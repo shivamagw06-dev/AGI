@@ -32,6 +32,7 @@ import { startUpstoxStatementScheduler } from "./services/upstoxStatementSchedul
 import { getLiveAlphaRuntimeStatus, startLiveAlphaRuntime } from "./services/liveAlphaRuntime.js";
 import { getLiveAlphaWorkspace } from "./services/liveAlphaWorkspace.js";
 import { buildConfluenceQueue } from "./services/researchConfluence.js";
+import { getResearchEvidence } from "./services/researchEvidenceCollector.js";
 import { llmProviderStatus } from "./services/llmClient.js";
 import rateLimit from "express-rate-limit";
 import cors from "cors";
@@ -302,7 +303,9 @@ reg('/api/market/live-alpha/workspace', async (_req, res) => {
 reg('/api/market/research-confluence', async (req, res) => {
   try {
     const workspace = await getLiveAlphaWorkspace();
-    res.json(buildConfluenceQueue({ workspace, limit: Number(req.query.limit) || 25 }));
+    const limit = Number(req.query.limit) || 25;
+    const research = await getResearchEvidence({ workspace, limit });
+    res.json({ ...buildConfluenceQueue({ workspace, research: research.evidence, limit }), evidence_health: research.health });
   } catch (error) {
     res.status(503).json({ error: error.message || 'Research confluence unavailable', research_only: true });
   }
