@@ -37,6 +37,7 @@ import { getConfluenceLedger, getConfluenceValidationSummary } from "./services/
 import { getConfluenceValidationStatus, startConfluenceValidationScheduler } from "./services/confluenceValidationScheduler.js";
 import { getCompanyResearchMemory, screenResearchChanges } from "./services/researchMemoryStore.js";
 import { getCompanyForecasts, getForecastValidation } from "./services/probabilisticForecastStore.js";
+import { getForecastRanking, getRankIcHealth, getWalkForwardDataset } from "./services/forecastV2Store.js";
 import { llmProviderStatus } from "./services/llmClient.js";
 import rateLimit from "express-rate-limit";
 import cors from "cors";
@@ -332,6 +333,18 @@ reg('/api/market/research-memory/:symbol', async (req, res) => {
 });
 reg('/api/market/forecasts/validation', async (req, res) => {
   try { res.json({ generated_at: new Date().toISOString(), research_only: true, ...(await getForecastValidation({ horizon: req.query.horizon, limit: Number(req.query.limit) || 5000 })) }); }
+  catch (error) { res.status(error.status === 404 ? 503 : 500).json({ error: error.message, research_only: true }); }
+});
+reg('/api/market/forecasts/rankings', async (req, res) => {
+  try { res.json({ generated_at: new Date().toISOString(), research_only: true, rows: await getForecastRanking({ date: req.query.date, horizon: req.query.horizon || '5d', limit: Number(req.query.limit) || 500 }) }); }
+  catch (error) { res.status(error.status === 404 ? 503 : 500).json({ error: error.message, research_only: true }); }
+});
+reg('/api/market/forecasts/rank-ic', async (req, res) => {
+  try { res.json({ generated_at: new Date().toISOString(), research_only: true, ...(await getRankIcHealth({ horizon: req.query.horizon || '5d', limit: Number(req.query.limit) || 252 })) }); }
+  catch (error) { res.status(error.status === 404 ? 503 : 500).json({ error: error.message, research_only: true }); }
+});
+reg('/api/market/forecasts/training-dataset', async (req, res) => {
+  try { res.json(await getWalkForwardDataset({ horizon: req.query.horizon || '5d', minimumTrainPeriods: Number(req.query.minimum_train_periods) || 20, limit: Number(req.query.limit) || 10000 })); }
   catch (error) { res.status(error.status === 404 ? 503 : 500).json({ error: error.message, research_only: true }); }
 });
 reg('/api/market/forecasts/:symbol', async (req, res) => {
