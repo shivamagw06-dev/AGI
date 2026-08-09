@@ -41,7 +41,7 @@ export async function getLiveAlphaWorkspace({ fetchImpl = globalThis.fetch, limi
   const runIds = runs.map((run) => run.id);
   const signals = runIds.length ? await query(
     'live_alpha_signals',
-    `select=id,run_id,symbol,sector,rank,classification,alpha_z,signal_quality_score,signal_quality_label,empirical_confidence_score,comparable_observations,liquidity_ok,factor_values,direction,price_at_signal,nifty_at_signal,sector_at_signal,volume_ratio,vwap_deviation,oi_change,created_at&run_id=in.(${runIds.join(',')})&order=created_at.desc&limit=${Math.min(500, Math.max(1, limit))}`,
+    `select=id,run_id,symbol,instrument_key,sector,rank,classification,alpha_z,signal_quality_score,signal_quality_label,empirical_confidence_score,comparable_observations,liquidity_ok,factor_values,direction,market_regime,price_at_signal,nifty_at_signal,sector_at_signal,volume_ratio,vwap_deviation,oi_change,created_at&run_id=in.(${runIds.join(',')})&order=created_at.desc&limit=${Math.min(500, Math.max(1, limit))}`,
     fetchImpl,
   ) : [];
   const runById = new Map(runs.map((run) => [run.id, run]));
