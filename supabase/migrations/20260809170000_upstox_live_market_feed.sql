@@ -16,7 +16,12 @@ create table if not exists public.live_market_snapshots (
   best_ask numeric,
   spread_bps numeric check (spread_bps is null or spread_bps >= 0),
   feed_latency_ms integer check (feed_latency_ms is null or feed_latency_ms >= 0),
-  minute_bucket timestamptz generated always as (date_trunc('minute', observed_at)) stored,
+  -- date_trunc(text, timestamptz) depends on the session timezone and is only
+  -- STABLE, so PostgreSQL rejects it in a stored generated column. date_bin
+  -- with a fixed UTC origin is IMMUTABLE and produces the same minute bucket.
+  minute_bucket timestamptz generated always as (
+    date_bin('1 minute'::interval, observed_at, timestamptz '2000-01-01 00:00:00+00')
+  ) stored,
   raw_factors jsonb not null default '{}'::jsonb check (jsonb_typeof(raw_factors) = 'object'),
   unique (instrument_key, observed_at)
 );
