@@ -27,8 +27,9 @@ test('runs momentum in shadow mode once a bucket has complete features', async (
   const baselines = new VolumeBaselineIndex(universe.map((row) => ({ instrument_key: row.instrumentKey, minute_of_session: 120, expected_cumulative_volume: 1000 })));
   const saved = [];
   const volumeSaved = [];
-  const pipeline = new MomentumShadowPipeline({ universe, benchmarkKey: 'INDEX|NIFTY', baselineIndex: baselines, repository: { saveMomentumRun: async (run) => saved.push(run), saveVolumeAnomalyRun: async (run) => volumeSaved.push(run) } });
-  for (const time of ['2026-08-10T04:45:00Z', '2026-08-10T05:30:00Z', '2026-08-10T05:45:00Z']) {
+  const openingSaved = [];
+  const pipeline = new MomentumShadowPipeline({ universe, benchmarkKey: 'INDEX|NIFTY', baselineIndex: baselines, repository: { saveMomentumRun: async (run) => saved.push(run), saveVolumeAnomalyRun: async (run) => volumeSaved.push(run), saveOpeningRangeRun: async (run) => openingSaved.push(run) } });
+  for (const time of ['2026-08-10T03:45:00Z', '2026-08-10T04:45:00Z', '2026-08-10T05:30:00Z', '2026-08-10T05:45:00Z']) {
     const step = time.endsWith('04:45:00Z') ? 0 : time.endsWith('05:30:00Z') ? 1 : 2;
     pipeline.ingest({ snapshots: [
       { instrument_key: 'INDEX|NIFTY', received_at: time, ltp: 100 + step },
@@ -40,6 +41,8 @@ test('runs momentum in shadow mode once a bucket has complete features', async (
   assert.equal(result.execution_enabled, false);
   assert.equal(saved.length, 1);
   assert.equal(volumeSaved.length, 1);
+  assert.equal(openingSaved.length, 1);
   assert.equal(result.companion_engines[0].engine, 'volume_liquidity_anomaly_v1');
+  assert.equal(result.companion_engines[1].engine, 'opening_range_expansion_v1');
   assert.equal((await pipeline.evaluate(new Date('2026-08-10T05:45:30Z'))).reason, 'already_evaluated_bucket');
 });
