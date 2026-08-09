@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { evaluateCrossSectionalMomentum } from './liveAlphaEngine.js';
+import { evaluateCrossSectionalMomentum, evaluateVolumeLiquidityAnomaly } from './liveAlphaEngine.js';
 
 function universe(size = 20) {
   return Array.from({ length: size }, (_, index) => ({
@@ -59,4 +59,29 @@ test('uses stock-minus-sector residual without double-counting the market', () =
   assert.equal(leader.residual_15m, 1);
   assert.equal(leader.residual_60m, 2);
   assert.equal(leader.sector_strength, 1);
+});
+
+test('ranks abnormal volume and labels accumulation versus distribution', () => {
+  const rows = universe();
+  rows[19].cumulativeVolume = 500_000;
+  rows[18].cumulativeVolume = 450_000;
+  rows[18].return15m = -4;
+  rows[18].return60m = -5;
+  const result = evaluateVolumeLiquidityAnomaly(rows, { asOf: '2026-08-09T06:00:00Z' });
+  assert.equal(result.engine, 'volume_liquidity_anomaly_v1');
+  assert.equal(result.research_only, true);
+  assert.equal(result.execution_enabled, false);
+  assert.equal(result.signals.find((row) => row.symbol === 'STOCK20').classification, 'abnormal_accumulation_candidate');
+  assert.equal(result.signals.find((row) => row.symbol === 'STOCK19').classification, 'abnormal_distribution_candidate');
+  assert.equal('order' in result.signals[0], false);
+});
+
+test('volume anomaly rejects weak participation and filters wide spreads', () => {
+  const rows = universe();
+  for (const row of rows) row.cumulativeVolume = 110_000;
+  rows[19].cumulativeVolume = 500_000;
+  rows[19].spreadBps = 80;
+  const result = evaluateVolumeLiquidityAnomaly(rows);
+  assert.equal(result.signals.find((row) => row.symbol === 'STOCK20').classification, 'filtered');
+  assert.equal(result.signals.some((row) => row.classification.includes('candidate')), false);
 });
