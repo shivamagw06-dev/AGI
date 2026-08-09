@@ -76,4 +76,5 @@ export class LiveAlphaPersistence {
   async saveVolumeAnomalyRun(result, diagnostics = {}) { return this.saveAlphaRun(result, diagnostics); }
   async saveOpeningRangeRun(result, diagnostics = {}) { return this.saveAlphaRun(result, diagnostics); }
   async saveMeanReversionRun(result, diagnostics = {}) { return this.saveAlphaRun(result, diagnostics); }
+  async saveDerivativesRun(result, diagnostics = {}) { return this.saveAlphaRun(result, diagnostics); }
 }

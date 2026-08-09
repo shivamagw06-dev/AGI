@@ -9,6 +9,8 @@ test('validates unique stock and sector mappings', () => {
   assert.throws(() => validateLiveAlphaUniverse({ ...valid, members: valid.members.slice(0, 5) }), /at least 10/);
   const duplicate = structuredClone(valid); duplicate.members[1].symbol = duplicate.members[0].symbol;
   assert.throws(() => validateLiveAlphaUniverse(duplicate), /Duplicate/);
+  const invalidDerivative = structuredClone(valid); invalidDerivative.members[0].derivativeInstrumentKey = 'NSE_EQ|NOT_A_FUTURE';
+  assert.throws(() => validateLiveAlphaUniverse(invalidDerivative), /derivative instrument/);
 });
 
 test('runtime remains disabled without the explicit production flag', async () => {
