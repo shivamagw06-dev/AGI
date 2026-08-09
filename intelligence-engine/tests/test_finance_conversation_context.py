@@ -93,3 +93,15 @@ def test_theme_and_time_window_survive_follow_up():
     assert effective.startswith("Regarding the ai capex theme")
     assert trace["theme"] == "ai_capex"
     assert trace["time_window"] == "this week"
+
+
+def test_answer_controls_persist_without_changing_entity():
+    store = ConversationStore()
+    resolve(store, "Analyse ICICI Bank")
+    effective, ticker, trace = resolve(store, "Show sources only")
+    assert effective.startswith("Regarding ICICIBANK")
+    assert ticker == "ICICIBANK"
+    assert trace["output_style"] == "sources"
+    _, _, trace = resolve(store, "Now explain simply and make it brief")
+    assert trace["audience"] == "general"
+    assert trace["answer_depth"] == "brief"

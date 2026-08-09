@@ -146,21 +146,48 @@ function ResearchProgressFallback({ journey, playbook }) {
 function AnswerTurn({ answer, onAsk }) {
   const [openChip, setOpenChip] = useState(null);
   if (!answer) return null;
+  const presentation = answer.presentation || {};
+  const isBrief = presentation.depth === 'brief';
+  const sourcesOnly = presentation.style === 'sources';
+  const tableMode = presentation.style === 'table';
+
+  if (sourcesOnly) {
+    return (
+      <div className="ac-msg ac-msg-agi">
+        <div className="ac-label">AGI · Sources</div>
+        <section className="ac-block ac-source-only">
+          <h2>Evidence and provenance</h2>
+          {(answer.provenance || []).length ? (
+            <ol className="ac-source-list">
+              {answer.provenance.map((item, index) => (
+                <li key={`${item.title}-${index}`}>
+                  {item.url ? <a href={item.url} target="_blank" rel="noreferrer">{item.title}</a> : <strong>{item.title}</strong>}
+                  <span>{item.source}</span>
+                </li>
+              ))}
+            </ol>
+          ) : (
+            <p className="ac-confidence-why">No attributable source records were returned for this turn.</p>
+          )}
+        </section>
+      </div>
+    );
+  }
 
   return (
     <div className="ac-msg ac-msg-agi">
       <div className="ac-label">AGI</div>
 
-      <ResearchStatus
+      {!isBrief && <ResearchStatus
         status={answer.researchStatus}
         workflow={answer.workflow}
         objective={answer.decisionObjective}
-      />
-      {!answer.researchStatus?.items?.length && (
+      />}
+      {!isBrief && !answer.researchStatus?.items?.length && (
         <ResearchProgressFallback journey={answer.researchJourney} playbook={answer.playbook} />
       )}
 
-      <NextBestResearch nbrq={answer.nextBestResearchQuestion} onAsk={onAsk} />
+      {!isBrief && <NextBestResearch nbrq={answer.nextBestResearchQuestion} onAsk={onAsk} />}
 
       {/* 1. Direct Answer */}
       <div className="ac-direct">
@@ -195,12 +222,28 @@ function AnswerTurn({ answer, onAsk }) {
         )}
       </div>
 
+      {tableMode && answer.thesisCards?.length > 0 && (
+        <section className="ac-block">
+          <h2>Research summary table</h2>
+          <div className="ac-answer-table-wrap">
+            <table className="ac-answer-table">
+              <thead><tr><th>Dimension</th><th>Assessment</th><th>Evidence</th></tr></thead>
+              <tbody>
+                {answer.thesisCards.map((card) => (
+                  <tr key={card.id}><td>{card.title}</td><td>{card.impact}</td><td>{card.body}</td></tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      )}
+
       {/* 2. Evidence / rationale */}
-      {answer.whyAgib?.length > 0 && (
+      {!tableMode && answer.whyAgib?.length > 0 && (
         <section className="ac-block">
           <h2>{answer.answerFormat?.evidenceTitle || 'Why AGI thinks this'}</h2>
           <ul className="ac-why-list">
-            {answer.whyAgib.map((item) => (
+            {answer.whyAgib.slice(0, isBrief ? 3 : undefined).map((item) => (
               <li key={item}>{item}</li>
             ))}
           </ul>
@@ -208,7 +251,7 @@ function AnswerTurn({ answer, onAsk }) {
       )}
 
       {/* 3. Company / financial thesis — not meaningful for factual comparisons. */}
-      {answer.answerFormat?.thesis !== false && <section className="ac-block">
+      {!isBrief && !tableMode && answer.answerFormat?.thesis !== false && <section className="ac-block">
         <h2>{answer.answerFormat?.key === 'financials' ? 'Financial performance' : answer.answerFormat?.key === 'valuation' ? 'Valuation framework' : 'Investment Thesis'}</h2>
         <div className="ac-thesis">
           {answer.thesisCards.map((card) => (
@@ -224,7 +267,7 @@ function AnswerTurn({ answer, onAsk }) {
       </section>}
 
       {/* 4. Bull vs Bear Case */}
-      {answer.answerFormat?.scenarios !== false && answer.confidence != null && !answer.evidenceUnavailable && (answer.moreBullish?.length || answer.moreBearish?.length) ? (
+      {!isBrief && answer.answerFormat?.scenarios !== false && answer.confidence != null && !answer.evidenceUnavailable && (answer.moreBullish?.length || answer.moreBearish?.length) ? (
         <section className="ac-block">
           <h2>{answer.answerFormat?.key === 'catalysts' ? 'Upside and downside catalysts' : 'Bull vs Bear Case'}</h2>
           <div className="ac-change">
@@ -251,7 +294,7 @@ function AnswerTurn({ answer, onAsk }) {
       ) : null}
 
       {/* 5. Research Conclusion */}
-      {answer.researchConclusion && (
+      {!isBrief && answer.researchConclusion && (
         <section className="ac-block ac-research-conclusion">
           <h2>Research Conclusion</h2>
           <p>{answer.researchConclusion.summary || answer.bottomLine}</p>
@@ -272,7 +315,7 @@ function AnswerTurn({ answer, onAsk }) {
       )}
 
       {/* 6. Questions Before You Decide */}
-      {answer.questionsBeforeYouDecide?.length > 0 && (
+      {!isBrief && answer.questionsBeforeYouDecide?.length > 0 && (
         <section className="ac-block">
           <h2>Questions Before You Decide</h2>
           <ul className="ac-why-list">
