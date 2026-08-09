@@ -24,6 +24,32 @@ def _blob(*parts: Any) -> str:
     return " ".join(str(p).lower() for p in parts if p)
 
 
+_DISPLAY_NAMES = {
+    "ASIANPAINT": "Asian Paints",
+    "HDFCBANK": "HDFC Bank",
+    "ICICIBANK": "ICICI Bank",
+    "INFY": "Infosys",
+    "RELIANCE": "Reliance Industries",
+    "TATAMOTORS": "Tata Motors",
+    "TCS": "TCS",
+}
+
+
+def _company_display_name(ev: dict[str, Any], fallback: str = "The company") -> str:
+    company = ev.get("company") or {}
+    ticker = str(ev.get("ticker") or company.get("ticker") or "").upper()
+    company_name = str(company.get("company_name") or "").strip()
+    if ticker and company_name.upper().replace(" ", "") == ticker.replace(" ", ""):
+        company_name = ""
+    return str(
+        company.get("display_name")
+        or company_name
+        or _DISPLAY_NAMES.get(ticker)
+        or ticker
+        or fallback
+    )
+
+
 def _pedagogy_for_ev(ev: dict[str, Any]) -> dict[str, Any] | None:
     company = ev.get("company") or {}
     return lookup_named_pedagogy(
@@ -243,7 +269,7 @@ def analyse_moat(ev: dict[str, Any]) -> dict[str, Any]:
     durability = "Strong" if sum(1 for d in dims if d.score >= 70) >= 2 else (
         "Medium" if primary else "Weak"
     )
-    name = company.get("company_name") or ev.get("ticker")
+    name = _company_display_name(ev, fallback="")
     if not name:
         # Pull a proper noun from the question (Costco/Apple/TCS) for direct answers.
         q = str(ev.get("question") or "")
@@ -329,11 +355,12 @@ def analyse_growth(ev: dict[str, Any]) -> dict[str, Any]:
         modes["cross_selling"] = "Primary"
         modes["organic"] = "Primary"
     primary = [m for m, v in modes.items() if v in {"Primary", "Evident"}][:5]
+    name = _company_display_name(ev)
     return {
         "industry": industry,
         "modes": modes,
         "primary_modes": primary or ["organic"],
-        "summary": "Growth is primarily "
+        "summary": f"Growth at {name} is primarily "
         + ", ".join((primary or ["organic"]))
         + f" for this {industry.replace('_', ' ')} franchise.",
         "confidence": 0.75,
@@ -404,7 +431,8 @@ def analyse_risks(ev: dict[str, Any]) -> dict[str, Any]:
             }
         )
     top = [r["key"] for r in sorted(risks, key=lambda x: -x["score"])[:5]]
-    summary = "Primary business risks: " + ", ".join(t.replace("_", " ") for t in top) + "."
+    name = _company_display_name(ev)
+    summary = f"Primary business risks for {name}: " + ", ".join(t.replace("_", " ") for t in top) + "."
     if tmpl.get("from_industry_dna") and tmpl.get("typical_risks"):
         summary += " Industry DNA risks: " + ", ".join(tmpl["typical_risks"][:4]) + "."
     return {

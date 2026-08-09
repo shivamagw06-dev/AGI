@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from typing import Any, Optional
 
 from knowledge_unification.fusion import fuse
@@ -13,6 +14,7 @@ from knowledge_unification.schema import FusedEvidence, ProviderResult
 
 KUL_VERSION = "1.2.0"
 PROGRAMME = "Phase X — Knowledge Unification Layer (+ II Integration 3.1.5)"
+_COMPARISON_RE = re.compile(r"\b(compare|versus|\bvs\.?\b|difference between|relative to)\b", re.I)
 
 
 def health() -> dict[str, Any]:
@@ -48,7 +50,7 @@ def plan_and_gather(
         from entity_intelligence.production import should_short_circuit
 
         ei_contract = ei_analyse(question) or {}
-        if should_short_circuit(ei_contract):
+        if should_short_circuit(ei_contract) and not _COMPARISON_RE.search(question or ""):
             summary = str(ei_contract.get("summary") or "").strip()
             why = list(ei_contract.get("why") or [])
             return {

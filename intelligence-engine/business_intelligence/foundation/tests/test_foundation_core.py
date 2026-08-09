@@ -60,6 +60,18 @@ def test_moat_dimensions_scored():
     assert out.get("durability") in {"Strong", "Medium", "Weak"}
 
 
+def test_company_answers_use_readable_names_instead_of_raw_tickers():
+    from business_intelligence.foundation.production import analyse
+
+    moat = analyse("Does Asian Paints have pricing power?", ticker="ASIANPAINT")
+    growth = analyse("What drives growth for Infosys?", ticker="INFY")
+    risks = analyse("What are the biggest business risks for Reliance Industries?", ticker="RELIANCE")
+
+    assert "Asian Paints" in moat["summary"]
+    assert "Infosys" in growth["summary"]
+    assert "Reliance Industries" in risks["summary"]
+
+
 def test_compare_uses_business_axes():
     from business_intelligence.foundation.production import compare
 

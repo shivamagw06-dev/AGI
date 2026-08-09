@@ -18,7 +18,7 @@ _HOUSE_RESEARCH_RE = re.compile(
 _THEMATIC_RESEARCH_RE = re.compile(
     r"\b(?:ai\s+(?:spending|investment|capex|infrastructure)|hyperscaler|"
     r"data[ -]?cent(?:er|re)|sector\s+rotation|sector\s+leadership|policy\s+shifts?|"
-    r"market\s+rotation|beneficiary\s+sectors?|industr(?:y|ies|ial)|power\s+(?:names?|companies|demand)|"
+    r"market\s+rotation|beneficiary\s+sectors?|power\s+(?:names?|companies|demand)|"
     r"capital\s+spending)\b",
     re.I,
 )

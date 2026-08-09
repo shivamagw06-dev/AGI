@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from app.ui.service import (
     _build_que_answer_construction,
+    _kul_is_deterministic_business_answer,
     _que_requires_full_desk,
     UiService,
 )
@@ -34,6 +35,16 @@ def test_education_does_not_require_full_desk():
     # Education / concept teaching can stay on KUL / financial router.
     assert pack["decision_type"] == "Education"
     assert _que_requires_full_desk(pack) is False
+
+
+def test_deterministic_business_answer_is_not_discarded_by_que():
+    hit = {
+        "providers_used": ["business_intelligence", "industry_intelligence"],
+        "company_intelligence": {"identity": {"ticker": "AAPL"}},
+    }
+    assert _kul_is_deterministic_business_answer(
+        "Why is Apple able to sustain premium pricing?", hit
+    ) is True
 
 
 def test_recommendation_policy_attaches_research_brief():
