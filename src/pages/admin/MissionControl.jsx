@@ -18,6 +18,7 @@ import { Button } from '@/components/ui/button';
 import AgentMapPanel from '@/pages/admin/AgentMapPanel';
 import AskObservabilityPanel from '@/pages/admin/AskObservabilityPanel';
 import '@/office/theme.css';
+import { API_ORIGIN } from '@/config';
 
 function statusColour(status) {
   const s = String(status || '').toLowerCase();
@@ -59,6 +60,7 @@ export default function MissionControl() {
   const [health, setHealth] = useState(null);
   const [desk, setDesk] = useState(null);
   const [gates, setGates] = useState(null);
+  const [researchPipeline, setResearchPipeline] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [query, setQuery] = useState('');
@@ -88,6 +90,10 @@ export default function MissionControl() {
       ]);
       if (hRes.status === 'fulfilled') setHealth(hRes.value);
       if (gRes.status === 'fulfilled') setGates(gRes.value);
+      if (API_ORIGIN) {
+        const response = await fetch(`${API_ORIGIN}/api/market/research-pipeline/health`, { headers: { Accept: 'application/json' } });
+        if (response.ok) setResearchPipeline(await response.json());
+      }
     } catch {
       /* ignore */
     }
@@ -355,6 +361,27 @@ export default function MissionControl() {
             <span>{error}</span>
           </Glass>
         ) : null}
+
+        <section className="space-y-3">
+          <Kicker>Research Pipeline · Live Instrumentation</Kicker>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6">
+            <Stat label="Pipeline" value={researchPipeline?.status || 'CHECKING'} status={researchPipeline?.status} hint="Research-only · execution disabled" />
+            <Stat label="Upstox Strategies" value={researchPipeline ? `${researchPipeline.feeds?.upstox_strategies?.healthy || 0} / 5` : '—'} hint="Live Alpha engines" />
+            <Stat label="Groww Strategies" value={researchPipeline ? `${researchPipeline.feeds?.groww_strategies?.healthy || 0} / 2` : '—'} hint="EOD research" />
+            <Stat label="Candidates" value={researchPipeline?.latest_cycle?.candidates ?? '—'} hint={`${researchPipeline?.latest_cycle?.eligible_confluence ?? 0} eligible`} />
+            <Stat label="Confluence Events" value={researchPipeline?.totals?.events ?? '—'} hint={`${researchPipeline?.latest_cycle?.persisted ?? 0} last cycle`} />
+            <Stat label="Memory States" value={researchPipeline?.totals?.memory ?? '—'} hint={`Coverage ${researchPipeline?.integrity?.memory_coverage ?? '—'}`} />
+            <Stat label="Forecast Sets" value={researchPipeline?.totals?.feature_snapshots ?? '—'} hint={`${researchPipeline?.totals?.forecasts ?? 0} horizon forecasts`} />
+            <Stat label="Ranked Rows" value={researchPipeline?.totals?.rankings ?? '—'} hint={`${researchPipeline?.totals?.cross_sections ?? 0} matured cross-sections`} />
+          </div>
+          {researchPipeline?.latest_cycle?.rejected ? (
+            <Glass className="grid gap-3 text-sm sm:grid-cols-3">
+              <div><span className="text-[var(--io-caption)]">Missing price anchor</span><p className="mt-1 font-semibold tabular-nums">{researchPipeline.latest_cycle.rejected.missing_price_anchor || 0}</p></div>
+              <div><span className="text-[var(--io-caption)]">Incomplete identity</span><p className="mt-1 font-semibold tabular-nums">{researchPipeline.latest_cycle.rejected.incomplete_identity || 0}</p></div>
+              <div><span className="text-[var(--io-caption)]">Invalid price anchor</span><p className="mt-1 font-semibold tabular-nums">{researchPipeline.latest_cycle.rejected.invalid_price_anchor || 0}</p></div>
+            </Glass>
+          ) : null}
+        </section>
 
         {/* SECTION 1 */}
         <section className="space-y-3">
