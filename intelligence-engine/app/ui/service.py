@@ -1747,6 +1747,12 @@ class UiService:
     ) -> SearchView:
         self._require()
         q = (question or "").strip()
+        from semantic_research_retrieval.routing import (
+            COMPANY_RESEARCH,
+            classify_research_route,
+        )
+
+        research_route = classify_research_route(q)
         client = None
         detected_ticker = ticker.upper() if ticker else None
         # Comparisons are multi-entity research requests.  Keep the canonical pair
@@ -1804,8 +1810,11 @@ class UiService:
             "ticker_rejects": [],
             "ere_research_blocked": False,
             "executive_source": None,
+            "research_route": research_route,
         }
         try:
+            if research_route != COMPANY_RESEARCH:
+                raise LookupError("entity resolution is not required for this research route")
             from entity_resolution.production import soft_slice_for_ask_agi as ere_soft_slice
 
             entity_resolution = ere_soft_slice(q) or {}
@@ -1832,7 +1841,11 @@ class UiService:
             ere_body = {}
 
         # Deterministic alias bind (Meta/Apple/…) before soft packs can pollute.
-        alias_hit = alias_ticker_from_question(q)
+        alias_hit = (
+            alias_ticker_from_question(q)
+            if research_route == COMPANY_RESEARCH
+            else None
+        )
         if alias_hit and not detected_ticker:
             detected_ticker = alias_hit
             ask_orchestration["ticker_source"] = "alias"
@@ -1947,6 +1960,8 @@ class UiService:
         # genuinely fictitious/unrecognized names — see
         # app/ui/coverage_policy.py.
         try:
+            if research_route != COMPANY_RESEARCH:
+                raise LookupError("coverage policy is company-only")
             unsupported_company = coverage_policy_detect(q)
         except Exception:
             unsupported_company = None
@@ -1957,6 +1972,8 @@ class UiService:
         # fusion or the composer. Only unambiguous, registered companies route
         # here; anything else falls through to the normal pipeline.
         try:
+            if research_route != COMPANY_RESEARCH:
+                raise LookupError("company metadata routing is company-only")
             from company_identity.metadata_router import route as metadata_route
 
             metadata_hit = metadata_route(q)
@@ -2065,6 +2082,9 @@ class UiService:
         try:
             kul_hit = kul_answer_for_ask(q, ticker=detected_ticker)
         except Exception:
+            kul_hit = None
+        if research_route != COMPANY_RESEARCH and kul_hit:
+            ask_orchestration["kul_deferred_for_semantic_research"] = True
             kul_hit = None
         # Post-KUL: if KUL somehow bound a forbidden ticker, discard and refuse.
         try:
@@ -2324,6 +2344,8 @@ class UiService:
         # Fallback: isolated IKT company router (pre-KUL path) if unification
         # returned nothing but CapIQ still has a direct profile hit.
         try:
+            if research_route != COMPANY_RESEARCH:
+                raise LookupError("company profile routing is company-only")
             ikt_hit = company_router_route(q)
         except Exception:
             ikt_hit = None
@@ -2428,6 +2450,8 @@ class UiService:
         # of these questions are shaped like "Explain <term>" and would
         # otherwise be misread as requiring a company.
         try:
+            if research_route != COMPANY_RESEARCH:
+                raise LookupError("financial concept router deferred to semantic research")
             financial_hit = financial_router_route(q)
         except Exception:
             financial_hit = None
@@ -2464,6 +2488,8 @@ class UiService:
                     _rejected.append(str(r))
         _rejected = [x for x in _rejected if x]
         if (
+            research_route == COMPANY_RESEARCH
+            and
             requires_resolved_company(q)
             and not detected_ticker
             and (ere_research_blocked or not alias_hit)
