@@ -80,8 +80,11 @@ function normalizeSnapshot(row, index) {
     ...values,
     spreadBps: finite(row.spreadBps ?? row.spread_bps),
     minimumLiquidity: row.minimumLiquidity !== false,
-    residual15m: values.return15m - values.benchmarkReturn15m - values.sectorReturn15m,
-    residual60m: values.return60m - values.benchmarkReturn60m - values.sectorReturn60m,
+    // Sector index return already contains the broad-market move. Stock minus
+    // sector is therefore the clean residual; subtracting Nifty again would
+    // double-count the market component.
+    residual15m: values.return15m - values.sectorReturn15m,
+    residual60m: values.return60m - values.sectorReturn60m,
     volumeSurprise: values.cumulativeVolume / values.expectedCumulativeVolume,
     sectorStrength: values.sectorReturn60m - values.benchmarkReturn60m,
   };
