@@ -47,7 +47,7 @@ function zScores(rows, key, { winsorize = 4 } = {}) {
   });
 }
 
-function confidence({ alphaZ, persistence, volumeSurprise, liquidityOk, dataCoverage }) {
+function preliminarySignalQuality({ alphaZ, persistence, volumeSurprise, liquidityOk, dataCoverage }) {
   const strength = Math.min(Math.abs(alphaZ) / 2.5, 1);
   const score = 100 * (
     0.45 * strength
@@ -57,7 +57,11 @@ function confidence({ alphaZ, persistence, volumeSurprise, liquidityOk, dataCove
     + 0.10 * dataCoverage
   );
   const rounded = Math.round(Math.max(0, Math.min(100, score)));
-  return { score: rounded, label: rounded >= 75 ? 'high' : rounded >= 55 ? 'medium' : 'low' };
+  return {
+    score: rounded,
+    label: rounded >= 90 ? 'exceptional' : rounded >= 80 ? 'very_strong' : rounded >= 70 ? 'strong' : rounded >= 60 ? 'moderate' : rounded >= 50 ? 'weak' : 'ignore',
+    empirical: false,
+  };
 }
 
 function normalizeSnapshot(row, index) {
@@ -134,7 +138,12 @@ export function evaluateCrossSectionalMomentum(snapshots, {
       sector_strength: Number(row.sectorStrength.toFixed(4)),
       persistence: persistence === 1 ? 'high' : 'low',
       liquidity_ok: liquidityOk,
-      confidence: confidence({ alphaZ, persistence, volumeSurprise: row.volumeSurprise, liquidityOk, dataCoverage }),
+      signal_quality: preliminarySignalQuality({ alphaZ, persistence, volumeSurprise: row.volumeSurprise, liquidityOk, dataCoverage }),
+      empirical_confidence: {
+        status: 'unvalidated',
+        score: null,
+        comparable_observations: 0,
+      },
       factors: {
         residual_15m_z: Number(z15[index].toFixed(4)),
         residual_60m_z: Number(z60[index].toFixed(4)),
