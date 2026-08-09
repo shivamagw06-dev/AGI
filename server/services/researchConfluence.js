@@ -71,6 +71,7 @@ export function evaluateResearchConfluence(evidence, { now = new Date() } = {}) 
     symbol, sector: evidence.sector || null, timestamp: now.toISOString(), research_only: true,
     anchors: evidence.anchors || null,
     components: { fundamental, valuation, groww_equity: growwEquity, groww_sector: growwSector, live: liveComponents, catalyst },
+    evidence: { key_bull_evidence: evidence.key_bull_evidence || [], key_bear_evidence: evidence.key_bear_evidence || [], risks: evidence.risks || [], catalysts: evidence.provenance?.catalyst?.items || evidence.catalysts || [], provenance: evidence.provenance || {} },
     scores: { fundamental_score: scores.fundamental, valuation_score: scores.valuation, eod_confirmation_score: scores.eod == null ? null : Number(scores.eod.toFixed(2)), live_confirmation_score: scores.live == null ? null : Number(scores.live.toFixed(2)), catalyst_relevance_score: scores.catalyst },
     bullish_signal_count: bullish, bearish_signal_count: bearish, contradiction_count: researchPositive ? bearish : bullish,
     confluence_class: classify(scores), research_priority_score: weightedScore(scores),
