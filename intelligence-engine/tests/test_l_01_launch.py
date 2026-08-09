@@ -90,6 +90,16 @@ def test_feedback_engine_and_backlog():
     assert summary["not_helpful"] == 1
 
 
+def test_finance_answer_feedback_tags_are_structured():
+    row = submit_feedback(
+        screen="ask_agi",
+        reaction="not_helpful",
+        tags=["wrong_entity", "missing_evidence", "not_an_allowed_tag"],
+    )
+    assert row["ok"] is True
+    assert row["tags"] == ["wrong_entity", "missing_evidence"]
+
+
 def test_v11_feature_flags_default_off():
     flags = list_flags()
     assert flags["all_disabled"] is True

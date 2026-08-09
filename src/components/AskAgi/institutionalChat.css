@@ -352,6 +352,31 @@
   padding: 0.55rem 0.8rem;
 }
 .ac-clarification-options button:hover { background: #eef5ff; }
+.ac-answer-feedback {
+  align-items: center;
+  border-top: 1px solid var(--ac-line);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+}
+.ac-answer-feedback > span, .ac-answer-feedback > p { color: var(--ac-soft); font-size: 0.78rem; margin: 0 0.25rem 0 0; }
+.ac-answer-feedback button {
+  align-items: center;
+  background: #fff;
+  border: 1px solid var(--ac-line);
+  border-radius: 999px;
+  color: var(--ac-ink);
+  cursor: pointer;
+  display: inline-flex;
+  font-size: 0.74rem;
+  gap: 0.3rem;
+  padding: 0.42rem 0.62rem;
+}
+.ac-answer-feedback button:hover { border-color: var(--ac-blue); color: var(--ac-blue); }
+.ac-feedback-tags { display: flex; flex-basis: 100%; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.35rem; }
+.ac-feedback-tags > span { color: var(--ac-muted); font-size: 0.72rem; padding: 0.45rem 0.25rem 0 0; }
 
 .ac-direct {
   background: var(--ac-panel);

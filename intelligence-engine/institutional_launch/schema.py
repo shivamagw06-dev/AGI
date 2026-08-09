@@ -39,6 +39,12 @@ FEEDBACK_TAGS = (
     "wrong_answer",
     "too_slow",
     "hard_to_understand",
+    "wrong_entity",
+    "stale_data",
+    "missing_evidence",
+    "unclear_reasoning",
+    "too_long",
+    "forecast_issue",
 )
 
 # v1.1 capabilities — off by default until Launch-01 is healthy

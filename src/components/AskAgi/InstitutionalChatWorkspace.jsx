@@ -17,9 +17,12 @@ import {
   User,
   Briefcase,
   Eye,
+  ThumbsDown,
+  ThumbsUp,
 } from 'lucide-react';
 import { mapChatAnswer } from '@/components/AskAgi/adapters/mapChatAnswer';
 import { getRecentSearches } from '@/lib/searchHistory';
+import { submitLaunchFeedback } from '@/lib/intelligenceApi';
 import '@/components/AskAgi/institutionalChat.css';
 
 const NAV = [
@@ -145,11 +148,31 @@ function ResearchProgressFallback({ journey, playbook }) {
 
 function AnswerTurn({ answer, onAsk }) {
   const [openChip, setOpenChip] = useState(null);
+  const [feedback, setFeedback] = useState({ reaction: '', status: 'idle' });
   if (!answer) return null;
   const presentation = answer.presentation || {};
   const isBrief = presentation.depth === 'brief';
   const sourcesOnly = presentation.style === 'sources';
   const tableMode = presentation.style === 'table';
+  const feedbackTags = [
+    ['wrong_entity', 'Wrong company'],
+    ['stale_data', 'Stale data'],
+    ['missing_evidence', 'Missing evidence'],
+    ['unclear_reasoning', 'Unclear reasoning'],
+    ['too_long', 'Too long'],
+    ['forecast_issue', 'Forecast issue'],
+  ];
+  const sendFeedback = async (reaction, tags = []) => {
+    if (feedback.status === 'sending') return;
+    setFeedback({ reaction, status: 'sending' });
+    try {
+      // Privacy-minimal V1: never transmit the question, answer, entity, or conversation ID.
+      await submitLaunchFeedback({ screen: 'ask_agi', reaction, tags });
+      setFeedback({ reaction, status: 'sent' });
+    } catch {
+      setFeedback({ reaction, status: 'error' });
+    }
+  };
 
   if (answer.clarification?.required) {
     return (
@@ -390,6 +413,37 @@ function AnswerTurn({ answer, onAsk }) {
             </button>
           ))}
         </div>
+      </section>
+
+      <section className="ac-answer-feedback" aria-label="Rate this AGI answer">
+        {feedback.status === 'sent' ? (
+          <p>Feedback recorded for AGI quality review.</p>
+        ) : (
+          <>
+            <span>Was this research answer useful?</span>
+            <button type="button" onClick={() => sendFeedback('helpful')} aria-label="Helpful answer">
+              <ThumbsUp size={15} /> Yes
+            </button>
+            <button
+              type="button"
+              onClick={() => setFeedback({ reaction: 'not_helpful', status: 'choosing' })}
+              aria-label="Answer needs improvement"
+            >
+              <ThumbsDown size={15} /> Needs improvement
+            </button>
+          </>
+        )}
+        {feedback.status === 'choosing' && (
+          <div className="ac-feedback-tags">
+            <span>What went wrong?</span>
+            {feedbackTags.map(([tag, label]) => (
+              <button type="button" key={tag} onClick={() => sendFeedback('not_helpful', [tag])}>
+                {label}
+              </button>
+            ))}
+          </div>
+        )}
+        {feedback.status === 'error' && <p>Feedback could not be saved. Please try again.</p>}
       </section>
     </div>
   );
