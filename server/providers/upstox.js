@@ -238,28 +238,17 @@ export async function getIntradayCandles(instrumentKey, { unit = 'minutes', inte
  * Upstox currently accepts: NSE_EQ|CASH, NSE_FO|INDEX_FUTURES, ...
  * @param {{ dataType?: string, interval?: '1D'|'1M' }} opts
  */
-export async function getMarketFiiDii({ dataType = 'NSE_EQ|CASH', interval = '1D' } = {}) {
-  const qs = new URLSearchParams({ data_type: dataType, interval }).toString();
-  const [fii, dii] = await Promise.all([
-    upstoxGet(`/market/fii?${qs}`),
-    upstoxGet(`/market/dii?${qs}`),
-  ]);
-  const fiiData = fii?.data || fii;
-  const diiData = dii?.data || dii;
-  const latestFii = Array.isArray(fiiData) ? fiiData[fiiData.length - 1] : fiiData;
-  const latestDii = Array.isArray(diiData) ? diiData[diiData.length - 1] : diiData;
-  // Warehouse institutional_flow.segment options are NSE_EQ / CASH.
-  const segment = dataType.includes('CASH') || dataType.startsWith('NSE_EQ')
-    ? 'NSE_EQ'
-    : String(dataType).slice(0, 32);
-  return {
-    ok: true,
-    segment,
-    data_type: dataType,
-    interval,
-    fii: latestFii || {},
-    dii: latestDii || {},
-    fii_series: Array.isArray(fiiData) ? fiiData : [fiiData].filter(Boolean),
-    dii_series: Array.isArray(diiData) ? diiData : [diiData].filter(Boolean),
-  };
+export const FII_DATA_TYPES = Object.freeze(['NSE_EQ|CASH', 'NSE_FO|INDEX_FUTURES', 'NSE_FO|STOCK_FUTURES', 'NSE_FO|INDEX_OPTIONS', 'NSE_FO|STOCK_OPTIONS']);
+function activityQuery(dataTypes, interval, from) { const params = new URLSearchParams(); for (const value of dataTypes) params.append('data_type', value); params.set('interval', interval); if (from) params.set('from', from); return params.toString(); }
+function istDateFromTimestamp(value) { const timestamp = Number(value); if (!Number.isFinite(timestamp)) return null; const parts = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata', year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(new Date(timestamp)); const get = (type) => parts.find((part) => part.type === type)?.value; return `${get('year')}-${get('month')}-${get('day')}`; }
+export function normalizeInstitutionalActivity(payload, participant, interval = '1D') {
+  const output = [];
+  for (const [segment, values] of Object.entries(payload?.data ?? payload ?? {})) for (const row of (Array.isArray(values) ? values : [values].filter(Boolean))) {
+    const timestamp = Number(row?.time_stamp ?? row?.timestamp);
+    output.push({ participant, segment, interval, observation_date: istDateFromTimestamp(timestamp), time_stamp: Number.isFinite(timestamp) ? timestamp : null, buy_amount: row?.buy_amount ?? null, sell_amount: row?.sell_amount ?? null, buy_contracts: row?.buy_contracts ?? null, sell_contracts: row?.sell_contracts ?? null, oi_contracts: row?.oi_contracts ?? null, oi_amount: row?.oi_amount ?? null, long_contracts: row?.total_long_contracts ?? null, short_contracts: row?.total_short_contracts ?? null, call_long_contracts: row?.total_call_long_contracts ?? null, put_long_contracts: row?.total_put_long_contracts ?? null, call_short_contracts: row?.total_call_short_contracts ?? null, put_short_contracts: row?.total_put_short_contracts ?? null, source: 'upstox' });
+  }
+  return output.filter((row) => row.observation_date);
 }
+export async function getMarketFii({ dataTypes = FII_DATA_TYPES, interval = '1D', from } = {}) { const requested = [...new Set((dataTypes || []).filter((value) => FII_DATA_TYPES.includes(value)))]; if (!requested.length) throw new Error('At least one valid FII data type is required.'); return upstoxGet(`/market/fii?${activityQuery(requested, interval, from)}`); }
+export async function getMarketDii({ interval = '1D', from } = {}) { return upstoxGet(`/market/dii?${activityQuery(['NSE_EQ|CASH'], interval, from)}`); }
+export async function getMarketFiiDii({ dataTypes, dataType, interval = '1D', from } = {}) { const requested = dataTypes || (dataType ? [dataType] : FII_DATA_TYPES); const [fii, dii] = await Promise.all([getMarketFii({ dataTypes: requested, interval, from }), getMarketDii({ interval, from })]); return { ok: true, interval, from: from || null, data_types: requested, observations: [...normalizeInstitutionalActivity(fii, 'FII', interval), ...normalizeInstitutionalActivity(dii, 'DII', interval)] }; }
