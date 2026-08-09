@@ -36,6 +36,7 @@ import { getResearchEvidence } from "./services/researchEvidenceCollector.js";
 import { getConfluenceLedger, getConfluenceValidationSummary } from "./services/confluenceValidationStore.js";
 import { getConfluenceValidationStatus, startConfluenceValidationScheduler } from "./services/confluenceValidationScheduler.js";
 import { getCompanyResearchMemory, screenResearchChanges } from "./services/researchMemoryStore.js";
+import { getCompanyForecasts, getForecastValidation } from "./services/probabilisticForecastStore.js";
 import { llmProviderStatus } from "./services/llmClient.js";
 import rateLimit from "express-rate-limit";
 import cors from "cors";
@@ -327,6 +328,14 @@ reg('/api/market/research-memory/changes', async (req, res) => {
 });
 reg('/api/market/research-memory/:symbol', async (req, res) => {
   try { res.json(await getCompanyResearchMemory(req.params.symbol, { limit: Number(req.query.limit) || 50 })); }
+  catch (error) { res.status(error.status === 404 ? 503 : 500).json({ error: error.message, research_only: true }); }
+});
+reg('/api/market/forecasts/validation', async (req, res) => {
+  try { res.json({ generated_at: new Date().toISOString(), research_only: true, ...(await getForecastValidation({ horizon: req.query.horizon, limit: Number(req.query.limit) || 5000 })) }); }
+  catch (error) { res.status(error.status === 404 ? 503 : 500).json({ error: error.message, research_only: true }); }
+});
+reg('/api/market/forecasts/:symbol', async (req, res) => {
+  try { res.json(await getCompanyForecasts(req.params.symbol, { limit: Number(req.query.limit) || 30 })); }
   catch (error) { res.status(error.status === 404 ? 503 : 500).json({ error: error.message, research_only: true }); }
 });
 reg('/api/news/headlines', async (_req, res) => {
