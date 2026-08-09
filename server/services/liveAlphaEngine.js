@@ -180,9 +180,74 @@ export function evaluateCrossSectionalMomentum(snapshots, {
   };
 }
 
+/**
+ * Detect abnormal participation confirmed by price direction. This is a
+ * research ranking only: it deliberately emits no order side, size or target.
+ */
+export function evaluateVolumeLiquidityAnomaly(snapshots, {
+  minimumUniverse = 10,
+  tailFraction = 0.15,
+  minimumVolumeRatio = 1.25,
+  maximumSpreadBps = 35,
+  asOf = new Date().toISOString(),
+} = {}) {
+  if (!Array.isArray(snapshots) || snapshots.length < minimumUniverse) {
+    throw new Error(`Volume anomaly requires at least ${minimumUniverse} simultaneous instruments.`);
+  }
+  if (!(tailFraction > 0 && tailFraction <= 0.25)) throw new Error('tailFraction must be above 0 and at most 0.25.');
+  const normalized = snapshots.map(normalizeSnapshot);
+  if (new Set(normalized.map((row) => row.symbol)).size !== normalized.length) throw new Error('Snapshot symbols must be unique.');
+  const volumeZ = zScores(normalized, 'volumeSurprise');
+  const residualZ = zScores(normalized, 'residual15m');
+  const ranked = normalized.map((row, index) => {
+    const liquidityOk = row.minimumLiquidity && (row.spreadBps === null || row.spreadBps <= maximumSpreadBps);
+    const directionalConfirmation = Math.sign(row.residual15m) === Math.sign(row.residual60m) ? 1 : 0.5;
+    const anomalyScore = (0.70 * volumeZ[index]) + (0.30 * Math.abs(residualZ[index]) * directionalConfirmation);
+    return {
+      symbol: row.symbol,
+      sector: row.sector,
+      instrument_key: row.instrumentKey,
+      alpha_z: Number(anomalyScore.toFixed(4)),
+      residual_15m: Number(row.residual15m.toFixed(4)),
+      residual_60m: Number(row.residual60m.toFixed(4)),
+      volume_surprise: Number(row.volumeSurprise.toFixed(4)),
+      sector_strength: Number(row.sectorStrength.toFixed(4)),
+      liquidity_ok: liquidityOk,
+      signal_quality: preliminarySignalQuality({ alphaZ: anomalyScore, persistence: directionalConfirmation, volumeSurprise: row.volumeSurprise, liquidityOk, dataCoverage: row.instrumentKey ? 1 : 0.9 }),
+      empirical_confidence: { status: 'unvalidated', score: null, comparable_observations: 0 },
+      factors: {
+        volume_surprise_z: Number(volumeZ[index].toFixed(4)),
+        absolute_residual_15m_z: Number(Math.abs(residualZ[index]).toFixed(4)),
+        spread_bps: row.spreadBps,
+        directional_confirmation: directionalConfirmation,
+      },
+    };
+  }).sort((left, right) => right.alpha_z - left.alpha_z);
+  const eligible = ranked.filter((row) => row.liquidity_ok && row.volume_surprise >= minimumVolumeRatio && row.alpha_z > 0);
+  const candidateCount = Math.min(eligible.length, Math.max(1, Math.ceil(ranked.length * tailFraction)));
+  const candidateSymbols = new Set(eligible.slice(0, candidateCount).map((row) => row.symbol));
+  const signals = ranked.map((row, index) => ({
+    ...row,
+    rank: index + 1,
+    classification: !row.liquidity_ok ? 'filtered' : candidateSymbols.has(row.symbol)
+      ? (row.residual_15m >= 0 ? 'abnormal_accumulation_candidate' : 'abnormal_distribution_candidate')
+      : 'neutral',
+  }));
+  return {
+    engine: ALPHA_ENGINES.VOLUME_ANOMALY,
+    as_of: new Date(asOf).toISOString(),
+    research_only: true,
+    execution_enabled: false,
+    universe_size: signals.length,
+    tail_size: candidateCount,
+    config: { tailFraction, minimumVolumeRatio, maximumSpreadBps },
+    signals,
+  };
+}
+
 export const LIVE_ALPHA_ROADMAP = Object.freeze([
   { engine: ALPHA_ENGINES.MOMENTUM, status: 'implemented' },
-  { engine: ALPHA_ENGINES.VOLUME_ANOMALY, status: 'planned' },
+  { engine: ALPHA_ENGINES.VOLUME_ANOMALY, status: 'implemented' },
   { engine: ALPHA_ENGINES.OPENING_RANGE, status: 'planned' },
   { engine: ALPHA_ENGINES.MEAN_REVERSION, status: 'planned' },
   { engine: ALPHA_ENGINES.DERIVATIVES, status: 'planned' },
