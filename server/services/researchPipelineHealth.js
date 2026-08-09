@@ -1,4 +1,6 @@
 import { getLiveAlphaWorkspace } from './liveAlphaWorkspace.js';
+import { tradingCalendar } from './tradingCalendarService.js';
+import { diagnosePipelineBottlenecks } from './researchDataQuality.js';
 
 function config(){const url=String(process.env.SUPABASE_URL||'').trim().replace(/\/$/,''),key=String(process.env.SUPABASE_SERVICE_ROLE_KEY||'').trim();if(!url||!key)throw new Error('Research pipeline health requires Supabase credentials.');return{url,key};}
 async function countRows(table,query=''){const{url,key}=config();const response=await fetch(`${url}/rest/v1/${table}?select=id${query?`&${query}`:''}`,{method:'HEAD',headers:{apikey:key,Authorization:`Bearer ${key}`,Prefer:'count=exact'}});if(!response.ok){const error=new Error(`Pipeline health count failed for ${table} (${response.status}).`);error.status=response.status;throw error;}const range=response.headers.get('content-range')||'*/0';return Number(range.split('/').at(-1))||0;}
@@ -12,6 +14,7 @@ export function derivePipelineStatus({scheduler,counts,upstoxHealthy,growwHealth
 }
 
 export async function getResearchPipelineHealth({schedulerStatus,workspace}={}){
+  const now=new Date();
   const data=workspace||await getLiveAlphaWorkspace();
   const [events,outcomes,memory,changes,featureSnapshots,forecasts,forecastOutcomes,rankings,crossSections]=await Promise.all([
     countRows('research_confluence_events'),countRows('research_confluence_outcomes'),countRows('research_memory_states'),countRows('research_memory_changes'),countRows('research_feature_snapshots'),countRows('research_forecasts'),countRows('research_forecast_outcomes'),countRows('research_forecast_rankings'),countRows('research_forecast_cross_section_metrics'),
@@ -19,10 +22,17 @@ export async function getResearchPipelineHealth({schedulerStatus,workspace}={}){
   const upstoxEngines=new Set((data?.runs||[]).map((run)=>run.engine).filter(Boolean));
   const growwStrategies=new Set((data?.groww?.runs||[]).map((run)=>run.strategy).filter(Boolean));
   const counts={events,outcomes,memory,changes,feature_snapshots:featureSnapshots,forecasts,forecast_outcomes:forecastOutcomes,rankings,cross_sections:crossSections};
+  const calendar=tradingCalendar.health('NSE');
+  const session=tradingCalendar.sessionFor(now,'NSE');
+  const outsideSession=!session || now.getTime()<Number(session.start_time) || now.getTime()>Number(session.end_time);
+  const marketClosed=!calendar.is_trading_day || outsideSession || /closed/i.test(String(calendar.current_exchange_status?.status||''));
+  const marketFeed=marketClosed?'MARKET_CLOSED':data?.readiness?.status==='ready'?'READY':String(data?.readiness?.status||'UNKNOWN').toUpperCase();
+  const feeds={market_feed:marketFeed,upstox_strategies:{healthy:upstoxEngines.size,expected:5,engines:[...upstoxEngines]},groww_strategies:{healthy:growwStrategies.size,expected:2,strategies:[...growwStrategies]}};
   const status=derivePipelineStatus({scheduler:schedulerStatus,counts,upstoxHealthy:upstoxEngines.size,growwHealthy:growwStrategies.size});
+  const bottlenecks=diagnosePipelineBottlenecks({scheduler:schedulerStatus,counts,feeds,marketClosed});
   return {
     generated_at:new Date().toISOString(),status,research_only:true,execution_enabled:false,
-    feeds:{market_feed:data?.readiness?.status==='ready'?'READY':String(data?.readiness?.status||'UNKNOWN').toUpperCase(),upstox_strategies:{healthy:upstoxEngines.size,expected:5,engines:[...upstoxEngines]},groww_strategies:{healthy:growwStrategies.size,expected:2,strategies:[...growwStrategies]}},
+    feeds,market_session:{closed:marketClosed,session,calendar},bottlenecks,dominant_bottleneck:bottlenecks[0]||null,
     latest_cycle:{candidates:schedulerStatus?.last_capture?.candidates||0,eligible_confluence:schedulerStatus?.last_capture?.eligible||0,persisted:schedulerStatus?.last_capture?.events||0,rejected:schedulerStatus?.last_capture?.rejected||{},outcomes_completed:schedulerStatus?.last_completion?.completed||0},
     totals:counts,
     integrity:{memory_coverage:events?Number((memory/events).toFixed(3)):null,feature_snapshot_coverage:events?Number((featureSnapshots/events).toFixed(3)):null,forecasts_per_snapshot:featureSnapshots?Number((forecasts/featureSnapshots).toFixed(3)):null,duplicate_protection:'DATABASE_UNIQUE_CONSTRAINTS'},

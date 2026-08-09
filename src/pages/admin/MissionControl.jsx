@@ -375,10 +375,25 @@ export default function MissionControl() {
             <Stat label="Ranked Rows" value={researchPipeline?.totals?.rankings ?? '—'} hint={`${researchPipeline?.totals?.cross_sections ?? 0} matured cross-sections`} />
           </div>
           {researchPipeline?.latest_cycle?.rejected ? (
-            <Glass className="grid gap-3 text-sm sm:grid-cols-3">
-              <div><span className="text-[var(--io-caption)]">Missing price anchor</span><p className="mt-1 font-semibold tabular-nums">{researchPipeline.latest_cycle.rejected.missing_price_anchor || 0}</p></div>
-              <div><span className="text-[var(--io-caption)]">Incomplete identity</span><p className="mt-1 font-semibold tabular-nums">{researchPipeline.latest_cycle.rejected.incomplete_identity || 0}</p></div>
-              <div><span className="text-[var(--io-caption)]">Invalid price anchor</span><p className="mt-1 font-semibold tabular-nums">{researchPipeline.latest_cycle.rejected.invalid_price_anchor || 0}</p></div>
+            <Glass className="grid gap-3 text-sm sm:grid-cols-2 lg:grid-cols-4">
+              {Object.entries(researchPipeline.latest_cycle.rejected)
+                .filter(([, value]) => Number(value) > 0)
+                .sort((a, b) => Number(b[1]) - Number(a[1]))
+                .map(([reason, value]) => (
+                  <div key={reason}>
+                    <span className="text-[var(--io-caption)]">{reason.replaceAll('_', ' ')}</span>
+                    <p className="mt-1 font-semibold tabular-nums">{value}</p>
+                  </div>
+                ))}
+            </Glass>
+          ) : null}
+          {researchPipeline?.dominant_bottleneck ? (
+            <Glass className="border-amber-500/30 text-sm">
+              <p className="font-semibold text-amber-200">Dominant bottleneck · {researchPipeline.dominant_bottleneck.stage.replaceAll('_', ' ')}</p>
+              <p className="mt-1 text-[var(--io-muted)]">
+                {researchPipeline.dominant_bottleneck.reason.replaceAll('_', ' ')}
+                {researchPipeline.dominant_bottleneck.affected != null ? ` · ${researchPipeline.dominant_bottleneck.affected} affected` : ''}
+              </p>
             </Glass>
           ) : null}
         </section>
