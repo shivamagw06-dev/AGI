@@ -348,6 +348,7 @@
 }
 .ac-evidence-limit strong { color: #3f3217; }
 .ac-sources { background: #fbfcfe; }
+.ac-conversation-direct { max-width: 44rem; }
 .ac-answer-table-wrap { overflow-x: auto; }
 .ac-answer-table { border-collapse: collapse; font-size: 0.82rem; width: 100%; }
 .ac-answer-table th, .ac-answer-table td { border-bottom: 1px solid var(--ac-line); padding: 0.65rem; text-align: left; vertical-align: top; }
