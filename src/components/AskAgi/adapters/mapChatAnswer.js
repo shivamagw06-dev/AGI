@@ -92,6 +92,24 @@ export function mapChatAnswer(pack) {
     'Evidence unavailable: AGI could not retrieve verified company research for this answer. Retry when the research desk is available.';
   const evidenceBacked = (value, fallback) =>
     evidenceUnavailable ? unavailableText : (value || fallback);
+  const conversation = pack?.conversation_context || pack?.ask_orchestration?.conversation || {};
+  const provenance = [
+    ...(Array.isArray(pack?.evidence_used) ? pack.evidence_used : []),
+    ...(Array.isArray(pack?.supporting_research) ? pack.supporting_research : []),
+  ]
+    .map((item) =>
+      typeof item === 'string'
+        ? { title: item, source: 'AGI research', url: '' }
+        : {
+            title: item?.title || item?.name || item?.text || item?.source || 'Research evidence',
+            source: item?.source || item?.publisher || item?.provider || 'AGI research',
+            url: item?.url || item?.href || '',
+          }
+    )
+    .filter((item, index, rows) =>
+      item.title && rows.findIndex((row) => row.title === item.title && row.url === item.url) === index
+    )
+    .slice(0, 12);
 
   const rc = vm.responseConstitution || pack?.answer_construction?.response_constitution || null;
   const aic =
@@ -376,6 +394,12 @@ export function mapChatAnswer(pack) {
     lastUpdated: vm.lastUpdated,
     evidenceUnavailable,
     answerFormat,
+    presentation: {
+      depth: conversation.answer_depth || 'standard',
+      style: conversation.output_style || 'standard',
+      audience: conversation.audience || 'analyst',
+    },
+    provenance,
     constitutionVersion: aic?.version || ipf?.version || rc?.version || '1.0',
     investmentContext,
     researchConclusion,

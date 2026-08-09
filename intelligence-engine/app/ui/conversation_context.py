@@ -17,6 +17,10 @@ _FOLLOW_UP_RE = re.compile(
     r"\b(it|its|that company|this company|them|those companies|the first|the second|now|also)\b",
     re.I,
 )
+_CONTROL_ONLY_RE = re.compile(
+    r"^(?:please\s+)?(?:make|show|give|rewrite|explain|format|summari[sz]e)\b",
+    re.I,
+)
 _COMPARE_RE = re.compile(r"\b(compare|versus|vs\.?|relative to|against)\b", re.I)
 _INSTEAD_RE = re.compile(r"\b(instead|switch to|change to|move to)\b", re.I)
 _FOCUS = {
@@ -53,6 +57,8 @@ class ConversationState:
     theme: str | None = None
     time_window: str | None = None
     answer_depth: str | None = None
+    output_style: str | None = None
+    audience: str | None = None
     turn_count: int = 0
     updated_at: float = field(default_factory=time.time)
 
@@ -119,7 +125,7 @@ class ConversationStore:
         inherited: list[str] = []
         effective = original
         is_compare = bool(_COMPARE_RE.search(original))
-        is_follow_up = bool(_FOLLOW_UP_RE.search(original))
+        is_follow_up = bool(_FOLLOW_UP_RE.search(original) or _CONTROL_ONLY_RE.search(original))
         prior_entities = state.entities()
 
         if explicit:
@@ -165,6 +171,18 @@ class ConversationStore:
             state.answer_depth = "brief"
         elif re.search(r"\b(detailed|in detail|deep|full)\b", original, re.I):
             state.answer_depth = "detailed"
+        if re.search(r"\b(sources? only|show (?:me )?(?:the )?sources?|provenance only)\b", original, re.I):
+            state.output_style = "sources"
+        elif re.search(r"\b(table|tabular)\b", original, re.I):
+            state.output_style = "table"
+        elif re.search(r"\b(bullets?|bullet points?)\b", original, re.I):
+            state.output_style = "bullets"
+        elif re.search(r"\b(normal format|standard format|reset format)\b", original, re.I):
+            state.output_style = "standard"
+        if re.search(r"\b(explain simply|simple language|beginner|plain english)\b", original, re.I):
+            state.audience = "general"
+        elif re.search(r"\b(for an analyst|institutional detail|technical language)\b", original, re.I):
+            state.audience = "analyst"
         state.turn_count += 1
         state.updated_at = time.time()
 
@@ -184,6 +202,8 @@ class ConversationStore:
             "theme": state.theme,
             "time_window": state.time_window,
             "answer_depth": state.answer_depth,
+            "output_style": state.output_style,
+            "audience": state.audience,
             "turn_count": state.turn_count,
             "reference_status": "unresolved" if unresolved else "resolved",
         }
