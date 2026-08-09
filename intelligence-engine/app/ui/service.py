@@ -1724,6 +1724,57 @@ class UiService:
                     "conversation": conversation_trace,
                 },
             )
+        execution = conversation_trace.get("research_execution")
+        if execution in {"SKIP", "REUSE_PREVIOUS"}:
+            move = conversation_trace.get("conversation_move")
+            previous = str(conversation_trace.get("previous_answer_summary") or "").strip()
+            if move == "GREETING":
+                direct = (
+                    "Hello — ask me about a company, valuation, earnings, market outlook, "
+                    "sector, macro theme, forecast, or your existing AGI research."
+                )
+            elif move == "THANKS":
+                direct = "You're welcome. The current research context remains available for your next question."
+            elif move == "CAPABILITY_QUESTION":
+                direct = (
+                    "I can analyse companies, financials, valuation, earnings, risks, catalysts, "
+                    "peers, sectors, markets and AGI forecasts, with evidence and source limitations shown."
+                )
+            elif previous:
+                if move == "SHORTER":
+                    sentences = re.split(r"(?<=[.!?])\s+", previous)
+                    direct = " ".join(sentences[:2]).strip()
+                else:
+                    direct = previous
+            else:
+                direct = "I need a prior research answer in this thread before I can reuse or rewrite it."
+            tid = normalize_request_id((ask_trace_id or "").strip() or None)
+            return SearchView(
+                meta=UiMeta(surface="search", sources=["conversation_controller"]),
+                question=q or "Ask AGI",
+                status="ok",
+                intent="conversation",
+                answer={
+                    "summary": direct,
+                    "executive_summary": direct,
+                    "stance": "Conversation",
+                    "policy": execution.lower(),
+                },
+                executive_summary=direct,
+                confidence=None,
+                follow_up_questions=[],
+                answer_policy=f"conversation_{execution.lower()}",
+                conversation_context=conversation_trace,
+                ask_orchestration={
+                    "version": "ask-orchestration-trace-2",
+                    "ask_trace_id": tid,
+                    "request_id": tid,
+                    "completed": True,
+                    "last_completed_stage": "conversation_controller",
+                    "conversation": conversation_trace,
+                    "research_skipped": True,
+                },
+            )
         # Per-Ask Yahoo symbol/enrich cache — resolve once, reuse across CID/DVC/YFP.
         _yahoo_scope = None
         _end_yahoo_scope = None
@@ -1745,6 +1796,12 @@ class UiService:
                 view.question = q
                 view.conversation_context = conversation_trace
                 view.ask_orchestration["conversation"] = conversation_trace
+                conversation_store.record_answer(
+                    conversation_trace["conversation_id"],
+                    question=q,
+                    answer_summary=view.executive_summary,
+                    research_artifact_ref=(view.ask_orchestration or {}).get("request_id"),
+                )
                 return view
             except Exception as exc:  # noqa: BLE001 — desk must degrade, not disappear
                 import logging
