@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import InstitutionalChatWorkspace from '@/components/AskAgi/InstitutionalChatWorkspace';
-import { postUiSearch } from '@/lib/uiApi';
+import { postUiSearch, resetAskConversation } from '@/lib/uiApi';
 import { universalAsk } from '@/lib/intelligenceApi';
 import { pushSearch, saveAnswer, saveSearch } from '@/lib/searchHistory';
 import { trackProductEvent } from '@/lib/productAnalytics';
@@ -250,6 +250,7 @@ export default function AskAgiProductPage() {
         question={question}
         onAsk={onAsk}
         onSave={onSaveAnswer}
+        onNewChat={resetAskConversation}
         savedFlash={savedFlash}
         embedded
         basePath="/agi/ask"

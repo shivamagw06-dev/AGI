@@ -44,6 +44,7 @@ from app.ui.executive_composer import (
     requires_resolved_company,
     unknown_entity_executive,
 )
+from app.ui.conversation_context import conversation_store
 from app.ui.ticker_guard import (
     accept_detected_ticker,
     alias_ticker_from_question,
@@ -1674,9 +1675,18 @@ class UiService:
         *,
         ticker: str | None = None,
         ask_trace_id: str | None = None,
+        conversation_id: str | None = None,
+        reset_conversation: bool = False,
     ) -> SearchView:
         """Ask desk entry — always returns a SearchView when possible (never blank 503)."""
         q = (question or "").strip()
+        effective_question, effective_ticker, conversation_trace = conversation_store.resolve(
+            q,
+            conversation_id=conversation_id,
+            ticker=ticker,
+            ticker_extractor=alias_tickers_from_question,
+            reset=reset_conversation,
+        )
         # Per-Ask Yahoo symbol/enrich cache — resolve once, reuse across CID/DVC/YFP.
         _yahoo_scope = None
         _end_yahoo_scope = None
@@ -1692,9 +1702,13 @@ class UiService:
             pass
         try:
             try:
-                return self._search_unguarded(
-                    question, ticker=ticker, ask_trace_id=ask_trace_id
+                view = self._search_unguarded(
+                    effective_question, ticker=effective_ticker, ask_trace_id=ask_trace_id
                 )
+                view.question = q
+                view.conversation_context = conversation_trace
+                view.ask_orchestration["conversation"] = conversation_trace
+                return view
             except Exception as exc:  # noqa: BLE001 — desk must degrade, not disappear
                 import logging
                 import traceback
@@ -1720,6 +1734,7 @@ class UiService:
                         sources=["degraded_fallback"],
                     ),
                     question=q or "Ask AGI",
+                    conversation_context=conversation_trace,
                     status="degraded",
                     degradation={
                         "desk": "exception",
