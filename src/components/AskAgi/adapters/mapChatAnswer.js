@@ -92,6 +92,9 @@ export function mapChatAnswer(pack) {
     'Evidence unavailable: AGI could not retrieve verified company research for this answer. Retry when the research desk is available.';
   const evidenceBacked = (value, fallback) =>
     evidenceUnavailable ? unavailableText : (value || fallback);
+  const qualityGates = pack?.answer?.quality_gates || {};
+  const financialsUnsupported = qualityGates.financials_supported === false;
+  const valuationUnsupported = qualityGates.valuation_supported === false;
   const conversation = pack?.conversation_context || pack?.ask_orchestration?.conversation || {};
   const provenance = [
     ...(Array.isArray(pack?.evidence_used) ? pack.evidence_used : []),
@@ -192,7 +195,9 @@ export function mapChatAnswer(pack) {
           null,
         'Whether the company is making real cash and whether its balance sheet can handle stress.'
       ),
-      impact: impactFromLabel('financial', thesisSrc.financial_quality || vm.financialNarrative || ''),
+      impact: financialsUnsupported
+        ? 'Unavailable'
+        : impactFromLabel('financial', thesisSrc.financial_quality || vm.financialNarrative || ''),
     },
     {
       id: 'valuation',
@@ -203,7 +208,9 @@ export function mapChatAnswer(pack) {
           null,
         'Whether the share price already assumes strong future results — and compared with what.'
       ),
-      impact: impactFromLabel('valuation', thesisSrc.valuation || vm.valuationNarrative || 'neutral'),
+      impact: valuationUnsupported
+        ? 'Unavailable'
+        : impactFromLabel('valuation', thesisSrc.valuation || vm.valuationNarrative || 'neutral'),
     },
     {
       id: 'risk',
