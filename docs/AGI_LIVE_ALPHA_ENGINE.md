@@ -60,4 +60,6 @@ The runtime now validates an explicit liquid-NSE universe, deduplicates all stoc
 
 Strategy #2, volume/liquidity anomaly, now runs from the same synchronized snapshots and point-in-time-safe volume baselines. It flags only abnormal participation above 1.25x expected cumulative volume, applies the same spread/liquidity gate, labels accumulation versus distribution from residual price direction, persists its research signals and schedules the same forward outcomes.
 
+Strategy #3, opening-range expansion, records the first 15 minutes of each session and evaluates later expansion beyond that range. Candidates require a 0.10% breakout buffer, at least 1.10x expected cumulative volume, acceptable spread, and an opening range between 0.15% and 3%. Missing opening observations fail closed, preventing a mid-session restart from inventing a range.
+
 Next, apply all migrations, populate at least five prior sessions of minute volume baselines, verify every configured index key with Upstox, and run a controlled market-hours soak test. The acceptance gates are stable connectivity, fresh synchronized coverage, low decode errors, complete baseline coverage and consistent five-minute shadow runs for both implemented engines.

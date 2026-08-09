@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { evaluateCrossSectionalMomentum, evaluateVolumeLiquidityAnomaly } from './liveAlphaEngine.js';
+import { evaluateCrossSectionalMomentum, evaluateOpeningRangeExpansion, evaluateVolumeLiquidityAnomaly } from './liveAlphaEngine.js';
 
 function universe(size = 20) {
   return Array.from({ length: size }, (_, index) => ({
@@ -83,5 +83,29 @@ test('volume anomaly rejects weak participation and filters wide spreads', () =>
   rows[19].spreadBps = 80;
   const result = evaluateVolumeLiquidityAnomaly(rows);
   assert.equal(result.signals.find((row) => row.symbol === 'STOCK20').classification, 'filtered');
+  assert.equal(result.signals.some((row) => row.classification.includes('candidate')), false);
+});
+
+test('opening range requires buffered, volume-confirmed breakouts', () => {
+  const rows = universe().map((row) => ({ ...row, currentPrice: 100, openingHigh: 100, openingLow: 99 }));
+  rows[19].currentPrice = 102;
+  rows[19].cumulativeVolume = 300_000;
+  rows[18].currentPrice = 97;
+  rows[18].cumulativeVolume = 300_000;
+  const result = evaluateOpeningRangeExpansion(rows, { asOf: '2026-08-09T06:00:00Z' });
+  assert.equal(result.engine, 'opening_range_expansion_v1');
+  assert.equal(result.signals.find((row) => row.symbol === 'STOCK20').classification, 'upside_opening_breakout_candidate');
+  assert.equal(result.signals.find((row) => row.symbol === 'STOCK19').classification, 'downside_opening_breakout_candidate');
+  assert.equal(result.execution_enabled, false);
+  assert.equal('order' in result.signals[0], false);
+});
+
+test('opening range filters weak volume, wide spreads and invalid ranges', () => {
+  const rows = universe().map((row) => ({ ...row, currentPrice: 102, openingHigh: 100, openingLow: 99, cumulativeVolume: 105_000 }));
+  rows[0].spreadBps = 90;
+  rows[1].openingLow = 99.95;
+  const result = evaluateOpeningRangeExpansion(rows);
+  assert.equal(result.signals.find((row) => row.symbol === 'STOCK1').classification, 'filtered');
+  assert.equal(result.signals.find((row) => row.symbol === 'STOCK2').classification, 'invalid_opening_range');
   assert.equal(result.signals.some((row) => row.classification.includes('candidate')), false);
 });
