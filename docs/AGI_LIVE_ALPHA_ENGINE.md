@@ -50,4 +50,6 @@ Every signal is evaluated independently at 5 minutes, 15 minutes, 30 minutes, 1 
 
 ## Next implementation
 
-Build the Upstox V3 Protobuf collector and snapshot clock. It should use one full-mode stream for the selected liquid universe, reconnect with bounded backoff, detect stale instruments and write minute bars/raw feed health. Strategy #2 then reuses those minute-of-day volume baselines.
+The forward-outcome lifecycle is now defined. Every persisted directional signal schedules measurements at 5m, 15m, 30m, 1h, close, next day and 5d. Each completed observation records raw return, beta-adjusted market alpha, sector-relative alpha, estimated costs and net alpha. Missing prices remain pending for a bounded retry rather than being silently converted to zero.
+
+Next, build the Upstox V3 Protobuf collector and snapshot clock. It should use one full-mode stream for the selected liquid universe, reconnect with bounded backoff, detect stale instruments and write minute bars/raw feed health. The same normalized price store supplies both signal generation and outcome measurement.
