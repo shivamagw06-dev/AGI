@@ -4,6 +4,7 @@
  */
 
 import { refreshUpstoxValuationRatios } from './upstoxValuationRatiosRefresh.js';
+import { tradingCalendar } from './tradingCalendarService.js';
 
 let scheduler = null;
 let lastRun = null;
@@ -34,7 +35,7 @@ function istParts(d = new Date()) {
 }
 
 function inEodWindow(parts) {
-  if (['Sat', 'Sun'].includes(String(parts.weekday || ''))) return false;
+  if (['Sat', 'Sun'].includes(String(parts.weekday || '')) || !tradingCalendar.isTradingDay(parts.date)) return false;
   // 18:15–18:59 IST
   if (parts.hour !== 18) return false;
   return parts.minute >= 15;

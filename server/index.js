@@ -39,6 +39,7 @@ import { getCompanyResearchMemory, screenResearchChanges } from "./services/rese
 import { getCompanyForecasts, getForecastValidation } from "./services/probabilisticForecastStore.js";
 import { getForecastRanking, getRankIcHealth, getWalkForwardDataset } from "./services/forecastV2Store.js";
 import { getResearchPipelineHealth } from "./services/researchPipelineHealth.js";
+import { startTradingCalendarService, tradingCalendar } from "./services/tradingCalendarService.js";
 import { llmProviderStatus } from "./services/llmClient.js";
 import rateLimit from "express-rate-limit";
 import cors from "cors";
@@ -302,6 +303,7 @@ reg('/api/health', (req, res) => res.json({
   commit: process.env.RENDER_GIT_COMMIT || process.env.GIT_COMMIT || null,
 }));
 reg('/api/market/live-alpha/status', (_req, res) => res.json(getLiveAlphaRuntimeStatus()));
+reg('/api/market/trading-calendar/status', (_req, res) => res.json(tradingCalendar.health()));
 reg('/api/market/live-alpha/workspace', async (_req, res) => {
   try { res.json(await getLiveAlphaWorkspace()); }
   catch (error) { res.status(503).json({ error: error.message, research_only: true, execution_enabled: false }); }
@@ -395,6 +397,7 @@ app.post('/api/notify-subscribers', (req, res, next) => {
   req.url = '/notify-subscribers';
   return newsletterRouter.handle(req, res, next);
 });
+startTradingCalendarService();
 startCioMorningScheduler();
 startContinuousGatherLearnScheduler();
 startInstitutionalFlowScheduler();

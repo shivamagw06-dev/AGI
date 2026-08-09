@@ -161,6 +161,25 @@ export async function getCorporateActions(isin) {
   return getFundamentals(isin, 'corporate-actions');
 }
 
+/** Canonical exchange calendar inputs used by AGI schedulers and horizons. */
+export async function getMarketHolidays(date = null) {
+  const suffix = date ? `/${encodeURIComponent(String(date))}` : '';
+  return upstoxGet(`/market/holidays${suffix}`);
+}
+
+export async function getMarketTimings(date) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(String(date || ''))) {
+    throw new Error('Upstox market timings require date in YYYY-MM-DD format.');
+  }
+  return upstoxGet(`/market/timings/${encodeURIComponent(String(date))}`);
+}
+
+export async function getExchangeStatus(exchange = 'NSE') {
+  const value = String(exchange || '').trim().toUpperCase();
+  if (!/^[A-Z0-9_-]{2,12}$/.test(value)) throw new Error('Invalid exchange.');
+  return upstoxGet(`/market/status/${encodeURIComponent(value)}`);
+}
+
 /** GET /v2/fundamentals/{instrument_key}/competitors — keyed by instrument_key, not ISIN. */
 export async function getCompetitors(instrumentKey) {
   const key = String(instrumentKey || '').trim();

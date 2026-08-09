@@ -4,6 +4,7 @@
  */
 
 import { refreshUpstoxInstitutionalFlows } from './upstoxFlowRefresh.js';
+import { tradingCalendar } from './tradingCalendarService.js';
 
 let scheduler = null;
 let lastRun = null;
@@ -39,7 +40,7 @@ function isWeekdayIST(weekday) {
 
 /** Target window: 18:05–18:59 IST on weekdays (one success per calendar day). */
 function inEodWindow(parts) {
-  if (!isWeekdayIST(parts.weekday)) return false;
+  if (!isWeekdayIST(parts.weekday) || !tradingCalendar.isTradingDay(parts.date)) return false;
   if (parts.hour !== 18) return false;
   return parts.minute >= 5;
 }

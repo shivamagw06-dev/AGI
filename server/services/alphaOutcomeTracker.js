@@ -1,4 +1,5 @@
 import { VALIDATION_HORIZONS } from './alphaValidation.js';
+import { tradingCalendar } from './tradingCalendarService.js';
 
 const IST_OFFSET_MS = 5.5 * 60 * 60 * 1000;
 const INTRADAY_MINUTES = Object.freeze({ '5m': 5, '15m': 15, '30m': 30, '1h': 60 });
@@ -34,18 +35,6 @@ function istDate(year, month, day, hour, minute) {
   return new Date(Date.UTC(year, month, day, hour, minute) - IST_OFFSET_MS);
 }
 
-function addTradingDays(date, count) {
-  const parts = istParts(date);
-  let cursor = istDate(parts.year, parts.month, parts.day, 15, 30);
-  let remaining = count;
-  while (remaining > 0) {
-    cursor = new Date(cursor.getTime() + 24 * 60 * 60 * 1000);
-    const weekday = istParts(cursor).weekday;
-    if (weekday !== 0 && weekday !== 6) remaining -= 1;
-  }
-  return cursor;
-}
-
 export function horizonDueAt(asOf, horizon) {
   if (!VALIDATION_HORIZONS.includes(horizon)) throw new Error(`Unsupported outcome horizon: ${horizon}.`);
   const signalTime = new Date(asOf);
@@ -53,8 +42,8 @@ export function horizonDueAt(asOf, horizon) {
   if (INTRADAY_MINUTES[horizon]) return new Date(signalTime.getTime() + INTRADAY_MINUTES[horizon] * 60_000).toISOString();
   const parts = istParts(signalTime);
   if (horizon === 'close') return istDate(parts.year, parts.month, parts.day, 15, 30).toISOString();
-  if (horizon === 'next_day') return addTradingDays(signalTime, 1).toISOString();
-  return addTradingDays(signalTime, 5).toISOString();
+  if (horizon === 'next_day') return tradingCalendar.addTradingDays(signalTime, 1).toISOString();
+  return tradingCalendar.addTradingDays(signalTime, 5).toISOString();
 }
 
 export function createOutcomeSchedule(signal) {

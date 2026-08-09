@@ -7,6 +7,7 @@
  */
 
 import { refreshUpstoxFundamentals } from './upstoxFundamentalsRefresh.js';
+import { tradingCalendar } from './tradingCalendarService.js';
 
 let timer = null;
 let inFlight = false;
@@ -29,7 +30,7 @@ function istParts(d = new Date()) {
 }
 
 function due(parts) {
-  return !['Sat', 'Sun'].includes(String(parts.weekday || '')) && parts.hour === 18 && parts.minute >= 35;
+  return tradingCalendar.isTradingDay(parts.date) && parts.hour === 18 && parts.minute >= 35;
 }
 
 function catchupConfig() {
