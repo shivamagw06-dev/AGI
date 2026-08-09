@@ -1,4 +1,4 @@
-import { evaluateCrossSectionalMomentum, evaluateIntradayMeanReversion, evaluateOpeningRangeExpansion, evaluateVolumeLiquidityAnomaly } from './liveAlphaEngine.js';
+import { evaluateCrossSectionalMomentum, evaluateDerivativesPositioning, evaluateIntradayMeanReversion, evaluateOpeningRangeExpansion, evaluateVolumeLiquidityAnomaly } from './liveAlphaEngine.js';
 import { minuteOfSession } from './minuteVolumeBaseline.js';
 
 function change(current, previous) {
@@ -45,6 +45,12 @@ export class IntradayFeatureStore {
     const session = new Date(now.getTime() + 5.5 * 60 * 60_000).toISOString().slice(0, 10);
     return this.openingRanges.get(`${session}|${key}`) || null;
   }
+  derivatives(key, nowMs) {
+    const current = this.latest(key);
+    const previous = this.atOrBefore(key, nowMs - 15 * 60_000);
+    if (!(current?.ltp > 0) || !(previous?.ltp > 0) || !(current?.open_interest > 0) || !(previous?.open_interest > 0)) return null;
+    return { current, priceReturn15m: ((current.ltp / previous.ltp) - 1) * 100, oiChange15m: ((current.open_interest / previous.open_interest) - 1) * 100 };
+  }
 }
 
 export class MomentumShadowPipeline {
@@ -83,6 +89,12 @@ export class MomentumShadowPipeline {
     const result = evaluateCrossSectionalMomentum(snapshots, { asOf: now.toISOString() });
     const volumeResult = evaluateVolumeLiquidityAnomaly(snapshots, { asOf: now.toISOString() });
     const meanReversionResult = evaluateIntradayMeanReversion(snapshots, { asOf: now.toISOString() });
+    const derivativeSnapshots = this.universe.map((member) => {
+      if (!member.derivativeInstrumentKey) return null;
+      const derivative = this.featureStore.derivatives(member.derivativeInstrumentKey, now.getTime());
+      return derivative ? { symbol: member.symbol, sector: member.sector, instrumentKey: member.derivativeInstrumentKey, priceReturn15m: derivative.priceReturn15m, oiChange15m: derivative.oiChange15m, openInterest: derivative.current.open_interest, impliedVolatility: derivative.current.implied_volatility, spreadBps: derivative.current.spread_bps, minimumLiquidity: member.minimumLiquidity !== false } : null;
+    }).filter(Boolean);
+    const derivativesResult = derivativeSnapshots.length >= 10 ? evaluateDerivativesPositioning(derivativeSnapshots, { asOf: now.toISOString() }) : null;
     const openingSnapshots = snapshots.map((snapshot) => {
       const range = this.featureStore.openingRange(snapshot.instrumentKey, now);
       const current = this.featureStore.latest(snapshot.instrumentKey);
@@ -127,11 +139,18 @@ export class MomentumShadowPipeline {
       const negative = signal.classification === 'positive_shock_pullback_candidate';
       return { ...signal, direction: positive ? 'positive' : negative ? 'negative' : null, price_at_signal: anchor?.stock?.ltp ?? null, nifty_at_signal: benchmark.current.ltp, sector_at_signal: anchor?.sector?.ltp ?? null };
     });
+    if (derivativesResult) derivativesResult.signals = derivativesResult.signals.map((signal) => {
+      const positive = signal.classification === 'long_buildup_candidate' || signal.classification === 'short_covering_candidate';
+      const negative = signal.classification === 'short_buildup_candidate' || signal.classification === 'long_unwinding_candidate';
+      const stock = this.featureStore.latest(this.universe.find((member) => member.symbol === signal.symbol)?.instrumentKey);
+      return { ...signal, direction: positive ? 'positive' : negative ? 'negative' : null, price_at_signal: stock?.ltp ?? null, nifty_at_signal: benchmark.current.ltp, sector_at_signal: null };
+    });
     this.lastRunBucket = bucket;
     await this.repository?.saveMomentumRun?.(result, { benchmark_key: this.benchmarkKey, minute_of_session: minute });
     await this.repository?.saveVolumeAnomalyRun?.(volumeResult, { benchmark_key: this.benchmarkKey, minute_of_session: minute });
     if (openingResult) await this.repository?.saveOpeningRangeRun?.(openingResult, { benchmark_key: this.benchmarkKey, minute_of_session: minute });
     await this.repository?.saveMeanReversionRun?.(meanReversionResult, { benchmark_key: this.benchmarkKey, minute_of_session: minute });
-    return { ...result, companion_engines: [volumeResult, ...(openingResult ? [openingResult] : []), meanReversionResult] };
+    if (derivativesResult) await this.repository?.saveDerivativesRun?.(derivativesResult, { benchmark_key: this.benchmarkKey, minute_of_session: minute });
+    return { ...result, companion_engines: [volumeResult, ...(openingResult ? [openingResult] : []), meanReversionResult, ...(derivativesResult ? [derivativesResult] : [])], derivatives_status: derivativesResult ? 'running' : 'insufficient_derivative_coverage' };
   }
 }
