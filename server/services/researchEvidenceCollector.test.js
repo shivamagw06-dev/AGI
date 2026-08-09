@@ -15,3 +15,15 @@ test('collects all three missing evidence layers with partial-source tolerance',
   assert.ok(result.evidence[0].catalyst_score > 80);
   assert.equal(result.health.errors.length, 0);
 });
+
+test('treats a missing forecast as normal availability state, not a route error', async () => {
+  const fetchImpl = async (url) => {
+    if (url.includes('hedge-fund-lab')) return { ok: true, json: async () => ({ cards: [] }) };
+    if (url.includes('valuation-terminal')) return { ok: true, json: async () => ({ valuation_attractiveness: 70 }) };
+    return { ok: false, status: 404 };
+  };
+  const result = await collectResearchEvidence({ workspace: { groww: { equities: [{ symbol: 'SBIN' }] }, signals: [] }, fetchImpl });
+  assert.equal(result.health.errors.length, 0);
+  assert.equal(result.health.unavailable[0].reason, 'NO_ELIGIBLE_FORECAST_YET');
+  assert.equal(result.evidence[0].provenance.catalyst.forecast_available, false);
+});

@@ -12,6 +12,11 @@ function engineConfig() {
 async function engineGet(path, fetchImpl) {
   const { baseUrl, token } = engineConfig();
   const response = await fetchImpl(`${baseUrl}${path}`, { headers: { Accept: 'application/json', Authorization: `Bearer ${token}`, 'X-AGI-Intelligence-Token': token }, signal: AbortSignal.timeout(12_000) });
+  if (response.status === 404) {
+    const error = new Error('Evidence is not available yet.');
+    error.code = 'EVIDENCE_NOT_AVAILABLE'; error.status = 404;
+    throw error;
+  }
   if (!response.ok) throw new Error(`Evidence source failed (${response.status}).`);
   return response.json();
 }
@@ -26,7 +31,7 @@ async function mapLimit(values, concurrency, mapper) {
 
 export async function collectResearchEvidence({ workspace, fetchImpl = globalThis.fetch, limit = 12, now = new Date() } = {}) {
   let hedgeFund = [];
-  const errors = [];
+  const errors = [], unavailable = [];
   try { hedgeFund = normalizeHedgeFundEvidence(await engineGet(`/v1/hedge-fund-lab/terminal?limit=${Math.max(12, limit)}`, fetchImpl)); }
   catch (error) { errors.push({ source: 'hedge_fund_lab', error: error.message }); }
   const requested = [
@@ -40,16 +45,19 @@ export async function collectResearchEvidence({ workspace, fetchImpl = globalThi
       engineGet(`/v1/valuation-terminal/company/${encodeURIComponent(symbol)}?window=5Y&peer_limit=12`, fetchImpl),
       engineGet(`/v1/forecast/catalysts/${encodeURIComponent(symbol)}`, fetchImpl),
     ]);
-    if (valuation.status === 'rejected') errors.push({ source: 'valuation_terminal', symbol, error: valuation.reason.message });
-    if (catalysts.status === 'rejected') errors.push({ source: 'forecast_intelligence', symbol, error: catalysts.reason.message });
+    if (valuation.status === 'rejected' && valuation.reason.code !== 'EVIDENCE_NOT_AVAILABLE') errors.push({ source: 'valuation_terminal', symbol, error: valuation.reason.message });
+    if (catalysts.status === 'rejected' && catalysts.reason.code !== 'EVIDENCE_NOT_AVAILABLE') errors.push({ source: 'forecast_intelligence', symbol, error: catalysts.reason.message });
+    if (valuation.status === 'rejected' && valuation.reason.code === 'EVIDENCE_NOT_AVAILABLE') unavailable.push({ source: 'valuation_terminal', symbol, reason: 'NO_VALUATION_PACK_YET' });
+    if (catalysts.status === 'rejected' && catalysts.reason.code === 'EVIDENCE_NOT_AVAILABLE') unavailable.push({ source: 'forecast_intelligence', symbol, reason: 'NO_ELIGIBLE_FORECAST_YET' });
     return mergeResearchEvidence(
       valuation.status === 'fulfilled' ? [normalizeValuationEvidence(symbol, valuation.value)] : [],
       catalysts.status === 'fulfilled' ? [normalizeCatalystEvidence(symbol, catalysts.value, { now })] : [],
+      catalysts.status === 'rejected' && catalysts.reason.code === 'EVIDENCE_NOT_AVAILABLE' ? [{ symbol, catalyst_score: null, provenance: { catalyst: { engine: 'forecast_intelligence', forecast_available: false, reason: 'NO_ELIGIBLE_FORECAST_YET' } } }] : [],
     );
   });
   return {
     evidence: mergeResearchEvidence(hedgeFund, ...enriched),
-    health: { generated_at: now.toISOString(), candidates: symbols.length, populated: { fundamental: hedgeFund.filter((row) => row.fundamental_score != null).length, valuation: enriched.flat().filter((row) => row.valuation_score != null).length, catalyst: enriched.flat().filter((row) => row.catalyst_score != null).length }, errors: errors.slice(0, 20) },
+    health: { generated_at: now.toISOString(), candidates: symbols.length, populated: { fundamental: hedgeFund.filter((row) => row.fundamental_score != null).length, valuation: enriched.flat().filter((row) => row.valuation_score != null).length, catalyst: enriched.flat().filter((row) => row.catalyst_score != null).length }, unavailable: unavailable.slice(0, 50), errors: errors.slice(0, 20) },
   };
 }
 

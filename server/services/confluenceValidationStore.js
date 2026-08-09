@@ -7,17 +7,20 @@ const validPrice = (value) => Number.isFinite(Number(value)) && Number(value) > 
 export async function saveConfluenceEvents(queue, universe) {
   const memberBySymbol = new Map((universe?.members || []).map((member) => [member.symbol, member]));
   const rows = [];
+  const rejected = { missing_price_anchor: 0, incomplete_identity: 0, invalid_price_anchor: 0 };
   for (const item of queue?.items || []) {
     const anchors = item.anchors, member = memberBySymbol.get(item.symbol);
-    if (!anchors?.captured_at || !member || ![anchors.price_at_signal, anchors.benchmark_at_signal, anchors.sector_index_at_signal].every(validPrice)) continue;
+    if (!member || !member.instrumentKey || !member.sectorInstrumentKey || !universe?.benchmarkKey) { rejected.incomplete_identity += 1; continue; }
+    if (!anchors?.captured_at) { rejected.missing_price_anchor += 1; continue; }
+    if (![anchors.price_at_signal, anchors.benchmark_at_signal, anchors.sector_index_at_signal].every(validPrice)) { rejected.invalid_price_anchor += 1; continue; }
     const live = item.components?.live || {};
     rows.push({ event_key: `${item.symbol}:${item.confluence_class}:${anchors.captured_at}`, symbol: item.symbol, captured_at: anchors.captured_at, classification: item.confluence_class, fundamental_score: item.scores.fundamental_score, valuation_score: item.scores.valuation_score, eod_confirmation: item.scores.eod_confirmation_score, live_confirmation: item.scores.live_confirmation_score, catalyst_score: item.scores.catalyst_relevance_score, leadership: live.leadership?.effective, activity: live.activity?.effective, breakout: live.breakout?.effective, dislocation: live.dislocation?.effective, positioning: live.positioning?.effective, research_priority: item.research_priority_score, market_regime: anchors.market_regime, sector: item.sector, instrument_key: member.instrumentKey, benchmark_instrument_key: universe.benchmarkKey, sector_instrument_key: member.sectorInstrumentKey, price_at_signal: anchors.price_at_signal, benchmark_at_signal: anchors.benchmark_at_signal, sector_index_at_signal: anchors.sector_index_at_signal, completeness: item.flags, evidence_snapshot: item, research_only: true });
   }
-  if (!rows.length) return { events: 0, outcomes: 0 };
+  if (!rows.length) return { candidates: queue?.items?.length || 0, eligible: 0, events: 0, outcomes: 0, rejected };
   const saved = await rest('research_confluence_events', { method: 'POST', query: 'on_conflict=event_key', body: rows, prefer: 'resolution=merge-duplicates,return=representation' });
   const schedules = saved.flatMap((event) => createConfluenceOutcomeSchedule(event.id, event.captured_at));
   if (schedules.length) await rest('research_confluence_outcomes', { method: 'POST', query: 'on_conflict=event_id,horizon', body: schedules, prefer: 'resolution=ignore-duplicates,return=minimal' });
-  return { events: saved.length, outcomes: schedules.length };
+  return { candidates: queue?.items?.length || 0, eligible: rows.length, events: saved.length, outcomes: schedules.length, rejected };
 }
 
 async function firstSnapshot(instrumentKey, dueAt) {
