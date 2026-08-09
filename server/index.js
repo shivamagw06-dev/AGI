@@ -35,6 +35,7 @@ import { buildConfluenceQueue } from "./services/researchConfluence.js";
 import { getResearchEvidence } from "./services/researchEvidenceCollector.js";
 import { getConfluenceLedger, getConfluenceValidationSummary } from "./services/confluenceValidationStore.js";
 import { getConfluenceValidationStatus, startConfluenceValidationScheduler } from "./services/confluenceValidationScheduler.js";
+import { getCompanyResearchMemory, screenResearchChanges } from "./services/researchMemoryStore.js";
 import { llmProviderStatus } from "./services/llmClient.js";
 import rateLimit from "express-rate-limit";
 import cors from "cors";
@@ -318,6 +319,14 @@ reg('/api/market/research-confluence/validation', async (_req, res) => {
 });
 reg('/api/market/research-confluence/ledger', async (req, res) => {
   try { res.json({ generated_at: new Date().toISOString(), research_only: true, rows: await getConfluenceLedger({ limit: Number(req.query.limit) || 100, symbol: req.query.symbol }) }); }
+  catch (error) { res.status(error.status === 404 ? 503 : 500).json({ error: error.message, research_only: true }); }
+});
+reg('/api/market/research-memory/changes', async (req, res) => {
+  try { res.json({ generated_at: new Date().toISOString(), research_only: true, rows: await screenResearchChanges({ type: req.query.type, days: Number(req.query.days) || 30, limit: Number(req.query.limit) || 100 }) }); }
+  catch (error) { res.status(error.status === 404 ? 503 : 500).json({ error: error.message, research_only: true }); }
+});
+reg('/api/market/research-memory/:symbol', async (req, res) => {
+  try { res.json(await getCompanyResearchMemory(req.params.symbol, { limit: Number(req.query.limit) || 50 })); }
   catch (error) { res.status(error.status === 404 ? 503 : 500).json({ error: error.message, research_only: true }); }
 });
 reg('/api/news/headlines', async (_req, res) => {
