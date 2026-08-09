@@ -18,12 +18,26 @@ async function query(table, search, fetchImpl) {
   const response = await fetchImpl(`${auth.url}/rest/v1/${table}?${search}`, {
     headers: { apikey: auth.key, Authorization: `Bearer ${auth.key}` },
   });
-  if (!response.ok) throw new Error(`Alpha workspace query failed (${response.status}).`);
+  if (!response.ok) {
+    const error = new Error(`Alpha workspace query failed (${response.status}).`);
+    error.status = response.status;
+    throw error;
+  }
   return response.json();
 }
 
 export async function getLiveAlphaWorkspace({ fetchImpl = globalThis.fetch, limit = 250 } = {}) {
-  const runs = await query('live_alpha_runs', `select=id,engine,as_of,market_session,universe_size,diagnostics&order=as_of.desc&limit=25`, fetchImpl);
+  let runs;
+  try {
+    runs = await query('live_alpha_runs', `select=id,engine,as_of,market_session,universe_size,diagnostics&order=as_of.desc&limit=25`, fetchImpl);
+  } catch (error) {
+    if (error.status !== 404) throw error;
+    return {
+      generated_at: new Date().toISOString(), research_only: true, execution_enabled: false,
+      engines: ENGINE_LABELS, runs: [], signals: [],
+      readiness: { status: 'database_setup_required', migrations_required: ['20260809150000_live_alpha_engine.sql', '20260809160000_live_alpha_outcomes.sql', '20260809170000_upstox_live_market_feed.sql', '20260809180000_live_alpha_volume_baselines.sql', '20260809190000_live_alpha_strategy_classifications.sql'] },
+    };
+  }
   const runIds = runs.map((run) => run.id);
   const signals = runIds.length ? await query(
     'live_alpha_signals',
@@ -34,7 +48,7 @@ export async function getLiveAlphaWorkspace({ fetchImpl = globalThis.fetch, limi
   return {
     generated_at: new Date().toISOString(), research_only: true, execution_enabled: false,
     engines: ENGINE_LABELS,
-    runs,
+    readiness: { status: 'ready', migrations_required: [] }, runs,
     signals: signals.map((signal) => ({ ...signal, engine: runById.get(signal.run_id)?.engine || null, as_of: runById.get(signal.run_id)?.as_of || signal.created_at })),
   };
 }
