@@ -35,8 +35,12 @@ create table if not exists public.live_alpha_signals (
     'positive_research_candidate', 'negative_research_candidate', 'neutral', 'filtered'
   )),
   alpha_z numeric(8,4) not null,
-  confidence_score numeric(5,2) not null check (confidence_score between 0 and 100),
-  confidence_label text not null check (confidence_label in ('low', 'medium', 'high')),
+  signal_quality_score numeric(5,2) not null check (signal_quality_score between 0 and 100),
+  signal_quality_label text not null check (signal_quality_label in (
+    'ignore', 'weak', 'moderate', 'strong', 'very_strong', 'exceptional'
+  )),
+  empirical_confidence_score numeric(5,2) check (empirical_confidence_score between 0 and 100),
+  comparable_observations integer not null default 0 check (comparable_observations >= 0),
   liquidity_ok boolean not null,
   factor_values jsonb not null check (jsonb_typeof(factor_values) = 'object'),
   explanation jsonb not null default '[]'::jsonb check (jsonb_typeof(explanation) = 'array'),
@@ -52,8 +56,25 @@ create index if not exists live_alpha_signals_run_alpha_idx
 create index if not exists live_alpha_signals_symbol_created_idx
   on public.live_alpha_signals (symbol, created_at desc);
 
+create table if not exists public.live_alpha_validation_metrics (
+  id uuid primary key default gen_random_uuid(),
+  engine text not null,
+  horizon text not null check (horizon in ('5m', '15m', '30m', '1h', 'close', 'next_day', '5d')),
+  regime text not null default 'all',
+  evaluated_through timestamptz not null,
+  sample_size integer not null check (sample_size >= 0),
+  validation_status text not null check (validation_status in ('insufficient_sample', 'eligible', 'validated', 'rejected')),
+  metrics jsonb not null check (jsonb_typeof(metrics) = 'object'),
+  created_at timestamptz not null default now(),
+  unique (engine, horizon, regime, evaluated_through)
+);
+
+create index if not exists live_alpha_validation_engine_horizon_idx
+  on public.live_alpha_validation_metrics (engine, horizon, evaluated_through desc);
+
 alter table public.live_alpha_runs enable row level security;
 alter table public.live_alpha_signals enable row level security;
+alter table public.live_alpha_validation_metrics enable row level security;
 
 comment on table public.live_alpha_runs is
   'Research-only evaluations from AGI live alpha factor engines; never an execution ledger.';
