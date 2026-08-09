@@ -85,14 +85,19 @@ export function mapChatAnswer(pack) {
     if (typeof item === 'string') return Boolean(item.trim());
     return Boolean(item?.source || item?.title || item?.url || item?.id);
   });
+  const conversationExecution = pack?.conversation_context?.research_execution
+    || pack?.ask_orchestration?.conversation?.research_execution;
+  const conversationalOnly = pack?.intent === 'conversation'
+    || conversationExecution === 'SKIP'
+    || conversationExecution === 'REUSE_PREVIOUS';
   const evidenceUnavailable =
-    !hasVerifiedEvidence ||
+    !conversationalOnly && (!hasVerifiedEvidence ||
     Boolean(
       pack?.degraded ||
         pack?.mode === 'node_desk_fallback' ||
         pack?.ask_orchestration?.fallback ||
         pack?.ask_orchestration?.fallback_used
-    );
+    ));
   const answerFormat = answerFormatFor(vm.question || pack?.question, vm.intent || pack?.intent);
   const unavailableText =
     'Evidence unavailable: AGI could not retrieve verified company research for this answer. Retry when the research desk is available.';
@@ -384,6 +389,7 @@ export function mapChatAnswer(pack) {
     freshness: vm.freshness,
     lastUpdated: vm.lastUpdated,
     evidenceUnavailable,
+    conversationalOnly,
     answerFormat,
     presentation: {
       depth: conversation.answer_depth || 'standard',

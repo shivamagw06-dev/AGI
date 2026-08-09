@@ -55,6 +55,7 @@ _TICKER_DISPLAY: Dict[str, str] = {
     "TATAMOTORS": "Tata Motors",
     "ADANIENT": "Adani Enterprises",
     "JSWENERGY": "JSW Energy",
+    "HCLTECH": "HCLTech",
 }
 
 
@@ -109,6 +110,7 @@ _ALIAS_SCAN: tuple[tuple[re.Pattern[str], str], ...] = (
     (re.compile(r"\btata motors\b|\bttmt\b", re.I), "TATAMOTORS"),
     (re.compile(r"\badani(?:\s+enterprises)?\b", re.I), "ADANIENT"),
     (re.compile(r"\bjsw energy\b", re.I), "JSWENERGY"),
+    (re.compile(r"\bhcl(?:tech| technologies)?\b", re.I), "HCLTECH"),
 )
 
 
