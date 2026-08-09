@@ -9,6 +9,9 @@ from semantic_research_retrieval.routing import (
     HOUSE_RESEARCH,
     THEMATIC_RESEARCH,
     classify_research_route,
+    initial_research_trace,
+    record_answer_synthesis,
+    record_semantic_retrieval,
 )
 
 
@@ -61,3 +64,55 @@ def test_listed_agi_companies_keep_strict_entity_resolution(question, ticker):
     assert result["state"] == STATE_VERIFIED_ENTITY
     assert result["allow_planner"] is True
     assert result["ticker"] == ticker
+
+
+def test_research_trace_exposes_each_acceptance_stage():
+    trace = initial_research_trace(
+        "Which sectors may gain if data-center investment stays elevated?"
+    )
+    trace = record_semantic_retrieval(
+        trace,
+        {
+            "enabled": True,
+            "AGI_HOUSE_VIEW": {
+                "documents": [
+                    {
+                        "document_id": "doc_b3733303faa7",
+                        "title": "Global Investment Monitor: AI Capital, Policy Shifts and the Next Market Rotation",
+                        "retrieval_score": 0.71,
+                    }
+                ]
+            },
+            "answerability": {"status": "SUFFICIENT"},
+        },
+    )
+    trace = record_answer_synthesis(trace, completed=True)
+    assert trace == {
+        "query": "Which sectors may gain if data-center investment stays elevated?",
+        "route": THEMATIC_RESEARCH,
+        "company_required": False,
+        "semantic_retrieval": "EXECUTED",
+        "matched_documents": [
+            {
+                "document_id": "doc_b3733303faa7",
+                "title": "Global Investment Monitor: AI Capital, Policy Shifts and the Next Market Rotation",
+                "score": 0.71,
+            }
+        ],
+        "global_investment_monitor": "MATCH",
+        "answerability": "SUFFICIENT",
+        "answer_synthesis": "EXECUTED",
+        "failure_stage": None,
+    }
+
+
+def test_research_trace_labels_evidence_insufficiency():
+    trace = record_semantic_retrieval(
+        initial_research_trace("Could hyperscaler capex benefit power names?"),
+        {
+            "enabled": True,
+            "AGI_HOUSE_VIEW": {"documents": [{"title": "Weak thematic match"}]},
+            "answerability": {"status": "INSUFFICIENT"},
+        },
+    )
+    assert trace["failure_stage"] == "EVIDENCE_INSUFFICIENCY"

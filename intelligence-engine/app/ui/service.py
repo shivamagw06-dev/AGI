@@ -1750,9 +1750,11 @@ class UiService:
         from semantic_research_retrieval.routing import (
             COMPANY_RESEARCH,
             classify_research_route,
+            initial_research_trace,
         )
 
         research_route = classify_research_route(q)
+        research_trace = initial_research_trace(q)
         client = None
         detected_ticker = ticker.upper() if ticker else None
         # Comparisons are multi-entity research requests.  Keep the canonical pair
@@ -1811,6 +1813,7 @@ class UiService:
             "ere_research_blocked": False,
             "executive_source": None,
             "research_route": research_route,
+            "research_retrieval_trace": research_trace,
         }
         try:
             if research_route != COMPANY_RESEARCH:
@@ -3120,9 +3123,19 @@ class UiService:
                 if (semantic_research.get("answerability") or {}).get("may_answer")
                 else "insufficient"
             )
+            from semantic_research_retrieval.routing import record_semantic_retrieval
+
+            research_trace = record_semantic_retrieval(research_trace, semantic_research)
+            ask_orchestration["research_retrieval_trace"] = research_trace
         except Exception:
             semantic_research = {}
             degradation["semantic_research"] = "unavailable"
+            from semantic_research_retrieval.routing import record_semantic_retrieval
+
+            research_trace = record_semantic_retrieval(research_trace, semantic_research)
+            research_trace["semantic_retrieval"] = "FAILED"
+            research_trace["failure_stage"] = "RETRIEVAL"
+            ask_orchestration["research_retrieval_trace"] = research_trace
 
         # CID v1.0 — load living company dossier FIRST for company analysis (never rebuild from raw APIs)
         try:
@@ -5400,6 +5413,17 @@ class UiService:
                 answer["why"] = why
                 ask_orchestration["executive_source"] = "executive_composer_rule6_rewrite"
             ask_orchestration["executive_validation"] = _final.get("validation")
+        except Exception:
+            pass
+
+        try:
+            from semantic_research_retrieval.routing import record_answer_synthesis
+
+            research_trace = record_answer_synthesis(
+                research_trace,
+                completed=bool(str(executive or "").strip()),
+            )
+            ask_orchestration["research_retrieval_trace"] = research_trace
         except Exception:
             pass
 
