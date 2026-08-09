@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Activity, AlertCircle, BarChart3, ChevronRight, Clock3, RefreshCw, ShieldCheck, Sparkles, X } from 'lucide-react';
+import API_ORIGIN from '@/config';
 import './liveAlphaPage.css';
 
 const STRATEGIES = [
@@ -20,6 +21,15 @@ function scoreText(value) { return `${value > 0 ? '+' : ''}${value}`; }
 function confidence(score, sample = 0) { return sample >= 100 && score >= 70 ? 'VALIDATED' : score >= 80 ? 'HIGH' : score >= 60 ? 'MEDIUM' : 'LOW'; }
 function formatFactor(value, suffix = '') { const number = Number(value); return Number.isFinite(number) ? `${number > 0 ? '+' : ''}${number.toFixed(2)}${suffix}` : '—'; }
 function age(iso) { const mins = Math.max(0, Math.floor((Date.now() - Date.parse(iso)) / 60000)); return mins < 1 ? 'Now' : mins < 60 ? `${mins}m` : `${Math.floor(mins / 60)}h`; }
+
+async function readApiJson(response, label) {
+  const contentType = response.headers.get('content-type') || '';
+  if (!response.ok) throw new Error(`${label} is unavailable (${response.status}).`);
+  if (!contentType.toLowerCase().includes('application/json')) {
+    throw new Error(`${label} returned the website shell instead of API data. Check the configured backend origin.`);
+  }
+  return response.json();
+}
 
 function buildRows(signals) {
   const latest = new Map();
@@ -56,10 +66,13 @@ export default function LiveAlphaPage() {
   const load = async () => {
     setLoading(true); setError('');
     try {
-      const [workspaceResponse, statusResponse] = await Promise.all([fetch('/api/market/live-alpha/workspace'), fetch('/api/market/live-alpha/status')]);
-      if (!workspaceResponse.ok) throw new Error('Live Alpha research store is unavailable.');
-      setPayload(await workspaceResponse.json());
-      setRuntime(statusResponse.ok ? await statusResponse.json() : null);
+      if (!API_ORIGIN) throw new Error('AGI backend origin is not configured.');
+      const [workspaceResponse, statusResponse] = await Promise.all([
+        fetch(`${API_ORIGIN}/api/market/live-alpha/workspace`, { headers: { Accept: 'application/json' } }),
+        fetch(`${API_ORIGIN}/api/market/live-alpha/status`, { headers: { Accept: 'application/json' } }),
+      ]);
+      setPayload(await readApiJson(workspaceResponse, 'Live Alpha research store'));
+      setRuntime(await readApiJson(statusResponse, 'Live Alpha runtime'));
     } catch (requestError) { setError(requestError.message); }
     finally { setLoading(false); }
   };
