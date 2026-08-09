@@ -38,6 +38,7 @@ import { getConfluenceValidationStatus, startConfluenceValidationScheduler } fro
 import { getCompanyResearchMemory, screenResearchChanges } from "./services/researchMemoryStore.js";
 import { getCompanyForecasts, getForecastValidation } from "./services/probabilisticForecastStore.js";
 import { getForecastRanking, getRankIcHealth, getWalkForwardDataset } from "./services/forecastV2Store.js";
+import { getResearchPipelineHealth } from "./services/researchPipelineHealth.js";
 import { llmProviderStatus } from "./services/llmClient.js";
 import rateLimit from "express-rate-limit";
 import cors from "cors";
@@ -350,6 +351,10 @@ reg('/api/market/forecasts/training-dataset', async (req, res) => {
 reg('/api/market/forecasts/:symbol', async (req, res) => {
   try { res.json(await getCompanyForecasts(req.params.symbol, { limit: Number(req.query.limit) || 30 })); }
   catch (error) { res.status(error.status === 404 ? 503 : 500).json({ error: error.message, research_only: true }); }
+});
+reg('/api/market/research-pipeline/health', async (_req, res) => {
+  try { res.json(await getResearchPipelineHealth({ schedulerStatus: getConfluenceValidationStatus() })); }
+  catch (error) { res.status(error.status === 404 ? 503 : 500).json({ error: error.message, status: 'DEGRADED', research_only: true }); }
 });
 reg('/api/news/headlines', async (_req, res) => {
   const data = await getNewsHeadlines();
