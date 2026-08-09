@@ -68,6 +68,21 @@ export class MomentumShadowPipeline {
     }
     if (snapshots.length < 10) return { skipped: true, reason: 'insufficient_complete_universe', coverage: snapshots.length };
     const result = evaluateCrossSectionalMomentum(snapshots, { asOf: now.toISOString() });
+    const anchors = new Map(this.universe.map((member) => {
+      const stock = this.featureStore.latest(member.instrumentKey);
+      const sector = this.featureStore.latest(member.sectorInstrumentKey);
+      return [member.symbol, { stock, sector }];
+    }));
+    result.signals = result.signals.map((signal) => {
+      const anchor = anchors.get(signal.symbol);
+      return {
+        ...signal,
+        direction: signal.classification === 'positive_research_candidate' ? 'positive' : signal.classification === 'negative_research_candidate' ? 'negative' : null,
+        price_at_signal: anchor?.stock?.ltp ?? null,
+        nifty_at_signal: benchmark.current.ltp,
+        sector_at_signal: anchor?.sector?.ltp ?? null,
+      };
+    });
     this.lastRunBucket = bucket;
     await this.repository?.saveMomentumRun?.(result, { benchmark_key: this.benchmarkKey, minute_of_session: minute });
     return result;
