@@ -16,6 +16,7 @@ import createIntelligenceCmsRouter from "./routes/intelligenceCms.js";
 import createIntelligencePlatformRouter from "./routes/intelligencePlatform.js";
 import createAuthRouter from "./routes/auth.js";
 import createNewsletterRouter from "./routes/newsletter.js";
+import createResearchSignalsRouter from "./routes/researchSignals.js";
 import { getNewsHeadlines } from "./services/newsHeadlinesService.js";
 import { getIpoDetail, getIpoPlatform, getIpoSummary } from "./services/ipoService.js";
 import { getMarketContext } from "./services/marketContextService.js";
@@ -39,7 +40,12 @@ const serverDirectory = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.join(serverDirectory, ".env") });
 
 const app = express();
-app.use(express.json({ limit: "2mb" }));
+app.use(express.json({
+  limit: "2mb",
+  verify: (req, _res, buffer) => {
+    req.rawBody = Buffer.from(buffer);
+  },
+}));
 app.set("trust proxy", 1);
 
 const PORT = process.env.PORT ? Number(process.env.PORT) : 3000;
@@ -310,6 +316,7 @@ const nifty500ResearchRouter = createNifty500ResearchRouter();
 app.use('/api/research/nifty500', nifty500ResearchLimiter, nifty500ResearchRouter);
 // Alias — some clients/probes hit /nifty50 without the trailing 0.
 app.use('/api/research/nifty50', nifty500ResearchLimiter, nifty500ResearchRouter);
+app.use('/api/research-signals', createResearchSignalsRouter());
 app.use('/api/intelligence', createIntelligenceRouter());
 app.use('/api/ui', createUiRouter());
 app.use('/api/pe', createPeIntelligenceRouter());
