@@ -335,6 +335,7 @@ export default function InstitutionalChatWorkspace({
   question,
   onAsk,
   onSave,
+  onNewChat,
   savedFlash,
   embedded = false,
   basePath = '/ask',
@@ -367,6 +368,7 @@ export default function InstitutionalChatWorkspace({
   };
 
   const newChat = () => {
+    onNewChat?.();
     navigate(askHome);
     setDraft('');
     window.scrollTo({ top: 0, behavior: 'smooth' });

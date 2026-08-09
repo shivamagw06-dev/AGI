@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import InstitutionalChatWorkspace from '@/components/AskAgi/InstitutionalChatWorkspace';
-import { postUiSearch } from '@/lib/uiApi';
+import { postUiSearch, resetAskConversation } from '@/lib/uiApi';
 import { pushSearch, saveAnswer, saveSearch } from '@/lib/searchHistory';
 import { trackProductEvent } from '@/lib/productAnalytics';
 
@@ -78,6 +78,7 @@ export default function AskAgiPage() {
         question={question}
         onAsk={onAsk}
         onSave={onSaveAnswer}
+        onNewChat={resetAskConversation}
         savedFlash={savedFlash}
       />
     </>

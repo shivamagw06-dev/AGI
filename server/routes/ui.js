@@ -579,6 +579,8 @@ export default function createUiRouter() {
   router.post('/search', async (req, res) => {
     const question = req.body?.question || req.query.question;
     const ticker = req.body?.ticker || req.query.ticker;
+    const conversationId = req.body?.conversation_id || req.body?.conversationId;
+    const resetConversation = Boolean(req.body?.reset_conversation || req.body?.resetConversation);
     if (!question) {
       return res.status(400).json({ error: 'question is required' });
     }
@@ -782,6 +784,8 @@ export default function createUiRouter() {
           request_id: gatewayTraceId,
           ask_trace_id: gatewayTraceId,
           ...(ticker ? { ticker: String(ticker) } : {}),
+          ...(conversationId ? { conversation_id: String(conversationId) } : {}),
+          ...(resetConversation ? { reset_conversation: true } : {}),
         },
         timeoutMs: askTimeoutMs,
         headers: {

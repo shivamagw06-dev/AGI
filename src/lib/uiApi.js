@@ -73,11 +73,34 @@ export const getUiAutocomplete = (q) => uiFetch('/autocomplete', { query: { q: q
 export const getUiPredictions = () => uiFetch('/predictions');
 export const getUiCalendar = () => uiFetch('/calendar');
 export const getUiCopilot = (params = {}) => uiFetch('/copilot', { query: params });
-export async function postUiSearch(question, ticker) {
+
+const ASK_CONVERSATION_KEY = 'agi.ask.conversation.v1';
+
+export function getAskConversationId() {
+  if (typeof window === 'undefined') return '';
+  let value = window.sessionStorage.getItem(ASK_CONVERSATION_KEY);
+  if (!value) {
+    value = globalThis.crypto?.randomUUID?.() || `ask-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    window.sessionStorage.setItem(ASK_CONVERSATION_KEY, value);
+  }
+  return value;
+}
+
+export function resetAskConversation() {
+  if (typeof window !== 'undefined') window.sessionStorage.removeItem(ASK_CONVERSATION_KEY);
+  return getAskConversationId();
+}
+
+export async function postUiSearch(question, ticker, options = {}) {
+  const conversationId = options.conversationId || getAskConversationId();
+  const conversation = {
+    ...(conversationId ? { conversation_id: conversationId } : {}),
+    ...(options.resetConversation ? { reset_conversation: true } : {}),
+  };
   try {
     return await uiFetch('/search', {
       method: 'POST',
-      body: { question, ticker },
+      body: { question, ticker, ...conversation },
       timeoutMs: 25_000,
     });
   } catch (err) {
@@ -91,7 +114,7 @@ export async function postUiSearch(question, ticker) {
     await new Promise((r) => setTimeout(r, 2500));
     return uiFetch('/search', {
       method: 'POST',
-      body: { question, ticker },
+      body: { question, ticker, ...conversation },
       timeoutMs: 25_000,
     });
   }

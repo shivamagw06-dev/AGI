@@ -9070,6 +9070,8 @@ async def ui_search(
     from app.ui.ask_pipeline_trace import normalize_request_id
 
     ask_trace_id = None
+    conversation_id = None
+    reset_conversation = False
     if isinstance(body, dict):
         ask_trace_id = (
             body.get("request_id")
@@ -9078,6 +9080,8 @@ async def ui_search(
         )
         if not ticker and body.get("ticker"):
             ticker = str(body.get("ticker"))
+        conversation_id = body.get("conversation_id") or body.get("conversationId")
+        reset_conversation = bool(body.get("reset_conversation") or body.get("resetConversation"))
     ask_trace_id = (str(ask_trace_id).strip() if ask_trace_id else None) or (
         str(x_request_id).strip() if x_request_id else None
     ) or (str(x_ask_trace_id).strip() if x_ask_trace_id else None)
@@ -9085,7 +9089,14 @@ async def ui_search(
 
     try:
         view = await run_in_threadpool(
-            partial(_ui.search, question, ticker=ticker, ask_trace_id=ask_trace_id)
+            partial(
+                _ui.search,
+                question,
+                ticker=ticker,
+                ask_trace_id=ask_trace_id,
+                conversation_id=str(conversation_id) if conversation_id else None,
+                reset_conversation=reset_conversation,
+            )
         )
         payload = view.model_dump(mode="json")
         # Echo request_id / ask_trace_id for gateway / clients.
