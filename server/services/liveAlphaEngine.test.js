@@ -26,6 +26,8 @@ test('ranks residual momentum and selects both research tails', () => {
   assert.equal(result.tail_size, 2);
   assert.equal(result.signals[0].symbol, 'STOCK20');
   assert.equal(result.signals[0].classification, 'positive_research_candidate');
+  assert.equal(result.signals[0].signal_quality.empirical, false);
+  assert.equal(result.signals[0].empirical_confidence.status, 'unvalidated');
   assert.equal(result.signals.at(-1).classification, 'negative_research_candidate');
   assert.equal('order' in result.signals[0], false);
 });

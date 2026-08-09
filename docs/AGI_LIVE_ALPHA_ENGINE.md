@@ -4,6 +4,8 @@
 
 Turn synchronized Upstox observations into research candidates, then measure whether those candidates produce return beyond benchmark, costs and slippage. The engine is research-only. It cannot create orders, positions, quantities or targets.
 
+The product label remains **Live Alpha Signals** until a factor demonstrates statistically meaningful, out-of-sample excess return after costs. Only then may that specific factor be labelled **AGI Validated Alpha**.
+
 ## Build sequence
 
 1. Cross-sectional residual momentum — implemented in Phase 1.
@@ -28,6 +30,12 @@ One simultaneous stock snapshot contains 15- and 60-minute stock, benchmark and 
 `score = 30% z(residual 15m) + 30% z(residual 60m) + 20% z(volume surprise) + 20% z(sector strength)`
 
 The weights are configuration, not a permanent claim. They must be learned and validated through walk-forward testing before any output is called alpha.
+
+The live `signal_quality` score measures current factor strength and data quality. It is explicitly non-empirical. `empirical_confidence` remains unvalidated with a null score until sufficient comparable historical outcomes exist.
+
+## Empirical validation
+
+Every signal is evaluated independently at 5 minutes, 15 minutes, 30 minutes, 1 hour, close, next day and 5 days. The validator records sample size, hit rate, average and median net alpha, winner/loser behaviour, expected value, information coefficient, signal Sharpe, maximum drawdown, turnover, estimated costs and cumulative net alpha. Results are also sliced by market regime.
 
 ## Production gates
 
