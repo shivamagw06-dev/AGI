@@ -7,12 +7,24 @@ test('joins stored signals to their research engine without execution fields', a
     [{ id: 'run-1', engine: 'cross_sectional_momentum_v1', as_of: '2026-08-09T06:00:00Z' }],
     [{ id: 'signal-1', run_id: 'run-1', symbol: 'SBIN', classification: 'positive_research_candidate' }],
   ];
-  const fetchImpl = async () => ({ ok: true, json: async () => responses.shift() });
+  const fetchImpl = async () => ({ ok: true, json: async () => responses.shift() || [] });
   const priorUrl = process.env.SUPABASE_URL; const priorKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
   process.env.SUPABASE_URL = 'https://example.supabase.co'; process.env.SUPABASE_SERVICE_ROLE_KEY = 'test';
   const result = await getLiveAlphaWorkspace({ fetchImpl });
   assert.equal(result.signals[0].engine, 'cross_sectional_momentum_v1');
   assert.equal(result.execution_enabled, false);
+  if (priorUrl === undefined) delete process.env.SUPABASE_URL; else process.env.SUPABASE_URL = priorUrl;
+  if (priorKey === undefined) delete process.env.SUPABASE_SERVICE_ROLE_KEY; else process.env.SUPABASE_SERVICE_ROLE_KEY = priorKey;
+});
+
+test('returns the latest Groww sector and equity research results', async () => {
+  const responses = [[], [{ id: 'sector-run', strategy: 'agi_sector_rotation_v1', as_of: '2026-08-09T06:00:00Z' }, { id: 'equity-run', strategy: 'agi_equity_opportunity_v1', as_of: '2026-08-09T06:05:00Z' }], [{ sector: 'BANK', rank: 1, score: 88 }], [{ symbol: 'SBIN', signal: 'research_candidate', rank: 1, score: 84 }]];
+  const fetchImpl = async () => ({ ok: true, json: async () => responses.shift() || [] });
+  const priorUrl = process.env.SUPABASE_URL; const priorKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  process.env.SUPABASE_URL = 'https://example.supabase.co'; process.env.SUPABASE_SERVICE_ROLE_KEY = 'test';
+  const result = await getLiveAlphaWorkspace({ fetchImpl });
+  assert.equal(result.groww.sectors[0].sector, 'BANK');
+  assert.equal(result.groww.equities[0].symbol, 'SBIN');
   if (priorUrl === undefined) delete process.env.SUPABASE_URL; else process.env.SUPABASE_URL = priorUrl;
   if (priorKey === undefined) delete process.env.SUPABASE_SERVICE_ROLE_KEY; else process.env.SUPABASE_SERVICE_ROLE_KEY = priorKey;
 });
