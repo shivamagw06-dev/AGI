@@ -2988,6 +2988,7 @@ class UiService:
         forecast_learning: dict[str, Any] = {}
         research_intelligence: dict[str, Any] = {}
         semantic_research: dict[str, Any] = {}
+        finance_research_skill: dict[str, Any] = {}
         market_events: dict[str, Any] = {}
         context_assembly: dict[str, Any] = {}
         intelligence_bus: dict[str, Any] = {}
@@ -3196,6 +3197,23 @@ class UiService:
         except Exception:
             semantic_research = {}
             degradation["semantic_research"] = "unavailable"
+
+        # Repository-local AGI Finance Research skill contract. This compiler
+        # performs no I/O and receives only evidence already approved above.
+        try:
+            from finance_research_skill.production import compile_evidence_contract
+
+            finance_research_skill = compile_evidence_contract(
+                entity=detected_ticker,
+                research_intelligence=research_intelligence,
+                semantic_research=semantic_research,
+                sector_intelligence=sector_intelligence,
+                request_id=getattr(pipeline, "request_id", None),
+            )
+            degradation["finance_research_skill"] = "ok"
+        except Exception:
+            finance_research_skill = {}
+            degradation["finance_research_skill"] = "unavailable"
 
         # CID v1.0 — load living company dossier FIRST for company analysis (never rebuild from raw APIs)
         try:
@@ -3725,6 +3743,9 @@ class UiService:
                         else {},
                         "semantic_research": semantic_research
                         if isinstance(semantic_research, dict)
+                        else {},
+                        "finance_research_skill": finance_research_skill
+                        if isinstance(finance_research_skill, dict)
                         else {},
                         "company_dossier": company_dossier if isinstance(company_dossier, dict) else {},
                         "multi_source": multi_source_pack if isinstance(multi_source_pack, dict) else {},
@@ -5650,6 +5671,7 @@ class UiService:
             },
             research_intelligence=scrub(research_intelligence) if research_intelligence else {},
             semantic_research=scrub(semantic_research) if semantic_research else {},
+            finance_research_skill=scrub(finance_research_skill) if finance_research_skill else {},
             market_events=scrub(market_events)
             if market_events
             else {
