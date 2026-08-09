@@ -62,4 +62,6 @@ Strategy #2, volume/liquidity anomaly, now runs from the same synchronized snaps
 
 Strategy #3, opening-range expansion, records the first 15 minutes of each session and evaluates later expansion beyond that range. Candidates require a 0.10% breakout buffer, at least 1.10x expected cumulative volume, acceptable spread, and an opening range between 0.15% and 3%. Missing opening observations fail closed, preventing a mid-session restart from inventing a range.
 
+Strategy #4, intraday mean reversion, ranks extreme 15-minute stock-versus-sector residual shocks and researches the opposite-direction response. It rejects broad-market moves above 0.75%, volume above 2.5x baseline, wide spreads, and moves dominated by an established 60-minute trend. These gates are designed to avoid mechanically fading market stress, persistent information, or illiquid prints.
+
 Next, apply all migrations, populate at least five prior sessions of minute volume baselines, verify every configured index key with Upstox, and run a controlled market-hours soak test. The acceptance gates are stable connectivity, fresh synchronized coverage, low decode errors, complete baseline coverage and consistent five-minute shadow runs for both implemented engines.

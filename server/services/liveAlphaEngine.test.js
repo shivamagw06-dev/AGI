@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { evaluateCrossSectionalMomentum, evaluateOpeningRangeExpansion, evaluateVolumeLiquidityAnomaly } from './liveAlphaEngine.js';
+import { evaluateCrossSectionalMomentum, evaluateIntradayMeanReversion, evaluateOpeningRangeExpansion, evaluateVolumeLiquidityAnomaly } from './liveAlphaEngine.js';
 
 function universe(size = 20) {
   return Array.from({ length: size }, (_, index) => ({
@@ -108,4 +108,29 @@ test('opening range filters weak volume, wide spreads and invalid ranges', () =>
   assert.equal(result.signals.find((row) => row.symbol === 'STOCK1').classification, 'filtered');
   assert.equal(result.signals.find((row) => row.symbol === 'STOCK2').classification, 'invalid_opening_range');
   assert.equal(result.signals.some((row) => row.classification.includes('candidate')), false);
+});
+
+test('mean reversion identifies isolated positive and negative residual shocks', () => {
+  const rows = universe().map((row) => ({ ...row, cumulativeVolume: 100_000, return15m: row.sectorReturn15m, return60m: row.sectorReturn60m }));
+  rows[0].return15m = rows[0].sectorReturn15m - 4;
+  rows[1].return15m = rows[1].sectorReturn15m + 4;
+  const result = evaluateIntradayMeanReversion(rows, { asOf: '2026-08-09T06:00:00Z' });
+  assert.equal(result.engine, 'intraday_mean_reversion_v1');
+  assert.equal(result.signals.find((row) => row.symbol === 'STOCK1').classification, 'negative_shock_rebound_candidate');
+  assert.equal(result.signals.find((row) => row.symbol === 'STOCK2').classification, 'positive_shock_pullback_candidate');
+  assert.equal(result.execution_enabled, false);
+  assert.equal('order' in result.signals[0], false);
+});
+
+test('mean reversion rejects market stress, event volume, trends and wide spreads', () => {
+  const base = universe().map((row) => ({ ...row, cumulativeVolume: 100_000, return15m: row.sectorReturn15m, return60m: row.sectorReturn60m }));
+  base[0].return15m -= 4; base[0].spreadBps = 90;
+  base[1].return15m += 4; base[1].benchmarkReturn15m = 1;
+  base[2].return15m -= 4; base[2].cumulativeVolume = 300_000;
+  base[3].return15m += 2; base[3].return60m = base[3].sectorReturn60m + 5;
+  const result = evaluateIntradayMeanReversion(base);
+  assert.equal(result.signals.find((row) => row.symbol === 'STOCK1').classification, 'filtered');
+  assert.equal(result.signals.find((row) => row.symbol === 'STOCK2').classification, 'market_stress_filtered');
+  assert.equal(result.signals.find((row) => row.symbol === 'STOCK3').classification, 'event_volume_filtered');
+  assert.equal(result.signals.find((row) => row.symbol === 'STOCK4').classification, 'trend_filtered');
 });

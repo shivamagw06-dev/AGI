@@ -1,4 +1,4 @@
-import { evaluateCrossSectionalMomentum, evaluateOpeningRangeExpansion, evaluateVolumeLiquidityAnomaly } from './liveAlphaEngine.js';
+import { evaluateCrossSectionalMomentum, evaluateIntradayMeanReversion, evaluateOpeningRangeExpansion, evaluateVolumeLiquidityAnomaly } from './liveAlphaEngine.js';
 import { minuteOfSession } from './minuteVolumeBaseline.js';
 
 function change(current, previous) {
@@ -82,6 +82,7 @@ export class MomentumShadowPipeline {
     if (snapshots.length < 10) return { skipped: true, reason: 'insufficient_complete_universe', coverage: snapshots.length };
     const result = evaluateCrossSectionalMomentum(snapshots, { asOf: now.toISOString() });
     const volumeResult = evaluateVolumeLiquidityAnomaly(snapshots, { asOf: now.toISOString() });
+    const meanReversionResult = evaluateIntradayMeanReversion(snapshots, { asOf: now.toISOString() });
     const openingSnapshots = snapshots.map((snapshot) => {
       const range = this.featureStore.openingRange(snapshot.instrumentKey, now);
       const current = this.featureStore.latest(snapshot.instrumentKey);
@@ -120,10 +121,17 @@ export class MomentumShadowPipeline {
       const negative = signal.classification === 'downside_opening_breakout_candidate';
       return { ...signal, direction: positive ? 'positive' : negative ? 'negative' : null, price_at_signal: anchor?.stock?.ltp ?? null, nifty_at_signal: benchmark.current.ltp, sector_at_signal: anchor?.sector?.ltp ?? null };
     });
+    meanReversionResult.signals = meanReversionResult.signals.map((signal) => {
+      const anchor = anchors.get(signal.symbol);
+      const positive = signal.classification === 'negative_shock_rebound_candidate';
+      const negative = signal.classification === 'positive_shock_pullback_candidate';
+      return { ...signal, direction: positive ? 'positive' : negative ? 'negative' : null, price_at_signal: anchor?.stock?.ltp ?? null, nifty_at_signal: benchmark.current.ltp, sector_at_signal: anchor?.sector?.ltp ?? null };
+    });
     this.lastRunBucket = bucket;
     await this.repository?.saveMomentumRun?.(result, { benchmark_key: this.benchmarkKey, minute_of_session: minute });
     await this.repository?.saveVolumeAnomalyRun?.(volumeResult, { benchmark_key: this.benchmarkKey, minute_of_session: minute });
     if (openingResult) await this.repository?.saveOpeningRangeRun?.(openingResult, { benchmark_key: this.benchmarkKey, minute_of_session: minute });
-    return { ...result, companion_engines: [volumeResult, ...(openingResult ? [openingResult] : [])] };
+    await this.repository?.saveMeanReversionRun?.(meanReversionResult, { benchmark_key: this.benchmarkKey, minute_of_session: minute });
+    return { ...result, companion_engines: [volumeResult, ...(openingResult ? [openingResult] : []), meanReversionResult] };
   }
 }
