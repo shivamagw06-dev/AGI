@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { evaluateCrossSectionalMomentum, evaluateIntradayMeanReversion, evaluateOpeningRangeExpansion, evaluateVolumeLiquidityAnomaly } from './liveAlphaEngine.js';
+import { evaluateCrossSectionalMomentum, evaluateDerivativesPositioning, evaluateIntradayMeanReversion, evaluateOpeningRangeExpansion, evaluateVolumeLiquidityAnomaly } from './liveAlphaEngine.js';
 
 function universe(size = 20) {
   return Array.from({ length: size }, (_, index) => ({
@@ -133,4 +133,28 @@ test('mean reversion rejects market stress, event volume, trends and wide spread
   assert.equal(result.signals.find((row) => row.symbol === 'STOCK2').classification, 'market_stress_filtered');
   assert.equal(result.signals.find((row) => row.symbol === 'STOCK3').classification, 'event_volume_filtered');
   assert.equal(result.signals.find((row) => row.symbol === 'STOCK4').classification, 'trend_filtered');
+});
+
+test('derivatives positioning classifies all four price and OI states', () => {
+  const rows = Array.from({ length: 12 }, (_, index) => ({ symbol: `FUT${index}`, sector: 'BANK', instrumentKey: `NSE_FO|${index}`, priceReturn15m: 0.1, oiChange15m: 0.2, openInterest: 100_000, spreadBps: 8 }));
+  Object.assign(rows[0], { priceReturn15m: 2, oiChange15m: 5 });
+  Object.assign(rows[1], { priceReturn15m: -2, oiChange15m: 5 });
+  Object.assign(rows[2], { priceReturn15m: 2, oiChange15m: -5 });
+  Object.assign(rows[3], { priceReturn15m: -2, oiChange15m: -5 });
+  const result = evaluateDerivativesPositioning(rows, { asOf: '2026-08-09T06:00:00Z' });
+  assert.equal(result.signals.find((row) => row.symbol === 'FUT0').classification, 'long_buildup_candidate');
+  assert.equal(result.signals.find((row) => row.symbol === 'FUT1').classification, 'short_buildup_candidate');
+  assert.equal(result.signals.find((row) => row.symbol === 'FUT2').classification, 'short_covering_candidate');
+  assert.equal(result.signals.find((row) => row.symbol === 'FUT3').classification, 'long_unwinding_candidate');
+  assert.equal(result.execution_enabled, false);
+  assert.equal('order' in result.signals[0], false);
+});
+
+test('derivatives positioning rejects weak changes, wide spreads and incomplete coverage', () => {
+  const rows = Array.from({ length: 10 }, (_, index) => ({ symbol: `FUT${index}`, sector: 'BANK', instrumentKey: `NSE_FO|${index}`, priceReturn15m: 0.1, oiChange15m: 0.2, openInterest: 100_000, spreadBps: 8 }));
+  rows[0].priceReturn15m = 2; rows[0].oiChange15m = 5; rows[0].spreadBps = 90;
+  const result = evaluateDerivativesPositioning(rows);
+  assert.equal(result.signals.find((row) => row.symbol === 'FUT0').classification, 'filtered');
+  assert.equal(result.signals.find((row) => row.symbol === 'FUT1').classification, 'neutral');
+  assert.throws(() => evaluateDerivativesPositioning(rows.slice(0, 5)), /at least 10/);
 });
