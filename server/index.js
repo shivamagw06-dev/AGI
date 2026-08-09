@@ -33,6 +33,11 @@ import { getLiveAlphaRuntimeStatus, startLiveAlphaRuntime } from "./services/liv
 import { getLiveAlphaWorkspace } from "./services/liveAlphaWorkspace.js";
 import { buildConfluenceQueue } from "./services/researchConfluence.js";
 import { getResearchEvidence } from "./services/researchEvidenceCollector.js";
+import { getConfluenceLedger, getConfluenceValidationSummary } from "./services/confluenceValidationStore.js";
+import { getConfluenceValidationStatus, startConfluenceValidationScheduler } from "./services/confluenceValidationScheduler.js";
+import { getCompanyResearchMemory, screenResearchChanges } from "./services/researchMemoryStore.js";
+import { getCompanyForecasts, getForecastValidation } from "./services/probabilisticForecastStore.js";
+import { getForecastRanking, getRankIcHealth, getWalkForwardDataset } from "./services/forecastV2Store.js";
 import { llmProviderStatus } from "./services/llmClient.js";
 import rateLimit from "express-rate-limit";
 import cors from "cors";
@@ -310,6 +315,42 @@ reg('/api/market/research-confluence', async (req, res) => {
     res.status(503).json({ error: error.message || 'Research confluence unavailable', research_only: true });
   }
 });
+reg('/api/market/research-confluence/validation', async (_req, res) => {
+  try { res.json({ generated_at: new Date().toISOString(), classifications: await getConfluenceValidationSummary(), status: getConfluenceValidationStatus() }); }
+  catch (error) { res.status(error.status === 404 ? 503 : 500).json({ error: error.message, status: getConfluenceValidationStatus() }); }
+});
+reg('/api/market/research-confluence/ledger', async (req, res) => {
+  try { res.json({ generated_at: new Date().toISOString(), research_only: true, rows: await getConfluenceLedger({ limit: Number(req.query.limit) || 100, symbol: req.query.symbol }) }); }
+  catch (error) { res.status(error.status === 404 ? 503 : 500).json({ error: error.message, research_only: true }); }
+});
+reg('/api/market/research-memory/changes', async (req, res) => {
+  try { res.json({ generated_at: new Date().toISOString(), research_only: true, rows: await screenResearchChanges({ type: req.query.type, days: Number(req.query.days) || 30, limit: Number(req.query.limit) || 100 }) }); }
+  catch (error) { res.status(error.status === 404 ? 503 : 500).json({ error: error.message, research_only: true }); }
+});
+reg('/api/market/research-memory/:symbol', async (req, res) => {
+  try { res.json(await getCompanyResearchMemory(req.params.symbol, { limit: Number(req.query.limit) || 50 })); }
+  catch (error) { res.status(error.status === 404 ? 503 : 500).json({ error: error.message, research_only: true }); }
+});
+reg('/api/market/forecasts/validation', async (req, res) => {
+  try { res.json({ generated_at: new Date().toISOString(), research_only: true, ...(await getForecastValidation({ horizon: req.query.horizon, limit: Number(req.query.limit) || 5000 })) }); }
+  catch (error) { res.status(error.status === 404 ? 503 : 500).json({ error: error.message, research_only: true }); }
+});
+reg('/api/market/forecasts/rankings', async (req, res) => {
+  try { res.json({ generated_at: new Date().toISOString(), research_only: true, rows: await getForecastRanking({ date: req.query.date, horizon: req.query.horizon || '5d', limit: Number(req.query.limit) || 500 }) }); }
+  catch (error) { res.status(error.status === 404 ? 503 : 500).json({ error: error.message, research_only: true }); }
+});
+reg('/api/market/forecasts/rank-ic', async (req, res) => {
+  try { res.json({ generated_at: new Date().toISOString(), research_only: true, ...(await getRankIcHealth({ horizon: req.query.horizon || '5d', limit: Number(req.query.limit) || 252 })) }); }
+  catch (error) { res.status(error.status === 404 ? 503 : 500).json({ error: error.message, research_only: true }); }
+});
+reg('/api/market/forecasts/training-dataset', async (req, res) => {
+  try { res.json(await getWalkForwardDataset({ horizon: req.query.horizon || '5d', minimumTrainPeriods: Number(req.query.minimum_train_periods) || 20, limit: Number(req.query.limit) || 10000 })); }
+  catch (error) { res.status(error.status === 404 ? 503 : 500).json({ error: error.message, research_only: true }); }
+});
+reg('/api/market/forecasts/:symbol', async (req, res) => {
+  try { res.json(await getCompanyForecasts(req.params.symbol, { limit: Number(req.query.limit) || 30 })); }
+  catch (error) { res.status(error.status === 404 ? 503 : 500).json({ error: error.message, research_only: true }); }
+});
 reg('/api/news/headlines', async (_req, res) => {
   const data = await getNewsHeadlines();
   res.set('Cache-Control', 'public, max-age=1800, stale-while-revalidate=300');
@@ -359,6 +400,7 @@ startHedgeFundLiveQuoteScheduler();
 startHedgeFundUpstoxCandleScheduler();
 startUpstoxStatementScheduler();
 startLiveAlphaRuntime().catch((error) => console.error('[live-alpha] startup failed:', error?.message || error));
+startConfluenceValidationScheduler();
 
 /* ---------- /api/perplexity/deals ----------
    Ask Perplexity for a strict JSON array of deals with these fields:
