@@ -296,6 +296,41 @@
   color: var(--ac-blue);
   margin-bottom: 0.55rem;
 }
+.ac-msg-prior { opacity: 0.9; }
+.ac-prior-turn .ac-direct { box-shadow: none; }
+.ac-turn-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.8rem;
+}
+.ac-turn-meta span {
+  border: 1px solid var(--ac-line);
+  border-radius: 999px;
+  color: var(--ac-soft);
+  font-size: 0.7rem;
+  font-weight: 650;
+  padding: 0.25rem 0.5rem;
+  text-transform: capitalize;
+}
+.ac-thread-divider {
+  align-items: center;
+  color: var(--ac-muted);
+  display: flex;
+  font-size: 0.68rem;
+  font-weight: 750;
+  gap: 0.75rem;
+  letter-spacing: 0.1em;
+  margin: 0.25rem 0 1.5rem;
+  text-transform: uppercase;
+}
+.ac-thread-divider::before,
+.ac-thread-divider::after {
+  background: var(--ac-line);
+  content: '';
+  flex: 1;
+  height: 1px;
+}
 
 .ac-direct {
   background: var(--ac-panel);

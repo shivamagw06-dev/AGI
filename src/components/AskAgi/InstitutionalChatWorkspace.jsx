@@ -336,6 +336,7 @@ export default function InstitutionalChatWorkspace({
   onAsk,
   onSave,
   onNewChat,
+  conversationTurns = [],
   savedFlash,
   embedded = false,
   basePath = '/ask',
@@ -348,6 +349,13 @@ export default function InstitutionalChatWorkspace({
   const threadRef = useRef(null);
   const inputRef = useRef(null);
   const askHome = basePath || '/ask';
+  const priorTurns = useMemo(() => {
+    const turns = Array.isArray(conversationTurns) ? conversationTurns : [];
+    const last = turns[turns.length - 1];
+    return last && String(last.question || '').trim() === String(question || '').trim()
+      ? turns.slice(0, -1)
+      : turns;
+  }, [conversationTurns, question]);
 
   useEffect(() => {
     setRecents(getRecentSearches(8));
@@ -490,6 +498,29 @@ export default function InstitutionalChatWorkspace({
                 </div>
               </div>
             )}
+
+            {priorTurns.map((turn) => (
+              <div className="ac-prior-turn" key={turn.id}>
+                <div className="ac-msg ac-msg-user">
+                  <div className="ac-bubble-user">{turn.question}</div>
+                </div>
+                <div className="ac-msg ac-msg-agi ac-msg-prior">
+                  <div className="ac-label">AGI</div>
+                  <div className="ac-direct">
+                    <p className="ac-direct-text">{turn.summary || 'Research response recorded.'}</p>
+                    <div className="ac-turn-meta">
+                      {turn.stance ? <span>{turn.stance}</span> : null}
+                      {turn.confidence != null ? <span>Confidence {turn.confidence}%</span> : null}
+                      {(turn.entities || []).map((entity) => <span key={entity}>{entity}</span>)}
+                      {turn.focus ? <span>{turn.focus.replaceAll('_', ' ')}</span> : null}
+                      {turn.horizon ? <span>{turn.horizon}</span> : null}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+
+            {priorTurns.length > 0 && <div className="ac-thread-divider">Current turn</div>}
 
             {question && (
               <div className="ac-msg ac-msg-user">

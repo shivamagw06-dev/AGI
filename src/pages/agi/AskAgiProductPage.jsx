@@ -1,7 +1,12 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import InstitutionalChatWorkspace from '@/components/AskAgi/InstitutionalChatWorkspace';
-import { postUiSearch, resetAskConversation } from '@/lib/uiApi';
+import { getAskConversationId, postUiSearch, resetAskConversation } from '@/lib/uiApi';
+import {
+  appendConversationTurn,
+  clearConversationTranscript,
+  getConversationTranscript,
+} from '@/lib/conversationTranscript';
 import { universalAsk } from '@/lib/intelligenceApi';
 import { pushSearch, saveAnswer, saveSearch } from '@/lib/searchHistory';
 import { trackProductEvent } from '@/lib/productAnalytics';
@@ -21,6 +26,10 @@ export default function AskAgiProductPage() {
   const [state, setState] = useState({ loading: false, pack: null, error: null, orchestrated: null });
   const [draft, setDraft] = useState('');
   const [savedFlash, setSavedFlash] = useState(false);
+  const conversationIdRef = useRef(getAskConversationId());
+  const [conversationTurns, setConversationTurns] = useState(() =>
+    getConversationTranscript(conversationIdRef.current)
+  );
 
   const contextLabel = useMemo(() => {
     if (ticker) return `Company context: ${ticker}`;
@@ -58,8 +67,9 @@ export default function AskAgiProductPage() {
       portfolio_id: portfolio || 'agi-core-equity',
       entities: ticker ? [ticker] : undefined,
     };
+    const conversationId = conversationIdRef.current;
     Promise.all([
-      postUiSearch(scopedQuestion).catch((error) => ({ __error: error })),
+      postUiSearch(scopedQuestion, undefined, { conversationId }).catch((error) => ({ __error: error })),
       universalAsk(uagBody).catch(() => null),
     ]).then(([packOrErr, uag]) => {
       if (!active) return;
@@ -78,12 +88,21 @@ export default function AskAgiProductPage() {
         error: null,
         orchestrated: uag && uag.ok !== false ? uag : null,
       });
+      setConversationTurns(
+        appendConversationTurn({ conversationId, question: scopedQuestion, pack: packOrErr })
+      );
       trackProductEvent('search_success', { question: scopedQuestion, surface: 'agi_product' });
     });
     return () => {
       active = false;
     };
   }, [question, scopedQuestion, ticker, context, portfolio]);
+
+  const onNewChat = () => {
+    clearConversationTranscript(conversationIdRef.current);
+    conversationIdRef.current = resetAskConversation();
+    setConversationTurns([]);
+  };
 
   const buildAskHref = (q) => {
     const next = String(q || '').trim();
@@ -250,7 +269,8 @@ export default function AskAgiProductPage() {
         question={question}
         onAsk={onAsk}
         onSave={onSaveAnswer}
-        onNewChat={resetAskConversation}
+        onNewChat={onNewChat}
+        conversationTurns={conversationTurns}
         savedFlash={savedFlash}
         embedded
         basePath="/agi/ask"

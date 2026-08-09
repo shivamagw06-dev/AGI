@@ -1,8 +1,13 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import InstitutionalChatWorkspace from '@/components/AskAgi/InstitutionalChatWorkspace';
-import { postUiSearch, resetAskConversation } from '@/lib/uiApi';
+import { getAskConversationId, postUiSearch, resetAskConversation } from '@/lib/uiApi';
+import {
+  appendConversationTurn,
+  clearConversationTranscript,
+  getConversationTranscript,
+} from '@/lib/conversationTranscript';
 import { pushSearch, saveAnswer, saveSearch } from '@/lib/searchHistory';
 import { trackProductEvent } from '@/lib/productAnalytics';
 
@@ -12,6 +17,10 @@ export default function AskAgiPage() {
   const question = (params.get('q') || '').trim();
   const [state, setState] = useState({ loading: false, pack: null, error: null });
   const [savedFlash, setSavedFlash] = useState(false);
+  const conversationIdRef = useRef(getAskConversationId());
+  const [conversationTurns, setConversationTurns] = useState(() =>
+    getConversationTranscript(conversationIdRef.current)
+  );
 
   useEffect(() => {
     if (!question) {
@@ -22,10 +31,12 @@ export default function AskAgiPage() {
     setState({ loading: true, pack: null, error: null });
     pushSearch(question);
     trackProductEvent('question_asked', { question });
-    postUiSearch(question)
+    const conversationId = conversationIdRef.current;
+    postUiSearch(question, undefined, { conversationId })
       .then((pack) => {
         if (!active) return;
         setState({ loading: false, pack, error: null });
+        setConversationTurns(appendConversationTurn({ conversationId, question, pack }));
         trackProductEvent('search_success', { question });
       })
       .catch((error) => active && setState({ loading: false, pack: null, error }));
@@ -33,6 +44,12 @@ export default function AskAgiPage() {
       active = false;
     };
   }, [question]);
+
+  const onNewChat = () => {
+    clearConversationTranscript(conversationIdRef.current);
+    conversationIdRef.current = resetAskConversation();
+    setConversationTurns([]);
+  };
 
   const onAsk = (q) => {
     const next = String(q || '').trim();
@@ -78,7 +95,8 @@ export default function AskAgiPage() {
         question={question}
         onAsk={onAsk}
         onSave={onSaveAnswer}
-        onNewChat={resetAskConversation}
+        onNewChat={onNewChat}
+        conversationTurns={conversationTurns}
         savedFlash={savedFlash}
       />
     </>
