@@ -7,6 +7,7 @@ Unit conversion for statement aggregates happens in the warehouse gateway
 from __future__ import annotations
 
 import re
+import calendar
 from datetime import date, datetime, timezone
 from typing import Any, Optional
 
@@ -44,6 +45,26 @@ def _num(value: Any) -> Optional[float]:
 
 def _today() -> str:
     return date.today().isoformat()
+
+
+def _iso_date(value: Any) -> Optional[str]:
+    """Normalize provider dates without silently truncating human labels."""
+    text = str(value or "").strip()
+    if not text:
+        return None
+    for fmt in ("%Y-%m-%d", "%d %b %Y", "%d %B %Y", "%d-%m-%Y", "%d/%m/%Y"):
+        try:
+            return datetime.strptime(text, fmt).date().isoformat()
+        except ValueError:
+            continue
+    month_year = _MONTH_YEAR_RE.match(text)
+    if month_year:
+        month = _MONTH_NUM[month_year.group("mon")[:3].lower()]
+        year = int(month_year.group("year"))
+        if year < 100:
+            year += 2000
+        return date(year, month, calendar.monthrange(year, month)[1]).isoformat()
+    return None
 
 
 def _pick(data: dict[str, Any], *keys: str) -> Any:
@@ -387,10 +408,23 @@ def normalise_profile(payload: dict[str, Any]) -> dict[str, Any]:
         "industry": industry,
         "sub_industry": _pick(data, "sub_industry", "gics_sub_industry", "industry_group"),
         "business_description": _pick(
-            data, "business_description", "description", "about", "company_description"
+            data, "business_description", "description", "about", "company_description",
+            "company_profile",
         ),
         "market_cap_inr": _num(_pick(data, "market_cap_inr", "market_cap", "mcap")),
         "market_cap_usd": _num(_pick(data, "market_cap_usd")),
+        # These provider fields describe the whole sector, not the company.
+        # Keep them separate so they can never contaminate company valuation.
+        "sector_market_cap_inr": _num(
+            (_pick(data, "sector_market_cap_inr") or {}).get("value")
+            if isinstance(_pick(data, "sector_market_cap_inr"), dict)
+            else None
+        ),
+        "sector_market_cap_usd": _num(
+            (_pick(data, "sector_market_cap_usd") or {}).get("value")
+            if isinstance(_pick(data, "sector_market_cap_usd"), dict)
+            else None
+        ),
         "website": _pick(data, "website", "url", "web_url"),
         "city": _pick(data, "city", "headquarters_city"),
         "state": _pick(data, "state"),
@@ -536,6 +570,30 @@ def normalise_shareholding(payload: dict[str, Any]) -> list[dict[str, Any]]:
         else:
             rows_in = [data]
 
+    # Current Upstox shape is category-oriented:
+    # [{category: "promoters", history: [{period, value}, ...]}, ...].
+    # Pivot it into one complete ownership observation per reporting period.
+    category_rows = [r for r in rows_in if r.get("category") and isinstance(r.get("history"), list)]
+    if category_rows:
+        by_period: dict[str, dict[str, Any]] = {}
+        category_map = {
+            "promoters": "promoter",
+            "fii": "fii",
+            "other_dii": "dii",
+            "mutual_funds": "mutual_funds",
+            "retail_and_other": "public",
+        }
+        for category_row in category_rows:
+            field = category_map.get(str(category_row.get("category") or "").strip().lower())
+            if not field:
+                continue
+            for point in category_row.get("history") or []:
+                if not isinstance(point, dict) or not point.get("period"):
+                    continue
+                bucket = by_period.setdefault(str(point["period"]), {})
+                bucket[field] = point.get("value")
+        rows_in = [{"period": period, **values} for period, values in by_period.items()]
+
     out: list[dict[str, Any]] = []
     for item in rows_in:
         as_of = (
@@ -545,7 +603,9 @@ def normalise_shareholding(payload: dict[str, Any]) -> list[dict[str, Any]]:
         )
         promoter = _num(_pick(item, "promoter", "promoter_holding", "promoters"))
         fii = _num(_pick(item, "fii", "fpi", "foreign_institutional"))
-        dii = _num(_pick(item, "dii", "domestic_institutional"))
+        other_dii = _num(_pick(item, "dii", "domestic_institutional"))
+        mutual_funds = _num(_pick(item, "mutual_funds", "mutual_fund"))
+        dii = (other_dii or 0) + (mutual_funds or 0) if other_dii is not None or mutual_funds is not None else None
         public = _num(_pick(item, "public", "public_holding", "retail"))
         government = _num(_pick(item, "government", "govt", "government_holding"))
         others = _num(_pick(item, "others", "other", "others_holding"))
@@ -553,7 +613,7 @@ def normalise_shareholding(payload: dict[str, Any]) -> list[dict[str, Any]]:
         if fii is not None or dii is not None:
             institutional = (fii or 0) + (dii or 0)
         notes: list[str] = []
-        parts = [x for x in (promoter, public, government, others) if x is not None]
+        parts = [x for x in (promoter, fii, dii, public, government, others) if x is not None]
         if len(parts) >= 2:
             total = sum(parts)
             if total and abs(total - 100) > 8:
@@ -561,7 +621,7 @@ def normalise_shareholding(payload: dict[str, Any]) -> list[dict[str, Any]]:
         status = "warning" if notes else "passed"
         out.append({
             "symbol": symbol,
-            "as_of": str(as_of)[:10],
+            "as_of": _iso_date(as_of) or str(as_of),
             "promoter_holding": promoter,
             "fii": fii,
             "dii": dii,
@@ -610,7 +670,7 @@ def normalise_corporate_actions(payload: dict[str, Any]) -> list[dict[str, Any]]
             if token in name:
                 action_type = kind
                 break
-        action_date = (
+        action_date_raw = (
             details.get("ex dividend date")
             or details.get("ex-date")
             or details.get("ex date")
@@ -618,19 +678,21 @@ def normalise_corporate_actions(payload: dict[str, Any]) -> list[dict[str, Any]]
             or ev.get("action_date")
             or details.get("record date")
         )
+        action_date = _iso_date(action_date_raw)
+        announcement_date = _iso_date(details.get("announcement date"))
         if not action_date:
             continue
         out.append({
             "symbol": symbol,
-            "action_date": str(action_date)[:10],
+            "action_date": action_date,
             "action_type": action_type,
             "dividend": _num(ev.get("amount")) if action_type == "dividend" else None,
             "split": ev.get("ratio") if action_type == "split" else None,
             "bonus": ev.get("ratio") if action_type == "bonus" else None,
             "rights": ev.get("ratio") if action_type == "rights" else None,
             "details": details.get("details") or ev.get("name"),
-            "announcement_date": details.get("announcement date"),
-            "effective_date": str(action_date)[:10],
+            "announcement_date": announcement_date,
+            "effective_date": action_date,
             "confidence": 0.55,  # secondary
             "source": SOURCE,
         })
@@ -686,8 +748,10 @@ def normalise_competitors(payload: dict[str, Any]) -> list[dict[str, Any]]:
             "peer_instrument_key": instrument_key or (f"NSE_EQ|{peer_isin}" if peer_isin else None),
             "sector": payload.get("sector"),
             "industry": payload.get("industry"),
-            "relationship": "competitor",
-            "confidence": 0.8,
+            # Provider peers are candidates. Sector/business-model validation
+            # must promote them before AGI treats them as canonical competitors.
+            "relationship": "related",
+            "confidence": 0.6,
             "as_of": as_of,
             "source": SOURCE,
         })

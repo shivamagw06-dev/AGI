@@ -33,6 +33,13 @@ describe('Upstox annual statement backfill', () => {
   });
 
   it('keeps the normal refresh capable of quarterly data', () => {
-    assert.equal(statementRequests().length, 6);
+    const requests = statementRequests();
+    assert.equal(requests.length, 4);
+    assert.deepEqual(requests[3], [
+      'income-statement',
+      { type: 'consolidated', time_period: 'quarterly', fs: false },
+    ]);
+    assert.equal(requests.some(([endpoint, params]) =>
+      endpoint !== 'income-statement' && params.time_period === 'quarterly'), false);
   });
 });

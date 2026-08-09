@@ -40,6 +40,23 @@ def test_normalise_profile():
     assert row["dqiv_status"] == "passed"
 
 
+def test_normalise_profile_documented_upstox_shape():
+    row = normalise_profile({
+        "symbol": "RELIANCE",
+        "isin": "INE002A01018",
+        "data": {
+            "company_profile": "Diversified energy, retail and digital services business.",
+            "sector": "Refineries",
+            "sector_market_cap_inr": {"value": 1942866.05, "unit": "crore"},
+            "sector_market_cap_usd": {"value": 215.87, "unit": "billion"},
+        },
+    })
+    assert row["business_description"].startswith("Diversified energy")
+    assert row["sector_market_cap_inr"] == 1942866.05
+    assert row["sector_market_cap_usd"] == 215.87
+    assert row.get("market_cap_inr") is None
+
+
 def test_normalise_income_statement_periods():
     rows = normalise_statements({
         "symbol": "INFY",
@@ -161,6 +178,23 @@ def test_shareholding_dqiv():
     assert rows[0]["institutional_holding"] == 61.0
 
 
+def test_shareholding_documented_category_history_shape():
+    rows = normalise_shareholding({
+        "symbol": "RELIANCE",
+        "data": [
+            {"category": "promoters", "history": [{"period": "Mar 2026", "value": 50}]},
+            {"category": "fii", "history": [{"period": "Mar 2026", "value": 20}]},
+            {"category": "other_dii", "history": [{"period": "Mar 2026", "value": 10}]},
+            {"category": "mutual_funds", "history": [{"period": "Mar 2026", "value": 5}]},
+            {"category": "retail_and_other", "history": [{"period": "Mar 2026", "value": 15}]},
+        ],
+    })
+    assert len(rows) == 1
+    assert rows[0]["as_of"] == "2026-03-31"
+    assert rows[0]["dii"] == 15
+    assert rows[0]["institutional_holding"] == 35
+
+
 def test_corporate_actions_secondary_confidence():
     rows = normalise_corporate_actions({
         "symbol": "INFY",
@@ -180,6 +214,23 @@ def test_corporate_actions_secondary_confidence():
     assert rows[0]["source"] == "upstox"
 
 
+def test_corporate_actions_parses_documented_human_dates():
+    rows = normalise_corporate_actions({
+        "symbol": "RELIANCE",
+        "data": [{
+            "name": "Dividend",
+            "amount": 5.5,
+            "expiry_date": "14 Aug 2025",
+            "event_details": [
+                {"name": "Announcement date", "value": "25 Apr 2025"},
+                {"name": "Ex dividend date", "value": "14 Aug 2025"},
+            ],
+        }],
+    })
+    assert rows[0]["action_date"] == "2025-08-14"
+    assert rows[0]["announcement_date"] == "2025-04-25"
+
+
 def test_competitors_no_self():
     rows = normalise_competitors({
         "symbol": "INFY",
@@ -188,7 +239,8 @@ def test_competitors_no_self():
     })
     assert len(rows) == 1
     assert rows[0]["peer_symbol"] == "TCS"
-    assert rows[0]["relationship"] == "competitor"
+    assert rows[0]["relationship"] == "related"
+    assert rows[0]["confidence"] == 0.6
 
 
 def test_ingest_bundle_profile(monkeypatch):
@@ -202,7 +254,9 @@ def test_ingest_bundle_profile(monkeypatch):
             return {"ok": True, "written": len(rows)}
 
     import institutional_warehouse.gateway as gateway_mod
+    import institutional_warehouse.store as store_mod
     monkeypatch.setattr(gateway_mod, "write", GW().write)
+    monkeypatch.setattr(store_mod, "all_rows", lambda *_, **__: [])
 
     out = ingest.ingest_bundle({
         "dataset": "profile",
@@ -216,3 +270,60 @@ def test_ingest_bundle_profile(monkeypatch):
     tabs = {w["tab"] for w in writes}
     assert "company_master" in tabs
     assert "profile_history" in tabs
+
+
+def test_upstox_profile_does_not_overwrite_existing_capiq_master(monkeypatch):
+    from upstox_fundamentals import ingest
+    import institutional_warehouse.gateway as gateway_mod
+    import institutional_warehouse.store as store_mod
+
+    writes = []
+    monkeypatch.setattr(store_mod, "all_rows", lambda tab, **_: [{
+        "company_id": "RELIANCE",
+        "symbol": "RELIANCE",
+        "company_name": "Reliance Industries Limited",
+        "isin": "INE002A01018",
+        "instrument_key": "NSE_EQ|INE002A01018",
+        "sector": "Diversified",
+        "industry": "Conglomerate",
+        "business_description": "Canonical CapIQ description",
+        "source": "capital_iq",
+    }] if tab == "company_master" else [])
+    monkeypatch.setattr(gateway_mod, "write", lambda tab, rows, **kwargs: (
+        writes.append((tab, rows, kwargs)) or {"ok": True, "written": len(rows)}
+    ))
+
+    out = ingest.ingest_profile(normalise_profile({
+        "symbol": "RELIANCE",
+        "isin": "INE002A01018",
+        "data": {"sector": "Refineries", "company_profile": "Provider description"},
+    }))
+    assert out["company_master"]["written"] == 0
+    assert [tab for tab, _, _ in writes] == ["profile_history"]
+
+
+def test_upstox_statements_skip_matching_capiq_period(monkeypatch):
+    from upstox_fundamentals import ingest
+    import institutional_warehouse.gateway as gateway_mod
+    import institutional_warehouse.store as store_mod
+
+    writes = []
+    monkeypatch.setattr(store_mod, "all_rows", lambda tab, **_: [{
+        "symbol": "RELIANCE",
+        "statement_type": "CONSOLIDATED",
+        "fiscal_year": "FY2025",
+        "source": "capital_iq",
+    }] if tab == "financials_annual" else [])
+    monkeypatch.setattr(gateway_mod, "write", lambda tab, rows, **kwargs: (
+        writes.append((tab, rows)) or {"ok": True, "written": len(rows)}
+    ))
+
+    out = ingest.ingest_statements([{
+        "symbol": "RELIANCE",
+        "statement_type": "CONSOLIDATED",
+        "statement_frequency": "ANNUAL",
+        "fiscal_year": "FY2025",
+        "revenue": 100,
+    }])
+    assert out["capiq_rows_preserved"] == 1
+    assert not writes

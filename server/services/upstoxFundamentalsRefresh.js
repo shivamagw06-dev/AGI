@@ -49,10 +49,11 @@ export function statementRequests({ annualOnly = false } = {}) {
     ['cash-flow', { type: 'consolidated', time_period: 'yearly', fs: true }],
   ];
   if (annualOnly) return annual;
+  // Upstox documents `time_period` for income statements only. Balance-sheet
+  // and cash-flow full statements are annual, so do not manufacture quarterly
+  // requests that can be ignored or rejected by the provider.
   return annual.concat([
     ['income-statement', { type: 'consolidated', time_period: 'quarterly', fs: false }],
-    ['balance-sheet', { type: 'consolidated', time_period: 'quarterly', fs: false }],
-    ['cash-flow', { type: 'consolidated', time_period: 'quarterly', fs: false }],
   ]);
 }
 
@@ -185,7 +186,7 @@ export async function refreshUpstoxFundamentals({
           const replies = await Promise.all(statementRequests({ annualOnly }).map(
             ([endpoint, params]) => getFundamentals(company.isin, endpoint, params),
           ));
-          const [incomeY, balanceY, cashY, incomeQ, balanceQ, cashQ] = replies;
+          const [incomeY, balanceY, cashY, incomeQ] = replies;
           batch.push({
             symbol: company.symbol,
             isin: company.isin,
@@ -205,8 +206,6 @@ export async function refreshUpstoxFundamentals({
             instrument_key: company.instrument_key,
             dataset: 'statements',
             'income-statement': incomeQ,
-            'balance-sheet': balanceQ,
-            'cash-flow': cashQ,
             reported_unit: 'crore',
             source: 'upstox',
           });
@@ -279,7 +278,7 @@ export async function refreshUpstoxFundamentals({
       instrument_types: instrumentUniverseSummary(universe),
       batchSize: companies.length,
       annual_only: Boolean(annualOnly),
-      requests_per_company: annualOnly ? 3 : 6,
+      requests_per_company: annualOnly ? 3 : 4,
     },
     fetched: batch.length,
     errors: errors.slice(0, 20),
