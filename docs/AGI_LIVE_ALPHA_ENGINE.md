@@ -54,4 +54,6 @@ The forward-outcome lifecycle is now defined. Every persisted directional signal
 
 The Upstox V3 collector and synchronized snapshot clock are now implemented. The collector requests the one-time authorized WebSocket URL, subscribes in binary Full mode, decodes the official Protobuf contract, normalizes price/volume/depth/OI observations, rejects stale or high-skew cross-sections and reconnects with bounded exponential backoff. The feed remains opt-in until its production universe and persistence adapter are configured.
 
-Next, connect the normalized batches to the private snapshot tables and build minute-of-day volume baselines. That activates Strategy #1 on a synchronized live universe and supplies the calibration required by Strategy #2.
+Normalized batches can now be downsampled into the private snapshot store, and point-in-time-safe median cumulative-volume curves can be built from prior sessions. The opt-in shadow pipeline keeps two hours of rolling features, requires complete 15- and 60-minute stock/sector/Nifty history plus a valid volume baseline, and evaluates Momentum Strategy #1 once per five-minute bucket. It remains research-only and skips incomplete universes rather than filling missing observations.
+
+Next, configure the production liquid-NSE universe with stock-to-sector index mappings, attach the Supabase persistence adapter to the collector, and run a controlled market-hours soak test. After feed coverage and baseline quality pass, Strategy #2 (volume/liquidity anomaly) can use the same store.
