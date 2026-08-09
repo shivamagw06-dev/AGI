@@ -245,10 +245,62 @@ export function evaluateVolumeLiquidityAnomaly(snapshots, {
   };
 }
 
+export function evaluateOpeningRangeExpansion(snapshots, {
+  minimumUniverse = 10,
+  breakoutBufferPct = 0.10,
+  minimumVolumeRatio = 1.10,
+  minimumRangePct = 0.15,
+  maximumRangePct = 3,
+  maximumSpreadBps = 35,
+  asOf = new Date().toISOString(),
+} = {}) {
+  if (!Array.isArray(snapshots) || snapshots.length < minimumUniverse) {
+    throw new Error(`Opening-range expansion requires at least ${minimumUniverse} simultaneous instruments.`);
+  }
+  const rows = snapshots.map((row, index) => {
+    const symbol = String(row?.symbol || '').trim().toUpperCase();
+    const sector = String(row?.sector || '').trim().toUpperCase();
+    const currentPrice = finite(row.currentPrice ?? row.current_price);
+    const openingHigh = finite(row.openingHigh ?? row.opening_high);
+    const openingLow = finite(row.openingLow ?? row.opening_low);
+    const volumeSurprise = finite(row.cumulativeVolume) / finite(row.expectedCumulativeVolume);
+    const spreadBps = finite(row.spreadBps ?? row.spread_bps);
+    if (!/^[A-Z0-9&-]+$/.test(symbol) || !sector || ![currentPrice, openingHigh, openingLow, volumeSurprise].every(Number.isFinite)) throw new Error(`Invalid opening-range snapshot at index ${index}.`);
+    if (!(openingLow > 0 && openingHigh >= openingLow && currentPrice > 0 && volumeSurprise >= 0)) throw new Error(`Invalid opening range for ${symbol}.`);
+    const midpoint = (openingHigh + openingLow) / 2;
+    const rangePct = ((openingHigh - openingLow) / midpoint) * 100;
+    const upsideBreakoutPct = ((currentPrice / openingHigh) - 1) * 100;
+    const downsideBreakoutPct = ((openingLow / currentPrice) - 1) * 100;
+    const direction = upsideBreakoutPct >= breakoutBufferPct ? 'positive' : downsideBreakoutPct >= breakoutBufferPct ? 'negative' : null;
+    const breakoutPct = Math.max(upsideBreakoutPct, downsideBreakoutPct, 0);
+    const rangeOk = rangePct >= minimumRangePct && rangePct <= maximumRangePct;
+    const liquidityOk = row.minimumLiquidity !== false && (spreadBps === null || spreadBps <= maximumSpreadBps);
+    return { symbol, sector, instrumentKey: String(row.instrumentKey || row.instrument_key || '').trim() || null, currentPrice, openingHigh, openingLow, rangePct, breakoutPct, direction, volumeSurprise, spreadBps, rangeOk, liquidityOk };
+  });
+  if (new Set(rows.map((row) => row.symbol)).size !== rows.length) throw new Error('Snapshot symbols must be unique.');
+  const breakoutZ = zScores(rows, 'breakoutPct');
+  const volumeZ = zScores(rows, 'volumeSurprise');
+  const signals = rows.map((row, index) => {
+    const alphaZ = (0.65 * breakoutZ[index]) + (0.35 * volumeZ[index]);
+    const candidate = row.direction && row.rangeOk && row.liquidityOk && row.volumeSurprise >= minimumVolumeRatio;
+    return {
+      symbol: row.symbol, sector: row.sector, instrument_key: row.instrumentKey,
+      alpha_z: Number(alphaZ.toFixed(4)), residual_15m: 0, residual_60m: 0,
+      volume_surprise: Number(row.volumeSurprise.toFixed(4)), sector_strength: 0,
+      liquidity_ok: row.liquidityOk,
+      classification: !row.liquidityOk ? 'filtered' : !row.rangeOk ? 'invalid_opening_range' : candidate ? (row.direction === 'positive' ? 'upside_opening_breakout_candidate' : 'downside_opening_breakout_candidate') : 'neutral',
+      signal_quality: preliminarySignalQuality({ alphaZ, persistence: candidate ? 1 : 0, volumeSurprise: row.volumeSurprise, liquidityOk: row.liquidityOk && row.rangeOk, dataCoverage: row.instrumentKey ? 1 : 0.9 }),
+      empirical_confidence: { status: 'unvalidated', score: null, comparable_observations: 0 },
+      factors: { opening_high: row.openingHigh, opening_low: row.openingLow, opening_range_pct: Number(row.rangePct.toFixed(4)), breakout_pct: Number(row.breakoutPct.toFixed(4)), breakout_z: Number(breakoutZ[index].toFixed(4)), volume_surprise_z: Number(volumeZ[index].toFixed(4)), spread_bps: row.spreadBps },
+    };
+  }).sort((left, right) => right.alpha_z - left.alpha_z).map((row, index) => ({ ...row, rank: index + 1 }));
+  return { engine: ALPHA_ENGINES.OPENING_RANGE, as_of: new Date(asOf).toISOString(), research_only: true, execution_enabled: false, universe_size: signals.length, config: { openingMinutes: 15, breakoutBufferPct, minimumVolumeRatio, minimumRangePct, maximumRangePct, maximumSpreadBps }, signals };
+}
+
 export const LIVE_ALPHA_ROADMAP = Object.freeze([
   { engine: ALPHA_ENGINES.MOMENTUM, status: 'implemented' },
   { engine: ALPHA_ENGINES.VOLUME_ANOMALY, status: 'implemented' },
-  { engine: ALPHA_ENGINES.OPENING_RANGE, status: 'planned' },
+  { engine: ALPHA_ENGINES.OPENING_RANGE, status: 'implemented' },
   { engine: ALPHA_ENGINES.MEAN_REVERSION, status: 'planned' },
   { engine: ALPHA_ENGINES.DERIVATIVES, status: 'planned' },
 ]);
