@@ -1,5 +1,5 @@
 /**
- * UIFI schedules — weekly profile/competitors; monthly coverage audit tick.
+ * UIFI schedules — rotating fundamentals refreshes plus monthly coverage audit.
  * Daily key-ratios remain on valuationRatiosScheduler (Phase 7.4D).
  */
 
@@ -20,6 +20,8 @@ function istParts(d = new Date()) {
     hour: '2-digit',
     minute: '2-digit',
     day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
     hour12: false,
   });
   const parts = Object.fromEntries(fmt.formatToParts(d).map((p) => [p.type, p.value]));
@@ -28,15 +30,36 @@ function istParts(d = new Date()) {
     hour: Number(parts.hour),
     minute: Number(parts.minute),
     day: Number(parts.day),
+    month: Number(parts.month),
+    year: Number(parts.year),
   };
 }
 
-async function runWeekly() {
-  const profile = await refreshUpstoxFundamentals({ dataset: 'profile', limit: 80, concurrency: 3 });
+export function rotationOffset(d = new Date(), batchSize = 80, cadenceDays = 7) {
+  const period = Math.floor(d.getTime() / (cadenceDays * 86_400_000));
+  return period * batchSize;
+}
+
+async function runWeekly(now = new Date()) {
+  const profile = await refreshUpstoxFundamentals({
+    dataset: 'profile', limit: 80, offset: rotationOffset(now, 80), concurrency: 3,
+  });
   const competitors = await refreshUpstoxFundamentals({
-    dataset: 'competitors', limit: 60, concurrency: 2,
+    dataset: 'competitors', limit: 60, offset: rotationOffset(now, 60), concurrency: 2,
   });
   return { profile, competitors };
+}
+
+async function runShareholding(now = new Date()) {
+  return refreshUpstoxFundamentals({
+    dataset: 'share-holdings', limit: 80, offset: rotationOffset(now, 80), concurrency: 2,
+  });
+}
+
+async function runCorporateActions(now = new Date()) {
+  return refreshUpstoxFundamentals({
+    dataset: 'corporate-actions', limit: 100, offset: rotationOffset(now, 100, 1), concurrency: 3,
+  });
 }
 
 async function runMonthlyAudit() {
@@ -47,23 +70,50 @@ async function runMonthlyAudit() {
 export function startUifiScheduler() {
   if (!enabled() || timer) return getUifiSchedulerStatus();
   let lastWeeklyKey = '';
+  let lastOwnershipKey = '';
+  let lastCorporateActionsKey = '';
   let lastMonthlyKey = '';
 
   timer = setInterval(async () => {
-    const p = istParts();
+    const now = new Date();
+    const p = istParts(now);
+    const dateKey = `${p.year}-${p.month}-${p.day}`;
     // Sunday 08:00 IST — weekly profile + competitors
-    const weeklyKey = `${p.weekday}-${p.hour}`;
+    const weeklyKey = `${dateKey}-${p.hour}`;
     if (p.weekday === 'Sun' && p.hour === 8 && weeklyKey !== lastWeeklyKey) {
       lastWeeklyKey = weeklyKey;
       lastTick = new Date().toISOString();
       try {
-        lastResult = { kind: 'weekly', ...(await runWeekly()) };
+        lastResult = { kind: 'weekly', ...(await runWeekly(now)) };
       } catch (err) {
         lastResult = { kind: 'weekly', ok: false, error: err?.message || String(err) };
       }
     }
+    // Sunday 09:00 IST — rotating shareholding coverage.
+    const ownershipKey = `${dateKey}-${p.hour}`;
+    if (p.weekday === 'Sun' && p.hour === 9 && ownershipKey !== lastOwnershipKey) {
+      lastOwnershipKey = ownershipKey;
+      lastTick = now.toISOString();
+      try {
+        lastResult = { kind: 'shareholding', result: await runShareholding(now) };
+      } catch (err) {
+        lastResult = { kind: 'shareholding', ok: false, error: err?.message || String(err) };
+      }
+    }
+    // Weekdays 18:50 IST — rotating corporate-action coverage.
+    const corporateActionsKey = `${dateKey}-${p.hour}`;
+    if (p.weekday !== 'Sat' && p.weekday !== 'Sun' && p.hour === 18
+        && p.minute >= 50 && corporateActionsKey !== lastCorporateActionsKey) {
+      lastCorporateActionsKey = corporateActionsKey;
+      lastTick = now.toISOString();
+      try {
+        lastResult = { kind: 'corporate-actions', result: await runCorporateActions(now) };
+      } catch (err) {
+        lastResult = { kind: 'corporate-actions', ok: false, error: err?.message || String(err) };
+      }
+    }
     // 1st of month 11:00 IST — coverage audit
-    const monthlyKey = `${p.day}-${p.hour}`;
+    const monthlyKey = `${p.year}-${p.month}-${p.day}-${p.hour}`;
     if (p.day === 1 && p.hour === 11 && monthlyKey !== lastMonthlyKey) {
       lastMonthlyKey = monthlyKey;
       lastTick = new Date().toISOString();
@@ -86,6 +136,8 @@ export function getUifiSchedulerStatus() {
     running: Boolean(timer),
     schedules: {
       weekly: 'Sunday 08:00 IST — profile + competitors',
+      shareholding: 'Sunday 09:00 IST — rotating shareholding coverage',
+      corporate_actions: 'Weekdays 18:50 IST — rotating corporate actions',
       monthly: '1st 11:00 IST — coverage audit',
       daily_key_ratios: '18:15 IST via valuationRatiosScheduler',
     },

@@ -8,6 +8,38 @@ from upstox_fundamentals.models import SOURCE
 from upstox_fundamentals import normalize
 
 
+def _is_capiq(row: dict[str, Any]) -> bool:
+    source = str(row.get("source") or "").strip().lower()
+    return source.startswith(("capital_iq", "capiq", "capital iq", "s&p capital iq"))
+
+
+def _existing_for_symbol(tab: str, symbol: str) -> list[dict[str, Any]]:
+    from institutional_warehouse import store
+
+    return store.all_rows(tab, entity=symbol, limit=200)
+
+
+def _exclude_capiq_statement_collisions(
+    tab: str, rows: list[dict[str, Any]],
+) -> tuple[list[dict[str, Any]], int]:
+    """Never let a secondary Upstox refresh replace a CapIQ statement row."""
+    keys = ("symbol", "statement_type", "fiscal_year") if tab == "financials_annual" else (
+        "symbol", "statement_type", "fiscal_period",
+    )
+    protected: set[tuple[str, ...]] = set()
+    for symbol in {str(row.get("symbol") or "").upper() for row in rows}:
+        if not symbol:
+            continue
+        for existing in _existing_for_symbol(tab, symbol):
+            if _is_capiq(existing):
+                protected.add(tuple(str(existing.get(key) or "").upper() for key in keys))
+    safe = [
+        row for row in rows
+        if tuple(str(row.get(key) or "").upper() for key in keys) not in protected
+    ]
+    return safe, len(rows) - len(safe)
+
+
 def _split_annual_quarterly(rows: list[dict[str, Any]]) -> tuple[list[dict], list[dict]]:
     annual: list[dict[str, Any]] = []
     quarterly: list[dict[str, Any]] = []
@@ -29,27 +61,47 @@ def ingest_profile(row: dict[str, Any], *, actor: str = "uifi") -> dict[str, Any
 
     if not row:
         return {"ok": False, "error": "empty_profile"}
-    master = {k: v for k, v in row.items() if k not in {
+    proposed_master = {k: v for k, v in row.items() if k not in {
         "as_of", "confidence", "dqiv_status", "validation_notes", "provider_version",
     }}
+    existing = next(iter(_existing_for_symbol("company_master", str(row.get("symbol") or ""))), None)
+    master = proposed_master
+    if existing:
+        # CapIQ and prior canonical imports remain authoritative for descriptive,
+        # classification and valuation fields. Upstox may only fill missing identity.
+        master = {
+            "company_id": existing.get("company_id") or row.get("company_id"),
+            "symbol": existing.get("symbol") or row.get("symbol"),
+            "company_name": existing.get("company_name") or row.get("company_name"),
+            "source": existing.get("source") or SOURCE,
+        }
+        for field in ("isin", "instrument_key"):
+            master[field] = existing.get(field) or row.get(field)
     history = {
         k: row.get(k) for k in (
             "symbol", "as_of", "isin", "instrument_key", "company_name", "legal_name",
             "sector", "industry", "sub_industry", "business_description",
-            "market_cap_inr", "market_cap_usd", "website", "city", "state", "country",
+            "market_cap_inr", "market_cap_usd", "sector_market_cap_inr",
+            "sector_market_cap_usd", "website", "city", "state", "country",
             "listing_date", "employee_count", "confidence", "dqiv_status",
             "validation_notes", "source",
         )
     }
-    return {
+    result = {
         "ok": True,
-        "company_master": gateway.write(
-            "company_master", [master], source=SOURCE, actor=actor, reason="uifi:profile",
-        ),
         "profile_history": gateway.write(
             "profile_history", [history], source=SOURCE, actor=actor, reason="uifi:profile_history",
         ),
     }
+    # Avoid even touching the canonical row when Upstox has no missing identity to fill.
+    if not existing or any(existing.get(field) in (None, "") and master.get(field) for field in ("isin", "instrument_key")):
+        result["company_master"] = gateway.write(
+            "company_master", [master], source=str(master.get("source") or SOURCE),
+            actor=actor, reason="uifi:profile_identity_fill",
+        )
+    else:
+        result["company_master"] = {"ok": True, "written": 0, "preserved_existing": True}
+    return result
 
 
 def ingest_statements(rows: list[dict[str, Any]], *, actor: str = "uifi") -> dict[str, Any]:
@@ -58,7 +110,14 @@ def ingest_statements(rows: list[dict[str, Any]], *, actor: str = "uifi") -> dic
     if not rows:
         return {"ok": False, "error": "no_statement_rows"}
     annual, quarterly = _split_annual_quarterly(rows)
-    out: dict[str, Any] = {"ok": True, "annual_rows": len(annual), "quarterly_rows": len(quarterly)}
+    annual, annual_protected = _exclude_capiq_statement_collisions("financials_annual", annual)
+    quarterly, quarterly_protected = _exclude_capiq_statement_collisions("financials_quarterly", quarterly)
+    out: dict[str, Any] = {
+        "ok": True,
+        "annual_rows": len(annual),
+        "quarterly_rows": len(quarterly),
+        "capiq_rows_preserved": annual_protected + quarterly_protected,
+    }
     if annual:
         out["financials_annual"] = gateway.write(
             "financials_annual", annual, source=SOURCE, actor=actor,
