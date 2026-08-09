@@ -209,7 +209,7 @@ function AnswerTurn({ answer, onAsk }) {
               {answer.provenance.map((item, index) => (
                 <li key={`${item.title}-${index}`}>
                   {item.url ? <a href={item.url} target="_blank" rel="noreferrer">{item.title}</a> : <strong>{item.title}</strong>}
-                  <span>{item.source}</span>
+                  <span>{[item.source, item.date, item.evidenceType].filter(Boolean).join(' · ')}</span>
                 </li>
               ))}
             </ol>
@@ -267,6 +267,14 @@ function AnswerTurn({ answer, onAsk }) {
             Research desk is warming — this answer uses live institutional context while the full engine recovers.
           </div>
         )}
+        {answer.dataQuality?.incomplete && (
+          <div className="ac-evidence-limit" role="status">
+            <strong>Evidence limitation</strong>
+            {!answer.dataQuality.financialsSupported && <span>Dated financial evidence is incomplete.</span>}
+            {!answer.dataQuality.valuationSupported && <span>Numeric valuation evidence is incomplete.</span>}
+            {!answer.dataQuality.conglomerateFrameworkValidated && <span>The company framework requires validation.</span>}
+          </div>
+        )}
       </div>
 
       {tableMode && answer.thesisCards?.length > 0 && (
@@ -316,11 +324,11 @@ function AnswerTurn({ answer, onAsk }) {
       {/* 4. Bull vs Bear Case */}
       {!isBrief && answer.answerFormat?.scenarios !== false && answer.confidence != null && !answer.evidenceUnavailable && (answer.moreBullish?.length || answer.moreBearish?.length) ? (
         <section className="ac-block">
-          <h2>{answer.answerFormat?.key === 'catalysts' ? 'Upside and downside catalysts' : 'Bull vs Bear Case'}</h2>
+          <h2>{answer.answerFormat?.key === 'catalysts' ? 'Upside and downside catalysts' : answer.scenarioCopy?.title}</h2>
           <div className="ac-change">
             <div className="ac-change-col bull">
-              <h3>Bull Case</h3>
-              <p className="ac-case-lead">Why someone would buy</p>
+              <h3>{answer.scenarioCopy?.positive}</h3>
+              <p className="ac-case-lead">{answer.scenarioCopy?.positiveLead}</p>
               <ul>
                 {answer.moreBullish.map((item) => (
                   <li key={item}>{item}</li>
@@ -328,8 +336,8 @@ function AnswerTurn({ answer, onAsk }) {
               </ul>
             </div>
             <div className="ac-change-col bear">
-              <h3>Bear Case</h3>
-              <p className="ac-case-lead">Why someone would avoid it</p>
+              <h3>{answer.scenarioCopy?.negative}</h3>
+              <p className="ac-case-lead">{answer.scenarioCopy?.negativeLead}</p>
               <ul>
                 {answer.moreBearish.map((item) => (
                   <li key={item}>{item}</li>
@@ -400,6 +408,25 @@ function AnswerTurn({ answer, onAsk }) {
           <div className="ac-chip-panel">
             {deepText(answer, openChip) || 'Detailed evidence for this layer will appear as coverage completes.'}
           </div>
+        )}
+      </section>
+
+      {/* Source visibility is part of the default answer contract. */}
+      <section className="ac-block ac-sources">
+        <h2>Sources &amp; Evidence</h2>
+        {answer.provenance?.length ? (
+          <ol className="ac-source-list">
+            {answer.provenance.map((item, index) => (
+              <li key={`${item.title}-${item.date || index}`}>
+                {item.url ? <a href={item.url} target="_blank" rel="noreferrer">{item.title}</a> : <strong>{item.title}</strong>}
+                <span>
+                  {[item.source, item.date, item.evidenceType].filter(Boolean).join(' · ')}
+                </span>
+              </li>
+            ))}
+          </ol>
+        ) : (
+          <p className="ac-confidence-why">No attributable source records were returned for this turn.</p>
         )}
       </section>
 
