@@ -25,3 +25,15 @@ test('returns an honest empty workspace when storage is not configured', async (
   if (priorUrl !== undefined) process.env.SUPABASE_URL = priorUrl;
   if (priorKey !== undefined) process.env.SUPABASE_SERVICE_ROLE_KEY = priorKey;
 });
+
+test('reports database setup required when alpha tables are not migrated', async () => {
+  const fetchImpl = async () => ({ ok: false, status: 404 });
+  const priorUrl = process.env.SUPABASE_URL; const priorKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  process.env.SUPABASE_URL = 'https://example.supabase.co'; process.env.SUPABASE_SERVICE_ROLE_KEY = 'test';
+  const result = await getLiveAlphaWorkspace({ fetchImpl });
+  assert.equal(result.readiness.status, 'database_setup_required');
+  assert.equal(result.signals.length, 0);
+  assert.equal(result.execution_enabled, false);
+  if (priorUrl === undefined) delete process.env.SUPABASE_URL; else process.env.SUPABASE_URL = priorUrl;
+  if (priorKey === undefined) delete process.env.SUPABASE_SERVICE_ROLE_KEY; else process.env.SUPABASE_SERVICE_ROLE_KEY = priorKey;
+});
