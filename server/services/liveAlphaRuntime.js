@@ -22,9 +22,11 @@ export function validateLiveAlphaUniverse(config) {
     const member = {
       symbol: String(row.symbol || '').trim().toUpperCase(), sector: String(row.sector || '').trim().toUpperCase(),
       instrumentKey: String(row.instrumentKey || '').trim(), sectorInstrumentKey: String(row.sectorInstrumentKey || '').trim(),
+      derivativeInstrumentKey: String(row.derivativeInstrumentKey || '').trim() || null,
       minimumLiquidity: row.minimumLiquidity !== false,
     };
     if (!/^[A-Z0-9&-]+$/.test(member.symbol) || !member.sector || !member.instrumentKey.includes('|') || !member.sectorInstrumentKey.startsWith('NSE_INDEX|')) throw new Error(`Invalid universe member at index ${index}.`);
+    if (member.derivativeInstrumentKey && !member.derivativeInstrumentKey.startsWith('NSE_FO|')) throw new Error(`Invalid derivative instrument at index ${index}.`);
     if (symbols.has(member.symbol) || keys.has(member.instrumentKey)) throw new Error(`Duplicate universe member: ${member.symbol}.`);
     symbols.add(member.symbol); keys.add(member.instrumentKey);
     return member;
@@ -49,7 +51,7 @@ export async function startLiveAlphaRuntime({ Feed = UpstoxMarketFeedV3, Persist
     const baselines = new VolumeBaselineIndex(await persistence.loadVolumeBaselines());
     const pipeline = new MomentumShadowPipeline({ ...universe, universe: universe.members, baselineIndex: baselines, repository: persistence });
     const store = new SynchronizedSnapshotStore();
-    const instrumentKeys = [...new Set([universe.benchmarkKey, ...universe.members.flatMap((row) => [row.instrumentKey, row.sectorInstrumentKey])])];
+    const instrumentKeys = [...new Set([universe.benchmarkKey, ...universe.members.flatMap((row) => [row.instrumentKey, row.sectorInstrumentKey, row.derivativeInstrumentKey]).filter(Boolean)])];
     let lastEvaluationMs = 0;
     const feed = new Feed({ instrumentKeys, snapshotStore: store, onBatch: async (batch) => {
       pipeline.ingest(batch);
