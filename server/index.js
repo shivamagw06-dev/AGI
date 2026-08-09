@@ -31,6 +31,7 @@ import { startHedgeFundUpstoxCandleScheduler } from "./services/hedgeFundUpstoxC
 import { startUpstoxStatementScheduler } from "./services/upstoxStatementScheduler.js";
 import { getLiveAlphaRuntimeStatus, startLiveAlphaRuntime } from "./services/liveAlphaRuntime.js";
 import { getLiveAlphaWorkspace } from "./services/liveAlphaWorkspace.js";
+import { buildConfluenceQueue } from "./services/researchConfluence.js";
 import { llmProviderStatus } from "./services/llmClient.js";
 import rateLimit from "express-rate-limit";
 import cors from "cors";
@@ -297,6 +298,14 @@ reg('/api/market/live-alpha/status', (_req, res) => res.json(getLiveAlphaRuntime
 reg('/api/market/live-alpha/workspace', async (_req, res) => {
   try { res.json(await getLiveAlphaWorkspace()); }
   catch (error) { res.status(503).json({ error: error.message, research_only: true, execution_enabled: false }); }
+});
+reg('/api/market/research-confluence', async (req, res) => {
+  try {
+    const workspace = await getLiveAlphaWorkspace();
+    res.json(buildConfluenceQueue({ workspace, limit: Number(req.query.limit) || 25 }));
+  } catch (error) {
+    res.status(503).json({ error: error.message || 'Research confluence unavailable', research_only: true });
+  }
 });
 reg('/api/news/headlines', async (_req, res) => {
   const data = await getNewsHeadlines();
