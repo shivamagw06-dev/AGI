@@ -1,3 +1,5 @@
+import { createOutcomeSchedule } from './alphaOutcomeTracker.js';
+
 function config() {
   const url = String(process.env.SUPABASE_URL || '').trim().replace(/\/$/, '');
   const key = String(process.env.SUPABASE_SERVICE_ROLE_KEY || '').trim();
@@ -40,5 +42,34 @@ export class LiveAlphaPersistence {
   }
   async saveHealth(status, staleInstruments = 0) {
     await rest('live_market_feed_health', { body: { status: status.status, subscribed_instruments: status.subscribed_instruments, messages: status.messages, decode_errors: status.decode_errors, reconnects: status.reconnects, last_message_at: status.last_message_at, stale_instruments: staleInstruments, diagnostics: { last_error: status.last_error, mode: status.mode } } });
+  }
+  async loadVolumeBaselines() {
+    return rest('live_volume_baselines', { method: 'GET', query: 'select=instrument_key,minute_of_session,expected_cumulative_volume,sample_sessions', body: undefined, prefer: undefined });
+  }
+  async saveMomentumRun(result, diagnostics = {}) {
+    const session = new Date(new Date(result.as_of).getTime() + 5.5 * 60 * 60_000).toISOString().slice(0, 10);
+    const runs = await rest('live_alpha_runs', {
+      body: { engine: result.engine, as_of: result.as_of, market_session: session, universe_size: result.universe_size, research_only: true, execution_enabled: false, config: { weights: result.weights }, diagnostics },
+      prefer: 'return=representation',
+    });
+    const runId = runs?.[0]?.id;
+    if (!runId) throw new Error('Live alpha run insert did not return an id.');
+    const rows = result.signals.map((signal) => ({
+      run_id: runId, symbol: signal.symbol, instrument_key: signal.instrument_key, sector: signal.sector,
+      rank: signal.rank, classification: signal.classification, alpha_z: signal.alpha_z,
+      signal_quality_score: signal.signal_quality.score, signal_quality_label: signal.signal_quality.label,
+      empirical_confidence_score: signal.empirical_confidence.score, comparable_observations: signal.empirical_confidence.comparable_observations,
+      liquidity_ok: signal.liquidity_ok, factor_values: { ...signal.factors, residual_15m: signal.residual_15m, residual_60m: signal.residual_60m, volume_surprise: signal.volume_surprise, sector_strength: signal.sector_strength },
+      direction: signal.direction, price_at_signal: signal.price_at_signal, nifty_at_signal: signal.nifty_at_signal,
+      sector_at_signal: signal.sector_at_signal, volume_ratio: signal.volume_surprise,
+    }));
+    const saved = await rest('live_alpha_signals', { body: rows, prefer: 'return=representation' });
+    const outcomes = [];
+    for (const signal of saved || []) {
+      if (!signal.direction) continue;
+      outcomes.push(...createOutcomeSchedule({ id: signal.id, as_of: result.as_of, price_at_signal: signal.price_at_signal, nifty_at_signal: signal.nifty_at_signal, sector_at_signal: signal.sector_at_signal }));
+    }
+    if (outcomes.length) await rest('live_alpha_signal_outcomes', { body: outcomes });
+    return { run_id: runId, signals: rows.length, outcomes: outcomes.length };
   }
 }
