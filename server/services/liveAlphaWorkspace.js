@@ -45,10 +45,27 @@ export async function getLiveAlphaWorkspace({ fetchImpl = globalThis.fetch, limi
     fetchImpl,
   ) : [];
   const runById = new Map(runs.map((run) => [run.id, run]));
+  let groww = { readiness: 'ready', runs: [], sectors: [], equities: [] };
+  try {
+    const growwRuns = await query('research_strategy_runs', 'select=id,strategy,run_id,as_of,received_at,status,coverage,error_count&order=as_of.desc&limit=10', fetchImpl);
+    const latestByStrategy = new Map();
+    for (const run of growwRuns) if (!latestByStrategy.has(run.strategy)) latestByStrategy.set(run.strategy, run);
+    const latestRuns = [...latestByStrategy.values()];
+    const sectorRun = latestByStrategy.get('agi_sector_rotation_v1');
+    const equityRun = latestByStrategy.get('agi_equity_opportunity_v1');
+    const [sectors, equities] = await Promise.all([
+      sectorRun ? query('sector_rotation_signals', `select=sector,rank,score,return_5d,return_20d,relative_20d,relative_60d,rotation,risk,factors&strategy_run_id=eq.${sectorRun.id}&order=rank.asc&limit=20`, fetchImpl) : [],
+      equityRun ? query('equity_opportunity_signals', `select=symbol,signal,rank,score,return_20d,return_60d,relative_20d,relative_60d,volume_ratio,trend,volume_confirmation,risk,reasons,factors&strategy_run_id=eq.${equityRun.id}&order=score.desc&limit=30`, fetchImpl) : [],
+    ]);
+    groww = { readiness: 'ready', runs: latestRuns, sectors, equities };
+  } catch (error) {
+    if (error.status !== 404) throw error;
+    groww = { readiness: 'database_setup_required', runs: [], sectors: [], equities: [] };
+  }
   return {
     generated_at: new Date().toISOString(), research_only: true, execution_enabled: false,
     engines: ENGINE_LABELS,
-    readiness: { status: 'ready', migrations_required: [] }, runs,
+    readiness: { status: 'ready', migrations_required: [] }, runs, groww,
     signals: signals.map((signal) => ({ ...signal, engine: runById.get(signal.run_id)?.engine || null, as_of: runById.get(signal.run_id)?.as_of || signal.created_at })),
   };
 }
