@@ -216,6 +216,33 @@ def _que_requires_full_desk(que_pack: dict[str, Any] | None) -> bool:
     return decision in _QUE_FULL_DESK_DECISIONS
 
 
+def _kul_is_deterministic_business_answer(
+    question: str,
+    kul_hit: dict[str, Any] | None,
+) -> bool:
+    """Keep complete BI/industry pedagogy out of the generic research desk.
+
+    QUE may label comparisons and industry explanations as investment decisions.
+    That label should not discard a deterministic, evidence-gated answer from the
+    existing Business/Industry Intelligence engines.
+    """
+    if not isinstance(kul_hit, dict):
+        return False
+    providers = set(kul_hit.get("providers_used") or [])
+    if not providers.intersection({"business_intelligence", "industry_intelligence"}):
+        return False
+    try:
+        from universal_knowledge.planner import detect_family
+
+        family = detect_family(question)
+    except Exception:
+        family = ""
+    company_identity = (kul_hit.get("company_intelligence") or {}).get("identity") or {}
+    return family in {"business", "comparison", "industry"} or (
+        family == "valuation" and not company_identity.get("ticker")
+    )
+
+
 def _is_recommendation_bait(question: str) -> bool:
     """Transactional buy/sell bait — must refuse without the full research stack."""
     try:
@@ -2042,7 +2069,7 @@ class UiService:
                 )
                 detected_ticker = None
                 ask_orchestration["ticker_source"] = "entity_intelligence_cleared"
-            if ei_should_short_circuit(ei_contract):
+            if ei_should_short_circuit(ei_contract) and not is_comparison_question(q):
                 try:
                     pipeline.set_intent("Entity Intelligence", confidence=0.99)
                     pipeline.mark(STAGE_RETRIEVAL_STARTED, status="skipped")
@@ -2192,11 +2219,13 @@ class UiService:
             )
             and not ((kul_hit.get("company_intelligence") or {}).get("identity") or {}).get("ticker")
         )
+        kul_is_deterministic_business = _kul_is_deterministic_business_answer(q, kul_hit)
         if (
             kul_hit
             and (kul_hit.get("summary") or kul_hit.get("why"))
             and _que_requires_full_desk(que_pack)
             and not kul_is_finance_concept
+            and not kul_is_deterministic_business
         ):
             ask_orchestration["kul_deferred_for_que"] = True
             ask_orchestration["kul_deferred_providers"] = kul_providers_preview[:8]

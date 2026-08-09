@@ -6,6 +6,7 @@ knowledge. Both the KUL short-circuit and the full desk path call here.
 
 from __future__ import annotations
 
+import re
 import time
 from typing import Any, Optional
 
@@ -13,6 +14,9 @@ from universal_knowledge.coverage import measure_coverage
 from universal_knowledge.evidence_graph import build_evidence_graph
 from universal_knowledge.planner import plan as plan_question
 from universal_knowledge.registry import kul_registry
+
+
+_COMPARISON_RE = re.compile(r"\b(compare|versus|\bvs\.?\b|difference between|relative to)\b", re.I)
 
 
 def gather(
@@ -31,7 +35,7 @@ def gather(
         from entity_intelligence.production import should_short_circuit
 
         ei_contract = ei_analyse(question) or {}
-        if should_short_circuit(ei_contract):
+        if should_short_circuit(ei_contract) and not _COMPARISON_RE.search(question or ""):
             summary = str(ei_contract.get("summary") or "").strip()
             return {
                 "ok": True,

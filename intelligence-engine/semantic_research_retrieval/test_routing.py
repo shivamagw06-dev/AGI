@@ -31,6 +31,20 @@ def test_acceptance_routes_are_immutable(question, expected):
 @pytest.mark.parametrize(
     "question",
     [
+        "What is Reliance Industries' business model?",
+        "Evaluate management quality for Reliance Industries.",
+        "What are the biggest business risks for Reliance Industries?",
+        "Compare TCS vs Infosys.",
+        "What is the industry structure of cement?",
+    ],
+)
+def test_company_and_deterministic_industry_questions_do_not_enter_article_route(question):
+    assert classify_research_route(question) == COMPANY_RESEARCH
+
+
+@pytest.mark.parametrize(
+    "question",
+    [
         "What does AGI think AI spending means for sector rotation?",
         "Could hyperscaler capex benefit power and industrial names?",
         "How do policy shifts interact with AI investment?",
