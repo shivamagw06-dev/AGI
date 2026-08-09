@@ -2887,6 +2887,7 @@ class UiService:
         evidence_verification: dict[str, Any] = {}
         investment_intelligence: dict[str, Any] = {}
         forecast_learning: dict[str, Any] = {}
+        research_intelligence: dict[str, Any] = {}
         market_events: dict[str, Any] = {}
         context_assembly: dict[str, Any] = {}
         intelligence_bus: dict[str, Any] = {}
@@ -2917,6 +2918,29 @@ class UiService:
             "reasoning": "pending",
             "ask_slim": slim,
         }
+
+        # Existing-intelligence bridge: retrieve only the research datasets required
+        # by this question. Forecasts remain typed estimates, never observed facts.
+        try:
+            from research_intelligence_tool.production import (
+                soft_slice_for_ask_agi as research_intelligence_slice,
+            )
+
+            research_intelligence = research_intelligence_slice(
+                q,
+                {"ticker": detected_ticker},
+            ) or {}
+            if research_intelligence.get("matched"):
+                failures = (
+                    ((research_intelligence.get("sections") or {}).get("DATA_QUALITY") or {}).get(
+                        "retrieval_failures"
+                    )
+                    or []
+                )
+                degradation["research_intelligence"] = "degraded" if failures else "ok"
+        except Exception:
+            research_intelligence = {}
+            degradation["research_intelligence"] = "unavailable"
 
         # Sprint 6.4 KRIG — Knowledge Bundle soft-wire (IE never discovers Yahoo/NSE/BSE).
         # Soft / timed: Ask must not block if Knowledge Platform is down.
@@ -3573,6 +3597,9 @@ class UiService:
                         "finance_retrieval": finance_retrieval if isinstance(finance_retrieval, dict) else {},
                         "sector_intelligence": sector_intelligence if isinstance(sector_intelligence, dict) else {},
                         "live_evidence": live_evidence if isinstance(live_evidence, dict) else {},
+                        "research_intelligence": research_intelligence
+                        if isinstance(research_intelligence, dict)
+                        else {},
                         "company_dossier": company_dossier if isinstance(company_dossier, dict) else {},
                         "multi_source": multi_source_pack if isinstance(multi_source_pack, dict) else {},
                     },
@@ -5495,6 +5522,7 @@ class UiService:
                     "never_forget_predictions": True,
                 },
             },
+            research_intelligence=scrub(research_intelligence) if research_intelligence else {},
             market_events=scrub(market_events)
             if market_events
             else {
