@@ -335,10 +335,53 @@ export function evaluateIntradayMeanReversion(snapshots, {
   return { engine: ALPHA_ENGINES.MEAN_REVERSION, as_of: new Date(asOf).toISOString(), research_only: true, execution_enabled: false, universe_size: signals.length, config: { minimumResidualShockPct, minimumShockZ, maximumBenchmarkMovePct, maximumVolumeRatio, maximumSpreadBps }, signals };
 }
 
+export function evaluateDerivativesPositioning(snapshots, {
+  minimumUniverse = 10,
+  minimumPriceMovePct = 0.25,
+  minimumOiChangePct = 1,
+  maximumSpreadBps = 50,
+  asOf = new Date().toISOString(),
+} = {}) {
+  if (!Array.isArray(snapshots) || snapshots.length < minimumUniverse) {
+    throw new Error(`Derivatives positioning requires at least ${minimumUniverse} simultaneous contracts.`);
+  }
+  const rows = snapshots.map((row, index) => {
+    const symbol = String(row?.symbol || '').trim().toUpperCase();
+    const sector = String(row?.sector || '').trim().toUpperCase();
+    const priceReturn15m = finite(row.priceReturn15m ?? row.price_return_15m);
+    const oiChange15m = finite(row.oiChange15m ?? row.oi_change_15m);
+    const openInterest = finite(row.openInterest ?? row.open_interest);
+    const spreadBps = finite(row.spreadBps ?? row.spread_bps);
+    const impliedVolatility = finite(row.impliedVolatility ?? row.implied_volatility);
+    if (!/^[A-Z0-9&-]+$/.test(symbol) || !sector || ![priceReturn15m, oiChange15m, openInterest].every(Number.isFinite) || openInterest <= 0) throw new Error(`Invalid derivatives snapshot at index ${index}.`);
+    return { symbol, sector, instrumentKey: String(row.instrumentKey || row.instrument_key || '').trim() || null, priceReturn15m, oiChange15m, openInterest, spreadBps, impliedVolatility, minimumLiquidity: row.minimumLiquidity !== false };
+  });
+  if (new Set(rows.map((row) => row.symbol)).size !== rows.length) throw new Error('Snapshot symbols must be unique.');
+  const priceZ = zScores(rows, 'priceReturn15m');
+  const oiZ = zScores(rows, 'oiChange15m');
+  const signals = rows.map((row, index) => {
+    const liquidityOk = row.minimumLiquidity && (row.spreadBps === null || row.spreadBps <= maximumSpreadBps);
+    const material = Math.abs(row.priceReturn15m) >= minimumPriceMovePct && Math.abs(row.oiChange15m) >= minimumOiChangePct;
+    const classification = !liquidityOk ? 'filtered' : !material ? 'neutral'
+      : row.priceReturn15m > 0 && row.oiChange15m > 0 ? 'long_buildup_candidate'
+        : row.priceReturn15m < 0 && row.oiChange15m > 0 ? 'short_buildup_candidate'
+          : row.priceReturn15m > 0 ? 'short_covering_candidate' : 'long_unwinding_candidate';
+    const alphaZ = (0.45 * Math.abs(priceZ[index])) + (0.55 * Math.abs(oiZ[index]));
+    return {
+      symbol: row.symbol, sector: row.sector, instrument_key: row.instrumentKey, alpha_z: Number(alphaZ.toFixed(4)),
+      residual_15m: Number(row.priceReturn15m.toFixed(4)), residual_60m: 0, volume_surprise: 1, sector_strength: 0, liquidity_ok: liquidityOk, classification,
+      signal_quality: preliminarySignalQuality({ alphaZ, persistence: material ? 1 : 0, volumeSurprise: 1, liquidityOk, dataCoverage: row.instrumentKey ? 1 : 0.9 }),
+      empirical_confidence: { status: 'unvalidated', score: null, comparable_observations: 0 },
+      factors: { price_return_15m: Number(row.priceReturn15m.toFixed(4)), oi_change_15m: Number(row.oiChange15m.toFixed(4)), open_interest: row.openInterest, price_return_z: Number(priceZ[index].toFixed(4)), oi_change_z: Number(oiZ[index].toFixed(4)), implied_volatility: row.impliedVolatility, spread_bps: row.spreadBps },
+    };
+  }).sort((left, right) => right.alpha_z - left.alpha_z).map((row, index) => ({ ...row, rank: index + 1 }));
+  return { engine: ALPHA_ENGINES.DERIVATIVES, as_of: new Date(asOf).toISOString(), research_only: true, execution_enabled: false, universe_size: signals.length, config: { minimumPriceMovePct, minimumOiChangePct, maximumSpreadBps }, signals };
+}
+
 export const LIVE_ALPHA_ROADMAP = Object.freeze([
   { engine: ALPHA_ENGINES.MOMENTUM, status: 'implemented' },
   { engine: ALPHA_ENGINES.VOLUME_ANOMALY, status: 'implemented' },
   { engine: ALPHA_ENGINES.OPENING_RANGE, status: 'implemented' },
   { engine: ALPHA_ENGINES.MEAN_REVERSION, status: 'implemented' },
-  { engine: ALPHA_ENGINES.DERIVATIVES, status: 'planned' },
+  { engine: ALPHA_ENGINES.DERIVATIVES, status: 'implemented_requires_derivative_universe' },
 ]);
