@@ -2888,6 +2888,7 @@ class UiService:
         investment_intelligence: dict[str, Any] = {}
         forecast_learning: dict[str, Any] = {}
         research_intelligence: dict[str, Any] = {}
+        semantic_research: dict[str, Any] = {}
         market_events: dict[str, Any] = {}
         context_assembly: dict[str, Any] = {}
         intelligence_bus: dict[str, Any] = {}
@@ -3073,6 +3074,29 @@ class UiService:
             except Exception:
                 if not sector_intelligence:
                     sector_intelligence = {}
+
+        # Semantic Research Retrieval V2 runs after Sector Intelligence so thematic
+        # questions can complete a controlled second hop into current confirmation.
+        try:
+            from semantic_research_retrieval.production import (
+                package_for_ask_agi as semantic_research_package,
+            )
+
+            semantic_research = semantic_research_package(
+                q,
+                kip=self.kip,
+                ticker=detected_ticker,
+                current_intelligence=research_intelligence,
+                sector_intelligence=sector_intelligence,
+            ) or {}
+            degradation["semantic_research"] = (
+                "ok"
+                if (semantic_research.get("answerability") or {}).get("may_answer")
+                else "insufficient"
+            )
+        except Exception:
+            semantic_research = {}
+            degradation["semantic_research"] = "unavailable"
 
         # CID v1.0 — load living company dossier FIRST for company analysis (never rebuild from raw APIs)
         try:
@@ -3599,6 +3623,9 @@ class UiService:
                         "live_evidence": live_evidence if isinstance(live_evidence, dict) else {},
                         "research_intelligence": research_intelligence
                         if isinstance(research_intelligence, dict)
+                        else {},
+                        "semantic_research": semantic_research
+                        if isinstance(semantic_research, dict)
                         else {},
                         "company_dossier": company_dossier if isinstance(company_dossier, dict) else {},
                         "multi_source": multi_source_pack if isinstance(multi_source_pack, dict) else {},
@@ -5523,6 +5550,7 @@ class UiService:
                 },
             },
             research_intelligence=scrub(research_intelligence) if research_intelligence else {},
+            semantic_research=scrub(semantic_research) if semantic_research else {},
             market_events=scrub(market_events)
             if market_events
             else {
