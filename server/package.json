@@ -8,7 +8,7 @@
     "start": "node index.js",
     "dev": "nodemon index.js",
     "worker:cms-ingest": "CMS_INGEST_IS_WORKER=1 node workers/cmsIngestWorker.js",
-    "test": "echo \"No tests specified\" && exit 0"
+    "test": "node --test services/*.test.js"
   },
   "keywords": [],
   "author": "Shivam Agarwal",
