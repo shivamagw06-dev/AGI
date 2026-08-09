@@ -16,15 +16,29 @@ create table if not exists public.live_market_snapshots (
   best_ask numeric,
   spread_bps numeric check (spread_bps is null or spread_bps >= 0),
   feed_latency_ms integer check (feed_latency_ms is null or feed_latency_ms >= 0),
-  -- date_trunc(text, timestamptz) depends on the session timezone and is only
-  -- STABLE, so PostgreSQL rejects it in a stored generated column. date_bin
-  -- with a fixed UTC origin is IMMUTABLE and produces the same minute bucket.
-  minute_bucket timestamptz generated always as (
-    date_bin('1 minute'::interval, observed_at, timestamptz '2000-01-01 00:00:00+00')
-  ) stored,
+  -- Populated by the trigger below. A trigger is used instead of a generated
+  -- column because Supabase/PostgreSQL rejects timezone-aware truncation in a
+  -- generated expression as non-immutable.
+  minute_bucket timestamptz,
   raw_factors jsonb not null default '{}'::jsonb check (jsonb_typeof(raw_factors) = 'object'),
   unique (instrument_key, observed_at)
 );
+
+create or replace function public.set_live_market_snapshot_minute_bucket()
+returns trigger
+language plpgsql
+set search_path = public
+as $$
+begin
+  new.minute_bucket := date_trunc('minute', new.observed_at at time zone 'UTC') at time zone 'UTC';
+  return new;
+end;
+$$;
+
+drop trigger if exists set_live_market_snapshot_minute_bucket on public.live_market_snapshots;
+create trigger set_live_market_snapshot_minute_bucket
+before insert or update of observed_at on public.live_market_snapshots
+for each row execute function public.set_live_market_snapshot_minute_bucket();
 
 create index if not exists live_market_snapshots_instrument_time_idx
   on public.live_market_snapshots (instrument_key, observed_at desc);
