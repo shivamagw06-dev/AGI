@@ -47,5 +47,6 @@ test('runs momentum in shadow mode once a bucket has complete features', async (
   assert.equal(result.companion_engines[0].engine, 'volume_liquidity_anomaly_v1');
   assert.equal(result.companion_engines[1].engine, 'opening_range_expansion_v1');
   assert.equal(result.companion_engines[2].engine, 'intraday_mean_reversion_v1');
+  assert.equal(result.derivatives_status, 'insufficient_derivative_coverage');
   assert.equal((await pipeline.evaluate(new Date('2026-08-10T05:45:30Z'))).reason, 'already_evaluated_bucket');
 });
