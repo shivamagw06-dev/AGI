@@ -30,6 +30,7 @@ import { startHedgeFundLiveQuoteScheduler } from "./services/hedgeFundLiveQuoteS
 import { startHedgeFundUpstoxCandleScheduler } from "./services/hedgeFundUpstoxCandleScheduler.js";
 import { startUpstoxStatementScheduler } from "./services/upstoxStatementScheduler.js";
 import { getLiveAlphaRuntimeStatus, startLiveAlphaRuntime } from "./services/liveAlphaRuntime.js";
+import { getLiveAlphaWorkspace } from "./services/liveAlphaWorkspace.js";
 import { llmProviderStatus } from "./services/llmClient.js";
 import rateLimit from "express-rate-limit";
 import cors from "cors";
@@ -293,6 +294,10 @@ reg('/api/health', (req, res) => res.json({
   commit: process.env.RENDER_GIT_COMMIT || process.env.GIT_COMMIT || null,
 }));
 reg('/api/market/live-alpha/status', (_req, res) => res.json(getLiveAlphaRuntimeStatus()));
+reg('/api/market/live-alpha/workspace', async (_req, res) => {
+  try { res.json(await getLiveAlphaWorkspace()); }
+  catch (error) { res.status(503).json({ error: error.message, research_only: true, execution_enabled: false }); }
+});
 reg('/api/news/headlines', async (_req, res) => {
   const data = await getNewsHeadlines();
   res.set('Cache-Control', 'public, max-age=1800, stale-while-revalidate=300');
