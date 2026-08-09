@@ -150,6 +150,8 @@ class SearchView(BaseModel):
     investment_intelligence: dict[str, Any] = Field(default_factory=dict)
     # FLE v1 — forecast history, calibration and learning before reasoning
     forecast_learning: dict[str, Any] = Field(default_factory=dict)
+    # Intent-gated bridge to confluence, memory, forecasts, outcomes and Mission Control.
+    research_intelligence: dict[str, Any] = Field(default_factory=dict)
     # MEE v1 — canonical market events / what changed before reasoning
     market_events: dict[str, Any] = Field(default_factory=dict)
     # CAE v1 — unified context assembly package (orchestration gateway)
