@@ -297,10 +297,48 @@ export function evaluateOpeningRangeExpansion(snapshots, {
   return { engine: ALPHA_ENGINES.OPENING_RANGE, as_of: new Date(asOf).toISOString(), research_only: true, execution_enabled: false, universe_size: signals.length, config: { openingMinutes: 15, breakoutBufferPct, minimumVolumeRatio, minimumRangePct, maximumRangePct, maximumSpreadBps }, signals };
 }
 
+export function evaluateIntradayMeanReversion(snapshots, {
+  minimumUniverse = 10,
+  minimumResidualShockPct = 0.50,
+  minimumShockZ = 1.25,
+  maximumBenchmarkMovePct = 0.75,
+  maximumVolumeRatio = 2.50,
+  maximumSpreadBps = 35,
+  asOf = new Date().toISOString(),
+} = {}) {
+  if (!Array.isArray(snapshots) || snapshots.length < minimumUniverse) {
+    throw new Error(`Intraday mean reversion requires at least ${minimumUniverse} simultaneous instruments.`);
+  }
+  const rows = snapshots.map(normalizeSnapshot);
+  if (new Set(rows.map((row) => row.symbol)).size !== rows.length) throw new Error('Snapshot symbols must be unique.');
+  const residualZ = zScores(rows, 'residual15m');
+  const signals = rows.map((row, index) => {
+    const shockZ = residualZ[index];
+    const liquidityOk = row.minimumLiquidity && (row.spreadBps === null || row.spreadBps <= maximumSpreadBps);
+    const regimeOk = Math.abs(row.benchmarkReturn15m) <= maximumBenchmarkMovePct;
+    const volumeOk = row.volumeSurprise <= maximumVolumeRatio;
+    const shockDominates = Math.abs(row.residual15m) >= Math.max(minimumResidualShockPct, Math.abs(row.residual60m) * 0.60);
+    const statisticallyExtreme = Math.abs(shockZ) >= minimumShockZ;
+    const candidate = liquidityOk && regimeOk && volumeOk && shockDominates && statisticallyExtreme;
+    const direction = row.residual15m < 0 ? 'positive' : 'negative';
+    const alphaZ = Math.abs(shockZ);
+    return {
+      symbol: row.symbol, sector: row.sector, instrument_key: row.instrumentKey,
+      alpha_z: Number(alphaZ.toFixed(4)), residual_15m: Number(row.residual15m.toFixed(4)), residual_60m: Number(row.residual60m.toFixed(4)),
+      volume_surprise: Number(row.volumeSurprise.toFixed(4)), sector_strength: Number(row.sectorStrength.toFixed(4)), liquidity_ok: liquidityOk,
+      classification: !liquidityOk ? 'filtered' : !regimeOk ? 'market_stress_filtered' : !volumeOk ? 'event_volume_filtered' : !shockDominates ? 'trend_filtered' : candidate ? (direction === 'positive' ? 'negative_shock_rebound_candidate' : 'positive_shock_pullback_candidate') : 'neutral',
+      signal_quality: preliminarySignalQuality({ alphaZ, persistence: shockDominates ? 1 : 0, volumeSurprise: Math.min(row.volumeSurprise, 2), liquidityOk: liquidityOk && regimeOk && volumeOk, dataCoverage: row.instrumentKey ? 1 : 0.9 }),
+      empirical_confidence: { status: 'unvalidated', score: null, comparable_observations: 0 },
+      factors: { residual_15m_z: Number(shockZ.toFixed(4)), shock_dominance: Number((Math.abs(row.residual15m) / Math.max(Math.abs(row.residual60m), 0.0001)).toFixed(4)), benchmark_return_15m: row.benchmarkReturn15m, volume_surprise: Number(row.volumeSurprise.toFixed(4)), spread_bps: row.spreadBps },
+    };
+  }).sort((left, right) => right.alpha_z - left.alpha_z).map((row, index) => ({ ...row, rank: index + 1 }));
+  return { engine: ALPHA_ENGINES.MEAN_REVERSION, as_of: new Date(asOf).toISOString(), research_only: true, execution_enabled: false, universe_size: signals.length, config: { minimumResidualShockPct, minimumShockZ, maximumBenchmarkMovePct, maximumVolumeRatio, maximumSpreadBps }, signals };
+}
+
 export const LIVE_ALPHA_ROADMAP = Object.freeze([
   { engine: ALPHA_ENGINES.MOMENTUM, status: 'implemented' },
   { engine: ALPHA_ENGINES.VOLUME_ANOMALY, status: 'implemented' },
   { engine: ALPHA_ENGINES.OPENING_RANGE, status: 'implemented' },
-  { engine: ALPHA_ENGINES.MEAN_REVERSION, status: 'planned' },
+  { engine: ALPHA_ENGINES.MEAN_REVERSION, status: 'implemented' },
   { engine: ALPHA_ENGINES.DERIVATIVES, status: 'planned' },
 ]);
