@@ -33,6 +33,8 @@ import { getLiveAlphaRuntimeStatus, startLiveAlphaRuntime } from "./services/liv
 import { getLiveAlphaWorkspace } from "./services/liveAlphaWorkspace.js";
 import { buildConfluenceQueue } from "./services/researchConfluence.js";
 import { getResearchEvidence } from "./services/researchEvidenceCollector.js";
+import { getConfluenceLedger, getConfluenceValidationSummary } from "./services/confluenceValidationStore.js";
+import { getConfluenceValidationStatus, startConfluenceValidationScheduler } from "./services/confluenceValidationScheduler.js";
 import { llmProviderStatus } from "./services/llmClient.js";
 import rateLimit from "express-rate-limit";
 import cors from "cors";
@@ -310,6 +312,14 @@ reg('/api/market/research-confluence', async (req, res) => {
     res.status(503).json({ error: error.message || 'Research confluence unavailable', research_only: true });
   }
 });
+reg('/api/market/research-confluence/validation', async (_req, res) => {
+  try { res.json({ generated_at: new Date().toISOString(), classifications: await getConfluenceValidationSummary(), status: getConfluenceValidationStatus() }); }
+  catch (error) { res.status(error.status === 404 ? 503 : 500).json({ error: error.message, status: getConfluenceValidationStatus() }); }
+});
+reg('/api/market/research-confluence/ledger', async (req, res) => {
+  try { res.json({ generated_at: new Date().toISOString(), research_only: true, rows: await getConfluenceLedger({ limit: Number(req.query.limit) || 100, symbol: req.query.symbol }) }); }
+  catch (error) { res.status(error.status === 404 ? 503 : 500).json({ error: error.message, research_only: true }); }
+});
 reg('/api/news/headlines', async (_req, res) => {
   const data = await getNewsHeadlines();
   res.set('Cache-Control', 'public, max-age=1800, stale-while-revalidate=300');
@@ -359,6 +369,7 @@ startHedgeFundLiveQuoteScheduler();
 startHedgeFundUpstoxCandleScheduler();
 startUpstoxStatementScheduler();
 startLiveAlphaRuntime().catch((error) => console.error('[live-alpha] startup failed:', error?.message || error));
+startConfluenceValidationScheduler();
 
 /* ---------- /api/perplexity/deals ----------
    Ask Perplexity for a strict JSON array of deals with these fields:
