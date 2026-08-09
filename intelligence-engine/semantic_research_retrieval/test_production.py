@@ -1,5 +1,7 @@
 from semantic_research_retrieval.production import expand_query, package_for_ask_agi
 
+import pytest
+
 
 class FakeKip:
     def __init__(self):
@@ -65,3 +67,24 @@ def test_multi_hop_keeps_current_confirmation_separate():
 def test_no_kip_fails_closed():
     result = package_for_ask_agi("What did AGI write?", kip=None)
     assert result["answerability"]["may_answer"] is False
+
+
+@pytest.mark.parametrize(
+    "question",
+    [
+        "What does AGI think AI spending means for sector rotation?",
+        "Could hyperscaler capex benefit power and industrial names?",
+        "How do policy shifts interact with AI investment?",
+        "Which sectors may gain if data-center investment stays elevated?",
+        "What was AGI's house view in the Global Investment Monitor?",
+    ],
+)
+def test_acceptance_prompts_reach_semantic_retrieval_with_provenance(question):
+    kip = FakeKip()
+    result = package_for_ask_agi(question, kip=kip)
+    assert kip.calls
+    assert result["enabled"] is True
+    assert result["AGI_HOUSE_VIEW"]["documents"][0]["document_id"] == "doc_b3733303faa7"
+    assert result["SOURCES"][0]["title"].startswith("Global Investment Monitor")
+    assert result["CURRENT_EVIDENCE"] == {}
+    assert result["answerability"]["status"] in {"SUFFICIENT", "PARTIAL"}

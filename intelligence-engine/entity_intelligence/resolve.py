@@ -33,6 +33,10 @@ from entity_intelligence.schema import (
     STATE_VERIFIED_INDUSTRY,
     STATE_VERIFIED_MACRO,
 )
+from semantic_research_retrieval.routing import (
+    COMPANY_RESEARCH,
+    classify_research_route,
+)
 
 _CONCEPT_RE = re.compile(
     r"\b(what is|what are|explain|define|meaning of|how (does|do|to)|"
@@ -389,11 +393,39 @@ def resolve(question: str) -> dict[str, Any]:
         }
 
     nq = normalize(q)
+    research_route = classify_research_route(q)
 
     # Fiction / unknown names that must refuse without substitution
     if _UNKNOWN_FICTION_RE.search(q):
         m = _UNKNOWN_FICTION_RE.search(q)
         return _unsupported_payload(m.group(0).title() if m else "Unknown company", reason="unrecognized entity")
+
+    # House research and market themes do not require a listed-company bind.
+    # Explicit AGI Greenpac / AGI Infra mentions stay on COMPANY_RESEARCH.
+    if research_route != COMPANY_RESEARCH:
+        return {
+            "ok": True,
+            "state": STATE_VERIFIED_CONCEPT,
+            "confidence": 0.99,
+            "allow_planner": True,
+            "ticker": None,
+            "canonical_name": (
+                "Agarwal Global Investments"
+                if research_route == "HOUSE_RESEARCH"
+                else None
+            ),
+            "research_route": research_route,
+            "summary": (
+                "Verified AGI house-research route (no listed company required)."
+                if research_route == "HOUSE_RESEARCH"
+                else "Verified thematic-research route (no listed company required)."
+            ),
+            "why": [
+                "Research intent was classified before listed-company resolution.",
+                "Semantic research retrieval may proceed without a ticker.",
+            ],
+            "version": EI_VERSION,
+        }
 
     # Ambiguous bare stems first (HDFC, Tata, JSW, Titan) — including
     # "Explain HDFC" / "What about Titan?" lead-ins.

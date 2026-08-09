@@ -15,6 +15,18 @@ VERSION = "semantic-research-retrieval-v2.0.0"
 _EXPANSIONS: tuple[tuple[re.Pattern[str], tuple[str, ...]], ...] = (
     (
         re.compile(
+            r"\b(global investment monitor|house view|agi(?:['’]s)?\s+(?:research|view)|"
+            r"what\s+(?:does|did|was)\s+agi)\b",
+            re.I,
+        ),
+        (
+            "Global Investment Monitor",
+            "AGI house view",
+            "AI capital policy shifts market rotation",
+        ),
+    ),
+    (
+        re.compile(
             r"\b(hyperscaler|ai (?:capex|spending|infrastructure)|data[ -]?cent(?:er|re))",
             re.I,
         ),
@@ -95,10 +107,14 @@ def _source_priority(question: str) -> list[str]:
         phrase in q
         for phrase in (
             "what did agi",
+            "what does agi",
+            "what was agi",
             "agi wrote",
             "agi's view",
+            "agi’s view",
             "agi view",
             "house view",
+            "global investment monitor",
         )
     ):
         return [
