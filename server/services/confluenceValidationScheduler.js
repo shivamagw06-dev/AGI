@@ -3,6 +3,7 @@ import { getLiveAlphaWorkspace } from './liveAlphaWorkspace.js';
 import { buildConfluenceQueue } from './researchConfluence.js';
 import { getResearchEvidence } from './researchEvidenceCollector.js';
 import { completeDueConfluenceOutcomes, saveConfluenceEvents } from './confluenceValidationStore.js';
+import { syncResearchMemory } from './researchMemoryStore.js';
 
 let timer = null;
 let state = { enabled: false, status: 'disabled', last_run: null, last_capture: null, last_completion: null, last_error: null };
@@ -16,7 +17,8 @@ export async function runConfluenceValidationCycle() {
     const queue = buildConfluenceQueue({ workspace, research: research.evidence, limit: 25 });
     const capture = await saveConfluenceEvents(queue, universe);
     const completion = await completeDueConfluenceOutcomes();
-    state = { ...state, status: 'idle', last_run: new Date().toISOString(), last_capture: capture, last_completion: completion };
+    const memory = await syncResearchMemory();
+    state = { ...state, status: 'idle', last_run: new Date().toISOString(), last_capture: capture, last_completion: completion, last_memory_sync: memory };
   } catch (error) {
     state = { ...state, status: error.status === 404 ? 'database_setup_required' : 'degraded', last_run: new Date().toISOString(), last_error: error.message };
   }
