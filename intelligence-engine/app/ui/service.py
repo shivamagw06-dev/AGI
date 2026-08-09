@@ -1687,6 +1687,35 @@ class UiService:
             ticker_extractor=alias_tickers_from_question,
             reset=reset_conversation,
         )
+        clarification = conversation_trace.get("clarification") or {}
+        if clarification.get("required"):
+            tid = normalize_request_id((ask_trace_id or "").strip() or None)
+            return SearchView(
+                meta=UiMeta(surface="search", sources=["conversation_clarification"]),
+                question=q or "Ask AGI",
+                status="ok",
+                intent="clarification",
+                answer={
+                    "summary": clarification.get("question"),
+                    "stance": "Insufficient context",
+                    "policy": "clarify_before_research",
+                },
+                executive_summary=clarification.get("question"),
+                confidence=0.0,
+                follow_up_questions=[
+                    item.get("prompt") for item in clarification.get("options", []) if item.get("prompt")
+                ],
+                answer_policy="clarify_before_research",
+                conversation_context=conversation_trace,
+                ask_orchestration={
+                    "version": "ask-orchestration-trace-2",
+                    "ask_trace_id": tid,
+                    "request_id": tid,
+                    "completed": True,
+                    "last_completed_stage": "conversation_clarification",
+                    "conversation": conversation_trace,
+                },
+            )
         # Per-Ask Yahoo symbol/enrich cache — resolve once, reuse across CID/DVC/YFP.
         _yahoo_scope = None
         _end_yahoo_scope = None

@@ -151,6 +151,30 @@ function AnswerTurn({ answer, onAsk }) {
   const sourcesOnly = presentation.style === 'sources';
   const tableMode = presentation.style === 'table';
 
+  if (answer.clarification?.required) {
+    return (
+      <div className="ac-msg ac-msg-agi">
+        <div className="ac-label">AGI · Clarification</div>
+        <section className="ac-block ac-clarification">
+          <p className="ac-kicker">One detail needed</p>
+          <h2>{answer.clarification.question}</h2>
+          {(answer.clarification.options || []).length > 0 && (
+            <div className="ac-clarification-options">
+              {answer.clarification.options.map((option) => (
+                <button key={option.label} type="button" onClick={() => onAsk(option.prompt)}>
+                  {option.label}
+                </button>
+              ))}
+            </div>
+          )}
+          <p className="ac-confidence-why">
+            AGI has not run the research pipeline yet, so no company, horizon, or comparison has been guessed.
+          </p>
+        </section>
+      </div>
+    );
+  }
+
   if (sourcesOnly) {
     return (
       <div className="ac-msg ac-msg-agi">

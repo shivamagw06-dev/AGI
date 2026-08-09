@@ -105,3 +105,27 @@ def test_answer_controls_persist_without_changing_entity():
     _, _, trace = resolve(store, "Now explain simply and make it brief")
     assert trace["audience"] == "general"
     assert trace["answer_depth"] == "brief"
+
+
+def test_unresolved_reference_requests_clarification():
+    store = ConversationStore()
+    _, _, trace = resolve(store, "What about its valuation?")
+    assert trace["clarification"]["required"] is True
+    assert trace["clarification"]["reason"] == "missing_reference"
+
+
+def test_ambiguous_hdfc_and_incomplete_comparison_request_clarification():
+    store = ConversationStore()
+    _, _, trace = resolve(store, "Analyse HDFC")
+    assert trace["clarification"]["reason"] == "ambiguous_entity"
+    assert len(trace["clarification"]["options"]) == 3
+    _, _, trace = resolve(store, "Compare ICICI Bank", cid="compare")
+    assert trace["clarification"]["reason"] == "missing_comparison_entity"
+
+
+def test_action_question_requests_horizon_once():
+    store = ConversationStore()
+    _, _, trace = resolve(store, "Should I buy ICICI Bank?")
+    assert trace["clarification"]["reason"] == "missing_investment_horizon"
+    _, _, trace = resolve(store, "Should I buy ICICI Bank? Use a 12M investment horizon.")
+    assert trace["clarification"]["required"] is False
