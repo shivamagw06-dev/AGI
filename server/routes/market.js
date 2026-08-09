@@ -113,14 +113,20 @@ export default function createMarketRouter(env = {}) {
     try {
       const { refreshUpstoxInstitutionalFlows } = await import('../services/upstoxFlowRefresh.js');
       const result = await refreshUpstoxInstitutionalFlows({
-        dataType: req.body?.dataType || 'NSE_EQ|CASH',
+        dataTypes: req.body?.dataTypes,
+        dataType: req.body?.dataType,
         interval: req.body?.interval || '1D',
-        date: req.body?.date,
+        from: req.body?.from,
       });
       return res.status(result.status || (result.ok ? 200 : 502)).json(result);
     } catch (err) {
       return res.status(502).json({ ok: false, error: err?.message || 'upstox_flows_refresh_failed' });
     }
+  });
+
+  router.post('/upstox-flows/backfill', async (req, res) => {
+    try { const { backfillUpstoxInstitutionalFlows } = await import('../services/upstoxFlowRefresh.js'); const result = await backfillUpstoxInstitutionalFlows({ from: req.body?.from || '2026-04-01', interval: req.body?.interval || '1D', maxWindows: Number(req.body?.maxWindows) || 12 }); return res.status(result.ok ? 200 : 502).json(result); }
+    catch (err) { return res.status(502).json({ ok: false, error: err?.message || 'upstox_flows_backfill_failed' }); }
   });
 
   router.get('/upstox-flows/status', async (_req, res) => {
