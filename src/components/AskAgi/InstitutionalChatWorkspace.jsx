@@ -198,6 +198,17 @@ function AnswerTurn({ answer, onAsk }) {
     );
   }
 
+  if (answer.conversationalOnly) {
+    return (
+      <div className="ac-msg ac-msg-agi">
+        <div className="ac-label">AGI</div>
+        <div className="ac-direct ac-conversation-direct">
+          <p className="ac-direct-text">{answer.directAnswer}</p>
+        </div>
+      </div>
+    );
+  }
+
   if (sourcesOnly) {
     return (
       <div className="ac-msg ac-msg-agi">

@@ -67,8 +67,17 @@ class SupabaseConversationCheckpointBackend:
 
     def load(self, thread_id: str) -> dict[str, Any] | None:
         safe = parse.quote(thread_id, safe="")
-        rows = self._call("GET", f"?thread_id=eq.{safe}&select=state&limit=1")
+        rows = self._call("GET", f"?thread_id=eq.{safe}&select=state,expires_at&limit=1")
         if isinstance(rows, list) and rows and isinstance(rows[0].get("state"), dict):
+            expires_at = rows[0].get("expires_at")
+            if not isinstance(expires_at, str):
+                return None
+            try:
+                expiry = datetime.fromisoformat(expires_at.replace("Z", "+00:00"))
+            except ValueError:
+                return None
+            if expiry <= datetime.now(timezone.utc):
+                return None
             return rows[0]["state"]
         return None
 

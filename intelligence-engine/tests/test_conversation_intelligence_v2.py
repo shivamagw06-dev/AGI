@@ -40,7 +40,7 @@ class MemoryCheckpoint:
 
 def tickers(question: str) -> list[str]:
     out = []
-    for name, ticker in (("tcs", "TCS"), ("infosys", "INFY"), ("reliance", "RELIANCE")):
+    for name, ticker in (("tcs", "TCS"), ("infosys", "INFY"), ("reliance", "RELIANCE"), ("hcl", "HCLTECH")):
         if name in question.lower():
             out.append(ticker)
     return out
@@ -109,3 +109,15 @@ def test_challenge_correction_and_capability_routes():
         _, _, trace = resolve(store, question)
         assert trace["conversation_move"] == move
         assert trace["research_execution"] == execution
+        if move in {"CHALLENGE", "CORRECTION"}:
+            assert trace["active_entities"] == ["RELIANCE"]
+
+
+def test_leading_and_inherits_prior_company_as_comparison():
+    store = ConversationStore(checkpoint_backend=MemoryCheckpoint())
+    resolve(store, "Analyse TCS")
+    effective, _, trace = resolve(store, "and HCL?")
+    assert trace["active_entities"] == ["TCS", "HCLTECH"]
+    assert trace["conversation_move"] == "FOLLOW_UP"
+    assert trace["research_execution"] == "INCREMENTAL_RETRIEVAL"
+    assert effective.startswith("Compare TCS vs HCLTECH")

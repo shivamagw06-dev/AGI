@@ -28,6 +28,7 @@ _CONTROL_ONLY_RE = re.compile(
 )
 _COMPARE_RE = re.compile(r"\b(compare|versus|vs\.?|relative to|against)\b", re.I)
 _INSTEAD_RE = re.compile(r"\b(instead|switch to|change to|move to)\b", re.I)
+_LEADING_AND_RE = re.compile(r"^\s*(?:and|what about)\b", re.I)
 _FOCUS = {
     "valuation": re.compile(r"\b(valuation|fair value|cheap|expensive|multiple|price target)\b", re.I),
     "forecast": re.compile(r"\b(forecast|expect|outlook|probability|horizon)\b", re.I),
@@ -81,6 +82,7 @@ class ConversationState:
     conversation_move: str | None = None
     research_intent: str | None = None
     research_execution: str | None = None
+    checkpoint_restored: bool = False
     turn_count: int = 0
     updated_at: float = field(default_factory=time.time)
 
@@ -120,6 +122,7 @@ class ConversationStore:
         allowed = set(ConversationState.__dataclass_fields__)
         values = {key: value for key, value in payload.items() if key in allowed}
         values["conversation_id"] = conversation_id
+        values["checkpoint_restored"] = True
         return ConversationState(**values)
 
     @staticmethod
@@ -221,7 +224,11 @@ class ConversationStore:
         inherited: list[str] = []
         effective = original
         is_compare = bool(_COMPARE_RE.search(original))
-        is_follow_up = bool(_FOLLOW_UP_RE.search(original) or _CONTROL_ONLY_RE.search(original))
+        is_follow_up = bool(
+            _FOLLOW_UP_RE.search(original)
+            or _CONTROL_ONLY_RE.search(original)
+            or _LEADING_AND_RE.search(original)
+        )
         prior_entities = state.entities()
         conversation_move, router_confidence = self._conversation_move(
             original, is_follow_up=is_follow_up, has_context=bool(prior_entities or state.theme),
@@ -237,19 +244,20 @@ class ConversationStore:
             research_execution = "INCREMENTAL_RETRIEVAL"
         else:
             research_execution = "FULL_RESEARCH"
+        contextual_move = conversation_move in {"FOLLOW_UP", "CHALLENGE", "CORRECTION", "CONTINUE"}
 
         if explicit:
             if _INSTEAD_RE.search(original) and not is_compare:
                 state.primary_entity = explicit[0]
                 state.comparison_entities = explicit[1:]
-            elif is_compare and len(explicit) == 1 and state.primary_entity and explicit[0] != state.primary_entity:
+            elif (is_compare or _LEADING_AND_RE.search(original)) and len(explicit) == 1 and state.primary_entity and explicit[0] != state.primary_entity:
                 inherited = [state.primary_entity]
                 state.comparison_entities = [state.primary_entity, explicit[0]]
                 effective = f"Compare {state.primary_entity} vs {explicit[0]}. {original}"
             else:
                 state.primary_entity = explicit[0]
                 state.comparison_entities = explicit[:] if len(explicit) > 1 else []
-        elif is_follow_up and (prior_entities or state.theme):
+        elif (is_follow_up or contextual_move) and (prior_entities or state.theme):
             inherited = prior_entities[:]
             focus = self._detect_focus(original)
             if focus and prior_entities:
@@ -300,7 +308,7 @@ class ConversationStore:
         state.updated_at = time.time()
         self._persist(state)
 
-        unresolved = bool(is_follow_up and not prior_entities and not explicit)
+        unresolved = bool((is_follow_up or contextual_move) and not prior_entities and not explicit)
         clarification = self._clarification(
             original,
             explicit=explicit,
@@ -331,10 +339,19 @@ class ConversationStore:
             "research_intent": research_intent,
             "research_execution": research_execution,
             "research_required": research_execution in {"INCREMENTAL_RETRIEVAL", "FULL_RESEARCH"},
-            "research_freshness": "EXISTING" if research_execution == "REUSE_PREVIOUS" else "FRESH",
+            "research_freshness": {
+                "SKIP": "NONE",
+                "REUSE_PREVIOUS": "EXISTING",
+                "INCREMENTAL_RETRIEVAL": "REFRESH_REQUIRED",
+                "FULL_RESEARCH": "FRESH",
+            }[research_execution],
             "previous_answer_reused": research_execution == "REUSE_PREVIOUS" and bool(state.previous_answer_summary),
             "previous_evidence_reused": research_execution == "REUSE_PREVIOUS" and bool(state.previous_research_artifact_ref),
-            "context_source": "THREAD_CHECKPOINT" if inherited or state.turn_count > 1 else "CURRENT_TURN",
+            "context_source": (
+                "THREAD_CHECKPOINT" if state.checkpoint_restored
+                else "PROCESS_MEMORY" if inherited or state.turn_count > 1
+                else "CURRENT_TURN"
+            ),
             "router_confidence": router_confidence,
             "previous_answer_summary": state.previous_answer_summary if research_execution == "REUSE_PREVIOUS" else None,
             "reference_status": "unresolved" if unresolved else "resolved",
