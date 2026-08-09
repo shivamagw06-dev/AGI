@@ -1,4 +1,4 @@
-import { evaluateCrossSectionalMomentum, evaluateVolumeLiquidityAnomaly } from './liveAlphaEngine.js';
+import { evaluateCrossSectionalMomentum, evaluateOpeningRangeExpansion, evaluateVolumeLiquidityAnomaly } from './liveAlphaEngine.js';
 import { minuteOfSession } from './minuteVolumeBaseline.js';
 
 function change(current, previous) {
@@ -9,6 +9,7 @@ export class IntradayFeatureStore {
   constructor({ retentionMs = 2 * 60 * 60_000 } = {}) {
     this.retentionMs = retentionMs;
     this.series = new Map();
+    this.openingRanges = new Map();
   }
   ingest(batch) {
     for (const row of batch?.snapshots || []) {
@@ -20,6 +21,14 @@ export class IntradayFeatureStore {
       const cutoff = at - this.retentionMs;
       while (values.length && Date.parse(values[0].received_at) < cutoff) values.shift();
       this.series.set(row.instrument_key, values);
+      const minute = minuteOfSession(row.received_at);
+      const session = new Date(at + 5.5 * 60 * 60_000).toISOString().slice(0, 10);
+      if (minute >= 0 && minute < 15) {
+        const rangeKey = `${session}|${row.instrument_key}`;
+        const range = this.openingRanges.get(rangeKey) || { high: row.ltp, low: row.ltp, observations: 0 };
+        range.high = Math.max(range.high, row.ltp); range.low = Math.min(range.low, row.ltp); range.observations += 1;
+        this.openingRanges.set(rangeKey, range);
+      }
     }
   }
   latest(key) { return this.series.get(key)?.at(-1) || null; }
@@ -31,6 +40,10 @@ export class IntradayFeatureStore {
   returns(key, nowMs) {
     const current = this.latest(key);
     return current ? { current, return15m: change(current, this.atOrBefore(key, nowMs - 15 * 60_000)), return60m: change(current, this.atOrBefore(key, nowMs - 60 * 60_000)) } : null;
+  }
+  openingRange(key, now = new Date()) {
+    const session = new Date(now.getTime() + 5.5 * 60 * 60_000).toISOString().slice(0, 10);
+    return this.openingRanges.get(`${session}|${key}`) || null;
   }
 }
 
@@ -69,6 +82,12 @@ export class MomentumShadowPipeline {
     if (snapshots.length < 10) return { skipped: true, reason: 'insufficient_complete_universe', coverage: snapshots.length };
     const result = evaluateCrossSectionalMomentum(snapshots, { asOf: now.toISOString() });
     const volumeResult = evaluateVolumeLiquidityAnomaly(snapshots, { asOf: now.toISOString() });
+    const openingSnapshots = snapshots.map((snapshot) => {
+      const range = this.featureStore.openingRange(snapshot.instrumentKey, now);
+      const current = this.featureStore.latest(snapshot.instrumentKey);
+      return range ? { ...snapshot, currentPrice: current?.ltp, openingHigh: range.high, openingLow: range.low } : null;
+    }).filter(Boolean);
+    const openingResult = openingSnapshots.length >= 10 ? evaluateOpeningRangeExpansion(openingSnapshots, { asOf: now.toISOString() }) : null;
     const anchors = new Map(this.universe.map((member) => {
       const stock = this.featureStore.latest(member.instrumentKey);
       const sector = this.featureStore.latest(member.sectorInstrumentKey);
@@ -95,9 +114,16 @@ export class MomentumShadowPipeline {
         sector_at_signal: anchor?.sector?.ltp ?? null,
       };
     });
+    if (openingResult) openingResult.signals = openingResult.signals.map((signal) => {
+      const anchor = anchors.get(signal.symbol);
+      const positive = signal.classification === 'upside_opening_breakout_candidate';
+      const negative = signal.classification === 'downside_opening_breakout_candidate';
+      return { ...signal, direction: positive ? 'positive' : negative ? 'negative' : null, price_at_signal: anchor?.stock?.ltp ?? null, nifty_at_signal: benchmark.current.ltp, sector_at_signal: anchor?.sector?.ltp ?? null };
+    });
     this.lastRunBucket = bucket;
     await this.repository?.saveMomentumRun?.(result, { benchmark_key: this.benchmarkKey, minute_of_session: minute });
     await this.repository?.saveVolumeAnomalyRun?.(volumeResult, { benchmark_key: this.benchmarkKey, minute_of_session: minute });
-    return { ...result, companion_engines: [volumeResult] };
+    if (openingResult) await this.repository?.saveOpeningRangeRun?.(openingResult, { benchmark_key: this.benchmarkKey, minute_of_session: minute });
+    return { ...result, companion_engines: [volumeResult, ...(openingResult ? [openingResult] : [])] };
   }
 }
