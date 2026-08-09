@@ -46,10 +46,10 @@ export class LiveAlphaPersistence {
   async loadVolumeBaselines() {
     return rest('live_volume_baselines', { method: 'GET', query: 'select=instrument_key,minute_of_session,expected_cumulative_volume,sample_sessions', body: undefined, prefer: undefined });
   }
-  async saveMomentumRun(result, diagnostics = {}) {
+  async saveAlphaRun(result, diagnostics = {}) {
     const session = new Date(new Date(result.as_of).getTime() + 5.5 * 60 * 60_000).toISOString().slice(0, 10);
     const runs = await rest('live_alpha_runs', {
-      body: { engine: result.engine, as_of: result.as_of, market_session: session, universe_size: result.universe_size, research_only: true, execution_enabled: false, config: { weights: result.weights }, diagnostics },
+      body: { engine: result.engine, as_of: result.as_of, market_session: session, universe_size: result.universe_size, research_only: true, execution_enabled: false, config: result.config || { weights: result.weights }, diagnostics },
       prefer: 'return=representation',
     });
     const runId = runs?.[0]?.id;
@@ -72,4 +72,6 @@ export class LiveAlphaPersistence {
     if (outcomes.length) await rest('live_alpha_signal_outcomes', { body: outcomes });
     return { run_id: runId, signals: rows.length, outcomes: outcomes.length };
   }
+  async saveMomentumRun(result, diagnostics = {}) { return this.saveAlphaRun(result, diagnostics); }
+  async saveVolumeAnomalyRun(result, diagnostics = {}) { return this.saveAlphaRun(result, diagnostics); }
 }

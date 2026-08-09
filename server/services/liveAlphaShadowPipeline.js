@@ -1,4 +1,4 @@
-import { evaluateCrossSectionalMomentum } from './liveAlphaEngine.js';
+import { evaluateCrossSectionalMomentum, evaluateVolumeLiquidityAnomaly } from './liveAlphaEngine.js';
 import { minuteOfSession } from './minuteVolumeBaseline.js';
 
 function change(current, previous) {
@@ -68,6 +68,7 @@ export class MomentumShadowPipeline {
     }
     if (snapshots.length < 10) return { skipped: true, reason: 'insufficient_complete_universe', coverage: snapshots.length };
     const result = evaluateCrossSectionalMomentum(snapshots, { asOf: now.toISOString() });
+    const volumeResult = evaluateVolumeLiquidityAnomaly(snapshots, { asOf: now.toISOString() });
     const anchors = new Map(this.universe.map((member) => {
       const stock = this.featureStore.latest(member.instrumentKey);
       const sector = this.featureStore.latest(member.sectorInstrumentKey);
@@ -83,8 +84,20 @@ export class MomentumShadowPipeline {
         sector_at_signal: anchor?.sector?.ltp ?? null,
       };
     });
+    volumeResult.signals = volumeResult.signals.map((signal) => {
+      const anchor = anchors.get(signal.symbol);
+      const candidate = signal.classification === 'abnormal_accumulation_candidate' || signal.classification === 'abnormal_distribution_candidate';
+      return {
+        ...signal,
+        direction: !candidate ? null : signal.classification === 'abnormal_accumulation_candidate' ? 'positive' : 'negative',
+        price_at_signal: anchor?.stock?.ltp ?? null,
+        nifty_at_signal: benchmark.current.ltp,
+        sector_at_signal: anchor?.sector?.ltp ?? null,
+      };
+    });
     this.lastRunBucket = bucket;
     await this.repository?.saveMomentumRun?.(result, { benchmark_key: this.benchmarkKey, minute_of_session: minute });
-    return result;
+    await this.repository?.saveVolumeAnomalyRun?.(volumeResult, { benchmark_key: this.benchmarkKey, minute_of_session: minute });
+    return { ...result, companion_engines: [volumeResult] };
   }
 }
