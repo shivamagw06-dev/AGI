@@ -1,3 +1,5 @@
+import { tradingCalendar } from './tradingCalendarService.js';
+
 const IST_OFFSET_MS = 5.5 * 60 * 60_000;
 export const CONFLUENCE_HORIZONS = Object.freeze(['5m', '15m', '30m', '60m', 'close', '1d', '5d', '20d']);
 const MINUTES = Object.freeze({ '5m': 5, '15m': 15, '30m': 30, '60m': 60 });
@@ -7,18 +9,12 @@ const round = (value) => Number(value.toFixed(6));
 const median = (values) => { const clean = [...values].sort((a, b) => a - b); const mid = Math.floor(clean.length / 2); return clean.length % 2 ? clean[mid] : (clean[mid - 1] + clean[mid]) / 2; };
 const istDate = (date, hour = 15, minute = 30) => { const shifted = new Date(date.getTime() + IST_OFFSET_MS); return new Date(Date.UTC(shifted.getUTCFullYear(), shifted.getUTCMonth(), shifted.getUTCDate(), hour, minute) - IST_OFFSET_MS); };
 
-function addTradingDays(date, count) {
-  let cursor = istDate(date); let remaining = count;
-  while (remaining > 0) { cursor = new Date(cursor.getTime() + 86_400_000); const day = new Date(cursor.getTime() + IST_OFFSET_MS).getUTCDay(); if (day !== 0 && day !== 6) remaining -= 1; }
-  return cursor;
-}
-
 export function confluenceHorizonDueAt(capturedAt, horizon) {
   if (!CONFLUENCE_HORIZONS.includes(horizon)) throw new Error(`Unsupported confluence horizon: ${horizon}.`);
   const at = new Date(capturedAt); if (Number.isNaN(at.getTime())) throw new Error('Invalid confluence timestamp.');
   if (MINUTES[horizon]) return new Date(at.getTime() + MINUTES[horizon] * 60_000).toISOString();
   if (horizon === 'close') return istDate(at).toISOString();
-  return addTradingDays(at, horizon === '1d' ? 1 : horizon === '5d' ? 5 : 20).toISOString();
+  return tradingCalendar.addTradingDays(at, horizon === '1d' ? 1 : horizon === '5d' ? 5 : 20).toISOString();
 }
 
 export function createConfluenceOutcomeSchedule(eventId, capturedAt) {
