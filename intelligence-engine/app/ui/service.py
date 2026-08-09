@@ -108,6 +108,14 @@ from app.ui.sanitize import (
     scrub_text,
 )
 from app.ui.timeouts import ask_slim_enabled, call_with_timeout
+from institutional_output_quality.guards import (
+    CONGLOMERATE_FRAMEWORK_GUARDS,
+    dedupe_research_text,
+    filter_company_framework_text,
+    has_supported_financial_evidence,
+    has_supported_valuation_evidence,
+    requires_full_company_analysis,
+)
 
 
 def _unwrap_soft_slice(name: str, data: Any) -> dict[str, Any]:
@@ -2267,11 +2275,20 @@ class UiService:
         if (
             kul_hit
             and (kul_hit.get("summary") or kul_hit.get("why"))
-            and _que_requires_full_desk(que_pack)
+            and (
+                _que_requires_full_desk(que_pack)
+                or requires_full_company_analysis(q, detected_ticker)
+            )
             and not kul_is_finance_concept
-            and not kul_is_deterministic_business
+            and (
+                not kul_is_deterministic_business
+                or requires_full_company_analysis(q, detected_ticker)
+            )
         ):
             ask_orchestration["kul_deferred_for_que"] = True
+            ask_orchestration["full_company_analysis_required"] = requires_full_company_analysis(
+                q, detected_ticker
+            )
             ask_orchestration["kul_deferred_providers"] = kul_providers_preview[:8]
             ask_orchestration["kul_deferred_summary"] = str(kul_hit.get("summary") or "")[:280]
             kul_hit = None  # fall through to full desk
@@ -5496,6 +5513,68 @@ class UiService:
             ask_orchestration["executive_validation"] = _final.get("validation")
         except Exception:
             pass
+
+        # Final institutional quality gates run after every synthesis rewrite.
+        executive = dedupe_research_text(executive)
+        why = filter_company_framework_text(list(why or []), detected_ticker)
+        why = list(dict.fromkeys(dedupe_research_text(item) for item in why if item))
+        why = [item for item in why if item]
+        risks = list(dict.fromkeys(dedupe_research_text(item) for item in (risks or []) if item))
+        catalysts = list(
+            dict.fromkeys(dedupe_research_text(item) for item in (catalysts or []) if item)
+        )
+        valuation_supported = has_supported_valuation_evidence(valuation)
+        financials_supported = has_supported_financial_evidence(company_analysis)
+        quality_gates = {
+            "full_company_analysis": requires_full_company_analysis(q, detected_ticker),
+            "financials_supported": financials_supported,
+            "valuation_supported": valuation_supported,
+            "conglomerate_framework_validated": not any(
+                pattern.search(" ".join(why))
+                for pattern in CONGLOMERATE_FRAMEWORK_GUARDS.get(
+                    str(detected_ticker or "").upper(), ()
+                )
+            ),
+        }
+        if quality_gates["full_company_analysis"]:
+            missing_core = sum(
+                not quality_gates[key]
+                for key in ("financials_supported", "valuation_supported")
+            )
+            if missing_core:
+                conf = min(float(conf or 0), 65.0 if missing_core == 1 else 50.0)
+            if not valuation_supported:
+                valuation = {
+                    "evidence_status": "INSUFFICIENT",
+                    "label": "Not established",
+                    "missing": [
+                        "current price or enterprise value",
+                        "valuation multiple or SOTP",
+                        "source and as-of date",
+                    ],
+                }
+        answer["summary"] = executive
+        answer["executive_summary"] = executive
+        answer["why"] = why
+        answer["key_risks"] = risks
+        answer["key_catalysts"] = catalysts
+        answer["quality_gates"] = quality_gates
+        if str(detected_ticker or "").upper() == "RELIANCE":
+            answer["analysis_framework"] = {
+                "type": "conglomerate_segment_analysis",
+                "segments": {
+                    "O2C": ["refining throughput", "GRM", "petrochemical spreads"],
+                    "Jio": ["subscribers", "ARPU", "churn", "data consumption"],
+                    "Retail": ["store productivity", "revenue growth", "margins"],
+                    "New Energy": ["capex", "commissioning milestones", "unit economics"],
+                    "Consolidated": ["free cash flow", "leverage", "SOTP valuation"],
+                },
+            }
+        if not all((financials_supported, valuation_supported)):
+            answer["confidence_explanation"] = (
+                "Confidence is capped because dated financial or numeric valuation "
+                "evidence is incomplete."
+            )
 
         # Phase-1 observability finalize — deferred until after all Executive Composer
         # rewrites so the debug trace / developer console show the final user-visible
