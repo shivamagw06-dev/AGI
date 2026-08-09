@@ -47,7 +47,7 @@ test('rejects undersized universes, duplicate symbols and invalid weights', () =
   assert.throws(() => evaluateCrossSectionalMomentum(universe(), { weights: { residual15m: 1 } }), /sum to 1/);
 });
 
-test('removes benchmark and sector moves before ranking', () => {
+test('uses stock-minus-sector residual without double-counting the market', () => {
   const rows = universe();
   rows[10] = {
     ...rows[10], symbol: 'RAWLEADER', return15m: 3, return60m: 5,
@@ -56,7 +56,7 @@ test('removes benchmark and sector moves before ranking', () => {
   };
   const result = evaluateCrossSectionalMomentum(rows);
   const leader = result.signals.find((row) => row.symbol === 'RAWLEADER');
-  assert.equal(leader.residual_15m, 0);
-  assert.equal(leader.residual_60m, 0);
-  assert.notEqual(leader.rank, 1);
+  assert.equal(leader.residual_15m, 1);
+  assert.equal(leader.residual_60m, 2);
+  assert.equal(leader.sector_strength, 1);
 });
