@@ -399,6 +399,7 @@ export function mapChatAnswer(pack) {
       style: conversation.output_style || 'standard',
       audience: conversation.audience || 'analyst',
     },
+    clarification: conversation.clarification || null,
     provenance,
     constitutionVersion: aic?.version || ipf?.version || rc?.version || '1.0',
     investmentContext,

@@ -32,7 +32,7 @@ _FOCUS = {
     "thesis_change": re.compile(r"\b(what changed|thesis change|strengthen|weaken)\b", re.I),
     "reliability": re.compile(r"\b(reliability|validated|accuracy|hit rate|rank ic)\b", re.I),
 }
-_HORIZON_RE = re.compile(r"\b(5m|15m|30m|60m|1d|5d|20d|one day|five days?|twenty days?)\b", re.I)
+_HORIZON_RE = re.compile(r"\b(5m|15m|30m|60m|1d|5d|20d|3m|6m|12m|one day|five days?|twenty days?)\b", re.I)
 _BENCHMARK_RE = re.compile(r"\b(nifty\s*50|nifty|sensex|bank\s*nifty|sector(?:\s+index)?)\b", re.I)
 _TIME_WINDOW_RE = re.compile(
     r"\b(today|yesterday|this week|last week|this month|last month|last \d+ (?:days?|weeks?|months?))\b",
@@ -187,6 +187,14 @@ class ConversationStore:
         state.updated_at = time.time()
 
         unresolved = bool(is_follow_up and not prior_entities and not explicit)
+        clarification = self._clarification(
+            original,
+            explicit=explicit,
+            active_entities=state.entities(),
+            is_compare=is_compare,
+            unresolved_reference=unresolved,
+            horizon=state.horizon,
+        )
         trace = {
             "version": "finance-conversation-v1",
             "conversation_id": cid,
@@ -206,6 +214,7 @@ class ConversationStore:
             "audience": state.audience,
             "turn_count": state.turn_count,
             "reference_status": "unresolved" if unresolved else "resolved",
+            "clarification": clarification,
         }
         derived_ticker = ticker or (state.primary_entity if len(state.entities()) == 1 else None)
         return effective, derived_ticker, trace
@@ -223,6 +232,58 @@ class ConversationStore:
             if pattern.search(question):
                 return name
         return None
+
+    @staticmethod
+    def _clarification(
+        question: str,
+        *,
+        explicit: list[str],
+        active_entities: list[str],
+        is_compare: bool,
+        unresolved_reference: bool,
+        horizon: str | None,
+    ) -> dict:
+        base = {"required": False, "reason": None, "question": None, "options": []}
+        if re.search(r"\bhdfc\b", question, re.I) and not re.search(
+            r"\bhdfc\s+(bank|amc|life|asset management)\b", question, re.I
+        ):
+            return {
+                "required": True,
+                "reason": "ambiguous_entity",
+                "question": "Which HDFC entity do you mean?",
+                "options": [
+                    {"label": "HDFC Bank", "prompt": re.sub(r"\bHDFC\b", "HDFC Bank", question, flags=re.I)},
+                    {"label": "HDFC AMC", "prompt": re.sub(r"\bHDFC\b", "HDFC AMC", question, flags=re.I)},
+                    {"label": "HDFC Life", "prompt": re.sub(r"\bHDFC\b", "HDFC Life", question, flags=re.I)},
+                ],
+            }
+        if unresolved_reference:
+            return {
+                "required": True,
+                "reason": "missing_reference",
+                "question": "Which company, sector, or theme should I apply this to?",
+                "options": [],
+            }
+        if is_compare and len(active_entities) < 2:
+            subject = explicit[0] if explicit else (active_entities[0] if active_entities else "that company")
+            return {
+                "required": True,
+                "reason": "missing_comparison_entity",
+                "question": f"What should I compare {subject} with?",
+                "options": [],
+            }
+        if re.search(r"\b(should i buy|should i sell|buy or sell|enter now)\b", question, re.I) and active_entities and not horizon:
+            return {
+                "required": True,
+                "reason": "missing_investment_horizon",
+                "question": "What investment horizon should AGI evaluate?",
+                "options": [
+                    {"label": "Tactical · 5D", "prompt": f"{question} Use a 5D tactical horizon."},
+                    {"label": "Swing · 20D", "prompt": f"{question} Use a 20D swing horizon."},
+                    {"label": "Investment · 12M", "prompt": f"{question} Use a 12M investment horizon."},
+                ],
+            }
+        return base
 
 
 conversation_store = ConversationStore()

@@ -339,6 +339,19 @@
 .ac-answer-table { border-collapse: collapse; font-size: 0.82rem; width: 100%; }
 .ac-answer-table th, .ac-answer-table td { border-bottom: 1px solid var(--ac-line); padding: 0.65rem; text-align: left; vertical-align: top; }
 .ac-answer-table th { color: var(--ac-muted); font-size: 0.68rem; letter-spacing: 0.08em; text-transform: uppercase; }
+.ac-clarification h2 { font-family: var(--ac-serif); font-size: 1.2rem; margin: 0; }
+.ac-clarification-options { display: flex; flex-wrap: wrap; gap: 0.55rem; margin-top: 1rem; }
+.ac-clarification-options button {
+  background: #fff;
+  border: 1px solid var(--ac-blue);
+  border-radius: 999px;
+  color: var(--ac-blue);
+  cursor: pointer;
+  font-size: 0.82rem;
+  font-weight: 700;
+  padding: 0.55rem 0.8rem;
+}
+.ac-clarification-options button:hover { background: #eef5ff; }
 
 .ac-direct {
   background: var(--ac-panel);
