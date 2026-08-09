@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Activity, AlertCircle, BarChart3, ChevronRight, Clock3, RefreshCw, ShieldCheck, Sparkles, X } from 'lucide-react';
 import API_ORIGIN from '@/config';
 import './liveAlphaPage.css';
+import './growwResearch.css';
 
 const STRATEGIES = [
   ['cross_sectional_momentum_v1', 'Leadership', 'Cross-Sectional Momentum'],
@@ -112,6 +113,7 @@ export default function LiveAlphaPage() {
     </section>
 
     <main className="la-main">
+      <GrowwResearch groww={payload.groww} />
       <section className="la-panel la-scanner">
         <header><div><span className="la-section-kicker">Opportunity map</span><h2>Live Alpha Scanner</h2></div><div className="la-controls"><select value={sort} onChange={(event) => setSort(event.target.value)} aria-label="Sort scanner"><option value="alpha">Alpha score</option><option value="confidence">Confidence</option><option value="sector">Sector</option><option value="age">Signal age</option></select><span>{rows.length} names</span></div></header>
         {error ? <div className="la-notice error"><AlertCircle size={18} /><div><strong>Workspace unavailable</strong><p>{error}</p></div></div> : null}
@@ -131,6 +133,21 @@ export default function LiveAlphaPage() {
 
 function Score({ value }) { return <span className={`la-score ${value >= 80 ? 'exceptional up' : value <= -80 ? 'exceptional down' : value > 0 ? 'up' : value < 0 ? 'down' : ''}`}>{scoreText(value)}</span>; }
 function MiniScore({ signal }) { const value = signedScore(signal); return signal?.direction ? <span className={`la-mini-score ${value > 0 ? 'up' : 'down'}`}>{scoreText(value)}</span> : <span className="la-dash">—</span>; }
+
+function GrowwResearch({ groww }) {
+  const runs = new Map((groww?.runs || []).map((run) => [run.strategy, run]));
+  const sectorRun = runs.get('agi_sector_rotation_v1');
+  const equityRun = runs.get('agi_equity_opportunity_v1');
+  const sectors = (groww?.sectors || []).slice(0, 6);
+  const equities = (groww?.equities || []).slice(0, 6);
+  return <section className="la-groww"><header><div><span className="la-section-kicker">Groww Cloud · end-of-day research</span><h2>Groww Research</h2><p>Independent scheduled research inputs, excluded from the five-model live composite until comparably validated.</p></div><span className="la-groww-badge">Research only</span></header><div className="la-groww-grid">
+    <article className="la-panel"><div className="la-groww-head"><div><small>AGI Sector</small><h3>Sector Rotation</h3></div><RunState run={sectorRun} /></div>{sectors.length ? <table><thead><tr><th>#</th><th>Sector</th><th>Score</th><th>Rotation</th><th>20d relative</th></tr></thead><tbody>{sectors.map((row) => <tr key={row.sector}><td>{row.rank}</td><td><strong>{row.sector}</strong></td><td>{Number(row.score).toFixed(0)}</td><td><span className={`la-rotation ${row.rotation}`}>{row.rotation}</span></td><td className={Number(row.relative_20d) >= 0 ? 'positive' : 'negative'}>{formatFactor(row.relative_20d, '%')}</td></tr>)}</tbody></table> : <GrowwEmpty label="No sector rotation run has been received." />}</article>
+    <article className="la-panel"><div className="la-groww-head"><div><small>Opportunity</small><h3>Equity Opportunities</h3></div><RunState run={equityRun} /></div>{equities.length ? <table><thead><tr><th>#</th><th>Stock</th><th>Score</th><th>Signal</th><th>Volume</th></tr></thead><tbody>{equities.map((row) => <tr key={`${row.symbol}-${row.signal}`}><td>{row.rank || '—'}</td><td><strong>{row.symbol}</strong></td><td>{Number(row.score).toFixed(0)}</td><td><span className={`la-groww-signal ${row.signal}`}>{String(row.signal).replaceAll('_', ' ')}</span></td><td>{Number(row.volume_ratio) ? `${Number(row.volume_ratio).toFixed(2)}×` : '—'}</td></tr>)}</tbody></table> : <GrowwEmpty label="No equity opportunity run has been received." />}</article>
+  </div></section>;
+}
+
+function RunState({ run }) { return <div className="la-run-state"><i className={run ? 'ready' : ''} /><span>{run ? run.status || 'received' : 'standby'}</span>{run ? <time>{age(run.as_of)}</time> : null}</div>; }
+function GrowwEmpty({ label }) { return <div className="la-groww-empty"><Clock3 size={17} /><span>{label}</span></div>; }
 
 function ResearchDrawer({ row, onClose }) {
   const lead = row.active.sort((a, b) => Math.abs(signedScore(b)) - Math.abs(signedScore(a)))[0];
