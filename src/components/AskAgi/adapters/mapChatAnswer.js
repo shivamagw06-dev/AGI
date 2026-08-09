@@ -11,6 +11,12 @@ import {
 } from '@/lib/researchJourney';
 import { getResearchSession, mergeResearchSession } from '@/lib/researchSession';
 import { answerFormatFor } from '@/components/AskAgi/answerFormat';
+import {
+  calibrateDisplayedConfidence,
+  dedupeAnswerText,
+  normalizeProvenance,
+  scenarioCopy,
+} from '@/components/AskAgi/answerQuality';
 
 function asList(v, n = 8) {
   if (!Array.isArray(v)) return [];
@@ -96,23 +102,11 @@ export function mapChatAnswer(pack) {
   const financialsUnsupported = qualityGates.financials_supported === false;
   const valuationUnsupported = qualityGates.valuation_supported === false;
   const conversation = pack?.conversation_context || pack?.ask_orchestration?.conversation || {};
-  const provenance = [
+  const provenance = normalizeProvenance([
     ...(Array.isArray(pack?.evidence_used) ? pack.evidence_used : []),
     ...(Array.isArray(pack?.supporting_research) ? pack.supporting_research : []),
-  ]
-    .map((item) =>
-      typeof item === 'string'
-        ? { title: item, source: 'AGI research', url: '' }
-        : {
-            title: item?.title || item?.name || item?.text || item?.source || 'Research evidence',
-            source: item?.source || item?.publisher || item?.provider || 'AGI research',
-            url: item?.url || item?.href || '',
-          }
-    )
-    .filter((item, index, rows) =>
-      item.title && rows.findIndex((row) => row.title === item.title && row.url === item.url) === index
-    )
-    .slice(0, 12);
+    ...(Array.isArray(pack?.supporting_evidence) ? pack.supporting_evidence : []),
+  ]);
 
   const rc = vm.responseConstitution || pack?.answer_construction?.response_constitution || null;
   const aic =
@@ -250,12 +244,6 @@ export function mapChatAnswer(pack) {
       ],
       6
     );
-  if (!moreBullish.length && !evidenceUnavailable) {
-    moreBullish.push(
-      'Demand keeps compounding without needing ever-higher spending to win customers',
-      'Cash generation improves so the company depends less on external capital'
-    );
-  }
 
   const moreBearish = evidenceUnavailable
     ? []
@@ -267,12 +255,6 @@ export function mapChatAnswer(pack) {
       ],
       6
     );
-  if (!moreBearish.length && !evidenceUnavailable) {
-    moreBearish.push(
-      'Investors already expect a lot — so a small disappointment could pressure the share price',
-      'Competition or regulation could slow growth faster than the business can adapt'
-    );
-  }
 
   const intelligenceChips = [
     { id: 'company', label: 'Company Intelligence', section: 'business' },
@@ -301,7 +283,7 @@ export function mapChatAnswer(pack) {
     conviction: vm.conviction || view,
   };
 
-  const directAnswer = evidenceUnavailable
+  const directAnswer = dedupeAnswerText(evidenceUnavailable
     ? unavailableText
     : (
       aicSections.executive_summary ||
@@ -310,7 +292,7 @@ export function mapChatAnswer(pack) {
       vm.executive ||
       vm.conclusion ||
       unavailableText
-    );
+    ));
 
   const researchConclusion =
     vm.researchConclusion ||
@@ -364,11 +346,13 @@ export function mapChatAnswer(pack) {
     ? [unavailableText]
     : asList(rc?.why_agib_thinks_this?.length ? rc.why_agib_thinks_this : vm.why, 5);
 
-  const bottomLine = evidenceUnavailable
+  const bottomLine = dedupeAnswerText(evidenceUnavailable
     ? unavailableText
-    : (rc?.bottom_line || vm.bottomLine || vm.conclusion || directAnswer);
+    : (rc?.bottom_line || vm.bottomLine || vm.conclusion || directAnswer));
 
-  const confidence = evidenceUnavailable ? null : (vm.confidence ?? rc?.confidence?.score ?? null);
+  const confidence = evidenceUnavailable
+    ? null
+    : calibrateDisplayedConfidence(vm.confidence ?? rc?.confidence?.score ?? null, qualityGates);
   const confidenceExplanation =
     evidenceUnavailable
       ? unavailableText
@@ -408,6 +392,13 @@ export function mapChatAnswer(pack) {
     },
     clarification: conversation.clarification || null,
     provenance,
+    scenarioCopy: scenarioCopy(answerFormat.key),
+    dataQuality: {
+      financialsSupported: !financialsUnsupported,
+      valuationSupported: !valuationUnsupported,
+      conglomerateFrameworkValidated: qualityGates.conglomerate_framework_validated !== false,
+      incomplete: financialsUnsupported || valuationUnsupported || qualityGates.conglomerate_framework_validated === false,
+    },
     constitutionVersion: aic?.version || ipf?.version || rc?.version || '1.0',
     investmentContext,
     researchConclusion,
