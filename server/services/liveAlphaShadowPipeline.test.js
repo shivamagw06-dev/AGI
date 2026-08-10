@@ -49,6 +49,28 @@ test('runs momentum in shadow mode once a bucket has complete features', async (
   assert.equal(result.companion_engines[0].engine, 'volume_liquidity_anomaly_v1');
   assert.equal(result.companion_engines[1].engine, 'opening_range_expansion_v1');
   assert.equal(result.companion_engines[2].engine, 'intraday_mean_reversion_v1');
-  assert.equal(result.derivatives_status, 'insufficient_derivative_coverage');
+  assert.equal(result.derivatives_status, 'derivative_instruments_not_configured');
+  assert.deepEqual(result.persistence.map((row) => row.status), ['stored', 'stored', 'stored', 'stored', 'unavailable']);
   assert.equal((await pipeline.evaluate(new Date('2026-08-10T05:45:30Z'))).reason, 'already_evaluated_bucket');
+});
+
+test('one engine storage failure does not block the remaining engines', async () => {
+  const stored = [];
+  const pipeline = new MomentumShadowPipeline({
+    repository: {
+      saveMomentumRun: async () => { stored.push('momentum'); return { signals: 10 }; },
+      saveOpeningRangeRun: async () => { throw new Error('opening write failed'); },
+      saveMeanReversionRun: async () => { stored.push('mean'); return { signals: 10 }; },
+    },
+  });
+  const statuses = await pipeline.persistEngines([
+    { engine: 'momentum', method: 'saveMomentumRun', result: {} },
+    { engine: 'opening', method: 'saveOpeningRangeRun', result: {} },
+    { engine: 'mean', method: 'saveMeanReversionRun', result: {} },
+    { engine: 'derivatives', method: 'saveDerivativesRun', result: null, reason: 'derivative_instruments_not_configured' },
+  ], {});
+  assert.deepEqual(stored, ['momentum', 'mean']);
+  assert.deepEqual(statuses.map((row) => row.status), ['stored', 'failed', 'stored', 'unavailable']);
+  assert.equal(statuses[1].error, 'opening write failed');
+  assert.equal(statuses[3].reason, 'derivative_instruments_not_configured');
 });
