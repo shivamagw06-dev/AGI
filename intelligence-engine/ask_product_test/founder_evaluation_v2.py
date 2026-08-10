@@ -739,6 +739,7 @@ def evaluate_founder_v2_case(
                 "industry_intelligence",
                 "business_intelligence",
                 "capiq_ikt",
+                "institutional_knowledge_tables",
                 "company_memory",
                 "financial_concepts",
                 "financial_foundations",
@@ -750,6 +751,7 @@ def evaluate_founder_v2_case(
             "unsupported_coverage_policy",
             "company_router",
             "ikt_company",
+            "ikt_company_router",
         })
 
     for forbidden in expect.get("forbid_entities") or []:

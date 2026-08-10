@@ -9,6 +9,14 @@ _FULL_COMPANY_ANALYSIS_RE = re.compile(
     r"^\s*(?:please\s+)?(?:analyse|analyze|review|evaluate|assess)\b",
     re.I,
 )
+# Scoped BI axes — keep deterministic Business Intelligence answers instead of
+# forcing the generic full research desk (which "Evaluate …" would otherwise trigger).
+_SCOPED_BUSINESS_AXIS_RE = re.compile(
+    r"\b(management quality|capital allocation|governance|shareholder friendl|"
+    r"business model|competitive advantage|unit economics|network effects?|"
+    r"moat|cost advantages?)\b",
+    re.I,
+)
 
 CONGLOMERATE_FRAMEWORK_GUARDS: dict[str, tuple[re.Pattern[str], ...]] = {
     "RELIANCE": (
@@ -21,7 +29,17 @@ CONGLOMERATE_FRAMEWORK_GUARDS: dict[str, tuple[re.Pattern[str], ...]] = {
 
 def requires_full_company_analysis(question: str, ticker: str | None) -> bool:
     """Resolved broad company analyses must run the complete research desk."""
-    return bool(ticker and _FULL_COMPANY_ANALYSIS_RE.search(str(question or "")))
+    text = str(question or "")
+    if not ticker or not _FULL_COMPANY_ANALYSIS_RE.search(text):
+        return False
+    if _SCOPED_BUSINESS_AXIS_RE.search(text):
+        return False
+    return True
+
+
+def is_scoped_business_axis_question(question: str) -> bool:
+    """True for BI-axis prompts that must not fall back to a company-profile dump."""
+    return bool(_SCOPED_BUSINESS_AXIS_RE.search(str(question or "")))
 
 
 def dedupe_research_text(value: Any) -> str:

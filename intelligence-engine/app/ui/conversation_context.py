@@ -18,8 +18,11 @@ from app.ui.conversation_checkpoints import (
 )
 
 
+# Pronouns `it`/`its` are lowercase-only so sector acronym "IT" does not
+# false-trigger follow-up clarification ("IT services companies").
+_PRONOUN_FOLLOW_UP_RE = re.compile(r"(?<![A-Za-z])(?:it|its)(?![A-Za-z])")
 _FOLLOW_UP_RE = re.compile(
-    r"\b(it|its|that company|this company|them|those companies|the first|the second|now|also)\b",
+    r"\b(that company|this company|them|those companies|the first|the second|now|also)\b",
     re.I,
 )
 _CONTROL_ONLY_RE = re.compile(
@@ -236,7 +239,8 @@ class ConversationStore:
             prior_entities or state.theme or state.previous_answer_summary
         )
         is_follow_up = bool(
-            _FOLLOW_UP_RE.search(original)
+            _PRONOUN_FOLLOW_UP_RE.search(original)
+            or _FOLLOW_UP_RE.search(original)
             or _LEADING_AND_RE.search(original)
             or (_CONTROL_ONLY_RE.search(original) and has_thread_context)
         )
