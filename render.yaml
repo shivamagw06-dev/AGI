@@ -55,6 +55,10 @@ services:
         value: "true"
       - key: GROWW_EQUITY_OPPORTUNITY_SCHEDULE_IST
         value: "16:30"
+      - key: GROWW_SECTOR_ROTATION_SCHEDULER
+        value: "true"
+      - key: GROWW_SECTOR_ROTATION_SCHEDULE_IST
+        value: "16:35"
 
   # Optional dedicated ingest worker (Starter+). Decouples queue processing from
   # the HTTP process so deploys/restarts of the API do not drop in-flight work
