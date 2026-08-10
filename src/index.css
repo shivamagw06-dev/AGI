@@ -546,6 +546,7 @@
 
   .agi-cover--16-10 {
     aspect-ratio: 16 / 10;
+    background-color: #ffffff;
   }
 
   .agi-cover--16-9 {
@@ -557,6 +558,7 @@
     min-height: 220px;
     min-width: 0;
     max-width: 100%;
+    background-color: #ffffff;
   }
 
   /* Desktop featured mosaic: fill the grid cell without overflowing into copy. */
@@ -574,21 +576,35 @@
     min-width: 118px;
     max-width: 118px;
     flex-shrink: 0;
+    background-color: #ffffff;
+  }
+
+  /* Home/research cards: show full infographic covers without grey letterboxing. */
+  .agi-cover--featured img,
+  .agi-cover--16-10 img,
+  .agi-cover--thumb img {
+    object-fit: contain;
   }
 
   .agi-cover--article {
     aspect-ratio: auto;
     max-height: none;
+    width: fit-content;
+    max-width: min(90rem, calc(100vw - 3rem));
+    margin-inline: auto;
+    background-color: transparent;
+    border: none;
     border-radius: 0.75rem;
-    border: 1px solid hsl(var(--border));
+    overflow: hidden;
   }
 
   .agi-cover--article img {
-    width: 100%;
+    display: block;
+    width: auto;
+    max-width: min(90rem, calc(100vw - 3rem));
     height: auto;
     max-height: min(72vh, 720px);
-    object-fit: contain;
-    object-position: center;
+    border-radius: 0.75rem;
   }
 
   .agi-cover--editor {
