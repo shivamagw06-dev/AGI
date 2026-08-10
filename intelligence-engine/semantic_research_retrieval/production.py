@@ -268,6 +268,7 @@ def package_for_ask_agi(
     theme_filters = [str(item) for item in (themes or []) if item]
     fused: dict[str, dict[str, Any]] = {}
     failures: list[str] = []
+    ticker_metadata_fallback = False
     for variant in query_variants:
         try:
             response = _dump(
@@ -275,6 +276,16 @@ def package_for_ask_agi(
                     variant, mode="hybrid", limit=max(20, limit * 3), ticker=ticker
                 )
             )
+            # Older CMS articles may have been learned before ticker extraction
+            # was enabled. A strict ticker filter would make those exact-title
+            # matches invisible. Retry without the metadata filter only when the
+            # filtered query is empty; lexical/semantic ranking and answerability
+            # gates still decide whether the result is usable.
+            if ticker and not (response.get("hits") or []):
+                response = _dump(
+                    kip.search(variant, mode="hybrid", limit=max(20, limit * 3))
+                )
+                ticker_metadata_fallback = True
             for raw in response.get("hits") or []:
                 hit = _dump(raw)
                 doc_id = str(hit.get("document_id") or "")
@@ -309,6 +320,7 @@ def package_for_ask_agi(
             "applied": len(query_variants) > 1,
             "variant_count": len(query_variants),
         },
+        "ticker_metadata_fallback": ticker_metadata_fallback,
         "source_hierarchy": _source_priority(question),
         "AGI_HOUSE_VIEW": {"documents": hits, "evidence_count": len(hits)},
         "CURRENT_EVIDENCE": (
