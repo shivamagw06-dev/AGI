@@ -363,6 +363,15 @@
 
 .vt-company-context { margin: .25rem 0 0; color: rgba(255,255,255,.72); font-size: .84rem; }
 
+.vt-pack-freshness {
+  margin: 0.45rem 0 0;
+  font-size: 0.74rem;
+  color: rgba(255, 255, 255, 0.72);
+  letter-spacing: 0.02em;
+}
+.vt-pack-freshness[data-freshness='fresh'] { color: #9ff0bf; }
+.vt-pack-freshness[data-freshness='aging'] { color: rgba(255, 255, 255, 0.78); }
+.vt-pack-freshness[data-freshness='stale'] { color: #ffe09d; }
 .vt-hero-quality {
   min-width: 130px;
   border-left: 1px solid rgba(255,255,255,.2);

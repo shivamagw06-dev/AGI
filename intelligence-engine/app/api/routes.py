@@ -20716,6 +20716,52 @@ async def valuation_engine_terminal_company(symbol: str, window: str = "5Y", pee
     return company_pack(symbol, window=window, peer_limit=peer_limit)
 
 
+@router.post("/valuation-engine/terminal/company/{symbol}/snapshot")
+async def valuation_engine_terminal_company_snapshot(
+    symbol: str,
+    window: str = "5Y",
+    peer_limit: int = 12,
+):
+    """Compute one company pack and persist it to Supabase for Node reads."""
+    from valuation_engine.snapshot_store import compute_and_persist
+
+    return compute_and_persist(
+        symbol,
+        window=window,
+        peer_limit=max(1, min(int(peer_limit or 12), 40)),
+    )
+
+
+@router.get("/valuation-engine/terminal/company/{symbol}/snapshot/latest")
+async def valuation_engine_terminal_company_snapshot_latest(symbol: str, window: str = "5Y"):
+    """Return the latest stored company pack metadata (engine-side debug)."""
+    from valuation_engine.snapshot_store import latest_pack_row
+
+    row = latest_pack_row(symbol, window=window)
+    if not row:
+        return {"ok": False, "error": "no_snapshot", "symbol": str(symbol or "").upper()}
+    return {
+        "ok": True,
+        **{
+            k: row.get(k)
+            for k in (
+                "pack_id",
+                "symbol",
+                "window",
+                "generated_at",
+                "source_as_of",
+                "status",
+                "freshness",
+                "schema_version",
+                "calculation_version",
+                "data_quality",
+                "health_score",
+            )
+        },
+        "payload": row.get("payload"),
+    }
+
+
 @router.get("/valuation-engine/terminal/series/{symbol}/{metric}")
 async def valuation_engine_terminal_series(symbol: str, metric: str, window: str = "5Y"):
     """Coverage-aware chart series for one metric."""

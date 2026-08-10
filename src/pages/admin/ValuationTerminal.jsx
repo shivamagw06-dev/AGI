@@ -275,7 +275,7 @@ function CompanySearch({ onSelect, recent, favorites, onToggleFavorite }) {
   );
 }
 
-function OverviewStrip({ overview, healthScore, table = [] }) {
+function OverviewStrip({ overview, healthScore, table = [], packMeta = null }) {
   if (!overview) return null;
   const metric = (id) => table.find((row) => row.metric === id) || {};
   const pe = metric('pe');
@@ -299,6 +299,23 @@ function OverviewStrip({ overview, healthScore, table = [] }) {
           <p className="vt-company-context">
             {[overview.sector, overview.industry].filter(Boolean).join(' · ') || 'Classification unavailable'}
           </p>
+          {packMeta?.generated_at || packMeta?.freshness ? (
+            <p className="vt-pack-freshness" data-freshness={packMeta.freshness || 'unknown'}>
+              Pack{' '}
+              {packMeta.generated_at
+                ? new Date(packMeta.generated_at).toLocaleString('en-IN', {
+                    timeZone: 'Asia/Kolkata',
+                    day: '2-digit',
+                    month: 'short',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })
+                : '—'}
+              {packMeta.freshness ? ` · ${packMeta.freshness}` : ''}
+              {packMeta.source_as_of ? ` · source ${packMeta.source_as_of}` : ''}
+              {packMeta.cache?.stale || packMeta.freshness === 'stale' ? ' · serving stored result' : ''}
+            </p>
+          ) : null}
         </div>
         <div className="vt-hero-quality">
           <span>Evidence confidence</span>
@@ -869,7 +886,17 @@ function CompanyDetailWorkspace({
     <div className="vt-company-shell">
       <div className="vt-company-main">
         <div className="vt-title-actions">
-          <OverviewStrip overview={overview} healthScore={healthScore} table={pack.table} />
+          <OverviewStrip
+            overview={overview}
+            healthScore={healthScore}
+            table={pack.table}
+            packMeta={{
+              generated_at: pack.generated_at,
+              freshness: pack.freshness,
+              source_as_of: pack.source_as_of,
+              cache: pack.cache,
+            }}
+          />
           <button
             type="button"
             className={`vt-fav-btn ${isFavorite ? 'on' : ''}`}
@@ -1092,7 +1119,7 @@ export default function ValuationTerminal() {
     });
   }, []);
 
-  const loadPack = useCallback(async () => {
+  const loadPack = useCallback(async ({ force = false } = {}) => {
     if (!symbol) {
       setPack(null);
       return;
@@ -1100,7 +1127,9 @@ export default function ValuationTerminal() {
     setLoading(true);
     setError('');
     try {
-      const out = await getVtCompany(symbol, { window, peer_limit: 12 });
+      const params = { window, peer_limit: 12 };
+      if (force) params.refresh = 1;
+      const out = await getVtCompany(symbol, params);
       setPack(out);
       if (!out?.ok) setError(out?.error || 'Company not in warehouse');
     } catch (err) {
@@ -1154,7 +1183,7 @@ export default function ValuationTerminal() {
               className="vi-btn"
               onClick={() => {
                 loadHealth();
-                loadPack();
+                loadPack({ force: true });
                 getSveSectors().then((r) => setSectors(r?.sectors || []));
                 getSveMarket().then(setMarket).catch(() => setMarket(null));
               }}
@@ -1218,7 +1247,7 @@ export default function ValuationTerminal() {
           </div>
         ) : null}
 
-        {loading ? <p className="hint">Computing valuation from warehouse…</p> : null}
+        {loading ? <p className="hint">Loading valuation pack…</p> : null}
 
         {pack?.ok ? (
           <CompanyDetailWorkspace

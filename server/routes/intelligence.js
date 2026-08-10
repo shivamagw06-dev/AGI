@@ -36,6 +36,7 @@ import {
   hflStaticStrategy,
 } from '../services/hflStaticLibrary.js';
 import { getHflTerminalFromReadModel } from '../services/hflTerminalSnapshot.js';
+import { getValuationCompanyPackFromReadModel } from '../services/valuationCompanyPackSnapshot.js';
 
 function engineConfig() {
   let baseUrl = (process.env.INTELLIGENCE_ENGINE_URL || 'http://127.0.0.1:8100').replace(/\/$/, '');
@@ -2577,11 +2578,28 @@ export default function createIntelligenceRouter() {
   });
   router.get('/valuation-terminal/company/:ticker', async (req, res) => {
     try {
+      const window = req.query?.window || '5Y';
+      const peerLimit = Number(req.query?.peer_limit) || 12;
+      const forceRefresh = String(req.query?.refresh || '') === '1';
+      const fromStore = await getValuationCompanyPackFromReadModel({
+        engineFetch,
+        symbol: req.params.ticker,
+        window,
+        peerLimit,
+        forceRefresh,
+        allowStale: true,
+      });
+      if (fromStore?.data) {
+        res.set('X-AGI-Valuation-Pack-Cache', fromStore.source || 'supabase');
+        res.set('X-AGI-Valuation-Pack-Freshness', fromStore.data.freshness || 'unknown');
+        return res.status(200).json(fromStore.data);
+      }
       const qs = new URLSearchParams(req.query || {}).toString();
       const r = await engineFetch(
         `/v1/valuation-terminal/company/${encodeURIComponent(req.params.ticker)}${qs ? `?${qs}` : ''}`,
         { timeoutMs: 90_000 },
       );
+      res.set('X-AGI-Valuation-Pack-Cache', 'engine_live');
       res.status(r.status).json(r.data);
     } catch (err) {
       res.status(502).json({ error: err.message || 'valuation-terminal company failed' });
@@ -2877,11 +2895,28 @@ export default function createIntelligenceRouter() {
   });
   router.get('/valuation/company/:symbol', async (req, res) => {
     try {
+      const window = req.query?.window || '10Y';
+      const peerLimit = Number(req.query?.peer_limit) || 12;
+      const forceRefresh = String(req.query?.refresh || '') === '1';
+      const fromStore = await getValuationCompanyPackFromReadModel({
+        engineFetch,
+        symbol: req.params.symbol,
+        window,
+        peerLimit,
+        forceRefresh,
+        allowStale: true,
+      });
+      if (fromStore?.data) {
+        res.set('X-AGI-Valuation-Pack-Cache', fromStore.source || 'supabase');
+        res.set('X-AGI-Valuation-Pack-Freshness', fromStore.data.freshness || 'unknown');
+        return res.status(200).json(fromStore.data);
+      }
       const qs = new URLSearchParams(req.query || {}).toString();
       const r = await engineFetch(
         `/v1/valuation/company/${encodeURIComponent(req.params.symbol)}${qs ? `?${qs}` : ''}`,
         { timeoutMs: 90_000 },
       );
+      res.set('X-AGI-Valuation-Pack-Cache', 'engine_live');
       res.status(r.status).json(r.data);
     } catch (err) {
       res.status(502).json({ error: err.message || 'valuation company failed' });
@@ -3553,11 +3588,28 @@ export default function createIntelligenceRouter() {
   router.get('/valuation-engine/terminal/search', kfGet('/v1/valuation-engine/terminal/search'));
   router.get('/valuation-engine/terminal/company/:symbol', async (req, res) => {
     try {
+      const window = req.query?.window || '5Y';
+      const peerLimit = Number(req.query?.peer_limit) || 12;
+      const forceRefresh = String(req.query?.refresh || '') === '1';
+      const fromStore = await getValuationCompanyPackFromReadModel({
+        engineFetch,
+        symbol: req.params.symbol,
+        window,
+        peerLimit,
+        forceRefresh,
+        allowStale: true,
+      });
+      if (fromStore?.data) {
+        res.set('X-AGI-Valuation-Pack-Cache', fromStore.source || 'supabase');
+        res.set('X-AGI-Valuation-Pack-Freshness', fromStore.data.freshness || 'unknown');
+        return res.status(200).json(fromStore.data);
+      }
       const qs = new URLSearchParams(req.query || {}).toString();
       const r = await engineFetch(
         `/v1/valuation-engine/terminal/company/${encodeURIComponent(req.params.symbol)}${qs ? `?${qs}` : ''}`,
         { timeoutMs: 90_000 },
       );
+      res.set('X-AGI-Valuation-Pack-Cache', 'engine_live');
       res.status(r.status).json(r.data);
     } catch (err) {
       res.status(502).json({ error: err.message || 'valuation-engine terminal company failed' });
