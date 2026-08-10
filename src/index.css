@@ -546,6 +546,7 @@
 
   .agi-cover--16-10 {
     aspect-ratio: 16 / 10;
+    background-color: #ffffff;
   }
 
   .agi-cover--16-9 {
@@ -557,6 +558,7 @@
     min-height: 220px;
     min-width: 0;
     max-width: 100%;
+    background-color: #ffffff;
   }
 
   /* Desktop featured mosaic: fill the grid cell without overflowing into copy. */
@@ -574,6 +576,14 @@
     min-width: 118px;
     max-width: 118px;
     flex-shrink: 0;
+    background-color: #ffffff;
+  }
+
+  /* Home/research cards: show full infographic covers without grey letterboxing. */
+  .agi-cover--featured img,
+  .agi-cover--16-10 img,
+  .agi-cover--thumb img {
+    object-fit: contain;
   }
 
   .agi-cover--article {

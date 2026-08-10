@@ -100,7 +100,7 @@ function FeaturedArticle({ article }) {
 
   return (
     <article className="group grid h-full min-w-0 overflow-hidden rounded-xl border border-[#e4e7ec] bg-white lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] animate-home-rise">
-      <Link to={href} className="agi-cover agi-cover--featured block min-w-0 bg-[#f3f4f6]">
+      <Link to={href} className="agi-cover agi-cover--featured block min-w-0">
         <img
           src={cover}
           alt=""
