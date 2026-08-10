@@ -6,7 +6,15 @@ import re
 from typing import Any
 
 _FULL_COMPANY_ANALYSIS_RE = re.compile(
-    r"^\s*(?:please\s+)?(?:analyse|analyze|review|evaluate|assess)\b",
+    r"^\s*(?:please\s+)?(?:analyse|analyze|review|evaluate|assess)\b|"
+    r"\b(?:agi(?:['’]s)?|your|our|house)\s+(?:current\s+)?view\b|"
+    r"\bview\s+on\b|\binvestment\s+(?:view|thesis|case)\b|"
+    r"\b(?:bull|bear|base)\s+case\b|"
+    r"\bwhat\s+(?:would|could)\s+change\s+.*\bview\b|"
+    r"(?:\b(?:order wins?|contracts?|tenders?|acquisitions?|guidance)\b.*"
+    r"\b(?:impact|material|thesis|view|outlook|case)\b)|"
+    r"(?:\b(?:impact|material|thesis|view|outlook|case)\b.*"
+    r"\b(?:order wins?|contracts?|tenders?|acquisitions?|guidance)\b)",
     re.I,
 )
 # Scoped BI axes — keep deterministic Business Intelligence answers instead of

@@ -19,6 +19,21 @@ _RULES: tuple[tuple[re.Pattern[str], str, str, str, int], ...] = (
      "Should I allocate capital here instead of another opportunity?", "Evaluate", 25),
     (re.compile(r"\bdeserve\s+research\b|\binitiate\s+coverage\b|\bworth\s+research\b", re.I), "Research Priority",
      "Should analyst resources be allocated to this company?", "Prioritize", 25),
+    (re.compile(
+        r"\b(?:agi(?:['’]s)?|your|our|house)\s+(?:current\s+)?view\b|"
+        r"\bview\s+on\b|\binvestment\s+(?:view|thesis|case)\b|"
+        r"\b(?:bull|bear|base)\s+case\b|\bwhat\s+(?:would|could)\s+change\s+.*\bview\b",
+        re.I,
+     ), "Thesis Validation",
+     "Does the current evidence strengthen or weaken the investment thesis?", "Challenge", 25),
+    (re.compile(
+        r"\b(?:order wins?|contracts?|tenders?|acquisitions?|guidance)\b.*"
+        r"\b(?:impact|material|thesis|view|outlook|case)\b|"
+        r"\b(?:impact|material|thesis|view|outlook|case)\b.*"
+        r"\b(?:order wins?|contracts?|tenders?|acquisitions?|guidance)\b",
+        re.I,
+     ), "Thesis Validation",
+     "Does this corporate event materially change the investment thesis?", "Evaluate", 23),
     (re.compile(r"\bcompare\b|\bvs\.?\b|\bversus\b|\bwhich\s+one\b", re.I), "Peer Selection",
      "If I only invest in one company, which differences matter?", "Compare", 22),
     (re.compile(r"\bexpensive\b|\bcheap\b|\bvaluation\b|\bpremium\b|\bmultiple\b|\bfairly\s+valued\b", re.I),
