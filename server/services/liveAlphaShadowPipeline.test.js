@@ -7,6 +7,8 @@ test('builds median minute baselines using prior sessions only', () => {
   const rows = [];
   for (let day = 1; day <= 6; day += 1) rows.push({ instrument_key: 'NSE_EQ|A', observed_at: `2026-08-0${day}T04:00:00Z`, cumulative_volume: day * 100 });
   const baseline = buildMinuteVolumeBaselines(rows, { minimumSessions: 5, throughSession: '2026-08-07' });
+  assert.equal(baseline[0].instrument_key, 'NSE_EQ|A');
+  assert.equal(baseline[0].minute_of_session, 15);
   assert.equal(baseline[0].expected_cumulative_volume, 350);
   assert.equal(baseline[0].sample_sessions, 6);
 });
