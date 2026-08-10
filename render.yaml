@@ -152,6 +152,20 @@ services:
         sync: false
       - key: SUPABASE_SERVICE_ROLE_KEY
         sync: false
+      # Ask AGI grounded synthesis. OPENAI_API_KEY is entered in Render and
+      # never committed; deterministic ICE remains the automatic fallback.
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: ASK_LLM_ENABLED
+        value: "true"
+      - key: ASK_REASONING_MODEL
+        value: gpt-5.6-terra
+      - key: ASK_REASONING_EFFORT
+        value: medium
+      - key: ASK_LLM_TIMEOUT_SECONDS
+        value: "25"
+      - key: ASK_LLM_MAX_OUTPUT_TOKENS
+        value: "1400"
       # FAA live public acquisition — search + page enrichment
       # Set EXA / FIRECRAWL / BROWSERBASE / TAVILY keys in Render dashboard
       - key: FAA

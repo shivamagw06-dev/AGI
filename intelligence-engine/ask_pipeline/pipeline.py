@@ -33,6 +33,7 @@ from ask_pipeline.recording import record_decision_quality, register_outcome
 from ask_pipeline.schema import FREEZE_LOCKS, PIPELINE_VERSION, PROGRAMME
 from ask_pipeline import store
 from ask_pipeline.telemetry import build_telemetry
+from ask_pipeline.llm_synthesis import synthesize_financial_answer
 from observability.tracing import span as trace_span
 from observability.tracing import traced as trace_run
 
@@ -1632,6 +1633,34 @@ def run_complete_ask(
         "fabricated": False,
         "reasoning_changed": False,
     }
+
+    # Grounded generative synthesis. The deterministic ICE response remains the
+    # fallback and the model receives only bounded, attributed pipeline evidence.
+    llm_synthesis = synthesize_financial_answer(
+        question=question,
+        evidence=evidence,
+        intent_resolution=irl,
+        entities=entities_rec,
+        deterministic_answer=communication,
+    )
+    if llm_synthesis.get("used") and isinstance(llm_synthesis.get("answer"), dict):
+        generated = llm_synthesis["answer"]
+        communication = {
+            **communication,
+            "executive_summary": generated.get("executive_summary"),
+            "why": generated.get("why") or communication.get("why") or [],
+            "prose": generated.get("prose"),
+            "answer_source": "openai_grounded_synthesis",
+            "llm_cited_evidence_ids": generated.get("cited_evidence_ids") or [],
+            "llm_uncertainty": generated.get("uncertainty"),
+            "llm_used": True,
+            "llm_model": llm_synthesis.get("model"),
+        }
+    stages["llm_synthesis"] = {
+        key: value
+        for key, value in llm_synthesis.items()
+        if key not in {"answer"}
+    }
     # Prefer ICE text on the institutional answer surface
     institutional_answer = {
         **institutional_answer,
@@ -1727,6 +1756,7 @@ def run_complete_ask(
         "institutional_memory": institutional_memory,
         "institutional_answer": institutional_answer,
         "communication": communication,
+        "llm_synthesis": stages.get("llm_synthesis"),
         "planner": planner,
         "dag": dag,
         "governance": governance,
@@ -1772,9 +1802,9 @@ def run_complete_ask(
             "prose": communication.get("prose"),
             "template": communication.get("template"),
             "sections": communication.get("sections"),
-            "source": "institutional_communication",
+            "source": communication.get("answer_source") or "institutional_communication",
             "fabricated": False,
-            "llm_used": False,
+            "llm_used": bool(llm_synthesis.get("used")),
         },
         "planner": planner,
         "dag": dag,
@@ -1791,7 +1821,14 @@ def run_complete_ask(
         "fabricated": False,
         "reasoning_changed": False,
         "knowledge_factory_changed": False,
-        "llm_synthesis_used": False,
+        "llm_used": bool(llm_synthesis.get("used")),
+        "llm_synthesis_used": bool(llm_synthesis.get("used")),
+        "model": llm_synthesis.get("model"),
+        "llm": {
+            key: value
+            for key, value in llm_synthesis.items()
+            if key not in {"answer"}
+        },
         # AGI v4.0 Investment Office soft surface (thin; full packs in store/context)
         "investment_office_os": {
             "release": "AGI v4.0",
