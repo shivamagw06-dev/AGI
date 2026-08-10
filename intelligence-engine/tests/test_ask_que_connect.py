@@ -38,6 +38,7 @@ def test_investment_view_and_corporate_event_require_full_research_desk():
         "What is your investment thesis on TCS?",
         "What would change your view on Infosys?",
         "How material is Reliance's new contract to the investment case?",
+        "Assess the investment impact of Zen Technologies' 295 crore defence order",
     )
     for question in questions:
         pack = _build_que_answer_construction(question, ticker="ZENTEC")
