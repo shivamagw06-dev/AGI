@@ -4,6 +4,7 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
+    "test:auth": "node --test src/lib/authValidation.test.js server/routes/auth.test.js",
     "dev": "node scripts/write-build-version.js && cp index.vite.html index.html && vite --host :: --port 3000",
     "build": "node scripts/write-build-version.js && cp index.vite.html index.html && vite build",
     "build:hostinger": "node scripts/write-build-version.js && cp index.vite.html index.html && vite build && cp dist/index.html index.html && rm -rf assets && cp -R dist/assets assets && cp dist/.htaccess .htaccess && cp dist/version.json version.json",

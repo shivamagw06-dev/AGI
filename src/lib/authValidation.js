@@ -1,20 +1,14 @@
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const MOBILE_RE = /^[+]?[\d\s()-]{8,18}$/;
+export const PASSWORD_REQUIREMENTS = { minLength: 12 };
 
 export function isValidEmail(email) {
   return EMAIL_RE.test(String(email || '').trim());
 }
 
-export function isValidMobile(mobile) {
-  const value = String(mobile || '').trim();
-  if (!value) return true;
-  return MOBILE_RE.test(value);
-}
-
 export function passwordChecks(password = '') {
   const value = String(password);
   return {
-    minLength: value.length >= 8,
+    minLength: value.length >= PASSWORD_REQUIREMENTS.minLength,
     hasUpper: /[A-Z]/.test(value),
     hasLower: /[a-z]/.test(value),
     hasNumber: /\d/.test(value),
@@ -24,7 +18,7 @@ export function passwordChecks(password = '') {
 
 export function isStrongPassword(password) {
   const c = passwordChecks(password);
-  return c.minLength && c.hasUpper && c.hasLower && c.hasNumber;
+  return c.minLength && c.hasUpper && c.hasLower && c.hasNumber && c.hasSymbol;
 }
 
 export function validateSignup({
@@ -32,7 +26,6 @@ export function validateSignup({
   email,
   password,
   confirmPassword,
-  mobile,
   acceptTerms,
   acceptPrivacy,
 }) {
@@ -42,10 +35,9 @@ export function validateSignup({
   }
   if (!isValidEmail(email)) errors.email = 'Enter a valid email address.';
   if (!isStrongPassword(password)) {
-    errors.password = 'Use 8+ characters with upper, lower, and a number.';
+    errors.password = 'Use 12+ characters with uppercase, lowercase, a number, and a symbol.';
   }
   if (password !== confirmPassword) errors.confirmPassword = 'Passwords do not match.';
-  if (!isValidMobile(mobile)) errors.mobile = 'Enter a valid mobile number.';
   if (!acceptTerms) errors.acceptTerms = 'Accept the Terms & Conditions to continue.';
   if (!acceptPrivacy) errors.acceptPrivacy = 'Accept the Privacy Policy to continue.';
   return errors;

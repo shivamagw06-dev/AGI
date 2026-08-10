@@ -67,7 +67,7 @@ export default function PinUnlockPage() {
         <Lock className="h-8 w-8 text-[#0d1d33]" />
         <h1 className="mt-4 text-2xl font-bold text-[#18202b]">Welcome back, {firstName}</h1>
         <p className="mt-2 text-sm text-[#667085]">
-          Enter your device PIN to unlock this trusted browser session.
+          Enter the local PIN for this browser. This is not your AGI account password.
         </p>
         <label htmlFor="pin" className="mt-6 mb-1 block text-sm font-medium">
           {length}-digit PIN

@@ -35,7 +35,7 @@ export default function ResetPasswordPage() {
     setError('');
     setMessage('');
     if (!isStrongPassword(password)) {
-      setError('Use 8+ characters with upper, lower, and a number.');
+      setError('Use 12+ characters with uppercase, lowercase, a number, and a symbol.');
       return;
     }
     if (password !== confirmPassword) {
@@ -88,10 +88,11 @@ export default function ResetPasswordPage() {
                 className="w-full border border-[#cbd2da] px-3 py-3 text-sm focus:border-[#274c77] focus:outline-none"
               />
               <ul className="mt-2 grid grid-cols-2 gap-1 text-[11px] text-[#7b8491]">
-                <li className={checks.minLength ? 'text-[#087443]' : ''}>8+ characters</li>
+                <li className={checks.minLength ? 'text-[#087443]' : ''}>12+ characters</li>
                 <li className={checks.hasUpper ? 'text-[#087443]' : ''}>Uppercase</li>
                 <li className={checks.hasLower ? 'text-[#087443]' : ''}>Lowercase</li>
                 <li className={checks.hasNumber ? 'text-[#087443]' : ''}>Number</li>
+                <li className={checks.hasSymbol ? 'text-[#087443]' : ''}>Symbol</li>
               </ul>
             </div>
             <div>

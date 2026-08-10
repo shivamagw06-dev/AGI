@@ -68,7 +68,7 @@ export default function AccountSecurityPage() {
     e.preventDefault();
     flash(true, '');
     if (!isStrongPassword(password)) {
-      flash(false, 'Use 8+ characters with upper, lower, and a number.');
+      flash(false, 'Use 12+ characters with uppercase, lowercase, a number, and a symbol.');
       return;
     }
     if (password !== confirmPassword) {
@@ -99,17 +99,17 @@ export default function AccountSecurityPage() {
             <div>
               <h1 className="text-2xl font-bold text-[#18202b]">Account security</h1>
               <p className="mt-1 text-sm text-[#667085]">
-                Manage password, device PIN, and signed-in sessions for {user?.email}.
+                Manage your password, local browser PIN, and signed-in sessions.
               </p>
             </div>
           </div>
         </div>
 
         <section className="border border-[#dce1e7] bg-white p-6 sm:p-8">
-          <h2 className="text-lg font-bold text-[#18202b]">Device PIN unlock</h2>
+          <h2 className="text-lg font-bold text-[#18202b]">Local browser PIN</h2>
           <p className="mt-1 text-sm text-[#667085]">
-            After you sign in once, this browser can ask for a {pinCfg?.length || pinLength}-digit PIN
-            instead of your password. The PIN stays on this device only.
+            This optional PIN only locks access in this browser after you sign in. It is not your
+            account password and cannot recover or secure your account on other devices.
           </p>
           <p className="mt-3 text-xs font-semibold text-[#445066]">
             Status: {pinEnabled ? `Enabled (${pinCfg?.length || 4}-digit)` : 'Not set on this device'}
@@ -176,10 +176,11 @@ export default function AccountSecurityPage() {
               className="w-full border border-[#cbd2da] px-3 py-3 text-sm focus:border-[#274c77] focus:outline-none"
             />
             <ul className="grid grid-cols-2 gap-1 text-[11px] text-[#7b8491]">
-              <li className={checks.minLength ? 'text-[#087443]' : ''}>8+ characters</li>
+              <li className={checks.minLength ? 'text-[#087443]' : ''}>12+ characters</li>
               <li className={checks.hasUpper ? 'text-[#087443]' : ''}>Uppercase</li>
               <li className={checks.hasLower ? 'text-[#087443]' : ''}>Lowercase</li>
               <li className={checks.hasNumber ? 'text-[#087443]' : ''}>Number</li>
+              <li className={checks.hasSymbol ? 'text-[#087443]' : ''}>Symbol</li>
             </ul>
             <input
               type="password"
