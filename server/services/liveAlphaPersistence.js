@@ -18,6 +18,20 @@ async function rest(table, { method = 'POST', query = '', body, prefer = 'return
   return text ? JSON.parse(text) : null;
 }
 
+export async function pagedGet(table, baseParams, { limit = 5000, pageSize = 1000 } = {}) {
+  const rows = [];
+  while (rows.length < limit) {
+    const size = Math.min(pageSize, limit - rows.length);
+    const params = new URLSearchParams(baseParams);
+    params.set('limit', String(size));
+    params.set('offset', String(rows.length));
+    const page = await rest(table, { method: 'GET', query: params.toString(), body: undefined, prefer: undefined }) || [];
+    rows.push(...page);
+    if (page.length < size) break;
+  }
+  return rows;
+}
+
 export class LiveAlphaPersistence {
   constructor() { this.persistedMinute = new Map(); }
   async persistBatch(batch) {
@@ -53,7 +67,10 @@ export class LiveAlphaPersistence {
     await rest('live_market_feed_health', { body: { status: status.status, subscribed_instruments: status.subscribed_instruments, messages: status.messages, decode_errors: status.decode_errors, reconnects: status.reconnects, last_message_at: status.last_message_at, stale_instruments: staleInstruments, diagnostics: { last_error: status.last_error, mode: status.mode } } });
   }
   async loadVolumeBaselines() {
-    return rest('live_volume_baselines', { method: 'GET', query: 'select=instrument_key,minute_of_session,expected_cumulative_volume,sample_sessions', body: undefined, prefer: undefined });
+    return pagedGet('live_volume_baselines', {
+      select: 'instrument_key,minute_of_session,expected_cumulative_volume,sample_sessions',
+      order: 'instrument_key.asc,minute_of_session.asc',
+    }, { limit: 20_000 });
   }
   async saveVolumeBaselines(rows = []) {
     if (!rows.length) return 0;
@@ -66,13 +83,12 @@ export class LiveAlphaPersistence {
   }
   async loadRecentSnapshots({ minutes = 90, limit = 5000 } = {}) {
     const since = new Date(Date.now() - Math.max(1, minutes) * 60_000).toISOString();
-    const query = new URLSearchParams({
+    const params = {
       select: 'instrument_key,observed_at,exchange_timestamp,ltp,previous_close,last_traded_quantity,average_traded_price,cumulative_volume,open_interest,implied_volatility,best_bid,best_ask,spread_bps,feed_latency_ms,raw_factors',
       observed_at: `gte.${since}`,
       order: 'observed_at.asc',
-      limit: String(Math.max(1, limit)),
-    }).toString();
-    const rows = await rest('live_market_snapshots', { method: 'GET', query, body: undefined, prefer: undefined });
+    };
+    const rows = await pagedGet('live_market_snapshots', params, { limit: Math.max(1, limit) });
     return (rows || []).map((row) => ({
       ...row,
       received_at: row.observed_at,
