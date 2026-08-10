@@ -163,8 +163,17 @@
   margin: 1rem auto;
 }
 
-/* Article media keeps its intrinsic ratio in both the CMS and public renderer. */
+/* Article media keeps its intrinsic ratio in the CMS editor, preview, and public renderer. */
+.article-editor-content,
+.article-prose {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
 .article-editor-content img,
+.article-editor-content video,
+.article-editor-content svg,
+.article-editor-content canvas,
 .article-prose img,
 .article-prose video,
 .article-prose svg,
@@ -173,15 +182,16 @@
   width: auto;
   max-width: 100%;
   height: auto;
+  object-fit: contain;
 }
 
-.article-prose {
-  min-width: 0;
-  overflow-wrap: anywhere;
-}
-
-/* Prose remains readable while visual material can use the wider page canvas. */
+/* Prose stays readable; visual blocks can break out to a wider canvas on large screens. */
 @media (min-width: 900px) {
+  .article-editor-content > img,
+  .article-editor-content > figure,
+  .article-editor-content > iframe,
+  .article-editor-content > video,
+  .article-editor-content > table,
   .article-prose > img,
   .article-prose > figure,
   .article-prose > iframe,
@@ -195,18 +205,22 @@
   }
 }
 
+.article-editor-content iframe,
+.article-editor-content video,
 .article-prose iframe,
 .article-prose video {
   max-width: 100%;
   border: 0;
 }
 
+.article-editor-content iframe,
 .article-prose iframe {
   aspect-ratio: 16 / 9;
   height: auto;
   min-height: 260px;
 }
 
+.article-editor-content pre,
 .article-prose pre {
   max-width: 100%;
   overflow-x: auto;
@@ -214,6 +228,7 @@
   -webkit-overflow-scrolling: touch;
 }
 
+.article-editor-content table,
 .article-prose table {
   display: block;
   max-width: 100%;
@@ -222,31 +237,51 @@
   -webkit-overflow-scrolling: touch;
 }
 
+.article-editor-content table > *,
 .article-prose table > * {
   width: max-content;
   min-width: 100%;
 }
 
+.article-editor-content a,
 .article-prose a {
   overflow-wrap: anywhere;
 }
 
 @media (max-width: 639px) {
-  .article-page-shell {
+  .article-page-shell,
+  .article-preview-shell {
     overflow-x: clip;
   }
 
-  .article-page-header h1 {
+  .article-page-header h1,
+  .article-preview-header h1 {
     font-size: clamp(2rem, 10vw, 2.75rem);
   }
 
+  .article-editor-content,
   .article-prose {
     margin-top: 1.5rem;
     font-size: 1rem;
   }
 
+  .article-editor-content iframe,
   .article-prose iframe {
     min-height: 0;
+  }
+
+  .article-editor-content > img,
+  .article-editor-content > iframe,
+  .article-editor-content > video,
+  .article-editor-content > table,
+  .article-prose > img,
+  .article-prose > iframe,
+  .article-prose > video,
+  .article-prose > table {
+    left: auto;
+    width: 100%;
+    max-width: 100%;
+    transform: none;
   }
 }
 .tiptap .img-caption {
