@@ -74,12 +74,21 @@ export async function startLiveAlphaRuntime({ Feed = UpstoxMarketFeedV3, Persist
     state.status = 'running';
     if (baselines.values.size < universe.members.length) {
       state.baseline_bootstrap = { status: 'running', rows: baselines.values.size, failures: [] };
-      bootstrapLiveAlphaVolumeBaselines({ members: universe.members, persistence, baselineIndex: baselines })
-        .then((result) => {
+      const retryMs = Math.max(60_000, Number(process.env.LIVE_ALPHA_BASELINE_RETRY_MS || 5 * 60_000));
+      const bootstrap = async () => {
+        try {
+          const result = await bootstrapLiveAlphaVolumeBaselines({ members: universe.members, persistence, baselineIndex: baselines });
           state.baseline_bootstrap = result;
           if (runtime?.bootstrap) runtime.bootstrap.volume_baselines = baselines.values.size;
-        })
-        .catch((error) => { state.baseline_bootstrap = { status: 'failed', rows: baselines.values.size, error: error.message, failures: [] }; });
+          if (result.status !== 'ready' && runtime) {
+            const retry = setTimeout(bootstrap, retryMs); retry.unref?.();
+          }
+        } catch (error) {
+          state.baseline_bootstrap = { status: 'failed', rows: baselines.values.size, error: error.message, failures: [] };
+          if (runtime) { const retry = setTimeout(bootstrap, retryMs); retry.unref?.(); }
+        }
+      };
+      void bootstrap();
     } else {
       state.baseline_bootstrap = { status: 'ready', rows: baselines.values.size, failures: [] };
     }

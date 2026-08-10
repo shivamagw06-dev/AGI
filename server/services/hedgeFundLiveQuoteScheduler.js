@@ -134,8 +134,8 @@ export function startHedgeFundLiveQuoteScheduler() {
   // import. Keep it off until it is moved to an isolated data worker.
   if (
     timer ||
-    String(process.env.HEDGE_FUND_LIVE_REFRESH_ENABLED || 'false').toLowerCase() !== 'true' ||
-    String(process.env.HEDGE_FUND_LIVE_QUOTES || 'false').toLowerCase() !== 'true'
+    String(process.env.HEDGE_FUND_LIVE_REFRESH_ENABLED || 'true').toLowerCase() !== 'true' ||
+    String(process.env.HEDGE_FUND_LIVE_QUOTES || 'true').toLowerCase() !== 'true'
   ) return;
   // Default 10 minutes — do not compete with page opens every minute.
   const intervalMs = Math.max(120_000, Number(process.env.HEDGE_FUND_LIVE_QUOTE_INTERVAL_MS || 600_000));
