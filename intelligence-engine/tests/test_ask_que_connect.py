@@ -30,6 +30,22 @@ def test_que_pack_capital_allocation():
     assert _que_requires_full_desk(pack) is True
 
 
+def test_investment_view_and_corporate_event_require_full_research_desk():
+    from institutional_output_quality.guards import requires_full_company_analysis
+
+    questions = (
+        "What is AGI's view on Zen Technologies' ₹295 crore defence order?",
+        "What is your investment thesis on TCS?",
+        "What would change your view on Infosys?",
+        "How material is Reliance's new contract to the investment case?",
+    )
+    for question in questions:
+        pack = _build_que_answer_construction(question, ticker="ZENTEC")
+        assert pack["decision_type"] == "Thesis Validation"
+        assert _que_requires_full_desk(pack) is True
+        assert requires_full_company_analysis(question, "ZENTEC") is True
+
+
 def test_education_does_not_require_full_desk():
     pack = _build_que_answer_construction("Explain free cash flow in plain English for a new investor")
     # Education / concept teaching can stay on KUL / financial router.
