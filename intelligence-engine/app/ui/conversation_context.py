@@ -27,6 +27,10 @@ _CONTROL_ONLY_RE = re.compile(
     re.I,
 )
 _COMPARE_RE = re.compile(r"\b(compare|versus|vs\.?|relative to|against)\b", re.I)
+_VS_SIDES_RE = re.compile(
+    r"([A-Za-z][A-Za-z0-9&.' -]{1,40}?)\s+(?:vs\.?|versus)\s+([A-Za-z][A-Za-z0-9&.' -]{1,40})",
+    re.I,
+)
 _INSTEAD_RE = re.compile(r"\b(instead|switch to|change to|move to)\b", re.I)
 _LEADING_AND_RE = re.compile(r"^\s*(?:and|what about)\b", re.I)
 _FOCUS = {
@@ -224,14 +228,20 @@ class ConversationStore:
         inherited: list[str] = []
         effective = original
         is_compare = bool(_COMPARE_RE.search(original))
+        prior_entities = state.entities()
+        # Bare control verbs ("Explain…", "Show…") are only follow-ups when a
+        # prior thread exists. Otherwise standalone pedagogy/BI asks are blocked
+        # by missing_reference clarification before BI/IKT/unknown-entity paths.
+        has_thread_context = bool(
+            prior_entities or state.theme or state.previous_answer_summary
+        )
         is_follow_up = bool(
             _FOLLOW_UP_RE.search(original)
-            or _CONTROL_ONLY_RE.search(original)
             or _LEADING_AND_RE.search(original)
+            or (_CONTROL_ONLY_RE.search(original) and has_thread_context)
         )
-        prior_entities = state.entities()
         conversation_move, router_confidence = self._conversation_move(
-            original, is_follow_up=is_follow_up, has_context=bool(prior_entities or state.theme),
+            original, is_follow_up=is_follow_up, has_context=has_thread_context,
         )
         research_intent = "NONE" if conversation_move in {
             "GREETING", "THANKS", "CAPABILITY_QUESTION", "SIMPLIFY", "SHORTER",
@@ -375,6 +385,15 @@ class ConversationStore:
         return None
 
     @staticmethod
+    def _lexical_comparison_side_count(question: str) -> int:
+        """Count A/B sides in 'X vs Y' even when ticker aliases miss one name."""
+        match = _VS_SIDES_RE.search(question or "")
+        if not match:
+            return 0
+        sides = [part.strip() for part in (match.group(1), match.group(2)) if part and len(part.strip()) > 1]
+        return len(sides)
+
+    @staticmethod
     def _clarification(
         question: str,
         *,
@@ -405,7 +424,13 @@ class ConversationStore:
                 "question": "Which company, sector, or theme should I apply this to?",
                 "options": [],
             }
-        if is_compare and len(active_entities) < 2:
+        # Lexical two-sided compares must reach BI/comparison even if alias map
+        # only resolves one ticker (e.g. "DMart vs Reliance Retail").
+        if (
+            is_compare
+            and len(active_entities) < 2
+            and ConversationStore._lexical_comparison_side_count(question) < 2
+        ):
             subject = explicit[0] if explicit else (active_entities[0] if active_entities else "that company")
             return {
                 "required": True,
@@ -413,17 +438,9 @@ class ConversationStore:
                 "question": f"What should I compare {subject} with?",
                 "options": [],
             }
-        if re.search(r"\b(should i buy|should i sell|buy or sell|enter now)\b", question, re.I) and active_entities and not horizon:
-            return {
-                "required": True,
-                "reason": "missing_investment_horizon",
-                "question": "What investment horizon should AGI evaluate?",
-                "options": [
-                    {"label": "Tactical · 5D", "prompt": f"{question} Use a 5D tactical horizon."},
-                    {"label": "Swing · 20D", "prompt": f"{question} Use a 20D swing horizon."},
-                    {"label": "Investment · 12M", "prompt": f"{question} Use a 12M investment horizon."},
-                ],
-            }
+        # Buy/sell horizon is intentionally not clarified here: recommendation
+        # policy must short-circuit first ("Should I buy X?" → refuse advice).
+        _ = horizon
         return base
 
 

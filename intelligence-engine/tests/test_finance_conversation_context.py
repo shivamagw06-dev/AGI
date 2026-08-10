@@ -123,9 +123,41 @@ def test_ambiguous_hdfc_and_incomplete_comparison_request_clarification():
     assert trace["clarification"]["reason"] == "missing_comparison_entity"
 
 
-def test_action_question_requests_horizon_once():
+def test_action_question_does_not_block_recommendation_policy():
+    """Buy/sell asks must reach recommendation_policy, not horizon clarification."""
     store = ConversationStore()
     _, _, trace = resolve(store, "Should I buy ICICI Bank?")
-    assert trace["clarification"]["reason"] == "missing_investment_horizon"
-    _, _, trace = resolve(store, "Should I buy ICICI Bank? Use a 12M investment horizon.")
     assert trace["clarification"]["required"] is False
+    _, _, trace = resolve(store, "Should I buy HDFC Bank tomorrow?")
+    assert trace["clarification"]["required"] is False
+
+
+def test_standalone_explain_and_concept_prompts_do_not_clarify():
+    store = ConversationStore()
+    for prompt in (
+        "Explain Costco's membership model.",
+        "Explain a SaaS business model.",
+        "Explain network effects as a moat.",
+        "Explain EBITDA",
+        "Explain XYZ Quantum Robotics Pvt Ltd.",
+    ):
+        _, _, trace = resolve(store, prompt, cid=f"explain-{prompt[:12]}", reset=True)
+        assert trace["clarification"]["required"] is False, prompt
+        assert trace["reference_status"] == "resolved", prompt
+
+
+def test_lexical_two_sided_compare_skips_missing_partner_clarification():
+    store = ConversationStore()
+    _, _, trace = resolve(store, "Compare DMart vs Reliance Retail.")
+    assert trace["clarification"]["required"] is False
+    _, _, trace = resolve(store, "Compare Indigo vs Air India business models.", cid="indigo")
+    assert trace["clarification"]["required"] is False
+
+
+def test_control_verb_follow_up_still_clarifies_without_thread():
+    """Pronoun / incomplete follow-ups without context must still clarify."""
+    store = ConversationStore()
+    _, _, trace = resolve(store, "What about its valuation?")
+    assert trace["clarification"]["reason"] == "missing_reference"
+    _, _, trace = resolve(store, "Now show only valuation", cid="control-no-thread", reset=True)
+    assert trace["clarification"]["reason"] == "missing_reference"
