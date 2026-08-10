@@ -33,7 +33,7 @@ export default function ArticlePreview({ open, onClose, article, html }) {
           )}
 
           <div
-            className="prose prose-lg max-w-none mt-10 prose-headings:text-slate-900 prose-a:text-blue-700 prose-blockquote:border-blue-600"
+            className="article-prose prose prose-lg max-w-none mt-10 prose-headings:text-slate-900 prose-a:text-blue-700 prose-blockquote:border-blue-600"
             dangerouslySetInnerHTML={{ __html: html || '<p>No content yet.</p>' }}
           />
         </div>

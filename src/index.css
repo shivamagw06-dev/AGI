@@ -147,11 +147,107 @@
   background: transparent;
 }
 .tiptap-img-full {
+  width: auto;
   max-width: 100%;
+  max-height: none;
   height: auto;
   display: block;
   margin: 1rem auto;
   border-radius: 8px;
+}
+.tiptap-img-small {
+  width: auto;
+  max-width: min(100%, 32rem);
+  height: auto;
+  display: block;
+  margin: 1rem auto;
+}
+
+/* Article media keeps its intrinsic ratio in both the CMS and public renderer. */
+.article-editor-content img,
+.article-prose img,
+.article-prose video,
+.article-prose svg,
+.article-prose canvas {
+  display: block;
+  width: auto;
+  max-width: 100%;
+  height: auto;
+}
+
+.article-prose {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+/* Prose remains readable while visual material can use the wider page canvas. */
+@media (min-width: 900px) {
+  .article-prose > img,
+  .article-prose > figure,
+  .article-prose > iframe,
+  .article-prose > video,
+  .article-prose > table {
+    position: relative;
+    left: 50%;
+    width: min(72rem, calc(100vw - 4rem));
+    max-width: min(72rem, calc(100vw - 4rem));
+    transform: translateX(-50%);
+  }
+}
+
+.article-prose iframe,
+.article-prose video {
+  max-width: 100%;
+  border: 0;
+}
+
+.article-prose iframe {
+  aspect-ratio: 16 / 9;
+  height: auto;
+  min-height: 260px;
+}
+
+.article-prose pre {
+  max-width: 100%;
+  overflow-x: auto;
+  white-space: pre;
+  -webkit-overflow-scrolling: touch;
+}
+
+.article-prose table {
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
+  border-collapse: collapse;
+  -webkit-overflow-scrolling: touch;
+}
+
+.article-prose table > * {
+  width: max-content;
+  min-width: 100%;
+}
+
+.article-prose a {
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 639px) {
+  .article-page-shell {
+    overflow-x: clip;
+  }
+
+  .article-page-header h1 {
+    font-size: clamp(2rem, 10vw, 2.75rem);
+  }
+
+  .article-prose {
+    margin-top: 1.5rem;
+    font-size: 1rem;
+  }
+
+  .article-prose iframe {
+    min-height: 0;
+  }
 }
 .tiptap .img-caption {
   font-size: 0.9rem;

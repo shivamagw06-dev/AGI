@@ -44,7 +44,7 @@ function Divider() {
   return <div className="w-px h-6 bg-slate-600 mx-1" />;
 }
 
-export default function EditorToolbar({ editor, onInsertImage, onInsertVideo, onInsertChart }) {
+export default function EditorToolbar({ editor, onInsertImage, onInsertVideo, onInsertChart, imageUploading = false }) {
   if (!editor) return null;
 
   const addLink = () => {
@@ -130,7 +130,11 @@ export default function EditorToolbar({ editor, onInsertImage, onInsertVideo, on
       <ToolBtn onClick={addLink} active={editor.isActive('link')} title="Insert link">
         <LinkIcon size={16} />
       </ToolBtn>
-      <ToolBtn onClick={onInsertImage} title="Insert image">
+      <ToolBtn
+        onClick={onInsertImage}
+        title={imageUploading ? 'Uploading image…' : 'Insert image at cursor'}
+        disabled={imageUploading}
+      >
         <ImageIcon size={16} />
       </ToolBtn>
       <ToolBtn onClick={insertTable} title="Insert table">

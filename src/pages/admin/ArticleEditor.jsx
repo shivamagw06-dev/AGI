@@ -66,6 +66,7 @@ export default function ArticleEditor() {
   const [lastSaved, setLastSaved] = useState(null);
   const [error, setError] = useState('');
   const [previewOpen, setPreviewOpen] = useState(false);
+  const [inlineImageUploading, setInlineImageUploading] = useState(false);
   const [loaded, setLoaded] = useState(!editSlug);
   const [originalAuthorId, setOriginalAuthorId] = useState(null);
 
@@ -182,6 +183,10 @@ export default function ArticleEditor() {
   );
 
   const insertImage = useCallback(async () => {
+    if (!editor || inlineImageUploading) return;
+    // The native file picker and upload both move focus away from TipTap. Capture
+    // the cursor now so the image is inserted where the author requested it.
+    const insertionPosition = editor.state.selection.anchor;
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = 'image/*';
@@ -189,14 +194,26 @@ export default function ArticleEditor() {
       const file = input.files?.[0];
       if (!file || !editor) return;
       try {
+        setInlineImageUploading(true);
         const url = await uploadFile('images', file);
-        editor.chain().focus().setImage({ src: url }).run();
+        const safePosition = Math.min(insertionPosition, editor.state.doc.content.size);
+        editor
+          .chain()
+          .focus()
+          .insertContentAt(safePosition, {
+            type: 'image',
+            attrs: { src: url, alt: file.name, size: 'full', align: 'center' },
+          })
+          .run();
+        dirtyRef.current = true;
       } catch (err) {
         alert(`Image upload failed: ${err.message}`);
+      } finally {
+        setInlineImageUploading(false);
       }
     };
     input.click();
-  }, [editor, uploadFile]);
+  }, [editor, inlineImageUploading, uploadFile]);
 
   const insertVideo = useCallback(() => {
     const raw = window.prompt('Paste YouTube, Vimeo, or embed URL');
@@ -639,8 +656,19 @@ export default function ArticleEditor() {
             />
 
             <div className="bg-white border border-slate-200 rounded-b-xl shadow-sm mx-4 mb-8 overflow-hidden">
-              <EditorToolbar editor={editor} onInsertImage={insertImage} onInsertVideo={insertVideo} onInsertChart={insertChart} />
-              <EditorContent editor={editor} />
+              <EditorToolbar
+                editor={editor}
+                onInsertImage={insertImage}
+                onInsertVideo={insertVideo}
+                onInsertChart={insertChart}
+                imageUploading={inlineImageUploading}
+              />
+              {inlineImageUploading && (
+                <div className="border-b border-blue-100 bg-blue-50 px-4 py-2 text-sm text-blue-700" role="status">
+                  Uploading image at the selected position…
+                </div>
+              )}
+              <EditorContent editor={editor} className="article-editor-content" />
             </div>
           </div>
         </div>
