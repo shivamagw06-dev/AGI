@@ -10124,6 +10124,29 @@ async def hedge_fund_lab_terminal(limit: int = 12):
     return overview(limit=max(1, min(int(limit or 12), 50)))
 
 
+@router.post("/hedge-fund-lab/terminal/snapshot")
+async def hedge_fund_lab_terminal_snapshot(limit: int = 12):
+    """Compute the full terminal once and persist it to Supabase for Node reads."""
+    from hedge_fund_lab.snapshot_store import compute_and_persist
+
+    return compute_and_persist(limit=max(1, min(int(limit or 12), 50)))
+
+
+@router.get("/hedge-fund-lab/terminal/snapshot/latest")
+async def hedge_fund_lab_terminal_snapshot_latest():
+    """Return the latest stored terminal snapshot metadata (engine-side debug)."""
+    from hedge_fund_lab.snapshot_store import latest_snapshot_row
+
+    row = latest_snapshot_row()
+    if not row:
+        return {"ok": False, "error": "no_snapshot"}
+    return {"ok": True, **{k: row.get(k) for k in (
+        "id", "generated_at", "source_as_of", "status", "freshness",
+        "schema_version", "calculation_version", "data_quality",
+        "limit_used", "universe_scanned", "live_opportunities",
+    )}, "payload": row.get("payload")}
+
+
 @router.get("/hedge-fund-lab/opportunity/{ticker}")
 async def hedge_fund_lab_opportunity(ticker: str):
     """Why a company was surfaced: evidence, calculation chain, risks and timeline."""

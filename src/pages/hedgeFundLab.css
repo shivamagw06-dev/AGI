@@ -656,6 +656,15 @@
 .hft-regime .v { font-size: 0.95rem; font-weight: 600; }
 
 /* Hero */
+.hft-freshness {
+  margin: 0 0 0.65rem;
+  font-size: 0.78rem;
+  color: var(--hfl-dim);
+  letter-spacing: 0.02em;
+}
+.hft-freshness[data-freshness='stale'] { color: #c9873a; }
+.hft-freshness[data-freshness='aging'] { color: #9aa7b8; }
+.hft-freshness[data-freshness='fresh'] { color: #7d9b7a; }
 .hft-hero { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 0.7rem; }
 .hft-stat {
   background: var(--hfl-panel); border: 1px solid var(--hfl-line); border-radius: 8px;

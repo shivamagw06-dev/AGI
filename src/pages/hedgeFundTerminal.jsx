@@ -410,6 +410,24 @@ export default function HedgeFundTerminal() {
 
       {data ? <RegimeStrip regime={data.regime} /> : null}
 
+      {data?.generated_at || data?.freshness ? (
+        <p className="hft-freshness" data-freshness={data.freshness || 'unknown'}>
+          Snapshot{' '}
+          {data.generated_at
+            ? new Date(data.generated_at).toLocaleString('en-IN', {
+                timeZone: 'Asia/Kolkata',
+                day: '2-digit',
+                month: 'short',
+                hour: '2-digit',
+                minute: '2-digit',
+              })
+            : '—'}
+          {data.freshness ? ` · ${data.freshness}` : ''}
+          {data.source_as_of || data.as_of ? ` · source ${data.source_as_of || data.as_of}` : ''}
+          {data.cache?.stale || data.freshness === 'stale' ? ' · serving stored result' : ''}
+        </p>
+      ) : null}
+
       <section className="hft-hero">
         {[
           ['Universe scanned', n(hero.universe_scanned)],
@@ -615,7 +633,9 @@ export default function HedgeFundTerminal() {
       </div>
 
       <p className="hft-note">
-        Scanned {n(data.hero?.universe_scanned)} companies on {data.as_of}
+        Scanned {n(data.hero?.universe_scanned)} companies on {data.source_as_of || data.as_of}
+        {data.generated_at ? ` · generated ${new Date(data.generated_at).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}` : ''}
+        {data.freshness ? ` · ${data.freshness}` : ''}
         {data.compared_with ? `, compared with ${data.compared_with}` : ''}. {data.policy}
       </p>
         </>

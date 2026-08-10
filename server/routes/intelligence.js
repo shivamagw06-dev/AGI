@@ -35,6 +35,7 @@ import {
   hflStaticLibrary,
   hflStaticStrategy,
 } from '../services/hflStaticLibrary.js';
+import { getHflTerminalFromReadModel } from '../services/hflTerminalSnapshot.js';
 
 function engineConfig() {
   let baseUrl = (process.env.INTELLIGENCE_ENGINE_URL || 'http://127.0.0.1:8100').replace(/\/$/, '');
@@ -2404,24 +2405,47 @@ export default function createIntelligenceRouter() {
       // Cap default scan size so cold/open paths stay interactive.
       const query = { ...(req.query || {}) };
       if (query.limit == null || query.limit === '') query.limit = '12';
+      const forceRefresh = String(query.refresh || '') === '1';
+      const limit = Math.max(1, Math.min(Number(query.limit) || 12, 50));
       const qs = new URLSearchParams(query).toString();
       const cacheKey = qs;
-      const fresh = readHflTerminalCache(cacheKey);
-      if (fresh) {
-        res.set('X-AGI-Hedge-Fund-Cache', 'fresh');
-        return res.status(200).json(fresh.data);
+
+      if (!forceRefresh) {
+        const fresh = readHflTerminalCache(cacheKey);
+        if (fresh) {
+          res.set('X-AGI-Hedge-Fund-Cache', 'memory-fresh');
+          res.set('X-AGI-Hedge-Fund-Freshness', fresh.data?.freshness || (fresh.stale ? 'aging' : 'fresh'));
+          return res.status(200).json(fresh.data);
+        }
       }
+
+      // Prefer Supabase read model. Singleflight refresh wakes Python at most once.
+      const fromStore = await getHflTerminalFromReadModel({
+        engineFetch,
+        limit,
+        forceRefresh,
+        allowStale: true,
+      });
+      if (fromStore?.data) {
+        writeHflTerminalCache(cacheKey, fromStore.data);
+        res.set('X-AGI-Hedge-Fund-Cache', fromStore.source || 'supabase');
+        res.set('X-AGI-Hedge-Fund-Freshness', fromStore.data.freshness || 'unknown');
+        return res.status(200).json(fromStore.data);
+      }
+
+      // Legacy live engine path (pre-migration / no Supabase credentials).
       const r = await engineFetch(
         `/v1/hedge-fund-lab/terminal${qs ? `?${qs}` : ''}`,
         { timeoutMs: 8_000 },
       );
       if (r.ok) {
         writeHflTerminalCache(cacheKey, r.data);
+        res.set('X-AGI-Hedge-Fund-Cache', 'engine_live');
         return res.status(r.status).json(r.data);
       }
       const stale = readHflTerminalCache(cacheKey, { allowStale: true });
       if (stale) {
-        res.set('X-AGI-Hedge-Fund-Cache', 'stale');
+        res.set('X-AGI-Hedge-Fund-Cache', 'memory-stale');
         return res.status(200).json({ ...stale.data, cache: { stale: true, age_ms: stale.age } });
       }
       return res.status(r.status).json(r.data);
@@ -2430,7 +2454,7 @@ export default function createIntelligenceRouter() {
       if (query.limit == null || query.limit === '') query.limit = '12';
       const stale = readHflTerminalCache(new URLSearchParams(query).toString(), { allowStale: true });
       if (stale) {
-        res.set('X-AGI-Hedge-Fund-Cache', 'stale');
+        res.set('X-AGI-Hedge-Fund-Cache', 'memory-stale');
         return res.status(200).json({ ...stale.data, cache: { stale: true, age_ms: stale.age } });
       }
       res.status(504).json({ error: err.message || 'hedge-fund-lab terminal failed', timeout: true });

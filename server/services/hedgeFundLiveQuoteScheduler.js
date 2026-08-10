@@ -11,6 +11,7 @@
  * import was competing with user traffic and causing 502s.
  */
 import { getLTP, getOHLC, isGrowwConfigured } from '../providers/groww.js';
+import { readLatestHflTerminalSnapshot } from './hflTerminalSnapshot.js';
 
 let timer = null;
 let lastRun = null;
@@ -93,9 +94,22 @@ export async function refreshHedgeFundLiveQuotes({ force = false } = {}) {
   if (inFlight) return { ok: true, skipped: true, reason: 'refresh_in_flight' };
 
   inFlight = (async () => {
-    // Reuse the same small terminal the page uses (cached server-side).
-    // Never request limit=60 here — that forced a second full scanner rebuild.
-    const terminal = await engineFetch('/v1/hedge-fund-lab/terminal?limit=12', { timeoutMs: 45_000 });
+    // Prefer the Supabase terminal snapshot — never rebuild scanners for quotes.
+    let terminal = null;
+    try {
+      terminal = await readLatestHflTerminalSnapshot();
+    } catch {
+      terminal = null;
+    }
+    if (!terminal?.ok) {
+      try {
+        const latest = await engineFetch('/v1/hedge-fund-lab/terminal/snapshot/latest', { timeoutMs: 20_000 });
+        terminal = latest?.payload || null;
+      } catch {
+        terminal = null;
+      }
+    }
+    if (!terminal?.ok) return { ok: true, skipped: true, reason: 'no_terminal_snapshot' };
     const symbols = symbolsFromTerminal(terminal);
     if (!symbols.length) return { ok: true, skipped: true, reason: 'no_research_candidates' };
     const keys = symbols.map((symbol) => `NSE_${symbol}`);
@@ -141,8 +155,8 @@ export function startHedgeFundLiveQuoteScheduler() {
   const intervalMs = Math.max(120_000, Number(process.env.HEDGE_FUND_LIVE_QUOTE_INTERVAL_MS || 600_000));
   const tick = () => refreshHedgeFundLiveQuotes().then((result) => { lastRun = { at: new Date().toISOString(), ...result }; })
     .catch((error) => { lastRun = { at: new Date().toISOString(), ok: false, error: error.message }; });
-  // Wait 5 minutes after boot so deploy/keep-warm traffic settles first.
-  const initialDelayMs = Math.max(60_000, Number(process.env.HEDGE_FUND_LIVE_QUOTE_INITIAL_DELAY_MS || 300_000));
+  // Wait 12 minutes after boot — after HFL snapshot (2m) and candles (8m).
+  const initialDelayMs = Math.max(60_000, Number(process.env.HEDGE_FUND_LIVE_QUOTE_INITIAL_DELAY_MS || 720_000));
   setTimeout(tick, initialDelayMs); timer = setInterval(tick, intervalMs); timer.unref?.();
 }
 

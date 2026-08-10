@@ -70,6 +70,11 @@ export default function createMarketRouter(env = {}) {
     return res.status(200).json({ ok: true, ...getHedgeFundLiveQuoteStatus() });
   });
 
+  router.get('/hedge-fund-terminal-snapshot/status', async (_req, res) => {
+    const { getHflTerminalSnapshotSchedulerStatus } = await import('../services/hflTerminalSnapshotScheduler.js');
+    return res.status(200).json({ ok: true, ...getHflTerminalSnapshotSchedulerStatus() });
+  });
+
   router.get('/hedge-fund-upstox-candles/status', async (_req, res) => {
     const { getHedgeFundUpstoxCandleStatus } = await import('../services/hedgeFundUpstoxCandleScheduler.js');
     return res.status(200).json({ ok: true, ...getHedgeFundUpstoxCandleStatus() });
