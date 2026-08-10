@@ -13,7 +13,7 @@ from typing import Any, Optional
 from urllib import error, parse, request
 
 SCHEMA_VERSION = "1.0"
-CALCULATION_VERSION = "hfl_terminal_v1"
+CALCULATION_VERSION = "hfl_terminal_v2"
 FRESH_SECONDS = 15 * 60
 AGING_SECONDS = 60 * 60
 

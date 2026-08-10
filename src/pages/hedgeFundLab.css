@@ -745,3 +745,24 @@
 .hft-note { margin: 0.8rem 0 0; font-size: 0.75rem; color: var(--hfl-dim); max-width: 100ch; line-height: 1.55; }
 .hft-ask-head .hft-dim { margin-left: 0.5rem; text-transform: none; letter-spacing: 0; }
 .hft-ask-why { margin: 0.3rem 0 0.5rem; padding-left: 1rem; font-size: 0.82rem; line-height: 1.55; color: var(--hfl-dim); }
+
+.hft-label {
+  display: inline-block;
+  padding: 0.12rem 0.45rem;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  border: 1px solid transparent;
+}
+.hft-label-confirmed { color: #8fd4a0; background: rgba(74, 140, 92, 0.15); border-color: rgba(74, 140, 92, 0.35); }
+.hft-label-timing-conflict { color: #e8b06a; background: rgba(200, 135, 58, 0.15); border-color: rgba(200, 135, 58, 0.35); }
+.hft-label-live-unconfirmed { color: #9eb8d9; background: rgba(100, 140, 190, 0.12); border-color: rgba(100, 140, 190, 0.3); }
+.hft-label-fundamental-only { color: #b8c4d4; background: rgba(120, 140, 170, 0.1); border-color: rgba(120, 140, 170, 0.25); }
+.hft-label-tactical-only { color: #c9a8e8; background: rgba(150, 110, 190, 0.12); border-color: rgba(150, 110, 190, 0.3); }
+
+.hft-dir { font-size: 0.78rem; font-weight: 600; text-transform: capitalize; }
+.hft-dir-positive { color: #8fd4a0; }
+.hft-dir-negative { color: #e08a8a; }
+.hft-dir-neutral { color: var(--hfl-dim); }
