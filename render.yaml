@@ -61,6 +61,8 @@ services:
         value: "16:35"
       - key: ENGINE_KEEP_WARM_MS
         value: "300000"
+      - key: ASK_ENGINE_TIMEOUT_MS
+        value: "55000"
       - key: GROWW_SECTOR_ROTATION_BACKFILL_DELAY_MS
         value: "120000"
 
