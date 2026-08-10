@@ -53,13 +53,38 @@ def _env_number(name: str, default: float, *, minimum: float, maximum: float) ->
     return max(minimum, min(value, maximum))
 
 
-def _evidence_rows(evidence: dict[str, Any]) -> list[dict[str, str]]:
+def _evidence_rows(
+    evidence: dict[str, Any], supplemental_packs: dict[str, Any] | None = None,
+) -> list[dict[str, str]]:
     """Extract a small, attributable evidence set for the model."""
     rows: list[dict[str, str]] = []
     packs = (evidence or {}).get("packs") or {}
     iere = packs.get("iere") or {}
     iere_payload = iere.get("evidence") or {}
-    candidates = iere_payload.get("top_evidence") or []
+    candidates = list(iere_payload.get("top_evidence") or [])
+
+    # UiService retrieves CMS/KIP house research before running the complete Ask
+    # pipeline. Keep that verified material inside the same bounded evidence
+    # boundary used by the model; previously it was available to deterministic
+    # reasoning but silently dropped from grounded synthesis.
+    semantic = (supplemental_packs or {}).get("semantic_research") or {}
+    house_view = semantic.get("AGI_HOUSE_VIEW") or {}
+    for hit in house_view.get("documents") or []:
+        if not isinstance(hit, dict):
+            continue
+        candidates.append(
+            {
+                "evidence_id": hit.get("document_id"),
+                "document_id": hit.get("document_id"),
+                "title": hit.get("title"),
+                "source": "AGI KIP uploaded research",
+                "doc_type": hit.get("document_type"),
+                "content": hit.get("snippet"),
+                "available_from": hit.get("date"),
+                "confidence": hit.get("confidence"),
+                "retrieval_score": hit.get("retrieval_score"),
+            }
+        )
 
     ranked: list[tuple[int, int, dict[str, Any]]] = []
     for position, item in enumerate(candidates):
@@ -265,6 +290,7 @@ def synthesize_financial_answer(
     intent_resolution: dict[str, Any],
     entities: dict[str, Any],
     deterministic_answer: dict[str, Any],
+    supplemental_packs: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Return synthesis metadata plus an answer when OpenAI succeeds."""
     api_key = os.environ.get("OPENAI_API_KEY", "").strip()
@@ -277,7 +303,7 @@ def synthesize_financial_answer(
     if not api_key:
         return {"used": False, "model": model, "status": "missing_api_key"}
 
-    rows = _evidence_rows(evidence)
+    rows = _evidence_rows(evidence, supplemental_packs)
     if not rows:
         return {"used": False, "model": model, "status": "no_grounded_evidence"}
     evidence_json = json.dumps(rows, ensure_ascii=False, default=str)[:MAX_EVIDENCE_CHARS]

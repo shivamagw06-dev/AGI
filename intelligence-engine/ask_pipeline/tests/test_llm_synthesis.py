@@ -177,3 +177,44 @@ def test_primary_and_uploaded_evidence_is_prioritised_and_deduplicated(monkeypat
     supplied = json.loads(_OpenAI.last.responses.kwargs["input"].split("EVIDENCE\n", 1)[1])
     assert supplied[0]["source"] == "company filing"
     assert len(supplied) == 2
+
+
+def test_cms_house_research_is_supplied_to_grounded_synthesis(monkeypatch):
+    monkeypatch.setenv("OPENAI_API_KEY", "test-key")
+    monkeypatch.setitem(sys.modules, "openai", types.SimpleNamespace(OpenAI=_OpenAI))
+    supplemental = {
+        "semantic_research": {
+            "AGI_HOUSE_VIEW": {
+                "documents": [
+                    {
+                        "document_id": "doc_zen",
+                        "title": "Zen Technologies' ₹295 Crore Defence Win",
+                        "document_type": "agi_research",
+                        "snippet": "The order improves revenue visibility, subject to execution.",
+                        "retrieval_score": 0.94,
+                        "confidence": 0.9,
+                    },
+                    {
+                        "document_id": "doc_zen_duplicate",
+                        "title": "Duplicate Zen note",
+                        "document_type": "agi_research",
+                        "snippet": "The order improves revenue visibility, subject to execution.",
+                        "retrieval_score": 0.93,
+                    },
+                ]
+            }
+        }
+    }
+    result = synthesize_financial_answer(
+        question="Assess the investment impact of Zen Technologies' 295 crore defence order",
+        evidence={"packs": {}},
+        intent_resolution={"intent": "research"},
+        entities={"entities": ["ZENTEC"]},
+        deterministic_answer={"executive_summary": "Fallback"},
+        supplemental_packs=supplemental,
+    )
+    assert result["used"] is True
+    supplied = json.loads(_OpenAI.last.responses.kwargs["input"].split("EVIDENCE\n", 1)[1])
+    assert len(supplied) == 1
+    assert supplied[0]["source"] == "AGI KIP uploaded research"
+    assert "revenue visibility" in supplied[0]["content"]

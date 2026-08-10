@@ -11,10 +11,10 @@ _FULL_COMPANY_ANALYSIS_RE = re.compile(
     r"\bview\s+on\b|\binvestment\s+(?:view|thesis|case)\b|"
     r"\b(?:bull|bear|base)\s+case\b|"
     r"\bwhat\s+(?:would|could)\s+change\s+.*\bview\b|"
-    r"(?:\b(?:order wins?|contracts?|tenders?|acquisitions?|guidance)\b.*"
+    r"(?:\b(?:orders?|contracts?|tenders?|acquisitions?|guidance)\b.*"
     r"\b(?:impact|material|thesis|view|outlook|case)\b)|"
     r"(?:\b(?:impact|material|thesis|view|outlook|case)\b.*"
-    r"\b(?:order wins?|contracts?|tenders?|acquisitions?|guidance)\b)",
+    r"\b(?:orders?|contracts?|tenders?|acquisitions?|guidance)\b)",
     re.I,
 )
 # Scoped BI axes — keep deterministic Business Intelligence answers instead of

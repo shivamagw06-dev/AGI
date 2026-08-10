@@ -27,10 +27,10 @@ _RULES: tuple[tuple[re.Pattern[str], str, str, str, int], ...] = (
      ), "Thesis Validation",
      "Does the current evidence strengthen or weaken the investment thesis?", "Challenge", 25),
     (re.compile(
-        r"\b(?:order wins?|contracts?|tenders?|acquisitions?|guidance)\b.*"
+        r"\b(?:orders?|contracts?|tenders?|acquisitions?|guidance)\b.*"
         r"\b(?:impact|material|thesis|view|outlook|case)\b|"
         r"\b(?:impact|material|thesis|view|outlook|case)\b.*"
-        r"\b(?:order wins?|contracts?|tenders?|acquisitions?|guidance)\b",
+        r"\b(?:orders?|contracts?|tenders?|acquisitions?|guidance)\b",
         re.I,
      ), "Thesis Validation",
      "Does this corporate event materially change the investment thesis?", "Evaluate", 23),

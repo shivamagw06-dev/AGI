@@ -1642,6 +1642,7 @@ def run_complete_ask(
         intent_resolution=irl,
         entities=entities_rec,
         deterministic_answer=communication,
+        supplemental_packs=packs,
     )
     if llm_synthesis.get("used") and isinstance(llm_synthesis.get("answer"), dict):
         generated = llm_synthesis["answer"]
