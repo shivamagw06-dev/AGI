@@ -1,18 +1,19 @@
 import { calculateConfluenceOutcome, createConfluenceOutcomeSchedule, summarizeConfluenceOutcomes } from './confluenceOutcomeValidation.js';
+import { settlementWindow, validateConfluenceCandidate, validateSettlementSnapshots } from './researchDataQuality.js';
 
 function config() { const url = String(process.env.SUPABASE_URL || '').trim().replace(/\/$/, ''), key = String(process.env.SUPABASE_SERVICE_ROLE_KEY || '').trim(); if (!url || !key) throw new Error('Confluence validation requires Supabase credentials.'); return { url, key }; }
 async function rest(table, { method = 'GET', query = '', body, prefer } = {}) { const { url, key } = config(); const response = await fetch(`${url}/rest/v1/${table}${query ? `?${query}` : ''}`, { method, headers: { apikey: key, Authorization: `Bearer ${key}`, 'Content-Type': 'application/json', ...(prefer ? { Prefer: prefer } : {}) }, body: body == null ? undefined : JSON.stringify(body) }); if (!response.ok) { const error = new Error(`Confluence validation storage failed (${response.status}): ${(await response.text()).slice(0, 240)}`); error.status = response.status; throw error; } const text = await response.text(); return text ? JSON.parse(text) : []; }
-const validPrice = (value) => Number.isFinite(Number(value)) && Number(value) > 0;
-
-export async function saveConfluenceEvents(queue, universe) {
-  const memberBySymbol = new Map((universe?.members || []).map((member) => [member.symbol, member]));
+export async function saveConfluenceEvents(queue, universe, { now = new Date() } = {}) {
+  const memberBySymbol = new Map((universe?.members || []).map((member) => [String(member.symbol || '').trim().toUpperCase(), member]));
   const rows = [];
-  const rejected = { missing_price_anchor: 0, incomplete_identity: 0, invalid_price_anchor: 0 };
+  const rejected = {};
   for (const item of queue?.items || []) {
-    const anchors = item.anchors, member = memberBySymbol.get(item.symbol);
-    if (!member || !member.instrumentKey || !member.sectorInstrumentKey || !universe?.benchmarkKey) { rejected.incomplete_identity += 1; continue; }
-    if (!anchors?.captured_at) { rejected.missing_price_anchor += 1; continue; }
-    if (![anchors.price_at_signal, anchors.benchmark_at_signal, anchors.sector_index_at_signal].every(validPrice)) { rejected.invalid_price_anchor += 1; continue; }
+    const anchors = item.anchors, member = memberBySymbol.get(String(item.symbol || '').trim().toUpperCase());
+    const quality = validateConfluenceCandidate(item, member, universe, { now });
+    if (!quality.valid) {
+      for (const reason of quality.reasons) rejected[reason] = (rejected[reason] || 0) + 1;
+      continue;
+    }
     const live = item.components?.live || {};
     rows.push({ event_key: `${item.symbol}:${item.confluence_class}:${anchors.captured_at}`, symbol: item.symbol, captured_at: anchors.captured_at, classification: item.confluence_class, fundamental_score: item.scores.fundamental_score, valuation_score: item.scores.valuation_score, eod_confirmation: item.scores.eod_confirmation_score, live_confirmation: item.scores.live_confirmation_score, catalyst_score: item.scores.catalyst_relevance_score, leadership: live.leadership?.effective, activity: live.activity?.effective, breakout: live.breakout?.effective, dislocation: live.dislocation?.effective, positioning: live.positioning?.effective, research_priority: item.research_priority_score, market_regime: anchors.market_regime, sector: item.sector, instrument_key: member.instrumentKey, benchmark_instrument_key: universe.benchmarkKey, sector_instrument_key: member.sectorInstrumentKey, price_at_signal: anchors.price_at_signal, benchmark_at_signal: anchors.benchmark_at_signal, sector_index_at_signal: anchors.sector_index_at_signal, completeness: item.flags, evidence_snapshot: item, research_only: true });
   }
@@ -23,18 +24,21 @@ export async function saveConfluenceEvents(queue, universe) {
   return { candidates: queue?.items?.length || 0, eligible: rows.length, events: saved.length, outcomes: schedules.length, rejected };
 }
 
-async function firstSnapshot(instrumentKey, dueAt) {
-  const query = `select=ltp,observed_at&instrument_key=eq.${encodeURIComponent(instrumentKey)}&observed_at=gte.${encodeURIComponent(dueAt)}&order=observed_at.asc&limit=1`;
+async function firstSnapshot(instrumentKey, dueAt, horizon) {
+  const window = settlementWindow(dueAt, horizon);
+  const query = `select=ltp,observed_at&instrument_key=eq.${encodeURIComponent(instrumentKey)}&observed_at=gte.${encodeURIComponent(window.start)}&observed_at=lte.${encodeURIComponent(window.end)}&order=observed_at.asc&limit=1`;
   return (await rest('live_market_snapshots', { query }))?.[0] || null;
 }
 
 export async function completeDueConfluenceOutcomes({ now = new Date(), limit = 200 } = {}) {
   const due = await rest('research_confluence_outcomes', { query: `select=*,event:research_confluence_events(*)&status=eq.pending&due_at=lte.${encodeURIComponent(now.toISOString())}&order=due_at.asc&limit=${Math.min(500, limit)}` });
-  const summary = { due: due.length, completed: 0, deferred: 0, failed: 0 };
+  const summary = { due: due.length, completed: 0, deferred: 0, failed: 0, deferred_reasons: {} };
   for (const row of due) {
     try {
-      const event = row.event; const [stock, benchmark, sector] = await Promise.all([firstSnapshot(event.instrument_key, row.due_at), firstSnapshot(event.benchmark_instrument_key, row.due_at), firstSnapshot(event.sector_instrument_key, row.due_at)]);
-      if (!stock || !benchmark || !sector) { summary.deferred += 1; continue; }
+      const event = row.event; const snapshots = await Promise.all([firstSnapshot(event.instrument_key, row.due_at, row.horizon), firstSnapshot(event.benchmark_instrument_key, row.due_at, row.horizon), firstSnapshot(event.sector_instrument_key, row.due_at, row.horizon)]);
+      const quality = validateSettlementSnapshots(snapshots);
+      if (!quality.valid) { summary.deferred += 1; summary.deferred_reasons[quality.reason] = (summary.deferred_reasons[quality.reason] || 0) + 1; continue; }
+      const [stock, benchmark, sector] = snapshots;
       const result = calculateConfluenceOutcome({ priceAtSignal: event.price_at_signal, futurePrice: stock.ltp, benchmarkAtSignal: event.benchmark_at_signal, futureBenchmark: benchmark.ltp, sectorAtSignal: event.sector_index_at_signal, futureSector: sector.ltp });
       await rest('research_confluence_outcomes', { method: 'PATCH', query: `id=eq.${row.id}`, body: { status: 'completed', observed_at: stock.observed_at, future_price: stock.ltp, future_benchmark: benchmark.ltp, future_sector: sector.ltp, ...result }, prefer: 'return=minimal' }); summary.completed += 1;
     } catch (error) { summary.failed += 1; await rest('research_confluence_outcomes', { method: 'PATCH', query: `id=eq.${row.id}`, body: { attempt_count: Number(row.attempt_count || 0) + 1, last_error: error.message.slice(0, 500) }, prefer: 'return=minimal' }).catch(() => {}); }
