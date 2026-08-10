@@ -140,10 +140,17 @@ def test_standalone_explain_and_concept_prompts_do_not_clarify():
         "Explain network effects as a moat.",
         "Explain EBITDA",
         "Explain XYZ Quantum Robotics Pvt Ltd.",
+        "What risks matter most for IT services companies?",
     ):
         _, _, trace = resolve(store, prompt, cid=f"explain-{prompt[:12]}", reset=True)
         assert trace["clarification"]["required"] is False, prompt
         assert trace["reference_status"] == "resolved", prompt
+
+
+def test_lowercase_pronoun_still_marks_follow_up_without_thread():
+    store = ConversationStore()
+    _, _, trace = resolve(store, "What about its margins?", reset=True)
+    assert trace["clarification"]["reason"] == "missing_reference"
 
 
 def test_lexical_two_sided_compare_skips_missing_partner_clarification():
