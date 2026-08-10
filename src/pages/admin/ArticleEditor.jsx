@@ -100,7 +100,8 @@ export default function ArticleEditor() {
     content: '<p></p>',
     editorProps: {
       attributes: {
-        class: 'prose prose-lg max-w-none min-h-[420px] px-8 py-6 focus:outline-none',
+        class:
+          'article-editor-content article-prose prose prose-lg max-w-none min-h-[420px] px-8 py-6 focus:outline-none',
       },
     },
     onUpdate: () => {
@@ -710,7 +711,7 @@ export default function ArticleEditor() {
                   Uploading image at the cursor — you can also paste or drag images into the editor.
                 </div>
               )}
-              <EditorContent editor={editor} className="article-editor-content" />
+              <EditorContent editor={editor} />
             </div>
           </div>
         </div>
