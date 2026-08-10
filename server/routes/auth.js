@@ -1,7 +1,12 @@
 import { Router } from 'express';
 import rateLimit from 'express-rate-limit';
+import { safeVerificationRedirect } from '../lib/authRedirect.js';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const GENERIC_VERIFICATION_RESPONSE = {
+  ok: true,
+  message: 'If an account needs verification, an email will arrive shortly.',
+};
 
 function escapeHtml(value = '') {
   return String(value)
@@ -157,16 +162,23 @@ export default function createAuthRouter() {
 
   const authLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
-    max: 20,
+    max: 8,
     standardHeaders: true,
     legacyHeaders: false,
-    message: { error: 'Too many auth email requests. Try again later.' },
+    message: { error: 'Too many attempts. Wait a few minutes before trying again.' },
+  });
+  const emailLimiter = rateLimit({
+    windowMs: 30 * 60 * 1000,
+    max: 3,
+    keyGenerator: (req) => String(req.body?.email || '').trim().toLowerCase() || 'missing-email',
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { error: 'Too many attempts. Wait a few minutes before trying again.' },
   });
 
-  router.post('/send-verification', authLimiter, async (req, res) => {
+  router.post('/send-verification', authLimiter, emailLimiter, async (req, res) => {
     try {
       const email = String(req.body?.email || '').trim().toLowerCase();
-      const fullName = String(req.body?.fullName || '').trim();
       const redirectTo = String(req.body?.redirectTo || '').trim();
       const siteUrl = (process.env.PUBLIC_SITE_URL || 'https://agarwalglobalinvestments.com').replace(/\/$/, '');
 
@@ -177,51 +189,22 @@ export default function createAuthRouter() {
       const { createSupabaseAdmin } = await import('../lib/supabaseAdmin.js');
       const admin = createSupabaseAdmin();
       if (!admin) {
-        return res.status(503).json({
-          ok: false,
-          skipped: true,
-          reason: 'Supabase admin credentials unavailable; relying on default Auth email.',
-        });
+        console.error('[auth/send-verification] Supabase admin credentials unavailable');
+        return res.status(202).json(GENERIC_VERIFICATION_RESPONSE);
       }
 
-      const { actionLink, type } = await generateActionLink(
-        admin,
+      const { error } = await admin.auth.resend({
+        type: 'signup',
         email,
-        redirectTo || `${siteUrl}/verify-email`
-      );
-
-      try {
-        const sent = await sendEmail({
-          to: email,
-          subject: 'Verify your Agarwal Global Investments account',
-          html: brandedVerificationHtml({ fullName, actionLink, siteUrl }),
-        });
-        return res.json({
-          ok: true,
-          provider: sent.provider,
-          from: sent.from,
-          linkType: type,
-        });
-      } catch (mailErr) {
-        if (mailErr?.code === 'EMAIL_PROVIDER_MISSING') {
-          return res.status(503).json({
-            ok: false,
-            skipped: true,
-            reason: mailErr.message,
-            note: 'Configure RESEND_API_KEY on Render, and/or Supabase custom SMTP.',
-          });
-        }
-        return res.status(502).json({
-          error: 'Email provider rejected the message.',
-          detail: mailErr?.message || String(mailErr),
-        });
+        options: { emailRedirectTo: safeVerificationRedirect(redirectTo, siteUrl) },
+      });
+      if (error) {
+        console.warn('[auth/send-verification] Supabase resend rejected', error.message);
       }
+      return res.status(202).json(GENERIC_VERIFICATION_RESPONSE);
     } catch (err) {
       console.error('[auth/send-verification]', err?.message || err);
-      return res.status(500).json({
-        error: 'Failed to send verification email.',
-        detail: err?.message || String(err),
-      });
+      return res.status(202).json(GENERIC_VERIFICATION_RESPONSE);
     }
   });
 

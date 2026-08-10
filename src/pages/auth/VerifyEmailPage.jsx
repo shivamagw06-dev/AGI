@@ -42,7 +42,9 @@ export default function VerifyEmailPage() {
     setBusy(true);
     setMessage('');
     try {
-      await resendVerification(email || user?.email || '');
+      await resendVerification(email || user?.email || '', {
+        redirectTo: `${window.location.origin}/verify-email?next=${encodeURIComponent(safeNext)}`,
+      });
       setMessage('Verification email sent. Check your inbox and spam folder.');
     } catch (err) {
       setMessage(err?.message || 'Unable to resend verification email.');

@@ -1,6 +1,7 @@
 import React, { createContext, useState, useContext, useEffect, useMemo } from 'react';
 import { supabase, isSupabaseConfigured } from '../lib/supabaseClient';
 import { clearPinUnlock, markPinUnlocked } from '@/lib/devicePin';
+import { mapAuthError } from '@/lib/authErrors';
 
 const AuthContext = createContext(null);
 
@@ -53,7 +54,6 @@ export const AuthProvider = ({ children }) => {
       fullName,
       email,
       password,
-      mobile = '',
       emailRedirectTo,
     }) => {
       requireConfigured();
@@ -65,7 +65,6 @@ export const AuthProvider = ({ children }) => {
           emailRedirectTo: redirectTo,
           data: {
             full_name: String(fullName || '').trim(),
-            mobile: String(mobile || '').trim() || null,
             onboarding_complete: false,
           },
         },
@@ -79,26 +78,10 @@ export const AuthProvider = ({ children }) => {
           enriched.code = error.code || 'signup_db_trigger';
           throw enriched;
         }
-        throw error;
-      }
-
-      // Best-effort branded welcome/verification email via AGI API (Resend).
-      try {
-        const { API_ORIGIN } = await import('@/config');
-        const base = (API_ORIGIN || '').replace(/\/$/, '');
-        if (base) {
-          await fetch(`${base}/api/auth/send-verification`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              email: email.trim(),
-              fullName: String(fullName || '').trim(),
-              redirectTo,
-            }),
-          }).catch(() => null);
-        }
-      } catch {
-        /* optional */
+        const safeError = new Error(mapAuthError(error, 'signup'));
+        safeError.code = error.code;
+        safeError.status = error.status;
+        throw safeError;
       }
 
       return data;
@@ -110,7 +93,12 @@ export const AuthProvider = ({ children }) => {
         email: email.trim(),
         password,
       });
-      if (error) throw error;
+      if (error) {
+        throw Object.assign(new Error(mapAuthError(error, 'signin')), {
+          code: error.code,
+          status: error.status,
+        });
+      }
       // Password auth already verified identity for this browser session.
       if (data.user?.id) markPinUnlocked(data.user.id);
       return data;
@@ -161,13 +149,10 @@ export const AuthProvider = ({ children }) => {
 
     const logoutAllDevices = async () => logout({ scope: 'global' });
 
-    const resendVerification = async (email, fullName = '') => {
+    const resendVerification = async (email, { redirectTo } = {}) => {
       const target = email.trim();
       if (!target) throw new Error('Enter the email used at signup.');
-      const redirectTo = `${SITE_URL}/verify-email`;
-
-      // Prefer AGI branded Resend path (works even when browser anon key is bad).
-      let brandedError = null;
+      const destination = redirectTo || `${SITE_URL}/verify-email`;
       try {
         const { API_ORIGIN } = await import('@/config');
         const base = (API_ORIGIN || '').replace(/\/$/, '');
@@ -175,44 +160,18 @@ export const AuthProvider = ({ children }) => {
           const resp = await fetch(`${base}/api/auth/send-verification`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email: target, fullName, redirectTo }),
+            body: JSON.stringify({ email: target, redirectTo: destination }),
           });
           const payload = await resp.json().catch(() => ({}));
-          if (resp.ok && payload?.ok) return payload;
-          brandedError =
-            payload?.detail || payload?.error || payload?.reason || `Branded resend failed (${resp.status})`;
-          if (!payload?.skipped) {
-            console.warn('[auth] branded resend failed', payload);
-          }
+          if (resp.ok) return payload;
+          const requestError = new Error(payload?.error || 'Verification request failed.');
+          requestError.status = resp.status;
+          throw requestError;
         }
       } catch (err) {
-        brandedError = err?.message || String(err);
-        console.warn('[auth] branded resend request failed', brandedError);
+        throw Object.assign(new Error(mapAuthError(err, 'resend')), { status: err?.status });
       }
-
-      // Only fall back to Supabase client when it is correctly configured.
-      if (!isSupabaseConfigured) {
-        throw new Error(
-          brandedError ||
-            'Unable to resend verification email. Authentication is not configured on this deployment.'
-        );
-      }
-
-      const { error } = await supabase.auth.resend({
-        type: 'signup',
-        email: target,
-        options: { emailRedirectTo: redirectTo },
-      });
-      if (error) {
-        if (/invalid api key/i.test(error.message || '')) {
-          throw new Error(
-            brandedError ||
-              'Unable to resend verification email due to an invalid browser API key. Please try again shortly.'
-          );
-        }
-        throw error;
-      }
-      return { ok: true, provider: 'supabase' };
+      throw new Error('Verification email service is temporarily unavailable. Please try again later.');
     };
 
     return {
