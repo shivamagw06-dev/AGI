@@ -27,13 +27,15 @@ from growwapi import GrowwAPI
 # ---------------------------------------------------------------------------
 # Private delivery configuration (paste in Groww Cloud strategy editor only)
 # ---------------------------------------------------------------------------
+# Groww Cloud cannot reliably reach Render. Post to Supabase edge ingest instead.
+# (Same token/secret/signature as Node /api/research-signals/ingest.)
 AGI_INGEST_URL = os.getenv(
     "AGI_INGEST_URL",
-    "https://finance-news-backend-19i5.onrender.com/api/research-signals/ingest",
+    "https://zrvdtpxfmuijhionbaxr.supabase.co/functions/v1/research-signals-ingest",
 ).strip()
 AGI_HEALTH_URL = os.getenv(
     "AGI_HEALTH_URL",
-    "https://finance-news-backend-19i5.onrender.com/api/health",
+    "https://zrvdtpxfmuijhionbaxr.supabase.co/functions/v1/research-signals-ingest",
 ).strip()
 AGI_INGEST_TOKEN = os.getenv("AGI_INGEST_TOKEN", "PASTE_RESEARCH_SIGNALS_INGEST_TOKEN").strip()
 AGI_INGEST_SECRET = os.getenv("AGI_INGEST_SECRET", "PASTE_RESEARCH_SIGNALS_INGEST_SECRET").strip()
@@ -177,15 +179,16 @@ def analyse(symbol: str, rows, benchmark: dict):
     }
 
 
-def wake_node_api(timeout_seconds: float = 15.0) -> None:
-    """Best-effort wake for Render cold start. Never blocks delivery."""
+def wake_node_api(timeout_seconds: float = 10.0) -> None:
+    """Best-effort ping. Groww Cloud often cannot reach Render; Supabase is fine."""
     if not AGI_HEALTH_URL:
         return
     try:
-        with urllib.request.urlopen(AGI_HEALTH_URL, timeout=timeout_seconds) as response:
-            print(f"AGI API wake-up status: {response.status}")
+        req = urllib.request.Request(AGI_HEALTH_URL, method="GET")
+        with urllib.request.urlopen(req, timeout=timeout_seconds) as response:
+            print(f"AGI ingest ping status: {response.status}")
     except Exception as error:
-        print(f"AGI API wake-up warning: {str(error)[:200]}")
+        print(f"AGI ingest ping warning: {str(error)[:200]}")
 
 
 def deliver(payload: dict) -> None:
@@ -317,3 +320,6 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+# Groww Cloud imports the module; ensure main runs on schedule.
+main()
