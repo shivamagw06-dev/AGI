@@ -15,6 +15,15 @@ test('requires canonical identity, instrument keys, sector and fresh positive an
   assert.ok(invalid.reasons.includes('stale_price_anchor'));
 });
 
+test('accepts canonical Upstox index keys containing spaces', () => {
+  const now = new Date('2026-08-10T04:00:00Z');
+  const item = { symbol: 'HDFCBANK', sector: 'FINANCIALS', anchors: { captured_at: '2026-08-10T03:55:00Z', price_at_signal: 1000, benchmark_at_signal: 25000, sector_index_at_signal: 28000 } };
+  const member = { symbol: 'HDFCBANK', instrumentKey: 'NSE_EQ|INE040A01034', sectorInstrumentKey: 'NSE_INDEX|Nifty Financial Services' };
+  const result = validateConfluenceCandidate(item, member, { benchmarkKey: 'NSE_INDEX|Nifty 50' }, { now });
+  assert.equal(result.valid, true);
+  assert.deepEqual(result.reasons, []);
+});
+
 test('bounds outcome observations and rejects asynchronous price triples', () => {
   const window = settlementWindow('2026-08-10T10:00:00Z', '5m');
   assert.equal(window.end, '2026-08-10T10:30:00.000Z');

@@ -6,6 +6,7 @@ import { completeDueConfluenceOutcomes, saveConfluenceEvents } from './confluenc
 import { syncResearchMemory } from './researchMemoryStore.js';
 import { settleDueForecasts, syncProbabilisticForecasts } from './probabilisticForecastStore.js';
 import { syncForecastCrossSections } from './forecastV2Store.js';
+import { scopeQueueToLiveUniverse } from './confluenceCandidateScope.js';
 
 let timer = null;
 let state = { enabled: false, status: 'disabled', last_run: null, last_capture: null, last_completion: null, last_error: null };
@@ -16,7 +17,10 @@ export async function runConfluenceValidationCycle() {
   try {
     const [workspace, universe] = await Promise.all([getLiveAlphaWorkspace(), loadLiveAlphaUniverse()]);
     const research = await getResearchEvidence({ workspace, limit: 25 });
-    const queue = buildConfluenceQueue({ workspace, research: research.evidence, limit: 25 });
+    const queue = scopeQueueToLiveUniverse(
+      buildConfluenceQueue({ workspace, research: research.evidence, limit: 100 }),
+      universe,
+    );
     const capture = await saveConfluenceEvents(queue, universe);
     const completion = await completeDueConfluenceOutcomes();
     const memory = await syncResearchMemory();
