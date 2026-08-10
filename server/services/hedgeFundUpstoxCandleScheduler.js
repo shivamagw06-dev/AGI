@@ -8,6 +8,7 @@
  * limits or making a page visit perform vendor work.
  */
 import { getHistoricalCandles, getIntradayCandles, isUpstoxConfigured } from '../providers/upstox.js';
+import { readLatestHflTerminalSnapshot } from './hflTerminalSnapshot.js';
 
 let timer = null;
 let inFlight = null;
@@ -134,7 +135,22 @@ export async function refreshHedgeFundUpstoxCandles({ force = false } = {}) {
   if (inFlight) return { ok: true, skipped: true, reason: 'refresh_in_flight' };
   inFlight = (async () => {
     const today = isoIstDate();
-    const terminal = await engineFetch('/v1/hedge-fund-lab/terminal?limit=24', { timeoutMs: 45_000 });
+    // Prefer Supabase snapshot so candle refresh does not rebuild scanners.
+    let terminal = null;
+    try {
+      terminal = await readLatestHflTerminalSnapshot();
+    } catch {
+      terminal = null;
+    }
+    if (!terminal?.ok) {
+      try {
+        const latest = await engineFetch('/v1/hedge-fund-lab/terminal/snapshot/latest', { timeoutMs: 20_000 });
+        terminal = latest?.payload || null;
+      } catch {
+        terminal = null;
+      }
+    }
+    if (!terminal?.ok) return { ok: true, skipped: true, reason: 'no_terminal_snapshot' };
     const candidates = candidateRows(terminal);
     if (!candidates.length) return { ok: true, skipped: true, reason: 'no_instrument_keys' };
     const shouldRunDaily = force || (!marketOpen() && lastDailyRefresh !== today);
@@ -157,7 +173,8 @@ export function startHedgeFundUpstoxCandleScheduler() {
   ) return;
   const intervalMs = Math.max(15 * 60_000, Number(process.env.HEDGE_FUND_UPSTOX_CANDLE_INTERVAL_MS || 15 * 60_000));
   const tick = () => refreshHedgeFundUpstoxCandles().then((result) => { lastRun = result; }).catch((error) => { lastRun = { ok: false, error: error.message, at: new Date().toISOString() }; });
-  setTimeout(tick, Math.max(60_000, Number(process.env.HEDGE_FUND_UPSTOX_INITIAL_DELAY_MS || 180_000)));
+  // Stagger after HFL snapshot scheduler (default 2m) so Python is not woken twice.
+  setTimeout(tick, Math.max(60_000, Number(process.env.HEDGE_FUND_UPSTOX_INITIAL_DELAY_MS || 480_000)));
   timer = setInterval(tick, intervalMs);
   timer.unref?.();
 }
