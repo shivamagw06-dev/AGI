@@ -324,7 +324,11 @@ def evaluate_golden_business_case(case: Dict[str, Any], payload: Dict[str, Any])
             "knowledge_unification",
             "company_router",
             "ikt_company",
-        }
+            "ikt_company_router",
+        } or any(
+            p in providers
+            for p in ("institutional_knowledge_tables", "business_intelligence", "capiq_ikt")
+        )
     soft_only = providers and all(p in {"legacy_kip", "academy"} for p in providers)
     assertions["no_generic_retrieval_only"] = not soft_only
 

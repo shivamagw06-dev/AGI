@@ -47,6 +47,24 @@ def test_deterministic_business_answer_is_not_discarded_by_que():
     ) is True
 
 
+def test_management_quality_keeps_bi_and_skips_full_desk():
+    from institutional_output_quality.guards import (
+        is_scoped_business_axis_question,
+        requires_full_company_analysis,
+    )
+
+    q = "Evaluate management quality for Reliance Industries."
+    assert is_scoped_business_axis_question(q) is True
+    assert requires_full_company_analysis(q, "RELIANCE") is False
+    hit = {
+        "providers_used": ["business_intelligence", "investment_intelligence"],
+        "company_intelligence": {"identity": {"ticker": "RELIANCE"}},
+    }
+    assert _kul_is_deterministic_business_answer(q, hit) is True
+    # Broad evaluate without a BI axis still escalates.
+    assert requires_full_company_analysis("Evaluate Reliance Industries.", "RELIANCE") is True
+
+
 def test_recommendation_policy_attaches_research_brief():
     svc = UiService.__new__(UiService)
     from app.ui.ask_orchestration_trace import StageTimer

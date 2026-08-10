@@ -114,6 +114,7 @@ from institutional_output_quality.guards import (
     filter_company_framework_text,
     has_supported_financial_evidence,
     has_supported_valuation_evidence,
+    is_scoped_business_axis_question,
     requires_full_company_analysis,
 )
 
@@ -247,6 +248,8 @@ def _kul_is_deterministic_business_answer(
     except Exception:
         family = ""
     company_identity = (kul_hit.get("company_intelligence") or {}).get("identity") or {}
+    if is_scoped_business_axis_question(question):
+        return True
     return family in {"business", "comparison", "industry"} or (
         family == "valuation" and not company_identity.get("ticker")
     )
@@ -2498,6 +2501,10 @@ class UiService:
             ikt_hit = None
         if ikt_hit and _que_requires_full_desk(que_pack):
             ask_orchestration["ikt_deferred_for_que"] = True
+            ikt_hit = None
+        # Management / moat / unit-economics axes need BI, not a CapIQ profile dump.
+        if ikt_hit and is_scoped_business_axis_question(q):
+            ask_orchestration["ikt_deferred_for_business_axis"] = True
             ikt_hit = None
         if ikt_hit:
             for stage in ("ikl", "retrieval", "ranking", "reasoning", "response_assembly"):
