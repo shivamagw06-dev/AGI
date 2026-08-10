@@ -36,7 +36,7 @@ export default function ArticlePreview({ open, onClose, article, html }) {
           </header>
 
           {article.coverUrl && (
-            <div className="agi-cover agi-cover--article mx-auto mt-6 w-full max-w-[90rem]">
+            <div className="agi-cover agi-cover--article mt-6">
               <img src={article.coverUrl} alt="" />
             </div>
           )}

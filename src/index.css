@@ -579,16 +579,22 @@
   .agi-cover--article {
     aspect-ratio: auto;
     max-height: none;
+    width: fit-content;
+    max-width: min(90rem, calc(100vw - 3rem));
+    margin-inline: auto;
+    background-color: transparent;
+    border: none;
     border-radius: 0.75rem;
-    border: 1px solid hsl(var(--border));
+    overflow: hidden;
   }
 
   .agi-cover--article img {
-    width: 100%;
+    display: block;
+    width: auto;
+    max-width: min(90rem, calc(100vw - 3rem));
     height: auto;
     max-height: min(72vh, 720px);
-    object-fit: contain;
-    object-position: center;
+    border-radius: 0.75rem;
   }
 
   .agi-cover--editor {
