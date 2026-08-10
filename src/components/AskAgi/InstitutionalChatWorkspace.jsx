@@ -703,8 +703,9 @@ export default function InstitutionalChatWorkspace({
                 <div className="ac-label">AGI</div>
                 <div className="ac-direct">
                   <p className="ac-direct-text">
-                    The research desk is momentarily unavailable. Please retry — AGI will resume institutional analysis
-                    as soon as the engine is warm.
+                    {/timed out|timeout/i.test(String(error?.message || error || ''))
+                      ? 'The research desk needs a little longer for this question. Please retry — complex company questions can take up to a minute while the engine assembles evidence from your uploaded research.'
+                      : 'The research desk is momentarily unavailable. Please retry — AGI will resume institutional analysis as soon as the engine is warm.'}
                   </p>
                 </div>
               </div>

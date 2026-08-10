@@ -56,6 +56,7 @@ KNOWN_TICKERS = {
     "NVDA",
     "META",
     "FB",
+    "ZENTEC",
 }
 
 # Common English / research words that look like tickers when uppercased.

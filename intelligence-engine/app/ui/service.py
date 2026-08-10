@@ -48,6 +48,7 @@ from app.ui.conversation_context import conversation_store
 from app.ui.ticker_guard import (
     accept_detected_ticker,
     alias_ticker_from_question,
+    kip_title_bind,
     looks_like_framework_meta_executive,
 )
 from app.ui.iax import (
@@ -1894,6 +1895,17 @@ class UiService:
         research_route = classify_research_route(q)
         client = None
         detected_ticker = ticker.upper() if ticker else None
+        early_ticker_source: str | None = "user" if detected_ticker else None
+        if research_route == COMPANY_RESEARCH and not detected_ticker:
+            alias_early = alias_ticker_from_question(q)
+            if alias_early:
+                detected_ticker = alias_early
+                early_ticker_source = "alias"
+            else:
+                kip_early = kip_title_bind(q, self.kip)
+                if kip_early:
+                    detected_ticker = kip_early
+                    early_ticker_source = "kip_title"
         # Comparisons are multi-entity research requests.  Keep the canonical pair
         # separate from the primary ticker used by legacy single-company adapters.
         comparison_tickers: list[str] = []
@@ -1945,7 +1957,7 @@ class UiService:
         ask_orchestration: dict[str, Any] = {
             "ask_trace_id": ask_trace_id,
             "request_id": ask_trace_id,
-            "ticker_source": "user" if detected_ticker else None,
+            "ticker_source": early_ticker_source or ("user" if detected_ticker else None),
             "ticker_rejects": [],
             "ere_research_blocked": False,
             "executive_source": None,

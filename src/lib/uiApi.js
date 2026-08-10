@@ -101,11 +101,11 @@ export async function postUiSearch(question, ticker, options = {}) {
     return await uiFetch('/search', {
       method: 'POST',
       body: { question, ticker, ...conversation },
-      timeoutMs: 25_000,
+      timeoutMs: 60_000,
     });
   } catch (err) {
     const msg = String(err?.message || '');
-    // A browser timeout already gave the desk a full 25 seconds. Retrying it
+    // A browser timeout already gave the desk a full 60 seconds. Retrying it
     // automatically doubles the visitor wait and leaves an apparently frozen
     // Ask page. Network/5xx failures can still receive one wake-and-retry.
     const retryable = /503|502|research_desk_unavailable|unavailable/i.test(msg) && !/timed out/i.test(msg);
@@ -115,7 +115,7 @@ export async function postUiSearch(question, ticker, options = {}) {
     return uiFetch('/search', {
       method: 'POST',
       body: { question, ticker, ...conversation },
-      timeoutMs: 25_000,
+      timeoutMs: 60_000,
     });
   }
 }
