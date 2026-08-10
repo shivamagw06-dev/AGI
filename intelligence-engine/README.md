@@ -22,6 +22,15 @@ uvicorn app.main:app --host 0.0.0.0 --port 8100 --reload
 
 Health: `GET http://127.0.0.1:8100/v1/health`
 
+## Ask AGI model synthesis
+
+Ask AGI retrieves and validates evidence locally, then uses OpenAI only for the
+final grounded answer. Set `OPENAI_API_KEY` on the intelligence-engine service.
+The defaults are `ASK_LLM_ENABLED=true`, `ASK_REASONING_MODEL=gpt-5.6-terra`,
+`ASK_REASONING_EFFORT=medium`, and `ASK_LLM_TIMEOUT_SECONDS=25`. If the key,
+model, evidence, or API is unavailable, Ask AGI automatically returns the
+existing deterministic ICE answer. Secrets are never returned in telemetry.
+
 ## Auth
 
 Send `Authorization: Bearer $INTELLIGENCE_ENGINE_TOKEN` (or `X-AGI-Intelligence-Token`).

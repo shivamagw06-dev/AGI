@@ -3817,7 +3817,7 @@ class UiService:
 
             # Bound complete-ask soft-wire so retrieval-heavy prompts (SMOKE-04)
             # cannot hold the gateway until ASK_ENGINE_TIMEOUT_MS.
-            rca_budget_s = 20.0 if slim else 40.0
+            rca_budget_s = 30.0 if slim else 50.0
 
             def _run_rca():
                 return run_complete_ask(
@@ -5207,7 +5207,7 @@ class UiService:
                 "playbook_id": _ice_view.get("playbook_id"),
                 "validation": _ice_view.get("validation"),
                 "consumes_institutional_answer": True,
-                "llm_used": False,
+                "llm_used": bool((ask_pipeline_runtime or {}).get("llm_used")),
                 "executive_was_framework_meta": ice_is_meta,
             }
             _pb_view = (ask_pipeline_runtime or {}).get("playbook_selection") or {}
@@ -5395,15 +5395,16 @@ class UiService:
             )
             # Soft ICE / IRP path — record whether a generative LLM call was used.
             _llm_used = bool((ask_pipeline_runtime or {}).get("llm_used"))
+            _llm_meta = (ask_pipeline_runtime or {}).get("llm") or {}
             _lat = (ask_orchestration.get("latency") or {})
             pipeline.mark(STAGE_LLM_STARTED, status="ok" if _llm_used else "skipped")
             pipeline.set_llm(
-                model=((ask_pipeline_runtime or {}).get("model") or ("ice_compose" if _ice_for_trace else "irp_soft")),
-                prompt_tokens=pipeline.prompt.get("estimated_tokens"),
-                completion_tokens=max(1, len(_exec) // 4) if _exec else 0,
-                latency_ms=int(_lat.get("reasoning_ms") or 0),
-                finish_reason="stop",
-                used=_llm_used or bool(_lat.get("reasoning_ms")),
+                model=(_llm_meta.get("model") or (ask_pipeline_runtime or {}).get("model") or ("ice_compose" if _ice_for_trace else "irp_soft")),
+                prompt_tokens=_llm_meta.get("prompt_tokens") or pipeline.prompt.get("estimated_tokens"),
+                completion_tokens=_llm_meta.get("completion_tokens") or (max(1, len(_exec) // 4) if _exec else 0),
+                latency_ms=int(_llm_meta.get("latency_ms") or _lat.get("reasoning_ms") or 0),
+                finish_reason=_llm_meta.get("finish_reason") or _llm_meta.get("status") or "stop",
+                used=_llm_used,
             )
             if not pipeline.intent:
                 _intent_final = (irp_dump or {}).get("intent") or (client or {}).get("intent") or ask_orchestration.get("intent")
