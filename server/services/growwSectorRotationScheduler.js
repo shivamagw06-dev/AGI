@@ -3,11 +3,26 @@
  */
 
 import { isGrowwConfigured } from '../providers/groww.js';
-import { runGrowwSectorRotationResearch } from './growwSectorRotationRun.js';
+import { runGrowwSectorRotationResearch, STRATEGY } from './growwSectorRotationRun.js';
 
 let timer = null;
 let lastRun = null;
 let lastIstDay = null;
+
+async function hasSectorRotationRunToday(fetchImpl = globalThis.fetch) {
+  const url = String(process.env.SUPABASE_URL || '').trim().replace(/\/$/, '');
+  const key = String(process.env.SUPABASE_SERVICE_ROLE_KEY || '').trim();
+  if (!url || !key) return false;
+  const parts = istParts();
+  const dayStart = `${parts.year}-${parts.month}-${parts.day}T00:00:00+05:30`;
+  const response = await fetchImpl(
+    `${url}/rest/v1/research_strategy_runs?strategy=eq.${STRATEGY}&as_of=gte.${encodeURIComponent(dayStart)}&select=id&limit=1`,
+    { headers: { apikey: key, Authorization: `Bearer ${key}` } },
+  );
+  if (!response.ok) return false;
+  const rows = await response.json();
+  return Array.isArray(rows) && rows.length > 0;
+}
 
 function istParts(now = new Date()) {
   return Object.fromEntries(
@@ -79,6 +94,19 @@ export function startGrowwSectorRotationScheduler() {
   setTimeout(tick, initialDelayMs);
   timer = setInterval(tick, pollMs);
   timer.unref?.();
+
+  const backfillDelayMs = Math.max(90_000, Number(process.env.GROWW_SECTOR_ROTATION_BACKFILL_DELAY_MS || 120_000));
+  setTimeout(() => {
+    hasSectorRotationRunToday()
+      .then((hasRun) => {
+        if (hasRun) return null;
+        console.info('[groww-sector-rotation] no run today — startup backfill');
+        return triggerGrowwSectorRotationRun({ force: true });
+      })
+      .catch((error) => {
+        console.warn('[groww-sector-rotation] startup backfill failed:', error?.message || error);
+      });
+  }, backfillDelayMs);
   console.info(
     `[groww-sector-rotation] scheduler active (IST ${process.env.GROWW_SECTOR_ROTATION_SCHEDULE_IST || '16:35'}, poll ${Math.round(pollMs / 60000)}m)`
   );

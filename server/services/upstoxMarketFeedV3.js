@@ -118,13 +118,28 @@ export class SynchronizedSnapshotStore {
   }
 }
 
+export function isUpstoxAuthError(error) {
+  const message = String(error?.message || error || '');
+  return error?.code === 'UPSTOX_AUTH_FAILED'
+    || /\b403\b/.test(message)
+    || /invalid token|unauthorized|authentication/i.test(message);
+}
+
 export async function authorizeMarketFeed({ fetchImpl = globalThis.fetch } = {}) {
   const { token } = resolveUpstoxAccessToken();
-  if (!token) throw new Error('Upstox access token is required for the V3 live feed.');
+  if (!token) {
+    const error = new Error('Upstox access token is required for the V3 live feed.');
+    error.code = 'UPSTOX_AUTH_FAILED';
+    throw error;
+  }
   const response = await fetchImpl(AUTHORIZE_URL, { headers: { Accept: 'application/json', Authorization: `Bearer ${token}` } });
   const json = await response.json().catch(() => ({}));
   const url = json?.data?.authorized_redirect_uri;
-  if (!response.ok || !url?.startsWith('wss://')) throw new Error(json?.errors?.[0]?.message || json?.message || `Upstox feed authorization failed (${response.status}).`);
+  if (!response.ok || !url?.startsWith('wss://')) {
+    const error = new Error(json?.errors?.[0]?.message || json?.message || `Upstox feed authorization failed (${response.status}).`);
+    if (response.status === 401 || response.status === 403) error.code = 'UPSTOX_AUTH_FAILED';
+    throw error;
+  }
   return url;
 }
 
@@ -182,10 +197,23 @@ export class UpstoxMarketFeedV3 {
           this.state.last_error = error.message;
         }
       });
-      socket.on('error', (error) => { this.state.last_error = error.message; });
+      socket.on('error', (error) => {
+        this.state.last_error = error.message;
+        if (isUpstoxAuthError(error)) {
+          this.reconnect = false;
+          this.state.status = 'auth_failed';
+          this.state.auth_hint = 'Upstox access token expired or invalid. Update UPSTOX_ACCESS_TOKEN on Render, then POST /api/market/upstox-feed/restart.';
+        }
+      });
       socket.on('close', () => { this.socket = null; this.state.status = this.stopped ? 'stopped' : 'reconnecting'; this.#scheduleReconnect(); });
     } catch (error) {
       this.state.last_error = error.message;
+      if (isUpstoxAuthError(error)) {
+        this.reconnect = false;
+        this.state.status = 'auth_failed';
+        this.state.auth_hint = 'Upstox access token expired or invalid. Update UPSTOX_ACCESS_TOKEN on Render, then POST /api/market/upstox-feed/restart.';
+        return;
+      }
       this.state.status = 'reconnecting';
       this.#scheduleReconnect();
     }

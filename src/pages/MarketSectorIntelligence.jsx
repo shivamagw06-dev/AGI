@@ -179,7 +179,11 @@ export default function MarketSectorIntelligence() {
     try {
       const data = await getMiDashboard();
       setPack(data);
-      if (!data?.ok) setError(data?.error || 'Dashboard unavailable');
+      if (data?.degraded) {
+        setError(data.hint || data.error || 'Dashboard is temporarily degraded — showing cached or partial data.');
+      } else if (!data?.ok) {
+        setError(data?.error || 'Dashboard unavailable');
+      }
     } catch (err) {
       setError(err?.message || 'Failed to load market intelligence');
       setPack(null);
@@ -287,7 +291,7 @@ export default function MarketSectorIntelligence() {
           <p>Percentile shown against each sector’s verified valuation history.</p>
         </aside> : null}
         <div className="msi-body">
-        {error ? <div className="msi-error">{error}</div> : null}
+        {error ? <div className={`msi-error${pack?.degraded ? ' msi-degraded' : ''}`}>{error}</div> : null}
         {loading ? <p className="msi-hint">Loading market intelligence…</p> : null}
 
         {pack?.ok ? (

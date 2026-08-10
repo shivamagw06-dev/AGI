@@ -7,10 +7,13 @@ import { VolumeBaselineIndex } from './minuteVolumeBaseline.js';
 import { SynchronizedSnapshotStore, UpstoxMarketFeedV3 } from './upstoxMarketFeedV3.js';
 import { bootstrapLiveAlphaVolumeBaselines } from './liveAlphaBaselineBootstrap.js';
 import { resolveLiveAlphaDerivatives } from './liveAlphaDerivativeUniverse.js';
+import { pollGrowwIndexSnapshots } from './sectorIndexGrowwFallback.js';
+import { isUpstoxAuthError } from './upstoxMarketFeedV3.js';
 
 const serverDir = path.dirname(fileURLToPath(import.meta.url));
 const defaultUniversePath = path.join(serverDir, '../config/live-alpha-universe.example.json');
 let runtime = null;
+let growwFallbackTimer = null;
 let state = { enabled: false, status: 'disabled', started_at: null, last_evaluation: null, last_error: null };
 
 export function validateLiveAlphaUniverse(config) {
@@ -81,6 +84,7 @@ export async function startLiveAlphaRuntime({ Feed = UpstoxMarketFeedV3, Persist
     state = { enabled: true, status: 'starting', started_at: new Date().toISOString(), last_evaluation: null, last_error: null };
     await feed.start();
     state.status = 'running';
+    if (feed.state?.status === 'auth_failed') startGrowwSectorIndexFallback({ store, pipeline, instrumentKeys });
     if (baselines.values.size < universe.members.length) {
       state.baseline_bootstrap = { status: 'running', rows: baselines.values.size, failures: [] };
       const retryMs = Math.max(60_000, Number(process.env.LIVE_ALPHA_BASELINE_RETRY_MS || 5 * 60_000));
@@ -103,16 +107,48 @@ export async function startLiveAlphaRuntime({ Feed = UpstoxMarketFeedV3, Persist
     }
     return getLiveAlphaRuntimeStatus();
   } catch (error) {
-    state = { ...state, enabled: true, status: 'failed', last_error: error.message };
+    state = { ...state, enabled: true, status: isUpstoxAuthError(error) ? 'auth_failed' : 'failed', last_error: error.message };
+    if (isUpstoxAuthError(error)) {
+      state.auth_hint = 'Update UPSTOX_ACCESS_TOKEN on Render, then POST /api/market/upstox-feed/restart.';
+    }
     return getLiveAlphaRuntimeStatus();
   }
 }
 
 export function stopLiveAlphaRuntime() {
+  if (growwFallbackTimer) clearInterval(growwFallbackTimer);
+  growwFallbackTimer = null;
   runtime?.feed.stop();
   runtime = null;
   state.status = 'stopped';
   return getLiveAlphaRuntimeStatus();
+}
+
+function startGrowwSectorIndexFallback({ store, pipeline, instrumentKeys }) {
+  if (growwFallbackTimer) return;
+  const indexKeys = instrumentKeys.filter((key) => String(key).startsWith('NSE_INDEX|'));
+  if (!indexKeys.length) return;
+  state.feed_fallback = { mode: 'groww_sector_indices', status: 'active' };
+  const pollMs = Math.max(60_000, Number(process.env.LIVE_ALPHA_GROWW_FALLBACK_MS || 120_000));
+  const tick = async () => {
+    try {
+      const snapshots = await pollGrowwIndexSnapshots(indexKeys);
+      if (!snapshots.length) return;
+      const batch = { snapshots, type: 'groww_fallback' };
+      store.ingest(batch);
+      pipeline.ingest(batch);
+    } catch (error) {
+      state.feed_fallback = { mode: 'groww_sector_indices', status: 'failed', error: error.message };
+    }
+  };
+  void tick();
+  growwFallbackTimer = setInterval(tick, pollMs);
+  growwFallbackTimer.unref?.();
+}
+
+export async function restartLiveAlphaRuntime() {
+  stopLiveAlphaRuntime();
+  return startLiveAlphaRuntime();
 }
 
 export function getLiveAlphaRuntimeStatus() {
