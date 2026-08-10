@@ -678,10 +678,11 @@ export default function ArticlePage() {
         <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
       </Helmet>
 
-      <div className="max-w-3xl mx-auto px-4 py-8">
-        <Link to="/" className="text-sm text-muted-foreground hover:text-foreground">
+      <main className="article-page-shell px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+        <header className="article-page-header mx-auto w-full max-w-5xl">
+          <Link to="/" className="text-sm text-muted-foreground hover:text-foreground">
           ← Back
-        </Link>
+          </Link>
 
         <h1 className="mt-3 text-3xl md:text-4xl font-extrabold tracking-tight leading-tight">
           {article.title}
@@ -759,19 +760,22 @@ export default function ArticlePage() {
           )}
         </div>
 
+        </header>
+
         {image && (
-          <div className="mt-6 agi-cover agi-cover--article">
+          <div className="agi-cover agi-cover--article mx-auto mt-6 w-full max-w-6xl">
             <img src={image} alt="" />
           </div>
         )}
 
         <article
-          className="prose prose-neutral dark:prose-invert max-w-none mt-8 prose-img:rounded-lg prose-img:border prose-img:max-w-full prose-img:h-auto prose-img:object-contain prose-h1:font-extrabold prose-h2:font-bold prose-p:leading-7"
+          className="article-prose prose prose-neutral dark:prose-invert mx-auto mt-8 w-full max-w-3xl prose-h1:font-extrabold prose-h2:font-bold prose-p:leading-7"
           dangerouslySetInnerHTML={{ __html: sanitizedHtml }}
         />
 
-        {message && <div className="mt-6 text-sm text-green-700">{message}</div>}
-        {errorMessage && <div className="mt-6 text-sm text-red-600">{errorMessage}</div>}
+        <div className="article-page-footer mx-auto w-full max-w-3xl">
+          {message && <div className="mt-6 text-sm text-green-700">{message}</div>}
+          {errorMessage && <div className="mt-6 text-sm text-red-600">{errorMessage}</div>}
 
         <div className="mt-10 flex flex-wrap gap-3">
           <Button
@@ -826,7 +830,8 @@ export default function ArticlePage() {
         {/* Comments Section */}
         {/* ----------------------------- */}
         <Comments articleId={article.id} />
-      </div>
+        </div>
+      </main>
     </div>
   );
 }
