@@ -63,6 +63,63 @@ export default function createMarketRouter(env = {}) {
     }
   });
 
+  router.get('/groww-sector-rotation/status', async (_req, res) => {
+    const { getGrowwSectorRotationSchedulerStatus } = await import('../services/growwSectorRotationScheduler.js');
+    return res.status(200).json({ ok: true, ...getGrowwSectorRotationSchedulerStatus() });
+  });
+
+  router.post('/groww-sector-rotation/run', async (_req, res) => {
+    try {
+      const { triggerGrowwSectorRotationRun } = await import('../services/growwSectorRotationScheduler.js');
+      const result = await triggerGrowwSectorRotationRun({ force: true });
+      return res.status(result.ok === false ? 502 : 200).json(result);
+    } catch (err) {
+      return res.status(502).json({ ok: false, error: err?.message || 'groww_sector_rotation_run_failed' });
+    }
+  });
+
+  router.get('/groww-equity-opportunity/status', async (_req, res) => {
+    const { getGrowwEquityOpportunitySchedulerStatus } = await import('../services/growwEquityOpportunityScheduler.js');
+    return res.status(200).json({ ok: true, ...getGrowwEquityOpportunitySchedulerStatus() });
+  });
+
+  router.post('/groww-equity-opportunity/run', async (_req, res) => {
+    try {
+      const { triggerGrowwEquityOpportunityRun } = await import('../services/growwEquityOpportunityScheduler.js');
+      const result = await triggerGrowwEquityOpportunityRun({ force: true });
+      return res.status(result.ok === false ? 502 : 200).json(result);
+    } catch (err) {
+      return res.status(502).json({ ok: false, error: err?.message || 'groww_equity_opportunity_run_failed' });
+    }
+  });
+
+  router.get('/upstox-feed/verify', async (_req, res) => {
+    try {
+      const { authorizeMarketFeed } = await import('../services/upstoxMarketFeedV3.js');
+      const url = await authorizeMarketFeed();
+      return res.status(200).json({ ok: true, authorized: Boolean(url), checkedAt: new Date().toISOString() });
+    } catch (err) {
+      return res.status(200).json({
+        ok: false,
+        authorized: false,
+        error: err?.message || 'upstox_feed_verify_failed',
+        code: err?.code || null,
+        hint: 'Refresh UPSTOX_ACCESS_TOKEN on Render (Upstox developer dashboard daily token).',
+        checkedAt: new Date().toISOString(),
+      });
+    }
+  });
+
+  router.post('/upstox-feed/restart', async (_req, res) => {
+    try {
+      const { restartLiveAlphaRuntime } = await import('../services/liveAlphaRuntime.js');
+      const status = await restartLiveAlphaRuntime();
+      return res.status(200).json({ ok: true, ...status });
+    } catch (err) {
+      return res.status(502).json({ ok: false, error: err?.message || 'upstox_feed_restart_failed' });
+    }
+  });
+
   // Operational status only: confirms whether Hedge Fund candidates are being
   // refreshed from Groww without exposing quotes or credentials.
   router.get('/hedge-fund-live-quotes/status', async (_req, res) => {

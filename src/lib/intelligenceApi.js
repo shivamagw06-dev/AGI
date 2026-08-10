@@ -3254,9 +3254,9 @@ export const postAqeQualityGate = (body = {}) =>
 /** Market & Sector Intelligence Terminal v1.0 */
 export const getMiHealth = () => intelligenceFetch('/market-intelligence/health');
 export const getMiDashboard = () =>
-  intelligenceFetch('/market-intelligence/dashboard', { timeoutMs: 120_000 });
+  intelligenceFetch('/market-intelligence/dashboard', { timeoutMs: 60_000 });
 export const getMiSector = (sector) =>
-  intelligenceFetch(`/market-intelligence/sector/${encodeURIComponent(sector)}`, { timeoutMs: 90_000 });
+  intelligenceFetch(`/market-intelligence/sector/${encodeURIComponent(sector)}`, { timeoutMs: 60_000 });
 
 /** Hedge Fund Strategy Lab */
 export const getHflHealth = () =>

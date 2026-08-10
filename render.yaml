@@ -59,6 +59,10 @@ services:
         value: "true"
       - key: GROWW_SECTOR_ROTATION_SCHEDULE_IST
         value: "16:35"
+      - key: ENGINE_KEEP_WARM_MS
+        value: "300000"
+      - key: GROWW_SECTOR_ROTATION_BACKFILL_DELAY_MS
+        value: "120000"
 
   # Optional dedicated ingest worker (Starter+). Decouples queue processing from
   # the HTTP process so deploys/restarts of the API do not drop in-flight work

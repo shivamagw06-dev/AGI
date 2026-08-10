@@ -32,6 +32,7 @@ import { startHflTerminalSnapshotScheduler } from "./services/hflTerminalSnapsho
 import { startValuationCompanyPackScheduler } from "./services/valuationCompanyPackScheduler.js";
 import { startGrowwEquityOpportunityScheduler } from "./services/growwEquityOpportunityScheduler.js";
 import { startGrowwSectorRotationScheduler } from "./services/growwSectorRotationScheduler.js";
+import { startEngineKeepWarm } from "./services/engineKeepWarm.js";
 import { startUpstoxStatementScheduler } from "./services/upstoxStatementScheduler.js";
 import { getLiveAlphaRuntimeStatus, startLiveAlphaRuntime } from "./services/liveAlphaRuntime.js";
 import { getLiveAlphaWorkspace } from "./services/liveAlphaWorkspace.js";
@@ -417,6 +418,7 @@ startHedgeFundUpstoxCandleScheduler();
 startUpstoxStatementScheduler();
 startLiveAlphaRuntime().catch((error) => console.error('[live-alpha] startup failed:', error?.message || error));
 startConfluenceValidationScheduler();
+startEngineKeepWarm();
 
 /* ---------- /api/perplexity/deals ----------
    Ask Perplexity for a strict JSON array of deals with these fields:

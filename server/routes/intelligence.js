@@ -31,6 +31,10 @@ import {
   buildKocDegradedOverview,
 } from '../services/kocDegraded.js';
 import {
+  buildMiDegradedDashboard,
+  buildMiDegradedSector,
+} from '../services/miDegraded.js';
+import {
   hflStaticCompare,
   hflStaticLibrary,
   hflStaticStrategy,
@@ -166,6 +170,25 @@ function readHflTerminalCache(key, { allowStale = false } = {}) {
 
 function writeHflTerminalCache(key, data) {
   if (data && typeof data === 'object') hflTerminalCache.set(key, { data, at: Date.now() });
+}
+
+const MI_DASHBOARD_FRESH_MS = 5 * 60_000;
+const MI_DASHBOARD_STALE_MS = 60 * 60_000;
+let miDashboardCache = null;
+
+function readMiDashboardCache({ allowStale = false } = {}) {
+  if (!miDashboardCache) return null;
+  const age = Date.now() - miDashboardCache.at;
+  if (age <= MI_DASHBOARD_FRESH_MS || (allowStale && age <= MI_DASHBOARD_STALE_MS)) {
+    return { data: miDashboardCache.data, age, stale: age > MI_DASHBOARD_FRESH_MS };
+  }
+  return null;
+}
+
+function writeMiDashboardCache(data) {
+  if (data && typeof data === 'object' && data.ok) {
+    miDashboardCache = { data, at: Date.now() };
+  }
 }
 
 async function companyMatches(query, limit = 8) {
@@ -3641,12 +3664,32 @@ export default function createIntelligenceRouter() {
   // Market & Sector Intelligence Terminal v1.0
   router.get('/market-intelligence/health', kfGet('/v1/market-intelligence/health'));
   router.get('/market-intelligence/dashboard', async (req, res) => {
+    const allowStale = req.query.stale === '1' || req.query.stale === 'true';
+    const cached = readMiDashboardCache({ allowStale: true });
+    if (cached && !allowStale && cached.age <= MI_DASHBOARD_FRESH_MS && req.query.refresh !== '1') {
+      return res.status(200).json({
+        ...cached.data,
+        _cache: { age_ms: cached.age, stale: cached.stale },
+      });
+    }
     try {
       const qs = new URLSearchParams(req.query || {}).toString();
-      const r = await engineFetch(`/v1/market-intelligence/dashboard${qs ? `?${qs}` : ''}`, { timeoutMs: 120_000 });
-      res.status(r.status).json(r.data);
+      const r = await engineFetch(`/v1/market-intelligence/dashboard${qs ? `?${qs}` : ''}`, { timeoutMs: 45_000 });
+      if (r.ok && r.data?.ok) writeMiDashboardCache(r.data);
+      return res.status(r.status).json(r.data);
     } catch (err) {
-      res.status(502).json({ error: err.message || 'market-intelligence dashboard failed' });
+      const detail = err?.message || 'market-intelligence dashboard failed';
+      if (cached) {
+        return res.status(200).json({
+          ...cached.data,
+          ok: true,
+          degraded: true,
+          error: detail,
+          hint: 'Serving last good dashboard while the engine recovers.',
+          _cache: { age_ms: cached.age, stale: true },
+        });
+      }
+      return res.status(200).json(buildMiDegradedDashboard(detail));
     }
   });
   router.get('/market-intelligence/sector/:sector', async (req, res) => {
@@ -3654,11 +3697,12 @@ export default function createIntelligenceRouter() {
       const qs = new URLSearchParams(req.query || {}).toString();
       const r = await engineFetch(
         `/v1/market-intelligence/sector/${encodeURIComponent(req.params.sector)}${qs ? `?${qs}` : ''}`,
-        { timeoutMs: 90_000 },
+        { timeoutMs: 45_000 },
       );
-      res.status(r.status).json(r.data);
+      return res.status(r.status).json(r.data);
     } catch (err) {
-      res.status(502).json({ error: err.message || 'market-intelligence sector failed' });
+      const detail = err?.message || 'market-intelligence sector failed';
+      return res.status(200).json(buildMiDegradedSector(req.params.sector, detail));
     }
   });
   router.post('/market-intelligence/flows/ingest', async (req, res) => {
