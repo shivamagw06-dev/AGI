@@ -34,6 +34,7 @@ import { normalizeArticleSection } from '@/lib/articleSections';
 import { RESEARCH_DESK_SECTIONS } from '@/lib/deskSections';
 import { canEditArticle, isAdmin } from '@/lib/adminAuth';
 import { Button } from '@/components/ui/button';
+import { insertImageAtPosition, uploadArticleImage } from '@/lib/articleImageUpload';
 
 const AUTOSAVE_MS = 4000;
 
@@ -172,48 +173,89 @@ export default function ArticleEditor() {
   }, [editor]);
 
   const uploadFile = useCallback(
-    async (bucket, file) => {
-      const path = `${user.id}/${Date.now()}-${file.name}`;
-      const { error: uploadError } = await supabase.storage.from(bucket).upload(path, file);
-      if (uploadError) throw uploadError;
-      const { data } = supabase.storage.from(bucket).getPublicUrl(path);
-      return data.publicUrl;
+    async (bucket, file) => uploadArticleImage({ userId: user?.id, file, bucket }),
+    [user?.id]
+  );
+
+  const insertImageFile = useCallback(
+    async (file, insertionPosition) => {
+      if (!editor || !file || inlineImageUploading) return;
+      if (!file.type?.startsWith('image/')) {
+        setError('Only image files can be inserted into the article body.');
+        return;
+      }
+      const position = insertionPosition ?? editor.state.selection.anchor;
+      try {
+        setInlineImageUploading(true);
+        setError('');
+        const url = await uploadFile('images', file);
+        insertImageAtPosition(editor, position, { url, alt: file.name });
+        dirtyRef.current = true;
+      } catch (err) {
+        setError(err?.message || 'Image upload failed');
+      } finally {
+        setInlineImageUploading(false);
+      }
     },
-    [user.id]
+    [editor, inlineImageUploading, uploadFile]
   );
 
   const insertImage = useCallback(async () => {
     if (!editor || inlineImageUploading) return;
-    // The native file picker and upload both move focus away from TipTap. Capture
-    // the cursor now so the image is inserted where the author requested it.
     const insertionPosition = editor.state.selection.anchor;
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = 'image/*';
     input.onchange = async () => {
       const file = input.files?.[0];
-      if (!file || !editor) return;
-      try {
-        setInlineImageUploading(true);
-        const url = await uploadFile('images', file);
-        const safePosition = Math.min(insertionPosition, editor.state.doc.content.size);
-        editor
-          .chain()
-          .focus()
-          .insertContentAt(safePosition, {
-            type: 'image',
-            attrs: { src: url, alt: file.name, size: 'full', align: 'center' },
-          })
-          .run();
-        dirtyRef.current = true;
-      } catch (err) {
-        alert(`Image upload failed: ${err.message}`);
-      } finally {
-        setInlineImageUploading(false);
-      }
+      if (file) await insertImageFile(file, insertionPosition);
     };
     input.click();
-  }, [editor, inlineImageUploading, uploadFile]);
+  }, [editor, inlineImageUploading, insertImageFile]);
+
+  useEffect(() => {
+    if (!editor) return;
+    const view = editor.view;
+    if (!view?.dom) return;
+
+    const dropHandler = (event) => {
+      const files = event.dataTransfer?.files;
+      if (!files?.length) return;
+      const imageFiles = Array.from(files).filter((file) => file.type.startsWith('image/'));
+      if (!imageFiles.length) return;
+      event.preventDefault();
+      const coords = { left: event.clientX, top: event.clientY };
+      const pos = view.posAtCoords(coords)?.pos ?? editor.state.selection.anchor;
+      void (async () => {
+        for (const file of imageFiles) {
+          // eslint-disable-next-line no-await-in-loop
+          await insertImageFile(file, pos);
+        }
+      })();
+    };
+
+    const pasteHandler = (event) => {
+      const files = event.clipboardData?.files;
+      if (!files?.length) return;
+      const imageFiles = Array.from(files).filter((file) => file.type.startsWith('image/'));
+      if (!imageFiles.length) return;
+      event.preventDefault();
+      const position = editor.state.selection.anchor;
+      void (async () => {
+        for (const file of imageFiles) {
+          // eslint-disable-next-line no-await-in-loop
+          await insertImageFile(file, position);
+        }
+      })();
+    };
+
+    view.dom.addEventListener('drop', dropHandler);
+    view.dom.addEventListener('paste', pasteHandler);
+    return () => {
+      view.dom.removeEventListener('drop', dropHandler);
+      view.dom.removeEventListener('paste', pasteHandler);
+    };
+  }, [editor, insertImageFile]);
 
   const insertVideo = useCallback(() => {
     const raw = window.prompt('Paste YouTube, Vimeo, or embed URL');
@@ -240,7 +282,7 @@ export default function ArticleEditor() {
         setCoverUrl(url);
         dirtyRef.current = true;
       } catch (err) {
-        alert(`Cover upload failed: ${err.message}`);
+        setError(err?.message || 'Cover upload failed');
       }
     };
     input.click();
@@ -665,7 +707,7 @@ export default function ArticleEditor() {
               />
               {inlineImageUploading && (
                 <div className="border-b border-blue-100 bg-blue-50 px-4 py-2 text-sm text-blue-700" role="status">
-                  Uploading image at the selected position…
+                  Uploading image at the cursor — you can also paste or drag images into the editor.
                 </div>
               )}
               <EditorContent editor={editor} className="article-editor-content" />
