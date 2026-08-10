@@ -17,7 +17,11 @@ from typing import Any, Callable, Optional
 
 from .live_alpha_bridge import (
     confluence_label,
+    effective_agreement,
     fetch_live_alpha_rows,
+    fundamental_bias,
+    live_alpha_confirms,
+    live_alpha_conflicts,
     unified_score,
 )
 from .scanner import (
@@ -555,6 +559,8 @@ def _overview_uncached(capped: int, cache_key: str, now: float) -> dict[str, Any
     # Strategy overlap — independent scanners agreeing on the same company.
     overlap: dict[str, dict[str, Any]] = {}
     for key, rows in full_results.items():
+        if key == "live_alpha":
+            continue
         for row in rows:
             ticker, name = _identity(row)
             if not ticker:
@@ -568,25 +574,43 @@ def _overview_uncached(capped: int, cache_key: str, now: float) -> dict[str, Any
                     "industry": row.get("industry") or (row.get("long_leg") or {}).get("industry"),
                     "market_cap": row.get("market_cap") or (row.get("long_leg") or {}).get("market_cap"),
                     "coverage": row.get("coverage") or (row.get("long_leg") or {}).get("coverage"),
-                    "strategies": [],
                     "fundamental_strategies": [],
-                    "confidences": [],
+                    "fundamental_confidences": [],
                 },
             )
-            entry["strategies"].append(SCANS[key][0])
-            if key != "live_alpha":
-                entry["fundamental_strategies"].append(SCANS[key][0])
-            entry["confidences"].append(row.get("confidence") or 50)
+            entry["fundamental_strategies"].append(SCANS[key][0])
+            entry["fundamental_confidences"].append(row.get("confidence") or 50)
+
+    for ticker, la in live_alpha_by_ticker.items():
+        overlap.setdefault(
+            ticker,
+            {
+                "ticker": ticker,
+                "company_name": la.get("company_name") or ticker,
+                "sector": la.get("sector"),
+                "industry": None,
+                "market_cap": None,
+                "coverage": None,
+                "fundamental_strategies": [],
+                "fundamental_confidences": [],
+            },
+        )
 
     overlap_rows = []
     for ticker, entry in overlap.items():
-        n = len(entry["strategies"])
         fund_n = len(entry["fundamental_strategies"])
-        avg = round(sum(entry["confidences"]) / n, 1) if n else 50.0
+        fund_confidences = entry["fundamental_confidences"]
+        fund_avg = round(sum(fund_confidences) / fund_n, 1) if fund_n else None
         la = live_alpha_by_ticker.get(ticker)
         la_present = la is not None
         la_direction = la.get("direction") if la else None
-        hfl_bias = "positive" if avg >= 55 else "negative" if avg <= 45 else None
+        hfl_bias = fundamental_bias(fund_avg)
+        confirms = live_alpha_confirms(hfl_bias=hfl_bias, live_direction=la_direction)
+        conflicts = live_alpha_conflicts(hfl_bias=hfl_bias, live_direction=la_direction)
+        agreement = effective_agreement(fundamental_count=fund_n, live_alpha_confirms=confirms)
+        display_strategies = list(entry["fundamental_strategies"])
+        if la_present:
+            display_strategies.append("Live Alpha")
         label = confluence_label(
             hfl_scanner_count=fund_n,
             live_alpha_present=la_present,
@@ -594,7 +618,7 @@ def _overview_uncached(capped: int, cache_key: str, now: float) -> dict[str, Any
             hfl_bias=hfl_bias,
         )
         unified = unified_score(
-            hfl_score=avg,
+            hfl_score=fund_avg or 50.0,
             live_alpha_score=(la or {}).get("live_alpha_score"),
             live_direction=la_direction,
             hfl_bias=hfl_bias,
@@ -607,14 +631,17 @@ def _overview_uncached(capped: int, cache_key: str, now: float) -> dict[str, Any
                 "industry": entry["industry"],
                 "market_cap": entry["market_cap"],
                 "coverage": entry["coverage"],
-                "strategies": entry["strategies"],
+                "strategies": display_strategies,
                 "fundamental_strategies": entry["fundamental_strategies"],
-                "agreement": n,
+                "agreement": agreement,
                 "fundamental_agreement": fund_n,
-                "avg_confidence": avg,
+                "avg_confidence": fund_avg,
+                "fundamental_confidence": fund_avg,
                 "priority_score": round(unified, 1),
                 "unified_score": unified,
                 "confluence_label": label,
+                "live_alpha_confirms": confirms,
+                "live_alpha_conflicts": conflicts,
                 "live_alpha": {
                     "present": la_present,
                     "direction": la_direction,
@@ -624,6 +651,8 @@ def _overview_uncached(capped: int, cache_key: str, now: float) -> dict[str, Any
                     "contributing_engines": (la or {}).get("contributing_engines") or [],
                     "signal_age_minutes": (la or {}).get("signal_age_minutes"),
                     "newest_signal_at": (la or {}).get("newest_signal_at"),
+                    "confirms": confirms,
+                    "conflicts": conflicts,
                 } if la_present else None,
             }
         )
@@ -644,12 +673,21 @@ def _overview_uncached(capped: int, cache_key: str, now: float) -> dict[str, Any
     for rank, row in enumerate(ranked_queue[:10], start=1):
         minutes = 30 + 15 * min(4, row["agreement"])
         la = row.get("live_alpha") or {}
-        why_parts = [f"{row['agreement']} independent scanners agree: " + ", ".join(row["strategies"])]
-        if la.get("present"):
+        fund_strategies = row.get("fundamental_strategies") or []
+        why_parts = [
+            f"{row['fundamental_agreement']} fundamental scanner"
+            f"{'s' if row['fundamental_agreement'] != 1 else ''}: "
+            + ", ".join(fund_strategies),
+        ]
+        if la.get("confirms"):
             why_parts.append(
-                f"Live Alpha {la.get('direction') or '—'}"
-                + (f" ({', '.join(la.get('contributing_engines') or [])})" if la.get("contributing_engines") else "")
+                f"Live Alpha confirms ({la.get('direction') or '—'})"
+                + (f" via {', '.join(la.get('contributing_engines') or [])}" if la.get("contributing_engines") else "")
             )
+        elif la.get("conflicts"):
+            why_parts.append(f"Live Alpha timing conflict ({la.get('direction') or '—'} vs fundamentals)")
+        elif la.get("present"):
+            why_parts.append(f"Live Alpha present ({la.get('direction') or '—'}) — not counted as agreement")
         queue.append(
             {
                 "rank": rank,
@@ -660,7 +698,7 @@ def _overview_uncached(capped: int, cache_key: str, now: float) -> dict[str, Any
                 "stars": max(1, min(5, 1 + row["agreement"])),
                 "why": " · ".join(why_parts),
                 "estimated_research_minutes": minutes,
-                "confidence": row["avg_confidence"],
+                "confidence": row.get("fundamental_confidence"),
                 "unified_score": row.get("unified_score"),
                 "confluence_label": row.get("confluence_label"),
                 "live_alpha_direction": la.get("direction"),
@@ -727,7 +765,10 @@ def _overview_uncached(capped: int, cache_key: str, now: float) -> dict[str, Any
         "live_alpha_meta": live_meta,
         "scoring": {
             "unified_weights": {"hedge_fund": 0.7, "live_alpha": 0.3},
+            "hedge_fund_component": "fundamental scanner confidence only (excludes Live Alpha)",
+            "agreement_rule": "Live Alpha increases agreement only on directional confirmation",
             "conflict_penalty": "Negative Live Alpha conflicts reduce the unified score instead of adding agreement.",
+            "freshness": live_meta.get("freshness_mode") or "session",
         },
         "cache": {"hit": False, "ttl_sec": _OVERVIEW_TTL_SEC},
     }

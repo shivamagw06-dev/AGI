@@ -12,7 +12,11 @@ if str(ENGINE_ROOT) not in sys.path:
 from hedge_fund_lab.live_alpha_bridge import (  # noqa: E402
     composite_score,
     confluence_label,
+    effective_agreement,
     engine_agreement,
+    fundamental_bias,
+    live_alpha_confirms,
+    live_alpha_conflicts,
     signed_score,
     unified_score,
 )
@@ -58,6 +62,84 @@ def test_unified_score_penalizes_conflicts():
     aligned = unified_score(hfl_score=70, live_alpha_score=60, live_direction="positive", hfl_bias="positive")
     conflict = unified_score(hfl_score=70, live_alpha_score=60, live_direction="negative", hfl_bias="positive")
     assert conflict < aligned
+
+
+def test_fundamental_bias_and_effective_agreement():
+    assert fundamental_bias(60) == "positive"
+    assert fundamental_bias(40) == "negative"
+    assert fundamental_bias(50) is None
+    assert effective_agreement(fundamental_count=1, live_alpha_confirms=False) == 1
+    assert effective_agreement(fundamental_count=1, live_alpha_confirms=True) == 2
+    assert live_alpha_confirms(hfl_bias="positive", live_direction="positive") is True
+    assert live_alpha_conflicts(hfl_bias="positive", live_direction="negative") is True
+
+
+def test_conflict_does_not_inflate_agreement():
+    """One fundamental + conflicting Live Alpha must not reach agreement=2."""
+    fund_n = 1
+    confirms = live_alpha_confirms(hfl_bias="positive", live_direction="negative")
+    assert confirms is False
+    assert effective_agreement(fundamental_count=fund_n, live_alpha_confirms=confirms) == 1
+
+
+def test_newest_neutral_blocks_older_qualifying(monkeypatch):
+    from hedge_fund_lab import live_alpha_bridge as bridge
+
+    runs = [{"id": "run-new", "engine": "cross_sectional_momentum_v1", "as_of": "2026-08-10T10:00:00Z"}]
+    signals = [
+        {
+            "symbol": "TCS",
+            "sector": "IT",
+            "run_id": "run-new",
+            "direction": None,
+            "alpha_z": 0.5,
+            "signal_quality_score": 80,
+            "signal_quality_label": "strong",
+            "liquidity_ok": True,
+            "classification": "neutral",
+            "factor_values": {},
+            "created_at": "2026-08-10T10:00:00Z",
+        },
+        {
+            "symbol": "TCS",
+            "sector": "IT",
+            "run_id": "run-new",
+            "direction": "positive",
+            "alpha_z": 1.5,
+            "signal_quality_score": 80,
+            "signal_quality_label": "strong",
+            "liquidity_ok": True,
+            "classification": "positive_research_candidate",
+            "factor_values": {},
+            "created_at": "2026-08-10T09:00:00Z",
+        },
+    ]
+
+    def fake_rest(path, **kwargs):
+        if path.startswith("live_alpha_runs"):
+            return runs
+        if path.startswith("live_alpha_signals"):
+            return signals
+        return None
+
+    monkeypatch.setattr(bridge, "_rest", fake_rest)
+    monkeypatch.setattr(bridge, "_signal_is_fresh", lambda signal, as_of=None: True)
+    out = bridge.fetch_live_alpha_rows(limit=10)
+    assert out["ok"] is True
+    assert out["rows"] == []
+
+
+def test_next_session_open_keeps_closing_signal_through_evening():
+    from datetime import datetime, timedelta, timezone
+
+    from hedge_fund_lab.live_alpha_bridge import _next_nse_session_open
+
+    # ~3:25 PM IST on a Monday
+    closing = datetime(2026, 8, 10, 9, 55, tzinfo=timezone.utc)
+    nxt = _next_nse_session_open(closing)
+    assert nxt > closing
+    # A fixed 120-minute window would expire before the evening research window ends.
+    assert closing + timedelta(minutes=120) < nxt
 
 
 def test_fetch_live_alpha_rows_without_supabase():

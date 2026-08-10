@@ -10,9 +10,10 @@ from __future__ import annotations
 import json
 import math
 import os
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, time, timezone
 from typing import Any, Optional
 from urllib import error, parse, request
+from zoneinfo import ZoneInfo
 
 ENGINE_LABELS: dict[str, str] = {
     "cross_sectional_momentum_v1": "Leadership",
@@ -23,9 +24,12 @@ ENGINE_LABELS: dict[str, str] = {
 }
 
 _ENGINE_ORDER = list(ENGINE_LABELS.keys())
+IST = ZoneInfo("Asia/Kolkata")
 
 _MIN_QUALITY = float(os.getenv("HFL_LIVE_ALPHA_MIN_QUALITY", "50"))
-_MAX_AGE_MINUTES = float(os.getenv("HFL_LIVE_ALPHA_MAX_AGE_MINUTES", "120"))
+_FRESHNESS_MODE = (os.getenv("HFL_LIVE_ALPHA_FRESHNESS_MODE") or "session").strip().lower()
+_MAX_AGE_MINUTES_RAW = (os.getenv("HFL_LIVE_ALPHA_MAX_AGE_MINUTES") or "").strip()
+_MAX_AGE_MINUTES = float(_MAX_AGE_MINUTES_RAW) if _MAX_AGE_MINUTES_RAW else None
 _WEAK_LABELS = frozenset({"ignore", "weak"})
 
 
@@ -80,6 +84,35 @@ def _age_minutes(ts: Optional[datetime]) -> Optional[float]:
     return max(0.0, (datetime.now(timezone.utc) - ts).total_seconds() / 60.0)
 
 
+def _next_nse_session_open(after: datetime) -> datetime:
+    """Next NSE cash session open (Mon–Fri 09:15 IST) strictly after `after`."""
+    local = after.astimezone(IST)
+    day = local.date()
+    while True:
+        if day.weekday() < 5:
+            candidate = datetime.combine(day, time(9, 15), tzinfo=IST)
+            if candidate > local:
+                return candidate.astimezone(timezone.utc)
+        day += timedelta(days=1)
+
+
+def _signal_is_fresh(signal: dict[str, Any], *, as_of: Optional[datetime]) -> bool:
+    """Session-aware freshness: closing signals stay until the next NSE open."""
+    created = _parse_ts(signal.get("created_at") or signal.get("as_of"))
+    ref = created or as_of
+    if ref is None:
+        return False
+    now = datetime.now(timezone.utc)
+    if _FRESHNESS_MODE == "minutes":
+        cap = _MAX_AGE_MINUTES if _MAX_AGE_MINUTES is not None else 720.0
+        age = _age_minutes(ref)
+        return age is not None and age <= cap
+    if _FRESHNESS_MODE == "hours":
+        cap_hours = (_MAX_AGE_MINUTES / 60.0) if _MAX_AGE_MINUTES is not None else 12.0
+        return (now - ref).total_seconds() <= cap_hours * 3600
+    return now < _next_nse_session_open(ref)
+
+
 def signed_score(signal: dict[str, Any]) -> float:
     direction = signal.get("direction")
     if not direction:
@@ -104,10 +137,7 @@ def _signal_passes_filters(signal: dict[str, Any], *, as_of: Optional[datetime])
     classification = str(signal.get("classification") or "").lower()
     if classification in {"filtered", "neutral"}:
         return False
-    created = _parse_ts(signal.get("created_at") or signal.get("as_of"))
-    ref = created or as_of
-    age = _age_minutes(ref)
-    if age is not None and age > _MAX_AGE_MINUTES:
+    if not _signal_is_fresh(signal, as_of=as_of):
         return False
     return True
 
@@ -164,6 +194,7 @@ def fetch_live_alpha_rows(*, limit: int = 200) -> dict[str, Any]:
         return {"ok": False, "error": "live_alpha_unavailable", "rows": [], "meta": {}}
 
     run_by_id = {r["id"]: r for r in runs}
+    seen_keys: set[str] = set()
     latest_by_key: dict[str, dict[str, Any]] = {}
     for sig in signals or []:
         if not isinstance(sig, dict):
@@ -176,8 +207,9 @@ def fetch_live_alpha_rows(*, limit: int = 200) -> dict[str, Any]:
         if not symbol:
             continue
         key = f"{symbol}|{engine}"
-        if key in latest_by_key:
+        if key in seen_keys:
             continue
+        seen_keys.add(key)
         sig = {**sig, "engine": engine, "as_of": run.get("as_of")}
         if not _signal_passes_filters(sig, as_of=_parse_ts(run.get("as_of"))):
             continue
@@ -243,10 +275,34 @@ def fetch_live_alpha_rows(*, limit: int = 200) -> dict[str, Any]:
             "source": "live_alpha_signals",
             "engines": ENGINE_LABELS,
             "qualifying_symbols": len(rows),
+            "freshness_mode": _FRESHNESS_MODE,
             "max_age_minutes": _MAX_AGE_MINUTES,
             "min_quality": _MIN_QUALITY,
         },
     }
+
+
+def fundamental_bias(fund_avg: Optional[float]) -> Optional[str]:
+    if fund_avg is None:
+        return None
+    if fund_avg >= 55:
+        return "positive"
+    if fund_avg <= 45:
+        return "negative"
+    return None
+
+
+def live_alpha_confirms(*, hfl_bias: Optional[str], live_direction: Optional[str]) -> bool:
+    return bool(hfl_bias and live_direction and hfl_bias == live_direction)
+
+
+def live_alpha_conflicts(*, hfl_bias: Optional[str], live_direction: Optional[str]) -> bool:
+    return bool(hfl_bias and live_direction and hfl_bias != live_direction)
+
+
+def effective_agreement(*, fundamental_count: int, live_alpha_confirms: bool) -> int:
+    """Only positive Live Alpha confirmation adds to scanner agreement."""
+    return int(fundamental_count) + (1 if live_alpha_confirms else 0)
 
 
 def confluence_label(
