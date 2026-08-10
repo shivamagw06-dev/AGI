@@ -3844,6 +3844,9 @@ class UiService:
                         "multi_source": multi_source_pack if isinstance(multi_source_pack, dict) else {},
                     },
                     academy=finance_academy if isinstance(finance_academy, dict) else None,
+                    institutional_knowledge=institutional_knowledge
+                    if isinstance(institutional_knowledge, dict)
+                    else None,
                 )
 
             ask_pipeline_runtime, rca_to = call_with_timeout(

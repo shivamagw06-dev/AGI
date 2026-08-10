@@ -39,12 +39,13 @@ def retrieve_knowledge(
     question: str | None = None,
     as_of: str | None = None,
     concept_mode: bool = False,
+    institutional_knowledge: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     started = time.time()
     selection = dict(KNOWLEDGE_SELECTION.get(intent) or KNOWLEDGE_SELECTION["Unknown"])
 
     # IKL — institutional memory before KF/IERE raw-document style retrieval
-    ikl_pack: dict[str, Any] = {}
+    ikl_pack: dict[str, Any] = institutional_knowledge or {}
     try:
         from institutional_knowledge_layer.production import ask_consult as ikl_ask_consult
 
@@ -53,11 +54,12 @@ def retrieve_knowledge(
             for e in (entities or [])
             if e.get("type") == "company" and e.get("id")
         ]
-        ikl_pack = ikl_ask_consult(
-            question or "",
-            ticker=company_ids_early[0] if company_ids_early else None,
-            companies=company_ids_early or None,
-        ) or {}
+        if institutional_knowledge is None:
+            ikl_pack = ikl_ask_consult(
+                question or "",
+                ticker=company_ids_early[0] if company_ids_early else None,
+                companies=company_ids_early or None,
+            ) or {}
     except Exception:
         ikl_pack = {}
 
