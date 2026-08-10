@@ -26,16 +26,15 @@ export function buildMinuteVolumeBaselines(observations, { minimumSessions = 5, 
     if (!key || !Number.isFinite(volume) || volume < 0) continue;
     const { session, minute } = istClock(row.observed_at);
     if (minute < 0 || minute > 375 || (throughSession && session >= throughSession)) continue;
-    const sessionKey = `${key}|${minute}|${session}`;
+    // Instrument keys themselves contain `|`; encode tuple keys rather than
+    // parsing a delimiter that is also valid inside the instrument key.
+    const sessionKey = JSON.stringify([key, minute, session]);
     perSession.set(sessionKey, Math.max(volume, perSession.get(sessionKey) ?? 0));
   }
   const groups = new Map();
   for (const [compound, volume] of perSession) {
-    const [instrumentKey, minuteText] = compound.split('|', 3);
-    // Instrument keys themselves contain one pipe; recover using final fields.
-    const lastSeparator = compound.lastIndexOf('|');
-    const sessionSeparator = compound.lastIndexOf('|', lastSeparator - 1);
-    const groupKey = compound.slice(0, sessionSeparator);
+    const [instrumentKey, minute] = JSON.parse(compound);
+    const groupKey = JSON.stringify([instrumentKey, minute]);
     const values = groups.get(groupKey) || [];
     values.push(volume);
     groups.set(groupKey, values);
@@ -43,10 +42,10 @@ export function buildMinuteVolumeBaselines(observations, { minimumSessions = 5, 
   const output = [];
   for (const [groupKey, values] of groups) {
     if (values.length < minimumSessions) continue;
-    const separator = groupKey.lastIndexOf('|');
+    const [instrumentKey, minute] = JSON.parse(groupKey);
     output.push({
-      instrument_key: groupKey.slice(0, separator),
-      minute_of_session: Number(groupKey.slice(separator + 1)),
+      instrument_key: instrumentKey,
+      minute_of_session: minute,
       expected_cumulative_volume: median(values),
       sample_sessions: values.length,
     });
