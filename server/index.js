@@ -30,6 +30,7 @@ import { startHedgeFundLiveQuoteScheduler } from "./services/hedgeFundLiveQuoteS
 import { startHedgeFundUpstoxCandleScheduler } from "./services/hedgeFundUpstoxCandleScheduler.js";
 import { startHflTerminalSnapshotScheduler } from "./services/hflTerminalSnapshotScheduler.js";
 import { startValuationCompanyPackScheduler } from "./services/valuationCompanyPackScheduler.js";
+import { startGrowwEquityOpportunityScheduler } from "./services/growwEquityOpportunityScheduler.js";
 import { startUpstoxStatementScheduler } from "./services/upstoxStatementScheduler.js";
 import { getLiveAlphaRuntimeStatus, startLiveAlphaRuntime } from "./services/liveAlphaRuntime.js";
 import { getLiveAlphaWorkspace } from "./services/liveAlphaWorkspace.js";
@@ -408,6 +409,7 @@ startHvieRuntimeScheduler();
 startUifiScheduler();
 startHflTerminalSnapshotScheduler();
 startValuationCompanyPackScheduler();
+startGrowwEquityOpportunityScheduler();
 startHedgeFundLiveQuoteScheduler();
 startHedgeFundUpstoxCandleScheduler();
 startUpstoxStatementScheduler();

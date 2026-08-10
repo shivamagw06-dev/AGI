@@ -50,6 +50,11 @@ services:
         value: "true"
       - key: HEDGE_FUND_UPSTOX_CANDLES
         value: "true"
+      # Groww Cloud cannot reach Render/Supabase; compute equity opportunity here.
+      - key: GROWW_EQUITY_OPPORTUNITY_SCHEDULER
+        value: "true"
+      - key: GROWW_EQUITY_OPPORTUNITY_SCHEDULE_IST
+        value: "16:30"
 
   # Optional dedicated ingest worker (Starter+). Decouples queue processing from
   # the HTTP process so deploys/restarts of the API do not drop in-flight work
