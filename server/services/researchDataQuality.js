@@ -1,5 +1,9 @@
 const SYMBOL_RE = /^[A-Z0-9][A-Z0-9&.-]{0,31}$/;
-const INSTRUMENT_KEY_RE = /^[A-Z0-9_]+\|[A-Z0-9][A-Z0-9_-]*$/;
+// Upstox equity keys are compact (for example NSE_EQ|INE002A01018), while
+// canonical index keys contain spaces (for example NSE_INDEX|Nifty 50 and
+// NSE_INDEX|Nifty Financial Services). Keep the exchange/segment strict, but
+// allow the documented index-name characters on the right-hand side.
+const INSTRUMENT_KEY_RE = /^[A-Z0-9_]+\|[A-Z0-9][A-Z0-9 _&.-]*$/;
 
 export function canonicalSymbol(value) {
   const symbol = String(value || '').trim().toUpperCase();
