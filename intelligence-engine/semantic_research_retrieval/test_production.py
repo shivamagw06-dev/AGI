@@ -69,6 +69,41 @@ def test_no_kip_fails_closed():
     assert result["answerability"]["may_answer"] is False
 
 
+def test_missing_ticker_metadata_retries_without_filter():
+    class LegacyCmsKip(FakeKip):
+        def search(self, query, **kwargs):
+            self.calls.append((query, kwargs))
+            if kwargs.get("ticker"):
+                return {"hits": []}
+            return {
+                "hits": [
+                    {
+                        "document_id": "doc_zen",
+                        "title": "Zen Technologies' ₹295 Crore Defence Win",
+                        "document_type": "agi_research",
+                        "semantic_score": 0.92,
+                        "keyword_score": 0.96,
+                        "freshness": 1.0,
+                        "confidence": 0.9,
+                        "tickers": [],
+                        "snippet": "The order boosts revenue visibility; execution is key.",
+                    }
+                ]
+            }
+
+    kip = LegacyCmsKip()
+    result = package_for_ask_agi(
+        "What is AGI's view on Zen Technologies' 295 crore defence order?",
+        kip=kip,
+        ticker="ZENTEC",
+    )
+    assert result["ticker_metadata_fallback"] is True
+    assert result["answerability"]["status"] == "SUFFICIENT"
+    assert result["AGI_HOUSE_VIEW"]["documents"][0]["document_id"] == "doc_zen"
+    assert any(call[1].get("ticker") == "ZENTEC" for call in kip.calls)
+    assert any("ticker" not in call[1] for call in kip.calls)
+
+
 @pytest.mark.parametrize(
     "question",
     [
