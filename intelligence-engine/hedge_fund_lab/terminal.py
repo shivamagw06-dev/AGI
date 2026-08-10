@@ -15,6 +15,11 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Callable, Optional
 
+from .live_alpha_bridge import (
+    confluence_label,
+    fetch_live_alpha_rows,
+    unified_score,
+)
 from .scanner import (
     SOURCES,
     _SCANNERS,
@@ -30,6 +35,7 @@ from .scanner import (
 )
 
 _SNAPSHOT_DAYS = 60
+_INVENTORY_LIMIT = 1000
 
 
 # ---------------------------------------------------------------------------
@@ -159,15 +165,24 @@ def _scan_dividend(universe, medians, limit) -> list[dict[str, Any]]:
     return out[:limit]
 
 
+def _scan_live_alpha(universe, medians, limit) -> list[dict[str, Any]]:
+    """Ninth scanner — intraday Live Alpha engines (research-only)."""
+    del universe, medians  # Live Alpha reads Supabase, not the warehouse scan.
+    fetched = fetch_live_alpha_rows(limit=limit)
+    if not fetched.get("ok"):
+        return []
+    return list(fetched.get("rows") or [])
+
+
 SCANS: dict[str, tuple[str, Callable]] = {
     **{k: v for k, v in _SCANNERS.items()},
     "growth": ("Growth", _scan_growth),
     "dividend": ("Dividend / income", _scan_dividend),
+    "live_alpha": ("Live Alpha", _scan_live_alpha),
 }
 
-# The Hedge Fund desk is fundamentals-first while technical research is paused.
-# Raw price history remains in the warehouse for a future reintroduction.
-_ORDER = ["alpha", "value", "quality", "growth", "conviction", "dividend", "stress", "pairs"]
+# Fundamentals-first desk with Live Alpha as the ninth independent scanner.
+_ORDER = ["alpha", "value", "quality", "growth", "conviction", "dividend", "stress", "pairs", "live_alpha"]
 
 _SCAN_PROFILE: dict[str, dict[str, str]] = {
     "alpha": {
@@ -210,6 +225,11 @@ _SCAN_PROFILE: dict[str, dict[str, str]] = {
         "risk": "Medium — the spread widens before it converges, if it converges",
         "question": "Is the gap explained by profitability, or is it mispricing?",
     },
+    "live_alpha": {
+        "alpha": "Intraday leadership, activity, breakout, dislocation and positioning",
+        "risk": "High — tactical signals can conflict with slower fundamental screens",
+        "question": "Does today's market behaviour confirm or contradict the fundamental case?",
+    },
 }
 
 
@@ -250,6 +270,8 @@ def _confidence(key: str, row: dict[str, Any]) -> int:
         return clamp(50 + len(row.get("stress_flags") or []) * 12)
     if key == "pairs":
         return clamp(30 + (_num(row.get("spread_multiple")) or 0) * 12)
+    if key == "live_alpha":
+        return clamp(35 + (_num(row.get("live_alpha_score")) or 0) * 0.65)
     return 50
 
 
@@ -449,19 +471,30 @@ def overview(limit: int = 12) -> dict[str, Any]:
 
 
 def _overview_uncached(capped: int, cache_key: str, now: float) -> dict[str, Any]:
-    run = run_all(limit=capped)
-    if not run.get("ok"):
-        return {"ok": False, "error": run.get("error") or "universe_empty", "cache": {"hit": False}}
+    full_run = run_all(limit=_INVENTORY_LIMIT)
+    if not full_run.get("ok"):
+        return {"ok": False, "error": full_run.get("error") or "universe_empty", "cache": {"hit": False}}
 
-    universe = run["universe"]
-    medians = run["medians"]
-    results = run["results"]
+    universe = full_run["universe"]
+    medians = full_run["medians"]
+    full_results = full_run["results"]
+    # Display respects the UI cap; inventory comparison uses complete scanner membership.
+    results = {key: (rows or [])[:capped] for key, rows in full_results.items()}
 
     day = _today()
-    snapshot = {key: [_identity(r)[0] for r in rows if _identity(r)[0]] for key, rows in results.items()}
+    membership_snapshot = {
+        key: [_identity(r)[0] for r in rows if _identity(r)[0]]
+        for key, rows in full_results.items()
+    }
     prior_day = _previous_day(day)
     prior = (_load_snapshots().get("days") or {}).get(prior_day) or {} if prior_day else {}
-    _save_snapshot(day, snapshot)
+    _save_snapshot(day, membership_snapshot)
+
+    live_alpha_by_ticker: dict[str, dict[str, Any]] = {}
+    for row in full_results.get("live_alpha") or []:
+        ticker = str(row.get("ticker") or "").upper()
+        if ticker:
+            live_alpha_by_ticker[ticker] = row
 
     # Strategy suitability comes from the regime, keyed onto the scanners.
     reg = regime(universe)
@@ -477,6 +510,7 @@ def _overview_uncached(capped: int, cache_key: str, now: float) -> dict[str, Any
         "dividend": "Equity Market Neutral",
         "stress": "Distressed",
         "pairs": "Equity Market Neutral",
+        "live_alpha": "Momentum / CTA Trend",
     }
 
     cards = []
@@ -486,7 +520,7 @@ def _overview_uncached(capped: int, cache_key: str, now: float) -> dict[str, Any
         rows = results[key]
         label = SCANS[key][0]
         confs = [r.get("confidence") for r in rows if r.get("confidence")]
-        current = set(snapshot.get(key) or [])
+        current = set(membership_snapshot.get(key) or [])
         previous = set(prior.get(key) or [])
         entered = sorted(current - previous) if prior else []
         exited = sorted(previous - current) if prior else []
@@ -520,7 +554,7 @@ def _overview_uncached(capped: int, cache_key: str, now: float) -> dict[str, Any
 
     # Strategy overlap — independent scanners agreeing on the same company.
     overlap: dict[str, dict[str, Any]] = {}
-    for key, rows in results.items():
+    for key, rows in full_results.items():
         for row in rows:
             ticker, name = _identity(row)
             if not ticker:
@@ -535,16 +569,36 @@ def _overview_uncached(capped: int, cache_key: str, now: float) -> dict[str, Any
                     "market_cap": row.get("market_cap") or (row.get("long_leg") or {}).get("market_cap"),
                     "coverage": row.get("coverage") or (row.get("long_leg") or {}).get("coverage"),
                     "strategies": [],
+                    "fundamental_strategies": [],
                     "confidences": [],
                 },
             )
             entry["strategies"].append(SCANS[key][0])
+            if key != "live_alpha":
+                entry["fundamental_strategies"].append(SCANS[key][0])
             entry["confidences"].append(row.get("confidence") or 50)
 
     overlap_rows = []
-    for entry in overlap.values():
+    for ticker, entry in overlap.items():
         n = len(entry["strategies"])
-        avg = round(sum(entry["confidences"]) / n, 1)
+        fund_n = len(entry["fundamental_strategies"])
+        avg = round(sum(entry["confidences"]) / n, 1) if n else 50.0
+        la = live_alpha_by_ticker.get(ticker)
+        la_present = la is not None
+        la_direction = la.get("direction") if la else None
+        hfl_bias = "positive" if avg >= 55 else "negative" if avg <= 45 else None
+        label = confluence_label(
+            hfl_scanner_count=fund_n,
+            live_alpha_present=la_present,
+            live_direction=la_direction,
+            hfl_bias=hfl_bias,
+        )
+        unified = unified_score(
+            hfl_score=avg,
+            live_alpha_score=(la or {}).get("live_alpha_score"),
+            live_direction=la_direction,
+            hfl_bias=hfl_bias,
+        )
         overlap_rows.append(
             {
                 "ticker": entry["ticker"],
@@ -554,9 +608,23 @@ def _overview_uncached(capped: int, cache_key: str, now: float) -> dict[str, Any
                 "market_cap": entry["market_cap"],
                 "coverage": entry["coverage"],
                 "strategies": entry["strategies"],
+                "fundamental_strategies": entry["fundamental_strategies"],
                 "agreement": n,
+                "fundamental_agreement": fund_n,
                 "avg_confidence": avg,
-                "priority_score": round(n * 20 + avg * 0.6, 1),
+                "priority_score": round(unified, 1),
+                "unified_score": unified,
+                "confluence_label": label,
+                "live_alpha": {
+                    "present": la_present,
+                    "direction": la_direction,
+                    "score": (la or {}).get("live_alpha_score"),
+                    "signed_score": (la or {}).get("live_alpha_signed"),
+                    "engine_agreement": (la or {}).get("engine_agreement"),
+                    "contributing_engines": (la or {}).get("contributing_engines") or [],
+                    "signal_age_minutes": (la or {}).get("signal_age_minutes"),
+                    "newest_signal_at": (la or {}).get("newest_signal_at"),
+                } if la_present else None,
             }
         )
     overlap_rows.sort(key=lambda r: -r["priority_score"])
@@ -575,6 +643,13 @@ def _overview_uncached(capped: int, cache_key: str, now: float) -> dict[str, Any
     queue = []
     for rank, row in enumerate(ranked_queue[:10], start=1):
         minutes = 30 + 15 * min(4, row["agreement"])
+        la = row.get("live_alpha") or {}
+        why_parts = [f"{row['agreement']} independent scanners agree: " + ", ".join(row["strategies"])]
+        if la.get("present"):
+            why_parts.append(
+                f"Live Alpha {la.get('direction') or '—'}"
+                + (f" ({', '.join(la.get('contributing_engines') or [])})" if la.get("contributing_engines") else "")
+            )
         queue.append(
             {
                 "rank": rank,
@@ -583,9 +658,15 @@ def _overview_uncached(capped: int, cache_key: str, now: float) -> dict[str, Any
                 "sector": row["sector"],
                 "industry": row["industry"],
                 "stars": max(1, min(5, 1 + row["agreement"])),
-                "why": f"{row['agreement']} independent scanners agree: " + ", ".join(row["strategies"]),
+                "why": " · ".join(why_parts),
                 "estimated_research_minutes": minutes,
                 "confidence": row["avg_confidence"],
+                "unified_score": row.get("unified_score"),
+                "confluence_label": row.get("confluence_label"),
+                "live_alpha_direction": la.get("direction"),
+                "live_alpha_engines": la.get("contributing_engines") or [],
+                "signal_age_minutes": la.get("signal_age_minutes"),
+                "engine_agreement": la.get("engine_agreement"),
                 "market_cap": row.get("market_cap"),
                 "strategies": row["strategies"],
             }
@@ -610,6 +691,7 @@ def _overview_uncached(capped: int, cache_key: str, now: float) -> dict[str, Any
     ]
 
     total = sum(len(rows) for rows in results.values())
+    live_meta = fetch_live_alpha_rows(limit=1).get("meta") or {}
     payload = {
         "ok": True,
         "as_of": day,
@@ -621,6 +703,7 @@ def _overview_uncached(capped: int, cache_key: str, now: float) -> dict[str, Any
             "live_opportunities": total,
             "companies_flagged": len(overlap_rows),
             "multi_strategy_companies": sum(1 for r in overlap_rows if r["agreement"] >= 2),
+            "live_alpha_qualifying": live_meta.get("qualifying_symbols"),
             "highlights": [h for h in highlights if h["row"]],
         },
         "cards": cards,
@@ -641,6 +724,11 @@ def _overview_uncached(capped: int, cache_key: str, now: float) -> dict[str, Any
         "sources": dict(SOURCES),
         "universe_meta": universe_meta(),
         "policy": "Research observations only — no buy, sell, target price or personalised advice.",
+        "live_alpha_meta": live_meta,
+        "scoring": {
+            "unified_weights": {"hedge_fund": 0.7, "live_alpha": 0.3},
+            "conflict_penalty": "Negative Live Alpha conflicts reduce the unified score instead of adding agreement.",
+        },
         "cache": {"hit": False, "ttl_sec": _OVERVIEW_TTL_SEC},
     }
     _OVERVIEW_CACHE["key"] = cache_key

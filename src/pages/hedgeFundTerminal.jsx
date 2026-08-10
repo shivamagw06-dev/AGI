@@ -19,6 +19,19 @@ const pct = (v, digits = 1) => (v == null ? '—' : `${n(v, digits)}%`);
 
 const crore = (v) => (typeof v === 'number' && v > 0 ? `₹${n(v / 1e7, 0)} cr` : '—');
 
+function signalAge(minutes) {
+  if (minutes == null) return '—';
+  if (minutes < 1) return 'Now';
+  if (minutes < 60) return `${minutes}m`;
+  return `${Math.floor(minutes / 60)}h`;
+}
+
+function ConfluenceBadge({ label }) {
+  if (!label) return '—';
+  const slug = String(label).toLowerCase().replace(/\s+/g, '-');
+  return <span className={`hft-label hft-label-${slug}`}>{label}</span>;
+}
+
 function Stars({ n: count }) {
   if (!count) return <span className="hft-dim">—</span>;
   return (
@@ -280,6 +293,7 @@ export function OpportunityTable({ scan, label, previewRows = null, researchQues
   if (error) return <div className="hft-error">{error}</div>;
 
   const pairs = scan === 'pairs';
+  const liveAlpha = scan === 'live_alpha';
 
   return (
     <div className="hft-opps">
@@ -296,9 +310,18 @@ export function OpportunityTable({ scan, label, previewRows = null, researchQues
               <th />
               <th>{pairs ? 'Long leg' : 'Company'}</th>
               <th>{pairs ? 'Short leg' : 'Sector'}</th>
-              <th>Industry</th>
+              {!liveAlpha ? <th>Industry</th> : null}
               <th>Confidence</th>
-              <th>Consensus</th>
+              {liveAlpha ? (
+                <>
+                  <th>Direction</th>
+                  <th>Engines</th>
+                  <th>Alignment</th>
+                  <th>Age</th>
+                </>
+              ) : (
+                <th>Consensus</th>
+              )}
               <th>Why it qualified</th>
             </tr>
           </thead>
@@ -307,6 +330,7 @@ export function OpportunityTable({ scan, label, previewRows = null, researchQues
               const ticker = pairs ? row.long_leg?.ticker : row.ticker;
               const key = pairs ? `${row.industry}-${ticker}` : ticker;
               const isOpen = open === key;
+              const colSpan = liveAlpha ? 9 : 7;
               return (
                 <Fragment key={key}>
                   <tr className={isOpen ? 'open' : ''}>
@@ -320,14 +344,23 @@ export function OpportunityTable({ scan, label, previewRows = null, researchQues
                       <div className="hft-dim">{ticker}</div>
                     </td>
                     <td>{pairs ? row.short_leg?.company_name : row.sector}</td>
-                    <td>{row.industry}</td>
+                    {!liveAlpha ? <td>{row.industry}</td> : null}
                     <td><span className="hft-conf">{row.confidence ?? '—'}</span></td>
-                    <td>{pairs ? `${n(row.spread_multiple)}× spread` : pct(row.consensus_upside)}</td>
+                    {liveAlpha ? (
+                      <>
+                        <td><span className={`hft-dir hft-dir-${row.direction || 'neutral'}`}>{row.direction || '—'}</span></td>
+                        <td className="hft-dim">{(row.contributing_engines || []).join(' · ') || '—'}</td>
+                        <td>{row.engine_agreement || '—'}</td>
+                        <td>{signalAge(row.signal_age_minutes)}</td>
+                      </>
+                    ) : (
+                      <td>{pairs ? `${n(row.spread_multiple)}× spread` : pct(row.consensus_upside)}</td>
+                    )}
                     <td className="hft-why">{row.why}</td>
                   </tr>
                   {isOpen && ticker ? (
                     <tr className="hft-detail-row">
-                      <td colSpan={7}><Explanation ticker={ticker} /></td>
+                      <td colSpan={colSpan}><Explanation ticker={ticker} /></td>
                     </tr>
                   ) : null}
                 </Fragment>
@@ -337,9 +370,9 @@ export function OpportunityTable({ scan, label, previewRows = null, researchQues
         </table>
       </div>
       <p className="hft-note">
-        Market data from the AGI warehouse, including Upstox daily and intraday candles where available;
-        financial history and consensus from the AGI research warehouse; interpretation by AGI.
-        Research observations only — never a buy, sell or target price.
+        {liveAlpha
+          ? 'Live Alpha reads Leadership, Activity, Breakout, Dislocation and Positioning from the intraday research store. Stale, illiquid and low-quality signals are excluded. Research only — no execution.'
+          : 'Market data from the AGI warehouse, including Upstox daily and intraday candles where available; financial history and consensus from the AGI research warehouse; interpretation by AGI. Research observations only — never a buy, sell or target price.'}
       </p>
     </div>
   );
@@ -500,22 +533,38 @@ export default function HedgeFundTerminal() {
         <>
       <h2 className="hft-title">Strategy overlap</h2>
       <p className="hft-dim hft-lead">
-        Independent scanners reaching the same company. Agreement raises research priority; it is not
-        a stronger recommendation, because the scanners share the same underlying data.
+        Independent scanners reaching the same company. Unified score blends 70% Hedge Fund evidence with
+        30% Live Alpha; negative Live Alpha conflicts are penalized rather than treated as agreement.
       </p>
       <div className="hft-table-wrap">
         <table className="hft-table">
           <thead>
-            <tr><th>Company</th><th>Sector</th><th>Strategies</th><th>Agreement</th><th>Avg confidence</th></tr>
+            <tr>
+              <th>Company</th>
+              <th>Sector</th>
+              <th>Label</th>
+              <th>Strategies</th>
+              <th>Direction</th>
+              <th>Engines</th>
+              <th>Age</th>
+              <th>Unified</th>
+            </tr>
           </thead>
           <tbody>
             {(data.overlap || []).slice(0, 12).map((row) => (
               <tr key={row.ticker}>
                 <td><strong>{row.company_name}</strong><div className="hft-dim">{row.ticker}</div></td>
                 <td>{row.sector}</td>
+                <td><ConfluenceBadge label={row.confluence_label} /></td>
                 <td>{(row.strategies || []).join(' · ')}</td>
-                <td>{row.agreement}</td>
-                <td>{row.avg_confidence}</td>
+                <td>
+                  {row.live_alpha?.direction
+                    ? <span className={`hft-dir hft-dir-${row.live_alpha.direction}`}>{row.live_alpha.direction}</span>
+                    : '—'}
+                </td>
+                <td className="hft-dim">{(row.live_alpha?.contributing_engines || []).join(' · ') || '—'}</td>
+                <td>{signalAge(row.live_alpha?.signal_age_minutes)}</td>
+                <td>{row.unified_score ?? row.priority_score ?? '—'}</td>
               </tr>
             ))}
           </tbody>
@@ -526,17 +575,24 @@ export default function HedgeFundTerminal() {
       <div className="hft-table-wrap">
         <table className="hft-table">
           <thead>
-            <tr><th>#</th><th>Company</th><th>Priority</th><th>Why</th><th>Research time</th><th>Confidence</th></tr>
+            <tr>
+              <th>#</th>
+              <th>Company</th>
+              <th>Label</th>
+              <th>Priority</th>
+              <th>Why</th>
+              <th>Unified</th>
+            </tr>
           </thead>
           <tbody>
             {(data.research_queue || []).map((row) => (
               <tr key={row.ticker}>
                 <td>{row.rank}</td>
                 <td><strong>{row.company_name}</strong><div className="hft-dim">{row.industry}</div></td>
+                <td><ConfluenceBadge label={row.confluence_label} /></td>
                 <td><Stars n={row.stars} /></td>
                 <td className="hft-why">{row.why}</td>
-                <td>{row.estimated_research_minutes} min</td>
-                <td>{row.confidence}</td>
+                <td>{row.unified_score ?? row.confidence ?? '—'}</td>
               </tr>
             ))}
           </tbody>

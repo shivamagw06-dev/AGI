@@ -6,7 +6,7 @@
  */
 
 const SCHEMA_VERSION = '1.0';
-const CALCULATION_VERSION = 'hfl_terminal_v1';
+const CALCULATION_VERSION = 'hfl_terminal_v2';
 const FRESH_MS = Number(process.env.HFL_SNAPSHOT_FRESH_MS || 15 * 60_000);
 const AGING_MS = Number(process.env.HFL_SNAPSHOT_AGING_MS || 60 * 60_000);
 const STALE_SERVE_MS = Number(process.env.HFL_SNAPSHOT_STALE_SERVE_MS || 24 * 60 * 60_000);
