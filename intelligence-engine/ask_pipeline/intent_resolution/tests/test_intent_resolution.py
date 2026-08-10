@@ -287,3 +287,26 @@ def test_sprint34_mixed_and_ambiguous_intent() -> None:
     assert amb["intent"] == "Accounting"
     assert amb.get("secondary_intent") in {"Analyse", "Documents", "Explain", "Portfolio", None}
     assert amb.get("intent_why_won")
+
+
+INVESTMENT_ASSISTANT_ROUTING = [
+    ("What is AGI’s view on Zen Technologies’ ₹295 crore defence order?", {"Analyse", "CorporateEvents"}),
+    ("What is your view on Reliance?", {"Analyse"}),
+    ("Give me a quick take on HDFC Bank", {"Analyse"}),
+    ("What changed after Infosys earnings?", {"CorporateEvents"}),
+    ("Is TCS expensive at its current valuation?", {"Valuation"}),
+    ("What are the main risks to Zomato?", {"Risk"}),
+    ("Compare BEL with HAL", {"Compare"}),
+    ("Would you buy Asian Paints for a five-year portfolio?", {"Portfolio"}),
+    ("What would change your view?", {"Analyse"}),
+    ("Build the bull, base and bear case for Bajaj Finance", {"Analyse"}),
+]
+
+
+@pytest.mark.parametrize("question,expected", INVESTMENT_ASSISTANT_ROUTING)
+def test_investment_assistant_routing(question: str, expected: set[str]) -> None:
+    irl = resolve_intent(question)
+    assert irl["intent"] in expected, (
+        f"got {irl['intent']} expected {expected} scores={irl.get('intent_scores')}"
+    )
+    assert irl["intent"] != "Unknown"

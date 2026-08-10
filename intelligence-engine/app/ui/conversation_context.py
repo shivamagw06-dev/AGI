@@ -36,13 +36,21 @@ _VS_SIDES_RE = re.compile(
 )
 _INSTEAD_RE = re.compile(r"\b(instead|switch to|change to|move to)\b", re.I)
 _LEADING_AND_RE = re.compile(r"^\s*(?:and|what about)\b", re.I)
+_INVESTMENT_FOLLOW_UP_RE = re.compile(
+    r"\b(what (?:would|could) change (?:your|the|agi(?:'s)?) view|"
+    r"bull case|base case|bear case|key catalysts?|main risks?)\b",
+    re.I,
+)
 _FOCUS = {
     "valuation": re.compile(r"\b(valuation|fair value|cheap|expensive|multiple|price target)\b", re.I),
     "forecast": re.compile(r"\b(forecast|expect|outlook|probability|horizon)\b", re.I),
     "fundamentals": re.compile(r"\b(fundamental|quality|earnings|margin|cash flow)\b", re.I),
     "risk": re.compile(r"\b(risk|bear case|downside|concern)\b", re.I),
     "catalyst": re.compile(r"\b(catalyst|event|trigger)\b", re.I),
-    "thesis_change": re.compile(r"\b(what changed|thesis change|strengthen|weaken)\b", re.I),
+    "thesis_change": re.compile(
+        r"\b(what (?:changed|would change|could change)|thesis change|strengthen|weaken)\b",
+        re.I,
+    ),
     "reliability": re.compile(r"\b(reliability|validated|accuracy|hit rate|rank ic)\b", re.I),
 }
 _HORIZON_RE = re.compile(r"\b(5m|15m|30m|60m|1d|5d|20d|3m|6m|12m|one day|five days?|twenty days?)\b", re.I)
@@ -242,6 +250,7 @@ class ConversationStore:
             _PRONOUN_FOLLOW_UP_RE.search(original)
             or _FOLLOW_UP_RE.search(original)
             or _LEADING_AND_RE.search(original)
+            or (_INVESTMENT_FOLLOW_UP_RE.search(original) and has_thread_context)
             or (_CONTROL_ONLY_RE.search(original) and has_thread_context)
         )
         conversation_move, router_confidence = self._conversation_move(

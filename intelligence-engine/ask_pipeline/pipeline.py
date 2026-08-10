@@ -1645,11 +1645,47 @@ def run_complete_ask(
     )
     if llm_synthesis.get("used") and isinstance(llm_synthesis.get("answer"), dict):
         generated = llm_synthesis["answer"]
+        generated_sections = generated.get("investment_sections") or {}
+        section_titles = {
+            "thesis": "Investment Thesis",
+            "bull_case": "Bull Case",
+            "bear_case": "Bear Case",
+            "catalysts": "Catalysts",
+            "risks": "Risks",
+            "valuation": "Valuation",
+            "what_changes_view": "What Would Change the View",
+            "evidence_gaps": "Evidence Gaps",
+        }
+        communication_sections = dict(communication.get("sections") or {})
+        for section_key, bullets in generated_sections.items():
+            if not bullets:
+                continue
+            communication_sections[section_key] = {
+                "section": section_key,
+                "title": section_titles.get(section_key, section_key.replace("_", " ").title()),
+                "bullets": bullets,
+                "visible": True,
+                "source": "openai_grounded_synthesis",
+            }
+        communication_section_order = list(
+            dict.fromkeys(
+                [
+                    *[
+                        key
+                        for key in (communication.get("section_order") or [])
+                        if key in communication_sections
+                    ],
+                    *[key for key in generated_sections if generated_sections.get(key)],
+                ]
+            )
+        )
         communication = {
             **communication,
             "executive_summary": generated.get("executive_summary"),
             "why": generated.get("why") or communication.get("why") or [],
             "prose": generated.get("prose"),
+            "sections": communication_sections,
+            "section_order": communication_section_order,
             "answer_source": "openai_grounded_synthesis",
             "llm_cited_evidence_ids": generated.get("cited_evidence_ids") or [],
             "llm_uncertainty": generated.get("uncertainty"),

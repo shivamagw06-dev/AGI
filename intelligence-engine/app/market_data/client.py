@@ -35,6 +35,12 @@ T = TypeVar("T", bound=CanonicalModel)
 UpdateHandler = Callable[[Any], None]
 
 
+class _PermanentProviderFailure(Exception):
+    def __init__(self, original: ProviderError) -> None:
+        self.original = original
+        super().__init__(str(original))
+
+
 class MarketDataClient:
     """Failover-aware market data facade.
 
@@ -454,7 +460,7 @@ class MarketDataClient:
                 return await _once()
             except ProviderError as exc:
                 if not exc.retryable:
-                    raise
+                    raise _PermanentProviderFailure(exc) from exc
                 raise
 
         try:
@@ -468,6 +474,8 @@ class MarketDataClient:
             )
         except RetryError:
             raise
+        except _PermanentProviderFailure as exc:
+            raise exc.original
         except CircuitOpenError:
             raise
 

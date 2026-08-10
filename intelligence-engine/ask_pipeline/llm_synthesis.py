@@ -19,6 +19,12 @@ LOGGER = logging.getLogger("agi.ask.llm_synthesis")
 DEFAULT_MODEL = "gpt-5.6-terra"
 MAX_EVIDENCE_ITEMS = 12
 MAX_EVIDENCE_CHARS = 36_000
+_FINANCIAL_NUMBER_RE = re.compile(
+    r"(?:₹|rs\.?|inr|\$|€|£)\s*\d[\d,]*(?:\.\d+)?"
+    r"(?:\s*(?:crore|cr|lakh|million|billion|trillion))?"
+    r"|\d[\d,]*(?:\.\d+)?\s*(?:%|percent|bps|basis points?|x|times|crore|cr|lakh|million|billion|trillion)\b",
+    re.I,
+)
 
 
 def _enabled() -> bool:
@@ -55,7 +61,44 @@ def _evidence_rows(evidence: dict[str, Any]) -> list[dict[str, str]]:
     iere_payload = iere.get("evidence") or {}
     candidates = iere_payload.get("top_evidence") or []
 
-    for index, item in enumerate(candidates[:MAX_EVIDENCE_ITEMS], start=1):
+    ranked: list[tuple[int, int, dict[str, Any]]] = []
+    for position, item in enumerate(candidates):
+        if not isinstance(item, dict):
+            continue
+        citation = item.get("citation") if isinstance(item.get("citation"), dict) else {}
+        descriptor = " ".join(
+            _safe_text(value, 500).lower()
+            for value in (
+                item.get("title"), item.get("document_title"), item.get("source"),
+                item.get("provider"), item.get("doc_type"), citation.get("source"),
+            )
+        )
+        score = 0
+        if re.search(r"\b(company filing|exchange filing|annual report|investor presentation|transcript)\b", descriptor):
+            score += 40
+        if re.search(r"\b(agi knowledge|knowledge factory|kip|uploaded|research note)\b", descriptor):
+            score += 35
+        if re.search(r"\b(company announcement|regulatory|official)\b", descriptor):
+            score += 25
+        ranked.append((score, -position, item))
+
+    seen: set[str] = set()
+    selected: list[dict[str, Any]] = []
+    for _, _, item in sorted(ranked, key=lambda row: (row[0], row[1]), reverse=True):
+        fingerprint = _safe_text(
+            item.get("snippet") or item.get("text") or item.get("content")
+            or item.get("summary") or item.get("evidence") or item.get("payload"),
+            2_400,
+        ).lower()
+        if fingerprint and fingerprint in seen:
+            continue
+        if fingerprint:
+            seen.add(fingerprint)
+        selected.append(item)
+        if len(selected) >= MAX_EVIDENCE_ITEMS:
+            break
+
+    for index, item in enumerate(selected, start=1):
         if not isinstance(item, dict):
             continue
         citation = item.get("citation") if isinstance(item.get("citation"), dict) else {}
@@ -133,7 +176,30 @@ def _parse_json(text: str) -> dict[str, Any]:
     return parsed
 
 
-def _normalise_answer(payload: dict[str, Any], valid_ids: set[str]) -> dict[str, Any]:
+def _financial_numbers(text: str) -> set[str]:
+    return {
+        re.sub(r"[\s,]", "", match.group(0)).lower()
+        for match in _FINANCIAL_NUMBER_RE.finditer(text or "")
+    }
+
+
+def _numeric_values(text: str) -> set[str]:
+    return {
+        match.replace(",", "").lstrip("0") or "0"
+        for match in re.findall(r"(?<![A-Za-z])\d[\d,]*(?:\.\d+)?", text or "")
+    }
+
+
+def _financial_number_values(text: str) -> set[str]:
+    values: set[str] = set()
+    for claim in _financial_numbers(text):
+        values.update(_numeric_values(claim))
+    return values
+
+
+def _normalise_answer(
+    payload: dict[str, Any], valid_ids: set[str], allowed_numeric_values: set[str],
+) -> dict[str, Any]:
     executive = _safe_text(payload.get("executive_summary"), 2_400)
     prose = _safe_text(payload.get("prose"), 8_000)
     why = [
@@ -158,12 +224,37 @@ def _normalise_answer(payload: dict[str, Any], valid_ids: set[str]) -> dict[str,
     }
     if inline_ids - valid_ids:
         raise ValueError("model response referenced evidence that was not supplied")
+    investment_sections = {}
+    for key in (
+        "thesis",
+        "bull_case",
+        "bear_case",
+        "catalysts",
+        "risks",
+        "valuation",
+        "what_changes_view",
+        "evidence_gaps",
+    ):
+        raw = payload.get(key) or []
+        if isinstance(raw, str):
+            raw = [raw]
+        investment_sections[key] = [
+            _safe_text(item, 900) for item in raw[:8] if _safe_text(item, 900)
+        ]
+    generated_text = " ".join(
+        [executive, prose, *why]
+        + [item for section in investment_sections.values() for item in section]
+    )
+    unsupported_numbers = _financial_number_values(generated_text) - allowed_numeric_values
+    if unsupported_numbers:
+        raise ValueError("model response introduced unsupported financial figures")
     return {
         "executive_summary": executive,
         "why": why,
         "prose": prose,
         "cited_evidence_ids": list(dict.fromkeys(cited_ids)),
         "uncertainty": _safe_text(payload.get("uncertainty"), 1_000),
+        "investment_sections": investment_sections,
     }
 
 
@@ -204,9 +295,14 @@ def synthesize_financial_answer(
         "Answer only from supplied evidence and the deterministic analysis. Do not invent "
         "prices, dates, financial metrics, recommendations, or sources. Clearly separate facts "
         "from inference and state material uncertainty. This is research, not personalized "
-        "investment advice. Cite factual claims inline using only [E1], [E2], etc. Return only "
-        "valid JSON with keys executive_summary (string), why (array of strings), prose "
-        "(string), cited_evidence_ids (array of strings), and uncertainty (string)."
+        "investment advice. Cite factual claims inline using only [E1], [E2], etc. "
+        "Lead with the investment conclusion, then distinguish thesis, bull case, bear case, "
+        "catalysts, risks, valuation implications, what would change the view, and evidence "
+        "gaps. Never force a valuation conclusion when valuation evidence is absent. Return "
+        "only valid JSON with keys executive_summary (string), why (array of strings), prose "
+        "(string), cited_evidence_ids (array of strings), uncertainty (string), and these array "
+        "fields: thesis, bull_case, bear_case, catalysts, risks, valuation, what_changes_view, "
+        "evidence_gaps."
     )
     input_text = (
         f"QUESTION\n{_safe_text(question, 2_000)}\n\n"
@@ -229,7 +325,10 @@ def synthesize_financial_answer(
             max_output_tokens=max_output,
             store=False,
         )
-        answer = _normalise_answer(_parse_json(response.output_text), valid_ids)
+        allowed_numeric_values = _numeric_values(input_text)
+        answer = _normalise_answer(
+            _parse_json(response.output_text), valid_ids, allowed_numeric_values
+        )
         usage = getattr(response, "usage", None)
         result = {
             "used": True,
