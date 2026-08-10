@@ -20742,22 +20742,18 @@ async def valuation_engine_terminal_company_snapshot_latest(symbol: str, window:
         return {"ok": False, "error": "no_snapshot", "symbol": str(symbol or "").upper()}
     return {
         "ok": True,
-        **{
-            k: row.get(k)
-            for k in (
-                "pack_id",
-                "symbol",
-                "window",
-                "generated_at",
-                "source_as_of",
-                "status",
-                "freshness",
-                "schema_version",
-                "calculation_version",
-                "data_quality",
-                "health_score",
-            )
-        },
+        "pack_id": row.get("pack_id"),
+        "symbol": row.get("symbol"),
+        "window": row.get("window") or row.get("pack_window"),
+        "pack_window": row.get("pack_window") or row.get("window"),
+        "generated_at": row.get("generated_at"),
+        "source_as_of": row.get("source_as_of"),
+        "status": row.get("status"),
+        "freshness": row.get("freshness"),
+        "schema_version": row.get("schema_version"),
+        "calculation_version": row.get("calculation_version"),
+        "data_quality": row.get("data_quality"),
+        "health_score": row.get("health_score"),
         "payload": row.get("payload"),
     }
 
