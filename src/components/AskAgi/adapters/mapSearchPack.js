@@ -34,6 +34,10 @@ function asList(value, limit = 8) {
   return value.map((v) => asText(v)).filter(Boolean).slice(0, limit);
 }
 
+function sectionList(section, limit = 8) {
+  return asList(section?.bullets || section, limit);
+}
+
 function pct(value) {
   if (value == null || Number.isNaN(Number(value))) return null;
   const n = Number(value);
@@ -123,6 +127,7 @@ export function mapSearchPack(pack) {
   const ic = pack.intelligence_construction?.enabled ? pack.intelligence_construction : null;
   const ac = pack.answer_construction?.enabled ? pack.answer_construction : null;
   const sections = ic?.sections || {};
+  const answerSections = pack.answer?.sections || {};
   const enrich = ic?.answer_enrichment || {};
   const briefing = pack.institutional_briefing || {};
   const ca = pack.company_analysis || {};
@@ -474,7 +479,9 @@ export function mapSearchPack(pack) {
   }));
 
   const risks = asList(
-    pack.key_risks || ca.risks || sections.risks || enrich.risks || (biz.risks ? [biz.risks] : []),
+    sectionList(answerSections.risks).length
+      ? sectionList(answerSections.risks)
+      : pack.key_risks || ca.risks || sections.risks || enrich.risks || (biz.risks ? [biz.risks] : []),
     8
   ).map((r, i) => ({
     risk: r,
@@ -484,7 +491,9 @@ export function mapSearchPack(pack) {
     monitoring: 'Active',
   }));
 
-  const catalysts = asList(pack.key_catalysts || ca.catalysts || sections.catalysts || enrich.catalysts, 8);
+  const catalysts = sectionList(answerSections.catalysts).length
+    ? sectionList(answerSections.catalysts)
+    : asList(pack.key_catalysts || ca.catalysts || sections.catalysts || enrich.catalysts, 8);
 
   const learned = asList(
     [
@@ -893,12 +902,21 @@ export function mapSearchPack(pack) {
     whatChanged: asList(iaf?.what_changed || iafCio?.what_changed || pack.whats_changed?.bullets, 6),
     leaders,
     bull: asList(
-      iafCio?.bull_case || ac?.bull || thesis.bull_case || pack.bull_case || pack.answer?.bull_case || ca.bull_case,
+      sectionList(answerSections.bull_case).length
+        ? sectionList(answerSections.bull_case)
+        : iafCio?.bull_case || ac?.bull || thesis.bull_case || pack.bull_case || pack.answer?.bull_case || ca.bull_case,
       6
     ),
-    base: asList(iafCio?.base_case || ac?.base || thesis.neutral_case || ca.base_case, 6),
+    base: asList(
+      sectionList(answerSections.thesis).length
+        ? sectionList(answerSections.thesis)
+        : iafCio?.base_case || ac?.base || thesis.neutral_case || ca.base_case,
+      6
+    ),
     bear: asList(
-      iafCio?.bear_case || ac?.bear || thesis.bear_case || pack.bear_case || pack.answer?.bear_case || ca.bear_case,
+      sectionList(answerSections.bear_case).length
+        ? sectionList(answerSections.bear_case)
+        : iafCio?.bear_case || ac?.bear || thesis.bear_case || pack.bear_case || pack.answer?.bear_case || ca.bear_case,
       6
     ),
     risks: (() => {
@@ -915,6 +933,8 @@ export function mapSearchPack(pack) {
       return risks;
     })(),
     catalysts: asList(iafCio?.key_catalysts || catalysts, 8),
+    whatChangesView: sectionList(answerSections.what_changes_view, 8),
+    evidenceGaps: sectionList(answerSections.evidence_gaps, 8),
     learned,
     responseConstitution:
       ac?.response_constitution?.enabled

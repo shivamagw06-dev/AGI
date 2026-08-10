@@ -380,6 +380,24 @@ function AnswerTurn({ answer, onAsk }) {
         </section>
       )}
 
+      {!isBrief && answer.whatChangesView?.length > 0 && (
+        <section className="ac-block">
+          <h2>What Would Change the View</h2>
+          <ul className="ac-why-list">
+            {answer.whatChangesView.map((item) => <li key={item}>{item}</li>)}
+          </ul>
+        </section>
+      )}
+
+      {!isBrief && answer.evidenceGaps?.length > 0 && (
+        <section className="ac-block">
+          <h2>Evidence Gaps</h2>
+          <ul className="ac-why-list">
+            {answer.evidenceGaps.map((item) => <li key={item}>{item}</li>)}
+          </ul>
+        </section>
+      )}
+
       {/* 6. Questions Before You Decide */}
       {!isBrief && answer.questionsBeforeYouDecide?.length > 0 && (
         <section className="ac-block">

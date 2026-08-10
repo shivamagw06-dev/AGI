@@ -260,6 +260,8 @@ export function mapChatAnswer(pack) {
       ],
       6
     );
+  const whatChangesView = evidenceUnavailable ? [] : asList(vm.whatChangesView, 8);
+  const evidenceGaps = evidenceUnavailable ? [] : asList(vm.evidenceGaps, 8);
 
   const intelligenceChips = [
     { id: 'company', label: 'Company Intelligence', section: 'business' },
@@ -378,6 +380,8 @@ export function mapChatAnswer(pack) {
     confidence,
     confidenceExplanation,
     institutionalView: evidenceUnavailable ? 'Evidence unavailable' : view,
+    whatChangesView,
+    evidenceGaps,
     stanceTone: evidenceUnavailable ? 'neu' : (vm.stanceTone || (view === 'Constructive' ? 'pos' : view === 'Cautious' ? 'neg' : 'neu')),
     thesisCards,
     moreBullish,

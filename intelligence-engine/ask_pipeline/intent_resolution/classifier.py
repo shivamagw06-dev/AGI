@@ -70,6 +70,10 @@ def classify_intent(
         bump("Industry", 1.2, "industry_with_entity")
     if cues.get("corporate_events") and not cues.get("historical_replay"):
         bump("CorporateEvents", 2.0, "events_lexicon")
+    if cues.get("investment_view"):
+        bump("Analyse", 3.1, "investment_view_shape")
+        if cues.get("corporate_events"):
+            bump("CorporateEvents", 1.8, "event_driven_view")
     if cues.get("accounting"):
         bump("Accounting", 2.0, "accounting_lexicon")
     if cues.get("risk") and not cues.get("explain"):

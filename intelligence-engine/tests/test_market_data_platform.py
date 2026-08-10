@@ -220,6 +220,28 @@ async def test_failover_to_secondary_provider():
 
 
 @pytest.mark.asyncio
+async def test_non_retryable_provider_failure_is_attempted_once_before_failover():
+    primary = FakeProvider(
+        "permanent_failure",
+        priority=1,
+        fail_times=100,
+        retryable_fail=False,
+    )
+    secondary = FakeProvider("healthy_fallback", priority=2)
+    client = MarketDataClient(max_attempts=3)
+    client.rate_limits.configure("permanent_failure", 100, 100)
+    client.rate_limits.configure("healthy_fallback", 100, 100)
+    client.register_provider(primary)
+    client.register_provider(secondary)
+
+    quote = await client.get_quote("ZENTEC")
+
+    assert quote.provenance.provider_id == "healthy_fallback"
+    assert primary._calls == 1
+    assert secondary._calls == 1
+
+
+@pytest.mark.asyncio
 async def test_cache_path_marks_cache_hit_and_is_fast():
     provider = FakeProvider("only", priority=1)
     client = MarketDataClient(quote_ttl_s=60, max_attempts=1)

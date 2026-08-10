@@ -35,7 +35,7 @@ _PORTFOLIO = re.compile(
     re.I,
 )
 _RISK = re.compile(
-    r"\b(risk review|risk checklist|risk|drawdown|downside|volatility|var\b|tail risk)\b",
+    r"\b(risk review|risk checklist|risks?|drawdown|downside|volatility|var\b|tail risk)\b",
     re.I,
 )
 _ACCOUNTING = re.compile(
@@ -62,7 +62,8 @@ _GOVERNMENT = re.compile(
     re.I,
 )
 _EVENTS = re.compile(
-    r"\b(dividend|buyback|merger|announcement|board meeting|earnings|quarterly result)\b",
+    r"\b(dividend|buyback|merger|announcement|board meeting|earnings|quarterly results?|"
+    r"order wins?|orders?|contracts?|tender|acquisition|guidance)\b",
     re.I,
 )
 _DOCUMENTS = re.compile(
@@ -92,6 +93,12 @@ _FRAMEWORK_EXPLAIN = re.compile(
     r"when would it be misleading)\b",
     re.I,
 )
+_INVESTMENT_VIEW = re.compile(
+    r"\b(?:your|agi(?:'s|’s)?|our|house) view\b|\bview on\b|\bquick take\b|"
+    r"\binvestment (?:view|thesis|case)\b|\b(?:bull|bear|base) case\b|"
+    r"\bwhat would change (?:your|the|agi(?:'s|’s)?) view\b|\bcurrent outlook\b",
+    re.I,
+)
 
 
 def analyse_language(question: str) -> dict[str, Any]:
@@ -102,11 +109,14 @@ def analyse_language(question: str) -> dict[str, Any]:
     portfolio_hit = bool(_PORTFOLIO.search(ql)) and not (
         capital_alloc and not _PORTFOLIO_STRONG.search(ql) and "portfolio" not in ql
     )
+    investment_view = bool(_INVESTMENT_VIEW.search(ql))
+    education = bool(_EDUCATION.search(ql)) and not investment_view
     cues = {
         "explain": bool(_EXPLAIN.search(ql)),
         "compare": bool(_COMPARE.search(ql)),
         "analyse": bool(_ANALYSE.search(ql)),
-        "education": bool(_EDUCATION.search(ql)),
+        "education": education,
+        "investment_view": investment_view,
         "valuation_lexicon": bool(_VALUATION.search(ql)),
         "portfolio": portfolio_hit,
         "portfolio_strong": bool(_PORTFOLIO_STRONG.search(ql)),

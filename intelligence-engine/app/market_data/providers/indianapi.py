@@ -51,7 +51,9 @@ class IndianApiProvider(MarketDataProvider):
         except httpx.HTTPError as exc:
             raise ProviderError(self.provider_id, f"transport error: {exc}", retryable=True) from exc
         if response.status_code == 429:
-            raise ProviderError(self.provider_id, "rate limited by vendor", retryable=True)
+            # Immediate retries amplify vendor throttling and delay the user;
+            # fail over to the next configured provider for this request.
+            raise ProviderError(self.provider_id, "rate limited by vendor", retryable=False)
         if response.status_code >= 500:
             raise ProviderError(self.provider_id, f"vendor {response.status_code}", retryable=True)
         if response.status_code >= 400:

@@ -41,6 +41,14 @@ class _Response:
             "prose": "The filing supports the order value; margin impact is not disclosed [E1].",
             "cited_evidence_ids": ["E1", "E999"],
             "uncertainty": "Execution timing and margins were not supplied.",
+            "thesis": ["The order supports revenue visibility [E1]."],
+            "bull_case": ["Execution could deepen the customer relationship [E1]."],
+            "bear_case": ["Margin and delivery timing are not disclosed [E1]."],
+            "catalysts": ["Execution updates [E1]."],
+            "risks": ["Delivery slippage [E1]."],
+            "valuation": ["No valuation evidence was supplied."],
+            "what_changes_view": ["A cancellation would weaken the view [E1]."],
+            "evidence_gaps": ["Order margin and schedule."],
         }
     )
 
@@ -78,6 +86,7 @@ def test_synthesis_calls_responses_api_and_filters_citations(monkeypatch):
     assert result["used"] is True
     assert result["status"] == "completed"
     assert result["answer"]["cited_evidence_ids"] == ["E1"]
+    assert result["answer"]["investment_sections"]["risks"]
     assert _OpenAI.last.responses.kwargs["store"] is False
     assert _OpenAI.last.responses.kwargs["reasoning"] == {"effort": "medium"}
     assert "order_value_crore" in _OpenAI.last.responses.kwargs["input"]
@@ -118,3 +127,53 @@ def test_api_error_does_not_break_ask(monkeypatch):
     assert result["used"] is False
     assert result["status"] == "fallback"
     assert result["error_type"] == "TimeoutError"
+
+
+def test_unsupported_financial_figure_uses_fallback(monkeypatch):
+    class FabricatedResponse(_Response):
+        output_text = json.dumps(
+            {
+                "executive_summary": "The order is worth ₹999 crore [E1].",
+                "why": ["The filing supports it [E1]."],
+                "prose": "The order supports the thesis at an invented 45x multiple [E1].",
+                "cited_evidence_ids": ["E1"],
+            }
+        )
+
+    class FabricatingResponses:
+        def create(self, **kwargs):
+            return FabricatedResponse()
+
+    class FabricatingOpenAI:
+        def __init__(self, **kwargs):
+            self.responses = FabricatingResponses()
+
+    monkeypatch.setenv("OPENAI_API_KEY", "test-key")
+    monkeypatch.setitem(sys.modules, "openai", types.SimpleNamespace(OpenAI=FabricatingOpenAI))
+    result = synthesize_financial_answer(
+        question="What is the view?",
+        evidence=_evidence(),
+        intent_resolution={},
+        entities={"entities": ["ZENTEC"]},
+        deterministic_answer={"executive_summary": "Fallback"},
+    )
+    assert result["used"] is False
+    assert result["status"] == "fallback"
+    assert result["error_type"] == "ValueError"
+
+
+def test_primary_and_uploaded_evidence_is_prioritised_and_deduplicated(monkeypatch):
+    evidence = _evidence()
+    rows = evidence["packs"]["iere"]["evidence"]["top_evidence"]
+    rows.insert(0, {"title": "Market snapshot", "source": "aggregator", "payload": {"price": 1}})
+    rows.append({"title": "Duplicate filing", "source": "company filing", "payload": {"order_value_crore": 295}})
+    monkeypatch.setenv("OPENAI_API_KEY", "test-key")
+    monkeypatch.setitem(sys.modules, "openai", types.SimpleNamespace(OpenAI=_OpenAI))
+    result = synthesize_financial_answer(
+        question="What is the view?", evidence=evidence, intent_resolution={},
+        entities={"entities": ["ZENTEC"]}, deterministic_answer={"executive_summary": "Fallback"},
+    )
+    assert result["used"] is True
+    supplied = json.loads(_OpenAI.last.responses.kwargs["input"].split("EVIDENCE\n", 1)[1])
+    assert supplied[0]["source"] == "company filing"
+    assert len(supplied) == 2

@@ -8,6 +8,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 app_pkg = sys.modules.setdefault("app", types.ModuleType("app"))
+app_pkg.__path__ = [str(ROOT / "app")]
 ui_pkg = sys.modules.setdefault("app.ui", types.ModuleType("app.ui"))
 ui_pkg.__path__ = [str(ROOT / "app" / "ui")]
 
@@ -121,3 +122,22 @@ def test_leading_and_inherits_prior_company_as_comparison():
     assert trace["conversation_move"] == "FOLLOW_UP"
     assert trace["research_execution"] == "INCREMENTAL_RETRIEVAL"
     assert effective.startswith("Compare TCS vs HCLTECH")
+
+
+def test_investment_view_follow_up_inherits_company_without_pronoun():
+    store = ConversationStore(checkpoint_backend=MemoryCheckpoint())
+    resolve(store, "Analyse TCS")
+    effective, ticker, trace = resolve(store, "What would change your view?")
+    assert ticker == "TCS"
+    assert trace["conversation_move"] == "FOLLOW_UP"
+    assert trace["research_intent"] == "THESIS_CHANGE"
+    assert trace["research_execution"] == "INCREMENTAL_RETRIEVAL"
+    assert effective.startswith("thesis change analysis for TCS")
+
+
+def test_investment_follow_up_without_context_requests_reference():
+    store = ConversationStore(checkpoint_backend=MemoryCheckpoint())
+    _, ticker, trace = resolve(store, "What is the bear case?")
+    assert ticker is None
+    assert trace["conversation_move"] == "NEW_RESEARCH"
+    assert trace["clarification"]["required"] is False
