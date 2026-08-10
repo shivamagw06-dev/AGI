@@ -149,7 +149,7 @@ def persist_company_pack(
         "valuation_company_packs",
         body={
             "symbol": symbol,
-            "window": win,
+            "pack_window": win,
             "peer_limit": max(1, min(int(peer_limit or 12), 40)),
             "generated_at": generated_at,
             "source_as_of": str(source_as_of),
@@ -176,10 +176,10 @@ def persist_company_pack(
 
     _rest(
         "POST",
-        "valuation_company_packs_latest?on_conflict=symbol,window",
+        "valuation_company_packs_latest?on_conflict=symbol,pack_window",
         body={
             "symbol": symbol,
-            "window": win,
+            "pack_window": win,
             "pack_id": pack_id,
             "generated_at": generated_at,
             "source_as_of": str(source_as_of),
@@ -220,6 +220,7 @@ def persist_company_pack(
         "pack_id": pack_id,
         "symbol": symbol,
         "window": win,
+        "pack_window": win,
         "generated_at": generated_at,
         "source_as_of": str(source_as_of),
         "status": "ready",
@@ -282,15 +283,19 @@ def latest_pack_row(symbol: str, *, window: str = "5Y") -> Optional[dict[str, An
         "GET",
         "valuation_company_packs_latest",
         query=(
-            f"?symbol=eq.{ticker}&window=eq.{win}"
-            "&select=pack_id,symbol,window,generated_at,source_as_of,status,freshness,"
+            f"?symbol=eq.{ticker}&pack_window=eq.{win}"
+            "&select=pack_id,symbol,pack_window,generated_at,source_as_of,status,freshness,"
             "schema_version,calculation_version,data_quality,health_score,payload"
         ),
         body=None,
         prefer="return=representation",
     )
     if isinstance(rows, list) and rows:
-        return rows[0]
+        row = rows[0]
+        # Keep API-facing alias used by the terminal payload.
+        if "window" not in row and row.get("pack_window"):
+            row = {**row, "window": row["pack_window"]}
+        return row
     return None
 
 
@@ -304,10 +309,12 @@ def list_aging_latest(*, limit: int = 8, max_age_seconds: int | None = None) -> 
         "valuation_company_packs_latest",
         query=(
             f"?status=eq.ready&generated_at=lt.{cutoff}"
-            "&select=symbol,window,generated_at,freshness,pack_id"
+            "&select=symbol,pack_window,generated_at,freshness,pack_id"
             f"&order=generated_at.asc&limit={capped}"
         ),
         body=None,
         prefer="return=representation",
     )
-    return rows if isinstance(rows, list) else []
+    if not isinstance(rows, list):
+        return []
+    return [{**row, "window": row.get("pack_window") or row.get("window")} for row in rows]

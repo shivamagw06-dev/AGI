@@ -1,12 +1,13 @@
 -- Valuation company-pack read model.
--- Python calculates; Supabase stores one latest pack per (symbol, window);
+-- Python calculates; Supabase stores one latest pack per (symbol, pack_window);
 -- Node serves instantly and keeps the previous pack if Python is unavailable.
+-- Note: column is pack_window (not "window") because WINDOW is reserved in Postgres.
 
 create table if not exists public.valuation_company_packs (
   id uuid primary key default gen_random_uuid(),
   symbol text not null check (symbol = upper(symbol)),
-  window text not null default '5Y'
-    check (window in ('1Y', '3Y', '5Y', '10Y', 'MAX')),
+  pack_window text not null default '5Y'
+    check (pack_window in ('1Y', '3Y', '5Y', '10Y', 'MAX')),
   peer_limit integer not null default 12
     check (peer_limit > 0 and peer_limit <= 40),
   generated_at timestamptz not null default now(),
@@ -34,16 +35,16 @@ create index if not exists valuation_company_packs_symbol_generated_idx
   on public.valuation_company_packs (symbol, generated_at desc);
 
 create index if not exists valuation_company_packs_symbol_window_generated_idx
-  on public.valuation_company_packs (symbol, window, generated_at desc);
+  on public.valuation_company_packs (symbol, pack_window, generated_at desc);
 
 create index if not exists valuation_company_packs_status_generated_idx
   on public.valuation_company_packs (status, generated_at desc);
 
--- Fast latest lookup: one row per (symbol, window).
+-- Fast latest lookup: one row per (symbol, pack_window).
 create table if not exists public.valuation_company_packs_latest (
   symbol text not null check (symbol = upper(symbol)),
-  window text not null default '5Y'
-    check (window in ('1Y', '3Y', '5Y', '10Y', 'MAX')),
+  pack_window text not null default '5Y'
+    check (pack_window in ('1Y', '3Y', '5Y', '10Y', 'MAX')),
   pack_id uuid not null references public.valuation_company_packs(id) on delete cascade,
   generated_at timestamptz not null,
   source_as_of text,
@@ -58,7 +59,7 @@ create table if not exists public.valuation_company_packs_latest (
   health_score numeric(6,2),
   payload jsonb not null check (jsonb_typeof(payload) = 'object'),
   updated_at timestamptz not null default now(),
-  primary key (symbol, window)
+  primary key (symbol, pack_window)
 );
 
 create index if not exists valuation_company_packs_latest_generated_idx
@@ -70,7 +71,7 @@ alter table public.valuation_company_packs_latest enable row level security;
 comment on table public.valuation_company_packs is
   'Historical valuation company packs for audit and validation.';
 comment on table public.valuation_company_packs_latest is
-  'Latest valuation company pack per symbol/window. Node serves these so page loads do not recompute.';
+  'Latest valuation company pack per symbol/pack_window. Node serves these so page loads do not recompute.';
 
 create or replace function public.cleanup_valuation_company_packs(retention_days integer default 30)
 returns integer

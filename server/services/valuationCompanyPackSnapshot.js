@@ -100,7 +100,7 @@ function decoratePayload(row) {
     ...payload,
     ok: payload.ok !== false,
     symbol: row.symbol || payload.symbol,
-    window: row.window || payload.window,
+    window: row.pack_window || row.window || payload.window,
     generated_at: generatedAt,
     source_as_of: row.source_as_of || payload.source_as_of || null,
     status: row.status || payload.status || 'ready',
@@ -127,8 +127,8 @@ export async function readLatestValuationCompanyPack(symbol, {
   if (!ticker) return null;
   const query = new URLSearchParams({
     symbol: `eq.${ticker}`,
-    window: `eq.${win}`,
-    select: 'pack_id,symbol,window,generated_at,source_as_of,status,freshness,schema_version,calculation_version,data_quality,health_score,payload',
+    pack_window: `eq.${win}`,
+    select: 'pack_id,symbol,pack_window,generated_at,source_as_of,status,freshness,schema_version,calculation_version,data_quality,health_score,payload',
     limit: '1',
   }).toString();
   const rows = await rest(`valuation_company_packs_latest?${query}`);
