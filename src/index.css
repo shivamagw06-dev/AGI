@@ -189,8 +189,8 @@
   .article-prose > table {
     position: relative;
     left: 50%;
-    width: min(72rem, calc(100vw - 4rem));
-    max-width: min(72rem, calc(100vw - 4rem));
+    width: min(90rem, calc(100vw - 3rem));
+    max-width: min(90rem, calc(100vw - 3rem));
     transform: translateX(-50%);
   }
 }
@@ -542,10 +542,18 @@
   }
 
   .agi-cover--article {
-    aspect-ratio: 16 / 10;
-    max-height: 420px;
+    aspect-ratio: auto;
+    max-height: none;
     border-radius: 0.75rem;
     border: 1px solid hsl(var(--border));
+  }
+
+  .agi-cover--article img {
+    width: 100%;
+    height: auto;
+    max-height: min(72vh, 720px);
+    object-fit: contain;
+    object-position: center;
   }
 
   .agi-cover--editor {

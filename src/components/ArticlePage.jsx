@@ -587,7 +587,7 @@ export default function ArticlePage() {
 
   if (loading) {
     return (
-      <div className="max-w-3xl mx-auto px-4 py-16">
+      <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:px-10">
         <p className="text-muted-foreground">Loading…</p>
       </div>
     );
@@ -595,7 +595,7 @@ export default function ArticlePage() {
 
   if (!article) {
     return (
-      <div className="max-w-3xl mx-auto px-4 py-16">
+      <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:px-10">
         <p className="mb-4 font-semibold">Article not found</p>
         <p className="text-sm text-muted-foreground mb-4">
           Tried slug: <code>{slug}</code>
@@ -678,8 +678,8 @@ export default function ArticlePage() {
         <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
       </Helmet>
 
-      <main className="article-page-shell px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
-        <header className="article-page-header mx-auto w-full max-w-5xl">
+      <main className="article-page-shell mx-auto w-full max-w-[90rem] px-4 py-6 sm:px-6 sm:py-8 lg:px-10">
+        <header className="article-page-header mx-auto w-full max-w-6xl">
           <Link to="/" className="text-sm text-muted-foreground hover:text-foreground">
           ← Back
           </Link>
@@ -763,17 +763,17 @@ export default function ArticlePage() {
         </header>
 
         {image && (
-          <div className="agi-cover agi-cover--article mx-auto mt-6 w-full max-w-6xl">
+          <div className="agi-cover agi-cover--article mx-auto mt-6 w-full max-w-[90rem]">
             <img src={image} alt="" />
           </div>
         )}
 
         <article
-          className="article-prose prose prose-neutral dark:prose-invert mx-auto mt-8 w-full max-w-3xl prose-h1:font-extrabold prose-h2:font-bold prose-p:leading-7"
+          className="article-prose prose prose-lg prose-neutral dark:prose-invert mx-auto mt-8 w-full max-w-5xl prose-h1:font-extrabold prose-h2:font-bold prose-p:leading-7"
           dangerouslySetInnerHTML={{ __html: sanitizedHtml }}
         />
 
-        <div className="article-page-footer mx-auto w-full max-w-3xl">
+        <div className="article-page-footer mx-auto w-full max-w-5xl">
           {message && <div className="mt-6 text-sm text-green-700">{message}</div>}
           {errorMessage && <div className="mt-6 text-sm text-red-600">{errorMessage}</div>}
 
