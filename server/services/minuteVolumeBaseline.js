@@ -65,4 +65,8 @@ export class VolumeBaselineIndex {
   get(instrumentKey, minute) {
     return this.values.get(`${instrumentKey}|${minute}`) ?? null;
   }
+  replace(rows = []) {
+    this.values = new Map(rows.map((row) => [`${row.instrument_key}|${row.minute_of_session}`, Number(row.expected_cumulative_volume)]));
+    return this.values.size;
+  }
 }

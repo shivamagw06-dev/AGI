@@ -37,7 +37,16 @@ export class LiveAlphaPersistence {
         raw_factors: { ohlc: item.ohlc, total_buy_quantity: item.total_buy_quantity, total_sell_quantity: item.total_sell_quantity, request_mode: item.request_mode },
       });
     }
-    if (rows.length) await rest('live_market_snapshots', { body: rows });
+    // The database intentionally keeps one observation per instrument/minute.
+    // Feed reconnects and overlapping batches can legitimately replay that
+    // minute, so make the write idempotent at the database boundary as well as
+    // in this process. This also protects against two live workers briefly
+    // overlapping during a rolling deploy.
+    if (rows.length) await rest('live_market_snapshots', {
+      query: 'on_conflict=instrument_key,minute_bucket',
+      body: rows,
+      prefer: 'resolution=merge-duplicates,return=minimal',
+    });
     return rows.length;
   }
   async saveHealth(status, staleInstruments = 0) {
@@ -45,6 +54,33 @@ export class LiveAlphaPersistence {
   }
   async loadVolumeBaselines() {
     return rest('live_volume_baselines', { method: 'GET', query: 'select=instrument_key,minute_of_session,expected_cumulative_volume,sample_sessions', body: undefined, prefer: undefined });
+  }
+  async saveVolumeBaselines(rows = []) {
+    if (!rows.length) return 0;
+    await rest('live_volume_baselines', {
+      query: 'on_conflict=instrument_key,minute_of_session',
+      body: rows,
+      prefer: 'resolution=merge-duplicates,return=minimal',
+    });
+    return rows.length;
+  }
+  async loadRecentSnapshots({ minutes = 90, limit = 5000 } = {}) {
+    const since = new Date(Date.now() - Math.max(1, minutes) * 60_000).toISOString();
+    const query = new URLSearchParams({
+      select: 'instrument_key,observed_at,exchange_timestamp,ltp,previous_close,last_traded_quantity,average_traded_price,cumulative_volume,open_interest,implied_volatility,best_bid,best_ask,spread_bps,feed_latency_ms,raw_factors',
+      observed_at: `gte.${since}`,
+      order: 'observed_at.asc',
+      limit: String(Math.max(1, limit)),
+    }).toString();
+    const rows = await rest('live_market_snapshots', { method: 'GET', query, body: undefined, prefer: undefined });
+    return (rows || []).map((row) => ({
+      ...row,
+      received_at: row.observed_at,
+      ohlc: row.raw_factors?.ohlc || null,
+      total_buy_quantity: row.raw_factors?.total_buy_quantity ?? null,
+      total_sell_quantity: row.raw_factors?.total_sell_quantity ?? null,
+      request_mode: row.raw_factors?.request_mode || null,
+    }));
   }
   async saveAlphaRun(result, diagnostics = {}) {
     const session = new Date(new Date(result.as_of).getTime() + 5.5 * 60 * 60_000).toISOString().slice(0, 10);
