@@ -40,6 +40,16 @@ services:
       # Set to external when the dedicated worker below is enabled.
       - key: CMS_INGEST_WORKER_MODE
         value: embedded
+      # Research-only Hedge Fund refreshers. These populate observations and
+      # candles; neither path places orders or enables execution.
+      - key: HEDGE_FUND_LIVE_REFRESH_ENABLED
+        value: "true"
+      - key: HEDGE_FUND_LIVE_QUOTES
+        value: "true"
+      - key: HEDGE_FUND_TECHNICAL_RESEARCH_ENABLED
+        value: "true"
+      - key: HEDGE_FUND_UPSTOX_CANDLES
+        value: "true"
 
   # Optional dedicated ingest worker (Starter+). Decouples queue processing from
   # the HTTP process so deploys/restarts of the API do not drop in-flight work

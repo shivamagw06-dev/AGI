@@ -5,6 +5,7 @@ import { LiveAlphaPersistence } from './liveAlphaPersistence.js';
 import { MomentumShadowPipeline } from './liveAlphaShadowPipeline.js';
 import { VolumeBaselineIndex } from './minuteVolumeBaseline.js';
 import { SynchronizedSnapshotStore, UpstoxMarketFeedV3 } from './upstoxMarketFeedV3.js';
+import { bootstrapLiveAlphaVolumeBaselines } from './liveAlphaBaselineBootstrap.js';
 
 const serverDir = path.dirname(fileURLToPath(import.meta.url));
 const defaultUniversePath = path.join(serverDir, '../config/live-alpha-universe.example.json');
@@ -50,6 +51,11 @@ export async function startLiveAlphaRuntime({ Feed = UpstoxMarketFeedV3, Persist
     const persistence = new Persistence();
     const baselines = new VolumeBaselineIndex(await persistence.loadVolumeBaselines());
     const pipeline = new MomentumShadowPipeline({ ...universe, universe: universe.members, baselineIndex: baselines, repository: persistence });
+    // Preserve the rolling 15m/60m feature window across deploys and brief
+    // restarts. Only genuine persisted observations are restored; missing
+    // market history is never synthesized.
+    const recentSnapshots = await persistence.loadRecentSnapshots?.({ minutes: 90, limit: 5000 }) || [];
+    if (recentSnapshots.length) pipeline.ingest({ snapshots: recentSnapshots });
     const store = new SynchronizedSnapshotStore();
     const instrumentKeys = [...new Set([universe.benchmarkKey, ...universe.members.flatMap((row) => [row.instrumentKey, row.sectorInstrumentKey, row.derivativeInstrumentKey]).filter(Boolean)])];
     let lastEvaluationMs = 0;
@@ -62,10 +68,21 @@ export async function startLiveAlphaRuntime({ Feed = UpstoxMarketFeedV3, Persist
         state.last_evaluation = { at: new Date().toISOString(), skipped: Boolean(evaluation.skipped), reason: evaluation.reason || null, universe_size: evaluation.universe_size || evaluation.coverage || 0 };
       }
     } });
-    runtime = { feed, pipeline, persistence, store, universe };
+    runtime = { feed, pipeline, persistence, store, universe, bootstrap: { recent_snapshots: recentSnapshots.length, volume_baselines: baselines.values.size } };
     state = { enabled: true, status: 'starting', started_at: new Date().toISOString(), last_evaluation: null, last_error: null };
     await feed.start();
     state.status = 'running';
+    if (baselines.values.size < universe.members.length) {
+      state.baseline_bootstrap = { status: 'running', rows: baselines.values.size, failures: [] };
+      bootstrapLiveAlphaVolumeBaselines({ members: universe.members, persistence, baselineIndex: baselines })
+        .then((result) => {
+          state.baseline_bootstrap = result;
+          if (runtime?.bootstrap) runtime.bootstrap.volume_baselines = baselines.values.size;
+        })
+        .catch((error) => { state.baseline_bootstrap = { status: 'failed', rows: baselines.values.size, error: error.message, failures: [] }; });
+    } else {
+      state.baseline_bootstrap = { status: 'ready', rows: baselines.values.size, failures: [] };
+    }
     return getLiveAlphaRuntimeStatus();
   } catch (error) {
     state = { ...state, enabled: true, status: 'failed', last_error: error.message };
@@ -85,6 +102,7 @@ export function getLiveAlphaRuntimeStatus() {
     ...state,
     feed: runtime?.feed.status() || null,
     universe: runtime ? { members: runtime.universe.members.length, subscribed_instruments: runtime.feed.instrumentKeys.length, benchmark_key: runtime.universe.benchmarkKey } : null,
+    bootstrap: runtime?.bootstrap || null,
     research_only: true,
     execution_enabled: false,
   };
