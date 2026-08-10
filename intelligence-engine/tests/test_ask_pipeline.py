@@ -131,3 +131,24 @@ def test_existing_reasoning_and_kf_untouched() -> None:
     assert "propose_from_outcome" not in pipeline_src
     assert "evaluate_decision" not in pipeline_src
     assert "run_assignment" not in pipeline_src  # avoid multi govern_answer on Ask
+
+
+def test_preloaded_institutional_memory_is_reused(monkeypatch) -> None:
+    import institutional_knowledge_layer.production as ikl_production
+
+    def duplicate_consult(*args, **kwargs):
+        raise AssertionError("institutional memory was consulted twice")
+
+    monkeypatch.setattr(ikl_production, "ask_consult", duplicate_consult)
+    preloaded = {
+        "enabled": True,
+        "layers_hit": ["company_memory"],
+        "confidence": 0.8,
+        "answer_hints": ["Verified prior company memory."],
+    }
+    out = run_complete_ask(
+        "What is the investment thesis on Infosys?",
+        ticker_hint="INFY",
+        institutional_knowledge=preloaded,
+    )
+    assert out["knowledge"]["institutional_knowledge"] == preloaded

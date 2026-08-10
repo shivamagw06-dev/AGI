@@ -53,6 +53,7 @@ def run_complete_ask(
     requested_asset: str | None = None,
     requested_portfolio: str | None = None,
     jurisdiction: str | None = None,
+    institutional_knowledge: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Traverse the full institutional Ask pipeline for one question."""
     t0 = time.time()
@@ -194,6 +195,7 @@ def run_complete_ask(
             question=question,
             as_of=irl.get("as_of"),
             concept_mode=bool(irl.get("concept_mode")),
+            institutional_knowledge=institutional_knowledge,
         )
         _sp.end(
             outputs={
