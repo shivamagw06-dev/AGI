@@ -4,6 +4,21 @@ import { buildMinuteVolumeBaselines } from './minuteVolumeBaseline.js';
 const IST_OFFSET_MS = 5.5 * 60 * 60_000;
 
 function dateOnly(date) { return date.toISOString().slice(0, 10); }
+function wait(ms) { return new Promise((resolve) => setTimeout(resolve, ms)); }
+
+async function historicalCandlesWithBackoff(instrumentKey, range) {
+  let lastError;
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    try {
+      return await getHistoricalCandles(instrumentKey, range);
+    } catch (error) {
+      lastError = error;
+      if (error?.status !== 429 || attempt === 2) throw error;
+      await wait((attempt + 1) * 10_000);
+    }
+  }
+  throw lastError;
+}
 
 function normalizedObservations(instrumentKey, payload) {
   const rows = [];
@@ -37,9 +52,13 @@ export async function bootstrapLiveAlphaVolumeBaselines({ members, persistence, 
   const from = dateOnly(new Date(now.getTime() - 12 * 86_400_000));
   const observations = [];
   const failures = [];
-  for (const member of members) {
+  for (let index = 0; index < members.length; index += 1) {
+    const member = members[index];
     try {
-      const payload = await getHistoricalCandles(member.instrumentKey, { unit: 'minutes', interval: 1, from, to });
+      // Keep well below the shared historical-data rate limit; other AGI
+      // collectors may be using the same provider quota at boot.
+      if (index > 0) await wait(1_500);
+      const payload = await historicalCandlesWithBackoff(member.instrumentKey, { unit: 'minutes', interval: 1, from, to });
       observations.push(...normalizedObservations(member.instrumentKey, payload));
     } catch (error) {
       failures.push({ symbol: member.symbol, error: error.message });
