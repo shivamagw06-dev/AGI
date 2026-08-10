@@ -6,6 +6,7 @@ import { MomentumShadowPipeline } from './liveAlphaShadowPipeline.js';
 import { VolumeBaselineIndex } from './minuteVolumeBaseline.js';
 import { SynchronizedSnapshotStore, UpstoxMarketFeedV3 } from './upstoxMarketFeedV3.js';
 import { bootstrapLiveAlphaVolumeBaselines } from './liveAlphaBaselineBootstrap.js';
+import { resolveLiveAlphaDerivatives } from './liveAlphaDerivativeUniverse.js';
 
 const serverDir = path.dirname(fileURLToPath(import.meta.url));
 const defaultUniversePath = path.join(serverDir, '../config/live-alpha-universe.example.json');
@@ -47,14 +48,16 @@ export async function startLiveAlphaRuntime({ Feed = UpstoxMarketFeedV3, Persist
   }
   if (runtime) return getLiveAlphaRuntimeStatus();
   try {
-    const universe = await loadLiveAlphaUniverse();
+    const universe = await resolveLiveAlphaDerivatives(await loadLiveAlphaUniverse());
     const persistence = new Persistence();
     const baselines = new VolumeBaselineIndex(await persistence.loadVolumeBaselines());
     const pipeline = new MomentumShadowPipeline({ ...universe, universe: universe.members, baselineIndex: baselines, repository: persistence });
     // Preserve the rolling 15m/60m feature window across deploys and brief
     // restarts. Only genuine persisted observations are restored; missing
     // market history is never synthesized.
+    const openingSnapshots = await persistence.loadSessionOpeningSnapshots?.({ now: new Date(), limit: 1000 }) || [];
     const recentSnapshots = await persistence.loadRecentSnapshots?.({ minutes: 90, limit: 5000 }) || [];
+    if (openingSnapshots.length) pipeline.ingest({ snapshots: openingSnapshots });
     if (recentSnapshots.length) pipeline.ingest({ snapshots: recentSnapshots });
     const store = new SynchronizedSnapshotStore();
     const instrumentKeys = [...new Set([universe.benchmarkKey, ...universe.members.flatMap((row) => [row.instrumentKey, row.sectorInstrumentKey, row.derivativeInstrumentKey]).filter(Boolean)])];
@@ -65,10 +68,16 @@ export async function startLiveAlphaRuntime({ Feed = UpstoxMarketFeedV3, Persist
       if (Date.now() - lastEvaluationMs >= 5_000) {
         lastEvaluationMs = Date.now();
         const evaluation = await pipeline.evaluate(new Date());
-        state.last_evaluation = { at: new Date().toISOString(), skipped: Boolean(evaluation.skipped), reason: evaluation.reason || null, universe_size: evaluation.universe_size || evaluation.coverage || 0 };
+        state.last_evaluation = {
+          at: new Date().toISOString(), skipped: Boolean(evaluation.skipped), reason: evaluation.reason || null,
+          universe_size: evaluation.universe_size || evaluation.coverage || 0,
+          opening_range_status: evaluation.opening_range_status || null,
+          derivatives_status: evaluation.derivatives_status || null,
+          persistence: evaluation.persistence || [],
+        };
       }
     } });
-    runtime = { feed, pipeline, persistence, store, universe, bootstrap: { recent_snapshots: recentSnapshots.length, volume_baselines: baselines.values.size } };
+    runtime = { feed, pipeline, persistence, store, universe, bootstrap: { opening_snapshots: openingSnapshots.length, recent_snapshots: recentSnapshots.length, volume_baselines: baselines.values.size, derivatives: universe.derivativeResolution } };
     state = { enabled: true, status: 'starting', started_at: new Date().toISOString(), last_evaluation: null, last_error: null };
     await feed.start();
     state.status = 'running';
@@ -110,7 +119,7 @@ export function getLiveAlphaRuntimeStatus() {
   return {
     ...state,
     feed: runtime?.feed.status() || null,
-    universe: runtime ? { members: runtime.universe.members.length, subscribed_instruments: runtime.feed.instrumentKeys.length, benchmark_key: runtime.universe.benchmarkKey } : null,
+    universe: runtime ? { members: runtime.universe.members.length, subscribed_instruments: runtime.feed.instrumentKeys.length, benchmark_key: runtime.universe.benchmarkKey, derivatives: runtime.universe.derivativeResolution } : null,
     bootstrap: runtime?.bootstrap || null,
     research_only: true,
     execution_enabled: false,

@@ -82,6 +82,28 @@ export class LiveAlphaPersistence {
       request_mode: row.raw_factors?.request_mode || null,
     }));
   }
+  async loadSessionOpeningSnapshots({ now = new Date(), limit = 1000 } = {}) {
+    const shifted = new Date(now.getTime() + 5.5 * 60 * 60_000);
+    const session = shifted.toISOString().slice(0, 10);
+    const start = new Date(`${session}T03:45:00.000Z`).toISOString();
+    const end = new Date(`${session}T04:00:00.000Z`).toISOString();
+    const query = new URLSearchParams({
+      select: 'instrument_key,observed_at,exchange_timestamp,ltp,previous_close,last_traded_quantity,average_traded_price,cumulative_volume,open_interest,implied_volatility,best_bid,best_ask,spread_bps,feed_latency_ms,raw_factors',
+      observed_at: `gte.${start}`,
+      and: `(observed_at.lt.${end})`,
+      order: 'observed_at.asc',
+      limit: String(Math.max(1, limit)),
+    }).toString();
+    const rows = await rest('live_market_snapshots', { method: 'GET', query, body: undefined, prefer: undefined });
+    return (rows || []).map((row) => ({
+      ...row,
+      received_at: row.observed_at,
+      ohlc: row.raw_factors?.ohlc || null,
+      total_buy_quantity: row.raw_factors?.total_buy_quantity ?? null,
+      total_sell_quantity: row.raw_factors?.total_sell_quantity ?? null,
+      request_mode: row.raw_factors?.request_mode || null,
+    }));
+  }
   async saveAlphaRun(result, diagnostics = {}) {
     const session = new Date(new Date(result.as_of).getTime() + 5.5 * 60 * 60_000).toISOString().slice(0, 10);
     const runs = await rest('live_alpha_runs', {
@@ -101,12 +123,21 @@ export class LiveAlphaPersistence {
     }));
     const saved = await rest('live_alpha_signals', { body: rows, prefer: 'return=representation' });
     const outcomes = [];
+    let outcomeSkipped = 0;
     for (const signal of saved || []) {
       if (!signal.direction) continue;
+      const anchors = [signal.price_at_signal, signal.nifty_at_signal, signal.sector_at_signal].map(Number);
+      // A research signal remains useful even when an outcome anchor is not
+      // available. Persist it, but do not create an invalid validation row or
+      // allow it to stop the other independent alpha engines.
+      if (anchors.some((value) => !Number.isFinite(value) || value <= 0)) {
+        outcomeSkipped += 1;
+        continue;
+      }
       outcomes.push(...createOutcomeSchedule({ id: signal.id, as_of: result.as_of, price_at_signal: signal.price_at_signal, nifty_at_signal: signal.nifty_at_signal, sector_at_signal: signal.sector_at_signal }));
     }
     if (outcomes.length) await rest('live_alpha_signal_outcomes', { body: outcomes });
-    return { run_id: runId, signals: rows.length, outcomes: outcomes.length };
+    return { run_id: runId, signals: rows.length, outcomes: outcomes.length, outcome_skipped: outcomeSkipped };
   }
   async saveMomentumRun(result, diagnostics = {}) { return this.saveAlphaRun(result, diagnostics); }
   async saveVolumeAnomalyRun(result, diagnostics = {}) { return this.saveAlphaRun(result, diagnostics); }

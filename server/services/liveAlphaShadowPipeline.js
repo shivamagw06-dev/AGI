@@ -64,6 +64,25 @@ export class MomentumShadowPipeline {
     this.lastRunBucket = null;
   }
   ingest(batch) { this.featureStore.ingest(batch); }
+  async persistEngines(entries, diagnostics) {
+    const persistence = [];
+    for (const entry of entries) {
+      if (!entry.result || typeof this.repository?.[entry.method] !== 'function') {
+        persistence.push({ engine: entry.engine, status: 'unavailable', reason: entry.reason || 'insufficient_input_coverage' });
+        continue;
+      }
+      try {
+        const stored = await this.repository[entry.method](entry.result, diagnostics);
+        persistence.push({ engine: entry.engine, status: 'stored', ...stored });
+      } catch (error) {
+        // Engines are independent research observations. A storage failure in
+        // one must not prevent the remaining engines from being evaluated and
+        // persisted in the same five-minute bucket.
+        persistence.push({ engine: entry.engine, status: 'failed', error: error.message });
+      }
+    }
+    return persistence;
+  }
   async evaluate(now = new Date()) {
     const bucket = Math.floor(now.getTime() / this.intervalMs);
     if (bucket === this.lastRunBucket) return { skipped: true, reason: 'already_evaluated_bucket' };
@@ -142,15 +161,26 @@ export class MomentumShadowPipeline {
     if (derivativesResult) derivativesResult.signals = derivativesResult.signals.map((signal) => {
       const positive = signal.classification === 'long_buildup_candidate' || signal.classification === 'short_covering_candidate';
       const negative = signal.classification === 'short_buildup_candidate' || signal.classification === 'long_unwinding_candidate';
-      const stock = this.featureStore.latest(this.universe.find((member) => member.symbol === signal.symbol)?.instrumentKey);
-      return { ...signal, direction: positive ? 'positive' : negative ? 'negative' : null, price_at_signal: stock?.ltp ?? null, nifty_at_signal: benchmark.current.ltp, sector_at_signal: null };
+      const member = this.universe.find((row) => row.symbol === signal.symbol);
+      const stock = this.featureStore.latest(member?.instrumentKey);
+      const sector = this.featureStore.latest(member?.sectorInstrumentKey);
+      return { ...signal, direction: positive ? 'positive' : negative ? 'negative' : null, price_at_signal: stock?.ltp ?? null, nifty_at_signal: benchmark.current.ltp, sector_at_signal: sector?.ltp ?? null };
     });
     this.lastRunBucket = bucket;
-    await this.repository?.saveMomentumRun?.(result, { benchmark_key: this.benchmarkKey, minute_of_session: minute });
-    await this.repository?.saveVolumeAnomalyRun?.(volumeResult, { benchmark_key: this.benchmarkKey, minute_of_session: minute });
-    if (openingResult) await this.repository?.saveOpeningRangeRun?.(openingResult, { benchmark_key: this.benchmarkKey, minute_of_session: minute });
-    await this.repository?.saveMeanReversionRun?.(meanReversionResult, { benchmark_key: this.benchmarkKey, minute_of_session: minute });
-    if (derivativesResult) await this.repository?.saveDerivativesRun?.(derivativesResult, { benchmark_key: this.benchmarkKey, minute_of_session: minute });
-    return { ...result, companion_engines: [volumeResult, ...(openingResult ? [openingResult] : []), meanReversionResult, ...(derivativesResult ? [derivativesResult] : [])], derivatives_status: derivativesResult ? 'running' : 'insufficient_derivative_coverage' };
+    const diagnostics = { benchmark_key: this.benchmarkKey, minute_of_session: minute };
+    const persistence = await this.persistEngines([
+      { engine: result.engine, method: 'saveMomentumRun', result },
+      { engine: volumeResult.engine, method: 'saveVolumeAnomalyRun', result: volumeResult },
+      { engine: 'opening_range_expansion_v1', method: 'saveOpeningRangeRun', result: openingResult, reason: 'opening_range_not_restored' },
+      { engine: meanReversionResult.engine, method: 'saveMeanReversionRun', result: meanReversionResult },
+      { engine: 'derivatives_positioning_v1', method: 'saveDerivativesRun', result: derivativesResult, reason: derivativeSnapshots.length ? 'insufficient_derivative_coverage' : 'derivative_instruments_not_configured' },
+    ], diagnostics);
+    return {
+      ...result,
+      companion_engines: [volumeResult, ...(openingResult ? [openingResult] : []), meanReversionResult, ...(derivativesResult ? [derivativesResult] : [])],
+      persistence,
+      opening_range_status: openingResult ? 'running' : 'opening_range_not_restored',
+      derivatives_status: derivativesResult ? 'running' : derivativeSnapshots.length ? 'insufficient_derivative_coverage' : 'derivative_instruments_not_configured',
+    };
   }
 }
