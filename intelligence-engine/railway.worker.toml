@@ -1,5 +1,5 @@
-# Default Railway config (worker). For the HTTP engine service, set Config File Path
-# to railway.engine.toml in the Railway dashboard (Settings → Config-as-code).
+# Railway config for agib-intelligence-worker (background gather worker).
+# Dashboard: Root Directory = intelligence-engine, Config File Path = railway.worker.toml
 [build]
 builder = "DOCKERFILE"
 dockerfilePath = "Dockerfile"

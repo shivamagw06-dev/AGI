@@ -1,4 +1,4 @@
-# AGIB intelligence gather worker — Railway background worker image.
+# AGIB intelligence engine — shared image for Railway web + worker services.
 # Service root on Railway: intelligence-engine/ (WORKDIR /intelligence-engine).
 FROM python:3.12-slim
 
@@ -7,9 +7,6 @@ WORKDIR /intelligence-engine
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PLAYWRIGHT_BROWSERS_PATH=/ms-playwright \
-    APP_ENV=production \
-    AGI_ROLE=gather_worker \
-    AGI_GATHER_FORCE=true \
     FAA_PLAYWRIGHT_AUTO_INSTALL=false
 
 # Minimal OS packages; Playwright --with-deps installs Chromium runtime libs.
@@ -28,4 +25,6 @@ RUN python -m pip install --no-cache-dir -r requirements.txt \
 
 COPY . .
 
-CMD ["python", "scripts/gather_worker.py"]
+RUN chmod +x scripts/railway_start.sh scripts/start_engine.sh
+
+CMD ["bash", "scripts/railway_start.sh"]
