@@ -24,6 +24,10 @@ RUN python3 -m venv /opt/groww-venv \
     && /opt/groww-venv/bin/pip install --no-cache-dir -r requirements.txt
 ENV PATH="/opt/groww-venv/bin:${PATH}"
 
+# Bust layer cache when git revision changes (Railway sets RAILWAY_GIT_COMMIT_SHA).
+ARG RAILWAY_GIT_COMMIT_SHA=unknown
+RUN echo "agib-api build ${RAILWAY_GIT_COMMIT_SHA}" > /tmp/build-revision
+
 COPY . .
 
 CMD ["node", "index.js"]
