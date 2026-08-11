@@ -24,10 +24,11 @@ test('prevents live momentum from becoming an investment thesis', () => {
 });
 
 test('assembles market evidence without inventing fundamentals', () => {
-  const workspace = { groww: { runs: [{ strategy: 'agi_equity_opportunity_v1', as_of: now.toISOString() }, { strategy: 'agi_sector_rotation_v1', as_of: now.toISOString() }], equities: [{ symbol: 'SBIN', score: 84 }], sectors: [{ sector: 'BANK', score: 88 }] }, signals: [{ symbol: 'SBIN', sector: 'BANK', engine: 'cross_sectional_momentum_v1', direction: 'positive', signal_quality_score: 90, as_of: now.toISOString() }] };
+  const workspace = { groww: { runs: [{ strategy: 'agi_equity_opportunity_v1', as_of: now.toISOString() }, { strategy: 'agi_sector_rotation_v1', as_of: now.toISOString() }], equities: [{ symbol: 'SBIN', score: 84 }], sectors: [{ sector: 'BANK', score: 88 }] }, signals: [{ symbol: 'SBIN', sector: 'BANK', engine: 'cross_sectional_momentum_v1', direction: 'positive', signal_quality_score: 90, factor_values: { residual_15m_z: 1.25 }, as_of: now.toISOString() }] };
   const queue = buildConfluenceQueue({ workspace, now });
   assert.equal(queue.items[0].symbol, 'SBIN');
   assert.equal(queue.items[0].scores.fundamental_score, null);
   assert.equal(queue.items[0].flags.incomplete_research_evidence, true);
   assert.equal(queue.items[0].scores.live_confirmation_score, 90);
+  assert.equal(queue.items[0].market_features.leadership.residual_15m_z, 1.25);
 });
