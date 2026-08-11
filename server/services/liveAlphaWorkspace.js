@@ -26,7 +26,7 @@ async function query(table, search, fetchImpl) {
   return response.json();
 }
 
-export async function getLiveAlphaWorkspace({ fetchImpl = globalThis.fetch, limit = 250 } = {}) {
+export async function getLiveAlphaWorkspace({ fetchImpl = globalThis.fetch, limit = 250, now = new Date() } = {}) {
   let runs;
   try {
     runs = await query('live_alpha_runs', `select=id,engine,as_of,market_session,universe_size,diagnostics&order=as_of.desc&limit=25`, fetchImpl);
@@ -45,6 +45,26 @@ export async function getLiveAlphaWorkspace({ fetchImpl = globalThis.fetch, limi
     fetchImpl,
   ) : [];
   const runById = new Map(runs.map((run) => [run.id, run]));
+  const signalCountByRun = new Map();
+  for (const signal of signals) signalCountByRun.set(signal.run_id, (signalCountByRun.get(signal.run_id) || 0) + 1);
+  const latestRunByEngine = new Map();
+  for (const run of runs) if (!latestRunByEngine.has(run.engine)) latestRunByEngine.set(run.engine, run);
+  const staleAfterSeconds = Math.max(300, Number(process.env.LIVE_ALPHA_STALE_AFTER_SECONDS || 15 * 60));
+  const strategyHealth = Object.fromEntries(Object.keys(ENGINE_LABELS).map((engine) => {
+    const run = latestRunByEngine.get(engine);
+    const storedSignals = run ? signalCountByRun.get(run.id) || 0 : 0;
+    const ageSeconds = run?.as_of ? Math.max(0, Math.floor((now.getTime() - Date.parse(run.as_of)) / 1000)) : null;
+    const orphaned = Boolean(run && storedSignals === 0);
+    return [engine, {
+      status: !run ? 'never_run' : orphaned ? 'persistence_failed' : ageSeconds > staleAfterSeconds ? 'stale' : 'ready',
+      latest_run_at: run?.as_of || null, latest_run_id: run?.id || null,
+      stored_signals: storedSignals, age_seconds: ageSeconds, orphaned,
+    }];
+  }));
+  const successfulRuns = [...latestRunByEngine.values()].filter((run) => (signalCountByRun.get(run.id) || 0) > 0);
+  const latestSuccessfulAt = successfulRuns.map((run) => run.as_of).filter(Boolean).sort().at(-1) || null;
+  const latestAgeSeconds = latestSuccessfulAt ? Math.max(0, Math.floor((now.getTime() - Date.parse(latestSuccessfulAt)) / 1000)) : null;
+  const degradedEngines = Object.entries(strategyHealth).filter(([, health]) => health.status === 'persistence_failed').map(([engine]) => engine);
   let groww = { readiness: 'ready', runs: [], sectors: [], equities: [] };
   try {
     const growwRuns = await query('research_strategy_runs', 'select=id,strategy,run_id,as_of,received_at,status,coverage,error_count&order=as_of.desc&limit=10', fetchImpl);
@@ -65,7 +85,18 @@ export async function getLiveAlphaWorkspace({ fetchImpl = globalThis.fetch, limi
   return {
     generated_at: new Date().toISOString(), research_only: true, execution_enabled: false,
     engines: ENGINE_LABELS,
-    readiness: { status: 'ready', migrations_required: [] }, runs, groww,
+    readiness: {
+      status: degradedEngines.length ? 'persistence_degraded' : 'ready',
+      migrations_required: [], degraded_engines: degradedEngines,
+    },
+    freshness: {
+      latest_successful_at: latestSuccessfulAt,
+      age_seconds: latestAgeSeconds,
+      stale_after_seconds: staleAfterSeconds,
+      stale: latestAgeSeconds === null || latestAgeSeconds > staleAfterSeconds,
+    },
+    strategy_health: strategyHealth,
+    runs, groww,
     signals: signals.map((signal) => ({ ...signal, engine: runById.get(signal.run_id)?.engine || null, as_of: runById.get(signal.run_id)?.as_of || signal.created_at })),
   };
 }

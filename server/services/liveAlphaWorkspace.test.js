@@ -13,8 +13,34 @@ test('joins stored signals to their research engine without execution fields', a
   const result = await getLiveAlphaWorkspace({ fetchImpl });
   assert.equal(result.signals[0].engine, 'cross_sectional_momentum_v1');
   assert.equal(result.execution_enabled, false);
+  assert.equal(result.strategy_health.cross_sectional_momentum_v1.stored_signals, 1);
   if (priorUrl === undefined) delete process.env.SUPABASE_URL; else process.env.SUPABASE_URL = priorUrl;
   if (priorKey === undefined) delete process.env.SUPABASE_SERVICE_ROLE_KEY; else process.env.SUPABASE_SERVICE_ROLE_KEY = priorKey;
+});
+
+test('reports stale and orphaned engine runs instead of claiming readiness', async () => {
+  const responses = [
+    [
+      { id: 'momentum-run', engine: 'cross_sectional_momentum_v1', as_of: '2026-08-11T04:00:00Z' },
+      { id: 'volume-run', engine: 'volume_liquidity_anomaly_v1', as_of: '2026-08-11T04:00:00Z' },
+    ],
+    [{ id: 'signal-1', run_id: 'momentum-run', symbol: 'SBIN', classification: 'positive_research_candidate' }],
+  ];
+  const fetchImpl = async () => ({ ok: true, json: async () => responses.shift() || [] });
+  const priorUrl = process.env.SUPABASE_URL; const priorKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  process.env.SUPABASE_URL = 'https://example.supabase.co'; process.env.SUPABASE_SERVICE_ROLE_KEY = 'test';
+  try {
+    const result = await getLiveAlphaWorkspace({ fetchImpl, now: new Date('2026-08-11T05:00:00Z') });
+    assert.equal(result.readiness.status, 'persistence_degraded');
+    assert.deepEqual(result.readiness.degraded_engines, ['volume_liquidity_anomaly_v1']);
+    assert.equal(result.strategy_health.cross_sectional_momentum_v1.status, 'stale');
+    assert.equal(result.strategy_health.volume_liquidity_anomaly_v1.status, 'persistence_failed');
+    assert.equal(result.freshness.stale, true);
+    assert.equal(result.freshness.latest_successful_at, '2026-08-11T04:00:00Z');
+  } finally {
+    if (priorUrl === undefined) delete process.env.SUPABASE_URL; else process.env.SUPABASE_URL = priorUrl;
+    if (priorKey === undefined) delete process.env.SUPABASE_SERVICE_ROLE_KEY; else process.env.SUPABASE_SERVICE_ROLE_KEY = priorKey;
+  }
 });
 
 test('returns the latest Groww sector and equity research results', async () => {

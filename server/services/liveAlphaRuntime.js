@@ -14,7 +14,20 @@ const serverDir = path.dirname(fileURLToPath(import.meta.url));
 const defaultUniversePath = path.join(serverDir, '../config/live-alpha-universe.example.json');
 let runtime = null;
 let growwFallbackTimer = null;
-let state = { enabled: false, status: 'disabled', started_at: null, last_evaluation: null, last_error: null };
+let state = {
+  enabled: false, status: 'disabled', evaluation_status: 'disabled', started_at: null,
+  last_evaluation: null, last_successful_evaluation: null, last_error: null,
+};
+
+export function classifyEvaluationStatus(evaluation) {
+  if (!evaluation) return 'warming_up';
+  if (evaluation.skipped) {
+    if (['benchmark_history_incomplete', 'insufficient_complete_universe'].includes(evaluation.reason)) return 'warming_up';
+    if (evaluation.reason === 'already_evaluated_bucket') return 'live';
+    return 'blocked';
+  }
+  return (evaluation.persistence || []).some((row) => row.status === 'failed') ? 'degraded' : 'live';
+}
 
 export function validateLiveAlphaUniverse(config) {
   const benchmarkKey = String(config?.benchmarkKey || '').trim();
@@ -71,17 +84,24 @@ export async function startLiveAlphaRuntime({ Feed = UpstoxMarketFeedV3, Persist
       if (Date.now() - lastEvaluationMs >= 5_000) {
         lastEvaluationMs = Date.now();
         const evaluation = await pipeline.evaluate(new Date());
-        state.last_evaluation = {
+        const currentEvaluation = {
           at: new Date().toISOString(), skipped: Boolean(evaluation.skipped), reason: evaluation.reason || null,
           universe_size: evaluation.universe_size || evaluation.coverage || 0,
           opening_range_status: evaluation.opening_range_status || null,
           derivatives_status: evaluation.derivatives_status || null,
           persistence: evaluation.persistence || [],
         };
+        state.last_evaluation = currentEvaluation;
+        state.evaluation_status = classifyEvaluationStatus(currentEvaluation);
+        if (!currentEvaluation.skipped) state.last_successful_evaluation = currentEvaluation;
       }
     } });
     runtime = { feed, pipeline, persistence, store, universe, bootstrap: { opening_snapshots: openingSnapshots.length, recent_snapshots: recentSnapshots.length, volume_baselines: baselines.values.size, derivatives: universe.derivativeResolution } };
-    state = { enabled: true, status: 'starting', started_at: new Date().toISOString(), last_evaluation: null, last_error: null };
+    state = {
+      enabled: true, status: 'starting', evaluation_status: 'warming_up',
+      started_at: new Date().toISOString(), last_evaluation: null,
+      last_successful_evaluation: null, last_error: null,
+    };
     await feed.start();
     state.status = 'running';
     if (feed.state?.status === 'auth_failed') startGrowwSectorIndexFallback({ store, pipeline, instrumentKeys });
@@ -121,6 +141,7 @@ export function stopLiveAlphaRuntime() {
   runtime?.feed.stop();
   runtime = null;
   state.status = 'stopped';
+  state.evaluation_status = 'stopped';
   return getLiveAlphaRuntimeStatus();
 }
 
