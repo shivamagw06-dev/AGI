@@ -15,10 +15,6 @@ export default function ForgotPasswordPage() {
     e.preventDefault();
     setMessage('');
     setError('');
-    if (!isConfigured) {
-      setError('Authentication is not configured on this deployment.');
-      return;
-    }
     if (!isValidEmail(email)) {
       setError('Enter a valid email address.');
       return;
@@ -30,9 +26,15 @@ export default function ForgotPasswordPage() {
           ? `${window.location.origin}/reset-password`
           : 'https://agarwalglobalinvestments.com/reset-password';
       await requestPasswordReset(email, redirectTo);
-      setMessage(`If an account exists for ${email.trim()}, a password reset link is on its way.`);
+      setMessage(
+        `If an account exists for ${email.trim()}, a password reset link from support@agarwalglobalinvestments.com is on its way.`
+      );
     } catch (err) {
-      setError(err?.message || 'Unable to send reset email.');
+      if (!isConfigured) {
+        setError(err?.message || 'Authentication is not configured on this deployment.');
+      } else {
+        setError(err?.message || 'Unable to send reset email.');
+      }
     } finally {
       setLoading(false);
     }

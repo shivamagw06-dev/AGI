@@ -104,10 +104,6 @@ export default function LoginPage() {
   const handleSignup = async (e) => {
     e.preventDefault();
     resetAlerts();
-    if (!isSupabaseConfigured) {
-      setErrorMessage(AUTH_UNCONFIGURED);
-      return;
-    }
     const errors = validateSignup({
       fullName,
       email,
@@ -135,13 +131,17 @@ export default function LoginPage() {
       }
       setPendingVerifyEmail(email.trim());
       setMessage(
-        `Account created. We sent a verification email to ${email.trim()}. Verify your email, then sign in.`
+        data?.message ||
+          `Account created. We sent a verification email to ${email.trim()} from support@agarwalglobalinvestments.com. Verify your email, then sign in.`
       );
       setMode('signin');
       setPassword('');
       setConfirmPassword('');
     } catch (err) {
-      setErrorMessage(err?.message || 'Unable to create your account.');
+      const msg = err?.message || 'Unable to create your account.';
+      setErrorMessage(
+        /not configured/i.test(msg) && !isSupabaseConfigured ? AUTH_UNCONFIGURED : msg
+      );
     } finally {
       setLoading(false);
     }
