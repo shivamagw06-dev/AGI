@@ -137,9 +137,10 @@ function normalizeEquity(payload) {
     ...deteriorating.map((row, index) => mapRow(row, index, 'risk_review')),
   ];
   const statedCoverage = payload.processed ?? payload.coverage;
+  const uniqueSymbolCoverage = new Set(signals.map((signal) => signal.symbol)).size;
   const coverage = statedCoverage === undefined
-    ? signals.length
-    : integer(statedCoverage, 'processed', { min: signals.length, max: 5000 });
+    ? uniqueSymbolCoverage
+    : integer(statedCoverage, 'processed', { min: uniqueSymbolCoverage, max: 5000 });
   return { table: 'equity_opportunity_signals', signals, coverage };
 }
 
