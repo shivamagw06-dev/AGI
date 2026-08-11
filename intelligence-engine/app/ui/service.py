@@ -227,6 +227,35 @@ def _que_requires_full_desk(que_pack: dict[str, Any] | None) -> bool:
     return decision in _QUE_FULL_DESK_DECISIONS
 
 
+_IRL_FULL_DESK_INTENTS = frozenset(
+    {
+        "CompanyOverview",
+        "FinancialAnalysis",
+        "Valuation",
+        "Earnings",
+        "Compare",
+        "Risk",
+        "MarketMovement",
+        "Ownership",
+        "Screening",
+        "Forecasting",
+        "Catalyst",
+        "HistoricalChange",
+        "HistoricalReplay",
+        "Portfolio",
+        "Analyse",
+        "CorporateEvents",
+        "Documents",
+        "CrossDomain",
+    }
+)
+
+
+def _irl_requires_full_desk(intent: str | None) -> bool:
+    """Keep workflow-shaped questions out of KUL's teaching shortcut."""
+    return str(intent or "") in _IRL_FULL_DESK_INTENTS
+
+
 def _kul_is_deterministic_business_answer(
     question: str,
     kul_hit: dict[str, Any] | None,
@@ -2230,10 +2259,26 @@ class UiService:
         # that blocks all business reasoning. CapIQ false-binds remain guarded
         # inside KUL. Non-business unsupported questions still refuse below.
         # Entity Intelligence must have allowed the planner (or been unavailable).
+        early_irl: dict[str, Any] = {}
         try:
-            kul_hit = kul_answer_for_ask(q, ticker=detected_ticker)
+            from ask_pipeline.intent_resolution import resolve_intent as resolve_ask_intent
+
+            early_irl = resolve_ask_intent(q, ticker_hint=detected_ticker) or {}
+            ask_orchestration["resolved_intent"] = early_irl.get("intent")
+            ask_orchestration["resolved_intent_confidence"] = early_irl.get("intent_confidence")
+            ask_orchestration["research_workflow"] = (
+                (early_irl.get("evidence_requirements") or {}).get("research_workflow") or []
+            )
         except Exception:
+            early_irl = {}
+        if _irl_requires_full_desk(early_irl.get("intent")):
             kul_hit = None
+            ask_orchestration["kul_deferred_for_intent"] = early_irl.get("intent")
+        else:
+            try:
+                kul_hit = kul_answer_for_ask(q, ticker=detected_ticker)
+            except Exception:
+                kul_hit = None
         if research_route != COMPANY_RESEARCH and kul_hit:
             ask_orchestration["kul_deferred_for_semantic_research"] = True
             kul_hit = None
