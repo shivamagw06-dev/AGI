@@ -5,6 +5,7 @@ from __future__ import annotations
 from app.ui.service import (
     _build_que_answer_construction,
     _kul_is_deterministic_business_answer,
+    _irl_requires_full_desk,
     _que_requires_full_desk,
     UiService,
 )
@@ -52,6 +53,16 @@ def test_education_does_not_require_full_desk():
     # Education / concept teaching can stay on KUL / financial router.
     assert pack["decision_type"] == "Education"
     assert _que_requires_full_desk(pack) is False
+
+
+def test_nse_workflow_intents_bypass_kul_shortcut():
+    for intent in (
+        "Screening", "Earnings", "MarketMovement", "Ownership", "Valuation",
+        "Compare", "Forecasting", "HistoricalChange", "CompanyOverview",
+    ):
+        assert _irl_requires_full_desk(intent) is True
+    for intent in ("Education", "Explain", "Industry", "Macro", "Government"):
+        assert _irl_requires_full_desk(intent) is False
 
 
 def test_deterministic_business_answer_is_not_discarded_by_que():
