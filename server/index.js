@@ -56,6 +56,9 @@ const serverDirectory = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.join(serverDirectory, ".env") });
 
 const app = express();
+const PORT = Number(process.env.PORT) || 3000;
+const HOST = process.env.HOST || "0.0.0.0";
+
 // Platform health — register before rate limits / heavy routers (Railway, Render).
 app.get("/api/health", (_req, res) => res.json({
   ok: true,
@@ -65,6 +68,20 @@ app.get("/api/health", (_req, res) => res.json({
   llm: llmProviderStatus(),
   commit: process.env.RENDER_GIT_COMMIT || process.env.GIT_COMMIT || null,
 }));
+
+// Bind immediately so Railway healthchecks succeed while routes register asynchronously.
+let server = app.listen(PORT, HOST, () => {
+  console.log(`🚀 IndianAPI Proxy listening on ${HOST}:${PORT}`);
+});
+
+process.on("uncaughtException", (err) => {
+  console.error("[fatal] uncaughtException:", err?.stack || err);
+});
+process.on("unhandledRejection", (reason) => {
+  console.error("[fatal] unhandledRejection:", reason);
+});
+
+setImmediate(() => {
 app.use(express.json({
   limit: "2mb",
   verify: (req, _res, buffer) => {
@@ -73,7 +90,6 @@ app.use(express.json({
 }));
 app.set("trust proxy", 1);
 
-const PORT = process.env.PORT ? Number(process.env.PORT) : 3000;
 const BASE_URL = process.env.INDIANAPI_BASE || "https://stock.indianapi.in";
 
 const API_KEY = (process.env.INDIANAPI_KEY || process.env.VITE_INDIANAPI_KEY || "").toString().trim();
@@ -106,6 +122,8 @@ app.use(cors({
   credentials: true,
 }));
 
+console.log(`IndianAPI Proxy base URL: ${BASE_URL}`);
+
 // Rate limiting — AGI market intelligence has its own limiter (cached, low churn)
 const apiLimiter = rateLimit({
   windowMs: 60_000,
@@ -114,7 +132,7 @@ const apiLimiter = rateLimit({
   legacyHeaders: false,
   skip: (req) => {
     const p = (req.path || req.url || '').split('?')[0];
-    return /\/market\/(intelligence|dashboard|pulse|ticker)\/?$/.test(p);
+    return p === '/api/health' || /\/market\/(intelligence|dashboard|pulse|ticker)\/?$/.test(p);
   },
 });
 const marketIntelLimiter = rateLimit({
@@ -973,11 +991,7 @@ reg('/__routes', (req, res) => {
 
 app.use((req, res) => res.status(404).json({ error: 'Not found', path: req.path }));
 
-// start server — bind 0.0.0.0 so Railway/Render healthchecks reach the container
-const HOST = process.env.HOST || "0.0.0.0";
-const server = app.listen(PORT, HOST, () => {
-  console.log(`🚀 IndianAPI Proxy running on ${HOST}:${PORT} — Base: ${BASE_URL}`);
-});
+}); // setImmediate — defer heavy route registration until after listen()
 
 process.on('SIGTERM', () => {
   console.info('SIGTERM received — closing HTTP server');
