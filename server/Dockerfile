@@ -4,7 +4,8 @@ FROM node:20-slim
 
 WORKDIR /app
 
-ENV NODE_ENV=production
+ENV NODE_ENV=production \
+    HOST=0.0.0.0
 
 # Groww Python scripts (server/scripts/groww_*.py) need pip deps.
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -25,6 +26,4 @@ ENV PATH="/opt/groww-venv/bin:${PATH}"
 
 COPY . .
 
-EXPOSE 3000
-
-CMD ["npm", "start"]
+CMD ["node", "index.js"]

@@ -56,6 +56,15 @@ const serverDirectory = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.join(serverDirectory, ".env") });
 
 const app = express();
+// Platform health — register before rate limits / heavy routers (Railway, Render).
+app.get("/api/health", (_req, res) => res.json({
+  ok: true,
+  architecture: "v1.0.1 LOCKED",
+  ui_aggregation: true,
+  intelligence_gateway: true,
+  llm: llmProviderStatus(),
+  commit: process.env.RENDER_GIT_COMMIT || process.env.GIT_COMMIT || null,
+}));
 app.use(express.json({
   limit: "2mb",
   verify: (req, _res, buffer) => {
@@ -299,14 +308,6 @@ function reg(path, handler) {
 
 // --- Health + debug endpoints
 reg('/', (req, res) => res.json({ service: 'finance-news-backend', status: 'running' }));
-reg('/api/health', (req, res) => res.json({
-  ok: true,
-  architecture: 'v1.0.1 LOCKED',
-  ui_aggregation: true,
-  intelligence_gateway: true,
-  llm: llmProviderStatus(),
-  commit: process.env.RENDER_GIT_COMMIT || process.env.GIT_COMMIT || null,
-}));
 reg('/api/market/live-alpha/status', (_req, res) => res.json(getLiveAlphaRuntimeStatus()));
 reg('/api/market/trading-calendar/status', (_req, res) => res.json(tradingCalendar.health()));
 reg('/api/market/live-alpha/workspace', async (_req, res) => {
@@ -972,9 +973,10 @@ reg('/__routes', (req, res) => {
 
 app.use((req, res) => res.status(404).json({ error: 'Not found', path: req.path }));
 
-// start server
-const server = app.listen(PORT, () => {
-  console.log(`🚀 IndianAPI Proxy running on port ${PORT} — Base: ${BASE_URL}`);
+// start server — bind 0.0.0.0 so Railway/Render healthchecks reach the container
+const HOST = process.env.HOST || "0.0.0.0";
+const server = app.listen(PORT, HOST, () => {
+  console.log(`🚀 IndianAPI Proxy running on ${HOST}:${PORT} — Base: ${BASE_URL}`);
 });
 
 process.on('SIGTERM', () => {
