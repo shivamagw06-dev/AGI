@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
-IRL_VERSION = "intent-resolution-v1.1.0"
+IRL_VERSION = "intent-resolution-v1.2.0"
 PROGRAMME = "AGIB v3.4 – Institutional Answer Excellence · Track A Ask Pipeline 2.0"
 MODULE_CODE = "IRL"
 
@@ -35,6 +35,15 @@ INTENTS_V2: tuple[str, ...] = (
     "CorporateEvents",
     "Documents",
     "CrossDomain",
+    "CompanyOverview",
+    "FinancialAnalysis",
+    "Earnings",
+    "MarketMovement",
+    "Ownership",
+    "Screening",
+    "Forecasting",
+    "Catalyst",
+    "HistoricalChange",
     "Unknown",
 )
 
@@ -55,6 +64,15 @@ INTENT_TO_LEGACY: dict[str, str] = {
     "CorporateEvents": "Research",
     "Documents": "Research",
     "CrossDomain": "Research",
+    "CompanyOverview": "Research",
+    "FinancialAnalysis": "Research",
+    "Earnings": "Research",
+    "MarketMovement": "Research",
+    "Ownership": "Research",
+    "Screening": "Research",
+    "Forecasting": "Research",
+    "Catalyst": "Research",
+    "HistoricalChange": "Historical",
     "Unknown": "Unknown",
 }
 
@@ -75,6 +93,15 @@ INTENT_TO_QUESTION_TYPE_V2: dict[str, str] = {
     "CorporateEvents": "business_quality",
     "Documents": "education",
     "CrossDomain": "macro",
+    "CompanyOverview": "business_quality",
+    "FinancialAnalysis": "financial_quality",
+    "Earnings": "business_quality",
+    "MarketMovement": "business_quality",
+    "Ownership": "business_quality",
+    "Screening": "comparison",
+    "Forecasting": "business_quality",
+    "Catalyst": "business_quality",
+    "HistoricalChange": "business_quality",
     "Unknown": "education",  # safer than default valuation
 }
 
