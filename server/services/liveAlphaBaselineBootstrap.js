@@ -50,7 +50,7 @@ export async function bootstrapLiveAlphaVolumeBaselines({ members, persistence, 
   const throughSession = new Date(now.getTime() + IST_OFFSET_MS).toISOString().slice(0, 10);
   const to = dateOnly(new Date(now.getTime() - 86_400_000));
   const from = dateOnly(new Date(now.getTime() - 12 * 86_400_000));
-  const observations = [];
+  let storedRows = 0;
   const failures = [];
   for (let index = 0; index < members.length; index += 1) {
     const member = members[index];
@@ -59,20 +59,26 @@ export async function bootstrapLiveAlphaVolumeBaselines({ members, persistence, 
       // collectors may be using the same provider quota at boot.
       if (index > 0) await wait(1_500);
       const payload = await historicalCandlesWithBackoff(member.instrumentKey, { unit: 'minutes', interval: 1, from, to });
-      observations.push(...normalizedObservations(member.instrumentKey, payload));
+      // Build and persist one instrument at a time. A Nifty 200 bootstrap can
+      // contain hundreds of thousands of candle observations; retaining all
+      // of them until the final member needlessly risks exhausting the API
+      // process during deploys.
+      const rows = buildMinuteVolumeBaselines(normalizedObservations(member.instrumentKey, payload), { minimumSessions, throughSession }).map((row) => ({
+        ...row,
+        calculated_through: to,
+        method: 'median_prior_sessions',
+        updated_at: new Date().toISOString(),
+      }));
+      if (rows.length) {
+        await persistence.saveVolumeBaselines(rows);
+        baselineIndex.upsert(rows);
+        storedRows += rows.length;
+      }
     } catch (error) {
       failures.push({ symbol: member.symbol, error: error.message });
     }
   }
-  const rows = buildMinuteVolumeBaselines(observations, { minimumSessions, throughSession }).map((row) => ({
-    ...row,
-    calculated_through: to,
-    method: 'median_prior_sessions',
-    updated_at: new Date().toISOString(),
-  }));
-  await persistence.saveVolumeBaselines(rows);
-  baselineIndex.replace(rows);
-  return { status: rows.length ? 'ready' : 'insufficient_history', rows: rows.length, failures };
+  return { status: storedRows ? 'ready' : 'insufficient_history', rows: baselineIndex.values.size, bootstrapped_rows: storedRows, failures };
 }
 
 export { normalizedObservations };

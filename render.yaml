@@ -50,6 +50,10 @@ services:
         value: "true"
       - key: HEDGE_FUND_UPSTOX_CANDLES
         value: "true"
+      # Live Alpha equity engines cover the full tracked Nifty 200 universe.
+      # Futures remain limited to contracts actually listed in NSE_FO.
+      - key: LIVE_ALPHA_UNIVERSE_PRESET
+        value: nifty200
       # Groww Cloud cannot reach Render/Supabase; compute equity opportunity here.
       - key: GROWW_EQUITY_OPPORTUNITY_SCHEDULER
         value: "true"
