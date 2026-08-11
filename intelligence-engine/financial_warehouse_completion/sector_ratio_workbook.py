@@ -68,9 +68,15 @@ _MEDIAN_CAP = {"pe": 300.0, "pb": 60.0, "ptbv": 60.0, "p_assets": 30.0,
 def _number(value: Any) -> float | None:
     if value is None or isinstance(value, bool):
         return None
+    if isinstance(value, str) and value.strip().upper() in {
+        "8308", "N/A", "NA", "NM", "N.M.", "#N/A", "#VALUE!", "#DIV/0!",
+    }:
+        return None
     try:
         out = float(value)
     except (TypeError, ValueError):
+        return None
+    if out == 8308.0:
         return None
     return out if out == out and abs(out) != float("inf") else None
 

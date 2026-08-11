@@ -1,6 +1,12 @@
 from __future__ import annotations
 
-from financial_warehouse_completion.capiq_normalization import audit_and_prepare, resolve_identity
+import pytest
+
+from financial_warehouse_completion.capiq_normalization import (
+    audit_and_prepare,
+    reconcile_derived_fields,
+    resolve_identity,
+)
 
 
 def _masters():
@@ -43,3 +49,28 @@ def test_verified_company_period_has_all_required_fields_before_release():
     assert len(prepared["accepted"]) == 1
     assert prepared["audits"][0]["overall_status"] == "VERIFIED"
     assert prepared["audits"][0]["required_fields_found"] == 3
+
+
+def test_stale_workbook_formulas_are_rebuilt_from_statement_components():
+    row, repaired = reconcile_derived_fields({
+        "current_assets": 103193.1, "current_liabilities": 37331.0,
+        "working_capital": -103165.96, "cfo": -24108.7, "capex": -552.4,
+        "free_cash_flow": -2479.76,
+    })
+    assert row["working_capital"] == 65862.1
+    assert row["free_cash_flow"] == pytest.approx(-24661.1)
+    assert repaired == ["working_capital", "free_cash_flow"]
+
+
+def test_accepted_row_and_audit_carry_reconciled_values():
+    prepared = audit_and_prepare(
+        [{"symbol": "TCS", "fiscal_year": "FY2025", "pat": 100, "assets": 500,
+          "equity": 300, "current_assets": 200, "current_liabilities": 80,
+          "working_capital": -999}],
+        field_map={"PAT": "pat", "Total Assets": "assets", "Total Equity": "equity",
+                   "Working Capital": "working_capital"},
+        source_file="2016-2026.xlsx", masters=_masters(),
+    )
+    assert prepared["accepted"][0]["working_capital"] == 120
+    assert prepared["audits"][0]["reconciliation"] == "REPAIRED"
+    assert prepared["audits"][0]["repaired_fields"] == ["working_capital"]
