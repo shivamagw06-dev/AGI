@@ -8,6 +8,19 @@ const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 const round = (value, digits = 4) => Number(value.toFixed(digits));
 const mean = (values) => { const clean = values.filter((value) => value != null); return clean.length ? clean.reduce((sum, value) => sum + value, 0) / clean.length : null; };
 
+function rawMarketFactors(event) {
+  const source = event?.evidence_snapshot?.market_features || event?.market_features || {};
+  const output = {};
+  for (const [engine, factors] of Object.entries(source)) {
+    if (!factors || typeof factors !== 'object' || Array.isArray(factors)) continue;
+    for (const [name, value] of Object.entries(factors)) {
+      const parsed = number(value);
+      if (parsed != null) output[`${engine}_${name}`] = parsed;
+    }
+  }
+  return output;
+}
+
 export function createPointInTimeFeatures(event) {
   if (!event?.id || !event?.symbol || !event?.captured_at) throw new Error('A dated confluence event is required.');
   const live = ['leadership','activity','breakout','dislocation','positioning'].map((key) => number(event[key]));
@@ -15,9 +28,9 @@ export function createPointInTimeFeatures(event) {
     fundamental: number(event.fundamental_score), valuation: number(event.valuation_score),
     eod: number(event.eod_confirmation), live: number(event.live_confirmation), catalyst: number(event.catalyst_score),
     leadership: live[0], activity: live[1], breakout: live[2], dislocation: live[3], positioning: live[4],
-    research_priority: number(event.research_priority), classification: event.classification, market_regime: event.market_regime || null,
+    research_priority: number(event.research_priority), ...rawMarketFactors(event), classification: event.classification, market_regime: event.market_regime || null,
   };
-  const scored = Object.values(features).filter((value) => typeof value === 'number').length;
+  const scored = ['fundamental','valuation','eod','live','catalyst','leadership','activity','breakout','dislocation','positioning','research_priority'].filter((key) => typeof features[key] === 'number').length;
   return { confluence_event_id: event.id, symbol: event.symbol, captured_at: event.captured_at, feature_version: FEATURE_VERSION, market_regime: event.market_regime || null, sector: event.sector || null, features, completeness: round(scored / 11), point_in_time_safe: true, research_only: true };
 }
 

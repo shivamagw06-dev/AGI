@@ -5,6 +5,11 @@ const FACTORS = Object.freeze([
   'fundamental', 'valuation', 'eod', 'live', 'catalyst',
   'leadership', 'activity', 'breakout', 'dislocation', 'positioning',
   'research_priority',
+  'leadership_residual_15m_z', 'leadership_residual_60m_z', 'leadership_volume_surprise_z', 'leadership_sector_strength_z',
+  'activity_volume_surprise_z', 'activity_absolute_residual_15m_z',
+  'breakout_opening_range_pct', 'breakout_breakout_z',
+  'dislocation_residual_15m_z', 'dislocation_benchmark_return_15m',
+  'positioning_price_return_15m', 'positioning_oi_change_15m', 'positioning_price_move_z', 'positioning_oi_change_z',
 ]);
 
 const finite = (value) => value == null || value === '' || !Number.isFinite(Number(value)) ? null : Number(value);
