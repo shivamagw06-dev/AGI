@@ -133,6 +133,17 @@ class KipService:
         self._require_enabled()
         return self.store.get_document(document_id)
 
+    def retire_article(self, article_id: str) -> KipDocument | None:
+        """Tombstone an unpublished CMS article without deleting immutable history."""
+        self._require_enabled()
+        doc = self.store.retire_article(article_id)
+        if doc is not None:
+            try:
+                kip_persist.save_store(self.store)
+            except Exception:
+                pass
+        return doc
+
     def get_company(self, ticker: str) -> CompanyKnowledge:
         self._require_enabled()
         t = ticker.upper()

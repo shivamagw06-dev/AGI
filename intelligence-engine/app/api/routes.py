@@ -853,6 +853,18 @@ async def kip_ingest_agi(body: ChannelIngestRequest):
     return _channel_ingest(body, "agi")
 
 
+@router.post("/kip/article/{article_id}/retire")
+async def kip_retire_article(article_id: str):
+    """Exclude an unpublished CMS article from retrieval; retain lineage for audit."""
+    doc = _kip.retire_article(article_id)
+    return {
+        "ok": True,
+        "article_id": article_id,
+        "retired": doc is not None,
+        "document_id": doc.document_id if doc is not None else None,
+    }
+
+
 @router.post("/kip/ingest/broker")
 async def kip_ingest_broker(body: ChannelIngestRequest):
     """Ingest broker research (single or bulk PDF/DOCX/MD/Email/ZIP)."""

@@ -171,6 +171,37 @@ export async function learnCmsArticles({
   const dailyMode = mode === 'daily' || Boolean(sinceDate === 'today');
   const effectiveOnlyUnlearned = onlyUnlearned && !dailyMode;
 
+  // Publishing is reversible. Tombstone previously learned drafts before
+  // ingesting active articles so Ask AGI cannot quote unpublished research.
+  const { data: unpublished } = await admin
+    .from('articles')
+    .select('id,title,intelligence_document_id,status')
+    .eq('status', 'draft')
+    .not('intelligence_document_id', 'is', null)
+    .limit(200);
+  let retired = 0;
+  for (const article of unpublished || []) {
+    try {
+      const result = await engineFetch(
+        `/v1/kip/article/${encodeURIComponent(article.id)}/retire`,
+        { method: 'POST', body: {}, timeoutMs: 30_000 }
+      );
+      if (!result.ok) continue;
+      retired += result.data?.retired ? 1 : 0;
+      await admin
+        .from('articles')
+        .update({
+          intelligence_document_id: null,
+          intelligence_ingested_at: null,
+          learn_status: 'unpublished',
+          last_learn_error: null,
+        })
+        .eq('id', article.id);
+    } catch {
+      // Leave metadata intact so the next scheduler pass retries safely.
+    }
+  }
+
   let query = admin
     .from('articles')
     .select(
@@ -402,6 +433,7 @@ export async function learnCmsArticles({
     learned,
     failed,
     skipped,
+    retired,
     compound: compoundResult,
     research_hub: researchHubResult,
     results,
