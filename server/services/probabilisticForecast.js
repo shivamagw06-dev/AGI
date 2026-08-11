@@ -43,7 +43,7 @@ export function generateProbabilisticForecast(snapshot, horizon) {
     confluence_event_id: snapshot.confluence_event_id, symbol: snapshot.symbol, forecast_time: snapshot.captured_at, horizon,
     expected_alpha_pct: round(expected), probability_positive: round(probability),
     p10: round(expected - 1.282*sigma), p25: round(expected - 0.674*sigma), p50: round(expected), p75: round(expected + 0.674*sigma), p90: round(expected + 1.282*sigma),
-    confidence: round(confidence, 2), model_agreement: round(agreement), model_version: MODEL_VERSION, feature_version: FEATURE_VERSION,
+    confidence: round(confidence, 2), model_agreement: round(agreement), model_version: MODEL_VERSION, feature_version: snapshot.feature_version || FEATURE_VERSION,
     market_regime: snapshot.market_regime, component_forecasts: c,
     explanation: { why: ['Fundamental, valuation, EOD, live, and catalyst evidence are scored separately.','Regime conditioning and historical-state baseline are independent components.'], risks: snapshot.completeness < 0.8 ? ['Feature completeness is below 80%.'] : [], calibrated: false },
     research_only: true,
