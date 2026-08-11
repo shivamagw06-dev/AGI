@@ -23,13 +23,20 @@ not a generic Supabase sender.
      - `https://www.agarwalglobalinvestments.com/**`
      - local Vite origin if needed
 
-## Optional path: Node branded verification (`/api/auth/send-verification`)
+## Primary path: Node branded signup (`/api/auth/signup`)
 
-After signup, the frontend best-effort calls:
+The login page prefers:
 
-`POST /api/auth/send-verification`
+`POST /api/auth/signup`
 
-The Node API (Render) can generate a Supabase admin confirmation link and send a branded HTML email when these env vars are set:
+This creates the user with the Supabase **service role** (so broken Supabase SMTP cannot roll back the signup) and sends the AGI branded verification email via Resend/SendGrid.
+
+Related endpoints:
+
+- `POST /api/auth/send-verification`
+- `POST /api/auth/send-password-reset`
+
+The Node API (Render) needs these env vars:
 
 ```bash
 SUPABASE_URL=https://YOUR_PROJECT.supabase.co

@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { isSupabaseConfigured, supabase } from '../lib/supabaseClient';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
@@ -35,7 +35,7 @@ function Field({ id, label, error, children }) {
         {label}
       </label>
       {children}
-      {error ? <p id={`${id}-error`} className="mt-1 text-xs text-[#b42318]">{error}</p> : null}
+      {error ? <p className="mt-1 text-xs text-[#b42318]">{error}</p> : null}
     </div>
   );
 }
@@ -43,11 +43,10 @@ function Field({ id, label, error, children }) {
 function PasswordStrength({ password }) {
   const checks = passwordChecks(password);
   const items = [
-    { ok: checks.minLength, label: '12+ characters' },
+    { ok: checks.minLength, label: '8+ characters' },
     { ok: checks.hasUpper, label: 'Uppercase' },
     { ok: checks.hasLower, label: 'Lowercase' },
     { ok: checks.hasNumber, label: 'Number' },
-    { ok: checks.hasSymbol, label: 'Symbol' },
   ];
   if (!password) return null;
   return (
@@ -67,23 +66,21 @@ export default function LoginPage() {
   const navigate = useNavigate();
   const next = searchParams.get('next') || searchParams.get('redirect') || '/';
   const safeNext = next.startsWith('/') ? next : '/';
-  const [mode, setMode] = useState(searchParams.get('mode') === 'signup' ? 'signup' : 'signin');
+  const [mode, setMode] = useState(searchParams.get('mode') === 'signin' ? 'signin' : 'signup');
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
+  const [mobile, setMobile] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [acceptPrivacy, setAcceptPrivacy] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [oauthLoading, setOauthLoading] = useState(null);
   const [fieldErrors, setFieldErrors] = useState({});
   const [message, setMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [pendingVerifyEmail, setPendingVerifyEmail] = useState('');
-  const formRef = useRef(null);
-  const busy = loading || oauthLoading !== null;
 
   const redirectTo =
     typeof window !== 'undefined'
@@ -104,43 +101,20 @@ export default function LoginPage() {
     setFieldErrors({});
   };
 
-  const focusFirstInvalid = (errors) => {
-    const first = Object.keys(errors)[0];
-    requestAnimationFrame(() => formRef.current?.querySelector(`#${first}`)?.focus());
-  };
-
-  const switchMode = (nextMode) => {
-    if (busy || nextMode === mode) return;
-    setMode(nextMode);
-    setPassword('');
-    setConfirmPassword('');
-    setShowPassword(false);
-    setShowConfirmPassword(false);
-    setAcceptTerms(false);
-    setAcceptPrivacy(false);
-    resetAlerts();
-  };
-
   const handleSignup = async (e) => {
     e.preventDefault();
     resetAlerts();
-    if (!isSupabaseConfigured) {
-      setErrorMessage(AUTH_UNCONFIGURED);
-      return;
-    }
     const errors = validateSignup({
       fullName,
       email,
       password,
       confirmPassword,
+      mobile,
       acceptTerms,
       acceptPrivacy,
     });
     setFieldErrors(errors);
-    if (Object.keys(errors).length) {
-      focusFirstInvalid(errors);
-      return;
-    }
+    if (Object.keys(errors).length) return;
 
     setLoading(true);
     try {
@@ -148,6 +122,7 @@ export default function LoginPage() {
         fullName,
         email,
         password,
+        mobile,
         emailRedirectTo: `${window.location.origin}/verify-email?next=${encodeURIComponent(safeNext)}`,
       });
       if (data?.session?.user) {
@@ -155,12 +130,18 @@ export default function LoginPage() {
         return;
       }
       setPendingVerifyEmail(email.trim());
-      setMessage('Account created. Check your inbox to verify your email, then sign in.');
+      setMessage(
+        data?.message ||
+          `Account created. We sent a verification email to ${email.trim()} from support@agarwalglobalinvestments.com. Verify your email, then sign in.`
+      );
       setMode('signin');
       setPassword('');
       setConfirmPassword('');
     } catch (err) {
-      setErrorMessage(err?.message || 'Unable to create your account.');
+      const msg = err?.message || 'Unable to create your account.';
+      setErrorMessage(
+        /not configured/i.test(msg) && !isSupabaseConfigured ? AUTH_UNCONFIGURED : msg
+      );
     } finally {
       setLoading(false);
     }
@@ -174,15 +155,11 @@ export default function LoginPage() {
       return;
     }
     if (!isValidEmail(email)) {
-      const errors = { email: 'Enter a valid email address.' };
-      setFieldErrors(errors);
-      focusFirstInvalid(errors);
+      setFieldErrors({ email: 'Enter a valid email address.' });
       return;
     }
     if (!password) {
-      const errors = { password: 'Enter your password.' };
-      setFieldErrors(errors);
-      focusFirstInvalid(errors);
+      setFieldErrors({ password: 'Enter your password.' });
       return;
     }
 
@@ -216,10 +193,8 @@ export default function LoginPage() {
     setLoading(true);
     resetAlerts();
     try {
-      await resendVerification(target, {
-        redirectTo: `${window.location.origin}/verify-email?next=${encodeURIComponent(safeNext)}`,
-      });
-      setMessage('If this account needs verification, an email will arrive shortly.');
+      await resendVerification(target);
+      setMessage(`Verification email resent to ${target.trim()}.`);
     } catch (err) {
       setErrorMessage(err?.message || 'Unable to resend verification email.');
     } finally {
@@ -229,15 +204,6 @@ export default function LoginPage() {
 
   const handleOAuthLogin = async (provider) => {
     try {
-      if (mode === 'signup' && (!acceptTerms || !acceptPrivacy)) {
-        const errors = {
-          ...(!acceptTerms ? { acceptTerms: 'Accept the Terms & Conditions to continue.' } : {}),
-          ...(!acceptPrivacy ? { acceptPrivacy: 'Accept the Privacy Policy to continue.' } : {}),
-        };
-        setFieldErrors(errors);
-        focusFirstInvalid(errors);
-        return;
-      }
       setOauthLoading(provider);
       resetAlerts();
       if (!isSupabaseConfigured) throw new Error(AUTH_UNCONFIGURED);
@@ -257,7 +223,7 @@ export default function LoginPage() {
       <div className="flex min-h-screen items-center justify-center bg-[#f5f7fa] px-4">
         <div className="w-full max-w-md border border-[#dce1e7] bg-white p-6 shadow-[0_16px_50px_rgba(15,35,60,0.08)]">
           <h1 className="text-xl font-semibold text-[#18202b]">You are already signed in</h1>
-          <p className="mt-2 text-sm text-[#667085]">Continue to your AGI workspace.</p>
+          <p className="mt-2 text-sm text-[#667085]">{user.email}</p>
           <button
             type="button"
             className="mt-6 w-full bg-[#0d1d33] px-4 py-3 text-sm font-bold text-white hover:bg-[#182f4e]"
@@ -323,9 +289,9 @@ export default function LoginPage() {
             <button
               type="button"
               onClick={() => {
-                switchMode('signup');
+                setMode('signup');
+                resetAlerts();
               }}
-              disabled={busy}
               className={`rounded-sm py-2 ${mode === 'signup' ? 'bg-[#0d1d33] text-white' : 'text-[#667085]'}`}
             >
               Sign up
@@ -333,9 +299,9 @@ export default function LoginPage() {
             <button
               type="button"
               onClick={() => {
-                switchMode('signin');
+                setMode('signin');
+                resetAlerts();
               }}
-              disabled={busy}
               className={`rounded-sm py-2 ${mode === 'signin' ? 'bg-[#0d1d33] text-white' : 'text-[#667085]'}`}
             >
               Sign in
@@ -344,7 +310,6 @@ export default function LoginPage() {
 
           <form
             onSubmit={mode === 'signup' ? handleSignup : handleSignin}
-            ref={formRef}
             className="mt-6 space-y-4"
             noValidate
           >
@@ -358,8 +323,6 @@ export default function LoginPage() {
                   placeholder="Your full name"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
-                  aria-invalid={Boolean(fieldErrors.fullName)}
-                  aria-describedby={fieldErrors.fullName ? 'fullName-error' : undefined}
                 />
               </Field>
             )}
@@ -374,10 +337,22 @@ export default function LoginPage() {
                 placeholder="you@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                aria-invalid={Boolean(fieldErrors.email)}
-                aria-describedby={fieldErrors.email ? 'email-error' : undefined}
               />
             </Field>
+
+            {mode === 'signup' && (
+              <Field id="mobile" label="Mobile (optional)" error={fieldErrors.mobile}>
+                <input
+                  id="mobile"
+                  type="tel"
+                  autoComplete="tel"
+                  className="w-full border border-[#cbd2da] bg-white px-3 py-3 text-sm focus:border-[#274c77] focus:outline-none"
+                  placeholder="+91 98765 43210"
+                  value={mobile}
+                  onChange={(e) => setMobile(e.target.value)}
+                />
+              </Field>
+            )}
 
             <Field id="password" label="Password" error={fieldErrors.password}>
               <div className="relative">
@@ -390,8 +365,6 @@ export default function LoginPage() {
                   placeholder={mode === 'signup' ? 'Create a strong password' : 'Your password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  aria-invalid={Boolean(fieldErrors.password)}
-                  aria-describedby={fieldErrors.password ? 'password-error' : mode === 'signup' ? 'password-help' : undefined}
                 />
                 <button
                   type="button"
@@ -402,26 +375,21 @@ export default function LoginPage() {
                   {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
               </div>
-              {mode === 'signup' ? <div id="password-help"><PasswordStrength password={password} /></div> : null}
+              {mode === 'signup' ? <PasswordStrength password={password} /> : null}
             </Field>
 
             {mode === 'signup' && (
               <Field id="confirmPassword" label="Confirm password" error={fieldErrors.confirmPassword}>
                 <input
                   id="confirmPassword"
-                  type={showConfirmPassword ? 'text' : 'password'}
+                  type={showPassword ? 'text' : 'password'}
                   autoComplete="new-password"
                   required
                   className="w-full border border-[#cbd2da] bg-white px-3 py-3 text-sm focus:border-[#274c77] focus:outline-none"
                   placeholder="Re-enter password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  aria-invalid={Boolean(fieldErrors.confirmPassword)}
-                  aria-describedby={fieldErrors.confirmPassword ? 'confirmPassword-error' : undefined}
                 />
-                <button type="button" onClick={() => setShowConfirmPassword((v) => !v)} aria-label={showConfirmPassword ? 'Hide confirmation password' : 'Show confirmation password'} className="text-xs font-semibold text-[#667085]">
-                  {showConfirmPassword ? 'Hide' : 'Show'}
-                </button>
               </Field>
             )}
 
@@ -432,9 +400,6 @@ export default function LoginPage() {
                     type="checkbox"
                     className="mt-1"
                     checked={acceptTerms}
-                    id="acceptTerms"
-                    aria-invalid={Boolean(fieldErrors.acceptTerms)}
-                    aria-describedby={fieldErrors.acceptTerms ? 'acceptTerms-error' : undefined}
                     onChange={(e) => setAcceptTerms(e.target.checked)}
                   />
                   <span>
@@ -446,16 +411,13 @@ export default function LoginPage() {
                   </span>
                 </label>
                 {fieldErrors.acceptTerms ? (
-                  <p id="acceptTerms-error" className="text-xs text-[#b42318]">{fieldErrors.acceptTerms}</p>
+                  <p className="text-xs text-[#b42318]">{fieldErrors.acceptTerms}</p>
                 ) : null}
                 <label className="flex items-start gap-2">
                   <input
                     type="checkbox"
                     className="mt-1"
                     checked={acceptPrivacy}
-                    id="acceptPrivacy"
-                    aria-invalid={Boolean(fieldErrors.acceptPrivacy)}
-                    aria-describedby={fieldErrors.acceptPrivacy ? 'acceptPrivacy-error' : undefined}
                     onChange={(e) => setAcceptPrivacy(e.target.checked)}
                   />
                   <span>
@@ -467,7 +429,7 @@ export default function LoginPage() {
                   </span>
                 </label>
                 {fieldErrors.acceptPrivacy ? (
-                  <p id="acceptPrivacy-error" className="text-xs text-[#b42318]">{fieldErrors.acceptPrivacy}</p>
+                  <p className="text-xs text-[#b42318]">{fieldErrors.acceptPrivacy}</p>
                 ) : null}
               </div>
             )}
@@ -482,7 +444,7 @@ export default function LoginPage() {
 
             <button
               type="submit"
-              disabled={busy}
+              disabled={loading}
               className="w-full bg-[#0d1d33] px-4 py-3 text-sm font-bold text-white hover:bg-[#182f4e] disabled:opacity-50"
             >
               {mode === 'signup' ? (
@@ -503,7 +465,7 @@ export default function LoginPage() {
             <button
               type="button"
               onClick={handleResend}
-              disabled={busy}
+              disabled={loading}
               className="mt-3 w-full border border-[#cbd2da] px-4 py-2.5 text-xs font-semibold text-[#18202b] hover:bg-[#f8fafb] disabled:opacity-50"
             >
               Resend verification email
@@ -529,7 +491,7 @@ export default function LoginPage() {
             <button
               type="button"
               onClick={() => handleOAuthLogin('google')}
-              disabled={busy}
+              disabled={oauthLoading !== null}
               className="flex w-full items-center justify-center border border-[#cbd2da] px-4 py-3 text-sm font-semibold text-[#18202b] hover:bg-[#f8fafb] disabled:opacity-50"
             >
               <GoogleMark />
@@ -538,7 +500,7 @@ export default function LoginPage() {
             <button
               type="button"
               onClick={() => handleOAuthLogin('linkedin_oidc')}
-              disabled={busy}
+              disabled={oauthLoading !== null}
               className="flex w-full items-center justify-center border border-[#cbd2da] px-4 py-3 text-sm font-semibold text-[#18202b] hover:bg-[#f8fafb] disabled:opacity-50"
             >
               <LinkedInMark />
