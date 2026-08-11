@@ -1,57 +1,78 @@
 # Fix: cannot sign up / no verification email
 
-## Confirmed production failure
+## Confirmed production failures (fixed)
 
-Supabase Auth returns:
+### 1) Database trigger (fixed in Supabase)
 
-`Database error saving new user`
+Supabase Auth returned `Database error saving new user` because three
+`auth.users` AFTER INSERT triggers used `ON CONFLICT` without matching unique
+constraints:
 
-for **new** signups. This is almost always a broken `auth.users` → `public.profiles` trigger.
+| Trigger | Function | Missing constraint |
+| --- | --- | --- |
+| `_on_auth_user_created` | `_on_auth_user_created()` | `user_index.user_id` PK |
+| `on_auth_user_created` | `handle_new_user()` | `profiles.id` PK |
+| `on_auth_user_created_subscribe` | `handle_new_user_subscribe()` | `subscribers.user_id` unique |
 
-Supabase’s own SMTP recovery mail also fails (`Error sending recovery email`).  
-AGI branded Resend path works for **existing** users via:
+Applied migration:
 
-`POST /api/auth/send-verification` → `magiclink`
+`supabase/migrations/20260811100000_fix_auth_signup_triggers_constraints.sql`
 
-## Immediate founder unblock
+### 2) Supabase SMTP (bypassed in app)
 
-For `shivam.agw06@gmail.com`, send:
+After the trigger fix, `/auth/v1/signup` still returned:
 
-```bash
-curl -X POST https://finance-news-backend-19i5.onrender.com/api/auth/send-verification \
-  -H 'Content-Type: application/json' \
-  -d '{"email":"shivam.agw06@gmail.com","fullName":"Shivam","redirectTo":"https://agarwalglobalinvestments.com/verify-email"}'
-```
+`Error sending confirmation email` / SMTP `535 "Invalid username"`
 
-Check inbox/spam for **support@agarwalglobalinvestments.com**.
+GoTrue rolls the signup back when confirmation mail fails. AGI now creates
+accounts through the Node API instead of relying on Supabase SMTP:
 
-## Permanent fix (run in Supabase SQL Editor)
+`POST /api/auth/signup` → `admin.createUser` + Resend branded verification
 
-Open:
+Also:
 
-https://supabase.com/dashboard/project/zrvdtpxfmuijhionbaxr/sql/new
+- `POST /api/auth/send-verification`
+- `POST /api/auth/send-password-reset`
 
-Paste and run the full contents of:
+## Optional: repair Supabase SMTP (dashboard)
 
-`supabase/migrations/20260726100000_fix_auth_signup_profiles_trigger.sql`
-
-Then verify:
-
-```bash
-curl -sS https://zrvdtpxfmuijhionbaxr.supabase.co/auth/v1/signup \
-  -H "apikey: $ANON_KEY" -H "Authorization: Bearer $ANON_KEY" \
-  -H 'Content-Type: application/json' \
-  -d "{\"email\":\"agi.probe.$(date +%s)@example.com\",\"password\":\"TestPass123!@#\"}"
-```
-
-Expected: HTTP 200 (not `Database error saving new user`).
-
-## Also configure Supabase SMTP (Resend)
-
-Authentication → SMTP:
+Authentication → SMTP (Resend example):
 
 - Host: `smtp.resend.com`
 - Port: `465`
 - Username: `resend`
 - Password: Resend API key
 - Sender: `support@agarwalglobalinvestments.com`
+
+Until SMTP is fixed, keep using the AGI branded API path.
+
+## Deploy checklist
+
+1. Supabase migration applied (already done on `zrvdtpxfmuijhionbaxr`)
+2. Redeploy **Render** `finance-news-backend` so `/api/auth/signup` is live
+3. Redeploy **Hostinger** frontend so `AuthContext` calls the AGI signup API
+4. Confirm Render env has:
+   - `SUPABASE_URL`
+   - `SUPABASE_SERVICE_ROLE_KEY`
+   - `RESEND_API_KEY`
+   - `PUBLIC_SITE_URL=https://agarwalglobalinvestments.com`
+   - `FROM_EMAIL=Agarwal Global Investments <support@agarwalglobalinvestments.com>`
+
+## Verify
+
+```bash
+# Health
+curl -sS https://finance-news-backend-19i5.onrender.com/api/auth/health
+
+# Signup (after Render deploy)
+curl -sS -X POST https://finance-news-backend-19i5.onrender.com/api/auth/signup \
+  -H 'Content-Type: application/json' \
+  -d "{\"email\":\"agi.probe.$(date +%s)@example.com\",\"password\":\"TestPass123!@#\",\"fullName\":\"Probe User\"}"
+
+# Resend verification for an existing address
+curl -sS -X POST https://finance-news-backend-19i5.onrender.com/api/auth/send-verification \
+  -H 'Content-Type: application/json' \
+  -d '{"email":"avaishnavi294@gmail.com","fullName":"Vaishnavi","redirectTo":"https://agarwalglobalinvestments.com/verify-email"}'
+```
+
+Expected signup: HTTP 201 with `ok: true` and `provider: "resend"`.
