@@ -104,7 +104,8 @@ export class MomentumShadowPipeline {
         spreadBps: stock.current.spread_bps, minimumLiquidity: member.minimumLiquidity !== false,
       });
     }
-    if (snapshots.length < 10) return { skipped: true, reason: 'insufficient_complete_universe', coverage: snapshots.length };
+    const minimumCoverage = Math.max(10, Math.ceil(this.universe.length * 0.8));
+    if (snapshots.length < minimumCoverage) return { skipped: true, reason: 'insufficient_complete_universe', coverage: snapshots.length, required_coverage: minimumCoverage };
     const result = evaluateCrossSectionalMomentum(snapshots, { asOf: now.toISOString() });
     const volumeResult = evaluateVolumeLiquidityAnomaly(snapshots, { asOf: now.toISOString() });
     const meanReversionResult = evaluateIntradayMeanReversion(snapshots, { asOf: now.toISOString() });

@@ -12,6 +12,23 @@ import { isUpstoxAuthError } from './upstoxMarketFeedV3.js';
 
 const serverDir = path.dirname(fileURLToPath(import.meta.url));
 const defaultUniversePath = path.join(serverDir, '../config/live-alpha-universe.example.json');
+const nifty200Path = path.join(serverDir, '../../indices/Nifty200.csv');
+const SECTOR_INDEX_BY_INDUSTRY = Object.freeze({
+  'FINANCIAL SERVICES': 'NSE_INDEX|Nifty Financial Services',
+  'INFORMATION TECHNOLOGY': 'NSE_INDEX|Nifty IT',
+  'AUTOMOBILE AND AUTO COMPONENTS': 'NSE_INDEX|Nifty Auto',
+  'HEALTHCARE': 'NSE_INDEX|Nifty Pharma',
+  'FAST MOVING CONSUMER GOODS': 'NSE_INDEX|Nifty FMCG',
+  'METALS & MINING': 'NSE_INDEX|Nifty Metal',
+  'OIL GAS & CONSUMABLE FUELS': 'NSE_INDEX|Nifty Energy',
+  'POWER': 'NSE_INDEX|Nifty Energy',
+  'REALTY': 'NSE_INDEX|Nifty Realty',
+  'TELECOMMUNICATION': 'NSE_INDEX|Nifty India Digital',
+  'CAPITAL GOODS': 'NSE_INDEX|Nifty Infrastructure',
+  'CONSTRUCTION': 'NSE_INDEX|Nifty Infrastructure',
+  'CONSTRUCTION MATERIALS': 'NSE_INDEX|Nifty Infrastructure',
+  'SERVICES': 'NSE_INDEX|Nifty Infrastructure',
+});
 let runtime = null;
 let growwFallbackTimer = null;
 let state = {
@@ -49,10 +66,28 @@ export function validateLiveAlphaUniverse(config) {
     symbols.add(member.symbol); keys.add(member.instrumentKey);
     return member;
   });
-  return { benchmarkKey, members: clean };
+  return { benchmarkKey, members: clean, name: String(config?.name || 'custom'), expectedMembers: Number(config?.expectedMembers || clean.length) };
 }
 
 export async function loadLiveAlphaUniverse(filePath = process.env.LIVE_ALPHA_UNIVERSE_PATH || defaultUniversePath) {
+  const preset = String(process.env.LIVE_ALPHA_UNIVERSE_PRESET || 'nifty200').trim().toLowerCase();
+  if (!process.env.LIVE_ALPHA_UNIVERSE_PATH && preset === 'nifty200') {
+    const lines = (await fs.readFile(nifty200Path, 'utf8')).split(/\r?\n/).filter(Boolean);
+    const members = lines.slice(1).map((line, index) => {
+      const columns = line.split(',').map((value) => value.trim());
+      if (columns.length !== 5) throw new Error(`Invalid Nifty 200 CSV row ${index + 2}.`);
+      const [, industry, symbol, series, isin] = columns;
+      if (series !== 'EQ' || !/^INE[A-Z0-9]{8}[0-9]$/.test(isin)) throw new Error(`Invalid Nifty 200 security at row ${index + 2}.`);
+      const normalizedIndustry = industry.toUpperCase();
+      return {
+        symbol,
+        sector: normalizedIndustry.replace(/[^A-Z0-9]+/g, '_').replace(/^_|_$/g, ''),
+        instrumentKey: `NSE_EQ|${isin}`,
+        sectorInstrumentKey: SECTOR_INDEX_BY_INDUSTRY[normalizedIndustry] || 'NSE_INDEX|Nifty 50',
+      };
+    });
+    return validateLiveAlphaUniverse({ name: 'nifty200', expectedMembers: 200, benchmarkKey: 'NSE_INDEX|Nifty 50', members });
+  }
   return validateLiveAlphaUniverse(JSON.parse(await fs.readFile(filePath, 'utf8')));
 }
 
@@ -66,13 +101,15 @@ export async function startLiveAlphaRuntime({ Feed = UpstoxMarketFeedV3, Persist
   try {
     const universe = await resolveLiveAlphaDerivatives(await loadLiveAlphaUniverse());
     const persistence = new Persistence();
-    const baselines = new VolumeBaselineIndex(await persistence.loadVolumeBaselines());
+    const baselineLimit = Math.max(20_000, universe.members.length * 376);
+    const baselines = new VolumeBaselineIndex(await persistence.loadVolumeBaselines({ limit: baselineLimit }));
     const pipeline = new MomentumShadowPipeline({ ...universe, universe: universe.members, baselineIndex: baselines, repository: persistence });
     // Preserve the rolling 15m/60m feature window across deploys and brief
     // restarts. Only genuine persisted observations are restored; missing
     // market history is never synthesized.
-    const openingSnapshots = await persistence.loadSessionOpeningSnapshots?.({ now: new Date(), limit: 1000 }) || [];
-    const recentSnapshots = await persistence.loadRecentSnapshots?.({ minutes: 90, limit: 5000 }) || [];
+    const estimatedInstrumentCount = universe.members.length * 2 + 20;
+    const openingSnapshots = await persistence.loadSessionOpeningSnapshots?.({ now: new Date(), limit: estimatedInstrumentCount * 15 }) || [];
+    const recentSnapshots = await persistence.loadRecentSnapshots?.({ minutes: 90, limit: estimatedInstrumentCount * 90 }) || [];
     if (openingSnapshots.length) pipeline.ingest({ snapshots: openingSnapshots });
     if (recentSnapshots.length) pipeline.ingest({ snapshots: recentSnapshots });
     const store = new SynchronizedSnapshotStore();
@@ -87,6 +124,7 @@ export async function startLiveAlphaRuntime({ Feed = UpstoxMarketFeedV3, Persist
         const currentEvaluation = {
           at: new Date().toISOString(), skipped: Boolean(evaluation.skipped), reason: evaluation.reason || null,
           universe_size: evaluation.universe_size || evaluation.coverage || 0,
+          required_coverage: evaluation.required_coverage || null,
           opening_range_status: evaluation.opening_range_status || null,
           derivatives_status: evaluation.derivatives_status || null,
           persistence: evaluation.persistence || [],
@@ -105,12 +143,17 @@ export async function startLiveAlphaRuntime({ Feed = UpstoxMarketFeedV3, Persist
     await feed.start();
     state.status = 'running';
     if (feed.state?.status === 'auth_failed') startGrowwSectorIndexFallback({ store, pipeline, instrumentKeys });
-    if (baselines.values.size < universe.members.length) {
-      state.baseline_bootstrap = { status: 'running', rows: baselines.values.size, failures: [] };
+    const missingBaselineMembers = universe.members.filter((member) => !baselines.hasInstrument(member.instrumentKey));
+    if (missingBaselineMembers.length) {
+      state.baseline_bootstrap = { status: 'running', rows: baselines.values.size, covered_instruments: baselines.instrumentCount(), missing_instruments: missingBaselineMembers.length, failures: [] };
       const retryMs = Math.max(60_000, Number(process.env.LIVE_ALPHA_BASELINE_RETRY_MS || 5 * 60_000));
       const bootstrap = async () => {
         try {
-          const result = await bootstrapLiveAlphaVolumeBaselines({ members: universe.members, persistence, baselineIndex: baselines });
+          const remainingMembers = universe.members.filter((member) => !baselines.hasInstrument(member.instrumentKey));
+          const result = await bootstrapLiveAlphaVolumeBaselines({ members: remainingMembers, persistence, baselineIndex: baselines });
+          result.covered_instruments = baselines.instrumentCount();
+          result.missing_instruments = universe.members.filter((member) => !baselines.hasInstrument(member.instrumentKey)).length;
+          if (result.missing_instruments > 0) result.status = 'partial';
           state.baseline_bootstrap = result;
           if (runtime?.bootstrap) runtime.bootstrap.volume_baselines = baselines.values.size;
           if (result.status !== 'ready' && runtime) {
@@ -123,7 +166,7 @@ export async function startLiveAlphaRuntime({ Feed = UpstoxMarketFeedV3, Persist
       };
       void bootstrap();
     } else {
-      state.baseline_bootstrap = { status: 'ready', rows: baselines.values.size, failures: [] };
+      state.baseline_bootstrap = { status: 'ready', rows: baselines.values.size, covered_instruments: baselines.instrumentCount(), missing_instruments: 0, failures: [] };
     }
     return getLiveAlphaRuntimeStatus();
   } catch (error) {
@@ -176,7 +219,7 @@ export function getLiveAlphaRuntimeStatus() {
   return {
     ...state,
     feed: runtime?.feed.status() || null,
-    universe: runtime ? { members: runtime.universe.members.length, subscribed_instruments: runtime.feed.instrumentKeys.length, benchmark_key: runtime.universe.benchmarkKey, derivatives: runtime.universe.derivativeResolution } : null,
+    universe: runtime ? { name: runtime.universe.name, members: runtime.universe.members.length, expected_members: runtime.universe.expectedMembers, coverage_complete: runtime.universe.members.length === runtime.universe.expectedMembers, subscribed_instruments: runtime.feed.instrumentKeys.length, benchmark_key: runtime.universe.benchmarkKey, derivatives: runtime.universe.derivativeResolution } : null,
     bootstrap: runtime?.bootstrap || null,
     research_only: true,
     execution_enabled: false,

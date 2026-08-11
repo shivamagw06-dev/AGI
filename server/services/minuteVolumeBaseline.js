@@ -64,8 +64,20 @@ export class VolumeBaselineIndex {
   get(instrumentKey, minute) {
     return this.values.get(`${instrumentKey}|${minute}`) ?? null;
   }
+  hasInstrument(instrumentKey) {
+    const prefix = `${instrumentKey}|`;
+    for (const key of this.values.keys()) if (key.startsWith(prefix)) return true;
+    return false;
+  }
+  instrumentCount() {
+    return new Set([...this.values.keys()].map((key) => key.slice(0, key.lastIndexOf('|')))).size;
+  }
   replace(rows = []) {
     this.values = new Map(rows.map((row) => [`${row.instrument_key}|${row.minute_of_session}`, Number(row.expected_cumulative_volume)]));
+    return this.values.size;
+  }
+  upsert(rows = []) {
+    for (const row of rows) this.values.set(`${row.instrument_key}|${row.minute_of_session}`, Number(row.expected_cumulative_volume));
     return this.values.size;
   }
 }

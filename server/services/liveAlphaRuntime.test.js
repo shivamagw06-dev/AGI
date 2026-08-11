@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { classifyEvaluationStatus, startLiveAlphaRuntime, stopLiveAlphaRuntime, validateLiveAlphaUniverse } from './liveAlphaRuntime.js';
+import { classifyEvaluationStatus, loadLiveAlphaUniverse, startLiveAlphaRuntime, stopLiveAlphaRuntime, validateLiveAlphaUniverse } from './liveAlphaRuntime.js';
 
 const valid = { benchmarkKey: 'NSE_INDEX|Nifty 50', members: Array.from({ length: 10 }, (_, index) => ({ symbol: `S${index}`, sector: 'BANK', instrumentKey: `NSE_EQ|${index}`, sectorInstrumentKey: 'NSE_INDEX|Nifty Bank' })) };
 
@@ -11,6 +11,26 @@ test('validates unique stock and sector mappings', () => {
   assert.throws(() => validateLiveAlphaUniverse(duplicate), /Duplicate/);
   const invalidDerivative = structuredClone(valid); invalidDerivative.members[0].derivativeInstrumentKey = 'NSE_EQ|NOT_A_FUTURE';
   assert.throws(() => validateLiveAlphaUniverse(invalidDerivative), /derivative instrument/);
+});
+
+test('loads the complete Nifty 200 default with unique Upstox equity keys', async () => {
+  const priorPreset = process.env.LIVE_ALPHA_UNIVERSE_PRESET;
+  const priorPath = process.env.LIVE_ALPHA_UNIVERSE_PATH;
+  delete process.env.LIVE_ALPHA_UNIVERSE_PRESET;
+  delete process.env.LIVE_ALPHA_UNIVERSE_PATH;
+  try {
+    const universe = await loadLiveAlphaUniverse();
+    assert.equal(universe.name, 'nifty200');
+    assert.equal(universe.expectedMembers, 200);
+    assert.equal(universe.members.length, 200);
+    assert.equal(new Set(universe.members.map((row) => row.symbol)).size, 200);
+    assert.equal(new Set(universe.members.map((row) => row.instrumentKey)).size, 200);
+    assert.ok(universe.members.every((row) => row.instrumentKey.startsWith('NSE_EQ|INE')));
+    assert.ok(universe.members.every((row) => row.sectorInstrumentKey.startsWith('NSE_INDEX|')));
+  } finally {
+    if (priorPreset === undefined) delete process.env.LIVE_ALPHA_UNIVERSE_PRESET; else process.env.LIVE_ALPHA_UNIVERSE_PRESET = priorPreset;
+    if (priorPath === undefined) delete process.env.LIVE_ALPHA_UNIVERSE_PATH; else process.env.LIVE_ALPHA_UNIVERSE_PATH = priorPath;
+  }
 });
 
 test('runtime remains disabled without the explicit production flag', async () => {

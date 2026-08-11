@@ -18,6 +18,15 @@ async function rest(table, { method = 'POST', query = '', body, prefer = 'return
   return text ? JSON.parse(text) : null;
 }
 
+async function writeChunks(table, rows, options = {}, chunkSize = 250) {
+  const output = [];
+  for (let index = 0; index < rows.length; index += chunkSize) {
+    const saved = await rest(table, { ...options, body: rows.slice(index, index + chunkSize) });
+    if (Array.isArray(saved)) output.push(...saved);
+  }
+  return output;
+}
+
 export async function pagedGet(table, baseParams, { limit = 5000, pageSize = 1000 } = {}) {
   const rows = [];
   while (rows.length < limit) {
@@ -56,9 +65,8 @@ export class LiveAlphaPersistence {
     // minute, so make the write idempotent at the database boundary as well as
     // in this process. This also protects against two live workers briefly
     // overlapping during a rolling deploy.
-    if (rows.length) await rest('live_market_snapshots', {
+    if (rows.length) await writeChunks('live_market_snapshots', rows, {
       query: 'on_conflict=instrument_key,minute_bucket',
-      body: rows,
       prefer: 'resolution=merge-duplicates,return=minimal',
     });
     return rows.length;
@@ -66,17 +74,16 @@ export class LiveAlphaPersistence {
   async saveHealth(status, staleInstruments = 0) {
     await rest('live_market_feed_health', { body: { status: status.status, subscribed_instruments: status.subscribed_instruments, messages: status.messages, decode_errors: status.decode_errors, reconnects: status.reconnects, last_message_at: status.last_message_at, stale_instruments: staleInstruments, diagnostics: { last_error: status.last_error, mode: status.mode } } });
   }
-  async loadVolumeBaselines() {
+  async loadVolumeBaselines({ limit = 20_000 } = {}) {
     return pagedGet('live_volume_baselines', {
       select: 'instrument_key,minute_of_session,expected_cumulative_volume,sample_sessions',
       order: 'instrument_key.asc,minute_of_session.asc',
-    }, { limit: 20_000 });
+    }, { limit });
   }
   async saveVolumeBaselines(rows = []) {
     if (!rows.length) return 0;
-    await rest('live_volume_baselines', {
+    await writeChunks('live_volume_baselines', rows, {
       query: 'on_conflict=instrument_key,minute_of_session',
-      body: rows,
       prefer: 'resolution=merge-duplicates,return=minimal',
     });
     return rows.length;
@@ -138,7 +145,7 @@ export class LiveAlphaPersistence {
       sector_at_signal: signal.sector_at_signal, volume_ratio: signal.volume_surprise,
     }));
     try {
-      const saved = await rest('live_alpha_signals', { body: rows, prefer: 'return=representation' });
+      const saved = await writeChunks('live_alpha_signals', rows, { prefer: 'return=representation' });
       const outcomes = [];
       let outcomeSkipped = 0;
       for (const signal of saved || []) {
@@ -153,7 +160,7 @@ export class LiveAlphaPersistence {
         }
         outcomes.push(...createOutcomeSchedule({ id: signal.id, as_of: result.as_of, price_at_signal: signal.price_at_signal, nifty_at_signal: signal.nifty_at_signal, sector_at_signal: signal.sector_at_signal }));
       }
-      if (outcomes.length) await rest('live_alpha_signal_outcomes', { body: outcomes });
+      if (outcomes.length) await writeChunks('live_alpha_signal_outcomes', outcomes);
       return { run_id: runId, signals: rows.length, outcomes: outcomes.length, outcome_skipped: outcomeSkipped };
     } catch (error) {
       // REST inserts cannot atomically create a run and its signal rows. Remove

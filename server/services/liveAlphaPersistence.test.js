@@ -72,3 +72,28 @@ test('removes the parent run when signal persistence fails', async () => {
     if (priorKey === undefined) delete process.env.SUPABASE_SERVICE_ROLE_KEY; else process.env.SUPABASE_SERVICE_ROLE_KEY = priorKey;
   }
 });
+
+test('chunks large snapshot batches for Nifty 200 persistence', async () => {
+  const priorUrl = process.env.SUPABASE_URL;
+  const priorKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const priorFetch = globalThis.fetch;
+  process.env.SUPABASE_URL = 'https://example.supabase.co';
+  process.env.SUPABASE_SERVICE_ROLE_KEY = 'test-service-key';
+  const sizes = [];
+  globalThis.fetch = async (_url, options = {}) => {
+    sizes.push(JSON.parse(options.body).length);
+    return { ok: true, text: async () => '' };
+  };
+  try {
+    const snapshots = Array.from({ length: 501 }, (_, index) => ({
+      instrument_key: `NSE_EQ|${index}`, received_at: '2026-08-11T05:40:00.000Z', ltp: 100,
+    }));
+    const saved = await new LiveAlphaPersistence().persistBatch({ snapshots });
+    assert.equal(saved, 501);
+    assert.deepEqual(sizes, [250, 250, 1]);
+  } finally {
+    globalThis.fetch = priorFetch;
+    if (priorUrl === undefined) delete process.env.SUPABASE_URL; else process.env.SUPABASE_URL = priorUrl;
+    if (priorKey === undefined) delete process.env.SUPABASE_SERVICE_ROLE_KEY; else process.env.SUPABASE_SERVICE_ROLE_KEY = priorKey;
+  }
+});
