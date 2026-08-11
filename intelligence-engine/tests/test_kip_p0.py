@@ -175,6 +175,28 @@ def test_ocr_and_versioning_lineage():
     # immutability: content of v1 unchanged
     assert "Target price Rs 1400" in refreshed.cleaned_content
 
+    # Audit history is retained, but stale versions cannot ground Ask AGI.
+    results = svc.search("Target price Rs 1400", mode="hybrid", limit=10)
+    assert all(hit.document_id != v1.document_id for hit in results.hits)
+    assert any(hit.document_id == v2.document_id for hit in results.hits)
+
+
+def test_explicit_nse_ticker_is_not_limited_to_static_lexicon():
+    svc = _svc()
+    doc = svc.ingest(
+        IngestRequest(
+            title="CMS company research",
+            content="The company reported improving cash conversion and order execution.",
+            source="agi",
+            document_type=DocumentType.AGI_RESEARCH,
+            tickers=["WAAREEENER"],
+            article_id="cms-waaree-1",
+        )
+    )
+    assert doc.investment.tickers == ["WAAREEENER"]
+    results = svc.search("cash conversion", ticker="WAAREEENER")
+    assert [hit.document_id for hit in results.hits] == [doc.document_id]
+
 
 def test_company_timeline_and_graph():
     svc = _svc()
