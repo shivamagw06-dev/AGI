@@ -59,10 +59,14 @@ services:
         value: "true"
       - key: GROWW_EQUITY_OPPORTUNITY_SCHEDULE_IST
         value: "16:30"
+      - key: GROWW_EQUITY_OPPORTUNITY_SLOTS_IST
+        value: "10:00,11:00,12:00,13:00,14:00,15:00,16:30"
       - key: GROWW_SECTOR_ROTATION_SCHEDULER
         value: "true"
       - key: GROWW_SECTOR_ROTATION_SCHEDULE_IST
         value: "16:35"
+      - key: GROWW_SECTOR_ROTATION_SLOTS_IST
+        value: "10:05,11:05,12:05,13:05,14:05,15:05,16:35"
       - key: ENGINE_KEEP_WARM_MS
         value: "300000"
       - key: ASK_ENGINE_TIMEOUT_MS
