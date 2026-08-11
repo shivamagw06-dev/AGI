@@ -1,4 +1,5 @@
-import { FORECAST_HORIZONS, createPointInTimeFeatures, generateProbabilisticForecast, settleForecast } from './probabilisticForecast.js';
+import { FORECAST_HORIZONS, generateProbabilisticForecast, settleForecast } from './probabilisticForecast.js';
+import { buildCrossSectionalFeatureSnapshots } from './crossSectionalForecastFeatures.js';
 function config(){const url=String(process.env.SUPABASE_URL||'').trim().replace(/\/$/,''),key=String(process.env.SUPABASE_SERVICE_ROLE_KEY||'').trim();if(!url||!key)throw new Error('Forecast storage requires Supabase credentials.');return{url,key};}
 async function rest(table,{method='GET',query='',body,prefer}={}){const{url,key}=config();const response=await fetch(`${url}/rest/v1/${table}${query?`?${query}`:''}`,{method,headers:{apikey:key,Authorization:`Bearer ${key}`,'Content-Type':'application/json',...(prefer?{Prefer:prefer}:{})},body:body==null?undefined:JSON.stringify(body)});if(!response.ok){const error=new Error(`Forecast storage failed (${response.status}): ${(await response.text()).slice(0,240)}`);error.status=response.status;throw error;}const text=await response.text();return text?JSON.parse(text):[];}
 
@@ -10,8 +11,8 @@ export function selectDailyForecastEvents(events=[]){
 
 export async function syncProbabilisticForecasts({limit=2000}={}){
   const [events,existingForecasts]=await Promise.all([rest('research_confluence_events',{query:`select=*&order=captured_at.desc&limit=${Math.min(5000,limit)}`}),rest('research_forecasts',{query:'select=symbol,forecast_time&is_canonical=eq.true&limit=10000'})]);
-  const dailyEvents=selectDailyForecastEvents(events),seenDays=new Set(existingForecasts.map((row)=>`${String(row.symbol||'').toUpperCase()}|${String(row.forecast_time||'').slice(0,10)}`)); const summary={scanned:events.length,daily_candidates:dailyEvents.length,snapshots_created:0,forecasts_created:0};
-  for(const event of dailyEvents){const dayKey=`${event.symbol}|${String(event.captured_at).slice(0,10)}`;if(seenDays.has(dayKey))continue;const input=createPointInTimeFeatures(event);const snapshot=(await rest('research_feature_snapshots',{method:'POST',body:input,prefer:'return=representation'}))?.[0];if(!snapshot)continue;const forecasts=FORECAST_HORIZONS.map((h)=>({...generateProbabilisticForecast(input,h),feature_snapshot_id:snapshot.id}));await rest('research_forecasts',{method:'POST',body:forecasts,prefer:'return=minimal'});seenDays.add(dayKey);summary.snapshots_created+=1;summary.forecasts_created+=forecasts.length;}
+  const dailyEvents=selectDailyForecastEvents(events),dailyInputs=buildCrossSectionalFeatureSnapshots(dailyEvents),seenDays=new Set(existingForecasts.map((row)=>`${String(row.symbol||'').toUpperCase()}|${String(row.forecast_time||'').slice(0,10)}`)); const summary={scanned:events.length,daily_candidates:dailyEvents.length,feature_version:dailyInputs[0]?.feature_version||null,snapshots_created:0,forecasts_created:0};
+  for(const input of dailyInputs){const dayKey=`${input.symbol}|${String(input.captured_at).slice(0,10)}`;if(seenDays.has(dayKey))continue;const snapshot=(await rest('research_feature_snapshots',{method:'POST',body:input,prefer:'return=representation'}))?.[0];if(!snapshot)continue;const forecasts=FORECAST_HORIZONS.map((h)=>({...generateProbabilisticForecast(input,h),feature_snapshot_id:snapshot.id}));await rest('research_forecasts',{method:'POST',body:forecasts,prefer:'return=minimal'});seenDays.add(dayKey);summary.snapshots_created+=1;summary.forecasts_created+=forecasts.length;}
   return summary;
 }
 
