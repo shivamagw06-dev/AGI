@@ -80,34 +80,50 @@ export default function LiveAlphaPage() {
   useEffect(() => { document.title = 'Live Alpha | Agarwal Global Investments'; load(); const timer = setInterval(load, 60000); return () => clearInterval(timer); }, []);
 
   const allRows = useMemo(() => buildRows(payload.signals || []), [payload.signals]);
-  const rows = useMemo(() => allRows.filter((row) => strategy === 'all' || row.strategies[strategy]).sort((a, b) => sort === 'confidence' ? b.quality - a.quality : sort === 'age' ? Date.parse(b.newest) - Date.parse(a.newest) : sort === 'sector' ? a.sector.localeCompare(b.sector) : Math.abs(b.composite) - Math.abs(a.composite)), [allRows, strategy, sort]);
+  const rows = useMemo(() => allRows.filter((row) => strategy === 'all' || row.strategies[strategy]?.direction).sort((a, b) => sort === 'confidence' ? b.quality - a.quality : sort === 'age' ? Date.parse(b.newest) - Date.parse(a.newest) : sort === 'sector' ? a.sector.localeCompare(b.sector) : Math.abs(b.composite) - Math.abs(a.composite)), [allRows, strategy, sort]);
   const strategyStats = useMemo(() => Object.fromEntries(STRATEGIES.map(([key]) => {
     const signals = allRows.map((row) => row.strategies[key]).filter((signal) => signal?.direction);
     return [key, { active: signals.length, high: signals.filter((signal) => Number(signal.signal_quality_score) >= 80).length, strongest: signals.sort((a, b) => Math.abs(signedScore(b)) - Math.abs(signedScore(a)))[0] }];
   })), [allRows]);
-  const highConfidence = allRows.filter((row) => row.confidence === 'HIGH' || row.confidence === 'VALIDATED').length;
+  const isFresh = payload.freshness?.stale === false;
+  const evaluationStatus = runtime?.evaluation_status || (runtime?.status === 'running' ? 'warming_up' : 'stopped');
+  const displayStatus = payload.readiness?.status === 'persistence_degraded'
+    ? 'Storage issue'
+    : evaluationStatus === 'warming_up'
+      ? 'Warming up'
+      : evaluationStatus === 'degraded' || evaluationStatus === 'blocked'
+        ? 'Research degraded'
+        : !isFresh
+          ? 'Stale signals'
+          : evaluationStatus === 'live'
+            ? 'Live research'
+            : 'Research standby';
+  const liveNow = displayStatus === 'Live research';
+  const highConfidence = isFresh ? allRows.filter((row) => row.confidence === 'HIGH' || row.confidence === 'VALIDATED').length : 0;
   const selectedRow = selected ? allRows.find((row) => row.symbol === selected) : null;
   const confluence = [...allRows].filter((row) => row.active.length >= 2).sort((a, b) => b.active.length - a.active.length || Math.abs(b.composite) - Math.abs(a.composite)).slice(0, 3);
-  const lastUpdate = payload.generated_at ? new Date(payload.generated_at).toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', second: '2-digit' }) : '—';
+  const lastUpdate = payload.freshness?.latest_successful_at
+    ? new Date(payload.freshness.latest_successful_at).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })
+    : 'No completed run';
 
   return <div className="la-page">
     <section className="la-command">
       <div className="la-title-row">
         <div><span className="la-eyebrow"><Sparkles size={13} /> AGI research system</span><h1>Live Alpha</h1><p>Independent market behaviours, unified into one institutional signal workspace.</p></div>
-        <div className="la-live-meta"><span className={`la-live-dot ${runtime?.status === 'running' ? 'on' : ''}`} />{runtime?.status === 'running' ? 'Live feed' : 'Research standby'}<button onClick={load} aria-label="Refresh"><RefreshCw size={15} className={loading ? 'spin' : ''} /></button></div>
+        <div className="la-live-meta"><span className={`la-live-dot ${liveNow ? 'on' : ''}`} />{displayStatus}<button onClick={load} aria-label="Refresh"><RefreshCw size={15} className={loading ? 'spin' : ''} /></button></div>
       </div>
       <div className="la-regime">
         <div><small>Market regime</small><strong>{runtime?.last_evaluation?.regime || 'Awaiting classification'}</strong></div>
         <div><small>Nifty bias</small><strong>Not yet classified</strong></div>
-        <div><small>Active signals</small><strong>{allRows.filter((row) => row.active.length).length}</strong></div>
+        <div><small>Active signals</small><strong>{isFresh ? allRows.filter((row) => row.active.length).length : 0}</strong></div>
         <div><small>High confidence</small><strong>{highConfidence}</strong></div>
-        <div><small>Last update</small><strong>{lastUpdate} IST</strong></div>
+        <div><small>Last completed run</small><strong>{lastUpdate}</strong></div>
       </div>
       <div className="la-strategy-grid">
-        {STRATEGIES.map(([key, label, technical]) => { const stat = strategyStats[key]; const score = stat?.strongest ? signedScore(stat.strongest) : 0; return <button key={key} onClick={() => setStrategy(strategy === key ? 'all' : key)} className={`la-strategy-card ${strategy === key ? 'active' : ''}`}>
-          <span className="la-card-status"><i className={stat?.active ? 'ready' : ''} />{key === 'derivatives_positioning_v1' && runtime?.last_evaluation?.derivatives_status === 'insufficient_derivative_coverage' ? 'Awaiting futures' : stat?.active ? 'Live' : 'Standby'}</span>
-          <h2>{label}</h2><p>{technical}</p><div className="la-card-count"><strong>{stat?.active || 0}</strong><span>active<br />{stat?.high || 0} high confidence</span></div>
-          <footer><span>Strongest</span><b>{stat?.strongest ? `${stat.strongest.symbol} ${scoreText(score)}` : 'No signal'}</b></footer>
+        {STRATEGIES.map(([key, label, technical]) => { const stat = strategyStats[key]; const health = payload.strategy_health?.[key]; const effectiveActive = isFresh ? stat?.active || 0 : 0; const score = stat?.strongest ? signedScore(stat.strongest) : 0; const cardStatus = health?.status === 'persistence_failed' ? 'Storage error' : health?.status === 'stale' ? 'Stale' : health?.status === 'never_run' ? 'Not run' : key === 'derivatives_positioning_v1' && runtime?.last_evaluation?.derivatives_status === 'insufficient_derivative_coverage' ? 'Awaiting futures' : liveNow && effectiveActive ? 'Live' : evaluationStatus === 'warming_up' ? 'Warming up' : 'Standby'; return <button key={key} onClick={() => setStrategy(strategy === key ? 'all' : key)} className={`la-strategy-card ${strategy === key ? 'active' : ''}`}>
+          <span className="la-card-status"><i className={cardStatus === 'Live' ? 'ready' : ''} />{cardStatus}</span>
+          <h2>{label}</h2><p>{technical}</p><div className="la-card-count"><strong>{effectiveActive}</strong><span>active<br />{isFresh ? stat?.high || 0 : 0} high confidence</span></div>
+          <footer><span>{isFresh ? 'Strongest' : 'Last stored'}</span><b>{stat?.strongest ? `${stat.strongest.symbol} ${scoreText(score)}` : 'No signal'}</b></footer>
         </button>; })}
       </div>
     </section>
@@ -117,6 +133,7 @@ export default function LiveAlphaPage() {
       <section className="la-panel la-scanner">
         <header><div><span className="la-section-kicker">Opportunity map</span><h2>Live Alpha Scanner</h2></div><div className="la-controls"><select value={sort} onChange={(event) => setSort(event.target.value)} aria-label="Sort scanner"><option value="alpha">Alpha score</option><option value="confidence">Confidence</option><option value="sector">Sector</option><option value="age">Signal age</option></select><span>{rows.length} names</span></div></header>
         {error ? <div className="la-notice error"><AlertCircle size={18} /><div><strong>Workspace unavailable</strong><p>{error}</p></div></div> : null}
+        {!error && !liveNow ? <div className="la-notice"><AlertCircle size={18} /><div><strong>{displayStatus}</strong><p>{payload.readiness?.status === 'persistence_degraded' ? `Signal storage failed for: ${(payload.readiness.degraded_engines || []).map((key) => SHORT[key] || key).join(', ')}.` : evaluationStatus === 'warming_up' ? 'The market feed is connected, but the strategies are collecting enough benchmark history before evaluation.' : payload.freshness?.latest_successful_at ? `Displayed observations are historical. Last completed run: ${lastUpdate}.` : 'No completed strategy run is available yet.'}</p></div></div> : null}
         {!loading && !error && !rows.length ? <div className="la-empty"><Activity size={28} /><h3>{payload.readiness?.status === 'database_setup_required' ? 'Alpha database setup required' : 'No live research signals yet'}</h3><p>{payload.readiness?.status === 'database_setup_required' ? 'Apply the five Live Alpha Supabase migrations. The workspace will remain safely in standby until its research tables exist.' : 'The workspace is connected, but AGI has not stored a qualifying signal. Complete volume baselines, verify the universe, and enable shadow collection when ready.'}</p></div> : null}
         {rows.length ? <div className="la-table-wrap"><table><thead><tr><th>Stock</th><th>Alpha</th>{STRATEGIES.map(([key]) => <th key={key}>{SHORT[key]}</th>)}<th>Confidence</th><th>Age</th><th /></tr></thead><tbody>{rows.map((row) => <tr key={row.symbol} onClick={() => setSelected(row.symbol)}><td><strong>{row.symbol}</strong><span>{row.sector}</span></td><td><Score value={row.composite} /></td>{STRATEGIES.map(([key]) => <td key={key}><MiniScore signal={row.strategies[key]} /></td>)}<td><span className={`la-confidence ${row.confidence.toLowerCase()}`}>{row.confidence}</span></td><td>{age(row.newest)}</td><td><ChevronRight size={15} /></td></tr>)}</tbody></table></div> : null}
       </section>

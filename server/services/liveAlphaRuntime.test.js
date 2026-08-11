@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { startLiveAlphaRuntime, stopLiveAlphaRuntime, validateLiveAlphaUniverse } from './liveAlphaRuntime.js';
+import { classifyEvaluationStatus, startLiveAlphaRuntime, stopLiveAlphaRuntime, validateLiveAlphaUniverse } from './liveAlphaRuntime.js';
 
 const valid = { benchmarkKey: 'NSE_INDEX|Nifty 50', members: Array.from({ length: 10 }, (_, index) => ({ symbol: `S${index}`, sector: 'BANK', instrumentKey: `NSE_EQ|${index}`, sectorInstrumentKey: 'NSE_INDEX|Nifty Bank' })) };
 
@@ -21,4 +21,12 @@ test('runtime remains disabled without the explicit production flag', async () =
   assert.equal(status.execution_enabled, false);
   if (prior !== undefined) process.env.LIVE_ALPHA_SHADOW_ENABLED = prior;
   stopLiveAlphaRuntime();
+});
+
+test('separates a connected feed from evaluation readiness', () => {
+  assert.equal(classifyEvaluationStatus(null), 'warming_up');
+  assert.equal(classifyEvaluationStatus({ skipped: true, reason: 'benchmark_history_incomplete' }), 'warming_up');
+  assert.equal(classifyEvaluationStatus({ skipped: true, reason: 'already_evaluated_bucket' }), 'live');
+  assert.equal(classifyEvaluationStatus({ skipped: false, persistence: [{ status: 'stored' }] }), 'live');
+  assert.equal(classifyEvaluationStatus({ skipped: false, persistence: [{ status: 'failed' }] }), 'degraded');
 });

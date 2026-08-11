@@ -137,23 +137,39 @@ export class LiveAlphaPersistence {
       direction: signal.direction, price_at_signal: signal.price_at_signal, nifty_at_signal: signal.nifty_at_signal,
       sector_at_signal: signal.sector_at_signal, volume_ratio: signal.volume_surprise,
     }));
-    const saved = await rest('live_alpha_signals', { body: rows, prefer: 'return=representation' });
-    const outcomes = [];
-    let outcomeSkipped = 0;
-    for (const signal of saved || []) {
-      if (!signal.direction) continue;
-      const anchors = [signal.price_at_signal, signal.nifty_at_signal, signal.sector_at_signal].map(Number);
-      // A research signal remains useful even when an outcome anchor is not
-      // available. Persist it, but do not create an invalid validation row or
-      // allow it to stop the other independent alpha engines.
-      if (anchors.some((value) => !Number.isFinite(value) || value <= 0)) {
-        outcomeSkipped += 1;
-        continue;
+    try {
+      const saved = await rest('live_alpha_signals', { body: rows, prefer: 'return=representation' });
+      const outcomes = [];
+      let outcomeSkipped = 0;
+      for (const signal of saved || []) {
+        if (!signal.direction) continue;
+        const anchors = [signal.price_at_signal, signal.nifty_at_signal, signal.sector_at_signal].map(Number);
+        // A research signal remains useful even when an outcome anchor is not
+        // available. Persist it, but do not create an invalid validation row or
+        // allow it to stop the other independent alpha engines.
+        if (anchors.some((value) => !Number.isFinite(value) || value <= 0)) {
+          outcomeSkipped += 1;
+          continue;
+        }
+        outcomes.push(...createOutcomeSchedule({ id: signal.id, as_of: result.as_of, price_at_signal: signal.price_at_signal, nifty_at_signal: signal.nifty_at_signal, sector_at_signal: signal.sector_at_signal }));
       }
-      outcomes.push(...createOutcomeSchedule({ id: signal.id, as_of: result.as_of, price_at_signal: signal.price_at_signal, nifty_at_signal: signal.nifty_at_signal, sector_at_signal: signal.sector_at_signal }));
+      if (outcomes.length) await rest('live_alpha_signal_outcomes', { body: outcomes });
+      return { run_id: runId, signals: rows.length, outcomes: outcomes.length, outcome_skipped: outcomeSkipped };
+    } catch (error) {
+      // REST inserts cannot atomically create a run and its signal rows. Remove
+      // the parent on any downstream failure so dashboards never treat an
+      // orphan run as a successful engine evaluation. FK cascades clean up any
+      // partially inserted signal/outcome rows.
+      try {
+        await rest('live_alpha_runs', {
+          method: 'DELETE', query: `id=eq.${encodeURIComponent(runId)}`,
+          body: undefined, prefer: 'return=minimal',
+        });
+      } catch (cleanupError) {
+        error.cleanup_error = cleanupError.message;
+      }
+      throw error;
     }
-    if (outcomes.length) await rest('live_alpha_signal_outcomes', { body: outcomes });
-    return { run_id: runId, signals: rows.length, outcomes: outcomes.length, outcome_skipped: outcomeSkipped };
   }
   async saveMomentumRun(result, diagnostics = {}) { return this.saveAlphaRun(result, diagnostics); }
   async saveVolumeAnomalyRun(result, diagnostics = {}) { return this.saveAlphaRun(result, diagnostics); }
