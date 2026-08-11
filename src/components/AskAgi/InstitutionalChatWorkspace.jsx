@@ -232,6 +232,90 @@ function AnswerTurn({ answer, onAsk }) {
     );
   }
 
+  // Default chat experience: readable prose first, with selective structure.
+  // The legacy research dashboard remains available via output_style=institutional.
+  if (!tableMode && presentation.style !== 'institutional') {
+    return (
+      <div className="ac-msg ac-msg-agi">
+        <div className="ac-label">AGI</div>
+        <article className="ac-conversational-answer">
+          {(answer.narrativeParagraphs?.length ? answer.narrativeParagraphs : [answer.directAnswer])
+            .filter(Boolean)
+            .map((paragraph, index) => (
+              <p key={`${index}-${paragraph.slice(0, 32)}`} className={index === 0 ? 'ac-conversational-lead' : ''}>
+                {paragraph}
+              </p>
+            ))}
+
+          {answer.whyAgib?.length > 0 && (
+            <section>
+              <h2>{answer.answerFormat?.evidenceTitle || 'Why this matters'}</h2>
+              {answer.whyAgib.slice(0, isBrief ? 3 : 5).map((paragraph) => (
+                <p key={paragraph}>{paragraph}</p>
+              ))}
+            </section>
+          )}
+
+          {!isBrief && (answer.moreBullish?.length > 0 || answer.moreBearish?.length > 0) && (
+            <section>
+              <h2>Investment view</h2>
+              {answer.moreBullish?.length > 0 && <h3>What supports the case</h3>}
+              {answer.moreBullish?.length > 0 && (
+                <ul>{answer.moreBullish.slice(0, 5).map((item) => <li key={item}>{item}</li>)}</ul>
+              )}
+              {answer.moreBearish?.length > 0 && <h3>What could go wrong</h3>}
+              {answer.moreBearish?.length > 0 && (
+                <ul>{answer.moreBearish.slice(0, 5).map((item) => <li key={item}>{item}</li>)}</ul>
+              )}
+            </section>
+          )}
+
+          {!isBrief && answer.whatChangesView?.length > 0 && (
+            <section>
+              <h2>What would change the view</h2>
+              <ul>{answer.whatChangesView.map((item) => <li key={item}>{item}</li>)}</ul>
+            </section>
+          )}
+
+          {answer.bottomLine && answer.bottomLine !== answer.directAnswer && (
+            <section className="ac-conversational-bottom-line">
+              <h2>{answer.answerFormat?.bottomLine || 'Bottom line'}</h2>
+              <p>{answer.bottomLine}</p>
+            </section>
+          )}
+
+          <div className="ac-conversational-meta">
+            <span>{answer.institutionalView}</span>
+            <span>{answer.confidence == null ? 'Confidence unavailable' : `${answer.confidence}% confidence`}</span>
+            {answer.horizon && <span>{answer.horizon}</span>}
+          </div>
+
+          {answer.provenance?.length > 0 && (
+            <details className="ac-conversational-sources">
+              <summary>Sources</summary>
+              <ol className="ac-source-list">
+                {answer.provenance.map((item, index) => (
+                  <li key={`${item.title}-${item.date || index}`}>
+                    {item.url ? <a href={item.url} target="_blank" rel="noreferrer">{item.title}</a> : <strong>{item.title}</strong>}
+                    <span>{[item.source, item.date, item.evidenceType].filter(Boolean).join(' · ')}</span>
+                  </li>
+                ))}
+              </ol>
+            </details>
+          )}
+        </article>
+
+        {answer.followUps?.length > 0 && (
+          <div className="ac-follows ac-conversational-follows">
+            {answer.followUps.slice(0, 4).map((q) => (
+              <button key={q} type="button" onClick={() => onAsk(q)}>{q}</button>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div className="ac-msg ac-msg-agi">
       <div className="ac-label">AGI</div>

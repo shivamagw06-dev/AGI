@@ -414,6 +414,65 @@
   color: var(--ac-ink);
   margin: 0 0 1.1rem;
 }
+.ac-conversational-answer {
+  max-width: 780px;
+  color: var(--ac-ink);
+  font-size: 1rem;
+  line-height: 1.72;
+}
+.ac-conversational-answer > p,
+.ac-conversational-answer section > p {
+  margin: 0 0 1rem;
+}
+.ac-conversational-answer .ac-conversational-lead {
+  font-size: 1.08rem;
+  line-height: 1.68;
+}
+.ac-conversational-answer h2 {
+  margin: 1.6rem 0 0.65rem;
+  font-size: 1rem;
+}
+.ac-conversational-answer h3 {
+  margin: 1rem 0 0.35rem;
+  font-size: 0.92rem;
+}
+.ac-conversational-answer ul {
+  margin: 0.35rem 0 1rem;
+  padding-left: 1.25rem;
+}
+.ac-conversational-answer li {
+  margin: 0.35rem 0;
+}
+.ac-conversational-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  margin-top: 1.25rem;
+  color: var(--ac-muted);
+  font-size: 0.8rem;
+}
+.ac-conversational-sources {
+  margin-top: 1.25rem;
+}
+.ac-conversational-sources summary {
+  cursor: pointer;
+  color: var(--ac-soft);
+  font-weight: 700;
+}
+.ac-conversational-follows {
+  max-width: 780px;
+  margin-top: 1.25rem;
+}
+@media (max-width: 720px) {
+  .ac-conversational-answer {
+    max-width: 100%;
+    font-size: 0.96rem;
+    line-height: 1.65;
+  }
+  .ac-conversational-answer .ac-conversational-lead {
+    font-size: 1.02rem;
+  }
+}
 .ac-confidence-why {
   margin: 0.85rem 0 0;
   padding-top: 0.85rem;
