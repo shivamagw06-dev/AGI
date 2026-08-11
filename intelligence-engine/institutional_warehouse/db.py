@@ -11,6 +11,7 @@ from __future__ import annotations
 import os
 import sqlite3
 import threading
+import time
 from pathlib import Path
 from typing import Any, Iterable, Optional, Sequence
 
@@ -90,12 +91,47 @@ class _SqliteBackend(_Backend):
     def __init__(self, path: Path) -> None:
         self.path = path
         path.parent.mkdir(parents=True, exist_ok=True)
-        self._conn = sqlite3.connect(str(path), check_same_thread=False, timeout=30.0)
+        self._busy_timeout_ms = max(
+            1_000,
+            int(os.getenv("INSTITUTIONAL_WAREHOUSE_SQLITE_BUSY_TIMEOUT_MS", "30000")),
+        )
+        self._write_retries = max(
+            0,
+            int(os.getenv("INSTITUTIONAL_WAREHOUSE_SQLITE_WRITE_RETRIES", "3")),
+        )
+        self._conn = sqlite3.connect(
+            str(path),
+            check_same_thread=False,
+            timeout=self._busy_timeout_ms / 1000.0,
+        )
         self._conn.row_factory = sqlite3.Row
         with _LOCK:
             self._conn.execute("PRAGMA journal_mode=WAL")
             self._conn.execute("PRAGMA synchronous=NORMAL")
-            self._conn.execute("PRAGMA busy_timeout=15000")
+            self._conn.execute(f"PRAGMA busy_timeout={self._busy_timeout_ms}")
+
+    @staticmethod
+    def _is_lock_error(exc: sqlite3.OperationalError) -> bool:
+        message = str(exc).lower()
+        return "database is locked" in message or "database table is locked" in message
+
+    def _write(self, operation: Any) -> int:
+        """Commit a SQLite write, retrying transient cross-process lock contention."""
+        for attempt in range(self._write_retries + 1):
+            cur = None
+            try:
+                cur = operation()
+                self._conn.commit()
+                return max(cur.rowcount, 0)
+            except sqlite3.OperationalError as exc:
+                self._conn.rollback()
+                if not self._is_lock_error(exc) or attempt >= self._write_retries:
+                    raise
+                time.sleep(min(0.25 * (2**attempt), 2.0))
+            finally:
+                if cur is not None:
+                    cur.close()
+        return 0  # pragma: no cover - loop either returns or raises
 
     def query(self, sql: str, params: Sequence[Any] = ()) -> list[dict[str, Any]]:
         with _LOCK:
@@ -106,22 +142,14 @@ class _SqliteBackend(_Backend):
 
     def execute(self, sql: str, params: Sequence[Any] = ()) -> int:
         with _LOCK:
-            cur = self._conn.execute(sql, tuple(params))
-            self._conn.commit()
-            count = cur.rowcount
-            cur.close()
-        return max(count, 0)
+            return self._write(lambda: self._conn.execute(sql, tuple(params)))
 
     def executemany(self, sql: str, rows: Iterable[Sequence[Any]]) -> int:
         batch = [tuple(r) for r in rows]
         if not batch:
             return 0
         with _LOCK:
-            cur = self._conn.executemany(sql, batch)
-            self._conn.commit()
-            count = cur.rowcount
-            cur.close()
-        return max(count, 0)
+            return self._write(lambda: self._conn.executemany(sql, batch))
 
     def close(self) -> None:
         with _LOCK:
