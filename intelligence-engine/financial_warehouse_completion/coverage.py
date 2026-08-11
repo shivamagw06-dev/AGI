@@ -10,6 +10,7 @@ from financial_warehouse_completion.models import (
     ENGINE_CODE,
     MIN_ANNUAL_YEARS,
     MIN_QUARTERLY_PERIODS,
+    PREFERRED_ANNUAL_YEARS,
     PROGRAMME_CODE,
     PROGRAMME_VERSION,
     TARGETS,
@@ -39,6 +40,17 @@ def _entity_count(tab: str, symbol: str) -> int:
             return 0
 
 
+def _statement_depth(tab: str, symbol: str, period_key: str) -> int:
+    """Count distinct fiscal periods, not duplicate source/statement rows."""
+    from institutional_warehouse import store
+
+    try:
+        rows = store.all_rows(tab, entity=symbol, limit=500) or []
+    except Exception:
+        rows = []
+    return len({str(row.get(period_key) or "").strip().upper() for row in rows if row.get(period_key)})
+
+
 def company_coverage(symbol: str) -> dict[str, Any]:
     """Per-company pack coverage used by HVIE / RIE / FIE consumers."""
     from institutional_warehouse import store
@@ -53,6 +65,8 @@ def company_coverage(symbol: str) -> dict[str, Any]:
 
     annual_n = _entity_count("financials_annual", ticker)
     quarterly_n = _entity_count("financials_quarterly", ticker)
+    annual_periods = _statement_depth("financials_annual", ticker, "fiscal_year")
+    quarterly_periods = _statement_depth("financials_quarterly", ticker, "fiscal_period")
     share_ok, shares = has_share_count(ticker)
     consensus_n = _entity_count("consensus", ticker)
     ownership_n = _entity_count("ownership", ticker)
@@ -62,8 +76,8 @@ def company_coverage(symbol: str) -> dict[str, Any]:
 
     packs = {
         "company_master": bool(master),
-        "financials_annual": annual_n >= MIN_ANNUAL_YEARS,
-        "financials_quarterly": quarterly_n >= MIN_QUARTERLY_PERIODS,
+        "financials_annual": annual_periods >= MIN_ANNUAL_YEARS,
+        "financials_quarterly": quarterly_periods >= MIN_QUARTERLY_PERIODS,
         "share_count_history": share_ok,
         "consensus": consensus_n >= 1,
         "ownership": ownership_n >= 1,
@@ -71,6 +85,10 @@ def company_coverage(symbol: str) -> dict[str, Any]:
         "profile_history": profile_n >= 1,
     }
     financial_ok = packs["financials_annual"] or packs["financials_quarterly"]
+    preferred = {
+        "annual_10y": annual_periods >= PREFERRED_ANNUAL_YEARS,
+        "quarterly_8q": quarterly_periods >= 8,
+    }
     missing = [k for k, v in packs.items() if not v]
     return {
         "ok": True,
@@ -82,6 +100,8 @@ def company_coverage(symbol: str) -> dict[str, Any]:
         "counts": {
             "annual": annual_n,
             "quarterly": quarterly_n,
+            "annual_periods": annual_periods,
+            "quarterly_periods": quarterly_periods,
             "share_count_history": share_hist_n,
             "consensus": consensus_n,
             "ownership": ownership_n,
@@ -90,6 +110,8 @@ def company_coverage(symbol: str) -> dict[str, Any]:
         },
         "packs": packs,
         "financial_ok": financial_ok,
+        "preferred": preferred,
+        "strategy_ready": bool(financial_ok and preferred["quarterly_8q"]),
         "share_count_ok": share_ok,
         "shares_outstanding": shares,
         "missing_packs": missing,

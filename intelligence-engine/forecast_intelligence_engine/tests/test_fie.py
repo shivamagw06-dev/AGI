@@ -157,6 +157,24 @@ def test_dqiv_rejects_buy_language():
     assert validate_section(bad)["ok"] is False
 
 
+def test_dqiv_rejects_forecast_when_verified_history_is_too_thin():
+    pack = {
+        "modules": {"executive": executive(_bundle())},
+        "forecast_quality": {"recommendation": None, "investment_rating": None, "target_price": None},
+        "inputs_present": {"financials_annual": True},
+        "data_readiness": {
+            "forecast_ready": False,
+            "failures": ["quarterly_history_below_8_periods"],
+        },
+        "recommendation": None,
+        "investment_rating": None,
+        "target_price": None,
+    }
+    result = validate_pack(pack)
+    assert result["ok"] is False
+    assert "data_readiness:quarterly_history_below_8_periods" in result["errors"]
+
+
 def test_company_get_reads_materialised_forecast(monkeypatch):
     calls = []
 
