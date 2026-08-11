@@ -5,6 +5,7 @@ import json
 
 import pytest
 
+from agi_improvement_engine.dashboard import build_dashboard
 from agi_improvement_engine.questions import generate_questions
 from agi_improvement_engine.evaluator import _public_citations
 from agi_improvement_engine.scoring import score_evaluation
@@ -19,6 +20,7 @@ def test_question_generation_is_diversified_and_deterministic():
     assert len({q["ticker"] for q in left}) >= 30
     assert len({q["sector"] for q in left}) >= 25
     assert len({q["difficulty"] for q in left}) == 5
+    assert len({q["kind"] for q in left}) >= 20
     assert max(sum(1 for q in left if q["ticker"] == ticker) for ticker in {q["ticker"] for q in left}) <= 4
 
 
@@ -94,3 +96,55 @@ def test_evaluator_citation_boundary_drops_raw_and_secret_fields():
         "url": "https://nse.example/filing",
     }]
     assert "secret" not in json.dumps(rows)
+
+
+def test_dashboard_summary_fields():
+    dashboard = build_dashboard({
+        "session_id": "aiei-test",
+        "started_questions": 10,
+        "completed": 10,
+        "passed": 7,
+        "failed": 3,
+        "critical_failures": 1,
+        "pass_rate": 70.0,
+        "average_score": 72.5,
+        "average_latency_ms": 1200,
+        "model_calls": 10,
+        "input_tokens": 100,
+        "output_tokens": 50,
+        "estimated_api_cost_usd": 0.01,
+        "dimension_weighted_averages": {
+            "entity_correctness": 12.0,
+            "numerical_accuracy": 15.0,
+            "evidence_support": 14.0,
+            "freshness": 8.0,
+        },
+        "top_root_causes": [["DATA_STALE", 2]],
+        "companies_covered": 8,
+        "sectors_covered": 6,
+    })
+    assert dashboard["attempted"] == 10
+    assert dashboard["passed"] == 7
+    assert dashboard["entity_accuracy"] == 12.0
+    assert dashboard["estimated_cost_usd"] == 0.01
+
+
+def test_smoke_count_allowed_in_execute_mode(tmp_path):
+    def ask(question):
+        return {"executive_summary": f"Answer for {question['ticker']}"}
+
+    def evaluate(question, answer):
+        return ({
+            "dimensions": {
+                "entity_correctness": 90, "numerical_accuracy": 90,
+                "evidence_support": 90, "financial_reasoning": 80,
+                "freshness": 90, "completeness": 80, "communication": 90,
+            },
+            "root_causes": [], "critical_failures": [], "notes": "ok",
+        }, {"input_tokens": 1, "output_tokens": 1, "model_calls": 1})
+
+    result = asyncio.run(run_session(
+        count=10, execute=True, concurrency=2, output_dir=tmp_path,
+        ask_fn=ask, evaluate_fn=evaluate,
+    ))
+    assert result["completed"] == 10
