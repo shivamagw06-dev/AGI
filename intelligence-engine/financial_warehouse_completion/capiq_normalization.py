@@ -14,8 +14,31 @@ from institutional_warehouse.values import now_iso
 
 
 SOURCE = "capital_iq_workbook"
-MAPPING_VERSION = "CAPIQ_V1"
+MAPPING_VERSION = "CAPIQ_V2"
 REQUIRED_FIELDS = ("pat", "assets", "equity")
+
+
+def reconcile_derived_fields(raw: dict[str, Any]) -> tuple[dict[str, Any], list[str]]:
+    """Rebuild arithmetic fields from the workbook's reported components."""
+    row = dict(raw)
+    repaired: list[str] = []
+    current_assets = row.get("current_assets")
+    current_liabilities = row.get("current_liabilities")
+    if current_assets is not None and current_liabilities is not None:
+        calculated = float(current_assets) - float(current_liabilities)
+        supplied = row.get("working_capital")
+        if supplied is None or abs(float(supplied) - calculated) > 0.01:
+            repaired.append("working_capital")
+        row["working_capital"] = calculated
+    cfo = row.get("cfo")
+    capex = row.get("capex")
+    if cfo is not None and capex is not None:
+        calculated = float(cfo) - abs(float(capex))
+        supplied = row.get("free_cash_flow")
+        if supplied is None or abs(float(supplied) - calculated) > 0.01:
+            repaired.append("free_cash_flow")
+        row["free_cash_flow"] = calculated
+    return row, repaired
 
 
 def _text(value: Any) -> str:
@@ -95,15 +118,12 @@ def audit_and_prepare(
     audits: list[dict[str, Any]] = []
     identities: list[dict[str, Any]] = []
     accepted: list[dict[str, Any]] = []
-    for raw in rows:
+    for source_row in rows:
+        raw, repaired_fields = reconcile_derived_fields(source_row)
         resolved = resolve_identity(raw, master_index)
         present = [metric for metric in field_map.values() if raw.get(metric) is not None]
         required_found = sum(1 for metric in REQUIRED_FIELDS if raw.get(metric) is not None)
         period_ok = bool(_text(raw.get("fiscal_year")).startswith("FY"))
-        fcf_ok = (
-            raw.get("free_cash_flow") is None or raw.get("cfo") is None or raw.get("capex") is None
-            or abs(float(raw["free_cash_flow"]) - (float(raw["cfo"]) - abs(float(raw["capex"])))) < 1.0
-        )
         verified = resolved["identity_status"] == "VERIFIED" and required_found == len(REQUIRED_FIELDS) and period_ok
         status = "VERIFIED" if verified else "REVIEW_REQUIRED"
         score = round(100.0 * required_found / len(REQUIRED_FIELDS), 1)
@@ -123,7 +143,8 @@ def audit_and_prepare(
             "required_fields_found": required_found,
             "unit_check": "PASS",
             "period_check": "PASS" if period_ok else "FAIL",
-            "reconciliation": "PASS" if fcf_ok else "REVIEW_REQUIRED",
+            "reconciliation": "REPAIRED" if repaired_fields else "PASS",
+            "repaired_fields": repaired_fields,
             "quality_score": score,
             "overall_status": status,
             "write_status": "READY" if verified else "HELD",

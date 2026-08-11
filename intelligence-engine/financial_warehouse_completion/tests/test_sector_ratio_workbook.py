@@ -23,3 +23,11 @@ def test_tcs_ratio_row_is_normalised_and_source_traceable():
     assert row["source_version"] == sector_ratio_workbook.SOURCE_VERSION
     assert row["median_eligibility"] == "ELIGIBLE"
     assert row["value"] > 0
+
+
+def test_vendor_error_markers_are_not_parsed_as_ratios():
+    assert sector_ratio_workbook._number("8308") is None
+    assert sector_ratio_workbook._number(8308) is None
+    assert sector_ratio_workbook._number("#DIV/0!") is None
+    assert sector_ratio_workbook._number("  N/A ") is None
+    assert sector_ratio_workbook._number(12.5) == 12.5
