@@ -29,6 +29,29 @@ def classify_intent(
     if cues.get("historical_replay"):
         bump("HistoricalReplay", 2.5, "replay_lexicon")
 
+    # NSE research workflows. Screening wins over single-company interpretations;
+    # more specific analytical workflows win over generic Explain/Analyse.
+    if cues.get("screening"):
+        bump("Screening", 5.0, "cross_company_criteria")
+    if cues.get("market_movement") and not (
+        cues.get("macro") and not entities.get("primary")
+    ):
+        bump("MarketMovement", 4.5, "price_movement_question")
+    if cues.get("earnings"):
+        bump("Earnings", 4.3, "earnings_change_question")
+    if cues.get("ownership"):
+        bump("Ownership", 4.0, "ownership_question")
+    if cues.get("catalyst"):
+        bump("Catalyst", 3.8, "catalyst_question")
+    if cues.get("forecasting"):
+        bump("Forecasting", 3.5, "forward_question")
+    if cues.get("historical_change") and not cues.get("historical_replay"):
+        bump("HistoricalChange", 3.7, "change_over_time")
+    if cues.get("financial_analysis") and not cues.get("screening"):
+        bump("FinancialAnalysis", 2.7, "financial_kpi_question")
+    if cues.get("company_overview"):
+        bump("CompanyOverview", 4.0, "company_overview_question")
+
     if cues.get("cross_domain"):
         bump("CrossDomain", 3.0, "cross_domain_cue")
     # Multiple domain cues → cross-domain
@@ -150,6 +173,14 @@ def classify_intent(
             bump("Analyse", 0.8, "analyse_with_valuation_words")
             scores["Valuation"] -= 1.0
             reasons.append("Valuation:penalty_analyse_shape")
+    if cues.get("analyse") and entities.get("primary") and not any(
+        cues.get(key)
+        for key in (
+            "screening", "market_movement", "earnings", "ownership", "forecasting",
+            "catalyst", "historical_change", "financial_analysis", "valuation_lexicon",
+        )
+    ):
+        bump("CompanyOverview", 3.0, "general_company_analysis")
 
     # Pure valuation asks (is it cheap / fair value of X)
     if cues.get("valuation_lexicon") and not (

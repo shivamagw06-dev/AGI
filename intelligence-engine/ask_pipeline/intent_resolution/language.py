@@ -10,7 +10,11 @@ _EXPLAIN = re.compile(
     r"\b(why|explain|how (?:does|do|would|should|can)|what (?:makes|causes)|reason|because)\b",
     re.I,
 )
-_COMPARE = re.compile(r"\b(compare|comparison|versus|\bvs\.?\b|relative to|difference between|which of)\b", re.I)
+_COMPARE = re.compile(
+    r"\b(compare|comparison|versus|\bvs\.?\b|relative to|difference between|which of|"
+    r"who has better|which is (?:better|cheaper)|better than)\b",
+    re.I,
+)
 _ANALYSE = re.compile(
     r"\b(analyse|analyze|assess|evaluate|investigate|determine whether|how would you|what evidence|"
     r"list at least|construct|identify|which (?:additional )?evidence)\b",
@@ -99,6 +103,52 @@ _INVESTMENT_VIEW = re.compile(
     r"\bwhat would change (?:your|the|agi(?:'s|’s)?) view\b|\bcurrent outlook\b",
     re.I,
 )
+_EARNINGS = re.compile(
+    r"\b(after earnings|changed? after .{0,40}(?:earnings|results)|post[- ]earnings|earnings (?:change|reaction|surprise)|"
+    r"results? (?:change|reaction|miss|beat)|quarterly performance|margin(?:s)? (?:falling|rising|changed))\b",
+    re.I,
+)
+_MARKET_MOVEMENT = re.compile(
+    r"\b(why (?:is|are|did) .+ (?:falling|rising|down|up)|stock (?:falling|rising)|"
+    r"price (?:fall|rise|drop|jump|decline|rally)|price hasn['’]?t reacted|market reaction|"
+    r"underperform(?:ing|ed)?|outperform(?:ing|ed)?)\b",
+    re.I,
+)
+_OWNERSHIP = re.compile(
+    r"\b(promoter holding|promoter ownership|fii|fpi|dii|institutional ownership|"
+    r"shareholding|insider ownership|pledged shares?)\b",
+    re.I,
+)
+_SCREENING = re.compile(
+    r"\b(find|screen|show|list|which)\b.*\b(compan(?:y|ies)|stocks?|banks?|nbfcs?|midcaps?|smallcaps?|"
+    r"it compan(?:y|ies)|industrial compan(?:y|ies)|banking stocks)\b|"
+    r"\b(companies|stocks?)\s+where\b",
+    re.I,
+)
+_FORECASTING = re.compile(
+    r"\b(forecast|predict|expected|expectations?|outlook|next quarter|next year|forward earnings|"
+    r"earnings revisions?|consensus estimates?)\b",
+    re.I,
+)
+_CATALYST = re.compile(
+    r"\b(catalysts?|what could move|trigger|upcoming event|re[- ]rating|de[- ]rating)\b",
+    re.I,
+)
+_HISTORICAL_CHANGE = re.compile(
+    r"\b(what changed|how has .+ changed|change since|relative to history|historical average|"
+    r"historical median|over the last|for \d+ quarters?|six months ago)\b",
+    re.I,
+)
+_FINANCIAL_ANALYSIS = re.compile(
+    r"\b(financial analysis|financial performance|fundamentals?|roe|roce|margins?|"
+    r"cash conversion|profitability|revenue growth|earnings growth|balance sheet)\b",
+    re.I,
+)
+_COMPANY_OVERVIEW = re.compile(
+    r"\b(analyse|analyze)\s+[a-z0-9& .'-]+\.?$|\bwhat['’]?s going wrong with\b|"
+    r"\banything new with\b|\bwhat is happening (?:with|at)\b",
+    re.I,
+)
 
 
 def analyse_language(question: str) -> dict[str, Any]:
@@ -117,6 +167,15 @@ def analyse_language(question: str) -> dict[str, Any]:
         "analyse": bool(_ANALYSE.search(ql)),
         "education": education,
         "investment_view": investment_view,
+        "earnings": bool(_EARNINGS.search(ql)),
+        "market_movement": bool(_MARKET_MOVEMENT.search(ql)),
+        "ownership": bool(_OWNERSHIP.search(ql)),
+        "screening": bool(_SCREENING.search(ql)),
+        "forecasting": bool(_FORECASTING.search(ql)),
+        "catalyst": bool(_CATALYST.search(ql)),
+        "historical_change": bool(_HISTORICAL_CHANGE.search(ql)),
+        "financial_analysis": bool(_FINANCIAL_ANALYSIS.search(ql)),
+        "company_overview": bool(_COMPANY_OVERVIEW.search(ql)),
         "valuation_lexicon": bool(_VALUATION.search(ql)),
         "portfolio": portfolio_hit,
         "portfolio_strong": bool(_PORTFOLIO_STRONG.search(ql)),
