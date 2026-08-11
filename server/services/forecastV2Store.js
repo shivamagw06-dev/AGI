@@ -2,6 +2,7 @@ import { buildPointInTimeTrainingRows, buildWalkForwardFolds, evaluateCrossSecti
 function config(){const url=String(process.env.SUPABASE_URL||'').trim().replace(/\/$/,''),key=String(process.env.SUPABASE_SERVICE_ROLE_KEY||'').trim();if(!url||!key)throw new Error('Forecast V2 storage requires Supabase credentials.');return{url,key};}
 async function rest(table,{method='GET',query='',body,prefer}={}){const{url,key}=config();const response=await fetch(`${url}/rest/v1/${table}${query?`?${query}`:''}`,{method,headers:{apikey:key,Authorization:`Bearer ${key}`,'Content-Type':'application/json',...(prefer?{Prefer:prefer}:{})},body:body==null?undefined:JSON.stringify(body)});if(!response.ok){const error=new Error(`Forecast V2 storage failed (${response.status}): ${(await response.text()).slice(0,240)}`);error.status=response.status;throw error;}const text=await response.text();return text?JSON.parse(text):[];}
 const groupKey=(row)=>`${String(row.forecast_time).slice(0,10)}|${row.horizon}`;
+const round=(value,digits=6)=>Number(Number(value).toFixed(digits));
 
 export async function syncForecastCrossSections({limit=10000}={}){
   const [forecasts,outcomes]=await Promise.all([rest('research_forecasts',{query:`select=*&order=forecast_time.asc&limit=${Math.min(10000,limit)}`}),rest('research_forecast_outcomes',{query:'select=*&limit=10000'})]);
@@ -10,6 +11,18 @@ export async function syncForecastCrossSections({limit=10000}={}){
   return output;
 }
 
-export async function getForecastRanking({date,horizon='5d',limit=500}={}){const target=date||new Date().toISOString().slice(0,10);return rest('research_forecast_rankings',{query:`select=*&forecast_date=eq.${target}&horizon=eq.${encodeURIComponent(horizon)}&order=forecast_rank.asc&limit=${Math.min(5000,limit)}`});}
+export function latestForecastRankingRows(rows=[],limit=500){
+  const latest=new Map();
+  for(const row of rows){
+    const symbol=String(row.symbol||'').trim().toUpperCase();if(!symbol)continue;
+    const timestamp=Date.parse(row.forecast?.forecast_time||row.created_at||0)||0;
+    const existing=latest.get(symbol),existingTimestamp=Date.parse(existing?.forecast?.forecast_time||existing?.created_at||0)||0;
+    if(!existing||timestamp>existingTimestamp)latest.set(symbol,{...row,symbol});
+  }
+  const ranked=[...latest.values()].sort((a,b)=>Number(b.forecast?.expected_alpha_pct??-Infinity)-Number(a.forecast?.expected_alpha_pct??-Infinity)||Number(a.forecast_rank||Infinity)-Number(b.forecast_rank||Infinity)||a.symbol.localeCompare(b.symbol));
+  const n=ranked.length;
+  return ranked.slice(0,Math.min(5000,limit)).map((row,index)=>{const rank=index+1,percentile=n===1?1:1-index/(n-1);return{...row,forecast_rank:rank,universe_size:n,percentile:round(percentile),decile:Math.min(10,Math.max(1,Math.ceil(percentile*10)))};});
+}
+export async function getForecastRanking({date,horizon='5d',limit=500}={}){const target=date||new Date().toISOString().slice(0,10),rows=await rest('research_forecast_rankings',{query:`select=*,forecast:research_forecasts(*)&forecast_date=eq.${target}&horizon=eq.${encodeURIComponent(horizon)}&order=created_at.desc&limit=5000`});return latestForecastRankingRows(rows,limit);}
 export async function getRankIcHealth({horizon='5d',limit=252}={}){const rows=await rest('research_forecast_cross_section_metrics',{query:`select=*&horizon=eq.${encodeURIComponent(horizon)}&order=forecast_date.desc&limit=${Math.min(2000,limit)}`});return{horizon,...summarizeRankIc(rows),latest:rows[0]||null,history:rows};}
 export async function getWalkForwardDataset({horizon='5d',minimumTrainPeriods=20,limit=10000}={}){const [snapshots,forecasts,outcomes]=await Promise.all([rest('research_feature_snapshots',{query:`select=*&limit=${Math.min(10000,limit)}`}),rest('research_forecasts',{query:`select=*&horizon=eq.${encodeURIComponent(horizon)}&limit=${Math.min(10000,limit)}`}),rest('research_forecast_outcomes',{query:`select=*&limit=${Math.min(10000,limit)}`})]);const rows=buildPointInTimeTrainingRows(snapshots,forecasts,outcomes),dates=rows.map((row)=>String(row.as_of).slice(0,10));return{horizon,rows,folds:buildWalkForwardFolds(dates,{minimumTrainPeriods}),observations:rows.length,point_in_time_safe:true};}
