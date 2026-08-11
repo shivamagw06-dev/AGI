@@ -26,6 +26,21 @@ function asList(v, n = 8) {
     .slice(0, n);
 }
 
+function asParagraphs(values, n = 8) {
+  const seen = new Set();
+  return values
+    .flatMap((value) => (typeof value === 'string' ? value.split(/\n\s*\n+/) : []))
+    .map((value) => value.replace(/\s+/g, ' ').trim())
+    .filter((value) => {
+      if (!value) return false;
+      const key = value.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+      if (!key || seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    })
+    .slice(0, n);
+}
+
 function impactFromLabel(label = '', text = '') {
   const blob = `${label} ${text}`.toLowerCase();
   if (/risk|bear|weak|pressure|concern|negative|impair|cautious/.test(blob)) return 'Watch';
@@ -357,6 +372,25 @@ export function mapChatAnswer(pack) {
     ? unavailableText
     : (rc?.bottom_line || vm.bottomLine || vm.conclusion || directAnswer));
 
+  // Chat-first answer body. Prefer the model's grounded prose, then the
+  // deterministic conclusion. The institutional cards remain available only
+  // when a user explicitly requests that presentation style.
+  const narrativeParagraphs = evidenceUnavailable
+    ? [unavailableText]
+    : asParagraphs([
+      directAnswer,
+      pack?.answer?.prose,
+      pack?.prose,
+      vm.institutionalAnswer?.prose,
+      vm.thesis,
+      bottomLine,
+    ]).filter((paragraph, index, rows) => {
+      if (index === 0) return true;
+      const first = rows[0]?.toLowerCase() || '';
+      const current = paragraph.toLowerCase();
+      return current !== first && !first.includes(current) && !current.includes(first);
+    });
+
   const confidence = evidenceUnavailable
     ? null
     : calibrateDisplayedConfidence(vm.confidence ?? rc?.confidence?.score ?? null, qualityGates);
@@ -374,6 +408,7 @@ export function mapChatAnswer(pack) {
     intent: vm.intent,
     category: vm.category,
     directAnswer,
+    narrativeParagraphs,
     whyAgib,
     bottomLine,
     horizon: vm.horizon || vm.institutionalAnswer?.horizon || '12–24 Months',
