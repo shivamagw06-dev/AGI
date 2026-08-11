@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Activity, AlertCircle, BarChart3, ChevronRight, Clock3, RefreshCw, ShieldCheck, Sparkles, X } from 'lucide-react';
 import API_ORIGIN from '@/config';
+import { CONVICTION_FILTERS, convictionTone, filterConvictionRows, readableConvictionLabel } from '@/lib/evidenceConvictionView';
 import './liveAlphaPage.css';
 import './growwResearch.css';
 
@@ -63,6 +64,10 @@ export default function LiveAlphaPage() {
   const [selected, setSelected] = useState(null);
   const [strategy, setStrategy] = useState('all');
   const [sort, setSort] = useState('alpha');
+  const [view, setView] = useState('signals');
+  const [conviction, setConviction] = useState({ run: null, rows: [] });
+  const [convictionFilter, setConvictionFilter] = useState('shortlist');
+  const [convictionError, setConvictionError] = useState('');
 
   const load = async () => {
     setLoading(true); setError('');
@@ -74,6 +79,11 @@ export default function LiveAlphaPage() {
       ]);
       setPayload(await readApiJson(workspaceResponse, 'Live Alpha research store'));
       setRuntime(await readApiJson(statusResponse, 'Live Alpha runtime'));
+      try {
+        const convictionResponse = await fetch(`${API_ORIGIN}/api/market/evidence-conviction?limit=200`, { headers: { Accept: 'application/json' } });
+        setConviction(await readApiJson(convictionResponse, 'Conviction ranking')); setConvictionError('');
+      }
+      catch (convictionRequestError) { setConvictionError(convictionRequestError.message); }
     } catch (requestError) { setError(requestError.message); }
     finally { setLoading(false); }
   };
@@ -129,6 +139,11 @@ export default function LiveAlphaPage() {
     </section>
 
     <main className="la-main">
+      <nav className="la-view-tabs" aria-label="Live Alpha views">
+        <button className={view === 'signals' ? 'active' : ''} onClick={() => setView('signals')}><Activity size={15} /> Strategy signals</button>
+        <button className={view === 'conviction' ? 'active' : ''} onClick={() => setView('conviction')}><ShieldCheck size={15} /> Conviction</button>
+      </nav>
+      {view === 'signals' ? <>
       <GrowwResearch groww={payload.groww} />
       <section className="la-panel la-scanner">
         <header><div><span className="la-section-kicker">Opportunity map</span><h2>Live Alpha Scanner</h2></div><div className="la-controls"><select value={sort} onChange={(event) => setSort(event.target.value)} aria-label="Sort scanner"><option value="alpha">Alpha score</option><option value="confidence">Confidence</option><option value="sector">Sector</option><option value="age">Signal age</option></select><span>{rows.length} names</span></div></header>
@@ -142,10 +157,34 @@ export default function LiveAlphaPage() {
         <div className="la-panel la-confluence"><header><div><span className="la-section-kicker">Independent confirmation</span><h2>High-Conviction Confluence</h2></div></header>{confluence.length ? confluence.map((row) => <button key={row.symbol} onClick={() => setSelected(row.symbol)}><div><strong>{row.symbol}</strong><span>{row.sector}</span></div><div className="la-model-dots">{STRATEGIES.map(([key]) => <i key={key} className={row.strategies[key]?.direction ? 'on' : ''} title={SHORT[key]} />)}</div><div><b>{row.active.length}/5</b><span>models confirm</span></div><Score value={row.composite} /></button>) : <p className="la-muted-copy">Confluence appears when two or more independent engines flag the same stock.</p>}</div>
         <div className="la-panel la-events"><header><div><span className="la-section-kicker">Signal lifecycle</span><h2>Recent Events</h2></div></header>{(payload.signals || []).filter((signal) => signal.direction).slice(0, 6).map((signal) => <button key={signal.id} onClick={() => setSelected(signal.symbol)}><Clock3 size={14} /><time>{new Date(signal.as_of).toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit' })}</time><span><b>{signal.symbol}</b> · {String(signal.classification).replaceAll('_', ' ')}</span></button>)}{!(payload.signals || []).some((signal) => signal.direction) ? <p className="la-muted-copy">No signal lifecycle events have been recorded.</p> : null}</div>
       </section>
+      </> : <ConvictionPanel payload={conviction} error={convictionError} filter={convictionFilter} onFilter={setConvictionFilter} />}
       <p className="la-disclosure"><ShieldCheck size={14} /> Research signals only. AGI does not generate orders, position sizes, targets, or execution instructions.</p>
     </main>
     {selectedRow ? <ResearchDrawer row={selectedRow} onClose={() => setSelected(null)} /> : null}
   </div>;
+}
+
+function ConvictionPanel({ payload, error, filter, onFilter }) {
+  const rows = filterConvictionRows(payload?.rows || [], filter);
+  const counts = payload?.run?.counts || {};
+  const generated = payload?.run?.generated_at ? new Date(payload.run.generated_at).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }) : 'Awaiting first run';
+  return <section className="la-conviction-view">
+    <header className="la-conviction-hero"><div><span className="la-section-kicker">Evidence-confirmed decision layer</span><h2>Conviction Ranking</h2><p>Groww leadership, Upstox confirmation and available research evidence—ranked without turning incomplete signals into investment theses.</p></div><div className="la-conviction-meta"><strong>{payload?.run?.universe_size || 0}</strong><span>ranked names<br />Updated {generated}</span></div></header>
+    <div className="la-conviction-summary">
+      <div><small>High conviction</small><strong>{counts.HIGH_CONVICTION || 0}</strong></div>
+      <div><small>Confirmed</small><strong>{counts.CONFIRMED || 0}</strong></div>
+      <div><small>Watch</small><strong>{counts.WATCH || 0}</strong></div>
+      <div><small>Needs evidence</small><strong>{counts.INCOMPLETE || 0}</strong></div>
+    </div>
+    <div className="la-conviction-toolbar"><div>{CONVICTION_FILTERS.map(([key, label]) => <button key={key} className={filter === key ? 'active' : ''} onClick={() => onFilter(key)}>{label}</button>)}</div><span>Showing {rows.length} names</span></div>
+    {error ? <div className="la-notice error"><AlertCircle size={18} /><div><strong>Conviction ranking unavailable</strong><p>{error}</p></div></div> : null}
+    {!error && !payload?.run ? <div className="la-empty"><ShieldCheck size={28} /><h3>Awaiting the first conviction cycle</h3><p>The ranking will appear after the finance backend combines stored Groww, Upstox and research evidence.</p></div> : null}
+    {!error && payload?.run && !rows.length ? <div className="la-empty"><ShieldCheck size={28} /><h3>{filter === 'shortlist' ? 'No evidence-confirmed shortlist yet' : 'No names in this category'}</h3><p>{filter === 'shortlist' ? 'AGI is correctly withholding conviction while fundamental, valuation or live confirmation is incomplete.' : 'Choose another filter to inspect the current ranking.'}</p>{filter === 'shortlist' ? <button className="la-empty-action" onClick={() => onFilter('incomplete')}>View names needing evidence</button> : null}</div> : null}
+    {rows.length ? <div className="la-conviction-list">{rows.slice(0, filter === 'shortlist' ? 10 : 200).map((row) => <details key={row.symbol} className="la-conviction-card">
+      <summary><span className="la-conviction-rank">#{row.rank}</span><div className="la-conviction-name"><strong>{row.symbol}</strong><span>{row.sector || 'Sector unavailable'}</span></div><div className="la-conviction-score"><strong>{Number(row.conviction_score).toFixed(1)}</strong><span>conviction</span></div><span className={`la-conviction-label ${convictionTone(row.conviction_label)}`}>{readableConvictionLabel(row.conviction_label)}</span><div className="la-evidence-meter"><i style={{ width: `${Math.round(Number(row.evidence_coverage || 0) * 100)}%` }} /><span>{Math.round(Number(row.evidence_coverage || 0) * 100)}% evidence</span></div><ChevronRight className="la-conviction-chevron" size={16} /></summary>
+      <div className="la-conviction-detail"><article><small>AGI thesis</small><p>{row.thesis}</p></article><article><small>Risk and contradiction check</small><p>{row.risk_note}</p></article><div className="la-component-grid">{Object.entries(row.component_scores || {}).map(([key, value]) => <div key={key}><span>{key.replaceAll('_', ' ')}</span><strong>{value == null ? '—' : Number(value).toFixed(0)}</strong></div>)}</div></div>
+    </details>)}</div> : null}
+  </section>;
 }
 
 function Score({ value }) { return <span className={`la-score ${value >= 80 ? 'exceptional up' : value <= -80 ? 'exceptional down' : value > 0 ? 'up' : value < 0 ? 'down' : ''}`}>{scoreText(value)}</span>; }
