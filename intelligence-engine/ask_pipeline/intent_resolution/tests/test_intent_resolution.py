@@ -293,7 +293,7 @@ INVESTMENT_ASSISTANT_ROUTING = [
     ("What is AGI’s view on Zen Technologies’ ₹295 crore defence order?", {"Analyse", "CorporateEvents"}),
     ("What is your view on Reliance?", {"Analyse"}),
     ("Give me a quick take on HDFC Bank", {"Analyse"}),
-    ("What changed after Infosys earnings?", {"CorporateEvents"}),
+    ("What changed after Infosys earnings?", {"Earnings", "CorporateEvents"}),
     ("Is TCS expensive at its current valuation?", {"Valuation"}),
     ("What are the main risks to Zomato?", {"Risk"}),
     ("Compare BEL with HAL", {"Compare"}),
@@ -310,3 +310,34 @@ def test_investment_assistant_routing(question: str, expected: set[str]) -> None
         f"got {irl['intent']} expected {expected} scores={irl.get('intent_scores')}"
     )
     assert irl["intent"] != "Unknown"
+
+
+NSE_OPERATING_SYSTEM_ROUTING = [
+    ("What's going wrong with TCS?", "TCS", "CompanyOverview"),
+    ("Why is it falling?", "TCS", "MarketMovement"),
+    ("Is the valuation justified?", "TCS", "Valuation"),
+    ("What changed after earnings?", "TCS", "Earnings"),
+    ("Compare it with Infosys.", "TCS", "Compare"),
+    ("Who has better cash conversion?", "TCS", "Compare"),
+    ("Which IT company is cheapest relative to history?", None, "Screening"),
+    ("Find banks where ROE is improving but valuation is below historical average.", None, "Screening"),
+    ("Which NSE companies have promoter holding rising?", None, "Screening"),
+    ("Show companies where earnings are improving but price hasn't reacted.", None, "Screening"),
+    ("Which banking stocks have falling NIM but improving asset quality?", None, "Screening"),
+    ("Find companies where FII ownership rose for 3 quarters.", None, "Screening"),
+    ("What are the upcoming catalysts for Reliance?", "RELIANCE", "Catalyst"),
+    ("How did AGI view this company six months ago?", "TCS", "HistoricalChange"),
+]
+
+
+@pytest.mark.parametrize("question,ticker_hint,expected", NSE_OPERATING_SYSTEM_ROUTING)
+def test_nse_operating_system_routes_to_specific_workflow(
+    question: str, ticker_hint: str | None, expected: str,
+) -> None:
+    irl = resolve_intent(question, ticker_hint=ticker_hint)
+    assert irl["intent"] == expected, (
+        f"got {irl['intent']} expected {expected} scores={irl.get('intent_scores')}"
+    )
+    workflow = (irl.get("evidence_requirements") or {}).get("research_workflow") or []
+    assert len(workflow) >= 3
+    assert (irl.get("evidence_requirements") or {}).get("evidence_types_required")
