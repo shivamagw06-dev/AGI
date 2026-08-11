@@ -25,7 +25,7 @@ services:
       - key: INTELLIGENCE_ENGINE_TOKEN
         generateValue: true
       - key: CIO_MORNING_SCHEDULER
-        value: "true"
+        value: "false"
       # Gather runs on the engine gather sidecar / dedicated worker — do not
       # POST heavy CGL cycles into the HTTP process from Node (causes 502s).
       - key: CONTINUOUS_GATHER_LEARN_SCHEDULER
@@ -33,7 +33,7 @@ services:
       - key: CONTINUOUS_GATHER_LEARN_NODE_INTERVAL_MS
         value: "1800000"
       - key: CONTINUOUS_MORNING_DAG
-        value: "true"
+        value: "false"
       - key: CONTINUOUS_FAA_REFRESH
         value: "true"
       # embedded = API also runs the ingest worker (default on Free).
@@ -212,7 +212,37 @@ services:
       - key: CONTINUOUS_GATHER_LEARN_INTERVAL_SEC
         value: "1800"
       - key: CONTINUOUS_MORNING_DAG
-        value: "true"
+        value: "false"
+      # Paused product surfaces: macro and portfolio are not currently used.
+      # Keep company research, Ask, evidence, warehouse and forecasting active.
+      - key: MIE_RUNTIME_ENABLED
+        value: "false"
+      - key: E01_P0
+        value: "false"
+      - key: E10_P0
+        value: "false"
+      - key: KF_MACRO
+        value: "false"
+      - key: AOI_RBI
+        value: "false"
+      - key: IKG_MACRO
+        value: "false"
+      - key: ILM_PORTFOLIO
+        value: "false"
+      - key: CIG_PORTFOLIO_IMPACT
+        value: "false"
+      - key: PORTFOLIO_OFFICE
+        value: "false"
+      - key: PO01
+        value: "false"
+      - key: AGI_MPC_01_ENABLED
+        value: "false"
+      - key: AGI_PRE_01_ENABLED
+        value: "false"
+      - key: AGI_CIO_01_ENABLED
+        value: "false"
+      - key: AGI_PKG_01_ENABLED
+        value: "false"
       - key: CONTINUOUS_LIDI
         value: "true"
       - key: CONTINUOUS_KF_HD
@@ -316,7 +346,7 @@ services:
       - key: ACCOUNTING_INTELLIGENCE
         value: "true"
       - key: PORTFOLIO_INTELLIGENCE
-        value: "true"
+        value: "false"
       - key: PEER_INTELLIGENCE
         value: "true"
       - key: CAUSAL_INTELLIGENCE
@@ -328,7 +358,7 @@ services:
       - key: INSTITUTIONAL_MEMORY
         value: "true"
       - key: SIMULATION_LAB
-        value: "true"
+        value: "false"
       - key: DECISION_ENGINE_V2
         value: "true"
       - key: EVIDENCE_INTELLIGENCE_LAYER
@@ -409,7 +439,41 @@ services:
       - key: CONTINUOUS_GATHER_LEARN_INTERVAL_SEC
         value: "1800"
       - key: CONTINUOUS_MORNING_DAG
-        value: "true"
+        value: "false"
+      # Worker pause mirrors the web service. These switches are reversible
+      # and do not delete warehouse, macro or portfolio data.
+      - key: MIE_RUNTIME_ENABLED
+        value: "false"
+      - key: E01_P0
+        value: "false"
+      - key: E10_P0
+        value: "false"
+      - key: KF_MACRO
+        value: "false"
+      - key: AOI_RBI
+        value: "false"
+      - key: IKG_MACRO
+        value: "false"
+      - key: ILM_PORTFOLIO
+        value: "false"
+      - key: CIG_PORTFOLIO_IMPACT
+        value: "false"
+      - key: PORTFOLIO_INTELLIGENCE
+        value: "false"
+      - key: SIMULATION_LAB
+        value: "false"
+      - key: PORTFOLIO_OFFICE
+        value: "false"
+      - key: PO01
+        value: "false"
+      - key: AGI_MPC_01_ENABLED
+        value: "false"
+      - key: AGI_PRE_01_ENABLED
+        value: "false"
+      - key: AGI_CIO_01_ENABLED
+        value: "false"
+      - key: AGI_PKG_01_ENABLED
+        value: "false"
       - key: CONTINUOUS_LIDI
         value: "true"
       - key: CONTINUOUS_KF_HD
