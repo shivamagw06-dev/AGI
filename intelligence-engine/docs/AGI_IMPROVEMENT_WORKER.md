@@ -1,45 +1,143 @@
 # Ask AGI Investment Intelligence Improvement Worker
 
-This worker implements a controlled evaluation loop; it does not retrain OpenAI model weights.
+Controlled evaluation loop for Ask AGI. This is **evaluation-driven self-improvement**, not OpenAI model-weight training.
 
-## Railway service
+## Architecture
 
-Create a separate background worker using `intelligence-engine/railway.improvement.toml`. Do not replace the web service or gather worker.
+```text
+agi-improvement-worker (Railway, no public URL)
+        |
+        |  POST /v1/ui/search  (concurrency 2, bounded retries)
+        v
+agib-intelligence-engine  (healthy path — no agib-api required)
+        |
+        v
+AGI research / retrieval / reasoning
+        |
+        v
+independent OpenAI evaluator
+        |
+        v
+append-only JSONL + Supabase persistence
+```
 
-Required environment variables:
+The worker **never** starts the AGI web server and **never** runs on Render.
 
-- `AGI_ENGINE_URL`: Ask AGI engine base URL.
-- `OPENAI_API_KEY`: evaluator project key; never stored in reports.
+## Required endpoint
 
-Safe defaults:
+`scripts/improvement_worker.py` calls the intelligence engine directly:
 
-- 100 questions per assigned session.
-- 10-question batches.
-- concurrency 2, hard maximum 8.
-- six-hour maximum runtime.
-- no code modification, merge, deployment, database migration, or trading.
+```text
+POST {AGI_ENGINE_URL}/v1/ui/search?question=...&ticker=...
+```
 
-Optional controls:
+It does **not** call `agib-api`. Point `AGI_ENGINE_URL` at your healthy `agib-intelligence-engine` public or private Railway URL.
 
-- `AGI_IMPROVEMENT_QUESTION_LIMIT`: use the validated ramp 100 → 250 → 500 → 1000 → 2500.
-- `AGI_IMPROVEMENT_BATCH_SIZE`
-- `AGI_IMPROVEMENT_CONCURRENCY`
-- `AGI_IMPROVEMENT_RUNTIME_HOURS`
-- `AGI_EVAL_MODEL`, `AGI_EVAL_REASONING`, `AGI_EVAL_TIMEOUT_SEC`
-- `AGI_IMPROVEMENT_MAX_MODEL_CALLS` (hard default: 100)
-- `AGI_EVAL_INPUT_USD_PER_MILLION`, `AGI_EVAL_OUTPUT_USD_PER_MILLION` for cost reporting
-- `AGI_IMPROVEMENT_OUTPUT_DIR` (mount persistent storage at `/data`)
+Preflight check: `GET {AGI_ENGINE_URL}/v1/health`
 
-Run a no-cost local preview:
+## Railway service: agi-improvement-worker
+
+Create a **separate** background worker. Do not replace `agib-intelligence-engine`, `agib-intelligence-worker`, or `agib-api`.
+
+| Setting | Value |
+|---|---|
+| Service name | `agi-improvement-worker` |
+| Root directory | `intelligence-engine` |
+| Config file | `railway.improvement.toml` |
+| Builder | Dockerfile |
+| Start command | `python scripts/improvement_worker.py` |
+| Public networking | **OFF** |
+| Replicas | **1** |
+| Volume (recommended) | mount at `/data` |
+
+`agib-api` may remain paused or failing — it is not in this dependency chain.
+
+## Environment variables
+
+Required for live runs:
+
+| Variable | Purpose |
+|---|---|
+| `AGI_ENGINE_URL` | Base URL of `agib-intelligence-engine` (or use `INTELLIGENCE_ENGINE_URL`) |
+| `OPENAI_API_KEY` | Independent evaluator only; never stored in reports |
+
+Recommended defaults for first live run:
+
+| Variable | Value |
+|---|---|
+| `AGI_IMPROVEMENT_QUESTION_LIMIT` | `100` |
+| `AGI_IMPROVEMENT_CONCURRENCY` | `2` |
+| `AGI_IMPROVEMENT_BATCH_SIZE` | `10` |
+| `AGI_IMPROVEMENT_MAX_RETRIES` | `3` |
+| `AGI_ASK_TIMEOUT_SEC` | `70` |
+| `AGI_IMPROVEMENT_OUTPUT_DIR` | `/data/agi-improvement` |
+
+Optional:
+
+| Variable | Purpose |
+|---|---|
+| `AGI_IMPROVEMENT_SMOKE_TEST` | `1` → 10-question smoke run |
+| `AGI_IMPROVEMENT_DRY_RUN` | `1` → generate questions only, no API spend |
+| `INTELLIGENCE_ENGINE_TOKEN` | Bearer token if engine auth is enabled |
+| `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` | Durable append-only persistence |
+| `AGI_EVAL_MODEL`, `AGI_EVAL_TIMEOUT_SEC` | Evaluator model settings |
+| `AGI_EVAL_INPUT_USD_PER_MILLION`, `AGI_EVAL_OUTPUT_USD_PER_MILLION` | Cost reporting |
+
+## Ramp stages (do not skip)
+
+```text
+100 → 250 → 500 → 1,000 → 2,500/day
+```
+
+Promote only after acceptable error rate, answer quality, evaluator success, latency, engine load, and OpenAI cost.
+
+## Operational sequence
+
+1. Verify `agib-intelligence-engine` is online (`/v1/health`).
+2. Create `agi-improvement-worker` with variables above.
+3. Mount `/data` volume for local JSONL backup.
+4. Run smoke: `AGI_IMPROVEMENT_SMOKE_TEST=1` (10 questions).
+5. Run live: `AGI_IMPROVEMENT_QUESTION_LIMIT=100`, concurrency `2`.
+6. Watch logs for `[agi-improvement-dashboard]` JSON summary.
+
+## Outputs
+
+Local/volume (append-only):
+
+- `evaluations.jsonl`
+- `learning_events.jsonl`
+- `reports/<session-id>.json`
+
+Supabase (when configured):
+
+- `agi_improvement_sessions`
+- `agi_improvement_evaluations`
+- `agi_improvement_learning_events`
+
+## Local commands
+
+Dry run (no spend):
 
 ```bash
 python -m agi_improvement_engine.worker --count 100
 ```
 
-Execute explicitly:
+Execute against local engine:
 
 ```bash
-python -m agi_improvement_engine.worker --count 100 --execute --endpoint https://your-engine.example
+AGI_ENGINE_URL=http://127.0.0.1:8100 \
+OPENAI_API_KEY=sk-... \
+python -m agi_improvement_engine.worker --count 10 --execute --concurrency 2
 ```
 
-Outputs are append-only `evaluations.jsonl` records and a per-session dashboard under `reports/`. Answers are traces, not factual memory. Only independently evaluated learning events may inform a proposed repair, and meaningful investment-logic changes must remain unmerged for human review.
+Railway entrypoint:
+
+```bash
+python scripts/improvement_worker.py
+```
+
+## Safety
+
+The worker must not trade, auto-merge PRs, auto-deploy material logic, mutate production schemas, or treat AGI answers as ground truth.
+
+Failures produce diagnosis records (`DIAGNOSIS_REQUIRED`) for human-reviewed fixes — not automatic answer regeneration.
