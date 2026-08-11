@@ -8,6 +8,7 @@ import { settleDueForecasts, syncProbabilisticForecasts } from './probabilisticF
 import { syncForecastCrossSections } from './forecastV2Store.js';
 import { scopeQueueToLiveUniverse } from './confluenceCandidateScope.js';
 import { buildEvidenceConfirmedConvictionRanking } from './evidenceConfirmedConviction.js';
+import { indiaTradingDayAfterClose } from './dailyForecastSchedule.js';
 
 let timer = null;
 let state = { enabled: false, status: 'disabled', last_run: null, last_capture: null, last_completion: null, last_error: null };
@@ -34,10 +35,13 @@ export async function runConfluenceValidationCycle() {
     const capture = await saveConfluenceEvents(queue, universe);
     const completion = await completeDueConfluenceOutcomes();
     const memory = await syncResearchMemory();
-    const forecasts = await syncProbabilisticForecasts();
+    const forecastDate = indiaTradingDayAfterClose();
+    const forecasts = forecastDate && state.last_daily_forecast_date !== forecastDate
+      ? await syncProbabilisticForecasts()
+      : { status: forecastDate ? 'already_completed_today' : 'waiting_for_15_40_ist', forecast_date: forecastDate || null, snapshots_created: 0, forecasts_created: 0 };
     const forecastOutcomes = await settleDueForecasts();
     const crossSections = await syncForecastCrossSections();
-    state = { ...state, status: 'idle', last_run: new Date().toISOString(), last_conviction: convictionSave, last_capture: capture, last_completion: completion, last_memory_sync: memory, last_forecast_sync: forecasts, last_forecast_completion: forecastOutcomes, last_cross_section_sync: crossSections };
+    state = { ...state, status: 'idle', last_run: new Date().toISOString(), last_conviction: convictionSave, last_capture: capture, last_completion: completion, last_memory_sync: memory, last_forecast_sync: forecasts, last_daily_forecast_date: forecastDate && forecasts.status !== 'waiting_for_15_40_ist' ? forecastDate : state.last_daily_forecast_date, last_forecast_completion: forecastOutcomes, last_cross_section_sync: crossSections };
   } catch (error) {
     state = { ...state, status: error.status === 404 ? 'database_setup_required' : 'degraded', last_run: new Date().toISOString(), last_error: error.message };
   }
