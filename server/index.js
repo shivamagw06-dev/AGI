@@ -38,7 +38,7 @@ import { getLiveAlphaRuntimeStatus, startLiveAlphaRuntime } from "./services/liv
 import { getLiveAlphaWorkspace } from "./services/liveAlphaWorkspace.js";
 import { buildConfluenceQueue } from "./services/researchConfluence.js";
 import { getResearchEvidence } from "./services/researchEvidenceCollector.js";
-import { getConfluenceLedger, getConfluenceValidationSummary } from "./services/confluenceValidationStore.js";
+import { getConfluenceLedger, getConfluenceValidationSummary, getLatestEvidenceConviction } from "./services/confluenceValidationStore.js";
 import { getConfluenceValidationStatus, startConfluenceValidationScheduler } from "./services/confluenceValidationScheduler.js";
 import { getCompanyResearchMemory, screenResearchChanges } from "./services/researchMemoryStore.js";
 import { getCompanyForecasts, getForecastValidation } from "./services/probabilisticForecastStore.js";
@@ -349,6 +349,10 @@ reg('/api/market/research-confluence/validation', async (_req, res) => {
 reg('/api/market/research-confluence/ledger', async (req, res) => {
   try { res.json({ generated_at: new Date().toISOString(), research_only: true, rows: await getConfluenceLedger({ limit: Number(req.query.limit) || 100, symbol: req.query.symbol }) }); }
   catch (error) { res.status(error.status === 404 ? 503 : 500).json({ error: error.message, research_only: true }); }
+});
+reg('/api/market/evidence-conviction', async (req, res) => {
+  try { res.json(await getLatestEvidenceConviction({ limit: Number(req.query.limit) || 25, label: req.query.label })); }
+  catch (error) { res.status(error.status === 404 ? 503 : 500).json({ error: error.message, research_only: true, execution_enabled: false }); }
 });
 reg('/api/market/research-memory/changes', async (req, res) => {
   try { res.json({ generated_at: new Date().toISOString(), research_only: true, rows: await screenResearchChanges({ type: req.query.type, days: Number(req.query.days) || 30, limit: Number(req.query.limit) || 100 }) }); }

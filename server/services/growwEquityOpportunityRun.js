@@ -6,6 +6,9 @@
  * persists via ingestPayload (direct Supabase write, no outbound ingest hop).
  */
 
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { getHistoricalCandles, isGrowwConfigured } from '../providers/groww.js';
 import { ingestPayload, STRATEGIES } from './researchSignalIngest.js';
 
@@ -16,6 +19,8 @@ export const DEFAULT_UNIVERSE =
   'RELIANCE,HDFCBANK,ICICIBANK,INFY,TCS,BHARTIARTL,ITC,LT,SBIN,AXISBANK,KOTAKBANK,HINDUNILVR,BAJFINANCE,MARUTI,SUNPHARMA,NTPC,TITAN,ULTRACEMCO,ASIANPAINT,POWERGRID,M&M,NESTLEIND,TATASTEEL,ONGC,TECHM,WIPRO,COALINDIA,JSWSTEEL,HCLTECH,ADANIENT,ADANIPORTS,BAJAJFINSV,GRASIM,DRREDDY,CIPLA,EICHERMOT,HEROMOTOCO,APOLLOHOSP,BRITANNIA,DIVISLAB,INDUSINDBK,TATACONSUM,SBILIFE,HDFCLIFE,BPCL,SHRIRAMFIN,TRENT,BEL,JIOFIN,BAJAJ-AUTO';
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+const serverDir = path.dirname(fileURLToPath(import.meta.url));
+const defaultNifty200Path = path.join(serverDir, '../../indices/Nifty200.csv');
 
 function istTimestamp(now = new Date()) {
   const parts = Object.fromEntries(
@@ -138,13 +143,24 @@ export function analyseEquity(symbol, candles, benchmark) {
   };
 }
 
-function parseUniverse() {
-  const limit = Math.max(5, Math.min(200, Number(process.env.AGI_MAX_SYMBOLS || 50) || 50));
-  return String(process.env.AGI_UNIVERSE || DEFAULT_UNIVERSE)
-    .split(',')
-    .map((symbol) => symbol.trim().toUpperCase())
-    .filter(Boolean)
-    .slice(0, limit);
+export async function loadEquityUniverse() {
+  const limit = Math.max(5, Math.min(200, Number(process.env.AGI_MAX_SYMBOLS || 200) || 200));
+  const configured = String(process.env.AGI_UNIVERSE || '').trim();
+  if (configured) {
+    return configured.split(',').map((symbol) => symbol.trim().toUpperCase()).filter(Boolean).slice(0, limit);
+  }
+  try {
+    const csvPath = process.env.AGI_NIFTY200_PATH || defaultNifty200Path;
+    const rows = (await fs.readFile(csvPath, 'utf8')).split(/\r?\n/).slice(1).filter(Boolean);
+    const symbols = rows.map((line) => line.split(',')[2]?.trim().toUpperCase()).filter(Boolean);
+    if (symbols.length !== 200 || new Set(symbols).size !== 200) {
+      throw new Error(`expected 200 unique symbols, received ${symbols.length}`);
+    }
+    return symbols.slice(0, limit);
+  } catch (error) {
+    console.warn('[groww-equity-opportunity] Nifty 200 universe unavailable, using core fallback:', error.message);
+    return DEFAULT_UNIVERSE.split(',').map((symbol) => symbol.trim()).slice(0, limit);
+  }
 }
 
 export async function runGrowwEquityOpportunityResearch({ force = false } = {}) {
@@ -153,7 +169,7 @@ export async function runGrowwEquityOpportunityResearch({ force = false } = {}) 
   }
 
   const delayMs = Math.max(100, Number(process.env.AGI_CALL_DELAY_SEC || 0.22) * 1000);
-  const symbols = parseUniverse();
+  const symbols = await loadEquityUniverse();
   const lookbackDays = Math.max(120, Number(process.env.AGI_LOOKBACK_DAYS || 175) || 175);
 
   const niftyCandles = await getHistoricalCandles('NSE', 'CASH', 'NIFTY', lookbackDays);
@@ -183,7 +199,9 @@ export async function runGrowwEquityOpportunityResearch({ force = false } = {}) 
   }
 
   rows.sort((left, right) => right.score - left.score);
-  const candidates = rows.slice(0, 10).map((row, index) => ({
+  // Persist the complete cross-section. Downstream conviction ranking needs
+  // every constituent, not only the ten names already selected by momentum.
+  const candidates = rows.map((row, index) => ({
     ...row,
     rank: index + 1,
     signal: 'research_candidate',
@@ -203,6 +221,8 @@ export async function runGrowwEquityOpportunityResearch({ force = false } = {}) 
     universe_size: symbols.length,
     processed: rows.length,
     benchmark,
+    universe: 'nifty200',
+    shortlist_size: Math.min(20, rows.length),
     candidates,
     deteriorating,
     errors: errors.slice(0, 20),

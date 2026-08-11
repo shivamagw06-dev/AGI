@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { analyseEquity, returnPct, stdev } from './growwEquityOpportunityRun.js';
+import { analyseEquity, loadEquityUniverse, returnPct, stdev } from './growwEquityOpportunityRun.js';
 
 function syntheticCandles(count, { start = 100, drift = 0.2, volume = 1_000_000 } = {}) {
   const rows = [];
@@ -31,4 +31,19 @@ test('analyseEquity scores a rising series', () => {
 test('analyseEquity returns null for short history', () => {
   const candles = syntheticCandles(40);
   assert.equal(analyseEquity('TCS', candles, { return_20d: 0, return_60d: 0 }), null);
+});
+
+test('uses the complete Nifty 200 as the default equity universe', async () => {
+  const priorUniverse = process.env.AGI_UNIVERSE;
+  const priorLimit = process.env.AGI_MAX_SYMBOLS;
+  delete process.env.AGI_UNIVERSE;
+  delete process.env.AGI_MAX_SYMBOLS;
+  try {
+    const symbols = await loadEquityUniverse();
+    assert.equal(symbols.length, 200);
+    assert.equal(new Set(symbols).size, 200);
+  } finally {
+    if (priorUniverse === undefined) delete process.env.AGI_UNIVERSE; else process.env.AGI_UNIVERSE = priorUniverse;
+    if (priorLimit === undefined) delete process.env.AGI_MAX_SYMBOLS; else process.env.AGI_MAX_SYMBOLS = priorLimit;
+  }
 });

@@ -55,3 +55,51 @@ export async function getConfluenceValidationSummary({ limit = 10000 } = {}) {
   const rows = await rest('research_confluence_outcomes', { query: `select=horizon,status,excess_return_pct,sector_adjusted_alpha_pct,event:research_confluence_events(classification,market_regime)&status=eq.completed&limit=${Math.min(10000, limit)}` });
   return summarizeConfluenceOutcomes(rows.map((row) => ({ ...row, classification: row.event?.classification, market_regime: row.event?.market_regime })));
 }
+
+export async function saveEvidenceConvictionRanking(ranking) {
+  const runs = await rest('evidence_conviction_runs', {
+    method: 'POST',
+    body: {
+      strategy: ranking.strategy,
+      universe: ranking.universe,
+      generated_at: ranking.generated_at,
+      universe_size: ranking.universe_size,
+      methodology: ranking.methodology,
+      counts: ranking.counts,
+      research_only: true,
+    },
+    prefer: 'return=representation',
+  });
+  const runId = runs?.[0]?.id;
+  if (!runId) throw new Error('Evidence conviction run insert did not return an id.');
+  const rows = ranking.rows.map((row) => ({
+    run_id: runId,
+    symbol: row.symbol,
+    sector: row.sector,
+    rank: row.rank,
+    conviction_score: row.conviction_score,
+    conviction_label: row.conviction_label,
+    evidence_coverage: row.evidence_coverage,
+    confluence_class: row.confluence_class,
+    market_regime: row.market_regime,
+    eligible_for_research_shortlist: row.eligible_for_research_shortlist,
+    thesis: row.thesis,
+    risk_note: row.risk_note,
+    component_scores: row.component_scores,
+    evidence_snapshot: row.evidence_snapshot,
+    research_only: true,
+  }));
+  if (rows.length) await rest('evidence_conviction_rankings', { method: 'POST', body: rows, prefer: 'return=minimal' });
+  return { run_id: runId, rankings: rows.length, shortlist: rows.filter((row) => row.eligible_for_research_shortlist).length };
+}
+
+export async function getLatestEvidenceConviction({ limit = 25, label } = {}) {
+  const runs = await rest('evidence_conviction_runs', { query: 'select=*&order=generated_at.desc&limit=1' });
+  const run = runs?.[0];
+  if (!run) return { run: null, rows: [], research_only: true, execution_enabled: false };
+  const labelFilter = label ? `&conviction_label=eq.${encodeURIComponent(String(label).toUpperCase())}` : '';
+  const rows = await rest('evidence_conviction_rankings', {
+    query: `select=symbol,sector,rank,conviction_score,conviction_label,evidence_coverage,confluence_class,market_regime,eligible_for_research_shortlist,thesis,risk_note,component_scores&run_id=eq.${run.id}${labelFilter}&order=rank.asc&limit=${Math.max(1, Math.min(200, Number(limit) || 25))}`,
+  });
+  return { run, rows, research_only: true, execution_enabled: false };
+}
