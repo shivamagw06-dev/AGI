@@ -19,7 +19,9 @@ COPY package.json package-lock.json ./
 RUN npm install --no-audit --no-fund
 
 COPY requirements.txt ./
-RUN python3 -m pip install --no-cache-dir -r requirements.txt
+RUN python3 -m venv /opt/groww-venv \
+    && /opt/groww-venv/bin/pip install --no-cache-dir -r requirements.txt
+ENV PATH="/opt/groww-venv/bin:${PATH}"
 
 COPY . .
 
