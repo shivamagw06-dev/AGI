@@ -37,6 +37,18 @@ test('normalizes candidates and deterioration rows', () => {
   assert.deepEqual(result.signals.map((row) => row.signal), ['research_candidate', 'risk_review']);
 });
 
+test('counts unique company coverage when a risk-review row duplicates a ranked symbol', () => {
+  const shared = { symbol: 'RELIANCE', score: 78, trend: 'positive', risk: 'low', volume_confirmation: true };
+  const payload = {
+    strategy: 'agi_equity_opportunity_v1', run_id: 'agi_equity_opportunity_v1:2026-08-09-duplicate',
+    as_of: '2026-08-09T06:00:00.000Z', schema_version: '1.0', research_only: true, processed: 1,
+    candidates: [{ ...shared, rank: 1 }], deteriorating: [{ ...shared }],
+  };
+  const normalized = normalizePayload(payload, { now });
+  assert.equal(normalized.coverage, 1);
+  assert.equal(normalized.signals.length, 2);
+});
+
 test('rejects trading-capable and stale payloads', () => {
   assert.throws(() => normalizePayload({ ...sectorPayload(), research_only: false }, { now }), /research_only/);
   assert.throws(() => normalizePayload({ ...sectorPayload(), as_of: '2026-08-01T00:00:00Z' }, { now }), /accepted window/);
