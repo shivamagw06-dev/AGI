@@ -1,10 +1,8 @@
 # Railway config for agib-api (Node Express gateway).
 # Dashboard: Root Directory = server, Config File Path = railway.toml
-#
-# server/requirements.txt exists for Groww Python scripts; Railpack otherwise
-# detects Python-only, skips npm install, and npm start fails the healthcheck.
 [build]
-buildCommand = "npm install --no-audit --no-fund && python -m pip install -r requirements.txt"
+builder = "DOCKERFILE"
+dockerfilePath = "Dockerfile"
 
 [deploy]
 startCommand = "npm start"
