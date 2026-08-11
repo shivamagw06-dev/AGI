@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { buildCrossSectionalFeatureSnapshots, robustScale } from './crossSectionalForecastFeatures.js';
+import { buildCrossSectionalFeatureSnapshots, buildDailyCrossSectionalFeatureSnapshots, robustScale } from './crossSectionalForecastFeatures.js';
 
 const event = (id, symbol, sector, score) => ({
   id, symbol, sector, captured_at: '2026-08-11T10:10:00Z',
@@ -36,4 +36,13 @@ test('records missing factors instead of imputing future information', () => {
   assert.equal(rows[0].features.cross_sectional.missing.valuation, true);
   assert.equal(rows[0].features.cross_sectional.market_z.valuation, null);
   assert.ok(rows[0].completeness < rows[1].completeness);
+});
+
+test('never mixes different forecast dates in one cross-section', () => {
+  const nextDay = event('d', 'DDD', 'IT', 90); nextDay.captured_at = '2026-08-12T10:10:00Z';
+  const rows = buildDailyCrossSectionalFeatureSnapshots([
+    event('a', 'AAA', 'BANKS', 20), event('b', 'BBB', 'BANKS', 50), event('c', 'CCC', 'BANKS', 80), nextDay,
+  ]);
+  assert.deepEqual(rows.map((row) => row.features.cross_sectional.universe_size), [3, 3, 3, 1]);
+  assert.equal(rows[3].features.cross_sectional.market_z.fundamental, null);
 });

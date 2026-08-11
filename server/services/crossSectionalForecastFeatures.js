@@ -77,4 +77,17 @@ export function buildCrossSectionalFeatureSnapshots(events = []) {
   });
 }
 
+export function buildDailyCrossSectionalFeatureSnapshots(events = []) {
+  const byDate = new Map();
+  for (const event of events) {
+    const date = String(event?.captured_at || '').slice(0, 10);
+    if (!date) continue;
+    const rows = byDate.get(date) || [];
+    rows.push(event); byDate.set(date, rows);
+  }
+  return [...byDate.entries()]
+    .sort(([left], [right]) => left.localeCompare(right))
+    .flatMap(([, rows]) => buildCrossSectionalFeatureSnapshots(rows));
+}
+
 export { FACTORS as CROSS_SECTIONAL_FACTORS };
