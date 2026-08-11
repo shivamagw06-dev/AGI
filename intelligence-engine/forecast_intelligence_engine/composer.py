@@ -79,6 +79,7 @@ def build_forecast(symbol: str) -> dict[str, Any]:
         "forecast_quality": quality,
         "probabilities": scenarios.get("probabilities"),
         "inputs_present": bundle.get("inputs_present"),
+        "data_readiness": bundle.get("data_readiness"),
         "recommendation": None,
         "investment_rating": None,
         "target_price": None,

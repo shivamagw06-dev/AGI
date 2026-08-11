@@ -63,6 +63,10 @@ def validate_pack(pack: dict[str, Any]) -> dict[str, Any]:
     inputs = pack.get("inputs_present") or {}
     if not inputs.get("financials_annual"):
         errors.append("insufficient_statements")
+    readiness = pack.get("data_readiness")
+    if isinstance(readiness, dict) and not readiness.get("forecast_ready", False):
+        failures = readiness.get("failures") or ["readiness_unknown"]
+        errors.extend(f"data_readiness:{item}" for item in failures[:8])
     if errors:
         return {"ok": False, "status": "REJECT", "errors": errors[:40]}
     return {"ok": True, "status": "PASS", "errors": []}

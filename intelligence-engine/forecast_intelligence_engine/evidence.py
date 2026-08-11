@@ -107,6 +107,31 @@ def load_bundle(symbol: str) -> dict[str, Any]:
 
     latest_annual = annual[-1] if annual else {}
     prev_annual = annual[-2] if len(annual) >= 2 else {}
+    annual_periods = {
+        str(row.get("fiscal_year") or "").strip().upper()
+        for row in annual
+        if row.get("fiscal_year")
+    }
+    quarterly_periods = {
+        str(row.get("fiscal_period") or "").strip().upper()
+        for row in quarterly
+        if row.get("fiscal_period")
+    }
+    required_history = {
+        "revenue_observations": sum(metric(row, "revenue") is not None for row in annual),
+        "pat_observations": sum(metric(row, "pat", "net_income") is not None for row in annual),
+        "annual_periods": len(annual_periods),
+        "quarterly_periods": len(quarterly_periods),
+    }
+    readiness_failures = []
+    if required_history["annual_periods"] < 2:
+        readiness_failures.append("annual_history_below_2_periods")
+    if required_history["quarterly_periods"] < 8:
+        readiness_failures.append("quarterly_history_below_8_periods")
+    if required_history["revenue_observations"] < 2:
+        readiness_failures.append("revenue_history_below_2_observations")
+    if required_history["pat_observations"] < 2:
+        readiness_failures.append("pat_history_below_2_observations")
 
     return {
         "symbol": ticker,
@@ -123,6 +148,12 @@ def load_bundle(symbol: str) -> dict[str, Any]:
         "forecast_accuracy": forecast_acc,
         "latest_annual": latest_annual,
         "prev_annual": prev_annual,
+        "data_readiness": {
+            **required_history,
+            "forecast_ready": not readiness_failures,
+            "failures": readiness_failures,
+            "policy": "verified_warehouse_facts_only",
+        },
         "uve": uve or {},
         "vpae": vpae or {},
         "hvie": hvie or {},

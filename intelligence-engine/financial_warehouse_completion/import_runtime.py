@@ -142,9 +142,8 @@ def _process_symbol(symbol: str, *, actor: str) -> dict[str, Any]:
         from institutional_warehouse.backfill import statements as stmt_bf
 
         pack = cov.company_coverage(ticker)
-        if not pack.get("packs", {}).get("financials_annual") or not pack.get("packs", {}).get(
-            "financials_quarterly"
-        ):
+        preferred = pack.get("preferred") or {}
+        if not preferred.get("annual_10y") or not preferred.get("quarterly_8q"):
             if hasattr(stmt_bf, "backfill_company"):
                 out = stmt_bf.backfill_company(ticker, actor=actor)
                 actions.append("yahoo_statements")
@@ -191,9 +190,15 @@ def _process_symbol(symbol: str, *, actor: str) -> dict[str, Any]:
         if not done
         else None,
         completed_at=_now() if done else None,
-        blocking_reason=None
-        if done
-        else ("missing_statements" if not pack.get("financial_ok") else "missing_share_count"),
+        blocking_reason=(
+            None
+            if done and pack.get("strategy_ready")
+            else (
+                "preferred_statement_depth"
+                if done
+                else ("missing_statements" if not pack.get("financial_ok") else "missing_share_count")
+            )
+        ),
     )
     return {
         "ok": done,
