@@ -4,6 +4,8 @@
 # server/requirements.txt exists for Groww Python scripts; Railpack otherwise
 # detects Python-only, skips npm install, and npm start fails the healthcheck.
 [build]
+# Node API — use Railpack, NOT Dockerfile (there is no server/Dockerfile).
+builder = "RAILPACK"
 buildCommand = "npm install --no-audit --no-fund && python -m pip install -r requirements.txt"
 
 [deploy]
