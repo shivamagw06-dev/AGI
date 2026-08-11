@@ -19,6 +19,15 @@ LOGGER = logging.getLogger("agi.ask.llm_synthesis")
 DEFAULT_MODEL = "gpt-5.6-terra"
 MAX_EVIDENCE_ITEMS = 12
 MAX_EVIDENCE_CHARS = 36_000
+_PUBLIC_MARKET_SOURCES = {
+    "nse", "bse", "rbi", "yahoo", "finnhub", "fmp", "groww",
+    "indianapi", "twelve_data", "fred", "alphavantage",
+}
+_PUBLIC_MARKET_FACTS = {
+    "symbol", "last_price", "price", "close", "open", "high", "low",
+    "volume", "change", "change_pct", "market_cap", "pe", "pe_ratio",
+    "pb", "pb_ratio", "ev_ebitda", "dividend_yield", "roe",
+}
 _FINANCIAL_NUMBER_RE = re.compile(
     r"(?:₹|rs\.?|inr|\$|€|£)\s*\d[\d,]*(?:\.\d+)?"
     r"(?:\s*(?:crore|cr|lakh|million|billion|trillion))?"
@@ -53,6 +62,47 @@ def _env_number(name: str, default: float, *, minimum: float, maximum: float) ->
     return max(minimum, min(value, maximum))
 
 
+def _public_market_candidates(supplemental_packs: dict[str, Any] | None) -> list[dict[str, Any]]:
+    """Return only whitelisted public observations from LEO's verified layer.
+
+    Deliberately do not traverse arbitrary supplemental packs or forward raw
+    provider responses. This is the model-data boundary for changing market
+    facts: source, verification state, evidence type and fact key must all be
+    explicitly allowed.
+    """
+    live = (supplemental_packs or {}).get("live_evidence") or {}
+    objects = live.get("evidence_objects") if isinstance(live, dict) else []
+    candidates: list[dict[str, Any]] = []
+    for item in objects or []:
+        if not isinstance(item, dict):
+            continue
+        source_id = str(item.get("source_id") or "").strip().lower()
+        status = str(item.get("verification_status") or "").strip().lower()
+        evidence_type = str(item.get("evidence_type") or "").strip().lower()
+        fact_key = str(item.get("fact_key") or "").strip().lower()
+        if source_id not in _PUBLIC_MARKET_SOURCES:
+            continue
+        if status not in {"verified", "provisionally_verified"}:
+            continue
+        if evidence_type not in {"market_data", "valuation_metrics"}:
+            continue
+        if fact_key not in _PUBLIC_MARKET_FACTS:
+            continue
+        value = _safe_text(item.get("value_text") or item.get("value"), 300)
+        if not value:
+            continue
+        candidates.append(
+            {
+                "evidence_id": item.get("evidence_id"),
+                "title": item.get("title") or f"{item.get('company_symbol') or 'Market'} {fact_key}",
+                "source": f"{source_id.upper()} public market data",
+                "available_from": item.get("published"),
+                "content": f"{fact_key}: {value}",
+            }
+        )
+    return candidates[:8]
+
+
 def _evidence_rows(
     evidence: dict[str, Any], supplemental_packs: dict[str, Any] | None = None,
 ) -> list[dict[str, str]]:
@@ -85,6 +135,8 @@ def _evidence_rows(
                 "retrieval_score": hit.get("retrieval_score"),
             }
         )
+
+    candidates.extend(_public_market_candidates(supplemental_packs))
 
     ranked: list[tuple[int, int, dict[str, Any]]] = []
     for position, item in enumerate(candidates):

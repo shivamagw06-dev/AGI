@@ -218,3 +218,87 @@ def test_cms_house_research_is_supplied_to_grounded_synthesis(monkeypatch):
     assert len(supplied) == 1
     assert supplied[0]["source"] == "AGI KIP uploaded research"
     assert "revenue visibility" in supplied[0]["content"]
+
+
+def test_verified_public_market_fact_is_supplied_without_raw_payload(monkeypatch):
+    class MarketResponse(_Response):
+        output_text = json.dumps(
+            {
+                "executive_summary": "The supplied public quote is the current evidence [E1].",
+                "why": ["The market-data observation is attributed [E1]."],
+                "prose": "Treat it as a point-in-time observation [E1].",
+                "cited_evidence_ids": ["E1"],
+            }
+        )
+
+    class MarketResponses(_Responses):
+        def create(self, **kwargs):
+            self.kwargs = kwargs
+            return MarketResponse()
+
+    class MarketOpenAI(_OpenAI):
+        def __init__(self, **kwargs):
+            self.responses = MarketResponses()
+            _OpenAI.last = self
+
+    monkeypatch.setenv("OPENAI_API_KEY", "test-key")
+    monkeypatch.setitem(sys.modules, "openai", types.SimpleNamespace(OpenAI=MarketOpenAI))
+    supplemental = {
+        "live_evidence": {
+            "evidence_objects": [
+                {
+                    "evidence_id": "leo_quote",
+                    "evidence_type": "market_data",
+                    "fact_key": "last_price",
+                    "value_text": "1425.50",
+                    "company_symbol": "ZENTEC",
+                    "source_id": "yahoo",
+                    "title": "ZENTEC quote",
+                    "published": "2026-08-11T10:00:00Z",
+                    "verification_status": "provisionally_verified",
+                    "raw": {"api_key": "must-not-leave-engine", "cookie": "secret"},
+                }
+            ]
+        }
+    }
+    result = synthesize_financial_answer(
+        question="What is ZENTEC trading at?", evidence={"packs": {}},
+        intent_resolution={}, entities={"entities": ["ZENTEC"]},
+        deterministic_answer={"executive_summary": "Fallback"},
+        supplemental_packs=supplemental,
+    )
+    assert result["used"] is True
+    model_input = _OpenAI.last.responses.kwargs["input"]
+    supplied = json.loads(model_input.split("EVIDENCE\n", 1)[1])
+    assert supplied[0]["source"] == "YAHOO public market data"
+    assert supplied[0]["content"] == "last_price: 1425.50"
+    assert "must-not-leave-engine" not in model_input
+    assert "cookie" not in model_input
+
+
+def test_unverified_or_internal_live_fact_is_not_supplied(monkeypatch):
+    monkeypatch.setenv("OPENAI_API_KEY", "test-key")
+    monkeypatch.setitem(sys.modules, "openai", types.SimpleNamespace(OpenAI=_OpenAI))
+    supplemental = {
+        "live_evidence": {
+            "evidence_objects": [
+                {
+                    "evidence_type": "market_data", "fact_key": "last_price",
+                    "value_text": "999", "source_id": "yahoo",
+                    "verification_status": "unverified",
+                },
+                {
+                    "evidence_type": "valuation_metrics", "fact_key": "pe",
+                    "value_text": "31x", "source_id": "internal_research",
+                    "verification_status": "verified",
+                },
+            ]
+        }
+    }
+    result = synthesize_financial_answer(
+        question="Value the company", evidence={"packs": {}}, intent_resolution={},
+        entities={}, deterministic_answer={"executive_summary": "Fallback"},
+        supplemental_packs=supplemental,
+    )
+    assert result["used"] is False
+    assert result["status"] == "no_grounded_evidence"
