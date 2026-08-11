@@ -9,6 +9,78 @@ from forecast_intelligence_engine.models import ENGINE_CODE, ENGINE_LABEL, MODUL
 from forecast_intelligence_engine import runtime as fie_runtime
 
 
+def _stored_rows(tab: str, symbol: str, *, limit: int = 50) -> tuple[list[dict[str, Any]], int]:
+    """Read one company's persisted forecast without running forecast builders.
+
+    Public GET endpoints must remain cheap. Building a forecast can read several
+    large warehouse tabs and belongs to the background runtime, not a request
+    handler.
+    """
+    try:
+        from institutional_warehouse import store
+
+        page = store.fetch(
+            tab,
+            filters={"symbol": str(symbol or "").strip().upper()},
+            sort="as_of",
+            order="desc",
+            limit=limit,
+        )
+        return list(page.get("rows") or []), int(page.get("total") or 0)
+    except Exception:
+        return [], 0
+
+
+def stored_company(symbol: str) -> dict[str, Any]:
+    """Return the latest materialised forecast; never compute on the HTTP path."""
+    ticker = str(symbol or "").strip().upper()
+    if not ticker:
+        return {"ok": False, "error": "symbol_required", "engine": ENGINE_CODE, "version": VERSION}
+    summaries, _ = _stored_rows("forecast_company", ticker, limit=1)
+    if not summaries:
+        return {
+            "ok": False,
+            "symbol": ticker,
+            "status": "NOT_READY",
+            "error": "stored_forecast_not_found",
+            "retryable": True,
+            "engine": ENGINE_CODE,
+            "version": VERSION,
+        }
+    summary = summaries[0]
+    scenario_rows, _ = _stored_rows("forecast_scenarios", ticker, limit=10)
+    assumption_rows, _ = _stored_rows("forecast_assumptions", ticker, limit=50)
+    probabilities = {
+        "bull": summary.get("bull_pct"),
+        "base": summary.get("base_pct"),
+        "bear": summary.get("bear_pct"),
+    }
+    return {
+        "ok": True,
+        "cached": True,
+        "symbol": ticker,
+        "status": summary.get("status"),
+        "as_of": summary.get("as_of"),
+        "executive_summary": summary.get("executive_summary"),
+        "forecast_quality": {
+            "forecast_confidence": summary.get("forecast_confidence"),
+            "score": summary.get("score"),
+            "coverage_pct": summary.get("coverage_pct"),
+        },
+        "probabilities": probabilities,
+        "scenarios": scenario_rows,
+        "assumptions": assumption_rows,
+        "modules_ok": summary.get("modules_ok"),
+        "dqiv": summary.get("dqiv"),
+        "generated_at": summary.get("last_updated") or (summary.get("_meta") or {}).get("updated_at"),
+        "recommendation": None,
+        "target_price": None,
+        "vendor_calls": False,
+        "engine": ENGINE_CODE,
+        "version": summary.get("version") or VERSION,
+    }
+
+
 def health() -> dict[str, Any]:
     return {
         "ok": True,
@@ -55,7 +127,7 @@ def health() -> dict[str, Any]:
 
 
 def company(symbol: str) -> dict[str, Any]:
-    return build_forecast(symbol)
+    return stored_company(symbol)
 
 
 def module(symbol: str, name: str) -> dict[str, Any]:
@@ -123,16 +195,25 @@ def coverage(*, limit: int = 200) -> dict[str, Any]:
     try:
         from institutional_warehouse import store
 
-        page = store.fetch("forecast_company", limit=min(max(int(limit), 1), 2000))
+        page = store.fetch(
+            "forecast_company",
+            sort="last_updated",
+            order="desc",
+            limit=min(max(int(limit), 1), 2000),
+        )
         rows = list(page.get("rows") or [])
+        total = int(page.get("total") or 0)
     except Exception:
         rows = []
-    total = len(rows)
+        total = 0
+    # This is the high-confidence count in the returned page, not a fabricated
+    # universe-wide aggregate. Name it explicitly so consumers cannot confuse it.
     high = sum(1 for r in rows if r.get("forecast_confidence") == "High")
     return {
         "ok": True,
         "count": total,
-        "high_confidence": high,
+        "returned": len(rows),
+        "high_confidence_returned": high,
         "rows": rows[:limit],
         "engine": ENGINE_CODE,
         "version": VERSION,

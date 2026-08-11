@@ -366,6 +366,14 @@ services:
         value: gather_worker
       - key: AGI_GATHER_FORCE
         value: "true"
+      # Forecast builds are heavy warehouse jobs. Run them here, never in the
+      # user-facing HTTP process. Conservative pacing protects shared services.
+      - key: FIE_RUNTIME
+        value: "true"
+      - key: FIE_BATCH
+        value: "1"
+      - key: FIE_INTERVAL_SECONDS
+        value: "180"
       - key: KIP_DATA_DIR
         sync: false
       - key: KIP_REQUIRE_PERSISTENT

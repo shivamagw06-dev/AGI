@@ -26,6 +26,26 @@ _STATE: dict[str, Any] = {
 }
 
 
+def _role() -> str:
+    return str(os.getenv("AGI_ROLE") or "local").strip().lower()
+
+
+def _owned_here() -> bool:
+    return _role() not in {"web", "http", "api"}
+
+
+def _runtime_snapshot() -> dict[str, Any]:
+    with _LOCK:
+        snap = {k: v for k, v in _STATE.items() if k != "started_mono"}
+    snap["process_role"] = _role()
+    snap["owned_here"] = _owned_here()
+    if not _owned_here():
+        # A daemon thread cannot be observed across Render processes. Do not
+        # misreport the web process's local idle state as the worker's state.
+        snap["status"] = "external_worker"
+    return snap
+
+
 def _now() -> str:
     return datetime.now(timezone.utc).isoformat()
 
@@ -168,8 +188,7 @@ def process_batch(*, batch: int = 3) -> dict[str, Any]:
 
 def board() -> dict[str, Any]:
     pipe = pipeline_counts()
-    with _LOCK:
-        snap = {k: v for k, v in _STATE.items() if k != "started_mono"}
+    snap = _runtime_snapshot()
     universe = int(pipe.get("universe") or 0)
     complete = int(pipe.get("complete") or 0)
     pct = round(100.0 * complete / universe, 1) if universe else 0.0
@@ -205,8 +224,7 @@ def board() -> dict[str, Any]:
 
 
 def status() -> dict[str, Any]:
-    with _LOCK:
-        snap = {k: v for k, v in _STATE.items() if k != "started_mono"}
+    snap = _runtime_snapshot()
     return {
         "ok": True,
         "engine": ENGINE_CODE,
@@ -218,6 +236,13 @@ def status() -> dict[str, Any]:
 
 def start(*, interval_seconds: Optional[float] = None, batch: Optional[int] = None) -> dict[str, Any]:
     global _THREAD
+    if not _owned_here():
+        return {
+            "ok": False,
+            "enabled": False,
+            "reason": "forecast_runtime_owned_by_gather_worker",
+            "process_role": _role(),
+        }
     if not _truthy("FIE_RUNTIME", "true"):
         return {"ok": True, "enabled": False, "reason": "FIE_RUNTIME=false"}
     if _THREAD and _THREAD.is_alive():

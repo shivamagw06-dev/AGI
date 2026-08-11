@@ -46,6 +46,7 @@ def _apply_worker_defaults() -> None:
         "WAREHOUSE_DAILY_REFRESH": "true",
         "WAREHOUSE_BACKFILL": "true",
         "HVIE_RUNTIME": "true",
+        "FIE_RUNTIME": "true",
     }
     # Sidecar start script exports these true already; still fill gaps.
     for key, value in defaults.items():
@@ -167,6 +168,21 @@ def main() -> int:
         log.info("gather_worker_hvie_runtime", extra=boot_hvie)
     except Exception as exc:  # noqa: BLE001
         log.warning("gather_worker_hvie_runtime_failed", extra={"error": str(exc)[:200]})
+
+    # Forecast Intelligence Runtime — materialise forecasts away from HTTP.
+    # Client GET requests only read these stored results, so a slow company
+    # build can never make Ask AGI or the health endpoint unresponsive.
+    if _truthy("FIE_RUNTIME", "true"):
+        try:
+            from forecast_intelligence_engine.runtime import start as start_fie
+            from forecast_intelligence_engine.runtime import stop as stop_fie
+
+            boot_fie = start_fie()
+            if boot_fie.get("enabled"):
+                stop_fns.append(stop_fie)
+            log.info("gather_worker_fie_runtime", extra=boot_fie)
+        except Exception as exc:  # noqa: BLE001
+            log.warning("gather_worker_fie_runtime_failed", extra={"error": str(exc)[:200]})
 
     # Seed sector median history for MSI heatmap (pe/pb/ev_ebitda) — weekly job
     # alone left historical_sector_medians nearly empty in production.

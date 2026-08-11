@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from forecast_intelligence_engine import ask_slice, health
+from forecast_intelligence_engine import production
 from forecast_intelligence_engine.composer import build_forecast, build_module
 from forecast_intelligence_engine.dqiv import validate_pack, validate_section
 from forecast_intelligence_engine.modules import executive, scenarios, valuation
@@ -154,3 +155,49 @@ def test_dqiv_rejects_buy_language():
         "evidence": [{"source": "x"}],
     }
     assert validate_section(bad)["ok"] is False
+
+
+def test_company_get_reads_materialised_forecast(monkeypatch):
+    calls = []
+
+    def fake_rows(tab, symbol, *, limit=50):
+        calls.append((tab, symbol, limit))
+        if tab == "forecast_company":
+            return ([{
+                "symbol": "INFY", "status": "PASS", "as_of": "2026-08-11",
+                "executive_summary": "Base case remains most likely.",
+                "forecast_confidence": "High", "score": 0.82, "coverage_pct": 91,
+                "bull_pct": 25, "base_pct": 55, "bear_pct": 20,
+                "modules_ok": 10, "dqiv": "PASS", "version": "8.5",
+            }], 1)
+        return ([], 0)
+
+    monkeypatch.setattr(production, "_stored_rows", fake_rows)
+    monkeypatch.setattr(
+        production,
+        "build_forecast",
+        lambda _symbol: (_ for _ in ()).throw(AssertionError("HTTP path rebuilt forecast")),
+    )
+    out = production.company("infy")
+    assert out["ok"] is True
+    assert out["cached"] is True
+    assert out["probabilities"] == {"bull": 25, "base": 55, "bear": 20}
+    assert calls[0] == ("forecast_company", "INFY", 1)
+
+
+def test_company_get_reports_not_ready_without_computing(monkeypatch):
+    monkeypatch.setattr(production, "_stored_rows", lambda *_a, **_k: ([], 0))
+    out = production.company("NEWCO")
+    assert out["ok"] is False
+    assert out["status"] == "NOT_READY"
+    assert out["retryable"] is True
+
+
+def test_runtime_will_not_start_inside_web_process(monkeypatch):
+    from forecast_intelligence_engine import runtime
+
+    monkeypatch.setenv("AGI_ROLE", "web")
+    out = runtime.start()
+    assert out["ok"] is False
+    assert out["reason"] == "forecast_runtime_owned_by_gather_worker"
+    assert runtime.status()["runtime"]["status"] == "external_worker"
