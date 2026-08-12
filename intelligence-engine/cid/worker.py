@@ -14,7 +14,7 @@ from typing import Any
 
 from cid.openai_dossier import status as openai_status
 from cid.persistence import generated_age_seconds, latest_versions
-from cid.production import generate_openai_dossier
+from cid.openai_dossier import generate
 
 STOP = Event()
 DEFAULT_WORKERS = 4
@@ -68,7 +68,9 @@ def eligible_queue(*, refresh_days: float) -> tuple[list[str], int]:
 
 def _generate(ticker: str) -> dict[str, Any]:
     started = time.monotonic()
-    result = generate_openai_dossier(ticker, refresh_evidence=True)
+    from cid.warehouse_dossier import build
+
+    result = generate(ticker, build(ticker))
     persisted = (result.get("persistence") or {}).get("persisted")
     if result.get("ok") and not persisted:
         return {
@@ -124,6 +126,10 @@ def run_forever() -> None:
                     "queued": 0,
                     "completed_this_process": completed,
                     "failures": len(failures),
+                    "recent_failures": [
+                        {"ticker": ticker, **detail}
+                        for ticker, detail in list(failures.items())[-8:]
+                    ],
                 }
             )
             STOP.wait(idle_seconds)
@@ -140,6 +146,10 @@ def run_forever() -> None:
                 "active": batch,
                 "completed_this_process": completed,
                 "failures": len(failures),
+                "recent_failures": [
+                    {"ticker": ticker, **detail}
+                    for ticker, detail in list(failures.items())[-8:]
+                ],
             }
         )
         with ThreadPoolExecutor(max_workers=workers, thread_name_prefix="cid-dossier") as pool:
