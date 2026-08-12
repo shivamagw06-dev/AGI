@@ -70,6 +70,7 @@ def evidence_rows(dossier: dict[str, Any]) -> list[dict[str, Any]]:
         ("company_memory", dossier.get("company_memory")),
         ("announcements", dossier.get("announcements")),
         ("documents", dossier.get("documents")),
+        ("warehouse_evidence", dossier.get("warehouse_evidence")),
     )
     for name, value in blocks:
         if value not in (None, {}, []):
