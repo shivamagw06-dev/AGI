@@ -17887,6 +17887,7 @@ async def rih_run(payload: dict[str, Any] = Body(default={})):
 async def rih_build(payload: dict[str, Any] = Body(default={})):
     """Build (and optionally publish) a hub from article metadata. Ops / CMS soft-wire."""
     from research_intelligence_hub.production import build
+    from research_intelligence_hub.backpressure import ResearchHubBusyError, run_single_flight
 
     headline = payload.get("headline") or payload.get("title")
     if not headline:
@@ -17894,16 +17895,24 @@ async def rih_build(payload: dict[str, Any] = Body(default={})):
     tickers = payload.get("tickers") or payload.get("companies") or []
     if isinstance(tickers, str):
         tickers = [t.strip() for t in tickers.split(",") if t.strip()]
-    return build(
-        note_id=payload.get("note_id") or payload.get("id") or payload.get("article_id"),
-        headline=str(headline),
-        body=str(payload.get("body") or payload.get("content") or ""),
-        publication_date=payload.get("publication_date"),
-        session=payload.get("session"),
-        tickers=list(tickers) if isinstance(tickers, list) else None,
-        importance_score=int(payload.get("importance_score") or 50),
-        persist=bool(payload.get("persist")),
-    )
+    try:
+        return await run_single_flight(
+            build,
+            note_id=payload.get("note_id") or payload.get("id") or payload.get("article_id"),
+            headline=str(headline),
+            body=str(payload.get("body") or payload.get("content") or ""),
+            publication_date=payload.get("publication_date"),
+            session=payload.get("session"),
+            tickers=list(tickers) if isinstance(tickers, list) else None,
+            importance_score=int(payload.get("importance_score") or 50),
+            persist=bool(payload.get("persist")),
+        )
+    except ResearchHubBusyError as exc:
+        raise HTTPException(
+            status_code=429,
+            detail=str(exc),
+            headers={"Retry-After": "5"},
+        ) from exc
 
 
 @router.get("/research/hub/{note_id}/graph")
