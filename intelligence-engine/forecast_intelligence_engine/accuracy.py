@@ -21,6 +21,7 @@ _ALIASES = {
     "free_cash_flow": ("free_cash_flow", "fcf"),
 }
 _YEARS = {"FY+1": 1, "FY+2": 2, "FY+3": 3, "FY+5": 5}
+VALID_OUTCOME = "VALID"
 
 
 def _now() -> str:
@@ -176,23 +177,112 @@ def evaluate_predictions(
     return out
 
 
+def evaluation_rows(
+    predictions: Iterable[dict[str, Any]],
+    actuals: Iterable[dict[str, Any]],
+    *,
+    sector: Optional[str] = None,
+    regime: Optional[str] = None,
+    evaluated_at: Optional[str] = None,
+) -> list[dict[str, Any]]:
+    """Register every prediction outcome, including non-scoreable operational states."""
+    actual_list = list(actuals)
+    actual_by_period = {_period(row): row for row in actual_list if _period(row)}
+    known_periods = sorted(actual_by_period)
+    stamp = evaluated_at or _now()
+    out: list[dict[str, Any]] = []
+    for pred in predictions:
+        target = str(pred.get("target_period") or "").upper().replace(" ", "")
+        aliases = _ALIASES.get(str(pred.get("metric") or ""))
+        actual_row = actual_by_period.get(target)
+        actual_value = metric(actual_row or {}, *(aliases or ())) if aliases else None
+        status = VALID_OUTCOME
+        reason = "exact_period_and_metric_match"
+        requires_review = False
+        if not target:
+            status, reason = "PERIOD_MISMATCH", "forecast_target_period_missing"
+            requires_review = True
+        elif actual_row is None:
+            # A later period on file means the target was skipped or labelled
+            # differently; otherwise the actual simply has not arrived yet.
+            status = "PERIOD_MISMATCH" if known_periods and target < max(known_periods) else "MISSING_ACTUAL"
+            reason = "target_period_not_found" if status == "PERIOD_MISMATCH" else "actual_not_reported_yet"
+            requires_review = status == "PERIOD_MISMATCH"
+        elif actual_value is None:
+            status, reason = "MISSING_ACTUAL", "metric_missing_in_actual_statement"
+        elif bool(actual_row.get("restated") or actual_row.get("is_restated")):
+            status, reason = "DATA_REVISION", "actual_statement_marked_restated"
+            requires_review = True
+        elif str(actual_row.get("accounting_change") or "").strip():
+            status, reason = "ACCOUNTING_CHANGE", str(actual_row.get("accounting_change"))[:260]
+            requires_review = True
+        out.append({
+            "symbol": pred.get("symbol"),
+            "generated_at": pred.get("generated_at"),
+            "forecast_as_of": pred.get("forecast_as_of"),
+            "target_period": pred.get("target_period"),
+            "actual_period": _period(actual_row or {}) or None,
+            "horizon": pred.get("horizon"),
+            "scenario": pred.get("scenario"),
+            "metric": pred.get("metric"),
+            "forecast_value": pred.get("forecast_value"),
+            "actual_value": actual_value,
+            "outcome_status": status,
+            "validation_reason": reason,
+            "requires_review": requires_review,
+            "sector": sector,
+            "regime": regime,
+            "forecast_confidence": pred.get("forecast_confidence"),
+            "model_version": pred.get("model_version"),
+            "actual_source": "warehouse.financials_annual" if actual_row else None,
+            "evaluated_at": stamp,
+        })
+    return out
+
+
 def evaluate_symbol(symbol: str) -> dict[str, Any]:
     from institutional_warehouse import gateway, store
 
     ticker = str(symbol or "").strip().upper()
     predictions = store.all_rows("forecast_metric_predictions", entity=ticker, limit=10000)
     actuals = store.all_rows("financials_annual", entity=ticker, limit=100)
+    masters = store.all_rows("company_master", entity=ticker, limit=1)
+    master = masters[0] if masters else {}
+    evaluations = store.all_rows("forecast_evaluations", entity=ticker, limit=10000)
+    evaluation_keys = {
+        (r.get("generated_at"), r.get("target_period"), r.get("horizon"), r.get("scenario"), r.get("metric"), r.get("outcome_status"))
+        for r in evaluations
+    }
+    evaluation_due = [
+        row for row in evaluation_rows(predictions, actuals, sector=master.get("sector"))
+        if (row.get("generated_at"), row.get("target_period"), row.get("horizon"), row.get("scenario"), row.get("metric"), row.get("outcome_status")) not in evaluation_keys
+    ]
+    evaluation_result = gateway.write(
+        "forecast_evaluations", evaluation_due, source=ENGINE_CODE, actor="fie_accuracy",
+        reason="forecast_outcome_governance", detect_conflicts=False,
+    ) if evaluation_due else {"ok": True, "written": 0}
     existing = store.all_rows("forecast_accuracy", entity=ticker, limit=10000)
     keys = {
         (r.get("generated_at"), r.get("actual_period"), r.get("horizon"), r.get("scenario"), r.get("metric"))
         for r in existing
     }
+    valid_keys = {
+        (r.get("generated_at"), r.get("target_period"), r.get("horizon"), r.get("scenario"), r.get("metric"))
+        for r in [*evaluations, *evaluation_due] if r.get("outcome_status") == VALID_OUTCOME
+    }
     due = [
         row for row in evaluate_predictions(predictions, actuals)
+        if (row.get("generated_at"), row.get("actual_period"), row.get("horizon"), row.get("scenario"), row.get("metric")) in valid_keys
         if (row.get("generated_at"), row.get("actual_period"), row.get("horizon"), row.get("scenario"), row.get("metric")) not in keys
     ]
     result = gateway.write(
         "forecast_accuracy", due, source=ENGINE_CODE, actor="fie_accuracy",
         reason="point_in_time_forecast_evaluation", detect_conflicts=False,
     ) if due else {"ok": True, "written": 0}
-    return {"ok": bool(result.get("ok", True)), "symbol": ticker, "eligible": len(due), "written": int(result.get("written") or 0)}
+    return {
+        "ok": bool(result.get("ok", True)) and bool(evaluation_result.get("ok", True)),
+        "symbol": ticker,
+        "evaluations_written": int(evaluation_result.get("written") or 0),
+        "eligible": len(due),
+        "written": int(result.get("written") or 0),
+    }

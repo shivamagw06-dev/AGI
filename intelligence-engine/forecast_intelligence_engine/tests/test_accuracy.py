@@ -1,4 +1,4 @@
-from forecast_intelligence_engine.accuracy import evaluate_predictions, prediction_rows, target_period
+from forecast_intelligence_engine.accuracy import evaluation_rows, evaluate_predictions, prediction_rows, target_period
 
 
 def _pack():
@@ -58,3 +58,21 @@ def test_evaluator_waits_for_exact_future_actual_and_scores_bias():
 def test_no_matching_actual_means_no_accuracy_row():
     rows = prediction_rows(_pack())
     assert evaluate_predictions(rows, [{"fiscal_year": "FY25", "revenue": 100}]) == []
+
+
+def test_evaluation_registry_exposes_missing_and_revised_actuals():
+    rows = prediction_rows(_pack())
+    missing = evaluation_rows(rows, [{"fiscal_year": "FY25", "revenue": 100}])
+    assert {r["outcome_status"] for r in missing} == {"MISSING_ACTUAL"}
+    revised = evaluation_rows(rows, [{"fiscal_year": "FY26", "revenue": 105, "pat": 18, "restated": True}])
+    fy1 = [r for r in revised if r["target_period"] == "FY26"]
+    assert {r["outcome_status"] for r in fy1} == {"DATA_REVISION"}
+    assert all(r["requires_review"] is True for r in fy1)
+
+
+def test_evaluation_registry_marks_exact_outcomes_valid():
+    rows = prediction_rows(_pack())
+    outcomes = evaluation_rows(rows, [{"fiscal_year": "FY26", "revenue": 105, "pat": 18}], sector="IT")
+    fy1 = [r for r in outcomes if r["target_period"] == "FY26"]
+    assert {r["outcome_status"] for r in fy1} == {"VALID"}
+    assert all(r["sector"] == "IT" for r in fy1)
