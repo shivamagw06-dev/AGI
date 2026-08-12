@@ -10101,6 +10101,13 @@ async def hedge_fund_lab_strategies():
     return library()
 
 
+@router.get("/hedge-fund-lab/reliability")
+async def hedge_fund_lab_reliability():
+    from reliability_registry import registry
+
+    return registry()
+
+
 @router.get("/hedge-fund-lab/compare")
 async def hedge_fund_lab_compare():
     from hedge_fund_lab.production import compare

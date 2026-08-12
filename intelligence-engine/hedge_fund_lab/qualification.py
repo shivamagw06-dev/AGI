@@ -30,5 +30,14 @@ STRATEGY_QUALIFICATION: dict[str, dict[str, Any]] = {
 
 
 def qualification_for(strategy_id: str) -> dict[str, Any]:
-    record = STRATEGY_QUALIFICATION.get(strategy_id, {"status": "framework", "label": "Framework", "operational_scope": "methodology_only"})
-    return {**record, "pipeline": list(QUALIFICATION_PIPELINE), "production_validated": record["status"] == "production_validated"}
+    from reliability_registry import component
+
+    reliability = component(strategy_id)
+    return {
+        "status": reliability["lifecycle"],
+        "label": reliability["lifecycle_label"],
+        "operational_scope": reliability["allowed_use"].lower().replace(" ", "_"),
+        "pipeline": list(QUALIFICATION_PIPELINE),
+        "production_validated": reliability["lifecycle"] == "production",
+        "reliability": reliability,
+    }

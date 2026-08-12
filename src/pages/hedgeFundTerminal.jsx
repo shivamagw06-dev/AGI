@@ -186,7 +186,7 @@ function InstitutionalStack({ stack }) {
   const forecast = stack.forecast_intelligence || {};
   const cells = [
     { icon: Layers3, label: 'Strategy library', value: library.count, detail: 'Institutional methodologies' },
-    { icon: Activity, label: 'Research scanners', value: scanners.count, detail: `${scanners.operational || 0} operational · ${scanners.candidate || 0} candidate` },
+    { icon: Activity, label: 'Research scanners', value: scanners.count, detail: `${scanners.operational || 0} operational · ${scanners.experimental || 0} experimental` },
     { icon: Zap, label: 'Live Alpha', value: live.qualifying_symbols ?? 0, detail: `${(live.engines || []).length} intraday engines · ${String(live.status || 'waiting').replaceAll('_', ' ')}` },
     { icon: Target, label: 'Alpha Opportunity', value: alpha.companies_flagged ?? 0, detail: `${alpha.multi_strategy_companies || 0} multi-strategy · ${alpha.queue_size || 0} queued` },
     { icon: BrainCircuit, label: 'Forecast Intelligence', value: forecast.company_forecasts ?? 0, detail: `${forecast.metric_predictions || 0} metric forecasts · ${forecast.accuracy_records || 0} measured` },
@@ -203,6 +203,41 @@ function InstitutionalStack({ stack }) {
         <span>Forecast governance</span>
         <p>{forecast.governance || 'Forecast outcomes remain governed and do not automatically alter model parameters.'}</p>
       </div>
+    </section>
+  );
+}
+
+function ReliabilityRegistry({ registry }) {
+  const components = registry?.components || [];
+  if (!components.length) return null;
+  return (
+    <section className="hft-reliability">
+      <div className="hft-reliability-head">
+        <div><span>Independent validation authority</span><h2>Reliability Registry</h2></div>
+        <small>{registry.validation_version} · execution allowed for {registry.execution_allowed || 0} components</small>
+      </div>
+      <div className="hft-table-wrap">
+        <table className="hft-table compact">
+          <thead><tr><th>Component</th><th>Lifecycle</th><th>Health</th><th>Validation</th><th>Allowed use</th><th>Execution</th></tr></thead>
+          <tbody>
+            {components.map((row) => {
+              const checks = row.validation || {};
+              const passed = Object.values(checks).filter((v) => v === 'passed' || v === 'yes').length;
+              return (
+                <tr key={row.component_id}>
+                  <td><strong>{row.name}</strong><div className="hft-dim">{row.validation_version}</div></td>
+                  <td><span className={`hft-state hft-state-${row.lifecycle}`}>{row.lifecycle_label}</span></td>
+                  <td><span className={`hft-health hft-health-${row.health}`}>{row.health}</span><div className="hft-dim">{row.health_reason}</div></td>
+                  <td>{passed}/6 passed<div className="hft-dim">PIT {checks.pit_data} · OOS {checks.out_of_sample}</div></td>
+                  <td>{row.allowed_use}</td>
+                  <td><strong className={row.execution === 'allowed' ? 'hft-allow' : 'hft-block'}>{row.execution}</strong></td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+      <p className="hft-note">{registry.policy}</p>
     </section>
   );
 }
@@ -480,6 +515,7 @@ export default function HedgeFundTerminal() {
 
       {data ? <RegimeStrip regime={data.regime} /> : null}
       {data ? <InstitutionalStack stack={data.institutional_stack} /> : null}
+      {data ? <ReliabilityRegistry registry={data.reliability_registry} /> : null}
 
       {data?.generated_at || data?.freshness ? (
         <p className="hft-freshness" data-freshness={data.freshness || 'unknown'}>

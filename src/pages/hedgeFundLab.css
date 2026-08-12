@@ -710,6 +710,21 @@
 @media (max-width: 1050px) { .hft-stack { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 620px) { .hft-stack { grid-template-columns: 1fr; } }
 
+.hft-reliability { margin: 0 0 1rem; }
+.hft-reliability-head { display: flex; align-items: end; justify-content: space-between; gap: 1rem; margin-bottom: 0.5rem; }
+.hft-reliability-head span { color: var(--hfl-teal); font-size: 0.66rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+.hft-reliability-head h2 { margin: 0.12rem 0 0; font-size: 1rem; }
+.hft-reliability-head small { color: var(--hfl-dim); }
+.hft-health, .hft-state { display: inline-block; padding: 0.12rem 0.38rem; border-radius: 4px; font-size: 0.67rem; font-weight: 700; text-transform: uppercase; }
+.hft-health-healthy { color: #8fd4a0; background: rgba(74, 140, 92, 0.15); }
+.hft-health-degraded, .hft-health-stale { color: #e8b06a; background: rgba(200, 135, 58, 0.15); }
+.hft-health-suspended, .hft-health-failed { color: #e08a8a; background: rgba(180, 70, 70, 0.15); }
+.hft-state-operational { color: #9eb8d9; background: rgba(100, 140, 190, 0.14); }
+.hft-state-experimental { color: #b8c4d4; background: rgba(120, 140, 170, 0.1); }
+.hft-allow { color: #8fd4a0; text-transform: uppercase; }
+.hft-block { color: #e08a8a; text-transform: uppercase; }
+@media (max-width: 700px) { .hft-reliability-head { display: block; } .hft-reliability-head small { display: block; margin-top: 0.35rem; } }
+
 .hft-highlights { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 0.7rem; margin-top: 0.7rem; }
 .hft-highlight { background: #0d1727; border: 1px solid var(--hfl-line); border-radius: 8px; padding: 0.7rem 0.9rem; }
 .hft-highlight .k { font-size: 0.66rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--hfl-teal); }

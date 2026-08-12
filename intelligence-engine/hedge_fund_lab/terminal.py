@@ -528,6 +528,7 @@ def _overview_uncached(capped: int, cache_key: str, now: float) -> dict[str, Any
         "pairs": "Equity Market Neutral",
         "live_alpha": "Momentum / CTA Trend",
     }
+    from reliability_registry import component as reliability_component
 
     cards = []
     new_today: list[dict[str, Any]] = []
@@ -542,6 +543,7 @@ def _overview_uncached(capped: int, cache_key: str, now: float) -> dict[str, Any
         exited = sorted(previous - current) if prior else []
         profile = _SCAN_PROFILE.get(key, {})
         suit = suitability_by_name.get(suitability_map.get(key, ""), {})
+        reliability_record = reliability_component(key)
         for ticker in entered:
             row = next((r for r in rows if _identity(r)[0] == ticker), None)
             new_today.append(
@@ -561,13 +563,14 @@ def _overview_uncached(capped: int, cache_key: str, now: float) -> dict[str, Any
                 "alpha_source": profile.get("alpha"),
                 "risk_level": profile.get("risk"),
                 "research_question": profile.get("question"),
-                "qualification_status": _SCAN_QUALIFICATION[key][0],
-                "qualification_label": _SCAN_QUALIFICATION[key][1],
-                "operational": _SCAN_QUALIFICATION[key][0] == "operational",
+                "qualification_status": reliability_record["lifecycle"],
+                "qualification_label": reliability_record["lifecycle_label"],
+                "operational": reliability_record["lifecycle"] == "operational",
                 "research_validated": False,
                 "investment_validated": False,
                 "production_validated": False,
                 "backtest_status": "not_backtested",
+                "reliability": reliability_record,
                 "entered_today": len(entered),
                 "exited_today": len(exited),
                 # Embed preview rows so the UI does not re-scan on first paint.
@@ -750,6 +753,10 @@ def _overview_uncached(capped: int, cache_key: str, now: float) -> dict[str, Any
     total = sum(len(rows) for rows in results.values())
     live_meta = fetch_live_alpha_rows(limit=1).get("meta") or {}
     forecast_intelligence = _forecast_intelligence_status()
+    reliability = _reliability_status(
+        universe_count=len(universe), live_meta=live_meta,
+        forecast_intelligence=forecast_intelligence,
+    )
     payload = {
         "ok": True,
         "as_of": day,
@@ -757,7 +764,7 @@ def _overview_uncached(capped: int, cache_key: str, now: float) -> dict[str, Any
         "regime": reg,
         "hero": {
             "universe_scanned": len(universe),
-            "strategies_running": sum(1 for key in _ORDER if _SCAN_QUALIFICATION[key][0] == "operational"),
+            "strategies_running": sum(1 for key in _ORDER if reliability_component(key)["lifecycle"] == "operational"),
             "research_modules": len(_ORDER),
             "live_opportunities": total,
             "companies_flagged": len(overlap_rows),
@@ -795,8 +802,8 @@ def _overview_uncached(capped: int, cache_key: str, now: float) -> dict[str, Any
             },
             "research_scanners": {
                 "count": len(_ORDER),
-                "operational": sum(1 for key in _ORDER if _SCAN_QUALIFICATION[key][0] == "operational"),
-                "candidate": sum(1 for key in _ORDER if _SCAN_QUALIFICATION[key][0] == "candidate"),
+                "operational": sum(1 for key in _ORDER if reliability_component(key)["lifecycle"] == "operational"),
+                "experimental": sum(1 for key in _ORDER if reliability_component(key)["lifecycle"] == "experimental"),
             },
             "live_alpha": {
                 "engines": ["Leadership", "Activity", "Breakout", "Dislocation", "Positioning"],
@@ -812,6 +819,7 @@ def _overview_uncached(capped: int, cache_key: str, now: float) -> dict[str, Any
             },
             "forecast_intelligence": forecast_intelligence,
         },
+        "reliability_registry": reliability,
         "scoring": {
             "unified_weights": {"hedge_fund": 0.7, "live_alpha": 0.3},
             "weighting_status": "agi_designed_not_empirically_optimized",
@@ -826,7 +834,7 @@ def _overview_uncached(capped: int, cache_key: str, now: float) -> dict[str, Any
             "research_validated": "Requires a costed point-in-time backtest, liquidity checks and out-of-sample validation.",
             "investment_validated": "Requires robust risk-adjusted performance across regimes and a documented failure profile.",
             "current_operational_scanners": sum(
-                1 for key in _ORDER if _SCAN_QUALIFICATION[key][0] == "operational"
+                1 for key in _ORDER if reliability_component(key)["lifecycle"] == "operational"
             ),
             "current_research_validated_strategies": 0,
             "current_investment_validated_strategies": 0,
@@ -837,6 +845,29 @@ def _overview_uncached(capped: int, cache_key: str, now: float) -> dict[str, Any
     _OVERVIEW_CACHE["at"] = now
     _OVERVIEW_CACHE["payload"] = payload
     return payload
+
+
+def _reliability_status(*, universe_count: int, live_meta: dict[str, Any], forecast_intelligence: dict[str, Any]) -> dict[str, Any]:
+    from reliability_registry import registry
+
+    overrides: dict[str, dict[str, Any]] = {}
+    if universe_count <= 0:
+        for key in ("value", "quality", "growth", "conviction", "dividend", "alpha", "pairs", "stress"):
+            overrides[key] = {"health": "failed", "health_reason": "Warehouse strategy universe is empty."}
+    if not live_meta.get("qualifying_symbols"):
+        overrides["live_alpha"] = {
+            "health": "degraded",
+            "health_reason": "No fresh, liquid, quality-qualified Live Alpha signals are currently available.",
+            "evidence": {"qualifying_symbols": live_meta.get("qualifying_symbols") or 0},
+        }
+    if not forecast_intelligence.get("company_forecasts"):
+        overrides["fie"] = {"health": "degraded", "health_reason": "No stored company forecasts are available."}
+    if not forecast_intelligence.get("outcome_evaluations"):
+        overrides["fle"] = {
+            "health": "degraded",
+            "health_reason": "Outcome evaluation framework is operational but empirical outcomes have not accumulated.",
+        }
+    return registry(overrides)
 
 
 def _forecast_intelligence_status() -> dict[str, Any]:
