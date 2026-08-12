@@ -70,7 +70,13 @@ def _generate(ticker: str) -> dict[str, Any]:
     started = time.monotonic()
     from cid.warehouse_dossier import build
 
-    result = generate(ticker, build(ticker))
+    dossier = build(ticker)
+    result = generate(ticker, dossier)
+    if not result.get("ok"):
+        from cid.learning import compose, readiness
+
+        if readiness().get("ready"):
+            result = compose(ticker, dossier, reason=str(result.get("error") or "openai_unavailable"))
     persisted = (result.get("persistence") or {}).get("persisted")
     if result.get("ok") and not persisted:
         return {
@@ -86,6 +92,7 @@ def _generate(ticker: str) -> dict[str, Any]:
         "error": result.get("error"),
         "message": result.get("message"),
         "version": (result.get("persistence") or {}).get("version"),
+        "fallback": bool(result.get("fallback")),
         "runtime_seconds": round(time.monotonic() - started, 2),
     }
 
@@ -96,12 +103,13 @@ def run_forever() -> None:
     idle_seconds = max(30, int(os.environ.get("CID_DOSSIER_IDLE_SECONDS", "300")))
     failures: dict[str, dict[str, Any]] = {}
     completed = 0
+    fallback_completed = 0
 
     write_status({"status": "starting", "workers": workers, "refresh_days": refresh_days})
     while not STOP.is_set():
         llm = openai_status()
-        if not llm.get("enabled"):
-            write_status({"status": "waiting_for_openai_key", "workers": workers, "openai": llm})
+        if not llm.get("enabled") and not (llm.get("agi_takeover") or {}).get("ready"):
+            write_status({"status": "waiting_for_openai_or_learned_profile", "workers": workers, "openai": llm})
             STOP.wait(idle_seconds)
             continue
         try:
@@ -125,6 +133,8 @@ def run_forever() -> None:
                     "fresh": fresh,
                     "queued": 0,
                     "completed_this_process": completed,
+                    "fallback_completed_this_process": fallback_completed,
+                    "agi_takeover": llm.get("agi_takeover"),
                     "failures": len(failures),
                     "recent_failures": [
                         {"ticker": ticker, **detail}
@@ -145,6 +155,8 @@ def run_forever() -> None:
                 "queued": len(queue),
                 "active": batch,
                 "completed_this_process": completed,
+                "fallback_completed_this_process": fallback_completed,
+                "agi_takeover": llm.get("agi_takeover"),
                 "failures": len(failures),
                 "recent_failures": [
                     {"ticker": ticker, **detail}
@@ -162,6 +174,8 @@ def run_forever() -> None:
                     result = {"ok": False, "ticker": ticker, "error": type(exc).__name__, "message": str(exc)[:300]}
                 if result.get("ok"):
                     completed += 1
+                    if result.get("fallback"):
+                        fallback_completed += 1
                     failures.pop(ticker, None)
                 else:
                     attempts = int((failures.get(ticker) or {}).get("attempts") or 0) + 1

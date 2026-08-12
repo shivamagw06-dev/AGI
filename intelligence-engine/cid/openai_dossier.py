@@ -78,6 +78,8 @@ def _response_schema() -> dict[str, Any]:
 
 def status() -> dict[str, Any]:
     key_present = bool(os.environ.get("OPENAI_API_KEY", "").strip())
+    from cid.learning import readiness
+
     return {
         "enabled": key_present,
         "provider": "openai",
@@ -85,6 +87,7 @@ def status() -> dict[str, Any]:
         "generator_version": GENERATOR_VERSION,
         "key_present": key_present,
         "policy": "grounded_synthesis_only",
+        "agi_takeover": readiness(),
     }
 
 
@@ -234,6 +237,11 @@ def generate(ticker: str, dossier: dict[str, Any]) -> dict[str, Any]:
                 "policy": "grounded_synthesis_only",
             }
         )
+        from cid.learning import learn_from_success
+
+        learned_profile = learn_from_success(research)
+        research["learning_profile_version"] = learned_profile.get("version")
+        research["learning_examples"] = learned_profile.get("successful_examples")
         updated = dict(dossier)
         updated["openai_research"] = research
         updated["dossier_generation"] = {
