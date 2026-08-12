@@ -105,10 +105,18 @@ export class GrowwLiveAlphaFeed {
       }
       const indexKeys = [...new Set([this.universe.benchmarkKey, ...this.universe.members.map((row) => row.sectorInstrumentKey)])];
       const indexMap = new Map(indexKeys.map((key) => [key, growwSymbolForIndex(key)]).filter(([, symbol]) => symbol));
-      const prices = await getLTP([...new Set(indexMap.values())], 'CASH');
-      for (const [key, symbol] of indexMap) {
-        const price = number(prices?.[symbol] ?? prices?.[`NSE_${symbol}`] ?? prices?.[`NSE:${symbol}`]);
-        if (price > 0) snapshots.push({ instrument_key: key, received_at: receivedAt, ltp: price, request_mode: 'groww_ltp', source: 'groww' });
+      try {
+        const exchangeSymbols = [...new Set([...indexMap.values()].map((symbol) => `NSE_${symbol}`))];
+        const prices = await getLTP(exchangeSymbols, 'CASH');
+        for (const [key, symbol] of indexMap) {
+          const price = number(prices?.[`NSE_${symbol}`] ?? prices?.[`NSE:${symbol}`] ?? prices?.[symbol]);
+          if (price > 0) snapshots.push({ instrument_key: key, received_at: receivedAt, ltp: price, request_mode: 'groww_ltp', source: 'groww' });
+        }
+      } catch (error) {
+        // Preserve valid equity and futures observations when an individual
+        // index alias changes at the provider. Evaluation will remain in
+        // warm-up until the benchmark and sector anchors are available.
+        this.state.last_index_error = error.message;
       }
       if (snapshots.length) {
         await this.onBatch({ type: 'groww_live_alpha', snapshots });
