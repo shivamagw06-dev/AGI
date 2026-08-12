@@ -204,11 +204,16 @@ def stage_import(
                           mapping=mapping, actor=actor, source=source)
 
 
-def commit_import(import_id: str, *, actor: str = "admin") -> dict[str, Any]:
+def commit_import(
+    import_id: str,
+    *,
+    actor: str = "admin",
+    recalculate: bool = True,
+) -> dict[str, Any]:
     denied = permissions.require(actor, "commit_import")
     if denied:
         return denied
-    return importer.commit(import_id, actor=actor)
+    return importer.commit(import_id, actor=actor, recalculate=recalculate)
 
 
 def preview_mapping(tab_id: str, headers: Sequence[str]) -> dict[str, Any]:
