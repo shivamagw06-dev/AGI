@@ -1,6 +1,11 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { attachGrowwDerivatives, normalizeExchangeTimestamp } from './growwLiveAlphaFeed.js';
+import { attachGrowwDerivatives, normalizeExchangeTimestamp, normalizeSpreadBps } from './growwLiveAlphaFeed.js';
+
+test('rejects inverted Groww depth instead of persisting a negative spread', () => {
+  assert.equal(normalizeSpreadBps(1193.1, 1123.7), null);
+  assert.equal(normalizeSpreadBps(100, 101), 99.5025);
+});
 
 test('normalizes Groww exchange timestamps to milliseconds', () => {
   assert.equal(normalizeExchangeTimestamp(1_786_517_820), 1_786_517_820_000);

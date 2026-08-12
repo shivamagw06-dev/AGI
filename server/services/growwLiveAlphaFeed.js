@@ -14,6 +14,13 @@ function positiveNumber(value) {
   return parsed > 0 ? parsed : null;
 }
 
+export function normalizeSpreadBps(bid, ask) {
+  const normalizedBid = positiveNumber(bid);
+  const normalizedAsk = positiveNumber(ask);
+  if (normalizedBid === null || normalizedAsk === null || normalizedAsk < normalizedBid) return null;
+  return Number((((normalizedAsk - normalizedBid) / ((normalizedAsk + normalizedBid) / 2)) * 10_000).toFixed(4));
+}
+
 export function normalizeExchangeTimestamp(value) {
   const parsed = number(value);
   if (!(parsed > 0)) return null;
@@ -41,7 +48,7 @@ function normalizeQuote(instrumentKey, quote, receivedAt) {
     average_traded_price: positiveNumber(quote?.average_price),
     cumulative_volume: number(quote?.volume), open_interest: number(quote?.open_interest),
     implied_volatility: number(quote?.implied_volatility), best_bid: bid, best_ask: ask,
-    spread_bps: bid > 0 && ask > 0 ? Number((((ask - bid) / ((ask + bid) / 2)) * 10_000).toFixed(4)) : null,
+    spread_bps: normalizeSpreadBps(bid, ask),
     total_buy_quantity: number(quote?.total_buy_quantity), total_sell_quantity: number(quote?.total_sell_quantity),
     ohlc: ohlc(quote?.ohlc), request_mode: 'groww_quote', source: 'groww',
   };
