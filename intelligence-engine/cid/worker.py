@@ -98,7 +98,9 @@ def _generate(ticker: str) -> dict[str, Any]:
 
 
 def run_forever() -> None:
-    workers = max(1, min(10, int(os.environ.get("CID_DOSSIER_WORKERS", str(DEFAULT_WORKERS)))))
+    sprint_mode = os.environ.get("CID_DOSSIER_SPRINT_MODE", "").strip().lower() in {"1", "true", "yes"}
+    configured_workers = 10 if sprint_mode else int(os.environ.get("CID_DOSSIER_WORKERS", str(DEFAULT_WORKERS)))
+    workers = max(1, min(10, configured_workers))
     refresh_days = float(os.environ.get("CID_DOSSIER_REFRESH_DAYS", "30"))
     idle_seconds = max(30, int(os.environ.get("CID_DOSSIER_IDLE_SECONDS", "300")))
     batch_pause_seconds = max(0, float(os.environ.get("CID_DOSSIER_BATCH_PAUSE_SECONDS", "10")))
@@ -111,6 +113,7 @@ def run_forever() -> None:
         "workers": workers,
         "refresh_days": refresh_days,
         "batch_pause_seconds": batch_pause_seconds,
+        "sprint_mode": sprint_mode,
     })
     while not STOP.is_set():
         llm = openai_status()

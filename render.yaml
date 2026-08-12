@@ -190,6 +190,8 @@ services:
         value: "true"
       - key: CID_DOSSIER_WORKERS
         value: "10"
+      - key: CID_DOSSIER_SPRINT_MODE
+        value: "true"
       - key: CID_DOSSIER_BATCH_PAUSE_SECONDS
         value: "10"
       - key: CID_DOSSIER_START_DELAY_SECONDS
