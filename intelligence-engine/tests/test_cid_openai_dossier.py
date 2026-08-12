@@ -39,6 +39,9 @@ def test_missing_key_fails_closed(monkeypatch):
 def test_generation_keeps_only_valid_citations(monkeypatch):
     payload = {
         "executive_summary": "Evidence-grounded summary.",
+        "long_company_narrative": "A long evidence-grounded company narrative.",
+        "long_company_narrative_evidence_ids": ["W1", "FAKE"],
+        "long_company_narrative_confidence": 0.75,
         "sections": {
             name: {"summary": name, "claims": ["claim"], "evidence_ids": ["W1", "FAKE"], "confidence": 0.8}
             for name in SECTIONS
@@ -64,6 +67,8 @@ def test_generation_keeps_only_valid_citations(monkeypatch):
     out = generate("INFY", _dossier())
     assert out["ok"] is True
     assert out["research"]["sections"]["risks"]["evidence_ids"] == ["W1"]
+    assert out["research"]["long_company_narrative_evidence_ids"] == ["W1"]
+    assert out["research"]["long_company_narrative_confidence"] == 0.75
     assert out["dossier"]["financial_metrics"]["roe"] == 30.0
     assert out["dossier"]["persisted_version"] == 3
 

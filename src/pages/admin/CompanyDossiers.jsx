@@ -250,6 +250,17 @@ export default function CompanyDossiers() {
                 </p>
               </div>
               <p className="text-sm text-slate-700 leading-6">{dossier.openai_research.executive_summary}</p>
+              {dossier.openai_research.long_company_narrative ? (
+                <div className="border-t border-slate-100 pt-4">
+                  <h3 className="text-sm font-semibold text-slate-900">Long company narrative</h3>
+                  <p className="text-sm text-slate-700 leading-7 mt-2">
+                    {dossier.openai_research.long_company_narrative}
+                  </p>
+                  <p className="text-xs text-slate-400 mt-3">
+                    Evidence: {(dossier.openai_research.long_company_narrative_evidence_ids || []).join(', ') || 'none'} · Confidence {Math.round(Number(dossier.openai_research.long_company_narrative_confidence || 0) * 100)}%
+                  </p>
+                </div>
+              ) : null}
               <div className="grid gap-3 md:grid-cols-2">
                 {Object.entries(dossier.openai_research.sections || {}).map(([name, section]) => (
                   <div key={name} className="border border-slate-100 rounded-lg p-3">
