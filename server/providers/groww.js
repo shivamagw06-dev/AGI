@@ -28,7 +28,7 @@ function looksLikeAccessToken(value) {
   return value.startsWith('eyJ') && value.length > 100;
 }
 
-async function resolveAccessToken() {
+export async function resolveGrowwAccessToken() {
   const direct = (process.env.GROWW_ACCESS_TOKEN || '').trim();
   if (direct) return direct;
 
@@ -88,7 +88,7 @@ export function isGrowwConfigured() {
 }
 
 async function growwRequest(path, params = {}) {
-  const token = await resolveAccessToken();
+  const token = await resolveGrowwAccessToken();
 
   const url = new URL(`${GROWW_BASE}${path}`);
   Object.entries(params).forEach(([k, v]) => {

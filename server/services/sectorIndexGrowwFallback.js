@@ -15,6 +15,7 @@ export const SECTOR_INDEX_GROWW = Object.freeze({
   'NSE_INDEX|Nifty Pharma': 'NIFTYPHARMA',
   'NSE_INDEX|Nifty Metal': 'NIFTYMETAL',
   'NSE_INDEX|Nifty Energy': 'NIFTYENERGY',
+  'NSE_INDEX|Nifty Realty': 'NIFTYREALTY',
   'NSE_INDEX|Nifty Financial Services': 'FINNIFTY',
   'NSE_INDEX|Nifty Infrastructure': 'NIFTYINFRA',
   'NSE_INDEX|Nifty India Digital': 'NIFTYIT',
