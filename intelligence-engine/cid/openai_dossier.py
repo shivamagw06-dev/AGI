@@ -77,11 +77,13 @@ def _response_schema() -> dict[str, Any]:
 
 
 def status() -> dict[str, Any]:
+    generation_enabled = os.environ.get("CID_OPENAI_ENABLED", "false").strip().lower() in {"1", "true", "yes"}
     key_present = bool(os.environ.get("OPENAI_API_KEY", "").strip())
     from cid.learning import readiness
 
     return {
-        "enabled": key_present,
+        "enabled": generation_enabled and key_present,
+        "generation_enabled": generation_enabled,
         "provider": "openai",
         "model": os.environ.get("CID_OPENAI_MODEL", DEFAULT_MODEL).strip() or DEFAULT_MODEL,
         "generator_version": GENERATOR_VERSION,
@@ -174,6 +176,8 @@ def _normalise(payload: dict[str, Any], valid_ids: set[str]) -> dict[str, Any]:
 
 
 def generate(ticker: str, dossier: dict[str, Any]) -> dict[str, Any]:
+    if os.environ.get("CID_OPENAI_ENABLED", "false").strip().lower() not in {"1", "true", "yes"}:
+        return {"ok": False, "error": "openai_generation_disabled", **status()}
     api_key = os.environ.get("OPENAI_API_KEY", "").strip()
     model = os.environ.get("CID_OPENAI_MODEL", DEFAULT_MODEL).strip() or DEFAULT_MODEL
     if not api_key:
