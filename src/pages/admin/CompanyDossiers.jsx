@@ -157,6 +157,18 @@ export default function CompanyDossiers() {
         />
       </div>
 
+      <div className="bg-white rounded-xl border border-slate-200 p-4 flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <p className="text-sm font-semibold text-slate-900">Continuous dossier population</p>
+          <p className="text-xs text-slate-500 mt-1">
+            {dashboard?.background_worker?.workers || 0} workers · {dashboard?.background_worker?.fresh || 0} fresh · {dashboard?.background_worker?.queued || 0} queued
+          </p>
+        </div>
+        <span className="text-xs font-semibold px-2 py-1 rounded-full bg-slate-100 text-slate-700">
+          {dashboard?.background_worker?.status || 'not started'}
+        </span>
+      </div>
+
       <div className="bg-white rounded-xl border border-slate-200 p-5 space-y-3">
         <div className="flex items-center justify-between">
           <h2 className="font-semibold text-slate-900">Tracked dossiers</h2>
@@ -218,6 +230,42 @@ export default function CompanyDossiers() {
 
       {dossier ? (
         <div className="grid gap-6 lg:grid-cols-2">
+          {dossier.openai_research ? (
+            <section className="lg:col-span-2 bg-white rounded-xl border border-slate-200 p-5 space-y-4">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <p className="text-[10px] uppercase tracking-[0.2em] text-indigo-600 font-semibold">OpenAI grounded synthesis</p>
+                  <h2 className="font-semibold text-slate-900 mt-1">Institutional research dossier</h2>
+                </div>
+                <p className="text-xs text-slate-400">
+                  {dossier.openai_research.model} · {String(dossier.openai_research.generated_at || '').slice(0, 19)}
+                </p>
+              </div>
+              <p className="text-sm text-slate-700 leading-6">{dossier.openai_research.executive_summary}</p>
+              {dossier.openai_research.long_company_narrative ? (
+                <div className="border-t border-slate-100 pt-4">
+                  <h3 className="text-sm font-semibold text-slate-900">Long company narrative</h3>
+                  <p className="text-sm text-slate-700 leading-7 mt-2">
+                    {dossier.openai_research.long_company_narrative}
+                  </p>
+                  <p className="text-xs text-slate-400 mt-3">
+                    Evidence: {(dossier.openai_research.long_company_narrative_evidence_ids || []).join(', ') || 'none'} · Confidence {Math.round(Number(dossier.openai_research.long_company_narrative_confidence || 0) * 100)}%
+                  </p>
+                </div>
+              ) : null}
+              <div className="grid gap-3 md:grid-cols-2">
+                {Object.entries(dossier.openai_research.sections || {}).map(([name, section]) => (
+                  <div key={name} className="border border-slate-100 rounded-lg p-3">
+                    <h3 className="text-sm font-semibold text-slate-900 capitalize">{name.replaceAll('_', ' ')}</h3>
+                    <p className="text-sm text-slate-600 mt-1">{section.summary || 'Evidence gap.'}</p>
+                    <p className="text-xs text-slate-400 mt-2">
+                      Evidence: {(section.evidence_ids || []).join(', ') || 'none'} · Confidence {Math.round(Number(section.confidence || 0) * 100)}%
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </section>
+          ) : null}
           <div className="bg-white rounded-xl border border-slate-200 p-5 space-y-3">
             <h2 className="font-semibold text-slate-900">
               {selected} · {dossier.identity?.company_name || selected}
