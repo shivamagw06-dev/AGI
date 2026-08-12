@@ -94,7 +94,6 @@ export class GrowwLiveAlphaFeed {
     if (this.stopped || this.inFlight) return;
     this.inFlight = true;
     try {
-      const receivedAt = new Date().toISOString();
       const snapshots = [];
       const quoteJobs = this.universe.members.flatMap((member) => [
         { key: member.instrumentKey, segment: 'CASH', symbol: member.symbol },
@@ -108,7 +107,7 @@ export class GrowwLiveAlphaFeed {
         const settled = await Promise.allSettled(group.map((job) => getQuote('NSE', job.segment, job.symbol)));
         settled.forEach((result, offset) => {
           if (result.status === 'fulfilled') {
-            const snapshot = normalizeQuote(group[offset].key, result.value, receivedAt);
+            const snapshot = normalizeQuote(group[offset].key, result.value, new Date().toISOString());
             if (snapshot) snapshots.push(snapshot);
           } else this.state.decode_errors += 1;
         });
@@ -121,7 +120,7 @@ export class GrowwLiveAlphaFeed {
         const prices = await getLTP(exchangeSymbols, 'CASH');
         for (const [key, symbol] of indexMap) {
           const price = number(prices?.[`NSE_${symbol}`] ?? prices?.[`NSE:${symbol}`] ?? prices?.[symbol]);
-          if (price > 0) snapshots.push({ instrument_key: key, received_at: receivedAt, ltp: price, request_mode: 'groww_ltp', source: 'groww' });
+          if (price > 0) snapshots.push({ instrument_key: key, received_at: new Date().toISOString(), ltp: price, request_mode: 'groww_ltp', source: 'groww' });
         }
       } catch (error) {
         // Preserve valid equity and futures observations when an individual
