@@ -180,7 +180,7 @@ def _scan_live_alpha(universe, medians, limit) -> list[dict[str, Any]]:
 
 SCANS: dict[str, tuple[str, Callable]] = {
     **{k: v for k, v in _SCANNERS.items()},
-    "growth": ("Growth", _scan_growth),
+    "growth": ("Forward Earnings Growth", _scan_growth),
     "dividend": ("Dividend / income", _scan_dividend),
     "live_alpha": ("Live Alpha confirmation", _scan_live_alpha),
 }
@@ -190,12 +190,12 @@ _ORDER = ["alpha", "value", "quality", "growth", "conviction", "dividend", "stre
 
 _SCAN_QUALIFICATION = {
     "alpha": ("candidate", "Candidate"),
-    "value": ("production_validated", "Production scanner"),
-    "quality": ("production_validated", "Production scanner"),
-    "growth": ("production_validated", "Production scanner"),
-    "conviction": ("production_validated", "Production scanner"),
-    "dividend": ("production_validated", "Production scanner"),
-    "stress": ("production_validated", "Production scanner"),
+    "value": ("operational", "Operational scanner"),
+    "quality": ("operational", "Operational scanner"),
+    "growth": ("operational", "Operational scanner"),
+    "conviction": ("operational", "Operational scanner"),
+    "dividend": ("operational", "Operational scanner"),
+    "stress": ("operational", "Operational scanner"),
     "pairs": ("candidate", "Production candidate scanner"),
     "live_alpha": ("candidate", "Live Alpha confirmation — warming up"),
 }
@@ -217,9 +217,9 @@ _SCAN_PROFILE: dict[str, dict[str, str]] = {
         "question": "Is the return on capital durable, and what is priced for it?",
     },
     "growth": {
-        "alpha": "Earnings delivery against an already-optimistic curve",
+        "alpha": "Forward EPS delivery against the trailing-to-forward P/E gap",
         "risk": "High — de-rating is violent when growth disappoints",
-        "question": "Can the implied growth actually be delivered?",
+        "question": "Can the implied forward EPS growth actually be delivered? This is not a revenue or historical CAGR screen.",
     },
     "conviction": {
         "alpha": "Sell-side expectation gaps that resolve on results",
@@ -563,7 +563,11 @@ def _overview_uncached(capped: int, cache_key: str, now: float) -> dict[str, Any
                 "research_question": profile.get("question"),
                 "qualification_status": _SCAN_QUALIFICATION[key][0],
                 "qualification_label": _SCAN_QUALIFICATION[key][1],
-                "production_validated": _SCAN_QUALIFICATION[key][0] == "production_validated",
+                "operational": _SCAN_QUALIFICATION[key][0] == "operational",
+                "research_validated": False,
+                "investment_validated": False,
+                "production_validated": False,
+                "backtest_status": "not_backtested",
                 "entered_today": len(entered),
                 "exited_today": len(exited),
                 # Embed preview rows so the UI does not re-scan on first paint.
@@ -752,7 +756,7 @@ def _overview_uncached(capped: int, cache_key: str, now: float) -> dict[str, Any
         "regime": reg,
         "hero": {
             "universe_scanned": len(universe),
-            "strategies_running": sum(1 for key in _ORDER if _SCAN_QUALIFICATION[key][0] == "production_validated"),
+            "strategies_running": sum(1 for key in _ORDER if _SCAN_QUALIFICATION[key][0] == "operational"),
             "research_modules": len(_ORDER),
             "live_opportunities": total,
             "companies_flagged": len(overlap_rows),
@@ -781,10 +785,22 @@ def _overview_uncached(capped: int, cache_key: str, now: float) -> dict[str, Any
         "live_alpha_meta": live_meta,
         "scoring": {
             "unified_weights": {"hedge_fund": 0.7, "live_alpha": 0.3},
+            "weighting_status": "agi_designed_not_empirically_optimized",
+            "weighting_label": "AGI composite weighting",
             "hedge_fund_component": "fundamental scanner confidence only (excludes Live Alpha)",
             "agreement_rule": "Live Alpha increases agreement only on directional confirmation",
             "conflict_penalty": "Negative Live Alpha conflicts reduce the unified score instead of adding agreement.",
             "freshness": live_meta.get("freshness_mode") or "session",
+        },
+        "validation_lifecycle": {
+            "operational": "Code runs and required data is available.",
+            "research_validated": "Requires a costed point-in-time backtest, liquidity checks and out-of-sample validation.",
+            "investment_validated": "Requires robust risk-adjusted performance across regimes and a documented failure profile.",
+            "current_operational_scanners": sum(
+                1 for key in _ORDER if _SCAN_QUALIFICATION[key][0] == "operational"
+            ),
+            "current_research_validated_strategies": 0,
+            "current_investment_validated_strategies": 0,
         },
         "cache": {"hit": False, "ttl_sec": _OVERVIEW_TTL_SEC},
     }

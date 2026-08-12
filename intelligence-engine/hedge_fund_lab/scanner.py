@@ -899,7 +899,7 @@ _SCANNERS = {
     "value": ("Value", _scan_value),
     "quality": ("Quality", _scan_quality),
     "conviction": ("Consensus conviction", _scan_conviction),
-    "stress": ("Distressed / stress", _scan_stress),
+    "stress": ("Stress", _scan_stress),
     "pairs": ("Valuation dispersion candidates", _scan_pairs),
 }
 

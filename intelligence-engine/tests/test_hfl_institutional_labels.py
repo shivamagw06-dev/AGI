@@ -7,7 +7,7 @@ if str(ENGINE_ROOT) not in sys.path:
 
 from hedge_fund_lab.production import library, strategy
 from hedge_fund_lab.scanner import _scan_pairs, _scan_quality, _scan_value
-from hedge_fund_lab.terminal import market_dashboard
+from hedge_fund_lab.terminal import SCANS, _SCAN_QUALIFICATION, market_dashboard
 
 
 def _row(ticker, value, *, industry="Mixed Industry", sector="Industrials", metric="ev_ebitda"):
@@ -81,3 +81,11 @@ def test_strategy_library_distinguishes_frameworks_from_operational_models():
     assert rows["long_short_equity"]["status"] == "candidate"
     assert not any(row["production_validated"] for row in rows.values())
     assert rows["long_short_equity"]["pipeline"][-1] == "live_monitoring"
+
+
+def test_operational_scanners_are_not_described_as_validated_strategies():
+    operational = {key for key, status in _SCAN_QUALIFICATION.items() if status[0] == "operational"}
+    assert operational == {"value", "quality", "growth", "conviction", "dividend", "stress"}
+    assert not any(status[0] == "production_validated" for status in _SCAN_QUALIFICATION.values())
+    assert SCANS["growth"][0] == "Forward Earnings Growth"
+    assert SCANS["stress"][0] == "Stress"
