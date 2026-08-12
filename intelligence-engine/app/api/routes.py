@@ -6,6 +6,7 @@ from typing import Any
 from fastapi import APIRouter, Depends, Header, HTTPException, Query
 from fastapi import Body
 from fastapi.responses import HTMLResponse
+from starlette.concurrency import run_in_threadpool
 
 from app.agents.registry import list_agents
 from app.core.config import Settings, get_settings
@@ -18781,7 +18782,10 @@ async def warehouse_recalculate(
         kwargs["stages"] = body["stages"]
     if body.get("entity"):
         kwargs["entity"] = str(body["entity"]).upper()
-    return recompute(**kwargs)
+    # Formula recomputation is synchronous and can scan substantial warehouse
+    # history. Keep it off uvicorn's event loop so health checks and unrelated
+    # API traffic remain responsive while a scheduled factor refresh runs.
+    return await run_in_threadpool(recompute, **kwargs)
 
 
 @router.get("/warehouse/search")
