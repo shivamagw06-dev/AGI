@@ -1,5 +1,5 @@
 import { Fragment, useCallback, useEffect, useState } from 'react';
-import { Activity, ChevronDown, ChevronRight, Search, Sparkles } from 'lucide-react';
+import { Activity, BrainCircuit, ChevronDown, ChevronRight, Layers3, Search, Sparkles, Target, Zap } from 'lucide-react';
 import {
   getHflOpportunity,
   getHflScan,
@@ -174,6 +174,36 @@ function RegimeStrip({ regime }) {
         {' '}This is not a live daily advance/decline classification.
       </p>
     </>
+  );
+}
+
+function InstitutionalStack({ stack }) {
+  if (!stack) return null;
+  const library = stack.strategy_library || {};
+  const scanners = stack.research_scanners || {};
+  const live = stack.live_alpha || {};
+  const alpha = stack.alpha_opportunity || {};
+  const forecast = stack.forecast_intelligence || {};
+  const cells = [
+    { icon: Layers3, label: 'Strategy library', value: library.count, detail: 'Institutional methodologies' },
+    { icon: Activity, label: 'Research scanners', value: scanners.count, detail: `${scanners.operational || 0} operational · ${scanners.candidate || 0} candidate` },
+    { icon: Zap, label: 'Live Alpha', value: live.qualifying_symbols ?? 0, detail: `${(live.engines || []).length} intraday engines · ${String(live.status || 'waiting').replaceAll('_', ' ')}` },
+    { icon: Target, label: 'Alpha Opportunity', value: alpha.companies_flagged ?? 0, detail: `${alpha.multi_strategy_companies || 0} multi-strategy · ${alpha.queue_size || 0} queued` },
+    { icon: BrainCircuit, label: 'Forecast Intelligence', value: forecast.company_forecasts ?? 0, detail: `${forecast.metric_predictions || 0} metric forecasts · ${forecast.accuracy_records || 0} measured` },
+  ];
+  return (
+    <section id="forecast-intelligence" className="hft-stack" aria-label="AGI institutional strategy stack">
+      {cells.map(({ icon: Icon, label, value, detail }) => (
+        <div key={label} className="hft-stack-cell">
+          <Icon size={16} />
+          <div><span>{label}</span><strong>{n(value, 0)}</strong><small>{detail}</small></div>
+        </div>
+      ))}
+      <div className="hft-stack-wide">
+        <span>Forecast governance</span>
+        <p>{forecast.governance || 'Forecast outcomes remain governed and do not automatically alter model parameters.'}</p>
+      </div>
+    </section>
   );
 }
 
@@ -449,6 +479,7 @@ export default function HedgeFundTerminal() {
       ) : null}
 
       {data ? <RegimeStrip regime={data.regime} /> : null}
+      {data ? <InstitutionalStack stack={data.institutional_stack} /> : null}
 
       {data?.generated_at || data?.freshness ? (
         <p className="hft-freshness" data-freshness={data.freshness || 'unknown'}>
@@ -498,7 +529,7 @@ export default function HedgeFundTerminal() {
         })}
       </section>
 
-      <h2 className="hft-title"><Activity size={15} /> Live strategy scanners</h2>
+      <h2 id="live-strategy-scanners" className="hft-title"><Activity size={15} /> Live strategy scanners</h2>
       <p className="hft-dim hft-lead">
         Operational means the scanner runs on available data; it does not mean the strategy is research or investment
         validated. Confidence is a screen-strength score, not a probability of profit.

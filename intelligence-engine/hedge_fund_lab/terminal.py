@@ -749,6 +749,7 @@ def _overview_uncached(capped: int, cache_key: str, now: float) -> dict[str, Any
 
     total = sum(len(rows) for rows in results.values())
     live_meta = fetch_live_alpha_rows(limit=1).get("meta") or {}
+    forecast_intelligence = _forecast_intelligence_status()
     payload = {
         "ok": True,
         "as_of": day,
@@ -783,6 +784,34 @@ def _overview_uncached(capped: int, cache_key: str, now: float) -> dict[str, Any
         "universe_meta": universe_meta(),
         "policy": "Research observations only — no buy, sell, target price or personalised advice.",
         "live_alpha_meta": live_meta,
+        "institutional_stack": {
+            "strategy_library": {
+                "count": 8,
+                "methodologies": [
+                    "Long / Short Equity", "Equity Market Neutral", "Statistical Arbitrage",
+                    "Global Macro", "Merger Arbitrage", "Convertible Arbitrage",
+                    "CTA / Managed Futures", "Distressed & Special Situations",
+                ],
+            },
+            "research_scanners": {
+                "count": len(_ORDER),
+                "operational": sum(1 for key in _ORDER if _SCAN_QUALIFICATION[key][0] == "operational"),
+                "candidate": sum(1 for key in _ORDER if _SCAN_QUALIFICATION[key][0] == "candidate"),
+            },
+            "live_alpha": {
+                "engines": ["Leadership", "Activity", "Breakout", "Dislocation", "Positioning"],
+                "qualifying_symbols": live_meta.get("qualifying_symbols"),
+                "freshness": live_meta.get("freshness_mode") or "session",
+                "status": "active" if live_meta.get("qualifying_symbols") else "waiting_for_qualifying_signals",
+            },
+            "alpha_opportunity": {
+                "companies_flagged": len(overlap_rows),
+                "multi_strategy_companies": sum(1 for r in overlap_rows if r["agreement"] >= 2),
+                "queue_size": len(queue),
+                "status": "active" if overlap_rows else "waiting_for_scanner_results",
+            },
+            "forecast_intelligence": forecast_intelligence,
+        },
         "scoring": {
             "unified_weights": {"hedge_fund": 0.7, "live_alpha": 0.3},
             "weighting_status": "agi_designed_not_empirically_optimized",
@@ -808,6 +837,37 @@ def _overview_uncached(capped: int, cache_key: str, now: float) -> dict[str, Any
     _OVERVIEW_CACHE["at"] = now
     _OVERVIEW_CACHE["payload"] = payload
     return payload
+
+
+def _forecast_intelligence_status() -> dict[str, Any]:
+    """Cheap warehouse status for the FIE/FLE layer shown in Hedge Fund Lab."""
+    counts: dict[str, int] = {}
+    try:
+        from institutional_warehouse import store
+
+        for tab in (
+            "forecast_company", "forecast_metric_predictions", "forecast_snapshots",
+            "forecast_evaluations", "forecast_accuracy", "forecast_learnings",
+        ):
+            page = store.fetch(tab, limit=1)
+            counts[tab] = int(page.get("total") or 0)
+    except Exception:
+        counts = {}
+    forecasts = counts.get("forecast_company", 0)
+    evaluations = counts.get("forecast_evaluations", 0)
+    accuracy = counts.get("forecast_accuracy", 0)
+    return {
+        "engine": "FIE 8.5 + FLE Phase 1",
+        "status": "measuring_outcomes" if evaluations else ("forecasting" if forecasts else "waiting_for_forecasts"),
+        "company_forecasts": forecasts,
+        "metric_predictions": counts.get("forecast_metric_predictions", 0),
+        "immutable_snapshots": counts.get("forecast_snapshots", 0),
+        "outcome_evaluations": evaluations,
+        "accuracy_records": accuracy,
+        "validated_learnings": counts.get("forecast_learnings", 0),
+        "self_learning_claim": False,
+        "governance": "Only validated outcomes feed accuracy; model parameters are not changed automatically.",
+    }
 
 
 def market_dashboard(universe=None, medians=None) -> dict[str, Any]:

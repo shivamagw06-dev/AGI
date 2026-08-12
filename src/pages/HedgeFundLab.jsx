@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Activity, Gauge, Layers, Sigma } from 'lucide-react';
+import { Activity, BrainCircuit, Gauge, Layers, Sigma, Target, Zap } from 'lucide-react';
 import HedgeFundTerminal, { InlineAsk } from '@/pages/hedgeFundTerminal';
 import {
   getHflCompare,
@@ -340,10 +340,23 @@ export function HedgeFundLabSections() {
         <p>Live opportunities, strategy mechanics and institutional risk analytics</p>
         <div className="hfl-focus-links">
           <Link to="/hedge-fund/alpha-opportunities">
+            <Target size={16} />
             <span>AGI Alpha</span>
             <strong>Alpha Opportunities</strong>
-            <small>Multi-factor research queue</small>
+            <small>Fundamental confluence and research queue</small>
           </Link>
+          <a href="#live-strategy-scanners">
+            <Zap size={16} />
+            <span>Intraday</span>
+            <strong>Live Alpha</strong>
+            <small>Leadership, activity, breakout, dislocation and positioning</small>
+          </a>
+          <a href="#forecast-intelligence">
+            <BrainCircuit size={16} />
+            <span>FIE + FLE</span>
+            <strong>Forecast Intelligence</strong>
+            <small>Scenario forecasts, outcomes, accuracy and governed learning</small>
+          </a>
         </div>
         <InlineAsk />
       </header>
