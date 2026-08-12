@@ -472,6 +472,7 @@ export default function HedgeFundTerminal() {
         {[
           ['Universe scanned', n(hero.universe_scanned)],
           ['Strategies running', n(hero.strategies_running)],
+          ['Research modules', n(hero.research_modules)],
           ['Live opportunities', n(hero.live_opportunities)],
           ['Companies flagged', n(hero.companies_flagged)],
           ['Multi-strategy names', n(hero.multi_strategy_companies)],
@@ -514,6 +515,7 @@ export default function HedgeFundTerminal() {
               <span className="name">{card.label}</span>
               <Stars n={card.suitability_stars} />
             </div>
+            <div className="hft-dim">{card.qualification_label || 'Candidate'}</div>
             <div className="count">{n(card.count)}<span>opportunities</span></div>
             <div className="meta">
               <span>Avg confidence {card.avg_confidence ?? '—'}</span>

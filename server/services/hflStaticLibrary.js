@@ -18,6 +18,23 @@ const DATA_PATH = join(__dirname, '../data/hflStrategyLibrary.json');
 
 let cache = null;
 
+const QUALIFICATION_PIPELINE = ['signal_definition', 'data_requirements', 'research_backtest', 'point_in_time_validation', 'transaction_costs', 'liquidity_and_capacity', 'risk_analysis', 'out_of_sample_test', 'production_qualification', 'live_monitoring'];
+const QUALIFICATION = {
+  long_short_equity: ['candidate', 'Candidate', 'research_scanners'],
+  equity_market_neutral: ['candidate', 'Candidate', 'qualification_framework'],
+  statistical_arbitrage: ['candidate', 'Candidate', 'calculator_and_research'],
+  global_macro: ['framework', 'Framework', 'methodology_only'],
+  merger_arbitrage: ['framework', 'Framework', 'methodology_only'],
+  convertible_arbitrage: ['framework', 'Framework', 'methodology_only'],
+  cta_trend: ['framework', 'Framework', 'methodology_only'],
+  distressed: ['candidate', 'Candidate', 'research_scanner'],
+};
+
+function qualify(pack) {
+  const [status, label, operationalScope] = QUALIFICATION[pack.id] || ['framework', 'Framework', 'methodology_only'];
+  return { ...pack, status, label, operational_scope: operationalScope, pipeline: QUALIFICATION_PIPELINE, production_validated: status === 'production_validated' };
+}
+
 function load() {
   if (cache) return cache;
   cache = JSON.parse(readFileSync(DATA_PATH, 'utf8'));
@@ -51,7 +68,7 @@ export function hflStaticLibrary() {
   const data = load();
   return {
     ok: true,
-    strategies: data.strategies || [],
+    strategies: (data.strategies || []).map(qualify),
     count: data.count || (data.strategies || []).length,
     source: 'node_static_fallback',
   };
@@ -73,5 +90,5 @@ export function hflStaticStrategy(strategyId) {
   if (!pack) {
     return { ok: false, error: 'unknown_strategy', strategy_id: strategyId, source: 'node_static_fallback' };
   }
-  return { ok: true, ...pack, agi_intelligence: intelligenceFor(pack), source: 'node_static_fallback' };
+  return { ok: true, ...qualify(pack), agi_intelligence: intelligenceFor(pack), source: 'node_static_fallback' };
 }

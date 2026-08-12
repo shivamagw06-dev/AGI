@@ -9,6 +9,8 @@ from __future__ import annotations
 
 from typing import Any, Optional
 
+from .qualification import qualification_for
+
 STRATEGIES: tuple[dict[str, Any], ...] = (
     {
         "id": "long_short_equity",
@@ -373,7 +375,7 @@ _BY_ID = {s["id"]: s for s in STRATEGIES}
 def list_strategies() -> list[dict[str, Any]]:
     """Card-level profile for every strategy."""
     return [
-        {
+        qualification_for(s["id"]) | {
             k: s[k]
             for k in (
                 "id",
@@ -396,7 +398,9 @@ def list_strategies() -> list[dict[str, Any]]:
 
 
 def get_strategy(strategy_id: str) -> Optional[dict[str, Any]]:
-    return _BY_ID.get(str(strategy_id or "").strip().lower())
+    strategy_id = str(strategy_id or "").strip().lower()
+    strategy = _BY_ID.get(strategy_id)
+    return {**strategy, **qualification_for(strategy_id)} if strategy else None
 
 
 def comparison() -> list[dict[str, Any]]:

@@ -182,11 +182,23 @@ SCANS: dict[str, tuple[str, Callable]] = {
     **{k: v for k, v in _SCANNERS.items()},
     "growth": ("Growth", _scan_growth),
     "dividend": ("Dividend / income", _scan_dividend),
-    "live_alpha": ("Live Alpha", _scan_live_alpha),
+    "live_alpha": ("Live Alpha confirmation", _scan_live_alpha),
 }
 
 # Fundamentals-first desk with Live Alpha as the ninth independent scanner.
 _ORDER = ["alpha", "value", "quality", "growth", "conviction", "dividend", "stress", "pairs", "live_alpha"]
+
+_SCAN_QUALIFICATION = {
+    "alpha": ("candidate", "Candidate"),
+    "value": ("production_validated", "Production scanner"),
+    "quality": ("production_validated", "Production scanner"),
+    "growth": ("production_validated", "Production scanner"),
+    "conviction": ("production_validated", "Production scanner"),
+    "dividend": ("production_validated", "Production scanner"),
+    "stress": ("production_validated", "Production scanner"),
+    "pairs": ("candidate", "Production candidate scanner"),
+    "live_alpha": ("candidate", "Live Alpha confirmation — warming up"),
+}
 
 _SCAN_PROFILE: dict[str, dict[str, str]] = {
     "alpha": {
@@ -549,6 +561,9 @@ def _overview_uncached(capped: int, cache_key: str, now: float) -> dict[str, Any
                 "alpha_source": profile.get("alpha"),
                 "risk_level": profile.get("risk"),
                 "research_question": profile.get("question"),
+                "qualification_status": _SCAN_QUALIFICATION[key][0],
+                "qualification_label": _SCAN_QUALIFICATION[key][1],
+                "production_validated": _SCAN_QUALIFICATION[key][0] == "production_validated",
                 "entered_today": len(entered),
                 "exited_today": len(exited),
                 # Embed preview rows so the UI does not re-scan on first paint.
@@ -737,7 +752,8 @@ def _overview_uncached(capped: int, cache_key: str, now: float) -> dict[str, Any
         "regime": reg,
         "hero": {
             "universe_scanned": len(universe),
-            "strategies_running": len(_ORDER),
+            "strategies_running": sum(1 for key in _ORDER if _SCAN_QUALIFICATION[key][0] == "production_validated"),
+            "research_modules": len(_ORDER),
             "live_opportunities": total,
             "companies_flagged": len(overlap_rows),
             "multi_strategy_companies": sum(1 for r in overlap_rows if r["agreement"] >= 2),

@@ -366,6 +366,7 @@ export function HedgeFundLabSections() {
             >
               <div className="fam">{s.family}</div>
               <div className="name">{s.name}</div>
+              <div className="hfl-hint">{s.label || 'Framework'} · {String(s.operational_scope || 'methodology_only').replaceAll('_', ' ')}</div>
               <div className="alpha"><Stars n={s.alpha_rating} /></div>
               <div className="meta">
                 <span>Capacity {s.capacity}</span>
@@ -386,6 +387,7 @@ export function HedgeFundLabSections() {
                   <p className="hfl-hint">
                     {detail.alpha_source} · gross {detail.typical_gross} · net {detail.typical_net}
                   </p>
+                  <p className="hfl-hint">Qualification: <b>{detail.label || 'Framework'}</b> · {String(detail.operational_scope || 'methodology_only').replaceAll('_', ' ')}</p>
                 </div>
                 <div className="hfl-users">
                   {detail.top_users.map((u) => <span key={u}>{u}</span>)}
@@ -418,6 +420,14 @@ export function HedgeFundLabSections() {
               {detail.id === 'equity_market_neutral' ? (
                 <p className="hfl-hint">Qualification pipeline: valuation dispersion → economic comparability → correlation → cointegration → factor neutrality → borrow and liquidity → costed backtest → market-neutral candidate.</p>
               ) : null}
+            </section>
+
+            <section className="hfl-module">
+              <h3>Production qualification</h3>
+              <p className="hfl-hint">A framework is not a production engine. Promotion requires every evidence gate below.</p>
+              <ol className="hfl-flow">
+                {(detail.pipeline || []).map((step) => <li key={step}>{String(step).replaceAll('_', ' ')}</li>)}
+              </ol>
             </section>
 
             <section className="hfl-module hfl-agi">
