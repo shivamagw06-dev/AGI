@@ -500,8 +500,8 @@ export default function HedgeFundTerminal() {
 
       <h2 className="hft-title"><Activity size={15} /> Live strategy scanners</h2>
       <p className="hft-dim hft-lead">
-        Scanner confidence is a transparent screen-strength score, not a probability of profit. Only a completed,
-        costed point-in-time backtest is shown as backtested research.
+        Operational means the scanner runs on available data; it does not mean the strategy is research or investment
+        validated. Confidence is a screen-strength score, not a probability of profit.
       </p>
       <section className="hft-scanners">
         {(data?.cards || []).map((card) => (
@@ -516,6 +516,7 @@ export default function HedgeFundTerminal() {
               <Stars n={card.suitability_stars} />
             </div>
             <div className="hft-dim">{card.qualification_label || 'Candidate'}</div>
+            <div className="hft-dim">{card.backtest_status === 'not_backtested' ? 'Not backtested' : card.backtest_status}</div>
             <div className="count">{n(card.count)}<span>opportunities</span></div>
             <div className="meta">
               <span>Avg confidence {card.avg_confidence ?? '—'}</span>
@@ -542,8 +543,8 @@ export default function HedgeFundTerminal() {
         <>
       <h2 className="hft-title">Strategy overlap</h2>
       <p className="hft-dim hft-lead">
-        Independent scanners reaching the same company. Unified score blends 70% Hedge Fund evidence with
-        30% Live Alpha; negative Live Alpha conflicts are penalized rather than treated as agreement.
+        Independent scanners reaching the same company. The AGI-designed, not empirically optimized, composite uses
+        70% Hedge Fund evidence and 30% Live Alpha. Negative conflicts are penalized rather than treated as agreement.
       </p>
       <div className="hft-table-wrap">
         <table className="hft-table">
