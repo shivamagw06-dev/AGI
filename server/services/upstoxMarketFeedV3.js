@@ -144,7 +144,7 @@ export async function authorizeMarketFeed({ fetchImpl = globalThis.fetch } = {})
 }
 
 export class UpstoxMarketFeedV3 {
-  constructor({ instrumentKeys, mode = 'full', snapshotStore = new SynchronizedSnapshotStore(), authorize = authorizeMarketFeed, websocketFactory, decoder = decodeMarketFeedMessage, onBatch = async () => {}, reconnect = true } = {}) {
+  constructor({ instrumentKeys, mode = 'full', snapshotStore = new SynchronizedSnapshotStore(), authorize = authorizeMarketFeed, websocketFactory, decoder = decodeMarketFeedMessage, onBatch = async () => {}, reconnect = true, reconnectBaseMs = 1_000, random = Math.random } = {}) {
     this.instrumentKeys = [...new Set((instrumentKeys || []).map(String).map((key) => key.trim()).filter(Boolean))];
     if (!this.instrumentKeys.length || this.instrumentKeys.some((key) => !key.includes('|'))) throw new Error('Valid Upstox instrument keys are required.');
     if (mode === 'full' && this.instrumentKeys.length > MAX_FULL_KEYS) throw new Error(`Full-mode feed is limited to ${MAX_FULL_KEYS} combined instrument keys.`);
@@ -155,11 +155,13 @@ export class UpstoxMarketFeedV3 {
     this.decoder = decoder;
     this.onBatch = onBatch;
     this.reconnect = reconnect;
+    this.reconnectBaseMs = Math.max(1, Number(reconnectBaseMs) || 1_000);
+    this.random = random;
     this.socket = null;
     this.timer = null;
     this.stopped = true;
     this.attempt = 0;
-    this.state = { status: 'idle', connected_at: null, last_message_at: null, reconnects: 0, messages: 0, decode_errors: 0, last_error: null };
+    this.state = { status: 'idle', connected_at: null, last_message_at: null, reconnects: 0, messages: 0, decode_errors: 0, last_error: null, next_retry_at: null };
   }
 
   async start() {
@@ -181,6 +183,9 @@ export class UpstoxMarketFeedV3 {
         this.attempt = 0;
         this.state.status = 'connected';
         this.state.connected_at = new Date().toISOString();
+        this.state.last_error = null;
+        this.state.next_retry_at = null;
+        delete this.state.auth_hint;
         const request = { guid: crypto.randomUUID(), method: 'sub', data: { mode: this.mode, instrumentKeys: this.instrumentKeys } };
         socket.send(Buffer.from(JSON.stringify(request)));
       });
@@ -199,11 +204,12 @@ export class UpstoxMarketFeedV3 {
       });
       socket.on('error', (error) => {
         this.state.last_error = error.message;
-        if (isUpstoxAuthError(error)) {
-          this.reconnect = false;
-          this.state.status = 'auth_failed';
-          this.state.auth_hint = 'Upstox access token expired or invalid. Update UPSTOX_ACCESS_TOKEN on Render, then POST /api/market/upstox-feed/restart.';
-        }
+        // Authorization of the one-time WebSocket URL has already succeeded at
+        // this point. A handshake 403 can also mean that an old connection from
+        // a rolling deploy has not released its Upstox connection slot yet.
+        // Treat it as recoverable and obtain a fresh one-time URL on retry.
+        this.state.status = 'reconnecting';
+        if (isUpstoxAuthError(error)) this.state.auth_hint = 'Live-feed handshake rejected; retrying with a fresh authorized URL.';
       });
       socket.on('close', () => { this.socket = null; this.state.status = this.stopped ? 'stopped' : 'reconnecting'; this.#scheduleReconnect(); });
     } catch (error) {
@@ -221,16 +227,18 @@ export class UpstoxMarketFeedV3 {
 
   #scheduleReconnect() {
     if (this.stopped || !this.reconnect || this.timer) return;
-    const delay = Math.min(30_000, 1_000 * (2 ** this.attempt)) + Math.floor(Math.random() * 250);
+    const delay = Math.min(30_000, this.reconnectBaseMs * (2 ** this.attempt)) + Math.floor(this.random() * 250);
     this.attempt += 1;
     this.state.reconnects += 1;
-    this.timer = setTimeout(() => { this.timer = null; this.#connect(); }, delay);
+    this.state.next_retry_at = new Date(Date.now() + delay).toISOString();
+    this.timer = setTimeout(() => { this.timer = null; this.state.next_retry_at = null; this.#connect(); }, delay);
   }
 
   stop() {
     this.stopped = true;
     if (this.timer) clearTimeout(this.timer);
     this.timer = null;
+    this.state.next_retry_at = null;
     this.socket?.close();
     this.socket = null;
     this.state.status = 'stopped';

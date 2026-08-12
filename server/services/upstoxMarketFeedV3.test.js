@@ -52,3 +52,34 @@ test('enforces the documented full-mode subscription ceiling', () => {
   const keys = Array.from({ length: 1501 }, (_, index) => `NSE_EQ|${index}`);
   assert.throws(() => new UpstoxMarketFeedV3({ instrumentKeys: keys }), /1500/);
 });
+
+test('retries a rejected WebSocket handshake with a fresh authorized URL', async () => {
+  const sockets = [];
+  let authorizations = 0;
+  const feed = new UpstoxMarketFeedV3({
+    instrumentKeys: ['NSE_EQ|TEST'],
+    authorize: async () => `wss://feed.example/${++authorizations}`,
+    websocketFactory: (url) => {
+      const handlers = {};
+      const socket = { url, on: (event, handler) => { handlers[event] = handler; }, send: () => {}, close: () => {} };
+      sockets.push({ socket, handlers });
+      return socket;
+    },
+    reconnectBaseMs: 1,
+    random: () => 0,
+  });
+
+  await feed.start();
+  sockets[0].handlers.error(new Error('Unexpected server response: 403'));
+  sockets[0].handlers.close();
+  assert.equal(feed.status().status, 'reconnecting');
+  assert.equal(feed.status().reconnects, 1);
+
+  await new Promise((resolve) => setTimeout(resolve, 10));
+  assert.equal(authorizations, 2);
+  assert.equal(sockets.length, 2);
+  sockets[1].handlers.open();
+  assert.equal(feed.status().status, 'connected');
+  assert.equal(feed.status().last_error, null);
+  feed.stop();
+});
