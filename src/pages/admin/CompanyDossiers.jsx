@@ -7,7 +7,6 @@ import {
   getCompanyDossier,
   getCompanyDossierCoverage,
   getCompanyDossierTimeline,
-  generateCompanyDossier,
   enrichYfp,
 } from '@/lib/intelligenceApi';
 import { Button } from '@/components/ui/button';
@@ -87,22 +86,6 @@ export default function CompanyDossiers() {
     }
   };
 
-  const onGenerateDossier = async () => {
-    const ticker = selected || 'HDFCBANK';
-    setBusy('generate');
-    setError('');
-    try {
-      const result = await generateCompanyDossier(ticker, true);
-      setDossier(result?.dossier || null);
-      await loadTicker(ticker);
-      await load();
-    } catch (err) {
-      setError(err?.message || 'OpenAI dossier generation failed');
-    } finally {
-      setBusy('');
-    }
-  };
-
   const pct = (v) =>
     v == null || Number.isNaN(Number(v)) ? '—' : `${Math.round(Number(v) <= 1 ? Number(v) * 100 : Number(v))}%`;
 
@@ -134,9 +117,6 @@ export default function CompanyDossiers() {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button onClick={onGenerateDossier} disabled={!!busy || loading || !selected}>
-            {busy === 'generate' ? 'Generating…' : 'Generate full dossier'}
-          </Button>
           <Button variant="outline" onClick={onEnrichFinancials} disabled={!!busy || loading}>
             {busy === 'enrich' ? 'Enriching…' : 'Enrich Financials'}
           </Button>
@@ -175,6 +155,18 @@ export default function CompanyDossiers() {
           }
           hint="70–89% / 50–69%"
         />
+      </div>
+
+      <div className="bg-white rounded-xl border border-slate-200 p-4 flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <p className="text-sm font-semibold text-slate-900">Continuous dossier population</p>
+          <p className="text-xs text-slate-500 mt-1">
+            {dashboard?.background_worker?.workers || 0} workers · {dashboard?.background_worker?.fresh || 0} fresh · {dashboard?.background_worker?.queued || 0} queued
+          </p>
+        </div>
+        <span className="text-xs font-semibold px-2 py-1 rounded-full bg-slate-100 text-slate-700">
+          {dashboard?.background_worker?.status || 'not started'}
+        </span>
       </div>
 
       <div className="bg-white rounded-xl border border-slate-200 p-5 space-y-3">

@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import os
 import uuid
+from datetime import datetime, timezone
 from typing import Any
 from urllib import error, parse, request
 
@@ -58,6 +59,45 @@ def load_latest(ticker: str) -> dict[str, Any] | None:
         return None
     dossier["persisted_version"] = rows[0].get("version")
     return dossier
+
+
+def latest_versions() -> dict[str, dict[str, Any]]:
+    rows = _rest(
+        "GET",
+        "?select=ticker,company_name,version,generated_at,coverage_score,coverage_grade&order=ticker.asc,version.desc&limit=10000",
+    )
+    latest: dict[str, dict[str, Any]] = {}
+    for row in rows if isinstance(rows, list) else []:
+        ticker = str(row.get("ticker") or "").upper()
+        if ticker and ticker not in latest:
+            latest[ticker] = row
+    return latest
+
+
+def latest_summary_rows() -> list[dict[str, Any]]:
+    return [
+        {
+            "ticker": ticker,
+            "company_name": row.get("company_name") or ticker,
+            "coverage_score": row.get("coverage_score"),
+            "coverage_grade": row.get("coverage_grade"),
+            "updated_at": row.get("generated_at"),
+            "persisted_version": row.get("version"),
+            "generated": True,
+        }
+        for ticker, row in latest_versions().items()
+    ]
+
+
+def generated_age_seconds(row: dict[str, Any], *, now: datetime | None = None) -> float | None:
+    raw = row.get("generated_at")
+    if not raw:
+        return None
+    try:
+        parsed = datetime.fromisoformat(str(raw).replace("Z", "+00:00"))
+        return max(0.0, ((now or datetime.now(timezone.utc)) - parsed).total_seconds())
+    except (TypeError, ValueError):
+        return None
 
 
 def save_version(dossier: dict[str, Any]) -> dict[str, Any]:

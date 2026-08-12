@@ -168,6 +168,16 @@ services:
       # never committed; deterministic ICE remains the automatic fallback.
       - key: OPENAI_API_KEY
         sync: false
+      - key: CID_DOSSIER_WORKER_ENABLED
+        value: "true"
+      - key: CID_DOSSIER_WORKERS
+        value: "4"
+      - key: CID_DOSSIER_REFRESH_DAYS
+        value: "30"
+      - key: CID_DOSSIER_IDLE_SECONDS
+        value: "300"
+      - key: CID_OPENAI_MODEL
+        value: gpt-5-mini
       - key: ASK_LLM_ENABLED
         value: "true"
       - key: ASK_REASONING_MODEL

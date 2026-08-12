@@ -8929,6 +8929,7 @@ async def company_dossier_health():
     from cid.schema import CID_VERSION
 
     from cid.openai_dossier import status as openai_dossier_status
+    from cid.worker import read_status as dossier_worker_status
 
     return {
         "status": "ok" if is_cid_enabled() else "disabled",
@@ -8939,6 +8940,7 @@ async def company_dossier_health():
         "architecture_status": "v1.0.1 LOCKED",
         "position": "permanent_company_memory_after_leo",
         "openai_generation": openai_dossier_status(),
+        "background_worker": dossier_worker_status(),
     }
 
 

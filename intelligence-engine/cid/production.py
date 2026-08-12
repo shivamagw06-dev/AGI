@@ -477,10 +477,28 @@ def production_dashboard() -> dict[str, Any]:
         if not store.get(t):
             ensure_dossier(t)
     rows = store.summary_rows(limit=100)
+    try:
+        from cid.persistence import latest_summary_rows
+
+        persisted = latest_summary_rows()
+    except Exception:
+        persisted = []
+    merged = {str(row.get("ticker") or "").upper(): row for row in rows if row.get("ticker")}
+    for row in persisted:
+        ticker = str(row.get("ticker") or "").upper()
+        if ticker:
+            merged[ticker] = {**merged.get(ticker, {}), **row}
+    rows = sorted(merged.values(), key=lambda row: str(row.get("updated_at") or ""), reverse=True)
     grades = {}
     for r in rows:
         g = r.get("coverage_grade") or "Insufficient"
         grades[g] = grades.get(g, 0) + 1
+    try:
+        from cid.worker import read_status
+
+        worker = read_status()
+    except Exception:
+        worker = {"status": "unavailable", "workers": 0}
     return {
         "programme": "CID",
         "cid_version": CID_VERSION,
@@ -492,6 +510,7 @@ def production_dashboard() -> dict[str, Any]:
         "dossiers": rows,
         "answer_policy": "dossier_before_raw_apis",
         "not_an_engine": True,
+        "background_worker": worker,
     }
 
 

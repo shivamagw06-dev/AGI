@@ -10,11 +10,16 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 GATHER_PID=""
+DOSSIER_PID=""
 
 cleanup() {
   if [[ -n "${GATHER_PID}" ]] && kill -0 "${GATHER_PID}" 2>/dev/null; then
     kill -TERM "${GATHER_PID}" 2>/dev/null || true
     wait "${GATHER_PID}" 2>/dev/null || true
+  fi
+  if [[ -n "${DOSSIER_PID}" ]] && kill -0 "${DOSSIER_PID}" 2>/dev/null; then
+    kill -TERM "${DOSSIER_PID}" 2>/dev/null || true
+    wait "${DOSSIER_PID}" 2>/dev/null || true
   fi
 }
 trap cleanup EXIT INT TERM
@@ -62,6 +67,18 @@ if [[ "${AGI_GATHER_SIDECAR:-true}" != "false" && "${AGI_GATHER_SIDECAR:-true}" 
   echo "[start_engine] gather sidecar pid=${GATHER_PID}"
 else
   echo "[start_engine] AGI_GATHER_SIDECAR=false — HTTP only (use agib-intelligence-worker)"
+fi
+
+if [[ "${CID_DOSSIER_WORKER_ENABLED:-true}" != "false" && "${CID_DOSSIER_WORKER_ENABLED:-true}" != "0" ]]; then
+  echo "[start_engine] launching continuous company dossier worker (${CID_DOSSIER_WORKERS:-4} threads)"
+  (
+    export AGI_ROLE=dossier_worker
+    exec nice -n 5 python scripts/company_dossier_worker.py
+  ) &
+  DOSSIER_PID=$!
+  echo "[start_engine] company dossier worker pid=${DOSSIER_PID}"
+else
+  echo "[start_engine] company dossier worker disabled"
 fi
 
 echo "[start_engine] launching uvicorn on port ${PORT:-8100} (FAA_LIVE_FETCH=${FAA_LIVE_FETCH})"
