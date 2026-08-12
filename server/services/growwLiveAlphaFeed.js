@@ -9,6 +9,14 @@ function number(value) {
   return Number.isFinite(parsed) ? parsed : null;
 }
 
+export function normalizeExchangeTimestamp(value) {
+  const parsed = number(value);
+  if (!(parsed > 0)) return null;
+  if (parsed < 10_000_000_000) return parsed * 1_000;
+  if (parsed > 10_000_000_000_000) return Math.floor(parsed / 1_000);
+  return parsed;
+}
+
 function ohlc(value) {
   if (!value) return [];
   if (typeof value === 'object') return [value];
@@ -22,7 +30,7 @@ function normalizeQuote(instrumentKey, quote, receivedAt) {
   if (!(ltp > 0)) return null;
   return {
     instrument_key: instrumentKey, received_at: receivedAt,
-    exchange_timestamp: number(quote?.last_trade_time), ltp,
+    exchange_timestamp: normalizeExchangeTimestamp(quote?.last_trade_time), ltp,
     previous_close: number(ohlc(quote?.ohlc)?.[0]?.close),
     last_traded_quantity: number(quote?.last_trade_quantity),
     average_traded_price: number(quote?.average_price),

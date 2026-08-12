@@ -1,6 +1,12 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { attachGrowwDerivatives } from './growwLiveAlphaFeed.js';
+import { attachGrowwDerivatives, normalizeExchangeTimestamp } from './growwLiveAlphaFeed.js';
+
+test('normalizes Groww exchange timestamps to milliseconds', () => {
+  assert.equal(normalizeExchangeTimestamp(1_786_517_820), 1_786_517_820_000);
+  assert.equal(normalizeExchangeTimestamp(1_786_517_820_000), 1_786_517_820_000);
+  assert.equal(normalizeExchangeTimestamp(null), null);
+});
 
 test('maps the nearest unexpired Groww future to each Live Alpha member', async () => {
   const prior = process.env.GROWW_ACCESS_TOKEN;
