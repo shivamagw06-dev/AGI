@@ -2,6 +2,8 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { SynchronizedSnapshotStore, decodeMarketFeedMessage, loadFeedResponseType, normalizeFeedResponse, UpstoxMarketFeedV3 } from './upstoxMarketFeedV3.js';
 
+process.env.UPSTOX_ACCESS_TOKEN ||= 'test-access-token-with-enough-length-abcdefgh';
+
 test('decodes the official V3 protobuf contract', async () => {
   const type = await loadFeedResponseType();
   const encoded = type.encode(type.create({
@@ -46,6 +48,29 @@ test('subscribes in binary and normalizes incoming batches', async () => {
   assert.equal(batches[0].snapshots[0].ltp, 100);
   assert.equal(feed.status().research_only, true);
   feed.stop();
+});
+
+test('sends the documented authorization headers on the WebSocket handshake', async () => {
+  const previousToken = process.env.UPSTOX_ACCESS_TOKEN;
+  process.env.UPSTOX_ACCESS_TOKEN = 'analytics-access-token-with-enough-length-abcdefgh';
+  let handshake;
+  const socket = { on: () => {}, send: () => {}, close: () => {} };
+  try {
+    const feed = new UpstoxMarketFeedV3({
+      instrumentKeys: ['NSE_EQ|TEST'],
+      authorize: async () => 'wss://feed.example/test',
+      websocketFactory: (url, headers) => { handshake = { url, headers }; return socket; },
+      reconnect: false,
+    });
+    await feed.start();
+    assert.equal(handshake.url, 'wss://feed.example/test');
+    assert.equal(handshake.headers.Accept, '*/*');
+    assert.equal(handshake.headers.Authorization, `Bearer ${process.env.UPSTOX_ACCESS_TOKEN}`);
+    feed.stop();
+  } finally {
+    if (previousToken === undefined) delete process.env.UPSTOX_ACCESS_TOKEN;
+    else process.env.UPSTOX_ACCESS_TOKEN = previousToken;
+  }
 });
 
 test('enforces the documented full-mode subscription ceiling', () => {

@@ -132,7 +132,7 @@ export async function authorizeMarketFeed({ fetchImpl = globalThis.fetch } = {})
     error.code = 'UPSTOX_AUTH_FAILED';
     throw error;
   }
-  const response = await fetchImpl(AUTHORIZE_URL, { headers: { Accept: 'application/json', Authorization: `Bearer ${token}` } });
+  const response = await fetchImpl(AUTHORIZE_URL, { headers: { Accept: '*/*', Authorization: `Bearer ${token}` } });
   const json = await response.json().catch(() => ({}));
   const url = json?.data?.authorized_redirect_uri;
   if (!response.ok || !url?.startsWith('wss://')) {
@@ -151,7 +151,7 @@ export class UpstoxMarketFeedV3 {
     this.mode = mode;
     this.snapshotStore = snapshotStore;
     this.authorize = authorize;
-    this.websocketFactory = websocketFactory || ((url) => new WebSocket(url, { followRedirects: true }));
+    this.websocketFactory = websocketFactory || ((url, headers) => new WebSocket(url, { followRedirects: true, headers }));
     this.decoder = decoder;
     this.onBatch = onBatch;
     this.reconnect = reconnect;
@@ -176,7 +176,19 @@ export class UpstoxMarketFeedV3 {
     try {
       const url = await this.authorize();
       if (this.stopped) return;
-      const socket = this.websocketFactory(url);
+      // Upstox V3 requires the bearer token and Accept header on the WebSocket
+      // handshake as well as on the preceding authorization request. The
+      // authorized redirect URL alone is not sufficient for every account.
+      const { token } = resolveUpstoxAccessToken();
+      if (!token) {
+        const error = new Error('Upstox access token is required for the V3 live-feed handshake.');
+        error.code = 'UPSTOX_AUTH_FAILED';
+        throw error;
+      }
+      const socket = this.websocketFactory(url, {
+        Accept: '*/*',
+        Authorization: `Bearer ${token}`,
+      });
       this.socket = socket;
       socket.binaryType = 'arraybuffer';
       socket.on('open', () => {
