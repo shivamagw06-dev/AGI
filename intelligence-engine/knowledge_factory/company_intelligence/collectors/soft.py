@@ -21,6 +21,34 @@ def _sector_for(ticker: str) -> str:
         return UNKNOWN
 
 
+def _warehouse_company(ticker: str) -> dict[str, Any]:
+    """Read the effective master row without making warehouse availability fatal."""
+    try:
+        from institutional_warehouse import store
+        result = store.fetch("company_master", filters={"symbol": str(ticker or "").upper()}, limit=1)
+        rows = result.get("rows") or []
+        return dict(rows[0]) if rows else {}
+    except Exception:
+        return {}
+
+
+def _warehouse_peers(ticker: str, limit: int = 20) -> list[str]:
+    """Return vendor-backed peer symbols, preserving source order and uniqueness."""
+    try:
+        from institutional_warehouse import store
+        result = store.fetch("peer_relationships", filters={"symbol": str(ticker or "").upper()}, limit=max(1, int(limit)))
+        out: list[str] = []
+        seen: set[str] = set()
+        for row in result.get("rows") or []:
+            peer = str(row.get("peer_symbol") or "").strip().upper()
+            if peer and peer != str(ticker or "").upper() and peer not in seen:
+                out.append(peer)
+                seen.add(peer)
+        return out
+    except Exception:
+        return []
+
+
 def _dna(sector: str) -> dict[str, Any]:
     if not sector or sector == UNKNOWN:
         return {}
@@ -86,7 +114,8 @@ def _sector_peers(ticker: str, sector: str, limit: int = 6) -> list[str]:
 
 def collect_company_context(ticker: str) -> dict[str, Any]:
     t = str(ticker or "").upper()
-    sector = _sector_for(t)
+    warehouse_company = _warehouse_company(t)
+    sector = str(warehouse_company.get("sector") or _sector_for(t) or UNKNOWN)
     seed = get_seed(t)
     return {
         "ticker": t,
@@ -96,6 +125,8 @@ def collect_company_context(ticker: str) -> dict[str, Any]:
         "dna": _dna(sector),
         "ticker_business": _ticker_business(t),
         "ticker_peers": _ticker_peers(t),
+        "warehouse_company": warehouse_company,
+        "warehouse_peers": _warehouse_peers(t),
         "sector_peers": _sector_peers(t, sector),
         "management_pack": _management_pack(t),
         "kf_company": _kf_company(t),

@@ -93,23 +93,24 @@ def produce_identity(ctx: dict[str, Any]) -> dict[str, Any]:
         fields = _seed_fields(seed, IDENTITY_KEYS, source="institutional_seed", collector=collector, confidence=0.95)
         return module_block("identity", fields, source="institutional_seed", collector=collector, confidence=0.95)
 
+    master = ctx.get("warehouse_company") or {}
     sector = ctx.get("sector") or UNKNOWN
     display = dna.get("display_name") or sector
     fields = {
-        "company_name": _f(t, source="nifty500_universe", collector=collector, confidence=0.6, derived_from=["ticker"]),
-        "legal_name": _f(UNKNOWN, source="unavailable", collector=collector),
-        "nse_symbol": _f(t, source="nifty500_universe", collector=collector, confidence=0.9, derived_from=["nifty500"]),
-        "bse_symbol": _f(UNKNOWN, source="unavailable", collector=collector),
-        "isin": _f(UNKNOWN, source="unavailable", collector=collector),
+        "company_name": _f(master.get("company_name") or t, source="institutional_warehouse" if master else "ticker", collector=collector, confidence=0.9 if master else 0.6, derived_from=["company_master"] if master else ["ticker"]),
+        "legal_name": _f(master.get("legal_name") or UNKNOWN, source="institutional_warehouse" if master.get("legal_name") else "unavailable", collector=collector, confidence=0.9 if master.get("legal_name") else 0.0),
+        "nse_symbol": _f(t, source="institutional_warehouse" if master else "ticker", collector=collector, confidence=0.95, derived_from=["company_master"] if master else ["ticker"]),
+        "bse_symbol": _f(master.get("bse_symbol") or UNKNOWN, source="institutional_warehouse" if master.get("bse_symbol") else "unavailable", collector=collector, confidence=0.9 if master.get("bse_symbol") else 0.0),
+        "isin": _f(master.get("isin") or UNKNOWN, source="institutional_warehouse" if master.get("isin") else "unavailable", collector=collector, confidence=0.95 if master.get("isin") else 0.0),
         "cin": _f(UNKNOWN, source="unavailable", collector=collector),
-        "exchange": _f("NSE", source="nifty500_universe", collector=collector, confidence=0.8, derived_from=["nifty500"]),
+        "exchange": _f(master.get("exchange") or "NSE", source="institutional_warehouse" if master else "ticker", collector=collector, confidence=0.9, derived_from=["company_master"] if master else ["ticker"]),
         "listing_date": _f(UNKNOWN, source="unavailable", collector=collector),
         "registered_office": _f(UNKNOWN, source="unavailable", collector=collector),
         "headquarters": _f(UNKNOWN, source="unavailable", collector=collector),
-        "website": _f(UNKNOWN, source="unavailable", collector=collector),
-        "industry": _f(display, source="institutional_sector_prior", collector=collector, confidence=0.7, derived_from=["sector_dna"]),
-        "sector": _f(sector, source="nifty500_universe", collector=collector, confidence=0.9, derived_from=["nifty500_sector"]),
-        "sub_industry": _f(UNKNOWN, source="unavailable", collector=collector),
+        "website": _f(master.get("website") or UNKNOWN, source="institutional_warehouse" if master.get("website") else "unavailable", collector=collector, confidence=0.85 if master.get("website") else 0.0),
+        "industry": _f(master.get("industry") or display, source="institutional_warehouse" if master.get("industry") else "institutional_sector_prior", collector=collector, confidence=0.9 if master.get("industry") else 0.7, derived_from=["company_master"] if master.get("industry") else ["sector_dna"]),
+        "sector": _f(sector, source="institutional_warehouse" if master.get("sector") else "nifty500_universe", collector=collector, confidence=0.9, derived_from=["company_master"] if master.get("sector") else ["nifty500_sector"]),
+        "sub_industry": _f(master.get("sub_industry") or UNKNOWN, source="institutional_warehouse" if master.get("sub_industry") else "unavailable", collector=collector, confidence=0.85 if master.get("sub_industry") else 0.0),
         "market_cap_category": _f("Nifty 500 constituent", source="nifty500_universe", collector=collector, confidence=0.7, derived_from=["nifty500"]),
         "index_membership": _f(["NIFTY 500"], source="nifty500_universe", collector=collector, confidence=0.9, derived_from=["nifty500"]),
         "corporate_status": _f("Active", source="nifty500_universe", collector=collector, confidence=0.6, derived_from=["nifty500"]),
@@ -307,9 +308,9 @@ def produce_competition(ctx: dict[str, Any]) -> dict[str, Any]:
         fields = _seed_fields(seed, COMP_KEYS, source="institutional_seed", collector=collector, confidence=0.95)
         return module_block("competition", fields, source="institutional_seed", collector=collector, confidence=0.95)
 
-    peers = ctx.get("ticker_peers") or ctx.get("sector_peers") or []
+    peers = ctx.get("warehouse_peers") or ctx.get("ticker_peers") or ctx.get("sector_peers") or []
     dna = ctx.get("dna") or {}
-    source = "company_analysis" if ctx.get("ticker_peers") else ("nifty500_sector_peers" if peers else "unavailable")
+    source = "institutional_warehouse" if ctx.get("warehouse_peers") else ("company_analysis" if ctx.get("ticker_peers") else ("nifty500_sector_peers" if peers else "unavailable"))
     fields = {
         "primary_competitors": _f(peers or UNKNOWN, source=source, collector=collector, confidence=0.7 if peers else 0.0, derived_from=["ticker_peers", "sector_peers"]),
         "market_position": _f(UNKNOWN, source="unavailable", collector=collector),

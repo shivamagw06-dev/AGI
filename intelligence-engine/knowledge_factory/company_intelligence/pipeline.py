@@ -26,6 +26,7 @@ def run_company_intelligence_pipeline(tickers: list[str] | None = None) -> dict[
     universe = _universe(tickers)
     published = 0
     failures: list[dict[str, Any]] = []
+    partials: list[dict[str, Any]] = []
     ready = 0
     levels: dict[int, int] = {i: 0 for i in range(8)}
 
@@ -37,7 +38,7 @@ def run_company_intelligence_pipeline(tickers: list[str] | None = None) -> dict[
             if obj.get("institutional_ready"):
                 ready += 1
             if obj.get("quality", {}).get("failed_gates"):
-                failures.append({"ticker": t, "failed_gates": obj["quality"]["failed_gates"]})
+                partials.append({"ticker": t, "failed_gates": obj["quality"]["failed_gates"]})
         except Exception as exc:
             failures.append({"ticker": t, "reason": str(exc)})
 
@@ -51,6 +52,10 @@ def run_company_intelligence_pipeline(tickers: list[str] | None = None) -> dict[
         "institutional_ready": ready,
         "institutional_ready_pct": round(100.0 * ready / (len(universe) or 1), 2),
         "coverage_levels": levels,
+        "execution_failures": failures[:50],
+        "execution_failure_count": len(failures),
+        "partial_objects": partials[:50],
+        "partial_object_count": len(partials),
         "validation_failures": failures[:50],
         "validation_failure_count": len(failures),
         "dashboard": dash,
