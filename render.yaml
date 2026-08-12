@@ -176,8 +176,14 @@ services:
         value: "30"
       - key: CID_DOSSIER_IDLE_SECONDS
         value: "300"
+      - key: CID_FALLBACK_MIN_EXAMPLES
+        value: "1"
       - key: CID_OPENAI_MODEL
         value: gpt-5-mini
+      - key: CID_OPENAI_TIMEOUT_SECONDS
+        value: "120"
+      - key: CID_OPENAI_MAX_OUTPUT_TOKENS
+        value: "8000"
       - key: ASK_LLM_ENABLED
         value: "true"
       - key: ASK_REASONING_MODEL

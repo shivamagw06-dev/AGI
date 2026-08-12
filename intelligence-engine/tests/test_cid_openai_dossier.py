@@ -7,7 +7,7 @@ ENGINE_ROOT = Path(__file__).resolve().parents[1]
 if str(ENGINE_ROOT) not in sys.path:
     sys.path.insert(0, str(ENGINE_ROOT))
 
-from cid.openai_dossier import SECTIONS, evidence_rows, generate
+from cid.openai_dossier import SECTIONS, _response_schema, evidence_rows, generate
 from ask_pipeline.llm_synthesis import _evidence_rows
 
 
@@ -27,6 +27,13 @@ def test_evidence_rows_are_addressable():
     rows = evidence_rows(_dossier())
     assert rows[0]["id"] == "W1"
     assert any(row["id"] == "E-AR" for row in rows)
+
+
+def test_structured_output_schema_requires_every_section():
+    schema = _response_schema()
+    assert schema["additionalProperties"] is False
+    assert schema["properties"]["sections"]["required"] == list(SECTIONS)
+    assert schema["properties"]["sections"]["additionalProperties"] is False
 
 
 def test_missing_key_fails_closed(monkeypatch):
@@ -59,6 +66,8 @@ def test_generation_keeps_only_valid_citations(monkeypatch):
 
         def create(self, **kwargs):
             assert kwargs["store"] is False
+            assert kwargs["text"]["format"]["type"] == "json_schema"
+            assert kwargs["text"]["format"]["strict"] is True
             return Response()
 
     monkeypatch.setenv("OPENAI_API_KEY", "test")

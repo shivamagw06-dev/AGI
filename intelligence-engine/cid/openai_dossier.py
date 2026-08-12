@@ -32,8 +32,54 @@ SECTIONS = (
 )
 
 
+def _response_schema() -> dict[str, Any]:
+    section = {
+        "type": "object",
+        "additionalProperties": False,
+        "properties": {
+            "summary": {"type": "string"},
+            "claims": {"type": "array", "items": {"type": "string"}},
+            "evidence_ids": {"type": "array", "items": {"type": "string"}},
+            "confidence": {"type": "number", "minimum": 0, "maximum": 1},
+        },
+        "required": ["summary", "claims", "evidence_ids", "confidence"],
+    }
+    return {
+        "type": "object",
+        "additionalProperties": False,
+        "properties": {
+            "executive_summary": {"type": "string"},
+            "long_company_narrative": {"type": "string"},
+            "long_company_narrative_evidence_ids": {
+                "type": "array",
+                "items": {"type": "string"},
+            },
+            "long_company_narrative_confidence": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1,
+            },
+            "sections": {
+                "type": "object",
+                "additionalProperties": False,
+                "properties": {name: section for name in SECTIONS},
+                "required": list(SECTIONS),
+            },
+        },
+        "required": [
+            "executive_summary",
+            "long_company_narrative",
+            "long_company_narrative_evidence_ids",
+            "long_company_narrative_confidence",
+            "sections",
+        ],
+    }
+
+
 def status() -> dict[str, Any]:
     key_present = bool(os.environ.get("OPENAI_API_KEY", "").strip())
+    from cid.learning import readiness
+
     return {
         "enabled": key_present,
         "provider": "openai",
@@ -41,6 +87,7 @@ def status() -> dict[str, Any]:
         "generator_version": GENERATOR_VERSION,
         "key_present": key_present,
         "policy": "grounded_synthesis_only",
+        "agi_takeover": readiness(),
     }
 
 
@@ -157,12 +204,20 @@ def generate(ticker: str, dossier: dict[str, Any]) -> dict[str, Any]:
     try:
         from openai import OpenAI
 
-        client = OpenAI(api_key=api_key, timeout=float(os.environ.get("CID_OPENAI_TIMEOUT_SECONDS", "60")), max_retries=1)
+        client = OpenAI(api_key=api_key, timeout=float(os.environ.get("CID_OPENAI_TIMEOUT_SECONDS", "120")), max_retries=1)
         response = client.responses.create(
             model=model,
             instructions=instructions,
             input=input_text,
-            max_output_tokens=int(os.environ.get("CID_OPENAI_MAX_OUTPUT_TOKENS", "5000")),
+            max_output_tokens=int(os.environ.get("CID_OPENAI_MAX_OUTPUT_TOKENS", "8000")),
+            text={
+                "format": {
+                    "type": "json_schema",
+                    "name": "company_dossier",
+                    "strict": True,
+                    "schema": _response_schema(),
+                }
+            },
             store=False,
         )
         payload = json.loads(response.output_text)
@@ -182,6 +237,11 @@ def generate(ticker: str, dossier: dict[str, Any]) -> dict[str, Any]:
                 "policy": "grounded_synthesis_only",
             }
         )
+        from cid.learning import learn_from_success
+
+        learned_profile = learn_from_success(research)
+        research["learning_profile_version"] = learned_profile.get("version")
+        research["learning_examples"] = learned_profile.get("successful_examples")
         updated = dict(dossier)
         updated["openai_research"] = research
         updated["dossier_generation"] = {
