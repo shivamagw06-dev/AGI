@@ -151,7 +151,8 @@ function ExpectancyLab() {
 
   return (
     <section className="hfl-module">
-      <h3><Sigma size={15} /> Strategy expectancy</h3>
+      <h3><Sigma size={15} /> Illustrative strategy expectancy</h3>
+      <p className="hfl-hint">User-controlled assumptions, not AGI backtest results. Expectancy does not model correlation, overlapping positions, capacity or tail losses.</p>
       <div className="hfl-lab-grid">
         <div className="hfl-controls">
           {fields.map(([key, label, min, max, step]) => (
@@ -393,7 +394,8 @@ export function HedgeFundLabSections() {
 
               <div className="hfl-two">
                 <div>
-                  <h3>How this strategy makes money</h3>
+                  <h3>Illustrative AGI strategy attribution</h3>
+                  <p className="hfl-hint">Illustrative assumptions, not universal fund return attribution or demonstrated AGI performance.</p>
                   <div className="hfl-revenue">
                     {detail.revenue_sources.map((r) => (
                       <div key={r.source}>
@@ -413,6 +415,9 @@ export function HedgeFundLabSections() {
                   </ol>
                 </div>
               </div>
+              {detail.id === 'equity_market_neutral' ? (
+                <p className="hfl-hint">Qualification pipeline: valuation dispersion → economic comparability → correlation → cointegration → factor neutrality → borrow and liquidity → costed backtest → market-neutral candidate.</p>
+              ) : null}
             </section>
 
             <section className="hfl-module hfl-agi">

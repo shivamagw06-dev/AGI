@@ -5,7 +5,8 @@ ENGINE_ROOT = Path(__file__).resolve().parents[1]
 if str(ENGINE_ROOT) not in sys.path:
     sys.path.insert(0, str(ENGINE_ROOT))
 
-from hedge_fund_lab.scanner import _scan_pairs, _scan_value
+from hedge_fund_lab.production import strategy
+from hedge_fund_lab.scanner import _scan_pairs, _scan_quality, _scan_value
 from hedge_fund_lab.terminal import market_dashboard
 
 
@@ -50,3 +51,25 @@ def test_sector_dashboard_discloses_reproducible_methodology():
     dash = market_dashboard(rows, {"Mixed Industry": {"count": 6, "ev_ebitda": 10.0}})
     assert dash["methodology"]["weighting"].startswith("equal-weighted")
     assert dash["interpretation"]["type"] == "agi_model_output"
+    assert "book equity" in dash["metric_methodology"]["pb"]
+    assert "not normalized" in dash["metric_methodology"]["ev_ebitda"]
+
+
+def test_quality_debt_to_equity_requires_accounting_basis():
+    row = _row("ABBOTINDIA", 20.0, metric="pe")
+    row.update({"roe": 37.86, "profit_margin": 22.4, "debt_to_equity": 3.6})
+    row["data_context"] = {
+        "accounting_scope": "not_provided",
+        "fundamentals_period": "FY26",
+        "fundamentals_source": "warehouse.historical_ratios",
+    }
+    hit = _scan_quality([row], {}, 10)[0]
+    assert hit["validation_status"] == "accounting_basis_verification_required"
+    assert hit["debt_to_equity_basis"]["debt_definition"] == "not_provided"
+    assert "verify accounting basis" in hit["why"].lower()
+
+
+def test_long_short_copy_discloses_residual_market_exposure():
+    text = strategy("long_short_equity")["agi_intelligence"]["why_institutions_use_it"]
+    assert "net beta" in text
+    assert "largely independent" not in text

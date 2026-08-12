@@ -43,13 +43,22 @@ def strategy(strategy_id: str) -> dict[str, Any]:
     if not pack:
         return {"ok": False, "error": "unknown_strategy", "strategy_id": strategy_id}
 
+    if pack["id"] in {"long_short_equity", "equity_market_neutral"}:
+        institutional_use = (
+            f"{pack['name']} seeks to reduce dependence on market direction through "
+            f"offsetting long and short exposures, but returns remain sensitive to net beta, "
+            f"factor exposures and short squeezes. Its stated alpha source is {pack['alpha_source'].lower()}."
+        )
+    else:
+        institutional_use = (
+            f"{pack['name']} seeks {pack['alpha_source'].lower()} across its stated "
+            f"{pack['holding_period'].lower()} holding period. Returns remain exposed to the "
+            "strategy-specific risks and regimes shown below."
+        )
+
     # AGI Intelligence panel — the interpretation layer over the profile.
     intelligence = {
-        "why_institutions_use_it": (
-            f"{pack['name']} is run for {pack['alpha_source'].lower()}, which is "
-            f"largely independent of market direction and supports "
-            f"{pack['capacity'].lower()} capacity at {pack['leverage'].lower()} leverage."
-        ),
+        "why_institutions_use_it": institutional_use,
         "when_it_performs": pack["works_when"],
         "when_it_struggles": pack["fails_when"],
         "favourable_regimes": pack["regimes"],
