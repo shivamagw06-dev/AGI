@@ -216,9 +216,13 @@ export async function restartLiveAlphaRuntime() {
 }
 
 export function getLiveAlphaRuntimeStatus() {
+  const feed = runtime?.feed.status() || null;
+  const runtimeStatus = runtime && feed && !['connected', 'idle'].includes(feed.status)
+    ? 'degraded'
+    : state.status;
   return {
-    ...state,
-    feed: runtime?.feed.status() || null,
+    ...state, status: runtimeStatus,
+    feed,
     universe: runtime ? { name: runtime.universe.name, members: runtime.universe.members.length, expected_members: runtime.universe.expectedMembers, coverage_complete: runtime.universe.members.length === runtime.universe.expectedMembers, subscribed_instruments: runtime.feed.instrumentKeys.length, benchmark_key: runtime.universe.benchmarkKey, derivatives: runtime.universe.derivativeResolution } : null,
     bootstrap: runtime?.bootstrap || null,
     research_only: true,
