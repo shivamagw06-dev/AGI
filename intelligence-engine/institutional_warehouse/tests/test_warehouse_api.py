@@ -192,6 +192,36 @@ def test_http_recalculate_delegates_blocking_work(monkeypatch):
     assert seen["entity"] == "AAA"
 
 
+def test_http_commit_import_preserves_no_recalculate_and_delegates(monkeypatch):
+    from app.api import routes
+    from institutional_warehouse import production as warehouse_production
+
+    seen = {}
+
+    def fake_commit(import_id, **kwargs):
+        seen.update({"import_id": import_id, **kwargs})
+        return {"ok": True}
+
+    async def fake_threadpool(function, *args, **kwargs):
+        seen["function"] = function
+        return function(*args, **kwargs)
+
+    monkeypatch.setattr(warehouse_production, "commit_import", fake_commit)
+    monkeypatch.setattr(routes, "run_in_threadpool", fake_threadpool)
+    result = run(
+        routes.warehouse_commit_import(
+            "import-123",
+            {"actor": "quote-worker", "recalculate": False},
+            None,
+        )
+    )
+    assert result == {"ok": True}
+    assert seen["function"] is fake_commit
+    assert seen["import_id"] == "import-123"
+    assert seen["actor"] == "quote-worker"
+    assert seen["recalculate"] is False
+
+
 # --------------------------------------------------------------------------
 # Refresh pipeline
 # --------------------------------------------------------------------------

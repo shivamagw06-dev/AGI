@@ -18654,7 +18654,13 @@ async def warehouse_commit_import(
 ):
     from institutional_warehouse.production import commit_import
 
-    return commit_import(import_id, actor=_warehouse_actor(payload, x_agi_actor))
+    body = payload or {}
+    return await run_in_threadpool(
+        commit_import,
+        import_id,
+        actor=_warehouse_actor(body, x_agi_actor),
+        recalculate=bool(body.get("recalculate", True)),
+    )
 
 
 @router.post("/warehouse/tab/{tab_id}/map-headers")
