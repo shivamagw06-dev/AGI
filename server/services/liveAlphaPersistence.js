@@ -52,11 +52,11 @@ export class LiveAlphaPersistence {
       rows.push({
         instrument_key: item.instrument_key, observed_at: item.received_at,
         exchange_timestamp: item.exchange_timestamp ? new Date(item.exchange_timestamp).toISOString() : null,
-        ltp: item.ltp, previous_close: item.previous_close, last_traded_quantity: item.last_traded_quantity,
-        average_traded_price: item.average_traded_price, cumulative_volume: item.cumulative_volume,
-        open_interest: item.open_interest, implied_volatility: item.implied_volatility,
-        best_bid: item.best_bid, best_ask: item.best_ask, spread_bps: item.spread_bps,
-        feed_latency_ms: item.feed_latency_ms,
+        ltp: item.ltp, previous_close: item.previous_close ?? null, last_traded_quantity: item.last_traded_quantity ?? null,
+        average_traded_price: item.average_traded_price ?? null, cumulative_volume: item.cumulative_volume ?? null,
+        open_interest: item.open_interest ?? null, implied_volatility: item.implied_volatility ?? null,
+        best_bid: item.best_bid ?? null, best_ask: item.best_ask ?? null, spread_bps: item.spread_bps ?? null,
+        feed_latency_ms: item.feed_latency_ms ?? null,
         raw_factors: { ohlc: item.ohlc, total_buy_quantity: item.total_buy_quantity, total_sell_quantity: item.total_sell_quantity, request_mode: item.request_mode },
       });
     }
