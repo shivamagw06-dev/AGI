@@ -18,6 +18,7 @@ from cid.openai_dossier import generate
 
 STOP = Event()
 DEFAULT_WORKERS = 4
+DEFAULT_SPRINT_MODE = True  # Temporary: revert after the dossier queue reaches zero.
 
 
 def _now() -> str:
@@ -98,7 +99,8 @@ def _generate(ticker: str) -> dict[str, Any]:
 
 
 def run_forever() -> None:
-    sprint_mode = os.environ.get("CID_DOSSIER_SPRINT_MODE", "").strip().lower() in {"1", "true", "yes"}
+    sprint_default = "true" if DEFAULT_SPRINT_MODE else "false"
+    sprint_mode = os.environ.get("CID_DOSSIER_SPRINT_MODE", sprint_default).strip().lower() in {"1", "true", "yes"}
     configured_workers = 10 if sprint_mode else int(os.environ.get("CID_DOSSIER_WORKERS", str(DEFAULT_WORKERS)))
     workers = max(1, min(10, configured_workers))
     refresh_days = float(os.environ.get("CID_DOSSIER_REFRESH_DAYS", "30"))
