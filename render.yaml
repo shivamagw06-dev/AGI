@@ -35,7 +35,7 @@ services:
       - key: CONTINUOUS_MORNING_DAG
         value: "false"
       - key: CONTINUOUS_FAA_REFRESH
-        value: "false"
+        value: "true"
       # embedded = API also runs the ingest worker (default on Free).
       # Set to external when the dedicated worker below is enabled.
       - key: CMS_INGEST_WORKER_MODE
@@ -43,31 +43,31 @@ services:
       # Research-only Hedge Fund refreshers. These populate observations and
       # candles; neither path places orders or enables execution.
       - key: HEDGE_FUND_LIVE_REFRESH_ENABLED
-        value: "false"
+        value: "true"
       - key: HEDGE_FUND_LIVE_QUOTES
-        value: "false"
+        value: "true"
       - key: HEDGE_FUND_TECHNICAL_RESEARCH_ENABLED
-        value: "false"
+        value: "true"
       - key: HEDGE_FUND_UPSTOX_CANDLES
-        value: "false"
+        value: "true"
       - key: HFL_SNAPSHOT_SCHEDULER_ENABLED
-        value: "false"
+        value: "true"
       - key: VALUATION_PACK_SCHEDULER_ENABLED
-        value: "false"
+        value: "true"
       - key: VALUATION_RATIOS_SCHEDULER
-        value: "false"
+        value: "true"
       - key: INSTITUTIONAL_FLOW_SCHEDULER
-        value: "false"
+        value: "true"
       - key: HVIE_RUNTIME_SCHEDULER
-        value: "false"
+        value: "true"
       - key: UIFI_SCHEDULER
-        value: "false"
+        value: "true"
       - key: UPSTOX_STATEMENT_SCHEDULER
-        value: "false"
+        value: "true"
       - key: CONFLUENCE_VALIDATION_ENABLED
-        value: "false"
+        value: "true"
       - key: LIVE_ALPHA_SHADOW_ENABLED
-        value: "false"
+        value: "true"
       # Live Alpha equity engines cover the full tracked Nifty 200 universe.
       # Futures remain limited to contracts actually listed in NSE_FO.
       - key: LIVE_ALPHA_UNIVERSE_PRESET
@@ -78,13 +78,13 @@ services:
         value: "180000"
       # Groww Cloud cannot reach Render/Supabase; compute equity opportunity here.
       - key: GROWW_EQUITY_OPPORTUNITY_SCHEDULER
-        value: "false"
+        value: "true"
       - key: GROWW_EQUITY_OPPORTUNITY_SCHEDULE_IST
         value: "16:30"
       - key: GROWW_EQUITY_OPPORTUNITY_SLOTS_IST
         value: "10:00,11:00,12:00,13:00,14:00,15:00,16:30"
       - key: GROWW_SECTOR_ROTATION_SCHEDULER
-        value: "false"
+        value: "true"
       - key: GROWW_SECTOR_ROTATION_SCHEDULE_IST
         value: "16:35"
       - key: GROWW_SECTOR_ROTATION_SLOTS_IST
@@ -191,9 +191,9 @@ services:
       - key: CID_DOSSIER_PAUSED
         value: "true"
       - key: CID_DOSSIER_WORKERS
-        value: "10"
+        value: "4"
       - key: CID_DOSSIER_SPRINT_MODE
-        value: "true"
+        value: "false"
       - key: CID_DOSSIER_BATCH_PAUSE_SECONDS
         value: "10"
       - key: CID_DOSSIER_START_DELAY_SECONDS
@@ -290,20 +290,20 @@ services:
       - key: AGI_PKG_01_ENABLED
         value: "false"
       - key: CONTINUOUS_LIDI
-        value: "false"
+        value: "true"
       - key: CONTINUOUS_KF_HD
-        value: "false"
+        value: "true"
       - key: CONTINUOUS_FAA_REFRESH
-        value: "false"
+        value: "true"
       - key: CONTINUOUS_LEARNING_LOOP
-        value: "false"
+        value: "true"
       - key: CONTINUOUS_DIRECTOR_LEARNING
-        value: "false"
+        value: "true"
       - key: CONTINUOUS_HISTORICAL_BACKFILL
         value: "false"
       # Keep draining backlog until every listed company is fully backfilled, then maintenance-only.
       - key: CONTINUOUS_BACKFILL_UNTIL_COMPLETE
-        value: "false"
+        value: "true"
       - key: CONTINUOUS_BACKFILL_ACTIVE_INTERVAL_SEC
         value: "300"
       # Knowledge Factory Historical Depth — owned by gather sidecar/worker.
@@ -445,7 +445,7 @@ services:
       # Forecast builds are heavy warehouse jobs. Run them here, never in the
       # user-facing HTTP process. Conservative pacing protects shared services.
       - key: FIE_RUNTIME
-        value: "false"
+        value: "true"
       - key: FIE_BATCH
         value: "1"
       - key: FIE_INTERVAL_SECONDS
@@ -489,7 +489,7 @@ services:
       - key: FAA_BROWSERBASE_ENABLED
         value: "false"
       - key: CONTINUOUS_GATHER_LEARN
-        value: "false"
+        value: "true"
       - key: CONTINUOUS_GATHER_LEARN_INTERVAL_SEC
         value: "1800"
       - key: CONTINUOUS_MORNING_DAG
@@ -529,23 +529,23 @@ services:
       - key: AGI_PKG_01_ENABLED
         value: "false"
       - key: CONTINUOUS_LIDI
-        value: "false"
+        value: "true"
       - key: CONTINUOUS_KF_HD
-        value: "false"
+        value: "true"
       - key: CONTINUOUS_FAA_REFRESH
-        value: "false"
+        value: "true"
       - key: CONTINUOUS_LEARNING_LOOP
-        value: "false"
+        value: "true"
       - key: CONTINUOUS_DIRECTOR_LEARNING
-        value: "false"
+        value: "true"
       - key: CONTINUOUS_HISTORICAL_BACKFILL
-        value: "false"
+        value: "true"
       - key: CONTINUOUS_BACKFILL_UNTIL_COMPLETE
-        value: "false"
+        value: "true"
       - key: CONTINUOUS_BACKFILL_ACTIVE_INTERVAL_SEC
         value: "300"
       - key: KF_HD_LIVE_COLLECTORS
-        value: "false"
+        value: "true"
       - key: KF_HD_BACKFILL_BATCH
         value: "12"
       - key: KF_HD_BACKFILL_BATCHES_PER_CYCLE
