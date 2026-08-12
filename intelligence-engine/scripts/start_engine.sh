@@ -70,9 +70,15 @@ else
 fi
 
 if [[ "${CID_DOSSIER_WORKER_ENABLED:-true}" != "false" && "${CID_DOSSIER_WORKER_ENABLED:-true}" != "0" ]]; then
-  echo "[start_engine] launching continuous company dossier worker (${CID_DOSSIER_WORKERS:-4} threads)"
+  # Give uvicorn time to become healthy before warehouse reads and OpenAI work
+  # begin. The dossier process is deliberately lower priority and defaults to
+  # four threads on the live four-CPU Render web service.
+  DOSSIER_DELAY_SEC="${CID_DOSSIER_START_DELAY_SECONDS:-120}"
+  echo "[start_engine] company dossier worker scheduled in ${DOSSIER_DELAY_SEC}s (${CID_DOSSIER_WORKERS:-4} threads)"
   (
+    sleep "${DOSSIER_DELAY_SEC}"
     export AGI_ROLE=dossier_worker
+    echo "[start_engine] launching continuous company dossier worker now"
     exec nice -n 5 python scripts/company_dossier_worker.py
   ) &
   DOSSIER_PID=$!

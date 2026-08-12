@@ -111,7 +111,7 @@ services:
     name: agib-intelligence-engine
     runtime: python
     rootDir: intelligence-engine
-    # Pro plan (4 GB / 2 CPU) — matches the live Render service. A persistent
+    # Pro plan (8 GB / 4 CPU) — matches the live Render service. A persistent
     # disk requires at least Starter; Pro comfortably exceeds that minimum.
     # If this value drifts below the actual dashboard plan, a Blueprint
     # re-sync can DOWNGRADE the live service to match this file. Keep it in sync.
@@ -172,6 +172,8 @@ services:
         value: "true"
       - key: CID_DOSSIER_WORKERS
         value: "4"
+      - key: CID_DOSSIER_START_DELAY_SECONDS
+        value: "120"
       - key: CID_DOSSIER_REFRESH_DAYS
         value: "30"
       - key: CID_DOSSIER_IDLE_SECONDS
