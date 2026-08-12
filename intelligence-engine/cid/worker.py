@@ -98,7 +98,7 @@ def _generate(ticker: str) -> dict[str, Any]:
 
 
 def run_forever() -> None:
-    workers = max(1, min(4, int(os.environ.get("CID_DOSSIER_WORKERS", str(DEFAULT_WORKERS)))))
+    workers = max(1, min(10, int(os.environ.get("CID_DOSSIER_WORKERS", str(DEFAULT_WORKERS)))))
     refresh_days = float(os.environ.get("CID_DOSSIER_REFRESH_DAYS", "30"))
     idle_seconds = max(30, int(os.environ.get("CID_DOSSIER_IDLE_SECONDS", "300")))
     batch_pause_seconds = max(0, float(os.environ.get("CID_DOSSIER_BATCH_PAUSE_SECONDS", "10")))
