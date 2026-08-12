@@ -27,13 +27,11 @@ function load() {
 function intelligenceFor(pack) {
   const works = pack.works_when || [];
   const fails = pack.fails_when || [];
+  const institutionalUse = ['long_short_equity', 'equity_market_neutral'].includes(pack.id)
+    ? `${pack.name} seeks to reduce dependence on market direction through offsetting long and short exposures, but returns remain sensitive to net beta, factor exposures and short squeezes. Its stated alpha source is ${String(pack.alpha_source || '').toLowerCase()}.`
+    : `${pack.name} seeks ${String(pack.alpha_source || '').toLowerCase()} across its stated ${String(pack.holding_period || '').toLowerCase()} holding period. Returns remain exposed to the strategy-specific risks and regimes shown below.`;
   return {
-    why_institutions_use_it: (
-      `${pack.name} is run for ${String(pack.alpha_source || '').toLowerCase()}, which is `
-      + `largely independent of market direction and supports `
-      + `${String(pack.capacity || '').toLowerCase()} capacity at `
-      + `${String(pack.leverage || '').toLowerCase()} leverage.`
-    ),
+    why_institutions_use_it: institutionalUse,
     when_it_performs: works,
     when_it_struggles: fails,
     favourable_regimes: pack.regimes || [],

@@ -536,6 +536,7 @@ def market_regime() -> dict[str, Any]:
         "strategy_suitability": suitability,
         "methodology": {
             "definition": "AGI model classification from covered-universe one-year returns and valuation.",
+            "drivers": "covered-universe 1Y positive-return breadth, median 1Y return and valuation",
             "positive_1y_return_formula": "companies with 1Y return > 0 / companies with a valid 1Y return",
             "period": "latest stored observation with trailing one-year return",
             "universe": "covered warehouse universe",
@@ -598,7 +599,7 @@ def _scan_value(universe, medians, limit) -> list[dict[str, Any]]:
                         f"{roe_med}%." if roe is not None and roe_med is not None
                         else "."
                     )
-                    + (" This is a headline multiple; normalize exceptional items and enterprise value before drawing a valuation conclusion." if normalization_required else "")
+                    + (" This is a headline multiple. Validate the underlying EBITDA and reconcile enterprise-value adjustments before drawing a valuation conclusion." if normalization_required else "")
                 ),
             }
         )
@@ -623,10 +624,19 @@ def _scan_quality(universe, medians, limit) -> list[dict[str, Any]]:
                 "profit_margin": margin,
                 "debt_to_equity": debt,
                 "quality_score": round(min(100.0, roe + margin / 2 - (debt or 0) / 20), 1),
-                "validation_status": "screen_validated",
+                "validation_status": "accounting_basis_verification_required" if debt is not None and (row.get("data_context") or {}).get("accounting_scope") == "not_provided" else "screen_validated",
+                "debt_to_equity_basis": {
+                    "status": "verify_accounting_basis" if debt is not None and (row.get("data_context") or {}).get("accounting_scope") == "not_provided" else "reported_basis_available",
+                    "period": (row.get("data_context") or {}).get("fundamentals_period"),
+                    "scope": (row.get("data_context") or {}).get("accounting_scope"),
+                    "debt_definition": "not_provided",
+                    "lease_liabilities_included": "not_provided",
+                    "equity_basis": "not_provided",
+                    "source": (row.get("data_context") or {}).get("fundamentals_source"),
+                },
                 "why": (
                     f"Return on equity of {roe}% on a {margin}% net margin"
-                    + (f" with debt/equity at {debt}" if debt is not None else "")
+                    + (f" with debt/equity at {debt}x — verify accounting basis" if debt is not None and (row.get("data_context") or {}).get("accounting_scope") == "not_provided" else f" with debt/equity at {debt}x" if debt is not None else "")
                     + " — the profitability profile institutions screen for."
                 ),
             }

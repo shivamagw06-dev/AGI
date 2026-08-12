@@ -145,9 +145,9 @@ function RegimeStrip({ regime }) {
   if (!regime?.ok) return null;
   const rotation = regime.sector_rotation || {};
   const cells = [
-    ['Regime', regime.stance],
-    ['Breadth advancing', pct(regime.breadth_advancing_pct)],
-    ['Advance / decline', n(regime.advance_decline_ratio)],
+    ['Market regime', regime.stance],
+    ['1Y positive-return breadth', pct(regime.positive_1y_return_pct ?? regime.breadth_advancing_pct)],
+    ['Daily advance / decline', regime.advance_decline_ratio == null ? 'Not available' : n(regime.advance_decline_ratio)],
     ['Median 1Y return', pct(regime.median_return_1y_pct)],
     ['Return dispersion', pct(regime.return_dispersion_pct)],
     ['Median P/E', n(regime.median_pe)],
@@ -159,14 +159,21 @@ function RegimeStrip({ regime }) {
     ['Universe', n(regime.universe)],
   ];
   return (
-    <section className="hft-regime">
-      {cells.map(([label, value]) => (
-        <div key={label}>
-          <span className="k">{label}</span>
-          <span className="v">{value ?? '—'}</span>
-        </div>
-      ))}
-    </section>
+    <>
+      <section className="hft-regime">
+        {cells.map(([label, value]) => (
+          <div key={label}>
+            <span className="k">{label}</span>
+            <span className="v">{value ?? '—'}</span>
+            {label === 'Market regime' ? <span className="k">AGI model output</span> : null}
+          </div>
+        ))}
+      </section>
+      <p className="hft-dim hft-lead">
+        Why: {regime.methodology?.drivers || 'covered-universe 1Y breadth, momentum and valuation'}.
+        {' '}This is not a live daily advance/decline classification.
+      </p>
+    </>
   );
 }
 
@@ -635,7 +642,17 @@ export default function HedgeFundTerminal() {
             Lowest median P/E: <b>{dash.lowest_median_pe_sector?.sector || dash.cheapest_sector?.sector || '—'}</b> at {n(dash.lowest_median_pe_sector?.median_pe ?? dash.cheapest_sector?.median_pe)}× ·
             {' '}Highest median P/E: <b>{dash.highest_median_pe_sector?.sector || dash.most_expensive_sector?.sector || '—'}</b> at {n(dash.highest_median_pe_sector?.median_pe ?? dash.most_expensive_sector?.median_pe)}×
           </p>
-          <p className="hft-dim">{dash.methodology?.definition || 'Median constituent trailing P/E'} · {dash.methodology?.weighting || 'equal-weighted median'}</p>
+          <p className="hft-dim">
+            {dash.methodology?.definition || 'Median constituent trailing P/E'} · {dash.methodology?.weighting || 'equal-weighted median'}<br />
+            Universe: {dash.methodology?.universe || 'covered warehouse companies grouped by primary sector'} · Excludes: {dash.methodology?.exclusions || 'missing and invalid observations'}<br />
+            Accounting: {dash.methodology?.accounting || 'reported trailing metrics; scope disclosed where available'} · As of: {dash.methodology?.period || data.as_of || '—'} · Source: {dash.methodology?.source || 'AGI Research Warehouse'}
+          </p>
+          {dash.metric_methodology ? (
+            <p className="hft-dim">
+              P/B: {dash.metric_methodology.pb}<br />
+              EV/EBITDA: {dash.metric_methodology.ev_ebitda}
+            </p>
+          ) : null}
           <div className="hft-table-wrap">
             <table className="hft-table compact">
               <thead><tr><th>Sector</th><th>P/E</th><th>ROE</th><th>Yield</th><th>1Y</th><th>Upside</th></tr></thead>
@@ -720,7 +737,7 @@ function BacktestPanel() {
   return (
     <section className="hft-dash">
       <div>
-        <h5>Validated strategy research</h5>
+        <h5>Backtest specification</h5>
         <p className="hft-dim">12–1 momentum, monthly rebalance, next-close execution, turnover costs and close-based stop.</p>
         <button className="hft-ask-bar" type="button" onClick={run} disabled={busy}>
           {busy ? 'Running point-in-time backtest…' : 'Run momentum backtest'}

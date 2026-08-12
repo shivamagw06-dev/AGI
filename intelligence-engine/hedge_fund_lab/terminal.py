@@ -870,6 +870,14 @@ def market_dashboard(universe=None, medians=None) -> dict[str, Any]:
             "exclusions": "missing, negative and out-of-bounds P/E; sectors with fewer than five covered companies",
             "source": SOURCES["market_data"],
             "weighting": "equal-weighted median; not market-cap weighted",
+            "accounting": "reported trailing valuation metrics; consolidated scope where supplied by the warehouse, otherwise scope is disclosed as unavailable",
+            "liquidity_rule": "none beyond valid stored market observations; no minimum market-cap filter",
+            "financial_company_treatment": "sector medians retain financial companies; EV/EBITDA is not used for banks and insurers",
+        },
+        "metric_methodology": {
+            "pe": "Trailing reported earnings; only positive, in-range observations enter sector medians.",
+            "pb": "Latest reported book equity available in the warehouse; not tangible book or average equity unless the source record explicitly says so. Interpret alongside ROE.",
+            "ev_ebitda": "Provider-reported headline EV/EBITDA. EBITDA is not normalized; lease liabilities, minorities, investments and cash adjustments require reconciliation before a valuation conclusion.",
         },
         "interpretation": {
             "type": "agi_model_output",
