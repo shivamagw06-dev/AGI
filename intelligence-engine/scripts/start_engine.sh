@@ -69,7 +69,9 @@ else
   echo "[start_engine] AGI_GATHER_SIDECAR=false — HTTP only (use agib-intelligence-worker)"
 fi
 
-if [[ "${CID_DOSSIER_WORKER_ENABLED:-true}" != "false" && "${CID_DOSSIER_WORKER_ENABLED:-true}" != "0" ]]; then
+if [[ "${CID_DOSSIER_PAUSED:-true}" == "true" || "${CID_DOSSIER_PAUSED:-true}" == "1" ]]; then
+  echo "[start_engine] company dossier worker paused"
+elif [[ "${CID_DOSSIER_WORKER_ENABLED:-true}" != "false" && "${CID_DOSSIER_WORKER_ENABLED:-true}" != "0" ]]; then
   # Give uvicorn time to become healthy before warehouse reads and OpenAI work
   # begin. The dossier process is deliberately lower priority and defaults to
   # four threads on the live four-CPU Render web service.

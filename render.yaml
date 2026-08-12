@@ -188,6 +188,8 @@ services:
         sync: false
       - key: CID_DOSSIER_WORKER_ENABLED
         value: "false"
+      - key: CID_DOSSIER_PAUSED
+        value: "true"
       - key: CID_DOSSIER_WORKERS
         value: "10"
       - key: CID_DOSSIER_SPRINT_MODE
