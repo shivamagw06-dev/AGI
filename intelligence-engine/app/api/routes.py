@@ -8928,6 +8928,8 @@ async def company_dossier_health():
     from cid.production import is_cid_enabled
     from cid.schema import CID_VERSION
 
+    from cid.openai_dossier import status as openai_dossier_status
+
     return {
         "status": "ok" if is_cid_enabled() else "disabled",
         "layer": "Company Intelligence Dossier",
@@ -8936,7 +8938,20 @@ async def company_dossier_health():
         "not_an_engine": True,
         "architecture_status": "v1.0.1 LOCKED",
         "position": "permanent_company_memory_after_leo",
+        "openai_generation": openai_dossier_status(),
     }
+
+
+@router.post("/company-dossier/{ticker}/generate")
+async def company_dossier_generate(ticker: str, refresh_evidence: bool = True):
+    from cid.production import generate_openai_dossier
+
+    result = generate_openai_dossier(ticker, refresh_evidence=refresh_evidence)
+    if not result.get("ok"):
+        error = result.get("error")
+        status_code = 503 if error == "missing_openai_api_key" else 422
+        raise HTTPException(status_code=status_code, detail=result)
+    return result
 
 
 @router.get("/company-dossier/{ticker}")

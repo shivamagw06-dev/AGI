@@ -19,7 +19,19 @@ class CidStore:
         t = (ticker or "").upper()
         with self._lock:
             d = self._dossiers.get(t)
-            return deepcopy(d) if d else None
+            if d:
+                return deepcopy(d)
+        try:
+            from cid.persistence import load_latest
+
+            persisted = load_latest(t)
+        except Exception:
+            persisted = None
+        if persisted:
+            with self._lock:
+                self._dossiers[t] = persisted
+            return deepcopy(persisted)
+        return None
 
     def ensure(self, ticker: str, *, company: str | None = None) -> dict[str, Any]:
         t = (ticker or "").upper()

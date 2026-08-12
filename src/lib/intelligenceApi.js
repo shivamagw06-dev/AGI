@@ -818,6 +818,11 @@ export const getCompanyDossierForecast = (ticker) =>
   intelligenceFetch(`/company-dossier/${encodeURIComponent(ticker)}/forecast`);
 export const getCompanyDossierDocuments = (ticker) =>
   intelligenceFetch(`/company-dossier/${encodeURIComponent(ticker)}/documents`);
+export const generateCompanyDossier = (ticker, refreshEvidence = true) =>
+  intelligenceFetch(
+    `/company-dossier/${encodeURIComponent(ticker)}/generate?refresh_evidence=${refreshEvidence ? 'true' : 'false'}`,
+    { method: 'POST', body: {} },
+  );
 export const getYfpHealth = () => intelligenceFetch('/yfp/health');
 export const getYfpDashboard = () => intelligenceFetch('/yfp/dashboard');
 export const getYfpQualityGates = () => intelligenceFetch('/yfp/quality-gates');

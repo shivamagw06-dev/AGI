@@ -7,6 +7,7 @@ import {
   getCompanyDossier,
   getCompanyDossierCoverage,
   getCompanyDossierTimeline,
+  generateCompanyDossier,
   enrichYfp,
 } from '@/lib/intelligenceApi';
 import { Button } from '@/components/ui/button';
@@ -86,6 +87,22 @@ export default function CompanyDossiers() {
     }
   };
 
+  const onGenerateDossier = async () => {
+    const ticker = selected || 'HDFCBANK';
+    setBusy('generate');
+    setError('');
+    try {
+      const result = await generateCompanyDossier(ticker, true);
+      setDossier(result?.dossier || null);
+      await loadTicker(ticker);
+      await load();
+    } catch (err) {
+      setError(err?.message || 'OpenAI dossier generation failed');
+    } finally {
+      setBusy('');
+    }
+  };
+
   const pct = (v) =>
     v == null || Number.isNaN(Number(v)) ? '—' : `${Math.round(Number(v) <= 1 ? Number(v) * 100 : Number(v))}%`;
 
@@ -117,6 +134,9 @@ export default function CompanyDossiers() {
           </p>
         </div>
         <div className="flex gap-2">
+          <Button onClick={onGenerateDossier} disabled={!!busy || loading || !selected}>
+            {busy === 'generate' ? 'Generating…' : 'Generate full dossier'}
+          </Button>
           <Button variant="outline" onClick={onEnrichFinancials} disabled={!!busy || loading}>
             {busy === 'enrich' ? 'Enriching…' : 'Enrich Financials'}
           </Button>
@@ -218,6 +238,31 @@ export default function CompanyDossiers() {
 
       {dossier ? (
         <div className="grid gap-6 lg:grid-cols-2">
+          {dossier.openai_research ? (
+            <section className="lg:col-span-2 bg-white rounded-xl border border-slate-200 p-5 space-y-4">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <p className="text-[10px] uppercase tracking-[0.2em] text-indigo-600 font-semibold">OpenAI grounded synthesis</p>
+                  <h2 className="font-semibold text-slate-900 mt-1">Institutional research dossier</h2>
+                </div>
+                <p className="text-xs text-slate-400">
+                  {dossier.openai_research.model} · {String(dossier.openai_research.generated_at || '').slice(0, 19)}
+                </p>
+              </div>
+              <p className="text-sm text-slate-700 leading-6">{dossier.openai_research.executive_summary}</p>
+              <div className="grid gap-3 md:grid-cols-2">
+                {Object.entries(dossier.openai_research.sections || {}).map(([name, section]) => (
+                  <div key={name} className="border border-slate-100 rounded-lg p-3">
+                    <h3 className="text-sm font-semibold text-slate-900 capitalize">{name.replaceAll('_', ' ')}</h3>
+                    <p className="text-sm text-slate-600 mt-1">{section.summary || 'Evidence gap.'}</p>
+                    <p className="text-xs text-slate-400 mt-2">
+                      Evidence: {(section.evidence_ids || []).join(', ') || 'none'} · Confidence {Math.round(Number(section.confidence || 0) * 100)}%
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </section>
+          ) : null}
           <div className="bg-white rounded-xl border border-slate-200 p-5 space-y-3">
             <h2 className="font-semibold text-slate-900">
               {selected} · {dossier.identity?.company_name || selected}

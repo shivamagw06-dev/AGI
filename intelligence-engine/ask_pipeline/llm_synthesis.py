@@ -138,6 +138,28 @@ def _evidence_rows(
 
     candidates.extend(_public_market_candidates(supplemental_packs))
 
+    # A generated dossier is bounded secondary research. Its underlying CID
+    # evidence IDs remain visible so synthesis is not presented as a filing.
+    dossier = (supplemental_packs or {}).get("company_dossier") or {}
+    dossier_research = dossier.get("openai_research") if isinstance(dossier, dict) else {}
+    if isinstance(dossier_research, dict):
+        for name, section in (dossier_research.get("sections") or {}).items():
+            if not isinstance(section, dict) or not section.get("summary"):
+                continue
+            underlying = [str(v) for v in (section.get("evidence_ids") or []) if str(v).strip()]
+            candidates.append(
+                {
+                    "evidence_id": f"CID-{dossier.get('ticker')}-{name}",
+                    "title": f"AGI company dossier: {str(name).replace('_', ' ')}",
+                    "source": "AGI knowledge dossier synthesis",
+                    "doc_type": "company_dossier",
+                    "content": section.get("summary"),
+                    "available_from": dossier_research.get("generated_at"),
+                    "confidence": section.get("confidence"),
+                    "underlying_evidence_ids": underlying,
+                }
+            )
+
     ranked: list[tuple[int, int, dict[str, Any]]] = []
     for position, item in enumerate(candidates):
         if not isinstance(item, dict):

@@ -41,6 +41,17 @@ def get_dossier(ticker: str) -> dict[str, Any]:
     return {**d, "enabled": True}
 
 
+def generate_openai_dossier(ticker: str, *, refresh_evidence: bool = True) -> dict[str, Any]:
+    """Build the factual dossier, then add an evidence-only OpenAI research layer."""
+    t = (ticker or "").strip().upper()
+    if not t:
+        return {"ok": False, "error": "ticker_required"}
+    dossier = get_or_build(t, query=f"Build a full institutional company dossier for {t}") if refresh_evidence else get_dossier(t)
+    from cid.openai_dossier import generate
+
+    return generate(t, dossier)
+
+
 def get_or_build(
     ticker: str | None,
     *,

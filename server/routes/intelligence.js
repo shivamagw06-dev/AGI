@@ -8052,7 +8052,37 @@ export default function createIntelligenceRouter() {
   router.get('/academy/regression/health', kfGet('/v1/academy/regression/health'));
   router.get('/leo/health', kfGet('/v1/leo/health'));
   router.get('/dvc/health', kfGet('/v1/dvc/health'));
+  router.get('/company-dossier', kfGet('/v1/company-dossier'));
+  router.get('/company-dossier/quality-gates', kfGet('/v1/company-dossier/quality-gates'));
   router.get('/company-dossier/health', kfGet('/v1/company-dossier/health'));
+  router.get('/company-dossier/:ticker', proxyGet((req) =>
+    `/v1/company-dossier/${encodeURIComponent(req.params.ticker)}`));
+  router.get('/company-dossier/:ticker/timeline', proxyGet((req) => {
+    const limit = Math.max(1, Math.min(500, Number(req.query.limit) || 100));
+    return `/v1/company-dossier/${encodeURIComponent(req.params.ticker)}/timeline?limit=${limit}`;
+  }));
+  router.get('/company-dossier/:ticker/coverage', proxyGet((req) =>
+    `/v1/company-dossier/${encodeURIComponent(req.params.ticker)}/coverage`));
+  router.get('/company-dossier/:ticker/valuation', proxyGet((req) =>
+    `/v1/company-dossier/${encodeURIComponent(req.params.ticker)}/valuation`));
+  router.get('/company-dossier/:ticker/risk', proxyGet((req) =>
+    `/v1/company-dossier/${encodeURIComponent(req.params.ticker)}/risk`));
+  router.get('/company-dossier/:ticker/forecast', proxyGet((req) =>
+    `/v1/company-dossier/${encodeURIComponent(req.params.ticker)}/forecast`));
+  router.get('/company-dossier/:ticker/documents', proxyGet((req) =>
+    `/v1/company-dossier/${encodeURIComponent(req.params.ticker)}/documents`));
+  router.post('/company-dossier/:ticker/generate', async (req, res) => {
+    try {
+      const refresh = String(req.query.refresh_evidence || 'true').toLowerCase() !== 'false';
+      const result = await engineFetch(
+        `/v1/company-dossier/${encodeURIComponent(req.params.ticker)}/generate?refresh_evidence=${refresh}`,
+        { method: 'POST', body: req.body || {}, timeoutMs: 120_000 },
+      );
+      return res.status(result.status).json(result.data);
+    } catch (error) {
+      return res.status(503).json({ error: 'Company dossier generation unavailable', detail: error.message });
+    }
+  });
   router.get('/decision-engine/health', kfGet('/v1/decision-engine/health'));
 
   // RQ1 Research Ontology — Sprint 1 classify-only (not a top-level intelligence layer)
