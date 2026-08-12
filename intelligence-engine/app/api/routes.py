@@ -10103,9 +10103,9 @@ async def hedge_fund_lab_strategies():
 
 @router.get("/hedge-fund-lab/reliability")
 async def hedge_fund_lab_reliability():
-    from reliability_registry import registry
+    from hedge_fund_lab.terminal import reliability_status
 
-    return registry()
+    return reliability_status()
 
 
 @router.get("/hedge-fund-lab/compare")

@@ -22,3 +22,18 @@ def test_registry_contains_models_scanners_live_and_forecasts():
     ids = {row["component_id"] for row in body["components"]}
     assert {"alpha", "live_alpha", "fie", "fle", "long_short_equity"} <= ids
     assert body["execution_allowed"] == 0
+
+
+def test_runtime_registry_automatically_demotes_missing_inputs(monkeypatch):
+    monkeypatch.setattr("hedge_fund_lab.terminal.universe_meta", lambda: {"count": 0})
+    monkeypatch.setattr("hedge_fund_lab.terminal._universe", lambda: [])
+    monkeypatch.setattr("hedge_fund_lab.terminal.fetch_live_alpha_rows", lambda limit=1: {"meta": {}})
+    monkeypatch.setattr("hedge_fund_lab.terminal._forecast_intelligence_status", lambda: {"company_forecasts": 0, "outcome_evaluations": 0})
+    from hedge_fund_lab.terminal import reliability_status
+
+    body = reliability_status()
+    rows = {row["component_id"]: row for row in body["components"]}
+    assert rows["value"]["health"] == "failed"
+    assert rows["live_alpha"]["health"] == "degraded"
+    assert rows["fie"]["health"] == "degraded"
+    assert rows["fle"]["health"] == "degraded"

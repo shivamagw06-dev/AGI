@@ -870,6 +870,30 @@ def _reliability_status(*, universe_count: int, live_meta: dict[str, Any], forec
     return registry(overrides)
 
 
+def reliability_status() -> dict[str, Any]:
+    """Registry view with current data availability, independent of terminal success."""
+    try:
+        universe_count = int(universe_meta().get("count") or 0)
+        if universe_count <= 0:
+            universe_count = len(_universe())
+    except Exception:
+        universe_count = 0
+    live_meta = fetch_live_alpha_rows(limit=1).get("meta") or {}
+    forecast_intelligence = _forecast_intelligence_status()
+    out = _reliability_status(
+        universe_count=universe_count,
+        live_meta=live_meta,
+        forecast_intelligence=forecast_intelligence,
+    )
+    out["runtime_evidence"] = {
+        "strategy_universe": universe_count,
+        "live_alpha_qualifying": live_meta.get("qualifying_symbols") or 0,
+        "forecast_company": forecast_intelligence.get("company_forecasts") or 0,
+        "forecast_evaluations": forecast_intelligence.get("outcome_evaluations") or 0,
+    }
+    return out
+
+
 def _forecast_intelligence_status() -> dict[str, Any]:
     """Cheap warehouse status for the FIE/FLE layer shown in Hedge Fund Lab."""
     counts: dict[str, int] = {}
