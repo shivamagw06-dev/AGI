@@ -171,7 +171,9 @@ services:
       - key: CID_DOSSIER_WORKER_ENABLED
         value: "true"
       - key: CID_DOSSIER_WORKERS
-        value: "4"
+        value: "3"
+      - key: CID_DOSSIER_BATCH_PAUSE_SECONDS
+        value: "10"
       - key: CID_DOSSIER_START_DELAY_SECONDS
         value: "120"
       - key: CID_DOSSIER_REFRESH_DAYS

@@ -101,11 +101,17 @@ def run_forever() -> None:
     workers = max(1, min(4, int(os.environ.get("CID_DOSSIER_WORKERS", str(DEFAULT_WORKERS)))))
     refresh_days = float(os.environ.get("CID_DOSSIER_REFRESH_DAYS", "30"))
     idle_seconds = max(30, int(os.environ.get("CID_DOSSIER_IDLE_SECONDS", "300")))
+    batch_pause_seconds = max(0, float(os.environ.get("CID_DOSSIER_BATCH_PAUSE_SECONDS", "10")))
     failures: dict[str, dict[str, Any]] = {}
     completed = 0
     fallback_completed = 0
 
-    write_status({"status": "starting", "workers": workers, "refresh_days": refresh_days})
+    write_status({
+        "status": "starting",
+        "workers": workers,
+        "refresh_days": refresh_days,
+        "batch_pause_seconds": batch_pause_seconds,
+    })
     while not STOP.is_set():
         llm = openai_status()
         if not llm.get("enabled") and not (llm.get("agi_takeover") or {}).get("ready"):
@@ -185,6 +191,20 @@ def run_forever() -> None:
                         "message": result.get("message"),
                         "retry_at": time.time() + min(21600, 60 * (2 ** min(attempts, 8))),
                     }
+        if batch_pause_seconds and not STOP.is_set():
+            write_status(
+                {
+                    "status": "yielding",
+                    "workers": workers,
+                    "fresh": fresh,
+                    "queued": max(0, len(queue) - len(batch)),
+                    "completed_this_process": completed,
+                    "fallback_completed_this_process": fallback_completed,
+                    "failures": len(failures),
+                    "batch_pause_seconds": batch_pause_seconds,
+                }
+            )
+            STOP.wait(batch_pause_seconds)
 
 
 def stop(*_: Any) -> None:
