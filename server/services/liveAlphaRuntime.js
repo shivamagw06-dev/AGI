@@ -9,6 +9,7 @@ import { bootstrapLiveAlphaVolumeBaselines } from './liveAlphaBaselineBootstrap.
 import { resolveLiveAlphaDerivatives } from './liveAlphaDerivativeUniverse.js';
 import { pollGrowwIndexSnapshots } from './sectorIndexGrowwFallback.js';
 import { isUpstoxAuthError } from './upstoxMarketFeedV3.js';
+import { attachGrowwDerivatives, GrowwLiveAlphaFeed } from './growwLiveAlphaFeed.js';
 
 const serverDir = path.dirname(fileURLToPath(import.meta.url));
 const defaultUniversePath = path.join(serverDir, '../config/live-alpha-universe.example.json');
@@ -91,7 +92,7 @@ export async function loadLiveAlphaUniverse(filePath = process.env.LIVE_ALPHA_UN
   return validateLiveAlphaUniverse(JSON.parse(await fs.readFile(filePath, 'utf8')));
 }
 
-export async function startLiveAlphaRuntime({ Feed = UpstoxMarketFeedV3, Persistence = LiveAlphaPersistence } = {}) {
+export async function startLiveAlphaRuntime({ Feed = null, Persistence = LiveAlphaPersistence } = {}) {
   const enabled = String(process.env.LIVE_ALPHA_SHADOW_ENABLED || '').toLowerCase() === 'true';
   if (!enabled) {
     state = { ...state, enabled: false, status: 'disabled' };
@@ -99,7 +100,20 @@ export async function startLiveAlphaRuntime({ Feed = UpstoxMarketFeedV3, Persist
   }
   if (runtime) return getLiveAlphaRuntimeStatus();
   try {
-    const universe = await resolveLiveAlphaDerivatives(await loadLiveAlphaUniverse());
+    const provider = String(process.env.LIVE_ALPHA_PROVIDER || 'groww').trim().toLowerCase();
+    let universe = await loadLiveAlphaUniverse();
+    if (provider === 'groww') {
+      universe = await attachGrowwDerivatives(universe);
+      universe = {
+        ...universe,
+        members: universe.members.map((member) => member.growwDerivativeInstrumentKey
+          ? { ...member, derivativeInstrumentKey: member.growwDerivativeInstrumentKey }
+          : member),
+        derivativeResolution: universe.growwDerivativeResolution,
+      };
+    } else {
+      universe = await resolveLiveAlphaDerivatives(universe);
+    }
     const persistence = new Persistence();
     const baselineLimit = Math.max(20_000, universe.members.length * 376);
     const baselines = new VolumeBaselineIndex(await persistence.loadVolumeBaselines({ limit: baselineLimit }));
@@ -115,7 +129,8 @@ export async function startLiveAlphaRuntime({ Feed = UpstoxMarketFeedV3, Persist
     const store = new SynchronizedSnapshotStore();
     const instrumentKeys = [...new Set([universe.benchmarkKey, ...universe.members.flatMap((row) => [row.instrumentKey, row.sectorInstrumentKey, row.derivativeInstrumentKey]).filter(Boolean)])];
     let lastEvaluationMs = 0;
-    const feed = new Feed({ instrumentKeys, snapshotStore: store, onBatch: async (batch) => {
+    const FeedClass = Feed || (provider === 'groww' ? GrowwLiveAlphaFeed : UpstoxMarketFeedV3);
+    const feed = new FeedClass({ instrumentKeys, universe, snapshotStore: store, onBatch: async (batch) => {
       pipeline.ingest(batch);
       await persistence.persistBatch(batch);
       if (Date.now() - lastEvaluationMs >= 5_000) {
@@ -134,7 +149,7 @@ export async function startLiveAlphaRuntime({ Feed = UpstoxMarketFeedV3, Persist
         if (!currentEvaluation.skipped) state.last_successful_evaluation = currentEvaluation;
       }
     } });
-    runtime = { feed, pipeline, persistence, store, universe, bootstrap: { opening_snapshots: openingSnapshots.length, recent_snapshots: recentSnapshots.length, volume_baselines: baselines.values.size, derivatives: universe.derivativeResolution } };
+    runtime = { provider, feed, pipeline, persistence, store, universe, bootstrap: { opening_snapshots: openingSnapshots.length, recent_snapshots: recentSnapshots.length, volume_baselines: baselines.values.size, derivatives: universe.derivativeResolution } };
     state = {
       enabled: true, status: 'starting', evaluation_status: 'warming_up',
       started_at: new Date().toISOString(), last_evaluation: null,
@@ -142,7 +157,7 @@ export async function startLiveAlphaRuntime({ Feed = UpstoxMarketFeedV3, Persist
     };
     await feed.start();
     state.status = 'running';
-    if (feed.state?.status === 'auth_failed') startGrowwSectorIndexFallback({ store, pipeline, instrumentKeys });
+    if (provider !== 'groww' && feed.state?.status === 'auth_failed') startGrowwSectorIndexFallback({ store, pipeline, instrumentKeys });
     const missingBaselineMembers = universe.members.filter((member) => !baselines.hasInstrument(member.instrumentKey));
     if (missingBaselineMembers.length) {
       state.baseline_bootstrap = { status: 'running', rows: baselines.values.size, covered_instruments: baselines.instrumentCount(), missing_instruments: missingBaselineMembers.length, failures: [] };
@@ -222,6 +237,7 @@ export function getLiveAlphaRuntimeStatus() {
     : state.status;
   return {
     ...state, status: runtimeStatus,
+    provider: runtime?.provider || null,
     feed,
     universe: runtime ? { name: runtime.universe.name, members: runtime.universe.members.length, expected_members: runtime.universe.expectedMembers, coverage_complete: runtime.universe.members.length === runtime.universe.expectedMembers, subscribed_instruments: runtime.feed.instrumentKeys.length, benchmark_key: runtime.universe.benchmarkKey, derivatives: runtime.universe.derivativeResolution } : null,
     bootstrap: runtime?.bootstrap || null,

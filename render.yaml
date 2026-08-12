@@ -54,6 +54,10 @@ services:
       # Futures remain limited to contracts actually listed in NSE_FO.
       - key: LIVE_ALPHA_UNIVERSE_PRESET
         value: nifty200
+      - key: LIVE_ALPHA_PROVIDER
+        value: groww
+      - key: LIVE_ALPHA_GROWW_POLL_MS
+        value: "120000"
       # Groww Cloud cannot reach Render/Supabase; compute equity opportunity here.
       - key: GROWW_EQUITY_OPPORTUNITY_SCHEDULER
         value: "true"
