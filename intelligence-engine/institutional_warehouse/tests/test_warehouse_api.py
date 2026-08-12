@@ -163,6 +163,35 @@ def test_http_filters_accept_json():
     assert page["total"] == 1
 
 
+def test_http_recalculate_delegates_blocking_work(monkeypatch):
+    from app.api import routes
+    from institutional_warehouse import production as warehouse_production
+
+    seen = {}
+
+    def fake_recompute(**kwargs):
+        seen.update(kwargs)
+        return {"ok": True, "delegated": True}
+
+    async def fake_threadpool(function, **kwargs):
+        seen["function"] = function
+        return function(**kwargs)
+
+    monkeypatch.setattr(warehouse_production, "recompute", fake_recompute)
+    monkeypatch.setattr(routes, "run_in_threadpool", fake_threadpool)
+    result = run(
+        routes.warehouse_recalculate(
+            {"actor": "scheduler", "stages": ["factors"], "entity": "aaa"},
+            None,
+        )
+    )
+    assert result == {"ok": True, "delegated": True}
+    assert seen["function"] is fake_recompute
+    assert seen["actor"] == "scheduler"
+    assert seen["stages"] == ["factors"]
+    assert seen["entity"] == "AAA"
+
+
 # --------------------------------------------------------------------------
 # Refresh pipeline
 # --------------------------------------------------------------------------
