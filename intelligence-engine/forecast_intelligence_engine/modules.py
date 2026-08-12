@@ -154,6 +154,8 @@ def business(bundle: dict[str, Any]) -> dict[str, Any]:
         evidence=[{"source": "warehouse.financials_annual"}],
         confidence=conf,
         forecast=base.get("lines") or {},
+        base_period=base.get("base_period"),
+        base_values=base.get("base_values") or {},
         windows=list(WINDOWS),
         growth_rates_used=cagrs,
     )
@@ -349,8 +351,10 @@ def scenarios(bundle: dict[str, Any]) -> dict[str, Any]:
         scenarios={
             k: {
                 "ok": v.get("ok"),
+                "base_period": v.get("base_period"),
+                "base_values": v.get("base_values") or {},
                 "growth_rates_used": v.get("growth_rates_used"),
-                "lines": {lk: {"FY+1": (lv or {}).get("FY+1"), "FY+3": (lv or {}).get("FY+3")} for lk, lv in (v.get("lines") or {}).items()},
+                "lines": {lk: dict(lv or {}) for lk, lv in (v.get("lines") or {}).items()},
             }
             for k, v in packs.items()
         },

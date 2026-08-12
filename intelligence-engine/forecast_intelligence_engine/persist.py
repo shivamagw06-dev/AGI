@@ -9,7 +9,7 @@ from forecast_intelligence_engine.models import ENGINE_CODE
 
 def persist_forecast(pack: dict[str, Any]) -> dict[str, Any]:
     """Best-effort write of forecast summary + history + scenarios + assumptions."""
-    written = {"forecast_company": 0, "forecast_history": 0, "forecast_scenarios": 0, "forecast_assumptions": 0}
+    written = {"forecast_company": 0, "forecast_history": 0, "forecast_scenarios": 0, "forecast_assumptions": 0, "forecast_metric_predictions": 0}
     try:
         from institutional_warehouse import gateway
     except Exception as exc:
@@ -90,18 +90,48 @@ def persist_forecast(pack: dict[str, Any]) -> dict[str, Any]:
         except Exception:
             pass
 
-    assumptions = executive.get("assumptions") or []
+    # Freeze the forecast line items before any future actual can be observed.
+    try:
+        from forecast_intelligence_engine.accuracy import prediction_rows
+
+        metric_rows = prediction_rows(pack)
+        if metric_rows:
+            r = gateway.write(
+                "forecast_metric_predictions",
+                metric_rows,
+                source=ENGINE_CODE,
+                actor="fie",
+                reason="immutable_forecast_vintage",
+                detect_conflicts=False,
+            )
+            written["forecast_metric_predictions"] = int(r.get("written") or 0)
+    except Exception:
+        pass
+
+    # Atomic assumptions are independently testable against each consequence.
     assum_rows = []
-    for a in assumptions:
-        if not isinstance(a, dict):
-            continue
-        assum_rows.append({
-            "symbol": symbol,
-            "as_of": as_of,
-            "name": a.get("name"),
-            "value": a.get("value") if a.get("value") is not None else a.get("value_pct"),
-            "basis": a.get("basis"),
-        })
+    try:
+        from forecast_intelligence_engine.accuracy import prediction_rows
+
+        for row in prediction_rows(pack):
+            metric_name = row.get("metric")
+            assum_rows.append({
+                "symbol": symbol,
+                "as_of": as_of,
+                "generated_at": pack.get("generated_at"),
+                "name": f"{metric_name}_growth_anchor",
+                "metric": metric_name,
+                "horizon": row.get("horizon"),
+                "scenario": row.get("scenario"),
+                "value": row.get("historical_cagr_pct"),
+                "basis": "warehouse_historical_cagr",
+                "assumption_type": "derived",
+                "expected_consequence": row.get("forecast_value"),
+                "confidence": row.get("forecast_confidence"),
+                "status": "OPEN",
+            })
+    except Exception:
+        assum_rows = []
     if assum_rows:
         try:
             r = gateway.write(
@@ -134,5 +164,16 @@ def persist_forecast(pack: dict[str, Any]) -> dict[str, Any]:
         )
     except Exception:
         pass
+
+    snapshot = pack.get("forecast_snapshot") or {}
+    if snapshot:
+        try:
+            r = gateway.write(
+                "forecast_snapshots", [snapshot], source=ENGINE_CODE, actor="fie",
+                reason="point_in_time_forecast_snapshot", detect_conflicts=False,
+            )
+            written["forecast_snapshots"] = int(r.get("written") or 0)
+        except Exception:
+            pass
 
     return {"ok": True, "written": written}

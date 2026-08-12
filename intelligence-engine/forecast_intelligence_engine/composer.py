@@ -102,5 +102,10 @@ def build_forecast(symbol: str) -> dict[str, Any]:
         pack["status"] = "REJECT"
     else:
         pack["status"] = "PASS"
+        from forecast_learning_engine.snapshot import build_snapshot
+
+        pack["forecast_snapshot"] = build_snapshot(
+            bundle, generated_at=pack["generated_at"], engine_version=VERSION,
+        )
         persist_forecast(pack)
     return pack

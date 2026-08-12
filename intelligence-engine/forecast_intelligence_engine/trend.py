@@ -103,11 +103,22 @@ def business_forecast(annual: list[dict[str, Any]], *, scenario: str = "base") -
         "operating_cash_flow": project_line(metric(last, "cfo", "operating_cash_flow"), rev_g, scenario=scenario),
         "free_cash_flow": project_line(metric(last, "free_cash_flow", "fcf"), cagrs.get("fcf") if cagrs.get("fcf") is not None else rev_g, scenario=scenario),
     }
+    base_values = {
+        "revenue": metric(last, "revenue", "total_revenue", "sales"),
+        "ebitda": metric(last, "ebitda"),
+        "ebit": metric(last, "ebit", "operating_profit"),
+        "pat": metric(last, "pat", "net_income"),
+        "eps": metric(last, "eps"),
+        "book_value": metric(last, "equity", "shareholders_equity"),
+        "operating_cash_flow": metric(last, "cfo", "operating_cash_flow"),
+        "free_cash_flow": metric(last, "free_cash_flow", "fcf"),
+    }
     return {
         "ok": True,
         "scenario": scenario,
         "base_period": last.get("fiscal_year") or last.get("period"),
         "growth_rates_used": {k: _pct(v) for k, v in cagrs.items()},
+        "base_values": base_values,
         "lines": lines,
     }
 

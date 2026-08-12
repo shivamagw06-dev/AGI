@@ -167,6 +167,16 @@ def process_batch(*, batch: int = 3) -> dict[str, Any]:
                 last_error=str(out.get("error") or errors[:3])[:280],
             )
             failed += 1
+    evaluated = 0
+    evaluation_errors = 0
+    try:
+        from forecast_intelligence_engine.accuracy import evaluate_symbol
+
+        for item in claimed:
+            result = evaluate_symbol(str(item.get("symbol") or ""))
+            evaluated += int(result.get("written") or 0)
+    except Exception:
+        evaluation_errors += 1
     elapsed = max(0.001, time.time() - t0)
     with _LOCK:
         _STATE["last_tick"] = _now()
@@ -178,6 +188,8 @@ def process_batch(*, batch: int = 3) -> dict[str, Any]:
         "attempted": len(claimed),
         "completed": completed,
         "failed": failed,
+        "accuracy_rows_written": evaluated,
+        "accuracy_errors": evaluation_errors,
         "elapsed_seconds": round(elapsed, 2),
         "pipeline": pipeline_counts(),
         "results": results,

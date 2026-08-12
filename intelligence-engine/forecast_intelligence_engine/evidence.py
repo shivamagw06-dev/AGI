@@ -74,6 +74,7 @@ def load_bundle(symbol: str) -> dict[str, Any]:
     ownership = _rows("ownership", ticker, limit=20)
     actions = _rows("corporate_actions", ticker, limit=80)
     timeline = _rows("research_timeline", ticker, limit=100)
+    consensus = _rows("consensus", ticker, limit=100)
     forecast_hist = sorted(
         _rows("forecast_history", ticker, limit=100),
         key=lambda r: str(r.get("as_of") or r.get("generated_at") or ""),
@@ -144,6 +145,7 @@ def load_bundle(symbol: str) -> dict[str, Any]:
         "ownership": ownership,
         "corporate_actions": actions,
         "research_timeline": timeline,
+        "consensus": consensus,
         "forecast_history": forecast_hist,
         "forecast_accuracy": forecast_acc,
         "latest_annual": latest_annual,

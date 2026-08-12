@@ -187,7 +187,12 @@ def history(symbol: str) -> dict[str, Any]:
 
 
 def accuracy(symbol: str) -> dict[str, Any]:
-    return build_module(symbol, "accuracy")
+    from forecast_intelligence_engine.accuracy import evaluate_symbol
+
+    evaluation = evaluate_symbol(symbol)
+    out = build_module(symbol, "accuracy")
+    out["evaluation"] = evaluation
+    return out
 
 
 def coverage(*, limit: int = 200) -> dict[str, Any]:
