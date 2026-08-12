@@ -65,7 +65,7 @@ export async function attachGrowwDerivatives(universe, options = {}) {
 }
 
 export class GrowwLiveAlphaFeed {
-  constructor({ universe, onBatch = async () => {}, pollMs = Number(process.env.LIVE_ALPHA_GROWW_POLL_MS || 120_000) } = {}) {
+  constructor({ universe, onBatch = async () => {}, pollMs = Number(process.env.LIVE_ALPHA_GROWW_POLL_MS || 180_000) } = {}) {
     this.universe = universe;
     this.onBatch = onBatch;
     this.pollMs = Math.max(60_000, pollMs);
@@ -92,8 +92,11 @@ export class GrowwLiveAlphaFeed {
         { key: member.instrumentKey, segment: 'CASH', symbol: member.symbol },
         ...(member.growwDerivativeTradingSymbol ? [{ key: member.growwDerivativeInstrumentKey, segment: 'FNO', symbol: member.growwDerivativeTradingSymbol }] : []),
       ]);
-      for (let index = 0; index < quoteJobs.length; index += 8) {
-        const group = quoteJobs.slice(index, index + 8);
+      // Groww's 300/minute live-data limit is shared with the rest of AGI.
+      // Three requests per second leaves capacity for dashboards and scheduled
+      // research while a complete cash + futures cycle finishes in ~2m10s.
+      for (let index = 0; index < quoteJobs.length; index += 3) {
+        const group = quoteJobs.slice(index, index + 3);
         const settled = await Promise.allSettled(group.map((job) => getQuote('NSE', job.segment, job.symbol)));
         settled.forEach((result, offset) => {
           if (result.status === 'fulfilled') {
@@ -101,7 +104,7 @@ export class GrowwLiveAlphaFeed {
             if (snapshot) snapshots.push(snapshot);
           } else this.state.decode_errors += 1;
         });
-        if (index + 8 < quoteJobs.length) await new Promise((resolve) => setTimeout(resolve, 1_050));
+        if (index + 3 < quoteJobs.length) await new Promise((resolve) => setTimeout(resolve, 1_050));
       }
       const indexKeys = [...new Set([this.universe.benchmarkKey, ...this.universe.members.map((row) => row.sectorInstrumentKey)])];
       const indexMap = new Map(indexKeys.map((key) => [key, growwSymbolForIndex(key)]).filter(([, symbol]) => symbol));
