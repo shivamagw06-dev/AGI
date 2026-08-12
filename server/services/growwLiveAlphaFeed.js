@@ -9,6 +9,11 @@ function number(value) {
   return Number.isFinite(parsed) ? parsed : null;
 }
 
+function positiveNumber(value) {
+  const parsed = number(value);
+  return parsed > 0 ? parsed : null;
+}
+
 export function normalizeExchangeTimestamp(value) {
   const parsed = number(value);
   if (!(parsed > 0)) return null;
@@ -31,9 +36,9 @@ function normalizeQuote(instrumentKey, quote, receivedAt) {
   return {
     instrument_key: instrumentKey, received_at: receivedAt,
     exchange_timestamp: normalizeExchangeTimestamp(quote?.last_trade_time), ltp,
-    previous_close: number(ohlc(quote?.ohlc)?.[0]?.close),
+    previous_close: positiveNumber(ohlc(quote?.ohlc)?.[0]?.close),
     last_traded_quantity: number(quote?.last_trade_quantity),
-    average_traded_price: number(quote?.average_price),
+    average_traded_price: positiveNumber(quote?.average_price),
     cumulative_volume: number(quote?.volume), open_interest: number(quote?.open_interest),
     implied_volatility: number(quote?.implied_volatility), best_bid: bid, best_ask: ask,
     spread_bps: bid > 0 && ask > 0 ? Number((((ask - bid) / ((ask + bid) / 2)) * 10_000).toFixed(4)) : null,
