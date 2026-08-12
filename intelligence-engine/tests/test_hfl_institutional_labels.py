@@ -5,7 +5,7 @@ ENGINE_ROOT = Path(__file__).resolve().parents[1]
 if str(ENGINE_ROOT) not in sys.path:
     sys.path.insert(0, str(ENGINE_ROOT))
 
-from hedge_fund_lab.production import strategy
+from hedge_fund_lab.production import library, strategy
 from hedge_fund_lab.scanner import _scan_pairs, _scan_quality, _scan_value
 from hedge_fund_lab.terminal import market_dashboard
 
@@ -73,3 +73,11 @@ def test_long_short_copy_discloses_residual_market_exposure():
     text = strategy("long_short_equity")["agi_intelligence"]["why_institutions_use_it"]
     assert "net beta" in text
     assert "largely independent" not in text
+
+
+def test_strategy_library_distinguishes_frameworks_from_operational_models():
+    rows = {row["id"]: row for row in library()["strategies"]}
+    assert rows["global_macro"]["status"] == "framework"
+    assert rows["long_short_equity"]["status"] == "candidate"
+    assert not any(row["production_validated"] for row in rows.values())
+    assert rows["long_short_equity"]["pipeline"][-1] == "live_monitoring"
