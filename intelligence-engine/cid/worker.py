@@ -72,7 +72,11 @@ def _generate(ticker: str) -> dict[str, Any]:
     from cid.warehouse_dossier import build
 
     dossier = build(ticker)
-    result = generate(ticker, dossier)
+    openai_enabled = os.environ.get("CID_OPENAI_ENABLED", "false").strip().lower() in {"1", "true", "yes"}
+    if openai_enabled:
+        result = generate(ticker, dossier)
+    else:
+        result = {"ok": False, "error": "openai_generation_disabled"}
     if not result.get("ok"):
         from cid.learning import compose, readiness
 
