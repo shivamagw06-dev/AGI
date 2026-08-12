@@ -722,10 +722,10 @@ def _overview_uncached(capped: int, cache_key: str, now: float) -> dict[str, Any
 
     highlights = [
         {"label": "Highest conviction", "scan": "conviction", "row": _top("conviction")},
-        {"label": "Largest discount", "scan": "value", "row": _top("value")},
+        {"label": "Largest headline discount", "scan": "value", "row": _top("value")},
         {"label": "Highest quality", "scan": "quality", "row": _top("quality")},
         {"label": "Strongest momentum", "scan": "momentum", "row": _top("momentum")},
-        {"label": "Widest pair spread", "scan": "pairs", "row": _top("pairs")},
+        {"label": "Widest valuation dispersion", "scan": "pairs", "row": _top("pairs")},
     ]
 
     total = sum(len(rows) for rows in results.values())
@@ -828,6 +828,8 @@ def market_dashboard(universe=None, medians=None) -> dict[str, Any]:
                 "value": value,
                 "industry_median": benchmark,
                 "gap_pct": round(((value / benchmark) - 1.0) * 100.0, 1),
+                "relative_multiple": round(value / benchmark, 2),
+                "validation_status": "normalization_required" if metric == "ev_ebitda" or abs(((value / benchmark) - 1.0) * 100.0) >= 300 else "screen_validated",
             }
         )
     gaps.sort(key=lambda r: r["gap_pct"])
@@ -850,6 +852,9 @@ def market_dashboard(universe=None, medians=None) -> dict[str, Any]:
     return {
         "ok": True,
         "sectors": sector_rows,
+        "lowest_median_pe_sector": priced[0] if priced else None,
+        "highest_median_pe_sector": priced[-1] if priced else None,
+        # Compatibility aliases; the UI must not describe these as attractiveness rankings.
         "cheapest_sector": priced[0] if priced else None,
         "most_expensive_sector": priced[-1] if priced else None,
         "largest_discounts": gaps[:5],
@@ -857,7 +862,20 @@ def market_dashboard(universe=None, medians=None) -> dict[str, Any]:
         "highest_roe": _rank("roe", True),
         "highest_yield": _rank("dividend_yield", True),
         "highest_conviction": conviction[:5],
-        "note": "Sector medians are computed across the covered universe, not an index weighting.",
+        "methodology": {
+            "definition": "Median constituent trailing P/E by sector",
+            "formula": "median of valid positive constituent P/E observations",
+            "period": universe_meta().get("as_of"),
+            "universe": "covered warehouse companies grouped by primary sector",
+            "exclusions": "missing, negative and out-of-bounds P/E; sectors with fewer than five covered companies",
+            "source": SOURCES["market_data"],
+            "weighting": "equal-weighted median; not market-cap weighted",
+        },
+        "interpretation": {
+            "type": "agi_model_output",
+            "warning": "Low or high median P/E is descriptive and is not, by itself, an attractiveness conclusion.",
+        },
+        "note": "Sector figures are reproducible equal-weighted medians across the covered universe.",
     }
 
 
@@ -885,7 +903,19 @@ def factor_dashboard(universe=None, medians=None) -> dict[str, Any]:
         count, pct = share(predicate)
         factors.append({"factor": name, "companies": count, "share_pct": pct, "definition": definition})
 
-    return {"ok": True, "universe": len(rows), "factors": factors}
+    return {
+        "ok": True,
+        "universe": len(rows),
+        "factors": factors,
+        "methodology": {
+            "period": universe_meta().get("as_of"),
+            "universe": "covered warehouse universe",
+            "basis": "latest available annual fundamentals and stored trailing market metrics",
+            "exclusions": "missing values fail the relevant screen; financial companies are not yet separated",
+            "source": "warehouse historical ratios, valuation and price history",
+            "warning": "These are screening counts, not pure academic factor portfolios.",
+        },
+    }
 
 
 # ---------------------------------------------------------------------------

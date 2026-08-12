@@ -258,6 +258,15 @@ def _map_warehouse_row(
         } if factors else {},
         "source": mi.get("source") or "warehouse",
         "valuation_date": mi.get("valuation_date"),
+        "data_context": {
+            "valuation_period": mi.get("valuation_date"),
+            "fundamentals_period": ratios.get("period"),
+            "fundamentals_basis": ratios.get("basis") or "annual",
+            "accounting_scope": ratios.get("accounting_scope") or ratios.get("scope") or "not_provided",
+            "valuation_source": mi.get("source") or SOURCES["market_data"],
+            "fundamentals_source": SOURCES["fundamentals"],
+            "consensus_date": (legacy_consensus or {}).get("consensus_date"),
+        },
     }
 
 
@@ -441,6 +450,7 @@ def _base(row: dict[str, Any]) -> dict[str, Any]:
         "consensus_upside": consensus.get("upside"),
         "coverage": consensus.get("coverage"),
         "return_1y": consensus.get("return_1y"),
+        "data_context": row.get("data_context") or {},
     }
 
 
@@ -457,17 +467,17 @@ def market_regime() -> dict[str, Any]:
         for r in universe
         if _num((r.get("consensus") or {}).get("return_1y")) is not None
     ]
-    advancing = sum(1 for r in returns if r > 0)
-    breadth = round((advancing / len(returns)) * 100.0, 1) if returns else None
+    positive_1y = sum(1 for r in returns if r > 0)
+    positive_1y_pct = round((positive_1y / len(returns)) * 100.0, 1) if returns else None
     median_return = _median(returns)
     median_pe = _median([r.get("pe") for r in universe])
     median_upside = _median([(r.get("consensus") or {}).get("upside") for r in universe])
 
-    if breadth is None:
+    if positive_1y_pct is None:
         stance = "Unknown"
-    elif breadth >= 60 and (median_return or 0) > 5:
+    elif positive_1y_pct >= 60 and (median_return or 0) > 5:
         stance = "Risk On"
-    elif breadth <= 40:
+    elif positive_1y_pct <= 40:
         stance = "Risk Off"
     else:
         stance = "Mixed"
@@ -514,17 +524,26 @@ def market_regime() -> dict[str, Any]:
     return {
         "ok": True,
         "stance": stance,
-        "breadth_advancing_pct": breadth,
+        "classification_type": "agi_model_output",
+        "positive_1y_return_pct": positive_1y_pct,
+        # Backward-compatible field. This is not daily advancing breadth.
+        "breadth_advancing_pct": positive_1y_pct,
         "median_return_1y_pct": median_return,
         "median_pe": median_pe,
         "median_consensus_upside_pct": median_upside,
         "universe": len(universe),
         "universe_meta": universe_meta(),
         "strategy_suitability": suitability,
-        "note": (
-            "Regime is derived from the covered universe's own breadth, returns and "
-            "valuation after the warehouse refresh — not from a live vendor call."
-        ),
+        "methodology": {
+            "definition": "AGI model classification from covered-universe one-year returns and valuation.",
+            "positive_1y_return_formula": "companies with 1Y return > 0 / companies with a valid 1Y return",
+            "period": "latest stored observation with trailing one-year return",
+            "universe": "covered warehouse universe",
+            "exclusions": "companies without a valid one-year return",
+            "source": SOURCES["market_data"],
+            "timestamp": universe_meta().get("as_of"),
+        },
+        "note": "Risk stance is an AGI model output, not an objective market fact or live daily breadth reading.",
     }
 
 
@@ -548,6 +567,14 @@ def _scan_value(universe, medians, limit) -> list[dict[str, Any]]:
             continue
         # A cheap multiple with sub-par returns is a trap, not value.
         trap = roe is not None and roe_med is not None and roe < roe_med
+        normalization_required = metric == "ev_ebitda" or discount <= -75
+        classification = (
+            "Potential value trap"
+            if trap
+            else "Headline discount — normalization required"
+            if normalization_required
+            else "Relative-value research candidate"
+        )
         out.append(
             {
                 **_base(row),
@@ -557,7 +584,9 @@ def _scan_value(universe, medians, limit) -> list[dict[str, Any]]:
                 "discount_pct": discount,
                 "roe": roe,
                 "industry_median_roe": roe_med,
-                "classification": "Potential value trap" if trap else "Deep value",
+                "classification": classification,
+                "validation_status": "normalization_required" if normalization_required else "screen_validated",
+                "relative_multiple": round(value / benchmark, 2),
                 "why": (
                     f"Trades at {value} on {metric.upper()} against an industry median of "
                     f"{benchmark}, a {abs(discount)}% discount"
@@ -569,6 +598,7 @@ def _scan_value(universe, medians, limit) -> list[dict[str, Any]]:
                         f"{roe_med}%." if roe is not None and roe_med is not None
                         else "."
                     )
+                    + (" This is a headline multiple; normalize exceptional items and enterprise value before drawing a valuation conclusion." if normalization_required else "")
                 ),
             }
         )
@@ -593,6 +623,7 @@ def _scan_quality(universe, medians, limit) -> list[dict[str, Any]]:
                 "profit_margin": margin,
                 "debt_to_equity": debt,
                 "quality_score": round(min(100.0, roe + margin / 2 - (debt or 0) / 20), 1),
+                "validation_status": "screen_validated",
                 "why": (
                     f"Return on equity of {roe}% on a {margin}% net margin"
                     + (f" with debt/equity at {debt}" if debt is not None else "")
@@ -727,13 +758,23 @@ def _scan_pairs(universe, medians, limit) -> list[dict[str, Any]]:
                 "spread_multiple": spread,
                 "industry_median": (medians.get(industry) or {}).get(metric),
                 "peers": len(members),
+                "classification": "Valuation dispersion candidate",
+                "comparability_status": "fundamental_comparability_required",
+                "promotion_status": "not_market_neutral",
+                "required_tests": [
+                    "business-model and revenue-driver comparability",
+                    "rolling return correlation and beta",
+                    "cointegration and spread stationarity",
+                    "factor exposure neutrality",
+                    "liquidity, borrow cost and slippage",
+                    "costed point-in-time backtest",
+                ],
                 "why": (
                     f"Within {industry}, {cheap.get('company_name')} trades at "
                     f"{cheap['_value']} on {metric.upper()} while "
                     f"{rich.get('company_name')} trades at {rich['_value']} — a "
-                    f"{spread}× spread across {len(members)} peers. A market-neutral "
-                    "expression needs price-history diagnostics, borrow and execution checks before it "
-                    "can become a long/short research candidate."
+                    f"{spread}× headline valuation dispersion across {len(members)} industry members. "
+                    "Industry membership alone does not establish economic comparability or market neutrality."
                 ),
                 "caution": (
                     "Valuation gaps within an industry usually reflect real differences in "
@@ -849,7 +890,7 @@ _SCANNERS = {
     "quality": ("Quality", _scan_quality),
     "conviction": ("Consensus conviction", _scan_conviction),
     "stress": ("Distressed / stress", _scan_stress),
-    "pairs": ("Market-neutral pairs", _scan_pairs),
+    "pairs": ("Valuation dispersion candidates", _scan_pairs),
 }
 
 
