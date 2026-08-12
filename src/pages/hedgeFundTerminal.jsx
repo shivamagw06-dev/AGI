@@ -630,11 +630,12 @@ export default function HedgeFundTerminal() {
       <h2 className="hft-title">Market dashboard</h2>
       <div className="hft-dash">
         <div>
-          <h5>Sector valuation</h5>
+          <h5>Sector valuation data</h5>
           <p className="hft-dim">
-            Cheapest: <b>{dash.cheapest_sector?.sector || '—'}</b> at {n(dash.cheapest_sector?.median_pe)}× ·
-            {' '}Dearest: <b>{dash.most_expensive_sector?.sector || '—'}</b> at {n(dash.most_expensive_sector?.median_pe)}×
+            Lowest median P/E: <b>{dash.lowest_median_pe_sector?.sector || dash.cheapest_sector?.sector || '—'}</b> at {n(dash.lowest_median_pe_sector?.median_pe ?? dash.cheapest_sector?.median_pe)}× ·
+            {' '}Highest median P/E: <b>{dash.highest_median_pe_sector?.sector || dash.most_expensive_sector?.sector || '—'}</b> at {n(dash.highest_median_pe_sector?.median_pe ?? dash.most_expensive_sector?.median_pe)}×
           </p>
+          <p className="hft-dim">{dash.methodology?.definition || 'Median constituent trailing P/E'} · {dash.methodology?.weighting || 'equal-weighted median'}</p>
           <div className="hft-table-wrap">
             <table className="hft-table compact">
               <thead><tr><th>Sector</th><th>P/E</th><th>ROE</th><th>Yield</th><th>1Y</th><th>Upside</th></tr></thead>
@@ -650,16 +651,16 @@ export default function HedgeFundTerminal() {
           </div>
         </div>
         <div>
-          <h5>Largest discounts to industry</h5>
+          <h5>Largest headline discounts to industry</h5>
           <ul className="hft-list">
             {(dash.largest_discounts || []).map((r) => (
-              <li key={r.ticker}><b>{r.company_name}</b> {pct(r.gap_pct)} on {r.metric?.toUpperCase()} <span className="hft-dim">{crore(r.market_cap)}</span></li>
+              <li key={r.ticker}><b>{r.company_name}</b> {n(r.value)}× vs {n(r.industry_median)}× · {n(r.relative_multiple)}× relative <span className="hft-dim">{r.validation_status === 'normalization_required' ? 'Normalization required' : crore(r.market_cap)}</span></li>
             ))}
           </ul>
-          <h5>Largest premiums to industry</h5>
+          <h5>Largest headline premiums to industry</h5>
           <ul className="hft-list">
             {(dash.largest_premiums || []).map((r) => (
-              <li key={r.ticker}><b>{r.company_name}</b> {pct(r.gap_pct)} on {r.metric?.toUpperCase()}</li>
+              <li key={r.ticker}><b>{r.company_name}</b> {n(r.value)}× vs {n(r.industry_median)}× · {n(r.relative_multiple)}× relative</li>
             ))}
           </ul>
         </div>
@@ -677,6 +678,7 @@ export default function HedgeFundTerminal() {
         </div>
         <div>
           <h5>Factor readings</h5>
+          <p className="hft-dim">{data.factors?.methodology?.warning || 'Screening counts, not pure factor portfolios.'}</p>
           <ul className="hft-list">
             {((data.factors || {}).factors || []).map((f) => (
               <li key={f.factor}>
