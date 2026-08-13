@@ -1,5 +1,5 @@
-import { Fragment, useCallback, useEffect, useState } from 'react';
-import { Activity, BrainCircuit, ChevronDown, ChevronRight, Layers3, Search, Sparkles, Target, Zap } from 'lucide-react';
+import { Fragment, useCallback, useEffect, useMemo, useState } from 'react';
+import { Activity, ChevronDown, ChevronRight, Layers3, Search, Sparkles, Target } from 'lucide-react';
 import {
   getHflOpportunity,
   getHflScan,
@@ -19,11 +19,15 @@ const pct = (v, digits = 1) => (v == null ? '—' : `${n(v, digits)}%`);
 
 const crore = (v) => (typeof v === 'number' && v > 0 ? `₹${n(v / 1e7, 0)} cr` : '—');
 
-function signalAge(minutes) {
-  if (minutes == null) return '—';
-  if (minutes < 1) return 'Now';
-  if (minutes < 60) return `${minutes}m`;
-  return `${Math.floor(minutes / 60)}h`;
+const HIDDEN_HEDGE_FUND_MODULES = ['reliability registry', 'live alpha', 'forecast intelligence'];
+
+function isHiddenHedgeFundModule(item) {
+  const identity = [item?.id, item?.label, item?.name]
+    .filter(Boolean)
+    .join(' ')
+    .replaceAll('_', ' ')
+    .toLowerCase();
+  return HIDDEN_HEDGE_FUND_MODULES.some((module) => identity.includes(module));
 }
 
 function ConfluenceBadge({ label }) {
@@ -181,63 +185,20 @@ function InstitutionalStack({ stack }) {
   if (!stack) return null;
   const library = stack.strategy_library || {};
   const scanners = stack.research_scanners || {};
-  const live = stack.live_alpha || {};
   const alpha = stack.alpha_opportunity || {};
-  const forecast = stack.forecast_intelligence || {};
   const cells = [
     { icon: Layers3, label: 'Strategy library', value: library.count, detail: 'Institutional methodologies' },
     { icon: Activity, label: 'Research scanners', value: scanners.count, detail: `${scanners.operational || 0} operational · ${scanners.experimental || 0} experimental` },
-    { icon: Zap, label: 'Live Alpha', value: live.qualifying_symbols ?? 0, detail: `${(live.engines || []).length} intraday engines · ${String(live.status || 'waiting').replaceAll('_', ' ')}` },
     { icon: Target, label: 'Alpha Opportunity', value: alpha.companies_flagged ?? 0, detail: `${alpha.multi_strategy_companies || 0} multi-strategy · ${alpha.queue_size || 0} queued` },
-    { icon: BrainCircuit, label: 'Forecast Intelligence', value: forecast.company_forecasts ?? 0, detail: `${forecast.metric_predictions || 0} metric forecasts · ${forecast.accuracy_records || 0} measured` },
   ];
   return (
-    <section id="forecast-intelligence" className="hft-stack" aria-label="AGI institutional strategy stack">
+    <section className="hft-stack" aria-label="AGI institutional strategy stack">
       {cells.map(({ icon: Icon, label, value, detail }) => (
         <div key={label} className="hft-stack-cell">
           <Icon size={16} />
           <div><span>{label}</span><strong>{n(value, 0)}</strong><small>{detail}</small></div>
         </div>
       ))}
-      <div className="hft-stack-wide">
-        <span>Forecast governance</span>
-        <p>{forecast.governance || 'Forecast outcomes remain governed and do not automatically alter model parameters.'}</p>
-      </div>
-    </section>
-  );
-}
-
-function ReliabilityRegistry({ registry }) {
-  const components = registry?.components || [];
-  if (!components.length) return null;
-  return (
-    <section className="hft-reliability">
-      <div className="hft-reliability-head">
-        <div><span>Independent validation authority</span><h2>Reliability Registry</h2></div>
-        <small>{registry.validation_version} · execution allowed for {registry.execution_allowed || 0} components</small>
-      </div>
-      <div className="hft-table-wrap">
-        <table className="hft-table compact">
-          <thead><tr><th>Component</th><th>Lifecycle</th><th>Health</th><th>Validation</th><th>Allowed use</th><th>Execution</th></tr></thead>
-          <tbody>
-            {components.map((row) => {
-              const checks = row.validation || {};
-              const passed = Object.values(checks).filter((v) => v === 'passed' || v === 'yes').length;
-              return (
-                <tr key={row.component_id}>
-                  <td><strong>{row.name}</strong><div className="hft-dim">{row.validation_version}</div></td>
-                  <td><span className={`hft-state hft-state-${row.lifecycle}`}>{row.lifecycle_label}</span></td>
-                  <td><span className={`hft-health hft-health-${row.health}`}>{row.health}</span><div className="hft-dim">{row.health_reason}</div></td>
-                  <td>{passed}/6 passed<div className="hft-dim">PIT {checks.pit_data} · OOS {checks.out_of_sample}</div></td>
-                  <td>{row.allowed_use}</td>
-                  <td><strong className={row.execution === 'allowed' ? 'hft-allow' : 'hft-block'}>{row.execution}</strong></td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-      <p className="hft-note">{registry.policy}</p>
     </section>
   );
 }
@@ -365,8 +326,6 @@ export function OpportunityTable({ scan, label, previewRows = null, researchQues
   if (error) return <div className="hft-error">{error}</div>;
 
   const pairs = scan === 'pairs';
-  const liveAlpha = scan === 'live_alpha';
-
   return (
     <div className="hft-opps">
       <div className="hft-opps-head">
@@ -382,18 +341,9 @@ export function OpportunityTable({ scan, label, previewRows = null, researchQues
               <th />
               <th>{pairs ? 'Long leg' : 'Company'}</th>
               <th>{pairs ? 'Short leg' : 'Sector'}</th>
-              {!liveAlpha ? <th>Industry</th> : null}
+              <th>Industry</th>
               <th>Confidence</th>
-              {liveAlpha ? (
-                <>
-                  <th>Direction</th>
-                  <th>Engines</th>
-                  <th>Alignment</th>
-                  <th>Age</th>
-                </>
-              ) : (
-                <th>Consensus</th>
-              )}
+              <th>Consensus</th>
               <th>Why it qualified</th>
             </tr>
           </thead>
@@ -402,7 +352,7 @@ export function OpportunityTable({ scan, label, previewRows = null, researchQues
               const ticker = pairs ? row.long_leg?.ticker : row.ticker;
               const key = pairs ? `${row.industry}-${ticker}` : ticker;
               const isOpen = open === key;
-              const colSpan = liveAlpha ? 9 : 7;
+              const colSpan = 7;
               return (
                 <Fragment key={key}>
                   <tr className={isOpen ? 'open' : ''}>
@@ -416,18 +366,9 @@ export function OpportunityTable({ scan, label, previewRows = null, researchQues
                       <div className="hft-dim">{ticker}</div>
                     </td>
                     <td>{pairs ? row.short_leg?.company_name : row.sector}</td>
-                    {!liveAlpha ? <td>{row.industry}</td> : null}
+                    <td>{row.industry}</td>
                     <td><span className="hft-conf">{row.confidence ?? '—'}</span></td>
-                    {liveAlpha ? (
-                      <>
-                        <td><span className={`hft-dir hft-dir-${row.direction || 'neutral'}`}>{row.direction || '—'}</span></td>
-                        <td className="hft-dim">{(row.contributing_engines || []).join(' · ') || '—'}</td>
-                        <td>{row.engine_agreement || '—'}</td>
-                        <td>{signalAge(row.signal_age_minutes)}</td>
-                      </>
-                    ) : (
-                      <td>{pairs ? `${n(row.spread_multiple)}× spread` : pct(row.consensus_upside)}</td>
-                    )}
+                    <td>{pairs ? `${n(row.spread_multiple)}× spread` : pct(row.consensus_upside)}</td>
                     <td className="hft-why">{row.why}</td>
                   </tr>
                   {isOpen && ticker ? (
@@ -442,9 +383,7 @@ export function OpportunityTable({ scan, label, previewRows = null, researchQues
         </table>
       </div>
       <p className="hft-note">
-        {liveAlpha
-          ? 'Live Alpha reads Leadership, Activity, Breakout, Dislocation and Positioning from the intraday research store. Stale, illiquid and low-quality signals are excluded. Research only — no execution.'
-          : 'Market data from the AGI warehouse, including Upstox daily and intraday candles where available; financial history and consensus from the AGI research warehouse; interpretation by AGI. Research observations only — never a buy, sell or target price.'}
+        Market data from the AGI warehouse, including Upstox daily and intraday candles where available; financial history and consensus from the AGI research warehouse; interpretation by AGI. Research observations only — never a buy, sell or target price.
       </p>
     </div>
   );
@@ -488,7 +427,11 @@ export default function HedgeFundTerminal() {
   const hero = data?.hero || {};
   const dash = data?.market_dashboard || {};
   const daily = data?.daily_intelligence || {};
-  const active = (data?.cards || []).find((c) => c.id === scan);
+  const cards = useMemo(
+    () => (data?.cards || []).filter((card) => !isHiddenHedgeFundModule(card)),
+    [data?.cards],
+  );
+  const active = cards.find((c) => c.id === scan) || cards[0];
 
   return (
     <div className="hft">
@@ -515,7 +458,6 @@ export default function HedgeFundTerminal() {
 
       {data ? <RegimeStrip regime={data.regime} /> : null}
       {data ? <InstitutionalStack stack={data.institutional_stack} /> : null}
-      {data ? <ReliabilityRegistry registry={data.reliability_registry} /> : null}
 
       {data?.generated_at || data?.freshness ? (
         <p className="hft-freshness" data-freshness={data.freshness || 'unknown'}>
@@ -552,7 +494,7 @@ export default function HedgeFundTerminal() {
       </section>
 
       <section className="hft-highlights">
-        {(hero.highlights || []).map((h) => {
+        {(hero.highlights || []).filter((h) => !isHiddenHedgeFundModule(h)).map((h) => {
           const row = h.row || {};
           const name = row.company_name || row.long_leg?.company_name;
           return (
@@ -571,7 +513,7 @@ export default function HedgeFundTerminal() {
         validated. Confidence is a screen-strength score, not a probability of profit.
       </p>
       <section className="hft-scanners">
-        {(data?.cards || []).map((card) => (
+        {cards.map((card) => (
           <button
             key={card.id}
             type="button"
@@ -610,8 +552,8 @@ export default function HedgeFundTerminal() {
         <>
       <h2 className="hft-title">Strategy overlap</h2>
       <p className="hft-dim hft-lead">
-        Independent scanners reaching the same company. The AGI-designed, not empirically optimized, composite uses
-        70% Hedge Fund evidence and 30% Live Alpha. Negative conflicts are penalized rather than treated as agreement.
+        Independent Hedge Fund scanners reaching the same company. The composite is AGI-designed and not empirically
+        optimized; it is a research-prioritisation score, not evidence of investment performance.
       </p>
       <div className="hft-table-wrap">
         <table className="hft-table">
@@ -621,9 +563,6 @@ export default function HedgeFundTerminal() {
               <th>Sector</th>
               <th>Label</th>
               <th>Strategies</th>
-              <th>Direction</th>
-              <th>Engines</th>
-              <th>Age</th>
               <th>Unified</th>
             </tr>
           </thead>
@@ -634,13 +573,6 @@ export default function HedgeFundTerminal() {
                 <td>{row.sector}</td>
                 <td><ConfluenceBadge label={row.confluence_label} /></td>
                 <td>{(row.strategies || []).join(' · ')}</td>
-                <td>
-                  {row.live_alpha?.direction
-                    ? <span className={`hft-dir hft-dir-${row.live_alpha.direction}`}>{row.live_alpha.direction}</span>
-                    : '—'}
-                </td>
-                <td className="hft-dim">{(row.live_alpha?.contributing_engines || []).join(' · ') || '—'}</td>
-                <td>{signalAge(row.live_alpha?.signal_age_minutes)}</td>
                 <td>{row.unified_score ?? row.priority_score ?? '—'}</td>
               </tr>
             ))}
