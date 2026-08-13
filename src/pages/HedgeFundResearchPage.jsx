@@ -96,11 +96,12 @@ function FactorAudit() {
       {rows.length > 0 ? <>
         <div className="hfl-factor-meta"><b>{audit.status || 'IN_DEVELOPMENT'}</b><span>{audit.layer_version}</span><span>As of {audit.as_of}</span><span>{audit.universe} companies evaluated</span></div>
         <div className="hfl-factor-table-wrap"><table className="hfl-factor-table">
-          <thead><tr><th>Company</th><th>Quality</th><th>ROIC 5Y</th><th>ROIC rank</th><th>FCF margin</th><th>Mispricing</th><th>Value rank</th><th>Data quality</th><th>PIT status</th></tr></thead>
+          <thead><tr><th>Company</th><th>Quality</th><th>Earnings</th><th>Growth</th><th>Capital</th><th>Balance</th><th>ROIC 5Y</th><th>FCF margin</th><th>Mispricing</th><th>Data quality</th><th>PIT status</th></tr></thead>
           <tbody>{rows.map((row) => <tr key={row.symbol}>
             <td><b>{row.symbol}</b><span>{row.company_name || 'Name unavailable'}</span></td>
-            <td>{score(row.quality_score)}</td><td>{percent(row.roic_5y)}</td><td>{score(row.roic_percentile)}</td>
-            <td>{percent(row.fcf_margin)}</td><td>{score(row.mispricing_score)}</td><td>{score(row.valuation_percentile)}</td>
+            <td>{score(row.quality_score)}</td><td>{score(row.earnings_quality_score)}</td><td>{score(row.sustainable_growth_score)}</td>
+            <td>{score(row.capital_allocation_score)}</td><td>{score(row.balance_sheet_risk_score)}</td><td>{percent(row.roic_5y)}</td>
+            <td>{percent(row.fcf_margin)}</td><td>{score(row.mispricing_score)}</td>
             <td>{score(row.data_quality)}</td><td><span className="hfl-pit-status">{String(row.validation_status || 'Unavailable').replaceAll('_', ' ')}</span></td>
           </tr>)}</tbody>
         </table></div>

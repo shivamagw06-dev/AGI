@@ -71,6 +71,27 @@ def change_volatility(values: Iterable[Any]) -> Optional[float]:
     return statistics.stdev(changes) if len(changes) >= 2 else None
 
 
+def volatility(values: Iterable[Any]) -> Optional[float]:
+    clean = [v for v in (number(item) for item in values) if v is not None]
+    return statistics.stdev(clean) if len(clean) >= 2 else None
+
+
+def cagr(values: Iterable[Any]) -> Optional[float]:
+    clean = [v for v in (number(item) for item in values) if v is not None]
+    if len(clean) < 2 or clean[0] <= 0 or clean[-1] <= 0:
+        return None
+    return (clean[-1] / clean[0]) ** (1.0 / (len(clean) - 1)) - 1.0
+
+
+def trend(values: Iterable[Any]) -> Optional[float]:
+    clean = [v for v in (number(item) for item in values) if v is not None]
+    if len(clean) < 2:
+        return None
+    x_mean = (len(clean) - 1) / 2.0
+    denominator = sum((i - x_mean) ** 2 for i in range(len(clean)))
+    return sum((i - x_mean) * (value - statistics.mean(clean)) for i, value in enumerate(clean)) / denominator if denominator else None
+
+
 def percentile_rank(values: Iterable[Any], current: Any) -> Optional[float]:
     clean = [v for v in (number(item) for item in values) if v is not None]
     value = number(current)

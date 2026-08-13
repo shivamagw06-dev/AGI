@@ -99,7 +99,7 @@ def mapping_rows(field_map: dict[str, str]) -> list[dict[str, Any]]:
             "source": SOURCE,
             "source_label": label,
             "company_type": "ALL",
-            "statement_type": "CONSOLIDATED",
+            "statement_type": "UNKNOWN",
             "canonical_metric": metric,
             "period_type": "ANNUAL",
             "sign_multiplier": 1.0,
