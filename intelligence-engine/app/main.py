@@ -171,6 +171,34 @@ async def lifespan(_app: FastAPI):
             threading.Thread(target=_run_sector_history_seed, name="historical-sector-baseline", daemon=True).start()
     except Exception as exc:
         log.warning("historical_sector_baseline_seed_thread_failed", extra={"error": str(exc)[:160]})
+    # Import the checked-in licensed India macro workbook into private tables.
+    # The importer is fingerprinted by source hash and uses idempotent upserts;
+    # raw vendor values are never exposed through the public macro API.
+    try:
+        import threading
+
+        from macro_intelligence_engine.licensed_capiq import import_workbook as import_licensed_macro
+
+        def _run_licensed_macro_seed() -> None:
+            try:
+                result = import_licensed_macro()
+                log.info(
+                    "licensed_india_macro_seed",
+                    extra={
+                        "ok": result.get("ok"),
+                        "observations": result.get("observations"),
+                        "forecasts": result.get("forecasts"),
+                        "quarantined": result.get("quarantined"),
+                        "source_hash": result.get("source_hash"),
+                    },
+                )
+            except Exception as exc:  # pragma: no cover - defensive startup path
+                log.warning("licensed_india_macro_seed_failed", extra={"error": str(exc)[:200]})
+
+        if not migration_priority:
+            threading.Thread(target=_run_licensed_macro_seed, name="licensed-india-macro-seed", daemon=True).start()
+    except Exception as exc:
+        log.warning("licensed_india_macro_seed_thread_failed", extra={"error": str(exc)[:160]})
     # Valuation Consensus — Broker Estimates seed (committed CapIQ export).
     try:
         import threading
