@@ -183,7 +183,7 @@ def _stamp_units(tab, accepted: Sequence[dict[str, Any]]) -> int:
     if not accepted:
         return 0
     table = db.physical_table(tab.id)
-    stamped = 0
+    payload: list[tuple[Any, ...]] = []
     for row in accepted:
         unit = row.get("sys_reported_unit")
         if not unit:
@@ -191,13 +191,14 @@ def _stamp_units(tab, accepted: Sequence[dict[str, Any]]) -> int:
         row_id = store.make_row_id(tab, row)
         if not row_id:
             continue
-        db.execute(
+        payload.append((unit, row.get("sys_unit_scale"), row.get("sys_unit_method"), row_id))
+    if payload:
+        db.executemany(
             f"UPDATE {table} SET sys_reported_unit = ?, sys_unit_scale = ?,"
             f" sys_unit_method = ? WHERE row_id = ?",
-            (unit, row.get("sys_unit_scale"), row.get("sys_unit_method"), row_id),
+            payload,
         )
-        stamped += 1
-    return stamped
+    return len(payload)
 
 
 def _stamp_quality(tab, accepted: Sequence[dict[str, Any]], *, source: str,
@@ -208,7 +209,7 @@ def _stamp_quality(tab, accepted: Sequence[dict[str, Any]], *, source: str,
     table = db.physical_table(tab.id)
     material = [c.key for c in tab.columns
                 if c.key not in ("source", "last_updated", "import_time")]
-    stamped = 0
+    payload: list[tuple[Any, ...]] = []
     stamp = now_iso()
 
     for row in accepted:
@@ -224,14 +225,15 @@ def _stamp_quality(tab, accepted: Sequence[dict[str, Any]], *, source: str,
             missing_fields=missing,
             has_conflict=row_id in conflicted,
         )
-        db.execute(
+        payload.append((block["quality_type"], block["confidence"], block["confidence_score"],
+                        block["validation_status"], stamp, row_id))
+    if payload:
+        db.executemany(
             f"UPDATE {table} SET sys_quality = ?, sys_confidence = ?, sys_confidence_score = ?,"
             f" sys_validation = ?, sys_validated_at = ? WHERE row_id = ?",
-            (block["quality_type"], block["confidence"], block["confidence_score"],
-             block["validation_status"], stamp, row_id),
+            payload,
         )
-        stamped += 1
-    return stamped
+    return len(payload)
 
 
 def remediate_missing_zeros(*, actor: str = "system", tabs: Optional[Sequence[str]] = None,

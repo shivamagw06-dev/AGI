@@ -19044,10 +19044,16 @@ async def warehouse_import_capital_iq_workbook_run(
     if bool(body.get("dry_run")):
         from financial_warehouse_completion.production import stage_capiq_workbook
         return stage_capiq_workbook(years=[int(year) for year in years] if years else None)
-    return run_capiq_workbook(
+    # Parsing, audited warehouse writes, and formula recalculation are CPU/DB
+    # heavy. Keep them off the event loop so health and read APIs remain live.
+    from functools import partial
+    from starlette.concurrency import run_in_threadpool
+
+    return await run_in_threadpool(partial(
+        run_capiq_workbook,
         years=[int(year) for year in years] if years else None,
         actor=_warehouse_actor(body, x_agi_actor),
-    )
+    ))
 
 
 @router.get("/warehouse/import/sector-ratio-workbook")
