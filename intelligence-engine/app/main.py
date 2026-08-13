@@ -5,6 +5,7 @@ from __future__ import annotations
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from app.api.routes import router
@@ -326,6 +327,16 @@ app = FastAPI(
     version="0.1.0",
     description="Multi-agent institutional research engine for Agarwal Global Investments.",
     lifespan=lifespan,
+)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "https://agarwalglobalinvestments.com",
+        "https://www.agarwalglobalinvestments.com",
+        "http://localhost:5173",
+    ],
+    allow_methods=["GET", "OPTIONS"],
+    allow_headers=["Accept", "Content-Type"],
 )
 app.include_router(router)
 

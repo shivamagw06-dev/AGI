@@ -1,6 +1,13 @@
 import { API_ORIGIN } from '@/config';
 
 const BASE = API_ORIGIN || '';
+const PUBLIC_MIE_BASE = 'https://agib-intelligence-engine.onrender.com/v1';
+
+async function publicMieFetch(path, timeoutMs = 12_000) {
+  const resp = await fetch(`${PUBLIC_MIE_BASE}${path}`, { signal: AbortSignal.timeout(timeoutMs) });
+  if (!resp.ok) throw new Error(`Public macro API error (${resp.status})`);
+  return resp.json();
+}
 
 async function intelligenceFetch(path, { method = 'GET', body, timeoutMs = 45_000 } = {}) {
   if (!BASE) {
@@ -3192,9 +3199,9 @@ export const postFieRuntimeRun = (body = {}) =>
 /** Macro Intelligence Engine (Phase 9.0) — /mie/* */
 export const getMieHealth = () => intelligenceFetch('/mie/health');
 export const getMieDataReadiness = (country = 'India') =>
-  intelligenceFetch(`/mie/data-readiness?country=${encodeURIComponent(country)}`, { timeoutMs: 8_000 });
+  publicMieFetch(`/mie/data-readiness?country=${encodeURIComponent(country)}`);
 export const getMieLatestPublicObservations = (country = 'India') =>
-  intelligenceFetch(`/mie/public-observations/latest?country=${encodeURIComponent(country)}`, { timeoutMs: 8_000 });
+  publicMieFetch(`/mie/public-observations/latest?country=${encodeURIComponent(country)}`);
 export const getMieDashboard = (params = {}) => {
   const qs = new URLSearchParams(
     Object.fromEntries(Object.entries(params).filter(([, v]) => v != null && v !== '')),
