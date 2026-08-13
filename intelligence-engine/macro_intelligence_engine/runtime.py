@@ -25,6 +25,7 @@ _STATE: dict[str, Any] = {
     "processed_this_session": 0,
     "last_mode": None,
     "started_mono": None,
+    "last_public_data_run": None,
 }
 
 
@@ -59,6 +60,20 @@ def run_refresh(*, mode: str = "daily", country: str = DEFAULT_COUNTRY) -> dict[
     _upsert_runtime(ctry, queue_status="RUNNING", lifecycle="REFRESHING", last_run_at=_now())
     t0 = time.perf_counter()
     try:
+        public_data = None
+        if ctry.lower() == DEFAULT_COUNTRY.lower() and _truthy("MIE_PUBLIC_DATA_ENABLED", "true"):
+            last = _STATE.get("last_public_data_run")
+            due = not last or (datetime.now(timezone.utc) - datetime.fromisoformat(last)).total_seconds() >= 86400
+            if due:
+                try:
+                    from macro_intelligence_engine.public_ingestion import run_public_ingestion
+                    public_data = run_public_ingestion()
+                except Exception as exc:
+                    # Public-source collection must never prevent the existing
+                    # macro pack from refreshing. Its receipt remains explicit.
+                    public_data = {"ok": False, "error": str(exc)[:240]}
+                with _LOCK:
+                    _STATE["last_public_data_run"] = _now()
         pack = build_macro_pack(ctry)
         ok = bool(pack.get("ok"))
         # Publishing is part of the asynchronous runtime.  The web route reads
@@ -96,6 +111,7 @@ def run_refresh(*, mode: str = "daily", country: str = DEFAULT_COUNTRY) -> dict[
             "elapsed_ms": int((time.perf_counter() - t0) * 1000),
             "engine": ENGINE_CODE,
             "version": VERSION,
+            "public_data": public_data,
         }
     except Exception as exc:
         with _LOCK:

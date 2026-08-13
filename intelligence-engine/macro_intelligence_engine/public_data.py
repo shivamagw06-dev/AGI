@@ -60,6 +60,12 @@ CORE_50: tuple[tuple[str, str, str, str], ...] = (
 
 
 def _warehouse_rows(table: str, limit: int = 5000) -> list[dict[str, Any]]:
+    if table.startswith("macro_public_"):
+        try:
+            from macro_intelligence_engine.public_ingestion import _rest
+            return list(_rest(table, query=f"?select=*&limit={int(limit)}") or [])
+        except Exception:
+            return []
     try:
         from institutional_warehouse import store
         return list((store.fetch(table, limit=limit) or {}).get("rows") or [])
@@ -109,6 +115,6 @@ def readiness(country: str = "India") -> dict[str, Any]:
             for domain, total in sorted(domain_totals.items())
         ],
         "series": items,
+        "sources": __import__("macro_intelligence_engine.public_ingestion", fromlist=["source_status"]).source_status(),
         "policy": "Only persisted public/official observations count. Catalogue placeholders do not count as coverage.",
     }
-
