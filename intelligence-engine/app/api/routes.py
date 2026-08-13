@@ -20667,7 +20667,8 @@ async def mie_runtime_run(payload: dict[str, Any] = Body(default_factory=dict)):
     from macro_intelligence_engine import runtime_run
 
     body = payload or {}
-    return runtime_run(
+    return await run_in_threadpool(
+        runtime_run,
         mode=str(body.get("mode") or "daily"),
         batch=int(body.get("batch") or 1),
     )
