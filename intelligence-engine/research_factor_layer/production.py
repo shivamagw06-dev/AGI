@@ -265,16 +265,25 @@ def _quality_results(cutoff: str, symbols: list[str], annual_by_symbol: Optional
                 components[component] = median(ranked)
             factor_score = weighted_score(components, weights, minimum=max(2, min(3, len(weights))))
             available = sum(value is not None for value in components.values())
+            available_weight = sum(weights[key] for key, value in components.items() if value is not None)
+            contributions = {key: (value * weights[key] / available_weight if value is not None and available_weight else None)
+                             for key, value in components.items()}
+            ranked_components = sorted(((key, value) for key, value in components.items() if value is not None), key=lambda item: item[1], reverse=True)
             factors[name] = {"factor_name": name, "factor_version": version, "company_id": symbol,
                 "as_of_date": cutoff, "data_cutoff": cutoff, "score": round(factor_score, 1) if factor_score is not None else None,
                 "raw_score": round(factor_score / 100.0, 4) if factor_score is not None else None, "calculated_at": _calculated_at(),
                 "percentile": None, "raw_metrics": values, "metric_history": pack["rows"],
                 "component_scores": {key: round(value, 1) if value is not None else None for key, value in components.items()},
+                "component_contributions": {key: round(value, 1) if value is not None else None for key, value in contributions.items()},
                 "component_weights": weights, "evidence": [], "missing_data": pack["missing"],
                 "coverage": round(available / len(components), 3), "data_quality": round(100 * available / len(components), 1),
                 "confidence": "HIGH" if available / len(components) >= .8 else "MEDIUM" if available / len(components) >= .6 else "LOW",
                 "methodology_status": "IN_DEVELOPMENT", "validation_status": "POINT_IN_TIME_LIMITED",
                 "signal_label": "Annual fundamental signal — PIT limited", "methodology": {"invested_capital": INVESTED_CAPITAL_METHOD},
+                "why_surfaced": [key.replace("_", " ").title() for key, _ in ranked_components[:3]],
+                "weakest_evidence": [key.replace("_", " ").title() for key, _ in ranked_components[-2:]],
+                "invalidation_risks": ["ROIC deterioration", "FCF conversion deterioration", "Leverage increase",
+                                       "Working-capital deterioration", "Capital-allocation deterioration"],
                 "provenance": [{"period": row.get("period"), "source": row.get("source"), "filing_date": row.get("filing_date")} for row in pack["rows"]]}
         quality = factors["quality_compounder"]
         if values.get("roic_10y_median") is not None: quality["evidence"].append(f"10Y median ROIC {values['roic_10y_median'] * 100:.1f}%")
@@ -388,6 +397,7 @@ def audit(*, as_of: Optional[str] = None, limit: int = 20) -> dict[str, Any]:
                          ("Balance-Sheet Quality", pack.get("balance_sheet_risk", {}).get("score")),
                          ("Relative Mispricing", value.get("score")))
         available_factors = [(name, score) for name, score in factor_labels if score is not None]
+        accounting_scores = [score for _, score in factor_labels[:5] if score is not None]
         rows.append({
             "symbol": symbol, "company_name": pack["company"].get("company_name"),
             "quality_score": quality.get("score"), "roic_5y": quality.get("raw_metrics", {}).get("roic_5y_median"),
@@ -398,6 +408,7 @@ def audit(*, as_of: Optional[str] = None, limit: int = 20) -> dict[str, Any]:
             "sustainable_growth_score": pack.get("sustainable_growth", {}).get("score"),
             "capital_allocation_score": pack.get("capital_allocation", {}).get("score"),
             "balance_sheet_risk_score": pack.get("balance_sheet_risk", {}).get("score"),
+            "fundamental_composite": round(sum(accounting_scores) / len(accounting_scores), 1) if accounting_scores else None,
             "data_quality": round((quality.get("data_quality", 0) + value.get("data_quality", 0)) / 2, 1),
             "validation_status": "POINT_IN_TIME_LIMITED" if any("LIMITED" in str(status) for status in (quality.get("validation_status"), value.get("validation_status"))) else "POINT_IN_TIME_READY",
             "primary_evidence": (value.get("evidence") or quality.get("evidence") or [])[:3],
@@ -406,8 +417,11 @@ def audit(*, as_of: Optional[str] = None, limit: int = 20) -> dict[str, Any]:
             "contradictory_evidence": (quality.get("missing_data") or [])[:2] + (value.get("missing_data") or [])[:2],
             "key_risk": "Valuation history is not fully publication-vintaged; do not treat this as a backtest-ready signal.",
         })
-    rows.sort(key=lambda row: (-(row.get("quality_score") or -1), -(row.get("mispricing_score") or -1)))
-    return {"ok": True, "layer_version": FACTOR_LAYER_VERSION, "as_of": cutoff, "universe": len(results), "rows": rows[:max(1, min(limit, 100))], "status": "IN_DEVELOPMENT"}
+    rows.sort(key=lambda row: -(row.get("fundamental_composite") or -1))
+    selected = rows[:max(1, min(limit, 100))]
+    return {"ok": True, "layer_version": FACTOR_LAYER_VERSION, "as_of": cutoff, "universe": len(results), "rows": selected,
+            "strongest_positive": rows[:3], "strongest_negative": list(reversed(rows[-3:])),
+            "status": "IN_DEVELOPMENT", "policy": "Accounting-factor evidence only; not an investment recommendation or demonstrated predictive alpha."}
 
 
 def health() -> dict[str, Any]:

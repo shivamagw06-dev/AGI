@@ -166,6 +166,11 @@ def capiq_workbook_status() -> dict[str, Any]:
     return preview()
 
 
+def stage_capiq_workbook(*, years: Optional[list[int]] = None) -> dict[str, Any]:
+    from financial_warehouse_completion.capiq_workbook import audit_preview
+    return audit_preview(years=years or tuple(range(2017, 2027)))
+
+
 def run_capiq_workbook(*, years: Optional[list[int]] = None, actor: str = "fwcp") -> dict[str, Any]:
     from financial_warehouse_completion.capiq_workbook import import_completed_years
     return import_completed_years(years=years, actor=actor)

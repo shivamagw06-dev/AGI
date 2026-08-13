@@ -87,8 +87,8 @@ function FactorAudit() {
   return (
     <section className="hfl-factor-audit" aria-labelledby="factor-audit-title">
       <div className="hfl-programme-title">
-        <div><span>Research factor layer</span><h2 id="factor-audit-title">Quality and relative mispricing audit</h2></div>
-        <p>Versioned warehouse calculations with explicit missing-data and point-in-time status. In Development means research use only.</p>
+        <div><span>Fundamental research summary</span><h2 id="factor-audit-title">Strongest fundamental research signals</h2></div>
+        <p>Rankings reflect accounting-factor evidence only. They are not investment recommendations or demonstrated predictive alpha.</p>
       </div>
       {error ? <div className="hfl-factor-empty">Factor output is currently unavailable. {error}</div> : null}
       {!error && !audit ? <div className="hfl-factor-empty">Calculating warehouse factors...</div> : null}
@@ -96,10 +96,10 @@ function FactorAudit() {
       {rows.length > 0 ? <>
         <div className="hfl-factor-meta"><b>{audit.status || 'IN_DEVELOPMENT'}</b><span>{audit.layer_version}</span><span>As of {audit.as_of}</span><span>{audit.universe} companies evaluated</span></div>
         <div className="hfl-factor-table-wrap"><table className="hfl-factor-table">
-          <thead><tr><th>Company</th><th>Quality</th><th>Earnings</th><th>Growth</th><th>Capital</th><th>Balance</th><th>ROIC 5Y</th><th>FCF margin</th><th>Mispricing</th><th>Data quality</th><th>PIT status</th></tr></thead>
+          <thead><tr><th>Company</th><th>Composite</th><th>Quality</th><th>Earnings</th><th>Growth</th><th>Capital</th><th>Balance</th><th>ROIC 5Y</th><th>FCF margin</th><th>Mispricing</th><th>Data quality</th><th>PIT status</th></tr></thead>
           <tbody>{rows.map((row) => <tr key={row.symbol}>
             <td><b>{row.symbol}</b><span>{row.company_name || 'Name unavailable'}</span></td>
-            <td>{score(row.quality_score)}</td><td>{score(row.earnings_quality_score)}</td><td>{score(row.sustainable_growth_score)}</td>
+            <td>{score(row.fundamental_composite)}</td><td>{score(row.quality_score)}</td><td>{score(row.earnings_quality_score)}</td><td>{score(row.sustainable_growth_score)}</td>
             <td>{score(row.capital_allocation_score)}</td><td>{score(row.balance_sheet_risk_score)}</td><td>{percent(row.roic_5y)}</td>
             <td>{percent(row.fcf_margin)}</td><td>{score(row.mispricing_score)}</td>
             <td>{score(row.data_quality)}</td><td><span className="hfl-pit-status">{String(row.validation_status || 'Unavailable').replaceAll('_', ' ')}</span></td>

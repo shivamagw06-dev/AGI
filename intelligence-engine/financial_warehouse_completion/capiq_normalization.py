@@ -118,13 +118,34 @@ def audit_and_prepare(
     audits: list[dict[str, Any]] = []
     identities: list[dict[str, Any]] = []
     accepted: list[dict[str, Any]] = []
+    seen_keys: set[tuple[str, str]] = set()
     for source_row in rows:
         raw, repaired_fields = reconcile_derived_fields(source_row)
         resolved = resolve_identity(raw, master_index)
         present = [metric for metric in field_map.values() if raw.get(metric) is not None]
         required_found = sum(1 for metric in REQUIRED_FIELDS if raw.get(metric) is not None)
         period_ok = bool(_text(raw.get("fiscal_year")).startswith("FY"))
-        verified = resolved["identity_status"] == "VERIFIED" and required_found == len(REQUIRED_FIELDS) and period_ok
+        natural_key = (_text(raw.get("symbol")).upper(), _text(raw.get("fiscal_year")))
+        duplicate = natural_key in seen_keys
+        seen_keys.add(natural_key)
+        impossible = []
+        for field in ("assets", "equity", "revenue"):
+            value = raw.get(field)
+            if value is not None and float(value) < 0:
+                impossible.append(field)
+        suspicious_zeros = [field for field in REQUIRED_FIELDS if raw.get(field) == 0]
+        assets, liabilities, equity, minority = (raw.get(key) for key in ("assets", "total_liabilities", "equity", "minority_interest"))
+        balance_delta = None
+        if None not in (assets, liabilities, equity):
+            balance_delta = float(assets) - float(liabilities) - float(equity) - float(minority or 0)
+        reconciliation_failed = balance_delta is not None and abs(balance_delta) > max(1.0, abs(float(assets)) * 0.01)
+        quarantine_reasons = []
+        if resolved["identity_status"] != "VERIFIED": quarantine_reasons.append("unmatched_security")
+        if duplicate: quarantine_reasons.append("duplicate_company_year")
+        if impossible: quarantine_reasons.append("impossible_values:" + ",".join(impossible))
+        if suspicious_zeros: quarantine_reasons.append("suspicious_zeros:" + ",".join(suspicious_zeros))
+        if reconciliation_failed: quarantine_reasons.append("balance_sheet_reconciliation_failed")
+        verified = not quarantine_reasons and required_found == len(REQUIRED_FIELDS) and period_ok
         status = "VERIFIED" if verified else "REVIEW_REQUIRED"
         score = round(100.0 * required_found / len(REQUIRED_FIELDS), 1)
         audit = {
@@ -144,10 +165,12 @@ def audit_and_prepare(
             "unit_check": "PASS",
             "period_check": "PASS" if period_ok else "FAIL",
             "reconciliation": "REPAIRED" if repaired_fields else "PASS",
+            "balance_delta": balance_delta,
+            "quarantine_reasons": quarantine_reasons,
             "repaired_fields": repaired_fields,
             "quality_score": score,
             "overall_status": status,
-            "write_status": "READY" if verified else "HELD",
+            "write_status": "READY" if verified else "QUARANTINED",
             "mapping_version": MAPPING_VERSION,
         }
         audits.append(audit)

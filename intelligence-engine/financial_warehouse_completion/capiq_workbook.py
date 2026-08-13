@@ -187,10 +187,23 @@ def audit_preview(*, years: Iterable[int] = DEFAULT_YEARS, path: Path = WORKBOOK
     for row in audits:
         status = str(row.get("overall_status") or "UNKNOWN")
         by_status[status] = by_status.get(status, 0) + 1
+    by_year: dict[str, dict[str, int]] = {}
+    quarantine_reasons: dict[str, int] = {}
+    for row in audits:
+        year = str(row.get("fiscal_year") or "UNKNOWN")
+        bucket = by_year.setdefault(year, {"staged": 0, "accepted": 0, "quarantined": 0})
+        bucket["staged"] += 1
+        if row.get("write_status") == "READY": bucket["accepted"] += 1
+        else: bucket["quarantined"] += 1
+        for reason in row.get("quarantine_reasons") or []:
+            quarantine_reasons[reason] = quarantine_reasons.get(reason, 0) + 1
     return {
         "ok": True, "source": SOURCE, "workbook": path.name, "years": list(selected),
         "seen": len(rows), "ready": len(prepared["accepted"]), "status_counts": by_status,
-        "sample": audits[:25], "mapping_version": "CAPIQ_V1", "unit": "INR million",
+        "quarantined": len(rows) - len(prepared["accepted"]), "rejected": 0,
+        "company_matches": sum(1 for row in audits if row.get("identity_status") == "VERIFIED"),
+        "quarantine_reasons": quarantine_reasons, "by_year": by_year,
+        "sample": audits[:25], "mapping_version": "CAPIQ_V2", "unit": "INR million",
     }
 
 

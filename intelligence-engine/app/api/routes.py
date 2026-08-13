@@ -19041,6 +19041,9 @@ async def warehouse_import_capital_iq_workbook_run(
     years = body.get("years")
     if years is not None and (not isinstance(years, list) or not all(str(y).isdigit() for y in years)):
         raise HTTPException(status_code=422, detail="years_must_be_a_list_of_years")
+    if bool(body.get("dry_run")):
+        from financial_warehouse_completion.production import stage_capiq_workbook
+        return stage_capiq_workbook(years=[int(year) for year in years] if years else None)
     return run_capiq_workbook(
         years=[int(year) for year in years] if years else None,
         actor=_warehouse_actor(body, x_agi_actor),
