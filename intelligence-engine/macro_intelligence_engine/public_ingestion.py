@@ -1,6 +1,6 @@
 """Durable public macro ingestion. Background runtime only; never called by page reads."""
 from __future__ import annotations
-import hashlib, json, os, urllib.request, uuid
+import csv, hashlib, io, json, os, urllib.parse, urllib.request, uuid
 from datetime import datetime, timezone
 from macro_intelligence_engine.public_data import CORE_50
 
@@ -34,6 +34,11 @@ G20_WORLD_BANK_SERIES = {
     "investment_gdp": ("NE.GDI.FTOT.ZS", "Growth", "% GDP"),
     "private_credit_gdp": ("FS.AST.PRVT.GD.ZS", "Financial", "% GDP"),
     "gdp_per_capita": ("NY.GDP.PCAP.CD", "Structural", "USD"),
+}
+IMF_G20_SERIES = {
+    "gdp_growth": ("NGDP_RPCH", "Growth", "%"), "inflation": ("PCPIPCH", "Inflation", "%"),
+    "unemployment": ("LUR", "Labour", "%"), "government_debt_gdp": ("GGXWDG_NGDP", "Fiscal", "% GDP"),
+    "fiscal_balance_gdp": ("GGXCNL_NGDP", "Fiscal", "% GDP"), "current_account_gdp": ("BCA_NGDPD", "External", "% GDP"),
 }
 
 def _now(): return datetime.now(timezone.utc)
@@ -115,8 +120,65 @@ def collect_world_bank_g20():
     _rest("macro_public_ingestion_runs",method="PATCH",rows={"status":status,"completed_at":_now().isoformat(),"rows_received":len(registry),"rows_accepted":len(observations),"rows_quarantined":len(errors),"error":";".join(errors)[:1000] or None,"receipt":{"countries":len(G20_COUNTRIES),"indicators":len(G20_WORLD_BANK_SERIES),"errors":errors}},query=f"?run_id=eq.{run_id}",prefer="return=minimal")
     return {"ok":bool(observations),"source":"World Bank G20","run_id":run_id,"status":status,"accepted":len(observations),"errors":errors}
 
+def _persist_official_run(source, registry, observations, errors):
+    run_id=str(uuid.uuid4()); started=_now()
+    _rest("macro_public_ingestion_runs",method="POST",rows={"run_id":run_id,"source":source,"status":"RUNNING","started_at":started.isoformat()},prefer="return=minimal")
+    if registry:_rest("macro_public_series_registry",method="POST",rows=registry,query="?on_conflict=series_id",prefer="resolution=merge-duplicates,return=minimal")
+    if observations:_rest("macro_public_observations",method="POST",rows=observations,query="?on_conflict=series_id,country_code,period_date,vintage_date,revision_number",prefer="resolution=merge-duplicates,return=minimal")
+    status="COMPLETE" if observations and not errors else ("COMPLETE_WITH_WARNINGS" if observations else "FAILED")
+    _rest("macro_public_ingestion_runs",method="PATCH",rows={"status":status,"completed_at":_now().isoformat(),"rows_received":len(registry),"rows_accepted":len(observations),"rows_quarantined":len(errors),"error":";".join(errors)[:1000] or None,"receipt":{"series":len(registry),"observations":len(observations),"errors":errors}},query=f"?run_id=eq.{run_id}",prefer="return=minimal")
+    return {"ok":bool(observations),"source":source,"run_id":run_id,"status":status,"accepted":len(observations),"errors":errors}
+
+def collect_imf_g20():
+    registry=[]; observations=[]; errors=[]; fetched=_now(); completed_year=fetched.year-1
+    for key,(indicator,domain,unit) in IMF_G20_SERIES.items():
+        url=f"https://www.imf.org/external/datamapper/api/v1/{indicator}"
+        try:
+            req=urllib.request.Request(url,headers={"User-Agent":"AGI-Macro-Intelligence/1.0"})
+            with urllib.request.urlopen(req,timeout=35) as response: raw=response.read()
+            payload=json.loads(raw); values=((payload.get("values") or {}).get(indicator) or {}); digest=hashlib.sha256(raw).hexdigest()
+            for iso3,country in G20_COUNTRIES.items():
+                history=values.get(iso3) or {}; eligible=[(int(y),v) for y,v in history.items() if str(y).isdigit() and int(y)<=completed_year and v is not None]
+                series_id=f"imf_{iso3.lower()}_{key}"
+                registry.append({"series_id":series_id,"country_code":iso3,"domain":domain.lower(),"label":key.replace("_"," ").title(),"unit":unit,"frequency":"annual","primary_source":"IMF WEO DataMapper","source_url":url,"source_series_id":indicator,"license_class":"PUBLIC_OFFICIAL","refresh_policy":"ON_RELEASE","active":True,"metadata":{"country_name":country,"connector":"imf_datamapper","dataset":"WEO","ingestion_status":"CONNECTED","pit_policy":"first_successful_agi_fetch"},"updated_at":fetched.isoformat()})
+                if not eligible: errors.append(f"{indicator}:{iso3}:no_completed_observation"); continue
+                year,value=max(eligible)
+                observations.append({"series_id":series_id,"country_code":iso3,"period_date":f"{year}-12-31","value_numeric":value,"unit":unit,"frequency":"annual","release_date":fetched.isoformat(),"available_at":fetched.isoformat(),"vintage_date":fetched.date().isoformat(),"revision_number":0,"is_forecast":False,"source":"IMF WEO DataMapper API","source_url":url,"source_payload_hash":digest,"quality_status":"PROVISIONAL","metadata":{"indicator":indicator,"country_name":country,"forecast_excluded_after":completed_year}})
+        except Exception as exc: errors.append(f"{indicator}:{str(exc)[:120]}")
+    return _persist_official_run("IMF WEO DataMapper",registry,observations,errors)
+
+def collect_oecd_policy_rates():
+    url="https://sdmx.oecd.org/public/rest/data/OECD.SDD.STES,DSD_STES@DF_FINMARK/.?startPeriod=2024&dimensionAtObservation=AllDimensions&format=csvfile"
+    registry=[]; observations=[]; errors=[]; fetched=_now()
+    try:
+        req=urllib.request.Request(url,headers={"User-Agent":"AGI-Macro-Intelligence/1.0"})
+        with urllib.request.urlopen(req,timeout=45) as response: raw=response.read()
+        rows=csv.DictReader(io.StringIO(raw.decode("utf-8-sig"))); latest={}
+        for row in rows:
+            iso3=str(row.get("REF_AREA") or "").upper()
+            if iso3 not in G20_COUNTRIES or row.get("MEASURE")!="IRSTCI" or not row.get("OBS_VALUE"): continue
+            if iso3 not in latest or str(row.get("TIME_PERIOD"))>str(latest[iso3].get("TIME_PERIOD")): latest[iso3]=row
+        digest=hashlib.sha256(raw).hexdigest()
+        for iso3,country in G20_COUNTRIES.items():
+            series_id=f"oecd_{iso3.lower()}_policy_rate"; registry.append({"series_id":series_id,"country_code":iso3,"domain":"monetary","label":"Policy Rate","unit":"%","frequency":"monthly","primary_source":"OECD","source_url":url,"source_series_id":"DF_FINMARK:IRSTCI","license_class":"PUBLIC_OFFICIAL","refresh_policy":"ON_RELEASE","active":True,"metadata":{"country_name":country,"connector":"oecd_sdmx","ingestion_status":"CONNECTED"},"updated_at":fetched.isoformat()})
+            row=latest.get(iso3)
+            if not row: errors.append(f"policy_rate:{iso3}:missing"); continue
+            period=str(row.get("TIME_PERIOD")); observations.append({"series_id":series_id,"country_code":iso3,"period_date":f"{period[:7]}-01","value_numeric":row.get("OBS_VALUE"),"unit":"%","frequency":"monthly","release_date":fetched.isoformat(),"available_at":fetched.isoformat(),"vintage_date":fetched.date().isoformat(),"revision_number":0,"is_forecast":False,"source":"OECD SDMX API","source_url":url,"source_payload_hash":digest,"quality_status":"PROVISIONAL","metadata":{"measure":"IRSTCI","country_name":country,"time_period":period}})
+    except Exception as exc: errors.append(f"oecd_policy_rates:{str(exc)[:140]}")
+    return _persist_official_run("OECD SDMX",registry,observations,errors)
+
 def source_status():
-    return [{"source":s,"status":"CONNECTED" if s=="World Bank" else "REGISTERED","collection":"LIVE_API" if s=="World Bank" else "AWAITING_VERIFIED_CONNECTOR"} for s in ("RBI","MoSPI","Ministry of Commerce","World Bank","IMF","BIS","OECD")]
+    return [
+        {"source":"World Bank","status":"CONNECTED","collection":"LIVE_API"},
+        {"source":"IMF","status":"CONNECTED","collection":"LIVE_API_WEO"},
+        {"source":"OECD","status":"CONNECTED","collection":"LIVE_SDMX"},
+        {"source":"MoSPI","status":"CONFIGURATION_REQUIRED","collection":"API_ACCESS_TOKEN_REQUIRED"},
+        {"source":"RBI","status":"MAPPING_REQUIRED","collection":"DBIE_ACCESS_PATH_REQUIRED"},
+        {"source":"BIS","status":"MAPPING_REQUIRED","collection":"SDMX_SERIES_KEYS_REQUIRED"},
+        {"source":"ILO","status":"MAPPING_REQUIRED","collection":"BULK_INDICATOR_KEYS_REQUIRED"},
+        {"source":"UNCTAD","status":"MAPPING_REQUIRED","collection":"DATASET_KEYS_REQUIRED"},
+        {"source":"Ministry of Commerce","status":"ADAPTER_REQUIRED","collection":"OFFICIAL_DOWNLOAD_NO_DOCUMENTED_API"},
+    ]
 
 def run_public_ingestion():
-    seeded=seed_registry(); wb=collect_world_bank(); g20=collect_world_bank_g20(); return {"ok":bool(seeded.get("ok") and wb.get("ok") and g20.get("ok")),"registry":seeded,"collectors":[wb,g20],"sources":source_status()}
+    seeded=seed_registry(); wb=collect_world_bank(); g20=collect_world_bank_g20(); imf=collect_imf_g20(); oecd=collect_oecd_policy_rates(); return {"ok":bool(seeded.get("ok") and wb.get("ok") and g20.get("ok") and imf.get("ok") and oecd.get("ok")),"registry":seeded,"collectors":[wb,g20,imf,oecd],"sources":source_status()}
