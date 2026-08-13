@@ -43,6 +43,35 @@ test('reports stale and orphaned engine runs instead of claiming readiness', asy
   }
 });
 
+test('loads enough rows for every latest engine run without false orphaning', async () => {
+  const runs = Object.keys({
+    cross_sectional_momentum_v1: 1,
+    volume_liquidity_anomaly_v1: 1,
+    intraday_mean_reversion_v1: 1,
+    derivatives_positioning_v1: 1,
+  }).map((engine, index) => ({ id: `run-${index}`, engine, as_of: '2026-08-13T07:20:00Z' }));
+  const signals = runs.flatMap((run) => Array.from({ length: 200 }, (_, index) => ({
+    id: `${run.id}-${index}`, run_id: run.id, symbol: `S${index}`,
+  })));
+  const urls = [];
+  const responses = [runs, signals, []];
+  const fetchImpl = async (url) => {
+    urls.push(url);
+    return { ok: true, json: async () => responses.shift() || [] };
+  };
+  const priorUrl = process.env.SUPABASE_URL; const priorKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  process.env.SUPABASE_URL = 'https://example.supabase.co'; process.env.SUPABASE_SERVICE_ROLE_KEY = 'test';
+  try {
+    const result = await getLiveAlphaWorkspace({ fetchImpl, now: new Date('2026-08-13T07:21:00Z') });
+    assert.equal(result.signals.length, 800);
+    assert.match(urls[1], /limit=1250/);
+    for (const run of runs) assert.equal(result.strategy_health[run.engine].status, 'ready');
+  } finally {
+    if (priorUrl === undefined) delete process.env.SUPABASE_URL; else process.env.SUPABASE_URL = priorUrl;
+    if (priorKey === undefined) delete process.env.SUPABASE_SERVICE_ROLE_KEY; else process.env.SUPABASE_SERVICE_ROLE_KEY = priorKey;
+  }
+});
+
 test('returns the latest Groww sector and equity research results', async () => {
   const responses = [[], [{ id: 'sector-run', strategy: 'agi_sector_rotation_v1', as_of: '2026-08-09T06:00:00Z' }, { id: 'equity-run', strategy: 'agi_equity_opportunity_v1', as_of: '2026-08-09T06:05:00Z' }], [{ sector: 'BANK', rank: 1, score: 88 }], [{ symbol: 'SBIN', signal: 'research_candidate', rank: 1, score: 84 }]];
   const fetchImpl = async () => ({ ok: true, json: async () => responses.shift() || [] });

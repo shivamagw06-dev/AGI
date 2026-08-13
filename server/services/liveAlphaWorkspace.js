@@ -38,17 +38,21 @@ export async function getLiveAlphaWorkspace({ fetchImpl = globalThis.fetch, limi
       readiness: { status: 'database_setup_required', migrations_required: ['20260809150000_live_alpha_engine.sql', '20260809160000_live_alpha_outcomes.sql', '20260809170000_upstox_live_market_feed.sql', '20260809180000_live_alpha_volume_baselines.sql', '20260809190000_live_alpha_strategy_classifications.sql'] },
     };
   }
-  const runIds = runs.map((run) => run.id);
+  const latestRunByEngine = new Map();
+  for (const run of runs) if (!latestRunByEngine.has(run.engine)) latestRunByEngine.set(run.engine, run);
+  // Load complete signal sets for the latest run of every engine. A single
+  // global cap lets the first large runs crowd later engines out of the
+  // workspace response, which falsely makes healthy runs look orphaned.
+  const runIds = [...latestRunByEngine.values()].map((run) => run.id);
+  const signalLimit = Math.min(2500, Math.max(1, limit) * Object.keys(ENGINE_LABELS).length);
   const signals = runIds.length ? await query(
     'live_alpha_signals',
-    `select=id,run_id,symbol,instrument_key,sector,rank,classification,alpha_z,signal_quality_score,signal_quality_label,empirical_confidence_score,comparable_observations,liquidity_ok,factor_values,direction,market_regime,price_at_signal,nifty_at_signal,sector_at_signal,volume_ratio,vwap_deviation,oi_change,created_at&run_id=in.(${runIds.join(',')})&order=created_at.desc&limit=${Math.min(500, Math.max(1, limit))}`,
+    `select=id,run_id,symbol,instrument_key,sector,rank,classification,alpha_z,signal_quality_score,signal_quality_label,empirical_confidence_score,comparable_observations,liquidity_ok,factor_values,direction,market_regime,price_at_signal,nifty_at_signal,sector_at_signal,volume_ratio,vwap_deviation,oi_change,created_at&run_id=in.(${runIds.join(',')})&order=created_at.desc&limit=${signalLimit}`,
     fetchImpl,
   ) : [];
   const runById = new Map(runs.map((run) => [run.id, run]));
   const signalCountByRun = new Map();
   for (const signal of signals) signalCountByRun.set(signal.run_id, (signalCountByRun.get(signal.run_id) || 0) + 1);
-  const latestRunByEngine = new Map();
-  for (const run of runs) if (!latestRunByEngine.has(run.engine)) latestRunByEngine.set(run.engine, run);
   const staleAfterSeconds = Math.max(300, Number(process.env.LIVE_ALPHA_STALE_AFTER_SECONDS || 15 * 60));
   const strategyHealth = Object.fromEntries(Object.keys(ENGINE_LABELS).map((engine) => {
     const run = latestRunByEngine.get(engine);
