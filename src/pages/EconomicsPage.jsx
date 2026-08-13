@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Activity,
   AlertTriangle,
@@ -16,6 +16,7 @@ import {
 import PageShell from '@/components/Layout/PageShell';
 import AskAgiBar from '@/components/Home/AskAgiBar';
 import DeskResearchFeed from '@/components/Research/DeskResearchFeed';
+import { getMieDataReadiness } from '@/lib/intelligenceApi';
 import './economicsPage.css';
 
 const OUTLOOK = [
@@ -59,7 +60,13 @@ function Direction({ type }) {
 }
 
 export default function EconomicsPage() {
+  const [readiness, setReadiness] = useState(null);
   useEffect(() => { document.title = 'India Economics Intelligence | AGI'; }, []);
+  useEffect(() => {
+    let active = true;
+    getMieDataReadiness('India').then((data) => { if (active) setReadiness(data); }).catch(() => {});
+    return () => { active = false; };
+  }, []);
 
   return <PageShell
     title="India Economics Intelligence"
@@ -127,6 +134,16 @@ export default function EconomicsPage() {
         </div>
         <div className="eco-methodology"><header className="eco-section-head"><div><span>Publication control</span><h2>Evidence-to-view methodology</h2></div></header>
           <ol><li><b>1</b><span>Read licensed macro, credit and risk evidence.</span></li><li><b>2</b><span>Separate public facts from provider-specific forecasts and scores.</span></li><li><b>3</b><span>Translate direction, interaction and portfolio relevance into AGI commentary.</span></li><li><b>4</b><span>Publish the interpretation with source date, confidence and limitations.</span></li></ol>
+        </div>
+      </section>
+
+      <section className="eco-band">
+        <header className="eco-section-head"><div><span>Public-data foundation</span><h2>G20 Core 50 readiness</h2></div><Status tone={readiness?.status === 'OPERATIONAL' ? 'stable' : 'forecast'}>{readiness?.status || 'DATA BUILDING'}</Status></header>
+        <div className="eco-readiness">
+          <div className="eco-readiness-total"><strong>{readiness?.observed ?? 0}<small> / {readiness?.total ?? 50}</small></strong><span>Persisted public series</span><i><em style={{ width: `${readiness?.coverage_percent || 0}%` }} /></i><p>{readiness?.policy || 'Only persisted public or official observations count toward readiness.'}</p></div>
+          <div className="eco-readiness-domains">{(readiness?.domains || [
+            { domain: 'growth', observed: 0, total: 6 }, { domain: 'inflation', observed: 0, total: 4 }, { domain: 'monetary', observed: 0, total: 5 }, { domain: 'external', observed: 0, total: 5 },
+          ]).map((row) => <div key={row.domain}><span>{row.domain}</span><b>{row.observed} / {row.total}</b></div>)}</div>
         </div>
       </section>
 

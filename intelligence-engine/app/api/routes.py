@@ -20451,6 +20451,14 @@ async def mie_health():
     return health()
 
 
+@router.get("/mie/data-readiness")
+async def mie_data_readiness(country: str = "India"):
+    """Read-only public macro Core 50 coverage. Never collects data on request."""
+    from macro_intelligence_engine.public_data import readiness
+
+    return readiness(country=country)
+
+
 @router.get("/mie/dashboard")
 async def mie_dashboard(country: str = "India"):
     try:
