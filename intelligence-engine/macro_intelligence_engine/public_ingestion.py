@@ -181,4 +181,28 @@ def source_status():
     ]
 
 def run_public_ingestion():
-    seeded=seed_registry(); wb=collect_world_bank(); g20=collect_world_bank_g20(); imf=collect_imf_g20(); oecd=collect_oecd_policy_rates(); return {"ok":bool(seeded.get("ok") and wb.get("ok") and g20.get("ok") and imf.get("ok") and oecd.get("ok")),"registry":seeded,"collectors":[wb,g20,imf,oecd],"sources":source_status()}
+    def run_stage(label, collector):
+        try:
+            return collector()
+        except Exception as exc:
+            return {
+                "ok": False,
+                "source": label,
+                "status": "FAILED",
+                "accepted": 0,
+                "errors": [f"{type(exc).__name__}: {str(exc)[:500]}"],
+            }
+
+    seeded = run_stage("Core 50 Registry", seed_registry)
+    collectors = [
+        run_stage("World Bank", collect_world_bank),
+        run_stage("World Bank G20", collect_world_bank_g20),
+        run_stage("IMF WEO DataMapper", collect_imf_g20),
+        run_stage("OECD SDMX", collect_oecd_policy_rates),
+    ]
+    return {
+        "ok": bool(seeded.get("ok") and all(item.get("ok") for item in collectors)),
+        "registry": seeded,
+        "collectors": collectors,
+        "sources": source_status(),
+    }
