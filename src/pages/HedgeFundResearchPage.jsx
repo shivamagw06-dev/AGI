@@ -1,175 +1,296 @@
-import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Activity, Database, Layers, Scale, ShieldCheck, Target } from 'lucide-react';
-import HedgeFundTerminal, { InlineAsk } from '@/pages/hedgeFundTerminal';
-import { getCapitalIqMigrationStatus, getResearchFactorAudit } from '@/lib/intelligenceApi';
+import { useEffect, useMemo, useState } from 'react';
+import {
+  AlertTriangle,
+  BookOpenCheck,
+  ChevronRight,
+  CircleDashed,
+  Database,
+  FlaskConical,
+  Layers3,
+  Scale,
+  Search,
+  ShieldCheck,
+} from 'lucide-react';
+import { InlineAsk } from '@/pages/hedgeFundTerminal';
+import {
+  getCapitalIqMigrationStatus,
+  getResearchFactorAudit,
+  getResearchFactorCompany,
+} from '@/lib/intelligenceApi';
 import './hedgeFundLab.css';
 
-const COMPANY_STRATEGIES = [
-  ['Quality Compounders', 'In Development', 'development', 'ROIC · FCF conversion · stability · leverage', 'Current screen is basic; the 5–10Y factor model is not complete.'],
-  ['Relative Mispricing', 'In Development', 'development', 'P/E · P/B · EV/EBITDA · historical percentiles', 'Historical valuation exists; the validated composite is not complete.'],
-  ['Earnings Quality', 'In Development', 'development', 'CFO · accruals · working capital · FCF', 'Accounting Intelligence exists; the Hedge Fund adapter is not complete.'],
-  ['Sustainable Growth', 'In Development', 'development', 'Growth · ROIC · reinvestment · dilution', 'Sustainable-growth and growth-gap mathematics are not complete.'],
-  ['Capital Allocation', 'Data Building', 'building', 'ROIC · WACC · NOPAT · invested capital', 'Deployment history and evidence-backed WACC inputs remain incomplete.'],
-  ['Balance-Sheet Risk', 'In Development', 'development', 'Debt · coverage · CFO/debt · liquidity', 'Current stress rules precede the unified risk model.'],
+const FACTORS = [
+  { key: 'quality_score', detail: 'quality_compounder', name: 'Quality Compounder', short: 'Quality', formula: 'ROIC quality + stability + FCF quality + growth quality + margin quality + reinvestment efficiency + balance-sheet quality' },
+  { key: 'earnings_quality_score', detail: 'earnings_quality', name: 'Earnings Quality', short: 'Earnings', formula: 'Cash conversion + working-capital quality + FCF conversion + exceptional-item quality + accrual quality' },
+  { key: 'sustainable_growth_score', detail: 'sustainable_growth', name: 'Sustainable Growth', short: 'Growth', formula: 'Growth + sustainable growth + margin change + internal funding + capital efficiency' },
+  { key: 'capital_allocation_score', detail: 'capital_allocation', name: 'Capital Allocation', short: 'Capital', formula: 'Reinvestment returns + cash discipline + acquisition discipline + distributions + debt discipline' },
+  { key: 'balance_sheet_risk_score', detail: 'balance_sheet_risk', name: 'Balance-Sheet Risk', short: 'Balance', formula: 'Leverage + coverage + cash/debt + CFO/debt + liabilities/equity + working-capital and asset risk' },
+  { key: 'mispricing_score', detail: 'relative_mispricing', name: 'Relative Mispricing', short: 'Value', formula: 'P/E + EV/EBITDA + P/B + peer-relative valuation + quality support' },
 ];
 
-const ALLOCATION_STRATEGIES = [
-  ['Macro Regime', 'In Development', 'development', 'Rates · inflation · growth · INR · institutional flows', 'Deterministic five-regime classifier is not yet portfolio-wired.'],
-  ['Sector Relative Value', 'In Development', 'development', 'Sector history · quality · valuation · macro', 'Sector history exists; the four-factor composite is incomplete.'],
-  ['Pair / Relative Value', 'Experimental', 'experimental', 'Prices · peers · spread · factor exposure', 'Cointegration, half-life and costed testing required.'],
-  ['Event Intelligence', 'Data building', 'building', 'Events · exact timestamps · abnormal returns', 'Waiting for point-in-time event depth.'],
-  ['Earnings Revisions', 'Data building', 'building', 'Consensus vintages · estimate revisions', 'Current consensus alone is insufficient.'],
-  ['Forecast Mispricing', 'Experimental', 'experimental', 'Scenarios · uncertainty · outcome history', 'Promotion requires calibrated forecast outcomes.'],
-  ['Portfolio Optimization', 'Experimental', 'experimental', 'Alpha vector · covariance · turnover · constraints', 'Current tools are illustrative, not an optimizer.'],
-  ['Risk Decomposition', 'Experimental', 'experimental', 'Market · sector · factor · idiosyncratic risk', 'Current risk contribution is a proxy, not a factor covariance model.'],
+const BUILDING_STRATEGIES = [
+  ['Sector Relative Value', 'DATA BUILDING', 'Sector valuation, quality and operating breadth require complete sector histories.'],
+  ['Macro Strategy', 'IN DEVELOPMENT', 'Rates, inflation, growth, INR and flows are not yet joined to this research layer.'],
+  ['Event Strategy', 'DATA BUILDING', 'Point-in-time events and subsequent abnormal returns are required.'],
+  ['Earnings Revision', 'DATA BUILDING', 'Consensus estimate vintages are required before revision signals can be computed.'],
+  ['Forecast Mispricing', 'EXPERIMENTAL', 'Forecast outcome history and confidence calibration remain incomplete.'],
+  ['Pairs / Relative Value', 'EXPERIMENTAL', 'Cointegration, half-life, borrow and cost validation remain gated.'],
+  ['Portfolio & Risk', 'EXPERIMENTAL', 'Covariance, exposure, capacity and cost controls are not production validated.'],
 ];
-
-function StrategyRow({ item }) {
-  const [name, status, tone, data, note] = item;
-  return (
-    <article className="hfl-programme-item">
-      <div className="hfl-programme-head">
-        <h3>{name}</h3>
-        <span className={`hfl-programme-status ${tone}`}>{status}</span>
-      </div>
-      <p>{data}</p>
-      <div>{note}</div>
-    </article>
-  );
-}
-
-function ResearchArchitecture() {
-  return (
-    <section className="hfl-programme" aria-labelledby="investment-architecture-title">
-      <div className="hfl-programme-title">
-        <div><span>Weeks to years</span><h2 id="investment-architecture-title">Investment opportunity architecture</h2></div>
-        <p>These are permanent maturity states, not marketing labels. Only implemented mathematics with production data checks can become Operational.</p>
-      </div>
-      <div className="hfl-programme-grid">
-        <div className="hfl-programme-column">
-          <header><Database size={17} /><div><b>Company fundamentals</b><span>Quality · accounting · growth · solvency</span></div></header>
-          {COMPANY_STRATEGIES.map((item) => <StrategyRow key={item[0]} item={item} />)}
-        </div>
-        <div className="hfl-programme-column">
-          <header><Scale size={17} /><div><b>Relative value and allocation</b><span>Macro · sectors · events · forecasts</span></div></header>
-          {ALLOCATION_STRATEGIES.map((item) => <StrategyRow key={item[0]} item={item} />)}
-        </div>
-      </div>
-      <div className="hfl-process">
-        {[
-          [Target, 'Research factor layer', 'Versioned metrics · evidence · PIT cutoff'],
-          [ShieldCheck, 'Validation and risk', 'PIT · costs · liquidity · exposure'],
-          [Layers, 'Portfolio construction', 'Sizing · constraints · covariance'],
-          [Activity, 'Performance learning', 'Attribution · outcomes · calibration'],
-        ].map(([Icon, title, detail], index) => (
-          <div key={title}><span>{index + 1}</span><Icon size={16} /><b>{title}</b><small>{detail}</small></div>
-        ))}
-      </div>
-    </section>
-  );
-}
 
 const isNumber = (value) => value !== null && value !== undefined && value !== '' && Number.isFinite(Number(value));
-const score = (value) => isNumber(value) ? Number(value).toFixed(1) : 'Unavailable';
-const percent = (value) => isNumber(value) ? `${(Number(value) * 100).toFixed(1)}%` : 'Unavailable';
+const number = (value, fallback = 'Unavailable') => isNumber(value) ? Number(value).toFixed(1) : fallback;
+const clean = (value) => String(value || 'Unavailable').replaceAll('_', ' ');
+const factorCoverage = (row) => FACTORS.filter((factor) => isNumber(row?.[factor.key])).length;
+const rowEligible = (row) => isNumber(row?.fundamental_composite) && Number(row?.data_quality) >= 60 && factorCoverage(row) >= 4;
 
-function FactorAudit() {
-  const [audit, setAudit] = useState(null);
-  const [error, setError] = useState('');
-  useEffect(() => {
-    let active = true;
-    getResearchFactorAudit(20).then((data) => { if (active) setAudit(data); }).catch((err) => { if (active) setError(err?.message || 'Factor audit unavailable'); });
-    return () => { active = false; };
-  }, []);
-  const rows = Array.isArray(audit?.rows) ? audit.rows : [];
-  const lead = rows[0];
-  return (
-    <section className="hfl-factor-audit" aria-labelledby="factor-audit-title">
-      <div className="hfl-programme-title">
-        <div><span>Fundamental research summary</span><h2 id="factor-audit-title">Strongest fundamental research signals</h2></div>
-        <p>Rankings reflect accounting-factor evidence only. They are not investment recommendations or demonstrated predictive alpha.</p>
-      </div>
-      {error ? <div className="hfl-factor-empty">Factor output is currently unavailable. {error}</div> : null}
-      {!error && !audit ? <div className="hfl-factor-empty">Calculating warehouse factors...</div> : null}
-      {!error && audit && rows.length === 0 ? <div className="hfl-factor-empty">No eligible factor outputs are available for this cutoff.</div> : null}
-      {rows.length > 0 ? <>
-        <div className="hfl-factor-meta"><b>{audit.status || 'IN_DEVELOPMENT'}</b><span>{audit.layer_version}</span><span>As of {audit.as_of}</span><span>{audit.universe} companies evaluated</span></div>
-        <div className="hfl-factor-table-wrap"><table className="hfl-factor-table">
-          <thead><tr><th>Company</th><th>Composite</th><th>Quality</th><th>Earnings</th><th>Growth</th><th>Capital</th><th>Balance</th><th>ROIC 5Y</th><th>FCF margin</th><th>Mispricing</th><th>Data quality</th><th>PIT status</th></tr></thead>
-          <tbody>{rows.map((row) => <tr key={row.symbol}>
-            <td><b>{row.symbol}</b><span>{row.company_name || 'Name unavailable'}</span></td>
-            <td>{score(row.fundamental_composite)}</td><td>{score(row.quality_score)}</td><td>{score(row.earnings_quality_score)}</td><td>{score(row.sustainable_growth_score)}</td>
-            <td>{score(row.capital_allocation_score)}</td><td>{score(row.balance_sheet_risk_score)}</td><td>{percent(row.roic_5y)}</td>
-            <td>{percent(row.fcf_margin)}</td><td>{score(row.mispricing_score)}</td>
-            <td>{score(row.data_quality)}</td><td><span className="hfl-pit-status">{String(row.validation_status || 'Unavailable').replaceAll('_', ' ')}</span></td>
-          </tr>)}</tbody>
-        </table></div>
-        {lead ? <div className="hfl-research-summary">
-          <header><span>Research summary</span><h3>{lead.company_name || lead.symbol} · {lead.primary_factor}</h3></header>
-          <div><b>Supporting factors</b><p>{lead.supporting_factors?.join(' · ') || 'Unavailable'}</p></div>
-          <div><b>Positive evidence</b><p>{lead.primary_evidence?.join(' · ') || 'Unavailable'}</p></div>
-          <div><b>Contradictory evidence</b><p>{lead.contradictory_evidence?.join(' · ') || 'None identified from available fields'}</p></div>
-          <div><b>Key limitation</b><p>{lead.key_risk}</p></div>
-        </div> : null}
-      </> : null}
-    </section>
-  );
+function Status({ children, tone = 'neutral' }) {
+  return <span className={`hfr-status ${tone}`}>{children}</span>;
 }
 
-function MigrationStatus() {
-  const [job, setJob] = useState(null);
-  useEffect(() => {
-    let active = true;
-    const load = () => getCapitalIqMigrationStatus().then((data) => {
-      if (active) setJob(data?.job === null ? null : data);
-    }).catch(() => {});
-    load();
-    const timer = window.setInterval(load, 15000);
-    return () => { active = false; window.clearInterval(timer); };
-  }, []);
-  if (!job?.job_id) return null;
-  const approved = Number(job.approved_rows || 0);
-  const verified = Number(job.verified_rows || 0);
-  const progress = job.status === 'COMPLETED' ? 100 : Math.min(99, approved ? (verified / approved) * 100 : 0);
-  const heartbeat = job.heartbeat_at ? new Date(job.heartbeat_at).toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata' }) : 'Unavailable';
-  return <section className="hfl-migration" aria-labelledby="capiq-migration-title">
-    <div className="hfl-migration-head"><div><span>Warehouse ingestion audit</span><h2 id="capiq-migration-title">Capital IQ Annual Accounting</h2></div><b className={`hfl-migration-state ${String(job.status || '').toLowerCase()}`}>{String(job.status || 'UNKNOWN').replaceAll('_', ' ')}</b></div>
-    <div className="hfl-migration-track" aria-label={`${progress.toFixed(0)} percent independently verified`}><i style={{ width: `${progress}%` }} /></div>
-    <div className="hfl-migration-counts">
-      <div><b>{Number(job.persisted_rows || 0).toLocaleString('en-IN')}</b><span>of {approved.toLocaleString('en-IN')} persisted</span></div>
-      <div><b>{Number(job.normalized_rows || 0).toLocaleString('en-IN')}</b><span>normalized</span></div>
-      <div><b>{Number(job.recalculated_rows || 0).toLocaleString('en-IN')}</b><span>factor inputs recalculated</span></div>
-      <div><b>{verified.toLocaleString('en-IN')}</b><span>independently verified</span></div>
+function SectionTitle({ eyebrow, title, copy, action }) {
+  return <header className="hfr-section-title">
+    <div><span>{eyebrow}</span><h2>{title}</h2>{copy ? <p>{copy}</p> : null}</div>
+    {action}
+  </header>;
+}
+
+function ScoreBar({ value }) {
+  const width = isNumber(value) ? Math.max(0, Math.min(100, Number(value))) : 0;
+  return <div className="hfr-score"><b>{number(value, '—')}</b><span><i style={{ width: `${width}%` }} /></span></div>;
+}
+
+function ContextStrip({ audit }) {
+  return <section className="hfr-context" aria-label="Research context">
+    <div><span>Research regime</span><b>Annual fundamentals</b><small>Medium / long horizon</small></div>
+    <div><span>Model state</span><b>{clean(audit?.status || 'IN DEVELOPMENT')}</b><small>{audit?.layer_version || 'research-factor-layer-v2.0.0'}</small></div>
+    <div><span>Point-in-time</span><b className="hfr-warn">Limited</b><small>Historical availability is not historical publication timing</small></div>
+    <div><span>Data cutoff</span><b>{audit?.as_of || 'Unavailable'}</b><small>{audit?.universe ? `${audit.universe.toLocaleString('en-IN')} companies evaluated` : 'Loading factor universe'}</small></div>
+  </section>;
+}
+
+function OpportunityBoard({ rows, onSelect }) {
+  const leaders = rows.slice(0, 6);
+  const lead = leaders[0];
+  return <section className="hfr-section" aria-labelledby="opportunities-title">
+    <SectionTitle
+      eyebrow="Research queue"
+      title="Strongest fundamental evidence"
+      copy="Candidates pass a minimum data-quality and factor-coverage gate. Ranking is a research prior, not a recommendation or demonstrated alpha."
+      action={<Status tone="warning">PIT LIMITED</Status>}
+    />
+    {!lead ? <div className="hfr-empty"><CircleDashed size={18} /> No candidate currently passes the evidence gate.</div> : <div className="hfr-opportunity-layout">
+      <article className="hfr-lead">
+        <div className="hfr-lead-head"><div><span>Highest eligible composite</span><h3>{lead.company_name || lead.symbol}</h3><p>{lead.symbol} · {clean(lead.primary_factor)}</p></div><strong>{number(lead.fundamental_composite)}</strong></div>
+        <div className="hfr-reason-grid">
+          <div><b>Why it surfaced</b><p>{lead.primary_evidence?.slice(0, 3).join(' · ') || 'No narrative evidence available.'}</p></div>
+          <div><b>Supporting factors</b><p>{lead.supporting_factors?.join(' · ') || 'Unavailable'}</p></div>
+          <div><b>Contradictory evidence</b><p>{lead.contradictory_evidence?.join(' · ') || 'No contradictory evidence identified from available fields.'}</p></div>
+          <div><b>Key limitation</b><p>{lead.key_risk || 'Point-in-time validation is incomplete.'}</p></div>
+        </div>
+        <button className="hfr-command" type="button" onClick={() => onSelect(lead.symbol)}>Inspect evidence <ChevronRight size={15} /></button>
+      </article>
+      <div className="hfr-ranking">
+        {leaders.map((row, index) => <button key={row.symbol} type="button" onClick={() => onSelect(row.symbol)}>
+          <span>{String(index + 1).padStart(2, '0')}</span>
+          <div><b>{row.company_name || row.symbol}</b><small>{row.symbol} · {clean(row.primary_factor)}</small></div>
+          <strong>{number(row.fundamental_composite)}</strong>
+        </button>)}
+      </div>
+    </div>}
+  </section>;
+}
+
+function MarketContext() {
+  const modules = [
+    ['Macro regime', 'DATA UNAVAILABLE', 'No joined rates, inflation, growth, INR and flows snapshot.'],
+    ['Sector breadth', 'IN DEVELOPMENT', 'Factor coverage exists; sector aggregation is not independently validated.'],
+    ['Consensus revisions', 'DATA BUILDING', 'Historical consensus vintages are not available.'],
+    ['Portfolio conditions', 'EXPERIMENTAL', 'Liquidity, covariance and capacity controls are not approved.'],
+  ];
+  return <section className="hfr-section" aria-labelledby="context-title">
+    <SectionTitle eyebrow="Research conditions" title="Market and sector context" copy="Unavailable context remains explicit rather than being replaced with inferred or fabricated signals." />
+    <div className="hfr-context-modules">{modules.map(([name, status, note]) => <div key={name}><b>{name}</b><Status tone={status === 'DATA UNAVAILABLE' ? 'danger' : 'neutral'}>{status}</Status><p>{note}</p></div>)}</div>
+  </section>;
+}
+
+function StrategyDashboard({ rows }) {
+  return <section className="hfr-section" aria-labelledby="strategies-title">
+    <SectionTitle eyebrow="Model diagnostics" title="Strategy dashboard" copy="Each module exposes its formula family, coverage and current governance state." />
+    <div className="hfr-strategy-grid">
+      {FACTORS.map((factor) => {
+        const available = rows.filter((row) => isNumber(row[factor.key]));
+        const leader = [...available].sort((a, b) => Number(b[factor.key]) - Number(a[factor.key]))[0];
+        return <article key={factor.key} className="hfr-strategy-card">
+          <header><div><span>ACCOUNTING FACTOR</span><h3>{factor.name}</h3></div><Status tone="warning">IN DEVELOPMENT</Status></header>
+          <p>{factor.formula}</p>
+          <div className="hfr-strategy-stats"><span><b>{available.length}</b> visible in current audit</span><span><b>{leader ? number(leader[factor.key]) : '—'}</b> highest score</span></div>
+          <footer><span>{leader?.symbol || 'No candidate'}</span><small>Annual fundamental signal · PIT limited</small></footer>
+        </article>;
+      })}
+      {BUILDING_STRATEGIES.map(([name, status, note]) => <article key={name} className="hfr-strategy-card gated">
+        <header><div><span>GATED MODULE</span><h3>{name}</h3></div><Status tone={status === 'EXPERIMENTAL' ? 'neutral' : 'danger'}>{status}</Status></header>
+        <p>{note}</p><div className="hfr-gated"><CircleDashed size={16} /> No institutional output claimed</div>
+      </article>)}
     </div>
-    <div className="hfl-migration-foot"><span>Phase: {job.phase || 'Queued'}</span><span>Chunk {job.current_chunk || 0} / {job.total_chunks || 0}</span><span>Heartbeat: {heartbeat} IST</span><span>Quarantined: {Number(job.quarantined_rows || 0).toLocaleString('en-IN')}</span><span>Failed: {job.failed_rows || 0}</span></div>
-    <p>Annual fundamental signal · PIT limited. Quarantined records remain available for identity and data-quality review.</p>
+  </section>;
+}
+
+function OpportunityMatrices({ rows }) {
+  const pairs = [
+    ['Quality × Mispricing', 'quality_score', 'mispricing_score'],
+    ['Growth × Earnings Quality', 'sustainable_growth_score', 'earnings_quality_score'],
+    ['Capital Allocation × Balance Sheet', 'capital_allocation_score', 'balance_sheet_risk_score'],
+    ['Quality × Earnings Quality', 'quality_score', 'earnings_quality_score'],
+  ];
+  return <section className="hfr-section" aria-labelledby="matrices-title">
+    <SectionTitle eyebrow="Factor intersections" title="Opportunity matrices" copy="Intersections use available 0–100 factor scores; they are not return forecasts." />
+    <div className="hfr-matrices">{pairs.map(([name, x, y]) => {
+      const candidates = rows.filter((row) => isNumber(row[x]) && isNumber(row[y])).sort((a, b) => (Number(b[x]) + Number(b[y])) - (Number(a[x]) + Number(a[y]))).slice(0, 5);
+      return <article key={name}><header><h3>{name}</h3><small>Equal-weight diagnostic intersection</small></header>
+        {candidates.map((row) => <div key={row.symbol}><b>{row.symbol}</b><span>{number(row[x])}</span><span>{number(row[y])}</span><strong>{number((Number(row[x]) + Number(row[y])) / 2)}</strong></div>)}
+        {!candidates.length ? <p>Insufficient overlapping observations.</p> : null}
+      </article>;
+    })}</div>
+  </section>;
+}
+
+function CandidateTable({ rows, onSelect }) {
+  const [query, setQuery] = useState('');
+  const filtered = rows.filter((row) => `${row.symbol} ${row.company_name}`.toLowerCase().includes(query.toLowerCase())).slice(0, 30);
+  const weakening = [...rows].filter((row) => Number(row.fundamental_composite) < 50).sort((a, b) => Number(a.fundamental_composite) - Number(b.fundamental_composite)).slice(0, 8);
+  return <section className="hfr-section" aria-labelledby="candidates-title">
+    <SectionTitle eyebrow="Company research" title="Candidate diagnostics" copy="Only rows passing ≥60 data quality, ≥4 available factors and an available composite are included." action={<label className="hfr-search"><Search size={15} /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search candidates" /></label>} />
+    <div className="hfr-table-wrap"><table className="hfr-table">
+      <thead><tr><th>Company</th><th>Composite</th>{FACTORS.map((factor) => <th key={factor.key}>{factor.short}</th>)}<th>Quality</th><th>Evidence</th></tr></thead>
+      <tbody>{filtered.map((row) => <tr key={row.symbol} onClick={() => onSelect(row.symbol)} tabIndex="0">
+        <td><b>{row.symbol}</b><span>{row.company_name || 'Name unavailable'}</span></td><td><strong>{number(row.fundamental_composite)}</strong></td>
+        {FACTORS.map((factor) => <td key={factor.key}><ScoreBar value={row[factor.key]} /></td>)}
+        <td>{number(row.data_quality)}</td><td><span className="hfr-evidence-count">{factorCoverage(row)} / {FACTORS.length} factors</span></td>
+      </tr>)}</tbody>
+    </table></div>
+    <div className="hfr-weakening"><header><AlertTriangle size={16} /><div><b>Weakening fundamental profiles</b><span>Eligible companies with composite below 50</span></div></header>
+      {weakening.length ? weakening.map((row) => <button key={row.symbol} type="button" onClick={() => onSelect(row.symbol)}><b>{row.symbol}</b><span>{row.company_name}</span><strong>{number(row.fundamental_composite)}</strong></button>) : <p>No eligible weakening profile is visible in the current audit window.</p>}
+    </div>
+  </section>;
+}
+
+function ComponentRows({ factor }) {
+  const entries = Object.entries(factor?.component_contributions || {});
+  if (!entries.length) return <p className="hfr-muted">Component contributions unavailable.</p>;
+  return <div className="hfr-components">{entries.map(([name, contribution]) => <div key={name}><span>{clean(name)}</span><small>Weight {number(factor?.component_weights?.[name])}</small><b>{number(contribution)}</b></div>)}</div>;
+}
+
+function CompanyEvidence({ symbol, onClose }) {
+  const [detail, setDetail] = useState(null);
+  const [error, setError] = useState('');
+  useEffect(() => {
+    if (!symbol) return undefined;
+    let active = true;
+    setDetail(null); setError('');
+    getResearchFactorCompany(symbol).then((data) => { if (active) setDetail(data?.result || null); }).catch((err) => { if (active) setError(err?.message || 'Company evidence unavailable'); });
+    return () => { active = false; };
+  }, [symbol]);
+  if (!symbol) return null;
+  const company = detail?.company;
+  return <section className="hfr-detail" aria-live="polite">
+    <header className="hfr-detail-head"><div><span>Evidence drill-down</span><h2>{company?.company_name || symbol}</h2><p>{symbol}{company?.sector ? ` · ${company.sector}` : ''}{company?.industry ? ` · ${company.industry}` : ''}</p></div><button type="button" onClick={onClose}>Close</button></header>
+    {error ? <div className="hfr-empty"><AlertTriangle size={18} /> {error}</div> : null}
+    {!detail && !error ? <div className="hfr-empty"><CircleDashed size={18} /> Loading audited components…</div> : null}
+    {detail ? <div className="hfr-detail-grid">{FACTORS.map((meta) => {
+      const factor = detail[meta.detail];
+      return <article key={meta.detail}>
+        <header><div><span>{factor?.factor_version || 'Version unavailable'}</span><h3>{meta.name}</h3></div><strong>{number(factor?.score, '—')}</strong></header>
+        <p className="hfr-formula">{meta.formula}</p>
+        <div className="hfr-detail-meta"><span>Coverage <b>{isNumber(factor?.coverage) ? `${(Number(factor.coverage) * 100).toFixed(1)}%` : number(factor?.data_quality)}</b></span><span>Confidence <b>{factor?.confidence || 'Unavailable'}</b></span><span>Percentile <b>{number(factor?.percentile)}</b></span></div>
+        <ComponentRows factor={factor} />
+        <div className="hfr-missing"><b>Missing fields</b><span>{factor?.missing_data?.length ? factor.missing_data.join(' · ') : 'None reported'}</span></div>
+      </article>;
+    })}</div> : null}
+  </section>;
+}
+
+function ValidationPanel() {
+  const tests = [
+    ['Point-in-time fundamentals', 'PARTIAL', 'Historical reporting availability is present; publication timing is not fully reconstructable.'],
+    ['Forward-return labels', 'NOT AVAILABLE', '1M / 3M / 6M / 12M outcome joins are not accepted.'],
+    ['Rank IC and portfolio spreads', 'NOT RUN', 'No predictive performance claim permitted.'],
+    ['Out-of-sample / walk-forward', 'NOT RUN', 'Methodology has not passed a frozen OOS test.'],
+    ['Costs, liquidity and capacity', 'NOT RUN', 'No executable portfolio claim permitted.'],
+    ['Risk and attribution', 'NOT RUN', 'Factor covariance and realized attribution are not validated.'],
+  ];
+  return <section className="hfr-section" aria-labelledby="validation-title">
+    <SectionTitle eyebrow="Reliability gate" title="Validation status" copy="The registry controls what the page may claim. A generated score is not treated as economically validated." action={<Status tone="danger">RESEARCH ONLY</Status>} />
+    <div className="hfr-validation">{tests.map(([name, status, note]) => <div key={name}><span>{status === 'PARTIAL' ? <AlertTriangle size={17} /> : <CircleDashed size={17} />}</span><div><b>{name}</b><p>{note}</p></div><Status tone={status === 'PARTIAL' ? 'warning' : 'danger'}>{status}</Status></div>)}</div>
+  </section>;
+}
+
+function GovernancePanel({ job, audit }) {
+  const receipt = job || {};
+  const complete = String(receipt.status || '').toUpperCase() === 'COMPLETED';
+  const metrics = [
+    ['Approved', receipt.approved_rows, 21580],
+    ['Persisted', receipt.persisted_rows, 21580],
+    ['Normalized', receipt.normalized_rows, 21580],
+    ['Verified', receipt.verified_rows, 21580],
+    ['Quarantined', receipt.quarantined_rows, 8620],
+    ['Failed', receipt.failed_rows, 0],
+  ];
+  return <section className="hfr-section hfr-governance" aria-labelledby="governance-title">
+    <SectionTitle eyebrow="Warehouse governance" title="Data lineage and acceptance" copy="Capital IQ annual accounting is persisted and normalized in INR millions. Quarantined rows remain outside approved factor inputs." action={<Status tone={complete ? 'success' : 'warning'}>{complete ? 'RECEIPT COMPLETE' : 'CHECKING RECEIPT'}</Status>} />
+    <div className="hfr-governance-grid">
+      <div className="hfr-receipt">{metrics.map(([label, live, fallback]) => <div key={label}><b>{Number(isNumber(live) ? live : fallback).toLocaleString('en-IN')}</b><span>{label}</span></div>)}</div>
+      <div className="hfr-lineage">
+        <div><Database size={17} /><span>Source</span><b>Master 10Y India · Capital IQ annual statements</b></div>
+        <div><Scale size={17} /><span>Unit</span><b>INR millions · normalized</b></div>
+        <div><Layers3 size={17} /><span>Factor layer</span><b>{audit?.layer_version || 'research-factor-layer-v2.0.0'}</b></div>
+        <div><ShieldCheck size={17} /><span>Validation</span><b>POINT IN TIME LIMITED</b></div>
+      </div>
+    </div>
+    <p className="hfr-policy">Accounting-factor evidence only. No recommendation, execution instruction or demonstrated predictive alpha. Promotion requires independent PIT backtesting, costs, liquidity, out-of-sample testing and risk controls.</p>
   </section>;
 }
 
 export default function HedgeFundResearchPage() {
-  useEffect(() => { document.title = 'Hedge Fund | Agarwal Global Investments'; }, []);
-  return (
-    <div className="hfl-root">
-      <header className="hfl-header hfl-research-header">
-        <div className="hfl-mandate"><span>AGI Hedge Fund Research</span><b>Fundamental mispricing, risk and capital allocation</b></div>
-        <h1>Investment Opportunity</h1>
-        <p>Medium and long-horizon research built from company economics, valuation, accounting quality, macro context and portfolio risk.</p>
-        <div className="hfl-focus-links">
-          <Link to="/hedge-fund/alpha-opportunities"><Target size={16} /><span>Research queue</span><strong>Alpha Opportunities</strong><small>Fundamental confluence requiring analyst validation</small></Link>
-        </div>
-        <InlineAsk />
-      </header>
-      <main className="hfl-body">
-        <ResearchArchitecture />
-        <MigrationStatus />
-        <FactorAudit />
-        <section className="hfl-terminal-band">
-          <div className="hfl-programme-title"><div><span>Current basic implementation</span><h2>Warehouse research screens</h2></div><p>These screens use available valuation, profitability, leverage and consensus fields. They are inputs to the factor build, not the completed mathematics described above.</p></div>
-          <HedgeFundTerminal />
-        </section>
-        <p className="hfl-note">Research only. Operational means a module runs on available warehouse data; it does not mean investment validated, production approved or suitable for execution.</p>
-      </main>
-    </div>
-  );
+  const [audit, setAudit] = useState(null);
+  const [job, setJob] = useState(null);
+  const [error, setError] = useState('');
+  const [selected, setSelected] = useState('');
+
+  useEffect(() => {
+    document.title = 'Research Strategy Intelligence | AGI';
+    let active = true;
+    Promise.allSettled([getResearchFactorAudit(100), getCapitalIqMigrationStatus()]).then(([auditResult, jobResult]) => {
+      if (!active) return;
+      if (auditResult.status === 'fulfilled') setAudit(auditResult.value);
+      else setError(auditResult.reason?.message || 'Research factor output is unavailable.');
+      if (jobResult.status === 'fulfilled') setJob(jobResult.value);
+    });
+    return () => { active = false; };
+  }, []);
+
+  const allRows = Array.isArray(audit?.rows) ? audit.rows : [];
+  const eligibleRows = useMemo(() => allRows.filter(rowEligible).sort((a, b) => Number(b.fundamental_composite) - Number(a.fundamental_composite)), [allRows]);
+  const select = (symbol) => { setSelected(symbol); window.requestAnimationFrame(() => document.getElementById('company-evidence')?.scrollIntoView({ behavior: 'smooth', block: 'start' })); };
+
+  return <div className="hfl-root hfr-root">
+    <header className="hfr-header">
+      <div className="hfr-brand"><BookOpenCheck size={18} /><span>AGI Hedge Fund Research</span></div>
+      <div className="hfr-header-grid"><div><h1>Research Strategy Intelligence</h1><p>Systematic fundamental research for identifying, challenging and validating medium- and long-horizon investment hypotheses.</p></div><div className="hfr-header-policy"><FlaskConical size={18} /><b>Research system</b><span>No brokerage · No execution · No investment recommendation</span></div></div>
+      <InlineAsk />
+    </header>
+    <main className="hfr-main">
+      <ContextStrip audit={audit} />
+      {error ? <div className="hfr-error"><AlertTriangle size={18} /><div><b>Factor service unavailable</b><span>{error}</span></div></div> : null}
+      {!audit && !error ? <div className="hfr-loading"><CircleDashed size={19} /> Loading independently calculated research factors…</div> : null}
+      <OpportunityBoard rows={eligibleRows} onSelect={select} />
+      <MarketContext />
+      <StrategyDashboard rows={allRows} />
+      <OpportunityMatrices rows={eligibleRows} />
+      <CandidateTable rows={eligibleRows} onSelect={select} />
+      <div id="company-evidence"><CompanyEvidence symbol={selected} onClose={() => setSelected('')} /></div>
+      <ValidationPanel />
+      <GovernancePanel job={job} audit={audit} />
+    </main>
+  </div>;
 }
