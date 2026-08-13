@@ -158,31 +158,29 @@ def collect_imf_g20():
     return _persist_official_run("IMF WEO DataMapper",registry,observations,errors)
 
 def collect_oecd_policy_rates():
-    url="https://sdmx.oecd.org/public/rest/data/OECD.SDD.STES,DSD_STES@DF_FINMARK/all?startPeriod=2000-01&dimensionAtObservation=AllDimensions&format=csvfile"
     registry=[]; observations=[]; errors=[]; fetched=_now()
-    try:
-        req=urllib.request.Request(url,headers={"User-Agent":"AGI-Macro-Intelligence/1.0"})
-        with urllib.request.urlopen(req,timeout=45) as response: raw=response.read()
-        rows=csv.DictReader(io.StringIO(raw.decode("utf-8-sig"))); history={iso3: [] for iso3 in G20_COUNTRIES}
-        for row in rows:
-            iso3=str(row.get("REF_AREA") or "").upper()
-            if iso3 not in G20_COUNTRIES or row.get("MEASURE")!="IRSTCI" or not row.get("OBS_VALUE"): continue
-            history[iso3].append(row)
-        digest=hashlib.sha256(raw).hexdigest()
-        for iso3,country in G20_COUNTRIES.items():
-            series_id=f"oecd_{iso3.lower()}_policy_rate"; registry.append({"series_id":series_id,"country_code":iso3,"domain":"monetary","label":"Policy Rate","unit":"%","frequency":"monthly","primary_source":"OECD","source_url":url,"source_series_id":"DF_FINMARK:IRSTCI","license_class":"PUBLIC_OFFICIAL","refresh_policy":"ON_RELEASE","active":True,"metadata":{"country_name":country,"connector":"oecd_sdmx","ingestion_status":"CONNECTED"},"updated_at":fetched.isoformat()})
-            rows_for_country=history.get(iso3) or []
-            if not rows_for_country: errors.append(f"policy_rate:{iso3}:missing"); continue
-            for row in rows_for_country:
-                period=str(row.get("TIME_PERIOD"))
-                observations.append({"series_id":series_id,"country_code":iso3,"period_date":f"{period[:7]}-01","value_numeric":row.get("OBS_VALUE"),"unit":"%","frequency":"monthly","release_date":fetched.isoformat(),"available_at":fetched.isoformat(),"vintage_date":fetched.date().isoformat(),"revision_number":0,"is_forecast":False,"source":"OECD SDMX API","source_url":url,"source_payload_hash":digest,"quality_status":"PROVISIONAL","metadata":{"measure":"IRSTCI","country_name":country,"time_period":period,"pit_status":"FETCH_VINTAGE_ONLY","source_tier":"C"}})
-    except Exception as exc: errors.append(f"oecd_policy_rates:{str(exc)[:140]}")
+    for iso3,country in G20_COUNTRIES.items():
+        key=f"{iso3}.M.IRSTCI.PA._Z._Z._Z._Z.N"
+        url=f"https://sdmx.oecd.org/public/rest/data/OECD.SDD.STES,DSD_STES@DF_FINMARK/{key}?startPeriod=2000-01&dimensionAtObservation=AllDimensions&format=csvfile"
+        series_id=f"oecd_{iso3.lower()}_policy_rate"
+        registry.append({"series_id":series_id,"country_code":iso3,"domain":"monetary","label":"Policy Rate","unit":"%","frequency":"monthly","primary_source":"OECD","source_url":url,"source_series_id":"DF_FINMARK:IRSTCI","license_class":"PUBLIC_OFFICIAL","refresh_policy":"ON_RELEASE","active":True,"metadata":{"country_name":country,"connector":"oecd_sdmx","ingestion_status":"CONNECTED"},"updated_at":fetched.isoformat()})
+        try:
+            req=urllib.request.Request(url,headers={"User-Agent":"AGI-Macro-Intelligence/1.0","Accept":"text/csv"})
+            with urllib.request.urlopen(req,timeout=30) as response: raw=response.read()
+            digest=hashlib.sha256(raw).hexdigest(); accepted=0
+            for row in csv.DictReader(io.StringIO(raw.decode("utf-8-sig"))):
+                if row.get("MEASURE")!="IRSTCI" or not row.get("OBS_VALUE"): continue
+                period=str(row.get("TIME_PERIOD") or "")
+                if len(period)<7: continue
+                observations.append({"series_id":series_id,"country_code":iso3,"period_date":f"{period[:7]}-01","value_numeric":row.get("OBS_VALUE"),"unit":"%","frequency":"monthly","release_date":fetched.isoformat(),"available_at":fetched.isoformat(),"vintage_date":fetched.date().isoformat(),"revision_number":0,"is_forecast":False,"source":"OECD SDMX API","source_url":url,"source_payload_hash":digest,"quality_status":"PROVISIONAL","metadata":{"measure":"IRSTCI","country_name":country,"time_period":period,"pit_status":"FETCH_VINTAGE_ONLY","source_tier":"C"}}); accepted+=1
+            if not accepted: errors.append(f"policy_rate:{iso3}:missing")
+        except Exception as exc: errors.append(f"policy_rate:{iso3}:{str(exc)[:120]}")
     return _persist_official_run("OECD SDMX",registry,observations,errors)
 
 def source_status():
     return [
         {"source":"World Bank","status":"CONNECTED","collection":"LIVE_API"},
-        {"source":"IMF","status":"CONNECTED","collection":"LIVE_API_V2_WEO"},
+        {"source":"IMF","status":"DEPLOYMENT_BLOCKED","collection":"RENDER_EGRESS_HTTP_403; API_V2_VERIFIED_EXTERNALLY"},
         {"source":"OECD","status":"CONNECTED","collection":"LIVE_SDMX"},
         {"source":"MoSPI","status":"CONFIGURATION_REQUIRED","collection":"API_ACCESS_TOKEN_REQUIRED"},
         {"source":"RBI","status":"MAPPING_REQUIRED","collection":"DBIE_ACCESS_PATH_REQUIRED"},
