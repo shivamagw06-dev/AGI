@@ -129,26 +129,6 @@ def latest_observations(country: str = "India") -> dict[str, Any]:
         str(row.get("series_id") or ""): row
         for row in _warehouse_rows("macro_public_series_registry")
     }
-
-
-def g20_matrix() -> dict[str, Any]:
-    """Latest comparable G20 observations. No scores or regimes are inferred."""
-    from macro_intelligence_engine.public_ingestion import G20_COUNTRIES, G20_WORLD_BANK_SERIES
-    rows = [row for row in _warehouse_rows("macro_public_observations", limit=10000) if str(row.get("series_id") or "").startswith("g20_") and row.get("value_numeric") is not None]
-    latest = {}
-    for row in rows:
-        key=(str(row.get("country_code") or "").upper(), str(row.get("series_id") or "").split("_",2)[-1])
-        order=(str(row.get("period_date") or ""),str(row.get("available_at") or ""))
-        if key not in latest or order>latest[key][0]: latest[key]=(order,row)
-    countries=[]
-    for iso3,name in G20_COUNTRIES.items():
-        indicators={}
-        for key,(_source,label,unit) in G20_WORLD_BANK_SERIES.items():
-            item=latest.get((iso3,key)); row=item[1] if item else None
-            indicators[key]=None if row is None else {"value":row.get("value_numeric"),"unit":row.get("unit") or unit,"observation_date":row.get("period_date"),"available_at":row.get("available_at"),"source":row.get("source"),"quality_status":row.get("quality_status"),"label":label}
-        countries.append({"iso3":iso3,"country":name,"observed":sum(v is not None for v in indicators.values()),"total":len(indicators),"indicators":indicators})
-    observed=sum(row["observed"] for row in countries); total=len(countries)*len(G20_WORLD_BANK_SERIES)
-    return {"ok":True,"universe":"G20 19 economies","countries":countries,"country_count":len(countries),"indicator_count":len(G20_WORLD_BANK_SERIES),"observed":observed,"total":total,"coverage_percent":round(100*observed/total,1) if total else 0,"status":"DATA BUILDING" if observed<total else "OBSERVED LAYER OPERATIONAL","pit_status":"PIT LIMITED","policy":"Comparable World Bank observations only. No country score, rank or regime is inferred."}
     rows = [
         row for row in _warehouse_rows("macro_public_observations")
         if str(row.get("country_code") or row.get("country") or "").lower() in allowed
@@ -184,4 +164,61 @@ def g20_matrix() -> dict[str, Any]:
         "latest_available_at": freshest, "count": len(observations), "observations": observations,
         "pit_status": "PIT LIMITED",
         "policy": "Values are persisted official/public observations. No missing value is estimated or backfilled on read.",
+    }
+
+
+def g20_matrix() -> dict[str, Any]:
+    """Latest comparable G20 observations. No scores or regimes are inferred."""
+    from macro_intelligence_engine.public_ingestion import G20_COUNTRIES, G20_WORLD_BANK_SERIES
+
+    rows = [
+        row for row in _warehouse_rows("macro_public_observations", limit=10000)
+        if str(row.get("series_id") or "").startswith("g20_")
+        and row.get("value_numeric") is not None
+    ]
+    latest = {}
+    for row in rows:
+        key = (
+            str(row.get("country_code") or "").upper(),
+            str(row.get("series_id") or "").split("_", 2)[-1],
+        )
+        order = (str(row.get("period_date") or ""), str(row.get("available_at") or ""))
+        if key not in latest or order > latest[key][0]:
+            latest[key] = (order, row)
+    countries = []
+    frequency_counts = Counter()
+    for iso3, name in G20_COUNTRIES.items():
+        indicators = {}
+        for key, (_source, label, unit) in G20_WORLD_BANK_SERIES.items():
+            item = latest.get((iso3, key))
+            row = item[1] if item else None
+            if row:
+                frequency_counts[str(row.get("frequency") or "unknown")] += 1
+            indicators[key] = None if row is None else {
+                "value": row.get("value_numeric"), "unit": row.get("unit") or unit,
+                "frequency": row.get("frequency"), "observation_date": row.get("period_date"),
+                "release_date": row.get("release_date"), "available_at": row.get("available_at"),
+                "revision_number": row.get("revision_number", 0), "source": row.get("source"),
+                "quality_status": row.get("quality_status"), "pit_status": "PIT LIMITED",
+                "source_tier": "C", "label": label,
+            }
+        countries.append({
+            "iso3": iso3, "country": name,
+            "observed": sum(value is not None for value in indicators.values()),
+            "total": len(indicators), "indicators": indicators,
+        })
+    observed = sum(row["observed"] for row in countries)
+    total = len(countries) * len(G20_WORLD_BANK_SERIES)
+    return {
+        "ok": True, "universe": "G20 19 economies", "countries": countries,
+        "country_count": len(countries), "indicator_count": len(G20_WORLD_BANK_SERIES),
+        "observed": observed, "total": total,
+        "coverage_percent": round(100 * observed / total, 1) if total else 0,
+        "frequency_mix": dict(sorted(frequency_counts.items())),
+        "source_tier_mix": {"A": 0, "B": 0, "C": observed, "D": 0},
+        "status": "DATA BUILDING",
+        "pit_status": "PIT LIMITED",
+        "calculation_gate": "BLOCKED",
+        "blocked_outputs": ["country_scores", "rankings", "macro_regimes", "investment_implications"],
+        "policy": "Tier C harmonized observations only. Coverage is not validation. No country score, rank or regime is inferred.",
     }
