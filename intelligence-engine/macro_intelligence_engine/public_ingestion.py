@@ -54,6 +54,11 @@ def _rest(table, *, method="GET", rows=None, query="", prefer=""):
     if prefer:req.add_header("Prefer",prefer)
     with urllib.request.urlopen(req,timeout=30) as response: body=response.read(); return json.loads(body) if body else None
 
+def _write_chunks(table, rows, *, query="", prefer="resolution=merge-duplicates,return=minimal", size=500):
+    items=list(rows or [])
+    for start in range(0,len(items),size):
+        _rest(table,method="POST",rows=items[start:start+size],query=query,prefer=prefer)
+
 def registry_rows():
     out=[]
     for series_id,domain,label,frequency in CORE_50:
@@ -67,21 +72,25 @@ def seed_registry():
     rows=registry_rows(); _rest("macro_public_series_registry",method="POST",rows=rows,query="?on_conflict=series_id",prefer="resolution=merge-duplicates,return=minimal"); return {"ok":True,"registered":len(rows)}
 
 def _wb_fetch(country,indicator):
-    url=f"https://api.worldbank.org/v2/country/{country.lower()}/indicator/{indicator}?format=json&per_page=12&mrv=6"; req=urllib.request.Request(url,headers={"User-Agent":"AGI-Macro-Intelligence/1.0"})
+    url=f"https://api.worldbank.org/v2/country/{country.lower()}/indicator/{indicator}?format=json&per_page=100&mrv=25"; req=urllib.request.Request(url,headers={"User-Agent":"AGI-Macro-Intelligence/1.0"})
     with urllib.request.urlopen(req,timeout=25) as response: raw=response.read()
     payload=json.loads(raw); rows=payload[1] if isinstance(payload,list) and len(payload)>1 and isinstance(payload[1],list) else []
-    return next((r for r in rows if r.get("value") is not None),None),hashlib.sha256(raw).hexdigest(),url
+    return [row for row in rows if row.get("value") is not None],hashlib.sha256(raw).hexdigest(),url
 
 def collect_world_bank():
     run_id=str(uuid.uuid4()); errors=[]; observations=[]
     _rest("macro_public_ingestion_runs",method="POST",rows={"run_id":run_id,"source":"World Bank","status":"RUNNING","started_at":_now().isoformat()},prefer="return=minimal")
     for series_id,(indicator,unit,country) in WORLD_BANK_SERIES.items():
         try:
-            row,payload_hash,url=_wb_fetch(country,indicator); period=str((row or {}).get("date") or "")
-            if not row or not period[:4].isdigit(): errors.append(f"{series_id}:no_observation"); continue
-            fetched=_now(); observations.append({"series_id":series_id,"country_code":country,"period_date":f"{period[:4]}-12-31","value_numeric":row.get("value"),"unit":unit,"frequency":"annual","release_date":fetched.isoformat(),"available_at":fetched.isoformat(),"vintage_date":fetched.date().isoformat(),"revision_number":0,"is_forecast":False,"source":"World Bank Indicators API","source_url":url,"source_payload_hash":payload_hash,"quality_status":"PROVISIONAL","metadata":{"indicator":indicator,"country_label":(row.get("country") or {}).get("value")}})
+            rows,payload_hash,url=_wb_fetch(country,indicator)
+            if not rows: errors.append(f"{series_id}:no_observation"); continue
+            fetched=_now()
+            for row in rows:
+                period=str(row.get("date") or "")
+                if not period[:4].isdigit(): continue
+                observations.append({"series_id":series_id,"country_code":country,"period_date":f"{period[:4]}-12-31","value_numeric":row.get("value"),"unit":unit,"frequency":"annual","release_date":fetched.isoformat(),"available_at":fetched.isoformat(),"vintage_date":fetched.date().isoformat(),"revision_number":0,"is_forecast":False,"source":"World Bank Indicators API","source_url":url,"source_payload_hash":payload_hash,"quality_status":"PROVISIONAL","metadata":{"indicator":indicator,"country_label":(row.get("country") or {}).get("value"),"pit_status":"FETCH_VINTAGE_ONLY","source_tier":"C"}})
         except Exception as exc: errors.append(f"{series_id}:{str(exc)[:100]}")
-    if observations:_rest("macro_public_observations",method="POST",rows=observations,query="?on_conflict=series_id,country_code,period_date,vintage_date,revision_number",prefer="resolution=merge-duplicates,return=minimal")
+    if observations:_write_chunks("macro_public_observations",observations,query="?on_conflict=series_id,country_code,period_date,vintage_date,revision_number")
     status="COMPLETE" if observations and not errors else ("COMPLETE_WITH_WARNINGS" if observations else "FAILED")
     _rest("macro_public_ingestion_runs",method="PATCH",rows={"status":status,"completed_at":_now().isoformat(),"rows_received":len(WORLD_BANK_SERIES),"rows_accepted":len(observations),"rows_quarantined":len(errors),"error":";".join(errors)[:1000] or None,"receipt":{"series":[r["series_id"] for r in observations],"errors":errors}},query=f"?run_id=eq.{run_id}",prefer="return=minimal")
     return {"ok":bool(observations),"source":"World Bank","run_id":run_id,"status":status,"accepted":len(observations),"errors":errors}
@@ -99,23 +108,24 @@ def collect_world_bank_g20():
     _rest("macro_public_ingestion_runs",method="POST",rows={"run_id":run_id,"source":"World Bank G20","status":"RUNNING","started_at":_now().isoformat()},prefer="return=minimal")
     countries=";".join(code.lower() for code in G20_COUNTRIES)
     for key,(indicator,_domain,unit) in G20_WORLD_BANK_SERIES.items():
-        url=f"https://api.worldbank.org/v2/country/{countries}/indicator/{indicator}?format=json&per_page=500&mrv=6"
+        url=f"https://api.worldbank.org/v2/country/{countries}/indicator/{indicator}?format=json&per_page=5000&mrv=25"
         try:
             req=urllib.request.Request(url,headers={"User-Agent":"AGI-Macro-Intelligence/1.0"})
             with urllib.request.urlopen(req,timeout=30) as response: raw=response.read()
             payload=json.loads(raw); candidates=payload[1] if isinstance(payload,list) and len(payload)>1 else []
-            latest={}
+            histories={iso3: [] for iso3 in G20_COUNTRIES}
             for row in candidates or []:
                 iso3=str(row.get("countryiso3code") or "").upper(); period=str(row.get("date") or "")
-                if iso3 in G20_COUNTRIES and row.get("value") is not None and iso3 not in latest: latest[iso3]=row
+                if iso3 in G20_COUNTRIES and row.get("value") is not None and period[:4].isdigit(): histories[iso3].append(row)
             fetched=_now(); digest=hashlib.sha256(raw).hexdigest()
-            for iso3,row in latest.items():
-                period=str(row.get("date") or "")
-                observations.append({"series_id":f"g20_{iso3.lower()}_{key}","country_code":iso3,"period_date":f"{period[:4]}-12-31","value_numeric":row.get("value"),"unit":unit,"frequency":"annual","release_date":fetched.isoformat(),"available_at":fetched.isoformat(),"vintage_date":fetched.date().isoformat(),"revision_number":0,"is_forecast":False,"source":"World Bank Indicators API","source_url":url,"source_payload_hash":digest,"quality_status":"PROVISIONAL","metadata":{"indicator":indicator,"country_name":G20_COUNTRIES[iso3]}})
-            missing=set(G20_COUNTRIES)-set(latest)
+            for iso3,history in histories.items():
+                for row in history:
+                    period=str(row.get("date") or "")
+                    observations.append({"series_id":f"g20_{iso3.lower()}_{key}","country_code":iso3,"period_date":f"{period[:4]}-12-31","value_numeric":row.get("value"),"unit":unit,"frequency":"annual","release_date":fetched.isoformat(),"available_at":fetched.isoformat(),"vintage_date":fetched.date().isoformat(),"revision_number":0,"is_forecast":False,"source":"World Bank Indicators API","source_url":url,"source_payload_hash":digest,"quality_status":"PROVISIONAL","metadata":{"indicator":indicator,"country_name":G20_COUNTRIES[iso3],"pit_status":"FETCH_VINTAGE_ONLY","source_tier":"C"}})
+            missing={iso3 for iso3,history in histories.items() if not history}
             if missing: errors.append(f"{key}:missing:{','.join(sorted(missing))}")
         except Exception as exc: errors.append(f"{key}:{str(exc)[:120]}")
-    if observations:_rest("macro_public_observations",method="POST",rows=observations,query="?on_conflict=series_id,country_code,period_date,vintage_date,revision_number",prefer="resolution=merge-duplicates,return=minimal")
+    if observations:_write_chunks("macro_public_observations",observations,query="?on_conflict=series_id,country_code,period_date,vintage_date,revision_number")
     status="COMPLETE" if observations and not errors else ("COMPLETE_WITH_WARNINGS" if observations else "FAILED")
     _rest("macro_public_ingestion_runs",method="PATCH",rows={"status":status,"completed_at":_now().isoformat(),"rows_received":len(registry),"rows_accepted":len(observations),"rows_quarantined":len(errors),"error":";".join(errors)[:1000] or None,"receipt":{"countries":len(G20_COUNTRIES),"indicators":len(G20_WORLD_BANK_SERIES),"errors":errors}},query=f"?run_id=eq.{run_id}",prefer="return=minimal")
     return {"ok":bool(observations),"source":"World Bank G20","run_id":run_id,"status":status,"accepted":len(observations),"errors":errors}
@@ -123,55 +133,57 @@ def collect_world_bank_g20():
 def _persist_official_run(source, registry, observations, errors):
     run_id=str(uuid.uuid4()); started=_now()
     _rest("macro_public_ingestion_runs",method="POST",rows={"run_id":run_id,"source":source,"status":"RUNNING","started_at":started.isoformat()},prefer="return=minimal")
-    if registry:_rest("macro_public_series_registry",method="POST",rows=registry,query="?on_conflict=series_id",prefer="resolution=merge-duplicates,return=minimal")
-    if observations:_rest("macro_public_observations",method="POST",rows=observations,query="?on_conflict=series_id,country_code,period_date,vintage_date,revision_number",prefer="resolution=merge-duplicates,return=minimal")
+    if registry:_write_chunks("macro_public_series_registry",registry,query="?on_conflict=series_id")
+    if observations:_write_chunks("macro_public_observations",observations,query="?on_conflict=series_id,country_code,period_date,vintage_date,revision_number")
     status="COMPLETE" if observations and not errors else ("COMPLETE_WITH_WARNINGS" if observations else "FAILED")
-    _rest("macro_public_ingestion_runs",method="PATCH",rows={"status":status,"completed_at":_now().isoformat(),"rows_received":len(registry),"rows_accepted":len(observations),"rows_quarantined":len(errors),"error":";".join(errors)[:1000] or None,"receipt":{"series":len(registry),"observations":len(observations),"errors":errors}},query=f"?run_id=eq.{run_id}",prefer="return=minimal")
+    _rest("macro_public_ingestion_runs",method="PATCH",rows={"status":status,"completed_at":_now().isoformat(),"rows_received":len(observations)+len(errors),"rows_accepted":len(observations),"rows_quarantined":len(errors),"error":";".join(errors)[:1000] or None,"receipt":{"series":len(registry),"observations":len(observations),"errors":errors}},query=f"?run_id=eq.{run_id}",prefer="return=minimal")
     return {"ok":bool(observations),"source":source,"run_id":run_id,"status":status,"accepted":len(observations),"errors":errors}
 
 def collect_imf_g20():
     registry=[]; observations=[]; errors=[]; fetched=_now(); completed_year=fetched.year-1
     for key,(indicator,domain,unit) in IMF_G20_SERIES.items():
-        url=f"https://www.imf.org/external/datamapper/api/v1/{indicator}"
+        url=f"https://www.imf.org/external/datamapper/api/v2/{indicator}"
         try:
             req=urllib.request.Request(url,headers={"User-Agent":"AGI-Macro-Intelligence/1.0"})
             with urllib.request.urlopen(req,timeout=35) as response: raw=response.read()
             payload=json.loads(raw); values=((payload.get("values") or {}).get(indicator) or {}); digest=hashlib.sha256(raw).hexdigest()
             for iso3,country in G20_COUNTRIES.items():
-                history=values.get(iso3) or {}; eligible=[(int(y),v) for y,v in history.items() if str(y).isdigit() and int(y)<=completed_year and v is not None]
+                history=values.get(iso3) or {}; eligible=[(int(y),v) for y,v in history.items() if str(y).isdigit() and 2000<=int(y)<=completed_year and v is not None]
                 series_id=f"imf_{iso3.lower()}_{key}"
                 registry.append({"series_id":series_id,"country_code":iso3,"domain":domain.lower(),"label":key.replace("_"," ").title(),"unit":unit,"frequency":"annual","primary_source":"IMF WEO DataMapper","source_url":url,"source_series_id":indicator,"license_class":"PUBLIC_OFFICIAL","refresh_policy":"ON_RELEASE","active":True,"metadata":{"country_name":country,"connector":"imf_datamapper","dataset":"WEO","ingestion_status":"CONNECTED","pit_policy":"first_successful_agi_fetch"},"updated_at":fetched.isoformat()})
                 if not eligible: errors.append(f"{indicator}:{iso3}:no_completed_observation"); continue
-                year,value=max(eligible)
-                observations.append({"series_id":series_id,"country_code":iso3,"period_date":f"{year}-12-31","value_numeric":value,"unit":unit,"frequency":"annual","release_date":fetched.isoformat(),"available_at":fetched.isoformat(),"vintage_date":fetched.date().isoformat(),"revision_number":0,"is_forecast":False,"source":"IMF WEO DataMapper API","source_url":url,"source_payload_hash":digest,"quality_status":"PROVISIONAL","metadata":{"indicator":indicator,"country_name":country,"forecast_excluded_after":completed_year}})
+                for year,value in eligible:
+                    observations.append({"series_id":series_id,"country_code":iso3,"period_date":f"{year}-12-31","value_numeric":value,"unit":unit,"frequency":"annual","release_date":fetched.isoformat(),"available_at":fetched.isoformat(),"vintage_date":fetched.date().isoformat(),"revision_number":0,"is_forecast":False,"source":"IMF WEO DataMapper API v2","source_url":url,"source_payload_hash":digest,"quality_status":"PROVISIONAL","metadata":{"indicator":indicator,"country_name":country,"forecast_excluded_after":completed_year,"pit_status":"FETCH_VINTAGE_ONLY","source_tier":"C"}})
         except Exception as exc: errors.append(f"{indicator}:{str(exc)[:120]}")
     return _persist_official_run("IMF WEO DataMapper",registry,observations,errors)
 
 def collect_oecd_policy_rates():
-    url="https://sdmx.oecd.org/public/rest/data/OECD.SDD.STES,DSD_STES@DF_FINMARK/.?startPeriod=2024&dimensionAtObservation=AllDimensions&format=csvfile"
+    url="https://sdmx.oecd.org/public/rest/data/OECD.SDD.STES,DSD_STES@DF_FINMARK/all?startPeriod=2000-01&dimensionAtObservation=AllDimensions&format=csvfile"
     registry=[]; observations=[]; errors=[]; fetched=_now()
     try:
         req=urllib.request.Request(url,headers={"User-Agent":"AGI-Macro-Intelligence/1.0"})
         with urllib.request.urlopen(req,timeout=45) as response: raw=response.read()
-        rows=csv.DictReader(io.StringIO(raw.decode("utf-8-sig"))); latest={}
+        rows=csv.DictReader(io.StringIO(raw.decode("utf-8-sig"))); history={iso3: [] for iso3 in G20_COUNTRIES}
         for row in rows:
             iso3=str(row.get("REF_AREA") or "").upper()
             if iso3 not in G20_COUNTRIES or row.get("MEASURE")!="IRSTCI" or not row.get("OBS_VALUE"): continue
-            if iso3 not in latest or str(row.get("TIME_PERIOD"))>str(latest[iso3].get("TIME_PERIOD")): latest[iso3]=row
+            history[iso3].append(row)
         digest=hashlib.sha256(raw).hexdigest()
         for iso3,country in G20_COUNTRIES.items():
             series_id=f"oecd_{iso3.lower()}_policy_rate"; registry.append({"series_id":series_id,"country_code":iso3,"domain":"monetary","label":"Policy Rate","unit":"%","frequency":"monthly","primary_source":"OECD","source_url":url,"source_series_id":"DF_FINMARK:IRSTCI","license_class":"PUBLIC_OFFICIAL","refresh_policy":"ON_RELEASE","active":True,"metadata":{"country_name":country,"connector":"oecd_sdmx","ingestion_status":"CONNECTED"},"updated_at":fetched.isoformat()})
-            row=latest.get(iso3)
-            if not row: errors.append(f"policy_rate:{iso3}:missing"); continue
-            period=str(row.get("TIME_PERIOD")); observations.append({"series_id":series_id,"country_code":iso3,"period_date":f"{period[:7]}-01","value_numeric":row.get("OBS_VALUE"),"unit":"%","frequency":"monthly","release_date":fetched.isoformat(),"available_at":fetched.isoformat(),"vintage_date":fetched.date().isoformat(),"revision_number":0,"is_forecast":False,"source":"OECD SDMX API","source_url":url,"source_payload_hash":digest,"quality_status":"PROVISIONAL","metadata":{"measure":"IRSTCI","country_name":country,"time_period":period}})
+            rows_for_country=history.get(iso3) or []
+            if not rows_for_country: errors.append(f"policy_rate:{iso3}:missing"); continue
+            for row in rows_for_country:
+                period=str(row.get("TIME_PERIOD"))
+                observations.append({"series_id":series_id,"country_code":iso3,"period_date":f"{period[:7]}-01","value_numeric":row.get("OBS_VALUE"),"unit":"%","frequency":"monthly","release_date":fetched.isoformat(),"available_at":fetched.isoformat(),"vintage_date":fetched.date().isoformat(),"revision_number":0,"is_forecast":False,"source":"OECD SDMX API","source_url":url,"source_payload_hash":digest,"quality_status":"PROVISIONAL","metadata":{"measure":"IRSTCI","country_name":country,"time_period":period,"pit_status":"FETCH_VINTAGE_ONLY","source_tier":"C"}})
     except Exception as exc: errors.append(f"oecd_policy_rates:{str(exc)[:140]}")
     return _persist_official_run("OECD SDMX",registry,observations,errors)
 
 def source_status():
     return [
         {"source":"World Bank","status":"CONNECTED","collection":"LIVE_API"},
-        {"source":"IMF","status":"DEPLOYMENT_BLOCKED","collection":"RENDER_EGRESS_HTTP_403"},
-        {"source":"OECD","status":"CONFIGURATION_REQUIRED","collection":"SDMX_QUERY_HTTP_400"},
+        {"source":"IMF","status":"CONNECTED","collection":"LIVE_API_V2_WEO"},
+        {"source":"OECD","status":"CONNECTED","collection":"LIVE_SDMX"},
         {"source":"MoSPI","status":"CONFIGURATION_REQUIRED","collection":"API_ACCESS_TOKEN_REQUIRED"},
         {"source":"RBI","status":"MAPPING_REQUIRED","collection":"DBIE_ACCESS_PATH_REQUIRED"},
         {"source":"BIS","status":"MAPPING_REQUIRED","collection":"SDMX_SERIES_KEYS_REQUIRED"},
