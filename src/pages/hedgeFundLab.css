@@ -510,6 +510,7 @@
 .hfl-programme-head h3 { margin: 0; font-size: .86rem; }
 .hfl-programme-status { padding: .18rem .42rem; border: 1px solid; font-size: .62rem; text-transform: uppercase; white-space: nowrap; }
 .hfl-programme-status.ready { color: #69d7bd; border-color: #2b806e; }
+.hfl-programme-status.development { color: #f0cd94; border-color: #8d682d; }
 .hfl-programme-status.candidate { color: #9cc6ff; border-color: #41688e; }
 .hfl-programme-status.experimental { color: #f0cd94; border-color: #8d682d; }
 .hfl-programme-status.building { color: #aab6c7; border-color: #45566d; }

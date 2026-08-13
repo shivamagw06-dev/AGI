@@ -5,21 +5,23 @@ import HedgeFundTerminal, { InlineAsk } from '@/pages/hedgeFundTerminal';
 import './hedgeFundLab.css';
 
 const COMPANY_STRATEGIES = [
-  ['Quality Compounders', 'Operational', 'ready', 'ROIC · FCF conversion · stability · leverage', 'Persistent business quality across five to ten years.'],
-  ['Relative Mispricing', 'Operational', 'ready', 'P/E · P/B · EV/EBITDA · historical percentiles', 'Industry-aware valuation with anomaly checks.'],
-  ['Earnings Quality', 'Operational', 'ready', 'CFO · accruals · working capital · FCF', 'Tests whether reported profit converts into cash.'],
-  ['Sustainable Growth', 'Operational', 'ready', 'Growth · ROIC · reinvestment · dilution', 'Separates durable growth from financed growth.'],
-  ['Capital Allocation', 'Research candidate', 'candidate', 'ROIC · WACC · NOPAT · invested capital', 'WACC remains an explicit model assumption.'],
-  ['Balance-Sheet Risk', 'Operational', 'ready', 'Debt · coverage · CFO/debt · liquidity', 'Risk classification, never an automatic short.'],
+  ['Quality Compounders', 'In Development', 'development', 'ROIC · FCF conversion · stability · leverage', 'Current screen is basic; the 5–10Y factor model is not complete.'],
+  ['Relative Mispricing', 'In Development', 'development', 'P/E · P/B · EV/EBITDA · historical percentiles', 'Historical valuation exists; the validated composite is not complete.'],
+  ['Earnings Quality', 'In Development', 'development', 'CFO · accruals · working capital · FCF', 'Accounting Intelligence exists; the Hedge Fund adapter is not complete.'],
+  ['Sustainable Growth', 'In Development', 'development', 'Growth · ROIC · reinvestment · dilution', 'Sustainable-growth and growth-gap mathematics are not complete.'],
+  ['Capital Allocation', 'Data Building', 'building', 'ROIC · WACC · NOPAT · invested capital', 'Deployment history and evidence-backed WACC inputs remain incomplete.'],
+  ['Balance-Sheet Risk', 'In Development', 'development', 'Debt · coverage · CFO/debt · liquidity', 'Current stress rules precede the unified risk model.'],
 ];
 
 const ALLOCATION_STRATEGIES = [
-  ['Macro Regime', 'Operational', 'ready', 'Rates · inflation · growth · INR · institutional flows', 'Changes risk budgets and sector context.'],
-  ['Sector Relative Value', 'Operational', 'ready', 'Sector history · quality · valuation · macro', 'Compares sectors with their own history.'],
+  ['Macro Regime', 'In Development', 'development', 'Rates · inflation · growth · INR · institutional flows', 'Deterministic five-regime classifier is not yet portfolio-wired.'],
+  ['Sector Relative Value', 'In Development', 'development', 'Sector history · quality · valuation · macro', 'Sector history exists; the four-factor composite is incomplete.'],
   ['Pair / Relative Value', 'Experimental', 'experimental', 'Prices · peers · spread · factor exposure', 'Cointegration, half-life and costed testing required.'],
   ['Event Intelligence', 'Data building', 'building', 'Events · exact timestamps · abnormal returns', 'Waiting for point-in-time event depth.'],
   ['Earnings Revisions', 'Data building', 'building', 'Consensus vintages · estimate revisions', 'Current consensus alone is insufficient.'],
   ['Forecast Mispricing', 'Experimental', 'experimental', 'Scenarios · uncertainty · outcome history', 'Promotion requires calibrated forecast outcomes.'],
+  ['Portfolio Optimization', 'Experimental', 'experimental', 'Alpha vector · covariance · turnover · constraints', 'Current tools are illustrative, not an optimizer.'],
+  ['Risk Decomposition', 'Experimental', 'experimental', 'Market · sector · factor · idiosyncratic risk', 'Current risk contribution is a proxy, not a factor covariance model.'],
 ];
 
 function StrategyRow({ item }) {
@@ -41,7 +43,7 @@ function ResearchArchitecture() {
     <section className="hfl-programme" aria-labelledby="investment-architecture-title">
       <div className="hfl-programme-title">
         <div><span>Weeks to years</span><h2 id="investment-architecture-title">Investment opportunity architecture</h2></div>
-        <p>Warehouse evidence creates research candidates. Validation and risk remain hard gates before portfolio use.</p>
+        <p>These are permanent maturity states, not marketing labels. Only implemented mathematics with production data checks can become Operational.</p>
       </div>
       <div className="hfl-programme-grid">
         <div className="hfl-programme-column">
@@ -55,7 +57,7 @@ function ResearchArchitecture() {
       </div>
       <div className="hfl-process">
         {[
-          [Target, 'Alpha estimation', 'Evidence-weighted research return'],
+          [Target, 'Research factor layer', 'Versioned metrics · evidence · PIT cutoff'],
           [ShieldCheck, 'Validation and risk', 'PIT · costs · liquidity · exposure'],
           [Layers, 'Portfolio construction', 'Sizing · constraints · covariance'],
           [Activity, 'Performance learning', 'Attribution · outcomes · calibration'],
@@ -83,7 +85,7 @@ export default function HedgeFundResearchPage() {
       <main className="hfl-body">
         <ResearchArchitecture />
         <section className="hfl-terminal-band">
-          <div className="hfl-programme-title"><div><span>Warehouse screens</span><h2>Research candidates</h2></div><p>Operational screens surface evidence to investigate. Scores are neither profit probabilities nor execution instructions.</p></div>
+          <div className="hfl-programme-title"><div><span>Current basic implementation</span><h2>Warehouse research screens</h2></div><p>These screens use available valuation, profitability, leverage and consensus fields. They are inputs to the factor build, not the completed mathematics described above.</p></div>
           <HedgeFundTerminal />
         </section>
         <p className="hfl-note">Research only. Operational means a module runs on available warehouse data; it does not mean investment validated, production approved or suitable for execution.</p>
