@@ -52,8 +52,76 @@ function buildRows(signals) {
     const composite = scores.length ? Math.round(scores.reduce((sum, value) => sum + value, 0) / Math.sqrt(scores.length)) : 0;
     const quality = active.length ? Math.round(active.reduce((sum, signal) => sum + Number(signal.empirical_confidence_score ?? signal.signal_quality_score ?? 0), 0) / active.length) : 0;
     const samples = Math.max(0, ...active.map((signal) => Number(signal.comparable_observations) || 0));
-    return { ...row, active, composite: Math.max(-99, Math.min(99, composite)), quality, samples, confidence: confidence(quality, samples) };
+    const positive = active.filter((signal) => signal.direction === 'positive').length;
+    const negative = active.filter((signal) => signal.direction === 'negative').length;
+    const agreement = !active.length ? 'LOW ALIGNMENT' : positive && negative ? 'MIXED' : active.length >= 2 ? 'HIGH ALIGNMENT' : 'LOW ALIGNMENT';
+    return { ...row, active, composite: Math.max(-99, Math.min(99, composite)), quality, samples, confidence: confidence(quality, samples), agreement };
   });
+}
+
+function signalReason(row) {
+  const ordered = [...row.active].sort((a, b) => Math.abs(signedScore(b)) - Math.abs(signedScore(a)));
+  const primary = ordered[0];
+  const sources = ordered.map((signal) => STRATEGIES.find(([key]) => key === signal.engine)?.[1] || signal.engine);
+  const direction = row.composite < 0 ? 'negative' : 'positive';
+  const supporting = ordered.filter((signal) => signal.direction === direction).map((signal) => `${STRATEGIES.find(([key]) => key === signal.engine)?.[1] || signal.engine} ${scoreText(signedScore(signal))}`);
+  const opposing = ordered.filter((signal) => signal.direction !== direction).map((signal) => `${STRATEGIES.find(([key]) => key === signal.engine)?.[1] || signal.engine} ${scoreText(signedScore(signal))}`);
+  return {
+    primary_driver: primary ? `${STRATEGIES.find(([key]) => key === primary.engine)?.[1] || primary.engine} ${scoreText(signedScore(primary))}` : 'No directional component',
+    supporting_factors: supporting,
+    negative_factors: opposing,
+    data_quality: ordered.every((signal) => signal.liquidity_ok) ? 'Required live inputs passed liquidity checks' : 'One or more inputs failed liquidity checks',
+    confidence_reason: row.samples >= 100 ? 'Supported by comparable completed outcomes' : `${row.confidence} model-state confidence from signal strength, agreement and available inputs; not calibrated to future returns`,
+    strategy_sources: sources,
+  };
+}
+
+function OpportunitySummary({ rows, signals, freshness, onSelect }) {
+  const directional = rows.filter((row) => row.active.length);
+  const positive = directional.filter((row) => row.composite > 0).sort((a, b) => b.composite - a.composite);
+  const negative = directional.filter((row) => row.composite < 0).sort((a, b) => a.composite - b.composite);
+  const evaluated = new Set(signals.map((signal) => signal.symbol)).size;
+  const neutral = Math.max(0, evaluated - directional.length);
+  const confidenceCounts = directional.reduce((counts, row) => ({ ...counts, [row.confidence]: (counts[row.confidence] || 0) + 1 }), {});
+  const renderOpportunity = (row) => { const reason = signalReason(row); return <button key={row.symbol} onClick={() => onSelect(row.symbol)}><div><strong>{row.symbol}</strong><span>{row.sector}</span></div><Score value={row.composite} /><span className={`la-confidence ${row.confidence.toLowerCase()}`}>{row.confidence}</span><p>Why: {reason.primary_driver}{reason.supporting_factors.length > 1 ? ` with ${row.agreement.toLowerCase()}` : ''}</p></button>; };
+  return <section className="la-opportunity-summary">
+    <header><div><span className="la-section-kicker">Current research state</span><h2>Opportunity Summary</h2></div><div><strong>{evaluated}</strong><span>stocks evaluated<br />Data age {freshness?.age_seconds == null ? 'unavailable' : `${Math.floor(freshness.age_seconds / 60)} min`}</span></div></header>
+    <div className="la-summary-stats"><div><span>Positive signals</span><strong className="positive">{positive.length}</strong></div><div><span>Negative signals</span><strong className="negative">{negative.length}</strong></div><div><span>Neutral</span><strong>{neutral}</strong></div><div><span>High confidence</span><strong>{(confidenceCounts.HIGH || 0) + (confidenceCounts.VALIDATED || 0)}</strong></div><div><span>Medium confidence</span><strong>{confidenceCounts.MEDIUM || 0}</strong></div><div><span>Low confidence</span><strong>{confidenceCounts.LOW || 0}</strong></div></div>
+    <div className="la-summary-lists"><article><h3>Strongest positive research signals</h3>{positive.slice(0, 5).map(renderOpportunity)}{!positive.length ? <p>No positive signal currently passes the configured rules.</p> : null}</article><article><h3>Negative / weakening signals</h3>{negative.slice(0, 5).map(renderOpportunity)}{!negative.length ? <p>No negative signal currently passes the configured rules.</p> : null}</article></div>
+    <footer><b>Research Signal — validation pending.</b> Rankings prioritize current signal strength, then component agreement and data completeness. These are not recommendations or demonstrated predictive alpha.</footer>
+  </section>;
+}
+
+function StrategyHealth({ payload, runtime }) {
+  const signals = payload.signals || [];
+  const rows = STRATEGIES.map(([key, label, name]) => {
+    const engineRows = signals.filter((signal) => signal.engine === key);
+    const classes = Object.fromEntries([...new Set(engineRows.map((row) => row.classification))].map((value) => [value, engineRows.filter((row) => row.classification === value).length]));
+    const active = engineRows.filter((row) => row.direction).length;
+    const health = payload.strategy_health?.[key];
+    const unavailable = key === 'opening_range_expansion_v1' && runtime?.last_successful_evaluation?.opening_range_status === 'opening_range_not_restored';
+    const rejection = unavailable ? 'Opening window unavailable' : key === 'intraday_mean_reversion_v1' ? `${classes.trend_filtered || 0} trend, ${classes.event_volume_filtered || 0} event volume` : key === 'derivatives_positioning_v1' ? `${classes.neutral || 0} thresholds not jointly met` : '—';
+    return { key, label, name, evaluated: engineRows.length || null, active, health, unavailable, rejection, accounted: key !== 'intraday_mean_reversion_v1' || engineRows.length === active + Object.entries(classes).filter(([classification]) => !classification.includes('candidate')).reduce((sum, [, count]) => sum + count, 0) };
+  });
+  const degraded = rows.some((row) => row.unavailable || ['persistence_failed', 'stale'].includes(row.health?.status));
+  return <section className="la-panel la-health"><header><div><span className="la-section-kicker">Independent pipeline status</span><h2>Strategy Health</h2></div><span className={degraded ? 'degraded' : 'ready'}>{degraded ? 'Operational with degraded strategy' : 'Operational'}</span></header><div className="la-table-wrap"><table><thead><tr><th>Strategy</th><th>Status</th><th>Evaluated</th><th>Signals</th><th>Rejections</th><th>Data state</th></tr></thead><tbody>{rows.map((row) => <tr key={row.key}><td><strong>{row.label}</strong><span>{row.name}</span></td><td>{row.unavailable ? 'Degraded' : row.health?.status === 'ready' ? row.active ? 'Operational' : 'Operational / No signal' : row.health?.status || 'Not run'}</td><td>{row.evaluated ?? '—'}</td><td>{row.evaluated == null ? '—' : row.active}</td><td>{row.rejection}{row.key === 'intraday_mean_reversion_v1' ? <small className={row.accounted ? 'ok' : 'warning'}>{row.accounted ? 'All instruments accounted for' : 'Data integrity warning'}</small> : null}</td><td>{row.unavailable ? 'Recovery next session' : row.health?.status === 'ready' ? 'Ready' : 'Unavailable'}</td></tr>)}</tbody></table></div></section>;
+}
+
+function Observability({ rows, signals, runtime }) {
+  const scores = rows.filter((row) => row.active.length).map((row) => row.composite);
+  const sorted = [...scores].sort((a, b) => a - b);
+  const average = scores.length ? scores.reduce((sum, value) => sum + value, 0) / scores.length : 0;
+  const median = sorted.length ? sorted[Math.floor(sorted.length / 2)] : 0;
+  const deviation = scores.length ? Math.sqrt(scores.reduce((sum, value) => sum + ((value - average) ** 2), 0) / scores.length) : 0;
+  const extremes = scores.filter((value) => Math.abs(value) === 99).length;
+  const concentrationWarning = scores.length >= 10 && extremes / scores.length >= 0.2;
+  const feed = runtime?.feed || {};
+  const observed = new Set(signals.map((signal) => signal.instrument_key).filter(Boolean)).size;
+  const expected = runtime?.universe?.subscribed_instruments || feed.subscribed_instruments || null;
+  return <section className="la-observability">
+    <article className="la-panel"><header><div><span className="la-section-kicker">Transport is not data quality</span><h2>Upstox Feed Health</h2></div><span className={feed.status === 'connected' ? 'ready' : 'degraded'}>{feed.status || 'Unavailable'}</span></header><div className="la-observe-grid"><div><small>Messages received</small><strong>{Number(feed.messages || 0).toLocaleString('en-IN')}</strong></div><div><small>Reconnects</small><strong>{feed.reconnects ?? '—'}</strong></div><div><small>Decode errors</small><strong>{feed.decode_errors ?? '—'}</strong></div><div><small>Last heartbeat</small><strong>{feed.last_message_at ? age(feed.last_message_at) : '—'}</strong></div><div><small>Expected subscriptions</small><strong>{expected ?? '—'}</strong></div><div><small>Observed in latest runs</small><strong>{observed}</strong></div></div><footer>Connected transport does not independently establish complete inputs or strategy correctness.</footer></article>
+    <article className="la-panel"><header><div><span className="la-section-kicker">Distribution monitor</span><h2>Signal Diagnostics</h2></div><span className={concentrationWarning ? 'degraded' : 'ready'}>{concentrationWarning ? 'Concentration warning' : 'Observed'}</span></header><div className="la-observe-grid"><div><small>Directional names</small><strong>{scores.length}</strong></div><div><small>+99 / -99 scores</small><strong>{extremes}</strong></div><div><small>Average score</small><strong>{average.toFixed(1)}</strong></div><div><small>Median score</small><strong>{median.toFixed(1)}</strong></div><div><small>Standard deviation</small><strong>{deviation.toFixed(1)}</strong></div><div><small>20-day signal median</small><strong>Collecting</strong></div></div><footer>{concentrationWarning ? 'An unusually large share of current research signals is at the score boundary.' : 'No configured score-concentration threshold is currently breached.'} Signal-count anomaly comparison begins after sufficient daily history accumulates.</footer></article>
+  </section>;
 }
 
 export default function LiveAlphaPage() {
@@ -144,6 +212,9 @@ export default function LiveAlphaPage() {
         <button className={view === 'conviction' ? 'active' : ''} onClick={() => setView('conviction')}><ShieldCheck size={15} /> Conviction</button>
       </nav>
       {view === 'signals' ? <>
+      <OpportunitySummary rows={allRows} signals={payload.signals || []} freshness={payload.freshness} onSelect={setSelected} />
+      <StrategyHealth payload={payload} runtime={runtime} />
+      <Observability rows={allRows} signals={payload.signals || []} runtime={runtime} />
       <GrowwResearch groww={payload.groww} />
       <section className="la-panel la-scanner">
         <header><div><span className="la-section-kicker">Opportunity map</span><h2>Live Alpha Scanner</h2></div><div className="la-controls"><select value={sort} onChange={(event) => setSort(event.target.value)} aria-label="Sort scanner"><option value="alpha">Alpha score</option><option value="confidence">Confidence</option><option value="sector">Sector</option><option value="age">Signal age</option></select><span>{rows.length} names</span></div></header>
@@ -208,19 +279,24 @@ function GrowwEmpty({ label }) { return <div className="la-groww-empty"><Clock3 
 function ResearchDrawer({ row, onClose }) {
   const lead = row.active.sort((a, b) => Math.abs(signedScore(b)) - Math.abs(signedScore(a)))[0];
   const factors = lead?.factor_values || {};
+  const reason = signalReason(row);
   return <div className="la-drawer-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}><aside className="la-drawer">
     <header><div><span>{row.sector}</span><h2>{row.symbol}</h2></div><button onClick={onClose} aria-label="Close research drawer"><X size={20} /></button></header>
-    <section className="la-drawer-score"><div><small>Composite Alpha</small><Score value={row.composite} /></div><div><small>Confidence</small><strong>{row.confidence}</strong></div><div><small>Models</small><strong>{row.active.length}/5</strong></div><div><small>Signal age</small><strong>{age(row.newest)}</strong></div></section>
+    <section className="la-drawer-score"><div><small>Research Signal Score</small><Score value={row.composite} /></div><div><small>Confidence</small><strong>{row.confidence}</strong></div><div><small>Agreement</small><strong>{row.agreement}</strong></div><div><small>Signal age</small><strong>{age(row.newest)}</strong></div></section>
     <section><h3>Why flagged</h3><div className="la-factor-list">{STRATEGIES.map(([key, label]) => <div key={key}><span>{label}</span><MiniScore signal={row.strategies[key]} /></div>)}</div></section>
     <section><h3>Live evidence</h3><div className="la-evidence"><div><span>15m residual</span><b>{formatFactor(factors.residual_15m ?? lead?.residual_15m, '%')}</b></div><div><span>Volume vs expected</span><b>{Number(lead?.volume_ratio || factors.volume_surprise || 0) ? `${Number(lead?.volume_ratio || factors.volume_surprise).toFixed(2)}×` : '—'}</b></div><div><span>Opening range</span><b>{factors.breakout_pct != null ? `${formatFactor(factors.breakout_pct, '%')} break` : '—'}</b></div><div><span>OI change</span><b>{formatFactor(factors.oi_change_15m ?? lead?.oi_change, '%')}</b></div></div></section>
-    <section className="la-what"><h3>What AGI sees</h3><p>{explain(row)}</p></section>
+    <section className="la-what"><h3>Why {row.symbol} surfaced</h3><p>{explain(row)}</p><ul>{reason.supporting_factors.map((factor) => <li key={factor}>{factor}</li>)}{reason.negative_factors.map((factor) => <li key={factor}>Opposing: {factor}</li>)}</ul></section>
+    <section><h3>Data quality</h3><div className="la-evidence"><div><span>Price data</span><b>{lead?.price_at_signal ? 'READY' : 'UNAVAILABLE'}</b></div><div><span>Volume data</span><b>{lead?.volume_ratio != null || factors.volume_surprise != null ? 'READY' : 'NOT REQUIRED'}</b></div><div><span>Derivative data</span><b>{row.strategies.derivatives_positioning_v1 ? 'READY' : 'NOT REQUIRED'}</b></div><div><span>Liquidity checks</span><b>{reason.data_quality}</b></div><div><span>Timestamp</span><b>{new Date(row.newest).toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata' })} IST</b></div></div></section>
+    <section><h3>Confidence basis</h3><p className="la-confidence-copy">{reason.confidence_reason}. Confidence is model-state confidence, not probability of positive future return.</p></section>
     <section><h3>Historical validation</h3>{row.samples ? <div className="la-validation"><div><span>Comparable signals</span><b>{row.samples.toLocaleString('en-IN')}</b></div><div><span>Empirical confidence</span><b>{row.quality}%</b></div></div> : <div className="la-notice"><BarChart3 size={18} /><div><strong>Collecting evidence</strong><p>Signal quality is live, but empirical confidence remains unvalidated until enough forward outcomes are complete.</p></div></div>}</section>
+    <section><h3>Research status</h3><div className="la-evidence"><div><span>Lifecycle</span><b>Operational</b></div><div><span>Validation</span><b>Research Signal — validation pending</b></div><div><span>Permitted use</span><b>Research prioritisation</b></div><div><span>Execution</span><b>Blocked</b></div><div><span>Signal ID</span><b>{lead?.id || 'Unavailable'}</b></div><div><span>Data cutoff</span><b>{row.newest}</b></div></div></section>
   </aside></div>;
 }
 
 function explain(row) {
-  const names = STRATEGIES.filter(([key]) => row.strategies[key]?.direction).map(([, label]) => label);
+  const reason = signalReason(row);
+  const names = reason.strategy_sources;
   const direction = row.composite >= 0 ? 'positive' : 'negative';
   if (!names.length) return 'No active directional research classification is present.';
-  return `${row.symbol} has a ${direction} composite research signal. ${names.join(', ')} ${names.length === 1 ? 'is' : 'are'} contributing independent evidence. ${row.samples ? 'Historical confidence is based on completed comparable outcomes.' : 'The live reading has not yet accumulated enough comparable outcomes for empirical validation.'}`;
+  return `${row.symbol} has a ${direction} research signal score of ${scoreText(row.composite)}. The primary measurable driver is ${reason.primary_driver}. ${names.join(', ')} ${names.length === 1 ? 'is' : 'are'} contributing evidence and component agreement is ${row.agreement.toLowerCase()}. ${row.samples ? 'Comparable completed outcomes are available.' : 'The signal is operational but has not accumulated enough outcomes for empirical validation.'}`;
 }
