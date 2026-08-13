@@ -5,6 +5,7 @@ from __future__ import annotations
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+from fastapi.responses import JSONResponse
 
 from app.api.routes import router
 from app.core.config import get_settings
@@ -329,6 +330,46 @@ app = FastAPI(
     lifespan=lifespan,
 )
 app.include_router(router)
+
+
+_MIGRATION_ALLOWLIST = (
+    "/",
+    "/v1/health",
+    "/v1/warehouse/import/capital-iq-workbook/jobs/",
+)
+
+
+@app.middleware("http")
+async def capiq_migration_load_shed(request, call_next):
+    """Reserve the shared web process for the active controlled migration.
+
+    This is deliberately temporary and state-driven: once the durable job is
+    terminal, normal Intelligence Engine traffic is admitted automatically.
+    """
+    path = request.url.path
+    if path == "/" or any(path.startswith(prefix) for prefix in _MIGRATION_ALLOWLIST[1:]):
+        return await call_next(request)
+    try:
+        from financial_warehouse_completion.capiq_background import latest_job
+
+        job = latest_job()
+        status = str((job or {}).get("status") or "")
+        if status in {"QUEUED", "RUNNING", "PAUSED"}:
+            return JSONResponse(
+                status_code=503,
+                content={
+                    "ok": False,
+                    "error": "capiq_migration_priority",
+                    "message": "Intelligence workload temporarily paused while controlled accounting migration completes.",
+                    "job_id": (job or {}).get("job_id"),
+                    "migration_status": status,
+                    "retry_after_seconds": 30,
+                },
+                headers={"Retry-After": "30"},
+            )
+    except Exception:
+        pass
+    return await call_next(request)
 
 
 @app.get("/")
