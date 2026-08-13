@@ -170,8 +170,8 @@ def collect_oecd_policy_rates():
 def source_status():
     return [
         {"source":"World Bank","status":"CONNECTED","collection":"LIVE_API"},
-        {"source":"IMF","status":"CONNECTED","collection":"LIVE_API_WEO"},
-        {"source":"OECD","status":"CONNECTED","collection":"LIVE_SDMX"},
+        {"source":"IMF","status":"DEPLOYMENT_BLOCKED","collection":"RENDER_EGRESS_HTTP_403"},
+        {"source":"OECD","status":"CONFIGURATION_REQUIRED","collection":"SDMX_QUERY_HTTP_400"},
         {"source":"MoSPI","status":"CONFIGURATION_REQUIRED","collection":"API_ACCESS_TOKEN_REQUIRED"},
         {"source":"RBI","status":"MAPPING_REQUIRED","collection":"DBIE_ACCESS_PATH_REQUIRED"},
         {"source":"BIS","status":"MAPPING_REQUIRED","collection":"SDMX_SERIES_KEYS_REQUIRED"},
