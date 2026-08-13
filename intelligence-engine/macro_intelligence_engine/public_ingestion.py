@@ -90,7 +90,7 @@ def _g20_registry_rows():
     rows=[]
     for iso3,country in G20_COUNTRIES.items():
         for key,(indicator,domain,unit) in G20_WORLD_BANK_SERIES.items():
-            rows.append({"series_id":f"g20_{iso3.lower()}_{key}","country_code":iso3,"domain":domain.lower(),"label":key.replace("_"," ").title(),"unit":unit,"frequency":"annual","primary_source":"World Bank","source_url":"https://api.worldbank.org/v2/","source_series_id":indicator,"license_class":"PUBLIC_OFFICIAL","refresh_policy":"ON_RELEASE","active":True,"metadata":{"country_name":country,"connector":"world_bank_g20","ingestion_status":"CONNECTED","pit_policy":"first_successful_agi_fetch"},"updated_at":_now().isoformat()})
+            rows.append({"series_id":f"g20_{iso3.lower()}_{key}","country_code":iso3,"domain":domain.lower(),"label":key.replace("_"," ").title(),"unit":unit,"frequency":"annual","primary_source":"World Bank G20 Comparison","source_url":"https://api.worldbank.org/v2/","source_series_id":indicator,"license_class":"PUBLIC_OFFICIAL","refresh_policy":"ON_RELEASE","active":True,"metadata":{"country_name":country,"upstream_indicator":indicator,"connector":"world_bank_g20","ingestion_status":"CONNECTED","pit_policy":"first_successful_agi_fetch"},"updated_at":_now().isoformat()})
     return rows
 
 def collect_world_bank_g20():
