@@ -83,6 +83,42 @@ def readiness(country: str = "India") -> dict[str, Any]:
         str(row.get("series_id") or "") for row in registry
         if str(row.get("country_code") or row.get("country") or "").lower() in {country_norm.lower(), "in", "ind", "global"}
     }
+    observed_ids = {
+        str(row.get("series_id") or "") for row in observations
+        if str(row.get("country_code") or row.get("country") or "").lower() in {country_norm.lower(), "in", "ind", "global"}
+        and row.get("value_numeric") is not None
+    }
+    domains = Counter(domain for series_id, domain, _, _ in CORE_50 if series_id in observed_ids)
+    domain_totals = Counter(domain for _, domain, _, _ in CORE_50)
+    items = [
+        {
+            "series_id": series_id,
+            "domain": domain,
+            "label": label,
+            "frequency": frequency,
+            "registered": series_id in registry_ids,
+            "observed": series_id in observed_ids,
+        }
+        for series_id, domain, label, frequency in CORE_50
+    ]
+    observed = sum(1 for row in items if row["observed"])
+    return {
+        "ok": True,
+        "country": country_norm,
+        "catalogue": "G20 Core 50 v1",
+        "total": len(CORE_50),
+        "registered": sum(1 for row in items if row["registered"]),
+        "observed": observed,
+        "coverage_percent": round(100 * observed / len(CORE_50), 1),
+        "status": "OPERATIONAL" if observed >= 40 else "DATA BUILDING",
+        "domains": [
+            {"domain": domain, "observed": domains[domain], "total": total}
+            for domain, total in sorted(domain_totals.items())
+        ],
+        "series": items,
+        "sources": __import__("macro_intelligence_engine.public_ingestion", fromlist=["source_status"]).source_status(),
+        "policy": "Only persisted public/official observations count. Catalogue placeholders do not count as coverage.",
+    }
 
 
 def latest_observations(country: str = "India") -> dict[str, Any]:
@@ -128,40 +164,4 @@ def latest_observations(country: str = "India") -> dict[str, Any]:
         "latest_available_at": freshest, "count": len(observations), "observations": observations,
         "pit_status": "PIT LIMITED",
         "policy": "Values are persisted official/public observations. No missing value is estimated or backfilled on read.",
-    }
-    observed_ids = {
-        str(row.get("series_id") or "") for row in observations
-        if str(row.get("country_code") or row.get("country") or "").lower() in {country_norm.lower(), "in", "ind", "global"}
-        and row.get("value_numeric") is not None
-    }
-    domains = Counter(domain for series_id, domain, _, _ in CORE_50 if series_id in observed_ids)
-    domain_totals = Counter(domain for _, domain, _, _ in CORE_50)
-    items = [
-        {
-            "series_id": series_id,
-            "domain": domain,
-            "label": label,
-            "frequency": frequency,
-            "registered": series_id in registry_ids,
-            "observed": series_id in observed_ids,
-        }
-        for series_id, domain, label, frequency in CORE_50
-    ]
-    observed = sum(1 for row in items if row["observed"])
-    return {
-        "ok": True,
-        "country": country_norm,
-        "catalogue": "G20 Core 50 v1",
-        "total": len(CORE_50),
-        "registered": sum(1 for row in items if row["registered"]),
-        "observed": observed,
-        "coverage_percent": round(100 * observed / len(CORE_50), 1),
-        "status": "OPERATIONAL" if observed >= 40 else "DATA BUILDING",
-        "domains": [
-            {"domain": domain, "observed": domains[domain], "total": total}
-            for domain, total in sorted(domain_totals.items())
-        ],
-        "series": items,
-        "sources": __import__("macro_intelligence_engine.public_ingestion", fromlist=["source_status"]).source_status(),
-        "policy": "Only persisted public/official observations count. Catalogue placeholders do not count as coverage.",
     }
