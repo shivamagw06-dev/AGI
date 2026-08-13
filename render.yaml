@@ -73,7 +73,12 @@ services:
       - key: LIVE_ALPHA_UNIVERSE_PRESET
         value: nifty200
       - key: LIVE_ALPHA_PROVIDER
-        value: groww
+        value: upstox
+      # Official V3 WS: Bearer + followRedirects (override with authorize if needed)
+      - key: UPSTOX_FEED_CONNECT_MODE
+        value: redirect
+      - key: LIVE_ALPHA_ALLOW_GROWW_FALLBACK
+        value: "false"
       - key: LIVE_ALPHA_GROWW_POLL_MS
         value: "180000"
       # Groww Cloud cannot reach Render/Supabase; compute equity opportunity here.

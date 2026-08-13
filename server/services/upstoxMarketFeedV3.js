@@ -7,6 +7,8 @@ import { resolveUpstoxAccessToken } from '../providers/upstox.js';
 
 const protoPath = path.join(path.dirname(fileURLToPath(import.meta.url)), '../providers/MarketDataFeedV3.proto');
 const AUTHORIZE_URL = process.env.UPSTOX_FEED_AUTHORIZE_URL || 'https://api.upstox.com/v3/feed/market-data-feed/authorize';
+/** Official V3 feeder endpoint — connect with Bearer + followRedirects (matches Upstox docs / working clients). */
+const MARKET_FEED_URL = process.env.UPSTOX_MARKET_FEED_URL || 'wss://api.upstox.com/v3/feed/market-data-feed';
 const MAX_FULL_KEYS = 1500;
 let feedTypePromise;
 
@@ -72,6 +74,7 @@ export function normalizeFeedResponse(message, receivedAt = new Date()) {
       total_sell_quantity: numeric(body.tsq),
       ohlc,
       request_mode: feed.requestMode || null,
+      source: 'upstox',
     });
   }
   return {
@@ -132,7 +135,10 @@ export async function authorizeMarketFeed({ fetchImpl = globalThis.fetch } = {})
     error.code = 'UPSTOX_AUTH_FAILED';
     throw error;
   }
-  const response = await fetchImpl(AUTHORIZE_URL, { headers: { Accept: '*/*', Authorization: `Bearer ${token}` } });
+  // Authorize docs require Accept: application/json
+  const response = await fetchImpl(AUTHORIZE_URL, {
+    headers: { Accept: 'application/json', Authorization: `Bearer ${token}` },
+  });
   const json = await response.json().catch(() => ({}));
   const url = json?.data?.authorized_redirect_uri;
   if (!response.ok || !url?.startsWith('wss://')) {
@@ -143,14 +149,70 @@ export async function authorizeMarketFeed({ fetchImpl = globalThis.fetch } = {})
   return url;
 }
 
+/**
+ * Resolve WebSocket URL + handshake headers.
+ *
+ * - `redirect` (default): connect to the documented market-data-feed endpoint with
+ *   Bearer + Accept, following redirects (matches Upstox docs and working clients).
+ * - `authorize`: fetch a one-time authorized_redirect_uri; the `code` query param is
+ *   the single-use WS credential — do NOT also send Bearer on that handshake.
+ */
+export async function resolveFeedHandshake({
+  connectMode = process.env.UPSTOX_FEED_CONNECT_MODE || 'redirect',
+  authorize = authorizeMarketFeed,
+} = {}) {
+  const { token } = resolveUpstoxAccessToken();
+  if (!token) {
+    const error = new Error('Upstox access token is required for the V3 live-feed handshake.');
+    error.code = 'UPSTOX_AUTH_FAILED';
+    throw error;
+  }
+  const mode = String(connectMode || 'redirect').trim().toLowerCase();
+  if (mode === 'authorize') {
+    const url = await authorize();
+    return {
+      mode: 'authorize',
+      url,
+      // One-time code in the URL authenticates the socket.
+      headers: { Accept: '*/*' },
+    };
+  }
+  return {
+    mode: 'redirect',
+    url: MARKET_FEED_URL,
+    headers: {
+      Accept: '*/*',
+      Authorization: `Bearer ${token}`,
+    },
+  };
+}
+
 export class UpstoxMarketFeedV3 {
-  constructor({ instrumentKeys, mode = 'full', snapshotStore = new SynchronizedSnapshotStore(), authorize = authorizeMarketFeed, websocketFactory, decoder = decodeMarketFeedMessage, onBatch = async () => {}, reconnect = true, reconnectBaseMs = 1_000, random = Math.random } = {}) {
+  constructor({
+    instrumentKeys,
+    mode = 'full',
+    snapshotStore = new SynchronizedSnapshotStore(),
+    authorize = authorizeMarketFeed,
+    connectMode = process.env.UPSTOX_FEED_CONNECT_MODE || 'redirect',
+    websocketFactory,
+    decoder = decodeMarketFeedMessage,
+    onBatch = async () => {},
+    reconnect = true,
+    reconnectBaseMs = 1_000,
+    random = Math.random,
+  } = {}) {
     this.instrumentKeys = [...new Set((instrumentKeys || []).map(String).map((key) => key.trim()).filter(Boolean))];
-    if (!this.instrumentKeys.length || this.instrumentKeys.some((key) => !key.includes('|'))) throw new Error('Valid Upstox instrument keys are required.');
-    if (mode === 'full' && this.instrumentKeys.length > MAX_FULL_KEYS) throw new Error(`Full-mode feed is limited to ${MAX_FULL_KEYS} combined instrument keys.`);
+    if (!this.instrumentKeys.length || this.instrumentKeys.some((key) => !key.includes('|'))) {
+      throw new Error('Valid Upstox instrument keys are required.');
+    }
+    if (mode === 'full' && this.instrumentKeys.length > MAX_FULL_KEYS) {
+      throw new Error(`Full-mode feed is limited to ${MAX_FULL_KEYS} combined instrument keys.`);
+    }
     this.mode = mode;
     this.snapshotStore = snapshotStore;
     this.authorize = authorize;
+    this.connectMode = String(connectMode || 'redirect').trim().toLowerCase();
+    this.preferredConnectMode = this.connectMode;
     this.websocketFactory = websocketFactory || ((url, headers) => new WebSocket(url, { followRedirects: true, headers }));
     this.decoder = decoder;
     this.onBatch = onBatch;
@@ -161,7 +223,18 @@ export class UpstoxMarketFeedV3 {
     this.timer = null;
     this.stopped = true;
     this.attempt = 0;
-    this.state = { status: 'idle', connected_at: null, last_message_at: null, reconnects: 0, messages: 0, decode_errors: 0, last_error: null, next_retry_at: null };
+    this.state = {
+      status: 'idle',
+      provider: 'upstox',
+      connected_at: null,
+      last_message_at: null,
+      reconnects: 0,
+      messages: 0,
+      decode_errors: 0,
+      last_error: null,
+      next_retry_at: null,
+      connect_mode: this.connectMode,
+    };
   }
 
   async start() {
@@ -174,21 +247,13 @@ export class UpstoxMarketFeedV3 {
   async #connect() {
     this.state.status = 'authorizing';
     try {
-      const url = await this.authorize();
-      if (this.stopped) return;
-      // Upstox V3 requires the bearer token and Accept header on the WebSocket
-      // handshake as well as on the preceding authorization request. The
-      // authorized redirect URL alone is not sufficient for every account.
-      const { token } = resolveUpstoxAccessToken();
-      if (!token) {
-        const error = new Error('Upstox access token is required for the V3 live-feed handshake.');
-        error.code = 'UPSTOX_AUTH_FAILED';
-        throw error;
-      }
-      const socket = this.websocketFactory(url, {
-        Accept: '*/*',
-        Authorization: `Bearer ${token}`,
+      const handshake = await resolveFeedHandshake({
+        connectMode: this.connectMode,
+        authorize: this.authorize,
       });
+      if (this.stopped) return;
+      this.state.connect_mode = handshake.mode;
+      const socket = this.websocketFactory(handshake.url, handshake.headers);
       this.socket = socket;
       socket.binaryType = 'arraybuffer';
       socket.on('open', () => {
@@ -198,7 +263,12 @@ export class UpstoxMarketFeedV3 {
         this.state.last_error = null;
         this.state.next_retry_at = null;
         delete this.state.auth_hint;
-        const request = { guid: crypto.randomUUID(), method: 'sub', data: { mode: this.mode, instrumentKeys: this.instrumentKeys } };
+        // Upstox requires the subscription request as a binary frame.
+        const request = {
+          guid: crypto.randomUUID().replace(/-/g, '').slice(0, 20),
+          method: 'sub',
+          data: { mode: this.mode, instrumentKeys: this.instrumentKeys },
+        };
         socket.send(Buffer.from(JSON.stringify(request)));
       });
       socket.on('message', async (data) => {
@@ -216,14 +286,22 @@ export class UpstoxMarketFeedV3 {
       });
       socket.on('error', (error) => {
         this.state.last_error = error.message;
-        // Authorization of the one-time WebSocket URL has already succeeded at
-        // this point. A handshake 403 can also mean that an old connection from
-        // a rolling deploy has not released its Upstox connection slot yet.
-        // Treat it as recoverable and obtain a fresh one-time URL on retry.
         this.state.status = 'reconnecting';
-        if (isUpstoxAuthError(error)) this.state.auth_hint = 'Live-feed handshake rejected; retrying with a fresh authorized URL.';
+        if (isUpstoxAuthError(error)) {
+          // Redirect+Bearer failed → next retry uses one-time authorize URL without Bearer.
+          if (this.connectMode === 'redirect') this.connectMode = 'authorize';
+          this.state.auth_hint = [
+            'Live-feed handshake rejected (403).',
+            'Upstox allows only 2 market-data WS connections per user — close local/test scripts.',
+            'Retrying with a fresh authorized URL.',
+          ].join(' ');
+        }
       });
-      socket.on('close', () => { this.socket = null; this.state.status = this.stopped ? 'stopped' : 'reconnecting'; this.#scheduleReconnect(); });
+      socket.on('close', () => {
+        this.socket = null;
+        this.state.status = this.stopped ? 'stopped' : 'reconnecting';
+        this.#scheduleReconnect();
+      });
     } catch (error) {
       this.state.last_error = error.message;
       if (isUpstoxAuthError(error)) {
@@ -243,7 +321,11 @@ export class UpstoxMarketFeedV3 {
     this.attempt += 1;
     this.state.reconnects += 1;
     this.state.next_retry_at = new Date(Date.now() + delay).toISOString();
-    this.timer = setTimeout(() => { this.timer = null; this.state.next_retry_at = null; this.#connect(); }, delay);
+    this.timer = setTimeout(() => {
+      this.timer = null;
+      this.state.next_retry_at = null;
+      this.#connect();
+    }, delay);
   }
 
   stop() {
@@ -254,10 +336,17 @@ export class UpstoxMarketFeedV3 {
     this.socket?.close();
     this.socket = null;
     this.state.status = 'stopped';
+    this.connectMode = this.preferredConnectMode;
     return this.status();
   }
 
   status() {
-    return { ...this.state, mode: this.mode, subscribed_instruments: this.instrumentKeys.length, research_only: true };
+    return {
+      ...this.state,
+      provider: 'upstox',
+      mode: this.mode,
+      subscribed_instruments: this.instrumentKeys.length,
+      research_only: true,
+    };
   }
 }

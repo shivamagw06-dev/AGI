@@ -100,7 +100,9 @@ export async function startLiveAlphaRuntime({ Feed = null, Persistence = LiveAlp
   }
   if (runtime) return getLiveAlphaRuntimeStatus();
   try {
-    const provider = String(process.env.LIVE_ALPHA_PROVIDER || 'groww').trim().toLowerCase();
+    // Live Alpha research engines consume Upstox V3 market-data websocket by default.
+    // Groww remains available only when LIVE_ALPHA_PROVIDER=groww is set explicitly.
+    const provider = String(process.env.LIVE_ALPHA_PROVIDER || 'upstox').trim().toLowerCase();
     let universe = await loadLiveAlphaUniverse();
     if (provider === 'groww') {
       universe = await attachGrowwDerivatives(universe);
@@ -130,7 +132,8 @@ export async function startLiveAlphaRuntime({ Feed = null, Persistence = LiveAlp
     const instrumentKeys = [...new Set([universe.benchmarkKey, ...universe.members.flatMap((row) => [row.instrumentKey, row.sectorInstrumentKey, row.derivativeInstrumentKey]).filter(Boolean)])];
     let lastEvaluationMs = 0;
     const FeedClass = Feed || (provider === 'groww' ? GrowwLiveAlphaFeed : UpstoxMarketFeedV3);
-    const feed = new FeedClass({ instrumentKeys, universe, snapshotStore: store, onBatch: async (batch) => {
+    // Upstox-only mode: full websocket feed. Do not mix Groww quote polling.
+    const feed = new FeedClass({ instrumentKeys, universe, snapshotStore: store, mode: 'full', onBatch: async (batch) => {
       pipeline.ingest(batch);
       await persistence.persistBatch(batch);
       if (Date.now() - lastEvaluationMs >= 5_000) {
@@ -157,7 +160,12 @@ export async function startLiveAlphaRuntime({ Feed = null, Persistence = LiveAlp
     };
     await feed.start();
     state.status = 'running';
-    if (provider !== 'groww' && feed.state?.status === 'auth_failed') startGrowwSectorIndexFallback({ store, pipeline, instrumentKeys });
+    // Soft Groww index fallback only when explicitly allowed — Live Alpha itself
+    // stays on Upstox when LIVE_ALPHA_PROVIDER=upstox.
+    const allowGrowwFallback = String(process.env.LIVE_ALPHA_ALLOW_GROWW_FALLBACK || '').toLowerCase() === 'true';
+    if (allowGrowwFallback && provider === 'upstox' && feed.state?.status === 'auth_failed') {
+      startGrowwSectorIndexFallback({ store, pipeline, instrumentKeys });
+    }
     const missingBaselineMembers = universe.members.filter((member) => !baselines.hasInstrument(member.instrumentKey));
     if (missingBaselineMembers.length) {
       state.baseline_bootstrap = { status: 'running', rows: baselines.values.size, covered_instruments: baselines.instrumentCount(), missing_instruments: missingBaselineMembers.length, failures: [] };

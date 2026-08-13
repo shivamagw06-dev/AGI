@@ -24,6 +24,36 @@ test('retains rolling observations and calculates returns', () => {
   assert.equal(Number(result.return60m.toFixed(2)), 5);
 });
 
+test('restores opening range and 15m returns from Upstox 1m OHLC after reconnect', () => {
+  const store = new IntradayFeatureStore();
+  // 09:15–09:29 IST = 03:45–03:59 UTC on this date
+  const open = Date.parse('2026-08-11T03:45:00Z');
+  const bars = Array.from({ length: 15 }, (_, index) => ({
+    interval: 'I1',
+    open: 100,
+    high: 101 + index * 0.1,
+    low: 99.5,
+    close: 100.5 + index * 0.05,
+    volume: 1000 + index,
+    timestamp: open + index * 60_000,
+  }));
+  store.ingest({
+    snapshots: [{
+      instrument_key: 'NSE_EQ|TEST',
+      received_at: '2026-08-11T05:00:00Z',
+      ltp: 103,
+      ohlc: bars,
+    }],
+  });
+  const range = store.openingRange('NSE_EQ|TEST', new Date('2026-08-11T05:00:00Z'));
+  assert.ok(range);
+  assert.equal(Number(range.high.toFixed(2)), 102.4);
+  assert.equal(range.low, 99.5);
+  const returns = store.returns('NSE_EQ|TEST', Date.parse('2026-08-11T05:00:00Z'));
+  assert.ok(returns.return15m !== null);
+  assert.ok(returns.return60m !== null);
+});
+
 test('runs momentum in shadow mode once a bucket has complete features', async () => {
   const universe = Array.from({ length: 10 }, (_, index) => ({ symbol: `S${index}`, sector: 'BANK', instrumentKey: `EQ|${index}`, sectorInstrumentKey: 'INDEX|BANK' }));
   const baselines = new VolumeBaselineIndex(universe.map((row) => ({ instrument_key: row.instrumentKey, minute_of_session: 120, expected_cumulative_volume: 1000 })));

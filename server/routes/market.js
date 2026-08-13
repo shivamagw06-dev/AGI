@@ -625,5 +625,42 @@ export default function createMarketRouter(env = {}) {
     return res.status(200).json(data);
   });
 
+  // Live Alpha / Upstox V3 market-data feed ops (research-only; no order placement).
+  router.get('/upstox-feed/verify', async (_req, res) => {
+    try {
+      const { authorizeMarketFeed } = await import('../services/upstoxMarketFeedV3.js');
+      const url = await authorizeMarketFeed();
+      return res.status(200).json({ ok: true, authorized: Boolean(url), checkedAt: new Date().toISOString() });
+    } catch (err) {
+      return res.status(200).json({
+        ok: false,
+        authorized: false,
+        error: err?.message || 'upstox_feed_verify_failed',
+        code: err?.code || null,
+        hint: 'Refresh UPSTOX_ACCESS_TOKEN on Render (Upstox developer dashboard daily token).',
+        checkedAt: new Date().toISOString(),
+      });
+    }
+  });
+
+  router.post('/upstox-feed/restart', async (_req, res) => {
+    try {
+      const { restartLiveAlphaRuntime } = await import('../services/liveAlphaRuntime.js');
+      const status = await restartLiveAlphaRuntime();
+      return res.status(200).json({ ok: true, ...status });
+    } catch (err) {
+      return res.status(502).json({ ok: false, error: err?.message || 'upstox_feed_restart_failed' });
+    }
+  });
+
+  router.get('/live-alpha/status', async (_req, res) => {
+    try {
+      const { getLiveAlphaRuntimeStatus } = await import('../services/liveAlphaRuntime.js');
+      return res.status(200).json({ ok: true, ...getLiveAlphaRuntimeStatus() });
+    } catch (err) {
+      return res.status(200).json({ ok: false, error: err?.message || 'live_alpha_status_unavailable' });
+    }
+  });
+
   return router;
 }

@@ -5,29 +5,95 @@ function change(current, previous) {
   return previous?.ltp > 0 ? ((current.ltp / previous.ltp) - 1) * 100 : null;
 }
 
+/** Upstox full-mode 1-minute candle interval labels observed in V3 feeds. */
+function isOneMinuteInterval(interval) {
+  return /^(1m|I1|1)$/i.test(String(interval || '').trim());
+}
+
+function sessionDateIst(ms) {
+  return new Date(ms + 5.5 * 60 * 60_000).toISOString().slice(0, 10);
+}
+
 export class IntradayFeatureStore {
   constructor({ retentionMs = 2 * 60 * 60_000 } = {}) {
     this.retentionMs = retentionMs;
     this.series = new Map();
     this.openingRanges = new Map();
   }
+
+  #touchOpeningRange(instrumentKey, session, high, low) {
+    if (!(high > 0) || !(low > 0)) return;
+    const rangeKey = `${session}|${instrumentKey}`;
+    const range = this.openingRanges.get(rangeKey) || { high, low, observations: 0 };
+    range.high = Math.max(range.high, high);
+    range.low = Math.min(range.low, low);
+    range.observations += 1;
+    this.openingRanges.set(rangeKey, range);
+  }
+
+  /**
+   * Upstox full mode ships marketOHLC (1m / 30m / 1d). Use 1m bars to:
+   * - restore opening-range high/low after mid-session reconnects
+   * - seed sparse price history so 15m/60m returns warm up faster than tick-only
+   */
+  #ingestOhlc(instrumentKey, ohlcRows, receivedAtMs) {
+    if (!Array.isArray(ohlcRows) || !ohlcRows.length) return;
+    const cutoff = receivedAtMs - this.retentionMs;
+    for (const bar of ohlcRows) {
+      if (!isOneMinuteInterval(bar.interval)) continue;
+      const barMs = Number(bar.timestamp);
+      if (!Number.isFinite(barMs) || barMs < cutoff || !(bar.close > 0)) continue;
+      const minute = minuteOfSession(new Date(barMs).toISOString());
+      if (minute >= 0 && minute < 15) {
+        this.#touchOpeningRange(
+          instrumentKey,
+          sessionDateIst(barMs),
+          bar.high ?? bar.close,
+          bar.low ?? bar.close,
+        );
+      }
+      this.#upsertPoint(instrumentKey, {
+        instrument_key: instrumentKey,
+        received_at: new Date(barMs).toISOString(),
+        ltp: bar.close,
+        cumulative_volume: null,
+        open_interest: null,
+        spread_bps: null,
+        implied_volatility: null,
+        source: 'upstox_ohlc_1m',
+      }, barMs);
+    }
+  }
+
+  #upsertPoint(instrumentKey, point, at) {
+    const values = this.series.get(instrumentKey) || [];
+    let index = values.length - 1;
+    while (index >= 0 && Date.parse(values[index].received_at) > at) index -= 1;
+    if (index >= 0 && Date.parse(values[index].received_at) === at) {
+      const existing = values[index];
+      // Live ticks replace synthetic OHLC; never overwrite a live tick with OHLC.
+      if (point.source === 'upstox_ohlc_1m' && existing.source !== 'upstox_ohlc_1m') {
+        /* keep live */
+      } else {
+        values[index] = point;
+      }
+    } else {
+      values.splice(index + 1, 0, point);
+    }
+    const cutoff = at - this.retentionMs;
+    while (values.length && Date.parse(values[0].received_at) < cutoff) values.shift();
+    this.series.set(instrumentKey, values);
+  }
+
   ingest(batch) {
     for (const row of batch?.snapshots || []) {
       const at = Date.parse(row.received_at);
       if (!Number.isFinite(at) || !(row.ltp > 0)) continue;
-      const values = this.series.get(row.instrument_key) || [];
-      const last = values.at(-1);
-      if (!last || Date.parse(last.received_at) < at) values.push(row);
-      const cutoff = at - this.retentionMs;
-      while (values.length && Date.parse(values[0].received_at) < cutoff) values.shift();
-      this.series.set(row.instrument_key, values);
+      this.#ingestOhlc(row.instrument_key, row.ohlc, at);
+      this.#upsertPoint(row.instrument_key, row, at);
       const minute = minuteOfSession(row.received_at);
-      const session = new Date(at + 5.5 * 60 * 60_000).toISOString().slice(0, 10);
       if (minute >= 0 && minute < 15) {
-        const rangeKey = `${session}|${row.instrument_key}`;
-        const range = this.openingRanges.get(rangeKey) || { high: row.ltp, low: row.ltp, observations: 0 };
-        range.high = Math.max(range.high, row.ltp); range.low = Math.min(range.low, row.ltp); range.observations += 1;
-        this.openingRanges.set(rangeKey, range);
+        this.#touchOpeningRange(row.instrument_key, sessionDateIst(at), row.ltp, row.ltp);
       }
     }
   }
