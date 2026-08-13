@@ -34,6 +34,7 @@ _LOCK = threading.RLock()
 _THREAD: threading.Thread | None = None
 _PAUSE = threading.Event()
 _READY = False
+_ACTIVE_STATUS: str | None = None
 
 
 def _init() -> None:
@@ -73,6 +74,15 @@ def latest_job() -> dict[str, Any] | None:
     return _decode(_one("SELECT * FROM wh_capiq_import_jobs ORDER BY started_at DESC LIMIT 1"))
 
 
+def migration_active_cached() -> bool:
+    """Fast request-path flag; hits the warehouse only once per process boot."""
+    global _ACTIVE_STATUS
+    if _ACTIVE_STATUS is None:
+        job = latest_job()
+        _ACTIVE_STATUS = str((job or {}).get("status") or "")
+    return _ACTIVE_STATUS in {"QUEUED", "RUNNING", "PAUSED"}
+
+
 def job_status(job_id: str, *, include_chunks: bool = True) -> dict[str, Any]:
     _init()
     job = _decode(_one("SELECT * FROM wh_capiq_import_jobs WHERE job_id = ?", (job_id,)))
@@ -91,6 +101,7 @@ def job_status(job_id: str, *, include_chunks: bool = True) -> dict[str, Any]:
 
 
 def create_job(*, years: Iterable[int] | None = None, actor: str = "fwcp") -> dict[str, Any]:
+    global _ACTIVE_STATUS
     _init()
     selected = tuple(sorted({int(y) for y in (years or DEFAULT_YEARS)}))
     existing = _one(
@@ -144,6 +155,7 @@ def create_job(*, years: Iterable[int] | None = None, actor: str = "fwcp") -> di
         " attempt_count, processed_count, persisted_count, error_count) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
         chunks,
     )
+    _ACTIVE_STATUS = "QUEUED"
     start_worker(job_id, actor=actor)
     return {**job_status(job_id, include_chunks=False), "created": True}
 
@@ -157,11 +169,14 @@ def _load_approved(job: dict[str, Any]) -> tuple[list[dict[str, Any]], dict[str,
 
 
 def _touch(job_id: str, **fields: Any) -> None:
+    global _ACTIVE_STATUS
     fields["heartbeat_at"] = now_iso()
     db.execute(
         "UPDATE wh_capiq_import_jobs SET " + ", ".join(f"{k} = ?" for k in fields) + " WHERE job_id = ?",
         (*fields.values(), job_id),
     )
+    if "status" in fields:
+        _ACTIVE_STATUS = str(fields["status"] or "")
 
 
 def _upgrade_recalculation_chunks(job_id: str) -> None:

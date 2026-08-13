@@ -70,12 +70,10 @@ async def lifespan(_app: FastAPI):
     # a terminal state. API/health/warehouse reads remain available.
     migration_priority = False
     try:
-        from financial_warehouse_completion.capiq_background import latest_job
+        from financial_warehouse_completion.capiq_background import latest_job, migration_active_cached
 
         active_capiq_job = latest_job()
-        migration_priority = str((active_capiq_job or {}).get("status") or "") in {
-            "QUEUED", "RUNNING", "PAUSED",
-        }
+        migration_priority = migration_active_cached()
         if migration_priority:
             log.warning(
                 "capiq_migration_priority_mode",
@@ -350,19 +348,16 @@ async def capiq_migration_load_shed(request, call_next):
     if path == "/" or any(path.startswith(prefix) for prefix in _MIGRATION_ALLOWLIST[1:]):
         return await call_next(request)
     try:
-        from financial_warehouse_completion.capiq_background import latest_job
+        from financial_warehouse_completion.capiq_background import migration_active_cached
 
-        job = latest_job()
-        status = str((job or {}).get("status") or "")
-        if status in {"QUEUED", "RUNNING", "PAUSED"}:
+        if migration_active_cached():
             return JSONResponse(
                 status_code=503,
                 content={
                     "ok": False,
                     "error": "capiq_migration_priority",
                     "message": "Intelligence workload temporarily paused while controlled accounting migration completes.",
-                    "job_id": (job or {}).get("job_id"),
-                    "migration_status": status,
+                    "migration_status": "ACTIVE",
                     "retry_after_seconds": 30,
                 },
                 headers={"Retry-After": "30"},
