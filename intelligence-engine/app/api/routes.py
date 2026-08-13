@@ -20459,6 +20459,14 @@ async def mie_data_readiness(country: str = "India"):
     return readiness(country=country)
 
 
+@router.get("/mie/public-observations/latest")
+async def mie_public_observations_latest(country: str = "India"):
+    """Latest persisted public observations with source and PIT lineage."""
+    from macro_intelligence_engine.public_data import latest_observations
+
+    return latest_observations(country=country)
+
+
 @router.get("/mie/dashboard")
 async def mie_dashboard(country: str = "India"):
     try:

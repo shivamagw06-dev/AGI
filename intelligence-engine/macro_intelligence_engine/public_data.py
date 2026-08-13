@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections import Counter
+from datetime import datetime, timezone
 from typing import Any
 
 CORE_50: tuple[tuple[str, str, str, str], ...] = (
@@ -81,6 +82,52 @@ def readiness(country: str = "India") -> dict[str, Any]:
     registry_ids = {
         str(row.get("series_id") or "") for row in registry
         if str(row.get("country_code") or row.get("country") or "").lower() in {country_norm.lower(), "in", "ind", "global"}
+    }
+
+
+def latest_observations(country: str = "India") -> dict[str, Any]:
+    """Return latest persisted observations with lineage; never calculate missing values."""
+    country_norm = str(country or "India").strip()
+    allowed = {country_norm.lower(), "in", "ind"}
+    registry = {
+        str(row.get("series_id") or ""): row
+        for row in _warehouse_rows("macro_public_series_registry")
+    }
+    rows = [
+        row for row in _warehouse_rows("macro_public_observations")
+        if str(row.get("country_code") or row.get("country") or "").lower() in allowed
+        and row.get("value_numeric") is not None
+    ]
+    latest: dict[str, dict[str, Any]] = {}
+    for row in rows:
+        series_id = str(row.get("series_id") or "")
+        ordering = (str(row.get("period_date") or ""), str(row.get("available_at") or ""))
+        prior = latest.get(series_id)
+        if prior is None or ordering > prior[0]:
+            latest[series_id] = (ordering, row)
+    catalogue = {series_id: (domain, label, frequency) for series_id, domain, label, frequency in CORE_50}
+    observations = []
+    for series_id, (_, row) in sorted(latest.items()):
+        domain, label, frequency = catalogue.get(series_id, ("other", series_id, row.get("frequency")))
+        meta = registry.get(series_id) or {}
+        observations.append({
+            "series_id": series_id, "domain": domain, "label": label,
+            "value": row.get("value_numeric"), "unit": row.get("unit") or meta.get("unit"),
+            "frequency": row.get("frequency") or frequency,
+            "observation_date": row.get("period_date"), "release_date": row.get("release_date"),
+            "available_at": row.get("available_at"), "vintage_date": row.get("vintage_date"),
+            "revision_number": row.get("revision_number", 0),
+            "quality_status": row.get("quality_status") or "UNKNOWN",
+            "source": row.get("source") or meta.get("primary_source"),
+            "source_url": row.get("source_url") or meta.get("source_url"),
+            "pit_status": "PIT LIMITED",
+        })
+    freshest = max((str(row.get("available_at") or "") for _, row in latest.values()), default=None)
+    return {
+        "ok": True, "country": country_norm, "generated_at": datetime.now(timezone.utc).isoformat(),
+        "latest_available_at": freshest, "count": len(observations), "observations": observations,
+        "pit_status": "PIT LIMITED",
+        "policy": "Values are persisted official/public observations. No missing value is estimated or backfilled on read.",
     }
     observed_ids = {
         str(row.get("series_id") or "") for row in observations

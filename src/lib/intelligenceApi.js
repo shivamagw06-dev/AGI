@@ -3193,6 +3193,8 @@ export const postFieRuntimeRun = (body = {}) =>
 export const getMieHealth = () => intelligenceFetch('/mie/health');
 export const getMieDataReadiness = (country = 'India') =>
   intelligenceFetch(`/mie/data-readiness?country=${encodeURIComponent(country)}`, { timeoutMs: 8_000 });
+export const getMieLatestPublicObservations = (country = 'India') =>
+  intelligenceFetch(`/mie/public-observations/latest?country=${encodeURIComponent(country)}`, { timeoutMs: 8_000 });
 export const getMieDashboard = (params = {}) => {
   const qs = new URLSearchParams(
     Object.fromEntries(Object.entries(params).filter(([, v]) => v != null && v !== '')),
