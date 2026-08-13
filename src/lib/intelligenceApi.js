@@ -3323,3 +3323,5 @@ export const getResearchFactorCompany = (symbol, asOf = '') => {
   if (asOf) qs.set('as_of', asOf);
   return intelligenceFetch(`/research-factors/company/${encodeURIComponent(symbol)}${qs.size ? `?${qs}` : ''}`, { timeoutMs: 120_000 });
 };
+export const getCapitalIqMigrationStatus = () =>
+  intelligenceFetch('/warehouse/import/capital-iq-workbook/jobs/latest', { timeoutMs: 30_000 });

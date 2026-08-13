@@ -484,6 +484,49 @@ CREATE TABLE IF NOT EXISTS wh_backfill_dates (
     last_error TEXT,
     updated_at TEXT
 );
+CREATE TABLE IF NOT EXISTS wh_capiq_import_jobs (
+    job_id TEXT PRIMARY KEY,
+    source_file TEXT,
+    source_version TEXT,
+    code_version TEXT,
+    schema_version TEXT,
+    started_at TEXT,
+    completed_at TEXT,
+    status TEXT,
+    phase TEXT,
+    total_rows INTEGER,
+    approved_rows INTEGER,
+    quarantined_rows INTEGER,
+    processed_rows INTEGER,
+    persisted_rows INTEGER,
+    normalized_rows INTEGER,
+    recalculated_rows INTEGER,
+    verified_rows INTEGER,
+    failed_rows INTEGER,
+    current_chunk INTEGER,
+    total_chunks INTEGER,
+    error_count INTEGER,
+    last_error TEXT,
+    heartbeat_at TEXT,
+    years TEXT,
+    receipt TEXT
+);
+CREATE TABLE IF NOT EXISTS wh_capiq_import_chunks (
+    chunk_id TEXT PRIMARY KEY,
+    job_id TEXT,
+    phase TEXT,
+    row_start INTEGER,
+    row_end INTEGER,
+    status TEXT,
+    attempt_count INTEGER,
+    started_at TEXT,
+    completed_at TEXT,
+    processed_count INTEGER,
+    persisted_count INTEGER,
+    error_count INTEGER,
+    last_error TEXT,
+    heartbeat_at TEXT
+);
 """
 
 _META_INDEXES = (
@@ -497,6 +540,8 @@ _META_INDEXES = (
     "CREATE UNIQUE INDEX IF NOT EXISTS idx_bfdate_source_date ON wh_backfill_dates (source, trade_date)",
     "CREATE INDEX IF NOT EXISTS idx_bfdate_status ON wh_backfill_dates (source, status)",
     "CREATE INDEX IF NOT EXISTS idx_job_kind ON wh_backfill_jobs (kind, created_at)",
+    "CREATE INDEX IF NOT EXISTS idx_capiq_job_status ON wh_capiq_import_jobs (status, started_at)",
+    "CREATE INDEX IF NOT EXISTS idx_capiq_chunk_job ON wh_capiq_import_chunks (job_id, phase, row_start)",
     "CREATE INDEX IF NOT EXISTS idx_quarantine_tab ON wh_quarantine (tab_id, created_at)",
     "CREATE INDEX IF NOT EXISTS idx_conflicts_row ON wh_conflicts (tab_id, row_id)",
     "CREATE INDEX IF NOT EXISTS idx_conflicts_entity ON wh_conflicts (entity)",

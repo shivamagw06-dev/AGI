@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Activity, Database, Layers, Scale, ShieldCheck, Target } from 'lucide-react';
 import HedgeFundTerminal, { InlineAsk } from '@/pages/hedgeFundTerminal';
-import { getResearchFactorAudit } from '@/lib/intelligenceApi';
+import { getCapitalIqMigrationStatus, getResearchFactorAudit } from '@/lib/intelligenceApi';
 import './hedgeFundLab.css';
 
 const COMPANY_STRATEGIES = [
@@ -117,6 +117,36 @@ function FactorAudit() {
   );
 }
 
+function MigrationStatus() {
+  const [job, setJob] = useState(null);
+  useEffect(() => {
+    let active = true;
+    const load = () => getCapitalIqMigrationStatus().then((data) => {
+      if (active) setJob(data?.job === null ? null : data);
+    }).catch(() => {});
+    load();
+    const timer = window.setInterval(load, 15000);
+    return () => { active = false; window.clearInterval(timer); };
+  }, []);
+  if (!job?.job_id) return null;
+  const approved = Number(job.approved_rows || 0);
+  const verified = Number(job.verified_rows || 0);
+  const progress = job.status === 'COMPLETED' ? 100 : Math.min(99, approved ? (verified / approved) * 100 : 0);
+  const heartbeat = job.heartbeat_at ? new Date(job.heartbeat_at).toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata' }) : 'Unavailable';
+  return <section className="hfl-migration" aria-labelledby="capiq-migration-title">
+    <div className="hfl-migration-head"><div><span>Warehouse ingestion audit</span><h2 id="capiq-migration-title">Capital IQ Annual Accounting</h2></div><b className={`hfl-migration-state ${String(job.status || '').toLowerCase()}`}>{String(job.status || 'UNKNOWN').replaceAll('_', ' ')}</b></div>
+    <div className="hfl-migration-track" aria-label={`${progress.toFixed(0)} percent independently verified`}><i style={{ width: `${progress}%` }} /></div>
+    <div className="hfl-migration-counts">
+      <div><b>{Number(job.persisted_rows || 0).toLocaleString('en-IN')}</b><span>of {approved.toLocaleString('en-IN')} persisted</span></div>
+      <div><b>{Number(job.normalized_rows || 0).toLocaleString('en-IN')}</b><span>normalized</span></div>
+      <div><b>{Number(job.recalculated_rows || 0).toLocaleString('en-IN')}</b><span>factor inputs recalculated</span></div>
+      <div><b>{verified.toLocaleString('en-IN')}</b><span>independently verified</span></div>
+    </div>
+    <div className="hfl-migration-foot"><span>Phase: {job.phase || 'Queued'}</span><span>Chunk {job.current_chunk || 0} / {job.total_chunks || 0}</span><span>Heartbeat: {heartbeat} IST</span><span>Quarantined: {Number(job.quarantined_rows || 0).toLocaleString('en-IN')}</span><span>Failed: {job.failed_rows || 0}</span></div>
+    <p>Annual fundamental signal · PIT limited. Quarantined records remain available for identity and data-quality review.</p>
+  </section>;
+}
+
 export default function HedgeFundResearchPage() {
   useEffect(() => { document.title = 'Hedge Fund | Agarwal Global Investments'; }, []);
   return (
@@ -132,6 +162,7 @@ export default function HedgeFundResearchPage() {
       </header>
       <main className="hfl-body">
         <ResearchArchitecture />
+        <MigrationStatus />
         <FactorAudit />
         <section className="hfl-terminal-band">
           <div className="hfl-programme-title"><div><span>Current basic implementation</span><h2>Warehouse research screens</h2></div><p>These screens use available valuation, profitability, leverage and consensus fields. They are inputs to the factor build, not the completed mathematics described above.</p></div>

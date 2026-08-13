@@ -19035,8 +19035,6 @@ async def warehouse_import_capital_iq_workbook_run(
     payload: dict[str, Any] = Body(default_factory=dict),
     x_agi_actor: str | None = Header(default=None),
 ):
-    from financial_warehouse_completion.production import run_capiq_workbook
-
     body = payload or {}
     years = body.get("years")
     if years is not None and (not isinstance(years, list) or not all(str(y).isdigit() for y in years)):
@@ -19044,16 +19042,39 @@ async def warehouse_import_capital_iq_workbook_run(
     if bool(body.get("dry_run")):
         from financial_warehouse_completion.production import stage_capiq_workbook
         return stage_capiq_workbook(years=[int(year) for year in years] if years else None)
-    # Parsing, audited warehouse writes, and formula recalculation are CPU/DB
-    # heavy. Keep them off the event loop so health and read APIs remain live.
-    from functools import partial
-    from starlette.concurrency import run_in_threadpool
-
-    return await run_in_threadpool(partial(
-        run_capiq_workbook,
+    from financial_warehouse_completion.capiq_background import create_job
+    return create_job(
         years=[int(year) for year in years] if years else None,
         actor=_warehouse_actor(body, x_agi_actor),
-    ))
+    )
+
+
+@router.get("/warehouse/import/capital-iq-workbook/jobs/latest")
+async def warehouse_import_capital_iq_workbook_latest():
+    from financial_warehouse_completion.capiq_background import latest_job, job_status
+    job = latest_job()
+    return job_status(str(job["job_id"])) if job else {"ok": True, "job": None}
+
+
+@router.get("/warehouse/import/capital-iq-workbook/jobs/{job_id}")
+async def warehouse_import_capital_iq_workbook_job(job_id: str):
+    from financial_warehouse_completion.capiq_background import job_status
+    return job_status(job_id)
+
+
+@router.post("/warehouse/import/capital-iq-workbook/jobs/{job_id}/pause")
+async def warehouse_import_capital_iq_workbook_pause(job_id: str):
+    from financial_warehouse_completion.capiq_background import pause
+    return pause(job_id)
+
+
+@router.post("/warehouse/import/capital-iq-workbook/jobs/{job_id}/resume")
+async def warehouse_import_capital_iq_workbook_resume(
+    job_id: str, payload: dict[str, Any] = Body(default_factory=dict),
+    x_agi_actor: str | None = Header(default=None),
+):
+    from financial_warehouse_completion.capiq_background import resume
+    return resume(job_id, actor=_warehouse_actor(payload or {}, x_agi_actor))
 
 
 @router.get("/warehouse/import/sector-ratio-workbook")

@@ -109,6 +109,14 @@ async def lifespan(_app: FastAPI):
         threading.Thread(target=_run_ikt_seed, name="ikt-capital-iq-seed", daemon=True).start()
     except Exception as exc:
         log.warning("ikt_capital_iq_seed_thread_failed", extra={"error": str(exc)[:160]})
+    # Resume the first incomplete Capital IQ migration from its durable chunk
+    # checkpoint. Completed chunks are never replayed.
+    try:
+        from financial_warehouse_completion.capiq_background import resume_incomplete
+        capiq_resume = resume_incomplete()
+        log.info("capiq_background_resume", extra=capiq_resume)
+    except Exception as exc:
+        log.warning("capiq_background_resume_failed", extra={"error": str(exc)[:160]})
     # Seed the committed 10-year CapIQ sector-ratio workbook into the durable
     # warehouse.  It is fingerprinted and idempotent: a matching deploy only
     # performs a registry lookup, while a new workbook rebuilds the affected
