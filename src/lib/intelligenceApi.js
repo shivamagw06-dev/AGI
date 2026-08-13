@@ -3202,6 +3202,7 @@ export const getMieDataReadiness = (country = 'India') =>
   publicMieFetch(`/mie/data-readiness?country=${encodeURIComponent(country)}`);
 export const getMieLatestPublicObservations = (country = 'India') =>
   publicMieFetch(`/mie/public-observations/latest?country=${encodeURIComponent(country)}`);
+export const getMieG20Matrix = () => publicMieFetch('/mie/g20/matrix', 20_000);
 export const getMieDashboard = (params = {}) => {
   const qs = new URLSearchParams(
     Object.fromEntries(Object.entries(params).filter(([, v]) => v != null && v !== '')),

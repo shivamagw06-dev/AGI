@@ -20467,6 +20467,13 @@ async def mie_public_observations_latest(country: str = "India"):
     return latest_observations(country=country)
 
 
+@router.get("/mie/g20/matrix")
+async def mie_g20_matrix():
+    from macro_intelligence_engine.public_data import g20_matrix
+
+    return g20_matrix()
+
+
 @router.get("/mie/dashboard")
 async def mie_dashboard(country: str = "India"):
     try:

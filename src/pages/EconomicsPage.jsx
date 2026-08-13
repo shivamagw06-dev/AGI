@@ -3,7 +3,7 @@ import { Activity, AlertTriangle, Database, ExternalLink, Globe2, Landmark, Scal
 import PageShell from '@/components/Layout/PageShell';
 import AskAgiBar from '@/components/Home/AskAgiBar';
 import DeskResearchFeed from '@/components/Research/DeskResearchFeed';
-import { getMieDataReadiness, getMieLatestPublicObservations } from '@/lib/intelligenceApi';
+import { getMieDataReadiness, getMieG20Matrix, getMieLatestPublicObservations } from '@/lib/intelligenceApi';
 import './economicsPage.css';
 
 const PULSE = [
@@ -31,15 +31,18 @@ const fmt = (value) => {
 function Status({ children, tone = '' }) { return <span className={`eco-status ${tone}`}>{children}</span>; }
 
 export default function EconomicsPage() {
+  const [view, setView] = useState('india');
   const [readiness, setReadiness] = useState(null);
   const [publicData, setPublicData] = useState(null);
+  const [g20, setG20] = useState(null);
   useEffect(() => { document.title = 'Economic Intelligence | AGI'; }, []);
   useEffect(() => {
     let active = true;
-    Promise.allSettled([getMieDataReadiness('India'), getMieLatestPublicObservations('India')]).then(([r, o]) => {
+    Promise.allSettled([getMieDataReadiness('India'), getMieLatestPublicObservations('India'), getMieG20Matrix()]).then(([r, o, g]) => {
       if (!active) return;
       if (r.status === 'fulfilled') setReadiness(r.value);
       if (o.status === 'fulfilled') setPublicData(o.value);
+      if (g.status === 'fulfilled') setG20(g.value);
     });
     return () => { active = false; };
   }, []);
@@ -51,17 +54,29 @@ export default function EconomicsPage() {
   return <PageShell title="Economic Intelligence" eyebrow="AGI Economics" description="Macro conditions, economic regimes and transmission across markets." metaTitle="Economic Intelligence | Agarwal Global Investments" wide>
     <div className="eco-root eco-terminal">
       <section className="eco-controls" aria-label="Economics scope">
-        <div><span>Country</span><b>India</b></div><div><span>Universe</span><b>Core 50</b></div><div><span>History</span><b>Building</b></div><div><span>Frequency</span><b>Mixed</b></div>
+        <div className="eco-view-switch"><span>View</span><div><button className={view === 'india' ? 'active' : ''} onClick={() => setView('india')}>India</button><button className={view === 'g20' ? 'active' : ''} onClick={() => setView('g20')}>G20</button></div></div><div><span>Universe</span><b>{view === 'g20' ? '19 economies' : 'Core 50'}</b></div><div><span>History</span><b>Building</b></div><div><span>Frequency</span><b>Annual comparable</b></div>
       </section>
 
       <section className="eco-source-strip">
         <div><Database size={16}/><span>Latest collection</span><b>{latest ? latest.toLocaleDateString('en-IN') : 'Loading'}</b></div>
         <div><Activity size={16}/><span>Data freshness</span><b>{age == null ? 'Checking' : `${age} day${age === 1 ? '' : 's'}`}</b></div>
-        <div><Globe2 size={16}/><span>Series coverage</span><b>{readiness?.observed ?? 0} / {readiness?.total ?? 50}</b></div>
+        <div><Globe2 size={16}/><span>Series coverage</span><b>{view === 'g20' ? `${g20?.observed ?? 0} / ${g20?.total ?? 152}` : `${readiness?.observed ?? 0} / ${readiness?.total ?? 50}`}</b></div>
         <div><ShieldCheck size={16}/><span>Point in time</span><b>PIT limited</b></div>
       </section>
 
       <section className="eco-ask"><div><span>Research interface</span><h2>Ask what changed, why it matters and what evidence is missing</h2><p>Ask AGI uses persisted evidence and should distinguish observations from interpretation.</p></div><AskAgiBar placeholder="Ask what the current data says about India’s external position..." size="large" buttonLabel="Ask AGI" ariaLabel="Ask AGI about economics"/></section>
+
+      {view === 'g20' && <section className="eco-band eco-g20-terminal">
+        <header className="eco-section-head"><div><span>G20 macro monitor</span><h2>Comparable evidence across 19 economies</h2></div><Status tone={g20?.observed === g20?.total ? 'stable' : 'forecast'}>{g20?.status || 'DATA BUILDING'}</Status></header>
+        <div className="eco-g20-summary"><div><strong>{g20?.country_count ?? 19}</strong><span>Economies</span></div><div><strong>{g20?.indicator_count ?? 8}</strong><span>Comparable indicators</span></div><div><strong>{g20?.observed ?? 0}<small> / {g20?.total ?? 152}</small></strong><span>Persisted observations</span></div><div><strong>{g20?.coverage_percent ?? 0}%</strong><span>Coverage</span></div></div>
+        <div className="eco-g20-note"><AlertTriangle size={15}/><p>This is the observed layer. AGI does not assign country scores, ranks or regimes until historical factor calculations and point-in-time validation are available.</p></div>
+        <div className="eco-g20-matrix"><div className="head"><b>Economy</b><b>GDP growth</b><b>Inflation</b><b>Unemployment</b><b>Debt / GDP</b><b>Current account</b><b>Investment</b><b>Private credit</b><b>Coverage</b></div>{(g20?.countries || []).map((row) => {
+          const value = (key) => row.indicators?.[key];
+          const cell = (key) => { const item=value(key); return <span className={!item ? 'missing' : ''}>{item ? <>{fmt(item.value)}<small>{item.unit} · {String(item.observation_date || '').slice(0,4)}</small></> : <>—<small>DATA BUILDING</small></>}</span>; };
+          return <div className={row.iso3 === 'IND' ? 'india' : ''} key={row.iso3}><b>{row.country}<small>{row.iso3}</small></b>{cell('gdp_growth')}{cell('inflation')}{cell('unemployment')}{cell('government_debt_gdp')}{cell('current_account_gdp')}{cell('investment_gdp')}{cell('private_credit_gdp')}<strong>{row.observed} / {row.total}</strong></div>;
+        })}</div>
+        <footer className="eco-g20-footer"><Database size={14}/><span>Source: World Bank Indicators API · Annual latest available · PROVISIONAL · PIT LIMITED</span></footer>
+      </section>}
 
       <section className="eco-band eco-regime-terminal">
         <header className="eco-section-head"><div><span>Macro regime</span><h2>Classification withheld until factor history is sufficient</h2></div><Status tone="forecast">DATA BUILDING</Status></header>
