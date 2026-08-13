@@ -25,6 +25,7 @@ from institutional_warehouse.schema import find_tab
 from institutional_warehouse.values import now_iso
 
 CHUNK_SIZE = 500
+RECALC_STAGES = ("statement_derivations", "ratios", "annual_sector_ratios", "valuation", "factors", "quality")
 CODE_VERSION = "CAPIQ_BACKGROUND_V1"
 SCHEMA_VERSION = "CAPIQ_V2"
 ACTIVE = ("QUEUED", "RUNNING")
@@ -113,7 +114,7 @@ def create_job(*, years: Iterable[int] | None = None, actor: str = "fwcp") -> di
     persistence_chunks = (approved + CHUNK_SIZE - 1) // CHUNK_SIZE
     evidence_chunks = (len(prepared["audits"]) + CHUNK_SIZE - 1) // CHUNK_SIZE
     identity_chunks = (len(prepared["identities"]) + CHUNK_SIZE - 1) // CHUNK_SIZE
-    total_chunks = 1 + evidence_chunks + identity_chunks + persistence_chunks + 3
+    total_chunks = 1 + evidence_chunks + identity_chunks + persistence_chunks + 2 + len(RECALC_STAGES)
     db.execute(
         "INSERT INTO wh_capiq_import_jobs (job_id, source_file, source_version, code_version,"
         " schema_version, started_at, status, phase, total_rows, approved_rows, quarantined_rows,"
@@ -133,8 +134,11 @@ def create_job(*, years: Iterable[int] | None = None, actor: str = "fwcp") -> di
     for idx, start in enumerate(range(0, approved, CHUNK_SIZE), 1):
         end = min(start + CHUNK_SIZE, approved)
         chunks.append((f"{job_id}:persist:{idx}", job_id, "PERSIST", start, end, "QUEUED", 0, 0, 0, 0))
-    for phase in ("NORMALIZE", "RECALCULATE", "VERIFY"):
-        chunks.append((f"{job_id}:{phase.lower()}", job_id, phase, 0, approved, "QUEUED", 0, 0, 0, 0))
+    chunks.append((f"{job_id}:normalize", job_id, "NORMALIZE", 0, approved, "QUEUED", 0, 0, 0, 0))
+    for idx, _stage in enumerate(RECALC_STAGES):
+        chunks.append((f"{job_id}:recalculate:{idx + 1}", job_id, "RECALCULATE", idx, idx + 1,
+                       "QUEUED", 0, 0, 0, 0))
+    chunks.append((f"{job_id}:verify", job_id, "VERIFY", 0, approved, "QUEUED", 0, 0, 0, 0))
     db.executemany(
         "INSERT INTO wh_capiq_import_chunks (chunk_id, job_id, phase, row_start, row_end, status,"
         " attempt_count, processed_count, persisted_count, error_count) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
@@ -158,6 +162,38 @@ def _touch(job_id: str, **fields: Any) -> None:
         "UPDATE wh_capiq_import_jobs SET " + ", ".join(f"{k} = ?" for k in fields) + " WHERE job_id = ?",
         (*fields.values(), job_id),
     )
+
+
+def _upgrade_recalculation_chunks(job_id: str) -> None:
+    """Upgrade an active V1 single recalculation checkpoint in place."""
+    rows = db.query("SELECT * FROM wh_capiq_import_chunks WHERE job_id=? AND phase='RECALCULATE'", (job_id,))
+    if len(rows) != 1 or str(rows[0].get("chunk_id") or "").count(":") > 2:
+        return
+    old = rows[0]
+    if old.get("status") == "COMPLETED":
+        return
+    db.execute("DELETE FROM wh_capiq_import_chunks WHERE chunk_id=?", (old["chunk_id"],))
+    payload = [
+        (f"{job_id}:recalculate:{idx + 1}", job_id, "RECALCULATE", idx, idx + 1, "QUEUED", 0, 0, 0, 0)
+        for idx, _stage in enumerate(RECALC_STAGES)
+    ]
+    db.executemany(
+        "INSERT INTO wh_capiq_import_chunks (chunk_id, job_id, phase, row_start, row_end, status,"
+        " attempt_count, processed_count, persisted_count, error_count) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        payload,
+    )
+    db.execute("UPDATE wh_capiq_import_jobs SET total_chunks=total_chunks+?, phase='RECALCULATE', heartbeat_at=? WHERE job_id=?",
+               (len(RECALC_STAGES) - 1, now_iso(), job_id))
+
+
+def _stage_heartbeat(job_id: str, chunk_id: str, stop: threading.Event) -> None:
+    while not stop.wait(30):
+        stamp = now_iso()
+        try:
+            db.execute("UPDATE wh_capiq_import_jobs SET heartbeat_at=? WHERE job_id=?", (stamp, job_id))
+            db.execute("UPDATE wh_capiq_import_chunks SET heartbeat_at=? WHERE chunk_id=?", (stamp, chunk_id))
+        except Exception:
+            pass
 
 
 def _chunk_run(chunk: dict[str, Any], job: dict[str, Any], approved: list[dict[str, Any]],
@@ -200,12 +236,19 @@ def _chunk_run(chunk: dict[str, Any], job: dict[str, Any], approved: list[dict[s
         counts = _verification_counts(approved)
         persisted = processed = counts["normalized"]
     elif phase == "RECALCULATE":
-        result = recalculate(actor=actor, stages=(
-            "statement_derivations", "ratios", "annual_sector_ratios", "valuation", "factors", "quality",
-        ))
+        stage_index = int(chunk["row_start"])
+        stage = RECALC_STAGES[stage_index]
+        stop_heartbeat = threading.Event()
+        heartbeat = threading.Thread(target=_stage_heartbeat, args=(str(job["job_id"]), chunk_id, stop_heartbeat),
+                                     name=f"capiq-heartbeat-{stage}", daemon=True)
+        heartbeat.start()
+        try:
+            result = recalculate(actor=actor, stages=(stage,))
+        finally:
+            stop_heartbeat.set()
         if not result.get("ok"):
             raise RuntimeError(json.dumps(result.get("errors") or [])[:1000])
-        persisted = processed = len(approved)
+        persisted = processed = len(approved) if stage == RECALC_STAGES[-1] else 0
     else:
         receipt = _verify(job, approved)
         persisted = processed = int(receipt["verified"])
@@ -279,6 +322,7 @@ def _run(job_id: str, actor: str) -> None:
         if not job.get("ok"): return
         _touch(job_id, status="RUNNING")
         approved, prepared = _load_approved(job)
+        _upgrade_recalculation_chunks(job_id)
         chunks = db.query(
             "SELECT * FROM wh_capiq_import_chunks WHERE job_id=? AND status!='COMPLETED'"
             " ORDER BY CASE phase WHEN 'MAPPING' THEN 1 WHEN 'EVIDENCE' THEN 2 WHEN 'IDENTITY' THEN 3"
@@ -317,7 +361,11 @@ def _run(job_id: str, actor: str) -> None:
             if chunk["phase"] in ("NORMALIZE", "RECALCULATE", "VERIFY"):
                 fields["normalized_rows"] = int((counts or {}).get("normalized") or 0)
             if chunk["phase"] in ("RECALCULATE", "VERIFY"):
-                fields["recalculated_rows"] = len(approved)
+                remaining_recalc = _one(
+                    "SELECT COUNT(*) n FROM wh_capiq_import_chunks WHERE job_id=? AND phase='RECALCULATE' AND status!='COMPLETED'",
+                    (job_id,),
+                ) or {}
+                fields["recalculated_rows"] = len(approved) if int(remaining_recalc.get("n") or 0) == 0 else 0
             if chunk["phase"] == "VERIFY":
                 receipt = _decode(_one("SELECT receipt FROM wh_capiq_import_jobs WHERE job_id=?", (job_id,))) or {}
                 rec = receipt.get("receipt") or {}
