@@ -63,7 +63,11 @@ def run_refresh(*, mode: str = "daily", country: str = DEFAULT_COUNTRY) -> dict[
         public_data = None
         if ctry.lower() == DEFAULT_COUNTRY.lower() and _truthy("MIE_PUBLIC_DATA_ENABLED", "true"):
             last = _STATE.get("last_public_data_run")
-            due = not last or (datetime.now(timezone.utc) - datetime.fromisoformat(last)).total_seconds() >= 86400
+            due = (
+                mode_norm == "public_data"
+                or not last
+                or (datetime.now(timezone.utc) - datetime.fromisoformat(last)).total_seconds() >= 86400
+            )
             if due:
                 try:
                     from macro_intelligence_engine.public_ingestion import run_public_ingestion
