@@ -2547,6 +2547,26 @@ export default function createIntelligenceRouter() {
     }
   });
 
+  router.get('/research-factors/health', kfGet('/v1/research-factors/health'));
+  router.get('/research-factors/audit', async (req, res) => {
+    try {
+      const qs = new URLSearchParams(req.query || {}).toString();
+      const r = await engineFetch(`/v1/research-factors/audit${qs ? `?${qs}` : ''}`, { timeoutMs: 120_000 });
+      res.status(r.status).json(r.data);
+    } catch (err) {
+      res.status(504).json({ error: err.message || 'research factor audit failed', timeout: true });
+    }
+  });
+  router.get('/research-factors/company/:symbol', async (req, res) => {
+    try {
+      const qs = new URLSearchParams(req.query || {}).toString();
+      const r = await engineFetch(`/v1/research-factors/company/${encodeURIComponent(req.params.symbol)}${qs ? `?${qs}` : ''}`, { timeoutMs: 120_000 });
+      res.status(r.status).json(r.data);
+    } catch (err) {
+      res.status(504).json({ error: err.message || 'research factor company lookup failed', timeout: true });
+    }
+  });
+
   router.get('/universal-knowledge/health', kfGet('/v1/universal-knowledge/health'));
   router.get('/universal-knowledge/registry', kfGet('/v1/universal-knowledge/registry'));
   router.post('/universal-knowledge/orchestrate', async (req, res) => {

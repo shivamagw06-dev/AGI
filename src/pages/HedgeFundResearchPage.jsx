@@ -1,7 +1,8 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Activity, Database, Layers, Scale, ShieldCheck, Target } from 'lucide-react';
 import HedgeFundTerminal, { InlineAsk } from '@/pages/hedgeFundTerminal';
+import { getResearchFactorAudit } from '@/lib/intelligenceApi';
 import './hedgeFundLab.css';
 
 const COMPANY_STRATEGIES = [
@@ -69,6 +70,52 @@ function ResearchArchitecture() {
   );
 }
 
+const isNumber = (value) => value !== null && value !== undefined && value !== '' && Number.isFinite(Number(value));
+const score = (value) => isNumber(value) ? Number(value).toFixed(1) : 'Unavailable';
+const percent = (value) => isNumber(value) ? `${(Number(value) * 100).toFixed(1)}%` : 'Unavailable';
+
+function FactorAudit() {
+  const [audit, setAudit] = useState(null);
+  const [error, setError] = useState('');
+  useEffect(() => {
+    let active = true;
+    getResearchFactorAudit(20).then((data) => { if (active) setAudit(data); }).catch((err) => { if (active) setError(err?.message || 'Factor audit unavailable'); });
+    return () => { active = false; };
+  }, []);
+  const rows = Array.isArray(audit?.rows) ? audit.rows : [];
+  const lead = rows[0];
+  return (
+    <section className="hfl-factor-audit" aria-labelledby="factor-audit-title">
+      <div className="hfl-programme-title">
+        <div><span>Research factor layer</span><h2 id="factor-audit-title">Quality and relative mispricing audit</h2></div>
+        <p>Versioned warehouse calculations with explicit missing-data and point-in-time status. In Development means research use only.</p>
+      </div>
+      {error ? <div className="hfl-factor-empty">Factor output is currently unavailable. {error}</div> : null}
+      {!error && !audit ? <div className="hfl-factor-empty">Calculating warehouse factors...</div> : null}
+      {!error && audit && rows.length === 0 ? <div className="hfl-factor-empty">No eligible factor outputs are available for this cutoff.</div> : null}
+      {rows.length > 0 ? <>
+        <div className="hfl-factor-meta"><b>{audit.status || 'IN_DEVELOPMENT'}</b><span>{audit.layer_version}</span><span>As of {audit.as_of}</span><span>{audit.universe} companies evaluated</span></div>
+        <div className="hfl-factor-table-wrap"><table className="hfl-factor-table">
+          <thead><tr><th>Company</th><th>Quality</th><th>ROIC 5Y</th><th>ROIC rank</th><th>FCF margin</th><th>Mispricing</th><th>Value rank</th><th>Data quality</th><th>PIT status</th></tr></thead>
+          <tbody>{rows.map((row) => <tr key={row.symbol}>
+            <td><b>{row.symbol}</b><span>{row.company_name || 'Name unavailable'}</span></td>
+            <td>{score(row.quality_score)}</td><td>{percent(row.roic_5y)}</td><td>{score(row.roic_percentile)}</td>
+            <td>{percent(row.fcf_margin)}</td><td>{score(row.mispricing_score)}</td><td>{score(row.valuation_percentile)}</td>
+            <td>{score(row.data_quality)}</td><td><span className="hfl-pit-status">{String(row.validation_status || 'Unavailable').replaceAll('_', ' ')}</span></td>
+          </tr>)}</tbody>
+        </table></div>
+        {lead ? <div className="hfl-research-summary">
+          <header><span>Research summary</span><h3>{lead.company_name || lead.symbol} · {lead.primary_factor}</h3></header>
+          <div><b>Supporting factors</b><p>{lead.supporting_factors?.join(' · ') || 'Unavailable'}</p></div>
+          <div><b>Positive evidence</b><p>{lead.primary_evidence?.join(' · ') || 'Unavailable'}</p></div>
+          <div><b>Contradictory evidence</b><p>{lead.contradictory_evidence?.join(' · ') || 'None identified from available fields'}</p></div>
+          <div><b>Key limitation</b><p>{lead.key_risk}</p></div>
+        </div> : null}
+      </> : null}
+    </section>
+  );
+}
+
 export default function HedgeFundResearchPage() {
   useEffect(() => { document.title = 'Hedge Fund | Agarwal Global Investments'; }, []);
   return (
@@ -84,6 +131,7 @@ export default function HedgeFundResearchPage() {
       </header>
       <main className="hfl-body">
         <ResearchArchitecture />
+        <FactorAudit />
         <section className="hfl-terminal-band">
           <div className="hfl-programme-title"><div><span>Current basic implementation</span><h2>Warehouse research screens</h2></div><p>These screens use available valuation, profitability, leverage and consensus fields. They are inputs to the factor build, not the completed mathematics described above.</p></div>
           <HedgeFundTerminal />

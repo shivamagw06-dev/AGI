@@ -10108,6 +10108,27 @@ async def hedge_fund_lab_reliability():
     return reliability_status()
 
 
+@router.get("/research-factors/health")
+async def research_factors_health():
+    from research_factor_layer.production import health
+
+    return health()
+
+
+@router.get("/research-factors/audit")
+async def research_factors_audit(limit: int = 20, as_of: str | None = None):
+    from research_factor_layer.production import audit
+
+    return audit(as_of=as_of, limit=max(1, min(int(limit or 20), 100)))
+
+
+@router.get("/research-factors/company/{symbol}")
+async def research_factors_company(symbol: str, as_of: str | None = None):
+    from research_factor_layer.production import company
+
+    return company(symbol, as_of=as_of)
+
+
 @router.get("/hedge-fund-lab/compare")
 async def hedge_fund_lab_compare():
     from hedge_fund_lab.production import compare

@@ -3311,3 +3311,15 @@ export const getHflScan = (strategy, params = {}) => {
     { timeoutMs: 25_000 },
   );
 };
+
+/** Versioned, warehouse-backed research factors. */
+export const getResearchFactorAudit = (limit = 20, asOf = '') => {
+  const qs = new URLSearchParams({ limit: String(limit) });
+  if (asOf) qs.set('as_of', asOf);
+  return intelligenceFetch(`/research-factors/audit?${qs}`, { timeoutMs: 120_000 });
+};
+export const getResearchFactorCompany = (symbol, asOf = '') => {
+  const qs = new URLSearchParams();
+  if (asOf) qs.set('as_of', asOf);
+  return intelligenceFetch(`/research-factors/company/${encodeURIComponent(symbol)}${qs.size ? `?${qs}` : ''}`, { timeoutMs: 120_000 });
+};
