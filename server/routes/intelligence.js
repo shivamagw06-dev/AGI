@@ -8813,12 +8813,14 @@ export default function createIntelligenceRouter() {
   router.get('/warehouse/import/status', warehouseGet('/v1/warehouse/import/status'));
   router.get('/warehouse/import/board', warehouseGet('/v1/warehouse/import/board'));
   router.get('/warehouse/import/capital-iq', warehouseGet('/v1/warehouse/import/capital-iq'));
+  router.get('/warehouse/import/capital-iq-workbook', warehouseGet('/v1/warehouse/import/capital-iq-workbook', 300_000));
   router.post('/warehouse/import/start', warehousePost('/v1/warehouse/import/start'));
   router.post('/warehouse/import/stop', warehousePost('/v1/warehouse/import/stop'));
   router.post('/warehouse/import/resume', warehousePost('/v1/warehouse/import/resume'));
   router.post('/warehouse/import/retry', warehousePost('/v1/warehouse/import/retry', 300_000));
   router.post('/warehouse/import/run', warehousePost('/v1/warehouse/import/run', 300_000));
   router.post('/warehouse/import/capital-iq', warehousePost('/v1/warehouse/import/capital-iq', 300_000));
+  router.post('/warehouse/import/capital-iq-workbook', warehousePost('/v1/warehouse/import/capital-iq-workbook', 600_000));
   router.post('/warehouse/share-count/:symbol/sync', warehousePost((req) =>
     `/v1/warehouse/share-count/${encode(req.params.symbol)}/sync`));
   // Phase 7.4F — Yahoo-first financial fill (fast EMPTY / thin path)
