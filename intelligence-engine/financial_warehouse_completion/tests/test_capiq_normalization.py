@@ -37,7 +37,7 @@ def test_unmatched_company_is_held_not_written():
     )
     assert prepared["accepted"] == []
     assert prepared["audits"][0]["overall_status"] == "REVIEW_REQUIRED"
-    assert prepared["audits"][0]["write_status"] == "HELD"
+    assert prepared["audits"][0]["write_status"] == "QUARANTINED"
 
 
 def test_verified_company_period_has_all_required_fields_before_release():
@@ -74,3 +74,28 @@ def test_accepted_row_and_audit_carry_reconciled_values():
     assert prepared["accepted"][0]["working_capital"] == 120
     assert prepared["audits"][0]["reconciliation"] == "REPAIRED"
     assert prepared["audits"][0]["repaired_fields"] == ["working_capital"]
+
+
+def test_negative_equity_is_retained_as_a_warning_not_quarantined():
+    prepared = audit_and_prepare(
+        [{"symbol": "TCS", "fiscal_year": "FY2025", "pat": -10, "assets": 500,
+          "equity": -30, "revenue": 1000}],
+        field_map={"PAT": "pat", "Total Assets": "assets", "Total Equity": "equity",
+                   "Revenue": "revenue"},
+        source_file="2016-2026.xlsx", masters=_masters(),
+    )
+    assert len(prepared["accepted"]) == 1
+    assert prepared["audits"][0]["data_warnings"] == ["equity", "pat"]
+    assert prepared["audits"][0]["quarantine_reasons"] == []
+
+
+def test_zero_assets_remains_quarantined():
+    prepared = audit_and_prepare(
+        [{"symbol": "TCS", "fiscal_year": "FY2025", "pat": 10, "assets": 0,
+          "equity": -30, "revenue": 1000}],
+        field_map={"PAT": "pat", "Total Assets": "assets", "Total Equity": "equity",
+                   "Revenue": "revenue"},
+        source_file="2016-2026.xlsx", masters=_masters(),
+    )
+    assert prepared["accepted"] == []
+    assert "suspicious_zeros:assets" in prepared["audits"][0]["quarantine_reasons"]

@@ -128,12 +128,16 @@ def audit_and_prepare(
         natural_key = (_text(raw.get("symbol")).upper(), _text(raw.get("fiscal_year")))
         duplicate = natural_key in seen_keys
         seen_keys.add(natural_key)
-        impossible = []
-        for field in ("assets", "equity", "revenue"):
-            value = raw.get(field)
-            if value is not None and float(value) < 0:
-                impossible.append(field)
-        suspicious_zeros = [field for field in REQUIRED_FIELDS if raw.get(field) == 0]
+        # Negative equity and revenue can be genuine economic observations. Keep
+        # them available to the research layer, but expose them as warnings. A
+        # negative or zero asset base is not a usable company-period statement.
+        assets_value = raw.get("assets")
+        impossible = ["assets"] if assets_value is not None and float(assets_value) < 0 else []
+        suspicious_zeros = ["assets"] if assets_value == 0 else []
+        data_warnings = [
+            field for field in ("equity", "revenue", "pat")
+            if raw.get(field) is not None and float(raw[field]) <= 0
+        ]
         assets, liabilities, equity, minority = (raw.get(key) for key in ("assets", "total_liabilities", "equity", "minority_interest"))
         balance_delta = None
         if None not in (assets, liabilities, equity):
@@ -167,6 +171,7 @@ def audit_and_prepare(
             "reconciliation": "REPAIRED" if repaired_fields else "PASS",
             "balance_delta": balance_delta,
             "quarantine_reasons": quarantine_reasons,
+            "data_warnings": data_warnings,
             "repaired_fields": repaired_fields,
             "quality_score": score,
             "overall_status": status,
