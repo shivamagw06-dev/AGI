@@ -64,9 +64,35 @@ async def lifespan(_app: FastAPI):
         )
     except Exception as exc:
         log.warning("kip_snapshot_load_failed", extra={"error": str(exc)[:160]})
+    # Temporary migration-priority mode. The durable CapIQ job is the only
+    # heavyweight background workload allowed on this service until it reaches
+    # a terminal state. API/health/warehouse reads remain available.
+    migration_priority = False
+    try:
+        from financial_warehouse_completion.capiq_background import latest_job
+
+        active_capiq_job = latest_job()
+        migration_priority = str((active_capiq_job or {}).get("status") or "") in {
+            "QUEUED", "RUNNING", "PAUSED",
+        }
+        if migration_priority:
+            log.warning(
+                "capiq_migration_priority_mode",
+                extra={
+                    "job_id": active_capiq_job.get("job_id"),
+                    "status": active_capiq_job.get("status"),
+                    "paused_workloads": [
+                        "institutional_stack_bootstrap", "ikt_capital_iq_seed",
+                        "historical_sector_baseline", "valuation_consensus_seed",
+                        "gather_collectors", "mission_control_builder",
+                    ],
+                },
+            )
+    except Exception as exc:
+        log.warning("capiq_migration_priority_check_failed", extra={"error": str(exc)[:160]})
     # Soft-seed Institutional Stack (FIL corpus + FDI/MII refresh) — never blocks startup
     try:
-        if getattr(settings, "institutional_stack", True):
+        if getattr(settings, "institutional_stack", True) and not migration_priority:
             from institutional_stack.production import bootstrap_stack
 
             boot = bootstrap_stack()
@@ -106,7 +132,8 @@ async def lifespan(_app: FastAPI):
             except Exception as exc:  # pragma: no cover - defensive
                 log.warning("ikt_capital_iq_seed_failed", extra={"error": str(exc)[:160]})
 
-        threading.Thread(target=_run_ikt_seed, name="ikt-capital-iq-seed", daemon=True).start()
+        if not migration_priority:
+            threading.Thread(target=_run_ikt_seed, name="ikt-capital-iq-seed", daemon=True).start()
     except Exception as exc:
         log.warning("ikt_capital_iq_seed_thread_failed", extra={"error": str(exc)[:160]})
     # Resume the first incomplete Capital IQ migration from its durable chunk
@@ -140,7 +167,8 @@ async def lifespan(_app: FastAPI):
             except Exception as exc:  # pragma: no cover - defensive startup path
                 log.warning("historical_sector_baseline_seed_failed", extra={"error": str(exc)[:200]})
 
-        threading.Thread(target=_run_sector_history_seed, name="historical-sector-baseline", daemon=True).start()
+        if not migration_priority:
+            threading.Thread(target=_run_sector_history_seed, name="historical-sector-baseline", daemon=True).start()
     except Exception as exc:
         log.warning("historical_sector_baseline_seed_thread_failed", extra={"error": str(exc)[:160]})
     # Valuation Consensus — Broker Estimates seed (committed CapIQ export).
@@ -163,7 +191,8 @@ async def lifespan(_app: FastAPI):
             except Exception as exc:  # pragma: no cover
                 log.warning("valuation_consensus_seed_failed", extra={"error": str(exc)[:160]})
 
-        threading.Thread(target=_run_vc_seed, name="valuation-consensus-seed", daemon=True).start()
+        if not migration_priority:
+            threading.Thread(target=_run_vc_seed, name="valuation-consensus-seed", daemon=True).start()
     except Exception as exc:
         log.warning("valuation_consensus_seed_thread_failed", extra={"error": str(exc)[:160]})
     # Valuation Terminal no longer seeds from committed Yahoo JSON.
@@ -185,10 +214,10 @@ async def lifespan(_app: FastAPI):
     stop_faa_collector = None
     stop_cgl = None
     stop_mie_runtime = None
-    if http_only:
+    if http_only or migration_priority:
         log.info(
             "gather_skipped_http_role",
-            extra={"agi_role": agi_role, "reason": "sidecar_or_worker_owns_gather"},
+            extra={"agi_role": agi_role, "reason": "capiq_migration_priority" if migration_priority else "sidecar_or_worker_owns_gather"},
         )
     else:
         # Global Markets is snapshot-first. Build it only in the dedicated
@@ -244,7 +273,9 @@ async def lifespan(_app: FastAPI):
 
         run_mc = (not http_only) or should_run_builder_on_web()
         # gather_worker process starts its own scheduler; avoid double-start there.
-        if http_only and should_run_builder_on_web():
+        if migration_priority:
+            log.info("mission_control_builder_paused", extra={"reason": "capiq_migration_priority"})
+        elif http_only and should_run_builder_on_web():
             boot_mc = start_scheduler(boot_build=True)
             stop_mc_snapshot = stop_scheduler
             log.info("mc_snapshot_builder_on_web", extra=boot_mc)
