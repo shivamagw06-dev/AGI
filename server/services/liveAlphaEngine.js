@@ -80,6 +80,7 @@ function normalizeSnapshot(row, index) {
     ...values,
     spreadBps: finite(row.spreadBps ?? row.spread_bps),
     minimumLiquidity: row.minimumLiquidity !== false,
+    sectorProxyUsed: row.sectorProxyUsed === true,
     // Sector index return already contains the broad-market move. Stock minus
     // sector is therefore the clean residual; subtracting Nifty again would
     // double-count the market component.
@@ -152,6 +153,7 @@ export function evaluateCrossSectionalMomentum(snapshots, {
         residual_60m_z: Number(z60[index].toFixed(4)),
         volume_surprise_z: Number(zVolume[index].toFixed(4)),
         sector_strength_z: Number(zSector[index].toFixed(4)),
+        sector_proxy_used: row.sectorProxyUsed,
       },
     };
   }).sort((left, right) => right.alpha_z - left.alpha_z);
@@ -220,6 +222,7 @@ export function evaluateVolumeLiquidityAnomaly(snapshots, {
         absolute_residual_15m_z: Number(Math.abs(residualZ[index]).toFixed(4)),
         spread_bps: row.spreadBps,
         directional_confirmation: directionalConfirmation,
+        sector_proxy_used: row.sectorProxyUsed,
       },
     };
   }).sort((left, right) => right.alpha_z - left.alpha_z);
@@ -291,7 +294,7 @@ export function evaluateOpeningRangeExpansion(snapshots, {
       classification: !row.liquidityOk ? 'filtered' : !row.rangeOk ? 'invalid_opening_range' : candidate ? (row.direction === 'positive' ? 'upside_opening_breakout_candidate' : 'downside_opening_breakout_candidate') : 'neutral',
       signal_quality: preliminarySignalQuality({ alphaZ, persistence: candidate ? 1 : 0, volumeSurprise: row.volumeSurprise, liquidityOk: row.liquidityOk && row.rangeOk, dataCoverage: row.instrumentKey ? 1 : 0.9 }),
       empirical_confidence: { status: 'unvalidated', score: null, comparable_observations: 0 },
-      factors: { opening_high: row.openingHigh, opening_low: row.openingLow, opening_range_pct: Number(row.rangePct.toFixed(4)), breakout_pct: Number(row.breakoutPct.toFixed(4)), breakout_z: Number(breakoutZ[index].toFixed(4)), volume_surprise_z: Number(volumeZ[index].toFixed(4)), spread_bps: row.spreadBps },
+      factors: { opening_high: row.openingHigh, opening_low: row.openingLow, opening_range_pct: Number(row.rangePct.toFixed(4)), breakout_pct: Number(row.breakoutPct.toFixed(4)), breakout_z: Number(breakoutZ[index].toFixed(4)), volume_surprise_z: Number(volumeZ[index].toFixed(4)), spread_bps: row.spreadBps, sector_proxy_used: row.sectorProxyUsed },
     };
   }).sort((left, right) => right.alpha_z - left.alpha_z).map((row, index) => ({ ...row, rank: index + 1 }));
   return { engine: ALPHA_ENGINES.OPENING_RANGE, as_of: new Date(asOf).toISOString(), research_only: true, execution_enabled: false, universe_size: signals.length, config: { openingMinutes: 15, breakoutBufferPct, minimumVolumeRatio, minimumRangePct, maximumRangePct, maximumSpreadBps }, signals };
@@ -329,7 +332,7 @@ export function evaluateIntradayMeanReversion(snapshots, {
       classification: !liquidityOk ? 'filtered' : !regimeOk ? 'market_stress_filtered' : !volumeOk ? 'event_volume_filtered' : !shockDominates ? 'trend_filtered' : candidate ? (direction === 'positive' ? 'negative_shock_rebound_candidate' : 'positive_shock_pullback_candidate') : 'neutral',
       signal_quality: preliminarySignalQuality({ alphaZ, persistence: shockDominates ? 1 : 0, volumeSurprise: Math.min(row.volumeSurprise, 2), liquidityOk: liquidityOk && regimeOk && volumeOk, dataCoverage: row.instrumentKey ? 1 : 0.9 }),
       empirical_confidence: { status: 'unvalidated', score: null, comparable_observations: 0 },
-      factors: { residual_15m_z: Number(shockZ.toFixed(4)), shock_dominance: Number((Math.abs(row.residual15m) / Math.max(Math.abs(row.residual60m), 0.0001)).toFixed(4)), benchmark_return_15m: row.benchmarkReturn15m, volume_surprise: Number(row.volumeSurprise.toFixed(4)), spread_bps: row.spreadBps },
+      factors: { residual_15m_z: Number(shockZ.toFixed(4)), shock_dominance: Number((Math.abs(row.residual15m) / Math.max(Math.abs(row.residual60m), 0.0001)).toFixed(4)), benchmark_return_15m: row.benchmarkReturn15m, volume_surprise: Number(row.volumeSurprise.toFixed(4)), spread_bps: row.spreadBps, sector_proxy_used: row.sectorProxyUsed },
     };
   }).sort((left, right) => right.alpha_z - left.alpha_z).map((row, index) => ({ ...row, rank: index + 1 }));
   return { engine: ALPHA_ENGINES.MEAN_REVERSION, as_of: new Date(asOf).toISOString(), research_only: true, execution_enabled: false, universe_size: signals.length, config: { minimumResidualShockPct, minimumShockZ, maximumBenchmarkMovePct, maximumVolumeRatio, maximumSpreadBps }, signals };
