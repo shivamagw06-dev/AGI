@@ -236,6 +236,19 @@ def dashboard() -> dict[str, Any]:
     }
 
 
+def calibration_board() -> dict[str, Any]:
+    from forecast_intelligence_engine.accuracy import calibration_summary
+    try:
+        from institutional_warehouse import store
+        accuracy_rows = store.all_rows("forecast_accuracy", limit=100000)
+        evaluations = store.all_rows("forecast_evaluations", limit=100000)
+        summary = calibration_summary(accuracy_rows, evaluations)
+        return {"ok": True, "engine": ENGINE_CODE, "version": VERSION, **summary}
+    except Exception as exc:
+        return {"ok": False, "engine": ENGINE_CODE, "version": VERSION,
+                "status": "UNAVAILABLE", "execution_eligible": False, "error": str(exc)[:240]}
+
+
 def ask_slice(question: str, *, symbol: Optional[str] = None) -> dict[str, Any]:
     """Soft Ask surface — route question to the most relevant FIE module."""
     q = (question or "").lower()

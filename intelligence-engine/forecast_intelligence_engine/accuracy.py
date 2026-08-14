@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import re
+import statistics
 from datetime import datetime, timezone
 from typing import Any, Iterable, Optional
 
@@ -22,6 +23,51 @@ _ALIASES = {
 }
 _YEARS = {"FY+1": 1, "FY+2": 2, "FY+3": 3, "FY+5": 5}
 VALID_OUTCOME = "VALID"
+
+
+def calibration_summary(
+    accuracy_rows: Iterable[dict[str, Any]],
+    evaluation_rows_: Iterable[dict[str, Any]],
+    *,
+    minimum_outcomes: int = 100,
+    minimum_sector_outcomes: int = 20,
+) -> dict[str, Any]:
+    """Aggregate only governed outcomes; never infer accuracy from open forecasts."""
+    accuracy = [row for row in accuracy_rows if row.get("ape_pct") is not None]
+    evaluations = list(evaluation_rows_)
+    apes = sorted(float(row["ape_pct"]) for row in accuracy)
+    directions = [bool(row["direction_correct"]) for row in accuracy if row.get("direction_correct") is not None]
+    aligned = [row for row in accuracy if row.get("calibration_status") == "ALIGNED"]
+    valid_evaluations = [row for row in evaluations if row.get("outcome_status") == VALID_OUTCOME]
+    sector_counts: dict[str, int] = {}
+    for row in valid_evaluations:
+        sector = str(row.get("sector") or "Unclassified")
+        sector_counts[sector] = sector_counts.get(sector, 0) + 1
+    median = statistics.median(apes) if apes else None
+    gates = {
+        "minimum_outcomes": len(accuracy) >= minimum_outcomes,
+        "median_ape_at_most_20_pct": median is not None and median <= 20.0,
+        "directional_accuracy_at_least_50_pct": bool(directions) and sum(directions) / len(directions) >= 0.50,
+        "confidence_alignment_at_least_60_pct": bool(accuracy) and len(aligned) / len(accuracy) >= 0.60,
+        "sector_models_supported": bool(sector_counts) and all(count >= minimum_sector_outcomes for count in sector_counts.values()),
+        "consensus_vintages_available": False,
+    }
+    empirically_ready = all(gates.values())
+    return {
+        "status": "RESEARCH_CALIBRATED" if empirically_ready else "ACCUMULATING_OUTCOMES",
+        "execution_eligible": False,
+        "valid_accuracy_outcomes": len(accuracy),
+        "governed_valid_evaluations": len(valid_evaluations),
+        "total_evaluations": len(evaluations),
+        "mean_ape_pct": round(sum(apes) / len(apes), 3) if apes else None,
+        "median_ape_pct": round(median, 3) if median is not None else None,
+        "directional_accuracy_pct": round(sum(directions) / len(directions) * 100, 2) if directions else None,
+        "confidence_alignment_pct": round(len(aligned) / len(accuracy) * 100, 2) if accuracy else None,
+        "sector_outcome_counts": dict(sorted(sector_counts.items())),
+        "gates": gates,
+        "missing_dependencies": [name for name, passed in gates.items() if not passed],
+        "rule": "Forecast calibration may inform research confidence only; it cannot authorize strategy or portfolio execution.",
+    }
 
 
 def _now() -> str:

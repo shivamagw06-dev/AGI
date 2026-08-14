@@ -20453,6 +20453,12 @@ async def fie_accuracy(symbol: str):
     return accuracy(symbol)
 
 
+@router.get("/fie/calibration")
+async def fie_calibration():
+    from forecast_intelligence_engine import calibration_board
+    return await run_in_threadpool(calibration_board)
+
+
 @router.get("/fie/runtime/status")
 async def fie_runtime_status():
     from forecast_intelligence_engine import runtime_status
