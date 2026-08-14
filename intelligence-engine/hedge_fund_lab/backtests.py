@@ -24,6 +24,11 @@ DEFAULTS = {
     "stop_loss_pct": 0.20,
     "one_way_cost_bps": 25,
     "min_average_daily_value": 2_000_000,
+    "portfolio_capital": 100_000_000,
+    "max_adv_participation": 0.10,
+    "max_drawdown_limit_pct": 20.0,
+    "min_oos_annualized_return_pct": 0.0,
+    "min_oos_sharpe": 0.0,
 }
 
 
@@ -155,6 +160,7 @@ def momentum_backtest(
     returns: list[float] = []
     return_dates: list[str] = []
     turnover: list[float] = []
+    capacity_estimates: list[float] = []
     rebalances: list[dict[str, Any]] = []
     stopped: set[str] = set()
     start = lookback + 1
@@ -164,7 +170,7 @@ def momentum_backtest(
         is_rebalance = (i - start) % rebalance_every == 0
         old_weights = dict(weights)
         if is_rebalance:
-            candidates: list[tuple[float, str]] = []
+            candidates: list[tuple[float, str, float]] = []
             for symbol, series in prices.items():
                 history = [bar for bar in series if bar["date"] <= previous]
                 if len(history) < lookback:
@@ -175,24 +181,30 @@ def momentum_backtest(
                 avg_value = sum(bar["close"] * bar["volume"] for bar in history[-21:]) / min(21, len(history))
                 if avg_value < float(cfg["min_average_daily_value"]):
                     continue
-                candidates.append((end["close"] / base["close"] - 1.0, symbol))
+                candidates.append((end["close"] / base["close"] - 1.0, symbol, avg_value))
             candidates.sort(reverse=True)
             sector_used: dict[str, float] = defaultdict(float)
             selected: list[str] = []
             raw_weight = min(float(cfg["max_weight"]), 1.0 / holdings)
-            for _, symbol in candidates:
+            selected_adv: dict[str, float] = {}
+            for _, symbol, avg_value in candidates:
                 sector = sectors.get(symbol, "Unclassified")
                 if sector_used[sector] + raw_weight > float(cfg["max_sector_weight"]) + 1e-12:
                     continue
                 selected.append(symbol)
+                selected_adv[symbol] = avg_value
                 sector_used[sector] += raw_weight
                 if len(selected) == holdings:
                     break
             weights = {symbol: 1.0 / len(selected) for symbol in selected} if selected else {}
+            if weights:
+                participation = float(cfg["max_adv_participation"])
+                capacity_estimates.append(min(selected_adv[symbol] * participation / weight for symbol, weight in weights.items()))
             entry = {symbol: bars[symbol]["close"] for symbol in weights if symbol in bars}
             peak = dict(entry)
             stopped.clear()
-            rebalances.append({"date": today, "selected": sorted(weights), "candidate_count": len(candidates)})
+            rebalances.append({"date": today, "selected": sorted(weights), "candidate_count": len(candidates),
+                               "estimated_capacity": round(capacity_estimates[-1], 2) if weights else None})
 
         gross_return = 0.0
         for symbol, weight in list(weights.items()):
@@ -225,12 +237,20 @@ def momentum_backtest(
         "model_version": MODEL_VERSION,
         "execution": {"signal_time": "prior_close", "execution": "next_close", "cost_model": "one_way_turnover_bps",
                       "one_way_cost_bps": cfg["one_way_cost_bps"], "stop_loss_pct": cfg["stop_loss_pct"] * 100},
-        "constraints": {key: cfg[key] for key in ("holdings", "max_weight", "max_sector_weight", "min_average_daily_value")},
+        "constraints": {key: cfg[key] for key in ("holdings", "max_weight", "max_sector_weight", "min_average_daily_value", "portfolio_capital", "max_adv_participation", "max_drawdown_limit_pct", "min_oos_annualized_return_pct", "min_oos_sharpe")},
         "coverage": {"symbols_with_price_history": len(prices), "calendar_sessions": len(calendar),
                      "backtest_sessions": len(returns), "rebalance_count": len(rebalances)},
         "metrics": _metrics(returns),
         "validation": _validation_report(return_dates, returns),
         "average_turnover_pct": round(sum(turnover) / len(turnover) * 100, 3),
+        "capacity": {
+            "status": "COMPLETED" if capacity_estimates else "INSUFFICIENT_DATA",
+            "assumed_portfolio_capital": float(cfg["portfolio_capital"]),
+            "max_adv_participation_pct": round(float(cfg["max_adv_participation"]) * 100, 3),
+            "minimum_estimated_capacity": round(min(capacity_estimates), 2) if capacity_estimates else None,
+            "median_estimated_capacity": round(sorted(capacity_estimates)[len(capacity_estimates) // 2], 2) if capacity_estimates else None,
+            "passes_assumed_capital": bool(capacity_estimates and min(capacity_estimates) >= float(cfg["portfolio_capital"])),
+        },
         "rebalances": rebalances[-24:],
         "limitations": [
             "Long-only price momentum only; no borrow, short rebate, taxes or intraday execution model.",

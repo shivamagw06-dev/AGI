@@ -18,7 +18,7 @@ def test_momentum_backtest_is_point_in_time_and_costed():
     result = momentum_backtest(
         _price_rows(),
         classifications={"WIN": "A", "MID": "B", "LOSE": "C"},
-        config={"holdings": 1, "min_average_daily_value": 1, "one_way_cost_bps": 25},
+        config={"holdings": 1, "min_average_daily_value": 1, "one_way_cost_bps": 25, "portfolio_capital": 100_000},
     )
     assert result["ok"] is True
     assert result["execution"]["signal_time"] == "prior_close"
@@ -32,6 +32,9 @@ def test_momentum_backtest_is_point_in_time_and_costed():
     assert validation["periods"]["train"]["end"] < validation["periods"]["validation"]["start"]
     assert validation["periods"]["validation"]["end"] < validation["periods"]["test"]["start"]
     assert validation["out_of_sample_observations"] >= 21
+    assert result["capacity"]["status"] == "COMPLETED"
+    assert result["capacity"]["passes_assumed_capital"] is True
+    assert result["capacity"]["minimum_estimated_capacity"] >= 100_000
 
 
 def test_momentum_backtest_fails_closed_without_history():

@@ -468,6 +468,19 @@ def backtest(strategy_id: str, config: dict[str, Any] | None = None) -> dict[str
     validation = result.get("validation") or {}
     completed = result.get("ok") is True and validation.get("status") == "COMPLETED"
     observed_at = (validation.get("periods") or {}).get("test", {}).get("end")
+    constraints = result.get("constraints") or {}
+    test_metrics = ((validation.get("periods") or {}).get("test") or {}).get("metrics") or {}
+    oos_passed = bool(
+        completed
+        and validation.get("out_of_sample_observations", 0) >= 21
+        and float(test_metrics.get("annualized_return_pct") or -999) > float(constraints.get("min_oos_annualized_return_pct", 0))
+        and float(test_metrics.get("sharpe") or -999) > float(constraints.get("min_oos_sharpe", 0))
+    )
+    capacity = result.get("capacity") or {}
+    capacity_passed = bool(completed and capacity.get("passes_assumed_capital"))
+    max_drawdown = abs(float((result.get("metrics") or {}).get("max_drawdown_pct") or 999))
+    drawdown_limit = float(constraints.get("max_drawdown_limit_pct", 20))
+    risk_passed = bool(completed and max_drawdown <= drawdown_limit)
     evidence = {
         "backtest": {
             "status": "PASSED" if completed else "FAILED",
@@ -478,11 +491,11 @@ def backtest(strategy_id: str, config: dict[str, Any] | None = None) -> dict[str
             "limitations": result.get("limitations") or [],
         },
         "out_of_sample": {
-            "status": "PASSED" if completed and validation.get("out_of_sample_observations", 0) >= 21 else "FAILED",
+            "status": "PASSED" if oos_passed else "FAILED",
             "observed_at": observed_at,
             "source": "hedge_fund_lab.backtests",
             "source_version": result.get("model_version"),
-            "detail": (validation.get("periods") or {}).get("test"),
+            "detail": {**((validation.get("periods") or {}).get("test") or {}), "acceptance": {"minimum_observations": 21, "minimum_annualized_return_pct": constraints.get("min_oos_annualized_return_pct", 0), "minimum_sharpe": constraints.get("min_oos_sharpe", 0), "passed": oos_passed}},
         },
         "transaction_costs": {
             "status": "PASSED" if completed and validation.get("costs_included") else "FAILED",
@@ -492,20 +505,21 @@ def backtest(strategy_id: str, config: dict[str, Any] | None = None) -> dict[str
             "detail": result.get("execution"),
         },
         "liquidity_capacity": {
-            "status": "PARTIAL" if completed else "FAILED",
+            "status": "PASSED" if capacity_passed else "FAILED",
             "observed_at": observed_at,
             "source": "hedge_fund_lab.backtests",
             "source_version": result.get("model_version"),
-            "detail": {"minimum_average_daily_value": (result.get("constraints") or {}).get("min_average_daily_value"), "capacity_model": "NOT_COMPLETED"},
+            "detail": capacity,
         },
         "risk": {
-            "status": "PARTIAL" if completed else "FAILED",
+            "status": "PASSED" if risk_passed else "FAILED",
             "observed_at": observed_at,
             "source": "hedge_fund_lab.backtests",
             "source_version": result.get("model_version"),
-            "detail": {"max_drawdown_pct": (result.get("metrics") or {}).get("max_drawdown_pct"), "approved_limit": None},
+            "detail": {"max_drawdown_pct": (result.get("metrics") or {}).get("max_drawdown_pct"), "approved_limit_pct": drawdown_limit, "passed": risk_passed},
         },
     }
     from .registry_store import append_validation_evidence
     persistence = append_validation_evidence(strategy_id, VERSION, evidence)
-    return {**result, "strategy_lab_id": strategy_id, "validation": {**validation, "parameter_sensitivity": (result.get("parameter_sensitivity") or {}).get("status", "NOT_COMPLETED"), "survivorship": "SURVIVORSHIP_BIAS_RISK", "promotion": "DO_NOT_DEPLOY"}, "registry_evidence": evidence, "persistence": persistence}
+    economic_gates_passed = oos_passed and capacity_passed and risk_passed
+    return {**result, "strategy_lab_id": strategy_id, "validation": {**validation, "parameter_sensitivity": (result.get("parameter_sensitivity") or {}).get("status", "NOT_COMPLETED"), "survivorship": "SURVIVORSHIP_BIAS_RISK", "economic_gates_passed": economic_gates_passed, "promotion": "DO_NOT_DEPLOY"}, "registry_evidence": evidence, "persistence": persistence}
