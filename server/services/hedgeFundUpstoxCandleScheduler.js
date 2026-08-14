@@ -72,6 +72,10 @@ function dateDaysAgo(days, now = new Date()) {
   return date.toISOString().slice(0, 10);
 }
 
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 function candidateRows(pack) {
   const seen = new Set();
   const output = [];
@@ -122,10 +126,12 @@ async function refreshDaily(candidates, today) {
   const collected = [];
   const failures = [];
   const overlayFailures = [];
-  const concurrency = Math.max(1, Math.min(4, Number(process.env.HEDGE_FUND_UPSTOX_EOD_CONCURRENCY || 2)));
+  const concurrency = Math.max(1, Math.min(2, Number(process.env.HEDGE_FUND_UPSTOX_EOD_CONCURRENCY || 1)));
+  const requestPauseMs = Math.max(100, Number(process.env.HEDGE_FUND_UPSTOX_EOD_REQUEST_PAUSE_MS || 350));
+  let rateLimited = false;
   let cursor = 0;
   const worker = async () => {
-    while (cursor < candidates.length) {
+    while (cursor < candidates.length && !rateLimited) {
       const candidate = candidates[cursor++];
       try {
         // Upstox historical candles generally stop at the previous completed
@@ -140,6 +146,7 @@ async function refreshDaily(candidates, today) {
           for (const row of currentRows) byDate.set(row.date, row);
         } catch (error) {
           overlayFailures.push({ ticker: candidate.ticker, error: error.message });
+          if (error?.status === 429) throw error;
         }
         if (!byDate.has(today)) {
           // Repair missed sessions from a short historical overlap. Existing
@@ -152,7 +159,9 @@ async function refreshDaily(candidates, today) {
         collected.push(...byDate.values());
       } catch (error) {
         failures.push({ ticker: candidate.ticker, error: error.message });
+        if (error?.status === 429) rateLimited = true;
       }
+      if (!rateLimited) await sleep(requestPauseMs);
     }
   };
   await Promise.all(Array.from({ length: concurrency }, worker));
@@ -167,6 +176,7 @@ async function refreshDaily(candidates, today) {
     imported,
     failures,
     overlayFailures,
+    rate_limited: rateLimited,
     successful_today: [...latestCoverage],
   };
 }
@@ -241,7 +251,7 @@ export function startHedgeFundUpstoxCandleScheduler() {
   const tick = () => refreshHedgeFundUpstoxCandles().then((result) => {
     lastRun = result;
     if (result?.eod_retry_required && !retryTimer) {
-      retryTimer = setTimeout(() => { retryTimer = null; tick(); }, Math.max(60_000, Number(process.env.HEDGE_FUND_UPSTOX_EOD_RETRY_MS || 120_000)));
+      retryTimer = setTimeout(() => { retryTimer = null; tick(); }, Math.max(5 * 60_000, Number(process.env.HEDGE_FUND_UPSTOX_EOD_RETRY_MS || 15 * 60_000)));
       retryTimer.unref?.();
     }
   }).catch((error) => { lastRun = { ok: false, error: error.message, at: new Date().toISOString() }; });
