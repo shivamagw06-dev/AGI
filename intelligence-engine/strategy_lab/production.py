@@ -426,7 +426,18 @@ def _registry_decision(strategy_id: str, session: dict[str, Any] | None = None) 
     }
     from .registry_store import load_latest_evidence
     durable_evidence = load_latest_evidence().get(strategy_id, {})
-    for gate in ("backtest", "out_of_sample", "transaction_costs", "liquidity_capacity", "risk", "walk_forward_paper"):
+    for gate in (
+        "point_in_time",
+        "corporate_actions",
+        "backtest",
+        "out_of_sample",
+        "transaction_costs",
+        "liquidity_capacity",
+        "risk",
+        "parameter_stability",
+        "walk_forward_paper",
+        "operational_controls",
+    ):
         if gate in durable_evidence:
             evidence[gate] = durable_evidence[gate]
     requested = "OPERATIONAL" if implemented else "EXPERIMENTAL"

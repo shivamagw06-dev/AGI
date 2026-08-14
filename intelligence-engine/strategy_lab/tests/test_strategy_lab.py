@@ -67,3 +67,21 @@ def test_cross_sectional_scanner_ranks_same_session_universe():
     assert sum(signal["signal"] == "BUY" for signal in signals) == 20
     assert signals[0]["factor_contributions"]["cross_sectional_rank"] == 1
     assert all(signal["trade_eligible"] is False for signal in signals)
+
+
+def test_runtime_registry_refresh_preserves_durable_validation_evidence(monkeypatch):
+    monkeypatch.setattr("strategy_lab.registry_store.load_latest_evidence", lambda: {
+        "cross_sectional_momentum": {
+            "parameter_stability": {"status": "FAILED", "source": "backtest", "detail": "unstable"},
+            "corporate_actions": {"status": "PARTIAL", "source": "adjustment_receipt"},
+        }
+    })
+    result = strategy("cross_sectional_momentum", {
+        "session_status": "PASS",
+        "latest_completed_session": "2026-08-14",
+        "session_coverage": 200,
+        "coverage_threshold": 160,
+    })
+    evidence = result["validation_registry"]["evidence"]
+    assert evidence["parameter_stability"]["status"] == "FAILED"
+    assert evidence["corporate_actions"]["status"] == "PARTIAL"
