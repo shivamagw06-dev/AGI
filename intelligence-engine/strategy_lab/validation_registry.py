@@ -59,6 +59,7 @@ REQUIRED_BY_LIFECYCLE = {
 
 def _state(value: Any) -> str:
     state = str(value or "MISSING").upper()
+    state = {"PASS": "PASSED", "FAIL": "FAILED", "ERROR": "FAILED"}.get(state, state)
     return state if state in EVIDENCE_STATES else "MISSING"
 
 

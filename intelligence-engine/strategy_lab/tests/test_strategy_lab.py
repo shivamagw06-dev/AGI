@@ -7,6 +7,7 @@ from strategy_lab.production import (
     dashboard,
     strategy,
 )
+from strategy_lab.validation_registry import normalise_evidence
 
 
 def bars(n=300, growth=1.002):
@@ -24,6 +25,17 @@ def test_phase_one_registry_is_research_only():
     assert item["lifecycle"] == "IMPLEMENTED"
     assert item["validation_registry"]["authority"] == "VALIDATION_REGISTRY"
     assert item["validation_registry"]["execution"] == "BLOCKED"
+
+
+def test_registry_canonicalises_operational_pass_fail_labels():
+    evidence = normalise_evidence({
+        "data_freshness": {"status": "PASS"},
+        "data_completeness": {"status": "FAIL"},
+        "risk": {"status": "ERROR"},
+    })
+    assert evidence["data_freshness"]["status"] == "PASSED"
+    assert evidence["data_completeness"]["status"] == "FAILED"
+    assert evidence["risk"]["status"] == "FAILED"
 
 
 def test_trend_and_momentum_explain_real_fields():
