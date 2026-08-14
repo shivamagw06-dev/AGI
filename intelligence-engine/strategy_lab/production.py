@@ -401,7 +401,8 @@ def health() -> dict[str, Any]:
         warehouse = universe_meta()
     except Exception as exc:
         return {"ok": False, "status": "DATA_UNAVAILABLE", "error": str(exc)[:160], "version": VERSION}
-    return {"ok": True, "status": "RESEARCH_ONLY", "version": VERSION, "phase": 1, "strategies": len(REGISTRY), "warehouse_universe": warehouse.get("count", 0), "strategy_universe": "top_200_by_market_cap", "price_cache_ttl_seconds": _CACHE_TTL_SECONDS, "execution_enabled": False, "promotion_authority": "strategy_validation_gates"}
+    from .registry_store import table_health
+    return {"ok": True, "status": "RESEARCH_ONLY", "version": VERSION, "phase": 2, "strategies": len(REGISTRY), "warehouse_universe": warehouse.get("count", 0), "strategy_universe": "top_200_by_market_cap", "price_cache_ttl_seconds": _CACHE_TTL_SECONDS, "execution_enabled": False, "promotion_authority": "VALIDATION_REGISTRY_ONLY", "validation_registry_store": table_health()}
 
 
 def strategy(strategy_id: str, session: dict[str, Any] | None = None) -> dict[str, Any]:
@@ -443,9 +444,11 @@ def dashboard(limit: int = 5) -> dict[str, Any]:
         all_signals.sort(key=lambda x: (priority.get(str(x.get("signal")), 0), abs(float(x.get("score") or 0))), reverse=True)
         rows = all_signals[:max(1, min(limit, 20))]
         cards.append({**strategy(key, session), "as_of": max((s["timestamp"] for s in all_signals), default=None), "universe": len(all_signals), "signal_count": len(rows), "signals": rows})
+    from .registry_store import persist_decisions
+    persistence = persist_decisions(cards)
     return {"ok": True, "generated_at": datetime.now(timezone.utc).isoformat(), "version": VERSION, "admin_only": True, "research_only": True, "execution_enabled": False,
             "global_execution_status": "BLOCKED", "lifecycle": list(LIFECYCLE), "signal_statuses": list(SIGNAL_STATUS), "session_health": session, "strategies": cards,
-            "validation_registry": {"authority": "VALIDATION_REGISTRY", "version": "strategy-validation-registry-v2.0.0", "execution_allowed": 0},
+            "validation_registry": {"authority": "VALIDATION_REGISTRY", "version": "strategy-validation-registry-v2.0.0", "execution_allowed": 0, "persistence": persistence},
             "promotion_gates": ["sufficient_observations", "point_in_time_compliance", "costed_backtest", "positive_out_of_sample", "drawdown_limit", "parameter_stability", "survivorship_review"],
             "builder_contract": {"fields": ["universe", "data_fields", "transformations", "factors", "weights", "entry_rule", "exit_rule", "risk_rule", "liquidity_rule", "cost_assumptions"],
                                  "save_status": "DRAFT", "self_promotion_allowed": False, "arbitrary_code_allowed": False},
