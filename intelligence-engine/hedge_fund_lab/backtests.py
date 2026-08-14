@@ -52,6 +52,8 @@ def _clean_prices(rows: Iterable[dict[str, Any]]) -> dict[str, list[dict[str, An
         by_symbol[symbol][day] = {
             "date": day,
             "close": close,
+            "high": _number(row.get("high")) or close,
+            "low": _number(row.get("low")) or close,
             "volume": _number(row.get("volume")) or 0.0,
         }
     return {symbol: [bars[d] for d in sorted(bars)] for symbol, bars in by_symbol.items()}
@@ -393,10 +395,140 @@ def trend_backtest(
     }
 
 
+def breakout_backtest(
+    rows: Iterable[dict[str, Any]], *, classifications: dict[str, str] | None = None,
+    config: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Long-only Donchian breakout with volume confirmation and daily exits."""
+    cfg = {**DEFAULTS, "rebalance_sessions": 5, "entry_window": 55, "exit_window": 20,
+           "atr_window": 14, "volume_window": 20, "minimum_volume_ratio": 1.0, **(config or {})}
+    prices = _clean_prices(rows)
+    entry_window, exit_window = int(cfg["entry_window"]), int(cfg["exit_window"])
+    atr_window, volume_window = int(cfg["atr_window"]), int(cfg["volume_window"])
+    rebalance_every, holdings = int(cfg["rebalance_sessions"]), int(cfg["holdings"])
+    required = max(entry_window + 1, exit_window + 1, atr_window + 1, volume_window + 1)
+    if min(entry_window, exit_window, atr_window, volume_window, rebalance_every, holdings) < 1:
+        return {"ok": False, "error": "invalid_backtest_config"}
+    calendar = sorted({bar["date"] for series in prices.values() for bar in series})
+    if len(calendar) < required + 2:
+        return {"ok": False, "error": "insufficient_price_history", "required_sessions": required + 2,
+                "available_sessions": len(calendar), "model_version": MODEL_VERSION}
+    by_day: dict[str, dict[str, dict[str, Any]]] = defaultdict(dict)
+    for symbol, series in prices.items():
+        for bar in series:
+            by_day[bar["date"]][symbol] = bar
+    sectors = {str(k).upper(): str(v or "Unclassified") for k, v in (classifications or {}).items()}
+    price_dates = {symbol: [bar["date"] for bar in series] for symbol, series in prices.items()}
+    weights: dict[str, float] = {}
+    entry: dict[str, float] = {}
+    peak: dict[str, float] = {}
+    returns: list[float] = []
+    return_dates: list[str] = []
+    turnover: list[float] = []
+    capacity_estimates: list[float] = []
+    rebalances: list[dict[str, Any]] = []
+    start = required + 1
+    for i in range(start, len(calendar)):
+        today, previous = calendar[i], calendar[i - 1]
+        bars, prior = by_day[today], by_day[previous]
+        old_weights = dict(weights)
+        if (i - start) % rebalance_every == 0:
+            candidates: list[tuple[float, str, float]] = []
+            for symbol, series in prices.items():
+                end_index = bisect_right(price_dates[symbol], previous)
+                if end_index < required:
+                    continue
+                signal_bar = series[end_index - 1]
+                prior_entry = series[end_index - entry_window - 1:end_index - 1]
+                prior_volume = series[end_index - volume_window - 1:end_index - 1]
+                breakout_level = max(bar["high"] for bar in prior_entry)
+                average_volume = sum(bar["volume"] for bar in prior_volume) / len(prior_volume)
+                volume_ratio = signal_bar["volume"] / average_volume if average_volume > 0 else 0.0
+                if signal_bar["close"] <= breakout_level or volume_ratio < float(cfg["minimum_volume_ratio"]):
+                    continue
+                liquidity_window = series[max(0, end_index - 21):end_index]
+                avg_value = sum(bar["close"] * bar["volume"] for bar in liquidity_window) / len(liquidity_window)
+                if avg_value < float(cfg["min_average_daily_value"]):
+                    continue
+                true_ranges = []
+                atr_sample = series[end_index - atr_window - 1:end_index]
+                for prior_bar, current_bar in zip(atr_sample[:-1], atr_sample[1:]):
+                    true_ranges.append(max(current_bar["high"] - current_bar["low"], abs(current_bar["high"] - prior_bar["close"]), abs(current_bar["low"] - prior_bar["close"])))
+                atr = sum(true_ranges) / len(true_ranges) if true_ranges else 0.0
+                score = (signal_bar["close"] / breakout_level - 1.0) / max(atr / signal_bar["close"], 0.005)
+                candidates.append((score, symbol, avg_value))
+            candidates.sort(reverse=True)
+            selected: list[str] = []
+            selected_adv: dict[str, float] = {}
+            sector_used: dict[str, float] = defaultdict(float)
+            raw_weight = min(float(cfg["max_weight"]), 1.0 / holdings)
+            for _, symbol, avg_value in candidates:
+                sector = sectors.get(symbol, "Unclassified")
+                if sector_used[sector] + raw_weight > float(cfg["max_sector_weight"]) + 1e-12:
+                    continue
+                selected.append(symbol)
+                selected_adv[symbol] = avg_value
+                sector_used[sector] += raw_weight
+                if len(selected) == holdings:
+                    break
+            weights = {symbol: 1.0 / len(selected) for symbol in selected} if selected else {}
+            if weights:
+                participation = float(cfg["max_adv_participation"])
+                capacity_estimates.append(min(selected_adv[symbol] * participation / weight for symbol, weight in weights.items()))
+            entry = {symbol: bars[symbol]["close"] for symbol in weights if symbol in bars}
+            peak = dict(entry)
+            rebalances.append({"date": today, "selected": sorted(weights), "candidate_count": len(candidates),
+                               "estimated_capacity": round(capacity_estimates[-1], 2) if weights else None})
+        gross_return = 0.0
+        exits: set[str] = set()
+        for symbol, weight in list(weights.items()):
+            if symbol not in bars or symbol not in prior:
+                continue
+            current = bars[symbol]["close"]
+            peak[symbol] = max(peak.get(symbol, current), current)
+            end_index = bisect_right(price_dates[symbol], previous)
+            prior_exit = prices[symbol][max(0, end_index - exit_window):end_index]
+            exit_level = min(bar["low"] for bar in prior_exit) if prior_exit else current
+            if current < exit_level or current / max(entry.get(symbol, current), peak[symbol]) - 1.0 <= -float(cfg["stop_loss_pct"]):
+                exits.add(symbol)
+            gross_return += weight * (current / prior[symbol]["close"] - 1.0)
+        if exits:
+            weights = {symbol: weight for symbol, weight in weights.items() if symbol not in exits}
+        all_symbols = set(old_weights) | set(weights)
+        traded = sum(max(0.0, weights.get(symbol, 0.0) - old_weights.get(symbol, 0.0)) for symbol in all_symbols)
+        returns.append(gross_return - traded * float(cfg["one_way_cost_bps"]) / 10_000.0)
+        return_dates.append(today)
+        turnover.append(traded)
+    if not returns or not rebalances:
+        return {"ok": False, "error": "insufficient_eligible_universe", "model_version": MODEL_VERSION,
+                "eligible_symbols": len(prices)}
+    return {
+        "ok": True, "strategy": "volatility_breakout_long_only", "research_status": "backtested_not_investment_advice",
+        "model_version": MODEL_VERSION,
+        "execution": {"signal_time": "prior_close", "execution": "next_close", "cost_model": "one_way_turnover_bps",
+                      "one_way_cost_bps": cfg["one_way_cost_bps"], "stop_loss_pct": cfg["stop_loss_pct"] * 100},
+        "constraints": {key: cfg[key] for key in ("holdings", "max_weight", "max_sector_weight", "min_average_daily_value", "portfolio_capital", "max_adv_participation", "max_drawdown_limit_pct", "min_oos_annualized_return_pct", "min_oos_sharpe")},
+        "parameters": {"entry_window": entry_window, "exit_window": exit_window, "atr_window": atr_window,
+                       "volume_window": volume_window, "minimum_volume_ratio": cfg["minimum_volume_ratio"], "rebalance_sessions": rebalance_every},
+        "coverage": {"symbols_with_price_history": len(prices), "calendar_sessions": len(calendar), "backtest_sessions": len(returns), "rebalance_count": len(rebalances)},
+        "metrics": _metrics(returns), "validation": _validation_report(return_dates, returns),
+        "average_turnover_pct": round(sum(turnover) / len(turnover) * 100, 3),
+        "capacity": {"status": "COMPLETED" if capacity_estimates else "INSUFFICIENT_DATA", "assumed_portfolio_capital": float(cfg["portfolio_capital"]),
+                     "max_adv_participation_pct": round(float(cfg["max_adv_participation"]) * 100, 3),
+                     "minimum_estimated_capacity": round(min(capacity_estimates), 2) if capacity_estimates else None,
+                     "median_estimated_capacity": round(sorted(capacity_estimates)[len(capacity_estimates) // 2], 2) if capacity_estimates else None,
+                     "passes_assumed_capital": bool(capacity_estimates and min(capacity_estimates) >= float(cfg["portfolio_capital"]))},
+        "rebalances": rebalances[-24:],
+        "limitations": ["Long-only breakout model; no short book, taxes or intraday execution model.",
+                        "High, low and volume are required; incomplete bars are conservatively replaced by close and remain a data-quality limitation.",
+                        "Historical constituents and delisted securities remain incomplete, so survivorship risk is explicit."],
+    }
+
+
 def run_from_warehouse(strategy: str, config: dict[str, Any] | None = None) -> dict[str, Any]:
     """Load the bounded warehouse inputs needed by the backtest."""
     strategy_key = str(strategy).lower()
-    if strategy_key not in {"momentum", "momentum_12_1_long_only", "trend", "trend_following", "trend_following_long_only"}:
+    if strategy_key not in {"momentum", "momentum_12_1_long_only", "trend", "trend_following", "trend_following_long_only", "breakout", "volatility_breakout", "volatility_breakout_long_only"}:
         return {"ok": False, "error": "strategy_requires_point_in_time_fundamental_history",
                 "detail": "Value and quality are intentionally blocked until filing-effective timestamps and factor snapshots pass coverage checks."}
     try:
@@ -409,7 +541,7 @@ def run_from_warehouse(strategy: str, config: dict[str, Any] | None = None) -> d
         table = db.physical_table("daily_market_history")
         marks = ",".join("?" for _ in symbols)
         rows = db.query(
-            f'''SELECT symbol, date, close, adjusted_close, volume
+            f'''SELECT symbol, date, high, low, close, adjusted_close, volume
                 FROM {table}
                 WHERE COALESCE(sys_published, 1) = 1
                   AND symbol IN ({marks})
@@ -421,12 +553,20 @@ def run_from_warehouse(strategy: str, config: dict[str, Any] | None = None) -> d
     supplied = dict(config or {})
     sensitivity_enabled = bool(supplied.pop("parameter_sensitivity", True))
     is_trend = strategy_key in {"trend", "trend_following", "trend_following_long_only"}
-    runner = trend_backtest if is_trend else momentum_backtest
+    is_breakout = strategy_key in {"breakout", "volatility_breakout", "volatility_breakout_long_only"}
+    runner = breakout_backtest if is_breakout else trend_backtest if is_trend else momentum_backtest
     result = runner(rows, classifications=classifications, config=supplied)
     if not result.get("ok") or not sensitivity_enabled:
         return result
     sensitivity = []
-    if is_trend:
+    if is_breakout:
+        variants = [40, 55, 70]
+        for entry_window in variants:
+            variant = runner(rows, classifications=classifications, config={**supplied, "entry_window": entry_window})
+            sensitivity.append({"entry_window": entry_window, "ok": bool(variant.get("ok")), "metrics": variant.get("metrics"),
+                                "test_metrics": ((variant.get("validation") or {}).get("periods") or {}).get("test", {}).get("metrics")})
+        selection_rule = "Predeclared Donchian entry-window variants 40/55/70 sessions; no best-variant substitution."
+    elif is_trend:
         base_slow = int(supplied.get("slow_window", 200))
         variants = sorted({max(100, base_slow - 50), base_slow, base_slow + 50})
         for slow_window in variants:

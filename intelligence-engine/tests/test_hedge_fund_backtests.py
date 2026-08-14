@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from hedge_fund_lab.backtests import momentum_backtest, trend_backtest
+from hedge_fund_lab.backtests import breakout_backtest, momentum_backtest, trend_backtest
 from hedge_fund_lab.calculators import pair_diagnostics
 
 
@@ -56,6 +56,22 @@ def test_trend_backtest_is_costed_capacity_checked_and_out_of_sample():
     assert result["parameters"]["slow_window"] == 200
     assert result["validation"]["status"] == "COMPLETED"
     assert result["validation"]["out_of_sample_observations"] >= 21
+    assert result["capacity"]["passes_assumed_capital"] is True
+
+
+def test_breakout_backtest_uses_prior_channel_and_volume():
+    result = breakout_backtest(
+        _price_rows(),
+        classifications={"WIN": "A", "MID": "B", "LOSE": "C"},
+        config={"holdings": 1, "min_average_daily_value": 1, "portfolio_capital": 100_000},
+    )
+    assert result["ok"] is True
+    assert result["strategy"] == "volatility_breakout_long_only"
+    assert result["parameters"]["entry_window"] == 55
+    assert result["parameters"]["exit_window"] == 20
+    assert result["execution"]["signal_time"] == "prior_close"
+    assert result["execution"]["execution"] == "next_close"
+    assert result["validation"]["status"] == "COMPLETED"
     assert result["capacity"]["passes_assumed_capital"] is True
 
 
