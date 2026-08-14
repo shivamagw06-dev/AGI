@@ -42,6 +42,7 @@ import {
 import { getHflTerminalFromReadModel } from '../services/hflTerminalSnapshot.js';
 import { getValuationCompanyPackFromReadModel } from '../services/valuationCompanyPackSnapshot.js';
 import { requireStrategyLabAdmin } from '../services/strategyLabAdminAuth.js';
+import { enrichStrategyLabWithLiveMarket } from '../services/strategyLabLiveMarket.js';
 
 function engineConfig() {
   let baseUrl = (process.env.INTELLIGENCE_ENGINE_URL || 'http://127.0.0.1:8100').replace(/\/$/, '');
@@ -2553,7 +2554,7 @@ export default function createIntelligenceRouter() {
   router.get('/strategy-lab/health', requireStrategyLabAdmin, async (_req, res) => {
     try {
       const r = await engineFetch('/v1/strategy-lab/health', { timeoutMs: 30_000 });
-      return res.status(r.status).json(r.data);
+      return res.status(r.status).json(enrichStrategyLabWithLiveMarket(r.data));
     } catch (err) {
       return res.status(503).json({ ok: false, error: err.message || 'strategy lab health unavailable' });
     }
@@ -2562,7 +2563,7 @@ export default function createIntelligenceRouter() {
     try {
       const limit = Math.max(1, Math.min(Number(req.query.limit || 5), 20));
       const r = await engineFetch(`/v1/strategy-lab/dashboard?limit=${limit}`, { timeoutMs: 180_000 });
-      return res.status(r.status).json(r.data);
+      return res.status(r.status).json(enrichStrategyLabWithLiveMarket(r.data));
     } catch (err) {
       return res.status(504).json({ ok: false, error: err.message || 'strategy lab dashboard unavailable' });
     }
@@ -2571,7 +2572,7 @@ export default function createIntelligenceRouter() {
     try {
       const limit = Math.max(1, Math.min(Number(req.query.limit || 20), 100));
       const r = await engineFetch(`/v1/strategy-lab/scan/${encodeURIComponent(req.params.strategyId)}?limit=${limit}`, { timeoutMs: 180_000 });
-      return res.status(r.status).json(r.data);
+      return res.status(r.status).json(enrichStrategyLabWithLiveMarket(r.data));
     } catch (err) {
       return res.status(504).json({ ok: false, error: err.message || 'strategy lab scan unavailable' });
     }

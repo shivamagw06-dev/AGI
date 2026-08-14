@@ -44,6 +44,8 @@ export default function StrategyLab() {
   ].map(([key, label]) => ({ key, label, rows: strategies.filter((item) => item.category === key) }))), [strategies]);
   const current = strategies.find((item) => item.strategy_id === selected) || strategies[0];
   const signals = useMemo(() => [...(scan?.signals || current?.signals || [])].sort((a, b) => (SIGNAL_ORDER[a.signal] || 9) - (SIGNAL_ORDER[b.signal] || 9)), [scan, current]);
+  const live = scan?.live_market || dashboard?.live_market || health?.live_market;
+  const clocks = scan?.clocks || dashboard?.clocks || health?.clocks;
 
   const runScan = async () => {
     setBusy('scan'); setError('');
@@ -76,6 +78,14 @@ export default function StrategyLab() {
 
       {error ? <div className="sl-alert"><AlertTriangle size={17} /><span>{error}</span></div> : null}
 
+      <section className="sl-live-monitor">
+        <div><span className="sl-kicker">Live market input</span><h3>{String(live?.provider || 'Upstox').toUpperCase()}</h3><Status tone={live?.status === 'connected' ? 'research' : 'restricted'}>{live?.status || 'NOT CONNECTED'}</Status></div>
+        <div><span>Subscriptions</span><strong>{fmt(live?.subscribed_instruments, 0)}</strong><small>{fmt(live?.observed_instruments, 0)} observed</small></div>
+        <div><span>Feed health</span><strong>{fmt(live?.decode_errors, 0)} errors</strong><small>{fmt(live?.reconnects, 0)} reconnects</small></div>
+        <div><span>Signal clock</span><strong>{clocks?.signal?.mode || 'EOD'}</strong><small>{clocks?.signal?.completed_session || 'Unavailable'} completed</small></div>
+        <div><span>Market clock</span><strong>{clocks?.market?.session || 'UNKNOWN'}</strong><small>{clocks?.market?.local_date || '—'} · {clocks?.market?.local_time || '—'}</small></div>
+      </section>
+
       <div className="sl-workspace">
         <aside className="sl-sidebar">
           <div className="sl-sidebar-title"><span>Strategy library</span><b>{strategies.length}</b></div>
@@ -91,7 +101,7 @@ export default function StrategyLab() {
           {current ? <>
             <section className="sl-strategy-head">
               <div><span className="sl-kicker">{current.family}</span><h2>{current.name}</h2><p>{current.formula}</p></div>
-              <div className="sl-head-status"><Status>{current.lifecycle}</Status><Status tone="restricted">{current.signal_status || 'BLOCKED'}</Status><span>Completed session {dashboard?.session_health?.latest_completed_session || current.as_of || '—'}</span></div>
+              <div className="sl-head-status"><Status>{current.data_mode || 'EOD'}</Status><Status>{current.lifecycle}</Status><Status tone="restricted">{current.signal_status || 'BLOCKED'}</Status><span>Completed session {dashboard?.session_health?.latest_completed_session || current.as_of || '—'}</span></div>
             </section>
 
             {!current.calculator_available ? <section className="sl-alert sl-inline"><AlertTriangle size={17} /><span>This family is visible for governance and design review only. Output is blocked: {(current.reason_codes || current.blocked_by || []).join(' · ') || 'STRATEGY_NOT_IMPLEMENTED'}.</span></section> : null}
@@ -117,7 +127,7 @@ export default function StrategyLab() {
             <section className="sl-panel sl-table-panel">
               <header><div><span className="sl-kicker">Signal monitor</span><h3>Current research outputs</h3></div><span>{busy === 'scan' ? 'Calculating…' : `${signals.length} shown · EOD observations, not live quotes`}</span></header>
               <div className="sl-table-wrap"><table><thead><tr><th>Ticker</th><th>Research direction</th><th>Strength</th><th>Signal price</th><th>Completed close</th><th>Live price</th><th>Eligibility</th><th>Failed gates</th><th>Evidence</th></tr></thead>
-                <tbody>{signals.map((row) => <tr key={`${row.strategy_id}-${row.ticker}`}><td><strong>{row.ticker}</strong><small>{row.signal_session || row.timestamp}</small></td><td><Status tone={String(row.signal).toLowerCase()}>{row.research_direction || row.signal}</Status><small>{row.signal}</small></td><td>{fmt(row.signal_strength ?? Math.abs(row.score))}<small>{row.confidence}</small></td><td><strong>{fmt(row.prices?.signal_price ?? row.entry)}</strong><small>{row.prices?.signal_session || row.timestamp}</small></td><td><strong>{fmt(row.prices?.latest_completed_close)}</strong><small>{row.prices?.latest_completed_session || 'Unavailable'}</small></td><td><strong>{fmt(row.prices?.live_price)}</strong><small>{row.prices?.live_source || 'Not connected'}</small></td><td><Status tone="restricted">{row.eligibility}</Status><small>Execution blocked</small></td><td><span>{(row.reason_codes || []).join(' · ')}</span></td><td><span>Data {row.validation?.data}</span><small>PIT {row.validation?.pit} · Costs {row.validation?.costs} · Risk {row.validation?.risk}</small></td></tr>)}</tbody></table></div>
+                <tbody>{signals.map((row) => <tr key={`${row.strategy_id}-${row.ticker}`}><td><strong>{row.ticker}</strong><small>{row.signal_session || row.timestamp}</small></td><td><Status tone={String(row.signal).toLowerCase()}>{row.research_direction || row.signal}</Status><small>{row.signal}</small></td><td>{fmt(row.signal_strength ?? Math.abs(row.score))}<small>{row.confidence}</small></td><td><strong>{fmt(row.prices?.signal_price ?? row.entry)}</strong><small>{row.prices?.signal_session || row.timestamp}</small></td><td><strong>{fmt(row.prices?.latest_completed_close)}</strong><small>{row.prices?.latest_completed_session || 'Unavailable'}</small></td><td><strong>{fmt(row.prices?.live_price)}</strong><small>{row.prices?.live_source || 'Not connected'}{row.prices?.live_quote_age_ms != null ? ` · ${Math.round(row.prices.live_quote_age_ms / 1000)}s old` : ''}</small><small>{(row.live_validation?.reason_codes || []).join(' · ')}</small></td><td><Status tone="restricted">{row.eligibility}</Status><small>Execution blocked</small></td><td><span>{(row.reason_codes || []).join(' · ')}</span></td><td><span>Data {row.validation?.data}</span><small>PIT {row.validation?.pit} · Costs {row.validation?.costs} · Risk {row.validation?.risk}</small></td></tr>)}</tbody></table></div>
               {!signals.length ? <p className="sl-empty">No output is displayed until the strategy has sufficient verified history.</p> : null}
             </section>
 

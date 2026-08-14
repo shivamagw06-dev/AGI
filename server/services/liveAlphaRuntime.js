@@ -253,3 +253,64 @@ export function getLiveAlphaRuntimeStatus() {
     execution_enabled: false,
   };
 }
+
+export function getLiveAlphaMarketSnapshot(symbols = [], { now = new Date() } = {}) {
+  const status = getLiveAlphaRuntimeStatus();
+  const requested = [...new Set((symbols || []).map((value) => String(value || '').trim().toUpperCase()).filter(Boolean))];
+  const members = new Map((runtime?.universe?.members || []).map((member) => [member.symbol, member]));
+  const quotes = {};
+
+  for (const symbol of requested) {
+    const member = members.get(symbol);
+    const snapshot = member ? runtime?.store.get(member.instrumentKey) : null;
+    const receivedMs = snapshot?.received_at ? Date.parse(snapshot.received_at) : NaN;
+    const quoteAgeMs = Number.isFinite(receivedMs) ? Math.max(0, now.getTime() - receivedMs) : null;
+    const checks = {
+      live_feed_connected: status.feed?.status === 'connected',
+      instrument_mapped: Boolean(member),
+      quote_received: Boolean(snapshot),
+      quote_fresh: quoteAgeMs != null && quoteAgeMs <= (runtime?.store.staleAfterMs || 15_000),
+      session_valid: Boolean(snapshot?.received_at),
+    };
+    const reasonCodes = [];
+    if (!checks.live_feed_connected) reasonCodes.push('LIVE_FEED_DISCONNECTED');
+    if (!checks.instrument_mapped) reasonCodes.push('INSTRUMENT_NOT_MAPPED');
+    if (checks.instrument_mapped && !checks.quote_received) reasonCodes.push('LIVE_QUOTE_NOT_RECEIVED');
+    if (checks.quote_received && !checks.quote_fresh) reasonCodes.push('STALE_LIVE_QUOTE');
+    if (checks.quote_received && !checks.session_valid) reasonCodes.push('INVALID_LIVE_SESSION');
+    quotes[symbol] = {
+      symbol,
+      instrument_key: member?.instrumentKey || null,
+      source: status.provider || 'upstox',
+      ltp: snapshot?.ltp ?? null,
+      previous_close: snapshot?.previous_close ?? null,
+      average_traded_price: snapshot?.average_traded_price ?? null,
+      cumulative_volume: snapshot?.cumulative_volume ?? null,
+      open_interest: snapshot?.open_interest ?? null,
+      best_bid: snapshot?.best_bid ?? null,
+      best_ask: snapshot?.best_ask ?? null,
+      spread_bps: snapshot?.spread_bps ?? null,
+      day_ohlc: snapshot?.ohlc || null,
+      exchange_timestamp: snapshot?.exchange_timestamp || null,
+      received_at: snapshot?.received_at || null,
+      quote_age_ms: quoteAgeMs,
+      data_quality: reasonCodes.length ? 'BLOCKED' : 'PASS',
+      checks: checks,
+      reason_codes: reasonCodes,
+    };
+  }
+
+  return {
+    provider: status.provider || 'upstox',
+    status: status.feed?.status || status.status,
+    observed_at: now.toISOString(),
+    last_heartbeat: status.feed?.last_message_at || null,
+    subscribed_instruments: status.feed?.subscribed_instruments || 0,
+    observed_instruments: runtime?.store?.latest?.size || 0,
+    messages: status.feed?.messages || 0,
+    decode_errors: status.feed?.decode_errors || 0,
+    reconnects: status.feed?.reconnects || 0,
+    research_only: true,
+    quotes,
+  };
+}
