@@ -23,6 +23,8 @@ _STATE: dict[str, Any] = {
     "failed_this_session": 0,
     "processed_this_session": 0,
     "started_mono": None,
+    "outcome_cursor": 0,
+    "outcomes_evaluated_this_session": 0,
 }
 
 
@@ -167,16 +169,13 @@ def process_batch(*, batch: int = 3) -> dict[str, Any]:
                 last_error=str(out.get("error") or errors[:3])[:280],
             )
             failed += 1
-    evaluated = 0
-    evaluation_errors = 0
     try:
-        from forecast_intelligence_engine.accuracy import evaluate_symbol
-
-        for item in claimed:
-            result = evaluate_symbol(str(item.get("symbol") or ""))
-            evaluated += int(result.get("written") or 0)
-    except Exception:
-        evaluation_errors += 1
+        outcome_batch = int(os.getenv("FIE_OUTCOME_BATCH", "25"))
+    except (TypeError, ValueError):
+        outcome_batch = 25
+    outcome = sweep_outcomes(batch=max(batch, outcome_batch))
+    evaluated = int(outcome.get("accuracy_rows_written") or 0)
+    evaluation_errors = int(outcome.get("errors") or 0)
     elapsed = max(0.001, time.time() - t0)
     with _LOCK:
         _STATE["last_tick"] = _now()
@@ -190,11 +189,61 @@ def process_batch(*, batch: int = 3) -> dict[str, Any]:
         "failed": failed,
         "accuracy_rows_written": evaluated,
         "accuracy_errors": evaluation_errors,
+        "outcome_sweep": outcome,
         "elapsed_seconds": round(elapsed, 2),
         "pipeline": pipeline_counts(),
         "results": results,
         "engine": ENGINE_CODE,
         "version": VERSION,
+    }
+
+
+def sweep_outcomes(*, batch: int = 25) -> dict[str, Any]:
+    """Revisit forecast vintages independently of the generation queue.
+
+    Annual actuals commonly arrive after the forecast queue has drained. A
+    bounded rotating sweep ensures those forecasts are graded when the exact
+    target period becomes available without coupling evaluation to regeneration.
+    """
+    from forecast_intelligence_engine.accuracy import evaluate_symbol
+    from institutional_warehouse import store
+
+    symbols = store.entities("forecast_metric_predictions")
+    size = max(1, min(int(batch), 250))
+    with _LOCK:
+        start = int(_STATE.get("outcome_cursor") or 0)
+    if not symbols:
+        return {"ok": True, "symbols_with_predictions": 0, "attempted": 0,
+                "evaluations_written": 0, "accuracy_rows_written": 0, "errors": 0,
+                "next_cursor": 0}
+    start %= len(symbols)
+    selected = [symbols[(start + index) % len(symbols)] for index in range(min(size, len(symbols)))]
+    evaluations_written = 0
+    accuracy_written = 0
+    errors = 0
+    results: list[dict[str, Any]] = []
+    for symbol in selected:
+        try:
+            result = evaluate_symbol(symbol)
+            evaluations_written += int(result.get("evaluations_written") or 0)
+            accuracy_written += int(result.get("written") or 0)
+            results.append(result)
+        except Exception as exc:
+            errors += 1
+            results.append({"ok": False, "symbol": symbol, "error": str(exc)[:200]})
+    next_cursor = (start + len(selected)) % len(symbols)
+    with _LOCK:
+        _STATE["outcome_cursor"] = next_cursor
+        _STATE["outcomes_evaluated_this_session"] += accuracy_written
+    return {
+        "ok": errors == 0,
+        "symbols_with_predictions": len(symbols),
+        "attempted": len(selected),
+        "evaluations_written": evaluations_written,
+        "accuracy_rows_written": accuracy_written,
+        "errors": errors,
+        "next_cursor": next_cursor,
+        "results": results,
     }
 
 

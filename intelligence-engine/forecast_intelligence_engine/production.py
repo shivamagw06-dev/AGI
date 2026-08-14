@@ -242,7 +242,8 @@ def calibration_board() -> dict[str, Any]:
         from institutional_warehouse import store
         accuracy_rows = store.all_rows("forecast_accuracy", limit=100000)
         evaluations = store.all_rows("forecast_evaluations", limit=100000)
-        summary = calibration_summary(accuracy_rows, evaluations)
+        predictions = store.all_rows("forecast_metric_predictions", limit=100000)
+        summary = calibration_summary(accuracy_rows, evaluations, prediction_count=len(predictions))
         return {"ok": True, "engine": ENGINE_CODE, "version": VERSION, **summary}
     except Exception as exc:
         return {"ok": False, "engine": ENGINE_CODE, "version": VERSION,

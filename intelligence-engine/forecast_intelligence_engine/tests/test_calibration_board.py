@@ -16,7 +16,21 @@ def test_calibration_requires_real_outcomes_and_consensus():
 
 
 def test_empty_calibration_fails_closed():
-    result = calibration_summary([], [])
+    result = calibration_summary([], [], prediction_count=0)
     assert result["valid_accuracy_outcomes"] == 0
     assert result["status"] == "ACCUMULATING_OUTCOMES"
     assert all(passed is False for passed in result["gates"].values())
+    assert result["outcome_diagnostic"] == "NO_PREDICTIONS"
+
+
+def test_open_forecasts_are_explained_without_becoming_accuracy():
+    evaluations = [
+        {"outcome_status": "MISSING_ACTUAL", "requires_review": False},
+        {"outcome_status": "PERIOD_MISMATCH", "requires_review": True},
+    ]
+    result = calibration_summary([], evaluations, prediction_count=12)
+    assert result["forecast_predictions"] == 12
+    assert result["outcome_status_counts"] == {"MISSING_ACTUAL": 1, "PERIOD_MISMATCH": 1}
+    assert result["review_required"] == 1
+    assert result["outcome_diagnostic"] == "NO_MATURED_VALID_OUTCOMES"
+    assert result["execution_eligible"] is False

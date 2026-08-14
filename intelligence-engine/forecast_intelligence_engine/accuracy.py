@@ -29,12 +29,19 @@ def calibration_summary(
     accuracy_rows: Iterable[dict[str, Any]],
     evaluation_rows_: Iterable[dict[str, Any]],
     *,
+    prediction_count: Optional[int] = None,
     minimum_outcomes: int = 100,
     minimum_sector_outcomes: int = 20,
 ) -> dict[str, Any]:
     """Aggregate only governed outcomes; never infer accuracy from open forecasts."""
     accuracy = [row for row in accuracy_rows if row.get("ape_pct") is not None]
     evaluations = list(evaluation_rows_)
+    outcome_status_counts: dict[str, int] = {}
+    review_required = 0
+    for row in evaluations:
+        status = str(row.get("outcome_status") or "UNKNOWN").upper()
+        outcome_status_counts[status] = outcome_status_counts.get(status, 0) + 1
+        review_required += int(bool(row.get("requires_review")))
     apes = sorted(float(row["ape_pct"]) for row in accuracy)
     directions = [bool(row["direction_correct"]) for row in accuracy if row.get("direction_correct") is not None]
     aligned = [row for row in accuracy if row.get("calibration_status") == "ALIGNED"]
@@ -59,6 +66,9 @@ def calibration_summary(
         "valid_accuracy_outcomes": len(accuracy),
         "governed_valid_evaluations": len(valid_evaluations),
         "total_evaluations": len(evaluations),
+        "forecast_predictions": int(prediction_count if prediction_count is not None else len(evaluations)),
+        "outcome_status_counts": dict(sorted(outcome_status_counts.items())),
+        "review_required": review_required,
         "mean_ape_pct": round(sum(apes) / len(apes), 3) if apes else None,
         "median_ape_pct": round(median, 3) if median is not None else None,
         "directional_accuracy_pct": round(sum(directions) / len(directions) * 100, 2) if directions else None,
@@ -66,6 +76,12 @@ def calibration_summary(
         "sector_outcome_counts": dict(sorted(sector_counts.items())),
         "gates": gates,
         "missing_dependencies": [name for name, passed in gates.items() if not passed],
+        "outcome_diagnostic": (
+            "NO_PREDICTIONS" if prediction_count == 0
+            else "NOT_YET_EVALUATED" if prediction_count and not evaluations
+            else "NO_MATURED_VALID_OUTCOMES" if not accuracy
+            else "OUTCOMES_ACCUMULATING"
+        ),
         "rule": "Forecast calibration may inform research confidence only; it cannot authorize strategy or portfolio execution.",
     }
 
