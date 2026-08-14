@@ -463,7 +463,7 @@ def dashboard(limit: int = 5) -> dict[str, Any]:
 
 
 def backtest(strategy_id: str, config: dict[str, Any] | None = None) -> dict[str, Any]:
-    strategy_map = {"time_series_momentum": "momentum", "cross_sectional_momentum": "cross_sectional_momentum", "trend_following": "trend_following", "volatility_breakout": "volatility_breakout", "mean_reversion": "mean_reversion"}
+    strategy_map = {"time_series_momentum": "momentum", "cross_sectional_momentum": "cross_sectional_momentum", "trend_following": "trend_following", "volatility_breakout": "volatility_breakout", "mean_reversion": "mean_reversion", "quality_momentum": "quality_momentum"}
     if strategy_id not in strategy_map:
         return {"ok": False, "status": "DATA_BUILDING", "error": "strategy_specific_walk_forward_backtest_not_implemented", "strategy_id": strategy_id, "decision": "DO_NOT_DEPLOY"}
     from hedge_fund_lab.backtests import run_from_warehouse

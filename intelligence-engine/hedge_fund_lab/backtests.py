@@ -657,6 +657,50 @@ def mean_reversion_backtest(
 def run_from_warehouse(strategy: str, config: dict[str, Any] | None = None) -> dict[str, Any]:
     """Load the bounded warehouse inputs needed by the backtest."""
     strategy_key = str(strategy).lower()
+    if strategy_key == "quality_momentum":
+        try:
+            from institutional_warehouse import db
+            factor_table = db.physical_table("hedge_fund_factors")
+            annual_table = db.physical_table("financials_annual")
+            factor_stats = (db.query(
+                f'''SELECT COUNT(*) AS rows, COUNT(DISTINCT symbol) AS symbols,
+                           COUNT(DISTINCT as_of) AS snapshots, MIN(as_of) AS first_as_of,
+                           MAX(as_of) AS latest_as_of
+                    FROM {factor_table} WHERE quality_score IS NOT NULL'''
+            ) or [{}])[0]
+            filing_stats = (db.query(
+                f'''SELECT COUNT(*) AS rows, COUNT(DISTINCT symbol) AS symbols,
+                           SUM(CASE WHEN COALESCE(filing_date, effective_date) IS NOT NULL THEN 1 ELSE 0 END) AS dated_rows
+                    FROM {annual_table}'''
+            ) or [{}])[0]
+        except Exception as exc:
+            return {"ok": False, "error": "warehouse_unavailable", "detail": str(exc)[:200]}
+        total = int(filing_stats.get("rows") or 0)
+        dated = int(filing_stats.get("dated_rows") or 0)
+        return {
+            "ok": False,
+            "error": "point_in_time_quality_history_unavailable",
+            "strategy": "quality_momentum_long_only",
+            "model_version": MODEL_VERSION,
+            "readiness": {
+                "current_quality_factor_rows": int(factor_stats.get("rows") or 0),
+                "current_quality_factor_symbols": int(factor_stats.get("symbols") or 0),
+                "distinct_factor_snapshots": int(factor_stats.get("snapshots") or 0),
+                "first_factor_as_of": factor_stats.get("first_as_of"),
+                "latest_factor_as_of": factor_stats.get("latest_as_of"),
+                "annual_statement_rows": total,
+                "annual_statement_symbols": int(filing_stats.get("symbols") or 0),
+                "filing_or_effective_dated_rows": dated,
+                "filing_date_coverage_pct": round(dated / total * 100, 2) if total else 0.0,
+                "minimum_required_factor_snapshots": 5,
+                "status": "BLOCKED",
+            },
+            "limitations": [
+                "Current cross-sectional quality scores cannot be projected backward into historical portfolios.",
+                "Each annual factor observation must be keyed to the date the filing became public.",
+                "Historical constituents and delisted securities remain incomplete.",
+            ],
+        }
     if strategy_key not in {"momentum", "cross_sectional_momentum", "momentum_12_1_long_only", "trend", "trend_following", "trend_following_long_only", "breakout", "volatility_breakout", "volatility_breakout_long_only", "mean_reversion", "medium_term_mean_reversion", "medium_term_mean_reversion_long_only"}:
         return {"ok": False, "error": "strategy_requires_point_in_time_fundamental_history",
                 "detail": "Value and quality are intentionally blocked until filing-effective timestamps and factor snapshots pass coverage checks."}

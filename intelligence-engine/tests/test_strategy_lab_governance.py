@@ -45,6 +45,16 @@ def test_cross_sectional_momentum_has_its_own_governed_backtest(monkeypatch):
     assert result["validation"]["promotion"] == "DO_NOT_DEPLOY"
     assert result["registry_evidence"]["parameter_stability"]["status"] == "FAILED"
 
+
+def test_quality_momentum_routes_to_fail_closed_readiness_audit(monkeypatch):
+    monkeypatch.setattr("hedge_fund_lab.backtests.run_from_warehouse", lambda key, config: {
+        "ok": False, "error": key, "readiness": {"status": "BLOCKED"},
+    })
+    result = production.backtest("quality_momentum")
+    assert result["error"] == "quality_momentum"
+    assert result["validation"]["economic_gates_passed"] is False
+    assert result["validation"]["promotion"] == "DO_NOT_DEPLOY"
+
     result = production.scan("event_strategies")
 
     assert result["ok"] is True
