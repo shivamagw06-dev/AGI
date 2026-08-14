@@ -119,6 +119,7 @@ async function importRows(rows) {
 async function refreshDaily(candidates, today) {
   const collected = [];
   const failures = [];
+  const overlayFailures = [];
   const concurrency = Math.max(1, Math.min(8, Number(process.env.HEDGE_FUND_UPSTOX_EOD_CONCURRENCY || 4)));
   let cursor = 0;
   const worker = async () => {
@@ -128,9 +129,21 @@ async function refreshDaily(candidates, today) {
         // Existing warehouse history is retained. Pull a short overlap so the
         // latest completed bar is repaired without re-downloading 10 years.
         const payload = await getHistoricalCandles(candidate.instrumentKey, { unit: 'days', interval: 1, from: dateDaysAgo(10), to: today });
-        const rows = candleRows(candidate.ticker, payload, 'upstox_v3_daily').filter((row) => row.date <= today);
-        if (!rows.length) throw new Error('no_daily_candles_returned');
-        collected.push(...rows);
+        const historicalRows = candleRows(candidate.ticker, payload, 'upstox_v3_daily').filter((row) => row.date <= today);
+        if (!historicalRows.length) throw new Error('no_daily_candles_returned');
+        const byDate = new Map(historicalRows.map((row) => [row.date, row]));
+        // Upstox historical candles generally stop at the previous completed
+        // day. The documented V3 intraday endpoint with days/1 supplies the
+        // current trading day's consolidated OHLCV candle.
+        try {
+          const currentPayload = await getIntradayCandles(candidate.instrumentKey, { unit: 'days', interval: 1 });
+          const currentRows = candleRows(candidate.ticker, currentPayload, 'upstox_v3_current_day').filter((row) => row.date === today);
+          if (!currentRows.length) throw new Error('current_day_candle_missing');
+          for (const row of currentRows) byDate.set(row.date, row);
+        } catch (error) {
+          overlayFailures.push({ ticker: candidate.ticker, error: error.message });
+        }
+        collected.push(...byDate.values());
       } catch (error) {
         failures.push({ ticker: candidate.ticker, error: error.message });
       }
@@ -147,6 +160,7 @@ async function refreshDaily(candidates, today) {
     rowsWritten: collected.length,
     imported,
     failures,
+    overlayFailures,
   };
 }
 
