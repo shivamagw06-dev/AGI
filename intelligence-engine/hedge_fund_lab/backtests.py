@@ -8,6 +8,7 @@ on each decision date and the simulated portfolio has paid its costs.
 from __future__ import annotations
 
 import math
+from bisect import bisect_right
 from collections import defaultdict
 from datetime import date
 from typing import Any, Iterable
@@ -154,6 +155,7 @@ def momentum_backtest(
         for bar in series:
             by_day[bar["date"]][symbol] = bar
     sectors = {str(k).upper(): str(v or "Unclassified") for k, v in (classifications or {}).items()}
+    price_dates = {symbol: [bar["date"] for bar in series] for symbol, series in prices.items()}
     weights: dict[str, float] = {}
     entry: dict[str, float] = {}
     peak: dict[str, float] = {}
@@ -172,13 +174,14 @@ def momentum_backtest(
         if is_rebalance:
             candidates: list[tuple[float, str, float]] = []
             for symbol, series in prices.items():
-                history = [bar for bar in series if bar["date"] <= previous]
-                if len(history) < lookback:
+                end_index = bisect_right(price_dates[symbol], previous)
+                if end_index < lookback:
                     continue
-                end, base = history[-skip - 1], history[-lookback]
+                end, base = series[end_index - skip - 1], series[end_index - lookback]
                 if base["close"] <= 0:
                     continue
-                avg_value = sum(bar["close"] * bar["volume"] for bar in history[-21:]) / min(21, len(history))
+                liquidity_window = series[max(0, end_index - 21):end_index]
+                avg_value = sum(bar["close"] * bar["volume"] for bar in liquidity_window) / len(liquidity_window)
                 if avg_value < float(cfg["min_average_daily_value"]):
                     continue
                 candidates.append((end["close"] / base["close"] - 1.0, symbol, avg_value))
@@ -281,6 +284,7 @@ def trend_backtest(
         for bar in series:
             by_day[bar["date"]][symbol] = bar
     sectors = {str(k).upper(): str(v or "Unclassified") for k, v in (classifications or {}).items()}
+    price_dates = {symbol: [bar["date"] for bar in series] for symbol, series in prices.items()}
     weights: dict[str, float] = {}
     entry: dict[str, float] = {}
     peak: dict[str, float] = {}
@@ -298,9 +302,10 @@ def trend_backtest(
         if (i - start) % rebalance_every == 0:
             candidates: list[tuple[float, str, float]] = []
             for symbol, series in prices.items():
-                history = [bar for bar in series if bar["date"] <= previous]
-                if len(history) < required:
+                end_index = bisect_right(price_dates[symbol], previous)
+                if end_index < required:
                     continue
+                history = series[end_index - required:end_index]
                 closes = [bar["close"] for bar in history]
                 price = closes[-1]
                 sma_fast = sum(closes[-fast:]) / fast
@@ -309,7 +314,8 @@ def trend_backtest(
                 slope = sma_slow / prior_slow - 1.0 if prior_slow > 0 else 0.0
                 if not (price > sma_slow and sma_fast > sma_slow and slope > 0):
                     continue
-                avg_value = sum(bar["close"] * bar["volume"] for bar in history[-21:]) / min(21, len(history))
+                liquidity_window = series[max(0, end_index - 21):end_index]
+                avg_value = sum(bar["close"] * bar["volume"] for bar in liquidity_window) / len(liquidity_window)
                 if avg_value < float(cfg["min_average_daily_value"]):
                     continue
                 score = (price / sma_slow - 1.0) + (sma_fast / sma_slow - 1.0) + slope
