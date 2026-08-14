@@ -8,6 +8,8 @@ from __future__ import annotations
 
 import math
 import statistics
+import threading
+import time
 from collections import defaultdict
 from datetime import datetime, timezone
 from typing import Any
@@ -15,6 +17,9 @@ from typing import Any
 VERSION = "strategy-lab-phase1-v1.0.0"
 LIFECYCLE = ("DRAFT", "BACKTESTING", "VALIDATING", "PAPER", "OPERATIONAL", "SUSPENDED", "RETIRED")
 COMMON_DATA = ["adjusted_daily_ohlcv", "liquidity", "corporate_actions"]
+_CACHE_LOCK = threading.Lock()
+_PRICE_CACHE: dict[str, Any] = {"at": 0.0, "rows": []}
+_CACHE_TTL_SECONDS = 300
 
 REGISTRY: dict[str, dict[str, Any]] = {
     "time_series_momentum": {
@@ -55,9 +60,37 @@ def _num(value: Any) -> float | None:
     return out if math.isfinite(out) else None
 
 
-def _warehouse_rows(limit: int = 500_000) -> list[dict[str, Any]]:
-    from institutional_warehouse import store
-    return store.all_rows("daily_market_history", limit=limit) or []
+def _warehouse_rows(limit: int = 800_000) -> list[dict[str, Any]]:
+    """Read raw immutable prices without the expensive cell-override overlay.
+
+    Strategy inputs are append-only market observations. Reading them through
+    ``store.all_rows`` performs override lookups for every page and made a
+    full-universe scan exceed Render's request window. This bounded projection
+    keeps only the latest 300 sessions per symbol and is cached across engines.
+    """
+    now = time.monotonic()
+    cached = _PRICE_CACHE.get("rows") or []
+    if cached and now - float(_PRICE_CACHE.get("at") or 0) < _CACHE_TTL_SECONDS:
+        return cached[:limit]
+    with _CACHE_LOCK:
+        cached = _PRICE_CACHE.get("rows") or []
+        if cached and time.monotonic() - float(_PRICE_CACHE.get("at") or 0) < _CACHE_TTL_SECONDS:
+            return cached[:limit]
+        from institutional_warehouse import db
+        table = db.physical_table("daily_market_history")
+        rows = db.query(
+            f'''SELECT symbol, date, open, high, low, close, adjusted_close, volume
+                FROM (
+                  SELECT symbol, date, open, high, low, close, adjusted_close, volume,
+                         ROW_NUMBER() OVER (PARTITION BY symbol ORDER BY date DESC) AS rn
+                  FROM {table}
+                  WHERE COALESCE(sys_published, 1) = 1
+                ) recent
+                WHERE rn <= 300
+                ORDER BY symbol, date'''
+        )
+        _PRICE_CACHE.update({"at": time.monotonic(), "rows": rows})
+        return rows[:limit]
 
 
 def _series(rows: list[dict[str, Any]]) -> dict[str, list[dict[str, float | str]]]:
@@ -183,7 +216,7 @@ def health() -> dict[str, Any]:
         rows = _warehouse_rows(limit=1_000)
     except Exception as exc:
         return {"ok": False, "status": "DATA_UNAVAILABLE", "error": str(exc)[:160], "version": VERSION}
-    return {"ok": True, "status": "RESEARCH_ONLY", "version": VERSION, "phase": 1, "strategies": len(REGISTRY), "warehouse_rows_sampled": len(rows), "execution_enabled": False, "promotion_authority": "strategy_validation_gates"}
+    return {"ok": True, "status": "RESEARCH_ONLY", "version": VERSION, "phase": 1, "strategies": len(REGISTRY), "warehouse_rows_sampled": len(rows), "price_cache_ttl_seconds": _CACHE_TTL_SECONDS, "execution_enabled": False, "promotion_authority": "strategy_validation_gates"}
 
 
 def strategy(strategy_id: str) -> dict[str, Any]:
