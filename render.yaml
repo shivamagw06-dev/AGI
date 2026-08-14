@@ -158,10 +158,11 @@ services:
     envVars:
       - key: APP_ENV
         value: production
-      # The live engine runs its web process only; scheduled collection is
-      # owned by the backend worker so it cannot compete with Ask requests.
+      # Run the reduced-priority gather sidecar on the same Pro instance so it
+      # shares the durable warehouse disk. The HTTP process still keeps every
+      # heavy gather flag off; scripts/start_engine.sh isolates the worker.
       - key: AGI_GATHER_SIDECAR
-        value: "false"
+        value: "true"
       # Durable data roots.  KIP keeps research objects; the warehouse keeps
       # imported financial statements, valuation snapshots and live prices.
       - key: KIP_DATA_DIR

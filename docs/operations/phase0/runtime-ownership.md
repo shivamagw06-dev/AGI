@@ -10,12 +10,12 @@ One recurring operation must have exactly one production owner.
 | Ask AGI and research reads | `agib-intelligence-engine` | Python web | KIP + warehouse | Active |
 | KIP document/research memory | `agib-intelligence-engine` | Python web | Render disk, optional Supabase mirror | Active |
 | Capital IQ bootstrap and resumable import | `agib-intelligence-engine` | Python web background jobs | Render disk warehouse | Active on demand/restart |
-| Continuous Gather and Learn | `agib-intelligence-worker` | Python worker | Worker-configured stores | **Stale heartbeat** |
-| FAA public evidence collector | `agib-intelligence-worker` | Python worker | KIP/FAA stores | Not proven active |
-| LIDI and historical-depth collectors | `agib-intelligence-worker` | Python worker | LIDI/KF stores | Not proven active |
-| Warehouse daily refresh and backfill | `agib-intelligence-worker` | Python worker | Institutional warehouse | Not proven active |
-| Historical valuation runtime | `agib-intelligence-worker` | Python worker | Warehouse HVIE tables | Not proven active |
-| Forecast runtime | `agib-intelligence-worker` | Python worker | Forecast warehouse tables | External owner; incomplete |
+| Continuous Gather and Learn | `agib-intelligence-engine` | Reduced-priority Python sidecar | Shared Render disk | Phase 1 restoration deployed; live heartbeat pending |
+| FAA public evidence collector | `agib-intelligence-engine` | Reduced-priority Python sidecar | Shared Render disk | Phase 1 restoration deployed; output freshness pending |
+| LIDI and historical-depth collectors | `agib-intelligence-engine` | Reduced-priority Python sidecar | Shared Render disk | Phase 1 restoration deployed; output freshness pending |
+| Warehouse daily refresh and backfill | `agib-intelligence-engine` | Reduced-priority Python sidecar | Institutional warehouse | Phase 1 restoration deployed; output freshness pending |
+| Historical valuation runtime | `agib-intelligence-engine` | Reduced-priority Python sidecar | Warehouse HVIE tables | Phase 1 restoration deployed; output freshness pending |
+| Forecast runtime | `agib-intelligence-engine` | Reduced-priority Python sidecar | Forecast warehouse tables | Phase 1 restoration deployed; incomplete |
 | Company dossier generation | Disabled | No active owner | Warehouse/Supabase | Paused; health telemetry stale |
 | Macro runtime | Disabled | No active owner | Macro warehouse tables | Disabled |
 | E01 macro regime | Disabled | No active owner | EngineState store | Disabled |
