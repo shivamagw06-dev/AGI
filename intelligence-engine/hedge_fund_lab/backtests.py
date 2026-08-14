@@ -260,9 +260,137 @@ def momentum_backtest(
     }
 
 
+def trend_backtest(
+    rows: Iterable[dict[str, Any]], *, classifications: dict[str, str] | None = None,
+    config: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Long-only moving-average trend portfolio with next-session execution."""
+    cfg = {**DEFAULTS, "fast_window": 50, "slow_window": 200, "slope_window": 20, **(config or {})}
+    prices = _clean_prices(rows)
+    fast, slow, slope_window = int(cfg["fast_window"]), int(cfg["slow_window"]), int(cfg["slope_window"])
+    rebalance_every, holdings = int(cfg["rebalance_sessions"]), int(cfg["holdings"])
+    required = slow + slope_window
+    if min(fast, slow, slope_window, rebalance_every, holdings) < 1 or fast >= slow:
+        return {"ok": False, "error": "invalid_backtest_config"}
+    calendar = sorted({bar["date"] for series in prices.values() for bar in series})
+    if len(calendar) < required + 2:
+        return {"ok": False, "error": "insufficient_price_history", "required_sessions": required + 2,
+                "available_sessions": len(calendar), "model_version": MODEL_VERSION}
+    by_day: dict[str, dict[str, dict[str, Any]]] = defaultdict(dict)
+    for symbol, series in prices.items():
+        for bar in series:
+            by_day[bar["date"]][symbol] = bar
+    sectors = {str(k).upper(): str(v or "Unclassified") for k, v in (classifications or {}).items()}
+    weights: dict[str, float] = {}
+    entry: dict[str, float] = {}
+    peak: dict[str, float] = {}
+    returns: list[float] = []
+    return_dates: list[str] = []
+    turnover: list[float] = []
+    capacity_estimates: list[float] = []
+    rebalances: list[dict[str, Any]] = []
+    stopped: set[str] = set()
+    start = required + 1
+    for i in range(start, len(calendar)):
+        today, previous = calendar[i], calendar[i - 1]
+        bars, prior = by_day[today], by_day[previous]
+        old_weights = dict(weights)
+        if (i - start) % rebalance_every == 0:
+            candidates: list[tuple[float, str, float]] = []
+            for symbol, series in prices.items():
+                history = [bar for bar in series if bar["date"] <= previous]
+                if len(history) < required:
+                    continue
+                closes = [bar["close"] for bar in history]
+                price = closes[-1]
+                sma_fast = sum(closes[-fast:]) / fast
+                sma_slow = sum(closes[-slow:]) / slow
+                prior_slow = sum(closes[-slow - slope_window:-slope_window]) / slow
+                slope = sma_slow / prior_slow - 1.0 if prior_slow > 0 else 0.0
+                if not (price > sma_slow and sma_fast > sma_slow and slope > 0):
+                    continue
+                avg_value = sum(bar["close"] * bar["volume"] for bar in history[-21:]) / min(21, len(history))
+                if avg_value < float(cfg["min_average_daily_value"]):
+                    continue
+                score = (price / sma_slow - 1.0) + (sma_fast / sma_slow - 1.0) + slope
+                candidates.append((score, symbol, avg_value))
+            candidates.sort(reverse=True)
+            selected: list[str] = []
+            selected_adv: dict[str, float] = {}
+            sector_used: dict[str, float] = defaultdict(float)
+            raw_weight = min(float(cfg["max_weight"]), 1.0 / holdings)
+            for _, symbol, avg_value in candidates:
+                sector = sectors.get(symbol, "Unclassified")
+                if sector_used[sector] + raw_weight > float(cfg["max_sector_weight"]) + 1e-12:
+                    continue
+                selected.append(symbol)
+                selected_adv[symbol] = avg_value
+                sector_used[sector] += raw_weight
+                if len(selected) == holdings:
+                    break
+            weights = {symbol: 1.0 / len(selected) for symbol in selected} if selected else {}
+            if weights:
+                participation = float(cfg["max_adv_participation"])
+                capacity_estimates.append(min(selected_adv[symbol] * participation / weight for symbol, weight in weights.items()))
+            entry = {symbol: bars[symbol]["close"] for symbol in weights if symbol in bars}
+            peak = dict(entry)
+            stopped.clear()
+            rebalances.append({"date": today, "selected": sorted(weights), "candidate_count": len(candidates),
+                               "estimated_capacity": round(capacity_estimates[-1], 2) if weights else None})
+        gross_return = 0.0
+        for symbol, weight in list(weights.items()):
+            if symbol not in bars or symbol not in prior:
+                continue
+            current = bars[symbol]["close"]
+            peak[symbol] = max(peak.get(symbol, current), current)
+            if current / max(entry.get(symbol, current), peak[symbol]) - 1.0 <= -float(cfg["stop_loss_pct"]):
+                stopped.add(symbol)
+            gross_return += weight * (current / prior[symbol]["close"] - 1.0)
+        if stopped:
+            weights = {symbol: weight for symbol, weight in weights.items() if symbol not in stopped}
+        all_symbols = set(old_weights) | set(weights)
+        traded = sum(max(0.0, weights.get(symbol, 0.0) - old_weights.get(symbol, 0.0)) for symbol in all_symbols)
+        returns.append(gross_return - traded * float(cfg["one_way_cost_bps"]) / 10_000.0)
+        return_dates.append(today)
+        turnover.append(traded)
+    if not returns or not rebalances:
+        return {"ok": False, "error": "insufficient_eligible_universe", "model_version": MODEL_VERSION,
+                "eligible_symbols": len(prices)}
+    return {
+        "ok": True,
+        "strategy": "trend_following_long_only",
+        "research_status": "backtested_not_investment_advice",
+        "model_version": MODEL_VERSION,
+        "execution": {"signal_time": "prior_close", "execution": "next_close", "cost_model": "one_way_turnover_bps",
+                      "one_way_cost_bps": cfg["one_way_cost_bps"], "stop_loss_pct": cfg["stop_loss_pct"] * 100},
+        "constraints": {key: cfg[key] for key in ("holdings", "max_weight", "max_sector_weight", "min_average_daily_value", "portfolio_capital", "max_adv_participation", "max_drawdown_limit_pct", "min_oos_annualized_return_pct", "min_oos_sharpe")},
+        "parameters": {"fast_window": fast, "slow_window": slow, "slope_window": slope_window, "rebalance_sessions": rebalance_every},
+        "coverage": {"symbols_with_price_history": len(prices), "calendar_sessions": len(calendar),
+                     "backtest_sessions": len(returns), "rebalance_count": len(rebalances)},
+        "metrics": _metrics(returns),
+        "validation": _validation_report(return_dates, returns),
+        "average_turnover_pct": round(sum(turnover) / len(turnover) * 100, 3),
+        "capacity": {
+            "status": "COMPLETED" if capacity_estimates else "INSUFFICIENT_DATA",
+            "assumed_portfolio_capital": float(cfg["portfolio_capital"]),
+            "max_adv_participation_pct": round(float(cfg["max_adv_participation"]) * 100, 3),
+            "minimum_estimated_capacity": round(min(capacity_estimates), 2) if capacity_estimates else None,
+            "median_estimated_capacity": round(sorted(capacity_estimates)[len(capacity_estimates) // 2], 2) if capacity_estimates else None,
+            "passes_assumed_capital": bool(capacity_estimates and min(capacity_estimates) >= float(cfg["portfolio_capital"])),
+        },
+        "rebalances": rebalances[-24:],
+        "limitations": [
+            "Long-only trend model; no short book, taxes or intraday execution model.",
+            "Corporate-action-adjusted closes are used when available; adjustment coverage remains an independent gate.",
+            "Historical constituents and delisted securities remain incomplete, so survivorship risk is explicit.",
+        ],
+    }
+
+
 def run_from_warehouse(strategy: str, config: dict[str, Any] | None = None) -> dict[str, Any]:
     """Load the bounded warehouse inputs needed by the backtest."""
-    if str(strategy).lower() not in {"momentum", "momentum_12_1_long_only"}:
+    strategy_key = str(strategy).lower()
+    if strategy_key not in {"momentum", "momentum_12_1_long_only", "trend", "trend_following", "trend_following_long_only"}:
         return {"ok": False, "error": "strategy_requires_point_in_time_fundamental_history",
                 "detail": "Value and quality are intentionally blocked until filing-effective timestamps and factor snapshots pass coverage checks."}
     try:
@@ -286,23 +414,31 @@ def run_from_warehouse(strategy: str, config: dict[str, Any] | None = None) -> d
         return {"ok": False, "error": "warehouse_unavailable", "detail": str(exc)[:200]}
     supplied = dict(config or {})
     sensitivity_enabled = bool(supplied.pop("parameter_sensitivity", True))
-    result = momentum_backtest(rows, classifications=classifications, config=supplied)
+    is_trend = strategy_key in {"trend", "trend_following", "trend_following_long_only"}
+    runner = trend_backtest if is_trend else momentum_backtest
+    result = runner(rows, classifications=classifications, config=supplied)
     if not result.get("ok") or not sensitivity_enabled:
         return result
-    base_lookback = int(supplied.get("lookback_sessions", DEFAULTS["lookback_sessions"]))
-    variants = sorted({max(126, base_lookback - 63), base_lookback, base_lookback + 63})
     sensitivity = []
-    for lookback in variants:
-        variant = momentum_backtest(rows, classifications=classifications, config={**supplied, "lookback_sessions": lookback})
-        sensitivity.append({
-            "lookback_sessions": lookback,
-            "ok": bool(variant.get("ok")),
-            "metrics": variant.get("metrics"),
-            "test_metrics": ((variant.get("validation") or {}).get("periods") or {}).get("test", {}).get("metrics"),
-        })
+    if is_trend:
+        base_slow = int(supplied.get("slow_window", 200))
+        variants = sorted({max(100, base_slow - 50), base_slow, base_slow + 50})
+        for slow_window in variants:
+            variant = runner(rows, classifications=classifications, config={**supplied, "slow_window": slow_window})
+            sensitivity.append({"slow_window": slow_window, "ok": bool(variant.get("ok")), "metrics": variant.get("metrics"),
+                                "test_metrics": ((variant.get("validation") or {}).get("periods") or {}).get("test", {}).get("metrics")})
+        selection_rule = "Predeclared slow-window variants 150/200/250 sessions; no best-variant substitution."
+    else:
+        base_lookback = int(supplied.get("lookback_sessions", DEFAULTS["lookback_sessions"]))
+        variants = sorted({max(126, base_lookback - 63), base_lookback, base_lookback + 63})
+        for lookback in variants:
+            variant = runner(rows, classifications=classifications, config={**supplied, "lookback_sessions": lookback})
+            sensitivity.append({"lookback_sessions": lookback, "ok": bool(variant.get("ok")), "metrics": variant.get("metrics"),
+                                "test_metrics": ((variant.get("validation") or {}).get("periods") or {}).get("test", {}).get("metrics")})
+        selection_rule = "Predeclared lookback +/- 63 sessions; no best-variant substitution."
     result["parameter_sensitivity"] = {
         "status": "COMPLETED" if all(item["ok"] for item in sensitivity) else "PARTIAL",
         "variants": sensitivity,
-        "selection_rule": "Predeclared lookback +/- 63 sessions; no best-variant substitution.",
+        "selection_rule": selection_rule,
     }
     return result

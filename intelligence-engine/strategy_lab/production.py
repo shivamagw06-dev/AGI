@@ -461,10 +461,11 @@ def dashboard(limit: int = 5) -> dict[str, Any]:
 
 
 def backtest(strategy_id: str, config: dict[str, Any] | None = None) -> dict[str, Any]:
-    if strategy_id != "time_series_momentum":
+    strategy_map = {"time_series_momentum": "momentum", "trend_following": "trend_following"}
+    if strategy_id not in strategy_map:
         return {"ok": False, "status": "DATA_BUILDING", "error": "strategy_specific_walk_forward_backtest_not_implemented", "strategy_id": strategy_id, "decision": "DO_NOT_DEPLOY"}
     from hedge_fund_lab.backtests import run_from_warehouse
-    result = run_from_warehouse("momentum", config or {})
+    result = run_from_warehouse(strategy_map[strategy_id], config or {})
     validation = result.get("validation") or {}
     completed = result.get("ok") is True and validation.get("status") == "COMPLETED"
     observed_at = (validation.get("periods") or {}).get("test", {}).get("end")

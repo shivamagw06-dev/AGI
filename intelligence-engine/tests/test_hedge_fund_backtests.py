@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from hedge_fund_lab.backtests import momentum_backtest
+from hedge_fund_lab.backtests import momentum_backtest, trend_backtest
 from hedge_fund_lab.calculators import pair_diagnostics
 
 
@@ -41,6 +41,22 @@ def test_momentum_backtest_fails_closed_without_history():
     result = momentum_backtest(_price_rows()[:20], config={"min_average_daily_value": 1})
     assert result["ok"] is False
     assert result["error"] == "insufficient_price_history"
+
+
+def test_trend_backtest_is_costed_capacity_checked_and_out_of_sample():
+    result = trend_backtest(
+        _price_rows(),
+        classifications={"WIN": "A", "MID": "B", "LOSE": "C"},
+        config={"holdings": 1, "min_average_daily_value": 1, "portfolio_capital": 100_000},
+    )
+    assert result["ok"] is True
+    assert result["strategy"] == "trend_following_long_only"
+    assert result["execution"]["execution"] == "next_close"
+    assert result["parameters"]["fast_window"] == 50
+    assert result["parameters"]["slow_window"] == 200
+    assert result["validation"]["status"] == "COMPLETED"
+    assert result["validation"]["out_of_sample_observations"] >= 21
+    assert result["capacity"]["passes_assumed_capital"] is True
 
 
 def test_pair_diagnostics_never_claims_cointegration_without_test():
