@@ -110,14 +110,13 @@ export class LiveAlphaPersistence {
     const session = shifted.toISOString().slice(0, 10);
     const start = new Date(`${session}T03:45:00.000Z`).toISOString();
     const end = new Date(`${session}T04:00:00.000Z`).toISOString();
-    const query = new URLSearchParams({
+    const params = {
       select: 'instrument_key,observed_at,exchange_timestamp,ltp,previous_close,last_traded_quantity,average_traded_price,cumulative_volume,open_interest,implied_volatility,best_bid,best_ask,spread_bps,feed_latency_ms,raw_factors',
       observed_at: `gte.${start}`,
       and: `(observed_at.lt.${end})`,
       order: 'observed_at.asc',
-      limit: String(Math.max(1, limit)),
-    }).toString();
-    const rows = await rest('live_market_snapshots', { method: 'GET', query, body: undefined, prefer: undefined });
+    };
+    const rows = await pagedGet('live_market_snapshots', params, { limit: Math.max(1, limit) });
     return (rows || []).map((row) => ({
       ...row,
       received_at: row.observed_at,

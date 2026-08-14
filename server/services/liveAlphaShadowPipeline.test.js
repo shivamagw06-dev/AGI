@@ -24,6 +24,16 @@ test('retains rolling observations and calculates returns', () => {
   assert.equal(Number(result.return60m.toFixed(2)), 5);
 });
 
+test('retains the latest genuine cumulative-volume tick behind an OHLC point', () => {
+  const store = new IntradayFeatureStore();
+  store.ingest({ snapshots: [
+    { instrument_key: 'A', received_at: '2026-08-14T06:00:00Z', ltp: 100, cumulative_volume: 2500 },
+    { instrument_key: 'A', received_at: '2026-08-14T06:01:00Z', ltp: 101, cumulative_volume: null, source: 'upstox_ohlc_1m' },
+  ] });
+  assert.equal(store.latest('A').ltp, 101);
+  assert.equal(store.latestWithFinite('A', 'cumulative_volume').cumulative_volume, 2500);
+});
+
 test('restores opening range and 15m returns from Upstox 1m OHLC after reconnect', () => {
   const store = new IntradayFeatureStore();
   // 09:15–09:29 IST = 03:45–03:59 UTC on this date

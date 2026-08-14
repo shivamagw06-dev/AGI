@@ -30,6 +30,32 @@ test('reads past the Supabase 1000-row response boundary', async () => {
   }
 });
 
+test('opening-range restoration is paged beyond the Supabase row cap', async () => {
+  const priorUrl = process.env.SUPABASE_URL;
+  const priorKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const priorFetch = globalThis.fetch;
+  process.env.SUPABASE_URL = 'https://example.supabase.co';
+  process.env.SUPABASE_SERVICE_ROLE_KEY = 'test-service-key';
+  const offsets = [];
+  globalThis.fetch = async (url) => {
+    const parsed = new URL(url);
+    const offset = Number(parsed.searchParams.get('offset'));
+    const limit = Number(parsed.searchParams.get('limit'));
+    offsets.push(offset);
+    const count = Math.min(limit, Math.max(0, 2300 - offset));
+    return { ok: true, text: async () => JSON.stringify(Array.from({ length: count }, (_, index) => ({ instrument_key: `EQ|${offset + index}`, observed_at: '2026-08-14T03:50:00Z', ltp: 100 }))) };
+  };
+  try {
+    const rows = await new LiveAlphaPersistence().loadSessionOpeningSnapshots({ now: new Date('2026-08-14T06:00:00Z'), limit: 5000 });
+    assert.equal(rows.length, 2300);
+    assert.deepEqual(offsets, [0, 1000, 2000]);
+  } finally {
+    globalThis.fetch = priorFetch;
+    if (priorUrl === undefined) delete process.env.SUPABASE_URL; else process.env.SUPABASE_URL = priorUrl;
+    if (priorKey === undefined) delete process.env.SUPABASE_SERVICE_ROLE_KEY; else process.env.SUPABASE_SERVICE_ROLE_KEY = priorKey;
+  }
+});
+
 test('removes the parent run when signal persistence fails', async () => {
   const priorUrl = process.env.SUPABASE_URL;
   const priorKey = process.env.SUPABASE_SERVICE_ROLE_KEY;

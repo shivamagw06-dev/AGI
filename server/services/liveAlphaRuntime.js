@@ -143,6 +143,7 @@ export async function startLiveAlphaRuntime({ Feed = null, Persistence = LiveAlp
           at: new Date().toISOString(), skipped: Boolean(evaluation.skipped), reason: evaluation.reason || null,
           universe_size: evaluation.universe_size || evaluation.coverage || 0,
           required_coverage: evaluation.required_coverage || null,
+          coverage_diagnostics: evaluation.coverage_diagnostics || null,
           opening_range_status: evaluation.opening_range_status || null,
           derivatives_status: evaluation.derivatives_status || null,
           persistence: evaluation.persistence || [],

@@ -98,6 +98,14 @@ export class IntradayFeatureStore {
     }
   }
   latest(key) { return this.series.get(key)?.at(-1) || null; }
+  latestWithFinite(key, field) {
+    const rows = this.series.get(key) || [];
+    for (let index = rows.length - 1; index >= 0; index -= 1) {
+      const value = rows[index]?.[field];
+      if (value !== null && value !== undefined && value !== '' && Number.isFinite(Number(value))) return rows[index];
+    }
+    return null;
+  }
   atOrBefore(key, timestamp) {
     const rows = this.series.get(key) || [];
     for (let index = rows.length - 1; index >= 0; index -= 1) if (Date.parse(rows[index].received_at) <= timestamp) return rows[index];
@@ -156,22 +164,29 @@ export class MomentumShadowPipeline {
     if (!benchmark || benchmark.return15m === null || benchmark.return60m === null) return { skipped: true, reason: 'benchmark_history_incomplete' };
     const minute = minuteOfSession(now.toISOString());
     const snapshots = [];
+    const coverageDiagnostics = { stock_history: 0, sector_history: 0, volume_tick: 0, volume_baseline: 0, complete: 0 };
     for (const member of this.universe) {
       const stock = this.featureStore.returns(member.instrumentKey, now.getTime());
       const sector = this.featureStore.returns(member.sectorInstrumentKey, now.getTime());
       const expected = this.baselineIndex?.get(member.instrumentKey, minute);
-      if (!stock || !sector || [stock.return15m, stock.return60m, sector.return15m, sector.return60m, expected, stock.current.cumulative_volume].every((value) => Number.isFinite(Number(value))) === false || expected <= 0) continue;
+      const volumePoint = this.featureStore.latestWithFinite(member.instrumentKey, 'cumulative_volume');
+      if (stock && Number.isFinite(Number(stock.return15m)) && Number.isFinite(Number(stock.return60m))) coverageDiagnostics.stock_history += 1;
+      if (sector && Number.isFinite(Number(sector.return15m)) && Number.isFinite(Number(sector.return60m))) coverageDiagnostics.sector_history += 1;
+      if (volumePoint) coverageDiagnostics.volume_tick += 1;
+      if (Number.isFinite(Number(expected)) && expected > 0) coverageDiagnostics.volume_baseline += 1;
+      if (!stock || !sector || [stock.return15m, stock.return60m, sector.return15m, sector.return60m, expected, volumePoint?.cumulative_volume].every((value) => Number.isFinite(Number(value))) === false || expected <= 0) continue;
+      coverageDiagnostics.complete += 1;
       snapshots.push({
         symbol: member.symbol, sector: member.sector, instrumentKey: member.instrumentKey,
         return15m: stock.return15m, return60m: stock.return60m,
         benchmarkReturn15m: benchmark.return15m, benchmarkReturn60m: benchmark.return60m,
         sectorReturn15m: sector.return15m, sectorReturn60m: sector.return60m,
-        cumulativeVolume: stock.current.cumulative_volume, expectedCumulativeVolume: expected,
-        spreadBps: stock.current.spread_bps, minimumLiquidity: member.minimumLiquidity !== false,
+        cumulativeVolume: volumePoint.cumulative_volume, expectedCumulativeVolume: expected,
+        spreadBps: stock.current.spread_bps ?? volumePoint.spread_bps, minimumLiquidity: member.minimumLiquidity !== false,
       });
     }
     const minimumCoverage = Math.max(10, Math.ceil(this.universe.length * 0.8));
-    if (snapshots.length < minimumCoverage) return { skipped: true, reason: 'insufficient_complete_universe', coverage: snapshots.length, required_coverage: minimumCoverage };
+    if (snapshots.length < minimumCoverage) return { skipped: true, reason: 'insufficient_complete_universe', coverage: snapshots.length, required_coverage: minimumCoverage, coverage_diagnostics: coverageDiagnostics };
     const result = evaluateCrossSectionalMomentum(snapshots, { asOf: now.toISOString() });
     const volumeResult = evaluateVolumeLiquidityAnomaly(snapshots, { asOf: now.toISOString() });
     const meanReversionResult = evaluateIntradayMeanReversion(snapshots, { asOf: now.toISOString() });
@@ -246,6 +261,7 @@ export class MomentumShadowPipeline {
       ...result,
       companion_engines: [volumeResult, ...(openingResult ? [openingResult] : []), meanReversionResult, ...(derivativesResult ? [derivativesResult] : [])],
       persistence,
+      coverage_diagnostics: coverageDiagnostics,
       opening_range_status: openingResult ? 'running' : 'opening_range_not_restored',
       derivatives_status: derivativesResult ? 'running' : derivativeSnapshots.length ? 'insufficient_derivative_coverage' : 'derivative_instruments_not_configured',
     };
