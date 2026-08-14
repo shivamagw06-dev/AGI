@@ -13,6 +13,7 @@ from urllib import error, parse, request
 _LOCK = threading.Lock()
 _LAST_WRITE: dict[str, Any] = {"at": 0.0, "result": {"ok": False, "status": "NOT_RUN"}}
 _WRITE_TTL_SECONDS = 300
+_EVIDENCE_CACHE: dict[str, Any] = {"at": 0.0, "rows": {}}
 
 
 def _credentials() -> tuple[str, str] | None:
@@ -65,6 +66,67 @@ def table_health() -> dict[str, Any]:
         return {"ok": True, "status": "READY", "sample_rows": len(rows)}
     except Exception as exc:  # noqa: BLE001
         return {"ok": False, "status": "UNAVAILABLE", "error": str(exc)[:300]}
+
+
+def load_latest_evidence(*, force: bool = False) -> dict[str, dict[str, dict[str, Any]]]:
+    """Load the newest append-only receipt for every strategy gate."""
+    now = time.monotonic()
+    with _LOCK:
+        if not force and now - float(_EVIDENCE_CACHE["at"] or 0) < _WRITE_TTL_SECONDS:
+            return _EVIDENCE_CACHE["rows"]
+        if not _credentials():
+            return {}
+        try:
+            rows = _rest(
+                "GET",
+                "strategy_validation_evidence",
+                query="?select=strategy_key,strategy_version,gate_key,status,observed_at,source,receipt_id,metrics,limitations,recorded_at&order=recorded_at.desc&limit=1000",
+            ) or []
+        except Exception:  # noqa: BLE001
+            return {}
+        latest: dict[str, dict[str, dict[str, Any]]] = {}
+        for row in rows:
+            strategy_key = str(row.get("strategy_key") or "")
+            gate_key = str(row.get("gate_key") or "")
+            if not strategy_key or not gate_key or gate_key in latest.setdefault(strategy_key, {}):
+                continue
+            metrics = row.get("metrics") or {}
+            latest[strategy_key][gate_key] = {
+                "status": row.get("status", "MISSING"),
+                "observed_at": row.get("observed_at"),
+                "source": row.get("source"),
+                "receipt_id": row.get("receipt_id"),
+                "detail": metrics.get("detail", metrics),
+            }
+        _EVIDENCE_CACHE.update({"at": now, "rows": latest})
+        return latest
+
+
+def append_validation_evidence(strategy_id: str, version: str, evidence: dict[str, dict[str, Any]]) -> dict[str, Any]:
+    """Append independently hashed receipts produced by a validation run."""
+    rows = []
+    for gate, item in evidence.items():
+        receipt_id = _receipt(strategy_id, version, gate, item)
+        rows.append({
+            "strategy_key": strategy_id,
+            "strategy_version": version,
+            "gate_key": gate,
+            "status": item.get("status", "MISSING"),
+            "observed_at": item.get("observed_at"),
+            "source": item.get("source", "strategy_lab.backtest"),
+            "source_version": item.get("source_version"),
+            "receipt_id": receipt_id,
+            "metrics": {"detail": item.get("detail")},
+            "limitations": item.get("limitations") or [],
+            "evidence_hash": receipt_id,
+        })
+    try:
+        if rows:
+            _rest("POST", "strategy_validation_evidence", body=rows)
+        _EVIDENCE_CACHE.update({"at": 0.0, "rows": {}})
+        return {"ok": True, "status": "PERSISTED", "evidence_rows": len(rows), "receipt_ids": [row["receipt_id"] for row in rows]}
+    except Exception as exc:  # noqa: BLE001
+        return {"ok": False, "status": "PERSISTENCE_FAILED", "error": str(exc)[:300], "evidence_rows": 0}
 
 
 def persist_decisions(strategies: list[dict[str, Any]], *, force: bool = False) -> dict[str, Any]:
@@ -127,4 +189,3 @@ def persist_decisions(strategies: list[dict[str, Any]], *, force: bool = False) 
             result = {"ok": False, "status": "PERSISTENCE_FAILED", "error": str(exc)[:300], "decisions": 0, "evidence_rows": 0}
         _LAST_WRITE.update({"at": now, "result": result})
         return result
-

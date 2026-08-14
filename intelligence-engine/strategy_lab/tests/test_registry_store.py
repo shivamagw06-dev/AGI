@@ -47,3 +47,19 @@ def test_persistence_failure_is_fail_soft(monkeypatch):
     assert result["status"] == "PERSISTENCE_FAILED"
     assert "offline" in result["error"]
 
+
+def test_latest_evidence_keeps_newest_receipt_per_gate(monkeypatch):
+    monkeypatch.setattr(registry_store, "_credentials", lambda: ("https://example.supabase.co", "key"))
+    rows = [
+        {"strategy_key": "momentum", "gate_key": "backtest", "status": "PASSED", "recorded_at": "2026-08-14T02:00:00Z", "metrics": {"detail": {"sharpe": 1.1}}},
+        {"strategy_key": "momentum", "gate_key": "backtest", "status": "MISSING", "recorded_at": "2026-08-14T01:00:00Z", "metrics": {}},
+        {"strategy_key": "momentum", "gate_key": "transaction_costs", "status": "PASSED", "recorded_at": "2026-08-14T02:00:00Z", "metrics": {"detail": {"bps": 25}}},
+    ]
+    monkeypatch.setattr(registry_store, "_rest", lambda *args, **kwargs: rows)
+    registry_store._EVIDENCE_CACHE.update({"at": 0.0, "rows": {}})
+
+    evidence = registry_store.load_latest_evidence(force=True)["momentum"]
+
+    assert evidence["backtest"]["status"] == "PASSED"
+    assert evidence["backtest"]["detail"]["sharpe"] == 1.1
+    assert evidence["transaction_costs"]["status"] == "PASSED"

@@ -6,7 +6,7 @@ from hedge_fund_lab.calculators import pair_diagnostics
 
 def _price_rows() -> list[dict[str, object]]:
     rows: list[dict[str, object]] = []
-    for day in range(310):
+    for day in range(420):
         label = f"2025-{day:04d}"
         for symbol, multiplier in (("WIN", 1.003), ("MID", 1.001), ("LOSE", 0.999)):
             rows.append({"date": label, "symbol": symbol, "adjusted_close": 100 * multiplier ** day,
@@ -25,6 +25,13 @@ def test_momentum_backtest_is_point_in_time_and_costed():
     assert result["coverage"]["rebalance_count"] > 0
     assert result["rebalances"][0]["selected"] == ["WIN"]
     assert result["metrics"]["cumulative_return_pct"] is not None
+    validation = result["validation"]
+    assert validation["status"] == "COMPLETED"
+    assert validation["lookahead_check"] is True
+    assert validation["costs_included"] is True
+    assert validation["periods"]["train"]["end"] < validation["periods"]["validation"]["start"]
+    assert validation["periods"]["validation"]["end"] < validation["periods"]["test"]["start"]
+    assert validation["out_of_sample_observations"] >= 21
 
 
 def test_momentum_backtest_fails_closed_without_history():

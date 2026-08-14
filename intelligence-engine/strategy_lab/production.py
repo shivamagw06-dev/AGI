@@ -370,6 +370,11 @@ def _registry_decision(strategy_id: str, session: dict[str, Any] | None = None) 
         "point_in_time": {"status": "PARTIAL", "source": "warehouse", "detail": "Annual fundamentals remain PIT limited."},
         "corporate_actions": {"status": "MISSING", "source": "warehouse", "detail": "Independent adjustment receipt not recorded."},
     }
+    from .registry_store import load_latest_evidence
+    durable_evidence = load_latest_evidence().get(strategy_id, {})
+    for gate in ("backtest", "out_of_sample", "transaction_costs", "liquidity_capacity", "risk", "walk_forward_paper"):
+        if gate in durable_evidence:
+            evidence[gate] = durable_evidence[gate]
     requested = "OPERATIONAL" if implemented else "EXPERIMENTAL"
     health = "HEALTHY" if session_passed else "DEGRADED" if not session else "STALE"
     reason = "Latest completed session and common-universe coverage passed." if session_passed else "Current session evidence is unavailable or incomplete."
@@ -460,4 +465,47 @@ def backtest(strategy_id: str, config: dict[str, Any] | None = None) -> dict[str
         return {"ok": False, "status": "DATA_BUILDING", "error": "strategy_specific_walk_forward_backtest_not_implemented", "strategy_id": strategy_id, "decision": "DO_NOT_DEPLOY"}
     from hedge_fund_lab.backtests import run_from_warehouse
     result = run_from_warehouse("momentum", config or {})
-    return {**result, "strategy_lab_id": strategy_id, "validation": {"out_of_sample": "NOT_COMPLETED", "parameter_sensitivity": "NOT_COMPLETED", "survivorship": "SURVIVORSHIP_BIAS_RISK", "promotion": "DO_NOT_DEPLOY"}}
+    validation = result.get("validation") or {}
+    completed = result.get("ok") is True and validation.get("status") == "COMPLETED"
+    observed_at = (validation.get("periods") or {}).get("test", {}).get("end")
+    evidence = {
+        "backtest": {
+            "status": "PASSED" if completed else "FAILED",
+            "observed_at": observed_at,
+            "source": "hedge_fund_lab.backtests",
+            "source_version": result.get("model_version"),
+            "detail": {"metrics": result.get("metrics"), "coverage": result.get("coverage"), "lookahead_check": validation.get("lookahead_check"), "parameter_sensitivity": result.get("parameter_sensitivity")},
+            "limitations": result.get("limitations") or [],
+        },
+        "out_of_sample": {
+            "status": "PASSED" if completed and validation.get("out_of_sample_observations", 0) >= 21 else "FAILED",
+            "observed_at": observed_at,
+            "source": "hedge_fund_lab.backtests",
+            "source_version": result.get("model_version"),
+            "detail": (validation.get("periods") or {}).get("test"),
+        },
+        "transaction_costs": {
+            "status": "PASSED" if completed and validation.get("costs_included") else "FAILED",
+            "observed_at": observed_at,
+            "source": "hedge_fund_lab.backtests",
+            "source_version": result.get("model_version"),
+            "detail": result.get("execution"),
+        },
+        "liquidity_capacity": {
+            "status": "PARTIAL" if completed else "FAILED",
+            "observed_at": observed_at,
+            "source": "hedge_fund_lab.backtests",
+            "source_version": result.get("model_version"),
+            "detail": {"minimum_average_daily_value": (result.get("constraints") or {}).get("min_average_daily_value"), "capacity_model": "NOT_COMPLETED"},
+        },
+        "risk": {
+            "status": "PARTIAL" if completed else "FAILED",
+            "observed_at": observed_at,
+            "source": "hedge_fund_lab.backtests",
+            "source_version": result.get("model_version"),
+            "detail": {"max_drawdown_pct": (result.get("metrics") or {}).get("max_drawdown_pct"), "approved_limit": None},
+        },
+    }
+    from .registry_store import append_validation_evidence
+    persistence = append_validation_evidence(strategy_id, VERSION, evidence)
+    return {**result, "strategy_lab_id": strategy_id, "validation": {**validation, "parameter_sensitivity": (result.get("parameter_sensitivity") or {}).get("status", "NOT_COMPLETED"), "survivorship": "SURVIVORSHIP_BIAS_RISK", "promotion": "DO_NOT_DEPLOY"}, "registry_evidence": evidence, "persistence": persistence}

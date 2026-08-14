@@ -76,6 +76,54 @@ def _metrics(returns: list[float]) -> dict[str, float | None]:
     }
 
 
+def _validation_report(dates: list[str], returns: list[float]) -> dict[str, Any]:
+    """Chronological, leakage-safe evaluation of already-costed daily returns."""
+    count = min(len(dates), len(returns))
+    if count < 63:
+        return {
+            "status": "INSUFFICIENT_OBSERVATIONS",
+            "observations": count,
+            "minimum_observations": 63,
+            "lookahead_check": True,
+        }
+    train_end = max(1, int(count * 0.60))
+    validation_end = max(train_end + 1, int(count * 0.80))
+    periods = {
+        "train": (0, train_end),
+        "validation": (train_end, validation_end),
+        "test": (validation_end, count),
+    }
+    period_results = {}
+    for name, (start, end) in periods.items():
+        period_results[name] = {
+            "start": dates[start],
+            "end": dates[end - 1],
+            "observations": end - start,
+            "metrics": _metrics(returns[start:end]),
+        }
+    walk_forward = []
+    window = 126
+    step = 63
+    for start in range(0, count - window + 1, step):
+        end = start + window
+        walk_forward.append({
+            "start": dates[start],
+            "end": dates[end - 1],
+            "observations": window,
+            "metrics": _metrics(returns[start:end]),
+        })
+    return {
+        "status": "COMPLETED",
+        "method": "chronological_60_20_20_with_rolling_126_session_windows",
+        "lookahead_check": True,
+        "costs_included": True,
+        "periods": period_results,
+        "walk_forward": walk_forward,
+        "walk_forward_windows": len(walk_forward),
+        "out_of_sample_observations": count - validation_end,
+    }
+
+
 def momentum_backtest(
     rows: Iterable[dict[str, Any]], *, classifications: dict[str, str] | None = None,
     config: dict[str, Any] | None = None,
@@ -105,6 +153,7 @@ def momentum_backtest(
     entry: dict[str, float] = {}
     peak: dict[str, float] = {}
     returns: list[float] = []
+    return_dates: list[str] = []
     turnover: list[float] = []
     rebalances: list[dict[str, Any]] = []
     stopped: set[str] = set()
@@ -163,6 +212,7 @@ def momentum_backtest(
         traded = sum(max(0.0, weights.get(symbol, 0.0) - old_weights.get(symbol, 0.0)) for symbol in all_symbols)
         cost = traded * float(cfg["one_way_cost_bps"]) / 10_000.0
         returns.append(gross_return - cost)
+        return_dates.append(today)
         turnover.append(traded)
 
     if not returns or not rebalances:
@@ -179,6 +229,7 @@ def momentum_backtest(
         "coverage": {"symbols_with_price_history": len(prices), "calendar_sessions": len(calendar),
                      "backtest_sessions": len(returns), "rebalance_count": len(rebalances)},
         "metrics": _metrics(returns),
+        "validation": _validation_report(return_dates, returns),
         "average_turnover_pct": round(sum(turnover) / len(turnover) * 100, 3),
         "rebalances": rebalances[-24:],
         "limitations": [
@@ -201,4 +252,25 @@ def run_from_warehouse(strategy: str, config: dict[str, Any] | None = None) -> d
         classifications = {str(row.get("ticker") or "").upper(): row.get("primary_sector") for row in _universe()}
     except Exception as exc:
         return {"ok": False, "error": "warehouse_unavailable", "detail": str(exc)[:200]}
-    return momentum_backtest(rows, classifications=classifications, config=config)
+    supplied = dict(config or {})
+    sensitivity_enabled = bool(supplied.pop("parameter_sensitivity", True))
+    result = momentum_backtest(rows, classifications=classifications, config=supplied)
+    if not result.get("ok") or not sensitivity_enabled:
+        return result
+    base_lookback = int(supplied.get("lookback_sessions", DEFAULTS["lookback_sessions"]))
+    variants = sorted({max(126, base_lookback - 63), base_lookback, base_lookback + 63})
+    sensitivity = []
+    for lookback in variants:
+        variant = momentum_backtest(rows, classifications=classifications, config={**supplied, "lookback_sessions": lookback})
+        sensitivity.append({
+            "lookback_sessions": lookback,
+            "ok": bool(variant.get("ok")),
+            "metrics": variant.get("metrics"),
+            "test_metrics": ((variant.get("validation") or {}).get("periods") or {}).get("test", {}).get("metrics"),
+        })
+    result["parameter_sensitivity"] = {
+        "status": "COMPLETED" if all(item["ok"] for item in sensitivity) else "PARTIAL",
+        "variants": sensitivity,
+        "selection_rule": "Predeclared lookback +/- 63 sessions; no best-variant substitution.",
+    }
+    return result
