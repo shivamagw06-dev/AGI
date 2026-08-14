@@ -88,6 +88,10 @@ def load_latest_evidence(*, force: bool = False) -> dict[str, dict[str, dict[str
         for row in rows:
             strategy_key = str(row.get("strategy_key") or "")
             gate_key = str(row.get("gate_key") or "")
+            # Absence is not a new validation finding. Runtime refreshes must
+            # not shadow an older substantive receipt with MISSING.
+            if str(row.get("status") or "MISSING").upper() == "MISSING":
+                continue
             if not strategy_key or not gate_key or gate_key in latest.setdefault(strategy_key, {}):
                 continue
             metrics = row.get("metrics") or {}
@@ -160,6 +164,8 @@ def persist_decisions(strategies: list[dict[str, Any]], *, force: bool = False) 
                 "evaluated_at": decision.get("evaluated_at"),
             })
             for gate, evidence in (decision.get("evidence") or {}).items():
+                if str(evidence.get("status") or "MISSING").upper() == "MISSING":
+                    continue
                 receipt_id = _receipt(strategy_id, version, gate, evidence)
                 evidence_rows.append({
                     "strategy_key": strategy_id,
