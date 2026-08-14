@@ -25,7 +25,10 @@
 | Supabase backup/PITR timestamp | Daily physical backup confirmed; latest visible 2026-08-13 23:15:17 UTC |
 | Backup owner | Supabase managed (database); Render disk backup owner-confirmed by AGI administrator |
 | Retention | Supabase: seven daily recovery points visible; Render: not recorded |
-| Restore verification | Pending |
+| Logical backup artifact | `/var/data/kip/backups/warehouse-restore-test.sqlite3` |
+| Backup artifact size | 9,859,317,760 bytes (about 9.86 GB) |
+| Backup artifact verification | PASS: file exists, is non-empty, and begins with `SQLite format 3\0` |
+| Restore verification | Partial: artifact verified; isolated SQLite read/integrity test pending |
 
 Supabase evidence was visually confirmed in `Database > Backups > Scheduled backups`
 on 14 August 2026. The dashboard explicitly states that Storage API objects are not
@@ -34,6 +37,20 @@ included; only database records and Storage metadata are covered by these backup
 The Render `intelligence-data` persistent disk backup was confirmed completed by the
 AGI administrator on 14 August 2026. The Render-generated timestamp and retention
 period were not provided and therefore remain explicitly unverified.
+
+On 14 August 2026, a logical SQLite backup was created at
+`/var/data/kip/backups/warehouse-restore-test.sqlite3`. A file-level verification
+confirmed that the 9,859,317,760-byte artifact exists and has the canonical SQLite
+header. Full `integrity_check` and `quick_check` attempts against the copy were stopped
+because they consumed excessive time and the full check temporarily blocked the live
+service. A subsequent restart recovered the engine, warehouse, and KIP without data
+loss: the warehouse reported 57 tables and 2,438,012 rows, while KIP reported durable
+disk persistence and a healthy Supabase mirror.
+
+This evidence proves backup creation and basic artifact validity, but not complete
+database recovery. Run the remaining read/integrity validation in an isolated Render
+one-off job or separate recovery instance; do not repeat it in the production web
+service.
 
 ## Acceptance Conditions
 
