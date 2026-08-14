@@ -444,6 +444,12 @@ def run_from_warehouse(strategy: str, config: dict[str, Any] | None = None) -> d
         selection_rule = "Predeclared lookback +/- 63 sessions; no best-variant substitution."
     result["parameter_sensitivity"] = {
         "status": "COMPLETED" if all(item["ok"] for item in sensitivity) else "PARTIAL",
+        "economic_status": "PASSED" if sensitivity and all(
+            item.get("ok")
+            and float((item.get("test_metrics") or {}).get("annualized_return_pct") or -999) > float(supplied.get("min_oos_annualized_return_pct", DEFAULTS["min_oos_annualized_return_pct"]))
+            and float((item.get("test_metrics") or {}).get("sharpe") or -999) > float(supplied.get("min_oos_sharpe", DEFAULTS["min_oos_sharpe"]))
+            for item in sensitivity
+        ) else "FAILED",
         "variants": sensitivity,
         "selection_rule": selection_rule,
     }
