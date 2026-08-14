@@ -6,6 +6,7 @@ import './StrategyLab.css';
 const SIGNAL_ORDER = { BUY: 1, SELL: 2, EXIT: 3, HOLD: 4 };
 
 function fmt(value, digits = 2) {
+  if (value == null || value === '') return '—';
   const number = Number(value);
   return Number.isFinite(number) ? number.toLocaleString('en-IN', { maximumFractionDigits: digits }) : '—';
 }
@@ -108,9 +109,9 @@ export default function StrategyLab() {
             </section>
 
             <section className="sl-panel sl-table-panel">
-              <header><div><span className="sl-kicker">Signal monitor</span><h3>Current research outputs</h3></div><span>{busy === 'scan' ? 'Calculating…' : `${signals.length} shown`}</span></header>
-              <div className="sl-table-wrap"><table><thead><tr><th>Ticker</th><th>Signal</th><th>Score</th><th>Confidence</th><th>Entry</th><th>Stop</th><th>Target</th><th>Main reason</th><th>Data</th></tr></thead>
-                <tbody>{signals.map((row) => <tr key={`${row.strategy_id}-${row.ticker}`}><td><strong>{row.ticker}</strong><small>{row.timestamp}</small></td><td><Status tone={String(row.signal).toLowerCase()}>{row.signal}</Status></td><td>{fmt(row.score)}</td><td>{row.confidence}</td><td>{fmt(row.entry)}</td><td>{fmt(row.stop)}</td><td>{fmt(row.target)}</td><td><span>{row.explanation?.main_driver}</span><small>{(row.reason_codes || []).join(' · ')}</small></td><td><span>{fmt(row.data?.completeness, 1)}%</span><small>{row.data?.pit_status}</small></td></tr>)}</tbody></table></div>
+              <header><div><span className="sl-kicker">Signal monitor</span><h3>Current research outputs</h3></div><span>{busy === 'scan' ? 'Calculating…' : `${signals.length} shown · EOD observations, not live quotes`}</span></header>
+              <div className="sl-table-wrap"><table><thead><tr><th>Ticker</th><th>Signal</th><th>Score</th><th>Confidence</th><th>Signal close</th><th>Stop</th><th>Target</th><th>Main reason</th><th>Data</th></tr></thead>
+                <tbody>{signals.map((row) => <tr key={`${row.strategy_id}-${row.ticker}`}><td><strong>{row.ticker}</strong><small>{row.timestamp}</small></td><td><Status tone={String(row.signal).toLowerCase()}>{row.signal}</Status></td><td>{fmt(row.score)}</td><td>{row.confidence}</td><td><strong>{fmt(row.entry)}</strong><small>Close on {row.timestamp}</small></td><td>{fmt(row.stop)}</td><td>{fmt(row.target)}</td><td><span>{row.explanation?.main_driver}</span><small>{(row.reason_codes || []).join(' · ')}</small></td><td><span>{fmt(row.data?.completeness, 1)}%</span><small>{row.data?.pit_status}</small></td></tr>)}</tbody></table></div>
               {!signals.length ? <p className="sl-empty">No output is displayed until the strategy has sufficient verified history.</p> : null}
             </section>
 
