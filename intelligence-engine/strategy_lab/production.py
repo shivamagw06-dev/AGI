@@ -77,18 +77,38 @@ def _warehouse_rows(limit: int = 800_000) -> list[dict[str, Any]]:
         if cached and time.monotonic() - float(_PRICE_CACHE.get("at") or 0) < _CACHE_TTL_SECONDS:
             return cached[:limit]
         from institutional_warehouse import db
+        from hedge_fund_lab.scanner import _universe
+
+        covered = sorted(
+            _universe(),
+            key=lambda row: float(row.get("market_cap") or 0),
+            reverse=True,
+        )
+        symbols = [str(row.get("ticker") or "").upper() for row in covered[:200]]
+        symbols = [symbol for symbol in symbols if symbol]
+        if not symbols:
+            return []
         table = db.physical_table("daily_market_history")
+        marks = ",".join("?" for _ in symbols)
         rows = db.query(
             f'''SELECT symbol, date, open, high, low, close, adjusted_close, volume
-                FROM (
-                  SELECT symbol, date, open, high, low, close, adjusted_close, volume,
-                         ROW_NUMBER() OVER (PARTITION BY symbol ORDER BY date DESC) AS rn
-                  FROM {table}
-                  WHERE COALESCE(sys_published, 1) = 1
-                ) recent
-                WHERE rn <= 300
-                ORDER BY symbol, date'''
+                FROM {table}
+                WHERE COALESCE(sys_published, 1) = 1
+                  AND symbol IN ({marks})
+                ORDER BY symbol, date DESC''',
+            tuple(symbols),
         )
+        # Retain only the latest 300 sessions without asking SQLite to rank the
+        # whole warehouse. The selected universe is capped at 200 liquid names.
+        counts: dict[str, int] = defaultdict(int)
+        bounded = []
+        for row in rows:
+            symbol = str(row.get("symbol") or "")
+            if counts[symbol] >= 300:
+                continue
+            counts[symbol] += 1
+            bounded.append(row)
+        rows = sorted(bounded, key=lambda row: (str(row.get("symbol") or ""), str(row.get("date") or "")))
         _PRICE_CACHE.update({"at": time.monotonic(), "rows": rows})
         return rows[:limit]
 
@@ -213,10 +233,11 @@ CALCULATORS = {"time_series_momentum": _momentum, "trend_following": _trend, "vo
 
 def health() -> dict[str, Any]:
     try:
-        rows = _warehouse_rows(limit=1_000)
+        from hedge_fund_lab.scanner import universe_meta
+        warehouse = universe_meta()
     except Exception as exc:
         return {"ok": False, "status": "DATA_UNAVAILABLE", "error": str(exc)[:160], "version": VERSION}
-    return {"ok": True, "status": "RESEARCH_ONLY", "version": VERSION, "phase": 1, "strategies": len(REGISTRY), "warehouse_rows_sampled": len(rows), "price_cache_ttl_seconds": _CACHE_TTL_SECONDS, "execution_enabled": False, "promotion_authority": "strategy_validation_gates"}
+    return {"ok": True, "status": "RESEARCH_ONLY", "version": VERSION, "phase": 1, "strategies": len(REGISTRY), "warehouse_universe": warehouse.get("count", 0), "strategy_universe": "top_200_by_market_cap", "price_cache_ttl_seconds": _CACHE_TTL_SECONDS, "execution_enabled": False, "promotion_authority": "strategy_validation_gates"}
 
 
 def strategy(strategy_id: str) -> dict[str, Any]:
