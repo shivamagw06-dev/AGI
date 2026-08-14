@@ -9,6 +9,7 @@
  */
 import { getHistoricalCandles, getIntradayCandles, isUpstoxConfigured } from '../providers/upstox.js';
 import { readLatestHflTerminalSnapshot } from './hflTerminalSnapshot.js';
+import { loadLiveAlphaUniverse } from './liveAlphaRuntime.js';
 
 let timer = null;
 let inFlight = null;
@@ -46,6 +47,17 @@ function marketOpen(now = new Date()) {
   if (['Sat', 'Sun'].includes(p.weekday)) return false;
   const minute = Number(p.hour) * 60 + Number(p.minute);
   return minute >= 9 * 60 + 15 && minute <= 15 * 60 + 30;
+}
+
+export function afterMarketClose(now = new Date()) {
+  const p = istParts(now);
+  if (['Sat', 'Sun'].includes(p.weekday)) return false;
+  return Number(p.hour) * 60 + Number(p.minute) >= 15 * 60 + 45;
+}
+
+export function dailyCoveragePassed(daily, universeSize) {
+  const minimumCoverage = Math.ceil(Number(universeSize || 0) * 0.80);
+  return minimumCoverage > 0 && Number(daily?.latest_session_coverage || 0) >= minimumCoverage;
 }
 
 function isoIstDate(now = new Date()) {
@@ -86,32 +98,56 @@ function candleRows(ticker, payload, source) {
 
 async function importRows(rows) {
   if (!rows.length) return { ok: true, written: 0 };
-  const staged = await engineFetch('/v1/warehouse/tab/daily_market_history/import', {
-    method: 'POST', body: { rows, actor: 'hedge_fund_upstox_candles', source: 'upstox_v3' }, timeoutMs: 90_000,
-  });
-  if (!staged.import_id) throw new Error(staged.error || 'upstox_candle_stage_failed');
-  return engineFetch(`/v1/warehouse/import/${staged.import_id}/commit`, {
-    method: 'POST', body: { actor: 'hedge_fund_upstox_candles', recalculate: false }, timeoutMs: 90_000,
-  });
+  let written = 0;
+  const chunks = [];
+  const chunkSize = Math.max(100, Number(process.env.HEDGE_FUND_UPSTOX_IMPORT_CHUNK_SIZE || 750));
+  for (let index = 0; index < rows.length; index += chunkSize) {
+    const chunk = rows.slice(index, index + chunkSize);
+    const staged = await engineFetch('/v1/warehouse/tab/daily_market_history/import', {
+      method: 'POST', body: { rows: chunk, actor: 'hedge_fund_upstox_candles', source: 'upstox_v3' }, timeoutMs: 90_000,
+    });
+    if (!staged.import_id) throw new Error(staged.error || 'upstox_candle_stage_failed');
+    const committed = await engineFetch(`/v1/warehouse/import/${staged.import_id}/commit`, {
+      method: 'POST', body: { actor: 'hedge_fund_upstox_candles', recalculate: false }, timeoutMs: 90_000,
+    });
+    written += Number(committed?.inserted ?? committed?.written ?? chunk.length);
+    chunks.push({ rows: chunk.length, import_id: staged.import_id, ok: committed?.ok !== false });
+  }
+  return { ok: true, written, chunks };
 }
 
 async function refreshDaily(candidates, today) {
-  let rowsWritten = 0;
-  let refreshed = 0;
+  const collected = [];
   const failures = [];
-  for (const candidate of candidates) {
-    try {
-      const payload = await getHistoricalCandles(candidate.instrumentKey, { unit: 'days', interval: 1, from: dateDaysAgo(400), to: today });
-      const rows = candleRows(candidate.ticker, payload, 'upstox_v3_daily');
-      await importRows(rows);
-      await engineFetch('/v1/warehouse/recalculate', { method: 'POST', body: { actor: 'hedge_fund_upstox_candles', stages: ['factors'], entity: candidate.ticker }, timeoutMs: 90_000 });
-      rowsWritten += rows.length;
-      refreshed += 1;
-    } catch (error) {
-      failures.push({ ticker: candidate.ticker, error: error.message });
+  const concurrency = Math.max(1, Math.min(8, Number(process.env.HEDGE_FUND_UPSTOX_EOD_CONCURRENCY || 4)));
+  let cursor = 0;
+  const worker = async () => {
+    while (cursor < candidates.length) {
+      const candidate = candidates[cursor++];
+      try {
+        // Existing warehouse history is retained. Pull a short overlap so the
+        // latest completed bar is repaired without re-downloading 10 years.
+        const payload = await getHistoricalCandles(candidate.instrumentKey, { unit: 'days', interval: 1, from: dateDaysAgo(10), to: today });
+        const rows = candleRows(candidate.ticker, payload, 'upstox_v3_daily').filter((row) => row.date <= today);
+        if (!rows.length) throw new Error('no_daily_candles_returned');
+        collected.push(...rows);
+      } catch (error) {
+        failures.push({ ticker: candidate.ticker, error: error.message });
+      }
     }
-  }
-  return { refreshed, rowsWritten, failures };
+  };
+  await Promise.all(Array.from({ length: concurrency }, worker));
+  const imported = await importRows(collected);
+  const refreshedSymbols = new Set(collected.map((row) => row.symbol));
+  const latestCoverage = new Set(collected.filter((row) => row.date === today).map((row) => row.symbol));
+  return {
+    requested: candidates.length,
+    refreshed: refreshedSymbols.size,
+    latest_session_coverage: latestCoverage.size,
+    rowsWritten: collected.length,
+    imported,
+    failures,
+  };
 }
 
 async function refreshIntraday(candidates) {
@@ -150,14 +186,18 @@ export async function refreshHedgeFundUpstoxCandles({ force = false } = {}) {
         terminal = null;
       }
     }
-    if (!terminal?.ok) return { ok: true, skipped: true, reason: 'no_terminal_snapshot' };
-    const candidates = candidateRows(terminal);
-    if (!candidates.length) return { ok: true, skipped: true, reason: 'no_instrument_keys' };
-    const shouldRunDaily = force || (!marketOpen() && lastDailyRefresh !== today);
-    const daily = shouldRunDaily ? await refreshDaily(candidates, today) : null;
-    if (shouldRunDaily) lastDailyRefresh = today;
-    const intraday = marketOpen() ? await refreshIntraday(candidates) : null;
-    return { ok: true, provider: 'upstox_v3', candidates: candidates.length, daily, intraday, as_of: new Date().toISOString() };
+    // The full-universe EOD repair is independent from the terminal snapshot.
+    // Only intraday candidate overlays require a current Hedge Fund queue.
+    const candidates = terminal?.ok ? candidateRows(terminal) : [];
+    const fullUniverse = await loadLiveAlphaUniverse();
+    const dailyCandidates = fullUniverse.members.map((member) => ({ ticker: member.symbol, instrumentKey: member.instrumentKey }));
+    const shouldRunDaily = force || (afterMarketClose() && lastDailyRefresh !== today);
+    const daily = shouldRunDaily ? await refreshDaily(dailyCandidates, today) : null;
+    const minimumCoverage = Math.ceil(dailyCandidates.length * 0.80);
+    // A partial provider run must retry; it must never mark the EOD session done.
+    if (shouldRunDaily && dailyCoveragePassed(daily, dailyCandidates.length)) lastDailyRefresh = today;
+    const intraday = marketOpen() && candidates.length ? await refreshIntraday(candidates) : null;
+    return { ok: true, provider: 'upstox_v3', candidates: candidates.length, eod_universe: dailyCandidates.length, eod_minimum_coverage: minimumCoverage, daily, intraday, as_of: new Date().toISOString() };
   })();
   try { return await inFlight; } finally { inFlight = null; }
 }
@@ -174,11 +214,11 @@ export function startHedgeFundUpstoxCandleScheduler() {
   const intervalMs = Math.max(15 * 60_000, Number(process.env.HEDGE_FUND_UPSTOX_CANDLE_INTERVAL_MS || 15 * 60_000));
   const tick = () => refreshHedgeFundUpstoxCandles().then((result) => { lastRun = result; }).catch((error) => { lastRun = { ok: false, error: error.message, at: new Date().toISOString() }; });
   // Stagger after HFL snapshot scheduler (default 2m) so Python is not woken twice.
-  setTimeout(tick, Math.max(60_000, Number(process.env.HEDGE_FUND_UPSTOX_INITIAL_DELAY_MS || 480_000)));
+  setTimeout(tick, Math.max(60_000, Number(process.env.HEDGE_FUND_UPSTOX_INITIAL_DELAY_MS || 120_000)));
   timer = setInterval(tick, intervalMs);
   timer.unref?.();
 }
 
 export function getHedgeFundUpstoxCandleStatus() {
-  return { enabled: Boolean(timer), provider: 'upstox_v3', intervalMs: Number(process.env.HEDGE_FUND_UPSTOX_CANDLE_INTERVAL_MS || 15 * 60_000), marketOpen: marketOpen(), lastRun };
+  return { enabled: Boolean(timer), provider: 'upstox_v3', intervalMs: Number(process.env.HEDGE_FUND_UPSTOX_CANDLE_INTERVAL_MS || 15 * 60_000), marketOpen: marketOpen(), afterMarketClose: afterMarketClose(), lastDailyRefresh, lastRun };
 }
