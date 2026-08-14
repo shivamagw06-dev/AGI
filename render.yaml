@@ -158,11 +158,11 @@ services:
     envVars:
       - key: APP_ENV
         value: production
-      # Run the reduced-priority gather sidecar on the same Pro instance so it
-      # shares the durable warehouse disk. The HTTP process still keeps every
-      # heavy gather flag off; scripts/start_engine.sh isolates the worker.
+      # Historical backfill is intentionally disabled: the warehouse already
+      # has the required history, while live market collection is owned by the
+      # Node Upstox/Groww schedulers. Keep HTTP capacity for Ask and strategies.
       - key: AGI_GATHER_SIDECAR
-        value: "true"
+        value: "false"
       # Durable data roots.  KIP keeps research objects; the warehouse keeps
       # imported financial statements, valuation snapshots and live prices.
       - key: KIP_DATA_DIR

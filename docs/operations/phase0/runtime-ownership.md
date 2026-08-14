@@ -10,12 +10,12 @@ One recurring operation must have exactly one production owner.
 | Ask AGI and research reads | `agib-intelligence-engine` | Python web | KIP + warehouse | Active |
 | KIP document/research memory | `agib-intelligence-engine` | Python web | Render disk, optional Supabase mirror | Active |
 | Capital IQ bootstrap and resumable import | `agib-intelligence-engine` | Python web background jobs | Render disk warehouse | Active on demand/restart |
-| Continuous Gather and Learn | `agib-intelligence-engine` | Reduced-priority Python sidecar | Shared Render disk | Phase 1 restoration deployed; live heartbeat pending |
-| FAA public evidence collector | `agib-intelligence-engine` | Reduced-priority Python sidecar | Shared Render disk | Phase 1 restoration deployed; output freshness pending |
-| LIDI and historical-depth collectors | `agib-intelligence-engine` | Reduced-priority Python sidecar | Shared Render disk | Phase 1 restoration deployed; output freshness pending |
-| Warehouse daily refresh and backfill | `agib-intelligence-engine` | Reduced-priority Python sidecar | Institutional warehouse | Phase 1 restoration deployed; output freshness pending |
-| Historical valuation runtime | `agib-intelligence-engine` | Reduced-priority Python sidecar | Warehouse HVIE tables | Phase 1 restoration deployed; output freshness pending |
-| Forecast runtime | `agib-intelligence-engine` | Reduced-priority Python sidecar | Forecast warehouse tables | Phase 1 restoration deployed; incomplete |
+| Continuous Gather and Learn | Disabled | No active owner | Existing warehouse retained | Intentionally disabled; historical coverage accepted |
+| FAA public evidence collector | Disabled | On-demand only | Existing KIP/FAA stores retained | Continuous collection not required |
+| LIDI and historical-depth collectors | Disabled | No active owner | Existing LIDI/KF stores retained | Historical backfill complete enough for current use |
+| Warehouse historical backfill | Disabled | No active owner | Institutional warehouse | Existing historical inventory retained |
+| Historical valuation backfill | Disabled | No active owner | Warehouse HVIE tables | Existing valuation history retained |
+| Forecast runtime | Disabled | On-demand/manual | Forecast warehouse tables | Existing forecasts retained; no continuous backfill |
 | Company dossier generation | Disabled | No active owner | Warehouse/Supabase | Paused; health telemetry stale |
 | Macro runtime | Disabled | No active owner | Macro warehouse tables | Disabled |
 | E01 macro regime | Disabled | No active owner | EngineState store | Disabled |
