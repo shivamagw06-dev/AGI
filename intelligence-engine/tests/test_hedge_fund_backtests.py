@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from hedge_fund_lab.backtests import breakout_backtest, momentum_backtest, trend_backtest
+from hedge_fund_lab.backtests import breakout_backtest, mean_reversion_backtest, momentum_backtest, trend_backtest
 from hedge_fund_lab.calculators import pair_diagnostics
 
 
@@ -73,6 +73,29 @@ def test_breakout_backtest_uses_prior_channel_and_volume():
     assert result["execution"]["execution"] == "next_close"
     assert result["validation"]["status"] == "COMPLETED"
     assert result["capacity"]["passes_assumed_capital"] is True
+
+
+def test_mean_reversion_backtest_requires_dislocation_inside_positive_trend():
+    rows = []
+    for day in range(420):
+        label = f"2025-{day:04d}"
+        for symbol, growth in (("WIN", 1.003), ("MID", 1.002), ("SLOW", 1.001)):
+            close = 100 * growth ** day
+            if day % 25 == 0:
+                close *= 0.78
+            rows.append({"date": label, "symbol": symbol, "adjusted_close": close, "volume": 100_000})
+    result = mean_reversion_backtest(
+        rows,
+        classifications={"WIN": "A", "MID": "B", "SLOW": "C"},
+        config={"holdings": 1, "min_average_daily_value": 1, "portfolio_capital": 100_000},
+    )
+    assert result["ok"] is True
+    assert result["strategy"] == "medium_term_mean_reversion_long_only"
+    assert result["parameters"]["entry_z"] == 2.0
+    assert result["parameters"]["trend_window"] == 200
+    assert result["execution"]["execution"] == "next_close"
+    assert result["validation"]["status"] == "COMPLETED"
+    assert any(row["selected"] for row in result["rebalances"])
 
 
 def test_pair_diagnostics_never_claims_cointegration_without_test():
