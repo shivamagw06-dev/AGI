@@ -80,7 +80,7 @@ def load_latest_evidence(*, force: bool = False) -> dict[str, dict[str, dict[str
             rows = _rest(
                 "GET",
                 "strategy_validation_evidence",
-                query="?select=strategy_key,strategy_version,gate_key,status,observed_at,source,receipt_id,metrics,limitations,recorded_at&status=neq.MISSING&order=recorded_at.desc&limit=10000",
+                query="?select=strategy_key,strategy_version,gate_key,status,observed_at,source,receipt_id,metrics,limitations,recorded_at&status=neq.MISSING&order=recorded_at.desc&limit=2000",
             ) or []
         except Exception:  # noqa: BLE001
             return {}
