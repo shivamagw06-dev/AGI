@@ -125,3 +125,29 @@ def import_workbook() -> dict[str, Any]:
     _write_chunks("macro_licensed_forecasts", forecast_rows, query="?on_conflict=country_code,series_id,vintage_date,target_year,source")
     _write_chunks("macro_licensed_quarantine", quarantine, query="?on_conflict=source_file,source_sheet,row_label,period_label,reason,source_hash")
     return {**parsed,"observations":len(observations),"forecasts":len(forecast_rows),"quarantined":len(quarantine)}
+
+
+def import_status() -> dict[str, Any]:
+    """Aggregate receipt only. Licensed values and labels never leave storage."""
+    try:
+        observations = _rest("macro_licensed_observations", query="?select=id&limit=1000") or []
+        forecasts = _rest("macro_licensed_forecasts", query="?select=id&limit=1000") or []
+        quarantine = _rest("macro_licensed_quarantine", query="?select=id&limit=1000") or []
+    except Exception as exc:
+        return {"ok": False, "status": "NOT_READY", "error": str(exc)[:200]}
+    counts = {
+        "observations": len(observations),
+        "forecasts": len(forecasts),
+        "quarantined": len(quarantine),
+    }
+    expected = {"observations": 92, "forecasts": 91, "quarantined": 298}
+    complete = all(counts[key] >= value for key, value in expected.items())
+    return {
+        "ok": True,
+        "status": "COMPLETE" if complete else "PENDING_IMPORT",
+        "counts": counts,
+        "expected_minimum": expected,
+        "licence_class": "LICENSED_INTERNAL_ONLY",
+        "publish_allowed": False,
+        "raw_values_exposed": False,
+    }
