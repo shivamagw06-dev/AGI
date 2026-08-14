@@ -484,7 +484,26 @@ def backtest(strategy_id: str, config: dict[str, Any] | None = None) -> dict[str
     max_drawdown = abs(float((result.get("metrics") or {}).get("max_drawdown_pct") or 999))
     drawdown_limit = float(constraints.get("max_drawdown_limit_pct", 20))
     risk_passed = bool(completed and max_drawdown <= drawdown_limit)
+    readiness = result.get("readiness") or {}
+    pit_exact = bool(result.get("point_in_time_status") == "EXACT" or readiness.get("filing_date_coverage_pct") == 100.0)
+    corporate_actions_verified = bool(result.get("corporate_actions_verified") is True)
     evidence = {
+        "point_in_time": {
+            "status": "PASSED" if pit_exact else ("PARTIAL" if completed or readiness.get("conservative_lag_proxy_coverage_pct") else "FAILED"),
+            "observed_at": observed_at,
+            "source": "institutional_warehouse",
+            "source_version": result.get("model_version"),
+            "detail": {"exact": pit_exact, "readiness": readiness, "survivorship": "SURVIVORSHIP_BIAS_RISK"},
+            "limitations": ["Historical constituents and delisted securities remain incomplete."],
+        },
+        "corporate_actions": {
+            "status": "PASSED" if corporate_actions_verified else ("PARTIAL" if completed else "FAILED"),
+            "observed_at": observed_at,
+            "source": "warehouse.daily_market_history.adjusted_close",
+            "source_version": result.get("model_version"),
+            "detail": {"independently_verified": corporate_actions_verified},
+            "limitations": ["Adjusted closes are consumed when available, but an independent complete-history receipt is not recorded."],
+        },
         "backtest": {
             "status": "PASSED" if completed else "FAILED",
             "observed_at": observed_at,
@@ -533,5 +552,5 @@ def backtest(strategy_id: str, config: dict[str, Any] | None = None) -> dict[str
     }
     from .registry_store import append_validation_evidence
     persistence = append_validation_evidence(strategy_id, VERSION, evidence)
-    economic_gates_passed = oos_passed and capacity_passed and risk_passed and parameter_stability_passed
+    economic_gates_passed = pit_exact and corporate_actions_verified and oos_passed and capacity_passed and risk_passed and parameter_stability_passed
     return {**result, "strategy_lab_id": strategy_id, "validation": {**validation, "parameter_sensitivity": sensitivity.get("status", "NOT_COMPLETED"), "parameter_stability": sensitivity.get("economic_status", "NOT_COMPLETED"), "survivorship": "SURVIVORSHIP_BIAS_RISK", "economic_gates_passed": economic_gates_passed, "promotion": "DO_NOT_DEPLOY"}, "registry_evidence": evidence, "persistence": persistence}

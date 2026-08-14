@@ -35,6 +35,7 @@ GATES = (
     "transaction_costs",
     "liquidity_capacity",
     "risk",
+    "parameter_stability",
     "walk_forward_paper",
     "operational_controls",
 )
@@ -49,7 +50,7 @@ REQUIRED_BY_LIFECYCLE = {
     ),
     "INVESTMENT_VALIDATED": (
         "implementation", "data_freshness", "data_completeness", "point_in_time", "corporate_actions",
-        "backtest", "out_of_sample", "transaction_costs", "liquidity_capacity", "risk", "walk_forward_paper",
+        "backtest", "out_of_sample", "transaction_costs", "liquidity_capacity", "risk", "parameter_stability", "walk_forward_paper",
     ),
     "PRODUCTION_CANDIDATE": GATES,
     "PRODUCTION": GATES,
@@ -135,4 +136,3 @@ def evaluate(
         "evaluated_at": datetime.now(timezone.utc).isoformat(),
         "promotion_authority": "VALIDATION_REGISTRY_ONLY",
     }
-
