@@ -9698,6 +9698,18 @@ async def continuous_gather_learn_health():
     return health()
 
 
+@router.post(
+    "/continuous-gather-learn/heartbeat",
+    dependencies=[Depends(require_token)],
+)
+async def continuous_gather_learn_heartbeat(payload: dict[str, Any] = Body(default={})):
+    """Accept a signed heartbeat from the isolated gather worker."""
+    from continuous_gather_learn.persist import write_remote_gather_heartbeat
+
+    heartbeat = write_remote_gather_heartbeat(payload or {})
+    return {"ok": True, "accepted_at": heartbeat.get("beat_at")}
+
+
 @router.get("/continuous-gather-learn/dashboard")
 async def continuous_gather_learn_dashboard():
     from continuous_gather_learn.production import dashboard

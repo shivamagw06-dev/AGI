@@ -191,6 +191,35 @@ def write_gather_heartbeat(payload: dict[str, Any] | None = None) -> dict[str, A
         return body
 
 
+def write_remote_gather_heartbeat(payload: dict[str, Any] | None = None) -> dict[str, Any]:
+    """Persist an authenticated worker heartbeat using server-owned timestamps."""
+    incoming = payload if isinstance(payload, dict) else {}
+    allowed = {
+        "phase",
+        "role",
+        "worker_id",
+        "CONTINUOUS_GATHER_LEARN",
+        "FAA_BACKGROUND_COLLECTOR",
+        "FAA_LIVE_FETCH",
+        "CONTINUOUS_LIDI",
+        "CONTINUOUS_HISTORICAL_BACKFILL",
+        "KF_HD_LIVE_COLLECTORS",
+    }
+    body = {key: incoming.get(key) for key in allowed if key in incoming}
+    body.update(
+        {
+            "role": str(body.get("role") or "gather_worker")[:80],
+            "phase": str(body.get("phase") or "running")[:80],
+            "source": "authenticated_remote_worker",
+            "beat_at": _now(),
+            "unix_ts": time.time(),
+        }
+    )
+    with _LOCK:
+        _write_json(store_root() / "metrics" / "gather_heartbeat.json", body)
+    return body
+
+
 def read_gather_heartbeat(*, max_age_sec: float = 180.0) -> dict[str, Any]:
     """Return gather heartbeat; mark fresh when beat is within max_age_sec."""
     with _LOCK:

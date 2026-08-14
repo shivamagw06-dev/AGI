@@ -63,6 +63,50 @@ def _apply_worker_defaults() -> None:
         os.environ["FAA_LIVE_FETCH"] = "true"
 
 
+def _remote_engine_url() -> str:
+    raw = str(
+        os.environ.get("AGIB_INTELLIGENCE_ENGINE_URL")
+        or os.environ.get("INTELLIGENCE_ENGINE_URL")
+        or ""
+    ).strip().rstrip("/")
+    if raw and not raw.startswith(("http://", "https://")):
+        raw = f"https://{raw}"
+    return raw
+
+
+def _publish_remote_heartbeat(payload: dict | None = None) -> dict:
+    """Publish worker liveness across Render's non-shared service disks."""
+    base_url = _remote_engine_url()
+    token = str(os.environ.get("INTELLIGENCE_ENGINE_TOKEN") or "").strip()
+    if not base_url or not token:
+        return {"published": False, "reason": "remote_heartbeat_not_configured"}
+
+    import httpx
+
+    body = {
+        "role": "gather_worker",
+        "worker_id": os.environ.get("RENDER_INSTANCE_ID") or os.environ.get("RENDER_SERVICE_ID"),
+        "CONTINUOUS_GATHER_LEARN": os.environ.get("CONTINUOUS_GATHER_LEARN"),
+        "FAA_BACKGROUND_COLLECTOR": os.environ.get("FAA_BACKGROUND_COLLECTOR"),
+        "FAA_LIVE_FETCH": os.environ.get("FAA_LIVE_FETCH"),
+        "CONTINUOUS_LIDI": os.environ.get("CONTINUOUS_LIDI"),
+        "CONTINUOUS_HISTORICAL_BACKFILL": os.environ.get("CONTINUOUS_HISTORICAL_BACKFILL"),
+        "KF_HD_LIVE_COLLECTORS": os.environ.get("KF_HD_LIVE_COLLECTORS"),
+        **(payload or {}),
+    }
+    try:
+        response = httpx.post(
+            f"{base_url}/v1/continuous-gather-learn/heartbeat",
+            headers={"Authorization": f"Bearer {token}"},
+            json=body,
+            timeout=10.0,
+        )
+        response.raise_for_status()
+        return {"published": True, "status_code": response.status_code}
+    except Exception as exc:  # noqa: BLE001
+        return {"published": False, "reason": str(exc)[:200]}
+
+
 def main() -> int:
     _apply_worker_defaults()
 
@@ -216,12 +260,23 @@ def main() -> int:
         log.warning("gather_worker_heartbeat_failed", extra={"error": str(exc)[:160]})
         _heartbeat = None
 
+    remote = _publish_remote_heartbeat({"phase": "ready"})
+    if not remote.get("published"):
+        log.warning("gather_worker_remote_heartbeat_failed", extra=remote)
+
+    last_remote_heartbeat = time.monotonic()
+
     while not stopping["flag"]:
         if _heartbeat is not None:
             try:
                 _heartbeat({"phase": "running"})
             except Exception:
                 pass
+        if time.monotonic() - last_remote_heartbeat >= 30.0:
+            remote = _publish_remote_heartbeat({"phase": "running"})
+            if not remote.get("published"):
+                log.warning("gather_worker_remote_heartbeat_failed", extra=remote)
+            last_remote_heartbeat = time.monotonic()
         time.sleep(5.0)
 
     for fn in stop_fns:

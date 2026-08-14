@@ -177,6 +177,11 @@ services:
           name: agib-api
           type: web
           envVarKey: INTELLIGENCE_ENGINE_TOKEN
+      - key: INTELLIGENCE_ENGINE_URL
+        fromService:
+          name: agib-intelligence-engine
+          type: web
+          property: host
       - key: AGIB_API_BASE_URL
         fromService:
           name: agib-api
