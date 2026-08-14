@@ -12,9 +12,11 @@ import { readLatestHflTerminalSnapshot } from './hflTerminalSnapshot.js';
 import { loadLiveAlphaUniverse } from './liveAlphaRuntime.js';
 
 let timer = null;
+let retryTimer = null;
 let inFlight = null;
 let lastRun = null;
 let lastDailyRefresh = null;
+let dailyProgress = { date: null, covered: new Set() };
 
 function engineConfig() {
   let baseUrl = String(process.env.AGIB_INTELLIGENCE_ENGINE_URL || process.env.INTELLIGENCE_ENGINE_URL || '').replace(/\/$/, '');
@@ -120,21 +122,17 @@ async function refreshDaily(candidates, today) {
   const collected = [];
   const failures = [];
   const overlayFailures = [];
-  const concurrency = Math.max(1, Math.min(8, Number(process.env.HEDGE_FUND_UPSTOX_EOD_CONCURRENCY || 4)));
+  const concurrency = Math.max(1, Math.min(4, Number(process.env.HEDGE_FUND_UPSTOX_EOD_CONCURRENCY || 2)));
   let cursor = 0;
   const worker = async () => {
     while (cursor < candidates.length) {
       const candidate = candidates[cursor++];
       try {
-        // Existing warehouse history is retained. Pull a short overlap so the
-        // latest completed bar is repaired without re-downloading 10 years.
-        const payload = await getHistoricalCandles(candidate.instrumentKey, { unit: 'days', interval: 1, from: dateDaysAgo(10), to: today });
-        const historicalRows = candleRows(candidate.ticker, payload, 'upstox_v3_daily').filter((row) => row.date <= today);
-        if (!historicalRows.length) throw new Error('no_daily_candles_returned');
-        const byDate = new Map(historicalRows.map((row) => [row.date, row]));
         // Upstox historical candles generally stop at the previous completed
         // day. The documented V3 intraday endpoint with days/1 supplies the
-        // current trading day's consolidated OHLCV candle.
+        // current trading day's consolidated OHLCV candle. Try it first so the
+        // normal daily path needs only one provider call per instrument.
+        const byDate = new Map();
         try {
           const currentPayload = await getIntradayCandles(candidate.instrumentKey, { unit: 'days', interval: 1 });
           const currentRows = candleRows(candidate.ticker, currentPayload, 'upstox_v3_current_day').filter((row) => row.date === today);
@@ -142,6 +140,14 @@ async function refreshDaily(candidates, today) {
           for (const row of currentRows) byDate.set(row.date, row);
         } catch (error) {
           overlayFailures.push({ ticker: candidate.ticker, error: error.message });
+        }
+        if (!byDate.has(today)) {
+          // Repair missed sessions from a short historical overlap. Existing
+          // 10-year warehouse history remains untouched.
+          const payload = await getHistoricalCandles(candidate.instrumentKey, { unit: 'days', interval: 1, from: dateDaysAgo(10), to: today });
+          const historicalRows = candleRows(candidate.ticker, payload, 'upstox_v3_daily').filter((row) => row.date <= today);
+          if (!historicalRows.length) throw new Error('no_daily_candles_returned');
+          for (const row of historicalRows) byDate.set(row.date, row);
         }
         collected.push(...byDate.values());
       } catch (error) {
@@ -161,6 +167,7 @@ async function refreshDaily(candidates, today) {
     imported,
     failures,
     overlayFailures,
+    successful_today: [...latestCoverage],
   };
 }
 
@@ -205,13 +212,18 @@ export async function refreshHedgeFundUpstoxCandles({ force = false } = {}) {
     const candidates = terminal?.ok ? candidateRows(terminal) : [];
     const fullUniverse = await loadLiveAlphaUniverse();
     const dailyCandidates = fullUniverse.members.map((member) => ({ ticker: member.symbol, instrumentKey: member.instrumentKey }));
+    if (dailyProgress.date !== today) dailyProgress = { date: today, covered: new Set() };
     const shouldRunDaily = force || (afterMarketClose() && lastDailyRefresh !== today);
-    const daily = shouldRunDaily ? await refreshDaily(dailyCandidates, today) : null;
+    const pendingDailyCandidates = dailyCandidates.filter((candidate) => !dailyProgress.covered.has(candidate.ticker));
+    const daily = shouldRunDaily && pendingDailyCandidates.length ? await refreshDaily(pendingDailyCandidates, today) : null;
+    for (const ticker of daily?.successful_today || []) dailyProgress.covered.add(ticker);
     const minimumCoverage = Math.ceil(dailyCandidates.length * 0.80);
     // A partial provider run must retry; it must never mark the EOD session done.
-    if (shouldRunDaily && dailyCoveragePassed(daily, dailyCandidates.length)) lastDailyRefresh = today;
+    const cumulativeCoverage = dailyProgress.covered.size;
+    const eodRetryRequired = shouldRunDaily && cumulativeCoverage < minimumCoverage;
+    if (shouldRunDaily && !eodRetryRequired) lastDailyRefresh = today;
     const intraday = marketOpen() && candidates.length ? await refreshIntraday(candidates) : null;
-    return { ok: true, provider: 'upstox_v3', candidates: candidates.length, eod_universe: dailyCandidates.length, eod_minimum_coverage: minimumCoverage, daily, intraday, as_of: new Date().toISOString() };
+    return { ok: true, provider: 'upstox_v3', candidates: candidates.length, eod_universe: dailyCandidates.length, eod_minimum_coverage: minimumCoverage, eod_cumulative_coverage: cumulativeCoverage, eod_pending: dailyCandidates.length - cumulativeCoverage, eod_retry_required: eodRetryRequired, daily, intraday, as_of: new Date().toISOString() };
   })();
   try { return await inFlight; } finally { inFlight = null; }
 }
@@ -226,7 +238,13 @@ export function startHedgeFundUpstoxCandleScheduler() {
     String(process.env.HEDGE_FUND_UPSTOX_CANDLES || 'true').toLowerCase() !== 'true'
   ) return;
   const intervalMs = Math.max(15 * 60_000, Number(process.env.HEDGE_FUND_UPSTOX_CANDLE_INTERVAL_MS || 15 * 60_000));
-  const tick = () => refreshHedgeFundUpstoxCandles().then((result) => { lastRun = result; }).catch((error) => { lastRun = { ok: false, error: error.message, at: new Date().toISOString() }; });
+  const tick = () => refreshHedgeFundUpstoxCandles().then((result) => {
+    lastRun = result;
+    if (result?.eod_retry_required && !retryTimer) {
+      retryTimer = setTimeout(() => { retryTimer = null; tick(); }, Math.max(60_000, Number(process.env.HEDGE_FUND_UPSTOX_EOD_RETRY_MS || 120_000)));
+      retryTimer.unref?.();
+    }
+  }).catch((error) => { lastRun = { ok: false, error: error.message, at: new Date().toISOString() }; });
   // Stagger after HFL snapshot scheduler (default 2m) so Python is not woken twice.
   setTimeout(tick, Math.max(60_000, Number(process.env.HEDGE_FUND_UPSTOX_INITIAL_DELAY_MS || 120_000)));
   timer = setInterval(tick, intervalMs);
@@ -234,5 +252,5 @@ export function startHedgeFundUpstoxCandleScheduler() {
 }
 
 export function getHedgeFundUpstoxCandleStatus() {
-  return { enabled: Boolean(timer), provider: 'upstox_v3', intervalMs: Number(process.env.HEDGE_FUND_UPSTOX_CANDLE_INTERVAL_MS || 15 * 60_000), marketOpen: marketOpen(), afterMarketClose: afterMarketClose(), lastDailyRefresh, lastRun };
+  return { enabled: Boolean(timer), provider: 'upstox_v3', intervalMs: Number(process.env.HEDGE_FUND_UPSTOX_CANDLE_INTERVAL_MS || 15 * 60_000), marketOpen: marketOpen(), afterMarketClose: afterMarketClose(), retryScheduled: Boolean(retryTimer), lastDailyRefresh, lastRun };
 }
