@@ -7,9 +7,9 @@ import { VolumeBaselineIndex } from './minuteVolumeBaseline.js';
 import { SynchronizedSnapshotStore, UpstoxMarketFeedV3 } from './upstoxMarketFeedV3.js';
 import { bootstrapLiveAlphaVolumeBaselines } from './liveAlphaBaselineBootstrap.js';
 import { resolveLiveAlphaDerivatives } from './liveAlphaDerivativeUniverse.js';
-import { pollGrowwIndexSnapshots } from './sectorIndexGrowwFallback.js';
 import { isUpstoxAuthError } from './upstoxMarketFeedV3.js';
 import { attachGrowwDerivatives, GrowwLiveAlphaFeed } from './growwLiveAlphaFeed.js';
+import { isGrowwConfigured } from '../providers/groww.js';
 
 const serverDir = path.dirname(fileURLToPath(import.meta.url));
 const defaultUniversePath = path.join(serverDir, '../config/live-alpha-universe.example.json');
@@ -31,7 +31,6 @@ const SECTOR_INDEX_BY_INDUSTRY = Object.freeze({
   'SERVICES': 'NSE_INDEX|Nifty Infrastructure',
 });
 let runtime = null;
-let growwFallbackTimer = null;
 let state = {
   enabled: false, status: 'disabled', evaluation_status: 'disabled', started_at: null,
   last_evaluation: null, last_successful_evaluation: null, last_error: null,
@@ -45,6 +44,13 @@ export function classifyEvaluationStatus(evaluation) {
     return 'blocked';
   }
   return (evaluation.persistence || []).some((row) => row.status === 'failed') ? 'degraded' : 'live';
+}
+
+export function shouldUseGrowwFallback({ provider, feedStatus, allowFallback, growwConfigured }) {
+  return provider === 'upstox'
+    && ['auth_failed', 'failed'].includes(String(feedStatus || '').toLowerCase())
+    && allowFallback === true
+    && growwConfigured === true;
 }
 
 export function validateLiveAlphaUniverse(config) {
@@ -92,7 +98,7 @@ export async function loadLiveAlphaUniverse(filePath = process.env.LIVE_ALPHA_UN
   return validateLiveAlphaUniverse(JSON.parse(await fs.readFile(filePath, 'utf8')));
 }
 
-export async function startLiveAlphaRuntime({ Feed = null, Persistence = LiveAlphaPersistence } = {}) {
+export async function startLiveAlphaRuntime({ Feed = null, FallbackFeed = GrowwLiveAlphaFeed, Persistence = LiveAlphaPersistence } = {}) {
   const enabled = String(process.env.LIVE_ALPHA_SHADOW_ENABLED || '').toLowerCase() === 'true';
   if (!enabled) {
     state = { ...state, enabled: false, status: 'disabled' };
@@ -133,7 +139,7 @@ export async function startLiveAlphaRuntime({ Feed = null, Persistence = LiveAlp
     let lastEvaluationMs = 0;
     const FeedClass = Feed || (provider === 'groww' ? GrowwLiveAlphaFeed : UpstoxMarketFeedV3);
     // Upstox-only mode: full websocket feed. Do not mix Groww quote polling.
-    const feed = new FeedClass({ instrumentKeys, universe, snapshotStore: store, mode: 'full', onBatch: async (batch) => {
+    const onBatch = async (batch) => {
       pipeline.ingest(batch);
       await persistence.persistBatch(batch);
       if (Date.now() - lastEvaluationMs >= 5_000) {
@@ -152,7 +158,8 @@ export async function startLiveAlphaRuntime({ Feed = null, Persistence = LiveAlp
         state.evaluation_status = classifyEvaluationStatus(currentEvaluation);
         if (!currentEvaluation.skipped) state.last_successful_evaluation = currentEvaluation;
       }
-    } });
+    };
+    let feed = new FeedClass({ instrumentKeys, universe, snapshotStore: store, mode: 'full', onBatch });
     runtime = { provider, feed, pipeline, persistence, store, universe, bootstrap: { opening_snapshots: openingSnapshots.length, recent_snapshots: recentSnapshots.length, volume_baselines: baselines.values.size, derivatives: universe.derivativeResolution } };
     state = {
       enabled: true, status: 'starting', evaluation_status: 'warming_up',
@@ -160,12 +167,26 @@ export async function startLiveAlphaRuntime({ Feed = null, Persistence = LiveAlp
       last_successful_evaluation: null, last_error: null,
     };
     await feed.start();
-    state.status = 'running';
-    // Soft Groww index fallback only when explicitly allowed — Live Alpha itself
-    // stays on Upstox when LIVE_ALPHA_PROVIDER=upstox.
     const allowGrowwFallback = String(process.env.LIVE_ALPHA_ALLOW_GROWW_FALLBACK || '').toLowerCase() === 'true';
-    if (allowGrowwFallback && provider === 'upstox' && feed.state?.status === 'auth_failed') {
-      startGrowwSectorIndexFallback({ store, pipeline, instrumentKeys });
+    const initialFeedStatus = feed.status?.().status || feed.state?.status;
+    if (shouldUseGrowwFallback({ provider, feedStatus: initialFeedStatus, allowFallback: allowGrowwFallback, growwConfigured: isGrowwConfigured() })) {
+      feed.stop?.();
+      feed = new FallbackFeed({ instrumentKeys, universe, snapshotStore: store, mode: 'full', onBatch });
+      await feed.start();
+      runtime.feed = feed;
+      runtime.provider = 'groww';
+      state.feed_fallback = {
+        mode: 'groww_full_research_feed', status: feed.status?.().status || 'connected',
+        reason: `upstox_${initialFeedStatus}`,
+        derivatives: 'unavailable_until_groww_derivative_mapping',
+      };
+      state.status = feed.status?.().status === 'connected' ? 'running' : 'degraded';
+    } else if (['auth_failed', 'failed'].includes(String(initialFeedStatus || '').toLowerCase())) {
+      state.status = initialFeedStatus;
+      state.evaluation_status = 'blocked';
+      state.last_error = feed.status?.().last_error || `Primary provider ${initialFeedStatus}`;
+    } else {
+      state.status = 'running';
     }
     const missingBaselineMembers = universe.members.filter((member) => !baselines.hasInstrument(member.instrumentKey));
     if (missingBaselineMembers.length) {
@@ -203,35 +224,11 @@ export async function startLiveAlphaRuntime({ Feed = null, Persistence = LiveAlp
 }
 
 export function stopLiveAlphaRuntime() {
-  if (growwFallbackTimer) clearInterval(growwFallbackTimer);
-  growwFallbackTimer = null;
   runtime?.feed.stop();
   runtime = null;
   state.status = 'stopped';
   state.evaluation_status = 'stopped';
   return getLiveAlphaRuntimeStatus();
-}
-
-function startGrowwSectorIndexFallback({ store, pipeline, instrumentKeys }) {
-  if (growwFallbackTimer) return;
-  const indexKeys = instrumentKeys.filter((key) => String(key).startsWith('NSE_INDEX|'));
-  if (!indexKeys.length) return;
-  state.feed_fallback = { mode: 'groww_sector_indices', status: 'active' };
-  const pollMs = Math.max(60_000, Number(process.env.LIVE_ALPHA_GROWW_FALLBACK_MS || 120_000));
-  const tick = async () => {
-    try {
-      const snapshots = await pollGrowwIndexSnapshots(indexKeys);
-      if (!snapshots.length) return;
-      const batch = { snapshots, type: 'groww_fallback' };
-      store.ingest(batch);
-      pipeline.ingest(batch);
-    } catch (error) {
-      state.feed_fallback = { mode: 'groww_sector_indices', status: 'failed', error: error.message };
-    }
-  };
-  void tick();
-  growwFallbackTimer = setInterval(tick, pollMs);
-  growwFallbackTimer.unref?.();
 }
 
 export async function restartLiveAlphaRuntime() {
@@ -241,15 +238,22 @@ export async function restartLiveAlphaRuntime() {
 
 export function getLiveAlphaRuntimeStatus() {
   const feed = runtime?.feed.status() || null;
-  const runtimeStatus = runtime && feed && !['connected', 'idle'].includes(feed.status)
-    ? 'degraded'
-    : state.status;
+  const runtimeStatus = !runtime || !feed || ['connected', 'idle'].includes(feed.status)
+    ? state.status
+    : ['auth_failed', 'failed'].includes(feed.status) ? feed.status : 'degraded';
   return {
     ...state, status: runtimeStatus,
     provider: runtime?.provider || null,
     feed,
     universe: runtime ? { name: runtime.universe.name, members: runtime.universe.members.length, expected_members: runtime.universe.expectedMembers, coverage_complete: runtime.universe.members.length === runtime.universe.expectedMembers, subscribed_instruments: runtime.feed.instrumentKeys.length, benchmark_key: runtime.universe.benchmarkKey, derivatives: runtime.universe.derivativeResolution } : null,
     bootstrap: runtime?.bootstrap || null,
+    provider_policy: {
+      primary: String(process.env.LIVE_ALPHA_PROVIDER || 'upstox').trim().toLowerCase(),
+      fallback: 'groww',
+      fallback_allowed: String(process.env.LIVE_ALPHA_ALLOW_GROWW_FALLBACK || '').toLowerCase() === 'true',
+      fallback_configured: isGrowwConfigured(),
+      active: runtime?.provider || null,
+    },
     research_only: true,
     execution_enabled: false,
   };
@@ -264,20 +268,22 @@ export function getLiveAlphaMarketSnapshot(symbols = [], { now = new Date() } = 
   for (const symbol of requested) {
     const member = members.get(symbol);
     const snapshot = member ? runtime?.store.get(member.instrumentKey) : null;
-    const receivedMs = snapshot?.received_at ? Date.parse(snapshot.received_at) : NaN;
-    const quoteAgeMs = Number.isFinite(receivedMs) ? Math.max(0, now.getTime() - receivedMs) : null;
+    const quality = member && runtime?.store ? runtime.store.quality(member.instrumentKey, { now }) : null;
+    const quoteAgeMs = quality?.age_ms ?? null;
     const checks = {
       live_feed_connected: status.feed?.status === 'connected',
       instrument_mapped: Boolean(member),
       quote_received: Boolean(snapshot),
-      quote_fresh: quoteAgeMs != null && quoteAgeMs <= (runtime?.store.staleAfterMs || 15_000),
+      quote_fresh: Boolean(quality?.pass),
+      timestamp_valid: Boolean(snapshot?.effective_timestamp),
       session_valid: Boolean(snapshot?.received_at),
     };
     const reasonCodes = [];
     if (!checks.live_feed_connected) reasonCodes.push('LIVE_FEED_DISCONNECTED');
     if (!checks.instrument_mapped) reasonCodes.push('INSTRUMENT_NOT_MAPPED');
     if (checks.instrument_mapped && !checks.quote_received) reasonCodes.push('LIVE_QUOTE_NOT_RECEIVED');
-    if (checks.quote_received && !checks.quote_fresh) reasonCodes.push('STALE_LIVE_QUOTE');
+    if (checks.quote_received) reasonCodes.push(...(quality?.reason_codes || []));
+    if (checks.quote_received && !checks.timestamp_valid) reasonCodes.push('INVALID_LIVE_TIMESTAMP');
     if (checks.quote_received && !checks.session_valid) reasonCodes.push('INVALID_LIVE_SESSION');
     quotes[symbol] = {
       symbol,
@@ -293,7 +299,11 @@ export function getLiveAlphaMarketSnapshot(symbols = [], { now = new Date() } = 
       spread_bps: snapshot?.spread_bps ?? null,
       day_ohlc: snapshot?.ohlc || null,
       exchange_timestamp: snapshot?.exchange_timestamp || null,
+      provider_timestamp: snapshot?.server_timestamp || null,
       received_at: snapshot?.received_at || null,
+      ingested_at: snapshot?.ingested_at || snapshot?.received_at || null,
+      effective_timestamp: snapshot?.effective_timestamp || null,
+      timestamp_source: snapshot?.timestamp_source || null,
       quote_age_ms: quoteAgeMs,
       data_quality: reasonCodes.length ? 'BLOCKED' : 'PASS',
       checks: checks,
@@ -311,6 +321,7 @@ export function getLiveAlphaMarketSnapshot(symbols = [], { now = new Date() } = 
     messages: status.feed?.messages || 0,
     decode_errors: status.feed?.decode_errors || 0,
     reconnects: status.feed?.reconnects || 0,
+    snapshot_quality: runtime?.store?.stats() || null,
     research_only: true,
     quotes,
   };

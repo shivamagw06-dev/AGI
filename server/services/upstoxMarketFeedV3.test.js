@@ -38,6 +38,32 @@ test('requires complete, fresh and low-skew snapshots', () => {
   assert.equal(store.synchronized(['A|1', 'A|3'], { now: new Date('2026-08-09T08:00:05Z') }).ready, false);
 });
 
+test('uses exchange time for freshness and rejects future or out-of-order ticks', () => {
+  const store = new SynchronizedSnapshotStore({ staleAfterMs: 15_000, futureToleranceMs: 5_000 });
+  const received = '2026-08-09T08:00:10Z';
+  const accepted = store.ingest({ snapshots: [{
+    instrument_key: 'NSE_EQ|TEST', received_at: received,
+    exchange_timestamp: Date.parse('2026-08-09T08:00:09Z'), ltp: 100,
+  }] });
+  assert.equal(accepted.accepted, 1);
+  assert.equal(store.get('NSE_EQ|TEST').timestamp_source, 'exchange');
+  assert.equal(store.quality('NSE_EQ|TEST', { now: new Date('2026-08-09T08:00:20Z') }).pass, true);
+  assert.equal(store.quality('NSE_EQ|TEST', { now: new Date('2026-08-09T08:00:30Z') }).reason_codes[0], 'STALE_LIVE_QUOTE');
+
+  store.ingest({ snapshots: [{
+    instrument_key: 'NSE_EQ|TEST', received_at: received,
+    exchange_timestamp: Date.parse('2026-08-09T08:01:00Z'), ltp: 101,
+  }] });
+  store.ingest({ snapshots: [{
+    instrument_key: 'NSE_EQ|TEST', received_at: '2026-08-09T08:00:12Z',
+    exchange_timestamp: Date.parse('2026-08-09T08:00:01Z'), ltp: 99,
+  }] });
+  const stats = store.stats();
+  assert.equal(stats.rejected_future, 1);
+  assert.equal(stats.rejected_out_of_order, 1);
+  assert.equal(store.get('NSE_EQ|TEST').ltp, 100);
+});
+
 test('redirect handshake uses market-data-feed URL with Bearer headers', async () => {
   const previousToken = process.env.UPSTOX_ACCESS_TOKEN;
   process.env.UPSTOX_ACCESS_TOKEN = 'analytics-access-token-with-enough-length-abcdefgh';

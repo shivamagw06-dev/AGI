@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { classifyEvaluationStatus, loadLiveAlphaUniverse, startLiveAlphaRuntime, stopLiveAlphaRuntime, validateLiveAlphaUniverse } from './liveAlphaRuntime.js';
+import { classifyEvaluationStatus, loadLiveAlphaUniverse, shouldUseGrowwFallback, startLiveAlphaRuntime, stopLiveAlphaRuntime, validateLiveAlphaUniverse } from './liveAlphaRuntime.js';
 
 const valid = { benchmarkKey: 'NSE_INDEX|Nifty 50', members: Array.from({ length: 10 }, (_, index) => ({ symbol: `S${index}`, sector: 'BANK', instrumentKey: `NSE_EQ|${index}`, sectorInstrumentKey: 'NSE_INDEX|Nifty Bank' })) };
 
@@ -49,4 +49,12 @@ test('separates a connected feed from evaluation readiness', () => {
   assert.equal(classifyEvaluationStatus({ skipped: true, reason: 'already_evaluated_bucket' }), 'live');
   assert.equal(classifyEvaluationStatus({ skipped: false, persistence: [{ status: 'stored' }] }), 'live');
   assert.equal(classifyEvaluationStatus({ skipped: false, persistence: [{ status: 'failed' }] }), 'degraded');
+});
+
+test('only activates Groww fallback for a failed Upstox primary with explicit permission', () => {
+  assert.equal(shouldUseGrowwFallback({ provider: 'upstox', feedStatus: 'auth_failed', allowFallback: true, growwConfigured: true }), true);
+  assert.equal(shouldUseGrowwFallback({ provider: 'upstox', feedStatus: 'connected', allowFallback: true, growwConfigured: true }), false);
+  assert.equal(shouldUseGrowwFallback({ provider: 'upstox', feedStatus: 'auth_failed', allowFallback: false, growwConfigured: true }), false);
+  assert.equal(shouldUseGrowwFallback({ provider: 'upstox', feedStatus: 'auth_failed', allowFallback: true, growwConfigured: false }), false);
+  assert.equal(shouldUseGrowwFallback({ provider: 'groww', feedStatus: 'failed', allowFallback: true, growwConfigured: true }), false);
 });

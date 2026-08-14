@@ -30,6 +30,14 @@ function numeric(value) {
   return Number.isFinite(result) ? result : null;
 }
 
+export function normalizeEpochMs(value) {
+  const parsed = numeric(value);
+  if (!(parsed > 0)) return null;
+  if (parsed < 10_000_000_000) return parsed * 1_000;
+  if (parsed > 10_000_000_000_000) return Math.floor(parsed / 1_000);
+  return parsed;
+}
+
 function feedBody(feed) {
   return feed?.fullFeed?.marketFF
     || feed?.fullFeed?.indexFF
@@ -86,27 +94,85 @@ export function normalizeFeedResponse(message, receivedAt = new Date()) {
 }
 
 export class SynchronizedSnapshotStore {
-  constructor({ staleAfterMs = 15_000 } = {}) {
+  constructor({ staleAfterMs = 15_000, futureToleranceMs = 60_000, outOfOrderToleranceMs = 1_000 } = {}) {
     this.staleAfterMs = staleAfterMs;
+    this.futureToleranceMs = futureToleranceMs;
+    this.outOfOrderToleranceMs = outOfOrderToleranceMs;
     this.latest = new Map();
     this.marketStatus = {};
+    this.counters = {
+      accepted: 0,
+      rejected_invalid: 0,
+      rejected_future: 0,
+      rejected_out_of_order: 0,
+    };
   }
 
   ingest(normalized) {
     if (normalized.market_status) this.marketStatus = normalized.market_status;
-    for (const snapshot of normalized.snapshots || []) this.latest.set(snapshot.instrument_key, snapshot);
+    const summary = { accepted: 0, rejected: 0, reason_codes: {} };
+    for (const snapshot of normalized.snapshots || []) {
+      const key = String(snapshot?.instrument_key || '').trim();
+      const receivedMs = Date.parse(snapshot?.received_at || '');
+      const exchangeMs = normalizeEpochMs(snapshot?.exchange_timestamp);
+      const serverMs = normalizeEpochMs(snapshot?.server_timestamp);
+      const effectiveMs = exchangeMs ?? serverMs ?? (Number.isFinite(receivedMs) ? receivedMs : null);
+      let reason = null;
+      if (!key || !Number.isFinite(receivedMs) || !Number.isFinite(effectiveMs)) reason = 'INVALID_SNAPSHOT_TIMESTAMP';
+      else if (effectiveMs > receivedMs + this.futureToleranceMs) reason = 'FUTURE_EXCHANGE_TIMESTAMP';
+      else {
+        const previous = this.latest.get(key);
+        const previousMs = Date.parse(previous?.effective_timestamp || previous?.received_at || '');
+        if (Number.isFinite(previousMs) && effectiveMs < previousMs - this.outOfOrderToleranceMs) reason = 'OUT_OF_ORDER_TICK';
+      }
+      if (reason) {
+        summary.rejected += 1;
+        summary.reason_codes[reason] = (summary.reason_codes[reason] || 0) + 1;
+        if (reason === 'FUTURE_EXCHANGE_TIMESTAMP') this.counters.rejected_future += 1;
+        else if (reason === 'OUT_OF_ORDER_TICK') this.counters.rejected_out_of_order += 1;
+        else this.counters.rejected_invalid += 1;
+        continue;
+      }
+      const canonical = {
+        ...snapshot,
+        exchange_timestamp: exchangeMs,
+        server_timestamp: serverMs,
+        ingested_at: snapshot.received_at,
+        effective_timestamp: new Date(effectiveMs).toISOString(),
+        timestamp_source: exchangeMs != null ? 'exchange' : serverMs != null ? 'provider_server' : 'ingestion',
+      };
+      this.latest.set(key, canonical);
+      this.counters.accepted += 1;
+      summary.accepted += 1;
+    }
+    return summary;
   }
 
   get(instrumentKey) {
     return this.latest.get(instrumentKey) || null;
   }
 
+  quality(instrumentKey, { now = new Date() } = {}) {
+    const row = this.get(instrumentKey);
+    if (!row) return { pass: false, age_ms: null, reason_codes: ['LIVE_QUOTE_NOT_RECEIVED'] };
+    const effectiveMs = Date.parse(row.effective_timestamp || row.received_at || '');
+    const ageMs = Number.isFinite(effectiveMs) ? now.getTime() - effectiveMs : null;
+    const reasons = [];
+    if (ageMs == null) reasons.push('INVALID_LIVE_TIMESTAMP');
+    else if (ageMs < -this.futureToleranceMs) reasons.push('FUTURE_EXCHANGE_TIMESTAMP');
+    else if (ageMs > this.staleAfterMs) reasons.push('STALE_LIVE_QUOTE');
+    return { pass: reasons.length === 0, age_ms: ageMs == null ? null : Math.max(0, ageMs), reason_codes: reasons };
+  }
+
+  stats() {
+    return { ...this.counters, observed_instruments: this.latest.size };
+  }
+
   synchronized(instrumentKeys, { now = new Date(), maximumSkewMs = 5_000 } = {}) {
     const rows = instrumentKeys.map((key) => this.latest.get(key)).filter(Boolean);
-    const timestamps = rows.map((row) => Date.parse(row.received_at));
+    const timestamps = rows.map((row) => Date.parse(row.effective_timestamp || row.received_at));
     const stale = instrumentKeys.filter((key) => {
-      const row = this.latest.get(key);
-      return !row || now.getTime() - Date.parse(row.received_at) > this.staleAfterMs;
+      return !this.quality(key, { now }).pass;
     });
     const skewMs = timestamps.length ? Math.max(...timestamps) - Math.min(...timestamps) : null;
     return {
@@ -346,6 +412,7 @@ export class UpstoxMarketFeedV3 {
       provider: 'upstox',
       mode: this.mode,
       subscribed_instruments: this.instrumentKeys.length,
+      snapshot_quality: this.snapshotStore.stats(),
       research_only: true,
     };
   }
