@@ -246,10 +246,22 @@ def run_from_warehouse(strategy: str, config: dict[str, Any] | None = None) -> d
         return {"ok": False, "error": "strategy_requires_point_in_time_fundamental_history",
                 "detail": "Value and quality are intentionally blocked until filing-effective timestamps and factor snapshots pass coverage checks."}
     try:
-        from institutional_warehouse import store
+        from institutional_warehouse import db
         from .scanner import _universe
-        rows = store.all_rows("daily_market_history", limit=500_000) or []
-        classifications = {str(row.get("ticker") or "").upper(): row.get("primary_sector") for row in _universe()}
+        universe = sorted(_universe(), key=lambda row: float(row.get("market_cap") or 0), reverse=True)
+        selected = [row for row in universe[:200] if str(row.get("ticker") or "").strip()]
+        symbols = [str(row.get("ticker") or "").upper() for row in selected]
+        classifications = {str(row.get("ticker") or "").upper(): row.get("primary_sector") for row in selected}
+        table = db.physical_table("daily_market_history")
+        marks = ",".join("?" for _ in symbols)
+        rows = db.query(
+            f'''SELECT symbol, date, close, adjusted_close, volume
+                FROM {table}
+                WHERE COALESCE(sys_published, 1) = 1
+                  AND symbol IN ({marks})
+                ORDER BY symbol, date''',
+            tuple(symbols),
+        ) if symbols else []
     except Exception as exc:
         return {"ok": False, "error": "warehouse_unavailable", "detail": str(exc)[:200]}
     supplied = dict(config or {})
