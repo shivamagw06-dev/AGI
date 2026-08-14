@@ -79,6 +79,18 @@ def test_latest_evidence_ignores_newer_missing_refresh(monkeypatch):
     assert evidence["risk"]["status"] == "FAILED"
 
 
+def test_latest_evidence_filters_missing_before_server_limit(monkeypatch):
+    monkeypatch.setattr(registry_store, "_credentials", lambda: ("https://example.supabase.co", "key"))
+    queries = []
+    monkeypatch.setattr(registry_store, "_rest", lambda *args, **kwargs: queries.append(kwargs.get("query")) or [])
+    registry_store._EVIDENCE_CACHE.update({"at": 0.0, "rows": {}})
+
+    registry_store.load_latest_evidence(force=True)
+
+    assert "status=neq.MISSING" in queries[0]
+    assert queries[0].index("status=neq.MISSING") < queries[0].index("limit=1000")
+
+
 def test_persist_decisions_does_not_append_missing_evidence(monkeypatch):
     calls = []
     monkeypatch.setattr(registry_store, "_credentials", lambda: ("https://example.supabase.co", "key"))
