@@ -59,5 +59,7 @@ export function isStrictAdminPath(pathname = '') {
     path.startsWith('/admin/investment-office/') ||
     path === '/investment-office' ||
     path.startsWith('/investment-office/')
+    || path === '/admin/strategy-lab'
+    || path.startsWith('/admin/strategy-lab/')
   );
 }

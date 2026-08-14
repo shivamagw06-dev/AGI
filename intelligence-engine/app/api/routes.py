@@ -10225,6 +10225,43 @@ async def hedge_fund_lab_backtest(strategy_id: str, payload: dict[str, Any] = Bo
 
 
 # ---------------------------------------------------------------------------
+# Admin Strategy Lab — governed medium-horizon systematic research.
+# The intelligence service itself is token-protected; the Node proxy also
+# enforces the signed-in AGI administrator before exposing these endpoints.
+# ---------------------------------------------------------------------------
+
+
+@router.get("/strategy-lab/health")
+async def strategy_lab_health():
+    from strategy_lab.production import health
+    return health()
+
+
+@router.get("/strategy-lab/dashboard")
+async def strategy_lab_dashboard(limit: int = 5):
+    from strategy_lab.production import dashboard
+    return dashboard(limit=max(1, min(int(limit or 5), 20)))
+
+
+@router.get("/strategy-lab/strategy/{strategy_id}")
+async def strategy_lab_strategy(strategy_id: str):
+    from strategy_lab.production import strategy
+    return strategy(strategy_id)
+
+
+@router.get("/strategy-lab/scan/{strategy_id}")
+async def strategy_lab_scan(strategy_id: str, limit: int = 20):
+    from strategy_lab.production import scan
+    return scan(strategy_id, limit=max(1, min(int(limit or 20), 100)))
+
+
+@router.post("/strategy-lab/backtest/{strategy_id}")
+async def strategy_lab_backtest(strategy_id: str, payload: dict[str, Any] = Body(default={})):
+    from strategy_lab.production import backtest
+    return backtest(strategy_id, payload or {})
+
+
+# ---------------------------------------------------------------------------
 # Valuation Intelligence Terminal — market multiples plus AGI interpretation.
 # ---------------------------------------------------------------------------
 

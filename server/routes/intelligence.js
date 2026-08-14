@@ -41,6 +41,7 @@ import {
 } from '../services/hflStaticLibrary.js';
 import { getHflTerminalFromReadModel } from '../services/hflTerminalSnapshot.js';
 import { getValuationCompanyPackFromReadModel } from '../services/valuationCompanyPackSnapshot.js';
+import { requireStrategyLabAdmin } from '../services/strategyLabAdminAuth.js';
 
 function engineConfig() {
   let baseUrl = (process.env.INTELLIGENCE_ENGINE_URL || 'http://127.0.0.1:8100').replace(/\/$/, '');
@@ -2544,6 +2545,43 @@ export default function createIntelligenceRouter() {
       res.status(r.status).json(r.data);
     } catch (err) {
       res.status(502).json({ error: err.message || 'hedge-fund-lab backtest failed' });
+    }
+  });
+
+  // Admin Strategy Lab. Authentication is enforced server-side in addition to
+  // the React admin route; these responses are never public fallbacks.
+  router.get('/strategy-lab/health', requireStrategyLabAdmin, async (_req, res) => {
+    try {
+      const r = await engineFetch('/v1/strategy-lab/health', { timeoutMs: 30_000 });
+      return res.status(r.status).json(r.data);
+    } catch (err) {
+      return res.status(503).json({ ok: false, error: err.message || 'strategy lab health unavailable' });
+    }
+  });
+  router.get('/strategy-lab/dashboard', requireStrategyLabAdmin, async (req, res) => {
+    try {
+      const limit = Math.max(1, Math.min(Number(req.query.limit || 5), 20));
+      const r = await engineFetch(`/v1/strategy-lab/dashboard?limit=${limit}`, { timeoutMs: 180_000 });
+      return res.status(r.status).json(r.data);
+    } catch (err) {
+      return res.status(504).json({ ok: false, error: err.message || 'strategy lab dashboard unavailable' });
+    }
+  });
+  router.get('/strategy-lab/scan/:strategyId', requireStrategyLabAdmin, async (req, res) => {
+    try {
+      const limit = Math.max(1, Math.min(Number(req.query.limit || 20), 100));
+      const r = await engineFetch(`/v1/strategy-lab/scan/${encodeURIComponent(req.params.strategyId)}?limit=${limit}`, { timeoutMs: 180_000 });
+      return res.status(r.status).json(r.data);
+    } catch (err) {
+      return res.status(504).json({ ok: false, error: err.message || 'strategy lab scan unavailable' });
+    }
+  });
+  router.post('/strategy-lab/backtest/:strategyId', requireStrategyLabAdmin, async (req, res) => {
+    try {
+      const r = await engineFetch(`/v1/strategy-lab/backtest/${encodeURIComponent(req.params.strategyId)}`, { method: 'POST', body: req.body || {}, timeoutMs: 180_000 });
+      return res.status(r.status).json(r.data);
+    } catch (err) {
+      return res.status(504).json({ ok: false, error: err.message || 'strategy lab backtest unavailable' });
     }
   });
 
