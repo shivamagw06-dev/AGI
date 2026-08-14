@@ -30,6 +30,7 @@ DEFAULTS = {
     "max_drawdown_limit_pct": 20.0,
     "min_oos_annualized_return_pct": 0.0,
     "min_oos_sharpe": 0.0,
+    "max_parameter_oos_return_spread_pct": 50.0,
 }
 
 
@@ -718,14 +719,28 @@ def run_from_warehouse(strategy: str, config: dict[str, Any] | None = None) -> d
             sensitivity.append({"lookback_sessions": lookback, "ok": bool(variant.get("ok")), "metrics": variant.get("metrics"),
                                 "test_metrics": ((variant.get("validation") or {}).get("periods") or {}).get("test", {}).get("metrics")})
         selection_rule = "Predeclared lookback +/- 63 sessions; no best-variant substitution."
-    result["parameter_sensitivity"] = {
-        "status": "COMPLETED" if all(item["ok"] for item in sensitivity) else "PARTIAL",
-        "economic_status": "PASSED" if sensitivity and all(
+    variant_oos_returns = [float((item.get("test_metrics") or {}).get("annualized_return_pct") or -999) for item in sensitivity]
+    variant_drawdowns = [abs(float((item.get("metrics") or {}).get("max_drawdown_pct") or 999)) for item in sensitivity]
+    return_spread = max(variant_oos_returns) - min(variant_oos_returns) if variant_oos_returns else None
+    economic_stability = bool(
+        sensitivity
+        and all(
             item.get("ok")
             and float((item.get("test_metrics") or {}).get("annualized_return_pct") or -999) > float(supplied.get("min_oos_annualized_return_pct", DEFAULTS["min_oos_annualized_return_pct"]))
             and float((item.get("test_metrics") or {}).get("sharpe") or -999) > float(supplied.get("min_oos_sharpe", DEFAULTS["min_oos_sharpe"]))
             for item in sensitivity
-        ) else "FAILED",
+        )
+        and all(drawdown <= float(supplied.get("max_drawdown_limit_pct", DEFAULTS["max_drawdown_limit_pct"])) for drawdown in variant_drawdowns)
+        and return_spread is not None
+        and return_spread <= float(supplied.get("max_parameter_oos_return_spread_pct", DEFAULTS["max_parameter_oos_return_spread_pct"]))
+    )
+    result["parameter_sensitivity"] = {
+        "status": "COMPLETED" if all(item["ok"] for item in sensitivity) else "PARTIAL",
+        "economic_status": "PASSED" if economic_stability else "FAILED",
+        "oos_annualized_return_spread_pct": round(return_spread, 3) if return_spread is not None else None,
+        "maximum_variant_drawdown_pct": round(max(variant_drawdowns), 3) if variant_drawdowns else None,
+        "acceptance": {"maximum_oos_return_spread_pct": float(supplied.get("max_parameter_oos_return_spread_pct", DEFAULTS["max_parameter_oos_return_spread_pct"])),
+                       "maximum_drawdown_pct": float(supplied.get("max_drawdown_limit_pct", DEFAULTS["max_drawdown_limit_pct"]))},
         "variants": sensitivity,
         "selection_rule": selection_rule,
     }
