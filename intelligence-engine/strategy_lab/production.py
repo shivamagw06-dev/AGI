@@ -346,9 +346,61 @@ def _reversion(ticker: str, bars: list[dict[str, Any]]) -> dict[str, Any] | None
 CALCULATORS = {"time_series_momentum": _momentum, "trend_following": _trend, "volatility_breakout": _breakout, "mean_reversion": _reversion}
 
 
+def _cross_sectional_momentum(series: dict[str, list[dict[str, Any]]]) -> list[dict[str, Any]]:
+    """Rank 12-minus-1 returns across the same completed-session universe."""
+    candidates: list[tuple[str, list[dict[str, Any]], float]] = []
+    for ticker, bars in series.items():
+        if len(bars) < 253:
+            continue
+        closes = [float(bar["close"]) for bar in bars]
+        return_12_1 = closes[-22] / closes[-253] - 1.0
+        liquid, _ = _liquid(bars)
+        if liquid:
+            candidates.append((ticker, bars, return_12_1))
+    candidates.sort(key=lambda item: item[2], reverse=True)
+    count = len(candidates)
+    if count < 20:
+        return []
+    signals: list[dict[str, Any]] = []
+    holdings = min(20, count)
+    for rank, (ticker, bars, raw_return) in enumerate(candidates, start=1):
+        percentile = 100.0 * (count - rank) / max(1, count - 1)
+        signal = _base_signal("cross_sectional_momentum", ticker, bars)
+        is_selected = rank <= holdings
+        signal.update(
+            signal="BUY" if is_selected else "HOLD",
+            score=round(percentile, 2),
+            confidence="MEDIUM",
+            entry=float(bars[-1]["close"]),
+            stop=None,
+            target=None,
+            expected_holding_period="1 month, rebalanced monthly",
+            factor_contributions={
+                "return_12_minus_1_pct": round(raw_return * 100, 3),
+                "cross_sectional_rank": rank,
+                "eligible_universe": count,
+                "target_holdings": holdings,
+            },
+            reason_codes=["TOP_12_1_MOMENTUM_RANK"] if is_selected else ["OUTSIDE_TOP_MOMENTUM_RANK"],
+            explanation={
+                "main_driver": "Twelve-month return excluding the latest month, ranked across one completed-session universe.",
+                "contradictory_evidence": [],
+                "limitations": [
+                    "Sector concentration is enforced in the backtest but cannot be certified in this scanner until dated classifications are available.",
+                    "Historical constituents and delisted securities remain incomplete.",
+                ],
+            },
+        )
+        signals.append(_govern_signal(signal))
+    return signals
+
+
+IMPLEMENTED_STRATEGIES = frozenset(CALCULATORS) | {"cross_sectional_momentum"}
+
+
 def _registry_decision(strategy_id: str, session: dict[str, Any] | None = None) -> dict[str, Any]:
     item = REGISTRY.get(strategy_id) or {}
-    implemented = strategy_id in CALCULATORS
+    implemented = strategy_id in IMPLEMENTED_STRATEGIES
     session = session or {}
     session_passed = session.get("session_status") == "PASS"
     evidence = {
@@ -414,7 +466,7 @@ def health() -> dict[str, Any]:
 
 def strategy(strategy_id: str, session: dict[str, Any] | None = None) -> dict[str, Any]:
     item = REGISTRY.get(strategy_id)
-    operational = strategy_id in CALCULATORS
+    operational = strategy_id in IMPLEMENTED_STRATEGIES
     return {"ok": bool(item), "strategy_id": strategy_id, **(item or {"error": "unknown_strategy"}), "version": VERSION,
             "data_requirements": (item or {}).get("data_requirements", COMMON_DATA), "calculator_available": operational,
             "signal_status": "BLOCKED", "trade_eligible": False, "execution_eligible": False,
@@ -423,13 +475,15 @@ def strategy(strategy_id: str, session: dict[str, Any] | None = None) -> dict[st
 
 def scan(strategy_id: str, limit: int = 20) -> dict[str, Any]:
     calculator = CALCULATORS.get(strategy_id)
-    if not calculator:
+    if not calculator and strategy_id != "cross_sectional_momentum":
         item = REGISTRY.get(strategy_id)
         return {"ok": bool(item), "status": "BLOCKED", "error": "strategy_not_implemented" if item else "unknown_strategy",
                 "strategy": strategy(strategy_id), "strategy_id": strategy_id, "signals": [],
                 "reason_codes": list((item or {}).get("blocked_by") or ["STRATEGY_NOT_IMPLEMENTED"]), "decision": "DO_NOT_DEPLOY"}
     series, session = _series_snapshot(_warehouse_rows())
-    signals = [_govern_signal(signal) for ticker, bars in series.items() if (signal := calculator(ticker, bars)) is not None]
+    signals = _cross_sectional_momentum(series) if strategy_id == "cross_sectional_momentum" else [
+        _govern_signal(signal) for ticker, bars in series.items() if (signal := calculator(ticker, bars)) is not None
+    ]
     priority = {"BUY": 4, "SELL": 3, "EXIT": 2, "HOLD": 1}
     signals.sort(key=lambda x: (priority.get(str(x.get("signal")), 0), abs(float(x.get("score") or 0))), reverse=True)
     return {"ok": True, "strategy": strategy(strategy_id, session), "as_of": session.get("latest_completed_session"), "session_health": session,
@@ -442,11 +496,13 @@ def dashboard(limit: int = 5) -> dict[str, Any]:
     cards = []
     for key in REGISTRY:
         calculator = CALCULATORS.get(key)
-        if not calculator:
+        if not calculator and key != "cross_sectional_momentum":
             cards.append({**strategy(key, session), "as_of": session.get("latest_completed_session"), "universe": 0, "signal_count": 0,
                           "signals": [], "reason_codes": list(REGISTRY[key].get("blocked_by") or [])})
             continue
-        all_signals = [_govern_signal(signal) for ticker, bars in series.items() if (signal := calculator(ticker, bars)) is not None]
+        all_signals = _cross_sectional_momentum(series) if key == "cross_sectional_momentum" else [
+            _govern_signal(signal) for ticker, bars in series.items() if (signal := calculator(ticker, bars)) is not None
+        ]
         priority = {"BUY": 4, "SELL": 3, "EXIT": 2, "HOLD": 1}
         all_signals.sort(key=lambda x: (priority.get(str(x.get("signal")), 0), abs(float(x.get("score") or 0))), reverse=True)
         rows = all_signals[:max(1, min(limit, 20))]
