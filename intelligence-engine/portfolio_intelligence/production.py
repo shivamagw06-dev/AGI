@@ -121,11 +121,23 @@ def analyse(
     *,
     candidate: str | None = None,
     candidate_weight: float | None = None,
+    strategy_id: str | None = None,
 ) -> dict[str, Any]:
     if not is_enabled():
         return {"enabled": False, "pio_version": PIO_VERSION}
     out = analyse_portfolio(portfolio_id, candidate=candidate, candidate_weight=candidate_weight)
-    return {"enabled": True, **out}
+    governance = strategy_execution_gate(strategy_id) if strategy_id else {
+        "execution_eligible": False,
+        "decision": "BLOCKED",
+        "reason": "STRATEGY_ID_REQUIRED",
+        "rule": "Portfolio research without a validated strategy can never be execution eligible.",
+    }
+    return {
+        "enabled": True,
+        **out,
+        "execution_governance": governance,
+        "execution_eligible": bool(governance.get("execution_eligible")),
+    }
 
 
 def portfolio_health(portfolio_id: str) -> dict[str, Any]:

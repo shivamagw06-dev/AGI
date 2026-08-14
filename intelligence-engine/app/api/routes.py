@@ -4937,6 +4937,7 @@ async def portfolio_intelligence_analyse(payload: dict[str, Any] = Body(default=
         payload.get("portfolio_id"),
         candidate=payload.get("candidate") or payload.get("ticker"),
         candidate_weight=payload.get("candidate_weight"),
+        strategy_id=payload.get("strategy_id"),
     )
     if out.get("enabled") and not out.get("found"):
         raise HTTPException(status_code=404, detail="portfolio_not_found")
@@ -4954,6 +4955,12 @@ async def portfolio_intelligence_quality_gates():
 async def portfolio_intelligence_strategy_gate(strategy_id: str):
     from portfolio_intelligence.production import strategy_execution_gate
     return await run_in_threadpool(strategy_execution_gate, strategy_id)
+
+
+@router.get("/reliability/roadmap")
+async def institutional_reliability_roadmap():
+    from institutional_reliability import roadmap_status
+    return await run_in_threadpool(roadmap_status)
 
 
 @router.get("/admin/portfolio-intelligence", response_class=HTMLResponse)
