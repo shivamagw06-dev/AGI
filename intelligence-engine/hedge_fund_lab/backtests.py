@@ -60,6 +60,74 @@ def _clean_prices(rows: Iterable[dict[str, Any]]) -> dict[str, list[dict[str, An
     return {symbol: [bars[d] for d in sorted(bars)] for symbol, bars in by_symbol.items()}
 
 
+def corporate_action_adjustment_receipt(
+    rows: Iterable[dict[str, Any]], actions: Iterable[dict[str, Any]],
+) -> dict[str, Any]:
+    """Verify adjusted-price factors against independently dated structural actions."""
+    price_rows = list(rows)
+    action_rows = list(actions)
+    usable = [row for row in price_rows if _number(row.get("close")) not in (None, 0)]
+    adjusted = [row for row in usable if _number(row.get("adjusted_close")) not in (None, 0)]
+    coverage = 100.0 * len(adjusted) / len(usable) if usable else 0.0
+    by_symbol: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    for row in usable:
+        by_symbol[str(row.get("symbol") or "").upper()].append(row)
+    for symbol in by_symbol:
+        by_symbol[symbol].sort(key=lambda row: str(row.get("date") or ""))
+
+    structural_types = {"split", "bonus", "rights", "merger", "demerger"}
+    structural = [
+        action for action in action_rows
+        if str(action.get("action_type") or "").lower() in structural_types
+    ]
+    matched = verified = 0
+    examples: list[dict[str, Any]] = []
+    for action in structural:
+        symbol = str(action.get("symbol") or "").upper()
+        event_date = str(action.get("effective_date") or action.get("action_date") or "")[:10]
+        series = by_symbol.get(symbol) or []
+        before = [row for row in series if str(row.get("date") or "")[:10] < event_date][-3:]
+        after = [row for row in series if str(row.get("date") or "")[:10] >= event_date][:3]
+        if not before or not after:
+            continue
+        matched += 1
+        prior, current = before[-1], after[0]
+        raw_prior, raw_current = _number(prior.get("close")), _number(current.get("close"))
+        adj_prior, adj_current = _number(prior.get("adjusted_close")), _number(current.get("adjusted_close"))
+        event_verified = False
+        if None not in (raw_prior, raw_current, adj_prior, adj_current):
+            raw_return = raw_current / raw_prior - 1.0
+            adjusted_return = adj_current / adj_prior - 1.0
+            factor_before = adj_prior / raw_prior
+            factor_after = adj_current / raw_current
+            event_verified = abs(factor_after / factor_before - 1.0) >= 0.01 and abs(adjusted_return) < abs(raw_return)
+        verified += int(event_verified)
+        if len(examples) < 20:
+            examples.append({
+                "symbol": symbol,
+                "action_type": str(action.get("action_type") or "").lower(),
+                "event_date": event_date,
+                "verified": event_verified,
+            })
+
+    passed = bool(usable) and coverage == 100.0 and bool(structural) and matched == len(structural) and verified == len(structural)
+    status = "PASSED" if passed else "PARTIAL" if usable and adjusted else "FAILED"
+    return {
+        "status": status,
+        "independently_verified": passed,
+        "price_rows": len(usable),
+        "adjusted_price_rows": len(adjusted),
+        "adjusted_close_coverage_pct": round(coverage, 3),
+        "corporate_action_rows": len(action_rows),
+        "structural_actions": len(structural),
+        "structural_actions_matched_to_prices": matched,
+        "structural_actions_verified": verified,
+        "examples": examples,
+        "source": "warehouse.corporate_actions + warehouse.daily_market_history",
+        "rule": "PASS requires 100% adjusted-close coverage and every structural action independently reflected in the adjustment factor.",
+    }
+
+
 def _metrics(returns: list[float]) -> dict[str, float | None]:
     if not returns:
         return {"cumulative_return_pct": None, "annualized_return_pct": None, "annualized_volatility_pct": None,
@@ -727,6 +795,15 @@ def run_from_warehouse(strategy: str, config: dict[str, Any] | None = None) -> d
                 ORDER BY symbol, date''',
             tuple(symbols),
         ) if symbols else []
+        actions_table = db.physical_table("corporate_actions")
+        actions = db.query(
+            f'''SELECT symbol, action_date, effective_date, action_type
+                FROM {actions_table}
+                WHERE COALESCE(sys_published, 1) = 1
+                  AND symbol IN ({marks})
+                ORDER BY symbol, action_date''',
+            tuple(symbols),
+        ) if symbols else []
     except Exception as exc:
         return {"ok": False, "error": "warehouse_unavailable", "detail": str(exc)[:200]}
     supplied = dict(config or {})
@@ -736,6 +813,9 @@ def run_from_warehouse(strategy: str, config: dict[str, Any] | None = None) -> d
     is_reversion = strategy_key in {"mean_reversion", "medium_term_mean_reversion", "medium_term_mean_reversion_long_only"}
     runner = mean_reversion_backtest if is_reversion else breakout_backtest if is_breakout else trend_backtest if is_trend else momentum_backtest
     result = runner(rows, classifications=classifications, config=supplied)
+    adjustment_receipt = corporate_action_adjustment_receipt(rows, actions)
+    result["corporate_action_verification"] = adjustment_receipt
+    result["corporate_actions_verified"] = adjustment_receipt["independently_verified"]
     if not result.get("ok") or not sensitivity_enabled:
         return result
     sensitivity = []

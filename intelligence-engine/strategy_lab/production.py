@@ -543,6 +543,7 @@ def backtest(strategy_id: str, config: dict[str, Any] | None = None) -> dict[str
     readiness = result.get("readiness") or {}
     pit_exact = bool(result.get("point_in_time_status") == "EXACT" or readiness.get("filing_date_coverage_pct") == 100.0)
     corporate_actions_verified = bool(result.get("corporate_actions_verified") is True)
+    corporate_action_receipt = result.get("corporate_action_verification") or {}
     evidence = {
         "point_in_time": {
             "status": "PASSED" if pit_exact else ("PARTIAL" if completed or readiness.get("conservative_lag_proxy_coverage_pct") else "FAILED"),
@@ -557,7 +558,7 @@ def backtest(strategy_id: str, config: dict[str, Any] | None = None) -> dict[str
             "observed_at": observed_at,
             "source": "warehouse.daily_market_history.adjusted_close",
             "source_version": result.get("model_version"),
-            "detail": {"independently_verified": corporate_actions_verified},
+            "detail": corporate_action_receipt or {"independently_verified": corporate_actions_verified},
             "limitations": ["Adjusted closes are consumed when available, but an independent complete-history receipt is not recorded."],
         },
         "backtest": {
