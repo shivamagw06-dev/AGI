@@ -17,13 +17,21 @@ function allowedEmails() {
 export async function requireStrategyLabAdmin(req, res, next) {
   const token = bearer(req);
   const url = String(process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '').replace(/\/$/, '');
-  const anonKey = String(process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY || '');
-  if (!token || !url || !anonKey) {
+  // A server deployment normally has the service-role key even when frontend-only
+  // VITE_* variables are absent. Supabase accepts either key as the API key while
+  // the caller's bearer token remains the identity being verified.
+  const apiKey = String(
+    process.env.SUPABASE_ANON_KEY
+      || process.env.VITE_SUPABASE_ANON_KEY
+      || process.env.SUPABASE_SERVICE_ROLE_KEY
+      || '',
+  ).trim();
+  if (!token || !url || !apiKey) {
     return res.status(401).json({ ok: false, error: 'ADMIN_AUTH_REQUIRED' });
   }
   try {
     const response = await fetch(`${url}/auth/v1/user`, {
-      headers: { apikey: anonKey, Authorization: `Bearer ${token}` },
+      headers: { apikey: apiKey, Authorization: `Bearer ${token}` },
       signal: AbortSignal.timeout(10_000),
     });
     if (!response.ok) return res.status(401).json({ ok: false, error: 'INVALID_ADMIN_SESSION' });
