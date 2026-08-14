@@ -30,8 +30,19 @@ def test_common_session_excludes_partial_intraday_and_stale_symbols():
 
 def test_catalog_uses_formal_lifecycle_and_blocks_unimplemented_families():
     assert production.REGISTRY["time_series_momentum"]["lifecycle"] == "IMPLEMENTED"
+    assert production.REGISTRY["cross_sectional_momentum"]["lifecycle"] == "IMPLEMENTED"
     assert production.REGISTRY["event_strategies"]["category"] == "BLOCKED"
     assert "EXECUTION_ELIGIBLE" in production.LIFECYCLE
+
+
+def test_cross_sectional_momentum_has_its_own_governed_backtest(monkeypatch):
+    monkeypatch.setattr("hedge_fund_lab.backtests.run_from_warehouse", lambda key, config: {
+        "ok": False, "error": key, "validation": {}, "constraints": {}, "metrics": {},
+    })
+    result = production.backtest("cross_sectional_momentum")
+    assert result["strategy_lab_id"] == "cross_sectional_momentum"
+    assert result["error"] == "cross_sectional_momentum"
+    assert result["validation"]["promotion"] == "DO_NOT_DEPLOY"
 
     result = production.scan("event_strategies")
 

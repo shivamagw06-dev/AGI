@@ -58,9 +58,11 @@ REGISTRY: dict[str, dict[str, Any]] = {
         "parameters": {"mean_window": 20, "trend_window": 200, "entry_z": 2.0, "exit_z": 0.5, "atr_window": 14, "stop_atr": 2.0},
     },
     "cross_sectional_momentum": {
-        "name": "Cross-Sectional Momentum", "family": "MOMENTUM", "lifecycle": "DRAFT", "category": "DATA_BUILDING",
-        "holding_period": "1-12 months", "data_mode": "EOD", "formula": "Percentile ranks of 1M/3M/6M/12M returns, volatility and sector-relative momentum",
-        "parameters": {}, "blocked_by": ["PIT_DATA_MISSING", "BACKTEST_INSUFFICIENT"],
+        "name": "Cross-Sectional Momentum", "family": "MOMENTUM", "lifecycle": "IMPLEMENTED", "category": "IMPLEMENTED",
+        "holding_period": "1-12 months", "data_mode": "EOD", "overlap": "time_series_momentum",
+        "overlap_note": "Ranks securities against each other; unlike time-series momentum, it does not infer direction from each security's own absolute trend.",
+        "formula": "Monthly long-only rank on 12-month return excluding the latest month, with liquidity and sector concentration controls",
+        "parameters": {"lookback_sessions": 252, "skip_recent_sessions": 21, "rebalance_sessions": 21, "holdings": 20, "max_weight": 0.10, "max_sector_weight": 0.30},
     },
     "quality_momentum": {
         "name": "Quality + Momentum", "family": "MULTI_FACTOR", "lifecycle": "DRAFT", "category": "DATA_BUILDING",
@@ -461,7 +463,7 @@ def dashboard(limit: int = 5) -> dict[str, Any]:
 
 
 def backtest(strategy_id: str, config: dict[str, Any] | None = None) -> dict[str, Any]:
-    strategy_map = {"time_series_momentum": "momentum", "trend_following": "trend_following", "volatility_breakout": "volatility_breakout", "mean_reversion": "mean_reversion"}
+    strategy_map = {"time_series_momentum": "momentum", "cross_sectional_momentum": "cross_sectional_momentum", "trend_following": "trend_following", "volatility_breakout": "volatility_breakout", "mean_reversion": "mean_reversion"}
     if strategy_id not in strategy_map:
         return {"ok": False, "status": "DATA_BUILDING", "error": "strategy_specific_walk_forward_backtest_not_implemented", "strategy_id": strategy_id, "decision": "DO_NOT_DEPLOY"}
     from hedge_fund_lab.backtests import run_from_warehouse

@@ -657,7 +657,7 @@ def mean_reversion_backtest(
 def run_from_warehouse(strategy: str, config: dict[str, Any] | None = None) -> dict[str, Any]:
     """Load the bounded warehouse inputs needed by the backtest."""
     strategy_key = str(strategy).lower()
-    if strategy_key not in {"momentum", "momentum_12_1_long_only", "trend", "trend_following", "trend_following_long_only", "breakout", "volatility_breakout", "volatility_breakout_long_only", "mean_reversion", "medium_term_mean_reversion", "medium_term_mean_reversion_long_only"}:
+    if strategy_key not in {"momentum", "cross_sectional_momentum", "momentum_12_1_long_only", "trend", "trend_following", "trend_following_long_only", "breakout", "volatility_breakout", "volatility_breakout_long_only", "mean_reversion", "medium_term_mean_reversion", "medium_term_mean_reversion_long_only"}:
         return {"ok": False, "error": "strategy_requires_point_in_time_fundamental_history",
                 "detail": "Value and quality are intentionally blocked until filing-effective timestamps and factor snapshots pass coverage checks."}
     try:
