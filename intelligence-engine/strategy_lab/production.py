@@ -11,8 +11,9 @@ import statistics
 import threading
 import time
 from collections import defaultdict
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import Any
+from zoneinfo import ZoneInfo
 
 VERSION = "strategy-lab-governance-v1.1.0"
 LIFECYCLE = (
@@ -168,7 +169,15 @@ def _warehouse_rows(limit: int = 800_000) -> list[dict[str, Any]]:
         return rows[:limit]
 
 
-def _series_snapshot(rows: list[dict[str, Any]]) -> tuple[dict[str, list[dict[str, float | str]]], dict[str, Any]]:
+def _expected_completed_session(now: datetime | None = None) -> str:
+    local = now.astimezone(ZoneInfo("Asia/Kolkata")) if now else datetime.now(ZoneInfo("Asia/Kolkata"))
+    candidate = local.date() if (local.hour, local.minute) >= (16, 0) else local.date() - timedelta(days=1)
+    while candidate.weekday() >= 5:
+        candidate -= timedelta(days=1)
+    return candidate.isoformat()
+
+
+def _series_snapshot(rows: list[dict[str, Any]], expected_session: str | None = None) -> tuple[dict[str, list[dict[str, float | str]]], dict[str, Any]]:
     grouped: dict[str, dict[str, dict[str, float | str]]] = defaultdict(dict)
     for row in rows:
         ticker = str(row.get("symbol") or row.get("ticker") or "").upper()
@@ -193,7 +202,8 @@ def _series_snapshot(rows: list[dict[str, Any]]) -> tuple[dict[str, list[dict[st
     peak = max(coverage.values(), default=0)
     threshold = max(1, math.ceil(peak * 0.80))
     eligible_dates = [day for day, count in coverage.items() if count >= threshold]
-    completed_session = max(eligible_dates, default=None)
+    common_observed_session = max(eligible_dates, default=None)
+    completed_session = expected_session or _expected_completed_session()
     series: dict[str, list[dict[str, float | str]]] = {}
     stale: list[str] = []
     for ticker, days in grouped.items():
@@ -203,8 +213,11 @@ def _series_snapshot(rows: list[dict[str, Any]]) -> tuple[dict[str, list[dict[st
         series[ticker] = [days[day] for day in sorted(days) if day <= completed_session]
     return series, {
         "latest_completed_session": completed_session,
+        "common_observed_session": common_observed_session,
         "session_coverage": coverage.get(completed_session, 0) if completed_session else 0,
         "coverage_threshold": threshold,
+        "session_status": "PASS" if coverage.get(completed_session, 0) >= threshold else "FAIL",
+        "exchange_calendar_status": "WEEKDAY_RULE_ONLY",
         "mixed_session_blocked": len(stale),
         "stale_tickers": sorted(stale),
     }

@@ -20,7 +20,7 @@ def test_common_session_excludes_partial_intraday_and_stale_symbols():
     rows.append(_row("A", "2026-08-14", 101.0))
     rows = [row for row in rows if not (row["symbol"] == "E" and row["date"] == "2026-08-13")]
 
-    series, health = production._series_snapshot(rows)
+    series, health = production._series_snapshot(rows, expected_session="2026-08-13")
 
     assert health["latest_completed_session"] == "2026-08-13"
     assert health["mixed_session_blocked"] == 1
