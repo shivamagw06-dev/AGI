@@ -43,6 +43,7 @@ def test_cross_sectional_momentum_has_its_own_governed_backtest(monkeypatch):
     assert result["strategy_lab_id"] == "cross_sectional_momentum"
     assert result["error"] == "cross_sectional_momentum"
     assert result["validation"]["promotion"] == "DO_NOT_DEPLOY"
+    assert result["registry_evidence"]["parameter_stability"]["status"] == "FAILED"
 
     result = production.scan("event_strategies")
 

@@ -522,9 +522,16 @@ def backtest(strategy_id: str, config: dict[str, Any] | None = None) -> dict[str
             "detail": {"max_drawdown_pct": (result.get("metrics") or {}).get("max_drawdown_pct"), "approved_limit_pct": drawdown_limit, "passed": risk_passed},
         },
     }
-    from .registry_store import append_validation_evidence
-    persistence = append_validation_evidence(strategy_id, VERSION, evidence)
     sensitivity = result.get("parameter_sensitivity") or {}
     parameter_stability_passed = sensitivity.get("economic_status") == "PASSED"
+    evidence["parameter_stability"] = {
+        "status": "PASSED" if parameter_stability_passed else "FAILED",
+        "observed_at": observed_at,
+        "source": "hedge_fund_lab.backtests",
+        "source_version": result.get("model_version"),
+        "detail": sensitivity,
+    }
+    from .registry_store import append_validation_evidence
+    persistence = append_validation_evidence(strategy_id, VERSION, evidence)
     economic_gates_passed = oos_passed and capacity_passed and risk_passed and parameter_stability_passed
     return {**result, "strategy_lab_id": strategy_id, "validation": {**validation, "parameter_sensitivity": sensitivity.get("status", "NOT_COMPLETED"), "parameter_stability": sensitivity.get("economic_status", "NOT_COMPLETED"), "survivorship": "SURVIVORSHIP_BIAS_RISK", "economic_gates_passed": economic_gates_passed, "promotion": "DO_NOT_DEPLOY"}, "registry_evidence": evidence, "persistence": persistence}
