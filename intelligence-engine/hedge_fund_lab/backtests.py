@@ -670,13 +670,15 @@ def run_from_warehouse(strategy: str, config: dict[str, Any] | None = None) -> d
             ) or [{}])[0]
             filing_stats = (db.query(
                 f'''SELECT COUNT(*) AS rows, COUNT(DISTINCT symbol) AS symbols,
-                           SUM(CASE WHEN COALESCE(filing_date, effective_date) IS NOT NULL THEN 1 ELSE 0 END) AS dated_rows
+                           SUM(CASE WHEN COALESCE(filing_date, effective_date) IS NOT NULL THEN 1 ELSE 0 END) AS dated_rows,
+                           SUM(CASE WHEN fiscal_year IS NOT NULL AND TRIM(fiscal_year) <> '' THEN 1 ELSE 0 END) AS period_labeled_rows
                     FROM {annual_table}'''
             ) or [{}])[0]
         except Exception as exc:
             return {"ok": False, "error": "warehouse_unavailable", "detail": str(exc)[:200]}
         total = int(filing_stats.get("rows") or 0)
         dated = int(filing_stats.get("dated_rows") or 0)
+        period_labeled = int(filing_stats.get("period_labeled_rows") or 0)
         return {
             "ok": False,
             "error": "point_in_time_quality_history_unavailable",
@@ -692,6 +694,10 @@ def run_from_warehouse(strategy: str, config: dict[str, Any] | None = None) -> d
                 "annual_statement_symbols": int(filing_stats.get("symbols") or 0),
                 "filing_or_effective_dated_rows": dated,
                 "filing_date_coverage_pct": round(dated / total * 100, 2) if total else 0.0,
+                "period_labeled_rows": period_labeled,
+                "conservative_lag_proxy_coverage_pct": round(period_labeled / total * 100, 2) if total else 0.0,
+                "proxy_availability_rule": "fiscal_period_end_plus_60_calendar_days",
+                "proxy_pit_status": "PIT_LIMITED",
                 "minimum_required_factor_snapshots": 5,
                 "status": "BLOCKED",
             },

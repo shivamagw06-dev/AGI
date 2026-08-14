@@ -450,7 +450,10 @@ def test_reconstruction_never_uses_a_statement_before_it_was_published():
 
 def test_availability_dates_respect_the_reporting_lag():
     assert valuation_history.available_from("FY25", quarterly=False) == "2025-05-30"
+    assert valuation_history.available_from("FY2025", quarterly=False) == "2025-05-30"
+    assert valuation_history.available_from("2025", quarterly=False) == "2025-05-30"
     assert valuation_history.available_from("FY25Q2", quarterly=True) == "2024-11-14"
+    assert valuation_history.available_from("FY2025Q2", quarterly=True) == "2024-11-14"
     assert valuation_history.available_from("FY25", quarterly=False, lag_days=0) == "2025-03-31"
 
 

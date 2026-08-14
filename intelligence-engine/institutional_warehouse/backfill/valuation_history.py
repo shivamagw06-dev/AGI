@@ -58,15 +58,24 @@ def _pct(numer: Any, denom: Any) -> Optional[float]:
 
 
 def _fiscal_period_end(label: str) -> Optional[date]:
-    """FY24 -> 2024-03-31, FY24Q2 -> 2023-09-30 (Indian fiscal year)."""
+    """Parse FY24/FY2024/2024 and optional quarter into an Indian period end."""
     text = str(label or "").strip().upper().replace(" ", "")
-    if not text.startswith("FY") or len(text) < 4:
+    if text.startswith("FY"):
+        text = text[2:]
+    quarter = None
+    if "Q" in text:
+        year_text, quarter_text = text.split("Q", 1)
+        quarter = f"Q{quarter_text[:1]}"
+    else:
+        year_text = text
+    if not year_text.isdigit() or len(year_text) not in {2, 4}:
         return None
     try:
-        year = 2000 + int(text[2:4])
+        year = int(year_text)
+        if len(year_text) == 2:
+            year += 2000
     except ValueError:
         return None
-    quarter = text[4:6] if len(text) >= 6 and text[4] == "Q" else None
     if not quarter:
         return date(year, 3, 31)
     ends = {"Q1": (year - 1, 6, 30), "Q2": (year - 1, 9, 30), "Q3": (year - 1, 12, 31),
