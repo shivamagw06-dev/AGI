@@ -14,22 +14,26 @@
 
 ## Backup Gate
 
-- [ ] Confirm Render persistent disk snapshot/backup completed.
+- [x] Confirm Render persistent disk snapshot/backup completed.
 - [x] Confirm Supabase database backup or point-in-time recovery is enabled.
 - [ ] Record backup timestamp, owner, retention period, and restore location below.
 - [ ] Perform a read-only restore verification or documented restore drill.
 
 | Evidence | Value |
 |---|---|
-| Render backup timestamp | Pending |
+| Render backup timestamp | Owner confirmed completed on 2026-08-14; provider timestamp not supplied |
 | Supabase backup/PITR timestamp | Daily physical backup confirmed; latest visible 2026-08-13 23:15:17 UTC |
-| Backup owner | Supabase managed (database); Render owner pending |
-| Retention | Seven daily Supabase recovery points visible, 2026-08-07 through 2026-08-13 |
+| Backup owner | Supabase managed (database); Render disk backup owner-confirmed by AGI administrator |
+| Retention | Supabase: seven daily recovery points visible; Render: not recorded |
 | Restore verification | Pending |
 
 Supabase evidence was visually confirmed in `Database > Backups > Scheduled backups`
 on 14 August 2026. The dashboard explicitly states that Storage API objects are not
 included; only database records and Storage metadata are covered by these backups.
+
+The Render `intelligence-data` persistent disk backup was confirmed completed by the
+AGI administrator on 14 August 2026. The Render-generated timestamp and retention
+period were not provided and therefore remain explicitly unverified.
 
 ## Acceptance Conditions
 
