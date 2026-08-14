@@ -1,0 +1,29 @@
+.sl-nav-group {
+  display: grid;
+  gap: 4px;
+  margin-bottom: 14px;
+}
+
+.sl-nav-group h4 {
+  display: flex;
+  justify-content: space-between;
+  margin: 0;
+  padding: 6px 8px;
+  color: #71818f;
+  font-size: 9px;
+  text-transform: uppercase;
+}
+
+.sl-nav-group h4 b {
+  color: #9aa9b6;
+}
+
+.sl-inline {
+  margin: 14px 0 0;
+}
+
+@media (max-width: 900px) {
+  .sl-nav-group {
+    min-width: 0;
+  }
+}

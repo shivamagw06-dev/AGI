@@ -14,8 +14,13 @@ from collections import defaultdict
 from datetime import datetime, timezone
 from typing import Any
 
-VERSION = "strategy-lab-phase1-v1.0.0"
-LIFECYCLE = ("DRAFT", "BACKTESTING", "VALIDATING", "PAPER", "OPERATIONAL", "SUSPENDED", "RETIRED")
+VERSION = "strategy-lab-governance-v1.1.0"
+LIFECYCLE = (
+    "DRAFT", "IMPLEMENTED", "DATA_VALIDATED", "BACKTESTABLE",
+    "RESEARCH_VALIDATED", "PAPER_ELIGIBLE", "PAPER_VALIDATED",
+    "PRODUCTION_CANDIDATE", "EXECUTION_ELIGIBLE", "SUSPENDED", "RETIRED",
+)
+SIGNAL_STATUS = ("RESEARCH_ONLY", "BLOCKED", "PAPER_ELIGIBLE", "EXECUTION_ELIGIBLE")
 COMMON_DATA = ["adjusted_daily_ohlcv", "liquidity", "corporate_actions"]
 _CACHE_LOCK = threading.Lock()
 _PRICE_CACHE: dict[str, Any] = {"at": 0.0, "rows": []}
@@ -23,31 +28,81 @@ _CACHE_TTL_SECONDS = 300
 
 REGISTRY: dict[str, dict[str, Any]] = {
     "time_series_momentum": {
-        "name": "Time-Series Momentum", "family": "TREND", "lifecycle": "BACKTESTING",
+        "name": "Time-Series Momentum", "family": "TREND", "lifecycle": "IMPLEMENTED", "category": "IMPLEMENTED",
         "holding_period": "1-12 months", "overlap": "cross_sectional_momentum_v1",
         "overlap_note": "Different horizon and construction; medium-term absolute trend, not intraday cross-sectional leadership.",
         "formula": "0.15*z(R21)+0.25*z(R63)+0.25*z(R126)+0.35*z(R252), divided by realized volatility",
         "parameters": {"windows": [21, 63, 126, 252], "weights": [0.15, 0.25, 0.25, 0.35], "buy": 0.35, "sell": -0.35},
     },
     "trend_following": {
-        "name": "Trend Following", "family": "TREND", "lifecycle": "BACKTESTING",
+        "name": "Trend Following", "family": "TREND", "lifecycle": "IMPLEMENTED", "category": "IMPLEMENTED",
         "holding_period": "1-12 months", "overlap": None,
         "formula": "Price/SMA200, SMA50/SMA200, SMA200 slope, ADX and ATR",
         "parameters": {"fast_sma": 50, "slow_sma": 200, "slope_window": 20, "atr_window": 14, "stop_atr": 2.5},
     },
     "volatility_breakout": {
-        "name": "Volatility Breakout", "family": "BREAKOUT", "lifecycle": "BACKTESTING",
+        "name": "Volatility Breakout", "family": "BREAKOUT", "lifecycle": "IMPLEMENTED", "category": "IMPLEMENTED",
         "holding_period": "2-12 weeks", "overlap": "opening_range_expansion_v1",
         "overlap_note": "Daily 20/55-session Donchian breakout; not Live Alpha's opening-range intraday breakout.",
         "formula": "Close versus prior 20/55-session high or low, confirmed by ATR regime and volume",
         "parameters": {"entry_windows": [20, 55], "exit_window": 20, "atr_window": 14, "volume_window": 20, "stop_atr": 2.0},
     },
     "mean_reversion": {
-        "name": "Medium-Term Mean Reversion", "family": "MEAN_REVERSION", "lifecycle": "BACKTESTING",
+        "name": "Medium-Term Mean Reversion", "family": "MEAN_REVERSION", "lifecycle": "IMPLEMENTED", "category": "IMPLEMENTED",
         "holding_period": "5-30 sessions", "overlap": "intraday_mean_reversion_v1",
         "overlap_note": "Daily 20-session dislocation with 200-day trend and volatility filters; not intraday residual reversion.",
         "formula": "Z=(Close-SMA20)/SD20, gated by SMA200 trend, liquidity and volatility percentile",
         "parameters": {"mean_window": 20, "trend_window": 200, "entry_z": 2.0, "exit_z": 0.5, "atr_window": 14, "stop_atr": 2.0},
+    },
+    "cross_sectional_momentum": {
+        "name": "Cross-Sectional Momentum", "family": "MOMENTUM", "lifecycle": "DRAFT", "category": "DATA_BUILDING",
+        "holding_period": "1-12 months", "formula": "Percentile ranks of 1M/3M/6M/12M returns, volatility and sector-relative momentum",
+        "parameters": {}, "blocked_by": ["PIT_DATA_MISSING", "BACKTEST_INSUFFICIENT"],
+    },
+    "quality_momentum": {
+        "name": "Quality + Momentum", "family": "MULTI_FACTOR", "lifecycle": "DRAFT", "category": "DATA_BUILDING",
+        "holding_period": "3-18 months", "formula": "wQ*Quality + wM*Momentum with explicit component attribution",
+        "parameters": {}, "blocked_by": ["PIT_DATA_MISSING", "BACKTEST_INSUFFICIENT"],
+    },
+    "value_quality": {
+        "name": "Value + Quality", "family": "MULTI_FACTOR", "lifecycle": "DRAFT", "category": "DATA_BUILDING",
+        "holding_period": "6-24 months", "formula": "Historical valuation percentile combined with ROIC, FCF conversion and leverage quality",
+        "parameters": {}, "blocked_by": ["PIT_DATA_MISSING", "BACKTEST_INSUFFICIENT"],
+    },
+    "accounting_quality": {
+        "name": "Accounting Quality", "family": "FUNDAMENTAL", "lifecycle": "DRAFT", "category": "DATA_BUILDING",
+        "holding_period": "6-24 months", "formula": "CFO/PAT, FCF/PAT, accruals, working-capital stress and exceptional-item dependence",
+        "parameters": {}, "blocked_by": ["PIT_DATA_MISSING", "BACKTEST_INSUFFICIENT"],
+    },
+    "volatility_premia": {
+        "name": "Volatility Premia", "family": "DERIVATIVES", "lifecycle": "DRAFT", "category": "DATA_BUILDING",
+        "holding_period": "1-12 weeks", "formula": "Realized/implied volatility spread, skew, term structure, liquidity and open interest",
+        "parameters": {}, "blocked_by": ["DERIVATIVES_DATA_MISSING", "BACKTEST_INSUFFICIENT"],
+    },
+    "sector_rotation": {
+        "name": "Sector Rotation", "family": "ALLOCATION", "lifecycle": "DRAFT", "category": "DATA_BUILDING",
+        "holding_period": "1-12 months", "formula": "Sector momentum, relative valuation, fundamental strength and macro sensitivity",
+        "parameters": {}, "blocked_by": ["PIT_DATA_MISSING", "RISK_LIMIT"],
+    },
+    "event_strategies": {
+        "name": "Event Strategies", "family": "EVENT", "lifecycle": "DRAFT", "category": "BLOCKED",
+        "holding_period": "Event dependent", "formula": "Timestamped abnormal and cumulative abnormal returns around classified events",
+        "parameters": {}, "blocked_by": ["EVENT_TIMESTAMP_MISSING", "CORPORATE_ACTION_UNVERIFIED"],
+    },
+    "pairs_stat_arb": {
+        "name": "Pairs / Statistical Arbitrage", "family": "STATISTICAL_ARBITRAGE", "lifecycle": "DRAFT", "category": "BLOCKED",
+        "holding_period": "Days to months", "formula": "Cointegrated log-price spread, hedge ratio, residual z-score and half-life",
+        "parameters": {}, "blocked_by": ["CORPORATE_ACTION_UNVERIFIED", "COST_FAILURE"],
+    },
+    "macro_equity": {
+        "name": "Macro-to-Equity", "family": "MACRO", "lifecycle": "DRAFT", "category": "BLOCKED",
+        "holding_period": "1-12 months", "formula": "Rolling sector sensitivities to rates, INR, oil, inflation, liquidity and credit",
+        "parameters": {}, "blocked_by": ["MACRO_VINTAGE_MISSING", "PIT_DATA_MISSING"],
+    },
+    "composite_research": {
+        "name": "Composite Research Strategy", "family": "COMPOSITE", "lifecycle": "DRAFT", "category": "BLOCKED",
+        "holding_period": "Model dependent", "formula": "Only independently validated quality, value, growth, momentum, risk, macro and event components",
+        "parameters": {}, "blocked_by": ["COMPONENT_VALIDATION_INSUFFICIENT", "BACKTEST_INSUFFICIENT"],
     },
 }
 
@@ -113,7 +168,7 @@ def _warehouse_rows(limit: int = 800_000) -> list[dict[str, Any]]:
         return rows[:limit]
 
 
-def _series(rows: list[dict[str, Any]]) -> dict[str, list[dict[str, float | str]]]:
+def _series_snapshot(rows: list[dict[str, Any]]) -> tuple[dict[str, list[dict[str, float | str]]], dict[str, Any]]:
     grouped: dict[str, dict[str, dict[str, float | str]]] = defaultdict(dict)
     for row in rows:
         ticker = str(row.get("symbol") or row.get("ticker") or "").upper()
@@ -127,7 +182,36 @@ def _series(rows: list[dict[str, Any]]) -> dict[str, list[dict[str, float | str]
             "low": _num(row.get("low")) or close,
             "volume": _num(row.get("volume")) or 0.0,
         }
-    return {ticker: [days[d] for d in sorted(days)] for ticker, days in grouped.items()}
+    # A current intraday candle may exist for only part of the universe. Select
+    # the newest session shared by at least 80% of the best-covered date, then
+    # exclude companies missing that completed session. This prevents mixed-date
+    # rankings and fails closed on stale symbols such as an unrefreshed daily bar.
+    coverage: dict[str, int] = defaultdict(int)
+    for days in grouped.values():
+        for day in days:
+            coverage[day] += 1
+    peak = max(coverage.values(), default=0)
+    threshold = max(1, math.ceil(peak * 0.80))
+    eligible_dates = [day for day, count in coverage.items() if count >= threshold]
+    completed_session = max(eligible_dates, default=None)
+    series: dict[str, list[dict[str, float | str]]] = {}
+    stale: list[str] = []
+    for ticker, days in grouped.items():
+        if not completed_session or completed_session not in days:
+            stale.append(ticker)
+            continue
+        series[ticker] = [days[day] for day in sorted(days) if day <= completed_session]
+    return series, {
+        "latest_completed_session": completed_session,
+        "session_coverage": coverage.get(completed_session, 0) if completed_session else 0,
+        "coverage_threshold": threshold,
+        "mixed_session_blocked": len(stale),
+        "stale_tickers": sorted(stale),
+    }
+
+
+def _series(rows: list[dict[str, Any]]) -> dict[str, list[dict[str, float | str]]]:
+    return _series_snapshot(rows)[0]
 
 
 def _mean(values: list[float]) -> float:
@@ -155,12 +239,26 @@ def _liquid(bars: list[dict[str, Any]]) -> tuple[bool, float]:
 
 def _base_signal(strategy_id: str, ticker: str, bars: list[dict[str, Any]]) -> dict[str, Any]:
     liquid, adv = _liquid(bars)
+    reason_codes = ["PIT_DATA_MISSING", "CORPORATE_ACTION_UNVERIFIED", "BACKTEST_INSUFFICIENT", "COST_FAILURE", "RISK_LIMIT"]
+    if not liquid:
+        reason_codes.append("LOW_LIQUIDITY")
     return {
         "strategy_id": strategy_id, "strategy_version": VERSION, "ticker": ticker,
-        "timestamp": bars[-1]["date"], "eligibility": "RESEARCH_ONLY", "trade_eligible": False,
+        "timestamp": bars[-1]["date"], "signal_session": bars[-1]["date"], "eligibility": "BLOCKED", "trade_eligible": False,
         "data": {"source": "warehouse.daily_market_history", "observations": len(bars), "freshness": bars[-1]["date"],
-                 "completeness": round(min(100.0, len(bars) / 252 * 100), 1), "pit_status": "PIT_LIMITED", "liquid": liquid, "average_daily_value": round(adv, 2)},
-        "governance": {"lifecycle": REGISTRY[strategy_id]["lifecycle"], "decision": "DO_NOT_DEPLOY", "execution": "BLOCKED"},
+                 "freshness_status": "PASS", "completed_session": True,
+                 "completeness": round(min(100.0, len(bars) / 252 * 100), 1), "pit_status": "PIT_LIMITED", "liquid": liquid,
+                 "liquidity_status": "PASS" if liquid else "FAIL", "corporate_action_status": "UNVERIFIED",
+                 "average_daily_value": round(adv, 2)},
+        "prices": {"signal_price": bars[-1]["close"], "signal_session": bars[-1]["date"],
+                   "latest_completed_close": bars[-1]["close"], "latest_completed_session": bars[-1]["date"],
+                   "live_price": None, "live_price_age_seconds": None, "live_source": "NOT_CONNECTED"},
+        "validation": {"data": "PARTIAL", "pit": "FAIL", "liquidity": "PASS" if liquid else "FAIL",
+                       "corporate_actions": "FAIL", "backtest": "FAIL", "costs": "FAIL", "out_of_sample": "FAIL",
+                       "risk": "FAIL", "paper": "FAIL"},
+        "reason_codes": reason_codes,
+        "governance": {"lifecycle": REGISTRY[strategy_id]["lifecycle"], "signal_status": "BLOCKED",
+                       "decision": "DO_NOT_DEPLOY", "execution": "BLOCKED", "next_eligible_status": "RESEARCH_ONLY"},
     }
 
 
@@ -231,6 +329,18 @@ def _reversion(ticker: str, bars: list[dict[str, Any]]) -> dict[str, Any] | None
 CALCULATORS = {"time_series_momentum": _momentum, "trend_following": _trend, "volatility_breakout": _breakout, "mean_reversion": _reversion}
 
 
+def _govern_signal(signal: dict[str, Any]) -> dict[str, Any]:
+    factor_reasons = list(signal.get("reason_codes") or [])
+    gate_reasons = ["PIT_DATA_MISSING", "CORPORATE_ACTION_UNVERIFIED", "BACKTEST_INSUFFICIENT", "COST_FAILURE", "RISK_LIMIT"]
+    if not signal.get("data", {}).get("liquid"):
+        gate_reasons.append("LOW_LIQUIDITY")
+    signal["reason_codes"] = list(dict.fromkeys(factor_reasons + gate_reasons))
+    direction = {"BUY": "LONG", "SELL": "SHORT", "EXIT": "FLAT", "HOLD": "NEUTRAL"}.get(str(signal.get("signal")), "NEUTRAL")
+    signal.update(research_direction=direction, signal_strength=abs(float(signal.get("score") or 0)), eligibility="BLOCKED", trade_eligible=False)
+    signal.setdefault("governance", {}).update(signal_status="BLOCKED", decision="DO_NOT_DEPLOY", execution="BLOCKED")
+    return signal
+
+
 def health() -> dict[str, Any]:
     try:
         from hedge_fund_lab.scanner import universe_meta
@@ -242,32 +352,48 @@ def health() -> dict[str, Any]:
 
 def strategy(strategy_id: str) -> dict[str, Any]:
     item = REGISTRY.get(strategy_id)
-    return {"ok": bool(item), "strategy_id": strategy_id, **(item or {"error": "unknown_strategy"}), "version": VERSION, "data_requirements": COMMON_DATA, "trade_eligible": False}
+    operational = strategy_id in CALCULATORS
+    return {"ok": bool(item), "strategy_id": strategy_id, **(item or {"error": "unknown_strategy"}), "version": VERSION,
+            "data_requirements": (item or {}).get("data_requirements", COMMON_DATA), "calculator_available": operational,
+            "signal_status": "BLOCKED", "trade_eligible": False, "execution_eligible": False}
 
 
 def scan(strategy_id: str, limit: int = 20) -> dict[str, Any]:
     calculator = CALCULATORS.get(strategy_id)
-    if not calculator: return {"ok": False, "error": "unknown_strategy", "strategy_id": strategy_id}
-    series = _series(_warehouse_rows())
-    signals = [signal for ticker, bars in series.items() if (signal := calculator(ticker, bars)) is not None]
+    if not calculator:
+        item = REGISTRY.get(strategy_id)
+        return {"ok": bool(item), "status": "BLOCKED", "error": "strategy_not_implemented" if item else "unknown_strategy",
+                "strategy": strategy(strategy_id), "strategy_id": strategy_id, "signals": [],
+                "reason_codes": list((item or {}).get("blocked_by") or ["STRATEGY_NOT_IMPLEMENTED"]), "decision": "DO_NOT_DEPLOY"}
+    series, session = _series_snapshot(_warehouse_rows())
+    signals = [_govern_signal(signal) for ticker, bars in series.items() if (signal := calculator(ticker, bars)) is not None]
     priority = {"BUY": 4, "SELL": 3, "EXIT": 2, "HOLD": 1}
     signals.sort(key=lambda x: (priority.get(str(x.get("signal")), 0), abs(float(x.get("score") or 0))), reverse=True)
-    return {"ok": True, "strategy": strategy(strategy_id), "as_of": max((s["timestamp"] for s in signals), default=None), "universe_with_sufficient_history": len(signals), "signals": signals[:max(1, min(limit, 100))], "trade_eligible_count": 0, "policy": "Research signal only; validation and execution gates remain blocked."}
+    return {"ok": True, "strategy": strategy(strategy_id), "as_of": session.get("latest_completed_session"), "session_health": session,
+            "universe_with_sufficient_history": len(signals), "signals": signals[:max(1, min(limit, 100))], "trade_eligible_count": 0,
+            "policy": "Mathematical research output only; PIT, corporate-action, backtest, cost, risk and paper gates remain blocked."}
 
 
 def dashboard(limit: int = 5) -> dict[str, Any]:
-    series = _series(_warehouse_rows())
+    series, session = _series_snapshot(_warehouse_rows())
     cards = []
     for key in REGISTRY:
-        calculator = CALCULATORS[key]
-        all_signals = [signal for ticker, bars in series.items() if (signal := calculator(ticker, bars)) is not None]
+        calculator = CALCULATORS.get(key)
+        if not calculator:
+            cards.append({**strategy(key), "as_of": session.get("latest_completed_session"), "universe": 0, "signal_count": 0,
+                          "signals": [], "reason_codes": list(REGISTRY[key].get("blocked_by") or [])})
+            continue
+        all_signals = [_govern_signal(signal) for ticker, bars in series.items() if (signal := calculator(ticker, bars)) is not None]
         priority = {"BUY": 4, "SELL": 3, "EXIT": 2, "HOLD": 1}
         all_signals.sort(key=lambda x: (priority.get(str(x.get("signal")), 0), abs(float(x.get("score") or 0))), reverse=True)
         rows = all_signals[:max(1, min(limit, 20))]
         cards.append({**strategy(key), "as_of": max((s["timestamp"] for s in all_signals), default=None), "universe": len(all_signals), "signal_count": len(rows), "signals": rows})
-    return {"ok": True, "generated_at": datetime.now(timezone.utc).isoformat(), "version": VERSION, "admin_only": True, "research_only": True, "execution_enabled": False, "lifecycle": list(LIFECYCLE), "strategies": cards,
+    return {"ok": True, "generated_at": datetime.now(timezone.utc).isoformat(), "version": VERSION, "admin_only": True, "research_only": True, "execution_enabled": False,
+            "global_execution_status": "BLOCKED", "lifecycle": list(LIFECYCLE), "signal_statuses": list(SIGNAL_STATUS), "session_health": session, "strategies": cards,
             "promotion_gates": ["sufficient_observations", "point_in_time_compliance", "costed_backtest", "positive_out_of_sample", "drawdown_limit", "parameter_stability", "survivorship_review"],
-            "next_phases": {"phase_2": ["quality_value", "quality_momentum", "value_reversal", "fundamental_deterioration", "balance_sheet_risk"], "status": "NOT_IMPLEMENTED"}}
+            "builder_contract": {"fields": ["universe", "data_fields", "transformations", "factors", "weights", "entry_rule", "exit_rule", "risk_rule", "liquidity_rule", "cost_assumptions"],
+                                 "save_status": "DRAFT", "self_promotion_allowed": False, "arbitrary_code_allowed": False},
+            "governance_statements": ["A mathematical signal is not an investment strategy.", "A backtested strategy is not a validated strategy.", "A validated strategy is not automatically executable."]}
 
 
 def backtest(strategy_id: str, config: dict[str, Any] | None = None) -> dict[str, Any]:
