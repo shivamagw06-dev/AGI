@@ -43,6 +43,7 @@ export default function StrategyLab() {
     ['BLOCKED', 'Blocked'],
   ].map(([key, label]) => ({ key, label, rows: strategies.filter((item) => item.category === key) }))), [strategies]);
   const current = strategies.find((item) => item.strategy_id === selected) || strategies[0];
+  const registry = current?.validation_registry;
   const signals = useMemo(() => [...(scan?.signals || current?.signals || [])].sort((a, b) => (SIGNAL_ORDER[a.signal] || 9) - (SIGNAL_ORDER[b.signal] || 9)), [scan, current]);
   const live = scan?.live_market || dashboard?.live_market || health?.live_market;
   const clocks = scan?.clocks || dashboard?.clocks || health?.clocks;
@@ -101,7 +102,7 @@ export default function StrategyLab() {
           {current ? <>
             <section className="sl-strategy-head">
               <div><span className="sl-kicker">{current.family}</span><h2>{current.name}</h2><p>{current.formula}</p></div>
-              <div className="sl-head-status"><Status>{current.data_mode || 'EOD'}</Status><Status>{current.lifecycle}</Status><Status tone="restricted">{current.signal_status || 'BLOCKED'}</Status><span>Completed session {dashboard?.session_health?.latest_completed_session || current.as_of || '—'}</span></div>
+              <div className="sl-head-status"><Status>{current.data_mode || 'EOD'}</Status><Status>{registry?.lifecycle || current.lifecycle}</Status><Status tone={registry?.health === 'HEALTHY' ? 'research' : 'restricted'}>{registry?.health || 'DEGRADED'}</Status><Status tone="restricted">{registry?.execution || current.signal_status || 'BLOCKED'}</Status><span>Completed session {dashboard?.session_health?.latest_completed_session || current.as_of || '—'}</span></div>
             </section>
 
             {!current.calculator_available ? <section className="sl-alert sl-inline"><AlertTriangle size={17} /><span>This family is visible for governance and design review only. Output is blocked: {(current.reason_codes || current.blocked_by || []).join(' · ') || 'STRATEGY_NOT_IMPLEMENTED'}.</span></section> : null}
@@ -132,8 +133,8 @@ export default function StrategyLab() {
             </section>
 
             <section className="sl-validation">
-              <div><span className="sl-kicker">Validation registry</span><h3>Promotion decision: DO NOT DEPLOY</h3><p>A running formula is not evidence of economic validity.</p></div>
-              <ul>{(dashboard?.promotion_gates || []).map((gate) => <li key={gate}><i />{gate.replaceAll('_', ' ')}</li>)}</ul>
+              <div><span className="sl-kicker">Validation registry · {registry?.registry_version || dashboard?.validation_registry?.version || '—'}</span><h3>{registry?.lifecycle || 'EXPERIMENTAL'} / {registry?.health || 'DEGRADED'}</h3><p>{registry?.allowed_use || 'Research only'} · Execution {registry?.execution || 'BLOCKED'}</p><small>{registry?.health_reason}</small></div>
+              <ul>{Object.entries(registry?.evidence || {}).map(([gate, evidence]) => <li key={gate}><i className={evidence?.status === 'PASSED' ? 'pass' : ''} />{gate.replaceAll('_', ' ')} · {evidence?.status || 'MISSING'}</li>)}</ul>
             </section>
 
             <section className="sl-panel">

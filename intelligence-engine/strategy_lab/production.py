@@ -15,6 +15,8 @@ from datetime import datetime, timedelta, timezone
 from typing import Any
 from zoneinfo import ZoneInfo
 
+from .validation_registry import evaluate as evaluate_registry
+
 VERSION = "strategy-lab-governance-v1.1.0"
 LIFECYCLE = (
     "DRAFT", "IMPLEMENTED", "DATA_VALIDATED", "BACKTESTABLE",
@@ -342,6 +344,45 @@ def _reversion(ticker: str, bars: list[dict[str, Any]]) -> dict[str, Any] | None
 CALCULATORS = {"time_series_momentum": _momentum, "trend_following": _trend, "volatility_breakout": _breakout, "mean_reversion": _reversion}
 
 
+def _registry_decision(strategy_id: str, session: dict[str, Any] | None = None) -> dict[str, Any]:
+    item = REGISTRY.get(strategy_id) or {}
+    implemented = strategy_id in CALCULATORS
+    session = session or {}
+    session_passed = session.get("session_status") == "PASS"
+    evidence = {
+        "implementation": {
+            "status": "PASSED" if implemented else "MISSING",
+            "source": "strategy_lab.calculator_registry",
+            "detail": "Deterministic calculator is registered." if implemented else "No calculator is registered.",
+        },
+        "data_freshness": {
+            "status": "PASSED" if session_passed else "MISSING",
+            "observed_at": session.get("latest_completed_session"),
+            "source": "warehouse.daily_market_history",
+            "detail": session.get("session_status") or "No session receipt supplied.",
+        },
+        "data_completeness": {
+            "status": "PASSED" if session_passed else "MISSING",
+            "observed_at": session.get("latest_completed_session"),
+            "source": "strategy_lab.common_session_gate",
+            "detail": {"coverage": session.get("session_coverage"), "threshold": session.get("coverage_threshold")},
+        },
+        "point_in_time": {"status": "PARTIAL", "source": "warehouse", "detail": "Annual fundamentals remain PIT limited."},
+        "corporate_actions": {"status": "MISSING", "source": "warehouse", "detail": "Independent adjustment receipt not recorded."},
+    }
+    requested = "OPERATIONAL" if implemented else "EXPERIMENTAL"
+    health = "HEALTHY" if session_passed else "DEGRADED" if not session else "STALE"
+    reason = "Latest completed session and common-universe coverage passed." if session_passed else "Current session evidence is unavailable or incomplete."
+    return evaluate_registry(
+        strategy_id,
+        requested_lifecycle=requested,
+        evidence=evidence,
+        health=health,
+        health_reason=reason,
+        allowed_use="Mathematical research and candidate prioritisation" if implemented else "Methodology design only",
+    )
+
+
 def _govern_signal(signal: dict[str, Any]) -> dict[str, Any]:
     factor_reasons = list(signal.get("reason_codes") or [])
     gate_reasons = ["PIT_DATA_MISSING", "CORPORATE_ACTION_UNVERIFIED", "BACKTEST_INSUFFICIENT", "COST_FAILURE", "RISK_LIMIT"]
@@ -363,12 +404,13 @@ def health() -> dict[str, Any]:
     return {"ok": True, "status": "RESEARCH_ONLY", "version": VERSION, "phase": 1, "strategies": len(REGISTRY), "warehouse_universe": warehouse.get("count", 0), "strategy_universe": "top_200_by_market_cap", "price_cache_ttl_seconds": _CACHE_TTL_SECONDS, "execution_enabled": False, "promotion_authority": "strategy_validation_gates"}
 
 
-def strategy(strategy_id: str) -> dict[str, Any]:
+def strategy(strategy_id: str, session: dict[str, Any] | None = None) -> dict[str, Any]:
     item = REGISTRY.get(strategy_id)
     operational = strategy_id in CALCULATORS
     return {"ok": bool(item), "strategy_id": strategy_id, **(item or {"error": "unknown_strategy"}), "version": VERSION,
             "data_requirements": (item or {}).get("data_requirements", COMMON_DATA), "calculator_available": operational,
-            "signal_status": "BLOCKED", "trade_eligible": False, "execution_eligible": False}
+            "signal_status": "BLOCKED", "trade_eligible": False, "execution_eligible": False,
+            "validation_registry": _registry_decision(strategy_id, session)}
 
 
 def scan(strategy_id: str, limit: int = 20) -> dict[str, Any]:
@@ -382,7 +424,7 @@ def scan(strategy_id: str, limit: int = 20) -> dict[str, Any]:
     signals = [_govern_signal(signal) for ticker, bars in series.items() if (signal := calculator(ticker, bars)) is not None]
     priority = {"BUY": 4, "SELL": 3, "EXIT": 2, "HOLD": 1}
     signals.sort(key=lambda x: (priority.get(str(x.get("signal")), 0), abs(float(x.get("score") or 0))), reverse=True)
-    return {"ok": True, "strategy": strategy(strategy_id), "as_of": session.get("latest_completed_session"), "session_health": session,
+    return {"ok": True, "strategy": strategy(strategy_id, session), "as_of": session.get("latest_completed_session"), "session_health": session,
             "universe_with_sufficient_history": len(signals), "signals": signals[:max(1, min(limit, 100))], "trade_eligible_count": 0,
             "policy": "Mathematical research output only; PIT, corporate-action, backtest, cost, risk and paper gates remain blocked."}
 
@@ -393,16 +435,17 @@ def dashboard(limit: int = 5) -> dict[str, Any]:
     for key in REGISTRY:
         calculator = CALCULATORS.get(key)
         if not calculator:
-            cards.append({**strategy(key), "as_of": session.get("latest_completed_session"), "universe": 0, "signal_count": 0,
+            cards.append({**strategy(key, session), "as_of": session.get("latest_completed_session"), "universe": 0, "signal_count": 0,
                           "signals": [], "reason_codes": list(REGISTRY[key].get("blocked_by") or [])})
             continue
         all_signals = [_govern_signal(signal) for ticker, bars in series.items() if (signal := calculator(ticker, bars)) is not None]
         priority = {"BUY": 4, "SELL": 3, "EXIT": 2, "HOLD": 1}
         all_signals.sort(key=lambda x: (priority.get(str(x.get("signal")), 0), abs(float(x.get("score") or 0))), reverse=True)
         rows = all_signals[:max(1, min(limit, 20))]
-        cards.append({**strategy(key), "as_of": max((s["timestamp"] for s in all_signals), default=None), "universe": len(all_signals), "signal_count": len(rows), "signals": rows})
+        cards.append({**strategy(key, session), "as_of": max((s["timestamp"] for s in all_signals), default=None), "universe": len(all_signals), "signal_count": len(rows), "signals": rows})
     return {"ok": True, "generated_at": datetime.now(timezone.utc).isoformat(), "version": VERSION, "admin_only": True, "research_only": True, "execution_enabled": False,
             "global_execution_status": "BLOCKED", "lifecycle": list(LIFECYCLE), "signal_statuses": list(SIGNAL_STATUS), "session_health": session, "strategies": cards,
+            "validation_registry": {"authority": "VALIDATION_REGISTRY", "version": "strategy-validation-registry-v2.0.0", "execution_allowed": 0},
             "promotion_gates": ["sufficient_observations", "point_in_time_compliance", "costed_backtest", "positive_out_of_sample", "drawdown_limit", "parameter_stability", "survivorship_review"],
             "builder_contract": {"fields": ["universe", "data_fields", "transformations", "factors", "weights", "entry_rule", "exit_rule", "risk_rule", "liquidity_rule", "cost_assumptions"],
                                  "save_status": "DRAFT", "self_promotion_allowed": False, "arbitrary_code_allowed": False},

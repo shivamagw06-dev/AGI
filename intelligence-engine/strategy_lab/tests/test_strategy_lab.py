@@ -13,7 +13,9 @@ def bars(n=300, growth=1.002):
 def test_phase_one_registry_is_research_only():
     item = strategy("trend_following")
     assert item["ok"] and item["trade_eligible"] is False
-    assert item["lifecycle"] == "BACKTESTING"
+    assert item["lifecycle"] == "IMPLEMENTED"
+    assert item["validation_registry"]["authority"] == "VALIDATION_REGISTRY"
+    assert item["validation_registry"]["execution"] == "BLOCKED"
 
 
 def test_trend_and_momentum_explain_real_fields():
@@ -23,7 +25,7 @@ def test_trend_and_momentum_explain_real_fields():
     assert trend["stop"] < trend["entry"]
     assert "sma200" in trend["factor_contributions"]
     assert momentum["signal"] == "BUY"
-    assert momentum["eligibility"] == "RESEARCH_ONLY"
+    assert momentum["eligibility"] == "BLOCKED"
 
 
 def test_breakout_and_reversion_fail_closed_or_explain():

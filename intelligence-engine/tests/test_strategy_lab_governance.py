@@ -56,3 +56,17 @@ def test_signal_governance_cannot_self_promote():
     assert signal["governance"]["execution"] == "BLOCKED"
     assert "BACKTEST_INSUFFICIENT" in signal["reason_codes"]
     assert "CORPORATE_ACTION_UNVERIFIED" in signal["reason_codes"]
+
+
+def test_registry_separates_lifecycle_from_current_health():
+    decision = production._registry_decision("trend_following", {
+        "session_status": "PASS",
+        "latest_completed_session": "2026-08-14",
+        "session_coverage": 180,
+        "coverage_threshold": 160,
+    })
+
+    assert decision["requested_lifecycle"] == "OPERATIONAL"
+    assert decision["lifecycle"] == "OPERATIONAL"
+    assert decision["health"] == "HEALTHY"
+    assert decision["execution"] == "BLOCKED"
