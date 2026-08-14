@@ -4950,6 +4950,12 @@ async def portfolio_intelligence_quality_gates():
     return quality_gates()
 
 
+@router.get("/portfolio-intelligence/strategy-gate/{strategy_id}")
+async def portfolio_intelligence_strategy_gate(strategy_id: str):
+    from portfolio_intelligence.production import strategy_execution_gate
+    return await run_in_threadpool(strategy_execution_gate, strategy_id)
+
+
 @router.get("/admin/portfolio-intelligence", response_class=HTMLResponse)
 async def admin_portfolio_intelligence():
     from portfolio_intelligence.production import admin_page

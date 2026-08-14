@@ -25,6 +25,39 @@ def health() -> dict[str, Any]:
     }
 
 
+def strategy_execution_gate(strategy_id: str) -> dict[str, Any]:
+    """Fail-closed bridge from strategy validation into portfolio construction."""
+    from strategy_lab.production import REGISTRY
+    from strategy_lab.registry_store import load_latest_evidence
+    from strategy_lab.validation_registry import evaluate
+
+    key = str(strategy_id or "").strip().lower()
+    if key not in REGISTRY:
+        return {"ok": False, "strategy_id": key, "execution_eligible": False,
+                "decision": "BLOCKED", "reason": "UNKNOWN_STRATEGY"}
+    evidence = load_latest_evidence(force=True).get(key, {})
+    decision = evaluate(
+        key,
+        requested_lifecycle="PRODUCTION",
+        evidence=evidence,
+        health="HEALTHY",
+        allowed_use="Portfolio construction only after independent production approval",
+    )
+    allowed = decision.get("execution") == "ALLOWED" and decision.get("lifecycle") == "PRODUCTION"
+    return {
+        "ok": True,
+        "strategy_id": key,
+        "strategy_name": REGISTRY[key]["name"],
+        "execution_eligible": allowed,
+        "decision": "ALLOWED" if allowed else "BLOCKED",
+        "supported_lifecycle": decision.get("supported_lifecycle"),
+        "failed_gates": decision.get("failed_gates") or [],
+        "missing_gates": decision.get("missing_gates") or [],
+        "validation_registry": decision,
+        "rule": "Research output cannot size or alter a portfolio unless the Validation Registry permits execution.",
+    }
+
+
 def dashboard() -> dict[str, Any]:
     sample = analyse_portfolio(default_portfolio_id(), candidate="KOTAKBANK")
     return {
