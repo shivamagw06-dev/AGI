@@ -12,3 +12,16 @@ test('live enrichment preserves EOD prices and adds a separately labelled quote'
   assert.equal(result.clocks.signal.completed_session, '2026-08-13');
   assert.equal(result.clocks.market.local_time, '12:01:01 IST');
 });
+
+test('health payloads with non-array strategy summaries do not fail enrichment', () => {
+  const liveSnapshot = { provider: 'upstox', status: 'connected', quotes: {} };
+  const result = enrichStrategyLabWithLiveMarket({ ok: true, strategies: 14 }, { liveSnapshot });
+  assert.equal(result.ok, true);
+  assert.deepEqual(result.live_market, liveSnapshot);
+});
+
+test('object strategy registries are accepted', () => {
+  const liveSnapshot = { provider: 'upstox', status: 'connected', quotes: { RADICO: { ltp: 4617 } } };
+  const result = enrichStrategyLabWithLiveMarket({ strategies: { momentum: { signals: [{ ticker: 'RADICO', prices: {} }] } } }, { liveSnapshot });
+  assert.equal(result.strategies.momentum.signals[0].prices.live_price, 4617);
+});

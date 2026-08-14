@@ -2,7 +2,12 @@ import { getLiveAlphaMarketSnapshot } from './liveAlphaRuntime.js';
 
 function signalRows(payload) {
   if (Array.isArray(payload?.signals)) return payload.signals;
-  return (payload?.strategies || []).flatMap((strategy) => strategy?.signals || []);
+  const strategies = Array.isArray(payload?.strategies)
+    ? payload.strategies
+    : payload?.strategies && typeof payload.strategies === 'object'
+      ? Object.values(payload.strategies)
+      : [];
+  return strategies.flatMap((strategy) => Array.isArray(strategy?.signals) ? strategy.signals : []);
 }
 
 function marketClock(now = new Date()) {
