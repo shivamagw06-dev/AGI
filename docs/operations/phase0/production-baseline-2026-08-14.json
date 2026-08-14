@@ -1,0 +1,262 @@
+{
+  "captured_at": "2026-08-14T09:12:52.036966+00:00",
+  "freeze": {
+    "allowed_changes": [
+      "reliability",
+      "data_quality",
+      "coverage",
+      "observability",
+      "validation",
+      "security",
+      "performance",
+      "bug_fixes"
+    ],
+    "new_engines": false,
+    "new_product_pages": false,
+    "new_strategy_families": false
+  },
+  "probes": {
+    "ask_pipeline": {
+      "error": "Expecting value: line 1 column 1 (char 0)",
+      "http_status": null,
+      "latency_ms": 8043.55,
+      "ok": false,
+      "url": "https://agib-intelligence-engine.onrender.com/v1/ask/pipeline"
+    },
+    "composite_shadow": {
+      "error": "Expecting value: line 1 column 1 (char 0)",
+      "http_status": null,
+      "latency_ms": 8030.87,
+      "ok": false,
+      "url": "https://agib-intelligence-engine.onrender.com/v1/l4/health"
+    },
+    "continuous_evaluation": {
+      "error": "Expecting value: line 1 column 1 (char 0)",
+      "http_status": null,
+      "latency_ms": 8039.15,
+      "ok": false,
+      "url": "https://agib-intelligence-engine.onrender.com/v1/cre/health"
+    },
+    "continuous_gather": {
+      "error": "Expecting value: line 1 column 1 (char 0)",
+      "http_status": null,
+      "latency_ms": 8048.07,
+      "ok": false,
+      "url": "https://agib-intelligence-engine.onrender.com/v1/continuous-gather-learn/health"
+    },
+    "cross_sectional_alpha": {
+      "error": "Expecting value: line 1 column 1 (char 0)",
+      "http_status": null,
+      "latency_ms": 8039.04,
+      "ok": false,
+      "url": "https://agib-intelligence-engine.onrender.com/v1/e03/health"
+    },
+    "dossiers": {
+      "error": "Expecting value: line 1 column 1 (char 0)",
+      "http_status": null,
+      "latency_ms": 8036.68,
+      "ok": false,
+      "url": "https://agib-intelligence-engine.onrender.com/v1/company-dossier/health"
+    },
+    "engine": {
+      "error": "Expecting value: line 1 column 1 (char 0)",
+      "http_status": null,
+      "latency_ms": 8051.25,
+      "ok": false,
+      "url": "https://agib-intelligence-engine.onrender.com/v1/health"
+    },
+    "events": {
+      "error": "Expecting value: line 1 column 1 (char 0)",
+      "http_status": null,
+      "latency_ms": 8041.66,
+      "ok": false,
+      "url": "https://agib-intelligence-engine.onrender.com/v1/e05/health"
+    },
+    "factor_style": {
+      "error": "Expecting value: line 1 column 1 (char 0)",
+      "http_status": null,
+      "latency_ms": 8036.26,
+      "ok": false,
+      "url": "https://agib-intelligence-engine.onrender.com/v1/e02/health"
+    },
+    "features": {
+      "error": "Expecting value: line 1 column 1 (char 0)",
+      "http_status": null,
+      "latency_ms": 8056.36,
+      "ok": false,
+      "url": "https://agib-intelligence-engine.onrender.com/v1/features/health"
+    },
+    "forecast": {
+      "error": "Expecting value: line 1 column 1 (char 0)",
+      "http_status": null,
+      "latency_ms": 8042.18,
+      "ok": false,
+      "url": "https://agib-intelligence-engine.onrender.com/v1/fie/health"
+    },
+    "forecast_runtime": {
+      "error": "Expecting value: line 1 column 1 (char 0)",
+      "http_status": null,
+      "latency_ms": 8038.15,
+      "ok": false,
+      "url": "https://agib-intelligence-engine.onrender.com/v1/fie/runtime/status"
+    },
+    "fundamental_ls": {
+      "error": "Expecting value: line 1 column 1 (char 0)",
+      "http_status": null,
+      "latency_ms": 8028.49,
+      "ok": false,
+      "url": "https://agib-intelligence-engine.onrender.com/v1/e13/health"
+    },
+    "knowledge_memory": {
+      "error": "Expecting value: line 1 column 1 (char 0)",
+      "http_status": null,
+      "latency_ms": 8036.77,
+      "ok": false,
+      "url": "https://agib-intelligence-engine.onrender.com/v1/kip/health"
+    },
+    "macro_regime": {
+      "error": "Expecting value: line 1 column 1 (char 0)",
+      "http_status": null,
+      "latency_ms": 8037.15,
+      "ok": false,
+      "url": "https://agib-intelligence-engine.onrender.com/v1/e01/health"
+    },
+    "market_data": {
+      "error": "Expecting value: line 1 column 1 (char 0)",
+      "http_status": null,
+      "latency_ms": 8047.83,
+      "ok": false,
+      "url": "https://agib-intelligence-engine.onrender.com/v1/market-data/health"
+    },
+    "portfolio_construction": {
+      "error": "Expecting value: line 1 column 1 (char 0)",
+      "http_status": null,
+      "latency_ms": 8039.79,
+      "ok": false,
+      "url": "https://agib-intelligence-engine.onrender.com/v1/e10/health"
+    },
+    "relative_value": {
+      "error": "Expecting value: line 1 column 1 (char 0)",
+      "http_status": null,
+      "latency_ms": 8036.23,
+      "ok": false,
+      "url": "https://agib-intelligence-engine.onrender.com/v1/e04/health"
+    },
+    "risk_overlay": {
+      "error": "Expecting value: line 1 column 1 (char 0)",
+      "http_status": null,
+      "latency_ms": 8027.21,
+      "ok": false,
+      "url": "https://agib-intelligence-engine.onrender.com/v1/e14/health"
+    },
+    "sentiment": {
+      "error": "Expecting value: line 1 column 1 (char 0)",
+      "http_status": null,
+      "latency_ms": 8035.26,
+      "ok": false,
+      "url": "https://agib-intelligence-engine.onrender.com/v1/e11/health"
+    },
+    "trend": {
+      "error": "Expecting value: line 1 column 1 (char 0)",
+      "http_status": null,
+      "latency_ms": 8034.05,
+      "ok": false,
+      "url": "https://agib-intelligence-engine.onrender.com/v1/e09/health"
+    },
+    "validation": {
+      "error": "Expecting value: line 1 column 1 (char 0)",
+      "http_status": null,
+      "latency_ms": 8040.47,
+      "ok": false,
+      "url": "https://agib-intelligence-engine.onrender.com/v1/validation/health"
+    },
+    "volatility": {
+      "error": "Expecting value: line 1 column 1 (char 0)",
+      "http_status": null,
+      "latency_ms": 8034.81,
+      "ok": false,
+      "url": "https://agib-intelligence-engine.onrender.com/v1/e08/health"
+    },
+    "warehouse": {
+      "error": "Expecting value: line 1 column 1 (char 0)",
+      "http_status": null,
+      "latency_ms": 8052.36,
+      "ok": false,
+      "url": "https://agib-intelligence-engine.onrender.com/v1/warehouse/health"
+    },
+    "warehouse_backfill": {
+      "error": "Expecting value: line 1 column 1 (char 0)",
+      "http_status": null,
+      "latency_ms": 8040.36,
+      "ok": false,
+      "url": "https://agib-intelligence-engine.onrender.com/v1/warehouse/backfill/status"
+    }
+  },
+  "schema_version": "agi-phase0-baseline-v1",
+  "source": {
+    "branch": "main",
+    "commit": "feedea5646778a7d6a85c9244d53888d5db51b41",
+    "commit_subject": "Keep intelligence API responsive during heavy jobs",
+    "engine_base_url": "https://agib-intelligence-engine.onrender.com/v1",
+    "repository": "shivamagw06-dev/AGI"
+  },
+  "summary": {
+    "continuous_gather": {
+      "effective_gather": null,
+      "heartbeat": null,
+      "sidecar_age_sec": null,
+      "sidecar_fresh": null,
+      "status": null
+    },
+    "engine_run_counts": {
+      "composite_shadow": 0,
+      "cross_sectional_alpha": 0,
+      "events": 0,
+      "factor_style": 0,
+      "fundamental_ls": 0,
+      "macro_regime": 0,
+      "portfolio_construction": 0,
+      "relative_value": 0,
+      "risk_overlay": 0,
+      "sentiment": 0,
+      "trend": 0,
+      "volatility": 0
+    },
+    "forecast_coverage": {},
+    "knowledge_memory": {},
+    "probe_failures": [
+      "market_data",
+      "engine",
+      "knowledge_memory",
+      "warehouse_backfill",
+      "ask_pipeline",
+      "forecast",
+      "warehouse",
+      "features",
+      "continuous_gather",
+      "forecast_runtime",
+      "dossiers",
+      "validation",
+      "continuous_evaluation",
+      "factor_style",
+      "macro_regime",
+      "cross_sectional_alpha",
+      "volatility",
+      "trend",
+      "relative_value",
+      "sentiment",
+      "portfolio_construction",
+      "events",
+      "fundamental_ls",
+      "risk_overlay",
+      "composite_shadow"
+    ],
+    "warehouse": {
+      "populated_tabs": 0,
+      "row_counts": {},
+      "status": null,
+      "tabs": null,
+      "total_rows": null
+    }
+  }
+}
