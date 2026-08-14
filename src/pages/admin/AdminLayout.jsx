@@ -127,6 +127,7 @@ const navItems = [
   { to: '/admin/knowledge-graph', label: 'Knowledge Graph', icon: Network },
   { to: '/admin/institutional-memory', label: 'Learning & Memory', icon: BookMarked },
   { to: '/admin/simulation-lab', label: 'Simulation Lab', icon: FlaskConical },
+  { to: '/admin/strategy-lab', label: 'Strategy Lab', icon: LineChart },
   { to: '/admin/decision-engine-v2', label: 'Decision Engine V2', icon: Gavel },
   { to: '/admin/institutional-intelligence', label: 'Institutional Intelligence', icon: Activity },
   { to: '/admin/company-monitor', label: 'Company Monitor', icon: Bell },
