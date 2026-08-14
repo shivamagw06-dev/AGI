@@ -88,7 +88,7 @@ def test_latest_evidence_filters_missing_before_server_limit(monkeypatch):
     registry_store.load_latest_evidence(force=True)
 
     assert "status=neq.MISSING" in queries[0]
-    assert queries[0].index("status=neq.MISSING") < queries[0].index("limit=1000")
+    assert queries[0].index("status=neq.MISSING") < queries[0].index("limit=10000")
 
 
 def test_persist_decisions_does_not_append_missing_evidence(monkeypatch):
