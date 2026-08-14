@@ -11,6 +11,7 @@ from fastapi.responses import JSONResponse
 from app.api.routes import router
 from app.core.config import get_settings
 from app.core.logging import configure_logging, get_logger
+from app.core.route_offload import install_legacy_route_offload
 from app.agents.registry import bootstrap_registry
 
 configure_logging()
@@ -90,20 +91,36 @@ async def lifespan(_app: FastAPI):
             )
     except Exception as exc:
         log.warning("capiq_migration_priority_check_failed", extra={"error": str(exc)[:160]})
-    # Soft-seed Institutional Stack (FIL corpus + FDI/MII refresh) — never blocks startup
+    # Soft-seed Institutional Stack (FIL corpus + FDI/MII refresh) without
+    # delaying HTTP startup. This performs synchronous warehouse/model work.
     try:
         if getattr(settings, "institutional_stack", True) and not migration_priority:
+            import threading
+
             from institutional_stack.production import bootstrap_stack
 
-            boot = bootstrap_stack()
-            log.info(
-                "institutional_stack_bootstrapped",
-                extra={
-                    "ok": boot.get("ok"),
-                    "documents": (boot.get("seed") or {}).get("document_count"),
-                    "tickers": boot.get("tickers"),
-                },
-            )
+            def _run_institutional_bootstrap() -> None:
+                try:
+                    boot = bootstrap_stack()
+                    log.info(
+                        "institutional_stack_bootstrapped",
+                        extra={
+                            "ok": boot.get("ok"),
+                            "documents": (boot.get("seed") or {}).get("document_count"),
+                            "tickers": boot.get("tickers"),
+                        },
+                    )
+                except Exception as exc:  # pragma: no cover - defensive startup path
+                    log.warning(
+                        "institutional_stack_bootstrap_failed",
+                        extra={"error": str(exc)[:160]},
+                    )
+
+            threading.Thread(
+                target=_run_institutional_bootstrap,
+                name="institutional-stack-bootstrap",
+                daemon=True,
+            ).start()
     except Exception as exc:
         log.warning("institutional_stack_bootstrap_failed", extra={"error": str(exc)[:160]})
     # IKT Capital IQ company-reference seed (bulk-uploaded screener exports,
@@ -367,6 +384,15 @@ app.add_middleware(
     allow_headers=["Accept", "Content-Type"],
 )
 app.include_router(router)
+
+# Keep lightweight liveness endpoints on the main event loop. The remaining
+# legacy API surface is offloaded because its async handlers frequently invoke
+# synchronous warehouse, network and model operations.
+_offloaded_routes = install_legacy_route_offload(
+    app,
+    exempt_paths={"/v1/health"},
+)
+log.info("legacy_api_route_offload_installed", extra={"routes": _offloaded_routes})
 
 
 _MIGRATION_ALLOWLIST = (
