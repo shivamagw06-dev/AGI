@@ -326,8 +326,23 @@ async def test_market_data_health_endpoint():
         body = response.json()
         assert "providers" in body
         assert "metrics" in body
+        assert body["status"] in {"verified", "configured_unverified", "unavailable"}
+        assert isinstance(body["live_data_verified"], bool)
+        assert all("verified_live" in provider for provider in body["providers"])
         ids = {p["provider_id"] for p in body["providers"]}
         assert {"indianapi", "finnhub", "fmp"} <= ids
+
+
+@pytest.mark.asyncio
+async def test_engine_health_separates_availability_from_outputs():
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        response = await client.get("/v1/e02/health")
+        assert response.status_code == 200
+        body = response.json()
+        assert body["available"] is True
+        assert isinstance(body["operational"], bool)
+        assert body["operational_status"] in {"operational", "ready_no_outputs", "disabled"}
 
 
 def test_registry_orders_by_priority():

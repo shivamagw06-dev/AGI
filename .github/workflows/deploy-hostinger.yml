@@ -243,3 +243,18 @@ jobs:
           fi
           echo "::warning::FTP secondary publish failed after 3 retries (Hostinger control-socket timeout). Primary Hostinger publish is Git sync of index.html + /assets (already committed above when rebuild ran). Re-run this workflow if FTP root must also be refreshed."
           # Do not fail the job: Horizons Git sync is the production document root.
+
+      - name: Verify public website is reachable
+        run: |
+          set -euo pipefail
+          for attempt in 1 2 3 4 5; do
+            code="$(curl -L --connect-timeout 10 --max-time 25 -sS -o /tmp/agi-home.html -w '%{http_code}' https://agarwalglobalinvestments.com/ || true)"
+            if [ "${code}" = "200" ] && grep -q '<div id="root"' /tmp/agi-home.html; then
+              echo "Public website verified on attempt ${attempt}."
+              exit 0
+            fi
+            echo "Website check ${attempt}/5 failed (HTTP ${code:-unreachable}); retrying."
+            sleep 20
+          done
+          echo "::error::Deployment uploaded, but agarwalglobalinvestments.com is not reachable. Check Hostinger server status, SSL and domain routing."
+          exit 1

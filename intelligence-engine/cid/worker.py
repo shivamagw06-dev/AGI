@@ -39,10 +39,48 @@ def write_status(payload: dict[str, Any]) -> None:
 
 
 def read_status() -> dict[str, Any]:
+    paused = os.environ.get("CID_DOSSIER_PAUSED", "true").strip().lower() in {"1", "true", "yes"}
+    enabled = os.environ.get("CID_DOSSIER_WORKER_ENABLED", "true").strip().lower() not in {
+        "0",
+        "false",
+        "no",
+    }
     try:
-        return json.loads(_status_path().read_text())
+        payload = json.loads(_status_path().read_text())
     except (FileNotFoundError, json.JSONDecodeError, OSError):
-        return {"status": "not_started", "workers": 0}
+        payload = {"status": "not_started", "workers": 0}
+
+    updated_at = str(payload.get("updated_at") or "")
+    age_seconds: float | None = None
+    try:
+        age_seconds = max(
+            0.0,
+            (
+                datetime.now(timezone.utc)
+                - datetime.fromisoformat(updated_at.replace("Z", "+00:00"))
+            ).total_seconds(),
+        )
+    except (TypeError, ValueError):
+        pass
+
+    if paused or not enabled:
+        return {
+            **payload,
+            "status": "paused" if paused else "disabled",
+            "workers": 0,
+            "active": [],
+            "configured_enabled": enabled,
+            "configured_paused": paused,
+            "snapshot_age_seconds": round(age_seconds, 1) if age_seconds is not None else None,
+            "snapshot_stale": True,
+        }
+    return {
+        **payload,
+        "configured_enabled": enabled,
+        "configured_paused": paused,
+        "snapshot_age_seconds": round(age_seconds, 1) if age_seconds is not None else None,
+        "snapshot_stale": age_seconds is None or age_seconds > 900,
+    }
 
 
 def warehouse_universe() -> list[str]:

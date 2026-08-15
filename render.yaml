@@ -172,9 +172,9 @@ services:
       - key: FIE_SIDECAR
         value: "true"
       - key: FIE_BATCH
-        value: "1"
+        value: "2"
       - key: FIE_INTERVAL_SECONDS
-        value: "180"
+        value: "120"
       - key: STRATEGY_REGISTRY_REFRESH_SECONDS
         value: "1800"
       - key: STRATEGY_VALIDATION_INTERVAL_SECONDS
@@ -182,9 +182,9 @@ services:
       - key: ANSWER_PACK_MATERIALIZER_ENABLED
         value: "true"
       - key: ANSWER_PACK_MATERIALIZER_INTERVAL_SECONDS
-        value: "900"
+        value: "600"
       - key: ANSWER_PACK_MATERIALIZER_BATCH
-        value: "5"
+        value: "10"
       # Durable data roots.  KIP keeps research objects; the warehouse keeps
       # imported financial statements, valuation snapshots and live prices.
       - key: KIP_DATA_DIR

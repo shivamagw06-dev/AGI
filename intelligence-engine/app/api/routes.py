@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+from concurrent.futures import ThreadPoolExecutor
 from typing import Any
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Query
@@ -111,6 +112,7 @@ _market_data = MarketDataClient.from_settings(get_settings())
 _features = FeatureRegistryService()
 _orch_ledger = OrchLedger()
 _l2 = L2FeatureBuildService(_features, orch_ledger=_orch_ledger)
+_l2_drain_pool = ThreadPoolExecutor(max_workers=1, thread_name_prefix="orch-l2-drain")
 _e01 = E01Service(_features, orch_ledger=_orch_ledger)
 _e14 = E14Service(_features, e01=_e01, orch_ledger=_orch_ledger)
 _e02 = E02Service(_features, e01=_e01, e14=_e14, orch_ledger=_orch_ledger)
@@ -128,6 +130,31 @@ _l4 = L4Service(
 )
 _e10 = E10Service(l4=_l4, e14=_e14, e02=_e02, orch_ledger=_orch_ledger)
 _validation = ValidationService()
+
+
+def _engine_health(service: Any) -> dict[str, Any]:
+    """Separate process availability from evidence that an engine has run."""
+    payload = service.health()
+    metrics = payload.get("metrics") or {}
+    store = payload.get("store") or {}
+    runs = int(metrics.get("runs") or 0)
+    stored_outputs = sum(
+        int(value or 0)
+        for value in store.values()
+        if isinstance(value, (int, float)) and not isinstance(value, bool)
+    )
+    operational = runs > 0 and stored_outputs > 0
+    return {
+        **payload,
+        "available": bool(payload.get("ok")),
+        "operational": operational,
+        "operational_status": (
+            "operational" if operational
+            else "ready_no_outputs" if payload.get("ok")
+            else "disabled"
+        ),
+        "last_run_verified": runs > 0,
+    }
 _cre = CREService()
 _kip = KipService()
 _rsp = RspService(kip=_kip)
@@ -252,8 +279,13 @@ except Exception:
 def _wire_market_data_to_l2() -> None:
     """MarketData publishes updates; ORCH L2 marks dirty + schedules builds."""
 
+    def _drain_queued_updates() -> None:
+        while _l2.drain(parallel=True, max_workers=4) is not None:
+            pass
+
     def _on_update(event: MarketDataUpdateEvent) -> None:
         _l2.on_market_data_update(event, drain=False)
+        _l2_drain_pool.submit(_drain_queued_updates)
 
     _market_data.on_update(_on_update)
 
@@ -379,7 +411,7 @@ async def orch_l2_health():
 @router.get("/e01/health")
 async def e01_health():
     """E01 Macro & Regime Engine health (E01-001–005 P0)."""
-    return _e01.health()
+    return _engine_health(_e01)
 
 
 @router.get("/e01/state")
@@ -400,7 +432,7 @@ async def e01_history(limit: int = 50):
 @router.get("/e14/health")
 async def e14_health():
     """E14 Risk & Crowding Overlay health (E14-001–005 P0)."""
-    return _e14.health()
+    return _engine_health(_e14)
 
 
 @router.get("/e14/state")
@@ -421,7 +453,7 @@ async def e14_history(limit: int = 50):
 @router.get("/e02/health")
 async def e02_health():
     """E02 Factor & Style Engine health (E02-001–005 P0)."""
-    return _e02.health()
+    return _engine_health(_e02)
 
 
 @router.get("/e02/exposure/{symbol}")
@@ -442,7 +474,7 @@ async def e02_history(symbol: str, limit: int = 50):
 @router.get("/e13/health")
 async def e13_health():
     """E13 Equity Fundamental L/S Engine health (E13-001–005 P0)."""
-    return _e13.health()
+    return _engine_health(_e13)
 
 
 @router.get("/e13/fundamental/{symbol}")
@@ -463,7 +495,7 @@ async def e13_history(symbol: str, limit: int = 50):
 @router.get("/e08/health")
 async def e08_health():
     """E08 Volatility & Options Intelligence health (E08-001–005 P0)."""
-    return _e08.health()
+    return _engine_health(_e08)
 
 
 @router.get("/e08/state/{symbol}")
@@ -484,7 +516,7 @@ async def e08_history(symbol: str, limit: int = 50):
 @router.get("/e09/health")
 async def e09_health():
     """E09 CTA Trend Engine health (E09-001–005 P0)."""
-    return _e09.health()
+    return _engine_health(_e09)
 
 
 @router.get("/e09/state/{symbol}")
@@ -505,7 +537,7 @@ async def e09_history(symbol: str, limit: int = 50):
 @router.get("/e04/health")
 async def e04_health():
     """E04 Statistical Arbitrage & Relative Value health (E04-001–005 P0)."""
-    return _e04.health()
+    return _engine_health(_e04)
 
 
 @router.get("/e04/state/{pair}")
@@ -526,7 +558,7 @@ async def e04_history(pair: str, limit: int = 50):
 @router.get("/e05/health")
 async def e05_health():
     """E05 Event-Driven & Special Situations health (E05-001–005 P0)."""
-    return _e05.health()
+    return _engine_health(_e05)
 
 
 @router.get("/e05/events/{symbol}")
@@ -547,7 +579,7 @@ async def e05_history(symbol: str, limit: int = 50):
 @router.get("/e11/health")
 async def e11_health():
     """E11 Sentiment & Alternative Data health (E11-001–005 P0)."""
-    return _e11.health()
+    return _engine_health(_e11)
 
 
 @router.get("/e11/sentiment/{symbol}")
@@ -577,7 +609,7 @@ async def e11_history(symbol: str, limit: int = 50):
 @router.get("/e03/health")
 async def e03_health():
     """E03 Cross-Sectional Quant Engine health (E03-001–005 P0/M0)."""
-    return _e03.health()
+    return _engine_health(_e03)
 
 
 @router.get("/e03/alpha/{symbol}")
@@ -607,7 +639,7 @@ async def e03_parity():
 @router.get("/l4/health")
 async def l4_health():
     """L4 Composite Intelligence health (L4-001–005 P0 Shadow)."""
-    return _l4.health()
+    return _engine_health(_l4)
 
 
 @router.get("/l4/opinion/{symbol}")
@@ -628,7 +660,7 @@ async def l4_history(symbol: str, limit: int = 50):
 @router.get("/e10/health")
 async def e10_health():
     """E10 Portfolio Construction health (E10-001–005 P0)."""
-    return _e10.health()
+    return _engine_health(_e10)
 
 
 @router.get("/e10/portfolio")

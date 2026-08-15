@@ -17,12 +17,12 @@ if str(ROOT) not in sys.path:
 def main() -> int:
     os.environ["AGI_ROLE"] = "gather_worker"
     os.environ.setdefault("FIE_RUNTIME", "true")
-    os.environ.setdefault("FIE_BATCH", "1")
-    os.environ.setdefault("FIE_INTERVAL_SECONDS", "180")
+    os.environ.setdefault("FIE_BATCH", "2")
+    os.environ.setdefault("FIE_INTERVAL_SECONDS", "120")
     os.environ.setdefault("STRATEGY_REGISTRY_REFRESH_SECONDS", "1800")
     os.environ.setdefault("ANSWER_PACK_MATERIALIZER_ENABLED", "true")
-    os.environ.setdefault("ANSWER_PACK_MATERIALIZER_INTERVAL_SECONDS", "900")
-    os.environ.setdefault("ANSWER_PACK_MATERIALIZER_BATCH", "5")
+    os.environ.setdefault("ANSWER_PACK_MATERIALIZER_INTERVAL_SECONDS", "600")
+    os.environ.setdefault("ANSWER_PACK_MATERIALIZER_BATCH", "10")
 
     from app.core.logging import configure_logging, get_logger
     from continuous_gather_learn.persist import write_gather_heartbeat
@@ -43,7 +43,7 @@ def main() -> int:
             float(os.environ["ANSWER_PACK_MATERIALIZER_INTERVAL_SECONDS"]),
         )
     except (TypeError, ValueError):
-        answer_pack_interval = 900.0
+        answer_pack_interval = 600.0
     stopping = {"value": False}
 
     def handle_stop(signum, _frame):  # noqa: ANN001
@@ -106,7 +106,7 @@ def main() -> int:
                 answer_pack_status = materialize_batch(
                     batch_size=max(
                         1,
-                        int(os.environ.get("ANSWER_PACK_MATERIALIZER_BATCH") or 5),
+                        int(os.environ.get("ANSWER_PACK_MATERIALIZER_BATCH") or 10),
                     ),
                     start_cursor=int(checkpoint.get("next_cursor") or 0),
                 )
