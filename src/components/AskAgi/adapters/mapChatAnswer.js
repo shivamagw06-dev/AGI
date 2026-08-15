@@ -20,10 +20,31 @@ import {
 
 function asList(v, n = 8) {
   if (!Array.isArray(v)) return [];
+  const seen = new Set();
   return v
     .map((x) => (typeof x === 'string' ? x : x?.text || x?.title || x?.label || x?.risk || ''))
     .filter(Boolean)
+    .map((x) => String(x).replace(/\s+/g, ' ').trim())
+    .filter((x) => {
+      const key = x.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+      if (!key || seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    })
     .slice(0, n);
+}
+
+function cleanClientLead(value = '') {
+  return String(value || '')
+    .replace(/\s*\(committee vote[^)]*\)/gi, '')
+    .replace(/\s*Committee vote\s+\d+\s*\/\s*\d+\s*[→-]+\s*[^.]+\.?/gi, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function labelledScore(text = '', label = '') {
+  const match = String(text || '').match(new RegExp(`${label}\\s+([^;,.]+)`, 'i'));
+  return match?.[1]?.trim() || null;
 }
 
 function asParagraphs(values, n = 8) {
@@ -290,23 +311,7 @@ export function mapChatAnswer(pack) {
     { id: 'forecast', label: 'Forecast Intelligence', section: 'scenarios' },
   ];
 
-  const scores = evidenceUnavailable ? {
-    business: null,
-    financial: null,
-    growth: null,
-    valuation: null,
-    risk: null,
-    conviction: null,
-  } : {
-    business: vm.kpis?.find((k) => /business|quality/i.test(k.label))?.value || null,
-    financial: vm.kpis?.find((k) => /financial|cash|roe/i.test(k.label))?.value || null,
-    growth: vm.kpis?.find((k) => /growth|momentum/i.test(k.label))?.value || null,
-    valuation: vm.kpis?.find((k) => /valuation|multiple/i.test(k.label))?.value || null,
-    risk: vm.risks?.[0]?.severity || vm.risks?.[0]?.impact || 'Watch',
-    conviction: vm.conviction || view,
-  };
-
-  const directAnswer = dedupeAnswerText(evidenceUnavailable
+  const rawLead = evidenceUnavailable
     ? unavailableText
     : (
       aicSections.executive_summary ||
@@ -315,7 +320,26 @@ export function mapChatAnswer(pack) {
       vm.executive ||
       vm.conclusion ||
       unavailableText
-    ));
+    );
+  const cleanedLead = cleanClientLead(rawLead);
+
+  const scores = evidenceUnavailable ? {
+    business: null,
+    financial: null,
+    growth: null,
+    valuation: null,
+    risk: null,
+    conviction: null,
+  } : {
+    business: labelledScore(cleanedLead, 'Business quality'),
+    financial: labelledScore(cleanedLead, 'financials?'),
+    growth: null,
+    valuation: labelledScore(cleanedLead, 'valuation'),
+    risk: labelledScore(cleanedLead, 'risk') || 'Active watch',
+    conviction: vm.conviction || view,
+  };
+
+  const directAnswer = dedupeAnswerText(cleanedLead);
 
   const researchConclusion =
     vm.researchConclusion ||
@@ -367,7 +391,10 @@ export function mapChatAnswer(pack) {
 
   const whyAgib = evidenceUnavailable
     ? [unavailableText]
-    : asList(rc?.why_agib_thinks_this?.length ? rc.why_agib_thinks_this : vm.why, 5);
+    : asList(rc?.why_agib_thinks_this?.length ? rc.why_agib_thinks_this : vm.why, 8)
+      .filter((item) => !/^this matters because/i.test(item))
+      .filter((item) => !/investor lens:|avoid:\s*using/i.test(item))
+      .slice(0, 5);
 
   const bottomLine = dedupeAnswerText(evidenceUnavailable
     ? unavailableText
