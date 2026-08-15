@@ -1,3 +1,5 @@
+import { persistResearchKnowledge } from './researchKnowledgeRegistry.js';
+
 /**
  * CMS Article Learning — read uploaded articles into KIP/KF/KC (soft-wire).
  * Architecture v1.0.1 LOCKED — additive only; never redesign engines.
@@ -240,6 +242,20 @@ export async function learnCmsArticles({
         throw new Error(`Knowledge validation failed: ${detail}`);
       }
 
+      const knowledgeRegistry = await persistResearchKnowledge({
+        job: {
+          article_id: article.id,
+          document_id: documentId,
+          content_hash: String(result.data?.metadata?.content_hash || article.id),
+          slug: article.slug || null,
+          embedding_version: result.data?.metadata?.embedding_version || 'kip-default',
+          quality: result.data?.knowledge?.quality ?? 0.7,
+          payload,
+        },
+        ingestResult: result.data,
+        verified: true,
+      });
+
       const learnedAt = new Date().toISOString();
       const nextCount = Number(article.learn_count || 0) + 1;
 
@@ -277,6 +293,7 @@ export async function learnCmsArticles({
         learning_date: learningDate,
         learn_count: nextCount,
         verified: true,
+        knowledge_registry: knowledgeRegistry,
       });
     } catch (err) {
       failed += 1;

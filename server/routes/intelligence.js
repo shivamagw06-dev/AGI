@@ -43,6 +43,7 @@ import { getHflTerminalFromReadModel } from '../services/hflTerminalSnapshot.js'
 import { getValuationCompanyPackFromReadModel } from '../services/valuationCompanyPackSnapshot.js';
 import { requireStrategyLabAdmin } from '../services/strategyLabAdminAuth.js';
 import { enrichStrategyLabWithLiveMarket } from '../services/strategyLabLiveMarket.js';
+import { getResearchKnowledgeCard } from '../services/researchKnowledgeRegistry.js';
 
 function engineConfig() {
   let baseUrl = (process.env.INTELLIGENCE_ENGINE_URL || 'http://127.0.0.1:8100').replace(/\/$/, '');
@@ -499,6 +500,16 @@ export default function createIntelligenceRouter() {
       worker: getWorkerInfo(),
       blueprint: getPipelineBlueprint(),
     });
+  });
+
+  router.get('/cms/knowledge-card/:articleId', async (req, res) => {
+    try {
+      const card = await getResearchKnowledgeCard(req.params.articleId);
+      if (!card) return res.status(404).json({ error: 'knowledge_card_not_found' });
+      return res.json({ ok: true, ...card });
+    } catch (error) {
+      return res.status(503).json({ error: 'knowledge_registry_unavailable', detail: error.message });
+    }
   });
 
   // Replay terminal job with stored payload (optional new embedding_version).

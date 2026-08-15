@@ -13,6 +13,7 @@
 import { createHash, randomUUID } from 'crypto';
 import os from 'os';
 import { markArticleIntelligenceIngest } from './cmsArticleLearning.js';
+import { persistResearchKnowledge } from './researchKnowledgeRegistry.js';
 import {
   PIPELINE_STAGES,
   appendStageTrace,
@@ -871,11 +872,17 @@ async function runOneJob(job, engineFetch) {
       ? research.missing_sections.length
       : Number(result.data?.missing_sections || 0);
     job.cost_usd = Number(result.data?.cost_usd ?? result.data?.cost ?? 0) || 0;
+    const registry = await persistResearchKnowledge({
+      job,
+      ingestResult: result.data,
+      verified: true,
+    });
     await markStage('kip_ingest', 'ok', {
       document_id: documentId,
       latency_ms: job.engine_latency_ms,
       verified: true,
       skipped_duplicate: Boolean(result.data?.already_processed || result.data?.idempotent),
+      knowledge_registry: registry,
     });
   }
 
