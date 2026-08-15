@@ -124,8 +124,9 @@ class ValuationConsensusProvider:
                 row = get_row(ticker)
                 if row:
                     return self._company_result(t0, ticker, row, question=question)
-                if "consensus" not in (plan.question_types or []):
-                    return empty_result(self.spec.id, t0, "no_consensus_row")
+                # A company-bound lookup must never fall through to the market
+                # screen and present other companies' consensus as evidence.
+                return empty_result(self.spec.id, t0, "no_consensus_row")
 
             if "consensus" in (plan.question_types or []) or _SCREEN_RE.search(question):
                 return self._screen_result(t0, question)

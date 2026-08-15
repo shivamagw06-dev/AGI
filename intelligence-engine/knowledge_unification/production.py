@@ -197,7 +197,20 @@ def answer_for_ask(question: str, *, ticker: Optional[str] = None) -> Optional[d
         company = gathered.get("company_intelligence")
         company = company if isinstance(company, dict) else {}
         identity = company.get("identity") if isinstance(company.get("identity"), dict) else {}
-        if gathered.get("answerable") and "valuation_consensus" in sources:
+        gathered_summary = str(gathered.get("summary") or "")
+        summary_is_company_consensus = bool(
+            re.search(
+                r"\b(capital iq market consensus|capital iq consensus (?:high|low) target|"
+                r"analysts contribute to the capital iq consensus)\b",
+                gathered_summary,
+                re.I,
+            )
+        )
+        if (
+            gathered.get("answerable")
+            and "valuation_consensus" in sources
+            and summary_is_company_consensus
+        ):
             return {
                 "summary": gathered.get("summary") or "",
                 "why": list(gathered.get("why") or []),
@@ -212,6 +225,44 @@ def answer_for_ask(question: str, *, ticker: Optional[str] = None) -> Optional[d
                 "providers_used": sources,
                 "exact_fact": True,
             }
+        name = ticker
+        if ticker:
+            try:
+                from company_identity.service import identity_for
+
+                identity = identity_for(ticker)
+                name = identity.company_name if identity.resolved else ticker
+            except Exception:
+                name = ticker
+        unavailable = (
+            f"No Capital IQ market-consensus record is available for {name or 'this company'} "
+            "in the current database export. AGI will not substitute a company profile or "
+            "invent a target price."
+        )
+        return {
+            "summary": unavailable,
+            "why": [
+                "The valuation-consensus provider returned no usable row for the verified entity.",
+                "Refresh or import the latest consensus dataset before using this field.",
+            ],
+            "evidence": [],
+            "engine": "knowledge_unification",
+            "key": ticker,
+            "company_name": name,
+            "coverage": {
+                "knowledge_sources_used": ["valuation_consensus"],
+                "missing_information": ["market_consensus_record"],
+                "confidence": 100.0,
+            },
+            "company_intelligence": {
+                "identity": {"ticker": ticker, "name": name},
+            },
+            "concept_intelligence": {},
+            "diagnostics": gathered.get("diagnostics") or {},
+            "providers_used": ["valuation_consensus"],
+            "exact_fact": True,
+            "insufficient_evidence": True,
+        }
 
     try:
         from universal_knowledge.production import for_ask as uko_for_ask

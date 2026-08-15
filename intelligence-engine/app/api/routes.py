@@ -9711,9 +9711,11 @@ async def mission_control_rebuild(payload: dict[str, Any] = Body(default={})):
 
 @router.get("/continuous-gather-learn/health")
 async def continuous_gather_learn_health():
+    from starlette.concurrency import run_in_threadpool
+
     from continuous_gather_learn.production import health
 
-    return health()
+    return await run_in_threadpool(health)
 
 
 @router.post(
@@ -9722,28 +9724,39 @@ async def continuous_gather_learn_health():
 )
 async def continuous_gather_learn_heartbeat(payload: dict[str, Any] = Body(default={})):
     """Accept a signed heartbeat from the isolated gather worker."""
+    from starlette.concurrency import run_in_threadpool
+
     from continuous_gather_learn.persist import write_remote_gather_heartbeat
 
-    heartbeat = write_remote_gather_heartbeat(payload or {})
+    heartbeat = await run_in_threadpool(write_remote_gather_heartbeat, payload or {})
     return {"ok": True, "accepted_at": heartbeat.get("beat_at")}
 
 
 @router.get("/continuous-gather-learn/dashboard")
 async def continuous_gather_learn_dashboard():
+    from starlette.concurrency import run_in_threadpool
+
     from continuous_gather_learn.production import dashboard
 
-    return dashboard()
+    return await run_in_threadpool(dashboard)
 
 
 @router.post("/continuous-gather-learn/run")
 async def continuous_gather_learn_run(payload: dict[str, Any] = Body(default={})):
     """Ops-only: run one gather→learn cycle. Failures never affect Ask."""
+    from functools import partial
+
+    from starlette.concurrency import run_in_threadpool
+
     from continuous_gather_learn.production import run as cgl_run
 
-    return cgl_run(
-        slot=payload.get("slot"),
-        force_morning_dag=bool(payload.get("force_morning_dag")),
-        include_faa=payload.get("include_faa"),
+    return await run_in_threadpool(
+        partial(
+            cgl_run,
+            slot=payload.get("slot"),
+            force_morning_dag=bool(payload.get("force_morning_dag")),
+            include_faa=payload.get("include_faa"),
+        )
     )
 
 
