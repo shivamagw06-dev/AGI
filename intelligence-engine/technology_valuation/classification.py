@@ -10,6 +10,13 @@ _CONSUMER_CANONICAL = frozenset({"consumer_internet", "digital_commerce", "ecomm
 _SEMI_CANONICAL = frozenset({"semiconductor","semiconductors","fabless_semiconductor","semiconductor_design","semiconductor_manufacturing","foundry","atmp","osat","semiconductor_equipment"})
 _TELECOM_CANONICAL = frozenset({"telecom","telecommunications","wireless_telecom","mobile_telecom","broadband","fiber_telecom","enterprise_telecom"})
 _TOWER_CANONICAL = frozenset({"telecom_infrastructure","telecom_towers","tower_infrastructure","passive_telecom_infrastructure","tower_company"})
+_SPECIALIZED={
+    "ERD_TECHNOLOGY_SERVICES":frozenset({"engineering_services","erd_services","engineering_r_and_d","technology_enabled_services","bpm_digital_services"}),
+    "HARDWARE_ELECTRONICS":frozenset({"technology_hardware","hardware","electronics_manufacturing","ems","odm","electronics"}),
+    "DATA_CENTRES":frozenset({"data_centres","data_centers","data_centre","data_center","digital_infrastructure"}),
+    "FINTECH_PAYMENTS":frozenset({"fintech","fintech_platform","payments_technology","payments","merchant_technology"}),
+    "CYBERSECURITY_CLOUD":frozenset({"cybersecurity","cloud","cloud_infrastructure","cloud_software","specialized_technology"}),
+}
 
 
 def classify_technology_subsector(company: dict[str, Any]) -> dict[str, Any]:
@@ -46,6 +53,11 @@ def classify_technology_subsector(company: dict[str, Any]) -> dict[str, Any]:
         return {"status":"CLASSIFIED","parent_sector":"TECHNOLOGY_AND_DIGITAL","subsector":explicit,"model_family":"TELECOM_INFRASTRUCTURE_TOWERS","source":"company_master.technology_subsector"}
     if canonical in _TOWER_CANONICAL:
         return {"status":"CLASSIFIED","parent_sector":"TECHNOLOGY_AND_DIGITAL","subsector":canonical.upper(),"model_family":"TELECOM_INFRASTRUCTURE_TOWERS","source":"canonical_industry_taxonomy"}
+    for family,aliases in _SPECIALIZED.items():
+        if explicit in {x.upper() for x in aliases}|{family}:
+            return {"status":"CLASSIFIED","parent_sector":"TECHNOLOGY_AND_DIGITAL","subsector":explicit,"model_family":family,"source":"company_master.technology_subsector"}
+        if canonical in aliases:
+            return {"status":"CLASSIFIED","parent_sector":"TECHNOLOGY_AND_DIGITAL","subsector":canonical.upper(),"model_family":family,"source":"canonical_industry_taxonomy"}
     symbol = str(company.get("symbol") or company.get("company_id") or "").strip().upper()
     if symbol in IT_SERVICES_COHORT:
         return {"status":"CLASSIFIED", "parent_sector":"TECHNOLOGY_AND_DIGITAL", "subsector":"IT_SERVICES", "source":"phase_2a_reviewed_cohort_registry"}

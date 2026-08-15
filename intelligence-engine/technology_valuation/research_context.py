@@ -16,6 +16,8 @@ from technology_valuation.telecom_model import TELECOM_MODEL
 from technology_valuation.telecom_service import REQUIRED_TELECOM_INPUTS
 from technology_valuation.tower_model import TOWER_MODEL
 from technology_valuation.tower_service import REQUIRED_TOWER_INPUTS
+from technology_valuation.specialized_model import SPECIALIZED_MODELS
+from technology_valuation.specialized_service import REQUIRED_SPECIALIZED
 
 
 def technology_research_context(company_id: str, *, loader: Callable[[str],dict[str,Any]] | None=None) -> dict[str,Any]:
@@ -41,6 +43,8 @@ def technology_research_context(company_id: str, *, loader: Callable[[str],dict[
         model=TELECOM_MODEL; required=REQUIRED_TELECOM_INPUTS
     elif classification.get("model_family")=="TELECOM_INFRASTRUCTURE_TOWERS":
         model=TOWER_MODEL; required=REQUIRED_TOWER_INPUTS
+    elif classification.get("model_family") in SPECIALIZED_MODELS:
+        model=SPECIALIZED_MODELS[classification["model_family"]]; required=REQUIRED_SPECIALIZED[classification["model_family"]]
     elif classification.get("subsector")=="IT_SERVICES":
         model=IT_SERVICES_MODEL; required=REQUIRED_INPUTS
     else:

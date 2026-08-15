@@ -144,4 +144,7 @@ def evaluate_technology_company(*, company: dict[str, Any], inputs: dict[str, An
     if classification.get("model_family")=="TELECOM_INFRASTRUCTURE_TOWERS":
         from technology_valuation.tower_service import evaluate_tower
         return {**evaluate_tower(company=company,inputs=inputs,as_of=as_of,peers=peers,history=history,scenarios=scenarios),"classification":classification}
+    if classification.get("model_family") in {"ERD_TECHNOLOGY_SERVICES","HARDWARE_ELECTRONICS","DATA_CENTRES","FINTECH_PAYMENTS","CYBERSECURITY_CLOUD"}:
+        from technology_valuation.specialized_service import evaluate_specialized
+        return {**evaluate_specialized(family=classification["model_family"],company=company,inputs=inputs,as_of=as_of,peers=peers,history=history,scenarios=scenarios),"classification":classification}
     return _evaluate_it_services(company=company,inputs=inputs,as_of=as_of,peers=peers,history=history,scenarios=scenarios)
