@@ -19,7 +19,7 @@ const EVENT_TYPES = [
 
 const QUESTION_TYPES = [
   { key: 'causal_analysis', pattern: /\b(why|how|impact|affect|change|mean for|so what)\b/i },
-  { key: 'risk_analysis', pattern: /\b(risk|downside|wrong|break|concern)\b/i },
+  { key: 'risk_analysis', pattern: /\b(risks?|downside|wrong|break|concerns?)\b/i },
   { key: 'investment_view', pattern: /\b(view|thesis|outlook|opportunity|invest)\w*\b/i },
   { key: 'factual', pattern: /\b(what happened|how much|when|where)\b/i },
 ];

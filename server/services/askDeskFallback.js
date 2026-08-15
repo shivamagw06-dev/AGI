@@ -58,14 +58,17 @@ function articleAnalysis(article = {}) {
 
 function searchTerms(question = '') {
   const ignored = new Set([
-    'about', 'agi', 'crore', 'does', 'have', 'india', 'indian', 'order', 'report',
-    'says', 'technologies', 'that', 'the', 'this', 'view', 'what', 'with',
+    'about', 'affect', 'agi', 'biggest', 'compare', 'crore', 'does', 'financial',
+    'have', 'how', 'impact', 'india', 'indian', 'large', 'months', 'next', 'order',
+    'over', 'report', 'risks', 'says', 'sharply', 'shareholder', 'should', 'still',
+    'that', 'the', 'this', 'value', 'view', 'what', 'where', 'which', 'with', 'would',
   ]);
   return [...new Set(String(question).toLowerCase().match(/[a-z0-9]{3,}/g) || [])]
     .filter((term) => !ignored.has(term));
 }
 
 export function rankPublishedResearch(question, rows = []) {
+  if (/\b(compare|comparison|versus|vs\.?|difference between)\b/i.test(question)) return [];
   const terms = searchTerms(question);
   if (!terms.length) return [];
   return rows
@@ -73,13 +76,18 @@ export function rankPublishedResearch(question, rows = []) {
       const title = plainText(article?.title).toLowerCase();
       const tags = plainText(Array.isArray(article?.tags) ? article.tags.join(' ') : article?.tags).toLowerCase();
       const body = plainText(`${article?.excerpt || ''} ${article?.content_md || ''} ${article?.content || ''}`).toLowerCase();
-      const score = terms.reduce(
-        (sum, term) => sum + (title.includes(term) ? 8 : 0) + (tags.includes(term) ? 4 : 0) + (body.includes(term) ? 1 : 0),
-        0
+      const titleMatches = terms.filter((term) => title.includes(term));
+      const tagMatches = terms.filter((term) => tags.includes(term));
+      const bodyMatches = terms.filter((term) => body.includes(term));
+      const score = titleMatches.length * 8 + tagMatches.length * 4 + bodyMatches.length;
+      const strongMatches = new Set([...titleMatches, ...tagMatches]).size;
+      const titleCoverage = titleMatches.length / terms.length;
+      const eligible = titleMatches.length > 0 && (
+        strongMatches >= 2 || titleCoverage >= 0.45 || (terms.length === 1 && titleMatches.length === 1)
       );
-      return { article, score };
+      return { article, score, eligible, title_matches: titleMatches, tag_matches: tagMatches };
     })
-    .filter(({ score }) => score >= 8)
+    .filter(({ score, eligible }) => eligible && score >= 8)
     .sort((a, b) => b.score - a.score || String(b.article?.published_at || '').localeCompare(String(a.article?.published_at || '')));
 }
 
@@ -111,7 +119,11 @@ export function publishedResearchPack(question, article) {
     published_at: article.published_at || null,
     note: summary,
   };
-  const directAnswer = `AGI's published view: ${summary}`;
+  const directAnswer = reasoning.planner.question_type === 'causal_analysis'
+    ? `AGI's view: ${summary} The transmission is ${reasoning.financial_transmission.join(' → ')}. ${reasoning.conditions[0]}`
+    : reasoning.planner.question_type === 'risk_analysis'
+      ? `AGI's risk view: ${analysis.risks.slice(0, 2).join(' ')} ${reasoning.counter_case[0]}`
+      : `AGI's published view: ${summary}`;
   const confidenceExplanation = 'High confidence that this reflects AGI\'s house research because it is taken directly from the published report. It is not a fresh independent re-analysis of facts released after that publication.';
   const why = [
     `Matched the question to AGI's published report “${plainText(article.title)}”.`,

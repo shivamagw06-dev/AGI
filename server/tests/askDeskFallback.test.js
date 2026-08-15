@@ -28,6 +28,16 @@ describe('askDeskFallback', () => {
     assert.ok(ranked[0]?.score >= 8);
   });
 
+  it('rejects weak generic overlap and comparison questions from the article fast path', () => {
+    const rows = [{
+      id: 'zen',
+      title: 'Zen Technologies defence order boosts revenue visibility',
+      excerpt: 'Execution will occur over the next twelve months and could affect cash flow.',
+    }];
+    assert.equal(rankPublishedResearch('How would an RBI rate cut affect Indian banks over the next 12 months?', rows).length, 0);
+    assert.equal(rankPublishedResearch('Compare a telecom tariff increase versus a defence contract win.', rows).length, 0);
+  });
+
   it('makes a matched article primary evidence without discarding engine context', () => {
     const merged = mergePublishedResearch(
       {
@@ -86,6 +96,7 @@ describe('askDeskFallback', () => {
     assert.ok(pack.affected_metrics.includes('churn'));
     assert.match(pack.reasoning_framework.what_could_go_wrong, /churn/i);
     assert.equal(pack.evidence_boundary.quantified_impact_available, false);
+    assert.match(pack.executive_summary, /The transmission is Tariff/i);
   });
 
   it('maps a defence order through execution and cash conversion', () => {
@@ -98,5 +109,16 @@ describe('askDeskFallback', () => {
     assert.equal(pack.research_plan.event_type, 'order_win');
     assert.ok(pack.financial_transmission.includes('Project margin and working capital'));
     assert.ok(pack.affected_metrics.includes('operating cash flow'));
+  });
+
+  it('answers a plural risks question with the risk case first', () => {
+    const pack = publishedResearchPack('What are the execution risks in Zen Technologies?', {
+      id: 'zen-risk',
+      title: 'Zen Technologies wins a defence order',
+      excerpt: 'The order adds visibility, but execution delays and receivable growth remain key risks.',
+      content: 'Execution delays and receivable growth could weaken cash conversion.',
+    });
+    assert.equal(pack.research_plan.question_type, 'risk_analysis');
+    assert.match(pack.executive_summary, /^AGI's risk view:/);
   });
 });
