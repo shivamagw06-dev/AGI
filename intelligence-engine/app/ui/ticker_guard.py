@@ -6,6 +6,7 @@ import re
 from typing import Any, Optional
 
 from app.kip.extractors import KNOWN_TICKERS, TICKER_STOPWORDS, looks_like_equity_ticker
+from company_identity.core_aliases import iter_alias_tickers
 
 # Explicit global names that must bind even when ERE returns a Theme first.
 _ALIAS_BIND: tuple[tuple[re.Pattern[str], str], ...] = (
@@ -59,7 +60,9 @@ def alias_ticker_from_question(question: str) -> Optional[str]:
     for pattern, ticker in _ALIAS_BIND:
         if pattern.search(q):
             return ticker
-    return None
+    # The shared core registry covers the institutional India universe.  Keep
+    # the explicit global aliases above, then use deterministic local names.
+    return next(iter_alias_tickers(q), None)
 
 
 def _title_overlap_score(question: str, title: str) -> int:
@@ -135,6 +138,11 @@ def looks_like_framework_meta_executive(text: str) -> bool:
         "entity-bound analysis",
         "governance path:",
         "lidi validated publish",
+        "framework-selection confidence",
+        "procedure:",
+        "required domains present or softened",
+        "frameworks were not executed",
+        "question type:",
     )
     if any(m in low for m in meta_markers):
         return True

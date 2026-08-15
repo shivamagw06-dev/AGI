@@ -13,6 +13,7 @@ from app.ui.ticker_guard import (
     alias_ticker_from_question,
     looks_like_framework_meta_executive,
 )
+from company_identity.core_aliases import CORE_COMPANY_ALIASES, iter_alias_tickers
 
 # ---------------------------------------------------------------------------
 # Scaffold / meta detection (release-blocking patterns)
@@ -37,6 +38,17 @@ _PLANNING_MARKERS = (
     "institutional brief (",
     "lidi validated publish",
     "this matters because",
+    "framework-selection confidence",
+    "procedure:",
+    "required domains present or softened",
+    "required domains:",
+    "excluded (forbidden for context)",
+    "no applicable framework",
+    "frameworks were not executed",
+    "question type:",
+    "applicability score",
+    "decision policy lens:",
+    "insufficient evidence (missing",
 )
 
 _TICKER_DISPLAY: Dict[str, str] = {
@@ -126,6 +138,10 @@ def is_planning_scaffold(text: str) -> bool:
         return True
     if "analyse via" in low or "analyze via" in low:
         return True
+    if "□" in raw or "☐" in raw:
+        return True
+    if re.match(r"^financial:\s+[A-Z0-9.-]+\s+(expectations|company intelligence)", raw):
+        return True
     if _COMMITTEE_BOILERPLATE.search(raw):
         return True
     for marker in _PLANNING_MARKERS:
@@ -213,6 +229,9 @@ def alias_tickers_from_question(question: str) -> List[str]:
     out: List[str] = []
     for pattern, ticker in _ALIAS_SCAN:
         if pattern.search(q) and ticker not in out:
+            out.append(ticker)
+    for ticker in iter_alias_tickers(q):
+        if ticker not in out:
             out.append(ticker)
     # Fallback to single-alias helper for any missed first match
     one = alias_ticker_from_question(q)
@@ -310,7 +329,14 @@ def _pack_narrative(packs: Dict[str, Any]) -> List[str]:
     """Pull short factual snippets from soft packs (no new retrieval)."""
     lines: List[str] = []
     ca = packs.get("company_analysis") if isinstance(packs.get("company_analysis"), dict) else {}
-    for key in ("summary", "business_model", "overview", "narrative"):
+    for key in (
+        "executive_summary",
+        "business_overview",
+        "summary",
+        "business_model",
+        "overview",
+        "narrative",
+    ):
         v = ca.get(key)
         if isinstance(v, str) and len(v.strip()) > 40 and not is_planning_scaffold(v):
             lines.append(_scrub_line(v, max_len=260))
@@ -330,7 +356,45 @@ def _pack_narrative(packs: Dict[str, Any]) -> List[str]:
             lines.append(_scrub_line(snip, max_len=220))
         if len(lines) >= 3:
             break
+    materialized = (
+        packs.get("materialized_answer_pack")
+        if isinstance(packs.get("materialized_answer_pack"), dict)
+        else {}
+    )
+    for value in (
+        materialized.get("direct_answer"),
+        (materialized.get("business") or {}).get("overview")
+        if isinstance(materialized.get("business"), dict)
+        else None,
+        (materialized.get("financials") or {}).get("summary")
+        if isinstance(materialized.get("financials"), dict)
+        else None,
+    ):
+        if isinstance(value, str) and len(value.strip()) > 30 and not is_planning_scaffold(value):
+            cleaned = _scrub_line(value, max_len=260)
+            if cleaned not in lines:
+                lines.append(cleaned)
     return lines[:4]
+
+
+def _mentions_wrong_company(text: str, expected_ticker: str | None) -> bool:
+    """Reject a candidate that is visibly bound to another covered company."""
+    expected = str(expected_ticker or "").upper()
+    if not expected:
+        return False
+    raw = str(text or "")
+    upper = raw.upper()
+    for ticker, aliases in CORE_COMPANY_ALIASES:
+        if ticker == expected:
+            continue
+        if re.search(rf"(?<![A-Z0-9]){re.escape(ticker)}(?![A-Z0-9])", upper):
+            return True
+        for alias in aliases:
+            if len(alias) >= 5 and re.search(
+                rf"(?<![a-z0-9]){re.escape(alias)}(?![a-z0-9])", raw, re.I
+            ):
+                return True
+    return False
 
 
 def _lead_for_question(
@@ -556,7 +620,11 @@ def compose_executive(
     # Prefer any non-scaffold candidate already produced upstream.
     for cand in candidates or []:
         text = str(cand or "").strip()
-        if text and not is_planning_scaffold(text):
+        if (
+            text
+            and not is_planning_scaffold(text)
+            and not _mentions_wrong_company(text, detected_ticker)
+        ):
             why_out = [
                 w
                 for w in (why or [])

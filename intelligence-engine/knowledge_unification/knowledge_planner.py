@@ -275,9 +275,9 @@ _MARKET_MENU = (
 # Sell-side consensus (CapIQ targets / broker counts / coverage) leads, then
 # AGI's own layers so the answer can separate market view from AGI view.
 _CONSENSUS_MENU = (
+    "valuation_consensus",
     "historical_intelligence",
     "institutional_warehouse",
-    "valuation_consensus",
     "valuation_terminal",
     "financial_statement_warehouse",
     "capiq_ikt",
@@ -290,9 +290,9 @@ _CONSENSUS_MENU = (
 # Universe-wide consensus screens name no company — consulting the company
 # engines only yields "Business type: unknown" noise.
 _CONSENSUS_SCREEN_MENU = (
+    "valuation_consensus",
     "historical_intelligence",
     "institutional_warehouse",
-    "valuation_consensus",
     "valuation_terminal",
     "financial_statement_warehouse",
     "industry_intelligence",

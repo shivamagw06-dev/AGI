@@ -15,6 +15,11 @@ from knowledge_unification.schema import FusedEvidence, ProviderResult
 KUL_VERSION = "1.2.0"
 PROGRAMME = "Phase X — Knowledge Unification Layer (+ II Integration 3.1.5)"
 _COMPARISON_RE = re.compile(r"\b(compare|versus|\bvs\.?\b|difference between|relative to)\b", re.I)
+_EXACT_CONSENSUS_RE = re.compile(
+    r"\b(consensus target|target price|price target|high target|low target|"
+    r"analysts? cover|rating split|broker (?:estimate|consensus|recommendation))\b",
+    re.I,
+)
 
 
 def health() -> dict[str, Any]:
@@ -181,6 +186,33 @@ def answer_for_ask(question: str, *, ticker: Optional[str] = None) -> Optional[d
     Phase 6.0 — every short-circuit uses the same gather as the full desk path.
     Soft-only academy/legacy hits still must not short-circuit Ask.
     """
+    # Exact market-consensus questions are database lookups, not synthesis
+    # prompts.  UKO deliberately blends useful company context, but that can
+    # displace the requested numeric fact with a general business summary.
+    # Preserve the KUL consensus provider as the authoritative answer here.
+    if _EXACT_CONSENSUS_RE.search(question or ""):
+        gathered = plan_and_gather(question, ticker=ticker)
+        coverage = gathered.get("coverage") if isinstance(gathered.get("coverage"), dict) else {}
+        sources = list(coverage.get("knowledge_sources_used") or [])
+        company = gathered.get("company_intelligence")
+        company = company if isinstance(company, dict) else {}
+        identity = company.get("identity") if isinstance(company.get("identity"), dict) else {}
+        if gathered.get("answerable") and "valuation_consensus" in sources:
+            return {
+                "summary": gathered.get("summary") or "",
+                "why": list(gathered.get("why") or []),
+                "evidence": list(gathered.get("evidence") or []),
+                "engine": "knowledge_unification",
+                "key": identity.get("ticker") or ticker,
+                "company_name": identity.get("name"),
+                "coverage": coverage,
+                "company_intelligence": company,
+                "concept_intelligence": gathered.get("concept_intelligence") or {},
+                "diagnostics": gathered.get("diagnostics") or {},
+                "providers_used": sources,
+                "exact_fact": True,
+            }
+
     try:
         from universal_knowledge.production import for_ask as uko_for_ask
 

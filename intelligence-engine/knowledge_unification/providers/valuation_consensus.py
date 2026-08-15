@@ -123,7 +123,7 @@ class ValuationConsensusProvider:
             if ticker:
                 row = get_row(ticker)
                 if row:
-                    return self._company_result(t0, ticker, row)
+                    return self._company_result(t0, ticker, row, question=question)
                 if "consensus" not in (plan.question_types or []):
                     return empty_result(self.spec.id, t0, "no_consensus_row")
 
@@ -136,7 +136,14 @@ class ValuationConsensusProvider:
     # ------------------------------------------------------------------
     # Company-level consensus
     # ------------------------------------------------------------------
-    def _company_result(self, t0: float, ticker: str, row: dict[str, Any]) -> ProviderResult:
+    def _company_result(
+        self,
+        t0: float,
+        ticker: str,
+        row: dict[str, Any],
+        *,
+        question: str = "",
+    ) -> ProviderResult:
         from valuation_consensus.agi_panel import soft_consensus_facts
 
         facts = soft_consensus_facts(row)
@@ -205,11 +212,19 @@ class ValuationConsensusProvider:
             "these broker views."
         )
 
-        summary = (
-            f"{name} — Capital IQ market consensus: "
-            + (", ".join(headline_bits) if headline_bits else "coverage details below")
-            + "."
-        )
+        q = question.lower()
+        if "high target" in q and row.get("target_high") is not None:
+            summary = f"{name} — the Capital IQ consensus high target is {_fmt(row.get('target_high'))}."
+        elif "low target" in q and row.get("target_low") is not None:
+            summary = f"{name} — the Capital IQ consensus low target is {_fmt(row.get('target_low'))}."
+        elif ("analyst" in q and "cover" in q) and coverage is not None:
+            summary = f"{name} — {_fmt(coverage)} analysts contribute to the Capital IQ consensus."
+        else:
+            summary = (
+                f"{name} — Capital IQ market consensus: "
+                + (", ".join(headline_bits) if headline_bits else "coverage details below")
+                + "."
+            )
 
         return timed_result(
             self.spec.id,

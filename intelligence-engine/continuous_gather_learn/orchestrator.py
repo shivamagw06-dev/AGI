@@ -291,6 +291,7 @@ def run_cycle(
         "knowledge_extracts": 0,
         "learnings_archived": 0,
         "backfill_extracts": 0,
+        "answer_packs_written": 0,
     }
 
     # 1. Collect
@@ -508,6 +509,27 @@ def run_cycle(
             cgl_persist.put_run(run)
         except Exception:
             pass
+
+    # Ask AGI answer packs — rotate through covered companies from database state.
+    # Runs after knowledge integration and never on the interactive Ask path.
+    try:
+        from answer_packs.materializer import materialize_batch
+
+        answer_pack_checkpoint = cgl_persist.get_checkpoint("answer_pack_materializer") or {}
+        answer_pack_result = materialize_batch(
+            batch_size=5,
+            start_cursor=int(answer_pack_checkpoint.get("next_cursor") or 0),
+        )
+        run["answer_pack_materialization"] = answer_pack_result
+        volumes["answer_packs_written"] = int(answer_pack_result.get("written") or 0)
+        cgl_persist.put_checkpoint("answer_pack_materializer", answer_pack_result)
+        cgl_persist.put_run(run)
+    except Exception as exc:  # noqa: BLE001
+        run["answer_pack_materialization"] = {
+            "ok": False,
+            "error": str(exc)[:240],
+            "soft": True,
+        }
 
     # IO V1.3.1 — Morning Snapshot Builder (soft). Never blocks CGL/Ask.
     try:

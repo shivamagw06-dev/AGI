@@ -256,6 +256,18 @@ def _irl_requires_full_desk(intent: str | None) -> bool:
     return str(intent or "") in _IRL_FULL_DESK_INTENTS
 
 
+def _is_consensus_fact_question(question: str) -> bool:
+    return bool(
+        re.search(
+            r"\b(consensus|street|analyst)\b.*\b(target(?:\s+price)?|upside|recommendation|estimate|coverage)\b|"
+            r"\b(target(?:\s+price)?|upside)\b.*\b(consensus|street|analyst)\b|"
+            r"\b(high target|low target|analysts? cover|rating split|broker recommendation)\b",
+            question or "",
+            re.I,
+        )
+    )
+
+
 def _kul_is_deterministic_business_answer(
     question: str,
     kul_hit: dict[str, Any] | None,
@@ -2271,7 +2283,8 @@ class UiService:
             )
         except Exception:
             early_irl = {}
-        if _irl_requires_full_desk(early_irl.get("intent")):
+        consensus_fact_question = _is_consensus_fact_question(q)
+        if _irl_requires_full_desk(early_irl.get("intent")) and not consensus_fact_question:
             kul_hit = None
             ask_orchestration["kul_deferred_for_intent"] = early_irl.get("intent")
         else:
@@ -2396,6 +2409,7 @@ class UiService:
                 _que_requires_full_desk(que_pack)
                 or requires_full_company_analysis(q, detected_ticker)
             )
+            and not consensus_fact_question
             and not kul_is_finance_concept
             and (
                 not kul_is_deterministic_business
@@ -2500,6 +2514,26 @@ class UiService:
             conf = float(coverage.get("confidence") or 80.0)
             sources = ["knowledge_unification", "question_understanding_engine", *providers_used]
             followups = list(que_pack.get("top_research_questions") or [])[:3]
+            try:
+                from answer_packs import build_answer_pack
+
+                kul_answer_pack = build_answer_pack(
+                    question=q,
+                    ticker=kul_key,
+                    executive=executive,
+                    confidence=conf,
+                    evidence_used=kul_hit.get("evidence") or [],
+                    knowledge_gaps=list(coverage.get("missing_information") or []),
+                    quality_gates={
+                        "database_evidence": bool(providers_used),
+                        "exact_fact": bool(kul_hit.get("exact_fact")),
+                    },
+                )
+            except Exception:
+                kul_answer_pack = {
+                    "version": "ask-answer-pack-v1.0.0",
+                    "status": "degraded",
+                }
             return SearchView(
                 meta=UiMeta(surface="search", sources=sources),
                 question=q,
@@ -2532,6 +2566,7 @@ class UiService:
                     "decision_type": que_pack.get("decision_type"),
                     "primary_investment_question": que_pack.get("primary_investment_question"),
                     "research_brief": que_pack.get("research_brief") or {},
+                    "answer_pack": kul_answer_pack,
                 },
                 executive_summary=executive,
                 house_view={"label": "Unified Knowledge", "stance": "Neutral"},
@@ -3699,6 +3734,17 @@ class UiService:
                     detected_ticker = str(company_analysis["ticker"]).upper()
         except Exception:
             company_analysis = {}
+
+        # Background materialized pack is a read-only resilience layer. Current
+        # request-time database analysis stays authoritative when available.
+        materialized_answer_pack: dict[str, Any] = {}
+        if detected_ticker:
+            try:
+                from answer_packs.materializer import load_materialized_pack
+
+                materialized_answer_pack = load_materialized_pack(detected_ticker) or {}
+            except Exception:
+                materialized_answer_pack = {}
 
         # Company Monitoring System V1 — what changed since prior snapshot/quarter (never auto house-view)
         try:
@@ -5510,6 +5556,7 @@ class UiService:
                         "company_analysis": company_analysis if isinstance(company_analysis, dict) else {},
                         "company_dossier": company_dossier if isinstance(company_dossier, dict) else {},
                         "knowledge_bundle": knowledge_bundle if isinstance(knowledge_bundle, dict) else {},
+                        "materialized_answer_pack": materialized_answer_pack,
                     },
                     candidates=[
                         executive or "",
@@ -5621,6 +5668,7 @@ class UiService:
                     "company_analysis": company_analysis if isinstance(company_analysis, dict) else {},
                     "company_dossier": company_dossier if isinstance(company_dossier, dict) else {},
                     "knowledge_bundle": knowledge_bundle if isinstance(knowledge_bundle, dict) else {},
+                    "materialized_answer_pack": materialized_answer_pack,
                 },
                 detected_ticker=detected_ticker,
                 tickers=_cmp_tickers or ([detected_ticker] if detected_ticker else []),
@@ -5684,6 +5732,32 @@ class UiService:
         answer["key_risks"] = risks
         answer["key_catalysts"] = catalysts
         answer["quality_gates"] = quality_gates
+        try:
+            from answer_packs import build_answer_pack
+
+            answer["answer_pack"] = build_answer_pack(
+                question=q,
+                ticker=detected_ticker,
+                executive=executive,
+                confidence=conf,
+                company_analysis=company_analysis if isinstance(company_analysis, dict) else {},
+                company_dossier=company_dossier if isinstance(company_dossier, dict) else {},
+                investment_thesis=thesis,
+                bull_case=bull,
+                bear_case=bear,
+                risks=risks,
+                catalysts=catalysts,
+                valuation=valuation,
+                evidence_used=evidence_used if isinstance(evidence_used, list) else [],
+                supporting_evidence=support_ev if isinstance(support_ev, list) else [],
+                freshness=freshness,
+                quality_gates=quality_gates,
+                knowledge_gaps=(answer_construction or {}).get("knowledge_gaps")
+                if isinstance(answer_construction, dict)
+                else [],
+            )
+        except Exception:
+            answer["answer_pack"] = {"version": "ask-answer-pack-v1.0.0", "status": "degraded"}
         if str(detected_ticker or "").upper() == "RELIANCE":
             answer["analysis_framework"] = {
                 "type": "conglomerate_segment_analysis",

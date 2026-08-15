@@ -182,6 +182,30 @@ async def test_cache_hit_and_duplicate_coalesce():
     assert cache.hit_ratio > 0
 
 
+@pytest.mark.asyncio
+async def test_cache_owner_failure_does_not_leave_unretrieved_future():
+    cache = MarketDataCache()
+    loop = asyncio.get_running_loop()
+    contexts = []
+    previous = loop.get_exception_handler()
+    loop.set_exception_handler(lambda _loop, context: contexts.append(context))
+
+    async def failing_factory():
+        raise RuntimeError("provider unavailable")
+
+    try:
+        with pytest.raises(RuntimeError, match="provider unavailable"):
+            await cache.get_or_set("failed", 60, failing_factory)
+        await asyncio.sleep(0)
+        assert not [
+            context
+            for context in contexts
+            if "Future exception was never retrieved" in str(context.get("message"))
+        ]
+    finally:
+        loop.set_exception_handler(previous)
+
+
 def test_rate_limiter_blocks_burst():
     registry = ProviderRateLimitRegistry()
     registry.configure("p", rate_per_second=1, burst=1)

@@ -509,6 +509,15 @@ def resolve(question: str) -> dict[str, Any]:
     # safe even for bare stems — "What does Axis Bank do?" previously fell
     # through to the unknown-entity policy.
     canonical_tk = _canonical_capiq_ticker(q)
+    canonical_source = "capiq_registry"
+    if not canonical_tk:
+        try:
+            from company_identity.core_aliases import core_alias_ticker
+
+            canonical_tk = core_alias_ticker(q)
+            canonical_source = "core_company_registry"
+        except Exception:
+            canonical_tk = None
     if canonical_tk:
         canonical = _canonical_identity(canonical_tk)
         display_name = (canonical or {}).get("company_name") or canonical_tk
@@ -523,7 +532,7 @@ def resolve(question: str) -> dict[str, Any]:
                 "ticker": canonical_tk,
                 "listing": "public",
                 "coverage": "full_institutional",
-                "source": "capiq_registry",
+                "source": canonical_source,
                 "primary_sector": (canonical or {}).get("primary_sector"),
                 "primary_industry": (canonical or {}).get("primary_industry"),
                 "business_type": (canonical or {}).get("business_type"),
@@ -532,10 +541,10 @@ def resolve(question: str) -> dict[str, Any]:
             "ticker": canonical_tk,
             "canonical_name": display_name,
             "identity": canonical,
-            "summary": f"Resolved {display_name} ({canonical_tk}) from the Capital IQ registry.",
+            "summary": f"Resolved {display_name} ({canonical_tk}) from AGI's canonical company registry.",
             "why": [
-                "Company named in the question matched the canonical Capital IQ registry.",
-                "Capital IQ classification is authoritative for sector, industry and business type.",
+                "Company named in the question matched AGI's canonical company registry.",
+                "Stored warehouse classification remains authoritative for sector, industry and business type.",
             ],
             "version": EI_VERSION,
         }

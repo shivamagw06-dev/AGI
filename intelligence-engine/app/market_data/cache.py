@@ -105,6 +105,11 @@ class MarketDataCache:
         except Exception as exc:
             if not future.done():
                 future.set_exception(exc)
+                # The owner raises the original exception directly. If no
+                # coalesced waiter exists, asyncio would otherwise report
+                # "Future exception was never retrieved" even though the
+                # provider failure was handled by the caller.
+                future.exception()
             raise
         finally:
             with self._lock:
