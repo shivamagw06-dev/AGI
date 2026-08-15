@@ -57,13 +57,17 @@ Client question
 - Strict tool argument validation, per-tool call limits, research budgets and
   read/propose/controlled-write permissions.
 - Ask research plans now record their governed tool plan in the existing trace.
+- Governed executor with explicit handler injection, permission gates, call,
+  search, document, runtime and timeout budgets, plus sanitized call traces.
+- Registered but unbound tools fail closed; registry handler strings are never
+  imported or executed dynamically.
 - Proposed/validated/trusted/quarantined candidate lifecycle remains database
   owned; model output cannot self-promote to trusted knowledge.
 
 ## Material gaps
 
-1. Bind each registered tool descriptor to its existing runtime handler through
-   one audited executor; registry and planning are complete, execution is next.
+1. Bind the remaining registry descriptors to their existing services. The
+   audited executor and core KIP/KF/market/event/thesis bindings now exist.
 2. Add provider-independent web search and document retrieval adapters with
    authority tiers, licenses, budgets and original-source verification.
 3. Execute iterative gap-driven research; the current planner records a plan but

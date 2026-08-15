@@ -32,6 +32,8 @@ def execute_research_dag(
 
     iro_plan = (planner or {}).get("plan") or {}
     iro_levels = ((iro_plan.get("execution_plan") or {}).get("levels")) or []
+    tool_plan = (planner or {}).get("tool_plan") or {}
+    planned_tools = tool_plan.get("tools") or []
 
     tasks = [
         {
@@ -58,9 +60,19 @@ def execute_research_dag(
             "task_count": planner.get("task_count"),
         },
         {
+            "task_id": "governed_tool_plan",
+            "status": "planned" if planned_tools else "empty",
+            "depends_on": ["attach_planner"],
+            "registry_version": tool_plan.get("registry_version"),
+            "tools": [item.get("name") for item in planned_tools],
+            "budgets": tool_plan.get("budgets") or {},
+            "controlled_writes_allowed": False,
+            "execution_mode": "explicit_bindings_only",
+        },
+        {
             "task_id": "iro_schedule_observe",
             "status": "executed" if iro_levels else "empty",
-            "depends_on": ["attach_planner"],
+            "depends_on": ["governed_tool_plan"],
             "iro_levels": iro_levels,
             "max_parallelism": (iro_plan.get("execution_plan") or {}).get("max_parallelism"),
             "note": "Ask uses plan metadata; task-level govern_answer remains inside S09 once",
@@ -78,7 +90,9 @@ def execute_research_dag(
         "levels": [
             ["knowledge_retrieval"],
             ["evidence_assembly"],
-            ["attach_planner", "iro_schedule_observe"],
+            ["attach_planner"],
+            ["governed_tool_plan"],
+            ["iro_schedule_observe"],
         ],
         "iro_schedule_levels": iro_levels,
         "failures": failures,
