@@ -9,6 +9,7 @@ from typing import Any
 from editorial.cache import get_cache
 from editorial.flags import is_enabled
 from editorial.gemini_provider import GeminiProvider
+from editorial.openai_provider import OpenAIProvider
 from editorial.glossary import plain_english
 from editorial.logging_util import log_editorial_event
 from editorial.package import sanitize_structured
@@ -93,12 +94,22 @@ def resolve_provider(name: str | None = None) -> EditorialProvider:
         from app.core.config import get_settings
 
         settings = get_settings()
-        provider_name = (name or settings.editorial_provider or "gemini").strip().lower()
+        # Ask AGI prefers the OpenAI editorial teacher whenever its key is present.
+        # An explicit provider argument remains available for tests and controlled runs.
+        provider_name = (
+            name
+            or ("openai" if settings.openai_api_key else settings.editorial_provider)
+            or "openai"
+        ).strip().lower()
+        if provider_name in {"openai", "gpt"}:
+            return OpenAIProvider(api_key=settings.openai_api_key, model=settings.openai_model)
         if provider_name in {"gemini", "google", "google_gemini"}:
             return GeminiProvider(api_key=settings.gemini_api_key, model=settings.gemini_model)
+        if settings.openai_api_key:
+            return OpenAIProvider(api_key=settings.openai_api_key, model=settings.openai_model)
         return GeminiProvider(api_key=settings.gemini_api_key, model=settings.gemini_model)
     except Exception:
-        return GeminiProvider()
+        return OpenAIProvider()
 
 
 def _await_rewrite(provider: EditorialProvider, **kwargs: Any) -> dict[str, Any]:
@@ -129,7 +140,7 @@ class EditorialService:
             "version": EDITORIAL_VERSION,
             "role": "writer_only",
             "agib_is_brain": True,
-            "gemini_is_writer_only": True,
+            "provider_is_writer_only": True,
             "never_generates_advice": True,
             "never_recommends_actions": True,
             "provider": self.provider.health(),

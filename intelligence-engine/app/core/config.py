@@ -464,10 +464,10 @@ class Settings(BaseSettings):
     answer_construction_v3: bool = True
     ask_agi_answer_construction_v3: bool = True
 
-    # Editorial Intelligence Layer — Gemini is the writer only; AGIB remains the brain.
+    # Editorial Intelligence Layer — provider is the writer only; AGIB remains the brain.
     editorial_layer: bool = True
     ask_agi_editorial_layer: bool = True
-    editorial_provider: str = "gemini"  # gemini | openai | claude | mistral | deepseek (writer swap)
+    editorial_provider: str = "openai"  # openai | gemini | claude | mistral | deepseek
     # Contradiction Reasoning Soft Layer — step-by-step conflict answers (not a top-level engine)
     contradiction_reasoning: bool = True
     ask_agi_contradiction_reasoning: bool = True

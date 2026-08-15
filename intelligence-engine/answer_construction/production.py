@@ -293,7 +293,7 @@ def package_for_ask_agi(**kwargs: Any) -> dict[str, Any]:
     except Exception:
         out.setdefault("contradiction_reasoning", {"enabled": False, "bypassed": True})
 
-    # Editorial Intelligence Layer — Gemini (or future providers) rewrite ONLY.
+    # Editorial Intelligence Layer — configured provider rewrites ONLY.
     # AGIB remains the brain; structured intelligence only; never documents.
     # Skip editorial override when contradiction / gold reasoning owns the executive.
     # Also skip inventing valuation prose when framework execution policy withholds narrative.
@@ -365,7 +365,7 @@ def package_for_ask_agi(**kwargs: Any) -> dict[str, Any]:
                         "editorial_fallback": editorial.get("fallback"),
                         "editorial_rewrite_only": True,
                     }
-                out["answer_policy"] = "agib_brain_gemini_editorial_writer"
+                out["answer_policy"] = "agib_brain_external_editorial_writer"
         except Exception:
             out.setdefault("editorial", {"enabled": False, "bypassed": True})
     else:

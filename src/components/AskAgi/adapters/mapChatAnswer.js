@@ -459,7 +459,7 @@ export function mapChatAnswer(pack) {
     conversationalOnly,
     answerFormat,
     presentation: {
-      depth: conversation.answer_depth || 'standard',
+      depth: conversation.answer_depth || 'brief',
       style: conversation.output_style || 'standard',
       audience: conversation.audience || 'analyst',
     },
