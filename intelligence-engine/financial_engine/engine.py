@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
+import math
 import time
 from typing import Any
 
@@ -24,7 +25,7 @@ def _failure(code: str, calculation_id: str, detail: str, started: float) -> dic
     }
 
 
-def _normalise_inputs(inputs: dict[str, Any], required: tuple[str, ...], as_of: str | None) -> tuple[dict[str, float], dict[str, Any]]:
+def _normalise_inputs(inputs: dict[str, Any], required: tuple[str, ...], as_of: str | None, *, allow_mixed_units: bool = False, allow_mixed_periods: bool = False) -> tuple[dict[str, float], dict[str, Any]]:
     values: dict[str, float] = {}
     metadata: dict[str, Any] = {}
     units: set[str] = set()
@@ -46,6 +47,8 @@ def _normalise_inputs(inputs: dict[str, Any], required: tuple[str, ...], as_of: 
         else:
             raise ValueError(f"INVALID_INPUT:{key}")
         values[key] = value
+        if not math.isfinite(value):
+            raise ValueError(f"INVALID_INPUT:{key} must be finite")
         metadata[key] = meta
         if meta.get("unit"): units.add(str(meta["unit"]).lower())
         if meta.get("currency"): currencies.add(str(meta["currency"]).upper())
@@ -54,11 +57,11 @@ def _normalise_inputs(inputs: dict[str, Any], required: tuple[str, ...], as_of: 
         available_at = meta.get("available_at")
         if as_of and available_at and str(available_at) > str(as_of):
             raise ValueError(f"POINT_IN_TIME_VIOLATION:{key}")
-    if len(units) > 1:
+    if len(units) > 1 and not allow_mixed_units:
         raise ValueError("UNIT_MISMATCH:inputs")
     if len(currencies) > 1:
         raise ValueError("CURRENCY_MISMATCH:inputs")
-    if len(periods) > 1:
+    if len(periods) > 1 and not allow_mixed_periods:
         raise ValueError("PERIOD_MISMATCH:inputs")
     return values, {
         "units": sorted(units), "currencies": sorted(currencies),
@@ -75,13 +78,16 @@ def calculate(*, calculation_id: str | None = None, operation: str | None = None
     if not isinstance(inputs, dict):
         return _failure("INVALID_INPUT", calc_id, "inputs must be an object", started)
     try:
-        values, provenance = _normalise_inputs(inputs, spec.required_inputs, as_of)
+        values, provenance = _normalise_inputs(inputs, spec.required_inputs, as_of,
+            allow_mixed_units=spec.allow_mixed_units, allow_mixed_periods=spec.allow_mixed_periods)
         if calc_id in {"CAGR"} and values.get("years", 0) <= 0:
             return _failure("INVALID_INPUT", calc_id, "years must be positive", started)
         if calc_id == "CAGR" and (values["beginning"] <= 0 or values["end"] < 0):
             return _failure("INVALID_INPUT", calc_id, "CAGR requires a positive beginning and non-negative ending value", started)
-        if calc_id == "JUSTIFIED_PB" and values["cost_of_equity"] <= values["growth"]:
+        if calc_id in {"JUSTIFIED_PB", "BANK_RESIDUAL_INCOME", "BANK_DDM"} and values["cost_of_equity"] <= values["growth"]:
             return _failure("INVALID_TERMINAL_GROWTH", calc_id, "cost of equity must exceed growth", started)
+        if calc_id == "BANK_IMPLIED_GROWTH" and values["price_to_book"] == 1.0:
+            return _failure("DIVISION_BY_ZERO", calc_id, "P/B cannot equal 1 for this algebraic reverse-growth form", started)
         value = spec.function(values)
     except ZeroDivisionError:
         return _failure("DIVISION_BY_ZERO", calc_id, "formula denominator is zero", started)
