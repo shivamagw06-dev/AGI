@@ -202,6 +202,7 @@ def build_core_read_executor(
     mee: Any | None = None,
     thesis: Any | None = None,
     search: Any | None = None,
+    calculator: Any | None = None,
 ) -> GovernedToolExecutor:
     """Bind existing AGI services without dynamic imports or hidden fallbacks."""
 
@@ -225,4 +226,9 @@ def build_core_read_executor(
     if search is not None:
         handlers["SEARCH_WEB"] = search.search_web
         handlers["SEARCH_NEWS"] = search.search_news
+    if calculator is None:
+        from financial_engine import calculate as calculator
+    handlers["CALCULATE"] = lambda operation, inputs: calculator(
+        calculation_id=operation, inputs=inputs
+    )
     return GovernedToolExecutor(handlers)
