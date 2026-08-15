@@ -22,6 +22,7 @@ def main() -> int:
     os.environ.setdefault("STRATEGY_REGISTRY_REFRESH_SECONDS", "1800")
 
     from app.core.logging import configure_logging, get_logger
+    from continuous_gather_learn.persist import write_gather_heartbeat
     from forecast_intelligence_engine.runtime import start, stop
     from scripts.gather_worker import _publish_remote_heartbeat
 
@@ -51,6 +52,10 @@ def main() -> int:
                 "FIE_RUNTIME": os.environ.get("FIE_RUNTIME"),
                 "FIE_BATCH": os.environ.get("FIE_BATCH"),
             }
+            try:
+                write_gather_heartbeat(payload)
+            except Exception as exc:  # noqa: BLE001
+                log.warning("forecast_worker_local_heartbeat_failed", extra={"error": str(exc)[:200]})
             remote = _publish_remote_heartbeat(payload)
             if not remote.get("published"):
                 log.warning("forecast_worker_heartbeat_failed", extra=remote)
