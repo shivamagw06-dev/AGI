@@ -1,5 +1,6 @@
 from strategy_lab.production import (
     _breakout,
+    _canonical_strategy_symbols,
     _cross_sectional_momentum,
     _momentum,
     _reversion,
@@ -121,3 +122,16 @@ def test_runtime_registry_refresh_preserves_durable_validation_evidence(monkeypa
     evidence = result["validation_registry"]["evidence"]
     assert evidence["parameter_stability"]["status"] == "FAILED"
     assert evidence["corporate_actions"]["status"] == "PARTIAL"
+
+
+def test_canonical_strategy_symbols_reads_official_membership(tmp_path):
+    path = tmp_path / "Nifty200.csv"
+    path.write_text(
+        "Company Name,Industry,Symbol,Series,ISIN Code\n"
+        "Alpha Ltd,Industrials,ALPHA,EQ,INE000000001\n"
+        "Beta Ltd,Industrials,BETA,BE,INE000000002\n"
+        "Gamma Ltd,Financial Services,GAMMA,EQ,INE000000003\n",
+        encoding="utf-8",
+    )
+
+    assert _canonical_strategy_symbols(path) == ["ALPHA", "GAMMA"]

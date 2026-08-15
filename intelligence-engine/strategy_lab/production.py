@@ -10,11 +10,13 @@ import math
 import hashlib
 import json
 import os
+import csv
 import statistics
 import threading
 import time
 from collections import defaultdict
 from datetime import datetime, timedelta, timezone
+from pathlib import Path
 from typing import Any
 from zoneinfo import ZoneInfo
 
@@ -124,6 +126,21 @@ def _num(value: Any) -> float | None:
     return out if math.isfinite(out) else None
 
 
+def _canonical_strategy_symbols(universe_path: Path | None = None) -> list[str]:
+    """Return the same official Nifty 200 membership used by the EOD collector."""
+    path = universe_path or (Path(__file__).resolve().parents[2] / "indices" / "Nifty200.csv")
+    try:
+        with path.open(newline="", encoding="utf-8-sig") as handle:
+            return [
+                str(row.get("Symbol") or "").strip().upper()
+                for row in csv.DictReader(handle)
+                if str(row.get("Series") or "").strip().upper() == "EQ"
+                and str(row.get("Symbol") or "").strip()
+            ]
+    except (OSError, csv.Error):
+        return []
+
+
 def _warehouse_rows(limit: int = 800_000) -> list[dict[str, Any]]:
     """Read raw immutable prices without the expensive cell-override overlay.
 
@@ -143,12 +160,18 @@ def _warehouse_rows(limit: int = 800_000) -> list[dict[str, Any]]:
         from institutional_warehouse import db
         from hedge_fund_lab.scanner import _universe
 
-        covered = sorted(
-            _universe(),
-            key=lambda row: float(row.get("market_cap") or 0),
-            reverse=True,
-        )
-        symbols = [str(row.get("ticker") or "").upper() for row in covered[:200]]
+        # The Upstox EOD collector maintains the canonical Nifty 200 universe.
+        # Strategy completeness must measure the same membership set; deriving
+        # it from valuation rows is unsafe because missing market caps can turn
+        # a nominal top-200 sort into an alphabetical small-cap selection.
+        symbols = _canonical_strategy_symbols()
+        if not symbols:
+            covered = sorted(
+                _universe(),
+                key=lambda row: float(row.get("market_cap") or 0),
+                reverse=True,
+            )
+            symbols = [str(row.get("ticker") or "").upper() for row in covered[:200]]
         symbols = [symbol for symbol in symbols if symbol]
         if not symbols:
             return []
