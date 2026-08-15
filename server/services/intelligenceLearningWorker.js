@@ -58,7 +58,7 @@ async function openAiJson({ model, instructions, input, effort = 'medium', maxOu
     body: JSON.stringify({
       model,
       instructions,
-      input,
+      input: `Return one valid JSON object only.\n\n${input}`,
       reasoning: { effort },
       text: { format: { type: 'json_object' } },
       max_output_tokens: maxOutputTokens,

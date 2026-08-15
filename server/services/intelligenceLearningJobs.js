@@ -1,6 +1,6 @@
 import { createSupabaseAdmin } from '../lib/supabaseAdmin.js';
 
-export const LEARNING_PIPELINE_VERSION = 'universal-learning-v2';
+export const LEARNING_PIPELINE_VERSION = 'universal-learning-v3';
 export const LEARNING_STAGES = Object.freeze([
   'classification',
   'facts_claims',
