@@ -2471,6 +2471,24 @@ async def bank_kpi_backfill(
     )
 
 
+@router.post(
+    "/financials-valuation/bank-kpis/reprocess-indexed",
+    dependencies=[Depends(require_token)],
+)
+async def bank_kpi_reprocess_indexed(
+    symbols: list[str] = Body(default=[]),
+    limit_per_bank: int = Query(default=20, ge=1, le=50),
+):
+    from financials_valuation.bank_kpi_backfill import reprocess_indexed_bank_documents
+
+    return await run_in_threadpool(
+        reprocess_indexed_bank_documents,
+        _faa,
+        symbols=symbols or None,
+        limit_per_bank=limit_per_bank,
+    )
+
+
 @router.post("/faa/jobs")
 async def faa_jobs():
     try:
