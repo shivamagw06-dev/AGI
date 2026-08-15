@@ -240,4 +240,6 @@ def build_core_read_executor(
     from company_intelligence_resolver import CompanyIntelligenceResolver
     company_resolver = CompanyIntelligenceResolver()
     handlers["GET_COMPANY_ANALYSIS"] = company_resolver.resolve
+    from causal_research_engine.service import ask_context
+    handlers["GET_CAUSAL_RESEARCH"] = ask_context
     return GovernedToolExecutor(handlers)

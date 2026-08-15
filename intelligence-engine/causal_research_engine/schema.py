@@ -144,3 +144,60 @@ class FinancialImpact:
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
+
+
+@dataclass(frozen=True)
+class CausalEvent:
+    event_id: str
+    title: str
+    event_type: str
+    occurred_at: str
+    available_at: str
+    company_id: str | None = None
+    industry: str | None = None
+    claims: tuple[str, ...] = ()
+    evidence: tuple[EvidenceReference, ...] = ()
+    status: str = "PROPOSED"
+    version: str = CRE_VERSION
+
+
+@dataclass(frozen=True)
+class ScenarioResult:
+    scenario_id: str
+    name: str
+    probability: float
+    relationship_ids: tuple[str, ...]
+    financial_impact_ids: tuple[str, ...]
+    assumptions: tuple[str, ...]
+    valuation_effect: str = "UNKNOWN"
+    epistemic_label: str = "SCENARIO"
+    status: str = "PROPOSED"
+    version: str = CRE_VERSION
+
+
+@dataclass(frozen=True)
+class ThesisUpdateProposal:
+    proposal_id: str
+    thesis_id: str
+    relationship_ids: tuple[str, ...]
+    impact_ids: tuple[str, ...]
+    direction: str
+    rationale: str
+    invalidation_conditions: tuple[str, ...] = ()
+    monitoring_indicators: tuple[str, ...] = ()
+    status: str = "PROPOSED"
+    version: str = CRE_VERSION
+
+
+@dataclass(frozen=True)
+class OutcomeRecord:
+    outcome_id: str
+    relationship_id: str
+    expected_direction: str
+    observed_direction: str
+    observation_date: str
+    evidence_ids: tuple[str, ...]
+    matched: bool
+    confidence_delta: float
+    status: str = "PROPOSED"
+    version: str = CRE_VERSION

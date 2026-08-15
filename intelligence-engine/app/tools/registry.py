@@ -43,6 +43,7 @@ _TOOLS = (
     ToolSpec("GET_FINANCIALS", "1.0", "read", "Retrieve reported or estimated warehouse financial observations.", "app.kaip_client.client.KAIPClient.get_company_profile", {"company": _field("str", required=True, limit=80), "metrics": _field("list", limit=40), "period": _field("str", limit=40), "frequency": _field("str", limit=20)}),
     ToolSpec("GET_MARKET_DATA", "1.0", "read", "Retrieve point-in-time market observations through governed providers.", "app.market_data.client.MarketDataClient.get_quote", {"symbol": _field("str", required=True, limit=40), "data_type": _field("str", limit=40)}, freshness_sensitive=True),
     ToolSpec("GET_CAUSAL_GRAPH", "1.0", "read", "Retrieve evidence-backed causal chains and counter-effects.", "causal_graph.production", {"entity": _field("str", limit=80), "industry": _field("str", limit=120), "event": _field("str", limit=240), "depth": _field("int", limit=6)}),
+    ToolSpec("GET_CAUSAL_RESEARCH", "1.0", "read", "Retrieve point-in-time governed causal research context from existing AGI relationship systems.", "causal_research_engine.service.ask_context", {"entity": _field("str", required=True, limit=80), "question": _field("str", limit=500), "industry": _field("str", limit=120), "depth": _field("int", limit=6), "analysis_as_of": _field("str", limit=32)}, max_calls=3),
     ToolSpec("GET_THESIS", "1.0", "read", "Retrieve current and historical thesis versions.", "app.ail.thesis_engine", {"company": _field("str", limit=80), "industry": _field("str", limit=120), "topic": _field("str", limit=240)}),
     ToolSpec("GET_LATEST_EVENTS", "1.0", "read", "Retrieve latest validated company, industry or macro events.", "app.mee.service.MarketEventEngineService.search", {"query": _field("str", required=True, limit=500), "limit": _field("int", limit=20)}, freshness_sensitive=True),
     ToolSpec("CALCULATE", "1.2", "read", "Run AFE from explicit inputs or resolve verified company inputs from the canonical warehouse.", "financial_engine.calculate", {"operation": _field("str", required=True, limit=60), "inputs": _field("dict", limit=50), "company": _field("str", limit=80), "period": _field("str", limit=40), "as_of_date": _field("str", limit=32), "currency": _field("str", limit=12), "unit": _field("str", limit=30)}, max_calls=15),
@@ -115,7 +116,9 @@ def plan_tools(question: str, *, ticker_hint: str | None = None) -> dict[str, An
         selected.extend(["GET_LATEST_EVENTS", "SEARCH_WEB"])
         reasons.update({"GET_LATEST_EVENTS": "freshness_required", "SEARCH_WEB": "current_world_check"})
     if _CAUSAL_RE.search(query):
-        selected.append("GET_CAUSAL_GRAPH"); reasons["GET_CAUSAL_GRAPH"] = "causal_question"
+        selected.extend(["GET_CAUSAL_GRAPH", "GET_CAUSAL_RESEARCH"])
+        reasons["GET_CAUSAL_GRAPH"] = "causal_question"
+        reasons["GET_CAUSAL_RESEARCH"] = "governed_causal_context"
     if _THESIS_RE.search(query):
         selected.append("GET_THESIS"); reasons["GET_THESIS"] = "view_or_thesis_question"
     if _FINANCIAL_RE.search(query):
