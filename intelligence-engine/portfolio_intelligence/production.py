@@ -234,9 +234,17 @@ def quality_gates() -> dict[str, Any]:
     out = analyse_portfolio(default_portfolio_id(), candidate="KOTAKBANK")
     report = out.get("report") or {}
     text = (report.get("text") or "").lower()
+    lineage = out.get("data_lineage") or {}
     checks = {
         "enabled": is_enabled(),
         "portfolio_found": bool(out.get("found")),
+        "immutable_live_portfolio_snapshot": bool(
+            lineage.get("source") == "institutional_warehouse" and lineage.get("immutable_snapshot")
+        ),
+        "holding_weights_valid": bool(lineage.get("weights_valid")),
+        "empirical_risk_history": bool(lineage.get("empirical_risk_ready")),
+        "empirical_risk_model": (out.get("risk") or {}).get("method") == "empirical_daily_returns_v1",
+        "attribution_history": bool(lineage.get("attribution_ready")),
         "never_replaces_company_analysis": bool(out.get("does_not_replace_company_analysis")),
         "candidate_in_portfolio_context": bool(out.get("candidate") and out.get("impact")),
         "diversification_calculated": (out.get("diversification") or {}).get("diversification") is not None,
@@ -248,7 +256,13 @@ def quality_gates() -> dict[str, Any]:
         "evidence_backed": (out.get("evidence") or {}).get("count", 0) >= 1,
         "flags": flags_dict().get("PORTFOLIO_INTELLIGENCE") is True,
     }
-    return {"passed": all(checks.values()), "checks": checks, "pio_version": PIO_VERSION}
+    return {
+        "passed": all(checks.values()),
+        "checks": checks,
+        "data_lineage": lineage,
+        "pio_version": PIO_VERSION,
+        "rule": "Seed portfolios and proxy risk mathematics may demonstrate structure but can never satisfy production governance.",
+    }
 
 
 def admin_page() -> str:

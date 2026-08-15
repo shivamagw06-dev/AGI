@@ -1794,6 +1794,107 @@ STRATEGY_PAPER_OUTCOMES = Tab(
     ),
 )
 
+PORTFOLIO_SNAPSHOTS = Tab(
+    id="portfolio_snapshots",
+    label="Portfolio Snapshots",
+    description="Immutable point-in-time portfolio mandates and aggregate state.",
+    mode="append",
+    key=("portfolio_id", "as_of"),
+    entity_column="portfolio_id",
+    order_by=("as_of DESC", "portfolio_id"),
+    search_columns=("portfolio_id", "name", "benchmark"),
+    icon="portfolio",
+    columns=(
+        _c("portfolio_id", "Portfolio ID", TEXT, required=True, width=180, group="Key"),
+        _c("as_of", "As Of", DATE, required=True, width=130, group="Key"),
+        _c("name", "Name", TEXT, width=220, group="Mandate"),
+        _c("objective", "Objective", TEXT, width=280, group="Mandate"),
+        _c("benchmark", "Benchmark", TEXT, width=160, group="Mandate"),
+        _c("base_currency", "Base Currency", TEXT, width=120, group="Mandate"),
+        _c("risk_tolerance", "Risk Tolerance", TEXT, width=140, group="Limits"),
+        _c("max_drawdown", "Max Drawdown", NUMBER, width=130, group="Limits"),
+        _c("single_name_limit", "Single Name Limit", NUMBER, width=150, group="Limits"),
+        _c("sector_limits", "Sector Limits", JSON, width=220, group="Limits"),
+        _c("benchmark_sector_weights", "Benchmark Sector Weights", JSON, width=240, group="Benchmark"),
+        _c("cash_weight", "Cash Weight", NUMBER, width=120, group="State"),
+        _c("status", "Status", TEXT, width=110, group="State"),
+        *PROVENANCE_COLUMNS,
+    ),
+)
+
+PORTFOLIO_HOLDINGS = Tab(
+    id="portfolio_holdings",
+    label="Portfolio Holdings",
+    description="Immutable holdings belonging to a dated portfolio snapshot.",
+    mode="append",
+    key=("portfolio_id", "as_of", "ticker"),
+    entity_column="portfolio_id",
+    order_by=("as_of DESC", "portfolio_id", "ticker"),
+    search_columns=("portfolio_id", "ticker", "sector"),
+    icon="portfolio",
+    columns=(
+        _c("portfolio_id", "Portfolio ID", TEXT, required=True, width=180, group="Key"),
+        _c("as_of", "As Of", DATE, required=True, width=130, group="Key"),
+        _c("ticker", "Ticker", TEXT, required=True, width=120, group="Key"),
+        _c("weight", "Weight", NUMBER, required=True, width=110, group="Position"),
+        _c("shares", "Shares", NUMBER, width=120, group="Position"),
+        _c("market_value", "Market Value", NUMBER, width=140, group="Position"),
+        _c("sector", "Sector", TEXT, width=150, group="Exposure"),
+        _c("industry", "Industry", TEXT, width=170, group="Exposure"),
+        _c("country", "Country", TEXT, width=100, group="Exposure"),
+        _c("beta", "Beta", NUMBER, width=100, group="Risk"),
+        _c("factors", "Factor Exposures", JSON, width=220, group="Risk"),
+        _c("conviction", "Conviction", TEXT, width=120, group="Research"),
+        *PROVENANCE_COLUMNS,
+    ),
+)
+
+PORTFOLIO_DAILY_RETURNS = Tab(
+    id="portfolio_daily_returns",
+    label="Portfolio Daily Returns",
+    description="Dated portfolio and benchmark returns used for empirical risk and attribution.",
+    mode="append",
+    key=("portfolio_id", "date"),
+    entity_column="portfolio_id",
+    order_by=("date DESC", "portfolio_id"),
+    search_columns=("portfolio_id",),
+    icon="portfolio",
+    columns=(
+        _c("portfolio_id", "Portfolio ID", TEXT, required=True, width=180, group="Key"),
+        _c("date", "Date", DATE, required=True, width=130, group="Key"),
+        _c("return_pct", "Return %", NUMBER, required=True, width=120, group="Performance"),
+        _c("benchmark_return_pct", "Benchmark Return %", NUMBER, width=170, group="Performance"),
+        _c("nav", "NAV", NUMBER, width=120, group="Performance"),
+        _c("gross_exposure", "Gross Exposure", NUMBER, width=140, group="Exposure"),
+        _c("net_exposure", "Net Exposure", NUMBER, width=130, group="Exposure"),
+        *PROVENANCE_COLUMNS,
+    ),
+)
+
+PORTFOLIO_ATTRIBUTION = Tab(
+    id="portfolio_attribution",
+    label="Portfolio Attribution",
+    description="Dated holding-level performance attribution with explicit residual.",
+    mode="append",
+    key=("portfolio_id", "date", "ticker"),
+    entity_column="portfolio_id",
+    order_by=("date DESC", "portfolio_id", "ticker"),
+    search_columns=("portfolio_id", "ticker", "sector"),
+    icon="portfolio",
+    columns=(
+        _c("portfolio_id", "Portfolio ID", TEXT, required=True, width=180, group="Key"),
+        _c("date", "Date", DATE, required=True, width=130, group="Key"),
+        _c("ticker", "Ticker", TEXT, required=True, width=120, group="Key"),
+        _c("sector", "Sector", TEXT, width=150, group="Exposure"),
+        _c("starting_weight", "Starting Weight", NUMBER, width=150, group="Attribution"),
+        _c("security_return_pct", "Security Return %", NUMBER, width=160, group="Attribution"),
+        _c("contribution_pct", "Contribution %", NUMBER, width=150, group="Attribution"),
+        _c("benchmark_contribution_pct", "Benchmark Contribution %", NUMBER, width=210, group="Attribution"),
+        _c("active_contribution_pct", "Active Contribution %", NUMBER, width=190, group="Attribution"),
+        *PROVENANCE_COLUMNS,
+    ),
+)
+
 # --------------------------------------------------------------------------
 # Phase 9.0 — Macro Intelligence Engine warehouse tabs
 # --------------------------------------------------------------------------
@@ -2071,6 +2172,10 @@ TABS: tuple[Tab, ...] = (
     FORECAST_RUNTIME,
     STRATEGY_PAPER_SNAPSHOTS,
     STRATEGY_PAPER_OUTCOMES,
+    PORTFOLIO_SNAPSHOTS,
+    PORTFOLIO_HOLDINGS,
+    PORTFOLIO_DAILY_RETURNS,
+    PORTFOLIO_ATTRIBUTION,
     MACRO_SERIES,
     MACRO_LATEST,
     MACRO_EVENTS,

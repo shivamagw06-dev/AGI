@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import math
 from typing import Any
 
 # Sector vol priors (annualised approx)
@@ -53,4 +54,64 @@ def risk_budget(
         "drawdown_budget_usage": round(dd_usage, 3),
         "contributions": sorted(contrib, key=lambda c: -c["risk_contribution_proxy"])[:10],
         "stress_concentration": "elevated" if dd_usage > 1.1 else "within_budget",
+        "method": "sector_volatility_prior_v1",
+    }
+
+
+def empirical_risk_budget(rows: list[dict[str, Any]], *, max_drawdown: float) -> dict[str, Any] | None:
+    """Calculate portfolio risk from dated realized returns; percentages are converted to decimals."""
+    pairs = []
+    for row in rows:
+        try:
+            portfolio_return = float(row.get("return_pct")) / 100.0
+        except (TypeError, ValueError):
+            continue
+        benchmark = row.get("benchmark_return_pct")
+        try:
+            benchmark_return = float(benchmark) / 100.0 if benchmark is not None else None
+        except (TypeError, ValueError):
+            benchmark_return = None
+        pairs.append((portfolio_return, benchmark_return))
+    if len(pairs) < 63:
+        return None
+    values = [row[0] for row in pairs]
+    mean = sum(values) / len(values)
+    variance = sum((value - mean) ** 2 for value in values) / max(1, len(values) - 1)
+    volatility = math.sqrt(variance) * math.sqrt(252)
+    wealth = peak = 1.0
+    drawdown = 0.0
+    for value in values:
+        wealth *= 1.0 + value
+        peak = max(peak, wealth)
+        drawdown = min(drawdown, wealth / peak - 1.0)
+    comparable = [(p, b) for p, b in pairs if b is not None]
+    beta = tracking_error = None
+    if len(comparable) >= 63:
+        p_values = [row[0] for row in comparable]
+        b_values = [row[1] for row in comparable]
+        p_mean = sum(p_values) / len(p_values)
+        b_mean = sum(b_values) / len(b_values)
+        covariance = sum((p - p_mean) * (b - b_mean) for p, b in comparable) / max(1, len(comparable) - 1)
+        benchmark_variance = sum((b - b_mean) ** 2 for b in b_values) / max(1, len(b_values) - 1)
+        beta = covariance / benchmark_variance if benchmark_variance > 1e-12 else None
+        active = [p - b for p, b in comparable]
+        active_mean = sum(active) / len(active)
+        active_variance = sum((value - active_mean) ** 2 for value in active) / max(1, len(active) - 1)
+        tracking_error = math.sqrt(active_variance) * math.sqrt(252)
+    budget = max(0.01, float(max_drawdown or 0.25))
+    usage = abs(drawdown) / budget
+    return {
+        "risk_score": round(max(0.0, min(100.0, 100.0 - volatility * 150 - max(0.0, usage - 1.0) * 40)), 1),
+        "expected_volatility": round(volatility, 4),
+        "downside_risk_proxy": round(abs(drawdown), 4),
+        "realized_max_drawdown": round(drawdown, 4),
+        "max_drawdown_budget": budget,
+        "drawdown_budget_usage": round(usage, 4),
+        "beta_to_benchmark": round(beta, 4) if beta is not None else None,
+        "tracking_error": round(tracking_error, 4) if tracking_error is not None else None,
+        "observations": len(values),
+        "benchmark_observations": len(comparable),
+        "contributions": [],
+        "stress_concentration": "breach" if usage > 1.0 else "within_budget",
+        "method": "empirical_daily_returns_v1",
     }

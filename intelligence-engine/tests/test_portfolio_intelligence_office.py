@@ -25,11 +25,13 @@ def test_pio_health_and_candidate_impact():
     assert "buy now" not in ((out.get("report") or {}).get("text") or "").lower()
 
     qg = quality_gates()
-    assert qg["passed"] is True
+    assert qg["passed"] is False
+    assert qg["checks"]["immutable_live_portfolio_snapshot"] is False
+    assert qg["data_lineage"]["source"] == "seed_research_pack"
 
     committee = soft_slice_for_analyst("KOTAKBANK", analyst="committee")
     assert committee["portfolio_intelligence"]["impact"]
-    assert soft_slice_for_irs()["portfolio_intelligence"]["quality_gates_passed"] is True
+    assert soft_slice_for_irs()["portfolio_intelligence"]["quality_gates_passed"] is False
 
 
 def test_pio_already_held_candidate():

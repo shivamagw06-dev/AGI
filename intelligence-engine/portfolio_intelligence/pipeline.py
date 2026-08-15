@@ -20,7 +20,7 @@ from portfolio_intelligence.overlap.score import overlap_analysis
 from portfolio_intelligence.portfolio.packs import default_portfolio_id, portfolio_for
 from portfolio_intelligence.quality.pqe import portfolio_quality, quality_delta
 from portfolio_intelligence.reports.build import build_report, portfolio_health_block, suitability_matrix
-from portfolio_intelligence.risk_budget.score import risk_budget
+from portfolio_intelligence.risk_budget.score import empirical_risk_budget, risk_budget
 from portfolio_intelligence.scenario.engine import run_scenarios
 from portfolio_intelligence.schema import PIO_VERSION
 from portfolio_intelligence.watchlist.rank import rank_watchlist
@@ -36,7 +36,10 @@ _CANDIDATE_META = {
 }
 
 
-def _snapshot(holdings: list[dict[str, Any]], profile: dict[str, Any], cash_weight: float) -> dict[str, Any]:
+def _snapshot(
+    holdings: list[dict[str, Any]], profile: dict[str, Any], cash_weight: float,
+    *, daily_returns: list[dict[str, Any]] | None = None,
+) -> dict[str, Any]:
     divers = diversification_score(holdings, cash_weight=cash_weight)
     conc = concentration_score(
         holdings,
@@ -50,6 +53,10 @@ def _snapshot(holdings: list[dict[str, Any]], profile: dict[str, Any], cash_weig
         max_drawdown=float(profile.get("max_drawdown") or 0.25),
         avg_corr=float(corr.get("avg_pairwise_correlation") or 0.4),
     )
+    empirical = empirical_risk_budget(daily_returns or [], max_drawdown=float(profile.get("max_drawdown") or 0.25))
+    if empirical:
+        empirical["contributions"] = risk.get("contributions") or []
+        risk = empirical
     liq = liquidity_score(holdings)
     alloc = allocation_analysis(
         holdings,
@@ -104,11 +111,13 @@ def analyse_portfolio(
         return {"portfolio_id": pid, "found": False, "pio_version": PIO_VERSION}
 
     profile = book["profile"]
+    data_lineage = book.get("data_lineage") or {"source": "unknown"}
     holdings = list(book.get("holdings") or [])
     cash = float(book.get("cash_weight") or 0)
     bench = book.get("benchmark_sector_weights") or {}
+    daily_returns = book.get("daily_returns") or []
 
-    current = _snapshot(holdings, profile, cash)
+    current = _snapshot(holdings, profile, cash, daily_returns=daily_returns)
     current["allocation"] = allocation_analysis(
         holdings,
         cash_weight=cash,
@@ -240,6 +249,7 @@ def analyse_portfolio(
         "pio_version": PIO_VERSION,
         "primary_question": "Does this investment improve portfolio quality?",
         "profile": profile,
+        "data_lineage": data_lineage,
         "holdings": holdings,
         "cash_weight": cash,
         "health": health,
