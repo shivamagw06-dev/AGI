@@ -53,6 +53,8 @@ def test_forecast_only_worker_exists_without_full_gather_defaults():
     text = script.read_text(encoding="utf-8")
     assert 'os.environ["AGI_ROLE"] = "gather_worker"' in text
     assert 'os.environ.setdefault("FIE_RUNTIME", "true")' in text
+    assert "STRATEGY_REGISTRY_REFRESH_SECONDS" in text
+    assert "strategy_registry_refreshed" in text
     assert "CONTINUOUS_HISTORICAL_BACKFILL" not in text
     assert "FAA_BACKGROUND_COLLECTOR" not in text
 

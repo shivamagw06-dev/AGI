@@ -19,6 +19,7 @@ def main() -> int:
     os.environ.setdefault("FIE_RUNTIME", "true")
     os.environ.setdefault("FIE_BATCH", "1")
     os.environ.setdefault("FIE_INTERVAL_SECONDS", "180")
+    os.environ.setdefault("STRATEGY_REGISTRY_REFRESH_SECONDS", "1800")
 
     from app.core.logging import configure_logging, get_logger
     from forecast_intelligence_engine.runtime import start, stop
@@ -28,6 +29,10 @@ def main() -> int:
     log = get_logger("agi.forecast_worker")
     boot = start()
     log.info("forecast_worker_started", extra=boot)
+    try:
+        registry_interval = max(300.0, float(os.environ["STRATEGY_REGISTRY_REFRESH_SECONDS"]))
+    except (TypeError, ValueError):
+        registry_interval = 1800.0
     stopping = {"value": False}
 
     def handle_stop(signum, _frame):  # noqa: ANN001
@@ -37,6 +42,7 @@ def main() -> int:
     signal.signal(signal.SIGTERM, handle_stop)
     signal.signal(signal.SIGINT, handle_stop)
     last_heartbeat = 0.0
+    last_registry_refresh = 0.0
     while not stopping["value"]:
         if time.monotonic() - last_heartbeat >= 30.0:
             payload = {
@@ -49,6 +55,21 @@ def main() -> int:
             if not remote.get("published"):
                 log.warning("forecast_worker_heartbeat_failed", extra=remote)
             last_heartbeat = time.monotonic()
+        if time.monotonic() - last_registry_refresh >= registry_interval:
+            try:
+                from strategy_lab.production import dashboard
+
+                registry = dashboard(limit=1)
+                log.info(
+                    "strategy_registry_refreshed",
+                    extra={
+                        "strategies": len(registry.get("strategies") or []),
+                        "persistence": (registry.get("validation_registry") or {}).get("persistence"),
+                    },
+                )
+            except Exception as exc:  # noqa: BLE001
+                log.warning("strategy_registry_refresh_failed", extra={"error": str(exc)[:240]})
+            last_registry_refresh = time.monotonic()
         time.sleep(5.0)
     stop()
     log.info("forecast_worker_stopped")
