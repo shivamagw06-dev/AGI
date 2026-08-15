@@ -7,17 +7,8 @@ from typing import Any
 
 
 SCHEDULE = [
-    {"stream": "exchange_filings", "cadence": "every_5_minutes", "connectors": ["nse", "bse"]},
-    {"stream": "news", "cadence": "every_5_minutes", "connectors": ["news", "rss", "search_api"]},
-    {"stream": "rss", "cadence": "every_10_minutes", "connectors": ["rss"]},
-    {"stream": "government", "cadence": "hourly", "connectors": ["rbi", "sebi", "government", "pib", "mca"]},
-    {"stream": "annual_reports", "cadence": "daily", "connectors": ["company_ir", "pdf_url"]},
-    {"stream": "investor_presentations", "cadence": "daily", "connectors": ["company_ir"]},
-    {
-        "stream": "quarterly_reports",
-        "cadence": "every_hour_during_earnings_season",
-        "connectors": ["company_ir", "nse", "bse"],
-    },
+    {"stream": "daily_research", "cadence": "01:00_IST_daily_bounded_60_minutes", "connectors": ["company_ir", "nse", "bse", "sebi", "rbi", "mca", "pib", "news", "rss", "search_api"]},
+    {"stream": "evening_filings", "cadence": "18:00_IST_daily_bounded_15_minutes", "connectors": ["nse", "bse", "sebi", "rbi", "company_ir"]},
 ]
 
 WATCHLIST_QUERIES = [
@@ -27,6 +18,12 @@ WATCHLIST_QUERIES = [
     "HDFC Bank exchange filings and news",
     "RBI monetary policy press release",
     "SEBI notifications latest",
+]
+
+EVENING_FILINGS_QUERIES = [
+    "NSE BSE material corporate announcements latest",
+    "SEBI RBI regulatory notifications latest",
+    "company investor relations results filings latest India",
 ]
 
 

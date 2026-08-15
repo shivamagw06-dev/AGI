@@ -1,102 +1,141 @@
-"""FAA background collector — never runs on the Ask request path.
+"""Scheduled FAA collector, isolated from the Ask request path.
 
-Architecture:
-  FAA Collector (this module) → FRE/FAA in-memory snapshot → Ask reads index only
-
-Enable with ``FAA_BACKGROUND_COLLECTOR=1`` (default on). Interval via
-``FAA_COLLECTOR_INTERVAL_SEC`` (default 300).
+Default policy (Asia/Kolkata):
+  * 01:00 — full bounded daily acquisition, starts only inside a one-hour window.
+  * 18:00 — small filings/regulatory sweep after the market close.
 """
 
 from __future__ import annotations
 
+from datetime import datetime
 import logging
 import os
 import threading
 import time
 from typing import Any, Callable
+from zoneinfo import ZoneInfo
 
 log = logging.getLogger("agi.faa.background")
+IST = ZoneInfo("Asia/Kolkata")
 
 _STOP = threading.Event()
 _THREAD: threading.Thread | None = None
+_LAST_RUN_DATE: dict[str, str] = {}
 
 
 def _env_truthy(name: str, default: str = "1") -> bool:
     return str(os.environ.get(name, default)).strip().lower() in {"1", "true", "yes", "on"}
 
 
-def _interval_sec() -> float:
+def _env_int(name: str, default: int, low: int, high: int) -> int:
     try:
-        return max(60.0, float(os.environ.get("FAA_COLLECTOR_INTERVAL_SEC") or "300"))
+        return max(low, min(high, int(os.environ.get(name) or default)))
     except ValueError:
-        return 300.0
+        return default
 
 
-def _limit() -> int:
-    try:
-        return max(2, min(16, int(os.environ.get("FAA_COLLECTOR_LIMIT") or "6")))
-    except ValueError:
-        return 6
+def _limit(mode: str) -> int:
+    default = 3 if mode == "nightly" else 2
+    key = "FAA_NIGHTLY_LIMIT" if mode == "nightly" else "FAA_EVENING_LIMIT"
+    return _env_int(key, default, 1, 8)
+
+
+def _max_runtime_sec(mode: str) -> int:
+    default = 3_600 if mode == "nightly" else 900
+    key = "FAA_NIGHTLY_MAX_RUNTIME_SEC" if mode == "nightly" else "FAA_EVENING_MAX_RUNTIME_SEC"
+    return _env_int(key, default, 60, 3_600)
 
 
 def collector_enabled() -> bool:
     return _env_truthy("FAA_BACKGROUND_COLLECTOR", "1")
 
 
-def run_collector_once(faa: Any) -> dict[str, Any]:
-    """One background refresh cycle. Safe to call from a worker thread."""
+def due_mode(now: datetime | None = None) -> str | None:
+    current = (now or datetime.now(IST)).astimezone(IST)
+    date_key = current.date().isoformat()
+    nightly_hour = _env_int("FAA_NIGHTLY_HOUR_IST", 1, 0, 23)
+    evening_hour = _env_int("FAA_EVENING_HOUR_IST", 18, 0, 23)
+    if current.hour == nightly_hour and _LAST_RUN_DATE.get("nightly") != date_key:
+        return "nightly"
+    if (
+        _env_truthy("FAA_EVENING_FILINGS_SWEEP", "1")
+        and current.hour == evening_hour
+        and _LAST_RUN_DATE.get("evening_filings") != date_key
+    ):
+        return "evening_filings"
+    return None
+
+
+def run_collector_once(faa: Any, *, mode: str = "nightly") -> dict[str, Any]:
+    """Run one bounded scheduled collection cycle."""
     if faa is None:
-        return {"ok": False, "error": "faa_unbound"}
+        return {"ok": False, "error": "faa_unbound", "mode": mode}
     if hasattr(faa, "refresh_snapshots"):
-        return faa.refresh_snapshots(limit_per_query=_limit())
-    if hasattr(faa, "run_jobs"):
-        return faa.run_jobs()
-    return {"ok": False, "error": "no_refresh_method"}
+        return faa.refresh_snapshots(
+            limit_per_query=_limit(mode),
+            mode=mode,
+            max_runtime_sec=_max_runtime_sec(mode),
+        )
+    return {"ok": False, "error": "no_refresh_method", "mode": mode}
 
 
 def _loop(faa_factory: Callable[[], Any]) -> None:
-    # Stagger first run so boot/health stay responsive.
-    time.sleep(min(45.0, _interval_sec() / 4))
-    while not _STOP.is_set():
+    # No collection on boot. Poll cheaply until a configured IST window opens.
+    while not _STOP.wait(30.0):
         if not collector_enabled():
-            _STOP.wait(30.0)
             continue
+        mode = due_mode()
+        if not mode:
+            continue
+        date_key = datetime.now(IST).date().isoformat()
+        # Reserve the slot before work begins, preventing duplicate starts.
+        _LAST_RUN_DATE[mode] = date_key
         try:
-            faa = faa_factory()
-            result = run_collector_once(faa)
+            result = run_collector_once(faa_factory(), mode=mode)
             log.info(
-                "faa_background_cycle",
+                "faa_scheduled_cycle",
                 extra={
+                    "mode": mode,
                     "ok": bool(result.get("ok", True)),
                     "queries": result.get("queries") or len(result.get("runs") or []),
                     "errors": len(result.get("errors") or []),
+                    "deferred": result.get("deferred") or 0,
                 },
             )
-        except Exception as exc:  # noqa: BLE001 — never kill the collector thread
-            log.warning("faa_background_cycle_failed", extra={"error": str(exc)[:200]})
-        _STOP.wait(_interval_sec())
+        except Exception as exc:  # noqa: BLE001
+            log.warning("faa_scheduled_cycle_failed", extra={"mode": mode, "error": str(exc)[:200]})
+
+
+def schedule_status() -> dict[str, Any]:
+    return {
+        "timezone": "Asia/Kolkata",
+        "nightly": {
+            "hour": _env_int("FAA_NIGHTLY_HOUR_IST", 1, 0, 23),
+            "window_minutes": 60,
+            "max_runtime_seconds": _max_runtime_sec("nightly"),
+            "limit_per_query": _limit("nightly"),
+            "last_run_date": _LAST_RUN_DATE.get("nightly"),
+        },
+        "evening_filings": {
+            "enabled": _env_truthy("FAA_EVENING_FILINGS_SWEEP", "1"),
+            "hour": _env_int("FAA_EVENING_HOUR_IST", 18, 0, 23),
+            "max_runtime_seconds": _max_runtime_sec("evening_filings"),
+            "limit_per_query": _limit("evening_filings"),
+            "last_run_date": _LAST_RUN_DATE.get("evening_filings"),
+        },
+    }
 
 
 def start_background_collector(faa_factory: Callable[[], Any]) -> dict[str, Any]:
-    """Start daemon collector thread once. Idempotent."""
     global _THREAD
     if not collector_enabled():
-        return {"started": False, "reason": "disabled"}
+        return {"started": False, "reason": "disabled", "schedule": schedule_status()}
     if _THREAD is not None and _THREAD.is_alive():
-        return {"started": False, "reason": "already_running"}
+        return {"started": False, "reason": "already_running", "schedule": schedule_status()}
     _STOP.clear()
-    _THREAD = threading.Thread(
-        target=_loop,
-        args=(faa_factory,),
-        name="faa-background-collector",
-        daemon=True,
-    )
+    _THREAD = threading.Thread(target=_loop, args=(faa_factory,), name="faa-scheduled-collector", daemon=True)
     _THREAD.start()
-    return {
-        "started": True,
-        "interval_sec": _interval_sec(),
-        "limit": _limit(),
-    }
+    return {"started": True, "schedule": schedule_status()}
 
 
 def stop_background_collector() -> None:

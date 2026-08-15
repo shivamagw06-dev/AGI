@@ -55,4 +55,23 @@ Health exposes connector status, queue depth, worker count, cache size, live-fet
 
 `/v1/faa/health|dashboard|discover|acquire|connectors|jobs|consult|scheduler`
 
+## Background collection policy
+
+FAA does not acquire documents on the Ask request path. The default scheduled
+policy uses `Asia/Kolkata` time:
+
+- 01:00 IST: bounded daily research collection, with a 60-minute start window
+  and maximum runtime budget of 3,600 seconds.
+- 18:00 IST: small post-market filings and regulatory sweep, capped at 900
+  seconds.
+
+The collector runs each window at most once per local date. It stops starting
+new queries when the runtime deadline is reached and reports remaining work as
+deferred. Intraday market prices remain owned by market-data providers, while
+Ask AGI's bounded external search remains independent.
+
+Configuration: `FAA_NIGHTLY_HOUR_IST`, `FAA_NIGHTLY_MAX_RUNTIME_SEC`,
+`FAA_NIGHTLY_LIMIT`, `FAA_EVENING_FILINGS_SWEEP`, `FAA_EVENING_HOUR_IST`,
+`FAA_EVENING_MAX_RUNTIME_SEC`, and `FAA_EVENING_LIMIT`.
+
 BFF: `/api/intelligence/faa/*`

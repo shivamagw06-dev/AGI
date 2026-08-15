@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import time
 from typing import Any
 
 from app.core.config import get_settings
@@ -62,6 +63,8 @@ class FaaService:
             raise RuntimeError("FAA disabled")
 
     def health(self) -> dict[str, Any]:
+        from app.faa.background import schedule_status
+
         connector_health = [c.health() for c in self.connectors.values()]
         degraded = [c["connector_id"] for c in connector_health if c.get("status") != "ok"]
         return {
@@ -97,11 +100,14 @@ class FaaService:
             "http": self.pipeline.client.stats(),
             "metrics": self.metrics.model_dump(),
             "scheduler": self.scheduler.status() if self.flags.faa_scheduler else {},
+            "collection_policy": schedule_status(),
             "fre_bound": self.fre is not None,
             "last_successful_acquisition": self.metrics.last_success_at,
         }
 
     def dashboard(self) -> dict[str, Any]:
+        from app.faa.background import schedule_status
+
         self._require()
         return {
             "programme": "FAA",
@@ -115,6 +121,7 @@ class FaaService:
             "versions": self.store.snapshot(),
             "http": self.pipeline.client.stats(),
             "scheduler": self.scheduler.status(),
+            "collection_policy": schedule_status(),
             "connectors": [c.health() for c in self.connectors.values()],
             "recent_urls": list(self.cache.by_url.values())[-40:],
         }
@@ -196,28 +203,43 @@ class FaaService:
             "versions": self.store.snapshot(),
         }
 
-    def refresh_snapshots(self, *, limit_per_query: int = 6) -> dict[str, Any]:
+    def refresh_snapshots(
+        self,
+        *,
+        limit_per_query: int = 6,
+        mode: str = "nightly",
+        max_runtime_sec: int = 3_600,
+    ) -> dict[str, Any]:
         """Background collector cycle — fills FRE/FAA snapshot store off the Ask path."""
         self._require()
         runs: list[dict[str, Any]] = []
         errors: list[str] = []
-        # Keep cycles bounded so starter-plan memory/CPU survive.
-        for q in WATCHLIST_QUERIES[:4]:
+        from app.faa.scheduler import EVENING_FILINGS_QUERIES
+
+        queries = EVENING_FILINGS_QUERIES if mode == "evening_filings" else WATCHLIST_QUERIES
+        deadline = time.monotonic() + max(60, min(int(max_runtime_sec), 3_600))
+        deferred = 0
+        for index, q in enumerate(queries):
+            if time.monotonic() >= deadline:
+                deferred = len(queries) - index
+                break
             try:
                 runs.append(self.acquire(q, limit=limit_per_query))
             except Exception as exc:  # noqa: BLE001
                 errors.append(f"{q[:48]}: {str(exc)[:120]}")
                 runs.append({"query": q, "error": str(exc)[:160]})
         self.scheduler.mark_run(
-            "background_collector",
+            mode,
             queries=len(runs),
             errors=len(errors),
+            deferred=deferred,
         )
         return {
             "ok": not errors,
             "programme": "FAA",
-            "mode": "background_collector",
+            "mode": mode,
             "queries": len(runs),
+            "deferred": deferred,
             "runs": runs,
             "errors": errors,
             "scheduler": self.scheduler.status(),

@@ -64,6 +64,10 @@ def test_background_collector_uses_refresh_snapshots():
     faa = MagicMock()
     faa.refresh_snapshots.return_value = {"ok": True, "queries": 2, "runs": []}
     out = run_collector_once(faa)
-    faa.refresh_snapshots.assert_called_once()
+    faa.refresh_snapshots.assert_called_once_with(
+        limit_per_query=3,
+        mode="nightly",
+        max_runtime_sec=3600,
+    )
     assert out["ok"] is True
     assert collector_enabled() in {True, False}  # env-dependent, just callable
