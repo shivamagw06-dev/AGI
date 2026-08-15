@@ -246,4 +246,6 @@ def build_core_read_executor(
     handlers["GET_BANK_VALUATION"] = evaluate_bank
     from financials_valuation.facade import evaluate_financial_institution
     handlers["GET_FINANCIAL_VALUATION"] = evaluate_financial_institution
+    from technology_valuation.service import evaluate_technology_company
+    handlers["GET_TECHNOLOGY_VALUATION"] = evaluate_technology_company
     return GovernedToolExecutor(handlers)

@@ -92,6 +92,18 @@ def calculate(*, calculation_id: str | None = None, operation: str | None = None
             return _failure("DIVISION_BY_ZERO", calc_id, "P/B cannot equal 1 for this algebraic reverse-growth form", started)
         if calc_id == "IMPLIED_GROWTH_FROM_MULTIPLE" and (values["terminal_multiple"] <= 0 or values["horizon_years"] <= 0):
             return _failure("INVALID_INPUT", calc_id, "terminal multiple and horizon years must be positive", started)
+        if calc_id == "UTILIZATION_REVENUE_CAPACITY" and (
+            not 0 <= values["utilization"] <= 1 or values["opening_headcount"] <= 0
+            or values["closing_headcount"] <= 0 or values["billing_rate"] <= 0
+            or values["billable_periods"] <= 0
+        ):
+            return _failure("INVALID_INPUT", calc_id, "utilization must be 0-1 and capacity inputs must be positive", started)
+        if calc_id == "IT_SERVICES_SCENARIO_PRICE" and (
+            values["revenue"] <= 0 or values["revenue_growth"] <= -1
+            or not 0 <= values["ebit_margin"] <= 1 or not 0 <= values["tax_rate"] <= 1
+            or values["shares_outstanding"] <= 0 or values["target_pe"] <= 0
+        ):
+            return _failure("INVALID_INPUT", calc_id, "scenario economics are outside valid bounds", started)
         value = spec.function(values)
     except ZeroDivisionError:
         return _failure("DIVISION_BY_ZERO", calc_id, "formula denominator is zero", started)
@@ -120,7 +132,7 @@ def calculate(*, calculation_id: str | None = None, operation: str | None = None
         "as_of": as_of,
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "validation": {"status": "VALID"},
-        "warnings": ["SCENARIO_NOT_FACT"] if calc_id == "TELECOM_REVENUE_IMPACT" else [],
+        "warnings": ["SCENARIO_NOT_FACT"] if calc_id in {"TELECOM_REVENUE_IMPACT", "IT_SERVICES_SCENARIO_PRICE", "UTILIZATION_REVENUE_CAPACITY"} else [],
         "execution_time_ms": round((time.perf_counter() - started) * 1000, 3),
         "deterministic": True,
         "model_generated_formula": False,

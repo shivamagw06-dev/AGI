@@ -85,6 +85,24 @@ def seed_financial_models(*, transport: Transport = _rest) -> dict[str, Any]:
             "certified_models":0, "execution_eligible_models":0}
 
 
+def seed_sector_model(model: Any, *, parent_sector: str, transport: Transport = _rest) -> dict[str, Any]:
+    """Shared idempotent persistence path for reviewed non-Financials curricula."""
+    payload = model.to_dict()
+    digest = _hash(payload)
+    now = datetime.now(timezone.utc).isoformat()
+    transport("POST", "sector_valuation_models", query="?on_conflict=sector_id", body={
+        "sector_id":model.sector_id,"sector_name":model.sector_name,"parent_sector":parent_sector,
+        "subsector":model.subsector,"active_version":model.version,"validation_status":model.validation_status,
+        "confidence":model.confidence,"effective_date":model.effective_date,"updated_at":now,
+    }, prefer="resolution=merge-duplicates,return=minimal")
+    transport("POST", "sector_valuation_model_versions", query="?on_conflict=sector_id,version", body={
+        "sector_id":model.sector_id,"version":model.version,"model_payload":payload,"content_hash":digest,
+        "created_by":"agi-code-reviewed-model",
+    }, prefer="resolution=ignore-duplicates,return=minimal")
+    return {"ok":True,"sector_id":model.sector_id,"version":model.version,"content_hash":digest,
+            "curriculum_validation_status":model.validation_status,"certified":False,"execution_eligible":False}
+
+
 def persist_evidence(evidence: dict[str, Any], *, subsector: str = "COMMERCIAL_BANK", transport: Transport = _rest) -> dict[str, Any]:
     model = ALL_MODELS.get(subsector)
     if model is None:
@@ -135,6 +153,23 @@ def persist_certification(result: dict[str, Any], *, transport: Transport = _res
     }
     transport("POST", "sector_valuation_certifications", body=body, prefer="return=minimal")
     return {"ok": True, "status": status, "automatic_promotion": False}
+
+
+def persist_sector_certification(result: dict[str, Any], *, model: Any, transport: Transport = _rest) -> dict[str, Any]:
+    """Persist another sector's certification without granting investment approval."""
+    status=str(result.get("certification_status") or "NOT_STARTED")
+    total=int(result.get("total_gates") or 0); gates=result.get("gates") or {}; passed=int(result.get("passed_gates") or 0)
+    if status=="PASSED":
+        review_ok=all((result.get("authorized_reviewer"),result.get("reviewer_authorized"),result.get("review_evidence_id")))
+        if not review_ok or total<=0 or len(gates)!=total or passed!=total or not all(value is True for value in gates.values()):
+            return {"ok":False,"status":"VALIDATION_FAILED","reason":"complete_gates_and_external_review_required"}
+    body={"sector_id":model.sector_id,"model_version":model.version,"certification_status":status,
+          "gates":{**gates,"_review_evidence_id":result.get("review_evidence_id"),"_investment_certified":False},
+          "passed_gates":passed,"total_gates":total,"evaluated_companies":sorted((result.get("companies") or {}).keys()),
+          "evidence_cutoff":result.get("evidence_cutoff"),"reviewer":result.get("authorized_reviewer"),
+          "certified_at":datetime.now(timezone.utc).isoformat() if status=="PASSED" else None}
+    transport("POST","sector_valuation_certifications",body=body,prefer="return=minimal")
+    return {"ok":True,"status":status,"investment_certified":False,"automatic_promotion":False}
 
 
 def table_health(*, transport: Transport = _rest) -> dict[str, Any]:

@@ -1,0 +1,15 @@
+"""Phase 2A persistence through the existing generic sector registry."""
+from __future__ import annotations
+from typing import Any, Callable
+from financials_valuation.persistence import persist_sector_certification, seed_sector_model
+from technology_valuation.model import IT_SERVICES_MODEL, TECHNOLOGY_PARENT_SECTOR
+
+Transport=Callable[...,Any]
+
+
+def seed_it_services_model(*, transport: Transport) -> dict[str,Any]:
+    return seed_sector_model(IT_SERVICES_MODEL,parent_sector=TECHNOLOGY_PARENT_SECTOR,transport=transport)
+
+
+def persist_it_services_certification(result: dict[str,Any], *, transport: Transport) -> dict[str,Any]:
+    return persist_sector_certification(result,model=IT_SERVICES_MODEL,transport=transport)
