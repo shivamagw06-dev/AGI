@@ -64,12 +64,16 @@ def main() -> int:
             try:
                 from strategy_lab.production import dashboard
 
-                registry = dashboard(limit=1)
+                registry = dashboard(limit=20)
+                from strategy_lab.paper import run as run_paper
+
+                paper = run_paper(registry.get("strategies") or [])
                 log.info(
                     "strategy_registry_refreshed",
                     extra={
                         "strategies": len(registry.get("strategies") or []),
                         "persistence": (registry.get("validation_registry") or {}).get("persistence"),
+                        "paper": paper,
                     },
                 )
             except Exception as exc:  # noqa: BLE001

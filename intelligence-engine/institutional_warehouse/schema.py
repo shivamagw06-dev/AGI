@@ -1740,6 +1740,60 @@ FORECAST_RUNTIME = Tab(
     ),
 )
 
+STRATEGY_PAPER_SNAPSHOTS = Tab(
+    id="strategy_paper_snapshots",
+    label="Strategy Paper Snapshots",
+    description="Immutable forward-only research signals captured before outcomes are known.",
+    mode="append",
+    key=("strategy_id", "signal_as_of", "ticker"),
+    entity_column="ticker",
+    order_by=("signal_as_of DESC", "strategy_id", "ticker"),
+    search_columns=("strategy_id", "ticker", "research_direction"),
+    icon="strategy",
+    columns=(
+        _c("strategy_id", "Strategy", TEXT, required=True, width=180, group="Key"),
+        _c("strategy_version", "Strategy Version", TEXT, width=180, group="Key"),
+        _c("signal_as_of", "Signal As Of", DATE, required=True, width=130, group="Key"),
+        _c("ticker", "Ticker", TEXT, required=True, width=120, group="Key"),
+        _c("research_direction", "Direction", TEXT, required=True, width=130, group="Signal"),
+        _c("signal", "Signal", TEXT, width=100, group="Signal"),
+        _c("score", "Score", NUMBER, width=110, group="Signal"),
+        _c("signal_price", "Signal Price", NUMBER, required=True, width=130, group="Signal"),
+        _c("horizon_sessions", "Horizon Sessions", INTEGER, width=140, group="Evaluation"),
+        _c("captured_at", "Captured At", DATETIME, width=170, group="Lineage"),
+        *PROVENANCE_COLUMNS,
+    ),
+)
+
+STRATEGY_PAPER_OUTCOMES = Tab(
+    id="strategy_paper_outcomes",
+    label="Strategy Paper Outcomes",
+    description="Costed future outcomes for immutable paper signals; never backfilled before capture.",
+    mode="append",
+    key=("strategy_id", "signal_as_of", "ticker", "horizon_sessions"),
+    entity_column="ticker",
+    order_by=("evaluated_as_of DESC", "strategy_id", "ticker"),
+    search_columns=("strategy_id", "ticker", "research_direction"),
+    icon="strategy",
+    columns=(
+        _c("strategy_id", "Strategy", TEXT, required=True, width=180, group="Key"),
+        _c("strategy_version", "Strategy Version", TEXT, width=180, group="Key"),
+        _c("signal_as_of", "Signal As Of", DATE, required=True, width=130, group="Key"),
+        _c("evaluated_as_of", "Evaluated As Of", DATE, required=True, width=140, group="Outcome"),
+        _c("ticker", "Ticker", TEXT, required=True, width=120, group="Key"),
+        _c("research_direction", "Direction", TEXT, width=130, group="Signal"),
+        _c("signal_price", "Signal Price", NUMBER, width=130, group="Outcome"),
+        _c("outcome_price", "Outcome Price", NUMBER, width=130, group="Outcome"),
+        _c("horizon_sessions", "Horizon Sessions", INTEGER, required=True, width=140, group="Outcome"),
+        _c("gross_return_pct", "Gross Return %", NUMBER, width=140, group="Outcome"),
+        _c("round_trip_cost_bps", "Round Trip Cost bps", NUMBER, width=170, group="Costs"),
+        _c("net_return_pct", "Net Return %", NUMBER, width=130, group="Outcome"),
+        _c("profitable", "Profitable", BOOL, width=110, group="Outcome"),
+        _c("evaluated_at", "Evaluated At", DATETIME, width=170, group="Lineage"),
+        *PROVENANCE_COLUMNS,
+    ),
+)
+
 # --------------------------------------------------------------------------
 # Phase 9.0 — Macro Intelligence Engine warehouse tabs
 # --------------------------------------------------------------------------
@@ -2015,6 +2069,8 @@ TABS: tuple[Tab, ...] = (
     FORECAST_ACCURACY,
     FORECAST_LEARNINGS,
     FORECAST_RUNTIME,
+    STRATEGY_PAPER_SNAPSHOTS,
+    STRATEGY_PAPER_OUTCOMES,
     MACRO_SERIES,
     MACRO_LATEST,
     MACRO_EVENTS,
