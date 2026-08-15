@@ -247,6 +247,9 @@ def quality_gates() -> dict[str, Any]:
         "attribution_history": bool(lineage.get("attribution_ready")),
         "never_replaces_company_analysis": bool(out.get("does_not_replace_company_analysis")),
         "candidate_in_portfolio_context": bool(out.get("candidate") and out.get("impact")),
+        "candidate_risk_model_compatible": bool(
+            (out.get("candidate_governance") or {}).get("risk_models_compatible")
+        ),
         "diversification_calculated": (out.get("diversification") or {}).get("diversification") is not None,
         "concentration_calculated": (out.get("concentration") or {}).get("concentration") is not None,
         "risk_budget_calculated": (out.get("risk") or {}).get("expected_volatility") is not None,

@@ -133,6 +133,7 @@ def analyse_portfolio(
     suitability = None
     sizing = None
     pro_forma_snap = None
+    candidate_governance = None
     overlap = overlap_analysis(holdings, candidate_ticker=cand, candidate_sector=None)
 
     if cand:
@@ -160,16 +161,46 @@ def analyse_portfolio(
         )
         impact = position_impact(current=current, pro_forma=pro_forma_snap, overlap=overlap)
         pqe_d = quality_delta(current["portfolio_quality"], pro_forma_snap["portfolio_quality"])
-        sizing = position_sizing(
-            profile=profile,
-            overlap=overlap,
-            diversification_delta=float(impact.get("diversification_delta") or 0),
-            risk_delta=float(impact.get("risk_vol_delta") or 0),
-            quality_delta=float(impact.get("quality_delta") or 0),
-        )
+        current_risk_method = (current.get("risk") or {}).get("method")
+        pro_forma_risk_method = (pro_forma_snap.get("risk") or {}).get("method")
+        risk_methods_compatible = bool(current_risk_method and current_risk_method == pro_forma_risk_method)
+        candidate_governance = {
+            "risk_models_compatible": risk_methods_compatible,
+            "current_risk_method": current_risk_method,
+            "pro_forma_risk_method": pro_forma_risk_method,
+            "execution_eligible": False,
+            "reason": None if risk_methods_compatible else "CANDIDATE_COVARIANCE_HISTORY_REQUIRED",
+            "rule": "Candidate sizing requires a pro-forma empirical risk model comparable with the current portfolio.",
+        }
+        if risk_methods_compatible:
+            sizing = position_sizing(
+                profile=profile,
+                overlap=overlap,
+                diversification_delta=float(impact.get("diversification_delta") or 0),
+                risk_delta=float(impact.get("risk_vol_delta") or 0),
+                quality_delta=float(impact.get("quality_delta") or 0),
+            )
+        else:
+            impact.update({
+                "portfolio_risk_rises": None,
+                "risk_vol_delta": None,
+                "net_portfolio_effect": "undetermined",
+                "risk_model_compatible": False,
+                "reason": "CANDIDATE_COVARIANCE_HISTORY_REQUIRED",
+            })
+            sizing = {
+                "status": "BLOCKED",
+                "minimum_weight": None,
+                "suggested_initial_weight": None,
+                "maximum_weight": None,
+                "maximum_exposure": float(profile.get("single_name_limit") or 0.12),
+                "never_buy_sell_instructions": True,
+                "reason": "CANDIDATE_COVARIANCE_HISTORY_REQUIRED",
+                "note": "No sizing band until candidate covariance history supports a comparable pro-forma risk model.",
+            }
         # Re-run impact at suggested weight when available
         sug = sizing.get("suggested_initial_weight")
-        if sug and not overlap.get("already_held") and candidate_weight is None:
+        if risk_methods_compatible and sug and not overlap.get("already_held") and candidate_weight is None:
             pf_holdings = deepcopy(holdings) + [_candidate_holding(cand, float(sug))]
             pf_cash = max(0.0, cash - float(sug))
             pro_forma_snap = _snapshot(pf_holdings, profile, pf_cash)
@@ -181,7 +212,19 @@ def analyse_portfolio(
             )
             impact = position_impact(current=current, pro_forma=pro_forma_snap, overlap=overlap)
             pqe_d = quality_delta(current["portfolio_quality"], pro_forma_snap["portfolio_quality"])
-        suitability = suitability_matrix(impact, sizing=sizing, pqe_delta=pqe_d)
+        suitability = (
+            suitability_matrix(impact, sizing=sizing, pqe_delta=pqe_d)
+            if risk_methods_compatible
+            else {
+                "status": "BLOCKED",
+                "portfolio_fit": "undetermined",
+                "risk_contribution": "not_calculated",
+                "capital_efficiency": "not_calculated",
+                "never_buy_hold_sell": True,
+                "reason": "CANDIDATE_COVARIANCE_HISTORY_REQUIRED",
+                "summary": "Candidate suitability is blocked until comparable empirical pro-forma risk is available.",
+            }
+        )
 
     health = portfolio_health_block(
         diversification=current["diversification"],
@@ -268,6 +311,7 @@ def analyse_portfolio(
         "impact": impact,
         "suitability": suitability,
         "position_sizing": sizing,
+        "candidate_governance": candidate_governance,
         "pro_forma": pro_forma_snap,
         "watchlist": watch,
         "confidence": conf,

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from institutional_warehouse import store
 from portfolio_intelligence.portfolio import packs
+from portfolio_intelligence import pipeline
 from portfolio_intelligence.risk_budget.score import empirical_risk_budget
 
 
@@ -51,3 +52,28 @@ def test_empirical_risk_uses_realized_returns_and_benchmark():
 
 def test_empirical_risk_rejects_short_history():
     assert empirical_risk_budget([{"return_pct": 0.1}] * 62, max_drawdown=0.20) is None
+
+
+def test_candidate_sizing_blocks_mixed_empirical_and_proxy_risk(monkeypatch):
+    book = packs.portfolio_for("agib_core_india")
+    book["daily_returns"] = [
+        {"date": f"2025-{(i // 28) + 1:02d}-{(i % 28) + 1:02d}", "return_pct": 0.1 if i % 2 else -0.05}
+        for i in range(252)
+    ]
+    book["data_lineage"] = {
+        "source": "institutional_warehouse",
+        "immutable_snapshot": True,
+        "weights_valid": True,
+        "empirical_risk_ready": True,
+        "attribution_ready": True,
+    }
+    monkeypatch.setattr(pipeline, "portfolio_for", lambda _portfolio_id: book)
+
+    result = pipeline.analyse_portfolio("agib_core_india", candidate="KOTAKBANK")
+
+    assert result["risk"]["method"] == "empirical_daily_returns_v1"
+    assert result["pro_forma"]["risk"]["method"] == "sector_volatility_prior_v1"
+    assert result["candidate_governance"]["risk_models_compatible"] is False
+    assert result["impact"]["net_portfolio_effect"] == "undetermined"
+    assert result["position_sizing"]["status"] == "BLOCKED"
+    assert result["position_sizing"]["suggested_initial_weight"] is None
