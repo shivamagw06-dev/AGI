@@ -10,7 +10,6 @@ from forecast_intelligence_engine.dqiv import validate_pack, validate_section
 from forecast_intelligence_engine.evidence import load_bundle
 from forecast_intelligence_engine.models import ENGINE_CODE, ENGINE_LABEL, MODULES, VERSION
 from forecast_intelligence_engine.modules import MODULE_BUILDERS, confidence_module
-from forecast_intelligence_engine.persist import persist_forecast
 
 
 def _now() -> str:
@@ -107,7 +106,12 @@ def build_forecast(symbol: str) -> dict[str, Any]:
         pack["forecast_snapshot"] = build_snapshot(
             bundle, generated_at=pack["generated_at"], engine_version=VERSION,
         )
-        persistence = persist_forecast(pack)
+        # Resolve the durable writer at the call boundary. This keeps the
+        # persistence gate independently replaceable for failure drills and
+        # avoids retaining a stale writer across long-lived worker reloads.
+        from forecast_intelligence_engine import persist as persistence_store
+
+        persistence = persistence_store.persist_forecast(pack)
         pack["persistence"] = persistence
         if not persistence.get("ok"):
             pack["ok"] = False
