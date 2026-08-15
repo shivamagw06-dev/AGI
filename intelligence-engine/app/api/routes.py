@@ -10274,6 +10274,12 @@ async def strategy_lab_dashboard(limit: int = 5):
     return await run_in_threadpool(dashboard, limit=bounded_limit)
 
 
+@router.get("/strategy-lab/paper-validation")
+async def strategy_lab_paper_validation():
+    from strategy_lab.paper import board
+    return await run_in_threadpool(board)
+
+
 @router.get("/strategy-lab/strategy/{strategy_id}")
 async def strategy_lab_strategy(strategy_id: str):
     from strategy_lab.production import strategy

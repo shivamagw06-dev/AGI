@@ -1,4 +1,4 @@
-from strategy_lab.paper import _max_drawdown, capture
+from strategy_lab.paper import _max_drawdown, board, capture
 from institutional_warehouse import store
 
 
@@ -30,3 +30,20 @@ def test_capture_does_not_revise_frozen_signal(monkeypatch):
     assert result["eligible"] == 0
     assert result["written"] == 0
     assert writes == []
+
+
+def test_paper_board_is_read_only_and_fail_closed(monkeypatch):
+    monkeypatch.setattr(store, "all_rows", lambda tab, **_kwargs: [{
+        "strategy_id": "time_series_momentum",
+        "signal_as_of": "2026-08-14",
+        "ticker": "ABC",
+        "horizon_sessions": 21,
+    }] if tab == "strategy_paper_snapshots" else [])
+
+    result = board()
+
+    momentum = result["strategies"]["time_series_momentum"]
+    assert result["execution_eligible"] is False
+    assert momentum["snapshots"] == 1
+    assert momentum["pending_outcomes"] == 1
+    assert momentum["validation_status"] == "ACCUMULATING"

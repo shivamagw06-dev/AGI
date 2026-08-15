@@ -27,6 +27,9 @@ _STATE: dict[str, Any] = {
     "outcomes_evaluated_this_session": 0,
     "vintage_cursor": 0,
     "vintages_repaired_this_session": 0,
+    "strategy_validation_cursor": 0,
+    "last_strategy_validation_mono": 0.0,
+    "strategy_validations_this_session": 0,
 }
 
 
@@ -186,6 +189,15 @@ def process_batch(*, batch: int = 3) -> dict[str, Any]:
         outcome_batch = 25
     repair = repair_prediction_vintages(batch=1)
     outcome = sweep_outcomes(batch=max(batch, outcome_batch))
+    try:
+        validation_interval = max(900.0, float(os.getenv("STRATEGY_VALIDATION_INTERVAL_SECONDS", "1800")))
+    except (TypeError, ValueError):
+        validation_interval = 1800.0
+    with _LOCK:
+        validation_due = time.monotonic() - float(_STATE.get("last_strategy_validation_mono") or 0) >= validation_interval
+    strategy_validation = sweep_strategy_validation() if validation_due else {
+        "ok": True, "attempted": 0, "reason": "interval_not_elapsed",
+    }
     evaluated = int(outcome.get("accuracy_rows_written") or 0)
     evaluation_errors = int(outcome.get("errors") or 0)
     elapsed = max(0.001, time.time() - t0)
@@ -203,6 +215,7 @@ def process_batch(*, batch: int = 3) -> dict[str, Any]:
         "accuracy_errors": evaluation_errors,
         "outcome_sweep": outcome,
         "vintage_repair": repair,
+        "strategy_validation": strategy_validation,
         "elapsed_seconds": round(elapsed, 2),
         "pipeline": pipeline_counts(),
         "results": results,
@@ -307,6 +320,40 @@ def sweep_outcomes(*, batch: int = 25) -> dict[str, Any]:
         "next_cursor": next_cursor,
         "results": results,
     }
+
+
+def sweep_strategy_validation() -> dict[str, Any]:
+    """Run one governed strategy backtest per sweep and persist its gate receipts."""
+    from strategy_lab.production import IMPLEMENTED_STRATEGIES, backtest
+
+    strategies = sorted(IMPLEMENTED_STRATEGIES)
+    if not strategies:
+        return {"ok": True, "attempted": 0, "reason": "no_implemented_strategies"}
+    with _LOCK:
+        cursor = int(_STATE.get("strategy_validation_cursor") or 0) % len(strategies)
+    strategy_id = strategies[cursor]
+    try:
+        result = backtest(strategy_id, {})
+        persistence = result.get("persistence") or {}
+        validation = result.get("validation") or {}
+        out = {
+            "ok": bool(result.get("ok") and persistence.get("ok")),
+            "attempted": 1,
+            "strategy_id": strategy_id,
+            "backtest_status": validation.get("status"),
+            "economic_gates_passed": bool(validation.get("economic_gates_passed")),
+            "point_in_time_status": result.get("point_in_time_status"),
+            "corporate_actions_verified": bool(result.get("corporate_actions_verified")),
+            "persistence": persistence.get("status"),
+            "error": result.get("error") or persistence.get("error"),
+        }
+    except Exception as exc:
+        out = {"ok": False, "attempted": 1, "strategy_id": strategy_id, "error": str(exc)[:240]}
+    with _LOCK:
+        _STATE["strategy_validation_cursor"] = (cursor + 1) % len(strategies)
+        _STATE["last_strategy_validation_mono"] = time.monotonic()
+        _STATE["strategy_validations_this_session"] += int(bool(out.get("ok")))
+    return out
 
 
 def board() -> dict[str, Any]:

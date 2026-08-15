@@ -18,6 +18,7 @@ def roadmap_status() -> dict[str, Any]:
     """Evaluate every phase from its owning engine; missing evidence fails closed."""
     from forecast_intelligence_engine import calibration_board
     from portfolio_intelligence.production import quality_gates, strategy_execution_gate
+    from strategy_lab.paper import board as paper_board
     from strategy_lab.production import REGISTRY
     from strategy_lab.registry_store import load_latest_evidence
     from strategy_lab.validation_registry import evaluate
@@ -42,6 +43,7 @@ def roadmap_status() -> dict[str, Any]:
     phase_2_pass = bool(decisions) and all(
         decision.get("supported_lifecycle") in validated for decision in decisions.values()
     )
+    paper = paper_board()
 
     calibration = calibration_board()
     phase_3_pass = calibration.get("status") == "RESEARCH_CALIBRATED"
@@ -68,6 +70,7 @@ def roadmap_status() -> dict[str, Any]:
                 count for lifecycle, count in lifecycle_counts.items() if lifecycle in validated
             ),
             "strategy_count": len(REGISTRY),
+            "forward_paper_validation": paper,
         },
         "phase_3_forecast_intelligence": {
             "status": "ACCEPTED" if phase_3_pass else "ACCUMULATING_OUTCOMES",

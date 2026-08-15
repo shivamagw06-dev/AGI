@@ -128,6 +128,28 @@ def corporate_action_adjustment_receipt(
     }
 
 
+def price_point_in_time_receipt(result: dict[str, Any]) -> dict[str, Any]:
+    """Certify temporal integrity for price-only research without filing metadata."""
+    validation = result.get("validation") or {}
+    execution = result.get("execution") or {}
+    exact = bool(
+        result.get("ok")
+        and validation.get("lookahead_check") is True
+        and execution.get("signal_time") == "prior_close"
+        and execution.get("execution") == "next_close"
+    )
+    return {
+        "status": "EXACT" if exact else "FAILED",
+        "exact": exact,
+        "data_domain": "dated_adjusted_daily_prices",
+        "signal_information_cutoff": execution.get("signal_time"),
+        "execution_assumption": execution.get("execution"),
+        "lookahead_check": validation.get("lookahead_check") is True,
+        "fundamental_filing_dates_required": False,
+        "rule": "Price-only PIT passes only when each signal uses information available before its assumed execution session.",
+    }
+
+
 def _metrics(returns: list[float]) -> dict[str, float | None]:
     if not returns:
         return {"cumulative_return_pct": None, "annualized_return_pct": None, "annualized_volatility_pct": None,
@@ -813,6 +835,9 @@ def run_from_warehouse(strategy: str, config: dict[str, Any] | None = None) -> d
     is_reversion = strategy_key in {"mean_reversion", "medium_term_mean_reversion", "medium_term_mean_reversion_long_only"}
     runner = mean_reversion_backtest if is_reversion else breakout_backtest if is_breakout else trend_backtest if is_trend else momentum_backtest
     result = runner(rows, classifications=classifications, config=supplied)
+    pit_receipt = price_point_in_time_receipt(result)
+    result["point_in_time_status"] = pit_receipt["status"]
+    result["readiness"] = {"price_point_in_time": pit_receipt}
     adjustment_receipt = corporate_action_adjustment_receipt(rows, actions)
     result["corporate_action_verification"] = adjustment_receipt
     result["corporate_actions_verified"] = adjustment_receipt["independently_verified"]

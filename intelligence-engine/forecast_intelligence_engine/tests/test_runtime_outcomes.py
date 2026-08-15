@@ -39,3 +39,21 @@ def test_web_process_cannot_run_worker_batch(monkeypatch):
     assert result["ok"] is False
     assert result["attempted"] == 0
     assert result["reason"] == "forecast_runtime_owned_by_gather_worker"
+
+
+def test_strategy_validation_sweep_rotates_and_stays_fail_closed(monkeypatch):
+    monkeypatch.setattr("strategy_lab.production.IMPLEMENTED_STRATEGIES", {"time_series_momentum"})
+    monkeypatch.setattr("strategy_lab.production.backtest", lambda *_args, **_kwargs: {
+        "ok": True,
+        "point_in_time_status": "EXACT",
+        "corporate_actions_verified": False,
+        "validation": {"status": "COMPLETED", "economic_gates_passed": False},
+        "persistence": {"ok": True, "status": "PERSISTED"},
+    })
+    runtime._STATE["strategy_validation_cursor"] = 0
+    result = runtime.sweep_strategy_validation()
+    assert result["ok"] is True
+    assert result["strategy_id"] == "time_series_momentum"
+    assert result["point_in_time_status"] == "EXACT"
+    assert result["corporate_actions_verified"] is False
+    assert result["economic_gates_passed"] is False

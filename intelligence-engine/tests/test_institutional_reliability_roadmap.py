@@ -5,6 +5,9 @@ from institutional_reliability import production
 
 def test_roadmap_fails_closed_when_phase_evidence_is_missing(monkeypatch):
     monkeypatch.setattr("strategy_lab.registry_store.load_latest_evidence", lambda force=False: {})
+    monkeypatch.setattr("strategy_lab.paper.board", lambda: {
+        "status": "ACCUMULATING_FORWARD_EVIDENCE", "execution_eligible": False,
+    })
     monkeypatch.setattr("forecast_intelligence_engine.calibration_board", lambda: {
         "status": "ACCUMULATING_OUTCOMES", "execution_eligible": False,
     })
@@ -26,6 +29,9 @@ def test_roadmap_fails_closed_when_phase_evidence_is_missing(monkeypatch):
 
 def test_roadmap_cannot_accept_portfolio_phase_without_eligible_strategy(monkeypatch):
     monkeypatch.setattr("strategy_lab.registry_store.load_latest_evidence", lambda force=False: {})
+    monkeypatch.setattr("strategy_lab.paper.board", lambda: {
+        "status": "ACCUMULATING_FORWARD_EVIDENCE", "execution_eligible": False,
+    })
     monkeypatch.setattr("forecast_intelligence_engine.calibration_board", lambda: {
         "status": "RESEARCH_CALIBRATED", "execution_eligible": False,
     })

@@ -170,6 +170,56 @@ def persist_gate_receipts() -> dict[str, Any]:
     return {"ok": all(item.get("ok") for item in receipts.values()), "strategies": receipts}
 
 
+def board() -> dict[str, Any]:
+    """Read-only forward-validation progress; never generates or grades signals."""
+    from institutional_warehouse import store
+    from strategy_lab.production import IMPLEMENTED_STRATEGIES
+
+    snapshots = store.all_rows("strategy_paper_snapshots", limit=100000)
+    outcomes = store.all_rows("strategy_paper_outcomes", limit=100000)
+    completed = {
+        (str(row.get("strategy_id") or ""), str(row.get("signal_as_of") or ""),
+         str(row.get("ticker") or "").upper(), int(row.get("horizon_sessions") or HORIZON_SESSIONS))
+        for row in outcomes
+    }
+    strategies: dict[str, Any] = {}
+    for strategy_id in sorted(IMPLEMENTED_STRATEGIES):
+        signals = [row for row in snapshots if str(row.get("strategy_id") or "") == strategy_id]
+        graded = [row for row in outcomes if str(row.get("strategy_id") or "") == strategy_id]
+        signal_dates = sorted({str(row.get("signal_as_of")) for row in graded if row.get("signal_as_of")})
+        values = [float(row["net_return_pct"]) for row in graded if row.get("net_return_pct") is not None]
+        pending = sum(
+            1 for row in signals
+            if (strategy_id, str(row.get("signal_as_of") or ""), str(row.get("ticker") or "").upper(),
+                int(row.get("horizon_sessions") or HORIZON_SESSIONS)) not in completed
+        )
+        strategies[strategy_id] = {
+            "snapshots": len(signals),
+            "pending_outcomes": pending,
+            "matured_outcomes": len(graded),
+            "independent_signal_dates": len(signal_dates),
+            "minimum_signal_dates": MINIMUM_SIGNAL_DATES,
+            "remaining_signal_dates": max(0, MINIMUM_SIGNAL_DATES - len(signal_dates)),
+            "mean_net_return_pct": round(sum(values) / len(values), 4) if values else None,
+            "win_rate_pct": round(100.0 * sum(bool(row.get("profitable")) for row in graded) / len(graded), 2) if graded else None,
+            "last_signal_as_of": max((str(row.get("signal_as_of")) for row in signals), default=None),
+            "last_evaluated_as_of": max((str(row.get("evaluated_as_of")) for row in graded), default=None),
+            "validation_status": "EVIDENCE_AVAILABLE" if len(signal_dates) >= MINIMUM_SIGNAL_DATES else "ACCUMULATING",
+        }
+    return {
+        "ok": True,
+        "status": "ACCUMULATING_FORWARD_EVIDENCE" if any(
+            row["remaining_signal_dates"] for row in strategies.values()
+        ) else "MINIMUM_OBSERVATION_WINDOW_REACHED",
+        "forward_only": True,
+        "horizon_sessions": HORIZON_SESSIONS,
+        "round_trip_cost_bps": ROUND_TRIP_COST_BPS,
+        "execution_eligible": False,
+        "strategies": strategies,
+        "rule": "Observation count alone never validates a strategy; economic acceptance gates still apply.",
+    }
+
+
 def run(cards: list[dict[str, Any]]) -> dict[str, Any]:
     captured = capture(cards)
     evaluated = evaluate()

@@ -1,4 +1,4 @@
-from hedge_fund_lab.backtests import corporate_action_adjustment_receipt
+from hedge_fund_lab.backtests import corporate_action_adjustment_receipt, price_point_in_time_receipt
 
 
 def test_structural_action_adjustment_can_be_independently_verified():
@@ -30,3 +30,19 @@ def test_missing_actions_never_passes_even_with_adjusted_close_coverage():
     receipt = corporate_action_adjustment_receipt(rows, [])
     assert receipt["independently_verified"] is False
     assert receipt["corporate_action_rows"] == 0
+
+
+def test_price_only_pit_receipt_requires_prior_signal_and_future_execution():
+    passed = price_point_in_time_receipt({
+        "ok": True,
+        "validation": {"lookahead_check": True},
+        "execution": {"signal_time": "prior_close", "execution": "next_close"},
+    })
+    failed = price_point_in_time_receipt({
+        "ok": True,
+        "validation": {"lookahead_check": True},
+        "execution": {"signal_time": "same_close", "execution": "same_close"},
+    })
+    assert passed["status"] == "EXACT"
+    assert passed["fundamental_filing_dates_required"] is False
+    assert failed["status"] == "FAILED"
