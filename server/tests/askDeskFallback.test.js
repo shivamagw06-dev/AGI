@@ -3,6 +3,7 @@ import { describe, it } from 'node:test';
 import {
   buildAskDeskFallback,
   mergePublishedResearch,
+  publishedResearchPack,
   rankPublishedResearch,
 } from '../services/askDeskFallback.js';
 
@@ -50,5 +51,20 @@ describe('askDeskFallback', () => {
     assert.match(merged.executive_summary, /AGI's published view/i);
     assert.match(merged.executive_summary, /deeper engine sees execution risk/i);
     assert.equal(merged.ask_orchestration.published_research.matched, true);
+  });
+
+  it('replaces a cut-off CMS excerpt with complete article sentences', () => {
+    const pack = publishedResearchPack('What is the tariff view?', {
+      id: 'airtel-1',
+      title: 'Airtel Fires the First Shot',
+      slug: 'airtel-first-shot',
+      excerpt: 'India may be entering a tariff cycle, effectively raising the cost for a',
+      content: '<p>Airtel has raised prepaid pricing, signalling a new phase of tariff repair.</p><p>The change may support revenue growth, but customer churn and competitive responses remain important risks.</p>',
+    });
+    assert.doesNotMatch(pack.executive_summary, /cost for a$/);
+    assert.match(pack.executive_summary, /tariff repair\./);
+    assert.ok(pack.key_risks.some((risk) => /churn/i.test(risk)));
+    assert.ok(pack.key_catalysts.some((catalyst) => /revenue growth/i.test(catalyst)));
+    assert.notEqual(pack.answer.bottom_line, pack.answer.summary);
   });
 });

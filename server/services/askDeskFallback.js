@@ -25,6 +25,36 @@ function plainText(value = '') {
     .trim();
 }
 
+function completeSentences(value = '') {
+  return plainText(value)
+    .split(/(?<=[.!?])\s+(?=[A-Z0-9₹])/)
+    .map((sentence) => sentence.trim())
+    .filter((sentence) => sentence.length >= 35 && /[.!?]$/.test(sentence));
+}
+
+function articleAnalysis(article = {}) {
+  const excerpt = plainText(article.excerpt || '');
+  const excerptComplete = excerpt.length >= 100 && /[.!?]$/.test(excerpt);
+  const fullText = plainText(article.content_md || article.content || '');
+  const sentences = completeSentences(excerptComplete ? excerpt : fullText);
+  const usable = sentences.filter((sentence) =>
+    !/^(agarwal global investments|agi research|published|defence & aerospace|india telecom)/i.test(sentence)
+  );
+  const summarySentences = (usable.length ? usable : sentences).slice(0, 2);
+  const summary = summarySentences.join(' ').slice(0, 1_200).trim() || excerpt || plainText(article.title);
+  const candidates = completeSentences(fullText).slice(0, 80);
+  const select = (pattern, limit = 3) => candidates.filter((sentence) => pattern.test(sentence)).slice(0, limit);
+  const risks = select(/\b(risk|execution|margin|churn|pressure|competition|cash|working capital|delay|weak|downside|uncertain)/i);
+  const catalysts = select(/\b(catalyst|order|tariff|revenue|growth|demand|visibility|expansion|pricing|recovery|opportunity)/i);
+  const monitoring = [...risks, ...catalysts].slice(0, 4);
+  return {
+    summary,
+    risks: risks.length ? risks : ['Execution against the report’s stated operating assumptions remains the principal risk to monitor.'],
+    catalysts: catalysts.length ? catalysts : ['Confirmation of the report’s stated business drivers would strengthen AGI’s published view.'],
+    monitoring,
+  };
+}
+
 function searchTerms(question = '') {
   const ignored = new Set([
     'about', 'agi', 'crore', 'does', 'have', 'india', 'indian', 'order', 'report',
@@ -66,8 +96,8 @@ export async function findPublishedResearch(question) {
 }
 
 export function publishedResearchPack(question, article) {
-  const body = plainText(article.excerpt || article.content_md || article.content);
-  const summary = body.slice(0, 1_400).replace(/\s+\S*$/, '').trim() || plainText(article.title);
+  const analysis = articleAnalysis(article);
+  const summary = analysis.summary;
   const url = article.slug ? `/article/${encodeURIComponent(article.slug)}` : '/research';
   const evidence = {
     id: article.id,
@@ -87,6 +117,28 @@ export function publishedResearchPack(question, article) {
     'The answer preserves the report’s stated view; live market and post-publication developments require a refreshed analysis.',
   ].filter(Boolean);
   const followUps = ['Open the full AGI report', 'What could change AGI\'s view?', 'How material is the order to revenue?', 'What are the execution risks?'];
+  const bottomLine = analysis.monitoring.length
+    ? `What to monitor: ${analysis.monitoring.slice(0, 3).join(' ')}`
+    : `What to monitor: whether subsequent evidence confirms the operating assumptions in AGI's published report.`;
+  const responseConstitution = {
+    enabled: true,
+    version: '1.0',
+    direct_answer: directAnswer,
+    why_agib_thinks_this: why,
+    investment_thesis: {
+      business: summary,
+      risks: analysis.risks[0],
+      catalysts: analysis.catalysts[0],
+    },
+    bull_vs_bear: {
+      bull_case: analysis.catalysts,
+      bear_case: analysis.risks,
+    },
+    bottom_line: bottomLine,
+    supporting_intelligence: { evidence_notes: [evidence.note] },
+    suggested_follow_ups: followUps,
+    confidence: { score: 90, explanation: confidenceExplanation },
+  };
   return {
     ok: true,
     question,
@@ -98,10 +150,15 @@ export function publishedResearchPack(question, article) {
     intent: 'company_event_analysis',
     executive_summary: directAnswer,
     confidence: 90,
-    answer: { executive_summary: directAnswer, summary, why, bottom_line: summary, confidence_explanation: confidenceExplanation },
+    answer: { executive_summary: directAnswer, summary, why, bottom_line: bottomLine, confidence_explanation: confidenceExplanation, response_constitution: responseConstitution },
     why,
+    key_risks: analysis.risks,
+    key_catalysts: analysis.catalysts,
+    bull_case: analysis.catalysts,
+    bear_case: analysis.risks,
+    what_changes_view: analysis.monitoring,
     follow_up_questions: followUps,
-    answer_construction: { enabled: true, executive: directAnswer, why, bottom_line: summary, confidence_explanation: confidenceExplanation },
+    answer_construction: { enabled: true, executive: directAnswer, why, bottom_line: bottomLine, confidence_explanation: confidenceExplanation, response_constitution: responseConstitution },
     supporting_research: [evidence],
     supporting_evidence: [evidence],
     evidence_used: [evidence],
