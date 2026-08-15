@@ -7,6 +7,7 @@
 import { getAgiIntelligence } from './intelligenceService.js';
 import { createSupabaseAdmin } from '../lib/supabaseAdmin.js';
 import { buildPublishedReasoningPack } from './askReasoningPack.js';
+import { getDeskCompanyFallback } from './homeOfficeEnrichment.js';
 
 function asText(v, fallback = '') {
   if (v == null) return fallback;
@@ -24,6 +25,108 @@ function plainText(value = '') {
     .replace(/&amp;/gi, '&')
     .replace(/\s+/g, ' ')
     .trim();
+}
+
+const COMPANY_ALIASES = [
+  [/\bhdfc\s*bank\b|\bhdfcbank\b/i, 'HDFCBANK', 'HDFC Bank'],
+  [/\bicici\s*bank\b|\bicicibank\b/i, 'ICICIBANK', 'ICICI Bank'],
+  [/\breliance(?:\s+industries)?\b/i, 'RELIANCE', 'Reliance Industries'],
+  [/\binfosys\b|\binfy\b/i, 'INFY', 'Infosys'],
+  [/\btata consultancy services\b|\btcs\b/i, 'TCS', 'TCS'],
+  [/\bhindustan aeronautics\b|\bhal\b/i, 'HAL', 'HAL'],
+  [/\bbharat electronics\b|\bbel\b/i, 'BEL', 'BEL'],
+  [/\blarsen\s*(?:&|and)\s*toubro\b|\bl&t\b/i, 'LT', 'Larsen & Toubro'],
+];
+
+function identifyCompany(question = '') {
+  for (const [pattern, ticker, name] of COMPANY_ALIASES) {
+    if (pattern.test(question)) return { ticker, name };
+  }
+  return null;
+}
+
+export function companyInvestmentFallback(question) {
+  if (!/\b(should i|invest|buy|investment|worth buying)\b/i.test(question || '')) return null;
+  const company = identifyCompany(question);
+  if (!company) return null;
+  const desk = getDeskCompanyFallback(company.ticker);
+  if (!desk) return null;
+  const confidence = Math.round(Number(desk.confidence || 0) * 100);
+  const directAnswer =
+    `AGI's cached desk view on ${company.name} is ${desk.label} (${desk.score}/100, ${confidence}% confidence). ` +
+    `That supports further research, not an unconditional buy. Investment suitability still depends on valuation, holding period, portfolio concentration and current evidence.`;
+  const bank = desk.sector === 'Financials';
+  const why = bank
+    ? [
+        'The current desk framework treats liability strength, deposit growth and funding cost as the central banking drivers.',
+        'For HDFC Bank, the decision depends on evidence that post-merger balance-sheet, margin and return-ratio normalization is progressing.',
+        'This fallback deliberately withholds a fresh price or valuation because the full research engine did not complete.',
+      ]
+    : [
+        `The cached ${desk.sector || 'company'} desk score supports a monitored research position rather than automatic execution.`,
+        'Current valuation and post-cache developments must be refreshed before a portfolio decision.',
+      ];
+  const risks = bank
+    ? ['Deposit growth or funding costs remain unfavorable.', 'Margin and ROA/ROE recovery takes longer than expected.', 'Credit costs or asset-quality stress rise.']
+    : ['Current valuation may already discount the expected operating improvement.', 'New evidence may invalidate the cached desk view.'];
+  const catalysts = bank
+    ? ['Deposit growth catches up with advances.', 'Funding costs and net interest margins normalize.', 'ROA and ROE recover without weaker asset quality.']
+    : ['Operating evidence confirms the cached thesis.', 'Valuation offers an adequate margin of safety.'];
+  const bottomLine =
+    `Bottom line: keep ${company.name} as a ${desk.label.toLowerCase()} research candidate. ` +
+    `Do not treat this fallback as execution approval; refresh price, valuation and latest filings first.`;
+  const evidence = {
+    id: `node-desk-${company.ticker}`,
+    source: 'AGI cached investment desk',
+    type: 'cached_house_view',
+    title: `${company.name} cached desk view`,
+    note: `${desk.label}; score ${desk.score}/100; confidence ${confidence}%; sector ${desk.sector}.`,
+    freshness: 'cached_not_live',
+  };
+  return {
+    ok: true,
+    question,
+    mode: 'cached_company_investment_fallback',
+    degraded: true,
+    retryable: true,
+    status: 'research_candidate_not_execution_approved',
+    intent: 'investment_assessment',
+    entities: { ticker: company.ticker, companies: [company] },
+    fabricated: false,
+    executive_summary: directAnswer,
+    confidence,
+    answer: {
+      executive_summary: directAnswer,
+      summary: directAnswer,
+      why,
+      bottom_line: bottomLine,
+      confidence_explanation: 'Moderate confidence in the cached AGI desk classification; low confidence in current execution suitability until fresh valuation and filings are retrieved.',
+      response_constitution: {
+        enabled: true,
+        version: '1.0',
+        direct_answer: directAnswer,
+        why_agib_thinks_this: why,
+        investment_thesis: { business: why[0], financial_quality: why[1], valuation: 'Fresh valuation required.', risks: risks[0], catalysts: catalysts[0] },
+        bull_vs_bear: { bull_case: catalysts, bear_case: risks },
+        bottom_line: bottomLine,
+        supporting_intelligence: { evidence_notes: [evidence.note] },
+        suggested_follow_ups: [`Compare ${company.name} with its closest peer`, `What valuation would make ${company.name} attractive?`, `What could invalidate the view?`],
+        confidence: { score: confidence, explanation: 'Cached AGI desk evidence; fresh execution checks pending.' },
+      },
+    },
+    why,
+    key_risks: risks,
+    key_catalysts: catalysts,
+    bull_case: catalysts,
+    bear_case: risks,
+    what_changes_view: [...catalysts, ...risks].slice(0, 5),
+    supporting_research: [evidence],
+    supporting_evidence: [evidence],
+    evidence_used: [evidence],
+    evidence: [evidence],
+    ask_orchestration: { engine_reached: false, fallback: true, fallback_used: true, reason: 'cached_company_investment_fallback' },
+    meta: { surface: 'ask_company_investment_fallback', generated_at: new Date().toISOString() },
+  };
 }
 
 function completeSentences(value = '') {
@@ -260,6 +363,8 @@ export async function buildAskDeskFallback(question) {
   } catch {
     // Supabase retrieval is best-effort; retain the honest market-only fallback.
   }
+  const companyPack = companyInvestmentFallback(q);
+  if (companyPack) return companyPack;
   let intel = null;
   try {
     intel = await getAgiIntelligence();

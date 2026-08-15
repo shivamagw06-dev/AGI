@@ -28,6 +28,12 @@ const DESK_COMPANIES = [
   { ticker: 'LT', label: 'Constructive', confidence: 0.67, score: 75, sector: 'Industrials' },
 ];
 
+export function getDeskCompanyFallback(ticker) {
+  const symbol = String(ticker || '').trim().toUpperCase();
+  const row = DESK_COMPANIES.find((item) => item.ticker === symbol);
+  return row ? { ...row } : null;
+}
+
 const DESK_RESEARCH = [
   {
     id: 'agi-house-banks',

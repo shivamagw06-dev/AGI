@@ -592,7 +592,7 @@ export default function createUiRouter() {
 
     const askTimeoutMs = Math.max(
       15_000,
-      Number.parseInt(process.env.ASK_ENGINE_TIMEOUT_MS || '55000', 10) || 55_000,
+      Number.parseInt(process.env.ASK_ENGINE_TIMEOUT_MS || '45000', 10) || 45_000,
     );
     const httpStarted = Date.now();
     const gatewayTraceId = normalizeAskRequestId(

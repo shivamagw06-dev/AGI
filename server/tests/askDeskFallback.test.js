@@ -2,12 +2,25 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import {
   buildAskDeskFallback,
+  companyInvestmentFallback,
   mergePublishedResearch,
   publishedResearchPack,
   rankPublishedResearch,
 } from '../services/askDeskFallback.js';
 
 describe('askDeskFallback', () => {
+  it('returns a useful governed HDFC Bank investment fallback', () => {
+    const pack = companyInvestmentFallback('Should I invest in HDFC Bank?');
+    assert.equal(pack.mode, 'cached_company_investment_fallback');
+    assert.equal(pack.entities.ticker, 'HDFCBANK');
+    assert.equal(pack.confidence, 62);
+    assert.match(pack.executive_summary, /Neutral \(71\/100, 62% confidence\)/);
+    assert.match(pack.executive_summary, /not an unconditional buy/i);
+    assert.equal(pack.status, 'research_candidate_not_execution_approved');
+    assert.equal(pack.evidence[0].freshness, 'cached_not_live');
+    assert.match(pack.answer.bottom_line, /refresh price, valuation and latest filings/i);
+  });
+
   it('does not pretend market context is a research answer', async () => {
     const pack = await buildAskDeskFallback("What is Reliance's business model?");
     assert.equal(pack.mode, 'node_desk_fallback');
