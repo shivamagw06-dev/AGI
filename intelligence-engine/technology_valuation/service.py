@@ -65,7 +65,7 @@ def _expectation(implied: float | None, expected: float) -> str:
     return "EXPECTATIONS_STRETCHED" if ratio>1.10 else "EXPECTATIONS_FAVORABLE" if ratio<.90 else "EXPECTATIONS_NEUTRAL"
 
 
-def evaluate_technology_company(*, company: dict[str, Any], inputs: dict[str, Any], as_of: str,
+def _evaluate_it_services(*, company: dict[str, Any], inputs: dict[str, Any], as_of: str,
                                 peers: list[dict[str, Any]] | None = None,
                                 history: list[dict[str, Any]] | None = None,
                                 scenarios: dict[str, dict[str, Any]] | None = None) -> dict[str, Any]:
@@ -118,3 +118,15 @@ def evaluate_technology_company(*, company: dict[str, Any], inputs: dict[str, An
         "evidence_gaps":[name for name,present in (("peer_valuation",bool(peer_values)),("historical_valuation",bool(historical)),("trusted_causal_evidence",False)) if not present],
         "confidence":"MEDIUM" if peer_values and historical else "LOW","investment_attractiveness":"RESEARCH_ONLY",
         "execution_eligible":False,"certified":False,"investment_certified":False}
+
+
+def evaluate_technology_company(*, company: dict[str, Any], inputs: dict[str, Any], as_of: str,
+                                peers: list[dict[str, Any]] | None = None,
+                                history: list[dict[str, Any]] | None = None,
+                                scenarios: dict[str, dict[str, Any]] | None = None) -> dict[str, Any]:
+    """Single Technology entry point; classification selects the reviewed model."""
+    classification=classify_technology_subsector(company)
+    if classification.get("model_family")=="SOFTWARE_SAAS":
+        from technology_valuation.saas_service import evaluate_software_saas
+        return {**evaluate_software_saas(company=company,inputs=inputs,as_of=as_of,peers=peers,history=history,scenarios=scenarios),"classification":classification}
+    return _evaluate_it_services(company=company,inputs=inputs,as_of=as_of,peers=peers,history=history,scenarios=scenarios)

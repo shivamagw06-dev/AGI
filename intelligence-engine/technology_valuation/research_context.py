@@ -4,6 +4,8 @@ from typing import Any, Callable
 from technology_valuation.classification import classify_technology_subsector
 from technology_valuation.model import IT_SERVICES_MODEL
 from technology_valuation.service import REQUIRED_INPUTS
+from technology_valuation.saas_model import SOFTWARE_SAAS_MODEL
+from technology_valuation.saas_service import REQUIRED_SAAS_INPUTS
 
 
 def technology_research_context(company_id: str, *, loader: Callable[[str],dict[str,Any]] | None=None) -> dict[str,Any]:
@@ -17,12 +19,16 @@ def technology_research_context(company_id: str, *, loader: Callable[[str],dict[
     else: record=loader(ticker) or {}
     master=record.get("master") if isinstance(record.get("master"),dict) else record
     classification=classify_technology_subsector({**(master or {}),"symbol":ticker})
-    if classification.get("subsector")!="IT_SERVICES":
+    if classification.get("model_family")=="SOFTWARE_SAAS":
+        model=SOFTWARE_SAAS_MODEL; required=REQUIRED_SAAS_INPUTS
+    elif classification.get("subsector")=="IT_SERVICES":
+        model=IT_SERVICES_MODEL; required=REQUIRED_INPUTS
+    else:
         return {"status":"CLASSIFICATION_UNAVAILABLE","company_id":ticker,"classification":classification,"execution_eligible":False}
-    return {"status":"MODEL_CONTEXT","company_id":ticker,"classification":classification,"model_version":IT_SERVICES_MODEL.version,
-        "sector_id":IT_SERVICES_MODEL.sector_id,"sector_name":IT_SERVICES_MODEL.sector_name,"economic_structure":IT_SERVICES_MODEL.economic_structure,
-        "key_kpis":[k.__dict__ for k in IT_SERVICES_MODEL.key_kpis],"valuation_methods":[m.__dict__ for m in IT_SERVICES_MODEL.valuation_methods],
-        "valuation_drivers":list(IT_SERVICES_MODEL.valuation_drivers),"valuation_risks":list(IT_SERVICES_MODEL.valuation_risks),
-        "monitoring":list(IT_SERVICES_MODEL.monitoring_variables),"required_evidence":list(REQUIRED_INPUTS),
+    return {"status":"MODEL_CONTEXT","company_id":ticker,"classification":classification,"model_version":model.version,
+        "sector_id":model.sector_id,"sector_name":model.sector_name,"economic_structure":model.economic_structure,
+        "key_kpis":[k.__dict__ for k in model.key_kpis],"valuation_methods":[m.__dict__ for m in model.valuation_methods],
+        "valuation_drivers":list(model.valuation_drivers),"valuation_risks":list(model.valuation_risks),
+        "monitoring":list(model.monitoring_variables),"required_evidence":list(required),
         "calculation_status":"REQUIRES_PROVENANCE_COMPLETE_INPUT_PACK","causal_status":"PROPOSED_NOT_TRUSTED",
         "allowed_use":"research_planning_and_reasoning","execution_eligible":False,"certified":False,"investment_certified":False}

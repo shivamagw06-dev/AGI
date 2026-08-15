@@ -24,3 +24,25 @@ def it_services_templates(company_id: str | None = None) -> list[CausalRelations
         mechanism=mechanism, counter_effects=counter, source_quality="UNVALIDATED", status="PROPOSED",
         created_by="phase_2a_code_reviewed_curriculum",
     ) for i, (cause, effect, direction, mechanism, counter) in enumerate(rows, 1)]
+
+
+def software_saas_templates(company_id: str | None = None) -> list[CausalRelationship]:
+    rows=(
+        ("new_customers","arr","POSITIVE","New contracted customers add recurring value.",()),
+        ("net_revenue_retention","arr_growth","POSITIVE","Retention and expansion compound the installed base.",(CounterEffect("Concentration can magnify one loss", "NEGATIVE", "A large customer loss can overwhelm expansion", "1_QUARTER"),)),
+        ("gross_revenue_retention","growth_durability","POSITIVE","Defensive retention indicates whether recurring revenue persists without upsell.",()),
+        ("churn","arr_growth","NEGATIVE","Lost customer and contract value reduce the recurring base.",()),
+        ("pricing","average_contract_value","POSITIVE","Price and mix affect monetization per contract.",(CounterEffect("Price increases can raise churn", "NEGATIVE", "Customers may downgrade or leave", "2_QUARTERS"),)),
+        ("gross_margin","customer_ltv","POSITIVE","Higher gross profit retained per customer improves lifetime economics.",()),
+        ("cac_payback","growth_efficiency","NEGATIVE","Longer payback increases capital required for growth.",()),
+        ("arr_growth","operating_leverage","CONDITIONAL","Recurring growth can absorb R&D and go-to-market costs after sufficient scale.",(CounterEffect("Sales and R&D reinvestment delays leverage", "NEGATIVE", "Management may prioritize market capture", "MULTI_YEAR"),)),
+        ("operating_leverage","free_cash_flow","POSITIVE","Scale can convert recurring gross profit into cash generation.",()),
+        ("free_cash_flow","valuation","POSITIVE","Cash generation reduces dependence on terminal multiple assumptions.",()),
+        ("ai_productivity","software_value_proposition","CONDITIONAL","AI can improve product utility and development efficiency.",(CounterEffect("AI commoditizes features", "NEGATIVE", "Lower switching costs and new entrants pressure pricing", "MULTI_YEAR"),)),
+        ("stock_based_compensation","per_share_value","NEGATIVE","Equity compensation transfers value through dilution even when excluded from adjusted profit.",()),
+    )
+    return [CausalRelationship(relationship_id=f"CRE-TECH2B-{i:02d}",cause=cause,effect=effect,direction=direction,
+        relationship_type="CAUSAL_HYPOTHESIS",epistemic_label="HYPOTHESIS",industry="Software and SaaS",company_id=company_id,
+        strength="MEDIUM",confidence=.55,time_lag="1_QUARTER",mechanism=mechanism,counter_effects=counter,
+        source_quality="UNVALIDATED",status="PROPOSED",created_by="phase_2b_code_reviewed_curriculum")
+        for i,(cause,effect,direction,mechanism,counter) in enumerate(rows,1)]
