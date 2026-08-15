@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { classifyEvaluationStatus, loadLiveAlphaUniverse, shouldUseGrowwFallback, startLiveAlphaRuntime, stopLiveAlphaRuntime, validateLiveAlphaUniverse } from './liveAlphaRuntime.js';
+import { classifyEvaluationStatus, loadLiveAlphaPersistenceState, loadLiveAlphaUniverse, shouldUseGrowwFallback, startLiveAlphaRuntime, stopLiveAlphaRuntime, validateLiveAlphaUniverse } from './liveAlphaRuntime.js';
 
 const valid = { benchmarkKey: 'NSE_INDEX|Nifty 50', members: Array.from({ length: 10 }, (_, index) => ({ symbol: `S${index}`, sector: 'BANK', instrumentKey: `NSE_EQ|${index}`, sectorInstrumentKey: 'NSE_INDEX|Nifty Bank' })) };
 
@@ -57,4 +57,23 @@ test('only activates Groww fallback for a failed Upstox primary with explicit pe
   assert.equal(shouldUseGrowwFallback({ provider: 'upstox', feedStatus: 'auth_failed', allowFallback: false, growwConfigured: true }), false);
   assert.equal(shouldUseGrowwFallback({ provider: 'upstox', feedStatus: 'auth_failed', allowFallback: true, growwConfigured: false }), false);
   assert.equal(shouldUseGrowwFallback({ provider: 'groww', feedStatus: 'failed', allowFallback: true, growwConfigured: true }), false);
+});
+
+test('optional persistence timeouts do not disable live alpha startup', async () => {
+  const persistence = {
+    loadVolumeBaselines: async () => { throw new Error('statement timeout'); },
+    loadSessionOpeningSnapshots: async () => [{ instrument_key: 'NSE_EQ|1' }],
+    loadRecentSnapshots: async () => { throw new Error('statement timeout'); },
+  };
+
+  const restored = await loadLiveAlphaPersistenceState(persistence, {
+    baselineLimit: 100,
+    openingLimit: 20,
+    recentLimit: 50,
+  });
+
+  assert.deepEqual(restored.baselines, []);
+  assert.equal(restored.openingSnapshots.length, 1);
+  assert.deepEqual(restored.recentSnapshots, []);
+  assert.deepEqual(restored.errors.map((row) => row.component), ['volume_baselines', 'recent_snapshots']);
 });

@@ -53,6 +53,27 @@ export function shouldUseGrowwFallback({ provider, feedStatus, allowFallback, gr
     && growwConfigured === true;
 }
 
+export async function loadLiveAlphaPersistenceState(persistence, {
+  baselineLimit,
+  openingLimit,
+  recentLimit,
+  now = new Date(),
+} = {}) {
+  const errors = [];
+  const optionalLoad = async (name, load) => {
+    try {
+      return await load();
+    } catch (error) {
+      errors.push({ component: name, error: error?.message || String(error) });
+      return [];
+    }
+  };
+  const baselines = await optionalLoad('volume_baselines', () => persistence.loadVolumeBaselines({ limit: baselineLimit }));
+  const openingSnapshots = await optionalLoad('session_opening_snapshots', () => persistence.loadSessionOpeningSnapshots?.({ now, limit: openingLimit }) || []);
+  const recentSnapshots = await optionalLoad('recent_snapshots', () => persistence.loadRecentSnapshots?.({ minutes: 90, limit: recentLimit }) || []);
+  return { baselines, openingSnapshots, recentSnapshots, errors };
+}
+
 export function validateLiveAlphaUniverse(config) {
   const benchmarkKey = String(config?.benchmarkKey || '').trim();
   const members = config?.members;
@@ -124,14 +145,19 @@ export async function startLiveAlphaRuntime({ Feed = null, FallbackFeed = GrowwL
     }
     const persistence = new Persistence();
     const baselineLimit = Math.max(20_000, universe.members.length * 376);
-    const baselines = new VolumeBaselineIndex(await persistence.loadVolumeBaselines({ limit: baselineLimit }));
-    const pipeline = new MomentumShadowPipeline({ ...universe, universe: universe.members, baselineIndex: baselines, repository: persistence });
     // Preserve the rolling 15m/60m feature window across deploys and brief
     // restarts. Only genuine persisted observations are restored; missing
-    // market history is never synthesized.
+    // market history is never synthesized. A slow optional restore must not
+    // disable the Upstox feed or the strategies that can warm up from live data.
     const estimatedInstrumentCount = universe.members.length * 2 + 20;
-    const openingSnapshots = await persistence.loadSessionOpeningSnapshots?.({ now: new Date(), limit: estimatedInstrumentCount * 15 }) || [];
-    const recentSnapshots = await persistence.loadRecentSnapshots?.({ minutes: 90, limit: estimatedInstrumentCount * 90 }) || [];
+    const restored = await loadLiveAlphaPersistenceState(persistence, {
+      baselineLimit,
+      openingLimit: estimatedInstrumentCount * 15,
+      recentLimit: estimatedInstrumentCount * 90,
+    });
+    const baselines = new VolumeBaselineIndex(restored.baselines);
+    const pipeline = new MomentumShadowPipeline({ ...universe, universe: universe.members, baselineIndex: baselines, repository: persistence });
+    const { openingSnapshots, recentSnapshots } = restored;
     if (openingSnapshots.length) pipeline.ingest({ snapshots: openingSnapshots });
     if (recentSnapshots.length) pipeline.ingest({ snapshots: recentSnapshots });
     const store = new SynchronizedSnapshotStore();
@@ -160,7 +186,7 @@ export async function startLiveAlphaRuntime({ Feed = null, FallbackFeed = GrowwL
       }
     };
     let feed = new FeedClass({ instrumentKeys, universe, snapshotStore: store, mode: 'full', onBatch });
-    runtime = { provider, feed, pipeline, persistence, store, universe, bootstrap: { opening_snapshots: openingSnapshots.length, recent_snapshots: recentSnapshots.length, volume_baselines: baselines.values.size, derivatives: universe.derivativeResolution } };
+    runtime = { provider, feed, pipeline, persistence, store, universe, bootstrap: { opening_snapshots: openingSnapshots.length, recent_snapshots: recentSnapshots.length, volume_baselines: baselines.values.size, restore_errors: restored.errors, derivatives: universe.derivativeResolution } };
     state = {
       enabled: true, status: 'starting', evaluation_status: 'warming_up',
       started_at: new Date().toISOString(), last_evaluation: null,
