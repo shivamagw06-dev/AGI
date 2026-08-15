@@ -9,6 +9,7 @@ _PLATFORM_CANONICAL = frozenset({"internet_platform", "internet_platforms", "mar
 _CONSUMER_CANONICAL = frozenset({"consumer_internet", "digital_commerce", "ecommerce", "e_commerce", "online_retail", "digital_consumer"})
 _SEMI_CANONICAL = frozenset({"semiconductor","semiconductors","fabless_semiconductor","semiconductor_design","semiconductor_manufacturing","foundry","atmp","osat","semiconductor_equipment"})
 _TELECOM_CANONICAL = frozenset({"telecom","telecommunications","wireless_telecom","mobile_telecom","broadband","fiber_telecom","enterprise_telecom"})
+_TOWER_CANONICAL = frozenset({"telecom_infrastructure","telecom_towers","tower_infrastructure","passive_telecom_infrastructure","tower_company"})
 
 
 def classify_technology_subsector(company: dict[str, Any]) -> dict[str, Any]:
@@ -41,6 +42,10 @@ def classify_technology_subsector(company: dict[str, Any]) -> dict[str, Any]:
         return {"status":"CLASSIFIED","parent_sector":"TECHNOLOGY_AND_DIGITAL","subsector":explicit,"model_family":"TELECOM","source":"company_master.technology_subsector"}
     if canonical in _TELECOM_CANONICAL:
         return {"status":"CLASSIFIED","parent_sector":"TECHNOLOGY_AND_DIGITAL","subsector":canonical.upper(),"model_family":"TELECOM","source":"canonical_industry_taxonomy"}
+    if explicit in {"TELECOM_INFRASTRUCTURE","TELECOM_TOWERS","TOWER_INFRASTRUCTURE","PASSIVE_TELECOM_INFRASTRUCTURE"}:
+        return {"status":"CLASSIFIED","parent_sector":"TECHNOLOGY_AND_DIGITAL","subsector":explicit,"model_family":"TELECOM_INFRASTRUCTURE_TOWERS","source":"company_master.technology_subsector"}
+    if canonical in _TOWER_CANONICAL:
+        return {"status":"CLASSIFIED","parent_sector":"TECHNOLOGY_AND_DIGITAL","subsector":canonical.upper(),"model_family":"TELECOM_INFRASTRUCTURE_TOWERS","source":"canonical_industry_taxonomy"}
     symbol = str(company.get("symbol") or company.get("company_id") or "").strip().upper()
     if symbol in IT_SERVICES_COHORT:
         return {"status":"CLASSIFIED", "parent_sector":"TECHNOLOGY_AND_DIGITAL", "subsector":"IT_SERVICES", "source":"phase_2a_reviewed_cohort_registry"}

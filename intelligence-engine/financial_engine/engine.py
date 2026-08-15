@@ -132,6 +132,8 @@ def calculate(*, calculation_id: str | None = None, operation: str | None = None
             return _failure("INVALID_INPUT", calc_id, "opening subscribers must be positive", started)
         if calc_id == "TELECOM_SCENARIO_EQUITY" and (values["ebitda"] <= 0 or values["arpu"] <= 0 or values["subscribers"] <= 0 or values["tariff_change"] <= -1 or not 0 <= values["realization"] <= 1 or not 0 <= values["incremental_margin"] <= 1 or values["target_ev_ebitda"] <= 0):
             return _failure("INVALID_INPUT", calc_id, "telecom scenario inputs are outside valid bounds", started)
+        if calc_id == "TOWER_SCENARIO_EQUITY" and (values["sites"] <= 0 or values["tenancy_ratio"] <= 0 or values["annual_rent_per_tenant"] <= 0 or not 0 <= values["ebitda_margin"] <= 1 or values["target_ev_ebitda"] <= 0):
+            return _failure("INVALID_INPUT", calc_id, "tower scenario inputs are outside valid bounds", started)
         value = spec.function(values)
     except ZeroDivisionError:
         return _failure("DIVISION_BY_ZERO", calc_id, "formula denominator is zero", started)
@@ -160,7 +162,7 @@ def calculate(*, calculation_id: str | None = None, operation: str | None = None
         "as_of": as_of,
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "validation": {"status": "VALID"},
-        "warnings": ["SCENARIO_NOT_FACT"] if calc_id in {"TELECOM_REVENUE_IMPACT", "TELECOM_ANNUAL_SERVICE_REVENUE", "TELECOM_SCENARIO_EQUITY", "IT_SERVICES_SCENARIO_PRICE", "UTILIZATION_REVENUE_CAPACITY", "SAAS_SCENARIO_EV", "PLATFORM_SCENARIO_EV", "DIGITAL_SCENARIO_EV", "SEMI_CAPACITY_REVENUE", "SEMI_SCENARIO_EV"} else [],
+        "warnings": ["SCENARIO_NOT_FACT"] if calc_id in {"TELECOM_REVENUE_IMPACT", "TELECOM_ANNUAL_SERVICE_REVENUE", "TELECOM_SCENARIO_EQUITY", "TOWER_SCENARIO_EQUITY", "IT_SERVICES_SCENARIO_PRICE", "UTILIZATION_REVENUE_CAPACITY", "SAAS_SCENARIO_EV", "PLATFORM_SCENARIO_EV", "DIGITAL_SCENARIO_EV", "SEMI_CAPACITY_REVENUE", "SEMI_SCENARIO_EV"} else [],
         "execution_time_ms": round((time.perf_counter() - started) * 1000, 3),
         "deterministic": True,
         "model_generated_formula": False,

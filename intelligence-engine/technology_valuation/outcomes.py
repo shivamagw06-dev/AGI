@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from typing import Any
 
-TRACKED_METRICS=frozenset({"revenue_growth","constant_currency_growth","ebit_margin","fcf_margin","utilization","attrition","book_to_bill","arr_growth","nrr","grr","gross_margin","cac_payback","logo_churn","gmv_growth","take_rate","active_buyers","order_frequency","repeat_rate","contribution_margin","net_revenue_growth","return_rate","inventory_turns","advertising_arpu","yield_rate","rnd_intensity","capex_intensity","unit_shipments","average_selling_price","subscriber_growth","arpu","churn","market_share","net_debt_ebitda"})
+TRACKED_METRICS=frozenset({"revenue_growth","constant_currency_growth","ebit_margin","fcf_margin","utilization","attrition","book_to_bill","arr_growth","nrr","grr","gross_margin","cac_payback","logo_churn","gmv_growth","take_rate","active_buyers","order_frequency","repeat_rate","contribution_margin","net_revenue_growth","return_rate","inventory_turns","advertising_arpu","yield_rate","rnd_intensity","capex_intensity","unit_shipments","average_selling_price","subscriber_growth","arpu","churn","market_share","net_debt_ebitda","tenancy_ratio","tenant_additions","energy_coverage","contract_duration"})
 
 
 def build_outcome_record(*, company_id: str, metric: str, predicted_value: float, actual_value: float,
@@ -21,7 +21,7 @@ def build_outcome_record(*, company_id: str, metric: str, predicted_value: float
         return {"status":"INVALID_INPUT","trusted_update_allowed":False}
     error=actual-predicted
     pct_error=None if predicted==0 else error/abs(predicted)
-    subsector="TELECOM" if key in {"subscriber_growth","arpu","churn","market_share","net_debt_ebitda"} else "SEMICONDUCTOR_RELATED" if key in {"yield_rate","rnd_intensity","capex_intensity","unit_shipments","average_selling_price"} else "CONSUMER_INTERNET_DIGITAL_COMMERCE" if key in {"net_revenue_growth","return_rate","inventory_turns","advertising_arpu"} else "INTERNET_PLATFORMS_MARKETPLACES" if key in {"gmv_growth","take_rate","active_buyers","order_frequency","repeat_rate","contribution_margin"} else "SOFTWARE_SAAS" if key in {"arr_growth","nrr","grr","gross_margin","cac_payback","logo_churn"} else "IT_SERVICES"
+    subsector="TELECOM_INFRASTRUCTURE_TOWERS" if key in {"tenancy_ratio","tenant_additions","energy_coverage","contract_duration"} else "TELECOM" if key in {"subscriber_growth","arpu","churn","market_share","net_debt_ebitda"} else "SEMICONDUCTOR_RELATED" if key in {"yield_rate","rnd_intensity","capex_intensity","unit_shipments","average_selling_price"} else "CONSUMER_INTERNET_DIGITAL_COMMERCE" if key in {"net_revenue_growth","return_rate","inventory_turns","advertising_arpu"} else "INTERNET_PLATFORMS_MARKETPLACES" if key in {"gmv_growth","take_rate","active_buyers","order_frequency","repeat_rate","contribution_margin"} else "SOFTWARE_SAAS" if key in {"arr_growth","nrr","grr","gross_margin","cac_payback","logo_churn"} else "IT_SERVICES"
     return {"status":"PROPOSED","company_id":company_id,"subsector":subsector,"metric":key,
         "prediction":predicted,"actual":actual,"absolute_error":error,"percentage_error":pct_error,
         "predicted_at":predicted_at,"evaluated_at":evaluated_at,"source_id":source_id,
