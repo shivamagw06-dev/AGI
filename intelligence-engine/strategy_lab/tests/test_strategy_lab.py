@@ -5,6 +5,7 @@ from strategy_lab.production import (
     _reversion,
     _trend,
     dashboard,
+    operational_controls_receipt,
     strategy,
 )
 from strategy_lab.validation_registry import normalise_evidence
@@ -25,6 +26,15 @@ def test_phase_one_registry_is_research_only():
     assert item["lifecycle"] == "IMPLEMENTED"
     assert item["validation_registry"]["authority"] == "VALIDATION_REGISTRY"
     assert item["validation_registry"]["execution"] == "BLOCKED"
+
+
+def test_operational_control_receipt_runs_fail_closed_demotion_drill():
+    receipt = operational_controls_receipt()
+    assert receipt["status"] == "PASSED"
+    assert all(receipt["detail"]["checks"].values())
+    assert receipt["detail"]["stale_decision"] == "BLOCKED"
+    assert len(receipt["detail"]["kill_switch_drill_id"]) == 64
+    assert receipt["detail"]["external_execution"] == "BLOCKED"
 
 
 def test_registry_canonicalises_operational_pass_fail_labels():

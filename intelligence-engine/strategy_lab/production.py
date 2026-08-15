@@ -7,6 +7,9 @@ validation registry contains the required point-in-time and out-of-sample eviden
 from __future__ import annotations
 
 import math
+import hashlib
+import json
+import os
 import statistics
 import threading
 import time
@@ -16,6 +19,7 @@ from typing import Any
 from zoneinfo import ZoneInfo
 
 from .validation_registry import evaluate as evaluate_registry
+from .validation_registry import GATES as VALIDATION_GATES
 
 VERSION = "strategy-lab-governance-v1.1.0"
 LIFECYCLE = (
@@ -544,6 +548,59 @@ def _registry_decision(strategy_id: str, session: dict[str, Any] | None = None) 
     )
 
 
+def operational_controls_receipt() -> dict[str, Any]:
+    """Run a deterministic registry kill-switch drill and record its controls."""
+    blank = evaluate_registry("control_drill", requested_lifecycle="PRODUCTION", evidence={})
+    full = {gate: {"status": "PASSED", "receipt_id": f"drill-{gate}"} for gate in VALIDATION_GATES}
+    stale = evaluate_registry(
+        "control_drill",
+        requested_lifecycle="PRODUCTION",
+        evidence=full,
+        health="STALE",
+        health_reason="Synthetic stale-data control drill.",
+    )
+    try:
+        monitor_interval = max(900.0, float(os.getenv("STRATEGY_VALIDATION_INTERVAL_SECONDS", "1800")))
+    except (TypeError, ValueError):
+        monitor_interval = 1800.0
+    from institutional_warehouse import store
+
+    paper_append_only = all(
+        store.get_tab(tab_id).mode == "append"
+        for tab_id in ("strategy_paper_snapshots", "strategy_paper_outcomes")
+    )
+    checks = {
+        "execution_default_blocked": blank.get("execution") == "BLOCKED",
+        "stale_health_blocks_execution": stale.get("execution") == "BLOCKED",
+        "stale_health_blocks_historical_claims": stale.get("historical_alpha_claims_allowed") is False,
+        "automatic_demotion_active": stale.get("automatic_demotion") is True,
+        "paper_ledger_append_only": paper_append_only,
+        "validation_monitor_sla": monitor_interval <= 1800.0,
+    }
+    drill_payload = {
+        "checks": checks,
+        "monitor_interval_seconds": monitor_interval,
+        "registry_version": stale.get("registry_version"),
+        "stale_decision": stale.get("execution"),
+    }
+    drill_id = hashlib.sha256(
+        json.dumps(drill_payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    ).hexdigest()
+    passed = all(checks.values())
+    return {
+        "status": "PASSED" if passed else "FAILED",
+        "source": "strategy_lab.operational_control_drill",
+        "source_version": VERSION,
+        "detail": {
+            **drill_payload,
+            "kill_switch_drill_id": drill_id,
+            "promotion_authority": "VALIDATION_REGISTRY_ONLY",
+            "external_execution": "BLOCKED",
+        },
+        "limitations": ["External paging/on-call acknowledgement is outside this internal registry drill."],
+    }
+
+
 def _govern_signal(signal: dict[str, Any]) -> dict[str, Any]:
     factor_reasons = list(signal.get("reason_codes") or [])
     gate_reasons = ["PIT_DATA_MISSING", "CORPORATE_ACTION_UNVERIFIED", "BACKTEST_INSUFFICIENT", "COST_FAILURE", "RISK_LIMIT"]
@@ -709,6 +766,7 @@ def backtest(strategy_id: str, config: dict[str, Any] | None = None) -> dict[str
         "source_version": result.get("model_version"),
         "detail": sensitivity,
     }
+    evidence["operational_controls"] = operational_controls_receipt()
     from .registry_store import append_validation_evidence
     persistence = append_validation_evidence(strategy_id, VERSION, evidence)
     economic_gates_passed = pit_exact and corporate_actions_verified and oos_passed and capacity_passed and risk_passed and parameter_stability_passed
