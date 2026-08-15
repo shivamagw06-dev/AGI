@@ -52,7 +52,7 @@ export function rankPublishedResearch(question, rows = []) {
     .sort((a, b) => b.score - a.score || String(b.article?.published_at || '').localeCompare(String(a.article?.published_at || '')));
 }
 
-async function findPublishedResearch(question) {
+export async function findPublishedResearch(question) {
   const admin = createSupabaseAdmin();
   if (!admin) return null;
   const { data, error } = await admin
@@ -65,7 +65,7 @@ async function findPublishedResearch(question) {
   return rankPublishedResearch(question, Array.isArray(data) ? data : [])[0]?.article || null;
 }
 
-function publishedResearchPack(question, article) {
+export function publishedResearchPack(question, article) {
   const body = plainText(article.excerpt || article.content_md || article.content);
   const summary = body.slice(0, 1_400).replace(/\s+\S*$/, '').trim() || plainText(article.title);
   const url = article.slug ? `/article/${encodeURIComponent(article.slug)}` : '/research';
@@ -108,6 +108,60 @@ function publishedResearchPack(question, article) {
     evidence: [evidence],
     ask_orchestration: { engine_reached: false, fallback: true, fallback_used: true, reason: 'published_research_fast_fallback' },
     meta: { surface: 'ask_published_research_fallback', generated_at: new Date().toISOString() },
+  };
+}
+
+export function mergePublishedResearch(pack, question, article) {
+  if (!pack || typeof pack !== 'object' || !article) return pack;
+  const articlePack = publishedResearchPack(question, article);
+  const primaryEvidence = articlePack.evidence[0];
+  const mergeEvidence = (rows) => {
+    const combined = [primaryEvidence, ...(Array.isArray(rows) ? rows : [])];
+    const seen = new Set();
+    return combined.filter((row) => {
+      const key = String(row?.id || row?.url || row?.href || row?.title || '').toLowerCase();
+      if (!key || seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  };
+  const existingExecutive = asText(pack.answer?.executive_summary || pack.executive_summary);
+  const publishedExecutive = articlePack.executive_summary;
+  const executive = existingExecutive && !existingExecutive.includes(publishedExecutive)
+    ? `${publishedExecutive}\n\nCurrent intelligence context: ${existingExecutive}`
+    : publishedExecutive;
+  const existingWhy = Array.isArray(pack.answer?.why) ? pack.answer.why : Array.isArray(pack.why) ? pack.why : [];
+  return {
+    ...pack,
+    evidence_grade: 'published_agi_research',
+    published_research_match: {
+      id: article.id,
+      title: article.title,
+      slug: article.slug,
+      published_at: article.published_at || null,
+      role: 'primary_evidence',
+    },
+    executive_summary: executive,
+    answer: {
+      ...(pack.answer || {}),
+      executive_summary: executive,
+      summary: publishedExecutive,
+      why: [...articlePack.why, ...existingWhy].slice(0, 8),
+    },
+    why: [...articlePack.why, ...existingWhy].slice(0, 8),
+    supporting_research: mergeEvidence(pack.supporting_research),
+    supporting_evidence: mergeEvidence(pack.supporting_evidence),
+    evidence_used: mergeEvidence(pack.evidence_used),
+    evidence: mergeEvidence(pack.evidence),
+    ask_orchestration: {
+      ...(pack.ask_orchestration || {}),
+      published_research: {
+        matched: true,
+        article_id: article.id,
+        title: article.title,
+        role: 'primary_evidence',
+      },
+    },
   };
 }
 

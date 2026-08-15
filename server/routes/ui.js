@@ -17,6 +17,10 @@ import {
   marketCycleCacheMaxAgeSeconds,
   oncePerMarketCycle,
 } from '../config/marketRefresh.js';
+import {
+  findPublishedResearch,
+  mergePublishedResearch,
+} from '../services/askDeskFallback.js';
 
 function engineConfig() {
   let baseUrl = (process.env.INTELLIGENCE_ENGINE_URL || 'http://127.0.0.1:8100').replace(/\/$/, '');
@@ -601,6 +605,10 @@ export default function createUiRouter() {
       duration_ms: 0,
       question_excerpt: String(question).slice(0, 160),
     });
+    // Published AGI research is an immediate source of truth. Fetch it in
+    // parallel with the deeper engine so newly published articles are usable
+    // before asynchronous chunking/embedding has completed.
+    const publishedResearchPromise = findPublishedResearch(String(question)).catch(() => null);
 
     const buildTimeoutOrch = (detail, meta = {}) => {
       const elapsed = Date.now() - httpStarted;
@@ -802,6 +810,10 @@ export default function createUiRouter() {
         );
       }
       if (result.data && typeof result.data === 'object') {
+        const publishedResearch = await publishedResearchPromise;
+        if (publishedResearch) {
+          result.data = mergePublishedResearch(result.data, String(question), publishedResearch);
+        }
         const orch =
           result.data.ask_orchestration || result.data.degradation?.ask_orchestration || {};
         const httpMs = Date.now() - httpStarted;

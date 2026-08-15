@@ -1,6 +1,10 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { buildAskDeskFallback, rankPublishedResearch } from '../services/askDeskFallback.js';
+import {
+  buildAskDeskFallback,
+  mergePublishedResearch,
+  rankPublishedResearch,
+} from '../services/askDeskFallback.js';
 
 describe('askDeskFallback', () => {
   it('does not pretend market context is a research answer', async () => {
@@ -21,5 +25,30 @@ describe('askDeskFallback', () => {
     ]);
     assert.equal(ranked[0]?.article?.id, 'zen');
     assert.ok(ranked[0]?.score >= 8);
+  });
+
+  it('makes a matched article primary evidence without discarding engine context', () => {
+    const merged = mergePublishedResearch(
+      {
+        executive_summary: 'The deeper engine sees execution risk.',
+        answer: { executive_summary: 'The deeper engine sees execution risk.', why: ['Order conversion matters.'] },
+        evidence: [{ id: 'filing-1', title: 'Exchange filing' }],
+        ask_orchestration: { completed: true, fallback: false },
+      },
+      'What is the view on the order?',
+      {
+        id: 'article-1',
+        title: 'Company wins a major order',
+        slug: 'company-major-order',
+        excerpt: 'The order improves revenue visibility, while execution and cash conversion remain the key tests.',
+        published_at: '2026-08-15T00:00:00Z',
+      }
+    );
+    assert.equal(merged.evidence_grade, 'published_agi_research');
+    assert.equal(merged.evidence[0].id, 'article-1');
+    assert.equal(merged.evidence[1].id, 'filing-1');
+    assert.match(merged.executive_summary, /AGI's published view/i);
+    assert.match(merged.executive_summary, /deeper engine sees execution risk/i);
+    assert.equal(merged.ask_orchestration.published_research.matched, true);
   });
 });
