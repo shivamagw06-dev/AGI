@@ -6,6 +6,8 @@ from technology_valuation.model import IT_SERVICES_MODEL
 from technology_valuation.service import REQUIRED_INPUTS
 from technology_valuation.saas_model import SOFTWARE_SAAS_MODEL
 from technology_valuation.saas_service import REQUIRED_SAAS_INPUTS
+from technology_valuation.platform_model import PLATFORM_MODEL
+from technology_valuation.platform_service import REQUIRED_PLATFORM_INPUTS
 
 
 def technology_research_context(company_id: str, *, loader: Callable[[str],dict[str,Any]] | None=None) -> dict[str,Any]:
@@ -21,6 +23,8 @@ def technology_research_context(company_id: str, *, loader: Callable[[str],dict[
     classification=classify_technology_subsector({**(master or {}),"symbol":ticker})
     if classification.get("model_family")=="SOFTWARE_SAAS":
         model=SOFTWARE_SAAS_MODEL; required=REQUIRED_SAAS_INPUTS
+    elif classification.get("model_family")=="INTERNET_PLATFORMS_MARKETPLACES":
+        model=PLATFORM_MODEL; required=REQUIRED_PLATFORM_INPUTS
     elif classification.get("subsector")=="IT_SERVICES":
         model=IT_SERVICES_MODEL; required=REQUIRED_INPUTS
     else:

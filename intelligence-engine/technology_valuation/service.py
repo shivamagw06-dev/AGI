@@ -129,4 +129,7 @@ def evaluate_technology_company(*, company: dict[str, Any], inputs: dict[str, An
     if classification.get("model_family")=="SOFTWARE_SAAS":
         from technology_valuation.saas_service import evaluate_software_saas
         return {**evaluate_software_saas(company=company,inputs=inputs,as_of=as_of,peers=peers,history=history,scenarios=scenarios),"classification":classification}
+    if classification.get("model_family")=="INTERNET_PLATFORMS_MARKETPLACES":
+        from technology_valuation.platform_service import evaluate_platform_marketplace
+        return {**evaluate_platform_marketplace(company=company,inputs=inputs,as_of=as_of,peers=peers,history=history,scenarios=scenarios),"classification":classification}
     return _evaluate_it_services(company=company,inputs=inputs,as_of=as_of,peers=peers,history=history,scenarios=scenarios)

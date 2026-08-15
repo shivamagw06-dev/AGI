@@ -4,6 +4,7 @@ from typing import Any, Callable
 from financials_valuation.persistence import persist_sector_certification, seed_sector_model
 from technology_valuation.model import IT_SERVICES_MODEL, TECHNOLOGY_PARENT_SECTOR
 from technology_valuation.saas_model import SOFTWARE_SAAS_MODEL
+from technology_valuation.platform_model import PLATFORM_MODEL
 
 Transport=Callable[...,Any]
 
@@ -22,3 +23,9 @@ def seed_software_saas_model(*,transport:Transport)->dict[str,Any]:
 
 def persist_software_saas_certification(result:dict[str,Any],*,transport:Transport)->dict[str,Any]:
     return persist_sector_certification(result,model=SOFTWARE_SAAS_MODEL,transport=transport)
+
+def seed_platform_model(*,transport:Transport)->dict[str,Any]:
+    return seed_sector_model(PLATFORM_MODEL,parent_sector=TECHNOLOGY_PARENT_SECTOR,transport=transport)
+
+def persist_platform_certification(result:dict[str,Any],*,transport:Transport)->dict[str,Any]:
+    return persist_sector_certification(result,model=PLATFORM_MODEL,transport=transport)

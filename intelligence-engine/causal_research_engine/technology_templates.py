@@ -46,3 +46,25 @@ def software_saas_templates(company_id: str | None = None) -> list[CausalRelatio
         strength="MEDIUM",confidence=.55,time_lag="1_QUARTER",mechanism=mechanism,counter_effects=counter,
         source_quality="UNVALIDATED",status="PROPOSED",created_by="phase_2b_code_reviewed_curriculum")
         for i,(cause,effect,direction,mechanism,counter) in enumerate(rows,1)]
+
+
+def platform_marketplace_templates(company_id: str | None = None) -> list[CausalRelationship]:
+    rows=(
+        ("active_buyers","seller_value_proposition","POSITIVE","More relevant demand can improve seller conversion.",(CounterEffect("Low-intent users dilute liquidity","NEGATIVE","Raw user count may not create transactions","1_QUARTER"),)),
+        ("active_sellers","buyer_selection","POSITIVE","More quality supply can improve selection.",(CounterEffect("Low-quality supply raises trust costs","NEGATIVE","Uncurated supply can weaken experience","1_QUARTER"),)),
+        ("marketplace_liquidity","order_frequency","POSITIVE","Better matching encourages repeat transactions.",()),
+        ("order_frequency","gmv","POSITIVE","More transactions per active buyer increase activity.",()),
+        ("take_rate","revenue","POSITIVE","Fees convert GMV into revenue.",(CounterEffect("Higher fees encourage disintermediation","NEGATIVE","Participants may transact off-platform or churn","2_QUARTERS"),)),
+        ("customer_incentives","gmv_growth","POSITIVE","Discounts can stimulate transactions.",(CounterEffect("Subsidies weaken contribution economics","NEGATIVE","Purchased growth may disappear when incentives end","1_QUARTER"),)),
+        ("repeat_rate","customer_lifetime_value","POSITIVE","Repeat cohorts distribute acquisition cost over more gross profit.",()),
+        ("refund_cancellation_rate","contribution_margin","NEGATIVE","Refunds and failed fulfillment consume transaction economics.",()),
+        ("contribution_margin","free_cash_flow","POSITIVE","Positive transaction economics can absorb fixed costs.",()),
+        ("free_cash_flow","valuation","POSITIVE","Durable cash generation reduces reliance on distant scale assumptions.",()),
+        ("seller_concentration","platform_bargaining_power","NEGATIVE","Concentrated supply can negotiate fees or multi-home.",()),
+        ("ai_matching","marketplace_liquidity","CONDITIONAL","AI can improve discovery, fraud detection and support.",(CounterEffect("AI lowers discovery differentiation","NEGATIVE","Competitors may replicate matching capabilities","MULTI_YEAR"),)),
+    )
+    return [CausalRelationship(relationship_id=f"CRE-TECH2C-{i:02d}",cause=cause,effect=effect,direction=direction,
+        relationship_type="CAUSAL_HYPOTHESIS",epistemic_label="HYPOTHESIS",industry="Internet Platforms and Marketplaces",company_id=company_id,
+        strength="MEDIUM",confidence=.55,time_lag="1_QUARTER",mechanism=mechanism,counter_effects=counter,
+        source_quality="UNVALIDATED",status="PROPOSED",created_by="phase_2c_code_reviewed_curriculum")
+        for i,(cause,effect,direction,mechanism,counter) in enumerate(rows,1)]

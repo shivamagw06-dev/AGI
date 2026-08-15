@@ -8,6 +8,8 @@ def format_technology_answer(result: dict[str, Any]) -> dict[str, Any]:
         return {"status":result.get("status") or "DATA_UNAVAILABLE","answer":"AGI cannot form a reliable IT-services valuation view from the available point-in-time evidence.","limitations":result.get("input_issues") or result.get("risk_flags") or ["Evidence gates did not pass."],"execution_eligible":False}
     if (result.get("model") or {}).get("subsector")=="SOFTWARE_SAAS":
         return _format_software_saas_answer(result)
+    if (result.get("model") or {}).get("subsector")=="INTERNET_PLATFORMS_MARKETPLACES":
+        return _format_platform_answer(result)
     company=result.get("company_id") or "The company"; valuation=result["valuation"]; expectations=result["market_expectations"]; kpis=result["kpis"]
     expectation_text={"EXPECTATIONS_STRETCHED":"the market requires stronger growth than AGI's base expectation","EXPECTATIONS_FAVORABLE":"the market embeds less growth than AGI's base expectation","EXPECTATIONS_NEUTRAL":"market-implied growth is broadly aligned with AGI's base expectation"}.get(expectations.get("classification"),"market expectations cannot yet be resolved")
     return {"status":"RESEARCH_ONLY","direct_conclusion":f"{company} trades at {valuation['current_pe']:.2f}x normalized earnings and {valuation['ev_ebitda']:.2f}x EBITDA; {expectation_text}.",
@@ -33,4 +35,17 @@ def _format_software_saas_answer(result:dict[str,Any])->dict[str,Any]:
         "key_risks":result.get("model",{}).get("valuation_risks") or [],"ai_impact":result.get("business_economics",{}).get("ai_analysis"),
         "what_to_monitor":result.get("monitoring") or [],"confidence":result.get("confidence"),"as_of":result.get("as_of"),
         "sources":sorted({v.get("source_id") for v in (result.get("provenance") or {}).values() if v.get("source_id")}),
+        "limitations":"Operational research curriculum, not investment-certified or personalized advice.","execution_eligible":False}
+
+
+def _format_platform_answer(result:dict[str,Any])->dict[str,Any]:
+    company=result.get("company_id") or "The company"; v=result["valuation"]; k=result["kpis"]
+    expectation={"EXPECTATIONS_STRETCHED":"the valuation requires stronger growth than AGI's base case","EXPECTATIONS_FAVORABLE":"the valuation embeds less growth than AGI's base case","EXPECTATIONS_NEUTRAL":"market-implied growth broadly matches AGI's base case"}.get(result["market_expectations"].get("classification"),"market expectations remain unresolved")
+    return {"status":"RESEARCH_ONLY","direct_conclusion":f"{company} trades at {v['current_ev_sales']:.2f}x revenue and {v['ev_gmv']:.2f}x GMV; {expectation}.",
+        "business_quality":"A defensible platform requires repeat transactions, balanced buyer-seller liquidity and trust. User growth alone is not evidence of a network effect.",
+        "growth":f"GMV growth is {k['gmv_growth']:.1%}, take rate is {k['take_rate']:.1%}, and order frequency is {k['order_frequency']:.2f} per active buyer.",
+        "unit_economics":f"Contribution margin is {k['contribution_margin']:.1%}; customer acquisition cost is {k['cac']:.2f} in the reported currency.",
+        "cash_flow":f"FCF margin is {k['fcf_margin']:.1%}.","valuation":v,"market_implied_expectations":result.get("market_expectations"),"scenarios":result.get("scenarios"),
+        "key_risks":result.get("model",{}).get("valuation_risks") or [],"ai_impact":result.get("business_economics",{}).get("ai_analysis"),"what_to_monitor":result.get("monitoring") or [],
+        "confidence":result.get("confidence"),"as_of":result.get("as_of"),"sources":sorted({x.get("source_id") for x in (result.get("provenance") or {}).values() if x.get("source_id")}),
         "limitations":"Operational research curriculum, not investment-certified or personalized advice.","execution_eligible":False}

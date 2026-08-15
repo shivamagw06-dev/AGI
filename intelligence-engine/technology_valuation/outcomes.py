@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from typing import Any
 
-TRACKED_METRICS=frozenset({"revenue_growth","constant_currency_growth","ebit_margin","fcf_margin","utilization","attrition","book_to_bill","arr_growth","nrr","grr","gross_margin","cac_payback","logo_churn"})
+TRACKED_METRICS=frozenset({"revenue_growth","constant_currency_growth","ebit_margin","fcf_margin","utilization","attrition","book_to_bill","arr_growth","nrr","grr","gross_margin","cac_payback","logo_churn","gmv_growth","take_rate","active_buyers","order_frequency","repeat_rate","contribution_margin"})
 
 
 def build_outcome_record(*, company_id: str, metric: str, predicted_value: float, actual_value: float,
@@ -21,7 +21,7 @@ def build_outcome_record(*, company_id: str, metric: str, predicted_value: float
         return {"status":"INVALID_INPUT","trusted_update_allowed":False}
     error=actual-predicted
     pct_error=None if predicted==0 else error/abs(predicted)
-    subsector="SOFTWARE_SAAS" if key in {"arr_growth","nrr","grr","gross_margin","cac_payback","logo_churn"} else "IT_SERVICES"
+    subsector="INTERNET_PLATFORMS_MARKETPLACES" if key in {"gmv_growth","take_rate","active_buyers","order_frequency","repeat_rate","contribution_margin"} else "SOFTWARE_SAAS" if key in {"arr_growth","nrr","grr","gross_margin","cac_payback","logo_churn"} else "IT_SERVICES"
     return {"status":"PROPOSED","company_id":company_id,"subsector":subsector,"metric":key,
         "prediction":predicted,"actual":actual,"absolute_error":error,"percentage_error":pct_error,
         "predicted_at":predicted_at,"evaluated_at":evaluated_at,"source_id":source_id,

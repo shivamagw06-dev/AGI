@@ -104,6 +104,13 @@ SPECS = (
     CalculationSpec("RULE_OF_40", "Rule of 40", "saas", "ARR growth + free cash flow margin", ("arr_growth", "fcf_margin"), "decimal", lambda i: i["arr_growth"] + i["fcf_margin"], allow_mixed_units=True),
     CalculationSpec("EV_ARR", "Enterprise Value to ARR", "saas_valuation", "enterprise value / annual recurring revenue", ("enterprise_value", "arr"), "multiple", lambda i: _div(i["enterprise_value"], i["arr"])),
     CalculationSpec("SAAS_SCENARIO_EV", "SaaS Scenario Enterprise Value", "technology_scenario", "ARR * (1 + ARR growth) * target EV/ARR", ("arr", "arr_growth", "target_ev_arr"), "currency", lambda i: i["arr"] * (1.0 + i["arr_growth"]) * i["target_ev_arr"], allow_mixed_units=True, methodology="Explicit one-period scenario; assumptions are not facts"),
+    CalculationSpec("PLATFORM_TAKE_RATE", "Platform Take Rate", "marketplace", "platform revenue / gross merchandise value", ("revenue", "gmv"), "decimal", lambda i: _div(i["revenue"], i["gmv"])),
+    CalculationSpec("PLATFORM_GMV_GROWTH", "Platform GMV Growth", "marketplace", "closing GMV / opening GMV - 1", ("opening_gmv", "closing_gmv"), "decimal", lambda i: _div(i["closing_gmv"], i["opening_gmv"]) - 1.0),
+    CalculationSpec("PLATFORM_ORDER_FREQUENCY", "Platform Order Frequency", "marketplace", "orders / active buyers", ("orders", "active_buyers"), "orders_per_buyer", lambda i: _div(i["orders"], i["active_buyers"]), allow_mixed_units=True),
+    CalculationSpec("PLATFORM_CONTRIBUTION_MARGIN", "Platform Contribution Margin", "marketplace", "contribution profit / revenue", ("contribution_profit", "revenue"), "decimal", lambda i: _div(i["contribution_profit"], i["revenue"])),
+    CalculationSpec("PLATFORM_CUSTOMER_ACQUISITION_COST", "Platform Customer Acquisition Cost", "marketplace", "sales and marketing spend / new customers", ("sales_marketing_spend", "new_customers"), "currency_per_customer", lambda i: _div(i["sales_marketing_spend"], i["new_customers"]), allow_mixed_units=True),
+    CalculationSpec("EV_GMV", "Enterprise Value to GMV", "marketplace_valuation", "enterprise value / gross merchandise value", ("enterprise_value", "gmv"), "multiple", lambda i: _div(i["enterprise_value"], i["gmv"])),
+    CalculationSpec("PLATFORM_SCENARIO_EV", "Platform Scenario Enterprise Value", "technology_scenario", "GMV * (1 + GMV growth) * take rate * target EV/revenue", ("gmv", "gmv_growth", "take_rate", "target_ev_revenue"), "currency", lambda i: i["gmv"] * (1.0 + i["gmv_growth"]) * i["take_rate"] * i["target_ev_revenue"], allow_mixed_units=True, methodology="Explicit one-period scenario; assumptions are not facts"),
 )
 
 REGISTRY = {spec.calculation_id: spec for spec in SPECS}

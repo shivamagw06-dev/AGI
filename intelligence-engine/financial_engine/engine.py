@@ -106,6 +106,8 @@ def calculate(*, calculation_id: str | None = None, operation: str | None = None
             return _failure("INVALID_INPUT", calc_id, "scenario economics are outside valid bounds", started)
         if calc_id in {"ARR_GROWTH", "NET_REVENUE_RETENTION", "GROSS_REVENUE_RETENTION"} and values["opening_arr"] <= 0:
             return _failure("INVALID_INPUT", calc_id, "opening ARR must be positive", started)
+        if calc_id == "PLATFORM_GMV_GROWTH" and values["opening_gmv"] <= 0:
+            return _failure("INVALID_INPUT", calc_id, "opening GMV must be positive", started)
         if calc_id in {"NET_REVENUE_RETENTION", "GROSS_REVENUE_RETENTION"} and any(values[key] < 0 for key in values if key != "opening_arr"):
             return _failure("INVALID_INPUT", calc_id, "retention bridge components cannot be negative", started)
         if calc_id == "CAC_PAYBACK_MONTHS" and (values["customer_acquisition_cost"] < 0 or values["monthly_revenue_per_new_customer"] <= 0 or not 0 < values["gross_margin"] <= 1):
@@ -114,6 +116,8 @@ def calculate(*, calculation_id: str | None = None, operation: str | None = None
             return _failure("INVALID_INPUT", calc_id, "LTV inputs are outside valid bounds", started)
         if calc_id == "SAAS_SCENARIO_EV" and (values["arr"] <= 0 or values["arr_growth"] <= -1 or values["target_ev_arr"] <= 0):
             return _failure("INVALID_INPUT", calc_id, "SaaS scenario inputs are outside valid bounds", started)
+        if calc_id == "PLATFORM_SCENARIO_EV" and (values["gmv"] <= 0 or values["gmv_growth"] <= -1 or not 0 <= values["take_rate"] <= 1 or values["target_ev_revenue"] <= 0):
+            return _failure("INVALID_INPUT", calc_id, "platform scenario inputs are outside valid bounds", started)
         value = spec.function(values)
     except ZeroDivisionError:
         return _failure("DIVISION_BY_ZERO", calc_id, "formula denominator is zero", started)
@@ -142,7 +146,7 @@ def calculate(*, calculation_id: str | None = None, operation: str | None = None
         "as_of": as_of,
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "validation": {"status": "VALID"},
-        "warnings": ["SCENARIO_NOT_FACT"] if calc_id in {"TELECOM_REVENUE_IMPACT", "IT_SERVICES_SCENARIO_PRICE", "UTILIZATION_REVENUE_CAPACITY", "SAAS_SCENARIO_EV"} else [],
+        "warnings": ["SCENARIO_NOT_FACT"] if calc_id in {"TELECOM_REVENUE_IMPACT", "IT_SERVICES_SCENARIO_PRICE", "UTILIZATION_REVENUE_CAPACITY", "SAAS_SCENARIO_EV", "PLATFORM_SCENARIO_EV"} else [],
         "execution_time_ms": round((time.perf_counter() - started) * 1000, 3),
         "deterministic": True,
         "model_generated_formula": False,
