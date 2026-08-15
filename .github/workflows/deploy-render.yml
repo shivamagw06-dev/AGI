@@ -24,6 +24,11 @@ jobs:
   trigger-render-deploys:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout revision ancestry
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
       - name: Trigger Node API deploy hook
         env:
           HOOK: ${{ secrets.RENDER_DEPLOY_HOOK_API }}
@@ -57,9 +62,28 @@ jobs:
             payload="$(curl -fsS --max-time 20 "$ENGINE_HEALTH_URL" 2>/dev/null || true)"
             running_sha="$(python -c 'import json,sys; print((json.load(sys.stdin).get("deployment") or {}).get("commit") or "")' <<<"$payload" 2>/dev/null || true)"
             healthy="$(python -c 'import json,sys; print(str(json.load(sys.stdin).get("ok") is True).lower())' <<<"$payload" 2>/dev/null || true)"
-            if [ "$healthy" = "true" ] && [ "$running_sha" = "$EXPECTED_SHA" ]; then
-              echo "Render is healthy on exact revision $running_sha"
-              exit 0
+            if [ "$healthy" = "true" ] && [ -n "$running_sha" ]; then
+              if [ "$running_sha" = "$EXPECTED_SHA" ]; then
+                echo "Render is healthy on exact revision $running_sha"
+                exit 0
+              fi
+              # Hostinger's Git-sync workflow writes generated root artifacts
+              # back to main with [skip ci]. Render may therefore serve that
+              # descendant instead of the source parent this run requested.
+              # Accept it only when ancestry is proven and no source file
+              # changed between the two revisions.
+              git fetch --quiet origin "$running_sha" || true
+              if git cat-file -e "$running_sha^{commit}" 2>/dev/null \
+                && git merge-base --is-ancestor "$EXPECTED_SHA" "$running_sha"; then
+                unexpected="$(git diff --name-only "$EXPECTED_SHA" "$running_sha" -- \
+                  | grep -Ev '^(index\.html|\.htaccess|assets/)' || true)"
+                if [ -z "$unexpected" ]; then
+                  echo "Render is healthy on generated-artifact descendant $running_sha of $EXPECTED_SHA"
+                  exit 0
+                fi
+                echo "Descendant $running_sha contains non-artifact changes; refusing it:"
+                echo "$unexpected"
+              fi
             fi
             running_label="${running_sha:0:8}"
             [ -n "$running_label" ] || running_label="unavailable"
