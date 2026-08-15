@@ -1,4 +1,4 @@
-"""Grounded OpenAI synthesis for Ask AGI.
+"""Provider-independent grounded synthesis for Ask AGI.
 
 The institutional pipeline remains the source of truth.  This module only turns
 its bounded evidence into a clearer answer and falls back cleanly when the API
@@ -13,6 +13,8 @@ import os
 import re
 import time
 from typing import Any
+
+from reasoning_providers import configured_provider_name, get_reasoning_provider
 
 LOGGER = logging.getLogger("agi.ask.llm_synthesis")
 
@@ -366,16 +368,18 @@ def synthesize_financial_answer(
     deterministic_answer: dict[str, Any],
     supplemental_packs: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
-    """Return synthesis metadata plus an answer when OpenAI succeeds."""
-    api_key = os.environ.get("OPENAI_API_KEY", "").strip()
-    model = os.environ.get("ASK_REASONING_MODEL", DEFAULT_MODEL).strip() or DEFAULT_MODEL
+    """Return synthesis metadata plus an answer when the selected provider succeeds."""
+    provider_name = configured_provider_name()
+    provider = get_reasoning_provider(provider_name)
+    configured_model = os.environ.get("ASK_REASONING_MODEL", "").strip()
+    model = configured_model or provider.default_model()
     effort = os.environ.get("ASK_REASONING_EFFORT", "medium").strip().lower()
     if effort not in {"none", "low", "medium", "high", "xhigh", "max"}:
         effort = "medium"
     if not _enabled():
         return {"used": False, "model": model, "status": "disabled"}
-    if not api_key:
-        return {"used": False, "model": model, "status": "missing_api_key"}
+    if not provider.available():
+        return {"used": False, "provider": provider_name, "model": model, "status": "missing_api_key"}
 
     rows = _evidence_rows(evidence, supplemental_packs)
     if not rows:
@@ -414,37 +418,30 @@ def synthesize_financial_answer(
 
     started = time.monotonic()
     try:
-        from openai import OpenAI
-
-        client = OpenAI(api_key=api_key, timeout=timeout, max_retries=1)
-        response = client.responses.create(
-            model=model,
-            instructions=instructions,
-            input=input_text,
-            reasoning={"effort": effort},
-            max_output_tokens=max_output,
-            store=False,
+        response = provider.structured_generate(
+            model=model, instructions=instructions, input_text=input_text,
+            effort=effort, max_output_tokens=max_output, timeout=timeout,
         )
         allowed_numeric_values = _numeric_values(input_text)
         answer = _normalise_answer(
-            _parse_json(response.output_text), valid_ids, allowed_numeric_values
+            _parse_json(response.text), valid_ids, allowed_numeric_values
         )
-        usage = getattr(response, "usage", None)
         result = {
             "used": True,
             "status": "completed",
-            "model": model,
-            "response_id": getattr(response, "id", None),
+            "provider": response.provider,
+            "model": response.model,
+            "response_id": response.response_id,
             "latency_ms": int((time.monotonic() - started) * 1000),
-            "prompt_tokens": getattr(usage, "input_tokens", None),
-            "completion_tokens": getattr(usage, "output_tokens", None),
-            "finish_reason": "stop",
+            "prompt_tokens": response.input_tokens,
+            "completion_tokens": response.output_tokens,
+            "finish_reason": response.finish_reason,
             "evidence_count": len(rows),
             "answer": answer,
         }
         LOGGER.info(
             "ask_llm_completed model=%s latency_ms=%s evidence=%s input_tokens=%s output_tokens=%s",
-            model,
+            response.model,
             result["latency_ms"],
             len(rows),
             result["prompt_tokens"],
@@ -463,6 +460,7 @@ def synthesize_financial_answer(
         return {
             "used": False,
             "status": "fallback",
+            "provider": provider_name,
             "model": model,
             "latency_ms": latency_ms,
             "error_type": type(exc).__name__,

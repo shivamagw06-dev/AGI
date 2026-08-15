@@ -6,6 +6,7 @@ import {
   learningEnabled,
   learningModelRoles,
 } from './intelligenceLearningJobs.js';
+import { structuredGenerate } from './reasoningProvider.js';
 
 const runtime = {
   started: false,
@@ -32,15 +33,6 @@ const array = (value) => (Array.isArray(value) ? value.filter(Boolean) : []);
 const text = (value, limit = 4_000) => String(value || '').replace(/\s+/g, ' ').trim().slice(0, limit);
 const truthy = (value) => /^(1|true|yes|on)$/i.test(String(value || ''));
 
-function responseText(payload = {}) {
-  if (payload.output_text) return String(payload.output_text);
-  return array(payload.output)
-    .flatMap((item) => array(item?.content))
-    .filter((item) => item?.type === 'output_text' || typeof item?.text === 'string')
-    .map((item) => item.text || '')
-    .join('');
-}
-
 function parseJson(value = '') {
   const raw = String(value || '').trim().replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '');
   try { return JSON.parse(raw); } catch {
@@ -51,34 +43,14 @@ function parseJson(value = '') {
   }
 }
 
-async function openAiJson({ model, instructions, input, effort = 'medium', maxOutputTokens = 4_000 }) {
-  const key = String(process.env.OPENAI_API_KEY || '').trim();
-  if (!key) throw new Error('OPENAI_API_KEY_missing');
-  const response = await fetch('https://api.openai.com/v1/responses', {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
-    signal: AbortSignal.timeout(Math.max(30_000, Number(process.env.AGI_LEARNING_MODEL_TIMEOUT_MS) || 90_000)),
-    body: JSON.stringify({
-      model,
-      instructions,
-      input: `Return one valid JSON object only.\n\n${input}`,
-      reasoning: { effort },
-      text: { format: { type: 'json_object' } },
-      max_output_tokens: maxOutputTokens,
-      store: false,
-    }),
-  });
-  const raw = await response.text();
-  if (!response.ok) throw new Error(`openai_${response.status}:${raw.slice(0, 300)}`);
-  const payload = JSON.parse(raw);
-  if (payload.status === 'incomplete') {
-    throw new Error(`openai_incomplete:${payload.incomplete_details?.reason || 'output_limit'}`);
-  }
+async function providerJson({ model, instructions, input, effort = 'medium', maxOutputTokens = 4_000 }) {
+  const payload = await structuredGenerate({ model, instructions, input, effort, maxOutputTokens, timeoutMs: Math.max(30_000, Number(process.env.AGI_LEARNING_MODEL_TIMEOUT_MS) || 90_000) });
   return {
-    data: parseJson(responseText(payload)),
+    data: parseJson(payload.text),
     usage: payload.usage || {},
-    response_id: payload.id || null,
+    response_id: payload.response_id || null,
     model: payload.model || model,
+    provider: payload.provider,
   };
 }
 
@@ -235,7 +207,7 @@ async function processJob(admin, job) {
   const { document, source } = await sourceForJob(admin, job);
   const roles = learningModelRoles();
   await updateJob(admin, job.id, { current_stage: 'classification', stage_results: { source_chars: source.length, roles } });
-  const teacher = await openAiJson({
+  const teacher = await providerJson({
     model: roles.reasoning_model,
     instructions: teacherInstructions(),
     input: `DOCUMENT METADATA\n${JSON.stringify({ title: document.title, publisher: document.publisher, publication_date: document.publication_date, document_type: document.document_type })}\n\nSOURCE\n${source}`,
@@ -244,7 +216,7 @@ async function processJob(admin, job) {
   });
   const deterministic = validateLearningPayload(teacher.data, source);
   await updateJob(admin, job.id, { current_stage: 'validation', completed_stages: LEARNING_STAGES.slice(0, -1), stage_results: { teacher: { model: teacher.model, response_id: teacher.response_id, usage: teacher.usage }, deterministic_validation: deterministic } });
-  const critic = await openAiJson({
+  const critic = await providerJson({
     model: roles.critic_model,
     instructions: criticInstructions(),
     input: `SOURCE\n${source.slice(0, 35_000)}\n\nPROPOSAL\n${JSON.stringify(teacher.data).slice(0, 35_000)}`,
