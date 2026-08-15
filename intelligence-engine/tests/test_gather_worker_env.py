@@ -55,6 +55,8 @@ def test_forecast_only_worker_exists_without_full_gather_defaults():
     assert 'os.environ.setdefault("FIE_RUNTIME", "true")' in text
     assert "STRATEGY_REGISTRY_REFRESH_SECONDS" in text
     assert "strategy_registry_refreshed" in text
+    assert "ANSWER_PACK_MATERIALIZER_INTERVAL_SECONDS" in text
+    assert "answer_pack_materializer_refreshed" in text
     assert "write_gather_heartbeat" in text
     assert "CONTINUOUS_HISTORICAL_BACKFILL" not in text
     assert "FAA_BACKGROUND_COLLECTOR" not in text

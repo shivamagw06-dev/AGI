@@ -179,6 +179,12 @@ services:
         value: "1800"
       - key: STRATEGY_VALIDATION_INTERVAL_SECONDS
         value: "1800"
+      - key: ANSWER_PACK_MATERIALIZER_ENABLED
+        value: "true"
+      - key: ANSWER_PACK_MATERIALIZER_INTERVAL_SECONDS
+        value: "900"
+      - key: ANSWER_PACK_MATERIALIZER_BATCH
+        value: "5"
       # Durable data roots.  KIP keeps research objects; the warehouse keeps
       # imported financial statements, valuation snapshots and live prices.
       - key: KIP_DATA_DIR

@@ -205,6 +205,7 @@ def write_remote_gather_heartbeat(payload: dict[str, Any] | None = None) -> dict
         "CONTINUOUS_HISTORICAL_BACKFILL",
         "KF_HD_LIVE_COLLECTORS",
         "forecast_runtime",
+        "answer_pack_materializer",
     }
     body = {key: incoming.get(key) for key in allowed if key in incoming}
     runtime = body.get("forecast_runtime")
@@ -221,6 +222,23 @@ def write_remote_gather_heartbeat(payload: dict[str, Any] | None = None) -> dict
         }
     else:
         body.pop("forecast_runtime", None)
+    answer_pack = body.get("answer_pack_materializer")
+    if isinstance(answer_pack, dict):
+        answer_pack_allowed = {
+            "status",
+            "ok",
+            "attempted",
+            "written",
+            "unchanged",
+            "next_cursor",
+            "generated_at",
+            "error",
+        }
+        body["answer_pack_materializer"] = {
+            key: answer_pack.get(key) for key in answer_pack_allowed if key in answer_pack
+        }
+    else:
+        body.pop("answer_pack_materializer", None)
     body.update(
         {
             "role": str(body.get("role") or "gather_worker")[:80],

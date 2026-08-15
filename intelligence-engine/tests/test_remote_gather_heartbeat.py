@@ -21,6 +21,13 @@ def test_remote_heartbeat_uses_server_time_and_is_fresh(tmp_path, monkeypatch):
                 "last_batch": {"attempted": 1, "completed": 1},
                 "secret": "discard-me",
             },
+            "answer_pack_materializer": {
+                "ok": True,
+                "attempted": 5,
+                "written": 4,
+                "next_cursor": 10,
+                "secret": "discard-me",
+            },
         }
     )
 
@@ -30,6 +37,8 @@ def test_remote_heartbeat_uses_server_time_and_is_fresh(tmp_path, monkeypatch):
     assert row["forecast_runtime"]["status"] == "running"
     assert row["forecast_runtime"]["last_batch"]["completed"] == 1
     assert "secret" not in row["forecast_runtime"]
+    assert row["answer_pack_materializer"]["written"] == 4
+    assert "secret" not in row["answer_pack_materializer"]
     assert persist.read_gather_heartbeat()["fresh"] is True
 
 
