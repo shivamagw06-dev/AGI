@@ -121,7 +121,7 @@ services:
       - key: AGI_LEARNING_INITIAL_DELAY_MS
         value: "90000"
       - key: AGI_LEARNING_MAX_OUTPUT_TOKENS
-        value: "5000"
+        value: "6000"
       - key: GROWW_SECTOR_ROTATION_BACKFILL_DELAY_MS
         value: "120000"
 
