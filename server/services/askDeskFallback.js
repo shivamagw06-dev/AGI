@@ -67,6 +67,10 @@ function searchTerms(question = '') {
     .filter((term) => !ignored.has(term));
 }
 
+function tokenSet(value = '') {
+  return new Set(plainText(value).toLowerCase().match(/[a-z0-9]{3,}/g) || []);
+}
+
 export function rankPublishedResearch(question, rows = []) {
   if (/\b(compare|comparison|versus|vs\.?|difference between)\b/i.test(question)) return [];
   const terms = searchTerms(question);
@@ -76,9 +80,12 @@ export function rankPublishedResearch(question, rows = []) {
       const title = plainText(article?.title).toLowerCase();
       const tags = plainText(Array.isArray(article?.tags) ? article.tags.join(' ') : article?.tags).toLowerCase();
       const body = plainText(`${article?.excerpt || ''} ${article?.content_md || ''} ${article?.content || ''}`).toLowerCase();
-      const titleMatches = terms.filter((term) => title.includes(term));
-      const tagMatches = terms.filter((term) => tags.includes(term));
-      const bodyMatches = terms.filter((term) => body.includes(term));
+      const titleTokens = tokenSet(title);
+      const tagTokens = tokenSet(tags);
+      const bodyTokens = tokenSet(body);
+      const titleMatches = terms.filter((term) => titleTokens.has(term));
+      const tagMatches = terms.filter((term) => tagTokens.has(term));
+      const bodyMatches = terms.filter((term) => bodyTokens.has(term));
       const score = titleMatches.length * 8 + tagMatches.length * 4 + bodyMatches.length;
       const strongMatches = new Set([...titleMatches, ...tagMatches]).size;
       const titleCoverage = titleMatches.length / terms.length;

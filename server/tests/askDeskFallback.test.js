@@ -38,6 +38,16 @@ describe('askDeskFallback', () => {
     assert.equal(rankPublishedResearch('Compare a telecom tariff increase versus a defence contract win.', rows).length, 0);
   });
 
+  it('does not treat a query term as a substring inside an unrelated title word', () => {
+    const ranked = rankPublishedResearch('How would an RBI rate cut affect Indian banks?', [{
+      id: 'zen',
+      title: 'Zen Technologies defence win: execution is key',
+      tags: ['India', 'investment'],
+      excerpt: 'The contract supports revenue visibility.',
+    }]);
+    assert.equal(ranked.length, 0, 'cut must not match inside execution');
+  });
+
   it('makes a matched article primary evidence without discarding engine context', () => {
     const merged = mergePublishedResearch(
       {
