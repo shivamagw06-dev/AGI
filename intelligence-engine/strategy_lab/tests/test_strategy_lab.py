@@ -69,6 +69,7 @@ def test_cross_sectional_momentum_is_registered_as_implemented():
     })
     assert result["calculator_available"] is True
     assert result["validation_registry"]["evidence"]["implementation"]["status"] == "PASSED"
+    assert result["validation_registry"]["evidence"]["operational_controls"]["status"] == "PARTIAL"
     assert result["execution_eligible"] is False
 
 

@@ -432,6 +432,17 @@ def _registry_decision(strategy_id: str, session: dict[str, Any] | None = None) 
         },
         "point_in_time": {"status": "PARTIAL", "source": "warehouse", "detail": "Annual fundamentals remain PIT limited."},
         "corporate_actions": {"status": "MISSING", "source": "warehouse", "detail": "Independent adjustment receipt not recorded."},
+        "operational_controls": {
+            "status": "PARTIAL" if implemented else "MISSING",
+            "source": "strategy_lab.validation_registry",
+            "detail": {
+                "execution_default": "BLOCKED",
+                "trade_eligible_default": False,
+                "promotion_authority": "VALIDATION_REGISTRY_ONLY",
+                "web_worker_separation": True,
+                "remaining": ["paper_monitoring_sla", "alerting_receipt", "kill_switch_drill"],
+            },
+        },
     }
     from .registry_store import load_latest_evidence
     all_durable_evidence = load_latest_evidence()

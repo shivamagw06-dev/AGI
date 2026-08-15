@@ -403,7 +403,7 @@ services:
       - key: ACCOUNTING_INTELLIGENCE
         value: "true"
       - key: PORTFOLIO_INTELLIGENCE
-        value: "false"
+        value: "true"
       - key: PEER_INTELLIGENCE
         value: "true"
       - key: CAUSAL_INTELLIGENCE
@@ -524,7 +524,7 @@ services:
       - key: CIG_PORTFOLIO_IMPACT
         value: "false"
       - key: PORTFOLIO_INTELLIGENCE
-        value: "false"
+        value: "true"
       - key: SIMULATION_LAB
         value: "false"
       - key: PORTFOLIO_OFFICE
