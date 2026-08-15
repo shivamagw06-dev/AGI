@@ -67,4 +67,36 @@ describe('askDeskFallback', () => {
     assert.ok(pack.key_catalysts.some((catalyst) => /revenue growth/i.test(catalyst)));
     assert.notEqual(pack.answer.bottom_line, pack.answer.summary);
   });
+
+  it('adds an industry-aware causal and financial reasoning pack', () => {
+    const pack = publishedResearchPack('Why does Airtel matter in the next tariff cycle?', {
+      id: 'airtel-2',
+      title: 'Airtel starts the next telecom tariff cycle',
+      excerpt: 'Airtel has raised prepaid pricing, signalling a new phase of tariff repair.',
+      content: 'The change may support revenue growth, but customer churn and competitive responses remain important risks.',
+    });
+    assert.equal(pack.research_plan.industry, 'telecom');
+    assert.equal(pack.research_plan.event_type, 'pricing');
+    assert.equal(pack.research_plan.question_type, 'causal_analysis');
+    assert.deepEqual(pack.financial_transmission.slice(0, 3), [
+      'Tariff or plan-price change',
+      'Realised ARPU',
+      'Revenue per subscriber',
+    ]);
+    assert.ok(pack.affected_metrics.includes('churn'));
+    assert.match(pack.reasoning_framework.what_could_go_wrong, /churn/i);
+    assert.equal(pack.evidence_boundary.quantified_impact_available, false);
+  });
+
+  it('maps a defence order through execution and cash conversion', () => {
+    const pack = publishedResearchPack("What is AGI's view on Zen Technologies' order?", {
+      id: 'zen-2',
+      title: 'Zen Technologies wins a defence order',
+      excerpt: 'The contract adds to the company order pipeline while execution remains the key test.',
+    });
+    assert.equal(pack.research_plan.industry, 'defence');
+    assert.equal(pack.research_plan.event_type, 'order_win');
+    assert.ok(pack.financial_transmission.includes('Project margin and working capital'));
+    assert.ok(pack.affected_metrics.includes('operating cash flow'));
+  });
 });

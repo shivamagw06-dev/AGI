@@ -6,6 +6,7 @@
 
 import { getAgiIntelligence } from './intelligenceService.js';
 import { createSupabaseAdmin } from '../lib/supabaseAdmin.js';
+import { buildPublishedReasoningPack } from './askReasoningPack.js';
 
 function asText(v, fallback = '') {
   if (v == null) return fallback;
@@ -97,6 +98,7 @@ export async function findPublishedResearch(question) {
 
 export function publishedResearchPack(question, article) {
   const analysis = articleAnalysis(article);
+  const reasoning = buildPublishedReasoningPack(question, article, analysis);
   const summary = analysis.summary;
   const url = article.slug ? `/article/${encodeURIComponent(article.slug)}` : '/research';
   const evidence = {
@@ -114,6 +116,7 @@ export function publishedResearchPack(question, article) {
   const why = [
     `Matched the question to AGI's published report “${plainText(article.title)}”.`,
     article.published_at ? `Report publication date: ${String(article.published_at).slice(0, 10)}.` : null,
+    reasoning.reasoning_framework.why,
     'The answer preserves the report’s stated view; live market and post-publication developments require a refreshed analysis.',
   ].filter(Boolean);
   const followUps = ['Open the full AGI report', 'What could change AGI\'s view?', 'How material is the order to revenue?', 'What are the execution risks?'];
@@ -127,6 +130,7 @@ export function publishedResearchPack(question, article) {
     why_agib_thinks_this: why,
     investment_thesis: {
       business: summary,
+      financial_transmission: reasoning.financial_transmission,
       risks: analysis.risks[0],
       catalysts: analysis.catalysts[0],
     },
@@ -152,6 +156,13 @@ export function publishedResearchPack(question, article) {
     confidence: 90,
     answer: { executive_summary: directAnswer, summary, why, bottom_line: bottomLine, confidence_explanation: confidenceExplanation, response_constitution: responseConstitution },
     why,
+    research_plan: reasoning.planner,
+    reasoning_framework: reasoning.reasoning_framework,
+    financial_transmission: reasoning.financial_transmission,
+    affected_metrics: reasoning.affected_metrics,
+    conditions: reasoning.conditions,
+    counter_case: reasoning.counter_case,
+    evidence_boundary: reasoning.evidence_boundary,
     key_risks: analysis.risks,
     key_catalysts: analysis.catalysts,
     bull_case: analysis.catalysts,
