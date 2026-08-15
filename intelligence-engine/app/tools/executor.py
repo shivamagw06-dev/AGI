@@ -244,4 +244,6 @@ def build_core_read_executor(
     handlers["GET_CAUSAL_RESEARCH"] = ask_context
     from financials_valuation.service import evaluate_bank
     handlers["GET_BANK_VALUATION"] = evaluate_bank
+    from financials_valuation.facade import evaluate_financial_institution
+    handlers["GET_FINANCIAL_VALUATION"] = evaluate_financial_institution
     return GovernedToolExecutor(handlers)

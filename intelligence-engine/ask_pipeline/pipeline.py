@@ -1241,6 +1241,14 @@ def run_complete_ask(
             # Prefer KF provenance markers alongside existing soft packs
             if isinstance(packs[k], dict) and isinstance(v, dict):
                 packs[k] = {**packs[k], "knowledge_factory_overlay": v}
+    if hint:
+        try:
+            from financials_valuation.research_context import financial_research_context
+            financial_context = financial_research_context(hint)
+            if financial_context.get("status") == "MODEL_CONTEXT":
+                packs["financials_valuation_intelligence"] = financial_context
+        except Exception:
+            pass
     # Soft overlay — reasoning may ignore; does not change governance internals
     packs["framework_selection"] = {
         "ifse_version": framework_selection.get("ifse_version"),

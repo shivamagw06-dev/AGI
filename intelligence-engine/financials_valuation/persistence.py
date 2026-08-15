@@ -9,6 +9,9 @@ from typing import Any, Callable
 from urllib import error, request
 
 from financials_valuation.banking import BANKING_MODEL
+from financials_valuation.nonbank_models import MODELS
+
+ALL_MODELS = {BANKING_MODEL.subsector:BANKING_MODEL, **MODELS}
 
 Transport = Callable[..., Any]
 
@@ -43,45 +46,62 @@ def _hash(payload: dict[str, Any]) -> str:
     return hashlib.sha256(encoded.encode("utf-8")).hexdigest()
 
 
-def seed_banking_model(*, transport: Transport = _rest) -> dict[str, Any]:
-    """Idempotently persist the code-reviewed bank curriculum and immutable version."""
-    payload = BANKING_MODEL.to_dict()
+def _seed_model(model: Any, transport: Transport) -> dict[str, Any]:
+    payload = model.to_dict()
     digest = _hash(payload)
     now = datetime.now(timezone.utc).isoformat()
     transport("POST", "sector_valuation_models", query="?on_conflict=sector_id", body={
-        "sector_id": BANKING_MODEL.sector_id,
-        "sector_name": BANKING_MODEL.sector_name,
+        "sector_id": model.sector_id,
+        "sector_name": model.sector_name,
         "parent_sector": "FINANCIALS",
-        "subsector": BANKING_MODEL.subsector,
-        "active_version": BANKING_MODEL.version,
-        "validation_status": BANKING_MODEL.validation_status,
-        "confidence": BANKING_MODEL.confidence,
-        "effective_date": BANKING_MODEL.effective_date,
+        "subsector": model.subsector,
+        "active_version": model.version,
+        "validation_status": model.validation_status,
+        "confidence": model.confidence,
+        "effective_date": model.effective_date,
         "updated_at": now,
     }, prefer="resolution=merge-duplicates,return=minimal")
     transport("POST", "sector_valuation_model_versions", query="?on_conflict=sector_id,version", body={
-        "sector_id": BANKING_MODEL.sector_id,
-        "version": BANKING_MODEL.version,
+        "sector_id": model.sector_id,
+        "version": model.version,
         "model_payload": payload,
         "content_hash": digest,
         "created_by": "agi-code-reviewed-model",
     }, prefer="resolution=ignore-duplicates,return=minimal")
-    return {"ok": True, "sector_id": BANKING_MODEL.sector_id, "version": BANKING_MODEL.version,
-            "content_hash": digest, "validation_status": BANKING_MODEL.validation_status,
+    return {"ok": True, "sector_id": model.sector_id, "version": model.version,
+            "content_hash": digest, "validation_status": model.validation_status,
             "certified": False, "execution_eligible": False}
 
 
-def persist_evidence(evidence: dict[str, Any], *, transport: Transport = _rest) -> dict[str, Any]:
+def seed_banking_model(*, transport: Transport = _rest) -> dict[str, Any]:
+    """Backward-compatible commercial-bank seed."""
+    return _seed_model(BANKING_MODEL, transport)
+
+
+def seed_financial_models(*, transport: Transport = _rest) -> dict[str, Any]:
+    """Idempotently seed every reviewed financial-subsector curriculum."""
+    results = [_seed_model(model, transport) for model in (BANKING_MODEL, *MODELS.values())]
+    return {"ok": all(row["ok"] for row in results), "models":len(results), "results":results,
+            "certified_models":0, "execution_eligible_models":0}
+
+
+def persist_evidence(evidence: dict[str, Any], *, subsector: str = "COMMERCIAL_BANK", transport: Transport = _rest) -> dict[str, Any]:
+    model = ALL_MODELS.get(subsector)
+    if model is None:
+        return {"ok":False,"status":"CLASSIFICATION_UNAVAILABLE","reason":"unsupported_subsector"}
     required = ("knowledge_key", "source_type", "source_id", "available_at")
     missing = [key for key in required if not evidence.get(key)]
     if missing:
         return {"ok": False, "status": "DATA_UNAVAILABLE", "missing": missing}
+    validation_status = str(evidence.get("validation_status") or "PROPOSED").upper()
+    if validation_status not in {"PROPOSED","VALIDATED","TRUSTED","QUARANTINED","REJECTED"}:
+        return {"ok":False,"status":"VALIDATION_FAILED","reason":"invalid_validation_status"}
     payload = {
-        "sector_id": BANKING_MODEL.sector_id, "version": BANKING_MODEL.version,
+        "sector_id": model.sector_id, "version": model.version,
         "knowledge_key": evidence["knowledge_key"], "source_type": evidence["source_type"],
         "source_id": evidence["source_id"], "source_date": evidence.get("source_date"),
         "available_at": evidence["available_at"], "evidence_payload": evidence.get("evidence_payload") or {},
-        "validation_status": evidence.get("validation_status") or "PROPOSED",
+        "validation_status": validation_status,
         "confidence": float(evidence.get("confidence") or 0),
     }
     if not 0 <= payload["confidence"] <= 1:
@@ -94,11 +114,20 @@ def persist_evidence(evidence: dict[str, Any], *, transport: Transport = _rest) 
 
 def persist_certification(result: dict[str, Any], *, transport: Transport = _rest) -> dict[str, Any]:
     status = str(result.get("certification_status") or "NOT_STARTED")
-    if status == "PASSED" and not all((result.get("authorized_reviewer"), result.get("reviewer_authorized"), result.get("review_evidence_id"))):
-        return {"ok": False, "status": "VALIDATION_FAILED", "reason": "external_review_evidence_required"}
+    if status == "PASSED":
+        review_ok = all((result.get("authorized_reviewer"), result.get("reviewer_authorized"), result.get("review_evidence_id")))
+        gates = result.get("gates") or {}
+        gates_ok = len(gates) == int(result.get("total_gates") or 20) and all(value is True for value in gates.values())
+        if not review_ok or not gates_ok or int(result.get("passed_gates") or 0) != int(result.get("total_gates") or 20):
+            return {"ok": False, "status": "VALIDATION_FAILED", "reason": "complete_gates_and_external_review_required"}
+    sector_id = str(result.get("sector_id") or BANKING_MODEL.sector_id)
+    model = next((row for row in ALL_MODELS.values() if row.sector_id == sector_id), None)
+    if model is None:
+        return {"ok":False,"status":"CLASSIFICATION_UNAVAILABLE","reason":"unsupported_sector_id"}
     body = {
-        "sector_id": BANKING_MODEL.sector_id, "model_version": BANKING_MODEL.version,
-        "certification_status": status, "gates": result.get("gates") or {},
+        "sector_id": model.sector_id, "model_version": model.version,
+        "certification_status": status, "gates": {**(result.get("gates") or {}),
+            "_review_evidence_id":result.get("review_evidence_id")},
         "passed_gates": int(result.get("passed_gates") or 0), "total_gates": int(result.get("total_gates") or 20),
         "evaluated_companies": sorted((result.get("companies") or {}).keys()),
         "evidence_cutoff": result.get("evidence_cutoff"), "reviewer": result.get("authorized_reviewer"),

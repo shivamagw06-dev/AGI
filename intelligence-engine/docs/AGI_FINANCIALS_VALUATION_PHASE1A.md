@@ -1,10 +1,11 @@
-# AGI Financials Valuation Intelligence: Phase 1A
+# AGI Financials Valuation Intelligence: Phase 1
 
 ## Scope
 
-Phase 1A implements commercial-bank research intelligence only. It does not
-apply bank formulas to NBFCs, insurers, asset managers, brokers, exchanges or
-payments businesses. Classification is authoritative and fail-closed.
+Phase 1 implements separate research curricula for commercial banks, small
+finance banks, payments banks, NBFCs, housing finance, life/general/health
+insurance, asset managers, brokers, exchanges, fintech/payments and diversified
+financial services. Classification is authoritative and fail-closed.
 
 Current lifecycle status: **Operational / Not Investment Certified**.
 
@@ -20,7 +21,7 @@ evidence context. Execution and automatic recommendations remain blocked.
 - Existing thesis and knowledge systems remain authoritative; this phase does
   not create competing thesis or knowledge registries.
 
-## Bank Knowledge Model
+## Subsector Knowledge Models
 
 The versioned commercial-bank model contains 22 bank-specific KPI definitions,
 including deposits, CASA, NIM, asset quality, credit cost, ROA, ROE, CET1 and
@@ -36,6 +37,19 @@ Supported valuation methods:
 - reverse valuation through implied ROE and implied growth
 
 EV/EBITDA is explicitly marked inappropriate for commercial banks.
+
+Non-bank modules use their own economic drivers and methods:
+
+- NBFC/HFC: funding, spread, credit costs, leverage, P/B and residual income
+- Life insurance: APE, VNB, persistency, solvency and P/embedded value
+- General/health insurance: claims, expenses, combined ratio, reserves and P/B
+- Asset management: organic flows versus market appreciation, fees and margins
+- Brokers/exchanges: volume, market share, operating leverage and cycle controls
+- Fintech/payments: TPV, take rate, unit economics, cash burn and EV/gross profit
+- Diversified financials: segment-specific SOTP with explicit holdco adjustments
+
+The registry marks inappropriate methods explicitly rather than silently
+returning a number.
 
 ## Evidence Contract
 
@@ -62,11 +76,11 @@ The bank evaluator returns:
 - causal research context, monitoring variables and evidence gaps
 - formula-level provenance and validation status
 
-All outputs set `execution_eligible` to false in Phase 1A.
+All outputs set `execution_eligible` to false in Phase 1.
 
 ## Certification
 
-Certification covers HDFC Bank, ICICI Bank, Axis Bank and SBI across 20 gates:
+Certification covers each subsector across 20 gates:
 classification, business model, KPIs, statements, causal transmission, method
 selection, multiple justification, reverse valuation, history, peers, scenarios,
 sensitivity, PIT integrity, missing-data behavior, contradictions, accounting
@@ -75,6 +89,10 @@ quality, regulatory capital, client answers, adversarial behavior and provenance
 Passing automated gates does not self-certify the model. A named reviewer,
 externally confirmed authorization and review evidence ID are all required, and
 promotion remains a separate governance action.
+
+Non-bank certification additionally requires warehouse receipt IDs and
+independent-verification IDs for every validation company. Synthetic fixtures
+can test the engine but cannot certify a live model.
 
 ## Database Migration
 

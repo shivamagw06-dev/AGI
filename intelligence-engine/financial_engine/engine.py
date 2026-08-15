@@ -86,8 +86,12 @@ def calculate(*, calculation_id: str | None = None, operation: str | None = None
             return _failure("INVALID_INPUT", calc_id, "CAGR requires a positive beginning and non-negative ending value", started)
         if calc_id in {"JUSTIFIED_PB", "BANK_RESIDUAL_INCOME", "BANK_DDM"} and values["cost_of_equity"] <= values["growth"]:
             return _failure("INVALID_TERMINAL_GROWTH", calc_id, "cost of equity must exceed growth", started)
+        if calc_id == "GORDON_DCF" and values["discount_rate"] <= values["terminal_growth"]:
+            return _failure("INVALID_TERMINAL_GROWTH", calc_id, "discount rate must exceed terminal growth", started)
         if calc_id == "BANK_IMPLIED_GROWTH" and values["price_to_book"] == 1.0:
             return _failure("DIVISION_BY_ZERO", calc_id, "P/B cannot equal 1 for this algebraic reverse-growth form", started)
+        if calc_id == "IMPLIED_GROWTH_FROM_MULTIPLE" and (values["terminal_multiple"] <= 0 or values["horizon_years"] <= 0):
+            return _failure("INVALID_INPUT", calc_id, "terminal multiple and horizon years must be positive", started)
         value = spec.function(values)
     except ZeroDivisionError:
         return _failure("DIVISION_BY_ZERO", calc_id, "formula denominator is zero", started)

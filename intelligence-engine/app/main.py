@@ -54,11 +54,11 @@ async def lifespan(_app: FastAPI):
     # This seeds methodology only; it never invents company evidence or certifies itself.
     try:
         import threading
-        from financials_valuation.persistence import seed_banking_model
+        from financials_valuation.persistence import seed_financial_models
 
         def _seed_financials_valuation() -> None:
             try:
-                result = seed_banking_model()
+                result = seed_financial_models()
                 log.info("financials_valuation_seed", extra=result)
             except Exception as exc:  # pragma: no cover - defensive startup path
                 log.warning("financials_valuation_seed_failed", extra={"error": str(exc)[:200]})

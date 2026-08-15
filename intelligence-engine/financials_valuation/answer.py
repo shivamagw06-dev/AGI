@@ -39,3 +39,23 @@ def format_bank_answer(result: dict[str, Any]) -> dict[str, Any]:
         "limitations": "Research context, not personalized advice. The model is operational but not investment-certified.",
         "execution_eligible": False,
     }
+
+
+def format_financial_answer(result: dict[str, Any]) -> dict[str, Any]:
+    if (result.get("classification") or {}).get("subsector") == "COMMERCIAL_BANK":
+        return format_bank_answer(result)
+    if result.get("status") != "OPERATIONAL_NOT_CERTIFIED":
+        return {"status":result.get("status") or "DATA_UNAVAILABLE",
+                "answer":"AGI cannot form a reliable sector-specific valuation view from the available point-in-time evidence.",
+                "limitations":result.get("input_issues") or result.get("risk_flags") or ["Evidence gates did not pass."],
+                "execution_eligible":False}
+    valuation = result["valuation"]
+    model = result.get("model") or {}
+    company = result.get("company_id") or "The company"
+    return {"status":"RESEARCH_ONLY",
+        "answer":f"{company} is evaluated as {model.get('sector_name')} using {valuation['primary_method']}; the current primary valuation output is {valuation['primary_value']:.2f}. This is a sector-specific research measure, not a recommendation.",
+        "why_it_matters":model.get("economic_structure"), "what_to_monitor":result.get("monitoring") or [],
+        "risks":result.get("risk_flags") or [], "evidence_gaps":result.get("evidence_gaps") or [],
+        "confidence":result.get("confidence") or "LOW", "as_of":result.get("as_of"),
+        "limitations":"Operational research model; not investment-certified and not personalized advice.",
+        "execution_eligible":False}
