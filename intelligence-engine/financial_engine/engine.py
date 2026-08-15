@@ -122,6 +122,12 @@ def calculate(*, calculation_id: str | None = None, operation: str | None = None
             return _failure("INVALID_INPUT", calc_id, "opening net revenue must be positive", started)
         if calc_id == "DIGITAL_SCENARIO_EV" and (values["net_revenue"] <= 0 or values["revenue_growth"] <= -1 or values["target_ev_revenue"] <= 0):
             return _failure("INVALID_INPUT", calc_id, "digital commerce scenario inputs are outside valid bounds", started)
+        if calc_id == "SEMI_REVENUE_GROWTH" and values["opening_revenue"] <= 0:
+            return _failure("INVALID_INPUT", calc_id, "opening revenue must be positive", started)
+        if calc_id == "SEMI_CAPACITY_REVENUE" and (values["capacity"] <= 0 or not 0 <= values["utilization"] <= 1 or not 0 <= values["yield_rate"] <= 1 or values["average_selling_price"] <= 0):
+            return _failure("INVALID_INPUT", calc_id, "capacity economics are outside valid bounds", started)
+        if calc_id == "SEMI_SCENARIO_EV" and (values["revenue"] <= 0 or values["revenue_growth"] <= -1 or not 0 <= values["ebitda_margin"] <= 1 or values["target_ev_ebitda"] <= 0):
+            return _failure("INVALID_INPUT", calc_id, "semiconductor scenario inputs are outside valid bounds", started)
         value = spec.function(values)
     except ZeroDivisionError:
         return _failure("DIVISION_BY_ZERO", calc_id, "formula denominator is zero", started)
@@ -150,7 +156,7 @@ def calculate(*, calculation_id: str | None = None, operation: str | None = None
         "as_of": as_of,
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "validation": {"status": "VALID"},
-        "warnings": ["SCENARIO_NOT_FACT"] if calc_id in {"TELECOM_REVENUE_IMPACT", "IT_SERVICES_SCENARIO_PRICE", "UTILIZATION_REVENUE_CAPACITY", "SAAS_SCENARIO_EV", "PLATFORM_SCENARIO_EV", "DIGITAL_SCENARIO_EV"} else [],
+        "warnings": ["SCENARIO_NOT_FACT"] if calc_id in {"TELECOM_REVENUE_IMPACT", "IT_SERVICES_SCENARIO_PRICE", "UTILIZATION_REVENUE_CAPACITY", "SAAS_SCENARIO_EV", "PLATFORM_SCENARIO_EV", "DIGITAL_SCENARIO_EV", "SEMI_CAPACITY_REVENUE", "SEMI_SCENARIO_EV"} else [],
         "execution_time_ms": round((time.perf_counter() - started) * 1000, 3),
         "deterministic": True,
         "model_generated_formula": False,

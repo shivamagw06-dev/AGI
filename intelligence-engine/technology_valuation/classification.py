@@ -7,6 +7,7 @@ _CANONICAL = frozenset({"it_services", "it_consulting", "bpm_digital_services"})
 _SOFTWARE_CANONICAL = frozenset({"software", "saas", "software_products", "enterprise_software"})
 _PLATFORM_CANONICAL = frozenset({"internet_platform", "internet_platforms", "marketplace", "marketplaces", "digital_marketplace", "digital_platform"})
 _CONSUMER_CANONICAL = frozenset({"consumer_internet", "digital_commerce", "ecommerce", "e_commerce", "online_retail", "digital_consumer"})
+_SEMI_CANONICAL = frozenset({"semiconductor","semiconductors","fabless_semiconductor","semiconductor_design","semiconductor_manufacturing","foundry","atmp","osat","semiconductor_equipment"})
 
 
 def classify_technology_subsector(company: dict[str, Any]) -> dict[str, Any]:
@@ -31,6 +32,10 @@ def classify_technology_subsector(company: dict[str, Any]) -> dict[str, Any]:
     if canonical in _CONSUMER_CANONICAL:
         subsector="DIGITAL_COMMERCE" if canonical in {"digital_commerce","ecommerce","e_commerce","online_retail"} else "CONSUMER_INTERNET"
         return {"status":"CLASSIFIED","parent_sector":"TECHNOLOGY_AND_DIGITAL","subsector":subsector,"model_family":"CONSUMER_INTERNET_DIGITAL_COMMERCE","source":"canonical_industry_taxonomy"}
+    if explicit in {"SEMICONDUCTOR","FABLESS_SEMICONDUCTOR","SEMICONDUCTOR_DESIGN","SEMICONDUCTOR_MANUFACTURING","FOUNDRY","ATMP","OSAT","SEMICONDUCTOR_EQUIPMENT"}:
+        return {"status":"CLASSIFIED","parent_sector":"TECHNOLOGY_AND_DIGITAL","subsector":explicit,"model_family":"SEMICONDUCTOR_RELATED","source":"company_master.technology_subsector"}
+    if canonical in _SEMI_CANONICAL:
+        return {"status":"CLASSIFIED","parent_sector":"TECHNOLOGY_AND_DIGITAL","subsector":canonical.upper(),"model_family":"SEMICONDUCTOR_RELATED","source":"canonical_industry_taxonomy"}
     symbol = str(company.get("symbol") or company.get("company_id") or "").strip().upper()
     if symbol in IT_SERVICES_COHORT:
         return {"status":"CLASSIFIED", "parent_sector":"TECHNOLOGY_AND_DIGITAL", "subsector":"IT_SERVICES", "source":"phase_2a_reviewed_cohort_registry"}
