@@ -14,6 +14,38 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 
+def _apply_throughput_floor() -> None:
+    """Keep legacy dashboard values from silently restoring the slow rollout."""
+    try:
+        os.environ["FIE_BATCH"] = str(max(2, int(os.environ.get("FIE_BATCH") or 2)))
+    except ValueError:
+        os.environ["FIE_BATCH"] = "2"
+    try:
+        os.environ["FIE_INTERVAL_SECONDS"] = str(
+            min(120, max(30, int(os.environ.get("FIE_INTERVAL_SECONDS") or 120)))
+        )
+    except ValueError:
+        os.environ["FIE_INTERVAL_SECONDS"] = "120"
+    try:
+        os.environ["ANSWER_PACK_MATERIALIZER_BATCH"] = str(
+            max(10, int(os.environ.get("ANSWER_PACK_MATERIALIZER_BATCH") or 10))
+        )
+    except ValueError:
+        os.environ["ANSWER_PACK_MATERIALIZER_BATCH"] = "10"
+    try:
+        os.environ["ANSWER_PACK_MATERIALIZER_INTERVAL_SECONDS"] = str(
+            min(
+                600,
+                max(
+                    300,
+                    int(os.environ.get("ANSWER_PACK_MATERIALIZER_INTERVAL_SECONDS") or 600),
+                ),
+            )
+        )
+    except ValueError:
+        os.environ["ANSWER_PACK_MATERIALIZER_INTERVAL_SECONDS"] = "600"
+
+
 def main() -> int:
     os.environ["AGI_ROLE"] = "gather_worker"
     os.environ.setdefault("FIE_RUNTIME", "true")
@@ -23,6 +55,7 @@ def main() -> int:
     os.environ.setdefault("ANSWER_PACK_MATERIALIZER_ENABLED", "true")
     os.environ.setdefault("ANSWER_PACK_MATERIALIZER_INTERVAL_SECONDS", "600")
     os.environ.setdefault("ANSWER_PACK_MATERIALIZER_BATCH", "10")
+    _apply_throughput_floor()
 
     from app.core.logging import configure_logging, get_logger
     from continuous_gather_learn.persist import write_gather_heartbeat

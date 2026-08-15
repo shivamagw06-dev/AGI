@@ -62,6 +62,25 @@ def test_forecast_only_worker_exists_without_full_gather_defaults():
     assert "FAA_BACKGROUND_COLLECTOR" not in text
 
 
+def test_forecast_worker_enforces_production_throughput_floor(monkeypatch):
+    path = Path(__file__).resolve().parents[1] / "scripts" / "forecast_worker.py"
+    spec = importlib.util.spec_from_file_location("forecast_worker_mod", path)
+    assert spec and spec.loader
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    monkeypatch.setenv("FIE_BATCH", "1")
+    monkeypatch.setenv("FIE_INTERVAL_SECONDS", "180")
+    monkeypatch.setenv("ANSWER_PACK_MATERIALIZER_BATCH", "5")
+    monkeypatch.setenv("ANSWER_PACK_MATERIALIZER_INTERVAL_SECONDS", "900")
+
+    mod._apply_throughput_floor()
+
+    assert os.environ["FIE_BATCH"] == "2"
+    assert os.environ["FIE_INTERVAL_SECONDS"] == "120"
+    assert os.environ["ANSWER_PACK_MATERIALIZER_BATCH"] == "10"
+    assert os.environ["ANSWER_PACK_MATERIALIZER_INTERVAL_SECONDS"] == "600"
+
+
 def test_http_role_skips_gather_boot_helpers():
     """Web role must not start in-process CGL/FAA (sidecar owns gather)."""
     import os
