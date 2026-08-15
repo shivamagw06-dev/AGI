@@ -25,13 +25,26 @@ _YEARS = {"FY+1": 1, "FY+2": 2, "FY+3": 3, "FY+5": 5}
 VALID_OUTCOME = "VALID"
 
 
+def _number(value: Any) -> float | None:
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return None
+
+
 def calibration_summary(
     accuracy_rows: Iterable[dict[str, Any]],
     evaluation_rows_: Iterable[dict[str, Any]],
     *,
     prediction_count: Optional[int] = None,
+    consensus_vintage_count: int = 0,
+    consensus_symbol_count: int = 0,
+    consensus_matched_predictions: int = 0,
+    consensus_match_coverage_pct: float = 0.0,
     minimum_outcomes: int = 100,
     minimum_sector_outcomes: int = 20,
+    minimum_consensus_vintages: int = 100,
+    minimum_consensus_symbols: int = 20,
 ) -> dict[str, Any]:
     """Aggregate only governed outcomes; never infer accuracy from open forecasts."""
     accuracy = [row for row in accuracy_rows if row.get("ape_pct") is not None]
@@ -57,7 +70,12 @@ def calibration_summary(
         "directional_accuracy_at_least_50_pct": bool(directions) and sum(directions) / len(directions) >= 0.50,
         "confidence_alignment_at_least_60_pct": bool(accuracy) and len(aligned) / len(accuracy) >= 0.60,
         "sector_models_supported": bool(sector_counts) and all(count >= minimum_sector_outcomes for count in sector_counts.values()),
-        "consensus_vintages_available": False,
+        "consensus_vintages_available": (
+            consensus_vintage_count >= minimum_consensus_vintages
+            and consensus_symbol_count >= minimum_consensus_symbols
+            and consensus_matched_predictions >= minimum_consensus_symbols
+            and consensus_match_coverage_pct >= 50.0
+        ),
     }
     empirically_ready = all(gates.values())
     return {
@@ -74,6 +92,14 @@ def calibration_summary(
         "directional_accuracy_pct": round(sum(directions) / len(directions) * 100, 2) if directions else None,
         "confidence_alignment_pct": round(len(aligned) / len(accuracy) * 100, 2) if accuracy else None,
         "sector_outcome_counts": dict(sorted(sector_counts.items())),
+        "consensus_vintages": int(consensus_vintage_count),
+        "consensus_symbols": int(consensus_symbol_count),
+        "consensus_matched_predictions": int(consensus_matched_predictions),
+        "consensus_match_coverage_pct": round(float(consensus_match_coverage_pct), 2),
+        "consensus_minimums": {
+            "vintages": int(minimum_consensus_vintages),
+            "symbols": int(minimum_consensus_symbols),
+        },
         "gates": gates,
         "missing_dependencies": [name for name, passed in gates.items() if not passed],
         "outcome_diagnostic": (
@@ -83,6 +109,53 @@ def calibration_summary(
             else "OUTCOMES_ACCUMULATING"
         ),
         "rule": "Forecast calibration may inform research confidence only; it cannot authorize strategy or portfolio execution.",
+    }
+
+
+def consensus_comparison_summary(
+    predictions: Iterable[dict[str, Any]], consensus_vintages: Iterable[dict[str, Any]],
+) -> dict[str, Any]:
+    """Match base forecasts to the latest consensus vintage known on the forecast date."""
+    index: dict[tuple[str, str, str], list[dict[str, Any]]] = {}
+    for row in consensus_vintages:
+        key = (
+            str(row.get("symbol") or "").upper(),
+            str(row.get("target_period") or "").upper(),
+            str(row.get("metric") or "").lower(),
+        )
+        if all(key):
+            index.setdefault(key, []).append(row)
+    for rows in index.values():
+        rows.sort(key=lambda row: str(row.get("consensus_date") or ""))
+    eligible = [row for row in predictions if str(row.get("scenario") or "").lower() == "base"]
+    matched = 0
+    absolute_spreads: list[float] = []
+    for prediction in eligible:
+        key = (
+            str(prediction.get("symbol") or "").upper(),
+            str(prediction.get("target_period") or "").upper(),
+            str(prediction.get("metric") or "").lower(),
+        )
+        cutoff = str(prediction.get("forecast_as_of") or prediction.get("generated_at") or "")[:10]
+        candidates = [row for row in index.get(key, []) if str(row.get("consensus_date") or "")[:10] <= cutoff]
+        if not candidates:
+            continue
+        estimate = _number(candidates[-1].get("mean_estimate"))
+        forecast = _number(prediction.get("forecast_value"))
+        if estimate is None or forecast is None:
+            continue
+        matched += 1
+        if abs(estimate) > 1e-12:
+            absolute_spreads.append(abs(100.0 * (forecast - estimate) / estimate))
+    coverage = 100.0 * matched / len(eligible) if eligible else 0.0
+    return {
+        "eligible_base_predictions": len(eligible),
+        "matched_predictions": matched,
+        "match_coverage_pct": round(coverage, 2),
+        "mean_absolute_forecast_consensus_spread_pct": (
+            round(sum(absolute_spreads) / len(absolute_spreads), 3) if absolute_spreads else None
+        ),
+        "point_in_time_match_rule": "latest consensus_date <= forecast_as_of for identical symbol/target_period/metric",
     }
 
 

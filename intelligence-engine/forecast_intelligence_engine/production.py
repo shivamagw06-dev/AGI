@@ -237,14 +237,26 @@ def dashboard() -> dict[str, Any]:
 
 
 def calibration_board() -> dict[str, Any]:
-    from forecast_intelligence_engine.accuracy import calibration_summary
+    from forecast_intelligence_engine.accuracy import calibration_summary, consensus_comparison_summary
     try:
         from institutional_warehouse import store
         accuracy_rows = store.all_rows("forecast_accuracy", limit=100000)
         evaluations = store.all_rows("forecast_evaluations", limit=100000)
         predictions = store.all_rows("forecast_metric_predictions", limit=100000)
-        summary = calibration_summary(accuracy_rows, evaluations, prediction_count=len(predictions))
-        return {"ok": True, "engine": ENGINE_CODE, "version": VERSION, **summary}
+        consensus = store.all_rows("consensus_metric_vintages", limit=100000)
+        consensus_symbols = {str(row.get("symbol") or "").upper() for row in consensus if row.get("symbol")}
+        comparison = consensus_comparison_summary(predictions, consensus)
+        summary = calibration_summary(
+            accuracy_rows,
+            evaluations,
+            prediction_count=len(predictions),
+            consensus_vintage_count=len(consensus),
+            consensus_symbol_count=len(consensus_symbols),
+            consensus_matched_predictions=int(comparison.get("matched_predictions") or 0),
+            consensus_match_coverage_pct=float(comparison.get("match_coverage_pct") or 0),
+        )
+        return {"ok": True, "engine": ENGINE_CODE, "version": VERSION,
+                "forecast_vs_consensus": comparison, **summary}
     except Exception as exc:
         return {"ok": False, "engine": ENGINE_CODE, "version": VERSION,
                 "status": "UNAVAILABLE", "execution_eligible": False, "error": str(exc)[:240]}

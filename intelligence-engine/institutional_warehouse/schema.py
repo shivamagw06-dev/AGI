@@ -745,6 +745,32 @@ CONSENSUS = Tab(
     ),
 )
 
+CONSENSUS_METRIC_VINTAGES = Tab(
+    id="consensus_metric_vintages",
+    label="Consensus Metric Vintages",
+    description="Immutable point-in-time sell-side estimates by target period and financial metric.",
+    mode="append",
+    key=("symbol", "consensus_date", "target_period", "metric"),
+    entity_column="symbol",
+    order_by=("consensus_date DESC", "symbol", "target_period", "metric"),
+    search_columns=("symbol", "target_period", "metric"),
+    icon="consensus",
+    columns=(
+        _c("symbol", "Symbol", TEXT, required=True, width=130, group="Key"),
+        _c("consensus_date", "Consensus Date", DATE, required=True, width=140, group="Key"),
+        _c("target_period", "Target Period", TEXT, required=True, width=130, group="Key"),
+        _c("metric", "Metric", TEXT, required=True, width=140, group="Key"),
+        _c("mean_estimate", "Mean Estimate", NUMBER, required=True, width=150, group="Estimate"),
+        _c("median_estimate", "Median Estimate", NUMBER, width=160, group="Estimate"),
+        _c("high_estimate", "High Estimate", NUMBER, width=150, group="Estimate"),
+        _c("low_estimate", "Low Estimate", NUMBER, width=140, group="Estimate"),
+        _c("analyst_count", "Analyst Count", INTEGER, width=130, group="Breadth"),
+        _c("currency", "Currency", TEXT, width=100, group="Units"),
+        _c("unit", "Unit", TEXT, width=120, group="Units"),
+        *PROVENANCE_COLUMNS,
+    ),
+)
+
 # --------------------------------------------------------------------------
 # Tab 8 — Research Intelligence
 # --------------------------------------------------------------------------
@@ -2140,6 +2166,7 @@ TABS: tuple[Tab, ...] = (
     SECTOR_RATIO_HISTORY,
     HISTORICAL_VALUATION,
     CONSENSUS,
+    CONSENSUS_METRIC_VINTAGES,
     RESEARCH_INTELLIGENCE,
     RESEARCH_TIMELINE,
     CORPORATE_ACTIONS,

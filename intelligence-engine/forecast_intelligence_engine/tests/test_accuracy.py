@@ -1,4 +1,10 @@
-from forecast_intelligence_engine.accuracy import evaluation_rows, evaluate_predictions, prediction_rows, target_period
+from forecast_intelligence_engine.accuracy import (
+    consensus_comparison_summary,
+    evaluation_rows,
+    evaluate_predictions,
+    prediction_rows,
+    target_period,
+)
 
 
 def _pack():
@@ -76,3 +82,14 @@ def test_evaluation_registry_marks_exact_outcomes_valid():
     fy1 = [r for r in outcomes if r["target_period"] == "FY26"]
     assert {r["outcome_status"] for r in fy1} == {"VALID"}
     assert all(r["sector"] == "IT" for r in fy1)
+
+
+def test_consensus_comparison_never_uses_a_future_vintage():
+    predictions = prediction_rows(_pack())
+    consensus = [
+        {"symbol": "TEST", "consensus_date": "2026-08-12", "target_period": "FY26", "metric": "revenue", "mean_estimate": 108},
+        {"symbol": "TEST", "consensus_date": "2026-08-14", "target_period": "FY26", "metric": "revenue", "mean_estimate": 109},
+    ]
+    result = consensus_comparison_summary(predictions, consensus)
+    assert result["matched_predictions"] == 1
+    assert result["mean_absolute_forecast_consensus_spread_pct"] == 1.852

@@ -15,6 +15,23 @@ def test_calibration_requires_real_outcomes_and_consensus():
     assert result["execution_eligible"] is False
 
 
+def test_calibration_accepts_real_consensus_metric_coverage():
+    rows = [{"ape_pct": 10, "direction_correct": True, "calibration_status": "ALIGNED"}] * 2
+    evaluations = [{"outcome_status": "VALID", "sector": "Banks"}] * 2
+    result = calibration_summary(
+        rows,
+        evaluations,
+        minimum_outcomes=2,
+        minimum_sector_outcomes=2,
+        consensus_vintage_count=100,
+        consensus_symbol_count=20,
+        consensus_matched_predictions=20,
+        consensus_match_coverage_pct=100,
+    )
+    assert result["gates"]["consensus_vintages_available"] is True
+    assert result["status"] == "RESEARCH_CALIBRATED"
+
+
 def test_empty_calibration_fails_closed():
     result = calibration_summary([], [], prediction_count=0)
     assert result["valid_accuracy_outcomes"] == 0
