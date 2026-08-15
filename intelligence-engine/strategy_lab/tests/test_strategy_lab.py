@@ -72,6 +72,19 @@ def test_cross_sectional_momentum_is_registered_as_implemented():
     assert result["execution_eligible"] is False
 
 
+def test_unimplemented_strategy_cannot_borrow_price_data_readiness():
+    result = strategy("macro_equity", {
+        "session_status": "PASS",
+        "latest_completed_session": "2026-08-14",
+        "session_coverage": 200,
+        "coverage_threshold": 160,
+    })
+    evidence = result["validation_registry"]["evidence"]
+    assert evidence["implementation"]["status"] == "MISSING"
+    assert evidence["data_freshness"]["status"] == "FAILED"
+    assert evidence["data_completeness"]["status"] == "FAILED"
+
+
 def test_cross_sectional_scanner_ranks_same_session_universe():
     series = {f"S{index}": bars(253, 1.0005 + index / 100_000) for index in range(25)}
     signals = _cross_sectional_momentum(series)

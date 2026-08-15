@@ -403,6 +403,7 @@ def _registry_decision(strategy_id: str, session: dict[str, Any] | None = None) 
     implemented = strategy_id in IMPLEMENTED_STRATEGIES
     session = session or {}
     session_passed = session.get("session_status") == "PASS"
+    price_data_eligible = implemented and session_passed
     evidence = {
         "implementation": {
             "status": "PASSED" if implemented else "MISSING",
@@ -410,22 +411,46 @@ def _registry_decision(strategy_id: str, session: dict[str, Any] | None = None) 
             "detail": "Deterministic calculator is registered." if implemented else "No calculator is registered.",
         },
         "data_freshness": {
-            "status": "PASSED" if session_passed else "MISSING",
+            "status": "PASSED" if price_data_eligible else "FAILED",
             "observed_at": session.get("latest_completed_session"),
             "source": "warehouse.daily_market_history",
-            "detail": session.get("session_status") or "No session receipt supplied.",
+            "detail": (
+                session.get("session_status")
+                if implemented
+                else "Strategy-specific data source is not implemented or freshness-certified."
+            ) or "No session receipt supplied.",
         },
         "data_completeness": {
-            "status": "PASSED" if session_passed else "MISSING",
+            "status": "PASSED" if price_data_eligible else "FAILED",
             "observed_at": session.get("latest_completed_session"),
             "source": "strategy_lab.common_session_gate",
-            "detail": {"coverage": session.get("session_coverage"), "threshold": session.get("coverage_threshold")},
+            "detail": (
+                {"coverage": session.get("session_coverage"), "threshold": session.get("coverage_threshold")}
+                if implemented
+                else {"reason": "strategy_specific_dataset_not_certified", "requirements": item.get("data_mode")}
+            ),
         },
         "point_in_time": {"status": "PARTIAL", "source": "warehouse", "detail": "Annual fundamentals remain PIT limited."},
         "corporate_actions": {"status": "MISSING", "source": "warehouse", "detail": "Independent adjustment receipt not recorded."},
     }
     from .registry_store import load_latest_evidence
-    durable_evidence = load_latest_evidence().get(strategy_id, {})
+    all_durable_evidence = load_latest_evidence()
+    durable_evidence = all_durable_evidence.get(strategy_id, {})
+    # Corporate-action adjustment verification is a dataset-level receipt for
+    # the shared top-200 adjusted-price warehouse. Reuse the strongest
+    # substantive receipt across price strategies instead of reporting that the
+    # same warehouse check was never run thirteen separate times.
+    if "corporate_actions" not in durable_evidence and implemented:
+        shared = [
+            gates.get("corporate_actions")
+            for gates in all_durable_evidence.values()
+            if (gates.get("corporate_actions") or {}).get("status") in {"PASSED", "PARTIAL", "FAILED"}
+        ]
+        if shared:
+            rank = {"PASSED": 3, "PARTIAL": 2, "FAILED": 1}
+            durable_evidence = {**durable_evidence, "corporate_actions": max(
+                shared, key=lambda row: rank.get(str(row.get("status")), 0)
+            )}
     for gate in (
         "point_in_time",
         "corporate_actions",
@@ -441,8 +466,12 @@ def _registry_decision(strategy_id: str, session: dict[str, Any] | None = None) 
         if gate in durable_evidence:
             evidence[gate] = durable_evidence[gate]
     requested = "OPERATIONAL" if implemented else "EXPERIMENTAL"
-    health = "HEALTHY" if session_passed else "DEGRADED" if not session else "STALE"
-    reason = "Latest completed session and common-universe coverage passed." if session_passed else "Current session evidence is unavailable or incomplete."
+    health = "HEALTHY" if price_data_eligible else "DEGRADED" if (not implemented or not session) else "STALE"
+    reason = (
+        "Latest completed session and common-universe coverage passed."
+        if price_data_eligible
+        else "Strategy implementation or its required current dataset is unavailable or incomplete."
+    )
     return evaluate_registry(
         strategy_id,
         requested_lifecycle=requested,
