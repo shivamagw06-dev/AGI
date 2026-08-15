@@ -29,6 +29,8 @@ describe('intelligenceLearningJobs', () => {
       critic_model: 'reasoner',
     });
     assert.equal(learningEnabled({}), false);
+    assert.equal(learningEnabled({ NODE_ENV: 'production' }), true);
+    assert.equal(learningEnabled({ NODE_ENV: 'production', AGI_INTELLIGENCE_LEARNING_ENABLED: 'false' }), false);
     assert.equal(learningEnabled({ AGI_INTELLIGENCE_LEARNING_ENABLED: 'true' }), true);
   });
 });

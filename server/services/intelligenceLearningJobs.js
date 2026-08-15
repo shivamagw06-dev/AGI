@@ -23,7 +23,10 @@ export function learningModelRoles(env = process.env) {
 }
 
 export function learningEnabled(env = process.env) {
-  return /^(1|true|yes|on)$/i.test(String(env.AGI_INTELLIGENCE_LEARNING_ENABLED || 'false'));
+  if (env.AGI_INTELLIGENCE_LEARNING_ENABLED != null) {
+    return /^(1|true|yes|on)$/i.test(String(env.AGI_INTELLIGENCE_LEARNING_ENABLED));
+  }
+  return String(env.NODE_ENV || '').toLowerCase() === 'production';
 }
 
 export async function enqueueIntelligenceLearning(documentId, { priority = 5 } = {}) {
