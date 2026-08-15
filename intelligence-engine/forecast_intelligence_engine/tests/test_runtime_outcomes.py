@@ -31,3 +31,11 @@ def test_vintage_repair_rebuilds_one_missing_summary(monkeypatch):
     assert result["attempted"] == 1
     assert result["repaired"] == 1
     assert result["errors"] == 0
+
+
+def test_web_process_cannot_run_worker_batch(monkeypatch):
+    monkeypatch.setenv("AGI_ROLE", "web")
+    result = runtime.process_batch(batch=1)
+    assert result["ok"] is False
+    assert result["attempted"] == 0
+    assert result["reason"] == "forecast_runtime_owned_by_gather_worker"

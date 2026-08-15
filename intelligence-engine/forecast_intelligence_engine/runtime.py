@@ -136,6 +136,15 @@ def pipeline_counts() -> dict[str, int]:
 
 
 def process_batch(*, batch: int = 3) -> dict[str, Any]:
+    if not _owned_here():
+        return {
+            "ok": False,
+            "attempted": 0,
+            "completed": 0,
+            "failed": 0,
+            "reason": "forecast_runtime_owned_by_gather_worker",
+            "process_role": _role(),
+        }
     rows = [
         r for r in _paged("forecast_runtime", max_rows=50000)
         if str(r.get("queue_status") or "").upper() in {"PENDING", "RETRY"}
