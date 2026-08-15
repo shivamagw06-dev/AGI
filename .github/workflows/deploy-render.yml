@@ -47,3 +47,24 @@ jobs:
           fi
           curl -fsS -X POST "$HOOK"
           echo "Triggered RENDER_DEPLOY_HOOK_ENGINE"
+
+      - name: Verify exact Intelligence Engine revision is healthy
+        env:
+          EXPECTED_SHA: ${{ github.sha }}
+          ENGINE_HEALTH_URL: https://agib-intelligence-engine.onrender.com/v1/health
+        run: |
+          for attempt in $(seq 1 80); do
+            payload="$(curl -fsS --max-time 20 "$ENGINE_HEALTH_URL" 2>/dev/null || true)"
+            running_sha="$(python -c 'import json,sys; print((json.load(sys.stdin).get("deployment") or {}).get("commit") or "")' <<<"$payload" 2>/dev/null || true)"
+            healthy="$(python -c 'import json,sys; print(str(json.load(sys.stdin).get("ok") is True).lower())' <<<"$payload" 2>/dev/null || true)"
+            if [ "$healthy" = "true" ] && [ "$running_sha" = "$EXPECTED_SHA" ]; then
+              echo "Render is healthy on exact revision $running_sha"
+              exit 0
+            fi
+            running_label="${running_sha:0:8}"
+            [ -n "$running_label" ] || running_label="unavailable"
+            echo "Waiting for Render revision ${EXPECTED_SHA:0:8}; running=$running_label; attempt=$attempt/80"
+            sleep 15
+          done
+          echo "::error::Render did not become healthy on revision $EXPECTED_SHA within 20 minutes."
+          exit 1

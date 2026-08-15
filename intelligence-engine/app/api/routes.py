@@ -353,6 +353,11 @@ async def health():
     return {
         "ok": True,
         "service": "agi-intelligence-engine",
+        "deployment": {
+            "commit": os.environ.get("RENDER_GIT_COMMIT"),
+            "service_id": os.environ.get("RENDER_SERVICE_ID"),
+            "instance_id": os.environ.get("RENDER_INSTANCE_ID"),
+        },
         "agents": list_agents(),
     }
 
