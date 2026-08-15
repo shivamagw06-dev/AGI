@@ -2461,6 +2461,8 @@ async def bank_kpi_backfill(
     symbols: list[str] = Body(default=[]),
     limit_per_bank: int = Query(default=5, ge=1, le=8),
 ):
+    if os.environ.get("BANK_KPI_BACKFILL_ENABLED", "false").strip().lower() not in {"1", "true", "yes", "on"}:
+        raise HTTPException(status_code=423, detail="Bank KPI backfill is paused")
     from financials_valuation.bank_kpi_backfill import run_bank_backfill
 
     return await run_in_threadpool(
@@ -2479,6 +2481,8 @@ async def bank_kpi_reprocess_indexed(
     symbols: list[str] = Body(default=[]),
     limit_per_bank: int = Query(default=20, ge=1, le=50),
 ):
+    if os.environ.get("BANK_KPI_BACKFILL_ENABLED", "false").strip().lower() not in {"1", "true", "yes", "on"}:
+        raise HTTPException(status_code=423, detail="Bank KPI backfill is paused")
     from financials_valuation.bank_kpi_backfill import reprocess_indexed_bank_documents
 
     return await run_in_threadpool(
