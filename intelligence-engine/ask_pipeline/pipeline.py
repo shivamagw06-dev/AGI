@@ -1657,6 +1657,29 @@ def run_complete_ask(
 
     # Grounded generative synthesis. The deterministic ICE response remains the
     # fallback and the model receives only bounded, attributed pipeline evidence.
+    # Build CRE client sections locally. Internal causal relationships are not
+    # exported to the external synthesis provider.
+    causal_pack: dict[str, Any] = {}
+    causal_sections: dict[str, Any] = {}
+    if hint:
+        try:
+            from causal_research_engine.institutional_answer import compose_cre_sections
+            from causal_research_engine.service import ask_context as causal_ask_context
+            causal_pack = causal_ask_context(
+                entity=hint, question=question, analysis_as_of=irl.get("as_of")
+            ).get("causal_research") or {}
+            causal_sections = compose_cre_sections(
+                question=question, causal_pack=causal_pack,
+                evidence_text=str((evidence or {}).get("packs") or {}),
+            )
+            stages["causal_research"] = {
+                "status": "executed", "chain_count": len(causal_pack.get("chains") or []),
+                "contradiction_count": len(causal_pack.get("contradictions") or []),
+                "confidence": causal_sections.get("confidence"), "execution_eligible": False,
+            }
+        except Exception as exc:
+            stages["causal_research"] = {"status": "unavailable", "error": str(exc)[:160]}
+
     llm_synthesis = synthesize_financial_answer(
         question=question,
         evidence=evidence,
@@ -1713,6 +1736,32 @@ def run_complete_ask(
             "llm_uncertainty": generated.get("uncertainty"),
             "llm_used": True,
             "llm_model": llm_synthesis.get("model"),
+        }
+    if causal_sections:
+        section_titles = {
+            "direct_conclusion": "AGI View", "why": "Why",
+            "financial_transmission": "Financial Transmission", "bull_case": "Bull Case",
+            "bear_case": "Bear Case", "market_may_be_missing": "What the Market May Be Missing",
+            "what_changes_view": "What Would Change the View", "monitoring": "What to Monitor",
+            "evidence_gaps": "Evidence Gaps",
+        }
+        communication_sections = dict(communication.get("sections") or {})
+        for key, title in section_titles.items():
+            bullets = causal_sections.get(key) or []
+            if bullets:
+                communication_sections[key] = {
+                    "section": key, "title": title, "bullets": bullets,
+                    "visible": True, "source": "agi_cre_deterministic",
+                }
+        communication = {
+            **communication, "sections": communication_sections,
+            "section_order": list(dict.fromkeys([
+                "direct_conclusion", "why", "financial_transmission",
+                *(communication.get("section_order") or []),
+                "market_may_be_missing", "what_changes_view", "monitoring", "evidence_gaps",
+            ])),
+            "causal_confidence": causal_sections.get("confidence"),
+            "premise_challenge": causal_sections.get("premise_challenge") or [],
         }
     stages["llm_synthesis"] = {
         key: value

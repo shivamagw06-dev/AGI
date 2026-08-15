@@ -19,6 +19,7 @@ def research_context(*, entity: str, question: str = "", industry: str | None = 
 def ask_context(**kwargs: Any) -> dict[str, Any]:
     out = research_context(**kwargs)
     return {"causal_research": {"version": out["cre_version"], "analysis_as_of": out["analysis_as_of"],
+            "entity": out["entity"], "question": out["question"],
             "chains": [row.to_dict() for row in out["relationships"][:12]],
             "contradictions": [row.to_dict() for row in out["contradictions"]],
             "allowed_use": out["allowed_use"], "execution_eligible": False}}
