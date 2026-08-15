@@ -9,7 +9,7 @@ import {
 
 describe('intelligenceLearningJobs', () => {
   it('defines a resumable ordered universal pipeline', () => {
-    assert.equal(LEARNING_PIPELINE_VERSION, 'universal-learning-v3');
+    assert.equal(LEARNING_PIPELINE_VERSION, 'universal-learning-v4');
     assert.equal(LEARNING_STAGES[0], 'classification');
     assert.equal(LEARNING_STAGES.at(-1), 'validation');
     assert.ok(LEARNING_STAGES.includes('causal_intelligence'));

@@ -13,6 +13,9 @@ const runtime = {
   timer: null,
   owner: `agi-learning-${randomUUID().slice(0, 8)}`,
   processed: 0,
+  proposed: 0,
+  validated: 0,
+  trusted: 0,
   approved: 0,
   quarantined: 0,
   failed: 0,
@@ -147,6 +150,31 @@ async function evidenceRecord(admin, document, source, quote) {
   return data.id;
 }
 
+async function persistCandidate(admin, { job, document, payload, deterministic, critic, teacher, lifecycleStatus }) {
+  const validationReasons = [
+    ...array(deterministic?.errors),
+    ...array(critic?.issues),
+    ...(critic?.reason ? [text(critic.reason, 2_000)] : []),
+  ];
+  const { error } = await admin.from('intelligence_learning_candidates').upsert({
+    job_id: job.id,
+    document_id: document.id,
+    pipeline_version: job.pipeline_version || LEARNING_PIPELINE_VERSION,
+    payload,
+    deterministic_validation: deterministic,
+    critic_result: critic || {},
+    lifecycle_status: lifecycleStatus,
+    validation_reasons: [...new Set(validationReasons.filter(Boolean))],
+    teacher_model: teacher.model,
+    teacher_response_id: teacher.response_id,
+    teacher_usage: teacher.usage || {},
+    updated_at: new Date().toISOString(),
+  }, { onConflict: 'job_id' });
+  if (error) throw error;
+  runtime.proposed += 1;
+  if (lifecycleStatus === 'validated') runtime.validated += 1;
+}
+
 async function persistApproved(admin, document, payload, evidenceId) {
   const evidence_ids = [evidenceId];
   const writes = [];
@@ -220,16 +248,17 @@ async function processJob(admin, job) {
     effort: 'medium',
     maxOutputTokens: 1_200,
   });
-  const approved = deterministic.valid && critic.data?.decision === 'approve' && clamp(critic.data?.confidence) >= 0.7;
-  if (!approved) {
+  const validated = deterministic.valid && critic.data?.decision === 'approve' && clamp(critic.data?.confidence) >= 0.7;
+  await persistCandidate(admin, {
+    job, document, payload: teacher.data, deterministic, critic: critic.data, teacher,
+    lifecycleStatus: validated ? 'validated' : 'quarantined',
+  });
+  if (!validated) {
     await updateJob(admin, job.id, { status: 'quarantined', current_stage: 'validation', completed_stages: LEARNING_STAGES, completed_at: new Date().toISOString(), lease_owner: null, lease_expires_at: null, stage_results: { teacher: { model: teacher.model, response_id: teacher.response_id, usage: teacher.usage }, deterministic_validation: deterministic, critic: critic.data } });
     runtime.quarantined += 1;
     return { status: 'quarantined' };
   }
-  const evidenceId = await evidenceRecord(admin, document, source, teacher.data.evidence_quotes?.[0]);
-  await persistApproved(admin, document, teacher.data, evidenceId);
-  await updateJob(admin, job.id, { status: 'validated', current_stage: 'validation', completed_stages: LEARNING_STAGES, completed_at: new Date().toISOString(), lease_owner: null, lease_expires_at: null, stage_results: { teacher: { model: teacher.model, response_id: teacher.response_id, usage: teacher.usage }, deterministic_validation: deterministic, critic: critic.data, evidence_id: evidenceId } });
-  runtime.approved += 1;
+  await updateJob(admin, job.id, { status: 'validated', current_stage: 'validation', completed_stages: LEARNING_STAGES, completed_at: new Date().toISOString(), lease_owner: null, lease_expires_at: null, stage_results: { teacher: { model: teacher.model, response_id: teacher.response_id, usage: teacher.usage }, deterministic_validation: deterministic, critic: critic.data, candidate_lifecycle: 'validated' } });
   return { status: 'validated' };
 }
 
@@ -238,6 +267,13 @@ async function dailyProcessed(admin) {
   since.setUTCHours(0, 0, 0, 0);
   const { count } = await admin.from('intelligence_learning_jobs').select('id', { count: 'exact', head: true }).gte('started_at', since.toISOString());
   return Number(count || 0);
+}
+
+async function candidateStoreReady(admin) {
+  const { error } = await admin.from('intelligence_learning_candidates').select('id', { head: true, count: 'exact' }).limit(1);
+  if (!error) return true;
+  if (/intelligence_learning_candidates|schema cache|does not exist/i.test(error.message || '')) return false;
+  throw error;
 }
 
 async function backfillQueue(admin, limit = 5) {
@@ -254,6 +290,11 @@ export async function intelligenceLearningTick() {
   runtime.running = true;
   runtime.last_tick_at = new Date().toISOString();
   try {
+    if (!(await candidateStoreReady(admin))) {
+      runtime.last_error = 'migration_required:20260815180500_intelligence_candidate_lifecycle.sql';
+      return { skipped: true, reason: 'candidate_store_migration_required' };
+    }
+    runtime.last_error = null;
     const dailyLimit = Math.max(1, Number(process.env.AGI_LEARNING_DAILY_JOB_LIMIT) || 5);
     const completedToday = await dailyProcessed(admin);
     if (completedToday >= dailyLimit) return { skipped: true, reason: 'daily_limit', completed_today: completedToday, daily_limit: dailyLimit };
