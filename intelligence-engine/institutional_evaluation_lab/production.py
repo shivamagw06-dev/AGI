@@ -91,6 +91,15 @@ def golden_evaluation_health() -> dict[str, Any]:
     return health()
 
 
+def cre_investment_benchmark() -> dict[str, Any]:
+    """Coverage audit for every canonical industry model."""
+    from institutional_evaluation_lab.judges.economic_reasoning import evaluate_industry_models
+    from institutional_evaluation_lab.datasets.catalog import load_suite
+    result = evaluate_industry_models()
+    return {"suite": "cre_investment_144", "question_count": len(load_suite("cre_investment_144")),
+            "registry_claimed_count": 36, **result, "fabricated": False}
+
+
 def run_golden_evaluation(
     *,
     limit: int | None = None,

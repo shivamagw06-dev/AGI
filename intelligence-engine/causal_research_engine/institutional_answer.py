@@ -62,6 +62,9 @@ def compose_cre_sections(*, question: str, causal_pack: dict[str, Any], evidence
             "direct_conclusion": ["Insufficient governed causal evidence to determine this reliably."],
             "evidence_gaps": ["No validated company-specific causal pathway was retrieved."],
             "confidence": "LOW", "premise_challenge": unsupported,
+            "decision_relevance": "INSUFFICIENT_EVIDENCE",
+            "epistemic_layers": {"evidence": [], "interpretation": [], "scenario": [], "thesis": []},
+            "dynamic_monitoring": [], "execution_eligible": False,
         }
     entity = str(causal_pack.get("entity") or "")
     strongest = sorted(chains, key=lambda x: float(x.get("confidence") or 0), reverse=True)[:8]
@@ -94,6 +97,20 @@ def compose_cre_sections(*, question: str, causal_pack: dict[str, Any], evidence
         conclusion = f"The most relevant governed pathway is {pathways[0]}"
     if unsupported:
         conclusion = f"The question contains an unverified numeric premise ({', '.join(unsupported)}). " + conclusion
+    decision = (
+        "THESIS_WEAKENS" if any(term in q for term in ("not attractive", "invalidate", "go wrong", "risk")) else
+        "THESIS_STRENGTHENS" if any(term in q for term in ("improve", "more attractive", "strengthen")) else
+        "VALUATION_CHANGES" if "market" in q and any(term in q for term in ("assuming", "pricing", "priced")) else
+        "NO_MATERIAL_CHANGE"
+    )
+    scenario_layer = pathways if hypothetical else []
+    dynamic_monitoring = [
+        {"indicator": item, "why": f"It sits on a retrieved causal pathway relevant to {entity or 'the question'}.",
+         "current": None, "previous": None, "expected": None, "trend": "UNKNOWN",
+         "thesis_impact": "REASSESS_ON_CHANGE", "trigger": "Material deterioration or pathway reversal",
+         "frequency": "Quarterly"}
+        for item in monitoring[:8]
+    ]
     return {
         "direct_conclusion": [conclusion],
         "why": pathways[:3],
@@ -105,5 +122,13 @@ def compose_cre_sections(*, question: str, causal_pack: dict[str, Any], evidence
         "monitoring": monitoring[:8],
         "evidence_gaps": ["Unresolved causal contradictions remain."] if contradictions else [],
         "confidence": band, "premise_challenge": unsupported,
+        "decision_relevance": decision,
+        "epistemic_layers": {
+            "evidence": [x.get("relationship_id") for x in strongest if x.get("relationship_id")],
+            "interpretation": pathways,
+            "scenario": scenario_layer,
+            "thesis": [conclusion],
+        },
+        "dynamic_monitoring": dynamic_monitoring,
         "execution_eligible": False, "generated_by": "AGI_CRE_DETERMINISTIC",
     }

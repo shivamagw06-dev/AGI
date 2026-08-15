@@ -1762,6 +1762,9 @@ def run_complete_ask(
             ])),
             "causal_confidence": causal_sections.get("confidence"),
             "premise_challenge": causal_sections.get("premise_challenge") or [],
+            "decision_relevance": causal_sections.get("decision_relevance"),
+            "epistemic_layers": causal_sections.get("epistemic_layers") or {},
+            "dynamic_monitoring": causal_sections.get("dynamic_monitoring") or [],
         }
     stages["llm_synthesis"] = {
         key: value

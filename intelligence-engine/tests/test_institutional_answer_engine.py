@@ -23,6 +23,9 @@ def test_cfa_answer_has_decision_useful_sections():
     assert out["direct_conclusion"] and len(out["financial_transmission"]) == 3
     assert out["monitoring"] == ["funding mix", "NIM", "ROE"]
     assert out["execution_eligible"] is False
+    assert set(out["epistemic_layers"]) == {"evidence", "interpretation", "scenario", "thesis"}
+    assert out["decision_relevance"] == "NO_MATERIAL_CHANGE"
+    assert all(item["why"] and item["trigger"] for item in out["dynamic_monitoring"])
 
 
 def test_false_numeric_premise_is_challenged():
@@ -41,6 +44,7 @@ def test_insufficient_evidence_fails_closed():
     out = compose_cre_sections(question="Why?", causal_pack={"chains": []})
     assert "Insufficient governed causal evidence" in out["direct_conclusion"][0]
     assert out["confidence"] == "LOW"
+    assert out["decision_relevance"] == "INSUFFICIENT_EVIDENCE"
 
 
 def test_temporal_reasoning_does_not_leak_future_relationships():
