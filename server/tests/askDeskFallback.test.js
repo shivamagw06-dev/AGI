@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { buildAskDeskFallback } from '../services/askDeskFallback.js';
+import { buildAskDeskFallback, rankPublishedResearch } from '../services/askDeskFallback.js';
 
 describe('askDeskFallback', () => {
   it('does not pretend market context is a research answer', async () => {
@@ -12,5 +12,14 @@ describe('askDeskFallback', () => {
     assert.doesNotMatch(pack.executive_summary, /^On “/);
     assert.equal(pack.ask_orchestration?.fallback, true);
     assert.equal(pack.entities?.ticker, null);
+  });
+
+  it('ranks a matching published company-event report ahead of unrelated research', () => {
+    const ranked = rankPublishedResearch("What is AGI's view on Zen Technologies' ₹295 crore defence order?", [
+      { id: 'other', title: 'India inflation update', excerpt: 'CPI and rates' },
+      { id: 'zen', title: 'Zen Technologies wins a ₹295 crore defence order', excerpt: 'AGI assesses the earnings impact.' },
+    ]);
+    assert.equal(ranked[0]?.article?.id, 'zen');
+    assert.ok(ranked[0]?.score >= 8);
   });
 });

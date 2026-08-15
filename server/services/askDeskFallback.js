@@ -5,6 +5,7 @@
  */
 
 import { getAgiIntelligence } from './intelligenceService.js';
+import { createSupabaseAdmin } from '../lib/supabaseAdmin.js';
 
 function asText(v, fallback = '') {
   if (v == null) return fallback;
@@ -13,8 +14,111 @@ function asText(v, fallback = '') {
   return String(v);
 }
 
+function plainText(value = '') {
+  return String(value)
+    .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+    .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&nbsp;|&#160;/gi, ' ')
+    .replace(/&amp;/gi, '&')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function searchTerms(question = '') {
+  const ignored = new Set([
+    'about', 'agi', 'crore', 'does', 'have', 'india', 'indian', 'order', 'report',
+    'says', 'technologies', 'that', 'the', 'this', 'view', 'what', 'with',
+  ]);
+  return [...new Set(String(question).toLowerCase().match(/[a-z0-9]{3,}/g) || [])]
+    .filter((term) => !ignored.has(term));
+}
+
+export function rankPublishedResearch(question, rows = []) {
+  const terms = searchTerms(question);
+  if (!terms.length) return [];
+  return rows
+    .map((article) => {
+      const title = plainText(article?.title).toLowerCase();
+      const tags = plainText(Array.isArray(article?.tags) ? article.tags.join(' ') : article?.tags).toLowerCase();
+      const body = plainText(`${article?.excerpt || ''} ${article?.content_md || ''} ${article?.content || ''}`).toLowerCase();
+      const score = terms.reduce(
+        (sum, term) => sum + (title.includes(term) ? 8 : 0) + (tags.includes(term) ? 4 : 0) + (body.includes(term) ? 1 : 0),
+        0
+      );
+      return { article, score };
+    })
+    .filter(({ score }) => score >= 8)
+    .sort((a, b) => b.score - a.score || String(b.article?.published_at || '').localeCompare(String(a.article?.published_at || '')));
+}
+
+async function findPublishedResearch(question) {
+  const admin = createSupabaseAdmin();
+  if (!admin) return null;
+  const { data, error } = await admin
+    .from('articles')
+    .select('id,title,slug,excerpt,content,content_md,tags,section,published_at')
+    .eq('status', 'published')
+    .order('published_at', { ascending: false, nullsFirst: false })
+    .limit(100);
+  if (error) throw error;
+  return rankPublishedResearch(question, Array.isArray(data) ? data : [])[0]?.article || null;
+}
+
+function publishedResearchPack(question, article) {
+  const body = plainText(article.excerpt || article.content_md || article.content);
+  const summary = body.slice(0, 1_400).replace(/\s+\S*$/, '').trim() || plainText(article.title);
+  const url = article.slug ? `/article/${encodeURIComponent(article.slug)}` : '/research';
+  const evidence = {
+    id: article.id,
+    source: 'AGI Research',
+    type: 'agi_research',
+    title: article.title,
+    url,
+    href: url,
+    published_at: article.published_at || null,
+    note: summary,
+  };
+  const directAnswer = `AGI's published view: ${summary}`;
+  const confidenceExplanation = 'High confidence that this reflects AGI\'s house research because it is taken directly from the published report. It is not a fresh independent re-analysis of facts released after that publication.';
+  const why = [
+    `Matched the question to AGI's published report “${plainText(article.title)}”.`,
+    article.published_at ? `Report publication date: ${String(article.published_at).slice(0, 10)}.` : null,
+    'The answer preserves the report’s stated view; live market and post-publication developments require a refreshed analysis.',
+  ].filter(Boolean);
+  const followUps = ['Open the full AGI report', 'What could change AGI\'s view?', 'How material is the order to revenue?', 'What are the execution risks?'];
+  return {
+    ok: true,
+    question,
+    mode: 'published_agi_research_fallback',
+    evidence_grade: 'published_agi_research',
+    degraded: false,
+    retryable: false,
+    status: 'evidence_backed',
+    intent: 'company_event_analysis',
+    executive_summary: directAnswer,
+    confidence: 90,
+    answer: { executive_summary: directAnswer, summary, why, bottom_line: summary, confidence_explanation: confidenceExplanation },
+    why,
+    follow_up_questions: followUps,
+    answer_construction: { enabled: true, executive: directAnswer, why, bottom_line: summary, confidence_explanation: confidenceExplanation },
+    supporting_research: [evidence],
+    supporting_evidence: [evidence],
+    evidence_used: [evidence],
+    evidence: [evidence],
+    ask_orchestration: { engine_reached: false, fallback: true, fallback_used: true, reason: 'published_research_fast_fallback' },
+    meta: { surface: 'ask_published_research_fallback', generated_at: new Date().toISOString() },
+  };
+}
+
 export async function buildAskDeskFallback(question) {
   const q = String(question || '').trim();
+  try {
+    const article = await findPublishedResearch(q);
+    if (article) return publishedResearchPack(q, article);
+  } catch {
+    // Supabase retrieval is best-effort; retain the honest market-only fallback.
+  }
   let intel = null;
   try {
     intel = await getAgiIntelligence();

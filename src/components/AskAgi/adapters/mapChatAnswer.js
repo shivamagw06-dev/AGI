@@ -105,8 +105,9 @@ export function mapChatAnswer(pack) {
   const conversationalOnly = pack?.intent === 'conversation'
     || conversationExecution === 'SKIP'
     || conversationExecution === 'REUSE_PREVIOUS';
+  const verifiedPublishedResearch = pack?.evidence_grade === 'published_agi_research';
   const evidenceUnavailable =
-    !conversationalOnly && (!hasVerifiedEvidence ||
+    !conversationalOnly && !verifiedPublishedResearch && (!hasVerifiedEvidence ||
     Boolean(
       pack?.degraded ||
         pack?.mode === 'node_desk_fallback' ||
