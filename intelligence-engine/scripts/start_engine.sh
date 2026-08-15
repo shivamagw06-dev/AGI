@@ -43,6 +43,13 @@ if [[ "${AGI_GATHER_SIDECAR:-true}" != "false" && "${AGI_GATHER_SIDECAR:-true}" 
   (
     sleep "${DELAY_SEC}"
     export AGI_ROLE=gather_worker
+    if [[ "${AGI_GATHER_SIDECAR_PROFILE:-full}" == "forecast_only" ]]; then
+      export FIE_RUNTIME=true
+      export FIE_BATCH="${FIE_BATCH:-1}"
+      export FIE_INTERVAL_SECONDS="${FIE_INTERVAL_SECONDS:-180}"
+      echo "[start_engine] launching forecast-only sidecar now"
+      exec nice -n 10 python scripts/forecast_worker.py
+    fi
     export AGI_GATHER_FORCE=true
     export CONTINUOUS_GATHER_LEARN=true
     export FAA_BACKGROUND_COLLECTOR=true
@@ -60,7 +67,7 @@ if [[ "${AGI_GATHER_SIDECAR:-true}" != "false" && "${AGI_GATHER_SIDECAR:-true}" 
     export KF_HD_BACKFILL_BATCH="${KF_HD_BACKFILL_BATCH_SIDECAR:-6}"
     export FAA_COLLECTOR_LIMIT="${FAA_COLLECTOR_LIMIT_SIDECAR:-2}"
     export FAA_MAX_WORKERS="${FAA_MAX_WORKERS_SIDECAR:-2}"
-    echo "[start_engine] launching gather sidecar now"
+    echo "[start_engine] launching full gather sidecar now"
     exec nice -n 10 python scripts/gather_worker.py
   ) &
   GATHER_PID=$!

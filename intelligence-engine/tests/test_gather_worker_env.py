@@ -42,6 +42,18 @@ def test_start_engine_script_exists():
     assert "uvicorn app.main:app" in text
     assert "AGI_GATHER_SIDECAR_DELAY_SEC" in text
     assert "nice -n 10" in text
+    assert "AGI_GATHER_SIDECAR_PROFILE" in text
+    assert "forecast_worker.py" in text
+
+
+def test_forecast_only_worker_exists_without_full_gather_defaults():
+    script = Path(__file__).resolve().parents[1] / "scripts" / "forecast_worker.py"
+    assert script.is_file()
+    text = script.read_text(encoding="utf-8")
+    assert 'os.environ["AGI_ROLE"] = "gather_worker"' in text
+    assert 'os.environ.setdefault("FIE_RUNTIME", "true")' in text
+    assert "CONTINUOUS_HISTORICAL_BACKFILL" not in text
+    assert "FAA_BACKGROUND_COLLECTOR" not in text
 
 
 def test_http_role_skips_gather_boot_helpers():

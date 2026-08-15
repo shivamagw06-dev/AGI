@@ -162,7 +162,17 @@ services:
       # has the required history, while live market collection is owned by the
       # Node Upstox/Groww schedulers. Keep HTTP capacity for Ask and strategies.
       - key: AGI_GATHER_SIDECAR
-        value: "false"
+        value: "true"
+      - key: AGI_GATHER_SIDECAR_PROFILE
+        value: forecast_only
+      - key: AGI_GATHER_SIDECAR_DELAY_SEC
+        value: "120"
+      - key: FIE_RUNTIME
+        value: "true"
+      - key: FIE_BATCH
+        value: "1"
+      - key: FIE_INTERVAL_SECONDS
+        value: "180"
       # Durable data roots.  KIP keeps research objects; the warehouse keeps
       # imported financial statements, valuation snapshots and live prices.
       - key: KIP_DATA_DIR
