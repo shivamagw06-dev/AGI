@@ -107,5 +107,10 @@ def build_forecast(symbol: str) -> dict[str, Any]:
         pack["forecast_snapshot"] = build_snapshot(
             bundle, generated_at=pack["generated_at"], engine_version=VERSION,
         )
-        persist_forecast(pack)
+        persistence = persist_forecast(pack)
+        pack["persistence"] = persistence
+        if not persistence.get("ok"):
+            pack["ok"] = False
+            pack["status"] = "PERSISTENCE_FAILED"
+            pack["error"] = persistence.get("error") or "forecast_persistence_failed"
     return pack

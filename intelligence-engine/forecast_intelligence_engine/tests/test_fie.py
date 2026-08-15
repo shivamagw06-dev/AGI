@@ -127,6 +127,21 @@ def test_build_module_and_forecast(monkeypatch):
     assert validate_pack(pack)["ok"] is True
 
 
+def test_forecast_fails_closed_when_vintage_persistence_fails(monkeypatch):
+    monkeypatch.setattr(
+        "forecast_intelligence_engine.composer.load_bundle",
+        lambda symbol: _bundle(symbol=symbol),
+    )
+    monkeypatch.setattr(
+        "forecast_intelligence_engine.persist.persist_forecast",
+        lambda pack: {"ok": False, "error": "prediction_persistence_failed"},
+    )
+    pack = build_forecast("INFY")
+    assert pack["ok"] is False
+    assert pack["status"] == "PERSISTENCE_FAILED"
+    assert pack["error"] == "prediction_persistence_failed"
+
+
 def test_ask_slice_routes_scenarios(monkeypatch):
     monkeypatch.setattr(
         "forecast_intelligence_engine.production.build_module",

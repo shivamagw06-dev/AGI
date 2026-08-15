@@ -15,6 +15,32 @@ def persist_forecast(pack: dict[str, Any]) -> dict[str, Any]:
     except Exception as exc:
         return {"ok": False, "error": str(exc)[:200]}
 
+    # A forecast summary is not a gradeable forecast. Freeze the individual
+    # scenario line items first and fail closed if that mandatory evidence
+    # cannot be produced or persisted.
+    try:
+        from forecast_intelligence_engine.accuracy import prediction_rows
+
+        metric_rows = prediction_rows(pack)
+    except Exception as exc:
+        return {"ok": False, "error": f"prediction_rows_failed:{exc}"[:240], "written": written}
+    if not metric_rows:
+        return {"ok": False, "error": "forecast_has_no_gradeable_metric_predictions", "written": written}
+    try:
+        metric_result = gateway.write(
+            "forecast_metric_predictions",
+            metric_rows,
+            source=ENGINE_CODE,
+            actor="fie",
+            reason="immutable_forecast_vintage",
+            detect_conflicts=False,
+        )
+    except Exception as exc:
+        return {"ok": False, "error": f"prediction_persistence_failed:{exc}"[:240], "written": written}
+    if not metric_result.get("ok", True):
+        return {"ok": False, "error": "prediction_persistence_rejected", "detail": metric_result, "written": written}
+    written["forecast_metric_predictions"] = int(metric_result.get("written") or 0)
+
     symbol = pack.get("symbol")
     as_of = (pack.get("generated_at") or "")[:10]
     quality = pack.get("forecast_quality") or {}
@@ -89,24 +115,6 @@ def persist_forecast(pack: dict[str, Any]) -> dict[str, Any]:
             written["forecast_scenarios"] = int(r.get("written") or 0)
         except Exception:
             pass
-
-    # Freeze the forecast line items before any future actual can be observed.
-    try:
-        from forecast_intelligence_engine.accuracy import prediction_rows
-
-        metric_rows = prediction_rows(pack)
-        if metric_rows:
-            r = gateway.write(
-                "forecast_metric_predictions",
-                metric_rows,
-                source=ENGINE_CODE,
-                actor="fie",
-                reason="immutable_forecast_vintage",
-                detect_conflicts=False,
-            )
-            written["forecast_metric_predictions"] = int(r.get("written") or 0)
-    except Exception:
-        pass
 
     # Atomic assumptions are independently testable against each consequence.
     assum_rows = []
