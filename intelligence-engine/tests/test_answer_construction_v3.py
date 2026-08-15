@@ -120,11 +120,16 @@ def test_policy_preserves_brief_when_gated():
     assert out["institutional_answer"]["evidence_insufficient"] is True
     assert out["institutional_answer"].get("investment_thesis_status") == "INCONCLUSIVE"
     assert out["institutional_answer"].get("not_a_negative_view") is True
-    # Readiness gate owns the lead — editorial must not rewrite away INCONCLUSIVE
-    assert out["answer_policy"] == "institutional_readiness_gate_inconclusive"
-    assert out.get("editorial", {}).get("bypassed") is True
+    # Readiness gate owns the conclusion; editorial may explain it without changing it.
+    assert out["answer_policy"] == "institutional_readiness_gate_inconclusive_editorial_allowed"
+    assert out.get("editorial_governance", {}).get("conclusion_locked") is True
+    assert out.get("editorial", {}).get("enabled") is True
     exec_l = (out["executive"] or "").lower()
-    assert "inconclusive" in exec_l or "insufficient" in exec_l
+    assert (
+        "inconclusive" in exec_l
+        or "insufficient" in exec_l
+        or "not yet have enough verified evidence" in exec_l
+    )
     assert "eternal" in exec_l
     assert out["institutional_answer"]["word_count"] <= 80
     assert out["bull"]

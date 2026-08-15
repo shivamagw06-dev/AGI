@@ -140,6 +140,9 @@ def build_structured_package(
         "investment_horizon": _txt(ia.get("horizon")) or _txt(ac.get("investment_horizon")) or "Medium Term",
         "stance": _txt(ac.get("house_label")),
         "confidence": _txt(ia.get("conviction")),
+        "evidence_insufficient": _txt(ia.get("evidence_insufficient")),
+        "investment_thesis_status": _txt(ia.get("investment_thesis_status")),
+        "not_a_negative_view": _txt(ia.get("not_a_negative_view")),
         "mode": "recommendation" if ia.get("is_recommendation_query") or ia.get("enabled") else "quick_analysis",
     }
     return sanitize_structured(structured)

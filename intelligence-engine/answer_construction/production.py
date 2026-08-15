@@ -320,17 +320,17 @@ def package_for_ask_agi(**kwargs: Any) -> dict[str, Any]:
     )
 
     if evidence_gate_owns_lead:
-        # Never let prose rewrite erase Institutional Readiness Gate / INCONCLUSIVE status.
-        out.setdefault(
-            "editorial",
-            {
-                "enabled": False,
-                "bypassed": True,
-                "reason": "institutional_readiness_gate_owns_executive",
-            },
-        )
-        out["answer_policy"] = "institutional_readiness_gate_inconclusive"
-    elif not contradiction_active and ep.get("narrative_allowed") is not False:
+        # Governance owns the conclusion, but the editorial writer may explain it.
+        # The structured INCONCLUSIVE status is passed into the rewrite package and
+        # must remain explicit; only the earlier blanket prose bypass is removed.
+        out["editorial_governance"] = {
+            "conclusion_locked": True,
+            "investment_thesis_status": "INCONCLUSIVE",
+            "reason": "institutional_readiness_gate_owns_conclusion",
+        }
+        out["answer_policy"] = "institutional_readiness_gate_inconclusive_editorial_allowed"
+
+    if not contradiction_active and ep.get("narrative_allowed") is not False:
         try:
             from answer_construction.institutional_intelligence import wants_detailed_analysis
             from editorial.production import package_for_ask_agi as editorial_package
@@ -365,7 +365,11 @@ def package_for_ask_agi(**kwargs: Any) -> dict[str, Any]:
                         "editorial_fallback": editorial.get("fallback"),
                         "editorial_rewrite_only": True,
                     }
-                out["answer_policy"] = "agib_brain_external_editorial_writer"
+                out["answer_policy"] = (
+                    "institutional_readiness_gate_inconclusive_editorial_allowed"
+                    if evidence_gate_owns_lead
+                    else "agib_brain_external_editorial_writer"
+                )
         except Exception:
             out.setdefault("editorial", {"enabled": False, "bypassed": True})
     else:

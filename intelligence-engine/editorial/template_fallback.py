@@ -40,6 +40,17 @@ def template_quick_summary(structured: dict[str, Any], question: str | None = No
     risks = list(structured.get("top_risks") or [])
     val = structured.get("valuation")
 
+    if (
+        str(structured.get("investment_thesis_status") or "").upper() == "INCONCLUSIVE"
+        or str(structured.get("evidence_insufficient") or "").lower() == "true"
+    ):
+        risk = simplify_jargon(str(risks[0]).rstrip(".")) if risks else "important evidence is still missing"
+        return plain_english(
+            f"AGIB does not yet have enough verified evidence to form a firm view on {company}; "
+            "that is an incomplete assessment, not a negative judgment on the business. "
+            f"The main issue to resolve is {risk}."
+        )
+
     s1 = f"{company} continues to show {_quality_phrase(structured)}."
     if reasons:
         evidence = simplify_jargon(str(reasons[0]).rstrip("."))

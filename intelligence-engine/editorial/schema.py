@@ -27,6 +27,9 @@ ALLOWED_STRUCTURED_KEYS = frozenset(
         "ticker",
         "stance",
         "confidence",
+        "evidence_insufficient",
+        "investment_thesis_status",
+        "not_a_negative_view",
         "mode",
         "question",
     }
