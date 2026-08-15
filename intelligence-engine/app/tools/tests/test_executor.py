@@ -73,7 +73,7 @@ def test_core_factory_binds_existing_services():
             return {"document_id": document_id}
 
     executor = build_core_read_executor(kip=Kip())
-    assert executor.bound_tools == ["CALCULATE", "GET_DOCUMENT", "SEARCH_RESEARCH"]
+    assert executor.bound_tools == ["CALCULATE", "GET_COMPANY_ANALYSIS", "GET_DOCUMENT", "SEARCH_RESEARCH"]
     result = run(executor.execute("SEARCH_RESEARCH", {"query": "defence", "company": "ZEN"}, ToolExecutionContext()))
     assert result["filters"]["ticker"] == "ZEN"
 

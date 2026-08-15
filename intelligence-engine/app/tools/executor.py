@@ -237,4 +237,7 @@ def build_core_read_executor(
             )
         return calculator(calculation_id=operation, inputs=inputs or {})
     handlers["CALCULATE"] = _calculate
+    from company_intelligence_resolver import CompanyIntelligenceResolver
+    company_resolver = CompanyIntelligenceResolver()
+    handlers["GET_COMPANY_ANALYSIS"] = company_resolver.resolve
     return GovernedToolExecutor(handlers)

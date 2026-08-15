@@ -165,6 +165,10 @@ class FinancialDataResolver:
             pack = self.loader(company_id)
         return list((pack or {}).get("facts") or [])
 
+    def facts_for(self, company_id: str) -> list[dict[str, Any]]:
+        """Published fact access for governed composition layers."""
+        return self._load(company_id)
+
     def resolve(self, *, company_id: str, calculation_id: str, period: str | None = None, as_of_date: str | None = None, currency: str = "INR", unit: str = "INR million") -> dict[str, Any]:
         calc_id = str(calculation_id or "").upper()
         spec = get_spec(calc_id)

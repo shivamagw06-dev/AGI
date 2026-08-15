@@ -38,6 +38,7 @@ _TOOLS = (
     ToolSpec("SEARCH_NEWS", "1.0", "read", "Search recent attributable financial news.", "app.faa.connectors.news", {"query": _field("str", required=True, limit=500), "date_from": _field("str", limit=32), "max_results": _field("int", limit=10)}, max_calls=3, freshness_sensitive=True),
     ToolSpec("GET_DOCUMENT", "1.0", "read", "Retrieve one known KIP document with provenance.", "app.kip.service.KipService.get_document", {"document_id": _field("str", required=True, limit=160)}),
     ToolSpec("GET_COMPANY", "1.0", "read", "Retrieve structured company identity and institutional knowledge.", "app.kf.service.KnowledgeFactoryService.get_company", {"company_id": _field("str", required=True, limit=80), "fields": _field("list", limit=30)}),
+    ToolSpec("GET_COMPANY_ANALYSIS", "1.0", "read", "Resolve company classification, industry models, required KPIs, warehouse/AFE coverage and research protocol.", "company_intelligence_resolver.CompanyIntelligenceResolver.resolve", {"company_id": _field("str", required=True, limit=80), "period": _field("str", limit=40), "as_of_date": _field("str", limit=32), "segments": _field("list", limit=20)}, max_calls=3),
     ToolSpec("GET_INDUSTRY", "1.0", "read", "Retrieve industry DNA, drivers, KPIs and risks.", "app.kf.service.KnowledgeFactoryService.get_sector", {"industry_id": _field("str", required=True, limit=120), "fields": _field("list", limit=30)}),
     ToolSpec("GET_FINANCIALS", "1.0", "read", "Retrieve reported or estimated warehouse financial observations.", "app.kaip_client.client.KAIPClient.get_company_profile", {"company": _field("str", required=True, limit=80), "metrics": _field("list", limit=40), "period": _field("str", limit=40), "frequency": _field("str", limit=20)}),
     ToolSpec("GET_MARKET_DATA", "1.0", "read", "Retrieve point-in-time market observations through governed providers.", "app.market_data.client.MarketDataClient.get_quote", {"symbol": _field("str", required=True, limit=40), "data_type": _field("str", limit=40)}, freshness_sensitive=True),
@@ -108,8 +109,8 @@ def plan_tools(question: str, *, ticker_hint: str | None = None) -> dict[str, An
     selected = ["SEARCH_RESEARCH"]
     reasons = {"SEARCH_RESEARCH": "institutional_memory_first"}
     if ticker_hint:
-        selected.extend(["GET_COMPANY", "GET_FINANCIALS"])
-        reasons.update({"GET_COMPANY": "resolved_company", "GET_FINANCIALS": "company_financial_context"})
+        selected.extend(["GET_COMPANY", "GET_COMPANY_ANALYSIS", "GET_FINANCIALS"])
+        reasons.update({"GET_COMPANY": "resolved_company", "GET_COMPANY_ANALYSIS": "industry_kpi_coverage", "GET_FINANCIALS": "company_financial_context"})
     if _CURRENT_RE.search(query):
         selected.extend(["GET_LATEST_EVENTS", "SEARCH_WEB"])
         reasons.update({"GET_LATEST_EVENTS": "freshness_required", "SEARCH_WEB": "current_world_check"})
