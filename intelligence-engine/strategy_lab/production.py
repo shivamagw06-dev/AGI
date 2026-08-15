@@ -200,6 +200,31 @@ def _warehouse_rows(limit: int = 800_000) -> list[dict[str, Any]]:
         return rows[:limit]
 
 
+def _strategy_universe_meta() -> dict[str, Any]:
+    """Report coverage for the exact price universe used by Strategy Lab."""
+    from institutional_warehouse import db
+
+    symbols = _canonical_strategy_symbols()
+    if not symbols:
+        return {"count": 0, "expected": 0, "latest_session": None, "source": "canonical_universe_missing"}
+    table = db.physical_table("daily_market_history")
+    marks = ",".join("?" for _ in symbols)
+    rows = db.query(
+        f'''SELECT COUNT(DISTINCT symbol) AS count, MAX(date) AS latest_session
+            FROM {table}
+            WHERE COALESCE(sys_published, 1) = 1
+              AND symbol IN ({marks})''',
+        tuple(symbols),
+    )
+    row = rows[0] if rows else {}
+    return {
+        "count": int(row.get("count") or 0),
+        "expected": len(symbols),
+        "latest_session": row.get("latest_session"),
+        "source": "warehouse.daily_market_history",
+    }
+
+
 def _expected_completed_session_receipt(now: datetime | None = None) -> dict[str, Any]:
     local = now.astimezone(ZoneInfo("Asia/Kolkata")) if now else datetime.now(ZoneInfo("Asia/Kolkata"))
     candidate = local.date() if (local.hour, local.minute) >= (16, 0) else local.date() - timedelta(days=1)
@@ -638,12 +663,11 @@ def _govern_signal(signal: dict[str, Any]) -> dict[str, Any]:
 
 def health() -> dict[str, Any]:
     try:
-        from hedge_fund_lab.scanner import universe_meta
-        warehouse = universe_meta()
+        warehouse = _strategy_universe_meta()
     except Exception as exc:
         return {"ok": False, "status": "DATA_UNAVAILABLE", "error": str(exc)[:160], "version": VERSION}
     from .registry_store import table_health
-    return {"ok": True, "status": "RESEARCH_ONLY", "version": VERSION, "phase": 2, "strategies": len(REGISTRY), "warehouse_universe": warehouse.get("count", 0), "strategy_universe": "top_200_by_market_cap", "price_cache_ttl_seconds": _CACHE_TTL_SECONDS, "execution_enabled": False, "promotion_authority": "VALIDATION_REGISTRY_ONLY", "validation_registry_store": table_health()}
+    return {"ok": True, "status": "RESEARCH_ONLY", "version": VERSION, "phase": 2, "strategies": len(REGISTRY), "warehouse_universe": warehouse.get("count", 0), "strategy_universe": "canonical_nifty_200", "strategy_universe_coverage": warehouse, "price_cache_ttl_seconds": _CACHE_TTL_SECONDS, "execution_enabled": False, "promotion_authority": "VALIDATION_REGISTRY_ONLY", "validation_registry_store": table_health()}
 
 
 def strategy(strategy_id: str, session: dict[str, Any] | None = None) -> dict[str, Any]:

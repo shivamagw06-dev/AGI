@@ -69,6 +69,27 @@ def test_catalog_uses_formal_lifecycle_and_blocks_unimplemented_families():
     assert "EXECUTION_ELIGIBLE" in production.LIFECYCLE
 
 
+def test_health_reports_the_price_universe_used_by_strategy_lab(monkeypatch):
+    monkeypatch.setattr(production, "_canonical_strategy_symbols", lambda: ["A", "B"])
+    monkeypatch.setattr("institutional_warehouse.db.physical_table", lambda _tab: "wh_daily_market_history")
+    monkeypatch.setattr("institutional_warehouse.db.query", lambda _sql, _params: [{
+        "count": 2,
+        "latest_session": "2026-08-14",
+    }])
+    monkeypatch.setattr("strategy_lab.registry_store.table_health", lambda: {"ok": True})
+
+    result = production.health()
+
+    assert result["warehouse_universe"] == 2
+    assert result["strategy_universe"] == "canonical_nifty_200"
+    assert result["strategy_universe_coverage"] == {
+        "count": 2,
+        "expected": 2,
+        "latest_session": "2026-08-14",
+        "source": "warehouse.daily_market_history",
+    }
+
+
 def test_cross_sectional_momentum_has_its_own_governed_backtest(monkeypatch):
     monkeypatch.setattr("hedge_fund_lab.backtests.run_from_warehouse", lambda key, config: {
         "ok": False, "error": key, "validation": {}, "constraints": {}, "metrics": {},
