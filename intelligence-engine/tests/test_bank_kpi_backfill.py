@@ -108,3 +108,21 @@ def test_reprocess_uses_existing_fre_documents_without_acquisition(monkeypatch):
     assert result["mode"] == "REPROCESS_INDEXED_ONLY"
     assert result["documents"] == 1
     assert result["observations"] == 1
+
+
+def test_faa_document_store_survives_store_recreation(monkeypatch, tmp_path):
+    from app.faa.store import FaaStore
+    from app.fre.models import FreDocument
+
+    path = tmp_path / "faa.sqlite3"
+    monkeypatch.setenv("FAA_DOCUMENT_STORE_PATH", str(path))
+    first = FaaStore()
+    first.put_document(FreDocument(
+        title="Axis Bank Q1 FY26 results", url=DOCUMENT["url"], symbol="AXISBANK",
+        company="Axis Bank", raw_text="Net Interest Margin was 3.80%.",
+    ))
+    second = FaaStore()
+    restored = second.durable_documents(symbol="AXISBANK")
+    assert len(restored) == 1
+    assert restored[0]["raw_text"] == "Net Interest Margin was 3.80%."
+    assert second.snapshot()["durable_documents"] == 1

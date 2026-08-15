@@ -317,6 +317,8 @@ def _indexed_documents(faa: Any, symbol: str, *, limit: int = 20) -> list[dict[s
     fre = getattr(faa, "fre", None)
     store = getattr(fre, "store", None)
     documents = list(getattr(store, "documents", {}).values()) if store is not None else []
+    durable = getattr(getattr(faa, "store", None), "durable_documents", None)
+    durable_docs = durable(symbol=symbol, limit=limit) if callable(durable) else []
     company = CORE_BANKS[symbol].lower()
     aliases = {symbol.lower(), company, company.replace(" bank", "")}
     matched = []
@@ -326,6 +328,12 @@ def _indexed_documents(faa: Any, symbol: str, *, limit: int = 20) -> list[dict[s
         )).lower()
         if any(alias in haystack for alias in aliases):
             matched.append(document.to_dict())
+    seen = {str(item.get("checksum") or item.get("document_id") or item.get("url")) for item in matched}
+    for document in durable_docs:
+        key = str(document.get("checksum") or document.get("document_id") or document.get("url"))
+        if key not in seen:
+            matched.append(document)
+            seen.add(key)
     return matched[:limit]
 
 

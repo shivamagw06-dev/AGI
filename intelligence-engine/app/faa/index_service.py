@@ -38,6 +38,7 @@ class IndexService:
         fetched_by_checksum = {f.checksum: f for f in (fetched or []) if f.checksum}
         versions: list[DocumentVersion] = []
         for doc in documents:
+            self.store.put_document(doc)
             src = fetched_by_checksum.get(doc.checksum)
             version = DocumentVersion(
                 url=doc.url,
