@@ -35,7 +35,9 @@ export KF_HD_LIVE_COLLECTORS=false
 # Respect explicit false from the dashboard; default true when unset.
 export FAA_LIVE_FETCH="${FAA_LIVE_FETCH:-true}"
 
-if [[ "${AGI_GATHER_SIDECAR:-true}" != "false" && "${AGI_GATHER_SIDECAR:-true}" != "0" ]]; then
+FULL_SIDECAR="${AGI_GATHER_SIDECAR:-true}"
+FORECAST_SIDECAR="${FIE_SIDECAR:-true}"
+if [[ ( "${FULL_SIDECAR}" != "false" && "${FULL_SIDECAR}" != "0" ) || ( "${FORECAST_SIDECAR}" != "false" && "${FORECAST_SIDECAR}" != "0" ) ]]; then
   # Delay + nice: let uvicorn finish boot and stay responsive before gather
   # saturates the shared Pro CPUs (was starving /v1/health + Mission Control).
   DELAY_SEC="${AGI_GATHER_SIDECAR_DELAY_SEC:-90}"
@@ -43,7 +45,11 @@ if [[ "${AGI_GATHER_SIDECAR:-true}" != "false" && "${AGI_GATHER_SIDECAR:-true}" 
   (
     sleep "${DELAY_SEC}"
     export AGI_ROLE=gather_worker
-    if [[ "${AGI_GATHER_SIDECAR_PROFILE:-full}" == "forecast_only" ]]; then
+    SIDECAR_PROFILE="${AGI_GATHER_SIDECAR_PROFILE:-full}"
+    if [[ "${FULL_SIDECAR}" == "false" || "${FULL_SIDECAR}" == "0" ]]; then
+      SIDECAR_PROFILE="forecast_only"
+    fi
+    if [[ "${SIDECAR_PROFILE}" == "forecast_only" ]]; then
       export FIE_RUNTIME=true
       export FIE_BATCH="${FIE_BATCH:-1}"
       export FIE_INTERVAL_SECONDS="${FIE_INTERVAL_SECONDS:-180}"
@@ -73,7 +79,7 @@ if [[ "${AGI_GATHER_SIDECAR:-true}" != "false" && "${AGI_GATHER_SIDECAR:-true}" 
   GATHER_PID=$!
   echo "[start_engine] gather sidecar pid=${GATHER_PID}"
 else
-  echo "[start_engine] AGI_GATHER_SIDECAR=false — HTTP only (use agib-intelligence-worker)"
+  echo "[start_engine] full gather and forecast sidecars disabled — HTTP only"
 fi
 
 if [[ "${CID_DOSSIER_PAUSED:-true}" == "true" || "${CID_DOSSIER_PAUSED:-true}" == "1" ]]; then

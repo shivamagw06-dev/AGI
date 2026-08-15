@@ -169,6 +169,8 @@ services:
         value: "120"
       - key: FIE_RUNTIME
         value: "true"
+      - key: FIE_SIDECAR
+        value: "true"
       - key: FIE_BATCH
         value: "1"
       - key: FIE_INTERVAL_SECONDS

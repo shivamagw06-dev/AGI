@@ -44,6 +44,7 @@ def test_start_engine_script_exists():
     assert "nice -n 10" in text
     assert "AGI_GATHER_SIDECAR_PROFILE" in text
     assert "forecast_worker.py" in text
+    assert "FIE_SIDECAR" in text
 
 
 def test_forecast_only_worker_exists_without_full_gather_defaults():
