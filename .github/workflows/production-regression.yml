@@ -15,7 +15,10 @@ jobs:
   production-release-gate:
     name: AGI Core v1.0 Production Regression
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    # The permanent gate runs 18 full acceptance suites. Recent measured runs
+    # reached the old 45-minute ceiling before completing the suite list; keep
+    # every suite mandatory and allow the full regression to finish.
+    timeout-minutes: 90
     env:
       ASK_TEST_MODE: inprocess
       ASK_TEST_CASE_COOLDOWN_SEC: '0'

@@ -25,6 +25,8 @@ _STATE: dict[str, Any] = {
     "started_mono": None,
     "outcome_cursor": 0,
     "outcomes_evaluated_this_session": 0,
+    "vintage_cursor": 0,
+    "vintages_repaired_this_session": 0,
 }
 
 
@@ -173,6 +175,7 @@ def process_batch(*, batch: int = 3) -> dict[str, Any]:
         outcome_batch = int(os.getenv("FIE_OUTCOME_BATCH", "25"))
     except (TypeError, ValueError):
         outcome_batch = 25
+    repair = repair_prediction_vintages(batch=1)
     outcome = sweep_outcomes(batch=max(batch, outcome_batch))
     evaluated = int(outcome.get("accuracy_rows_written") or 0)
     evaluation_errors = int(outcome.get("errors") or 0)
@@ -190,11 +193,61 @@ def process_batch(*, batch: int = 3) -> dict[str, Any]:
         "accuracy_rows_written": evaluated,
         "accuracy_errors": evaluation_errors,
         "outcome_sweep": outcome,
+        "vintage_repair": repair,
         "elapsed_seconds": round(elapsed, 2),
         "pipeline": pipeline_counts(),
         "results": results,
         "engine": ENGINE_CODE,
         "version": VERSION,
+    }
+
+
+def repair_prediction_vintages(*, batch: int = 1) -> dict[str, Any]:
+    """Rebuild stored summaries that predate immutable metric vintages."""
+    from institutional_warehouse import store
+
+    summaries = store.all_rows("forecast_company", limit=50000)
+    predicted = set(store.entities("forecast_metric_predictions"))
+    missing = sorted({
+        str(row.get("symbol") or "").strip().upper()
+        for row in summaries
+        if row.get("symbol") and str(row.get("symbol") or "").strip().upper() not in predicted
+    })
+    if not missing:
+        return {"ok": True, "missing_before": 0, "attempted": 0, "repaired": 0, "errors": 0}
+    size = max(1, min(int(batch), 10))
+    with _LOCK:
+        start = int(_STATE.get("vintage_cursor") or 0) % len(missing)
+    selected = [missing[(start + index) % len(missing)] for index in range(min(size, len(missing)))]
+    repaired = 0
+    errors = 0
+    results: list[dict[str, Any]] = []
+    for symbol in selected:
+        try:
+            pack = build_forecast(symbol)
+            rows = store.all_rows("forecast_metric_predictions", entity=symbol, limit=1)
+            success = bool(pack.get("ok") and rows)
+            repaired += int(success)
+            errors += int(not success)
+            results.append({
+                "symbol": symbol,
+                "ok": success,
+                "forecast_status": pack.get("status"),
+                "prediction_rows_present": bool(rows),
+            })
+        except Exception as exc:
+            errors += 1
+            results.append({"symbol": symbol, "ok": False, "error": str(exc)[:200]})
+    with _LOCK:
+        _STATE["vintage_cursor"] = (start + len(selected)) % len(missing)
+        _STATE["vintages_repaired_this_session"] += repaired
+    return {
+        "ok": errors == 0,
+        "missing_before": len(missing),
+        "attempted": len(selected),
+        "repaired": repaired,
+        "errors": errors,
+        "results": results,
     }
 
 
