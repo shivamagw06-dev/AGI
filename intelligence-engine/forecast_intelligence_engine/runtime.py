@@ -162,6 +162,7 @@ def process_batch(*, batch: int = 3) -> dict[str, Any]:
     claimed = rows[: max(1, min(int(batch), 25))]
     completed = 0
     failed = 0
+    skipped = 0
     results = []
     t0 = time.time()
     for r in claimed:
@@ -171,14 +172,25 @@ def process_batch(*, batch: int = 3) -> dict[str, Any]:
             out = build_forecast(sym)
         except Exception as exc:
             out = {"ok": False, "symbol": sym, "error": str(exc)[:200]}
-        results.append({"symbol": sym, "ok": out.get("ok"), "status": out.get("status"), "error": out.get("error")})
+        dqiv_errors = (out.get("dqiv") or {}).get("errors") or []
+        results.append({
+            "symbol": sym,
+            "ok": out.get("ok"),
+            "status": out.get("status"),
+            "error": out.get("error") or (str(dqiv_errors[:3]) if dqiv_errors else None),
+        })
         if out.get("ok") and out.get("status") == "PASS":
             _upsert_runtime(sym, queue_status="COMPLETED", lifecycle="COMPLETE", last_error=None, completed_at=_now())
             completed += 1
         else:
-            errors = (out.get("dqiv") or {}).get("errors") or []
+            errors = dqiv_errors
+            failure_text = str(out.get("error") or errors[:3])[:280]
             life = "FAILED"
-            if "insufficient_statements" in errors:
+            if (
+                "insufficient_statements" in errors
+                or any("quarterly_history_below" in str(error) for error in errors)
+                or "forecast_has_no_gradeable_metric_predictions" in failure_text
+            ):
                 life = "WAITING_STATEMENTS"
             elif any("hvie" in str(e) for e in errors):
                 life = "WAITING_HVIE"
@@ -186,9 +198,13 @@ def process_batch(*, batch: int = 3) -> dict[str, Any]:
                 sym,
                 queue_status="FAILED" if life == "FAILED" else "SKIPPED",
                 lifecycle=life,
-                last_error=str(out.get("error") or errors[:3])[:280],
+                last_error=failure_text,
             )
-            failed += 1
+            results[-1]["lifecycle"] = life
+            if life == "FAILED":
+                failed += 1
+            else:
+                skipped += 1
     try:
         outcome_batch = int(os.getenv("FIE_OUTCOME_BATCH", "25"))
     except (TypeError, ValueError):
@@ -216,18 +232,40 @@ def process_batch(*, batch: int = 3) -> dict[str, Any]:
             "attempted": len(claimed),
             "completed": completed,
             "failed": failed,
+            "skipped": skipped,
             "accuracy_rows_written": evaluated,
             "accuracy_errors": evaluation_errors,
             "vintages_repaired": int(repair.get("repaired") or 0),
             "strategy_validation": strategy_validation.get("strategy_id"),
             "strategy_validation_ok": strategy_validation.get("ok"),
             "elapsed_seconds": round(elapsed, 2),
+            "failures": [
+                {"symbol": result.get("symbol"), "error": str(result.get("error") or "")[:160]}
+                for result in results if result.get("lifecycle") == "FAILED"
+            ][:3],
+            "deferrals": [
+                {
+                    "symbol": result.get("symbol"),
+                    "lifecycle": result.get("lifecycle"),
+                    "reason": str(result.get("error") or "")[:160],
+                }
+                for result in results
+                if result.get("lifecycle") in {"WAITING_STATEMENTS", "WAITING_HVIE", "WAITING_RIE"}
+            ][:3],
         }
+        _STATE["last_error"] = (
+            "; ".join(
+                f"{result.get('symbol')}:{str(result.get('error') or result.get('status') or 'forecast_failed')[:120]}"
+                for result in results if result.get("lifecycle") == "FAILED"
+            )[:300]
+            or None
+        )
     return {
         "ok": True,
         "attempted": len(claimed),
         "completed": completed,
         "failed": failed,
+        "skipped": skipped,
         "accuracy_rows_written": evaluated,
         "accuracy_errors": evaluation_errors,
         "outcome_sweep": outcome,

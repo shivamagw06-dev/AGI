@@ -48,6 +48,35 @@ def test_runtime_snapshot_exposes_compact_last_batch_state():
     assert "started_mono" not in snapshot
 
 
+def test_data_readiness_skip_is_not_classified_as_engine_failure(monkeypatch):
+    writes = []
+    monkeypatch.setenv("AGI_ROLE", "gather_worker")
+    monkeypatch.setattr(runtime, "_paged", lambda tab, max_rows=0: (
+        [{"symbol": "TEST", "queue_status": "PENDING"}] if tab == "forecast_runtime" else []
+    ))
+    monkeypatch.setattr(runtime, "_upsert_runtime", lambda symbol, **fields: writes.append((symbol, fields)))
+    monkeypatch.setattr(runtime, "build_forecast", lambda symbol: {
+        "ok": False,
+        "status": "FAIL",
+        "dqiv": {"errors": ["data_readiness:quarterly_history_below_8_periods"]},
+    })
+    monkeypatch.setattr(runtime, "repair_prediction_vintages", lambda batch=1: {"repaired": 0})
+    monkeypatch.setattr(runtime, "sweep_outcomes", lambda batch=1: {"accuracy_rows_written": 0, "errors": 0})
+    monkeypatch.setattr(runtime, "sweep_strategy_validation", lambda: {"ok": True, "attempted": 0})
+    runtime._STATE["last_strategy_validation_mono"] = 0
+
+    result = runtime.process_batch(batch=1)
+
+    terminal = writes[-1][1]
+    assert terminal["queue_status"] == "SKIPPED"
+    assert terminal["lifecycle"] == "WAITING_STATEMENTS"
+    assert result["failed"] == 0
+    assert result["skipped"] == 1
+    assert runtime._STATE["last_batch"]["failures"] == []
+    assert runtime._STATE["last_batch"]["deferrals"][0]["symbol"] == "TEST"
+    assert runtime._STATE["last_error"] is None
+
+
 def test_strategy_validation_sweep_rotates_and_stays_fail_closed(monkeypatch):
     monkeypatch.setattr("strategy_lab.production.IMPLEMENTED_STRATEGIES", {"time_series_momentum"})
     monkeypatch.setattr("strategy_lab.production.backtest", lambda *_args, **_kwargs: {
