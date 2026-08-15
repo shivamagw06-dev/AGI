@@ -1,4 +1,5 @@
 import { createSupabaseAdmin } from '../lib/supabaseAdmin.js';
+import { enqueueIntelligenceLearning } from './intelligenceLearningJobs.js';
 
 const asArray = (value) => (Array.isArray(value) ? value.filter(Boolean) : []);
 const clamp = (value, fallback = 0.5) => {
@@ -129,7 +130,13 @@ export async function persistResearchKnowledge({ job, ingestResult, verified = t
   const results = await Promise.all(writes);
   const childError = results.find((result) => result.error)?.error;
   if (childError) return { ok: false, document_id: documentId, error: childError.message || String(childError) };
-  return { ok: true, document_id: documentId, entities: entities.length, claims: claims.length, relationships: relationships.length, validation_status: documentRow.validation_status };
+  const learning = await enqueueIntelligenceLearning(documentId).catch((error) => ({
+    ok: false,
+    skipped: true,
+    reason: 'enqueue_exception',
+    error: error?.message || String(error),
+  }));
+  return { ok: true, document_id: documentId, entities: entities.length, claims: claims.length, relationships: relationships.length, validation_status: documentRow.validation_status, learning };
 }
 
 export async function getResearchKnowledgeCard(articleId) {
