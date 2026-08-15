@@ -8,6 +8,7 @@ from financials_valuation.banking import BANKING_MODEL, BANK_KPIS
 from financials_valuation.certification import GATES, certify_banking
 from financials_valuation.classification import classify_financial_subsector
 from financials_valuation.service import evaluate_bank
+from financials_valuation.persistence import persist_certification, persist_evidence, seed_banking_model, table_health
 
 
 AS_OF = "2026-08-15"
@@ -151,3 +152,38 @@ def test_ask_agi_plans_and_binds_governed_bank_tool():
     names = {tool["name"] for tool in plan_tools("Should I invest in HDFC Bank?", ticker_hint="HDFCBANK")["tools"]}
     assert "GET_BANK_VALUATION" in names
     assert "GET_BANK_VALUATION" in build_core_read_executor().bound_tools
+
+
+def test_model_seed_is_idempotent_and_hashes_full_curriculum():
+    calls = []
+    def transport(method, table, **kwargs):
+        calls.append((method, table, kwargs)); return []
+    first = seed_banking_model(transport=transport)
+    second = seed_banking_model(transport=transport)
+    assert first["content_hash"] == second["content_hash"]
+    assert len(first["content_hash"]) == 64
+    assert [row[1] for row in calls[:2]] == ["sector_valuation_models", "sector_valuation_model_versions"]
+    assert first["certified"] is False and first["execution_eligible"] is False
+
+
+def test_evidence_and_certification_persistence_fail_closed():
+    calls = []
+    def transport(method, table, **kwargs):
+        calls.append((method, table, kwargs)); return []
+    assert persist_evidence({"knowledge_key":"nim"}, transport=transport)["ok"] is False
+    accepted = persist_evidence({"knowledge_key":"nim", "source_type":"RBI", "source_id":"rbi-1",
+        "available_at":"2026-08-15T00:00:00Z", "confidence":.9}, transport=transport)
+    assert accepted["ok"] is True
+    false_pass = {"certification_status":"PASSED", "passed_gates":20, "total_gates":20}
+    assert persist_certification(false_pass, transport=transport)["ok"] is False
+    pending = {"certification_status":"IN_PROGRESS", "passed_gates":18, "total_gates":20, "companies":{}}
+    assert persist_certification(pending, transport=transport)["ok"] is True
+    assert any(row[1] == "sector_valuation_evidence" for row in calls)
+    assert any(row[1] == "sector_valuation_certifications" for row in calls)
+
+
+def test_registry_table_health_soft_fails():
+    ready = table_health(transport=lambda *args, **kwargs: [{"sector_id":"FINANCIALS.BANKS.COMMERCIAL"}])
+    assert ready["status"] == "READY"
+    failed = table_health(transport=lambda *args, **kwargs: (_ for _ in ()).throw(RuntimeError("offline")))
+    assert failed["status"] == "UNAVAILABLE"

@@ -50,6 +50,22 @@ async def lifespan(_app: FastAPI):
         )
 
     bootstrap_registry()
+    # Persist the reviewed commercial-bank curriculum without blocking startup.
+    # This seeds methodology only; it never invents company evidence or certifies itself.
+    try:
+        import threading
+        from financials_valuation.persistence import seed_banking_model
+
+        def _seed_financials_valuation() -> None:
+            try:
+                result = seed_banking_model()
+                log.info("financials_valuation_seed", extra=result)
+            except Exception as exc:  # pragma: no cover - defensive startup path
+                log.warning("financials_valuation_seed_failed", extra={"error": str(exc)[:200]})
+
+        threading.Thread(target=_seed_financials_valuation, name="financials-valuation-seed", daemon=True).start()
+    except Exception as exc:
+        log.warning("financials_valuation_seed_thread_failed", extra={"error": str(exc)[:160]})
     # Reload durable KIP snapshot (disk / optional Supabase) before serving traffic.
     try:
         from app.api.routes import _kip
