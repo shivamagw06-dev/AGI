@@ -23,7 +23,7 @@ def main() -> int:
 
     from app.core.logging import configure_logging, get_logger
     from continuous_gather_learn.persist import write_gather_heartbeat
-    from forecast_intelligence_engine.runtime import start, stop
+    from forecast_intelligence_engine.runtime import runtime_snapshot, start, stop
     from scripts.gather_worker import _publish_remote_heartbeat
 
     configure_logging()
@@ -51,6 +51,7 @@ def main() -> int:
                 "profile": "forecast_only",
                 "FIE_RUNTIME": os.environ.get("FIE_RUNTIME"),
                 "FIE_BATCH": os.environ.get("FIE_BATCH"),
+                "forecast_runtime": runtime_snapshot(),
             }
             try:
                 write_gather_heartbeat(payload)

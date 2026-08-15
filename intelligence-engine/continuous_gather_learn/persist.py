@@ -204,8 +204,23 @@ def write_remote_gather_heartbeat(payload: dict[str, Any] | None = None) -> dict
         "CONTINUOUS_LIDI",
         "CONTINUOUS_HISTORICAL_BACKFILL",
         "KF_HD_LIVE_COLLECTORS",
+        "forecast_runtime",
     }
     body = {key: incoming.get(key) for key in allowed if key in incoming}
+    runtime = body.get("forecast_runtime")
+    if isinstance(runtime, dict):
+        runtime_allowed = {
+            "status", "started_at", "last_tick", "last_error",
+            "completed_this_session", "failed_this_session",
+            "processed_this_session", "outcomes_evaluated_this_session",
+            "vintages_repaired_this_session", "strategy_validations_this_session",
+            "last_batch", "process_role", "owned_here",
+        }
+        body["forecast_runtime"] = {
+            key: runtime.get(key) for key in runtime_allowed if key in runtime
+        }
+    else:
+        body.pop("forecast_runtime", None)
     body.update(
         {
             "role": str(body.get("role") or "gather_worker")[:80],

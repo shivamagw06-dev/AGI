@@ -30,6 +30,7 @@ _STATE: dict[str, Any] = {
     "strategy_validation_cursor": 0,
     "last_strategy_validation_mono": 0.0,
     "strategy_validations_this_session": 0,
+    "last_batch": None,
 }
 
 
@@ -51,6 +52,11 @@ def _runtime_snapshot() -> dict[str, Any]:
         # misreport the web process's local idle state as the worker's state.
         snap["status"] = "external_worker"
     return snap
+
+
+def runtime_snapshot() -> dict[str, Any]:
+    """Compact, lock-safe worker state suitable for remote health heartbeats."""
+    return _runtime_snapshot()
 
 
 def _now() -> str:
@@ -206,6 +212,17 @@ def process_batch(*, batch: int = 3) -> dict[str, Any]:
         _STATE["completed_this_session"] += completed
         _STATE["failed_this_session"] += failed
         _STATE["processed_this_session"] += len(claimed)
+        _STATE["last_batch"] = {
+            "attempted": len(claimed),
+            "completed": completed,
+            "failed": failed,
+            "accuracy_rows_written": evaluated,
+            "accuracy_errors": evaluation_errors,
+            "vintages_repaired": int(repair.get("repaired") or 0),
+            "strategy_validation": strategy_validation.get("strategy_id"),
+            "strategy_validation_ok": strategy_validation.get("ok"),
+            "elapsed_seconds": round(elapsed, 2),
+        }
     return {
         "ok": True,
         "attempted": len(claimed),
@@ -431,6 +448,7 @@ def start(*, interval_seconds: Optional[float] = None, batch: Optional[int] = No
             _STATE["failed_this_session"] = 0
             _STATE["processed_this_session"] = 0
             _STATE["last_error"] = None
+            _STATE["last_batch"] = None
         try:
             sync_universe()
         except Exception as exc:

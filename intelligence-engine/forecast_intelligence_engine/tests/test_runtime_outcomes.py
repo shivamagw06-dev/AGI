@@ -41,6 +41,13 @@ def test_web_process_cannot_run_worker_batch(monkeypatch):
     assert result["reason"] == "forecast_runtime_owned_by_gather_worker"
 
 
+def test_runtime_snapshot_exposes_compact_last_batch_state():
+    runtime._STATE["last_batch"] = {"attempted": 1, "completed": 1, "failed": 0}
+    snapshot = runtime.runtime_snapshot()
+    assert snapshot["last_batch"]["completed"] == 1
+    assert "started_mono" not in snapshot
+
+
 def test_strategy_validation_sweep_rotates_and_stays_fail_closed(monkeypatch):
     monkeypatch.setattr("strategy_lab.production.IMPLEMENTED_STRATEGIES", {"time_series_momentum"})
     monkeypatch.setattr("strategy_lab.production.backtest", lambda *_args, **_kwargs: {

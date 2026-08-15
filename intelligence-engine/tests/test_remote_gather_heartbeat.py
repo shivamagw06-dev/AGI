@@ -15,12 +15,21 @@ def test_remote_heartbeat_uses_server_time_and_is_fresh(tmp_path, monkeypatch):
             "role": "gather_worker",
             "unix_ts": 1,
             "unexpected": "discard-me",
+            "forecast_runtime": {
+                "status": "running",
+                "last_tick": "2026-08-15T01:00:00Z",
+                "last_batch": {"attempted": 1, "completed": 1},
+                "secret": "discard-me",
+            },
         }
     )
 
     assert row["source"] == "authenticated_remote_worker"
     assert row["unix_ts"] > time.time() - 5
     assert "unexpected" not in row
+    assert row["forecast_runtime"]["status"] == "running"
+    assert row["forecast_runtime"]["last_batch"]["completed"] == 1
+    assert "secret" not in row["forecast_runtime"]
     assert persist.read_gather_heartbeat()["fresh"] is True
 
 
