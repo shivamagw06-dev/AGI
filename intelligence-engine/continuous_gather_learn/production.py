@@ -51,6 +51,7 @@ def health() -> dict[str, Any]:
             "FLE",
             "ILO",
             "CAL",
+            "Ask AGI Answer Pack Materializer",
             "ResearchDirector learning inject",
         ],
     }
@@ -91,6 +92,7 @@ def dashboard() -> dict[str, Any]:
             "kf_hd": cgl_persist.get_checkpoint("kf_hd"),
             "historical_backfill": cgl_persist.get_checkpoint("historical_backfill"),
             "analyst_accuracy_memory": cgl_persist.get_checkpoint("analyst_accuracy_memory"),
+            "answer_pack_materializer": cgl_persist.get_checkpoint("answer_pack_materializer"),
         },
         "background": last_status(),
         "knowledge_growth": metrics.get("knowledge_growth") or {},
