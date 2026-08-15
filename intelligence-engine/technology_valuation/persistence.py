@@ -5,6 +5,7 @@ from financials_valuation.persistence import persist_sector_certification, seed_
 from technology_valuation.model import IT_SERVICES_MODEL, TECHNOLOGY_PARENT_SECTOR
 from technology_valuation.saas_model import SOFTWARE_SAAS_MODEL
 from technology_valuation.platform_model import PLATFORM_MODEL
+from technology_valuation.consumer_model import CONSUMER_MODEL
 
 Transport=Callable[...,Any]
 
@@ -29,3 +30,9 @@ def seed_platform_model(*,transport:Transport)->dict[str,Any]:
 
 def persist_platform_certification(result:dict[str,Any],*,transport:Transport)->dict[str,Any]:
     return persist_sector_certification(result,model=PLATFORM_MODEL,transport=transport)
+
+def seed_consumer_model(*,transport:Transport)->dict[str,Any]:
+    return seed_sector_model(CONSUMER_MODEL,parent_sector=TECHNOLOGY_PARENT_SECTOR,transport=transport)
+
+def persist_consumer_certification(result:dict[str,Any],*,transport:Transport)->dict[str,Any]:
+    return persist_sector_certification(result,model=CONSUMER_MODEL,transport=transport)

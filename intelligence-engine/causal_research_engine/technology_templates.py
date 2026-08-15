@@ -68,3 +68,21 @@ def platform_marketplace_templates(company_id: str | None = None) -> list[Causal
         strength="MEDIUM",confidence=.55,time_lag="1_QUARTER",mechanism=mechanism,counter_effects=counter,
         source_quality="UNVALIDATED",status="PROPOSED",created_by="phase_2c_code_reviewed_curriculum")
         for i,(cause,effect,direction,mechanism,counter) in enumerate(rows,1)]
+
+
+def consumer_digital_templates(company_id: str | None = None) -> list[CausalRelationship]:
+    rows=(
+        ("active_customers","net_revenue","POSITIVE","More retained purchasing customers expand the revenue base.",(CounterEffect("Paid acquisition can mask weak retention","NEGATIVE","New users may not repeat after incentives","2_QUARTERS"),)),
+        ("order_frequency","net_sales","POSITIVE","Higher repeat frequency increases sales per active customer.",()),
+        ("average_order_value","net_sales","POSITIVE","Price and basket mix raise sales per order.",(CounterEffect("Higher prices can reduce conversion","NEGATIVE","Elastic demand can offset ticket growth","1_QUARTER"),)),
+        ("return_rate","net_revenue","NEGATIVE","Returns reverse sales and add handling and inventory costs.",()),
+        ("inventory_turns","cash_conversion","POSITIVE","Faster inventory movement reduces capital tied in stock.",(CounterEffect("Understocking causes lost sales","NEGATIVE","Excessively lean inventory can reduce availability","1_QUARTER"),)),
+        ("gross_margin","contribution_margin","POSITIVE","Merchandise and ad/subscription mix set the profit pool before fulfillment and marketing.",()),
+        ("fulfillment_cost_per_order","contribution_margin","NEGATIVE","Delivery, warehousing and service costs consume order economics.",()),
+        ("customer_acquisition_cost","growth_efficiency","NEGATIVE","Higher acquisition cost increases the repeat behavior needed for payback.",()),
+        ("repeat_rate","customer_lifetime_value","POSITIVE","Repeat cohorts spread acquisition cost across more gross profit.",()),
+        ("advertising_arpu","gross_margin","POSITIVE","High-margin advertising can lift blended economics.",(CounterEffect("Ad load can damage user experience","NEGATIVE","Excess monetization may reduce engagement","2_QUARTERS"),)),
+        ("contribution_margin","free_cash_flow","POSITIVE","Positive cohort and order economics can absorb fixed technology and corporate costs.",()),
+        ("ai_personalization","conversion","CONDITIONAL","AI can improve discovery, pricing and service productivity.",(CounterEffect("Privacy, compute cost and commoditization offset gains","NEGATIVE","Implementation can add cost or weaken trust","MULTI_YEAR"),)),
+    )
+    return [CausalRelationship(relationship_id=f"CRE-TECH2D-{i:02d}",cause=cause,effect=effect,direction=direction,relationship_type="CAUSAL_HYPOTHESIS",epistemic_label="HYPOTHESIS",industry="Consumer Internet and Digital Commerce",company_id=company_id,strength="MEDIUM",confidence=.55,time_lag="1_QUARTER",mechanism=mechanism,counter_effects=counter,source_quality="UNVALIDATED",status="PROPOSED",created_by="phase_2d_code_reviewed_curriculum") for i,(cause,effect,direction,mechanism,counter) in enumerate(rows,1)]
