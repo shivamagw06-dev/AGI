@@ -38,3 +38,16 @@ test('refresh combines holiday, timing and live exchange status', async () => {
   assert.equal(calendar.currentExchangeStatus('NSE').status, 'CLOSED');
   assert.equal(calendar.sessionFor('2026-08-11').source, 'upstox_market_timings');
 });
+
+test('warehouse calendar rows preserve official holiday provenance', () => {
+  const calendar = service();
+  calendar.ingestHolidays({ data: [{
+    date: '2026-08-15', holiday_type: 'TRADING_HOLIDAY', closed_exchanges: ['NSE'],
+  }] });
+  const rows = calendar.warehouseRows('NSE', new Date('2026-08-15T06:00:00Z'));
+  const holiday = rows.find((row) => row.date === '2026-08-15');
+  assert.equal(holiday.is_trading_day, false);
+  assert.equal(holiday.calendar_source, 'upstox_holidays_plus_market_timings');
+  assert.equal(holiday.source, 'upstox_market_calendar');
+  assert.equal(holiday.raw.holiday_type, 'TRADING_HOLIDAY');
+});

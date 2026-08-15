@@ -19,6 +19,12 @@ function utcDate(key, hour = 15, minute = 30) {
   return new Date(Date.UTC(year, month - 1, day, hour, minute) - IST_OFFSET_MS);
 }
 
+function isoTime(value) {
+  if (value == null || value === '') return null;
+  const date = new Date(Number.isFinite(Number(value)) ? Number(value) : value);
+  return Number.isNaN(date.getTime()) ? null : date.toISOString();
+}
+
 function rows(payload) {
   const data = payload?.data ?? payload;
   if (Array.isArray(data)) return data;
@@ -174,14 +180,72 @@ export class TradingCalendarService {
       fallback: this.holidays.size === 0,
     };
   }
+
+  warehouseRows(exchange = 'NSE', now = new Date()) {
+    const target = String(exchange).toUpperCase();
+    const today = dateKey(now);
+    const dates = new Set(this.holidays.keys());
+    // Persist a rolling observed window as well as every dated holiday returned
+    // by Upstox. The holiday feed plus weekday rule identifies official closed
+    // sessions without manufacturing market prices.
+    let cursor = utcDate(today, 12, 0);
+    for (let index = 0; index < 45; index += 1) {
+      dates.add(dateKey(cursor));
+      cursor = new Date(cursor.getTime() - DAY_MS);
+    }
+    return [...dates].sort().map((key) => {
+      const session = this.sessionFor(key, target);
+      const holiday = this.holidays.get(key) || null;
+      return {
+        exchange: target,
+        date: key,
+        is_trading_day: Boolean(session),
+        start_time: isoTime(session?.start_time),
+        end_time: isoTime(session?.end_time),
+        calendar_source: this.holidays.size ? 'upstox_holidays_plus_market_timings' : 'weekday_fallback',
+        observed_at: new Date().toISOString(),
+        raw: holiday || session || {},
+        source: 'upstox_market_calendar',
+      };
+    });
+  }
 }
 
 export const tradingCalendar = new TradingCalendarService();
 let refreshTimer = null;
 
+export async function persistTradingCalendar(calendar = tradingCalendar, exchange = 'NSE') {
+  let baseUrl = String(process.env.AGIB_INTELLIGENCE_ENGINE_URL || process.env.INTELLIGENCE_ENGINE_URL || '').trim().replace(/\/$/, '');
+  const token = String(process.env.AGIB_SERVICE_TOKEN || process.env.INTELLIGENCE_ENGINE_TOKEN || '').trim();
+  if (baseUrl && !/^https?:\/\//i.test(baseUrl)) baseUrl = `https://${baseUrl}`;
+  if (!baseUrl || !token) return { ok: false, skipped: true, reason: 'intelligence_engine_not_configured' };
+  const rows = calendar.warehouseRows(exchange);
+  const headers = {
+    Accept: 'application/json', 'Content-Type': 'application/json',
+    Authorization: `Bearer ${token}`, 'X-AGI-Intelligence-Token': token,
+  };
+  const stagedResponse = await fetch(`${baseUrl}/v1/warehouse/tab/exchange_sessions/import`, {
+    method: 'POST', headers,
+    body: JSON.stringify({ rows, actor: 'trading_calendar_service', source: 'upstox_market_calendar' }),
+    signal: AbortSignal.timeout(30_000),
+  });
+  const staged = await stagedResponse.json().catch(() => ({}));
+  if (!stagedResponse.ok || !staged.import_id) throw new Error(staged.error || staged.detail || `calendar_stage_${stagedResponse.status}`);
+  const committedResponse = await fetch(`${baseUrl}/v1/warehouse/import/${staged.import_id}/commit`, {
+    method: 'POST', headers,
+    body: JSON.stringify({ actor: 'trading_calendar_service', recalculate: false }),
+    signal: AbortSignal.timeout(30_000),
+  });
+  const committed = await committedResponse.json().catch(() => ({}));
+  if (!committedResponse.ok) throw new Error(committed.error || committed.detail || `calendar_commit_${committedResponse.status}`);
+  return { ok: true, rows: rows.length, import_id: staged.import_id };
+}
+
 export function startTradingCalendarService() {
   if (refreshTimer) return tradingCalendar.health();
-  const refresh = () => tradingCalendar.refresh().catch(() => {});
+  const refresh = () => tradingCalendar.refresh()
+    .then(() => persistTradingCalendar().catch(() => ({ ok: false })))
+    .catch(() => {});
   refresh();
   refreshTimer = setInterval(refresh, 6 * 60 * 60_000);
   refreshTimer.unref?.();

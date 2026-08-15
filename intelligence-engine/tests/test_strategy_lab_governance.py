@@ -1,4 +1,6 @@
 from strategy_lab import production
+from datetime import datetime
+from zoneinfo import ZoneInfo
 
 
 def _row(symbol: str, day: str, close: float = 100.0) -> dict:
@@ -42,6 +44,22 @@ def test_freshness_is_independent_from_universe_completeness():
     assert health["freshness_status"] == "PASS"
     assert decision["evidence"]["data_freshness"]["status"] == "PASSED"
     assert decision["evidence"]["data_completeness"]["status"] == "FAILED"
+
+
+def test_expected_session_prefers_official_exchange_calendar(monkeypatch):
+    monkeypatch.setattr("institutional_warehouse.db.physical_table", lambda _tab: "wh_exchange_sessions")
+    monkeypatch.setattr("institutional_warehouse.db.query", lambda _sql, _params: [{
+        "date": "2026-08-14",
+        "calendar_source": "upstox_holidays_plus_market_timings",
+        "observed_at": "2026-08-17T01:00:00Z",
+    }])
+    now = datetime(2026, 8, 17, 17, 0, tzinfo=ZoneInfo("Asia/Kolkata"))
+
+    receipt = production._expected_completed_session_receipt(now)
+
+    assert receipt["date"] == "2026-08-14"
+    assert receipt["status"] == "OFFICIAL"
+    assert receipt["source"] == "upstox_holidays_plus_market_timings"
 
 
 def test_catalog_uses_formal_lifecycle_and_blocks_unimplemented_families():

@@ -329,6 +329,28 @@ DAILY_MARKET_HISTORY = Tab(
     ),
 )
 
+EXCHANGE_SESSIONS = Tab(
+    id="exchange_sessions",
+    label="Exchange Sessions",
+    description="Append-only official exchange calendar observations used by point-in-time freshness gates.",
+    mode="append",
+    key=("exchange", "date"),
+    order_by=("date DESC", "exchange"),
+    search_columns=("exchange", "calendar_source"),
+    icon="market",
+    columns=(
+        _c("exchange", "Exchange", TEXT, required=True, width=110, group="Key"),
+        _c("date", "Date", DATE, required=True, width=120, group="Key"),
+        _c("is_trading_day", "Trading Day", BOOL, required=True, width=120, group="Session"),
+        _c("start_time", "Start Time", DATETIME, width=170, group="Session"),
+        _c("end_time", "End Time", DATETIME, width=170, group="Session"),
+        _c("calendar_source", "Calendar Source", TEXT, required=True, width=220, group="Lineage"),
+        _c("observed_at", "Observed At", DATETIME, required=True, width=170, group="Lineage"),
+        _c("raw", "Raw", JSON, width=260, group="Lineage"),
+        *PROVENANCE_COLUMNS,
+    ),
+)
+
 # --------------------------------------------------------------------------
 # Tabs 3 & 4 — Financial statements
 # --------------------------------------------------------------------------
@@ -2155,6 +2177,7 @@ TABS: tuple[Tab, ...] = (
     COMPANY_MASTER,
     PROFILE_HISTORY,
     DAILY_MARKET_HISTORY,
+    EXCHANGE_SESSIONS,
     FINANCIALS_ANNUAL,
     FINANCIALS_QUARTERLY,
     COMPANY_IDENTITY_MAP,

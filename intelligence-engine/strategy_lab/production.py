@@ -173,12 +173,42 @@ def _warehouse_rows(limit: int = 800_000) -> list[dict[str, Any]]:
         return rows[:limit]
 
 
-def _expected_completed_session(now: datetime | None = None) -> str:
+def _expected_completed_session_receipt(now: datetime | None = None) -> dict[str, Any]:
     local = now.astimezone(ZoneInfo("Asia/Kolkata")) if now else datetime.now(ZoneInfo("Asia/Kolkata"))
     candidate = local.date() if (local.hour, local.minute) >= (16, 0) else local.date() - timedelta(days=1)
     while candidate.weekday() >= 5:
         candidate -= timedelta(days=1)
-    return candidate.isoformat()
+    fallback = candidate.isoformat()
+    try:
+        from institutional_warehouse import db
+
+        table = db.physical_table("exchange_sessions")
+        rows = db.query(
+            f'''SELECT date, calendar_source, observed_at
+                FROM {table}
+                WHERE exchange = ? AND date <= ?
+                  AND COALESCE(is_trading_day, 0) IN (1, '1', 'true', 'TRUE')
+                  AND COALESCE(sys_published, 1) = 1
+                ORDER BY date DESC LIMIT 1''',
+            ("NSE", fallback),
+        )
+        if rows:
+            official = str(rows[0].get("date") or "")[:10]
+            age_days = (local.date() - datetime.fromisoformat(official).date()).days
+            if official and 0 <= age_days <= 10:
+                return {
+                    "date": official,
+                    "status": "OFFICIAL",
+                    "source": rows[0].get("calendar_source") or "warehouse.exchange_sessions",
+                    "observed_at": rows[0].get("observed_at"),
+                }
+    except Exception:
+        pass
+    return {"date": fallback, "status": "FALLBACK", "source": "weekday_rule", "observed_at": None}
+
+
+def _expected_completed_session(now: datetime | None = None) -> str:
+    return str(_expected_completed_session_receipt(now).get("date") or "")
 
 
 def _series_snapshot(rows: list[dict[str, Any]], expected_session: str | None = None) -> tuple[dict[str, list[dict[str, float | str]]], dict[str, Any]]:
@@ -207,7 +237,12 @@ def _series_snapshot(rows: list[dict[str, Any]], expected_session: str | None = 
     threshold = max(1, math.ceil(peak * 0.80))
     eligible_dates = [day for day, count in coverage.items() if count >= threshold]
     common_observed_session = max(eligible_dates, default=None)
-    completed_session = expected_session or _expected_completed_session()
+    calendar_receipt = (
+        {"date": expected_session, "status": "CALLER_SUPPLIED", "source": "test_or_explicit", "observed_at": None}
+        if expected_session
+        else _expected_completed_session_receipt()
+    )
+    completed_session = str(calendar_receipt.get("date") or "") or None
     expected_session_observed = bool(
         completed_session and coverage.get(completed_session, 0) > 0
     )
@@ -229,7 +264,9 @@ def _series_snapshot(rows: list[dict[str, Any]], expected_session: str | None = 
         # Retained for scan compatibility: a scan requires both a current date
         # and a sufficiently broad same-session universe.
         "session_status": "PASS" if expected_session_observed and completeness_passed else "FAIL",
-        "exchange_calendar_status": "WEEKDAY_RULE_ONLY",
+        "exchange_calendar_status": calendar_receipt.get("status"),
+        "exchange_calendar_source": calendar_receipt.get("source"),
+        "exchange_calendar_observed_at": calendar_receipt.get("observed_at"),
         "mixed_session_blocked": len(stale),
         "stale_tickers": sorted(stale),
     }
