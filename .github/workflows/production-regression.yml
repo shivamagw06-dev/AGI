@@ -11,6 +11,10 @@ on:
       - 'cursor/**'
   workflow_dispatch:
 
+concurrency:
+  group: production-release-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   production-release-gate:
     name: AGI Core v1.0 Production Regression
