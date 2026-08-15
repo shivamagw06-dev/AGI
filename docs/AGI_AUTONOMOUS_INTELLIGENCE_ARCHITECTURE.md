@@ -52,12 +52,18 @@ Client question
   `AGI_REASONING_PROVIDER` rather than provider-specific business logic.
 - Ask AGI grounded synthesis moved behind the provider contract.
 - Continuous intelligence learning moved behind the provider contract.
+- Versioned registry for research, web, document, company, industry, financial,
+  market, causal, thesis, event, calculation, comparison and proposal tools.
+- Strict tool argument validation, per-tool call limits, research budgets and
+  read/propose/controlled-write permissions.
+- Ask research plans now record their governed tool plan in the existing trace.
 - Proposed/validated/trusted/quarantined candidate lifecycle remains database
   owned; model output cannot self-promote to trusted knowledge.
 
 ## Material gaps
 
-1. Standardize the existing tool modules into one versioned read/write registry.
+1. Bind each registered tool descriptor to its existing runtime handler through
+   one audited executor; registry and planning are complete, execution is next.
 2. Add provider-independent web search and document retrieval adapters with
    authority tiers, licenses, budgets and original-source verification.
 3. Execute iterative gap-driven research; the current planner records a plan but
