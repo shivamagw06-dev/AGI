@@ -47,6 +47,7 @@ _TOOLS = (
     ToolSpec("GET_BANK_VALUATION", "1.0", "read", "Evaluate a classified commercial bank using point-in-time inputs, bank-appropriate methods and execution-blocking evidence gates.", "financials_valuation.service.evaluate_bank", {"company": _field("dict", required=True, limit=30), "inputs": _field("dict", required=True, limit=80), "as_of": _field("str", required=True, limit=32), "peers": _field("list", limit=50), "history": _field("list", limit=100), "scenarios": _field("dict", limit=3)}, max_calls=3),
     ToolSpec("GET_FINANCIAL_VALUATION", "1.0", "read", "Route a financial institution to its authoritative subsector model with PIT evidence and execution-blocking gates.", "financials_valuation.facade.evaluate_financial_institution", {"company": _field("dict", required=True, limit=30), "inputs": _field("dict", required=True, limit=100), "as_of": _field("str", required=True, limit=32), "peers": _field("list", limit=50), "history": _field("list", limit=100), "scenarios": _field("dict", limit=3)}, max_calls=3),
     ToolSpec("GET_TECHNOLOGY_VALUATION", "2K.0", "read", "Evaluate all governed Technology & Digital subsectors using point-in-time evidence, deterministic sector economics and execution-blocking gates.", "technology_valuation.service.evaluate_technology_company", {"company": _field("dict", required=True, limit=30), "inputs": _field("dict", required=True, limit=100), "as_of": _field("str", required=True, limit=32), "peers": _field("list", limit=50), "history": _field("list", limit=100), "scenarios": _field("dict", limit=3)}, max_calls=3),
+    ToolSpec("GET_CONSUMER_VALUATION", "3.0", "read", "Evaluate governed Consumer subsectors using point-in-time evidence, unit economics, deterministic AFE calculations and execution-blocking gates.", "consumer_valuation.service.evaluate_consumer_company", {"company": _field("dict", required=True, limit=40), "inputs": _field("dict", required=True, limit=120), "as_of": _field("str", required=True, limit=32), "peers": _field("list", limit=50), "history": _field("list", limit=100), "scenarios": _field("dict", limit=3)}, max_calls=3),
     ToolSpec("GET_THESIS", "1.0", "read", "Retrieve current and historical thesis versions.", "app.ail.thesis_engine", {"company": _field("str", limit=80), "industry": _field("str", limit=120), "topic": _field("str", limit=240)}),
     ToolSpec("GET_LATEST_EVENTS", "1.0", "read", "Retrieve latest validated company, industry or macro events.", "app.mee.service.MarketEventEngineService.search", {"query": _field("str", required=True, limit=500), "limit": _field("int", limit=20)}, freshness_sensitive=True),
     ToolSpec("CALCULATE", "1.2", "read", "Run AFE from explicit inputs or resolve verified company inputs from the canonical warehouse.", "financial_engine.calculate", {"operation": _field("str", required=True, limit=60), "inputs": _field("dict", limit=50), "company": _field("str", limit=80), "period": _field("str", limit=40), "as_of_date": _field("str", limit=32), "currency": _field("str", limit=12), "unit": _field("str", limit=30)}, max_calls=15),
@@ -63,6 +64,7 @@ _THESIS_RE = re.compile(r"\b(view|thesis|outlook|changed the view|invalidate)\b"
 _FINANCIAL_RE = re.compile(r"\b(revenue|margins?|ebitda|profits?|cash flows?|valuation|roe|roa|roic|nim|npa|loans?|deposits?|financials?|financially|invest|investment|expensive|cheap)\b", re.I)
 _BANK_RE = re.compile(r"\b(bank|nim|casa|gnpa|nnpa|credit cost|deposit|cet1|crar|price.to.book|p/b)\b", re.I)
 _TECHNOLOGY_RE = re.compile(r"\b(tcs|infosys|infy|hcltech|hcl tech|wipro|tech mahindra|techm|it services|outsourcing|utilization|billing rate|attrition|deal wins|tcv|book.to.bill|software|saas|annual recurring revenue|arr|nrr|grr|churn|cac|rule of 40|ev.arr|internet platform|marketplace|gmv|take rate|active buyers|active sellers|order frequency|network effect|contribution margin|ev.gmv|consumer internet|digital commerce|e.?commerce|online retail|active customers|average order value|aov|repeat rate|return rate|inventory turns|advertising arpu|semiconductor|chip|fabless|foundry|atmp|osat|wafer|yield rate|design win|telecom|wireless|broadband|fiber|subscriber|arpu|spectrum|tariff|5g|4g|telecom tower|tower infrastructure|passive infrastructure|tenancy ratio|tenant additions|ev.site|energy pass.through|engineering services|er.d|electronics manufacturing|technology hardware|data cent(?:re|er)|operational mw|pue|fintech|payments|tpv|merchant|cybersecurity|cloud infrastructure|rpo)\b", re.I)
+_CONSUMER_RE = re.compile(r"\b(fmcg|consumer durables?|retail|same.store sales|sssg|footfall|sales density|qsr|restaurant|store additions?|hotel|hospitality|occupancy|adr|revpar|textiles?|apparel|cotton|footwear|pairs sold|jewell?ery|gold price|making charges?|premiumization|volume growth|price.mix)\b", re.I)
 
 
 class ToolValidationError(ValueError):
@@ -132,12 +134,15 @@ def plan_tools(question: str, *, ticker_hint: str | None = None) -> dict[str, An
     if ticker_hint and _BANK_RE.search(query):
         selected.append("GET_BANK_VALUATION")
         reasons["GET_BANK_VALUATION"] = "bank_specific_point_in_time_valuation"
-    if ticker_hint and _FINANCIAL_RE.search(query) and not _TECHNOLOGY_RE.search(query):
+    if ticker_hint and _FINANCIAL_RE.search(query) and not _TECHNOLOGY_RE.search(query) and not _CONSUMER_RE.search(query):
         selected.append("GET_FINANCIAL_VALUATION")
         reasons["GET_FINANCIAL_VALUATION"] = "authoritative_financial_subsector_valuation"
     if ticker_hint and _TECHNOLOGY_RE.search(query):
         selected.append("GET_TECHNOLOGY_VALUATION")
         reasons["GET_TECHNOLOGY_VALUATION"] = "authoritative_technology_subsector_valuation"
+    if ticker_hint and _CONSUMER_RE.search(query):
+        selected.append("GET_CONSUMER_VALUATION")
+        reasons["GET_CONSUMER_VALUATION"] = "authoritative_consumer_subsector_unit_economics_and_valuation"
     names = list(dict.fromkeys(selected))
     tools = [get_tool(name) for name in names]
     return {

@@ -1256,6 +1256,13 @@ def run_complete_ask(
                 packs["technology_valuation_intelligence"] = technology_context
         except Exception:
             pass
+        try:
+            from consumer_valuation.research_context import consumer_research_context
+            consumer_context = consumer_research_context(hint)
+            if consumer_context.get("status") == "MODEL_CONTEXT":
+                packs["consumer_valuation_intelligence"] = consumer_context
+        except Exception:
+            pass
     # Soft overlay — reasoning may ignore; does not change governance internals
     packs["framework_selection"] = {
         "ifse_version": framework_selection.get("ifse_version"),
