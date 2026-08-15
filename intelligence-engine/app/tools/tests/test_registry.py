@@ -26,3 +26,10 @@ def test_current_causal_question_gets_freshness_and_reasoning_tools():
     assert {"SEARCH_RESEARCH", "SEARCH_WEB", "GET_LATEST_EVENTS", "GET_COMPANY", "GET_FINANCIALS", "GET_CAUSAL_GRAPH", "CALCULATE"} <= names
     assert plan["controlled_writes_allowed"] is False
     assert plan["budgets"]["max_searches"] == 5
+
+
+def test_investment_question_routes_to_financials_and_afe():
+    plan = plan_tools("Should I invest in HDFC Bank?", ticker_hint="HDFCBANK")
+    names = {tool["name"] for tool in plan["tools"]}
+    assert {"GET_COMPANY", "GET_FINANCIALS", "CALCULATE"} <= names
+    assert get_tool("CALCULATE").max_calls >= 11

@@ -228,7 +228,13 @@ def build_core_read_executor(
         handlers["SEARCH_NEWS"] = search.search_news
     if calculator is None:
         from financial_engine import calculate as calculator
-    handlers["CALCULATE"] = lambda operation, inputs: calculator(
-        calculation_id=operation, inputs=inputs
-    )
+    def _calculate(operation, inputs=None, company=None, period=None, as_of_date=None, currency="INR", unit="INR million"):
+        if company:
+            from financial_engine import FinancialDataResolver
+            return FinancialDataResolver().calculate(
+                company_id=company, calculation_id=operation, period=period,
+                as_of_date=as_of_date, currency=currency, unit=unit,
+            )
+        return calculator(calculation_id=operation, inputs=inputs or {})
+    handlers["CALCULATE"] = _calculate
     return GovernedToolExecutor(handlers)

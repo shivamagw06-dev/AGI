@@ -44,7 +44,7 @@ _TOOLS = (
     ToolSpec("GET_CAUSAL_GRAPH", "1.0", "read", "Retrieve evidence-backed causal chains and counter-effects.", "causal_graph.production", {"entity": _field("str", limit=80), "industry": _field("str", limit=120), "event": _field("str", limit=240), "depth": _field("int", limit=6)}),
     ToolSpec("GET_THESIS", "1.0", "read", "Retrieve current and historical thesis versions.", "app.ail.thesis_engine", {"company": _field("str", limit=80), "industry": _field("str", limit=120), "topic": _field("str", limit=240)}),
     ToolSpec("GET_LATEST_EVENTS", "1.0", "read", "Retrieve latest validated company, industry or macro events.", "app.mee.service.MarketEventEngineService.search", {"query": _field("str", required=True, limit=500), "limit": _field("int", limit=20)}, freshness_sensitive=True),
-    ToolSpec("CALCULATE", "1.1", "read", "Run an allow-listed deterministic AFE calculation with fail-closed validation.", "financial_engine.calculate", {"operation": _field("str", required=True, limit=60), "inputs": _field("dict", required=True, limit=50)}),
+    ToolSpec("CALCULATE", "1.2", "read", "Run AFE from explicit inputs or resolve verified company inputs from the canonical warehouse.", "financial_engine.calculate", {"operation": _field("str", required=True, limit=60), "inputs": _field("dict", limit=50), "company": _field("str", limit=80), "period": _field("str", limit=40), "as_of_date": _field("str", limit=32), "currency": _field("str", limit=12), "unit": _field("str", limit=30)}, max_calls=15),
     ToolSpec("COMPARE", "1.0", "read", "Compare governed company, peer, financial or thesis objects.", "app.iie.service.InvestmentIntelligenceService.compare", {"entities": _field("list", required=True, limit=20), "dimensions": _field("list", limit=20)}),
     ToolSpec("CREATE_MONITOR", "1.0", "propose", "Propose a monitoring indicator; cannot activate it.", "intelligence_learning_candidates", {"thesis_id": _field("str", limit=160), "indicator": _field("dict", required=True, limit=30)}),
     ToolSpec("PROPOSE_KNOWLEDGE", "1.0", "propose", "Store candidate knowledge for validation; cannot promote trust.", "intelligence_learning_candidates", {"document_id": _field("str", required=True, limit=160), "payload": _field("dict", required=True, limit=100)}),
@@ -55,7 +55,7 @@ _BY_NAME = {tool.name: tool for tool in _TOOLS}
 _CURRENT_RE = re.compile(r"\b(today|latest|current|recent|now|after|changed|outlook)\b", re.I)
 _CAUSAL_RE = re.compile(r"\b(why|how|impact|affect|transmit|mean for|what happens)\b", re.I)
 _THESIS_RE = re.compile(r"\b(view|thesis|outlook|changed the view|invalidate)\b", re.I)
-_FINANCIAL_RE = re.compile(r"\b(revenue|margins?|ebitda|profits?|cash flows?|valuation|roe|roic|financials?)\b", re.I)
+_FINANCIAL_RE = re.compile(r"\b(revenue|margins?|ebitda|profits?|cash flows?|valuation|roe|roa|roic|nim|npa|loans?|deposits?|financials?|financially|invest|investment|expensive|cheap)\b", re.I)
 
 
 class ToolValidationError(ValueError):

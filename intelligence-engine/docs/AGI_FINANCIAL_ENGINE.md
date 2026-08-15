@@ -56,7 +56,10 @@ The result includes raw and display values, formula/version, inputs, provenance,
 - Banking calculation set needed for HDFC analysis: implemented.
 - Governed `CALCULATE` binding: implemented.
 - Unit, currency, period and PIT validation: implemented.
-- HDFC source retrieval into AFE: existing warehouse path available; automatic question-to-metric execution remains the next integration gate.
+- Financial Data Resolver: implemented against the canonical Financial Statements Engine, with a fallback through the Institutional Warehouse's published annual-financial read API. It applies bank-specific mappings, source precedence, conflict exposure, unit normalization, staleness and PIT controls; unsupported inputs remain unavailable rather than estimated.
+- Company-aware `CALCULATE`: implemented. Requests may provide company, calculation, period and as-of date; the model does not supply warehouse numbers.
+- HDFC banking bundle: ROE, loan/deposit growth, NIM, GNPA, NNPA, PCR, credit cost, CET1, CRAR and P/B resolve through the bridge when canonical facts exist.
+- Ask planning: investment and banking questions now select `GET_FINANCIALS` and `CALCULATE`; client-response composition of a complete multi-metric bundle remains a separate reasoning integration gate.
 - DCF, IRR/XIRR, portfolio return analytics, full peer/reverse-DCF, insurance/NBFC/manufacturing/FMCG/IT formula expansion: pending registry expansion.
 - Current tests cover registry integrity, ROE/provenance, banking, telecom scenario, failure states, unit/PIT checks and governed execution.
 
