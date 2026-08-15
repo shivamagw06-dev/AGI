@@ -10,6 +10,7 @@
 import { getHistoricalCandles, getIntradayCandles, isUpstoxConfigured } from '../providers/upstox.js';
 import { readLatestHflTerminalSnapshot } from './hflTerminalSnapshot.js';
 import { loadLiveAlphaUniverse } from './liveAlphaRuntime.js';
+import { tradingCalendar } from './tradingCalendarService.js';
 
 let timer = null;
 let retryTimer = null;
@@ -67,6 +68,12 @@ function isoIstDate(now = new Date()) {
   return `${p.year}-${p.month}-${p.day}`;
 }
 
+export function latestCompletedTradingSession(now = new Date()) {
+  const today = isoIstDate(now);
+  if (tradingCalendar.isTradingDay(today, 'NSE') && afterMarketClose(now)) return today;
+  return isoIstDate(tradingCalendar.previousTradingDay(now, 'NSE'));
+}
+
 function dateDaysAgo(days, now = new Date()) {
   const date = new Date(now.getTime() - days * 86_400_000);
   return date.toISOString().slice(0, 10);
@@ -122,7 +129,7 @@ async function importRows(rows) {
   return { ok: true, written, chunks };
 }
 
-async function refreshDaily(candidates, today) {
+async function refreshDaily(candidates, targetSession, today) {
   const collected = [];
   const failures = [];
   const overlayFailures = [];
@@ -140,19 +147,21 @@ async function refreshDaily(candidates, today) {
         // normal daily path needs only one provider call per instrument.
         const byDate = new Map();
         try {
-          const currentPayload = await getIntradayCandles(candidate.instrumentKey, { unit: 'days', interval: 1 });
-          const currentRows = candleRows(candidate.ticker, currentPayload, 'upstox_v3_current_day').filter((row) => row.date === today);
-          if (!currentRows.length) throw new Error('current_day_candle_missing');
-          for (const row of currentRows) byDate.set(row.date, row);
+          if (targetSession === today) {
+            const currentPayload = await getIntradayCandles(candidate.instrumentKey, { unit: 'days', interval: 1 });
+            const currentRows = candleRows(candidate.ticker, currentPayload, 'upstox_v3_current_day').filter((row) => row.date === targetSession);
+            if (!currentRows.length) throw new Error('current_day_candle_missing');
+            for (const row of currentRows) byDate.set(row.date, row);
+          }
         } catch (error) {
           overlayFailures.push({ ticker: candidate.ticker, error: error.message });
           if (error?.status === 429) throw error;
         }
-        if (!byDate.has(today)) {
+        if (!byDate.has(targetSession)) {
           // Repair missed sessions from a short historical overlap. Existing
           // 10-year warehouse history remains untouched.
           const payload = await getHistoricalCandles(candidate.instrumentKey, { unit: 'days', interval: 1, from: dateDaysAgo(10), to: today });
-          const historicalRows = candleRows(candidate.ticker, payload, 'upstox_v3_daily').filter((row) => row.date <= today);
+          const historicalRows = candleRows(candidate.ticker, payload, 'upstox_v3_daily').filter((row) => row.date <= targetSession);
           if (!historicalRows.length) throw new Error('no_daily_candles_returned');
           for (const row of historicalRows) byDate.set(row.date, row);
         }
@@ -167,7 +176,7 @@ async function refreshDaily(candidates, today) {
   await Promise.all(Array.from({ length: concurrency }, worker));
   const imported = await importRows(collected);
   const refreshedSymbols = new Set(collected.map((row) => row.symbol));
-  const latestCoverage = new Set(collected.filter((row) => row.date === today).map((row) => row.symbol));
+  const latestCoverage = new Set(collected.filter((row) => row.date === targetSession).map((row) => row.symbol));
   return {
     requested: candidates.length,
     refreshed: refreshedSymbols.size,
@@ -202,6 +211,7 @@ export async function refreshHedgeFundUpstoxCandles({ force = false } = {}) {
   if (inFlight) return { ok: true, skipped: true, reason: 'refresh_in_flight' };
   inFlight = (async () => {
     const today = isoIstDate();
+    const targetSession = latestCompletedTradingSession();
     // Prefer Supabase snapshot so candle refresh does not rebuild scanners.
     let terminal = null;
     try {
@@ -222,18 +232,20 @@ export async function refreshHedgeFundUpstoxCandles({ force = false } = {}) {
     const candidates = terminal?.ok ? candidateRows(terminal) : [];
     const fullUniverse = await loadLiveAlphaUniverse();
     const dailyCandidates = fullUniverse.members.map((member) => ({ ticker: member.symbol, instrumentKey: member.instrumentKey }));
-    if (dailyProgress.date !== today) dailyProgress = { date: today, covered: new Set() };
-    const shouldRunDaily = force || (afterMarketClose() && lastDailyRefresh !== today);
+    if (dailyProgress.date !== targetSession) dailyProgress = { date: targetSession, covered: new Set() };
+    // Catch up the latest completed NSE session even on weekends or before the
+    // next open. Rate limits and deploys must not strand a partial EOD universe.
+    const shouldRunDaily = force || lastDailyRefresh !== targetSession;
     const pendingDailyCandidates = dailyCandidates.filter((candidate) => !dailyProgress.covered.has(candidate.ticker));
-    const daily = shouldRunDaily && pendingDailyCandidates.length ? await refreshDaily(pendingDailyCandidates, today) : null;
+    const daily = shouldRunDaily && pendingDailyCandidates.length ? await refreshDaily(pendingDailyCandidates, targetSession, today) : null;
     for (const ticker of daily?.successful_today || []) dailyProgress.covered.add(ticker);
     const minimumCoverage = Math.ceil(dailyCandidates.length * 0.80);
     // A partial provider run must retry; it must never mark the EOD session done.
     const cumulativeCoverage = dailyProgress.covered.size;
     const eodRetryRequired = shouldRunDaily && cumulativeCoverage < minimumCoverage;
-    if (shouldRunDaily && !eodRetryRequired) lastDailyRefresh = today;
+    if (shouldRunDaily && !eodRetryRequired) lastDailyRefresh = targetSession;
     const intraday = marketOpen() && candidates.length ? await refreshIntraday(candidates) : null;
-    return { ok: true, provider: 'upstox_v3', candidates: candidates.length, eod_universe: dailyCandidates.length, eod_minimum_coverage: minimumCoverage, eod_cumulative_coverage: cumulativeCoverage, eod_pending: dailyCandidates.length - cumulativeCoverage, eod_retry_required: eodRetryRequired, daily, intraday, as_of: new Date().toISOString() };
+    return { ok: true, provider: 'upstox_v3', candidates: candidates.length, target_session: targetSession, eod_universe: dailyCandidates.length, eod_minimum_coverage: minimumCoverage, eod_cumulative_coverage: cumulativeCoverage, eod_pending: dailyCandidates.length - cumulativeCoverage, eod_retry_required: eodRetryRequired, daily, intraday, as_of: new Date().toISOString() };
   })();
   try { return await inFlight; } finally { inFlight = null; }
 }
