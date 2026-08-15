@@ -61,6 +61,13 @@ Client question
   search, document, runtime and timeout budgets, plus sanitized call traces.
 - Registered but unbound tools fail closed; registry handler strings are never
   imported or executed dynamically.
+- Provider-neutral `SearchProvider` boundary with Exa and Tavily adapters,
+  provider failover, kill-switch support and no model-owned search dependency.
+- Freshness-triggered Ask questions now execute `SEARCH_WEB`/`SEARCH_NEWS`
+  through the governed executor when a provider key is configured.
+- Search results are URL-safety checked, ranked with primary official sources
+  first, recorded in a bounded evidence store and labelled
+  `external_evidence_unvalidated`; they cannot become trusted knowledge.
 - Proposed/validated/trusted/quarantined candidate lifecycle remains database
   owned; model output cannot self-promote to trusted knowledge.
 
@@ -68,8 +75,8 @@ Client question
 
 1. Bind the remaining registry descriptors to their existing services. The
    audited executor and core KIP/KF/market/event/thesis bindings now exist.
-2. Add provider-independent web search and document retrieval adapters with
-   authority tiers, licenses, budgets and original-source verification.
+2. Add governed full-page retrieval and original-document verification. Search
+   discovery, source tiers and evidence isolation are now connected.
 3. Execute iterative gap-driven research; the current planner records a plan but
    Ask's default DAG remains mostly deterministic and sequential.
 4. Add contradiction objects and confidence updates across new versus historical

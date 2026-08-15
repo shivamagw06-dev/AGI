@@ -25,6 +25,13 @@ def test_executes_explicit_read_handler_and_sanitizes_trace():
     assert "payload" not in context.trace[0]
 
 
+def test_sync_executor_uses_same_governance_boundary():
+    executor = GovernedToolExecutor({"GET_COMPANY": lambda company_id, fields=None: {"id": company_id}})
+    context = ToolExecutionContext()
+    assert executor.execute_sync("GET_COMPANY", {"company_id": "ZEN"}, context) == {"id": "ZEN"}
+    assert context.trace[0]["status"] == "success"
+
+
 def test_rejects_unknown_arguments_before_handler():
     executor = GovernedToolExecutor({"GET_COMPANY": lambda **_: {}})
     context = ToolExecutionContext()

@@ -28,6 +28,7 @@ from institutional_analog_intelligence.production import retrieve as retrieve_in
 from institutional_communication import ICE_VERSION, communicate_from_ask
 from ask_pipeline.knowledge import retrieve_knowledge
 from ask_pipeline.planner import run_planner
+from ask_pipeline.external_research import run_external_research
 from ask_pipeline.policy import execution_policy
 from ask_pipeline.recording import record_decision_quality, register_outcome
 from ask_pipeline.schema import FREEZE_LOCKS, PIPELINE_VERSION, PROGRAMME
@@ -1204,6 +1205,9 @@ def run_complete_ask(
     planner = run_planner(question, ticker_hint=hint, policy=policy)
     stages["planner"] = planner
 
+    external_research = run_external_research(question, planner.get("tool_plan"))
+    stages["external_research"] = external_research
+
     # S08 DAG (observability + dependency enforcement record)
     dag = execute_research_dag(
         policy=policy,
@@ -1215,6 +1219,21 @@ def run_complete_ask(
 
     # Merge packs for reasoning
     packs = dict(extra_packs or {})
+    if external_research.get("results"):
+        packs["web_evidence"] = {
+            "results": external_research.get("results"),
+            "trust_status": external_research.get("trust_status"),
+            "validation": {
+                "ok": True,
+                "durable_knowledge": False,
+                "requires_citation": True,
+                "requires_contradiction_check": True,
+            },
+            "provenance": {
+                "source": "governed_external_search",
+                "fabricated": False,
+            },
+        }
     for k, v in (evidence.get("governance_packs") or {}).items():
         if k not in packs or not packs.get(k):
             packs[k] = v

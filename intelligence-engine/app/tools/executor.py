@@ -124,6 +124,51 @@ class GovernedToolExecutor:
                 trace.update(_result_summary(result))
             context.trace.append(trace)
 
+    def execute_sync(self, name: str, payload: dict[str, Any], context: ToolExecutionContext) -> Any:
+        """Execute a synchronous bound handler for synchronous pipelines."""
+        started = time.monotonic()
+        tool: ToolSpec | None = None
+        clean: dict[str, Any] = {}
+        status = "error"
+        error_code: str | None = None
+        result: Any = None
+        try:
+            tool = get_tool(name)
+            clean = validate_tool_input(tool.name, payload)
+            self._authorize(tool, context)
+            self._reserve_budget(tool, context)
+            handler = self._handlers.get(tool.name)
+            if handler is None:
+                raise ToolExecutionError("tool_handler_unavailable")
+            result = handler(**clean)
+            if inspect.isawaitable(result):
+                raise ToolExecutionError("async_handler_requires_async_executor")
+            result = _normalise(result)
+            status = "success"
+            return result
+        except ToolValidationError as exc:
+            error_code = f"tool_input_invalid:{exc}"
+            raise ToolExecutionError(error_code) from exc
+        except ToolExecutionError as exc:
+            error_code = exc.code
+            raise
+        except Exception as exc:
+            error_code = "tool_execution_failed"
+            raise ToolExecutionError(error_code) from exc
+        finally:
+            trace = {
+                "tool": tool.name if tool else str(name or "").upper(),
+                "version": tool.version if tool else None,
+                "permission": tool.permission if tool else None,
+                "status": status,
+                "error_code": error_code,
+                "input_keys": sorted(clean),
+                "latency_ms": int((time.monotonic() - started) * 1000),
+            }
+            if status == "success":
+                trace.update(_result_summary(result))
+            context.trace.append(trace)
+
     @staticmethod
     def _authorize(tool: ToolSpec, context: ToolExecutionContext) -> None:
         if tool.permission == "propose" and not context.allow_proposals:
@@ -156,6 +201,7 @@ def build_core_read_executor(
     market: Any | None = None,
     mee: Any | None = None,
     thesis: Any | None = None,
+    search: Any | None = None,
 ) -> GovernedToolExecutor:
     """Bind existing AGI services without dynamic imports or hidden fallbacks."""
 
@@ -176,4 +222,7 @@ def build_core_read_executor(
         handlers["GET_THESIS"] = lambda company=None, industry=None, topic=None: thesis.get(
             company or industry or topic
         )
+    if search is not None:
+        handlers["SEARCH_WEB"] = search.search_web
+        handlers["SEARCH_NEWS"] = search.search_news
     return GovernedToolExecutor(handlers)
