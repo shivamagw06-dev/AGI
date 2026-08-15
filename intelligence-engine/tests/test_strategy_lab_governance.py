@@ -23,9 +23,25 @@ def test_common_session_excludes_partial_intraday_and_stale_symbols():
     series, health = production._series_snapshot(rows, expected_session="2026-08-13")
 
     assert health["latest_completed_session"] == "2026-08-13"
+    assert health["freshness_status"] == "PASS"
+    assert health["completeness_status"] == "PASS"
     assert health["mixed_session_blocked"] == 1
     assert "E" not in series
     assert series["A"][-1]["date"] == "2026-08-13"
+
+
+def test_freshness_is_independent_from_universe_completeness():
+    rows = [_row("A", "2026-08-14"), _row("B", "2026-08-13")]
+
+    _, health = production._series_snapshot(rows, expected_session="2026-08-14")
+    health["coverage_threshold"] = 160
+    health["completeness_status"] = "FAIL"
+    health["session_status"] = "FAIL"
+    decision = production._registry_decision("time_series_momentum", health)
+
+    assert health["freshness_status"] == "PASS"
+    assert decision["evidence"]["data_freshness"]["status"] == "PASSED"
+    assert decision["evidence"]["data_completeness"]["status"] == "FAILED"
 
 
 def test_catalog_uses_formal_lifecycle_and_blocks_unimplemented_families():

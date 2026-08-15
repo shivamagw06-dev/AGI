@@ -208,6 +208,10 @@ def _series_snapshot(rows: list[dict[str, Any]], expected_session: str | None = 
     eligible_dates = [day for day, count in coverage.items() if count >= threshold]
     common_observed_session = max(eligible_dates, default=None)
     completed_session = expected_session or _expected_completed_session()
+    expected_session_observed = bool(
+        completed_session and coverage.get(completed_session, 0) > 0
+    )
+    completeness_passed = coverage.get(completed_session, 0) >= threshold if completed_session else False
     series: dict[str, list[dict[str, float | str]]] = {}
     stale: list[str] = []
     for ticker, days in grouped.items():
@@ -220,7 +224,11 @@ def _series_snapshot(rows: list[dict[str, Any]], expected_session: str | None = 
         "common_observed_session": common_observed_session,
         "session_coverage": coverage.get(completed_session, 0) if completed_session else 0,
         "coverage_threshold": threshold,
-        "session_status": "PASS" if coverage.get(completed_session, 0) >= threshold else "FAIL",
+        "freshness_status": "PASS" if expected_session_observed else "FAIL",
+        "completeness_status": "PASS" if completeness_passed else "FAIL",
+        # Retained for scan compatibility: a scan requires both a current date
+        # and a sufficiently broad same-session universe.
+        "session_status": "PASS" if expected_session_observed and completeness_passed else "FAIL",
         "exchange_calendar_status": "WEEKDAY_RULE_ONLY",
         "mixed_session_blocked": len(stale),
         "stale_tickers": sorted(stale),
@@ -402,8 +410,8 @@ def _registry_decision(strategy_id: str, session: dict[str, Any] | None = None) 
     item = REGISTRY.get(strategy_id) or {}
     implemented = strategy_id in IMPLEMENTED_STRATEGIES
     session = session or {}
-    session_passed = session.get("session_status") == "PASS"
-    price_data_eligible = implemented and session_passed
+    freshness_passed = session.get("freshness_status", session.get("session_status")) == "PASS"
+    completeness_passed = session.get("completeness_status", session.get("session_status")) == "PASS"
     evidence = {
         "implementation": {
             "status": "PASSED" if implemented else "MISSING",
@@ -411,17 +419,17 @@ def _registry_decision(strategy_id: str, session: dict[str, Any] | None = None) 
             "detail": "Deterministic calculator is registered." if implemented else "No calculator is registered.",
         },
         "data_freshness": {
-            "status": "PASSED" if price_data_eligible else "FAILED",
+            "status": "PASSED" if implemented and freshness_passed else "FAILED",
             "observed_at": session.get("latest_completed_session"),
             "source": "warehouse.daily_market_history",
             "detail": (
-                session.get("session_status")
+                session.get("freshness_status", session.get("session_status"))
                 if implemented
                 else "Strategy-specific data source is not implemented or freshness-certified."
             ) or "No session receipt supplied.",
         },
         "data_completeness": {
-            "status": "PASSED" if price_data_eligible else "FAILED",
+            "status": "PASSED" if implemented and completeness_passed else "FAILED",
             "observed_at": session.get("latest_completed_session"),
             "source": "strategy_lab.common_session_gate",
             "detail": (
@@ -477,12 +485,18 @@ def _registry_decision(strategy_id: str, session: dict[str, Any] | None = None) 
         if gate in durable_evidence:
             evidence[gate] = durable_evidence[gate]
     requested = "OPERATIONAL" if implemented else "EXPERIMENTAL"
-    health = "HEALTHY" if price_data_eligible else "DEGRADED" if (not implemented or not session) else "STALE"
-    reason = (
-        "Latest completed session and common-universe coverage passed."
-        if price_data_eligible
-        else "Strategy implementation or its required current dataset is unavailable or incomplete."
-    )
+    if not implemented or not session:
+        health = "DEGRADED"
+        reason = "Strategy implementation or its required current dataset is unavailable."
+    elif not freshness_passed:
+        health = "STALE"
+        reason = "The expected completed market session is absent."
+    elif not completeness_passed:
+        health = "DEGRADED"
+        reason = "Latest completed session is current, but common-universe coverage is incomplete."
+    else:
+        health = "HEALTHY"
+        reason = "Latest completed session and common-universe coverage passed."
     return evaluate_registry(
         strategy_id,
         requested_lifecycle=requested,
