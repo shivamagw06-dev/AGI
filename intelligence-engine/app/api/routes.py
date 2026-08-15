@@ -2443,6 +2443,34 @@ async def faa_scheduler():
     return _faa.scheduler.status()
 
 
+@router.get("/financials-valuation/bank-kpis/coverage")
+async def bank_kpi_coverage():
+    from financials_valuation.bank_kpi_backfill import coverage
+
+    try:
+        return await run_in_threadpool(coverage)
+    except RuntimeError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+
+
+@router.post(
+    "/financials-valuation/bank-kpis/backfill",
+    dependencies=[Depends(require_token)],
+)
+async def bank_kpi_backfill(
+    symbols: list[str] = Body(default=[]),
+    limit_per_bank: int = Query(default=5, ge=1, le=8),
+):
+    from financials_valuation.bank_kpi_backfill import run_bank_backfill
+
+    return await run_in_threadpool(
+        run_bank_backfill,
+        _faa,
+        symbols=symbols or None,
+        limit_per_bank=limit_per_bank,
+    )
+
+
 @router.post("/faa/jobs")
 async def faa_jobs():
     try:
