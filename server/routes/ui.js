@@ -20,6 +20,7 @@ import {
 import {
   findPublishedResearch,
   mergePublishedResearch,
+  publishedResearchPack,
 } from '../services/askDeskFallback.js';
 
 function engineConfig() {
@@ -773,6 +774,47 @@ export default function createUiRouter() {
         });
       }
     };
+
+    // Do not make a visitor wait for the full institutional pipeline when AGI
+    // has already published a directly matching report. The deeper engine is
+    // reserved for follow-up synthesis; the house article itself is the
+    // authoritative answer for this request.
+    const directPublishedResearch = await Promise.race([
+      publishedResearchPromise,
+      new Promise((resolve) => {
+        const timer = setTimeout(() => resolve(null), 2_500);
+        timer.unref?.();
+      }),
+    ]);
+    if (directPublishedResearch) {
+      const pack = publishedResearchPack(String(question), directPublishedResearch);
+      pack.ask_orchestration = {
+        ...(pack.ask_orchestration || {}),
+        ask_trace_id: gatewayTraceId,
+        request_id: gatewayTraceId,
+        engine_reached: false,
+        fallback: false,
+        fallback_used: false,
+        completed: true,
+        timeout: false,
+        last_completed_stage: 'published_research_retrieval',
+        elapsed_ms: Date.now() - httpStarted,
+        published_research: {
+          matched: true,
+          article_id: directPublishedResearch.id,
+          title: directPublishedResearch.title,
+          role: 'primary_evidence',
+        },
+      };
+      res.setHeader('X-Ask-Trace-Id', gatewayTraceId);
+      res.setHeader('X-Request-Id', gatewayTraceId);
+      logAskPipeline('RESPONSE_SENT', gatewayTraceId, {
+        status: 'published_research_fast_path',
+        duration_ms: Date.now() - httpStarted,
+        article_id: directPublishedResearch.id,
+      });
+      return res.status(200).json(pack);
+    }
 
     try {
       const qs = new URLSearchParams({ question: String(question) });
