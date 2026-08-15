@@ -46,6 +46,7 @@ import { getForecastRanking, getRankIcHealth, getWalkForwardDataset } from "./se
 import { getResearchPipelineHealth } from "./services/researchPipelineHealth.js";
 import { startTradingCalendarService, tradingCalendar } from "./services/tradingCalendarService.js";
 import { llmProviderStatus } from "./services/llmClient.js";
+import { startIntelligenceLearningWorker } from "./services/intelligenceLearningWorker.js";
 import rateLimit from "express-rate-limit";
 import cors from "cors";
 import dotenv from "dotenv";
@@ -442,6 +443,7 @@ startUpstoxStatementScheduler();
 startLiveAlphaRuntime().catch((error) => console.error('[live-alpha] startup failed:', error?.message || error));
 startConfluenceValidationScheduler();
 startEngineKeepWarm();
+startIntelligenceLearningWorker();
 
 /* ---------- /api/perplexity/deals ----------
    Ask Perplexity for a strict JSON array of deals with these fields:

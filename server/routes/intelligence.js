@@ -44,6 +44,7 @@ import { getValuationCompanyPackFromReadModel } from '../services/valuationCompa
 import { requireStrategyLabAdmin } from '../services/strategyLabAdminAuth.js';
 import { enrichStrategyLabWithLiveMarket } from '../services/strategyLabLiveMarket.js';
 import { getResearchKnowledgeCard } from '../services/researchKnowledgeRegistry.js';
+import { intelligenceLearningStatus } from '../services/intelligenceLearningWorker.js';
 
 function engineConfig() {
   let baseUrl = (process.env.INTELLIGENCE_ENGINE_URL || 'http://127.0.0.1:8100').replace(/\/$/, '');
@@ -224,6 +225,7 @@ async function companyMatches(query, limit = 8) {
 
 export default function createIntelligenceRouter() {
   const router = Router();
+  router.get('/learning/status', async (_req, res) => res.json(intelligenceLearningStatus()));
 
   // Soft daily CMS → KIP/KF/KC learner (IST learning_date calendar)
   startCmsArticleLearningScheduler(engineFetch);
