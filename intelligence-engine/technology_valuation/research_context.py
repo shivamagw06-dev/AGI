@@ -12,6 +12,8 @@ from technology_valuation.consumer_model import CONSUMER_MODEL
 from technology_valuation.consumer_service import REQUIRED_CONSUMER_INPUTS
 from technology_valuation.semiconductor_model import SEMI_MODEL
 from technology_valuation.semiconductor_service import REQUIRED_SEMI_INPUTS
+from technology_valuation.telecom_model import TELECOM_MODEL
+from technology_valuation.telecom_service import REQUIRED_TELECOM_INPUTS
 
 
 def technology_research_context(company_id: str, *, loader: Callable[[str],dict[str,Any]] | None=None) -> dict[str,Any]:
@@ -33,6 +35,8 @@ def technology_research_context(company_id: str, *, loader: Callable[[str],dict[
         model=CONSUMER_MODEL; required=REQUIRED_CONSUMER_INPUTS
     elif classification.get("model_family")=="SEMICONDUCTOR_RELATED":
         model=SEMI_MODEL; required=REQUIRED_SEMI_INPUTS
+    elif classification.get("model_family")=="TELECOM":
+        model=TELECOM_MODEL; required=REQUIRED_TELECOM_INPUTS
     elif classification.get("subsector")=="IT_SERVICES":
         model=IT_SERVICES_MODEL; required=REQUIRED_INPUTS
     else:
