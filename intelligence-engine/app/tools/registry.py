@@ -49,6 +49,8 @@ _TOOLS = (
     ToolSpec("GET_TECHNOLOGY_VALUATION", "2K.0", "read", "Evaluate all governed Technology & Digital subsectors using point-in-time evidence, deterministic sector economics and execution-blocking gates.", "technology_valuation.service.evaluate_technology_company", {"company": _field("dict", required=True, limit=30), "inputs": _field("dict", required=True, limit=100), "as_of": _field("str", required=True, limit=32), "peers": _field("list", limit=50), "history": _field("list", limit=100), "scenarios": _field("dict", limit=3)}, max_calls=3),
     ToolSpec("GET_CONSUMER_VALUATION", "3.0", "read", "Evaluate governed Consumer subsectors using point-in-time evidence, unit economics, deterministic AFE calculations and execution-blocking gates.", "consumer_valuation.service.evaluate_consumer_company", {"company": _field("dict", required=True, limit=40), "inputs": _field("dict", required=True, limit=120), "as_of": _field("str", required=True, limit=32), "peers": _field("list", limit=50), "history": _field("list", limit=100), "scenarios": _field("dict", limit=3)}, max_calls=3),
     ToolSpec("GET_INDUSTRIAL_VALUATION", "4.0", "read", "Evaluate governed industrial, manufacturing and real-asset subsectors using PIT evidence, cycle normalization and deterministic AFE calculations.", "industrial_valuation.service.evaluate_industrial_company", {"company": _field("dict", required=True, limit=50), "inputs": _field("dict", required=True, limit=140), "as_of": _field("str", required=True, limit=32), "peers": _field("list", limit=50), "history": _field("list", limit=100), "scenarios": _field("dict", limit=3)}, max_calls=3),
+    ToolSpec("GET_ENERGY_VALUATION", "5.0", "read", "Evaluate governed Energy, Utility and Natural Resource subsectors using PIT evidence and deterministic AFE commodity, project and regulated-return calculations.", "energy_valuation.service.evaluate_energy_company", {"company": _field("dict", required=True, limit=50), "inputs": _field("dict", required=True, limit=160), "as_of": _field("str", required=True, limit=32), "peers": _field("list", limit=50), "history": _field("list", limit=100), "scenarios": _field("dict", limit=3)}, max_calls=3),
+    ToolSpec("GET_ENERGY_RESEARCH_CONTEXT", "5.0", "read", "Retrieve the classified Energy business model, KPIs, causal pathways, valuation methods and evidence requirements.", "energy_valuation.research_context.energy_research_context", {"company_id": _field("str", required=True, limit=80)}, max_calls=3),
     ToolSpec("GET_THESIS", "1.0", "read", "Retrieve current and historical thesis versions.", "app.ail.thesis_engine", {"company": _field("str", limit=80), "industry": _field("str", limit=120), "topic": _field("str", limit=240)}),
     ToolSpec("GET_LATEST_EVENTS", "1.0", "read", "Retrieve latest validated company, industry or macro events.", "app.mee.service.MarketEventEngineService.search", {"query": _field("str", required=True, limit=500), "limit": _field("int", limit=20)}, freshness_sensitive=True),
     ToolSpec("CALCULATE", "1.2", "read", "Run AFE from explicit inputs or resolve verified company inputs from the canonical warehouse.", "financial_engine.calculate", {"operation": _field("str", required=True, limit=60), "inputs": _field("dict", limit=50), "company": _field("str", limit=80), "period": _field("str", limit=40), "as_of_date": _field("str", limit=32), "currency": _field("str", limit=12), "unit": _field("str", limit=30)}, max_calls=15),
@@ -67,6 +69,7 @@ _BANK_RE = re.compile(r"\b(bank|nim|casa|gnpa|nnpa|credit cost|deposit|cet1|crar
 _TECHNOLOGY_RE = re.compile(r"\b(tcs|infosys|infy|hcltech|hcl tech|wipro|tech mahindra|techm|it services|outsourcing|utilization|billing rate|attrition|deal wins|tcv|book.to.bill|software|saas|annual recurring revenue|arr|nrr|grr|churn|cac|rule of 40|ev.arr|internet platform|marketplace|gmv|take rate|active buyers|active sellers|order frequency|network effect|contribution margin|ev.gmv|consumer internet|digital commerce|e.?commerce|online retail|active customers|average order value|aov|repeat rate|return rate|inventory turns|advertising arpu|semiconductor|chip|fabless|foundry|atmp|osat|wafer|yield rate|design win|telecom|wireless|broadband|fiber|subscriber|arpu|spectrum|tariff|5g|4g|telecom tower|tower infrastructure|passive infrastructure|tenancy ratio|tenant additions|ev.site|energy pass.through|engineering services|er.d|electronics manufacturing|technology hardware|data cent(?:re|er)|operational mw|pue|fintech|payments|tpv|merchant|cybersecurity|cloud infrastructure|rpo)\b", re.I)
 _CONSUMER_RE = re.compile(r"\b(fmcg|consumer durables?|retail|same.store sales|sssg|footfall|sales density|qsr|restaurant|store additions?|hotel|hospitality|occupancy|adr|revpar|textiles?|apparel|cotton|footwear|pairs sold|jewell?ery|gold price|making charges?|premiumization|volume growth|price.mix)\b", re.I)
 _INDUSTRIAL_RE = re.compile(r"\b(capital goods|industrial machinery|epc|infrastructure|construction|cement|steel|metals?|mining|chemicals?|specialty chemicals?|auto components?|automobile|defen[cs]e|aerospace|railways?|electrical equipment|renewable equipment|packaging|paper|pulp|order book|order inflow|capacity utilization|commodity spread|book.to.bill)\b", re.I)
+_ENERGY_RE = re.compile(r"\b(oil|gas|upstream|refining|refinery|fuel marketing|integrated energy|power generation|power transmission|power distribution|utility|utilities|renewable power|solar|wind|hydro|nuclear|coal|city gas|cgd|oilfield|water utility|waste management|battery|batteries|energy storage|reserves?|reserve life|plf|capacity factor|tariff|ppa|regulated asset|grm|lifting cost)\b", re.I)
 
 
 class ToolValidationError(ValueError):
@@ -136,7 +139,7 @@ def plan_tools(question: str, *, ticker_hint: str | None = None) -> dict[str, An
     if ticker_hint and _BANK_RE.search(query):
         selected.append("GET_BANK_VALUATION")
         reasons["GET_BANK_VALUATION"] = "bank_specific_point_in_time_valuation"
-    if ticker_hint and _FINANCIAL_RE.search(query) and not _TECHNOLOGY_RE.search(query) and not _CONSUMER_RE.search(query) and not _INDUSTRIAL_RE.search(query):
+    if ticker_hint and _FINANCIAL_RE.search(query) and not _TECHNOLOGY_RE.search(query) and not _CONSUMER_RE.search(query) and not _INDUSTRIAL_RE.search(query) and not _ENERGY_RE.search(query):
         selected.append("GET_FINANCIAL_VALUATION")
         reasons["GET_FINANCIAL_VALUATION"] = "authoritative_financial_subsector_valuation"
     if ticker_hint and _TECHNOLOGY_RE.search(query):
@@ -148,6 +151,10 @@ def plan_tools(question: str, *, ticker_hint: str | None = None) -> dict[str, An
     if ticker_hint and _INDUSTRIAL_RE.search(query):
         selected.append("GET_INDUSTRIAL_VALUATION")
         reasons["GET_INDUSTRIAL_VALUATION"] = "authoritative_industrial_cycle_and_valuation"
+    if ticker_hint and _ENERGY_RE.search(query):
+        selected.extend(["GET_ENERGY_RESEARCH_CONTEXT","GET_ENERGY_VALUATION"])
+        reasons["GET_ENERGY_RESEARCH_CONTEXT"] = "authoritative_energy_business_model_and_evidence_requirements"
+        reasons["GET_ENERGY_VALUATION"] = "authoritative_energy_cycle_project_and_valuation"
     names = list(dict.fromkeys(selected))
     tools = [get_tool(name) for name in names]
     return {

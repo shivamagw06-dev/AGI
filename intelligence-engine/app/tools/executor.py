@@ -252,4 +252,8 @@ def build_core_read_executor(
     handlers["GET_CONSUMER_VALUATION"] = evaluate_consumer_company
     from industrial_valuation.service import evaluate_industrial_company
     handlers["GET_INDUSTRIAL_VALUATION"] = evaluate_industrial_company
+    from energy_valuation.service import evaluate_energy_company
+    handlers["GET_ENERGY_VALUATION"] = evaluate_energy_company
+    from energy_valuation.research_context import energy_research_context
+    handlers["GET_ENERGY_RESEARCH_CONTEXT"] = energy_research_context
     return GovernedToolExecutor(handlers)

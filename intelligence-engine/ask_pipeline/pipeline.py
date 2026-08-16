@@ -1270,6 +1270,13 @@ def run_complete_ask(
                 packs["industrial_valuation_intelligence"] = industrial_context
         except Exception:
             pass
+        try:
+            from energy_valuation.research_context import energy_research_context
+            energy_context = energy_research_context(hint)
+            if energy_context.get("status") == "MODEL_CONTEXT":
+                packs["energy_valuation_intelligence"] = energy_context
+        except Exception:
+            pass
     # Soft overlay — reasoning may ignore; does not change governance internals
     packs["framework_selection"] = {
         "ifse_version": framework_selection.get("ifse_version"),
