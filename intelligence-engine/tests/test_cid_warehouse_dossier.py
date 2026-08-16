@@ -27,3 +27,33 @@ def test_build_uses_warehouse_history_and_peers(monkeypatch):
     assert "financial_statements" not in dossier["missing_evidence"]
     assert dossier["peer_comparison"]["peer_group"] == ["TCS"]
     assert any(row["kind"] == "warehouse_evidence" for row in evidence_rows(dossier))
+
+
+def test_build_prefers_master_10y_inr_million_rows(monkeypatch):
+    master = {
+        "symbol": "INFY",
+        "fiscal_year": "FY2025",
+        "revenue": 100,
+        "source": "capital_iq_workbook",
+        "statement_version": "capiq_master_10y_fy2025",
+        "_meta": {"reported_unit": "inr_million", "unit_scale": 1.0},
+    }
+    yahoo = {
+        "symbol": "INFY",
+        "fiscal_year": "FY25",
+        "revenue": 100_000_000,
+        "source": "formula_engine",
+        "statement_version": "yahoo",
+    }
+    data = {
+        "company_master": [{"symbol": "INFY", "company_name": "Infosys"}],
+        "financials_annual": [yahoo, master],
+    }
+    monkeypatch.setattr(warehouse_dossier, "_rows", lambda table, ticker, limit: data.get(table, []))
+
+    dossier = warehouse_dossier.build("INFY")
+
+    assert dossier["financial_statements"]["income_statement"]["annual"] == [master]
+    assert dossier["financial_statements"]["warehouse_annual_all_sources"] == [yahoo, master]
+    assert dossier["financial_statements"]["canonical_source"]["dataset"] == "Master_10Y_India.xlsx"
+    assert dossier["financial_statements"]["canonical_source"]["reported_unit"] == "inr_million"

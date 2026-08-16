@@ -200,6 +200,15 @@ def identify_gaps(
             leo_missing.append(t)
 
     cid_missing = list(cid.get("missing_evidence") or [])
+    fs = cid.get("financial_statements") or {}
+    has_canonical_financials = bool(
+        (fs.get("income_statement") or {}).get("annual")
+        and (fs.get("balance_sheet") or {}).get("annual")
+        and (fs.get("cash_flow") or {}).get("annual")
+    )
+    if has_canonical_financials:
+        leo_missing = [item for item in leo_missing if item != "financial_statements"]
+        cid_missing = [item for item in cid_missing if item != "financial_statements"]
     # Map CID categories into LEO-type targets
     for cat in cid_missing:
         leo_t = CID_TO_LEO.get(cat)
@@ -254,7 +263,11 @@ def identify_gaps(
         "blocked_before": blocked,
         "leo_missing": leo_missing,
         "cid_missing": cid_missing,
-        "must_have_missing": list(gate.get("must_have_missing") or []),
+        "must_have_missing": [
+            item
+            for item in (gate.get("must_have_missing") or [])
+            if not (has_canonical_financials and item == "financial_statements")
+        ],
         "target_leo_types": target_leo_types,
         "item_gaps": all_item_gaps,
         "flat_missing": flat_missing,

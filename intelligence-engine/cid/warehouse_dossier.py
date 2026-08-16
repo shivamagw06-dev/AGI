@@ -31,6 +31,17 @@ def _rows(table: str, ticker: str, limit: int) -> list[dict[str, Any]]:
     return list(store.all_rows(table, entity=ticker, limit=limit) or [])
 
 
+def _master_10y_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Return the canonical Capital IQ Master 10Y observations when available."""
+    master = [
+        row
+        for row in rows
+        if str(row.get("source") or "").lower() == "capital_iq_workbook"
+        and "capiq_master_10y" in str(row.get("statement_version") or "").lower()
+    ]
+    return master or rows
+
+
 def build(ticker: str) -> dict[str, Any]:
     """Build an OpenAI-ready factual dossier without live provider calls."""
     t = str(ticker or "").strip().upper()
@@ -62,14 +73,23 @@ def build(ticker: str) -> dict[str, Any]:
         }
     )
 
-    annual = evidence.get("financials_annual") or []
+    all_annual = evidence.get("financials_annual") or []
+    annual = _master_10y_rows(all_annual)
     quarterly = evidence.get("financials_quarterly") or []
     ratios = evidence.get("historical_ratios") or []
     valuations = evidence.get("historical_valuation") or []
     peers = evidence.get("peer_relationships") or []
     ownership = evidence.get("ownership") or []
     dossier["financial_statements"]["warehouse_annual"] = annual
+    dossier["financial_statements"]["warehouse_annual_all_sources"] = all_annual
     dossier["financial_statements"]["warehouse_quarterly"] = quarterly
+    dossier["financial_statements"]["canonical_source"] = {
+        "dataset": "Master_10Y_India.xlsx" if annual and annual is not all_annual else "institutional_warehouse",
+        "provider": "S&P Capital IQ" if annual and annual is not all_annual else None,
+        "reported_unit": "inr_million" if annual and annual is not all_annual else None,
+        "annual_periods": len(annual),
+        "policy": "canonical_annual_financials",
+    }
     # Warehouse rows are normalized three-statement observations. Mirror them
     # into the canonical statement buckets so coverage/gap engines recognize
     # the evidence without duplicating storage or changing provenance.

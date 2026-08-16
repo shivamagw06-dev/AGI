@@ -71,6 +71,33 @@ def test_identify_gaps_for_blocked_investment():
         },
     )
     assert gaps["blocked_before"] is True
+
+
+def test_master_10y_financials_clear_generic_financial_statement_gap():
+    rows = [{"fiscal_year": "FY2025", "source": "capital_iq_workbook"}]
+    gaps = identify_gaps(
+        ticker="INFY",
+        leo_pkg={
+            "quality_gate": {
+                "must_have_missing": ["financial_statements", "annual_report"],
+                "missing_evidence": ["financial_statements", "annual_report"],
+            }
+        },
+        cid={
+            "ticker": "INFY",
+            "missing_evidence": ["financial_statements", "annual_reports"],
+            "financial_statements": {
+                "income_statement": {"annual": rows},
+                "balance_sheet": {"annual": rows},
+                "cash_flow": {"annual": rows},
+            },
+        },
+    )
+
+    assert "financial_statements" not in gaps["leo_missing"]
+    assert "financial_statements" not in gaps["cid_missing"]
+    assert "financial_statements" not in gaps["must_have_missing"]
+    assert "annual_report" in gaps["leo_missing"]
     assert "market_data" in gaps["target_leo_types"]
     assert "valuation_metrics" in gaps["target_leo_types"]
     assert gaps["missing_count"] >= 1
