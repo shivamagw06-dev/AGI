@@ -77,6 +77,22 @@ def test_read_status_reports_paused_configuration_not_stale_worker(monkeypatch, 
     assert status["snapshot_stale"] is True
 
 
+def test_force_paused_campaign_exits_without_generating(monkeypatch, tmp_path):
+    monkeypatch.setenv("KIP_DATA_DIR", str(tmp_path))
+    monkeypatch.setenv("CID_DOSSIER_PAUSED", "false")
+    monkeypatch.setenv("CID_DOSSIER_WORKER_ENABLED", "true")
+    monkeypatch.setattr(worker, "CAMPAIGN_FORCE_PAUSED", True)
+    monkeypatch.setattr(worker, "eligible_queue", lambda **kwargs: (_ for _ in ()).throw(AssertionError("queue must not run")))
+
+    worker.run_forever()
+
+    status = worker.read_status()
+    assert status["status"] == "paused"
+    assert status["workers"] == 0
+    assert status["active"] == []
+    assert status["reason"] == "campaign_force_paused"
+
+
 def test_queue_reprocesses_fresh_legacy_versions(monkeypatch):
     monkeypatch.setattr(worker, "warehouse_universe", lambda: ["INFY"])
     monkeypatch.setattr(

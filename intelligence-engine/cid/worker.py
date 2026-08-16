@@ -20,6 +20,9 @@ STOP = Event()
 DEFAULT_WORKERS = 4
 MAX_WORKERS = 15
 DEFAULT_SPRINT_MODE = False
+# Operational kill switch. Keep the dossier campaign stopped until a deliberate
+# code review re-enables it; Render may retain older Blueprint environment values.
+CAMPAIGN_FORCE_PAUSED = True
 
 
 def _now() -> str:
@@ -40,7 +43,7 @@ def write_status(payload: dict[str, Any]) -> None:
 
 
 def read_status() -> dict[str, Any]:
-    paused = os.environ.get("CID_DOSSIER_PAUSED", "true").strip().lower() in {"1", "true", "yes"}
+    paused = CAMPAIGN_FORCE_PAUSED or os.environ.get("CID_DOSSIER_PAUSED", "true").strip().lower() in {"1", "true", "yes"}
     enabled = os.environ.get("CID_DOSSIER_WORKER_ENABLED", "true").strip().lower() not in {
         "0",
         "false",
@@ -194,6 +197,14 @@ def _generate(ticker: str) -> dict[str, Any]:
 
 
 def run_forever() -> None:
+    if CAMPAIGN_FORCE_PAUSED:
+        write_status({
+            "status": "paused",
+            "workers": 0,
+            "active": [],
+            "reason": "campaign_force_paused",
+        })
+        return
     sprint_default = "true" if DEFAULT_SPRINT_MODE else "false"
     sprint_mode = os.environ.get("CID_DOSSIER_SPRINT_MODE", sprint_default).strip().lower() in {"1", "true", "yes"}
     configured_workers = MAX_WORKERS if sprint_mode else int(os.environ.get("CID_DOSSIER_WORKERS", str(DEFAULT_WORKERS)))
