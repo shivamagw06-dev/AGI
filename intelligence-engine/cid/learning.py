@@ -11,6 +11,7 @@ from threading import Lock
 from typing import Any
 
 from cid.coverage import compute_coverage
+from cid.dossier_spec import DOSSIER_SPEC_VERSION, SECTIONS, audit_research
 from cid.persistence import save_version
 from cid.store import get_cid_store
 
@@ -134,26 +135,33 @@ def compose(ticker: str, dossier: dict[str, Any], *, reason: str) -> dict[str, A
     ids = {str(row.get("kind")): str(row.get("id")) for row in rows}
     warehouse_id = ids.get("warehouse_evidence")
     section_sources = {
-        "company_overview": (ids.get("identity"), identity),
+        "company_identity": (ids.get("identity"), identity),
         "business_model": (ids.get("business_profile"), dossier.get("business_profile")),
+        "industry_economics": (ids.get("industry_intelligence") or ids.get("sector_framework"), dossier.get("industry_intelligence") or dossier.get("sector_framework")),
         "competitive_position": (ids.get("peer_comparison"), dossier.get("peer_comparison")),
-        "management_assessment": (ids.get("management"), dossier.get("management")),
+        "management_governance": (ids.get("management"), dossier.get("management")),
+        "financial_performance": (ids.get("financial_statements"), dossier.get("financial_statements")),
+        "sector_kpis": (ids.get("sector_kpis"), dossier.get("sector_kpis")),
+        "earnings_quality": (ids.get("financial_metrics"), dossier.get("financial_metrics")),
         "capital_allocation": (ids.get("financial_statements"), dossier.get("financial_statements")),
-        "financial_quality": (ids.get("financial_metrics"), dossier.get("financial_metrics")),
-        "growth_drivers": (warehouse_id, _block(dossier, "research_intelligence")),
-        "risks": (warehouse_id, _block(dossier, "research_intelligence")),
+        "balance_sheet_risk": (ids.get("financial_statements"), dossier.get("financial_statements")),
+        "valuation": (ids.get("valuation"), dossier.get("valuation")),
+        "scenarios": (ids.get("scenario_analysis") or ids.get("valuation"), dossier.get("scenario_analysis") or (dossier.get("valuation") or {}).get("scenarios")),
         "catalysts": (ids.get("announcements"), dossier.get("announcements")),
-        "valuation_context": (ids.get("valuation"), dossier.get("valuation")),
-        "investment_thesis": (warehouse_id, _block(dossier, "research_intelligence")),
-        "invalidation_conditions": (ids.get("financial_metrics"), dossier.get("financial_metrics")),
-        "monitoring_questions": (warehouse_id, dossier.get("evidence_timeline")),
-        "evidence_gaps": (ids.get("identity"), dossier.get("missing_evidence")),
+        "risks": (warehouse_id, _block(dossier, "research_intelligence")),
+        "causal_map": (ids.get("causal_intelligence"), dossier.get("causal_intelligence")),
+        "market_implied_expectations": (ids.get("valuation"), dossier.get("valuation")),
+        "thesis_change_conditions": (warehouse_id, _block(dossier, "research_intelligence")),
+        "monitoring_dashboard": (warehouse_id, dossier.get("evidence_timeline")),
+        "evidence_gaps": (ids.get("evidence_completion") or ids.get("identity"), dossier.get("evidence_completion") or dossier.get("missing_evidence")),
+        "sources_provenance": (warehouse_id, dossier.get("evidence_timeline") or dossier.get("warehouse_evidence")),
     }
     sections: dict[str, Any] = {}
     narrative_parts = [
         f"{company} is covered through AGI's institutional warehouse under ticker {ticker}.",
     ]
-    for name, (eid, source) in section_sources.items():
+    for name in SECTIONS:
+        eid, source = section_sources.get(name, (None, None))
         facts = _sentences(source, limit=max(1, round(float((profile.get("section_claims") or {}).get(name) or 2))))
         summary = " ".join(facts) if facts else f"AGI does not yet hold sufficient verified evidence for {name.replace('_', ' ')}."
         evidence_ids = [eid] if facts and eid else []
@@ -162,6 +170,8 @@ def compose(ticker: str, dossier: dict[str, Any], *, reason: str) -> dict[str, A
             "claims": facts[:10],
             "evidence_ids": evidence_ids,
             "confidence": 0.62 if facts else 0.2,
+            "status": "SUPPORTED" if facts and eid else "DATA_REQUIRED",
+            "missing_fields": [] if facts and eid else [name],
         }
         if facts and name != "evidence_gaps":
             narrative_parts.append(summary)
@@ -177,7 +187,9 @@ def compose(ticker: str, dossier: dict[str, Any], *, reason: str) -> dict[str, A
         "generated_at": now,
         "provider": "agi",
         "model": "deterministic_learned_dossier_composer",
-        "generator_version": PROFILE_VERSION,
+        "generator_version": "cid-openai-v2",
+        "composer_version": PROFILE_VERSION,
+        "dossier_spec_version": DOSSIER_SPEC_VERSION,
         "evidence_count": len(cited),
         "policy": "learned_structure_grounded_fallback",
         "fallback_reason": reason,
@@ -185,12 +197,13 @@ def compose(ticker: str, dossier: dict[str, Any], *, reason: str) -> dict[str, A
         "learned_from_examples": int(profile.get("successful_examples") or 0),
         "learning_maturity": readiness().get("maturity"),
     }
+    research["quality_audit"] = audit_research(research)
     updated = dict(dossier)
     updated["openai_research"] = research
     updated["dossier_generation"] = {
         "status": "complete_fallback",
         "generated_at": now,
-        "generator_version": PROFILE_VERSION,
+        "generator_version": "cid-openai-v2",
         "model": research["model"],
     }
     updated.update(compute_coverage(updated))

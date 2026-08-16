@@ -39,6 +39,10 @@ def test_fallback_is_explicit_and_persisted(monkeypatch, tmp_path):
     assert out["ok"] is True
     assert out["research"]["provider"] == "agi"
     assert out["research"]["quality_status"] == "not_equivalent_to_openai_model_reasoning"
+    assert out["research"]["generator_version"] == "cid-openai-v2"
+    assert out["research"]["dossier_spec_version"] == "institutional-dossier-v2"
+    assert len(out["research"]["sections"]) == 20
+    assert out["dossier"]["dossier_generation"]["generator_version"] == "cid-openai-v2"
     valid_ids = {row["id"] for row in evidence_rows(dossier)}
     cited_ids = {
         evidence_id

@@ -161,8 +161,16 @@ def _generate(ticker: str) -> dict[str, Any]:
     if not result.get("ok"):
         from cid.learning import compose, readiness
 
-        if readiness().get("ready"):
-            result = compose(ticker, dossier, reason=str(result.get("error") or "openai_unavailable"))
+        allow_fallback = os.environ.get("CID_DOSSIER_ALLOW_FALLBACK", "false").strip().lower() in {"1", "true", "yes"}
+        if allow_fallback and readiness().get("ready"):
+            reason = ": ".join(
+                value for value in (
+                    str(result.get("error") or "openai_unavailable"),
+                    str(result.get("error_type") or ""),
+                    str(result.get("message") or ""),
+                ) if value
+            )
+            result = compose(ticker, dossier, reason=reason)
     persisted = (result.get("persistence") or {}).get("persisted")
     if result.get("ok") and not persisted:
         return {
@@ -179,6 +187,8 @@ def _generate(ticker: str) -> dict[str, Any]:
         "message": result.get("message"),
         "version": (result.get("persistence") or {}).get("version"),
         "fallback": bool(result.get("fallback")),
+        "error_type": result.get("error_type"),
+        "message": result.get("message"),
         "runtime_seconds": round(time.monotonic() - started, 2),
     }
 

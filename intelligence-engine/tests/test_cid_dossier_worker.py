@@ -99,3 +99,15 @@ def test_generate_can_disable_live_enrichment(monkeypatch):
     monkeypatch.setattr(worker, "generate", lambda ticker, dossier: {"ok": True, "persistence": {"persisted": True, "version": 1}})
     out = worker._generate("INFY")
     assert out["ok"] is True
+
+
+def test_campaign_does_not_persist_fallback_by_default(monkeypatch):
+    monkeypatch.setenv("CID_DOSSIER_LIVE_ENRICHMENT_ENABLED", "false")
+    monkeypatch.setenv("CID_OPENAI_ENABLED", "true")
+    monkeypatch.delenv("CID_DOSSIER_ALLOW_FALLBACK", raising=False)
+    monkeypatch.setattr("cid.warehouse_dossier.build", lambda ticker: {"ticker": ticker})
+    monkeypatch.setattr(worker, "generate", lambda ticker, dossier: {"ok": False, "error": "openai_generation_failed", "error_type": "RateLimitError"})
+    out = worker._generate("INFY")
+    assert out["ok"] is False
+    assert out["error"] == "openai_generation_failed"
+    assert out["error_type"] == "RateLimitError"
