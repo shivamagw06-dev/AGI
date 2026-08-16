@@ -21,5 +21,9 @@ def test_build_uses_warehouse_history_and_peers(monkeypatch):
     dossier = warehouse_dossier.build("INFY")
     assert dossier["identity"]["company_name"] == "Infosys"
     assert dossier["financial_statements"]["warehouse_annual"][0]["period"] == "FY25"
+    assert dossier["financial_statements"]["income_statement"]["annual"][0]["period"] == "FY25"
+    assert dossier["financial_statements"]["balance_sheet"]["annual"][0]["period"] == "FY25"
+    assert dossier["financial_statements"]["cash_flow"]["annual"][0]["period"] == "FY25"
+    assert "financial_statements" not in dossier["missing_evidence"]
     assert dossier["peer_comparison"]["peer_group"] == ["TCS"]
     assert any(row["kind"] == "warehouse_evidence" for row in evidence_rows(dossier))

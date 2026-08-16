@@ -192,6 +192,8 @@ def generate(ticker: str, dossier: dict[str, Any]) -> dict[str, Any]:
         "name the missing fields, and avoid generic filler. Use CONFLICT, STALE or PIT_LIMITED when the "
         "evidence says so. Distinguish reported facts, deterministic calculations and inference. Keep each "
         "section concise, avoid repeating the narrative, and include no more than four material claims. Also write "
+        "Preserve every reported unit and scale exactly; never compare or aggregate figures with incompatible or "
+        "unknown units, and state the limitation when scale metadata is absent. Also write "
         "long_company_narrative as one cohesive 700-900 word "
         "institutional paragraph covering the company's evolution, operating model, revenue and cost "
         "economics, competitive position, management and capital allocation, financial character, "

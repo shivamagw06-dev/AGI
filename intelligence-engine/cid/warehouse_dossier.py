@@ -70,6 +70,12 @@ def build(ticker: str) -> dict[str, Any]:
     ownership = evidence.get("ownership") or []
     dossier["financial_statements"]["warehouse_annual"] = annual
     dossier["financial_statements"]["warehouse_quarterly"] = quarterly
+    # Warehouse rows are normalized three-statement observations. Mirror them
+    # into the canonical statement buckets so coverage/gap engines recognize
+    # the evidence without duplicating storage or changing provenance.
+    for statement in ("income_statement", "balance_sheet", "cash_flow"):
+        dossier["financial_statements"][statement]["annual"] = annual
+        dossier["financial_statements"][statement]["quarterly"] = quarterly
     dossier["financial_metrics"] = {
         "latest": ratios[-1] if ratios else {},
         "historical_ratios": ratios,
