@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections import Counter
 from datetime import datetime, timezone
+import time
 from typing import Any
 
 CORE_50: tuple[tuple[str, str, str, str], ...] = (
@@ -59,12 +60,25 @@ CORE_50: tuple[tuple[str, str, str, str], ...] = (
     ("global_risk", "global", "Global Risk Indicator", "daily"),
 )
 
+_PUBLIC_CACHE: dict[tuple[str, int], tuple[float, list[dict[str, Any]]]] = {}
+
 
 def _warehouse_rows(table: str, limit: int = 5000) -> list[dict[str, Any]]:
     if table.startswith("macro_public_"):
         try:
             from macro_intelligence_engine.public_ingestion import _rest
-            return list(_rest(table, query=f"?select=*&limit={int(limit)}") or [])
+            requested=max(1,int(limit)); cache_key=(table,requested); now=time.monotonic()
+            cached=_PUBLIC_CACHE.get(cache_key)
+            if cached and now-cached[0] < 20:
+                return list(cached[1])
+            rows=[]; page_size=min(1000,requested)
+            for offset in range(0,requested,page_size):
+                page=list(_rest(table,query=f"?select=*&limit={page_size}&offset={offset}") or [])
+                rows.extend(page)
+                if len(page) < page_size: break
+            result=rows[:requested]
+            _PUBLIC_CACHE[cache_key]=(now,result)
+            return list(result)
         except Exception:
             return []
     try:

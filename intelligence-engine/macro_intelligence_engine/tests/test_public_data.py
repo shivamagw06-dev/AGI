@@ -92,3 +92,19 @@ def test_g20_source_plan_does_not_treat_catalogue_as_evidence(monkeypatch):
     assert result["cells"] == 171
     assert result["status_counts"] == {"PLANNED": 171}
     assert result["calculation_gate"] == "BLOCKED"
+
+
+def test_public_warehouse_reader_paginates_rest_results(monkeypatch):
+    from macro_intelligence_engine import public_data
+
+    public_data._PUBLIC_CACHE.clear()
+    calls = []
+    def fake_rest(_table, query=""):
+        calls.append(query)
+        if "offset=0" in query: return [{"id": index} for index in range(1000)]
+        if "offset=1000" in query: return [{"id": index} for index in range(1000, 1500)]
+        return []
+    monkeypatch.setattr("macro_intelligence_engine.public_ingestion._rest", fake_rest)
+    rows = public_data._warehouse_rows("macro_public_observations", limit=5000)
+    assert len(rows) == 1500
+    assert len(calls) == 2
