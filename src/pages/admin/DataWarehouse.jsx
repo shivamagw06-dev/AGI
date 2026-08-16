@@ -41,7 +41,7 @@ function downloadCsv(filename, csv) {
   URL.revokeObjectURL(url);
 }
 
-export default function DataWarehouse({ initialTabId = 'company_master' }) {
+export default function DataWarehouse({ initialTabId = 'company_master', focused = false }) {
   const { user } = useAuth() || {};
   const [searchParams] = useSearchParams();
   const [workbook, setWorkbook] = useState(null);
@@ -74,6 +74,7 @@ export default function DataWarehouse({ initialTabId = 'company_master' }) {
   );
 
   const columns = sheet?.columns || activeTab?.columns || [];
+  const visibleTabs = focused ? (workbook?.tabs || []).filter((tab) => tab.id === activeTabId) : (workbook?.tabs || []);
 
   /* --------------------------------------------------------------- loading */
 
@@ -287,7 +288,7 @@ export default function DataWarehouse({ initialTabId = 'company_master' }) {
       ) : null}
 
       <nav className="wh-tabstrip">
-        {(workbook?.tabs || []).map((tab) => (
+        {visibleTabs.map((tab) => (
           <button
             key={tab.id}
             type="button"
@@ -303,7 +304,12 @@ export default function DataWarehouse({ initialTabId = 'company_master' }) {
 
       {activeTab ? (
         <div className="wh-tabmeta">
-          <p>{activeTab.description}</p>
+          <p>
+            {activeTab.description}
+            {activeTabId === 'sector_evidence_matrix'
+              ? ' Start with DATA_REQUIRED rows; enter the value, stated unit, period, publication date and primary-source URL.'
+              : ''}
+          </p>
           <div className="wh-tabmeta-flags">
             {activeTab.read_only ? <span className="wh-pill is-locked">calculated · read only</span> : null}
             {activeTab.append_only ? <span className="wh-pill is-append">append only</span> : null}

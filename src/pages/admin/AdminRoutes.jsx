@@ -102,7 +102,7 @@ export default function AdminRoutes() {
           <Route path="valuation-terminal" element={<ValuationTerminal />} />
           {/* Full-bleed Institutional Data Warehouse — the workbook every engine reads */}
           <Route path="data-warehouse" element={<DataWarehouse />} />
-          <Route path="sector-evidence-audit" element={<DataWarehouse initialTabId="sector_evidence_matrix" />} />
+          <Route path="sector-evidence-audit" element={<DataWarehouse initialTabId="sector_evidence_matrix" focused />} />
           {/* Full-bleed Historical Coverage — how deep the warehouse actually goes */}
           <Route path="historical-coverage" element={<HistoricalCoverage />} />
           {/* Full-bleed Upstox full-universe valuation bootstrap (Phase 7.4d) */}

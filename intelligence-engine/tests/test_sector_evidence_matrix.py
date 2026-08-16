@@ -19,6 +19,9 @@ def test_completed_phases_seed_editable_missing_data_matrix(monkeypatch, tmp_pat
         "Phase 4 - Industrials", "Phase 5 - Energy",
     }
     assert all(row["status"] in {"SUPPORTED", "DATA_REQUIRED"} for row in page["rows"])
+    assert all(row["company_name"] for row in page["rows"])
+    assert all(row["metric_label"] and row["definition"] for row in page["rows"])
+    assert all(row["expected_unit"] and row["source_guidance"] for row in page["rows"])
 
 
 def test_sync_does_not_overwrite_manual_evidence(monkeypatch, tmp_path):
