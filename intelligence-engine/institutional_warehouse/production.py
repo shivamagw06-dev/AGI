@@ -88,6 +88,9 @@ def sheet(
 ) -> dict[str, Any]:
     if not find_tab(tab_id):
         return {"ok": False, "error": f"unknown_tab:{tab_id}"}
+    if tab_id == "sector_evidence_matrix":
+        from institutional_warehouse.sector_evidence import sync
+        sync()
     page = store.fetch(tab_id, entity=entity, filters=filters, search=q, sort=sort,
                        order=order, limit=limit, offset=offset)
     tab = get_tab(tab_id)

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import {
   ArrowLeft,
   Database,
@@ -41,12 +41,14 @@ function downloadCsv(filename, csv) {
   URL.revokeObjectURL(url);
 }
 
-export default function DataWarehouse() {
+export default function DataWarehouse({ initialTabId = 'company_master' }) {
   const { user } = useAuth() || {};
+  const [searchParams] = useSearchParams();
   const [workbook, setWorkbook] = useState(null);
   const [health, setHealth] = useState(null);
   const [role, setRole] = useState(null);
-  const [activeTabId, setActiveTabId] = useState('company_master');
+  const requestedTab = searchParams.get('tab') || initialTabId;
+  const [activeTabId, setActiveTabId] = useState(requestedTab);
   const [sheet, setSheet] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -224,7 +226,7 @@ export default function DataWarehouse() {
             <ArrowLeft size={13} /> Admin
           </Link>
           <h1>
-            <Database size={16} /> Institutional Data Warehouse
+            <Database size={16} /> {activeTabId === 'sector_evidence_matrix' ? 'Sector Missing Data Workbook' : 'Institutional Data Warehouse'}
           </h1>
           <span className="wh-sub">
             {health ? `${health.total_rows?.toLocaleString()} rows · ${health.dialect}` : 'connecting…'}

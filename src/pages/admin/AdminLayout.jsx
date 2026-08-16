@@ -62,6 +62,7 @@ const authorNavItems = [
 const navItems = [
   { to: '/admin', label: 'Dashboard', icon: LayoutDashboard, end: true },
   { to: '/admin/data-warehouse', label: 'Data Warehouse', icon: Database },
+  { to: '/admin/sector-evidence-audit', label: 'Sector Missing Data', icon: FileSpreadsheet },
   { to: '/admin/financial-warehouse', label: 'Financial Warehouse', icon: Database },
   { to: '/admin/financial-coverage', label: 'Financial Coverage', icon: CalendarRange },
   { to: '/admin/company-financials', label: 'Company Financials', icon: FileSpreadsheet },

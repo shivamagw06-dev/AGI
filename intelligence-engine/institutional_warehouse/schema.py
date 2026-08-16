@@ -2173,6 +2173,48 @@ MACRO_RUNTIME = Tab(
     ),
 )
 
+# Manual evidence workbook for the completed sector-valuation curricula.  This
+# is deliberately separate from certification: a filled cell is evidence, not
+# permission to promote an investment model.
+SECTOR_EVIDENCE_MATRIX = Tab(
+    id="sector_evidence_matrix",
+    label="Sector Missing Data",
+    description="Company x KPI evidence gaps for completed valuation phases. Fill manually or import CSV.",
+    mode="master",
+    key=("phase", "symbol", "subsector", "metric"),
+    order_by=("phase", "subsector", "symbol", "metric"),
+    entity_column="symbol",
+    search_columns=("phase", "symbol", "subsector", "metric", "source", "status"),
+    icon="spreadsheet",
+    notes=(
+        "Manual evidence does not certify a company or strategy.",
+        "Use decimal units for ratios unless the source explicitly reports percentages.",
+        "Every supported value requires period, PIT date and source.",
+    ),
+    columns=(
+        _c("phase", "Phase", TEXT, editable=False, required=True, width=150, group="Curriculum"),
+        _c("symbol", "Company", TEXT, editable=False, required=True, width=130, group="Company"),
+        _c("subsector", "Subsector", TEXT, editable=False, required=True, width=210, group="Curriculum"),
+        _c("metric", "Required KPI", TEXT, editable=False, required=True, width=220, group="Evidence"),
+        _c("required", "Required", BOOL, editable=False, width=90, group="Evidence"),
+        _c("available", "Available", BOOL, width=100, group="Evidence"),
+        _c("value", "Value", NUMBER, width=130, group="Manual Entry"),
+        _c("unit", "Unit", TEXT, width=120, group="Manual Entry"),
+        _c("period", "Period", TEXT, width=130, group="Manual Entry"),
+        _c("publication_date", "Publication Date", DATE, width=150, group="Point in Time"),
+        _c("as_of_date", "As Of Date", DATE, width=130, group="Point in Time"),
+        _c("pit_valid", "PIT Valid", BOOL, width=100, group="Point in Time"),
+        _c("source", "Source / URL", TEXT, width=260, group="Provenance"),
+        _c("evidence", "Evidence Note", TEXT, width=320, group="Provenance"),
+        _c("quality", "Quality", TEXT, width=120, group="Validation",
+           options=("HIGH", "MEDIUM", "LOW", "UNREVIEWED")),
+        _c("status", "Status", TEXT, required=True, width=140, group="Validation",
+           options=("SUPPORTED", "PARTIAL", "DATA_REQUIRED", "CONFLICT", "STALE", "PIT_INVALID")),
+        _c("review_notes", "Review Notes", TEXT, width=280, group="Validation"),
+        _c("last_updated", "Last Updated", DATETIME, editable=False, width=170, group="Provenance"),
+    ),
+)
+
 TABS: tuple[Tab, ...] = (
     COMPANY_MASTER,
     PROFILE_HISTORY,
@@ -2236,6 +2278,7 @@ TABS: tuple[Tab, ...] = (
     MACRO_ALERTS,
     MACRO_CALENDAR,
     MACRO_RUNTIME,
+    SECTOR_EVIDENCE_MATRIX,
     HEDGE_FUND_FACTORS,
     COMPANY_INTELLIGENCE,
     DATA_QUALITY,
