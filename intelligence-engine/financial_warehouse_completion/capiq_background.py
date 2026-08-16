@@ -26,8 +26,8 @@ from institutional_warehouse.values import now_iso
 
 CHUNK_SIZE = 500
 RECALC_STAGES = ("statement_derivations", "ratios", "annual_sector_ratios", "valuation", "factors", "quality")
-CODE_VERSION = "CAPIQ_BACKGROUND_V1"
-SCHEMA_VERSION = "CAPIQ_V2"
+CODE_VERSION = "CAPIQ_BACKGROUND_V1.1"
+SCHEMA_VERSION = "CAPIQ_V3"
 ACTIVE = ("QUEUED", "RUNNING")
 FINAL = ("FAILED", "COMPLETED", "COMPLETED_WITH_WARNINGS")
 _LOCK = threading.RLock()
