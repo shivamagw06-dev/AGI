@@ -7,7 +7,7 @@ from typing import Any
 
 ENGINE_CODE = "valuation_intelligence"
 ENGINE_NAME = "Valuation Intelligence"
-VERSION = "p2.2-v1.1.0"
+VERSION = "p2.2-v1.2.0"
 WORKSTREAM_ID = "P2.2"
 MILESTONE = "phase_2_2"
 PROGRAMME = "AGIB_VALUATION_INTELLIGENCE"

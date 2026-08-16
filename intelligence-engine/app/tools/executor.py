@@ -256,4 +256,6 @@ def build_core_read_executor(
     handlers["GET_ENERGY_VALUATION"] = evaluate_energy_company
     from energy_valuation.research_context import energy_research_context
     handlers["GET_ENERGY_RESEARCH_CONTEXT"] = energy_research_context
+    from valuation_intelligence.screen import screen_relative_valuation
+    handlers["SCREEN_RELATIVE_VALUATION"] = screen_relative_valuation
     return GovernedToolExecutor(handlers)
