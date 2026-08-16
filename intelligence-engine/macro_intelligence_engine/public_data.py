@@ -222,3 +222,55 @@ def g20_matrix() -> dict[str, Any]:
         "blocked_outputs": ["country_scores", "rankings", "macro_regimes", "investment_implications"],
         "policy": "Tier C harmonized observations only. Coverage is not validation. No country score, rank or regime is inferred.",
     }
+
+
+def g20_source_plan() -> dict[str, Any]:
+    """Return the governed collection plan reconciled to persisted warehouse data."""
+    from macro_intelligence_engine.g20_source_catalog import COUNTRY_SOURCES, MODULES, catalogue
+
+    registry = _warehouse_rows("macro_public_series_registry", limit=10000)
+    observations = _warehouse_rows("macro_public_observations", limit=10000)
+    registry_by_id = {str(row.get("series_id") or ""): row for row in registry}
+    module_domains = {
+        "central_bank": {"monetary"}, "fiscal": {"fiscal"}, "inflation": {"inflation"},
+        "growth": {"growth", "activity", "labour", "structural"}, "rates": {"monetary"},
+        "liquidity": {"financial", "credit", "monetary"}, "credit": {"financial", "credit"},
+        "fx_external": {"external", "currency"}, "commodities": {"global", "commodities"},
+    }
+    registered_cells = set()
+    observed_cells = set()
+    for series_id, meta in registry_by_id.items():
+        iso3 = str(meta.get("country_code") or "").upper()
+        domain = str(meta.get("domain") or "").lower()
+        for module, domains in module_domains.items():
+            if domain in domains:
+                registered_cells.add((iso3, module))
+    for observation in observations:
+        if observation.get("value_numeric") is None:
+            continue
+        series_id = str(observation.get("series_id") or "")
+        meta = registry_by_id.get(series_id) or {}
+        iso3 = str(observation.get("country_code") or meta.get("country_code") or "").upper()
+        domain = str(meta.get("domain") or "").lower()
+        for module, domains in module_domains.items():
+            if domain in domains:
+                observed_cells.add((iso3, module))
+    rows = []
+    for row in catalogue():
+        iso3 = row["iso3"]
+        key = (iso3, row["module"])
+        state = "OBSERVED_PARTIAL" if key in observed_cells else ("REGISTERED" if key in registered_cells else "PLANNED")
+        rows.append({**row, "status": state})
+    status_counts = Counter(row["status"] for row in rows)
+    return {
+        "ok": True,
+        "catalogue": "G20 x 9 Module Source Plan v1",
+        "economies": len(COUNTRY_SOURCES),
+        "modules": len(MODULES),
+        "cells": len(rows),
+        "source_priority": ["S1 Official Primary", "S2 Official International", "S3 Market Data", "S4 Alternative"],
+        "status_counts": dict(status_counts),
+        "plan": rows,
+        "calculation_gate": "BLOCKED",
+        "policy": "Catalogue presence is not evidence. A module is not validated until mapped observations pass provenance, history, freshness and PIT gates.",
+    }

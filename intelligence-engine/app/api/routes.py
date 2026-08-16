@@ -20688,6 +20688,13 @@ async def mie_g20_matrix():
     return g20_matrix()
 
 
+@router.get("/mie/g20/source-plan")
+async def mie_g20_source_plan():
+    from macro_intelligence_engine.public_data import g20_source_plan
+
+    return g20_source_plan()
+
+
 @router.get("/mie/licensed-capiq/status")
 async def mie_licensed_capiq_status():
     """Aggregate private-import receipt. Never returns licensed observations."""

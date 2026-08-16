@@ -3,7 +3,7 @@ import { Activity, AlertTriangle, ChevronRight, Database, ExternalLink, Globe2, 
 import PageShell from '@/components/Layout/PageShell';
 import AskAgiBar from '@/components/Home/AskAgiBar';
 import DeskResearchFeed from '@/components/Research/DeskResearchFeed';
-import { getMieDataReadiness, getMieG20Matrix, getMieLatestPublicObservations } from '@/lib/intelligenceApi';
+import { getMieDataReadiness, getMieG20Matrix, getMieG20SourcePlan, getMieLatestPublicObservations } from '@/lib/intelligenceApi';
 import './economicsPage.css';
 
 const PULSE = [
@@ -74,19 +74,34 @@ function MacroModules({ byId }) {
   </section>;
 }
 
+function SourceArchitecture({ sourcePlan }) {
+  const [country, setCountry] = useState('IND');
+  const rows = (sourcePlan?.plan || []).filter((row) => row.iso3 === country);
+  const economies = [...new Map((sourcePlan?.plan || []).map((row) => [row.iso3, row.country])).entries()];
+  return <section className="eco-band eco-source-plan">
+    <header className="eco-section-head"><div><span>Collection architecture</span><h2>Official-first G20 source plan</h2></div><Status tone="forecast">{sourcePlan?.calculation_gate || 'BLOCKED'}</Status></header>
+    <div className="eco-source-priority"><div><b>S1</b><span>National official sources</span></div><ChevronRight size={14}/><div><b>S2</b><span>IMF · OECD · BIS · World Bank</span></div><ChevronRight size={14}/><div><b>S3</b><span>Market feeds</span></div><ChevronRight size={14}/><div><b>S4</b><span>Alternative evidence</span></div></div>
+    <div className="eco-source-plan-controls"><label htmlFor="eco-source-country">Economy</label><select id="eco-source-country" value={country} onChange={(event)=>setCountry(event.target.value)}>{economies.map(([iso3,name])=><option value={iso3} key={iso3}>{name}</option>)}</select><span>{sourcePlan?.cells ?? 171} governed economy × module cells</span></div>
+    <div className="eco-source-plan-table"><div className="head"><b>Module</b><b>Primary source</b><b>Validation</b><b>Frequency</b><b>Status</b></div>{rows.map((row)=><div key={row.catalogue_id}><b>{row.module_label}</b><span>{row.primary_source}</span><span>{row.validation_sources.join(' · ')}</span><span>{row.target_frequency}</span><Status tone={row.status === 'OBSERVED_PARTIAL' ? 'stable' : ''}>{row.status.replace('_',' ')}</Status><small>{row.indicators.join(' · ')}</small></div>)}</div>
+    <footer className="eco-source-plan-policy"><ShieldCheck size={14}/><span>{sourcePlan?.policy || 'A planned source is not counted as evidence until an observation is persisted with provenance and PIT metadata.'}</span></footer>
+  </section>;
+}
+
 export default function EconomicsPage() {
   const [view, setView] = useState('g20');
   const [readiness, setReadiness] = useState(null);
   const [publicData, setPublicData] = useState(null);
   const [g20, setG20] = useState(null);
+  const [sourcePlan, setSourcePlan] = useState(null);
   useEffect(() => { document.title = 'Economic Intelligence | AGI'; }, []);
   useEffect(() => {
     let active = true;
-    Promise.allSettled([getMieDataReadiness('India'), getMieLatestPublicObservations('India'), getMieG20Matrix()]).then(([r, o, g]) => {
+    Promise.allSettled([getMieDataReadiness('India'), getMieLatestPublicObservations('India'), getMieG20Matrix(), getMieG20SourcePlan()]).then(([r, o, g, s]) => {
       if (!active) return;
       if (r.status === 'fulfilled') setReadiness(r.value);
       if (o.status === 'fulfilled') setPublicData(o.value);
       if (g.status === 'fulfilled') setG20(g.value);
+      if (s.status === 'fulfilled') setSourcePlan(s.value);
     });
     return () => { active = false; };
   }, []);
@@ -125,6 +140,8 @@ export default function EconomicsPage() {
         })}</div>
         <footer className="eco-g20-footer"><Database size={14}/><span>Source: World Bank Indicators API · Annual latest available · PROVISIONAL · PIT LIMITED</span></footer>
       </section>}
+
+      {view !== 'india' && <SourceArchitecture sourcePlan={sourcePlan} />}
 
       <section className="eco-band eco-regime-terminal">
         <header className="eco-section-head"><div><span>Macro regime</span><h2>Classification withheld until factor history is sufficient</h2></div><Status tone="forecast">DATA BUILDING</Status></header>
