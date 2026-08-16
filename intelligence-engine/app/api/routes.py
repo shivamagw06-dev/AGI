@@ -10268,6 +10268,20 @@ async def hedge_fund_lab_strategy(strategy_id: str):
     return strategy(strategy_id)
 
 
+@router.get("/hedge-fund-lab/long-short/readiness")
+async def hedge_fund_lab_long_short_readiness():
+    from hedge_fund_lab.long_short_equity import readiness
+
+    return readiness()
+
+
+@router.get("/hedge-fund-lab/long-short/research-book")
+async def hedge_fund_lab_long_short_research_book(limit: int = 10):
+    from hedge_fund_lab.long_short_equity import research_book
+
+    return research_book(limit=max(1, min(int(limit or 10), 25)))
+
+
 @router.get("/hedge-fund-lab/regime")
 async def hedge_fund_lab_regime():
     from hedge_fund_lab.scanner import market_regime

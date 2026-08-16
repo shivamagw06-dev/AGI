@@ -72,7 +72,12 @@ def strategy(strategy_id: str) -> dict[str, Any]:
             f"and it breaks when {pack['fails_when'][0].lower()}."
         ),
     }
-    return {"ok": True, **pack, "agi_intelligence": intelligence}
+    out = {"ok": True, **pack, "agi_intelligence": intelligence}
+    if pack["id"] == "long_short_equity":
+        from .long_short_equity import readiness
+
+        out["institutional_platform"] = readiness()
+    return out
 
 
 def compare() -> dict[str, Any]:

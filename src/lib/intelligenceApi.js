@@ -3285,6 +3285,10 @@ export const getHflCompare = () =>
   intelligenceFetch('/hedge-fund-lab/compare', { timeoutMs: 10_000 });
 export const getHflStrategy = (id) =>
   intelligenceFetch(`/hedge-fund-lab/strategy/${encodeURIComponent(id)}`, { timeoutMs: 10_000 });
+export const getHflLongShortReadiness = () =>
+  intelligenceFetch('/hedge-fund-lab/long-short/readiness', { timeoutMs: 10_000 });
+export const getHflLongShortResearchBook = (limit = 10) =>
+  intelligenceFetch(`/hedge-fund-lab/long-short/research-book?limit=${encodeURIComponent(limit)}`, { timeoutMs: 60_000 });
 export const hflCalculate = (kind, payload) =>
   intelligenceFetch(`/hedge-fund-lab/calculate/${encodeURIComponent(kind)}`, {
     method: 'POST',

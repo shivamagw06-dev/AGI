@@ -443,6 +443,32 @@ export function HedgeFundLabSections() {
               </ol>
             </section>
 
+            {detail.id === 'long_short_equity' && detail.institutional_platform ? (
+              <section className="hfl-module">
+                <h3>Long/Short institutional readiness</h3>
+                <p className="hfl-hint">
+                  Lifecycle: <b>{detail.institutional_platform.lifecycle}</b> · Allowed use: {detail.institutional_platform.allowed_use}
+                </p>
+                <div className="hfl-table-wrap">
+                  <table className="hfl-table">
+                    <thead><tr><th>Dataset</th><th>Status</th><th>Evidence</th></tr></thead>
+                    <tbody>
+                      {(detail.institutional_platform.data_foundation || []).map((row) => (
+                        <tr key={row.dataset}>
+                          <td>{String(row.dataset).replaceAll('_', ' ')}</td>
+                          <td><b>{String(row.status).toUpperCase()}</b></td>
+                          <td>{row.detail}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                <p className="hfl-hint">
+                  Execution, position sizing, market-neutral claims and performance claims remain blocked until the validation gates pass.
+                </p>
+              </section>
+            ) : null}
+
             <section className="hfl-module hfl-agi">
               <h3><Gauge size={15} /> AGI Intelligence</h3>
               <p className="hfl-lead">{agi.why_institutions_use_it}</p>
