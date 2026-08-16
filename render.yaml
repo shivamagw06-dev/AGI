@@ -271,7 +271,7 @@ services:
       - key: CID_OPENAI_TIMEOUT_SECONDS
         value: "120"
       - key: CID_OPENAI_MAX_OUTPUT_TOKENS
-        value: "8000"
+        value: "12000"
       - key: ASK_LLM_ENABLED
         value: "true"
       - key: ASK_REASONING_MODEL

@@ -34,6 +34,10 @@ def test_structured_output_schema_requires_every_section():
     assert schema["additionalProperties"] is False
     assert schema["properties"]["sections"]["required"] == list(SECTIONS)
     assert schema["properties"]["sections"]["additionalProperties"] is False
+    section = schema["properties"]["sections"]["properties"][SECTIONS[0]]
+    assert section["properties"]["summary"]["maxLength"] == 500
+    assert section["properties"]["claims"]["maxItems"] == 4
+    assert schema["properties"]["long_company_narrative"]["maxLength"] == 6000
 
 
 def test_missing_key_fails_closed(monkeypatch):

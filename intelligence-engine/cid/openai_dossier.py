@@ -20,15 +20,15 @@ def _response_schema() -> dict[str, Any]:
         "type": "object",
         "additionalProperties": False,
         "properties": {
-            "summary": {"type": "string"},
-            "claims": {"type": "array", "items": {"type": "string"}},
-            "evidence_ids": {"type": "array", "items": {"type": "string"}},
+            "summary": {"type": "string", "maxLength": 500},
+            "claims": {"type": "array", "maxItems": 4, "items": {"type": "string", "maxLength": 280}},
+            "evidence_ids": {"type": "array", "maxItems": 8, "items": {"type": "string"}},
             "confidence": {"type": "number", "minimum": 0, "maximum": 1},
             "status": {
                 "type": "string",
                 "enum": ["SUPPORTED", "PARTIAL", "DATA_REQUIRED", "CONFLICT", "STALE", "PIT_LIMITED"],
             },
-            "missing_fields": {"type": "array", "items": {"type": "string"}},
+            "missing_fields": {"type": "array", "maxItems": 15, "items": {"type": "string", "maxLength": 120}},
         },
         "required": ["summary", "claims", "evidence_ids", "confidence", "status", "missing_fields"],
     }
@@ -36,10 +36,11 @@ def _response_schema() -> dict[str, Any]:
         "type": "object",
         "additionalProperties": False,
         "properties": {
-            "executive_summary": {"type": "string"},
-            "long_company_narrative": {"type": "string"},
+            "executive_summary": {"type": "string", "maxLength": 1600},
+            "long_company_narrative": {"type": "string", "maxLength": 6000},
             "long_company_narrative_evidence_ids": {
                 "type": "array",
+                "maxItems": 30,
                 "items": {"type": "string"},
             },
             "long_company_narrative_confidence": {
@@ -142,20 +143,20 @@ def _normalise(payload: dict[str, Any], valid_ids: set[str]) -> dict[str, Any]:
         section = sections.get(name) if isinstance(sections.get(name), dict) else {}
         claims = section.get("claims") if isinstance(section.get("claims"), list) else []
         clean[name] = {
-            "summary": str(section.get("summary") or "")[:1800],
-            "claims": [str(v)[:800] for v in claims[:10] if str(v).strip()],
+            "summary": str(section.get("summary") or "")[:500],
+            "claims": [str(v)[:280] for v in claims[:4] if str(v).strip()],
             "evidence_ids": [
                 str(v) for v in (section.get("evidence_ids") or []) if str(v) in valid_ids
-            ][:20],
+            ][:8],
             "confidence": max(0.0, min(1.0, float(section.get("confidence") or 0.0))),
             "status": str(section.get("status") or ("SUPPORTED" if section.get("evidence_ids") else "DATA_REQUIRED")),
-            "missing_fields": [str(v)[:160] for v in (section.get("missing_fields") or [])[:30] if str(v).strip()],
+            "missing_fields": [str(v)[:120] for v in (section.get("missing_fields") or [])[:15] if str(v).strip()],
         }
     return {
-        "executive_summary": str(payload.get("executive_summary") or "")[:2400],
+        "executive_summary": str(payload.get("executive_summary") or "")[:1600],
         "long_company_narrative": " ".join(
             str(payload.get("long_company_narrative") or "").split()
-        )[:7000],
+        )[:6000],
         "long_company_narrative_evidence_ids": [
             str(v)
             for v in (payload.get("long_company_narrative_evidence_ids") or [])
@@ -189,8 +190,9 @@ def generate(ticker: str, dossier: dict[str, Any]) -> dict[str, Any]:
         "one or more exact evidence IDs supplied below. If evidence is absent, state the gap. Do not "
         "give buy/sell advice. A section without adequate cited evidence must use status DATA_REQUIRED, "
         "name the missing fields, and avoid generic filler. Use CONFLICT, STALE or PIT_LIMITED when the "
-        "evidence says so. Distinguish reported facts, deterministic calculations and inference. Also write "
-        "long_company_narrative as one cohesive 700-1100 word "
+        "evidence says so. Distinguish reported facts, deterministic calculations and inference. Keep each "
+        "section concise, avoid repeating the narrative, and include no more than four material claims. Also write "
+        "long_company_narrative as one cohesive 700-900 word "
         "institutional paragraph covering the company's evolution, operating model, revenue and cost "
         "economics, competitive position, management and capital allocation, financial character, "
         "growth drivers, risks, catalysts and valuation context. Do not use headings or bullet points "
@@ -211,7 +213,7 @@ def generate(ticker: str, dossier: dict[str, Any]) -> dict[str, Any]:
             model=model,
             instructions=instructions,
             input=input_text,
-            max_output_tokens=int(os.environ.get("CID_OPENAI_MAX_OUTPUT_TOKENS", "8000")),
+            max_output_tokens=int(os.environ.get("CID_OPENAI_MAX_OUTPUT_TOKENS", "12000")),
             text={
                 "format": {
                     "type": "json_schema",
