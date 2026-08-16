@@ -8,6 +8,8 @@ from industrial_valuation.outcomes import build_industrial_outcome
 from industrial_valuation.persistence import seed_industrial_models
 from industrial_valuation.research_context import industrial_research_context
 from industrial_valuation.service import evaluate_industrial_company,required_inputs
+from industrial_valuation.scorecard import DIMENSIONS,build_sector_valuation_scorecard
+from industrial_valuation.validation import VALIDATION_QUESTIONS,cohort_manifest,validate_company_pack
 from app.tools.registry import plan_tools
 
 def obs(value,available_at="2026-08-15",unit="INR million"):
@@ -70,3 +72,25 @@ def test_context_tool_certification_persistence_and_outcome():
     assert seeded["ok"] and seeded["models"]==16 and len(writes)==32
     outcome=build_industrial_outcome(company_id="BEL",subsector="DEFENCE_AEROSPACE",metric="order_book",predicted_value=100,actual_value=90,predicted_at="2026-01-01T00:00:00Z",evaluated_at="2026-08-16T00:00:00Z",source_id="filing")
     assert outcome["status"]=="PROPOSED" and not outcome["trusted_update_allowed"]
+
+def test_formal_validation_cohort_and_uniform_scorecard():
+    manifest=cohort_manifest()
+    assert manifest["subsectors"]==16 and manifest["companies"]>=35
+    assert len(manifest["questions"])==11
+    result=evaluate_industrial_company(company={"symbol":"TATASTEEL"},inputs=inputs("STEEL"),as_of="2026-08-16")
+    card=result["sector_valuation_scorecard"]
+    assert [line["dimension"] for line in card["dimensions"]]==list(DIMENSIONS)
+    assert card["conclusion"]=="RESEARCH_INCOMPLETE"
+    assert all(line["score"] is None for line in card["dimensions"])
+
+def test_company_validation_requires_all_eleven_evidence_answers():
+    result=validate_company_pack(company={"symbol":"TATASTEEL"},inputs=inputs("STEEL"),as_of="2026-08-16",qualitative_evidence={"business_model":{"finding":"Integrated steel producer","source_id":"annual-report"}})
+    assert result["validation_status"]=="VALIDATION_INCOMPLETE"
+    assert result["validation_questions"]["business_model"]["status"]=="SUPPORTED"
+    assert result["validation_questions"]["cycle_position"]["status"]=="DATA_REQUIRED"
+    assert len(result["validation_questions"])==len(VALIDATION_QUESTIONS)
+    assert not result["investment_certified"]
+
+@pytest.mark.parametrize("symbol,family",[("GMRAIRPORT","INFRASTRUCTURE"),("KNRCON","CONSTRUCTION"),("DEEPAKNTR","SPECIALTY_CHEMICALS"),("BOSCHLTD","AUTO_AUTO_COMPONENTS"),("SONACOMS","AUTO_AUTO_COMPONENTS")])
+def test_validation_cohort_symbols_are_classified(symbol,family):
+    assert classify_industrial({"symbol":symbol})["model_family"]==family

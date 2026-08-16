@@ -4,6 +4,8 @@ from typing import Any,Callable
 from industrial_valuation.classification import classify_industrial
 from industrial_valuation.models import CAUSAL,MODELS
 from industrial_valuation.service import required_inputs
+from industrial_valuation.scorecard import DIMENSIONS
+from industrial_valuation.validation import VALIDATION_QUESTIONS
 
 def industrial_research_context(company_id:str,*,loader:Callable[[str],dict[str,Any]]|None=None)->dict[str,Any]:
     ticker=str(company_id or "").upper().strip()
@@ -18,4 +20,4 @@ def industrial_research_context(company_id:str,*,loader:Callable[[str],dict[str,
     classification=classify_industrial({**(master or {}),"symbol":ticker}); family=classification.get("model_family")
     if family not in MODELS:return {"status":"CLASSIFICATION_UNAVAILABLE","company_id":ticker,"classification":classification,"execution_eligible":False}
     model=MODELS[family]
-    return {"status":"MODEL_CONTEXT","company_id":ticker,"classification":classification,"model_version":model.version,"sector_id":model.sector_id,"sector_name":model.sector_name,"business_model":model.economic_structure,"key_kpis":[item.__dict__ for item in model.key_kpis],"valuation_methods":[item.__dict__ for item in model.valuation_methods],"causal_templates":[list(path) for path in CAUSAL[family]],"valuation_drivers":list(model.valuation_drivers),"risks":list(model.valuation_risks),"monitoring":list(model.monitoring_variables),"required_evidence":list(required_inputs(family)),"calculation_authority":"AFE_ONLY","allowed_use":"research_planning_and_reasoning","execution_eligible":False,"investment_certified":False}
+    return {"status":"MODEL_CONTEXT","company_id":ticker,"classification":classification,"model_version":model.version,"sector_id":model.sector_id,"sector_name":model.sector_name,"business_model":model.economic_structure,"key_kpis":[item.__dict__ for item in model.key_kpis],"valuation_methods":[item.__dict__ for item in model.valuation_methods],"causal_templates":[list(path) for path in CAUSAL[family]],"valuation_drivers":list(model.valuation_drivers),"risks":list(model.valuation_risks),"monitoring":list(model.monitoring_variables),"required_evidence":list(required_inputs(family)),"sector_valuation_scorecard_dimensions":list(DIMENSIONS),"company_validation_questions":list(VALIDATION_QUESTIONS),"calculation_authority":"AFE_ONLY","allowed_use":"research_planning_and_reasoning","execution_eligible":False,"investment_certified":False}
