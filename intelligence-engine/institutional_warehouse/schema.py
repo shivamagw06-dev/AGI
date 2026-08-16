@@ -737,6 +737,60 @@ HISTORICAL_VALUATION = Tab(
 )
 
 # --------------------------------------------------------------------------
+# Tab 6b/6c — Point-in-time live valuation state and permanent snapshots
+# --------------------------------------------------------------------------
+
+_PIT_VALUATION_COLUMNS = (
+    _c("symbol", "Symbol", TEXT, editable=False, required=True, width=130, group="Key"),
+    _computed("price", "Price", CURRENCY, group="Market", unit=UNIT_INR),
+    _computed("volume", "Volume", NUMBER, group="Market", unit=UNIT_COUNT),
+    _computed("market_cap", "Market Cap", CURRENCY, width=150, group="Market", unit=UNIT_INR_MILLION),
+    _computed("enterprise_value", "Enterprise Value", CURRENCY, width=160, group="Market", unit=UNIT_INR_MILLION),
+    _computed("pe", "P/E", NUMBER, group="Valuation", unit=UNIT_RATIO),
+    _computed("pb", "P/B", NUMBER, group="Valuation", unit=UNIT_RATIO),
+    _computed("ptbv", "P/TBV", NUMBER, group="Valuation", unit=UNIT_RATIO),
+    _computed("ev_ebitda", "EV/EBITDA", NUMBER, width=130, group="Valuation", unit=UNIT_RATIO),
+    _computed("ev_sales", "EV/Sales", NUMBER, width=120, group="Valuation", unit=UNIT_RATIO),
+    _computed("fcf_yield", "FCF Yield", PERCENT, width=120, group="Valuation", unit=UNIT_PERCENT),
+    _computed("net_debt_ebitda", "Net Debt/EBITDA", NUMBER, width=160, group="Fundamentals", unit=UNIT_RATIO),
+    _computed("roe", "ROE", PERCENT, group="Fundamentals", unit=UNIT_PERCENT),
+    _computed("roa", "ROA", PERCENT, group="Fundamentals", unit=UNIT_PERCENT),
+    _computed("ebitda_margin", "EBITDA Margin", PERCENT, width=150, group="Fundamentals", unit=UNIT_PERCENT),
+    _c("price_as_of", "Price As Of", DATETIME, editable=False, required=True, width=180, group="PIT"),
+    _c("fundamental_as_of", "Fundamental As Of", DATE, editable=False, required=True, width=160, group="PIT"),
+    _c("fundamental_publication_date", "Financial Publication", DATETIME, editable=False, required=True, width=190, group="PIT"),
+    _c("calculation_timestamp", "Calculated At", DATETIME, editable=False, required=True, width=180, group="PIT"),
+    _c("fundamental_vintage_id", "Fundamental Vintage", TEXT, editable=False, required=True, width=210, group="PIT"),
+    _c("price_source", "Price Source", TEXT, editable=False, width=150, group="Provenance"),
+    _c("fundamental_source", "Fundamental Source", TEXT, editable=False, width=170, group="Provenance"),
+    _c("calculation_version", "Calculation Version", TEXT, editable=False, width=170, group="Provenance"),
+    _c("quality_status", "Quality Status", TEXT, editable=False, width=150, group="Quality"),
+    _c("missing_inputs", "Missing Inputs", JSON, editable=False, width=260, group="Quality"),
+)
+
+LIVE_VALUATION_STATE = Tab(
+    id="live_valuation_state", label="Live Valuation State",
+    description="Latest PIT-valid valuation state per company. Updated in place; not historical evidence.",
+    mode="computed", key=("symbol",), order_by=("symbol",), search_columns=("symbol",), icon="valuation",
+    notes=("Current state only; permanent observations are stored in Valuation Snapshots.",),
+    columns=(*_PIT_VALUATION_COLUMNS, *PROVENANCE_COLUMNS),
+)
+
+VALUATION_SNAPSHOTS = Tab(
+    id="valuation_snapshots", label="Valuation Snapshots",
+    description="Append-only PIT valuation observations triggered by time, material price moves and company events.",
+    mode="append", key=("symbol", "calculation_timestamp", "snapshot_reason"),
+    order_by=("calculation_timestamp DESC", "symbol"), search_columns=("symbol", "snapshot_reason"), icon="valuation",
+    notes=("Never overwrites fiscal ratio history.", "Every denominator must have been public by price_as_of."),
+    columns=(
+        *_PIT_VALUATION_COLUMNS,
+        _c("snapshot_reason", "Snapshot Reason", TEXT, editable=False, required=True, width=180, group="Trigger"),
+        _computed("price_move_pct", "Price Move %", PERCENT, width=130, group="Trigger", unit=UNIT_PERCENT),
+        *PROVENANCE_COLUMNS,
+    ),
+)
+
+# --------------------------------------------------------------------------
 # Tab 7 — Consensus
 # --------------------------------------------------------------------------
 
@@ -2238,6 +2292,8 @@ TABS: tuple[Tab, ...] = (
     ANNUAL_SECTOR_RATIOS,
     SECTOR_RATIO_HISTORY,
     HISTORICAL_VALUATION,
+    LIVE_VALUATION_STATE,
+    VALUATION_SNAPSHOTS,
     CONSENSUS,
     CONSENSUS_METRIC_VINTAGES,
     RESEARCH_INTELLIGENCE,

@@ -15376,6 +15376,30 @@ async def valuation_intelligence_ic10(max_peers: int = 3):
     return ic10_smoke(max_peers=max(1, min(int(max_peers), 8)))
 
 
+@router.get("/valuation-intelligence/live-snapshots/health")
+async def live_valuation_snapshot_health():
+    from valuation_intelligence.live_snapshots import health
+    return health()
+
+
+@router.get("/valuation-intelligence/live-snapshots/{symbol}")
+async def live_valuation_snapshot_latest(symbol: str):
+    from valuation_intelligence.live_snapshots import latest_state
+    return latest_state(symbol)
+
+
+@router.get("/valuation-intelligence/live-snapshots/{symbol}/history")
+async def live_valuation_snapshot_history(symbol: str, limit: int = 100):
+    from valuation_intelligence.live_snapshots import snapshot_history
+    return snapshot_history(symbol, limit=limit)
+
+
+@router.post("/valuation-intelligence/live-snapshots/{symbol}/refresh", dependencies=[Depends(require_token)])
+async def live_valuation_snapshot_refresh(symbol: str, reason: str | None = None):
+    from valuation_intelligence.live_snapshots import refresh_symbol
+    return await refresh_symbol(symbol, reason=reason)
+
+
 @router.get("/ikl/health")
 async def ikl_health():
     """Institutional Knowledge Intelligence Layer — Gather → Memory → Ask."""
