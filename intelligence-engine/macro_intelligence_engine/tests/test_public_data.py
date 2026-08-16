@@ -14,7 +14,12 @@ def test_empty_warehouse_is_data_building(monkeypatch):
     result = readiness("India")
     assert result["observed"] == 0
     assert result["coverage_percent"] == 0
-    assert result["status"] == "DATA BUILDING"
+    assert result["status"] == "RED / NON-OPERATIONAL"
+    assert result["mapped_but_empty"] == 0
+    assert result["unmapped"] == 50
+    assert result["evidence_validated"] == 0
+    assert result["pit_validated"] == 0
+    assert result["interpretation_readiness"] == "BLOCKED"
 
 
 def test_registry_maps_every_core_series():
@@ -39,6 +44,9 @@ def test_g20_harmonized_layer_blocks_intelligence_claims(monkeypatch):
     assert result["calculation_gate"] == "BLOCKED"
     assert "macro_regimes" in result["blocked_outputs"]
     assert result["source_tier_mix"] == {"A": 0, "B": 0, "C": 0, "D": 0}
+    assert result["critical_5"] == {"observed": 0, "total": 95, "coverage_percent": 0.0}
+    assert result["evidence_validated"] == 0
+    assert result["pit_validated"] == 0
 
 
 def test_g20_source_catalogue_covers_every_economy_and_module():

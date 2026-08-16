@@ -123,6 +123,18 @@ export default function EconomicsPage() {
         <div><ShieldCheck size={16}/><span>Point in time</span><b>PIT limited</b></div>
       </section>
 
+      <section className="eco-band eco-readiness-gates">
+        <header className="eco-section-head"><div><span>Macro Foundation v1</span><h2>Coverage is not validation</h2></div><Status tone="forecast">{readiness?.status || 'RED / NON-OPERATIONAL'}</Status></header>
+        <div className="eco-gate-grid">
+          <div><span>Observed</span><strong>{readiness?.observed ?? 0}<small> / {readiness?.total ?? 50}</small></strong><p>Persisted India Core 50 series</p></div>
+          <div><span>Mapped but empty</span><strong>{readiness?.mapped_but_empty ?? 0}</strong><p>Registered series without usable values</p></div>
+          <div><span>Unmapped</span><strong>{readiness?.unmapped ?? 0}</strong><p>Series still outside the registry</p></div>
+          <div><span>Evidence validated</span><strong>{readiness?.evidence_validated ?? 0}<small> / 50</small></strong><p>Verified authoritative observations</p></div>
+          <div><span>PIT validated</span><strong>{readiness?.pit_validated ?? 0}<small> / 50</small></strong><p>Official vintage or release timestamp</p></div>
+          <div><span>Interpretation</span><strong className="blocked">{readiness?.interpretation_readiness || 'BLOCKED'}</strong><p>Regime and investment conclusions withheld</p></div>
+        </div>
+      </section>
+
       <section className="eco-ask"><div><span>Research interface</span><h2>Ask what changed, why it matters and what evidence is missing</h2><p>Ask AGI uses persisted evidence and should distinguish observations from interpretation.</p></div><AskAgiBar placeholder="Ask what the current data says about India’s external position..." size="large" buttonLabel="Ask AGI" ariaLabel="Ask AGI about economics"/></section>
 
       <GlobalState byId={byId} />
@@ -131,7 +143,7 @@ export default function EconomicsPage() {
 
       {view !== 'india' && <section className="eco-band eco-g20-terminal">
         <header className="eco-section-head"><div><span>G20 macro monitor</span><h2>Comparable evidence across 19 economies</h2></div><Status tone={g20?.observed === g20?.total ? 'stable' : 'forecast'}>{g20?.status || 'DATA BUILDING'}</Status></header>
-        <div className="eco-g20-summary"><div><strong>{g20?.country_count ?? 19}</strong><span>Economies</span></div><div><strong>{g20?.indicator_count ?? 8}</strong><span>Comparable indicators</span></div><div><strong>{g20?.observed ?? 0}<small> / {g20?.total ?? 152}</small></strong><span>Persisted observations</span></div><div><strong>{g20?.coverage_percent ?? 0}%</strong><span>Coverage</span></div></div>
+        <div className="eco-g20-summary"><div><strong>{g20?.coverage_percent ?? 0}%</strong><span>Numerical coverage</span></div><div><strong>{g20?.source_tier_mix?.A ?? 0}</strong><span>Tier A observations</span></div><div><strong>{g20?.source_tier_mix?.B ?? 0}</strong><span>Tier B observations</span></div><div><strong>{g20?.pit_validated ?? 0}</strong><span>PIT validated</span></div></div>
         <div className="eco-g20-note"><AlertTriangle size={15}/><p>AGI Macro Regime Score: WITHHELD. Green/red direction is not inferred from isolated values; country scores require historical normalization, configured economic signs and point-in-time validation.</p></div>
         <div className="eco-g20-matrix"><div className="head"><b>Economy</b><b>GDP growth</b><b>Inflation</b><b>Unemployment</b><b>Debt / GDP</b><b>Current account</b><b>Investment</b><b>Private credit</b><b>Coverage</b></div>{(g20?.countries || []).map((row) => {
           const value = (key) => row.indicators?.[key];
@@ -198,7 +210,7 @@ export default function EconomicsPage() {
       </section>
 
       <section className="eco-band"><DeskResearchFeed deskId="economics" title="Economics Research"/></section>
-      <footer className="eco-disclosure"><AlertTriangle size={15}/><p><b>Research status:</b> World Bank collection is operational. RBI, MoSPI, Ministry of Commerce, IMF, BIS and OECD connectors are registered but not yet verified live. Current observations are PIT limited. Factor scores, country rankings, historical regimes and surprise indices remain withheld until their evidence requirements are met.</p></footer>
+      <footer className="eco-disclosure"><AlertTriangle size={15}/><p><b>Research status:</b> World Bank and OECD collection are connected. IMF is blocked from the Render environment; RBI requires canonical DBIE mapping, MoSPI requires configured access, and Ministry of Commerce requires a reproducible download adapter. Current observations remain PIT limited. Factor scores, country rankings, historical regimes and surprise indices are withheld.</p></footer>
     </div>
   </PageShell>;
 }

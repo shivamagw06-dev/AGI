@@ -83,11 +83,23 @@ def readiness(country: str = "India") -> dict[str, Any]:
         str(row.get("series_id") or "") for row in registry
         if str(row.get("country_code") or row.get("country") or "").lower() in {country_norm.lower(), "in", "ind", "global"}
     }
-    observed_ids = {
-        str(row.get("series_id") or "") for row in observations
+    usable_observations = [
+        row for row in observations
         if str(row.get("country_code") or row.get("country") or "").lower() in {country_norm.lower(), "in", "ind", "global"}
         and row.get("value_numeric") is not None
+    ]
+    observed_ids = {str(row.get("series_id") or "") for row in usable_observations}
+    verified_ids = {
+        str(row.get("series_id") or "") for row in usable_observations
+        if str(row.get("quality_status") or "").upper() == "VERIFIED"
     }
+    pit_valid_ids = {
+        str(row.get("series_id") or "") for row in usable_observations
+        if str(row.get("pit_status") or "").upper() in {"OFFICIAL_VINTAGE", "RELEASE_TIMESTAMP_RECORDED"}
+    }
+    history_periods: dict[str, set[str]] = {}
+    for row in usable_observations:
+        history_periods.setdefault(str(row.get("series_id") or ""), set()).add(str(row.get("period_date") or ""))
     domains = Counter(domain for series_id, domain, _, _ in CORE_50 if series_id in observed_ids)
     domain_totals = Counter(domain for _, domain, _, _ in CORE_50)
     items = [
@@ -98,10 +110,17 @@ def readiness(country: str = "India") -> dict[str, Any]:
             "frequency": frequency,
             "registered": series_id in registry_ids,
             "observed": series_id in observed_ids,
+            "evidence_validated": series_id in verified_ids,
+            "pit_validated": series_id in pit_valid_ids,
+            "history_periods": len(history_periods.get(series_id, set())),
+            "production_ready": series_id in verified_ids and series_id in pit_valid_ids and len(history_periods.get(series_id, set())) >= 24,
         }
         for series_id, domain, label, frequency in CORE_50
     ]
     observed = sum(1 for row in items if row["observed"])
+    evidence_validated = sum(1 for row in items if row["evidence_validated"])
+    pit_validated = sum(1 for row in items if row["pit_validated"])
+    production_ready = sum(1 for row in items if row["production_ready"])
     return {
         "ok": True,
         "country": country_norm,
@@ -109,15 +128,24 @@ def readiness(country: str = "India") -> dict[str, Any]:
         "total": len(CORE_50),
         "registered": sum(1 for row in items if row["registered"]),
         "observed": observed,
+        "mapped_but_empty": sum(1 for row in items if row["registered"] and not row["observed"]),
+        "unmapped": sum(1 for row in items if not row["registered"]),
+        "evidence_validated": evidence_validated,
+        "pit_validated": pit_validated,
+        "production_ready": production_ready,
         "coverage_percent": round(100 * observed / len(CORE_50), 1),
-        "status": "OPERATIONAL" if observed >= 40 else "DATA BUILDING",
+        "evidence_quality_percent": round(100 * evidence_validated / len(CORE_50), 1),
+        "pit_quality_percent": round(100 * pit_validated / len(CORE_50), 1),
+        "production_ready_percent": round(100 * production_ready / len(CORE_50), 1),
+        "interpretation_readiness": "READY" if production_ready == len(CORE_50) else "BLOCKED",
+        "status": "PRODUCTION READY" if production_ready == len(CORE_50) else "RED / NON-OPERATIONAL",
         "domains": [
             {"domain": domain, "observed": domains[domain], "total": total}
             for domain, total in sorted(domain_totals.items())
         ],
         "series": items,
         "sources": __import__("macro_intelligence_engine.public_ingestion", fromlist=["source_status"]).source_status(),
-        "policy": "Only persisted public/official observations count. Catalogue placeholders do not count as coverage.",
+        "policy": "Coverage, evidence validation, PIT validation and production readiness are separate gates. Catalogue placeholders never count as evidence.",
     }
 
 
@@ -171,6 +199,10 @@ def g20_matrix() -> dict[str, Any]:
     """Latest comparable G20 observations. No scores or regimes are inferred."""
     from macro_intelligence_engine.public_ingestion import G20_COUNTRIES, G20_WORLD_BANK_SERIES
 
+    registry = {
+        str(row.get("series_id") or ""): row
+        for row in _warehouse_rows("macro_public_series_registry", limit=10000)
+    }
     rows = [
         row for row in _warehouse_rows("macro_public_observations", limit=10000)
         if str(row.get("series_id") or "").startswith("g20_")
@@ -209,14 +241,31 @@ def g20_matrix() -> dict[str, Any]:
         })
     observed = sum(row["observed"] for row in countries)
     total = len(countries) * len(G20_WORLD_BANK_SERIES)
+    tier_counts = Counter()
+    pit_valid = 0
+    verified = 0
+    for _, row in latest.values():
+        meta = registry.get(str(row.get("series_id") or "")) or {}
+        tier = str(meta.get("source_tier") or (row.get("metadata") or {}).get("source_tier") or "C").upper()
+        tier_counts[tier if tier in {"A", "B", "C", "D"} else "C"] += 1
+        if str(row.get("pit_status") or "").upper() in {"OFFICIAL_VINTAGE", "RELEASE_TIMESTAMP_RECORDED"}:
+            pit_valid += 1
+        if str(row.get("quality_status") or "").upper() == "VERIFIED":
+            verified += 1
+    critical_keys = {"gdp_growth", "inflation", "policy_rate", "yield_10y", "usd_fx"}
+    critical_observed = sum(1 for (_iso3, key) in latest if key in critical_keys)
     return {
         "ok": True, "universe": "G20 19 economies", "countries": countries,
         "country_count": len(countries), "indicator_count": len(G20_WORLD_BANK_SERIES),
         "observed": observed, "total": total,
         "coverage_percent": round(100 * observed / total, 1) if total else 0,
         "frequency_mix": dict(sorted(frequency_counts.items())),
-        "source_tier_mix": {"A": 0, "B": 0, "C": observed, "D": 0},
-        "status": "DATA BUILDING",
+        "source_tier_mix": {tier: tier_counts[tier] for tier in ("A", "B", "C", "D")},
+        "evidence_validated": verified,
+        "pit_validated": pit_valid,
+        "production_ready": 0,
+        "critical_5": {"observed": critical_observed, "total": len(G20_COUNTRIES) * 5, "coverage_percent": round(100 * critical_observed / (len(G20_COUNTRIES) * 5), 1)},
+        "status": "RED / NON-OPERATIONAL",
         "pit_status": "PIT LIMITED",
         "calculation_gate": "BLOCKED",
         "blocked_outputs": ["country_scores", "rankings", "macro_regimes", "investment_implications"],
