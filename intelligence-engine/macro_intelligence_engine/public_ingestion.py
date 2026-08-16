@@ -56,6 +56,15 @@ INDIA_MACRO_SOURCE_DOMAINS = (
     "dea.gov.in", "labour.gov.in", "data.gov.in", "bis.org", "imf.org",
     "worldbank.org", "oecd.org", "ilo.org", "unctad.org",
 )
+WEB_REQUIRED_TERMS = {
+    "gdp_qoq": ("qoq", "q-o-q", "quarter-on-quarter", "quarter on quarter", "sequential"),
+    "industrial_production": ("industrial production", "index of industrial production", "iip"),
+    "cpi": ("consumer price index", "headline cpi", "cpi"),
+    "core_cpi": ("core inflation", "core cpi"),
+    "food_inflation": ("food inflation", "food price"),
+    "policy_rate": ("repo rate", "policy rate"),
+    "fx_reserves": ("foreign exchange reserves", "forex reserves", "fx reserves"),
+}
 
 def _now(): return datetime.now(timezone.utc)
 
@@ -272,6 +281,32 @@ def _missing_india_series():
     return [row for row in CORE_50 if row[0] not in observed and row[3] != "derived"]
 
 
+def _web_semantically_matches(series_id, extracted):
+    required=WEB_REQUIRED_TERMS.get(series_id)
+    if not required: return True
+    evidence=" ".join(str(extracted.get(key) or "") for key in ("source_title","quote")).lower()
+    return any(term in evidence for term in required)
+
+
+def _purge_invalid_web_candidates():
+    """Remove proposed rows that fail deterministic series-specific semantics."""
+    rows=_rest(
+        "macro_public_observations",
+        query="?select=id,series_id,source,metadata&country_code=eq.IND&limit=10000",
+    ) or []
+    purged=[]
+    for row in rows:
+        metadata=row.get("metadata") if isinstance(row.get("metadata"),dict) else {}
+        if metadata.get("connector") != "exa_web_fallback": continue
+        extracted={"source_title":row.get("source"),"quote":metadata.get("quote")}
+        if _web_semantically_matches(str(row.get("series_id") or ""),extracted): continue
+        row_id=row.get("id")
+        if row_id:
+            _rest("macro_public_observations",method="DELETE",query=f"?id=eq.{urllib.parse.quote(str(row_id))}",prefer="return=minimal")
+            purged.append(str(row_id))
+    return purged
+
+
 def _exa_macro_search(label, domain, frequency):
     key=(os.getenv("EXA_API_KEY") or "").strip()
     if not key: raise RuntimeError("exa_api_key_missing")
@@ -330,6 +365,7 @@ def collect_web_macro_gaps():
     """Fill bounded Core 50 gaps from cited web pages as untrusted candidates."""
     if not _truthy("MIE_WEB_FALLBACK_ENABLED"):
         return {"ok":True,"source":"Exa Web Macro Fallback","status":"DISABLED","accepted":0,"errors":[]}
+    purged=_purge_invalid_web_candidates()
     limit=max(1,min(int(os.getenv("MIE_WEB_FALLBACK_LIMIT","8")),20))
     observations=[]; errors=[]; fetched=_now()
     for series_id,domain,label,frequency in _missing_india_series()[:limit]:
@@ -345,6 +381,8 @@ def collect_web_macro_gaps():
                 errors.append(f"{series_id}:non_finite_value"); continue
             if float(extracted.get("confidence") or 0) < 0.75:
                 errors.append(f"{series_id}:low_extraction_confidence"); continue
+            if not _web_semantically_matches(series_id,extracted):
+                errors.append(f"{series_id}:semantic_mismatch"); continue
             period=str(extracted.get("period_date") or "")
             release=str(extracted.get("release_date") or "")
             try:
@@ -363,7 +401,9 @@ def collect_web_macro_gaps():
                     "evidence_role":"WEB_DISCOVERED_CANDIDATE_REQUIRES_VALIDATION"},
             })
         except Exception as exc: errors.append(f"{series_id}:{type(exc).__name__}:{str(exc)[:100]}")
-    return _persist_official_run("Exa Web Macro Fallback",[],observations,errors)
+    result=_persist_official_run("Exa Web Macro Fallback",[],observations,errors)
+    result["purged_invalid_candidates"]=len(purged)
+    return result
 
 def source_status():
     return [

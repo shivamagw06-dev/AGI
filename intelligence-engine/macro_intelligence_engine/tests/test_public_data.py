@@ -2,7 +2,7 @@ from macro_intelligence_engine.g20_source_catalog import COUNTRY_SOURCES, MODULE
 from macro_intelligence_engine.public_data import CORE_50, g20_matrix, g20_source_plan, latest_observations, readiness
 import json
 
-from macro_intelligence_engine.public_ingestion import WORLD_BANK_SERIES, YAHOO_MACRO_MARKET_SERIES, collect_web_macro_gaps, collect_yahoo_macro_market, registry_rows
+from macro_intelligence_engine.public_ingestion import WORLD_BANK_SERIES, YAHOO_MACRO_MARKET_SERIES, _web_semantically_matches, collect_web_macro_gaps, collect_yahoo_macro_market, registry_rows
 
 
 def test_core_50_is_unique_and_complete():
@@ -166,6 +166,7 @@ def test_web_macro_fallback_persists_only_proposed_tier_d_evidence(monkeypatch):
         "macro_intelligence_engine.public_ingestion._missing_india_series",
         lambda: [("cpi", "inflation", "Headline CPI", "monthly")],
     )
+    monkeypatch.setattr("macro_intelligence_engine.public_ingestion._purge_invalid_web_candidates", lambda: [])
     monkeypatch.setattr(
         "macro_intelligence_engine.public_ingestion._exa_macro_search",
         lambda *_args: ([{"title":"MoSPI CPI release","url":"https://www.mospi.gov.in/cpi","published_date":"2026-08-12","text":"CPI was 2.1%."}], "query", "hash"),
@@ -186,3 +187,10 @@ def test_web_macro_fallback_persists_only_proposed_tier_d_evidence(monkeypatch):
     assert row["metadata"]["source_tier"] == "D"
     assert row["metadata"]["trust_status"] == "PROPOSED"
     assert row["metadata"]["pit_status"] == "FETCH_VINTAGE_ONLY"
+
+
+def test_web_semantic_guard_rejects_annual_growth_as_gdp_qoq():
+    annual={"source_title":"Provisional estimates of annual GDP","quote":"Real GDP grew 7.8 percent in 2025-26."}
+    quarterly={"source_title":"Quarterly GDP release","quote":"GDP increased 1.7% quarter-on-quarter (QoQ)."}
+    assert _web_semantically_matches("gdp_qoq",annual) is False
+    assert _web_semantically_matches("gdp_qoq",quarterly) is True
