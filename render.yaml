@@ -243,9 +243,9 @@ services:
       - key: OPENAI_API_KEY
         sync: false
       - key: CID_DOSSIER_WORKER_ENABLED
-        value: "true"
-      - key: CID_DOSSIER_PAUSED
         value: "false"
+      - key: CID_DOSSIER_PAUSED
+        value: "true"
       - key: CID_DOSSIER_WORKERS
         value: "15"
       - key: CID_DOSSIER_SPRINT_MODE
