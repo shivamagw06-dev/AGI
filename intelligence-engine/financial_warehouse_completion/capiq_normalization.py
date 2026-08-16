@@ -14,7 +14,7 @@ from institutional_warehouse.values import now_iso
 
 
 SOURCE = "capital_iq_workbook"
-MAPPING_VERSION = "CAPIQ_V2"
+MAPPING_VERSION = "CAPIQ_V3"
 REQUIRED_FIELDS = ("pat", "assets", "equity")
 
 
@@ -155,7 +155,7 @@ def audit_and_prepare(
         audit = {
             "source": SOURCE,
             "source_file": source_file,
-            "source_sheet": str(raw.get("fiscal_year") or "").replace("FY", ""),
+            "source_sheet": "three_statement_join" if raw.get("source_sheets") else str(raw.get("fiscal_year") or "").replace("FY", ""),
             "source_symbol": _text(raw.get("symbol")).upper(),
             "symbol": resolved["symbol"],
             "fiscal_year": raw.get("fiscal_year"),
@@ -177,6 +177,8 @@ def audit_and_prepare(
             "overall_status": status,
             "write_status": "READY" if verified else "QUARANTINED",
             "mapping_version": MAPPING_VERSION,
+            "pit_status": raw.get("pit_status") or "PIT_LIMITED",
+            "pit_limitation": "Workbook has fiscal period ends but no original financial publication dates.",
         }
         audits.append(audit)
         if resolved["identity_map"]:

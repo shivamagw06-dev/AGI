@@ -9,6 +9,8 @@ unknown-unit statement rows.
 from __future__ import annotations
 
 from pathlib import Path
+from datetime import datetime, timezone
+from collections import Counter
 from typing import Any, Iterable
 
 from financial_warehouse_completion.models import ENGINE_CODE, PROGRAMME_VERSION
@@ -43,11 +45,17 @@ MASTER_FIELD_MAP = {
     "Intangible assets": "intangible_assets", "Goodwill": "goodwill", "Total assets": "assets",
     "Accounts payable": "accounts_payable", "Other current liab": "other_current_liabilities",
     "Total debt": "debt", "Current debt": "current_debt", "Long-term debt": "long_term_debt",
-    "Lease liabilities (LT)": "lease_liabilities", "Total liabilities": "total_liabilities",
+    "Lease liabilities (LT)": "lease_liabilities", "Provisions": "provisions",
+    "Total liabilities": "total_liabilities",
     "Equity (total common)": "equity", "CFO": "cfo", "CFI": "cfi", "CFF": "cff",
-    "Capex": "capex", "Depreciation (CF)": "depreciation", "Acquisition spending": "acquisition_spending",
+    "Capex": "capex", "Depreciation (CF)": "depreciation_cash_flow", "Acquisition spending": "acquisition_spending",
     "Dividends": "dividends_paid", "Buybacks": "buybacks", "Debt issuance": "debt_issuance",
     "Debt repayment": "debt_repayment",
+}
+
+SHEET_FIELD_OVERRIDES = {
+    ("Income Statement", "Minority interest"): "minority_interest",
+    ("Balance Sheet", "Minority interest"): "balance_sheet_minority_interest",
 }
 
 
@@ -124,7 +132,7 @@ def _master_rows(*, path: Path) -> Iterable[dict[str, Any]]:
                 for index in range(1, min(len(values), sheet.max_column)):
                     fiscal_year, fiscal_end = periods[index]
                     metric = str(header[1][index] or "").strip()
-                    field = MASTER_FIELD_MAP.get(metric)
+                    field = SHEET_FIELD_OVERRIDES.get((sheet_name, metric), MASTER_FIELD_MAP.get(metric))
                     value = _number(values[index])
                     if not field or value is None or not fiscal_year:
                         continue
@@ -134,14 +142,51 @@ def _master_rows(*, path: Path) -> Iterable[dict[str, Any]]:
                         "fiscal_end_date": fiscal_end.isoformat() if hasattr(fiscal_end, "isoformat") else str(fiscal_end or "")[:10],
                         "statement_type": "UNKNOWN", "statement_frequency": "ANNUAL",
                         "source": SOURCE, "statement_version": f"capiq_master_10y_{fiscal_year.lower()}",
+                        "pit_status": "PIT_LIMITED", "source_document": path.name,
+                        "retrieval_date": datetime.now(timezone.utc).date().isoformat(),
+                        "source_sheets": [], "source_mnemonics": {},
                     })
                     row[field] = value
+                    if sheet_name not in row["source_sheets"]:
+                        row["source_sheets"].append(sheet_name)
+                    row["source_mnemonics"][field] = str(header[3][index] or "")
         for row in joined.values():
             if row.get("cfo") is not None and row.get("capex") is not None:
                 row["free_cash_flow"] = float(row["cfo"]) - abs(float(row["capex"]))
             yield row
     finally:
         book.close()
+
+
+def workbook_diagnostics(*, path: Path = WORKBOOK_PATH) -> dict[str, Any]:
+    """Account for every source cell, including vendor errors and ambiguous zeros."""
+    from openpyxl import load_workbook
+    book = load_workbook(path, read_only=True, data_only=True)
+    sheets: dict[str, Any] = {}
+    try:
+        for sheet in book.worksheets:
+            counts: Counter[str] = Counter()
+            tokens: Counter[str] = Counter()
+            companies = 0
+            for values in sheet.iter_rows(min_row=6, values_only=True):
+                if not values or not values[0]:
+                    continue
+                companies += 1
+                for value in values[1:]:
+                    if value is None:
+                        counts["blank"] += 1
+                    elif isinstance(value, (int, float)) and not isinstance(value, bool):
+                        counts["numeric"] += 1
+                        counts["zero" if float(value) == 0 else "nonzero"] += 1
+                    else:
+                        counts["vendor_error"] += 1
+                        tokens[str(value)] += 1
+            sheets[sheet.title] = {"companies": companies, **dict(counts),
+                                   "vendor_error_tokens": dict(tokens)}
+    finally:
+        book.close()
+    return {"sheets": sheets, "zero_semantics": "AMBIGUOUS_REQUIRES_METRIC_CONTEXT",
+            "publication_dates": "NOT_PRESENT", "pit_status": "PIT_LIMITED"}
 
 
 def preview(*, years: Iterable[int] = DEFAULT_YEARS, path: Path = WORKBOOK_PATH) -> dict[str, Any]:
@@ -155,7 +200,8 @@ def preview(*, years: Iterable[int] = DEFAULT_YEARS, path: Path = WORKBOOK_PATH)
         rows = list(_master_rows(path=path))
         summary = {str(year): sum(1 for row in rows if row["fiscal_year"] == f"FY{year}") for year in years}
         return {"ok": True, "source": SOURCE, "workbook": path.name, "unit": "INR million", "years": summary,
-                "engine": ENGINE_CODE, "version": PROGRAMME_VERSION, "format": "three_statement_year_blocks"}
+                "engine": ENGINE_CODE, "version": PROGRAMME_VERSION, "format": "three_statement_year_blocks",
+                "diagnostics": workbook_diagnostics(path=path)}
     summary: dict[str, int] = {}
     for year in years:
         summary[str(year)] = sum(1 for _ in _sheet_rows(int(year), path=path))
@@ -203,7 +249,7 @@ def audit_preview(*, years: Iterable[int] = DEFAULT_YEARS, path: Path = WORKBOOK
         "quarantined": len(rows) - len(prepared["accepted"]), "rejected": 0,
         "company_matches": sum(1 for row in audits if row.get("identity_status") == "VERIFIED"),
         "quarantine_reasons": quarantine_reasons, "by_year": by_year,
-        "sample": audits[:25], "mapping_version": "CAPIQ_V2", "unit": "INR million",
+        "sample": audits[:25], "mapping_version": "CAPIQ_V3", "unit": "INR million",
     }
 
 

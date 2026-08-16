@@ -10,6 +10,8 @@ def test_preview_reads_completed_capital_iq_sheets():
     assert result["years"]["2017"] > 3000
     assert result["years"]["2024"] > 3000
     assert result["years"]["2026"] > 3000
+    assert result["diagnostics"]["pit_status"] == "PIT_LIMITED"
+    assert result["diagnostics"]["sheets"]["Income Statement"]["vendor_error"] == 5550
 
 
 def test_sheet_rows_normalise_ticker_and_stamp_identity():
@@ -21,3 +23,10 @@ def test_sheet_rows_normalise_ticker_and_stamp_identity():
     assert row["revenue"] > 0
     assert row["pat"] > 0
     assert row["accounts_receivable"] >= 0
+    assert row["pit_status"] == "PIT_LIMITED"
+    assert row["source_document"] == "Master_10Y_India.xlsx"
+    assert set(row["source_sheets"]) == {"Income Statement", "Balance Sheet", "Cash Flow"}
+    assert row["depreciation"] is not None and row["depreciation_cash_flow"] is not None
+    assert row["source_mnemonics"]["depreciation"] != row["source_mnemonics"]["depreciation_cash_flow"]
+    assert "minority_interest" in row
+    assert "balance_sheet_minority_interest" in row

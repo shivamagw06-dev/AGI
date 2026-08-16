@@ -103,6 +103,7 @@ def _institutional_warehouse_facts(company_id: str) -> list[dict[str, Any]]:
                 "source_id": row.get("row_id"),
                 "statement_type": row.get("statement_type"),
                 "quality": meta.get("validation") or meta.get("confidence") or "validated",
+                "pit_status": row.get("pit_status"),
             })
     return facts
 
@@ -187,10 +188,14 @@ class FinancialDataResolver:
             aliases = set(INPUT_METRICS[canonical])
             candidates = []
             future_candidates = []
+            pit_limited_candidates = []
             for fact in facts:
                 if _metric(fact) not in aliases: continue
                 if _period_number(fact.get("reporting_period") or fact.get("period")) != target_n: continue
                 available = str(fact.get("available_at") or fact.get("publication_date") or fact.get("published_timestamp") or "")
+                if as_of_date and str(fact.get("pit_status") or "").upper() == "PIT_LIMITED":
+                    pit_limited_candidates.append(fact)
+                    continue
                 if as_of_date and available and available[:10] > as_of_date[:10]:
                     future_candidates.append(fact)
                     continue
@@ -200,6 +205,11 @@ class FinancialDataResolver:
             if not candidates:
                 if future_candidates:
                     return {"status": "POINT_IN_TIME_VIOLATION", "input": afe_input, "calculation_id": calc_id, "company_id": company_id, "as_of_date": as_of_date, "available_at": sorted(str(f.get("available_at") or f.get("publication_date") or "") for f in future_candidates)[0]}
+                if pit_limited_candidates:
+                    return {"status": "POINT_IN_TIME_UNAVAILABLE", "input": afe_input,
+                            "calculation_id": calc_id, "company_id": company_id,
+                            "as_of_date": as_of_date,
+                            "reason": "financial_publication_date_unavailable"}
                 return {"status": "DATA_UNAVAILABLE", "missing_input": afe_input, "calculation_id": calc_id, "company_id": company_id, "period": period}
             candidates.sort(key=lambda row: row[0])
             best_priority = candidates[0][0]
