@@ -40,6 +40,14 @@ IMF_G20_SERIES = {
     "unemployment": ("LUR", "Labour", "%"), "government_debt_gdp": ("GGXWDG_NGDP", "Fiscal", "% GDP"),
     "fiscal_balance_gdp": ("GGXCNL_NGDP", "Fiscal", "% GDP"), "current_account_gdp": ("BCA_NGDPD", "External", "% GDP"),
 }
+YAHOO_MACRO_MARKET_SERIES = {
+    "usd_fx": {"symbol": "INR=X", "country": "IND", "unit": "INR per USD"},
+    "oil": {"symbol": "BZ=F", "country": "WLD", "unit": "USD/barrel"},
+    "gas": {"symbol": "NG=F", "country": "WLD", "unit": "USD/MMBtu"},
+    "copper": {"symbol": "HG=F", "country": "WLD", "unit": "USD/lb"},
+    "gold": {"symbol": "GC=F", "country": "WLD", "unit": "USD/troy oz"},
+    "global_risk": {"symbol": "^VIX", "country": "WLD", "unit": "index"},
+}
 
 def _now(): return datetime.now(timezone.utc)
 
@@ -177,11 +185,42 @@ def collect_oecd_policy_rates():
         except Exception as exc: errors.append(f"policy_rate:{iso3}:{str(exc)[:120]}")
     return _persist_official_run("OECD SDMX",registry,observations,errors)
 
+
+def collect_yahoo_macro_market():
+    """Collect bounded market history for Core 50 gaps; never acts as official macro evidence."""
+    observations=[]; errors=[]; fetched=_now()
+    for series_id, spec in YAHOO_MACRO_MARKET_SERIES.items():
+        symbol=spec["symbol"]
+        url=f"https://query2.finance.yahoo.com/v8/finance/chart/{urllib.parse.quote(symbol, safe='')}?interval=1d&range=2y"
+        try:
+            request=urllib.request.Request(url,headers={"User-Agent":"Mozilla/5.0 AGI-Macro-Intelligence/1.0","Accept":"application/json"})
+            with urllib.request.urlopen(request,timeout=25) as response: raw=response.read()
+            payload=json.loads(raw); result=(((payload.get("chart") or {}).get("result") or [None])[0] or {})
+            timestamps=result.get("timestamp") or []
+            quote=((((result.get("indicators") or {}).get("quote") or [{}])[0]) or {})
+            closes=quote.get("close") or []
+            digest=hashlib.sha256(raw).hexdigest(); accepted=0
+            for timestamp,value in zip(timestamps,closes):
+                if value is None: continue
+                observed_at=datetime.fromtimestamp(int(timestamp),tz=timezone.utc)
+                observations.append({
+                    "series_id":series_id,"country_code":spec["country"],"period_date":observed_at.date().isoformat(),
+                    "value_numeric":value,"unit":spec["unit"],"frequency":"daily","release_date":fetched.isoformat(),
+                    "available_at":fetched.isoformat(),"vintage_date":fetched.date().isoformat(),"revision_number":0,
+                    "is_forecast":False,"source":"Yahoo Finance Chart API","source_url":url,"source_payload_hash":digest,
+                    "quality_status":"PROVISIONAL","metadata":{"symbol":symbol,"market_timestamp":observed_at.isoformat(),
+                    "pit_status":"FETCH_VINTAGE_ONLY","source_tier":"D","evidence_role":"MARKET_REFERENCE_NOT_OFFICIAL_MACRO"},
+                }); accepted+=1
+            if not accepted: errors.append(f"{series_id}:{symbol}:no_observations")
+        except Exception as exc: errors.append(f"{series_id}:{symbol}:{str(exc)[:120]}")
+    return _persist_official_run("Yahoo Finance Macro Market",[],observations,errors)
+
 def source_status():
     return [
         {"source":"World Bank","status":"CONNECTED","collection":"LIVE_API"},
         {"source":"IMF","status":"DEPLOYMENT_BLOCKED","collection":"RENDER_EGRESS_HTTP_403; API_V2_VERIFIED_EXTERNALLY"},
         {"source":"OECD","status":"CONNECTED","collection":"LIVE_SDMX"},
+        {"source":"Yahoo Finance","status":"CONNECTED","collection":"MARKET_REFERENCE_TIER_D"},
         {"source":"MoSPI","status":"CONFIGURATION_REQUIRED","collection":"API_ACCESS_TOKEN_REQUIRED"},
         {"source":"RBI","status":"MAPPING_REQUIRED","collection":"DBIE_ACCESS_PATH_REQUIRED"},
         {"source":"BIS","status":"MAPPING_REQUIRED","collection":"SDMX_SERIES_KEYS_REQUIRED"},
@@ -209,6 +248,7 @@ def run_public_ingestion():
         run_stage("World Bank G20", collect_world_bank_g20),
         run_stage("IMF WEO DataMapper", collect_imf_g20),
         run_stage("OECD SDMX", collect_oecd_policy_rates),
+        run_stage("Yahoo Finance Macro Market", collect_yahoo_macro_market),
     ]
     return {
         "ok": bool(seeded.get("ok") and all(item.get("ok") for item in collectors)),

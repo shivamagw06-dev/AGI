@@ -79,13 +79,14 @@ def readiness(country: str = "India") -> dict[str, Any]:
     country_norm = str(country or "India").strip()
     registry = _warehouse_rows("macro_public_series_registry")
     observations = _warehouse_rows("macro_public_observations")
+    allowed_countries = {country_norm.lower(), "in", "ind", "global", "wld"}
     registry_ids = {
         str(row.get("series_id") or "") for row in registry
-        if str(row.get("country_code") or row.get("country") or "").lower() in {country_norm.lower(), "in", "ind", "global"}
+        if str(row.get("country_code") or row.get("country") or "").lower() in allowed_countries
     }
     usable_observations = [
         row for row in observations
-        if str(row.get("country_code") or row.get("country") or "").lower() in {country_norm.lower(), "in", "ind", "global"}
+        if str(row.get("country_code") or row.get("country") or "").lower() in allowed_countries
         and row.get("value_numeric") is not None
     ]
     observed_ids = {str(row.get("series_id") or "") for row in usable_observations}
@@ -152,7 +153,7 @@ def readiness(country: str = "India") -> dict[str, Any]:
 def latest_observations(country: str = "India") -> dict[str, Any]:
     """Return latest persisted observations with lineage; never calculate missing values."""
     country_norm = str(country or "India").strip()
-    allowed = {country_norm.lower(), "in", "ind"}
+    allowed = {country_norm.lower(), "in", "ind", "wld"}
     registry = {
         str(row.get("series_id") or ""): row
         for row in _warehouse_rows("macro_public_series_registry")
