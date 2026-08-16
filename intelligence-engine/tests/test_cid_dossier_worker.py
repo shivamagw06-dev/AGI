@@ -22,7 +22,10 @@ def test_queue_skips_fresh_versions(monkeypatch):
         worker,
         "latest_versions",
         lambda: {
-            "INFY": {"generated_at": datetime.now(timezone.utc).isoformat()},
+            "INFY": {
+                "generated_at": datetime.now(timezone.utc).isoformat(),
+                "generator_version": worker.GENERATOR_VERSION,
+            },
         },
     )
     queue, fresh = worker.eligible_queue(refresh_days=30)
@@ -44,7 +47,35 @@ def test_read_status_reports_paused_configuration_not_stale_worker(monkeypatch, 
     assert status["snapshot_stale"] is True
 
 
-def test_worker_count_is_hard_capped_at_ten(monkeypatch, tmp_path):
+def test_queue_reprocesses_fresh_legacy_versions(monkeypatch):
+    monkeypatch.setattr(worker, "warehouse_universe", lambda: ["INFY"])
+    monkeypatch.setattr(
+        worker,
+        "latest_versions",
+        lambda: {"INFY": {"generated_at": datetime.now(timezone.utc).isoformat(), "generator_version": "cid-openai-v1"}},
+    )
+    queue, fresh = worker.eligible_queue(refresh_days=30)
+    assert queue == ["INFY"]
+    assert fresh == 0
+
+
+def test_queue_prioritises_legacy_before_missing_and_stale(monkeypatch):
+    old = (datetime.now(timezone.utc) - timedelta(days=60)).isoformat()
+    monkeypatch.setattr(worker, "warehouse_universe", lambda: ["MISSING", "STALE", "LEGACY"])
+    monkeypatch.setattr(
+        worker,
+        "latest_versions",
+        lambda: {
+            "LEGACY": {"generated_at": datetime.now(timezone.utc).isoformat(), "generator_version": "cid-openai-v1"},
+            "STALE": {"generated_at": old, "generator_version": worker.GENERATOR_VERSION},
+        },
+    )
+    queue, fresh = worker.eligible_queue(refresh_days=30)
+    assert queue == ["LEGACY", "MISSING", "STALE"]
+    assert fresh == 0
+
+
+def test_worker_count_is_hard_capped_at_fifteen(monkeypatch, tmp_path):
     monkeypatch.setenv("CID_DOSSIER_WORKERS", "20")
     monkeypatch.setenv("KIP_DATA_DIR", str(tmp_path))
     monkeypatch.setattr(worker, "openai_status", lambda: {"enabled": True})
@@ -52,10 +83,19 @@ def test_worker_count_is_hard_capped_at_ten(monkeypatch, tmp_path):
 
     def stop_after_status(payload):
         if payload.get("status") == "idle":
-            assert payload["workers"] == 10
+            assert payload["workers"] == 15
             worker.STOP.set()
 
     worker.STOP.clear()
     monkeypatch.setattr(worker, "write_status", stop_after_status)
     worker.run_forever()
     worker.STOP.clear()
+
+
+def test_generate_can_disable_live_enrichment(monkeypatch):
+    monkeypatch.setenv("CID_DOSSIER_LIVE_ENRICHMENT_ENABLED", "false")
+    monkeypatch.setenv("CID_OPENAI_ENABLED", "true")
+    monkeypatch.setattr("cid.warehouse_dossier.build", lambda ticker: {"ticker": ticker})
+    monkeypatch.setattr(worker, "generate", lambda ticker, dossier: {"ok": True, "persistence": {"persisted": True, "version": 1}})
+    out = worker._generate("INFY")
+    assert out["ok"] is True

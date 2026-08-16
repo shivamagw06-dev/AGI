@@ -1,4 +1,4 @@
-"""Continuous four-worker company dossier population service."""
+"""Continuous, version-aware company dossier population service."""
 
 from __future__ import annotations
 
@@ -14,11 +14,12 @@ from typing import Any
 
 from cid.openai_dossier import status as openai_status
 from cid.persistence import generated_age_seconds, latest_versions
-from cid.openai_dossier import generate
+from cid.openai_dossier import GENERATOR_VERSION, generate
 
 STOP = Event()
 DEFAULT_WORKERS = 4
-DEFAULT_SPRINT_MODE = True  # Temporary: revert after the dossier queue reaches zero.
+MAX_WORKERS = 15
+DEFAULT_SPRINT_MODE = False
 
 
 def _now() -> str:
@@ -94,15 +95,23 @@ def eligible_queue(*, refresh_days: float) -> tuple[list[str], int]:
     universe = warehouse_universe()
     versions = latest_versions()
     fresh_seconds = max(0.25, refresh_days) * 86400
-    queue = []
+    legacy: list[str] = []
+    missing: list[str] = []
+    stale: list[str] = []
     fresh = 0
     for ticker in universe:
-        age = generated_age_seconds(versions.get(ticker) or {})
-        if age is not None and age < fresh_seconds:
+        version = versions.get(ticker) or {}
+        age = generated_age_seconds(version)
+        current_spec = str(version.get("generator_version") or "") == GENERATOR_VERSION
+        if current_spec and age is not None and age < fresh_seconds:
             fresh += 1
+        elif version and not current_spec:
+            legacy.append(ticker)
+        elif not version:
+            missing.append(ticker)
         else:
-            queue.append(ticker)
-    return queue, fresh
+            stale.append(ticker)
+    return legacy + missing + stale, fresh
 
 
 def _generate(ticker: str) -> dict[str, Any]:
@@ -110,6 +119,40 @@ def _generate(ticker: str) -> dict[str, Any]:
     from cid.warehouse_dossier import build
 
     dossier = build(ticker)
+    if os.environ.get("CID_DOSSIER_LIVE_ENRICHMENT_ENABLED", "true").strip().lower() in {"1", "true", "yes"}:
+        try:
+            from ecp.production import soft_complete
+
+            completion = soft_complete(
+                query=f"Complete institutional dossier evidence for {ticker}",
+                ticker=ticker,
+                cid=dossier,
+                force=True,
+            )
+            delta = completion.get("cid_delta") if isinstance(completion.get("cid_delta"), dict) else {}
+            for key, value in delta.items():
+                if key not in {"ticker", "ecp_completed"} and value not in (None, {}, []):
+                    dossier[key] = value
+            dossier["evidence_completion"] = {
+                key: completion.get(key)
+                for key in (
+                    "coverage_before",
+                    "coverage",
+                    "completed_automatically",
+                    "still_missing",
+                    "still_missing_items",
+                    "providers_used",
+                    "conflicts",
+                    "quality_panel",
+                    "errors",
+                )
+            }
+        except Exception as exc:
+            dossier["evidence_completion"] = {
+                "status": "degraded",
+                "error": type(exc).__name__,
+                "message": str(exc)[:300],
+            }
     openai_enabled = os.environ.get("CID_OPENAI_ENABLED", "false").strip().lower() in {"1", "true", "yes"}
     if openai_enabled:
         result = generate(ticker, dossier)
@@ -143,8 +186,8 @@ def _generate(ticker: str) -> dict[str, Any]:
 def run_forever() -> None:
     sprint_default = "true" if DEFAULT_SPRINT_MODE else "false"
     sprint_mode = os.environ.get("CID_DOSSIER_SPRINT_MODE", sprint_default).strip().lower() in {"1", "true", "yes"}
-    configured_workers = 10 if sprint_mode else int(os.environ.get("CID_DOSSIER_WORKERS", str(DEFAULT_WORKERS)))
-    workers = max(1, min(10, configured_workers))
+    configured_workers = MAX_WORKERS if sprint_mode else int(os.environ.get("CID_DOSSIER_WORKERS", str(DEFAULT_WORKERS)))
+    workers = max(1, min(MAX_WORKERS, configured_workers))
     refresh_days = float(os.environ.get("CID_DOSSIER_REFRESH_DAYS", "30"))
     idle_seconds = max(30, int(os.environ.get("CID_DOSSIER_IDLE_SECONDS", "300")))
     batch_pause_seconds = max(0, float(os.environ.get("CID_DOSSIER_BATCH_PAUSE_SECONDS", "10")))

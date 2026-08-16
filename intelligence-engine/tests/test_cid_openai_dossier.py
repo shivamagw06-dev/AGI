@@ -37,6 +37,7 @@ def test_structured_output_schema_requires_every_section():
 
 
 def test_missing_key_fails_closed(monkeypatch):
+    monkeypatch.setenv("CID_OPENAI_ENABLED", "true")
     monkeypatch.delenv("OPENAI_API_KEY", raising=False)
     out = generate("INFY", _dossier())
     assert out["ok"] is False
@@ -71,6 +72,7 @@ def test_generation_keeps_only_valid_citations(monkeypatch):
             return Response()
 
     monkeypatch.setenv("OPENAI_API_KEY", "test")
+    monkeypatch.setenv("CID_OPENAI_ENABLED", "true")
     monkeypatch.setitem(sys.modules, "openai", types.SimpleNamespace(OpenAI=Client))
     monkeypatch.setattr("cid.persistence.save_version", lambda dossier: {"persisted": True, "version": 3})
     out = generate("INFY", _dossier())

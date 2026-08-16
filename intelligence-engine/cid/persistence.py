@@ -64,7 +64,7 @@ def load_latest(ticker: str) -> dict[str, Any] | None:
 def latest_versions() -> dict[str, dict[str, Any]]:
     rows = _rest(
         "GET",
-        "?select=ticker,company_name,version,generated_at,coverage_score,coverage_grade&order=ticker.asc,version.desc&limit=10000",
+        "?select=ticker,company_name,version,generator_version,model,generated_at,coverage_score,coverage_grade&order=ticker.asc,version.desc&limit=10000",
     )
     latest: dict[str, dict[str, Any]] = {}
     for row in rows if isinstance(rows, list) else []:

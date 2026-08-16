@@ -185,15 +185,15 @@ services:
       # has the required history, while live market collection is owned by the
       # Node Upstox/Groww schedulers. Keep HTTP capacity for Ask and strategies.
       - key: AGI_GATHER_SIDECAR
-        value: "true"
+        value: "false"
       - key: AGI_GATHER_SIDECAR_PROFILE
         value: forecast_only
       - key: AGI_GATHER_SIDECAR_DELAY_SEC
         value: "120"
       - key: FIE_RUNTIME
-        value: "true"
+        value: "false"
       - key: FIE_SIDECAR
-        value: "true"
+        value: "false"
       - key: FIE_BATCH
         value: "2"
       - key: FIE_INTERVAL_SECONDS
@@ -203,7 +203,7 @@ services:
       - key: STRATEGY_VALIDATION_INTERVAL_SECONDS
         value: "1800"
       - key: ANSWER_PACK_MATERIALIZER_ENABLED
-        value: "true"
+        value: "false"
       - key: ANSWER_PACK_MATERIALIZER_INTERVAL_SECONDS
         value: "600"
       - key: ANSWER_PACK_MATERIALIZER_BATCH
@@ -243,15 +243,19 @@ services:
       - key: OPENAI_API_KEY
         sync: false
       - key: CID_DOSSIER_WORKER_ENABLED
-        value: "false"
-      - key: CID_DOSSIER_PAUSED
         value: "true"
+      - key: CID_DOSSIER_PAUSED
+        value: "false"
       - key: CID_DOSSIER_WORKERS
-        value: "4"
+        value: "15"
       - key: CID_DOSSIER_SPRINT_MODE
         value: "false"
       - key: CID_DOSSIER_BATCH_PAUSE_SECONDS
-        value: "10"
+        value: "5"
+      - key: CID_DOSSIER_LIVE_ENRICHMENT_ENABLED
+        value: "true"
+      - key: CID_OPENAI_ENABLED
+        value: "true"
       - key: CID_DOSSIER_START_DELAY_SECONDS
         value: "120"
       - key: CID_DOSSIER_REFRESH_DAYS
@@ -346,20 +350,20 @@ services:
       - key: AGI_PKG_01_ENABLED
         value: "false"
       - key: CONTINUOUS_LIDI
-        value: "true"
+        value: "false"
       - key: CONTINUOUS_KF_HD
-        value: "true"
+        value: "false"
       - key: CONTINUOUS_FAA_REFRESH
-        value: "true"
+        value: "false"
       - key: CONTINUOUS_LEARNING_LOOP
-        value: "true"
+        value: "false"
       - key: CONTINUOUS_DIRECTOR_LEARNING
-        value: "true"
+        value: "false"
       - key: CONTINUOUS_HISTORICAL_BACKFILL
         value: "false"
       # Keep draining backlog until every listed company is fully backfilled, then maintenance-only.
       - key: CONTINUOUS_BACKFILL_UNTIL_COMPLETE
-        value: "true"
+        value: "false"
       - key: CONTINUOUS_BACKFILL_ACTIVE_INTERVAL_SEC
         value: "300"
       # Knowledge Factory Historical Depth — owned by gather sidecar/worker.
