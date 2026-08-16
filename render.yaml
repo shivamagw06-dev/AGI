@@ -563,6 +563,14 @@ services:
         value: "true"
       - key: MIE_PUBLIC_DATA_ENABLED
         value: "true"
+      # Bounded India Core 50 gap discovery. Values remain Tier-D PROPOSED
+      # evidence until an official connector or reviewer validates them.
+      - key: MIE_WEB_FALLBACK_ENABLED
+        value: "true"
+      - key: MIE_WEB_FALLBACK_LIMIT
+        value: "8"
+      - key: MIE_WEB_EXTRACT_MODEL
+        value: gpt-4.1-mini
       - key: MIE_RUNTIME_INTERVAL_SEC
         value: "3600"
       - key: E01_P0
@@ -640,6 +648,8 @@ services:
       - key: KF_HD_CHUNK_YEARS
         value: "5"
       - key: EXA_API_KEY
+        sync: false
+      - key: OPENAI_API_KEY
         sync: false
       - key: FIRECRAWL_API_KEY
         sync: false

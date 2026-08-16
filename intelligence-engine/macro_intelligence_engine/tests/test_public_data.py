@@ -2,7 +2,7 @@ from macro_intelligence_engine.g20_source_catalog import COUNTRY_SOURCES, MODULE
 from macro_intelligence_engine.public_data import CORE_50, g20_matrix, g20_source_plan, latest_observations, readiness
 import json
 
-from macro_intelligence_engine.public_ingestion import WORLD_BANK_SERIES, YAHOO_MACRO_MARKET_SERIES, collect_yahoo_macro_market, registry_rows
+from macro_intelligence_engine.public_ingestion import WORLD_BANK_SERIES, YAHOO_MACRO_MARKET_SERIES, collect_web_macro_gaps, collect_yahoo_macro_market, registry_rows
 
 
 def test_core_50_is_unique_and_complete():
@@ -149,3 +149,40 @@ def test_world_bank_refresh_is_incremental_when_history_exists(monkeypatch):
 
     assert result["ok"] is False
     assert histories == [3] * len(WORLD_BANK_SERIES)
+
+
+def test_web_macro_fallback_is_disabled_by_default(monkeypatch):
+    monkeypatch.delenv("MIE_WEB_FALLBACK_ENABLED", raising=False)
+    result = collect_web_macro_gaps()
+    assert result["status"] == "DISABLED"
+    assert result["accepted"] == 0
+
+
+def test_web_macro_fallback_persists_only_proposed_tier_d_evidence(monkeypatch):
+    monkeypatch.setenv("MIE_WEB_FALLBACK_ENABLED", "true")
+    monkeypatch.setenv("EXA_API_KEY", "test")
+    monkeypatch.setenv("OPENAI_API_KEY", "test")
+    monkeypatch.setattr(
+        "macro_intelligence_engine.public_ingestion._missing_india_series",
+        lambda: [("cpi", "inflation", "Headline CPI", "monthly")],
+    )
+    monkeypatch.setattr(
+        "macro_intelligence_engine.public_ingestion._exa_macro_search",
+        lambda *_args: ([{"title":"MoSPI CPI release","url":"https://www.mospi.gov.in/cpi","published_date":"2026-08-12","text":"CPI was 2.1%."}], "query", "hash"),
+    )
+    monkeypatch.setattr(
+        "macro_intelligence_engine.public_ingestion._extract_macro_observation",
+        lambda *_args: ({"value":2.1,"unit":"%","period_date":"2026-07-31","release_date":"2026-08-12","source_url":"https://www.mospi.gov.in/cpi","source_title":"MoSPI CPI release","quote":"CPI was 2.1%.","confidence":0.94}, "gpt-test"),
+    )
+    captured={}
+    monkeypatch.setattr(
+        "macro_intelligence_engine.public_ingestion._persist_official_run",
+        lambda source, registry, observations, errors: captured.update(source=source,observations=observations,errors=errors) or {"ok":True,"accepted":len(observations)},
+    )
+    result=collect_web_macro_gaps()
+    row=captured["observations"][0]
+    assert result["accepted"] == 1
+    assert row["quality_status"] == "PROVISIONAL"
+    assert row["metadata"]["source_tier"] == "D"
+    assert row["metadata"]["trust_status"] == "PROPOSED"
+    assert row["metadata"]["pit_status"] == "FETCH_VINTAGE_ONLY"

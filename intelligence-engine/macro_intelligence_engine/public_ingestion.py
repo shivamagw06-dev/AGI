@@ -1,6 +1,6 @@
 """Durable public macro ingestion. Background runtime only; never called by page reads."""
 from __future__ import annotations
-import csv, hashlib, io, json, os, time, urllib.error, urllib.parse, urllib.request, uuid
+import csv, hashlib, io, json, math, os, time, urllib.error, urllib.parse, urllib.request, uuid
 from datetime import datetime, timezone
 from macro_intelligence_engine.public_data import CORE_50
 
@@ -48,6 +48,14 @@ YAHOO_MACRO_MARKET_SERIES = {
     "gold": {"symbol": "GC=F", "country": "WLD", "unit": "USD/troy oz"},
     "global_risk": {"symbol": "^VIX", "country": "WLD", "unit": "index"},
 }
+
+# Search is a gap-filling evidence source, not a substitute for an official
+# statistical connector.  Results outside these domains are never persisted.
+INDIA_MACRO_SOURCE_DOMAINS = (
+    "rbi.org.in", "mospi.gov.in", "commerce.gov.in", "indiabudget.gov.in",
+    "dea.gov.in", "labour.gov.in", "data.gov.in", "bis.org", "imf.org",
+    "worldbank.org", "oecd.org", "ilo.org", "unctad.org",
+)
 
 def _now(): return datetime.now(timezone.utc)
 
@@ -249,12 +257,121 @@ def collect_yahoo_macro_market():
         except Exception as exc: errors.append(f"{series_id}:{symbol}:{str(exc)[:120]}")
     return _persist_official_run("Yahoo Finance Macro Market",[],observations,errors)
 
+
+def _truthy(name, default="false"):
+    return str(os.getenv(name, default)).strip().lower() in {"1", "true", "yes", "on"}
+
+
+def _missing_india_series():
+    """Return registered Core 50 series with no persisted India/global value."""
+    rows = _rest(
+        "macro_public_observations",
+        query="?select=series_id&country_code=in.(IND,WLD)&limit=10000",
+    ) or []
+    observed = {str(row.get("series_id") or "") for row in rows}
+    return [row for row in CORE_50 if row[0] not in observed and row[3] != "derived"]
+
+
+def _exa_macro_search(label, domain, frequency):
+    key=(os.getenv("EXA_API_KEY") or "").strip()
+    if not key: raise RuntimeError("exa_api_key_missing")
+    query=(
+        f"India latest official {label} {frequency} value release date "
+        f"{domain} statistics"
+    )
+    payload={
+        "query":query,"numResults":5,"type":"auto","includeDomains":list(INDIA_MACRO_SOURCE_DOMAINS),
+        "contents":{"text":{"maxCharacters":3500}},
+    }
+    request=urllib.request.Request(
+        "https://api.exa.ai/search",data=json.dumps(payload).encode(),method="POST",
+        headers={"x-api-key":key,"Content-Type":"application/json","User-Agent":"AGI-Macro-Intelligence/1.0"},
+    )
+    with _urlopen(request,timeout=35) as response: raw=response.read()
+    data=json.loads(raw); results=[]
+    for item in data.get("results") or []:
+        if not isinstance(item,dict): continue
+        url=str(item.get("url") or "")
+        hostname=(urllib.parse.urlparse(url).hostname or "").lower()
+        if not any(hostname == host or hostname.endswith(f".{host}") for host in INDIA_MACRO_SOURCE_DOMAINS): continue
+        results.append({"title":item.get("title"),"url":url,"published_date":item.get("publishedDate"),"text":str(item.get("text") or "")[:3500]})
+    return results,query,hashlib.sha256(raw).hexdigest()
+
+
+def _extract_macro_observation(series_id, label, frequency, results):
+    """Use the configured model only to structure quoted webpage evidence."""
+    key=(os.getenv("OPENAI_API_KEY") or "").strip()
+    if not key: raise RuntimeError("openai_api_key_missing")
+    model=(os.getenv("MIE_WEB_EXTRACT_MODEL") or "gpt-4.1-mini").strip()
+    evidence=json.dumps(results,separators=(",",":"),ensure_ascii=True)
+    prompt=(
+        "Extract the latest completed-period numerical observation for the requested India macro series. "
+        "Use only the supplied webpage evidence. Never estimate, calculate, or use a forecast. Return JSON only with keys: "
+        "value (number or null), unit (string or null), period_date (YYYY-MM-DD or null), release_date "
+        "(YYYY-MM-DD or null), source_url (one supplied URL or null), source_title (string or null), quote "
+        "(short exact supporting text or null), confidence (0 to 1). If the value, period, unit, and supporting source "
+        "are not explicit, return value null.\n"
+        f"series_id={series_id}; label={label}; expected_frequency={frequency}; country=India\nEVIDENCE={evidence}"
+    )
+    payload={"model":model,"input":prompt,"temperature":0,"text":{"format":{"type":"json_object"}}}
+    request=urllib.request.Request(
+        "https://api.openai.com/v1/responses",data=json.dumps(payload).encode(),method="POST",
+        headers={"Authorization":f"Bearer {key}","Content-Type":"application/json","User-Agent":"AGI-Macro-Intelligence/1.0"},
+    )
+    with _urlopen(request,timeout=45) as response: data=json.loads(response.read())
+    text=""
+    for item in data.get("output") or []:
+        for content in item.get("content") or []:
+            if content.get("type") == "output_text": text += str(content.get("text") or "")
+    return json.loads(text or "{}"),model
+
+
+def collect_web_macro_gaps():
+    """Fill bounded Core 50 gaps from cited web pages as untrusted candidates."""
+    if not _truthy("MIE_WEB_FALLBACK_ENABLED"):
+        return {"ok":True,"source":"Exa Web Macro Fallback","status":"DISABLED","accepted":0,"errors":[]}
+    limit=max(1,min(int(os.getenv("MIE_WEB_FALLBACK_LIMIT","8")),20))
+    observations=[]; errors=[]; fetched=_now()
+    for series_id,domain,label,frequency in _missing_india_series()[:limit]:
+        try:
+            results,query,search_hash=_exa_macro_search(label,domain,frequency)
+            if not results: errors.append(f"{series_id}:no_authoritative_results"); continue
+            extracted,model=_extract_macro_observation(series_id,label,frequency,results)
+            value=extracted.get("value"); source_url=str(extracted.get("source_url") or "")
+            if value is None or not source_url or source_url not in {row["url"] for row in results}:
+                errors.append(f"{series_id}:no_explicit_observation"); continue
+            value=float(value)
+            if not math.isfinite(value):
+                errors.append(f"{series_id}:non_finite_value"); continue
+            if float(extracted.get("confidence") or 0) < 0.75:
+                errors.append(f"{series_id}:low_extraction_confidence"); continue
+            period=str(extracted.get("period_date") or "")
+            release=str(extracted.get("release_date") or "")
+            try:
+                datetime.fromisoformat(period); datetime.fromisoformat(release)
+            except ValueError:
+                errors.append(f"{series_id}:date_missing"); continue
+            observations.append({
+                "series_id":series_id,"country_code":"IND","period_date":period,"value_numeric":value,
+                "unit":extracted.get("unit"),"frequency":frequency,"release_date":f"{release}T00:00:00+00:00",
+                "available_at":fetched.isoformat(),"vintage_date":fetched.date().isoformat(),"revision_number":0,
+                "is_forecast":False,"source":extracted.get("source_title") or "Authoritative webpage via Exa",
+                "source_url":source_url,"source_payload_hash":search_hash,"quality_status":"PROVISIONAL",
+                "metadata":{"connector":"exa_web_fallback","query":query,"quote":extracted.get("quote"),
+                    "extractor_model":model,"extractor_confidence":extracted.get("confidence"),
+                    "pit_status":"FETCH_VINTAGE_ONLY","source_tier":"D","trust_status":"PROPOSED",
+                    "evidence_role":"WEB_DISCOVERED_CANDIDATE_REQUIRES_VALIDATION"},
+            })
+        except Exception as exc: errors.append(f"{series_id}:{type(exc).__name__}:{str(exc)[:100]}")
+    return _persist_official_run("Exa Web Macro Fallback",[],observations,errors)
+
 def source_status():
     return [
         {"source":"World Bank","status":"CONNECTED","collection":"LIVE_API"},
         {"source":"IMF","status":"DEPLOYMENT_BLOCKED","collection":"RENDER_EGRESS_HTTP_403; API_V2_VERIFIED_EXTERNALLY"},
         {"source":"OECD","status":"CONNECTED","collection":"LIVE_SDMX"},
         {"source":"Yahoo Finance","status":"CONNECTED","collection":"MARKET_REFERENCE_TIER_D"},
+        {"source":"Exa Web Fallback","status":"CONNECTED" if _truthy("MIE_WEB_FALLBACK_ENABLED") and (os.getenv("EXA_API_KEY") or "").strip() else "DISABLED","collection":"AUTHORITATIVE_WEB_DISCOVERY_TIER_D_PROPOSED"},
         {"source":"MoSPI","status":"CONFIGURATION_REQUIRED","collection":"API_ACCESS_TOKEN_REQUIRED"},
         {"source":"RBI","status":"MAPPING_REQUIRED","collection":"DBIE_ACCESS_PATH_REQUIRED"},
         {"source":"BIS","status":"MAPPING_REQUIRED","collection":"SDMX_SERIES_KEYS_REQUIRED"},
@@ -283,6 +400,7 @@ def run_public_ingestion():
         run_stage("IMF WEO DataMapper", collect_imf_g20),
         run_stage("OECD SDMX", collect_oecd_policy_rates),
         run_stage("Yahoo Finance Macro Market", collect_yahoo_macro_market),
+        run_stage("Exa Web Macro Fallback", collect_web_macro_gaps),
     ]
     return {
         "ok": bool(seeded.get("ok") and all(item.get("ok") for item in collectors)),
