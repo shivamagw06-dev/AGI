@@ -556,10 +556,15 @@ services:
         value: "1800"
       - key: CONTINUOUS_MORNING_DAG
         value: "false"
-      # Worker pause mirrors the web service. These switches are reversible
-      # and do not delete warehouse, macro or portfolio data.
+      # Macro public-data collection runs on the dedicated worker. The runtime
+      # checks hourly but enforces a 24-hour public-source refresh internally.
+      # Other paused product loops remain disabled and no dossier work resumes.
       - key: MIE_RUNTIME_ENABLED
-        value: "false"
+        value: "true"
+      - key: MIE_PUBLIC_DATA_ENABLED
+        value: "true"
+      - key: MIE_RUNTIME_INTERVAL_SEC
+        value: "3600"
       - key: E01_P0
         value: "false"
       - key: E10_P0
