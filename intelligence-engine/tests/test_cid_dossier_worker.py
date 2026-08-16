@@ -7,6 +7,7 @@ if str(ENGINE_ROOT) not in sys.path:
     sys.path.insert(0, str(ENGINE_ROOT))
 
 from cid import worker
+from cid import persistence
 from cid.persistence import generated_age_seconds
 
 
@@ -14,6 +15,35 @@ def test_generated_age_seconds():
     now = datetime(2026, 8, 12, tzinfo=timezone.utc)
     row = {"generated_at": (now - timedelta(days=2)).isoformat()}
     assert generated_age_seconds(row, now=now) == 2 * 86400
+
+
+def test_latest_versions_paginates_past_supabase_row_limit(monkeypatch):
+    first_page = [
+        {
+            "ticker": f"TICKER{i:04d}",
+            "version": 1,
+            "generator_version": worker.GENERATOR_VERSION,
+        }
+        for i in range(1000)
+    ]
+    second_page = [
+        {
+            "ticker": "TICKER1000",
+            "version": 1,
+            "generator_version": worker.GENERATOR_VERSION,
+        }
+    ]
+
+    def fake_rest(method, query="", body=None, **kwargs):
+        assert method == "GET"
+        return second_page if "offset=1000" in query else first_page
+
+    monkeypatch.setattr(persistence, "_rest", fake_rest)
+
+    versions = persistence.latest_versions()
+
+    assert len(versions) == 1001
+    assert versions["TICKER1000"]["version"] == 1
 
 
 def test_queue_skips_fresh_versions(monkeypatch):

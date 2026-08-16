@@ -62,15 +62,24 @@ def load_latest(ticker: str) -> dict[str, Any] | None:
 
 
 def latest_versions() -> dict[str, dict[str, Any]]:
-    rows = _rest(
-        "GET",
-        "?select=ticker,company_name,version,generator_version,model,generated_at,coverage_score,coverage_grade&order=ticker.asc,version.desc&limit=10000",
-    )
     latest: dict[str, dict[str, Any]] = {}
-    for row in rows if isinstance(rows, list) else []:
-        ticker = str(row.get("ticker") or "").upper()
-        if ticker and ticker not in latest:
-            latest[ticker] = row
+    page_size = 1000
+    offset = 0
+    while True:
+        rows = _rest(
+            "GET",
+            "?select=ticker,company_name,version,generator_version,model,generated_at,coverage_score,coverage_grade"
+            f"&order=ticker.asc,version.desc&limit={page_size}&offset={offset}",
+        )
+        if not isinstance(rows, list) or not rows:
+            break
+        for row in rows:
+            ticker = str(row.get("ticker") or "").upper()
+            if ticker and ticker not in latest:
+                latest[ticker] = row
+        if len(rows) < page_size:
+            break
+        offset += page_size
     return latest
 
 

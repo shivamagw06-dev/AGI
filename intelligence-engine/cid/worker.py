@@ -202,6 +202,7 @@ def run_forever() -> None:
     idle_seconds = max(30, int(os.environ.get("CID_DOSSIER_IDLE_SECONDS", "300")))
     batch_pause_seconds = max(0, float(os.environ.get("CID_DOSSIER_BATCH_PAUSE_SECONDS", "10")))
     failures: dict[str, dict[str, Any]] = {}
+    completed_tickers: set[str] = set()
     completed = 0
     fallback_completed = 0
 
@@ -228,7 +229,8 @@ def run_forever() -> None:
         now = time.time()
         queue = [
             ticker for ticker in queue
-            if now >= float((failures.get(ticker) or {}).get("retry_at") or 0)
+            if ticker not in completed_tickers
+            and now >= float((failures.get(ticker) or {}).get("retry_at") or 0)
         ]
         if not queue:
             write_status(
@@ -280,6 +282,7 @@ def run_forever() -> None:
                     result = {"ok": False, "ticker": ticker, "error": type(exc).__name__, "message": str(exc)[:300]}
                 if result.get("ok"):
                     completed += 1
+                    completed_tickers.add(ticker)
                     if result.get("fallback"):
                         fallback_completed += 1
                     failures.pop(ticker, None)
