@@ -191,7 +191,12 @@ def collect_yahoo_macro_market():
     observations=[]; errors=[]; fetched=_now()
     for series_id, spec in YAHOO_MACRO_MARKET_SERIES.items():
         symbol=spec["symbol"]
-        url=f"https://query2.finance.yahoo.com/v8/finance/chart/{urllib.parse.quote(symbol, safe='')}?interval=1d&range=2y"
+        try:
+            has_history=bool(_rest("macro_public_observations",query=f"?select=id&series_id=eq.{series_id}&limit=1"))
+        except Exception:
+            has_history=False
+        history_range="5d" if has_history else "2y"
+        url=f"https://query2.finance.yahoo.com/v8/finance/chart/{urllib.parse.quote(symbol, safe='')}?interval=1d&range={history_range}"
         try:
             request=urllib.request.Request(url,headers={"User-Agent":"Mozilla/5.0 AGI-Macro-Intelligence/1.0","Accept":"application/json"})
             with urllib.request.urlopen(request,timeout=25) as response: raw=response.read()
@@ -209,7 +214,8 @@ def collect_yahoo_macro_market():
                     "available_at":fetched.isoformat(),"vintage_date":fetched.date().isoformat(),"revision_number":0,
                     "is_forecast":False,"source":"Yahoo Finance Chart API","source_url":url,"source_payload_hash":digest,
                     "quality_status":"PROVISIONAL","metadata":{"symbol":symbol,"market_timestamp":observed_at.isoformat(),
-                    "pit_status":"FETCH_VINTAGE_ONLY","source_tier":"D","evidence_role":"MARKET_REFERENCE_NOT_OFFICIAL_MACRO"},
+                    "pit_status":"FETCH_VINTAGE_ONLY","source_tier":"D","history_range":history_range,
+                    "evidence_role":"MARKET_REFERENCE_NOT_OFFICIAL_MACRO"},
                 }); accepted+=1
             if not accepted: errors.append(f"{series_id}:{symbol}:no_observations")
         except Exception as exc: errors.append(f"{series_id}:{symbol}:{str(exc)[:120]}")

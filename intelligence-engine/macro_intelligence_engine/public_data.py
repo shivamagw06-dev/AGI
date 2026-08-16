@@ -89,11 +89,32 @@ def _warehouse_rows(table: str, limit: int = 5000) -> list[dict[str, Any]]:
         return []
 
 
+def _core_observation_rows(limit: int = 10000) -> list[dict[str, Any]]:
+    """Read only Core 50 evidence so G20 and market histories cannot crowd it out."""
+    try:
+        from macro_intelligence_engine.public_ingestion import _rest
+        requested=max(1,int(limit)); cache_key=("macro_public_observations_core",requested); now=time.monotonic()
+        cached=_PUBLIC_CACHE.get(cache_key)
+        if cached and now-cached[0] < 20:
+            return list(cached[1])
+        ids=",".join(row[0] for row in CORE_50); rows=[]; page_size=min(1000,requested)
+        for offset in range(0,requested,page_size):
+            query=(f"?select=*&series_id=in.({ids})&country_code=in.(IND,WLD)"
+                   f"&order=ingested_at.desc&limit={page_size}&offset={offset}")
+            page=list(_rest("macro_public_observations",query=query) or [])
+            rows.extend(page)
+            if len(page) < page_size: break
+        result=rows[:requested]; _PUBLIC_CACHE[cache_key]=(now,result)
+        return list(result)
+    except Exception:
+        return []
+
+
 def readiness(country: str = "India") -> dict[str, Any]:
     """Report persisted public-data coverage; never fabricates readiness from placeholders."""
     country_norm = str(country or "India").strip()
     registry = _warehouse_rows("macro_public_series_registry")
-    observations = _warehouse_rows("macro_public_observations")
+    observations = _core_observation_rows()
     allowed_countries = {country_norm.lower(), "in", "ind", "global", "wld"}
     registry_ids = {
         str(row.get("series_id") or "") for row in registry
@@ -174,7 +195,7 @@ def latest_observations(country: str = "India") -> dict[str, Any]:
         for row in _warehouse_rows("macro_public_series_registry")
     }
     rows = [
-        row for row in _warehouse_rows("macro_public_observations")
+        row for row in _core_observation_rows()
         if str(row.get("country_code") or row.get("country") or "").lower() in allowed
         and row.get("value_numeric") is not None
     ]

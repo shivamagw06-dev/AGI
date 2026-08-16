@@ -48,6 +48,7 @@ def test_yahoo_macro_market_persists_tier_d_fetch_vintages(monkeypatch):
 
     captured = {}
     monkeypatch.setattr("macro_intelligence_engine.public_ingestion.urllib.request.urlopen", lambda *_args, **_kwargs: Response())
+    monkeypatch.setattr("macro_intelligence_engine.public_ingestion._rest", lambda *_args, **_kwargs: [])
     monkeypatch.setattr("macro_intelligence_engine.public_ingestion._persist_official_run", lambda source, registry, observations, errors: captured.update(source=source, registry=registry, observations=observations, errors=errors) or {"ok": True, "accepted": len(observations)})
     result = collect_yahoo_macro_market()
     assert result["accepted"] == 12
@@ -55,6 +56,7 @@ def test_yahoo_macro_market_persists_tier_d_fetch_vintages(monkeypatch):
     assert captured["errors"] == []
     assert all(row["metadata"]["source_tier"] == "D" for row in captured["observations"])
     assert all(row["metadata"]["pit_status"] == "FETCH_VINTAGE_ONLY" for row in captured["observations"])
+    assert all(row["metadata"]["history_range"] == "2y" for row in captured["observations"])
 
 
 def test_latest_observations_returns_a_payload(monkeypatch):
