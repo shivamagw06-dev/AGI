@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Activity, AlertTriangle, ChevronRight, Database, ExternalLink, Globe2, Landmark, Scale, ShieldCheck, X } from 'lucide-react';
+import { Activity, AlertTriangle, ChevronRight, Database, ExternalLink, Globe2, Landmark, Radio, Radar, ShieldCheck, X } from 'lucide-react';
 import PageShell from '@/components/Layout/PageShell';
 import AskAgiBar from '@/components/Home/AskAgiBar';
 import DeskResearchFeed from '@/components/Research/DeskResearchFeed';
@@ -34,6 +34,21 @@ const MACRO_MODULES = [
   { id:'commodities', index:'09', name:'Commodities', ids:['brent','oil','gold','copper'], required:['Energy, metals and agriculture curves','Country import/export exposure','Commodity-inflation transmission','Inventory and supply indicators'], implication:'Inflation, trade balances, producers and input-cost margins' },
 ];
 
+const COUNTRY_THEMES = {
+  ARG:{flag:'🇦🇷',primary:'#75AADB',secondary:'#F6C85F'}, AUS:{flag:'🇦🇺',primary:'#00A86B',secondary:'#FFCD00'},
+  BRA:{flag:'🇧🇷',primary:'#28A745',secondary:'#FFD34E'}, CAN:{flag:'🇨🇦',primary:'#FF4D5A',secondary:'#F5F7F8'},
+  CHN:{flag:'🇨🇳',primary:'#EE334E',secondary:'#FFDE59'}, DEU:{flag:'🇩🇪',primary:'#FFCE00',secondary:'#E53935'},
+  FRA:{flag:'🇫🇷',primary:'#4A74F5',secondary:'#EF4D62'}, GBR:{flag:'🇬🇧',primary:'#4F6BED',secondary:'#E4475B'},
+  IDN:{flag:'🇮🇩',primary:'#F14C5A',secondary:'#F4F7F8'}, IND:{flag:'🇮🇳',primary:'#FF9F43',secondary:'#19B982'},
+  ITA:{flag:'🇮🇹',primary:'#22B573',secondary:'#F35A64'}, JPN:{flag:'🇯🇵',primary:'#F24962',secondary:'#F7F9FA'},
+  KOR:{flag:'🇰🇷',primary:'#4D75E8',secondary:'#F25268'}, MEX:{flag:'🇲🇽',primary:'#18A66D',secondary:'#E54855'},
+  RUS:{flag:'🇷🇺',primary:'#4779EB',secondary:'#F14A5E'}, SAU:{flag:'🇸🇦',primary:'#13B675',secondary:'#F5F7F8'},
+  TUR:{flag:'🇹🇷',primary:'#F04458',secondary:'#F5F7F8'}, USA:{flag:'🇺🇸',primary:'#4D78F0',secondary:'#F04E62'},
+  ZAF:{flag:'🇿🇦',primary:'#25B86F',secondary:'#F0C94B'}, WLD:{flag:'◉',primary:'#4DD7D0',secondary:'#8A7CFF'},
+};
+
+const countryTheme = (iso3) => COUNTRY_THEMES[iso3] || COUNTRY_THEMES.WLD;
+
 const fmt = (value) => {
   const number = Number(value);
   if (!Number.isFinite(number)) return '—';
@@ -44,6 +59,51 @@ function Status({ children, tone = '' }) { return <span className={`eco-status $
 
 function moduleEvidence(module, byId) {
   return [...new Map(module.ids.map((id) => byId[id]).filter(Boolean).map((row) => [row.series_id, row])).values()];
+}
+
+function CountryCommand({ countries, selectedIso, onSelect, coverage, latest, age }) {
+  const globalRow = { iso3:'WLD', country:'Global macro network', observed:Math.round(Number(coverage || 0)), total:100, indicators:{} };
+  const selected = selectedIso === 'WLD' ? globalRow : countries.find((row) => row.iso3 === selectedIso) || countries.find((row) => row.iso3 === 'IND') || countries[0] || globalRow;
+  const theme = countryTheme(selected?.iso3 || 'WLD');
+  const indicators = [
+    ['Growth', 'gdp_growth'], ['Inflation', 'inflation'], ['Employment', 'unemployment'],
+    ['Debt / GDP', 'government_debt_gdp'], ['Current account', 'current_account_gdp'], ['Investment', 'investment_gdp'],
+  ];
+  const observed = selected?.observed || 0;
+  const total = selected?.total || 8;
+  const observedPercent = Math.round((observed / Math.max(total, 1)) * 100);
+  const metric = (key) => selected?.indicators?.[key];
+
+  return <section className="eco-command" aria-label="Country macro command centre">
+    <div className="eco-command-visual">
+      <div className="eco-command-grid" aria-hidden="true" />
+      <header className="eco-command-title">
+        <div className="eco-live-mark"><Radio size={13}/><span>MACRO NETWORK</span></div>
+        <Status tone="forecast">REGIME WITHHELD</Status>
+      </header>
+      <div className="eco-country-identity">
+        <span className="eco-country-flag" aria-hidden="true">{theme.flag}</span>
+        <div><span>{selected?.iso3 || 'G20'} · Country intelligence</span><h2>{selected?.country || 'Global macro network'}</h2><p>Observed evidence, transmission paths and publication authority in one governed view.</p></div>
+      </div>
+      <div className="eco-regime-map" aria-label="Macro regime classification map">
+        <span className="axis inflation">INFLATION PRESSURE</span><span className="axis growth">GROWTH MOMENTUM</span>
+        <div className="quadrant stagflation"><b>STAGFLATION</b><small>Growth down · inflation up</small></div>
+        <div className="quadrant overheating"><b>OVERHEATING</b><small>Growth up · inflation up</small></div>
+        <div className="quadrant contraction"><b>CONTRACTION</b><small>Growth down · inflation down</small></div>
+        <div className="quadrant goldilocks"><b>GOLDILOCKS</b><small>Growth up · inflation down</small></div>
+        <div className="regime-orbit"><Radar size={20}/><span>Awaiting history</span></div>
+      </div>
+      <div className="eco-country-network" aria-label="Select G20 economy">
+        {countries.map((row) => { const rowTheme=countryTheme(row.iso3); return <button type="button" key={row.iso3} className={row.iso3 === selected?.iso3 ? 'active' : ''} onClick={()=>onSelect(row.iso3)} style={{'--dot':rowTheme.primary}} title={`View ${row.country}`}><span>{rowTheme.flag}</span><b>{row.iso3}</b></button>; })}
+      </div>
+    </div>
+    <aside className="eco-command-data">
+      <header><span>Country pulse</span><b>{observedPercent}% evidence coverage</b></header>
+      <div className="eco-command-metrics">{indicators.map(([label,key]) => { const item=metric(key); return <div key={key} className={!item ? 'missing' : ''}><span>{label}</span><strong>{item ? fmt(item.value) : '—'} <small>{item?.unit || ''}</small></strong><small>{item ? String(item.observation_date || 'Date unavailable') : 'DATA BUILDING'}</small></div>; })}</div>
+      <div className="eco-confidence-ring" style={{'--coverage':`${observedPercent * 3.6}deg`}}><div><strong>{observed}<small> / {total}</small></strong><span>observed</span></div></div>
+      <footer><div><Database size={14}/><span>Collected</span><b>{latest ? latest.toLocaleDateString('en-IN') : 'Loading'}</b></div><div><Activity size={14}/><span>Freshness</span><b>{age == null ? 'Checking' : `${age}d`}</b></div><div><ShieldCheck size={14}/><span>Authority</span><b>{coverage ? 'Provisional' : 'Building'}</b></div></footer>
+    </aside>
+  </section>;
 }
 
 function GlobalState({ byId }) {
@@ -89,6 +149,7 @@ function SourceArchitecture({ sourcePlan }) {
 
 export default function EconomicsPage() {
   const [view, setView] = useState('g20');
+  const [selectedCountry, setSelectedCountry] = useState('IND');
   const [readiness, setReadiness] = useState(null);
   const [publicData, setPublicData] = useState(null);
   const [g20, setG20] = useState(null);
@@ -109,12 +170,15 @@ export default function EconomicsPage() {
   const byId = useMemo(() => Object.fromEntries(observations.map((row) => [row.series_id, row])), [observations]);
   const latest = publicData?.latest_available_at ? new Date(publicData.latest_available_at) : null;
   const age = latest && !Number.isNaN(latest.getTime()) ? Math.max(0, Math.floor((Date.now() - latest.getTime()) / 86400000)) : null;
+  const activeTheme = countryTheme(view === 'global' ? 'WLD' : selectedCountry);
 
-  return <PageShell title="Economic Intelligence" eyebrow="AGI Economics" description="Macro conditions, economic regimes and transmission across markets." metaTitle="Economic Intelligence | Agarwal Global Investments" wide>
-    <div className="eco-root eco-terminal">
+  return <PageShell title="Economic Intelligence" eyebrow="AGI Economics" description="A governed view of global conditions, economic regimes and transmission across markets." metaTitle="Economic Intelligence | Agarwal Global Investments" className="eco-page-shell" theme="dark" wide>
+    <div className="eco-root eco-terminal" style={{'--country-primary':activeTheme.primary,'--country-secondary':activeTheme.secondary}}>
       <section className="eco-controls" aria-label="Economics scope">
-        <div className="eco-view-switch"><span>View</span><div><button className={view === 'global' ? 'active' : ''} onClick={() => setView('global')}>Global</button><button className={view === 'g20' ? 'active' : ''} onClick={() => setView('g20')}>G20</button><button className={view === 'india' ? 'active' : ''} onClick={() => setView('india')}>India</button></div></div><div><span>Universe</span><b>{view === 'india' ? 'India Core 50' : '19 economies'}</b></div><div><span>History</span><b>Building</b></div><div><span>Frequency</span><b>Annual comparable</b></div>
+        <div className="eco-view-switch"><span>Command view</span><div><button className={view === 'global' ? 'active' : ''} onClick={() => setView('global')}>Global</button><button className={view === 'g20' ? 'active' : ''} onClick={() => setView('g20')}>G20</button><button className={view === 'india' ? 'active' : ''} onClick={() => { setView('india'); setSelectedCountry('IND'); }}>India</button></div></div><div><span>Universe</span><b>{view === 'india' ? 'India Core 50' : '19 economies'}</b></div><div><span>History</span><b>Building</b></div><div><span>Frequency</span><b>Annual comparable</b></div>
       </section>
+
+      <CountryCommand countries={g20?.countries || []} selectedIso={view === 'global' ? 'WLD' : selectedCountry} onSelect={(iso3)=>{setSelectedCountry(iso3);setView(iso3 === 'IND' ? 'india' : 'g20');}} coverage={g20?.coverage_percent} latest={latest} age={age}/>
 
       <section className="eco-source-strip">
         <div><Database size={16}/><span>Latest collection</span><b>{latest ? latest.toLocaleDateString('en-IN') : 'Loading'}</b></div>
@@ -148,7 +212,8 @@ export default function EconomicsPage() {
         <div className="eco-g20-matrix"><div className="head"><b>Economy</b><b>GDP growth</b><b>Inflation</b><b>Unemployment</b><b>Debt / GDP</b><b>Current account</b><b>Investment</b><b>Private credit</b><b>Coverage</b></div>{(g20?.countries || []).map((row) => {
           const value = (key) => row.indicators?.[key];
           const cell = (key) => { const item=value(key); return <span className={!item ? 'missing' : ''}>{item ? <>{fmt(item.value)}<small>{item.unit} · {String(item.observation_date || '').slice(0,4)}</small></> : <>—<small>DATA BUILDING</small></>}</span>; };
-          return <div className={row.iso3 === 'IND' ? 'india' : ''} key={row.iso3}><b>{row.country}<small>{row.iso3}</small></b>{cell('gdp_growth')}{cell('inflation')}{cell('unemployment')}{cell('government_debt_gdp')}{cell('current_account_gdp')}{cell('investment_gdp')}{cell('private_credit_gdp')}<strong>{row.observed} / {row.total}</strong></div>;
+          const theme=countryTheme(row.iso3);
+          return <div className={`${row.iso3 === 'IND' ? 'india ' : ''}${row.iso3 === selectedCountry ? 'selected' : ''}`} key={row.iso3} role="button" tabIndex={0} onClick={()=>setSelectedCountry(row.iso3)} onKeyDown={(event)=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();setSelectedCountry(row.iso3);}}} style={{'--row-country':theme.primary}}><b><i>{theme.flag}</i>{row.country}<small>{row.iso3}</small></b>{cell('gdp_growth')}{cell('inflation')}{cell('unemployment')}{cell('government_debt_gdp')}{cell('current_account_gdp')}{cell('investment_gdp')}{cell('private_credit_gdp')}<strong>{row.observed} / {row.total}</strong></div>;
         })}</div>
         <footer className="eco-g20-footer"><Database size={14}/><span>Source: World Bank Indicators API · Annual latest available · PROVISIONAL · PIT LIMITED</span></footer>
       </section>}
