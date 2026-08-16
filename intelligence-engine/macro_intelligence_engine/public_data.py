@@ -110,6 +110,42 @@ def _core_observation_rows(limit: int = 10000) -> list[dict[str, Any]]:
         return []
 
 
+def _g20_observation_rows(limit_per_indicator: int = 1000) -> list[dict[str, Any]]:
+    """Read each G20 indicator independently so large vintages cannot hide families."""
+    try:
+        from macro_intelligence_engine.public_ingestion import G20_WORLD_BANK_SERIES, _rest
+
+        requested = max(1, int(limit_per_indicator))
+        cache_key = ("macro_public_observations_g20", requested)
+        now = time.monotonic()
+        cached = _PUBLIC_CACHE.get(cache_key)
+        if cached and now - cached[0] < 20:
+            return list(cached[1])
+
+        rows: list[dict[str, Any]] = []
+        page_size = min(1000, requested)
+        for indicator in G20_WORLD_BANK_SERIES:
+            fetched = 0
+            pattern = f"g20_*_{indicator}"
+            for offset in range(0, requested, page_size):
+                query = (
+                    f"?select=*&series_id=like.{pattern}&order=ingested_at.desc"
+                    f"&limit={page_size}&offset={offset}"
+                )
+                page = list(_rest("macro_public_observations", query=query) or [])
+                rows.extend(page)
+                fetched += len(page)
+                if len(page) < page_size:
+                    break
+            if fetched == 0:
+                continue
+
+        _PUBLIC_CACHE[cache_key] = (now, rows)
+        return list(rows)
+    except Exception:
+        return []
+
+
 def readiness(country: str = "India") -> dict[str, Any]:
     """Report persisted public-data coverage; never fabricates readiness from placeholders."""
     country_norm = str(country or "India").strip()
@@ -240,11 +276,7 @@ def g20_matrix() -> dict[str, Any]:
         str(row.get("series_id") or ""): row
         for row in _warehouse_rows("macro_public_series_registry", limit=10000)
     }
-    rows = [
-        row for row in _warehouse_rows("macro_public_observations", limit=10000)
-        if str(row.get("series_id") or "").startswith("g20_")
-        and row.get("value_numeric") is not None
-    ]
+    rows = [row for row in _g20_observation_rows() if row.get("value_numeric") is not None]
     latest = {}
     for row in rows:
         key = (
@@ -315,7 +347,7 @@ def g20_source_plan() -> dict[str, Any]:
     from macro_intelligence_engine.g20_source_catalog import COUNTRY_SOURCES, MODULES, catalogue
 
     registry = _warehouse_rows("macro_public_series_registry", limit=10000)
-    observations = _warehouse_rows("macro_public_observations", limit=10000)
+    observations = _g20_observation_rows()
     registry_by_id = {str(row.get("series_id") or ""): row for row in registry}
     module_domains = {
         "central_bank": {"monetary"}, "fiscal": {"fiscal"}, "inflation": {"inflation"},

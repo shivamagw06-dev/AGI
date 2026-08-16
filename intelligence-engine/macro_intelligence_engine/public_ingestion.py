@@ -1,6 +1,6 @@
 """Durable public macro ingestion. Background runtime only; never called by page reads."""
 from __future__ import annotations
-import csv, hashlib, io, json, os, urllib.parse, urllib.request, uuid
+import csv, hashlib, io, json, os, time, urllib.error, urllib.parse, urllib.request, uuid
 from datetime import datetime, timezone
 from macro_intelligence_engine.public_data import CORE_50
 
@@ -51,6 +51,31 @@ YAHOO_MACRO_MARKET_SERIES = {
 
 def _now(): return datetime.now(timezone.utc)
 
+
+def _urlopen(request, *, timeout=30, attempts=3):
+    """Open a public-data request with bounded retries for transient failures."""
+    for attempt in range(max(1, attempts)):
+        try:
+            return urllib.request.urlopen(request, timeout=timeout)
+        except urllib.error.HTTPError as exc:
+            retryable = exc.code in {408, 425, 429, 500, 502, 503, 504}
+            if not retryable or attempt + 1 >= attempts:
+                raise
+            retry_after = exc.headers.get("Retry-After") if exc.headers else None
+            delay = float(retry_after) if retry_after and retry_after.isdigit() else 2 ** attempt
+            time.sleep(min(delay, 10))
+        except (TimeoutError, urllib.error.URLError):
+            if attempt + 1 >= attempts:
+                raise
+            time.sleep(min(2 ** attempt, 10))
+
+
+def _series_has_history(series_id):
+    try:
+        return bool(_rest("macro_public_observations", query=f"?select=id&series_id=eq.{series_id}&limit=1"))
+    except Exception:
+        return False
+
 def _credentials():
     url=(os.getenv("SUPABASE_URL") or os.getenv("VITE_SUPABASE_URL") or "").strip().rstrip("/"); key=(os.getenv("SUPABASE_SERVICE_ROLE_KEY") or "").strip()
     if not url or not key: raise RuntimeError("supabase_credentials_missing")
@@ -79,9 +104,9 @@ def registry_rows():
 def seed_registry():
     rows=registry_rows(); _rest("macro_public_series_registry",method="POST",rows=rows,query="?on_conflict=series_id",prefer="resolution=merge-duplicates,return=minimal"); return {"ok":True,"registered":len(rows)}
 
-def _wb_fetch(country,indicator):
-    url=f"https://api.worldbank.org/v2/country/{country.lower()}/indicator/{indicator}?format=json&per_page=100&mrv=25"; req=urllib.request.Request(url,headers={"User-Agent":"AGI-Macro-Intelligence/1.0"})
-    with urllib.request.urlopen(req,timeout=25) as response: raw=response.read()
+def _wb_fetch(country, indicator, history=25):
+    url=f"https://api.worldbank.org/v2/country/{country.lower()}/indicator/{indicator}?format=json&per_page=100&mrv={history}"; req=urllib.request.Request(url,headers={"User-Agent":"AGI-Macro-Intelligence/1.0"})
+    with _urlopen(req, timeout=25) as response: raw=response.read()
     payload=json.loads(raw); rows=payload[1] if isinstance(payload,list) and len(payload)>1 and isinstance(payload[1],list) else []
     return [row for row in rows if row.get("value") is not None],hashlib.sha256(raw).hexdigest(),url
 
@@ -90,7 +115,8 @@ def collect_world_bank():
     _rest("macro_public_ingestion_runs",method="POST",rows={"run_id":run_id,"source":"World Bank","status":"RUNNING","started_at":_now().isoformat()},prefer="return=minimal")
     for series_id,(indicator,unit,country) in WORLD_BANK_SERIES.items():
         try:
-            rows,payload_hash,url=_wb_fetch(country,indicator)
+            history = 3 if _series_has_history(series_id) else 25
+            rows,payload_hash,url=_wb_fetch(country,indicator,history=history)
             if not rows: errors.append(f"{series_id}:no_observation"); continue
             fetched=_now()
             for row in rows:
@@ -116,10 +142,12 @@ def collect_world_bank_g20():
     _rest("macro_public_ingestion_runs",method="POST",rows={"run_id":run_id,"source":"World Bank G20","status":"RUNNING","started_at":_now().isoformat()},prefer="return=minimal")
     countries=";".join(code.lower() for code in G20_COUNTRIES)
     for key,(indicator,_domain,unit) in G20_WORLD_BANK_SERIES.items():
-        url=f"https://api.worldbank.org/v2/country/{countries}/indicator/{indicator}?format=json&per_page=5000&mrv=25"
+        sample_series = f"g20_ind_{key}"
+        history = 3 if _series_has_history(sample_series) else 25
+        url=f"https://api.worldbank.org/v2/country/{countries}/indicator/{indicator}?format=json&per_page=5000&mrv={history}"
         try:
             req=urllib.request.Request(url,headers={"User-Agent":"AGI-Macro-Intelligence/1.0"})
-            with urllib.request.urlopen(req,timeout=30) as response: raw=response.read()
+            with _urlopen(req,timeout=30) as response: raw=response.read()
             payload=json.loads(raw); candidates=payload[1] if isinstance(payload,list) and len(payload)>1 else []
             histories={iso3: [] for iso3 in G20_COUNTRIES}
             for row in candidates or []:
@@ -153,7 +181,7 @@ def collect_imf_g20():
         url=f"https://www.imf.org/external/datamapper/api/v2/{indicator}"
         try:
             req=urllib.request.Request(url,headers={"User-Agent":"AGI-Macro-Intelligence/1.0"})
-            with urllib.request.urlopen(req,timeout=35) as response: raw=response.read()
+            with _urlopen(req,timeout=35) as response: raw=response.read()
             payload=json.loads(raw); values=((payload.get("values") or {}).get(indicator) or {}); digest=hashlib.sha256(raw).hexdigest()
             for iso3,country in G20_COUNTRIES.items():
                 history=values.get(iso3) or {}; eligible=[(int(y),v) for y,v in history.items() if str(y).isdigit() and 2000<=int(y)<=completed_year and v is not None]
@@ -174,7 +202,7 @@ def collect_oecd_policy_rates():
         registry.append({"series_id":series_id,"country_code":iso3,"domain":"monetary","label":"Policy Rate","unit":"%","frequency":"monthly","primary_source":"OECD","source_url":url,"source_series_id":"DF_FINMARK:IRSTCI","license_class":"PUBLIC_OFFICIAL","refresh_policy":"ON_RELEASE","active":True,"metadata":{"country_name":country,"connector":"oecd_sdmx","ingestion_status":"CONNECTED"},"updated_at":fetched.isoformat()})
         try:
             req=urllib.request.Request(url,headers={"User-Agent":"AGI-Macro-Intelligence/1.0","Accept":"text/csv"})
-            with urllib.request.urlopen(req,timeout=30) as response: raw=response.read()
+            with _urlopen(req,timeout=30) as response: raw=response.read()
             digest=hashlib.sha256(raw).hexdigest(); accepted=0
             for row in csv.DictReader(io.StringIO(raw.decode("utf-8-sig"))):
                 if row.get("MEASURE")!="IRSTCI" or not row.get("OBS_VALUE"): continue
@@ -199,7 +227,7 @@ def collect_yahoo_macro_market():
         url=f"https://query2.finance.yahoo.com/v8/finance/chart/{urllib.parse.quote(symbol, safe='')}?interval=1d&range={history_range}"
         try:
             request=urllib.request.Request(url,headers={"User-Agent":"Mozilla/5.0 AGI-Macro-Intelligence/1.0","Accept":"application/json"})
-            with urllib.request.urlopen(request,timeout=25) as response: raw=response.read()
+            with _urlopen(request,timeout=25) as response: raw=response.read()
             payload=json.loads(raw); result=(((payload.get("chart") or {}).get("result") or [None])[0] or {})
             timestamps=result.get("timestamp") or []
             quote=((((result.get("indicators") or {}).get("quote") or [{}])[0]) or {})

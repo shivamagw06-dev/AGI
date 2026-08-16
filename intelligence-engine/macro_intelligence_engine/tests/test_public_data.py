@@ -110,3 +110,42 @@ def test_public_warehouse_reader_paginates_rest_results(monkeypatch):
     rows = public_data._warehouse_rows("macro_public_observations", limit=5000)
     assert len(rows) == 1500
     assert len(calls) == 2
+
+
+def test_g20_reader_isolates_indicator_families(monkeypatch):
+    from macro_intelligence_engine import public_data
+    from macro_intelligence_engine.public_ingestion import G20_WORLD_BANK_SERIES
+
+    public_data._PUBLIC_CACHE.clear()
+    calls = []
+
+    def fake_rest(_table, query=""):
+        calls.append(query)
+        for indicator in G20_WORLD_BANK_SERIES:
+            if f"g20_*_{indicator}" in query:
+                return [{"series_id": f"g20_ind_{indicator}", "country_code": "IND"}]
+        return []
+
+    monkeypatch.setattr("macro_intelligence_engine.public_ingestion._rest", fake_rest)
+    rows = public_data._g20_observation_rows()
+
+    assert len(rows) == len(G20_WORLD_BANK_SERIES)
+    assert len(calls) == len(G20_WORLD_BANK_SERIES)
+    assert all("series_id=like.g20_*_" in query for query in calls)
+
+
+def test_world_bank_refresh_is_incremental_when_history_exists(monkeypatch):
+    from macro_intelligence_engine.public_ingestion import collect_world_bank
+
+    histories = []
+    monkeypatch.setattr("macro_intelligence_engine.public_ingestion._series_has_history", lambda _series_id: True)
+    monkeypatch.setattr(
+        "macro_intelligence_engine.public_ingestion._wb_fetch",
+        lambda _country, _indicator, history=25: histories.append(history) or ([], "hash", "url"),
+    )
+    monkeypatch.setattr("macro_intelligence_engine.public_ingestion._rest", lambda *_args, **_kwargs: [])
+
+    result = collect_world_bank()
+
+    assert result["ok"] is False
+    assert histories == [3] * len(WORLD_BANK_SERIES)
