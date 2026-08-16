@@ -72,8 +72,9 @@ def _warehouse_rows(table: str, limit: int = 5000) -> list[dict[str, Any]]:
             if cached and now-cached[0] < 20:
                 return list(cached[1])
             rows=[]; page_size=min(1000,requested)
+            order = "&order=ingested_at.desc" if table == "macro_public_observations" else ""
             for offset in range(0,requested,page_size):
-                page=list(_rest(table,query=f"?select=*&limit={page_size}&offset={offset}") or [])
+                page=list(_rest(table,query=f"?select=*&limit={page_size}&offset={offset}{order}") or [])
                 rows.extend(page)
                 if len(page) < page_size: break
             result=rows[:requested]
