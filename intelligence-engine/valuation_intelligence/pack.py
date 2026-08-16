@@ -6,7 +6,8 @@ from datetime import datetime, timezone
 from typing import Any
 
 from valuation_intelligence.growth import growth_from_earnings, profitability_from_earnings
-from valuation_intelligence.history import historical_bands_for_symbol
+from valuation_intelligence.history import historical_bands_for_symbol, historical_windows_for_symbol
+from valuation_intelligence.conditioning import quality_matrix, reconcile_sources
 from valuation_intelligence.market import (
     compute_multiples,
     estimate_market_cap,
@@ -259,6 +260,30 @@ def build_valuation_pack(
         injected_series=injected_history,
     )
     historical = {k: v.to_dict() for k, v in hist_objs.items()}
+    window_objs = historical_windows_for_symbol(
+        key,
+        current={"pe": subject.pe, "pb": subject.pb, "ev_ebitda": subject.ev_ebitda, "ev_sales": subject.ev_sales},
+    )
+    historical_windows = {
+        metric: {window: band.to_dict() for window, band in windows.items()}
+        for metric, windows in window_objs.items()
+    }
+
+    pe_rel = relative.get("pe") or {}
+    pe_hist = historical.get("pe") or {}
+    matrix = quality_matrix(
+        historical_percentile=pe_hist.get("percentile"),
+        peer_premium_pct=pe_rel.get("premium_pct"),
+        roe=quality.get("roe"), peer_roe=medians.get("median_roe"),
+        eps_cagr=growth.eps_cagr_3y, peer_eps_cagr=medians.get("median_eps_cagr_3y"),
+    )
+    # The workbook observation is fiscal-year-end evidence. Reconcile only when
+    # another source explicitly represents the same current basis; otherwise
+    # preserve it as historical context rather than manufacturing a conflict.
+    reconciliation = {
+        metric: reconcile_sources({"afe_current": current_value})
+        for metric, current_value in {"pe": subject.pe, "pb": subject.pb, "ev_ebitda": subject.ev_ebitda}.items()
+    }
 
     stance, observations = build_narrative(
         relative=relative_objs,
@@ -335,6 +360,7 @@ def build_valuation_pack(
         "current": subject.to_dict(),
         "historical": {
             "bands": historical,
+            "windows": historical_windows,
             "percentile": (historical.get("pe") or {}).get("percentile"),
             "median": (historical.get("pe") or {}).get("median"),
             "premium": (relative.get("pe") or {}).get("premium_pct"),
@@ -352,6 +378,8 @@ def build_valuation_pack(
         "quality": quality,
         "growth": growth.to_dict(),
         "relative": relative,
+        "conditioning": matrix,
+        "source_reconciliation": reconciliation,
         "narrative": {
             "stance": stance,
             "observations": observations,
@@ -378,9 +406,12 @@ def build_valuation_pack(
         "peer_snapshots": [p.to_dict() for p in peers],
         "relative": relative,
         "historical": historical,
+        "historical_windows": historical_windows,
         "quality": quality,
         "growth": growth.to_dict(),
         "narrative": valuation["narrative"],
+        "valuation_conditioning": matrix,
+        "source_reconciliation": reconciliation,
         "observations": observations,
         "stance": stance,
         "evidence": evidence,
@@ -401,11 +432,13 @@ def build_valuation_pack(
             },
             "peer_multiples": medians,
             "historical_bands": historical,
+            "historical_windows": historical_windows,
             "premium_discount": {
                 "pe_premium_pct": (relative.get("pe") or {}).get("premium_pct"),
                 "pb_premium_pct": (relative.get("pb") or {}).get("premium_pct"),
                 "ev_ebitda_premium_pct": (relative.get("ev_ebitda") or {}).get("premium_pct"),
             },
+            "valuation_conditioning": matrix,
             "confidence": confidence,
             "freshness": valuation["freshness"],
             "narrative_stance": stance,

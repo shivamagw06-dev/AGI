@@ -6,6 +6,7 @@ from statistics import median
 from typing import Any
 
 from valuation_intelligence.schema import PeerSnapshot, RelativeMetric, SubjectMultiples
+from valuation_intelligence.conditioning import percentile_rank
 
 
 def _median(vals: list[float | None]) -> float | None:
@@ -90,6 +91,10 @@ def build_relative(
             current=cur,
             peer_median=med,
             premium_pct=prem,
+            peer_percentile=percentile_rank(cur, [
+                getattr(p, {"pe": "pe", "pb": "pb", "ev_ebitda": "ev_ebitda", "roe": "roe"}[key])
+                for p in peers
+            ]),
             reasons=_reasons(
                 subject_roe=subject_roe,
                 peer_roe=peer_roe,

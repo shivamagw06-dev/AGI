@@ -7,7 +7,7 @@ from typing import Any
 
 ENGINE_CODE = "valuation_intelligence"
 ENGINE_NAME = "Valuation Intelligence"
-VERSION = "p2.2-v1.0.0"
+VERSION = "p2.2-v1.1.0"
 WORKSTREAM_ID = "P2.2"
 MILESTONE = "phase_2_2"
 PROGRAMME = "AGIB_VALUATION_INTELLIGENCE"
@@ -72,6 +72,7 @@ class RelativeMetric:
     current: float | None = None
     peer_median: float | None = None
     premium_pct: float | None = None
+    peer_percentile: float | None = None
     reasons: list[str] = field(default_factory=list)
 
     def to_dict(self) -> dict[str, Any]:

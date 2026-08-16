@@ -7,6 +7,9 @@ from typing import Any
 from valuation_intelligence.schema import HistoricalBand
 
 
+_VENDOR_METRICS = {"pe", "pb", "ev_ebitda", "ev_sales", "ptbv", "p_assets"}
+
+
 def _percentile_rank(series: list[float], current: float) -> float | None:
     if not series:
         return None
@@ -45,6 +48,65 @@ def _pe_from_historical_depth(symbol: str) -> list[float]:
     except Exception:
         return []
     return []
+
+
+def _from_sector_ratio_warehouse(symbol: str, metric: str) -> list[float]:
+    """Read the versioned CapIQ workbook baseline persisted in the warehouse."""
+    key = (symbol or "").upper().replace(".NS", "").replace(".BO", "")
+    if not key or metric not in _VENDOR_METRICS:
+        return []
+    try:
+        from institutional_warehouse import store
+
+        rows = store.all_rows("sector_ratio_history", entity=key, limit=5000)
+    except Exception:
+        return []
+    points: list[tuple[int, float]] = []
+    for row in rows:
+        if str(row.get("metric") or "").lower() != metric:
+            continue
+        if str(row.get("median_eligibility") or "").upper() != "ELIGIBLE":
+            continue
+        try:
+            year = int(str(row.get("fiscal_year") or "").upper().replace("FY", ""))
+            value = float(row.get("value"))
+        except (TypeError, ValueError):
+            continue
+        if value > 0:
+            points.append((year, value))
+    # One value per year. A later source version wins without blending vintages.
+    by_year = {year: value for year, value in sorted(points)}
+    return [by_year[year] for year in sorted(by_year)]
+
+
+def historical_windows_from_series(
+    series: list[float], current: float | None, *, source: str
+) -> dict[str, HistoricalBand]:
+    """Build auditable 3Y/5Y/10Y distributions from annual observations."""
+    out: dict[str, HistoricalBand] = {}
+    for years, label in ((3, "3Y"), (5, "5Y"), (10, "10Y")):
+        sample = list(series[-years:])
+        band = band_from_series(sample, current, window=label, source=source)
+        if band is not None:
+            out[label.lower()] = band
+    return out
+
+
+def historical_windows_for_symbol(
+    symbol: str,
+    *,
+    current: dict[str, float | None],
+) -> dict[str, dict[str, HistoricalBand]]:
+    """Return workbook-backed windows for every comparable valuation metric."""
+    out: dict[str, dict[str, HistoricalBand]] = {}
+    for metric, current_value in current.items():
+        series = _from_sector_ratio_warehouse(symbol, metric)
+        windows = historical_windows_from_series(
+            series, current_value, source="capital_iq_sector_ratio_workbook"
+        )
+        if windows:
+            out[metric] = windows
+    return out
 
 
 def _pb_ev_from_historical_depth(symbol: str) -> tuple[list[float], list[float]]:
@@ -138,8 +200,11 @@ def historical_bands_for_symbol(
         if bands:
             return bands
 
-    pe_series = _pe_from_historical_depth(key)
-    source = "historical_depth"
+    pe_series = _from_sector_ratio_warehouse(key, "pe")
+    source = "capital_iq_sector_ratio_workbook"
+    if len(pe_series) < 3:
+        pe_series = _pe_from_historical_depth(key)
+        source = "historical_depth"
     if len(pe_series) < 3:
         yahoo_pe = _pe_from_yahoo_annual(key, annual_eps or [])
         if len(yahoo_pe) >= 3:
@@ -149,9 +214,17 @@ def historical_bands_for_symbol(
     if pe_band is not None:
         bands["pe"] = pe_band
 
-    pb_series, ev_series = _pb_ev_from_historical_depth(key)
-    pb_band = band_from_series(pb_series, current_pb, source="historical_depth")
-    ev_band = band_from_series(ev_series, current_ev_ebitda, source="historical_depth")
+    pb_series = _from_sector_ratio_warehouse(key, "pb")
+    ev_series = _from_sector_ratio_warehouse(key, "ev_ebitda")
+    pb_source = "capital_iq_sector_ratio_workbook"
+    ev_source = "capital_iq_sector_ratio_workbook"
+    depth_pb, depth_ev = _pb_ev_from_historical_depth(key)
+    if len(pb_series) < 3:
+        pb_series, pb_source = depth_pb, "historical_depth"
+    if len(ev_series) < 3:
+        ev_series, ev_source = depth_ev, "historical_depth"
+    pb_band = band_from_series(pb_series, current_pb, source=pb_source)
+    ev_band = band_from_series(ev_series, current_ev_ebitda, source=ev_source)
     if pb_band is not None:
         bands["pb"] = pb_band
     if ev_band is not None:
