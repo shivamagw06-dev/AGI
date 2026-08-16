@@ -76,8 +76,8 @@ const SNAPSHOT_NAME_ALIASES = {
   SENSEX: 'SENSEX',
   'BSE SENSEX': 'SENSEX',
   'S&P BSE SENSEX': 'SENSEX',
-  'INDIA VIX': 'VIX',
-  VIX: 'VIX',
+  'INDIA VIX': 'INDIA VIX',
+  VIX: 'INDIA VIX',
   'NIFTY MIDCAP 100': 'MIDCAP',
   'NIFTY MIDCAP 50': 'MIDCAP',
   // Next 50 is a weaker stand-in — only used if Midcap 100/50 are missing.
@@ -111,7 +111,7 @@ const SNAPSHOT_SOURCE_PRIORITY = {
   'NIFTY SMALLCAP 50': 70,
 };
 
-const CORE_INDIAN = ['NIFTY', 'BANK NIFTY', 'SENSEX', 'MIDCAP', 'SMALLCAP', 'VIX'];
+const CORE_INDIAN = ['NIFTY', 'BANK NIFTY', 'SENSEX', 'MIDCAP', 'SMALLCAP', 'INDIA VIX'];
 const CORE_GLOBAL = ['NASDAQ', 'S&P', 'Dow', 'Gold', 'Silver', 'Brent', 'Bitcoin', 'USDINR'];
 
 /** ETF proxy prices must never be shown as cash index levels. */
@@ -269,7 +269,8 @@ async function buildMarketSnapshotFresh() {
       else if (/silver/i.test(label)) name = 'Silver';
       else if (/brent|crude|wti|usoil/i.test(label)) name = 'Brent';
       else if (/bitcoin|btc/i.test(label)) name = 'Bitcoin';
-      else if (/vix/i.test(label)) name = 'VIX';
+      else if (/india vix/i.test(label)) name = 'INDIA VIX';
+      else if (/vix/i.test(label)) continue; // Never relabel US Cboe VIX as India VIX.
       else continue;
       const price = m.level ?? m.price ?? null;
       if (looksLikeEtfProxy(name, price)) continue;
@@ -344,7 +345,7 @@ async function buildMarketSnapshotFresh() {
     'USDINR',
     'Brent',
     'Bitcoin',
-    'VIX',
+    'INDIA VIX',
   ];
   cards.sort((a, b) => {
     const ai = order.indexOf(a.name);
@@ -356,6 +357,8 @@ async function buildMarketSnapshotFresh() {
     updatedAt: cycleUpdatedAt,
     stale: false,
     liveUnavailable: false,
+    marketState: marketSessionNow().status,
+    quoteLabel: marketSessionNow().status === 'open' ? 'LIVE' : 'LAST CLOSE',
   }));
 }
 

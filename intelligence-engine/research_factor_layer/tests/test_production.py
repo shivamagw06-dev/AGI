@@ -1,4 +1,13 @@
-from research_factor_layer.production import _eligible, _ev_reconciliation, _is_financial, _multiple_valid, _quality_results
+from research_factor_layer.production import (
+    _eligible,
+    _ev_reconciliation,
+    _identity_gate,
+    _is_financial,
+    _mispricing_result,
+    _multiple_valid,
+    _ordinal,
+    _quality_results,
+)
 
 
 def test_point_in_time_eligibility_uses_filing_date():
@@ -47,3 +56,43 @@ def test_five_accounting_factors_share_versioned_pit_limited_contract():
         assert result[name]["methodology_status"] == "IN_DEVELOPMENT"
         assert result[name]["validation_status"] == "POINT_IN_TIME_LIMITED"
         assert result[name]["score"] is not None
+        assert round(sum(result[name]["component_weights"].values()), 8) == 1.0
+
+
+def test_known_entity_and_taxonomy_contamination_is_quarantined():
+    ok, reasons = _identity_gate("BLS", {"company_name": "BLS E0Services Limited"}, set())
+    assert ok is False
+    assert "symbol_company_name_mismatch" in reasons
+    ok, reasons = _identity_gate(
+        "3BBLACKBIO",
+        {"company_name": "3B BlackBio Dx Limited", "sector": "Materials", "industry": "Fertilizers"},
+        set(),
+    )
+    assert ok is False
+    assert "taxonomy_corrected_from_contaminated_source" in reasons
+
+
+def test_ordinals_are_analyst_readable():
+    assert _ordinal(1) == "1st"
+    assert _ordinal(2) == "2nd"
+    assert _ordinal(3) == "3rd"
+    assert _ordinal(11) == "11th"
+
+
+def test_invalid_ev_ebitda_never_generates_peer_discount_explanation():
+    rows = [{"date": f"2026-01-{day:02d}", "ev_ebitda": 8.0, "pe": 15.0, "pb": 2.0} for day in range(1, 6)]
+    rows.append({"date": "2026-02-01", "ev_ebitda": -2.0, "pe": 15.0, "pb": 2.0})
+    peers = [{"symbol": f"P{i}", "industry": "Industrials", "ev_ebitda": 12.0} for i in range(4)]
+    result = _mispricing_result("AAA", "2026-02-01", {"industry": "Industrials"}, rows, {"score": 70}, peers)
+    assert result["validation_gates"]["peer_selection"].startswith("current_multiple_invalid")
+    assert not any("EV_EBITDA is" in item for item in result["evidence"])
+
+
+def test_extreme_valuation_z_score_is_excluded_from_factor():
+    rows = [{"date": f"2025-{month:02d}-01", "pb": 1.0} for month in range(1, 13)]
+    rows += [{"date": f"2026-{month:02d}-01", "pb": 1.0} for month in range(1, 6)]
+    rows.append({"date": "2026-06-01", "pb": 10.0})
+    result = _mispricing_result("AAA", "2026-06-01", {"industry": "Industrials"}, rows, {"score": 70}, [])
+    assert result["validation_gates"]["pb"] == "extreme_outlier_review_required"
+    assert result["component_scores"]["pb"] is None
+    assert result["raw_metrics"]["pb"]["outlier"] is True

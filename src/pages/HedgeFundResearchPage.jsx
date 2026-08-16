@@ -41,6 +41,12 @@ const BUILDING_STRATEGIES = [
 const isNumber = (value) => value !== null && value !== undefined && value !== '' && Number.isFinite(Number(value));
 const number = (value, fallback = 'Unavailable') => isNumber(value) ? Number(value).toFixed(1) : fallback;
 const clean = (value) => String(value || 'Unavailable').replaceAll('_', ' ');
+const analystText = (value) => clean(value)
+  .replace('negative or missing denominator', 'Multiple unavailable because earnings or EBITDA is negative/missing')
+  .replace('extreme outlier review required', 'Extreme observation requires corporate-action and unit review')
+  .replace('symbol company name mismatch', 'Exchange symbol and company name do not reconcile')
+  .replace('taxonomy corrected from contaminated source', 'Source-sector classification failed validation')
+  .replace('duplicate isin', 'ISIN is assigned to more than one exchange symbol');
 const factorCoverage = (row) => FACTORS.filter((factor) => isNumber(row?.[factor.key])).length;
 const rowEligible = (row) => isNumber(row?.fundamental_composite) && Number(row?.data_quality) >= 60 && factorCoverage(row) >= 4;
 
@@ -178,7 +184,8 @@ function CandidateTable({ rows, onSelect }) {
 function ComponentRows({ factor }) {
   const entries = Object.entries(factor?.component_contributions || {});
   if (!entries.length) return <p className="hfr-muted">Component contributions unavailable.</p>;
-  return <div className="hfr-components">{entries.map(([name, contribution]) => <div key={name}><span>{clean(name)}</span><small>Weight {number(factor?.component_weights?.[name])}</small><b>{number(contribution)}</b></div>)}</div>;
+  const weightTotal = Object.values(factor?.component_weights || {}).reduce((sum, value) => sum + (Number(value) || 0), 0);
+  return <><div className="hfr-components">{entries.map(([name, contribution]) => <div key={name}><span>{clean(name)}</span><small>Weight {isNumber(factor?.component_weights?.[name]) ? `${(Number(factor.component_weights[name]) * 100).toFixed(0)}%` : 'Unavailable'}</small><b>{number(contribution)}</b></div>)}</div><p className={Math.abs(weightTotal - 1) < 0.0001 ? 'hfr-muted' : 'hfr-policy'}>Displayed weights: {(weightTotal * 100).toFixed(0)}%</p></>;
 }
 
 function CompanyEvidence({ symbol, onClose }) {
@@ -204,7 +211,7 @@ function CompanyEvidence({ symbol, onClose }) {
         <p className="hfr-formula">{meta.formula}</p>
         <div className="hfr-detail-meta"><span>Coverage <b>{isNumber(factor?.coverage) ? `${(Number(factor.coverage) * 100).toFixed(1)}%` : number(factor?.data_quality)}</b></span><span>Confidence <b>{factor?.confidence || 'Unavailable'}</b></span><span>Percentile <b>{number(factor?.percentile)}</b></span></div>
         <ComponentRows factor={factor} />
-        <div className="hfr-missing"><b>Missing fields</b><span>{factor?.missing_data?.length ? factor.missing_data.join(' · ') : 'None reported'}</span></div>
+        <div className="hfr-missing"><b>Missing fields</b><span>{factor?.missing_data?.length ? factor.missing_data.map(analystText).join(' · ') : 'None reported'}</span></div>
       </article>;
     })}</div> : null}
   </section>;
@@ -281,6 +288,7 @@ export default function HedgeFundResearchPage() {
     </header>
     <main className="hfr-main">
       <ContextStrip audit={audit} />
+      {audit?.quarantined?.length ? <div className="hfr-error"><AlertTriangle size={18} /><div><b>{audit.quarantined.length} candidate identities quarantined</b><span>{audit.quarantined.map((item) => `${item.symbol}: ${(item.reasons || []).map(analystText).join(', ')}`).join(' · ')}</span></div></div> : null}
       {error ? <div className="hfr-error"><AlertTriangle size={18} /><div><b>Factor service unavailable</b><span>{error}</span></div></div> : null}
       {!audit && !error ? <div className="hfr-loading"><CircleDashed size={19} /> Loading independently calculated research factors…</div> : null}
       <OpportunityBoard rows={eligibleRows} onSelect={select} />

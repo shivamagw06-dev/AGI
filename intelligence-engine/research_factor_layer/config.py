@@ -3,9 +3,9 @@
 QUALITY_VERSION = "quality-compounder-v2.0.0"
 EARNINGS_QUALITY_VERSION = "earnings-quality-v1.0.0"
 SUSTAINABLE_GROWTH_VERSION = "sustainable-growth-v1.0.0"
-CAPITAL_ALLOCATION_VERSION = "capital-allocation-v1.0.0"
-BALANCE_SHEET_RISK_VERSION = "balance-sheet-risk-v1.0.0"
-MISPRICING_VERSION = "relative-mispricing-v1.0.0"
+CAPITAL_ALLOCATION_VERSION = "capital-allocation-v1.1.0"
+BALANCE_SHEET_RISK_VERSION = "balance-sheet-risk-v1.1.0"
+MISPRICING_VERSION = "relative-mispricing-v1.1.0"
 
 QUALITY_WEIGHTS = {"roic_quality": .25, "roic_stability": .15, "fcf_quality": .15,
                    "growth_quality": .15, "margin_quality": .10, "reinvestment_efficiency": .10,

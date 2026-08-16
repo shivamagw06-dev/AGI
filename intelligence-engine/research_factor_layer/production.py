@@ -40,9 +40,53 @@ from .math import (
     z_score,
 )
 
-FACTOR_LAYER_VERSION = "research-factor-layer-v2.0.0"
+FACTOR_LAYER_VERSION = "research-factor-layer-v2.1.0"
 _COMPUTE_CACHE: dict[str, tuple[float, dict[str, dict[str, Any]]]] = {}
 _CACHE_TTL_SECONDS = 900
+
+# Exchange identity is authoritative for these known collisions/corrections. These
+# overrides protect research output while the warehouse source rows are remediated.
+_CANONICAL_IDENTITIES = {
+    "BLS": {"company_name": "BLS International Services Limited"},
+    "BLSE": {"company_name": "BLS E-Services Limited"},
+    "3BBLACKBIO": {
+        "company_name": "3B BlackBio Dx Limited",
+        "sector": "Health Care",
+        "industry": "Health Care Supplies",
+    },
+}
+_IDENTITY_TOKENS = {
+    "BLS": ("international",),
+    "BLSE": ("e-services", "e services"),
+    "3BBLACKBIO": ("blackbio", "black bio"),
+}
+_MAX_ABS_VALUATION_Z = 4.0
+
+
+def _canonicalize_master(symbol: str, row: dict[str, Any]) -> dict[str, Any]:
+    return {**row, **_CANONICAL_IDENTITIES.get(symbol, {})}
+
+
+def _identity_gate(symbol: str, row: dict[str, Any], duplicate_isins: set[str]) -> tuple[bool, list[str]]:
+    reasons: list[str] = []
+    isin = str(row.get("isin") or "").strip().upper()
+    if isin and isin in duplicate_isins:
+        reasons.append("duplicate_isin")
+    raw_name = str(row.get("company_name") or "").lower().replace("0", "-")
+    expected = _IDENTITY_TOKENS.get(symbol)
+    if expected and not any(token in raw_name for token in expected):
+        reasons.append("symbol_company_name_mismatch")
+    if symbol == "3BBLACKBIO":
+        raw_taxonomy = f"{row.get('sector', '')} {row.get('industry', '')}".lower()
+        if any(token in raw_taxonomy for token in ("fertilizer", "agricultural chemical", "materials")):
+            reasons.append("taxonomy_corrected_from_contaminated_source")
+    return not reasons, reasons
+
+
+def _ordinal(value: float) -> str:
+    integer = int(round(value))
+    suffix = "th" if 10 <= integer % 100 <= 20 else {1: "st", 2: "nd", 3: "rd"}.get(integer % 10, "th")
+    return f"{integer}{suffix}"
 
 
 def _today() -> str:
@@ -167,7 +211,12 @@ def _quality_raw(symbol: str, cutoff: str, source_rows: Optional[list[dict[str, 
 
 
 def _master_rows() -> dict[str, dict[str, Any]]:
-    return {str(row.get("symbol") or "").upper(): row for row in store.all_rows("company_master", limit=10000) or [] if row.get("symbol")}
+    rows = store.all_rows("company_master", limit=10000) or []
+    return {
+        symbol: _canonicalize_master(symbol, row)
+        for row in rows
+        if (symbol := str(row.get("symbol") or "").upper())
+    }
 
 
 def _valuation_rows(cutoff: str) -> dict[str, list[dict[str, Any]]]:
@@ -316,17 +365,26 @@ def _mispricing_result(symbol: str, cutoff: str, master: dict[str, Any], rows: l
             continue
         percentile = percentile_rank(history, current)
         z = z_score(history, current)
+        if z is not None and abs(z) > _MAX_ABS_VALUATION_Z:
+            gates[metric] = "extreme_outlier_review_required"
+            missing.append(f"{metric}:extreme_outlier_review_required")
+            raw_metrics[metric] = {"current": number(current), "observations": len(history), "z_score": round(z, 3), "historical_percentile": round(percentile, 1), "outlier": True}
+            component_scores[metric] = None
+            continue
         raw_metrics[metric] = {"current": number(current), "observations": len(history), "z_score": round(z, 3) if z is not None else None, "historical_percentile": round(percentile, 1)}
         component_scores[metric] = 100.0 - percentile
-        evidence.append(f"{metric.upper()} at its {percentile:.0f}th historical percentile" + (f" (z {z:.2f})" if z is not None else ""))
+        evidence.append(f"{metric.upper()} at its {_ordinal(percentile)} historical percentile" + (f" (z {z:.2f})" if z is not None else ""))
     industry = str(master.get("industry") or "")
     eligible_peers = [row for row in peer_latest if row.get("symbol") != symbol and str(row.get("industry") or "") == industry]
     primary = "pb" if _is_financial(master) else "ev_ebitda"
     peer_values = [number(row.get(primary)) for row in eligible_peers if number(row.get(primary)) and number(row.get(primary)) > 0]
     peer_median = median(peer_values)
     current_primary = number(latest.get(primary))
-    peer_discount = 1.0 - current_primary / peer_median if current_primary and peer_median else None
-    peer_gate = "pass" if industry and len(peer_values) >= 3 else "insufficient_valid_peers"
+    current_primary_valid, current_primary_reason = _multiple_valid(primary, current_primary, latest, master)
+    if primary == "ev_ebitda" and ev_matches is False:
+        current_primary_valid, current_primary_reason = False, "enterprise_value_reconciliation_failed"
+    peer_discount = 1.0 - current_primary / peer_median if current_primary_valid and current_primary and peer_median else None
+    peer_gate = "pass" if current_primary_valid and industry and len(peer_values) >= 3 else (f"current_multiple_invalid:{current_primary_reason}" if not current_primary_valid else "insufficient_valid_peers")
     gates["peer_selection"] = peer_gate
     gates["accounting_period_alignment"] = "limited_latest_observation_only"
     raw_metrics["enterprise_value_reconciliation"] = {"within_tolerance": ev_matches, "difference": ev_difference, "tolerance": 0.10}
@@ -334,7 +392,7 @@ def _mispricing_result(symbol: str, cutoff: str, master: dict[str, Any], rows: l
     component_scores["peer_relative"] = max(0.0, min(100.0, 50.0 + peer_discount * 100.0)) if peer_discount is not None and len(peer_values) >= 3 else None
     component_scores["quality_support"] = quality.get("score")
     score = weighted_score(component_scores, MISPRICING_WEIGHTS, minimum=2)
-    if peer_discount is not None:
+    if peer_discount is not None and peer_gate == "pass":
         evidence.append(f"{primary.upper()} is {abs(peer_discount) * 100:.1f}% {'below' if peer_discount >= 0 else 'above'} the industry median")
     return {
         "factor_name": "relative_mispricing", "factor_version": MISPRICING_VERSION, "company_id": symbol,
@@ -354,6 +412,16 @@ def _compute(cutoff: str, limit: int = 5000) -> dict[str, dict[str, Any]]:
     cached = _COMPUTE_CACHE.get(cutoff)
     if cached and time.monotonic() - cached[0] < _CACHE_TTL_SECONDS:
         return cached[1]
+    raw_master_rows = store.all_rows("company_master", limit=10000) or []
+    isin_symbols: dict[str, set[str]] = defaultdict(set)
+    raw_masters: dict[str, dict[str, Any]] = {}
+    for row in raw_master_rows:
+        symbol = str(row.get("symbol") or "").upper()
+        if symbol:
+            raw_masters[symbol] = row
+        if isin := str(row.get("isin") or "").strip().upper():
+            isin_symbols[isin].add(symbol)
+    duplicate_isins = {isin for isin, symbols_for_isin in isin_symbols.items() if len(symbols_for_isin) > 1}
     masters = _master_rows()
     valuations = _valuation_rows(cutoff)
     annual_by_symbol: dict[str, list[dict[str, Any]]] = defaultdict(list)
@@ -363,13 +431,20 @@ def _compute(cutoff: str, limit: int = 5000) -> dict[str, dict[str, Any]]:
             annual_by_symbol[symbol].append(row)
     financial_symbols = set(annual_by_symbol)
     symbols = sorted(set(masters) & (set(valuations) | financial_symbols))[:max(1, limit)]
+    identity_status = {symbol: _identity_gate(symbol, raw_masters.get(symbol, masters[symbol]), duplicate_isins) for symbol in symbols}
     accounting = _quality_results(cutoff, symbols, annual_by_symbol)
     peer_latest = [{**masters.get(symbol, {}), **rows[-1]} for symbol, rows in valuations.items() if rows]
     out = {}
     for symbol in symbols:
         factor_pack = accounting.get(symbol, {})
         mispricing = _mispricing_result(symbol, cutoff, masters.get(symbol, {}), valuations.get(symbol, []), factor_pack.get("quality_compounder", {}), peer_latest)
-        out[symbol] = {"company": masters.get(symbol, {}), **factor_pack, "relative_mispricing": mispricing}
+        identity_ok, identity_reasons = identity_status[symbol]
+        out[symbol] = {
+            "company": masters.get(symbol, {}),
+            "data_integrity": {"status": "PASS" if identity_ok else "QUARANTINED", "reasons": identity_reasons},
+            **factor_pack,
+            "relative_mispricing": mispricing,
+        }
     mispricing_scores = [pack["relative_mispricing"]["score"] for pack in out.values()]
     for pack in out.values():
         factor = pack["relative_mispricing"]
@@ -389,6 +464,9 @@ def audit(*, as_of: Optional[str] = None, limit: int = 20) -> dict[str, Any]:
     results = _compute(cutoff)
     rows = []
     for symbol, pack in results.items():
+        integrity = pack.get("data_integrity") or {}
+        if integrity.get("status") != "PASS":
+            continue
         quality, value = pack["quality_compounder"], pack["relative_mispricing"]
         factor_labels = (("Quality Compounder", quality.get("score")),
                          ("Earnings Quality", pack.get("earnings_quality", {}).get("score")),
@@ -416,10 +494,12 @@ def audit(*, as_of: Optional[str] = None, limit: int = 20) -> dict[str, Any]:
             "supporting_factors": [name for name, _ in available_factors],
             "contradictory_evidence": (quality.get("missing_data") or [])[:2] + (value.get("missing_data") or [])[:2],
             "key_risk": "Valuation history is not fully publication-vintaged; do not treat this as a backtest-ready signal.",
+            "data_integrity": integrity,
         })
     rows.sort(key=lambda row: -(row.get("fundamental_composite") or -1))
     selected = rows[:max(1, min(limit, 100))]
-    return {"ok": True, "layer_version": FACTOR_LAYER_VERSION, "as_of": cutoff, "universe": len(results), "rows": selected,
+    quarantined = [{"symbol": symbol, **(pack.get("data_integrity") or {})} for symbol, pack in results.items() if (pack.get("data_integrity") or {}).get("status") != "PASS"]
+    return {"ok": True, "layer_version": FACTOR_LAYER_VERSION, "as_of": cutoff, "universe": len(results), "rows": selected, "quarantined": quarantined,
             "strongest_positive": rows[:3], "strongest_negative": list(reversed(rows[-3:])),
             "status": "IN_DEVELOPMENT", "policy": "Accounting-factor evidence only; not an investment recommendation or demonstrated predictive alpha."}
 
