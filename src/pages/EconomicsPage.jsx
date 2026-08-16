@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Activity, AlertTriangle, Database, ExternalLink, Globe2, Landmark, Scale, ShieldCheck } from 'lucide-react';
+import { Activity, AlertTriangle, ChevronRight, Database, ExternalLink, Globe2, Landmark, Scale, ShieldCheck, X } from 'lucide-react';
 import PageShell from '@/components/Layout/PageShell';
 import AskAgiBar from '@/components/Home/AskAgiBar';
 import DeskResearchFeed from '@/components/Research/DeskResearchFeed';
@@ -22,6 +22,18 @@ const TRANSMISSION = [
   ['Growth moderates', 'Cyclicals, discretionary consumption and credit demand', 'Defensive earnings and balance-sheet resilience become more relevant.'],
 ];
 
+const MACRO_MODULES = [
+  { id:'central-bank', index:'01', name:'Central Bank', ids:['policy_rate','real_policy_rate','yield_10y','fx_reserves'], required:['Policy rate history','Next meeting','Real policy rate','Balance sheet and liquidity operations','Forward guidance'], implication:'Rates, banks, duration and leveraged balance sheets' },
+  { id:'fiscal', index:'02', name:'Fiscal Intelligence', ids:['government_debt_gdp','fiscal_balance_gdp','investment'], required:['Fiscal and primary balance','Revenue and expenditure','Government capex','Borrowing and maturity profile'], implication:'Infrastructure, capital goods, sovereign yields and crowding out' },
+  { id:'inflation', index:'03', name:'Inflation', ids:['inflation','g20_ind_inflation','cpi','core_cpi','food_inflation','ppi'], required:['CPI and core history','Food, energy, goods and services decomposition','3M/6M annualised momentum','Consensus surprise vintages'], implication:'Policy path, bonds, consumer margins and real income' },
+  { id:'growth', index:'04', name:'Growth', ids:['gdp_growth','g20_ind_gdp_growth','gdp','investment','unemployment'], required:['Quarterly real and nominal GDP','PMI and industrial production','Consumption and investment components','Nowcast history'], implication:'Cyclicals, earnings breadth, credit demand and defensives' },
+  { id:'rates', index:'05', name:'Rates & Curve', ids:['policy_rate','yield_2y','yield_5y','yield_10y','yield_30y'], required:['1M–30Y sovereign curve','2Y–10Y and 3M–10Y slopes','Real yields','Breakevens and term premium'], implication:'Duration, banks, housing, valuation multiples and refinancing' },
+  { id:'liquidity', index:'06', name:'Liquidity', ids:['money_supply','private_credit_gdp','credit_growth'], required:['Central-bank balance sheet','Reserves, repo and funding spreads','Deposits and loan/deposit ratio','Market-liquidity measures'], implication:'Risk appetite, credit creation, funding stress and asset multiples' },
+  { id:'credit', index:'07', name:'Credit Cycle', ids:['private_credit_gdp','credit_growth','unemployment'], required:['Bank lending and deposits','NPLs and provisioning','Corporate spreads and defaults','Household delinquencies'], implication:'Banks, leveraged companies, defaults and domestic demand' },
+  { id:'fx', index:'08', name:'FX & External', ids:['current_account_gdp','exports','imports','fx_reserves'], required:['Spot and forward history','REER, carry and volatility','Portfolio and capital flows','Dollar-liquidity indicators'], implication:'Importers, exporters, inflation, reserves and capital flows' },
+  { id:'commodities', index:'09', name:'Commodities', ids:['brent','oil','gold','copper'], required:['Energy, metals and agriculture curves','Country import/export exposure','Commodity-inflation transmission','Inventory and supply indicators'], implication:'Inflation, trade balances, producers and input-cost margins' },
+];
+
 const fmt = (value) => {
   const number = Number(value);
   if (!Number.isFinite(number)) return '—';
@@ -30,8 +42,40 @@ const fmt = (value) => {
 
 function Status({ children, tone = '' }) { return <span className={`eco-status ${tone}`}>{children}</span>; }
 
+function moduleEvidence(module, byId) {
+  return [...new Map(module.ids.map((id) => byId[id]).filter(Boolean).map((row) => [row.series_id, row])).values()];
+}
+
+function GlobalState({ byId }) {
+  const dimensions = [
+    ['Growth', ['gdp_growth','g20_ind_gdp_growth']], ['Inflation', ['inflation','g20_ind_inflation','cpi']],
+    ['Rates', ['policy_rate','yield_10y']], ['Liquidity', ['money_supply','credit_growth']],
+    ['Credit', ['private_credit_gdp']], ['External', ['current_account_gdp','fx_reserves']],
+  ];
+  return <section className="eco-band eco-global-state">
+    <header className="eco-section-head"><div><span>Global macro state</span><h2>State, evidence and publication authority</h2></div><Status tone="forecast">REGIME WITHHELD</Status></header>
+    <div className="eco-state-grid"><div className="eco-state-regime"><span>AGI macro regime</span><strong>NOT YET CLASSIFIED</strong><p>A regime will be published only after comparable history, release vintages and minimum factor coverage pass validation.</p></div>{dimensions.map(([label, ids]) => { const count=ids.filter((id)=>byId[id]).length; return <div key={label}><span>{label}</span><b>{count ? 'OBSERVED · INCOMPLETE' : 'DATA REQUIRED'}</b><small>{count} / {ids.length} anchor series</small></div>; })}</div>
+  </section>;
+}
+
+function MacroTape({ observations }) {
+  const rows = observations.slice(0, 8);
+  return <section className="eco-band"><header className="eco-section-head"><div><span>Macro evidence tape</span><h2>Latest persisted releases</h2></div><p>Release observations, not live market quotes. Dates and sources remain attached.</p></header><div className="eco-tape">{rows.length ? rows.map((row)=><div key={row.series_id}><span>{row.label}</span><strong>{fmt(row.value)} <small>{row.unit}</small></strong><b>{String(row.observation_date || 'Date unavailable')}</b><Status>{row.pit_status || 'PIT LIMITED'}</Status></div>) : <p>No persisted macro releases are currently available.</p>}</div></section>;
+}
+
+function MacroModules({ byId }) {
+  const [selected, setSelected] = useState(null);
+  const module = MACRO_MODULES.find((item) => item.id === selected);
+  const evidence = module ? moduleEvidence(module, byId) : [];
+  return <section className="eco-band">
+    <header className="eco-section-head"><div><span>Interpretation engine</span><h2>Nine macro intelligence modules</h2></div><p>Select a module to inspect value → context → missing evidence → market transmission.</p></header>
+    <div className="eco-module-grid">{MACRO_MODULES.map((item)=>{ const found=moduleEvidence(item,byId); const state=found.length >= 2 ? 'PARTIAL' : found.length ? 'OBSERVED' : 'DATA REQUIRED'; return <button key={item.id} type="button" onClick={()=>setSelected(item.id)}><span>{item.index}</span><div><h3>{item.name}</h3><p>{item.implication}</p></div><Status tone={state==='DATA REQUIRED'?'':state==='PARTIAL'?'forecast':'stable'}>{state}</Status><ChevronRight size={15}/><small>{found.length} persisted inputs · Why?</small></button>;})}</div>
+    {module ? <div className="eco-module-detail" role="dialog" aria-modal="false" aria-label={`${module.name} intelligence`}><header><div><span>{module.index} · Intelligence drill-down</span><h3>{module.name}</h3></div><button type="button" onClick={()=>setSelected(null)} title="Close"><X size={17}/></button></header><div className="eco-module-detail-grid"><section><b>Observed evidence</b>{evidence.length ? evidence.map((row)=><div className="eco-evidence-row" key={row.series_id}><span>{row.label}</span><strong>{fmt(row.value)} {row.unit}</strong><small>{row.observation_date || 'Date unavailable'} · {row.source || 'Source unavailable'}</small></div>) : <p>No approved observation is mapped to this module.</p>}</section><section><b>What is still required</b><ul>{module.required.map((item)=><li key={item}>{item}</li>)}</ul></section><section><b>Why it matters</b><p>{module.implication}.</p><b>AGI interpretation</b><p>{evidence.length >= 2 ? 'Evidence exists, but history and point-in-time coverage are insufficient for a directional regime or investment conclusion.' : 'DATA_REQUIRED. AGI will not infer a directional conclusion from absent or isolated evidence.'}</p></section></div></div> : null}
+  </section>;
+}
+
 export default function EconomicsPage() {
-  const [view, setView] = useState('india');
+  const [view, setView] = useState('g20');
   const [readiness, setReadiness] = useState(null);
   const [publicData, setPublicData] = useState(null);
   const [g20, setG20] = useState(null);
@@ -54,7 +98,7 @@ export default function EconomicsPage() {
   return <PageShell title="Economic Intelligence" eyebrow="AGI Economics" description="Macro conditions, economic regimes and transmission across markets." metaTitle="Economic Intelligence | Agarwal Global Investments" wide>
     <div className="eco-root eco-terminal">
       <section className="eco-controls" aria-label="Economics scope">
-        <div className="eco-view-switch"><span>View</span><div><button className={view === 'india' ? 'active' : ''} onClick={() => setView('india')}>India</button><button className={view === 'g20' ? 'active' : ''} onClick={() => setView('g20')}>G20</button></div></div><div><span>Universe</span><b>{view === 'g20' ? '19 economies' : 'Core 50'}</b></div><div><span>History</span><b>Building</b></div><div><span>Frequency</span><b>Annual comparable</b></div>
+        <div className="eco-view-switch"><span>View</span><div><button className={view === 'global' ? 'active' : ''} onClick={() => setView('global')}>Global</button><button className={view === 'g20' ? 'active' : ''} onClick={() => setView('g20')}>G20</button><button className={view === 'india' ? 'active' : ''} onClick={() => setView('india')}>India</button></div></div><div><span>Universe</span><b>{view === 'india' ? 'India Core 50' : '19 economies'}</b></div><div><span>History</span><b>Building</b></div><div><span>Frequency</span><b>Annual comparable</b></div>
       </section>
 
       <section className="eco-source-strip">
@@ -66,10 +110,14 @@ export default function EconomicsPage() {
 
       <section className="eco-ask"><div><span>Research interface</span><h2>Ask what changed, why it matters and what evidence is missing</h2><p>Ask AGI uses persisted evidence and should distinguish observations from interpretation.</p></div><AskAgiBar placeholder="Ask what the current data says about India’s external position..." size="large" buttonLabel="Ask AGI" ariaLabel="Ask AGI about economics"/></section>
 
-      {view === 'g20' && <section className="eco-band eco-g20-terminal">
+      <GlobalState byId={byId} />
+      <MacroTape observations={observations} />
+      <MacroModules byId={byId} />
+
+      {view !== 'india' && <section className="eco-band eco-g20-terminal">
         <header className="eco-section-head"><div><span>G20 macro monitor</span><h2>Comparable evidence across 19 economies</h2></div><Status tone={g20?.observed === g20?.total ? 'stable' : 'forecast'}>{g20?.status || 'DATA BUILDING'}</Status></header>
         <div className="eco-g20-summary"><div><strong>{g20?.country_count ?? 19}</strong><span>Economies</span></div><div><strong>{g20?.indicator_count ?? 8}</strong><span>Comparable indicators</span></div><div><strong>{g20?.observed ?? 0}<small> / {g20?.total ?? 152}</small></strong><span>Persisted observations</span></div><div><strong>{g20?.coverage_percent ?? 0}%</strong><span>Coverage</span></div></div>
-        <div className="eco-g20-note"><AlertTriangle size={15}/><p>This is the observed layer. AGI does not assign country scores, ranks or regimes until historical factor calculations and point-in-time validation are available.</p></div>
+        <div className="eco-g20-note"><AlertTriangle size={15}/><p>AGI Macro Regime Score: WITHHELD. Green/red direction is not inferred from isolated values; country scores require historical normalization, configured economic signs and point-in-time validation.</p></div>
         <div className="eco-g20-matrix"><div className="head"><b>Economy</b><b>GDP growth</b><b>Inflation</b><b>Unemployment</b><b>Debt / GDP</b><b>Current account</b><b>Investment</b><b>Private credit</b><b>Coverage</b></div>{(g20?.countries || []).map((row) => {
           const value = (key) => row.indicators?.[key];
           const cell = (key) => { const item=value(key); return <span className={!item ? 'missing' : ''}>{item ? <>{fmt(item.value)}<small>{item.unit} · {String(item.observation_date || '').slice(0,4)}</small></> : <>—<small>DATA BUILDING</small></>}</span>; };
