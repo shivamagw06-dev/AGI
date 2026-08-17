@@ -208,6 +208,25 @@ export async function getPeInvestor(id){
   const r=rows[0];if(!r)return null;const s=r.private_market_sources?.original_values||{};
   return{id:r.id,name:r.name,geography:r.headquarters||s['Geographic Locations'],transactions:tx.map(t=>({id:t.id,companyName:t.company_name,observedDate:t.observed_date,transactionDescription:t.transaction_description}))};
 }
+export async function getPeIntelligence(){
+  const[deals,events,investors]=await Promise.all([
+    peEvidenceRest('private_market_deals?select=*&is_public=eq.true&order=deal_date.asc&limit=500'),
+    peEvidenceRest('private_market_change_events?select=id&limit=1000').catch(()=>[]),
+    peEvidenceRest('private_market_investors?select=headquarters&is_public=eq.true&limit=500')
+  ]);
+  const days=new Map();
+  deals.forEach(row=>{if(row.deal_date)days.set(row.deal_date,(days.get(row.deal_date)||0)+1)});
+  const valuationRows=deals.filter(row=>row.pre_money_valuation_inr_mn!=null||row.post_money_valuation_inr_mn!=null);
+  const geography=investors.filter(row=>row.headquarters).length;
+  return{
+    timeline:[...days].map(([date,count])=>({date,count})),
+    valuation:{disclosed:valuationRows.length,coverage:deals.length?Math.round(valuationRows.length/deals.length*100):0,rows:valuationRows.slice(-25).reverse().map(row=>({id:row.id,company:row.company_name,date:row.deal_date,transactionType:row.transaction_type,dealValue:row.deal_size_inr_mn,preMoney:row.pre_money_valuation_inr_mn,postMoney:row.post_money_valuation_inr_mn}))},
+    matching:{geographyCoverage:investors.length?Math.round(geography/investors.length*100):0,sectorCoverage:0,criteriaCoverage:0,status:'withheld_insufficient_evidence'},
+    monitoring:{events:events.length},
+    provenance:{recordCount:deals.length,effectiveDate:deals.map(row=>row.effective_date||row.deal_date).filter(Boolean).sort().at(-1)||null,evidenceContract:'private_markets_v1'},
+    evidenceTypes:['observed_fact','calculated_fact','screen_result','interpretation','unknown']
+  };
+}
 export function getPeFirm(slug) {
   const firm = TOP_FIRMS.find((f) => f.slug === slug);
   if (!firm) return null;
