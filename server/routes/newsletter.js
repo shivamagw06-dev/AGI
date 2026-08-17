@@ -7,6 +7,7 @@ import {
   normalizePreferences,
   selectedLetterNames,
 } from '../lib/agiLetters.js';
+import { buildArticleEmail, excerptFromHtml } from '../lib/articleEmailTemplate.js';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -28,15 +29,6 @@ function escapeHtml(value = '') {
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;');
-}
-
-function excerptFromHtml(html = '', maxChars = 280) {
-  const txt = String(html)
-    .replace(/<\/?[^>]+(>|$)/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
-  if (txt.length <= maxChars) return txt;
-  return `${txt.slice(0, maxChars).trim()}…`;
 }
 
 async function getSupabaseAdmin() {
@@ -108,46 +100,6 @@ async function sendBatchWithResend(items) {
     throw err;
   }
   return json;
-}
-
-function articleHtml({ title, summary, slug, email, letter }) {
-  const site = siteUrl();
-  const url = `${site}/article/${encodeURIComponent(slug)}`;
-  const unsub = `${site}/unsubscribe?email=${encodeURIComponent(email)}`;
-  const logo = logoUrl();
-  return `<!DOCTYPE html>
-<html>
-<body style="margin:0;padding:0;background:#f5f7fa;font-family:Arial,sans-serif;color:#18202b;">
-  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f5f7fa;padding:28px 12px;">
-    <tr><td align="center">
-      <table role="presentation" width="100%" style="max-width:560px;background:#ffffff;border:1px solid #dce1e7;">
-        <tr>
-          <td style="background:#0d1d33;color:#ffffff;padding:22px 26px;">
-            <img src="${escapeHtml(logo)}" alt="Agarwal Global Investments" width="72" height="64" style="display:block;width:72px;height:auto;border:0;" />
-            <div style="margin-top:14px;font-size:12px;letter-spacing:0.12em;text-transform:uppercase;color:#d4af37;">${escapeHtml(letter.name)}</div>
-            <div style="margin-top:6px;font-size:12px;color:#c6d4e7;">${escapeHtml(letter.tagline)}</div>
-            <div style="margin-top:12px;font-size:22px;font-weight:700;">${escapeHtml(title)}</div>
-          </td>
-        </tr>
-        <tr>
-          <td style="padding:26px;">
-            ${summary ? `<p style="margin:0 0 18px;font-size:15px;line-height:1.6;color:#445066;">${escapeHtml(summary)}</p>` : ''}
-            <p style="margin:0 0 22px;">
-              <a href="${escapeHtml(url)}" style="display:inline-block;background:#0d1d33;color:#ffffff;text-decoration:none;padding:12px 18px;font-size:14px;font-weight:700;">
-                Read the brief
-              </a>
-            </p>
-            <p style="margin:0;font-size:12px;line-height:1.6;color:#7b8491;">
-              You receive ${escapeHtml(letter.name)} because you subscribed at ${escapeHtml(site)}.
-              <a href="${escapeHtml(unsub)}" style="color:#274c77;">Unsubscribe</a>
-            </p>
-          </td>
-        </tr>
-      </table>
-    </td></tr>
-  </table>
-</body>
-</html>`;
 }
 
 function welcomeHtml(email, preferences = {}) {
@@ -349,12 +301,23 @@ export default function createNewsletterRouter() {
 
       for (let i = 0; i < recipients.length; i += 50) {
         const chunk = recipients.slice(i, i + 50);
-        const items = chunk.map((row) => ({
-          from,
-          to: [row.email],
-          subject: `${letter.name}: ${title}`,
-          html: articleHtml({ title, summary, slug, email: row.email, letter }),
-        }));
+        const items = chunk.map((row) => {
+          const email = buildArticleEmail({
+            title,
+            summary,
+            slug,
+            email: row.email,
+            letter,
+            section,
+          });
+          return {
+            from,
+            to: [row.email],
+            subject: email.subject,
+            html: email.html,
+            text: email.text,
+          };
+        });
         await sendBatchWithResend(items);
         sent += chunk.length;
       }

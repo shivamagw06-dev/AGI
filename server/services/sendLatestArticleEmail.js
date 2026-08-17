@@ -7,81 +7,9 @@ import {
   letterDisplayFrom,
   letterKeyFromSection,
 } from '../lib/agiLetters.js';
+import { buildArticleEmail, excerptFromHtml } from '../lib/articleEmailTemplate.js';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-function siteUrl() {
-  return (process.env.PUBLIC_SITE_URL || process.env.BASE_URL || 'https://agarwalglobalinvestments.com').replace(
-    /\/$/,
-    ''
-  );
-}
-
-function logoUrl() {
-  return `${siteUrl()}/agi-logo-email.png`;
-}
-
-function escapeHtml(value = '') {
-  return String(value)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
-}
-
-function excerptFromHtml(html = '', maxChars = 280) {
-  const txt = String(html)
-    .replace(/<\/?[^>]+(>|$)/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
-  if (txt.length <= maxChars) return txt;
-  return `${txt.slice(0, maxChars).trim()}…`;
-}
-
-function articleHtml({ title, summary, slug, email, letter }) {
-  const site = siteUrl();
-  const url = `${site}/article/${encodeURIComponent(slug)}`;
-  const unsub = `${site}/unsubscribe?email=${encodeURIComponent(email)}`;
-  const logo = logoUrl();
-  return `<!DOCTYPE html>
-<html>
-<body style="margin:0;padding:0;background:#f5f7fa;font-family:Arial,sans-serif;color:#18202b;">
-  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f5f7fa;padding:24px 12px;">
-    <tr><td align="center">
-      <table role="presentation" width="100%" style="max-width:640px;background:#ffffff;border:1px solid #e6ebf2;">
-        <tr>
-          <td style="padding:20px 24px;border-bottom:1px solid #eef2f7;">
-            <img src="${escapeHtml(logo)}" alt="AGI" width="120" style="display:block;border:0;" />
-          </td>
-        </tr>
-        <tr>
-          <td style="padding:24px;">
-            <p style="margin:0 0 8px;font-size:12px;letter-spacing:0.08em;text-transform:uppercase;color:#7b8491;">
-              ${escapeHtml(letter?.name || 'AGI Markets')}
-            </p>
-            <h1 style="margin:0 0 12px;font-size:22px;line-height:1.3;color:#0d1d33;">
-              ${escapeHtml(title)}
-            </h1>
-            <p style="margin:0 0 20px;font-size:15px;line-height:1.6;color:#3a4553;">
-              ${escapeHtml(summary || '')}
-            </p>
-            <p style="margin:0 0 18px;">
-              <a href="${escapeHtml(url)}" style="display:inline-block;background:#0d1d33;color:#ffffff;text-decoration:none;padding:12px 18px;font-size:14px;font-weight:700;">
-                Read the brief
-              </a>
-            </p>
-            <p style="margin:0;font-size:12px;line-height:1.6;color:#7b8491;">
-              You received this because you joined AGI.
-              <a href="${escapeHtml(unsub)}" style="color:#274c77;">Unsubscribe</a>
-            </p>
-          </td>
-        </tr>
-      </table>
-    </td></tr>
-  </table>
-</body>
-</html>`;
-}
 
 async function sendWithResend(payload) {
   const key = (process.env.RESEND_API_KEY || '').trim();
@@ -157,18 +85,22 @@ export async function sendLatestPublishedArticleEmail({ email, admin: adminArg }
     const summary = String(
       article.excerpt || excerptFromHtml(article.content || '')
     ).trim();
+    const emailContent = buildArticleEmail({
+      title: article.title,
+      summary,
+      slug: article.slug,
+      email: normalized,
+      letter,
+      section: article.section,
+      publishedAt: article.published_at,
+    });
 
     await sendWithResend({
       from: letterDisplayFrom(letter.key),
       to: normalized,
-      subject: `${letter.name}: ${article.title}`,
-      html: articleHtml({
-        title: article.title,
-        summary,
-        slug: article.slug,
-        email: normalized,
-        letter,
-      }),
+      subject: emailContent.subject,
+      html: emailContent.html,
+      text: emailContent.text,
     });
 
     return {
