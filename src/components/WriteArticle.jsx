@@ -484,7 +484,17 @@ export default function WriteArticle() {
           await apiFetch('/api/notify-subscribers', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ articleId: data?.id ?? null, title: payload.title, slug: data?.slug ?? data?.id, body: html }),
+            body: JSON.stringify({
+              articleId: data?.id ?? null,
+              title: payload.title,
+              slug: data?.slug ?? data?.id,
+              body: html,
+              excerpt,
+              section: payloadSectionLabel,
+              coverUrl: cover_url,
+              author: user?.user_metadata?.full_name || user?.email || 'AGI Research Desk',
+              publishedAt: new Date().toISOString(),
+            }),
           });
         } catch (notifyErr) {
           // log and continue
