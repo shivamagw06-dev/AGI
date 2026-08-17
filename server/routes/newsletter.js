@@ -102,67 +102,6 @@ async function sendBatchWithResend(items) {
   return json;
 }
 
-<<<<<<< HEAD
-=======
-function articleHtml({ title, summary, slug, email, unsubscribeToken, letter, coverUrl, author, publishedAt, readTime, section }) {
-  const site = siteUrl();
-  const url = `${site}/article/${encodeURIComponent(slug)}`;
-  const unsub = unsubscribeToken
-    ? `${site}/unsubscribe?token=${encodeURIComponent(unsubscribeToken)}`
-    : `${site}/unsubscribe?email=${encodeURIComponent(email)}`;
-  const logo = logoUrl();
-  const desk = author && !String(author).includes('@') ? author : 'AGI Research Desk';
-  const date = publishedAt
-    ? new Date(publishedAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
-    : new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
-  const category = section || letter.name;
-  return `<!DOCTYPE html>
-<html lang="en">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escapeHtml(title)}</title></head>
-<body style="margin:0;padding:0;background:#e9e9e7;font-family:Arial,Helvetica,sans-serif;color:#111111;">
-  <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;">${escapeHtml(summary || title)}&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;</div>
-  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#e9e9e7;padding:24px 10px;">
-    <tr><td align="center">
-      <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:640px;background:#ffffff;border:1px solid #c9c9c5;">
-        <tr>
-          <td style="background:#080808;color:#ffffff;padding:16px 24px;border-bottom:5px solid #f2a900;">
-            <table role="presentation" width="100%" cellspacing="0" cellpadding="0"><tr>
-              <td><img src="${escapeHtml(logo)}" alt="AGI" width="58" style="display:block;width:58px;height:auto;border:0;"></td>
-              <td align="right" style="font-size:11px;line-height:1.4;letter-spacing:.15em;text-transform:uppercase;color:#f2a900;font-weight:700;">Intelligence<br><span style="color:#ffffff;">${escapeHtml(letter.name)}</span></td>
-            </tr></table>
-          </td>
-        </tr>
-        ${coverUrl ? `<tr><td><img src="${escapeHtml(coverUrl)}" alt="" width="640" style="display:block;width:100%;max-width:640px;height:auto;border:0;"></td></tr>` : ''}
-        <tr>
-          <td style="padding:26px 28px 30px;">
-            <div style="margin:0 0 13px;font-size:11px;line-height:1.4;letter-spacing:.14em;text-transform:uppercase;color:#a05f00;font-weight:700;">${escapeHtml(category)} &nbsp;/&nbsp; AGI Intelligence</div>
-            <h1 style="margin:0 0 14px;font-family:Georgia,'Times New Roman',serif;font-size:32px;line-height:1.12;letter-spacing:-.02em;color:#080808;font-weight:700;">${escapeHtml(title)}</h1>
-            <div style="margin:0 0 24px;padding-bottom:15px;border-bottom:1px solid #d8d8d4;font-size:11px;line-height:1.5;text-transform:uppercase;letter-spacing:.08em;color:#666662;">${escapeHtml(desk)} &nbsp;•&nbsp; ${escapeHtml(date)} &nbsp;•&nbsp; ${escapeHtml(readTime || '3 min read')}</div>
-            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin:0 0 25px;background:#f4f4f1;border-left:5px solid #f2a900;"><tr><td style="padding:17px 18px;">
-              <div style="margin:0 0 7px;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:#805000;font-weight:700;">Executive Brief</div>
-              <div style="font-family:Georgia,'Times New Roman',serif;font-size:16px;line-height:1.6;color:#292927;">${escapeHtml(summary || 'Open the full AGI report for analysis, evidence and investment implications.')}</div>
-            </td></tr></table>
-            <table role="presentation" cellspacing="0" cellpadding="0"><tr><td style="background:#080808;border-bottom:4px solid #f2a900;">
-              <a href="${escapeHtml(url)}" style="display:inline-block;color:#ffffff;text-decoration:none;padding:14px 22px;font-size:12px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;">
-                Open Full Intelligence Report&nbsp;&nbsp;→
-              </a>
-            </td></tr></table>
-          </td>
-        </tr>
-        <tr><td style="background:#111111;padding:18px 28px;color:#a8a8a3;font-size:11px;line-height:1.6;">
-          <div style="margin-bottom:7px;color:#ffffff;font-weight:700;letter-spacing:.08em;text-transform:uppercase;">Agarwal Global Investments</div>
-          Independent research intelligence. Information only; not investment advice.<br>
-          You receive ${escapeHtml(letter.name)} because you subscribed to AGI Letters.<br>
-          <a href="${escapeHtml(unsub)}" style="color:#f2a900;">Unsubscribe</a>&nbsp;&nbsp;·&nbsp;&nbsp;<a href="${escapeHtml(`${site}/privacy`)}" style="color:#d3d3ce;">Privacy</a>
-        </td></tr>
-      </table>
-    </td></tr>
-  </table>
-</body>
-</html>`;
-}
-
->>>>>>> a4ea1389 (Redesign subscriber article emails)
 function welcomeHtml(email, preferences = {}) {
   const site = siteUrl();
   const unsub = `${site}/unsubscribe?email=${encodeURIComponent(email)}`;
@@ -368,7 +307,6 @@ export default function createNewsletterRouter() {
 
       for (let i = 0; i < recipients.length; i += 50) {
         const chunk = recipients.slice(i, i + 50);
-<<<<<<< HEAD
         const items = chunk.map((row) => {
           const email = buildArticleEmail({
             title,
@@ -377,6 +315,11 @@ export default function createNewsletterRouter() {
             email: row.email,
             letter,
             section,
+            unsubscribeToken: row.unsubscribeToken,
+            coverUrl,
+            author,
+            publishedAt,
+            readTime,
           });
           return {
             from,
@@ -386,15 +329,7 @@ export default function createNewsletterRouter() {
             text: email.text,
           };
         });
-=======
-        const items = chunk.map((row) => ({
-          from,
-          to: [row.email],
-          subject: `${letter.name}: ${title}`,
-          html: articleHtml({ title, summary, slug, email: row.email, unsubscribeToken: row.unsubscribeToken, letter, coverUrl, author, publishedAt, readTime, section }),
-          text: `${title}\n\n${summary}\n\nRead the full AGI report: ${siteUrl()}/article/${encodeURIComponent(slug)}`,
-        }));
->>>>>>> a4ea1389 (Redesign subscriber article emails)
+
         await sendBatchWithResend(items);
         sent += chunk.length;
       }

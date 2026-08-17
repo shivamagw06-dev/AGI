@@ -51,10 +51,16 @@ export function buildArticleEmail({
   letter,
   section = '',
   publishedAt = null,
+  unsubscribeToken = null,
+  coverUrl = '',
+  author = '',
+  readTime = '',
 } = {}) {
   const site = siteUrl();
   const articleUrl = `${site}/article/${encodeURIComponent(String(slug || '').trim())}`;
-  const unsubscribeUrl = `${site}/unsubscribe?email=${encodeURIComponent(String(email || '').trim())}`;
+  const unsubscribeUrl = unsubscribeToken
+    ? `${site}/unsubscribe?token=${encodeURIComponent(String(unsubscribeToken).trim())}`
+    : `${site}/unsubscribe?email=${encodeURIComponent(String(email || '').trim())}`;
   const logoUrl = `${site}/agi-logo-email.png`;
   const letterName = letter?.name || 'AGI Markets';
   const tagline = letter?.tagline || 'Independent market intelligence for serious investors.';
@@ -62,6 +68,9 @@ export function buildArticleEmail({
   const safeSummary = String(summary || '').trim();
   const sectionLabel = String(section || 'Research & Intelligence').trim();
   const editionDate = formatEditionDate(publishedAt);
+  const desk = author && !String(author).includes('@') ? String(author).trim() : 'AGI Research Desk';
+  const readingLabel = String(readTime || '3 min read').trim();
+  const safeCoverUrl = String(coverUrl || '').trim();
   const preheader = excerptFromHtml(
     safeSummary || `Read the latest ${letterName} research from Agarwal Global Investments.`,
     145
@@ -126,6 +135,7 @@ export function buildArticleEmail({
               </table>
             </td>
           </tr>
+          ${safeCoverUrl ? `<tr><td><img src="${escapeHtml(safeCoverUrl)}" width="640" alt="" style="display:block;width:100%;max-width:640px;height:auto;border:0;"></td></tr>` : ''}
           <tr>
             <td class="pad-x" style="padding:42px 34px 16px;">
               <p style="margin:0 0 14px;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#8a6c08;">
@@ -136,6 +146,9 @@ export function buildArticleEmail({
               </h1>
               <p style="margin:17px 0 0;font-size:13px;line-height:1.5;color:#697178;">
                 ${escapeHtml(tagline)}
+              </p>
+              <p style="margin:14px 0 0;padding-top:13px;border-top:1px solid #d7dadd;font-size:10px;line-height:1.5;letter-spacing:1px;text-transform:uppercase;color:#697178;">
+                ${escapeHtml(desk)}&nbsp;&nbsp;·&nbsp;&nbsp;${escapeHtml(editionDate)}&nbsp;&nbsp;·&nbsp;&nbsp;${escapeHtml(readingLabel)}
               </p>
             </td>
           </tr>
