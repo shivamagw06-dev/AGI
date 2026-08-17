@@ -62,6 +62,7 @@ const PrivateEquityPage = React.lazy(() => import('@/pages/PrivateEquityPage'));
 const PrivateEquityFirmPage = React.lazy(() => import('@/pages/PrivateEquityFirmPage'));
 const IntelligenceEntityPage = React.lazy(() => import('@/pages/IntelligenceEntityPage'));
 const EconomicsPage = React.lazy(() => import('@/pages/EconomicsPage'));
+const InsiderActivityPage = React.lazy(() => import('@/pages/InsiderActivityPage'));
 
 function RouteFallback({ label = 'Loading…' }) {
   return <div className="min-h-[40vh] p-8 text-center text-slate-600">{label}</div>;
@@ -198,6 +199,7 @@ function PublicRoutes() {
       <Route path="/private-equity/firms/:slug" element={<PrivateEquityFirmPage />} />
       <Route path="/global-markets" element={<GlobalMarketsPage />} />
       <Route path="/economics" element={<EconomicsPage />} />
+      <Route path="/insider-activity" element={<InsiderActivityPage />} />
       <Route path="/global" element={<Navigate replace to="/global-markets" />} />
       <Route path="/global-intelligence" element={<Navigate replace to="/global-markets" />} />
       <Route path="/economy" element={<Navigate replace to="/economics" />} />

@@ -24,6 +24,7 @@ const NAV = [
   { name: 'Market Intelligence', path: '/market-intelligence' },
   { name: 'Hedge Fund', path: '/hedge-fund' },
   { name: 'Live Alpha', path: '/live-alpha' },
+  { name: 'Insider Activity', path: '/insider-activity' },
   { name: 'Private Markets', path: '/private-markets' },
   { name: 'Global Markets', path: '/global-markets' },
   { name: 'Economics', path: '/economics' },

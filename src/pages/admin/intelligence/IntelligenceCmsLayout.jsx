@@ -14,12 +14,14 @@ import {
   ExternalLink,
   LogOut,
   Network,
+  UserRoundSearch,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
 const MODULE_NAV = [
   { to: '/admin/intelligence', label: 'Dashboard', icon: LayoutDashboard, end: true },
   { to: '/admin/intelligence/entities', label: 'Entity Registry', icon: Network, enabled: true },
+  { to: '/admin/intelligence/insider-trading-data', label: 'Insider Data', icon: UserRoundSearch, enabled: true },
   { to: '/admin/intelligence/valuation-monitor', label: 'Valuation Monitor', icon: LineChart, enabled: true },
   { to: '/admin/intelligence/transactions', label: 'Recent Transactions', icon: ArrowLeftRight, enabled: true },
   { to: '/admin/intelligence/pe-firms', label: 'PE Firms', icon: Building2, enabled: false },

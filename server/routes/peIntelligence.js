@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { getPeFirm, getPeOverview, getPeOpportunities, getPeInvestors, getPeInvestor, getPeIntelligence, listPeFirms } from '../services/peIntelligenceService.js';
 import { approvePrivateMarketsImport, getPrivateMarketsAdminOverview, previewPrivateMarketsImport, resolvePrivateMarketsEntity } from '../services/privateMarketsAdminService.js';
+import { approveInsiderImport, getInsiderActivity, getInsiderAdminOverview, previewInsiderImport } from '../services/insiderTradingService.js';
 
 export default function createPeIntelligenceRouter() {
   const router = Router();
@@ -26,6 +27,10 @@ export default function createPeIntelligenceRouter() {
   router.post('/admin/imports/preview',requireAdmin,async(req,res)=>{try{return res.json(await previewPrivateMarketsImport(req.body||{}))}catch(error){return res.status(400).json({error:error.message})}});
   router.post('/admin/imports/approve',requireAdmin,async(req,res)=>{try{return res.json(await approvePrivateMarketsImport(req.body||{}))}catch(error){return res.status(400).json({error:error.message})}});
   router.patch('/admin/entity-review/:id',requireAdmin,async(req,res)=>{try{return res.json(await resolvePrivateMarketsEntity(req.params.id,req.body?.status))}catch(error){return res.status(400).json({error:error.message})}});
+  router.get('/insider/activity',async(req,res)=>{try{return res.json(await getInsiderActivity(req.query))}catch(error){return res.status(503).json({error:error.message})}});
+  router.get('/insider/admin/overview',requireAdmin,async(_req,res)=>{try{return res.json(await getInsiderAdminOverview())}catch(error){return res.status(503).json({error:error.message})}});
+  router.post('/insider/admin/imports/preview',requireAdmin,async(req,res)=>{try{return res.json(await previewInsiderImport(req.body||{}))}catch(error){return res.status(400).json({error:error.message})}});
+  router.post('/insider/admin/imports/approve',requireAdmin,async(req,res)=>{try{return res.json(await approveInsiderImport(req.body||{}))}catch(error){return res.status(400).json({error:error.message})}});
 
   router.get('/firms/:slug', (req, res) => {
     const firm = getPeFirm(req.params.slug);
