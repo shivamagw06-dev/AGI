@@ -184,6 +184,30 @@ export async function getPeOverview({ sector = null, scope = 'core', search = ''
   */
 }
 
+async function peEvidenceRest(path) {
+  const url=String(process.env.SUPABASE_URL||'').trim().replace(/\/$/,'');
+  const key=String(process.env.SUPABASE_SERVICE_ROLE_KEY||'').trim();
+  if(!url||!key)return[];
+  const response=await fetch(url+'/rest/v1/'+path,{headers:{apikey:key,Authorization:'Bearer '+key}});
+  if(!response.ok)throw new Error('Private Markets evidence unavailable ('+response.status+')');
+  return response.json();
+}
+export async function getPeOpportunities({type='lbo',search='',limit=500}={}){
+  const selected=['lbo','sale_divestment','distressed'].includes(type)?type:'lbo';
+  const rows=await peEvidenceRest('private_market_opportunities?select=*&opportunity_type=eq.'+selected+'&is_public=eq.true&order=company_name&limit='+Math.min(500,Number(limit)||500));
+  const q=String(search).toLowerCase();
+  return{universe:'global_opportunity_intelligence',opportunities:rows.filter(r=>!q||(r.company_name+' '+JSON.stringify(r.observed_metrics)).toLowerCase().includes(q)).map(r=>({id:r.id,companyName:r.company_name,observedMetrics:r.observed_metrics||{},coverage:Number(r.coverage)||0,sourceId:r.source_id}))};
+}
+export async function getPeInvestors({search='',limit=500}={}){
+  const rows=await peEvidenceRest('private_market_investors?select=id,name,headquarters,private_market_sources(original_values)&is_public=eq.true&order=name&limit='+Math.min(500,Number(limit)||500));
+  const q=String(search).toLowerCase();
+  return{universe:'global_investor_network',investors:rows.map(r=>{const s=r.private_market_sources?.original_values||{};return{id:r.id,name:r.name,geography:r.headquarters||s['Geographic Locations'],recentTransactionCount:Number(s['# of Transactions as Buyer -  [Last 6 Months]'])||0}}).filter(r=>!q||(r.name+' '+r.geography).toLowerCase().includes(q))};
+}
+export async function getPeInvestor(id){
+  const[rows,tx]=await Promise.all([peEvidenceRest('private_market_investors?select=id,name,headquarters,private_market_sources(original_values)&id=eq.'+encodeURIComponent(id)+'&limit=1'),peEvidenceRest('private_market_investor_transactions?select=*&investor_id=eq.'+encodeURIComponent(id)+'&order=observed_date.desc')]);
+  const r=rows[0];if(!r)return null;const s=r.private_market_sources?.original_values||{};
+  return{id:r.id,name:r.name,geography:r.headquarters||s['Geographic Locations'],transactions:tx.map(t=>({id:t.id,companyName:t.company_name,observedDate:t.observed_date,transactionDescription:t.transaction_description}))};
+}
 export function getPeFirm(slug) {
   const firm = TOP_FIRMS.find((f) => f.slug === slug);
   if (!firm) return null;
