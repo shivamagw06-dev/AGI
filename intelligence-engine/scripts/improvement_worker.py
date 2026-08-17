@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Railway entrypoint for a bounded Ask AGI improvement session."""
+"""Entrypoint for a bounded Ask AGI improvement session."""
 
 from __future__ import annotations
 

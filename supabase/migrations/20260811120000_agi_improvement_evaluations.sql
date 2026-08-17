@@ -1,5 +1,5 @@
 -- Ask AGI improvement worker — append-only evaluation persistence.
--- Railway agi-improvement-worker writes here; never mutates production financial tables.
+-- The isolated AGI improvement worker writes here; never mutates production financial tables.
 
 create table if not exists public.agi_improvement_sessions (
   session_id text primary key,

@@ -60,7 +60,7 @@ const app = express();
 const PORT = Number(process.env.PORT) || 3000;
 const HOST = process.env.HOST || "0.0.0.0";
 
-// Platform health — register before rate limits / heavy routers (Railway, Render).
+// Platform health — register before rate limits / heavy routers.
 app.get("/api/health", (_req, res) => res.json({
   ok: true,
   architecture: "v1.0.1 LOCKED",
@@ -70,7 +70,7 @@ app.get("/api/health", (_req, res) => res.json({
   commit: process.env.RENDER_GIT_COMMIT || process.env.GIT_COMMIT || null,
 }));
 
-// Bind immediately so Railway healthchecks succeed while routes register asynchronously.
+// Bind immediately so platform healthchecks succeed while routes register asynchronously.
 let server = app.listen(PORT, HOST, () => {
   console.log(`🚀 IndianAPI Proxy listening on ${HOST}:${PORT}`);
 });

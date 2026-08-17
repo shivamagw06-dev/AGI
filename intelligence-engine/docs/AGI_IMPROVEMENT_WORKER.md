@@ -5,7 +5,7 @@ Controlled evaluation loop for Ask AGI. This is **evaluation-driven self-improve
 ## Architecture
 
 ```text
-agi-improvement-worker (Railway, no public URL)
+agi-improvement-worker (dedicated private worker)
         |
         |  POST /v1/ui/search  (concurrency 2, bounded retries)
         v
@@ -21,7 +21,7 @@ independent OpenAI evaluator
 append-only JSONL + Supabase persistence
 ```
 
-The worker **never** starts the AGI web server and **never** runs on Render.
+The worker **never** starts the AGI web server and must run as an isolated background process.
 
 ## Required endpoint
 
@@ -31,11 +31,11 @@ The worker **never** starts the AGI web server and **never** runs on Render.
 POST {AGI_ENGINE_URL}/v1/ui/search?question=...&ticker=...
 ```
 
-It does **not** call `agib-api`. Point `AGI_ENGINE_URL` at your healthy `agib-intelligence-engine` public or private Railway URL.
+It does **not** call `agib-api`. Point `AGI_ENGINE_URL` at the healthy Render `agib-intelligence-engine` URL.
 
 Preflight check: `GET {AGI_ENGINE_URL}/v1/health`
 
-## Railway service: agi-improvement-worker
+## Dedicated service: agi-improvement-worker
 
 Create a **separate** background worker. Do not replace `agib-intelligence-engine`, `agib-intelligence-worker`, or `agib-api`.
 
@@ -43,8 +43,6 @@ Create a **separate** background worker. Do not replace `agib-intelligence-engin
 |---|---|
 | Service name | `agi-improvement-worker` |
 | Root directory | `intelligence-engine` |
-| Config file | `railway.improvement.toml` |
-| Builder | Dockerfile |
 | Start command | `python scripts/improvement_worker.py` |
 | Public networking | **OFF** |
 | Replicas | **1** |
@@ -130,7 +128,7 @@ OPENAI_API_KEY=sk-... \
 python -m agi_improvement_engine.worker --count 10 --execute --concurrency 2
 ```
 
-Railway entrypoint:
+Worker entrypoint:
 
 ```bash
 python scripts/improvement_worker.py

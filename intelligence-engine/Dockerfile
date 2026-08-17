@@ -1,5 +1,4 @@
-# AGIB intelligence engine — shared image for Railway web + worker services.
-# Service root on Railway: intelligence-engine/ (WORKDIR /intelligence-engine).
+# AGIB intelligence engine container image.
 FROM python:3.12-slim
 
 WORKDIR /intelligence-engine
@@ -25,6 +24,6 @@ RUN python -m pip install --no-cache-dir -r requirements.txt \
 
 COPY . .
 
-RUN chmod +x scripts/railway_start.sh scripts/start_engine.sh
+RUN chmod +x scripts/start_engine.sh
 
-CMD ["bash", "scripts/railway_start.sh"]
+CMD ["bash", "scripts/start_engine.sh"]
