@@ -275,6 +275,16 @@ export default function createNewsletterRouter() {
         html: welcomeHtml(email, preferences),
       });
 
+      // Also send the latest published article (same drip as account signup).
+      try {
+        const { queueLatestPublishedArticleEmail } = await import(
+          '../services/sendLatestArticleEmail.js'
+        );
+        queueLatestPublishedArticleEmail(email);
+      } catch (queueErr) {
+        console.warn('[newsletter/welcome] latest-article queue failed', queueErr?.message || queueErr);
+      }
+
       return res.json({ ok: true, preferences });
     } catch (err) {
       console.error('[newsletter/welcome]', err?.message || err);

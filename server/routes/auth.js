@@ -371,6 +371,18 @@ export default function createAuthRouter() {
             ? ['signup', 'magiclink', 'recovery']
             : ['magiclink', 'signup', 'recovery'],
         });
+        // New accounts are auto-added to subscribers by DB trigger; also send
+        // the latest published article so they see your research immediately.
+        if (created) {
+          try {
+            const { queueLatestPublishedArticleEmail } = await import(
+              '../services/sendLatestArticleEmail.js'
+            );
+            queueLatestPublishedArticleEmail(email, admin);
+          } catch (queueErr) {
+            console.warn('[auth/signup] latest-article queue failed', queueErr?.message || queueErr);
+          }
+        }
         return res.status(created ? 201 : 200).json({
           ok: true,
           created,
@@ -386,6 +398,14 @@ export default function createAuthRouter() {
         });
       } catch (mailErr) {
         if (created) {
+          try {
+            const { queueLatestPublishedArticleEmail } = await import(
+              '../services/sendLatestArticleEmail.js'
+            );
+            queueLatestPublishedArticleEmail(email, admin);
+          } catch (queueErr) {
+            console.warn('[auth/signup] latest-article queue failed', queueErr?.message || queueErr);
+          }
           return res.status(201).json({
             ok: true,
             created: true,
