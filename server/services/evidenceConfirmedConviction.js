@@ -68,21 +68,21 @@ export function evaluateEvidenceConfirmedConviction(item) {
   };
 }
 
-export function buildEvidenceConfirmedConvictionRanking(queue, { limit = 200 } = {}) {
+export function buildEvidenceConfirmedConvictionRanking(queue, { limit = 500 } = {}) {
   const rows = (queue?.items || []).map(evaluateEvidenceConfirmedConviction).sort((left, right) =>
     (LABEL_ORDER[right.conviction_label] - LABEL_ORDER[left.conviction_label])
     || (right.conviction_score - left.conviction_score)
     || left.symbol.localeCompare(right.symbol));
   return {
     strategy: 'evidence_confirmed_conviction_v1',
-    universe: 'nifty200',
+    universe: 'nifty500',
     generated_at: queue?.generated_at || new Date().toISOString(),
     universe_size: rows.length,
     research_only: true,
     execution_enabled: false,
     methodology: { priority: 0.65, signal_agreement: 0.20, evidence_coverage: 0.15, contradiction_penalty: 10, incomplete_thesis_cap: 59 },
     counts: Object.fromEntries(Object.keys(LABEL_ORDER).map((label) => [label, rows.filter((row) => row.conviction_label === label).length])),
-    rows: rows.slice(0, Math.max(1, Math.min(200, limit))).map((row, index) => ({ ...row, rank: index + 1 })),
+    rows: rows.slice(0, Math.max(1, Math.min(500, limit))).map((row, index) => ({ ...row, rank: index + 1 })),
   };
 }
 

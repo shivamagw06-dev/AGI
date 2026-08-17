@@ -206,6 +206,9 @@ export class MomentumShadowPipeline {
       return range ? { ...snapshot, currentPrice: current?.ltp, openingHigh: range.high, openingLow: range.low } : null;
     }).filter(Boolean);
     const openingResult = openingSnapshots.length >= 10 ? evaluateOpeningRangeExpansion(openingSnapshots, { asOf: now.toISOString() }) : null;
+    const openingRangeReason = openingSnapshots.length
+      ? `insufficient_opening_range_coverage:${openingSnapshots.length}/10`
+      : 'genuine_session_opening_observations_unavailable';
     const anchors = new Map(this.universe.map((member) => {
       const stock = this.featureStore.latest(member.instrumentKey);
       const sector = this.featureStore.latest(member.sectorInstrumentKey);
@@ -257,7 +260,7 @@ export class MomentumShadowPipeline {
     const persistence = await this.persistEngines([
       { engine: result.engine, method: 'saveMomentumRun', result },
       { engine: volumeResult.engine, method: 'saveVolumeAnomalyRun', result: volumeResult },
-      { engine: 'opening_range_expansion_v1', method: 'saveOpeningRangeRun', result: openingResult, reason: 'opening_range_not_restored' },
+      { engine: 'opening_range_expansion_v1', method: 'saveOpeningRangeRun', result: openingResult, reason: openingRangeReason },
       { engine: meanReversionResult.engine, method: 'saveMeanReversionRun', result: meanReversionResult },
       { engine: 'derivatives_positioning_v1', method: 'saveDerivativesRun', result: derivativesResult, reason: derivativeSnapshots.length ? 'insufficient_derivative_coverage' : 'derivative_instruments_not_configured' },
     ], diagnostics);
@@ -266,7 +269,7 @@ export class MomentumShadowPipeline {
       companion_engines: [volumeResult, ...(openingResult ? [openingResult] : []), meanReversionResult, ...(derivativesResult ? [derivativesResult] : [])],
       persistence,
       coverage_diagnostics: coverageDiagnostics,
-      opening_range_status: openingResult ? 'running' : 'opening_range_not_restored',
+      opening_range_status: openingResult ? 'running' : openingRangeReason,
       derivatives_status: derivativesResult ? 'running' : derivativeSnapshots.length ? 'insufficient_derivative_coverage' : 'derivative_instruments_not_configured',
     };
   }

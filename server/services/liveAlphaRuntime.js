@@ -13,7 +13,7 @@ import { isGrowwConfigured } from '../providers/groww.js';
 
 const serverDir = path.dirname(fileURLToPath(import.meta.url));
 const defaultUniversePath = path.join(serverDir, '../config/live-alpha-universe.example.json');
-const nifty200Path = path.join(serverDir, '../../indices/Nifty200.csv');
+const nifty500Path = path.join(serverDir, '../../indices/Nifty500.csv');
 const SECTOR_INDEX_BY_INDUSTRY = Object.freeze({
   'FINANCIAL SERVICES': 'NSE_INDEX|Nifty Financial Services',
   'INFORMATION TECHNOLOGY': 'NSE_INDEX|Nifty IT',
@@ -98,9 +98,9 @@ export function validateLiveAlphaUniverse(config) {
 }
 
 export async function loadLiveAlphaUniverse(filePath = process.env.LIVE_ALPHA_UNIVERSE_PATH || defaultUniversePath) {
-  const preset = String(process.env.LIVE_ALPHA_UNIVERSE_PRESET || 'nifty200').trim().toLowerCase();
-  if (!process.env.LIVE_ALPHA_UNIVERSE_PATH && preset === 'nifty200') {
-    const lines = (await fs.readFile(nifty200Path, 'utf8')).split(/\r?\n/).filter(Boolean);
+  const preset = String(process.env.LIVE_ALPHA_UNIVERSE_PRESET || 'nifty500').trim().toLowerCase();
+  if (!process.env.LIVE_ALPHA_UNIVERSE_PATH && preset === 'nifty500') {
+    const lines = (await fs.readFile(nifty500Path, 'utf8')).split(/\r?\n/).filter(Boolean);
     const members = lines.slice(1).map((line, index) => {
       const columns = line.split(',').map((value) => value.trim());
       if (columns.length !== 5) throw new Error(`Invalid Nifty 200 CSV row ${index + 2}.`);
@@ -114,7 +114,7 @@ export async function loadLiveAlphaUniverse(filePath = process.env.LIVE_ALPHA_UN
         sectorInstrumentKey: SECTOR_INDEX_BY_INDUSTRY[normalizedIndustry] || 'NSE_INDEX|Nifty 50',
       };
     });
-    return validateLiveAlphaUniverse({ name: 'nifty200', expectedMembers: 200, benchmarkKey: 'NSE_INDEX|Nifty 50', members });
+    return validateLiveAlphaUniverse({ name: 'nifty500', expectedMembers: 500, benchmarkKey: 'NSE_INDEX|Nifty 50', members });
   }
   return validateLiveAlphaUniverse(JSON.parse(await fs.readFile(filePath, 'utf8')));
 }

@@ -99,7 +99,7 @@ export async function getLatestEvidenceConviction({ limit = 25, label } = {}) {
   if (!run) return { run: null, rows: [], research_only: true, execution_enabled: false };
   const labelFilter = label ? `&conviction_label=eq.${encodeURIComponent(String(label).toUpperCase())}` : '';
   const rows = await rest('evidence_conviction_rankings', {
-    query: `select=symbol,sector,rank,conviction_score,conviction_label,evidence_coverage,confluence_class,market_regime,eligible_for_research_shortlist,thesis,risk_note,component_scores&run_id=eq.${run.id}${labelFilter}&order=rank.asc&limit=${Math.max(1, Math.min(200, Number(limit) || 25))}`,
+    query: `select=symbol,sector,rank,conviction_score,conviction_label,evidence_coverage,confluence_class,market_regime,eligible_for_research_shortlist,thesis,risk_note,component_scores&run_id=eq.${run.id}${labelFilter}&order=rank.asc&limit=${Math.max(1, Math.min(500, Number(limit) || 25))}`,
   });
   return { run, rows, research_only: true, execution_enabled: false };
 }

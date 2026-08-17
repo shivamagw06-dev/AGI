@@ -80,7 +80,7 @@ export function evaluateResearchConfluence(evidence, { now = new Date() } = {}) 
   };
 }
 
-export function buildConfluenceQueue({ workspace, research = [], now = new Date(), limit = 25 } = {}) {
+export function buildConfluenceQueue({ workspace, research = [], now = new Date(), limit = 500 } = {}) {
   const bySymbol = new Map(research.map((row) => [String(row.symbol || '').toUpperCase(), { ...row }]));
   const sectorScores = new Map((workspace?.groww?.sectors || []).map((row) => [String(row.sector || '').toUpperCase(), row]));
   const equityRun = (workspace?.groww?.runs || []).find((run) => run.strategy === 'agi_equity_opportunity_v1');
@@ -97,7 +97,7 @@ export function buildConfluenceQueue({ workspace, research = [], now = new Date(
     bySymbol.set(symbol, { ...existing, symbol, sector: signal.sector || existing.sector, groww_sector_rotation_score: existing.groww_sector_rotation_score ?? sectorRow?.score, [`upstox_${key}_score`]: signedLiveScore(signal), market_features: { ...(existing.market_features || {}), [key]: signal.factor_values || {} }, anchors: existing.anchors || { captured_at: signal.as_of || signal.created_at, instrument_key: signal.instrument_key, price_at_signal: signal.price_at_signal, benchmark_at_signal: signal.nifty_at_signal, sector_index_at_signal: signal.sector_at_signal, market_regime: signal.market_regime || null }, observed_at: { ...(existing.observed_at || {}), groww_sector: existing.observed_at?.groww_sector || sectorRun?.as_of, [key]: signal.as_of || signal.created_at } });
   }
   const items = [...bySymbol.values()].map((row) => evaluateResearchConfluence(row, { now })).sort((a, b) => (b.research_priority_score ?? -1) - (a.research_priority_score ?? -1) || a.symbol.localeCompare(b.symbol));
-  return { generated_at: now.toISOString(), research_only: true, methodology: { weights: ALPHA_OPPORTUNITY_WEIGHTS, half_life_hours: HALF_LIFE_HOURS, decay: 'toward_neutral_exponential' }, completeness: { full_evidence: items.filter((item) => !item.flags.incomplete_research_evidence).length, total: items.length }, items: items.slice(0, Math.max(1, Math.min(200, limit))) };
+  return { generated_at: now.toISOString(), research_only: true, methodology: { weights: ALPHA_OPPORTUNITY_WEIGHTS, half_life_hours: HALF_LIFE_HOURS, decay: 'toward_neutral_exponential' }, completeness: { full_evidence: items.filter((item) => !item.flags.incomplete_research_evidence).length, total: items.length }, items: items.slice(0, Math.max(1, Math.min(500, limit))) };
 }
 
 export { ALPHA_OPPORTUNITY_WEIGHTS, ENGINE_KEYS, HALF_LIFE_HOURS };

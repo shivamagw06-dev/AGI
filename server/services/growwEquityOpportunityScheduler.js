@@ -5,7 +5,6 @@
  * same agi_equity_opportunity_v1 payload on the Node API and stores it directly.
  */
 
-import { isGrowwConfigured } from '../providers/groww.js';
 import { runGrowwEquityOpportunityResearch, STRATEGY } from './growwEquityOpportunityRun.js';
 import { activeHourlySlot, hasStoredStrategyRunInSlot } from './growwHourlySchedule.js';
 
@@ -45,11 +44,6 @@ export async function triggerGrowwEquityOpportunityRun({ force = false } = {}) {
 export function startGrowwEquityOpportunityScheduler() {
   if (timer) return;
   if (String(process.env.GROWW_EQUITY_OPPORTUNITY_SCHEDULER || 'false').toLowerCase() !== 'true') return;
-  if (!isGrowwConfigured()) {
-    console.warn('[groww-equity-opportunity] scheduler disabled: Groww auth not configured');
-    return;
-  }
-
   const pollMs = Math.max(60_000, Number(process.env.GROWW_EQUITY_OPPORTUNITY_POLL_MS || 5 * 60_000));
   const initialDelayMs = Math.max(60_000, Number(process.env.GROWW_EQUITY_OPPORTUNITY_INITIAL_DELAY_MS || 420_000));
 

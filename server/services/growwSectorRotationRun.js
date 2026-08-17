@@ -5,8 +5,8 @@
  * persists via ingestPayload directly to Supabase.
  */
 
-import { getHistoricalCandles, isGrowwConfigured } from '../providers/groww.js';
 import { ingestPayload, STRATEGIES } from './researchSignalIngest.js';
+import { getHistoricalCandlesWithFallback, UPSTOX_INDEX_KEYS } from './marketHistoricalCandles.js';
 
 export const STRATEGY = STRATEGIES.SECTOR;
 export const SCHEMA_VERSION = '1.0';
@@ -94,6 +94,23 @@ function candleCloses(candles) {
     .filter(Number.isFinite);
 }
 
+async function loadBenchmarkCloses(symbol, lookbackDays, providerUsage) {
+  const windows = [...new Set([lookbackDays, 180, 120])];
+  const failures = [];
+  for (const days of windows) {
+    try {
+      const result = await getHistoricalCandlesWithFallback({ tradingSymbol: symbol, days, minimumCandles: 65 });
+      providerUsage[result.source] += 1;
+      const closes = candleCloses(result.candles);
+      if (closes.length >= 65) return closes;
+      failures.push(`${days}d returned ${closes.length} candles`);
+    } catch (error) {
+      failures.push(`${days}d: ${error.message}`);
+    }
+  }
+  throw new Error(`${symbol} benchmark history unavailable: ${failures.join('; ')}`);
+}
+
 export function analyseSector(sector, candles, benchmark) {
   const closes = candleCloses(candles);
   if (closes.length < 125) return null;
@@ -177,20 +194,13 @@ function parseSectors() {
 }
 
 export async function runGrowwSectorRotationResearch({ force = false } = {}) {
-  if (!isGrowwConfigured()) {
-    throw new Error('Groww auth missing: set GROWW_ACCESS_TOKEN or GROWW_API_KEY + GROWW_API_SECRET');
-  }
-
   const delayMs = Math.max(100, Number(process.env.AGI_CALL_DELAY_SEC || 0.25) * 1000);
   const sectors = parseSectors();
   const benchmarkSymbol = String(process.env.AGI_BENCHMARK_SYMBOL || 'NIFTY').trim().toUpperCase();
   const lookbackDays = Math.max(180, Number(process.env.AGI_SECTOR_LOOKBACK_DAYS || 400) || 400);
+  const providerUsage = { groww: 0, upstox: 0 };
 
-  const benchmarkCandles = await getHistoricalCandles('NSE', 'CASH', benchmarkSymbol, lookbackDays);
-  const benchmarkCloses = candleCloses(benchmarkCandles);
-  if (benchmarkCloses.length < 65) {
-    throw new Error(`${benchmarkSymbol} benchmark history too short for sector rotation run`);
-  }
+  const benchmarkCloses = await loadBenchmarkCloses(benchmarkSymbol, lookbackDays, providerUsage);
 
   const benchmark = {
     symbol: benchmarkSymbol,
@@ -207,7 +217,12 @@ export async function runGrowwSectorRotationResearch({ force = false } = {}) {
   const errors = [];
   for (const sector of sectors) {
     try {
-      const candles = await getHistoricalCandles('NSE', 'CASH', sector, lookbackDays);
+      const result = await getHistoricalCandlesWithFallback({
+        tradingSymbol: sector, days: lookbackDays, minimumCandles: 125,
+        upstoxInstrumentKey: UPSTOX_INDEX_KEYS[sector],
+      });
+      providerUsage[result.source] += 1;
+      const candles = result.candles;
       const result = analyseSector(sector, candles, benchmark);
       if (result) rows.push(result);
       else errors.push({ sector, error: 'Insufficient history' });
@@ -230,6 +245,7 @@ export async function runGrowwSectorRotationResearch({ force = false } = {}) {
     universe_size: sectors.length,
     processed: rows.length,
     benchmark,
+    provider_usage: providerUsage,
     sectors: ranked,
     errors: errors.slice(0, 20),
   };
@@ -245,5 +261,6 @@ export async function runGrowwSectorRotationResearch({ force = false } = {}) {
     processed: rows.length,
     universe_size: sectors.length,
     errors: errors.length,
+    provider_usage: providerUsage,
   };
 }

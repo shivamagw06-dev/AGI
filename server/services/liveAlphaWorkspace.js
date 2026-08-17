@@ -26,7 +26,7 @@ async function query(table, search, fetchImpl) {
   return response.json();
 }
 
-export async function getLiveAlphaWorkspace({ fetchImpl = globalThis.fetch, limit = 250, now = new Date() } = {}) {
+export async function getLiveAlphaWorkspace({ fetchImpl = globalThis.fetch, limit = 500, now = new Date() } = {}) {
   let runs;
   try {
     runs = await query('live_alpha_runs', `select=id,engine,as_of,market_session,universe_size,diagnostics&order=as_of.desc&limit=25`, fetchImpl);
@@ -79,7 +79,7 @@ export async function getLiveAlphaWorkspace({ fetchImpl = globalThis.fetch, limi
     const equityRun = latestByStrategy.get('agi_equity_opportunity_v1');
     const [sectors, equities] = await Promise.all([
       sectorRun ? query('sector_rotation_signals', `select=sector,rank,score,return_5d,return_20d,relative_20d,relative_60d,rotation,risk,factors&strategy_run_id=eq.${sectorRun.id}&order=rank.asc&limit=20`, fetchImpl) : [],
-      equityRun ? query('equity_opportunity_signals', `select=symbol,signal,rank,score,return_20d,return_60d,relative_20d,relative_60d,volume_ratio,trend,volume_confirmation,risk,reasons,factors&strategy_run_id=eq.${equityRun.id}&signal=eq.research_candidate&order=score.desc&limit=250`, fetchImpl) : [],
+      equityRun ? query('equity_opportunity_signals', `select=symbol,signal,rank,score,return_20d,return_60d,relative_20d,relative_60d,volume_ratio,trend,volume_confirmation,risk,reasons,factors&strategy_run_id=eq.${equityRun.id}&signal=eq.research_candidate&order=score.desc&limit=500`, fetchImpl) : [],
     ]);
     groww = { readiness: 'ready', runs: latestRuns, sectors, equities };
   } catch (error) {

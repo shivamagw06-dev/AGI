@@ -170,11 +170,22 @@ export async function getHistoricalCandleRange(
 export async function getHistoricalCandles(exchange, segment, tradingSymbol, days = 120) {
   const end = new Date();
   const start = new Date(end.getTime() - days * 24 * 60 * 60 * 1000);
-  try {
-    return await getHistoricalCandleRange(exchange, segment, tradingSymbol, start, end);
-  } catch {
-    return [];
+  const attempts = Math.max(1, Number(process.env.GROWW_HISTORICAL_RETRIES || 3) || 3);
+  let lastError;
+  for (let attempt = 1; attempt <= attempts; attempt += 1) {
+    try {
+      return await getHistoricalCandleRange(exchange, segment, tradingSymbol, start, end);
+    } catch (error) {
+      lastError = error;
+      if (attempt < attempts) {
+        const delayMs = Math.min(5_000, 500 * (2 ** (attempt - 1)));
+        await new Promise((resolve) => setTimeout(resolve, delayMs));
+      }
+    }
   }
+  throw new Error(
+    `Groww historical candles unavailable for ${exchange}:${tradingSymbol} after ${attempts} attempts: ${lastError?.message || 'unknown error'}`
+  );
 }
 
 export const INDEX_SYMBOLS = [

@@ -68,10 +68,12 @@ services:
         value: "true"
       - key: LIVE_ALPHA_SHADOW_ENABLED
         value: "true"
-      # Live Alpha equity engines cover the full tracked Nifty 200 universe.
+      # Live Alpha equity engines cover the full tracked Nifty 500 universe.
       # Futures remain limited to contracts actually listed in NSE_FO.
       - key: LIVE_ALPHA_UNIVERSE_PRESET
-        value: nifty200
+        value: nifty500
+      - key: AGI_MAX_SYMBOLS
+        value: "500"
       - key: LIVE_ALPHA_PROVIDER
         value: upstox
       # Official V3 WS: Bearer + followRedirects (override with authorize if needed)

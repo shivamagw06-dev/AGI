@@ -2,7 +2,6 @@
  * Scheduled Groww sector rotation research on Render.
  */
 
-import { isGrowwConfigured } from '../providers/groww.js';
 import { runGrowwSectorRotationResearch, STRATEGY } from './growwSectorRotationRun.js';
 import { activeHourlySlot, hasStoredStrategyRunInSlot } from './growwHourlySchedule.js';
 
@@ -42,11 +41,6 @@ export async function triggerGrowwSectorRotationRun({ force = false } = {}) {
 export function startGrowwSectorRotationScheduler() {
   if (timer) return;
   if (String(process.env.GROWW_SECTOR_ROTATION_SCHEDULER || 'false').toLowerCase() !== 'true') return;
-  if (!isGrowwConfigured()) {
-    console.warn('[groww-sector-rotation] scheduler disabled: Groww auth not configured');
-    return;
-  }
-
   const pollMs = Math.max(60_000, Number(process.env.GROWW_SECTOR_ROTATION_POLL_MS || 5 * 60_000));
   const initialDelayMs = Math.max(60_000, Number(process.env.GROWW_SECTOR_ROTATION_INITIAL_DELAY_MS || 480_000));
 

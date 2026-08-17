@@ -28,9 +28,6 @@ export default function createMarketRouter(env = {}) {
   const router = Router();
 
   router.get('/groww-health', async (_req, res) => {
-    if (process.env.DEBUG_GROWW !== 'true' && process.env.NODE_ENV === 'production') {
-      return res.status(404).json({ error: 'Not found' });
-    }
     const health = await getGrowwHealth();
     return res.status(health.ok ? 200 : 502).json(health);
   });

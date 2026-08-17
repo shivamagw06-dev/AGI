@@ -20,10 +20,10 @@ export async function runConfluenceValidationCycle() {
     const [workspace, universe] = await Promise.all([getLiveAlphaWorkspace(), loadLiveAlphaUniverse()]);
     const research = await getResearchEvidence({ workspace, limit: 25 });
     const queue = scopeQueueToLiveUniverse(
-      buildConfluenceQueue({ workspace, research: research.evidence, limit: 200 }),
+      buildConfluenceQueue({ workspace, research: research.evidence, limit: 500 }),
       universe,
     );
-    const conviction = buildEvidenceConfirmedConvictionRanking(queue, { limit: 200 });
+    const conviction = buildEvidenceConfirmedConvictionRanking(queue, { limit: 500 });
     // A newly deployed app may briefly run before its database migration is
     // applied. Keep validation, memory and forecast maintenance alive while
     // surfacing the conviction persistence error in scheduler health.

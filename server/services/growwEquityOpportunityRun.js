@@ -9,8 +9,8 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { getHistoricalCandles, isGrowwConfigured } from '../providers/groww.js';
 import { ingestPayload, STRATEGIES } from './researchSignalIngest.js';
+import { getHistoricalCandlesWithFallback } from './marketHistoricalCandles.js';
 
 export const STRATEGY = STRATEGIES.EQUITY;
 export const SCHEMA_VERSION = '1.0';
@@ -20,7 +20,7 @@ export const DEFAULT_UNIVERSE =
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const serverDir = path.dirname(fileURLToPath(import.meta.url));
-const defaultNifty200Path = path.join(serverDir, '../../indices/Nifty200.csv');
+const defaultNifty500Path = path.join(serverDir, '../../indices/Nifty500.csv');
 
 function istTimestamp(now = new Date()) {
   const parts = Object.fromEntries(
@@ -77,6 +77,24 @@ function candleSeries(candles) {
     closes: rows.map((row) => Number(row[4])).filter(Number.isFinite),
     volumes: rows.map((row) => Number(row[5])).filter(Number.isFinite),
   };
+}
+
+async function loadNiftyBenchmark(lookbackDays, providerUsage) {
+  const windows = [...new Set([lookbackDays, 120])];
+  const failures = [];
+  for (const days of windows) {
+    try {
+      const result = await getHistoricalCandlesWithFallback({ tradingSymbol: 'NIFTY', days, minimumCandles: 65 });
+      const candles = result.candles;
+      providerUsage[result.source] += 1;
+      const closes = candleSeries(candles).closes;
+      if (closes.length >= 65) return closes;
+      failures.push(`${days}d returned ${closes.length} candles`);
+    } catch (error) {
+      failures.push(`${days}d: ${error.message}`);
+    }
+  }
+  throw new Error(`NIFTY benchmark history unavailable: ${failures.join('; ')}`);
 }
 
 export function analyseEquity(symbol, candles, benchmark) {
@@ -144,17 +162,17 @@ export function analyseEquity(symbol, candles, benchmark) {
 }
 
 export async function loadEquityUniverse() {
-  const limit = Math.max(5, Math.min(200, Number(process.env.AGI_MAX_SYMBOLS || 200) || 200));
+  const limit = Math.max(5, Math.min(500, Number(process.env.AGI_MAX_SYMBOLS || 500) || 500));
   const configured = String(process.env.AGI_UNIVERSE || '').trim();
   if (configured) {
     return configured.split(',').map((symbol) => symbol.trim().toUpperCase()).filter(Boolean).slice(0, limit);
   }
   try {
-    const csvPath = process.env.AGI_NIFTY200_PATH || defaultNifty200Path;
+    const csvPath = process.env.AGI_NIFTY500_PATH || process.env.AGI_NIFTY200_PATH || defaultNifty500Path;
     const rows = (await fs.readFile(csvPath, 'utf8')).split(/\r?\n/).slice(1).filter(Boolean);
     const symbols = rows.map((line) => line.split(',')[2]?.trim().toUpperCase()).filter(Boolean);
-    if (symbols.length !== 200 || new Set(symbols).size !== 200) {
-      throw new Error(`expected 200 unique symbols, received ${symbols.length}`);
+    if (symbols.length !== 500 || new Set(symbols).size !== 500) {
+      throw new Error(`expected 500 unique symbols, received ${symbols.length}`);
     }
     return symbols.slice(0, limit);
   } catch (error) {
@@ -164,19 +182,26 @@ export async function loadEquityUniverse() {
 }
 
 export async function runGrowwEquityOpportunityResearch({ force = false } = {}) {
-  if (!isGrowwConfigured()) {
-    throw new Error('Groww auth missing: set GROWW_ACCESS_TOKEN or GROWW_API_KEY + GROWW_API_SECRET');
-  }
-
   const delayMs = Math.max(100, Number(process.env.AGI_CALL_DELAY_SEC || 0.22) * 1000);
   const symbols = await loadEquityUniverse();
   const lookbackDays = Math.max(120, Number(process.env.AGI_LOOKBACK_DAYS || 175) || 175);
+  const providerUsage = { groww: 0, upstox: 0 };
 
-  const niftyCandles = await getHistoricalCandles('NSE', 'CASH', 'NIFTY', lookbackDays);
-  const niftyCloses = candleSeries(niftyCandles).closes;
-  if (niftyCloses.length < 65) {
-    throw new Error('NIFTY benchmark history too short for equity opportunity run');
+  const csvPath = process.env.AGI_NIFTY500_PATH || process.env.AGI_NIFTY200_PATH || defaultNifty500Path;
+  const isinBySymbol = new Map();
+  try {
+    const lines = (await fs.readFile(csvPath, 'utf8')).split(/\r?\n/).slice(1).filter(Boolean);
+    for (const line of lines) {
+      const columns = line.split(',');
+      const symbol = columns[2]?.trim().toUpperCase();
+      const isin = columns[4]?.trim().toUpperCase();
+      if (symbol && isin) isinBySymbol.set(symbol, isin);
+    }
+  } catch (error) {
+    console.warn('[groww-equity-opportunity] Upstox ISIN map unavailable:', error.message);
   }
+
+  const niftyCloses = await loadNiftyBenchmark(lookbackDays, providerUsage);
 
   const benchmark = {
     return_20d: returnPct(niftyCloses, 20),
@@ -189,7 +214,12 @@ export async function runGrowwEquityOpportunityResearch({ force = false } = {}) 
   const errors = [];
   for (const symbol of symbols) {
     try {
-      const candles = await getHistoricalCandles('NSE', 'CASH', symbol, lookbackDays);
+      const result = await getHistoricalCandlesWithFallback({
+        tradingSymbol: symbol, days: lookbackDays, minimumCandles: 65,
+        upstoxInstrumentKey: isinBySymbol.get(symbol) ? `NSE_EQ|${isinBySymbol.get(symbol)}` : null,
+      });
+      providerUsage[result.source] += 1;
+      const candles = result.candles;
       const result = analyseEquity(symbol, candles, benchmark);
       if (result) rows.push(result);
     } catch (error) {
@@ -221,7 +251,8 @@ export async function runGrowwEquityOpportunityResearch({ force = false } = {}) 
     universe_size: symbols.length,
     processed: rows.length,
     benchmark,
-    universe: 'nifty200',
+    provider_usage: providerUsage,
+    universe: 'nifty500',
     shortlist_size: Math.min(20, rows.length),
     candidates,
     deteriorating,
@@ -239,5 +270,6 @@ export async function runGrowwEquityOpportunityResearch({ force = false } = {}) 
     processed: rows.length,
     universe_size: symbols.length,
     errors: errors.length,
+    provider_usage: providerUsage,
   };
 }

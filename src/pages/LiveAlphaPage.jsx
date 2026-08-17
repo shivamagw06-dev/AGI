@@ -120,7 +120,7 @@ export default function LiveAlphaPage() {
       setPayload(await readApiJson(workspaceResponse, 'Live Alpha research store'));
       setRuntime(await readApiJson(statusResponse, 'Live Alpha runtime'));
       try {
-        const convictionResponse = await fetch(`${API_ORIGIN}/api/market/evidence-conviction?limit=200`, { headers: { Accept: 'application/json' } });
+        const convictionResponse = await fetch(`${API_ORIGIN}/api/market/evidence-conviction?limit=500`, { headers: { Accept: 'application/json' } });
         setConviction(await readApiJson(convictionResponse, 'Conviction ranking')); setConvictionError('');
       }
       catch (convictionRequestError) { setConvictionError(convictionRequestError.message); }
