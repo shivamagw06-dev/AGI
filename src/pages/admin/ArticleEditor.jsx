@@ -13,7 +13,7 @@ import { Table } from '@tiptap/extension-table';
 import TableRow from '@tiptap/extension-table-row';
 import TableCell from '@tiptap/extension-table-cell';
 import TableHeader from '@tiptap/extension-table-header';
-import { Eye, Save, Send, ImageIcon, Loader2, Brain } from 'lucide-react';
+import { Eye, Save, Send, ImageIcon, Loader2, Brain, Mail } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
 import { useAuth } from '@/contexts/AuthContext';
 import useCategories from '@/hooks/useCategories';
@@ -64,6 +64,7 @@ export default function ArticleEditor() {
   const [draftId, setDraftId] = useState(null);
   const [status, setStatus] = useState('draft');
   const [saving, setSaving] = useState(false);
+  const [notifying, setNotifying] = useState(false);
   const [lastSaved, setLastSaved] = useState(null);
   const [error, setError] = useState('');
   const [previewOpen, setPreviewOpen] = useState(false);
@@ -557,6 +558,37 @@ export default function ArticleEditor() {
     [editor, slug, slugManual, title, draftId, buildPayload, navigate, section, tagsInput]
   );
 
+  const notifyNow = useCallback(async () => {
+    if (!editor || notifying) return;
+    if (status !== 'published' || !slug) {
+      alert('Publish to the website first — the email links to the live article.');
+      return;
+    }
+    if (!window.confirm(`Email "${title.trim()}" to every active subscriber of this letter?`)) return;
+
+    setNotifying(true);
+    try {
+      const body = editor.getHTML();
+      const result = await notifySubscribers({
+        title: title.trim(),
+        slug,
+        summary: htmlToExcerpt(body, 280),
+        body,
+        section,
+      });
+
+      if (result?.ok && result?.sent > 0) {
+        alert(`Sent to ${result.sent} subscriber${result.sent === 1 ? '' : 's'} (${result.letter || 'letter'}).`);
+      } else if (result?.ok) {
+        alert(result.reason || 'No matching subscribers for this letter.');
+      } else {
+        alert(`Notify failed: ${result?.reason || result?.error || 'unknown error'}`);
+      }
+    } finally {
+      setNotifying(false);
+    }
+  }, [editor, notifying, status, slug, title, section]);
+
   useEffect(() => {
     if (!editor || !loaded || !user) return;
 
@@ -643,6 +675,24 @@ export default function ArticleEditor() {
             title="Private — AGI studies this. Not shown on the public website."
           >
             <Brain size={15} className="mr-1.5" /> Send to Intelligence
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={notifyNow}
+            disabled={notifying || saving || status !== 'published' || !slug}
+            title={
+              status === 'published'
+                ? 'Email this live article to subscribers of its letter'
+                : 'Available once the article is published'
+            }
+          >
+            {notifying ? (
+              <Loader2 size={15} className="mr-1.5 animate-spin" />
+            ) : (
+              <Mail size={15} className="mr-1.5" />
+            )}
+            Notify Subscribers
           </Button>
         </div>
       </div>
