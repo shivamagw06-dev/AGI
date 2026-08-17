@@ -8,7 +8,7 @@ async function fetchJson(path) {
   return res.json();
 }
 
-export function usePeOverview(sector = null) {
+export function usePeOverview(options = {}) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -17,14 +17,16 @@ export function usePeOverview(sector = null) {
     setLoading(true);
     setError(null);
     try {
-      const q = sector ? `?sector=${encodeURIComponent(sector)}` : '';
-      setData(await fetchJson(`/api/pe/overview${q}`));
+      const normalized = typeof options === 'string' ? { sector: options } : options;
+      const params = new URLSearchParams();
+      Object.entries(normalized || {}).forEach(([key, value]) => value !== null && value !== undefined && value !== '' && params.set(key, String(value)));
+      setData(await fetchJson('/api/pe/overview' + (params.size ? '?' + params : '')));
     } catch (e) {
       setError(e.message);
     } finally {
       setLoading(false);
     }
-  }, [sector]);
+  }, [JSON.stringify(options)]);
 
   useEffect(() => {
     reload();

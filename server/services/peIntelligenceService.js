@@ -97,7 +97,70 @@ function firmAiInsights(firm, portfolio) {
   };
 }
 
-export function getPeOverview({ sector = null } = {}) {
+export async function getPeOverview({ sector = null, scope = 'core', search = '', limit = 500 } = {}) {
+  const url = String(process.env.SUPABASE_URL || '').trim().replace(/\/$/, '');
+  const key = String(process.env.SUPABASE_SERVICE_ROLE_KEY || '').trim();
+  let rows = [], opportunities = [];
+  if (url && key) {
+    const headers = { apikey: key, Authorization: 'Bearer ' + key };
+    const [dealsResponse, opportunityResponse] = await Promise.all([
+      fetch(url + '/rest/v1/private_market_deals?select=*&is_public=eq.true&order=deal_date.desc&limit=' + Math.max(1, Math.min(500, Number(limit) || 500)), { headers }),
+      fetch(url + '/rest/v1/private_market_opportunities?select=opportunity_type&is_public=eq.true&limit=1000', { headers }),
+    ]);
+    if (dealsResponse.ok) rows = await dealsResponse.json();
+    else if (dealsResponse.status !== 404) throw new Error('Private Markets storage failed (' + dealsResponse.status + ')');
+    if (opportunityResponse.ok) opportunities = await opportunityResponse.json();
+  }
+  const needle = String(search).trim().toLowerCase();
+  const deals = rows.map((row) => ({
+    id: row.id, companyId: row.company_id, company: row.company_name, dealDate: row.deal_date,
+    dealSizeInrMn: row.deal_size_inr_mn == null ? null : Number(row.deal_size_inr_mn),
+    stakePercent: row.stake_percent == null ? null : Number(row.stake_percent),
+    preMoneyValuationInrMn: row.pre_money_valuation_inr_mn == null ? null : Number(row.pre_money_valuation_inr_mn),
+    postMoneyValuationInrMn: row.post_money_valuation_inr_mn == null ? null : Number(row.post_money_valuation_inr_mn),
+    businessDescription: row.business_description, location: row.location, transactionType: row.transaction_type || 'Other',
+    marketDomain: row.market_domain, sourceFile: row.source_file, sourceSheet: row.source_sheet, sourceRow: row.source_row, effectiveDate: row.effective_date,
+  })).filter((deal) => {
+    if (scope === 'core' && deal.marketDomain !== 'core') return false;
+    if (scope === 'public' && deal.marketDomain !== 'public') return false;
+    if (sector && !String(deal.transactionType).toLowerCase().includes(String(sector).toLowerCase())) return false;
+    return !needle || [deal.company, deal.location, deal.transactionType, deal.businessDescription].some((value) => String(value || '').toLowerCase().includes(needle));
+  });
+  const values = deals.map((deal) => deal.dealSizeInrMn).filter(Number.isFinite).sort((a, b) => a - b);
+  const stakes = deals.filter((deal) => Number.isFinite(deal.stakePercent)).length;
+  const middle = Math.floor(values.length / 2);
+  const metrics = {
+    dealCount: deals.length, companies: new Set(deals.map((deal) => deal.companyId || deal.company)).size,
+    totalValueInrMn: values.reduce((sum, value) => sum + value, 0),
+    medianValueInrMn: values.length ? (values.length % 2 ? values[middle] : (values[middle - 1] + values[middle]) / 2) : null,
+    valueCoverage: deals.length ? Math.round(values.length / deals.length * 100) : 0,
+    stakeCoverage: deals.length ? Math.round(stakes / deals.length * 100) : 0, stakeDisclosed: stakes,
+  };
+  const groups = new Map();
+  deals.forEach((deal) => {
+    const item = groups.get(deal.transactionType) || { label: deal.transactionType, count: 0, valueInrMn: 0 };
+    item.count += 1; item.valueInrMn += deal.dealSizeInrMn || 0; groups.set(deal.transactionType, item);
+  });
+  const breakdown = [...groups.values()].sort((a, b) => b.count - a.count);
+  const leader = breakdown[0];
+  const opportunitySummary = opportunities.reduce((out, item) => {
+    if (item.opportunity_type === 'sale_divestment') out.saleDivestment += 1;
+    if (item.opportunity_type === 'lbo') out.lbo += 1;
+    if (item.opportunity_type === 'distressed') out.distressed += 1;
+    return out;
+  }, { saleDivestment: 0, lbo: 0, distressed: 0 });
+  return {
+    updatedAt: new Date().toISOString(), scope, metrics, deals, breakdown, opportunitySummary,
+    view: leader ? {
+      headline: leader.label + ' leads observed activity',
+      interpretation: leader.label + ' represents ' + Math.round(leader.count / metrics.dealCount * 100) + '% of selected transactions. ' + metrics.valueCoverage + '% disclose value; undisclosed values are excluded.',
+    } : { headline: 'Evidence before narrative', interpretation: 'Verified records have not yet been imported into the canonical store.' },
+    provenance: {
+      effectiveDate: deals.map((deal) => deal.effectiveDate || deal.dealDate).filter(Boolean).sort().at(-1) || null,
+      recordCount: deals.length, sourceCount: new Set(deals.map((deal) => deal.sourceFile).filter(Boolean)).size, evidenceContract: 'private_markets_v1',
+    },
+  };
+  /*
   const feed = sector
     ? RESEARCH_FEED.filter((item) => item.sector === sector)
     : RESEARCH_FEED;
@@ -118,6 +181,7 @@ export function getPeOverview({ sector = null } = {}) {
       crawlerReady: true,
     },
   };
+  */
 }
 
 export function getPeFirm(slug) {

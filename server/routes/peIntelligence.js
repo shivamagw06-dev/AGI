@@ -4,9 +4,13 @@ import { getPeFirm, getPeOverview, listPeFirms } from '../services/peIntelligenc
 export default function createPeIntelligenceRouter() {
   const router = Router();
 
-  router.get('/overview', (req, res) => {
-    const sector = req.query.sector || null;
-    return res.json(getPeOverview({ sector }));
+  router.get('/overview', async (req, res) => {
+    try {
+      return res.json(await getPeOverview({ sector: req.query.sector || null, scope: req.query.scope || 'core', search: req.query.search || '', limit: req.query.limit || 500 }));
+    } catch (error) {
+      console.error('[pe-intelligence] overview failed', error);
+      return res.status(503).json({ error: 'Private Markets evidence is temporarily unavailable.' });
+    }
   });
 
   router.get('/firms', (_req, res) => {
