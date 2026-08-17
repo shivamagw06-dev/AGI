@@ -273,9 +273,10 @@ def _truthy(name, default="false"):
 
 def _missing_india_series():
     """Return registered Core 50 series with no persisted India/global value."""
+    ids=",".join(row[0] for row in CORE_50)
     rows = _rest(
         "macro_public_observations",
-        query="?select=series_id&country_code=in.(IND,WLD)&limit=10000",
+        query=f"?select=series_id&series_id=in.({ids})&country_code=in.(IND,WLD)&limit=10000",
     ) or []
     observed = {str(row.get("series_id") or "") for row in rows}
     return [row for row in CORE_50 if row[0] not in observed and row[3] != "derived"]
@@ -284,7 +285,17 @@ def _missing_india_series():
 def _web_semantically_matches(series_id, extracted):
     required=WEB_REQUIRED_TERMS.get(series_id)
     if not required: return True
-    evidence=" ".join(str(extracted.get(key) or "") for key in ("source_title","quote")).lower()
+    title=str(extracted.get("source_title") or "").lower()
+    quote=str(extracted.get("quote") or "").lower()
+    evidence=f"{title} {quote}"
+    if series_id == "gdp_qoq":
+        # India GDP releases commonly mix FY, YoY-quarter and sequential data.
+        # Never accept an annual-labelled source or a YoY quote as QoQ.
+        forbidden=("annual gross domestic product","annual gdp","year-on-year","year on year","y-o-y","yoy")
+        if any(term in title for term in ("annual gross domestic product","annual gdp")):
+            return False
+        if any(term in quote for term in forbidden):
+            return False
     return any(term in evidence for term in required)
 
 

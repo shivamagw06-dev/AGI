@@ -194,3 +194,8 @@ def test_web_semantic_guard_rejects_annual_growth_as_gdp_qoq():
     quarterly={"source_title":"Quarterly GDP release","quote":"GDP increased 1.7% quarter-on-quarter (QoQ)."}
     assert _web_semantically_matches("gdp_qoq",annual) is False
     assert _web_semantically_matches("gdp_qoq",quarterly) is True
+
+
+def test_web_semantic_guard_rejects_yoy_quarter_growth_as_qoq():
+    yoy={"source_title":"Quarterly GDP release","quote":"GDP expanded 7.8% year-on-year in Q4."}
+    assert _web_semantically_matches("gdp_qoq",yoy) is False
