@@ -20681,6 +20681,14 @@ async def mie_public_observations_latest(country: str = "India"):
     return latest_observations(country=country)
 
 
+@router.get("/mie/public-observations/supplemental")
+async def mie_public_observations_supplemental():
+    """Vendor/reference macro observations excluded from governed Core 50 coverage."""
+    from macro_intelligence_engine.public_data import supplemental_observations
+
+    return supplemental_observations()
+
+
 @router.get("/mie/g20/matrix")
 async def mie_g20_matrix():
     from macro_intelligence_engine.public_data import g20_matrix

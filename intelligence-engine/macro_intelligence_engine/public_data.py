@@ -268,6 +268,30 @@ def latest_observations(country: str = "India") -> dict[str, Any]:
     }
 
 
+def supplemental_observations() -> dict[str, Any]:
+    """Latest vendor/reference series kept outside the governed Core 50 count."""
+    try:
+        from macro_intelligence_engine.public_ingestion import _rest
+        rows=list(_rest("macro_public_observations",query="?select=*&series_id=like.fmp_*&order=period_date.desc,available_at.desc&limit=1000") or [])
+    except Exception:
+        rows=[]
+    latest={}
+    for row in rows:
+        series_id=str(row.get("series_id") or "")
+        if series_id and series_id not in latest and row.get("value_numeric") is not None: latest[series_id]=row
+    observations=[]
+    for series_id,row in sorted(latest.items()):
+        metadata=row.get("metadata") if isinstance(row.get("metadata"),dict) else {}
+        observations.append({
+            "series_id":series_id,"country_code":row.get("country_code"),"label":series_id.removeprefix("fmp_").replace("_"," ").title(),
+            "value":row.get("value_numeric"),"unit":row.get("unit"),"frequency":row.get("frequency"),
+            "observation_date":row.get("period_date"),"available_at":row.get("available_at"),"source":row.get("source"),
+            "source_url":row.get("source_url"),"quality_status":row.get("quality_status"),"evidence_role":metadata.get("evidence_role"),
+            "pit_status":"PIT LIMITED",
+        })
+    return {"ok":True,"count":len(observations),"observations":observations,"policy":"Supplemental vendor observations do not increase Core 50 coverage or validation status."}
+
+
 def g20_matrix() -> dict[str, Any]:
     """Latest comparable G20 observations. No scores or regimes are inferred."""
     from macro_intelligence_engine.public_ingestion import G20_COUNTRIES, G20_WORLD_BANK_SERIES

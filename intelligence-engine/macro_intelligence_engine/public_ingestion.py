@@ -1,7 +1,7 @@
 """Durable public macro ingestion. Background runtime only; never called by page reads."""
 from __future__ import annotations
-import csv, hashlib, io, json, math, os, time, urllib.error, urllib.parse, urllib.request, uuid
-from datetime import datetime, timezone
+import calendar, csv, hashlib, io, json, math, os, re, time, urllib.error, urllib.parse, urllib.request, uuid
+from datetime import datetime, timedelta, timezone
 from macro_intelligence_engine.public_data import CORE_50
 
 SOURCE_DEFAULTS = {
@@ -65,6 +65,27 @@ WEB_REQUIRED_TERMS = {
     "policy_rate": ("repo rate", "policy rate"),
     "fx_reserves": ("foreign exchange reserves", "forex reserves", "fx reserves"),
 }
+FMP_US_INDICATORS = (
+    "GDP", "realGDP", "federalFunds", "CPI", "inflationRate", "retailSales",
+    "consumerSentiment", "unemploymentRate", "totalNonfarmPayroll",
+    "industrialProductionTotalIndex", "tradeBalanceGoodsAndServices",
+)
+FMP_INDIA_EVENT_PATTERNS = (
+    (re.compile(r"\bgdp\b.*\b(qoq|quarter.on.quarter)\b", re.I), "gdp_qoq"),
+    (re.compile(r"\bgdp\b.*\b(yoy|year.on.year|growth)\b", re.I), "gdp_growth"),
+    (re.compile(r"\b(consumer price|cpi)\b", re.I), "cpi"),
+    (re.compile(r"\b(core cpi|core inflation)\b", re.I), "core_cpi"),
+    (re.compile(r"\b(food inflation|food price)\b", re.I), "food_inflation"),
+    (re.compile(r"\b(industrial production|index of industrial production|iip)\b", re.I), "industrial_production"),
+    (re.compile(r"\b(repo rate|interest rate decision|policy rate)\b", re.I), "policy_rate"),
+    (re.compile(r"\btrade balance\b", re.I), "trade_balance"),
+    (re.compile(r"\bexports?\b", re.I), "exports"),
+    (re.compile(r"\bimports?\b", re.I), "imports"),
+    (re.compile(r"\b(forex|foreign exchange|fx) reserves?\b", re.I), "fx_reserves"),
+    (re.compile(r"\b(composite pmi|pmi composite)\b", re.I), "pmi"),
+    (re.compile(r"\bconsumer confidence\b", re.I), "consumer_confidence"),
+    (re.compile(r"\bunemployment rate\b", re.I), "unemployment"),
+)
 
 def _now(): return datetime.now(timezone.utc)
 
@@ -267,6 +288,92 @@ def collect_yahoo_macro_market():
     return _persist_official_run("Yahoo Finance Macro Market",[],observations,errors)
 
 
+def _fmp_get(path, params=None):
+    key=(os.getenv("FMP_API_KEY") or "").strip()
+    if not key: raise RuntimeError("fmp_api_key_missing")
+    query={**(params or {}),"apikey":key}
+    url=f"https://financialmodelingprep.com/stable/{path}?{urllib.parse.urlencode(query)}"
+    request=urllib.request.Request(url,headers={"User-Agent":"AGI-Macro-Intelligence/1.0","Accept":"application/json"})
+    with _urlopen(request,timeout=30) as response: raw=response.read()
+    payload=json.loads(raw)
+    if isinstance(payload,dict) and payload.get("Error Message"): raise RuntimeError(str(payload["Error Message"])[:160])
+    return payload,hashlib.sha256(raw).hexdigest(),url
+
+
+def _fmp_period(event, released_at):
+    """Best-effort period end from event suffix; otherwise use release date."""
+    text=str(event or "")
+    month_match=re.search(r"\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\b",text,re.I)
+    quarter_match=re.search(r"\bQ([1-4])\b",text,re.I)
+    year_match=re.search(r"\b(20\d{2})\b",text)
+    year=int(year_match.group(1)) if year_match else released_at.year
+    if month_match:
+        month=list(calendar.month_abbr).index(month_match.group(1).title()[:3])
+        return f"{year:04d}-{month:02d}-{calendar.monthrange(year,month)[1]:02d}"
+    if quarter_match:
+        month=int(quarter_match.group(1))*3
+        return f"{year:04d}-{month:02d}-{calendar.monthrange(year,month)[1]:02d}"
+    return released_at.date().isoformat()
+
+
+def _fmp_event_series(event):
+    for pattern,series_id in FMP_INDIA_EVENT_PATTERNS:
+        if pattern.search(str(event or "")): return series_id
+    return None
+
+
+def collect_fmp_economics():
+    """FMP vendor data: India releases plus separately-labelled US/global context."""
+    if not _truthy("MIE_FMP_ENABLED","true") or not (os.getenv("FMP_API_KEY") or "").strip():
+        return {"ok":True,"source":"FMP Economics","status":"DISABLED","accepted":0,"errors":[]}
+    fetched=_now(); start=(fetched.date()-timedelta(days=89)).isoformat(); end=fetched.date().isoformat()
+    registry=[]; observations=[]; errors=[]
+    def add(series_id,country,domain,label,unit,frequency,date,value,source_url,digest,metadata):
+        registry.append({"series_id":series_id,"country_code":country,"domain":domain,"label":label,"unit":unit,"frequency":frequency,
+            "primary_source":"Financial Modeling Prep","source_url":source_url,"source_series_id":series_id,"license_class":"VENDOR_SECONDARY",
+            "refresh_policy":"DAILY","active":True,"metadata":{"connector":"fmp_economics","ingestion_status":"CONNECTED","source_tier":"C"},"updated_at":fetched.isoformat()})
+        observations.append({"series_id":series_id,"country_code":country,"period_date":date,"value_numeric":value,"unit":unit,"frequency":frequency,
+            "release_date":fetched.isoformat(),"available_at":fetched.isoformat(),"vintage_date":fetched.date().isoformat(),"revision_number":0,
+            "is_forecast":False,"source":"Financial Modeling Prep stable API","source_url":source_url,"source_payload_hash":digest,
+            "quality_status":"PROVISIONAL","metadata":{"connector":"fmp_economics","pit_status":"FETCH_VINTAGE_ONLY","source_tier":"C",**metadata}})
+    try:
+        payload,digest,url=_fmp_get("treasury-rates",{"from":start,"to":end})
+        for row in payload if isinstance(payload,list) else []:
+            date=str(row.get("date") or "")
+            for field in ("month1","month2","month3","month6","year1","year2","year3","year5","year7","year10","year20","year30"):
+                if row.get(field) is not None:
+                    add(f"fmp_us_treasury_{field}","USA","monetary",f"US Treasury {field}","%","daily",date,row[field],url,digest,{"fmp_field":field,"evidence_role":"US_REFERENCE_NOT_INDIA_YIELD"})
+    except Exception as exc: errors.append(f"treasury:{type(exc).__name__}:{str(exc)[:100]}")
+    for name in FMP_US_INDICATORS:
+        try:
+            payload,digest,url=_fmp_get("economic-indicators",{"name":name,"from":start,"to":end})
+            for row in payload if isinstance(payload,list) else []:
+                if row.get("value") is not None and row.get("date"):
+                    add(f"fmp_us_{name.lower()}","USA","global",f"US {name}",None,"as_reported",str(row["date"])[:10],row["value"],url,digest,{"fmp_name":name,"evidence_role":"US_MACRO_REFERENCE"})
+        except Exception as exc: errors.append(f"indicator:{name}:{type(exc).__name__}:{str(exc)[:80]}")
+    try:
+        payload,digest,url=_fmp_get("economic-calendar",{"country":"IN","from":start,"to":end})
+        catalogue={row[0]:row for row in CORE_50}
+        for row in payload if isinstance(payload,list) else []:
+            series_id=_fmp_event_series(row.get("event")); actual=row.get("actual")
+            if not series_id or actual is None or series_id not in catalogue: continue
+            released=datetime.fromisoformat(str(row.get("date") or "").replace("Z","+00:00"))
+            _sid,domain,label,frequency=catalogue[series_id]
+            add(series_id,"IND",domain,label,row.get("unit"),frequency,_fmp_period(row.get("event"),released),actual,url,digest,
+                {"event":row.get("event"),"previous":row.get("previous"),"estimate":row.get("estimate"),"impact":row.get("impact"),"release_timestamp":str(row.get("date")),"trust_status":"PROPOSED"})
+    except Exception as exc: errors.append(f"calendar:{type(exc).__name__}:{str(exc)[:100]}")
+    try:
+        payload,digest,url=_fmp_get("market-risk-premium")
+        india=next((row for row in payload if isinstance(row,dict) and str(row.get("country") or "").lower()=="india"),None) if isinstance(payload,list) else None
+        if india:
+            for field,label in (("countryRiskPremium","India Country Risk Premium"),("totalEquityRiskPremium","India Total Equity Risk Premium")):
+                if india.get(field) is not None: add(f"fmp_india_{field.lower()}","IND","valuation",label,"%","snapshot",fetched.date().isoformat(),india[field],url,digest,{"fmp_field":field,"evidence_role":"VALUATION_CONTEXT_NOT_CORE_50"})
+    except Exception as exc: errors.append(f"risk_premium:{type(exc).__name__}:{str(exc)[:100]}")
+    registry=list({row["series_id"]:row for row in registry}.values())
+    observations=list({(row["series_id"],row["country_code"],row["period_date"],row["vintage_date"],row["revision_number"]):row for row in observations}.values())
+    return _persist_official_run("FMP Economics",registry,observations,errors)
+
+
 def _truthy(name, default="false"):
     return str(os.getenv(name, default)).strip().lower() in {"1", "true", "yes", "on"}
 
@@ -422,6 +529,7 @@ def source_status():
         {"source":"IMF","status":"DEPLOYMENT_BLOCKED","collection":"RENDER_EGRESS_HTTP_403; API_V2_VERIFIED_EXTERNALLY"},
         {"source":"OECD","status":"CONNECTED","collection":"LIVE_SDMX"},
         {"source":"Yahoo Finance","status":"CONNECTED","collection":"MARKET_REFERENCE_TIER_D"},
+        {"source":"FMP Economics","status":"CONNECTED" if _truthy("MIE_FMP_ENABLED","true") and (os.getenv("FMP_API_KEY") or "").strip() else "DISABLED","collection":"VENDOR_ECONOMICS_TIER_C"},
         {"source":"Exa Web Fallback","status":"CONNECTED" if _truthy("MIE_WEB_FALLBACK_ENABLED") and (os.getenv("EXA_API_KEY") or "").strip() else "DISABLED","collection":"AUTHORITATIVE_WEB_DISCOVERY_TIER_D_PROPOSED"},
         {"source":"MoSPI","status":"CONFIGURATION_REQUIRED","collection":"API_ACCESS_TOKEN_REQUIRED"},
         {"source":"RBI","status":"MAPPING_REQUIRED","collection":"DBIE_ACCESS_PATH_REQUIRED"},
@@ -451,6 +559,7 @@ def run_public_ingestion():
         run_stage("IMF WEO DataMapper", collect_imf_g20),
         run_stage("OECD SDMX", collect_oecd_policy_rates),
         run_stage("Yahoo Finance Macro Market", collect_yahoo_macro_market),
+        run_stage("FMP Economics", collect_fmp_economics),
         run_stage("Exa Web Macro Fallback", collect_web_macro_gaps),
     ]
     return {

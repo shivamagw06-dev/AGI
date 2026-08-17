@@ -1,8 +1,8 @@
 from macro_intelligence_engine.g20_source_catalog import COUNTRY_SOURCES, MODULES, catalogue
-from macro_intelligence_engine.public_data import CORE_50, g20_matrix, g20_source_plan, latest_observations, readiness
+from macro_intelligence_engine.public_data import CORE_50, g20_matrix, g20_source_plan, latest_observations, readiness, supplemental_observations
 import json
 
-from macro_intelligence_engine.public_ingestion import WORLD_BANK_SERIES, YAHOO_MACRO_MARKET_SERIES, _web_semantically_matches, collect_web_macro_gaps, collect_yahoo_macro_market, registry_rows
+from macro_intelligence_engine.public_ingestion import WORLD_BANK_SERIES, YAHOO_MACRO_MARKET_SERIES, _fmp_event_series, _fmp_period, _web_semantically_matches, collect_fmp_economics, collect_web_macro_gaps, collect_yahoo_macro_market, registry_rows
 
 
 def test_core_50_is_unique_and_complete():
@@ -65,6 +65,14 @@ def test_latest_observations_returns_a_payload(monkeypatch):
     assert result["ok"] is True
     assert result["observations"] == []
     assert result["pit_status"] == "PIT LIMITED"
+
+
+def test_supplemental_fmp_data_does_not_claim_core_coverage(monkeypatch):
+    monkeypatch.setattr("macro_intelligence_engine.public_ingestion._rest",lambda *_args,**_kwargs:[{"series_id":"fmp_us_treasury_year10","country_code":"USA","period_date":"2026-07-29","value_numeric":4.67,"unit":"%","frequency":"daily","source":"FMP","source_url":"https://fmp","quality_status":"PROVISIONAL","metadata":{"evidence_role":"US_REFERENCE_NOT_INDIA_YIELD"}}])
+    result=supplemental_observations()
+    assert result["count"] == 1
+    assert result["observations"][0]["country_code"] == "USA"
+    assert "do not increase Core 50" in result["policy"]
 
 
 def test_g20_harmonized_layer_blocks_intelligence_claims(monkeypatch):
@@ -199,3 +207,36 @@ def test_web_semantic_guard_rejects_annual_growth_as_gdp_qoq():
 def test_web_semantic_guard_rejects_yoy_quarter_growth_as_qoq():
     yoy={"source_title":"Quarterly GDP release","quote":"GDP expanded 7.8% year-on-year in Q4."}
     assert _web_semantically_matches("gdp_qoq",yoy) is False
+
+
+def test_fmp_india_calendar_mapping_is_conservative():
+    assert _fmp_event_series("GDP QoQ (Q2)") == "gdp_qoq"
+    assert _fmp_event_series("CPI Inflation YoY (Jul)") == "cpi"
+    assert _fmp_event_series("Industrial Production (Jun)") == "industrial_production"
+    assert _fmp_event_series("Wholesale Inventories") is None
+
+
+def test_fmp_event_period_uses_reported_month_end():
+    from datetime import datetime
+    assert _fmp_period("CPI Inflation (Jun)", datetime(2026,7,14)) == "2026-06-30"
+    assert _fmp_period("GDP QoQ (Q2)", datetime(2026,8,1)) == "2026-06-30"
+
+
+def test_fmp_economics_keeps_us_treasury_separate_from_india_yields(monkeypatch):
+    monkeypatch.setenv("FMP_API_KEY","test")
+    monkeypatch.setenv("MIE_FMP_ENABLED","true")
+    def fake_get(path,params=None):
+        if path == "treasury-rates": return ([{"date":"2026-07-29","year2":4.22,"year10":4.67}],"hash","https://fmp/treasury")
+        if path == "economic-calendar": return ([{"date":"2026-07-28 12:00:00","country":"IN","event":"Industrial Production (Jun)","actual":7.3,"unit":"%"}],"hash","https://fmp/calendar")
+        if path == "market-risk-premium": return ([{"country":"India","countryRiskPremium":3.1,"totalEquityRiskPremium":7.5}],"hash","https://fmp/risk")
+        return ([],"hash",f"https://fmp/{path}")
+    captured={}
+    monkeypatch.setattr("macro_intelligence_engine.public_ingestion._fmp_get",fake_get)
+    monkeypatch.setattr("macro_intelligence_engine.public_ingestion._persist_official_run",lambda source,registry,observations,errors: captured.update(source=source,registry=registry,observations=observations,errors=errors) or {"ok":True,"accepted":len(observations)})
+    result=collect_fmp_economics()
+    assert result["accepted"] == 5
+    rows={row["series_id"]:row for row in captured["observations"]}
+    assert rows["fmp_us_treasury_year2"]["country_code"] == "USA"
+    assert rows["fmp_us_treasury_year10"]["metadata"]["evidence_role"] == "US_REFERENCE_NOT_INDIA_YIELD"
+    assert rows["industrial_production"]["country_code"] == "IND"
+    assert rows["industrial_production"]["period_date"] == "2026-06-30"

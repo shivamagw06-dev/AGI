@@ -3,7 +3,7 @@ import { Activity, AlertTriangle, ChevronRight, Database, ExternalLink, Globe2, 
 import PageShell from '@/components/Layout/PageShell';
 import AskAgiBar from '@/components/Home/AskAgiBar';
 import DeskResearchFeed from '@/components/Research/DeskResearchFeed';
-import { getMieDataReadiness, getMieG20Matrix, getMieG20SourcePlan, getMieLatestPublicObservations } from '@/lib/intelligenceApi';
+import { getMieDataReadiness, getMieG20Matrix, getMieG20SourcePlan, getMieLatestPublicObservations, getMieSupplementalObservations } from '@/lib/intelligenceApi';
 import './economicsPage.css';
 
 const PULSE = [
@@ -152,17 +152,19 @@ export default function EconomicsPage() {
   const [selectedCountry, setSelectedCountry] = useState('IND');
   const [readiness, setReadiness] = useState(null);
   const [publicData, setPublicData] = useState(null);
+  const [supplemental, setSupplemental] = useState(null);
   const [g20, setG20] = useState(null);
   const [sourcePlan, setSourcePlan] = useState(null);
   useEffect(() => { document.title = 'Economic Intelligence | AGI'; }, []);
   useEffect(() => {
     let active = true;
-    Promise.allSettled([getMieDataReadiness('India'), getMieLatestPublicObservations('India'), getMieG20Matrix(), getMieG20SourcePlan()]).then(([r, o, g, s]) => {
+    Promise.allSettled([getMieDataReadiness('India'), getMieLatestPublicObservations('India'), getMieG20Matrix(), getMieG20SourcePlan(), getMieSupplementalObservations()]).then(([r, o, g, s, x]) => {
       if (!active) return;
       if (r.status === 'fulfilled') setReadiness(r.value);
       if (o.status === 'fulfilled') setPublicData(o.value);
       if (g.status === 'fulfilled') setG20(g.value);
       if (s.status === 'fulfilled') setSourcePlan(s.value);
+      if (x.status === 'fulfilled') setSupplemental(x.value);
     });
     return () => { active = false; };
   }, []);
@@ -241,6 +243,12 @@ export default function EconomicsPage() {
         <header className="eco-section-head"><div><span>Layer 1 · Observed</span><h2>Latest official/public observations</h2></div><Status tone="stable">{observations.length} VALUES</Status></header>
         <div className="eco-observation-table"><div className="head"><b>Indicator</b><b>Latest</b><b>Observation</b><b>Source</b><b>Quality / PIT</b></div>{observations.map((row) => <div key={row.series_id}><span><b>{row.label}</b><small>{row.frequency}</small></span><strong>{fmt(row.value)} <small>{row.unit}</small></strong><span>{row.observation_date || '—'}</span><a href={row.source_url || '#'} target="_blank" rel="noreferrer">{row.source || 'Official source'} <ExternalLink size={12}/></a><span><Status>{row.quality_status}</Status><small>{row.pit_status}</small></span></div>)}</div>
       </section>
+
+      {(supplemental?.observations || []).length > 0 && <section className="eco-band">
+        <header className="eco-section-head"><div><span>Supplemental market context</span><h2>FMP economics, US Treasury curve and India risk premium</h2></div><Status tone="forecast">VENDOR · PIT LIMITED</Status></header>
+        <div className="eco-observation-table"><div className="head"><b>Indicator</b><b>Latest</b><b>Observation</b><b>Source</b><b>Use</b></div>{supplemental.observations.map((row) => <div key={row.series_id}><span><b>{row.label}</b><small>{row.country_code} · {row.frequency}</small></span><strong>{fmt(row.value)} <small>{row.unit}</small></strong><span>{row.observation_date || '—'}</span><a href={row.source_url || '#'} target="_blank" rel="noreferrer">FMP <ExternalLink size={12}/></a><span><Status>{row.quality_status}</Status><small>{row.evidence_role || 'Vendor reference'}</small></span></div>)}</div>
+        <footer className="eco-g20-footer"><Database size={14}/><span>{supplemental.policy}</span></footer>
+      </section>}
 
       <section className="eco-band">
         <header className="eco-section-head"><div><span>Layers 2–3 · Calculated and regime</span><h2>Factor engine readiness</h2></div><Status tone="forecast">IN DEVELOPMENT</Status></header>
