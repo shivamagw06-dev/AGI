@@ -49,7 +49,7 @@ export default function IfacComposer() {
         <p className="vp-lede">
           IFAC sits above UVE, HVIE, VARIE, RIE, FIE, MIE and Market Intelligence.
           It fuses engine outputs into institutional reports — it never generates new
-          intelligence, never calls vendors, and never lets CapIQ consensus become the headline.
+          intelligence, keeps source infrastructure private, and always presents AGI consensus as the headline.
         </p>
       </header>
 

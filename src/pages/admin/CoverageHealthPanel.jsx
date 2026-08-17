@@ -174,7 +174,7 @@ export default function CoverageHealthPanel() {
         </div>
 
         <div className="ich-block">
-          <h4>Upstox bootstrap</h4>
+          <h4>AGI valuation bootstrap</h4>
           {bootstrap?.ok ? (
             <>
               <ul className="ich-metric-list">
@@ -213,7 +213,7 @@ export default function CoverageHealthPanel() {
               ) : null}
             </>
           ) : (
-            <p className="hint">Bootstrap status unavailable — open Upstox Bootstrap admin for live queue.</p>
+            <p className="hint">Bootstrap status unavailable — open AGI Valuation Bootstrap for the live queue.</p>
           )}
         </div>
 
@@ -222,7 +222,7 @@ export default function CoverageHealthPanel() {
           <div className="ich-stat-xl">{fmt(residual.residual_missing, 0)}</div>
           <ul className="ich-metric-list">
             <li><span>Missing ISIN</span><strong>{fmt(residual.missing_isin, 0)}</strong></li>
-            <li><span>No Upstox fundamentals</span><strong>{fmt(residual.no_upstox_fundamentals, 0)}</strong></li>
+            <li><span>No AGI fundamentals</span><strong>{fmt(residual.no_upstox_fundamentals, 0)}</strong></li>
             <li><span>Provider failure</span><strong>{fmt(residual.provider_failure, 0)}</strong></li>
             <li><span>Delisted</span><strong>{fmt(residual.delisted, 0)}</strong></li>
           </ul>

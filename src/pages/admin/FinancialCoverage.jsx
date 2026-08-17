@@ -112,17 +112,17 @@ export default function FinancialCoverage() {
       await postYahooFillStop().catch(() => null);
       const out = await fn();
       if (out?.already_running) {
-        setNote('Upstox fill already running — EMPTY INE* equities are being written.');
+        setNote('AGI statement fill already running — EMPTY INE* equities are being written.');
       } else if (out?.ok === false) {
         setNote(`${label} failed: ${out.error || 'unknown'}`);
       } else if (label === 'run') {
         const b = out?.batch || {};
-        setNote(`Upstox batch: ${b.filled ?? 0} filled, ${b.failed ?? 0} failed, ${b.ingest_rows ?? 0} rows.`);
+        setNote(`AGI batch: ${b.filled ?? 0} filled, ${b.failed ?? 0} failed, ${b.ingest_rows ?? 0} rows.`);
       } else {
         setNote(
           label === 'start'
-            ? 'Upstox fill started. Uses /fundamentals/{isin}/income-statement (+ BS/CF), yearly+quarterly.'
-            : 'Upstox fill paused.',
+            ? 'AGI statement fill started for eligible annual and quarterly records.'
+            : 'AGI statement fill paused.',
         );
       }
       setUpstox(await getUpstoxEmptyFillStatus().catch(() => out));
@@ -172,14 +172,14 @@ export default function FinancialCoverage() {
       <div className="vp-shell">
         <Link to="/admin" className="vp-back"><ArrowLeft size={16} /> Admin</Link>
 
-        <p className="vp-kicker">Phase 7.4F · Step 0 audit + Upstox fill</p>
+        <p className="vp-kicker">AGI coverage audit and statement fill</p>
         <h1 className="vp-title">Financial Coverage Audit</h1>
         <p className="vp-sub">
           Measures warehouse depth, then fills EMPTY / thin equities from{' '}
-          <strong>Upstox fundamentals</strong> by ISIN
+          <strong>AGI fundamentals</strong> by ISIN
           (<code>/fundamentals/&#123;isin&#125;/income-statement</code> + balance-sheet + cash-flow).
-          Prefer Upstox on Render — Yahoo fundamentals are blocked from datacenter IPs.
-          CapIQ remains the path to 10-year COMPLETE depth. Never imports vendor PE/PB/EV.
+          AGI automatically selects the available production feed.
+          AGI long-history records provide complete depth.
         </p>
 
         <div className="hr-actions">
@@ -189,7 +189,7 @@ export default function FinancialCoverage() {
             disabled={busy || upstox?.runtime?.status === 'running'}
             onClick={() => upstoxAct('start', () => startUpstoxEmptyFill({ batch: 10, concurrency: 2, include_thin: true }))}
           >
-            <Play size={14} /> Start Upstox fill
+            <Play size={14} /> Start AGI fill
           </button>
           <button
             type="button"
@@ -210,7 +210,7 @@ export default function FinancialCoverage() {
           <button type="button" className="hr-btn" disabled={loading} onClick={refresh}>
             <RefreshCw size={14} /> {loading ? 'Scanning…' : 'Re-run audit'}
           </button>
-          <Link to="/admin/upstox-fundamentals" className="hr-btn">Upstox UIFI →</Link>
+          <Link to="/admin/upstox-fundamentals" className="hr-btn">AGI Fundamentals →</Link>
           <Link to="/admin/financial-warehouse" className="hr-btn">Import runtime →</Link>
         </div>
 
@@ -218,12 +218,12 @@ export default function FinancialCoverage() {
         {error ? <p className="vp-error">{error}</p> : null}
         {yahoo?.diagnosis ? (
           <p className="vp-error" style={{ marginTop: '0.75rem' }}>
-            Yahoo note: {yahoo.diagnosis} Use <strong>Start Upstox fill</strong> instead.
+            Yahoo note: {yahoo.diagnosis} Use <strong>Start AGI fill</strong> instead.
           </p>
         ) : null}
         {upstox?.plain_english || upstoxBoard?.plain_english ? (
           <p className="vp-sub" style={{ marginTop: '0.75rem' }}>
-            Upstox worker: <strong>{upstox?.runtime?.status || 'idle'}</strong>
+            AGI worker: <strong>{upstox?.runtime?.status || 'idle'}</strong>
             {' · '}filled {fmt(upstox?.runtime?.filled)} / processed {fmt(upstox?.runtime?.processed)}
             {' · '}failed {fmt(upstox?.runtime?.failed)}
             {' · '}EMPTY+INE waiting {fmt(upstoxBoard?.progress?.empty)}
@@ -232,7 +232,7 @@ export default function FinancialCoverage() {
         ) : null}
         {(upstox?.recent || []).length ? (
           <div className="vp-panel" style={{ marginTop: '0.75rem' }}>
-            <h2 className="vp-h2">Recent Upstox fill batches</h2>
+            <h2 className="vp-h2">Recent AGI fill batches</h2>
             <ul className="vp-muted" style={{ margin: 0, paddingLeft: '1.1rem', fontSize: '0.8rem' }}>
               {upstox.recent.slice(0, 8).map((e) => (
                 <li key={`${e.at}-${e.event}`}>

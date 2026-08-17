@@ -15,14 +15,14 @@ async function request(path, { method = 'GET', body } = {}) {
   const text = await resp.text().catch(() => '');
   if (text.trim().startsWith('<')) {
     throw new Error(
-      `Upstox API returned HTML for ${path}. Check VITE_API_URL points at Render, not the website.`
+      `AGI Data API returned HTML for ${path}. Check VITE_API_URL points at Render, not the website.`
     );
   }
   let data = {};
   try {
     data = text ? JSON.parse(text) : {};
   } catch {
-    throw new Error(`Upstox API invalid JSON for ${path}`);
+    throw new Error(`AGI Data API returned invalid JSON for ${path}`);
   }
   if (!resp.ok || data?.ok === false) {
     throw new Error(data.error || data.message || `HTTP ${resp.status}`);

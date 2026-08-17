@@ -134,9 +134,9 @@ export default function UpstoxBootstrap() {
               <ArrowLeft size={14} /> Data Warehouse
             </Link>
             <p className="ub-kicker">Phase 7.4d · Admin only</p>
-            <h1 className="ub-title">Upstox Valuation Bootstrap</h1>
+            <h1 className="ub-title">AGI Valuation Bootstrap</h1>
             <p className="ub-sub">
-              One-shot full-universe ISIN → Upstox key-ratios → DQIV → warehouse → Unified Valuation Engine.
+              One-shot full-universe ISIN → AGI key ratios → quality validation → warehouse → Unified Valuation Engine.
               Nightly 18:15 IST stays incremental; this bootstrap is not a permanent scheduler.
             </p>
           </div>

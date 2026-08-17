@@ -78,7 +78,7 @@ export default function ImportDialog({ tab, columns, onClose, onImported }) {
 
         <div className="wh-modal-body">
           <p className="wh-modal-help">
-            Paste straight from Excel, Google Sheets or a Capital IQ export. The first row must be
+            Paste straight from Excel, Google Sheets or an AGI data export. The first row must be
             headers — they are mapped onto warehouse columns automatically and every row is
             validated before anything is written.
           </p>

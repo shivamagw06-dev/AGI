@@ -435,8 +435,8 @@ export default function MarketSectorIntelligence() {
               title="Sector intelligence"
               subtitle={
                 sectors.some((s) => (s.upstox_coverage_pct || 0) > 0)
-                  ? 'Primary metric · current · Upstox sector benchmark · premium · opportunity'
-                  : 'Primary metric · current · sector benchmark awaits Upstox ISIN key-ratios (Upstox column is 0%)'
+                  ? 'Primary metric · current · AGI sector benchmark · premium · opportunity'
+                  : 'Primary metric · current · sector benchmark awaits AGI key-ratio coverage'
               }
             >
               <div className="msi-table-wrap">
@@ -450,7 +450,7 @@ export default function MarketSectorIntelligence() {
                       <th>Premium</th>
                       <th>History</th>
                       <th>Hist range</th>
-                      <th>Upstox</th>
+                      <th>AGI Coverage</th>
                       <th>Cos</th>
                     </tr>
                   </thead>
@@ -528,7 +528,7 @@ export default function MarketSectorIntelligence() {
                   {flows.latest_values_available === false ? (
                     <p className="msi-hint">
                       Flow history exists through {flows.latest_date || 'recent sessions'}, but net FII/DII
-                      values are still null in warehouse (Upstox EOD often lands after 18:05 IST).
+                      values are still null in the AGI warehouse and may arrive after the end-of-day processing window.
                     </p>
                   ) : null}
                   {flows.explanation ? <p className="msi-note">{flows.explanation}</p> : null}
@@ -539,7 +539,7 @@ export default function MarketSectorIntelligence() {
                   <p className="msi-hint">Last successful refresh: Never</p>
                   <p className="msi-hint">
                     Daily EOD ingest runs automatically at 18:05 IST after market close
-                    (Upstox → DQIV → warehouse). Admin may also trigger refresh from Mission Control.
+                    (AGI collection → quality validation → warehouse). Admin may also trigger refresh from Mission Control.
                   </p>
                 </div>
               )}
@@ -632,7 +632,7 @@ export default function MarketSectorIntelligence() {
                 <div><span>Coverage</span><strong>{fmt(pack.coverage?.companies, 0)} cos</strong></div>
                 <div><span>Validation</span><strong>{pack.validation?.publishable ? 'Passed' : `${pack.validation?.checks_passed || 0}/${pack.validation?.checks_total || 0} checks`}</strong></div>
                 <div><span>Confidence</span><strong className="msi-hint-inline">{pack.confidence?.methodology?.slice(0, 80)}…</strong></div>
-                <div><span>Historical hierarchy</span><strong><Database size={13} /> CapIQ → normalized warehouse → HVIE → verified provider ratios</strong></div>
+                <div><span>Historical hierarchy</span><strong><Database size={13} /> AGI source records → normalized warehouse → HVIE → verified ratios</strong></div>
               </div>
             </Section>
           </>

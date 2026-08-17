@@ -126,10 +126,10 @@ export default function UpstoxFundamentals() {
           <Link to="/admin" className="ub-back">
             <ArrowLeft size={14} /> Admin
           </Link>
-          <h1>Upstox Institutional Fundamentals</h1>
+          <h1>AGI Institutional Fundamentals</h1>
           <p className="ub-muted">
-            Phase 7.4E — warehouse-first UIFI. Upstox is primary structured fundamentals;
-            NSE/LIDI remain primary for corporate actions. Products never call Upstox.
+            Warehouse-first AGI fundamentals integration. AGI manages structured fundamentals;
+            AGI manages corporate actions and products through its internal data layer.
           </p>
         </div>
         <div className="ub-actions">
@@ -154,7 +154,7 @@ export default function UpstoxFundamentals() {
       <section className="ub-panel">
         <h2>Four-year company financial backfill</h2>
         <p className="ub-muted">
-          Runs only eligible stocks that are missing annual statements. Each company uses three Upstox calls:
+          Runs only eligible stocks that are missing annual statements. Each company runs through AGI financial collection:
           Income Statement, Balance Sheet, and Cash Flow. ETFs and funds are skipped.
         </p>
       </section>
@@ -168,7 +168,7 @@ export default function UpstoxFundamentals() {
         <Stat label="Quarterly statements" value={fmt(coverage?.statements_quarterly)} />
         <Stat label="Ownership" value={fmt(coverage?.ownership)} />
         <Stat label="Competitors" value={fmt(coverage?.competitors)} />
-        <Stat label="Corporate actions (Upstox)" value={fmt(coverage?.corporate_actions)} hint="secondary" />
+        <Stat label="Corporate actions (AGI)" value={fmt(coverage?.corporate_actions)} hint="secondary" />
         <Stat label="Key ratios" value={fmt(coverage?.valuation_ratios)} />
       </section>
 
@@ -205,7 +205,7 @@ export default function UpstoxFundamentals() {
 
       <section className="ub-panel">
         <h2>DQIV / failures</h2>
-        <p className="ub-muted">{failures.length} recent quality rows tagged Upstox</p>
+        <p className="ub-muted">{failures.length} recent AGI quality rows</p>
         <ul className="ub-log">
           {failures.slice(0, 15).map((row, i) => (
             <li key={i}><code>{row.symbol || row.feed || '—'}</code> {row.notes || row.message || JSON.stringify(row).slice(0, 120)}</li>

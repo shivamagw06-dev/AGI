@@ -366,8 +366,8 @@ export default function MissionControl() {
           <Kicker>Research Pipeline · Live Instrumentation</Kicker>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6">
             <Stat label="Pipeline" value={researchPipeline?.status || 'CHECKING'} status={researchPipeline?.status} hint="Research-only · execution disabled" />
-            <Stat label="Upstox Strategies" value={researchPipeline ? `${researchPipeline.feeds?.upstox_strategies?.healthy || 0} / 5` : '—'} hint="Live Alpha engines" />
-            <Stat label="Groww Strategies" value={researchPipeline ? `${researchPipeline.feeds?.groww_strategies?.healthy || 0} / 2` : '—'} hint="EOD research" />
+            <Stat label="AGI Live Strategies" value={researchPipeline ? `${researchPipeline.feeds?.upstox_strategies?.healthy || 0} / 5` : '—'} hint="Live Alpha engines" />
+            <Stat label="AGI EOD Strategies" value={researchPipeline ? `${researchPipeline.feeds?.groww_strategies?.healthy || 0} / 2` : '—'} hint="EOD research" />
             <Stat label="Candidates" value={researchPipeline?.latest_cycle?.candidates ?? '—'} hint={`${researchPipeline?.latest_cycle?.eligible_confluence ?? 0} eligible`} />
             <Stat label="Confluence Events" value={researchPipeline?.totals?.events ?? '—'} hint={`${researchPipeline?.latest_cycle?.persisted ?? 0} last cycle`} />
             <Stat label="Memory States" value={researchPipeline?.totals?.memory ?? '—'} hint={`Coverage ${researchPipeline?.integrity?.memory_coverage ?? '—'}`} />

@@ -114,7 +114,7 @@ export default function FinancialWarehouse() {
         <p className="vp-sub">
           Measure depth and run the Yahoo-first fill on{' '}
           <Link to="/admin/financial-coverage">Financial Coverage Audit</Link>
-          {' '}(EMPTY/thin → Yahoo; CapIQ still needed for 10y).
+          {' '}(thin records → AGI enrichment for long-history coverage).
         </p>
 
         <div className="hr-actions">

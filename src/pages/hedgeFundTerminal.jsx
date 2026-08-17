@@ -260,7 +260,7 @@ function Explanation({ ticker }) {
               <tr><td>Market data · Yahoo</td><td>P/E {n(data.market?.pe)} · P/B {n(data.market?.pb)} · yield {pct(data.market?.dividend_yield)}</td></tr>
               <tr><td>Quality · Yahoo</td><td>ROE {pct(data.quality?.roe)} · margin {pct(data.quality?.profit_margin)} · D/E {n(data.quality?.debt_to_equity)}</td></tr>
               <tr><td>Industry · AGI</td><td>{data.industry_context?.primary_metric?.toUpperCase()} {n(data.industry_context?.company_value)} vs median {n(data.industry_context?.industry_median)} ({pct(data.industry_context?.gap_pct)})</td></tr>
-              <tr><td>Consensus · Capital IQ</td><td>{pct(data.consensus?.upside)} upside · {n(data.consensus?.coverage)} brokers</td></tr>
+              <tr><td>AGI Market Consensus</td><td>{pct(data.consensus?.upside)} upside · {n(data.consensus?.coverage)} brokers</td></tr>
             </tbody>
           </table>
           {(data.timeline || []).length ? (
@@ -383,7 +383,7 @@ export function OpportunityTable({ scan, label, previewRows = null, researchQues
         </table>
       </div>
       <p className="hft-note">
-        Market data from the AGI warehouse, including Upstox daily and intraday candles where available; financial history and consensus from the AGI research warehouse; interpretation by AGI. Research observations only — never a buy, sell or target price.
+        Market data, daily and intraday observations, financial history and consensus from the AGI research warehouse; interpretation by AGI. Research observations only — never a buy, sell or target price.
       </p>
     </div>
   );

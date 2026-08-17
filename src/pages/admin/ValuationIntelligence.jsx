@@ -118,7 +118,7 @@ function ImportModal({ open, actor, onClose, onPublished }) {
   const runPreview = async (chosen) => {
     const f = chosen || file;
     if (!f) {
-      setError('Choose a Capital IQ / Broker Estimates Excel (.xlsx) file first.');
+      setError('Choose an AGI consensus Excel (.xlsx) file first.');
       return;
     }
     setBusy('preview');
@@ -194,7 +194,7 @@ function ImportModal({ open, actor, onClose, onPublished }) {
   return (
     <div className="vi-modal-backdrop" onClick={onClose}>
       <div className="vi-modal" onClick={(e) => e.stopPropagation()}>
-        <h2>Import Capital IQ / Broker Estimates</h2>
+        <h2>Import AGI Consensus Estimates</h2>
         <p className="hint">
           Choose an Excel file — preview runs automatically. Then Validate and Publish.
           Spreadsheet is an import source only; numbers are stored as-is.
@@ -432,7 +432,7 @@ export default function ValuationIntelligence() {
                 disabled={!!busy}
                 onClick={() => setImportOpen(true)}
               >
-                <FileSpreadsheet size={14} /> Import Capital IQ Excel
+                <FileSpreadsheet size={14} /> Import AGI Consensus Excel
               </button>
               <button
                 type="button"
@@ -451,7 +451,7 @@ export default function ValuationIntelligence() {
             </div>
           ) : (
             <p style={{ color: 'var(--vi-muted)', fontSize: '0.8rem', maxWidth: 280, textAlign: 'right' }}>
-              Browse-only. Sign in as admin to import CapIQ / Broker Estimates.
+              Browse-only. Sign in as admin to import AGI consensus estimates.
             </p>
           )}
         </div>
@@ -553,9 +553,8 @@ export default function ValuationIntelligence() {
         {error ? <div className="vi-error">{error}</div> : null}
 
         <p className="vi-note">
-          Note: consensus prices, targets and broker recommendation counts are Capital IQ market
-          data. AGI Institutional Intelligence is a separate layer, shown inside each company panel,
-          and is never overwritten by Capital IQ.
+          Note: consensus prices, targets and broker recommendation counts are AGI market intelligence.
+          AGI Institutional Intelligence is shown inside each company panel.
         </p>
 
         <section className="vi-analytics">
@@ -652,7 +651,7 @@ export default function ValuationIntelligence() {
               ) : (rows.items || []).length === 0 ? (
                 <tr>
                   <td colSpan={10} style={{ padding: '1.5rem', color: 'var(--vi-muted)' }}>
-                    No companies yet. {admin ? 'Import a Capital IQ Excel export to publish the first snapshot.' : 'Awaiting published consensus.'}
+                    No companies yet. {admin ? 'Import an AGI consensus Excel export to publish the first snapshot.' : 'Awaiting published consensus.'}
                   </td>
                 </tr>
               ) : (
@@ -737,7 +736,7 @@ function Expansion({ detail, tab, setTab }) {
   const body =
     tab === 'overview' ? (
       <>
-        <p className="vi-desc">{detail.overview?.business_description || 'No business description in this CapIQ snapshot.'}</p>
+        <p className="vi-desc">{detail.overview?.business_description || 'No business description in this AGI snapshot.'}</p>
         <div style={{ marginTop: '0.75rem' }}>
           <Kv
             data={{
@@ -804,7 +803,7 @@ function Expansion({ detail, tab, setTab }) {
       </div>
       <div className="vi-panels">
         <div className="vi-panel">
-          <h3>Market Consensus · Capital IQ</h3>
+          <h3>AGI Market Consensus</h3>
           {body}
         </div>
         <div className="vi-panel vi-agi">

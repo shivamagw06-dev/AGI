@@ -31,7 +31,7 @@ export const PIPELINE_PATH = [
 
 export const DATA_SOURCES = [
   { id: 'indianapi', name: 'IndianAPI', kind: 'market' },
-  { id: 'groww', name: 'Groww API', kind: 'market' },
+  { id: 'groww', name: 'AGI Market Feed', kind: 'market' },
   { id: 'yahoo', name: 'Yahoo Finance', kind: 'market' },
   { id: 'finnhub', name: 'Finnhub', kind: 'market' },
   { id: 'fmp', name: 'FMP', kind: 'fundamentals' },
