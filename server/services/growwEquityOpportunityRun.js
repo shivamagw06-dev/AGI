@@ -214,12 +214,12 @@ export async function runGrowwEquityOpportunityResearch({ force = false } = {}) 
   const errors = [];
   for (const symbol of symbols) {
     try {
-      const result = await getHistoricalCandlesWithFallback({
+      const historyResult = await getHistoricalCandlesWithFallback({
         tradingSymbol: symbol, days: lookbackDays, minimumCandles: 65,
         upstoxInstrumentKey: isinBySymbol.get(symbol) ? `NSE_EQ|${isinBySymbol.get(symbol)}` : null,
       });
-      providerUsage[result.source] += 1;
-      const candles = result.candles;
+      providerUsage[historyResult.source] += 1;
+      const candles = historyResult.candles;
       const result = analyseEquity(symbol, candles, benchmark);
       if (result) rows.push(result);
     } catch (error) {

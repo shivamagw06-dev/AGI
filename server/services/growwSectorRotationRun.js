@@ -217,12 +217,12 @@ export async function runGrowwSectorRotationResearch({ force = false } = {}) {
   const errors = [];
   for (const sector of sectors) {
     try {
-      const result = await getHistoricalCandlesWithFallback({
+      const historyResult = await getHistoricalCandlesWithFallback({
         tradingSymbol: sector, days: lookbackDays, minimumCandles: 125,
         upstoxInstrumentKey: UPSTOX_INDEX_KEYS[sector],
       });
-      providerUsage[result.source] += 1;
-      const candles = result.candles;
+      providerUsage[historyResult.source] += 1;
+      const candles = historyResult.candles;
       const result = analyseSector(sector, candles, benchmark);
       if (result) rows.push(result);
       else errors.push({ sector, error: 'Insufficient history' });
