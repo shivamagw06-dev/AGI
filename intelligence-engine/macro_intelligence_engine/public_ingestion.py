@@ -48,6 +48,12 @@ YAHOO_MACRO_MARKET_SERIES = {
     "gold": {"symbol": "GC=F", "country": "WLD", "unit": "USD/troy oz"},
     "global_risk": {"symbol": "^VIX", "country": "WLD", "unit": "index"},
 }
+BIS_INDIA_SERIES = {
+    "credit_gdp_gap": {"flow":"WS_CREDIT_GAP","key":"Q.IN.P.A.C","unit":"% GDP","frequency":"quarterly","label":"Credit-to-GDP Gap"},
+    "debt_service_ratio": {"flow":"WS_DSR","key":"Q.IN.P","unit":"%","frequency":"quarterly","label":"Debt-Service Ratio"},
+    "house_prices": {"flow":"WS_SPP","key":"Q.IN.N.628","unit":"index (2010=100)","frequency":"quarterly","label":"House Prices"},
+    "bank_credit": {"flow":"WS_TC","key":"Q.IN.P.B.M.USD.A","unit":"USD billions","frequency":"quarterly","label":"Bank Credit"},
+}
 
 # Search is a gap-filling evidence source, not a substitute for an official
 # statistical connector.  Results outside these domains are never persisted.
@@ -236,8 +242,9 @@ def collect_oecd_policy_rates():
     for iso3,country in G20_COUNTRIES.items():
         key=f"{iso3}.M.IRSTCI.PA._Z._Z._Z._Z.N"
         url=f"https://sdmx.oecd.org/public/rest/data/OECD.SDD.STES,DSD_STES@DF_FINMARK/{key}?startPeriod=2000-01&dimensionAtObservation=AllDimensions&format=csvfile"
-        series_id=f"oecd_{iso3.lower()}_policy_rate"
-        registry.append({"series_id":series_id,"country_code":iso3,"domain":"monetary","label":"Policy Rate","unit":"%","frequency":"monthly","primary_source":"OECD","source_url":url,"source_series_id":"DF_FINMARK:IRSTCI","license_class":"PUBLIC_OFFICIAL","refresh_policy":"ON_RELEASE","active":True,"metadata":{"country_name":country,"connector":"oecd_sdmx","ingestion_status":"CONNECTED"},"updated_at":fetched.isoformat()})
+        series_ids=[f"oecd_{iso3.lower()}_policy_rate"] + (["policy_rate"] if iso3 == "IND" else [])
+        for series_id in series_ids:
+            registry.append({"series_id":series_id,"country_code":iso3,"domain":"monetary","label":"Policy Rate","unit":"%","frequency":"monthly","primary_source":"OECD","source_url":url,"source_series_id":"DF_FINMARK:IRSTCI","license_class":"PUBLIC_OFFICIAL","refresh_policy":"ON_RELEASE","active":True,"metadata":{"country_name":country,"connector":"oecd_sdmx","ingestion_status":"CONNECTED"},"updated_at":fetched.isoformat()})
         try:
             req=urllib.request.Request(url,headers={"User-Agent":"AGI-Macro-Intelligence/1.0","Accept":"text/csv"})
             with _urlopen(req,timeout=30) as response: raw=response.read()
@@ -246,10 +253,45 @@ def collect_oecd_policy_rates():
                 if row.get("MEASURE")!="IRSTCI" or not row.get("OBS_VALUE"): continue
                 period=str(row.get("TIME_PERIOD") or "")
                 if len(period)<7: continue
-                observations.append({"series_id":series_id,"country_code":iso3,"period_date":f"{period[:7]}-01","value_numeric":row.get("OBS_VALUE"),"unit":"%","frequency":"monthly","release_date":fetched.isoformat(),"available_at":fetched.isoformat(),"vintage_date":fetched.date().isoformat(),"revision_number":0,"is_forecast":False,"source":"OECD SDMX API","source_url":url,"source_payload_hash":digest,"quality_status":"PROVISIONAL","metadata":{"measure":"IRSTCI","country_name":country,"time_period":period,"pit_status":"FETCH_VINTAGE_ONLY","source_tier":"C"}}); accepted+=1
+                for series_id in series_ids:
+                    observations.append({"series_id":series_id,"country_code":iso3,"period_date":f"{period[:7]}-01","value_numeric":row.get("OBS_VALUE"),"unit":"%","frequency":"monthly","release_date":fetched.isoformat(),"available_at":fetched.isoformat(),"vintage_date":fetched.date().isoformat(),"revision_number":0,"is_forecast":False,"source":"OECD SDMX API","source_url":url,"source_payload_hash":digest,"quality_status":"PROVISIONAL","metadata":{"measure":"IRSTCI","country_name":country,"time_period":period,"pit_status":"FETCH_VINTAGE_ONLY","source_tier":"C"}}); accepted+=1
             if not accepted: errors.append(f"policy_rate:{iso3}:missing")
         except Exception as exc: errors.append(f"policy_rate:{iso3}:{str(exc)[:120]}")
     return _persist_official_run("OECD SDMX",registry,observations,errors)
+
+
+def _sdmx_period_end(period):
+    value=str(period or "")
+    quarter=re.fullmatch(r"(\d{4})-Q([1-4])",value)
+    if quarter:
+        year=int(quarter.group(1)); month=int(quarter.group(2))*3
+        return f"{year:04d}-{month:02d}-{calendar.monthrange(year,month)[1]:02d}"
+    month=re.fullmatch(r"(\d{4})-(\d{2})",value)
+    if month:
+        year=int(month.group(1)); number=int(month.group(2))
+        return f"{year:04d}-{number:02d}-{calendar.monthrange(year,number)[1]:02d}"
+    return f"{value[:4]}-12-31" if value[:4].isdigit() else None
+
+
+def collect_bis_india():
+    """Collect explicitly mapped India Core 50 series from the official BIS SDMX API."""
+    fetched=_now(); registry=[]; observations=[]; errors=[]
+    for series_id,spec in BIS_INDIA_SERIES.items():
+        url=f"https://stats.bis.org/api/v1/data/{spec['flow']}/{spec['key']}/all?startPeriod=2000-01"
+        registry.append({"series_id":series_id,"country_code":"IND","domain":next(row[1] for row in CORE_50 if row[0] == series_id),"label":spec["label"],"unit":spec["unit"],"frequency":spec["frequency"],"primary_source":"Bank for International Settlements","source_url":url,"source_series_id":f"{spec['flow']}:{spec['key']}","license_class":"PUBLIC_OFFICIAL","refresh_policy":"ON_RELEASE","active":True,"metadata":{"connector":"bis_sdmx","ingestion_status":"CONNECTED","source_tier":"B"},"updated_at":fetched.isoformat()})
+        try:
+            request=urllib.request.Request(url,headers={"User-Agent":"AGI-Macro-Intelligence/1.0","Accept":"application/vnd.sdmx.structurespecificdata+xml;version=2.1"})
+            with _urlopen(request,timeout=35) as response: raw=response.read()
+            digest=hashlib.sha256(raw).hexdigest(); accepted=0
+            for match in re.finditer(rb'<Obs\b[^>]*\bTIME_PERIOD="([^"]+)"[^>]*\bOBS_VALUE="([^"]+)"',raw):
+                period=match.group(1).decode(); period_date=_sdmx_period_end(period)
+                if not period_date: continue
+                try: value=float(match.group(2))
+                except ValueError: continue
+                observations.append({"series_id":series_id,"country_code":"IND","period_date":period_date,"value_numeric":value,"unit":spec["unit"],"frequency":spec["frequency"],"release_date":fetched.isoformat(),"available_at":fetched.isoformat(),"vintage_date":fetched.date().isoformat(),"revision_number":0,"is_forecast":False,"source":"BIS SDMX API","source_url":url,"source_payload_hash":digest,"quality_status":"PROVISIONAL","metadata":{"flow":spec["flow"],"key":spec["key"],"time_period":period,"pit_status":"FETCH_VINTAGE_ONLY","source_tier":"B"}}); accepted+=1
+            if not accepted: errors.append(f"{series_id}:no_observations")
+        except Exception as exc: errors.append(f"{series_id}:{type(exc).__name__}:{str(exc)[:100]}")
+    return _persist_official_run("BIS India SDMX",registry,observations,errors)
 
 
 def collect_yahoo_macro_market():
@@ -293,11 +335,13 @@ def _fmp_get(path, params=None):
     if not key: raise RuntimeError("fmp_api_key_missing")
     query={**(params or {}),"apikey":key}
     url=f"https://financialmodelingprep.com/stable/{path}?{urllib.parse.urlencode(query)}"
+    public_url=f"https://financialmodelingprep.com/stable/{path}"
+    if params: public_url += f"?{urllib.parse.urlencode(params)}"
     request=urllib.request.Request(url,headers={"User-Agent":"AGI-Macro-Intelligence/1.0","Accept":"application/json"})
     with _urlopen(request,timeout=30) as response: raw=response.read()
     payload=json.loads(raw)
     if isinstance(payload,dict) and payload.get("Error Message"): raise RuntimeError(str(payload["Error Message"])[:160])
-    return payload,hashlib.sha256(raw).hexdigest(),url
+    return payload,hashlib.sha256(raw).hexdigest(),public_url
 
 
 def _fmp_period(event, released_at):
@@ -533,7 +577,7 @@ def source_status():
         {"source":"Exa Web Fallback","status":"CONNECTED" if _truthy("MIE_WEB_FALLBACK_ENABLED") and (os.getenv("EXA_API_KEY") or "").strip() else "DISABLED","collection":"AUTHORITATIVE_WEB_DISCOVERY_TIER_D_PROPOSED"},
         {"source":"MoSPI","status":"CONFIGURATION_REQUIRED","collection":"API_ACCESS_TOKEN_REQUIRED"},
         {"source":"RBI","status":"MAPPING_REQUIRED","collection":"DBIE_ACCESS_PATH_REQUIRED"},
-        {"source":"BIS","status":"MAPPING_REQUIRED","collection":"SDMX_SERIES_KEYS_REQUIRED"},
+        {"source":"BIS","status":"CONNECTED","collection":"INDIA_CORE_SDMX_TIER_B"},
         {"source":"ILO","status":"MAPPING_REQUIRED","collection":"BULK_INDICATOR_KEYS_REQUIRED"},
         {"source":"UNCTAD","status":"MAPPING_REQUIRED","collection":"DATASET_KEYS_REQUIRED"},
         {"source":"Ministry of Commerce","status":"ADAPTER_REQUIRED","collection":"OFFICIAL_DOWNLOAD_NO_DOCUMENTED_API"},
@@ -558,6 +602,7 @@ def run_public_ingestion():
         run_stage("World Bank G20", collect_world_bank_g20),
         run_stage("IMF WEO DataMapper", collect_imf_g20),
         run_stage("OECD SDMX", collect_oecd_policy_rates),
+        run_stage("BIS India SDMX", collect_bis_india),
         run_stage("Yahoo Finance Macro Market", collect_yahoo_macro_market),
         run_stage("FMP Economics", collect_fmp_economics),
         run_stage("Exa Web Macro Fallback", collect_web_macro_gaps),

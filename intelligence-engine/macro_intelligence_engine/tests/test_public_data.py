@@ -2,7 +2,7 @@ from macro_intelligence_engine.g20_source_catalog import COUNTRY_SOURCES, MODULE
 from macro_intelligence_engine.public_data import CORE_50, g20_matrix, g20_source_plan, latest_observations, readiness, supplemental_observations
 import json
 
-from macro_intelligence_engine.public_ingestion import WORLD_BANK_SERIES, YAHOO_MACRO_MARKET_SERIES, _fmp_event_series, _fmp_period, _web_semantically_matches, collect_fmp_economics, collect_web_macro_gaps, collect_yahoo_macro_market, registry_rows
+from macro_intelligence_engine.public_ingestion import BIS_INDIA_SERIES, WORLD_BANK_SERIES, YAHOO_MACRO_MARKET_SERIES, _fmp_event_series, _fmp_period, _sdmx_period_end, _web_semantically_matches, collect_bis_india, collect_fmp_economics, collect_web_macro_gaps, collect_yahoo_macro_market, registry_rows
 
 
 def test_core_50_is_unique_and_complete():
@@ -220,6 +220,26 @@ def test_fmp_event_period_uses_reported_month_end():
     from datetime import datetime
     assert _fmp_period("CPI Inflation (Jun)", datetime(2026,7,14)) == "2026-06-30"
     assert _fmp_period("GDP QoQ (Q2)", datetime(2026,8,1)) == "2026-06-30"
+
+
+def test_bis_india_mappings_cover_core_financial_gaps():
+    assert set(BIS_INDIA_SERIES) == {"credit_gdp_gap","debt_service_ratio","house_prices","bank_credit"}
+    assert _sdmx_period_end("2025-Q4") == "2025-12-31"
+
+
+def test_bis_india_collector_parses_sdmx_observations(monkeypatch):
+    payload=b'<message:DataSet><Series><Obs TIME_PERIOD="2025-Q4" OBS_VALUE="12.2" OBS_STATUS="A"/></Series></message:DataSet>'
+    class Response:
+        def __enter__(self): return self
+        def __exit__(self,*_args): return False
+        def read(self): return payload
+    captured={}
+    monkeypatch.setattr("macro_intelligence_engine.public_ingestion._urlopen",lambda *_args,**_kwargs:Response())
+    monkeypatch.setattr("macro_intelligence_engine.public_ingestion._persist_official_run",lambda source,registry,observations,errors:captured.update(source=source,registry=registry,observations=observations,errors=errors) or {"ok":True,"accepted":len(observations)})
+    result=collect_bis_india()
+    assert result["accepted"] == 4
+    assert {row["series_id"] for row in captured["observations"]} == set(BIS_INDIA_SERIES)
+    assert all(row["metadata"]["source_tier"] == "B" for row in captured["observations"])
 
 
 def test_fmp_economics_keeps_us_treasury_separate_from_india_yields(monkeypatch):
