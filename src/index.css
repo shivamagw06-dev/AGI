@@ -163,27 +163,18 @@
   margin: 1rem auto;
 }
 
-/* Article page uses the same canvas as the site header (1800px). */
+/* Readable article column. Photos sit in one shared frame so they match. */
 .article-page-shell,
 .article-preview-shell {
   min-width: 0;
-  width: 100%;
-  max-width: 1800px;
 }
 
 .article-editor-content,
-.article-prose,
-.article-prose.prose {
+.article-prose {
   min-width: 0;
-  max-width: none !important;
-  width: 100%;
   overflow-wrap: anywhere;
 }
 
-/*
-  In-body screenshots (Bloomberg charts, timelines) must share the text
-  column: never break out wider, and never taller than a figure.
-*/
 .article-editor-content img,
 .article-editor-content video,
 .article-editor-content svg,
@@ -199,13 +190,15 @@
 .article-prose .tiptap-img-full,
 .article-prose .tiptap-img-center {
   display: block;
-  width: auto !important;
+  box-sizing: border-box;
+  width: 100% !important;
   max-width: 100% !important;
-  height: auto !important;
-  max-height: min(28rem, 62vh) !important;
-  margin: 1.5rem 0 !important;
+  height: 28rem !important;
+  max-height: 28rem !important;
+  margin: 1.75rem auto !important;
   object-fit: contain;
-  object-position: left center;
+  object-position: center;
+  background: #ffffff;
 }
 
 .article-editor-content p:has(> img),
@@ -216,9 +209,9 @@
 
 .article-editor-content .tiptap-img-small,
 .article-prose .tiptap-img-small {
-  width: auto !important;
-  max-width: min(100%, 24rem) !important;
-  max-height: 16rem !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  height: 28rem !important;
 }
 
 .article-editor-content iframe,
@@ -288,7 +281,14 @@
   .article-prose iframe {
     min-height: 0;
   }
+
+  .article-editor-content img,
+  .article-prose img {
+    height: 16rem !important;
+    max-height: 16rem !important;
+  }
 }
+
 .tiptap .img-caption {
   font-size: 0.9rem;
   color: hsl(var(--muted-hsl));
@@ -596,9 +596,9 @@
   .agi-cover--article {
     aspect-ratio: auto;
     width: 100%;
-    max-width: 100%;
-    margin-inline: 0;
-    background-color: transparent;
+    max-width: 64rem;
+    margin-inline: auto;
+    background-color: #ffffff;
     border: none;
     border-radius: 0;
     overflow: hidden;
@@ -608,8 +608,7 @@
     display: block;
     width: 100%;
     max-width: 100%;
-    height: auto;
-    max-height: none;
+    height: 28rem;
     object-fit: contain;
     object-position: center;
     border-radius: 0;

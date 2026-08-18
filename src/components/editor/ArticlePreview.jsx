@@ -13,7 +13,7 @@ export default function ArticlePreview({ open, onClose, article, html }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/70 overflow-y-auto py-8 px-4">
-      <div className="relative w-full max-w-[1800px] bg-white rounded-xl shadow-2xl overflow-hidden">
+      <div className="relative w-full max-w-5xl bg-white rounded-xl shadow-2xl overflow-hidden">
         <div className="sticky top-0 flex items-center justify-between px-6 py-4 border-b bg-white rounded-t-xl z-10">
           <div>
             <p className="text-xs uppercase tracking-widest text-blue-600 font-semibold">Preview</p>
@@ -24,8 +24,8 @@ export default function ArticlePreview({ open, onClose, article, html }) {
           </Button>
         </div>
 
-        <div className="article-preview-shell mx-auto w-full max-w-[1800px] px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
-          <header className="article-preview-header w-full">
+        <div className="article-preview-shell mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 sm:py-8">
+          <header className="article-preview-header mx-auto w-full">
             <span className="text-sm font-medium text-blue-700">{article.section}</span>
             <h1 className="mt-3 text-3xl md:text-4xl font-bold text-slate-900 leading-tight">
               {article.title || 'Untitled'}
@@ -42,7 +42,7 @@ export default function ArticlePreview({ open, onClose, article, html }) {
           )}
 
           <div
-            className="article-prose prose prose-lg prose-neutral mt-8 w-full max-w-none prose-headings:text-slate-900 prose-a:text-blue-700 prose-blockquote:border-blue-600"
+            className="article-prose prose prose-lg prose-neutral mx-auto mt-8 w-full max-w-5xl prose-headings:text-slate-900 prose-a:text-blue-700 prose-blockquote:border-blue-600"
             dangerouslySetInnerHTML={{ __html: html || '<p>No content yet.</p>' }}
           />
         </div>
