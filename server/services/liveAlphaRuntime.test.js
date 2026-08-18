@@ -13,18 +13,18 @@ test('validates unique stock and sector mappings', () => {
   assert.throws(() => validateLiveAlphaUniverse(invalidDerivative), /derivative instrument/);
 });
 
-test('loads the complete Nifty 200 default with unique Upstox equity keys', async () => {
+test('loads the complete Nifty 500 default with unique equity keys', async () => {
   const priorPreset = process.env.LIVE_ALPHA_UNIVERSE_PRESET;
   const priorPath = process.env.LIVE_ALPHA_UNIVERSE_PATH;
   delete process.env.LIVE_ALPHA_UNIVERSE_PRESET;
   delete process.env.LIVE_ALPHA_UNIVERSE_PATH;
   try {
     const universe = await loadLiveAlphaUniverse();
-    assert.equal(universe.name, 'nifty200');
-    assert.equal(universe.expectedMembers, 200);
-    assert.equal(universe.members.length, 200);
-    assert.equal(new Set(universe.members.map((row) => row.symbol)).size, 200);
-    assert.equal(new Set(universe.members.map((row) => row.instrumentKey)).size, 200);
+    assert.equal(universe.name, 'nifty500');
+    assert.equal(universe.expectedMembers, 500);
+    assert.equal(universe.members.length, 500);
+    assert.equal(new Set(universe.members.map((row) => row.symbol)).size, 500);
+    assert.equal(new Set(universe.members.map((row) => row.instrumentKey)).size, 500);
     assert.ok(universe.members.every((row) => row.instrumentKey.startsWith('NSE_EQ|INE')));
     assert.ok(universe.members.every((row) => row.sectorInstrumentKey.startsWith('NSE_INDEX|')));
   } finally {
@@ -53,6 +53,8 @@ test('separates a connected feed from evaluation readiness', () => {
 
 test('only activates Groww fallback for a failed Upstox primary with explicit permission', () => {
   assert.equal(shouldUseGrowwFallback({ provider: 'upstox', feedStatus: 'auth_failed', allowFallback: true, growwConfigured: true }), true);
+  assert.equal(shouldUseGrowwFallback({ provider: 'upstox', feedStatus: 'reconnecting', reconnects: 3, lastError: 'Unexpected server response: 403', allowFallback: true, growwConfigured: true }), true);
+  assert.equal(shouldUseGrowwFallback({ provider: 'upstox', feedStatus: 'reconnecting', reconnects: 2, lastError: 'Unexpected server response: 403', allowFallback: true, growwConfigured: true }), false);
   assert.equal(shouldUseGrowwFallback({ provider: 'upstox', feedStatus: 'connected', allowFallback: true, growwConfigured: true }), false);
   assert.equal(shouldUseGrowwFallback({ provider: 'upstox', feedStatus: 'auth_failed', allowFallback: false, growwConfigured: true }), false);
   assert.equal(shouldUseGrowwFallback({ provider: 'upstox', feedStatus: 'auth_failed', allowFallback: true, growwConfigured: false }), false);

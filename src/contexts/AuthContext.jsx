@@ -63,7 +63,6 @@ export const AuthProvider = ({ children }) => {
       // Prefer AGI API signup: creates the user via service role and sends branded
       // Resend mail. Avoids Supabase Auth SMTP failures that roll back /auth/v1/signup.
       try {
-        const { API_ORIGIN } = await import('@/config');
         const base = (API_ORIGIN || '').replace(/\/$/, '');
         if (base) {
           const resp = await fetch(`${base}/api/auth/signup`, {
@@ -126,7 +125,6 @@ export const AuthProvider = ({ children }) => {
         if (/error sending confirmation email|confirmation email/i.test(msg)) {
           // User may have been created; attempt branded resend and treat as soft success.
           try {
-            const { API_ORIGIN } = await import('@/config');
             const base = (API_ORIGIN || '').replace(/\/$/, '');
             if (base) {
               await fetch(`${base}/api/auth/send-verification`, {
@@ -155,7 +153,6 @@ export const AuthProvider = ({ children }) => {
       }
 
       try {
-        const { API_ORIGIN } = await import('@/config');
         const base = (API_ORIGIN || '').replace(/\/$/, '');
         if (base) {
           await fetch(`${base}/api/auth/send-verification`, {
@@ -207,7 +204,6 @@ export const AuthProvider = ({ children }) => {
 
       // Prefer branded AGI reset mail (Resend) — Supabase SMTP is currently broken.
       try {
-        const { API_ORIGIN } = await import('@/config');
         const base = (API_ORIGIN || '').replace(/\/$/, '');
         if (base) {
           const resp = await fetch(`${base}/api/auth/send-password-reset`, {
@@ -265,7 +261,6 @@ export const AuthProvider = ({ children }) => {
       // Prefer AGI branded Resend path (works even when browser anon key is bad).
       let brandedError = null;
       try {
-        const { API_ORIGIN } = await import('@/config');
         const base = (API_ORIGIN || '').replace(/\/$/, '');
         if (base) {
           const resp = await fetch(`${base}/api/auth/send-verification`, {
@@ -336,3 +331,4 @@ export const useAuth = () => {
   if (!context) throw new Error('useAuth must be used within an AuthProvider');
   return context;
 };
+import { API_ORIGIN } from '@/config';

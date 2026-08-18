@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
+import API_ORIGIN from '@/config';
 
-const API_BASE = import.meta.env.VITE_API_URL || window?.API_URL || '';
+const API_BASE = API_ORIGIN || '';
 
 async function fetchJson(path) {
   const res = await fetch(`${API_BASE}${path}`, { headers: { Accept: 'application/json' } });

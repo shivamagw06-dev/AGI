@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { ArrowLeft, Building2, Database, MapPin, Search, ShieldCheck } from 'lucide-react';
-const BASE=import.meta.env.VITE_API_URL||window?.API_URL||'';
+import API_ORIGIN from '@/config';
+const BASE=API_ORIGIN||'';
 const load=async path=>{const r=await fetch(BASE+path);if(!r.ok)throw new Error('Private Markets API '+r.status);return r.json()};
 const show=v=>v==null||v===''||v==='-'?'Not disclosed':String(v);
 const fields={

@@ -4,8 +4,9 @@ import { Activity,ArrowLeft,Building2,Database,FileSearch,Globe2,MapPin,Search,S
 import AskAgiBar from '@/components/Home/AskAgiBar';
 import NewsletterSection from '@/components/Home/NewsletterSection';
 import { usePeOverview } from '@/hooks/usePeIntelligence';
+import API_ORIGIN from '@/config';
 import './peHybrid.css';
-const BASE=import.meta.env.VITE_API_URL||window?.API_URL||'';
+const BASE=API_ORIGIN||'';
 const get=async path=>{const r=await fetch(BASE+path);if(!r.ok)throw Error('API '+r.status);return r.json()};
 const money=v=>v==null?'Not disclosed':Number(v)>=1000?'₹'+(Number(v)/1000).toFixed(1)+'B':'₹'+Number(v).toLocaleString('en-IN')+'M';
 const date=v=>v?new Intl.DateTimeFormat('en-IN',{day:'2-digit',month:'short',year:'numeric'}).format(new Date(v)):'—';

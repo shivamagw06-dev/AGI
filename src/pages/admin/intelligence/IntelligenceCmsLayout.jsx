@@ -46,7 +46,7 @@ export default function IntelligenceCmsLayout() {
           <p className="text-xs text-white/60 mt-1 truncate">{user?.email}</p>
         </div>
         <nav className="flex-1 px-2 py-4 space-y-0.5 overflow-y-auto">
-          {MODULE_NAV.map(({ to, label, icon: Icon, end, enabled, external }) => {
+          {MODULE_NAV.filter(({ enabled }) => enabled !== false).map(({ to, label, icon: Icon, end, enabled, external }) => {
             if (external) {
               return (
                 <Link
@@ -64,22 +64,16 @@ export default function IntelligenceCmsLayout() {
                 key={to}
                 to={to}
                 end={end}
-                onClick={(e) => {
-                  if (enabled === false) e.preventDefault();
-                }}
                 className={({ isActive }) =>
                   `flex items-center gap-3 px-3 py-2.5 rounded-md text-sm transition-colors ${
-                    enabled === false
-                      ? 'text-white/30 cursor-not-allowed'
-                      : isActive
-                        ? 'bg-white/15 text-white font-medium'
-                        : 'text-white/75 hover:bg-white/10 hover:text-white'
+                    isActive
+                      ? 'bg-white/15 text-white font-medium'
+                      : 'text-white/75 hover:bg-white/10 hover:text-white'
                   }`
                 }
               >
                 <Icon size={17} />
                 {label}
-                {enabled === false && <span className="ml-auto text-[9px] uppercase tracking-wider opacity-60">Soon</span>}
               </NavLink>
             );
           })}

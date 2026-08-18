@@ -54,10 +54,9 @@ jobs:
           rebuild = bool(url and len(anon) >= 100 and anon.count(".") == 2 and api_ok)
           Path(os.environ["GITHUB_OUTPUT"]).write_text(f"rebuild={'true' if rebuild else 'false'}\n")
           if not api_ok:
-              print(
-                  "::warning::VITE_API_URL must be the Render backend "
-                  "(https://finance-news-backend-19i5.onrender.com), not the website. "
-                  "Skipping rebuild; deploying committed Hostinger root artifacts."
+              raise SystemExit(
+                  "VITE_API_URL must be the Render backend "
+                  "(https://finance-news-backend-19i5.onrender.com), not the website."
               )
           if not (url and len(anon) >= 100 and anon.count(".") == 2):
               print(

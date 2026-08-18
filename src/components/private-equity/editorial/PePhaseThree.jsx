@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Activity, AlertTriangle, BarChart3, Database, ShieldCheck } from 'lucide-react';
-const BASE=import.meta.env.VITE_API_URL||window?.API_URL||'';
+import API_ORIGIN from '@/config';
+const BASE=API_ORIGIN||'';
 const money=v=>v==null?'—':'₹'+(Number(v)>=1000?(Number(v)/1000).toFixed(1)+'B':Number(v).toLocaleString('en-IN')+'M');
 export default function PePhaseThree(){
  const[data,setData]=useState(null),[error,setError]=useState(null);

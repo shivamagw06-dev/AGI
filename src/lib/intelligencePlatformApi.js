@@ -1,4 +1,5 @@
-const API_BASE = import.meta.env.VITE_API_URL || window?.API_URL || '';
+import API_ORIGIN from '@/config';
+const API_BASE = API_ORIGIN || '';
 
 async function platformFetch(path, options = {}) {
   const res = await fetch(`${API_BASE}/api/intelligence/platform${path}`, {

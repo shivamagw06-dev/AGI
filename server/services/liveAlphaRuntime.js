@@ -46,9 +46,14 @@ export function classifyEvaluationStatus(evaluation) {
   return (evaluation.persistence || []).some((row) => row.status === 'failed') ? 'degraded' : 'live';
 }
 
-export function shouldUseGrowwFallback({ provider, feedStatus, allowFallback, growwConfigured }) {
+export function shouldUseGrowwFallback({ provider, feedStatus, reconnects = 0, lastError = '', allowFallback, growwConfigured }) {
+  const status = String(feedStatus || '').toLowerCase();
+  const terminalFailure = ['auth_failed', 'failed'].includes(status);
+  const repeatedHandshakeFailure = status === 'reconnecting'
+    && Number(reconnects) >= 3
+    && /403|handshake rejected/i.test(String(lastError || ''));
   return provider === 'upstox'
-    && ['auth_failed', 'failed'].includes(String(feedStatus || '').toLowerCase())
+    && (terminalFailure || repeatedHandshakeFailure)
     && allowFallback === true
     && growwConfigured === true;
 }
@@ -194,8 +199,8 @@ export async function startLiveAlphaRuntime({ Feed = null, FallbackFeed = GrowwL
     };
     await feed.start();
     const allowGrowwFallback = String(process.env.LIVE_ALPHA_ALLOW_GROWW_FALLBACK || '').toLowerCase() === 'true';
-    const initialFeedStatus = feed.status?.().status || feed.state?.status;
-    if (shouldUseGrowwFallback({ provider, feedStatus: initialFeedStatus, allowFallback: allowGrowwFallback, growwConfigured: isGrowwConfigured() })) {
+    const activateFallback = async (primaryStatus) => {
+      if (!runtime || runtime.provider !== 'upstox') return false;
       feed.stop?.();
       feed = new FallbackFeed({ instrumentKeys, universe, snapshotStore: store, mode: 'full', onBatch });
       await feed.start();
@@ -203,16 +208,35 @@ export async function startLiveAlphaRuntime({ Feed = null, FallbackFeed = GrowwL
       runtime.provider = 'groww';
       state.feed_fallback = {
         mode: 'groww_full_research_feed', status: feed.status?.().status || 'connected',
-        reason: `upstox_${initialFeedStatus}`,
+        reason: `upstox_${primaryStatus}`,
         derivatives: 'unavailable_until_groww_derivative_mapping',
       };
       state.status = feed.status?.().status === 'connected' ? 'running' : 'degraded';
+      return true;
+    };
+    const initialFeedState = feed.status?.() || feed.state || {};
+    const initialFeedStatus = initialFeedState.status;
+    if (shouldUseGrowwFallback({ provider, feedStatus: initialFeedStatus, reconnects: initialFeedState.reconnects, lastError: initialFeedState.last_error, allowFallback: allowGrowwFallback, growwConfigured: isGrowwConfigured() })) {
+      await activateFallback(initialFeedStatus);
     } else if (['auth_failed', 'failed'].includes(String(initialFeedStatus || '').toLowerCase())) {
       state.status = initialFeedStatus;
       state.evaluation_status = 'blocked';
       state.last_error = feed.status?.().last_error || `Primary provider ${initialFeedStatus}`;
     } else {
       state.status = 'running';
+    }
+    if (provider === 'upstox' && allowGrowwFallback && isGrowwConfigured() && runtime?.provider === 'upstox') {
+      const fallbackMonitor = setInterval(async () => {
+        if (!runtime || runtime.provider !== 'upstox' || runtime.switchingFeed) return;
+        const current = runtime.feed.status?.() || runtime.feed.state || {};
+        if (!shouldUseGrowwFallback({ provider: 'upstox', feedStatus: current.status, reconnects: current.reconnects, lastError: current.last_error, allowFallback: true, growwConfigured: true })) return;
+        runtime.switchingFeed = true;
+        try { await activateFallback(current.status); }
+        catch (error) { state.last_error = `Fallback activation failed: ${error.message}`; state.status = 'degraded'; }
+        finally { if (runtime) runtime.switchingFeed = false; }
+      }, 15_000);
+      fallbackMonitor.unref?.();
+      runtime.fallbackMonitor = fallbackMonitor;
     }
     const missingBaselineMembers = universe.members.filter((member) => !baselines.hasInstrument(member.instrumentKey));
     if (missingBaselineMembers.length) {
@@ -250,6 +274,7 @@ export async function startLiveAlphaRuntime({ Feed = null, FallbackFeed = GrowwL
 }
 
 export function stopLiveAlphaRuntime() {
+  if (runtime?.fallbackMonitor) clearInterval(runtime.fallbackMonitor);
   runtime?.feed.stop();
   runtime = null;
   state.status = 'stopped';
