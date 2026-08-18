@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Plus, FileText, Eye, Pencil, Trash2, Clock, Brain } from 'lucide-react';
+import { Plus, FileText, Eye, Pencil, Trash2, Clock, Brain, Pin } from 'lucide-react';
 import useArticlesAdmin from '@/hooks/useArticlesAdmin';
-import { formatArticleDate } from '@/lib/articleUtils';
+import { formatArticleDate, hasHomepageFeaturedTag, setHomepageFeaturedArticle } from '@/lib/articleUtils';
 import { getCmsLearningStatus, learnCmsArticles } from '@/lib/intelligenceApi';
 import { useAuth } from '@/contexts/AuthContext';
 import { isAdmin } from '@/lib/adminAuth';
@@ -12,10 +12,11 @@ export default function AdminDashboard() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const admin = isAdmin(user);
-  const { articles, loading, deleteArticle, stats } = useArticlesAdmin();
+  const { articles, loading, deleteArticle, reload, stats } = useArticlesAdmin();
   const [cmsLearn, setCmsLearn] = useState(null);
   const [learnBusy, setLearnBusy] = useState(false);
   const [learnMsg, setLearnMsg] = useState('');
+  const [pinningId, setPinningId] = useState(null);
 
   const refreshLearn = useCallback(async () => {
     try {
@@ -28,6 +29,23 @@ export default function AdminDashboard() {
   useEffect(() => {
     refreshLearn();
   }, [refreshLearn]);
+
+  const handlePinHomepage = async (article) => {
+    if (article.status !== 'published') {
+      alert('Publish the article first, then you can show it first on the homepage.');
+      return;
+    }
+    const already = hasHomepageFeaturedTag(article);
+    setPinningId(article.id);
+    try {
+      await setHomepageFeaturedArticle(article.id, { enabled: !already });
+      await reload();
+    } catch (err) {
+      alert(err.message || 'Could not update homepage lead.');
+    } finally {
+      setPinningId(null);
+    }
+  };
 
   const handleDelete = async (id, title) => {
     if (!window.confirm(`Delete "${title}"? This cannot be undone.`)) return;
@@ -67,7 +85,7 @@ export default function AdminDashboard() {
           <h1 className="text-2xl font-bold text-slate-900">{admin ? 'Dashboard' : 'My Articles'}</h1>
           <p className="text-slate-500 mt-1">
             {admin
-              ? 'Manage research articles and market updates'
+              ? 'Manage research articles and market updates. Use Show first to pick the homepage lead story.'
               : 'Edit and manage articles you uploaded'}
           </p>
         </div>
@@ -162,6 +180,7 @@ export default function AdminDashboard() {
                   <th className="text-left px-5 py-3 font-medium">Title</th>
                   <th className="text-left px-5 py-3 font-medium">Category</th>
                   <th className="text-left px-5 py-3 font-medium">Status</th>
+                  <th className="text-left px-5 py-3 font-medium">Homepage</th>
                   <th className="text-left px-5 py-3 font-medium">Date</th>
                   <th className="text-left px-5 py-3 font-medium">Learned</th>
                   <th className="text-right px-5 py-3 font-medium">Actions</th>
@@ -189,6 +208,30 @@ export default function AdminDashboard() {
                           ? 'intelligence'
                           : article.status}
                       </span>
+                    </td>
+                    <td className="px-5 py-4">
+                      {article.status === 'published' ? (
+                        <button
+                          type="button"
+                          onClick={() => handlePinHomepage(article)}
+                          disabled={pinningId === article.id}
+                          className={`inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-semibold ${
+                            hasHomepageFeaturedTag(article)
+                              ? 'bg-blue-700 text-white hover:bg-blue-800'
+                              : 'text-slate-600 hover:bg-blue-50 hover:text-blue-700'
+                          }`}
+                          title={
+                            hasHomepageFeaturedTag(article)
+                              ? 'This article is first on the homepage. Click to unpin.'
+                              : 'Show this article first on the homepage'
+                          }
+                        >
+                          <Pin size={13} />
+                          {hasHomepageFeaturedTag(article) ? 'On homepage' : 'Show first'}
+                        </button>
+                      ) : (
+                        <span className="text-xs text-slate-400">—</span>
+                      )}
                     </td>
                     <td className="px-5 py-4 text-slate-500 whitespace-nowrap">
                       <span className="flex items-center gap-1">

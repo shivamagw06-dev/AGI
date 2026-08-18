@@ -278,6 +278,7 @@ export default function ResearchTerminalHome() {
     limit: 36,
     section: null,
     sections: deskSections,
+    featuredFirst: activeDesk === RESEARCH_DESK_ALL,
   });
   const { articles: latestArticles, loading: latestLoading } = useHomepageLatest(7);
 

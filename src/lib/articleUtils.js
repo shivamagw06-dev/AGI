@@ -1,6 +1,42 @@
 import { supabase } from '@/lib/supabaseClient';
 
 export const HOMEPAGE_LATEST_TAG = 'homepage:latest';
+export const HOMEPAGE_FEATURED_TAG = 'homepage:featured';
+
+export function hasHomepageFeaturedTag(article) {
+  return Array.isArray(article?.tags) && article.tags.includes(HOMEPAGE_FEATURED_TAG);
+}
+
+export async function setHomepageFeaturedArticle(articleId, { enabled = true } = {}) {
+  const { data: current, error } = await supabase
+    .from('articles')
+    .select('id, tags')
+    .contains('tags', [HOMEPAGE_FEATURED_TAG]);
+  if (error) throw error;
+
+  for (const row of current || []) {
+    if (enabled && row.id === articleId) continue;
+    const nextTags = (row.tags || []).filter((tag) => tag !== HOMEPAGE_FEATURED_TAG);
+    const { error: clearError } = await supabase.from('articles').update({ tags: nextTags }).eq('id', row.id);
+    if (clearError) throw clearError;
+  }
+
+  if (!enabled || !articleId) return;
+
+  const { data: target, error: targetError } = await supabase
+    .from('articles')
+    .select('id, tags, status')
+    .eq('id', articleId)
+    .single();
+  if (targetError) throw targetError;
+  if (target.status !== 'published') {
+    throw new Error('Only published articles can be shown first on the homepage.');
+  }
+
+  const nextTags = Array.from(new Set([...(target.tags || []), HOMEPAGE_FEATURED_TAG]));
+  const { error: pinError } = await supabase.from('articles').update({ tags: nextTags }).eq('id', articleId);
+  if (pinError) throw pinError;
+}
 
 export function toSlug(str = '') {
   return (str || '')

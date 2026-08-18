@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
-import { mapArticleForCard } from '@/lib/articleUtils';
+import { HOMEPAGE_FEATURED_TAG, mapArticleForCard } from '@/lib/articleUtils';
+
+const ARTICLE_SELECT = 'id, title, slug, excerpt, cover_url, tags, published_at, section, status';
 
 export default function usePublishedArticles({
   limit = 6,
@@ -8,6 +10,7 @@ export default function usePublishedArticles({
   section = null,
   sections = null,
   offset = 0,
+  featuredFirst = false,
 } = {}) {
   const [articles, setArticles] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -25,7 +28,7 @@ export default function usePublishedArticles({
 
       let query = supabase
         .from('articles')
-        .select('id, title, slug, excerpt, cover_url, tags, published_at, section, status')
+        .select(ARTICLE_SELECT)
         .eq('status', 'published')
         .order('published_at', { ascending: false })
         .range(offset, offset + limit + (excludeSlug ? 1 : 0) - 1);
@@ -33,7 +36,17 @@ export default function usePublishedArticles({
       if (section) query = query.eq('section', section);
       else if (sectionList?.length) query = query.in('section', sectionList);
 
-      const { data, error: fetchError } = await query;
+      const [{ data, error: fetchError }, featuredResult] = await Promise.all([
+        query,
+        featuredFirst && !section && !sectionList?.length
+          ? supabase
+              .from('articles')
+              .select(ARTICLE_SELECT)
+              .eq('status', 'published')
+              .contains('tags', [HOMEPAGE_FEATURED_TAG])
+              .limit(1)
+          : Promise.resolve({ data: null, error: null }),
+      ]);
       if (cancelled) return;
 
       if (fetchError) {
@@ -41,7 +54,11 @@ export default function usePublishedArticles({
         setArticles([]);
         setError(fetchError.message);
       } else {
-        const mapped = (data || [])
+        const featured = featuredResult?.error ? null : featuredResult?.data?.[0] || null;
+        const merged = featured
+          ? [featured, ...(data || []).filter((row) => row.id !== featured.id)]
+          : data || [];
+        const mapped = merged
           .filter((row) => !excludeSlug || row.slug !== excludeSlug)
           .slice(0, limit)
           .map(mapArticleForCard)
@@ -56,7 +73,7 @@ export default function usePublishedArticles({
     return () => {
       cancelled = true;
     };
-  }, [limit, excludeSlug, section, sectionsKey, offset]);
+  }, [limit, excludeSlug, section, sectionsKey, offset, featuredFirst]);
 
   return { articles, loading, error };
 }

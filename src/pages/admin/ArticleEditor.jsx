@@ -24,8 +24,10 @@ import { IframeEmbed } from '@/extensions/IframeEmbed';
 import {
   generateUniqueSlug,
   HOMEPAGE_LATEST_TAG,
+  HOMEPAGE_FEATURED_TAG,
   htmlToExcerpt,
   readingTime,
+  setHomepageFeaturedArticle,
   toSlug,
   wordCountFromHTML,
 } from '@/lib/articleUtils';
@@ -62,6 +64,7 @@ export default function ArticleEditor() {
   const [section, setSection] = useState('Indian Market');
   const [tagsInput, setTagsInput] = useState('');
   const [showInLatest, setShowInLatest] = useState(false);
+  const [showAsHomepageLead, setShowAsHomepageLead] = useState(false);
   const [coverUrl, setCoverUrl] = useState('');
   const [draftId, setDraftId] = useState(null);
   const [status, setStatus] = useState('draft');
@@ -156,8 +159,13 @@ export default function ArticleEditor() {
       setSection(data.section || '');
       setCoverUrl(data.cover_url || '');
       const loadedTags = Array.isArray(data.tags) ? data.tags : [];
-      setTagsInput(loadedTags.filter((tag) => tag !== HOMEPAGE_LATEST_TAG).join(', '));
+      setTagsInput(
+        loadedTags
+          .filter((tag) => tag !== HOMEPAGE_LATEST_TAG && tag !== HOMEPAGE_FEATURED_TAG)
+          .join(', ')
+      );
       setShowInLatest(loadedTags.includes(HOMEPAGE_LATEST_TAG));
+      setShowAsHomepageLead(loadedTags.includes(HOMEPAGE_FEATURED_TAG));
       setStatus(data.status || 'draft');
 
       const html = data.content_md || data.content || '';
@@ -300,6 +308,7 @@ export default function ArticleEditor() {
       const html = editor?.getHTML() || '';
       const tags = tagsInput.split(',').map((t) => t.trim()).filter(Boolean);
       if (showInLatest && publishStatus !== 'intelligence') tags.push(HOMEPAGE_LATEST_TAG);
+      if (showAsHomepageLead && publishStatus === 'published') tags.push(HOMEPAGE_FEATURED_TAG);
       const excerpt = metaDescription.trim() || htmlToExcerpt(html, 320);
       const safeSection = normalizeArticleSection(section, {
         forIntelligence: publishStatus === 'intelligence',
@@ -337,7 +346,7 @@ export default function ArticleEditor() {
 
       return payload;
     },
-    [editor, tagsInput, showInLatest, metaDescription, user, title, slug, section, coverUrl, draftId, originalAuthorId]
+    [editor, tagsInput, showInLatest, showAsHomepageLead, metaDescription, user, title, slug, section, coverUrl, draftId, originalAuthorId]
   );
 
   const persist = useCallback(
@@ -422,6 +431,14 @@ export default function ArticleEditor() {
         setStatus(publishStatus === 'intelligence' ? 'intelligence' : data.status);
         setLastSaved(new Date());
         dirtyRef.current = false;
+
+        if (publishStatus === 'published' && data?.id) {
+          try {
+            await setHomepageFeaturedArticle(data.id, { enabled: showAsHomepageLead });
+          } catch (pinErr) {
+            console.warn('[cms] homepage lead update failed', pinErr);
+          }
+        }
 
         let ingestResult = null;
         let ingestError = null;
@@ -565,7 +582,7 @@ export default function ArticleEditor() {
         setSaving(false);
       }
     },
-    [editor, slug, slugManual, title, draftId, buildPayload, navigate, section, tagsInput, notifyOnPublish, coverUrl]
+    [editor, slug, slugManual, title, draftId, buildPayload, navigate, section, tagsInput, notifyOnPublish, coverUrl, showAsHomepageLead]
   );
 
   const notifyNow = useCallback(async () => {
@@ -818,6 +835,26 @@ export default function ArticleEditor() {
               Choose which homepage desk this research belongs to.
             </p>
           </div>
+
+          <label className="block rounded-lg border border-blue-200 bg-blue-50 p-3 cursor-pointer">
+            <span className="flex items-start gap-3">
+              <input
+                type="checkbox"
+                className="mt-0.5 h-4 w-4 accent-blue-700"
+                checked={showAsHomepageLead}
+                onChange={(e) => {
+                  setShowAsHomepageLead(e.target.checked);
+                  dirtyRef.current = true;
+                }}
+              />
+              <span>
+                <span className="block text-sm font-semibold text-blue-800">Show first on homepage</span>
+                <span className="mt-1 block text-xs leading-relaxed text-blue-800/80">
+                  Makes this the large lead story on the homepage. Only one article can be first.
+                </span>
+              </span>
+            </span>
+          </label>
 
           <label className="block rounded-lg border border-red-200 bg-red-50 p-3 cursor-pointer">
             <span className="flex items-start gap-3">
