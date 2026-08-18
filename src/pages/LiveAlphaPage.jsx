@@ -293,8 +293,9 @@ export default function LiveAlphaPage() {
                 title="What Changed"
                 reason="Since/delta comparisons require prior snapshots. Implement snapshot history on the backend before enabling this card."
               />
-              <EodResearchCard groww={payload.groww} />
             </section>
+
+            <ScheduledStrategiesPanel groww={payload.groww} />
           </>
         ) : (
           <ConvictionPanel
@@ -374,6 +375,7 @@ function MarketBehaviorCard({ rows, active, onSelect, helpOpen, onToggleHelp }) 
         <div>
           <span className="la-kicker">Behaviours</span>
           <h2>Market Behavior Today</h2>
+          <p className="la-behavior-sub">Live engines 1–5 · Sector &amp; Equity are strategies 6–7 below</p>
         </div>
         <button type="button" className="la-text-btn" onClick={onToggleHelp}>
           <HelpCircle size={13} /> What do these mean?
@@ -633,46 +635,121 @@ function ConfirmationCard({ row, onOpen }) {
   );
 }
 
-function EodResearchCard({ groww }) {
+function formatPct(value) {
+  const number = Number(value);
+  return Number.isFinite(number) ? `${number > 0 ? '+' : ''}${number.toFixed(2)}%` : '—';
+}
+
+function ScheduledStrategiesPanel({ groww }) {
   const runs = new Map((groww?.runs || []).map((run) => [run.strategy, run]));
   const sectorRun = runs.get('agi_sector_rotation_v1');
   const equityRun = runs.get('agi_equity_opportunity_v1');
+  const sectors = groww?.sectors || [];
+  const equities = groww?.equities || [];
   return (
-    <article className="la-card la-eod">
-      <header>
+    <section className="la-scheduled" aria-label="Scheduled sector and equity strategies">
+      <header className="la-scheduled-head">
         <div>
-          <span className="la-kicker">Scheduled</span>
-          <h2>Scheduled / EOD Research</h2>
+          <span className="la-kicker">Strategies 6–7 of 7</span>
+          <h2>Sector Rotation &amp; Equity Opportunities</h2>
+          <p>
+            Scheduled / end-of-day research strategies. Still active and stored — kept separate from the five live
+            intraday engines and not folded into the Live Alpha composite.
+          </p>
         </div>
-        <span className="la-tip" title="Groww scheduled research is excluded from the five-model Live Alpha composite until comparably validated.">
-          <Info size={12} /> Not in composite
+        <span className="la-tip" title="These Groww-scheduled strategies are research inputs only and are excluded from the five-model live composite until comparably validated.">
+          <Info size={12} /> Not in live composite
         </span>
       </header>
-      <div className="la-eod-grid">
-        <div>
-          <small>Sector Rotation</small>
-          <strong>EOD research</strong>
-          <span>{sectorRun ? `Last update ${age(sectorRun.as_of)}` : 'Awaiting run'}</span>
-        </div>
-        <div>
-          <small>Equity Opportunities</small>
-          <strong>EOD research</strong>
-          <span>{equityRun ? `Last update ${age(equityRun.as_of)}` : 'Awaiting run'}</span>
-        </div>
+      <div className="la-scheduled-grid">
+        <article className="la-card">
+          <header>
+            <div>
+              <span className="la-kicker">Strategy 6 · Scheduled</span>
+              <h2>Sector Rotation</h2>
+            </div>
+            <RunState run={sectorRun} coverage={sectors.length} />
+          </header>
+          {sectors.length ? (
+            <div className="la-table-wrap">
+              <table className="la-sched-table">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Sector</th>
+                    <th>Score</th>
+                    <th>Rotation</th>
+                    <th>20d relative</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {sectors.slice(0, 12).map((row) => (
+                    <tr key={row.sector}>
+                      <td>{row.rank}</td>
+                      <td><strong>{row.sector}</strong></td>
+                      <td>{Number(row.score).toFixed(0)}</td>
+                      <td><span className={`la-rotation ${row.rotation}`}>{row.rotation}</span></td>
+                      <td className={Number(row.relative_20d) >= 0 ? 'up' : 'down'}>{formatPct(row.relative_20d)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <p className="la-muted-copy">No sector rotation run has been received yet.</p>
+          )}
+        </article>
+
+        <article className="la-card">
+          <header>
+            <div>
+              <span className="la-kicker">Strategy 7 · Scheduled</span>
+              <h2>Equity Opportunities</h2>
+            </div>
+            <RunState run={equityRun} coverage={equities.length} />
+          </header>
+          {equities.length ? (
+            <div className="la-table-wrap">
+              <table className="la-sched-table">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Stock</th>
+                    <th>Score</th>
+                    <th>Signal</th>
+                    <th>Volume</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {equities.slice(0, 12).map((row) => (
+                    <tr key={`${row.symbol}-${row.signal}`}>
+                      <td>{row.rank || '—'}</td>
+                      <td><strong>{row.symbol}</strong></td>
+                      <td>{Number(row.score).toFixed(0)}</td>
+                      <td><span className="la-groww-signal">{String(row.signal || '').replaceAll('_', ' ')}</span></td>
+                      <td>{Number(row.volume_ratio) ? `${Number(row.volume_ratio).toFixed(2)}×` : '—'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <p className="la-muted-copy">No equity opportunity run has been received yet.</p>
+          )}
+        </article>
       </div>
-      {(groww?.sectors || []).length || (groww?.equities || []).length ? (
-        <div className="la-eod-preview">
-          {(groww?.sectors || []).slice(0, 3).map((row) => (
-            <span key={row.sector}>{row.sector} · {Number(row.score).toFixed(0)}</span>
-          ))}
-          {(groww?.equities || []).slice(0, 3).map((row) => (
-            <span key={row.symbol}>{row.symbol} · {Number(row.score).toFixed(0)}</span>
-          ))}
-        </div>
-      ) : (
-        <p className="la-muted-copy">No scheduled research run has been received yet.</p>
-      )}
-    </article>
+    </section>
+  );
+}
+
+function RunState({ run, coverage }) {
+  return (
+    <div className="la-run-state">
+      <i className={run ? 'ready' : ''} />
+      <span>{run ? (run.status || 'received') : 'standby'}</span>
+      {run ? <time>{age(run.as_of)}</time> : null}
+      {coverage != null ? <em>{coverage} names</em> : null}
+    </div>
   );
 }
 
