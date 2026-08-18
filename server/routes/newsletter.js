@@ -10,6 +10,18 @@ import {
 import { buildArticleEmail, excerptFromHtml } from '../lib/articleEmailTemplate.js';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const BLOCKED_TEST_DOMAINS = new Set(['example.com', 'example.org', 'example.net', 'test.com']);
+
+function normalizeEmail(value) {
+  return String(value || '').trim().toLowerCase();
+}
+
+function isSendableEmail(value) {
+  const email = normalizeEmail(value);
+  if (!EMAIL_RE.test(email)) return false;
+  const domain = email.split('@')[1] || '';
+  return !BLOCKED_TEST_DOMAINS.has(domain);
+}
 
 function siteUrl() {
   return (process.env.PUBLIC_SITE_URL || process.env.BASE_URL || 'https://agarwalglobalinvestments.com').replace(
@@ -84,6 +96,7 @@ async function sendBatchWithResend(items) {
     headers: {
       Authorization: `Bearer ${key}`,
       'Content-Type': 'application/json',
+      'x-batch-validation': 'permissive',
     },
     body: JSON.stringify(items),
   });
@@ -177,6 +190,7 @@ export default function createNewsletterRouter() {
         (process.env.SUPABASE_URL || '').trim() &&
           (process.env.SUPABASE_SERVICE_ROLE_KEY || '').trim()
       ),
+      testSend: true,
     });
   });
 
@@ -269,28 +283,38 @@ export default function createNewsletterRouter() {
         return res.status(400).json({ error: 'title and slug are required.' });
       }
 
-      const admin = await getSupabaseAdmin();
-      let list = [];
-      let queryError = null;
+      const testTo = normalizeEmail(req.body?.to || req.body?.testEmail || '');
+      let recipients = [];
 
-      const withPrefs = await admin.from('subscribers').select('email, preferences, unsubscribe_token').eq('is_active', true);
-      if (withPrefs.error && /preferences|column/i.test(withPrefs.error.message || '')) {
-        const fallback = await admin.from('subscribers').select('email').eq('is_active', true);
-        list = fallback.data || [];
-        queryError = fallback.error;
+      if (testTo) {
+        if (!isSendableEmail(testTo)) {
+          return res.status(400).json({ error: 'Valid test recipient email is required.' });
+        }
+        recipients = [{ email: testTo, unsubscribeToken: null }];
       } else {
-        list = withPrefs.data || [];
-        queryError = withPrefs.error;
-      }
-      if (queryError) throw queryError;
+        const admin = await getSupabaseAdmin();
+        let list = [];
+        let queryError = null;
 
-      const recipients = (list || [])
-        .map((row) => ({
-          email: String(row.email || '').trim().toLowerCase(),
-          preferences: normalizePreferences(row.preferences),
-          unsubscribeToken: row.unsubscribe_token || null,
-        }))
-        .filter((row) => EMAIL_RE.test(row.email) && row.preferences[letter.key]);
+        const withPrefs = await admin.from('subscribers').select('email, preferences, unsubscribe_token').eq('is_active', true);
+        if (withPrefs.error && /preferences|column/i.test(withPrefs.error.message || '')) {
+          const fallback = await admin.from('subscribers').select('email').eq('is_active', true);
+          list = fallback.data || [];
+          queryError = fallback.error;
+        } else {
+          list = withPrefs.data || [];
+          queryError = withPrefs.error;
+        }
+        if (queryError) throw queryError;
+
+        recipients = (list || [])
+          .map((row) => ({
+            email: normalizeEmail(row.email),
+            preferences: normalizePreferences(row.preferences),
+            unsubscribeToken: row.unsubscribe_token || null,
+          }))
+          .filter((row) => isSendableEmail(row.email) && row.preferences[letter.key]);
+      }
 
       if (!recipients.length) {
         return res.json({
@@ -303,34 +327,53 @@ export default function createNewsletterRouter() {
       }
 
       const from = letterDisplayFrom(letter.key);
-      let sent = 0;
-
-      for (let i = 0; i < recipients.length; i += 50) {
-        const chunk = recipients.slice(i, i + 50);
-        const items = chunk.map((row) => {
-          const email = buildArticleEmail({
-            title,
-            summary,
-            slug,
-            email: row.email,
-            letter,
-            section,
-            unsubscribeToken: row.unsubscribeToken,
-            coverUrl,
-            author,
-            publishedAt,
-            readTime,
-          });
-          return {
-            from,
-            to: [row.email],
-            subject: email.subject,
-            html: email.html,
-            text: email.text,
-          };
+      const items = recipients.map((row) => {
+        const email = buildArticleEmail({
+          title,
+          summary,
+          slug,
+          email: row.email,
+          letter,
+          section,
+          unsubscribeToken: row.unsubscribeToken,
+          coverUrl,
+          author,
+          publishedAt,
+          readTime,
         });
+        return {
+          from,
+          to: [row.email],
+          subject: email.subject,
+          html: email.html,
+          text: email.text,
+        };
+      });
 
-        await sendBatchWithResend(items);
+      if (testTo || items.length === 1) {
+        const item = items[0];
+        await sendWithResend({
+          from: item.from,
+          to: item.to[0],
+          subject: item.subject,
+          html: item.html,
+          text: item.text,
+        });
+        return res.json({
+          ok: true,
+          sent: 1,
+          test: Boolean(testTo),
+          to: item.to[0],
+          from,
+          letter: letter.key,
+          section: section || null,
+        });
+      }
+
+      let sent = 0;
+      for (let i = 0; i < items.length; i += 50) {
+        const chunk = items.slice(i, i + 50);
+        await sendBatchWithResend(chunk);
         sent += chunk.length;
       }
 
