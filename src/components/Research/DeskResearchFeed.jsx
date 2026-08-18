@@ -41,6 +41,8 @@ export default function DeskResearchFeed({
   limit = 12,
   emptyHint,
   className = '',
+  /** Override article grid columns (e.g. when beside a side rail). */
+  gridClassName = 'grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3',
 }) {
   const desk = getDeskById(deskId);
   const sections = useMemo(() => getSectionsForDesk(deskId), [deskId]);
@@ -78,7 +80,7 @@ export default function DeskResearchFeed({
       </div>
 
       {loading ? (
-        <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <div className={`mt-6 grid ${gridClassName}`}>
           {Array.from({ length: 3 }).map((_, i) => (
             <div key={i} className="h-56 animate-pulse rounded-xl border border-[#e8eaee] bg-[#f7f8fa]" />
           ))}
@@ -92,7 +94,7 @@ export default function DeskResearchFeed({
           </p>
         </div>
       ) : (
-        <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <div className={`mt-6 grid ${gridClassName}`}>
           {articles.map((article, i) => {
             const href = articleHref(article);
             const cover = articleCover(article);

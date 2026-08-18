@@ -17,6 +17,7 @@ import useMarketIntelligence from '@/hooks/useMarketIntelligence';
 import Nifty500ResearchPanel from '@/components/Research/Nifty500ResearchPanel';
 import InstitutionalIntelligenceLayer from '@/components/Research/InstitutionalIntelligenceLayer';
 import DeskResearchFeed from '@/components/Research/DeskResearchFeed';
+import MarketActivitiesRail from '@/components/Research/MarketActivitiesRail';
 import { getMarketBriefing } from '@/api/marketApi';
 import { getUiDashboard } from '@/lib/uiApi';
 
@@ -137,14 +138,6 @@ export default function MarketIntelligence() {
                   Valuation Table
                   <ArrowRight className="h-4 w-4" />
                 </Link>
-                <Link
-                  to="/hedge-fund/alpha-opportunities"
-                  className="inline-flex items-center justify-center gap-2 border border-[#7ea2cf] bg-[#e6f6f0] px-4 py-2.5 text-sm font-bold text-[#0d4a40] transition hover:bg-[#d5f0e7]"
-                >
-                  <TrendingUp className="h-4 w-4" />
-                  Alpha Opportunities
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
                 <div className="flex items-start gap-2 text-xs leading-relaxed text-[#c6d4e7]">
                   <Clock3 className="h-4 w-4 shrink-0" />
                   {updatedAt ? `Updated ${new Date(updatedAt).toLocaleString('en-IN')}` : 'Awaiting model refresh'}
@@ -155,8 +148,15 @@ export default function MarketIntelligence() {
         </section>
 
         <main className="max-w-[1800px] mx-auto px-4 sm:px-6 py-6 sm:py-8 lg:py-10">
-          <div className="mb-8 rounded-xl border border-[#dde1e6] bg-white p-5 sm:p-6">
-            <DeskResearchFeed deskId="indian-market" title="Indian Market Research" />
+          <div className="mb-8 grid grid-cols-1 gap-6 lg:grid-cols-12 lg:items-start">
+            <div className="rounded-xl border border-[#dde1e6] bg-white p-5 sm:p-6 lg:col-span-8">
+              <DeskResearchFeed
+                deskId="indian-market"
+                title="Indian Market Research"
+                gridClassName="grid-cols-1 gap-4 sm:grid-cols-2"
+              />
+            </div>
+            <MarketActivitiesRail className="lg:col-span-4 lg:sticky lg:top-24" />
           </div>
 
           <Nifty500ResearchPanel />

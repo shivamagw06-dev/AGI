@@ -74,6 +74,7 @@ const navItems = [
   { to: '/admin/hvie-runtime', label: 'HVIE Build', icon: Activity },
   { to: '/admin/research-intelligence', label: 'Research Intelligence', icon: BookOpen },
   { to: '/admin/market-research-note', label: 'Market Research Note', icon: FileText },
+  { to: '/admin/activities', label: 'Activities', icon: Bell },
   { to: '/admin/forecast-runtime', label: 'Forecast Output', icon: LineChart },
   { to: '/admin/macro-runtime', label: 'Macro Runtime', icon: Globe2 },
   { to: '/admin/ifac', label: 'Answer Composer', icon: Layers3 },

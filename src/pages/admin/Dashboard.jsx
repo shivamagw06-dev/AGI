@@ -102,6 +102,11 @@ export default function AdminDashboard() {
               {learnBusy ? 'Intelligence reading…' : 'Ask intelligence to learn articles'}
             </Button>
           ) : null}
+          {admin ? (
+            <Button variant="outline" onClick={() => navigate('/admin/activities')} className="border-slate-300">
+              Activities
+            </Button>
+          ) : null}
           <Button onClick={() => navigate('/admin/articles/new')} className="bg-blue-700 hover:bg-blue-800">
             <Plus size={16} className="mr-2" />
             New Article

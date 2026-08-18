@@ -78,6 +78,7 @@ const IfacComposer = lazy(() => import('@/pages/admin/IfacComposer'));
 const AskProductQuality = lazy(() => import('@/pages/admin/AskProductQuality'));
 const KulDashboard = lazy(() => import('@/pages/admin/KulDashboard'));
 const MarketResearchNote = lazy(() => import('@/pages/admin/MarketResearchNote'));
+const MarketActivities = lazy(() => import('@/pages/admin/MarketActivities'));
 const StrategyLab = lazy(() => import('@/pages/admin/StrategyLab'));
 const IntelligenceCmsRoutes = lazy(() => import('@/pages/admin/intelligence/IntelligenceCmsRoutes'));
 
@@ -136,6 +137,7 @@ export default function AdminRoutes() {
             <Route path="articles" element={<AdminDashboard />} />
             <Route path="articles/new" element={<ArticleEditor />} />
             <Route path="articles/edit/:slug" element={<ArticleEditor />} />
+            <Route path="activities" element={<MarketActivities />} />
             <Route path="categories" element={<CategoryManager />} />
             <Route path="knowledge" element={<KnowledgeFoundation />} />
             <Route path="open-intelligence" element={<OpenIntelligence />} />
