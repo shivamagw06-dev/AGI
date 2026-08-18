@@ -26,7 +26,11 @@ export default function PageShell({
       </Helmet>
 
       <div className={`border-b ${isLight ? 'border-slate-200 bg-white' : 'border-white/10 bg-slate-950'}`}>
-        <div className={`${wide ? 'max-w-[1680px]' : 'max-w-4xl'} mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-14`}>
+        <div
+          className={`${
+            wide ? 'w-full max-w-none' : 'max-w-4xl mx-auto'
+          } px-4 sm:px-6 lg:px-8 xl:px-10 2xl:px-12 ${wide ? 'py-8 lg:py-10' : 'py-12 lg:py-14'}`}
+        >
           <Link
             to={backTo}
             className={`inline-flex items-center gap-2 text-sm mb-6 transition-colors ${
@@ -54,9 +58,9 @@ export default function PageShell({
           </h1>
           {description && (
             <p
-              className={`mt-4 text-lg max-w-3xl leading-relaxed ${
-                isLight ? 'text-slate-600' : 'text-slate-400'
-              }`}
+              className={`mt-4 text-lg leading-relaxed ${
+                wide ? 'max-w-5xl' : 'max-w-3xl'
+              } ${isLight ? 'text-slate-600' : 'text-slate-300'}`}
             >
               {description}
             </p>
@@ -64,7 +68,11 @@ export default function PageShell({
         </div>
       </div>
 
-      <div className={`${wide ? 'max-w-[1680px]' : 'max-w-4xl'} mx-auto px-4 sm:px-6 lg:px-8 py-10 lg:py-14`}>
+      <div
+        className={`${
+          wide ? 'w-full max-w-none' : 'max-w-4xl mx-auto'
+        } px-4 sm:px-6 lg:px-8 xl:px-10 2xl:px-12 ${wide ? 'py-6 lg:py-8' : 'py-10 lg:py-14'}`}
+      >
         {children}
       </div>
     </div>
