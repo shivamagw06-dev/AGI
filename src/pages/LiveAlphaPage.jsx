@@ -1,18 +1,52 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Activity, AlertCircle, BarChart3, ChevronRight, Clock3, RefreshCw, ShieldCheck, Sparkles, X } from 'lucide-react';
+import {
+  Activity, AlertCircle, ChevronRight, HelpCircle, Info, RefreshCw, Search, ShieldCheck, X,
+} from 'lucide-react';
 import API_ORIGIN from '@/config';
 import { CONVICTION_FILTERS, convictionTone, filterConvictionRows, readableConvictionLabel } from '@/lib/evidenceConvictionView';
-import { buildCanonicalSignals, LIVE_ALPHA_STRATEGIES, reconcileLiveAlpha, signedSignalScore } from '@/lib/liveAlphaSignalModel';
+import {
+  buildLiveBrief,
+  buildMarketBehaviorRows,
+  buildMarketMap,
+  ENGINE_PLAIN,
+  evidenceStrengthLabel,
+  filterRadarRows,
+  marketStateFromBrief,
+  plainSignalDirection,
+  radarReason,
+  sortRadarRows,
+} from '@/lib/liveAlphaDashboardModel';
+import { buildCanonicalSignals, LIVE_ALPHA_STRATEGIES, signedSignalScore } from '@/lib/liveAlphaSignalModel';
 import './liveAlphaPage.css';
-import './growwResearch.css';
 
 const STRATEGIES = LIVE_ALPHA_STRATEGIES;
-const SHORT = { cross_sectional_momentum_v1: 'Lead', volume_liquidity_anomaly_v1: 'Act.', opening_range_expansion_v1: 'Break', intraday_mean_reversion_v1: 'Dis.', derivatives_positioning_v1: 'Pos.' };
+const SHORT = {
+  cross_sectional_momentum_v1: 'Lead',
+  volume_liquidity_anomaly_v1: 'Act.',
+  opening_range_expansion_v1: 'Break',
+  intraday_mean_reversion_v1: 'Dis.',
+  derivatives_positioning_v1: 'Pos.',
+};
 
-const signedScore = signedSignalScore;
 function scoreText(value) { return `${value > 0 ? '+' : ''}${value}`; }
-function formatFactor(value, suffix = '') { const number = Number(value); return Number.isFinite(number) ? `${number > 0 ? '+' : ''}${number.toFixed(2)}${suffix}` : '—'; }
-function age(iso) { const mins = Math.max(0, Math.floor((Date.now() - Date.parse(iso)) / 60000)); return mins < 1 ? 'Now' : mins < 60 ? `${mins}m` : `${Math.floor(mins / 60)}h`; }
+function formatFactor(value, suffix = '') {
+  const number = Number(value);
+  return Number.isFinite(number) ? `${number > 0 ? '+' : ''}${number.toFixed(2)}${suffix}` : '—';
+}
+function age(iso) {
+  const mins = Math.max(0, Math.round((Date.now() - Date.parse(iso)) / 60000));
+  if (!Number.isFinite(mins)) return '—';
+  if (mins < 1) return 'Now';
+  if (mins < 60) return `${mins}m`;
+  return `${Math.floor(mins / 60)}h`;
+}
+function ageSecondsLabel(seconds) {
+  if (seconds == null || !Number.isFinite(Number(seconds))) return '—';
+  const s = Math.max(0, Math.floor(Number(seconds)));
+  if (s < 60) return `${s} sec ago`;
+  if (s < 3600) return `${Math.floor(s / 60)} min ago`;
+  return `${Math.floor(s / 3600)}h ago`;
+}
 
 async function readApiJson(response, label) {
   const contentType = response.headers.get('content-type') || '';
@@ -23,77 +57,32 @@ async function readApiJson(response, label) {
   return response.json();
 }
 
-function buildRows(signals, strategyHealth) { return buildCanonicalSignals(signals, strategyHealth); }
-
-function signalReason(row) {
-  const interpretation = row.interpretation;
-  const scored = (signal) => `${STRATEGIES.find(([key]) => key === signal?.engine)?.[1] || signal?.engine} ${scoreText(signedScore(signal))}`;
-  return {
-    primary_driver: interpretation.primary_driver ? scored(interpretation.primary_driver) : interpretation.structure === 'CONFLICTING' ? `${scored(interpretation.dominant_positive)} versus ${scored(interpretation.dominant_negative)}` : 'No directional component',
-    supporting_factors: interpretation.supporting_components.map(scored),
-    negative_factors: interpretation.contradicting_components.map(scored),
-    data_quality: row.active.every((signal) => signal.liquidity_ok) ? 'Required live inputs passed liquidity checks' : 'One or more inputs failed liquidity checks',
-    confidence_reason: row.samples >= 100 ? 'Supported by comparable completed outcomes' : `${row.confidence} model-state confidence from signal strength, agreement and available inputs; not calibrated to future returns`,
-    strategy_sources: interpretation.active_components.map((signal) => STRATEGIES.find(([key]) => key === signal.engine)?.[1] || signal.engine),
-  };
+function StrengthBar({ value, max = 99 }) {
+  const pct = Math.min(100, Math.round((Math.abs(Number(value) || 0) / max) * 100));
+  const tone = value > 0 ? 'up' : value < 0 ? 'down' : '';
+  return (
+    <span className={`la-strength ${tone}`}>
+      <span className="la-strength-track"><i style={{ width: `${pct}%` }} /></span>
+      <b>{Math.abs(Number(value) || 0)}</b>
+    </span>
+  );
 }
 
-function OpportunitySummary({ rows, signals, freshness, runtime, onSelect }) {
-  const directional = rows.filter((row) => row.active.length);
-  const clean = directional.filter((row) => row.signal_structure !== 'CONFLICTING');
-  const positive = clean.filter((row) => row.composite > 0).sort((a, b) => b.composite - a.composite);
-  const negative = clean.filter((row) => row.composite < 0).sort((a, b) => a.composite - b.composite);
-  const conflicting = directional.filter((row) => row.signal_structure === 'CONFLICTING').sort((a, b) => Math.abs(b.composite) - Math.abs(a.composite));
-  const liveUniverse = runtime?.universe?.members || new Set(signals.map((signal) => signal.symbol)).size;
-  const coreRuns = (runtime?.last_successful_evaluation?.persistence || []).filter((row) => !['derivatives_positioning_v1', 'opening_range_expansion_v1'].includes(row.engine));
-  const eligible = Math.max(0, ...coreRuns.map((row) => Number(row.signals) || 0)) || new Set(signals.filter((signal) => signal.engine !== 'derivatives_positioning_v1').map((signal) => signal.symbol)).size;
-  const derivativeUniverse = signals.filter((signal) => signal.engine === 'derivatives_positioning_v1').length;
-  const strategySignalCount = rows.reduce((sum, row) => sum + row.active.length, 0);
-  const reconciliation = reconcileLiveAlpha({ liveUniverse, canonicalSignals: rows, strategySignalCount });
-  const confidenceCounts = directional.reduce((counts, row) => ({ ...counts, [row.confidence]: (counts[row.confidence] || 0) + 1 }), {});
-  const renderOpportunity = (row) => <button key={row.symbol} onClick={() => onSelect(row.symbol)}><div><strong>{row.symbol}</strong><span>{row.sector}</span></div><Score value={row.composite} /><span className={`la-confidence ${row.confidence.toLowerCase()}`}>{row.confidence}</span><p><b>{row.signal_structure}</b> · {row.interpretation.summary}</p></button>;
-  return <section className="la-opportunity-summary">
-    <header><div><span className="la-section-kicker">Current research state</span><h2>Opportunity Summary</h2></div><div><strong>{reconciliation.uniqueActiveNames}</strong><span>unique active names<br />Data age {freshness?.age_seconds == null ? 'unavailable' : `${Math.floor(freshness.age_seconds / 60)} min`}</span></div></header>
-    <div className="la-universe-stats"><div><span>Live equity universe</span><strong>{liveUniverse}</strong></div><div><span>Core strategy-eligible</span><strong>{eligible}</strong></div><div><span>Derivatives universe</span><strong>{derivativeUniverse}</strong></div><div><span>Strategy-level signals</span><strong>{strategySignalCount}</strong></div></div>
-    <div className="la-summary-stats"><div><span>Positive names</span><strong className="positive">{reconciliation.positive}</strong></div><div><span>Negative names</span><strong className="negative">{reconciliation.negative}</strong></div><div><span>Neutral</span><strong>{reconciliation.neutral}</strong></div><div><span>High confidence</span><strong>{(confidenceCounts.HIGH || 0) + (confidenceCounts.VALIDATED || 0)}</strong></div><div><span>Medium confidence</span><strong>{confidenceCounts.MEDIUM || 0}</strong></div><div><span>Low confidence</span><strong>{confidenceCounts.LOW || 0}</strong></div></div>
-    {!reconciliation.valid ? <div className="la-integrity-warning">DATA INTEGRITY WARNING — live-universe or active-signal counts do not reconcile.</div> : null}
-    <div className="la-summary-lists"><article><h3>Strongest positive research signals</h3>{positive.slice(0, 5).map(renderOpportunity)}{!positive.length ? <p>No positive signal currently passes the configured rules.</p> : null}</article><article><h3>Negative / weakening signals</h3>{negative.slice(0, 5).map(renderOpportunity)}{!negative.length ? <p>No negative signal currently passes the configured rules.</p> : null}</article>{conflicting.length ? <article className="la-conflicting"><h3>Conflicting / mixed signals</h3>{conflicting.slice(0, 5).map(renderOpportunity)}</article> : null}</div>
-    <footer><b>Research Signal — validation pending.</b> Rankings prioritize current signal strength, then component agreement and data completeness. These are not recommendations or demonstrated predictive alpha.</footer>
-  </section>;
+function BehaviorMeter({ bars = 0 }) {
+  return (
+    <span className="la-meter" aria-hidden>
+      {Array.from({ length: 5 }).map((_, i) => <i key={i} className={i < bars ? 'on' : ''} />)}
+    </span>
+  );
 }
 
-function StrategyHealth({ payload, runtime }) {
-  const signals = payload.signals || [];
-  const rows = STRATEGIES.map(([key, label, name]) => {
-    const engineRows = signals.filter((signal) => signal.engine === key);
-    const classes = Object.fromEntries([...new Set(engineRows.map((row) => row.classification))].map((value) => [value, engineRows.filter((row) => row.classification === value).length]));
-    const active = engineRows.filter((row) => row.direction).length;
-    const health = payload.strategy_health?.[key];
-    const unavailable = key === 'opening_range_expansion_v1' && runtime?.last_successful_evaluation?.opening_range_status === 'opening_range_not_restored';
-    const rejection = unavailable ? 'Opening window unavailable' : key === 'intraday_mean_reversion_v1' ? `${classes.trend_filtered || 0} trend, ${classes.event_volume_filtered || 0} event volume` : key === 'derivatives_positioning_v1' ? `${classes.neutral || 0} thresholds not jointly met` : '—';
-    return { key, label, name, evaluated: engineRows.length || null, active, health, unavailable, rejection, accounted: key !== 'intraday_mean_reversion_v1' || engineRows.length === active + Object.entries(classes).filter(([classification]) => !classification.includes('candidate')).reduce((sum, [, count]) => sum + count, 0) };
-  });
-  const degraded = rows.some((row) => row.unavailable || ['persistence_failed', 'stale'].includes(row.health?.status));
-  return <section className="la-panel la-health"><header><div><span className="la-section-kicker">Independent pipeline status</span><h2>Strategy Health</h2></div><span className={degraded ? 'degraded' : 'ready'}>{degraded ? 'Operational with degraded strategy' : 'Operational'}</span></header><div className="la-table-wrap"><table><thead><tr><th>Strategy</th><th>Status</th><th>Evaluated</th><th>Signals</th><th>Rejections</th><th>Data state</th></tr></thead><tbody>{rows.map((row) => <tr key={row.key}><td><strong>{row.label}</strong><span>{row.name}</span></td><td>{row.unavailable ? 'Degraded' : row.health?.status === 'ready' ? row.active ? 'Operational' : 'Operational / No signal' : row.health?.status || 'Not run'}</td><td>{row.evaluated ?? '—'}</td><td>{row.evaluated == null ? '—' : row.active}</td><td>{row.rejection}{row.key === 'intraday_mean_reversion_v1' ? <small className={row.accounted ? 'ok' : 'warning'}>{row.accounted ? 'All instruments accounted for' : 'Data integrity warning'}</small> : null}</td><td>{row.unavailable ? 'Recovery next session' : row.health?.status === 'ready' ? 'Ready' : 'Unavailable'}</td></tr>)}</tbody></table></div></section>;
-}
-
-function Observability({ rows, signals, runtime }) {
-  const scores = rows.filter((row) => row.active.length).map((row) => row.composite);
-  const sorted = [...scores].sort((a, b) => a - b);
-  const average = scores.length ? scores.reduce((sum, value) => sum + value, 0) / scores.length : 0;
-  const median = sorted.length ? sorted[Math.floor(sorted.length / 2)] : 0;
-  const deviation = scores.length ? Math.sqrt(scores.reduce((sum, value) => sum + ((value - average) ** 2), 0) / scores.length) : 0;
-  const extremes = scores.filter((value) => Math.abs(value) === 99).length;
-  const concentrationWarning = scores.length >= 10 && extremes / scores.length >= 0.2;
-  const feed = runtime?.feed || {};
-  const observed = new Set(signals.map((signal) => signal.instrument_key).filter(Boolean)).size;
-  const expected = runtime?.universe?.subscribed_instruments || feed.subscribed_instruments || null;
-  const missing = expected == null ? null : Math.max(0, expected - observed);
-  const coverageStatus = missing === 0 ? 'Complete' : missing == null ? 'Unavailable' : 'Partial / Review required';
-  return <section className="la-observability">
-    <article className="la-panel"><header><div><span className="la-section-kicker">Transport is not data quality</span><h2>AGI Live Feed Health</h2></div><span className={feed.status === 'connected' ? 'ready' : 'degraded'}>Transport {feed.status || 'Unavailable'}</span></header><div className="la-observe-grid"><div><small>Messages received</small><strong>{Number(feed.messages || 0).toLocaleString('en-IN')}</strong></div><div><small>Reconnects</small><strong>{feed.reconnects ?? '—'}</strong></div><div><small>Decode errors</small><strong>{feed.decode_errors ?? '—'}</strong></div><div><small>Expected subscriptions</small><strong>{expected ?? '—'}</strong></div><div><small>Observed latest runs</small><strong>{observed}</strong></div><div><small>Unexpectedly missing</small><strong>{missing ?? '—'}</strong></div><div><small>Input coverage</small><strong>{coverageStatus}</strong></div><div><small>Last heartbeat</small><strong>{feed.last_message_at ? age(feed.last_message_at) : '—'}</strong></div><div><small>Rejected tick order</small><strong>{Number(feed.snapshot_quality?.rejected_out_of_order || 0).toLocaleString('en-IN')}</strong></div><div><small>Rejected future ticks</small><strong>{Number(feed.snapshot_quality?.rejected_future || 0).toLocaleString('en-IN')}</strong></div></div><footer>Connected transport does not independently establish complete inputs or strategy correctness. Intentional exclusions are not currently reported separately, so missing coverage remains review-required.</footer></article>
-    <article className="la-panel"><header><div><span className="la-section-kicker">Distribution monitor</span><h2>Signal Diagnostics</h2></div><span className={concentrationWarning ? 'degraded' : 'ready'}>{concentrationWarning ? 'Concentration warning' : 'Observed'}</span></header><div className="la-observe-grid"><div><small>Directional names</small><strong>{scores.length}</strong></div><div><small>+99 / -99 scores</small><strong>{extremes}</strong></div><div><small>Average score</small><strong>{average.toFixed(1)}</strong></div><div><small>Median score</small><strong>{median.toFixed(1)}</strong></div><div><small>Standard deviation</small><strong>{deviation.toFixed(1)}</strong></div><div><small>20-day signal median</small><strong>Collecting</strong></div></div><footer>{concentrationWarning ? 'An unusually large share of current research signals is at the score boundary.' : 'No configured score-concentration threshold is currently breached.'} Signal-count anomaly comparison begins after sufficient daily history accumulates.</footer></article>
-  </section>;
+function UnavailableCard({ title, reason }) {
+  return (
+    <div className="la-card la-unavailable">
+      <header><span className="la-kicker">Unavailable</span><h2>{title}</h2></header>
+      <p>{reason}</p>
+    </div>
+  );
 }
 
 export default function LiveAlphaPage() {
@@ -103,14 +92,20 @@ export default function LiveAlphaPage() {
   const [error, setError] = useState('');
   const [selected, setSelected] = useState(null);
   const [strategy, setStrategy] = useState('all');
-  const [sort, setSort] = useState('alpha');
-  const [view, setView] = useState('signals');
+  const [filter, setFilter] = useState('all');
+  const [sort, setSort] = useState('strength');
+  const [search, setSearch] = useState('');
+  const [sector, setSector] = useState('');
+  const [view, setView] = useState('live');
+  const [healthOpen, setHealthOpen] = useState(false);
+  const [behaviorHelp, setBehaviorHelp] = useState(false);
   const [conviction, setConviction] = useState({ run: null, rows: [] });
   const [convictionFilter, setConvictionFilter] = useState('shortlist');
   const [convictionError, setConvictionError] = useState('');
 
   const load = async () => {
-    setLoading(true); setError('');
+    setLoading(true);
+    setError('');
     try {
       if (!API_ORIGIN) throw new Error('AGI backend origin is not configured.');
       const [workspaceResponse, statusResponse] = await Promise.all([
@@ -121,20 +116,29 @@ export default function LiveAlphaPage() {
       setRuntime(await readApiJson(statusResponse, 'Live Alpha runtime'));
       try {
         const convictionResponse = await fetch(`${API_ORIGIN}/api/market/evidence-conviction?limit=500`, { headers: { Accept: 'application/json' } });
-        setConviction(await readApiJson(convictionResponse, 'Conviction ranking')); setConvictionError('');
+        setConviction(await readApiJson(convictionResponse, 'Conviction ranking'));
+        setConvictionError('');
+      } catch (convictionRequestError) {
+        setConvictionError(convictionRequestError.message);
       }
-      catch (convictionRequestError) { setConvictionError(convictionRequestError.message); }
-    } catch (requestError) { setError(requestError.message); }
-    finally { setLoading(false); }
+    } catch (requestError) {
+      setError(requestError.message);
+    } finally {
+      setLoading(false);
+    }
   };
-  useEffect(() => { document.title = 'Live Alpha | Agarwal Global Investments'; load(); const timer = setInterval(load, 60000); return () => clearInterval(timer); }, []);
 
-  const allRows = useMemo(() => buildRows(payload.signals || [], payload.strategy_health || {}), [payload.signals, payload.strategy_health]);
-  const rows = useMemo(() => allRows.filter((row) => strategy === 'all' || row.strategies[strategy]?.direction).sort((a, b) => sort === 'confidence' ? b.quality - a.quality : sort === 'age' ? Date.parse(b.newest) - Date.parse(a.newest) : sort === 'sector' ? a.sector.localeCompare(b.sector) : Math.abs(b.composite) - Math.abs(a.composite)), [allRows, strategy, sort]);
-  const strategyStats = useMemo(() => Object.fromEntries(STRATEGIES.map(([key]) => {
-    const signals = allRows.map((row) => row.strategies[key]).filter((signal) => signal?.direction);
-    return [key, { active: signals.length, high: signals.filter((signal) => Number(signal.signal_quality_score) >= 80).length, strongest: signals.sort((a, b) => Math.abs(signedScore(b)) - Math.abs(signedScore(a)))[0] }];
-  })), [allRows]);
+  useEffect(() => {
+    document.title = 'Live Alpha | Agarwal Global Investments';
+    load();
+    const timer = setInterval(load, 60000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const allRows = useMemo(
+    () => buildCanonicalSignals(payload.signals || [], payload.strategy_health || {}),
+    [payload.signals, payload.strategy_health],
+  );
   const isFresh = payload.freshness?.stale === false;
   const evaluationStatus = runtime?.evaluation_status || (runtime?.status === 'running' ? 'warming_up' : 'stopped');
   const displayStatus = payload.readiness?.status === 'persistence_degraded'
@@ -149,134 +153,761 @@ export default function LiveAlphaPage() {
             ? 'Live research'
             : 'Research standby';
   const liveNow = displayStatus === 'Live research';
-  const highConfidence = isFresh ? allRows.filter((row) => row.confidence === 'HIGH' || row.confidence === 'VALIDATED').length : 0;
+
+  const brief = useMemo(() => buildLiveBrief(allRows, { isFresh }), [allRows, isFresh]);
+  const marketState = useMemo(() => marketStateFromBrief(brief), [brief]);
+  const behaviorRows = useMemo(
+    () => buildMarketBehaviorRows(allRows, payload.strategy_health || {}, isFresh),
+    [allRows, payload.strategy_health, isFresh],
+  );
+  const marketMap = useMemo(() => buildMarketMap(allRows, { isFresh }), [allRows, isFresh]);
+
+  const activeFilter = strategy !== 'all' ? strategy : filter;
+  const radarRows = useMemo(() => {
+    const filtered = filterRadarRows(allRows, activeFilter, { search, sector });
+    return sortRadarRows(filtered, sort === 'strength' ? 'strength' : sort);
+  }, [allRows, activeFilter, search, sector, sort]);
+
+  const confluence = useMemo(
+    () => [...allRows]
+      .filter((row) => row.active.length >= 2)
+      .sort((a, b) => b.active.length - a.active.length || Math.abs(b.composite) - Math.abs(a.composite)),
+    [allRows],
+  );
+  const topConfirmation = confluence[0] || null;
   const selectedRow = selected ? allRows.find((row) => row.symbol === selected) : null;
-  const confluence = [...allRows].filter((row) => row.active.length >= 2).sort((a, b) => b.active.length - a.active.length || Math.abs(b.composite) - Math.abs(a.composite)).slice(0, 3);
   const lastUpdate = payload.freshness?.latest_successful_at
-    ? new Date(payload.freshness.latest_successful_at).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })
+    ? new Date(payload.freshness.latest_successful_at).toLocaleString('en-IN', {
+      timeZone: 'Asia/Kolkata', day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit',
+    })
     : 'No completed run';
 
-  return <div className="la-page">
-    <section className="la-command">
-      <div className="la-title-row">
-        <div><span className="la-eyebrow"><Sparkles size={13} /> AGI research system</span><h1>Live Alpha</h1><p>Independent market behaviours, unified into one institutional signal workspace.</p></div>
-        <div className="la-live-meta"><span className={`la-live-dot ${liveNow ? 'on' : ''}`} />{displayStatus}<button onClick={load} aria-label="Refresh"><RefreshCw size={15} className={loading ? 'spin' : ''} /></button></div>
-      </div>
-      <div className="la-regime">
-        <div><small>Market regime</small><strong>{runtime?.last_evaluation?.regime || 'Awaiting classification'}</strong></div>
-        <div><small>Nifty bias</small><strong>Not yet classified</strong></div>
-        <div><small>Active signals</small><strong>{isFresh ? allRows.filter((row) => row.active.length).length : 0}</strong></div>
-        <div><small>High confidence</small><strong>{highConfidence}</strong></div>
-        <div><small>Last completed run</small><strong>{lastUpdate}</strong></div>
-      </div>
-      <div className="la-strategy-grid">
-        {STRATEGIES.map(([key, label, technical]) => { const stat = strategyStats[key]; const health = payload.strategy_health?.[key]; const effectiveActive = isFresh ? stat?.active || 0 : 0; const score = stat?.strongest ? signedScore(stat.strongest) : 0; const cardStatus = health?.status === 'persistence_failed' ? 'Storage error' : health?.status === 'stale' ? 'Stale' : health?.status === 'never_run' ? 'Not run' : key === 'derivatives_positioning_v1' && runtime?.last_evaluation?.derivatives_status === 'insufficient_derivative_coverage' ? 'Awaiting futures' : liveNow && effectiveActive ? 'Live' : evaluationStatus === 'warming_up' ? 'Warming up' : 'Standby'; return <button key={key} onClick={() => setStrategy(strategy === key ? 'all' : key)} className={`la-strategy-card ${strategy === key ? 'active' : ''}`}>
-          <span className="la-card-status"><i className={cardStatus === 'Live' ? 'ready' : ''} />{cardStatus}</span>
-          <h2>{label}</h2><p>{technical}</p><div className="la-card-count"><strong>{effectiveActive}</strong><span>active<br />{isFresh ? stat?.high || 0 : 0} high confidence</span></div>
-          <footer><span>{isFresh ? 'Strongest' : 'Last stored'}<small>{health?.stored_signals ? `${health.stored_signals} evaluated` : key === 'opening_range_expansion_v1' ? 'Execution unavailable' : 'Not evaluated'}</small></span><b>{stat?.strongest ? `${stat.strongest.symbol} ${scoreText(score)}` : 'No signal'}</b></footer>
-        </button>; })}
-      </div>
-    </section>
+  const onStrategySelect = (engine) => {
+    setStrategy((current) => (current === engine ? 'all' : engine));
+    setFilter('all');
+  };
 
-    <main className="la-main">
-      <nav className="la-view-tabs" aria-label="Live Alpha views">
-        <button className={view === 'signals' ? 'active' : ''} onClick={() => setView('signals')}><Activity size={15} /> Strategy signals</button>
-        <button className={view === 'conviction' ? 'active' : ''} onClick={() => setView('conviction')}><ShieldCheck size={15} /> Conviction</button>
-      </nav>
-      {view === 'signals' ? <>
-      <OpportunitySummary rows={allRows} signals={payload.signals || []} freshness={payload.freshness} runtime={runtime} onSelect={setSelected} />
-      <StrategyHealth payload={payload} runtime={runtime} />
-      <Observability rows={allRows} signals={payload.signals || []} runtime={runtime} />
-      <GrowwResearch groww={payload.groww} />
-      <section className="la-panel la-scanner">
-        <header><div><span className="la-section-kicker">Opportunity map</span><h2>Live Alpha Scanner</h2></div><div className="la-controls"><select value={sort} onChange={(event) => setSort(event.target.value)} aria-label="Sort scanner"><option value="alpha">Alpha score</option><option value="confidence">Confidence</option><option value="sector">Sector</option><option value="age">Signal age</option></select><span>{rows.length} names</span></div></header>
-        {error ? <div className="la-notice error"><AlertCircle size={18} /><div><strong>Workspace unavailable</strong><p>{error}</p></div></div> : null}
-        {!error && !liveNow ? <div className="la-notice"><AlertCircle size={18} /><div><strong>{displayStatus}</strong><p>{payload.readiness?.status === 'persistence_degraded' ? `Signal storage failed for: ${(payload.readiness.degraded_engines || []).map((key) => SHORT[key] || key).join(', ')}.` : evaluationStatus === 'warming_up' ? 'The market feed is connected, but the strategies are collecting enough benchmark history before evaluation.' : payload.freshness?.latest_successful_at ? `Displayed observations are historical. Last completed run: ${lastUpdate}.` : 'No completed strategy run is available yet.'}</p></div></div> : null}
-        {!loading && !error && !rows.length ? <div className="la-empty"><Activity size={28} /><h3>{payload.readiness?.status === 'database_setup_required' ? 'Alpha database setup required' : 'No live research signals yet'}</h3><p>{payload.readiness?.status === 'database_setup_required' ? 'Apply the five Live Alpha Supabase migrations. The workspace will remain safely in standby until its research tables exist.' : 'The workspace is connected, but AGI has not stored a qualifying signal. Complete volume baselines, verify the universe, and enable shadow collection when ready.'}</p></div> : null}
-        {rows.length ? <div className="la-table-wrap"><table><thead><tr><th>Stock</th><th>Alpha</th>{STRATEGIES.map(([key]) => <th key={key}>{SHORT[key]}</th>)}<th>Confidence</th><th>Age</th><th /></tr></thead><tbody>{rows.map((row) => <tr key={row.symbol} onClick={() => setSelected(row.symbol)}><td><strong>{row.symbol}</strong><span>{row.sector}</span></td><td><Score value={row.composite} /></td>{STRATEGIES.map(([key]) => <td key={key}><MiniScore signal={row.strategies[key]} /></td>)}<td><span className={`la-confidence ${row.confidence.toLowerCase()}`}>{row.confidence}</span></td><td>{age(row.newest)}</td><td><ChevronRight size={15} /></td></tr>)}</tbody></table></div> : null}
-      </section>
+  return (
+    <div className="la-page">
+      <header className="la-command">
+        <div className="la-command-left">
+          <h1>AGI Live Alpha</h1>
+          <p>Live market intelligence · Research only</p>
+        </div>
+        <div className="la-command-right">
+          <span className={`la-status-pill ${liveNow ? 'live' : ''}`}>
+            <i />
+            {liveNow ? 'LIVE' : displayStatus}
+          </span>
+          <span className="la-updated">{ageSecondsLabel(payload.freshness?.age_seconds)}</span>
+          <button type="button" className="la-icon-btn" onClick={load} aria-label="Refresh">
+            <RefreshCw size={14} className={loading ? 'spin' : ''} />
+          </button>
+          <button type="button" className="la-ghost-btn" onClick={() => setHealthOpen(true)}>
+            System Health
+          </button>
+        </div>
+      </header>
 
-      <section className="la-lower-grid">
-        <div className="la-panel la-confluence"><header><div><span className="la-section-kicker">Independent confirmation</span><h2>High-Conviction Confluence</h2></div></header>{confluence.length ? confluence.map((row) => <button key={row.symbol} onClick={() => setSelected(row.symbol)}><div><strong>{row.symbol}</strong><span>{row.sector}</span></div><div className="la-model-dots">{STRATEGIES.map(([key]) => <i key={key} className={row.strategies[key]?.direction ? 'on' : ''} title={SHORT[key]} />)}</div><div><b>{row.active.length}/5</b><span>models confirm</span></div><Score value={row.composite} /></button>) : <p className="la-muted-copy">Confluence appears when two or more independent engines flag the same stock.</p>}</div>
-        <div className="la-panel la-events"><header><div><span className="la-section-kicker">Signal lifecycle</span><h2>Recent Events</h2></div></header>{(payload.signals || []).filter((signal) => signal.direction).slice(0, 6).map((signal) => <button key={signal.id} onClick={() => setSelected(signal.symbol)}><Clock3 size={14} /><time>{new Date(signal.as_of).toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit' })}</time><span><b>{signal.symbol}</b> · {String(signal.classification).replaceAll('_', ' ')}</span></button>)}{!(payload.signals || []).some((signal) => signal.direction) ? <p className="la-muted-copy">No signal lifecycle events have been recorded.</p> : null}</div>
-      </section>
-      </> : <ConvictionPanel payload={conviction} error={convictionError} filter={convictionFilter} onFilter={setConvictionFilter} />}
-      <p className="la-disclosure"><ShieldCheck size={14} /> Research signals only. AGI does not generate orders, position sizes, targets, or execution instructions.</p>
-    </main>
-    {selectedRow ? <ResearchDrawer row={selectedRow} onClose={() => setSelected(null)} /> : null}
-  </div>;
+      <main className="la-shell">
+        <nav className="la-tabs" aria-label="Live Alpha views">
+          <button type="button" className={view === 'live' ? 'active' : ''} onClick={() => setView('live')}>
+            <Activity size={14} /> Live Intelligence
+          </button>
+          <button type="button" className={view === 'conviction' ? 'active' : ''} onClick={() => setView('conviction')}>
+            <ShieldCheck size={14} /> Conviction
+          </button>
+        </nav>
+
+        {view === 'live' ? (
+          <>
+            <section className="la-glance" aria-label="Market at a glance">
+              <GlanceCard label="Market state" value={marketState.label} detail={marketState.detail} tone={marketState.tone} />
+              <GlanceCard label="Nifty bias" value="Awaiting model" detail="Not yet classified" tone="neutral" />
+              <GlanceCard
+                label="Signals"
+                value={isFresh ? String(brief.breadth.active) : '0'}
+                detail={`${isFresh ? brief.breadth.high_evidence : 0} high evidence`}
+                tone="info"
+              />
+              <GlanceCard
+                label="Confluence"
+                value={isFresh ? String(brief.breadth.multi) : '0'}
+                detail={`${isFresh ? brief.breadth.conflicts : 0} conflicts`}
+                tone="info"
+              />
+              <GlanceCard
+                label="Evidence"
+                value={brief.evidence_strength}
+                detail={liveNow ? 'Fresh session' : displayStatus}
+                tone={brief.evidence_strength === 'HIGH' ? 'positive' : brief.evidence_strength === 'LOW' ? 'warning' : 'neutral'}
+              />
+            </section>
+
+            <section className="la-row-brief">
+              <LiveBriefCard brief={brief} />
+              <MarketBehaviorCard
+                rows={behaviorRows}
+                active={strategy}
+                onSelect={onStrategySelect}
+                helpOpen={behaviorHelp}
+                onToggleHelp={() => setBehaviorHelp((v) => !v)}
+              />
+            </section>
+
+            <section className="la-row-main">
+              <MarketMapCard map={marketMap} />
+              <UnavailableCard
+                title="Emerging Now"
+                reason="Biggest changes need historical Live Alpha score snapshots. That history is not exposed by the current workspace API, so change tracking stays unavailable rather than estimated."
+              />
+              <OpportunityRadar
+                rows={radarRows}
+                error={error}
+                displayStatus={displayStatus}
+                liveNow={liveNow}
+                loading={loading}
+                payload={payload}
+                lastUpdate={lastUpdate}
+                filter={filter}
+                strategy={strategy}
+                sort={sort}
+                search={search}
+                sector={sector}
+                onFilter={(next) => { setFilter(next); setStrategy('all'); }}
+                onSort={setSort}
+                onSearch={setSearch}
+                onSector={setSector}
+                onSelect={setSelected}
+                onClearStrategy={() => setStrategy('all')}
+              />
+            </section>
+
+            <section className="la-row-lower">
+              <ConfirmationCard row={isFresh ? topConfirmation : null} onOpen={setSelected} />
+              <UnavailableCard
+                title="Signal Evolution"
+                reason="Not enough intraday history is available from the workspace API to plot composite and engine scores over time."
+              />
+              <UnavailableCard
+                title="What Changed"
+                reason="Since/delta comparisons require prior snapshots. Implement snapshot history on the backend before enabling this card."
+              />
+              <EodResearchCard groww={payload.groww} />
+            </section>
+          </>
+        ) : (
+          <ConvictionPanel
+            payload={conviction}
+            error={convictionError}
+            filter={convictionFilter}
+            onFilter={setConvictionFilter}
+          />
+        )}
+
+        <p className="la-disclosure">
+          <ShieldCheck size={13} />
+          Research only. Not investment advice. AGI does not generate orders, position sizes, targets, or execution instructions.
+        </p>
+      </main>
+
+      {selectedRow ? <ResearchDrawer row={selectedRow} onClose={() => setSelected(null)} /> : null}
+      {healthOpen ? (
+        <SystemHealthDrawer
+          payload={payload}
+          runtime={runtime}
+          displayStatus={displayStatus}
+          onClose={() => setHealthOpen(false)}
+        />
+      ) : null}
+    </div>
+  );
+}
+
+function GlanceCard({ label, value, detail, tone = 'neutral' }) {
+  return (
+    <article className={`la-glance-card tone-${tone}`}>
+      <small>{label}</small>
+      <strong>{value}</strong>
+      <span>{detail}</span>
+    </article>
+  );
+}
+
+function LiveBriefCard({ brief }) {
+  return (
+    <article className="la-card la-brief">
+      <header>
+        <div>
+          <span className="la-kicker">AGI intelligence</span>
+          <h2>AGI Live Brief</h2>
+        </div>
+        <time>{brief.time_label}</time>
+      </header>
+      <p className="la-brief-headline">{brief.headline}</p>
+      {brief.sector_line ? <p className="la-brief-sector">{brief.sector_line}</p> : null}
+      {brief.notable?.length ? (
+        <div className="la-notable">
+          <small>Notable now</small>
+          <ul>
+            {brief.notable.map((item) => (
+              <li key={`${item.symbol}-${item.direction}`}>
+                <span className={item.direction === 'up' ? 'up' : 'down'}>{item.direction === 'up' ? '↑' : '↓'} {item.symbol}</span>
+                <em>{item.line}</em>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+      <footer>
+        Evidence strength
+        <b className={`la-pill ${String(brief.evidence_strength).toLowerCase()}`}>{brief.evidence_strength}</b>
+      </footer>
+    </article>
+  );
+}
+
+function MarketBehaviorCard({ rows, active, onSelect, helpOpen, onToggleHelp }) {
+  return (
+    <article className="la-card la-behavior">
+      <header>
+        <div>
+          <span className="la-kicker">Behaviours</span>
+          <h2>Market Behavior Today</h2>
+        </div>
+        <button type="button" className="la-text-btn" onClick={onToggleHelp}>
+          <HelpCircle size={13} /> What do these mean?
+        </button>
+      </header>
+      {helpOpen ? (
+        <div className="la-help">
+          {rows.map((row) => (
+            <div key={row.engine}>
+              <strong>{row.label}</strong>
+              <p>{row.plain}</p>
+              <small>{row.technical}</small>
+            </div>
+          ))}
+        </div>
+      ) : null}
+      <div className="la-behavior-list">
+        {rows.map((row) => (
+          <button
+            key={row.engine}
+            type="button"
+            className={active === row.engine ? 'active' : ''}
+            onClick={() => onSelect(row.engine)}
+          >
+            <span className="la-behavior-name">{row.label}</span>
+            <BehaviorMeter bars={row.intensity.bars} />
+            <span className={`la-intensity ${row.intensity.key}`}>{row.intensity.label}</span>
+            <strong>{row.active}</strong>
+          </button>
+        ))}
+      </div>
+    </article>
+  );
+}
+
+function MarketMapCard({ map }) {
+  if (!map.available) {
+    return <UnavailableCard title="Market Map" reason={map.reason} />;
+  }
+  return (
+    <article className="la-card la-map">
+      <header>
+        <div>
+          <span className="la-kicker">Where activity is happening</span>
+          <h2>Market Map</h2>
+        </div>
+      </header>
+      <div className="la-map-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Sector</th>
+              {map.engines.map((engine) => <th key={engine}>{ENGINE_PLAIN[engine].label}</th>)}
+            </tr>
+          </thead>
+          <tbody>
+            {map.sectors.map((row) => (
+              <tr key={row.sector}>
+                <td>{row.sector}</td>
+                {map.engines.map((engine) => {
+                  const cell = row.cells[engine];
+                  return <td key={engine} className={`cell-${cell.tone}`} title={cell.label}>{cell.mark}</td>;
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <footer className="la-map-legend">
+        <span>+++ Strong</span><span>++ Above normal</span><span>+ Supportive</span><span>− Below normal</span><span>−− Weak</span>
+      </footer>
+    </article>
+  );
+}
+
+function OpportunityRadar({
+  rows, error, displayStatus, liveNow, loading, payload, lastUpdate,
+  filter, strategy, sort, search, sector,
+  onFilter, onSort, onSearch, onSector, onSelect, onClearStrategy,
+}) {
+  const chips = [
+    ['all', 'All'], ['positive', 'Positive'], ['negative', 'Negative'], ['high', 'High Evidence'],
+    ['multi', 'Multi-Factor'], ['conflicting', 'Conflicting'],
+    ...STRATEGIES.map(([engine, label]) => [engine, label]),
+  ];
+  return (
+    <article className="la-card la-radar">
+      <header>
+        <div>
+          <span className="la-kicker">Opportunity map</span>
+          <h2>Live Opportunity Radar</h2>
+          <p>Research prioritisation — not trade recommendations.</p>
+        </div>
+        <span className="la-count">{rows.length} names</span>
+      </header>
+
+      <div className="la-radar-filters">
+        <div className="la-chips">
+          {chips.map(([key, label]) => (
+            <button
+              key={key}
+              type="button"
+              className={(strategy !== 'all' ? strategy : filter) === key ? 'active' : ''}
+              onClick={() => onFilter(key)}
+            >
+              {label}
+            </button>
+          ))}
+          {strategy !== 'all' ? (
+            <button type="button" className="la-clear" onClick={onClearStrategy}>Clear behaviour</button>
+          ) : null}
+        </div>
+        <div className="la-radar-controls">
+          <label className="la-search">
+            <Search size={13} />
+            <input value={search} onChange={(e) => onSearch(e.target.value)} placeholder="Search company" />
+          </label>
+          <input className="la-sector-input" value={sector} onChange={(e) => onSector(e.target.value)} placeholder="Sector" />
+          <select value={sort} onChange={(e) => onSort(e.target.value)} aria-label="Sort radar">
+            <option value="strength">Strength</option>
+            <option value="change">Biggest change</option>
+            <option value="newest">Newest</option>
+            <option value="confirmed">Most confirmed</option>
+          </select>
+        </div>
+      </div>
+
+      {error ? (
+        <div className="la-notice error"><AlertCircle size={16} /><div><strong>Workspace unavailable</strong><p>{error}</p></div></div>
+      ) : null}
+      {!error && !liveNow ? (
+        <div className="la-notice">
+          <AlertCircle size={16} />
+          <div>
+            <strong>{displayStatus}</strong>
+            <p>
+              {payload.readiness?.status === 'persistence_degraded'
+                ? `Signal storage failed for: ${(payload.readiness.degraded_engines || []).map((key) => SHORT[key] || key).join(', ')}.`
+                : evaluationCopy(displayStatus, lastUpdate, payload)}
+            </p>
+          </div>
+        </div>
+      ) : null}
+      {!loading && !error && !rows.length ? (
+        <div className="la-empty">
+          <Activity size={24} />
+          <h3>{payload.readiness?.status === 'database_setup_required' ? 'Alpha database setup required' : 'No live research signals yet'}</h3>
+          <p>
+            {payload.readiness?.status === 'database_setup_required'
+              ? 'Apply the Live Alpha Supabase migrations. The workspace stays in standby until research tables exist.'
+              : 'The workspace is connected, but AGI has not stored a qualifying directional signal for the current filters.'}
+          </p>
+        </div>
+      ) : null}
+
+      {rows.length ? (
+        <div className="la-table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Company</th>
+                <th>Signal</th>
+                <th>Strength</th>
+                <th>Confirmed by</th>
+                <th>Change</th>
+                <th>Main reason</th>
+                <th>Age</th>
+                <th />
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((row) => {
+                const direction = plainSignalDirection(row);
+                return (
+                  <tr key={row.symbol} onClick={() => onSelect(row.symbol)}>
+                    <td>
+                      <strong>{row.symbol}</strong>
+                      <span>{row.sector}</span>
+                    </td>
+                    <td><span className={`la-dir ${direction.key}`}>{direction.key === 'positive' ? '▲' : direction.key === 'negative' ? '▼' : '◆'} {direction.label}</span></td>
+                    <td><StrengthBar value={row.composite} /></td>
+                    <td>{row.active.length} engine{row.active.length === 1 ? '' : 's'}</td>
+                    <td className="la-muted">Unavailable</td>
+                    <td>{radarReason(row)}</td>
+                    <td>{age(row.newest)}</td>
+                    <td><ChevronRight size={14} /></td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      ) : null}
+      <footer className="la-radar-foot">
+        Strength is a research score on a ±99 scale — not a probability and never shown as a percent.
+      </footer>
+    </article>
+  );
+}
+
+function evaluationCopy(displayStatus, lastUpdate, payload) {
+  if (displayStatus === 'Warming up') {
+    return 'The market feed is connected, but strategies are collecting enough benchmark history before evaluation.';
+  }
+  if (payload.freshness?.latest_successful_at) {
+    return `Displayed observations are historical. Last completed run: ${lastUpdate}.`;
+  }
+  return 'No completed strategy run is available yet.';
+}
+
+function ConfirmationCard({ row, onOpen }) {
+  if (!row) {
+    return (
+      <UnavailableCard
+        title="Multi-Engine Confirmation"
+        reason="Confirmation appears when two or more independent Live Alpha engines flag the same company in fresh evidence."
+      />
+    );
+  }
+  const direction = plainSignalDirection(row);
+  return (
+    <article className="la-card la-confirm">
+      <header>
+        <div>
+          <span className="la-kicker">Evidence confirmation</span>
+          <h2>Multi-Engine Confirmation</h2>
+          <p>Multiple independent Live Alpha models are seeing the same company.</p>
+        </div>
+      </header>
+      <button type="button" className="la-confirm-hero" onClick={() => onOpen(row.symbol)}>
+        <div>
+          <strong>{row.symbol}</strong>
+          <span className={`la-dir ${direction.key}`}>{direction.label} structure</span>
+        </div>
+        <div className="la-confirm-score">
+          <b>{Math.abs(row.composite)}</b>
+          <small>/ 99</small>
+        </div>
+      </button>
+      <p className="la-confirm-meta">{row.active.length} of 5 engines supportive · Evidence {evidenceStrengthLabel(row.confidence)} · Age {age(row.newest)}</p>
+      <div className="la-confirm-bars">
+        {STRATEGIES.map(([engine, label]) => {
+          const signal = row.strategies[engine];
+          const score = signedSignalScore(signal);
+          const pct = Math.min(100, Math.abs(score));
+          return (
+            <div key={engine}>
+              <span>{label}</span>
+              <i><b style={{ width: `${pct}%` }} className={score > 0 ? 'up' : score < 0 ? 'down' : ''} /></i>
+              <em>{signal?.direction ? scoreText(score) : 'Neutral'}</em>
+            </div>
+          );
+        })}
+      </div>
+      <footer>Structure · {row.signal_structure}</footer>
+    </article>
+  );
+}
+
+function EodResearchCard({ groww }) {
+  const runs = new Map((groww?.runs || []).map((run) => [run.strategy, run]));
+  const sectorRun = runs.get('agi_sector_rotation_v1');
+  const equityRun = runs.get('agi_equity_opportunity_v1');
+  return (
+    <article className="la-card la-eod">
+      <header>
+        <div>
+          <span className="la-kicker">Scheduled</span>
+          <h2>Scheduled / EOD Research</h2>
+        </div>
+        <span className="la-tip" title="Groww scheduled research is excluded from the five-model Live Alpha composite until comparably validated.">
+          <Info size={12} /> Not in composite
+        </span>
+      </header>
+      <div className="la-eod-grid">
+        <div>
+          <small>Sector Rotation</small>
+          <strong>EOD research</strong>
+          <span>{sectorRun ? `Last update ${age(sectorRun.as_of)}` : 'Awaiting run'}</span>
+        </div>
+        <div>
+          <small>Equity Opportunities</small>
+          <strong>EOD research</strong>
+          <span>{equityRun ? `Last update ${age(equityRun.as_of)}` : 'Awaiting run'}</span>
+        </div>
+      </div>
+      {(groww?.sectors || []).length || (groww?.equities || []).length ? (
+        <div className="la-eod-preview">
+          {(groww?.sectors || []).slice(0, 3).map((row) => (
+            <span key={row.sector}>{row.sector} · {Number(row.score).toFixed(0)}</span>
+          ))}
+          {(groww?.equities || []).slice(0, 3).map((row) => (
+            <span key={row.symbol}>{row.symbol} · {Number(row.score).toFixed(0)}</span>
+          ))}
+        </div>
+      ) : (
+        <p className="la-muted-copy">No scheduled research run has been received yet.</p>
+      )}
+    </article>
+  );
+}
+
+function SystemHealthDrawer({ payload, runtime, displayStatus, onClose }) {
+  const feed = runtime?.feed || {};
+  const health = payload.strategy_health || {};
+  return (
+    <div className="la-drawer-backdrop" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+      <aside className="la-drawer la-health-drawer">
+        <header>
+          <div>
+            <span>Operations</span>
+            <h2>System Health</h2>
+          </div>
+          <button type="button" onClick={onClose} aria-label="Close"><X size={18} /></button>
+        </header>
+        <section>
+          <h3>Overall</h3>
+          <div className="la-health-row"><span>Page status</span><b>{displayStatus}</b></div>
+          <div className="la-health-row"><span>Runtime</span><b>{runtime?.status || 'Unavailable'}</b></div>
+          <div className="la-health-row"><span>Evaluation</span><b>{runtime?.evaluation_status || 'Unavailable'}</b></div>
+          <div className="la-health-row"><span>Readiness</span><b>{payload.readiness?.status || 'Unavailable'}</b></div>
+        </section>
+        <section>
+          <h3>Market feed</h3>
+          <div className="la-health-row"><span>Transport</span><b>{feed.status || 'Unavailable'}</b></div>
+          <div className="la-health-row"><span>Messages</span><b>{Number(feed.messages || 0).toLocaleString('en-IN')}</b></div>
+          <div className="la-health-row"><span>Reconnects</span><b>{feed.reconnects ?? '—'}</b></div>
+          <div className="la-health-row"><span>Decode errors</span><b>{feed.decode_errors ?? '—'}</b></div>
+          <div className="la-health-row"><span>Last heartbeat</span><b>{feed.last_message_at ? age(feed.last_message_at) : '—'}</b></div>
+          <div className="la-health-row"><span>Universe</span><b>{runtime?.universe ? `${runtime.universe.members} / ${runtime.universe.expected_members}` : '—'}</b></div>
+        </section>
+        <section>
+          <h3>Engines</h3>
+          {STRATEGIES.map(([engine, label]) => {
+            const row = health[engine] || {};
+            return (
+              <div className="la-health-row" key={engine}>
+                <span>{label}</span>
+                <b>{row.status || 'never_run'} · {row.stored_signals || 0} stored</b>
+              </div>
+            );
+          })}
+        </section>
+        <section>
+          <h3>Storage & diagnostics</h3>
+          <div className="la-health-row"><span>Degraded engines</span><b>{(payload.readiness?.degraded_engines || []).join(', ') || 'None'}</b></div>
+          <div className="la-health-row"><span>Last successful run</span><b>{payload.freshness?.latest_successful_at || '—'}</b></div>
+          <div className="la-health-row"><span>Last evaluation skip</span><b>{runtime?.last_evaluation?.reason || '—'}</b></div>
+          <div className="la-health-row"><span>Baselines</span><b>{runtime?.baseline_bootstrap?.status || '—'}</b></div>
+          <div className="la-health-row"><span>Rejected out-of-order</span><b>{Number(feed.snapshot_quality?.rejected_out_of_order || 0).toLocaleString('en-IN')}</b></div>
+        </section>
+      </aside>
+    </div>
+  );
+}
+
+function ResearchDrawer({ row, onClose }) {
+  const direction = plainSignalDirection(row);
+  const lead = [...row.active].sort((a, b) => Math.abs(signedSignalScore(b)) - Math.abs(signedSignalScore(a)))[0];
+  const factors = lead?.factor_values || {};
+  const interpretation = row.interpretation;
+  return (
+    <div className="la-drawer-backdrop" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+      <aside className="la-drawer">
+        <header>
+          <div>
+            <span>{row.sector}</span>
+            <h2>{row.symbol}</h2>
+          </div>
+          <button type="button" onClick={onClose} aria-label="Close"><X size={18} /></button>
+        </header>
+
+        <section className="la-drawer-score">
+          <div><small>Structure</small><strong className={`la-dir ${direction.key}`}>{direction.label}</strong></div>
+          <div><small>Strength</small><strong>{Math.abs(row.composite)} / 99</strong></div>
+          <div><small>Evidence</small><strong>{evidenceStrengthLabel(row.confidence)}</strong></div>
+          <div><small>Age</small><strong>{age(row.newest)}</strong></div>
+        </section>
+
+        <section className="la-what">
+          <h3>Why AGI flagged it</h3>
+          <p>{interpretation.summary} Predictive validity has not yet been established.</p>
+        </section>
+
+        <section>
+          <h3>Evidence</h3>
+          <div className="la-component-table">
+            <div><b>Component</b><b>Score</b><b>State</b><b>Role</b></div>
+            {STRATEGIES.map(([engine, label]) => {
+              const signal = row.strategies[engine];
+              const score = signedSignalScore(signal);
+              const role = !signal?.direction
+                ? row.component_states[engine]
+                : interpretation.structure === 'CONFLICTING'
+                  ? (signal.direction === 'positive' ? 'Dominant positive' : 'Dominant negative')
+                  : signal === interpretation.primary_driver
+                    ? 'Primary'
+                    : signal.direction === interpretation.primary_driver?.direction
+                      ? 'Supporting'
+                      : 'Contradicting';
+              return (
+                <div key={engine}>
+                  <span>{label}</span>
+                  <span className={score > 0 ? 'up' : score < 0 ? 'down' : ''}>{signal?.direction ? scoreText(score) : '—'}</span>
+                  <span>{row.component_states[engine]}</span>
+                  <span>{role}</span>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+
+        <section>
+          <h3>What changed</h3>
+          <p className="la-muted-copy">Intraday change history is unavailable until Live Alpha exposes prior score snapshots.</p>
+        </section>
+
+        <section>
+          <h3>Conflicting evidence</h3>
+          {interpretation.structure === 'CONFLICTING' ? (
+            <ul className="la-caveats">
+              {interpretation.contradicting_components.map((signal) => (
+                <li key={signal.engine}>{ENGINE_PLAIN[signal.engine]?.label || signal.engine} · {scoreText(signedSignalScore(signal))}</li>
+              ))}
+            </ul>
+          ) : (
+            <p className="la-muted-copy">No material conflicting engine currently detected.</p>
+          )}
+        </section>
+
+        <section>
+          <h3>What could weaken this signal?</h3>
+          <ul className="la-caveats">
+            {interpretation.weakening_conditions.map((item) => <li key={item}>{item}</li>)}
+          </ul>
+        </section>
+
+        <section>
+          <h3>Data quality</h3>
+          <div className="la-evidence">
+            <div><span>Liquidity checks</span><b>{row.active.every((s) => s.liquidity_ok) ? 'Passed' : 'Review required'}</b></div>
+            <div><span>Freshness</span><b>{age(row.newest)}</b></div>
+            <div><span>Comparable obs.</span><b>{row.samples || 0}</b></div>
+            <div><span>15m residual</span><b>{formatFactor(factors.residual_15m ?? lead?.residual_15m, '%')}</b></div>
+            <div><span>Volume vs expected</span><b>{Number(lead?.volume_ratio || factors.volume_surprise || 0) ? `${Number(lead?.volume_ratio || factors.volume_surprise).toFixed(2)}×` : '—'}</b></div>
+            <div><span>OI change</span><b>{formatFactor(factors.oi_change_15m ?? lead?.oi_change, '%')}</b></div>
+          </div>
+        </section>
+
+        <details className="la-lineage">
+          <summary>Model lineage</summary>
+          <p>Market feed → Instrument mapping → Normalization → Timestamp validation → Liquidity checks → Strategy input → Component score → Composite score → Signal interpretation → Confidence → Immutable research snapshot.</p>
+          <dl>
+            <dt>Data cutoff</dt><dd>{row.data_cutoff}</dd>
+            <dt>Strategy version</dt><dd>{row.strategy_version}</dd>
+            <dt>Model version</dt><dd>{row.model_version}</dd>
+            <dt>Lead signal id</dt><dd>{lead?.id || 'Unavailable'}</dd>
+            <dt>Input fingerprint</dt><dd>{row.data_fingerprint || 'Unavailable'}</dd>
+            <dt>Agreement</dt><dd>{row.agreement}</dd>
+          </dl>
+        </details>
+
+        <section>
+          <h3>Research caveats</h3>
+          <ul className="la-caveats">
+            {interpretation.caveats.map((item) => <li key={item}>{item}</li>)}
+            <li>This is a research signal, not an investment recommendation.</li>
+          </ul>
+        </section>
+      </aside>
+    </div>
+  );
 }
 
 function ConvictionPanel({ payload, error, filter, onFilter }) {
   const rows = filterConvictionRows(payload?.rows || [], filter);
   const counts = payload?.run?.counts || {};
-  const generated = payload?.run?.generated_at ? new Date(payload.run.generated_at).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }) : 'Awaiting first run';
-  return <section className="la-conviction-view">
-    <header className="la-conviction-hero"><div><span className="la-section-kicker">Evidence-confirmed decision layer</span><h2>Conviction Ranking</h2><p>AGI leadership, live confirmation and available research evidence—ranked without turning incomplete signals into investment theses.</p></div><div className="la-conviction-meta"><strong>{payload?.run?.universe_size || 0}</strong><span>ranked names<br />Updated {generated}</span></div></header>
-    <div className="la-conviction-summary">
-      <div><small>High conviction</small><strong>{counts.HIGH_CONVICTION || 0}</strong></div>
-      <div><small>Confirmed</small><strong>{counts.CONFIRMED || 0}</strong></div>
-      <div><small>Watch</small><strong>{counts.WATCH || 0}</strong></div>
-      <div><small>Needs evidence</small><strong>{counts.INCOMPLETE || 0}</strong></div>
-    </div>
-    <div className="la-conviction-toolbar"><div>{CONVICTION_FILTERS.map(([key, label]) => <button key={key} className={filter === key ? 'active' : ''} onClick={() => onFilter(key)}>{label}</button>)}</div><span>Showing {rows.length} names</span></div>
-    {error ? <div className="la-notice error"><AlertCircle size={18} /><div><strong>Conviction ranking unavailable</strong><p>{error}</p></div></div> : null}
-    {!error && !payload?.run ? <div className="la-empty"><ShieldCheck size={28} /><h3>Awaiting the first conviction cycle</h3><p>The ranking will appear after AGI combines stored market and research evidence.</p></div> : null}
-    {!error && payload?.run && !rows.length ? <div className="la-empty"><ShieldCheck size={28} /><h3>{filter === 'shortlist' ? 'No evidence-confirmed shortlist yet' : 'No names in this category'}</h3><p>{filter === 'shortlist' ? 'AGI is correctly withholding conviction while fundamental, valuation or live confirmation is incomplete.' : 'Choose another filter to inspect the current ranking.'}</p>{filter === 'shortlist' ? <button className="la-empty-action" onClick={() => onFilter('incomplete')}>View names needing evidence</button> : null}</div> : null}
-    {rows.length ? <div className="la-conviction-list">{rows.slice(0, filter === 'shortlist' ? 10 : 200).map((row) => <details key={row.symbol} className="la-conviction-card">
-      <summary><span className="la-conviction-rank">#{row.rank}</span><div className="la-conviction-name"><strong>{row.symbol}</strong><span>{row.sector || 'Sector unavailable'}</span></div><div className="la-conviction-score"><strong>{Number(row.conviction_score).toFixed(1)}</strong><span>conviction</span></div><span className={`la-conviction-label ${convictionTone(row.conviction_label)}`}>{readableConvictionLabel(row.conviction_label)}</span><div className="la-evidence-meter"><i style={{ width: `${Math.round(Number(row.evidence_coverage || 0) * 100)}%` }} /><span>{Math.round(Number(row.evidence_coverage || 0) * 100)}% evidence</span></div><ChevronRight className="la-conviction-chevron" size={16} /></summary>
-      <div className="la-conviction-detail"><article><small>AGI thesis</small><p>{row.thesis}</p></article><article><small>Risk and contradiction check</small><p>{row.risk_note}</p></article><div className="la-component-grid">{Object.entries(row.component_scores || {}).map(([key, value]) => <div key={key}><span>{key.replaceAll('_', ' ')}</span><strong>{value == null ? '—' : Number(value).toFixed(0)}</strong></div>)}</div></div>
-    </details>)}</div> : null}
-  </section>;
-}
-
-function Score({ value }) { return <span className={`la-score ${value >= 80 ? 'exceptional up' : value <= -80 ? 'exceptional down' : value > 0 ? 'up' : value < 0 ? 'down' : ''}`}>{scoreText(value)}</span>; }
-function MiniScore({ signal }) { const value = signedScore(signal); return signal?.direction ? <span className={`la-mini-score ${value > 0 ? 'up' : 'down'}`}>{scoreText(value)}</span> : <span className="la-dash">—</span>; }
-
-function GrowwResearch({ groww }) {
-  const runs = new Map((groww?.runs || []).map((run) => [run.strategy, run]));
-  const sectorRun = runs.get('agi_sector_rotation_v1');
-  const equityRun = runs.get('agi_equity_opportunity_v1');
-  const sectors = (groww?.sectors || []).slice(0, 6);
-  const equities = (groww?.equities || []).slice(0, 6);
-  return <section className="la-groww"><header><div><span className="la-section-kicker">AGI · end-of-day research</span><h2>AGI Scheduled Research</h2><p>Independent scheduled research inputs, excluded from the five-model live composite until comparably validated.</p></div><span className="la-groww-badge">Research only</span></header><div className="la-groww-grid">
-    <article className="la-panel"><div className="la-groww-head"><div><small>AGI Sector</small><h3>Sector Rotation</h3></div><RunState run={sectorRun} /></div>{sectors.length ? <table><thead><tr><th>#</th><th>Sector</th><th>Score</th><th>Rotation</th><th>20d relative</th></tr></thead><tbody>{sectors.map((row) => <tr key={row.sector}><td>{row.rank}</td><td><strong>{row.sector}</strong></td><td>{Number(row.score).toFixed(0)}</td><td><span className={`la-rotation ${row.rotation}`}>{row.rotation}</span></td><td className={Number(row.relative_20d) >= 0 ? 'positive' : 'negative'}>{formatFactor(row.relative_20d, '%')}</td></tr>)}</tbody></table> : <GrowwEmpty label="No sector rotation run has been received." />}</article>
-    <article className="la-panel"><div className="la-groww-head"><div><small>Opportunity</small><h3>Equity Opportunities</h3></div><RunState run={equityRun} /></div>{equities.length ? <table><thead><tr><th>#</th><th>Stock</th><th>Score</th><th>Signal</th><th>Volume</th></tr></thead><tbody>{equities.map((row) => <tr key={`${row.symbol}-${row.signal}`}><td>{row.rank || '—'}</td><td><strong>{row.symbol}</strong></td><td>{Number(row.score).toFixed(0)}</td><td><span className={`la-groww-signal ${row.signal}`}>{String(row.signal).replaceAll('_', ' ')}</span></td><td>{Number(row.volume_ratio) ? `${Number(row.volume_ratio).toFixed(2)}×` : '—'}</td></tr>)}</tbody></table> : <GrowwEmpty label="No equity opportunity run has been received." />}</article>
-  </div></section>;
-}
-
-function RunState({ run }) { return <div className="la-run-state"><i className={run ? 'ready' : ''} /><span>{run ? run.status || 'received' : 'standby'}</span>{run ? <time>{age(run.as_of)}</time> : null}</div>; }
-function GrowwEmpty({ label }) { return <div className="la-groww-empty"><Clock3 size={17} /><span>{label}</span></div>; }
-
-function ResearchDrawer({ row, onClose }) {
-  const lead = row.active.sort((a, b) => Math.abs(signedScore(b)) - Math.abs(signedScore(a)))[0];
-  const factors = lead?.factor_values || {};
-  const reason = signalReason(row);
-  const interpretation = row.interpretation;
-  const roleFor = (signal) => !signal?.direction ? row.component_states[signal?.engine] || 'Inactive' : interpretation.structure === 'CONFLICTING' ? signal.direction === 'positive' ? 'Dominant positive' : 'Dominant negative' : signal === interpretation.primary_driver ? 'Primary' : signal.direction === interpretation.primary_driver?.direction ? 'Supporting' : 'Contradicting';
-  return <div className="la-drawer-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}><aside className="la-drawer">
-    <header><div><span>{row.sector}</span><h2>{row.symbol}</h2></div><button onClick={onClose} aria-label="Close research drawer"><X size={20} /></button></header>
-    <section className="la-drawer-score"><div><small>Research Signal Score</small><Score value={row.composite} /></div><div><small>Confidence</small><strong>{row.confidence}</strong></div><div><small>Agreement</small><strong>{row.agreement}</strong></div><div><small>Signal age</small><strong>{age(row.newest)}</strong></div></section>
-    <section className="la-what"><h3>Research summary</h3><p>{interpretation.summary} The signal is operational and fresh, but predictive validity has not yet been established.</p></section>
-    <section><h3>Why flagged</h3><ol className="la-why-list">{interpretation.why_flagged.map((item) => <li key={item}>{item}</li>)}</ol></section>
-    <section><h3>Signal components</h3><div className="la-component-table"><div><b>Component</b><b>Score</b><b>State</b><b>Role</b></div>{STRATEGIES.map(([key, label]) => { const signal = row.strategies[key]; return <div key={key}><span>{label}</span><MiniScore signal={signal} /><span>{row.component_states[key]}</span><span>{roleFor(signal || { engine: key })}</span></div>; })}</div><p className="la-confidence-copy">Composite score follows the existing scoring framework. Component scores are contributing signals and are not necessarily additive.</p></section>
-    <section><h3>Live evidence</h3><div className="la-evidence"><div><span>15m residual</span><b>{formatFactor(factors.residual_15m ?? lead?.residual_15m, '%')}</b></div><div><span>Volume vs expected</span><b>{Number(lead?.volume_ratio || factors.volume_surprise || 0) ? `${Number(lead?.volume_ratio || factors.volume_surprise).toFixed(2)}×` : '—'}</b></div><div><span>Opening range</span><b>{factors.breakout_pct != null ? `${formatFactor(factors.breakout_pct, '%')} break` : '—'}</b></div><div><span>OI change</span><b>{formatFactor(factors.oi_change_15m ?? lead?.oi_change, '%')}</b></div></div></section>
-    <section className="la-what"><h3>Why {row.symbol} surfaced</h3><p>{explain(row)}</p><ul>{reason.supporting_factors.map((factor) => <li key={factor}>{factor}</li>)}{reason.negative_factors.map((factor) => <li key={factor}>Opposing: {factor}</li>)}</ul></section>
-    <section><h3>Data quality</h3><div className="la-evidence"><div><span>Price data</span><b>{lead?.price_at_signal ? 'READY' : 'UNAVAILABLE'}</b></div><div><span>Volume data</span><b>{lead?.volume_ratio != null || factors.volume_surprise != null ? 'READY' : 'NOT REQUIRED'}</b></div><div><span>Derivative data</span><b>{row.strategies.derivatives_positioning_v1 ? 'READY' : 'NOT REQUIRED'}</b></div><div><span>Liquidity checks</span><b>{reason.data_quality}</b></div><div><span>Timestamp</span><b>{new Date(row.newest).toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata' })} IST</b></div></div></section>
-    <section><h3>Confidence basis</h3><p className="la-confidence-copy">{reason.confidence_reason}. Confidence is model-state confidence, not probability of positive future return.</p></section>
-    <section><h3>Historical validation</h3>{row.samples ? <div className="la-validation"><div><span>Comparable signals</span><b>{row.samples.toLocaleString('en-IN')}</b></div><div><span>Empirical confidence</span><b>{row.quality}%</b></div></div> : <div className="la-notice"><BarChart3 size={18} /><div><strong>Collecting evidence</strong><p>Signal quality is live, but empirical confidence remains unvalidated until enough forward outcomes are complete.</p></div></div>}</section>
-    <section><h3>Research status</h3><div className="la-evidence"><div><span>Lifecycle</span><b>Operational</b></div><div><span>Validation</span><b>Research Signal — validation pending</b></div><div><span>Permitted use</span><b>Research prioritisation</b></div><div><span>Execution</span><b>Blocked</b></div><div><span>Signal ID</span><b>{lead?.id || 'Unavailable'}</b></div><div><span>Data cutoff</span><b>{row.newest}</b></div></div></section>
-    <section className="la-condition-grid"><div><h3>What would strengthen</h3><ul>{interpretation.strengthening_conditions.map((item) => <li key={item}>{item}</li>)}</ul></div><div><h3>What could weaken</h3><ul>{interpretation.weakening_conditions.map((item) => <li key={item}>{item}</li>)}</ul></div></section>
-    <section><h3>Research caveats</h3><ul className="la-caveats">{interpretation.caveats.map((item) => <li key={item}>{item}</li>)}<li>This is a research signal, not an investment recommendation.</li><li>Transport health does not independently establish input completeness.</li></ul></section>
-    <details className="la-lineage"><summary>Data lineage</summary><p>Market feed → Instrument mapping → Normalization → Timestamp validation → Liquidity checks → Strategy input → Component score → Composite score → Signal interpretation → Confidence → Immutable research snapshot.</p><dl><dt>Data cutoff</dt><dd>{row.data_cutoff}</dd><dt>Strategy version</dt><dd>{row.strategy_version}</dd><dt>Model version</dt><dd>{row.model_version}</dd><dt>Input fingerprint</dt><dd>{row.data_fingerprint || 'Unavailable'}</dd></dl></details>
-    <section className="la-what"><h3>Research interpretation</h3><p>{explain(row)}</p></section>
-  </aside></div>;
-}
-
-function explain(row) {
-  const reason = signalReason(row);
-  const names = reason.strategy_sources;
-  const direction = row.composite >= 0 ? 'positive' : 'negative';
-  if (!names.length) return 'No active directional research classification is present.';
-  return `${row.symbol} has a ${direction} research signal score of ${scoreText(row.composite)}. The primary measurable driver is ${reason.primary_driver}. ${names.join(', ')} ${names.length === 1 ? 'is' : 'are'} contributing evidence and component agreement is ${row.agreement.toLowerCase()}. ${row.samples ? 'Comparable completed outcomes are available.' : 'The signal is operational but has not accumulated enough outcomes for empirical validation.'}`;
+  const generated = payload?.run?.generated_at
+    ? new Date(payload.run.generated_at).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })
+    : 'Awaiting first run';
+  return (
+    <section className="la-conviction-view">
+      <header className="la-conviction-hero">
+        <div>
+          <span className="la-kicker">Evidence-confirmed decision layer</span>
+          <h2>Conviction Ranking</h2>
+          <p>Separate from Live Alpha composite. Combines leadership, live confirmation and research evidence without inventing theses from incomplete signals.</p>
+        </div>
+        <div className="la-conviction-meta">
+          <strong>{payload?.run?.universe_size || 0}</strong>
+          <span>ranked names<br />Updated {generated}</span>
+        </div>
+      </header>
+      <div className="la-conviction-summary">
+        <div><small>High conviction</small><strong>{counts.HIGH_CONVICTION || 0}</strong></div>
+        <div><small>Confirmed</small><strong>{counts.CONFIRMED || 0}</strong></div>
+        <div><small>Watch</small><strong>{counts.WATCH || 0}</strong></div>
+        <div><small>Needs evidence</small><strong>{counts.INCOMPLETE || 0}</strong></div>
+      </div>
+      <div className="la-conviction-toolbar">
+        <div>{CONVICTION_FILTERS.map(([key, label]) => (
+          <button key={key} type="button" className={filter === key ? 'active' : ''} onClick={() => onFilter(key)}>{label}</button>
+        ))}</div>
+        <span>Showing {rows.length} names</span>
+      </div>
+      {error ? <div className="la-notice error"><AlertCircle size={16} /><div><strong>Conviction ranking unavailable</strong><p>{error}</p></div></div> : null}
+      {!error && !payload?.run ? (
+        <div className="la-empty"><ShieldCheck size={24} /><h3>Awaiting the first conviction cycle</h3><p>The ranking appears after AGI combines stored market and research evidence.</p></div>
+      ) : null}
+      {rows.length ? (
+        <div className="la-conviction-list">
+          {rows.slice(0, filter === 'shortlist' ? 10 : 200).map((row) => (
+            <details key={row.symbol} className="la-conviction-card">
+              <summary>
+                <span className="la-conviction-rank">#{row.rank}</span>
+                <div className="la-conviction-name"><strong>{row.symbol}</strong><span>{row.sector || 'Sector unavailable'}</span></div>
+                <div className="la-conviction-score"><strong>{Number(row.conviction_score).toFixed(1)}</strong><span>conviction</span></div>
+                <span className={`la-conviction-label ${convictionTone(row.conviction_label)}`}>{readableConvictionLabel(row.conviction_label)}</span>
+                <div className="la-evidence-meter"><i style={{ width: `${Math.round(Number(row.evidence_coverage || 0) * 100)}%` }} /><span>{Math.round(Number(row.evidence_coverage || 0) * 100)}% evidence</span></div>
+                <ChevronRight className="la-conviction-chevron" size={16} />
+              </summary>
+              <div className="la-conviction-detail">
+                <article><small>AGI thesis</small><p>{row.thesis}</p></article>
+                <article><small>Risk and contradiction check</small><p>{row.risk_note}</p></article>
+                <div className="la-component-grid">
+                  {Object.entries(row.component_scores || {}).map(([key, value]) => (
+                    <div key={key}><span>{key.replaceAll('_', ' ')}</span><strong>{value == null ? '—' : Number(value).toFixed(0)}</strong></div>
+                  ))}
+                </div>
+              </div>
+            </details>
+          ))}
+        </div>
+      ) : null}
+    </section>
+  );
 }
