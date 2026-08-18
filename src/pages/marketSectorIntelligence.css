@@ -428,6 +428,14 @@ body.agi-terminal-route #root > header .market-ticker-chip:hover { background: #
 body.agi-terminal-route #root > header .market-ticker-chip span:first-child { color: #8c97a5 !important; }
 body.agi-terminal-route #root > header .market-ticker-chip span:nth-child(2) > span:first-child,
 body.agi-terminal-route #root > header a { color: #f2f4f7 !important; }
+/* Header owns its route mode so the white public shell cannot flash above the terminal. */
+.agi-terminal-header .group > span > span:first-child { color: #f2f4f7 !important; }
+.agi-terminal-header .group > span > span:last-child { color: #8c97a5 !important; }
+.agi-terminal-header .market-ticker-chip { border-color: #2a313b !important; background: #101318 !important; }
+.agi-terminal-header .market-ticker-chip:hover { background: #171c23 !important; }
+.agi-terminal-header .market-ticker-chip span:first-child { color: #8c97a5 !important; }
+.agi-terminal-header .market-ticker-chip span:nth-child(2) > span:first-child { color: #f2f4f7 !important; }
+.agi-terminal-header .market-ticker-viewport + a { color: #d8dee7 !important; }
 
 .msi-header { position: static; padding: .55rem max(20px, calc((100vw - 1580px) / 2)); }
 .msi-head-row { align-items: center; min-height: 58px; }

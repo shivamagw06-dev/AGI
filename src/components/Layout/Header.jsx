@@ -40,6 +40,7 @@ export default function Header() {
   const [handle, setHandle] = useState('');
   const userIsAdmin = isAdmin(user);
   const firstName = firstNameFromUser(user);
+  const terminalMode = location.pathname === '/market-sector-intelligence';
 
   useEffect(() => {
     if (!user) {
@@ -119,8 +120,8 @@ export default function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-50 bg-white shadow-sm">
-      <div className="border-b border-[#dddddd]">
+    <header className={`agi-public-header sticky top-0 z-50 ${terminalMode ? 'agi-terminal-header bg-[#0b0d10] shadow-none' : 'bg-white shadow-sm'}`}>
+      <div className={terminalMode ? 'border-b border-[#2a313b]' : 'border-b border-[#dddddd]'}>
         <div className="max-w-[1800px] mx-auto px-4 sm:px-6">
           <div className="flex items-center justify-between h-[58px] gap-4">
             <Logo />
@@ -133,8 +134,8 @@ export default function Header() {
                   onClick={() => go(item.path)}
                   className={`h-full px-2.5 xl:px-3 text-[13px] font-medium border-b-2 transition-colors whitespace-nowrap ${
                     isActive(item.path)
-                      ? 'text-[#111111] border-[#111111]'
-                      : 'text-[#444444] border-transparent hover:text-[#111111] hover:border-[#cccccc]'
+                      ? (terminalMode ? 'text-white border-[#ffa000]' : 'text-[#111111] border-[#111111]')
+                      : (terminalMode ? 'text-[#aab2bd] border-transparent hover:text-white hover:border-[#4b5563]' : 'text-[#444444] border-transparent hover:text-[#111111] hover:border-[#cccccc]')
                   }`}
                 >
                   {item.name}
@@ -146,7 +147,7 @@ export default function Header() {
               <button
                 type="button"
                 onClick={() => setSearchOpen(true)}
-                className="p-2 text-[#111111] hover:bg-[#f5f5f5] rounded-sm"
+                className={terminalMode ? 'p-2 text-[#d8dee7] hover:bg-[#171c23] rounded-sm' : 'p-2 text-[#111111] hover:bg-[#f5f5f5] rounded-sm'}
                 aria-label="Universal search"
               >
                 <Search className="w-5 h-5" />
@@ -157,7 +158,7 @@ export default function Header() {
                   <button
                     type="button"
                     onClick={() => go('/workspace')}
-                    className="hidden sm:inline-flex p-2 text-[#111111] hover:bg-[#f5f5f5]"
+                    className={terminalMode ? 'hidden sm:inline-flex p-2 text-[#d8dee7] hover:bg-[#171c23]' : 'hidden sm:inline-flex p-2 text-[#111111] hover:bg-[#f5f5f5]'}
                     aria-label="Notifications"
                     title="Notifications"
                   >
