@@ -67,6 +67,7 @@ export default function ArticleEditor() {
   const [status, setStatus] = useState('draft');
   const [saving, setSaving] = useState(false);
   const [notifying, setNotifying] = useState(false);
+  const [notifyOnPublish, setNotifyOnPublish] = useState(true);
   const [lastSaved, setLastSaved] = useState(null);
   const [error, setError] = useState('');
   const [previewOpen, setPreviewOpen] = useState(false);
@@ -494,7 +495,7 @@ export default function ArticleEditor() {
         }
 
         let notifyResult = null;
-        if (publishStatus === 'published') {
+        if (publishStatus === 'published' && notifyOnPublish) {
           const html = editor.getHTML();
           notifyResult = await notifySubscribers({
             title: title.trim(),
@@ -507,7 +508,9 @@ export default function ArticleEditor() {
         }
 
         if (!silent && publishStatus === 'published' && !stayInEditor) {
-          if (notifyResult?.ok && notifyResult?.sent > 0) {
+          if (!notifyOnPublish) {
+            alert('Published to website. Subscribers were not emailed.');
+          } else if (notifyResult?.ok && notifyResult?.sent > 0) {
             alert(
               `Published to ${notifyResult.letter || 'letter'}. Notified ${notifyResult.sent} subscriber${
                 notifyResult.sent === 1 ? '' : 's'
@@ -535,8 +538,9 @@ export default function ArticleEditor() {
             );
           }
         } else if (!silent && ingest && publishStatus === 'published' && stayInEditor) {
-          const notifyNote =
-            notifyResult?.ok && notifyResult?.sent > 0
+          const notifyNote = !notifyOnPublish
+            ? ' Subscribers were not emailed.'
+            : notifyResult?.ok && notifyResult?.sent > 0
               ? ` Notified ${notifyResult.sent} subscribers.`
               : '';
           const ingestNote = ingestError
@@ -561,7 +565,7 @@ export default function ArticleEditor() {
         setSaving(false);
       }
     },
-    [editor, slug, slugManual, title, draftId, buildPayload, navigate, section, tagsInput]
+    [editor, slug, slugManual, title, draftId, buildPayload, navigate, section, tagsInput, notifyOnPublish, coverUrl]
   );
 
   const notifyNow = useCallback(async () => {
@@ -665,12 +669,28 @@ export default function ArticleEditor() {
           <Button variant="outline" size="sm" onClick={() => persist('draft')} disabled={saving}>
             <Save size={15} className="mr-1.5" /> Save Draft
           </Button>
+          <label
+            className="flex items-center gap-2 rounded-md border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-700"
+            title="If checked, Publish to Website also emails active subscribers"
+          >
+            <input
+              type="checkbox"
+              className="h-3.5 w-3.5 accent-blue-700"
+              checked={notifyOnPublish}
+              onChange={(event) => setNotifyOnPublish(event.target.checked)}
+            />
+            Notify subscribers
+          </label>
           <Button
             size="sm"
             className="bg-blue-700 hover:bg-blue-800"
             onClick={() => persist('published', { ingest: true })}
             disabled={saving || !title.trim()}
-            title="Goes live on the website and is also studied by AGI Intelligence"
+            title={
+              notifyOnPublish
+                ? 'Goes live on the website, emails subscribers, and is studied by AGI Intelligence'
+                : 'Goes live on the website without emailing subscribers'
+            }
           >
             <Send size={15} className="mr-1.5" /> Publish to Website
           </Button>
@@ -707,7 +727,11 @@ export default function ArticleEditor() {
       <div className="mx-6 mt-3 grid gap-2 md:grid-cols-2 text-xs text-slate-600">
         <div className="rounded-lg border border-blue-100 bg-blue-50 px-3 py-2">
           <p className="font-semibold text-blue-800">1) Publish to Website</p>
-          <p>Daily public articles (about 3–4/day). Live on Research pages and also ingested for Ask AGI.</p>
+          <p>
+            Daily public articles (about 3–4/day). Live on Research pages and also ingested for Ask AGI.
+            Uncheck <span className="font-semibold">Notify subscribers</span> to publish without emailing, or use
+            Notify Subscribers later.
+          </p>
         </div>
         <div className="rounded-lg border border-violet-100 bg-violet-50 px-3 py-2">
           <p className="font-semibold text-violet-800">2) Send to Intelligence</p>
