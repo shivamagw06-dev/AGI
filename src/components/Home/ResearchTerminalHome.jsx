@@ -12,6 +12,7 @@ import {
 import AskAgiBar from '@/components/Home/AskAgiBar';
 import NewsletterSection from '@/components/Home/NewsletterSection';
 import usePublishedArticles from '@/hooks/usePublishedArticles';
+import useHomepageLatest from '@/hooks/useHomepageLatest';
 import { formatTimeAgo } from '@/lib/articleUtils';
 import {
   RESEARCH_DESK_ALL,
@@ -229,6 +230,43 @@ function BriefCard({ title, description, href, cta }) {
   );
 }
 
+function LatestRail({ articles, loading }) {
+  return (
+    <aside className="min-w-0 border border-[#e4e7ec] bg-white xl:self-start" aria-label="Latest selected headlines">
+      <div className="flex items-center justify-between border-b border-[#e4e7ec] px-5 py-4">
+        <h2 className="text-2xl font-bold tracking-tight text-[#e1251b]">Latest</h2>
+        <span className="rounded-full bg-[#111] px-3 py-1 text-xs font-semibold text-white">AGI</span>
+      </div>
+      <div className="px-5">
+        {loading ? (
+          <div className="space-y-4 py-5">
+            {[0, 1, 2, 3].map((item) => <div key={item} className="h-14 animate-pulse bg-[#f2f3f5]" />)}
+          </div>
+        ) : articles.length ? (
+          articles.map((article) => {
+            const meta = articleMeta(article);
+            return (
+              <article key={article.id || article.slug} className="grid grid-cols-[68px_minmax(0,1fr)] gap-3 border-b border-[#eceef2] py-5 last:border-b-0">
+                <time className="pt-0.5 text-sm font-semibold text-[#e1251b]">{meta.published}</time>
+                <h3 className="font-serif text-lg font-bold leading-snug text-[#111]">
+                  <Link to={articleHref(article)} className="hover:underline underline-offset-4">{article.title}</Link>
+                </h3>
+              </article>
+            );
+          })
+        ) : (
+          <p className="px-1 py-8 text-sm leading-relaxed text-[#767676]">
+            Select “Show in Homepage Latest” when publishing an article in the CMS.
+          </p>
+        )}
+      </div>
+      <Link to="/research" className="block border-t border-[#e4e7ec] px-5 py-4 text-right text-sm font-semibold hover:underline">
+        See all research →
+      </Link>
+    </aside>
+  );
+}
+
 export default function ResearchTerminalHome() {
   const navigate = useNavigate();
   const [activeDesk, setActiveDesk] = useState(RESEARCH_DESK_ALL);
@@ -241,6 +279,7 @@ export default function ResearchTerminalHome() {
     section: null,
     sections: deskSections,
   });
+  const { articles: latestArticles, loading: latestLoading } = useHomepageLatest(7);
 
   const articles = useMemo(() => {
     if (activeDesk === RESEARCH_DESK_ALL) return fetchedArticles;
@@ -369,6 +408,8 @@ export default function ResearchTerminalHome() {
             </Link>
           </div>
 
+          <div className="mt-8 grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_380px] xl:items-start">
+          <div className="min-w-0">
           {loading ? (
             <div className="mt-8 grid grid-cols-1 gap-5 lg:grid-cols-[1.6fr_1fr]">
               <div className="h-[340px] animate-pulse rounded-xl border border-[#e8eaee] bg-[#f7f8fa]" />
@@ -389,7 +430,7 @@ export default function ResearchTerminalHome() {
             </div>
           ) : (
             <>
-              <div className="mt-8 grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1.65fr)_minmax(0,1fr)] lg:items-stretch">
+              <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1.65fr)_minmax(0,1fr)] lg:items-stretch">
                 <FeaturedArticle article={featured} />
                 <div className="min-w-0 rounded-xl border border-[#e4e7ec] bg-white px-5 py-4 md:px-6">
                   <p className="mb-1 text-[11px] font-bold uppercase tracking-[0.14em] text-[#6b7280]">
@@ -412,6 +453,9 @@ export default function ResearchTerminalHome() {
               ) : null}
             </>
           )}
+          </div>
+          <LatestRail articles={latestArticles} loading={latestLoading} />
+          </div>
         </div>
       </section>
 

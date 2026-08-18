@@ -23,6 +23,7 @@ import { CustomImage } from '@/extensions/CustomImage';
 import { IframeEmbed } from '@/extensions/IframeEmbed';
 import {
   generateUniqueSlug,
+  HOMEPAGE_LATEST_TAG,
   htmlToExcerpt,
   readingTime,
   toSlug,
@@ -60,6 +61,7 @@ export default function ArticleEditor() {
   const [metaDescription, setMetaDescription] = useState('');
   const [section, setSection] = useState('Indian Market');
   const [tagsInput, setTagsInput] = useState('');
+  const [showInLatest, setShowInLatest] = useState(false);
   const [coverUrl, setCoverUrl] = useState('');
   const [draftId, setDraftId] = useState(null);
   const [status, setStatus] = useState('draft');
@@ -152,7 +154,9 @@ export default function ArticleEditor() {
       setMetaDescription(data.meta_description || data.excerpt || '');
       setSection(data.section || '');
       setCoverUrl(data.cover_url || '');
-      setTagsInput(Array.isArray(data.tags) ? data.tags.join(', ') : '');
+      const loadedTags = Array.isArray(data.tags) ? data.tags : [];
+      setTagsInput(loadedTags.filter((tag) => tag !== HOMEPAGE_LATEST_TAG).join(', '));
+      setShowInLatest(loadedTags.includes(HOMEPAGE_LATEST_TAG));
       setStatus(data.status || 'draft');
 
       const html = data.content_md || data.content || '';
@@ -294,6 +298,7 @@ export default function ArticleEditor() {
     (publishStatus) => {
       const html = editor?.getHTML() || '';
       const tags = tagsInput.split(',').map((t) => t.trim()).filter(Boolean);
+      if (showInLatest && publishStatus !== 'intelligence') tags.push(HOMEPAGE_LATEST_TAG);
       const excerpt = metaDescription.trim() || htmlToExcerpt(html, 320);
       const safeSection = normalizeArticleSection(section, {
         forIntelligence: publishStatus === 'intelligence',
@@ -331,7 +336,7 @@ export default function ArticleEditor() {
 
       return payload;
     },
-    [editor, tagsInput, metaDescription, user, title, slug, section, coverUrl, draftId, originalAuthorId]
+    [editor, tagsInput, showInLatest, metaDescription, user, title, slug, section, coverUrl, draftId, originalAuthorId]
   );
 
   const persist = useCallback(
@@ -787,6 +792,26 @@ export default function ArticleEditor() {
               Choose which homepage desk this research belongs to.
             </p>
           </div>
+
+          <label className="block rounded-lg border border-red-200 bg-red-50 p-3 cursor-pointer">
+            <span className="flex items-start gap-3">
+              <input
+                type="checkbox"
+                className="mt-0.5 h-4 w-4 accent-red-600"
+                checked={showInLatest}
+                onChange={(e) => {
+                  setShowInLatest(e.target.checked);
+                  dirtyRef.current = true;
+                }}
+              />
+              <span>
+                <span className="block text-sm font-semibold text-red-800">Show in Homepage Latest</span>
+                <span className="mt-1 block text-xs leading-relaxed text-red-700/80">
+                  Adds this headline to the manually curated Latest rail after it is published.
+                </span>
+              </span>
+            </span>
+          </label>
 
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">URL Slug</label>

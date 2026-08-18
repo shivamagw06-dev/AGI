@@ -1,5 +1,7 @@
 import { supabase } from '@/lib/supabaseClient';
 
+export const HOMEPAGE_LATEST_TAG = 'homepage:latest';
+
 export function toSlug(str = '') {
   return (str || '')
     .toLowerCase()
