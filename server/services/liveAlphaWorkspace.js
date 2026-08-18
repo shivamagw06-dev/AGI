@@ -6,6 +6,13 @@ const ENGINE_LABELS = Object.freeze({
   derivatives_positioning_v1: 'Positioning',
 });
 
+const SIGNAL_SELECT = [
+  'id', 'run_id', 'symbol', 'instrument_key', 'sector', 'rank', 'classification', 'alpha_z',
+  'signal_quality_score', 'signal_quality_label', 'empirical_confidence_score', 'comparable_observations',
+  'liquidity_ok', 'factor_values', 'direction', 'market_regime', 'price_at_signal', 'nifty_at_signal',
+  'sector_at_signal', 'volume_ratio', 'vwap_deviation', 'oi_change', 'created_at',
+].join(',');
+
 function credentials() {
   const url = String(process.env.SUPABASE_URL || '').trim().replace(/\/$/, '');
   const key = String(process.env.SUPABASE_SERVICE_ROLE_KEY || '').trim();
@@ -26,10 +33,36 @@ async function query(table, search, fetchImpl) {
   return response.json();
 }
 
+/**
+ * Load the newest run for every engine, then load that run's signals in
+ * separate requests. A single global signal query with one limit is capped by
+ * Supabase (~1000 rows), which can crowd newer engines and falsely mark older
+ * healthy runs as orphaned / persistence_failed.
+ */
+async function loadLatestRunsByEngine(fetchImpl) {
+  const batches = await Promise.all(Object.keys(ENGINE_LABELS).map((engine) => query(
+    'live_alpha_runs',
+    `select=id,engine,as_of,market_session,universe_size,diagnostics&engine=eq.${encodeURIComponent(engine)}&order=as_of.desc&limit=1`,
+    fetchImpl,
+  )));
+  return batches.flat().filter(Boolean);
+}
+
+async function loadSignalsForRuns(runs, { fetchImpl, limit }) {
+  const perRunLimit = Math.max(1, Math.min(1000, Number(limit) || 500));
+  if (!runs.length) return [];
+  const batches = await Promise.all(runs.map((run) => query(
+    'live_alpha_signals',
+    `select=${SIGNAL_SELECT}&run_id=eq.${encodeURIComponent(run.id)}&order=created_at.desc&limit=${perRunLimit}`,
+    fetchImpl,
+  )));
+  return batches.flat();
+}
+
 export async function getLiveAlphaWorkspace({ fetchImpl = globalThis.fetch, limit = 500, now = new Date() } = {}) {
   let runs;
   try {
-    runs = await query('live_alpha_runs', `select=id,engine,as_of,market_session,universe_size,diagnostics&order=as_of.desc&limit=25`, fetchImpl);
+    runs = await loadLatestRunsByEngine(fetchImpl);
   } catch (error) {
     if (error.status !== 404) throw error;
     return {
@@ -40,16 +73,8 @@ export async function getLiveAlphaWorkspace({ fetchImpl = globalThis.fetch, limi
   }
   const latestRunByEngine = new Map();
   for (const run of runs) if (!latestRunByEngine.has(run.engine)) latestRunByEngine.set(run.engine, run);
-  // Load complete signal sets for the latest run of every engine. A single
-  // global cap lets the first large runs crowd later engines out of the
-  // workspace response, which falsely makes healthy runs look orphaned.
-  const runIds = [...latestRunByEngine.values()].map((run) => run.id);
-  const signalLimit = Math.min(2500, Math.max(1, limit) * Object.keys(ENGINE_LABELS).length);
-  const signals = runIds.length ? await query(
-    'live_alpha_signals',
-    `select=id,run_id,symbol,instrument_key,sector,rank,classification,alpha_z,signal_quality_score,signal_quality_label,empirical_confidence_score,comparable_observations,liquidity_ok,factor_values,direction,market_regime,price_at_signal,nifty_at_signal,sector_at_signal,volume_ratio,vwap_deviation,oi_change,created_at&run_id=in.(${runIds.join(',')})&order=created_at.desc&limit=${signalLimit}`,
-    fetchImpl,
-  ) : [];
+  const latestRuns = [...latestRunByEngine.values()];
+  const signals = await loadSignalsForRuns(latestRuns, { fetchImpl, limit });
   const runById = new Map(runs.map((run) => [run.id, run]));
   const signalCountByRun = new Map();
   for (const signal of signals) signalCountByRun.set(signal.run_id, (signalCountByRun.get(signal.run_id) || 0) + 1);
@@ -74,14 +99,14 @@ export async function getLiveAlphaWorkspace({ fetchImpl = globalThis.fetch, limi
     const growwRuns = await query('research_strategy_runs', 'select=id,strategy,run_id,as_of,received_at,status,coverage,error_count&order=as_of.desc&limit=10', fetchImpl);
     const latestByStrategy = new Map();
     for (const run of growwRuns) if (!latestByStrategy.has(run.strategy)) latestByStrategy.set(run.strategy, run);
-    const latestRuns = [...latestByStrategy.values()];
+    const latestGrowwRuns = [...latestByStrategy.values()];
     const sectorRun = latestByStrategy.get('agi_sector_rotation_v1');
     const equityRun = latestByStrategy.get('agi_equity_opportunity_v1');
     const [sectors, equities] = await Promise.all([
       sectorRun ? query('sector_rotation_signals', `select=sector,rank,score,return_5d,return_20d,relative_20d,relative_60d,rotation,risk,factors&strategy_run_id=eq.${sectorRun.id}&order=rank.asc&limit=20`, fetchImpl) : [],
       equityRun ? query('equity_opportunity_signals', `select=symbol,signal,rank,score,return_20d,return_60d,relative_20d,relative_60d,volume_ratio,trend,volume_confirmation,risk,reasons,factors&strategy_run_id=eq.${equityRun.id}&signal=eq.research_candidate&order=score.desc&limit=500`, fetchImpl) : [],
     ]);
-    groww = { readiness: 'ready', runs: latestRuns, sectors, equities };
+    groww = { readiness: 'ready', runs: latestGrowwRuns, sectors, equities };
   } catch (error) {
     if (error.status !== 404) throw error;
     groww = { readiness: 'database_setup_required', runs: [], sectors: [], equities: [] };
