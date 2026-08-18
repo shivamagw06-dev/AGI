@@ -205,6 +205,11 @@ def _map_warehouse_row(
     r1 = return_1y
     if r1 is None:
         r1 = _num(legacy_consensus.get("return_1y"))
+    if r1 is None:
+        # The factor warehouse already carries a bounded 12-minus-1 momentum
+        # observation. Use it as the lightweight return context when the
+        # expensive daily-history join is intentionally disabled.
+        r1 = _num(factors.get("momentum_12_1_pct"))
 
     consensus = {
         "upside": upside,
@@ -381,7 +386,8 @@ def _universe_from_legacy() -> list[dict[str, Any]]:
     return out
 
 
-_UNIVERSE_CACHE: dict[str, Any] = {"at": 0.0, "rows": None}
+_UNIVERSE_CACHE: dict[str, Any] = {"at": 0.0, "rows": None, "source_id": None}
+_UNIVERSE_LOCK = __import__("threading").Lock()
 # Keep the joined universe warm across page opens + keep-warm pings.
 _UNIVERSE_TTL_SEC = 300.0
 
@@ -396,16 +402,22 @@ def _universe() -> list[dict[str, Any]]:
     import time
 
     now = time.time()
+    source_id = (id(_universe_from_warehouse), id(_universe_from_legacy))
     cached = _UNIVERSE_CACHE.get("rows")
-    if cached is not None and (now - float(_UNIVERSE_CACHE.get("at") or 0.0)) < _UNIVERSE_TTL_SEC:
+    if cached is not None and _UNIVERSE_CACHE.get("source_id") == source_id and (now - float(_UNIVERSE_CACHE.get("at") or 0.0)) < _UNIVERSE_TTL_SEC:
         return cached
 
-    rows = _universe_from_warehouse()
-    if not rows:
-        rows = _universe_from_legacy()
-    _UNIVERSE_CACHE["at"] = now
-    _UNIVERSE_CACHE["rows"] = rows
-    return rows
+    with _UNIVERSE_LOCK:
+        cached = _UNIVERSE_CACHE.get("rows")
+        if cached is not None and _UNIVERSE_CACHE.get("source_id") == source_id and (time.time() - float(_UNIVERSE_CACHE.get("at") or 0.0)) < _UNIVERSE_TTL_SEC:
+            return cached
+        rows = _universe_from_warehouse()
+        if not rows:
+            rows = _universe_from_legacy()
+        _UNIVERSE_CACHE["at"] = time.time()
+        _UNIVERSE_CACHE["rows"] = rows
+        _UNIVERSE_CACHE["source_id"] = source_id
+        return rows
 
 
 def _primary_metric(dna: Optional[str]) -> str:

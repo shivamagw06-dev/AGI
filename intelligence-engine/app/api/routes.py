@@ -10216,7 +10216,7 @@ async def valuation_consensus_seed(payload: dict[str, Any] = Body(default={})):
 async def hedge_fund_lab_health():
     from hedge_fund_lab.production import health
 
-    return health()
+    return await run_in_threadpool(health)
 
 
 @router.get("/hedge-fund-lab/strategies")
@@ -10230,7 +10230,7 @@ async def hedge_fund_lab_strategies():
 async def hedge_fund_lab_reliability():
     from hedge_fund_lab.terminal import reliability_status
 
-    return reliability_status()
+    return await run_in_threadpool(reliability_status)
 
 
 @router.get("/research-factors/health")
@@ -10272,21 +10272,21 @@ async def hedge_fund_lab_strategy(strategy_id: str):
 async def hedge_fund_lab_long_short_readiness():
     from hedge_fund_lab.long_short_equity import readiness
 
-    return readiness()
+    return await run_in_threadpool(readiness)
 
 
 @router.get("/hedge-fund-lab/long-short/research-book")
 async def hedge_fund_lab_long_short_research_book(limit: int = 10):
     from hedge_fund_lab.long_short_equity import research_book
 
-    return research_book(limit=max(1, min(int(limit or 10), 25)))
+    return await run_in_threadpool(research_book, limit=max(1, min(int(limit or 10), 25)))
 
 
 @router.get("/hedge-fund-lab/regime")
 async def hedge_fund_lab_regime():
     from hedge_fund_lab.scanner import market_regime
 
-    return market_regime()
+    return await run_in_threadpool(market_regime)
 
 
 @router.get("/hedge-fund-lab/scan/{strategy}")
@@ -10294,7 +10294,7 @@ async def hedge_fund_lab_scan(strategy: str, limit: int = 20, sector: str | None
     """Run a strategy across the live NSE universe."""
     from hedge_fund_lab.terminal import scan
 
-    return scan(strategy, limit=limit, sector=sector)
+    return await run_in_threadpool(scan, strategy, limit=limit, sector=sector)
 
 
 @router.get("/hedge-fund-lab/terminal")
@@ -10306,7 +10306,7 @@ async def hedge_fund_lab_terminal(limit: int = 12):
     """
     from hedge_fund_lab.terminal import overview
 
-    return overview(limit=max(1, min(int(limit or 12), 50)))
+    return await run_in_threadpool(overview, limit=max(1, min(int(limit or 12), 50)))
 
 
 @router.post("/hedge-fund-lab/terminal/snapshot")
@@ -10314,7 +10314,7 @@ async def hedge_fund_lab_terminal_snapshot(limit: int = 12):
     """Compute the full terminal once and persist it to Supabase for Node reads."""
     from hedge_fund_lab.snapshot_store import compute_and_persist
 
-    return compute_and_persist(limit=max(1, min(int(limit or 12), 50)))
+    return await run_in_threadpool(compute_and_persist, limit=max(1, min(int(limit or 12), 50)))
 
 
 @router.get("/hedge-fund-lab/terminal/snapshot/latest")
@@ -10322,7 +10322,7 @@ async def hedge_fund_lab_terminal_snapshot_latest():
     """Return the latest stored terminal snapshot metadata (engine-side debug)."""
     from hedge_fund_lab.snapshot_store import latest_snapshot_row
 
-    row = latest_snapshot_row()
+    row = await run_in_threadpool(latest_snapshot_row)
     if not row:
         return {"ok": False, "error": "no_snapshot"}
     return {"ok": True, **{k: row.get(k) for k in (
@@ -10337,14 +10337,14 @@ async def hedge_fund_lab_opportunity(ticker: str):
     """Why a company was surfaced: evidence, calculation chain, risks and timeline."""
     from hedge_fund_lab.terminal import opportunity
 
-    return opportunity(ticker)
+    return await run_in_threadpool(opportunity, ticker)
 
 
 @router.get("/hedge-fund-lab/daily-monitor")
 async def hedge_fund_lab_daily_monitor(limit: int = 6):
     from hedge_fund_lab.scanner import daily_monitor
 
-    return daily_monitor(limit=limit)
+    return await run_in_threadpool(daily_monitor, limit=limit)
 
 
 @router.post("/hedge-fund-lab/calculate/{kind}")
@@ -10352,7 +10352,7 @@ async def hedge_fund_lab_calculate(kind: str, payload: dict[str, Any] = Body(def
     """Every strategy calculation runs here, never in the browser."""
     from hedge_fund_lab.production import calculate
 
-    return calculate(kind, payload or {})
+    return await run_in_threadpool(calculate, kind, payload or {})
 
 
 @router.post("/hedge-fund-lab/backtest/{strategy_id}")
@@ -10360,7 +10360,7 @@ async def hedge_fund_lab_backtest(strategy_id: str, payload: dict[str, Any] = Bo
     """Run a bounded, point-in-time research backtest from warehouse data."""
     from hedge_fund_lab.production import backtest
 
-    return backtest(strategy_id, payload or {})
+    return await run_in_threadpool(backtest, strategy_id, payload or {})
 
 
 # ---------------------------------------------------------------------------

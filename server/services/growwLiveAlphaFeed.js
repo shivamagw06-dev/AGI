@@ -1,6 +1,6 @@
 import { parse } from 'csv-parse/sync';
-import { getLTP, getQuote, isGrowwConfigured } from '../providers/groww.js';
-import { growwSymbolForIndex } from './sectorIndexGrowwFallback.js';
+import { getQuote, isGrowwConfigured } from '../providers/groww.js';
+import { pollGrowwIndexSnapshots } from './sectorIndexGrowwFallback.js';
 
 const INSTRUMENTS_URL = process.env.GROWW_INSTRUMENTS_URL || 'https://growwapi-assets.groww.in/instruments/instrument.csv';
 
@@ -126,14 +126,9 @@ export class GrowwLiveAlphaFeed {
         if (index + 3 < quoteJobs.length) await new Promise((resolve) => setTimeout(resolve, 1_050));
       }
       const indexKeys = [...new Set([this.universe.benchmarkKey, ...this.universe.members.map((row) => row.sectorInstrumentKey)])];
-      const indexMap = new Map(indexKeys.map((key) => [key, growwSymbolForIndex(key)]).filter(([, symbol]) => symbol));
       try {
-        const exchangeSymbols = [...new Set([...indexMap.values()].map((symbol) => `NSE_${symbol}`))];
-        const prices = await getLTP(exchangeSymbols, 'CASH');
-        for (const [key, symbol] of indexMap) {
-          const price = number(prices?.[`NSE_${symbol}`] ?? prices?.[`NSE:${symbol}`] ?? prices?.[symbol]);
-          if (price > 0) snapshots.push({ instrument_key: key, received_at: new Date().toISOString(), ltp: price, request_mode: 'groww_ltp', source: 'groww' });
-        }
+        snapshots.push(...await pollGrowwIndexSnapshots(indexKeys));
+        this.state.last_index_error = null;
       } catch (error) {
         // Preserve valid equity and futures observations when an individual
         // index alias changes at the provider. Evaluation will remain in
