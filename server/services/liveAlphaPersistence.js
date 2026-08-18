@@ -27,6 +27,22 @@ async function writeChunks(table, rows, options = {}, chunkSize = 250) {
   return output;
 }
 
+async function writeRowsResilient(table, rows, options = {}) {
+  if (!rows.length) return { saved: [], rejected: [] };
+  try {
+    const saved = await rest(table, { ...options, body: rows });
+    return { saved: Array.isArray(saved) ? saved : [], rejected: [] };
+  } catch (error) {
+    if (rows.length === 1) return { saved: [], rejected: [{ row: rows[0], error: error.message }] };
+    const middle = Math.ceil(rows.length / 2);
+    const [left, right] = await Promise.all([
+      writeRowsResilient(table, rows.slice(0, middle), options),
+      writeRowsResilient(table, rows.slice(middle), options),
+    ]);
+    return { saved: [...left.saved, ...right.saved], rejected: [...left.rejected, ...right.rejected] };
+  }
+}
+
 export async function pagedGet(table, baseParams, { limit = 5000, pageSize = 1000 } = {}) {
   const rows = [];
   while (rows.length < limit) {
@@ -144,7 +160,12 @@ export class LiveAlphaPersistence {
       sector_at_signal: signal.sector_at_signal, volume_ratio: signal.volume_surprise,
     }));
     try {
-      const saved = await writeChunks('live_alpha_signals', rows, { prefer: 'return=representation' });
+      const signalWrite = await writeRowsResilient('live_alpha_signals', rows, { prefer: 'return=representation' });
+      const saved = signalWrite.saved;
+      if (!saved.length) {
+        const detail = signalWrite.rejected[0]?.error || 'No signal rows were accepted.';
+        throw new Error(`Live alpha signal batch rejected: ${detail}`);
+      }
       const outcomes = [];
       let outcomeSkipped = 0;
       for (const signal of saved || []) {
@@ -160,7 +181,14 @@ export class LiveAlphaPersistence {
         outcomes.push(...createOutcomeSchedule({ id: signal.id, as_of: result.as_of, price_at_signal: signal.price_at_signal, nifty_at_signal: signal.nifty_at_signal, sector_at_signal: signal.sector_at_signal }));
       }
       if (outcomes.length) await writeChunks('live_alpha_signal_outcomes', outcomes);
-      return { run_id: runId, signals: rows.length, outcomes: outcomes.length, outcome_skipped: outcomeSkipped };
+      return {
+        run_id: runId,
+        signals: saved.length,
+        rejected_signals: signalWrite.rejected.length,
+        rejection_errors: [...new Set(signalWrite.rejected.map((item) => item.error))].slice(0, 5),
+        outcomes: outcomes.length,
+        outcome_skipped: outcomeSkipped,
+      };
     } catch (error) {
       // REST inserts cannot atomically create a run and its signal rows. Remove
       // the parent on any downstream failure so dashboards never treat an
