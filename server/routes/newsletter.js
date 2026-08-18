@@ -7,7 +7,7 @@ import {
   normalizePreferences,
   selectedLetterNames,
 } from '../lib/agiLetters.js';
-import { buildArticleEmail, excerptFromHtml } from '../lib/articleEmailTemplate.js';
+import { buildArticleEmail, excerptFromHtml, firstImageUrlFromHtml, usableCoverUrl } from '../lib/articleEmailTemplate.js';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const BLOCKED_TEST_DOMAINS = new Set(['example.com', 'example.org', 'example.net', 'test.com']);
@@ -273,7 +273,11 @@ export default function createNewsletterRouter() {
       const summary = String(
         req.body?.summary || req.body?.excerpt || excerptFromHtml(req.body?.body || '')
       ).trim();
-      const coverUrl = String(req.body?.coverUrl || req.body?.cover_url || '').trim();
+      const coverUrlFromRequest = usableCoverUrl(
+        req.body?.coverUrl,
+        req.body?.cover_url,
+        firstImageUrlFromHtml(req.body?.body || '')
+      );
       const author = String(req.body?.author || '').trim();
       const publishedAt = req.body?.publishedAt || req.body?.published_at || new Date().toISOString();
       const words = excerptFromHtml(req.body?.body || '', 100000).split(/\s+/).filter(Boolean).length;
@@ -284,15 +288,26 @@ export default function createNewsletterRouter() {
       }
 
       const testTo = normalizeEmail(req.body?.to || req.body?.testEmail || '');
+      if (testTo && !isSendableEmail(testTo)) {
+        return res.status(400).json({ error: 'Valid test recipient email is required.' });
+      }
+
       let recipients = [];
+      let coverUrl = coverUrlFromRequest;
+
+      const admin = testTo && coverUrl ? null : await getSupabaseAdmin();
+      if (admin && !coverUrl) {
+        const articleLookup = await admin
+          .from('articles')
+          .select('cover_url')
+          .eq('slug', slug)
+          .maybeSingle();
+        coverUrl = usableCoverUrl(articleLookup.data?.cover_url);
+      }
 
       if (testTo) {
-        if (!isSendableEmail(testTo)) {
-          return res.status(400).json({ error: 'Valid test recipient email is required.' });
-        }
         recipients = [{ email: testTo, unsubscribeToken: null }];
       } else {
-        const admin = await getSupabaseAdmin();
         let list = [];
         let queryError = null;
 

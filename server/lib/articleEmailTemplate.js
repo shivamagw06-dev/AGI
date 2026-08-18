@@ -26,6 +26,20 @@ function formatEditionDate(value) {
     .toUpperCase();
 }
 
+export function firstImageUrlFromHtml(html = '') {
+  const match = String(html).match(/<img\b[^>]*\bsrc=["']([^"']+)["']/i);
+  const url = String(match?.[1] || '').trim();
+  return /^https?:\/\//i.test(url) ? url : '';
+}
+
+export function usableCoverUrl(...candidates) {
+  for (const value of candidates) {
+    const url = String(value || '').trim();
+    if (/^https?:\/\//i.test(url)) return url;
+  }
+  return '';
+}
+
 export function excerptFromHtml(html = '', maxChars = 280) {
   const text = String(html)
     .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, ' ')
@@ -135,7 +149,7 @@ export function buildArticleEmail({
               </table>
             </td>
           </tr>
-          ${safeCoverUrl ? `<tr><td><img src="${escapeHtml(safeCoverUrl)}" width="640" alt="" style="display:block;width:100%;max-width:640px;height:auto;border:0;"></td></tr>` : ''}
+          ${safeCoverUrl ? `<tr><td><a href="${escapeHtml(articleUrl)}" style="display:block;text-decoration:none;"><img src="${escapeHtml(safeCoverUrl)}" width="640" alt="${escapeHtml(safeTitle)}" style="display:block;width:100%;max-width:640px;height:auto;border:0;"></a></td></tr>` : ''}
           <tr>
             <td class="pad-x" style="padding:42px 34px 16px;">
               <p style="margin:0 0 14px;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#8a6c08;">

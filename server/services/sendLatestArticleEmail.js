@@ -7,7 +7,12 @@ import {
   letterDisplayFrom,
   letterKeyFromSection,
 } from '../lib/agiLetters.js';
-import { buildArticleEmail, excerptFromHtml } from '../lib/articleEmailTemplate.js';
+import {
+  buildArticleEmail,
+  excerptFromHtml,
+  firstImageUrlFromHtml,
+  usableCoverUrl,
+} from '../lib/articleEmailTemplate.js';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -44,7 +49,7 @@ async function sendWithResend(payload) {
 export async function fetchLatestPublishedArticle(admin) {
   const { data, error } = await admin
     .from('articles')
-    .select('id, title, slug, excerpt, section, content, published_at')
+    .select('id, title, slug, excerpt, section, content, cover_url, published_at, author')
     .eq('status', 'published')
     .order('published_at', { ascending: false })
     .limit(1)
@@ -93,6 +98,8 @@ export async function sendLatestPublishedArticleEmail({ email, admin: adminArg }
       letter,
       section: article.section,
       publishedAt: article.published_at,
+      coverUrl: usableCoverUrl(article.cover_url, firstImageUrlFromHtml(article.content || '')),
+      author: article.author,
     });
 
     await sendWithResend({

@@ -8,7 +8,10 @@ test('fetchLatestPublishedArticle queries published articles by published_at des
     from(table) {
       calls.push(table);
       const chain = {
-        select() { return chain; },
+        select(columns) {
+          calls.push(['select', columns]);
+          return chain;
+        },
         eq(column, value) {
           calls.push(['eq', column, value]);
           return chain;
@@ -42,6 +45,7 @@ test('fetchLatestPublishedArticle queries published articles by published_at des
 
   const article = await fetchLatestPublishedArticle(admin);
   assert.equal(article.slug, 'test-brief');
+  assert.match(String(calls.find((row) => Array.isArray(row) && row[0] === 'select')?.[1] || ''), /cover_url/);
   assert.equal(calls[0], 'articles');
   assert.deepEqual(calls.find((row) => Array.isArray(row) && row[0] === 'eq'), ['eq', 'status', 'published']);
   assert.deepEqual(

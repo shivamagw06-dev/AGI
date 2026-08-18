@@ -502,6 +502,7 @@ export default function ArticleEditor() {
             summary: htmlToExcerpt(html, 280),
             body: html,
             section,
+            coverUrl,
           });
         }
 
@@ -580,6 +581,7 @@ export default function ArticleEditor() {
         summary: htmlToExcerpt(body, 280),
         body,
         section,
+        coverUrl,
       });
 
       if (result?.ok && result?.sent > 0) {

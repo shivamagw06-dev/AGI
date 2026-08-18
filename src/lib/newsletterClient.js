@@ -34,6 +34,7 @@ export async function notifySubscribers({
   section,
   newsletterKey,
   letterKey,
+  coverUrl,
 } = {}) {
   const base = apiBase();
   if (!base) return { ok: false, skipped: true, reason: 'API origin missing' };
@@ -51,6 +52,7 @@ export async function notifySubscribers({
         section,
         newsletterKey,
         letterKey,
+        coverUrl,
       }),
     });
     const data = await resp.json().catch(() => ({}));
