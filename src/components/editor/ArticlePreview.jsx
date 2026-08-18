@@ -13,7 +13,7 @@ export default function ArticlePreview({ open, onClose, article, html }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/70 overflow-y-auto py-8 px-4">
-      <div className="relative w-full max-w-[760px] bg-white rounded-xl shadow-2xl overflow-hidden">
+      <div className="relative w-full max-w-[1500px] bg-white rounded-xl shadow-2xl overflow-hidden">
         <div className="sticky top-0 flex items-center justify-between px-6 py-4 border-b bg-white rounded-t-xl z-10">
           <div>
             <p className="text-xs uppercase tracking-widest text-blue-600 font-semibold">Preview</p>
@@ -25,7 +25,7 @@ export default function ArticlePreview({ open, onClose, article, html }) {
         </div>
 
         <div className="article-preview-shell mx-auto w-full px-6 py-8">
-          <header className="article-preview-header article-page-column mx-auto">
+          <header className="article-preview-header article-preview-wide mx-auto">
             {article.section && <p className="article-kicker">{article.section}</p>}
             <h1>
               {article.title || 'Untitled'}
@@ -36,7 +36,7 @@ export default function ArticlePreview({ open, onClose, article, html }) {
           </header>
 
           {article.coverUrl && (
-            <div className="article-page-column mx-auto">
+            <div className="article-preview-wide mx-auto">
             <div className="agi-cover agi-cover--article mt-8">
               <img src={article.coverUrl} alt="" />
             </div>
@@ -44,7 +44,7 @@ export default function ArticlePreview({ open, onClose, article, html }) {
           )}
 
           <div
-            className="article-prose prose prose-lg prose-neutral article-page-column mx-auto mt-8 w-full"
+            className="article-prose prose prose-lg prose-neutral article-preview-reading mx-auto mt-8 w-full"
             dangerouslySetInnerHTML={{ __html: html || '<p>No content yet.</p>' }}
           />
         </div>

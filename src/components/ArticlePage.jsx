@@ -678,10 +678,13 @@ export default function ArticlePage() {
         <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
       </Helmet>
 
-      <main className="article-page-shell mx-auto w-full px-4 py-8 sm:px-6 sm:py-10">
-        <div className="article-page-column">
-        <header className="article-page-header">
-          {article.section && <p className="article-kicker">{article.section}</p>}
+      <main className="article-page-shell w-full py-8 sm:py-10">
+        <div className="article-story-stage">
+          <div className="article-section-rail" aria-hidden={!article.section}>
+            {article.section && <span>{article.section}</span>}
+          </div>
+          <header className="article-page-header">
+            {article.section && <p className="article-kicker">{article.section}</p>}
 
         <h1>
           {article.title}
@@ -724,20 +727,27 @@ export default function ArticlePage() {
           </div>
         )}
 
-        </header>
+          </header>
 
-        {article.cover_url && (
-          <div className="agi-cover agi-cover--article mt-8">
-            <img src={article.cover_url} alt="" />
-          </div>
-        )}
+          {article.cover_url && (
+            <figure className="agi-cover agi-cover--article article-hero-media">
+              <img src={article.cover_url} alt={article.title || ''} />
+            </figure>
+          )}
+        </div>
 
-        <article
-          className="article-prose prose prose-lg prose-neutral mt-8 w-full max-w-none"
-          dangerouslySetInnerHTML={{ __html: sanitizedHtml }}
-        />
+        <div className="article-reading-stage">
+          <aside className="article-reading-rail" aria-label="Article details">
+            <span>{article.section || 'AGI Research'}</span>
+            <span>{minutes} min read</span>
+          </aside>
+          <div className="article-reading-column">
+            <article
+              className="article-prose prose prose-lg prose-neutral w-full max-w-none"
+              dangerouslySetInnerHTML={{ __html: sanitizedHtml }}
+            />
 
-        <div className="article-page-footer">
+            <div className="article-page-footer">
           {message && <div className="mt-6 text-sm text-green-700">{message}</div>}
           {errorMessage && <div className="mt-6 text-sm text-red-600">{errorMessage}</div>}
 
@@ -795,7 +805,9 @@ export default function ArticlePage() {
         {/* Comments Section */}
         {/* ----------------------------- */}
         <Comments articleId={article.id} />
-        </div>
+            </div>
+          </div>
+          <aside className="article-context-rail" aria-hidden="true" />
         </div>
       </main>
     </div>
