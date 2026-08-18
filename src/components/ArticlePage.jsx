@@ -1,6 +1,6 @@
 // src/components/ArticlePage.jsx
 import React, { useEffect, useMemo, useState, useCallback, Suspense, lazy } from 'react';
-import { useNavigate, useParams, Link } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import DOMPurify from 'dompurify';
 import { supabase } from '@/lib/supabaseClient';
@@ -609,7 +609,7 @@ export default function ArticlePage() {
   const isoPubDate = pubDate ? new Date(pubDate).toISOString() : null;
   const niceDate = pubDate
     ? new Date(pubDate).toLocaleDateString('en-US', {
-        month: 'short',
+        month: 'long',
         day: 'numeric',
         year: 'numeric',
       })
@@ -678,108 +678,73 @@ export default function ArticlePage() {
         <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
       </Helmet>
 
-      <main className="article-page-shell mx-auto w-full max-w-[90rem] px-4 py-6 sm:px-6 sm:py-8 lg:px-10">
-        <header className="article-page-header mx-auto w-full max-w-5xl">
-          <Link to="/" className="text-sm text-muted-foreground hover:text-foreground">
-          ← Back
-          </Link>
+      <main className="article-page-shell mx-auto w-full px-4 py-8 sm:px-6 sm:py-10">
+        <div className="article-page-column">
+        <header className="article-page-header">
+          {article.section && <p className="article-kicker">{article.section}</p>}
 
-        <h1 className="mt-3 text-3xl md:text-4xl font-extrabold tracking-tight leading-tight">
+        <h1>
           {article.title}
         </h1>
 
-        {/* author + subscribe */}
-        <div className="mt-4 flex items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-100">
-              {author?.photo_url ? (
-                <img src={author.photo_url} alt={author.full_name || 'author'} className="w-full h-full object-cover" />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-sm text-gray-400">
-                  {author?.display_name ? author.display_name[0] : 'A'}
-                </div>
-              )}
-            </div>
+        {article.excerpt && (
+          <p className="article-dek">{article.excerpt}</p>
+        )}
 
-            <div className="text-sm">
-              <div className="font-medium text-foreground">
-                {author?.full_name || author?.display_name || author?.handle || 'Author'}
-              </div>
-              <div className="text-muted-foreground text-xs">
-                {author?.handle ? `@${author.handle}` : ''}
-              </div>
-            </div>
-          </div>
-
-          <div>
-            {article.author_id !== user?.id && (
-              <div>
-                <Button
-                  onClick={handleSubscribeToggle}
-                  disabled={checkingSubscription || submitting}
-                  className="bg-yellow-500 hover:bg-yellow-600 text-white text-sm px-3 py-1 rounded-full"
-                >
-                  {checkingSubscription || submitting
-                    ? 'Please wait...'
-                    : isSubscribed
-                    ? 'Unsubscribe'
-                    : 'Subscribe'}
-                </Button>
-              </div>
-            )}
-
-            {article.author_id === user?.id && (
-              <div className="text-sm text-muted-foreground">You are the author</div>
-            )}
-          </div>
-        </div>
-
-        <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
-          <span>{niceDate}</span>
-          <span>•</span>
-          <span>{minutes} min read</span>
-
-          {Array.isArray(article.tags) && article.tags.length > 0 && (
-            <>
-              <span>•</span>
-              <div className="flex flex-wrap gap-2">
-                {article.tags.map((t, i) => (
-                  <span key={i} className="rounded-full bg-accent px-2 py-0.5 text-xs text-foreground">
-                    #{t}
-                  </span>
-                ))}
-              </div>
-            </>
-          )}
-
+        <p className="article-byline">
+          <span className="article-byline-name">
+            By {author?.full_name || author?.display_name || 'AGI Research'}
+          </span>
+          {niceDate ? (
+            <span className="article-byline-meta">
+              {' '}
+              {niceDate}
+              {minutes ? ` · ${minutes} min read` : ''}
+            </span>
+          ) : null}
           {article.status === 'draft' && (
-            <>
-              <span>•</span>
-              <span className="text-orange-500">Draft</span>
-            </>
+            <span className="article-byline-meta"> · Draft</span>
           )}
-        </div>
+        </p>
+
+        {article.author_id !== user?.id && (
+          <div className="mt-4">
+            <Button
+              onClick={handleSubscribeToggle}
+              disabled={checkingSubscription || submitting}
+              variant="outline"
+              className="h-8 rounded-none border-[#111] px-3 text-xs font-semibold uppercase tracking-wide"
+            >
+              {checkingSubscription || submitting
+                ? 'Please wait...'
+                : isSubscribed
+                ? 'Following'
+                : 'Follow'}
+            </Button>
+          </div>
+        )}
 
         </header>
 
         {article.cover_url && (
-          <div className="agi-cover agi-cover--article mx-auto mt-6 w-full max-w-5xl">
+          <div className="agi-cover agi-cover--article mt-8">
             <img src={article.cover_url} alt="" />
           </div>
         )}
 
         <article
-          className="article-prose prose prose-lg prose-neutral dark:prose-invert mx-auto mt-8 w-full max-w-5xl prose-h1:font-extrabold prose-h2:font-bold prose-p:leading-7"
+          className="article-prose prose prose-lg prose-neutral mt-8 w-full max-w-none"
           dangerouslySetInnerHTML={{ __html: sanitizedHtml }}
         />
 
-        <div className="article-page-footer mx-auto w-full max-w-5xl">
+        <div className="article-page-footer">
           {message && <div className="mt-6 text-sm text-green-700">{message}</div>}
           {errorMessage && <div className="mt-6 text-sm text-red-600">{errorMessage}</div>}
 
         <div className="mt-10 flex flex-wrap gap-3">
           <Button
             variant="outline"
+            className="h-8 rounded-none border-[#111] px-3 text-xs font-semibold uppercase tracking-wide"
             onClick={() =>
               window.open(
                 `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`,
@@ -830,6 +795,7 @@ export default function ArticlePage() {
         {/* Comments Section */}
         {/* ----------------------------- */}
         <Comments articleId={article.id} />
+        </div>
         </div>
       </main>
     </div>
