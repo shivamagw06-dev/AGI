@@ -737,7 +737,7 @@ export default function ArticleEditor() {
             )}
           </div>
 
-          <div className="max-w-4xl mx-auto">
+          <div className="w-full max-w-none">
             <input
               value={title}
               onChange={(e) => {

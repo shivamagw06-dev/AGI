@@ -163,60 +163,71 @@
   margin: 1rem auto;
 }
 
-/* Article media keeps its intrinsic ratio in the CMS editor, preview, and public renderer. */
+/* Article page uses the same canvas as the site header (1800px). */
+.article-page-shell,
+.article-preview-shell {
+  min-width: 0;
+}
+
 .article-editor-content,
 .article-prose {
   min-width: 0;
+  max-width: none;
+  width: 100%;
   overflow-wrap: anywhere;
 }
 
+.article-prose.prose {
+  max-width: none;
+}
+
+/* Photos, charts and embeds share one full-column width so they line up with copy. */
 .article-editor-content img,
 .article-editor-content video,
 .article-editor-content svg,
 .article-editor-content canvas,
+.article-editor-content figure,
 .article-prose img,
 .article-prose video,
 .article-prose svg,
-.article-prose canvas {
+.article-prose canvas,
+.article-prose figure {
   display: block;
-  width: auto;
-  max-width: 100%;
-  height: auto;
+  width: 100% !important;
+  max-width: 100% !important;
+  height: auto !important;
+  margin-left: 0;
+  margin-right: 0;
   object-fit: contain;
+  object-position: center;
 }
 
-/* Prose stays readable; visual blocks can break out to a wider canvas on large screens. */
-@media (min-width: 900px) {
-  .article-editor-content > img,
-  .article-editor-content > figure,
-  .article-editor-content > iframe,
-  .article-editor-content > video,
-  .article-editor-content > table,
-  .article-prose > img,
-  .article-prose > figure,
-  .article-prose > iframe,
-  .article-prose > video,
-  .article-prose > table {
-    position: relative;
-    left: 50%;
-    width: min(90rem, calc(100vw - 3rem));
-    max-width: min(90rem, calc(100vw - 3rem));
-    transform: translateX(-50%);
-  }
+.article-editor-content p:has(> img),
+.article-prose p:has(> img) {
+  margin-left: 0;
+  margin-right: 0;
+}
+
+.article-editor-content .tiptap-img-small,
+.article-prose .tiptap-img-small {
+  width: auto !important;
+  max-width: min(100%, 32rem) !important;
 }
 
 .article-editor-content iframe,
 .article-editor-content video,
 .article-prose iframe,
 .article-prose video {
-  max-width: 100%;
+  display: block;
+  width: 100% !important;
+  max-width: 100% !important;
   border: 0;
 }
 
 .article-editor-content iframe,
 .article-prose iframe {
   aspect-ratio: 16 / 9;
-  height: auto;
+  height: auto !important;
   min-height: 260px;
 }
 
@@ -231,6 +242,7 @@
 .article-editor-content table,
 .article-prose table {
   display: block;
+  width: 100%;
   max-width: 100%;
   overflow-x: auto;
   border-collapse: collapse;
@@ -268,20 +280,6 @@
   .article-editor-content iframe,
   .article-prose iframe {
     min-height: 0;
-  }
-
-  .article-editor-content > img,
-  .article-editor-content > iframe,
-  .article-editor-content > video,
-  .article-editor-content > table,
-  .article-prose > img,
-  .article-prose > iframe,
-  .article-prose > video,
-  .article-prose > table {
-    left: auto;
-    width: 100%;
-    max-width: 100%;
-    transform: none;
   }
 }
 .tiptap .img-caption {
@@ -588,23 +586,24 @@
 
   .agi-cover--article {
     aspect-ratio: auto;
-    max-height: none;
-    width: fit-content;
-    max-width: min(90rem, calc(100vw - 3rem));
-    margin-inline: auto;
+    width: 100%;
+    max-width: 100%;
+    margin-inline: 0;
     background-color: transparent;
     border: none;
-    border-radius: 0.75rem;
+    border-radius: 0;
     overflow: hidden;
   }
 
   .agi-cover--article img {
     display: block;
-    width: auto;
-    max-width: min(90rem, calc(100vw - 3rem));
+    width: 100%;
+    max-width: 100%;
     height: auto;
-    max-height: min(72vh, 720px);
-    border-radius: 0.75rem;
+    max-height: none;
+    object-fit: contain;
+    object-position: center;
+    border-radius: 0;
   }
 
   .agi-cover--editor {

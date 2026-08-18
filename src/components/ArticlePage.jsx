@@ -678,8 +678,8 @@ export default function ArticlePage() {
         <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
       </Helmet>
 
-      <main className="article-page-shell mx-auto w-full max-w-[90rem] px-4 py-6 sm:px-6 sm:py-8 lg:px-10">
-        <header className="article-page-header mx-auto w-full max-w-6xl">
+      <main className="article-page-shell mx-auto w-full max-w-[1800px] px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+        <header className="article-page-header w-full">
           <Link to="/" className="text-sm text-muted-foreground hover:text-foreground">
           ← Back
           </Link>
@@ -762,18 +762,18 @@ export default function ArticlePage() {
 
         </header>
 
-        {image && (
+        {article.cover_url && (
           <div className="agi-cover agi-cover--article mt-6">
-            <img src={image} alt="" />
+            <img src={article.cover_url} alt="" />
           </div>
         )}
 
         <article
-          className="article-prose prose prose-lg prose-neutral dark:prose-invert mx-auto mt-8 w-full max-w-5xl prose-h1:font-extrabold prose-h2:font-bold prose-p:leading-7"
+          className="article-prose prose prose-lg prose-neutral dark:prose-invert mt-8 w-full max-w-none prose-h1:font-extrabold prose-h2:font-bold prose-p:leading-7"
           dangerouslySetInnerHTML={{ __html: sanitizedHtml }}
         />
 
-        <div className="article-page-footer mx-auto w-full max-w-5xl">
+        <div className="article-page-footer w-full">
           {message && <div className="mt-6 text-sm text-green-700">{message}</div>}
           {errorMessage && <div className="mt-6 text-sm text-red-600">{errorMessage}</div>}
 
