@@ -391,7 +391,7 @@ export default function ResearchTerminalHome() {
 
       {/* Research mosaic */}
       <section id="latest-research" className="border-b border-[#e8eaee] bg-white" aria-label="Latest research">
-        <div className="mx-auto max-w-[1680px] px-4 sm:px-6 lg:px-8 py-10 md:py-12">
+        <div className="mx-auto w-full max-w-none px-4 sm:px-6 lg:px-8 2xl:px-12 py-10 md:py-12">
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
               <h2 className="font-serif text-3xl font-bold tracking-tight text-[#111111]">
@@ -408,7 +408,7 @@ export default function ResearchTerminalHome() {
             </Link>
           </div>
 
-          <div className="mt-8 grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_380px] xl:items-start">
+          <div className="mt-8 grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_clamp(320px,20vw,380px)] xl:items-start">
           <div className="min-w-0">
           {loading ? (
             <div className="mt-8 grid grid-cols-1 gap-5 lg:grid-cols-[1.6fr_1fr]">
