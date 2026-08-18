@@ -3,6 +3,11 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabaseClient';
 import { CheckCircle2, Loader2, Mail } from 'lucide-react';
+import {
+  consumeSignupIntent,
+  trackFunnelEvent,
+  trackReturnedToIntended,
+} from '@/lib/funnelAnalytics';
 
 export default function VerifyEmailPage() {
   const { user, resendVerification } = useAuth();
@@ -24,6 +29,14 @@ export default function VerifyEmailPage() {
         if (!mounted) return;
         if (sessionUser?.email_confirmed_at || sessionUser?.confirmed_at || user?.email_confirmed_at) {
           setStatus('verified');
+          const intent = consumeSignupIntent();
+          trackFunnelEvent('signup_completed', {
+            channel: intent?.channel || 'email',
+            feature: intent?.feature || null,
+            next: safeNext,
+            via: 'verify_email',
+          });
+          trackReturnedToIntended(safeNext);
           setTimeout(() => navigate(safeNext, { replace: true }), 1200);
           return;
         }

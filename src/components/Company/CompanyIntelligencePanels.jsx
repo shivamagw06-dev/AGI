@@ -6,6 +6,7 @@ import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import DiscoveryRail from '@/components/Product/DiscoveryRail';
 import { trackProductEvent } from '@/lib/productAnalytics';
+import { trackFirstMeaningfulAction } from '@/lib/funnelAnalytics';
 
 function Card({ title, children }) {
   return (
@@ -51,7 +52,10 @@ function DocList({ items }) {
 
 export default function CompanyIntelligencePanels({ data }) {
   useEffect(() => {
-    if (data?.ticker) trackProductEvent('company_viewed', { ticker: data.ticker });
+    if (data?.ticker) {
+      trackProductEvent('company_viewed', { ticker: data.ticker });
+      trackFirstMeaningfulAction('company_analysis_opened', { ticker: data.ticker });
+    }
   }, [data?.ticker]);
 
   if (!data) return null;

@@ -1,6 +1,11 @@
 import React, { createContext, useState, useContext, useEffect, useMemo } from 'react';
 import { supabase, isSupabaseConfigured } from '../lib/supabaseClient';
 import { clearPinUnlock, markPinUnlocked } from '@/lib/devicePin';
+import {
+  consumeSignupIntent,
+  trackFunnelEvent,
+  trackReturnedToIntended,
+} from '@/lib/funnelAnalytics';
 
 const AuthContext = createContext(null);
 
@@ -30,10 +35,27 @@ export const AuthProvider = ({ children }) => {
         setAuthReady(true);
       });
 
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
       setUser(session?.user ?? null);
       setLoading(false);
       setAuthReady(true);
+
+      // OAuth / magic-link landings — complete funnel if signup was started from Unlock CTA.
+      if (event === 'SIGNED_IN' && session?.user) {
+        const intent = consumeSignupIntent();
+        if (intent) {
+          const next = intent.next || (typeof window !== 'undefined' ? window.location.pathname : '/');
+          trackFunnelEvent('signup_completed', {
+            channel: intent.channel || 'oauth',
+            feature: intent.feature || null,
+            next,
+            via: 'auth_state',
+          });
+          if (next && String(next).startsWith('/')) {
+            trackReturnedToIntended(next);
+          }
+        }
+      }
     });
 
     return () => {

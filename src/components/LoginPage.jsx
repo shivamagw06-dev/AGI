@@ -5,6 +5,12 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { isAdmin } from '@/lib/adminAuth';
 import { validateSignup, passwordChecks, isValidEmail } from '@/lib/authValidation';
 import { getFeatureCopy, getFeatureForPath, UNLOCK_BENEFITS } from '@/lib/accessPolicy';
+import {
+  consumeSignupIntent,
+  markSignupIntent,
+  trackFunnelEvent,
+  trackReturnedToIntended,
+} from '@/lib/funnelAnalytics';
 import { ArrowLeft, Check, Eye, EyeOff, Lock, Mail } from 'lucide-react';
 
 const AUTH_UNCONFIGURED =
@@ -111,6 +117,7 @@ export default function LoginPage() {
       setOauthLoading(provider);
       resetAlerts();
       if (!isSupabaseConfigured) throw new Error(AUTH_UNCONFIGURED);
+      markSignupIntent({ channel: provider, next: safeNext, feature: unlockFeature });
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
         options: { redirectTo },
@@ -146,6 +153,7 @@ export default function LoginPage() {
 
     setLoading(true);
     try {
+      markSignupIntent({ channel: 'email', next: safeNext, feature: unlockFeature });
       const data = await register({
         fullName,
         email,
@@ -154,9 +162,18 @@ export default function LoginPage() {
         emailRedirectTo: `${window.location.origin}/verify-email?next=${encodeURIComponent(safeNext)}`,
       });
       if (data?.session?.user) {
+        consumeSignupIntent();
+        trackFunnelEvent('signup_completed', { channel: 'email', next: safeNext, feature: unlockFeature });
+        trackReturnedToIntended(safeNext);
         navigate(isAdmin(data.session.user) ? '/admin' : safeNext, { replace: true });
         return;
       }
+      trackFunnelEvent('signup_started', {
+        channel: 'email',
+        pending_verification: true,
+        next: safeNext,
+        feature: unlockFeature,
+      });
       setPendingVerifyEmail(email.trim());
       setMessage(
         data?.message ||
@@ -200,6 +217,18 @@ export default function LoginPage() {
         setErrorMessage('Please verify your email before signing in. Check your inbox for the AGI verification link.');
         return;
       }
+      const intent = consumeSignupIntent();
+      if (intent) {
+        trackFunnelEvent('signup_completed', {
+          channel: intent.channel || 'email',
+          next: safeNext,
+          feature: unlockFeature || intent.feature,
+          via: 'signin_after_verify',
+        });
+      } else {
+        trackFunnelEvent('login_completed', { channel: 'email', next: safeNext, feature: unlockFeature });
+      }
+      trackReturnedToIntended(safeNext);
       navigate(isAdmin(loggedIn) ? '/admin' : safeNext, { replace: true });
     } catch (err) {
       const msg = err?.message || 'Unable to sign in.';

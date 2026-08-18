@@ -1,4 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
+import { useEffect } from 'react';
 import { BrainCircuit, Check, Lock, Sparkles } from 'lucide-react';
 import {
   UNLOCK_BENEFITS,
@@ -6,6 +7,7 @@ import {
   getFeatureCopy,
   getFeatureForPath,
 } from '@/lib/accessPolicy';
+import { markSignupIntent, trackFunnelEvent } from '@/lib/funnelAnalytics';
 
 /**
  * Progressive registration wall — sells AGI intelligence instead of a bare login redirect.
@@ -18,6 +20,14 @@ export default function UnlockIntelligenceGate({ feature: featureProp, returnTo:
   const copy = getFeatureCopy(feature);
   const signupUrl = buildLoginUrl({ returnTo, mode: 'signup' });
   const signinUrl = buildLoginUrl({ returnTo, mode: 'signin' });
+
+  useEffect(() => {
+    trackFunnelEvent('unlock_screen', { feature, returnTo, path: location.pathname });
+  }, [feature, returnTo, location.pathname]);
+
+  const onSignupClick = (channel) => {
+    markSignupIntent({ feature, returnTo, channel });
+  };
 
   return (
     <div className="relative min-h-[calc(100vh-4rem)] overflow-hidden bg-[#070f16] text-[#eef4f7]">
@@ -79,6 +89,7 @@ export default function UnlockIntelligenceGate({ feature: featureProp, returnTo:
           <div className="mt-8 space-y-3">
             <Link
               to={signupUrl}
+              onClick={() => onSignupClick('email')}
               className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#3b82f6] px-4 py-3.5 text-sm font-bold text-white hover:bg-[#2563eb]"
             >
               <Sparkles className="h-4 w-4" />
@@ -86,6 +97,7 @@ export default function UnlockIntelligenceGate({ feature: featureProp, returnTo:
             </Link>
             <Link
               to={`${signupUrl}&oauth=google`}
+              onClick={() => onSignupClick('google')}
               className="flex w-full items-center justify-center gap-2 rounded-lg border border-white/15 bg-white px-4 py-3.5 text-sm font-bold text-[#111827] hover:bg-slate-100"
             >
               Continue with Google

@@ -7,6 +7,7 @@ import { getCmsLearningStatus, learnCmsArticles } from '@/lib/intelligenceApi';
 import { useAuth } from '@/contexts/AuthContext';
 import { isAdmin } from '@/lib/adminAuth';
 import { Button } from '@/components/ui/button';
+import FunnelSummaryCard from '@/components/analytics/FunnelSummaryCard';
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
@@ -107,6 +108,8 @@ export default function AdminDashboard() {
           </Button>
         </div>
       </div>
+
+      {admin ? <FunnelSummaryCard /> : null}
 
       <div className="mb-6 rounded-xl border border-slate-200 bg-white p-4 text-sm text-slate-600">
         <p className="font-semibold text-slate-900">

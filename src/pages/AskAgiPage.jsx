@@ -10,6 +10,7 @@ import {
 } from '@/lib/conversationTranscript';
 import { pushSearch, saveAnswer, saveSearch } from '@/lib/searchHistory';
 import { trackProductEvent } from '@/lib/productAnalytics';
+import { trackFirstMeaningfulAction } from '@/lib/funnelAnalytics';
 
 export default function AskAgiPage() {
   const [params] = useSearchParams();
@@ -31,6 +32,7 @@ export default function AskAgiPage() {
     setState({ loading: true, pack: null, error: null });
     pushSearch(question);
     trackProductEvent('question_asked', { question });
+    trackFirstMeaningfulAction('ask_agi_query', { question });
     const conversationId = conversationIdRef.current;
     postUiSearch(question, undefined, { conversationId })
       .then((pack) => {

@@ -8,6 +8,7 @@ import Footer from '@/components/Footer';
 import { Toaster } from '@/components/ui/toaster';
 import PinGate from '@/components/auth/PinGate';
 import RequireRegistration from '@/components/auth/RequireRegistration';
+import FunnelRouteTracker from '@/components/analytics/FunnelRouteTracker';
 
 const AdminRoutes = React.lazy(() => import('@/pages/admin/AdminRoutes'));
 const CategoryPage = React.lazy(() => import('@/pages/CategoryPage'));
@@ -310,6 +311,7 @@ function App() {
               rel="stylesheet"
             />
           </Helmet>
+          <FunnelRouteTracker />
           <AppShell />
         </div>
       </BrowserRouter>
