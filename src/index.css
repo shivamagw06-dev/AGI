@@ -167,39 +167,45 @@
 .article-page-shell,
 .article-preview-shell {
   min-width: 0;
+  width: 100%;
+  max-width: 1800px;
 }
 
 .article-editor-content,
-.article-prose {
+.article-prose,
+.article-prose.prose {
   min-width: 0;
-  max-width: none;
+  max-width: none !important;
   width: 100%;
   overflow-wrap: anywhere;
 }
 
-.article-prose.prose {
-  max-width: none;
-}
-
-/* Photos, charts and embeds share one full-column width so they line up with copy. */
+/*
+  In-body screenshots (Bloomberg charts, timelines) must share the text
+  column: never break out wider, and never taller than a figure.
+*/
 .article-editor-content img,
 .article-editor-content video,
 .article-editor-content svg,
 .article-editor-content canvas,
 .article-editor-content figure,
+.article-editor-content .tiptap-img-full,
+.article-editor-content .tiptap-img-center,
 .article-prose img,
 .article-prose video,
 .article-prose svg,
 .article-prose canvas,
-.article-prose figure {
+.article-prose figure,
+.article-prose .tiptap-img-full,
+.article-prose .tiptap-img-center {
   display: block;
-  width: 100% !important;
+  width: auto !important;
   max-width: 100% !important;
   height: auto !important;
-  margin-left: 0;
-  margin-right: 0;
+  max-height: min(28rem, 62vh) !important;
+  margin: 1.5rem 0 !important;
   object-fit: contain;
-  object-position: center;
+  object-position: left center;
 }
 
 .article-editor-content p:has(> img),
@@ -211,7 +217,8 @@
 .article-editor-content .tiptap-img-small,
 .article-prose .tiptap-img-small {
   width: auto !important;
-  max-width: min(100%, 32rem) !important;
+  max-width: min(100%, 24rem) !important;
+  max-height: 16rem !important;
 }
 
 .article-editor-content iframe,
@@ -472,8 +479,10 @@
   border: 0;
   border-radius: 0.5rem;
 }
-.tiptap-img-full { max-width: 100%; height: auto; display: block; margin: 1rem auto; }
-.tiptap-img-small { max-width: 320px; height: auto; display: block; margin: 1rem auto; }
+.article-editor-content .tiptap-img-full,
+.article-prose .tiptap-img-full { max-width: 100%; height: auto; display: block; margin: 1.5rem 0; }
+.article-editor-content .tiptap-img-small,
+.article-prose .tiptap-img-small { max-width: 320px; height: auto; display: block; margin: 1.5rem 0; }
 
 /* Research terminal homepage motion — subtle editorial presence only */
 .home-terminal .home-hero-brand {
