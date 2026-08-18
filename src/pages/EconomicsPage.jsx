@@ -246,7 +246,7 @@ export default function EconomicsPage() {
 
       {(supplemental?.observations || []).length > 0 && <section className="eco-band">
         <header className="eco-section-head"><div><span>Supplemental market context</span><h2>FMP economics, US Treasury curve and India risk premium</h2></div><Status tone="forecast">VENDOR · PIT LIMITED</Status></header>
-        <div className="eco-observation-table"><div className="head"><b>Indicator</b><b>Latest</b><b>Observation</b><b>Source</b><b>Use</b></div>{supplemental.observations.map((row) => <div key={row.series_id}><span><b>{row.label}</b><small>{row.country_code} · {row.frequency}</small></span><strong>{fmt(row.value)} <small>{row.unit}</small></strong><span>{row.observation_date || '—'}</span><a href={row.source_url || '#'} target="_blank" rel="noreferrer">FMP <ExternalLink size={12}/></a><span><Status>{row.quality_status}</Status><small>{row.evidence_role || 'Vendor reference'}</small></span></div>)}</div>
+        <div className="eco-observation-table"><div className="head"><b>Indicator</b><b>Latest</b><b>Observation</b><b>Source</b><b>Use</b></div>{supplemental.observations.map((row) => <div key={row.series_id}><span><b>{row.label}</b><small>{row.country_code} · {row.frequency}</small></span><strong>{fmt(row.value)} <small>{row.unit}</small></strong><span>{row.observation_date || '—'}</span><a href={row.source_url || '#'} target="_blank" rel="noreferrer">AGI supplemental source <ExternalLink size={12}/></a><span><Status>{row.quality_status}</Status><small>{row.evidence_role || 'Supplemental reference'}</small></span></div>)}</div>
         <footer className="eco-g20-footer"><Database size={14}/><span>{supplemental.policy}</span></footer>
       </section>}
 

@@ -27,7 +27,7 @@ export default function createPeIntelligenceRouter() {
   router.post('/admin/imports/preview',requireAdmin,async(req,res)=>{try{return res.json(await previewPrivateMarketsImport(req.body||{}))}catch(error){return res.status(400).json({error:error.message})}});
   router.post('/admin/imports/approve',requireAdmin,async(req,res)=>{try{return res.json(await approvePrivateMarketsImport(req.body||{}))}catch(error){return res.status(400).json({error:error.message})}});
   router.patch('/admin/entity-review/:id',requireAdmin,async(req,res)=>{try{return res.json(await resolvePrivateMarketsEntity(req.params.id,req.body?.status))}catch(error){return res.status(400).json({error:error.message})}});
-  router.get('/insider/activity',async(req,res)=>{try{return res.json(await getInsiderActivity(req.query))}catch(error){return res.status(503).json({error:error.message})}});
+  router.get('/insider/activity',async(req,res)=>{try{res.set('Cache-Control','public, max-age=60, stale-while-revalidate=300');return res.json(await getInsiderActivity(req.query))}catch(error){return res.status(503).json({error:error.message})}});
   router.get('/insider/admin/overview',requireAdmin,async(_req,res)=>{try{return res.json(await getInsiderAdminOverview())}catch(error){return res.status(503).json({error:error.message})}});
   router.post('/insider/admin/imports/preview',requireAdmin,async(req,res)=>{try{return res.json(await previewInsiderImport(req.body||{}))}catch(error){return res.status(400).json({error:error.message})}});
   router.post('/insider/admin/imports/approve',requireAdmin,async(req,res)=>{try{return res.json(await approveInsiderImport(req.body||{}))}catch(error){return res.status(400).json({error:error.message})}});
