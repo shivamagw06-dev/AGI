@@ -59,6 +59,7 @@ const PersonalWorkspace = React.lazy(() => import('@/pages/PersonalWorkspace'));
 const ResearchTerminalHome = React.lazy(() => import('@/components/Home/ResearchTerminalHome'));
 const HedgeFundPage = React.lazy(() => import('@/pages/HedgeFundPage'));
 const HedgeFundSignalPage = React.lazy(() => import('@/pages/HedgeFundSignalPage'));
+const StrategyLibrary = React.lazy(() => import('@/pages/StrategyLibrary'));
 const LiveAlphaPage = React.lazy(() => import('@/pages/LiveAlphaPage'));
 const PrivateEquityPage = React.lazy(() => import('@/pages/PrivateEquityPage'));
 const PrivateEquityFirmPage = React.lazy(() => import('@/pages/PrivateEquityFirmPage'));
@@ -203,6 +204,8 @@ function PublicRoutes() {
       <Route path="/live-alpha" element={gate('live_alpha', <LiveAlphaPage />)} />
       <Route path="/hedge-fund/alpha-opportunities" element={gate('hedge_fund', <HedgeFundSignalPage kind="alpha" />)} />
       <Route path="/hedge-fund/technical-analysis" element={<Navigate replace to="/hedge-fund/alpha-opportunities" />} />
+      <Route path="/hedge-fund/strategy-library" element={<StrategyLibrary />} />
+      <Route path="/strategies" element={<Navigate replace to="/hedge-fund/strategy-library" />} />
       <Route path="/hedge-fund/strategy-lab" element={<Navigate replace to="/hedge-fund" />} />
       <Route path="/private-markets" element={gate('private_markets', <PrivateEquityPage />)} />
       <Route path="/private-markets/firms/:slug" element={gate('private_markets', <PrivateEquityFirmPage />)} />
