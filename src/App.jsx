@@ -7,6 +7,7 @@ import { MarketDataProvider } from "@/contexts/MarketDataContext";
 import Footer from '@/components/Footer';
 import { Toaster } from '@/components/ui/toaster';
 import PinGate from '@/components/auth/PinGate';
+import RequireRegistration from '@/components/auth/RequireRegistration';
 
 const AdminRoutes = React.lazy(() => import('@/pages/admin/AdminRoutes'));
 const CategoryPage = React.lazy(() => import('@/pages/CategoryPage'));
@@ -102,11 +103,13 @@ function AppShell() {
     return (
       <MarketDataProvider>
         <PinGate>
-          <Suspense fallback={<div className="min-h-screen bg-[#f6f7f9] p-8 text-center text-slate-600">Loading AGI…</div>}>
-            <Routes>
-              <Route path="/agi/*" element={<AgiRoutes />} />
-            </Routes>
-          </Suspense>
+          <RequireRegistration feature="agi_workspace">
+            <Suspense fallback={<div className="min-h-screen bg-[#f6f7f9] p-8 text-center text-slate-600">Loading AGI…</div>}>
+              <Routes>
+                <Route path="/agi/*" element={<AgiRoutes />} />
+              </Routes>
+            </Suspense>
+          </RequireRegistration>
           <Toaster />
         </PinGate>
       </MarketDataProvider>
@@ -118,11 +121,13 @@ function AppShell() {
     return (
       <MarketDataProvider>
         <PinGate>
-          <Suspense fallback={<div className="min-h-screen bg-[#0b0e14] p-8 text-center text-slate-300">Loading Ask AGI…</div>}>
-            <Routes>
-              <Route path="/ask" element={<AskAgiPage />} />
-            </Routes>
-          </Suspense>
+          <RequireRegistration feature="ask_agi">
+            <Suspense fallback={<div className="min-h-screen bg-[#0b0e14] p-8 text-center text-slate-300">Loading Ask AGI…</div>}>
+              <Routes>
+                <Route path="/ask" element={<AskAgiPage />} />
+              </Routes>
+            </Suspense>
+          </RequireRegistration>
           <Toaster />
         </PinGate>
       </MarketDataProvider>
@@ -134,12 +139,14 @@ function AppShell() {
     return (
       <MarketDataProvider>
         <PinGate>
-          <Suspense fallback={<div className="min-h-screen bg-[#eef3f8] p-8 text-center text-slate-600">Loading Valuation Intelligence…</div>}>
-            <Routes>
-              <Route path="/valuation-intelligence" element={<ValuationIntelligence />} />
-              <Route path="/valuation-terminal" element={<ValuationTerminal />} />
-            </Routes>
-          </Suspense>
+          <RequireRegistration feature="valuation">
+            <Suspense fallback={<div className="min-h-screen bg-[#eef3f8] p-8 text-center text-slate-600">Loading Valuation Intelligence…</div>}>
+              <Routes>
+                <Route path="/valuation-intelligence" element={<ValuationIntelligence />} />
+                <Route path="/valuation-terminal" element={<ValuationTerminal />} />
+              </Routes>
+            </Suspense>
+          </RequireRegistration>
           <Toaster />
         </PinGate>
       </MarketDataProvider>
@@ -165,12 +172,16 @@ function AppShell() {
 }
 
 function PublicRoutes() {
+  const gate = (feature, element) => (
+    <RequireRegistration feature={feature}>{element}</RequireRegistration>
+  );
+
   return (
     <Routes>
       <Route path="/" element={<HomeLayout />} />
-      <Route path="/ask" element={<AskAgiPage />} />
-      <Route path="/predictions" element={<PredictionCentre />} />
-      <Route path="/workspace" element={<PersonalWorkspace />} />
+      <Route path="/ask" element={gate('ask_agi', <AskAgiPage />)} />
+      <Route path="/predictions" element={gate('forecasts', <PredictionCentre />)} />
+      <Route path="/workspace" element={gate('workspace', <PersonalWorkspace />)} />
 
       <Route path="/market-updates" element={<MarketUpdates />} />
       <Route path="/updates/:sectionId" element={<SectionArticlesPage />} />
@@ -184,38 +195,38 @@ function PublicRoutes() {
 
       <Route path="/markets" element={<Markets />} />
       <Route path="/sections/markets" element={<Navigate replace to="/markets" />} />
-      <Route path="/market-intelligence" element={<MarketIntelligence />} />
-      <Route path="/market-sector-intelligence" element={<MarketSectorIntelligence />} />
+      <Route path="/market-intelligence" element={gate('market_intelligence', <MarketIntelligence />)} />
+      <Route path="/market-sector-intelligence" element={gate('market_intelligence', <MarketSectorIntelligence />)} />
       <Route path="/macro-intelligence" element={<Navigate replace to="/global-markets" />} />
-      <Route path="/hedge-fund" element={<HedgeFundPage />} />
-      <Route path="/live-alpha" element={<LiveAlphaPage />} />
-      <Route path="/hedge-fund/alpha-opportunities" element={<HedgeFundSignalPage kind="alpha" />} />
+      <Route path="/hedge-fund" element={gate('hedge_fund', <HedgeFundPage />)} />
+      <Route path="/live-alpha" element={gate('live_alpha', <LiveAlphaPage />)} />
+      <Route path="/hedge-fund/alpha-opportunities" element={gate('hedge_fund', <HedgeFundSignalPage kind="alpha" />)} />
       <Route path="/hedge-fund/technical-analysis" element={<Navigate replace to="/hedge-fund/alpha-opportunities" />} />
       <Route path="/hedge-fund/strategy-lab" element={<Navigate replace to="/hedge-fund" />} />
-      <Route path="/private-markets" element={<PrivateEquityPage />} />
-      <Route path="/private-markets/firms/:slug" element={<PrivateEquityFirmPage />} />
-      <Route path="/private-markets/entities/:slug" element={<IntelligenceEntityPage />} />
+      <Route path="/private-markets" element={gate('private_markets', <PrivateEquityPage />)} />
+      <Route path="/private-markets/firms/:slug" element={gate('private_markets', <PrivateEquityFirmPage />)} />
+      <Route path="/private-markets/entities/:slug" element={gate('private_markets', <IntelligenceEntityPage />)} />
       <Route path="/private-equity" element={<Navigate replace to="/private-markets" />} />
-      <Route path="/private-equity/firms/:slug" element={<PrivateEquityFirmPage />} />
-      <Route path="/global-markets" element={<GlobalMarketsPage />} />
-      <Route path="/economics" element={<EconomicsPage />} />
-      <Route path="/insider-activity" element={<InsiderActivityPage />} />
+      <Route path="/private-equity/firms/:slug" element={gate('private_markets', <PrivateEquityFirmPage />)} />
+      <Route path="/global-markets" element={gate('global_markets', <GlobalMarketsPage />)} />
+      <Route path="/economics" element={gate('economics', <EconomicsPage />)} />
+      <Route path="/insider-activity" element={gate('insider', <InsiderActivityPage />)} />
       <Route path="/global" element={<Navigate replace to="/global-markets" />} />
       <Route path="/global-intelligence" element={<Navigate replace to="/global-markets" />} />
       <Route path="/economy" element={<Navigate replace to="/economics" />} />
-      <Route path="/pre-market" element={<PreMarketIntelligence />} />
+      <Route path="/pre-market" element={gate('market_intelligence', <PreMarketIntelligence />)} />
       <Route path="/updates/pre-market" element={<Navigate replace to="/pre-market" />} />
-      <Route path="/market-data" element={<MarketDataCentre />} />
-      <Route path="/data-health" element={<DataHealthSheet />} />
-      <Route path="/research/stocks/:symbol" element={<Nifty500StockResearch />} />
-      <Route path="/portfolio" element={<PortfolioDesk />} />
-      <Route path="/themes/:themeId" element={<ThemeDesk />} />
+      <Route path="/market-data" element={gate('market_intelligence', <MarketDataCentre />)} />
+      <Route path="/data-health" element={gate('market_intelligence', <DataHealthSheet />)} />
+      <Route path="/research/stocks/:symbol" element={gate('company_research', <Nifty500StockResearch />)} />
+      <Route path="/portfolio" element={gate('sector_theme', <PortfolioDesk />)} />
+      <Route path="/themes/:themeId" element={gate('sector_theme', <ThemeDesk />)} />
       <Route path="/themes" element={<Navigate replace to="/themes/credit_growth" />} />
-      <Route path="/sectors/:sectorId" element={<SectorDesk />} />
-      <Route path="/research/workflow" element={<ResearchWorkflowDesk />} />
-      <Route path="/ipo-intelligence" element={<IpoIntelligencePage />} />
+      <Route path="/sectors/:sectorId" element={gate('sector_theme', <SectorDesk />)} />
+      <Route path="/research/workflow" element={gate('sector_theme', <ResearchWorkflowDesk />)} />
+      <Route path="/ipo-intelligence" element={gate('ipo', <IpoIntelligencePage />)} />
       <Route path="/ipos" element={<Navigate replace to="/ipo-intelligence" />} />
-      <Route path="/ipos/:symbol" element={<IpoDetailPage />} />
+      <Route path="/ipos/:symbol" element={gate('ipo', <IpoDetailPage />)} />
 
       {/* Legacy redirects */}
       <Route path="/companies" element={<Navigate replace to="/company-updates" />} />

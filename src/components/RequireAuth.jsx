@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import { supabase } from '@/lib/supabaseClient';
+import { buildLoginUrl } from '@/lib/accessPolicy';
 
 export default function RequireAuth({ children }) {
+  const location = useLocation();
   const [user, setUser] = useState();
   const [loading, setLoading] = useState(true);
   useEffect(() => {
@@ -11,5 +13,7 @@ export default function RequireAuth({ children }) {
     });
   }, []);
   if (loading) return null;
-  return user ? children : <Navigate to="/login" replace />;
+  if (user) return children;
+  const returnTo = `${location.pathname}${location.search || ''}` || '/';
+  return <Navigate to={buildLoginUrl({ returnTo, mode: 'signin' })} replace />;
 }

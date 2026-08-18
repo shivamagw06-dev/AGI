@@ -18,6 +18,7 @@ import { firstNameFromUser } from '@/lib/authValidation';
 import Logo from '@/components/Layout/Logo';
 import MarketOutlookStrip from '@/components/Home/MarketOutlookStrip';
 import ResearchSearch from '@/components/Search/ResearchSearch';
+import { buildLoginUrl } from '@/lib/accessPolicy';
 
 const NAV = [
   { name: 'Home', path: '/' },
@@ -40,6 +41,9 @@ export default function Header() {
   const [handle, setHandle] = useState('');
   const userIsAdmin = isAdmin(user);
   const firstName = firstNameFromUser(user);
+  const returnTo = `${location.pathname}${location.search || ''}` || '/';
+  const loginHref = buildLoginUrl({ returnTo, mode: 'signin' });
+  const signupHref = buildLoginUrl({ returnTo, mode: 'signup' });
 
   useEffect(() => {
     if (!user) {
@@ -240,17 +244,17 @@ export default function Header() {
                 <>
                   <button
                     type="button"
-                    onClick={() => go('/login?mode=signin')}
+                    onClick={() => go(loginHref)}
                     className="hidden sm:block text-sm font-medium text-[#111111] hover:underline px-2"
                   >
                     Login
                   </button>
                   <button
                     type="button"
-                    onClick={() => go('/#newsletter')}
+                    onClick={() => go(signupHref)}
                     className="hidden sm:block rounded-md bg-[#0b1f33] text-white text-sm font-bold px-4 py-1.5 hover:bg-[#163353]"
                   >
-                    Subscribe
+                    Sign up free
                   </button>
                 </>
               )}
@@ -286,17 +290,17 @@ export default function Header() {
             <div className="grid grid-cols-2 gap-2 py-3">
               <button
                 type="button"
-                onClick={() => go('/login?mode=signin')}
+                onClick={() => go(loginHref)}
                 className="min-h-[44px] border border-[#111111] px-3 text-sm font-bold text-[#111111]"
               >
                 Login
               </button>
               <button
                 type="button"
-                onClick={() => go('/#newsletter')}
+                onClick={() => go(signupHref)}
                 className="min-h-[44px] rounded-md bg-[#0b1f33] px-3 text-sm font-bold text-white"
               >
-                Subscribe
+                Sign up free
               </button>
             </div>
           ) : (

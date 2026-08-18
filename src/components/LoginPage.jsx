@@ -1,9 +1,10 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { isSupabaseConfigured, supabase } from '../lib/supabaseClient';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { isAdmin } from '@/lib/adminAuth';
 import { validateSignup, passwordChecks, isValidEmail } from '@/lib/authValidation';
+import { getFeatureCopy, getFeatureForPath, UNLOCK_BENEFITS } from '@/lib/accessPolicy';
 import { ArrowLeft, Check, Eye, EyeOff, Lock, Mail } from 'lucide-react';
 
 const AUTH_UNCONFIGURED =
@@ -66,6 +67,9 @@ export default function LoginPage() {
   const navigate = useNavigate();
   const next = searchParams.get('next') || searchParams.get('redirect') || '/';
   const safeNext = next.startsWith('/') ? next : '/';
+  const unlockFeature = getFeatureForPath(safeNext);
+  const unlockCopy = unlockFeature ? getFeatureCopy(unlockFeature) : null;
+  const wantGoogle = searchParams.get('oauth') === 'google';
   const [mode, setMode] = useState(searchParams.get('mode') === 'signin' ? 'signin' : 'signup');
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
@@ -87,19 +91,43 @@ export default function LoginPage() {
       ? `${window.location.origin}${safeNext}`
       : 'https://agarwalglobalinvestments.com';
 
-  const subtitle = useMemo(
-    () =>
-      mode === 'signup'
-        ? 'Create your AGI account with email and password.'
-        : 'Sign in with your verified email and password.',
-    [mode]
-  );
+  const subtitle = useMemo(() => {
+    if (unlockCopy && mode === 'signup') {
+      return unlockCopy.blurb;
+    }
+    return mode === 'signup'
+      ? 'Create your free AGI account to unlock intelligence features.'
+      : 'Sign in with your verified email and password.';
+  }, [mode, unlockCopy]);
 
   const resetAlerts = () => {
     setMessage('');
     setErrorMessage('');
     setFieldErrors({});
   };
+
+  const handleOAuthLogin = async (provider) => {
+    try {
+      setOauthLoading(provider);
+      resetAlerts();
+      if (!isSupabaseConfigured) throw new Error(AUTH_UNCONFIGURED);
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: { redirectTo },
+      });
+      if (error) throw error;
+    } catch (err) {
+      setErrorMessage(err.message || `Unable to continue with ${provider}.`);
+      setOauthLoading(null);
+    }
+  };
+
+  useEffect(() => {
+    if (!wantGoogle || user) return;
+    handleOAuthLogin('google');
+    // Auto-start Google only once when arriving from Unlock CTA.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [wantGoogle]);
 
   const handleSignup = async (e) => {
     e.preventDefault();
@@ -202,22 +230,6 @@ export default function LoginPage() {
     }
   };
 
-  const handleOAuthLogin = async (provider) => {
-    try {
-      setOauthLoading(provider);
-      resetAlerts();
-      if (!isSupabaseConfigured) throw new Error(AUTH_UNCONFIGURED);
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider,
-        options: { redirectTo },
-      });
-      if (error) throw error;
-    } catch (err) {
-      setErrorMessage(err.message || `Unable to continue with ${provider}.`);
-      setOauthLoading(null);
-    }
-  };
-
   if (user) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#f5f7fa] px-4">
@@ -241,24 +253,29 @@ export default function LoginPage() {
       <div className="mx-auto grid max-w-5xl overflow-hidden border border-[#dce1e7] bg-white shadow-[0_16px_50px_rgba(15,35,60,0.08)] lg:grid-cols-2">
         <aside className="hidden bg-[#0d1d33] p-10 text-white lg:block">
           <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#a7c5ec]">
-            Agarwal Global Investments
+            {unlockCopy ? 'Unlock AGI Intelligence' : 'Agarwal Global Investments'}
           </p>
           <h1 className="mt-5 text-4xl font-bold leading-tight">
-            Understand markets.
-            <br />
-            Stay in control.
+            {unlockCopy ? unlockCopy.title : (
+              <>
+                Understand markets.
+                <br />
+                Stay in control.
+              </>
+            )}
           </h1>
           <p className="mt-5 max-w-sm text-sm leading-relaxed text-[#c6d4e7]">
-            Create a secure AGI account to save research preferences, unlock personal workspace tools,
-            and keep your session protected with an optional device PIN.
+            {unlockCopy
+              ? unlockCopy.blurb
+              : 'Create a free AGI account to unlock company intelligence, valuations, Ask AGI, quantitative signals and saved research.'}
           </p>
           <ul className="mt-10 space-y-4 text-sm text-[#dbe7f6]">
-            {[
+            {(unlockCopy ? UNLOCK_BENEFITS : [
               'Email + password with verification',
               'Persistent signed-in sessions',
               'Optional device PIN unlock',
               'No trading calls or investment recommendations',
-            ].map((item) => (
+            ]).map((item) => (
               <li key={item} className="flex items-start gap-3">
                 <Check className="mt-0.5 h-4 w-4 shrink-0 text-[#76d2a4]" />
                 {item}
@@ -275,7 +292,11 @@ export default function LoginPage() {
             <ArrowLeft className="h-3.5 w-3.5" /> Back to public research
           </Link>
           <h2 className="mt-8 text-2xl font-bold text-[#18202b]">
-            {mode === 'signup' ? 'Create your account' : 'Welcome back'}
+            {mode === 'signup'
+              ? unlockCopy
+                ? 'Create your free AGI account'
+                : 'Create your account'
+              : 'Welcome back'}
           </h2>
           <p className="mt-2 text-sm text-[#667085]">{subtitle}</p>
 
