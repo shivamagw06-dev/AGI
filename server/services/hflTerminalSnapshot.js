@@ -19,7 +19,7 @@ function credentials() {
   return url && key ? { url, key } : null;
 }
 
-async function rest(path, { method = 'GET', body, prefer } = {}) {
+async function rest(path, { method = 'GET', body, prefer, timeoutMs = 3_000 } = {}) {
   const auth = credentials();
   if (!auth) {
     const error = new Error('HFL snapshot store requires Supabase service credentials.');
@@ -35,7 +35,12 @@ async function rest(path, { method = 'GET', body, prefer } = {}) {
     headers['Content-Type'] = 'application/json';
   }
   if (prefer) headers.Prefer = prefer;
-  const response = await fetch(`${auth.url}/rest/v1/${path}`, { method, headers, body: body === undefined ? undefined : JSON.stringify(body) });
+  const response = await fetch(`${auth.url}/rest/v1/${path}`, {
+    method,
+    headers,
+    body: body === undefined ? undefined : JSON.stringify(body),
+    signal: AbortSignal.timeout(timeoutMs),
+  });
   if (!response.ok) {
     const detail = (await response.text()).slice(0, 300);
     const error = new Error(`HFL snapshot Supabase ${method} failed (${response.status}): ${detail}`);
@@ -163,21 +168,28 @@ export async function getHflTerminalFromReadModel({
     }
   }
 
-  try {
-    const refreshed = await refreshHflTerminalSnapshot({ engineFetch, limit });
-    if (refreshed?.ok) return { data: refreshed, source: 'engine_snapshot' };
-  } catch {
-    // Last resort: any stored snapshot even if old.
-    if (credentials()) {
-      try {
-        const stored = await readLatestHflTerminalSnapshot({ maxAgeMs: Number.POSITIVE_INFINITY });
-        if (stored?.ok) return { data: { ...stored, status: 'stale', freshness: 'stale' }, source: 'supabase_expired' };
-      } catch {
-        /* ignore */
-      }
-    }
-  }
-  return null;
+  // Page traffic must never wait for a full-universe Python scan. Start one
+  // singleflight refresh in the background and return a lightweight read model.
+  refreshHflTerminalSnapshot({ engineFetch, limit }).catch(() => null);
+  return {
+    source: 'warming',
+    data: {
+      ok: true,
+      status: 'warming',
+      freshness: 'unavailable',
+      read_model: 'supabase_hfl_terminal',
+      generated_at: null,
+      source_as_of: null,
+      hero: { universe_scanned: 0, live_opportunities: 0, companies_flagged: 0 },
+      cards: [],
+      overlap: [],
+      research_queue: [],
+      market_dashboard: {},
+      daily_intelligence: { new_opportunities: [], removed_opportunities: [], note: 'Preparing the latest research snapshot.' },
+      policy: 'Research snapshot is being prepared. No live request-time warehouse scan was run.',
+      cache: { stale: true, age_ms: null, source: 'warming' },
+    },
+  };
 }
 
 export function getHflSnapshotRefreshStatus() {

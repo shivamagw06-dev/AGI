@@ -3,6 +3,7 @@ import { describe, it, mock } from 'node:test';
 
 import {
   freshnessForAge,
+  getHflTerminalFromReadModel,
   getHflSnapshotRefreshStatus,
   refreshHflTerminalSnapshot,
 } from './hflTerminalSnapshot.js';
@@ -23,6 +24,22 @@ describe('HFL terminal snapshot freshness', () => {
 });
 
 describe('HFL terminal snapshot singleflight', () => {
+  it('returns a warming read model without waiting for a cold engine scan', async () => {
+    const engineFetch = mock.fn(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 50));
+      return { ok: false, status: 503, data: { error: 'warming' } };
+    });
+    const started = Date.now();
+
+    const result = await getHflTerminalFromReadModel({ engineFetch, limit: 12 });
+
+    assert.equal(result.source, 'warming');
+    assert.equal(result.data.status, 'warming');
+    assert.equal(result.data.ok, true);
+    assert.ok(Date.now() - started < 40);
+    await new Promise((resolve) => setTimeout(resolve, 60));
+  });
+
   it('launches only one engine snapshot job for concurrent refreshers', async () => {
     let calls = 0;
     const engineFetch = mock.fn(async () => {
