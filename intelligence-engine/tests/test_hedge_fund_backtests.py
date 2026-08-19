@@ -191,3 +191,36 @@ def test_warehouse_queries_only_reference_columns_that_exist():
             assert not missing, f"{tab_id} has no column(s) {sorted(missing)}"
             checked += 1
     assert checked >= 2, "the warehouse SELECTs moved; this guard stopped checking"
+
+
+def test_monthly_history_is_refused_rather_than_annualised_as_daily():
+    """daily_market_history is monthly before 2025: median gap 28-30 days, with
+    12 bars in 2023 and 12 in 2024. Annualising that by 252 sessions overstates
+    the result by about sqrt(20), which is how the momentum backtest came to
+    report a 186% annualised return."""
+    from datetime import date
+
+    from hedge_fund_lab.backtests import momentum_backtest
+
+    rows = []
+    for month in range(1, 13):
+        for year in (2022, 2023, 2024, 2025):
+            for symbol, growth in (("WIN", 1.02), ("MID", 1.01), ("LOSE", 0.99)):
+                rows.append({"date": date(year, month, 15).isoformat(), "symbol": symbol,
+                             "close": 100 * growth ** (year * 12 + month), "volume": 100_000})
+
+    result = momentum_backtest(rows, classifications={"WIN": "A", "MID": "B", "LOSE": "C"},
+                               config={"holdings": 1, "min_average_daily_value": 1})
+    assert result["ok"] is False
+    assert result["error"] == "price_history_is_not_daily"
+    assert result["price_frequency"]["median_gap_days"] > 20
+
+
+def test_genuinely_daily_history_still_passes_the_frequency_check():
+    from hedge_fund_lab.backtests import _clean_prices, price_frequency_receipt
+
+    rows = [{"date": d, "symbol": "AAA", "close": 100.0, "volume": 1} for d in _sessions(120)]
+    receipt = price_frequency_receipt(_clean_prices(rows))
+    assert receipt["is_daily"] is True
+    assert receipt["median_gap_days"] == 1
+    assert receipt["daily_history_appears_to_start"] is not None

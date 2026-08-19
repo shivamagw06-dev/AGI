@@ -182,6 +182,66 @@ def corporate_action_adjustment_receipt(
     }
 
 
+def price_frequency_receipt(
+    prices: dict[str, list[dict[str, Any]]], min_daily_share: float = 0.80,
+) -> dict[str, Any]:
+    """Confirm the bars really are daily before anything annualises them.
+
+    Every metric in this module scales by 252 - `sqrt(252)` for volatility,
+    `equity ** (252 / n)` for the annualised return - which is only meaningful
+    if one observation is one session. daily_market_history is not daily: on
+    2026-08-19 the median gap between bars was 28 to 30 days, with 12 bars in
+    2023, 12 in 2024, 92 in 2025 and 160 in 2026. It is a monthly series with a
+    daily tail that begins partway through 2025.
+
+    Annualising a monthly series as if it were daily inflates the result by
+    roughly the square root of twenty. That is how this harness came to report
+    a 186% annualised return, and it is the kind of number that ends up in a
+    deck, so the backtest fails closed rather than publishing it.
+    """
+    gaps: list[int] = []
+    daily_from: str | None = None
+    for bars in prices.values():
+        days = sorted({_as_date(bar["date"]) for bar in bars if _as_date(bar["date"])})
+        gaps.extend((b - a).days for a, b in zip(days, days[1:]))
+    if not gaps:
+        return {"status": "FAILED", "is_daily": False, "observations": 0,
+                "reason": "no_dated_observations"}
+
+    gaps.sort()
+    median_gap = gaps[len(gaps) // 2]
+    daily_like = sum(1 for gap in gaps if 1 <= gap <= 4)
+    share = daily_like / len(gaps)
+
+    # Where the daily tail starts: the earliest date after which spacing stays
+    # daily. Reported so the caller knows the window that is actually usable.
+    for bars in prices.values():
+        days = sorted({_as_date(bar["date"]) for bar in bars if _as_date(bar["date"])})
+        run_start = None
+        for a, b in zip(days, days[1:]):
+            if 1 <= (b - a).days <= 4:
+                run_start = run_start or a
+            else:
+                run_start = None
+        if run_start and (daily_from is None or run_start.isoformat() < daily_from):
+            daily_from = run_start.isoformat()
+
+    is_daily = share >= min_daily_share
+    return {
+        "status": "PASSED" if is_daily else "FAILED",
+        "is_daily": is_daily,
+        "observations": len(gaps) + len(prices),
+        "median_gap_days": median_gap,
+        "daily_spaced_share": round(share, 4),
+        "minimum_required_share": min_daily_share,
+        "daily_history_appears_to_start": daily_from,
+        "rule": ("Metrics annualise by 252 sessions, so at least "
+                 f"{int(min_daily_share * 100)}% of gaps between observations must be "
+                 "1 to 4 days. A monthly series annualised as daily overstates "
+                 "the result by roughly sqrt(20)."),
+    }
+
+
 def price_point_in_time_receipt(result: dict[str, Any]) -> dict[str, Any]:
     """Certify temporal integrity for price-only research without filing metadata."""
     validation = result.get("validation") or {}
@@ -288,6 +348,10 @@ def momentum_backtest(
     """
     cfg = {**DEFAULTS, **(config or {})}
     prices = _clean_prices(rows, actions)
+    frequency = price_frequency_receipt(prices)
+    if not frequency["is_daily"]:
+        return {"ok": False, "error": "price_history_is_not_daily",
+                "model_version": MODEL_VERSION, "price_frequency": frequency}
     lookback, skip = int(cfg["lookback_sessions"]), int(cfg["skip_recent_sessions"])
     rebalance_every, holdings = int(cfg["rebalance_sessions"]), int(cfg["holdings"])
     if lookback <= skip or holdings < 1 or rebalance_every < 1:
@@ -417,6 +481,10 @@ def trend_backtest(
     """Long-only moving-average trend portfolio with next-session execution."""
     cfg = {**DEFAULTS, "fast_window": 50, "slow_window": 200, "slope_window": 20, **(config or {})}
     prices = _clean_prices(rows, actions)
+    frequency = price_frequency_receipt(prices)
+    if not frequency["is_daily"]:
+        return {"ok": False, "error": "price_history_is_not_daily",
+                "model_version": MODEL_VERSION, "price_frequency": frequency}
     fast, slow, slope_window = int(cfg["fast_window"]), int(cfg["slow_window"]), int(cfg["slope_window"])
     rebalance_every, holdings = int(cfg["rebalance_sessions"]), int(cfg["holdings"])
     required = slow + slope_window
@@ -548,6 +616,10 @@ def breakout_backtest(
     cfg = {**DEFAULTS, "rebalance_sessions": 5, "entry_window": 55, "exit_window": 20,
            "atr_window": 14, "volume_window": 20, "minimum_volume_ratio": 1.0, **(config or {})}
     prices = _clean_prices(rows, actions)
+    frequency = price_frequency_receipt(prices)
+    if not frequency["is_daily"]:
+        return {"ok": False, "error": "price_history_is_not_daily",
+                "model_version": MODEL_VERSION, "price_frequency": frequency}
     entry_window, exit_window = int(cfg["entry_window"]), int(cfg["exit_window"])
     atr_window, volume_window = int(cfg["atr_window"]), int(cfg["volume_window"])
     rebalance_every, holdings = int(cfg["rebalance_sessions"]), int(cfg["holdings"])
@@ -678,6 +750,10 @@ def mean_reversion_backtest(
     cfg = {**DEFAULTS, "rebalance_sessions": 5, "mean_window": 20, "trend_window": 200,
            "trend_slope_window": 20, "entry_z": 2.0, "exit_z": 0.5, **(config or {})}
     prices = _clean_prices(rows, actions)
+    frequency = price_frequency_receipt(prices)
+    if not frequency["is_daily"]:
+        return {"ok": False, "error": "price_history_is_not_daily",
+                "model_version": MODEL_VERSION, "price_frequency": frequency}
     mean_window, trend_window = int(cfg["mean_window"]), int(cfg["trend_window"])
     slope_window, rebalance_every = int(cfg["trend_slope_window"]), int(cfg["rebalance_sessions"])
     holdings = int(cfg["holdings"])
