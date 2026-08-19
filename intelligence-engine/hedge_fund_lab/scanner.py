@@ -25,13 +25,28 @@ _SANE_BOUNDS: dict[str, tuple[float, float]] = {
     "pe": (3.0, 200.0),
     "forward_pe": (3.0, 200.0),
     "pb": (0.05, 50.0),
-    "ev_ebitda": (1.0, 80.0),
+    "ev_ebitda": (3.0, 60.0),
     "ev_sales": (0.05, 60.0),
     "roe": (-100.0, 150.0),
     "profit_margin": (-100.0, 100.0),
     "dividend_yield": (0.0, 25.0),
     "debt_to_equity": (0.0, 1000.0),
 }
+
+
+# Values inside the sane band but low enough that the denominator is probably
+# distorted (depressed or one-off earnings, unconsolidated EBITDA, missing net
+# debt). These are surfaced with a verification flag rather than suppressed.
+_SUSPECT_BELOW: dict[str, float] = {
+    "ev_ebitda": 5.0,
+    "pe": 6.0,
+    "pb": 0.2,
+}
+
+
+def _suspect_multiple(metric: str, value: Optional[float]) -> bool:
+    floor = _SUSPECT_BELOW.get(metric)
+    return floor is not None and value is not None and value < floor
 
 
 def _sane(row: dict[str, Any], field: str) -> Optional[float]:
@@ -580,7 +595,9 @@ def _scan_value(universe, medians, limit) -> list[dict[str, Any]]:
             continue
         # A cheap multiple with sub-par returns is a trap, not value.
         trap = roe is not None and roe_med is not None and roe < roe_med
-        normalization_required = metric == "ev_ebitda" or discount <= -75
+        # Previously every EV/EBITDA row was flagged regardless of value, so the
+        # status could not separate a plausible 8x from an impossible 1.03x.
+        normalization_required = _suspect_multiple(metric, value) or discount <= -75
         classification = (
             "Potential value trap"
             if trap
@@ -615,7 +632,7 @@ def _scan_value(universe, medians, limit) -> list[dict[str, Any]]:
                 ),
             }
         )
-    out.sort(key=lambda r: r["discount_pct"])
+    out.sort(key=lambda r: (r["validation_status"] != "screen_validated", r["discount_pct"]))
     return out[:limit]
 
 
