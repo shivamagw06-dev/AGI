@@ -164,3 +164,30 @@ def test_a_contradicted_ratio_is_not_applied():
 
     cleaned = _clean_prices(rows, actions)["AAA"]
     assert all(bar["close"] == 100.0 for bar in cleaned)
+
+
+def test_warehouse_queries_only_reference_columns_that_exist():
+    """A SELECT naming a column the table lacks surfaces to the caller as an
+    opaque 'warehouse_unavailable', with the real cause in a truncated detail
+    string. Adding a non-existent `ratio` column did exactly that in production."""
+    import re
+
+    from hedge_fund_lab import backtests
+    from institutional_warehouse.schema import TABS
+
+    source = open(backtests.__file__).read()
+    tabs = {tab.id: {c.key for c in tab.columns} for tab in TABS}
+    checked = 0
+    for table_key, tab_id in (("actions_table", "corporate_actions"),
+                              ("table", "daily_market_history")):
+        pattern = r"SELECT\s+((?:(?!FROM|SELECT).)*?)\s+FROM \{" + table_key + r"\}"
+        for match in re.finditer(pattern, source, re.S):
+            columns = {
+                part.strip().split()[-1]
+                for part in match.group(1).split(",")
+                if part.strip() and "(" not in part
+            }
+            missing = columns - tabs[tab_id] - {"*"}
+            assert not missing, f"{tab_id} has no column(s) {sorted(missing)}"
+            checked += 1
+    assert checked >= 2, "the warehouse SELECTs moved; this guard stopped checking"

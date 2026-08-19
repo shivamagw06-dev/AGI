@@ -874,7 +874,7 @@ def run_from_warehouse(strategy: str, config: dict[str, Any] | None = None) -> d
         actions_table = db.physical_table("corporate_actions")
         actions = db.query(
             f'''SELECT symbol, action_date, effective_date, action_type,
-                       split, bonus, ratio, rights, dividend
+                       split, bonus, rights, dividend
                 FROM {actions_table}
                 WHERE COALESCE(sys_published, 1) = 1
                   AND symbol IN ({marks})
