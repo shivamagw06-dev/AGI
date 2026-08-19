@@ -200,14 +200,15 @@ def _engine_rows(engine: str, limit: int) -> list[dict[str, Any]]:
     risk, liq = _risk_and_liquidity()
     out: list[dict[str, Any]] = []
     for row in payload.get("rows") or []:
-        for sig in (row.get("signals") or [row]):
-            if sig.get("engine") != engine:
-                continue
-            sym = str(sig.get("symbol") or row.get("symbol") or "").upper()
-            if not sym:
-                continue
-            sig = {**sig, "symbol": sym, "sector": sig.get("sector") or row.get("sector")}
-            out.append(_base_row(sig, risk.get(sym), liq.get(sym)))
+        sig = (row.get("engines") or {}).get(engine)
+        if not sig:
+            continue
+        sym = str(sig.get("symbol") or row.get("symbol") or row.get("ticker") or "").upper()
+        if not sym:
+            continue
+        sig = {**sig, "symbol": sym, "engine": engine,
+               "sector": sig.get("sector") or row.get("sector")}
+        out.append(_base_row(sig, risk.get(sym), liq.get(sym)))
     out.sort(key=lambda r: -(abs(r.get("signed_score") or 0)))
     return out[:limit]
 

@@ -255,6 +255,11 @@ def fetch_live_alpha_rows(*, limit: int = 200) -> dict[str, Any]:
                 "engine_agreement": agreement,
                 "contributing_engines": contributing,
                 "engine_count": len(active),
+                # Raw per-engine signals, keyed by engine id. The aggregate
+                # fields above collapse these into one confluence flag, which
+                # is all the confluence scanner needs; per-engine strategies
+                # need the underlying signal (alpha_z, quality, factor_values).
+                "engines": dict(row["engines"]),
                 "signal_age_minutes": round(age_min) if age_min is not None else None,
                 "newest_signal_at": row.get("newest"),
                 "why": (
