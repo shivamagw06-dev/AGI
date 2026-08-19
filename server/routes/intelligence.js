@@ -2390,6 +2390,7 @@ export default function createIntelligenceRouter() {
   });
 
   // Hedge Fund Strategy Lab — cold-start heavy; timeouts must exceed client AbortSignal.
+  router.get('/hedge-fund-lab/corporate-action-audit', kfGet('/v1/hedge-fund-lab/corporate-action-audit'));
   router.get('/hedge-fund-lab/live-strategies', kfGet('/v1/hedge-fund-lab/live-strategies'));
   router.get('/hedge-fund-lab/live-strategies/:id', (req, res, next) =>
     kfGet(`/v1/hedge-fund-lab/live-strategies/${encode(req.params.id)}`)(req, res, next));

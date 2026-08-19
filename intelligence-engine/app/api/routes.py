@@ -10219,6 +10219,22 @@ async def valuation_consensus_seed(payload: dict[str, Any] = Body(default={})):
 # ---------------------------------------------------------------------------
 
 
+@router.get("/hedge-fund-lab/corporate-action-audit")
+def hedge_fund_corporate_action_audit(limit: int = 30000):
+    """What the price adjustment can and cannot handle.
+
+    daily_market_history.adjusted_close is unpopulated, so returns must be
+    computed from an adjustment built off corporate_actions. This is the
+    receipt the validation registry asks for under CORPORATE_ACTION_UNVERIFIED,
+    which currently blocks the pairs strategy.
+    """
+    from hedge_fund_lab.price_adjustment import audit
+    from institutional_warehouse import store
+
+    actions = store.all_rows("corporate_actions", limit=max(1, min(int(limit or 30000), 60000)))
+    return audit(actions or [])
+
+
 @router.get("/hedge-fund-lab/live-strategies")
 def hedge_fund_live_strategies(limit: int = 12):
     """Intraday-native strategies: live engine signal + historical risk/liquidity.
