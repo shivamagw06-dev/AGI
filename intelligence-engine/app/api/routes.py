@@ -19232,6 +19232,22 @@ async def warehouse_import_capital_iq_run(
     )
 
 
+@router.get("/warehouse/import/vendor-exports")
+async def warehouse_vendor_exports_preview():
+    """Parsed row counts for the checked-in vendor exports, without writing."""
+    from financial_warehouse_completion.vendor_exports import collect, fingerprint
+    parsed = collect()
+    return {"ok": True, "source_hash": fingerprint(),
+            "reports": parsed["reports"], "counts": parsed["counts"]}
+
+
+@router.post("/warehouse/import/vendor-exports")
+async def warehouse_vendor_exports_seed(payload: dict[str, Any] = Body(default={})):
+    """Seed vendor exports into the warehouse. Idempotent unless force=true."""
+    from financial_warehouse_completion.vendor_exports import seed_if_needed
+    return seed_if_needed(force=bool(payload.get("force", False)))
+
+
 @router.get("/warehouse/import/capital-iq-workbook")
 async def warehouse_import_capital_iq_workbook_status():
     from financial_warehouse_completion.production import capiq_workbook_status

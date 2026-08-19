@@ -204,6 +204,34 @@ async def lifespan(_app: FastAPI):
             threading.Thread(target=_run_sector_history_seed, name="historical-sector-baseline", daemon=True).start()
     except Exception as exc:
         log.warning("historical_sector_baseline_seed_thread_failed", extra={"error": str(exc)[:160]})
+    # Seed the checked-in Trendlyne / Capital IQ vendor exports. Fills the two
+    # median tables that were empty (relative-value scans were deriving medians
+    # from a thin cross-section), plus per-name beta, ADV and industry context.
+    # Fingerprinted and idempotent: an unchanged deploy is one registry lookup.
+    try:
+        import threading
+
+        from financial_warehouse_completion.vendor_exports import seed_if_needed as seed_vendor_exports
+
+        def _run_vendor_export_seed() -> None:
+            try:
+                result = seed_vendor_exports()
+                log.info(
+                    "vendor_export_seed",
+                    extra={
+                        "ok": result.get("ok"),
+                        "skipped": result.get("skipped"),
+                        "rows_imported": result.get("rows_imported"),
+                        "source_hash": result.get("source_hash"),
+                    },
+                )
+            except Exception as exc:  # pragma: no cover - defensive startup path
+                log.warning("vendor_export_seed_failed", extra={"error": str(exc)[:200]})
+
+        if not migration_priority:
+            threading.Thread(target=_run_vendor_export_seed, name="vendor-export-seed", daemon=True).start()
+    except Exception as exc:
+        log.warning("vendor_export_seed_thread_failed", extra={"error": str(exc)[:160]})
     # Import the checked-in licensed India macro workbook into private tables.
     # The importer is fingerprinted by source hash and uses idempotent upserts;
     # raw vendor values are never exposed through the public macro API.
