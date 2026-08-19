@@ -30,16 +30,30 @@ def _row(ticker, value, *, industry="Mixed Industry", sector="Industrials", metr
     return row
 
 
-def test_extreme_ev_ebitda_discount_requires_normalization():
+def test_impossible_ev_ebitda_is_rejected_not_surfaced():
+    """1.1x EBITDA is a broken denominator, not a discount.
+
+    It used to pass the sanity band and be surfaced with a warning label. The
+    band now rejects it outright, which is what the module's own policy says:
+    a value outside a plausible range is treated as missing rather than
+    surfaced as an opportunity.
+    """
     rows = [_row("CHEAP", 1.1)] + [_row(f"P{i}", 10 + i) for i in range(5)]
     medians = {"Mixed Industry": {"count": 6, "ev_ebitda": 10.0, "roe": 18.0}}
-    hit = _scan_value(rows, medians, 10)[0]
+    assert "CHEAP" not in {hit["ticker"] for hit in _scan_value(rows, medians, 10)}
+
+
+def test_suspect_but_plausible_ev_ebitda_requires_normalization():
+    """A value inside the band but low enough to doubt is kept and flagged."""
+    rows = [_row("SUSPECT", 3.5)] + [_row(f"P{i}", 10 + i) for i in range(5)]
+    medians = {"Mixed Industry": {"count": 6, "ev_ebitda": 10.0, "roe": 18.0}}
+    hit = next(h for h in _scan_value(rows, medians, 10) if h["ticker"] == "SUSPECT")
     assert hit["validation_status"] == "normalization_required"
     assert "headline" in hit["classification"].lower()
 
 
 def test_pair_screen_never_claims_market_neutrality():
-    rows = [_row(f"C{i}", 2 + i * 5) for i in range(6)]
+    rows = [_row(f"C{i}", 4 + i * 5) for i in range(6)]  # all legs inside the sanity band
     hit = _scan_pairs(rows, {"Mixed Industry": {"ev_ebitda": 10}}, 10)[0]
     assert hit["promotion_status"] == "not_market_neutral"
     assert hit["classification"] == "Valuation dispersion candidate"
