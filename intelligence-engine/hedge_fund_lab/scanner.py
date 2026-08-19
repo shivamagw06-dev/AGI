@@ -330,6 +330,13 @@ def _universe_from_warehouse() -> list[dict[str, Any]]:
     except Exception:
         wh_consensus = {}
 
+    # historical_valuation.forward_pe is empty, so it was null across the whole
+    # universe and the Forward Earnings Growth and Alpha screens returned
+    # nothing at all. Capital IQ's forward estimates cover about 910 companies -
+    # the real extent of sell-side coverage here - so derive the multiple for
+    # those and leave the rest genuinely unknown rather than guessed.
+    forward_eps_map = _forward_eps_by_symbol()
+
     out: list[dict[str, Any]] = []
     factors_joined = 0
     for mi in mi_rows:
@@ -356,7 +363,16 @@ def _universe_from_warehouse() -> list[dict[str, Any]]:
             {
                 **mi,
                 "valuation_date": pack.get("valuation_date"),
-                "forward_pe": mi.get("forward_pe") if mi.get("forward_pe") is not None else forward_pe_map.get(sym),
+                "forward_pe": (
+                    mi.get("forward_pe")
+                    if mi.get("forward_pe") is not None
+                    else forward_pe_map.get(sym)
+                    if forward_pe_map.get(sym) is not None
+                    # Last resort: price over FY1 consensus EPS. Both vendor
+                    # fields are empty here, so without this the whole universe
+                    # has no forward multiple at all.
+                    else derived_forward_pe(mi.get("cmp"), forward_eps_map.get(sym))
+                ),
             },
             ratios=ratios.get(sym) or {},
             factors=fac,
@@ -463,6 +479,46 @@ def _valuation_history_by_symbol(*, limit: int = 200000) -> dict[str, dict[str, 
                 "latest": pairs[-1][1],
             }
     return out
+
+
+_FORWARD_EPS_CACHE: dict[str, Any] = {"at": 0.0, "rows": None}
+_FORWARD_EPS_TTL_SEC = 900.0
+
+
+def _forward_eps_by_symbol() -> dict[str, float]:
+    """{symbol: FY1 consensus EPS}, cached like every other warehouse scan."""
+    import time
+
+    now = time.time()
+    cached = _FORWARD_EPS_CACHE.get("rows")
+    if cached is not None and (now - float(_FORWARD_EPS_CACHE.get("at") or 0.0)) < _FORWARD_EPS_TTL_SEC:
+        return cached
+    try:
+        from financial_warehouse_completion.capiq_forward_estimates import latest_forward_eps
+
+        rows = latest_forward_eps()
+    except Exception:
+        rows = {}
+    _FORWARD_EPS_CACHE["at"] = time.time()
+    _FORWARD_EPS_CACHE["rows"] = rows
+    return rows
+
+
+def reset_forward_eps_cache() -> None:
+    _FORWARD_EPS_CACHE["at"] = 0.0
+    _FORWARD_EPS_CACHE["rows"] = None
+
+
+def derived_forward_pe(price: Optional[float], eps: Optional[float]) -> Optional[float]:
+    """Forward P/E from price and FY1 consensus EPS.
+
+    Guards the loss-making case explicitly: a negative EPS produces a negative
+    multiple that sorts as though it were the cheapest name on the desk.
+    """
+    price, eps = _num(price), _num(eps)
+    if price is None or eps is None or price <= 0 or eps <= 0:
+        return None
+    return round(price / eps, 2)
 
 
 def _history_index() -> dict[str, dict[str, dict[str, Any]]]:

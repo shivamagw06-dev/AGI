@@ -19395,6 +19395,34 @@ def warehouse_vendor_exports_seed(payload: dict[str, Any] = Body(default={})):
     return seed_if_needed(force=bool(payload.get("force", False)))
 
 
+@router.get("/warehouse/import/forward-estimates")
+def warehouse_import_forward_estimates_status():
+    """Preview the current forward EPS and revenue cross-section.
+
+    Coverage is roughly 910 companies of 3,023 - the real extent of sell-side
+    coverage in this market, not a truncated export.
+    """
+    from financial_warehouse_completion.capiq_forward_estimates import parse
+
+    parsed = parse()
+    return {k: v for k, v in parsed.items() if k != "rows"}
+
+
+@router.post("/warehouse/import/forward-estimates")
+def warehouse_import_forward_estimates_run(
+    payload: dict[str, Any] = Body(default_factory=dict),
+    x_agi_actor: str | None = Header(default=None),
+):
+    """Load forward estimates into consensus_metric_vintages.
+
+    Without these `forward_pe` is null across the universe, which is why the
+    Forward Earnings Growth and Alpha Opportunity screens returned no rows.
+    """
+    from financial_warehouse_completion.capiq_forward_estimates import import_estimates
+
+    return import_estimates(actor=_warehouse_actor(payload or {}, x_agi_actor))
+
+
 @router.get("/warehouse/import/capital-iq-workbook")
 def warehouse_import_capital_iq_workbook_status():
     from financial_warehouse_completion.production import capiq_workbook_status

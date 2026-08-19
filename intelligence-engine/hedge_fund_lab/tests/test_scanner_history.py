@@ -144,3 +144,29 @@ class TestCaching:
         scanner.reset_history_cache()
         scanner.own_history_context("AAA", "pe", 1.0)
         assert calls["n"] == 2
+
+
+class TestDerivedForwardPe:
+    """historical_valuation.forward_pe is empty, so forward_pe was null across
+    the universe and the Forward Earnings Growth and Alpha screens returned
+    zero rows while the estimates sat unread in the workbook."""
+
+    def test_price_over_fy1_eps(self):
+        assert scanner.derived_forward_pe(1000.0, 50.0) == 20.0
+
+    def test_a_loss_making_forecast_yields_no_multiple(self):
+        """A negative EPS produces a negative multiple that sorts as though it
+        were the cheapest name on the desk."""
+        assert scanner.derived_forward_pe(1000.0, -5.0) is None
+
+    def test_zero_eps_yields_no_multiple(self):
+        assert scanner.derived_forward_pe(1000.0, 0.0) is None
+
+    def test_missing_inputs_yield_no_multiple(self):
+        assert scanner.derived_forward_pe(None, 50.0) is None
+        assert scanner.derived_forward_pe(1000.0, None) is None
+        assert scanner.derived_forward_pe(0.0, 50.0) is None
+
+    def test_matches_a_hand_calculation(self):
+        # 360ONE: 1,173 against an FY2026 consensus EPS of 33.715.
+        assert scanner.derived_forward_pe(1173.0, 33.715) == round(1173.0 / 33.715, 2)
