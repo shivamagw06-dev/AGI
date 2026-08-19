@@ -509,9 +509,26 @@ def should_run_builder_on_web() -> bool:
         return True
     if explicit in {"0", "false", "no", "off"}:
         return False
-    sidecar = (os.getenv("AGI_GATHER_SIDECAR") or "").strip().lower()
-    # Sidecar default is true in render.yaml; when false, web owns local disk snapshot.
-    return sidecar in {"0", "false", "no", "off"}
+    # Default OFF on the HTTP service.
+    #
+    # This previously returned True whenever the gather sidecar was disabled,
+    # which is the normal configuration for agib-intelligence-engine. The
+    # builder then rebuilt every interval_sec() - 600s by default - inside the
+    # request-serving process. A rebuild takes the warehouse SQLite write lock,
+    # so every handler needing a read blocks behind it, and the service stops
+    # answering until it finishes.
+    #
+    # On 2026-08-19 that produced a failure cycle matching the interval to the
+    # second: clean boot 08:24:40, builder due 08:34:40, service unresponsive
+    # 08:34:34. Earlier fixes each appeared to work for exactly one interval.
+    #
+    # Moving handlers into the threadpool did not help, because the contention
+    # is a database lock rather than the event loop.
+    #
+    # The dedicated agib-intelligence-worker owns snapshot builds. Set
+    # AGI_MC_SNAPSHOT_BUILDER=true only for a single-box deployment with no
+    # separate worker, and expect a stall every interval when you do.
+    return False
 
 
 def reset_for_tests() -> None:
