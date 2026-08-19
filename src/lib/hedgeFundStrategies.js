@@ -433,7 +433,10 @@ export const VALIDATION_LABELS = {
  * `promotion_status` mean the numbers are right but the trade is not yet
  * promotable — those rows are shown, with the caveat attached.
  */
-const CLEAN = new Set(['', 'validated', 'ok', 'pass', 'none']);
+// The engine's own pass value is `screen_validated` — see
+// hedge_fund_lab/scanner.py. Omitting it hid every genuinely validated row,
+// which stayed invisible until the EV/EBITDA fix started producing them.
+const CLEAN = new Set(['', 'validated', 'screen_validated', 'ok', 'pass', 'none']);
 
 export const isValidated = (row) =>
   CLEAN.has(String(row?.validation_status || '').toLowerCase());
