@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+import os
+import threading
+import time
 from typing import Any
 
 from app.core.config import get_settings
@@ -61,6 +64,14 @@ class KipService:
         self.embedding_dim = embedding_dim if embedding_dim is not None else 256
         self.pipeline = KipPipeline(self.store, self.flags, embedding_dim=self.embedding_dim)
         self._persist_meta: dict[str, Any] = {"loaded": False}
+        # Snapshot writes serialise the entire store in one json.dumps. At
+        # ~2k documents and ~37k chunks that is a large, wholly synchronous
+        # operation, so it is coalesced rather than run per ingest.
+        self._save_lock = threading.Lock()
+        self._last_save_at: float = 0.0
+        self._pending_saves: int = 0
+        self._save_min_interval = float(os.environ.get("KIP_SNAPSHOT_MIN_INTERVAL_SECONDS", "300"))
+        self._save_max_pending = int(os.environ.get("KIP_SNAPSHOT_MAX_PENDING_INGESTS", "25"))
         if load_snapshot:
             try:
                 self._persist_meta = kip_persist.load_store(self.store)
@@ -485,7 +496,12 @@ class KipService:
         return kip_persist.verify_document_retrievable(self.store, document_id)
 
     def save_snapshot(self) -> dict[str, Any]:
-        return kip_persist.save_store(self.store)
+        """Force a write. Used by the explicit endpoint and at shutdown."""
+        with self._save_lock:
+            result = kip_persist.save_store(self.store)
+            self._last_save_at = time.monotonic()
+            self._pending_saves = 0
+            return result
 
     def reload_snapshot(self) -> dict[str, Any]:
         self._persist_meta = kip_persist.load_store(self.store)
@@ -503,11 +519,46 @@ class KipService:
                         nodes=self.store.nodes,
                         edges=self.store.edges,
                     )
-        # Persist after every successful ingest so Free-tier restarts keep memory.
+        self._save_snapshot_debounced()
+
+    def _save_snapshot_debounced(self) -> bool:
+        """Coalesce snapshot writes instead of one per ingest.
+
+        save_store() rebuilds the whole store as a single JSON string before
+        writing. That was previously called after every successful ingest, so
+        as the corpus grew each document cost a full re-serialisation of every
+        other document. With the store at ~2k documents / ~37k chunks the
+        process spends its time serialising, the uvicorn event loop is starved,
+        and /v1/health stops answering while background work carries on — which
+        is exactly how the engine presented on 2026-08-19: unresponsive to HTTP
+        for hours while still writing snapshots to disk.
+
+        The original comment cited Free-tier restarts, but a durable Render
+        disk is mounted now, so losing at most KIP_SNAPSHOT_MIN_INTERVAL_SECONDS
+        of ingests to a hard kill is an acceptable trade for a responsive API.
+        """
+        now = time.monotonic()
+        self._pending_saves += 1
+        due = (
+            self._last_save_at == 0.0
+            or self._pending_saves >= self._save_max_pending
+            or (now - self._last_save_at) >= self._save_min_interval
+        )
+        if not due:
+            return False
+        # Never let two ingests serialise the store concurrently: that doubles
+        # peak memory for no benefit, and the second write is redundant.
+        if not self._save_lock.acquire(blocking=False):
+            return False
         try:
             kip_persist.save_store(self.store)
+            self._last_save_at = time.monotonic()
+            self._pending_saves = 0
+            return True
         except Exception:
-            pass
+            return False
+        finally:
+            self._save_lock.release()
 
     def _require_enabled(self) -> None:
         if not self.flags.kip:
