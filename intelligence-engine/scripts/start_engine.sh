@@ -98,12 +98,21 @@ fi
 
 if [[ "${CID_DOSSIER_PAUSED:-true}" == "true" || "${CID_DOSSIER_PAUSED:-true}" == "1" ]]; then
   echo "[start_engine] company dossier worker paused"
-elif [[ "${CID_DOSSIER_WORKER_ENABLED:-true}" != "false" && "${CID_DOSSIER_WORKER_ENABLED:-true}" != "0" ]]; then
+# Default OFF, matching render.yaml (CID_DOSSIER_WORKER_ENABLED=false). This
+# defaulted to true, so when the env did not reach the process the worker
+# started anyway - on 2026-08-19 the boot logs read "launching continuous
+# company dossier worker now" while the blueprint said it was disabled and
+# paused. It runs CID_DOSSIER_WORKERS threads (15 in the blueprint) doing
+# warehouse reads and OpenAI calls inside the HTTP process, 120s after boot,
+# which matches the observed ~3-4 minute ramp from a healthy service to one
+# answering nothing.
+elif [[ "${CID_DOSSIER_WORKER_ENABLED:-false}" != "false" && "${CID_DOSSIER_WORKER_ENABLED:-false}" != "0" ]]; then
   # Give uvicorn time to become healthy before warehouse reads and OpenAI work
   # begin. The dossier process is deliberately lower priority and defaults to
   # four threads on the live four-CPU Render web service.
   DOSSIER_DELAY_SEC="${CID_DOSSIER_START_DELAY_SECONDS:-120}"
-  echo "[start_engine] company dossier worker scheduled in ${DOSSIER_DELAY_SEC}s (${CID_DOSSIER_WORKERS:-4} threads)"
+  echo "[start_engine] MODE=http+dossier threads=${CID_DOSSIER_WORKERS:-4} delay=${DOSSIER_DELAY_SEC}s"
+  echo "[start_engine] WARNING: dossier worker runs inside the HTTP process and competes for SQLite locks"
   (
     sleep "${DOSSIER_DELAY_SEC}"
     export AGI_ROLE=dossier_worker
