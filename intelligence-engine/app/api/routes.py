@@ -10138,7 +10138,7 @@ async def valuation_consensus_company(ticker: str):
 
 
 @router.post("/valuation-consensus/import/preview")
-async def valuation_consensus_import_preview(payload: dict[str, Any] = Body(default={})):
+def valuation_consensus_import_preview(payload: dict[str, Any] = Body(default={})):
     """Admin: upload CapIQ Excel → parse → stage preview (does not publish)."""
     from valuation_consensus.production import import_preview
 
@@ -10156,7 +10156,7 @@ async def valuation_consensus_import_preview(payload: dict[str, Any] = Body(defa
 
 
 @router.post("/valuation-consensus/import/validate")
-async def valuation_consensus_import_validate(payload: dict[str, Any] = Body(default={})):
+def valuation_consensus_import_validate(payload: dict[str, Any] = Body(default={})):
     from valuation_consensus.production import import_validate
 
     body = payload or {}
@@ -10164,7 +10164,7 @@ async def valuation_consensus_import_validate(payload: dict[str, Any] = Body(def
 
 
 @router.post("/valuation-consensus/import/publish")
-async def valuation_consensus_import_publish(payload: dict[str, Any] = Body(default={})):
+def valuation_consensus_import_publish(payload: dict[str, Any] = Body(default={})):
     from valuation_consensus.production import import_publish
 
     body = payload or {}
@@ -10172,7 +10172,7 @@ async def valuation_consensus_import_publish(payload: dict[str, Any] = Body(defa
 
 
 @router.post("/valuation-consensus/import/rollback")
-async def valuation_consensus_import_rollback(payload: dict[str, Any] = Body(default={})):
+def valuation_consensus_import_rollback(payload: dict[str, Any] = Body(default={})):
     from valuation_consensus.production import import_rollback
 
     body = payload or {}
@@ -10180,7 +10180,7 @@ async def valuation_consensus_import_rollback(payload: dict[str, Any] = Body(def
 
 
 @router.get("/valuation-consensus/imports")
-async def valuation_consensus_imports():
+def valuation_consensus_imports():
     from valuation_consensus.production import list_imports
 
     return list_imports()
@@ -14728,7 +14728,7 @@ async def financial_statements_validation_run(payload: dict[str, Any] = Body(def
 
 
 @router.get("/financial-statements/warehouse/health")
-async def financial_statements_warehouse_health():
+def financial_statements_warehouse_health():
     """FSE-06 Financial Warehouse."""
     from financial_statements_engine.financial_warehouse.production import health
 
@@ -14736,49 +14736,49 @@ async def financial_statements_warehouse_health():
 
 
 @router.get("/financial-statements/warehouse/dashboard")
-async def financial_statements_warehouse_dashboard():
+def financial_statements_warehouse_dashboard():
     from financial_statements_engine.financial_warehouse.production import dashboard
 
     return dashboard()
 
 
 @router.get("/financial-statements/warehouse/latest/{ticker}")
-async def financial_statements_warehouse_latest(ticker: str, statement_type: str | None = None):
+def financial_statements_warehouse_latest(ticker: str, statement_type: str | None = None):
     from financial_statements_engine.financial_warehouse.production import get_latest
 
     return get_latest(ticker, statement_type=statement_type)
 
 
 @router.get("/financial-statements/warehouse/metrics/{ticker}/{metric}")
-async def financial_statements_warehouse_metric_history(ticker: str, metric: str):
+def financial_statements_warehouse_metric_history(ticker: str, metric: str):
     from financial_statements_engine.financial_warehouse.production import get_metric_history
 
     return get_metric_history(ticker, metric)
 
 
 @router.get("/financial-statements/warehouse/timeline/{ticker}")
-async def financial_statements_warehouse_timeline(ticker: str):
+def financial_statements_warehouse_timeline(ticker: str):
     from financial_statements_engine.financial_warehouse.production import get_timeline
 
     return get_timeline(ticker)
 
 
 @router.get("/financial-statements/warehouse/view/{ticker}/{view}")
-async def financial_statements_warehouse_view(ticker: str, view: str, as_of: str | None = None):
+def financial_statements_warehouse_view(ticker: str, view: str, as_of: str | None = None):
     from financial_statements_engine.financial_warehouse.production import time_travel
 
     return time_travel(ticker, view, as_of=as_of)
 
 
 @router.get("/financial-statements/warehouse/contracts")
-async def financial_statements_warehouse_contracts():
+def financial_statements_warehouse_contracts():
     from financial_statements_engine.financial_warehouse.production import contracts
 
     return contracts()
 
 
 @router.get("/financial-statements/warehouse/contracts/{contract_id}/{ticker}")
-async def financial_statements_warehouse_contract(contract_id: str, ticker: str, view: str | None = None, metric: str | None = None):
+def financial_statements_warehouse_contract(contract_id: str, ticker: str, view: str | None = None, metric: str | None = None):
     from financial_statements_engine.financial_warehouse.production import contract
 
     kwargs: dict[str, Any] = {}
@@ -14790,7 +14790,7 @@ async def financial_statements_warehouse_contract(contract_id: str, ticker: str,
 
 
 @router.get("/financial-statements/warehouse/restatements")
-async def financial_statements_warehouse_restatements(company_id: str | None = None):
+def financial_statements_warehouse_restatements(company_id: str | None = None):
     from financial_statements_engine.financial_warehouse.production import restatements
 
     return restatements(company_id=company_id)
@@ -18721,14 +18721,14 @@ def _warehouse_actor(payload: dict[str, Any] | None = None, header: str | None =
 
 
 @router.get("/warehouse/health")
-async def warehouse_health():
+def warehouse_health():
     from institutional_warehouse.production import health
 
     return health()
 
 
 @router.post("/warehouse/repair/upstox-quarterly")
-async def warehouse_repair_upstox_quarterly(body: dict[str, Any] | None = None):
+def warehouse_repair_upstox_quarterly(body: dict[str, Any] | None = None):
     from institutional_warehouse.production import repair_upstox_quarterly
 
     body = body or {}
@@ -18743,35 +18743,35 @@ async def warehouse_repair_upstox_quarterly(body: dict[str, Any] | None = None):
 
 
 @router.get("/warehouse/workbook")
-async def warehouse_workbook():
+def warehouse_workbook():
     from institutional_warehouse.production import workbook
 
     return workbook()
 
 
 @router.get("/warehouse/stats")
-async def warehouse_stats():
+def warehouse_stats():
     from institutional_warehouse.production import stats
 
     return stats()
 
 
 @router.get("/warehouse/whoami")
-async def warehouse_whoami(x_agi_actor: str | None = Header(default=None)):
+def warehouse_whoami(x_agi_actor: str | None = Header(default=None)):
     from institutional_warehouse.production import whoami
 
     return whoami(_warehouse_actor(None, x_agi_actor))
 
 
 @router.get("/warehouse/tab/{tab_id}/schema")
-async def warehouse_tab_schema(tab_id: str):
+def warehouse_tab_schema(tab_id: str):
     from institutional_warehouse.production import tab_schema
 
     return tab_schema(tab_id)
 
 
 @router.get("/warehouse/tab/{tab_id}")
-async def warehouse_sheet(
+def warehouse_sheet(
     tab_id: str,
     entity: str | None = None,
     q: str | None = None,
@@ -18796,14 +18796,14 @@ async def warehouse_sheet(
 
 
 @router.get("/warehouse/tab/{tab_id}/row/{row_id}")
-async def warehouse_row(tab_id: str, row_id: str):
+def warehouse_row(tab_id: str, row_id: str):
     from institutional_warehouse.production import row
 
     return row(tab_id, row_id)
 
 
 @router.post("/warehouse/tab/{tab_id}/edit")
-async def warehouse_edit(
+def warehouse_edit(
     tab_id: str,
     payload: dict[str, Any] = Body(default_factory=dict),
     x_agi_actor: str | None = Header(default=None),
@@ -18820,7 +18820,7 @@ async def warehouse_edit(
 
 
 @router.post("/warehouse/tab/{tab_id}/row")
-async def warehouse_create_row(
+def warehouse_create_row(
     tab_id: str,
     payload: dict[str, Any] = Body(default_factory=dict),
     x_agi_actor: str | None = Header(default=None),
@@ -18832,7 +18832,7 @@ async def warehouse_create_row(
 
 
 @router.post("/warehouse/tab/{tab_id}/clear-override")
-async def warehouse_clear_override(
+def warehouse_clear_override(
     tab_id: str,
     payload: dict[str, Any] = Body(default_factory=dict),
     x_agi_actor: str | None = Header(default=None),
@@ -18845,7 +18845,7 @@ async def warehouse_clear_override(
 
 
 @router.post("/warehouse/tab/{tab_id}/delete")
-async def warehouse_delete_rows(
+def warehouse_delete_rows(
     tab_id: str,
     payload: dict[str, Any] = Body(default_factory=dict),
     x_agi_actor: str | None = Header(default=None),
@@ -18858,7 +18858,7 @@ async def warehouse_delete_rows(
 
 
 @router.post("/warehouse/tab/{tab_id}/publish")
-async def warehouse_publish(
+def warehouse_publish(
     tab_id: str,
     payload: dict[str, Any] = Body(default_factory=dict),
     x_agi_actor: str | None = Header(default=None),
@@ -18869,7 +18869,7 @@ async def warehouse_publish(
 
 
 @router.post("/warehouse/tab/{tab_id}/import")
-async def warehouse_stage_import(
+def warehouse_stage_import(
     tab_id: str,
     payload: dict[str, Any] = Body(default_factory=dict),
     x_agi_actor: str | None = Header(default=None),
@@ -18907,21 +18907,21 @@ async def warehouse_commit_import(
 
 
 @router.post("/warehouse/tab/{tab_id}/map-headers")
-async def warehouse_map_headers(tab_id: str, payload: dict[str, Any] = Body(default_factory=dict)):
+def warehouse_map_headers(tab_id: str, payload: dict[str, Any] = Body(default_factory=dict)):
     from institutional_warehouse.production import preview_mapping
 
     return preview_mapping(tab_id, (payload or {}).get("headers") or [])
 
 
 @router.get("/warehouse/imports")
-async def warehouse_imports(tab_id: str | None = None, limit: int = 25):
+def warehouse_imports(tab_id: str | None = None, limit: int = 25):
     from institutional_warehouse.production import imports
 
     return imports(tab_id=tab_id, limit=limit)
 
 
 @router.get("/warehouse/tab/{tab_id}/export")
-async def warehouse_export(
+def warehouse_export(
     tab_id: str,
     entity: str | None = None,
     q: str | None = None,
@@ -18935,21 +18935,21 @@ async def warehouse_export(
 
 
 @router.get("/warehouse/tab/{tab_id}/row/{row_id}/history")
-async def warehouse_history(tab_id: str, row_id: str, column: str | None = None):
+def warehouse_history(tab_id: str, row_id: str, column: str | None = None):
     from institutional_warehouse.production import history
 
     return history(tab_id, row_id, column=column)
 
 
 @router.get("/warehouse/tab/{tab_id}/row/{row_id}/compare")
-async def warehouse_compare(tab_id: str, row_id: str, version_a: int, version_b: int | None = None):
+def warehouse_compare(tab_id: str, row_id: str, version_a: int, version_b: int | None = None):
     from institutional_warehouse.production import compare
 
     return compare(tab_id, row_id, version_a, version_b)
 
 
 @router.post("/warehouse/tab/{tab_id}/row/{row_id}/restore")
-async def warehouse_restore(
+def warehouse_restore(
     tab_id: str,
     row_id: str,
     payload: dict[str, Any] = Body(default_factory=dict),
@@ -18965,7 +18965,7 @@ async def warehouse_restore(
 
 
 @router.get("/warehouse/audit")
-async def warehouse_audit(
+def warehouse_audit(
     tab_id: str | None = None,
     entity: str | None = None,
     action: str | None = None,
@@ -18980,14 +18980,14 @@ async def warehouse_audit(
 
 
 @router.get("/warehouse/validate")
-async def warehouse_validate(tab_id: str | None = None, sample: int = 300):
+def warehouse_validate(tab_id: str | None = None, sample: int = 300):
     from institutional_warehouse.production import validate
 
     return validate(tab_id, sample=sample)
 
 
 @router.post("/warehouse/refresh")
-async def warehouse_refresh(
+def warehouse_refresh(
     payload: dict[str, Any] = Body(default_factory=dict),
     x_agi_actor: str | None = Header(default=None),
 ):
@@ -19005,14 +19005,14 @@ async def warehouse_refresh(
 
 
 @router.get("/warehouse/refresh-runs")
-async def warehouse_refresh_runs(limit: int = 20):
+def warehouse_refresh_runs(limit: int = 20):
     from institutional_warehouse.production import refresh_runs
 
     return refresh_runs(limit=limit)
 
 
 @router.get("/warehouse/scheduler")
-async def warehouse_scheduler():
+def warehouse_scheduler():
     from institutional_warehouse.production import scheduler_status
 
     return scheduler_status()
@@ -19038,7 +19038,7 @@ async def warehouse_recalculate(
 
 
 @router.get("/warehouse/search")
-async def warehouse_search(q: str, per_tab: int = 5, tabs: str | None = None):
+def warehouse_search(q: str, per_tab: int = 5, tabs: str | None = None):
     from institutional_warehouse.production import global_search
 
     tab_list = [t.strip() for t in tabs.split(",") if t.strip()] if tabs else None
@@ -19046,21 +19046,21 @@ async def warehouse_search(q: str, per_tab: int = 5, tabs: str | None = None):
 
 
 @router.get("/warehouse/suggest")
-async def warehouse_suggest(prefix: str, limit: int = 10):
+def warehouse_suggest(prefix: str, limit: int = 10):
     from institutional_warehouse.production import suggest
 
     return suggest(prefix, limit=limit)
 
 
 @router.get("/warehouse/company/{symbol}")
-async def warehouse_company(symbol: str, per_tab: int = 25):
+def warehouse_company(symbol: str, per_tab: int = 25):
     from institutional_warehouse.production import company
 
     return company(symbol, per_tab=per_tab)
 
 
 @router.get("/warehouse/coverage")
-async def warehouse_coverage():
+def warehouse_coverage():
     from institutional_warehouse.production import coverage
 
     return coverage()
@@ -19079,14 +19079,14 @@ async def fwcp_health():
 
 
 @router.get("/warehouse/financial-coverage")
-async def warehouse_financial_coverage():
+def warehouse_financial_coverage():
     from financial_warehouse_completion import financial_coverage
 
     return financial_coverage()
 
 
 @router.get("/warehouse/financial-audit")
-async def warehouse_financial_audit():
+def warehouse_financial_audit():
     """Phase 7.4F Step 0 — read-only financial warehouse coverage audit."""
     from financial_warehouse_completion import financial_audit
 
@@ -19094,63 +19094,63 @@ async def warehouse_financial_audit():
 
 
 @router.get("/warehouse/coverage/summary")
-async def warehouse_coverage_summary():
+def warehouse_coverage_summary():
     from financial_warehouse_completion import coverage_summary
 
     return coverage_summary()
 
 
 @router.get("/warehouse/coverage/sector")
-async def warehouse_coverage_sector():
+def warehouse_coverage_sector():
     from financial_warehouse_completion import coverage_sector
 
     return coverage_sector()
 
 
 @router.get("/warehouse/missing-financials")
-async def warehouse_missing_financials(limit: int = 500, classification: str | None = None):
+def warehouse_missing_financials(limit: int = 500, classification: str | None = None):
     from financial_warehouse_completion import missing_financials
 
     return missing_financials(limit=limit, classification=classification)
 
 
 @router.get("/warehouse/company/{symbol}/coverage")
-async def warehouse_company_financial_coverage(symbol: str):
+def warehouse_company_financial_coverage(symbol: str):
     from financial_warehouse_completion import company_coverage
 
     return company_coverage(symbol)
 
 
 @router.get("/warehouse/missing-statements")
-async def warehouse_missing_statements(limit: int = 500):
+def warehouse_missing_statements(limit: int = 500):
     from financial_warehouse_completion import missing_statements
 
     return missing_statements(limit=limit)
 
 
 @router.get("/warehouse/missing-share-count")
-async def warehouse_missing_share_count(limit: int = 500):
+def warehouse_missing_share_count(limit: int = 500):
     from financial_warehouse_completion import missing_share_count
 
     return missing_share_count(limit=limit)
 
 
 @router.get("/warehouse/import/status")
-async def warehouse_import_status():
+def warehouse_import_status():
     from financial_warehouse_completion import import_status
 
     return import_status()
 
 
 @router.get("/warehouse/import/board")
-async def warehouse_import_board():
+def warehouse_import_board():
     from financial_warehouse_completion import import_board
 
     return import_board()
 
 
 @router.post("/warehouse/import/start")
-async def warehouse_import_start(
+def warehouse_import_start(
     payload: dict[str, Any] = Body(default_factory=dict),
     x_agi_actor: str | None = Header(default=None),
 ):
@@ -19164,14 +19164,14 @@ async def warehouse_import_start(
 
 
 @router.post("/warehouse/import/stop")
-async def warehouse_import_stop():
+def warehouse_import_stop():
     from financial_warehouse_completion import import_stop
 
     return import_stop()
 
 
 @router.post("/warehouse/import/resume")
-async def warehouse_import_resume(
+def warehouse_import_resume(
     payload: dict[str, Any] = Body(default_factory=dict),
     x_agi_actor: str | None = Header(default=None),
 ):
@@ -19185,7 +19185,7 @@ async def warehouse_import_resume(
 
 
 @router.post("/warehouse/import/retry")
-async def warehouse_import_retry(
+def warehouse_import_retry(
     payload: dict[str, Any] = Body(default_factory=dict),
     x_agi_actor: str | None = Header(default=None),
 ):
@@ -19199,7 +19199,7 @@ async def warehouse_import_retry(
 
 
 @router.post("/warehouse/import/run")
-async def warehouse_import_run(
+def warehouse_import_run(
     payload: dict[str, Any] = Body(default_factory=dict),
     x_agi_actor: str | None = Header(default=None),
 ):
@@ -19218,14 +19218,14 @@ async def warehouse_import_run(
 
 
 @router.get("/warehouse/import/capital-iq")
-async def warehouse_import_capital_iq_status():
+def warehouse_import_capital_iq_status():
     from financial_warehouse_completion import capital_iq
 
     return capital_iq()
 
 
 @router.post("/warehouse/import/capital-iq")
-async def warehouse_import_capital_iq_run(
+def warehouse_import_capital_iq_run(
     payload: dict[str, Any] = Body(default_factory=dict),
     x_agi_actor: str | None = Header(default=None),
 ):
@@ -19240,7 +19240,7 @@ async def warehouse_import_capital_iq_run(
 
 
 @router.get("/warehouse/import/vendor-exports")
-async def warehouse_vendor_exports_preview():
+def warehouse_vendor_exports_preview():
     """Parsed row counts for the checked-in vendor exports, without writing."""
     from financial_warehouse_completion.vendor_exports import collect, fingerprint
     parsed = collect()
@@ -19249,20 +19249,20 @@ async def warehouse_vendor_exports_preview():
 
 
 @router.post("/warehouse/import/vendor-exports")
-async def warehouse_vendor_exports_seed(payload: dict[str, Any] = Body(default={})):
+def warehouse_vendor_exports_seed(payload: dict[str, Any] = Body(default={})):
     """Seed vendor exports into the warehouse. Idempotent unless force=true."""
     from financial_warehouse_completion.vendor_exports import seed_if_needed
     return seed_if_needed(force=bool(payload.get("force", False)))
 
 
 @router.get("/warehouse/import/capital-iq-workbook")
-async def warehouse_import_capital_iq_workbook_status():
+def warehouse_import_capital_iq_workbook_status():
     from financial_warehouse_completion.production import capiq_workbook_status
     return capiq_workbook_status()
 
 
 @router.post("/warehouse/import/capital-iq-workbook")
-async def warehouse_import_capital_iq_workbook_run(
+def warehouse_import_capital_iq_workbook_run(
     payload: dict[str, Any] = Body(default_factory=dict),
     x_agi_actor: str | None = Header(default=None),
 ):
@@ -19281,26 +19281,26 @@ async def warehouse_import_capital_iq_workbook_run(
 
 
 @router.get("/warehouse/import/capital-iq-workbook/jobs/latest")
-async def warehouse_import_capital_iq_workbook_latest():
+def warehouse_import_capital_iq_workbook_latest():
     from financial_warehouse_completion.capiq_background import latest_job, job_status
     job = latest_job()
     return job_status(str(job["job_id"])) if job else {"ok": True, "job": None}
 
 
 @router.get("/warehouse/import/capital-iq-workbook/jobs/{job_id}")
-async def warehouse_import_capital_iq_workbook_job(job_id: str):
+def warehouse_import_capital_iq_workbook_job(job_id: str):
     from financial_warehouse_completion.capiq_background import job_status
     return job_status(job_id)
 
 
 @router.post("/warehouse/import/capital-iq-workbook/jobs/{job_id}/pause")
-async def warehouse_import_capital_iq_workbook_pause(job_id: str):
+def warehouse_import_capital_iq_workbook_pause(job_id: str):
     from financial_warehouse_completion.capiq_background import pause
     return pause(job_id)
 
 
 @router.post("/warehouse/import/capital-iq-workbook/jobs/{job_id}/resume")
-async def warehouse_import_capital_iq_workbook_resume(
+def warehouse_import_capital_iq_workbook_resume(
     job_id: str, payload: dict[str, Any] = Body(default_factory=dict),
     x_agi_actor: str | None = Header(default=None),
 ):
@@ -19309,14 +19309,14 @@ async def warehouse_import_capital_iq_workbook_resume(
 
 
 @router.get("/warehouse/import/sector-ratio-workbook")
-async def warehouse_import_sector_ratio_workbook_status():
+def warehouse_import_sector_ratio_workbook_status():
     """Preview the checked-in 10-year Capital IQ sector-ratio history."""
     from financial_warehouse_completion.production import sector_ratio_workbook_status
     return sector_ratio_workbook_status()
 
 
 @router.post("/warehouse/import/sector-ratio-workbook")
-async def warehouse_import_sector_ratio_workbook_run(
+def warehouse_import_sector_ratio_workbook_run(
     payload: dict[str, Any] = Body(default_factory=dict),
     x_agi_actor: str | None = Header(default=None),
 ):
@@ -19326,7 +19326,7 @@ async def warehouse_import_sector_ratio_workbook_run(
 
 
 @router.post("/warehouse/share-count/{symbol}/sync")
-async def warehouse_share_count_sync(
+def warehouse_share_count_sync(
     symbol: str,
     payload: dict[str, Any] = Body(default_factory=dict),
     x_agi_actor: str | None = Header(default=None),
@@ -19343,35 +19343,35 @@ async def warehouse_share_count_sync(
 
 
 @router.get("/warehouse/yahoo-fill/status")
-async def warehouse_yahoo_fill_status():
+def warehouse_yahoo_fill_status():
     from financial_warehouse_completion import yahoo_fill_status
 
     return yahoo_fill_status()
 
 
 @router.get("/warehouse/yahoo-fill/board")
-async def warehouse_yahoo_fill_board():
+def warehouse_yahoo_fill_board():
     from financial_warehouse_completion import yahoo_fill_board
 
     return yahoo_fill_board()
 
 
 @router.get("/warehouse/yahoo-fill/queue")
-async def warehouse_yahoo_fill_queue(limit: int = 200, include_thin: bool = True):
+def warehouse_yahoo_fill_queue(limit: int = 200, include_thin: bool = True):
     from financial_warehouse_completion import yahoo_fill_queue
 
     return yahoo_fill_queue(limit=limit, include_thin=include_thin)
 
 
 @router.get("/warehouse/yahoo-fill/probe")
-async def warehouse_yahoo_fill_probe(symbol: str = "RELIANCE"):
+def warehouse_yahoo_fill_probe(symbol: str = "RELIANCE"):
     from financial_warehouse_completion import yahoo_fill_probe
 
     return yahoo_fill_probe(symbol)
 
 
 @router.get("/warehouse/upstox-fill/queue")
-async def warehouse_upstox_fill_queue(
+def warehouse_upstox_fill_queue(
     limit: int = 200,
     include_thin: bool = True,
     exclude: str = "",
@@ -19383,14 +19383,14 @@ async def warehouse_upstox_fill_queue(
 
 
 @router.get("/warehouse/upstox-fill/board")
-async def warehouse_upstox_fill_board():
+def warehouse_upstox_fill_board():
     from financial_warehouse_completion import upstox_fill_board
 
     return upstox_fill_board()
 
 
 @router.post("/warehouse/yahoo-fill/start")
-async def warehouse_yahoo_fill_start(
+def warehouse_yahoo_fill_start(
     payload: dict[str, Any] = Body(default_factory=dict),
     x_agi_actor: str | None = Header(default=None),
 ):
@@ -19406,14 +19406,14 @@ async def warehouse_yahoo_fill_start(
 
 
 @router.post("/warehouse/yahoo-fill/stop")
-async def warehouse_yahoo_fill_stop():
+def warehouse_yahoo_fill_stop():
     from financial_warehouse_completion import yahoo_fill_stop
 
     return yahoo_fill_stop()
 
 
 @router.post("/warehouse/yahoo-fill/resume")
-async def warehouse_yahoo_fill_resume(
+def warehouse_yahoo_fill_resume(
     payload: dict[str, Any] = Body(default_factory=dict),
     x_agi_actor: str | None = Header(default=None),
 ):
@@ -19429,7 +19429,7 @@ async def warehouse_yahoo_fill_resume(
 
 
 @router.post("/warehouse/yahoo-fill/run")
-async def warehouse_yahoo_fill_run(
+def warehouse_yahoo_fill_run(
     payload: dict[str, Any] = Body(default_factory=dict),
     x_agi_actor: str | None = Header(default=None),
 ):
@@ -19449,7 +19449,7 @@ async def warehouse_yahoo_fill_run(
 
 
 @router.post("/warehouse/yahoo-fill/{symbol}")
-async def warehouse_yahoo_fill_symbol(
+def warehouse_yahoo_fill_symbol(
     symbol: str,
     payload: dict[str, Any] = Body(default_factory=dict),
     x_agi_actor: str | None = Header(default=None),
@@ -19466,7 +19466,7 @@ async def warehouse_yahoo_fill_symbol(
 
 
 @router.post("/warehouse/backfill")
-async def warehouse_backfill(
+def warehouse_backfill(
     payload: dict[str, Any] = Body(default_factory=dict),
     x_agi_actor: str | None = Header(default=None),
 ):
@@ -19489,21 +19489,21 @@ async def warehouse_backfill(
 
 
 @router.get("/warehouse/backfill/status")
-async def warehouse_backfill_status():
+def warehouse_backfill_status():
     from institutional_warehouse.production import backfill_status
 
     return backfill_status()
 
 
 @router.get("/warehouse/backfill/jobs")
-async def warehouse_backfill_jobs(limit: int = 20):
+def warehouse_backfill_jobs(limit: int = 20):
     from institutional_warehouse.production import backfill_jobs
 
     return backfill_jobs(limit=limit)
 
 
 @router.get("/warehouse/historical-coverage")
-async def warehouse_historical_coverage(top: int = 25):
+def warehouse_historical_coverage(top: int = 25):
     from institutional_warehouse.production import historical_coverage
 
     return historical_coverage(top=top)
@@ -19669,21 +19669,21 @@ async def hie_sector(symbol: str, metric: str = "pe"):
 
 
 @router.get("/warehouse/quality")
-async def warehouse_quality_summary():
+def warehouse_quality_summary():
     from institutional_warehouse.production import quality_summary
 
     return quality_summary()
 
 
 @router.get("/warehouse/quarantine")
-async def warehouse_quarantine(tab_id: str | None = None, limit: int = 100):
+def warehouse_quarantine(tab_id: str | None = None, limit: int = 100):
     from institutional_warehouse.production import quarantined_rows
 
     return quarantined_rows(tab_id, limit=limit)
 
 
 @router.get("/warehouse/conflicts")
-async def warehouse_conflicts(tab_id: str | None = None, entity: str | None = None,
+def warehouse_conflicts(tab_id: str | None = None, entity: str | None = None,
                               limit: int = 100):
     from institutional_warehouse.production import source_conflicts
 
@@ -19691,14 +19691,14 @@ async def warehouse_conflicts(tab_id: str | None = None, entity: str | None = No
 
 
 @router.get("/warehouse/conflicts/summary")
-async def warehouse_conflict_summary():
+def warehouse_conflict_summary():
     from institutional_warehouse.production import conflict_summary
 
     return conflict_summary()
 
 
 @router.post("/warehouse/remediate-zeros")
-async def warehouse_remediate_zeros(
+def warehouse_remediate_zeros(
     payload: dict[str, Any] = Body(default_factory=dict),
     x_agi_actor: str | None = Header(default=None),
 ):
@@ -21338,7 +21338,7 @@ async def company_corporate_actions_api(symbol: str):
 
 
 @router.get("/warehouse/statement-identity")
-async def warehouse_statement_identity():
+def warehouse_statement_identity():
     """Statement rows still carrying no statement type."""
     from institutional_warehouse.production import statement_identity_coverage
 
@@ -21346,7 +21346,7 @@ async def warehouse_statement_identity():
 
 
 @router.post("/warehouse/migrate-statement-identity")
-async def warehouse_migrate_statement_identity(
+def warehouse_migrate_statement_identity(
     payload: dict[str, Any] = Body(default_factory=dict),
     x_agi_actor: str | None = Header(default=None),
 ):
@@ -21359,7 +21359,7 @@ async def warehouse_migrate_statement_identity(
 
 
 @router.get("/warehouse/unit-coverage")
-async def warehouse_unit_coverage():
+def warehouse_unit_coverage():
     """Rows still carrying no unit stamp, per tab."""
     from institutional_warehouse.production import unit_coverage
 
@@ -21367,7 +21367,7 @@ async def warehouse_unit_coverage():
 
 
 @router.post("/warehouse/normalise-units")
-async def warehouse_normalise_units(
+def warehouse_normalise_units(
     payload: dict[str, Any] = Body(default_factory=dict),
     x_agi_actor: str | None = Header(default=None),
 ):
