@@ -6,8 +6,7 @@ import {
   buildMarketBehaviorRows,
   buildMarketMap,
   filterRadarRows,
-  marketStateFromBrief,
-} from './liveAlphaDashboardModel.js';
+  marketStateFromBrief, plainSignalDirection } from './liveAlphaDashboardModel.js';
 
 const signal = (engine, symbol, score, sector = 'BANKS') => ({
   id: `${engine}-${symbol}`,
@@ -59,4 +58,14 @@ test('radar filters preserve research language buckets', () => {
   ]);
   assert.equal(filterRadarRows(rows, 'conflicting').length, 1);
   assert.equal(filterRadarRows(rows, 'positive').length, 0);
+});
+
+test('plainSignalDirection returns an object, so callers must read .label', () => {
+  // Rendering the object itself as a JSX child throws "Objects are not valid
+  // as a React child" and blanks the whole page. Pinned because the shape is
+  // not obvious from the name.
+  const out = plainSignalDirection({ composite: -40, active: [{ direction: 'negative' }] });
+  assert.equal(typeof out, 'object');
+  assert.equal(typeof out.label, 'string');
+  assert.ok(out.label.length > 0);
 });

@@ -102,9 +102,16 @@ function ConfidenceBadge({ confidence, basis }) {
   );
 }
 
-function SignalRow({ row, expanded, onToggle }) {
+// Exported so a smoke test can render real production signals through it.
+export function SignalRow({ row, expanded, onToggle }) {
   const view = useMemo(() => interpretCanonicalSignal(row), [row]);
+  // plainSignalDirection returns { key, label }; rendering the object itself
+  // throws "Objects are not valid as a React child" and blanks the page.
+  const direction = plainSignalDirection(row)?.label ?? '—';
+  // Signals stored before liquidity_verified existed have no such field, which
+  // is unknown rather than fine — only an explicit false is a measured miss.
   const unverified = row.active.filter((signal) => signal.liquidity_verified === false).length;
+  const unknownLiquidity = row.active.filter((signal) => signal.liquidity_verified === undefined).length;
 
   return (
     <>
@@ -115,7 +122,7 @@ function SignalRow({ row, expanded, onToggle }) {
         </td>
         <td>
           <span className={`la-dir la-dir--${row.composite > 0 ? 'pos' : row.composite < 0 ? 'neg' : 'flat'}`}>
-            {plainSignalDirection(row)}
+            {direction}
           </span>
         </td>
         <td className="la-num">{row.composite > 0 ? '+' : ''}{row.composite}</td>
@@ -128,7 +135,9 @@ function SignalRow({ row, expanded, onToggle }) {
         <td className="la-num">
           {unverified > 0
             ? <span className="la-warn-inline" title="Bid-ask spread could not be measured for these components">{unverified} unverified</span>
-            : <span className="la-muted">ok</span>}
+            : unknownLiquidity > 0
+              ? <span className="la-muted" title="Recorded before liquidity verification existed">not recorded</span>
+              : <span className="la-muted">ok</span>}
         </td>
       </tr>
       {expanded ? (
