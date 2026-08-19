@@ -384,27 +384,30 @@ def parse_trendlyne_technical(path: Path) -> dict[str, Any]:
         return {"ok": False, "error": "empty_workbook", "path": path.name}
     as_of = _as_of_from_name(path, date.today().isoformat())
     version = f"{path.name}:{file_hash(path)}"
-    cols = {
-        "symbol": _index(header, "NSE Code"),
-        "beta_1m": _index(header, "Beta 1Month"),
-        "beta_3m": _index(header, "Beta 3Month"),
-        "beta_1y": _index(header, "Beta 1Year"),
-        "beta_3y": _index(header, "Beta 3Year"),
-        "atr": _index(header, "Day ATR"),
-        "adx": _index(header, "Day ADX"),
-        "rsi": _index(header, "Day RSI"),
-        "macd": _index(header, "Day MACD"),
-        "sma50": _index(header, "Day SMA50"),
-        "sma200": _index(header, "Day SMA200"),
+    labels = {
+        "beta_1m": "Beta 1Month", "beta_3m": "Beta 3Month",
+        "beta_1y": "Beta 1Year", "beta_3y": "Beta 3Year",
+        "atr": "Day ATR", "adx": "Day ADX", "rsi": "Day RSI", "mfi": "Day MFI",
+        "macd": "Day MACD", "macd_signal": "Day MACD Signal Line",
+        "sma50": "Day SMA50", "sma200": "Day SMA200",
+        "ema20": "Day EMA20", "ema50": "Day EMA50",
+        "roc21": "Day ROC21", "roc125": "Day ROC125",
+        "momentum_score": "Trendlyne Momentum Score",
+        "momentum_score_norm": "Normalized Momentum Score",
+        "momentum_score_prev_month": "Prev Month Trendlyne Momentum Score",
+        "pivot": "Standard Pivot point",
+        "isin": "ISIN",
     }
+    cols = {"symbol": _index(header, "NSE Code")}
+    cols.update({k: _index(header, v) for k, v in labels.items()})
     out = []
     for row in body:
         symbol = _text(_cell(row, cols["symbol"]))
         if not symbol:
             continue
-        rec = {"symbol": symbol, "as_of": as_of}
+        rec = {"symbol": symbol, "as_of": as_of, "isin": _text(_cell(row, cols.get("isin")))}
         for key, idx in cols.items():
-            if key == "symbol":
+            if key in ("symbol", "isin"):
                 continue
             rec[key] = _number(_cell(row, idx))
         if any(rec[k] is not None for k in rec if k not in ("symbol", "as_of")):
@@ -483,10 +486,16 @@ def collect(*, root: Path = _ROOT) -> dict[str, Any]:
                    "historical_market_medians", "ownership", "industry_context"))
         elif _index(header, "10Yr High") is not None:
             merge(parse_trendlyne_prices(path), ("price_history",))
+        elif _index(header, "Beta 1Year") is not None:
+            merge(parse_trendlyne_technical(path), ("risk_metrics",))
 
     tech = root / "trendlyne_technical_ownership.xlsx"
     if tech.exists():
-        merge(parse_trendlyne_technical(tech), ("risk_metrics",))
+        legacy = parse_trendlyne_technical(tech)
+        seen = {r["symbol"] for r in bundle.get("risk_metrics", ())}
+        legacy["risk_metrics"] = [r for r in legacy.get("risk_metrics", ())
+                                  if r["symbol"] not in seen]
+        merge(legacy, ("risk_metrics",))
 
     broker = root / "capital_iq_exports" / "broker_estimates.xlsx"
     if broker.exists():
