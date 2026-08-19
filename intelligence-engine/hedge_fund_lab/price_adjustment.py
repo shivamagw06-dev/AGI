@@ -42,7 +42,7 @@ from __future__ import annotations
 
 import re
 import statistics
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from typing import Any, Iterable, Optional
 
 _RATIO = re.compile(r"^\s*(\d+(?:\.\d+)?)\s*[:\-/]\s*(\d+(?:\.\d+)?)\s*$")
@@ -52,9 +52,12 @@ _RATIO = re.compile(r"^\s*(\d+(?:\.\d+)?)\s*[:\-/]\s*(\d+(?:\.\d+)?)\s*$")
 # cannot be tight; 6% is wide enough for a day's drift and far narrower than
 # the gap between the competing a/b and b/a readings.
 TOLERANCE = 0.06
-# Sessions either side of the ex-date used to measure the gap. A median over
-# several sessions resists a single bad print.
-GAP_WINDOW = 5
+# The gap is measured over calendar days, not a bar count. Early history in
+# daily_market_history is monthly, so "five bars either side" spans five months
+# there and ordinary price drift swamps the split. A calendar window keeps the
+# comparison local on dense history and simply declines to measure on sparse
+# history, which is reported as no evidence rather than a false contradiction.
+GAP_WINDOW_DAYS = 10
 
 
 def is_trading_day(value: date) -> bool:
@@ -150,17 +153,22 @@ def candidate_factors(action: dict[str, Any]) -> tuple[list[float], Optional[str
 def observed_factor(
     prices: list[tuple[date, float]],
     ex_date: date,
-    window: int = GAP_WINDOW,
+    window_days: int = GAP_WINDOW_DAYS,
 ) -> Optional[float]:
     """Price gap across the ex-date, as a factor applied to prior prices.
 
     Returns median(post) / median(pre): the number a pre-event price must be
-    multiplied by to sit on the post-event share base.
+    multiplied by to sit on the post-event share base. Only bars within
+    `window_days` of the ex-date count, so a split is compared against its own
+    neighbourhood rather than against a price five months away.
     """
-    trading = [(d, p) for d, p in prices if is_trading_day(d) and p > 0]
-    pre = [p for d, p in trading if d < ex_date][-window:]
-    post = [p for d, p in trading if d >= ex_date][:window]
-    if len(pre) < 2 or len(post) < 2:
+    lower = ex_date - timedelta(days=window_days)
+    upper = ex_date + timedelta(days=window_days)
+    pre = [p for d, p in prices
+           if p > 0 and is_trading_day(d) and lower <= d < ex_date]
+    post = [p for d, p in prices
+            if p > 0 and is_trading_day(d) and ex_date <= d <= upper]
+    if not pre or not post:
         return None
     before = statistics.median(pre)
     return statistics.median(post) / before if before > 0 else None

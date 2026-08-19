@@ -24,6 +24,20 @@ def _weekdays(start: date, count: int, price: float) -> list[tuple[date, float]]
     return out
 
 
+def _around(ex: date, pre: float, post: float, count: int = 5) -> list[tuple[date, float]]:
+    """Contiguous sessions either side of an ex-date.
+
+    The gap is measured over a calendar window, so a fixture has to place its
+    prices next to the event the way a real series does.
+    """
+    before, day = [], ex - timedelta(days=1)
+    while len(before) < count:
+        if pa.is_trading_day(day):
+            before.append((day, pre))
+        day -= timedelta(days=1)
+    return sorted(before) + _weekdays(ex, count, post)
+
+
 class TestSplitConvention:
     @pytest.mark.parametrize("raw,expected,event", [
         ("6:1", 1 / 6, "ZFCVINDIA 16086 -> 2660"),
@@ -75,13 +89,24 @@ class TestNonTradingDays:
 
 class TestObservedGap:
     def test_measures_the_split_gap(self):
-        pre = _weekdays(date(2026, 6, 1), 5, 1000.0)
+        pre = _weekdays(date(2026, 6, 15), 5, 1000.0)
         post = _weekdays(date(2026, 6, 22), 5, 250.0)
         gap = pa.observed_factor(pre + post, date(2026, 6, 22))
         assert gap == pytest.approx(0.25)
 
     def test_returns_none_without_enough_history(self):
-        assert pa.observed_factor([(date(2026, 6, 1), 100.0)], date(2026, 6, 2)) is None
+        assert pa.observed_factor([(date(2026, 6, 1), 100.0)], date(2026, 8, 2)) is None
+
+    def test_sparse_history_declines_to_measure_rather_than_guess(self):
+        """Early daily_market_history is monthly. Comparing a split against a
+        price five months away measures ordinary drift, not the split, and
+        produced 233 false contradictions against 8 corroborations."""
+        monthly = [(date(2005, m, 15), 100.0 * (1.04 ** m)) for m in range(1, 13)]
+        assert pa.observed_factor(monthly, date(2005, 7, 1)) is None
+
+    def test_dense_history_is_still_measured(self):
+        dense = _weekdays(date(2026, 6, 15), 6, 800.0) + _weekdays(date(2026, 6, 24), 6, 200.0)
+        assert pa.observed_factor(dense, date(2026, 6, 24)) == pytest.approx(0.25)
 
 
 class TestReconciliation:
@@ -109,7 +134,7 @@ class TestResolve:
     def test_duplicate_representations_of_one_event_collapse(self):
         """TRENT records one event as both a 1:2 bonus and a 3:2 split. Applying
         both would adjust by 0.44 instead of 0.67."""
-        prices = _weekdays(date(2026, 5, 1), 6, 300.0) + _weekdays(date(2026, 6, 1), 6, 200.0)
+        prices = _around(date(2026, 6, 1), 300.0, 200.0)
         actions = [
             {"symbol": "TRENT", "action_date": "2026-06-01", "action_type": "bonus", "bonus": "1:2"},
             {"symbol": "TRENT", "action_date": "2026-06-01", "action_type": "split", "split": "3:2"},
@@ -119,7 +144,7 @@ class TestResolve:
         assert resolved["factors"][0][1] == pytest.approx(2 / 3, rel=1e-3)
 
     def test_rights_and_dividends_create_no_factor(self):
-        prices = _weekdays(date(2026, 5, 1), 12, 100.0)
+        prices = _around(date(2026, 5, 20), 100.0, 100.0)
         for kind, field in (("rights", "1:4"), ("dividend", 5)):
             resolved = pa.resolve(prices, [{"symbol": "X", "action_date": "2026-05-20",
                                             "action_type": kind, kind: field}])
@@ -128,12 +153,12 @@ class TestResolve:
 
 class TestSeriesAdjustment:
     def test_a_split_removes_the_artificial_drop(self):
-        prices = _weekdays(date(2026, 5, 1), 5, 1000.0) + _weekdays(date(2026, 6, 1), 5, 500.0)
+        prices = _around(date(2026, 6, 1), 1000.0, 500.0)
         adjusted = pa.adjust_series(prices, [(date(2026, 6, 1), 0.5)])
         assert all(abs(r) < 1e-9 for _, r in pa.monthly_returns(adjusted))
 
     def test_most_recent_price_is_never_restated(self):
-        prices = _weekdays(date(2026, 5, 1), 4, 1000.0) + _weekdays(date(2026, 6, 1), 4, 480.0)
+        prices = _around(date(2026, 6, 1), 1000.0, 480.0, count=4)
         adjusted = pa.adjust_series(prices, [(date(2026, 6, 1), 0.5)])
         assert adjusted[-1][1] == pytest.approx(480.0)
 
@@ -156,8 +181,8 @@ class TestBuildFactors:
 
     def test_applies_only_the_corroborated_symbol(self):
         prices = {
-            "GOOD": _weekdays(date(2026, 5, 1), 6, 1000.0) + _weekdays(date(2026, 6, 1), 6, 250.0),
-            "BAD": _weekdays(date(2026, 5, 1), 6, 1000.0) + _weekdays(date(2026, 6, 1), 6, 990.0),
+            "GOOD": _around(date(2026, 6, 1), 1000.0, 250.0),
+            "BAD": _around(date(2026, 6, 1), 1000.0, 990.0),
         }
         actions = [
             {"symbol": "GOOD", "action_date": "2026-06-01", "action_type": "split", "split": "4:1"},
@@ -177,8 +202,7 @@ class TestAudit:
         assert report["adjustments_applied"] == 0
 
     def test_reports_quarantined_symbols(self):
-        prices = {"BAD": _weekdays(date(2026, 5, 1), 6, 1000.0)
-                         + _weekdays(date(2026, 6, 1), 6, 990.0)}
+        prices = {"BAD": _around(date(2026, 6, 1), 1000.0, 990.0)}
         report = pa.audit([{"symbol": "BAD", "action_date": "2026-06-01",
                             "action_type": "split", "split": "4:1"}], prices)
         assert report["symbols_quarantined"] == 1

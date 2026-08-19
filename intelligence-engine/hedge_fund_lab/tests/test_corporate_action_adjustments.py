@@ -21,8 +21,18 @@ def _bars(symbol: str, start: date, count: int, close: float) -> list[dict]:
     return out
 
 
+def _around(symbol: str, ex: date, pre: float, post: float, count: int = 5) -> list[dict]:
+    """Contiguous sessions either side of an ex-date, as a real series looks."""
+    before, day = [], ex - timedelta(days=1)
+    while len(before) < count:
+        if day.weekday() < 5:
+            before.append({"symbol": symbol, "date": day.isoformat(), "close": pre})
+        day -= timedelta(days=1)
+    return sorted(before, key=lambda r: r["date"]) + _bars(symbol, ex, count, post)
+
+
 def test_a_split_the_prices_confirm_is_corroborated():
-    rows = _bars("AAA", date(2026, 1, 5), 6, 100.0) + _bars("AAA", date(2026, 2, 2), 6, 50.0)
+    rows = _around("AAA", date(2026, 2, 2), 100.0, 50.0)
     actions = [{"symbol": "AAA", "action_date": "2026-02-02", "action_type": "split", "split": "2:1"}]
     receipt = corporate_action_adjustment_receipt(rows, actions)
     assert receipt["status"] == "PASSED"
@@ -33,7 +43,7 @@ def test_a_split_the_prices_confirm_is_corroborated():
 def test_a_stated_ratio_the_prices_contradict_is_quarantined():
     """DELPHIFX states a 3:1 split against a 16.4x price gap. Applying the
     stated factor would silently rescale the whole prior history."""
-    rows = _bars("BAD", date(2026, 1, 5), 6, 100.0) + _bars("BAD", date(2026, 2, 2), 6, 99.0)
+    rows = _around("BAD", date(2026, 2, 2), 100.0, 99.0)
     actions = [{"symbol": "BAD", "action_date": "2026-02-02", "action_type": "split", "split": "4:1"}]
     receipt = corporate_action_adjustment_receipt(rows, actions)
     assert receipt["independently_verified"] is False
