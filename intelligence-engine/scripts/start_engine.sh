@@ -35,13 +35,27 @@ export KF_HD_LIVE_COLLECTORS=false
 # Respect explicit false from the dashboard; default true when unset.
 export FAA_LIVE_FETCH="${FAA_LIVE_FETCH:-true}"
 
-FULL_SIDECAR="${AGI_GATHER_SIDECAR:-true}"
-FORECAST_SIDECAR="${FIE_SIDECAR:-true}"
+# Default OFF. render.yaml sets both to "false" for this service and a
+# dedicated agib-intelligence-worker exists to run them, but these defaults
+# were "true", so whenever the env did not reach the process the shell default
+# won and a heavy worker started inside the HTTP service anyway.
+#
+# That is what happened on 2026-08-19: agi.forecast_worker was logging from the
+# web service while the blueprint said FIE_SIDECAR=false. Memory sat at 2.5/8 GB
+# and CPU at 1-2/4, so nothing was starved - HTTP was blocked behind SQLite
+# locks held by the in-process worker (see institutional_warehouse/db.py, which
+# already carries lock-retry backoff). The engine served ~12s timeouts for
+# hours while background work carried on.
+#
+# A web service is now HTTP-only unless a sidecar is explicitly switched on.
+FULL_SIDECAR="${AGI_GATHER_SIDECAR:-false}"
+FORECAST_SIDECAR="${FIE_SIDECAR:-false}"
 if [[ ( "${FULL_SIDECAR}" != "false" && "${FULL_SIDECAR}" != "0" ) || ( "${FORECAST_SIDECAR}" != "false" && "${FORECAST_SIDECAR}" != "0" ) ]]; then
   # Delay + nice: let uvicorn finish boot and stay responsive before gather
   # saturates the shared Pro CPUs (was starving /v1/health + Mission Control).
   DELAY_SEC="${AGI_GATHER_SIDECAR_DELAY_SEC:-90}"
-  echo "[start_engine] gather sidecar scheduled in ${DELAY_SEC}s (nice)"
+  echo "[start_engine] MODE=http+sidecar gather=${FULL_SIDECAR} forecast=${FORECAST_SIDECAR} delay=${DELAY_SEC}s"
+  echo "[start_engine] WARNING: a heavy worker is starting inside the HTTP service; it competes for SQLite locks with request handlers"
   (
     sleep "${DELAY_SEC}"
     export AGI_ROLE=gather_worker
@@ -79,7 +93,7 @@ if [[ ( "${FULL_SIDECAR}" != "false" && "${FULL_SIDECAR}" != "0" ) || ( "${FOREC
   GATHER_PID=$!
   echo "[start_engine] gather sidecar pid=${GATHER_PID}"
 else
-  echo "[start_engine] full gather and forecast sidecars disabled — HTTP only"
+  echo "[start_engine] MODE=http-only (gather=${FULL_SIDECAR} forecast=${FORECAST_SIDECAR}) — workers run in agib-intelligence-worker"
 fi
 
 if [[ "${CID_DOSSIER_PAUSED:-true}" == "true" || "${CID_DOSSIER_PAUSED:-true}" == "1" ]]; then
