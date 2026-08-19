@@ -1,32 +1,59 @@
+"""The receipt that gates alpha claims on corporate-action integrity.
+
+It used to certify the warehouse's `adjusted_close`. That column equals `close`
+wherever populated and reflects no structural action at all, so the receipt was
+auditing a field nothing consumed and reporting 98.6% "coverage" while 0 of 114
+actions were actually verified. It now audits the adjustment this module
+applies, corroborated against the price gap.
+"""
+
+from datetime import date, timedelta
+
 from hedge_fund_lab.backtests import corporate_action_adjustment_receipt, price_point_in_time_receipt
 
 
-def test_structural_action_adjustment_can_be_independently_verified():
-    rows = [
-        {"symbol": "AAA", "date": "2026-01-09", "close": 100.0, "adjusted_close": 50.0},
-        {"symbol": "AAA", "date": "2026-01-12", "close": 50.0, "adjusted_close": 50.0},
-    ]
-    actions = [{"symbol": "AAA", "action_date": "2026-01-12", "action_type": "split"}]
+def _bars(symbol: str, start: date, count: int, close: float) -> list[dict]:
+    out, day = [], start
+    while len(out) < count:
+        if day.weekday() < 5:
+            out.append({"symbol": symbol, "date": day.isoformat(), "close": close})
+        day += timedelta(days=1)
+    return out
+
+
+def test_a_split_the_prices_confirm_is_corroborated():
+    rows = _bars("AAA", date(2026, 1, 5), 6, 100.0) + _bars("AAA", date(2026, 2, 2), 6, 50.0)
+    actions = [{"symbol": "AAA", "action_date": "2026-02-02", "action_type": "split", "split": "2:1"}]
     receipt = corporate_action_adjustment_receipt(rows, actions)
     assert receipt["status"] == "PASSED"
     assert receipt["independently_verified"] is True
-    assert receipt["structural_actions_verified"] == 1
+    assert receipt["structural_actions_corroborated"] == 1
 
 
-def test_equal_raw_and_adjusted_prices_do_not_fake_verification():
-    rows = [
-        {"symbol": "AAA", "date": "2026-01-09", "close": 100.0, "adjusted_close": 100.0},
-        {"symbol": "AAA", "date": "2026-01-12", "close": 50.0, "adjusted_close": 50.0},
-    ]
-    actions = [{"symbol": "AAA", "action_date": "2026-01-12", "action_type": "split"}]
+def test_a_stated_ratio_the_prices_contradict_is_quarantined():
+    """DELPHIFX states a 3:1 split against a 16.4x price gap. Applying the
+    stated factor would silently rescale the whole prior history."""
+    rows = _bars("BAD", date(2026, 1, 5), 6, 100.0) + _bars("BAD", date(2026, 2, 2), 6, 99.0)
+    actions = [{"symbol": "BAD", "action_date": "2026-02-02", "action_type": "split", "split": "4:1"}]
     receipt = corporate_action_adjustment_receipt(rows, actions)
-    assert receipt["status"] == "PARTIAL"
     assert receipt["independently_verified"] is False
-    assert receipt["structural_actions_verified"] == 0
+    assert receipt["structural_actions_contradicted"] == 1
+    assert receipt["structural_actions_corroborated"] == 0
 
 
-def test_missing_actions_never_passes_even_with_adjusted_close_coverage():
-    rows = [{"symbol": "AAA", "date": "2026-01-09", "close": 100.0, "adjusted_close": 100.0}]
+def test_weekend_rows_are_reported_as_dropped():
+    """NSE does not trade on Sunday; those rows carry a differently scaled
+    series and would fabricate a -90% session followed by a +900% one."""
+    rows = _bars("AAA", date(2026, 1, 5), 4, 100.0) + [
+        {"symbol": "AAA", "date": "2026-01-11", "close": 10.0},  # Sunday
+    ]
+    receipt = corporate_action_adjustment_receipt(rows, [])
+    assert receipt["non_trading_day_rows_dropped"] == 1
+    assert receipt["price_rows"] == 4
+
+
+def test_missing_actions_never_passes():
+    rows = _bars("AAA", date(2026, 1, 5), 4, 100.0)
     receipt = corporate_action_adjustment_receipt(rows, [])
     assert receipt["independently_verified"] is False
     assert receipt["corporate_action_rows"] == 0

@@ -1,15 +1,33 @@
 from __future__ import annotations
 
+from datetime import date, timedelta
+
 from hedge_fund_lab.backtests import breakout_backtest, mean_reversion_backtest, momentum_backtest, trend_backtest
 from hedge_fund_lab.calculators import pair_diagnostics
 
 
+def _sessions(count: int, start: date = date(2023, 1, 2)) -> list[str]:
+    """Consecutive NSE sessions.
+
+    The fixtures used to label days "2025-0001", which is not a date. The
+    harness now drops non-trading days, because roughly 18% of
+    daily_market_history falls on a weekend carrying a differently scaled
+    series, so a backtest fixture has to look like a real calendar.
+    """
+    out, day = [], start
+    while len(out) < count:
+        if day.weekday() < 5:
+            out.append(day.isoformat())
+        day += timedelta(days=1)
+    return out
+
+
 def _price_rows() -> list[dict[str, object]]:
     rows: list[dict[str, object]] = []
-    for day in range(420):
-        label = f"2025-{day:04d}"
+    sessions = _sessions(420)
+    for day, label in enumerate(sessions):
         for symbol, multiplier in (("WIN", 1.003), ("MID", 1.001), ("LOSE", 0.999)):
-            rows.append({"date": label, "symbol": symbol, "adjusted_close": 100 * multiplier ** day,
+            rows.append({"date": label, "symbol": symbol, "close": 100 * multiplier ** day,
                          "volume": 100_000})
     return rows
 
@@ -77,13 +95,12 @@ def test_breakout_backtest_uses_prior_channel_and_volume():
 
 def test_mean_reversion_backtest_requires_dislocation_inside_positive_trend():
     rows = []
-    for day in range(420):
-        label = f"2025-{day:04d}"
+    for day, label in enumerate(_sessions(420)):
         for symbol, growth in (("WIN", 1.003), ("MID", 1.002), ("SLOW", 1.001)):
             close = 100 * growth ** day
             if day % 25 == 0:
                 close *= 0.78
-            rows.append({"date": label, "symbol": symbol, "adjusted_close": close, "volume": 100_000})
+            rows.append({"date": label, "symbol": symbol, "close": close, "volume": 100_000})
     result = mean_reversion_backtest(
         rows,
         classifications={"WIN": "A", "MID": "B", "SLOW": "C"},
@@ -104,3 +121,46 @@ def test_pair_diagnostics_never_claims_cointegration_without_test():
     result = pair_diagnostics(long_prices, short_prices)
     assert result["ok"] is True
     assert result["adf_status"] == "not_estimated_without_statistical_test_dependency"
+
+
+def test_weekend_rows_cannot_reach_the_backtest():
+    """About 18% of daily_market_history falls on a day NSE is closed, carrying
+    a differently scaled series - MWL printed a tenth of its weekday price every
+    Sunday for months before its split. Left in, each weekend fabricates a -90%
+    session followed by a +900% one, which is what produced a 17.9% win rate."""
+    from hedge_fund_lab.backtests import _clean_prices
+
+    rows = []
+    for day, label in enumerate(_sessions(30)):
+        rows.append({"date": label, "symbol": "AAA", "close": 100.0, "volume": 100_000})
+    rows.append({"date": "2023-01-08", "symbol": "AAA", "close": 10.0, "volume": 100_000})
+
+    cleaned = _clean_prices(rows)["AAA"]
+    assert all(c["close"] == 100.0 for c in cleaned), "a weekend print survived"
+    assert len(cleaned) == 30
+
+
+def test_a_split_the_prices_confirm_is_applied_to_the_series():
+    from hedge_fund_lab.backtests import _clean_prices
+
+    sessions = _sessions(40)
+    rows = [{"date": d, "symbol": "AAA", "close": 100.0 if i < 20 else 25.0, "volume": 100_000}
+            for i, d in enumerate(sessions)]
+    actions = [{"symbol": "AAA", "action_date": sessions[20], "action_type": "split", "split": "4:1"}]
+
+    cleaned = _clean_prices(rows, actions)["AAA"]
+    assert all(abs(bar["close"] - 25.0) < 1e-9 for bar in cleaned), \
+        "the pre-split half should be restated onto the post-split share base"
+
+
+def test_a_contradicted_ratio_is_not_applied():
+    """Half the stated ratios disagree with the price series; guessing would
+    silently rescale the entire prior history."""
+    from hedge_fund_lab.backtests import _clean_prices
+
+    sessions = _sessions(40)
+    rows = [{"date": d, "symbol": "AAA", "close": 100.0, "volume": 100_000} for d in sessions]
+    actions = [{"symbol": "AAA", "action_date": sessions[20], "action_type": "split", "split": "4:1"}]
+
+    cleaned = _clean_prices(rows, actions)["AAA"]
+    assert all(bar["close"] == 100.0 for bar in cleaned)

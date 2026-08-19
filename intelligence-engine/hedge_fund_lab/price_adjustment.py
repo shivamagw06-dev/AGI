@@ -1,43 +1,65 @@
-"""Corporate-action adjusted prices, built because the warehouse column is empty.
+"""Corporate-action adjusted prices, corroborated against the price series.
 
-daily_market_history carries an `adjusted_close` column and it is unpopulated:
-0 of 500 sampled rows on 2026-08-19. Raw `close` is unusable for return
-measurement, because a 1:1 bonus halves the quoted price with no economic loss
-and would register as a -50% month. Indian issuers use bonuses and splits
-heavily, so this is not an edge case — it would corrupt every backtest run on
-this data.
+Three defects in the warehouse make raw `close` unusable for return
+measurement, all three verified against production on 2026-08-19:
 
-corporate_actions holds 25,468 rows with split, bonus, rights and dividend
-fields, which is enough to build the adjustment here.
+1. `adjusted_close` is not adjusted. Where it is populated it equals `close`
+   exactly, and the backtest receipt confirms 0 of 114 structural actions are
+   reflected in it. Preferring it over `close` buys nothing.
 
-Method. Working backwards from the present, a price observed before an action
-is restated onto today's share base by multiplying it by the cumulative factor
-of every action that has happened since:
+2. `daily_market_history` contains non-trading days. Roughly 18% of rows fall
+   on a Saturday or Sunday, when NSE is closed, and they carry a differently
+   scaled series: MWL's Sunday prints sat at one tenth of the surrounding
+   weekday prints for months before its split. Left in, every weekend injects
+   a -90% day followed by a +900% day.
 
-    adj(t) = close(t) * PROD over actions a with ex_date > t of f(a)
+3. The stated split ratios are inconsistent. Measuring the price gap at 45
+   structural actions:
 
-    split  1:n     f = 1/n     one old share becomes n
-    bonus  m:n     f = n/(n+m) n shares become n+m
-    rights          not adjusted - see below
+       5:2  -> price fell 2.50x   (a/b)
+       10:1 -> price fell 10.24x  (a/b)
+       2:10 -> price fell 5.05x   (b/a, the other way round)
+       4:3  -> price fell 1.25x   (neither reading)
+       3:1  -> price fell 16.4x   (neither, and not close)
 
-Rights issues are deliberately excluded. Adjusting them correctly needs the
-subscription price and take-up rate, neither of which is in the table, and a
-wrong rights adjustment is worse than none because it silently shifts the whole
-history. Rows affected by a rights issue are flagged instead.
+   Nineteen of forty-five matched a/b, two matched b/a, three showed no gap at
+   all, and the rest matched nothing. TRENT records the same event twice, as a
+   1:2 bonus and a 3:2 split, so applying both would adjust by 0.44 instead of
+   0.67.
 
-This is also the evidence the validation registry asks for under
-CORPORATE_ACTION_UNVERIFIED, which currently blocks the pairs strategy: an
-unadjusted split is indistinguishable from a violent mean-reversion signal.
+So the ratio string is a hypothesis, not an input. The observed gap in the
+price series is the measurement, and an adjustment is applied only where the
+two corroborate. Where they do not, the symbol is quarantined rather than
+guessed at - a wrong adjustment silently rescales the entire prior history,
+which is worse than no adjustment because nothing downstream can detect it.
+
+Bonus ratios do check out: m:n gives m new shares per n held, so n shares
+become n+m and prior prices scale by n/(n+m). LICI's 1:1 halved the price and
+TRENT's 1:2 moved it by two thirds, both as predicted.
 """
 
 from __future__ import annotations
 
 import re
+import statistics
 from datetime import date, datetime
 from typing import Any, Iterable, Optional
 
-# Ratios appear as "1:2", "1 : 2", "1-2" or bare numbers depending on source.
 _RATIO = re.compile(r"^\s*(\d+(?:\.\d+)?)\s*[:\-/]\s*(\d+(?:\.\d+)?)\s*$")
+
+# How far the observed gap may sit from the stated ratio and still count as
+# corroboration. Real prices move on the ex-date for ordinary reasons, so this
+# cannot be tight; 6% is wide enough for a day's drift and far narrower than
+# the gap between the competing a/b and b/a readings.
+TOLERANCE = 0.06
+# Sessions either side of the ex-date used to measure the gap. A median over
+# several sessions resists a single bad print.
+GAP_WINDOW = 5
+
+
+def is_trading_day(value: date) -> bool:
+    """NSE trades Monday to Friday. Weekend rows are corrupt, not sparse."""
+    return value.weekday() < 5
 
 
 def _as_date(value: Any) -> Optional[date]:
@@ -55,7 +77,6 @@ def _as_date(value: Any) -> Optional[date]:
 
 
 def _ratio(value: Any) -> Optional[tuple[float, float]]:
-    """Parse 'a:b' into (a, b). Returns None when unparseable."""
     if value is None:
         return None
     text = str(value).strip()
@@ -65,25 +86,41 @@ def _ratio(value: Any) -> Optional[tuple[float, float]]:
     if m:
         a, b = float(m.group(1)), float(m.group(2))
         return (a, b) if a > 0 and b > 0 else None
-    # A bare number on a split field means "1 becomes n".
     try:
         n = float(text)
     except ValueError:
         return None
-    return (1.0, n) if n > 0 else None
+    return (n, 1.0) if n > 0 else None
 
 
 def split_factor(value: Any) -> Optional[float]:
-    """A 1:n split multiplies share count by n, so prior prices scale by 1/n."""
+    """`a:b` multiplies the share count by a/b, so prior prices scale by b/a.
+
+    Measured, not assumed: ZFCVINDIA's 6:1 took the price from 16,086 to 2,660
+    and MWL's 10:1 took it from 370.25 to 36.65.
+    """
     parsed = _ratio(value)
     if not parsed:
         return None
-    old, new = parsed
-    return old / new if new else None
+    a, b = parsed
+    return b / a if a else None
+
+
+def split_factor_inverted(value: Any) -> Optional[float]:
+    """The competing `b/a` reading, kept so reconciliation can test both.
+
+    A minority of rows - every `2:10` seen so far - are written the other way
+    round, and only the price series can say which is meant.
+    """
+    parsed = _ratio(value)
+    if not parsed:
+        return None
+    a, b = parsed
+    return a / b if b else None
 
 
 def bonus_factor(value: Any) -> Optional[float]:
-    """An m:n bonus gives m new shares per n held: n shares become n+m."""
+    """`m:n` gives m new shares per n held, so n shares become n+m."""
     parsed = _ratio(value)
     if not parsed:
         return None
@@ -92,58 +129,155 @@ def bonus_factor(value: Any) -> Optional[float]:
     return n / total if total else None
 
 
-def action_factor(action: dict[str, Any]) -> tuple[Optional[float], Optional[str]]:
-    """Price factor for one corporate action, and why it was skipped if it was."""
+def candidate_factors(action: dict[str, Any]) -> tuple[list[float], Optional[str]]:
+    """Every reading of one action worth testing against the price series."""
     kind = str(action.get("action_type") or "").strip().lower()
     if kind == "split" or action.get("split"):
-        f = split_factor(action.get("split") or action.get("ratio"))
-        return (f, None) if f else (None, "unparseable_split")
+        raw = action.get("split") or action.get("ratio")
+        out = [f for f in (split_factor(raw), split_factor_inverted(raw))
+               if f and f > 0 and f != 1.0]
+        return (out, None) if out else ([], "unparseable_split")
     if kind == "bonus" or action.get("bonus"):
         f = bonus_factor(action.get("bonus") or action.get("ratio"))
-        return (f, None) if f else (None, "unparseable_bonus")
+        return ([f], None) if f else ([], "unparseable_bonus")
     if kind == "rights" or action.get("rights"):
-        # Needs subscription price and take-up; a wrong adjustment silently
-        # shifts the entire prior history, which is worse than none.
-        return None, "rights_not_adjusted"
+        return [], "rights_not_adjusted"
     if kind == "dividend" or action.get("dividend"):
-        # Price-return series only. Total return would need the dividend
-        # reinvested, which is a different question and should be labelled.
-        return None, "dividend_price_return_only"
-    return None, "unhandled_action_type"
+        return [], "dividend_price_return_only"
+    return [], "unhandled_action_type"
 
 
-def build_factors(actions: Iterable[dict[str, Any]]) -> dict[str, list[tuple[date, float]]]:
-    """Per-symbol list of (ex_date, factor), newest first."""
-    by_symbol: dict[str, list[tuple[date, float]]] = {}
+def observed_factor(
+    prices: list[tuple[date, float]],
+    ex_date: date,
+    window: int = GAP_WINDOW,
+) -> Optional[float]:
+    """Price gap across the ex-date, as a factor applied to prior prices.
+
+    Returns median(post) / median(pre): the number a pre-event price must be
+    multiplied by to sit on the post-event share base.
+    """
+    trading = [(d, p) for d, p in prices if is_trading_day(d) and p > 0]
+    pre = [p for d, p in trading if d < ex_date][-window:]
+    post = [p for d, p in trading if d >= ex_date][:window]
+    if len(pre) < 2 or len(post) < 2:
+        return None
+    before = statistics.median(pre)
+    return statistics.median(post) / before if before > 0 else None
+
+
+def reconcile(
+    candidates: list[float],
+    observed: Optional[float],
+    tolerance: float = TOLERANCE,
+) -> tuple[Optional[float], str]:
+    """Accept a stated ratio only where the price series agrees with it."""
+    if observed is None:
+        return None, "no_price_evidence"
+    if not candidates:
+        return None, "no_stated_ratio"
+    best, error = None, None
+    for factor in candidates:
+        relative = abs(observed - factor) / factor
+        if error is None or relative < error:
+            best, error = factor, relative
+    if error is not None and error <= tolerance:
+        return best, "corroborated"
+    return None, "stated_ratio_contradicted_by_prices"
+
+
+def resolve(
+    prices: list[tuple[date, float]],
+    actions: Iterable[dict[str, Any]],
+    tolerance: float = TOLERANCE,
+) -> dict[str, Any]:
+    """Corroborated factors for one symbol, plus why each action was dropped.
+
+    Actions sharing an ex-date are collapsed first: TRENT's bonus and split
+    rows describe one event, and applying both would double-adjust.
+    """
+    by_date: dict[date, list[dict[str, Any]]] = {}
+    reasons: dict[str, int] = {}
+    for action in actions or []:
+        when = _as_date(action.get("action_date") or action.get("ex_date"))
+        if when:
+            by_date.setdefault(when, []).append(action)
+
+    factors: list[tuple[date, float]] = []
+    detail: list[dict[str, Any]] = []
+    for when in sorted(by_date, reverse=True):
+        pooled: list[float] = []
+        skipped: Optional[str] = None
+        for action in by_date[when]:
+            cands, reason = candidate_factors(action)
+            pooled.extend(cands)
+            if reason and not cands:
+                skipped = reason
+        seen = sorted({round(f, 6) for f in pooled})
+        gap = observed_factor(prices, when)
+        factor, status = reconcile(seen, gap, tolerance)
+        if factor is None and skipped and not seen:
+            status = skipped
+        if factor is not None:
+            factors.append((when, factor))
+        reasons[status] = reasons.get(status, 0) + 1
+        detail.append({
+            "ex_date": when.isoformat(),
+            "stated_candidates": seen,
+            "observed_gap": round(gap, 6) if gap is not None else None,
+            "applied": factor,
+            "status": status,
+        })
+
+    return {"factors": factors, "detail": detail, "reasons": reasons,
+            "quarantined": any(d["status"] == "stated_ratio_contradicted_by_prices"
+                               for d in detail)}
+
+
+def build_factors(
+    actions: Iterable[dict[str, Any]],
+    prices_by_symbol: Optional[dict[str, list[tuple[date, float]]]] = None,
+    tolerance: float = TOLERANCE,
+) -> dict[str, list[tuple[date, float]]]:
+    """Per-symbol corroborated (ex_date, factor), newest first.
+
+    Without prices_by_symbol nothing can be corroborated, so nothing is
+    returned. That is deliberate: the previous version applied whatever the
+    ratio string said, and the ratio string is wrong about half the time.
+    """
+    grouped: dict[str, list[dict[str, Any]]] = {}
     for action in actions or []:
         symbol = str(action.get("symbol") or "").strip().upper()
-        when = _as_date(action.get("action_date") or action.get("ex_date"))
-        if not symbol or not when:
-            continue
-        factor, _ = action_factor(action)
-        if factor is None or factor <= 0 or factor == 1.0:
-            continue
-        by_symbol.setdefault(symbol, []).append((when, factor))
-    for rows in by_symbol.values():
-        rows.sort(key=lambda r: r[0], reverse=True)
-    return by_symbol
+        if symbol:
+            grouped.setdefault(symbol, []).append(action)
+
+    out: dict[str, list[tuple[date, float]]] = {}
+    for symbol, rows in grouped.items():
+        prices = (prices_by_symbol or {}).get(symbol) or []
+        resolved = resolve(prices, rows, tolerance)
+        if resolved["factors"]:
+            out[symbol] = sorted(resolved["factors"], key=lambda r: r[0], reverse=True)
+    return out
 
 
 def adjust_series(
     prices: list[tuple[date, float]],
     factors: list[tuple[date, float]],
+    drop_non_trading_days: bool = True,
 ) -> list[tuple[date, float]]:
     """Restate a price series onto the current share base.
 
-    Each observation is multiplied by the cumulative factor of every action
-    dated after it, so the most recent price is unchanged and history is
-    scaled to match.
+    Weekend rows are dropped by default. They are not merely redundant - they
+    carry a differently scaled series, so keeping them fabricates enormous
+    round-trip moves that no strategy actually traded.
     """
     if not prices:
         return []
-    ordered = sorted(prices, key=lambda p: p[0])
+    rows = [(d, p) for d, p in prices if p and p > 0]
+    if drop_non_trading_days:
+        rows = [(d, p) for d, p in rows if is_trading_day(d)]
     out: list[tuple[date, float]] = []
-    for when, price in ordered:
+    for when, price in sorted(rows, key=lambda r: r[0]):
         cumulative = 1.0
         for ex_date, factor in factors or []:
             if ex_date > when:
@@ -153,7 +287,6 @@ def adjust_series(
 
 
 def monthly_returns(series: list[tuple[date, float]]) -> list[tuple[date, float]]:
-    """Simple returns between consecutive adjusted observations."""
     ordered = sorted(series, key=lambda p: p[0])
     out: list[tuple[date, float]] = []
     for (_, prev), (when, curr) in zip(ordered, ordered[1:]):
@@ -162,35 +295,51 @@ def monthly_returns(series: list[tuple[date, float]]) -> list[tuple[date, float]
     return out
 
 
-def audit(actions: Iterable[dict[str, Any]]) -> dict[str, Any]:
-    """What the adjustment could and could not handle.
+def audit(
+    actions: Iterable[dict[str, Any]],
+    prices_by_symbol: Optional[dict[str, list[tuple[date, float]]]] = None,
+) -> dict[str, Any]:
+    """The CORPORATE_ACTION_UNVERIFIED receipt.
 
-    This is the receipt the validation registry wants under
-    CORPORATE_ACTION_UNVERIFIED. An adjustment that silently drops what it
-    cannot parse is exactly as dangerous as no adjustment at all.
+    Without prices this can only report what the action table claims, and says
+    so; corroboration is impossible and no factor is trustworthy.
     """
-    counts: dict[str, int] = {}
-    applied = 0
-    symbols: set[str] = set()
+    grouped: dict[str, list[dict[str, Any]]] = {}
     for action in actions or []:
         symbol = str(action.get("symbol") or "").strip().upper()
         if symbol:
-            symbols.add(symbol)
-        factor, reason = action_factor(action)
-        if factor is not None:
-            applied += 1
-            counts["applied"] = counts.get("applied", 0) + 1
-        else:
-            counts[reason or "unknown"] = counts.get(reason or "unknown", 0) + 1
+            grouped.setdefault(symbol, []).append(action)
+
+    reasons: dict[str, int] = {}
+    applied = quarantined = 0
+    for symbol, rows in grouped.items():
+        resolved = resolve((prices_by_symbol or {}).get(symbol) or [], rows)
+        applied += len(resolved["factors"])
+        quarantined += int(resolved["quarantined"])
+        for key, count in resolved["reasons"].items():
+            reasons[key] = reasons.get(key, 0) + count
+
+    corroborated = prices_by_symbol is not None
     return {
         "ok": True,
-        "actions_seen": sum(counts.values()),
+        "corroborated_against_prices": corroborated,
+        "actions_seen": sum(len(v) for v in grouped.values()),
+        "symbols": len(grouped),
         "adjustments_applied": applied,
-        "symbols": len(symbols),
-        "breakdown": dict(sorted(counts.items(), key=lambda kv: -kv[1])),
+        "symbols_quarantined": quarantined,
+        "breakdown": dict(sorted(reasons.items(), key=lambda kv: -kv[1])),
+        "status": "CORROBORATED" if corroborated else "UNVERIFIABLE_WITHOUT_PRICES",
         "limitations": [
+            "Stated split ratios are unreliable: of 45 structural actions measured "
+            "against the price series, 19 matched a/b, 2 matched b/a, 3 showed no "
+            "price gap, and the rest matched neither reading.",
+            "Adjustments are applied only where the observed price gap corroborates "
+            "the stated ratio; contradicted symbols are quarantined, not guessed.",
             "Rights issues are not adjusted: subscription price and take-up are absent.",
             "Dividends are not reinvested, so this is a price-return series.",
-            "Adjustment is built here because warehouse adjusted_close is unpopulated.",
+            "warehouse adjusted_close equals close wherever populated and reflects "
+            "no structural action, so it is ignored.",
+            "Weekend rows (about 18% of daily_market_history) are dropped as "
+            "non-trading days; they carry a differently scaled series.",
         ],
     }

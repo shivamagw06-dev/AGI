@@ -13,6 +13,8 @@ from collections import defaultdict
 from datetime import date
 from typing import Any, Iterable
 
+from .price_adjustment import _as_date, build_factors, is_trading_day, resolve
+
 
 MODEL_VERSION = "hfl-backtest-1.0"
 DEFAULTS = {
@@ -42,13 +44,31 @@ def _number(value: Any) -> float | None:
     return out if math.isfinite(out) else None
 
 
-def _clean_prices(rows: Iterable[dict[str, Any]]) -> dict[str, list[dict[str, Any]]]:
-    """Normalise and de-duplicate daily bars, preferring adjusted close."""
+def _clean_prices(
+    rows: Iterable[dict[str, Any]],
+    actions: Iterable[dict[str, Any]] | None = None,
+) -> dict[str, list[dict[str, Any]]]:
+    """Normalise daily bars onto a single, corporate-action adjusted share base.
+
+    Two corrections that the previous version got wrong, both verified against
+    production on 2026-08-19:
+
+    * `adjusted_close` was preferred over `close`. It equals `close` wherever it
+      is populated and reflects none of the 114 structural actions in the top-200
+      universe, so preferring it bought nothing while looking like diligence.
+    * Weekend rows were kept. About 18% of daily_market_history falls on a day
+      NSE is closed, carrying a differently scaled series - MWL printed a tenth
+      of its weekday price every Sunday for months - so each weekend fabricated
+      a -90% session followed by a +900% one.
+    """
     by_symbol: dict[str, dict[str, dict[str, Any]]] = defaultdict(dict)
     for row in rows:
-        symbol, day = str(row.get("symbol") or "").upper(), str(row.get("date") or "")
-        close = _number(row.get("adjusted_close")) or _number(row.get("close"))
+        symbol, day = str(row.get("symbol") or "").upper(), str(row.get("date") or "")[:10]
+        close = _number(row.get("close"))
         if not symbol or not day or close is None or close <= 0:
+            continue
+        parsed = _as_date(day)
+        if parsed is None or not is_trading_day(parsed):
             continue
         by_symbol[symbol][day] = {
             "date": day,
@@ -57,74 +77,108 @@ def _clean_prices(rows: Iterable[dict[str, Any]]) -> dict[str, list[dict[str, An
             "low": _number(row.get("low")) or close,
             "volume": _number(row.get("volume")) or 0.0,
         }
-    return {symbol: [bars[d] for d in sorted(bars)] for symbol, bars in by_symbol.items()}
+
+    ordered = {symbol: [bars[d] for d in sorted(bars)] for symbol, bars in by_symbol.items()}
+    if not actions:
+        return ordered
+
+    # Corroborate each stated ratio against the gap in this symbol's own prices;
+    # the ratio strings disagree with the price series about half the time.
+    series = {symbol: [(_as_date(bar["date"]), bar["close"]) for bar in bars]
+              for symbol, bars in ordered.items()}
+    series = {s: [(d, c) for d, c in v if d] for s, v in series.items()}
+    factors = build_factors(list(actions), series)
+    for symbol, bars in ordered.items():
+        applicable = factors.get(symbol)
+        if not applicable:
+            continue
+        for bar in bars:
+            when = _as_date(bar["date"])
+            cumulative = 1.0
+            for ex_date, factor in applicable:
+                if when and ex_date > when:
+                    cumulative *= factor
+            if cumulative != 1.0:
+                for field in ("close", "high", "low"):
+                    bar[field] = bar[field] * cumulative
+    return ordered
 
 
 def corporate_action_adjustment_receipt(
     rows: Iterable[dict[str, Any]], actions: Iterable[dict[str, Any]],
 ) -> dict[str, Any]:
-    """Verify adjusted-price factors against independently dated structural actions."""
+    """Verify the adjustment actually applied, against the price gap it claims.
+
+    This used to certify the warehouse's own `adjusted_close`. That column
+    equals `close` wherever it is populated and reflected none of the 114
+    structural actions in the top-200 universe, so the receipt was auditing a
+    field nothing consumed. It now audits the adjustment this module builds:
+    a factor is honoured only where the observed gap across the ex-date
+    corroborates the stated ratio, because those ratios disagree with the price
+    series roughly half the time.
+    """
     price_rows = list(rows)
     action_rows = list(actions)
-    usable = [row for row in price_rows if _number(row.get("close")) not in (None, 0)]
-    adjusted = [row for row in usable if _number(row.get("adjusted_close")) not in (None, 0)]
-    coverage = 100.0 * len(adjusted) / len(usable) if usable else 0.0
-    by_symbol: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    usable, weekend = [], 0
+    for row in price_rows:
+        close = _number(row.get("close"))
+        parsed = _as_date(str(row.get("date") or "")[:10])
+        if close in (None, 0) or parsed is None:
+            continue
+        if not is_trading_day(parsed):
+            weekend += 1
+            continue
+        usable.append(row)
+
+    series: dict[str, list[tuple[Any, float]]] = defaultdict(list)
     for row in usable:
-        by_symbol[str(row.get("symbol") or "").upper()].append(row)
-    for symbol in by_symbol:
-        by_symbol[symbol].sort(key=lambda row: str(row.get("date") or ""))
+        symbol = str(row.get("symbol") or "").upper()
+        series[symbol].append((_as_date(str(row.get("date"))[:10]), _number(row.get("close"))))
+    for rows_for_symbol in series.values():
+        rows_for_symbol.sort(key=lambda item: item[0])
 
     structural_types = {"split", "bonus", "rights", "merger", "demerger"}
-    structural = [
-        action for action in action_rows
-        if str(action.get("action_type") or "").lower() in structural_types
-    ]
-    matched = verified = 0
-    examples: list[dict[str, Any]] = []
-    for action in structural:
-        symbol = str(action.get("symbol") or "").upper()
-        event_date = str(action.get("effective_date") or action.get("action_date") or "")[:10]
-        series = by_symbol.get(symbol) or []
-        before = [row for row in series if str(row.get("date") or "")[:10] < event_date][-3:]
-        after = [row for row in series if str(row.get("date") or "")[:10] >= event_date][:3]
-        if not before or not after:
-            continue
-        matched += 1
-        prior, current = before[-1], after[0]
-        raw_prior, raw_current = _number(prior.get("close")), _number(current.get("close"))
-        adj_prior, adj_current = _number(prior.get("adjusted_close")), _number(current.get("adjusted_close"))
-        event_verified = False
-        if None not in (raw_prior, raw_current, adj_prior, adj_current):
-            raw_return = raw_current / raw_prior - 1.0
-            adjusted_return = adj_current / adj_prior - 1.0
-            factor_before = adj_prior / raw_prior
-            factor_after = adj_current / raw_current
-            event_verified = abs(factor_after / factor_before - 1.0) >= 0.01 and abs(adjusted_return) < abs(raw_return)
-        verified += int(event_verified)
-        if len(examples) < 20:
-            examples.append({
-                "symbol": symbol,
-                "action_type": str(action.get("action_type") or "").lower(),
-                "event_date": event_date,
-                "verified": event_verified,
-            })
+    structural = [a for a in action_rows
+                  if str(a.get("action_type") or "").lower() in structural_types]
 
-    passed = bool(usable) and coverage == 100.0 and bool(structural) and matched == len(structural) and verified == len(structural)
-    status = "PASSED" if passed else "PARTIAL" if usable and adjusted else "FAILED"
+    grouped: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    for action in structural:
+        grouped[str(action.get("symbol") or "").upper()].append(action)
+
+    corroborated = contradicted = unevidenced = 0
+    examples: list[dict[str, Any]] = []
+    for symbol, symbol_actions in grouped.items():
+        resolved = resolve(series.get(symbol) or [], symbol_actions)
+        for item in resolved["detail"]:
+            status = item["status"]
+            if status == "corroborated":
+                corroborated += 1
+            elif status == "stated_ratio_contradicted_by_prices":
+                contradicted += 1
+            else:
+                unevidenced += 1
+            if len(examples) < 20:
+                examples.append({"symbol": symbol, **item})
+
+    events = corroborated + contradicted + unevidenced
+    passed = bool(events) and contradicted == 0 and unevidenced == 0
+    status = "PASSED" if passed else "PARTIAL" if corroborated else "FAILED"
     return {
         "status": status,
         "independently_verified": passed,
         "price_rows": len(usable),
-        "adjusted_price_rows": len(adjusted),
-        "adjusted_close_coverage_pct": round(coverage, 3),
+        "non_trading_day_rows_dropped": weekend,
         "corporate_action_rows": len(action_rows),
         "structural_actions": len(structural),
-        "structural_actions_matched_to_prices": matched,
-        "structural_actions_verified": verified,
+        "structural_actions_corroborated": corroborated,
+        "structural_actions_contradicted": contradicted,
+        "structural_actions_without_price_evidence": unevidenced,
         "examples": examples,
         "source": "warehouse.corporate_actions + warehouse.daily_market_history",
-        "rule": "PASS requires 100% adjusted-close coverage and every structural action independently reflected in the adjustment factor.",
+        "rule": ("PASS requires every structural action to be corroborated by the "
+                 "price gap across its ex-date. Contradicted actions are quarantined "
+                 "rather than applied, because a wrong factor silently rescales the "
+                 "entire prior history."),
     }
 
 
@@ -225,7 +279,7 @@ def _validation_report(dates: list[str], returns: list[float]) -> dict[str, Any]
 
 def momentum_backtest(
     rows: Iterable[dict[str, Any]], *, classifications: dict[str, str] | None = None,
-    config: dict[str, Any] | None = None,
+    config: dict[str, Any] | None = None, actions: Iterable[dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     """Monthly 12-1 momentum backtest using only data known on each rebalance.
 
@@ -233,7 +287,7 @@ def momentum_backtest(
     conservative convention for an end-of-day signal and prevents look-ahead.
     """
     cfg = {**DEFAULTS, **(config or {})}
-    prices = _clean_prices(rows)
+    prices = _clean_prices(rows, actions)
     lookback, skip = int(cfg["lookback_sessions"]), int(cfg["skip_recent_sessions"])
     rebalance_every, holdings = int(cfg["rebalance_sessions"]), int(cfg["holdings"])
     if lookback <= skip or holdings < 1 or rebalance_every < 1:
@@ -358,11 +412,11 @@ def momentum_backtest(
 
 def trend_backtest(
     rows: Iterable[dict[str, Any]], *, classifications: dict[str, str] | None = None,
-    config: dict[str, Any] | None = None,
+    config: dict[str, Any] | None = None, actions: Iterable[dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     """Long-only moving-average trend portfolio with next-session execution."""
     cfg = {**DEFAULTS, "fast_window": 50, "slow_window": 200, "slope_window": 20, **(config or {})}
-    prices = _clean_prices(rows)
+    prices = _clean_prices(rows, actions)
     fast, slow, slope_window = int(cfg["fast_window"]), int(cfg["slow_window"]), int(cfg["slope_window"])
     rebalance_every, holdings = int(cfg["rebalance_sessions"]), int(cfg["holdings"])
     required = slow + slope_window
@@ -488,12 +542,12 @@ def trend_backtest(
 
 def breakout_backtest(
     rows: Iterable[dict[str, Any]], *, classifications: dict[str, str] | None = None,
-    config: dict[str, Any] | None = None,
+    config: dict[str, Any] | None = None, actions: Iterable[dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     """Long-only Donchian breakout with volume confirmation and daily exits."""
     cfg = {**DEFAULTS, "rebalance_sessions": 5, "entry_window": 55, "exit_window": 20,
            "atr_window": 14, "volume_window": 20, "minimum_volume_ratio": 1.0, **(config or {})}
-    prices = _clean_prices(rows)
+    prices = _clean_prices(rows, actions)
     entry_window, exit_window = int(cfg["entry_window"]), int(cfg["exit_window"])
     atr_window, volume_window = int(cfg["atr_window"]), int(cfg["volume_window"])
     rebalance_every, holdings = int(cfg["rebalance_sessions"]), int(cfg["holdings"])
@@ -618,12 +672,12 @@ def breakout_backtest(
 
 def mean_reversion_backtest(
     rows: Iterable[dict[str, Any]], *, classifications: dict[str, str] | None = None,
-    config: dict[str, Any] | None = None,
+    config: dict[str, Any] | None = None, actions: Iterable[dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     """Long-only price dislocation strategy conditioned on a positive slow trend."""
     cfg = {**DEFAULTS, "rebalance_sessions": 5, "mean_window": 20, "trend_window": 200,
            "trend_slope_window": 20, "entry_z": 2.0, "exit_z": 0.5, **(config or {})}
-    prices = _clean_prices(rows)
+    prices = _clean_prices(rows, actions)
     mean_window, trend_window = int(cfg["mean_window"]), int(cfg["trend_window"])
     slope_window, rebalance_every = int(cfg["trend_slope_window"]), int(cfg["rebalance_sessions"])
     holdings = int(cfg["holdings"])
@@ -819,7 +873,8 @@ def run_from_warehouse(strategy: str, config: dict[str, Any] | None = None) -> d
         ) if symbols else []
         actions_table = db.physical_table("corporate_actions")
         actions = db.query(
-            f'''SELECT symbol, action_date, effective_date, action_type
+            f'''SELECT symbol, action_date, effective_date, action_type,
+                       split, bonus, ratio, rights, dividend
                 FROM {actions_table}
                 WHERE COALESCE(sys_published, 1) = 1
                   AND symbol IN ({marks})
@@ -834,7 +889,7 @@ def run_from_warehouse(strategy: str, config: dict[str, Any] | None = None) -> d
     is_breakout = strategy_key in {"breakout", "volatility_breakout", "volatility_breakout_long_only"}
     is_reversion = strategy_key in {"mean_reversion", "medium_term_mean_reversion", "medium_term_mean_reversion_long_only"}
     runner = mean_reversion_backtest if is_reversion else breakout_backtest if is_breakout else trend_backtest if is_trend else momentum_backtest
-    result = runner(rows, classifications=classifications, config=supplied)
+    result = runner(rows, classifications=classifications, config=supplied, actions=actions)
     pit_receipt = price_point_in_time_receipt(result)
     result["point_in_time_status"] = pit_receipt["status"]
     result["readiness"] = {"price_point_in_time": pit_receipt}
@@ -847,14 +902,14 @@ def run_from_warehouse(strategy: str, config: dict[str, Any] | None = None) -> d
     if is_reversion:
         variants = [1.5, 2.0, 2.5]
         for entry_z in variants:
-            variant = runner(rows, classifications=classifications, config={**supplied, "entry_z": entry_z})
+            variant = runner(rows, classifications=classifications, config={**supplied, "entry_z": entry_z}, actions=actions)
             sensitivity.append({"entry_z": entry_z, "ok": bool(variant.get("ok")), "metrics": variant.get("metrics"),
                                 "test_metrics": ((variant.get("validation") or {}).get("periods") or {}).get("test", {}).get("metrics")})
         selection_rule = "Predeclared entry thresholds 1.5/2.0/2.5 standard deviations; no best-variant substitution."
     elif is_breakout:
         variants = [40, 55, 70]
         for entry_window in variants:
-            variant = runner(rows, classifications=classifications, config={**supplied, "entry_window": entry_window})
+            variant = runner(rows, classifications=classifications, config={**supplied, "entry_window": entry_window}, actions=actions)
             sensitivity.append({"entry_window": entry_window, "ok": bool(variant.get("ok")), "metrics": variant.get("metrics"),
                                 "test_metrics": ((variant.get("validation") or {}).get("periods") or {}).get("test", {}).get("metrics")})
         selection_rule = "Predeclared Donchian entry-window variants 40/55/70 sessions; no best-variant substitution."
@@ -862,7 +917,7 @@ def run_from_warehouse(strategy: str, config: dict[str, Any] | None = None) -> d
         base_slow = int(supplied.get("slow_window", 200))
         variants = sorted({max(100, base_slow - 50), base_slow, base_slow + 50})
         for slow_window in variants:
-            variant = runner(rows, classifications=classifications, config={**supplied, "slow_window": slow_window})
+            variant = runner(rows, classifications=classifications, config={**supplied, "slow_window": slow_window}, actions=actions)
             sensitivity.append({"slow_window": slow_window, "ok": bool(variant.get("ok")), "metrics": variant.get("metrics"),
                                 "test_metrics": ((variant.get("validation") or {}).get("periods") or {}).get("test", {}).get("metrics")})
         selection_rule = "Predeclared slow-window variants 150/200/250 sessions; no best-variant substitution."
@@ -870,7 +925,7 @@ def run_from_warehouse(strategy: str, config: dict[str, Any] | None = None) -> d
         base_lookback = int(supplied.get("lookback_sessions", DEFAULTS["lookback_sessions"]))
         variants = sorted({max(126, base_lookback - 63), base_lookback, base_lookback + 63})
         for lookback in variants:
-            variant = runner(rows, classifications=classifications, config={**supplied, "lookback_sessions": lookback})
+            variant = runner(rows, classifications=classifications, config={**supplied, "lookback_sessions": lookback}, actions=actions)
             sensitivity.append({"lookback_sessions": lookback, "ok": bool(variant.get("ok")), "metrics": variant.get("metrics"),
                                 "test_metrics": ((variant.get("validation") or {}).get("periods") or {}).get("test", {}).get("metrics")})
         selection_rule = "Predeclared lookback +/- 63 sessions; no best-variant substitution."

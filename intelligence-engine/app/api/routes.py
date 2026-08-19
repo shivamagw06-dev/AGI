@@ -10220,19 +10220,62 @@ async def valuation_consensus_seed(payload: dict[str, Any] = Body(default={})):
 
 
 @router.get("/hedge-fund-lab/corporate-action-audit")
-def hedge_fund_corporate_action_audit(limit: int = 30000):
-    """What the price adjustment can and cannot handle.
+def hedge_fund_corporate_action_audit(limit: int = 30000, symbols: int = 150):
+    """What the price adjustment can and cannot stand behind.
 
-    daily_market_history.adjusted_close is unpopulated, so returns must be
-    computed from an adjustment built off corporate_actions. This is the
-    receipt the validation registry asks for under CORPORATE_ACTION_UNVERIFIED,
-    which currently blocks the pairs strategy.
+    The receipt the validation registry asks for under CORPORATE_ACTION_UNVERIFIED,
+    which blocks the pairs strategy. Three findings drive it, all verified against
+    production on 2026-08-19:
+
+    * `daily_market_history.adjusted_close` equals `close` wherever populated and
+      reflects no structural action, so it is ignored rather than trusted.
+    * The stated split ratios disagree with the price series about half the time,
+      so each one is corroborated against the gap across its own ex-date.
+    * Roughly 18% of price rows fall on a weekend and carry a differently scaled
+      series, so they are dropped as non-trading days.
+
+    Bounded to the busiest symbols on purpose: an unbounded price scan on the
+    request path is what took the engine down on 2026-08-19.
     """
-    from hedge_fund_lab.price_adjustment import audit
-    from institutional_warehouse import store
+    from hedge_fund_lab.price_adjustment import _as_date, audit, is_trading_day
+    from institutional_warehouse import db, store
 
-    actions = store.all_rows("corporate_actions", limit=max(1, min(int(limit or 30000), 60000)))
-    return audit(actions or [])
+    actions = store.all_rows("corporate_actions", limit=max(1, min(int(limit or 30000), 60000))) or []
+    structural = {"split", "bonus", "rights", "merger", "demerger"}
+    wanted: list[str] = []
+    for action in actions:
+        if str(action.get("action_type") or "").lower() not in structural:
+            continue
+        symbol = str(action.get("symbol") or "").strip().upper()
+        if symbol and symbol not in wanted:
+            wanted.append(symbol)
+    wanted = wanted[: max(1, min(int(symbols or 150), 400))]
+
+    prices: dict[str, list] = {}
+    if wanted:
+        try:
+            table = db.physical_table("daily_market_history")
+            marks = ",".join("?" for _ in wanted)
+            rows = db.query(
+                f"""SELECT symbol, date, close FROM {table}
+                    WHERE COALESCE(sys_published, 1) = 1 AND symbol IN ({marks})
+                    ORDER BY symbol, date""",
+                tuple(wanted),
+            ) or []
+            for row in rows:
+                parsed = _as_date(str(row.get("date") or "")[:10])
+                try:
+                    close = float(row.get("close"))
+                except (TypeError, ValueError):
+                    continue
+                if parsed and close > 0 and is_trading_day(parsed):
+                    prices.setdefault(str(row.get("symbol") or "").upper(), []).append((parsed, close))
+        except Exception as exc:  # corroboration is best-effort; the audit still reports
+            return {**audit(actions), "price_lookup_error": str(exc)[:200]}
+
+    report = audit(actions, prices)
+    report["symbols_corroborated_against_prices"] = len(prices)
+    return report
 
 
 @router.get("/hedge-fund-lab/live-strategies")
