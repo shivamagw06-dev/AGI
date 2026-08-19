@@ -232,6 +232,30 @@ async def lifespan(_app: FastAPI):
             threading.Thread(target=_run_vendor_export_seed, name="vendor-export-seed", daemon=True).start()
     except Exception as exc:
         log.warning("vendor_export_seed_thread_failed", extra={"error": str(exc)[:160]})
+    # Capital IQ estimate vintages — 252k rows of point-in-time consensus and
+    # reported EPS, 2020-01 to 2025-12. This is what makes an honest backtest
+    # possible; without it every fundamental ranking looks ahead.
+    try:
+        import threading
+
+        from financial_warehouse_completion.capiq_vintages import parse as parse_vintages
+        from financial_warehouse_completion.capiq_vintages import write as write_vintages
+
+        def _run_vintage_seed() -> None:
+            try:
+                parsed = parse_vintages()
+                if not parsed.get("ok"):
+                    log.info("capiq_vintage_seed_skipped", extra={"reason": parsed.get("error")})
+                    return
+                result = write_vintages(parsed)
+                log.info("capiq_vintage_seed", extra={"written": result.get("written")})
+            except Exception as exc:  # pragma: no cover - defensive startup path
+                log.warning("capiq_vintage_seed_failed", extra={"error": str(exc)[:200]})
+
+        if not migration_priority:
+            threading.Thread(target=_run_vintage_seed, name="capiq-vintage-seed", daemon=True).start()
+    except Exception as exc:
+        log.warning("capiq_vintage_seed_thread_failed", extra={"error": str(exc)[:160]})
     # Import the checked-in licensed India macro workbook into private tables.
     # The importer is fingerprinted by source hash and uses idempotent upserts;
     # raw vendor values are never exposed through the public macro API.

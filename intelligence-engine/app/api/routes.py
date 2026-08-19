@@ -19273,6 +19273,28 @@ def warehouse_import_capital_iq_run(
     )
 
 
+@router.get("/warehouse/import/capiq-vintages")
+def warehouse_capiq_vintages_preview():
+    """Coverage of the checked-in estimate-vintage workbook, without writing."""
+    from financial_warehouse_completion.capiq_vintages import parse, summarise
+
+    parsed = parse()
+    if not parsed.get("ok"):
+        return {"ok": False, "error": parsed.get("error")}
+    return {"ok": True, "source_version": parsed.get("source_version"),
+            "stats": parsed.get("stats"), "summary": summarise(parsed)}
+
+
+@router.post("/warehouse/import/capiq-vintages")
+def warehouse_capiq_vintages_import():
+    from financial_warehouse_completion.capiq_vintages import parse, write
+
+    parsed = parse()
+    if not parsed.get("ok"):
+        return {"ok": False, "error": parsed.get("error")}
+    return write(parsed)
+
+
 @router.get("/warehouse/import/vendor-exports")
 def warehouse_vendor_exports_preview():
     """Parsed row counts for the checked-in vendor exports, without writing."""

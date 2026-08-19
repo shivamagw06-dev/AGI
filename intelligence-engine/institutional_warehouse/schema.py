@@ -856,6 +856,16 @@ CONSENSUS_METRIC_VINTAGES = Tab(
         _c("analyst_count", "Analyst Count", INTEGER, width=130, group="Breadth"),
         _c("currency", "Currency", TEXT, width=100, group="Units"),
         _c("unit", "Unit", TEXT, width=120, group="Units"),
+        _c("isin", "ISIN", TEXT, width=140, group="Key"),
+        _c("target_period_end", "Period End", DATE, width=130, group="Key"),
+        # Whether target_period came from the vendor or was derived. The 2026-08
+        # Capital IQ vintage export returned "(Invalid Time Period)" for every
+        # period-end cell, so those labels are derived from the as-of date on an
+        # Indian fiscal calendar. A derived label must never read as vendor-supplied.
+        _c("period_source", "Period Source", TEXT, width=160, group="Provenance",
+           options=("vendor", "derived_indian_fy")),
+        _c("is_forward_estimate", "Forward Estimate", TEXT, width=150, group="Estimate",
+           options=("true", "false")),
         *PROVENANCE_COLUMNS,
     ),
 )
