@@ -18975,6 +18975,37 @@ def warehouse_delete_rows(
                   reason=body.get("reason"))
 
 
+@router.post("/warehouse/tab/{tab_id}/retire")
+def warehouse_retire_rows(
+    tab_id: str,
+    payload: dict[str, Any] = Body(default_factory=dict),
+    x_agi_actor: str | None = Header(default=None),
+):
+    """Hide bad imported rows from active reads, keeping the audit history.
+
+    Append-only tabs refuse deletion on purpose - consensus_metric_vintages is
+    the point-in-time panel, and rewriting history is exactly what it exists to
+    prevent. But a bad import still has to be withdrawable, or the only way to
+    correct one is to leave it in place. Retiring sets sys_published = 0, so
+    the rows drop out of every active read while the version snapshot and audit
+    trail survive.
+
+    A reason is mandatory: a row hidden without one is indistinguishable from
+    data quietly going missing.
+    """
+    from institutional_warehouse import store
+
+    body = payload or {}
+    row_ids = body.get("row_ids") or []
+    reason = str(body.get("reason") or "").strip()
+    if not row_ids:
+        return {"ok": False, "error": "no_row_ids"}
+    if not reason:
+        return {"ok": False, "error": "reason_required"}
+    return store.retire_rows(tab_id, row_ids,
+                             actor=_warehouse_actor(body, x_agi_actor), reason=reason)
+
+
 @router.post("/warehouse/tab/{tab_id}/publish")
 def warehouse_publish(
     tab_id: str,
