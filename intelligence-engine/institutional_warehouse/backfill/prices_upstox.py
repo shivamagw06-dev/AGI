@@ -27,6 +27,22 @@ SOURCE = upstox_history.SOURCE
 MIN_DAILY_SHARE = 0.80
 
 
+def _one_row_per_key(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Collapse duplicate (symbol, date) rows, keeping the last.
+
+    daily_market_history keys on (symbol, date) and the store splits a payload
+    into inserts and updates before writing, with no ON CONFLICT clause. Two
+    rows sharing a key therefore both land in the insert batch and the whole
+    call fails with "UNIQUE constraint failed: wh_daily_market_history.row_id",
+    losing every company in the run rather than the offending row.
+    """
+    deduped: dict[tuple[str, str], dict[str, Any]] = {}
+    for row in rows:
+        key = (str(row.get("symbol") or "").upper(), str(row.get("date") or "")[:10])
+        deduped[key] = row
+    return list(deduped.values())
+
+
 def _companies() -> dict[str, str]:
     """{symbol: instrument_key} for every company we can address."""
     out: dict[str, str] = {}
@@ -63,7 +79,7 @@ def backfill_company(
         return {"ok": False, "symbol": ticker, "error": history.get("error"), "rows": 0}
 
     screened = screen_series(history["prices"], date_field="date")
-    clean = screened["accepted"]
+    clean = _one_row_per_key(screened["accepted"])
     share = upstox_history.daily_share(clean)
 
     if share < MIN_DAILY_SHARE:
@@ -110,9 +126,18 @@ def backfill(
     earliest: Optional[str] = None
 
     for ticker in pending:
-        result = backfill_company(ticker, instrument_key=keys.get(ticker.upper()), actor=actor,
-                                  start=start, end=end, getter=getter,
-                                  pause_seconds=pause_seconds)
+        try:
+            result = backfill_company(ticker, instrument_key=keys.get(ticker.upper()), actor=actor,
+                                      start=start, end=end, getter=getter,
+                                      pause_seconds=pause_seconds)
+        except Exception as exc:
+            # One company must not take the batch down with it. A write that
+            # raised previously aborted the whole stage, so 24 healthy
+            # companies were lost to one bad payload.
+            checkpoints.save_checkpoint(KIND, ticker, status=checkpoints.FAILED,
+                                        error=str(exc)[:200])
+            failed.append({"symbol": ticker, "error": str(exc)[:200]})
+            continue
         if not result.get("ok"):
             failed.append({"symbol": ticker, "error": result.get("error"),
                            "daily_share": result.get("daily_share")})

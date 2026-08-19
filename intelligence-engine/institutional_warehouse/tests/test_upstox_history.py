@@ -135,3 +135,51 @@ class TestFetchHistory:
                                getter=lambda url: {"data": {"candles": []}})
         assert out["ok"] is False
         assert out["error"] == "no_candles_returned"
+
+
+class TestDuplicateKeys:
+    def test_duplicate_symbol_date_rows_are_collapsed_before_writing(self):
+        """daily_market_history keys on (symbol, date) and the store has no
+        ON CONFLICT clause: two rows sharing a key both land in the insert
+        batch and fail the whole run with a UNIQUE constraint error, which is
+        what killed a 25-company batch."""
+        from institutional_warehouse.backfill.prices_upstox import _one_row_per_key
+
+        rows = [
+            {"symbol": "AAA", "date": "2026-08-18", "close": 1.0},
+            {"symbol": "AAA", "date": "2026-08-18", "close": 2.0},
+            {"symbol": "AAA", "date": "2026-08-17", "close": 3.0},
+        ]
+        out = _one_row_per_key(rows)
+        assert len(out) == 2
+        assert [r for r in out if r["date"] == "2026-08-18"][0]["close"] == 2.0, "last wins"
+
+    def test_case_differences_in_symbol_still_collide(self):
+        from institutional_warehouse.backfill.prices_upstox import _one_row_per_key
+
+        rows = [{"symbol": "aaa", "date": "2026-08-18", "close": 1.0},
+                {"symbol": "AAA", "date": "2026-08-18", "close": 2.0}]
+        assert len(_one_row_per_key(rows)) == 1
+
+
+def test_one_failing_company_does_not_abort_the_batch(monkeypatch):
+    """A raising write previously aborted the whole stage, so 24 healthy
+    companies were lost to one bad payload."""
+    from institutional_warehouse.backfill import prices_upstox as pu
+
+    monkeypatch.setattr(pu, "_companies", lambda: {"AAA": "NSE_EQ|INE000000001",
+                                                   "BBB": "NSE_EQ|INE000000002"})
+    monkeypatch.setattr(pu.checkpoints, "pending_entities", lambda *a, **k: ["AAA", "BBB"])
+    monkeypatch.setattr(pu.checkpoints, "save_checkpoint", lambda *a, **k: None)
+    monkeypatch.setattr(pu.checkpoints, "entity_coverage", lambda *a, **k: {})
+
+    def _company(symbol, **kwargs):
+        if symbol == "AAA":
+            raise RuntimeError("UNIQUE constraint failed: wh_daily_market_history.row_id")
+        return {"ok": True, "symbol": symbol, "rows": 10, "first": "2000-01-03"}
+
+    monkeypatch.setattr(pu, "backfill_company", _company)
+    out = pu.backfill()
+    assert out["companies_done"] == 1
+    assert out["companies_failed"] == 1
+    assert "UNIQUE constraint" in out["failures"][0]["error"]
