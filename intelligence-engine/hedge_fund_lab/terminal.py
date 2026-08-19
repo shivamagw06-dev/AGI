@@ -36,6 +36,7 @@ from .scanner import (
     _universe,
     market_regime,
     universe_meta,
+    _suspect_multiple,
 )
 
 _SNAPSHOT_DAYS = 60
@@ -976,7 +977,10 @@ def market_dashboard(universe=None, medians=None) -> dict[str, Any]:
                 "industry_median": benchmark,
                 "gap_pct": round(((value / benchmark) - 1.0) * 100.0, 1),
                 "relative_multiple": round(value / benchmark, 2),
-                "validation_status": "normalization_required" if metric == "ev_ebitda" or abs(((value / benchmark) - 1.0) * 100.0) >= 300 else "screen_validated",
+                # Flag on the evidence, not on the metric name — see
+                # hedge_fund_lab.scanner._SUSPECT_BELOW.
+                "validation_status": "normalization_required" if _suspect_multiple(metric, value)
+                or abs(((value / benchmark) - 1.0) * 100.0) >= 300 else "screen_validated",
             }
         )
     gaps.sort(key=lambda r: r["gap_pct"])
