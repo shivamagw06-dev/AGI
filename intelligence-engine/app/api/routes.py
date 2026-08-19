@@ -18849,6 +18849,31 @@ def warehouse_stats():
     return stats()
 
 
+@router.get("/warehouse/clean")
+def warehouse_clean_summary(limit: int = 5000):
+    """Headline numbers for each curated view: what was kept, and what was not.
+
+    Sync def on purpose - it scans the warehouse, so FastAPI runs it in the
+    threadpool rather than on the event loop.
+    """
+    from institutional_warehouse.clean_views import summary
+
+    return summary(limit=max(100, min(int(limit or 5000), 20000)))
+
+
+@router.get("/warehouse/clean/{name}")
+def warehouse_clean_view(name: str, limit: int = 5000):
+    """One curated view, with the known-bad rows filtered out and counted.
+
+    The warehouse holds good and corrupt rows in the same tables - quarterly
+    figures labelled as annual, weekend bars on a market that was closed - and
+    nothing downstream can separate them without knowing the specific defect.
+    """
+    from institutional_warehouse.clean_views import view
+
+    return view(name, limit=max(100, min(int(limit or 5000), 20000)))
+
+
 @router.get("/warehouse/whoami")
 def warehouse_whoami(x_agi_actor: str | None = Header(default=None)):
     from institutional_warehouse.production import whoami

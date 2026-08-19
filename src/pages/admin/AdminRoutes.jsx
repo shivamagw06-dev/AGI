@@ -21,6 +21,7 @@ const LiveEvidence = lazy(() => import('@/pages/admin/LiveEvidence'));
 const CompanyDossiers = lazy(() => import('@/pages/admin/CompanyDossiers'));
 const YahooProvider = lazy(() => import('@/pages/admin/YahooProvider'));
 const DataQuality = lazy(() => import('@/pages/admin/DataQuality'));
+const CleanDatabase = lazy(() => import('@/pages/admin/CleanDatabase'));
 const EvidenceCompletion = lazy(() => import('@/pages/admin/EvidenceCompletion'));
 const CompanyAnalysis = lazy(() => import('@/pages/admin/CompanyAnalysis'));
 const CompanyMonitor = lazy(() => import('@/pages/admin/CompanyMonitor'));
@@ -103,6 +104,7 @@ export default function AdminRoutes() {
           <Route path="valuation-terminal" element={<ValuationTerminal />} />
           {/* Full-bleed Institutional Data Warehouse — the workbook every engine reads */}
           <Route path="data-warehouse" element={<DataWarehouse />} />
+          <Route path="clean-database" element={<CleanDatabase />} />
           <Route path="sector-evidence-audit" element={<DataWarehouse initialTabId="sector_evidence_matrix" focused />} />
           {/* Full-bleed Historical Coverage — how deep the warehouse actually goes */}
           <Route path="historical-coverage" element={<HistoricalCoverage />} />

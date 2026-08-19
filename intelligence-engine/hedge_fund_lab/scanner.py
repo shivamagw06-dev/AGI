@@ -406,6 +406,108 @@ _UNIVERSE_LOCK = __import__("threading").Lock()
 # Keep the joined universe warm across page opens + keep-warm pings.
 _UNIVERSE_TTL_SEC = 300.0
 
+_HISTORY_CACHE: dict[str, Any] = {"at": 0.0, "rows": None}
+_HISTORY_LOCK = __import__("threading").Lock()
+# 139,639 rows scanned once and held. Repeated heavy reads on the request path
+# are what took the engine down on 2026-08-19.
+_HISTORY_TTL_SEC = 900.0
+# Metrics worth carrying per company. The workbook holds fifteen; these are the
+# ones the screens actually rank on.
+_HISTORY_METRICS = ("pe", "pb", "ev_ebitda", "roe", "roa", "ebitda_margin", "debt_equity")
+
+
+def _valuation_history_by_symbol(*, limit: int = 200000) -> dict[str, dict[str, dict[str, Any]]]:
+    """Ten years of per-company ratios from the Capital IQ workbook.
+
+    `sector_ratio_history` holds 139,639 rows covering 2,627 companies over
+    FY2016-FY2025 across fifteen metrics, and until now nothing in the hedge
+    fund lab read it - the screens ranked purely on a same-day cross-section.
+    That measures whether a stock is cheaper than its neighbours today; it
+    cannot say whether it is cheap against its own past, which is the question
+    a value screen is actually asking.
+
+    Returns {symbol: {metric: {"median", "years", "first", "last", "latest"}}}.
+    Only rows the workbook marked ELIGIBLE are used, so vendor outliers it
+    already excluded from its own medians stay excluded here.
+    """
+    try:
+        from institutional_warehouse import store
+    except Exception:
+        return {}
+
+    buckets: dict[str, dict[str, list[tuple[str, float]]]] = {}
+    try:
+        for row in store.all_rows("sector_ratio_history", limit=limit) or []:
+            if str(row.get("median_eligibility") or "").upper() != "ELIGIBLE":
+                continue
+            metric = str(row.get("metric") or "").lower()
+            symbol = str(row.get("symbol") or "").upper()
+            value = _num(row.get("value"))
+            year = str(row.get("fiscal_year") or "")
+            if not symbol or not year or value is None or metric not in _HISTORY_METRICS:
+                continue
+            buckets.setdefault(symbol, {}).setdefault(metric, []).append((year, value))
+    except Exception:
+        return {}
+
+    out: dict[str, dict[str, dict[str, Any]]] = {}
+    for symbol, metrics in buckets.items():
+        for metric, pairs in metrics.items():
+            pairs.sort()
+            values = [v for _, v in pairs]
+            out.setdefault(symbol, {})[metric] = {
+                "median": round(stats.median(values), 4),
+                "years": len(values),
+                "first": pairs[0][0],
+                "last": pairs[-1][0],
+                "latest": pairs[-1][1],
+            }
+    return out
+
+
+def _history_index() -> dict[str, dict[str, dict[str, Any]]]:
+    import time
+
+    now = time.time()
+    cached = _HISTORY_CACHE.get("rows")
+    if cached is not None and (now - float(_HISTORY_CACHE.get("at") or 0.0)) < _HISTORY_TTL_SEC:
+        return cached
+    with _HISTORY_LOCK:
+        cached = _HISTORY_CACHE.get("rows")
+        if cached is not None and (time.time() - float(_HISTORY_CACHE.get("at") or 0.0)) < _HISTORY_TTL_SEC:
+            return cached
+        rows = _valuation_history_by_symbol()
+        _HISTORY_CACHE["at"] = time.time()
+        _HISTORY_CACHE["rows"] = rows
+        return rows
+
+
+def reset_history_cache() -> None:
+    """Process-global state has to be clearable or tests leak into each other."""
+    _HISTORY_CACHE["at"] = 0.0
+    _HISTORY_CACHE["rows"] = None
+
+
+def own_history_context(ticker: str, metric: str, value: Optional[float]) -> dict[str, Any]:
+    """Where today's multiple sits against this company's own ten-year record.
+
+    A negative `discount_vs_own_pct` means the stock is cheaper than its own
+    history on a metric where lower is cheaper. Returns an explicit reason when
+    no comparison is possible rather than a silent null, because "no history"
+    and "no discount" are different findings.
+    """
+    entry = ((_history_index().get(str(ticker).upper()) or {}).get(str(metric).lower()) or {})
+    median = _num(entry.get("median"))
+    if value is None or median is None or median <= 0:
+        return {"available": False, "reason": "no_eligible_history" if median is None else "no_current_value"}
+    return {
+        "available": True,
+        "own_median": median,
+        "years": entry.get("years"),
+        "span": f"{entry.get('first')}-{entry.get('last')}",
+        "discount_vs_own_pct": round(((value / median) - 1.0) * 100.0, 1),
+    }
+
 
 def _universe() -> list[dict[str, Any]]:
     """Companies with market multiples (+ consensus / factors when available).
@@ -605,6 +707,11 @@ def _scan_value(universe, medians, limit) -> list[dict[str, Any]]:
             if normalization_required
             else "Relative-value research candidate"
         )
+        # A cross-sectional discount says the stock is cheaper than its
+        # neighbours today. It cannot say whether the whole industry re-rated,
+        # which is why the same screen flags a sector-wide de-rating as value.
+        # The ten-year record answers that separately.
+        own = own_history_context(row["ticker"], metric, value)
         out.append(
             {
                 **_base(row),
@@ -612,6 +719,7 @@ def _scan_value(universe, medians, limit) -> list[dict[str, Any]]:
                 "value": value,
                 "industry_median": benchmark,
                 "discount_pct": discount,
+                "vs_own_history": own,
                 "roe": roe,
                 "industry_median_roe": roe_med,
                 "classification": classification,
@@ -627,6 +735,12 @@ def _scan_value(universe, medians, limit) -> list[dict[str, Any]]:
                         else f", while return on equity of {roe}% is at or above the industry's "
                         f"{roe_med}%." if roe is not None and roe_med is not None
                         else "."
+                    )
+                    + (
+                        f" Against its own {own['span']} record it trades "
+                        f"{abs(own['discount_vs_own_pct'])}% {'below' if own['discount_vs_own_pct'] < 0 else 'above'} "
+                        f"a {own['years']}-year median of {own['own_median']}."
+                        if own.get("available") else ""
                     )
                     + (" This is a headline multiple. Validate the underlying EBITDA and reconcile enterprise-value adjustments before drawing a valuation conclusion." if normalization_required else "")
                 ),

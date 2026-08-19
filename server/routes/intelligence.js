@@ -8852,6 +8852,11 @@ export default function createIntelligenceRouter() {
   router.post('/warehouse/repair/upstox-quarterly', warehousePost('/v1/warehouse/repair/upstox-quarterly', 300_000));
   router.get('/warehouse/workbook', warehouseGet('/v1/warehouse/workbook'));
   router.get('/warehouse/stats', warehouseGet('/v1/warehouse/stats'));
+  // Curated views: the same tables with the known-bad rows filtered out and
+  // counted, so a reader can see what was excluded rather than trust a number.
+  router.get('/warehouse/clean', warehouseGet('/v1/warehouse/clean', 180_000));
+  router.get('/warehouse/clean/:name', (req, res, next) =>
+    warehouseGet(`/v1/warehouse/clean/${encode(req.params.name)}`, 180_000)(req, res, next));
   router.get('/warehouse/whoami', warehouseGet('/v1/warehouse/whoami'));
   router.get('/warehouse/coverage', warehouseGet('/v1/warehouse/coverage'));
   // Phase 7.4F — Financial Warehouse Completion Programme
