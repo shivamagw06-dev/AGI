@@ -811,8 +811,15 @@ async def kip_verify(document_id: str):
 
 @router.post("/kip/snapshot/save")
 async def kip_snapshot_save():
-    """Force-persist KIP snapshot to disk (+ optional Supabase mirror)."""
-    return _kip.save_snapshot()
+    """Force-persist KIP snapshot to disk (+ optional Supabase mirror).
+
+    save_store() serialises the entire store synchronously, so it is run on a
+    worker thread. Calling it directly from this async handler blocked the
+    uvicorn event loop for the whole write and stalled every other request.
+    """
+    import asyncio
+
+    return await asyncio.to_thread(_kip.save_snapshot)
 
 
 @router.post("/kip/snapshot/reload")
