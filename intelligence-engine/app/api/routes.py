@@ -10219,6 +10219,29 @@ async def valuation_consensus_seed(payload: dict[str, Any] = Body(default={})):
 # ---------------------------------------------------------------------------
 
 
+@router.get("/hedge-fund-lab/live-strategies")
+def hedge_fund_live_strategies(limit: int = 12):
+    """Intraday-native strategies: live engine signal + historical risk/liquidity.
+
+    Sync def on purpose - it reads the warehouse, so FastAPI runs it in the
+    threadpool rather than on the event loop.
+    """
+    from hedge_fund_lab.live_strategies import board
+
+    return board(limit=max(1, min(int(limit or 12), 50)))
+
+
+@router.get("/hedge-fund-lab/live-strategies/{strategy_id}")
+def hedge_fund_live_strategy(strategy_id: str, limit: int = 20):
+    from hedge_fund_lab.live_strategies import LIVE_STRATEGIES
+
+    entry = LIVE_STRATEGIES.get(str(strategy_id or "").strip().lower())
+    if not entry:
+        return {"ok": False, "error": "unknown_strategy", "strategy_id": strategy_id,
+                "available": sorted(LIVE_STRATEGIES)}
+    return entry[1](max(1, min(int(limit or 20), 50)))
+
+
 @router.get("/hedge-fund-lab/health")
 async def hedge_fund_lab_health():
     from hedge_fund_lab.production import health
