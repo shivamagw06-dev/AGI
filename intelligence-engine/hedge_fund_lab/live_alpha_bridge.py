@@ -31,6 +31,10 @@ _FRESHNESS_MODE = (os.getenv("HFL_LIVE_ALPHA_FRESHNESS_MODE") or "session").stri
 _MAX_AGE_MINUTES_RAW = (os.getenv("HFL_LIVE_ALPHA_MAX_AGE_MINUTES") or "").strip()
 _MAX_AGE_MINUTES = float(_MAX_AGE_MINUTES_RAW) if _MAX_AGE_MINUTES_RAW else None
 _WEAK_LABELS = frozenset({"ignore", "weak"})
+# One evaluation writes ~440 signals per engine across 5 engines. The previous
+# 500 cap kept barely one engine's worth, and since every signal in a run
+# shares created_at the ordering silently decided which engines survived.
+_SIGNAL_FETCH_LIMIT = int(os.getenv("HFL_LIVE_ALPHA_SIGNAL_LIMIT", "5000"))
 
 
 def _credentials() -> Optional[tuple[str, str]]:
@@ -188,7 +192,7 @@ def fetch_live_alpha_rows(*, limit: int = 200) -> dict[str, Any]:
         f"signal_quality_label,liquidity_ok,classification,factor_values,created_at"
         f"&run_id=in.({in_clause})"
         f"&order=created_at.desc"
-        f"&limit=500"
+        f"&limit={_SIGNAL_FETCH_LIMIT}"
     )
     if signals is None:
         return {"ok": False, "error": "live_alpha_unavailable", "rows": [], "meta": {}}
@@ -196,23 +200,30 @@ def fetch_live_alpha_rows(*, limit: int = 200) -> dict[str, Any]:
     run_by_id = {r["id"]: r for r in runs}
     seen_keys: set[str] = set()
     latest_by_key: dict[str, dict[str, Any]] = {}
+    funnel = {"fetched": len(signals or []), "unknown_engine": 0, "no_symbol": 0,
+              "duplicate": 0, "filtered": 0, "kept": 0}
     for sig in signals or []:
         if not isinstance(sig, dict):
             continue
         run = run_by_id.get(sig.get("run_id")) or {}
         engine = run.get("engine")
         if engine not in ENGINE_LABELS:
+            funnel["unknown_engine"] += 1
             continue
         symbol = str(sig.get("symbol") or "").upper()
         if not symbol:
+            funnel["no_symbol"] += 1
             continue
         key = f"{symbol}|{engine}"
         if key in seen_keys:
+            funnel["duplicate"] += 1
             continue
         seen_keys.add(key)
         sig = {**sig, "engine": engine, "as_of": run.get("as_of")}
         if not _signal_passes_filters(sig, as_of=_parse_ts(run.get("as_of"))):
+            funnel["filtered"] += 1
             continue
+        funnel["kept"] += 1
         latest_by_key[key] = sig
 
     by_symbol: dict[str, dict[str, Any]] = {}
@@ -283,6 +294,13 @@ def fetch_live_alpha_rows(*, limit: int = 200) -> dict[str, Any]:
             "freshness_mode": _FRESHNESS_MODE,
             "max_age_minutes": _MAX_AGE_MINUTES,
             "min_quality": _MIN_QUALITY,
+            "signal_fetch_limit": _SIGNAL_FETCH_LIMIT,
+            "runs_considered": len(runs),
+            # Where the signals went. An empty result is otherwise
+            # indistinguishable from a quiet market, which is exactly how a
+            # 500-row fetch cap stayed invisible while it was discarding three
+            # quarters of every evaluation.
+            "funnel": funnel,
         },
     }
 
