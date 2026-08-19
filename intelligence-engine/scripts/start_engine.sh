@@ -9,6 +9,25 @@ set -euo pipefail
 
 cd "$(dirname "$0")/.."
 
+# Render stores env values in multi-line textareas, so a trailing newline or
+# space is invisible in the dashboard but fatal to a string comparison:
+# "true\n" == "true" is false in bash. On 2026-08-19 the dashboard showed
+# CID_DOSSIER_PAUSED=true and CID_DOSSIER_WORKER_ENABLED=false while the boot
+# log still read "launching continuous company dossier worker now".
+#
+# ${VAR:-default} does not save you either - it only fires when the variable is
+# unset, not when it is set to "false ". Every boolean flag is normalised here
+# before it is compared.
+flag() {  # flag VALUE DEFAULT -> "true"/"false"
+  local raw="${1-}" fallback="${2:-false}"
+  raw="$(printf '%s' "${raw}" | tr -d '[:space:]' | tr '[:upper:]' '[:lower:]')"
+  [[ -z "${raw}" ]] && raw="${fallback}"
+  case "${raw}" in
+    true|1|yes|on) printf 'true' ;;
+    *)             printf 'false' ;;
+  esac
+}
+
 GATHER_PID=""
 DOSSIER_PID=""
 
@@ -48,9 +67,9 @@ export FAA_LIVE_FETCH="${FAA_LIVE_FETCH:-true}"
 # hours while background work carried on.
 #
 # A web service is now HTTP-only unless a sidecar is explicitly switched on.
-FULL_SIDECAR="${AGI_GATHER_SIDECAR:-false}"
-FORECAST_SIDECAR="${FIE_SIDECAR:-false}"
-if [[ ( "${FULL_SIDECAR}" != "false" && "${FULL_SIDECAR}" != "0" ) || ( "${FORECAST_SIDECAR}" != "false" && "${FORECAST_SIDECAR}" != "0" ) ]]; then
+FULL_SIDECAR="$(flag "${AGI_GATHER_SIDECAR-}" false)"
+FORECAST_SIDECAR="$(flag "${FIE_SIDECAR-}" false)"
+if [[ "${FULL_SIDECAR}" == "true" || "${FORECAST_SIDECAR}" == "true" ]]; then
   # Delay + nice: let uvicorn finish boot and stay responsive before gather
   # saturates the shared Pro CPUs (was starving /v1/health + Mission Control).
   DELAY_SEC="${AGI_GATHER_SIDECAR_DELAY_SEC:-90}"
@@ -60,7 +79,7 @@ if [[ ( "${FULL_SIDECAR}" != "false" && "${FULL_SIDECAR}" != "0" ) || ( "${FOREC
     sleep "${DELAY_SEC}"
     export AGI_ROLE=gather_worker
     SIDECAR_PROFILE="${AGI_GATHER_SIDECAR_PROFILE:-full}"
-    if [[ "${FULL_SIDECAR}" == "false" || "${FULL_SIDECAR}" == "0" ]]; then
+    if [[ "${FULL_SIDECAR}" != "true" ]]; then
       SIDECAR_PROFILE="forecast_only"
     fi
     if [[ "${SIDECAR_PROFILE}" == "forecast_only" ]]; then
@@ -96,7 +115,9 @@ else
   echo "[start_engine] MODE=http-only (gather=${FULL_SIDECAR} forecast=${FORECAST_SIDECAR}) — workers run in agib-intelligence-worker"
 fi
 
-if [[ "${CID_DOSSIER_PAUSED:-true}" == "true" || "${CID_DOSSIER_PAUSED:-true}" == "1" ]]; then
+DOSSIER_PAUSED="$(flag "${CID_DOSSIER_PAUSED-}" true)"
+DOSSIER_ENABLED="$(flag "${CID_DOSSIER_WORKER_ENABLED-}" false)"
+if [[ "${DOSSIER_PAUSED}" == "true" ]]; then
   echo "[start_engine] company dossier worker paused"
 # Default OFF, matching render.yaml (CID_DOSSIER_WORKER_ENABLED=false). This
 # defaulted to true, so when the env did not reach the process the worker
@@ -106,7 +127,7 @@ if [[ "${CID_DOSSIER_PAUSED:-true}" == "true" || "${CID_DOSSIER_PAUSED:-true}" =
 # warehouse reads and OpenAI calls inside the HTTP process, 120s after boot,
 # which matches the observed ~3-4 minute ramp from a healthy service to one
 # answering nothing.
-elif [[ "${CID_DOSSIER_WORKER_ENABLED:-false}" != "false" && "${CID_DOSSIER_WORKER_ENABLED:-false}" != "0" ]]; then
+elif [[ "${DOSSIER_ENABLED}" == "true" ]]; then
   # Give uvicorn time to become healthy before warehouse reads and OpenAI work
   # begin. The dossier process is deliberately lower priority and defaults to
   # four threads on the live four-CPU Render web service.
