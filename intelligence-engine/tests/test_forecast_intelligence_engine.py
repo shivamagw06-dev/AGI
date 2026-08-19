@@ -33,6 +33,8 @@ def test_fie_company_scenarios_gates():
 
     cats = catalysts("HDFCBANK")
     assert cats["found"] is True
+    cats_again = catalysts("HDFCBANK")
+    assert cats_again["catalysts"] == cats["catalysts"]
 
     q = analyse(question="What has to happen for HDFC to outperform?", ticker="HDFCBANK")
     assert q["found"] is True

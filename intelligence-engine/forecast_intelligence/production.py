@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import time
+from threading import Lock
 from typing import Any
 
 from forecast_intelligence.flags import flags_dict, is_enabled
@@ -83,16 +85,33 @@ def scenarios(ticker: str) -> dict[str, Any]:
     }
 
 
+_CATALYST_CACHE: dict[str, tuple[float, dict[str, Any]]] = {}
+_CATALYST_CACHE_LOCK = Lock()
+_CATALYST_TTL_SECONDS = 300.0
+
+
 def catalysts(ticker: str) -> dict[str, Any]:
+    key = (ticker or "").upper()
+    now = time.monotonic()
+    with _CATALYST_CACHE_LOCK:
+        hit = _CATALYST_CACHE.get(key)
+        if hit and now - hit[0] < _CATALYST_TTL_SECONDS:
+            return hit[1]
     out = company(ticker)
-    return {
+    result = {
         "enabled": out.get("enabled"),
         "fie_version": FIE_VERSION,
-        "ticker": out.get("ticker") or (ticker or "").upper(),
+        "ticker": out.get("ticker") or key,
         "found": out.get("found"),
         "catalysts": out.get("catalysts"),
         "not_a_price_prediction": True,
     }
+    with _CATALYST_CACHE_LOCK:
+        _CATALYST_CACHE[key] = (now, result)
+        if len(_CATALYST_CACHE) > 200:
+            oldest = min(_CATALYST_CACHE, key=lambda item: _CATALYST_CACHE[item][0])
+            _CATALYST_CACHE.pop(oldest, None)
+    return result
 
 
 def analyse(*, ticker: str | None = None, question: str | None = None) -> dict[str, Any]:

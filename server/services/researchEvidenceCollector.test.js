@@ -27,3 +27,32 @@ test('treats a missing forecast as normal availability state, not a route error'
   assert.equal(result.health.unavailable[0].reason, 'NO_ELIGIBLE_FORECAST_YET');
   assert.equal(result.evidence[0].provenance.catalyst.forecast_available, false);
 });
+
+test('reads stored snapshots instead of live warehouse scans', async () => {
+  const urls = [];
+  const fetchImpl = async (url) => {
+    urls.push(url);
+    if (url.includes('hedge-fund-lab/terminal')) return { ok: true, json: async () => ({ cards: [] }) };
+    if (url.includes('valuation-terminal')) return { ok: true, json: async () => ({ ok: true, valuation_attractiveness: 70 }) };
+    if (url.includes('forecast/catalysts')) return { ok: true, json: async () => ({ catalysts: [] }) };
+    return { ok: false, status: 404 };
+  };
+  await collectResearchEvidence({ workspace: { groww: { equities: [{ symbol: 'SBIN' }] }, signals: [] }, fetchImpl, limit: 25 });
+  assert.equal(urls.some((url) => url.includes('terminal?limit=')), false);
+  assert.equal(urls.filter((url) => url.includes('valuation-terminal/company/')).length, 1);
+});
+
+test('treats an engine timeout as unavailable evidence, not a hard error', async () => {
+  const fetchImpl = async (url) => {
+    if (url.includes('hedge-fund-lab')) {
+      const error = new Error('The operation was aborted due to timeout');
+      error.name = 'TimeoutError';
+      throw error;
+    }
+    if (url.includes('valuation-terminal')) return { ok: true, json: async () => ({ valuation_attractiveness: 70 }) };
+    return { ok: false, status: 404 };
+  };
+  const result = await collectResearchEvidence({ workspace: { groww: { equities: [{ symbol: 'SBIN' }] }, signals: [] }, fetchImpl });
+  assert.equal(result.health.errors.length, 0);
+  assert.ok(result.health.unavailable.some((row) => row.reason === 'NO_TERMINAL_SNAPSHOT_YET'));
+});
