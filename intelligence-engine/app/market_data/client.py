@@ -452,6 +452,24 @@ class MarketDataClient:
                     retryable = exc.retryable
                 if retryable:
                     breaker.record_failure()
+                else:
+                    # Permanent failures used to skip the breaker entirely, so a
+                    # revoked key (FMP 403) or an unauthorised endpoint (Yahoo
+                    # 401/406) never opened the circuit and was re-attempted for
+                    # every symbol in the universe. Park the provider instead.
+                    cooldown = getattr(exc, "cooldown_s", None)
+                    breaker.record_permanent_failure(cooldown)
+                    log.warning(
+                        "market_data_provider_parked",
+                        extra={
+                            "extra": {
+                                "provider_id": provider.provider_id,
+                                "cache_key": cache_key,
+                                "cooldown_s": cooldown or breaker.permanent_recovery_timeout_s,
+                                "error": str(exc)[:200],
+                            }
+                        },
+                    )
                 self.metrics.record_cold_fetch(provider.provider_id, latency, ok=False)
                 raise
 
