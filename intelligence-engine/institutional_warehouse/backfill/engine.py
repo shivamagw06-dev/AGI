@@ -14,11 +14,18 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Any, Callable, Iterable, Optional
 
 from institutional_warehouse import audit, store
-from institutional_warehouse.backfill import checkpoints, prices, statements, valuation_history
+from institutional_warehouse.backfill import (
+    checkpoints, prices, prices_upstox, statements, valuation_history,
+)
 from institutional_warehouse.backfill.sources import nse_archive
 from institutional_warehouse.values import now_iso
 
-STAGES = ("nse_archive", "yahoo_prices", "yahoo_statements", "valuation_history")
+# upstox_prices precedes yahoo_prices deliberately. Yahoo silently downsamples
+# a long range to monthly bars, which is how daily_market_history became a
+# monthly series while every checkpoint read "done"; Upstox returns genuinely
+# daily, already-adjusted candles back to 2000.
+STAGES = ("nse_archive", "upstox_prices", "yahoo_prices", "yahoo_statements",
+          "valuation_history")
 
 
 def _truthy(name: str, default: str = "false") -> bool:
@@ -96,6 +103,8 @@ def run(
 
     runners: dict[str, Callable[[], dict[str, Any]]] = {
         "nse_archive": lambda: nse_archive.backfill(actor=actor, days=days, fetch=fetch),
+        "upstox_prices": lambda: prices_upstox.backfill(universe, actor=actor, limit=companies,
+                                                        pause_seconds=pause_seconds),
         "yahoo_prices": lambda: prices.backfill(universe, actor=actor, limit=companies,
                                                 fetch=fetch, pause_seconds=pause_seconds),
         "yahoo_statements": lambda: statements.backfill(universe, actor=actor, limit=companies,
