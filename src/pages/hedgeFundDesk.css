@@ -250,3 +250,6 @@
     animation-duration: 0.001ms !important; transition-duration: 0.001ms !important;
   }
 }
+
+/* Intraday screens publish a sizing chain; the table scrolls on narrow views. */
+.hd-readout-wrap { overflow-x: auto; }

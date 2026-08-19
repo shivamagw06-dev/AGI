@@ -14,6 +14,13 @@ import pytest
 from hedge_fund_lab import live_strategies as ls
 
 
+@pytest.fixture(autouse=True)
+def _clear_cache():
+    ls.reset_cache()
+    yield
+    ls.reset_cache()
+
+
 class TestAnnualisedVol:
     def test_matches_hand_calculation(self):
         # ATR 20 on a price of 1000 is 2% daily; annualised = 0.02 * sqrt(252)
@@ -99,6 +106,41 @@ class TestCoverage:
         cov = ls._coverage({"atr": 5.0}, {"adv_3m": 3.0})
         assert cov["sizeable"] is True
         assert "beta" in cov["missing"]
+
+
+class TestCaching:
+    def test_shared_inputs_are_resolved_once_per_board(self, monkeypatch):
+        """board() used to resolve signals and both vendor tables once per
+        strategy - three Supabase round trips and six table scans - which made
+        the endpoint take 80 seconds."""
+        calls = {"signals": 0, "vendor": 0}
+
+        def _signals(**_):
+            calls["signals"] += 1
+            return {"ok": True, "rows": []}
+
+        def _vendor():
+            calls["vendor"] += 1
+            return ({}, {})
+
+        monkeypatch.setattr(ls, "fetch_live_alpha_rows", _signals)
+        monkeypatch.setattr(ls, "_risk_and_liquidity", _vendor)
+        ls.board(limit=5)
+        assert calls["signals"] == 1, f"signals fetched {calls['signals']}x for 3 strategies"
+
+    def test_reset_clears_the_cache(self, monkeypatch):
+        calls = {"n": 0}
+
+        def _signals(**_):
+            calls["n"] += 1
+            return {"ok": True, "rows": []}
+
+        monkeypatch.setattr(ls, "fetch_live_alpha_rows", _signals)
+        monkeypatch.setattr(ls, "_risk_and_liquidity", lambda: ({}, {}))
+        ls.board(limit=1)
+        ls.reset_cache()
+        ls.board(limit=1)
+        assert calls["n"] == 2
 
 
 class TestBoardContract:

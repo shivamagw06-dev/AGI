@@ -22,6 +22,8 @@ from __future__ import annotations
 
 import math
 import os
+import threading
+import time
 from datetime import date
 from typing import Any, Optional
 
@@ -50,6 +52,36 @@ def _num(value: Any) -> Optional[float]:
     return out if out == out and out not in (float("inf"), float("-inf")) else None
 
 
+# board() previously resolved these once per strategy: three Supabase round
+# trips for signals and six full vendor-table scans, which made the endpoint
+# take 80 seconds. Both inputs are identical across strategies within a single
+# request, so they are resolved once and cached briefly. Repeated heavy reads on
+# the request path are what took the engine down on 2026-08-19.
+_CACHE_TTL = float(os.getenv("HFL_LIVE_STRATEGY_CACHE_SECONDS", "60"))
+_CACHE_LOCK = threading.Lock()
+_CACHE: dict[str, Any] = {"risk": None, "liq": None, "signals": None, "at": 0.0}
+
+
+def reset_cache() -> None:
+    """Drop the shared cache. Used by tests and by any caller that needs a
+    guaranteed-fresh read rather than one up to _CACHE_TTL seconds old."""
+    with _CACHE_LOCK:
+        _CACHE.update({"risk": None, "liq": None, "signals": None, "at": 0.0})
+
+
+def _cached(key: str, producer):
+    """Single-flight, TTL cache shared by every strategy in one board() call."""
+    with _CACHE_LOCK:
+        now = time.monotonic()
+        if _CACHE["at"] and (now - _CACHE["at"]) > _CACHE_TTL:
+            _CACHE.update({"risk": None, "liq": None, "signals": None, "at": 0.0})
+        if _CACHE.get(key) is None:
+            _CACHE[key] = producer()
+            if not _CACHE["at"]:
+                _CACHE["at"] = now
+        return _CACHE[key]
+
+
 def _risk_and_liquidity() -> tuple[dict[str, dict], dict[str, dict]]:
     """Latest per-symbol risk metrics and liquidity from the vendor tabs.
 
@@ -58,6 +90,12 @@ def _risk_and_liquidity() -> tuple[dict[str, dict], dict[str, dict]]:
     Missing coverage is reported per row rather than silently defaulted, since
     a position sized without beta or ADV is not a position anyone should hold.
     """
+    cached = _CACHE.get("risk")
+    if cached is not None and _CACHE.get("liq") is not None:
+        with _CACHE_LOCK:
+            if _CACHE["at"] and (time.monotonic() - _CACHE["at"]) <= _CACHE_TTL:
+                return _CACHE["risk"], _CACHE["liq"]
+
     risk: dict[str, dict] = {}
     liq: dict[str, dict] = {}
     try:
@@ -74,6 +112,10 @@ def _risk_and_liquidity() -> tuple[dict[str, dict], dict[str, dict]]:
     except Exception:
         # The strategies still run without them; every row will say so.
         pass
+    with _CACHE_LOCK:
+        _CACHE["risk"], _CACHE["liq"] = risk, liq
+        if not _CACHE["at"]:
+            _CACHE["at"] = time.monotonic()
     return risk, liq
 
 
@@ -194,7 +236,7 @@ def _base_row(sig: dict[str, Any], risk_row: Optional[dict], liq_row: Optional[d
 
 
 def _engine_rows(engine: str, limit: int) -> list[dict[str, Any]]:
-    payload = fetch_live_alpha_rows(limit=400)
+    payload = _cached("signals", lambda: fetch_live_alpha_rows(limit=400))
     if not payload.get("ok"):
         return []
     risk, liq = _risk_and_liquidity()

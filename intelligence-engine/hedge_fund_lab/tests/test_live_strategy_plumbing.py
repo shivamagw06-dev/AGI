@@ -13,7 +13,18 @@ pins it, which is what these tests do.
 
 from __future__ import annotations
 
+import pytest
+
 from hedge_fund_lab import live_strategies as ls
+
+
+@pytest.fixture(autouse=True)
+def _clear_cache():
+    """board() caches signals and vendor tables across strategies within a
+    request. Without a reset the first test's fixture leaks into the rest."""
+    ls.reset_cache()
+    yield
+    ls.reset_cache()
 
 
 def _payload():

@@ -21,6 +21,140 @@ export const SIZING = {
 const num = (v) => (v === null || v === undefined || v === '' || !Number.isFinite(Number(v)) ? null : Number(v));
 
 /** Screens ordered so the desk lands on one with validated rows. */
+
+/**
+ * Intraday-native strategies, served by /hedge-fund-lab/live-strategies.
+ *
+ * These differ from the screens above: they compute from the live Live Alpha
+ * engines joined to historical ATR, beta and ADV, and they publish a target
+ * weight rather than only a ranking. `source: 'live'` routes them to the
+ * second fetch.
+ */
+export const LIVE_STRATEGIES = [
+  {
+    id: 'opening_range_breakout',
+    number: '10',
+    source: 'live',
+    name: 'Opening-Range Breakout',
+    family: 'Intraday',
+    question: 'Is this expansion real, or noise inside the normal range?',
+    edge: 'Expansion out of the opening range that clears the day\'s true range.',
+    thesis:
+      'The opening range sets a reference band. A move that clears it on volume is a different event from drift inside it. The engine flags the expansion; ATR decides whether the move is large relative to how the name normally trades, and ADV decides whether it can be held at size.',
+    math: [
+      {
+        label: 'Annualised volatility from ATR',
+        tex: '\\hat{\\sigma}_i = \\dfrac{\\text{ATR}_i}{P_i}\\sqrt{252}',
+        note: 'Average true range as a fraction of price. ATR rather than close-to-close because an intraday book is exposed to gaps, which a close-to-close estimate misses entirely.',
+      },
+      {
+        label: 'Volatility-targeted weight',
+        tex: 'w_i = \\dfrac{\\sigma_{\\text{target}}}{\\hat{\\sigma}_i \\sqrt{N}}',
+        note: 'Equalises risk contribution across N positions, so a violent small-cap and a placid large-cap carry comparable risk rather than comparable rupees.',
+      },
+      {
+        label: 'Liquidity cap',
+        tex: 'w_i \\leq \\dfrac{\\alpha \\cdot \\text{ADV}_i}{C}',
+        note: 'Weight capped at a fraction α of average daily traded value against portfolio capital C. Without it a screen returns names you cannot buy at size.',
+      },
+      {
+        label: 'Stop placement',
+        tex: 'S_i = P_i \\mp k\\,\\text{ATR}_i',
+        note: 'Stop set a multiple of ATR from entry, below for a long and above for a short, so the stop scales with the name\'s own volatility rather than a fixed percentage.',
+      },
+    ],
+    columns: [
+      { key: 'direction', label: 'Direction', type: 'text' },
+      { key: 'signal_quality', label: 'Quality', dp: 0 },
+      { key: 'price', label: 'Price', dp: 2 },
+      { key: 'atr', label: 'ATR', dp: 2 },
+      { key: 'stop', label: 'Stop', dp: 2 },
+      { key: 'stop_distance_pct', label: 'Stop dist', dp: 1, suffix: '%' },
+    ],
+    risks: [
+      'Most opening-range breaks fail. The edge is in position sizing and stops, not hit rate.',
+      'A stop set inside normal noise will be taken out by noise.',
+      'Signals decay within the session; a stale score is worse than none.',
+    ],
+  },
+  {
+    id: 'intraday_reversion',
+    number: '11',
+    source: 'live',
+    name: 'Intraday Mean Reversion',
+    family: 'Intraday',
+    question: 'Is the mean stable, or has the level genuinely reset?',
+    edge: 'Short-horizon dislocation from a stable intraday mean.',
+    thesis:
+      'A price that moves far from its intraday mean without news tends to revert. The whole risk is that the mean itself has moved, in which case the position is short a trend rather than long a reversion.',
+    math: [
+      {
+        label: 'Reversion band',
+        tex: 'B_i = \\dfrac{\\text{ATR}_i}{P_i}',
+        note: 'One ATR expressed as a fraction of price frames how far the name normally travels, and therefore what counts as dislocated for it specifically.',
+      },
+      {
+        label: 'Market-neutral hedge ratio',
+        tex: 'h_i = \\beta_i, \\qquad \\beta_p = \\sum_{i \\in L} w_i\\beta_i - \\sum_{j \\in S} w_j\\beta_j',
+        note: 'Short β rupees of index per rupee of stock to remove market direction. Mean reversion in a falling market is otherwise just a long position that happens to be losing.',
+      },
+      {
+        label: 'Half-life of reversion',
+        tex: 't_{1/2} = \\dfrac{\\ln 2}{\\theta}',
+        note: 'If the dislocation decays at rate θ, the half-life sets the holding period and therefore the cost budget. A half-life longer than the session is not an intraday trade.',
+      },
+    ],
+    columns: [
+      { key: 'direction', label: 'Direction', type: 'text' },
+      { key: 'signal_quality', label: 'Quality', dp: 0 },
+      { key: 'price', label: 'Price', dp: 2 },
+      { key: 'band_pct', label: 'ATR band', dp: 2, suffix: '%' },
+      { key: 'beta_1y', label: 'Beta 1Y', dp: 2 },
+      { key: 'market_hedge_ratio', label: 'Hedge ratio', dp: 2 },
+    ],
+    risks: [
+      'The mean may have reset. Reverting into a genuine trend is the dominant loss mode.',
+      'Without beta the position carries market direction it was never meant to hold.',
+      'Costs dominate at short horizons — this is the strategy most sensitive to slippage.',
+    ],
+  },
+  {
+    id: 'flow_anomaly',
+    number: '12',
+    source: 'live',
+    name: 'Volume / Liquidity Anomaly',
+    family: 'Intraday',
+    question: 'Is this accumulation, distribution, or a single print?',
+    edge: 'Volume dislocated from its own baseline often precedes a directional move.',
+    thesis:
+      'Volume far above a name\'s own baseline means someone is transacting with urgency. It carries no direction by itself, which is why it is read against price and against the size the book can absorb.',
+    math: [
+      {
+        label: 'Volume z-score',
+        tex: 'z_i = \\dfrac{V_i - \\mu_i}{\\sigma_i}',
+        note: 'Volume against the name\'s own baseline, not a market-wide one. A thin small-cap trading twice its usual is a bigger event than a large-cap doing the same.',
+      },
+      {
+        label: 'Participation limit',
+        tex: 'q_i \\leq \\alpha \\cdot \\text{ADV}_i',
+        note: 'Order size capped at a fraction of average daily value. Above roughly 10% you are the volume anomaly rather than the observer of one.',
+      },
+    ],
+    columns: [
+      { key: 'direction', label: 'Direction', type: 'text' },
+      { key: 'signal_quality', label: 'Quality', dp: 0 },
+      { key: 'price', label: 'Price', dp: 2 },
+      { key: 'adv_3m_value_cr', label: 'ADV', dp: 1, suffix: 'cr' },
+      { key: 'alpha_z', label: 'z', dp: 2, signed: true },
+    ],
+    risks: [
+      'Volume has no direction. A spike accompanies both accumulation and distribution.',
+      'One block print can create a spike that means nothing.',
+      'Index rebalancing and expiry generate volume unrelated to any view.',
+    ],
+  },
+];
+
 export const DEFAULT_SCREEN = 'conviction';
 
 export const STRATEGIES = [

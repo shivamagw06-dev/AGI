@@ -5,7 +5,8 @@ import 'katex/dist/katex.min.css';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
 import API_ORIGIN from '@/config';
 import {
-  STRATEGIES, SIZING_MATH, LIMITS, VALIDATION_LABELS, DEFAULT_SCREEN, isValidated, caveatOf,
+  STRATEGIES, LIVE_STRATEGIES, SIZING_MATH, LIMITS, VALIDATION_LABELS,
+  DEFAULT_SCREEN, isValidated, caveatOf,
 } from '@/lib/hedgeFundStrategies';
 import './hedgeFundDesk.css';
 
@@ -86,6 +87,7 @@ function Stage({ card }) {
 
 export default function HedgeFundDesk() {
   const [data, setData] = useState(null);
+  const [live, setLive] = useState(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
   const [active, setActive] = useState(DEFAULT_SCREEN);
@@ -95,12 +97,23 @@ export default function HedgeFundDesk() {
     setLoading(true); setError('');
     try {
       if (!API_ORIGIN) throw new Error('AGI backend origin is not configured.');
-      const res = await fetch(`${API_ORIGIN}/api/intelligence/hedge-fund-lab/terminal?limit=40`,
-        { headers: { Accept: 'application/json' } });
-      if (!res.ok) throw new Error(`The desk feed is unavailable (HTTP ${res.status}).`);
-      const type = res.headers.get('content-type') || '';
-      if (!type.includes('application/json')) throw new Error('The desk feed returned an invalid response.');
-      setData(await res.json());
+      const json = async (path) => {
+        const res = await fetch(`${API_ORIGIN}${path}`, { headers: { Accept: 'application/json' } });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        if (!(res.headers.get('content-type') || '').includes('application/json')) {
+          throw new Error('invalid response');
+        }
+        return res.json();
+      };
+      const [snapshot, intraday] = await Promise.allSettled([
+        json('/api/intelligence/hedge-fund-lab/terminal?limit=40'),
+        json('/api/intelligence/hedge-fund-lab/live-strategies?limit=25'),
+      ]);
+      if (snapshot.status === 'fulfilled') setData(snapshot.value);
+      else throw new Error(`The desk feed is unavailable (${snapshot.reason?.message}).`);
+      // The intraday board is additive: if it fails those cards report it and
+      // the nine fundamental screens are unaffected.
+      setLive(intraday.status === 'fulfilled' ? intraday.value : null);
     } catch (e) {
       setError(e.message || 'The desk feed is unavailable.');
     } finally { setLoading(false); }
@@ -110,8 +123,22 @@ export default function HedgeFundDesk() {
 
   const cards = useMemo(() => {
     const byId = Object.fromEntries((data?.cards || []).map((c) => [c.id, c]));
-    return STRATEGIES.map((s) => ({ ...s, card: byId[s.id] || null }));
-  }, [data]);
+    const liveById = Object.fromEntries((live?.cards || []).map((c) => [c.strategy, c]));
+    return [
+      ...STRATEGIES.map((s) => ({ ...s, card: byId[s.id] || null })),
+      ...LIVE_STRATEGIES.map((s) => {
+        const c = liveById[s.id];
+        return {
+          ...s,
+          // Shape the intraday payload like a terminal card so one renderer
+          // serves both. Intraday screens compute live rather than from the
+          // 15-minute snapshot, so they carry no validation_status.
+          card: c ? { ...c, id: s.id, count: c.count, results: c.results,
+                      operational: true, suitability_stars: 0 } : null,
+        };
+      }),
+    ];
+  }, [data, live]);
 
   const strategy = useMemo(
     () => cards.find((s) => s.id === active) || cards[0], [cards, active],
@@ -333,6 +360,46 @@ export default function HedgeFundDesk() {
                       </table>
                     </div>
                   )}
+
+                  {strategy.source === 'live' && visible[0]?.sizing ? (
+                    <div className="hd-block">
+                      <h4>Position sizing — {visible[0].ticker}</h4>
+                      <div className="hd-readout-wrap">
+                        <table className="hd-table">
+                          <thead>
+                            <tr>
+                              <th>Company</th><th>σ̂ ann.</th><th>Vol-target w</th>
+                              <th>Liquidity cap</th><th>Target w</th><th>Binding</th><th>Notional</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {visible.slice(0, 8).map((r) => {
+                              const s = r.sizing || {};
+                              return (
+                                <tr key={`sz-${r.ticker}`}>
+                                  <td className="hd-tick"><b>{r.ticker}</b></td>
+                                  <td>{s.annualised_vol != null ? `${(s.annualised_vol * 100).toFixed(1)}%` : '—'}</td>
+                                  <td>{s.vol_target_weight != null ? `${(s.vol_target_weight * 100).toFixed(2)}%` : '—'}</td>
+                                  <td>{s.liquidity_cap_weight != null ? `${(s.liquidity_cap_weight * 100).toFixed(2)}%` : '—'}</td>
+                                  <td><b>{s.target_weight != null ? `${(s.target_weight * 100).toFixed(2)}%` : '—'}</b></td>
+                                  <td className="hd-why" style={{ whiteSpace: 'nowrap' }}>
+                                    {String(s.binding_constraint || '—').replaceAll('_', ' ')}
+                                  </td>
+                                  <td>{s.notional_inr != null
+                                    ? `₹${(s.notional_inr / 1e7).toFixed(2)}cr` : '—'}</td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                      <p className="hd-eq-note" style={{ marginTop: '0.6rem' }}>
+                        Target weight is the smallest of the volatility target, the liquidity cap and
+                        the per-name maximum. The binding column names which one applied. A row that
+                        cannot be sized states the missing input rather than assuming one.
+                      </p>
+                    </div>
+                  ) : null}
 
                   {visible[0]?.why ? (
                     <div className="hd-block">
