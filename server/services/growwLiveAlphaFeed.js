@@ -14,12 +14,10 @@ function positiveNumber(value) {
   return parsed > 0 ? parsed : null;
 }
 
-export function normalizeSpreadBps(bid, ask) {
-  const normalizedBid = positiveNumber(bid);
-  const normalizedAsk = positiveNumber(ask);
-  if (normalizedBid === null || normalizedAsk === null || normalizedAsk < normalizedBid) return null;
-  return Number((((normalizedAsk - normalizedBid) / ((normalizedAsk + normalizedBid) / 2)) * 10_000).toFixed(4));
-}
+import { normalizeSpreadBps } from './marketSpread.js';
+
+// Re-exported: existing callers and tests import it from this module.
+export { normalizeSpreadBps };
 
 export function normalizeExchangeTimestamp(value) {
   const parsed = number(value);

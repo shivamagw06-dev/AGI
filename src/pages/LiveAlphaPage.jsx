@@ -1,126 +1,182 @@
 import { useEffect, useMemo, useState } from 'react';
-import {
-  Activity, AlertCircle, ChevronRight, HelpCircle, Info, RefreshCw, Search, ShieldCheck, X,
-} from 'lucide-react';
 import API_ORIGIN from '@/config';
-import { CONVICTION_FILTERS, convictionTone, filterConvictionRows, readableConvictionLabel } from '@/lib/evidenceConvictionView';
 import {
-  buildLiveBrief,
-  buildMarketBehaviorRows,
-  buildMarketMap,
+  buildCanonicalSignals,
+  interpretCanonicalSignal,
+  LIVE_ALPHA_STRATEGIES,
+} from '@/lib/liveAlphaSignalModel';
+import {
   ENGINE_PLAIN,
-  evidenceStrengthLabel,
   filterRadarRows,
-  marketStateFromBrief,
   plainSignalDirection,
-  radarReason,
-  sortRadarRows,
 } from '@/lib/liveAlphaDashboardModel';
-import { buildCanonicalSignals, LIVE_ALPHA_STRATEGIES, signedSignalScore } from '@/lib/liveAlphaSignalModel';
 import './liveAlphaPage.css';
 
-const STRATEGIES = LIVE_ALPHA_STRATEGIES;
-const SHORT = {
-  cross_sectional_momentum_v1: 'Lead',
-  volume_liquidity_anomaly_v1: 'Act.',
-  opening_range_expansion_v1: 'Break',
-  intraday_mean_reversion_v1: 'Dis.',
-  derivatives_positioning_v1: 'Pos.',
-};
+/**
+ * Live Alpha — five intraday research engines over the Nifty 500.
+ *
+ * Ordered so the least experienced reader reaches the right conclusion first.
+ * The page opens with the state of the data, because a board computed nine
+ * hours ago is a different product from a live one, and the previous layout
+ * led with signals while freshness sat far below the fold.
+ *
+ * Three rules this page keeps:
+ *   - Nothing appears as a recommendation. These are research observations.
+ *   - Every strength claim carries its evidence, or states there is none.
+ *     Model state and empirical validation are never conflated.
+ *   - A measurement that was not taken reads as unknown, never as zero.
+ */
 
-function scoreText(value) { return `${value > 0 ? '+' : ''}${value}`; }
-function formatFactor(value, suffix = '') {
-  const number = Number(value);
-  return Number.isFinite(number) ? `${number > 0 ? '+' : ''}${number.toFixed(2)}${suffix}` : '—';
-}
-function age(iso) {
-  const mins = Math.max(0, Math.round((Date.now() - Date.parse(iso)) / 60000));
-  if (!Number.isFinite(mins)) return '—';
-  if (mins < 1) return 'Now';
-  if (mins < 60) return `${mins}m`;
-  return `${Math.floor(mins / 60)}h`;
-}
-function ageSecondsLabel(seconds) {
-  if (seconds == null || !Number.isFinite(Number(seconds))) return '—';
-  const s = Math.max(0, Math.floor(Number(seconds)));
-  if (s < 60) return `${s} sec ago`;
-  if (s < 3600) return `${Math.floor(s / 60)} min ago`;
-  return `${Math.floor(s / 3600)}h ago`;
-}
+const REFRESH_MS = 60_000;
 
-async function readApiJson(response, label) {
-  const contentType = response.headers.get('content-type') || '';
-  if (!response.ok) throw new Error(`${label} is unavailable (${response.status}).`);
-  if (!contentType.toLowerCase().includes('application/json')) {
-    throw new Error(`${label} returned the website shell instead of API data. Check the configured backend origin.`);
-  }
+async function readJson(response, label) {
+  if (!response.ok) throw new Error(`${label} unavailable (${response.status})`);
   return response.json();
 }
 
-function StrengthBar({ value, max = 99 }) {
-  const pct = Math.min(100, Math.round((Math.abs(Number(value) || 0) / max) * 100));
-  const tone = value > 0 ? 'up' : value < 0 ? 'down' : '';
-  return (
-    <span className={`la-strength ${tone}`}>
-      <span className="la-strength-track"><i style={{ width: `${pct}%` }} /></span>
-      <b>{Math.abs(Number(value) || 0)}</b>
-    </span>
-  );
+function ageLabel(seconds) {
+  if (seconds === null || seconds === undefined) return 'never';
+  if (seconds < 90) return `${Math.round(seconds)}s ago`;
+  if (seconds < 5400) return `${Math.round(seconds / 60)} min ago`;
+  return `${(seconds / 3600).toFixed(1)} hours ago`;
 }
 
-function BehaviorMeter({ bars = 0 }) {
-  return (
-    <span className="la-meter" aria-hidden>
-      {Array.from({ length: 5 }).map((_, i) => <i key={i} className={i < bars ? 'on' : ''} />)}
-    </span>
-  );
-}
+/** The single most important thing on the page. */
+function StateBanner({ readiness, freshness, runtime }) {
+  const stale = freshness?.stale !== false;
+  const status = readiness?.status;
+  const evaluation = runtime?.evaluation_status;
+  const neverRan = runtime ? !runtime.last_successful_evaluation : false;
 
-function UnavailableCard({ title, reason }) {
+  let state;
+  if (status === 'persistence_degraded') {
+    state = {
+      tone: 'bad',
+      title: 'Storage degraded',
+      detail: `Engines affected: ${(readiness?.degraded_engines || []).join(', ') || 'unknown'}.`,
+    };
+  } else if (neverRan && evaluation === 'warming_up') {
+    state = {
+      tone: 'warn',
+      title: 'Warming up — no live evaluation yet',
+      detail: runtime?.last_evaluation?.reason
+        ? `Last attempt skipped: ${String(runtime.last_evaluation.reason).replace(/_/g, ' ')}. Signals below are from the last completed session.`
+        : 'The evaluator has not completed a successful pass since starting.',
+    };
+  } else if (stale) {
+    state = {
+      tone: 'warn',
+      title: 'Historical view — not live',
+      detail: `Newest evaluation ${ageLabel(freshness?.age_seconds)}, against a ${Math.round((freshness?.stale_after_seconds || 900) / 60)} minute freshness limit. Signals below describe the last completed session.`,
+    };
+  } else {
+    state = { tone: 'good', title: 'Live', detail: `Updated ${ageLabel(freshness?.age_seconds)}.` };
+  }
+
   return (
-    <div className="la-card la-unavailable">
-      <header><span className="la-kicker">Unavailable</span><h2>{title}</h2></header>
-      <p>{reason}</p>
+    <div className={`la-banner la-banner--${state.tone}`}>
+      <div className="la-banner__title">{state.title}</div>
+      <p className="la-banner__detail">{state.detail}</p>
     </div>
   );
 }
 
+function Metric({ label, value, sub }) {
+  return (
+    <div className="la-metric">
+      <div className="la-metric__label">{label}</div>
+      <div className="la-metric__value">{value}</div>
+      {sub ? <div className="la-metric__sub">{sub}</div> : null}
+    </div>
+  );
+}
+
+function ConfidenceBadge({ confidence, basis }) {
+  const tone = confidence === 'VALIDATED' || confidence === 'HIGH' ? 'good'
+    : confidence === 'MEDIUM' ? 'mid'
+      : confidence === 'MODEL-ONLY' ? 'warn' : 'low';
+  return (
+    <span className={`la-badge la-badge--${tone}`} title={basis || ''}>
+      {confidence === 'MODEL-ONLY' ? 'Model only' : confidence}
+    </span>
+  );
+}
+
+function SignalRow({ row, expanded, onToggle }) {
+  const view = useMemo(() => interpretCanonicalSignal(row), [row]);
+  const unverified = row.active.filter((signal) => signal.liquidity_verified === false).length;
+
+  return (
+    <>
+      <tr className={`la-row ${expanded ? 'la-row--open' : ''}`} onClick={onToggle}>
+        <td className="la-cell-sym">
+          <span className="la-sym">{row.symbol}</span>
+          <span className="la-sector">{row.sector}</span>
+        </td>
+        <td>
+          <span className={`la-dir la-dir--${row.composite > 0 ? 'pos' : row.composite < 0 ? 'neg' : 'flat'}`}>
+            {plainSignalDirection(row)}
+          </span>
+        </td>
+        <td className="la-num">{row.composite > 0 ? '+' : ''}{row.composite}</td>
+        <td><ConfidenceBadge confidence={row.confidence} basis={row.confidence_basis} /></td>
+        <td className="la-cell-drivers">
+          {row.active.length
+            ? row.active.map((signal) => ENGINE_PLAIN[signal.engine]?.label || signal.engine).join(' · ')
+            : <span className="la-muted">none active</span>}
+        </td>
+        <td className="la-num">
+          {unverified > 0
+            ? <span className="la-warn-inline" title="Bid-ask spread could not be measured for these components">{unverified} unverified</span>
+            : <span className="la-muted">ok</span>}
+        </td>
+      </tr>
+      {expanded ? (
+        <tr className="la-detail">
+          <td colSpan={6}>
+            <div className="la-detail__grid">
+              <div>
+                <h4>What the model sees</h4>
+                <p>{view.summary}</p>
+                <ul className="la-list">
+                  {view.why_flagged.map((line) => <li key={line}>{line}</li>)}
+                </ul>
+              </div>
+              <div>
+                <h4>Evidence</h4>
+                <p className="la-basis">{row.confidence_basis}</p>
+                <h4>Read this carefully</h4>
+                <ul className="la-list la-list--caveat">
+                  {view.caveats.map((line) => <li key={line}>{line}</li>)}
+                </ul>
+              </div>
+            </div>
+          </td>
+        </tr>
+      ) : null}
+    </>
+  );
+}
+
 export default function LiveAlphaPage() {
-  const [payload, setPayload] = useState({ signals: [], runs: [] });
+  const [payload, setPayload] = useState({});
   const [runtime, setRuntime] = useState(null);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [selected, setSelected] = useState(null);
-  const [strategy, setStrategy] = useState('all');
+  const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
-  const [sort, setSort] = useState('strength');
   const [search, setSearch] = useState('');
-  const [sector, setSector] = useState('');
-  const [view, setView] = useState('live');
-  const [healthOpen, setHealthOpen] = useState(false);
-  const [behaviorHelp, setBehaviorHelp] = useState(false);
-  const [conviction, setConviction] = useState({ run: null, rows: [] });
-  const [convictionFilter, setConvictionFilter] = useState('shortlist');
-  const [convictionError, setConvictionError] = useState('');
+  const [open, setOpen] = useState(null);
 
   const load = async () => {
-    setLoading(true);
     setError('');
     try {
       if (!API_ORIGIN) throw new Error('AGI backend origin is not configured.');
-      const [workspaceResponse, statusResponse] = await Promise.all([
+      const [workspace, status] = await Promise.all([
         fetch(`${API_ORIGIN}/api/market/live-alpha/workspace`, { headers: { Accept: 'application/json' } }),
         fetch(`${API_ORIGIN}/api/market/live-alpha/status`, { headers: { Accept: 'application/json' } }),
       ]);
-      setPayload(await readApiJson(workspaceResponse, 'Live Alpha research store'));
-      setRuntime(await readApiJson(statusResponse, 'Live Alpha runtime'));
-      try {
-        const convictionResponse = await fetch(`${API_ORIGIN}/api/market/evidence-conviction?limit=500`, { headers: { Accept: 'application/json' } });
-        setConviction(await readApiJson(convictionResponse, 'Conviction ranking'));
-        setConvictionError('');
-      } catch (convictionRequestError) {
-        setConvictionError(convictionRequestError.message);
-      }
+      setPayload(await readJson(workspace, 'Live Alpha research store'));
+      setRuntime(await readJson(status, 'Live Alpha runtime'));
     } catch (requestError) {
       setError(requestError.message);
     } finally {
@@ -131,7 +187,7 @@ export default function LiveAlphaPage() {
   useEffect(() => {
     document.title = 'Live Alpha | Agarwal Global Investments';
     load();
-    const timer = setInterval(load, 60000);
+    const timer = setInterval(load, REFRESH_MS);
     return () => clearInterval(timer);
   }, []);
 
@@ -140,851 +196,153 @@ export default function LiveAlphaPage() {
     [payload.signals, payload.strategy_health],
   );
   const isFresh = payload.freshness?.stale === false;
-  const evaluationStatus = runtime?.evaluation_status || (runtime?.status === 'running' ? 'warming_up' : 'stopped');
-  const displayStatus = payload.readiness?.status === 'persistence_degraded'
-    ? 'Storage issue'
-    : evaluationStatus === 'warming_up'
-      ? 'Warming up'
-      : evaluationStatus === 'degraded' || evaluationStatus === 'blocked'
-        ? 'Research degraded'
-        : !isFresh
-          ? 'Stale signals'
-          : evaluationStatus === 'live'
-            ? 'Live research'
-            : 'Research standby';
-  const liveNow = displayStatus === 'Live research';
-
-  const brief = useMemo(() => buildLiveBrief(allRows, { isFresh }), [allRows, isFresh]);
-  const marketState = useMemo(() => marketStateFromBrief(brief), [brief]);
-  const behaviorRows = useMemo(
-    () => buildMarketBehaviorRows(allRows, payload.strategy_health || {}, isFresh),
-    [allRows, payload.strategy_health, isFresh],
+  const directional = useMemo(() => allRows.filter((row) => row.active?.length), [allRows]);
+  const shown = useMemo(
+    () => filterRadarRows(directional, filter, { search })
+      .slice()
+      .sort((a, b) => Math.abs(b.composite) - Math.abs(a.composite)),
+    [directional, filter, search],
   );
-  const marketMap = useMemo(() => buildMarketMap(allRows, { isFresh }), [allRows, isFresh]);
 
-  const activeFilter = strategy !== 'all' ? strategy : filter;
-  const radarRows = useMemo(() => {
-    const filtered = filterRadarRows(allRows, activeFilter, { search, sector });
-    return sortRadarRows(filtered, sort === 'strength' ? 'strength' : sort);
-  }, [allRows, activeFilter, search, sector, sort]);
+  const engineCounts = useMemo(() => {
+    const counts = {};
+    for (const [key] of LIVE_ALPHA_STRATEGIES) {
+      counts[key] = directional.filter((row) => row.strategies[key]?.direction).length;
+    }
+    return counts;
+  }, [directional]);
 
-  const confluence = useMemo(
-    () => [...allRows]
-      .filter((row) => row.active.length >= 2)
-      .sort((a, b) => b.active.length - a.active.length || Math.abs(b.composite) - Math.abs(a.composite)),
-    [allRows],
-  );
-  const topConfirmation = confluence[0] || null;
-  const selectedRow = selected ? allRows.find((row) => row.symbol === selected) : null;
-  const lastUpdate = payload.freshness?.latest_successful_at
-    ? new Date(payload.freshness.latest_successful_at).toLocaleString('en-IN', {
-      timeZone: 'Asia/Kolkata', day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit',
-    })
-    : 'No completed run';
-
-  const onStrategySelect = (engine) => {
-    setStrategy((current) => (current === engine ? 'all' : engine));
-    setFilter('all');
-  };
+  if (loading) return <div className="la-page la-page--center">Loading Live Alpha…</div>;
 
   return (
     <div className="la-page">
-      <header className="la-command">
-        <div className="la-command-left">
-          <h1>AGI Live Alpha</h1>
-          <p>Live market intelligence · Research only</p>
-        </div>
-        <div className="la-command-right">
-          <span className={`la-status-pill ${liveNow ? 'live' : ''}`}>
-            <i />
-            {liveNow ? 'LIVE' : displayStatus}
-          </span>
-          <span className="la-updated">{ageSecondsLabel(payload.freshness?.age_seconds)}</span>
-          <button type="button" className="la-icon-btn" onClick={load} aria-label="Refresh">
-            <RefreshCw size={14} className={loading ? 'spin' : ''} />
-          </button>
-          <button type="button" className="la-ghost-btn" onClick={() => setHealthOpen(true)}>
-            System Health
-          </button>
-        </div>
-      </header>
-
-      <main className="la-shell">
-        <nav className="la-tabs" aria-label="Live Alpha views">
-          <button type="button" className={view === 'live' ? 'active' : ''} onClick={() => setView('live')}>
-            <Activity size={14} /> Live Intelligence
-          </button>
-          <button type="button" className={view === 'conviction' ? 'active' : ''} onClick={() => setView('conviction')}>
-            <ShieldCheck size={14} /> Conviction
-          </button>
-        </nav>
-
-        {view === 'live' ? (
-          <>
-            <section className="la-glance" aria-label="Market at a glance">
-              <GlanceCard label="Market state" value={marketState.label} detail={marketState.detail} tone={marketState.tone} />
-              <GlanceCard label="Nifty bias" value="Awaiting model" detail="Not yet classified" tone="neutral" />
-              <GlanceCard
-                label="Signals"
-                value={isFresh ? String(brief.breadth.active) : '0'}
-                detail={`${isFresh ? brief.breadth.high_evidence : 0} high evidence`}
-                tone="info"
-              />
-              <GlanceCard
-                label="Confluence"
-                value={isFresh ? String(brief.breadth.multi) : '0'}
-                detail={`${isFresh ? brief.breadth.conflicts : 0} conflicts`}
-                tone="info"
-              />
-              <GlanceCard
-                label="Evidence"
-                value={brief.evidence_strength}
-                detail={liveNow ? 'Fresh session' : displayStatus}
-                tone={brief.evidence_strength === 'HIGH' ? 'positive' : brief.evidence_strength === 'LOW' ? 'warning' : 'neutral'}
-              />
-            </section>
-
-            <section className="la-row-brief">
-              <LiveBriefCard brief={brief} />
-              <MarketBehaviorCard
-                rows={behaviorRows}
-                active={strategy}
-                onSelect={onStrategySelect}
-                helpOpen={behaviorHelp}
-                onToggleHelp={() => setBehaviorHelp((v) => !v)}
-              />
-            </section>
-
-            <section className="la-row-main">
-              <MarketMapCard map={marketMap} />
-              <UnavailableCard
-                title="Emerging Now"
-                reason="Biggest changes need historical Live Alpha score snapshots. That history is not exposed by the current workspace API, so change tracking stays unavailable rather than estimated."
-              />
-              <OpportunityRadar
-                rows={radarRows}
-                error={error}
-                displayStatus={displayStatus}
-                liveNow={liveNow}
-                loading={loading}
-                payload={payload}
-                lastUpdate={lastUpdate}
-                filter={filter}
-                strategy={strategy}
-                sort={sort}
-                search={search}
-                sector={sector}
-                onFilter={(next) => { setFilter(next); setStrategy('all'); }}
-                onSort={setSort}
-                onSearch={setSearch}
-                onSector={setSector}
-                onSelect={setSelected}
-                onClearStrategy={() => setStrategy('all')}
-              />
-            </section>
-
-            <section className="la-row-lower">
-              <ConfirmationCard row={isFresh ? topConfirmation : null} onOpen={setSelected} />
-              <UnavailableCard
-                title="Signal Evolution"
-                reason="Not enough intraday history is available from the workspace API to plot composite and engine scores over time."
-              />
-              <UnavailableCard
-                title="What Changed"
-                reason="Since/delta comparisons require prior snapshots. Implement snapshot history on the backend before enabling this card."
-              />
-            </section>
-
-            <ScheduledStrategiesPanel groww={payload.groww} />
-          </>
-        ) : (
-          <ConvictionPanel
-            payload={conviction}
-            error={convictionError}
-            filter={convictionFilter}
-            onFilter={setConvictionFilter}
-          />
-        )}
-
-        <p className="la-disclosure">
-          <ShieldCheck size={13} />
-          Research only. Not investment advice. AGI does not generate orders, position sizes, targets, or execution instructions.
+      <header className="la-head">
+        <h1>Live Alpha</h1>
+        <p className="la-sub">
+          Five intraday research engines across the Nifty 500. These are research
+          observations for analyst review — not recommendations, price targets, or orders.
         </p>
-      </main>
-
-      {selectedRow ? <ResearchDrawer row={selectedRow} onClose={() => setSelected(null)} /> : null}
-      {healthOpen ? (
-        <SystemHealthDrawer
-          payload={payload}
-          runtime={runtime}
-          displayStatus={displayStatus}
-          onClose={() => setHealthOpen(false)}
-        />
-      ) : null}
-    </div>
-  );
-}
-
-function GlanceCard({ label, value, detail, tone = 'neutral' }) {
-  return (
-    <article className={`la-glance-card tone-${tone}`}>
-      <small>{label}</small>
-      <strong>{value}</strong>
-      <span>{detail}</span>
-    </article>
-  );
-}
-
-function LiveBriefCard({ brief }) {
-  return (
-    <article className="la-card la-brief">
-      <header>
-        <div>
-          <span className="la-kicker">AGI intelligence</span>
-          <h2>AGI Live Brief</h2>
-        </div>
-        <time>{brief.time_label}</time>
       </header>
-      <p className="la-brief-headline">{brief.headline}</p>
-      {brief.sector_line ? <p className="la-brief-sector">{brief.sector_line}</p> : null}
-      {brief.notable?.length ? (
-        <div className="la-notable">
-          <small>Notable now</small>
-          <ul>
-            {brief.notable.map((item) => (
-              <li key={`${item.symbol}-${item.direction}`}>
-                <span className={item.direction === 'up' ? 'up' : 'down'}>{item.direction === 'up' ? '↑' : '↓'} {item.symbol}</span>
-                <em>{item.line}</em>
-              </li>
-            ))}
-          </ul>
-        </div>
-      ) : null}
-      <footer>
-        Evidence strength
-        <b className={`la-pill ${String(brief.evidence_strength).toLowerCase()}`}>{brief.evidence_strength}</b>
-      </footer>
-    </article>
-  );
-}
-
-function MarketBehaviorCard({ rows, active, onSelect, helpOpen, onToggleHelp }) {
-  return (
-    <article className="la-card la-behavior">
-      <header>
-        <div>
-          <span className="la-kicker">Behaviours</span>
-          <h2>Market Behavior Today</h2>
-          <p className="la-behavior-sub">Live engines 1–5 · Sector &amp; Equity are strategies 6–7 below</p>
-        </div>
-        <button type="button" className="la-text-btn" onClick={onToggleHelp}>
-          <HelpCircle size={13} /> What do these mean?
-        </button>
-      </header>
-      {helpOpen ? (
-        <div className="la-help">
-          {rows.map((row) => (
-            <div key={row.engine}>
-              <strong>{row.label}</strong>
-              <p>{row.plain}</p>
-              <small>{row.technical}</small>
-            </div>
-          ))}
-        </div>
-      ) : null}
-      <div className="la-behavior-list">
-        {rows.map((row) => (
-          <button
-            key={row.engine}
-            type="button"
-            className={active === row.engine ? 'active' : ''}
-            onClick={() => onSelect(row.engine)}
-          >
-            <span className="la-behavior-name">{row.label}</span>
-            <BehaviorMeter bars={row.intensity.bars} />
-            <span className={`la-intensity ${row.intensity.key}`}>{row.intensity.label}</span>
-            <strong>{row.active}</strong>
-          </button>
-        ))}
-      </div>
-    </article>
-  );
-}
-
-function MarketMapCard({ map }) {
-  if (!map.available) {
-    return <UnavailableCard title="Market Map" reason={map.reason} />;
-  }
-  return (
-    <article className="la-card la-map">
-      <header>
-        <div>
-          <span className="la-kicker">Where activity is happening</span>
-          <h2>Market Map</h2>
-        </div>
-      </header>
-      <div className="la-map-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Sector</th>
-              {map.engines.map((engine) => <th key={engine}>{ENGINE_PLAIN[engine].label}</th>)}
-            </tr>
-          </thead>
-          <tbody>
-            {map.sectors.map((row) => (
-              <tr key={row.sector}>
-                <td>{row.sector}</td>
-                {map.engines.map((engine) => {
-                  const cell = row.cells[engine];
-                  return <td key={engine} className={`cell-${cell.tone}`} title={cell.label}>{cell.mark}</td>;
-                })}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-      <footer className="la-map-legend">
-        <span>+++ Strong</span><span>++ Above normal</span><span>+ Supportive</span><span>− Below normal</span><span>−− Weak</span>
-      </footer>
-    </article>
-  );
-}
-
-function OpportunityRadar({
-  rows, error, displayStatus, liveNow, loading, payload, lastUpdate,
-  filter, strategy, sort, search, sector,
-  onFilter, onSort, onSearch, onSector, onSelect, onClearStrategy,
-}) {
-  const chips = [
-    ['all', 'All'], ['positive', 'Positive'], ['negative', 'Negative'], ['high', 'High Evidence'],
-    ['multi', 'Multi-Factor'], ['conflicting', 'Conflicting'],
-    ...STRATEGIES.map(([engine, label]) => [engine, label]),
-  ];
-  return (
-    <article className="la-card la-radar">
-      <header>
-        <div>
-          <span className="la-kicker">Opportunity map</span>
-          <h2>Live Opportunity Radar</h2>
-          <p>Research prioritisation — not trade recommendations.</p>
-        </div>
-        <span className="la-count">{rows.length} names</span>
-      </header>
-
-      <div className="la-radar-filters">
-        <div className="la-chips">
-          {chips.map(([key, label]) => (
-            <button
-              key={key}
-              type="button"
-              className={(strategy !== 'all' ? strategy : filter) === key ? 'active' : ''}
-              onClick={() => onFilter(key)}
-            >
-              {label}
-            </button>
-          ))}
-          {strategy !== 'all' ? (
-            <button type="button" className="la-clear" onClick={onClearStrategy}>Clear behaviour</button>
-          ) : null}
-        </div>
-        <div className="la-radar-controls">
-          <label className="la-search">
-            <Search size={13} />
-            <input value={search} onChange={(e) => onSearch(e.target.value)} placeholder="Search company" />
-          </label>
-          <input className="la-sector-input" value={sector} onChange={(e) => onSector(e.target.value)} placeholder="Sector" />
-          <select value={sort} onChange={(e) => onSort(e.target.value)} aria-label="Sort radar">
-            <option value="strength">Strength</option>
-            <option value="change">Biggest change</option>
-            <option value="newest">Newest</option>
-            <option value="confirmed">Most confirmed</option>
-          </select>
-        </div>
-      </div>
 
       {error ? (
-        <div className="la-notice error"><AlertCircle size={16} /><div><strong>Workspace unavailable</strong><p>{error}</p></div></div>
-      ) : null}
-      {!error && !liveNow ? (
-        <div className="la-notice">
-          <AlertCircle size={16} />
-          <div>
-            <strong>{displayStatus}</strong>
-            <p>
-              {payload.readiness?.status === 'persistence_degraded'
-                ? `Signal storage failed for: ${(payload.readiness.degraded_engines || []).map((key) => SHORT[key] || key).join(', ')}.`
-                : evaluationCopy(displayStatus, lastUpdate, payload)}
-            </p>
-          </div>
-        </div>
-      ) : null}
-      {!loading && !error && !rows.length ? (
-        <div className="la-empty">
-          <Activity size={24} />
-          <h3>{payload.readiness?.status === 'database_setup_required' ? 'Alpha database setup required' : 'No live research signals yet'}</h3>
-          <p>
-            {payload.readiness?.status === 'database_setup_required'
-              ? 'Apply the Live Alpha Supabase migrations. The workspace stays in standby until research tables exist.'
-              : 'The workspace is connected, but AGI has not stored a qualifying directional signal for the current filters.'}
-          </p>
+        <div className="la-banner la-banner--bad">
+          <div className="la-banner__title">Data unavailable</div>
+          <p className="la-banner__detail">{error}</p>
         </div>
       ) : null}
 
-      {rows.length ? (
-        <div className="la-table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Company</th>
-                <th>Signal</th>
-                <th>Strength</th>
-                <th>Confirmed by</th>
-                <th>Change</th>
-                <th>Main reason</th>
-                <th>Age</th>
-                <th />
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((row) => {
-                const direction = plainSignalDirection(row);
-                return (
-                  <tr key={row.symbol} onClick={() => onSelect(row.symbol)}>
-                    <td>
-                      <strong>{row.symbol}</strong>
-                      <span>{row.sector}</span>
-                    </td>
-                    <td><span className={`la-dir ${direction.key}`}>{direction.key === 'positive' ? '▲' : direction.key === 'negative' ? '▼' : '◆'} {direction.label}</span></td>
-                    <td><StrengthBar value={row.composite} /></td>
-                    <td>{row.active.length} engine{row.active.length === 1 ? '' : 's'}</td>
-                    <td className="la-muted">Unavailable</td>
-                    <td>{radarReason(row)}</td>
-                    <td>{age(row.newest)}</td>
-                    <td><ChevronRight size={14} /></td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      ) : null}
-      <footer className="la-radar-foot">
-        Strength is a research score on a ±99 scale — not a probability and never shown as a percent.
-      </footer>
-    </article>
-  );
-}
+      <StateBanner readiness={payload.readiness} freshness={payload.freshness} runtime={runtime} />
 
-function evaluationCopy(displayStatus, lastUpdate, payload) {
-  if (displayStatus === 'Warming up') {
-    return 'The market feed is connected, but strategies are collecting enough benchmark history before evaluation.';
-  }
-  if (payload.freshness?.latest_successful_at) {
-    return `Displayed observations are historical. Last completed run: ${lastUpdate}.`;
-  }
-  return 'No completed strategy run is available yet.';
-}
+      <section className="la-metrics">
+        <Metric label="Names with an active signal" value={directional.length} sub={`of ${allRows.length} evaluated`} />
+        <Metric label="Positive" value={directional.filter((row) => row.composite > 0).length} />
+        <Metric label="Negative" value={directional.filter((row) => row.composite < 0).length} />
+        <Metric
+          label="Multi-engine agreement"
+          value={directional.filter((row) => row.active.length >= 2).length}
+          sub="two or more engines aligned"
+        />
+        <Metric
+          label="Empirically validated"
+          value={directional.filter((row) => row.confidence === 'VALIDATED').length}
+          sub="requires 100+ comparables"
+        />
+      </section>
 
-function ConfirmationCard({ row, onOpen }) {
-  if (!row) {
-    return (
-      <UnavailableCard
-        title="Multi-Engine Confirmation"
-        reason="Confirmation appears when two or more independent Live Alpha engines flag the same company in fresh evidence."
-      />
-    );
-  }
-  const direction = plainSignalDirection(row);
-  return (
-    <article className="la-card la-confirm">
-      <header>
-        <div>
-          <span className="la-kicker">Evidence confirmation</span>
-          <h2>Multi-Engine Confirmation</h2>
-          <p>Multiple independent Live Alpha models are seeing the same company.</p>
-        </div>
-      </header>
-      <button type="button" className="la-confirm-hero" onClick={() => onOpen(row.symbol)}>
-        <div>
-          <strong>{row.symbol}</strong>
-          <span className={`la-dir ${direction.key}`}>{direction.label} structure</span>
-        </div>
-        <div className="la-confirm-score">
-          <b>{Math.abs(row.composite)}</b>
-          <small>/ 99</small>
-        </div>
-      </button>
-      <p className="la-confirm-meta">{row.active.length} of 5 engines supportive · Evidence {evidenceStrengthLabel(row.confidence)} · Age {age(row.newest)}</p>
-      <div className="la-confirm-bars">
-        {STRATEGIES.map(([engine, label]) => {
-          const signal = row.strategies[engine];
-          const score = signedSignalScore(signal);
-          const pct = Math.min(100, Math.abs(score));
+      <section className="la-engines">
+        {LIVE_ALPHA_STRATEGIES.map(([key]) => {
+          const meta = ENGINE_PLAIN[key] || {};
+          const health = payload.strategy_health?.[key]?.status;
           return (
-            <div key={engine}>
-              <span>{label}</span>
-              <i><b style={{ width: `${pct}%` }} className={score > 0 ? 'up' : score < 0 ? 'down' : ''} /></i>
-              <em>{signal?.direction ? scoreText(score) : 'Neutral'}</em>
+            <div key={key} className="la-engine">
+              <div className="la-engine__top">
+                <span className="la-engine__label">{meta.label || key}</span>
+                <span className={`la-chip la-chip--${health === 'ready' ? 'good' : health === 'stale' ? 'warn' : 'bad'}`}>
+                  {health || 'unknown'}
+                </span>
+              </div>
+              <p className="la-engine__plain">{meta.plain}</p>
+              <div className="la-engine__count">{engineCounts[key] ?? 0} active</div>
             </div>
           );
         })}
-      </div>
-      <footer>Structure · {row.signal_structure}</footer>
-    </article>
-  );
-}
+      </section>
 
-function formatPct(value) {
-  const number = Number(value);
-  return Number.isFinite(number) ? `${number > 0 ? '+' : ''}${number.toFixed(2)}%` : '—';
-}
-
-function ScheduledStrategiesPanel({ groww }) {
-  const runs = new Map((groww?.runs || []).map((run) => [run.strategy, run]));
-  const sectorRun = runs.get('agi_sector_rotation_v1');
-  const equityRun = runs.get('agi_equity_opportunity_v1');
-  const sectors = groww?.sectors || [];
-  const equities = groww?.equities || [];
-  return (
-    <section className="la-scheduled" aria-label="Scheduled sector and equity strategies">
-      <header className="la-scheduled-head">
-        <div>
-          <span className="la-kicker">Strategies 6–7 of 7</span>
-          <h2>Sector Rotation &amp; Equity Opportunities</h2>
-          <p>
-            Scheduled / end-of-day research strategies. Still active and stored — kept separate from the five live
-            intraday engines and not folded into the Live Alpha composite.
-          </p>
+      <section className="la-board">
+        <div className="la-board__bar">
+          <div className="la-filters">
+            {['all', 'positive', 'negative'].map((option) => (
+              <button
+                key={option}
+                type="button"
+                className={filter === option ? 'is-active' : ''}
+                onClick={() => setFilter(option)}
+              >
+                {option[0].toUpperCase() + option.slice(1)}
+              </button>
+            ))}
+          </div>
+          <input
+            className="la-search"
+            placeholder="Search symbol or sector"
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+          />
         </div>
-        <span className="la-tip" title="These Groww-scheduled strategies are research inputs only and are excluded from the five-model live composite until comparably validated.">
-          <Info size={12} /> Not in live composite
-        </span>
-      </header>
-      <div className="la-scheduled-grid">
-        <article className="la-card">
-          <header>
-            <div>
-              <span className="la-kicker">Strategy 6 · Scheduled</span>
-              <h2>Sector Rotation</h2>
-            </div>
-            <RunState run={sectorRun} coverage={sectors.length} />
-          </header>
-          {sectors.length ? (
-            <div className="la-table-wrap">
-              <table className="la-sched-table">
-                <thead>
-                  <tr>
-                    <th>#</th>
-                    <th>Sector</th>
-                    <th>Score</th>
-                    <th>Rotation</th>
-                    <th>20d relative</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {sectors.slice(0, 12).map((row) => (
-                    <tr key={row.sector}>
-                      <td>{row.rank}</td>
-                      <td><strong>{row.sector}</strong></td>
-                      <td>{Number(row.score).toFixed(0)}</td>
-                      <td><span className={`la-rotation ${row.rotation}`}>{row.rotation}</span></td>
-                      <td className={Number(row.relative_20d) >= 0 ? 'up' : 'down'}>{formatPct(row.relative_20d)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ) : (
-            <p className="la-muted-copy">No sector rotation run has been received yet.</p>
-          )}
-        </article>
 
-        <article className="la-card">
-          <header>
-            <div>
-              <span className="la-kicker">Strategy 7 · Scheduled</span>
-              <h2>Equity Opportunities</h2>
-            </div>
-            <RunState run={equityRun} coverage={equities.length} />
-          </header>
-          {equities.length ? (
-            <div className="la-table-wrap">
-              <table className="la-sched-table">
-                <thead>
-                  <tr>
-                    <th>#</th>
-                    <th>Stock</th>
-                    <th>Score</th>
-                    <th>Signal</th>
-                    <th>Volume</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {equities.slice(0, 12).map((row) => (
-                    <tr key={`${row.symbol}-${row.signal}`}>
-                      <td>{row.rank || '—'}</td>
-                      <td><strong>{row.symbol}</strong></td>
-                      <td>{Number(row.score).toFixed(0)}</td>
-                      <td><span className="la-groww-signal">{String(row.signal || '').replaceAll('_', ' ')}</span></td>
-                      <td>{Number(row.volume_ratio) ? `${Number(row.volume_ratio).toFixed(2)}×` : '—'}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ) : (
-            <p className="la-muted-copy">No equity opportunity run has been received yet.</p>
-          )}
-        </article>
-      </div>
-    </section>
-  );
-}
+        {shown.length === 0 ? (
+          <div className="la-empty">
+            No names currently carry an active directional signal.
+            {isFresh ? '' : ' The last evaluation is stale, so this reflects the previous session.'}
+          </div>
+        ) : (
+          <div className="la-tablewrap">
+            <table className="la-table">
+              <thead>
+                <tr>
+                  <th>Company</th>
+                  <th>Direction</th>
+                  <th className="la-num">Score</th>
+                  <th>Confidence</th>
+                  <th>Driven by</th>
+                  <th className="la-num">Liquidity</th>
+                </tr>
+              </thead>
+              <tbody>
+                {shown.map((row) => (
+                  <SignalRow
+                    key={row.symbol}
+                    row={row}
+                    expanded={open === row.symbol}
+                    onToggle={() => setOpen(open === row.symbol ? null : row.symbol)}
+                  />
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
 
-function RunState({ run, coverage }) {
-  return (
-    <div className="la-run-state">
-      <i className={run ? 'ready' : ''} />
-      <span>{run ? (run.status || 'received') : 'standby'}</span>
-      {run ? <time>{age(run.as_of)}</time> : null}
-      {coverage != null ? <em>{coverage} names</em> : null}
+      <footer className="la-foot">
+        <p>
+          <strong>Score</strong> is a composite of the active engines, from −99 to +99. It
+          measures how strongly the model currently reads a name, not expected return.
+        </p>
+        <p>
+          <strong>Confidence</strong> separates model state from evidence. “Model only” means
+          no historical comparables exist behind the signal yet — the empirical validation
+          layer is still collecting, and no signal on this page has reached the 100
+          observations required to read as validated.
+        </p>
+        <p>
+          <strong>Liquidity</strong> flags components whose bid-ask spread could not be measured
+          at evaluation time. Unmeasured is not the same as tight.
+        </p>
+        <p className="la-foot__legal">
+          Research output only. No execution is enabled from this page. Nothing here is
+          investment advice or a solicitation to trade.
+        </p>
+      </footer>
     </div>
-  );
-}
-
-function SystemHealthDrawer({ payload, runtime, displayStatus, onClose }) {
-  const feed = runtime?.feed || {};
-  const health = payload.strategy_health || {};
-  return (
-    <div className="la-drawer-backdrop" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-      <aside className="la-drawer la-health-drawer">
-        <header>
-          <div>
-            <span>Operations</span>
-            <h2>System Health</h2>
-          </div>
-          <button type="button" onClick={onClose} aria-label="Close"><X size={18} /></button>
-        </header>
-        <section>
-          <h3>Overall</h3>
-          <div className="la-health-row"><span>Page status</span><b>{displayStatus}</b></div>
-          <div className="la-health-row"><span>Runtime</span><b>{runtime?.status || 'Unavailable'}</b></div>
-          <div className="la-health-row"><span>Evaluation</span><b>{runtime?.evaluation_status || 'Unavailable'}</b></div>
-          <div className="la-health-row"><span>Readiness</span><b>{payload.readiness?.status || 'Unavailable'}</b></div>
-        </section>
-        <section>
-          <h3>Market feed</h3>
-          <div className="la-health-row"><span>Transport</span><b>{feed.status || 'Unavailable'}</b></div>
-          <div className="la-health-row"><span>Messages</span><b>{Number(feed.messages || 0).toLocaleString('en-IN')}</b></div>
-          <div className="la-health-row"><span>Reconnects</span><b>{feed.reconnects ?? '—'}</b></div>
-          <div className="la-health-row"><span>Decode errors</span><b>{feed.decode_errors ?? '—'}</b></div>
-          <div className="la-health-row"><span>Last heartbeat</span><b>{feed.last_message_at ? age(feed.last_message_at) : '—'}</b></div>
-          <div className="la-health-row"><span>Universe</span><b>{runtime?.universe ? `${runtime.universe.members} / ${runtime.universe.expected_members}` : '—'}</b></div>
-        </section>
-        <section>
-          <h3>Engines</h3>
-          {STRATEGIES.map(([engine, label]) => {
-            const row = health[engine] || {};
-            return (
-              <div className="la-health-row" key={engine}>
-                <span>{label}</span>
-                <b>{row.status || 'never_run'} · {row.stored_signals || 0} stored</b>
-              </div>
-            );
-          })}
-        </section>
-        <section>
-          <h3>Storage & diagnostics</h3>
-          <div className="la-health-row"><span>Degraded engines</span><b>{(payload.readiness?.degraded_engines || []).join(', ') || 'None'}</b></div>
-          <div className="la-health-row"><span>Last successful run</span><b>{payload.freshness?.latest_successful_at || '—'}</b></div>
-          <div className="la-health-row"><span>Last evaluation skip</span><b>{runtime?.last_evaluation?.reason || '—'}</b></div>
-          <div className="la-health-row"><span>Baselines</span><b>{runtime?.baseline_bootstrap?.status || '—'}</b></div>
-          <div className="la-health-row"><span>Rejected out-of-order</span><b>{Number(feed.snapshot_quality?.rejected_out_of_order || 0).toLocaleString('en-IN')}</b></div>
-        </section>
-      </aside>
-    </div>
-  );
-}
-
-function ResearchDrawer({ row, onClose }) {
-  const direction = plainSignalDirection(row);
-  const lead = [...row.active].sort((a, b) => Math.abs(signedSignalScore(b)) - Math.abs(signedSignalScore(a)))[0];
-  const factors = lead?.factor_values || {};
-  const interpretation = row.interpretation;
-  return (
-    <div className="la-drawer-backdrop" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-      <aside className="la-drawer">
-        <header>
-          <div>
-            <span>{row.sector}</span>
-            <h2>{row.symbol}</h2>
-          </div>
-          <button type="button" onClick={onClose} aria-label="Close"><X size={18} /></button>
-        </header>
-
-        <section className="la-drawer-score">
-          <div><small>Structure</small><strong className={`la-dir ${direction.key}`}>{direction.label}</strong></div>
-          <div><small>Strength</small><strong>{Math.abs(row.composite)} / 99</strong></div>
-          <div><small>Evidence</small><strong>{evidenceStrengthLabel(row.confidence)}</strong></div>
-          <div><small>Age</small><strong>{age(row.newest)}</strong></div>
-        </section>
-
-        <section className="la-what">
-          <h3>Why AGI flagged it</h3>
-          <p>{interpretation.summary} Predictive validity has not yet been established.</p>
-        </section>
-
-        <section>
-          <h3>Evidence</h3>
-          <div className="la-component-table">
-            <div><b>Component</b><b>Score</b><b>State</b><b>Role</b></div>
-            {STRATEGIES.map(([engine, label]) => {
-              const signal = row.strategies[engine];
-              const score = signedSignalScore(signal);
-              const role = !signal?.direction
-                ? row.component_states[engine]
-                : interpretation.structure === 'CONFLICTING'
-                  ? (signal.direction === 'positive' ? 'Dominant positive' : 'Dominant negative')
-                  : signal === interpretation.primary_driver
-                    ? 'Primary'
-                    : signal.direction === interpretation.primary_driver?.direction
-                      ? 'Supporting'
-                      : 'Contradicting';
-              return (
-                <div key={engine}>
-                  <span>{label}</span>
-                  <span className={score > 0 ? 'up' : score < 0 ? 'down' : ''}>{signal?.direction ? scoreText(score) : '—'}</span>
-                  <span>{row.component_states[engine]}</span>
-                  <span>{role}</span>
-                </div>
-              );
-            })}
-          </div>
-        </section>
-
-        <section>
-          <h3>What changed</h3>
-          <p className="la-muted-copy">Intraday change history is unavailable until Live Alpha exposes prior score snapshots.</p>
-        </section>
-
-        <section>
-          <h3>Conflicting evidence</h3>
-          {interpretation.structure === 'CONFLICTING' ? (
-            <ul className="la-caveats">
-              {interpretation.contradicting_components.map((signal) => (
-                <li key={signal.engine}>{ENGINE_PLAIN[signal.engine]?.label || signal.engine} · {scoreText(signedSignalScore(signal))}</li>
-              ))}
-            </ul>
-          ) : (
-            <p className="la-muted-copy">No material conflicting engine currently detected.</p>
-          )}
-        </section>
-
-        <section>
-          <h3>What could weaken this signal?</h3>
-          <ul className="la-caveats">
-            {interpretation.weakening_conditions.map((item) => <li key={item}>{item}</li>)}
-          </ul>
-        </section>
-
-        <section>
-          <h3>Data quality</h3>
-          <div className="la-evidence">
-            <div><span>Liquidity checks</span><b>{row.active.every((s) => s.liquidity_ok) ? 'Passed' : 'Review required'}</b></div>
-            <div><span>Freshness</span><b>{age(row.newest)}</b></div>
-            <div><span>Comparable obs.</span><b>{row.samples || 0}</b></div>
-            <div><span>15m residual</span><b>{formatFactor(factors.residual_15m ?? lead?.residual_15m, '%')}</b></div>
-            <div><span>Volume vs expected</span><b>{Number(lead?.volume_ratio || factors.volume_surprise || 0) ? `${Number(lead?.volume_ratio || factors.volume_surprise).toFixed(2)}×` : '—'}</b></div>
-            <div><span>OI change</span><b>{formatFactor(factors.oi_change_15m ?? lead?.oi_change, '%')}</b></div>
-          </div>
-        </section>
-
-        <details className="la-lineage">
-          <summary>Model lineage</summary>
-          <p>Market feed → Instrument mapping → Normalization → Timestamp validation → Liquidity checks → Strategy input → Component score → Composite score → Signal interpretation → Confidence → Immutable research snapshot.</p>
-          <dl>
-            <dt>Data cutoff</dt><dd>{row.data_cutoff}</dd>
-            <dt>Strategy version</dt><dd>{row.strategy_version}</dd>
-            <dt>Model version</dt><dd>{row.model_version}</dd>
-            <dt>Lead signal id</dt><dd>{lead?.id || 'Unavailable'}</dd>
-            <dt>Input fingerprint</dt><dd>{row.data_fingerprint || 'Unavailable'}</dd>
-            <dt>Agreement</dt><dd>{row.agreement}</dd>
-          </dl>
-        </details>
-
-        <section>
-          <h3>Research caveats</h3>
-          <ul className="la-caveats">
-            {interpretation.caveats.map((item) => <li key={item}>{item}</li>)}
-            <li>This is a research signal, not an investment recommendation.</li>
-          </ul>
-        </section>
-      </aside>
-    </div>
-  );
-}
-
-function ConvictionPanel({ payload, error, filter, onFilter }) {
-  const rows = filterConvictionRows(payload?.rows || [], filter);
-  const counts = payload?.run?.counts || {};
-  const generated = payload?.run?.generated_at
-    ? new Date(payload.run.generated_at).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })
-    : 'Awaiting first run';
-  return (
-    <section className="la-conviction-view">
-      <header className="la-conviction-hero">
-        <div>
-          <span className="la-kicker">Evidence-confirmed decision layer</span>
-          <h2>Conviction Ranking</h2>
-          <p>Separate from Live Alpha composite. Combines leadership, live confirmation and research evidence without inventing theses from incomplete signals.</p>
-        </div>
-        <div className="la-conviction-meta">
-          <strong>{payload?.run?.universe_size || 0}</strong>
-          <span>ranked names<br />Updated {generated}</span>
-        </div>
-      </header>
-      <div className="la-conviction-summary">
-        <div><small>High conviction</small><strong>{counts.HIGH_CONVICTION || 0}</strong></div>
-        <div><small>Confirmed</small><strong>{counts.CONFIRMED || 0}</strong></div>
-        <div><small>Watch</small><strong>{counts.WATCH || 0}</strong></div>
-        <div><small>Needs evidence</small><strong>{counts.INCOMPLETE || 0}</strong></div>
-      </div>
-      <div className="la-conviction-toolbar">
-        <div>{CONVICTION_FILTERS.map(([key, label]) => (
-          <button key={key} type="button" className={filter === key ? 'active' : ''} onClick={() => onFilter(key)}>{label}</button>
-        ))}</div>
-        <span>Showing {rows.length} names</span>
-      </div>
-      {error ? <div className="la-notice error"><AlertCircle size={16} /><div><strong>Conviction ranking unavailable</strong><p>{error}</p></div></div> : null}
-      {!error && !payload?.run ? (
-        <div className="la-empty"><ShieldCheck size={24} /><h3>Awaiting the first conviction cycle</h3><p>The ranking appears after AGI combines stored market and research evidence.</p></div>
-      ) : null}
-      {rows.length ? (
-        <div className="la-conviction-list">
-          {rows.slice(0, filter === 'shortlist' ? 10 : 200).map((row) => (
-            <details key={row.symbol} className="la-conviction-card">
-              <summary>
-                <span className="la-conviction-rank">#{row.rank}</span>
-                <div className="la-conviction-name"><strong>{row.symbol}</strong><span>{row.sector || 'Sector unavailable'}</span></div>
-                <div className="la-conviction-score"><strong>{Number(row.conviction_score).toFixed(1)}</strong><span>conviction</span></div>
-                <span className={`la-conviction-label ${convictionTone(row.conviction_label)}`}>{readableConvictionLabel(row.conviction_label)}</span>
-                <div className="la-evidence-meter"><i style={{ width: `${Math.round(Number(row.evidence_coverage || 0) * 100)}%` }} /><span>{Math.round(Number(row.evidence_coverage || 0) * 100)}% evidence</span></div>
-                <ChevronRight className="la-conviction-chevron" size={16} />
-              </summary>
-              <div className="la-conviction-detail">
-                <article><small>AGI thesis</small><p>{row.thesis}</p></article>
-                <article><small>Risk and contradiction check</small><p>{row.risk_note}</p></article>
-                <div className="la-component-grid">
-                  {Object.entries(row.component_scores || {}).map(([key, value]) => (
-                    <div key={key}><span>{key.replaceAll('_', ' ')}</span><strong>{value == null ? '—' : Number(value).toFixed(0)}</strong></div>
-                  ))}
-                </div>
-              </div>
-            </details>
-          ))}
-        </div>
-      ) : null}
-    </section>
   );
 }

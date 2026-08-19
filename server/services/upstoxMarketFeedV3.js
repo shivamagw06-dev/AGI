@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url';
 import protobuf from 'protobufjs';
 import WebSocket from 'ws';
 import { resolveUpstoxAccessToken } from '../providers/upstox.js';
+import { normalizeSpreadBps } from './marketSpread.js';
 
 const protoPath = path.join(path.dirname(fileURLToPath(import.meta.url)), '../providers/MarketDataFeedV3.proto');
 const AUTHORIZE_URL = process.env.UPSTOX_FEED_AUTHORIZE_URL || 'https://api.upstox.com/v3/feed/market-data-feed/authorize';
@@ -77,7 +78,7 @@ export function normalizeFeedResponse(message, receivedAt = new Date()) {
       implied_volatility: numeric(body.iv),
       best_bid: bid,
       best_ask: ask,
-      spread_bps: bid && ask ? Number((((ask - bid) / ((ask + bid) / 2)) * 10_000).toFixed(4)) : null,
+      spread_bps: normalizeSpreadBps(bid, ask),
       total_buy_quantity: numeric(body.tbq),
       total_sell_quantity: numeric(body.tsq),
       ohlc,

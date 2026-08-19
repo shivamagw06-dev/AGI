@@ -1,3 +1,4 @@
+import { spreadWithinLimit } from './marketSpread.js';
 /**
  * AGI Live Alpha Engine — research-only factor calculations.
  *
@@ -45,6 +46,46 @@ function zScores(rows, key, { winsorize = 4 } = {}) {
     const value = (row[key] - average) / deviation;
     return Math.max(-winsorize, Math.min(winsorize, value));
   });
+}
+
+/**
+ * Z-scores over the rows where the factor was actually measured.
+ *
+ * Rows failing `measured` get null, not 0. Sector strength is
+ * `sectorReturn60m - benchmarkReturn60m`, and when a sector index has no
+ * history the pipeline substitutes the benchmark for the sector, so the
+ * subtraction is benchmark minus itself: exactly 0 by construction. On
+ * 2026-08-19 that was 1,586 of 2,198 signals, 72%. Scoring that mass of
+ * structural zeros against the handful of real values manufactured a spread
+ * where none was measured, and every proxied name inherited a sector tilt it
+ * had never been observed to have.
+ */
+function zScoresWhere(rows, key, measured, { winsorize = 4 } = {}) {
+  const eligible = rows.filter(measured);
+  if (eligible.length < 3) return rows.map(() => null);
+  const values = eligible.map((row) => row[key]);
+  const average = mean(values);
+  const deviation = standardDeviation(values);
+  return rows.map((row) => {
+    if (!measured(row)) return null;
+    if (deviation === 0) return 0;
+    return Math.max(-winsorize, Math.min(winsorize, (row[key] - average) / deviation));
+  });
+}
+
+/**
+ * Weighted blend that skips unmeasured factors and renormalises.
+ *
+ * Treating a missing factor as a zero contribution quietly shrinks the
+ * composite toward the mean, so a name with no sector reading looked calmer
+ * than one measured as genuinely neutral. Redistributing the weight keeps the
+ * two distinguishable.
+ */
+function blendFactors(contributions) {
+  const usable = contributions.filter(([weight, value]) => weight > 0 && Number.isFinite(value));
+  const total = usable.reduce((sum, [weight]) => sum + weight, 0);
+  if (!(total > 0)) return 0;
+  return usable.reduce((sum, [weight, value]) => sum + (weight / total) * value, 0);
 }
 
 function preliminarySignalQuality({ alphaZ, persistence, volumeSurprise, liquidityOk, dataCoverage }) {
@@ -122,14 +163,19 @@ export function evaluateCrossSectionalMomentum(snapshots, {
   const z15 = zScores(normalized, 'residual15m');
   const z60 = zScores(normalized, 'residual60m');
   const zVolume = zScores(normalized, 'volumeSurprise');
-  const zSector = zScores(normalized, 'sectorStrength');
+  // Only names with a real sector index contribute to the sector factor.
+  const zSector = zScoresWhere(normalized, 'sectorStrength', (row) => !row.sectorProxyUsed);
   const ranked = normalized.map((row, index) => {
-    const alphaZ = factorWeights.residual15m * z15[index]
-      + factorWeights.residual60m * z60[index]
-      + factorWeights.volumeSurprise * zVolume[index]
-      + factorWeights.sectorStrength * zSector[index];
+    const alphaZ = blendFactors([
+      [factorWeights.residual15m, z15[index]],
+      [factorWeights.residual60m, z60[index]],
+      [factorWeights.volumeSurprise, zVolume[index]],
+      [factorWeights.sectorStrength, zSector[index]],
+    ]);
     const persistence = Math.sign(row.residual15m) === Math.sign(row.residual60m) ? 1 : 0.35;
-    const liquidityOk = row.minimumLiquidity && (row.spreadBps === null || row.spreadBps <= maximumSpreadBps);
+    const spreadGate = spreadWithinLimit(row.spreadBps, maximumSpreadBps);
+    const liquidityOk = Boolean(row.minimumLiquidity) && spreadGate.ok;
+    const liquidityVerified = Boolean(row.minimumLiquidity) && spreadGate.verified;
     const dataCoverage = row.instrumentKey ? 1 : 0.9;
     return {
       symbol: row.symbol,
@@ -139,9 +185,11 @@ export function evaluateCrossSectionalMomentum(snapshots, {
       residual_15m: Number(row.residual15m.toFixed(4)),
       residual_60m: Number(row.residual60m.toFixed(4)),
       volume_surprise: Number(row.volumeSurprise.toFixed(4)),
-      sector_strength: Number(row.sectorStrength.toFixed(4)),
+      sector_strength: row.sectorProxyUsed ? null : Number(row.sectorStrength.toFixed(4)),
       persistence: persistence === 1 ? 'high' : 'low',
       liquidity_ok: liquidityOk,
+      liquidity_verified: liquidityVerified,
+      liquidity_reason: spreadGate.reason,
       signal_quality: preliminarySignalQuality({ alphaZ, persistence, volumeSurprise: row.volumeSurprise, liquidityOk, dataCoverage }),
       empirical_confidence: {
         status: 'unvalidated',
@@ -152,7 +200,7 @@ export function evaluateCrossSectionalMomentum(snapshots, {
         residual_15m_z: Number(z15[index].toFixed(4)),
         residual_60m_z: Number(z60[index].toFixed(4)),
         volume_surprise_z: Number(zVolume[index].toFixed(4)),
-        sector_strength_z: Number(zSector[index].toFixed(4)),
+        sector_strength_z: zSector[index] === null ? null : Number(zSector[index].toFixed(4)),
         sector_proxy_used: row.sectorProxyUsed,
       },
     };
@@ -202,7 +250,9 @@ export function evaluateVolumeLiquidityAnomaly(snapshots, {
   const volumeZ = zScores(normalized, 'volumeSurprise');
   const residualZ = zScores(normalized, 'residual15m');
   const ranked = normalized.map((row, index) => {
-    const liquidityOk = row.minimumLiquidity && (row.spreadBps === null || row.spreadBps <= maximumSpreadBps);
+    const spreadGate = spreadWithinLimit(row.spreadBps, maximumSpreadBps);
+    const liquidityOk = Boolean(row.minimumLiquidity) && spreadGate.ok;
+    const liquidityVerified = Boolean(row.minimumLiquidity) && spreadGate.verified;
     const directionalConfirmation = Math.sign(row.residual15m) === Math.sign(row.residual60m) ? 1 : 0.5;
     const anomalyScore = (0.70 * volumeZ[index]) + (0.30 * Math.abs(residualZ[index]) * directionalConfirmation);
     return {
@@ -213,8 +263,10 @@ export function evaluateVolumeLiquidityAnomaly(snapshots, {
       residual_15m: Number(row.residual15m.toFixed(4)),
       residual_60m: Number(row.residual60m.toFixed(4)),
       volume_surprise: Number(row.volumeSurprise.toFixed(4)),
-      sector_strength: Number(row.sectorStrength.toFixed(4)),
+      sector_strength: row.sectorProxyUsed ? null : Number(row.sectorStrength.toFixed(4)),
       liquidity_ok: liquidityOk,
+      liquidity_verified: liquidityVerified,
+      liquidity_reason: spreadGate.reason,
       signal_quality: preliminarySignalQuality({ alphaZ: anomalyScore, persistence: directionalConfirmation, volumeSurprise: row.volumeSurprise, liquidityOk, dataCoverage: row.instrumentKey ? 1 : 0.9 }),
       empirical_confidence: { status: 'unvalidated', score: null, comparable_observations: 0 },
       factors: {
@@ -277,7 +329,9 @@ export function evaluateOpeningRangeExpansion(snapshots, {
     const direction = upsideBreakoutPct >= breakoutBufferPct ? 'positive' : downsideBreakoutPct >= breakoutBufferPct ? 'negative' : null;
     const breakoutPct = Math.max(upsideBreakoutPct, downsideBreakoutPct, 0);
     const rangeOk = rangePct >= minimumRangePct && rangePct <= maximumRangePct;
-    const liquidityOk = row.minimumLiquidity !== false && (spreadBps === null || spreadBps <= maximumSpreadBps);
+    const spreadGate = spreadWithinLimit(spreadBps, maximumSpreadBps);
+    const liquidityOk = row.minimumLiquidity !== false && spreadGate.ok;
+    const liquidityVerified = row.minimumLiquidity !== false && spreadGate.verified;
     return { symbol, sector, instrumentKey: String(row.instrumentKey || row.instrument_key || '').trim() || null, currentPrice, openingHigh, openingLow, rangePct, breakoutPct, direction, volumeSurprise, spreadBps, rangeOk, liquidityOk };
   });
   if (new Set(rows.map((row) => row.symbol)).size !== rows.length) throw new Error('Snapshot symbols must be unique.');
@@ -317,7 +371,9 @@ export function evaluateIntradayMeanReversion(snapshots, {
   const residualZ = zScores(rows, 'residual15m');
   const signals = rows.map((row, index) => {
     const shockZ = residualZ[index];
-    const liquidityOk = row.minimumLiquidity && (row.spreadBps === null || row.spreadBps <= maximumSpreadBps);
+    const spreadGate = spreadWithinLimit(row.spreadBps, maximumSpreadBps);
+    const liquidityOk = Boolean(row.minimumLiquidity) && spreadGate.ok;
+    const liquidityVerified = Boolean(row.minimumLiquidity) && spreadGate.verified;
     const regimeOk = Math.abs(row.benchmarkReturn15m) <= maximumBenchmarkMovePct;
     const volumeOk = row.volumeSurprise <= maximumVolumeRatio;
     const shockDominates = Math.abs(row.residual15m) >= Math.max(minimumResidualShockPct, Math.abs(row.residual60m) * 0.60);
@@ -363,7 +419,9 @@ export function evaluateDerivativesPositioning(snapshots, {
   const priceZ = zScores(rows, 'priceReturn15m');
   const oiZ = zScores(rows, 'oiChange15m');
   const signals = rows.map((row, index) => {
-    const liquidityOk = row.minimumLiquidity && (row.spreadBps === null || row.spreadBps <= maximumSpreadBps);
+    const spreadGate = spreadWithinLimit(row.spreadBps, maximumSpreadBps);
+    const liquidityOk = Boolean(row.minimumLiquidity) && spreadGate.ok;
+    const liquidityVerified = Boolean(row.minimumLiquidity) && spreadGate.verified;
     const material = Math.abs(row.priceReturn15m) >= minimumPriceMovePct && Math.abs(row.oiChange15m) >= minimumOiChangePct;
     const classification = !liquidityOk ? 'filtered' : !material ? 'neutral'
       : row.priceReturn15m > 0 && row.oiChange15m > 0 ? 'long_buildup_candidate'

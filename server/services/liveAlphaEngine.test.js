@@ -158,3 +158,56 @@ test('derivatives positioning rejects weak changes, wide spreads and incomplete 
   assert.equal(result.signals.find((row) => row.symbol === 'FUT1').classification, 'neutral');
   assert.throws(() => evaluateDerivativesPositioning(rows.slice(0, 5)), /at least 10/);
 });
+
+test('a proxied sector reports no reading rather than a measured zero', () => {
+  // When a sector index has no history the pipeline substitutes the benchmark
+  // for the sector, so sectorReturn60m - benchmarkReturn60m is 0 by
+  // construction. 1,586 of 2,198 stored signals carried that structural zero.
+  const rows = Array.from({ length: 12 }, (_, i) => ({
+    symbol: `S${i}`, sector: 'IT', instrumentKey: `k${i}`,
+    return15m: 0.01 * i, return60m: 0.02 * i,
+    benchmarkReturn15m: 0.005, benchmarkReturn60m: 0.01,
+    sectorReturn15m: 0.005, sectorReturn60m: 0.01, // proxy: equals benchmark
+    sectorProxyUsed: true,
+    cumulativeVolume: 1000 + i, expectedCumulativeVolume: 1000,
+    spreadBps: 5, minimumLiquidity: true,
+  }));
+  const out = evaluateCrossSectionalMomentum(rows, { asOf: '2026-08-20T04:00:00Z' });
+  for (const signal of out.signals) {
+    assert.equal(signal.sector_strength, null, 'proxied sector must not report a value');
+    assert.equal(signal.factors.sector_strength_z, null);
+    assert.ok(Number.isFinite(signal.alpha_z), 'alpha must still be computable');
+  }
+});
+
+test('a measured sector still contributes to the composite', () => {
+  const rows = Array.from({ length: 12 }, (_, i) => ({
+    symbol: `S${i}`, sector: 'IT', instrumentKey: `k${i}`,
+    return15m: 0.01 * i, return60m: 0.02 * i,
+    benchmarkReturn15m: 0.005, benchmarkReturn60m: 0.01,
+    sectorReturn15m: 0.006 + i * 0.001, sectorReturn60m: 0.012 + i * 0.002,
+    sectorProxyUsed: false,
+    cumulativeVolume: 1000 + i, expectedCumulativeVolume: 1000,
+    spreadBps: 5, minimumLiquidity: true,
+  }));
+  const out = evaluateCrossSectionalMomentum(rows, { asOf: '2026-08-20T04:00:00Z' });
+  assert.ok(out.signals.every((s) => typeof s.sector_strength === 'number'));
+  assert.ok(out.signals.some((s) => s.factors.sector_strength_z !== 0));
+});
+
+test('an unmeasurable spread is flagged rather than passed off as liquid', () => {
+  const rows = Array.from({ length: 12 }, (_, i) => ({
+    symbol: `S${i}`, sector: 'IT', instrumentKey: `k${i}`,
+    return15m: 0.01 * i, return60m: 0.02 * i,
+    benchmarkReturn15m: 0.005, benchmarkReturn60m: 0.01,
+    sectorReturn15m: 0.005, sectorReturn60m: 0.01, sectorProxyUsed: true,
+    cumulativeVolume: 1000 + i, expectedCumulativeVolume: 1000,
+    spreadBps: null, minimumLiquidity: true,
+  }));
+  const out = evaluateCrossSectionalMomentum(rows, { asOf: '2026-08-20T04:00:00Z' });
+  for (const signal of out.signals) {
+    assert.equal(signal.liquidity_ok, true, 'permissive gate is unchanged');
+    assert.equal(signal.liquidity_verified, false, 'but it must not claim verification');
+    assert.equal(signal.liquidity_reason, 'spread_unknown');
+  }
+});

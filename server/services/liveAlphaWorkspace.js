@@ -115,8 +115,20 @@ export async function getLiveAlphaWorkspace({ fetchImpl = globalThis.fetch, limi
     generated_at: new Date().toISOString(), research_only: true, execution_enabled: false,
     engines: ENGINE_LABELS,
     readiness: {
-      status: degradedEngines.length ? 'persistence_degraded' : 'ready',
+      // Stale data is not readiness. This reported 'ready' with no degraded
+      // engines while every engine was stale and the newest signal was 9.7
+      // hours old against a 15 minute threshold, so the page could show a
+      // green state over a board nobody should trade off.
+      status: degradedEngines.length
+        ? 'persistence_degraded'
+        : latestAgeSeconds === null
+          ? 'never_evaluated'
+          : latestAgeSeconds > staleAfterSeconds
+            ? 'stale'
+            : 'ready',
       migrations_required: [], degraded_engines: degradedEngines,
+      stale_engines: Object.entries(strategyHealth)
+        .filter(([, health]) => health.status === 'stale').map(([engine]) => engine),
     },
     freshness: {
       latest_successful_at: latestSuccessfulAt,

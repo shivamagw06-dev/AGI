@@ -12,8 +12,32 @@ export function signedSignalScore(signal) {
   return signal.direction === 'negative' ? -magnitude : magnitude;
 }
 
+/**
+ * How much weight the model puts on its own signal — never a probability.
+ *
+ * `score` is the engines' heuristic signal quality. `sample` is the count of
+ * historical comparable observations behind it, which is currently 0 for every
+ * signal because the empirical calibration layer has never produced one.
+ *
+ * The previous thresholds let a signal read 'HIGH' on score alone, so a name
+ * with no historical basis whatsoever could be badged with a word clients
+ * reasonably hear as evidential. Model strength and empirical evidence are now
+ * separate axes: without comparables the label is capped at MODEL-ONLY,
+ * however strong the heuristic looks.
+ */
 export function confidenceLabel(score, sample = 0) {
-  return sample >= 100 && score >= 70 ? 'VALIDATED' : score >= 80 ? 'HIGH' : score >= 60 ? 'MEDIUM' : 'LOW';
+  const samples = Number(sample) || 0;
+  if (samples < 30) return score >= 60 ? 'MODEL-ONLY' : 'LOW';
+  if (samples >= 100 && score >= 70) return 'VALIDATED';
+  return score >= 80 ? 'HIGH' : score >= 60 ? 'MEDIUM' : 'LOW';
+}
+
+/** Plain-language basis for the label, so the page never has to imply one. */
+export function confidenceBasis(sample = 0) {
+  const samples = Number(sample) || 0;
+  if (samples < 30) return 'Model state only — no historical comparables behind this signal yet.';
+  if (samples < 100) return `Partial evidence — ${samples} comparable observations, below the 100 required.`;
+  return `${samples} comparable observations.`;
 }
 
 export function componentState(signal, strategyHealth = {}) {
@@ -78,7 +102,8 @@ export function buildCanonicalSignals(signals, strategyHealth = {}) {
     const samples = Math.max(0, ...active.map((signal) => Number(signal.comparable_observations) || 0));
     const canonical = {
       ...row, newest: row.timestamp, input_timestamp: row.timestamp, data_cutoff: row.timestamp,
-      signal_score: composite, composite, quality, samples, confidence: confidenceLabel(quality, samples), active,
+      signal_score: composite, composite, quality, samples, confidence: confidenceLabel(quality, samples),
+      confidence_basis: confidenceBasis(samples), active,
       validation_status: samples >= 100 ? 'RESEARCH VALIDATED' : 'VALIDATION PENDING', strategy_status: 'OPERATIONAL',
       strategy_version: 'live-alpha-v1', model_version: 'signal-composite-v1',
       input_data_status: active.every((signal) => signal.liquidity_ok) ? 'READY' : 'REVIEW REQUIRED',
