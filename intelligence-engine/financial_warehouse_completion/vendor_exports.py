@@ -277,7 +277,7 @@ def parse_trendlyne_multigroup(path: Path) -> dict[str, Any]:
             "symbol": symbol,
             "as_of": as_of,
             **holdings,
-            "confidence": 90,
+            "confidence": 0.9,
             "dqiv_status": "VENDOR_REPORTED",
             "validation_notes": "; ".join(notes) or None,
             **prov,
@@ -439,6 +439,9 @@ def parse_capiq_broker(path: Path) -> dict[str, Any]:
     i_idx = _index(header, "Index Constituents")
 
     liquidity, covered = [], 0
+    seen_tickers: set[str] = set()
+    duplicate_tickers = 0
+    placeholder_tickers = 0
     for row in body:
         ticker = _text(_cell(row, i_tic))
         if not ticker:
@@ -449,6 +452,16 @@ def parse_capiq_broker(path: Path) -> dict[str, Any]:
         if adv is None:
             continue
         membership = _text(_cell(row, i_idx))
+        # Capital IQ substitutes NAME<COMPANYNAME> when a security has no
+        # ticker. Those cannot join company_master and the warehouse validator
+        # rejects them as invalid symbols, so drop them at the source.
+        if ticker.startswith("NAME") and len(ticker) > 20:
+            placeholder_tickers += 1
+            continue
+        if ticker in seen_tickers:
+            duplicate_tickers += 1
+            continue
+        seen_tickers.add(ticker)
         liquidity.append({
             "symbol": ticker,
             "as_of": as_of,
@@ -458,7 +471,9 @@ def parse_capiq_broker(path: Path) -> dict[str, Any]:
             "index_membership": (membership.replace("\n\n", "; ") if membership and membership != "0" else None),
         })
     return {"ok": True, "path": path.name, "as_of": as_of, "source_version": version,
-            "rows_read": len(body), "consensus_covered": covered, "liquidity": liquidity}
+            "rows_read": len(body), "consensus_covered": covered,
+            "duplicate_tickers": duplicate_tickers,
+            "placeholder_tickers": placeholder_tickers, "liquidity": liquidity}
 
 
 # --------------------------------------------------------------------- driver
@@ -506,28 +521,86 @@ def collect(*, root: Path = _ROOT) -> dict[str, Any]:
             "rows": bundle}
 
 
-# Tabs that exist in institutional_warehouse.schema and can be written directly.
-WAREHOUSE_TABS = ("historical_industry_medians", "historical_sector_medians",
-                  "historical_market_medians", "ownership")
+# Parsed key -> warehouse tab id. Vendor-sourced tabs are namespaced so they
+# never shadow AGI-derived tables of the same concept.
+TAB_ROUTES = {
+    "historical_industry_medians": "historical_industry_medians",
+    "historical_sector_medians": "historical_sector_medians",
+    "historical_market_medians": "historical_market_medians",
+    "ownership": "ownership",
+    "risk_metrics": "vendor_risk_metrics",
+    "liquidity": "vendor_liquidity",
+    "price_history": "vendor_price_history",
+    "industry_context": "vendor_industry_context",
+}
+WAREHOUSE_TABS = tuple(TAB_ROUTES)
+_REGISTRY_SOURCE = "vendor_exports_trendlyne_capiq"
 
 
 def write(bundle: dict[str, list[dict[str, Any]]], *, actor: str = "vendor_exports") -> dict[str, Any]:
-    """Persist the tabs that already exist in the warehouse schema.
-
-    ``price_history``, ``risk_metrics`` and ``liquidity`` have no tab yet and
-    are returned for a caller to route once one is defined, rather than being
-    silently dropped.
-    """
+    """Persist every parsed group to its warehouse tab."""
     from institutional_warehouse import gateway
 
-    written: dict[str, Any] = {}
-    for tab in WAREHOUSE_TABS:
-        rows = bundle.get(tab) or []
+    written: dict[str, int] = {}
+    for key, tab_id in TAB_ROUTES.items():
+        rows = bundle.get(key) or []
         if not rows:
             continue
         source = rows[0].get("source", SOURCE_TRENDLYNE)
-        gateway.write(tab, rows, source=source, actor=actor)
-        written[tab] = len(rows)
+        gateway.write(tab_id, rows, source=source, actor=actor,
+                      reason="vendor_export_ingestion")
+        written[tab_id] = len(rows)
+    return {"ok": True, "written": written}
 
-    unrouted = {k: len(v) for k, v in bundle.items() if k not in WAREHOUSE_TABS and v}
-    return {"ok": True, "written": written, "unrouted": unrouted}
+
+def fingerprint(*, root: Path = _ROOT) -> str:
+    """Fingerprint every source file so a redeploy is a registry lookup."""
+    parts = []
+    for path in discover("*multigroup*.xlsx"):
+        parts.append(f"{path.name}:{file_hash(path)}")
+    for extra in ("trendlyne_technical_ownership.xlsx",
+                  "capital_iq_exports/broker_estimates.xlsx"):
+        path = root / extra
+        if path.exists():
+            parts.append(f"{path.name}:{file_hash(path)}")
+    return hashlib.sha256("|".join(sorted(parts)).encode()).hexdigest()[:32]
+
+
+def seed_if_needed(*, actor: str = "vendor_seed", force: bool = False) -> dict[str, Any]:
+    """Import the checked-in vendor exports once per source fingerprint.
+
+    Mirrors sector_ratio_workbook: the files are seed artifacts only, runtime
+    reads come from the warehouse, and an unchanged deploy costs one lookup.
+    """
+    from institutional_warehouse import gateway, store
+    from institutional_warehouse.values import now_iso
+
+    digest = fingerprint()
+    with _SEED_LOCK:
+        if not force:
+            registry = store.all_rows("historical_import_registry", limit=5000)
+            done = next((r for r in registry
+                         if r.get("source_name") == _REGISTRY_SOURCE
+                         and r.get("source_hash") == digest
+                         and r.get("status") == "COMPLETED"), None)
+            if done:
+                return {"ok": True, "skipped": True, "source_hash": digest,
+                        "rows_imported": done.get("rows_imported")}
+
+        parsed = collect()
+        outcome = write(parsed["rows"], actor=actor)
+        total = sum(outcome["written"].values())
+        gateway.write("historical_import_registry", [{
+            "source_name": _REGISTRY_SOURCE,
+            "source_hash": digest,
+            "source_version": CODE_VERSION,
+            "rows_read": sum(r.get("rows_read") or 0 for r in parsed["reports"]),
+            "rows_imported": total,
+            "period_start": None,
+            "period_end": None,
+            "status": "COMPLETED",
+            "completed_at": now_iso(),
+            "error": None,
+        }], source=SOURCE_TRENDLYNE, actor=actor, reason="vendor_export_seed")
+        return {"ok": True, "skipped": False, "source_hash": digest,
+                "written": outcome["written"], "rows_imported": total}

@@ -8866,6 +8866,8 @@ export default function createIntelligenceRouter() {
   router.get('/warehouse/import/board', warehouseGet('/v1/warehouse/import/board'));
   router.get('/warehouse/import/capital-iq', warehouseGet('/v1/warehouse/import/capital-iq'));
   router.get('/warehouse/import/capital-iq-workbook', warehouseGet('/v1/warehouse/import/capital-iq-workbook', 300_000));
+  router.get('/warehouse/import/vendor-exports', warehouseGet('/v1/warehouse/import/vendor-exports', 180_000));
+  router.post('/warehouse/import/vendor-exports', warehousePost('/v1/warehouse/import/vendor-exports', 300_000));
   router.post('/warehouse/import/start', warehousePost('/v1/warehouse/import/start'));
   router.post('/warehouse/import/stop', warehousePost('/v1/warehouse/import/stop'));
   router.post('/warehouse/import/resume', warehousePost('/v1/warehouse/import/resume'));
