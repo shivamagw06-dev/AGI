@@ -128,3 +128,41 @@ class TestFiscalDerivation:
         assert fy1 == "FY2026"
         first = next(r for r in rows if r["target_period"] == "FY2026")
         assert first["target_period_end"] == "2026-03-31"
+
+
+class TestAsOfAnchoring:
+    """Dating the snapshot from the workbook's vintage columns rather than the
+    import date labelled the estimates FY2026 - a year that closed in March -
+    and collided with the genuine 2025-12-31 vintage rows on
+    (symbol, consensus_date, target_period, metric), overwriting 837 of them.
+    """
+
+    def test_default_as_of_is_the_import_date_not_a_vintage_column(self):
+        assert fe.default_as_of() == date.today()
+
+    def test_the_snapshot_does_not_land_on_a_vintage_month_end(self):
+        """The vintage sheets run to month ends through 2025-12-31. Sharing a
+        consensus_date with them is what caused the overwrite."""
+        parsed = fe.parse()
+        stamps = {r["consensus_date"] for r in (parsed.get("rows") or [])}
+        assert stamps, "no rows parsed"
+        assert "2025-12-31" not in stamps
+
+    def test_fy1_is_the_next_unreported_year(self):
+        """Pulled in August 2026, Capital IQ's FY1 is the year ending March
+        2027 - FY2026 has already closed."""
+        parsed = fe.parse(as_of=date(2026, 8, 19))
+        eps = [r for r in (parsed.get("rows") or []) if r["metric"] == "eps_estimate"]
+        if not eps:
+            return
+        assert sorted({r["target_period"] for r in eps})[0] == "FY2027"
+
+    def test_a_closed_period_is_flagged_as_stale(self):
+        """A workbook left unrefreshed stops holding forward estimates at all,
+        and must say so rather than keep serving them."""
+        parsed = fe.parse(as_of=date(2020, 6, 30))
+        assert parsed["stale"] is True
+        assert any("STALE" in x for x in parsed["limitations"])
+
+    def test_a_current_pull_is_not_flagged(self):
+        assert fe.parse().get("stale") is False

@@ -35,10 +35,24 @@ from .capiq_vintages import _clean_isin, _clean_symbol, _number, fiscal_period
 SOURCE = "capital_iq_forward_estimates"
 SHEET = "Forward_Estimates_Now"
 WORKBOOK_PATH = Path(__file__).resolve().parents[2] / "capiq_vintage_template.xlsx"
-# The workbook's vintage columns end 2025-12-31; the forward sheet is the live
-# pull taken when the file was refreshed. Dated to the export, not to today, so
-# a stale workbook cannot masquerade as a fresh estimate.
-AS_OF = date(2025, 12, 31)
+
+
+def default_as_of() -> date:
+    """The date FY1 is measured from: the import date.
+
+    This sheet is a live pull, so "FY1" means whatever Capital IQ considered
+    the next unreported year when the workbook was last refreshed. Dating it
+    from the workbook's *vintage* columns instead - they end 2025-12-31 - was
+    wrong twice over: it labelled the estimates FY2026, a year that closed in
+    March, and it collided with the genuine 2025-12-31 vintage rows on
+    (symbol, consensus_date, target_period, metric), overwriting 837 of them
+    with figures for a different year.
+
+    Today is the right anchor as long as the workbook is imported near when it
+    was pulled. If it goes stale the label drifts, so the import reports the
+    as_of it used and flags a period that has already closed.
+    """
+    return date.today()
 
 # (column index, metric, target period offset in years from FY1)
 _FIELDS = (
@@ -95,10 +109,13 @@ def _rows(path: Path, as_of: date) -> list[dict[str, Any]]:
         workbook.close()
 
 
-def parse(*, path: Path = WORKBOOK_PATH, as_of: date = AS_OF) -> dict[str, Any]:
+def parse(*, path: Path = WORKBOOK_PATH, as_of: Optional[date] = None) -> dict[str, Any]:
+    as_of = as_of or default_as_of()
     if not path.exists():
         return {"ok": False, "error": f"workbook_not_found:{path.name}", "rows": []}
     rows = _rows(path, as_of)
+    label_fy1, end_fy1 = fiscal_period(as_of, forward=True)
+    stale = end_fy1 < date.today()
     symbols = {r["symbol"] for r in rows}
     by_metric: dict[str, int] = {}
     for row in rows:
@@ -113,7 +130,12 @@ def parse(*, path: Path = WORKBOOK_PATH, as_of: date = AS_OF) -> dict[str, Any]:
         "row_count": len(rows),
         "symbols": len(symbols),
         "by_metric": by_metric,
-        "limitations": [
+        "stale": stale,
+        "limitations": ([
+            f"STALE: FY1 resolves to {label_fy1}, which ended {end_fy1.isoformat()} - "
+            "already closed. The workbook needs refreshing; these are not forward "
+            "estimates any more."
+        ] if stale else []) + [
             "Capital IQ writes 0 for no-data; those cells are dropped rather than "
             "read as a zero forecast, which would imply an infinite forward P/E.",
             "Fiscal periods are derived from the Indian fiscal calendar because the "
@@ -125,7 +147,7 @@ def parse(*, path: Path = WORKBOOK_PATH, as_of: date = AS_OF) -> dict[str, Any]:
 
 
 def import_estimates(*, actor: str = "fwcp", path: Path = WORKBOOK_PATH,
-                     as_of: date = AS_OF) -> dict[str, Any]:
+                     as_of: Optional[date] = None) -> dict[str, Any]:
     """Write the cross-section into consensus_metric_vintages."""
     from institutional_warehouse import gateway
 
