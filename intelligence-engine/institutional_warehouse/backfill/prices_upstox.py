@@ -148,9 +148,18 @@ def backfill(
         if first and (earliest is None or first < earliest):
             earliest = first
 
+    # Aggregated so a caller can tell throttling from thin history without
+    # reading every checkpoint. The per-company list is capped and often
+    # trimmed out of the job summary entirely.
+    reasons: dict[str, int] = {}
+    for item in failed:
+        key = str(item.get("error") or "unknown").split(":")[0][:48]
+        reasons[key] = reasons.get(key, 0) + 1
+
     return {
         "ok": True, "kind": KIND, "queued": len(pending),
         "companies_done": len(done), "companies_failed": len(failed),
+        "failure_reasons": dict(sorted(reasons.items(), key=lambda kv: -kv[1])),
         "rows_written": rows, "earliest_history": earliest,
         "addressable_companies": len(keys),
         "failures": failed[:20],

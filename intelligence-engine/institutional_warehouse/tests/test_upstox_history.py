@@ -183,3 +183,27 @@ def test_one_failing_company_does_not_abort_the_batch(monkeypatch):
     assert out["companies_done"] == 1
     assert out["companies_failed"] == 1
     assert "UNIQUE constraint" in out["failures"][0]["error"]
+
+
+def test_failure_reasons_are_aggregated_for_the_caller(monkeypatch):
+    """A stage that reports only a failure count forces the cause to be guessed
+    at from outside; the per-company list is capped and often trimmed out of
+    the job summary entirely."""
+    from institutional_warehouse.backfill import prices_upstox as pu
+
+    monkeypatch.setattr(pu, "_companies", lambda: {s: f"NSE_EQ|INE{s}" for s in ("A", "B", "C")})
+    monkeypatch.setattr(pu.checkpoints, "pending_entities", lambda *a, **k: ["A", "B", "C"])
+    monkeypatch.setattr(pu.checkpoints, "save_checkpoint", lambda *a, **k: None)
+    monkeypatch.setattr(pu.checkpoints, "entity_coverage", lambda *a, **k: {})
+
+    outcomes = {
+        "A": {"ok": False, "error": "series_is_not_daily", "daily_share": 0.4},
+        "B": {"ok": False, "error": "series_is_not_daily", "daily_share": 0.2},
+        "C": {"ok": False, "error": "no_candles_returned"},
+    }
+    monkeypatch.setattr(pu, "backfill_company", lambda symbol, **k: outcomes[symbol])
+
+    out = pu.backfill()
+    assert out["companies_failed"] == 3
+    assert out["failure_reasons"]["series_is_not_daily"] == 2
+    assert out["failure_reasons"]["no_candles_returned"] == 1

@@ -152,6 +152,9 @@ def _brief(payload: dict[str, Any]) -> dict[str, Any]:
     keep = (
         "ok", "error", "days_imported", "rows_seen", "companies_done", "companies_failed",
         "rows_written", "annual_periods", "quarterly_periods", "observations", "queued",
+        # Without this a failing stage reports only a count, and the cause has
+        # to be guessed at from outside.
+        "failure_reasons",
     )
     return {k: payload.get(k) for k in keep if k in payload}
 
