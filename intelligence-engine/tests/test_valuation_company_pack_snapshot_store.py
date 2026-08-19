@@ -55,3 +55,38 @@ def test_build_data_quality_from_pack():
     assert quality["coverage_pct"] == 82.5
     assert quality["health_score"] == 77
     assert quality["price_age_hours"] == 3.2
+
+
+def test_serve_company_pack_uses_snapshot_not_live_compute(monkeypatch):
+    from valuation_engine import snapshot_store as store
+
+    monkeypatch.setattr(
+        store,
+        "latest_pack_row",
+        lambda symbol, window="5Y": {
+            "generated_at": "2026-08-19T00:00:00Z",
+            "freshness": "fresh",
+            "payload": {"ok": True, "symbol": "TCS", "valuation_attractiveness": 70},
+        },
+    )
+    scanned = {"called": False}
+
+    def _company_pack(*_args, **_kwargs):
+        scanned["called"] = True
+        return {"ok": True, "symbol": "LIVE"}
+
+    monkeypatch.setattr("valuation_engine.terminal.company_pack", _company_pack)
+    out = store.serve_company_pack("tcs")
+    assert scanned["called"] is False
+    assert out["symbol"] == "TCS"
+    assert out["read_model"] == "supabase_valuation_company_pack"
+
+
+def test_serve_company_pack_missing_is_not_a_live_scan(monkeypatch):
+    from valuation_engine import snapshot_store as store
+
+    monkeypatch.setattr(store, "latest_pack_row", lambda symbol, window="5Y": None)
+    out = store.serve_company_pack("HEG")
+    assert out["ok"] is False
+    assert out["error"] == "NO_VALUATION_PACK_YET"
+    assert out["symbol"] == "HEG"

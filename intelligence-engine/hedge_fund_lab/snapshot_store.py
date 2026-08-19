@@ -253,3 +253,36 @@ def latest_snapshot_row() -> Optional[dict[str, Any]]:
     if isinstance(rows, list) and rows:
         return rows[0]
     return None
+
+
+def serve_terminal_overview(*, limit: int = 12, refresh: bool = False) -> dict[str, Any]:
+    """HTTP GET path: stored snapshot only. Live warehouse scans stay on POST /snapshot."""
+    if refresh:
+        from hedge_fund_lab.terminal import overview
+
+        return overview(limit=max(1, min(int(limit or 12), 50)))
+    try:
+        row = latest_snapshot_row()
+    except Exception:
+        row = None
+    payload = row.get("payload") if isinstance(row, dict) else None
+    if isinstance(payload, dict) and (payload.get("cards") is not None or payload.get("ok")):
+        return {
+            **payload,
+            "ok": payload.get("ok", True),
+            "read_model": "supabase_hfl_terminal",
+            "generated_at": row.get("generated_at") or payload.get("generated_at"),
+            "source_as_of": row.get("source_as_of") or payload.get("source_as_of") or payload.get("as_of"),
+            "freshness": row.get("freshness") or payload.get("freshness") or "unknown",
+        }
+    return {
+        "ok": True,
+        "status": "warming",
+        "freshness": "unavailable",
+        "read_model": "supabase_hfl_terminal",
+        "cards": [],
+        "overlap": [],
+        "research_queue": [],
+        "hero": {"universe_scanned": 0, "live_opportunities": 0, "companies_flagged": 0},
+        "policy": "Serving the stored research snapshot. Request-time warehouse scans are disabled.",
+    }

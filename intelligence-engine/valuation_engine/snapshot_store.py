@@ -299,6 +299,46 @@ def latest_pack_row(symbol: str, *, window: str = "5Y") -> Optional[dict[str, An
     return None
 
 
+def serve_company_pack(
+    symbol: str,
+    *,
+    window: str = "5Y",
+    peer_limit: int = 12,
+    refresh: bool = False,
+) -> dict[str, Any]:
+    """HTTP GET path: stored pack only. Live warehouse compute stays on POST /snapshot."""
+    if refresh:
+        from valuation_engine.terminal import company_pack
+
+        return company_pack(
+            symbol,
+            window=window,
+            peer_limit=max(1, min(int(peer_limit or 12), 40)),
+        )
+    ticker = str(symbol or "").strip().upper()
+    try:
+        row = latest_pack_row(ticker, window=window)
+    except Exception:
+        row = None
+    payload = row.get("payload") if isinstance(row, dict) else None
+    if isinstance(payload, dict) and payload.get("ok") is not False:
+        return {
+            **payload,
+            "ok": True,
+            "symbol": ticker or payload.get("symbol"),
+            "read_model": "supabase_valuation_company_pack",
+            "generated_at": row.get("generated_at") or payload.get("generated_at"),
+            "freshness": row.get("freshness") or payload.get("freshness") or "unknown",
+        }
+    return {
+        "ok": False,
+        "symbol": ticker,
+        "window": normalize_window(window),
+        "error": "NO_VALUATION_PACK_YET",
+        "read_model": "supabase_valuation_company_pack",
+    }
+
+
 def list_aging_latest(*, limit: int = 8, max_age_seconds: int | None = None) -> list[dict[str, Any]]:
     """Return latest packs older than fresh band for scheduler refresh."""
     threshold = max_age_seconds if max_age_seconds is not None else FRESH_SECONDS

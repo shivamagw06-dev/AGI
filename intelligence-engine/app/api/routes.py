@@ -7544,7 +7544,7 @@ async def forecast_intelligence_scenarios(ticker: str):
 async def forecast_intelligence_catalysts(ticker: str):
     from forecast_intelligence.production import catalysts
 
-    out = catalysts(ticker)
+    out = await run_in_threadpool(catalysts, ticker)
     if out.get("enabled") and not out.get("found"):
         raise HTTPException(status_code=404, detail="company_forecast_not_found")
     return out
@@ -10305,15 +10305,15 @@ async def hedge_fund_lab_scan(strategy: str, limit: int = 20, sector: str | None
 
 
 @router.get("/hedge-fund-lab/terminal")
-async def hedge_fund_lab_terminal(limit: int = 12):
-    """Regime, live opportunities, overlap, research queue and market dashboard.
+async def hedge_fund_lab_terminal(limit: int = 12, refresh: bool = False):
+    """Serve the stored terminal snapshot. Live warehouse scans stay on POST /snapshot."""
+    from hedge_fund_lab.snapshot_store import serve_terminal_overview
 
-    Default limit is intentionally small (12) so the page can open quickly.
-    Larger limits re-scan the full warehouse universe and can take minutes.
-    """
-    from hedge_fund_lab.terminal import overview
-
-    return await run_in_threadpool(overview, limit=max(1, min(int(limit or 12), 50)))
+    return await run_in_threadpool(
+        serve_terminal_overview,
+        limit=max(1, min(int(limit or 12), 50)),
+        refresh=refresh,
+    )
 
 
 @router.post("/hedge-fund-lab/terminal/snapshot")
@@ -10509,11 +10509,22 @@ async def valuation_terminal_companies(
 
 
 @router.get("/valuation-terminal/company/{ticker}")
-async def valuation_terminal_company(ticker: str, window: str = "5Y"):
-    """Migrated to Unified Valuation Engine terminal pack."""
-    from valuation_engine.terminal import company_pack
+async def valuation_terminal_company(
+    ticker: str,
+    window: str = "5Y",
+    peer_limit: int = 12,
+    refresh: bool = False,
+):
+    """Serve the stored company pack. Live warehouse compute stays on POST /snapshot."""
+    from valuation_engine.snapshot_store import serve_company_pack
 
-    return company_pack(ticker, window=window)
+    return await run_in_threadpool(
+        serve_company_pack,
+        ticker,
+        window=window,
+        peer_limit=peer_limit,
+        refresh=refresh,
+    )
 
 
 @router.get("/valuation-terminal/peers/{ticker}")
@@ -21087,11 +21098,22 @@ async def valuation_engine_terminal_search(q: str = "", limit: int = 12):
 
 
 @router.get("/valuation-engine/terminal/company/{symbol}")
-async def valuation_engine_terminal_company(symbol: str, window: str = "5Y", peer_limit: int = 12):
-    """Full terminal pack: table, peers, charts coverage, change log, health score."""
-    from valuation_engine.terminal import company_pack
+async def valuation_engine_terminal_company(
+    symbol: str,
+    window: str = "5Y",
+    peer_limit: int = 12,
+    refresh: bool = False,
+):
+    """Serve the stored company pack. Live warehouse compute stays on POST /snapshot."""
+    from valuation_engine.snapshot_store import serve_company_pack
 
-    return company_pack(symbol, window=window, peer_limit=peer_limit)
+    return await run_in_threadpool(
+        serve_company_pack,
+        symbol,
+        window=window,
+        peer_limit=peer_limit,
+        refresh=refresh,
+    )
 
 
 @router.post("/valuation-engine/terminal/company/{symbol}/snapshot")

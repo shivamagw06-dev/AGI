@@ -84,3 +84,41 @@ def test_flatten_opportunities_includes_pairs_legs():
     assert rows[1]["ticker"] == "ULTRACEMCO"
     assert rows[1]["scan_id"] == "pairs"
     assert rows[1]["row_payload"]["short_leg"]["ticker"] == "ambujacem"
+
+
+def test_serve_terminal_overview_uses_snapshot_not_live_scan(monkeypatch):
+    from hedge_fund_lab import snapshot_store as store
+
+    monkeypatch.setattr(
+        store,
+        "latest_snapshot_row",
+        lambda: {
+            "generated_at": "2026-08-19T00:00:00Z",
+            "freshness": "fresh",
+            "payload": {
+                "ok": True,
+                "cards": [{"id": "quality", "results": [{"ticker": "SBIN", "confidence": 80}]}],
+            },
+        },
+    )
+    scanned = {"called": False}
+
+    def _overview(**_kwargs):
+        scanned["called"] = True
+        return {"ok": True, "cards": []}
+
+    monkeypatch.setattr("hedge_fund_lab.terminal.overview", _overview)
+    out = store.serve_terminal_overview(limit=25)
+    assert scanned["called"] is False
+    assert out["cards"][0]["id"] == "quality"
+    assert out["read_model"] == "supabase_hfl_terminal"
+
+
+def test_serve_terminal_overview_warming_when_missing(monkeypatch):
+    from hedge_fund_lab import snapshot_store as store
+
+    monkeypatch.setattr(store, "latest_snapshot_row", lambda: None)
+    out = store.serve_terminal_overview()
+    assert out["status"] == "warming"
+    assert out["cards"] == []
+    assert out["ok"] is True

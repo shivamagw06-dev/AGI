@@ -53,7 +53,9 @@ export function startConfluenceValidationScheduler() {
   if (!enabled || timer) { state.enabled = enabled; return state; }
   state = { ...state, enabled: true, status: 'idle' };
   const tick = () => runConfluenceValidationCycle().catch((error) => { state = { ...state, status: 'degraded', last_error: error.message }; });
-  timer = setInterval(tick, 5 * 60_000); timer.unref?.(); tick();
+  timer = setInterval(tick, 5 * 60_000); timer.unref?.();
+  const firstDelay = setTimeout(tick, 45_000);
+  firstDelay.unref?.();
   return state;
 }
 
