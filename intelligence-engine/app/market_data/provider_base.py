@@ -30,9 +30,20 @@ Capability = Literal[
 
 
 class ProviderError(Exception):
-    def __init__(self, provider_id: str, message: str, *, retryable: bool = True) -> None:
+    def __init__(
+        self,
+        provider_id: str,
+        message: str,
+        *,
+        retryable: bool = True,
+        cooldown_s: float | None = None,
+    ) -> None:
         self.provider_id = provider_id
         self.retryable = retryable
+        # How long to park the provider when this failure is permanent. A
+        # revoked key should sit out far longer than a rate limit, which
+        # resets on its own. None means use the breaker's default.
+        self.cooldown_s = cooldown_s
         super().__init__(f"{provider_id}: {message}")
 
 
