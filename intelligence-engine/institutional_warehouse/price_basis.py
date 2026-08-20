@@ -141,26 +141,45 @@ def backfill_stamps(*, batches: int = 1, batch_size: int = STAMP_BATCH,
     The reader already falls back to the same declaration for an unstamped row,
     so this changes no answer. It removes the fallback's reason to exist, and
     makes a row's meaning legible without knowing which table to consult.
+
+    ``restamp_unknown`` also revisits rows stamped UNKNOWN by an earlier pass,
+    for the case the declaration has since learned their writer - `upstox_v3`
+    labelled 4,500 rows UNKNOWN before it was recognised. It is a separate pass
+    rather than a widened filter: mixed into the same scan, one block of rows
+    that genuinely cannot be resolved stalls the whole loop, which is exactly
+    what the first attempt did.
     """
     from institutional_warehouse import db
 
     db.init()
     table = db.physical_table("daily_market_history")
+    corrected = 0
+
+    if restamp_unknown:
+        # Small and set-based: only the sources the declaration now recognises,
+        # updated by source rather than row by row.
+        stale = db.query(
+            f"SELECT DISTINCT source FROM {table} WHERE price_basis = 'UNKNOWN'"
+        ) or []
+        for row in stale:
+            source = row.get("source")
+            family, basis = describe(source)
+            if basis == UNKNOWN:
+                continue  # still genuinely unknown; leave it rather than churn it
+            corrected += db.execute(
+                f"UPDATE {table} SET price_basis = ?, feed_family = ?"
+                f" WHERE price_basis = 'UNKNOWN' AND source IS ?",
+                (basis, family, source),
+            ) or 0
+
     stamped = 0
     passes = 0
     for _ in range(max(1, int(batches))):
-        where = ("price_basis IS NULL" if not restamp_unknown
-                 else "(price_basis IS NULL OR price_basis = 'UNKNOWN')")
         rows = db.query(
             f"SELECT row_id, source FROM {table}"
-            f" WHERE {where} AND close IS NOT NULL LIMIT ?",
+            f" WHERE price_basis IS NULL AND close IS NOT NULL LIMIT ?",
             (int(batch_size),),
         ) or []
-        if restamp_unknown:
-            # Only worth rewriting when the declaration now recognises it.
-            rows = [r for r in rows if describe(r.get("source"))[1] != UNKNOWN]
-            if not rows:
-                break
         if not rows:
             break
         by_source: dict[str, list[str]] = {}
@@ -168,8 +187,8 @@ def backfill_stamps(*, batches: int = 1, batch_size: int = STAMP_BATCH,
             by_source.setdefault(str(row.get("source") or ""), []).append(str(row["row_id"]))
         for source, ids in by_source.items():
             family, basis = describe(source)
-            for start in range(0, len(ids), 500):
-                chunk = ids[start:start + 500]
+            for start_at in range(0, len(ids), 500):
+                chunk = ids[start_at:start_at + 500]
                 marks = ", ".join("?" for _ in chunk)
                 db.execute(
                     f"UPDATE {table} SET price_basis = ?, feed_family = ?"
@@ -183,5 +202,5 @@ def backfill_stamps(*, batches: int = 1, batch_size: int = STAMP_BATCH,
         f"SELECT COUNT(*) AS n FROM {table} WHERE price_basis IS NULL AND close IS NOT NULL"
     )
     left = int((remaining[0] if remaining else {}).get("n") or 0)
-    return {"ok": True, "stamped": stamped, "passes": passes, "remaining": left,
-            "complete": left == 0}
+    return {"ok": True, "stamped": stamped, "corrected": corrected, "passes": passes,
+            "remaining": left, "complete": left == 0}
