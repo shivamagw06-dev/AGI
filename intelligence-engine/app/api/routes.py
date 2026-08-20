@@ -18942,6 +18942,42 @@ def warehouse_stats():
     return stats()
 
 
+@router.get("/warehouse/reconciliation/desk-values")
+def warehouse_reconciliation_desk_values(limit: int = 60):
+    """What the desk would display, shaped for comparison with a vendor.
+
+    Every defect found on 2026-08-20 was a case of a correct source existing
+    while the display used something else, and none was caught by a test. This
+    exposes the displayed side so an independent reference can contradict it.
+
+    Sync def on purpose - it reads the warehouse, so FastAPI runs it in the
+    threadpool rather than on the event loop.
+    """
+    from institutional_warehouse.reconciliation import desk_values
+
+    values = desk_values(limit=max(1, min(int(limit or 60), 400)))
+    return {"ok": bool(values), "count": len(values), "fields": sorted(
+        {k for row in values.values() for k in row}), "values": values}
+
+
+@router.post("/warehouse/reconciliation/compare")
+def warehouse_reconciliation_compare(payload: dict[str, Any] = Body(default_factory=dict)):
+    """Compare desk values against a reference supplied by the caller.
+
+    The reference arrives in the request rather than being fetched here, so the
+    vendor credential stays with whoever holds it.
+    """
+    from institutional_warehouse.reconciliation import desk_values, reconcile
+
+    body = payload or {}
+    reference = body.get("reference") or {}
+    if not isinstance(reference, dict) or not reference:
+        return {"ok": False, "error": "reference_required",
+                "detail": "Pass {\"reference\": {\"SYMBOL\": {\"price\": ..., ...}}}"}
+    ours = body.get("ours") or desk_values(limit=max(1, min(int(body.get("limit") or 60), 400)))
+    return reconcile(ours, reference)
+
+
 @router.get("/warehouse/clean")
 def warehouse_clean_summary(limit: int = 5000):
     """Headline numbers for each curated view: what was kept, and what was not.
