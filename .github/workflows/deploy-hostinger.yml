@@ -122,7 +122,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add index.html .htaccess
+          git add index.html .htaccess version.json
           git add -A assets
           if git diff --cached --quiet; then
             echo "No Hostinger root artifact changes to commit."
@@ -146,10 +146,31 @@ jobs:
           rm -rf dist/assets
           cp -R assets dist/assets
           cp .htaccess dist/.htaccess 2>/dev/null || true
+          cp version.json dist/version.json
           # Drop accidental Hostinger dashboard captures from FTP payload
           rm -rf "dist/Dashboard _ Hostinger.html" "dist/Dashboard _ Hostinger_files" || true
           echo "FTP payload ready:"
           ls -la dist | head
+          # The build stamp has to match the id baked into the bundle. It was
+          # neither committed nor copied here, so /version.json served a local
+          # build from 6 August while the bundle carried the real commit. The
+          # client compares the two and forces a reload when they differ, so
+          # every visitor took one pointless reload per session and the check
+          # could never do its actual job of catching a stale cached bundle.
+          # Only when this run actually rebuilt. .build-id is not tracked, so on a
+          # run that republishes the committed artifacts unchanged there is
+          # nothing new to compare against.
+          if [ -f .build-id ]; then
+            baked="$(cat .build-id)"
+            shipped="$(python3 -c 'import json;print(json.load(open("dist/version.json"))["buildId"])' 2>/dev/null || echo missing)"
+            if [ "$baked" != "$shipped" ]; then
+              echo "::error::version.json says $shipped but the bundle was built as $baked — every visitor would reload once per session forever"
+              exit 1
+            fi
+            echo "build stamp OK: $shipped"
+          else
+            echo "no rebuild this run; leaving the committed build stamp alone"
+          fi
           asset_count="$(find dist/assets -type f | wc -l | tr -d ' ')"
           echo "asset count: ${asset_count}"
           if [ "${asset_count}" -lt 5 ] || ! ls dist/assets/index-*.js >/dev/null 2>&1; then
