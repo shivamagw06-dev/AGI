@@ -313,6 +313,30 @@ DAILY_MARKET_HISTORY = Tab(
         _c("low", "Low", CURRENCY, width=110, group="OHLCV", unit=UNIT_INR),
         _c("close", "Close", CURRENCY, width=110, group="OHLCV", unit=UNIT_INR),
         _c("adjusted_close", "Adjusted Close", CURRENCY, width=140, group="OHLCV", unit=UNIT_INR),
+        # What `close` actually means on this row.
+        #
+        # Three feeds write this table and they do not agree on the question.
+        # Upstox supplies prices already adjusted for splits and bonuses; the
+        # NSE bhavcopy supplies the raw price that traded. Both landed in
+        # `close`, so a series could begin on one convention and finish on the
+        # other, and the ratio between its ends carried the split factor rather
+        # than the return - Dr. Lal PathLabs split two-for-one and was published
+        # at -45.29% for a year it finished up 9.4%.
+        #
+        # The immediate fix was to compute returns within one feed, which works
+        # but infers the convention from the writer's name. This column states
+        # it, so a reader can ask for a basis instead of guessing at one.
+        #
+        # RAW              the price as it traded, unadjusted
+        # SPLIT_ADJUSTED   restated for splits and bonuses
+        # TOTAL_RETURN     splits, bonuses and dividends reinvested
+        _c("price_basis", "Price Basis", TEXT, width=150, group="OHLCV",
+           help="RAW | SPLIT_ADJUSTED | TOTAL_RETURN"),
+        # The vendor behind the row, as distinct from the writer in front of it.
+        # Upstox writes under two names - a deep backfill and a nightly top-up -
+        # and they share a convention. Grouping on the writer split them apart
+        # and left the desk with nothing to pair.
+        _c("feed_family", "Feed", TEXT, width=130, group="Provenance"),
         _c("volume", "Volume", INTEGER, width=130, group="OHLCV", unit=UNIT_COUNT),
         _c("vwap", "VWAP", CURRENCY, width=110, group="OHLCV", unit=UNIT_INR),
         _c("delivery_pct", "Delivery %", PERCENT, width=110, group="OHLCV", unit=UNIT_PERCENT),

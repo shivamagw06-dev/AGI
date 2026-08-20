@@ -135,6 +135,20 @@ def _factors_by_symbol(*, limit: int = 8000) -> dict[str, dict[str, Any]]:
     return out
 
 
+# A year that halves a company or triples it is possible, and both happen. It is
+# also the exact signature of a price series that changed adjustment convention
+# halfway through - Dr. Lal PathLabs read -45%, Nuvama -75%, GRM Overseas -76%,
+# and every one of those was a split rather than a loss.
+#
+# So a reading outside this band is withheld and listed instead of published. A
+# genuine collapse is withheld with it, which is the cost: a number missing from
+# the desk is visible and asks a question, where a wrong one is neither.
+RETURN_FLOOR_PCT = -60.0
+RETURN_CEILING_PCT = 200.0
+
+_LAST_EXTREMES: list[dict[str, Any]] = []
+
+
 def _return_1y_by_symbol(*, limit: int = 200000) -> dict[str, Optional[float]]:
     """One-year price return per symbol, computed in the database.
 
@@ -170,20 +184,34 @@ def _return_1y_by_symbol(*, limit: int = 200000) -> dict[str, Optional[float]]:
         return {}
     table = db.physical_table("daily_market_history")
     weekday = "CAST(strftime('%w', date) AS INTEGER) BETWEEN 1 AND 5"
-    # Group the writers of one vendor feed together. Upstox writes under two
-    # names - `upstox_v3_historical` for the deep backfill and `upstox_v3_daily`
-    # for the nightly top-up - and they share an adjustment convention. Kept
-    # apart, the deep one fails the freshness test and the fresh one has no
-    # history, so nothing pairs and the desk falls back to a stale uploaded file.
-    feed = ("CASE WHEN source LIKE 'upstox%' THEN 'upstox'"
+    # Two prices may only be divided by one another when they are on the same
+    # adjustment basis and come from the same feed. The group key is that pair,
+    # so a raw price can never be the base for an adjusted one.
+    #
+    # `price_basis` and `feed_family` are stamped at write time. The fallback
+    # covers the rows written before those columns existed, and it is the same
+    # table `institutional_warehouse.price_basis` declares - not a second
+    # opinion, just one the database can read.
+    feed = ("COALESCE(feed_family, CASE"
+            " WHEN source LIKE 'upstox%' THEN 'upstox'"
             " WHEN source LIKE 'yahoo%' THEN 'yahoo'"
-            " ELSE source END")
+            " WHEN source = 'nse_bhavcopy' THEN 'nse'"
+            " ELSE source END)")
+    basis = ("COALESCE(price_basis, CASE"
+             " WHEN source LIKE 'upstox%' THEN 'SPLIT_ADJUSTED'"
+             " WHEN source LIKE 'yahoo%' THEN 'RAW'"
+             " WHEN source = 'nse_bhavcopy' THEN 'RAW'"
+             " ELSE 'UNKNOWN' END)")
     try:
         rows = db.query(
             f"""WITH usable AS (
-                    SELECT symbol, {feed} AS src, date, close FROM {table}
+                    SELECT symbol, {feed} || '|' || {basis} AS src, date, close FROM {table}
                     WHERE COALESCE(sys_published, 1) = 1
                       AND close IS NOT NULL AND close > 0 AND {weekday}
+                      -- A price whose convention was never established is not
+                      -- usable as either end. Agreement between two unknowns
+                      -- means nothing.
+                      AND {basis} <> 'UNKNOWN'
                 ),
                 sym_latest AS (
                     SELECT symbol, MAX(date) AS latest FROM usable GROUP BY symbol
@@ -230,13 +258,28 @@ def _return_1y_by_symbol(*, limit: int = 200000) -> dict[str, Optional[float]]:
         return {}
 
     out: dict[str, Optional[float]] = {}
+    extremes: list[dict[str, Any]] = []
     for row in rows:
         symbol = str(row.get("symbol") or "").upper()
         last_close = _num(row.get("last_close"))
         base_close = _num(row.get("base_close"))
-        if symbol and last_close and base_close and base_close > 0:
-            out[symbol] = round((last_close / base_close - 1.0) * 100.0, 2)
+        if not (symbol and last_close and base_close and base_close > 0):
+            continue
+        value = round((last_close / base_close - 1.0) * 100.0, 2)
+        if value < RETURN_FLOOR_PCT or value > RETURN_CEILING_PCT:
+            extremes.append({"symbol": symbol, "return_1y": value,
+                             "basis": row.get("src"), "base": base_close, "last": last_close})
+            continue
+        out[symbol] = value
+
+    global _LAST_EXTREMES
+    _LAST_EXTREMES = sorted(extremes, key=lambda e: abs(e["return_1y"]), reverse=True)
     return out
+
+
+def extreme_returns() -> list[dict[str, Any]]:
+    """One-year returns withheld from the last scan for being implausible."""
+    return list(_LAST_EXTREMES)
 
 
 def _latest_close_by_symbol() -> dict[str, float]:

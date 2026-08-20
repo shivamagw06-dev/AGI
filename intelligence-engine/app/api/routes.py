@@ -19892,6 +19892,38 @@ def warehouse_backfill_reopen(
     )
 
 
+@router.post("/warehouse/price-basis/stamp")
+def warehouse_price_basis_stamp(payload: dict[str, Any] = Body(default_factory=dict)):
+    """Fill price_basis and feed_family on rows written before they existed.
+
+    Bounded on purpose. The engine shares one SQLite file with its background
+    worker, and a single UPDATE across 7.1m rows would hold a write lock for as
+    long as it runs.
+    """
+    from institutional_warehouse import price_basis
+
+    body = payload or {}
+    return price_basis.backfill_stamps(
+        batches=int(body.get("batches") or 1),
+        batch_size=int(body.get("batch_size") or price_basis.STAMP_BATCH),
+    )
+
+
+@router.get("/warehouse/price-basis")
+def warehouse_price_basis_status():
+    from institutional_warehouse import db, price_basis
+
+    db.init()
+    table = db.physical_table("daily_market_history")
+    rows = db.query(
+        f"SELECT COALESCE(price_basis, 'unstamped') AS basis,"
+        f" COALESCE(feed_family, 'unstamped') AS feed, COUNT(*) AS n"
+        f" FROM {table} WHERE close IS NOT NULL GROUP BY basis, feed ORDER BY n DESC"
+    ) or []
+    return {"ok": True, "declared_sources": price_basis.known_sources(),
+            "by_basis": [dict(r) for r in rows]}
+
+
 @router.get("/warehouse/backfill/jobs")
 def warehouse_backfill_jobs(limit: int = 20):
     from institutional_warehouse.production import backfill_jobs

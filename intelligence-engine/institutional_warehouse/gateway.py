@@ -31,8 +31,8 @@ import uuid
 from typing import Any, Iterable, Optional, Sequence
 
 from institutional_warehouse import (
-    audit, conflicts, db, missing_values, quality, statement_identity, store, units,
-    validation,
+    audit, conflicts, db, missing_values, price_basis, quality, statement_identity,
+    store, units, validation,
 )
 from institutional_warehouse.schema import find_tab
 from institutional_warehouse.values import now_iso
@@ -69,6 +69,15 @@ def write(
     if not incoming:
         return {"ok": True, "tab": tab_id, "seen": 0, "written": 0, "inserted": 0,
                 "updated": 0, "unchanged": 0, "quarantined": 0}
+
+    # 0. What a price means, stamped by the feed that supplied it.
+    #
+    #    Three feeds write daily_market_history and they disagree about whether
+    #    `close` is restated for splits. Done in the one write path rather than
+    #    in each collector, so a new price source cannot forget and quietly
+    #    inherit somebody else's convention.
+    if tab_id == "daily_market_history":
+        incoming = price_basis.stamp(incoming, source=source)
 
     # 1. Statement identity, before the row can be keyed at all: statement_type
     #    is part of the natural key, and a row with an empty key part is skipped.

@@ -23,21 +23,37 @@ SCANNER = Path(__file__).resolve().parents[1] / "scanner.py"
 
 
 def _query() -> str:
-    """The shipped SQL, so a change to it is caught here rather than in production."""
+    """The shipped SQL and the expressions it is built from.
+
+    Read out of scanner.py rather than copied, so a change to either is caught
+    here instead of on the desk.
+    """
     src = SCANNER.read_text()
     sql = re.search(r'rows = db\.query\(\s*f"""(.*?)"""', src, re.S).group(1)
+    feed = _expr(src, "feed")
+    basis = _expr(src, "basis")
     return (sql.replace("{table}", "t")
                .replace("{weekday}", "CAST(strftime('%w', date) AS INTEGER) BETWEEN 1 AND 5")
-               .replace("{feed}", "CASE WHEN source LIKE 'upstox%' THEN 'upstox'"
-                                  " WHEN source LIKE 'yahoo%' THEN 'yahoo' ELSE source END"))
+               .replace("{feed}", feed)
+               .replace("{basis}", basis))
+
+
+def _expr(src: str, name: str) -> str:
+    """The SQL expression assigned to `name` in _return_1y_by_symbol."""
+    body = src.split("def _return_1y_by_symbol(")[1]
+    block = re.search(rf"\n    {name} = \((.*?)\)\n", body, re.S).group(1)
+    return " ".join(re.findall(r'"([^"]*)"', block))
 
 
 def _db(bars):
     con = sqlite3.connect(":memory:")
     con.row_factory = sqlite3.Row
     con.execute("CREATE TABLE t (symbol TEXT, date TEXT, close REAL, source TEXT,"
-                " sys_published INT DEFAULT 1)")
-    con.executemany("INSERT INTO t (symbol,date,close,source) VALUES (?,?,?,?)", bars)
+                " price_basis TEXT, feed_family TEXT, sys_published INT DEFAULT 1)")
+    con.executemany(
+        "INSERT INTO t (symbol,date,close,source,price_basis,feed_family)"
+        " VALUES (?,?,?,?,?,?)",
+        [(b + (None, None))[:6] if len(b) == 4 else b for b in bars])
     return con
 
 
@@ -121,3 +137,99 @@ class TestGuards:
                 + [("WKND", "2025-08-23", 999.0, "formula_engine")]
                 + _series("WKND", "upstox_v3_historical", "2026-08-10", 10, 110.0))
         assert _returns(bars)["WKND"] == 10.0
+
+
+class TestStampedBasis:
+    """Once a row states its basis, the query obeys the stamp, not the name.
+
+    `source` is a property of the row rather than of the field, so a partial
+    update rewrites it - the formula engine writes only market_cap, yet rows it
+    has touched are labelled formula_engine while their price came from
+    somewhere else. The stamp is written by whoever supplied the price.
+    """
+
+    @staticmethod
+    def _bars(symbol, source, basis, feed, start, days, price):
+        from datetime import date, timedelta
+        out, day = [], date.fromisoformat(start)
+        while len(out) < days:
+            if day.weekday() < 5:
+                out.append((symbol, day.isoformat(), price, source, basis, feed))
+            day += timedelta(days=1)
+        return out
+
+    def test_a_stamped_row_pairs_on_its_stamp_not_its_source_name(self):
+        """Both ends came from Upstox but were relabelled by a later partial
+        update. The stamp still says what the price is."""
+        bars = (self._bars("STAMPED", "formula_engine", "SPLIT_ADJUSTED", "upstox",
+                           "2025-08-18", 10, 100.0)
+                + self._bars("STAMPED", "formula_engine", "SPLIT_ADJUSTED", "upstox",
+                             "2026-08-10", 10, 130.0))
+        assert _returns(bars)["STAMPED"] == 30.0
+
+    def test_a_raw_end_and_an_adjusted_end_never_pair(self):
+        """The Lal PathLabs defect, stated in the schema instead of inferred."""
+        bars = (self._bars("MIXED", "nse_bhavcopy", "RAW", "nse", "2025-08-18", 10, 3400.0)
+                + self._bars("MIXED", "upstox_v3_daily", "SPLIT_ADJUSTED", "upstox",
+                             "2026-08-10", 10, 1700.0))
+        assert "MIXED" not in _returns(bars)
+
+    def test_one_feed_on_two_bases_does_not_pair_across_them(self):
+        """A vendor that changes convention mid-history is still two series."""
+        bars = (self._bars("SWITCH", "yahoo_finance", "RAW", "yahoo", "2025-08-18", 10, 200.0)
+                + self._bars("SWITCH", "yahoo_finance", "SPLIT_ADJUSTED", "yahoo",
+                             "2026-08-10", 10, 100.0))
+        assert "SWITCH" not in _returns(bars)
+
+    def test_an_unknown_basis_is_not_usable_as_either_end(self):
+        """Agreement between two unestablished conventions means nothing."""
+        bars = (self._bars("VAGUE", "mystery_feed", "UNKNOWN", "mystery",
+                           "2025-08-18", 10, 100.0)
+                + self._bars("VAGUE", "mystery_feed", "UNKNOWN", "mystery",
+                             "2026-08-10", 10, 150.0))
+        assert "VAGUE" not in _returns(bars)
+
+    def test_an_unstamped_row_falls_back_to_the_declared_table(self):
+        """7.1m rows predate the columns. They read the same declaration the
+        stamp would have written."""
+        from datetime import date, timedelta
+        out, day = [], date.fromisoformat("2025-08-18")
+        while len(out) < 20:
+            if day.weekday() < 5:
+                price = 100.0 if len(out) < 10 else 110.0
+                out.append(("LEGACY", day.isoformat(), price, "upstox_v3_historical"))
+            day += timedelta(days=1)
+            if len(out) == 10:
+                day = date.fromisoformat("2026-08-10")
+        assert _returns(out)["LEGACY"] == 10.0
+
+
+class TestExtremeReturns:
+    """A reading outside the plausible band is withheld and listed, not shown.
+
+    Dr. Lal PathLabs read -45%, Nuvama -75%, GRM Overseas -76%. Every one was a
+    split rather than a loss. The band catches that shape even when a future
+    defect arrives by some route these tests do not anticipate.
+    """
+
+    def test_the_band_is_the_one_that_was_agreed(self):
+        from hedge_fund_lab import scanner
+        assert scanner.RETURN_FLOOR_PCT == -60.0
+        assert scanner.RETURN_CEILING_PCT == 200.0
+
+    def test_a_plausible_return_publishes(self):
+        from hedge_fund_lab import scanner
+        assert -60.0 < 25.0 < 200.0
+        assert not (25.0 < scanner.RETURN_FLOOR_PCT or 25.0 > scanner.RETURN_CEILING_PCT)
+
+    @pytest.mark.parametrize("value", [-75.0, -76.4, 253.0, 473.0])
+    def test_the_readings_this_incident_produced_are_all_outside_it(self, value):
+        from hedge_fund_lab import scanner
+        assert value < scanner.RETURN_FLOOR_PCT or value > scanner.RETURN_CEILING_PCT
+
+    def test_a_withheld_reading_is_kept_for_review(self):
+        """Withholding silently would replace a wrong number with no number and
+        no reason, which is not better."""
+        from hedge_fund_lab import scanner
+        assert callable(scanner.extreme_returns)
+        assert isinstance(scanner.extreme_returns(), list)
