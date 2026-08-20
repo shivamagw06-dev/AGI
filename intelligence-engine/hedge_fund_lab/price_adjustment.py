@@ -55,7 +55,11 @@ TOLERANCE = 0.06
 # How close the observed gap must sit to 1.0 to conclude the vendor already
 # restated the series. Deliberately tighter than TOLERANCE: an 11:10 split has
 # a factor of 0.909 and must not be swallowed as "no gap".
-NO_GAP_TOLERANCE = 0.04
+# Widest drift still consistent with "no corporate-action gap". Prices move
+# over the twenty trading days spanned by the window, and the real contradicted
+# set ran from 0.89 to 1.18, but a 40% move is not drift - it is an event
+# neither hypothesis explains, and must stay a contradiction.
+NO_GAP_TOLERANCE = 0.25
 # The gap is measured over calendar days, not a bar count. Early history in
 # daily_market_history is monthly, so "five bars either side" spans five months
 # there and ordinary price drift swamps the split. A calendar window keeps the
@@ -211,15 +215,29 @@ def reconcile(
         return None, "no_price_evidence"
     if not candidates:
         return None, "no_stated_ratio"
+
+    # 1.0 competes as a hypothesis in its own right: it is what the gap looks
+    # like when the vendor has already restated the series. Whichever
+    # hypothesis the observation sits closest to wins.
+    #
+    # A fixed band around 1.0 does not work. Real prices drift over the ten
+    # trading days either side of an ex-date, and the contradicted set showed
+    # gaps from 0.89 to 1.18 for splits whose stated factors were 0.2 or 0.5 -
+    # nowhere near either. CANBK is the clearest case: Trendlyne independently
+    # confirms a 10:2 split on 2024-05-15, and the series moved 1.0417 across
+    # it, which missed a 0.04 band by 0.0017 and was called a contradiction.
     best, error = None, None
     for factor in candidates:
         relative = abs(observed - factor) / factor
         if error is None or relative < error:
             best, error = factor, relative
-    if error is not None and error <= tolerance:
-        return best, "corroborated"
-    if abs(observed - 1.0) <= no_gap_tolerance:
+    no_gap_error = abs(observed - 1.0)
+
+    if no_gap_error <= error and no_gap_error <= no_gap_tolerance:
         return None, "series_already_adjusted"
+    if error <= tolerance:
+        return best, "corroborated"
+    # Nearer to a stated ratio than to 1.0, but not near enough to either.
     return None, "stated_ratio_contradicted_by_prices"
 
 

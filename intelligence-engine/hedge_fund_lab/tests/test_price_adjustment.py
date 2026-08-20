@@ -222,6 +222,23 @@ class TestAlreadyAdjustedSeries:
         assert factor is None
         assert status == "series_already_adjusted"
 
+    @pytest.mark.parametrize("label,candidates,observed", [
+        # Trendlyne independently confirms a 10:2 split on 2024-05-15; the
+        # series moved 1.0417 across it, so it is already adjusted. A fixed
+        # 0.04 band missed this by 0.0017.
+        ("CANBK 10:2", [0.2, 5.0], 1.041685),
+        ("CIPLA 1:5", [0.2, 5.0], 0.905332),
+        ("COCHINSHIP 1:2", [0.5, 2.0], 1.178128),
+        ("ANANDRATHI 1:2", [0.5, 2.0], 0.894847),
+    ])
+    def test_real_contradicted_cases_are_pre_adjusted_not_broken(self, label, candidates, observed):
+        """Prices drift over the ten trading days either side of an ex-date, so
+        a gap of 0.89 to 1.18 against a stated factor of 0.2 or 0.5 means the
+        series was restated, not that the data is wrong."""
+        factor, status = pa.reconcile(candidates, observed=observed)
+        assert factor is None, label
+        assert status == "series_already_adjusted", label
+
     def test_it_is_not_treated_as_a_contradiction(self):
         prices = _around(date(2026, 6, 1), 250.0, 250.0)
         actions = [{"symbol": "ADJ", "action_date": "2026-06-01",
