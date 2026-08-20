@@ -199,3 +199,31 @@ class TestSignalMeasurement:
         # 40 names moving from -20 to -0.5 around 100 average about -10.25%.
         assert period["universe"] == pytest.approx(-0.1025, abs=1e-3)
         assert period["breadth"] == 40
+
+
+def test_an_unadjusted_split_cannot_wreck_the_benchmark():
+    """The universe benchmark is an unranked average, so one symbol whose split
+    went unadjusted drags the whole month. It reported 480% annualised
+    volatility and a -1,817% drawdown before this filter."""
+    vintages, prices = [], []
+    for i in range(30):
+        sym = f"S{i:02d}"
+        vintages.append(_vintage(sym, "FY2026", "2025-04", 100.0))
+        vintages.append(_vintage(sym, "FY2026", "2025-07", 100.0 + i))
+        prices.append(_bars(sym, "2025-07", 100.0, "31"))
+        prices.append(_bars(sym, "2025-08", 101.0, "29"))
+    # An unadjusted reverse split: a 400% gain that never happened. These
+    # dominate the variance, which is why the benchmark reported 480%
+    # annualised volatility. Note the filter is symmetric at 100%, so a
+    # moderate unadjusted forward split - a 1:2 showing -50% - still passes;
+    # catching those needs the corporate-action receipt, not a return bound.
+    vintages.append(_vintage("BAD", "FY2026", "2025-04", 100.0))
+    vintages.append(_vintage("BAD", "FY2026", "2025-07", 100.5))
+    prices.append(_bars("BAD", "2025-07", 100.0, "31"))
+    prices.append(_bars("BAD", "2025-08", 500.0, "29"))
+
+    out = er.backtest(vintage_rows=vintages, price_rows=prices, holdings=10, cost_bps=0)
+    period = next(p for p in out["periods"] if p["month"] == "2025-07")
+    assert period["implausible_returns_discarded"] == 1
+    assert period["universe"] == pytest.approx(0.01, abs=1e-6)
+    assert out["coverage"]["implausible_returns_discarded"] == 1

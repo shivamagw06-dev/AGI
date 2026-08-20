@@ -48,6 +48,13 @@ DEFAULT_COST_BPS = 25.0
 DEFAULT_OOS_START = "2024-01"
 # A tiny estimate makes the denominator explode; 1 rupee of EPS is the floor.
 MIN_ABS_ESTIMATE = 1.0
+# A monthly move beyond this is treated as a price error rather than a return.
+# The universe benchmark is an unranked average, so a single symbol whose split
+# went unadjusted - 104 corporate actions still contradict their stated ratio -
+# drags the whole month. It reported 480% annualised volatility and a -1,817%
+# drawdown, both impossible. The ranked books were unaffected because a bad
+# price has to also rank top or bottom to enter them.
+MAX_PLAUSIBLE_MONTHLY_RETURN = 1.0
 
 
 def _month(value: Any) -> Optional[str]:
@@ -224,11 +231,17 @@ def backtest(
         # Forward return for every name that carried a signal, not just the
         # ones bought. This is what makes the benchmark and the IC possible.
         forward: dict[str, float] = {}
+        discarded = 0
         for symbol in scores[month]:
             start = (prices.get(symbol) or {}).get(month)
             end = (prices.get(symbol) or {}).get(nxt)
-            if start and end and start > 0:
-                forward[symbol] = end / start - 1.0
+            if not (start and end and start > 0):
+                continue
+            move = end / start - 1.0
+            if abs(move) > MAX_PLAUSIBLE_MONTHLY_RETURN:
+                discarded += 1
+                continue
+            forward[symbol] = move
 
         ranked = [s for s, _ in sorted(scores[month].items(), key=lambda kv: -kv[1])
                   if s in forward]
@@ -258,6 +271,7 @@ def backtest(
             "long_short": round(spread - cost, 6),
             "ic": rank_ic(scores[month], forward),
             "breadth": len(forward),
+            "implausible_returns_discarded": discarded,
         })
         held = new_holdings
 
@@ -280,6 +294,8 @@ def backtest(
                      "cost_bps": cost_bps, "oos_start": oos_start,
                      "rebalance": "monthly", "weighting": "equal"},
         "coverage": {
+            "implausible_returns_discarded": sum(
+                p.get("implausible_returns_discarded") or 0 for p in periods),
             "months_evaluated": len(periods),
             "months_with_a_portfolio": len(net),
             "symbols_with_a_signal": len({s for month in scores.values() for s in month}),
