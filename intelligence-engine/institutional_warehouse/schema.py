@@ -999,6 +999,46 @@ OWNERSHIP = Tab(
 )
 
 # --------------------------------------------------------------------------
+# Tab — Insider Trades
+# --------------------------------------------------------------------------
+
+INSIDER_TRADES = Tab(
+    id="insider_trades",
+    label="Insider Trades",
+    description="Exchange-reported insider and SAST disclosures, one row per filing.",
+    mode="append",
+    # A person can file more than once for one company on one day, so the key
+    # carries the trade fingerprint. Without quantity and mode in it, a
+    # promoter buying twice in a session would collapse into a single row.
+    key=("symbol", "reported_on", "person", "action", "quantity", "mode"),
+    order_by=("reported_on DESC", "value DESC"),
+    search_columns=("symbol", "company_name", "person"),
+    icon="ownership",
+    columns=(
+        _c("symbol", "Symbol", TEXT, required=True, width=130, group="Key"),
+        _c("reported_on", "Reported", DATE, required=True, width=120, group="Key"),
+        _c("person", "Insider", TEXT, required=True, width=200, group="Key"),
+        _c("action", "Action", TEXT, required=True, width=120, group="Key"),
+        _c("quantity", "Quantity", NUMBER, required=True, width=130, group="Key"),
+        _c("mode", "Mode", TEXT, required=True, width=150, group="Key"),
+        _c("company_name", "Company", TEXT, width=220, group="Company"),
+        _c("category", "Category", TEXT, width=170, group="Insider"),
+        _c("value", "Value", CURRENCY, width=150, group="Trade"),
+        _c("avg_price", "Avg Price", CURRENCY, width=120, group="Trade"),
+        _c("traded_pct", "Traded %", PERCENT, width=110, group="Trade"),
+        _c("post_holding", "Post Holding", NUMBER, width=140, group="Trade"),
+        _c("regulation", "Regulation", TEXT, width=160, group="Filing"),
+        _c("security_type", "Security", TEXT, width=130, group="Filing"),
+        _c("period", "Period", TEXT, width=180, group="Filing"),
+        # Market purchases are a different signal from gifts and off-market
+        # transfers; keeping the raw mode alongside a normalised flag lets the
+        # page separate them without re-deriving the rule.
+        _c("is_open_market", "Open Market", TEXT, width=120, group="Filing"),
+        *PROVENANCE_COLUMNS,
+    ),
+)
+
+# --------------------------------------------------------------------------
 # Tab — Share Count History (Phase 7.4F FWCP)
 # --------------------------------------------------------------------------
 
@@ -2455,6 +2495,7 @@ TABS: tuple[Tab, ...] = (
     RESEARCH_TIMELINE,
     CORPORATE_ACTIONS,
     OWNERSHIP,
+    INSIDER_TRADES,
     PEER_RELATIONSHIPS,
     FWCP_IMPORT_QUEUE,
     INSTITUTIONAL_FLOW,

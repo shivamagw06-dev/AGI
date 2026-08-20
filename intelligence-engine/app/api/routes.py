@@ -19555,6 +19555,31 @@ def warehouse_vendor_exports_seed(payload: dict[str, Any] = Body(default={})):
     return seed_if_needed(force=bool(payload.get("force", False)))
 
 
+@router.get("/warehouse/import/insider-trades")
+def warehouse_import_insider_trades_status():
+    """Preview the insider exports on disk without writing anything.
+
+    The Insider Activity page's live source answers HTTP 429 with zero rows, so
+    the page renders empty. These files carry the same disclosures at no
+    per-request cost.
+    """
+    from financial_warehouse_completion.insider_trades import parse
+
+    parsed = parse()
+    return {k: v for k, v in parsed.items() if k != "rows"}
+
+
+@router.post("/warehouse/import/insider-trades")
+def warehouse_import_insider_trades_run(
+    payload: dict[str, Any] = Body(default_factory=dict),
+    x_agi_actor: str | None = Header(default=None),
+):
+    """Load every insider export in the repo, deduplicated across files."""
+    from financial_warehouse_completion.insider_trades import import_trades
+
+    return import_trades(actor=_warehouse_actor(payload or {}, x_agi_actor))
+
+
 @router.get("/warehouse/import/forward-estimates")
 def warehouse_import_forward_estimates_status():
     """Preview the current forward EPS and revenue cross-section.
