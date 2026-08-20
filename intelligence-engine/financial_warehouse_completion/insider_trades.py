@@ -34,7 +34,20 @@ FILE_PATTERN = re.compile(r"insider", re.IGNORECASE)
 # Only these put the person's own money at risk at a market price. A gift or an
 # off-market transfer moves shares without a market transaction, and an ESOP
 # allotment is compensation.
-OPEN_MARKET_MODES = {"market purchase", "market sale", "open market"}
+# SAST filings write a bare "Market" where an insider filing writes "Market
+# Purchase" - 198 rows, every one of them a market transaction. Leaving it out
+# excluded a quarter of the real open-market activity from the page.
+OPEN_MARKET_MODES = {"market purchase", "market sale", "open market", "market"}
+
+# An insider filing is a director or promoter trading their own company under
+# the PIT regulations. A SAST filing is an acquirer crossing a shareholding
+# threshold under the takeover code - a market transaction, but not an insider
+# one, and never reported with a price. Splitting them explains what otherwise
+# looks like missing data: value is present on 95% of insider filings and 0% of
+# SAST ones.
+def regime(regulation: Any) -> str:
+    return "sast" if "sast" in str(regulation or "").lower() else "insider"
+
 
 # The vendor writes "None" or "-" in action and mode when the filing did not
 # state one - a pledge revocation has no buy/sell mode, and some acquisitions
@@ -173,6 +186,7 @@ def parse_file(path: Path) -> list[dict[str, Any]]:
             "traded_pct": _number(_pick(clean, _COLUMNS["traded_pct"])),
             "post_holding": _number(_pick(clean, _COLUMNS["post_holding"])),
             "regulation": str(_pick(clean, _COLUMNS["regulation"]) or "").strip() or None,
+            "regime": regime(_pick(clean, _COLUMNS["regulation"])),
             "security_type": str(_pick(clean, _COLUMNS["security_type"]) or "").strip() or None,
             "period": str(_pick(clean, _COLUMNS["period"]) or "").strip() or None,
             "is_open_market": "true" if mode.lower() in OPEN_MARKET_MODES else "false",

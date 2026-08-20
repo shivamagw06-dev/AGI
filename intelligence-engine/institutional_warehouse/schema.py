@@ -1041,6 +1041,13 @@ INSIDER_TRADES = Tab(
         # transfers; keeping the raw mode alongside a normalised flag lets the
         # page separate them without re-deriving the rule.
         _c("is_open_market", "Open Market", TEXT, width=120, group="Filing"),
+        # Two disclosure regimes arrive in one export and mean different things.
+        # An insider filing is a director or promoter trading their own company;
+        # a SAST filing is an acquirer crossing a shareholding threshold under
+        # the takeover code. SAST filings never carry a price - 0 of 411 - so
+        # mixing them in makes value coverage look like a data problem when it
+        # is simply two populations.
+        _c("regime", "Regime", TEXT, width=110, group="Filing"),
         *PROVENANCE_COLUMNS,
     ),
 )

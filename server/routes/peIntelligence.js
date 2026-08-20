@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { getPeFirm, getPeOverview, getPeOpportunities, getPeInvestors, getPeInvestor, getPeIntelligence, listPeFirms } from '../services/peIntelligenceService.js';
 import { approvePrivateMarketsImport, getPrivateMarketsAdminOverview, previewPrivateMarketsImport, resolvePrivateMarketsEntity } from '../services/privateMarketsAdminService.js';
 import { approveInsiderImport, getInsiderActivity, getInsiderAdminOverview, previewInsiderImport } from '../services/insiderTradingService.js';
+import { getInsiderActivityFromWarehouse } from '../services/insiderWarehouse.js';
 
 export default function createPeIntelligenceRouter() {
   const router = Router();
@@ -27,7 +28,24 @@ export default function createPeIntelligenceRouter() {
   router.post('/admin/imports/preview',requireAdmin,async(req,res)=>{try{return res.json(await previewPrivateMarketsImport(req.body||{}))}catch(error){return res.status(400).json({error:error.message})}});
   router.post('/admin/imports/approve',requireAdmin,async(req,res)=>{try{return res.json(await approvePrivateMarketsImport(req.body||{}))}catch(error){return res.status(400).json({error:error.message})}});
   router.patch('/admin/entity-review/:id',requireAdmin,async(req,res)=>{try{return res.json(await resolvePrivateMarketsEntity(req.params.id,req.body?.status))}catch(error){return res.status(400).json({error:error.message})}});
-  router.get('/insider/activity',async(req,res)=>{try{res.set('Cache-Control','public, max-age=60, stale-while-revalidate=300');return res.json(await getInsiderActivity(req.query))}catch(error){return res.status(503).json({error:error.message})}});
+  // The warehouse copy is loaded by the engine importer and is the current one:
+  // it carries the pledge filings the Supabase normaliser drops, separates
+  // insider filings from takeover-code ones, and does not wait for someone to
+  // work the admin upload screen. The Supabase copy stays as the fallback so a
+  // cold or failing engine leaves the page with data rather than an error.
+  router.get('/insider/activity',async(req,res)=>{
+    res.set('Cache-Control','public, max-age=60, stale-while-revalidate=300');
+    try{
+      return res.json(await getInsiderActivityFromWarehouse(req.query));
+    }catch(warehouseError){
+      try{
+        const body=await getInsiderActivity(req.query);
+        return res.json({...body,source:'supabase',degraded:warehouseError.message});
+      }catch(error){
+        return res.status(503).json({error:error.message});
+      }
+    }
+  });
   router.get('/insider/admin/overview',requireAdmin,async(_req,res)=>{try{return res.json(await getInsiderAdminOverview())}catch(error){return res.status(503).json({error:error.message})}});
   router.post('/insider/admin/imports/preview',requireAdmin,async(req,res)=>{try{return res.json(await previewInsiderImport(req.body||{}))}catch(error){return res.status(400).json({error:error.message})}});
   router.post('/insider/admin/imports/approve',requireAdmin,async(req,res)=>{try{return res.json(await approveInsiderImport(req.body||{}))}catch(error){return res.status(400).json({error:error.message})}});

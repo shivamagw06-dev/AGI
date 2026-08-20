@@ -224,3 +224,52 @@ class TestRealExportsLoad:
         keys = ("company_name", "reported_on", "person", "action", "quantity", "mode")
         bad = [r for r in out["rows"] if any(is_blank(r[k]) for k in keys)]
         assert bad == [], f"{len(bad)} rows would be quarantined"
+
+
+class TestRegime:
+    """Two disclosure regimes arrive in one export and mean different things.
+
+    An insider filing is a director or promoter trading their own company under
+    the PIT rules. A SAST filing is an acquirer crossing a shareholding
+    threshold under the takeover code. Mixing them made value coverage read 61%
+    and look like a collection failure.
+    """
+
+    def test_a_takeover_filing_is_marked_as_one(self):
+        assert it.regime("SAST (29(2))") == "sast"
+        assert it.regime("SAST (Reg31)") == "sast"
+
+    def test_an_insider_filing_is_the_default(self):
+        assert it.regime("Insider Trading") == "insider"
+        assert it.regime(None) == "insider"
+
+    def test_the_real_export_splits_cleanly(self):
+        out = it.parse()
+        if not out.get("ok"):
+            return
+        rows = out["rows"]
+        insider = [r for r in rows if r["regime"] == "insider"]
+        sast = [r for r in rows if r["regime"] == "sast"]
+        assert insider and sast
+        # This is the whole reason for the split: a takeover filing discloses a
+        # shareholding change, never a price.
+        assert not any(r["value"] for r in sast), "SAST filings do not carry a value"
+        priced = sum(1 for r in insider if r["value"])
+        assert priced > len(insider) * 0.9, "insider filings almost always state a value"
+
+
+class TestOpenMarketCoverage:
+    def test_a_bare_market_mode_counts(self, tmp_path):
+        """SAST filings write "Market" where insider filings write "Market
+        Purchase". Excluding it left a quarter of the real open-market activity
+        off the page."""
+        rows = it.parse_file(_csv(tmp_path, "insider_m.csv", _line(mode="Market")))
+        assert rows[0]["is_open_market"] == "true"
+
+    def test_the_real_export_counts_them(self):
+        out = it.parse()
+        if not out.get("ok"):
+            return
+        bare = [r for r in out["rows"] if r["mode"] == "Market"]
+        assert bare, "the export writes a bare Market mode"
+        assert all(r["is_open_market"] == "true" for r in bare)
