@@ -88,3 +88,21 @@ def test_http_role_skips_gather_boot_helpers():
     os.environ["AGI_ROLE"] = "web"
     # Lifespan branching is covered by role check used in app.main
     assert (os.environ.get("AGI_ROLE") or "").lower() == "web"
+
+
+def test_a_warehouse_only_sidecar_profile_exists():
+    """The warehouse backfill needs the disk, and the disk is on the engine.
+
+    The full profile would bring it along with gather-learn, the FAA collectors,
+    KF_HD, LIDI and the morning DAG - which is the 19 August incident, where
+    background work inside the HTTP process held SQLite locks and the engine
+    served 12-second timeouts for hours.
+    """
+    script = Path(__file__).resolve().parents[1] / "scripts" / "start_engine.sh"
+    text = script.read_text(encoding="utf-8")
+    assert "warehouse_only" in text
+    profile = text.split('"${SIDECAR_PROFILE}" == "warehouse_only"')[1].split("fi")[0]
+    assert "WAREHOUSE_BACKFILL=true" in profile
+    for loud in ("CONTINUOUS_GATHER_LEARN", "FAA_BACKGROUND_COLLECTOR",
+                 "KF_HD_LIVE_COLLECTORS", "CONTINUOUS_MORNING_DAG"):
+        assert loud not in profile, f"{loud} does not belong in the narrow profile"

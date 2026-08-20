@@ -82,6 +82,26 @@ if [[ "${FULL_SIDECAR}" == "true" || "${FORECAST_SIDECAR}" == "true" ]]; then
     if [[ "${FULL_SIDECAR}" != "true" ]]; then
       SIDECAR_PROFILE="forecast_only"
     fi
+    # warehouse_only: the narrowest sidecar that can still collect history.
+    #
+    # The warehouse backfill has to run somewhere with the disk, and the disk is
+    # attached here. The full profile would bring it, but it also switches on
+    # gather-learn, the FAA collectors, KF_HD, LIDI and the morning DAG - and the
+    # 19 August incident above was exactly that: background work inside the HTTP
+    # process holding SQLite locks while the engine served 12-second timeouts.
+    #
+    # Every loop in gather_worker.py reads its own flag, so leaving the rest
+    # unset leaves them off. This turns on the warehouse refresh and the archive
+    # backfill and nothing else, with a small slice so the writer releases its
+    # lock often rather than holding it through a long batch.
+    if [[ "${SIDECAR_PROFILE}" == "warehouse_only" ]]; then
+      export WAREHOUSE_BACKFILL=true
+      export WAREHOUSE_BACKFILL_COMPANIES="${WAREHOUSE_BACKFILL_COMPANIES:-8}"
+      export WAREHOUSE_BACKFILL_DAYS="${WAREHOUSE_BACKFILL_DAYS:-20}"
+      export WAREHOUSE_BACKFILL_INTERVAL_MIN="${WAREHOUSE_BACKFILL_INTERVAL_MIN:-30}"
+      echo "[start_engine] launching warehouse-only sidecar now"
+      exec nice -n 10 python scripts/gather_worker.py
+    fi
     if [[ "${SIDECAR_PROFILE}" == "forecast_only" ]]; then
       export FIE_RUNTIME=true
       export FIE_BATCH="${FIE_BATCH:-1}"
