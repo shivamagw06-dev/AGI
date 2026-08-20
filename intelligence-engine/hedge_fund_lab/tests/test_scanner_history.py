@@ -254,3 +254,42 @@ class TestConsensusSourcing:
             ratios={}, factors={}, return_1y=None, legacy_consensus={},
         )
         assert row["data_context"]["consensus_date"] == "2026-08-02"
+
+
+class TestTradedClose:
+    """historical_valuation.cmp does not agree with the market. Against
+    daily_market_history on 2026-08-19, 1,050 of 1,162 symbols differed and
+    only 112 matched - RSDFIN at 152.44 against a true close of 96.15."""
+
+    def test_returns_the_last_traded_close(self, monkeypatch):
+        rows = [{"symbol": "RSDFIN", "close": 96.15}, {"symbol": "SUNTECK", "close": 294.25}]
+        monkeypatch.setattr("institutional_warehouse.db.query", lambda *a, **k: rows)
+        monkeypatch.setattr("institutional_warehouse.db.physical_table", lambda t: "t")
+        out = scanner._latest_close_by_symbol()
+        assert out["RSDFIN"] == 96.15 and out["SUNTECK"] == 294.25
+
+    def test_unusable_rows_are_skipped(self, monkeypatch):
+        rows = [{"symbol": "A", "close": 0}, {"symbol": "", "close": 10.0},
+                {"symbol": "B", "close": None}]
+        monkeypatch.setattr("institutional_warehouse.db.query", lambda *a, **k: rows)
+        monkeypatch.setattr("institutional_warehouse.db.physical_table", lambda t: "t")
+        assert scanner._latest_close_by_symbol() == {}
+
+    def test_a_database_failure_degrades_to_empty(self, monkeypatch):
+        def _boom(*a, **k):
+            raise RuntimeError("db down")
+
+        monkeypatch.setattr("institutional_warehouse.db.query", _boom)
+        monkeypatch.setattr("institutional_warehouse.db.physical_table", lambda t: "t")
+        assert scanner._latest_close_by_symbol() == {}
+
+    def test_the_traded_close_drives_upside(self):
+        """With cmp corrected to 294.25, a 435.93 target is 48.15% away, not
+        the 45.31% the valuation table's 300.00 implied."""
+        row = scanner._map_warehouse_row(
+            {"symbol": "SUNTECK", "cmp": 294.25},
+            ratios={}, factors={}, return_1y=None,
+            legacy_consensus={"target_price": 435.9323},
+        )
+        assert row["price"] == 294.25
+        assert row["consensus"]["upside"] == pytest.approx(48.15, abs=0.02)

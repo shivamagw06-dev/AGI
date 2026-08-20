@@ -199,6 +199,47 @@ def _return_1y_by_symbol(*, limit: int = 200000) -> dict[str, Optional[float]]:
     return out
 
 
+def _latest_close_by_symbol() -> dict[str, float]:
+    """Last traded close per symbol, from the price table that records trades.
+
+    historical_valuation carries its own `cmp`, and it does not agree with the
+    market. Compared against daily_market_history on 2026-08-19, 1,050 of 1,162
+    symbols differed - RSDFIN at 152.44 against a true close of 96.15, a 58%
+    error - and only 112 matched exactly. That price feeds market cap, the
+    price-based multiples and the consensus upside, so a wrong close is wrong
+    several times over on the page.
+
+    Weekends are excluded: NSE does not trade then and those rows carry a
+    differently scaled series.
+    """
+    try:
+        from institutional_warehouse import db
+    except Exception:
+        return {}
+    table = db.physical_table("daily_market_history")
+    try:
+        rows = db.query(
+            f"""WITH usable AS (
+                    SELECT symbol, date, close FROM {table}
+                    WHERE COALESCE(sys_published, 1) = 1
+                      AND close IS NOT NULL AND close > 0
+                      AND CAST(strftime('%w', date) AS INTEGER) BETWEEN 1 AND 5
+                ),
+                latest AS (SELECT symbol, MAX(date) AS d FROM usable GROUP BY symbol)
+                SELECT u.symbol, u.close FROM usable u
+                JOIN latest l ON u.symbol = l.symbol AND u.date = l.d"""
+        ) or []
+    except Exception:
+        return {}
+    out: dict[str, float] = {}
+    for row in rows:
+        symbol = str(row.get("symbol") or "").upper()
+        close = _num(row.get("close"))
+        if symbol and close and close > 0:
+            out[symbol] = close
+    return out
+
+
 def _legacy_consensus(ticker: str) -> dict[str, Any]:
     try:
         from valuation_consensus.store import get_row as consensus_row
@@ -343,6 +384,9 @@ def _universe_from_warehouse() -> list[dict[str, Any]]:
     ratios = _latest_ratios_by_symbol()
     factors = _factors_by_symbol()
     returns = _return_1y_by_symbol()
+    # The traded close, which historical_valuation.cmp disagrees with for about
+    # 90% of symbols.
+    closes = _latest_close_by_symbol()
 
     # Soft-fill buy_count / forward_pe from warehouse tabs when CapIQ file store is thin.
     wh_consensus: dict[str, dict[str, Any]] = {}
@@ -404,6 +448,8 @@ def _universe_from_warehouse() -> list[dict[str, Any]]:
             {
                 **mi,
                 "valuation_date": pack.get("valuation_date"),
+                # Traded close wins over the valuation table's own cmp.
+                "cmp": closes.get(sym) or mi.get("cmp"),
                 "forward_pe": (
                     mi.get("forward_pe")
                     if mi.get("forward_pe") is not None
