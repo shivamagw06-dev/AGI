@@ -38,8 +38,23 @@ jobs:
             echo "Add a Render Deploy Hook secret so /api/ui/* reaches production."
             exit 0
           fi
-          curl -fsS -X POST "$HOOK"
-          echo "Triggered RENDER_DEPLOY_HOOK_API"
+          # Render's hook answers 500 intermittently - three times on 20 Aug
+          # alone. A single curl turns that into a failed deploy and the commit
+          # sits unshipped until someone notices, so a transient answer is
+          # retried before the run is called a failure. Only 5xx and network
+          # errors are retried: a 4xx means the hook URL itself is wrong and
+          # retrying would just delay that finding.
+          for attempt in 1 2 3 4 5; do
+            code=$(curl -sS -o /dev/null -w '%{http_code}' -X POST "$HOOK" || echo 000)
+            case "$code" in
+              2*) echo "Triggered RENDER_DEPLOY_HOOK_API (attempt $attempt)"; exit 0 ;;
+              4*) echo "::error::RENDER_DEPLOY_HOOK_API rejected the hook with HTTP $code - check the secret."; exit 1 ;;
+            esac
+            echo "::warning::RENDER_DEPLOY_HOOK_API hook returned HTTP $code (attempt $attempt of 5); retrying."
+            sleep $((attempt * 10))
+          done
+          echo "::error::RENDER_DEPLOY_HOOK_API hook still failing after 5 attempts."
+          exit 1
 
       - name: Trigger Intelligence Engine deploy hook
         env:
@@ -50,8 +65,23 @@ jobs:
             echo "Add a Render Deploy Hook secret so /v1/ui/* backs /api/ui/*."
             exit 0
           fi
-          curl -fsS -X POST "$HOOK"
-          echo "Triggered RENDER_DEPLOY_HOOK_ENGINE"
+          # Render's hook answers 500 intermittently - three times on 20 Aug
+          # alone. A single curl turns that into a failed deploy and the commit
+          # sits unshipped until someone notices, so a transient answer is
+          # retried before the run is called a failure. Only 5xx and network
+          # errors are retried: a 4xx means the hook URL itself is wrong and
+          # retrying would just delay that finding.
+          for attempt in 1 2 3 4 5; do
+            code=$(curl -sS -o /dev/null -w '%{http_code}' -X POST "$HOOK" || echo 000)
+            case "$code" in
+              2*) echo "Triggered RENDER_DEPLOY_HOOK_ENGINE (attempt $attempt)"; exit 0 ;;
+              4*) echo "::error::RENDER_DEPLOY_HOOK_ENGINE rejected the hook with HTTP $code - check the secret."; exit 1 ;;
+            esac
+            echo "::warning::RENDER_DEPLOY_HOOK_ENGINE hook returned HTTP $code (attempt $attempt of 5); retrying."
+            sleep $((attempt * 10))
+          done
+          echo "::error::RENDER_DEPLOY_HOOK_ENGINE hook still failing after 5 attempts."
+          exit 1
 
       - name: Verify exact Intelligence Engine revision is healthy
         env:
