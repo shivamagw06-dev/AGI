@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import {
-  AlertTriangle, ArrowDownRight, ArrowUpRight, CalendarDays, Search, ShieldCheck, Users,
+  AlertTriangle, ArrowDownRight, ArrowUpRight, CalendarDays, Minus, Search, ShieldCheck, Users,
 } from 'lucide-react';
 
 import { insiderActivity } from '@/lib/insiderTradingApi';
@@ -48,8 +48,21 @@ const shortDate = (value) => (value
   ? new Date(`${value}T00:00:00`).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })
   : '');
 
-const isBuy = (row) => /acquisition|purchase|buy/i.test(String(row?.action || ''));
 const openMarket = (row) => String(row?.is_open_market) === 'true';
+
+/**
+ * Which way a filing points, in three states rather than two.
+ *
+ * A pledge creation is neither a purchase nor a sale, and the previous version
+ * drew a down arrow on it because it was not a buy. That reads as selling. A
+ * filing that states no direction gets a bar instead.
+ */
+function direction(row) {
+  const action = String(row?.action || '');
+  if (/acquisition|purchase|buy/i.test(action)) return 'buy';
+  if (/disposal|sale|sell/i.test(action)) return 'sell';
+  return 'flat';
+}
 
 /**
  * Buys above the line, sells below, running total across.
@@ -63,7 +76,7 @@ export function FlowChart({ days }) {
   if (chart.empty) {
     return <p className="ia-empty">No open-market filings in this window.</p>;
   }
-  const { width, height, zeroY, bars, line, marks, barBound, netBound } = chart;
+  const { width, height, zeroY, bars, line, marks, barBound, netBound, breaks } = chart;
   const labelEvery = Math.ceil(marks.length / 8);
 
   return (
@@ -91,6 +104,7 @@ export function FlowChart({ days }) {
         <small>
           Bars to ±{barBound} filings a day; the net line to ±{netBound}. Separate
           scales, so a rising total cannot flatten the daily bars.
+          {breaks ? ` The line breaks over ${breaks === 1 ? 'a stretch' : `${breaks} stretches`} with no filings — those days are not covered by any export, which is not the same as nothing having happened.` : ''}
         </small>
       </figcaption>
     </figure>
@@ -190,13 +204,55 @@ export function PledgeWatch({ rows }) {
   );
 }
 
+/**
+ * What the current view is made of, in words.
+ *
+ * The sentence has to follow the filter. Written as a fixed split it read
+ * "743 insider filings and 0 takeover-code filings" while the takeover filter
+ * was simply switched off, which states that none exist rather than that none
+ * are being shown.
+ */
+export function RegimeNote({ stats }) {
+  const insider = Number(stats?.insiderRecords) || 0;
+  const sast = Number(stats?.sastRecords) || 0;
+  const coverage = stats?.valueCoveragePct;
+  if (insider && sast) {
+    return (
+      <>
+        {count(insider)} insider filings and {count(sast)} takeover-code filings.
+        A takeover-code filing discloses a shareholding change and never a price,
+        which is why value coverage is quoted against insider filings alone.
+      </>
+    );
+  }
+  if (sast) {
+    return (
+      <>
+        Takeover-code filings only — an acquirer crossing a shareholding threshold,
+        rather than a director trading their own company. These disclose how much
+        of the company moved, never what was paid for it.
+      </>
+    );
+  }
+  return (
+    <>
+      Insider filings only — directors and promoters trading their own company.
+      {coverage == null ? null : ` Value is stated on ${coverage}% of them.`} Switch
+      to the takeover code for acquirers crossing a shareholding threshold.
+    </>
+  );
+}
+
 export function TradeRow({ row }) {
-  const buy = isBuy(row);
+  const way = direction(row);
   const market = openMarket(row);
+  const share = Number(row.traded_pct);
   return (
     <article className={market ? 'ia-trade' : 'ia-trade muted'}>
-      <div className={`ia-action ${buy ? 'buy' : 'sale'}`}>
-        {buy ? <ArrowUpRight aria-hidden="true" /> : <ArrowDownRight aria-hidden="true" />}
+      <div className={`ia-action ${way}`}>
+        {way === 'buy' ? <ArrowUpRight aria-hidden="true" /> : null}
+        {way === 'sell' ? <ArrowDownRight aria-hidden="true" /> : null}
+        {way === 'flat' ? <Minus aria-hidden="true" /> : null}
       </div>
       <div className="ia-who">
         <h3>{row.company_name}{row.symbol ? <em>{row.symbol}</em> : null}</h3>
@@ -205,7 +261,8 @@ export function TradeRow({ row }) {
       <span className={market ? 'ia-tag on' : 'ia-tag'}>{row.mode}</span>
       <div className="ia-number">
         <strong>{row.value ? money(row.value) : count(row.quantity)}</strong>
-        <small>{row.value ? `${count(row.quantity)} shares` : 'shares · no value stated'}</small>
+        <small>{row.value ? `${count(row.quantity)} shares` : `${count(row.quantity)} shares · no value stated`}</small>
+        {Number.isFinite(share) && share >= 0.01 ? <b>{share}% of the company</b> : null}
       </div>
     </article>
   );
@@ -311,9 +368,7 @@ export default function InsiderActivityPage() {
 
           <p className="ia-note">
             <CalendarDays aria-hidden="true" />
-            {count(stats.insiderRecords)} insider filings and {count(stats.sastRecords)} takeover-code
-            filings. Takeover-code filings disclose a shareholding change and never a
-            price, which is why value coverage is quoted against insider filings alone.
+            <RegimeNote stats={stats} />
           </p>
 
           <main className="ia-main">

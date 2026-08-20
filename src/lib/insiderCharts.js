@@ -30,7 +30,7 @@ export function niceBound(value) {
  * hundreds, so sharing one axis would flatten the daily bars into the baseline.
  * The axis each series belongs to is labelled on the chart.
  */
-export function flowChart(days, { width = 960, height = 260, gutter = 44, pad = 16 } = {}) {
+export function flowChart(days, { width = 960, height = 260, gutter = 44, pad = 16, gapBreakDays = 10 } = {}) {
   const points = (days || []).filter((day) => day && day.date);
   if (!points.length) return { empty: true, bars: [], line: '', width, height };
 
@@ -42,14 +42,25 @@ export function flowChart(days, { width = 960, height = 260, gutter = 44, pad = 
   const netValues = points.map((d) => d.cumulativeNet || 0);
   const netBound = niceBound(Math.max(Math.abs(Math.min(...netValues, 0)), Math.abs(Math.max(...netValues, 0)), 1));
 
-  const slot = plotWidth / points.length;
-  // Leave a visible gap between days without letting a long window shrink the
-  // bars to invisibility.
-  const barWidth = Math.max(Math.min(slot * 0.52, 22), 3);
+  // Positioned by date rather than by index. Evenly spaced slots put 23 June
+  // next to 4 August as though they were consecutive sessions, which hid a
+  // six-week hole in the exports behind a chart that looked continuous. A real
+  // time axis draws the hole as a hole.
+  const at = (date) => Date.parse(`${date}T00:00:00Z`);
+  const first = at(points[0].date);
+  const span = at(points.at(-1).date) - first;
+  const position = (date) => (span > 0
+    ? gutter + ((at(date) - first) / span) * plotWidth
+    : gutter + plotWidth / 2);
+
+  // Sized off the tightest gap between two days that actually carry filings, so
+  // neighbouring bars never overlap, with a floor that keeps them visible.
+  const gaps = points.slice(1).map((day, index) => position(day.date) - position(points[index].date));
+  const barWidth = Math.max(Math.min(gaps.length ? Math.min(...gaps) * 0.7 : 22, 22), 3);
 
   const bars = [];
-  points.forEach((day, index) => {
-    const centre = gutter + slot * (index + 0.5);
+  points.forEach((day) => {
+    const centre = position(day.date);
     for (const [key, direction] of [['buys', -1], ['sells', 1]]) {
       const count = day[key] || 0;
       if (!count) continue;
@@ -66,11 +77,19 @@ export function flowChart(days, { width = 960, height = 260, gutter = 44, pad = 
     }
   });
 
+  // The line breaks across a stretch with no filings rather than running flat
+  // through it. Drawn continuously it claims the net held steady for six weeks,
+  // when the truth is that no export covers those days.
+  const DAY = 86_400_000;
+  let breaks = 0;
   const line = points
     .map((day, index) => {
-      const x = gutter + slot * (index + 0.5);
+      const x = position(day.date);
       const y = zeroY - ((day.cumulativeNet || 0) / netBound) * (plotHeight / 2);
-      return `${index ? 'L' : 'M'}${x.toFixed(1)} ${y.toFixed(1)}`;
+      const gapDays = index ? (at(day.date) - at(points[index - 1].date)) / DAY : 0;
+      const restart = !index || gapDays > gapBreakDays;
+      if (index && restart) breaks += 1;
+      return `${restart ? 'M' : 'L'}${x.toFixed(1)} ${y.toFixed(1)}`;
     })
     .join(' ');
 
@@ -83,9 +102,12 @@ export function flowChart(days, { width = 960, height = 260, gutter = 44, pad = 
     netBound,
     bars,
     line,
-    marks: points.map((day, index) => ({
+    // How many stretches of missing coverage the window contains, so the page
+    // can say so in words rather than leaving the reader to spot the gap.
+    breaks,
+    marks: points.map((day) => ({
       date: day.date,
-      x: gutter + slot * (index + 0.5),
+      x: position(day.date),
       cumulativeNet: day.cumulativeNet || 0,
       buys: day.buys || 0,
       sells: day.sells || 0,

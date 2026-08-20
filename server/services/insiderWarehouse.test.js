@@ -140,3 +140,16 @@ test('search covers the company, the person and the ticker', () => {
   assert.equal(summarise(rows, { search: 'shroff' }).stats.records, 1);
   assert.equal(summarise(rows, { search: 'astral' }).stats.records, 1);
 });
+
+test('a filtered view reports what it is showing, not what exists', () => {
+  // Written as a fixed split the page read "743 insider filings and 0
+  // takeover-code filings" while the takeover filter was switched off, which
+  // states that none exist rather than that none are shown.
+  const rows = [
+    row(),
+    row({ person: 'B', regulation: 'SAST (29(2))', regime: 'sast', value: null }),
+  ];
+  assert.equal(summarise(rows, { regime: 'insider' }).stats.sastRecords, 0);
+  assert.equal(summarise(rows, { regime: 'sast' }).stats.insiderRecords, 0);
+  assert.equal(summarise(rows, {}).stats.sastRecords, 1);
+});

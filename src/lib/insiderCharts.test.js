@@ -73,3 +73,50 @@ test('a single reading draws no sparkline', () => {
 test('a flat series still draws a line', () => {
   assert.ok(sparkline([4, 4, 4]).includes('L'));
 });
+
+test('days are placed by date, not by position in the list', () => {
+  // Evenly spaced slots put 23 June next to 4 August as though they were
+  // consecutive sessions, hiding a six-week hole in the exports behind a chart
+  // that looked continuous.
+  const chart = flowChart([
+    day('2026-06-23', 1, 0, 1), day('2026-08-04', 1, 0, 2), day('2026-08-05', 1, 0, 3),
+  ]);
+  const [a, b, c] = chart.marks.map((mark) => mark.x);
+  assert.ok(b - a > (c - b) * 10, 'the six-week gap must dwarf the one-day gap');
+});
+
+test('bars do not overlap when two days are adjacent', () => {
+  const chart = flowChart([
+    day('2026-08-01', 1, 0, 1), day('2026-08-02', 1, 0, 2), day('2026-09-30', 1, 0, 3),
+  ]);
+  const [a, b] = chart.marks.map((mark) => mark.x);
+  assert.ok(chart.bars[0].width <= b - a, 'bar must fit inside the tightest gap');
+});
+
+test('a single day sits in the middle rather than at the edge', () => {
+  const chart = flowChart([day('2026-08-20', 3, 1, 2)]);
+  assert.ok(chart.marks[0].x > 100, 'one point should not be pinned to the left gutter');
+});
+
+test('the net line breaks over a stretch with no filings', () => {
+  // Drawn continuously it claims the net held steady for six weeks, when the
+  // truth is that no export covers those days.
+  const chart = flowChart([
+    day('2026-06-23', 1, 0, 1), day('2026-08-04', 1, 0, 2), day('2026-08-05', 1, 0, 3),
+  ]);
+  assert.equal(chart.breaks, 1);
+  assert.equal((chart.line.match(/M/g) || []).length, 2, 'two segments, not one');
+});
+
+test('consecutive days stay joined', () => {
+  const chart = flowChart([day('2026-08-04', 1, 0, 1), day('2026-08-05', 1, 0, 2)]);
+  assert.equal(chart.breaks, 0);
+  assert.equal((chart.line.match(/M/g) || []).length, 1);
+});
+
+test('a weekend is not a break in coverage', () => {
+  // Filings stop on Saturday and Sunday in every window; treating that as a
+  // hole would break the line every five days.
+  const chart = flowChart([day('2026-08-07', 1, 0, 1), day('2026-08-10', 1, 0, 2)]);
+  assert.equal(chart.breaks, 0);
+});
