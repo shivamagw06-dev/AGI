@@ -226,7 +226,16 @@ def _map_warehouse_row(
     if roe is None:
         roe = _num(ratios.get("roe"))
 
-    upside = _num(mi.get("consensus_upside"))
+    # Recomputed from the two numbers the page prints beside it, so the target,
+    # the price and the upside always reconcile. The pre-computed value carried
+    # its own price: SUNTECK showed 45.31% from a target of 435.93, which
+    # implies a price of 300.00 while the stock was at 294.25.
+    target_price = _num(mi.get("consensus_target")) or _num(legacy_consensus.get("target_price"))
+    price_now = _num(mi.get("cmp"))
+    upside = (round((target_price / price_now - 1.0) * 100.0, 2)
+              if target_price and price_now and price_now > 0 else None)
+    if upside is None:
+        upside = _num(mi.get("consensus_upside"))
     if upside is None:
         upside = _num(legacy_consensus.get("upside"))
     coverage = _num(mi.get("analyst_count"))
@@ -252,7 +261,7 @@ def _map_warehouse_row(
         "upside": upside,
         "coverage": coverage,
         "buy_count": buy_count,
-        "target_price": _num(mi.get("consensus_target")) or _num(legacy_consensus.get("target_price")),
+        "target_price": target_price,
         "return_1y": r1,
         "return_3y": _num(legacy_consensus.get("return_3y")),
         "source": "warehouse.consensus" if upside is not None or coverage is not None else (
@@ -307,7 +316,12 @@ def _map_warehouse_row(
             "accounting_scope": ratios.get("accounting_scope") or ratios.get("scope") or "not_provided",
             "valuation_source": mi.get("source") or SOURCES["market_data"],
             "fundamentals_source": SOURCES["fundamentals"],
-            "consensus_date": (legacy_consensus or {}).get("consensus_date"),
+            # The warehouse consensus row carries the date; the legacy file
+            # store is only a fallback. Reading the fallback first left every
+            # desk row with a null date, so nothing on the page said how old
+            # the analyst view was.
+            "consensus_date": (mi.get("consensus_date")
+                               or (legacy_consensus or {}).get("consensus_date")),
         },
     }
 
@@ -378,6 +392,11 @@ def _universe_from_warehouse() -> list[dict[str, Any]]:
                 legacy = {**legacy, "coverage": wh.get("analyst_count")}
             if not legacy.get("target_price") and wh.get("target_price") is not None:
                 legacy = {**legacy, "target_price": wh.get("target_price")}
+            # Carry the date too, or the desk cannot say how old the analyst
+            # view is - every row reported a null consensus_date while the
+            # warehouse row was stamped 2026-08-02.
+            if wh.get("consensus_date") is not None:
+                legacy = {**legacy, "consensus_date": wh.get("consensus_date")}
         fac = factors.get(sym) or {}
         if fac:
             factors_joined += 1

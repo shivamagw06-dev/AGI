@@ -215,3 +215,42 @@ class TestOneYearReturn:
         monkeypatch.setattr("institutional_warehouse.db.query", _boom)
         monkeypatch.setattr("institutional_warehouse.db.physical_table", lambda t: "t")
         assert scanner._return_1y_by_symbol() == {}
+
+
+class TestConsensusSourcing:
+    """Every desk row reported consensus_date null while the warehouse row was
+    stamped 2026-08-02, so nothing on the page said how old the analyst view
+    was - the same blind spot that let a year-stale 1Y return through."""
+
+    def test_upside_is_recomputed_from_target_and_price(self):
+        """SUNTECK showed 45.31% from a target of 435.93, which implies a price
+        of 300.00 while the stock was at 294.25. The page prints
+        u = P_target/P - 1, so it must be computed that way."""
+        row = scanner._map_warehouse_row(
+            {"symbol": "SUNTECK", "cmp": 294.25, "consensus_target": 435.9323,
+             "consensus_upside": 45.31},
+            ratios={}, factors={}, return_1y=None, legacy_consensus={},
+        )
+        assert row["consensus"]["upside"] == pytest.approx(48.15, abs=0.02)
+        assert row["consensus"]["target_price"] == pytest.approx(435.9323)
+
+    def test_it_falls_back_when_a_price_is_missing(self):
+        row = scanner._map_warehouse_row(
+            {"symbol": "AAA", "cmp": None, "consensus_upside": 12.0},
+            ratios={}, factors={}, return_1y=None, legacy_consensus={},
+        )
+        assert row["consensus"]["upside"] == 12.0
+
+    def test_a_zero_price_does_not_divide(self):
+        row = scanner._map_warehouse_row(
+            {"symbol": "AAA", "cmp": 0.0, "consensus_target": 100.0},
+            ratios={}, factors={}, return_1y=None, legacy_consensus={},
+        )
+        assert row["consensus"]["upside"] is None
+
+    def test_the_consensus_date_reaches_the_row(self):
+        row = scanner._map_warehouse_row(
+            {"symbol": "AAA", "cmp": 100.0, "consensus_date": "2026-08-02"},
+            ratios={}, factors={}, return_1y=None, legacy_consensus={},
+        )
+        assert row["data_context"]["consensus_date"] == "2026-08-02"
