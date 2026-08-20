@@ -104,6 +104,27 @@ def mark_date(
     )
 
 
+def frontier_date(source: str) -> Optional[str]:
+    """The oldest day this source has actually collected.
+
+    The walker generates its candidates as a fixed number of weekdays counted
+    backwards, and counting from today caps how far back it can ever look -
+    about eleven months at the scheduled slice size. It reached 2022 only
+    because someone passed an explicit start by hand.
+
+    Counting from the oldest collected day instead means each slice begins where
+    the last one stopped, so the window travels with the work rather than
+    staying pinned to the present.
+    """
+    rows = db.query(
+        "SELECT MIN(trade_date) AS oldest FROM wh_backfill_dates"
+        " WHERE source = ? AND status IN (?, ?)",
+        (source, DONE, SKIPPED),
+    )
+    oldest = (rows[0] if rows else {}).get("oldest")
+    return str(oldest) if oldest else None
+
+
 def reopen_dates(
     source: str,
     *,

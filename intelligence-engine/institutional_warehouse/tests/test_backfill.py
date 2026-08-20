@@ -693,3 +693,73 @@ class TestReopenDates:
         checkpoints.reopen_dates(nse_archive.SOURCE, reason="series filter widened")
         after = store.all_rows("daily_market_history", limit=5000)
         assert len(after) == len(before)
+
+
+class TestWalkFollowsTheFrontier:
+    """How far back a scheduled slice can ever see.
+
+    The walker counts a fixed number of weekdays backwards. Counted from today
+    that caps the reach at roughly the window's own length - about eleven months
+    at the scheduled size - while the archive goes back to 1995. It reached 2022
+    only because an explicit start was passed by hand.
+    """
+
+    def test_with_nothing_collected_it_starts_at_the_top(self):
+        claimed = nse_archive.backfill(actor="tester", days=2,
+                                       fetch=archive_fetcher(set()))
+        assert claimed["ok"] is not False
+
+    def test_the_window_moves_back_as_days_are_collected(self):
+        source = nse_archive.SOURCE
+        checkpoints.mark_date(source, "2023-03-20", status="done", rows=10)
+        assert checkpoints.frontier_date(source) == "2023-03-20"
+        checkpoints.mark_date(source, "2023-03-17", status="done", rows=10)
+        assert checkpoints.frontier_date(source) == "2023-03-17", "frontier follows the oldest"
+
+    def test_a_day_that_failed_does_not_move_the_frontier(self):
+        """Otherwise one unreachable day would drag the window past everything
+        behind it, and those days would never be looked at again."""
+        source = "src_frontier_fail"
+        checkpoints.mark_date(source, "2023-03-20", status="done", rows=10)
+        checkpoints.mark_date(source, "2019-01-02", status="failed", error="404")
+        assert checkpoints.frontier_date(source) == "2023-03-20"
+
+    def test_a_source_that_has_collected_nothing_has_no_frontier(self):
+        assert checkpoints.frontier_date("src_never_run") is None
+
+    def test_both_the_newest_and_the_oldest_end_are_offered(self):
+        """One window cannot do both jobs: counted from today the walk never
+        digs, counted from the frontier it never notices this morning's file."""
+        source = nse_archive.SOURCE
+        checkpoints.mark_date(source, "2023-03-20", status="done", rows=10)
+        seen = []
+
+        def watching(url: str) -> bytes:
+            seen.append(url)
+            raise FileNotFoundError(url)
+
+        nse_archive.backfill(actor="tester", days=3, fetch=watching)
+        years = {u.split("sec_bhavdata_full_")[-1][4:8] for u in seen if "sec_bhavdata_full_" in u}
+        assert "2023" in years, "must look near the frontier"
+        assert len(years) > 1, "must also look near today"
+
+    def test_a_backlog_at_the_top_does_not_starve_the_dig(self):
+        """Reopening 943 recent days filled the top window completely. Offered
+        as one combined list, the recent end takes the whole slice and the deep
+        end never gets a turn - which is the stall, not a fix for it."""
+        source = nse_archive.SOURCE
+        checkpoints.mark_date(source, "2023-03-20", status="done", rows=10)
+        seen = []
+
+        def watching(url: str) -> bytes:
+            seen.append(url)
+            raise FileNotFoundError(url)
+
+        nse_archive.backfill(actor="tester", days=8, fetch=watching)
+        years = {u.split("sec_bhavdata_full_")[-1][4:8] for u in seen if "sec_bhavdata_full_" in u}
+        assert "2023" in years, "the dig must get a share of every slice"
+
+    def test_the_dig_gets_most_of_the_slice(self):
+        """Keeping up with new days needs a few slots. Reaching 2016 needs the
+        rest, and there are roughly 2,600 weekdays to cross."""
+        assert nse_archive.RECENT_SHARE <= 0.5

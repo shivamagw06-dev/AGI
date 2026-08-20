@@ -183,6 +183,47 @@ def fetch_day(
     return {"ok": False, "trade_date": trade_date, "rows": [], "errors": errors}
 
 
+# What share of a slice goes to keeping up with new days. The rest digs.
+#
+# The two ends have to be claimed separately. Offering one combined list does
+# not work: the recent end always sorts first, so it takes the whole slice and
+# the deep end never gets a turn - which is the stall, not a fix for it.
+RECENT_SHARE = 0.25
+
+
+def _claim_both_ends(days: int, floor_date, max_attempts: int) -> list[str]:
+    """Days from the top of the archive and days from where digging left off.
+
+    One window cannot do both jobs. Counted from today the walk can never see
+    further back than its own length - around eleven months at the scheduled
+    slice size - while the archive runs to 1995. Counted only from the frontier
+    it digs happily and never notices this morning's bhavcopy.
+    """
+    recent_budget = max(1, int(days * RECENT_SHARE))
+    recent = checkpoints.claim_dates(
+        SOURCE,
+        trading_days_backwards(start=None, floor=floor_date, limit=max(days, 1)),
+        limit=recent_budget, max_attempts=max_attempts)
+
+    frontier = checkpoints.frontier_date(SOURCE)
+    if not frontier:
+        # Nothing collected yet, so there is no deep end to dig at. Spend the
+        # whole slice at the top; the frontier appears as soon as a day lands.
+        return checkpoints.claim_dates(
+            SOURCE,
+            trading_days_backwards(start=None, floor=floor_date, limit=max(days * 6, days)),
+            limit=days, max_attempts=max_attempts)
+
+    deep = checkpoints.claim_dates(
+        SOURCE,
+        trading_days_backwards(start=datetime.strptime(frontier, "%Y-%m-%d").date(),
+                               floor=floor_date, limit=max(days * 6, days)),
+        limit=max(days - len(recent), 1), max_attempts=max_attempts)
+
+    seen: set[str] = set()
+    return [d for d in (*recent, *deep) if not (d in seen or seen.add(d))]
+
+
 def backfill(
     *,
     actor: str = "backfill",
@@ -197,10 +238,21 @@ def backfill(
     floor_date = datetime.strptime(floor, "%Y-%m-%d").date() if floor else None
     # Look at a wide calendar window but only claim the days still owed, so a
     # long-running backfill keeps making progress instead of re-walking the top.
-    candidates = trading_days_backwards(start=start_date, floor=floor_date,
-                                        limit=max(int(days) * 6, int(days)))
-    claimed = checkpoints.claim_dates(SOURCE, candidates, limit=int(days),
-                                      max_attempts=max_attempts)
+    #
+    # Two windows, because one cannot do both jobs. Counted from today the walk
+    # can never see further back than its own length - around eleven months at
+    # the scheduled slice size - and the archive goes to 1995. Counted only from
+    # the frontier it digs happily and never notices this morning's bhavcopy.
+    #
+    # So: a short window at the top for days as they appear, and a long one from
+    # the oldest day already collected, which moves back as the work advances.
+    if start_date is not None:
+        candidates = trading_days_backwards(start=start_date, floor=floor_date,
+                                            limit=max(int(days) * 6, int(days)))
+        claimed = checkpoints.claim_dates(SOURCE, candidates, limit=int(days),
+                                          max_attempts=max_attempts)
+    else:
+        claimed = _claim_both_ends(int(days), floor_date, max_attempts)
 
     imported = 0
     written = {"inserted": 0, "updated": 0, "unchanged": 0}
