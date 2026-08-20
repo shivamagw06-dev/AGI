@@ -10219,6 +10219,42 @@ async def valuation_consensus_seed(payload: dict[str, Any] = Body(default={})):
 # ---------------------------------------------------------------------------
 
 
+@router.post("/hedge-fund-lab/backtest/estimate-revision")
+def hedge_fund_estimate_revision_backtest(payload: dict[str, Any] = Body(default={})):
+    """Monthly walk-forward on point-in-time consensus revisions.
+
+    The one strategy here whose edge is data assembly rather than speed: it
+    reads 258,465 vintages that say what was believed on each month end, so
+    ranking on them involves no look-ahead. Sync def on purpose - it scans the
+    warehouse, so FastAPI runs it in the threadpool.
+    """
+    from hedge_fund_lab.estimate_revision import backtest
+    from institutional_warehouse import db, store
+
+    body = payload or {}
+    try:
+        vintages = store.all_rows("consensus_metric_vintages", limit=400000) or []
+        table = db.physical_table("daily_market_history")
+        prices = db.query(
+            f"""SELECT symbol, date, close FROM {table}
+                WHERE COALESCE(sys_published, 1) = 1 AND close IS NOT NULL"""
+        ) or []
+    except Exception as exc:
+        return {"ok": False, "error": "warehouse_unavailable", "detail": str(exc)[:200]}
+
+    result = backtest(
+        vintage_rows=vintages,
+        price_rows=prices,
+        lookback_months=int(body.get("lookback_months") or 3),
+        holdings=int(body.get("holdings") or 25),
+        cost_bps=float(body.get("cost_bps") or 25.0),
+    )
+    # The month-by-month series is long and only useful for plotting.
+    if not body.get("include_periods"):
+        result.pop("periods", None)
+    return result
+
+
 @router.get("/hedge-fund-lab/corporate-action-audit")
 def hedge_fund_corporate_action_audit(limit: int = 30000, symbols: int = 150):
     """What the price adjustment can and cannot stand behind.
