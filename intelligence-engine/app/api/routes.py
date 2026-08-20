@@ -10219,6 +10219,34 @@ async def valuation_consensus_seed(payload: dict[str, Any] = Body(default={})):
 # ---------------------------------------------------------------------------
 
 
+def _month_end_closes(db) -> list[dict[str, Any]]:
+    """Last trading close of each month, aggregated in SQL.
+
+    The monthly strategies previously selected every daily bar - 6.86 million
+    rows - into the request process, which is what took the engine down during
+    market hours on 2026-08-20. Only the month-end close is ever used, so the
+    reduction happens in the database: roughly 300k rows instead of 6.86M.
+
+    Weekends are excluded here too. NSE does not trade then and those rows
+    carry a differently scaled series, so one could otherwise decide a month's
+    closing price.
+    """
+    table = db.physical_table("daily_market_history")
+    return db.query(
+        f"""SELECT symbol, date, close FROM (
+                SELECT symbol, date, close,
+                       ROW_NUMBER() OVER (
+                           PARTITION BY symbol, substr(date, 1, 7)
+                           ORDER BY date DESC
+                       ) AS rn
+                FROM {table}
+                WHERE COALESCE(sys_published, 1) = 1
+                  AND close IS NOT NULL
+                  AND CAST(strftime('%w', date) AS INTEGER) BETWEEN 1 AND 5
+            ) WHERE rn = 1"""
+    ) or []
+
+
 @router.post("/hedge-fund-lab/backtest/neglected-quality")
 def hedge_fund_neglected_quality_backtest(payload: dict[str, Any] = Body(default={})):
     """Quality ranking over companies with no analyst coverage.
@@ -10237,11 +10265,7 @@ def hedge_fund_neglected_quality_backtest(payload: dict[str, Any] = Body(default
         covered = {str(r.get("symbol") or "").upper()
                    for r in (store.all_rows("consensus", limit=20000) or [])
                    if r.get("symbol")}
-        table = db.physical_table("daily_market_history")
-        prices = db.query(
-            f"""SELECT symbol, date, close FROM {table}
-                WHERE COALESCE(sys_published, 1) = 1 AND close IS NOT NULL"""
-        ) or []
+        prices = _month_end_closes(db)
     except Exception as exc:
         return {"ok": False, "error": "warehouse_unavailable", "detail": str(exc)[:200]}
 
@@ -10271,11 +10295,7 @@ def hedge_fund_estimate_revision_backtest(payload: dict[str, Any] = Body(default
     body = payload or {}
     try:
         vintages = store.all_rows("consensus_metric_vintages", limit=400000) or []
-        table = db.physical_table("daily_market_history")
-        prices = db.query(
-            f"""SELECT symbol, date, close FROM {table}
-                WHERE COALESCE(sys_published, 1) = 1 AND close IS NOT NULL"""
-        ) or []
+        prices = _month_end_closes(db)
     except Exception as exc:
         return {"ok": False, "error": "warehouse_unavailable", "detail": str(exc)[:200]}
 
