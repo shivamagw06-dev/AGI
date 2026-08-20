@@ -27,7 +27,13 @@ import time
 from datetime import date
 from typing import Any, Optional
 
-from .live_alpha_bridge import ENGINE_LABELS, fetch_live_alpha_rows, signed_score
+from .live_alpha_bridge import (
+    _MIN_QUALITY as _MIN_QUALITY_ECHO,
+    _WEAK_LABELS as _WEAK_LABELS_ECHO,
+    ENGINE_LABELS,
+    fetch_live_alpha_rows,
+    signed_score,
+)
 
 # Portfolio construction constants. Overridable so a caller can explore the
 # sensitivity of position size without redeploying.
@@ -235,6 +241,37 @@ def _base_row(sig: dict[str, Any], risk_row: Optional[dict], liq_row: Optional[d
     }
 
 
+def engine_funnel(engine: str) -> dict[str, Any]:
+    """Why an engine contributed nothing, rather than leaving a blank card.
+
+    A card showing zero is indistinguishable from a broken one. The five Live
+    Alpha engines each publish their whole 500-name universe every run and
+    grade most of it as noise - on 2026-08-20, 1,401 of 2,198 stored signals
+    were classified neutral and 1,674 were labelled ignore - so an empty
+    strategy is usually correct and should say so.
+    """
+    payload = _cached("signals", lambda: fetch_live_alpha_rows(limit=400))
+    bridge = (payload.get("meta") or {}).get("funnel") or payload.get("funnel") or {}
+    rows = payload.get("rows") or []
+    present = sum(1 for r in rows if (r.get("engines") or {}).get(engine))
+    return {
+        "symbols_after_bridge_filters": len(rows),
+        "carrying_this_engine": present,
+        "bridge_funnel": bridge,
+        "bridge_filters": {
+            "minimum_quality_score": _MIN_QUALITY_ECHO,
+            "rejected_quality_labels": sorted(_WEAK_LABELS_ECHO),
+            "rejected_classifications": ["filtered", "neutral"],
+            "requires": ["a direction", "liquidity_ok", "a fresh run"],
+        },
+        "reading": (
+            "no signal from this engine cleared the quality and classification "
+            "gates in the latest run" if present == 0 else
+            f"{present} symbols carried a qualifying signal from this engine"
+        ),
+    }
+
+
 def _engine_rows(engine: str, limit: int) -> list[dict[str, Any]]:
     payload = _cached("signals", lambda: fetch_live_alpha_rows(limit=400))
     if not payload.get("ok"):
@@ -344,6 +381,14 @@ LIVE_STRATEGIES = {
     "flow_anomaly": ("Volume / Liquidity Anomaly", scan_flow_anomaly),
 }
 
+# Which Live Alpha engine feeds each strategy, so an empty card can report the
+# funnel for the right one.
+_STRATEGY_ENGINE = {
+    "opening_range_breakout": "opening_range_expansion_v1",
+    "intraday_reversion": "intraday_mean_reversion_v1",
+    "flow_anomaly": "volume_liquidity_anomaly_v1",
+}
+
 
 def board(limit: int = 12) -> dict[str, Any]:
     """All three strategies plus the sizing constants they share."""
@@ -354,6 +399,11 @@ def board(limit: int = 12) -> dict[str, Any]:
         except Exception as exc:  # pragma: no cover - defensive
             result = {"ok": False, "strategy": key, "label": label,
                       "error": str(exc)[:200], "results": [], "count": 0}
+        # An empty card must explain itself; a silent zero reads as a fault.
+        if not (result.get("results") or []):
+            engine_id = _STRATEGY_ENGINE.get(key)
+            if engine_id:
+                result = {**result, "why_empty": engine_funnel(engine_id)}
         cards.append(result)
     return {
         "ok": True,

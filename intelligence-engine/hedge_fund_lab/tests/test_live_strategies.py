@@ -162,3 +162,45 @@ class TestBoardContract:
         board = ls.board(limit=1)
         assert len(board["cards"]) == len(ls.LIVE_STRATEGIES)
         assert {c["strategy"] for c in board["cards"]} == set(ls.LIVE_STRATEGIES)
+
+
+class TestEmptyCardsExplainThemselves:
+    """A card showing zero is indistinguishable from a broken one. The engines
+    publish their whole 500-name universe each run and grade most of it noise -
+    1,401 of 2,198 stored signals were classified neutral on 2026-08-20 - so an
+    empty strategy is usually correct and must say so."""
+
+    def test_every_strategy_maps_to_an_engine(self):
+        assert set(ls._STRATEGY_ENGINE) == set(ls.LIVE_STRATEGIES)
+
+    def test_an_empty_card_carries_a_funnel(self, monkeypatch):
+        monkeypatch.setattr(ls, "fetch_live_alpha_rows",
+                            lambda **_: {"ok": True, "rows": [], "meta": {"funnel": {"kept": 0}}})
+        monkeypatch.setattr(ls, "_risk_and_liquidity", lambda: ({}, {}))
+        board = ls.board(limit=5)
+        for card in board["cards"]:
+            assert card["why_empty"]["carrying_this_engine"] == 0
+            assert "quality" in card["why_empty"]["reading"]
+
+    def test_the_funnel_states_the_gates_that_rejected_the_signals(self, monkeypatch):
+        monkeypatch.setattr(ls, "fetch_live_alpha_rows",
+                            lambda **_: {"ok": True, "rows": [], "meta": {}})
+        monkeypatch.setattr(ls, "_risk_and_liquidity", lambda: ({}, {}))
+        funnel = ls.engine_funnel("opening_range_expansion_v1")
+        gates = funnel["bridge_filters"]
+        assert "neutral" in gates["rejected_classifications"]
+        assert "ignore" in gates["rejected_quality_labels"]
+        assert gates["minimum_quality_score"] > 0
+
+    def test_a_populated_card_needs_no_explanation(self, monkeypatch):
+        row = {"ticker": "AAA", "symbol": "AAA", "sector": "IT",
+               "engines": {"opening_range_expansion_v1": {
+                   "symbol": "AAA", "direction": "positive", "signal_quality_score": 80,
+                   "alpha_z": 1.5, "factor_values": {"breakout_pct": 2.0}}}}
+        monkeypatch.setattr(ls, "fetch_live_alpha_rows",
+                            lambda **_: {"ok": True, "rows": [row], "meta": {}})
+        monkeypatch.setattr(ls, "_risk_and_liquidity",
+                            lambda: ({"AAA": {"atr": 5.0}}, {"AAA": {"adv_3m": 3.0}}))
+        board = ls.board(limit=5)
+        breakout = next(c for c in board["cards"] if c["strategy"] == "opening_range_breakout")
+        assert "why_empty" not in breakout
