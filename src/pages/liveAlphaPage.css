@@ -590,3 +590,22 @@
   .la-head h1{font-size:24px}
   .la-metric__value{font-size:22px}
 }
+
+/* Scheduled strategies 6-7: sector rotation and equity opportunities.
+   Visually subordinate to the live engines above, because they run on a
+   different cadence and are not part of the composite. */
+.la-section { margin-top: 2.5rem; }
+.la-section__head h2 { font-size: 1.05rem; margin: 0 0 .25rem; }
+.la-section__note { margin: 0 0 1rem; max-width: 68ch; font-size: .82rem; line-height: 1.55; color: var(--la-dim); }
+.la-sched { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); }
+.la-sched__card { border: 1px solid var(--la-line); border-radius: 10px; background: var(--la-panel); padding: 1rem; }
+.la-sched__head { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; margin-bottom: .75rem; }
+.la-sched__head h3 { margin: .15rem 0 0; font-size: .98rem; }
+.la-table--compact th, .la-table--compact td { padding: .35rem .5rem; font-size: .82rem; }
+.la-tag { display: inline-block; padding: .1rem .45rem; border-radius: 999px; font-size: .72rem; text-transform: capitalize; border: 1px solid var(--la-line); }
+.la-tag--leading { color: #34d399; border-color: rgba(52,211,153,.35); }
+.la-tag--improving { color: #60a5fa; border-color: rgba(96,165,250,.35); }
+.la-tag--weakening { color: #fbbf24; border-color: rgba(251,191,36,.35); }
+.la-tag--lagging { color: #f87171; border-color: rgba(248,113,113,.35); }
+.la-pos { color: #34d399; }
+.la-neg { color: #f87171; }

@@ -13,7 +13,11 @@ import {
 import './liveAlphaPage.css';
 
 /**
- * Live Alpha — five intraday research engines over the Nifty 500.
+ * Live Alpha — seven research strategies over the Nifty 500.
+ *
+ * Five intraday engines drive the composite; two scheduled end-of-day models
+ * (sector rotation, equity opportunities) run beside it on the Groww feed and
+ * are reported separately rather than blended in.
  *
  * Ordered so the least experienced reader reaches the right conclusion first.
  * The page opens with the state of the data, because a board computed nine
@@ -99,6 +103,110 @@ function ConfidenceBadge({ confidence, basis }) {
     <span className={`la-badge la-badge--${tone}`} title={basis || ''}>
       {confidence === 'MODEL-ONLY' ? 'Model only' : confidence}
     </span>
+  );
+}
+
+function runAge(run) {
+  if (!run?.as_of) return 'never run';
+  const seconds = (Date.now() - Date.parse(run.as_of)) / 1000;
+  return Number.isFinite(seconds) ? ageLabel(seconds) : 'unknown';
+}
+
+/**
+ * Strategies 6 and 7: scheduled end-of-day research over the Groww feed.
+ *
+ * These are not intraday engines and are deliberately excluded from the
+ * five-model composite — they run on a schedule, cover different ground, and
+ * have not been validated on comparable terms. Dropping them from the page
+ * entirely, as the first version of this redesign did, hid two working
+ * strategies whose runs were processing normally.
+ */
+export function ScheduledStrategies({ groww }) {
+  const runs = new Map((groww?.runs || []).map((run) => [run.strategy, run]));
+  const sectors = groww?.sectors || [];
+  const equities = groww?.equities || [];
+  const sectorRun = runs.get('agi_sector_rotation_v1');
+  const equityRun = runs.get('agi_equity_opportunity_v1');
+
+  return (
+    <section className="la-section">
+      <div className="la-section__head">
+        <h2>Scheduled strategies</h2>
+        <p className="la-section__note">
+          End-of-day sector and equity research over the Groww feed. Held separate
+          from the five intraday engines above and never folded into their composite,
+          because they run on a different cadence and are not validated on comparable terms.
+        </p>
+      </div>
+
+      <div className="la-sched">
+        <article className="la-sched__card">
+          <header className="la-sched__head">
+            <div>
+              <span className="la-kicker">Strategy 6 · scheduled</span>
+              <h3>Sector Rotation</h3>
+            </div>
+            <span className="la-muted">{sectors.length} sectors · {runAge(sectorRun)}</span>
+          </header>
+          {sectors.length ? (
+            <div className="la-tablewrap">
+              <table className="la-table la-table--compact">
+                <thead>
+                  <tr><th>#</th><th>Sector</th><th className="la-num">Score</th><th>State</th><th className="la-num">20d rel.</th></tr>
+                </thead>
+                <tbody>
+                  {sectors.slice(0, 12).map((row) => (
+                    <tr key={row.sector}>
+                      <td className="la-muted">{row.rank}</td>
+                      <td><strong>{row.sector}</strong></td>
+                      <td className="la-num">{Number(row.score).toFixed(0)}</td>
+                      <td><span className={`la-tag la-tag--${row.rotation}`}>{row.rotation}</span></td>
+                      <td className={`la-num ${Number(row.relative_20d) >= 0 ? 'la-pos' : 'la-neg'}`}>
+                        {Number(row.relative_20d) >= 0 ? '+' : ''}{Number(row.relative_20d).toFixed(2)}%
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : <p className="la-muted">No sector rotation run received yet.</p>}
+        </article>
+
+        <article className="la-sched__card">
+          <header className="la-sched__head">
+            <div>
+              <span className="la-kicker">Strategy 7 · scheduled</span>
+              <h3>Equity Opportunities</h3>
+            </div>
+            <span className="la-muted">{equities.length} names · {runAge(equityRun)}</span>
+          </header>
+          {equities.length ? (
+            <div className="la-tablewrap">
+              <table className="la-table la-table--compact">
+                <thead>
+                  <tr><th>#</th><th>Stock</th><th className="la-num">Score</th><th className="la-num">20d rel.</th><th>Volume</th></tr>
+                </thead>
+                <tbody>
+                  {equities.slice(0, 12).map((row) => (
+                    <tr key={row.symbol}>
+                      <td className="la-muted">{row.rank}</td>
+                      <td><strong>{row.symbol}</strong></td>
+                      <td className="la-num">{Number(row.score).toFixed(0)}</td>
+                      <td className={`la-num ${Number(row.relative_20d) >= 0 ? 'la-pos' : 'la-neg'}`}>
+                        {Number(row.relative_20d) >= 0 ? '+' : ''}{Number(row.relative_20d).toFixed(2)}%
+                      </td>
+                      <td className={row.volume_confirmation ? '' : 'la-muted'}>
+                        {Number(row.volume_ratio).toFixed(2)}×{row.volume_confirmation ? '' : ' unconfirmed'}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : <p className="la-muted">No equity opportunity run received yet.</p>}
+        </article>
+      </div>
+    </section>
   );
 }
 
@@ -228,8 +336,9 @@ export default function LiveAlphaPage() {
       <header className="la-head">
         <h1>Live Alpha</h1>
         <p className="la-sub">
-          Five intraday research engines across the Nifty 500. These are research
-          observations for analyst review — not recommendations, price targets, or orders.
+          Seven research strategies across the Nifty 500 — five intraday engines,
+          plus scheduled sector and equity models. These are research observations
+          for analyst review, not recommendations, price targets, or orders.
         </p>
       </header>
 
@@ -331,6 +440,8 @@ export default function LiveAlphaPage() {
           </div>
         )}
       </section>
+
+      <ScheduledStrategies groww={payload.groww} />
 
       <footer className="la-foot">
         <p>
