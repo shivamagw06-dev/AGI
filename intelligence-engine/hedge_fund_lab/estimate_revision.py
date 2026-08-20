@@ -38,6 +38,7 @@ from datetime import date
 from typing import Any, Iterable, Optional
 
 from .price_adjustment import _as_date, is_trading_day
+from .shortable import DEFAULT_BORROW_BPS_PA, monthly_borrow_cost, shortable_symbols
 
 MONTHS_PER_YEAR = 12
 DEFAULT_LOOKBACK_MONTHS = 3
@@ -213,8 +214,19 @@ def backtest(
     holdings: int = DEFAULT_HOLDINGS,
     cost_bps: float = DEFAULT_COST_BPS,
     oos_start: str = DEFAULT_OOS_START,
+    shortable: Optional[set[str]] = None,
+    borrow_bps_pa: float = DEFAULT_BORROW_BPS_PA,
 ) -> dict[str, Any]:
-    """Monthly walk-forward: rank on revision, hold one month, pay costs."""
+    """Monthly walk-forward: rank on revision, hold one month, pay costs.
+
+    The short leg is restricted to names with a single-stock future, because a
+    cash-segment short in India must be squared off the same session and cannot
+    be held across a monthly rebalance. That is 214 underlyings against 1,024
+    with a signal, so the unconstrained decile spread was never a portfolio
+    anyone could have run.
+    """
+    universe_shortable = shortable_symbols() if shortable is None else set(shortable)
+    borrow = monthly_borrow_cost(borrow_bps_pa)
     scores = revision_scores(vintage_rows, lookback_months=lookback_months)
     prices = monthly_prices(price_rows)
     if not scores:
@@ -251,14 +263,20 @@ def backtest(
             continue
 
         picks = ranked[:holdings]
-        shorts = ranked[-holdings:]
+        # Walk up from the worst-ranked name, keeping only what can be shorted.
+        eligible_shorts = [s for s in reversed(ranked) if s in universe_shortable]
+        shorts = eligible_shorts[:holdings]
+        rejected_shorts = sum(1 for s in ranked[-holdings:] if s not in universe_shortable)
         gross = sum(forward[s] for s in picks) / len(picks)
         # The universe of covered names, equally weighted: the benchmark this
         # portfolio was actually selected from. Beating it is the only claim a
         # long-only strategy can make; its raw return is mostly market
         # direction, which is why -18% out of sample said little on its own.
         universe = sum(forward.values()) / len(forward)
-        spread = gross - (sum(forward[s] for s in shorts) / len(shorts))
+        # Unconstrained spread kept only to show what the constraint costs.
+        theoretical = gross - (sum(forward[s] for s in ranked[-holdings:]) / holdings)
+        spread = (gross - (sum(forward[s] for s in shorts) / len(shorts)) - borrow
+                  if len(shorts) >= 5 else None)
 
         new_holdings = set(picks)
         turnover = len(new_holdings - held) / max(1, len(new_holdings))
@@ -268,7 +286,10 @@ def backtest(
             "net": round(gross - cost, 6), "turnover": round(turnover, 4),
             "universe": round(universe, 6),
             "excess": round(gross - cost - universe, 6),
-            "long_short": round(spread - cost, 6),
+            "long_short": round(spread - cost, 6) if spread is not None else None,
+            "long_short_unconstrained": round(theoretical - cost, 6),
+            "shorts_available": len(shorts),
+            "shorts_rejected_not_shortable": rejected_shorts,
             "ic": rank_ic(scores[month], forward),
             "breadth": len(forward),
             "implausible_returns_discarded": discarded,
@@ -311,6 +332,22 @@ def backtest(
         "universe_benchmark": _metrics(series("universe")),
         "long_short": _metrics(series("long_short")),
         "long_short_out_of_sample": _metrics(series("long_short", "out")),
+        # What the same spread would have earned if every name could be
+        # shorted. The gap between the two is the cost of the constraint, not
+        # an achievable result.
+        "long_short_unconstrained": _metrics(series("long_short_unconstrained")),
+        "shortability": {
+            "shortable_universe": len(universe_shortable),
+            "borrow_bps_pa": borrow_bps_pa,
+            "median_shorts_available": (
+                statistics.median([p["shorts_available"] for p in periods
+                                   if p.get("shorts_available") is not None])
+                if any(p.get("shorts_available") is not None for p in periods) else None),
+            "note": "Short leg restricted to single-stock futures. A cash-segment "
+                    "short in India must be squared off the same session, so it "
+                    "cannot be held across a monthly rebalance. Basis and margin "
+                    "are not modelled.",
+        },
         "information_coefficient": {
             "mean": round(sum(ics) / len(ics), 4) if ics else None,
             "mean_out_of_sample": round(sum(ics_out) / len(ics_out), 4) if ics_out else None,
@@ -334,6 +371,13 @@ def backtest(
             "Price return only; dividends are not reinvested.",
             "Costs are a flat round trip. Impact is not modelled, so results do "
             "not hold at size in thin names.",
+            "The short leg reaches only names with a single-stock future - 214 of "
+            "them - and those are the largest and most arbitraged in the market, "
+            "where a mispricing is least likely to survive.",
+            "Futures basis and margin are not modelled. An Indian single-stock "
+            "future usually trades at a premium that decays into expiry, so a "
+            "short earns carry while forgoing the cash return; the residual "
+            "varies by name and month.",
         ],
         "verdict": "Research evidence only. Survivorship alone disqualifies these "
                    "figures from an alpha claim, however they read.",

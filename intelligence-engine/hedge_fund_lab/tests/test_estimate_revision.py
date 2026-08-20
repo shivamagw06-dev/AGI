@@ -174,7 +174,8 @@ class TestSignalMeasurement:
 
     def test_a_falling_market_does_not_hide_a_working_signal(self):
         vintages, prices = self._spread_universe(aligned=True)
-        out = er.backtest(vintage_rows=vintages, price_rows=prices, holdings=10, cost_bps=0)
+        out = er.backtest(vintage_rows=vintages, price_rows=prices, holdings=10, cost_bps=0,
+                          shortable={f"S{i:02d}" for i in range(40)}, borrow_bps_pa=0)
         period = next(p for p in out["periods"] if p["month"] == "2025-07")
         assert period["net"] < 0, "the market fell, so the long book falls too"
         assert period["excess"] > 0, "but it still beat the universe it was picked from"
@@ -227,3 +228,55 @@ def test_an_unadjusted_split_cannot_wreck_the_benchmark():
     assert period["implausible_returns_discarded"] == 1
     assert period["universe"] == pytest.approx(0.01, abs=1e-6)
     assert out["coverage"]["implausible_returns_discarded"] == 1
+
+
+class TestShortConstraint:
+    """India has no month-long cash short, so the short leg needs a single-stock
+    future. 214 underlyings against 1,024 signal names."""
+
+    def _universe(self, n=40):
+        vintages, prices = [], []
+        for i in range(n):
+            sym = f"S{i:02d}"
+            vintages.append(_vintage(sym, "FY2026", "2025-04", 100.0))
+            vintages.append(_vintage(sym, "FY2026", "2025-07", 100.0 + i))
+            prices.append(_bars(sym, "2025-07", 100.0, "31"))
+            prices.append(_bars(sym, "2025-08", 100.0 + i * 0.5, "29"))
+        return vintages, prices
+
+    def test_unshortable_names_are_skipped_not_shorted(self):
+        vintages, prices = self._universe()
+        # Only the top half of the ranking is shortable, so the worst names -
+        # exactly the ones a spread wants - cannot be reached.
+        shortable = {f"S{i:02d}" for i in range(20, 40)}
+        out = er.backtest(vintage_rows=vintages, price_rows=prices, holdings=5,
+                          cost_bps=0, shortable=shortable, borrow_bps_pa=0)
+        period = next(p for p in out["periods"] if p["month"] == "2025-07")
+        assert period["shorts_rejected_not_shortable"] == 5
+        assert period["long_short"] < period["long_short_unconstrained"]
+
+    def test_borrow_cost_drags_the_spread(self):
+        vintages, prices = self._universe()
+        shortable = {f"S{i:02d}" for i in range(40)}
+        free = er.backtest(vintage_rows=vintages, price_rows=prices, holdings=5,
+                           cost_bps=0, shortable=shortable, borrow_bps_pa=0)
+        paid = er.backtest(vintage_rows=vintages, price_rows=prices, holdings=5,
+                           cost_bps=0, shortable=shortable, borrow_bps_pa=1200)
+        a = next(p for p in free["periods"] if p["month"] == "2025-07")["long_short"]
+        b = next(p for p in paid["periods"] if p["month"] == "2025-07")["long_short"]
+        assert b == pytest.approx(a - 0.01, abs=1e-6)
+
+    def test_too_few_shortable_names_yields_no_spread(self):
+        vintages, prices = self._universe()
+        out = er.backtest(vintage_rows=vintages, price_rows=prices, holdings=5,
+                          cost_bps=0, shortable={"S01"}, borrow_bps_pa=0)
+        period = next(p for p in out["periods"] if p["month"] == "2025-07")
+        assert period["long_short"] is None, "one name is not a short book"
+
+    def test_the_constraint_is_reported(self):
+        vintages, prices = self._universe()
+        out = er.backtest(vintage_rows=vintages, price_rows=prices, holdings=5,
+                          shortable={f"S{i:02d}" for i in range(40)}, borrow_bps_pa=100)
+        assert out["shortability"]["shortable_universe"] == 40
+        assert out["shortability"]["borrow_bps_pa"] == 100
+        assert any("single-stock future" in x for x in out["limitations"])
