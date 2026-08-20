@@ -114,7 +114,38 @@ class TestRealExports:
         out = it.parse()
         assert any("1,000 rows" in x for x in out.get("limitations", []))
 
-    def test_symbols_are_company_names_and_that_is_stated(self):
-        """The export has no ticker, so these cannot be joined to prices yet."""
+    def test_partial_ticker_coverage_is_stated(self):
+        """The export covers companies our master does not, so most rows keep a
+        blank symbol rather than a fabricated one."""
         out = it.parse()
-        assert any("not tickers" in x for x in out.get("limitations", []))
+        assert any("third resolve" in x for x in out.get("limitations", []))
+
+
+class TestSymbolResolution:
+    INDEX = ({"shaily engineering plastics": "SHAILY",
+              "apollo hospitals enterprise": "APOLLOHOSP",
+              "reliance industries": "RELIANCE"},
+             [("shaily engineering plastics", "SHAILY"),
+              ("apollo hospitals enterprise", "APOLLOHOSP"),
+              ("reliance industries", "RELIANCE"),
+              ("reliance power", "RPOWER")])
+
+    def test_an_exact_name_resolves(self):
+        assert it.resolve_symbol("Reliance Industries Ltd", self.INDEX) == ("RELIANCE", "exact")
+
+    def test_a_short_trade_name_resolves_by_prefix(self):
+        """The export writes "Shaily Engineering" for "Shaily Engineering
+        Plastics Limited"."""
+        assert it.resolve_symbol("Shaily Engineering", self.INDEX) == ("SHAILY", "prefix")
+
+    def test_an_ambiguous_prefix_resolves_to_nothing(self):
+        """Two Reliance companies share the opening word. Attaching the trade to
+        whichever sorts first would file it against the wrong company."""
+        assert it.resolve_symbol("Reliance", self.INDEX) == (None, "ambiguous")
+
+    def test_an_unknown_company_keeps_a_blank_symbol(self):
+        assert it.resolve_symbol("Some Tiny Co", self.INDEX) == (None, "unmatched")
+
+    def test_suffixes_and_punctuation_do_not_block_a_match(self):
+        assert it.resolve_symbol("APOLLO HOSPITALS ENTERPRISE LIMITED.",
+                                 self.INDEX)[0] == "APOLLOHOSP"

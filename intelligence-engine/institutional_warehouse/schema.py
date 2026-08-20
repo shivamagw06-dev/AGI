@@ -1007,21 +1007,28 @@ INSIDER_TRADES = Tab(
     label="Insider Trades",
     description="Exchange-reported insider and SAST disclosures, one row per filing.",
     mode="append",
+    # The export identifies companies by trade name, not ticker, and covers a
+    # wider universe than company_master holds - 411 companies of which only a
+    # third resolve to a symbol. Keying on the name keeps every disclosure;
+    # symbol is an enrichment that is filled where it can be, and left empty
+    # rather than guessed.
+    #
     # A person can file more than once for one company on one day, so the key
-    # carries the trade fingerprint. Without quantity and mode in it, a
-    # promoter buying twice in a session would collapse into a single row.
-    key=("symbol", "reported_on", "person", "action", "quantity", "mode"),
+    # also carries the trade fingerprint. Without quantity and mode, a promoter
+    # buying twice in a session would collapse into a single row.
+    key=("company_name", "reported_on", "person", "action", "quantity", "mode"),
     order_by=("reported_on DESC", "value DESC"),
     search_columns=("symbol", "company_name", "person"),
     icon="ownership",
     columns=(
-        _c("symbol", "Symbol", TEXT, required=True, width=130, group="Key"),
+        _c("company_name", "Company", TEXT, required=True, width=220, group="Key"),
         _c("reported_on", "Reported", DATE, required=True, width=120, group="Key"),
         _c("person", "Insider", TEXT, required=True, width=200, group="Key"),
         _c("action", "Action", TEXT, required=True, width=120, group="Key"),
         _c("quantity", "Quantity", NUMBER, required=True, width=130, group="Key"),
         _c("mode", "Mode", TEXT, required=True, width=150, group="Key"),
-        _c("company_name", "Company", TEXT, width=220, group="Company"),
+        _c("symbol", "Symbol", TEXT, width=130, group="Company"),
+        _c("symbol_match", "Match", TEXT, width=120, group="Company"),
         _c("category", "Category", TEXT, width=170, group="Insider"),
         _c("value", "Value", CURRENCY, width=150, group="Trade"),
         _c("avg_price", "Avg Price", CURRENCY, width=120, group="Trade"),

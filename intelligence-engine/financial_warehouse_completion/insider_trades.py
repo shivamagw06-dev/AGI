@@ -129,10 +129,6 @@ def parse_file(path: Path) -> list[dict[str, Any]]:
         if not (company and person and when and action and quantity is not None and mode):
             continue
         out.append({
-            # The export names the company, not its ticker. Resolving that to a
-            # symbol needs the company master, so the name is carried in both
-            # fields and reconciled later rather than guessed at here.
-            "symbol": company.upper(),
             "company_name": company,
             "reported_on": when.isoformat(),
             "person": person,
@@ -161,8 +157,70 @@ def discover(root: Path = REPO_ROOT) -> list[Path]:
     return sorted(found, key=lambda p: p.name)
 
 
+_SUFFIXES = re.compile(
+    r"\b(ltd|limited|the|company|co|corp|corporation|pvt|private|inc)\b")
+
+
+def _normalise_name(value: Any) -> str:
+    text = re.sub(r"[^a-z0-9 ]", " ", str(value or "").lower())
+    return re.sub(r"\s+", " ", _SUFFIXES.sub(" ", text)).strip()
+
+
+def symbol_index() -> tuple[dict[str, str], list[tuple[str, str]]]:
+    """Company name to ticker, from company_master.
+
+    Two lookups: an exact normalised name, and a list for prefix matching.
+    The export writes short trade names - "Shaily Engineering" against a master
+    entry of "Shaily Engineering Plastics Limited" - so exact matching alone
+    resolves only a quarter of them.
+    """
+    try:
+        from institutional_warehouse import store
+    except Exception:
+        return {}, []
+    exact: dict[str, str] = {}
+    listed: list[tuple[str, str]] = []
+    try:
+        rows = store.all_rows("company_master", limit=20000) or []
+    except Exception:
+        return {}, []
+    for row in rows:
+        symbol = str(row.get("symbol") or "").strip().upper()
+        if not symbol:
+            continue
+        for field in ("company_name", "legal_name"):
+            name = _normalise_name(row.get(field))
+            if name:
+                exact.setdefault(name, symbol)
+                listed.append((name, symbol))
+    return exact, listed
+
+
+def resolve_symbol(company: str, index: tuple[dict[str, str], list[tuple[str, str]]]
+                   ) -> tuple[Optional[str], str]:
+    """Ticker for a company name, and how it was found.
+
+    An ambiguous prefix returns nothing. Two companies sharing an opening word
+    would otherwise attach a disclosure to whichever happened to sort first,
+    and a trade filed against the wrong company is worse than one with no
+    ticker at all.
+    """
+    exact, listed = index
+    name = _normalise_name(company)
+    if not name:
+        return None, "blank"
+    if name in exact:
+        return exact[name], "exact"
+    candidates = {sym for master, sym in listed if master.startswith(name + " ")}
+    if len(candidates) == 1:
+        return candidates.pop(), "prefix"
+    if candidates:
+        return None, "ambiguous"
+    return None, "unmatched"
+
+
 def _fingerprint(row: dict[str, Any]) -> tuple:
-    return (row["symbol"], row["reported_on"], row["person"],
+    return (row["company_name"], row["reported_on"], row["person"],
             row["action"], row["quantity"], row["mode"])
 
 
@@ -187,7 +245,18 @@ def parse(root: Path = REPO_ROOT) -> dict[str, Any]:
                          "new": len(merged) - before,
                          "duplicate": len(rows) - (len(merged) - before)})
 
-    rows = sorted(merged.values(), key=lambda r: (r["reported_on"], r["symbol"]))
+    # Attach tickers where the master knows the company. Roughly two thirds do
+    # not resolve - the export covers small companies outside our universe -
+    # and those keep a blank symbol rather than a fabricated one.
+    index = symbol_index()
+    match_counts: dict[str, int] = {}
+    for row in merged.values():
+        symbol, how = resolve_symbol(row["company_name"], index)
+        row["symbol"] = symbol
+        row["symbol_match"] = how
+        match_counts[how] = match_counts.get(how, 0) + 1
+
+    rows = sorted(merged.values(), key=lambda r: (r["reported_on"], r["company_name"]))
     dates = [r["reported_on"] for r in rows]
     return {
         "ok": bool(rows),
@@ -195,17 +264,20 @@ def parse(root: Path = REPO_ROOT) -> dict[str, Any]:
         "files": per_file,
         "rows": rows,
         "row_count": len(rows),
-        "companies": len({r["symbol"] for r in rows}),
+        "companies": len({r["company_name"] for r in rows}),
         "first_reported": min(dates) if dates else None,
         "last_reported": max(dates) if dates else None,
         "open_market_rows": sum(1 for r in rows if r["is_open_market"] == "true"),
+        "symbol_match": match_counts,
+        "with_symbol": sum(1 for r in rows if r.get("symbol")),
         "limitations": [
             "The vendor caps a download at 1,000 rows and returns the newest "
             "ones without warning, so a wide date range looks complete and is "
             "not. Coverage is only as good as the files supplied.",
-            "The export names companies, not tickers, so symbol currently holds "
-            "the company name and needs resolving against company_master before "
-            "these rows can be joined to prices.",
+            "The export names companies by trade name and covers a wider "
+            "universe than company_master. Only about a third resolve to a "
+            "ticker; the rest are stored with a blank symbol and cannot be "
+            "joined to prices until the master covers them.",
         ],
     }
 
