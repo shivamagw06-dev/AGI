@@ -170,10 +170,18 @@ def _return_1y_by_symbol(*, limit: int = 200000) -> dict[str, Optional[float]]:
         return {}
     table = db.physical_table("daily_market_history")
     weekday = "CAST(strftime('%w', date) AS INTEGER) BETWEEN 1 AND 5"
+    # Group the writers of one vendor feed together. Upstox writes under two
+    # names - `upstox_v3_historical` for the deep backfill and `upstox_v3_daily`
+    # for the nightly top-up - and they share an adjustment convention. Kept
+    # apart, the deep one fails the freshness test and the fresh one has no
+    # history, so nothing pairs and the desk falls back to a stale uploaded file.
+    feed = ("CASE WHEN source LIKE 'upstox%' THEN 'upstox'"
+            " WHEN source LIKE 'yahoo%' THEN 'yahoo'"
+            " ELSE source END")
     try:
         rows = db.query(
             f"""WITH usable AS (
-                    SELECT symbol, source AS src, date, close FROM {table}
+                    SELECT symbol, {feed} AS src, date, close FROM {table}
                     WHERE COALESCE(sys_published, 1) = 1
                       AND close IS NOT NULL AND close > 0 AND {weekday}
                 ),
