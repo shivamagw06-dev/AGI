@@ -170,3 +170,48 @@ class TestDerivedForwardPe:
     def test_matches_a_hand_calculation(self):
         # 360ONE: 1,173 against an FY2026 consensus EPS of 33.715.
         assert scanner.derived_forward_pe(1173.0, 33.715) == round(1173.0 / 33.715, 2)
+
+
+class TestOneYearReturn:
+    """The desk showed SUNTECK at +23.1% on 2026-08-20 while the stock was down
+    25.1% over the year. The price data was correct all along - 393.00 a year
+    earlier against 294.25 - but the computation was disabled behind a flag and
+    the displayed figure came from an uploaded file that had gone stale."""
+
+    def test_computes_the_return_from_the_two_prices_sql_returns(self, monkeypatch):
+        rows = [{"symbol": "SUNTECK", "last_close": 294.25, "base_close": 393.0}]
+        monkeypatch.setattr("institutional_warehouse.db.query", lambda *a, **k: rows)
+        monkeypatch.setattr("institutional_warehouse.db.physical_table", lambda t: "t")
+        assert scanner._return_1y_by_symbol()["SUNTECK"] == pytest.approx(-25.13, abs=0.01)
+
+    def test_a_rise_reads_positive(self, monkeypatch):
+        rows = [{"symbol": "AAA", "last_close": 150.0, "base_close": 100.0}]
+        monkeypatch.setattr("institutional_warehouse.db.query", lambda *a, **k: rows)
+        monkeypatch.setattr("institutional_warehouse.db.physical_table", lambda t: "t")
+        assert scanner._return_1y_by_symbol()["AAA"] == pytest.approx(50.0)
+
+    def test_unusable_prices_are_skipped(self, monkeypatch):
+        rows = [
+            {"symbol": "A", "last_close": 100.0, "base_close": 0.0},
+            {"symbol": "B", "last_close": None, "base_close": 100.0},
+            {"symbol": "", "last_close": 100.0, "base_close": 50.0},
+        ]
+        monkeypatch.setattr("institutional_warehouse.db.query", lambda *a, **k: rows)
+        monkeypatch.setattr("institutional_warehouse.db.physical_table", lambda t: "t")
+        assert scanner._return_1y_by_symbol() == {}
+
+    def test_it_is_no_longer_behind_a_flag(self, monkeypatch):
+        """Disabling it is what let the stale file value reach the page."""
+        monkeypatch.delenv("HFL_LOAD_PRICE_RETURNS", raising=False)
+        rows = [{"symbol": "AAA", "last_close": 110.0, "base_close": 100.0}]
+        monkeypatch.setattr("institutional_warehouse.db.query", lambda *a, **k: rows)
+        monkeypatch.setattr("institutional_warehouse.db.physical_table", lambda t: "t")
+        assert scanner._return_1y_by_symbol()["AAA"] == pytest.approx(10.0)
+
+    def test_a_database_failure_degrades_to_empty(self, monkeypatch):
+        def _boom(*a, **k):
+            raise RuntimeError("db down")
+
+        monkeypatch.setattr("institutional_warehouse.db.query", _boom)
+        monkeypatch.setattr("institutional_warehouse.db.physical_table", lambda t: "t")
+        assert scanner._return_1y_by_symbol() == {}

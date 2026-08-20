@@ -136,46 +136,66 @@ def _factors_by_symbol(*, limit: int = 8000) -> dict[str, dict[str, Any]]:
 
 
 def _return_1y_by_symbol(*, limit: int = 200000) -> dict[str, Optional[float]]:
-    """Optional 1Y price returns from daily_market_history.
+    """One-year price return per symbol, computed in the database.
 
-    Default is OFF. Scanning up to 200k history rows on every cold universe
-    build made Hedge Fund / Market Intelligence opens multi-minute and could
-    tip the Render box into 502s. Scanners already fall back to consensus
-    ``return_1y`` when this map is empty. Set HFL_LOAD_PRICE_RETURNS=1 to
-    re-enable the expensive path.
+    This used to scan up to 200k history rows in the request process, which
+    made the desk multi-minute and tipped the box into 502s, so it was turned
+    off behind a flag. With it off the desk fell back to a `return_1y` parsed
+    from an uploaded file, and that number goes stale the moment prices move:
+    on 2026-08-20 it showed SUNTECK at +23.1% while the stock was down 25.1%
+    over the year, which our own daily bars price correctly at 393.00 to
+    294.25.
+
+    The scan was never necessary. Only two prices per symbol matter - the
+    latest close and the closest one at least a year earlier - and SQL can
+    find them without moving history into Python. That is roughly 2,800 rows
+    rather than 200,000, so the flag is gone and this is always on.
+
+    Weekend rows are excluded: NSE does not trade then and those bars carry a
+    differently scaled series.
     """
-    flag = (os.getenv("HFL_LOAD_PRICE_RETURNS") or "").strip().lower()
-    if flag not in ("1", "true", "yes", "on"):
-        return {}
     try:
-        from institutional_warehouse import store
+        from institutional_warehouse import db
     except Exception:
         return {}
-    by_sym: dict[str, list[tuple[str, float]]] = {}
-    # Hard-cap even when enabled — never read the whole history table in-request.
-    capped = max(1000, min(int(limit or 200000), 40_000))
+    table = db.physical_table("daily_market_history")
+    weekday = "CAST(strftime('%w', date) AS INTEGER) BETWEEN 1 AND 5"
     try:
-        for row in store.all_rows("daily_market_history", limit=capped) or []:
-            sym = str(row.get("symbol") or "").upper()
-            close = _num(row.get("close") or row.get("adj_close"))
-            day = str(row.get("date") or "")
-            if not sym or close is None or not day:
-                continue
-            by_sym.setdefault(sym, []).append((day, close))
+        rows = db.query(
+            f"""WITH usable AS (
+                    SELECT symbol, date, close FROM {table}
+                    WHERE COALESCE(sys_published, 1) = 1
+                      AND close IS NOT NULL AND close > 0 AND {weekday}
+                ),
+                latest AS (
+                    SELECT symbol, MAX(date) AS last_date FROM usable GROUP BY symbol
+                ),
+                now_px AS (
+                    SELECT u.symbol, u.close AS last_close, l.last_date
+                    FROM usable u JOIN latest l
+                      ON u.symbol = l.symbol AND u.date = l.last_date
+                ),
+                base AS (
+                    SELECT u.symbol, u.close AS base_close,
+                           ROW_NUMBER() OVER (
+                               PARTITION BY u.symbol ORDER BY u.date DESC
+                           ) AS rn
+                    FROM usable u JOIN latest l ON u.symbol = l.symbol
+                    WHERE u.date <= date(l.last_date, '-365 day')
+                )
+                SELECT n.symbol, n.last_close, b.base_close
+                FROM now_px n JOIN base b ON b.symbol = n.symbol AND b.rn = 1"""
+        ) or []
     except Exception:
         return {}
 
     out: dict[str, Optional[float]] = {}
-    for sym, points in by_sym.items():
-        points.sort(key=lambda p: p[0])
-        if len(points) < 2:
-            continue
-        last_px = points[-1][1]
-        # Prefer ~252 trading sessions back; else first available print.
-        base_px = points[max(0, len(points) - 253)][1]
-        if not base_px:
-            continue
-        out[sym] = round(((last_px / base_px) - 1.0) * 100.0, 2)
+    for row in rows:
+        symbol = str(row.get("symbol") or "").upper()
+        last_close = _num(row.get("last_close"))
+        base_close = _num(row.get("base_close"))
+        if symbol and last_close and base_close and base_close > 0:
+            out[symbol] = round((last_close / base_close - 1.0) * 100.0, 2)
     return out
 
 
@@ -217,6 +237,8 @@ def _map_warehouse_row(
     if buy_count is None:
         buy_count = _num((legacy_consensus or {}).get("buy"))
 
+    # Measured from prices when available. The file-store value is a stale
+    # snapshot and only fills gaps.
     r1 = return_1y
     if r1 is None:
         r1 = _num(legacy_consensus.get("return_1y"))
