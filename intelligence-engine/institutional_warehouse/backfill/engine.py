@@ -87,7 +87,16 @@ def run(
     statement_loader: Optional[Callable[[str], dict[str, Any]]] = None,
     enforce_worker: bool = True,
     pause_seconds: float = 0.0,
+    refresh_done: bool = False,
 ) -> dict[str, Any]:
+    """Run one slice of the historical backfill.
+
+    ``refresh_done`` re-collects companies already marked complete. Needed after
+    a fix that changes what a company's history contains rather than whether it
+    could be fetched: the bhavcopy walker overwrote Upstox's split-adjusted
+    prices with raw ones across 2022-12-27 to 2025-09-01, and those companies
+    are all marked done.
+    """
     if enforce_worker:
         blocked = worker_only()
         if blocked:
@@ -99,7 +108,7 @@ def run(
         actor=actor,
         params={"stages": wanted, "companies": companies, "days": days,
                 "cadence": cadence, "archive_start": archive_start,
-                "archive_floor": archive_floor},
+                "archive_floor": archive_floor, "refresh_done": refresh_done},
     )
     started = now_iso()
     results: dict[str, Any] = {}
@@ -110,7 +119,8 @@ def run(
             actor=actor, days=days, fetch=fetch,
             start=archive_start, floor=archive_floor),
         "upstox_prices": lambda: prices_upstox.backfill(universe, actor=actor, limit=companies,
-                                                        pause_seconds=pause_seconds),
+                                                        pause_seconds=pause_seconds,
+                                                        refresh_done=refresh_done),
         "yahoo_prices": lambda: prices.backfill(universe, actor=actor, limit=companies,
                                                 fetch=fetch, pause_seconds=pause_seconds),
         "yahoo_statements": lambda: statements.backfill(universe, actor=actor, limit=companies,

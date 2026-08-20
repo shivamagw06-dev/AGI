@@ -820,3 +820,31 @@ class TestBhavcopyFillsGapsOnly:
         import inspect
         src = inspect.getsource(nse_archive.backfill)
         assert "fill_only=True" in src
+
+
+class TestRefreshDone:
+    """Re-collecting companies already marked complete.
+
+    A company is fetched once and then skipped, which is right until a fix
+    changes what its history contains. The bhavcopy walker overwrote Upstox's
+    split-adjusted prices with raw ones across 2022-12-27 to 2025-09-01, and
+    every one of those companies is marked done.
+    """
+
+    def test_a_done_company_is_skipped_by_default(self):
+        checkpoints.save_checkpoint("upstox_prices", "LALPATHLAB", status=checkpoints.DONE)
+        assert checkpoints.pending_entities("upstox_prices", ["LALPATHLAB"], limit=5) == []
+
+    def test_refresh_done_offers_it_again(self):
+        checkpoints.save_checkpoint("upstox_prices", "NUVAMA", status=checkpoints.DONE)
+        again = checkpoints.pending_entities("upstox_prices", ["NUVAMA"], limit=5,
+                                             refresh_done=True)
+        assert again == ["NUVAMA"]
+
+    def test_the_engine_passes_the_flag_to_the_price_stage(self):
+        """Plumbed rather than remembered: without it the stage skips every
+        company and the slice silently does nothing."""
+        import inspect
+        from institutional_warehouse.backfill import engine as bf_engine
+        src = inspect.getsource(bf_engine.run)
+        assert "refresh_done=refresh_done" in src

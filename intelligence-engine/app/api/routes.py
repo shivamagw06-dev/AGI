@@ -19844,6 +19844,11 @@ def warehouse_backfill(
         kwargs["universe"] = [str(s).upper() for s in body["universe"]]
     if body.get("allow_here"):
         kwargs["enforce_worker"] = False
+    # Re-collect companies already marked complete. Needed after the bhavcopy
+    # walker overwrote Upstox's split-adjusted prices with raw ones - those
+    # companies are all marked done, so a normal slice would skip every one.
+    if body.get("refresh_done"):
+        kwargs["refresh_done"] = True
     return run_backfill(**kwargs)
 
 
