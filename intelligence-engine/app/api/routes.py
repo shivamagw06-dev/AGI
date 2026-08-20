@@ -10219,6 +10219,43 @@ async def valuation_consensus_seed(payload: dict[str, Any] = Body(default={})):
 # ---------------------------------------------------------------------------
 
 
+@router.post("/hedge-fund-lab/backtest/neglected-quality")
+def hedge_fund_neglected_quality_backtest(payload: dict[str, Any] = Body(default={})):
+    """Quality ranking over companies with no analyst coverage.
+
+    Long only by design: estimate revision showed real information that could
+    not be reached, because the only shortable names in India are the 214 with
+    single-stock futures. Here shortability never binds, and the universe is
+    the roughly 1,800 companies nobody models.
+    """
+    from hedge_fund_lab.neglected_quality import backtest
+    from institutional_warehouse import db, store
+
+    body = payload or {}
+    try:
+        ratios = store.all_rows("sector_ratio_history", limit=200000) or []
+        covered = {str(r.get("symbol") or "").upper()
+                   for r in (store.all_rows("consensus", limit=20000) or [])
+                   if r.get("symbol")}
+        table = db.physical_table("daily_market_history")
+        prices = db.query(
+            f"""SELECT symbol, date, close FROM {table}
+                WHERE COALESCE(sys_published, 1) = 1 AND close IS NOT NULL"""
+        ) or []
+    except Exception as exc:
+        return {"ok": False, "error": "warehouse_unavailable", "detail": str(exc)[:200]}
+
+    result = backtest(
+        ratio_rows=ratios,
+        price_rows=prices,
+        covered=covered if body.get("exclude_covered", True) else None,
+        holdings=int(body.get("holdings") or 30),
+        cost_bps=float(body.get("cost_bps") or 25.0),
+        lag_months=int(body.get("lag_months") or 6),
+    )
+    return result
+
+
 @router.post("/hedge-fund-lab/backtest/estimate-revision")
 def hedge_fund_estimate_revision_backtest(payload: dict[str, Any] = Body(default={})):
     """Monthly walk-forward on point-in-time consensus revisions.
