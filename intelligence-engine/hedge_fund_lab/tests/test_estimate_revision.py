@@ -99,7 +99,7 @@ class TestMonthlyPrices:
 
 
 class TestBacktest:
-    def _universe(self, n=12):
+    def _universe(self, n=30):
         vintages, prices = [], []
         for i in range(n):
             sym = f"S{i:02d}"
@@ -117,8 +117,8 @@ class TestBacktest:
         assert out["ok"] is True
         period = next(p for p in out["periods"] if p["month"] == "2025-07")
         assert period["n"] == 5
-        # Top five revisions are S07..S11, averaging +4.5% before costs.
-        assert period["gross"] == pytest.approx(0.045, abs=1e-6)
+        # Top five revisions are S25..S29, averaging +13.5% before costs.
+        assert period["gross"] == pytest.approx(0.135, abs=1e-6)
 
     def test_costs_are_charged_on_turnover(self):
         vintages, prices = self._universe()
@@ -152,3 +152,50 @@ class TestBacktest:
         out = er.backtest(vintage_rows=vintages, price_rows=prices, holdings=5)
         assert any("SURVIVORSHIP" in line for line in out["limitations"])
         assert "alpha claim" in out["verdict"]
+
+
+class TestSignalMeasurement:
+    """A long-only portfolio's return is mostly market direction. It can lose
+    money in a falling market while ranking every name correctly, which is why
+    -18% out of sample said little on its own about the signal."""
+
+    def _spread_universe(self, n=40, aligned=True):
+        vintages, prices = [], []
+        for i in range(n):
+            sym = f"S{i:02d}"
+            vintages.append(_vintage(sym, "FY2026", "2025-04", 100.0))
+            vintages.append(_vintage(sym, "FY2026", "2025-07", 100.0 + i))
+            # Whole market falls 20%; within it, return tracks the revision
+            # when aligned, and is unrelated when not.
+            move = (i * 0.5 if aligned else ((i * 7) % 20) * 0.5) - 20.0
+            prices.append(_bars(sym, "2025-07", 100.0, "31"))
+            prices.append(_bars(sym, "2025-08", 100.0 + move, "29"))
+        return vintages, prices
+
+    def test_a_falling_market_does_not_hide_a_working_signal(self):
+        vintages, prices = self._spread_universe(aligned=True)
+        out = er.backtest(vintage_rows=vintages, price_rows=prices, holdings=10, cost_bps=0)
+        period = next(p for p in out["periods"] if p["month"] == "2025-07")
+        assert period["net"] < 0, "the market fell, so the long book falls too"
+        assert period["excess"] > 0, "but it still beat the universe it was picked from"
+        assert period["long_short"] > 0, "and the top decile beat the bottom"
+
+    def test_information_coefficient_is_high_when_ranking_is_perfect(self):
+        vintages, prices = self._spread_universe(aligned=True)
+        out = er.backtest(vintage_rows=vintages, price_rows=prices, holdings=10)
+        period = next(p for p in out["periods"] if p["month"] == "2025-07")
+        assert period["ic"] == pytest.approx(1.0, abs=1e-6)
+
+    def test_information_coefficient_collapses_when_ranking_is_noise(self):
+        vintages, prices = self._spread_universe(aligned=False)
+        out = er.backtest(vintage_rows=vintages, price_rows=prices, holdings=10)
+        period = next(p for p in out["periods"] if p["month"] == "2025-07")
+        assert abs(period["ic"]) < 0.5, "unrelated returns must not show a strong IC"
+
+    def test_the_benchmark_is_the_covered_universe(self):
+        vintages, prices = self._spread_universe(aligned=True)
+        out = er.backtest(vintage_rows=vintages, price_rows=prices, holdings=10, cost_bps=0)
+        period = next(p for p in out["periods"] if p["month"] == "2025-07")
+        # 40 names moving from -20 to -0.5 around 100 average about -10.25%.
+        assert period["universe"] == pytest.approx(-0.1025, abs=1e-3)
+        assert period["breadth"] == 40

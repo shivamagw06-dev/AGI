@@ -132,6 +132,44 @@ def monthly_prices(price_rows: Iterable[dict[str, Any]]) -> dict[str, dict[str, 
             for symbol, months in latest.items()}
 
 
+def rank_ic(scores: dict[str, float], forward: dict[str, float]) -> Optional[float]:
+    """Spearman rank correlation between signal and next-month return.
+
+    The cleanest read on whether a signal carries information. A long-only
+    portfolio is dominated by market direction - it can lose money in a falling
+    market while ranking names perfectly - so the level of its return says
+    little about the signal. The rank correlation says it directly.
+    """
+    pairs = [(scores[s], forward[s]) for s in scores if s in forward]
+    if len(pairs) < 10:
+        return None
+
+    def _ranks(values: list[float]) -> list[float]:
+        order = sorted(range(len(values)), key=lambda i: values[i])
+        out = [0.0] * len(values)
+        i = 0
+        while i < len(order):
+            j = i
+            while j + 1 < len(order) and values[order[j + 1]] == values[order[i]]:
+                j += 1
+            shared = (i + j) / 2 + 1
+            for k in range(i, j + 1):
+                out[order[k]] = shared
+            i = j + 1
+        return out
+
+    xs = _ranks([p[0] for p in pairs])
+    ys = _ranks([p[1] for p in pairs])
+    n = len(pairs)
+    mean_x, mean_y = sum(xs) / n, sum(ys) / n
+    cov = sum((a - mean_x) * (b - mean_y) for a, b in zip(xs, ys))
+    var_x = sum((a - mean_x) ** 2 for a in xs)
+    var_y = sum((b - mean_y) ** 2 for b in ys)
+    if var_x <= 0 or var_y <= 0:
+        return None
+    return cov / math.sqrt(var_x * var_y)
+
+
 def _metrics(returns: list[float]) -> dict[str, Any]:
     """Monthly returns annualised by 12. Never by 252 - these are not days."""
     if len(returns) < 2:
@@ -183,30 +221,56 @@ def backtest(
 
     for month in months:
         nxt = _shift(month, -1)
-        ranked = sorted(scores[month].items(), key=lambda kv: -kv[1])
-        picks: list[tuple[str, float]] = []
-        for symbol, _score in ranked:
+        # Forward return for every name that carried a signal, not just the
+        # ones bought. This is what makes the benchmark and the IC possible.
+        forward: dict[str, float] = {}
+        for symbol in scores[month]:
             start = (prices.get(symbol) or {}).get(month)
             end = (prices.get(symbol) or {}).get(nxt)
             if start and end and start > 0:
-                picks.append((symbol, end / start - 1.0))
-            if len(picks) >= holdings:
-                break
-        if len(picks) < 5:
-            periods.append({"month": month, "n": len(picks), "net": None,
+                forward[symbol] = end / start - 1.0
+
+        ranked = [s for s, _ in sorted(scores[month].items(), key=lambda kv: -kv[1])
+                  if s in forward]
+        if len(ranked) < 20:
+            periods.append({"month": month, "n": len(ranked), "net": None,
                             "reason": "too_few_priced_candidates"})
             continue
-        gross = sum(r for _, r in picks) / len(picks)
-        new = {s for s, _ in picks}
-        turnover = len(new - held) / max(1, len(new))
-        cost = turnover * (cost_bps / 10_000.0) * 2
-        periods.append({"month": month, "n": len(picks), "gross": round(gross, 6),
-                        "net": round(gross - cost, 6), "turnover": round(turnover, 4)})
-        held = new
 
-    net = [p["net"] for p in periods if p.get("net") is not None]
-    in_sample = [p["net"] for p in periods if p.get("net") is not None and p["month"] < oos_start]
-    out_sample = [p["net"] for p in periods if p.get("net") is not None and p["month"] >= oos_start]
+        picks = ranked[:holdings]
+        shorts = ranked[-holdings:]
+        gross = sum(forward[s] for s in picks) / len(picks)
+        # The universe of covered names, equally weighted: the benchmark this
+        # portfolio was actually selected from. Beating it is the only claim a
+        # long-only strategy can make; its raw return is mostly market
+        # direction, which is why -18% out of sample said little on its own.
+        universe = sum(forward.values()) / len(forward)
+        spread = gross - (sum(forward[s] for s in shorts) / len(shorts))
+
+        new_holdings = set(picks)
+        turnover = len(new_holdings - held) / max(1, len(new_holdings))
+        cost = turnover * (cost_bps / 10_000.0) * 2
+        periods.append({
+            "month": month, "n": len(picks), "gross": round(gross, 6),
+            "net": round(gross - cost, 6), "turnover": round(turnover, 4),
+            "universe": round(universe, 6),
+            "excess": round(gross - cost - universe, 6),
+            "long_short": round(spread - cost, 6),
+            "ic": rank_ic(scores[month], forward),
+            "breadth": len(forward),
+        })
+        held = new_holdings
+
+    def series(key: str, window: Optional[str] = None) -> list[float]:
+        return [p[key] for p in periods
+                if p.get(key) is not None
+                and (window is None
+                     or (window == "in" and p["month"] < oos_start)
+                     or (window == "out" and p["month"] >= oos_start))]
+
+    net = series("net")
+    ics = [p["ic"] for p in periods if p.get("ic") is not None]
+    ics_out = [p["ic"] for p in periods if p.get("ic") is not None and p["month"] >= oos_start]
 
     return {
         "ok": bool(net),
@@ -222,8 +286,24 @@ def backtest(
             "symbols_with_prices": len(prices),
         },
         "net": _metrics(net),
-        "in_sample": _metrics(in_sample),
-        "out_of_sample": _metrics(out_sample),
+        "in_sample": _metrics(series("net", "in")),
+        "out_of_sample": _metrics(series("net", "out")),
+        # Return relative to the covered universe, which is what a long-only
+        # ranked strategy can actually claim.
+        "excess_over_universe": _metrics(series("excess")),
+        "excess_out_of_sample": _metrics(series("excess", "out")),
+        "universe_benchmark": _metrics(series("universe")),
+        "long_short": _metrics(series("long_short")),
+        "long_short_out_of_sample": _metrics(series("long_short", "out")),
+        "information_coefficient": {
+            "mean": round(sum(ics) / len(ics), 4) if ics else None,
+            "mean_out_of_sample": round(sum(ics_out) / len(ics_out), 4) if ics_out else None,
+            "months_positive_pct": round(sum(1 for i in ics if i > 0) / len(ics) * 100, 1) if ics else None,
+            "note": "Spearman rank correlation between the revision and the next "
+                    "month's return, across every covered name. A mean near zero "
+                    "means the ranking carries no information, whatever the "
+                    "portfolio returned.",
+        },
         "periods": periods,
         "limitations": [
             "SURVIVORSHIP: the universe is companies listed today. A ranked long "
