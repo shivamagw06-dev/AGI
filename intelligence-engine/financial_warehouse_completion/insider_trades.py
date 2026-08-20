@@ -36,6 +36,36 @@ FILE_PATTERN = re.compile(r"insider", re.IGNORECASE)
 # allotment is compensation.
 OPEN_MARKET_MODES = {"market purchase", "market sale", "open market"}
 
+# The vendor writes "None" or "-" in action and mode when the filing did not
+# state one - a pledge revocation has no buy/sell mode, and some acquisitions
+# arrive without a mode at all. The warehouse reads both of those as absent, and
+# both columns are part of the key, so 48 real disclosures were rejected.
+#
+# They are stored under an explicit placeholder instead. It says the same thing
+# the file says - the filing named no mode - while keeping the key complete so
+# the row survives and re-imports match it rather than duplicating it. It is not
+# treated as an open-market trade, because an unstated mode is not evidence of
+# one.
+UNSPECIFIED = "unspecified"
+_NULL_TEXT = {"", "-", "--", "n/a", "na", "nan", "none", "null"}
+
+
+def _stated(value: Any) -> str:
+    """The value as written, or the placeholder when the filing stated none."""
+    return _present(value) or UNSPECIFIED
+
+
+def _present(value: Any) -> str:
+    """The value as written, or empty when the file wrote a word for nothing.
+
+    Used for the fields that identify the filing - the company and the person.
+    A placeholder is wrong for these: a trade attributed to "None" belongs to
+    nobody, and the warehouse would reject it as blank anyway. Such a row is
+    dropped rather than stored under a name that means nothing.
+    """
+    text = str(value or "").strip()
+    return "" if text.lower() in _NULL_TEXT else text
+
 _COLUMNS = {
     "symbol": ("Stock",),
     "person": ("Client Name",),
@@ -118,15 +148,17 @@ def parse_file(path: Path) -> list[dict[str, Any]]:
     out: list[dict[str, Any]] = []
     for row in raw:
         clean = {str(k).strip(): v for k, v in row.items() if k}
-        company = str(_pick(clean, _COLUMNS["symbol"]) or "").strip()
-        person = str(_pick(clean, _COLUMNS["person"]) or "").strip()
+        company = _present(_pick(clean, _COLUMNS["symbol"]))
+        person = _present(_pick(clean, _COLUMNS["person"]))
         when = _date(_pick(clean, _COLUMNS["reported_on"]))
-        action = str(_pick(clean, _COLUMNS["action"]) or "").strip()
+        action = _stated(_pick(clean, _COLUMNS["action"]))
         quantity = _number(_pick(clean, _COLUMNS["quantity"]))
-        mode = str(_pick(clean, _COLUMNS["mode"]) or "").strip()
-        # Every part of the key must be present or the row cannot be stored
-        # without silently merging into an unrelated filing.
-        if not (company and person and when and action and quantity is not None and mode):
+        mode = _stated(_pick(clean, _COLUMNS["mode"]))
+        # Who filed, against which company, on what day, for how many shares.
+        # Without any one of these the row cannot be stored without silently
+        # merging into an unrelated filing. Action and mode are not on this
+        # list: they carry a placeholder when unstated, so they are never blank.
+        if not (company and person and when and quantity is not None):
             continue
         out.append({
             "company_name": company,
@@ -224,6 +256,35 @@ def _fingerprint(row: dict[str, Any]) -> tuple:
             row["action"], row["quantity"], row["mode"])
 
 
+def _trade(row: dict[str, Any]) -> tuple:
+    """The filing itself, ignoring how the exports described it."""
+    return (row["company_name"], row["reported_on"], row["person"],
+            row["quantity"])
+
+
+def _collapse_unspecified(rows: Iterable[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Drop a row whose action or mode is unstated when a stated one exists.
+
+    Four filings arrive twice: one export names the mode ("Off Market") and
+    another leaves the column empty for the same company, person, day and
+    quantity. Because mode is part of the key, both survive deduplication and
+    the trade is counted twice - inflating the volume the page reports.
+
+    They are the same filing, and the stated version is strictly more
+    informative, so the unstated copy is dropped. This only applies where a
+    stated row exists; an unstated filing with no counterpart is kept, because
+    the alternative is losing a real disclosure.
+    """
+    rows = list(rows)
+    stated: set[tuple] = {
+        _trade(r) for r in rows
+        if r["mode"] != UNSPECIFIED and r["action"] != UNSPECIFIED
+    }
+    return [r for r in rows
+            if _trade(r) not in stated
+            or (r["mode"] != UNSPECIFIED and r["action"] != UNSPECIFIED)]
+
+
 def parse(root: Path = REPO_ROOT) -> dict[str, Any]:
     """Read every export and collapse the overlap between them."""
     files = discover(root)
@@ -256,7 +317,8 @@ def parse(root: Path = REPO_ROOT) -> dict[str, Any]:
         row["symbol_match"] = how
         match_counts[how] = match_counts.get(how, 0) + 1
 
-    rows = sorted(merged.values(), key=lambda r: (r["reported_on"], r["company_name"]))
+    rows = sorted(_collapse_unspecified(merged.values()),
+                  key=lambda r: (r["reported_on"], r["company_name"]))
     dates = [r["reported_on"] for r in rows]
     return {
         "ok": bool(rows),

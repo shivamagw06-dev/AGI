@@ -51,11 +51,15 @@ class TestParsing:
         assert rows[0]["value"] is None
         assert rows[0]["traded_pct"] is None
 
-    def test_rows_missing_a_key_part_are_skipped(self, tmp_path):
-        """Storing these would silently merge unrelated filings together."""
+    def test_rows_that_cannot_be_identified_are_skipped(self, tmp_path):
+        """Storing these would silently merge unrelated filings together.
+
+        Mode is not on this list any more - a filing with no stated mode is
+        still a filing by a named person on a known day, so it is kept under a
+        placeholder rather than dropped."""
         rows = it.parse_file(_csv(
             tmp_path, "insider_c.csv",
-            _line(person=""), _line(qty=""), _line(when=""), _line(mode="")))
+            _line(person=""), _line(qty=""), _line(when="")))
         assert rows == []
 
 
@@ -149,3 +153,74 @@ class TestSymbolResolution:
     def test_suffixes_and_punctuation_do_not_block_a_match(self):
         assert it.resolve_symbol("APOLLO HOSPITALS ENTERPRISE LIMITED.",
                                  self.INDEX)[0] == "APOLLOHOSP"
+
+
+class TestUnstatedFields:
+    """The vendor writes "None" or "-" where the filing named no action or mode.
+
+    The warehouse reads both of those as absent, and both columns are part of
+    the key, so the first import rejected 48 real disclosures - every pledge
+    revocation among them.
+    """
+
+    def test_a_filing_with_no_stated_mode_is_kept(self, tmp_path):
+        rows = it.parse_file(_csv(tmp_path, "insider_x.csv", _line(mode="None")))
+        assert len(rows) == 1, "a pledge revocation has no buy/sell mode"
+        assert rows[0]["mode"] == it.UNSPECIFIED
+
+    @pytest.mark.parametrize("written", ["None", "-", "NA", "", "null"])
+    def test_every_spelling_of_nothing_becomes_one_placeholder(self, tmp_path, written):
+        """Two exports write absence differently. Left as-is they key apart and
+        the same filing is stored twice."""
+        rows = it.parse_file(_csv(tmp_path, f"insider_{len(written)}{written[:2]}.csv",
+                                  _line(action=written)))
+        assert rows[0]["action"] == it.UNSPECIFIED
+
+    def test_the_placeholder_is_not_an_open_market_trade(self, tmp_path):
+        """An unstated mode is not evidence that anyone paid a market price."""
+        rows = it.parse_file(_csv(tmp_path, "insider_y.csv", _line(mode="None")))
+        assert rows[0]["is_open_market"] == "false"
+
+    def test_a_row_still_needs_who_what_and_when(self, tmp_path):
+        """Relaxing action and mode must not let an unidentifiable row through."""
+        rows = it.parse_file(_csv(tmp_path, "insider_z.csv",
+                                  _line(person="None"), _line(qty="-"),
+                                  _line(stock="")))
+        assert rows == []
+
+
+class TestDuplicateFilings:
+    def test_the_stated_copy_wins_when_one_export_left_the_mode_blank(self, tmp_path):
+        """Waaree's 12.7m share acquisition arrives twice: one export names it
+        an off-market transfer, the other leaves mode empty. Keyed on mode both
+        survive, and the page counts the trade twice."""
+        _csv(tmp_path, "insider_stated.csv", _line(mode="Off Market"))
+        _csv(tmp_path, "insider_blank.csv", _line(mode="None"))
+        out = it.parse(tmp_path)
+        assert out["row_count"] == 1
+        assert out["rows"][0]["mode"] == "Off Market"
+
+    def test_an_unstated_filing_with_no_counterpart_is_kept(self, tmp_path):
+        """Dropping it would lose a real disclosure."""
+        _csv(tmp_path, "insider_lone.csv", _line(mode="None"))
+        assert it.parse(tmp_path)["row_count"] == 1
+
+    def test_a_pledge_and_its_revocation_are_not_collapsed(self, tmp_path):
+        """Same person, same day, same quantity, two different events - one
+        creates the pledge and one releases it."""
+        _csv(tmp_path, "insider_pledge.csv",
+             _line(action="None", mode="Pledge Creation"),
+             _line(action="Revoke", mode="None"))
+        assert it.parse(tmp_path)["row_count"] == 2
+
+
+class TestRealExportsLoad:
+    def test_no_row_is_rejected_by_the_warehouse_key_rules(self):
+        """Reproduces the 48 quarantined rows from the first import."""
+        from institutional_warehouse.values import is_blank
+        out = it.parse()
+        if not out.get("ok"):
+            return
+        keys = ("company_name", "reported_on", "person", "action", "quantity", "mode")
+        bad = [r for r in out["rows"] if any(is_blank(r[k]) for k in keys)]
+        assert bad == [], f"{len(bad)} rows would be quarantined"
