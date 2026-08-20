@@ -77,6 +77,8 @@ def run(
     *,
     actor: str = "backfill",
     stages: Optional[Iterable[str]] = None,
+    archive_start: Optional[str] = None,
+    archive_floor: Optional[str] = None,
     companies: int = 25,
     days: int = 60,
     cadence: str = "monthly",
@@ -95,14 +97,18 @@ def run(
     job_id = checkpoints.start_job(
         "backfill",
         actor=actor,
-        params={"stages": wanted, "companies": companies, "days": days, "cadence": cadence},
+        params={"stages": wanted, "companies": companies, "days": days,
+                "cadence": cadence, "archive_start": archive_start,
+                "archive_floor": archive_floor},
     )
     started = now_iso()
     results: dict[str, Any] = {}
     errors: list[dict[str, str]] = []
 
     runners: dict[str, Callable[[], dict[str, Any]]] = {
-        "nse_archive": lambda: nse_archive.backfill(actor=actor, days=days, fetch=fetch),
+        "nse_archive": lambda: nse_archive.backfill(
+            actor=actor, days=days, fetch=fetch,
+            start=archive_start, floor=archive_floor),
         "upstox_prices": lambda: prices_upstox.backfill(universe, actor=actor, limit=companies,
                                                         pause_seconds=pause_seconds),
         "yahoo_prices": lambda: prices.backfill(universe, actor=actor, limit=companies,

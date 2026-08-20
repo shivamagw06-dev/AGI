@@ -207,3 +207,29 @@ def test_failure_reasons_are_aggregated_for_the_caller(monkeypatch):
     assert out["companies_failed"] == 3
     assert out["failure_reasons"]["series_is_not_daily"] == 2
     assert out["failure_reasons"]["no_candles_returned"] == 1
+
+
+def test_the_archive_window_is_controllable(monkeypatch):
+    """Walking bhavcopy back to 2016 needs an explicit start and floor. The
+    default candidate list is days*6 weekdays from today, so it stalls long
+    before reaching the companies that later delisted - which is the whole
+    reason for going back."""
+    from institutional_warehouse.backfill import engine
+
+    seen = {}
+
+    def _backfill(**kwargs):
+        seen.update(kwargs)
+        return {"ok": True, "days_imported": 0}
+
+    monkeypatch.setattr(engine.nse_archive, "backfill", _backfill)
+    monkeypatch.setattr(engine.checkpoints, "start_job", lambda *a, **k: "job")
+    monkeypatch.setattr(engine.checkpoints, "finish_job", lambda *a, **k: None)
+    monkeypatch.setattr(engine.audit, "record", lambda *a, **k: None)
+    monkeypatch.setattr(engine.store, "row_count", lambda *a, **k: 0)
+
+    engine.run(stages=["nse_archive"], days=40, enforce_worker=False,
+               archive_start="2020-06-15", archive_floor="2016-01-01")
+    assert seen["start"] == "2020-06-15"
+    assert seen["floor"] == "2016-01-01"
+    assert seen["days"] == 40

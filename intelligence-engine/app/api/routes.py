@@ -19809,6 +19809,12 @@ def warehouse_backfill(
         kwargs["stages"] = body["stages"]
     if body.get("cadence"):
         kwargs["cadence"] = str(body["cadence"])
+    # Walking the bhavcopy archive back to 2016 needs an explicit window: the
+    # default candidate list is days*6 weekdays from today and stalls long
+    # before it reaches the delisted companies we are after.
+    for key in ("archive_start", "archive_floor"):
+        if body.get(key):
+            kwargs[key] = str(body[key])
     if body.get("universe"):
         kwargs["universe"] = [str(s).upper() for s in body["universe"]]
     if body.get("allow_here"):
