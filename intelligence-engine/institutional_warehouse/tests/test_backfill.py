@@ -848,3 +848,30 @@ class TestRefreshDone:
         from institutional_warehouse.backfill import engine as bf_engine
         src = inspect.getsource(bf_engine.run)
         assert "refresh_done=refresh_done" in src
+
+
+class TestReopenEntities:
+    def test_a_finished_company_is_queued_again(self):
+        """Otherwise the scheduled slice finds nothing owed and reports success
+        having repaired nothing."""
+        checkpoints.save_checkpoint("k_reopen", "AAA", status=checkpoints.DONE)
+        assert checkpoints.pending_entities("k_reopen", ["AAA"], limit=5) == []
+        checkpoints.reopen_entities("k_reopen", reason="prices overwritten by the walker")
+        assert checkpoints.pending_entities("k_reopen", ["AAA"], limit=5) == ["AAA"]
+
+    def test_a_skipped_company_is_left_skipped(self):
+        """Skipped means we decided not to, which a repair does not undo."""
+        checkpoints.save_checkpoint("k_skip", "BBB", status=checkpoints.SKIPPED)
+        checkpoints.reopen_entities("k_skip", reason="repair")
+        assert checkpoints.pending_entities("k_skip", ["BBB"], limit=5) == []
+
+    def test_it_refuses_without_a_reason(self):
+        assert checkpoints.reopen_entities("k_x", reason=" ")["error"] == "reason_required"
+
+    def test_progress_reports_done_against_the_whole_queue(self):
+        for name, status in (("C1", checkpoints.DONE), ("C2", checkpoints.DONE),
+                             ("C3", checkpoints.PENDING)):
+            checkpoints.save_checkpoint("k_prog", name, status=status)
+        out = checkpoints.entity_progress("k_prog")
+        assert (out["done"], out["total"]) == (2, 3)
+        assert out["pct"] == 66.7

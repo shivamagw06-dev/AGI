@@ -19911,6 +19911,28 @@ def warehouse_price_basis_stamp(payload: dict[str, Any] = Body(default_factory=d
     )
 
 
+@router.post("/warehouse/backfill/reopen-entities")
+def warehouse_backfill_reopen_entities(payload: dict[str, Any] = Body(default_factory=dict)):
+    """Put finished companies back in the queue so a scheduled slice repairs them."""
+    from institutional_warehouse.backfill import checkpoints
+
+    body = payload or {}
+    kind = str(body.get("kind") or "").strip()
+    reason = str(body.get("reason") or "").strip()
+    if not kind:
+        return {"ok": False, "error": "kind_required"}
+    if not reason:
+        return {"ok": False, "error": "reason_required"}
+    return checkpoints.reopen_entities(kind, reason=reason)
+
+
+@router.get("/warehouse/backfill/progress")
+def warehouse_backfill_progress(kind: str = "upstox_prices"):
+    from institutional_warehouse.backfill import checkpoints
+
+    return checkpoints.entity_progress(kind)
+
+
 @router.get("/warehouse/price-basis")
 def warehouse_price_basis_status():
     from institutional_warehouse import db, price_basis

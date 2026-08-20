@@ -185,6 +185,50 @@ def reopen_dates(
     }
 
 
+def reopen_entities(kind: str, *, reason: str) -> dict[str, Any]:
+    """Put finished companies back in the queue.
+
+    A company is fetched once and then skipped forever, which is right until a
+    fix changes what its history contains. The bhavcopy walker overwrote Upstox's
+    split-adjusted prices with raw ones across 2022-12-27 to 2025-09-01, and
+    every affected company is checkpointed as complete - so the scheduler runs
+    its slice, finds nothing owed, and reports success having repaired nothing.
+
+    Marking them pending lets the ordinary scheduled slice do the repair, rather
+    than it depending on somebody remembering to pass a flag.
+    """
+    db.init()
+    reason = str(reason or "").strip()
+    if not reason:
+        return {"ok": False, "error": "reason_required"}
+    counted = db.query(
+        "SELECT COUNT(*) AS n FROM wh_backfill_checkpoints WHERE kind = ? AND status = ?",
+        (kind, DONE),
+    )
+    total = int((counted[0] if counted else {}).get("n") or 0)
+    db.execute(
+        "UPDATE wh_backfill_checkpoints SET status = ?, attempts = 0, last_error = ?,"
+        " updated_at = ? WHERE kind = ? AND status = ?",
+        (PENDING, f"reopened: {reason}"[:400], now_iso(), kind, DONE),
+    )
+    return {"ok": True, "kind": kind, "reopened": total, "reason": reason}
+
+
+def entity_progress(kind: str) -> dict[str, Any]:
+    """How far a repair has got: done against everything it has to touch."""
+    db.init()
+    rows = db.query(
+        "SELECT status, COUNT(*) AS n FROM wh_backfill_checkpoints WHERE kind = ?"
+        " GROUP BY status", (kind,),
+    ) or []
+    by_status = {str(r["status"]): int(r["n"]) for r in rows}
+    total = sum(by_status.values())
+    done = by_status.get(DONE, 0)
+    return {"ok": True, "kind": kind, "by_status": by_status, "done": done,
+            "total": total,
+            "pct": round(100.0 * done / total, 1) if total else None}
+
+
 def date_coverage(source: str) -> dict[str, Any]:
     rows = db.query(
         "SELECT status, COUNT(*) AS n, SUM(rows) AS r FROM wh_backfill_dates"
