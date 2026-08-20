@@ -54,6 +54,24 @@ _SOURCES: dict[str, tuple[str, str]] = {
 }
 
 
+# Declared by vendor, for the writers that are not named individually above.
+#
+# Writer names multiply: `upstox_v3_historical` is the backfill, `upstox_v3_daily`
+# the nightly top-up, and `upstox_v3` a third that stamped 4,500 rows UNKNOWN
+# before anyone noticed. What is being declared here is not a name but a vendor -
+# every Upstox v3 candle comes back restated for splits, whichever of our writers
+# asked for it.
+#
+# Anything matching no prefix stays UNKNOWN. This widens what is recognised; it
+# does not guess.
+_VENDOR_PREFIXES: tuple[tuple[str, str, str], ...] = (
+    ("upstox_v3", "upstox", SPLIT_ADJUSTED),
+    ("upstox", "upstox", SPLIT_ADJUSTED),
+    ("yahoo", "yahoo", RAW),
+    ("nse_bhavcopy", "nse", RAW),
+)
+
+
 def describe(source: Any) -> tuple[str, str]:
     """(feed family, basis) for a source name.
 
@@ -64,6 +82,9 @@ def describe(source: Any) -> tuple[str, str]:
     key = str(source or "").strip().lower()
     if key in _SOURCES:
         return _SOURCES[key]
+    for prefix, family, basis in _VENDOR_PREFIXES:
+        if key.startswith(prefix):
+            return (family, basis)
     return (key or "unknown", UNKNOWN)
 
 
@@ -113,7 +134,8 @@ def known_sources() -> tuple[str, ...]:
 STAMP_BATCH = 20_000
 
 
-def backfill_stamps(*, batches: int = 1, batch_size: int = STAMP_BATCH) -> dict[str, Any]:
+def backfill_stamps(*, batches: int = 1, batch_size: int = STAMP_BATCH,
+                    restamp_unknown: bool = False) -> dict[str, Any]:
     """Fill price_basis and feed_family on rows written before they existed.
 
     The reader already falls back to the same declaration for an unstamped row,
@@ -127,11 +149,18 @@ def backfill_stamps(*, batches: int = 1, batch_size: int = STAMP_BATCH) -> dict[
     stamped = 0
     passes = 0
     for _ in range(max(1, int(batches))):
+        where = ("price_basis IS NULL" if not restamp_unknown
+                 else "(price_basis IS NULL OR price_basis = 'UNKNOWN')")
         rows = db.query(
             f"SELECT row_id, source FROM {table}"
-            f" WHERE price_basis IS NULL AND close IS NOT NULL LIMIT ?",
+            f" WHERE {where} AND close IS NOT NULL LIMIT ?",
             (int(batch_size),),
         ) or []
+        if restamp_unknown:
+            # Only worth rewriting when the declaration now recognises it.
+            rows = [r for r in rows if describe(r.get("source"))[1] != UNKNOWN]
+            if not rows:
+                break
         if not rows:
             break
         by_source: dict[str, list[str]] = {}

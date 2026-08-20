@@ -65,3 +65,26 @@ class TestComparable:
     @pytest.mark.parametrize("value", [None, "", "raw", "Split_Adjusted"])
     def test_case_and_blanks_are_handled(self, value):
         pb.comparable(value, pb.RAW)  # must not raise
+
+
+class TestVendorPrefixes:
+    """Writer names multiply; the vendor behind them does not.
+
+    `upstox_v3_historical` is the backfill, `upstox_v3_daily` the nightly
+    top-up, and `upstox_v3` a third that stamped 4,500 rows UNKNOWN before
+    anyone noticed. Every Upstox v3 candle comes back restated for splits,
+    whichever writer asked for it.
+    """
+
+    @pytest.mark.parametrize("source", ["upstox_v3", "upstox_v3_daily",
+                                        "upstox_v3_historical", "upstox_v3_intraday"])
+    def test_every_upstox_writer_resolves_to_the_same_feed(self, source):
+        assert pb.describe(source) == ("upstox", pb.SPLIT_ADJUSTED)
+
+    def test_a_vendor_we_have_not_declared_is_still_unknown(self):
+        """This widens what is recognised; it does not guess."""
+        assert pb.describe("zerodha_kite")[1] == pb.UNKNOWN
+        assert pb.describe("formula_engine")[1] == pb.UNKNOWN
+
+    def test_the_exchange_file_keeps_its_own_family(self):
+        assert pb.describe("nse_bhavcopy_full") == ("nse", pb.RAW)

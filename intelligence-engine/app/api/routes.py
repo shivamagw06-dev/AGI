@@ -19906,6 +19906,8 @@ def warehouse_price_basis_stamp(payload: dict[str, Any] = Body(default_factory=d
     return price_basis.backfill_stamps(
         batches=int(body.get("batches") or 1),
         batch_size=int(body.get("batch_size") or price_basis.STAMP_BATCH),
+        # Rows stamped UNKNOWN before the declaration recognised their writer.
+        restamp_unknown=bool(body.get("restamp_unknown")),
     )
 
 
