@@ -145,7 +145,7 @@ def corporate_action_adjustment_receipt(
     for action in structural:
         grouped[str(action.get("symbol") or "").upper()].append(action)
 
-    corroborated = contradicted = unevidenced = 0
+    corroborated = contradicted = unevidenced = already_adjusted = 0
     examples: list[dict[str, Any]] = []
     for symbol, symbol_actions in grouped.items():
         resolved = resolve(series.get(symbol) or [], symbol_actions)
@@ -153,6 +153,8 @@ def corporate_action_adjustment_receipt(
             status = item["status"]
             if status == "corroborated":
                 corroborated += 1
+            elif status == "series_already_adjusted":
+                already_adjusted += 1
             elif status == "stated_ratio_contradicted_by_prices":
                 contradicted += 1
             else:
@@ -160,9 +162,14 @@ def corporate_action_adjustment_receipt(
             if len(examples) < 20:
                 examples.append({"symbol": symbol, **item})
 
-    events = corroborated + contradicted + unevidenced
+    events = corroborated + contradicted + unevidenced + already_adjusted
+    # A pre-adjusted series is a pass: there is nothing to apply and nothing
+    # wrong. Only a genuine contradiction, or an action with no price to check
+    # it against, blocks the receipt.
     passed = bool(events) and contradicted == 0 and unevidenced == 0
-    status = "PASSED" if passed else "PARTIAL" if corroborated else "FAILED"
+    status = ("PASSED" if passed
+              else "PARTIAL" if (corroborated or already_adjusted)
+              else "FAILED")
     return {
         "status": status,
         "independently_verified": passed,
@@ -171,6 +178,7 @@ def corporate_action_adjustment_receipt(
         "corporate_action_rows": len(action_rows),
         "structural_actions": len(structural),
         "structural_actions_corroborated": corroborated,
+        "structural_actions_already_adjusted": already_adjusted,
         "structural_actions_contradicted": contradicted,
         "structural_actions_without_price_evidence": unevidenced,
         "examples": examples,

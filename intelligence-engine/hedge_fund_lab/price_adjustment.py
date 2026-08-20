@@ -52,6 +52,10 @@ _RATIO = re.compile(r"^\s*(\d+(?:\.\d+)?)\s*[:\-/]\s*(\d+(?:\.\d+)?)\s*$")
 # cannot be tight; 6% is wide enough for a day's drift and far narrower than
 # the gap between the competing a/b and b/a readings.
 TOLERANCE = 0.06
+# How close the observed gap must sit to 1.0 to conclude the vendor already
+# restated the series. Deliberately tighter than TOLERANCE: an 11:10 split has
+# a factor of 0.909 and must not be swallowed as "no gap".
+NO_GAP_TOLERANCE = 0.04
 # The gap is measured over calendar days, not a bar count. Early history in
 # daily_market_history is monthly, so "five bars either side" spans five months
 # there and ordinary price drift swamps the split. A calendar window keeps the
@@ -178,8 +182,31 @@ def reconcile(
     candidates: list[float],
     observed: Optional[float],
     tolerance: float = TOLERANCE,
+    no_gap_tolerance: float = NO_GAP_TOLERANCE,
 ) -> tuple[Optional[float], str]:
-    """Accept a stated ratio only where the price series agrees with it."""
+    """Decide what a price series says about one stated corporate action.
+
+    Four outcomes, and the third is the one this originally got wrong:
+
+    * corroborated - the gap matches the stated ratio; apply it.
+    * series_already_adjusted - there is no gap at all. The vendor has already
+      restated the history, so no factor is needed and applying one would
+      double-adjust. This is a healthy state, not a failure.
+    * stated_ratio_contradicted_by_prices - there is a gap, but it matches
+      neither reading of the ratio. Quarantine rather than guess.
+    * no_price_evidence / no_stated_ratio - nothing to compare.
+
+    The Upstox backfill made this distinction load-bearing. Its candles arrive
+    pre-adjusted, so a real 4:1 split leaves no break in the series; the old
+    logic saw "no gap where a gap was stated" and called it a contradiction.
+    That inverted the receipt overnight - 7 corroborated and 2 contradicted
+    became 1 and 234 - and reported the cleanest price history the warehouse
+    has ever held as its most suspect.
+
+    Candidates are tested before the no-gap check on purpose. An 11:10 split
+    has a factor of 0.909, close enough to 1.0 that testing "no gap" first
+    would swallow it.
+    """
     if observed is None:
         return None, "no_price_evidence"
     if not candidates:
@@ -191,6 +218,8 @@ def reconcile(
             best, error = factor, relative
     if error is not None and error <= tolerance:
         return best, "corroborated"
+    if abs(observed - 1.0) <= no_gap_tolerance:
+        return None, "series_already_adjusted"
     return None, "stated_ratio_contradicted_by_prices"
 
 
@@ -239,7 +268,10 @@ def resolve(
 
     return {"factors": factors, "detail": detail, "reasons": reasons,
             "quarantined": any(d["status"] == "stated_ratio_contradicted_by_prices"
-                               for d in detail)}
+                               for d in detail),
+            # Vendor-adjusted history needs no factor and is not a defect.
+            "already_adjusted": any(d["status"] == "series_already_adjusted"
+                                    for d in detail)}
 
 
 def build_factors(
@@ -319,11 +351,12 @@ def audit(
             grouped.setdefault(symbol, []).append(action)
 
     reasons: dict[str, int] = {}
-    applied = quarantined = 0
+    applied = quarantined = already = 0
     for symbol, rows in grouped.items():
         resolved = resolve((prices_by_symbol or {}).get(symbol) or [], rows)
         applied += len(resolved["factors"])
         quarantined += int(resolved["quarantined"])
+        already += int(resolved.get("already_adjusted", False))
         for key, count in resolved["reasons"].items():
             reasons[key] = reasons.get(key, 0) + count
 
@@ -335,9 +368,14 @@ def audit(
         "symbols": len(grouped),
         "adjustments_applied": applied,
         "symbols_quarantined": quarantined,
+        "symbols_already_adjusted": already,
         "breakdown": dict(sorted(reasons.items(), key=lambda kv: -kv[1])),
         "status": "CORROBORATED" if corroborated else "UNVERIFIABLE_WITHOUT_PRICES",
         "limitations": [
+            "A series the vendor already adjusted shows no gap at its ex-dates and "
+            "needs no factor; that is reported as series_already_adjusted, not as a "
+            "contradiction. The Upstox backfill delivers pre-adjusted candles, so "
+            "this is now the expected state for most symbols.",
             "Stated split ratios are unreliable: of 45 structural actions measured "
             "against the price series, 19 matched a/b, 2 matched b/a, 3 showed no "
             "price gap, and the rest matched neither reading.",

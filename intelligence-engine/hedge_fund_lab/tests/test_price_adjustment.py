@@ -202,8 +202,57 @@ class TestAudit:
         assert report["adjustments_applied"] == 0
 
     def test_reports_quarantined_symbols(self):
-        prices = {"BAD": _around(date(2026, 6, 1), 1000.0, 990.0)}
+        """A real gap of 0.6 matches neither 0.25 nor 4.0, and is not ~1.0."""
+        prices = {"BAD": _around(date(2026, 6, 1), 1000.0, 600.0)}
         report = pa.audit([{"symbol": "BAD", "action_date": "2026-06-01",
                             "action_type": "split", "split": "4:1"}], prices)
         assert report["symbols_quarantined"] == 1
         assert report["breakdown"]["stated_ratio_contradicted_by_prices"] == 1
+
+
+class TestAlreadyAdjustedSeries:
+    """The Upstox backfill delivers pre-adjusted candles, so a real split
+    leaves no break in the series. Reading "no gap where a gap was stated" as a
+    contradiction inverted the receipt overnight: 7 corroborated and 2
+    contradicted became 1 and 234, reporting the cleanest price history the
+    warehouse has held as its most suspect."""
+
+    def test_no_gap_means_the_vendor_already_adjusted(self):
+        factor, status = pa.reconcile([0.25, 4.0], observed=1.002)
+        assert factor is None
+        assert status == "series_already_adjusted"
+
+    def test_it_is_not_treated_as_a_contradiction(self):
+        prices = _around(date(2026, 6, 1), 250.0, 250.0)
+        actions = [{"symbol": "ADJ", "action_date": "2026-06-01",
+                    "action_type": "split", "split": "4:1"}]
+        resolved = pa.resolve(prices, actions)
+        assert resolved["quarantined"] is False
+        assert resolved["already_adjusted"] is True
+        assert resolved["factors"] == [], "a pre-adjusted series needs no factor"
+
+    def test_a_real_gap_still_corroborates(self):
+        prices = _around(date(2026, 6, 1), 1000.0, 250.0)
+        actions = [{"symbol": "RAW", "action_date": "2026-06-01",
+                    "action_type": "split", "split": "4:1"}]
+        resolved = pa.resolve(prices, actions)
+        assert resolved["factors"] and resolved["factors"][0][1] == pytest.approx(0.25)
+
+    def test_a_narrow_split_is_not_swallowed_as_no_gap(self):
+        """An 11:10 split has a factor of 0.909 - close enough to 1.0 that
+        checking 'no gap' before the stated ratio would lose it."""
+        factor, status = pa.reconcile([0.909, 1.1], observed=0.909)
+        assert status == "corroborated"
+        assert factor == pytest.approx(0.909)
+
+    def test_a_genuine_contradiction_still_fails(self):
+        factor, status = pa.reconcile([1 / 3, 3.0], observed=0.0608)
+        assert factor is None
+        assert status == "stated_ratio_contradicted_by_prices"
+
+    def test_audit_counts_pre_adjusted_symbols_separately(self):
+        prices = {"ADJ": _around(date(2026, 6, 1), 250.0, 250.0)}
+        report = pa.audit([{"symbol": "ADJ", "action_date": "2026-06-01",
+                            "action_type": "split", "split": "4:1"}], prices)
+        assert report["symbols_already_adjusted"] == 1
+        assert report["symbols_quarantined"] == 0

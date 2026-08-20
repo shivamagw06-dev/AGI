@@ -43,7 +43,7 @@ def test_a_split_the_prices_confirm_is_corroborated():
 def test_a_stated_ratio_the_prices_contradict_is_quarantined():
     """DELPHIFX states a 3:1 split against a 16.4x price gap. Applying the
     stated factor would silently rescale the whole prior history."""
-    rows = _around("BAD", date(2026, 2, 2), 100.0, 99.0)
+    rows = _around("BAD", date(2026, 2, 2), 100.0, 60.0)
     actions = [{"symbol": "BAD", "action_date": "2026-02-02", "action_type": "split", "split": "4:1"}]
     receipt = corporate_action_adjustment_receipt(rows, actions)
     assert receipt["independently_verified"] is False
