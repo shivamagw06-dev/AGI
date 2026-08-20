@@ -609,3 +609,28 @@
 .la-tag--lagging { color: #f87171; border-color: rgba(248,113,113,.35); }
 .la-pos { color: #34d399; }
 .la-neg { color: #f87171; }
+
+/* Sector rotation: compact cards, high on the page. Eleven of these carry more
+   information than the 194-row board below, so they get colour and space. */
+.la-rot { display: grid; gap: .6rem; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+.la-rot__card { border: 1px solid var(--la-line); border-left-width: 3px; border-radius: 8px; padding: .6rem .7rem; background: var(--la-panel); }
+.la-rot__card--leading { border-left-color: #34d399; }
+.la-rot__card--improving { border-left-color: #60a5fa; }
+.la-rot__card--weakening { border-left-color: #fbbf24; }
+.la-rot__card--lagging { border-left-color: #f87171; }
+.la-rot__top { display: flex; justify-content: space-between; align-items: baseline; gap: .5rem; }
+.la-rot__name { font-weight: 600; font-size: .82rem; letter-spacing: .01em; }
+.la-rot__rank { font-size: .7rem; color: var(--la-dim); }
+.la-rot__rel { font-size: 1.15rem; font-weight: 600; margin: .2rem 0 .3rem; font-variant-numeric: tabular-nums; }
+.la-rot__meta { display: flex; justify-content: space-between; align-items: center; gap: .4rem; font-size: .7rem; }
+
+/* Shortlist: the answer to "what should I look at", above the full board. */
+.la-short { display: grid; gap: .7rem; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); }
+.la-short__card { text-align: left; border: 1px solid var(--la-line); border-radius: 9px; padding: .7rem .8rem; background: var(--la-panel); cursor: pointer; color: inherit; font: inherit; transition: border-color .15s ease; }
+.la-short__card:hover { border-color: var(--la-accent, #64748b); }
+.la-short__top { display: flex; justify-content: space-between; align-items: baseline; gap: .5rem; }
+.la-short__sym { font-weight: 650; font-size: .92rem; }
+.la-short__score { font-variant-numeric: tabular-nums; font-weight: 600; }
+.la-short__engines { display: flex; flex-wrap: wrap; gap: .25rem; margin: .5rem 0; }
+.la-pill { font-size: .68rem; padding: .1rem .4rem; border: 1px solid var(--la-line); border-radius: 999px; color: var(--la-dim); }
+.la-short__foot { display: flex; justify-content: space-between; align-items: center; gap: .5rem; font-size: .72rem; }

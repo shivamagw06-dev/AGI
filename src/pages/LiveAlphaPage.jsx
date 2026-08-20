@@ -113,102 +113,176 @@ function runAge(run) {
 }
 
 /**
- * Strategies 6 and 7: scheduled end-of-day research over the Groww feed.
+ * Strategy 6 — Sector Rotation. Placed high on the page on purpose.
  *
- * These are not intraday engines and are deliberately excluded from the
- * five-model composite — they run on a schedule, cover different ground, and
- * have not been validated on comparable terms. Dropping them from the page
- * entirely, as the first version of this redesign did, hid two working
- * strategies whose runs were processing normally.
+ * Eleven rows that say where money is moving, against 500-row cross-sections
+ * everywhere else. It is the densest information here and it frames how every
+ * name below should be read, so it runs before the signal board rather than
+ * after it.
+ *
+ * Note it is NOT joined to the signal rows. The two use different taxonomies -
+ * signals carry NSE broad sectors (FINANCIAL_SERVICES, INFORMATION_TECHNOLOGY,
+ * twenty of them) while this carries index names (NIFTYBANK, NIFTYIT, eleven).
+ * They share no exact values, and the mapping is genuinely ambiguous: three
+ * bank indices collapse onto one FINANCIAL_SERVICES, and NIFTYPHARMA is not
+ * HEALTHCARE. A wrong sector label on a signal row would be worse than none.
  */
-export function ScheduledStrategies({ groww }) {
-  const runs = new Map((groww?.runs || []).map((run) => [run.strategy, run]));
+export function SectorRotation({ groww }) {
   const sectors = groww?.sectors || [];
-  const equities = groww?.equities || [];
-  const sectorRun = runs.get('agi_sector_rotation_v1');
-  const equityRun = runs.get('agi_equity_opportunity_v1');
+  const run = (groww?.runs || []).find((item) => item.strategy === 'agi_sector_rotation_v1');
+  const leading = sectors.filter((row) => row.rotation === 'leading').length;
+  const lagging = sectors.filter((row) => row.rotation === 'lagging').length;
 
   return (
     <section className="la-section">
       <div className="la-section__head">
-        <h2>Scheduled strategies</h2>
+        <h2>Where the market is moving</h2>
         <p className="la-section__note">
-          End-of-day sector and equity research over the Groww feed. Held separate
-          from the five intraday engines above and never folded into their composite,
-          because they run on a different cadence and are not validated on comparable terms.
+          Strategy 6 · scheduled sector rotation over the Groww feed, {runAge(run)}.
+          {sectors.length ? ` ${leading} leading, ${lagging} lagging.` : ''} Not joined to the
+          signals below — the two use different sector taxonomies, so treat this as
+          separate context rather than a label for individual names.
         </p>
       </div>
+      {sectors.length ? (
+        <div className="la-rot">
+          {sectors.map((row) => (
+            <div key={row.sector} className={`la-rot__card la-rot__card--${row.rotation}`}>
+              <div className="la-rot__top">
+                <span className="la-rot__name">{String(row.sector).replace(/^NIFTY/, '')}</span>
+                <span className="la-rot__rank">#{row.rank}</span>
+              </div>
+              <div className={`la-rot__rel ${Number(row.relative_20d) >= 0 ? 'la-pos' : 'la-neg'}`}>
+                {Number(row.relative_20d) >= 0 ? '+' : ''}{Number(row.relative_20d).toFixed(1)}%
+              </div>
+              <div className="la-rot__meta">
+                <span className={`la-tag la-tag--${row.rotation}`}>{row.rotation}</span>
+                <span className="la-muted">20d rel.</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : <p className="la-muted">No sector rotation run received yet.</p>}
+    </section>
+  );
+}
 
-      <div className="la-sched">
-        <article className="la-sched__card">
-          <header className="la-sched__head">
-            <div>
-              <span className="la-kicker">Strategy 6 · scheduled</span>
-              <h3>Sector Rotation</h3>
-            </div>
-            <span className="la-muted">{sectors.length} sectors · {runAge(sectorRun)}</span>
-          </header>
-          {sectors.length ? (
-            <div className="la-tablewrap">
-              <table className="la-table la-table--compact">
-                <thead>
-                  <tr><th>#</th><th>Sector</th><th className="la-num">Score</th><th>State</th><th className="la-num">20d rel.</th></tr>
-                </thead>
-                <tbody>
-                  {sectors.slice(0, 12).map((row) => (
-                    <tr key={row.sector}>
-                      <td className="la-muted">{row.rank}</td>
-                      <td><strong>{row.sector}</strong></td>
-                      <td className="la-num">{Number(row.score).toFixed(0)}</td>
-                      <td><span className={`la-tag la-tag--${row.rotation}`}>{row.rotation}</span></td>
-                      <td className={`la-num ${Number(row.relative_20d) >= 0 ? 'la-pos' : 'la-neg'}`}>
-                        {Number(row.relative_20d) >= 0 ? '+' : ''}{Number(row.relative_20d).toFixed(2)}%
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ) : <p className="la-muted">No sector rotation run received yet.</p>}
-        </article>
+/**
+ * The shortlist: names more than one engine agrees on.
+ *
+ * A client does not want 194 rows, and multi-engine agreement is the only
+ * corroboration this system currently has - empirical validation needs 100
+ * comparables and every signal has zero. So agreement across independent
+ * engines is the strongest claim available, and it is stated as exactly that.
+ */
+export function Shortlist({ rows, onSelect }) {
+  const top = rows
+    .filter((row) => row.active.length >= 2)
+    .slice()
+    .sort((a, b) => (b.active.length - a.active.length) || (Math.abs(b.composite) - Math.abs(a.composite)))
+    .slice(0, 12);
 
-        <article className="la-sched__card">
-          <header className="la-sched__head">
-            <div>
-              <span className="la-kicker">Strategy 7 · scheduled</span>
-              <h3>Equity Opportunities</h3>
+  if (!top.length) {
+    return (
+      <section className="la-section">
+        <div className="la-section__head">
+          <h2>Shortlist</h2>
+          <p className="la-section__note">
+            No name currently has two or more engines pointing the same way. That is a
+            quiet market reading, not a failure — the full board below still has signals.
+          </p>
+        </div>
+      </section>
+    );
+  }
+
+  return (
+    <section className="la-section">
+      <div className="la-section__head">
+        <h2>Shortlist — where engines agree</h2>
+        <p className="la-section__note">
+          Names flagged by two or more independent engines, strongest agreement first.
+          Agreement is corroboration between models, not evidence of future return.
+        </p>
+      </div>
+      <div className="la-short">
+        {top.map((row) => (
+          <button key={row.symbol} type="button" className="la-short__card" onClick={() => onSelect?.(row.symbol)}>
+            <div className="la-short__top">
+              <span className="la-short__sym">{row.symbol}</span>
+              <span className={`la-short__score ${row.composite > 0 ? 'la-pos' : 'la-neg'}`}>
+                {row.composite > 0 ? '+' : ''}{row.composite}
+              </span>
             </div>
-            <span className="la-muted">{equities.length} names · {runAge(equityRun)}</span>
-          </header>
-          {equities.length ? (
-            <div className="la-tablewrap">
-              <table className="la-table la-table--compact">
-                <thead>
-                  <tr><th>#</th><th>Stock</th><th className="la-num">Score</th><th className="la-num">20d rel.</th><th>Volume</th></tr>
-                </thead>
-                <tbody>
-                  {equities.slice(0, 12).map((row) => (
-                    <tr key={row.symbol}>
-                      <td className="la-muted">{row.rank}</td>
-                      <td><strong>{row.symbol}</strong></td>
-                      <td className="la-num">{Number(row.score).toFixed(0)}</td>
-                      <td className={`la-num ${Number(row.relative_20d) >= 0 ? 'la-pos' : 'la-neg'}`}>
-                        {Number(row.relative_20d) >= 0 ? '+' : ''}{Number(row.relative_20d).toFixed(2)}%
-                      </td>
-                      <td className={row.volume_confirmation ? '' : 'la-muted'}>
-                        {Number(row.volume_ratio).toFixed(2)}×{row.volume_confirmation ? '' : ' unconfirmed'}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div className="la-short__engines">
+              {row.active.map((signal) => (
+                <span key={signal.engine} className="la-pill">
+                  {ENGINE_PLAIN[signal.engine]?.label || signal.engine}
+                </span>
+              ))}
             </div>
-          ) : <p className="la-muted">No equity opportunity run received yet.</p>}
-        </article>
+            <div className="la-short__foot">
+              <span className="la-muted">{row.sector}</span>
+              <ConfidenceBadge confidence={row.confidence} basis={row.confidence_basis} />
+            </div>
+          </button>
+        ))}
       </div>
     </section>
   );
 }
+
+/** Strategy 7 — scheduled end-of-day equity screen. */
+export function EquityOpportunities({ groww }) {
+  const equities = groww?.equities || [];
+  const run = (groww?.runs || []).find((item) => item.strategy === 'agi_equity_opportunity_v1');
+  const top = equities.slice(0, 15);
+
+  return (
+    <section className="la-section">
+      <div className="la-section__head">
+        <h2>End-of-day equity screen</h2>
+        <p className="la-section__note">
+          Strategy 7 · scheduled over the Groww feed, {runAge(run)}. Ranked by score across
+          {' '}{equities.length} names. Every name carries the same
+          {' '}<code>research_candidate</code> label, so the ranking is the information here
+          and the label is not — it does not separate one name from another.
+        </p>
+      </div>
+      {top.length ? (
+        <div className="la-tablewrap">
+          <table className="la-table la-table--compact">
+            <thead>
+              <tr>
+                <th>#</th><th>Stock</th><th className="la-num">Score</th>
+                <th className="la-num">20d rel.</th><th className="la-num">60d rel.</th><th>Volume</th>
+              </tr>
+            </thead>
+            <tbody>
+              {top.map((row) => (
+                <tr key={row.symbol}>
+                  <td className="la-muted">{row.rank}</td>
+                  <td><strong>{row.symbol}</strong></td>
+                  <td className="la-num">{Number(row.score).toFixed(0)}</td>
+                  <td className={`la-num ${Number(row.relative_20d) >= 0 ? 'la-pos' : 'la-neg'}`}>
+                    {Number(row.relative_20d) >= 0 ? '+' : ''}{Number(row.relative_20d).toFixed(1)}%
+                  </td>
+                  <td className={`la-num ${Number(row.relative_60d) >= 0 ? 'la-pos' : 'la-neg'}`}>
+                    {Number(row.relative_60d) >= 0 ? '+' : ''}{Number(row.relative_60d).toFixed(1)}%
+                  </td>
+                  <td className={row.volume_confirmation ? '' : 'la-muted'}>
+                    {Number(row.volume_ratio).toFixed(2)}×{row.volume_confirmation ? '' : ' unconfirmed'}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : <p className="la-muted">No equity screen run received yet.</p>}
+    </section>
+  );
+}
+
 
 // Exported so a smoke test can render real production signals through it.
 export function SignalRow({ row, expanded, onToggle }) {
@@ -367,24 +441,9 @@ export default function LiveAlphaPage() {
         />
       </section>
 
-      <section className="la-engines">
-        {LIVE_ALPHA_STRATEGIES.map(([key]) => {
-          const meta = ENGINE_PLAIN[key] || {};
-          const health = payload.strategy_health?.[key]?.status;
-          return (
-            <div key={key} className="la-engine">
-              <div className="la-engine__top">
-                <span className="la-engine__label">{meta.label || key}</span>
-                <span className={`la-chip la-chip--${health === 'ready' ? 'good' : health === 'stale' ? 'warn' : 'bad'}`}>
-                  {health || 'unknown'}
-                </span>
-              </div>
-              <p className="la-engine__plain">{meta.plain}</p>
-              <div className="la-engine__count">{engineCounts[key] ?? 0} active</div>
-            </div>
-          );
-        })}
-      </section>
+      <SectorRotation groww={payload.groww} />
+
+      <Shortlist rows={directional} onSelect={setSearch} />
 
       <section className="la-board">
         <div className="la-board__bar">
@@ -441,7 +500,38 @@ export default function LiveAlphaPage() {
         )}
       </section>
 
-      <ScheduledStrategies groww={payload.groww} />
+      <EquityOpportunities groww={payload.groww} />
+
+      <section className="la-section">
+        <div className="la-section__head">
+          <h2>Engine health</h2>
+          <p className="la-section__note">
+            The five intraday engines and what each is currently contributing. An engine
+            reporting zero active names is not necessarily broken — it may simply have
+            nothing to say — but Positioning is coverage-limited: only 208 of 500
+            derivative instruments resolve, so its silence is partly structural.
+          </p>
+        </div>
+      <section className="la-engines">
+        {LIVE_ALPHA_STRATEGIES.map(([key]) => {
+          const meta = ENGINE_PLAIN[key] || {};
+          const health = payload.strategy_health?.[key]?.status;
+          return (
+            <div key={key} className="la-engine">
+              <div className="la-engine__top">
+                <span className="la-engine__label">{meta.label || key}</span>
+                <span className={`la-chip la-chip--${health === 'ready' ? 'good' : health === 'stale' ? 'warn' : 'bad'}`}>
+                  {health || 'unknown'}
+                </span>
+              </div>
+              <p className="la-engine__plain">{meta.plain}</p>
+              <div className="la-engine__count">{engineCounts[key] ?? 0} active</div>
+            </div>
+          );
+        })}
+      </section>
+      </section>
+
 
       <footer className="la-foot">
         <p>
