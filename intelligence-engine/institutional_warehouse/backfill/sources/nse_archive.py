@@ -267,8 +267,17 @@ def backfill(
             missing.append(trade_date)
             continue
         rows = result["rows"]
+        # Fill gaps, never overwrite. Upstox writes the same table with prices
+        # already adjusted for splits and bonuses; the bhavcopy carries the raw
+        # price that traded. Both land in `close`, so every day this walker
+        # re-collected replaced an adjusted price with a raw one and left a
+        # cliff in the series where the two meet.
+        #
+        # The bhavcopy is still the only place a company that has been delisted
+        # exists at all, which is why it runs. It just is not the authority on a
+        # day another feed has already priced.
         outcome = gateway.write("daily_market_history", rows, source=SOURCE, actor=actor,
-                               reason=f"backfill:nse:{trade_date}")
+                               reason=f"backfill:nse:{trade_date}", fill_only=True)
         for key in written:
             written[key] += int(outcome.get(key) or 0)
         imported += len(rows)

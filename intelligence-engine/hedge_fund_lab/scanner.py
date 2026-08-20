@@ -143,16 +143,26 @@ def _return_1y_by_symbol(*, limit: int = 200000) -> dict[str, Optional[float]]:
     off behind a flag. With it off the desk fell back to a `return_1y` parsed
     from an uploaded file, and that number goes stale the moment prices move:
     on 2026-08-20 it showed SUNTECK at +23.1% while the stock was down 25.1%
-    over the year, which our own daily bars price correctly at 393.00 to
-    294.25.
+    over the year.
 
-    The scan was never necessary. Only two prices per symbol matter - the
-    latest close and the closest one at least a year earlier - and SQL can
-    find them without moving history into Python. That is roughly 2,800 rows
-    rather than 200,000, so the flag is gone and this is always on.
+    Turning it back on fixed that symbol and broke every symbol that had split.
 
-    Weekend rows are excluded: NSE does not trade then and those bars carry a
-    differently scaled series.
+    Three feeds write this table. Upstox supplies prices already adjusted for
+    splits and bonuses; the NSE bhavcopy supplies the raw price that traded.
+    Both land in `close`, so a series can begin on one basis and end on the
+    other, and the ratio between the two endpoints then carries the split
+    factor rather than the return. Dr. Lal PathLabs split two-for-one and was
+    published at -45.29% for the year against a true figure near +12%.
+
+    The fix is to take both endpoints from one source. That needs no judgement
+    about which feed adjusts and which does not - a source only has to be
+    consistent with itself, and each of them is. Where several sources can
+    supply both ends, the one with the most history for that symbol wins.
+
+    A source qualifies only if its own latest bar is within a week of the
+    symbol's latest, so a feed that stopped months ago cannot quietly serve a
+    stale return, and its base bar has to sit in a 60-day window around the
+    anniversary rather than wherever its history happens to start.
     """
     try:
         from institutional_warehouse import db
@@ -163,28 +173,50 @@ def _return_1y_by_symbol(*, limit: int = 200000) -> dict[str, Optional[float]]:
     try:
         rows = db.query(
             f"""WITH usable AS (
-                    SELECT symbol, date, close FROM {table}
+                    SELECT symbol, source AS src, date, close FROM {table}
                     WHERE COALESCE(sys_published, 1) = 1
                       AND close IS NOT NULL AND close > 0 AND {weekday}
                 ),
-                latest AS (
-                    SELECT symbol, MAX(date) AS last_date FROM usable GROUP BY symbol
+                sym_latest AS (
+                    SELECT symbol, MAX(date) AS latest FROM usable GROUP BY symbol
                 ),
-                now_px AS (
-                    SELECT u.symbol, u.close AS last_close, l.last_date
-                    FROM usable u JOIN latest l
-                      ON u.symbol = l.symbol AND u.date = l.last_date
+                src_depth AS (
+                    SELECT symbol, src, COUNT(*) AS bars, MAX(date) AS src_latest
+                    FROM usable GROUP BY symbol, src
+                ),
+                -- A feed that stopped months ago must not serve a stale return.
+                fresh_src AS (
+                    SELECT d.symbol, d.src, d.bars, d.src_latest
+                    FROM src_depth d JOIN sym_latest y ON y.symbol = d.symbol
+                    WHERE d.src_latest >= date(y.latest, '-7 day')
+                ),
+                last_px AS (
+                    SELECT u.symbol, u.src, u.close AS last_close, u.date AS last_date,
+                           f.bars
+                    FROM usable u
+                    JOIN fresh_src f ON f.symbol = u.symbol AND f.src = u.src
+                                    AND u.date = f.src_latest
                 ),
                 base AS (
-                    SELECT u.symbol, u.close AS base_close,
+                    SELECT u.symbol, u.src, u.close AS base_close, u.date AS base_date,
                            ROW_NUMBER() OVER (
-                               PARTITION BY u.symbol ORDER BY u.date DESC
+                               PARTITION BY u.symbol, u.src ORDER BY u.date DESC
                            ) AS rn
-                    FROM usable u JOIN latest l ON u.symbol = l.symbol
+                    FROM usable u
+                    JOIN last_px l ON l.symbol = u.symbol AND l.src = u.src
                     WHERE u.date <= date(l.last_date, '-365 day')
+                      AND u.date >= date(l.last_date, '-425 day')
+                ),
+                paired AS (
+                    SELECT l.symbol, l.src, l.last_close, b.base_close, l.bars,
+                           ROW_NUMBER() OVER (
+                               PARTITION BY l.symbol ORDER BY l.bars DESC, l.src
+                           ) AS pick
+                    FROM last_px l
+                    JOIN base b ON b.symbol = l.symbol AND b.src = l.src AND b.rn = 1
                 )
-                SELECT n.symbol, n.last_close, b.base_close
-                FROM now_px n JOIN base b ON b.symbol = n.symbol AND b.rn = 1"""
+                SELECT symbol, src, last_close, base_close
+                FROM paired WHERE pick = 1"""
         ) or []
     except Exception:
         return {}

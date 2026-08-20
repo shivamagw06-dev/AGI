@@ -320,11 +320,17 @@ def upsert(
     reason: Optional[str] = None,
     journal: bool = True,
     published: bool = True,
+    fill_only: bool = False,
 ) -> dict[str, Any]:
     """Insert or update rows keyed by the tab's natural key.
 
     Returns counts plus the row ids touched. Unchanged rows are left alone so a
     daily refresh does not inflate the version history.
+
+    ``fill_only`` makes a source a gap-filler: it may create a row that is not
+    there, and may never change one that is. Some feeds carry data no other feed
+    has - the NSE bhavcopy is the only place a delisted company still exists -
+    while being the wrong authority for a row somebody else already wrote.
     """
     tab = get_tab(tab_id)
     table = db.physical_table(tab.id)
@@ -377,6 +383,19 @@ def upsert(
         marks = ", ".join("?" for _ in batch)
         for row in db.query(f"SELECT * FROM {table} WHERE row_id IN ({marks})", batch):
             existing[str(row["row_id"])] = row
+
+    # A gap-filler only fills gaps. The bhavcopy walker collected days that
+    # Upstox had already written, and because both land in `close` it replaced
+    # split-adjusted prices with the raw price that traded on the day. For
+    # Dr. Lal PathLabs that turned a +12% year into a published -45%.
+    left_alone = 0
+    if fill_only:
+        before = len(prepared)
+        prepared = [p for p in prepared if p["row_id"] not in existing]
+        left_alone = before - len(prepared)
+        if not prepared:
+            return {"ok": True, "tab": tab.id, "inserted": 0, "updated": 0,
+                    "unchanged": 0, "skipped": skipped, "left_alone": left_alone}
 
     stamp = now_iso()
     inserted = updated = unchanged = 0

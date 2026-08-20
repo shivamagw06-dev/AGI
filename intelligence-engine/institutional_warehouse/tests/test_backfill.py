@@ -12,7 +12,7 @@ import pytest
 
 os.environ.setdefault("INSTITUTIONAL_WAREHOUSE_ROOT", tempfile.mkdtemp(prefix="wh_backfill_"))
 
-from institutional_warehouse import db, history, store, units  # noqa: E402
+from institutional_warehouse import db, gateway, history, store, units  # noqa: E402
 from institutional_warehouse.backfill import (  # noqa: E402
     checkpoints,
     coverage,
@@ -763,3 +763,60 @@ class TestWalkFollowsTheFrontier:
         """Keeping up with new days needs a few slots. Reaching 2016 needs the
         rest, and there are roughly 2,600 weekdays to cross."""
         assert nse_archive.RECENT_SHARE <= 0.5
+
+
+class TestBhavcopyFillsGapsOnly:
+    """Why the bhavcopy must not overwrite a day another feed has priced.
+
+    Upstox writes this table with prices already adjusted for splits and
+    bonuses; the bhavcopy carries the raw price that traded. Both land in
+    `close`. Every day the walker re-collected replaced an adjusted price with a
+    raw one, leaving a cliff where the two meet - Dr. Lal PathLabs split
+    two-for-one and was published at -45% for a year it finished up about 12%.
+    """
+
+    ADJUSTED = [{"symbol": "LALPATHLAB", "date": "2025-08-29", "close": 1654.45}]
+    RAW = [{"symbol": "LALPATHLAB", "date": "2025-08-29", "close": 3308.90}]
+
+    def _close(self):
+        rows = [r for r in store.all_rows("daily_market_history", limit=50)
+                if r.get("symbol") == "LALPATHLAB" and r.get("date") == "2025-08-29"]
+        return rows[0]["close"] if rows else None
+
+    def test_the_raw_price_does_not_replace_the_adjusted_one(self):
+        gateway.write("daily_market_history", self.ADJUSTED,
+                      source="upstox_v3_historical", actor="t", reason="seed")
+        out = gateway.write("daily_market_history", self.RAW,
+                            source="nse_bhavcopy", actor="t", reason="fill", fill_only=True)
+        assert self._close() == 1654.45, "the adjusted price must survive"
+        assert out["left_alone"] == 1
+
+    def test_a_day_nobody_has_is_still_collected(self):
+        """The bhavcopy is the only place a delisted company exists at all, so
+        it has to keep writing the rows no other feed carries."""
+        out = gateway.write(
+            "daily_market_history",
+            [{"symbol": "COX&KINGS", "date": "2020-06-15", "close": 1.25}],
+            source="nse_bhavcopy", actor="t", reason="fill", fill_only=True)
+        assert out["inserted"] == 1
+        rows = [r for r in store.all_rows("daily_market_history", limit=200)
+                if r.get("symbol") == "COX&KINGS"]
+        assert rows and rows[0]["close"] == 1.25
+
+    def test_a_normal_write_still_overwrites(self):
+        """fill_only is opt-in; every other feed keeps its existing behaviour."""
+        gateway.write("daily_market_history",
+                      [{"symbol": "TESTCO", "date": "2025-08-29", "close": 10.0}],
+                      source="upstox_v3_historical", actor="t", reason="seed")
+        gateway.write("daily_market_history",
+                      [{"symbol": "TESTCO", "date": "2025-08-29", "close": 11.0}],
+                      source="upstox_v3_historical", actor="t", reason="correction")
+        rows = [r for r in store.all_rows("daily_market_history", limit=200)
+                if r.get("symbol") == "TESTCO"]
+        assert rows[0]["close"] == 11.0
+
+    def test_the_walker_writes_as_a_gap_filler(self):
+        """The guard belongs on the collector, not on the caller remembering."""
+        import inspect
+        src = inspect.getsource(nse_archive.backfill)
+        assert "fill_only=True" in src

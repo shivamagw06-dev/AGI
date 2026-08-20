@@ -54,8 +54,13 @@ def write(
     detect_conflicts: bool = True,
     published: bool = True,
     reported_unit: Optional[str] = None,
+    fill_only: bool = False,
 ) -> dict[str, Any]:
-    """The single validated write path into the warehouse."""
+    """The single validated write path into the warehouse.
+
+    ``fill_only`` marks the caller a gap-filler: it may add a row nobody has,
+    and may never overwrite one somebody already wrote.
+    """
     tab = find_tab(tab_id)
     if not tab:
         return {"ok": False, "error": f"unknown_tab:{tab_id}", "written": 0}
@@ -100,7 +105,8 @@ def write(
 
     # 6. Persist.
     result = store.upsert(tab_id, accepted, source=source, actor=actor,
-                          import_id=import_id, reason=reason, published=published) \
+                          import_id=import_id, reason=reason, published=published,
+                          fill_only=fill_only) \
         if accepted else {"inserted": 0, "updated": 0, "unchanged": 0, "skipped": 0}
 
     # 7. Unit and quality metadata for the rows that landed. Both are system
@@ -141,7 +147,11 @@ def write(
         "warnings": report["warning_count"],
         "unit": unit_result.get("unit"),
         "values_rescaled": unit_result.get("converted", 0),
-        **{k: result.get(k, 0) for k in ("inserted", "updated", "unchanged", "skipped")},
+        # left_alone counts rows a gap-filler declined to overwrite. It is the
+        # number that says the guard is doing something, so it is reported
+        # rather than swallowed.
+        **{k: result.get(k, 0)
+           for k in ("inserted", "updated", "unchanged", "skipped", "left_alone")},
     }
 
 
