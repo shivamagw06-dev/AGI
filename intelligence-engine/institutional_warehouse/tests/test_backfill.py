@@ -588,3 +588,108 @@ def test_history_coverage_per_company():
     report = history.coverage("AAA")
     assert report["price_years"] > 14
     assert report["tabs"]["daily_market_history"]["rows"] == 60
+
+
+class TestEquitySeries:
+    """Which rows in a bhavcopy are a company's shares.
+
+    This collector exists to fix survivorship bias. It kept EQ and BE, which
+    excluded the failures it was built to capture - a company on its way out is
+    moved to BZ, the surveillance series, before it is delisted.
+    """
+
+    @staticmethod
+    def _row(symbol: str, series: str, close: str = "101.0") -> str:
+        return (f"{symbol}, {series}, 15-Jun-2020, 100.0, 100.0, 105.0, 95.0, 100.5,"
+                f" {close}, 100.5, 100000, 12.5, 500, 50000, 50.0")
+
+    def _parse(self, *rows: str):
+        text = "\n".join([BHAV_HEADER, *rows])
+        return nse_archive.parse_rows(text, "2020-06-15")
+
+    def test_a_company_on_its_way_out_is_collected(self):
+        """Cox & Kings sat in BZ at 1.25 rupees on 15 June 2020 and was dropped
+        on every pass, which is exactly the loss a backtest must be able to
+        take."""
+        rows = self._parse(self._row("COX&KINGS", "BZ", "1.25"))
+        assert [r["symbol"] for r in rows] == ["COX&KINGS"]
+        assert rows[0]["close"] == 1.25
+
+    def test_the_sme_board_is_collected(self):
+        """Those companies delist too; leaving them out repeats the bias one
+        tier down."""
+        assert len(self._parse(self._row("SMECO", "SM"), self._row("SMETT", "ST"))) == 2
+
+    def test_ordinary_and_trade_for_trade_equity_still_load(self):
+        assert len(self._parse(self._row("AAA", "EQ"), self._row("BBB", "BE"))) == 2
+
+    @pytest.mark.parametrize("series", ["GB", "GS", "N2", "NZ", "Y1", "Z9", "RR", "MF"])
+    def test_debt_and_other_instruments_are_not_companies(self, series):
+        assert self._parse(self._row("SOMEBOND", series)) == []
+
+    def test_a_block_deal_never_becomes_a_second_close(self):
+        """BL is the block-deal window - a second price for a symbol on a day it
+        already has one. Admitting it would overwrite the real close."""
+        rows = self._parse(self._row("AAA", "EQ", "101.0"), self._row("AAA", "BL", "97.0"))
+        assert [r["close"] for r in rows] == [101.0]
+
+    def test_the_filter_is_an_allow_list(self):
+        """Around ninety series codes appear across the archive and NSE adds
+        more. A deny-list would let each new one in silently."""
+        assert self._parse(self._row("NEWTHING", "Q7")) == []
+
+
+class TestReopenDates:
+    """Sending already-collected days back through the collector.
+
+    A day is claimed once and never again, which is right when the collector is
+    right and wrong after a fix that changes what a day contains.
+    """
+
+    def test_a_done_day_is_claimed_again_after_reopening(self):
+        checkpoints.mark_date("src_reopen", "2020-06-15", status="done", rows=1622)
+        assert checkpoints.claim_dates("src_reopen", ["2020-06-15"]) == []
+        checkpoints.reopen_dates("src_reopen", reason="series filter widened to BZ and SME")
+        assert checkpoints.claim_dates("src_reopen", ["2020-06-15"]) == ["2020-06-15"]
+
+    def test_a_day_that_had_failed_starts_over_rather_than_resuming(self):
+        """A day two-thirds of the way to being abandoned is not still two-thirds
+        of the way there once the reason it failed has changed underneath it."""
+        for _ in range(3):
+            checkpoints.mark_date("src_att", "2020-06-16", status="failed", error="boom")
+        assert checkpoints.claim_dates("src_att", ["2020-06-16"]) == [], "exhausted"
+        checkpoints.reopen_dates("src_att", reason="parser fixed")
+        assert checkpoints.claim_dates("src_att", ["2020-06-16"]) == ["2020-06-16"]
+        assert checkpoints.date_status("src_att", "2020-06-16")["attempts"] == 0
+
+    def test_it_can_be_limited_to_a_range(self):
+        for day in ("2019-01-02", "2021-01-04", "2023-01-03"):
+            checkpoints.mark_date("src_range", day, status="done", rows=10)
+        out = checkpoints.reopen_dates("src_range", reason="only the old ones",
+                                       before="2022-01-01")
+        assert out["reopened"] == 2
+        assert checkpoints.claim_dates("src_range", ["2023-01-03"]) == [], "left alone"
+
+    def test_it_reports_what_it_touched(self):
+        for day in ("2020-02-03", "2020-02-04"):
+            checkpoints.mark_date("src_report", day, status="done", rows=5)
+        out = checkpoints.reopen_dates("src_report", reason="widened filter")
+        assert (out["reopened"], out["oldest"], out["newest"]) == (2, "2020-02-03", "2020-02-04")
+
+    def test_a_reopen_without_a_reason_is_refused(self):
+        """A day silently sent round again is indistinguishable from a collector
+        looping on itself."""
+        checkpoints.mark_date("src_noreason", "2020-06-15", status="done", rows=1)
+        assert checkpoints.reopen_dates("src_noreason", reason=" ")["error"] == "reason_required"
+        assert checkpoints.claim_dates("src_noreason", ["2020-06-15"]) == []
+
+    def test_reopening_leaves_the_collected_prices_in_place(self):
+        """The re-run writes through the same upsert. Deleting first would leave
+        a hole for as long as the re-run takes, and permanently if it stalls."""
+        nse_archive.backfill(actor="tester", days=1, start="2026-07-31",
+                             fetch=archive_fetcher({"2026-07-31"}))
+        before = store.all_rows("daily_market_history", limit=5000)
+        assert before, "the collector should have stored something to protect"
+        checkpoints.reopen_dates(nse_archive.SOURCE, reason="series filter widened")
+        after = store.all_rows("daily_market_history", limit=5000)
+        assert len(after) == len(before)

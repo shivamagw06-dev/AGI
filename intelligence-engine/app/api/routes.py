@@ -19854,6 +19854,39 @@ def warehouse_backfill_status():
     return backfill_status()
 
 
+@router.post("/warehouse/backfill/reopen")
+def warehouse_backfill_reopen(
+    payload: dict[str, Any] = Body(default_factory=dict),
+    x_agi_actor: str | None = Header(default=None),
+):
+    """Send already-collected days back through the collector.
+
+    Needed after a fix that changes what a day contains rather than whether it
+    could be fetched. The bhavcopy parser kept only EQ and BE, so every day
+    already stored is missing the companies that had been moved to the
+    surveillance series on their way to being delisted - which is the whole
+    reason that collector exists.
+
+    A reason is mandatory. A day silently sent round again is indistinguishable
+    from a collector looping on itself.
+    """
+    from institutional_warehouse.backfill import checkpoints
+
+    body = payload or {}
+    source = str(body.get("source") or "").strip()
+    reason = str(body.get("reason") or "").strip()
+    if not source:
+        return {"ok": False, "error": "source_required"}
+    if not reason:
+        return {"ok": False, "error": "reason_required"}
+    return checkpoints.reopen_dates(
+        source,
+        reason=reason,
+        before=body.get("before"),
+        after=body.get("after"),
+    )
+
+
 @router.get("/warehouse/backfill/jobs")
 def warehouse_backfill_jobs(limit: int = 20):
     from institutional_warehouse.production import backfill_jobs

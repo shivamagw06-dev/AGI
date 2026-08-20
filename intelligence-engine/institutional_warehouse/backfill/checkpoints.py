@@ -104,6 +104,66 @@ def mark_date(
     )
 
 
+def reopen_dates(
+    source: str,
+    *,
+    reason: str,
+    before: Optional[str] = None,
+    after: Optional[str] = None,
+) -> dict[str, Any]:
+    """Mark already-collected days as needing another pass.
+
+    A day is claimed once and never again, which is right when the collector is
+    right. It is wrong after a fix that changes what a day contains: the bhavcopy
+    parser kept only EQ and BE, so 928 days were stored without the companies
+    that had been moved to the surveillance series on their way to being
+    delisted - the exact rows the collector exists to capture.
+
+    Attempts are reset to zero along with the status. A day that had failed twice
+    is not two-thirds of the way to being abandoned once the reason it failed has
+    been changed underneath it.
+
+    Nothing is deleted. The re-run writes through the same upsert, so a day comes
+    back with its existing rows updated and the missing ones added. Deleting
+    first would leave a hole for as long as the re-run takes, and a re-run that
+    stalls halfway would leave it permanently.
+    """
+    db.init()
+    reason = str(reason or "").strip()
+    if not reason:
+        return {"ok": False, "error": "reason_required"}
+
+    where = ["source = ?"]
+    params: list[Any] = [source]
+    if before:
+        where.append("trade_date < ?")
+        params.append(str(before))
+    if after:
+        where.append("trade_date > ?")
+        params.append(str(after))
+    clause = " AND ".join(where)
+
+    affected = db.query(
+        f"SELECT COUNT(*) AS n, MIN(trade_date) AS lo, MAX(trade_date) AS hi"
+        f" FROM wh_backfill_dates WHERE {clause}",
+        tuple(params),
+    )
+    summary = affected[0] if affected else {}
+    db.execute(
+        f"UPDATE wh_backfill_dates SET status = ?, attempts = 0, last_error = ?,"
+        f" updated_at = ? WHERE {clause}",
+        (PENDING, f"reopened: {reason}"[:400], now_iso(), *params),
+    )
+    return {
+        "ok": True,
+        "source": source,
+        "reopened": int(summary.get("n") or 0),
+        "oldest": summary.get("lo"),
+        "newest": summary.get("hi"),
+        "reason": reason,
+    }
+
+
 def date_coverage(source: str) -> dict[str, Any]:
     rows = db.query(
         "SELECT status, COUNT(*) AS n, SUM(rows) AS r FROM wh_backfill_dates"

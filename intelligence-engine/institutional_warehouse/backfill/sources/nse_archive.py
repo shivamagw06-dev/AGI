@@ -84,6 +84,32 @@ def _csv_bytes(payload: bytes) -> bytes:
     return payload
 
 
+# Which series count as a company's shares.
+#
+# This collector exists to fix survivorship bias - the warehouse holds only
+# companies that still trade, so a backtest never takes the losses from ones
+# that failed. It kept EQ and BE, and that quietly excluded the failures it was
+# built to capture: a company on its way out is moved to BZ, the surveillance
+# series, before it is delisted. Cox & Kings sat in BZ at 1.25 rupees on 15 June
+# 2020 and was dropped on every pass.
+#
+# SM and ST are the SME board. Those companies delist too, and leaving them out
+# repeats the same bias one tier down.
+#
+# An allow-list rather than a deny-list on purpose. Around ninety other series
+# codes appear across the archive - GB and GS are government paper, N1 through
+# NZ and the Y and Z ranges are debt, RR is rights entitlements, MF is fund
+# units - and NSE adds more over time. A deny-list would let each new one in
+# silently. BL matters most of all: it is the block-deal window, a second price
+# for a symbol on a day it already has one, and admitting it would overwrite the
+# real close.
+#
+# Verified against six bhavcopies spanning 2016 to 2026: no symbol ever appears
+# under two of these series on the same day, so widening the filter cannot
+# collide on the (symbol, date) key.
+EQUITY_SERIES = ("EQ", "BE", "BZ", "SM", "ST")
+
+
 def parse_rows(text: str, trade_date: str) -> list[dict[str, Any]]:
     """Both bhavcopy layouts into warehouse market-history rows."""
     import csv
@@ -97,7 +123,7 @@ def parse_rows(text: str, trade_date: str) -> list[dict[str, Any]]:
             if k
         }
         series = (record.get("SERIES") or "EQ").upper()
-        if series not in ("EQ", "BE"):
+        if series not in EQUITY_SERIES:
             continue
         symbol = (record.get("SYMBOL") or "").strip().upper()
         if not symbol:
