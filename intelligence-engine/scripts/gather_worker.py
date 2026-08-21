@@ -66,9 +66,43 @@ def warehouse_only() -> bool:
     return _profile() == "warehouse_only"
 
 
+_WAREHOUSE_ONLY_DISABLED = (
+    "CONTINUOUS_GATHER_LEARN",
+    "FAA_BACKGROUND_COLLECTOR",
+    "CONTINUOUS_HISTORICAL_BACKFILL",
+    "CONTINUOUS_BACKFILL_UNTIL_COMPLETE",
+    "KF_HD_LIVE_COLLECTORS",
+    "CONTINUOUS_FAA_REFRESH",
+    "CONTINUOUS_LIDI",
+    "CONTINUOUS_KF_HD",
+    "CONTINUOUS_LEARNING_LOOP",
+    "CONTINUOUS_MORNING_DAG",
+    "FIE_RUNTIME",
+    "HVIE_RUNTIME",
+    "MIE_RUNTIME_ENABLED",
+)
+_WAREHOUSE_ONLY_ENABLED = (
+    "WAREHOUSE_DAILY_REFRESH",
+    "WAREHOUSE_BACKFILL",
+)
+
+
 def _apply_worker_defaults() -> None:
-    """Ensure gather flags are on for this process (sidecar overrides parent false)."""
+    """Apply full-worker defaults or enforce the narrow warehouse profile."""
     os.environ["AGI_ROLE"] = "gather_worker"
+
+    # The old implementation applied AGI_GATHER_FORCE after the launcher had
+    # disabled unrelated loops. Because force defaults to true, warehouse_only
+    # silently became a full gather worker again: CGL, FAA, FSE and Mission
+    # Control all started beside the backfill and filled the shared container.
+    # A safety profile must win over a broad force switch.
+    if warehouse_only():
+        for key in _WAREHOUSE_ONLY_DISABLED:
+            os.environ[key] = "false"
+        for key in _WAREHOUSE_ONLY_ENABLED:
+            os.environ[key] = "true"
+        return
+
     defaults = {
         "CONTINUOUS_GATHER_LEARN": "true",
         "FAA_BACKGROUND_COLLECTOR": "true",
@@ -165,34 +199,43 @@ def main() -> int:
 
     stop_fns: list = []
 
-    try:
-        from continuous_gather_learn.production import start as start_cgl
-        from continuous_gather_learn.production import stop as stop_cgl
+    if warehouse_only():
+        log.info("gather_worker_cgl_skipped", extra={"profile": _profile()})
+    else:
+        try:
+            from continuous_gather_learn.production import start as start_cgl
+            from continuous_gather_learn.production import stop as stop_cgl
 
-        boot_cgl = start_cgl()
-        stop_fns.append(stop_cgl)
-        log.info("gather_worker_cgl", extra=boot_cgl if isinstance(boot_cgl, dict) else {"boot": boot_cgl})
-    except Exception as exc:  # noqa: BLE001
-        log.warning("gather_worker_cgl_failed", extra={"error": str(exc)[:200]})
+            boot_cgl = start_cgl()
+            stop_fns.append(stop_cgl)
+            log.info("gather_worker_cgl", extra=boot_cgl if isinstance(boot_cgl, dict) else {"boot": boot_cgl})
+        except Exception as exc:  # noqa: BLE001
+            log.warning("gather_worker_cgl_failed", extra={"error": str(exc)[:200]})
 
-    try:
-        from app.faa.background import start_background_collector, stop_background_collector
-        from app.faa.service import FaaService
+    if warehouse_only():
+        log.info("gather_worker_faa_skipped", extra={"profile": _profile()})
+    else:
+        try:
+            from app.faa.background import start_background_collector, stop_background_collector
+            from app.faa.service import FaaService
 
-        faa = FaaService(fre=None, aoi=None)
-        boot_faa = start_background_collector(lambda: faa)
-        stop_fns.append(stop_background_collector)
-        log.info("gather_worker_faa", extra=boot_faa if isinstance(boot_faa, dict) else {"boot": boot_faa})
-    except Exception as exc:  # noqa: BLE001
-        log.warning("gather_worker_faa_failed", extra={"error": str(exc)[:200]})
+            faa = FaaService(fre=None, aoi=None)
+            boot_faa = start_background_collector(lambda: faa)
+            stop_fns.append(stop_background_collector)
+            log.info("gather_worker_faa", extra=boot_faa if isinstance(boot_faa, dict) else {"boot": boot_faa})
+        except Exception as exc:  # noqa: BLE001
+            log.warning("gather_worker_faa_failed", extra={"error": str(exc)[:200]})
 
-    try:
-        from financial_statements_engine.orchestrator.subscriber import bind_orchestrator_subscriber
+    if warehouse_only():
+        log.info("gather_worker_fse_bind_skipped", extra={"profile": _profile()})
+    else:
+        try:
+            from financial_statements_engine.orchestrator.subscriber import bind_orchestrator_subscriber
 
-        bind_orchestrator_subscriber()
-        log.info("gather_worker_fse_bound", extra={"subscriber": "fse00_orchestrator"})
-    except Exception as exc:  # noqa: BLE001
-        log.warning("gather_worker_fse_bind_failed", extra={"error": str(exc)[:200]})
+            bind_orchestrator_subscriber()
+            log.info("gather_worker_fse_bound", extra={"subscriber": "fse00_orchestrator"})
+        except Exception as exc:  # noqa: BLE001
+            log.warning("gather_worker_fse_bind_failed", extra={"error": str(exc)[:200]})
 
     # Global Markets snapshots are computed here, never during a client page
     # request. A dedicated worker does not share the web service disk, so the
@@ -209,15 +252,18 @@ def main() -> int:
             log.warning("gather_worker_mie_runtime_failed", extra={"error": str(exc)[:200]})
 
     # Mission Control snapshot builder — HTTP only reads; this process computes.
-    try:
-        from mission_control.snapshot import start_scheduler as start_mc_snapshot
-        from mission_control.snapshot import stop_scheduler as stop_mc_snapshot
+    if warehouse_only():
+        log.info("gather_worker_mc_snapshot_skipped", extra={"profile": _profile()})
+    else:
+        try:
+            from mission_control.snapshot import start_scheduler as start_mc_snapshot
+            from mission_control.snapshot import stop_scheduler as stop_mc_snapshot
 
-        boot_mc = start_mc_snapshot(boot_build=True)
-        stop_fns.append(stop_mc_snapshot)
-        log.info("gather_worker_mc_snapshot", extra=boot_mc if isinstance(boot_mc, dict) else {"boot": boot_mc})
-    except Exception as exc:  # noqa: BLE001
-        log.warning("gather_worker_mc_snapshot_failed", extra={"error": str(exc)[:200]})
+            boot_mc = start_mc_snapshot(boot_build=True)
+            stop_fns.append(stop_mc_snapshot)
+            log.info("gather_worker_mc_snapshot", extra=boot_mc if isinstance(boot_mc, dict) else {"boot": boot_mc})
+        except Exception as exc:  # noqa: BLE001
+            log.warning("gather_worker_mc_snapshot_failed", extra={"error": str(exc)[:200]})
 
     # Institutional Data Warehouse — daily refresh after the Indian close.
     try:
@@ -313,7 +359,8 @@ def main() -> int:
         _heartbeat = None
 
     remote = _publish_remote_heartbeat({"phase": "ready"})
-    if not remote.get("published"):
+    if (not remote.get("published")
+            and remote.get("reason") != "remote_heartbeat_not_configured"):
         log.warning("gather_worker_remote_heartbeat_failed", extra=remote)
 
     last_remote_heartbeat = time.monotonic()
@@ -326,7 +373,8 @@ def main() -> int:
                 pass
         if time.monotonic() - last_remote_heartbeat >= 30.0:
             remote = _publish_remote_heartbeat({"phase": "running"})
-            if not remote.get("published"):
+            if (not remote.get("published")
+                    and remote.get("reason") != "remote_heartbeat_not_configured"):
                 log.warning("gather_worker_remote_heartbeat_failed", extra=remote)
             last_remote_heartbeat = time.monotonic()
         time.sleep(5.0)
