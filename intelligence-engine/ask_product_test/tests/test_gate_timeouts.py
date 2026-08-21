@@ -1,0 +1,100 @@
+"""A suite that stops must be reported as a stopped suite, not a bad score.
+
+The gate runs 18 suites as child processes. Before this, subprocess.run had no
+timeout: a suite that hung blocked the runner until the 90-minute job ceiling,
+with no output naming which one. Runs also left children behind - the job log
+shows "Terminate orphan process: pid (2434) (python)".
+"""
+
+from __future__ import annotations
+
+import os
+import subprocess
+import sys
+import textwrap
+import time
+
+import pytest
+
+from ask_product_test import run_production_regression_v1 as gate
+
+
+def test_a_timeout_is_not_read_as_a_product_score():
+    """The important one: a hung suite must not inherit a stale artifact score."""
+    decision = gate._decide("bi_acceptance", {"pass_rate_pct": 100.0}, gate.EXIT_TIMEOUT)
+    assert decision["pass"] is False
+    assert decision["actual"] == "timeout"
+    assert decision["failure_class"] == "TIMEOUT"
+    assert decision["timed_out"] is True
+
+
+def test_a_normal_failure_is_still_a_product_failure():
+    decision = gate._decide("bi_acceptance", {"pass_rate_pct": 10.0}, 1)
+    assert decision.get("failure_class") != "TIMEOUT"
+
+
+def test_every_suite_has_a_timeout_ceiling():
+    for module in gate.SUITE_MODULES.values():
+        assert gate._suite_timeout(module) > 0
+
+
+def test_the_slow_suites_get_headroom_over_their_measured_time():
+    """core_platform measured 1,719s and answer_quality 1,403s."""
+    assert gate._suite_timeout("ask_product_test.run_core_platform_acceptance_v1") >= 2 * 1719
+    assert gate._suite_timeout("ask_product_test.run_answer_quality_acceptance_v1") >= 2 * 1403
+
+
+def test_the_ceiling_can_be_overridden_for_a_short_gate():
+    os.environ["GATE_SUITE_TIMEOUT_SEC"] = "5"
+    try:
+        assert gate._suite_timeout("anything") == 5
+    finally:
+        del os.environ["GATE_SUITE_TIMEOUT_SEC"]
+
+
+@pytest.mark.skipif(os.name != "posix", reason="process groups are posix-only")
+def test_a_hanging_child_is_killed_along_with_its_own_children(tmp_path):
+    """The behaviour that stops orphans surviving the step.
+
+    A parent that sleeps forever, having spawned a child that also sleeps
+    forever. Killing only the parent leaves the grandchild running.
+    """
+    marker = tmp_path / "grandchild.pid"
+    script = tmp_path / "hang.py"
+    script.write_text(textwrap.dedent(f"""
+        import subprocess, sys, time, os
+        child = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(300)"])
+        open({str(marker)!r}, "w").write(str(child.pid))
+        time.sleep(300)
+    """))
+
+    proc = subprocess.Popen([sys.executable, str(script)], start_new_session=True)
+    for _ in range(100):
+        if marker.exists():
+            break
+        time.sleep(0.05)
+    grandchild = int(marker.read_text().strip())
+
+    gate._terminate_group(proc, "hang.py")
+    assert proc.poll() is not None, "the suite process must be stopped"
+
+    deadline = time.time() + 5
+    alive = True
+    while time.time() < deadline:
+        try:
+            os.kill(grandchild, 0)
+            time.sleep(0.05)
+        except OSError:
+            alive = False
+            break
+    assert not alive, "the grandchild must not survive the suite it belonged to"
+
+
+@pytest.mark.skipif(os.name != "posix", reason="process groups are posix-only")
+def test_run_module_reports_a_timeout_rather_than_blocking(monkeypatch, tmp_path):
+    monkeypatch.setenv("GATE_SUITE_TIMEOUT_SEC", "2")
+    monkeypatch.setenv("ASK_TEST_ARTIFACTS", str(tmp_path))
+    started = time.perf_counter()
+    rc, elapsed = gate._run_module("this_module_does_not_exist_and_would_hang")
+    assert time.perf_counter() - started < 30, "must not block the runner"
+    assert rc in (gate.EXIT_TIMEOUT, 1), "a missing module exits; a hanging one times out"

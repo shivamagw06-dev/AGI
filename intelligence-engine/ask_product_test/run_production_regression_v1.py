@@ -42,6 +42,7 @@ from __future__ import annotations
 
 import json
 import os
+import signal
 import subprocess
 import sys
 import time
@@ -129,6 +130,62 @@ def _art() -> Path:
     return _artifacts_dir()
 
 
+#: A suite that stops producing output must not take the whole job down with it.
+#: Every suite today exits on its own - the slowest measured at 1,719s - so these
+#: ceilings are headroom, not a schedule. They exist so a suite that hangs is
+#: reported as a hung suite rather than consuming the 90-minute job timeout and
+#: leaving no indication of which one stopped.
+DEFAULT_SUITE_TIMEOUT_SEC = 900
+SUITE_TIMEOUT_SEC: Dict[str, int] = {
+    # measured 1,719s and 1,403s; the rest finish inside a minute
+    "ask_product_test.run_core_platform_acceptance_v1": 3600,
+    "ask_product_test.run_answer_quality_acceptance_v1": 3600,
+    "ask_product_test.run_founder_evaluation_v2": 1800,
+    "ask_product_test.run_golden_business_20": 1800,
+}
+
+#: Distinguishable from a suite that ran and failed. A timeout is a broken suite,
+#: not a product score, and _decide must not read it as one.
+EXIT_TIMEOUT = 124
+
+
+def _suite_timeout(module: str) -> int:
+    override = os.environ.get("GATE_SUITE_TIMEOUT_SEC")
+    if override:
+        try:
+            return max(1, int(override))
+        except ValueError:
+            pass
+    return SUITE_TIMEOUT_SEC.get(module, DEFAULT_SUITE_TIMEOUT_SEC)
+
+
+def _terminate_group(proc: "subprocess.Popen[bytes]", module: str) -> None:
+    """Stop the suite and everything it started.
+
+    The child is its own session leader, so the whole tree is signalled rather
+    than only the process the runner can see. The job log shows orphan pythons
+    surviving the step ("Terminate orphan process: pid (2434)"), which is the
+    runner leaving children behind for the runner host to clean up.
+    """
+    for signum, label in ((signal.SIGTERM, "SIGTERM"), (signal.SIGKILL, "SIGKILL")):
+        if proc.poll() is not None:
+            return
+        try:
+            os.killpg(os.getpgid(proc.pid), signum)
+        except (ProcessLookupError, PermissionError, OSError):
+            try:
+                proc.kill()
+            except OSError:
+                pass
+            return
+        print(f"[gate] sent {label} to {module} process group", flush=True)
+        try:
+            proc.wait(timeout=15)
+            return
+        except subprocess.TimeoutExpired:
+            continue
+
+
 def _run_module(module: str, env: Optional[Dict[str, str]] = None) -> Tuple[int, float]:
     merged = os.environ.copy()
     merged.setdefault("ASK_TEST_MODE", "inprocess")
@@ -136,16 +193,32 @@ def _run_module(module: str, env: Optional[Dict[str, str]] = None) -> Tuple[int,
     merged.setdefault("ASK_TEST_ARTIFACTS", str(_art()))
     if env:
         merged.update(env)
+    limit = _suite_timeout(module)
     t0 = time.perf_counter()
-    print(f"\n========== RUN {module} ==========", flush=True)
-    proc = subprocess.run(
+    print(f"\n========== RUN {module} (timeout {limit}s) ==========", flush=True)
+    # start_new_session gives the suite its own process group so a timeout can
+    # reach the children it spawned, not just the suite itself.
+    proc = subprocess.Popen(
         [sys.executable, "-m", module],
         cwd=str(ROOT),
         env=merged,
+        start_new_session=True,
     )
+    try:
+        returncode = proc.wait(timeout=limit)
+    except subprocess.TimeoutExpired:
+        elapsed = time.perf_counter() - t0
+        print(f"[gate] TIMEOUT {module} after {elapsed:.1f}s (limit {limit}s)", flush=True)
+        _terminate_group(proc, module)
+        print(f"========== TIMEOUT {module} ({elapsed:.1f}s) ==========", flush=True)
+        return EXIT_TIMEOUT, elapsed
+    finally:
+        # Whatever happened, do not leave the tree running behind us.
+        if proc.poll() is None:
+            _terminate_group(proc, module)
     elapsed = time.perf_counter() - t0
-    print(f"========== DONE {module} exit={proc.returncode} ({elapsed:.1f}s) ==========", flush=True)
-    return proc.returncode, elapsed
+    print(f"========== DONE {module} exit={returncode} ({elapsed:.1f}s) ==========", flush=True)
+    return returncode, elapsed
 
 
 def _load(name: str) -> Dict[str, Any]:
@@ -167,6 +240,20 @@ def _decide(suite_id: str, report: Dict[str, Any], rc: int) -> Dict[str, Any]:
     """Normalize suite outcome against AGI Core v1.0 freeze targets."""
     target = dict(RELEASE_GATE_TARGETS[suite_id])
     target["artifact"] = SUITE_ARTIFACTS[suite_id]
+
+    # A suite that never finished has no score. Reading a stale artifact from a
+    # previous run would report one anyway, and a timeout would silently become
+    # whatever the last run measured.
+    if rc == EXIT_TIMEOUT:
+        return {
+            "suite": suite_id,
+            "pass": False,
+            "actual": "timeout",
+            "target": target,
+            "failure_class": "TIMEOUT",
+            "timed_out": True,
+        }
+
     data = report or _load(target["artifact"])
     metric = target["metric"]
     actual = data.get(metric)
@@ -363,7 +450,14 @@ def main() -> int:
 
     all_pass = all(r["pass"] for r in results)
     infra_failures = [r for r in results if r.get("failure_class") == "INFRASTRUCTURE"]
-    product_failures = [r for r in results if not r["pass"] and r.get("failure_class") != "INFRASTRUCTURE"]
+    timed_out = [r for r in results if r.get("failure_class") == "TIMEOUT"]
+    product_failures = [r for r in results
+                        if not r["pass"]
+                        and r.get("failure_class") not in ("INFRASTRUCTURE", "TIMEOUT")]
+    if timed_out:
+        # Named explicitly. The failure this guards against is a suite that hangs
+        # and is then read as a product regression.
+        print(f"\n[gate] suites that timed out: {[r['suite'] for r in timed_out]}", flush=True)
     full_gate = bool(all_pass and with_afi and not quick)
     report = {
         "suite": "AGI Core v1.0 — Production Release Gate",
