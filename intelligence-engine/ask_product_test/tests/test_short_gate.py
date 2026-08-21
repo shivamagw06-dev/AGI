@@ -2,8 +2,11 @@
 
 from __future__ import annotations
 
+import asyncio
+
 import pytest
 
+from ask_product_test import provider_stub
 from ask_product_test import routing_failure_taxonomy as tax
 from ask_product_test import run_short_gate as sg
 from ask_product_test import zero_defect_extract as zde
@@ -36,6 +39,22 @@ def test_contract_mode_is_infrastructure_not_a_green_result(monkeypatch):
     """
     monkeypatch.setenv("ASK_TEST_MODE", "contract")
     assert sg.main() == sg.EXIT_INFRASTRUCTURE
+
+
+def test_installed_stub_uses_pipeline_context_not_expected_case_data():
+    """A bad pipeline binding must not be corrected by the test's ground truth."""
+    provider = provider_stub.StubEditorialProvider()
+    result = asyncio.run(provider.rewrite(
+        question="Explain the expected company",
+        structured={
+            "company": "Wrongly Bound Industries",
+            "ticker": "WRONG",
+            "financial_quality": "Weak",
+        },
+    ))
+    assert "Wrongly Bound Industries" in result["text"]
+    assert "ticker: WRONG" in result["text"]
+    assert "expected company is covered" not in result["text"].lower()
 
 
 def test_unique_cases_and_label_counts_are_reported_separately():

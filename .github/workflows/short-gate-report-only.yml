@@ -4,9 +4,9 @@ name: Short Gate (report-only measurement)
 # deployment. It exists to measure the zero-defect extraction: how long it
 # takes, how many cases it runs, what it finds.
 #
-# continue-on-error keeps a defect finding from showing as a red PR while the
-# underlying defects are being remediated. The numbers are in the log and the
-# artifact.
+# It is not a required check, but its conclusion remains honest: defects and
+# infrastructure failures are red informational checks. Evidence is uploaded
+# with `if: always()` even when the measurement fails.
 
 on:
   pull_request:
@@ -23,7 +23,6 @@ jobs:
   short-gate:
     name: Zero-defect extraction (report-only)
     runs-on: ubuntu-latest
-    continue-on-error: true
     # Generous against the 900s budget in the code, so the job does not kill the
     # very measurement it exists to take.
     timeout-minutes: 45
@@ -75,9 +74,10 @@ jobs:
           echo "duration_seconds=$(( $(date +%s) - start ))" >> "$GITHUB_OUTPUT"
           echo "exit_code=$rc" >> "$GITHUB_OUTPUT"
           # 2 is infrastructure — the stub failed to install, or the harness was
-          # not in inprocess mode. Surfaced, not swallowed.
-          if [ "$rc" = "2" ]; then echo "::warning::short gate infrastructure failure"; fi
-          exit 0
+          # not in inprocess mode. Preserve the real conclusion; later evidence
+          # steps use `if: always()` and still run.
+          if [ "$rc" = "2" ]; then echo "::error::short gate infrastructure failure"; fi
+          exit "$rc"
 
       - name: Summarise the measurement
         if: always()
