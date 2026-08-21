@@ -187,7 +187,8 @@ def held_period(symbol: str, *, tab: str = "financials_quarterly") -> Optional[s
 def detect(companies: Iterable[dict[str, Any]], *,
            fetch: Optional[Callable[[str], dict[str, Any]]] = None,
            pause_seconds: Optional[float] = None,
-           today: Optional[date] = None) -> dict[str, Any]:
+           today: Optional[date] = None,
+           force: bool = False) -> dict[str, Any]:
     """Ask each company whether it has reported since we last looked."""
     import time
 
@@ -213,6 +214,9 @@ def detect(companies: Iterable[dict[str, Any]], *,
             mine = company.get("held_period", ...)
             mine = held_period(symbol) if mine is ... else mine
             ok, reason = validate_period(candidate, held=mine, today=today)
+            if force and not ok and reason == "period_unchanged":
+                # A deliberate recollection of a period we already hold.
+                ok = True
             if ok:
                 found.append({"symbol": symbol, "reporting_period": str(candidate),
                               "trigger": q.TRIGGER_NEW_PERIOD})
@@ -223,7 +227,7 @@ def detect(companies: Iterable[dict[str, Any]], *,
         if pause:
             time.sleep(pause)
 
-    queued = q.enqueue(found) if found else {"queued": 0, "skipped": 0}
+    queued = q.enqueue(found, force=force) if found else {"queued": 0, "skipped": 0}
     return {
         "ok": True,
         "checked": len(list(companies)) if isinstance(companies, list) else None,

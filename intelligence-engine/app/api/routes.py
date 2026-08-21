@@ -21800,7 +21800,8 @@ async def fundamentals_refresh_detect(payload: dict[str, Any] = Body(default_fac
         universe = [c for c in universe if c["symbol"] in wanted]
     universe = universe[: int(body.get("max_companies") or 50)]
     return await run_in_threadpool(detect, universe,
-                                   pause_seconds=body.get("pause_seconds"))
+                                   pause_seconds=body.get("pause_seconds"),
+                                   force=bool(body.get("force")))
 
 
 @router.post("/fundamentals-refresh/run")

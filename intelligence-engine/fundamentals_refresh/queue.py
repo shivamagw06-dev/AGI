@@ -48,6 +48,7 @@ def _now() -> str:
 
 
 def enqueue(entries: Iterable[dict[str, Any]], *, trigger: str = TRIGGER_NEW_PERIOD,
+            force: bool = False,
             actor: str = "fundamentals_refresh") -> dict[str, Any]:
     """Add companies owed a refresh, without duplicating what is already owed.
 
@@ -58,6 +59,10 @@ def enqueue(entries: Iterable[dict[str, Any]], *, trigger: str = TRIGGER_NEW_PER
     An entry already SUCCESS for that period is left alone. Re-reporting the
     same quarter is not a reason to fetch it again; a restatement is, and says
     so through its own trigger.
+
+    ``force`` overrides that, for a period that has to be collected again
+    despite a prior success - a restatement, or a run whose success was recorded
+    by code that has since been found wrong.
     """
     from institutional_warehouse import gateway, store
 
@@ -74,7 +79,7 @@ def enqueue(entries: Iterable[dict[str, Any]], *, trigger: str = TRIGGER_NEW_PER
         symbol = str(entry["symbol"]).strip().upper()
         period = str(entry["reporting_period"]).strip()
         prior = held.get((symbol, period))
-        if prior:
+        if prior and not force:
             status = str(prior.get("status") or "")
             if status in (SUCCESS, RUNNING):
                 skipped += 1
