@@ -124,10 +124,13 @@ def _company_stem(question: str) -> str:
 def _resolve_short_name(stem: str) -> tuple[Optional[str], str]:
     """Bind a short company reference ("Titan", "Reliance") when unambiguous."""
     from company_identity.service import _name_index, _normalize_name, prefix_is_unambiguous
+    from entity_intelligence.registry import ambiguity_candidates
 
     key = _normalize_name(stem)
     if not key or len(key) < 3:
         return None, "mention_too_short"
+    if ambiguity_candidates(stem):
+        return None, "ambiguous_short_name"
     index = _name_index()
     exact = index.get(key)
     if exact:
