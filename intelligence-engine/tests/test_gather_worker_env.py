@@ -32,6 +32,38 @@ def test_gather_worker_force_enables_flags(monkeypatch):
     assert os.environ["AGI_ROLE"] == "gather_worker"
 
 
+def test_warehouse_only_profile_cannot_be_forced_wide(monkeypatch):
+    """The narrow profile must win over AGI_GATHER_FORCE and inherited flags."""
+    monkeypatch.setenv("AGI_GATHER_SIDECAR_PROFILE", "warehouse_only")
+    monkeypatch.setenv("AGI_GATHER_FORCE", "true")
+    loud = (
+        "CONTINUOUS_GATHER_LEARN",
+        "FAA_BACKGROUND_COLLECTOR",
+        "CONTINUOUS_HISTORICAL_BACKFILL",
+        "CONTINUOUS_BACKFILL_UNTIL_COMPLETE",
+        "KF_HD_LIVE_COLLECTORS",
+        "CONTINUOUS_FAA_REFRESH",
+        "CONTINUOUS_LIDI",
+        "CONTINUOUS_KF_HD",
+        "CONTINUOUS_LEARNING_LOOP",
+        "CONTINUOUS_MORNING_DAG",
+        "FIE_RUNTIME",
+        "HVIE_RUNTIME",
+        "MIE_RUNTIME_ENABLED",
+    )
+    for name in loud:
+        monkeypatch.setenv(name, "true")
+
+    gw = _load_gather_worker()
+    gw._apply_worker_defaults()
+
+    for name in loud:
+        assert os.environ[name] == "false", f"{name} escaped warehouse_only"
+    assert os.environ["WAREHOUSE_DAILY_REFRESH"] == "true"
+    assert os.environ["WAREHOUSE_BACKFILL"] == "true"
+    assert os.environ["AGI_ROLE"] == "gather_worker"
+
+
 def test_start_engine_script_exists():
     script = Path(__file__).resolve().parents[1] / "scripts" / "start_engine.sh"
     assert script.is_file()
