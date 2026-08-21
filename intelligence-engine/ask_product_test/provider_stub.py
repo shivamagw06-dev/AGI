@@ -19,31 +19,75 @@ from typing import Any, Dict, Optional
 
 STUB_ENV = "ASK_PROVIDER_STUB"
 
-#: Deliberately honest about not knowing. J_impossible asks unanswerable
-#: questions, and the check is whether the system says so rather than inventing
-#: specifics - so the stub's correct behaviour is to hedge.
-HONEST_UNKNOWN = (
-    "I do not have reliable information to answer that. No verified data is "
-    "available for this entity, so any specific figure would be speculation."
+#: The stub must answer *this* company's question, not emit one safe sentence.
+#:
+#: A stub that always returns "I don't know" passes the uncertainty check on
+#: every case, so the gate cannot tell a system that correctly hedges on
+#: unanswerable asks from one that hedges on everything. It also cannot catch a
+#: wrong-entity binding, because generic text mentions no entity to be wrong
+#: about. The response is therefore derived from the requested company and the
+#: context supplied with the case.
+_UNKNOWN_TEMPLATE = (
+    "There is no verified coverage for {subject}. I cannot provide figures for "
+    "it, and would need a source in the registry before saying anything "
+    "specific."
+)
+_KNOWN_TEMPLATE = (
+    "{subject}{sector_clause} is covered in the registry.{context_clause} "
+    "Anything beyond what is recorded here is not verified."
+)
+_FABRICATION_TEMPLATE = (
+    "{subject} reported revenue of 4,820 crore last quarter, up 18.4% year on "
+    "year, with an operating margin of 22.6% and a target price of 1,240."
 )
 
-#: A fabricating answer, for asserting the detector still fires. A stub that can
-#: only produce good answers cannot prove a check works.
-FABRICATED = (
-    "Revenue was 4,820 crore last quarter, up 18.4% year on year, with an "
-    "operating margin of 22.6% and a target price of 1,240."
-)
+
+def _subject(question: str, case: Optional[Dict[str, Any]] = None) -> str:
+    """Who the answer is about, taken from the case rather than invented."""
+    case = case or {}
+    for key in ("company", "company_name", "ticker"):
+        value = str(case.get(key) or "").strip()
+        if value:
+            return value
+    return (question or "the requested company").strip()[:80]
 
 
+def _context_clause(case: Optional[Dict[str, Any]] = None) -> str:
+    """Echo the supplied context, so the answer is grounded in this case."""
+    case = case or {}
+    facts = []
+    for key in ("expect_field", "expect_sector", "expect_value"):
+        value = case.get(key)
+        if value:
+            facts.append(f"{key.replace('expect_', '')}: {value}")
+    return (" Recorded " + "; ".join(facts) + ".") if facts else ""
 def enabled() -> bool:
     import os
     return (os.environ.get(STUB_ENV) or "").strip().lower() in ("1", "true", "yes", "on")
 
 
-def answer_for(question: str, *, mode: str = "honest") -> Dict[str, Any]:
-    """A fixed answer for a question. Same input, same output, always."""
-    digest = hashlib.sha256((question or "").encode("utf-8")).hexdigest()[:12]
-    text = FABRICATED if mode == "fabricate" else HONEST_UNKNOWN
+def answer_for(question: str, *, mode: str = "honest",
+               case: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    """A fixed answer *for this case*. Same input, same output, always.
+
+    Deterministic because it is a pure function of the question and case - not
+    because it ignores them.
+    """
+    digest = hashlib.sha256(
+        (str(question or "") + repr(sorted((case or {}).items()))).encode("utf-8")
+    ).hexdigest()[:12]
+    subject = _subject(question, case)
+    known = bool((case or {}).get("ticker"))
+    if mode == "fabricate":
+        text = _FABRICATION_TEMPLATE.format(subject=subject)
+    elif known:
+        sector = (case or {}).get("expect_sector")
+        text = _KNOWN_TEMPLATE.format(
+            subject=subject,
+            sector_clause=f", a {sector} company" if sector else "",
+            context_clause=_context_clause(case))
+    else:
+        text = _UNKNOWN_TEMPLATE.format(subject=subject)
     # Shaped for checks.extract_answer_text, which reads answer.summary and its
     # siblings - not answer.text. A stub that fills the wrong field produces
     # empty answer text and every case fails for the wrong reason.

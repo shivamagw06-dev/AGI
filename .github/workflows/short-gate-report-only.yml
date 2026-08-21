@@ -1,0 +1,118 @@
+name: Short Gate (report-only measurement)
+
+# Report-only. This is NOT a required check, gates no merge, and triggers no
+# deployment. It exists to measure the zero-defect extraction: how long it
+# takes, how many cases it runs, what it finds.
+#
+# continue-on-error keeps a defect finding from showing as a red PR while the
+# underlying defects are being remediated. The numbers are in the log and the
+# artifact.
+
+on:
+  pull_request:
+    paths:
+      - 'intelligence-engine/ask_product_test/**'
+      - '.github/workflows/short-gate-report-only.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: short-gate-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  short-gate:
+    name: Zero-defect extraction (report-only)
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    # Generous against the 900s budget in the code, so the job does not kill the
+    # very measurement it exists to take.
+    timeout-minutes: 45
+    env:
+      ASK_TEST_MODE: inprocess
+      ASK_TEST_CASE_COOLDOWN_SEC: '0'
+      ASK_SLIM: 'true'
+      FAA_BACKGROUND_COLLECTOR: 'false'
+      CONTINUOUS_GATHER_LEARN: 'false'
+      KIP_DATA_DIR: ${{ github.workspace }}/intelligence-engine/data
+      VALUATION_CONSENSUS_ROOT: ${{ github.workspace }}/intelligence-engine/data/valuation_consensus
+      IKT_STORE_ROOT: ${{ github.workspace }}/intelligence-engine/data/institutional_knowledge_tables
+      KF_STORE_ROOT: ${{ github.workspace }}/intelligence-engine/data/knowledge_factory
+      IERE_STORE_ROOT: ${{ github.workspace }}/intelligence-engine/data/evidence_retrieval
+      ACCEPTANCE_FIXTURES_ROOT: ${{ github.workspace }}/intelligence-engine/acceptance_fixtures
+      ASK_TEST_ARTIFACTS: ${{ github.workspace }}/intelligence-engine/artifacts
+
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        working-directory: intelligence-engine
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Prepare artifacts directory
+        run: mkdir -p intelligence-engine/artifacts
+
+      - name: Bootstrap acceptance data
+        run: python scripts/ci/bootstrap_acceptance_data.py
+
+      - name: Acceptance data health check
+        run: python scripts/ci/check_acceptance_data.py
+
+      - name: Run the short gate
+        id: gate
+        working-directory: intelligence-engine
+        env:
+          PYTHONPATH: .
+        run: |
+          set +e
+          start=$(date +%s)
+          python -m ask_product_test.run_short_gate
+          rc=$?
+          echo "duration_seconds=$(( $(date +%s) - start ))" >> "$GITHUB_OUTPUT"
+          echo "exit_code=$rc" >> "$GITHUB_OUTPUT"
+          # 2 is infrastructure — the stub failed to install, or the harness was
+          # not in inprocess mode. Surfaced, not swallowed.
+          if [ "$rc" = "2" ]; then echo "::warning::short gate infrastructure failure"; fi
+          exit 0
+
+      - name: Summarise the measurement
+        if: always()
+        working-directory: intelligence-engine
+        run: |
+          python - <<'PY'
+          import glob, json, os
+          hits = sorted(glob.glob("artifacts/_runs/*/short_gate/short_gate_zero_defect.json"))
+          summary = os.environ.get("GITHUB_STEP_SUMMARY")
+          if not hits:
+              line = "No short-gate artifact produced — see the job log."
+          else:
+              d = json.load(open(hits[-1]))
+              line = "\n".join([
+                  "## Short gate (report-only)", "",
+                  f"- decision: **{d['decision']}**",
+                  f"- cases planned / evaluated: {d['cases_planned']} / {d['cases_evaluated']}",
+                  f"- duration: **{d['elapsed_seconds']}s** of {d['budget_seconds']}s "
+                  f"(within budget: {d['within_budget']})",
+                  f"- defects: `{d['defects']}`",
+                  f"- unique failing cases: {d['unique_failing_cases']} "
+                  f"(P0: {d['unique_p0_cases']}, labels: {d['label_occurrences']})",
+                  f"- non-P0 tracked: `{d['non_p0_categories']}`",
+                  f"- section mapping: {d['section_mapping']}", "",
+                  "Report-only: blocks no merge and no deployment.",
+              ])
+          print(line)
+          if summary:
+              open(summary, "a").write(line + "\n")
+          PY
+
+      - name: Upload the measurement
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: short-gate-measurement
+          path: intelligence-engine/artifacts/_runs/**/short_gate/*.json
+          if-no-files-found: warn

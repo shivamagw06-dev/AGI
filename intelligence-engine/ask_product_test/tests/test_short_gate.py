@@ -87,3 +87,56 @@ def test_the_budget_is_reported_not_enforced():
 def test_the_mapping_is_still_provisional():
     report = sg.build_report([], elapsed=1.0, cases_planned=0, stub_ok=True)
     assert "PROVISIONAL" in report["section_mapping"]
+
+
+# --- fixed budget ----------------------------------------------------------
+
+def test_the_environment_cannot_raise_the_budget(monkeypatch, capsys):
+    monkeypatch.setenv("SHORT_GATE_BUDGET_SEC", str(sg.BUDGET_SECONDS + 5000))
+    assert sg.budget_seconds() == sg.BUDGET_SECONDS
+    assert "ignoring" in capsys.readouterr().out
+
+
+def test_the_environment_may_lower_the_budget(monkeypatch):
+    monkeypatch.setenv("SHORT_GATE_BUDGET_SEC", "60")
+    assert sg.budget_seconds() == 60
+
+
+def test_a_malformed_override_falls_back_to_the_committed_ceiling(monkeypatch):
+    monkeypatch.setenv("SHORT_GATE_BUDGET_SEC", "later")
+    assert sg.budget_seconds() == sg.BUDGET_SECONDS
+
+
+# --- partitioning ----------------------------------------------------------
+
+def test_partitions_recombine_to_exactly_the_manifest():
+    cases = zde.select_cases(build_cases(), defects=zde.REQUIRED_DEFECTS)
+    for shards in (1, 2, 3, 4, 8):
+        buckets = sg.partition(cases, shards)
+        check = sg.verify_partition(cases, buckets)
+        assert check["matches_manifest"] is True, f"{shards} shards"
+        assert check["combined_cases"] == len(cases)
+        assert check["duplicates"] == 0 and not check["missing"] and not check["extra"]
+
+
+def test_a_dropped_shard_is_detected():
+    """The failure this check exists for: a lost shard reads as zero defects."""
+    cases = zde.select_cases(build_cases(), defects=zde.REQUIRED_DEFECTS)
+    buckets = sg.partition(cases, 4)
+    check = sg.verify_partition(cases, buckets[:-1])
+    assert check["matches_manifest"] is False
+    assert check["missing"], "the lost cases must be named"
+
+
+def test_a_duplicated_case_is_detected():
+    cases = zde.select_cases(build_cases(), defects=zde.REQUIRED_DEFECTS)
+    buckets = sg.partition(cases, 3)
+    buckets.append([buckets[0][0]])
+    check = sg.verify_partition(cases, buckets)
+    assert check["matches_manifest"] is False and check["duplicates"] == 1
+
+
+def test_partitioning_never_reduces_coverage():
+    cases = zde.select_cases(build_cases(), defects=zde.REQUIRED_DEFECTS)
+    total = sum(len(b) for b in sg.partition(cases, 6))
+    assert total == len(cases) == 395

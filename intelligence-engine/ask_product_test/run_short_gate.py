@@ -46,10 +46,77 @@ EXIT_OK = 0
 EXIT_DEFECTS = 1
 EXIT_INFRASTRUCTURE = 2
 
-#: Wall-clock the gate aims to stay inside. Exceeding it is reported, not
-#: failed - the gate is report-only, and a budget that fails the run would be
-#: enforcement by the back door.
-BUDGET_SECONDS = int(os.environ.get("SHORT_GATE_BUDGET_SEC") or 900)
+#: The ceiling, in version control. Deliberately not readable from the
+#: environment: a budget an environment variable can raise is a budget that gets
+#: raised on the run that breaches it, and the number in the repository stops
+#: describing what is enforced. Changing it is a commit and a review.
+BUDGET_SECONDS = 900
+
+#: A run may set a *lower* ceiling to fail faster locally. It may not set a
+#: higher one - that is the whole point of the constant above.
+def budget_seconds() -> int:
+    override = (os.environ.get("SHORT_GATE_BUDGET_SEC") or "").strip()
+    if not override:
+        return BUDGET_SECONDS
+    try:
+        value = int(override)
+    except ValueError:
+        return BUDGET_SECONDS
+    if value > BUDGET_SECONDS:
+        print(f"[short_gate] ignoring SHORT_GATE_BUDGET_SEC={value}: the ceiling "
+              f"is {BUDGET_SECONDS}s and is set in version control", flush=True)
+        return BUDGET_SECONDS
+    return max(1, value)
+
+
+# --------------------------------------------------------------------------
+# Partitioning
+# --------------------------------------------------------------------------
+
+
+def manifest(cases: List[Dict[str, Any]]) -> List[str]:
+    """Every case id the extraction says must run, in order."""
+    return sorted(str(c.get("id")) for c in cases)
+
+
+def partition(cases: List[Dict[str, Any]], shards: int) -> List[List[Dict[str, Any]]]:
+    """Split the universe across shards without dropping or duplicating a case.
+
+    Partitioning is how the gate stays inside its budget if the full 395 cases
+    do not. Reducing the case set would be the other way, and it is the one
+    thing this gate exists to avoid - a smaller universe chosen to fit the clock
+    is the "current count as the test set" error wearing a different hat.
+    """
+    shards = max(1, int(shards))
+    buckets: List[List[Dict[str, Any]]] = [[] for _ in range(shards)]
+    for i, case in enumerate(sorted(cases, key=lambda c: str(c.get("id")))):
+        buckets[i % shards].append(case)
+    return buckets
+
+
+def verify_partition(cases: List[Dict[str, Any]],
+                     buckets: List[List[Dict[str, Any]]]) -> Dict[str, Any]:
+    """The shards, recombined, must be exactly the manifest.
+
+    Asserted rather than trusted: a partition that silently drops a shard
+    reports zero defects for every case in it.
+    """
+    expected = manifest(cases)
+    seen: List[str] = []
+    for bucket in buckets:
+        seen.extend(str(c.get("id")) for c in bucket)
+    combined = sorted(seen)
+    duplicates = len(seen) - len(set(seen))
+    missing = sorted(set(expected) - set(seen))
+    extra = sorted(set(seen) - set(expected))
+    return {
+        "matches_manifest": combined == expected and not duplicates,
+        "expected_cases": len(expected),
+        "combined_cases": len(seen),
+        "duplicates": duplicates,
+        "missing": missing[:20],
+        "extra": extra[:20],
+    }
 
 ARTIFACT = "short_gate_zero_defect.json"
 
@@ -120,8 +187,8 @@ def build_report(results: List[Dict[str, Any]], *, elapsed: float,
         "cases_planned": cases_planned,
         "cases_evaluated": len(results),
         "elapsed_seconds": round(elapsed, 1),
-        "budget_seconds": BUDGET_SECONDS,
-        "within_budget": elapsed <= BUDGET_SECONDS,
+        "budget_seconds": budget_seconds(),
+        "within_budget": elapsed <= budget_seconds(),
         # unique cases, held separately from label counts
         "unique_failing_cases": len(failing_cases),
         "unique_p0_cases": len(p0_cases),
@@ -190,7 +257,7 @@ def main() -> int:
     print(f"[short_gate] defects={report['defects']}", flush=True)
     print(f"[short_gate] non-P0 (tracked, not blocking)={report['non_p0_categories']}",
           flush=True)
-    print(f"[short_gate] {report['elapsed_seconds']}s of {BUDGET_SECONDS}s budget "
+    print(f"[short_gate] {report['elapsed_seconds']}s of {budget_seconds()}s budget "
           f"(within={report['within_budget']})", flush=True)
     print(f"[short_gate] artifact: {out}", flush=True)
     print("[short_gate] report-only: blocks no merge and no deployment", flush=True)
