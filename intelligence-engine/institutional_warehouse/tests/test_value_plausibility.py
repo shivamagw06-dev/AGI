@@ -172,3 +172,21 @@ def test_fail_closed_is_opt_in_and_off_by_default():
     out = scale_guard.inspect(TAB, rows, source="financial_connector",
                               mode=scale_guard.MODE_ISOLATE)
     assert out["keep"] == rows and out["isolate"] == []
+
+
+def test_a_million_fold_pair_among_non_minimum_values_is_found():
+    """Comparing every value only against the smallest misses this.
+
+    Three peers: a small genuine figure, and two rows a million apart from each
+    other. The 1e6 pair is 5000 against 5e9, neither of which is the minimum.
+    """
+    _seed([{"revenue": 12.0, "type": "CONSOLIDATED", "fy": "FY2024"},
+           {"revenue": 5000.0, "type": "STANDALONE", "fy": "FY2024"},
+           {"revenue": 5000.0 * 1e6, "type": "UNKNOWN", "fy": "FY24"}])
+    out = vp.census(TAB)
+    assert out["totals"]["ratio_corroborated"] >= 1, \
+        "the 1e6 pair does not involve the smallest value"
+
+
+def test_the_pairwise_comparison_is_bounded():
+    assert vp.MAX_PEERS_COMPARED == 24

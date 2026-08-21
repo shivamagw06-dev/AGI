@@ -57,6 +57,11 @@ IMPOSSIBLE_MILLION = 1e8
 SCALE_GAPS = ((0.9e6, 1.1e6, "rupees stored as INR million"),
               (0.9e7, 1.1e7, "crore stored as rupees"))
 
+#: A company-period group holds a handful of rows. The cap keeps the pairwise
+#: comparison from becoming quadratic if a pathological group ever appears, and
+#: is reported when it bites rather than silently truncating.
+MAX_PEERS_COMPARED = 24
+
 TABS = ("financials_annual", "financials_quarterly")
 _PERIOD_FIELD = {"financials_annual": "fiscal_year",
                  "financials_quarterly": "fiscal_period"}
@@ -164,13 +169,23 @@ def census(tab_id: str, *, symbols: Optional[Iterable[str]] = None,
         for (_folded, field), values in facts.items():
             if len(values) < 2:
                 continue
-            smallest = min(v for v, _ in values)
-            if not smallest:
-                continue
-            for value, row in values:
-                gap = value / smallest
-                if any(low <= gap <= high for low, high, _ in SCALE_GAPS):
-                    ratio_hits.setdefault(str(row.get("row_id")), set()).add(field)
+            # Pairwise, not every-value-against-the-smallest. With three or more
+            # peers a 1e6 pair can sit entirely among non-minimum values - a row
+            # in rupees next to another in rupees and one in millions - and
+            # comparing only to the minimum misses it. Bounded because a period
+            # group is a handful of rows, not a tab.
+            if len(values) > MAX_PEERS_COMPARED:
+                values = sorted(values, key=lambda vr: vr[0])[:MAX_PEERS_COMPARED]
+            for i, (left, left_row) in enumerate(values):
+                for right, right_row in values[i + 1:]:
+                    low_v, high_v = (left, right) if left <= right else (right, left)
+                    if not low_v:
+                        continue
+                    gap = high_v / low_v
+                    if any(low <= gap <= high for low, high, _ in SCALE_GAPS):
+                        # The larger side is the one holding an unconverted value.
+                        bigger = left_row if left >= right else right_row
+                        ratio_hits.setdefault(str(bigger.get("row_id")), set()).add(field)
 
     suspect = set(ratio_hits) | set(magnitude_hits)
     for rid in suspect:

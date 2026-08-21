@@ -93,10 +93,26 @@ Until this is done nothing else should run.
 `scale_guard` defaults to `off`. Set `report`: it counts what it would have
 isolated and stores everything. Watch for a week. No behaviour changes.
 
-### Step 2 — add the SOURCE_DEFAULT_UNIT entries
+### Step 2 — resolve the unit per fact, not per source
 
-Once step 0 establishes the units. This stops new mis-scaled rows at the source.
-Forward-only — it does not touch stored rows. Reversible by removing the entry.
+**Not** a `SOURCE_DEFAULT_UNIT` entry. An earlier draft of this plan said to add
+one after Step 0, and Step 0 then established that both sources are non-uniform
+in the code and in the stored data — so a source-wide default would fix the bulk
+and newly corrupt the minority already at a smaller scale. That step was wrong
+and is replaced.
+
+Instead, read the unit each fact declares. NSE XBRL carries `unitRef` on every
+numeric fact resolving to `iso4217:INR`, `xbrli:shares`, `xbrli:pure` or a
+compound `INR/share`. Resolving it makes the unit *declared* per row rather than
+assumed per feed, which is what the canonical rules already require.
+
+Alongside it, record the provenance the pipeline currently discards: which
+provider answered for `financial_connector`, and the
+`scaled_from_integrated_lakhs` flag that is set and never read.
+
+Forward-only. Stored rows are untouched. Scoped in
+`docs/xbrl-unit-resolution-scope.md`; shadow results and confirmed lineage are
+in the separate shadow PR.
 
 ### Step 3 — guard to isolate mode
 
