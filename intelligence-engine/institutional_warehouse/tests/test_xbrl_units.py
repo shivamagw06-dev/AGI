@@ -166,7 +166,7 @@ def test_the_shadow_applies_nothing_and_says_so():
     assert fact["filing_sha256"] and fact["provider"] == "nse_india"
 
 
-def test_lineage_is_confirmed_only_by_an_exact_value_match():
+def test_scale_is_corroborated_not_lineage():
     from institutional_warehouse import xbrl_shadow as sh
     doc = ('<xbrli:xbrl>' + UNITS_DOC + '<in-bse-fin:RevenueFromOperations'
            ' contextRef="OneD" unitRef="INR" decimals="-7">580520000000.00'
@@ -179,8 +179,8 @@ def test_lineage_is_confirmed_only_by_an_exact_value_match():
              "revenue": 580520.0},                             # already in millions
             {"row_id": "c", "symbol": "OTHER", "source": "x",
              "revenue": 580520000000.0}]                       # different company
-    out = sh.confirm_lineage(rows, index, fields=["revenue"])
-    assert out["confirmed_rows"] == 1
+    out = sh.corroborate_scale(rows, index, fields=["revenue"])
+    assert out["scale_corroborated_rows"] == 1
     assert "a" in out["rows"], "only the row whose value is the filing fact"
     assert "b" not in out["rows"], "an already-scaled row must not be claimed"
 
@@ -193,3 +193,25 @@ def test_a_document_with_no_declared_units_yields_nothing_usable():
     out = sh.scan_document(doc, company="TCS")
     assert all(f["proposed_normalised_value"] is None for f in out["facts"])
     assert out["counts"]["unknown_fails_closed"] >= 1
+
+
+def test_matching_does_not_identify_the_writer():
+    """Why the 275 rows are scale-corroborated and not lineage-confirmed.
+
+    Two providers reading one filing report one number. In the real run,
+    yahoo_finance_statements rows matched declared facts too - and Yahoo is the
+    failover provider, not the XBRL parser.
+    """
+    from institutional_warehouse import xbrl_shadow as sh
+    doc = ('<xbrli:xbrl>' + UNITS_DOC + '<in-bse-fin:RevenueFromOperations'
+           ' contextRef="OneD" unitRef="INR" decimals="-7">580520000000.00'
+           '</in-bse-fin:RevenueFromOperations></xbrli:xbrl>')
+    index = sh.index_declared_facts([sh.scan_document(doc, company="TCS")])
+    rows = [{"row_id": "a", "symbol": "TCS", "source": "financial_connector",
+             "revenue": 580520000000.0},
+            {"row_id": "b", "symbol": "TCS", "source": "yahoo_finance_statements",
+             "revenue": 580520000000.0}]
+    out = sh.corroborate_scale(rows, index, fields=["revenue"])
+    assert out["scale_corroborated_rows"] == 2, \
+        "both match, so the match cannot say which provider wrote either"
+    assert "does_not_establish" in out

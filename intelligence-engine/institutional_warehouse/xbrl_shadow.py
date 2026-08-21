@@ -16,6 +16,10 @@ That is the finding, not a limitation to work around. The estimate that 11,307
 rows would change value assumes those rows arrived by the XBRL path, and nothing
 stored can confirm it. Recording lineage is the prerequisite for converting
 anything, and it does not exist yet.
+
+Matching a stored value against a filing fact corroborates the *scale*, not the
+lineage - see :func:`corroborate_scale`. Two providers reading one filing report
+one number.
 """
 
 from __future__ import annotations
@@ -211,17 +215,25 @@ def index_declared_facts(scans: Iterable[dict[str, Any]],
     return index
 
 
-def confirm_lineage(rows: Iterable[dict[str, Any]], index: dict[tuple, list[dict[str, Any]]],
-                    *, fields: Iterable[str]) -> dict[str, Any]:
-    """Which stored rows can be proven to have come by the XBRL path.
+def corroborate_scale(rows: Iterable[dict[str, Any]], index: dict[tuple, list[dict[str, Any]]],
+                      *, fields: Iterable[str]) -> dict[str, Any]:
+    """Which stored rows hold a value identical to a declared XBRL fact.
 
-    Recorded lineage does not exist - source_document and retrieval_date are
-    populated on 0 of 102,822 fundamentals rows - so this matches on the value
-    itself. A row whose stored number equals a declared fact to the cent came
-    from that fact, and is therefore absolute rupees.
+    This corroborates the **value and its scale**. It does not establish
+    ingestion lineage, and an earlier version of this claimed that it did. It
+    cannot: another provider reading the same filing reports the same number, so
+    a match says the stored value is that fact's value - absolute rupees - not
+    that this row was written by the XBRL path.
 
-    Only rows this confirms may be treated as known. Everything else stays a
-    hypothesis, which is the whole point of running it.
+    The evidence against the stronger claim is in the run itself.
+    yahoo_finance_statements rows also match declared facts exactly, and Yahoo is
+    the failover provider rather than the XBRL parser. If matching identified the
+    writer, those rows could not match.
+
+    What the match does support: the row's magnitude is the filing's magnitude,
+    so reading it as INR million is wrong by a million. That is enough to justify
+    examining the row and not enough to justify converting it, which is why
+    nothing here converts anything.
     """
     confirmed: dict[str, dict[str, Any]] = {}
     for row in rows:
@@ -247,5 +259,13 @@ def confirm_lineage(rows: Iterable[dict[str, Any]], index: dict[tuple, list[dict
     for entry in confirmed.values():
         entry["filings"] = sorted(entry["filings"])
         entry["concepts"] = sorted(entry["concepts"])
-    return {"confirmed_rows": len(confirmed), "rows": confirmed,
-            "basis": "stored value identical to a declared XBRL fact"}
+    return {
+        "scale_corroborated_rows": len(confirmed),
+        "rows": confirmed,
+        "basis": "stored value identical to a declared XBRL fact",
+        "establishes": "the value and its scale (absolute rupees)",
+        "does_not_establish": (
+            "which provider wrote the row - another provider reading the same "
+            "filing reports the same number, and yahoo_finance_statements rows "
+            "match too"),
+    }

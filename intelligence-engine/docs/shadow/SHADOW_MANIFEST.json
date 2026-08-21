@@ -17,9 +17,11 @@
     "missing_unitRef": 2,
     "unitRef_not_declared:INR": 135
   },
-  "lineage_confirmed_rows": {
+  "hypothesis_note": "the 11,307 figure remains a hypothesis; only rows whose stored value is identical to a declared XBRL fact are confirmed",
+  "scale_corroborated_rows": {
     "financials_annual": 133,
     "financials_quarterly": 142
   },
-  "hypothesis_note": "the 11,307 figure remains a hypothesis; only rows whose stored value is identical to a declared XBRL fact are confirmed"
+  "scale_corroboration_note": "establishes the value and its scale (absolute rupees); does NOT establish which provider wrote the row - another provider reading the same filing reports the same number, and yahoo_finance_statements rows match too",
+  "regenerated_at_utc": "2026-08-21T18:59:56.642097+00:00"
 }
