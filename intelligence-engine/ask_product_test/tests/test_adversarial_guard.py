@@ -130,8 +130,14 @@ def test_the_stub_names_the_company_it_was_asked_about():
 
 def test_the_stub_echoes_the_supplied_context():
     text = provider_stub.answer_for(
-        "q", case={"ticker": "TCS", "expect_sector": "IT Services"})["answer"]["summary"]
-    assert "IT Services" in text
+        "q", structured={
+            "company": "Tata Consultancy Services",
+            "ticker": "TCS",
+            "financial_quality": "Strong",
+        })["answer"]["summary"]
+    assert "Tata Consultancy Services" in text
+    assert "ticker: TCS" in text
+    assert "financial quality: Strong" in text
 
 
 def test_the_stub_is_still_deterministic():
