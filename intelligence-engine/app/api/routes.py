@@ -21865,6 +21865,29 @@ async def fundamentals_reconciliation_inventory(
                                    simulate_unit_provenance=bool(simulate_provenance))
 
 
+@router.get("/fundamentals/value-plausibility")
+async def fundamentals_value_plausibility(tab: str = "financials_annual",
+                                          symbols: str = "", sample: int = 25):
+    """Census of aggregate money stored on the wrong scale. Writes nothing.
+
+    Reports row ids and the evidence for each. Plausibility is validation
+    evidence, not proof of provenance: a row named here is one to examine, not
+    one to retire.
+    """
+    from institutional_warehouse.value_plausibility import census
+
+    wanted = [s.strip().upper() for s in symbols.split(",") if s.strip()] or None
+    return await run_in_threadpool(census, tab, symbols=wanted, sample_rows=int(sample))
+
+
+@router.get("/fundamentals/value-plausibility-manifest")
+async def fundamentals_value_plausibility_manifest(tab: str = "financials_annual"):
+    """Every suspect row id with its evidence. Writes nothing."""
+    from institutional_warehouse.value_plausibility import manifest
+
+    return await run_in_threadpool(manifest, tab)
+
+
 @router.get("/fundamentals/unit-provenance-plan")
 async def fundamentals_unit_provenance_plan(tab: str = "", sample: int = 10):
     """What the Capital IQ provenance backfill would change. Writes nothing.
