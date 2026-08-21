@@ -136,17 +136,45 @@ def completeness(rows: Iterable[dict[str, Any]]) -> tuple[int, list[str]]:
     return len(EXPECTED) - len(missing), missing
 
 
+def kind_for(day: Optional[str] = None) -> str:
+    """Checkpoints are per day, so progress resumes but tomorrow starts fresh.
+
+    Without the date a company marked done today would be skipped forever, and
+    the point of a daily snapshot is that it happens daily.
+    """
+    return f"{KIND}:{day or datetime.now(timezone.utc).date().isoformat()}"
+
+
 def run(*, limit: Optional[int] = None, batch_size: int = 40, actor: str = "ratio_sweep",
         fetch: Optional[Callable[[str], dict[str, Any]]] = None,
-        pause_seconds: float = PAUSE_SECONDS) -> dict[str, Any]:
-    """Sweep the universe once and record honestly how far it got."""
+        pause_seconds: float = PAUSE_SECONDS, resume: bool = True,
+        max_companies: Optional[int] = None) -> dict[str, Any]:
+    """Sweep the universe and record honestly how far it got.
+
+    Resumable, because the first full run was killed at twenty minutes by a
+    deploy landing on top of it and lost everything it had collected. Each
+    company is checkpointed as it completes, so a restart costs the batch in
+    flight rather than the run.
+
+    ``max_companies`` bounds one call. A single request that runs for half an
+    hour is a request that a deploy, a timeout or a proxy will eventually
+    interrupt, and the work should survive all three.
+    """
     from institutional_warehouse import gateway
     from institutional_warehouse.backfill import checkpoints
 
     fetch = fetch or (lambda isin: fetch_ratios(isin))
+    day_kind = kind_for()
     universe = eligible(limit)
+    if resume:
+        owed = set(checkpoints.pending_entities(
+            day_kind, [c["symbol"] for c in universe], limit=len(universe) or 1))
+        universe = [c for c in universe if c["symbol"] in owed]
+    if max_companies:
+        universe = universe[:max_companies]
     run_id = checkpoints.start_job(KIND, actor=actor,
-                                   params={"limit": limit, "batch_size": batch_size})
+                                   params={"limit": limit, "batch_size": batch_size,
+                                           "resume": resume, "day": day_kind})
     started = datetime.now(timezone.utc)
 
     requested = successful = failed = invalid = skipped = 0
@@ -177,6 +205,9 @@ def run(*, limit: Optional[int] = None, batch_size: int = 40, actor: str = "rati
         requested += 1
         result = fetch(company["isin"])
         if not result.get("ok"):
+            checkpoints.save_checkpoint(day_kind, company["symbol"],
+                                        status=checkpoints.FAILED,
+                                        error=str(result.get("error"))[:200])
             failed += 1
             failures.append({"symbol": company["symbol"], "error": result.get("error"),
                              "detail": result.get("detail")})
@@ -186,6 +217,9 @@ def run(*, limit: Optional[int] = None, batch_size: int = 40, actor: str = "rati
                 # A response we could not read is quarantined by absence rather
                 # than promoted as a company with no ratios.
                 invalid += 1
+                checkpoints.save_checkpoint(day_kind, company["symbol"],
+                                            status=checkpoints.FAILED,
+                                            error="no_usable_ratios")
                 failures.append({"symbol": company["symbol"], "error": "no_usable_ratios"})
             else:
                 found, missing = completeness(rows)
@@ -199,6 +233,8 @@ def run(*, limit: Optional[int] = None, batch_size: int = 40, actor: str = "rati
                     incomplete.append({"symbol": company["symbol"], "have": found,
                                        "missing": missing})
                 staged.extend(rows)
+                checkpoints.save_checkpoint(day_kind, company["symbol"],
+                                            status=checkpoints.DONE)
                 successful += 1
         if len(staged) >= batch_size * len(EXPECTED):
             promote()

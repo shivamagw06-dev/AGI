@@ -21784,12 +21784,18 @@ async def valuation_ratios_sweep(payload: dict[str, Any] = Body(default_factory=
     from valuation_ratios.sweep import run
 
     body = payload or {}
+    # Bounded by default. An unbounded sweep is a half-hour request, and the
+    # first one was killed at twenty minutes by a deploy landing on top of it.
+    # Progress is checkpointed per company, so calling this repeatedly walks the
+    # universe without any single call being long enough to lose.
     return await run_in_threadpool(
         run,
         limit=int(body["limit"]) if body.get("limit") else None,
         batch_size=int(body.get("batch_size") or 40),
         actor=str(body.get("actor") or "ratio_sweep"),
         pause_seconds=float(body.get("pause_seconds", 0.6)),
+        resume=bool(body.get("resume", True)),
+        max_companies=int(body.get("max_companies") or 300),
     )
 
 

@@ -246,3 +246,47 @@ class TestIncompleteIsVisibleOnTheRow:
         row = _stored()[0]
         assert row["snapshot_completeness"] == "partial"
         assert row["snapshot_ratios_present"] < len(sweep.EXPECTED)
+
+
+class TestResumability:
+    """The first full run was killed at twenty minutes by a deploy landing on
+    top of it and lost everything. A restart should cost the batch in flight,
+    not the run."""
+
+    def test_a_second_call_skips_what_the_first_completed(self):
+        _seed(*[(f"C{i}", f"INE{i:03d}A01001") for i in range(6)])
+        first = sweep.run(fetch=_ok(_payload()), pause_seconds=0, max_companies=2)
+        assert first["successful"] == 2
+        second = sweep.run(fetch=_ok(_payload()), pause_seconds=0)
+        assert second["successful"] == 4, "only the four still owed"
+
+    def test_a_run_that_covers_everything_leaves_nothing_owed(self):
+        _seed(("AAA", "INE001A01001"), ("BBB", "INE002A01002"))
+        sweep.run(fetch=_ok(_payload()), pause_seconds=0)
+        again = sweep.run(fetch=_ok(_payload()), pause_seconds=0)
+        assert again["requested"] == 0, "nothing left to fetch today"
+
+    def test_tomorrow_starts_fresh(self):
+        """Without a per-day namespace a company marked done today would be
+        skipped forever, and the point of a daily snapshot is that it is daily."""
+        assert sweep.kind_for("2026-08-21") != sweep.kind_for("2026-08-22")
+
+    def test_resume_can_be_turned_off_for_a_deliberate_recollection(self):
+        _seed(("AAA", "INE001A01001"))
+        sweep.run(fetch=_ok(_payload()), pause_seconds=0)
+        forced = sweep.run(fetch=_ok(_payload()), pause_seconds=0, resume=False)
+        assert forced["requested"] == 1
+
+    def test_a_bounded_call_does_not_run_for_half_an_hour(self):
+        """A request that long is one a deploy, a timeout or a proxy will
+        eventually interrupt, and the work must survive all three."""
+        _seed(*[(f"C{i}", f"INE{i:03d}A01001") for i in range(50)])
+        out = sweep.run(fetch=_ok(_payload()), pause_seconds=0, max_companies=5)
+        assert out["requested"] == 5
+
+    def test_a_failed_company_is_retried_by_the_next_call(self):
+        _seed(("AAA", "INE001A01001"))
+        sweep.run(fetch=lambda i: {"ok": False, "error": "timeout"}, pause_seconds=0)
+        retry = sweep.run(fetch=_ok(_payload()), pause_seconds=0)
+        assert retry["successful"] == 1
+        assert len({r["snapshot_id"] for r in _stored()}) == 1, "one final snapshot"
