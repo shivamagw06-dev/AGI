@@ -90,7 +90,14 @@ def fetch_ratios(isin: str, *, timeout: float = 20.0) -> dict[str, Any]:
         with urllib.request.urlopen(request, timeout=timeout) as response:
             return {"ok": True, "payload": json.loads(response.read().decode("utf-8"))}
     except urllib.error.HTTPError as exc:
-        return {"ok": False, "error": f"http_{exc.code}"}
+        # The status alone does not say whether the token expired, the plan does
+        # not cover this endpoint, or the ISIN is unknown - and Upstox access
+        # tokens expire daily, so 403 is the expected shape of a stale one.
+        try:
+            body = exc.read().decode("utf-8", "replace")[:200]
+        except Exception:
+            body = ""
+        return {"ok": False, "error": f"http_{exc.code}", "detail": body}
     except Exception as exc:
         return {"ok": False, "error": str(exc)[:120]}
 
@@ -161,7 +168,8 @@ def run(*, limit: Optional[int] = None, batch_size: int = 40, actor: str = "rati
         result = fetch(company["isin"])
         if not result.get("ok"):
             failed += 1
-            failures.append({"symbol": company["symbol"], "error": result.get("error")})
+            failures.append({"symbol": company["symbol"], "error": result.get("error"),
+                             "detail": result.get("detail")})
         else:
             rows = _rows_for(company, result.get("payload") or {})
             if not rows:
