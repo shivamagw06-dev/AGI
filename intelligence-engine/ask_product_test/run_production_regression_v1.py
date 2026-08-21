@@ -42,6 +42,9 @@ from __future__ import annotations
 
 import json
 import os
+import uuid
+import shutil
+import signal
 import subprocess
 import sys
 import time
@@ -129,26 +132,229 @@ def _art() -> Path:
     return _artifacts_dir()
 
 
-def _run_module(module: str, env: Optional[Dict[str, str]] = None) -> Tuple[int, float]:
+#: One identifier per gate invocation. On a runner it is the workflow run and
+#: attempt, which makes an artifact traceable to the job that produced it; off a
+#: runner it is random. Either way it is unique per run.
+RUN_ID = (
+    f"{os.environ.get('GITHUB_RUN_ID')}-{os.environ.get('GITHUB_RUN_ATTEMPT', '1')}"
+    if os.environ.get("GITHUB_RUN_ID")
+    else uuid.uuid4().hex[:16]
+)
+
+
+def _suite_artifact_dir(suite_id: str) -> Path:
+    """A directory only this suite, in this run, writes to.
+
+    Isolation rather than timestamps. Comparing mtime against a launch time
+    works until it does not: filesystem timestamp resolution varies (HFS+ is
+    one second, some network filesystems coarser), clocks move, and a suite
+    that writes fast enough can land inside the slack the comparison needs. A
+    directory that did not exist before this run cannot contain another run's
+    file, and that holds regardless of the filesystem.
+    """
+    path = _art() / "_runs" / RUN_ID / suite_id
+    path.mkdir(parents=True, exist_ok=True)
+    return path
+
+
+#: A suite that stops producing output must not take the whole job down with it.
+#: Every suite today exits on its own - the slowest measured at 1,719s - so these
+#: ceilings are headroom, not a schedule. They exist so a suite that hangs is
+#: reported as a hung suite rather than consuming the 90-minute job timeout and
+#: leaving no indication of which one stopped.
+DEFAULT_SUITE_TIMEOUT_SEC = 900
+SUITE_TIMEOUT_SEC: Dict[str, int] = {
+    # measured 1,719s and 1,403s; the rest finish inside a minute
+    "ask_product_test.run_core_platform_acceptance_v1": 3600,
+    "ask_product_test.run_answer_quality_acceptance_v1": 3600,
+    "ask_product_test.run_founder_evaluation_v2": 1800,
+    "ask_product_test.run_golden_business_20": 1800,
+}
+
+#: Distinguishable from a suite that ran and failed. A timeout is a broken suite,
+#: not a product score, and _decide must not read it as one.
+EXIT_TIMEOUT = 124
+
+
+def _suite_timeout(module: str) -> int:
+    override = os.environ.get("GATE_SUITE_TIMEOUT_SEC")
+    if override:
+        try:
+            return max(1, int(override))
+        except ValueError:
+            pass
+    return SUITE_TIMEOUT_SEC.get(module, DEFAULT_SUITE_TIMEOUT_SEC)
+
+
+def _group_is_empty(pgid: int) -> bool:
+    try:
+        os.killpg(pgid, 0)
+    except ProcessLookupError:
+        return True
+    except (PermissionError, OSError):
+        return True
+    return False
+
+
+def _terminate_group(pgid: Optional[int], module: str, *,
+                     proc: "Optional[subprocess.Popen[bytes]]" = None) -> None:
+    """Stop everything the suite started, whether or not the suite itself exited.
+
+    Signalled by process group, not by pid. A suite that exits cleanly can still
+    leave children running - which is what the job log's "Terminate orphan
+    process: pid (2434) (python)" was: the runner host cleaning up after us. So
+    this runs after every suite, not only after a timeout, and an already-empty
+    group is the normal quiet case.
+    """
+    if pgid is None:
+        if proc is not None and proc.poll() is None:
+            try:
+                proc.kill()
+            except OSError:
+                pass
+        _reap(proc)
+        return
+    for signum, label in ((signal.SIGTERM, "SIGTERM"), (signal.SIGKILL, "SIGKILL")):
+        if _group_is_empty(pgid):
+            return
+        try:
+            os.killpg(pgid, signum)
+        except (ProcessLookupError, PermissionError, OSError):
+            return
+        print(f"[gate] sent {label} to leftover {module} process group", flush=True)
+        deadline = time.time() + 15
+        while time.time() < deadline:
+            # Reap our own child so it does not linger as a zombie holding the
+            # group open, and so its status is available to the caller.
+            if proc is not None and proc.poll() is None:
+                try:
+                    proc.wait(timeout=0.2)
+                except subprocess.TimeoutExpired:
+                    pass
+            if _group_is_empty(pgid):
+                _reap(proc)
+                return
+            time.sleep(0.2)
+    _reap(proc)
+
+
+def _reap(proc: "Optional[subprocess.Popen[bytes]]") -> None:
+    if proc is None or proc.poll() is not None:
+        return
+    try:
+        proc.wait(timeout=5)
+    except subprocess.TimeoutExpired:
+        try:
+            proc.kill()
+            proc.wait(timeout=5)
+        except (OSError, subprocess.TimeoutExpired):
+            pass
+
+
+def _run_module(module: str, env: Optional[Dict[str, str]] = None,
+                artifact_dir: Optional[Path] = None) -> Tuple[int, float, float]:
     merged = os.environ.copy()
     merged.setdefault("ASK_TEST_MODE", "inprocess")
     merged.setdefault("ASK_TEST_CASE_COOLDOWN_SEC", "0")
-    merged.setdefault("ASK_TEST_ARTIFACTS", str(_art()))
+    # Overridden, not defaulted: the suite must write where this run can find it
+    # and where no previous run could have written.
+    merged["ASK_TEST_ARTIFACTS"] = str(artifact_dir or _art())
+    merged["GATE_RUN_ID"] = RUN_ID
     if env:
         merged.update(env)
+    limit = _suite_timeout(module)
     t0 = time.perf_counter()
-    print(f"\n========== RUN {module} ==========", flush=True)
-    proc = subprocess.run(
+    launched_at = time.time()
+    print(f"\n========== RUN {module} (timeout {limit}s) ==========", flush=True)
+    # start_new_session gives the suite its own process group so cleanup can
+    # reach the children it spawned, not just the suite itself.
+    proc = subprocess.Popen(
         [sys.executable, "-m", module],
         cwd=str(ROOT),
         env=merged,
+        start_new_session=True,
     )
+    try:
+        pgid = os.getpgid(proc.pid)
+    except OSError:
+        pgid = None
+    timed_out = False
+    try:
+        returncode = proc.wait(timeout=limit)
+    except subprocess.TimeoutExpired:
+        timed_out = True
+        returncode = EXIT_TIMEOUT
+        print(f"[gate] TIMEOUT {module} after {time.perf_counter()-t0:.1f}s "
+              f"(limit {limit}s)", flush=True)
+    finally:
+        # After every suite, not only after a timeout: a suite that exited
+        # cleanly can still have left children behind.
+        _terminate_group(pgid, module, proc=proc)
     elapsed = time.perf_counter() - t0
-    print(f"========== DONE {module} exit={proc.returncode} ({elapsed:.1f}s) ==========", flush=True)
-    return proc.returncode, elapsed
+    label = "TIMEOUT" if timed_out else f"DONE {module} exit={returncode}"
+    print(f"========== {label} ({elapsed:.1f}s) ==========", flush=True)
+    return (EXIT_TIMEOUT if timed_out else returncode), elapsed, launched_at
 
 
-def _load(name: str) -> Dict[str, Any]:
+def _purge_artifact(name: str) -> None:
+    """Delete a suite's artifact before the suite runs.
+
+    Without this, a suite that dies before writing leaves the previous run's
+    file on disk and _decide reads it as this run's result. On a re-run of the
+    same job that is last run's score, reported as though it were fresh - a
+    green number produced by a suite that never finished.
+    """
+    for path in (_art() / name, Path("/workspace/artifacts") / name):
+        try:
+            path.unlink()
+        except (FileNotFoundError, OSError):
+            pass
+
+
+def _artifact_is_fresh(name: str, launched_at: float,
+                       suite_dir: Optional[Path] = None) -> bool:
+    """Whether the artifact belongs to the run that just finished.
+
+    Primary test is location: a file inside this run's own directory can only
+    have been written by this run. The mtime comparison is a fallback for a
+    suite that ignores ASK_TEST_ARTIFACTS and writes to the shared path, and is
+    deliberately not the main mechanism - timestamp resolution is not uniform
+    across filesystems.
+    """
+    if suite_dir is not None and (suite_dir / name).exists():
+        return True
+    for path in (_art() / name, Path("/workspace/artifacts") / name):
+        try:
+            if path.exists():
+                return path.stat().st_mtime >= (launched_at - 1.0)
+        except OSError:
+            continue
+    return False
+
+
+def _publish_artifact(name: str, suite_dir: Path) -> None:
+    """Copy an accepted result to the shared path the upload step collects.
+
+    Called only for results the gate accepted. Publishing a rejected artifact
+    would put a file the gate refused to score into the location a later run
+    falls back to reading.
+    """
+    src = suite_dir / name
+    if not src.exists():
+        return
+    try:
+        _art().mkdir(parents=True, exist_ok=True)
+        shutil.copy2(src, _art() / name)
+    except OSError:
+        pass
+
+
+def _load(name: str, suite_dir: Optional[Path] = None) -> Dict[str, Any]:
+    if suite_dir is not None and (suite_dir / name).exists():
+        try:
+            return json.loads((suite_dir / name).read_text(encoding="utf-8"))
+        except Exception:
+            return {}
     path = _art() / name
     if not path.exists():
         # Legacy cloud-agent path fallback.
@@ -163,11 +369,42 @@ def _load(name: str) -> Dict[str, Any]:
         return {}
 
 
-def _decide(suite_id: str, report: Dict[str, Any], rc: int) -> Dict[str, Any]:
+def _decide(suite_id: str, report: Dict[str, Any], rc: int,
+            launched_at: Optional[float] = None,
+            suite_dir: Optional[Path] = None) -> Dict[str, Any]:
     """Normalize suite outcome against AGI Core v1.0 freeze targets."""
     target = dict(RELEASE_GATE_TARGETS[suite_id])
     target["artifact"] = SUITE_ARTIFACTS[suite_id]
-    data = report or _load(target["artifact"])
+
+    if rc == EXIT_TIMEOUT:
+        return {
+            "suite": suite_id,
+            "pass": False,
+            "actual": "timeout",
+            "target": target,
+            "failure_class": "TIMEOUT",
+            "timed_out": True,
+        }
+
+    # A suite that died - signalled, crashed, killed by the OOM killer - has no
+    # score either. A negative return code means a signal; anything outside the
+    # runner's own vocabulary means the suite did not report an outcome, so its
+    # artifact cannot be trusted to describe this run.
+    abnormal = rc < 0 or rc not in (0, 1, EXIT_INFRASTRUCTURE)
+    stale = (launched_at is not None
+             and not report
+             and not _artifact_is_fresh(target["artifact"], launched_at, suite_dir))
+    if abnormal or stale:
+        return {
+            "suite": suite_id,
+            "pass": False,
+            "actual": f"no_result(rc={rc})" if abnormal else "stale_artifact",
+            "target": target,
+            "failure_class": "ABNORMAL_EXIT",
+            "abnormal_exit": True,
+        }
+
+    data = report or _load(target["artifact"], suite_dir)
     metric = target["metric"]
     actual = data.get(metric)
     if actual is None and metric == "pass_rate_pct":
@@ -351,8 +588,23 @@ def main() -> int:
 
     results: List[Dict[str, Any]] = []
     for suite_id, module in plan:
-        rc, elapsed = _run_module(module)
-        decision = _decide(suite_id, {}, rc)
+        # Removed before launch so a suite that never writes cannot be scored
+        # from the file its previous run left behind.
+        # Fresh directory per suite per run, plus the old shared path cleared,
+        # so neither location can carry a previous run's result forward.
+        suite_dir = _suite_artifact_dir(suite_id)
+        _purge_artifact(SUITE_ARTIFACTS[suite_id])
+        rc, elapsed, launched_at = _run_module(module, artifact_dir=suite_dir)
+        decision = _decide(suite_id, {}, rc, launched_at=launched_at,
+                           suite_dir=suite_dir)
+        # Published only after the result is accepted. A rejected artifact - from
+        # a timeout, a crash, or a file that could not be shown to belong to this
+        # run - must not reach the shared path, where the next run's mtime
+        # fallback could read it as its own.
+        if decision.get("timed_out") or decision.get("abnormal_exit"):
+            print(f"[gate] {suite_id}: result rejected, not published", flush=True)
+        else:
+            _publish_artifact(SUITE_ARTIFACTS[suite_id], suite_dir)
         decision["elapsed_sec"] = round(elapsed, 1)
         results.append(decision)
         print(
@@ -363,7 +615,16 @@ def main() -> int:
 
     all_pass = all(r["pass"] for r in results)
     infra_failures = [r for r in results if r.get("failure_class") == "INFRASTRUCTURE"]
-    product_failures = [r for r in results if not r["pass"] and r.get("failure_class") != "INFRASTRUCTURE"]
+    timed_out = [r for r in results if r.get("failure_class") == "TIMEOUT"]
+    abnormal = [r for r in results if r.get("failure_class") == "ABNORMAL_EXIT"]
+    product_failures = [r for r in results
+                        if not r["pass"]
+                        and r.get("failure_class") not in
+                        ("INFRASTRUCTURE", "TIMEOUT", "ABNORMAL_EXIT")]
+    if timed_out:
+        # Named explicitly. The failure this guards against is a suite that hangs
+        # and is then read as a product regression.
+        print(f"\n[gate] suites that timed out: {[r['suite'] for r in timed_out]}", flush=True)
     full_gate = bool(all_pass and with_afi and not quick)
     report = {
         "suite": "AGI Core v1.0 — Production Release Gate",
@@ -451,6 +712,15 @@ def main() -> int:
         print(f"  {r['suite']}: {r['actual']} [{mark}]", flush=True)
     if product_failures:
         print(f"\n  Product failure reason: {report['product']['reason']}", flush=True)
+    # A suite that did not run outranks how the rest scored. Returning
+    # EXIT_INFRASTRUCTURE here would file a hung suite under "infrastructure"
+    # and hide it; merge_allowed is already False because all_pass is False.
+    if timed_out:
+        print(f"[gate] exiting {EXIT_TIMEOUT}: suite timeout", flush=True)
+        return EXIT_TIMEOUT
+    if abnormal:
+        print("[gate] exiting 1: a suite produced no usable result", flush=True)
+        return 1
     if infra_failures and not product_failures:
         return EXIT_INFRASTRUCTURE
     return 0 if all_pass else 1
