@@ -10524,7 +10524,10 @@ async def hedge_fund_lab_desk_timings():
     """
     from hedge_fund_lab import desk_timings
 
-    return await run_in_threadpool(desk_timings.measure)
+    # include_builds re-runs the expensive builders and makes the engine
+    # unresponsive for minutes. It took the engine down once already, so it has
+    # to be asked for explicitly.
+    return await run_in_threadpool(desk_timings.measure, include_builds=False)
 
 
 @router.get("/hedge-fund-lab/desk-snapshot")
