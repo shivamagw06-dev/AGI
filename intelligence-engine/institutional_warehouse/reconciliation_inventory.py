@@ -41,7 +41,8 @@ from __future__ import annotations
 
 from typing import Any, Iterable, Optional
 
-from institutional_warehouse import canonical_rows, db, period_identity, units
+from institutional_warehouse import (canonical_rows, db, period_identity,
+                                     unit_provenance, units)
 from institutional_warehouse.schema import find_tab
 
 #: Values worth comparing between two rows for the same period.
@@ -142,11 +143,17 @@ def _row_view(row: dict[str, Any], tab_id: str, fields: tuple[str, ...]) -> dict
 
 
 def inventory(tab_id: str, *, symbols: Optional[Iterable[str]] = None,
-              max_groups_shown: int = 40) -> dict[str, Any]:
+              max_groups_shown: int = 40,
+              simulate_unit_provenance: bool = False) -> dict[str, Any]:
     """Group every row by period identity and say what would happen to it.
 
     Read-only. Returns counts for the whole tab, plus a sample of the groups
     that actually have something wrong with them.
+
+    ``simulate_unit_provenance`` re-reads the same rows as though the Capital IQ
+    provenance backfill had run, so its effect can be measured before production
+    is written to. It applies the backfill's own predicate rather than a second
+    description of it, and still writes nothing.
     """
     tab = find_tab(tab_id)
     if not tab or not canonical_rows.is_fundamental(tab_id):
@@ -189,6 +196,7 @@ def inventory(tab_id: str, *, symbols: Optional[Iterable[str]] = None,
     }
     by_source: dict[str, dict[str, int]] = {}
     by_unit: dict[str, int] = {}
+    manual_review_ids: set[str] = set()
     label_forms: set[str] = set()
     blocker_counts: dict[str, int] = {}
     samples: list[dict[str, Any]] = []
@@ -198,6 +206,10 @@ def inventory(tab_id: str, *, symbols: Optional[Iterable[str]] = None,
         groups: dict[str, list[dict[str, Any]]] = {}
         for row in db.query(
                 f"SELECT * FROM {table} WHERE sys_published = 1 AND symbol = ?", (symbol,)):
+            if simulate_unit_provenance:
+                proposed = unit_provenance.simulated_method(row)
+                if proposed:
+                    row = {**row, "sys_unit_method": proposed}
             totals["rows"] += 1
             label = row.get(period_field)
             key = row.get("period_key") or period_identity.period_key(label)
@@ -250,7 +262,14 @@ def inventory(tab_id: str, *, symbols: Optional[Iterable[str]] = None,
                 totals["rows_in_groups_with_no_canonical_candidate"] += len(members)
                 # Nothing here can be trusted and nothing can be dropped on that
                 # basis either. Every row is a person's decision.
-                totals["manual_review_rows"] += len(members)
+                #
+                # Counted by row id rather than incremented: a row in a group
+                # with no candidate is also a sole holder of everything it
+                # contains, so adding in both places counted the annual tab at
+                # 137,617 of 68,866 rows - exactly twice - and made the number
+                # unusable in the report it exists for.
+                for row in members:
+                    manual_review_ids.add(str(row.get("row_id")))
             else:
                 totals["rows_that_survive"] += len(winners)
 
@@ -274,7 +293,7 @@ def inventory(tab_id: str, *, symbols: Optional[Iterable[str]] = None,
                     totals["rows_sole_holder_of_a_metric"] += 1
                     # Holds something no survivor does, so retiring it loses
                     # data. Whether that data is worth keeping is a judgement.
-                    totals["manual_review_rows"] += 1
+                    manual_review_ids.add(str(row.get("row_id")))
                 elif winners:
                     totals["rows_retirable"] += 1
                 disagrees = _conflicting(winner, row, fields) if winner is not None else []
@@ -303,10 +322,12 @@ def inventory(tab_id: str, *, symbols: Optional[Iterable[str]] = None,
                     "losers": losers,
                 })
 
+    totals["manual_review_rows"] = len(manual_review_ids)
     return {
         "ok": True,
         "tab": tab_id,
         "dry_run": True,
+        "simulated_unit_provenance": bool(simulate_unit_provenance),
         "totals": totals,
         "by_source": dict(sorted(by_source.items(), key=lambda kv: -kv[1]["rows"])),
         "by_unit": dict(sorted(by_unit.items(), key=lambda kv: -kv[1])),
@@ -318,12 +339,15 @@ def inventory(tab_id: str, *, symbols: Optional[Iterable[str]] = None,
 
 
 def inventory_all(*, symbols: Optional[Iterable[str]] = None,
-                  max_groups_shown: int = 20) -> dict[str, Any]:
+                  max_groups_shown: int = 20,
+                  simulate_unit_provenance: bool = False) -> dict[str, Any]:
     """The dry run across both fundamentals tabs. Writes nothing."""
     return {
         "ok": True,
         "dry_run": True,
+        "simulated_unit_provenance": bool(simulate_unit_provenance),
         "tabs": {tab_id: inventory(tab_id, symbols=symbols,
-                                   max_groups_shown=max_groups_shown)
+                                   max_groups_shown=max_groups_shown,
+                                   simulate_unit_provenance=simulate_unit_provenance)
                  for tab_id in sorted(period_identity.FUNDAMENTAL_TABS)},
     }

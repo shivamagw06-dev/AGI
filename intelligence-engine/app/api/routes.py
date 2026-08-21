@@ -21844,6 +21844,7 @@ async def fundamentals_reconciliation_inventory(
     tab: str = "",
     symbols: str = "",
     max_groups: int = 20,
+    simulate_provenance: bool = False,
 ):
     """What the fundamentals tabs hold, grouped by period identity. Read-only.
 
@@ -21857,9 +21858,26 @@ async def fundamentals_reconciliation_inventory(
     wanted = [s.strip().upper() for s in symbols.split(",") if s.strip()] or None
     if tab:
         return await run_in_threadpool(inventory, tab, symbols=wanted,
-                                       max_groups_shown=int(max_groups))
+                                       max_groups_shown=int(max_groups),
+                                       simulate_unit_provenance=bool(simulate_provenance))
     return await run_in_threadpool(inventory_all, symbols=wanted,
-                                   max_groups_shown=int(max_groups))
+                                   max_groups_shown=int(max_groups),
+                                   simulate_unit_provenance=bool(simulate_provenance))
+
+
+@router.get("/fundamentals/unit-provenance-plan")
+async def fundamentals_unit_provenance_plan(tab: str = "", sample: int = 10):
+    """What the Capital IQ provenance backfill would change. Writes nothing.
+
+    Metadata only: sys_unit_method, for rows already labelled inr_million by a
+    source that documents INR million on every path it writes. No financial
+    value is read or altered, and the response carries the rollback SQL.
+    """
+    from institutional_warehouse.unit_provenance import plan, plan_all
+
+    if tab:
+        return await run_in_threadpool(plan, tab, sample=int(sample))
+    return await run_in_threadpool(plan_all, sample=int(sample))
 
 
 @router.post("/valuation-ratios/sweep")
