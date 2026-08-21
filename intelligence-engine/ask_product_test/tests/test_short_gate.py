@@ -24,6 +24,36 @@ def test_it_runs_the_whole_universe_not_the_failing_cases():
         len([c for c in bank if c["section"] == "J_impossible"]), "every J_impossible case"
 
 
+def test_the_namesake_universe_is_complete_and_a_wrong_binding_is_p0():
+    from ask_product_test.company_metadata_routing_acceptance_v1 import FALLTHROUGH_CASES
+
+    rows = [{
+        "kind": "fallthrough",
+        "question": question,
+        "passed": question != FALLTHROUGH_CASES[0],
+        "failed": (["bound_namesake:WRONG"]
+                   if question == FALLTHROUGH_CASES[0] else []),
+    } for question in FALLTHROUGH_CASES]
+    normalised = sg.normalise_namesake_results(rows)
+    assert len(normalised) == len(FALLTHROUGH_CASES) == 6
+    assert sum(bool(r["flags"].get("wrong_entity")) for r in normalised) == 1
+
+    report = sg.build_report(normalised, elapsed=1.0,
+                             cases_planned=len(normalised), stub_ok=True)
+    assert report["defects"]["wrong_entity"] == 1
+    assert report["unique_p0_cases"] == 1
+    assert report["decision"] == "FAIL"
+
+
+def test_a_missing_namesake_case_is_infrastructure_not_partial_coverage():
+    from ask_product_test.company_metadata_routing_acceptance_v1 import FALLTHROUGH_CASES
+
+    rows = [{"kind": "fallthrough", "question": q, "failed": []}
+            for q in FALLTHROUGH_CASES[:-1]]
+    with pytest.raises(RuntimeError, match="namesake universe mismatch"):
+        sg.normalise_namesake_results(rows)
+
+
 def test_a_missing_stub_is_infrastructure_not_not_run(monkeypatch):
     """NOT_RUN belongs to optional live evaluation, never to a required lane."""
     monkeypatch.setenv("ASK_TEST_MODE", "inprocess")

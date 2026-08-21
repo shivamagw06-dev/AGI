@@ -11,8 +11,11 @@ cases would pass the moment those six were fixed and would not notice the
 seventh. So it runs **every** J_impossible case and **every** identity-bearing
 case, and requires the defect counters to be zero across all of them.
 
-At the time of writing that is 395 of the bank's 500 cases: 50 J_impossible plus
-345 that resolve an identity.
+At the time of writing that is 395 of the core bank's 500 cases: 50
+J_impossible plus 345 that resolve an identity. The six ambiguous/uncovered
+namesake fallthrough cases from company-metadata routing are added separately;
+they have no expected ticker by design, which is exactly why the core selector
+cannot represent them.
 
 Determinism
 -----------
@@ -121,6 +124,46 @@ def verify_partition(cases: List[Dict[str, Any]],
 ARTIFACT = "short_gate_zero_defect.json"
 
 
+def normalise_namesake_results(rows: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """Keep the complete ambiguous-name universe and expose wrong bindings.
+
+    These cases intentionally carry no ticker, so selecting identity-bearing
+    core cases excludes the two historical `bound_namesake` failures. Coverage
+    is proven against FALLTHROUGH_CASES before any result is accepted.
+    """
+    from ask_product_test.company_metadata_routing_acceptance_v1 import FALLTHROUGH_CASES
+
+    by_question = {str(r.get("question")): r for r in rows
+                   if r.get("kind") == "fallthrough"}
+    expected = list(FALLTHROUGH_CASES)
+    if set(by_question) != set(expected):
+        missing = sorted(set(expected) - set(by_question))
+        extra = sorted(set(by_question) - set(expected))
+        raise RuntimeError(
+            f"namesake universe mismatch: missing={missing} extra={extra}")
+
+    out: List[Dict[str, Any]] = []
+    for i, question in enumerate(expected, 1):
+        row = by_question[question]
+        labels = list(row.get("failed") or [])
+        bound_wrong = any(str(label).startswith("bound_namesake") for label in labels)
+        out.append({
+            **row,
+            "id": f"NAMESAKE-{i:03d}",
+            "section": "company_metadata_namesake_fallthrough",
+            "flags": {"wrong_entity": bound_wrong},
+            "failed": labels,
+        })
+    return out
+
+
+def load_namesake_results() -> List[Dict[str, Any]]:
+    """Run the routing suite and extract every ambiguous-name fallthrough case."""
+    from ask_product_test.company_metadata_routing_acceptance_v1 import evaluate_pipeline
+
+    return normalise_namesake_results(evaluate_pipeline())
+
+
 def _load_stub():
     """Install the deterministic provider into the real pipeline.
 
@@ -222,7 +265,7 @@ def main() -> int:
         return EXIT_INFRASTRUCTURE
 
     cases = zde.select_cases(build_cases(), defects=zde.REQUIRED_DEFECTS)
-    print(f"[short_gate] {len(cases)} cases — every J_impossible and every "
+    print(f"[short_gate] {len(cases)} core cases — every J_impossible and every "
           f"identity-bearing case, not only the ones failing today", flush=True)
 
     # The real pipeline, with only the editorial provider fixed. Routing,
@@ -242,9 +285,20 @@ def main() -> int:
         results.append(evaluate_case(case, payload, int(transport.get("latency_ms") or 0)))
         if i % 50 == 0:
             print(f"  … {i}/{len(cases)}  ({time.perf_counter()-t0:.0f}s)", flush=True)
+
+    try:
+        namesake_results = load_namesake_results()
+    except Exception as exc:
+        print(f"[short_gate] INFRASTRUCTURE: namesake universe could not be "
+              f"verified: {type(exc).__name__}: {exc}", flush=True)
+        return EXIT_INFRASTRUCTURE
+    print(f"[short_gate] {len(namesake_results)} ambiguous-name fallthrough "
+          f"cases — none may bind a namesake", flush=True)
+    results.extend(namesake_results)
     elapsed = time.perf_counter() - t0
 
-    report = build_report(results, elapsed=elapsed, cases_planned=len(cases),
+    report = build_report(results, elapsed=elapsed,
+                          cases_planned=len(cases) + len(namesake_results),
                           stub_ok=True)
     out = _artifact_dir() / ARTIFACT
     out.write_text(json.dumps(report, indent=2), encoding="utf-8")

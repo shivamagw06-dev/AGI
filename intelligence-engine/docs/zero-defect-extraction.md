@@ -117,9 +117,12 @@ rather than failed.
 scoped to those would pass the moment they were fixed and would not notice the
 seventh defect.
 
-It runs **every** `J_impossible` case and **every** identity-bearing case —
-**395 of the bank's 500** (50 + 345) — and requires the defect counters at zero
-across all of them.
+It runs **every** `J_impossible` case, **every** identity-bearing case, and all
+six ambiguous/uncovered namesake fallthrough cases — **401 checks** in total
+(395 from the core bank plus 6 namesake cases) — and requires the defect
+counters at zero across all of them. The namesake cases intentionally have no
+expected ticker, so an identity-bearing selector alone would omit the exact
+universe that previously produced two wrong-company bindings.
 
 ## A missing stub is infrastructure, never NOT_RUN
 
