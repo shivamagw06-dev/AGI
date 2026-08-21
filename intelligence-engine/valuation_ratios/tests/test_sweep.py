@@ -180,3 +180,20 @@ class TestOwnershipStillApplies:
         src = inspect.getsource(sweep.run)
         assert "gateway.write" in src
         assert "store.upsert" not in src
+
+
+class TestClientHeaders:
+    def test_the_request_does_not_use_the_default_user_agent(self):
+        """Upstox's Cloudflare answers the default urllib agent with error 1010 -
+        a blocked client fingerprint, which reads as 403 and looks exactly like
+        an expired token until the body is read."""
+        import inspect
+        src = inspect.getsource(sweep.fetch_ratios)
+        assert "User-Agent" in src
+        assert "Mozilla/5.0" in sweep.USER_AGENT
+
+    def test_a_refusal_carries_the_reason_not_just_the_status(self):
+        """403 alone does not distinguish an expired token from a blocked client
+        from an unknown ISIN."""
+        import inspect
+        assert "detail" in inspect.getsource(sweep.fetch_ratios)

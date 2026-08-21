@@ -36,6 +36,10 @@ SOURCE = "upstox"
 KIND = "upstox_key_ratios"
 BASE = "https://api.upstox.com/v2/fundamentals"
 
+# Shared with the candle collector, which met the same Cloudflare rule first.
+USER_AGENT = ("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+              "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36")
+
 # Standard APIs allow 2,000 requests per 30 minutes. One a second leaves plenty
 # of headroom and keeps the engine's own database usable while the sweep runs.
 PAUSE_SECONDS = 0.6
@@ -83,9 +87,15 @@ def fetch_ratios(isin: str, *, timeout: float = 20.0) -> dict[str, Any]:
     token = _token()
     if not token:
         return {"ok": False, "error": "no_upstox_token"}
+    # The default urllib user agent is refused by Upstox's Cloudflare with
+    # error 1010 - a blocked client fingerprint, not an auth failure. The candle
+    # collector hit this first and carries the same header for the same reason.
     request = urllib.request.Request(
         f"{BASE}/{isin}/key-ratios",
-        headers={"Accept": "application/json", "Authorization": f"Bearer {token}"})
+        headers={"Accept": "application/json",
+                 "Api-Version": "2.0",
+                 "User-Agent": USER_AGENT,
+                 "Authorization": f"Bearer {token}"})
     try:
         with urllib.request.urlopen(request, timeout=timeout) as response:
             return {"ok": True, "payload": json.loads(response.read().decode("utf-8"))}
