@@ -197,3 +197,52 @@ class TestClientHeaders:
         from an unknown ISIN."""
         import inspect
         assert "detail" in inspect.getsource(sweep.fetch_ratios)
+
+
+class TestCoverageIsTwoNumbers:
+    """Eligible coverage says whether the run worked. Universe coverage says
+    what AGI actually knows. Reporting only one of them misleads either way."""
+
+    def test_both_figures_are_reported(self):
+        _seed(("AAA", "INE001A01001"), ("BBB", "INE002A01002"),
+              ("NOISIN1", ""), ("NOISIN2", ""))
+        out = sweep.run(fetch=_ok(_payload()), pause_seconds=0)
+        assert out["universe"] == 4
+        assert out["eligible"] == 2
+        assert out["coverage_pct"] == 100.0, "every company that could be asked, answered"
+        assert out["universe_coverage_pct"] == 50.0, "and half of AGI has no mapping"
+
+    def test_a_run_is_healthy_on_eligible_coverage_not_universe_coverage(self):
+        """283 unmapped companies are a mapping project, not a failed sweep."""
+        _seed(("AAA", "INE001A01001"), *[(f"N{i}", "") for i in range(9)])
+        out = sweep.run(fetch=_ok(_payload()), pause_seconds=0)
+        assert out["universe_coverage_pct"] == 10.0
+        assert out["status"] == sweep.HEALTHY
+
+
+class TestIncompleteIsVisibleOnTheRow:
+    """A run report is read once. The rows are read for years."""
+
+    def test_a_partial_snapshot_marks_every_one_of_its_rows(self):
+        _seed(("AAA", "INE001A01001"))
+        sweep.run(fetch=_ok(_payload(ev=None)), pause_seconds=0)
+        rows = _stored()
+        assert len(rows) == 5
+        assert {r["snapshot_completeness"] for r in rows} == {"partial"}
+        assert {r["snapshot_ratios_present"] for r in rows} == {5}
+
+    def test_a_complete_snapshot_says_so(self):
+        _seed(("AAA", "INE001A01001"))
+        sweep.run(fetch=_ok(_payload()), pause_seconds=0)
+        rows = _stored()
+        assert {r["snapshot_completeness"] for r in rows} == {"complete"}
+        assert {r["snapshot_ratios_present"] for r in rows} == {6}
+
+    def test_a_reader_can_tell_incomplete_from_absent_without_the_run_log(self):
+        """The point of the column: the missing sixth ratio must not look like
+        ordinary absence to whoever reads the row later."""
+        _seed(("AAA", "INE001A01001"))
+        sweep.run(fetch=_ok(_payload(ev=None)), pause_seconds=0)
+        row = _stored()[0]
+        assert row["snapshot_completeness"] == "partial"
+        assert row["snapshot_ratios_present"] < len(sweep.EXPECTED)

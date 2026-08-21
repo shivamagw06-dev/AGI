@@ -189,6 +189,12 @@ def run(*, limit: Optional[int] = None, batch_size: int = 40, actor: str = "rati
                 failures.append({"symbol": company["symbol"], "error": "no_usable_ratios"})
             else:
                 found, missing = completeness(rows)
+                # Marked on every row of the snapshot, not only in the run log.
+                # A run report is read once; the rows are read for years, and a
+                # missing sixth ratio must not look like ordinary absence.
+                for row in rows:
+                    row["snapshot_completeness"] = "partial" if missing else "complete"
+                    row["snapshot_ratios_present"] = found
                 if missing:
                     incomplete.append({"symbol": company["symbol"], "have": found,
                                        "missing": missing})
@@ -200,14 +206,27 @@ def run(*, limit: Optional[int] = None, batch_size: int = 40, actor: str = "rati
             time.sleep(pause_seconds)
     promote()
 
+    # Two figures, because they answer different questions.
+    #
+    # Eligible coverage is whether the run worked: of the companies Upstox can
+    # be asked about, how many answered. Universe coverage is what AGI actually
+    # knows, and a company with no ISIN is a permanent hole in it rather than a
+    # transient failure. Reporting only the first hides the structural gap;
+    # reporting only the second makes a healthy run look broken.
+    universe_size = len(universe)
     coverage = round(100.0 * successful / eligible_count, 2) if eligible_count else 0.0
+    universe_coverage = round(100.0 * successful / universe_size, 2) if universe_size else 0.0
     status = (FAILED if not successful
               else HEALTHY if coverage >= HEALTHY_COVERAGE_PCT
               else DEGRADED)
     stats = {
+        "universe": universe_size,
         "eligible": eligible_count, "requested": requested, "successful": successful,
         "failed": failed, "invalid": invalid, "skipped_no_isin": skipped,
-        "incomplete": len(incomplete), "coverage_pct": coverage, "status": status,
+        "incomplete": len(incomplete),
+        "coverage_pct": coverage,
+        "universe_coverage_pct": universe_coverage,
+        "status": status,
         "written": written,
         "seconds": round((datetime.now(timezone.utc) - started).total_seconds(), 1),
     }

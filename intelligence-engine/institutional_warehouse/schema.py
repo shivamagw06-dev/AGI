@@ -1343,6 +1343,17 @@ VALUATION_RATIOS = Tab(
         _c("provider_version", "Provider Version", TEXT, width=140, group="Provenance"),
         _c("confidence", "Confidence", TEXT, width=110, group="Quality"),
         _c("dqiv_status", "DQIV Status", TEXT, width=120, group="Quality"),
+        # Whether the snapshot this row belongs to carried all six ratios.
+        #
+        # Upstox sometimes returns five. Promoting the five is right - they are
+        # real values - but a reader must be able to tell a snapshot that was
+        # incomplete from one where the sixth ratio simply does not apply.
+        # Without this the gap looks like ordinary absence and nobody questions
+        # it.
+        _c("snapshot_completeness", "Snapshot", TEXT, width=120, group="Quality",
+           options=("complete", "partial")),
+        _c("snapshot_ratios_present", "Ratios Present", INTEGER, width=130,
+           group="Quality"),
         _c("validation_notes", "Validation Notes", TEXT, width=220, group="Quality"),
         *PROVENANCE_COLUMNS,
     ),
