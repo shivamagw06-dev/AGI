@@ -303,7 +303,7 @@ def extreme_returns() -> list[dict[str, Any]]:
     return list(_LAST_EXTREMES)
 
 
-def _latest_close_by_symbol() -> dict[str, float]:
+def _latest_close_by_symbol__measured() -> dict[str, float]:
     """Last traded close per symbol, from the price table that records trades.
 
     historical_valuation carries its own `cmp`, and it does not agree with the
@@ -627,7 +627,7 @@ _HISTORY_TTL_SEC = 900.0
 _HISTORY_METRICS = ("pe", "pb", "ev_ebitda", "roe", "roa", "ebitda_margin", "debt_equity")
 
 
-def _valuation_history_by_symbol(*, limit: int = 200000) -> dict[str, dict[str, dict[str, Any]]]:
+def _valuation_history_by_symbol__measured(*, limit: int = 200000) -> dict[str, dict[str, dict[str, Any]]]:
     """Ten years of per-company ratios from the Capital IQ workbook.
 
     `sector_ratio_history` holds 139,639 rows covering 2,627 companies over
@@ -680,7 +680,7 @@ _FORWARD_EPS_CACHE: dict[str, Any] = {"at": 0.0, "rows": None}
 _FORWARD_EPS_TTL_SEC = 900.0
 
 
-def _forward_eps_by_symbol() -> dict[str, float]:
+def _forward_eps_by_symbol__measured() -> dict[str, float]:
     """{symbol: FY1 consensus EPS}, cached like every other warehouse scan."""
     import time
 
@@ -765,7 +765,7 @@ def _served_stale(cache: dict[str, Any], lock: Any, ttl: float,
         return rows
 
 
-def _history_index() -> dict[str, dict[str, dict[str, Any]]]:
+def _history_index__measured() -> dict[str, dict[str, dict[str, Any]]]:
     """Ten years of per-company ratios, published rather than rebuilt on request.
 
     139,639 rows, measured at 28 seconds from cold. Serving it stale fixed the
@@ -811,10 +811,14 @@ def own_history_context(ticker: str, metric: str, value: Optional[float]) -> dic
 
 def _build_universe() -> list[dict[str, Any]]:
     """The expensive part: join the warehouse into one universe."""
-    rows = _universe_from_warehouse()
-    if not rows:
-        rows = _universe_from_legacy()
-    return rows
+    from observability import memory_stages as ms
+
+    with ms.stage("desk_universe_build") as detail:
+        rows = _universe_from_warehouse()
+        if not rows:
+            rows = _universe_from_legacy()
+        detail["rows"] = len(rows)
+        return rows
 
 
 # The two artifacts a desk request cannot answer without, and the only two that
@@ -1424,3 +1428,55 @@ def daily_monitor(limit: int = 6) -> dict[str, Any]:
         "sources": dict(SOURCES),
         "policy": "Research observations only — no buy, sell or price target.",
     }
+
+
+# ---------------------------------------------------------------------------
+# Measured wrappers for the heavy desk builders
+# ---------------------------------------------------------------------------
+#
+# The engine climbs to 7.6 GB of an 8 GB instance and two explanations have
+# already been wrong, both inferred from what was running rather than measured.
+# These four are the largest allocators on the desk path: the joined universe
+# (206s cold), the ten-year ratio history (139,639 rows), the latest-price map
+# and the 1Y return index.
+#
+# Peak matters more than the delta here. desk_snapshot publishes
+# stale-while-revalidate, so the previous artifact stays live in
+# _STATES[name]["payload"] for the whole build and is only released on adopt.
+# A builder that settles back to its starting RSS can still have held two full
+# copies at once, and an 8 GB ceiling cannot absorb that.
+
+def _latest_close_by_symbol() -> dict[str, float]:
+    from observability import memory_stages as ms
+
+    with ms.stage("desk_latest_price_map") as detail:
+        out = _latest_close_by_symbol__measured()
+        detail["symbols"] = len(out or {})
+        return out
+
+
+def _valuation_history_by_symbol(*, limit: int = 200000):
+    from observability import memory_stages as ms
+
+    with ms.stage("desk_ratio_history_build", limit=limit) as detail:
+        out = _valuation_history_by_symbol__measured(limit=limit)
+        detail["symbols"] = len(out or {})
+        return out
+
+
+def _forward_eps_by_symbol() -> dict[str, float]:
+    from observability import memory_stages as ms
+
+    with ms.stage("desk_forward_eps_build") as detail:
+        out = _forward_eps_by_symbol__measured()
+        detail["symbols"] = len(out or {})
+        return out
+
+
+def _history_index() -> dict[str, dict[str, dict[str, Any]]]:
+    from observability import memory_stages as ms
+
+    with ms.stage("desk_return_1y_build") as detail:
+        out = _history_index__measured()
+        detail["symbols"] = len(out or {})
+        return out

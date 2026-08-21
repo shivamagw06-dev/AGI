@@ -578,5 +578,12 @@ def repair_upstox_quarterly(
     *, actor: str = "admin", apply: bool = False, row_ids: list[str] | None = None
 ) -> dict[str, Any]:
     from institutional_warehouse.upstox_repair import repair_annual_as_quarterly
+    from observability import memory_stages as ms
 
-    return repair_annual_as_quarterly(actor=actor, apply=apply, row_ids=row_ids)
+    with ms.stage("price_repair_batch", apply=bool(apply),
+                  explicit_rows=len(row_ids or [])) as detail:
+        result = repair_annual_as_quarterly(actor=actor, apply=apply, row_ids=row_ids)
+        if isinstance(result, dict):
+            detail["rows"] = result.get("repaired") or result.get("rows")
+            detail["examined"] = result.get("examined") or result.get("candidates")
+        return result

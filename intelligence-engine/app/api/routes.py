@@ -21821,6 +21821,23 @@ def fundamentals_refresh_queue():
     return queue_state()
 
 
+@router.get("/diagnostics/memory-stages")
+async def diagnostics_memory_stages(limit: int = 200):
+    """What each heavy stage cost, as recorded when it ran.
+
+    Reads only. It never triggers a build, a backfill or a repair - the whole
+    point is to find the allocator without adding another allocation, and a
+    diagnostic that runs the job it is measuring measures itself.
+
+    Records come from a file on the shared disk rather than memory because the
+    gather sidecar is a separate OS process from uvicorn, so anything it
+    measured would otherwise be invisible here.
+    """
+    from observability.memory_stages import read_stages
+
+    return await run_in_threadpool(read_stages, limit=int(limit))
+
+
 @router.post("/valuation-ratios/sweep")
 async def valuation_ratios_sweep(payload: dict[str, Any] = Body(default_factory=dict)):
     """Pull today's key ratios for the whole universe.

@@ -28,6 +28,22 @@ def _truthy(name: str, default: str = "false") -> bool:
     return str(os.environ.get(name, default)).strip().lower() in {"1", "true", "yes", "on"}
 
 
+def _hb(name: str, **facts) -> None:
+    """Boot-sequence heartbeat.
+
+    The sidecar went silent for 25 minutes after `gather_worker_warehouse` with
+    no line naming the stage it was in. The stall was inside start_backfill's
+    synchronous boot slice, which runs before the caller logs anything about the
+    backfill at all. These make the next stall self-describing.
+    """
+    try:
+        from observability import memory_stages as ms
+
+        ms.heartbeat(name, **facts)
+    except Exception:
+        pass
+
+
 def _profile() -> str:
     return str(os.environ.get("AGI_GATHER_SIDECAR_PROFILE", "full")).strip().lower()
 
@@ -136,8 +152,9 @@ def main() -> int:
 
     configure_logging()
     log = get_logger("agi.gather_worker")
+    _hb("boot_starting", profile=_profile())
     log.info(
-        "gather_worker_starting",
+        "gather_worker_starting",  # noqa: COM812
         extra={
             "role": os.environ.get("AGI_ROLE"),
             "cgl": os.environ.get("CONTINUOUS_GATHER_LEARN"),
@@ -211,6 +228,7 @@ def main() -> int:
         if boot_warehouse.get("enabled"):
             stop_fns.append(stop_warehouse)
         log.info("gather_worker_warehouse", extra=boot_warehouse)
+        _hb("boot_warehouse_scheduler_done")
 
         # Historical backfill runs here and nowhere else: a universe pass is
         # thousands of HTTP calls and must never sit in front of Ask.
@@ -283,6 +301,7 @@ def main() -> int:
     signal.signal(signal.SIGTERM, _handle_stop)
     signal.signal(signal.SIGINT, _handle_stop)
 
+    _hb("boot_ready")
     log.info("gather_worker_ready")
     _heartbeat = None
     try:

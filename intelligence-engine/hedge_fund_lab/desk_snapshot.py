@@ -189,7 +189,17 @@ def status_all() -> list[dict[str, Any]]:
 
 def _adopt(name: str, payload: Any, *, source: str, build_seconds: Optional[float],
            built_at: Optional[float] = None) -> None:
+    # The moment old and new stop coexisting. Until this line the previous
+    # artifact is still live in st["payload"] so requests keep being answered,
+    # which is the whole point of stale-while-revalidate and also means peak RSS
+    # during a rebuild is roughly both copies at once.
+    from observability import memory_stages as ms
+
     st = _state(name)
+    had_previous = st.get("payload") is not None
+    ms.heartbeat("artifact_adopt", artifact=name, source=source,
+                 replacing_previous=had_previous,
+                 build_seconds=None if build_seconds is None else round(build_seconds, 2))
     st["payload"] = payload
     st["built_at"] = built_at or time.time()
     st["build_seconds"] = build_seconds
