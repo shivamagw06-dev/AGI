@@ -21865,6 +21865,26 @@ async def fundamentals_reconciliation_inventory(
                                    simulate_unit_provenance=bool(simulate_provenance))
 
 
+@router.get("/fundamentals/reconciliation-compare")
+async def fundamentals_reconciliation_compare(
+    tab: str = "financials_annual",
+    symbols: str = "",
+    max_groups: int = 1,
+):
+    """Before and after the provenance backfill, over one consistent read.
+
+    Writes nothing. Each company is read once and folded into both tallies, so
+    the difference is the effect of the change and not of the clock: schedulers
+    write these tabs every few minutes, and two separate inventory runs do not
+    describe the same rows.
+    """
+    from institutional_warehouse.reconciliation_inventory import compare
+
+    wanted = [s.strip().upper() for s in symbols.split(",") if s.strip()] or None
+    return await run_in_threadpool(compare, tab, symbols=wanted,
+                                   max_groups_shown=int(max_groups))
+
+
 @router.get("/fundamentals/unit-provenance-plan")
 async def fundamentals_unit_provenance_plan(tab: str = "", sample: int = 10):
     """What the Capital IQ provenance backfill would change. Writes nothing.

@@ -208,3 +208,63 @@ def test_rows_are_counted_by_unit_classification():
     assert by_unit["unstamped"] == 2, "the two rows nobody declared a magnitude for"
     assert by_unit["crore"] == 1
     assert by_unit["rupee"] == 1
+
+
+def test_compare_reads_each_row_once_for_both_halves(monkeypatch):
+    """The before/after must describe the same rows.
+
+    Two separate inventory runs against a live warehouse do not: schedulers
+    write these tabs every few minutes. This asserts the row query happens once
+    per company, not once per half.
+    """
+    from institutional_warehouse import db as _db
+
+    _seed(LIVE_SHAPE)
+    real = _db.query
+    row_reads = []
+
+    def counting_query(sql, params=()):
+        if "WHERE sys_published = 1 AND symbol = ?" in sql:
+            row_reads.append(params)
+        return real(sql, params)
+
+    monkeypatch.setattr(_db, "query", counting_query)
+    out = inv.compare(TAB)
+
+    assert out["ok"] is True and out["consistent_read"] is True
+    assert len(row_reads) == len(set(row_reads)), "each company must be read exactly once"
+
+
+def test_compare_before_matches_a_plain_inventory():
+    """The 'before' half must equal what the inventory reports on its own."""
+    _seed(LIVE_SHAPE)
+    plain = inv.inventory(TAB)["totals"]
+    both = inv.compare(TAB)
+
+    for key in ("rows", "rows_that_survive", "rows_with_unknown_units",
+                "manual_review_rows", "groups_with_no_canonical_candidate"):
+        assert both["before"][key] == plain[key], f"{key} drifted between the two paths"
+
+
+#: A Capital IQ row in the state the production tab is actually in: labelled
+#: inr_million, with nobody having established that. Without one of these the
+#: simulation has nothing to change and a delta test passes vacuously.
+CAPIQ_ASSUMED_ROW = {
+    "source": "capital_iq_workbook", "fiscal_period": "FY27Q1",
+    "statement_type": "CONSOLIDATED", "revenue": 3100000.0,
+    "unit": "inr_million", "method": "assumed_canonical",
+}
+
+
+def test_compare_delta_matches_the_simulated_inventory():
+    _seed(LIVE_SHAPE + [CAPIQ_ASSUMED_ROW])
+    simulated = inv.inventory(TAB, simulate_unit_provenance=True)["totals"]
+    both = inv.compare(TAB)
+
+    for key in ("rows_that_survive", "rows_with_unknown_units"):
+        assert both["after"][key] == simulated[key]
+        assert both["delta"][key] == simulated[key] - both["before"][key]
+
+    # The comparison has to be measuring something, or it proves nothing.
+    assert both["delta"]["rows_with_unknown_units"] != 0
+    assert both["before"] != both["after"]
