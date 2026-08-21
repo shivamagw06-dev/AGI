@@ -488,6 +488,17 @@ _STATEMENT_COLUMNS: tuple[Column, ...] = (
     *_FILING_COLUMNS,
     *PROVENANCE_COLUMNS,
     _c("statement_version", "Statement Version", TEXT, editable=False, width=150, group="Provenance"),
+    # One identity for a reporting period, whatever the vendor called it. The
+    # label stays in the natural key and is never rewritten on a stored row -
+    # rewriting it would mint a new row id and fork the period rather than merge
+    # it - so the shared identity is carried alongside instead.
+    _c("period_key", "Period Key", TEXT, editable=False, width=120, group="Provenance",
+       help="Q1 FY27, FY27Q1, FY2027Q1 and Jun 2026 all resolve to 2026-07-01"),
+    # Whether this row may be read as the answer, and what stopped it if not.
+    _c("is_canonical", "Canonical", BOOL, editable=False, width=110, group="Provenance",
+       help="Set only when period, statement type, source and units are all known"),
+    _c("canonical_blockers", "Not Canonical Because", TEXT, editable=False, width=220,
+       group="Provenance"),
 )
 
 FINANCIALS_ANNUAL = Tab(
