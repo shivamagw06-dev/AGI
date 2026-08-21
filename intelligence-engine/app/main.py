@@ -405,6 +405,22 @@ async def lifespan(_app: FastAPI):
     # install can starve CPU/RAM and make /v1/health time out. Bake browsers via
     # buildCommand (`python -m playwright install chromium`) or set
     # FAA_PLAYWRIGHT_AUTO_INSTALL=true only when disk/CPU budget allows.
+    # The desk's expensive artifacts, adopted from disk before the first request.
+    #
+    # This is what makes a deploy cheap. Without it the first client to arrive
+    # paid for a 206 second universe build and a 28 second ratio-history scan,
+    # because a fresh process has nothing cached and nothing to serve stale.
+    # Reading the last good build off the mounted disk takes milliseconds.
+    try:
+        from hedge_fund_lab import desk_snapshot, scanner
+
+        scanner.register_desk_artifacts()
+        log.info("desk_artifacts_primed", extra=desk_snapshot.prime_all())
+    except Exception as exc:
+        # A desk that has to build is worse than one that does not, but it is
+        # not a reason to refuse to start.
+        log.warning("desk_artifacts_prime_failed", extra={"error": str(exc)[:200]})
+
     log.info(
         "intelligence_engine_started",
         extra={"env": settings.app_env, "agib_base": settings.agib_api_base_url},

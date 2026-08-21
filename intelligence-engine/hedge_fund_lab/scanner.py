@@ -766,12 +766,24 @@ def _served_stale(cache: dict[str, Any], lock: Any, ttl: float,
 
 
 def _history_index() -> dict[str, dict[str, dict[str, Any]]]:
-    return _served_stale(_HISTORY_CACHE, _HISTORY_LOCK, _HISTORY_TTL_SEC,
-                         _valuation_history_by_symbol, "history")
+    """Ten years of per-company ratios, published rather than rebuilt on request.
+
+    139,639 rows, measured at 28 seconds from cold. Serving it stale fixed the
+    fifteen-minute turnover but not a fresh process, which has nothing cached to
+    serve - so it is persisted alongside the universe and adopted at startup.
+    """
+    return desk_snapshot.current(RATIO_HISTORY, _valuation_history_by_symbol, default={})
 
 
 def reset_history_cache() -> None:
-    """Process-global state has to be clearable or tests leak into each other."""
+    """Process-global state has to be clearable or tests leak into each other.
+
+    The ratio history moved to a published artifact, so clearing the old
+    in-process dictionary stopped clearing anything the reader looks at - which
+    is exactly the kind of quietly-inert helper that lets tests pass while
+    proving nothing.
+    """
+    desk_snapshot.forget(RATIO_HISTORY)
     _HISTORY_CACHE["at"] = 0.0
     _HISTORY_CACHE["rows"] = None
 
@@ -805,6 +817,23 @@ def _build_universe() -> list[dict[str, Any]]:
     return rows
 
 
+# The two artifacts a desk request cannot answer without, and the only two that
+# measured expensive from cold: the joined universe (206s to build) and the
+# ten-year ratio history (28s over 139,639 rows). Both are deterministic reads,
+# so both can be published rather than computed on demand.
+#
+# Staleness budgets are set from what the data is, not from how long it takes to
+# build. The universe carries a closing price and company fundamentals; the
+# ratio history is fiscal-year data that changes when results land.
+UNIVERSE = "universe"
+RATIO_HISTORY = "ratio_history"
+
+
+def register_desk_artifacts() -> None:
+    desk_snapshot.register(UNIVERSE, _build_universe, refresh_after=1800.0)
+    desk_snapshot.register(RATIO_HISTORY, _valuation_history_by_symbol, refresh_after=21600.0)
+
+
 def _universe() -> list[dict[str, Any]]:
     """Companies with market multiples (+ consensus / factors when available).
 
@@ -817,16 +846,20 @@ def _universe() -> list[dict[str, Any]]:
     slightly old universe answered immediately is worth more than a current one
     answered in twenty seconds, and the age is reported rather than hidden.
     """
-    return desk_snapshot.current(_build_universe, source="warehouse")
+    return desk_snapshot.current(UNIVERSE, _build_universe, default=[])
 
 
 def universe_snapshot_status() -> dict[str, Any]:
-    return desk_snapshot.status()
+    return desk_snapshot.status(UNIVERSE)
+
+
+def desk_artifacts_status() -> list[dict[str, Any]]:
+    return desk_snapshot.status_all()
 
 
 def rebuild_universe_snapshot() -> dict[str, Any]:
     """Force a rebuild now. Used at boot and by the scheduled warmer."""
-    return desk_snapshot.rebuild(_build_universe, source="warehouse")
+    return desk_snapshot.rebuild(UNIVERSE, _build_universe)
 
 
 def _primary_metric(dna: Optional[str]) -> str:

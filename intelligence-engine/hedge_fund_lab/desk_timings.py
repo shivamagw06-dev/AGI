@@ -32,12 +32,15 @@ def measure() -> dict[str, Any]:
 
     stages: list[dict[str, Any]] = []
 
-    # Cleared first so each number is the cold cost, not a cache hit.
-    scanner.reset_history_cache()
     scanner.reset_forward_eps_cache()
 
-    stages.append(_timed("universe_from_snapshot", scanner._universe))
-    stages.append(_timed("ratio_history_139k_rows", scanner._history_index))
+    # The builders are measured directly rather than through their published
+    # artifacts. Going via the artifact would measure a disk read - which is the
+    # point of the artifact, and not what a build costs.
+    stages.append(_timed("universe_served", scanner._universe))
+    stages.append(_timed("universe_build", scanner._build_universe))
+    stages.append(_timed("ratio_history_served", scanner._history_index))
+    stages.append(_timed("ratio_history_build_139k", scanner._valuation_history_by_symbol))
     stages.append(_timed("forward_eps", scanner._forward_eps_by_symbol))
     stages.append(_timed("latest_close_by_symbol", scanner._latest_close_by_symbol))
     stages.append(_timed("return_1y_by_symbol", scanner._return_1y_by_symbol))

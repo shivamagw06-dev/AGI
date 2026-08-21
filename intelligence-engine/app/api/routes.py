@@ -10535,17 +10535,17 @@ def hedge_fund_lab_desk_snapshot():
     no evidence the application is usable. This reports the thing that actually
     determines what a client sees.
     """
-    from hedge_fund_lab.scanner import universe_snapshot_status
+    from hedge_fund_lab.scanner import desk_artifacts_status
 
-    return {"ok": True, **universe_snapshot_status()}
+    return {"ok": True, "artifacts": desk_artifacts_status()}
 
 
 @router.post("/hedge-fund-lab/desk-snapshot/rebuild")
 async def hedge_fund_lab_desk_snapshot_rebuild():
     """Build a new universe now. Returns the build, not a queued acknowledgement."""
-    from hedge_fund_lab.scanner import rebuild_universe_snapshot
+    from hedge_fund_lab import desk_snapshot
 
-    return await run_in_threadpool(rebuild_universe_snapshot)
+    return await run_in_threadpool(desk_snapshot.refresh_stale)
 
 
 @router.get("/hedge-fund-lab/opportunity/{ticker}")

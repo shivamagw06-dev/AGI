@@ -1,23 +1,23 @@
-"""The desk's universe, built in the background and published atomically.
+"""Expensive read-side artifacts, built in the background and published atomically.
 
-The desk used to build its universe inside whichever request happened to arrive
-after the cache expired. Measured on 21 August: 200 seconds on the first request
-after a restart, 12 to 25 seconds every time the fifteen-minute cache turned
-over, and a timeout whenever a backfill slice was running at the same time.
+The desk used to build everything it needed inside whichever request happened to
+arrive after a cache expired. Measured on 21 August: 256 seconds on the first
+request after a restart, and a timeout whenever a backfill slice ran at the same
+time. The client's wait was the rebuild's duration.
 
-The client's wait was the rebuild's duration. That is the thing this fixes.
+An artifact qualifies for this treatment when it is expensive, deterministic, and
+needed before the desk can answer at all. Nothing else belongs here - this is not
+a general cache, and persisting arbitrary intermediate state would trade one
+problem for a directory full of stale files.
 
-Three properties matter, in this order:
+Three properties, in the order they matter:
 
-* A request never waits for a build. It is served whatever is on hand, and told
+* A request never waits for a build. It is served whatever is on hand and told
   how old that is.
 * A failed build never costs the last good one. Serving something stale and
   saying so beats serving nothing.
-* A restart does not start from nothing. The snapshot lives on the mounted disk,
-  so a fresh process serves the previous build while it makes a new one.
-
-Staleness is not hidden. Every payload carries when it was built and whether the
-builder is currently unwell, so a reader can decide rather than guess.
+* A restart does not start from nothing. Artifacts live on the mounted disk, so
+  a fresh process serves the previous build while it makes a new one.
 """
 
 from __future__ import annotations
@@ -30,59 +30,64 @@ import time
 from pathlib import Path
 from typing import Any, Callable, Optional
 
-SNAPSHOT_VERSION = 2
-FILENAME = "desk_universe.json"
+SNAPSHOT_VERSION = 3
 
-# How old a snapshot may get before a rebuild is triggered. The rebuild happens
-# behind the request, so this is not a latency budget - it is how stale the desk
-# is allowed to be, which is a different question.
-#
-# It must also stay well clear of how long a build takes. The first production
-# build was 210 seconds against a 300 second interval, which would have left the
-# engine building for two thirds of every cycle - the same continuous background
-# load that took the site down earlier that day, arriving by a different route.
-#
-# Thirty minutes gives a duty cycle near one in nine. The universe is company
-# fundamentals and a closing price; it does not change every five minutes.
+# Default staleness budget. Overridden per artifact, because "how old may this
+# be" is a question about the data, not about how long it takes to build.
 REFRESH_AFTER_SEC = float(os.getenv("DESK_SNAPSHOT_REFRESH_SEC", "1800") or 1800)
-
-# A build slower than this is worth knowing about even when it succeeds.
-SLOW_BUILD_SEC = 60.0
 
 # When a build fails, how long before trying again. Long enough that a broken
 # warehouse is not hammered, short enough to recover without a deploy.
 RETRY_AFTER_SEC = 120.0
 
+# A build slower than this is worth reporting even when it succeeds.
+SLOW_BUILD_SEC = 60.0
+
 FRESH, STALE, DEGRADED, EMPTY = "FRESH", "STALE", "DEGRADED", "EMPTY"
 
-_STATE: dict[str, Any] = {
-    "rows": None,
-    "built_at": 0.0,
-    "build_seconds": None,
-    "source": None,
-    "failures": 0,
-    "last_error": None,
-    "last_attempt_at": 0.0,
-    "builds": 0,
-}
-_LOCK = threading.Lock()
-_BUILDING = threading.Event()
+_STATES: dict[str, dict[str, Any]] = {}
+_LOCKS: dict[str, threading.Lock] = {}
+_BUILDING: dict[str, threading.Event] = {}
+_REGISTRY: dict[str, dict[str, Any]] = {}
+_GLOBAL_LOCK = threading.Lock()
 
 
-def snapshot_path() -> Path:
+def _blank() -> dict[str, Any]:
+    return {"payload": None, "built_at": 0.0, "build_seconds": None, "source": None,
+            "failures": 0, "last_error": None, "last_attempt_at": 0.0, "builds": 0}
+
+
+def _state(name: str) -> dict[str, Any]:
+    with _GLOBAL_LOCK:
+        if name not in _STATES:
+            _STATES[name] = _blank()
+            _LOCKS[name] = threading.Lock()
+            _BUILDING[name] = threading.Event()
+        return _STATES[name]
+
+
+def register(name: str, builder: Callable[[], Any], *, refresh_after: float = REFRESH_AFTER_SEC,
+             source: str = "warehouse") -> None:
+    """Declare an artifact so it can be primed and refreshed without a request."""
+    _state(name)
+    _REGISTRY[name] = {"builder": builder, "refresh_after": float(refresh_after),
+                       "source": source}
+
+
+def snapshot_path(name: str) -> Path:
     from institutional_warehouse.db import store_root
 
-    return Path(store_root()) / FILENAME
+    return Path(store_root()) / f"desk_{name}.json"
 
 
 def _write_atomically(path: Path, payload: dict[str, Any]) -> None:
     """Write beside the target and rename over it.
 
-    A process killed mid-write must not leave a half-written snapshot that the
-    next boot reads as the last good one.
+    A process killed mid-write must not leave a half-written file that the next
+    boot reads as the last good one.
     """
     path.parent.mkdir(parents=True, exist_ok=True)
-    handle, tmp = tempfile.mkstemp(dir=str(path.parent), prefix=".desk_", suffix=".tmp")
+    handle, tmp = tempfile.mkstemp(dir=str(path.parent), prefix=f".{path.stem}_", suffix=".tmp")
     try:
         with os.fdopen(handle, "w", encoding="utf-8") as out:
             json.dump(payload, out)
@@ -97,167 +102,240 @@ def _write_atomically(path: Path, payload: dict[str, Any]) -> None:
         raise
 
 
-def save(rows: list[dict[str, Any]], *, source: str, build_seconds: float) -> bool:
-    if not rows:
+def _size(payload: Any) -> Optional[int]:
+    try:
+        return len(payload)
+    except TypeError:
+        return None
+
+
+def save(name: str, payload: Any, *, source: str, build_seconds: float) -> bool:
+    if not payload:
         return False
     try:
-        _write_atomically(snapshot_path(), {
+        _write_atomically(snapshot_path(name), {
             "version": SNAPSHOT_VERSION,
+            "name": name,
             "built_at": time.time(),
             "build_seconds": round(build_seconds, 2),
             "source": source,
-            "count": len(rows),
-            "rows": rows,
+            "size": _size(payload),
+            "payload": payload,
         })
         return True
     except Exception:
-        # A snapshot that cannot be persisted is still usable in memory; losing
-        # it on the next restart is worse than nothing only if that stops the
+        # An artifact that cannot be persisted is still usable in memory. Losing
+        # it at the next restart is worse than nothing only if that stops this
         # process serving now, which it does not.
         return False
 
 
-def load() -> Optional[dict[str, Any]]:
-    path = snapshot_path()
+def load(name: str) -> Optional[dict[str, Any]]:
+    path = snapshot_path(name)
     try:
         if not path.exists():
             return None
-        payload = json.loads(path.read_text(encoding="utf-8"))
+        blob = json.loads(path.read_text(encoding="utf-8"))
     except Exception:
         return None
-    if int(payload.get("version") or 0) != SNAPSHOT_VERSION:
+    if int(blob.get("version") or 0) != SNAPSHOT_VERSION:
         return None
-    rows = payload.get("rows")
-    return payload if isinstance(rows, list) and rows else None
+    return blob if blob.get("payload") else None
 
 
-def age_seconds() -> Optional[float]:
-    built = float(_STATE.get("built_at") or 0.0)
+def age_seconds(name: str) -> Optional[float]:
+    built = float(_state(name).get("built_at") or 0.0)
     return None if not built else max(0.0, time.time() - built)
 
 
-def freshness() -> str:
-    if not _STATE.get("rows"):
+def refresh_after(name: str) -> float:
+    return float((_REGISTRY.get(name) or {}).get("refresh_after") or REFRESH_AFTER_SEC)
+
+
+def freshness(name: str) -> str:
+    st = _state(name)
+    if not st.get("payload"):
         return EMPTY
-    if int(_STATE.get("failures") or 0) >= 2:
+    if int(st.get("failures") or 0) >= 2:
         return DEGRADED
-    age = age_seconds()
-    return FRESH if age is not None and age < REFRESH_AFTER_SEC else STALE
+    age = age_seconds(name)
+    return FRESH if age is not None and age < refresh_after(name) else STALE
 
 
-def status() -> dict[str, Any]:
-    age = age_seconds()
+def status(name: str) -> dict[str, Any]:
+    st = _state(name)
+    age = age_seconds(name)
     return {
-        "freshness": freshness(),
-        "rows": len(_STATE.get("rows") or []),
+        "name": name,
+        "freshness": freshness(name),
+        "size": _size(st.get("payload")),
         "age_seconds": None if age is None else round(age, 1),
-        "build_seconds": _STATE.get("build_seconds"),
-        "source": _STATE.get("source"),
-        "builds": _STATE.get("builds"),
-        "failures": _STATE.get("failures"),
-        "last_error": _STATE.get("last_error"),
-        "building_now": _BUILDING.is_set(),
-        "persisted": snapshot_path().exists(),
-        "refresh_after_seconds": REFRESH_AFTER_SEC,
-        "slow_build": bool((_STATE.get("build_seconds") or 0) > SLOW_BUILD_SEC),
+        "build_seconds": st.get("build_seconds"),
+        "source": st.get("source"),
+        "builds": st.get("builds"),
+        "failures": st.get("failures"),
+        "last_error": st.get("last_error"),
+        "building_now": _BUILDING[name].is_set() if name in _BUILDING else False,
+        "persisted": snapshot_path(name).exists(),
+        "refresh_after_seconds": refresh_after(name),
+        "max_stale_seconds": round(refresh_after(name) * 4, 1),
+        "slow_build": bool((st.get("build_seconds") or 0) > SLOW_BUILD_SEC),
     }
 
 
-def _adopt(rows: list[dict[str, Any]], *, source: str, build_seconds: float,
+def status_all() -> list[dict[str, Any]]:
+    return [status(n) for n in sorted(set(_REGISTRY) | set(_STATES))]
+
+
+def _adopt(name: str, payload: Any, *, source: str, build_seconds: Optional[float],
            built_at: Optional[float] = None) -> None:
-    _STATE["rows"] = rows
-    _STATE["built_at"] = built_at or time.time()
-    _STATE["build_seconds"] = build_seconds
-    _STATE["source"] = source
-    _STATE["failures"] = 0
-    _STATE["last_error"] = None
+    st = _state(name)
+    st["payload"] = payload
+    st["built_at"] = built_at or time.time()
+    st["build_seconds"] = build_seconds
+    st["source"] = source
+    st["failures"] = 0
+    st["last_error"] = None
 
 
-def prime() -> bool:
-    """Adopt whatever the last process left on disk. Called once at import."""
-    payload = load()
-    if not payload:
+def prime(name: str) -> bool:
+    """Adopt whatever the last process left on disk."""
+    blob = load(name)
+    if not blob:
         return False
-    with _LOCK:
-        if _STATE.get("rows"):
+    st = _state(name)
+    with _LOCKS[name]:
+        if st.get("payload"):
             return False
-        _adopt(payload["rows"], source=str(payload.get("source") or "disk"),
-               build_seconds=payload.get("build_seconds"),
-               built_at=float(payload.get("built_at") or 0.0))
+        _adopt(name, blob["payload"], source=str(blob.get("source") or "disk"),
+               build_seconds=blob.get("build_seconds"),
+               built_at=float(blob.get("built_at") or 0.0))
     return True
 
 
-def rebuild(builder: Callable[[], list[dict[str, Any]]], *, source: str = "warehouse") -> dict[str, Any]:
-    """Build a new universe and publish it, or leave the old one alone.
+def rebuild(name: str, builder: Optional[Callable[[], Any]] = None, *,
+            source: str = "") -> dict[str, Any]:
+    """Build and publish, or leave the previous artifact untouched.
 
-    Only one build runs at a time. A second caller arriving mid-build is told so
-    rather than queued: two identical scans of the same tables help nobody and
-    compete for the same database lock.
+    Only one build per artifact runs at a time. A second caller arriving
+    mid-build is told so rather than queued: two identical scans of the same
+    tables help nobody and compete for the same database lock.
     """
-    if _BUILDING.is_set():
+    _state(name)
+    reg = _REGISTRY.get(name) or {}
+    builder = builder or reg.get("builder")
+    source = source or str(reg.get("source") or "warehouse")
+    if builder is None:
+        return {"ok": False, "error": f"no_builder_for:{name}"}
+
+    if _BUILDING[name].is_set():
         return {"ok": False, "skipped": "already_building"}
-    _BUILDING.set()
+    _BUILDING[name].set()
     started = time.time()
-    _STATE["last_attempt_at"] = started
+    st = _state(name)
+    st["last_attempt_at"] = started
     try:
-        rows = builder()
+        payload = builder()
         took = time.time() - started
-        if not rows:
-            # An empty result is a failed build, not a universe of nothing.
-            _STATE["failures"] = int(_STATE.get("failures") or 0) + 1
-            _STATE["last_error"] = "builder_returned_no_rows"
-            return {"ok": False, "error": "builder_returned_no_rows",
-                    "kept_previous": bool(_STATE.get("rows"))}
-        with _LOCK:
-            _adopt(rows, source=source, build_seconds=took)
-            _STATE["builds"] = int(_STATE.get("builds") or 0) + 1
-        persisted = save(rows, source=source, build_seconds=took)
-        return {"ok": True, "rows": len(rows), "build_seconds": round(took, 2),
-                "persisted": persisted, "slow": took > SLOW_BUILD_SEC}
+        if not payload:
+            # An empty result is a failed build, not a discovery that the data
+            # is gone.
+            st["failures"] = int(st.get("failures") or 0) + 1
+            st["last_error"] = "builder_returned_nothing"
+            return {"ok": False, "error": "builder_returned_nothing",
+                    "kept_previous": bool(st.get("payload"))}
+        with _LOCKS[name]:
+            _adopt(name, payload, source=source, build_seconds=took)
+            st["builds"] = int(st.get("builds") or 0) + 1
+        persisted = save(name, payload, source=source, build_seconds=took)
+        return {"ok": True, "name": name, "size": _size(payload),
+                "build_seconds": round(took, 2), "persisted": persisted,
+                "slow": took > SLOW_BUILD_SEC}
     except Exception as exc:
-        _STATE["failures"] = int(_STATE.get("failures") or 0) + 1
-        _STATE["last_error"] = str(exc)[:300]
+        st["failures"] = int(st.get("failures") or 0) + 1
+        st["last_error"] = str(exc)[:300]
         return {"ok": False, "error": str(exc)[:300],
-                "kept_previous": bool(_STATE.get("rows"))}
+                "kept_previous": bool(st.get("payload"))}
     finally:
-        _BUILDING.clear()
+        _BUILDING[name].clear()
 
 
-def should_refresh() -> bool:
-    if _BUILDING.is_set():
+def should_refresh(name: str) -> bool:
+    st = _state(name)
+    if _BUILDING[name].is_set():
         return False
-    if not _STATE.get("rows"):
+    if not st.get("payload"):
         return True
-    if int(_STATE.get("failures") or 0):
-        return (time.time() - float(_STATE.get("last_attempt_at") or 0.0)) >= RETRY_AFTER_SEC
-    age = age_seconds()
-    return age is None or age >= REFRESH_AFTER_SEC
+    if int(st.get("failures") or 0):
+        return (time.time() - float(st.get("last_attempt_at") or 0.0)) >= RETRY_AFTER_SEC
+    age = age_seconds(name)
+    return age is None or age >= refresh_after(name)
 
 
-def current(builder: Callable[[], list[dict[str, Any]]],
-            *, source: str = "warehouse") -> list[dict[str, Any]]:
-    """The universe, now. Never waits for a build unless there is nothing at all.
+def current(name: str, builder: Optional[Callable[[], Any]] = None, *,
+            source: str = "", default: Any = None) -> Any:
+    """The artifact, now. Never waits for a build unless there is nothing at all.
 
-    The one case that blocks is a process that has never built and found nothing
-    on disk. There is no stale answer to give, and an empty desk is not an
-    answer either.
+    The one case that blocks is a process that has never built this artifact and
+    found nothing on disk. There is no stale answer to give.
     """
-    rows = _STATE.get("rows")
-    if rows and should_refresh():
-        threading.Thread(target=rebuild, args=(builder,), kwargs={"source": source},
-                         name="desk-snapshot-refresh", daemon=True).start()
-    if rows:
-        return rows
-    if prime():
-        return _STATE.get("rows") or []
-    rebuild(builder, source=source)
-    return _STATE.get("rows") or []
+    st = _state(name)
+    payload = st.get("payload")
+
+    if payload is None and prime(name):
+        payload = _state(name).get("payload")
+
+    if payload is not None and should_refresh(name):
+        threading.Thread(target=rebuild, args=(name, builder), kwargs={"source": source},
+                         name=f"desk-refresh-{name}", daemon=True).start()
+
+    if payload is not None:
+        return payload
+
+    rebuild(name, builder, source=source)
+    return _state(name).get("payload") if _state(name).get("payload") is not None else default
 
 
-def reset() -> None:
-    """For tests. Does not delete the persisted snapshot."""
-    with _LOCK:
-        _STATE.update({"rows": None, "built_at": 0.0, "build_seconds": None,
-                       "source": None, "failures": 0, "last_error": None,
-                       "last_attempt_at": 0.0, "builds": 0})
-    _BUILDING.clear()
+def prime_all() -> dict[str, Any]:
+    """Adopt every registered artifact from disk. Called once at startup.
+
+    This is what makes a deploy cheap: the process comes up already able to
+    answer, and the rebuild happens behind whatever arrives first.
+    """
+    out = {}
+    for name in sorted(_REGISTRY):
+        out[name] = prime(name)
+    return {"ok": True, "primed": out}
+
+
+def refresh_stale() -> dict[str, Any]:
+    """Rebuild anything past its staleness budget. For a scheduled warmer."""
+    done = {}
+    for name in sorted(_REGISTRY):
+        done[name] = rebuild(name) if should_refresh(name) else {"ok": True, "skipped": "fresh"}
+    return {"ok": True, "artifacts": done}
+
+
+def forget(name: str) -> None:
+    """Clear the artifact and remove what it left on disk.
+
+    reset() deliberately keeps the file, because a process restarting should
+    find the last good build. A test asking for a clean slate wants the opposite,
+    and a reset that leaves the artifact readable is not a reset - the next call
+    primes from disk and the builder under test is never invoked.
+    """
+    reset(name)
+    try:
+        snapshot_path(name).unlink()
+    except OSError:
+        pass
+
+
+def reset(name: Optional[str] = None) -> None:
+    """For tests. Does not delete persisted files."""
+    names = [name] if name else list(_STATES)
+    for n in names:
+        _state(n)
+        with _LOCKS[n]:
+            _STATES[n] = _blank()
+        _BUILDING[n].clear()
