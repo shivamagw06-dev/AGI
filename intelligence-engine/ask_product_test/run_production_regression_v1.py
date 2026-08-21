@@ -42,6 +42,8 @@ from __future__ import annotations
 
 import json
 import os
+import uuid
+import shutil
 import signal
 import subprocess
 import sys
@@ -128,6 +130,31 @@ def _ts() -> str:
 
 def _art() -> Path:
     return _artifacts_dir()
+
+
+#: One identifier per gate invocation. On a runner it is the workflow run and
+#: attempt, which makes an artifact traceable to the job that produced it; off a
+#: runner it is random. Either way it is unique per run.
+RUN_ID = (
+    f"{os.environ.get('GITHUB_RUN_ID')}-{os.environ.get('GITHUB_RUN_ATTEMPT', '1')}"
+    if os.environ.get("GITHUB_RUN_ID")
+    else uuid.uuid4().hex[:16]
+)
+
+
+def _suite_artifact_dir(suite_id: str) -> Path:
+    """A directory only this suite, in this run, writes to.
+
+    Isolation rather than timestamps. Comparing mtime against a launch time
+    works until it does not: filesystem timestamp resolution varies (HFS+ is
+    one second, some network filesystems coarser), clocks move, and a suite
+    that writes fast enough can land inside the slack the comparison needs. A
+    directory that did not exist before this run cannot contain another run's
+    file, and that holds regardless of the filesystem.
+    """
+    path = _art() / "_runs" / RUN_ID / suite_id
+    path.mkdir(parents=True, exist_ok=True)
+    return path
 
 
 #: A suite that stops producing output must not take the whole job down with it.
@@ -224,11 +251,15 @@ def _reap(proc: "Optional[subprocess.Popen[bytes]]") -> None:
             pass
 
 
-def _run_module(module: str, env: Optional[Dict[str, str]] = None) -> Tuple[int, float, float]:
+def _run_module(module: str, env: Optional[Dict[str, str]] = None,
+                artifact_dir: Optional[Path] = None) -> Tuple[int, float, float]:
     merged = os.environ.copy()
     merged.setdefault("ASK_TEST_MODE", "inprocess")
     merged.setdefault("ASK_TEST_CASE_COOLDOWN_SEC", "0")
-    merged.setdefault("ASK_TEST_ARTIFACTS", str(_art()))
+    # Overridden, not defaulted: the suite must write where this run can find it
+    # and where no previous run could have written.
+    merged["ASK_TEST_ARTIFACTS"] = str(artifact_dir or _art())
+    merged["GATE_RUN_ID"] = RUN_ID
     if env:
         merged.update(env)
     limit = _suite_timeout(module)
@@ -280,19 +311,45 @@ def _purge_artifact(name: str) -> None:
             pass
 
 
-def _artifact_is_fresh(name: str, launched_at: float) -> bool:
-    """Whether the artifact on disk was written by the run that just finished."""
+def _artifact_is_fresh(name: str, launched_at: float,
+                       suite_dir: Optional[Path] = None) -> bool:
+    """Whether the artifact belongs to the run that just finished.
+
+    Primary test is location: a file inside this run's own directory can only
+    have been written by this run. The mtime comparison is a fallback for a
+    suite that ignores ASK_TEST_ARTIFACTS and writes to the shared path, and is
+    deliberately not the main mechanism - timestamp resolution is not uniform
+    across filesystems.
+    """
+    if suite_dir is not None and (suite_dir / name).exists():
+        return True
     for path in (_art() / name, Path("/workspace/artifacts") / name):
         try:
             if path.exists():
-                # One second of slack for filesystem timestamp granularity.
                 return path.stat().st_mtime >= (launched_at - 1.0)
         except OSError:
             continue
     return False
 
 
-def _load(name: str) -> Dict[str, Any]:
+def _publish_artifact(name: str, suite_dir: Path) -> None:
+    """Copy a suite's result to the shared path the upload step collects."""
+    src = suite_dir / name
+    if not src.exists():
+        return
+    try:
+        _art().mkdir(parents=True, exist_ok=True)
+        shutil.copy2(src, _art() / name)
+    except OSError:
+        pass
+
+
+def _load(name: str, suite_dir: Optional[Path] = None) -> Dict[str, Any]:
+    if suite_dir is not None and (suite_dir / name).exists():
+        try:
+            return json.loads((suite_dir / name).read_text(encoding="utf-8"))
+        except Exception:
+            return {}
     path = _art() / name
     if not path.exists():
         # Legacy cloud-agent path fallback.
@@ -308,7 +365,8 @@ def _load(name: str) -> Dict[str, Any]:
 
 
 def _decide(suite_id: str, report: Dict[str, Any], rc: int,
-            launched_at: Optional[float] = None) -> Dict[str, Any]:
+            launched_at: Optional[float] = None,
+            suite_dir: Optional[Path] = None) -> Dict[str, Any]:
     """Normalize suite outcome against AGI Core v1.0 freeze targets."""
     target = dict(RELEASE_GATE_TARGETS[suite_id])
     target["artifact"] = SUITE_ARTIFACTS[suite_id]
@@ -330,7 +388,7 @@ def _decide(suite_id: str, report: Dict[str, Any], rc: int,
     abnormal = rc < 0 or rc not in (0, 1, EXIT_INFRASTRUCTURE)
     stale = (launched_at is not None
              and not report
-             and not _artifact_is_fresh(target["artifact"], launched_at))
+             and not _artifact_is_fresh(target["artifact"], launched_at, suite_dir))
     if abnormal or stale:
         return {
             "suite": suite_id,
@@ -341,7 +399,7 @@ def _decide(suite_id: str, report: Dict[str, Any], rc: int,
             "abnormal_exit": True,
         }
 
-    data = report or _load(target["artifact"])
+    data = report or _load(target["artifact"], suite_dir)
     metric = target["metric"]
     actual = data.get(metric)
     if actual is None and metric == "pass_rate_pct":
@@ -527,9 +585,15 @@ def main() -> int:
     for suite_id, module in plan:
         # Removed before launch so a suite that never writes cannot be scored
         # from the file its previous run left behind.
+        # Fresh directory per suite per run, plus the old shared path cleared,
+        # so neither location can carry a previous run's result forward.
+        suite_dir = _suite_artifact_dir(suite_id)
         _purge_artifact(SUITE_ARTIFACTS[suite_id])
-        rc, elapsed, launched_at = _run_module(module)
-        decision = _decide(suite_id, {}, rc, launched_at=launched_at)
+        rc, elapsed, launched_at = _run_module(module, artifact_dir=suite_dir)
+        decision = _decide(suite_id, {}, rc, launched_at=launched_at,
+                           suite_dir=suite_dir)
+        # Copy up so the workflow's artifact upload still collects it.
+        _publish_artifact(SUITE_ARTIFACTS[suite_id], suite_dir)
         decision["elapsed_sec"] = round(elapsed, 1)
         results.append(decision)
         print(

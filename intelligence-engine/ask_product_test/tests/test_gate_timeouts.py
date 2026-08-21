@@ -195,3 +195,52 @@ def test_run_module_reports_a_timeout_rather_than_blocking(monkeypatch, tmp_path
     rc, elapsed, launched = gate._run_module("this_module_does_not_exist_and_would_hang")
     assert time.perf_counter() - started < 30, "must not block the runner"
     assert rc in (gate.EXIT_TIMEOUT, 1), "a missing module exits; a hanging one times out"
+
+
+# --- per-run artifact isolation -------------------------------------------
+
+def test_each_run_gets_its_own_artifact_directory(monkeypatch, tmp_path):
+    monkeypatch.setenv("ASK_TEST_ARTIFACTS", str(tmp_path))
+    a = gate._suite_artifact_dir("bi_acceptance")
+    assert a.exists() and gate.RUN_ID in str(a) and "bi_acceptance" in str(a)
+    assert gate._suite_artifact_dir("ii_acceptance") != a
+
+
+def test_isolation_not_timestamps_decides_freshness(monkeypatch, tmp_path):
+    """A file in this run's own directory is this run's, whatever its mtime.
+
+    Timestamp resolution is not uniform across filesystems, so mtime is the
+    fallback and location is the test.
+    """
+    monkeypatch.setenv("ASK_TEST_ARTIFACTS", str(tmp_path))
+    name = gate.SUITE_ARTIFACTS["bi_acceptance"]
+    suite_dir = gate._suite_artifact_dir("bi_acceptance")
+    (suite_dir / name).write_text('{"pass_rate_pct": 100.0}')
+    os.utime(suite_dir / name, (1000, 1000))          # an implausible mtime
+
+    assert gate._artifact_is_fresh(name, time.time(), suite_dir) is True
+    decision = gate._decide("bi_acceptance", {}, 0,
+                            launched_at=time.time(), suite_dir=suite_dir)
+    assert decision["pass"] is True
+
+
+def test_a_previous_runs_file_cannot_reach_this_runs_directory(monkeypatch, tmp_path):
+    monkeypatch.setenv("ASK_TEST_ARTIFACTS", str(tmp_path))
+    name = gate.SUITE_ARTIFACTS["bi_acceptance"]
+    (tmp_path / name).write_text('{"pass_rate_pct": 100.0}')   # last run, shared path
+    os.utime(tmp_path / name, (1000, 1000))
+    suite_dir = gate._suite_artifact_dir("bi_acceptance")      # this run, empty
+
+    decision = gate._decide("bi_acceptance", {}, 0,
+                            launched_at=time.time(), suite_dir=suite_dir)
+    assert decision["pass"] is False
+    assert decision["actual"] == "stale_artifact"
+
+
+def test_results_are_published_to_the_shared_upload_path(monkeypatch, tmp_path):
+    monkeypatch.setenv("ASK_TEST_ARTIFACTS", str(tmp_path))
+    name = gate.SUITE_ARTIFACTS["bi_acceptance"]
+    suite_dir = gate._suite_artifact_dir("bi_acceptance")
+    (suite_dir / name).write_text('{"pass_rate_pct": 99.0}')
+    gate._publish_artifact(name, suite_dir)
+    assert (tmp_path / name).exists(), "the upload step must still find it"
