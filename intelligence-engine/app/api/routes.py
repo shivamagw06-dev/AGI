@@ -21772,6 +21772,36 @@ async def valuation_ratios_ingest(payload: dict[str, Any] = Body(default_factory
     )
 
 
+@router.post("/valuation-ratios/sweep")
+async def valuation_ratios_sweep(payload: dict[str, Any] = Body(default_factory=dict)):
+    """Pull today's key ratios for the whole universe.
+
+    Ingest was push-based, so the table recorded whichever companies something
+    outside the engine happened to look at - twenty-five to eighty a day out of
+    2,431. Upstox's key ratios carry no time dimension, so a day not collected
+    is a day that cannot be recovered later.
+    """
+    from valuation_ratios.sweep import run
+
+    body = payload or {}
+    return await run_in_threadpool(
+        run,
+        limit=int(body["limit"]) if body.get("limit") else None,
+        batch_size=int(body.get("batch_size") or 40),
+        actor=str(body.get("actor") or "ratio_sweep"),
+        pause_seconds=float(body.get("pause_seconds", 0.6)),
+    )
+
+
+@router.get("/valuation-ratios/sweep/runs")
+def valuation_ratios_sweep_runs(limit: int = 10):
+    """What each sweep actually reached, rather than that it finished."""
+    from institutional_warehouse.backfill.checkpoints import recent_jobs
+    from valuation_ratios.sweep import KIND
+
+    return {"ok": True, "runs": recent_jobs(kind=KIND, limit=limit)}
+
+
 @router.post("/valuation-ratios/isin-backfill")
 async def valuation_ratios_isin_backfill(payload: dict[str, Any] = Body(default_factory=dict)):
     """Fill company_master.isin from Upstox NSE EQ instruments (blocks key-ratios otherwise)."""

@@ -72,7 +72,12 @@ def normalise_upstox_key_ratios(payload: dict[str, Any]) -> list[dict[str, Any]]
     now = datetime.now(timezone.utc)
     reported_date = str(payload.get("reported_date") or now.date().isoformat())
     reported_time = str(payload.get("reported_time") or now.isoformat())
-    snapshot_id = str(payload.get("snapshot_id") or f"upstox-{reported_date}-{uuid.uuid4().hex[:10]}")
+    # Deterministic per company and day, because snapshot_id is part of the key.
+    # A random one made a re-run land a second row for the same company on the
+    # same date - which is a duplicate, not a second observation. A sweep that
+    # retries a failed company must produce one final snapshot, not two.
+    snapshot_id = str(payload.get("snapshot_id")
+                      or f"upstox-{reported_date}-{symbol}")
 
     raw = payload.get("data")
     if raw is None:
