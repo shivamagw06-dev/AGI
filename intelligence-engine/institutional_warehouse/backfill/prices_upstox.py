@@ -12,7 +12,8 @@ they are.
 
 from __future__ import annotations
 
-from datetime import date
+import time
+from datetime import date, timedelta
 from typing import Any, Callable, Iterable, Optional
 
 from institutional_warehouse import gateway, store
@@ -105,17 +106,50 @@ def backfill_company(
     }
 
 
+def window_start(days: Optional[int], *, deep_history: bool = False,
+                 end: Optional[date] = None) -> date:
+    """Where a price collection should begin.
+
+    The scheduler advertises a bounded slice - WAREHOUSE_BACKFILL_DAYS=20 - and
+    until now that bound never reached this stage. It defaulted to EARLIEST, so
+    a "20 day" slice fetched twenty-six years of daily candles for sixty
+    companies, synchronously, on startup. One slice ran fourteen minutes without
+    finishing and took the sidecar from 201 MB to 1.7 GB.
+
+    ``deep_history`` is how the decade actually gets collected, and it is now
+    something a caller asks for rather than something it gets by forgetting to
+    pass a window. Losing that distinction silently is what made a routine
+    top-up indistinguishable from a full historical rebuild.
+    """
+    if deep_history or not days or int(days) <= 0:
+        return upstox_history.EARLIEST
+    return (end or date.today()) - timedelta(days=int(days))
+
+
 def backfill(
     universe: Optional[Iterable[str]] = None,
     *,
     actor: str = "backfill",
     limit: int = 25,
-    start: date = upstox_history.EARLIEST,
+    days: Optional[int] = None,
+    deep_history: bool = False,
+    start: Optional[date] = None,
     end: Optional[date] = None,
     getter: Optional[Callable[[str], dict[str, Any]]] = None,
     pause_seconds: float = 0.0,
     refresh_done: bool = False,
+    deadline: Optional[float] = None,
 ) -> dict[str, Any]:
+    """Collect Upstox price history for a bounded set of companies.
+
+    ``deadline`` is a monotonic timestamp after which no further company is
+    started. One pathological company used to be able to run the slice for as
+    long as it liked, and because the first slice runs on the boot path that
+    meant it could stop the scheduler from ever existing.
+    """
+    if start is None:
+        start = window_start(days, deep_history=deep_history, end=end)
+
     keys = _companies()
     names = list(universe) if universe is not None else sorted(keys)
     pending = checkpoints.pending_entities(KIND, names, limit=limit, refresh_done=refresh_done)
@@ -124,8 +158,12 @@ def backfill(
     failed: list[dict[str, Any]] = []
     rows = 0
     earliest: Optional[str] = None
+    stopped_early = False
 
     for ticker in pending:
+        if deadline is not None and time.monotonic() > deadline:
+            stopped_early = True
+            break
         try:
             result = backfill_company(ticker, instrument_key=keys.get(ticker.upper()), actor=actor,
                                       start=start, end=end, getter=getter,
@@ -158,6 +196,8 @@ def backfill(
 
     return {
         "ok": True, "kind": KIND, "queued": len(pending),
+        "window_start": start.isoformat(), "deep_history": bool(deep_history),
+        "stopped_at_deadline": stopped_early,
         "companies_done": len(done), "companies_failed": len(failed),
         "failure_reasons": dict(sorted(reasons.items(), key=lambda kv: -kv[1])),
         "rows_written": rows, "earliest_history": earliest,

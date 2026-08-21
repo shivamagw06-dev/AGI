@@ -26,6 +26,10 @@ def fresh_warehouse(tmp_path, monkeypatch):
     db.reset_backend()
     db.init(force=True)
     yield
+    # A failed assertion skips the test's own stop_backfill(), leaving the stub
+    # thread "alive" so the next test gets already_running instead of doing its
+    # work. One red test should not turn into three.
+    scheduler._BACKFILL_THREAD = None
     db.reset_backend()
 
 
@@ -45,13 +49,16 @@ def test_age_is_read_from_the_job_table_not_the_process():
 def test_a_restart_runs_immediately_when_a_slice_is_overdue(monkeypatch):
     _record_slice(51)  # the gap a redeploy actually produced in production
     monkeypatch.setenv("WAREHOUSE_BACKFILL", "true")
-    ran = {"count": 0}
-    monkeypatch.setattr(scheduler, "_backfill_slice", lambda: ran.__setitem__("count", 1))
+    monkeypatch.setattr(scheduler, "_backfill_slice", lambda: None)
     monkeypatch.setattr(scheduler.threading, "Thread", _StubThread)
 
     result = scheduler.start_backfill()
+    # Still immediate, but handed to the timer thread instead of run in front of
+    # it. Readiness must not wait on sixty companies of data work: a slice that
+    # ran inline here once went fourteen minutes without returning, so the timer
+    # for every later slice was never created.
     assert result["boot_slice"] is True
-    assert ran["count"] == 1
+    assert _StubThread.last["args"][1] is True, "the loop must be told to run one now"
     scheduler.stop_backfill()
 
 
@@ -64,7 +71,8 @@ def test_a_restart_waits_when_a_slice_has_just_run(monkeypatch):
 
     result = scheduler.start_backfill()
     assert result["boot_slice"] is False
-    assert ran["count"] == 0          # no double-run right after a completed slice
+    assert _StubThread.last["args"][1] is False   # no double-run after a completed slice
+    assert ran["count"] == 0
     scheduler.stop_backfill()
 
 
@@ -81,10 +89,19 @@ def test_status_reports_loop_health_from_shared_state():
 
 
 class _StubThread:
-    """Keeps the test off real threads while preserving the start/join contract."""
+    """Keeps the test off real threads while preserving the start/join contract.
+
+    Records the arguments it was constructed with. The boot slice now runs
+    inside the timer thread rather than in front of it, so "was a boot slice
+    scheduled" is a question about how this thread was built.
+    """
+
+    last: dict = {}
 
     def __init__(self, *args, **kwargs):
         self._alive = False
+        type(self).last = {"args": kwargs.get("args") or (args[1] if len(args) > 1 else ()),
+                           "target": kwargs.get("target")}
 
     def start(self):
         self._alive = True

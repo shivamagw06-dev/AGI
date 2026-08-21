@@ -134,7 +134,14 @@ def _backfill_slice() -> dict[str, Any]:
 
     companies = int(os.getenv("WAREHOUSE_BACKFILL_COMPANIES", "25") or 25)
     days = int(os.getenv("WAREHOUSE_BACKFILL_DAYS", "40") or 40)
-    result = run(actor="backfill_scheduler", companies=companies, days=days)
+    # A slice gets a wall-clock budget. Without one, a single slow company can
+    # run for as long as it likes, and the first slice used to be the thing the
+    # scheduler was waiting on before it could exist at all.
+    max_seconds = float(os.getenv("WAREHOUSE_BACKFILL_MAX_SECONDS", "900") or 900)
+    deep = str(os.getenv("WAREHOUSE_BACKFILL_DEEP_HISTORY", "")).strip().lower() in {
+        "1", "true", "yes", "on"}
+    result = run(actor="backfill_scheduler", companies=companies, days=days,
+                 deep_history=deep, max_seconds=max_seconds)
     _BACKFILL_STATE["slices"] = int(_BACKFILL_STATE.get("slices") or 0) + 1
     _BACKFILL_STATE["last_slice_at"] = datetime.now(timezone.utc).isoformat(timespec="seconds")
     _BACKFILL_STATE["last_result"] = {
@@ -195,8 +202,24 @@ def within_market_hours(now: Optional[datetime] = None) -> bool:
     return start <= minutes < end
 
 
-def _backfill_loop(interval_seconds: float) -> None:
+def _backfill_loop(interval_seconds: float, boot_slice: bool = False) -> None:
     from observability import memory_stages as ms
+
+    if boot_slice:
+        ms.heartbeat("backfill_boot_slice_start",
+                     companies=os.getenv("WAREHOUSE_BACKFILL_COMPANIES"),
+                     days=os.getenv("WAREHOUSE_BACKFILL_DAYS"))
+        try:
+            with ms.stage("warehouse_backfill_boot_slice",
+                          companies=os.getenv("WAREHOUSE_BACKFILL_COMPANIES"),
+                          days=os.getenv("WAREHOUSE_BACKFILL_DAYS")) as detail:
+                result = _backfill_slice()
+                if isinstance(result, dict):
+                    detail["rows"] = result.get("rows_written") or result.get("rows")
+                    detail["symbols"] = result.get("companies_done")
+        except Exception:
+            pass
+        ms.heartbeat("backfill_boot_slice_end")
 
     while not _BACKFILL_STOP.wait(interval_seconds):
         try:
@@ -260,27 +283,23 @@ def start_backfill(*, boot_slice: Optional[bool] = None) -> dict[str, Any]:
         boot_slice = age is None or age >= minutes
     if boot_slice and within_market_hours():
         boot_slice = False
-    if boot_slice:
-        ms.heartbeat("backfill_boot_slice_start",
-                     companies=os.getenv("WAREHOUSE_BACKFILL_COMPANIES"),
-                     days=os.getenv("WAREHOUSE_BACKFILL_DAYS"))
-        try:
-            with ms.stage("warehouse_backfill_boot_slice",
-                          companies=os.getenv("WAREHOUSE_BACKFILL_COMPANIES"),
-                          days=os.getenv("WAREHOUSE_BACKFILL_DAYS")) as detail:
-                result = _backfill_slice()
-                if isinstance(result, dict):
-                    detail["rows"] = result.get("written") or result.get("rows")
-                    detail["symbols"] = result.get("symbols") or result.get("companies")
-        except Exception:
-            pass
-        ms.heartbeat("backfill_boot_slice_end")
 
+    # The boot slice runs *inside* the timer thread, not in front of it.
+    #
+    # It used to run synchronously here, before the thread existed and before
+    # the caller logged anything about the backfill. On 21 August one slice ran
+    # for over fourteen minutes and never returned, so `gather_worker_ready` was
+    # never reached and the ten-minute timer was never created - the only
+    # backfill that process ever ran was the one blocking its own scheduler.
+    #
+    # Readiness must not depend on finishing sixty companies of data work.
     _BACKFILL_STOP.clear()
-    _BACKFILL_THREAD = threading.Thread(target=_backfill_loop, args=(minutes * 60.0,),
+    _BACKFILL_THREAD = threading.Thread(target=_backfill_loop,
+                                        args=(minutes * 60.0, bool(boot_slice)),
                                         name="warehouse-backfill", daemon=True)
     _BACKFILL_THREAD.start()
-    ms.heartbeat("backfill_timer_started", interval_minutes=minutes)
+    ms.heartbeat("backfill_timer_started", interval_minutes=minutes,
+                 boot_slice_queued=bool(boot_slice))
     return {"ok": True, "enabled": True, "interval_minutes": minutes, "boot_slice": boot_slice,
             "minutes_since_last_slice": round(age, 1) if age is not None else None}
 

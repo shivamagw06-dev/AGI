@@ -9,6 +9,8 @@ the checkpoint tables rather than in the process.
 
 from __future__ import annotations
 
+import time
+
 import os
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Any, Callable, Iterable, Optional
@@ -103,6 +105,8 @@ def run(
     enforce_worker: bool = True,
     pause_seconds: float = 0.0,
     refresh_done: bool = False,
+    deep_history: bool = False,
+    max_seconds: Optional[float] = None,
 ) -> dict[str, Any]:
     """Run one slice of the historical backfill.
 
@@ -129,13 +133,23 @@ def run(
     results: dict[str, Any] = {}
     errors: list[dict[str, str]] = []
 
+    # A slice that can run forever is a slice that can stop the scheduler from
+    # existing, because the first one runs on the boot path. Cooperative rather
+    # than forced: a thread cannot be killed from outside in Python, so the
+    # stages check it between companies and stop cleanly.
+    deadline = (time.monotonic() + float(max_seconds)) if max_seconds else None
+
     runners: dict[str, Callable[[], dict[str, Any]]] = {
         "nse_archive": lambda: nse_archive.backfill(
             actor=actor, days=days, fetch=fetch,
             start=archive_start, floor=archive_floor),
+        # days reaches this stage now. Without it the window defaulted to
+        # EARLIEST and a twenty-day slice fetched from January 2000.
         "upstox_prices": lambda: prices_upstox.backfill(universe, actor=actor, limit=companies,
+                                                        days=days, deep_history=deep_history,
                                                         pause_seconds=pause_seconds,
-                                                        refresh_done=refresh_done),
+                                                        refresh_done=refresh_done,
+                                                        deadline=deadline),
         "yahoo_prices": lambda: prices.backfill(universe, actor=actor, limit=companies,
                                                 fetch=fetch, pause_seconds=pause_seconds),
         "yahoo_statements": lambda: statements.backfill(universe, actor=actor, limit=companies,
@@ -150,6 +164,10 @@ def run(
     from observability import memory_stages as ms
 
     for stage in wanted:
+        if deadline is not None and time.monotonic() > deadline:
+            errors.append({"stage": stage, "error": "slice_deadline_reached"})
+            results[stage] = {"ok": False, "stage": stage, "skipped": "deadline"}
+            continue
         try:
             with ms.stage(f"backfill_stage_{stage}", companies=companies, days=days) as detail:
                 results[stage] = runners[stage]()
