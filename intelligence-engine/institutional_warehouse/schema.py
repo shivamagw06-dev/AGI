@@ -1026,6 +1026,45 @@ OWNERSHIP = Tab(
 # Tab — Insider Trades
 # --------------------------------------------------------------------------
 
+FUNDAMENTALS_REFRESH_QUEUE = Tab(
+    id="fundamentals_refresh_queue",
+    label="Fundamentals Refresh Queue",
+    description=(
+        "Companies owed an Upstox statement refresh, why they are owed it, and "
+        "how far the refresh got. Durable so a deploy cannot lose the work."
+    ),
+    mode="upsert",
+    # One entry per company and reporting period. A company that reports Q1 and
+    # then restates it is owed two refreshes of the same period, not two
+    # entries; a company that reports Q1 and then Q2 is owed two.
+    key=("symbol", "reporting_period"),
+    order_by=("queued_at DESC", "symbol"),
+    search_columns=("symbol", "status", "trigger"),
+    icon="queue",
+    columns=(
+        _c("symbol", "Symbol", TEXT, required=True, width=130, group="Key"),
+        # The period that prompted the refresh, so a stale entry can be told
+        # from a current one without guessing from timestamps.
+        _c("reporting_period", "Period", TEXT, required=True, width=130, group="Key"),
+        _c("status", "Status", TEXT, required=True, width=120, group="State",
+           options=("PENDING", "RUNNING", "SUCCESS", "RETRY", "FAILED")),
+        # Why this company is in the queue. Recorded because a queue nobody can
+        # explain is a queue nobody will trust enough to drain.
+        _c("trigger", "Trigger", TEXT, width=180, group="State",
+           options=("new_period", "restated_period", "reconciliation", "manual")),
+        _c("attempts", "Attempts", INTEGER, width=100, group="State"),
+        _c("queued_at", "Queued", DATETIME, width=170, group="Timing"),
+        _c("started_at", "Started", DATETIME, width=170, group="Timing"),
+        _c("finished_at", "Finished", DATETIME, width=170, group="Timing"),
+        _c("last_error", "Last Error", TEXT, width=260, group="State"),
+        _c("datasets_written", "Datasets", TEXT, width=200, group="Result"),
+        _c("periods_written", "Periods Written", INTEGER, width=140, group="Result"),
+        _c("periods_preserved", "Periods Preserved", INTEGER, width=150, group="Result"),
+        *PROVENANCE_COLUMNS,
+    ),
+)
+
+
 INSIDER_TRADES = Tab(
     id="insider_trades",
     label="Insider Trades",
@@ -2550,6 +2589,7 @@ TABS: tuple[Tab, ...] = (
     CORPORATE_ACTIONS,
     OWNERSHIP,
     INSIDER_TRADES,
+    FUNDAMENTALS_REFRESH_QUEUE,
     PEER_RELATIONSHIPS,
     FWCP_IMPORT_QUEUE,
     INSTITUTIONAL_FLOW,
