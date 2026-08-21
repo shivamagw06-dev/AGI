@@ -8,6 +8,8 @@ from __future__ import annotations
 
 import json
 import os
+import subprocess
+import sys
 from datetime import datetime, timezone
 from typing import Any, Optional
 from urllib import error, request
@@ -232,13 +234,13 @@ def persist_company_pack(
     }
 
 
-def compute_and_persist(
+def _compute_and_persist_inline(
     symbol: str,
     *,
     window: str = "5Y",
     peer_limit: int = 12,
 ) -> dict[str, Any]:
-    """Run company_pack once and store the read model."""
+    """Run company_pack once and store the read model in this process."""
     from valuation_engine.terminal import company_pack
 
     ticker = str(symbol or "").strip().upper()
@@ -272,6 +274,121 @@ def compute_and_persist(
         "read_model": "supabase_valuation_company_pack",
     }
     return {**meta, "payload": enriched}
+
+
+_RESULT_PREFIX = "__AGI_VALUATION_SNAPSHOT_RESULT__"
+
+
+def _process_isolation_enabled() -> bool:
+    raw = str(os.environ.get("VALUATION_PACK_PROCESS_ISOLATION", "true")).strip().lower()
+    return raw not in {"0", "false", "no", "off"}
+
+
+def _compute_and_persist_process(
+    symbol: str,
+    *,
+    window: str = "5Y",
+    peer_limit: int = 12,
+) -> dict[str, Any]:
+    """Build one pack in a disposable process so HTTP remains responsive.
+
+    The company pack is CPU/GIL heavy enough that a worker thread still blocked
+    the uvicorn process: a 24.8 second RELIANCE snapshot delayed /v1/health for
+    23.9 seconds. A one-shot child gives the operating system the isolation a
+    thread cannot, and releases all temporary memory when the pack is done.
+    """
+    ticker = str(symbol or "").strip().upper()
+    win = normalize_window(window)
+    capped = max(1, min(int(peer_limit or 12), 40))
+    timeout_seconds = max(
+        30.0,
+        float(os.environ.get("VALUATION_PACK_PROCESS_TIMEOUT_SECONDS", "150") or 150),
+    )
+    command = [
+        sys.executable,
+        "-m",
+        "valuation_engine.snapshot_store",
+        "--compute",
+        ticker,
+        win,
+        str(capped),
+    ]
+    try:
+        completed = subprocess.run(
+            command,
+            capture_output=True,
+            text=True,
+            timeout=timeout_seconds,
+            check=False,
+        )
+    except subprocess.TimeoutExpired:
+        return {
+            "ok": False,
+            "symbol": ticker,
+            "window": win,
+            "status": "failed",
+            "error": f"snapshot_process_timeout:{timeout_seconds:g}s",
+        }
+    except Exception as exc:
+        return {
+            "ok": False,
+            "symbol": ticker,
+            "window": win,
+            "status": "failed",
+            "error": f"snapshot_process_start_failed:{str(exc)[:200]}",
+        }
+
+    for line in reversed((completed.stdout or "").splitlines()):
+        if not line.startswith(_RESULT_PREFIX):
+            continue
+        try:
+            result = json.loads(line[len(_RESULT_PREFIX):])
+        except ValueError:
+            break
+        if isinstance(result, dict):
+            return result
+
+    detail = (completed.stderr or completed.stdout or "no child result").strip()[-500:]
+    return {
+        "ok": False,
+        "symbol": ticker,
+        "window": win,
+        "status": "failed",
+        "error": f"snapshot_process_failed:{completed.returncode}:{detail}",
+    }
+
+
+def compute_and_persist(
+    symbol: str,
+    *,
+    window: str = "5Y",
+    peer_limit: int = 12,
+) -> dict[str, Any]:
+    """Store one pack, isolating web-request computation in a child process."""
+    role = str(os.environ.get("AGI_ROLE") or "").strip().lower()
+    if role == "web" and _process_isolation_enabled():
+        return _compute_and_persist_process(
+            symbol,
+            window=window,
+            peer_limit=peer_limit,
+        )
+    return _compute_and_persist_inline(
+        symbol,
+        window=window,
+        peer_limit=peer_limit,
+    )
+
+
+def _main(argv: list[str]) -> int:
+    if len(argv) != 4 or argv[0] != "--compute":
+        return 2
+    result = _compute_and_persist_inline(
+        argv[1],
+        window=argv[2],
+        peer_limit=int(argv[3]),
+    )
+    print(_RESULT_PREFIX + json.dumps(result, default=str), flush=True)
+    return 0 if result.get("ok") else 1
 
 
 def latest_pack_row(symbol: str, *, window: str = "5Y") -> Optional[dict[str, Any]]:
@@ -358,3 +475,7 @@ def list_aging_latest(*, limit: int = 8, max_age_seconds: int | None = None) -> 
     if not isinstance(rows, list):
         return []
     return [{**row, "window": row.get("pack_window") or row.get("window")} for row in rows]
+
+
+if __name__ == "__main__":
+    raise SystemExit(_main(sys.argv[1:]))
