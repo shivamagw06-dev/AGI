@@ -19,6 +19,10 @@ def fresh_warehouse(tmp_path, monkeypatch):
     monkeypatch.setenv("INSTITUTIONAL_WAREHOUSE_ROOT", str(tmp_path))
     monkeypatch.delenv("WAREHOUSE_BACKFILL", raising=False)
     monkeypatch.setenv("WAREHOUSE_BACKFILL_INTERVAL_MIN", "30")
+    # These cover restart timing, not the trading calendar. Without this they
+    # pass overnight and fail during market hours, which is the worst kind of
+    # test - one whose result depends on when you ran it.
+    monkeypatch.setenv("WAREHOUSE_BACKFILL_MARKET_GUARD", "false")
     db.reset_backend()
     db.init(force=True)
     yield

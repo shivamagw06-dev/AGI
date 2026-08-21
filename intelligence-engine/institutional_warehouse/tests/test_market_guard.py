@@ -60,7 +60,20 @@ class TestMarketHours:
         monkeypatch.setattr(scheduler, "minutes_since_last_slice", lambda: 999.0)
         ran = []
         monkeypatch.setattr(scheduler, "_backfill_slice", lambda: ran.append(1))
-        out = scheduler.start_backfill()
-        scheduler.stop_backfill()
-        assert out.get("boot_slice") is False
-        assert ran == []
+
+        class _StubThread:
+            def __init__(self, *a, **k): pass
+            def start(self): pass
+            def is_alive(self): return False
+            def join(self, *a, **k): pass
+
+        # A real thread here outlives the test and the next call to
+        # start_backfill returns already_running instead of doing its work.
+        monkeypatch.setattr(scheduler.threading, "Thread", _StubThread)
+        try:
+            out = scheduler.start_backfill()
+            assert out.get("boot_slice") is False
+            assert ran == []
+        finally:
+            scheduler.stop_backfill()
+            scheduler._BACKFILL_THREAD = None
