@@ -114,6 +114,11 @@ def test_a_non_numeric_value_fails_closed(units):
     assert xu.resolve({"unitRef": "INR", "raw_value": "n/a"}, units)["reason"] == "value_not_numeric"
 
 
+@pytest.mark.parametrize("raw", ["nan", "inf", "-inf"])
+def test_a_non_finite_value_fails_closed(units, raw):
+    assert xu.resolve({"unitRef": "INR", "raw_value": raw}, units)["reason"] == "value_not_numeric"
+
+
 # --- values ---------------------------------------------------------------
 
 def test_a_negative_value_keeps_its_sign(units):

@@ -25,6 +25,7 @@ failed closed rather than guessed.
 
 from __future__ import annotations
 
+import math
 import re
 from typing import Any, Optional
 
@@ -147,4 +148,4 @@ def _num(raw: Any) -> Optional[float]:
         value = float(str(raw).strip())
     except (TypeError, ValueError):
         return None
-    return None if value != value else value
+    return value if math.isfinite(value) else None

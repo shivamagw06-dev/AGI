@@ -195,9 +195,8 @@ def index_declared_facts(scans: Iterable[dict[str, Any]],
                          concepts: Optional[set] = None) -> dict[tuple, list[dict[str, Any]]]:
     """Index declared money facts by (company, exact value).
 
-    The basis for the one lineage signal that does not need recorded provenance:
-    a stored value identical to a filing fact, to the cent, did not arrive by
-    coincidence.
+    An exact match corroborates the value and its absolute-rupee scale. It does
+    not establish which provider or parser wrote the stored row.
     """
     index: dict[tuple, list[dict[str, Any]]] = {}
     for scan in scans:
