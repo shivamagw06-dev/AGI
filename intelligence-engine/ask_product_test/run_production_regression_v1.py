@@ -333,7 +333,12 @@ def _artifact_is_fresh(name: str, launched_at: float,
 
 
 def _publish_artifact(name: str, suite_dir: Path) -> None:
-    """Copy a suite's result to the shared path the upload step collects."""
+    """Copy an accepted result to the shared path the upload step collects.
+
+    Called only for results the gate accepted. Publishing a rejected artifact
+    would put a file the gate refused to score into the location a later run
+    falls back to reading.
+    """
     src = suite_dir / name
     if not src.exists():
         return
@@ -592,8 +597,14 @@ def main() -> int:
         rc, elapsed, launched_at = _run_module(module, artifact_dir=suite_dir)
         decision = _decide(suite_id, {}, rc, launched_at=launched_at,
                            suite_dir=suite_dir)
-        # Copy up so the workflow's artifact upload still collects it.
-        _publish_artifact(SUITE_ARTIFACTS[suite_id], suite_dir)
+        # Published only after the result is accepted. A rejected artifact - from
+        # a timeout, a crash, or a file that could not be shown to belong to this
+        # run - must not reach the shared path, where the next run's mtime
+        # fallback could read it as its own.
+        if decision.get("timed_out") or decision.get("abnormal_exit"):
+            print(f"[gate] {suite_id}: result rejected, not published", flush=True)
+        else:
+            _publish_artifact(SUITE_ARTIFACTS[suite_id], suite_dir)
         decision["elapsed_sec"] = round(elapsed, 1)
         results.append(decision)
         print(

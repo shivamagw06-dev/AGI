@@ -244,3 +244,26 @@ def test_results_are_published_to_the_shared_upload_path(monkeypatch, tmp_path):
     (suite_dir / name).write_text('{"pass_rate_pct": 99.0}')
     gate._publish_artifact(name, suite_dir)
     assert (tmp_path / name).exists(), "the upload step must still find it"
+
+
+def test_a_rejected_result_is_not_published_to_the_shared_path(tmp_path, monkeypatch):
+    """A file the gate refused to score must not become the next run's fallback."""
+    monkeypatch.setenv("ASK_TEST_ARTIFACTS", str(tmp_path))
+    name = gate.SUITE_ARTIFACTS["bi_acceptance"]
+    suite_dir = gate._suite_artifact_dir("bi_acceptance")
+    (suite_dir / name).write_text('{"pass_rate_pct": 100.0}')
+
+    decision = gate._decide("bi_acceptance", {}, gate.EXIT_TIMEOUT)
+    assert decision["timed_out"] is True
+    # the loop publishes only when the decision accepted the result
+    if not (decision.get("timed_out") or decision.get("abnormal_exit")):
+        gate._publish_artifact(name, suite_dir)
+    assert not (tmp_path / name).exists(), "a timed-out suite must publish nothing"
+
+
+def test_the_run_directory_is_unique_per_run_and_per_suite(monkeypatch, tmp_path):
+    monkeypatch.setenv("ASK_TEST_ARTIFACTS", str(tmp_path))
+    a = gate._suite_artifact_dir("bi_acceptance")
+    b = gate._suite_artifact_dir("ii_acceptance")
+    assert a != b, "per suite"
+    assert a.parent == b.parent and a.parent.name == gate.RUN_ID, "per run"
