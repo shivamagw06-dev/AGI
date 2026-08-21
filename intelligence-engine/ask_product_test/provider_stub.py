@@ -63,3 +63,58 @@ def describe() -> Dict[str, Optional[str]]:
         "determinism": "by construction — fixed answers for fixed questions",
         "use": "required checks only; live provider evaluation belongs nightly",
     }
+
+
+# --------------------------------------------------------------------------
+# Installing the stub into the real pipeline
+# --------------------------------------------------------------------------
+
+
+class StubEditorialProvider:
+    """A fixed editorial provider, substituted for the live one.
+
+    The point is to stub the *provider*, not the pipeline. Routing, retrieval,
+    identity resolution and metadata still run and are still what gets measured;
+    only the text-generation step becomes fixed. Replacing the whole pipeline
+    with canned answers would measure the detector against its own fixture and
+    report a green result that means nothing.
+    """
+
+    name = "provider_stub"
+
+    async def rewrite(self, **kwargs: Any) -> Dict[str, Any]:
+        question = str(kwargs.get("question") or kwargs.get("prompt") or "")
+        payload = answer_for(question, mode="honest")
+        return {
+            "ok": True,
+            "provider": self.name,
+            "text": payload["answer"]["summary"],
+            "summary": payload["answer"]["summary"],
+            "latency_ms": 0,
+            "token_usage": {},
+        }
+
+
+def install() -> bool:
+    """Point the editorial factory at the stub. Returns False if it cannot.
+
+    A caller in a required lane must treat False as an infrastructure failure:
+    without this the pipeline falls back to template output, and template output
+    is not the product.
+    """
+    try:
+        from editorial import service as editorial_service
+    except Exception:
+        return False
+
+    factory = getattr(editorial_service, "resolve_provider", None) or \
+        getattr(editorial_service, "_provider_for", None) or \
+        getattr(editorial_service, "get_provider", None)
+    if factory is None:
+        return False
+
+    stub = StubEditorialProvider()
+    for attr in ("resolve_provider", "_provider_for", "get_provider"):
+        if hasattr(editorial_service, attr):
+            setattr(editorial_service, attr, lambda *a, **k: stub)
+    return True

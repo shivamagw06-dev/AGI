@@ -129,8 +129,14 @@ def summarise(results: List[Dict[str, Any]], *,
     offenders: Dict[str, List[Dict[str, Any]]] = {d: [] for d in wanted}
     for result in results:
         flags = result.get("flags") or {}
+        # Labels are the second source. evaluate_case sets both, but a result
+        # carrying labels and no flags would otherwise read as zero defects
+        # while the category breakdown showed the defect - two views of one run
+        # disagreeing, with the quieter one winning.
+        from ask_product_test.routing_failure_taxonomy import categorise
+        labelled = {categorise(l) for l in (result.get("failed") or [])}
         for defect in wanted:
-            if flags.get(defect):
+            if flags.get(defect) or defect in labelled:
                 counts[defect] += 1
                 offenders[defect].append({
                     "id": result.get("id"),
