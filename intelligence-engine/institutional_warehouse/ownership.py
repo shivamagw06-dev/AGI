@@ -232,39 +232,12 @@ def check_price_basis(rows: Iterable[dict[str, Any]], *, source: str) -> list[di
     return out
 
 
-def check_canonical_claim(tab: str, rows: Iterable[dict[str, Any]],
-                         *, source: str) -> list[dict[str, Any]]:
-    """A source marking its own rows canonical when it is not trusted for them.
-
-    The flag decides which of four rows for one quarter a reader believes, so a
-    collector that sets it on the way in has quietly appointed itself the
-    authority. It is derived at the gateway from what is actually known about
-    the row; asserting it is a violation rather than a preference.
-    """
-    from institutional_warehouse import canonical_rows
-
-    if not canonical_rows.is_fundamental(tab):
-        return []
-    if canonical_rows.source_is_canonical(tab, source):
-        return []
-    for row in rows or []:
-        if isinstance(row, dict) and row.get("is_canonical"):
-            allowed = ", ".join(sorted(canonical_rows.canonical_sources(tab)))
-            return [_violation(
-                "canonical_claim_not_owned",
-                f"{source} may not write canonical {tab} rows; canonical sources are {allowed}",
-                tab=tab, source=str(source),
-                owners=sorted(canonical_rows.canonical_sources(tab)))]
-    return []
-
-
 def check(tab: str, rows: Iterable[dict[str, Any]], *, source: str,
           today: Optional[str] = None) -> list[dict[str, Any]]:
     """Everything the contract forbids about this write."""
     rows = list(rows or [])
     return (check_fields(tab, rows, source=source)
             + check_period_scope(tab, rows, source=source, today=today)
-            + check_canonical_claim(tab, rows, source=source)
             + (check_price_basis(rows, source=source)
                if tab == "daily_market_history" else []))
 

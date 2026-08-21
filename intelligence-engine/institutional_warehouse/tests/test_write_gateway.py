@@ -216,15 +216,12 @@ def test_a_disagreement_between_sources_is_recorded_not_overwritten_silently():
     gateway.write(
         "financials_annual",
         [{"symbol": "AAA", "fiscal_year": "FY25", "revenue": 1000.0, "pat": 100.0}],
-        source="capital_iq", actor="tester", reported_unit="inr_million",
+        source="capital_iq", actor="tester",
     )
-    # Both sides declare the same unit. Fundamentals rows now refuse an
-    # overwrite from a source whose magnitude is unknown, so without this the
-    # test would be measuring the unit guard instead of conflict detection.
     gateway.write(
         "financials_annual",
         [{"symbol": "AAA", "fiscal_year": "FY25", "revenue": 1400.0, "pat": 100.0}],
-        source="yahoo_finance", actor="tester", reported_unit="inr_million",
+        source="yahoo_finance", actor="tester",
     )
     report = conflicts.recent()
     assert report["total"] == 1

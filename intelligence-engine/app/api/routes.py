@@ -21821,29 +21821,6 @@ def fundamentals_refresh_queue():
     return queue_state()
 
 
-@router.get("/fundamentals/reconciliation-inventory")
-async def fundamentals_reconciliation_inventory(
-    tab: str = "",
-    symbols: str = "",
-    max_groups: int = 20,
-):
-    """What the fundamentals tabs hold, grouped by period identity. Read-only.
-
-    Exists to be read before anything is retired. Four rows for one quarter is
-    not by itself a reason to drop three of them: an untrusted source is
-    sometimes the only holder of a metric, and `metrics_only_here` on each
-    losing row is the number that decides whether retiring it loses data.
-    """
-    from institutional_warehouse.reconciliation_inventory import inventory, inventory_all
-
-    wanted = [s.strip().upper() for s in symbols.split(",") if s.strip()] or None
-    if tab:
-        return await run_in_threadpool(inventory, tab, symbols=wanted,
-                                       max_groups_shown=int(max_groups))
-    return await run_in_threadpool(inventory_all, symbols=wanted,
-                                   max_groups_shown=int(max_groups))
-
-
 @router.post("/valuation-ratios/sweep")
 async def valuation_ratios_sweep(payload: dict[str, Any] = Body(default_factory=dict)):
     """Pull today's key ratios for the whole universe.

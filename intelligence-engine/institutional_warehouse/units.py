@@ -95,12 +95,6 @@ SOURCE_DEFAULT_UNIT: dict[str, str] = {
     "upstox": "crore",
     "capital_iq": "inr_million",
     "capiq": "inr_million",
-    # The workbook importer states INR million on every path it writes
-    # (capiq_workbook, capiq_normalization, capiq_background all declare it).
-    # Without the entry here its rows fall through to "assume canonical", which
-    # is indistinguishable from a source whose magnitude nobody knows.
-    "capital_iq_workbook": "inr_million",
-    "capiq_workbook": "inr_million",
 }
 
 METHOD_DECLARED = "declared"

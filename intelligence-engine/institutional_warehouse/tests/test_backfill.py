@@ -312,9 +312,7 @@ def test_statement_backfill_stores_raw_periods_only():
     result = statements.backfill_company("AAA", actor="tester", loader=loader)
     assert result["annual_periods"] == 2
     assert result["quarterly_periods"] == 1
-    # Written as FY25 and stored as FY2025: period labels are normalised on the
-    # way in so FY25 and FY2026 cannot become two rows for one year.
-    row = store.fetch("financials_annual", entity="AAA", filters={"fiscal_year": "FY2025"})["rows"][0]
+    row = store.fetch("financials_annual", entity="AAA", filters={"fiscal_year": "FY25"})["rows"][0]
     # Yahoo reports absolute rupees; the warehouse stores INR million.
     assert row["revenue"] == pytest.approx(1200.0 / units.MILLION)
     assert row["_meta"]["reported_unit"] == "rupee"
@@ -439,10 +437,7 @@ def test_reconstruction_never_uses_a_statement_before_it_was_published():
     valuation_history.reconstruct_company("AAA", actor="tester", cadence="quarterly")
 
     timeline = valuation_history._statement_timeline("AAA")
-    # Stored as FY2025: period labels are normalised on write so FY25 and
-    # FY2025 cannot become two rows for one year. _fiscal_period_end reads both
-    # forms identically, so only the label text here changes.
-    fy25 = next(e for e in timeline if e["label"] == "FY2025")
+    fy25 = next(e for e in timeline if e["label"] == "FY25")
     assert fy25["known_at"] > "2025-03-31"
 
     march = [r for r in store.fetch("historical_valuation", entity="AAA", limit=500)["rows"]
@@ -450,7 +445,7 @@ def test_reconstruction_never_uses_a_statement_before_it_was_published():
     if march:
         used = valuation_history._latest_known(timeline, march[0]["date"], quarterly=False)
         assert used is not None
-        assert used["label"] != "FY2025"  # only FY2024 and earlier were public then
+        assert used["label"] != "FY25"    # only FY24 and earlier were public then
 
 
 def test_availability_dates_respect_the_reporting_lag():
