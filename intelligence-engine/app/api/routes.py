@@ -21787,6 +21787,39 @@ async def valuation_ratios_ingest(payload: dict[str, Any] = Body(default_factory
     )
 
 
+@router.post("/fundamentals-refresh/detect")
+async def fundamentals_refresh_detect(payload: dict[str, Any] = Body(default_factory=dict)):
+    """Ask a set of companies whether they have reported since we last looked."""
+    from fundamentals_refresh.detector import detect
+    from valuation_ratios.sweep import ELIGIBLE_EQUITY, eligible
+
+    body = payload or {}
+    wanted = {str(s).upper() for s in (body.get("symbols") or [])}
+    universe = [c for c in eligible() if c.get("eligibility") == ELIGIBLE_EQUITY]
+    if wanted:
+        universe = [c for c in universe if c["symbol"] in wanted]
+    universe = universe[: int(body.get("max_companies") or 50)]
+    return await run_in_threadpool(detect, universe,
+                                   pause_seconds=body.get("pause_seconds"))
+
+
+@router.post("/fundamentals-refresh/run")
+async def fundamentals_refresh_run(payload: dict[str, Any] = Body(default_factory=dict)):
+    """Drain part of the refresh queue. Bounded; a long request is a lost one."""
+    from fundamentals_refresh.worker import run
+
+    body = payload or {}
+    return await run_in_threadpool(run, limit=int(body.get("limit") or 10),
+                                   pause_seconds=body.get("pause_seconds"))
+
+
+@router.get("/fundamentals-refresh/queue")
+def fundamentals_refresh_queue():
+    from fundamentals_refresh.queue import queue_state
+
+    return queue_state()
+
+
 @router.post("/valuation-ratios/sweep")
 async def valuation_ratios_sweep(payload: dict[str, Any] = Body(default_factory=dict)):
     """Pull today's key ratios for the whole universe.
