@@ -28,6 +28,28 @@ def _truthy(name: str, default: str = "false") -> bool:
     return str(os.environ.get(name, default)).strip().lower() in {"1", "true", "yes", "on"}
 
 
+def _profile() -> str:
+    return str(os.environ.get("AGI_GATHER_SIDECAR_PROFILE", "full")).strip().lower()
+
+
+def warehouse_only() -> bool:
+    """Whether this sidecar is restricted to warehouse collection.
+
+    Enforced here rather than in the shell that launches us. start_engine.sh
+    selected the narrow profile by exporting WAREHOUSE_* and leaving everything
+    else unset, on the belief that "every loop reads its own flag, so leaving
+    the rest unset leaves them off". That is not true of the two heaviest loops:
+    FIE_RUNTIME and HVIE_RUNTIME both default to *true*, so the narrow profile
+    silently started the forecast runtime and the historical-valuation runtime
+    anyway. On 21 August that left the engine at 7.1 GB of an 8 GB instance,
+    two runtimes and a 60-company backfill contending for one SQLite file, and
+    requests taking 35-95 seconds.
+
+    A profile that depends on a default staying false is not a profile.
+    """
+    return _profile() == "warehouse_only"
+
+
 def _apply_worker_defaults() -> None:
     """Ensure gather flags are on for this process (sidecar overrides parent false)."""
     os.environ["AGI_ROLE"] = "gather_worker"
@@ -202,21 +224,24 @@ def main() -> int:
         log.warning("gather_worker_warehouse_failed", extra={"error": str(exc)[:200]})
 
     # HVIE Continuous Runtime — bootstrap once, then maintain historical_valuation.
-    try:
-        from historical_valuation_intelligence.runtime import start_loop as start_hvie
-        from historical_valuation_intelligence.runtime import stop_loop as stop_hvie
+    if warehouse_only():
+        log.info("gather_worker_hvie_runtime_skipped", extra={"profile": _profile()})
+    else:
+        try:
+            from historical_valuation_intelligence.runtime import start_loop as start_hvie
+            from historical_valuation_intelligence.runtime import stop_loop as stop_hvie
 
-        boot_hvie = start_hvie()
-        if boot_hvie.get("enabled"):
-            stop_fns.append(stop_hvie)
-        log.info("gather_worker_hvie_runtime", extra=boot_hvie)
-    except Exception as exc:  # noqa: BLE001
-        log.warning("gather_worker_hvie_runtime_failed", extra={"error": str(exc)[:200]})
+            boot_hvie = start_hvie()
+            if boot_hvie.get("enabled"):
+                stop_fns.append(stop_hvie)
+            log.info("gather_worker_hvie_runtime", extra=boot_hvie)
+        except Exception as exc:  # noqa: BLE001
+            log.warning("gather_worker_hvie_runtime_failed", extra={"error": str(exc)[:200]})
 
     # Forecast Intelligence Runtime — materialise forecasts away from HTTP.
     # Client GET requests only read these stored results, so a slow company
     # build can never make Ask AGI or the health endpoint unresponsive.
-    if _truthy("FIE_RUNTIME", "true"):
+    if _truthy("FIE_RUNTIME", "true") and not warehouse_only():
         try:
             from forecast_intelligence_engine.runtime import start as start_fie
             from forecast_intelligence_engine.runtime import stop as stop_fie
@@ -230,16 +255,24 @@ def main() -> int:
 
     # Seed sector median history for MSI heatmap (pe/pb/ev_ebitda) — weekly job
     # alone left historical_sector_medians nearly empty in production.
-    try:
-        from historical_valuation_intelligence import persist as hvie_persist
+    #
+    # Had no flag of its own, so it ran under every profile including the narrow
+    # one: three universe-wide median passes at boot, in a sidecar meant to be
+    # doing warehouse collection and nothing else.
+    if warehouse_only():
+        log.info("gather_worker_hvie_sector_medians_skipped", extra={"profile": _profile()})
+    else:
+        try:
+            from historical_valuation_intelligence import persist as hvie_persist
 
-        median_boot = {
-            m: hvie_persist.persist_sector_medians(metric=m, actor="gather_worker")
-            for m in ("pe", "pb", "ev_ebitda")
-        }
-        log.info("gather_worker_hvie_sector_medians", extra={"metrics": list(median_boot)})
-    except Exception as exc:  # noqa: BLE001
-        log.warning("gather_worker_hvie_sector_medians_failed", extra={"error": str(exc)[:200]})
+            median_boot = {
+                m: hvie_persist.persist_sector_medians(metric=m, actor="gather_worker")
+                for m in ("pe", "pb", "ev_ebitda")
+            }
+            log.info("gather_worker_hvie_sector_medians", extra={"metrics": list(median_boot)})
+        except Exception as exc:  # noqa: BLE001
+            log.warning("gather_worker_hvie_sector_medians_failed",
+                        extra={"error": str(exc)[:200]})
 
     stopping = {"flag": False}
 

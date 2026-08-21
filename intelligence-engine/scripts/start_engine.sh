@@ -90,11 +90,22 @@ if [[ "${FULL_SIDECAR}" == "true" || "${FORECAST_SIDECAR}" == "true" ]]; then
     # 19 August incident above was exactly that: background work inside the HTTP
     # process holding SQLite locks while the engine served 12-second timeouts.
     #
-    # Every loop in gather_worker.py reads its own flag, so leaving the rest
-    # unset leaves them off. This turns on the warehouse refresh and the archive
-    # backfill and nothing else, with a small slice so the writer releases its
-    # lock often rather than holding it through a long batch.
+    # This comment used to claim "every loop in gather_worker.py reads its own
+    # flag, so leaving the rest unset leaves them off". That was wrong, and it
+    # was wrong about the two heaviest loops: FIE_RUNTIME and HVIE_RUNTIME both
+    # default to *true*. The narrow profile therefore started the forecast
+    # runtime, the historical-valuation runtime and three universe-wide sector
+    # median passes anyway. On 21 August that ran the engine at 7.1 GB of an
+    # 8 GB instance with two runtimes and a 60-company backfill contending for
+    # one SQLite file, and requests took 35-95 seconds.
+    #
+    # The profile is now enforced in gather_worker.py, where the work actually
+    # starts. These exports are the second lock on the same door: a flag that
+    # must stay false is set false rather than left to a default.
     if [[ "${SIDECAR_PROFILE}" == "warehouse_only" ]]; then
+      export FIE_RUNTIME=false
+      export HVIE_RUNTIME=false
+      export MIE_RUNTIME_ENABLED=false
       export WAREHOUSE_BACKFILL=true
       export WAREHOUSE_BACKFILL_COMPANIES="${WAREHOUSE_BACKFILL_COMPANIES:-8}"
       export WAREHOUSE_BACKFILL_DAYS="${WAREHOUSE_BACKFILL_DAYS:-20}"
