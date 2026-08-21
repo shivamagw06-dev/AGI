@@ -166,25 +166,14 @@ def _resolve_curated_alias(stem: str) -> tuple[Optional[str], str]:
     Only a verified, planner-allowed entity is accepted, so ambiguous stems
     still fall through to clarification and private names still refuse.
     """
-    try:
-        from entity_intelligence.production import analyse
-    except Exception:
-        return None, "entity_intelligence_unavailable"
-    try:
-        contract = analyse(stem) or {}
-    except Exception:
-        return None, "entity_intelligence_error"
-    if contract.get("state") != "verified_entity" or not contract.get("allow_planner"):
-        return None, f"entity_state:{contract.get('state')}"
-    entity = contract.get("entity") if isinstance(contract.get("entity"), dict) else {}
-    # Only curated market conventions (Reliance → Reliance Industries) are
-    # trusted here. A loose CapIQ keyword bind is exactly what turned
-    # "Apollo" into Apollo Micro Systems, so those are rejected.
-    if not str(entity.get("id") or "").startswith("ENT_"):
-        return None, "not_a_curated_alias"
-    ticker = contract.get("ticker")
+    from company_identity.core_aliases import exact_core_alias_ticker
+    from entity_intelligence.registry import ambiguity_candidates
+
+    if ambiguity_candidates(stem):
+        return None, "ambiguous_curated_alias"
+    ticker = exact_core_alias_ticker(stem)
     if not ticker:
-        return None, "entity_without_ticker"
+        return None, "not_a_curated_alias"
     from company_identity.service import identity_for
 
     return (str(ticker).upper(), "curated_alias") if identity_for(ticker).resolved else (None, "not_in_registry")

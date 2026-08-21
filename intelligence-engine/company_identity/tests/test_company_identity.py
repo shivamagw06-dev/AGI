@@ -115,6 +115,30 @@ def test_mention_resolution_never_binds_a_namesake():
     # Ambiguous or uncovered mentions must refuse rather than guess.
     for text in ("Apollo", "HDFC", "Tata", "Air India", "Explain enterprise value"):
         assert resolve_company_mention(text)[0] is None, text
+    # The same refusal must hold when a group stem is embedded in a question.
+    for text in (
+        "What sector is Tata in?",
+        "What is JSW's sector?",
+        "What is HDFC's industry?",
+        "What sector is Apollo in?",
+    ):
+        assert resolve_company_mention(text)[0] is None, text
+    assert resolve_company_mention("What sector is JSW Steel in?")[0] == "JSWSTEEL"
+    assert resolve_company_mention("What sector is Reliance in?")[0] == "RELIANCE"
+
+
+def test_metadata_router_refuses_ambiguous_group_stems():
+    if not _has_master():
+        pytest.skip("CapIQ master not seeded")
+    from company_identity.metadata_router import route
+
+    for question in (
+        "Tata sector", "JSW sector", "HDFC sector", "Apollo sector",
+        "Sun Pharma industry", "Air India sector",
+    ):
+        assert route(question) is None, question
+    assert route("JSW Steel sector")["ticker"] == "JSWSTEEL"
+    assert route("Reliance sector")["ticker"] == "RELIANCE"
 
 
 def test_guard_flags_cross_industry_leakage():

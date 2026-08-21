@@ -147,7 +147,12 @@ jobs:
           import glob, json, os, sys
           from ask_product_test.run_short_gate import combine_reports
 
-          files = sorted(glob.glob("combined-short-gate/*.json"))
+          files = sorted(
+              glob.glob(
+                  "combined-short-gate/**/short_gate_zero_defect_shard_*.json",
+                  recursive=True,
+              )
+          )
           try:
               reports = [json.load(open(path)) for path in files]
               combined = combine_reports(reports)
