@@ -10544,10 +10544,20 @@ def hedge_fund_lab_desk_snapshot():
 
 
 @router.post("/hedge-fund-lab/desk-snapshot/rebuild")
-async def hedge_fund_lab_desk_snapshot_rebuild():
+async def hedge_fund_lab_desk_snapshot_rebuild(
+    payload: dict[str, Any] = Body(default_factory=dict),
+):
     """Build a new universe now. Returns the build, not a queued acknowledgement."""
     from hedge_fund_lab import desk_snapshot
 
+    # Named maintenance action, not a diagnostic. Observability endpoints read
+    # recorded state; anything that clears a cache or forces a heavy rebuild has
+    # to be asked for explicitly - the alternative took the engine down once.
+    body = payload or {}
+    if body.get("force"):
+        names = body.get("names") or ["universe", "ratio_history"]
+        return await run_in_threadpool(
+            lambda: {"ok": True, "forced": {n: desk_snapshot.rebuild(n) for n in names}})
     return await run_in_threadpool(desk_snapshot.refresh_stale)
 
 
