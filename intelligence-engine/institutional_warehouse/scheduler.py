@@ -124,6 +124,10 @@ _BACKFILL_STATE: dict[str, Any] = {"slices": 0, "last_slice_at": None, "last_res
 def _backfill_slice() -> dict[str, Any]:
     from institutional_warehouse.backfill.engine import run
 
+    if within_market_hours():
+        _BACKFILL_STATE["last_skip_at"] = datetime.now(timezone.utc).isoformat(timespec="seconds")
+        return {"ok": True, "skipped": "market_hours"}
+
     companies = int(os.getenv("WAREHOUSE_BACKFILL_COMPANIES", "25") or 25)
     days = int(os.getenv("WAREHOUSE_BACKFILL_DAYS", "40") or 40)
     result = run(actor="backfill_scheduler", companies=companies, days=days)
@@ -136,6 +140,32 @@ def _backfill_slice() -> dict[str, Any]:
         "errors": result.get("errors"),
     }
     return result
+
+
+# NSE trades 09:15 to 15:30 IST. The backfill is held off during those hours,
+# plus a margin either side for the pre-open and the closing auction.
+#
+# Not a courtesy - a necessity. The desk rebuilds its cache every fifteen
+# minutes, and that rebuild takes about twelve seconds on an idle box. With a
+# backfill slice running it goes past sixty and the request times out. On
+# 21 August that was happening at 11:48 IST with the market open.
+#
+# The repair has all night. The client looking at a screen does not.
+MARKET_OPEN_IST = (9, 0)
+MARKET_CLOSE_IST = (15, 45)
+
+
+def within_market_hours(now: Optional[datetime] = None) -> bool:
+    """True while the exchange is trading, so heavy work can stand aside."""
+    if not _truthy("WAREHOUSE_BACKFILL_MARKET_GUARD", "true"):
+        return False
+    moment = (now or datetime.now(timezone.utc)).astimezone(IST)
+    if moment.weekday() >= 5:  # the exchange is shut at the weekend
+        return False
+    minutes = moment.hour * 60 + moment.minute
+    start = MARKET_OPEN_IST[0] * 60 + MARKET_OPEN_IST[1]
+    end = MARKET_CLOSE_IST[0] * 60 + MARKET_CLOSE_IST[1]
+    return start <= minutes < end
 
 
 def _backfill_loop(interval_seconds: float) -> None:
@@ -182,6 +212,8 @@ def start_backfill(*, boot_slice: Optional[bool] = None) -> dict[str, Any]:
     age = minutes_since_last_slice()
     if boot_slice is None:
         boot_slice = age is None or age >= minutes
+    if boot_slice and within_market_hours():
+        boot_slice = False
     if boot_slice:
         try:
             _backfill_slice()
