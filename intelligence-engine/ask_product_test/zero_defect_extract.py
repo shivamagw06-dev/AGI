@@ -143,6 +143,7 @@ def summarise(results: List[Dict[str, Any]], *,
                     "section": result.get("section"),
                     "question": result.get("question"),
                     "failed": result.get("failed"),
+                    "answer_excerpt": str(result.get("answer") or "")[:500],
                 })
 
     unconfinable = [d for d in wanted if DEFECT_SECTIONS.get(d) is None]
