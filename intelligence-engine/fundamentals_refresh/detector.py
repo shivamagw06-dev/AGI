@@ -39,8 +39,27 @@ _MONTHS = {m: i for i, m in enumerate(
      "jul", "aug", "sep", "oct", "nov", "dec"], start=1)}
 
 
+def _month_end(year: int, month: int) -> date:
+    """The day a period ends, expressed as the first of the next month.
+
+    A single convention throughout, so two labels for the same period compare
+    equal rather than one day apart.
+    """
+    return date(year + (month == 12), 1 if month == 12 else month + 1, 1)
+
+
 def parse_period(raw: Any) -> Optional[date]:
-    """'Mar 2026' or '2026-03-31' to a date. Anything else is not a period."""
+    """Any period label this warehouse actually contains, as a date.
+
+    There are four in the live data at once - "Mar 2026" from Upstox, "FY2026"
+    and "FY26Q4" from one importer, "Q1 FY27" from another. Compared as strings
+    none of them match each other, so the same quarter can be stored twice and a
+    refresh can fail to find what it just wrote. Compared as dates they are one
+    period, which is the only question worth asking.
+
+    Indian fiscal years end in March: FY2026 covers April 2025 to March 2026,
+    and its Q1 is the June quarter of 2025.
+    """
     text = str(raw or "").strip()
     if not text:
         return None
@@ -48,15 +67,36 @@ def parse_period(raw: Any) -> Optional[date]:
         return datetime.strptime(text[:10], "%Y-%m-%d").date()
     except ValueError:
         pass
-    match = re.match(r"^([A-Za-z]{3})[a-z]*\s+(\d{4})$", text)
-    if not match:
-        return None
-    month = _MONTHS.get(match.group(1).lower())
-    if not month:
-        return None
-    year = int(match.group(2))
-    # Month-end, since a reporting period ends when the month does.
-    return date(year + (month == 12), 1 if month == 12 else month + 1, 1)
+
+    month_year = re.match(r"^([A-Za-z]{3})[a-z]*\s+(\d{4})$", text)
+    if month_year:
+        month = _MONTHS.get(month_year.group(1).lower())
+        return _month_end(int(month_year.group(2)), month) if month else None
+
+    # FY2026Q3 / FY26Q3 / Q3 FY2026 / Q3FY26
+    quarter = (re.match(r"^FY\s*(\d{2,4})\s*Q([1-4])$", text, re.I)
+               or re.match(r"^Q([1-4])\s*FY\s*(\d{2,4})$", text, re.I))
+    if quarter:
+        groups = quarter.groups()
+        if text.upper().startswith("Q"):
+            qtr, year_raw = int(groups[0]), groups[1]
+        else:
+            year_raw, qtr = groups[0], int(groups[1])
+        year = int(year_raw)
+        if year < 100:
+            year += 2000
+        # Q1 of FY2026 is the June quarter of calendar 2025.
+        month = {1: 6, 2: 9, 3: 12, 4: 3}[qtr]
+        return _month_end(year if qtr == 4 else year - 1, month)
+
+    fiscal = re.match(r"^FY\s*(\d{2,4})$", text, re.I)
+    if fiscal:
+        year = int(fiscal.group(1))
+        if year < 100:
+            year += 2000
+        return _month_end(year, 3)
+
+    return None
 
 
 def validate_period(candidate: Any, *, held: Any = None,

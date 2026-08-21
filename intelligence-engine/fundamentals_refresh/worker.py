@@ -87,6 +87,25 @@ def coherent(results: dict[str, dict[str, Any]]) -> tuple[bool, list[str]]:
     return (not missing), missing
 
 
+def frequency_for(period: Any) -> str:
+    """Whether a period is a quarter or a year.
+
+    The trial found the detector watching quarterly periods while the worker
+    fetched yearly ones, so a company reporting Q1 triggered an annual refresh
+    that contained nothing new - and reported success for it. The frequency has
+    to follow the period that caused the refresh.
+    """
+    text = str(period or "").strip().lower()
+    if any(token in text for token in ("q1", "q2", "q3", "q4", "quarter")):
+        return "quarterly"
+    # Upstox labels quarters as a month and year - "Jun 2026" is Q1 of FY27.
+    # Only a March period is plausibly the full year for this market.
+    month = text.split()[0][:3] if text.split() else ""
+    if month in ("jun", "sep", "dec"):
+        return "quarterly"
+    return "yearly"
+
+
 def refresh_company(symbol: str, period: str, *, isin: str,
                     fetch: Optional[Callable[..., dict[str, Any]]] = None,
                     actor: str = "fundamentals_refresh",
@@ -97,12 +116,17 @@ def refresh_company(symbol: str, period: str, *, isin: str,
     from institutional_warehouse import store
     from upstox_fundamentals.ingest import ingest_statements
 
-    fetch = fetch or (lambda i, d: fetch_dataset(i, d))
+    fetch = fetch or (lambda i, d, tp="yearly": fetch_dataset(i, d, time_period=tp))
     pause = safe_pause(pause_seconds)
+    frequency = frequency_for(period)
 
     results: dict[str, dict[str, Any]] = {}
     for dataset in DATASETS:
-        results[dataset] = fetch(isin, dataset)
+        try:
+            results[dataset] = fetch(isin, dataset, frequency)
+        except TypeError:
+            # Test doubles that take only (isin, dataset).
+            results[dataset] = fetch(isin, dataset)
         if pause:
             time.sleep(pause)
 
@@ -138,10 +162,45 @@ def refresh_company(symbol: str, period: str, *, isin: str,
         return {"ok": False, "error": f"periods_lost:{','.join(sorted(lost))}",
                 "periods_preserved": len(held_periods & after_periods)}
 
+    # Success has to mean the period that caused the refresh actually landed.
+    # The trial produced six SUCCESS entries that wrote nothing, because the
+    # frequency was wrong - and a queue reporting success for a no-op is worse
+    # than one reporting failure, since nobody looks again.
+    landed = _period_present(symbol, period, frequency)
+    if not landed:
+        return {"ok": False, "error": f"period_not_written:{period}",
+                "frequency": frequency,
+                "datasets": [d for d in DATASETS if results[d].get("ok")],
+                "periods_preserved": len(held_periods)}
+
     return {"ok": True, "datasets": [d for d in DATASETS if results[d].get("ok")],
+            "frequency": frequency,
             "periods_written": len(after_periods - held_periods) + len(rows),
             "periods_preserved": len(held_periods),
             "written": written if isinstance(written, dict) else None}
+
+
+def _period_present(symbol: str, period: str, frequency: str) -> bool:
+    """Whether the refreshed period is now stored, whatever it is labelled.
+
+    Labels are not comparable as strings: the same quarter is stored as
+    "FY27Q1" by one source and "Q1 FY27" by another. Compared as dates, they
+    are the same quarter - which is the only question being asked.
+    """
+    from fundamentals_refresh.detector import parse_period
+    from institutional_warehouse import store
+
+    tab = "financials_quarterly" if frequency == "quarterly" else "financials_annual"
+    field = "fiscal_period" if frequency == "quarterly" else "fiscal_year"
+    target = parse_period(period)
+    if target is None:
+        return False
+    rows = store.fetch(tab, filters={"symbol": symbol}, limit=500).get("rows") or []
+    for row in rows:
+        stored = parse_period(row.get(field))
+        if stored and abs((stored - target).days) <= 45:
+            return True
+    return False
 
 
 def _statement_rows(symbol: str, isin: str, results: dict[str, dict[str, Any]]

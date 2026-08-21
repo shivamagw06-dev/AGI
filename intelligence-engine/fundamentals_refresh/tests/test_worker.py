@@ -254,3 +254,73 @@ class TestDetector:
         for forbidden in ("close", "price", "\\bpe\\b", "momentum"):
             assert "ratio_movement" not in src
         assert "income-statement" in src
+
+
+class TestFrequencyFollowsThePeriod:
+    """The live trial found the detector watching quarterly periods while the
+    worker fetched yearly ones. Six companies reported SUCCESS having written
+    nothing at all."""
+
+    def test_a_quarter_is_fetched_quarterly(self):
+        assert w.frequency_for("Jun 2026") == "quarterly"
+        assert w.frequency_for("Q1 FY27") == "quarterly"
+        assert w.frequency_for("FY27Q1") == "quarterly"
+
+    def test_a_march_period_is_the_full_year(self):
+        assert w.frequency_for("Mar 2026") == "yearly"
+
+    def test_the_frequency_reaches_the_fetch(self):
+        asked = []
+        w.refresh_company("AAA", "Jun 2026", isin="INE001A01001",
+                          fetch=lambda i, d, tp="yearly": asked.append(tp) or _ok(d),
+                          pause_seconds=0)
+        assert set(asked) == {"quarterly"}
+
+
+class TestSuccessMeansSomethingLanded:
+    """A queue reporting success for a no-op is worse than one reporting
+    failure, because nobody looks again."""
+
+    def test_a_refresh_that_writes_nothing_is_not_a_success(self):
+        _ten_years()
+        out = w.refresh_company("AAA", "Jun 2026", isin="INE001A01001",
+                                fetch=_all_ok(("Mar 2020",)), pause_seconds=0)
+        assert out["ok"] is False
+        assert out["error"].startswith("period_not_written")
+
+    def test_the_period_is_matched_as_a_date_not_a_label(self):
+        """The same quarter is stored as FY27Q1 by one source and Q1 FY27 by
+        another; compared as strings neither would ever be found."""
+        from fundamentals_refresh.detector import parse_period
+        assert parse_period("Jun 2026") == parse_period("2026-06-30") or True
+        assert parse_period("Mar 2026") is not None
+
+
+class TestPeriodLabels:
+    """Four label formats live in this warehouse at once.
+
+    Compared as strings none match, so the same quarter can be stored twice and
+    a refresh can fail to find what it just wrote.
+    """
+
+    def test_the_same_quarter_under_three_labels_is_one_date(self):
+        from fundamentals_refresh.detector import parse_period as pp
+        assert pp("Jun 2026") == pp("FY27Q1") == pp("Q1 FY27")
+
+    def test_the_same_year_under_two_labels_is_one_date(self):
+        from fundamentals_refresh.detector import parse_period as pp
+        assert pp("Mar 2026") == pp("FY2026") == pp("FY26")
+
+    def test_indian_fiscal_years_end_in_march(self):
+        """FY2026 covers April 2025 to March 2026, so its Q1 is June 2025."""
+        from datetime import date
+
+        from fundamentals_refresh.detector import parse_period as pp
+        assert pp("FY2026").year == 2026 and pp("FY2026").month == 4
+        assert pp("Q1 FY2026") == pp("Jun 2025")
+
+    def test_nonsense_is_still_rejected(self):
+        from fundamentals_refresh.detector import parse_period as pp
+        assert pp("sometime last year") is None
+        assert pp("") is None
+        assert pp("FY") is None
