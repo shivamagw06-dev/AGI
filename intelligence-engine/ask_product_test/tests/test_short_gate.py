@@ -54,6 +54,23 @@ def test_a_missing_namesake_case_is_infrastructure_not_partial_coverage():
         sg.normalise_namesake_results(rows)
 
 
+def test_namesake_loader_reads_the_suite_that_contains_fallthrough_cases(monkeypatch):
+    from ask_product_test import company_metadata_routing_acceptance_v1 as suite
+
+    rows = [{
+        "kind": "fallthrough",
+        "question": question,
+        "passed": True,
+        "failed": [],
+    } for question in suite.FALLTHROUGH_CASES]
+    monkeypatch.setattr(suite, "evaluate", lambda: {"results": rows})
+
+    loaded = sg.load_namesake_results()
+
+    assert len(loaded) == len(suite.FALLTHROUGH_CASES) == 6
+    assert [row["id"] for row in loaded] == [f"NAMESAKE-{i:03d}" for i in range(1, 7)]
+
+
 def test_a_missing_stub_is_infrastructure_not_not_run(monkeypatch):
     """NOT_RUN belongs to optional live evaluation, never to a required lane."""
     monkeypatch.setenv("ASK_TEST_MODE", "inprocess")

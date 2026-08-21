@@ -175,10 +175,16 @@ def normalise_namesake_results(rows: List[Dict[str, Any]]) -> List[Dict[str, Any
 
 
 def load_namesake_results() -> List[Dict[str, Any]]:
-    """Run the routing suite and extract every ambiguous-name fallthrough case."""
-    from ask_product_test.company_metadata_routing_acceptance_v1 import evaluate_pipeline
+    """Run the routing suite and extract every ambiguous-name fallthrough case.
 
-    return normalise_namesake_results(evaluate_pipeline())
+    ``evaluate_pipeline`` covers only twelve positive metadata questions. The
+    complete fallthrough universe lives in ``evaluate``; using the former makes
+    all six namesake cases disappear and must be treated as infrastructure.
+    """
+    from ask_product_test.company_metadata_routing_acceptance_v1 import evaluate
+
+    report = evaluate()
+    return normalise_namesake_results(list(report.get("results") or []))
 
 
 def _load_stub():
