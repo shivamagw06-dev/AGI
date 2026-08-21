@@ -21865,6 +21865,34 @@ async def fundamentals_reconciliation_inventory(
                                    simulate_unit_provenance=bool(simulate_provenance))
 
 
+@router.get(
+    "/fundamentals/reconciliation-compare",
+    dependencies=[Depends(require_token)],
+)
+async def fundamentals_reconciliation_compare(
+    tab: str = "financials_annual",
+    symbols: str = Query(..., min_length=1),
+    max_groups: int = Query(1, ge=0, le=5),
+):
+    """Before and after the provenance simulation over bounded paired reads.
+
+    Writes nothing. Each company is read once and folded into both tallies, so
+    the difference is the effect of the change and not of the clock: schedulers
+    write these tabs every few minutes, and two separate inventory runs do not
+    describe the same rows.
+    """
+    from institutional_warehouse.reconciliation_inventory import compare
+
+    wanted = list(dict.fromkeys(
+        s.strip().upper() for s in symbols.split(",") if s.strip()))
+    if not wanted:
+        raise HTTPException(status_code=400, detail="At least one symbol is required")
+    if len(wanted) > 25:
+        raise HTTPException(status_code=400, detail="At most 25 symbols per request")
+    return await run_in_threadpool(compare, tab, symbols=wanted,
+                                   max_groups_shown=int(max_groups))
+
+
 @router.get("/fundamentals/unit-provenance-plan")
 async def fundamentals_unit_provenance_plan(tab: str = "", sample: int = 10):
     """What the Capital IQ provenance backfill would change. Writes nothing.
