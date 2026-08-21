@@ -693,21 +693,58 @@ def derived_forward_pe(price: Optional[float], eps: Optional[float]) -> Optional
     return round(price / eps, 2)
 
 
-def _history_index() -> dict[str, dict[str, dict[str, Any]]]:
+def _served_stale(cache: dict[str, Any], lock: Any, ttl: float,
+                  builder: Any, label: str) -> Any:
+    """Answer from the cache, refresh behind the answer.
+
+    A heavy cache that rebuilds on whichever request arrives after it expires
+    makes that client pay for the whole scan while the rest queue behind the
+    lock. `sector_ratio_history` is 139,639 rows and that turnover measured 39
+    seconds in production.
+
+    An expired answer is still an answer. It is served, the rebuild runs on its
+    own thread, and the only request that waits is one with nothing to serve.
+    """
+    import threading
     import time
 
-    now = time.time()
-    cached = _HISTORY_CACHE.get("rows")
-    if cached is not None and (now - float(_HISTORY_CACHE.get("at") or 0.0)) < _HISTORY_TTL_SEC:
+    cached = cache.get("rows")
+    fresh = cached is not None and (time.time() - float(cache.get("at") or 0.0)) < ttl
+
+    if cached is not None and not fresh and not cache.get("building"):
+        cache["building"] = True
+
+        def _refresh() -> None:
+            try:
+                rows = builder()
+                if rows:
+                    cache["rows"] = rows
+                    cache["at"] = time.time()
+            except Exception:
+                # The previous value stays. A failed refresh must not empty a
+                # cache that was serving good answers a moment earlier.
+                pass
+            finally:
+                cache["building"] = False
+
+        threading.Thread(target=_refresh, name=f"cache-refresh-{label}", daemon=True).start()
+
+    if cached is not None:
         return cached
-    with _HISTORY_LOCK:
-        cached = _HISTORY_CACHE.get("rows")
-        if cached is not None and (time.time() - float(_HISTORY_CACHE.get("at") or 0.0)) < _HISTORY_TTL_SEC:
+
+    with lock:
+        cached = cache.get("rows")
+        if cached is not None:
             return cached
-        rows = _valuation_history_by_symbol()
-        _HISTORY_CACHE["at"] = time.time()
-        _HISTORY_CACHE["rows"] = rows
+        rows = builder()
+        cache["at"] = time.time()
+        cache["rows"] = rows
         return rows
+
+
+def _history_index() -> dict[str, dict[str, dict[str, Any]]]:
+    return _served_stale(_HISTORY_CACHE, _HISTORY_LOCK, _HISTORY_TTL_SEC,
+                         _valuation_history_by_symbol, "history")
 
 
 def reset_history_cache() -> None:
