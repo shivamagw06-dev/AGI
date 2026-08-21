@@ -129,13 +129,13 @@ class TestCurrentSourcesCannotWriteHistory:
         """Upstox key ratios carry no time dimension. A row of them dated to an
         old fiscal year is not stale data, it is invented data."""
         bad = ownership.check_period_scope(
-            "ratio_snapshots", [{"snapshot_date": "2019-03-31", "pe": 20.0}],
+            "valuation_ratios", [{"reported_date": "2019-03-31", "pe": 20.0}],
             source="upstox_key_ratios", today="2026-08-21")
         assert bad and bad[0]["rule"] == "current_source_writing_history"
 
     def test_today_is_fine(self):
         assert ownership.check_period_scope(
-            "ratio_snapshots", [{"snapshot_date": "2026-08-21", "pe": 20.0}],
+            "valuation_ratios", [{"reported_date": "2026-08-21", "pe": 20.0}],
             source="upstox_key_ratios", today="2026-08-21") == []
 
     def test_a_deep_source_may_write_whatever_period_it_likes(self):
@@ -195,3 +195,28 @@ class TestFailedRefreshKeepsTheValue:
                       [{"symbol": "AAA", "period": "FY2025", "basis": "annual", "roe": 19.9}],
                       source="formula_engine", actor="t", reason="revision")
         assert store.all_rows("historical_ratios", limit=10)[0]["roe"] == 19.9
+
+
+class TestCurrentOnlyIsScopedToTheEndpoint:
+    """Upstox is snapshot-only for ratios and period-bearing for statements.
+
+    Marking the vendor current-only blocked writing FY2023 statements - which is
+    precisely what the statements refresh exists to do.
+    """
+
+    def test_upstox_cannot_date_a_key_ratio_to_an_old_year(self):
+        bad = ownership.check_period_scope(
+            "valuation_ratios", [{"reported_date": "2019-03-31"}],
+            source="upstox", today="2026-08-21")
+        assert bad and bad[0]["rule"] == "current_source_writing_history"
+
+    def test_upstox_may_write_an_old_annual_statement(self):
+        """Four annual periods is what the endpoint returns; refreshing FY2023
+        is the feature, not a violation."""
+        assert ownership.check_period_scope(
+            "financials_annual", [{"period_end": "2023-03-31"}],
+            source="upstox", today="2026-08-21") == []
+
+    def test_a_source_with_no_scope_is_current_only_everywhere(self):
+        assert ownership.is_current_only("upstox_key_ratios", "valuation_ratios")
+        assert not ownership.is_current_only("capital_iq_workbook", "financials_annual")

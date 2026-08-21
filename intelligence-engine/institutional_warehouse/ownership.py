@@ -146,14 +146,36 @@ def check_fields(tab: str, rows: Iterable[dict[str, Any]], *, source: str) -> li
     return out
 
 
+# Where a source is snapshot-only, which is a fact about the endpoint rather
+# than the vendor.
+#
+# Upstox is both things at once. Its Key Ratios endpoint returns six values with
+# no time dimension, so a row of them dated to an old fiscal year is invented.
+# Its statement endpoints return four real annual periods, and a refresh of
+# FY2023 is exactly what they are for. Marking the vendor current-only would
+# have blocked the statements project outright.
+CURRENT_ONLY_TABS: dict[str, frozenset[str]] = {
+    "upstox": frozenset({"valuation_ratios"}),
+    "upstox_key_ratios": frozenset({"valuation_ratios"}),
+}
+
+
+def is_current_only(source: Any, tab: str) -> bool:
+    key = str(source or "").strip().lower()
+    if not has_role(key, CURRENT_ONLY):
+        return False
+    scoped = CURRENT_ONLY_TABS.get(key)
+    return True if scoped is None else tab in scoped
+
+
 def check_period_scope(tab: str, rows: Iterable[dict[str, Any]], *, source: str,
                        today: Optional[str] = None) -> list[dict[str, Any]]:
     """A source that only knows about the present writing about the past.
 
-    Upstox's key ratios carry no time dimension - they are today's values. A row
-    of them dated to an old fiscal year is not stale data, it is invented data.
+    Scoped to the endpoint, not the vendor: Upstox key ratios carry no time
+    dimension, while Upstox statements carry four real annual periods.
     """
-    if not has_role(source, CURRENT_ONLY):
+    if not is_current_only(source, tab):
         return []
     from datetime import date, datetime, timedelta
 
@@ -164,7 +186,10 @@ def check_period_scope(tab: str, rows: Iterable[dict[str, Any]], *, source: str,
     for row in rows or []:
         if not isinstance(row, dict):
             continue
-        for key in ("snapshot_date", "date", "as_of", "period_end"):
+        # reported_date is what valuation_ratios actually calls its date column.
+        # Without it the check silently never applied to the one tab it was
+        # written for.
+        for key in ("snapshot_date", "reported_date", "date", "as_of", "period_end"):
             raw = str(row.get(key) or "").strip()
             if not raw:
                 continue
