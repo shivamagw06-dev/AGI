@@ -55,8 +55,19 @@ def implausible_fields(row: dict[str, Any]) -> list[str]:
     return out
 
 
+def source_unit_is_documented(source: Any) -> bool:
+    """Whether this feed's unit is established rather than assumed.
+
+    A feed absent from SOURCE_DEFAULT_UNIT is not a feed whose unit is INR
+    million. It is a feed whose unit nobody has established, and resolve_unit
+    currently treats the two as the same thing.
+    """
+    return units.SOURCE_DEFAULT_UNIT.get(str(source or "").strip().lower()) is not None
+
+
 def inspect(tab_id: str, rows: Sequence[dict[str, Any]], *, source: str,
-            mode: Optional[str] = None) -> dict[str, Any]:
+            mode: Optional[str] = None,
+            fail_closed_on_unknown_unit: bool = False) -> dict[str, Any]:
     """Classify a batch before it is stored. Never mutates a row.
 
     Returns the rows to keep, the rows to isolate, and why. In MODE_REPORT
@@ -74,8 +85,23 @@ def inspect(tab_id: str, rows: Sequence[dict[str, Any]], *, source: str,
 
     for row in rows:
         bad = implausible_fields(row)
-        if not bad:
+        if not bad and not (fail_closed_on_unknown_unit and documented is None):
             keep.append(row)
+            continue
+        if not bad:
+            # Fails closed: the unit is unknown, so the row is held even though
+            # its magnitude looks ordinary. Investigated for
+            # earnings_intelligence_p21 and financial_connector, and neither can
+            # be given a source-wide default - both are non-uniform in the code
+            # and in the stored data (docs/source-unit-evidence.md). Assuming
+            # canonical is what stored rupees in a millions column; assuming
+            # rupees would corrupt the minority already in millions.
+            findings.append({
+                "symbol": row.get("symbol"), "fields": [], "source": source,
+                "source_unit_documented": False, "documented_unit": None,
+                "reason": "source has no documented unit; not assumed canonical",
+            })
+            (isolate if mode == MODE_ISOLATE else keep).append(row)
             continue
         finding = {
             "symbol": row.get("symbol"),

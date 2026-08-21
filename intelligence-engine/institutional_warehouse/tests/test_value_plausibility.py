@@ -133,3 +133,42 @@ def test_the_guard_notes_when_the_source_does_have_a_documented_unit():
                               mode=scale_guard.MODE_ISOLATE)
     assert out["findings"][0]["source_unit_documented"] is True
     assert out["findings"][0]["documented_unit"] == "inr_million"
+
+
+# --- failing closed on an undocumented unit -------------------------------
+
+def test_an_undocumented_source_is_not_treated_as_canonical():
+    """The defect, stated as a rule.
+
+    earnings_intelligence_p21 and financial_connector have no documented unit.
+    resolve_unit treats that as "already INR million", which is how raw rupees
+    reached a millions column. Neither can be given a default instead: both are
+    non-uniform, so a default would corrupt the rows already in millions.
+    """
+    assert scale_guard.source_unit_is_documented("earnings_intelligence_p21") is False
+    assert scale_guard.source_unit_is_documented("financial_connector") is False
+    assert scale_guard.source_unit_is_documented("capital_iq_workbook") is True
+
+
+def test_fail_closed_holds_an_ordinary_looking_row_from_an_unknown_source():
+    rows = [{"symbol": "ACME", "revenue": 5000.0}]
+    out = scale_guard.inspect(TAB, rows, source="financial_connector",
+                              mode=scale_guard.MODE_ISOLATE,
+                              fail_closed_on_unknown_unit=True)
+    assert len(out["isolate"]) == 1
+    assert out["findings"][0]["reason"].startswith("source has no documented unit")
+
+
+def test_fail_closed_leaves_documented_sources_alone():
+    rows = [{"symbol": "ACME", "revenue": 5000.0}]
+    out = scale_guard.inspect(TAB, rows, source="capital_iq_workbook",
+                              mode=scale_guard.MODE_ISOLATE,
+                              fail_closed_on_unknown_unit=True)
+    assert out["keep"] == rows and out["isolate"] == []
+
+
+def test_fail_closed_is_opt_in_and_off_by_default():
+    rows = [{"symbol": "ACME", "revenue": 5000.0}]
+    out = scale_guard.inspect(TAB, rows, source="financial_connector",
+                              mode=scale_guard.MODE_ISOLATE)
+    assert out["keep"] == rows and out["isolate"] == []
