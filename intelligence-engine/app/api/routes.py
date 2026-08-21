@@ -21626,7 +21626,8 @@ async def valuation_engine_terminal_company_snapshot(
     """Compute one company pack and persist it to Supabase for Node reads."""
     from valuation_engine.snapshot_store import compute_and_persist
 
-    return compute_and_persist(
+    return await run_in_threadpool(
+        compute_and_persist,
         symbol,
         window=window,
         peer_limit=max(1, min(int(peer_limit or 12), 40)),
