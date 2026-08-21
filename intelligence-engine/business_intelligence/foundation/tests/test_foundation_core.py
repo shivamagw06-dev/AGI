@@ -114,3 +114,18 @@ def test_analyse_business_model_for_listed_company():
         "unknown",
         "conglomerate",
     }
+
+
+def test_business_model_without_identity_or_evidence_fails_closed():
+    from business_intelligence.foundation.engines import analyse_business_model
+
+    out = analyse_business_model({
+        "question": "What is JSW's sector?",
+        "company": {},
+        "industry_key": "unknown",
+    })
+    explanation = out["how_it_makes_money"]
+    assert "No verified" in explanation
+    assert "Clarification is required" in explanation
+    assert "operates a unknown" not in explanation
+    assert out["confidence"] == 0.0
