@@ -36,7 +36,18 @@ FILENAME = "desk_universe.json"
 # How old a snapshot may get before a rebuild is triggered. The rebuild happens
 # behind the request, so this is not a latency budget - it is how stale the desk
 # is allowed to be, which is a different question.
-REFRESH_AFTER_SEC = 300.0
+#
+# It must also stay well clear of how long a build takes. The first production
+# build was 210 seconds against a 300 second interval, which would have left the
+# engine building for two thirds of every cycle - the same continuous background
+# load that took the site down earlier that day, arriving by a different route.
+#
+# Thirty minutes gives a duty cycle near one in nine. The universe is company
+# fundamentals and a closing price; it does not change every five minutes.
+REFRESH_AFTER_SEC = float(os.getenv("DESK_SNAPSHOT_REFRESH_SEC", "1800") or 1800)
+
+# A build slower than this is worth knowing about even when it succeeds.
+SLOW_BUILD_SEC = 60.0
 
 # When a build fails, how long before trying again. Long enough that a broken
 # warehouse is not hammered, short enough to recover without a deploy.
@@ -147,6 +158,8 @@ def status() -> dict[str, Any]:
         "last_error": _STATE.get("last_error"),
         "building_now": _BUILDING.is_set(),
         "persisted": snapshot_path().exists(),
+        "refresh_after_seconds": REFRESH_AFTER_SEC,
+        "slow_build": bool((_STATE.get("build_seconds") or 0) > SLOW_BUILD_SEC),
     }
 
 
@@ -200,7 +213,7 @@ def rebuild(builder: Callable[[], list[dict[str, Any]]], *, source: str = "wareh
             _STATE["builds"] = int(_STATE.get("builds") or 0) + 1
         persisted = save(rows, source=source, build_seconds=took)
         return {"ok": True, "rows": len(rows), "build_seconds": round(took, 2),
-                "persisted": persisted}
+                "persisted": persisted, "slow": took > SLOW_BUILD_SEC}
     except Exception as exc:
         _STATE["failures"] = int(_STATE.get("failures") or 0) + 1
         _STATE["last_error"] = str(exc)[:300]

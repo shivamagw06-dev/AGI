@@ -153,3 +153,25 @@ class TestReporting:
 
     def test_an_empty_state_is_reported_as_empty(self):
         assert ds.status()["freshness"] == ds.EMPTY
+
+
+class TestDutyCycle:
+    """The refresh interval must stay clear of how long a build takes.
+
+    The first production build was 210 seconds against a 300 second interval,
+    which would have left the engine building two thirds of every cycle - the
+    same continuous background load that took the site down that morning,
+    arriving by a different route.
+    """
+
+    def test_the_interval_leaves_room_for_a_slow_build(self):
+        assert ds.REFRESH_AFTER_SEC >= 900, "a 210s build needs far more than 300s"
+
+    def test_a_slow_build_is_flagged_even_when_it_succeeds(self, monkeypatch):
+        monkeypatch.setattr(ds, "SLOW_BUILD_SEC", 0.0)
+        out = ds.rebuild(lambda: _rows())
+        assert out["ok"] is True and out["slow"] is True
+        assert ds.status()["slow_build"] is True
+
+    def test_the_interval_is_configurable(self):
+        assert ds.status()["refresh_after_seconds"] == ds.REFRESH_AFTER_SEC
