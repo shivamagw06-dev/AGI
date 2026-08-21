@@ -231,7 +231,9 @@ def test_compare_reads_each_row_once_for_both_halves(monkeypatch):
     monkeypatch.setattr(_db, "query", counting_query)
     out = inv.compare(TAB)
 
-    assert out["ok"] is True and out["consistent_read"] is True
+    assert out["ok"] is True and out["before_after_row_consistent"] is True
+    assert out["comparison_basis"] == "same_rows_per_symbol"
+    assert out["whole_table_snapshot"] is False
     assert len(row_reads) == len(set(row_reads)), "each company must be read exactly once"
 
 

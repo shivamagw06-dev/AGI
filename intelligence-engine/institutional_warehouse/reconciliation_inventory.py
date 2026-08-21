@@ -366,7 +366,7 @@ def _finalise(tab_id: str, st: dict[str, Any], simulate: bool) -> dict[str, Any]
 
 def compare(tab_id: str, *, symbols: Optional[Iterable[str]] = None,
             max_groups_shown: int = 1) -> dict[str, Any]:
-    """Before and after the provenance backfill, over one consistent read.
+    """Before and after the provenance backfill over identical paired rows.
 
     The two halves of a before/after have to describe the same rows. Running the
     inventory twice against a live warehouse does not: schedulers write
@@ -377,9 +377,11 @@ def compare(tab_id: str, *, symbols: Optional[Iterable[str]] = None,
     like 9,170 rows of source drift.
 
     Each company is read once and folded into both tallies, so every row counted
-    in "after" is the same row counted in "before". Reading the whole tab into
-    one snapshot would be simpler and is what the per-company streaming in
-    inventory() exists to avoid.
+    in "after" is the same row counted in "before". This is deliberately not
+    called a database snapshot: companies are streamed one at a time, so a live
+    writer can change a company that has not yet been read. That does not alter
+    the before/after delta for any row, but it means the aggregate is not a
+    point-in-time picture of the whole table.
     """
     tab = find_tab(tab_id)
     if not tab or not canonical_rows.is_fundamental(tab_id):
@@ -411,7 +413,9 @@ def compare(tab_id: str, *, symbols: Optional[Iterable[str]] = None,
              if isinstance(v, int)}
     return {
         "ok": True, "dry_run": True, "tab": tab_id,
-        "consistent_read": True,
+        "comparison_basis": "same_rows_per_symbol",
+        "before_after_row_consistent": True,
+        "whole_table_snapshot": False,
         "rows_compared": before["totals"]["rows"],
         "before": before["totals"], "after": after["totals"], "delta": delta,
         "before_by_source": before["by_source"], "after_by_source": after["by_source"],
