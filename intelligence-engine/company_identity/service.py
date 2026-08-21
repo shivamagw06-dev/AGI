@@ -226,11 +226,31 @@ def resolve_company_mention(text: Optional[str]) -> tuple[Optional[str], str]:
     # Single-token canonical names, guarded against ordinary vocabulary and
     # against group names whose one-word form is only a stripped suffix.
     short_index = _short_name_index()
-    single = [
-        short_index[tok]
-        for tok in tokens
-        if len(tok) >= 3 and tok not in _MENTION_STOPWORDS and tok in short_index
-    ]
+    from company_identity.core_aliases import exact_core_alias_ticker
+    from entity_intelligence.registry import AMBIGUOUS
+
+    single: list[str] = []
+    for tok in tokens:
+        if len(tok) < 3 or tok in _MENTION_STOPWORDS:
+            continue
+        # Ambiguity must hold inside a sentence exactly as it does for a bare
+        # mention. Previously bare "Tata" refused, while "What sector is Tata
+        # in?" reached this later index and could bind one Tata company.
+        if AMBIGUOUS.get(tok):
+            continue
+        curated = exact_core_alias_ticker(tok)
+        if curated:
+            single.append(curated)
+            continue
+        prefix = f"{tok} "
+        prefix_tickers = {
+            ticker for name, ticker in index.items()
+            if name == tok or name.startswith(prefix)
+        }
+        if len(prefix_tickers) > 1:
+            continue
+        if tok in short_index:
+            single.append(short_index[tok])
     if len(set(single)) == 1:
         return single[0], "single_token_name"
     if len(set(single)) > 1:
