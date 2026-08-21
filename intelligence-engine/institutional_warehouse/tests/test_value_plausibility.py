@@ -83,6 +83,24 @@ def test_the_census_writes_nothing():
     assert db.query(f"SELECT * FROM {db.physical_table(TAB)}") == before
 
 
+def test_a_bounded_symbol_census_does_not_enumerate_the_whole_tab(monkeypatch):
+    _seed([{"symbol": "ACME", "revenue": 9.5e9},
+           {"symbol": "OTHER", "revenue": 8.1e9}])
+    real_query = db.query
+    queries = []
+
+    def capture(sql, params=()):
+        queries.append((sql, params))
+        return real_query(sql, params)
+
+    monkeypatch.setattr(db, "query", capture)
+    out = vp.census(TAB, symbols=["ACME"])
+
+    assert out["total_rows"] == 1
+    assert not any("SELECT DISTINCT symbol" in sql for sql, _ in queries)
+    assert all(params == ("ACME",) for sql, params in queries if "SELECT *" in sql)
+
+
 def test_the_manifest_names_every_suspect_row():
     _seed([{"revenue": 9.5e9}, {"revenue": 8.1e9, "fy": "FY2023"}, {"revenue": 500.0,
                                                                     "fy": "FY2022"}])

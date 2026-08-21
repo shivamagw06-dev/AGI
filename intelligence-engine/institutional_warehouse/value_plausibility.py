@@ -118,9 +118,17 @@ def census(tab_id: str, *, symbols: Optional[Iterable[str]] = None,
     period_field = _PERIOD_FIELD[tab_id]
     wanted = {str(s).upper() for s in symbols} if symbols else None
 
-    all_symbols = [str(r.get("symbol") or "") for r in db.query(
-        f"SELECT DISTINCT symbol FROM {table} WHERE sys_published = 1 ORDER BY symbol")]
-    all_symbols = [s for s in all_symbols if s and (wanted is None or s.upper() in wanted)]
+    if wanted is not None:
+        # The API caps this set before calling us. Do not enumerate the whole
+        # table and filter afterward: that would make a bounded response hide an
+        # unbounded database scan.
+        all_symbols = sorted(s for s in wanted if s)
+    else:
+        # Offline census path. This is intentionally unrestricted and is not
+        # exposed by the HTTP endpoint.
+        all_symbols = [str(r.get("symbol") or "") for r in db.query(
+            f"SELECT DISTINCT symbol FROM {table} WHERE sys_published = 1 ORDER BY symbol")]
+        all_symbols = [s for s in all_symbols if s]
 
     ratio_hits: dict[str, set[str]] = {}
     magnitude_hits: dict[str, set[str]] = {}

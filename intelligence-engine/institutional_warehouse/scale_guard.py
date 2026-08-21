@@ -6,10 +6,12 @@ as already canonical", and its raw rupees are stored in a column that means INR
 million. earnings_intelligence_p21 and financial_connector both do this, and
 both were still creating such rows on 2026-08-21.
 
-The fix for those two is an entry in SOURCE_DEFAULT_UNIT, once their true unit is
-established rather than guessed. This guard is the thing that keeps the next
-feed from repeating it, because the failure mode is silence: nothing errors, and
-a number a million times too large reads downstream as an ordinary number.
+Neither source can safely receive a source-wide default: both carry multiple
+scales. Their fix is per-fact unit resolution plus recorded provider/path
+provenance. This guard is the thing that keeps the next feed from repeating the
+failure while that forward fix is introduced, because the failure mode is
+silence: nothing errors, and a number a million times too large reads downstream
+as an ordinary number.
 
 Why isolate rather than reject
 ------------------------------
