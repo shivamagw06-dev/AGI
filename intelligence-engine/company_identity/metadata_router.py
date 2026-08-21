@@ -158,7 +158,10 @@ def _resolve_ticker_mention(stem: str) -> tuple[Optional[str], str]:
     if sum(1 for ch in token if ch.isupper()) < 2:
         return None, "not_ticker_shaped"
     from company_identity.service import identity_for
+    from entity_intelligence.registry import ambiguity_candidates
 
+    if ambiguity_candidates(token):
+        return None, "ambiguous_ticker_shorthand"
     identity = identity_for(token.upper())
     return (identity.ticker, "ticker_mention") if identity.resolved else (None, "unknown_ticker")
 
