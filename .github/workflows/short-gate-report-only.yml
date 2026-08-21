@@ -1,4 +1,4 @@
-name: Short Gate (report-only measurement)
+name: Required Short Gate
 
 # Report-only. This is NOT a required check, gates no merge, and triggers no
 # deployment. It exists to measure the zero-defect extraction: how long it
@@ -21,7 +21,7 @@ concurrency:
 
 jobs:
   short-gate:
-    name: Zero-defect extraction shard ${{ matrix.shard }} (report-only)
+    name: Zero-defect extraction shard ${{ matrix.shard }} (required)
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -124,7 +124,7 @@ jobs:
           if-no-files-found: warn
 
   combine:
-    name: Combine short-gate shards (report-only)
+    name: Required short gate
     needs: short-gate
     if: always()
     runs-on: ubuntu-latest
@@ -164,7 +164,7 @@ jobs:
           with open(out, "w") as handle:
               json.dump(combined, handle, indent=2)
           line = "\n".join([
-              "## Short gate combined (report-only)", "",
+    "## Required short gate", "",
               f"- decision: **{combined['decision']}**",
               f"- coverage: {combined['cases_evaluated']} / {combined['cases_planned']} cases",
               f"- shards: {combined['shard_count']}",
@@ -172,7 +172,7 @@ jobs:
               f"- defects: `{combined['defects']}`",
               f"- unique failing cases: {combined['unique_failing_cases']} "
               f"(P0: {combined['unique_p0_cases']})",
-              "", "Report-only: blocks no merge and no deployment.",
+    "", "Required: blocks merge and deployment when coverage is incomplete or any P0 defect is present.",
           ])
           print(line)
           if os.environ.get("GITHUB_STEP_SUMMARY"):
