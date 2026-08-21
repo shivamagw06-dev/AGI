@@ -21744,6 +21744,21 @@ async def valuation_ratios_coverage():
 
 @router.get("/valuation-ratios/company/{symbol}")
 async def valuation_ratios_company(symbol: str):
+    """The six ratios as they should be shown, each with its own freshness.
+
+    A failed refresh serves the last valid snapshot rather than nulls, and says
+    it is stale. A ratio that does not apply to the sector is marked so rather
+    than counted as a gap - otherwise every bank reads as degraded for want of
+    an EV/EBITDA it can never have.
+    """
+    from valuation_ratios.canonical import canonical_ratios
+
+    return await run_in_threadpool(canonical_ratios, symbol)
+
+
+@router.get("/valuation-ratios/company/{symbol}/raw")
+async def valuation_ratios_company_raw(symbol: str):
+    """The provider pack without the freshness layer, for debugging."""
     from valuation_ratios.ingest import latest_provider_ratios
 
     return latest_provider_ratios(symbol)
