@@ -11,6 +11,8 @@ import os
 import statistics as stats
 from typing import Any, Optional
 
+from hedge_fund_lab import desk_snapshot
+
 
 def _num(value: Any) -> Optional[float]:
     if isinstance(value, (int, float)) and not isinstance(value, bool):
@@ -735,32 +737,36 @@ def own_history_context(ticker: str, metric: str, value: Optional[float]) -> dic
     }
 
 
+def _build_universe() -> list[dict[str, Any]]:
+    """The expensive part: join the warehouse into one universe."""
+    rows = _universe_from_warehouse()
+    if not rows:
+        rows = _universe_from_legacy()
+    return rows
+
+
 def _universe() -> list[dict[str, Any]]:
     """Companies with market multiples (+ consensus / factors when available).
 
-    Prefers the institutional warehouse via Market Intelligence (Upstox ratios,
-    HVIE valuation, CapIQ consensus tabs). Falls back to the Yahoo-era file
-    store only when the warehouse universe is empty.
+    This used to rebuild inside whichever request arrived after the cache
+    expired, behind a lock, so the client's wait was the rebuild's duration -
+    200 seconds after a restart, 12 to 25 on a normal turnover, and a timeout
+    when a backfill slice was running.
+
+    It now returns whatever is on hand and refreshes behind the request. A
+    slightly old universe answered immediately is worth more than a current one
+    answered in twenty seconds, and the age is reported rather than hidden.
     """
-    import time
+    return desk_snapshot.current(_build_universe, source="warehouse")
 
-    now = time.time()
-    source_id = (id(_universe_from_warehouse), id(_universe_from_legacy))
-    cached = _UNIVERSE_CACHE.get("rows")
-    if cached is not None and _UNIVERSE_CACHE.get("source_id") == source_id and (now - float(_UNIVERSE_CACHE.get("at") or 0.0)) < _UNIVERSE_TTL_SEC:
-        return cached
 
-    with _UNIVERSE_LOCK:
-        cached = _UNIVERSE_CACHE.get("rows")
-        if cached is not None and _UNIVERSE_CACHE.get("source_id") == source_id and (time.time() - float(_UNIVERSE_CACHE.get("at") or 0.0)) < _UNIVERSE_TTL_SEC:
-            return cached
-        rows = _universe_from_warehouse()
-        if not rows:
-            rows = _universe_from_legacy()
-        _UNIVERSE_CACHE["at"] = time.time()
-        _UNIVERSE_CACHE["rows"] = rows
-        _UNIVERSE_CACHE["source_id"] = source_id
-        return rows
+def universe_snapshot_status() -> dict[str, Any]:
+    return desk_snapshot.status()
+
+
+def rebuild_universe_snapshot() -> dict[str, Any]:
+    """Force a rebuild now. Used at boot and by the scheduled warmer."""
+    return desk_snapshot.rebuild(_build_universe, source="warehouse")
 
 
 def _primary_metric(dna: Optional[str]) -> str:

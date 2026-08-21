@@ -10514,6 +10514,27 @@ async def hedge_fund_lab_terminal_snapshot_latest():
     )}, "payload": row.get("payload")}
 
 
+@router.get("/hedge-fund-lab/desk-snapshot")
+def hedge_fund_lab_desk_snapshot():
+    """How old the desk's universe is and whether the builder is well.
+
+    /health answers in 0.14s while the desk is completely unresponsive, so it is
+    no evidence the application is usable. This reports the thing that actually
+    determines what a client sees.
+    """
+    from hedge_fund_lab.scanner import universe_snapshot_status
+
+    return {"ok": True, **universe_snapshot_status()}
+
+
+@router.post("/hedge-fund-lab/desk-snapshot/rebuild")
+async def hedge_fund_lab_desk_snapshot_rebuild():
+    """Build a new universe now. Returns the build, not a queued acknowledgement."""
+    from hedge_fund_lab.scanner import rebuild_universe_snapshot
+
+    return await run_in_threadpool(rebuild_universe_snapshot)
+
+
 @router.get("/hedge-fund-lab/opportunity/{ticker}")
 async def hedge_fund_lab_opportunity(ticker: str):
     """Why a company was surfaced: evidence, calculation chain, risks and timeline."""
