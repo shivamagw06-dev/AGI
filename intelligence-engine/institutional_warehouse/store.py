@@ -384,6 +384,29 @@ def upsert(
         for row in db.query(f"SELECT * FROM {table} WHERE row_id IN ({marks})", batch):
             existing[str(row["row_id"])] = row
 
+    # A failed refresh must not erase a value that is already there.
+    #
+    # A vendor having a bad morning returns nulls, and writing them turns a
+    # working figure on the desk into a blank with no explanation. The stored
+    # value stays and its freshness is what changes.
+    nulled = 0
+    if existing:
+        from institutional_warehouse import ownership
+
+        cleaned: list[dict[str, Any]] = []
+        for item in prepared:
+            prior = existing.get(item["row_id"])
+            if not prior:
+                cleaned.append(item)
+                continue
+            values = item["values"]
+            for field in [k for k, v in values.items() if v is None]:
+                if prior.get(field) is not None:
+                    values.pop(field, None)
+                    nulled += 1
+            cleaned.append(item)
+        prepared = [p for p in cleaned if p["values"]]
+
     # A gap-filler only fills gaps. The bhavcopy walker collected days that
     # Upstox had already written, and because both land in `close` it replaced
     # split-adjusted prices with the raw price that traded on the day. For
@@ -395,7 +418,8 @@ def upsert(
         left_alone = before - len(prepared)
         if not prepared:
             return {"ok": True, "tab": tab.id, "inserted": 0, "updated": 0,
-                    "unchanged": 0, "skipped": skipped, "left_alone": left_alone}
+                    "unchanged": 0, "skipped": skipped, "left_alone": left_alone,
+                    "nulls_refused": nulled}
 
     stamp = now_iso()
     inserted = updated = unchanged = 0
@@ -517,6 +541,10 @@ def upsert(
         "unchanged": unchanged,
         "skipped": skipped,
         "collapsed": collapsed,
+        "left_alone": left_alone,
+        # Values a failed refresh tried to blank and was refused. Reported
+        # because a silent refusal looks identical to nothing having happened.
+        "nulls_refused": nulled,
         "source": source,
         "at": stamp,
     }

@@ -31,8 +31,8 @@ import uuid
 from typing import Any, Iterable, Optional, Sequence
 
 from institutional_warehouse import (
-    audit, conflicts, db, missing_values, price_basis, quality, statement_identity,
-    store, units, validation,
+    audit, conflicts, db, missing_values, ownership, price_basis, quality,
+    statement_identity, store, units, validation,
 )
 from institutional_warehouse.schema import find_tab
 from institutional_warehouse.values import now_iso
@@ -69,6 +69,22 @@ def write(
     if not incoming:
         return {"ok": True, "tab": tab_id, "seen": 0, "written": 0, "inserted": 0,
                 "updated": 0, "unchanged": 0, "quarantined": 0}
+
+    # 0a. Who is allowed to write what.
+    #
+    #     Rejected, not resolved. Every data defect this warehouse has produced
+    #     came from two sources writing one field and the last one winning, so a
+    #     violation that is quietly reconciled by precedence is the bug, not the
+    #     handling of it. The write does not land and the attempt is recorded.
+    violations = ownership.check(tab_id, incoming, source=source)
+    if violations:
+        audit.record("ownership_violation", tab_id=tab_id, actor=actor,
+                     detail={"source": source, "violations": violations[:20],
+                             "rows_rejected": len(incoming), "reason": reason},
+                     ok=False)
+        return {"ok": False, "error": "ownership_violation", "tab": tab_id,
+                "source": source, "violations": violations,
+                "written": 0, "rejected_rows": len(incoming)}
 
     # 0. What a price means, stamped by the feed that supplied it.
     #
@@ -160,7 +176,8 @@ def write(
         # number that says the guard is doing something, so it is reported
         # rather than swallowed.
         **{k: result.get(k, 0)
-           for k in ("inserted", "updated", "unchanged", "skipped", "left_alone")},
+           for k in ("inserted", "updated", "unchanged", "skipped", "left_alone",
+                     "nulls_refused")},
     }
 
 
