@@ -1,0 +1,25 @@
+{
+  "generated_at_utc": "2026-08-21T18:49:37.212321+00:00",
+  "code_commit": "d90bc0c537e2bcfcc7cb4e40744735a63724a3f3",
+  "applied": false,
+  "read_only": true,
+  "corpus": {
+    "filings": 113,
+    "companies": 12,
+    "path": "financial_statements_engine/data/raw/*/*.xbrl"
+  },
+  "facts_all": 106850,
+  "facts_mapped_concepts": 4815,
+  "outcomes_mapped": {
+    "declared": 3688,
+    "compound_unit_is_not_an_aggregate": 980,
+    "pure_is_not_money": 10,
+    "missing_unitRef": 2,
+    "unitRef_not_declared:INR": 135
+  },
+  "lineage_confirmed_rows": {
+    "financials_annual": 133,
+    "financials_quarterly": 142
+  },
+  "hypothesis_note": "the 11,307 figure remains a hypothesis; only rows whose stored value is identical to a declared XBRL fact are confirmed"
+}
