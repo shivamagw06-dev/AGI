@@ -875,3 +875,13 @@ class TestReopenEntities:
         out = checkpoints.entity_progress("k_prog")
         assert (out["done"], out["total"]) == (2, 3)
         assert out["pct"] == 66.7
+
+    def test_progress_names_the_companies_that_failed(self):
+        """A repair reported as 2,426 of 2,431 leaves five companies keeping the
+        wrong prices and no way to see which."""
+        checkpoints.save_checkpoint("k_named", "GOOD1", status=checkpoints.DONE)
+        checkpoints.save_checkpoint("k_named", "BADCO", status=checkpoints.FAILED,
+                                    error="upstox returned no candles")
+        out = checkpoints.entity_progress("k_named")
+        assert [f["entity"] for f in out["failed"]] == ["BADCO"]
+        assert "no candles" in out["failed"][0]["error"]

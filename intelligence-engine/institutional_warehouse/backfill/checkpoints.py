@@ -224,9 +224,18 @@ def entity_progress(kind: str) -> dict[str, Any]:
     by_status = {str(r["status"]): int(r["n"]) for r in rows}
     total = sum(by_status.values())
     done = by_status.get(DONE, 0)
+    # Named, not just counted. A repair reported as "2,426 of 2,431" leaves five
+    # companies keeping the wrong prices and no way to see which.
+    stuck = db.query(
+        "SELECT entity, attempts, last_error, updated_at FROM wh_backfill_checkpoints"
+        " WHERE kind = ? AND status = ? ORDER BY updated_at DESC LIMIT 25",
+        (kind, FAILED),
+    ) or []
     return {"ok": True, "kind": kind, "by_status": by_status, "done": done,
             "total": total,
-            "pct": round(100.0 * done / total, 1) if total else None}
+            "pct": round(100.0 * done / total, 1) if total else None,
+            "failed": [{"entity": r.get("entity"), "attempts": r.get("attempts"),
+                        "error": str(r.get("last_error") or "")[:200]} for r in stuck]}
 
 
 def date_coverage(source: str) -> dict[str, Any]:
