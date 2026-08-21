@@ -39,7 +39,8 @@ def _payload():
                     "opening_range_expansion_v1": {
                         "symbol": "ALPHA", "engine": "opening_range_expansion_v1",
                         "direction": "positive", "alpha_z": 2.4,
-                        "signal_quality_score": 82, "factor_values": {"last_price": 500.0},
+                        "signal_quality_score": 82, "price_at_signal": 500.0,
+                        "factor_values": {},
                     },
                 },
             },
@@ -50,12 +51,14 @@ def _payload():
                     "intraday_mean_reversion_v1": {
                         "symbol": "BETA", "engine": "intraday_mean_reversion_v1",
                         "direction": "negative", "alpha_z": -1.8,
-                        "signal_quality_score": 71, "factor_values": {"last_price": 250.0},
+                        "signal_quality_score": 71, "price_at_signal": 250.0,
+                        "factor_values": {},
                     },
                     "volume_liquidity_anomaly_v1": {
                         "symbol": "BETA", "engine": "volume_liquidity_anomaly_v1",
                         "direction": "negative", "alpha_z": -2.1,
-                        "signal_quality_score": 65, "factor_values": {"last_price": 250.0},
+                        "signal_quality_score": 65, "price_at_signal": 250.0,
+                        "factor_values": {},
                     },
                 },
             },
@@ -109,10 +112,21 @@ class TestRowContent:
         row = ls.scan_opening_range_breakout(10)["results"][0]
         assert row["engine"] == "Breakout"
         assert row["signal_quality"] == 82
-        assert row["price"] == 500.0 and row["price_source"] == "live_signal"
+        assert row["price"] == 500.0 and row["price_source"] == "price_at_signal"
         assert row["sizing"]["target_weight"] is not None
         assert row["sizing"]["binding_constraint"] in {
             "volatility_target", "liquidity", "max_weight"}
+
+    def test_missing_signal_price_is_never_replaced_by_sma50(self, monkeypatch):
+        payload = _payload()
+        signal = payload["rows"][0]["engines"]["opening_range_expansion_v1"]
+        signal.pop("price_at_signal")
+        signal["factor_values"] = {}
+        _patch(monkeypatch, payload)
+        row = ls.scan_opening_range_breakout(10)["results"][0]
+        assert row["price"] is None
+        assert row["price_source"] is None
+        assert row["sizing"]["target_weight"] is None
 
     def test_breakout_places_an_atr_stop_below_for_a_long(self, monkeypatch):
         _patch(monkeypatch)

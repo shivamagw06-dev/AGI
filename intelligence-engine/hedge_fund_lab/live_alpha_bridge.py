@@ -189,7 +189,7 @@ def fetch_live_alpha_rows(*, limit: int = 200) -> dict[str, Any]:
     signals = _rest(
         "live_alpha_signals"
         f"?select=symbol,sector,run_id,direction,alpha_z,signal_quality_score,"
-        f"signal_quality_label,liquidity_ok,classification,factor_values,created_at"
+        f"signal_quality_label,liquidity_ok,classification,factor_values,price_at_signal,created_at"
         f"&run_id=in.({in_clause})"
         f"&order=created_at.desc"
         f"&limit={_SIGNAL_FETCH_LIMIT}"

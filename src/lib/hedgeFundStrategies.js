@@ -66,7 +66,7 @@ export const LIVE_STRATEGIES = [
     columns: [
       { key: 'direction', label: 'Direction', type: 'text' },
       { key: 'signal_quality', label: 'Quality', dp: 0 },
-      { key: 'price', label: 'Price', dp: 2 },
+      { key: 'price', label: 'Signal price', dp: 2 },
       { key: 'atr', label: 'ATR', dp: 2 },
       { key: 'stop', label: 'Stop', dp: 2 },
       { key: 'stop_distance_pct', label: 'Stop dist', dp: 1, suffix: '%' },
@@ -107,7 +107,7 @@ export const LIVE_STRATEGIES = [
     columns: [
       { key: 'direction', label: 'Direction', type: 'text' },
       { key: 'signal_quality', label: 'Quality', dp: 0 },
-      { key: 'price', label: 'Price', dp: 2 },
+      { key: 'price', label: 'Signal price', dp: 2 },
       { key: 'band_pct', label: 'ATR band', dp: 2, suffix: '%' },
       { key: 'beta_1y', label: 'Beta 1Y', dp: 2 },
       { key: 'market_hedge_ratio', label: 'Hedge ratio', dp: 2 },
@@ -143,7 +143,7 @@ export const LIVE_STRATEGIES = [
     columns: [
       { key: 'direction', label: 'Direction', type: 'text' },
       { key: 'signal_quality', label: 'Quality', dp: 0 },
-      { key: 'price', label: 'Price', dp: 2 },
+      { key: 'price', label: 'Signal price', dp: 2 },
       { key: 'adv_3m_value_cr', label: 'ADV', dp: 1, suffix: 'cr' },
       { key: 'alpha_z', label: 'z', dp: 2, signed: true },
     ],
