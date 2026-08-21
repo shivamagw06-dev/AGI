@@ -120,9 +120,14 @@ def claim(limit: int = 25, *, actor: str = "fundamentals_refresh") -> list[dict[
     return taken
 
 
+UPDATED = "UPDATED"
+NO_CHANGE = "NO_CHANGE"
+
+
 def finish(symbol: str, period: str, *, ok: bool, error: Optional[str] = None,
            datasets: Optional[Iterable[str]] = None, periods_written: int = 0,
            periods_preserved: int = 0, attempts: Optional[int] = None,
+           outcome: Optional[str] = None,
            actor: str = "fundamentals_refresh") -> dict[str, Any]:
     """Record how a refresh ended.
 
@@ -142,6 +147,7 @@ def finish(symbol: str, period: str, *, ok: bool, error: Optional[str] = None,
         "symbol": symbol, "reporting_period": period, "status": status,
         "attempts": tries, "finished_at": _now(),
         "last_error": None if ok else str(error or "")[:400],
+        "outcome": (outcome or (UPDATED if periods_written else NO_CHANGE)) if ok else None,
         "datasets_written": ",".join(sorted(datasets or [])) or None,
         "periods_written": int(periods_written),
         "periods_preserved": int(periods_preserved),

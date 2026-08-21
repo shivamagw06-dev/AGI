@@ -1057,6 +1057,12 @@ FUNDAMENTALS_REFRESH_QUEUE = Tab(
         _c("started_at", "Started", DATETIME, width=170, group="Timing"),
         _c("finished_at", "Finished", DATETIME, width=170, group="Timing"),
         _c("last_error", "Last Error", TEXT, width=260, group="State"),
+        # SUCCESS says the refresh ran without error. This says whether it
+        # changed anything. The live trial produced six SUCCESS entries that
+        # wrote nothing, and without this column that is indistinguishable from
+        # six quarters landing.
+        _c("outcome", "Outcome", TEXT, width=140, group="Result",
+           options=("UPDATED", "NO_CHANGE")),
         _c("datasets_written", "Datasets", TEXT, width=200, group="Result"),
         _c("periods_written", "Periods Written", INTEGER, width=140, group="Result"),
         _c("periods_preserved", "Periods Preserved", INTEGER, width=150, group="Result"),

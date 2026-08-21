@@ -173,11 +173,28 @@ def refresh_company(symbol: str, period: str, *, isin: str,
                 "datasets": [d for d in DATASETS if results[d].get("ok")],
                 "periods_preserved": len(held_periods)}
 
+    # ingest_statements returns one result per tab it touched, not one set of
+    # counts, so they are summed across the tabs rather than read from the top
+    # level - where they were always zero and every refresh looked like a no-op.
+    counts = {"inserted": 0, "updated": 0, "unchanged": 0}
+    for key in ("financials_annual", "financials_quarterly"):
+        block = (written or {}).get(key) if isinstance(written, dict) else None
+        if isinstance(block, dict):
+            for field in counts:
+                counts[field] += int(block.get(field) or 0)
+    inserted = counts["inserted"]
+    updated = counts["updated"]
     return {"ok": True, "datasets": [d for d in DATASETS if results[d].get("ok")],
             "frequency": frequency,
-            "periods_written": len(after_periods - held_periods) + len(rows),
+            # A refresh that found nothing new is a valid outcome and not the
+            # same event as a quarter landing. Both are success; only one is
+            # news.
+            "outcome": "UPDATED" if (inserted or updated) else "NO_CHANGE",
+            "inserted": inserted, "updated": updated,
+            "unchanged": int(counts.get("unchanged") or 0),
+            "periods_written": inserted,
             "periods_preserved": len(held_periods),
-            "written": written if isinstance(written, dict) else None}
+            "written": counts or None}
 
 
 def _period_present(symbol: str, period: str, frequency: str) -> bool:
@@ -256,10 +273,15 @@ def run(*, limit: int = 10, actor: str = "fundamentals_refresh",
                  error=result.get("error"), datasets=result.get("datasets"),
                  periods_written=int(result.get("periods_written") or 0),
                  periods_preserved=int(result.get("periods_preserved") or 0),
-                 actor=actor)
+                 outcome=result.get("outcome"), actor=actor)
         succeeded += 1 if result.get("ok") else 0
         failed += 0 if result.get("ok") else 1
         outcomes.append({"symbol": symbol, "period": period, "ok": result.get("ok"),
+                         "outcome": result.get("outcome"),
+                         "frequency": result.get("frequency"),
+                         "inserted": result.get("inserted"),
+                         "updated": result.get("updated"),
+                         "unchanged": result.get("unchanged"),
                          "error": result.get("error"),
                          "preserved": result.get("periods_preserved")})
 

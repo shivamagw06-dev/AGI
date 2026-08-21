@@ -324,3 +324,32 @@ class TestPeriodLabels:
         assert pp("sometime last year") is None
         assert pp("") is None
         assert pp("FY") is None
+
+
+class TestOutcomeIsNotStatus:
+    """SUCCESS says the refresh ran. The outcome says whether it changed
+    anything. Six SUCCESS entries that wrote nothing are indistinguishable from
+    six quarters landing without this."""
+
+    def test_a_refresh_that_changes_nothing_says_no_change(self):
+        _ten_years()
+        w.refresh_company("AAA", "Mar 2026", isin="INE001A01001",
+                          fetch=_all_ok(("Mar 2026",)), pause_seconds=0)
+        second = w.refresh_company("AAA", "Mar 2026", isin="INE001A01001",
+                                   fetch=_all_ok(("Mar 2026",)), pause_seconds=0)
+        assert second["ok"] is True
+        assert second["outcome"] == "NO_CHANGE"
+
+    def test_a_refresh_that_writes_a_period_says_updated(self):
+        _ten_years()
+        out = w.refresh_company("AAA", "Mar 2027", isin="INE001A01001",
+                                fetch=_all_ok(("Mar 2027",)), pause_seconds=0)
+        assert out["ok"] is True and out["outcome"] == "UPDATED"
+
+    def test_the_queue_records_the_outcome(self):
+        _ten_years()
+        q.enqueue([{"symbol": "AAA", "reporting_period": "Mar 2027"}])
+        w.run(limit=5, fetch=_all_ok(("Mar 2027",)), pause_seconds=0)
+        row = store.all_rows(q.TAB, limit=10)[0]
+        assert row["status"] == q.SUCCESS
+        assert row["outcome"] == "UPDATED"
