@@ -32,10 +32,15 @@ def _query() -> str:
     sql = re.search(r'rows = db\.query\(\s*f"""(.*?)"""', src, re.S).group(1)
     feed = _expr(src, "feed")
     basis = _expr(src, "basis")
+    from hedge_fund_lab import scanner
     return (sql.replace("{table}", "t")
                .replace("{weekday}", "CAST(strftime('%w', date) AS INTEGER) BETWEEN 1 AND 5")
                .replace("{feed}", feed)
-               .replace("{basis}", basis))
+               .replace("{basis}", basis)
+               # The query bounds how far back it reads. The tests use dated
+               # fixtures, so the bound has to be widened here or every fixture
+               # silently falls outside the window and the test proves nothing.
+               .replace("{RETURN_WINDOW_DAYS}", "36500"))
 
 
 def _expr(src: str, name: str) -> str:
@@ -233,3 +238,30 @@ class TestExtremeReturns:
         from hedge_fund_lab import scanner
         assert callable(scanner.extreme_returns)
         assert isinstance(scanner.extreme_returns(), list)
+
+
+class TestQueryWindow:
+    """How far back the query reads.
+
+    Unbounded it walked all 7.1m price rows and called strftime on every one,
+    which measured 79 seconds cold. The window has to be wide enough to find an
+    anniversary and no wider.
+    """
+
+    def test_the_window_covers_a_year_plus_slack(self):
+        from hedge_fund_lab import scanner
+        assert scanner.RETURN_WINDOW_DAYS >= 425, (
+            "the base bar may sit 60 days past the anniversary when a company "
+            "has been suspended or the feed has a hole")
+
+    def test_the_window_is_not_the_whole_history(self):
+        from hedge_fund_lab import scanner
+        assert scanner.RETURN_WINDOW_DAYS <= 1000, "reading a decade to find one year"
+
+    def test_the_query_actually_bounds_itself(self):
+        assert "-{RETURN_WINDOW_DAYS} day" in SCANNER.read_text()
+
+    def test_the_latest_close_window_is_short(self):
+        """It only has to find today, not a decade of yesterdays."""
+        from hedge_fund_lab import scanner
+        assert 7 <= scanner.LATEST_CLOSE_WINDOW_DAYS <= 90

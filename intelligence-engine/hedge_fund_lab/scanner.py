@@ -145,6 +145,20 @@ def _factors_by_symbol(*, limit: int = 8000) -> dict[str, dict[str, Any]]:
 # So a reading outside this band is withheld and listed instead of published. A
 # genuine collapse is withheld with it, which is the cost: a number missing from
 # the desk is visible and asks a question, where a wrong one is neither.
+# How far back the one-year return query reads.
+#
+# It needs the latest bar and one at least 365 days earlier, and the base may sit
+# up to 60 days past the anniversary when a company has been suspended or the
+# feed has a hole. 500 days covers that with room to spare.
+#
+# A company whose last trade was years ago falls out, which is correct: there is
+# no current one-year return for a company that has stopped trading.
+RETURN_WINDOW_DAYS = 500
+
+# How far back the latest-close query reads. Enough to survive a long exchange
+# holiday and a stale feed without reading a decade of history to find today.
+LATEST_CLOSE_WINDOW_DAYS = 30
+
 RETURN_FLOOR_PCT = -60.0
 RETURN_CEILING_PCT = 200.0
 
@@ -209,6 +223,11 @@ def _return_1y_by_symbol(*, limit: int = 200000) -> dict[str, Optional[float]]:
             f"""WITH usable AS (
                     SELECT symbol, {feed} || '|' || {basis} AS src, date, close FROM {table}
                     WHERE COALESCE(sys_published, 1) = 1
+                      -- Bounded before anything else. Unbounded this walks all
+                      -- 7.1m rows and calls strftime on every one of them, which
+                      -- measured 79 seconds. A one-year return needs a year and
+                      -- the slack to find an anniversary, not 2006.
+                      AND date >= date('now', '-{RETURN_WINDOW_DAYS} day')
                       AND close IS NOT NULL AND close > 0 AND {weekday}
                       -- A price whose convention was never established is not
                       -- usable as either end. Agreement between two unknowns
@@ -307,6 +326,10 @@ def _latest_close_by_symbol() -> dict[str, float]:
             f"""WITH usable AS (
                     SELECT symbol, date, close FROM {table}
                     WHERE COALESCE(sys_published, 1) = 1
+                      -- The latest close per symbol needs recent bars only.
+                      -- Unbounded this scans all 7.1m rows, measured at 63
+                      -- seconds; a fortnight of slack covers a long holiday.
+                      AND date >= date('now', '-{LATEST_CLOSE_WINDOW_DAYS} day')
                       AND close IS NOT NULL AND close > 0
                       AND CAST(strftime('%w', date) AS INTEGER) BETWEEN 1 AND 5
                 ),
