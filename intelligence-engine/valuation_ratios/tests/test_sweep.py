@@ -29,8 +29,9 @@ def fresh(tmp_path, monkeypatch):
     db.reset_backend()
 
 
-def _seed(*companies):
-    rows = [{"symbol": s, "isin": i, "company_id": s, "company_name": s}
+def _seed(*companies, sector=None):
+    rows = [{"symbol": s, "isin": i, "company_id": s, "company_name": s,
+             **({"sector": sector} if sector else {})}
             for s, i in companies]
     gateway.write("company_master", rows, source="test", actor="t", reason="seed")
 
@@ -290,3 +291,103 @@ class TestResumability:
         retry = sweep.run(fetch=_ok(_payload()), pause_seconds=0)
         assert retry["successful"] == 1
         assert len({r["snapshot_id"] for r in _stored()}) == 1, "one final snapshot"
+
+
+class TestInstrumentClassification:
+    """520 of the first sweep's 2,168 were ETFs and index funds.
+
+    Upstox is right to have no P/E for them - they have no earnings. They were
+    counted as failures, retried three times each, and pulled coverage down to
+    something that read like a broken collector.
+    """
+
+    def test_an_etf_is_ineligible_not_failed(self):
+        assert sweep.classify({"symbol": "NV20BEES", "isin": "INE1"}) == sweep.INELIGIBLE_ETF
+        assert sweep.classify({"symbol": "GOLDBEES", "isin": "INE2"}) == sweep.INELIGIBLE_ETF
+
+    def test_a_fund_the_symbol_does_not_reveal_is_caught_by_evidence(self):
+        """ABSLLIQUID carries no ETF token and reads as a company until you ask.
+        The heuristic cannot catch every one, so answering with no ratios has to
+        be enough."""
+        _seed(("ABSLLIQUID", "INE001A01001"))
+        out = sweep.run(fetch=_ok({"data": []}), pause_seconds=0)
+        assert out["invalid"] == 1
+        assert out["successful"] == 0
+        assert out["coverage_pct"] == 0.0 or out["answerable"] == 0
+
+    def test_an_instrument_with_no_ratios_is_not_retried(self):
+        _seed(("ABSLLIQUID", "INE001A01001"))
+        sweep.run(fetch=_ok({"data": []}), pause_seconds=0)
+        again = sweep.run(fetch=_ok(_payload()), pause_seconds=0)
+        assert again["requested"] == 0, "asking again three times helps nobody"
+
+    def test_a_company_is_eligible(self):
+        assert sweep.classify({"symbol": "RELIANCE", "isin": "INE1"}) == sweep.ELIGIBLE_EQUITY
+
+    def test_no_isin_is_a_mapping_gap(self):
+        assert sweep.classify({"symbol": "SOMECO", "isin": ""}) == sweep.MISSING_MAPPING
+
+    def test_ineligible_instruments_are_skipped_never_fetched(self):
+        _seed(("RELIANCE", "INE001A01001"), ("NV20BEES", "INE002A01002"))
+        asked = []
+        out = sweep.run(fetch=lambda i: asked.append(i) or {"ok": True, "payload": _payload()},
+                        pause_seconds=0)
+        assert out["eligible"] == 1, "an ETF is not in the denominator"
+        assert out["skipped_no_isin"] == 1
+        assert len(asked) == 1, "and is never asked about at all"
+
+    def test_the_eligibility_breakdown_is_reported(self):
+        _seed(("RELIANCE", "INE001A01001"), ("NV20BEES", "INE002A01002"),
+              ("NOMAP", ""))
+        out = sweep.run(fetch=_ok(_payload()), pause_seconds=0)
+        assert out["by_eligibility"][sweep.ELIGIBLE_EQUITY] == 1
+        assert out["by_eligibility"][sweep.INELIGIBLE_ETF] == 1
+        assert out["by_eligibility"][sweep.MISSING_MAPPING] == 1
+
+    def test_an_etf_does_not_drag_coverage_down(self):
+        _seed(("RELIANCE", "INE001A01001"), *[(f"X{i}ETF", f"INE{i:03d}A0") for i in range(9)])
+        out = sweep.run(fetch=_ok(_payload()), pause_seconds=0)
+        assert out["coverage_pct"] == 100.0
+        assert out["status"] == sweep.HEALTHY
+
+
+class TestStructuralAbsence:
+    """A bank without ROCE is complete for a bank. A manufacturer without ROCE
+    has a gap. The same absence, two different facts."""
+
+    def test_a_bank_missing_roce_is_not_applicable_not_partial(self):
+        assert sweep.snapshot_state(["roce", "ev_ebitda"], sector="Financials") == \
+            sweep.NOT_APPLICABLE
+
+    def test_a_manufacturer_missing_roce_is_a_real_gap(self):
+        assert sweep.snapshot_state(["roce"], sector="Industrials") == sweep.PARTIAL_VALID
+
+    def test_a_bank_missing_something_else_is_still_a_gap(self):
+        assert sweep.snapshot_state(["pe"], sector="Financials") == sweep.PARTIAL_VALID
+
+    def test_all_six_present_is_fresh(self):
+        assert sweep.snapshot_state([], sector="Financials") == sweep.FRESH
+
+    def test_a_bank_is_not_counted_incomplete_in_the_run(self):
+        """Otherwise every lender reads as permanently degraded."""
+        _seed(("HDFCBANK", "INE001A01001"), sector="Financials")
+        out = sweep.run(fetch=_ok(_payload(roce=None, ev=None)), pause_seconds=0)
+        assert out["incomplete"] == 0
+        assert {r["snapshot_state"] for r in _stored()} == {sweep.NOT_APPLICABLE}
+
+
+class TestRateFloor:
+    """The pace was mine to choose and I chose 0.15s, which failed 218 of 254
+    companies at once. It is no longer a choice."""
+
+    def test_an_unsafe_pace_is_clamped(self):
+        assert sweep.safe_pause(0.15) == sweep.MIN_PAUSE_SECONDS
+        assert sweep.safe_pause(0.0) == sweep.MIN_PAUSE_SECONDS
+
+    def test_a_slower_pace_is_allowed(self):
+        assert sweep.safe_pause(3.0) == 3.0
+
+    def test_the_default_respects_the_published_limit(self):
+        # 2,000 requests per 30 minutes is about 1.1 a second.
+        assert sweep.PAUSE_SECONDS >= 0.5
+        assert sweep.MIN_PAUSE_SECONDS >= 0.5

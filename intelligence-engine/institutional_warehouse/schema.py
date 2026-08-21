@@ -1354,6 +1354,11 @@ VALUATION_RATIOS = Tab(
            options=("complete", "partial")),
         _c("snapshot_ratios_present", "Ratios Present", INTEGER, width=130,
            group="Quality"),
+        # A bank without ROCE is complete for a bank; a manufacturer without it
+        # has a gap. The same absence, two different facts, and only this column
+        # keeps every lender from reading as permanently degraded.
+        _c("snapshot_state", "State", TEXT, width=140, group="Quality",
+           options=("FRESH", "PARTIAL_VALID", "NOT_APPLICABLE", "STALE")),
         _c("validation_notes", "Validation Notes", TEXT, width=220, group="Quality"),
         *PROVENANCE_COLUMNS,
     ),
