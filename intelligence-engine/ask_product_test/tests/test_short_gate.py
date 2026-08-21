@@ -189,3 +189,45 @@ def test_partitioning_never_reduces_coverage():
     cases = zde.select_cases(build_cases(), defects=zde.REQUIRED_DEFECTS)
     total = sum(len(b) for b in sg.partition(cases, 6))
     assert total == len(cases) == 395
+
+
+def test_four_shard_reports_recombine_to_all_401_checks():
+    cases = zde.select_cases(build_cases(), defects=zde.REQUIRED_DEFECTS)
+    buckets = sg.partition(cases, 4)
+    full_manifest = sorted(sg.manifest(cases) + sg.namesake_manifest_ids())
+    reports = []
+    for index, bucket in enumerate(buckets):
+        ids = sg.manifest(bucket)
+        if index == 0:
+            ids += sg.namesake_manifest_ids()
+        results = [{"id": case_id, "failed": [], "flags": {}} for case_id in ids]
+        reports.append(sg.build_report(
+            results, elapsed=100 + index, cases_planned=len(full_manifest),
+            stub_ok=True, manifest_ids=full_manifest,
+            shard_index=index, shard_count=4))
+    combined = sg.combine_reports(reports)
+    assert combined["coverage_complete"] is True
+    assert combined["cases_planned"] == combined["cases_evaluated"] == 401
+    assert combined["decision"] == "PASS"
+    assert combined["elapsed_seconds"] == 103.0
+
+
+def test_combiner_rejects_a_missing_or_duplicated_case():
+    manifest_ids = ["a", "b"]
+    reports = [
+        sg.build_report([{"id": "a", "failed": []}], elapsed=1,
+                        cases_planned=2, stub_ok=True,
+                        manifest_ids=manifest_ids, shard_index=0, shard_count=2),
+        sg.build_report([{"id": "a", "failed": []}], elapsed=1,
+                        cases_planned=2, stub_ok=True,
+                        manifest_ids=manifest_ids, shard_index=1, shard_count=2),
+    ]
+    with pytest.raises(ValueError, match="coverage mismatch"):
+        sg.combine_reports(reports)
+
+
+def test_invalid_shard_coordinates_are_infrastructure(monkeypatch):
+    monkeypatch.setenv("SHORT_GATE_SHARD_COUNT", "4")
+    monkeypatch.setenv("SHORT_GATE_SHARD_INDEX", "4")
+    with pytest.raises(ValueError, match="invalid shard"):
+        sg.shard_config()

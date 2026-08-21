@@ -163,3 +163,8 @@ Both are extrapolations. The first CI run measures it, and `SHORT_GATE_BUDGET_SE
 makes the ceiling adjustable once a real number exists. If it lands over budget,
 the remedy is a decision about scope — not a smaller case set chosen to fit,
 which would reintroduce exactly the "current count as universe" error.
+
+The first serial measurement exceeded the 15-minute ceiling. The report-only
+workflow therefore runs four shards in parallel and combines them only after
+proving that their case-ID union is exactly the 401-case manifest, with no
+missing or duplicated case. Partitioning changes wall time, never coverage.

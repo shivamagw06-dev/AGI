@@ -34,6 +34,7 @@ import json
 import os
 import sys
 import time
+from collections import Counter
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List
@@ -121,7 +122,23 @@ def verify_partition(cases: List[Dict[str, Any]],
         "extra": extra[:20],
     }
 
-ARTIFACT = "short_gate_zero_defect.json"
+def artifact_name(shard_index: int) -> str:
+    return f"short_gate_zero_defect_shard_{shard_index}.json"
+
+
+def namesake_manifest_ids() -> List[str]:
+    from ask_product_test.company_metadata_routing_acceptance_v1 import FALLTHROUGH_CASES
+
+    return [f"NAMESAKE-{i:03d}" for i, _ in enumerate(FALLTHROUGH_CASES, 1)]
+
+
+def shard_config() -> tuple[int, int]:
+    """Validated zero-based shard coordinates from the report-only workflow."""
+    count = int(os.environ.get("SHORT_GATE_SHARD_COUNT") or "1")
+    index = int(os.environ.get("SHORT_GATE_SHARD_INDEX") or "0")
+    if count < 1 or index < 0 or index >= count:
+        raise ValueError(f"invalid shard {index}/{count}")
+    return count, index
 
 
 def normalise_namesake_results(rows: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
@@ -202,7 +219,9 @@ def _artifact_dir() -> Path:
 
 
 def build_report(results: List[Dict[str, Any]], *, elapsed: float,
-                 cases_planned: int, stub_ok: bool) -> Dict[str, Any]:
+                 cases_planned: int, stub_ok: bool,
+                 manifest_ids: List[str] | None = None,
+                 shard_index: int = 0, shard_count: int = 1) -> Dict[str, Any]:
     """Counters, unique failing cases, and categories - kept apart."""
     defects = zde.summarise(results, defects=zde.REQUIRED_DEFECTS, provider_ok=stub_ok)
     categories = tax.classify(results)
@@ -210,10 +229,12 @@ def build_report(results: List[Dict[str, Any]], *, elapsed: float,
     # A case can carry several labels. Counting labels as cases overstates the
     # problem; counting cases as labels hides which problems are present. Both
     # are reported, and neither is derived from the other.
-    failing_cases = {r.get("id") for r in results if r.get("failed")}
-    p0_cases = {r.get("id") for r in results
+    failing_cases = {str(r.get("id")) for r in results if r.get("failed")}
+    p0_cases = {str(r.get("id")) for r in results
                 if any(tax.categorise(l) in tax.RELEASE_CRITICAL
                        for l in (r.get("failed") or []))}
+    evaluated_ids = sorted(str(r.get("id")) for r in results)
+    expected_ids = sorted(manifest_ids or evaluated_ids)
 
     non_p0 = {c: n for c, n in categories["by_category"].items()
               if c not in tax.RELEASE_CRITICAL}
@@ -227,14 +248,20 @@ def build_report(results: List[Dict[str, Any]], *, elapsed: float,
         "required_check": False,
         "section_mapping": "PROVISIONAL — awaiting product owner approval",
         "provider": "deterministic stub",
+        "shard_index": shard_index,
+        "shard_count": shard_count,
         "cases_planned": cases_planned,
         "cases_evaluated": len(results),
+        "manifest_case_ids": expected_ids,
+        "evaluated_case_ids": evaluated_ids,
         "elapsed_seconds": round(elapsed, 1),
         "budget_seconds": budget_seconds(),
         "within_budget": elapsed <= budget_seconds(),
         # unique cases, held separately from label counts
         "unique_failing_cases": len(failing_cases),
+        "failing_case_ids": sorted(failing_cases),
         "unique_p0_cases": len(p0_cases),
+        "p0_case_ids": sorted(p0_cases),
         "label_occurrences": categories["labels_total"],
         # P0
         "defects": defects["defects"],
@@ -248,6 +275,72 @@ def build_report(results: List[Dict[str, Any]], *, elapsed: float,
                         "do not make a release unsafe"),
         "by_category": categories["by_category"],
         "decision": "PASS" if all(v == 0 for v in defects["defects"].values()) else "FAIL",
+    }
+
+
+def combine_reports(reports: List[Dict[str, Any]]) -> Dict[str, Any]:
+    """Combine shards only when they prove exact manifest coverage."""
+    if not reports:
+        raise ValueError("no shard reports")
+    shard_count = int(reports[0].get("shard_count") or 0)
+    if shard_count < 1 or len(reports) != shard_count:
+        raise ValueError(f"expected {shard_count} shard reports, found {len(reports)}")
+    indexes = [int(r.get("shard_index", -1)) for r in reports]
+    if sorted(indexes) != list(range(shard_count)):
+        raise ValueError(f"shard indexes are incomplete or duplicated: {indexes}")
+
+    expected = list(reports[0].get("manifest_case_ids") or [])
+    for report in reports[1:]:
+        if list(report.get("manifest_case_ids") or []) != expected:
+            raise ValueError("shards disagree on the extraction manifest")
+
+    seen = [case_id for report in reports
+            for case_id in (report.get("evaluated_case_ids") or [])]
+    duplicates = len(seen) - len(set(seen))
+    missing = sorted(set(expected) - set(seen))
+    extra = sorted(set(seen) - set(expected))
+    if duplicates or missing or extra or sorted(seen) != sorted(expected):
+        raise ValueError(
+            f"shard coverage mismatch: duplicates={duplicates} "
+            f"missing={missing[:20]} extra={extra[:20]}")
+
+    defect_keys = {key for report in reports for key in (report.get("defects") or {})}
+    defects = {key: sum(int((r.get("defects") or {}).get(key) or 0) for r in reports)
+               for key in sorted(defect_keys)}
+    categories: Counter[str] = Counter()
+    for report in reports:
+        categories.update({k: int(v) for k, v in (report.get("by_category") or {}).items()})
+    failing_ids = sorted({case_id for report in reports
+                          for case_id in (report.get("failing_case_ids") or [])})
+    p0_ids = sorted({case_id for report in reports
+                     for case_id in (report.get("p0_case_ids") or [])})
+    max_elapsed = max(float(r.get("elapsed_seconds") or 0) for r in reports)
+    budget = min(int(r.get("budget_seconds") or BUDGET_SECONDS) for r in reports)
+    return {
+        "suite": "short_gate_zero_defect_combined",
+        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "report_only": True,
+        "blocks_merge": False,
+        "blocks_deployment": False,
+        "required_check": False,
+        "shard_count": shard_count,
+        "cases_planned": len(expected),
+        "cases_evaluated": len(seen),
+        "manifest_case_ids": expected,
+        "coverage_complete": True,
+        "duplicates": 0,
+        "elapsed_seconds": round(max_elapsed, 1),
+        "budget_seconds": budget,
+        "within_budget": max_elapsed <= budget,
+        "defects": defects,
+        "zero_defect": all(value == 0 for value in defects.values()),
+        "unique_failing_cases": len(failing_ids),
+        "failing_case_ids": failing_ids,
+        "unique_p0_cases": len(p0_ids),
+        "p0_case_ids": p0_ids,
+        "label_occurrences": sum(int(r.get("label_occurrences") or 0) for r in reports),
+        "by_category": dict(sorted(categories.items())),
+        "decision": "PASS" if all(value == 0 for value in defects.values()) else "FAIL",
     }
 
 
@@ -265,7 +358,15 @@ def main() -> int:
         return EXIT_INFRASTRUCTURE
 
     cases = zde.select_cases(build_cases(), defects=zde.REQUIRED_DEFECTS)
-    print(f"[short_gate] {len(cases)} core cases — every J_impossible and every "
+    try:
+        shard_count, shard_index = shard_config()
+    except (TypeError, ValueError) as exc:
+        print(f"[short_gate] INFRASTRUCTURE: {exc}", flush=True)
+        return EXIT_INFRASTRUCTURE
+    selected_cases = partition(cases, shard_count)[shard_index]
+    full_manifest = sorted(manifest(cases) + namesake_manifest_ids())
+    print(f"[short_gate] shard {shard_index + 1}/{shard_count}: "
+          f"{len(selected_cases)} of {len(cases)} core cases — every J_impossible and every "
           f"identity-bearing case, not only the ones failing today", flush=True)
 
     # The real pipeline, with only the editorial provider fixed. Routing,
@@ -279,28 +380,31 @@ def main() -> int:
         latency_budget_ms=int(os.environ.get("ASK_TEST_LATENCY_MS") or "120000"))
     t0 = time.perf_counter()
     results: List[Dict[str, Any]] = []
-    for i, case in enumerate(cases, 1):
+    for i, case in enumerate(selected_cases, 1):
         transport = harness.ask(case["question"], case=case)
         payload = transport.get("payload") if isinstance(transport.get("payload"), dict) else {}
         results.append(evaluate_case(case, payload, int(transport.get("latency_ms") or 0)))
         if i % 50 == 0:
-            print(f"  … {i}/{len(cases)}  ({time.perf_counter()-t0:.0f}s)", flush=True)
+            print(f"  … {i}/{len(selected_cases)}  ({time.perf_counter()-t0:.0f}s)", flush=True)
 
-    try:
-        namesake_results = load_namesake_results()
-    except Exception as exc:
-        print(f"[short_gate] INFRASTRUCTURE: namesake universe could not be "
-              f"verified: {type(exc).__name__}: {exc}", flush=True)
-        return EXIT_INFRASTRUCTURE
-    print(f"[short_gate] {len(namesake_results)} ambiguous-name fallthrough "
-          f"cases — none may bind a namesake", flush=True)
+    namesake_results: List[Dict[str, Any]] = []
+    if shard_index == 0:
+        try:
+            namesake_results = load_namesake_results()
+        except Exception as exc:
+            print(f"[short_gate] INFRASTRUCTURE: namesake universe could not be "
+                  f"verified: {type(exc).__name__}: {exc}", flush=True)
+            return EXIT_INFRASTRUCTURE
+        print(f"[short_gate] {len(namesake_results)} ambiguous-name fallthrough "
+              f"cases — none may bind a namesake", flush=True)
     results.extend(namesake_results)
     elapsed = time.perf_counter() - t0
 
     report = build_report(results, elapsed=elapsed,
-                          cases_planned=len(cases) + len(namesake_results),
-                          stub_ok=True)
-    out = _artifact_dir() / ARTIFACT
+                          cases_planned=len(full_manifest), stub_ok=True,
+                          manifest_ids=full_manifest,
+                          shard_index=shard_index, shard_count=shard_count)
+    out = _artifact_dir() / artifact_name(shard_index)
     out.write_text(json.dumps(report, indent=2), encoding="utf-8")
 
     print(f"\n[short_gate] decision={report['decision']} "

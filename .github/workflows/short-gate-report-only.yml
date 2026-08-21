@@ -21,8 +21,12 @@ concurrency:
 
 jobs:
   short-gate:
-    name: Zero-defect extraction (report-only)
+    name: Zero-defect extraction shard ${{ matrix.shard }} (report-only)
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3]
     # Generous against the 900s budget in the code, so the job does not kill the
     # very measurement it exists to take.
     timeout-minutes: 45
@@ -39,6 +43,8 @@ jobs:
       IERE_STORE_ROOT: ${{ github.workspace }}/intelligence-engine/data/evidence_retrieval
       ACCEPTANCE_FIXTURES_ROOT: ${{ github.workspace }}/intelligence-engine/acceptance_fixtures
       ASK_TEST_ARTIFACTS: ${{ github.workspace }}/intelligence-engine/artifacts
+      SHORT_GATE_SHARD_COUNT: '4'
+      SHORT_GATE_SHARD_INDEX: ${{ matrix.shard }}
 
     steps:
       - uses: actions/checkout@v5
@@ -113,6 +119,65 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v6
         with:
-          name: short-gate-measurement
+          name: short-gate-measurement-${{ matrix.shard }}
           path: intelligence-engine/artifacts/_runs/**/short_gate/*.json
+          if-no-files-found: warn
+
+  combine:
+    name: Combine short-gate shards (report-only)
+    needs: short-gate
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/download-artifact@v6
+        with:
+          pattern: short-gate-measurement-*
+          path: intelligence-engine/combined-short-gate
+          merge-multiple: true
+      - name: Verify coverage and combine results
+        working-directory: intelligence-engine
+        env:
+          PYTHONPATH: .
+        run: |
+          python - <<'PY'
+          import glob, json, os, sys
+          from ask_product_test.run_short_gate import combine_reports
+
+          files = sorted(glob.glob("combined-short-gate/*.json"))
+          try:
+              reports = [json.load(open(path)) for path in files]
+              combined = combine_reports(reports)
+          except Exception as exc:
+              print(f"::error::short-gate shard coverage failure: {exc}")
+              raise SystemExit(2)
+
+          out = "combined-short-gate/short_gate_zero_defect_combined.json"
+          with open(out, "w") as handle:
+              json.dump(combined, handle, indent=2)
+          line = "\n".join([
+              "## Short gate combined (report-only)", "",
+              f"- decision: **{combined['decision']}**",
+              f"- coverage: {combined['cases_evaluated']} / {combined['cases_planned']} cases",
+              f"- shards: {combined['shard_count']}",
+              f"- slowest shard: **{combined['elapsed_seconds']}s** of {combined['budget_seconds']}s",
+              f"- defects: `{combined['defects']}`",
+              f"- unique failing cases: {combined['unique_failing_cases']} "
+              f"(P0: {combined['unique_p0_cases']})",
+              "", "Report-only: blocks no merge and no deployment.",
+          ])
+          print(line)
+          if os.environ.get("GITHUB_STEP_SUMMARY"):
+              open(os.environ["GITHUB_STEP_SUMMARY"], "a").write(line + "\n")
+          raise SystemExit(0 if combined["decision"] == "PASS" else 1)
+          PY
+      - name: Upload combined measurement
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: short-gate-measurement-combined
+          path: intelligence-engine/combined-short-gate/short_gate_zero_defect_combined.json
           if-no-files-found: warn
