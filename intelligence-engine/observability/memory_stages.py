@@ -218,6 +218,39 @@ def stage(name: str, *, collect: bool = False, **facts: Any) -> Iterator[dict[st
         })
 
 
+def process_table() -> list[dict[str, Any]]:
+    """Live RSS for every process in the container, not just this one.
+
+    start_engine.sh forks the gather sidecar, so "the engine's memory" is at
+    least two processes. On 21 August that distinction was the whole answer:
+    service memory went 3.09 -> 7.53 GB while the web process sat at 2332 MB
+    and never moved, and the only per-stage reading available for the sidecar
+    was stale because it was captured at stage entry and the stage never
+    returned.
+
+    Reading /proc is live and costs nothing, so a stalled process can no longer
+    hide its size behind a measurement taken minutes ago.
+    """
+    out: list[dict[str, Any]] = []
+    try:
+        pids = [name for name in os.listdir("/proc") if name.isdigit()]
+    except OSError:
+        return out
+    for pid in pids:
+        try:
+            with open(f"/proc/{pid}/statm", "r") as handle:
+                rss = int(handle.read().split()[1]) * _PAGE
+            with open(f"/proc/{pid}/cmdline", "rb") as handle:
+                cmd = handle.read().replace(b"\x00", b" ").decode("utf-8", "replace").strip()
+        except (OSError, IndexError, ValueError):
+            continue
+        if not cmd:
+            continue
+        out.append({"pid": int(pid), "rss_mb": _mb(rss), "cmd": cmd[:110]})
+    out.sort(key=lambda row: row.get("rss_mb") or 0, reverse=True)
+    return out
+
+
 def read_stages(limit: int = 200) -> dict[str, Any]:
     """Everything recorded, newest last. Reads only - starts no work."""
     path = _path()
@@ -239,12 +272,16 @@ def read_stages(limit: int = 200) -> dict[str, Any]:
         delta = row.get("rss_peak_over_before_mb")
         if delta is not None and (worst is None or delta > worst.get("rss_peak_over_before_mb", 0)):
             worst = row
+    processes = process_table()
     return {
         "ok": True,
         "path": path,
         "records": len(rows),
         "rss_now_mb": _mb(rss_bytes()),
         "rss_exact": rss_is_exact(),
+        # The number that located the missing 4.44 GB: every process, live.
+        "processes": processes,
+        "processes_total_rss_mb": round(sum(p.get("rss_mb") or 0 for p in processes), 1),
         "largest_peak_stage": worst,
         "stages": rows,
     }

@@ -57,12 +57,23 @@ def run_parallel(
     concurrency: int = 4,
 ) -> list[dict[str, Any]]:
     """Fan out per-company work. Kept modest: the sources rate-limit aggressively."""
+    from observability import memory_stages as ms
+
     names = list(items)
     if not names:
         return []
     if concurrency <= 1:
         return [worker(name) for name in names]
+
+    # Every company's full result is held here until the whole fan-out finishes.
+    # If a result carries price history, vendor payloads or statement records,
+    # 60 of them are alive at once by the end. Checkpointed every ten so the
+    # shape is visible: flat means the results are small, linear means they are
+    # not and the list is the problem.
     out: list[dict[str, Any]] = []
+    stage_name = str(getattr(worker, "__name__", "") or "worker")
+    ms.heartbeat("fanout_start", worker=stage_name, companies=len(names),
+                 concurrency=int(concurrency))
     with ThreadPoolExecutor(max_workers=max(1, min(int(concurrency), 8))) as pool:
         futures = {pool.submit(worker, name): name for name in names}
         for future in as_completed(futures):
@@ -70,6 +81,10 @@ def run_parallel(
                 out.append(future.result())
             except Exception as exc:
                 out.append({"ok": False, "symbol": futures[future], "error": str(exc)[:200]})
+            if len(out) % 10 == 0:
+                ms.heartbeat("fanout_progress", worker=stage_name, completed=len(out),
+                             of=len(names))
+    ms.heartbeat("fanout_end", worker=stage_name, results=len(out))
     return out
 
 
@@ -130,9 +145,17 @@ def run(
         ),
     }
 
+    # Measured per stage, because one of the five may dominate the payload and
+    # a single number for the whole slice cannot say which.
+    from observability import memory_stages as ms
+
     for stage in wanted:
         try:
-            results[stage] = runners[stage]()
+            with ms.stage(f"backfill_stage_{stage}", companies=companies, days=days) as detail:
+                results[stage] = runners[stage]()
+                brief = results[stage] if isinstance(results[stage], dict) else {}
+                detail["rows"] = brief.get("written") or brief.get("rows")
+                detail["symbols"] = brief.get("symbols") or brief.get("companies")
             if results[stage].get("ok") is False:
                 errors.append({"stage": stage, "error": str(results[stage].get("error"))})
         except Exception as exc:
