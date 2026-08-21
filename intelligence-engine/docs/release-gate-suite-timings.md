@@ -36,10 +36,20 @@ a verdict. 18 suites, 3,845s of child-process time, `decision=FAIL 7/18`.
 
 **Thirteen suites finish inside 60 seconds**, totalling 239s.
 
-A gate in the region of ten minutes is therefore reachable by moving those two
-suites out of it, without dropping any of the other sixteen. That is a
-consequence of the measurements; whether it is the right split depends on which
-suites are meant to block a release, which this document does not decide.
+Removing those two leaves **723s of suite time — 12.05 minutes**, before the job's
+own overhead. Checkout, Python setup, dependency install, acceptance-data
+bootstrap, the health check and the artifact upload all sit outside that figure,
+so the realistic first cut is **13-15 minutes, not 10**.
+
+Reaching ten minutes needs something further: a third suite moved,
+`founder_evaluation_v2` (260s) and `golden_business_20` (154s) being the obvious
+candidates at 57% of the remainder between them; or optimisation; or safe
+parallelism across suites that do not share artifact paths. None of that follows
+from timing alone, which is why this document stops here.
+
+Whether the split is right depends on which suites are meant to block a release
+- risk, determinism, external dependencies and historical pass rate - and this
+document decides none of it.
 
 ## Run history
 
