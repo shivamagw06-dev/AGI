@@ -10514,6 +10514,19 @@ async def hedge_fund_lab_terminal_snapshot_latest():
     )}, "payload": row.get("payload")}
 
 
+@router.get("/hedge-fund-lab/desk-timings")
+async def hedge_fund_lab_desk_timings():
+    """Where a cold desk request actually spends its time.
+
+    Added because I guessed twice and was wrong twice - first that the universe
+    build was the cost, then that the ratio history was. Each stage is timed
+    from a cold cache so the next decision is made from a measurement.
+    """
+    from hedge_fund_lab import desk_timings
+
+    return await run_in_threadpool(desk_timings.measure)
+
+
 @router.get("/hedge-fund-lab/desk-snapshot")
 def hedge_fund_lab_desk_snapshot():
     """How old the desk's universe is and whether the builder is well.
