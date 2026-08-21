@@ -155,9 +155,32 @@ MARKET_OPEN_IST = (9, 0)
 MARKET_CLOSE_IST = (15, 45)
 
 
+def maintenance_window_open(now: Optional[datetime] = None) -> bool:
+    """Whether a declared maintenance window is still running.
+
+    Set WAREHOUSE_MAINTENANCE_UNTIL to a date (YYYY-MM-DD) and the market guard
+    stands down until it passes. It carries its own expiry on purpose: a boolean
+    override is switched on for a quiet week and is still on months later, the
+    first time it costs somebody a trading day.
+
+    An unparseable value means no window. Failing closed here just means the
+    guard stays on, which is the safe direction.
+    """
+    raw = (os.getenv("WAREHOUSE_MAINTENANCE_UNTIL") or "").strip()
+    if not raw:
+        return False
+    try:
+        until = datetime.fromisoformat(raw).date()
+    except ValueError:
+        return False
+    return (now or datetime.now(timezone.utc)).astimezone(IST).date() <= until
+
+
 def within_market_hours(now: Optional[datetime] = None) -> bool:
     """True while the exchange is trading, so heavy work can stand aside."""
     if not _truthy("WAREHOUSE_BACKFILL_MARKET_GUARD", "true"):
+        return False
+    if maintenance_window_open(now):
         return False
     moment = (now or datetime.now(timezone.utc)).astimezone(IST)
     if moment.weekday() >= 5:  # the exchange is shut at the weekend

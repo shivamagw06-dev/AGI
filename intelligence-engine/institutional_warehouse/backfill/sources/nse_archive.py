@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import hashlib
 import io
+import os
 import zipfile
 from datetime import date, datetime, timedelta, timezone
 from typing import Any, Callable, Iterable, Optional
@@ -25,7 +26,52 @@ SOURCE = "nse_bhavcopy"
 
 # NSE's full bhavdata file starts in 2016; the older zipped cm<DDMMMYYYY>bhav.csv
 # archive reaches back to the 1990s. Both patterns are tried per date.
+# How far back the archive itself goes.
 ARCHIVE_FLOOR = date(1995, 1, 1)
+
+# How far back we choose to collect. The archive reaches 1995; ten years is what
+# the research actually uses, and without a floor the walker simply keeps going -
+# it had no stopping point at all, so it would have spent months collecting the
+# 1990s that nothing reads.
+COLLECT_YEARS = 10
+
+
+def collection_floor(today: Optional[date] = None) -> date:
+    """The oldest day worth collecting, as a real date rather than a promise."""
+    raw = (os.getenv("WAREHOUSE_BACKFILL_ARCHIVE_FLOOR") or "").strip()
+    if raw:
+        try:
+            return datetime.strptime(raw, "%Y-%m-%d").date()
+        except ValueError:
+            pass
+    anchor = today or datetime.now(timezone.utc).date()
+    try:
+        return anchor.replace(year=anchor.year - COLLECT_YEARS)
+    except ValueError:  # 29 February
+        return anchor.replace(year=anchor.year - COLLECT_YEARS, day=28)
+
+
+def collection_complete(floor: Optional[date] = None) -> dict[str, Any]:
+    """Whether the walk has reached its floor, and how to tell.
+
+    A walk that has finished and a walk that is stuck both stop producing rows.
+    The difference is whether anything is still owed, so that is what gets
+    reported rather than left to be inferred from silence.
+    """
+    target = floor or collection_floor()
+    frontier = checkpoints.frontier_date(SOURCE)
+    coverage = checkpoints.date_coverage(SOURCE) or {}
+    pending = int((coverage.get("by_status") or {}).get("pending") or 0)
+    reached = bool(frontier) and frontier <= target.isoformat()
+    return {
+        "floor": target.isoformat(),
+        "oldest_collected": frontier,
+        "pending_days": pending,
+        "complete": reached and pending == 0,
+        "reason": ("reached_floor" if reached and pending == 0
+                   else "days_still_owed" if pending
+                   else "still_walking_back"),
+    }
 
 
 def trading_days_backwards(
@@ -246,6 +292,8 @@ def backfill(
     #
     # So: a short window at the top for days as they appear, and a long one from
     # the oldest day already collected, which moves back as the work advances.
+    if floor_date is None:
+        floor_date = collection_floor()
     if start_date is not None:
         candidates = trading_days_backwards(start=start_date, floor=floor_date,
                                             limit=max(int(days) * 6, int(days)))

@@ -77,3 +77,34 @@ class TestMarketHours:
         finally:
             scheduler.stop_backfill()
             scheduler._BACKFILL_THREAD = None
+
+
+class TestMaintenanceWindow:
+    """A declared window that expires by itself.
+
+    A boolean override gets switched on for a quiet week and is still on months
+    later - discovered the first time it costs somebody a trading day.
+    """
+
+    def test_the_guard_stands_down_inside_the_window(self, monkeypatch):
+        monkeypatch.setenv("WAREHOUSE_MAINTENANCE_UNTIL", "2026-08-26")
+        assert not scheduler.within_market_hours(_ist("2026-08-21", 11, 48))
+
+    def test_it_expires_on_its_own(self, monkeypatch):
+        """The day after the window closes, trading hours are protected again
+        without anyone having to remember."""
+        monkeypatch.setenv("WAREHOUSE_MAINTENANCE_UNTIL", "2026-08-26")
+        assert scheduler.within_market_hours(_ist("2026-08-27", 11, 48))
+
+    def test_the_last_day_is_included(self, monkeypatch):
+        monkeypatch.setenv("WAREHOUSE_MAINTENANCE_UNTIL", "2026-08-26")
+        assert not scheduler.within_market_hours(_ist("2026-08-26", 11, 48))
+
+    def test_no_window_declared_means_the_guard_holds(self, monkeypatch):
+        monkeypatch.delenv("WAREHOUSE_MAINTENANCE_UNTIL", raising=False)
+        assert scheduler.within_market_hours(_ist("2026-08-21", 11, 48))
+
+    def test_a_malformed_date_does_not_open_the_window(self, monkeypatch):
+        """Failing closed here leaves the guard on, which is the safe direction."""
+        monkeypatch.setenv("WAREHOUSE_MAINTENANCE_UNTIL", "next friday")
+        assert scheduler.within_market_hours(_ist("2026-08-21", 11, 48))

@@ -19926,6 +19926,18 @@ def warehouse_backfill_reopen_entities(payload: dict[str, Any] = Body(default_fa
     return checkpoints.reopen_entities(kind, reason=reason)
 
 
+@router.get("/warehouse/backfill/archive-floor")
+def warehouse_archive_floor():
+    """Where the bhavcopy walk stops, and whether it has got there.
+
+    A walk that has finished and a walk that is stuck both stop producing rows.
+    This reports which, rather than leaving it to be inferred from silence.
+    """
+    from institutional_warehouse.backfill.sources import nse_archive
+
+    return {"ok": True, **nse_archive.collection_complete()}
+
+
 @router.get("/warehouse/backfill/progress")
 def warehouse_backfill_progress(kind: str = "upstox_prices"):
     from institutional_warehouse.backfill import checkpoints

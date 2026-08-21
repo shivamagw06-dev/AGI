@@ -885,3 +885,59 @@ class TestReopenEntities:
         out = checkpoints.entity_progress("k_named")
         assert [f["entity"] for f in out["failed"]] == ["BADCO"]
         assert "no candles" in out["failed"][0]["error"]
+
+
+class TestCollectionFloor:
+    """Where the archive walk stops, and how it says so.
+
+    The NSE archive reaches 1995 and the walker had no floor at all, so it would
+    have spent months collecting a decade nothing reads.
+    """
+
+    def test_the_floor_is_ten_years_back(self):
+        from datetime import date
+        assert nse_archive.collection_floor(date(2026, 8, 21)) == date(2016, 8, 21)
+
+    def test_a_leap_day_does_not_raise(self):
+        """29 February has no counterpart ten years earlier."""
+        from datetime import date
+        assert nse_archive.collection_floor(date(2024, 2, 29)) == date(2014, 2, 28)
+
+    def test_the_floor_can_be_set_explicitly(self, monkeypatch):
+        from datetime import date
+        monkeypatch.setenv("WAREHOUSE_BACKFILL_ARCHIVE_FLOOR", "2018-04-01")
+        assert nse_archive.collection_floor() == date(2018, 4, 1)
+
+    def test_a_malformed_floor_falls_back_to_ten_years(self, monkeypatch):
+        from datetime import date
+        monkeypatch.setenv("WAREHOUSE_BACKFILL_ARCHIVE_FLOOR", "ten years ago")
+        assert nse_archive.collection_floor(date(2026, 8, 21)) == date(2016, 8, 21)
+
+    def test_the_walk_does_not_reach_past_the_floor(self):
+        from datetime import date
+        days = nse_archive.trading_days_backwards(
+            start=date(2016, 8, 25), floor=date(2016, 8, 21), limit=500)
+        assert min(days) >= "2016-08-21"
+
+    def test_finished_and_stuck_are_reported_differently(self):
+        """Both stop producing rows. The difference is whether anything is owed."""
+        from datetime import date
+        source = nse_archive.SOURCE
+        checkpoints.mark_date(source, "2020-01-02", status=checkpoints.DONE, rows=10)
+        out = nse_archive.collection_complete(floor=date(2016, 8, 21))
+        assert out["complete"] is False
+        assert out["reason"] == "still_walking_back"
+
+    def test_it_reports_complete_once_the_floor_is_reached(self):
+        from datetime import date
+        source = "src_floor_done"
+        checkpoints.mark_date(source, "2016-08-19", status=checkpoints.DONE, rows=10)
+        import institutional_warehouse.backfill.sources.nse_archive as na
+        original = na.SOURCE
+        try:
+            na.SOURCE = source
+            out = na.collection_complete(floor=date(2016, 8, 21))
+            assert out["complete"] is True
+            assert out["reason"] == "reached_floor"
+        finally:
+            na.SOURCE = original
