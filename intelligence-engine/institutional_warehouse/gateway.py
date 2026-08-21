@@ -31,8 +31,9 @@ import uuid
 from typing import Any, Iterable, Optional, Sequence
 
 from institutional_warehouse import (
-    audit, conflicts, db, missing_values, ownership, price_basis, quality,
-    statement_identity, store, units, validation,
+    audit, canonical_rows, conflicts, db, missing_values, ownership,
+    period_identity, price_basis, quality, statement_identity, store, units,
+    validation,
 )
 from institutional_warehouse.schema import find_tab
 from institutional_warehouse.values import now_iso
@@ -99,12 +100,29 @@ def write(
     #    is part of the natural key, and a row with an empty key part is skipped.
     incoming = statement_identity.apply_identity(tab, incoming)
 
+    # 1b. Period identity, on every write regardless of source.
+    #
+    #     Four spellings of the June 2026 quarter are live at once. Normalising
+    #     only the trusted sources looks safer and is worse: two sources stop
+    #     landing on the same row, so they can never be seen to disagree, and
+    #     conflict detection goes quiet exactly where it is needed. Sources share
+    #     a row here by design - that is why `source` is not in the natural key.
+    #
+    #     This governs incoming writes only. No stored label is rewritten.
+    incoming = period_identity.stamp(tab_id, incoming, canonicalise_label=True)
+
     # 2. Units, before anything reads a number. Aggregate money becomes INR
     #    million so validation ranges and conflict tolerances mean the same
     #    thing whichever vendor sent the row.
     unit_result = units.normalise_rows(tab_id, incoming, source=source,
                                        reported_unit=reported_unit)
     incoming = unit_result["rows"]
+
+    # 2b. Whether each row may be read as the answer. Decided here because it
+    #     depends on the unit having been resolved: "assumed canonical" is the
+    #     absence of a unit, and it is what stored absolute rupees in a column
+    #     of INR million.
+    incoming = canonical_rows.stamp(tab_id, incoming, source=source)
 
     # 3. Missing-value intelligence, before validation sees the row: a zero that
     #    means "absent" must not be validated as though it were a reading.
@@ -127,6 +145,16 @@ def write(
         detect_conflicts = False
     if detect_conflicts and accepted:
         found_conflicts = conflicts.detect(tab_id, accepted, source=source, actor=actor)
+
+    # 5b. Protect what is already readable. A non-canonical row may not
+    #     overwrite a canonical one, and a row whose magnitude nobody knows may
+    #     not overwrite one that has been normalised - that is not an update but
+    #     the rupees-into-a-millions-column defect happening again.
+    guard_counts: dict[str, int] = {}
+    if accepted and canonical_rows.is_fundamental(tab_id):
+        accepted, guard_counts = canonical_rows.guard(
+            tab_id, accepted, _existing_by_row_id(tab, accepted),
+            key_of=lambda row: store.make_row_id(tab, row))
 
     # 6. Persist.
     result = store.upsert(tab_id, accepted, source=source, actor=actor,
@@ -169,6 +197,8 @@ def write(
         "reclassified_zeros": reclassified,
         "conflicts": len(found_conflicts),
         "quality_stamped": stamped,
+        "canonical": canonical_rows.summarise(accepted),
+        **guard_counts,
         "warnings": report["warning_count"],
         "unit": unit_result.get("unit"),
         "values_rescaled": unit_result.get("converted", 0),
@@ -179,6 +209,21 @@ def write(
            for k in ("inserted", "updated", "unchanged", "skipped", "left_alone",
                      "nulls_refused")},
     }
+
+
+def _existing_by_row_id(tab, rows: Sequence[dict[str, Any]]) -> dict[str, dict[str, Any]]:
+    """The stored rows these incoming rows would land on, keyed by row id."""
+    ids = [rid for rid in (store.make_row_id(tab, row) for row in rows) if rid]
+    if not ids:
+        return {}
+    table = db.physical_table(tab.id)
+    found: dict[str, dict[str, Any]] = {}
+    for start in range(0, len(ids), 400):
+        batch = ids[start:start + 400]
+        marks = ", ".join("?" for _ in batch)
+        for row in db.query(f"SELECT * FROM {table} WHERE row_id IN ({marks})", batch):
+            found[str(row["row_id"])] = row
+    return found
 
 
 def _quarantine(tab_id: str, rejected: Sequence[dict[str, Any]], *, source: str,
