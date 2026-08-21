@@ -199,6 +199,15 @@ def test_numeric_grounding_finds_invented_financial_figures():
     assert unsupported == ["18.4", "22.6", "4820"]
 
 
+def test_numeric_grounding_handles_zero_scientific_and_indian_grouping():
+    unsupported = unsupported_numeric_claims(
+        "Loss was 0 and exposure was 1e6 rupees.",
+        {"loss": 0, "exposure": "10,00,000"},
+    )
+    assert unsupported == []
+    assert unsupported_numeric_claims("Exposure was 1e6 rupees.", {}) == ["1000000"]
+
+
 def test_service_rejects_invented_figures_and_uses_safe_fallback():
     class FabricatingProvider:
         name = "fabricating"

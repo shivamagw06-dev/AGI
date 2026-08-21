@@ -21,7 +21,8 @@ from editorial.template_fallback import render_template
 
 _WORD_RE = re.compile(r"\s+")
 _NUMBER_RE = re.compile(
-    r"(?<![\w.])(?:[₹$€£]\s*)?[+-]?(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?%?(?![\w.])"
+    r"(?<![\w.])(?:[₹$€£]\s*)?[+-]?(?:\d[\d,]*(?:\.\d+)?|\.\d+)"
+    r"(?:[eE][+-]?\d+)?%?(?![\w.])"
 )
 _ADVICE_LINE = re.compile(
     r"(?im)^\s*(recommendation|action|rating|call|verdict|stance|"
@@ -81,7 +82,9 @@ def _numbers_in(value: Any) -> set[str]:
         for item in value:
             out.update(_numbers_in(item))
         return out
-    text = str(value or "")
+    if value is None:
+        return set()
+    text = str(value)
     return {
         normalised
         for match in _NUMBER_RE.findall(text)
