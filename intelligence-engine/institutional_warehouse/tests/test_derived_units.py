@@ -74,7 +74,8 @@ def test_a_derivation_lands_on_a_declared_row():
              "sys_reported_unit": "crore", "is_canonical": 1}
     derived = {"row_id": "r1", **KEYS, "free_cash_flow": 400.0}
     kept, _ = canonical_rows.guard("financials_quarterly", [derived],
-                                   {"r1": prior}, key_of=lambda r: r["row_id"])
+                                   {"r1": prior}, key_of=lambda r: r["row_id"],
+                                   source="formula_engine")
     assert len(kept) == 1
 
 
@@ -121,4 +122,122 @@ def test_deriving_preserves_provenance_and_trust(source, expect_trust, tmp_path,
                   "sys_unit_scale", "is_canonical"):
         assert after[field] == before[field], f"{field} changed"
     assert st.classify(tab, after) == expect_trust
+    db.reset_backend()
+
+
+# --- the exemption requires the authorised writer, not just the shape -------
+
+PRIOR = {"row_id": "r1", "source": "upstox", "sys_unit_method": "declared",
+         "sys_reported_unit": "crore", "is_canonical": 1}
+
+
+def _guard(row, source):
+    from institutional_warehouse import canonical_rows
+    return canonical_rows.guard("financials_quarterly", [row], {"r1": PRIOR},
+                                key_of=lambda r: r["row_id"], source=source)
+
+
+def test_the_formula_engine_may_write_derived_columns():
+    kept, _ = _guard({"row_id": "r1", "symbol": "ACME", "free_cash_flow": 400.0},
+                     "formula_engine")
+    assert len(kept) == 1
+
+
+@pytest.mark.parametrize("source", [
+    "yahoo_finance_statements", "financial_connector",
+    "earnings_intelligence_p21", "upstox",
+])
+def test_another_feed_cannot_use_the_exemption_by_shaping_its_payload(source):
+    """Shape is not entitlement.
+
+    Keying the exemption on payload shape alone let any feed reach a trusted row
+    its reported writes are refused from, simply by sending a row containing
+    nothing but free_cash_flow.
+    """
+    kept, counts = _guard(
+        {"row_id": "r1", "symbol": "ACME", "free_cash_flow": 9.9e9}, source)
+    assert kept == [] and counts
+
+
+def test_the_formula_engine_carrying_a_reported_field_is_refused():
+    """A reported write from the formula engine is still a reported write."""
+    kept, counts = _guard(
+        {"row_id": "r1", "symbol": "ACME", "free_cash_flow": 400.0,
+         "revenue": 9.9e9}, "formula_engine")
+    assert kept == [] and counts.get("refused_downgrade") == 1
+
+
+def test_both_halves_are_required():
+    from institutional_warehouse import derived_units as d
+    derived = {"symbol": "ACME", "free_cash_flow": 400.0}
+    reported = {"symbol": "ACME", "revenue": 1.0}
+    assert d.is_derived_write(derived, "formula_engine") is True
+    assert d.is_derived_write(derived, "yahoo_finance_statements") is False
+    assert d.is_derived_write(reported, "formula_engine") is False
+
+
+# --- provenance and keys cannot be changed through the exemption -----------
+
+def test_a_derived_write_may_not_re_own_the_row():
+    """The drift incident arriving by a new door.
+
+    A derived payload claiming a different source rewrote provenance through
+    the exemption - upstox became formula_engine on a stable row_id. Refused
+    rather than stripped, because a caller sending the wrong source is a bug
+    worth surfacing.
+    """
+    kept, counts = _guard(
+        {"row_id": "r1", "symbol": "ACME", "source": "formula_engine",
+         "free_cash_flow": 400.0}, "formula_engine")
+    assert kept == [] and counts.get("refused_provenance_change") == 1
+
+
+def test_a_derived_write_preserving_the_parent_source_is_allowed():
+    """What the real formula engine sends: the parent's own source."""
+    kept, _ = _guard({"row_id": "r1", "symbol": "ACME", "source": "upstox",
+                      "free_cash_flow": 400.0}, "formula_engine")
+    assert len(kept) == 1
+
+
+def test_provenance_survives_a_real_derivation(tmp_path, monkeypatch):
+    monkeypatch.setenv("INSTITUTIONAL_WAREHOUSE_ROOT", str(tmp_path))
+    from institutional_warehouse import db, formulas, gateway, schema, store
+    db.reset_backend(); db.init(force=True)
+    tab_id = "financials_quarterly"
+    key = {"symbol": "ACME", "statement_type": "CONSOLIDATED",
+           "fiscal_period": "FY2027Q1"}
+    gateway.write(tab_id, [{**key, "source": "upstox", "cfo": 500.0,
+                            "capex": -100.0, "equity": 4000.0,
+                            "shares_outstanding": 100.0}],
+                  source="upstox", actor="seed")
+    row_id = store.make_row_id(schema.find_tab(tab_id), key)
+    read = lambda: dict(db.query(
+        f"SELECT * FROM {db.physical_table(tab_id)} WHERE row_id=?", (row_id,))[0])
+    before = read()
+    formulas.recalc_statement_derivations(actor="test")
+    after = read()
+    assert after["free_cash_flow"] is not None
+    for field in ("source", "symbol", "statement_type", "fiscal_period",
+                  "sys_reported_unit", "sys_unit_method", "is_canonical"):
+        assert after[field] == before[field], f"{field} changed"
+    db.reset_backend()
+
+
+def test_a_derived_write_under_a_different_key_cannot_touch_the_original(
+        tmp_path, monkeypatch):
+    """A different natural key is a different row, not a rewrite of this one."""
+    monkeypatch.setenv("INSTITUTIONAL_WAREHOUSE_ROOT", str(tmp_path))
+    from institutional_warehouse import db, gateway
+    db.reset_backend(); db.init(force=True)
+    tab_id = "financials_quarterly"
+    gateway.write(tab_id, [{"symbol": "ACME", "statement_type": "CONSOLIDATED",
+                            "fiscal_period": "FY2027Q1", "source": "upstox",
+                            "cfo": 500.0}], source="upstox", actor="seed")
+    gateway.write(tab_id, [{"symbol": "OTHERCO", "statement_type": "CONSOLIDATED",
+                            "fiscal_period": "FY2027Q1", "source": "formula_engine",
+                            "free_cash_flow": 123.0}],
+                  source="formula_engine", actor="t")
+    acme = db.query(f"SELECT source FROM {db.physical_table(tab_id)}"
+                    f" WHERE symbol='ACME'")[0]
+    assert acme["source"] == "upstox"
     db.reset_backend()

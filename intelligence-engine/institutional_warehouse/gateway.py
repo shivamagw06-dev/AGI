@@ -154,7 +154,7 @@ def write(
     if accepted and canonical_rows.is_fundamental(tab_id):
         accepted, guard_counts = canonical_rows.guard(
             tab_id, accepted, _existing_by_row_id(tab, accepted),
-            key_of=lambda row: store.make_row_id(tab, row))
+            key_of=lambda row: store.make_row_id(tab, row), source=source)
 
     # 6. Persist.
     result = store.upsert(tab_id, accepted, source=source, actor=actor,
@@ -164,7 +164,7 @@ def write(
 
     # 7. Unit and quality metadata for the rows that landed. Both are system
     #    columns, which store.upsert does not carry, so they are written here.
-    _stamp_units(tab, accepted)
+    _stamp_units(tab, accepted, source=source)
     stamped = _stamp_quality(tab, accepted, source=source,
                             conflicted={c["row_id"] for c in found_conflicts})
 
@@ -254,7 +254,7 @@ def _quarantine(tab_id: str, rejected: Sequence[dict[str, Any]], *, source: str,
     return len(payload)
 
 
-def _stamp_units(tab, accepted: Sequence[dict[str, Any]]) -> int:
+def _stamp_units(tab, accepted: Sequence[dict[str, Any]], *, source: Any = None) -> int:
     """Persist the unit provenance the normaliser attached to each row.
 
     Without this the stamp never reaches the database, every stored row looks
@@ -270,7 +270,7 @@ def _stamp_units(tab, accepted: Sequence[dict[str, Any]]) -> int:
         # the row already carries. Without this, computing free_cash_flow on an
         # Upstox row would overwrite its declared "crore" provenance with
         # whatever the formula engine's source resolved to.
-        if derived_units.is_derived_only(row):
+        if derived_units.is_derived_write(row, source):
             continue
         unit = row.get("sys_reported_unit")
         if not unit:

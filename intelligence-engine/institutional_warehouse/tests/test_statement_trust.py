@@ -333,8 +333,8 @@ def test_a_derivation_should_be_allowed_onto_a_declared_row():
 
     prior = {"row_id": "r1", "source": "upstox", "sys_unit_method": "declared",
              "sys_reported_unit": "crore", "is_canonical": 1}
-    derived = {"row_id": "r1", "source": "upstox",
-               "sys_unit_method": "assumed_canonical", "free_cash_flow": 400.0}
+    derived = {"row_id": "r1", "source": "upstox", "free_cash_flow": 400.0}
     kept, _counts = canonical_rows.guard(
-        QT, [derived], {"r1": prior}, key_of=lambda r: r["row_id"])
+        QT, [derived], {"r1": prior}, key_of=lambda r: r["row_id"],
+        source="formula_engine")
     assert len(kept) == 1, "a derivation should be able to land on a trusted row"

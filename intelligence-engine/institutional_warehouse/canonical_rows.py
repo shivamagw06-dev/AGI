@@ -118,7 +118,7 @@ def stamp(tab_id: str, rows: Sequence[dict[str, Any]], *, source: Any) -> list[d
         # been judged. Stamping it here would recompute that judgement from the
         # formula engine's own source and overwrite it, turning a trusted row
         # non-canonical for the crime of receiving a free_cash_flow.
-        if derived_units.is_derived_only(new_row):
+        if derived_units.is_derived_write(new_row, source):
             out.append(new_row)
             continue
         why = blockers(tab_id, new_row, source=source)
@@ -195,7 +195,7 @@ def _row_is_trusted(tab_id: str, row: dict[str, Any]) -> bool:
 
 
 def guard(tab_id: str, rows: Sequence[dict[str, Any]], existing: dict[str, dict[str, Any]],
-          *, key_of: Any) -> tuple[list[dict[str, Any]], dict[str, int]]:
+          *, key_of: Any, source: Any = None) -> tuple[list[dict[str, Any]], dict[str, int]]:
     """Stop a write that would corrupt a row already fit to be read.
 
     Two refusals, both for things that have happened here:
@@ -218,6 +218,7 @@ def guard(tab_id: str, rows: Sequence[dict[str, Any]], existing: dict[str, dict[
     kept: list[dict[str, Any]] = []
     refused_downgrade = 0
     refused_units = 0
+    refused_provenance = 0
     for row in rows or []:
         prior = existing.get(key_of(row)) or {}
         if not prior:
@@ -230,7 +231,18 @@ def guard(tab_id: str, rows: Sequence[dict[str, Any]], existing: dict[str, dict[
         # declared row while allowing it onto assumed_canonical ones - exactly
         # backwards. It cannot promote the row either: the payload has no
         # reported value and store.upsert leaves source untouched on update.
-        if derived_units.is_derived_only(row):
+        if derived_units.is_derived_write(row, source):
+            # The exemption adds computed columns. It does not re-own the row.
+            # A derived payload claiming a different source rewrote provenance
+            # through the exemption - upstox became formula_engine on a stable
+            # row_id, which is the drift incident arriving by a new door.
+            # Refused rather than stripped, because a caller sending the wrong
+            # source is a bug worth surfacing.
+            claimed = str(row.get("source") or "").strip().lower()
+            held = str(prior.get("source") or "").strip().lower()
+            if claimed and held and claimed != held:
+                refused_provenance += 1
+                continue
             kept.append(row)
             continue
 
@@ -249,4 +261,6 @@ def guard(tab_id: str, rows: Sequence[dict[str, Any]], existing: dict[str, dict[
         counts["refused_downgrade"] = refused_downgrade
     if refused_units:
         counts["refused_unknown_units"] = refused_units
+    if refused_provenance:
+        counts["refused_provenance_change"] = refused_provenance
     return kept, counts

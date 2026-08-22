@@ -68,6 +68,17 @@ def _is_metadata(field: str) -> bool:
 
 DERIVED_FIELDS: Set[str] = set(DERIVED_FIELD_UNITS)
 
+#: Who is allowed to write derived columns. The exemption skips the unit guard,
+#: the unit stamp and the canonical stamp, so it cannot rest on payload shape
+#: alone - any feed could then send a row containing only free_cash_flow and
+#: reach a trusted row that its reported writes are refused from. Shape says
+#: what a payload is; this says who is entitled to send it.
+DERIVED_WRITERS: Set[str] = {"formula_engine"}
+
+
+def is_derived_writer(source: Any) -> bool:
+    return str(source or "").strip().lower() in DERIVED_WRITERS
+
 
 def unit_of(field: str) -> Optional[str]:
     return DERIVED_FIELD_UNITS.get(field)
@@ -96,14 +107,27 @@ def carries_money(row: Dict[str, Any]) -> bool:
 def is_derived_only(row: Dict[str, Any]) -> bool:
     """Whether this payload carries computed columns and nothing reported.
 
-    A row that also carries revenue is a reported write wearing a derived
-    write's clothes, and is not exempt from anything.
+    Shape only. Callers granting the exemption must also check the writer with
+    :func:`is_derived_write` - a row that looks derived is not the same as one
+    the formula engine sent.
     """
     fields = {field for field, value in (row or {}).items()
               if value is not None and not _is_metadata(field)}
     if not fields:
         return False
     return fields <= DERIVED_FIELDS
+
+
+def is_derived_write(row: Dict[str, Any], source: Any) -> bool:
+    """Whether this write may take the derived-only exemption.
+
+    Both halves: the payload carries nothing but computed columns, and the
+    writer is one entitled to compute them. Either alone is not enough - a
+    reported write from the formula engine is still a reported write, and a
+    derived-shaped payload from a vendor feed is a vendor feed writing to a row
+    it is otherwise refused from.
+    """
+    return is_derived_writer(source) and is_derived_only(row)
 
 
 def split(rows: Iterable[Dict[str, Any]]) -> tuple[list, list]:
