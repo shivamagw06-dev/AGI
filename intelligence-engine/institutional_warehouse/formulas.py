@@ -261,8 +261,21 @@ def _statement_type_rank(row: dict[str, Any]) -> tuple[int, str]:
 
 
 def _preferred_statement_series(statements: list[dict[str, Any]], key: str) -> list[dict[str, Any]]:
+    """Every period, trusted or not.
+
+    The formula engine derives columns for the rows that exist rather than
+    reading an answer, so it opts in deliberately: the derivation inherits the
+    trust of the row it came from, and the read path is where filtering belongs.
+
+    Deriving from an unverified row does not promote it. Measured end to end -
+    source, unit method, reported unit and is_canonical are all unchanged after
+    free_cash_flow lands, and the row stays out of the default read. That is the
+    guarantee the source-drift incident needs, where formula_engine once rewrote
+    `source` on rows it derived from.
+    """
     return canonical_statement_series(
-        statements, period_key=key, annual=key == "fiscal_year"
+        statements, period_key=key, annual=key == "fiscal_year",
+        include_unverified=True,
     )
 
 
