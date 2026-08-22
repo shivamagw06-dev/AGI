@@ -82,6 +82,13 @@ jobs:
           if [ "$rc" = "2" ]; then echo "::error::short gate infrastructure failure"; fi
           exit "$rc"
 
+      - name: Run critical UI home regression
+        if: matrix.shard == 0
+        working-directory: intelligence-engine
+        env:
+          PYTHONPATH: .
+        run: pytest -q tests/test_ui_home_cache.py
+
       - name: Summarise the measurement
         if: always()
         working-directory: intelligence-engine
@@ -140,6 +147,10 @@ jobs:
         env:
           PYTHONPATH: .
         run: |
+          if [ "${{ needs.short-gate.result }}" != "success" ]; then
+            echo "::error::one or more required shard jobs failed"
+            exit 2
+          fi
           python - <<'PY'
           import glob, json, os, sys
           from ask_product_test.run_short_gate import combine_reports
