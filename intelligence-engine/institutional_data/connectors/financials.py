@@ -145,6 +145,22 @@ class FinancialStatementsConnector(Connector):
         )
         if not pack.get("ok"):
             return [], "nse_earnings_empty"
+
+        def provenance(row: dict[str, Any]) -> dict[str, Any]:
+            return {
+                "units_in": row.get("units_in"),
+                "metadata": {
+                    "source": "earnings_intelligence",
+                    "provider": row.get("provider") or "nse_india",
+                    "parser_path": row.get("parser_path"),
+                    "xbrl_url": row.get("xbrl_url"),
+                    "unit_resolution": row.get("unit_resolution"),
+                    "scaled_from_integrated_lakhs": bool(
+                        row.get("scaled_from_integrated_lakhs")
+                    ),
+                },
+            }
+
         out: list[dict[str, Any]] = []
         for row in pack.get("quarter_history") or []:
             inc = row.get("income_statement") or {}
@@ -166,7 +182,7 @@ class FinancialStatementsConnector(Connector):
                         "net_income": inc.get("pat_owners") or inc.get("pat"),
                         "eps": inc.get("eps_basic"),
                     },
-                    "metadata": {"source": "earnings_intelligence", "xbrl_url": row.get("xbrl_url")},
+                    **provenance(row),
                     "ttm": False,
                     "quality_score": 0.9,
                     "restatement": False,
@@ -196,7 +212,7 @@ class FinancialStatementsConnector(Connector):
                             "net_income": inc.get("pat_owners") or inc.get("pat"),
                             "eps": inc.get("eps_basic"),
                         },
-                        "metadata": {"source": "earnings_intelligence", "xbrl_url": row.get("xbrl_url")},
+                        **provenance(row),
                         "ttm": False,
                         "quality_score": 0.9,
                         "restatement": False,
@@ -218,7 +234,7 @@ class FinancialStatementsConnector(Connector):
                             "equity": bal.get("total_equity"),
                             "shares": None,
                         },
-                        "metadata": {"source": "earnings_intelligence", "xbrl_url": row.get("xbrl_url")},
+                        **provenance(row),
                         "ttm": False,
                         "quality_score": 0.9,
                         "restatement": False,
@@ -239,7 +255,7 @@ class FinancialStatementsConnector(Connector):
                             "fcf": cf.get("free_cash_flow"),
                             "capex": cf.get("capex"),
                         },
-                        "metadata": {"source": "earnings_intelligence", "xbrl_url": row.get("xbrl_url")},
+                        **provenance(row),
                         "ttm": False,
                         "quality_score": 0.9,
                         "restatement": False,
@@ -300,6 +316,10 @@ class FinancialStatementsConnector(Connector):
                 "restatement": r.get("restatement", False),
                 "version": r.get("version") or 1,
                 "metadata": r.get("metadata") or {},
+                "units_in": r.get("units_in"),
+                "provider": (r.get("metadata") or {}).get("provider"),
+                "parser_path": (r.get("metadata") or {}).get("parser_path"),
+                "source_document": (r.get("metadata") or {}).get("xbrl_url"),
             }
             # Flatten key accounts for HD derived producers
             for k, v in (r.get("accounts") or {}).items():
@@ -470,9 +490,14 @@ class FinancialStatementsConnector(Connector):
                         "restatement": False,
                         "version": 1,
                         "metadata": {"source": "yahoo_quoteSummary"},
+                        "units_in": "rupee",
                         "ttm": False,
                     }
                 )
+                out[-1]["metadata"].update({
+                    "provider": "yahoo_finance",
+                    "parser_path": "yahoo_quotesummary",
+                })
         return out
 
     def _accounts_from_row(self, row: dict[str, Any], stype: str) -> dict[str, Any]:

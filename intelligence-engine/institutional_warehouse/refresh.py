@@ -676,6 +676,7 @@ def stage_knowledge_factory(*, actor: str, limit: Optional[int] = None) -> dict[
 
 def _statement_row(entity: str, record: dict[str, Any], *, annual: bool) -> Optional[dict[str, Any]]:
     payload = record.get("payload") or {}
+    metadata = payload.get("metadata") if isinstance(payload.get("metadata"), dict) else {}
     period = str(record.get("period") or "").strip()
     if not period:
         return None
@@ -694,6 +695,18 @@ def _statement_row(entity: str, record: dict[str, Any], *, annual: bool) -> Opti
         "source": str(record.get("source") or "knowledge_factory_hd"),
         "statement_version": str(payload.get("statement") or "mixed"),
     }
+    units_in = payload.get("units_in") or metadata.get("units_in")
+    if units_in:
+        row["units_in"] = units_in
+    source_document = payload.get("source_document") or metadata.get("xbrl_url")
+    if source_document:
+        row["source_document"] = source_document
+    provider = payload.get("provider") or metadata.get("provider")
+    parser_path = payload.get("parser_path") or metadata.get("parser_path")
+    if provider and parser_path:
+        row["statement_version"] = f"{provider}:{parser_path}"
+    elif provider or parser_path:
+        row["statement_version"] = str(provider or parser_path)
     if annual:
         row["fiscal_year"] = period
     else:

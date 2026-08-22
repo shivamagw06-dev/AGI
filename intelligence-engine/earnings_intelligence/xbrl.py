@@ -5,6 +5,8 @@ from __future__ import annotations
 import re
 from typing import Any
 
+from institutional_warehouse import units as warehouse_units
+from institutional_warehouse import xbrl_units as xu
 from ownership_intelligence.dates import parse_nse_date
 
 # Map local XBRL concept → canonical pack field (OneD = period facts)
@@ -74,6 +76,30 @@ CASHFLOW_MAP = {
     "CashAndCashEquivalentsCashFlowStatement": "cash_end",
 }
 
+_NON_AGGREGATE_DESTINATIONS = {
+    "eps_basic", "eps_basic_cont", "eps_diluted", "eps_diluted_cont",
+    "face_value", "shares_outstanding",
+}
+_PER_SHARE_CONCEPTS = {
+    source
+    for mapping in (INCOME_MAP, BALANCE_MAP)
+    for source, destination in mapping.items()
+    if destination in {
+        "eps_basic", "eps_basic_cont", "eps_diluted", "eps_diluted_cont",
+        "face_value",
+    }
+}
+_AGGREGATE_CONCEPTS = {
+    source
+    for mapping in (INCOME_MAP, BALANCE_MAP, CASHFLOW_MAP)
+    for source, destination in mapping.items()
+    if destination not in _NON_AGGREGATE_DESTINATIONS
+} | {
+    "SegmentRevenue", "SegmentRevenueFromOperations", "SegmentProfitBeforeTax",
+    "SegmentProfitLossBeforeTaxAndFinanceCosts", "SegmentAssets",
+    "SegmentLiabilities", "SegmentFinanceCosts",
+}
+
 
 def download_xbrl(url: str, *, opener=None) -> bytes:
     from live_data.collectors.base import http_get, nse_session_opener
@@ -101,20 +127,107 @@ def _num(raw: str) -> float | None:
         return None
 
 
-def _facts_for_context(text: str, ctx: str) -> dict[str, float]:
+def _attribute(attrs: str, name: str) -> str | None:
+    match = re.search(rf'\b{re.escape(name)}\s*=\s*["\']([^"\']*)["\']', attrs or "")
+    return match.group(1) if match else None
+
+
+def _record_unit_outcome(
+    audit: dict[str, Any],
+    *,
+    resolved: bool,
+    reason: str,
+    category: str = "money",
+) -> None:
+    key = f"{'resolved' if resolved else 'rejected'}_{category}_facts"
+    audit[key] = int(audit.get(key) or 0) + 1
+    reasons = audit.setdefault("reasons", {})
+    reasons[reason] = int(reasons.get(reason) or 0) + 1
+
+
+def _facts_for_context(
+    text: str,
+    ctx: str,
+    *,
+    unit_defs: dict[str, dict[str, Any]] | None = None,
+    unit_audit: dict[str, Any] | None = None,
+    inline: bool = False,
+) -> dict[str, float]:
     out: dict[str, float] = {}
     for m in re.finditer(rf"<([A-Za-z0-9_:-]+)([^>]*)>", text):
         tag, attrs = m.group(1), m.group(2)
-        if f'contextRef="{ctx}"' not in attrs:
+        if _attribute(attrs, "contextRef") != ctx:
             continue
         local = tag.split(":")[-1]
         rest = text[m.end() : m.end() + 64]
-        vm = re.match(r"\s*([-+]?[0-9]*\.?[0-9]+)", rest)
+        vm = re.match(r"\s*([-+]?[0-9][0-9,]*\.?[0-9]*)", rest)
         if not vm:
             continue
-        val = _num(vm.group(1))
+        raw_value = vm.group(1).replace(",", "")
+        val = _num(raw_value)
         if val is None:
             continue
+        if unit_defs is not None and local in _PER_SHARE_CONCEPTS:
+            unit_ref = _attribute(attrs, "unitRef")
+            unit = unit_defs.get(str(unit_ref)) if unit_ref else None
+            scale = _attribute(attrs, "scale")
+            if inline or scale not in (None, ""):
+                reason = "inline_xbrl_scale_not_supported"
+            elif not unit_ref:
+                reason = "missing_unitRef"
+            elif unit is None:
+                reason = f"unitRef_not_declared:{unit_ref}"
+            elif (
+                unit.get("kind") != xu.COMPOUND
+                or unit.get("measures") != ["iso4217:INR", "xbrli:shares"]
+            ):
+                reason = "per_share_unit_not_declared"
+            else:
+                reason = None
+            if reason is not None:
+                if unit_audit is not None:
+                    _record_unit_outcome(
+                        unit_audit,
+                        resolved=False,
+                        reason=reason,
+                        category="per_share",
+                    )
+                continue
+            if unit_audit is not None:
+                _record_unit_outcome(
+                    unit_audit,
+                    resolved=True,
+                    reason="declared_per_share",
+                    category="per_share",
+                )
+        elif unit_defs is not None and local in _AGGREGATE_CONCEPTS:
+            resolved = xu.resolve(
+                {
+                    "unitRef": _attribute(attrs, "unitRef"),
+                    "decimals": _attribute(attrs, "decimals"),
+                    "scale": _attribute(attrs, "scale"),
+                    "raw_value": raw_value,
+                },
+                unit_defs,
+            )
+            if inline and resolved["usable_as_money"]:
+                resolved = {
+                    **resolved,
+                    "usable_as_money": False,
+                    "normalised_value": None,
+                    "reason": "inline_xbrl_scale_not_supported",
+                }
+            if not resolved["usable_as_money"]:
+                if unit_audit is not None:
+                    _record_unit_outcome(
+                        unit_audit,
+                        resolved=False,
+                        reason=str(resolved.get("reason") or "unit_unresolved"),
+                    )
+                continue
+            val = float(resolved["normalised_value"])
+            if unit_audit is not None:
+                _record_unit_outcome(unit_audit, resolved=True, reason="declared")
         # Keep first (or prefer finite)
         if local not in out:
             out[local] = val
@@ -189,11 +302,14 @@ def _derive_balance(bal: dict[str, Any]) -> dict[str, Any]:
         bal["total_equity"] = round(float(esc) + float(reserves), 2)
     if bal.get("reserves") is None and bal.get("total_equity") is not None and bal.get("equity_share_capital") is not None:
         bal["reserves"] = round(float(bal["total_equity"]) - float(bal["equity_share_capital"]), 2)
-    # Shares outstanding ≈ paid-up / face value
+    # Paid-up capital is canonical INR million; face value is declared INR/share.
     face = bal.get("face_value")
     if bal.get("shares_outstanding") is None and esc not in (None, 0) and face not in (None, 0):
         try:
-            bal["shares_outstanding"] = round(float(esc) / float(face), 2)
+            bal["shares_outstanding"] = round(
+                float(esc) * 1_000_000.0 / float(face),
+                2,
+            )
         except (TypeError, ValueError, ZeroDivisionError):
             pass
     return bal
@@ -211,7 +327,13 @@ def _derive_cashflow(cf: dict[str, Any]) -> dict[str, Any]:
     return cf
 
 
-def _parse_segments(text: str) -> list[dict[str, Any]]:
+def _parse_segments(
+    text: str,
+    *,
+    unit_defs: dict[str, dict[str, Any]] | None = None,
+    unit_audit: dict[str, Any] | None = None,
+    inline: bool = False,
+) -> list[dict[str, Any]]:
     """Extract reportable segment rows when present."""
     # Pair DescriptionOfReportableSegment with nearby SegmentRevenue in same typed context
     segs: list[dict[str, Any]] = []
@@ -224,7 +346,9 @@ def _parse_segments(text: str) -> list[dict[str, Any]]:
         ctx, name = m.group(1), re.sub(r"\s+", " ", m.group(2)).strip()
         if not name:
             continue
-        facts = _facts_for_context(text, ctx)
+        facts = _facts_for_context(
+            text, ctx, unit_defs=unit_defs, unit_audit=unit_audit, inline=inline,
+        )
         # Also try sibling OneD-less segment contexts — often same numeric on OneD with axis
         row = {
             "name": name,
@@ -263,12 +387,21 @@ def parse_financial_xbrl(raw: bytes | str) -> dict[str, Any]:
     """Normalize financial XBRL into income / balance / cashflow / segments."""
     text = raw.decode("utf-8", errors="replace") if isinstance(raw, (bytes, bytearray)) else str(raw)
 
+    unit_defs = xu.parse_units(text)
+    inline = xu.is_inline_xbrl(text)
+    unit_audit: dict[str, Any] = {
+        "resolved_money_facts": 0,
+        "rejected_money_facts": 0,
+        "reasons": {},
+    }
+
     # OneD = duration (P&L / period CF); OneI = instant (balance sheet);
     # FourD = YTD / annual cumulative on many IND-AS filings.
-    one = _facts_for_context(text, "OneD")
-    one_i = _facts_for_context(text, "OneI")
-    four = _facts_for_context(text, "FourD")
-    four_i = _facts_for_context(text, "FourI")
+    fact_args = {"unit_defs": unit_defs, "unit_audit": unit_audit, "inline": inline}
+    one = _facts_for_context(text, "OneD", **fact_args)
+    one_i = _facts_for_context(text, "OneI", **fact_args)
+    four = _facts_for_context(text, "FourD", **fact_args)
+    four_i = _facts_for_context(text, "FourI", **fact_args)
 
     # Re-map income preferring OneD (period) explicitly
     income = _derive_income(_map_block(one if one else four, INCOME_MAP))
@@ -277,7 +410,7 @@ def parse_financial_xbrl(raw: bytes | str) -> dict[str, Any]:
     balance = _derive_balance(_map_block(_merge_facts(one_i, four_i, one, four), BALANCE_MAP))
     # Cash flow: period on OneD; annual totals often only on FourD
     cashflow = _derive_cashflow(_map_block(_merge_facts(one, four), CASHFLOW_MAP))
-    segments = _parse_segments(text)
+    segments = _parse_segments(text, **fact_args)
 
     # Instant date if present
     as_of = None
@@ -302,6 +435,16 @@ def parse_financial_xbrl(raw: bytes | str) -> dict[str, Any]:
         "has_cash_flow": has_cf,
         "has_segments": bool(segments),
         "source": "nse_financial_xbrl",
+        "provider": "nse_india",
+        "parser_path": "nse_xbrl_fact",
+        "units_in": "inr_million" if unit_audit["resolved_money_facts"] else None,
+        "unit_resolution": {
+            **unit_audit,
+            "method": "declared_per_fact",
+            "canonical_money_unit": "inr_million",
+            "inline_xbrl": inline,
+            "decimals_used_as_scale": False,
+        },
         "concepts_present": sorted(one.keys())[:80],
     }
 
@@ -400,16 +543,38 @@ def enrich_filing_with_xbrl(
     out["has_cash_flow"] = detail.get("has_cash_flow")
     out["has_segments"] = detail.get("has_segments")
     out["detail_source"] = filing.get("source")
+    out["provider"] = detail.get("provider")
+    out["parser_path"] = detail.get("parser_path")
+    out["units_in"] = detail.get("units_in")
+    out["unit_resolution"] = detail.get("unit_resolution")
     # Soft fill from integrated summary when XBRL thin
     summary = filing.get("raw_summary") or {}
     inc = out["statements"]["income_statement"] or {}
     if inc.get("revenue_from_operations") is None and summary.get("income") not in (None, ""):
-        try:
-            # Integrated feed often in lakhs
-            inc["revenue_from_operations"] = float(summary["income"]) * 100_000.0
-            out["statements"]["income_statement"] = _derive_income(inc)
-            out["has_income"] = True
-            out["scaled_from_integrated_lakhs"] = True
-        except (TypeError, ValueError):
-            pass
+        summary_unit_raw = (
+            summary.get("units_in") or summary.get("unit") or summary.get("unit_of_measure")
+        )
+        summary_unit = warehouse_units.canonical_unit_name(summary_unit_raw)
+        if summary_unit is None:
+            out["integrated_summary_skipped"] = "unit_not_declared"
+        else:
+            try:
+                inc["revenue_from_operations"] = (
+                    float(summary["income"])
+                    * warehouse_units.SCALE_TO_MILLION[summary_unit]
+                )
+            except (TypeError, ValueError):
+                out["integrated_summary_skipped"] = "income_not_numeric"
+            else:
+                previous_path = out.get("parser_path") if out.get("units_in") else None
+                out["provider"] = "nse_india"
+                out["parser_path"] = (
+                    f"{previous_path}+integrated_summary_declared"
+                    if previous_path else "integrated_summary_declared"
+                )
+                out["units_in"] = "inr_million"
+                out["integrated_summary_reported_unit"] = summary_unit
+                out["scaled_from_integrated_lakhs"] = summary_unit in {"lakh", "inr_lakh"}
+                out["statements"]["income_statement"] = _derive_income(inc)
+                out["has_income"] = True
     return out
