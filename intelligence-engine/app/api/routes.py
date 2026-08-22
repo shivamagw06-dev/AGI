@@ -9151,10 +9151,60 @@ async def ui_health():
     return _ui.health()
 
 
+async def _cached_ui_home():
+    """Return a bounded, process-local home snapshot without blocking the event loop."""
+    import asyncio
+    import logging
+    import time
+
+    cache = getattr(_cached_ui_home, "_cache", None)
+    if cache is None:
+        cache = {
+            "payload": None,
+            "expires_at": 0.0,
+            "lock": asyncio.Lock(),
+        }
+        setattr(_cached_ui_home, "_cache", cache)
+
+    now = time.monotonic()
+    if cache["payload"] is not None and now < cache["expires_at"]:
+        return cache["payload"]
+
+    async with cache["lock"]:
+        now = time.monotonic()
+        if cache["payload"] is not None and now < cache["expires_at"]:
+            return cache["payload"]
+
+        started = time.monotonic()
+        try:
+            payload = await asyncio.wait_for(
+                asyncio.to_thread(lambda: _ui.home().model_dump(mode="json")),
+                timeout=15.0,
+            )
+        except TimeoutError:
+            if cache["payload"] is not None:
+                logging.getLogger(__name__).warning(
+                    "ui_home_refresh_timeout serving_stale=true timeout_seconds=15"
+                )
+                return cache["payload"]
+            raise HTTPException(
+                status_code=503,
+                detail="Home intelligence is still loading. Please retry shortly.",
+            )
+
+        cache["payload"] = payload
+        cache["expires_at"] = time.monotonic() + 30.0
+        logging.getLogger(__name__).info(
+            "ui_home_refresh duration_ms=%d cache_ttl_seconds=30",
+            int((time.monotonic() - started) * 1000),
+        )
+        return payload
+
+
 @router.get("/ui/home")
 async def ui_home():
     try:
-        return _ui.home().model_dump(mode="json")
+        return await _cached_ui_home()
     except RuntimeError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
