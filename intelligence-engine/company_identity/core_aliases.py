@@ -72,3 +72,22 @@ def iter_alias_tickers(question: str) -> Iterator[str]:
 
 def core_alias_ticker(question: str) -> str | None:
     return next(iter_alias_tickers(question), None)
+
+
+def exact_core_alias_ticker(mention: str) -> str | None:
+    """Resolve only when the entire mention is one curated alias.
+
+    Substring matching is useful for a full question but unsafe as an identity
+    fallback: ``Reliance Power`` must not become Reliance Industries merely
+    because both contain ``Reliance``.
+    """
+    key = re.sub(r"[^a-z0-9&-]+", " ", str(mention or "").lower()).strip()
+    matches = {
+        ticker
+        for ticker, aliases in CORE_COMPANY_ALIASES
+        if key in {
+            re.sub(r"[^a-z0-9&-]+", " ", alias.lower()).strip()
+            for alias in aliases
+        }
+    }
+    return next(iter(matches)) if len(matches) == 1 else None

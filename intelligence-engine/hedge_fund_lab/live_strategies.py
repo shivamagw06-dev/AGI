@@ -207,14 +207,16 @@ def _coverage(risk_row: Optional[dict], liq_row: Optional[dict]) -> dict[str, An
 
 
 def _base_row(sig: dict[str, Any], risk_row: Optional[dict], liq_row: Optional[dict]) -> dict[str, Any]:
-    price = _num((sig.get("factor_values") or {}).get("last_price")) if isinstance(sig.get("factor_values"), dict) else None
-    if price is None and risk_row:
-        # SMA50 is a poor proxy for last price but keeps sizing expressible when
-        # the signal payload omits it; flagged so it is never mistaken for a quote.
-        price = _num(risk_row.get("sma50"))
-        price_source = "sma50_proxy" if price is not None else None
-    else:
-        price_source = "live_signal" if price is not None else None
+    # The signal writer persists the actual traded price separately from
+    # factor_values. Prefer that explicit field; older signals may still carry
+    # last_price inside factor_values.
+    price = _num(sig.get("price_at_signal"))
+    price_source = "price_at_signal" if price is not None else None
+    if price is None and isinstance(sig.get("factor_values"), dict):
+        price = _num((sig.get("factor_values") or {}).get("last_price"))
+        price_source = "live_signal_factor" if price is not None else None
+    # Never substitute SMA50 for a quote. A moving average is valid risk context,
+    # but presenting it as "Price" corrupts stops, ADV value and position sizing.
 
     atr = _num(risk_row.get("atr")) if risk_row else None
     adv = _num(liq_row.get("adv_3m")) if liq_row else None

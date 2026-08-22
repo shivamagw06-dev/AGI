@@ -84,6 +84,13 @@ def analyse_business_model(ev: dict[str, Any]) -> dict[str, Any]:
     products = company.get("products")
     segments = company.get("business_segments") or (ped or {}).get("segments")
     btype = (ped or {}).get("business_type") or business_type_for_industry(industry)
+    unknown_model = (
+        not ped
+        and not desc
+        and not products
+        and not segments
+        and (industry == "unknown" or btype == "unknown" or name == "The company")
+    )
 
     revenue_streams: list[str] = []
     if products:
@@ -97,7 +104,11 @@ def analyse_business_model(ev: dict[str, Any]) -> dict[str, Any]:
         # First sentence as revenue narrative, not fabrication of numbers.
         revenue_streams.append(re.split(r"(?<=[.!?])\s+", desc.strip())[0][:220])
     if not revenue_streams:
-        revenue_streams = [f"Core {industry.replace('_', ' ')} franchise revenue"]
+        revenue_streams = (
+            ["No verified revenue streams are available."]
+            if unknown_model
+            else [f"Core {industry.replace('_', ' ')} franchise revenue"]
+        )
 
     # Named pedagogy wins over thin CapIQ blurbs for conglomerates / globals.
     if ped and ped.get("how_it_makes_money"):
@@ -106,6 +117,11 @@ def analyse_business_model(ev: dict[str, Any]) -> dict[str, Any]:
         how = desc.strip()
         if how:
             how = " ".join(re.split(r"(?<=[.!?])\s+", how)[:2])
+        elif unknown_model:
+            how = (
+                "No verified company identity or business-model evidence is available. "
+                "Clarification is required before describing how this company makes money."
+            )
         else:
             how = (
                 f"{name} operates a {btype.replace('_', ' ')} economic engine in "
@@ -116,7 +132,11 @@ def analyse_business_model(ev: dict[str, Any]) -> dict[str, Any]:
     if company.get("customers"):
         customers.append(str(company["customers"])[:200])
     if not customers:
-        customers = ["Core franchise customers in the primary industry"]
+        customers = (
+            ["No verified customer segments are available."]
+            if unknown_model
+            else ["Core franchise customers in the primary industry"]
+        )
 
     channels = []
     blob = _blob(desc, products, segments)
@@ -127,7 +147,43 @@ def analyse_business_model(ev: dict[str, Any]) -> dict[str, Any]:
     if any(k in blob for k in ("dealer", "distributor", "channel partner")):
         channels.append("Dealer / distributor network")
     if not channels:
-        channels = ["Primary industry distribution channels"]
+        channels = (
+            ["No verified distribution channels are available."]
+            if unknown_model
+            else ["Primary industry distribution channels"]
+        )
+
+    cost_structure = [
+        "Cost of delivering the core product/service",
+        "Operating and distribution cost base",
+        "Growth / acquisition investment",
+    ]
+    fixed_vs_variable = {
+        "fixed": "Franchise, plant, network, or platform fixed costs",
+        "variable": "Volume-linked inputs, commissions, or credit/variable delivery costs",
+    }
+    unit_economics_summary = " -> ".join(tmpl["unit_econ_chain"])
+    recurring_vs_one_time = (
+        "High recurring character"
+        if any(k in blob for k in ("deposit", "subscription", "recurring", "premium", "retainer"))
+        or industry in {"banks", "saas", "insurance", "subscription", "utility"}
+        else "Mix of recurring and transactional revenue"
+    )
+    capital_intensity = str(tmpl["capital_intensity"])
+    working_capital_profile = str(tmpl["working_capital"])
+    operating_leverage = str(tmpl["operating_leverage"])
+    pricing_model = str(tmpl["pricing_model"])
+    confidence = 0.88 if desc else 0.62
+    if unknown_model:
+        cost_structure = ["No verified cost structure is available."]
+        fixed_vs_variable = {"fixed": "Unknown", "variable": "Unknown"}
+        unit_economics_summary = "No verified unit economics are available."
+        recurring_vs_one_time = "Unknown pending verified business-model evidence"
+        capital_intensity = "Unknown"
+        working_capital_profile = "Unknown"
+        operating_leverage = "Unknown"
+        pricing_model = "Unknown"
+        confidence = 0.0
 
     card = BusinessModelCard(
         business_type=btype,
@@ -135,27 +191,15 @@ def analyse_business_model(ev: dict[str, Any]) -> dict[str, Any]:
         revenue_streams=revenue_streams[:6],
         customer_segments=customers[:4],
         distribution_channels=channels[:4],
-        cost_structure=[
-            "Cost of delivering the core product/service",
-            "Operating and distribution cost base",
-            "Growth / acquisition investment",
-        ],
-        fixed_vs_variable={
-            "fixed": "Franchise, plant, network, or platform fixed costs",
-            "variable": "Volume-linked inputs, commissions, or credit/variable delivery costs",
-        },
-        unit_economics_summary=" → ".join(tmpl["unit_econ_chain"]),
-        recurring_vs_one_time=(
-            "High recurring character"
-            if any(k in blob for k in ("deposit", "subscription", "recurring", "premium", "retainer"))
-            or industry in {"banks", "saas", "insurance", "subscription", "utility"}
-            else "Mix of recurring and transactional revenue"
-        ),
-        capital_intensity=str(tmpl["capital_intensity"]),
-        working_capital_profile=str(tmpl["working_capital"]),
-        operating_leverage=str(tmpl["operating_leverage"]),
-        pricing_model=str(tmpl["pricing_model"]),
-        confidence=0.88 if desc else 0.62,
+        cost_structure=cost_structure,
+        fixed_vs_variable=fixed_vs_variable,
+        unit_economics_summary=unit_economics_summary,
+        recurring_vs_one_time=recurring_vs_one_time,
+        capital_intensity=capital_intensity,
+        working_capital_profile=working_capital_profile,
+        operating_leverage=operating_leverage,
+        pricing_model=pricing_model,
+        confidence=confidence,
         evidence=list(ev.get("evidence") or [])[:6],
     )
     return card.to_dict()
