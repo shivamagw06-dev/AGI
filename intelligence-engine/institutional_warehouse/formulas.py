@@ -261,8 +261,18 @@ def _statement_type_rank(row: dict[str, Any]) -> tuple[int, str]:
 
 
 def _preferred_statement_series(statements: list[dict[str, Any]], key: str) -> list[dict[str, Any]]:
+    """Every period, trusted or not.
+
+    The formula engine derives columns for the rows that exist rather than
+    reading an answer, so it opts in deliberately. Filtering here would leave
+    unverified rows with no free_cash_flow and no ratios at all - worse than
+    deriving them, because a fallback row missing its derived columns looks
+    absent rather than unverified. The derivation inherits the trust of the row
+    it came from, and the read path is where that filtering belongs.
+    """
     return canonical_statement_series(
-        statements, period_key=key, annual=key == "fiscal_year"
+        statements, period_key=key, annual=key == "fiscal_year",
+        include_unverified=True,
     )
 
 

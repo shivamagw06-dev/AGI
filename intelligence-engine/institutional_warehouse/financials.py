@@ -47,14 +47,26 @@ def _selection_rank(row: dict[str, Any], *, annual: bool) -> tuple[int, int, int
 
 
 def canonical_statement_series(
-    rows: Iterable[dict[str, Any]], *, period_key: str, annual: bool
+    rows: Iterable[dict[str, Any]], *, period_key: str, annual: bool,
+    include_unverified: bool = False,
 ) -> list[dict[str, Any]]:
     """Return one reported statement per fiscal period with clear lineage.
 
-    The selection is consolidated-first. For annual statements it is then
-    CapIQ-first within the same fiscal year, never an older CapIQ year in place
-    of a newer live annual report.
+    The selection is consolidated-first, then declared-unit-first, then
+    CapIQ-first for annual, then most recently updated.
+
+    Trusted only by default. Ranking alone was not enough: it picks the best row
+    for a period, and then returns it whatever its trust - so a period no
+    declared feed covers still handed an unverified row to every caller
+    automatically. On the quarterly tab that was 6,616 of 7,355 selections.
+
+    Reading unverified rows now takes include_unverified, so it appears at the
+    call site rather than in a default nobody revisits. Every returned row
+    carries a `trust` label either way.
     """
+    from institutional_warehouse import statement_trust
+
+    tab_id = "financials_annual" if annual else "financials_quarterly"
     grouped: dict[str, list[dict[str, Any]]] = {}
     for row in rows:
         period = str(row.get(period_key) or "").strip()
@@ -62,4 +74,8 @@ def canonical_statement_series(
             grouped.setdefault(period, []).append(row)
     selected = [min(candidates, key=lambda row: _selection_rank(row, annual=annual))
                 for candidates in grouped.values()]
-    return sorted(selected, key=lambda row: fiscal_sort_key(row.get(period_key)))
+    labelled = statement_trust.label(tab_id, selected)
+    if not include_unverified:
+        labelled = [row for row in labelled
+                    if row.get("trust") == statement_trust.TRUSTED]
+    return sorted(labelled, key=lambda row: fiscal_sort_key(row.get(period_key)))
