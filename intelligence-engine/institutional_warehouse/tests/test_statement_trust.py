@@ -316,13 +316,27 @@ def test_a_derived_row_stays_out_of_the_default_read(tmp_path, monkeypatch):
     _db.reset_backend()
 
 
-def test_the_units_guard_refuses_a_derivation_onto_a_declared_row():
-    """Recorded because it surprised me and bounds what the opt-in achieves.
+@pytest.mark.xfail(
+    reason="KNOWN DEFECT, not desired behaviour: derived columns reach "
+           "assumed_canonical rows and not declared ones, which is the wrong "
+           "way round. Tracked for the derivation-units fix. Asserting the "
+           "current behaviour as correct would lock the defect in place.",
+    strict=True,
+)
+def test_a_derivation_should_be_allowed_onto_a_declared_row():
+    """What SHOULD happen, failing today.
 
     formula_engine has no declared unit, so its write counts as unknown-unit and
-    the guard refuses it onto any row whose unit IS known - trusted or not. So
-    derived columns reach assumed_canonical rows and not declared ones, which is
-    the wrong way round and is a pre-existing defect, not one this change makes.
+    the guard refuses it onto any row whose unit IS known. A trusted Upstox row
+    therefore cannot receive free_cash_flow while a 44%-suspect
+    assumed_canonical row can.
+
+    The fix is not one blanket unit for formula_engine - its outputs are money
+    (free_cash_flow), per-share (book_value) and unitless ratios, which do not
+    share a unit. Derived monetary fields should inherit the parent row's
+    established unit while the row keeps its own source and trust.
+
+    When that lands, this test passes and the xfail marker comes off.
     """
     from institutional_warehouse import canonical_rows
 
@@ -330,10 +344,6 @@ def test_the_units_guard_refuses_a_derivation_onto_a_declared_row():
              "sys_reported_unit": "crore", "is_canonical": 1}
     derived = {"row_id": "r1", "source": "upstox",
                "sys_unit_method": "assumed_canonical", "free_cash_flow": 400.0}
-    kept, counts = canonical_rows.guard(
+    kept, _counts = canonical_rows.guard(
         QT, [derived], {"r1": prior}, key_of=lambda r: r["row_id"])
-    # Refused as a downgrade before the units check is even reached: the derived
-    # row carries no declared unit, so it is untrusted whatever its source says.
-    # Either refusal is correct; what matters is that it does not land.
-    assert kept == []
-    assert counts.get("refused_downgrade") or counts.get("refused_unknown_units")
+    assert len(kept) == 1, "a derivation should be able to land on a trusted row"
