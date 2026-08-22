@@ -171,6 +171,17 @@ def _delete_slice() -> int:
     return db.execute(f"DELETE FROM wh_financials_annual WHERE {where}", params)
 
 
+def _stamp_declared_units() -> int:
+    """Persist the workbook's declared INR-million provenance on the landed slice."""
+    where, params = _slice_where()
+    return db.execute(
+        "UPDATE wh_financials_annual SET sys_reported_unit = ?, "
+        "sys_unit_scale = ?, sys_unit_method = ? "
+        f"WHERE source = ? AND {where}",
+        ("inr_million", 1.0, "declared", SOURCE, *params),
+    )
+
+
 def _restore_payloads(payloads: list[dict[str, Any]]) -> int:
     if not payloads:
         return 0
@@ -298,6 +309,12 @@ def replace_all(*, confirm: str, plan_hash: str, actor: str) -> dict[str, Any]:
                     )
                 inserted += landed
 
+            unit_rows_stamped = _stamp_declared_units()
+            if unit_rows_stamped != inserted:
+                raise RuntimeError(
+                    f"unit_stamp_failed:stamped={unit_rows_stamped}:expected={inserted}"
+                )
+
             where, params = _slice_where()
             verification = db.query(
                 "SELECT COUNT(*) AS total, "
@@ -341,6 +358,7 @@ def replace_all(*, confirm: str, plan_hash: str, actor: str) -> dict[str, Any]:
             "years": list(YEARS),
             "removed_rows": removed,
             "inserted_rows": inserted,
+            "unit_rows_stamped": unit_rows_stamped,
             "source": SOURCE,
             "unit": "inr_million",
             "quarterly_touched": False,
