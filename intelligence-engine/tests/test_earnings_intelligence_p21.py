@@ -7,7 +7,7 @@ from decision_engine.readiness_gate import compute_coverage_board
 from earnings_intelligence.enrich import merge_financials_into_dossier
 from earnings_intelligence.production import analyse, health, package_for_ask_agi
 from earnings_intelligence.schema import IC10_UNIVERSE, WORKSTREAM_ID
-from earnings_intelligence.xbrl import parse_financial_xbrl
+from earnings_intelligence.xbrl import enrich_filing_with_xbrl, parse_financial_xbrl
 from phase2_investment_intelligence.contract import validate_engine_payload
 from phase2_investment_intelligence.workstreams import WORKSTREAMS
 
@@ -50,6 +50,12 @@ def _corp_a(to_date: str, *, xbrl: str = "https://example.test/a.xml") -> dict:
     }
 
 
+def _unit_ref(tag: str) -> str:
+    if "Earnings" in tag or tag == "FaceValueOfEquityShareCapital":
+        return "INRPerShare"
+    return "INR"
+
+
 def _income_xbrl(*, revenue: float, pat: float, eps: float = 10.0, ytd_revenue: float | None = None) -> str:
     ytd_revenue = ytd_revenue if ytd_revenue is not None else revenue * 3
     facts = [
@@ -68,7 +74,9 @@ def _income_xbrl(*, revenue: float, pat: float, eps: float = 10.0, ytd_revenue: 
         ("FourD", "ProfitLossForPeriod", pat * 3),
     ]
     body = "".join(
-        f'<in-bse-fin:{tag} contextRef="{ctx}" unitRef="INR" decimals="2">{val:.2f}</in-bse-fin:{tag}>'
+        f'<in-bse-fin:{tag} contextRef="{ctx}" '
+        f'unitRef="{_unit_ref(tag)}" decimals="2">'
+        f'{val:.2f}</in-bse-fin:{tag}>'
         for ctx, tag, val in facts
     )
     seg = (
@@ -80,7 +88,13 @@ def _income_xbrl(*, revenue: float, pat: float, eps: float = 10.0, ytd_revenue: 
     return (
         '<?xml version="1.0"?>'
         '<xbrli:xbrl xmlns:xbrli="http://www.xbrl.org/2003/instance" '
-        'xmlns:in-bse-fin="http://www.bseindia.com/xbrl/fin">'
+        'xmlns:in-bse-fin="http://www.bseindia.com/xbrl/fin" '
+        'xmlns:iso4217="http://www.xbrl.org/2003/iso4217">'
+        '<xbrli:unit id="INR"><xbrli:measure>iso4217:INR</xbrli:measure></xbrli:unit>'
+        '<xbrli:unit id="INRPerShare"><xbrli:divide><xbrli:unitNumerator>'
+        '<xbrli:measure>iso4217:INR</xbrli:measure></xbrli:unitNumerator>'
+        '<xbrli:unitDenominator><xbrli:measure>xbrli:shares</xbrli:measure>'
+        '</xbrli:unitDenominator></xbrli:divide></xbrli:unit>'
         '<xbrli:context id="OneD"><xbrli:entity><xbrli:identifier scheme="s">1</xbrli:identifier></xbrli:entity>'
         "<xbrli:period><xbrli:endDate>2026-06-30</xbrli:endDate></xbrli:period></xbrli:context>"
         '<xbrli:context id="FourD"><xbrli:entity><xbrli:identifier scheme="s">1</xbrli:identifier></xbrli:entity>'
@@ -105,6 +119,7 @@ def _annual_xbrl(*, revenue: float, pat: float, assets: float, equity: float, oc
         ("OneI", "CashAndCashEquivalents", assets * 0.1),
         ("OneI", "Equity", equity),
         ("OneI", "EquityShareCapital", equity * 0.1),
+        ("OneI", "FaceValueOfEquityShareCapital", 10.0),
         ("OneI", "EquityAttributableToOwnersOfParent", equity),
         ("FourD", "CashFlowsFromUsedInOperatingActivities", ocf),
         ("FourD", "CashFlowsFromUsedInInvestingActivities", -ocf * 0.4),
@@ -113,13 +128,21 @@ def _annual_xbrl(*, revenue: float, pat: float, assets: float, equity: float, oc
         ("FourD", "ProfitLossForPeriod", pat),
     ]
     body = "".join(
-        f'<in-bse-fin:{tag} contextRef="{ctx}" unitRef="INR" decimals="2">{val:.2f}</in-bse-fin:{tag}>'
+        f'<in-bse-fin:{tag} contextRef="{ctx}" '
+        f'unitRef="{_unit_ref(tag)}" decimals="2">'
+        f'{val:.2f}</in-bse-fin:{tag}>'
         for ctx, tag, val in facts
     )
     return (
         '<?xml version="1.0"?>'
         '<xbrli:xbrl xmlns:xbrli="http://www.xbrl.org/2003/instance" '
-        'xmlns:in-bse-fin="http://www.bseindia.com/xbrl/fin">'
+        'xmlns:in-bse-fin="http://www.bseindia.com/xbrl/fin" '
+        'xmlns:iso4217="http://www.xbrl.org/2003/iso4217">'
+        '<xbrli:unit id="INR"><xbrli:measure>iso4217:INR</xbrli:measure></xbrli:unit>'
+        '<xbrli:unit id="INRPerShare"><xbrli:divide><xbrli:unitNumerator>'
+        '<xbrli:measure>iso4217:INR</xbrli:measure></xbrli:unitNumerator>'
+        '<xbrli:unitDenominator><xbrli:measure>xbrli:shares</xbrli:measure>'
+        '</xbrli:unitDenominator></xbrli:divide></xbrli:unit>'
         '<xbrli:context id="OneD"><xbrli:entity><xbrli:identifier scheme="s">1</xbrli:identifier></xbrli:entity>'
         "<xbrli:period><xbrli:endDate>2026-03-31</xbrli:endDate></xbrli:period></xbrli:context>"
         '<xbrli:context id="OneI"><xbrli:entity><xbrli:identifier scheme="s">1</xbrli:identifier></xbrli:entity>'
@@ -134,13 +157,49 @@ def test_xbrl_income_balance_cashflow_and_segments():
     q = parse_financial_xbrl(_income_xbrl(revenue=6.3e11, pat=1.2e11))
     assert q["ok"] is True
     assert q["has_income"] is True
-    assert q["income_statement"]["revenue_from_operations"] == 6.3e11
+    assert q["income_statement"]["revenue_from_operations"] == 6.3e5
+    assert q["income_statement"]["eps_basic"] == 10.0
+    assert q["units_in"] == "inr_million"
+    assert q["unit_resolution"]["decimals_used_as_scale"] is False
     assert q["income_statement"]["ebitda"] is not None
     assert q["has_segments"] is True
     a = parse_financial_xbrl(_annual_xbrl(revenue=2.4e12, pat=4.6e11, assets=1e12, equity=8e11, ocf=5e11))
     assert a["has_balance"] is True
     assert a["has_cash_flow"] is True
+    assert a["balance_sheet"]["face_value"] == 10.0
+    assert a["balance_sheet"]["shares_outstanding"] == 8_000_000_000.0
     assert a["cash_flow"]["free_cash_flow"] is not None
+
+
+def test_per_share_fact_requires_declared_inr_per_share_unit():
+    raw = _income_xbrl(revenue=6.3e11, pat=1.2e11).replace(
+        'unitRef="INRPerShare"',
+        'unitRef="INR"',
+    )
+    parsed = parse_financial_xbrl(raw)
+    assert parsed["income_statement"]["eps_basic"] is None
+    assert parsed["unit_resolution"]["rejected_per_share_facts"] >= 1
+
+
+def test_integrated_summary_without_a_declared_unit_is_not_guessed():
+    filing = {"raw_summary": {"income": "100"}}
+    out = enrich_filing_with_xbrl(
+        filing,
+        injected_xbrl="<xbrli:xbrl></xbrli:xbrl>",
+    )
+    assert out["integrated_summary_skipped"] == "unit_not_declared"
+    assert out["statements"]["income_statement"].get("revenue_from_operations") is None
+
+
+def test_integrated_summary_lakhs_is_used_only_when_declared():
+    filing = {"raw_summary": {"income": "100", "unit": "lakh"}}
+    out = enrich_filing_with_xbrl(
+        filing,
+        injected_xbrl="<xbrli:xbrl></xbrli:xbrl>",
+    )
+    assert out["statements"]["income_statement"]["revenue_from_operations"] == 10.0
+    assert out["units_in"] == "inr_million"
+    assert out["scaled_from_integrated_lakhs"] is True
 
 
 def test_analyse_injected_pack_ttm_and_contract():

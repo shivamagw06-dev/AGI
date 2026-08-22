@@ -78,12 +78,18 @@ jobs:
           if [ "$rc" = "2" ]; then echo "::error::short gate infrastructure failure"; fi
           exit "$rc"
 
-      - name: Run critical UI home regression
+      - name: Run critical ingestion and UI regressions
         if: matrix.shard == 0
         working-directory: intelligence-engine
         env:
           PYTHONPATH: .
-        run: pytest -q tests/test_ui_home_cache.py
+        run: |
+          pytest -q \
+            tests/test_ui_home_cache.py \
+            tests/test_earnings_intelligence_p21.py \
+            institutional_data/tests/test_institutional_data_production.py::test_yahoo_financial_records_keep_provider_and_rupee_unit \
+            institutional_warehouse/tests/test_xbrl_units.py \
+            institutional_warehouse/tests/test_statement_unit_provenance.py
 
       - name: Summarise the measurement
         if: always()

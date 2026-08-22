@@ -49,6 +49,14 @@ def _write_hd(pack: dict[str, Any]) -> dict[str, Any]:
                     "total_debt": bal.get("total_debt"),
                     "equity": bal.get("total_equity"),
                     "source": "earnings_intelligence_p21",
+                    "units_in": row.get("units_in"),
+                    "provider": row.get("provider"),
+                    "parser_path": row.get("parser_path"),
+                    "source_document": row.get("xbrl_url"),
+                    "unit_resolution": row.get("unit_resolution"),
+                    "scaled_from_integrated_lakhs": bool(
+                        row.get("scaled_from_integrated_lakhs")
+                    ),
                 },
                 source="earnings_intelligence_p21",
                 confidence=float(pack.get("confidence") or 0.9),
