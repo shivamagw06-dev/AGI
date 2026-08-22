@@ -2509,6 +2509,81 @@ VENDOR_LIQUIDITY = Tab(
     ),
 )
 
+
+VENDOR_VALUATION_SNAPSHOT = Tab(
+    id="vendor_valuation_snapshot",
+    label="Vendor Valuation Snapshot",
+    description=(
+        "Dated company valuation observations from Trendlyne. Historical averages "
+        "remain labelled as averages and are never expanded into invented annual rows."
+    ),
+    mode="append",
+    key=("symbol", "as_of", "source"),
+    order_by=("as_of DESC", "symbol"),
+    search_columns=("symbol", "company_name", "vendor_industry", "vendor_sector"),
+    icon="valuation",
+    columns=(
+        _c("symbol", "Symbol", TEXT, required=True, width=130, group="Key"),
+        _c("as_of", "As Of", DATE, required=True, width=120, group="Key"),
+        _c("isin", "ISIN", TEXT, width=140, group="Key"),
+        _c("company_name", "Company", TEXT, width=220, group="Identity"),
+        _c("vendor_industry", "Vendor Industry", TEXT, width=200, group="Classification"),
+        _c("vendor_sector", "Vendor Sector", TEXT, width=190, group="Classification"),
+        _c("current_price", "Current Price", NUMBER, width=120, group="Market"),
+        _c("pe_ttm", "P/E TTM", NUMBER, width=105, group="Valuation"),
+        _c("forward_pe_1y", "Forward P/E 1Y", NUMBER, width=130, group="Valuation"),
+        _c("pe_3y_average", "P/E 3Y Average", NUMBER, width=135, group="History Summary"),
+        _c("pe_5y_average", "P/E 5Y Average", NUMBER, width=135, group="History Summary"),
+        _c("pct_days_below_current_pe", "Days Below Current P/E %", NUMBER, width=175,
+           group="History Summary"),
+        _c("pb_ttm", "P/B TTM", NUMBER, width=105, group="Valuation"),
+        _c("peg_ttm", "PEG TTM", NUMBER, width=105, group="Valuation"),
+        _c("roe", "ROE", NUMBER, width=100, group="Quality"),
+        _c("roa", "ROA", NUMBER, width=100, group="Quality"),
+        _c("sector_pe_ttm", "Sector P/E TTM", NUMBER, width=130, group="Relative"),
+        _c("industry_pe_ttm", "Industry P/E TTM", NUMBER, width=140, group="Relative"),
+        _c("sector_pb_ttm", "Sector P/B TTM", NUMBER, width=130, group="Relative"),
+        _c("industry_pb_ttm", "Industry P/B TTM", NUMBER, width=140, group="Relative"),
+        *PROVENANCE_COLUMNS,
+    ),
+)
+
+VENDOR_MARKET_SNAPSHOT = Tab(
+    id="vendor_market_snapshot",
+    label="Vendor Market Snapshot",
+    description=(
+        "Current Capital IQ market-reference export. Vendor tickers are retained "
+        "verbatim; BSE identifiers are not guessed into NSE company identities."
+    ),
+    mode="append",
+    key=("vendor_ticker", "as_of", "source_version"),
+    order_by=("as_of DESC", "vendor_ticker"),
+    search_columns=("vendor_ticker", "company_name", "vendor_item_id"),
+    icon="valuation",
+    columns=(
+        _c("vendor_ticker", "Vendor Ticker", TEXT, required=True, width=140, group="Key"),
+        _c("as_of", "As Of", DATE, required=True, width=120, group="Key"),
+        _c("company_name", "Company", TEXT, width=230, group="Identity"),
+        _c("vendor_item_id", "Capital IQ Item ID", TEXT, width=160, group="Identity"),
+        _c("trading_status", "Trading Status", TEXT, width=130, group="Market"),
+        _c("currency", "Currency", TEXT, width=120, group="Market"),
+        _c("close_usd", "Close (USD Historical FX)", NUMBER, width=170, group="Market"),
+        _c("return_ytd", "YTD %", NUMBER, width=90, group="Returns"),
+        _c("return_1d", "1D %", NUMBER, width=90, group="Returns"),
+        _c("return_1w", "1W %", NUMBER, width=90, group="Returns"),
+        _c("return_1m", "1M %", NUMBER, width=90, group="Returns"),
+        _c("return_3m", "3M %", NUMBER, width=90, group="Returns"),
+        _c("return_6m", "6M %", NUMBER, width=90, group="Returns"),
+        _c("return_9m", "9M %", NUMBER, width=90, group="Returns"),
+        _c("return_1y", "1Y %", NUMBER, width=90, group="Returns"),
+        _c("return_3y", "3Y %", NUMBER, width=90, group="Returns"),
+        _c("return_5y", "5Y %", NUMBER, width=90, group="Returns"),
+        _c("return_10y", "10Y %", NUMBER, width=95, group="Returns"),
+        _c("index_membership", "Index Membership", TEXT, width=300, group="Classification"),
+        *PROVENANCE_COLUMNS,
+    ),
+)
+
 VENDOR_PRICE_HISTORY = Tab(
     id="vendor_price_history",
     label="Vendor Price History",
@@ -2621,6 +2696,8 @@ TABS: tuple[Tab, ...] = (
     HISTORICAL_MARKET_MEDIANS,
     VENDOR_RISK_METRICS,
     VENDOR_LIQUIDITY,
+    VENDOR_VALUATION_SNAPSHOT,
+    VENDOR_MARKET_SNAPSHOT,
     VENDOR_PRICE_HISTORY,
     VENDOR_INDUSTRY_CONTEXT,
     HVIE_UNIVERSE_QUEUE,

@@ -41,7 +41,8 @@ _ROOT = Path(__file__).resolve().parents[2]
 
 SOURCE_TRENDLYNE = "trendlyne_data_downloader"
 SOURCE_CAPIQ_BROKER = "capital_iq_broker_estimates"
-CODE_VERSION = "vendor_exports_v1"
+SOURCE_CAPIQ_MARKET = "capital_iq_market_export"
+CODE_VERSION = "vendor_exports_v2"
 
 _SEED_LOCK = threading.Lock()
 
@@ -164,6 +165,11 @@ def _as_of_from_name(path: Path, fallback: str) -> str:
     return fallback
 
 
+def _file_as_of(path: Path) -> str:
+    """Stable snapshot date when a vendor filename does not carry one."""
+    return datetime.fromtimestamp(path.stat().st_mtime, tz=timezone.utc).date().isoformat()
+
+
 def discover(pattern: str) -> list[Path]:
     return sorted(p for p in _ROOT.glob(pattern) if p.is_file())
 
@@ -178,6 +184,46 @@ def _provenance(source: str, source_version: str) -> dict[str, Any]:
 
 
 # ------------------------------------------------------------- trendlyne parse
+
+
+def parse_trendlyne_valuation(path: Path) -> dict[str, Any]:
+    """Current valuation snapshot; 3Y/5Y columns remain summary statistics."""
+    header, body = _load(path)
+    if not header:
+        return {"ok": False, "error": "empty_workbook", "path": path.name}
+    as_of = _as_of_from_name(path, _file_as_of(path))
+    version = f"{path.name}:{file_hash(path)}"
+    prov = _provenance(SOURCE_TRENDLYNE, version)
+    labels = {
+        "symbol": "NSE Code", "isin": "ISIN", "company_name": "Stock Name",
+        "vendor_industry": "Industry Name", "vendor_sector": "sector_name",
+        "current_price": "Current Price", "pe_ttm": "PE TTM Price to Earnings",
+        "forward_pe_1y": "Forecaster Estimates 1Y forward PE",
+        "pe_3y_average": "PE 3Yr Average", "pe_5y_average": "PE 5Yr Average",
+        "pct_days_below_current_pe": "%Days traded below current PE Price to Earnings",
+        "pb_ttm": "Price to Book Value Adjusted", "peg_ttm": "PEG TTM PE to Growth",
+        "roe": "ROE Annual %", "roa": "RoA Annual %",
+        "sector_pe_ttm": "Sector PE TTM", "industry_pe_ttm": "Industry PE TTM",
+        "sector_pb_ttm": "Sector Price to Book TTM",
+        "industry_pb_ttm": "Industry Price to Book TTM",
+    }
+    indexes = {key: _index(header, label) for key, label in labels.items()}
+    text_fields = {"symbol", "isin", "company_name", "vendor_industry", "vendor_sector"}
+    rows = []
+    for source_row in body:
+        symbol = _text(_cell(source_row, indexes["symbol"]))
+        if not symbol:
+            continue
+        row = {"symbol": symbol, "as_of": as_of}
+        for key, index in indexes.items():
+            if key == "symbol":
+                continue
+            row[key] = _text(_cell(source_row, index)) if key in text_fields else _number(_cell(source_row, index))
+        if any(row.get(key) is not None for key in labels if key not in text_fields):
+            rows.append({**row, **prov})
+    return {"ok": True, "path": path.name, "as_of": as_of, "source_version": version,
+            "rows_read": len(body), "valuation_snapshot": rows}
+
 
 def parse_trendlyne_multigroup(path: Path) -> dict[str, Any]:
     """Extract industry medians, sector medians, market medians and ownership.
@@ -418,6 +464,89 @@ def parse_trendlyne_technical(path: Path) -> dict[str, Any]:
 
 # ----------------------------------------------------------------- capital iq
 
+
+def _index_contains(header: list[str], *needles: str) -> Optional[int]:
+    wanted = tuple(needle.lower() for needle in needles)
+    for index, label in enumerate(header):
+        text = str(label or "").strip().lower()
+        if all(needle in text for needle in wanted):
+            return index
+    return None
+
+
+def parse_capiq_market_exports(paths: Iterable[Path]) -> dict[str, Any]:
+    """Join split Capital IQ exports without inventing NSE identities."""
+    loaded: list[tuple[Path, list[tuple[Any, ...]]]] = []
+    header: list[str] | None = None
+    for path in sorted(paths):
+        import openpyxl
+        book = openpyxl.load_workbook(path, read_only=True, data_only=True)
+        try:
+            values = list(book[book.sheetnames[0]].iter_rows(values_only=True))
+        finally:
+            book.close()
+        if not values:
+            continue
+        first = [str(cell).strip() if cell is not None else "" for cell in values[0]]
+        if any(label.lower() == "ticker" for label in first):
+            header = first
+            loaded.append((path, values[1:]))
+        else:
+            loaded.append((path, values))
+    if not header:
+        return {"ok": False, "error": "capiq_market_header_not_found"}
+
+    paths_loaded = [path for path, _ in loaded]
+    as_of = max(_file_as_of(path) for path in paths_loaded)
+    version_text = "|".join(f"{path.name}:{file_hash(path)}" for path in paths_loaded)
+    version = f"split_market:{hashlib.sha256(version_text.encode()).hexdigest()[:16]}"
+    indexes = {
+        "vendor_ticker": _index(header, "Ticker"),
+        "company_name": _index(header, "Company Name"),
+        "index_membership": _index_contains(header, "index constituents"),
+        "trading_status": _index(header, "Trading Status"),
+        "vendor_item_id": _index(header, "Excel Trading Item ID"),
+        "currency": _index(header, "Equity Currency"),
+        "close_usd": _index_contains(header, "day close price", "latest", "usd"),
+        "return_ytd": _index_contains(header, "% price change", "ytd"),
+        "return_1d": _index_contains(header, "% price change", "1 day"),
+        "return_1w": _index_contains(header, "% price change", "1 week"),
+        "return_1m": _index_contains(header, "% price change", "1 month"),
+        "return_3m": _index_contains(header, "% price change", "3 months"),
+        "return_6m": _index_contains(header, "% price change", "6 months"),
+        "return_9m": _index_contains(header, "% price change", "9 months"),
+        "return_1y": _index_contains(header, "% price change", "1 year"),
+        "return_3y": _index_contains(header, "% price change", "3 years"),
+        "return_5y": _index_contains(header, "% price change", "5 years"),
+        "return_10y": _index_contains(header, "% price change", "10 years"),
+    }
+    text_fields = {"vendor_ticker", "company_name", "index_membership", "trading_status",
+                   "vendor_item_id", "currency"}
+    rows: list[dict[str, Any]] = []
+    seen: set[str] = set()
+    duplicate_tickers = 0
+    for _path, body in loaded:
+        for source_row in body:
+            ticker = _text(_cell(source_row, indexes["vendor_ticker"]))
+            if not ticker:
+                continue
+            identity = _text(_cell(source_row, indexes["vendor_item_id"])) or ticker
+            if identity in seen:
+                duplicate_tickers += 1
+                continue
+            seen.add(identity)
+            row = {"vendor_ticker": ticker, "as_of": as_of}
+            for key, index in indexes.items():
+                if key == "vendor_ticker":
+                    continue
+                value = _cell(source_row, index)
+                row[key] = _text(value) if key in text_fields else _number(value)
+            rows.append({**row, **_provenance(SOURCE_CAPIQ_MARKET, version)})
+    return {"ok": True, "paths": [path.name for path in paths_loaded], "as_of": as_of,
+            "source_version": version, "rows_read": sum(len(body) for _, body in loaded),
+            "duplicate_tickers": duplicate_tickers, "market_snapshot": rows}
+
+
 def parse_capiq_broker(path: Path) -> dict[str, Any]:
     """Liquidity from the broker export.
 
@@ -488,7 +617,8 @@ def collect(*, root: Path = _ROOT) -> dict[str, Any]:
                         if k not in ("historical_industry_medians", "historical_sector_medians",
                                      "historical_market_medians", "ownership", "price_history",
                                      "industry_context",
-                                     "risk_metrics", "liquidity")})
+                                     "risk_metrics", "liquidity", "valuation_snapshot",
+                                     "market_snapshot")})
         for key in keys:
             if result.get(key):
                 bundle.setdefault(key, []).extend(result[key])
@@ -504,6 +634,13 @@ def collect(*, root: Path = _ROOT) -> dict[str, Any]:
         elif _index(header, "Beta 1Year") is not None:
             merge(parse_trendlyne_technical(path), ("risk_metrics",))
 
+    valuation = root / "trendlyne_valuation.xlsx"
+    if valuation.exists():
+        merge(parse_trendlyne_valuation(valuation), ("valuation_snapshot",))
+        merge(parse_trendlyne_multigroup(valuation),
+              ("historical_industry_medians", "historical_sector_medians",
+               "historical_market_medians", "industry_context"))
+
     tech = root / "trendlyne_technical_ownership.xlsx"
     if tech.exists():
         legacy = parse_trendlyne_technical(tech)
@@ -515,6 +652,10 @@ def collect(*, root: Path = _ROOT) -> dict[str, Any]:
     broker = root / "capital_iq_exports" / "broker_estimates.xlsx"
     if broker.exists():
         merge(parse_capiq_broker(broker), ("liquidity",))
+
+    market_exports = sorted((root / "capital_iq_exports").glob("capiq_export_*.xlsx"))
+    if market_exports:
+        merge(parse_capiq_market_exports(market_exports), ("market_snapshot",))
 
     return {"ok": True, "reports": reports,
             "counts": {k: len(v) for k, v in sorted(bundle.items())},
@@ -532,6 +673,8 @@ TAB_ROUTES = {
     "liquidity": "vendor_liquidity",
     "price_history": "vendor_price_history",
     "industry_context": "vendor_industry_context",
+    "valuation_snapshot": "vendor_valuation_snapshot",
+    "market_snapshot": "vendor_market_snapshot",
 }
 WAREHOUSE_TABS = tuple(TAB_ROUTES)
 _REGISTRY_SOURCE = "vendor_exports_trendlyne_capiq"
@@ -547,9 +690,12 @@ def write(bundle: dict[str, list[dict[str, Any]]], *, actor: str = "vendor_expor
         if not rows:
             continue
         source = rows[0].get("source", SOURCE_TRENDLYNE)
-        gateway.write(tab_id, rows, source=source, actor=actor,
-                      reason="vendor_export_ingestion")
-        written[tab_id] = len(rows)
+        result = gateway.write(tab_id, rows, source=source, actor=actor,
+                               reason="vendor_export_ingestion")
+        if not result.get("ok"):
+            return {"ok": False, "error": "vendor_export_write_failed", "tab": tab_id,
+                    "detail": result, "written": written}
+        written[tab_id] = int(result.get("written") or len(rows))
     return {"ok": True, "written": written}
 
 
@@ -557,6 +703,11 @@ def fingerprint(*, root: Path = _ROOT) -> str:
     """Fingerprint every source file so a redeploy is a registry lookup."""
     parts = []
     for path in discover("*multigroup*.xlsx"):
+        parts.append(f"{path.name}:{file_hash(path)}")
+    valuation = root / "trendlyne_valuation.xlsx"
+    if valuation.exists():
+        parts.append(f"{valuation.name}:{file_hash(valuation)}")
+    for path in sorted((root / "capital_iq_exports").glob("capiq_export_*.xlsx")):
         parts.append(f"{path.name}:{file_hash(path)}")
     for extra in ("trendlyne_technical_ownership.xlsx",
                   "capital_iq_exports/broker_estimates.xlsx"):
@@ -588,7 +739,11 @@ def seed_if_needed(*, actor: str = "vendor_seed", force: bool = False) -> dict[s
                         "rows_imported": done.get("rows_imported")}
 
         parsed = collect()
+        if not parsed.get("ok") or any(not report.get("ok", True) for report in parsed["reports"]):
+            return {"ok": False, "error": "vendor_export_parse_failed", "reports": parsed["reports"]}
         outcome = write(parsed["rows"], actor=actor)
+        if not outcome.get("ok"):
+            return outcome
         total = sum(outcome["written"].values())
         gateway.write("historical_import_registry", [{
             "source_name": _REGISTRY_SOURCE,
