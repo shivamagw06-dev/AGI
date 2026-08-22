@@ -11,8 +11,12 @@ Render shell after reviewing the read-only plan:
 from __future__ import annotations
 
 import argparse
+import gc
 import hashlib
 import json
+import subprocess
+import sys
+import tempfile
 import threading
 import uuid
 from collections import Counter
@@ -26,15 +30,56 @@ from financial_warehouse_completion.capiq_workbook import (
     _master_rows,
 )
 from institutional_warehouse import audit, db, gateway
-from institutional_warehouse.formulas import recalculate
 from institutional_warehouse.values import now_iso
 
 
 YEARS = tuple(range(2017, 2027))
 CONFIRMATION = "REPLACE_ANNUAL_FY2017_FY2026"
+RESUME_CONFIRMATION = "RESUME_ANNUAL_RECALCULATION"
 ROLLBACK_CONFIRMATION = "ROLLBACK_ANNUAL_REPLACEMENT"
 CHUNK_SIZE = 250
+RECALCULATION_STAGES = (
+    "statement_derivations",
+    "ratios",
+    "valuation",
+    "factors",
+    "quality",
+    "annual_sector_ratios",
+)
+ACTIVE_STATUSES = (
+    "RUNNING",
+    "DATA_REPLACED",
+    "RECALCULATING",
+    "ROLLING_BACK",
+)
 _LOCK = threading.Lock()
+
+_STAGE_RUNNER = """
+import json
+import pathlib
+import sys
+import traceback
+
+from institutional_warehouse.formulas import recalculate
+
+actor, stage, output_path = sys.argv[1:4]
+try:
+    result = recalculate(actor=actor, stages=(stage,))
+except BaseException as exc:
+    result = {
+        "ok": False,
+        "error": f"{type(exc).__name__}:{exc}",
+        "traceback": traceback.format_exc()[-4000:],
+    }
+    pathlib.Path(output_path).write_text(
+        json.dumps(result, sort_keys=True, default=str), encoding="utf-8"
+    )
+    raise
+else:
+    pathlib.Path(output_path).write_text(
+        json.dumps(result, sort_keys=True, default=str), encoding="utf-8"
+    )
+"""
 
 
 def _json(value: Any) -> str:
@@ -182,6 +227,31 @@ def _stamp_declared_units() -> int:
     )
 
 
+def _verify_replacement(expected: int) -> dict[str, Any]:
+    where, params = _slice_where()
+    row = db.query(
+        "SELECT COUNT(*) AS total, "
+        "SUM(CASE WHEN source IS NULL OR source != ? THEN 1 ELSE 0 END) AS foreign_rows, "
+        "SUM(CASE WHEN sys_reported_unit = 'inr_million' "
+        "AND sys_unit_method = 'declared' AND sys_unit_scale = 1.0 THEN 1 ELSE 0 END) "
+        "AS declared_rows "
+        f"FROM wh_financials_annual WHERE {where}",
+        (SOURCE, *params),
+    )[0]
+    verification = {
+        "total": int(row.get("total") or 0),
+        "foreign_rows": int(row.get("foreign_rows") or 0),
+        "declared_rows": int(row.get("declared_rows") or 0),
+        "expected": int(expected),
+    }
+    verification["ok"] = (
+        verification["total"] == verification["expected"]
+        and verification["foreign_rows"] == 0
+        and verification["declared_rows"] == verification["total"]
+    )
+    return verification
+
+
 def _restore_payloads(payloads: list[dict[str, Any]]) -> int:
     if not payloads:
         return 0
@@ -221,28 +291,206 @@ def _restore_run(run_id: str) -> int:
     return _restore_payloads(payloads)
 
 
+def _run_recalculation_stage(actor: str, stage: str) -> dict[str, Any]:
+    """Run one memory-heavy stage in a disposable process."""
+    with tempfile.TemporaryDirectory(prefix=f"capiq_{stage}_") as directory:
+        result_path = f"{directory}/result.json"
+        log_path = f"{directory}/stage.log"
+        with open(log_path, "w", encoding="utf-8") as log_file:
+            completed = subprocess.run(
+                [sys.executable, "-c", _STAGE_RUNNER, actor, stage, result_path],
+                stdout=log_file,
+                stderr=subprocess.STDOUT,
+                check=False,
+            )
+        try:
+            with open(result_path, encoding="utf-8") as result_file:
+                result = json.load(result_file)
+        except (FileNotFoundError, json.JSONDecodeError) as exc:
+            try:
+                with open(log_path, encoding="utf-8", errors="replace") as log_file:
+                    output_tail = log_file.read()[-2000:]
+            except OSError:
+                output_tail = ""
+            return {
+                "ok": False,
+                "error": "stage_process_did_not_produce_a_result",
+                "stage": stage,
+                "exit_code": completed.returncode,
+                "detail": str(exc),
+                "output_tail": output_tail,
+            }
+        if completed.returncode != 0:
+            result["ok"] = False
+            result.setdefault("error", "stage_process_failed")
+            result["exit_code"] = completed.returncode
+        return result
+
+
 def _recalculate(actor: str) -> dict[str, Any]:
-    result = recalculate(
-        actor=actor,
-        stages=(
-            "statement_derivations",
-            "ratios",
-            "valuation",
-            "factors",
-            "quality",
-            "annual_sector_ratios",
+    result: dict[str, Any] = {
+        "ok": True,
+        "mode": "isolated_subprocess_per_stage",
+        "stages": {},
+        "errors": [],
+    }
+    for stage in RECALCULATION_STAGES:
+        stage_run = _run_recalculation_stage(actor, stage)
+        stage_receipt = (stage_run.get("stages") or {}).get(stage, stage_run)
+        result["stages"][stage] = stage_receipt
+        stage_ok = bool(stage_run.get("ok"))
+        if isinstance(stage_receipt, dict) and stage_receipt.get("ok") is False:
+            stage_ok = False
+        if not stage_ok:
+            result["ok"] = False
+            result["errors"].append(
+                {
+                    "stage": stage,
+                    "error": stage_run.get("error") or "stage_reported_failure",
+                    "exit_code": stage_run.get("exit_code"),
+                }
+            )
+            break
+        gc.collect()
+    return result
+
+
+def _base_receipt(
+    *,
+    run_id: str,
+    built: dict[str, Any],
+    removed: int,
+    inserted: int,
+    unit_rows_stamped: int,
+) -> dict[str, Any]:
+    return {
+        "run_id": run_id,
+        "plan_hash": built["plan_hash"],
+        "workbook": WORKBOOK_PATH.name,
+        "workbook_sha256": built["workbook_sha256"],
+        "years": list(YEARS),
+        "removed_rows": removed,
+        "inserted_rows": inserted,
+        "unit_rows_stamped": unit_rows_stamped,
+        "source": SOURCE,
+        "unit": "inr_million",
+        "quarterly_touched": False,
+        "prices_touched": False,
+    }
+
+
+def _checkpoint_replacement(run_id: str, receipt: dict[str, Any]) -> None:
+    db.execute(
+        "UPDATE wh_capiq_annual_replacement_runs SET status='DATA_REPLACED', "
+        "removed_rows=?, inserted_rows=?, receipt=?, error=NULL WHERE run_id=?",
+        (
+            int(receipt["removed_rows"]),
+            int(receipt["inserted_rows"]),
+            _json(receipt),
+            run_id,
         ),
     )
-    failures = [
-        name for name, receipt in (result.get("stages") or {}).items()
-        if isinstance(receipt, dict) and receipt.get("ok") is False
-    ]
-    if failures:
-        result["ok"] = False
-        result.setdefault("errors", []).extend(
-            {"stage": name, "error": "stage_reported_failure"} for name in failures
+
+
+def _finish_recalculation(
+    *, run_id: str, actor: str, receipt: dict[str, Any]
+) -> dict[str, Any]:
+    db.execute(
+        "UPDATE wh_capiq_annual_replacement_runs "
+        "SET status='RECALCULATING', receipt=?, error=NULL WHERE run_id=?",
+        (_json(receipt), run_id),
+    )
+    try:
+        rebuilt = _recalculate(actor)
+    except Exception as exc:
+        rebuilt = {
+            "ok": False,
+            "mode": "isolated_subprocess_per_stage",
+            "stages": {},
+            "errors": [{"stage": "orchestrator", "error": f"{type(exc).__name__}:{exc}"}],
+        }
+    status = "COMPLETED" if rebuilt.get("ok") else "COMPLETED_DERIVED_FAILED"
+    completed_receipt = {**receipt, "recalculated": rebuilt}
+    db.execute(
+        "UPDATE wh_capiq_annual_replacement_runs SET status=?, completed_at=?, "
+        "removed_rows=?, inserted_rows=?, receipt=?, error=? WHERE run_id=?",
+        (
+            status,
+            now_iso(),
+            int(receipt["removed_rows"]),
+            int(receipt["inserted_rows"]),
+            _json(completed_receipt),
+            None if rebuilt.get("ok") else _json(rebuilt.get("errors") or [])[:1000],
+            run_id,
+        ),
+    )
+    audit.record(
+        "import",
+        tab_id="financials_annual",
+        actor=actor,
+        detail=completed_receipt,
+        ok=bool(rebuilt.get("ok")),
+    )
+    return {"ok": bool(rebuilt.get("ok")), "status": status, **completed_receipt}
+
+
+def resume_recalculation(*, run_id: str, confirm: str, actor: str) -> dict[str, Any]:
+    if confirm != RESUME_CONFIRMATION:
+        return {"ok": False, "error": "confirmation_required", "required": RESUME_CONFIRMATION}
+    _init_tables()
+    with _LOCK:
+        rows = db.query(
+            "SELECT * FROM wh_capiq_annual_replacement_runs WHERE run_id = ?",
+            (run_id,),
         )
-    return result
+        if not rows:
+            return {"ok": False, "error": "replacement_run_not_found", "run_id": run_id}
+        run = rows[0]
+        allowed = {
+            "RUNNING",
+            "DATA_REPLACED",
+            "RECALCULATING",
+            "COMPLETED_DERIVED_FAILED",
+        }
+        if str(run.get("status") or "") not in allowed:
+            return {
+                "ok": False,
+                "error": "replacement_run_not_resumable",
+                "status": run.get("status"),
+            }
+
+        built = _build()
+        verification = _verify_replacement(len(built["accepted"]))
+        if not verification["ok"]:
+            return {
+                "ok": False,
+                "error": "replacement_data_not_verified",
+                "run_id": run_id,
+                "verification": verification,
+            }
+        backup_count = int(
+            db.query(
+                "SELECT COUNT(*) AS n FROM wh_capiq_annual_replacement_backup WHERE run_id = ?",
+                (run_id,),
+            )[0].get("n")
+            or 0
+        )
+        try:
+            receipt = json.loads(str(run.get("receipt") or "{}"))
+        except json.JSONDecodeError:
+            receipt = {}
+        if not receipt:
+            receipt = _base_receipt(
+                run_id=run_id,
+                built=built,
+                removed=int(run.get("removed_rows") or 0) or backup_count,
+                inserted=verification["total"],
+                unit_rows_stamped=verification["declared_rows"],
+            )
+        _checkpoint_replacement(run_id, receipt)
+        del built
+        gc.collect()
+        return _finish_recalculation(run_id=run_id, actor=actor, receipt=receipt)
 
 
 def replace_all(*, confirm: str, plan_hash: str, actor: str) -> dict[str, Any]:
@@ -261,7 +509,8 @@ def replace_all(*, confirm: str, plan_hash: str, actor: str) -> dict[str, Any]:
     with _LOCK:
         active = db.query(
             "SELECT run_id FROM wh_capiq_annual_replacement_runs "
-            "WHERE status IN ('RUNNING', 'ROLLING_BACK') LIMIT 1"
+            f"WHERE status IN ({','.join('?' for _ in ACTIVE_STATUSES)}) LIMIT 1",
+            ACTIVE_STATUSES,
         )
         if active:
             return {"ok": False, "error": "replacement_already_active", "run_id": active[0]["run_id"]}
@@ -315,23 +564,23 @@ def replace_all(*, confirm: str, plan_hash: str, actor: str) -> dict[str, Any]:
                     f"unit_stamp_failed:stamped={unit_rows_stamped}:expected={inserted}"
                 )
 
-            where, params = _slice_where()
-            verification = db.query(
-                "SELECT COUNT(*) AS total, "
-                "SUM(CASE WHEN source IS NULL OR source != ? THEN 1 ELSE 0 END) AS foreign_rows, "
-                "SUM(CASE WHEN sys_reported_unit = 'inr_million' "
-                "AND sys_unit_method = 'declared' THEN 1 ELSE 0 END) AS declared_rows "
-                f"FROM wh_financials_annual WHERE {where}",
-                (SOURCE, *params),
-            )[0]
-            total = int(verification.get("total") or 0)
-            foreign = int(verification.get("foreign_rows") or 0)
-            declared = int(verification.get("declared_rows") or 0)
-            if total != len(built["accepted"]) or foreign or declared != total:
+            verification = _verify_replacement(len(built["accepted"]))
+            if not verification["ok"]:
                 raise RuntimeError(
-                    f"verification_failed:total={total}:expected={len(built['accepted'])}:"
-                    f"foreign={foreign}:declared={declared}"
+                    f"verification_failed:total={verification['total']}:"
+                    f"expected={verification['expected']}:"
+                    f"foreign={verification['foreign_rows']}:"
+                    f"declared={verification['declared_rows']}"
                 )
+
+            receipt = _base_receipt(
+                run_id=run_id,
+                built=built,
+                removed=removed,
+                inserted=inserted,
+                unit_rows_stamped=unit_rows_stamped,
+            )
+            _checkpoint_replacement(run_id, receipt)
         except Exception as exc:
             restored = _restore_run(run_id)
             db.execute(
@@ -348,40 +597,10 @@ def replace_all(*, confirm: str, plan_hash: str, actor: str) -> dict[str, Any]:
                 "detail": str(exc)[:500],
             }
 
-        rebuilt = _recalculate(actor)
-        status = "COMPLETED" if rebuilt.get("ok") else "COMPLETED_DERIVED_FAILED"
-        receipt = {
-            "run_id": run_id,
-            "plan_hash": built["plan_hash"],
-            "workbook": WORKBOOK_PATH.name,
-            "workbook_sha256": built["workbook_sha256"],
-            "years": list(YEARS),
-            "removed_rows": removed,
-            "inserted_rows": inserted,
-            "unit_rows_stamped": unit_rows_stamped,
-            "source": SOURCE,
-            "unit": "inr_million",
-            "quarterly_touched": False,
-            "prices_touched": False,
-            "recalculated": rebuilt,
-        }
-        db.execute(
-            "UPDATE wh_capiq_annual_replacement_runs SET status=?, completed_at=?, "
-            "removed_rows=?, inserted_rows=?, receipt=?, error=? WHERE run_id=?",
-            (
-                status, now_iso(), removed, inserted, _json(receipt),
-                None if rebuilt.get("ok") else _json(rebuilt.get("errors") or [])[:1000],
-                run_id,
-            ),
-        )
-        audit.record(
-            "import",
-            tab_id="financials_annual",
-            actor=actor,
-            detail=receipt,
-            ok=bool(rebuilt.get("ok")),
-        )
-        return {"ok": bool(rebuilt.get("ok")), "status": status, **receipt}
+        del current
+        del built
+        gc.collect()
+        return _finish_recalculation(run_id=run_id, actor=actor, receipt=receipt)
 
 
 def rollback(*, run_id: str, confirm: str, actor: str) -> dict[str, Any]:
@@ -395,7 +614,12 @@ def rollback(*, run_id: str, confirm: str, actor: str) -> dict[str, Any]:
         )
         if not runs:
             return {"ok": False, "error": "replacement_run_not_found", "run_id": run_id}
-        if str(runs[0].get("status") or "") not in {"COMPLETED", "COMPLETED_DERIVED_FAILED"}:
+        if str(runs[0].get("status") or "") not in {
+            "DATA_REPLACED",
+            "RECALCULATING",
+            "COMPLETED",
+            "COMPLETED_DERIVED_FAILED",
+        }:
             return {
                 "ok": False,
                 "error": "replacement_run_not_rollback_eligible",
@@ -438,6 +662,10 @@ def main() -> None:
     apply_parser.add_argument("--plan-hash", required=True)
     apply_parser.add_argument("--confirm", required=True)
     apply_parser.add_argument("--actor", default="render_shell")
+    resume_parser = sub.add_parser("resume")
+    resume_parser.add_argument("--run-id", required=True)
+    resume_parser.add_argument("--confirm", required=True)
+    resume_parser.add_argument("--actor", default="render_shell")
     rollback_parser = sub.add_parser("rollback")
     rollback_parser.add_argument("--run-id", required=True)
     rollback_parser.add_argument("--confirm", required=True)
@@ -447,6 +675,12 @@ def main() -> None:
         result = replacement_plan()
     elif args.command == "apply":
         result = replace_all(confirm=args.confirm, plan_hash=args.plan_hash, actor=args.actor)
+    elif args.command == "resume":
+        result = resume_recalculation(
+            run_id=args.run_id,
+            confirm=args.confirm,
+            actor=args.actor,
+        )
     else:
         result = rollback(run_id=args.run_id, confirm=args.confirm, actor=args.actor)
     print(json.dumps(result, indent=2, sort_keys=True, default=str))
