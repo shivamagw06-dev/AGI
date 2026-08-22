@@ -365,6 +365,11 @@ _wire_l4_passive_consumer()
 _wire_e10_passive_consumer()
 
 
+#: A census walks every row for each company named. Bounded so one request
+#: cannot become a full-tab scan.
+MAX_CENSUS_SYMBOLS = 25
+
+
 def require_token(
     authorization: str | None = Header(default=None),
     x_agi_token: str | None = Header(default=None, alias="X-AGI-Intelligence-Token"),
@@ -21913,6 +21918,62 @@ async def fundamentals_reconciliation_inventory(
     return await run_in_threadpool(inventory_all, symbols=wanted,
                                    max_groups_shown=int(max_groups),
                                    simulate_unit_provenance=bool(simulate_provenance))
+
+
+@router.get(
+    "/fundamentals/reconciliation-compare",
+    dependencies=[Depends(require_token)],
+)
+async def fundamentals_reconciliation_compare(
+    tab: str = "financials_annual",
+    symbols: str = Query(..., min_length=1),
+    max_groups: int = Query(1, ge=0, le=5),
+):
+    """Before and after the provenance simulation over bounded paired reads.
+
+    Writes nothing. Each company is read once and folded into both tallies, so
+    the difference is the effect of the change and not of the clock: schedulers
+    write these tabs every few minutes, and two separate inventory runs do not
+    describe the same rows.
+    """
+    from institutional_warehouse.reconciliation_inventory import compare
+
+    wanted = list(dict.fromkeys(
+        s.strip().upper() for s in symbols.split(",") if s.strip()))
+    if not wanted:
+        raise HTTPException(status_code=400, detail="At least one symbol is required")
+    if len(wanted) > 25:
+        raise HTTPException(status_code=400, detail="At most 25 symbols per request")
+    return await run_in_threadpool(compare, tab, symbols=wanted,
+                                   max_groups_shown=int(max_groups))
+@router.get("/fundamentals/value-plausibility",
+            dependencies=[Depends(require_token)])
+async def fundamentals_value_plausibility(
+    symbols: str,
+    tab: str = "financials_annual",
+    sample: int = Query(default=25, ge=1, le=200),
+):
+    """Census of aggregate money stored on the wrong scale. Writes nothing.
+
+    `symbols` is required and bounded. Without it this walked every company in a
+    69,156-row tab, and clamping the response sample bounded the reply while
+    leaving the database work unbounded - an authenticated caller could still
+    scan the whole warehouse per request. The unrestricted census is run offline
+    and reviewed as a sealed artifact instead (docs/census/).
+
+    Plausibility is validation evidence, not proof of provenance: a row named
+    here is one to examine, not one to retire.
+    """
+    from institutional_warehouse.value_plausibility import census
+
+    wanted = [s.strip().upper() for s in symbols.split(",") if s.strip()]
+    if not wanted:
+        raise HTTPException(status_code=400, detail="symbols is required")
+    if len(wanted) > MAX_CENSUS_SYMBOLS:
+        raise HTTPException(
+            status_code=400,
+            detail=f"at most {MAX_CENSUS_SYMBOLS} symbols per request")
+    return await run_in_threadpool(census, tab, symbols=wanted, sample_rows=int(sample))
 
 
 @router.get("/fundamentals/unit-provenance-plan")

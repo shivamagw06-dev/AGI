@@ -13,6 +13,7 @@ from editorial.service import (
     generateQuickSummary,
     generateRecommendation,
     strip_advice_language,
+    unsupported_numeric_claims,
 )
 from editorial.template_fallback import render_template
 
@@ -180,6 +181,60 @@ def test_service_strips_provider_advice(monkeypatch):
     assert "SELL" not in text
     assert "only justified" not in text.lower()
     assert "franchise" not in text.lower()
+
+
+def test_numeric_grounding_allows_figures_present_in_structured_evidence():
+    unsupported = unsupported_numeric_claims(
+        "Revenue was 4,820 crore and margin was 18.40%.",
+        {"top_reasons": ["Revenue 4820 crore", "Margin 18.4%"]},
+    )
+    assert unsupported == []
+
+
+def test_numeric_grounding_finds_invented_financial_figures():
+    unsupported = unsupported_numeric_claims(
+        "Revenue was 4,820 crore, up 18.4%, with margin of 22.6%.",
+        {"company": "TCS", "top_reasons": ["Revenue remained stable"]},
+    )
+    assert unsupported == ["18.4", "22.6", "4820"]
+
+
+def test_numeric_grounding_handles_zero_scientific_and_indian_grouping():
+    unsupported = unsupported_numeric_claims(
+        "Loss was 0 and exposure was 1e6 rupees.",
+        {"loss": 0, "exposure": "10,00,000"},
+    )
+    assert unsupported == []
+    assert unsupported_numeric_claims("Exposure was 1e6 rupees.", {}) == ["1000000"]
+
+
+def test_service_rejects_invented_figures_and_uses_safe_fallback():
+    class FabricatingProvider:
+        name = "fabricating"
+
+        def health(self):
+            return {"provider": self.name, "available": True}
+
+        async def rewrite(self, **kwargs):
+            return {
+                "text": "HDFC Bank revenue was 4,820 crore, up 18.4%.",
+                "provider": self.name,
+                "model": "fake",
+                "usage": {},
+                "latency_ms": 1,
+            }
+
+    service = EditorialService(provider=FabricatingProvider())
+    out = service.generateQuickSummary(
+        SAMPLE,
+        question="Summarise HDFC Bank without inventing figures",
+    )
+    assert out["fallback"] is True
+    assert out["provider"] == "template_fallback"
+    assert out["provider_output_rejected"] is True
+    assert out["numeric_grounding"]["ok"] is False
+    assert out["numeric_grounding"]["unsupported"] == ["18.4", "4820"]
+    assert "4,820" not in out["text"] and "18.4%" not in out["text"]
 
 
 def test_cache_identical_summary_requests():
