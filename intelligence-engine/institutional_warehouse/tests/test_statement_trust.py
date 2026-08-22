@@ -239,3 +239,101 @@ def test_fallback_still_fills_a_period_with_no_trusted_answer():
 def test_coverage_reports_how_many_fallback_rows_are_superseded():
     rows = [row("upstox"), row("yahoo_finance_statements", "assumed_canonical")]
     assert st.coverage(QT, rows)["fallback_rows_superseded"] == 1
+
+
+# --- the formula engine must not promote what it derives from -------------
+
+def _seed_fallback_row(db, tab_id="financials_quarterly"):
+    """An unverified row with unknown units, as production holds one.
+
+    Seeded with the computed natural key. A hand-written row_id does not match
+    what make_row_id derives, so the derivation writes a second row instead of
+    updating this one and the test passes without exercising anything.
+    """
+    from institutional_warehouse import schema, store
+
+    tab = schema.find_tab(tab_id)
+    key = {"symbol": "ACME", "statement_type": "CONSOLIDATED",
+           "fiscal_period": "FY2027Q1"}
+    row_id = store.make_row_id(tab, key)
+    db.execute(
+        f"INSERT INTO {db.physical_table(tab_id)} (row_id, symbol, statement_type,"
+        f" fiscal_period, source, cfo, capex, equity, shares_outstanding,"
+        f" sys_published, sys_reported_unit, sys_unit_method, is_canonical)"
+        f" VALUES (?,?,?,?,?,?,?,?,?,1,?,?,0)",
+        (row_id, "ACME", "CONSOLIDATED", "FY2027Q1", "earnings_intelligence_p21",
+         500.0, -100.0, 4000.0, 100.0, "inr_million", "assumed_canonical"))
+    return row_id
+
+
+def test_deriving_from_a_fallback_row_does_not_promote_it(tmp_path, monkeypatch):
+    """The source-drift incident, as a regression test.
+
+    formula_engine once rewrote `source` on rows it derived from - the journal
+    recorded yahoo_finance_statements becoming formula_engine on a stable
+    row_id. Deriving free_cash_flow from an unverified row must leave its
+    source, unit metadata and trust exactly as they were: a derived column is
+    not evidence that the row it came from is trustworthy.
+    """
+    monkeypatch.setenv("INSTITUTIONAL_WAREHOUSE_ROOT", str(tmp_path))
+    from institutional_warehouse import db as _db
+    _db.reset_backend(); _db.init(force=True)
+    from institutional_warehouse import formulas
+
+    row_id = _seed_fallback_row(_db)
+    read = lambda: dict(_db.query(
+        f"SELECT * FROM {_db.physical_table(QT)} WHERE row_id=?", (row_id,))[0])
+    before = read()
+
+    formulas.recalc_statement_derivations(actor="test")
+    after = read()
+
+    assert after["free_cash_flow"] == 400.0, "the derivation must actually land"
+    for field in ("source", "sys_unit_method", "sys_reported_unit", "is_canonical"):
+        assert after[field] == before[field], f"{field} was promoted"
+    assert st.classify(QT, after) == st.FALLBACK
+    _db.reset_backend()
+
+
+def test_a_derived_row_stays_out_of_the_default_read(tmp_path, monkeypatch):
+    """Deriving a column must not make the row readable as fact."""
+    monkeypatch.setenv("INSTITUTIONAL_WAREHOUSE_ROOT", str(tmp_path))
+    from institutional_warehouse import db as _db
+    _db.reset_backend(); _db.init(force=True)
+    from institutional_warehouse import formulas
+    from institutional_warehouse.financials import canonical_statement_series
+
+    _seed_fallback_row(_db)
+    formulas.recalc_statement_derivations(actor="test")
+    rows = _db.query(f"SELECT * FROM {_db.physical_table(QT)}")
+
+    assert canonical_statement_series(
+        [dict(r) for r in rows], period_key="fiscal_period", annual=False) == []
+    opted_in = canonical_statement_series(
+        [dict(r) for r in rows], period_key="fiscal_period", annual=False,
+        include_unverified=True)
+    assert len(opted_in) == 1 and opted_in[0]["trust"] == st.FALLBACK
+    _db.reset_backend()
+
+
+def test_the_units_guard_refuses_a_derivation_onto_a_declared_row():
+    """Recorded because it surprised me and bounds what the opt-in achieves.
+
+    formula_engine has no declared unit, so its write counts as unknown-unit and
+    the guard refuses it onto any row whose unit IS known - trusted or not. So
+    derived columns reach assumed_canonical rows and not declared ones, which is
+    the wrong way round and is a pre-existing defect, not one this change makes.
+    """
+    from institutional_warehouse import canonical_rows
+
+    prior = {"row_id": "r1", "source": "upstox", "sys_unit_method": "declared",
+             "sys_reported_unit": "crore", "is_canonical": 1}
+    derived = {"row_id": "r1", "source": "upstox",
+               "sys_unit_method": "assumed_canonical", "free_cash_flow": 400.0}
+    kept, counts = canonical_rows.guard(
+        QT, [derived], {"r1": prior}, key_of=lambda r: r["row_id"])
+    # Refused as a downgrade before the units check is even reached: the derived
+    # row carries no declared unit, so it is untrusted whatever its source says.
+    # Either refusal is correct; what matters is that it does not land.
+    assert kept == []
+    assert counts.get("refused_downgrade") or counts.get("refused_unknown_units")
