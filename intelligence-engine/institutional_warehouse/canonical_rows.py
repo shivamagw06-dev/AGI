@@ -156,6 +156,36 @@ def unit_is_known(row: dict[str, Any]) -> bool:
     return str(row.get("sys_unit_method") or "") not in ("", units.METHOD_ASSUMED)
 
 
+def _prior_is_trusted(tab_id: str, prior: dict[str, Any]) -> bool:
+    """Whether the stored row may be read as fact.
+
+    is_canonical is stamped on write, so every row written before that column
+    existed carries NULL - which is every quarterly row in production today. A
+    guard that trusts the flag alone therefore protects none of them: a feed
+    with a known-but-undeclared unit overwrites a declared Upstox row and no
+    refusal is recorded, because NULL is falsy.
+
+    So the flag is used when it was set, and otherwise the same source and unit
+    test the read path applies is computed here. A row is not less protected for
+    having been written before the column existed.
+    """
+    from institutional_warehouse import statement_trust
+
+    flag = prior.get("is_canonical")
+    if flag is not None:
+        return bool(flag)
+    return statement_trust.is_trusted(tab_id, prior)
+
+
+def _row_is_trusted(tab_id: str, row: dict[str, Any]) -> bool:
+    from institutional_warehouse import statement_trust
+
+    flag = row.get("is_canonical")
+    if flag is not None:
+        return bool(flag)
+    return statement_trust.is_trusted(tab_id, row)
+
+
 def guard(tab_id: str, rows: Sequence[dict[str, Any]], existing: dict[str, dict[str, Any]],
           *, key_of: Any) -> tuple[list[dict[str, Any]], dict[str, int]]:
     """Stop a write that would corrupt a row already fit to be read.
@@ -186,7 +216,7 @@ def guard(tab_id: str, rows: Sequence[dict[str, Any]], existing: dict[str, dict[
             kept.append(row)
             continue
 
-        if prior.get("is_canonical") and not row.get("is_canonical"):
+        if _prior_is_trusted(tab_id, prior) and not _row_is_trusted(tab_id, row):
             refused_downgrade += 1
             continue
 

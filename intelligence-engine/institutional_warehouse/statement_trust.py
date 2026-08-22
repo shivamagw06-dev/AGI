@@ -93,21 +93,51 @@ def partition(tab_id: str, rows: Iterable[Dict[str, Any]]
     return trusted, fallback
 
 
+def period_key_of(row: Dict[str, Any]) -> tuple:
+    """What makes two rows answers to the same question."""
+    return (str(row.get("symbol") or "").upper(),
+            str(row.get("fiscal_period") or row.get("fiscal_year") or ""),
+            str(row.get("statement_type") or ""))
+
+
 def select(tab_id: str, rows: Sequence[Dict[str, Any]], *,
            include_unverified: bool = False) -> List[Dict[str, Any]]:
-    """Rows a reader may use. Trusted only, unless asked otherwise.
+    """Rows a reader may use, each labelled with its trust mode.
 
-    The default is the point. A caller that does nothing special gets data whose
-    magnitude was declared by the feed that supplied it. Reading unverified rows
-    is possible and has to be spelled out, so it appears in the calling code
-    rather than in a default nobody revisits.
+    Trusted only by default. Reading unverified rows takes include_unverified,
+    so it appears in the calling code rather than in a default nobody revisits.
+
+    Every row is labelled, trusted ones included. Labelling only the fallback
+    left the trusted rows carrying no `trust` key at all, so a caller could not
+    tell a trusted row from one this module had never seen.
+
+    With include_unverified, a fallback row is returned only for a period that
+    has no trusted answer. Returning both put two rows for one company-period in
+    front of a caller taking the first or last of them, which is the silent
+    duplicate this is meant to prevent - a reader would have no way to know the
+    9.9e9 row and the 1,000 row were answers to the same question.
     """
     trusted, fallback = partition(tab_id, rows)
+    out = [dict(row, trust=TRUSTED) for row in trusted]
     if not include_unverified:
-        return trusted
-    # Trusted first, so a caller taking the first row per period gets the
-    # declared one wherever it exists.
-    return trusted + [dict(row, trust=FALLBACK) for row in fallback]
+        return out
+    answered = {period_key_of(row) for row in trusted}
+    out.extend(dict(row, trust=FALLBACK, superseded_by_trusted=False)
+               for row in fallback if period_key_of(row) not in answered)
+    return out
+
+
+def suppressed(tab_id: str, rows: Sequence[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """Fallback rows a trusted answer already covers.
+
+    Returned rather than discarded so the count is inspectable: a period where
+    an unverified feed disagrees with a declared one is worth seeing, even
+    though the declared one is what gets read.
+    """
+    trusted, fallback = partition(tab_id, rows)
+    answered = {period_key_of(row) for row in trusted}
+    return [dict(row, trust=FALLBACK, superseded_by_trusted=True)
+            for row in fallback if period_key_of(row) in answered]
 
 
 def label(tab_id: str, rows: Iterable[Dict[str, Any]]) -> List[Dict[str, Any]]:
@@ -120,9 +150,15 @@ def coverage(tab_id: str, rows: Iterable[Dict[str, Any]]) -> Dict[str, Any]:
     trusted, fallback = partition(tab_id, rows)
     t_cos = {str(r.get("symbol")) for r in trusted}
     f_cos = {str(r.get("symbol")) for r in fallback}
+    answered = {period_key_of(row) for row in trusted}
     return {
         "tab": tab_id,
         "trusted_rows": len(trusted),
+        # Fallback rows a trusted answer already covers. Reported because a
+        # period where an unverified feed disagrees with a declared one is worth
+        # seeing even though the declared one is what gets read.
+        "fallback_rows_superseded": sum(
+            1 for row in fallback if period_key_of(row) in answered),
         "fallback_rows": len(fallback),
         "trusted_companies": len(t_cos),
         "fallback_only_companies": len(f_cos - t_cos),

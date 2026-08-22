@@ -28,14 +28,22 @@ def fiscal_sort_key(value: Any) -> tuple[int, str]:
     return year, text
 
 
-def _selection_rank(row: dict[str, Any], *, annual: bool) -> tuple[int, int, str]:
+def _selection_rank(row: dict[str, Any], *, annual: bool) -> tuple[int, int, int, str]:
+    from institutional_warehouse import statement_trust
+
     statement_type = str(row.get("statement_type") or "").upper()
     basis_rank = 0 if statement_type == "CONSOLIDATED" else 1
     # CapIQ is the canonical annual history. Quarterly data deliberately keeps
     # its provider order because CapIQ is not a live quarterly feed.
     source_rank = 0 if annual and is_capiq_workbook(row) else 1
+    # A declared unit outranks a recent write. Without this the quarterly tie
+    # break fell through to last_updated, so the feed that wrote most recently
+    # won the period - which is how a row of unknown magnitude becomes the
+    # answer over one whose feed said what unit it reports in.
+    tab = "financials_annual" if annual else "financials_quarterly"
+    trust_rank = 0 if statement_trust.is_trusted(tab, row) else 1
     updated = str(row.get("sys_updated_at") or row.get("last_updated") or "")
-    return basis_rank, source_rank, updated
+    return basis_rank, trust_rank, source_rank, updated
 
 
 def canonical_statement_series(
