@@ -31,7 +31,7 @@ import uuid
 from typing import Any, Iterable, Optional, Sequence
 
 from institutional_warehouse import (
-    audit, canonical_rows, conflicts, db, missing_values, ownership,
+    audit, canonical_rows, conflicts, db, derived_units, missing_values, ownership,
     period_identity, price_basis, quality, statement_identity, store, units,
     validation,
 )
@@ -266,6 +266,12 @@ def _stamp_units(tab, accepted: Sequence[dict[str, Any]]) -> int:
     table = db.physical_table(tab.id)
     payload: list[tuple[Any, ...]] = []
     for row in accepted:
+        # A derived-only write asserts no unit, so it must not restamp the one
+        # the row already carries. Without this, computing free_cash_flow on an
+        # Upstox row would overwrite its declared "crore" provenance with
+        # whatever the formula engine's source resolved to.
+        if derived_units.is_derived_only(row):
+            continue
         unit = row.get("sys_reported_unit")
         if not unit:
             continue

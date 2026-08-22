@@ -35,7 +35,7 @@ from __future__ import annotations
 
 from typing import Any, Iterable, Sequence
 
-from institutional_warehouse import period_identity, units
+from institutional_warehouse import derived_units, period_identity, units
 
 #: Sources whose fundamentals rows may be read as the answer, per tab.
 #:
@@ -113,6 +113,14 @@ def stamp(tab_id: str, rows: Sequence[dict[str, Any]], *, source: Any) -> list[d
         if not isinstance(row, dict):
             continue
         new_row = dict(row)
+        # A derived-only write makes no claim about whether the row may be read
+        # as the answer - it adds computed columns to a row that has already
+        # been judged. Stamping it here would recompute that judgement from the
+        # formula engine's own source and overwrite it, turning a trusted row
+        # non-canonical for the crime of receiving a free_cash_flow.
+        if derived_units.is_derived_only(new_row):
+            out.append(new_row)
+            continue
         why = blockers(tab_id, new_row, source=source)
         new_row["is_canonical"] = not why
         new_row["canonical_blockers"] = ", ".join(why)
@@ -213,6 +221,16 @@ def guard(tab_id: str, rows: Sequence[dict[str, Any]], existing: dict[str, dict[
     for row in rows or []:
         prior = existing.get(key_of(row)) or {}
         if not prior:
+            kept.append(row)
+            continue
+
+        # A derived-only write asserts no unit and claims no provenance. It
+        # carries computed columns onto a row that already has both, so judging
+        # it on a unit it never claimed refused free_cash_flow onto every
+        # declared row while allowing it onto assumed_canonical ones - exactly
+        # backwards. It cannot promote the row either: the payload has no
+        # reported value and store.upsert leaves source untouched on update.
+        if derived_units.is_derived_only(row):
             kept.append(row)
             continue
 
