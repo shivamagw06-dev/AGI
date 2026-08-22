@@ -9,10 +9,7 @@ name: Short Gate (report-only measurement)
 # with `if: always()` even when the measurement fails.
 
 on:
-  pull_request:
-    paths:
-      - 'intelligence-engine/ask_product_test/**'
-      - '.github/workflows/short-gate-report-only.yml'
+  pull_request: {}
   workflow_dispatch:
 
 concurrency:
