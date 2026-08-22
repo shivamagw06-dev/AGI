@@ -219,8 +219,19 @@ def guard(tab_id: str, rows: Sequence[dict[str, Any]], existing: dict[str, dict[
     refused_downgrade = 0
     refused_units = 0
     refused_provenance = 0
+    refused_orphan = 0
     for row in rows or []:
         prior = existing.get(key_of(row)) or {}
+
+        # The derived exemption is update-only. A derived payload with no parent
+        # row inserts one containing free_cash_flow and nothing else - an orphan
+        # with no revenue, no units and no reported source, which then reads as
+        # a fallback row for a period nobody reported. "A different key is a
+        # different row_id" describes what happens; it does not make it safe.
+        if derived_units.is_derived_write(row, source) and not prior:
+            refused_orphan += 1
+            continue
+
         if not prior:
             kept.append(row)
             continue
@@ -263,4 +274,6 @@ def guard(tab_id: str, rows: Sequence[dict[str, Any]], existing: dict[str, dict[
         counts["refused_unknown_units"] = refused_units
     if refused_provenance:
         counts["refused_provenance_change"] = refused_provenance
+    if refused_orphan:
+        counts["refused_derived_without_parent"] = refused_orphan
     return kept, counts

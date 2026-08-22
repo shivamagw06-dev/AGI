@@ -223,9 +223,34 @@ def test_provenance_survives_a_real_derivation(tmp_path, monkeypatch):
     db.reset_backend()
 
 
-def test_a_derived_write_under_a_different_key_cannot_touch_the_original(
-        tmp_path, monkeypatch):
-    """A different natural key is a different row, not a rewrite of this one."""
+def test_a_derived_write_without_a_parent_row_is_refused():
+    """Update-only. Without a parent there is nothing to add a column to.
+
+    Inserting would create a row holding free_cash_flow and nothing else - no
+    revenue, no units, no reported source - which then reads as a fallback row
+    for a period nobody reported.
+    """
+    from institutional_warehouse import canonical_rows
+
+    kept, counts = canonical_rows.guard(
+        "financials_quarterly",
+        [{"row_id": "missing", "symbol": "ORPHANCO", "free_cash_flow": 123.0}],
+        {}, key_of=lambda r: r["row_id"], source="formula_engine")
+    assert kept == [] and counts.get("refused_derived_without_parent") == 1
+
+
+def test_a_reported_write_may_still_create_a_row():
+    """The update-only rule is for derived columns, not for real data."""
+    from institutional_warehouse import canonical_rows
+
+    kept, _ = canonical_rows.guard(
+        "financials_quarterly",
+        [{"row_id": "new", "symbol": "NEWCO", "revenue": 1000.0}],
+        {}, key_of=lambda r: r["row_id"], source="upstox")
+    assert len(kept) == 1
+
+
+def test_a_derived_write_cannot_increase_the_row_count(tmp_path, monkeypatch):
     monkeypatch.setenv("INSTITUTIONAL_WAREHOUSE_ROOT", str(tmp_path))
     from institutional_warehouse import db, gateway
     db.reset_backend(); db.init(force=True)
@@ -233,11 +258,40 @@ def test_a_derived_write_under_a_different_key_cannot_touch_the_original(
     gateway.write(tab_id, [{"symbol": "ACME", "statement_type": "CONSOLIDATED",
                             "fiscal_period": "FY2027Q1", "source": "upstox",
                             "cfo": 500.0}], source="upstox", actor="seed")
-    gateway.write(tab_id, [{"symbol": "OTHERCO", "statement_type": "CONSOLIDATED",
-                            "fiscal_period": "FY2027Q1", "source": "formula_engine",
-                            "free_cash_flow": 123.0}],
+    count = lambda: db.query(
+        f"SELECT COUNT(*) AS n FROM {db.physical_table(tab_id)}")[0]["n"]
+    before = count()
+    for payload in (
+        {"symbol": "ORPHANCO", "statement_type": "CONSOLIDATED",
+         "fiscal_period": "FY2027Q1", "free_cash_flow": 123.0},
+        {"symbol": "ACME", "statement_type": "CONSOLIDATED",
+         "fiscal_period": "FY2099Q4", "free_cash_flow": 456.0},
+        {"symbol": "ACME", "statement_type": "STANDALONE",
+         "fiscal_period": "FY2027Q1", "free_cash_flow": 789.0},
+    ):
+        gateway.write(tab_id, [{**payload, "source": "formula_engine"}],
+                      source="formula_engine", actor="t")
+    assert count() == before, "a derived write must never add a row"
+    db.reset_backend()
+
+
+def test_a_derived_write_cannot_target_another_company(tmp_path, monkeypatch):
+    """Two real rows. A derivation for one must not alter the other."""
+    monkeypatch.setenv("INSTITUTIONAL_WAREHOUSE_ROOT", str(tmp_path))
+    from institutional_warehouse import db, gateway
+    db.reset_backend(); db.init(force=True)
+    tab_id = "financials_quarterly"
+    for symbol, cfo in (("ACME", 500.0), ("OTHERCO", 900.0)):
+        gateway.write(tab_id, [{"symbol": symbol, "statement_type": "CONSOLIDATED",
+                                "fiscal_period": "FY2027Q1", "source": "upstox",
+                                "cfo": cfo, "capex": -100.0}],
+                      source="upstox", actor="seed")
+    gateway.write(tab_id, [{"symbol": "ACME", "statement_type": "CONSOLIDATED",
+                            "fiscal_period": "FY2027Q1", "source": "upstox",
+                            "free_cash_flow": 400.0}],
                   source="formula_engine", actor="t")
-    acme = db.query(f"SELECT source FROM {db.physical_table(tab_id)}"
-                    f" WHERE symbol='ACME'")[0]
-    assert acme["source"] == "upstox"
+    other = db.query(f"SELECT * FROM {db.physical_table(tab_id)}"
+                     f" WHERE symbol='OTHERCO'")[0]
+    assert other["free_cash_flow"] is None, "the other company must be untouched"
+    assert other["source"] == "upstox"
     db.reset_backend()
