@@ -75,6 +75,10 @@ DERIVED_FIELDS: Set[str] = set(DERIVED_FIELD_UNITS)
 #: what a payload is; this says who is entitled to send it.
 DERIVED_WRITERS: Set[str] = {"formula_engine"}
 
+# Gateway-only proof of which stored row a calculation came from. The gateway
+# removes this before validation and persistence; it is never warehouse data.
+PARENT_ROW_ID = "_derived_parent_row_id"
+
 
 def is_derived_writer(source: Any) -> bool:
     return str(source or "").strip().lower() in DERIVED_WRITERS

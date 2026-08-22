@@ -195,7 +195,9 @@ def _row_is_trusted(tab_id: str, row: dict[str, Any]) -> bool:
 
 
 def guard(tab_id: str, rows: Sequence[dict[str, Any]], existing: dict[str, dict[str, Any]],
-          *, key_of: Any, source: Any = None) -> tuple[list[dict[str, Any]], dict[str, int]]:
+          *, key_of: Any, source: Any = None,
+          derived_parents: dict[str, str] | None = None,
+          ) -> tuple[list[dict[str, Any]], dict[str, int]]:
     """Stop a write that would corrupt a row already fit to be read.
 
     Two refusals, both for things that have happened here:
@@ -220,17 +222,25 @@ def guard(tab_id: str, rows: Sequence[dict[str, Any]], existing: dict[str, dict[
     refused_units = 0
     refused_provenance = 0
     refused_orphan = 0
+    refused_key_change = 0
     for row in rows or []:
-        prior = existing.get(key_of(row)) or {}
+        row_id = key_of(row)
+        prior = existing.get(row_id) or {}
+        derived = derived_units.is_derived_write(row, source)
 
-        # The derived exemption is update-only. A derived payload with no parent
-        # row inserts one containing free_cash_flow and nothing else - an orphan
-        # with no revenue, no units and no reported source, which then reads as
-        # a fallback row for a period nobody reported. "A different key is a
-        # different row_id" describes what happens; it does not make it safe.
-        if derived_units.is_derived_write(row, source) and not prior:
-            refused_orphan += 1
-            continue
+        if derived:
+            expected_parent = (derived_parents or {}).get(row_id)
+            if not expected_parent:
+                refused_orphan += 1
+                continue
+            if expected_parent != row_id:
+                refused_key_change += 1
+                continue
+            # The binding names a row, but the row must still exist now. This
+            # makes the operation update-only even if it races a retirement.
+            if not prior:
+                refused_orphan += 1
+                continue
 
         if not prior:
             kept.append(row)
@@ -242,7 +252,7 @@ def guard(tab_id: str, rows: Sequence[dict[str, Any]], existing: dict[str, dict[
         # declared row while allowing it onto assumed_canonical ones - exactly
         # backwards. It cannot promote the row either: the payload has no
         # reported value and store.upsert leaves source untouched on update.
-        if derived_units.is_derived_write(row, source):
+        if derived:
             # The exemption adds computed columns. It does not re-own the row.
             # A derived payload claiming a different source rewrote provenance
             # through the exemption - upstox became formula_engine on a stable
@@ -276,4 +286,6 @@ def guard(tab_id: str, rows: Sequence[dict[str, Any]], existing: dict[str, dict[
         counts["refused_provenance_change"] = refused_provenance
     if refused_orphan:
         counts["refused_derived_without_parent"] = refused_orphan
+    if refused_key_change:
+        counts["refused_derived_key_change"] = refused_key_change
     return kept, counts

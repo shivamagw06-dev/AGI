@@ -66,10 +66,22 @@ def write(
     if not tab:
         return {"ok": False, "error": f"unknown_tab:{tab_id}", "written": 0}
 
-    incoming = [r for r in rows if isinstance(r, dict)]
+    incoming = [dict(r) for r in rows if isinstance(r, dict)]
     if not incoming:
         return {"ok": True, "tab": tab_id, "seen": 0, "written": 0, "inserted": 0,
                 "updated": 0, "unchanged": 0, "quarantined": 0}
+
+    # A calculation is an update to the row that supplied its inputs, never an
+    # upsert chosen only by the payload's current keys. Capture that parent proof
+    # before any normaliser sees the row, then remove the private marker so it can
+    # neither be validated nor persisted as warehouse data.
+    derived_parents: dict[str, str] = {}
+    for row in incoming:
+        parent_id = str(row.pop(derived_units.PARENT_ROW_ID, "") or "").strip()
+        target_id = store.make_row_id(tab, row)
+        if derived_units.is_derived_writer(source) and parent_id and target_id:
+            previous = derived_parents.get(target_id)
+            derived_parents[target_id] = parent_id if previous in (None, parent_id) else ""
 
     # 0a. Who is allowed to write what.
     #
@@ -154,7 +166,8 @@ def write(
     if accepted and canonical_rows.is_fundamental(tab_id):
         accepted, guard_counts = canonical_rows.guard(
             tab_id, accepted, _existing_by_row_id(tab, accepted),
-            key_of=lambda row: store.make_row_id(tab, row), source=source)
+            key_of=lambda row: store.make_row_id(tab, row), source=source,
+            derived_parents=derived_parents)
 
     # 6. Persist.
     result = store.upsert(tab_id, accepted, source=source, actor=actor,

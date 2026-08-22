@@ -16,7 +16,7 @@ from __future__ import annotations
 import statistics
 from typing import Any, Iterable, Optional
 
-from institutional_warehouse import audit, gateway, store, units
+from institutional_warehouse import audit, derived_units, gateway, store, units
 from institutional_warehouse.financials import canonical_statement_series
 from institutional_warehouse.values import now_iso, today_iso
 
@@ -123,6 +123,10 @@ def recalc_statement_derivations(*, actor: str = "system", entity: Optional[str]
                 continue
             updates.append(
                 {
+                    # Bind the update to the exact stored row that supplied the
+                    # inputs. The gateway consumes this marker and refuses an
+                    # insert or a calculation retargeted through changed keys.
+                    derived_units.PARENT_ROW_ID: row.get("row_id"),
                     "symbol": row.get("symbol"),
                     # statement_type is part of the key: without it this partial
                     # update would land on a different row than the one it was

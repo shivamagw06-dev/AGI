@@ -75,7 +75,8 @@ def test_a_derivation_lands_on_a_declared_row():
     derived = {"row_id": "r1", **KEYS, "free_cash_flow": 400.0}
     kept, _ = canonical_rows.guard("financials_quarterly", [derived],
                                    {"r1": prior}, key_of=lambda r: r["row_id"],
-                                   source="formula_engine")
+                                   source="formula_engine",
+                                   derived_parents={"r1": "r1"})
     assert len(kept) == 1
 
 
@@ -134,7 +135,8 @@ PRIOR = {"row_id": "r1", "source": "upstox", "sys_unit_method": "declared",
 def _guard(row, source):
     from institutional_warehouse import canonical_rows
     return canonical_rows.guard("financials_quarterly", [row], {"r1": PRIOR},
-                                key_of=lambda r: r["row_id"], source=source)
+                                key_of=lambda r: r["row_id"], source=source,
+                                derived_parents={"r1": "r1"})
 
 
 def test_the_formula_engine_may_write_derived_columns():
@@ -235,7 +237,8 @@ def test_a_derived_write_without_a_parent_row_is_refused():
     kept, counts = canonical_rows.guard(
         "financials_quarterly",
         [{"row_id": "missing", "symbol": "ORPHANCO", "free_cash_flow": 123.0}],
-        {}, key_of=lambda r: r["row_id"], source="formula_engine")
+        {}, key_of=lambda r: r["row_id"], source="formula_engine",
+        derived_parents={"missing": "missing"})
     assert kept == [] and counts.get("refused_derived_without_parent") == 1
 
 
@@ -252,7 +255,7 @@ def test_a_reported_write_may_still_create_a_row():
 
 def test_a_derived_write_cannot_increase_the_row_count(tmp_path, monkeypatch):
     monkeypatch.setenv("INSTITUTIONAL_WAREHOUSE_ROOT", str(tmp_path))
-    from institutional_warehouse import db, gateway
+    from institutional_warehouse import db, derived_units, gateway, schema, store
     db.reset_backend(); db.init(force=True)
     tab_id = "financials_quarterly"
     gateway.write(tab_id, [{"symbol": "ACME", "statement_type": "CONSOLIDATED",
@@ -261,6 +264,10 @@ def test_a_derived_write_cannot_increase_the_row_count(tmp_path, monkeypatch):
     count = lambda: db.query(
         f"SELECT COUNT(*) AS n FROM {db.physical_table(tab_id)}")[0]["n"]
     before = count()
+    parent_id = store.make_row_id(schema.find_tab(tab_id), {
+        "symbol": "ACME", "statement_type": "CONSOLIDATED",
+        "fiscal_period": "FY2027Q1",
+    })
     for payload in (
         {"symbol": "ORPHANCO", "statement_type": "CONSOLIDATED",
          "fiscal_period": "FY2027Q1", "free_cash_flow": 123.0},
@@ -269,16 +276,17 @@ def test_a_derived_write_cannot_increase_the_row_count(tmp_path, monkeypatch):
         {"symbol": "ACME", "statement_type": "STANDALONE",
          "fiscal_period": "FY2027Q1", "free_cash_flow": 789.0},
     ):
-        gateway.write(tab_id, [{**payload, "source": "formula_engine"}],
+        gateway.write(tab_id, [{**payload, "source": "formula_engine",
+                                derived_units.PARENT_ROW_ID: parent_id}],
                       source="formula_engine", actor="t")
     assert count() == before, "a derived write must never add a row"
     db.reset_backend()
 
 
 def test_a_derived_write_cannot_target_another_company(tmp_path, monkeypatch):
-    """Two real rows. A derivation for one must not alter the other."""
+    """Changing ACME's keys to an existing OTHERCO row is still refused."""
     monkeypatch.setenv("INSTITUTIONAL_WAREHOUSE_ROOT", str(tmp_path))
-    from institutional_warehouse import db, gateway
+    from institutional_warehouse import db, derived_units, gateway, schema, store
     db.reset_backend(); db.init(force=True)
     tab_id = "financials_quarterly"
     for symbol, cfo in (("ACME", 500.0), ("OTHERCO", 900.0)):
@@ -286,12 +294,22 @@ def test_a_derived_write_cannot_target_another_company(tmp_path, monkeypatch):
                                 "fiscal_period": "FY2027Q1", "source": "upstox",
                                 "cfo": cfo, "capex": -100.0}],
                       source="upstox", actor="seed")
-    gateway.write(tab_id, [{"symbol": "ACME", "statement_type": "CONSOLIDATED",
-                            "fiscal_period": "FY2027Q1", "source": "upstox",
-                            "free_cash_flow": 400.0}],
-                  source="formula_engine", actor="t")
+    tab = schema.find_tab(tab_id)
+    acme_id = store.make_row_id(tab, {"symbol": "ACME",
+                                      "statement_type": "CONSOLIDATED",
+                                      "fiscal_period": "FY2027Q1"})
+    result = gateway.write(
+        tab_id,
+        [{"symbol": "OTHERCO", "statement_type": "CONSOLIDATED",
+          "fiscal_period": "FY2027Q1", "source": "upstox",
+          "free_cash_flow": 400.0, derived_units.PARENT_ROW_ID: acme_id}],
+        source="formula_engine", actor="t")
     other = db.query(f"SELECT * FROM {db.physical_table(tab_id)}"
                      f" WHERE symbol='OTHERCO'")[0]
+    acme = db.query(f"SELECT * FROM {db.physical_table(tab_id)}"
+                    f" WHERE symbol='ACME'")[0]
+    assert result.get("refused_derived_key_change") == 1
     assert other["free_cash_flow"] is None, "the other company must be untouched"
+    assert acme["free_cash_flow"] is None, "the parent must be untouched on refusal"
     assert other["source"] == "upstox"
     db.reset_backend()
