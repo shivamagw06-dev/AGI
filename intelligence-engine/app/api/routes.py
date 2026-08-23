@@ -22132,6 +22132,26 @@ async def valuation_ratios_workbook_summary(days: int = 120):
     return {"ok": True, **summary}
 
 
+@router.post("/valuation-ratios/pivot-historical",
+             dependencies=[Depends(require_token)])
+async def valuation_ratios_pivot_historical(payload: dict[str, Any] = Body(default_factory=dict)):
+    """Rebuild historical_valuation for one day from ratios already collected.
+
+    Repair for days swept before the sweep learned to pivot. Re-sweeping
+    cannot do it: checkpoints are per day, so a resumed sweep finds an empty
+    queue and an unresumed one restarts at the top of the universe and
+    rewrites the same first companies. This spends no provider budget.
+    """
+    from valuation_ratios.ingest import pivot_stored_ratios
+
+    body = payload or {}
+    return await run_in_threadpool(
+        pivot_stored_ratios,
+        date=body.get("date"),
+        actor=str(body.get("actor") or "pivot_backfill"),
+    )
+
+
 @router.post("/valuation-ratios/isin-backfill")
 async def valuation_ratios_isin_backfill(payload: dict[str, Any] = Body(default_factory=dict)):
     """Fill company_master.isin from Upstox NSE EQ instruments (blocks key-ratios otherwise)."""
