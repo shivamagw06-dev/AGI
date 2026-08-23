@@ -140,7 +140,7 @@ jobs:
           if git diff --cached --quiet; then
             echo "No Hostinger root artifact changes to commit."
           elif git commit -m "chore: sync Hostinger production build [skip ci]" \
-               && git push --force origin HEAD:deploy/hostinger-options-build-801; then
+               && git push origin HEAD:main; then
             echo "Committed and pushed Hostinger root build for Horizons Git sync."
           else
             echo "::warning::Could not push build artifacts to main; branch protection "
