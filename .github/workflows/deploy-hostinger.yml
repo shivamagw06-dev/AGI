@@ -117,6 +117,19 @@ jobs:
           print("Bundle API origin OK")
           PY
 
+      # Best effort, and deliberately not fatal.
+      #
+      # This pushes straight to main, and main now requires the short gate. A
+      # direct push carries no pull request, so the check can never report on
+      # it and the push is rejected every time:
+      #
+      #   GH006: Protected branch update failed for refs/heads/main
+      #   - Required status check "Required short gate" is expected
+      #
+      # The step used to fail on that, which skipped every FTP step below it,
+      # so nothing reached Hostinger between 21 and 23 August while the builds
+      # themselves were fine. FTP is the delivery path and must not depend on
+      # a push that protection is designed to refuse.
       - name: Commit Hostinger root artifacts for Git sync
         if: steps.prep.outputs.rebuild == 'true'
         run: |
@@ -126,11 +139,18 @@ jobs:
           git add -A assets
           if git diff --cached --quiet; then
             echo "No Hostinger root artifact changes to commit."
-          else
-            git commit -m "chore: sync Hostinger production build [skip ci]"
-            git push origin HEAD:main
+          elif git commit -m "chore: sync Hostinger production build [skip ci]" \
+               && git push origin HEAD:main; then
             echo "Committed and pushed Hostinger root build for Horizons Git sync."
+          else
+            echo "::warning::Could not push build artifacts to main; branch protection "
+            echo "::warning::requires the short gate on every push and a direct push has "
+            echo "::warning::no pull request to run it. FTP below still publishes this "
+            echo "::warning::build. To restore the Git-sync path, allow this actor to "
+            echo "::warning::bypass protection. The committed artifacts are stale until then."
           fi
+          # No reset: the checkout is ephemeral, and FTP ships the files on
+          # disk rather than anything from git history.
 
       # Always publish the Hostinger Git root (index.html + /assets). Never FTP an empty
       # dist/assets tree — that deletes the live /assets folder and leaves the old site stuck.
