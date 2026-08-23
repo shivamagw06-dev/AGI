@@ -389,7 +389,11 @@ def run(*, limit: Optional[int] = None, batch_size: int = 40, actor: str = "rati
         "written": written,
         "seconds": round((datetime.now(timezone.utc) - started).total_seconds(), 1),
     }
-    checkpoints.finish_job(run_id, ok=status == HEALTHY, stats=stats)
+    # A DEGRADED run wrote data; only FAILED wrote none. Recording DEGRADED as a
+    # failed job made a batch that fetched 253 companies at 90.68% coverage read
+    # as a dead integration, which is why this collector looked broken for
+    # months while it was running two days ago.
+    checkpoints.finish_job(run_id, ok=status != FAILED, stats=stats)
     return {"ok": status != FAILED, "run_id": run_id, **stats,
             "failures": failures[:25], "incomplete_sample": incomplete[:25],
             "note": ("coverage below 95% is reported DEGRADED rather than as a "
