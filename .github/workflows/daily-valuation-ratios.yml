@@ -97,6 +97,39 @@ jobs:
           echo "calls=$calls" >> "$GITHUB_OUTPUT"
           echo "status=$last_status" >> "$GITHUB_OUTPUT"
 
+      - name: Collect FII/DII flows
+        shell: bash
+        run: |
+          set -uo pipefail
+          ENGINE='https://agib-intelligence-engine.onrender.com/v1'
+          # institutional_flow stopped on 20 August. The fetcher lived in the
+          # web service, whose Upstox token answers "Invalid token used to
+          # access API", and its scheduler was in-memory on a service that
+          # redeploys several times a day - its own status reported
+          # lastRun: null. Running it from here depends on no process staying
+          # up, and the engine's token is the one that works.
+          curl -sS --max-time 300 -X POST "$ENGINE/market-intelligence/flows/refresh" \
+            -H 'Content-Type: application/json' -d '{"actor":"daily_cron"}' \
+            -o flows.json -w 'flows HTTP %{http_code}\n' || true
+          python3 - <<'PY' || true
+          import json
+          try:
+              d = json.load(open("flows.json"))
+          except Exception as exc:
+              print(f"::warning::flows response unreadable: {exc}")
+              raise SystemExit(0)
+          if not d.get("ok"):
+              # Not fatal: valuation ratios are the job's reason to exist and
+              # they are already collected by this point.
+              print(f"::warning::flows refresh failed: {d.get('error')} "
+                    f"{str(d.get('failures'))[:200]}")
+          else:
+              w = d.get("written") or {}
+              print(f"  fetched {d.get('fetched')} observations over "
+                    f"{d.get('days')} days ({d.get('first_day')} .. {d.get('last_day')}), "
+                    f"wrote {w.get('inserted', 0)} new / {w.get('updated', 0)} updated")
+          PY
+
       - name: Verify today landed
         shell: bash
         run: |
