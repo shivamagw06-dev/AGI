@@ -21840,6 +21840,31 @@ async def market_intelligence_sector(sector: str, universe_limit: int = 5000):
         }
 
 
+@router.post("/market-intelligence/flows/refresh")
+async def market_intelligence_flows_refresh(payload: dict[str, Any] = Body(default_factory=dict)):
+    """Pull FII/DII from Upstox and write it. The route the engine already
+    tells people to call.
+
+    It did not exist: the flows service answers "No FII/DII rows in warehouse
+    yet. Run POST /v1/market-intelligence/flows/refresh", and that path
+    returned 404. The only way in was the push-based ingest, which needs
+    somebody to supply the payload.
+
+    The fetch lives here rather than in the web service because that service's
+    Upstox token answers "Invalid token used to access API", which is why the
+    table stopped on 20 August.
+    """
+    from market_intelligence_engine.fetch_flows import refresh
+
+    body = payload or {}
+    return await run_in_threadpool(
+        refresh,
+        interval=str(body.get("interval") or "1D"),
+        since=body.get("since"),
+        actor=str(body.get("actor") or "flow_refresh"),
+    )
+
+
 @router.post("/market-intelligence/flows/ingest")
 async def market_intelligence_flows_ingest(payload: dict[str, Any] = Body(default_factory=dict)):
     """Persist FII/DII rows into warehouse (called by BFF after Upstox fetch)."""
@@ -22130,6 +22155,26 @@ async def valuation_ratios_workbook_summary(days: int = 120):
 
     summary = await run_in_threadpool(workbook.summarise, days=days)
     return {"ok": True, **summary}
+
+
+@router.post("/valuation-ratios/pivot-historical",
+             dependencies=[Depends(require_token)])
+async def valuation_ratios_pivot_historical(payload: dict[str, Any] = Body(default_factory=dict)):
+    """Rebuild historical_valuation for one day from ratios already collected.
+
+    Repair for days swept before the sweep learned to pivot. Re-sweeping
+    cannot do it: checkpoints are per day, so a resumed sweep finds an empty
+    queue and an unresumed one restarts at the top of the universe and
+    rewrites the same first companies. This spends no provider budget.
+    """
+    from valuation_ratios.ingest import pivot_stored_ratios
+
+    body = payload or {}
+    return await run_in_threadpool(
+        pivot_stored_ratios,
+        date=body.get("date"),
+        actor=str(body.get("actor") or "pivot_backfill"),
+    )
 
 
 @router.post("/valuation-ratios/isin-backfill")
