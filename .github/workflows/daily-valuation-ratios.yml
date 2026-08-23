@@ -102,8 +102,19 @@ jobs:
         run: |
           set -uo pipefail
           ENGINE='https://agib-intelligence-engine.onrender.com/v1'
-          curl -sS --max-time 120 "$ENGINE/valuation-ratios/coverage" -o coverage.json \
-            -w 'coverage HTTP %{http_code}\n' || true
+          TODAY="$(date -u +%F)"
+
+          # Ask the warehouse what exists for today rather than trusting what
+          # this run happened to collect. Checkpoints are per day, so a second
+          # run finds an empty queue and honestly reports universe=0,
+          # successful=0, FAILED - and judging the day by that number fails a
+          # day whose data is complete. The same applies to a re-run after a
+          # partial failure, where this run only ever sees the remainder.
+          curl -sS --max-time 120 -o today.json -w 'today HTTP %{http_code}\n' \
+            --get "$ENGINE/warehouse/tab/valuation_ratios" \
+            --data-urlencode 'limit=1' \
+            --data-urlencode "filters={\"reported_date\":\"$TODAY\"}" || true
+          export TODAY
 
           # The job fails loudly on a thin day. The keep-warm workflow in this
           # repo emitted ::warning:: and exited 0 while the engine was down for
@@ -115,16 +126,25 @@ jobs:
           export COLLECTED CALLS STATUS
           python3 - <<'PY'
           import json, os, sys
+
+          day = os.environ.get("TODAY")
           collected = int(os.environ.get("COLLECTED") or 0)
-          print(f"collected today: {collected} companies in "
+          print(f"this run collected {collected} companies in "
                 f"{os.environ.get('CALLS')} calls "
                 f"(last batch {os.environ.get('STATUS')})")
+
           try:
-              cov = json.load(open("coverage.json"))
-              print("warehouse:", cov.get("companies"), "companies,",
-                    cov.get("rows"), "rows")
+              rows = int(json.load(open("today.json")).get("total") or 0)
           except Exception as exc:
-              print("coverage unreadable:", exc)
-          if collected < 1000:
-              sys.exit(f"::error::only {collected} companies collected; expected ~2,400")
+              sys.exit(f"::error::cannot read today's row count: {exc}")
+
+          # Six ratios per company, minus the ones that do not exist for a
+          # lender - ROCE and EV/EBITDA are correctly absent for banks - so
+          # this is a floor, not a company count.
+          print(f"warehouse holds {rows} rows dated {day} "
+                f"(~{rows // 6} companies)")
+          # ~1,000 companies. A full day is about 12,400 rows; well under this
+          # means the sweep did not get round the universe, whoever ran it.
+          if rows < 6000:
+              sys.exit(f"::error::only {rows} rows dated {day}; expected ~12,400")
           PY
