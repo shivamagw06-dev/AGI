@@ -2839,6 +2839,7 @@ STRATEGY_EXECUTION_SIMULATIONS = Tab(
     ),
 )
 
+@@
 STRATEGY_LIVE_ATTRIBUTION = Tab(
     id="strategy_live_attribution",
     label="Strategy Paper and Live Attribution",
@@ -2859,6 +2860,27 @@ STRATEGY_LIVE_ATTRIBUTION = Tab(
         _c("transaction_costs", "Transaction Costs", NUMBER, width=150, group="Performance"),
         _c("slippage_costs", "Slippage Costs", NUMBER, width=140, group="Performance"),
         _c("net_pnl", "Net P&L", NUMBER, width=120, group="Performance"),
+    ),
+)
+
+STRATEGY_DATA_READINESS = Tab(
+    id="strategy_data_readiness",
+    label="Strategy Data Readiness",
+    description="Daily immutable evidence showing why each strategy can or cannot enter validation.",
+    mode="append",
+    key=("as_of", "strategy_id", "report_hash"),
+    order_by=("as_of DESC", "strategy_id"),
+    search_columns=("strategy_id", "data_gate", "report_hash"),
+    icon="strategy",
+    columns=(
+        _c("as_of", "As Of", DATE, required=True, width=120, group="Identity"),
+        _c("strategy_id", "Strategy", TEXT, required=True, width=190, group="Identity"),
+        _c("report_hash", "Report Hash", TEXT, required=True, width=240, group="Integrity"),
+        _c("data_gate", "Data Gate", TEXT, required=True, width=120, group="Governance"),
+        _c("gate_states_json", "Gate States", JSON, required=True, width=300, group="Governance"),
+        _c("blockers_json", "Blockers", JSON, required=True, width=300, group="Governance"),
+        _c("counts_json", "Counts", JSON, required=True, width=360, group="Evidence"),
+        _c("created_at", "Created At", DATETIME, required=True, width=170, group="Audit"),
     ),
 )
 
@@ -2914,6 +2936,7 @@ TABS: tuple[Tab, ...] = (
     CANONICAL_FEATURE_OBSERVATIONS,
     STRATEGY_EXECUTION_SIMULATIONS,
     STRATEGY_LIVE_ATTRIBUTION,
+    STRATEGY_DATA_READINESS,
     HVIE_UNIVERSE_QUEUE,
     DAILY_INTELLIGENCE_CHANGES,
     RIE_COMPANY_DOSSIER,

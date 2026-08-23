@@ -10738,14 +10738,15 @@ async def strategy_lab_definition(strategy_id: str):
         raise HTTPException(status_code=404, detail=str(exc)) from exc
 
 
-@router.post("/strategy-lab/registry/sync")
+@@
+@router.post("/strategy-lab/registry/sync", dependencies=[Depends(require_token)])
 async def strategy_lab_registry_sync(payload: dict[str, Any] = Body(default={})):
     """Seal code-defined versions into the immutable warehouse registry."""
     from strategy_lab.operating_system import sync_registry
     return await run_in_threadpool(sync_registry, actor=str((payload or {}).get("actor") or "admin"))
 
 
-@router.post("/strategy-lab/research/{strategy_id}")
+@router.post("/strategy-lab/research/{strategy_id}", dependencies=[Depends(require_token)])
 async def strategy_lab_run_research(strategy_id: str, payload: dict[str, Any] = Body(default={})):
     """Run bounded factor research or a standardized point-in-time backtest."""
     from strategy_lab.operating_system import run_research
@@ -10765,6 +10766,29 @@ async def strategy_lab_capital_decision(strategy_id: str):
         return await run_in_threadpool(capital_decision, strategy_id)
     except KeyError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
+@router.get("/strategy-lab/data-readiness")
+async def strategy_lab_data_readiness(as_of: str | None = None):
+    """Read-only point-in-time, universe, action and price readiness evidence."""
+    from strategy_lab.prospective import readiness
+    return await run_in_threadpool(readiness, as_of)
+
+
+@router.post("/strategy-lab/prospective/capture", dependencies=[Depends(require_token)])
+async def strategy_lab_prospective_capture(payload: dict[str, Any] = Body(default={})):
+    """Capture facts from now forward; legacy facts are never backdated."""
+    from strategy_lab.prospective import capture
+    try:
+        return await run_in_threadpool(
+            capture,
+            as_of=(payload or {}).get("as_of"),
+            actor=str((payload or {}).get("actor") or "daily_validation_cron"),
+            confirm=(payload or {}).get("confirm"),
+            dry_run=bool((payload or {}).get("dry_run", False)),
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
 
 
 # ---------------------------------------------------------------------------
