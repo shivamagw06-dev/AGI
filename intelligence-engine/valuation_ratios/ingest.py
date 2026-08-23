@@ -151,6 +151,58 @@ def ingest_key_ratios(
     return out
 
 
+
+def _closing_prices(symbols: set[str], dates: set[str]) -> dict[tuple[str, str], float]:
+    """Closing price per (symbol, date), in one query rather than 2,400.
+
+    Only the dates being written are looked up. Carrying a stale close forward
+    onto today's row would print a price the market never traded at, which is
+    worse than showing none.
+    """
+    from institutional_warehouse import db
+
+    if not symbols or not dates:
+        return {}
+    table = db.physical_table("daily_market_history")
+    marks = ",".join(["?"] * len(dates))
+    rows = db.query(
+        f"SELECT symbol, date, close FROM {table} "
+        f"WHERE date IN ({marks}) AND close IS NOT NULL",
+        tuple(sorted(dates)),
+    )
+    out: dict[tuple[str, str], float] = {}
+    for row in rows:
+        sym = str(row.get("symbol") or "").upper()
+        if sym not in symbols:
+            continue
+        try:
+            out[(sym, str(row.get("date")))] = float(row["close"])
+        except (TypeError, ValueError):
+            continue
+    return out
+
+
+def _existing_valuations(symbols: set[str], dates: set[str]) -> dict[tuple[str, str], dict[str, Any]]:
+    """What the table already holds for these keys, in one query.
+
+    The per-symbol fetch this replaces ran once per company: a full sweep of
+    2,400 companies meant 2,400 round trips before a single row was written.
+    """
+    from institutional_warehouse import db
+
+    if not symbols or not dates:
+        return {}
+    table = db.physical_table("historical_valuation")
+    marks = ",".join(["?"] * len(dates))
+    rows = db.query(f"SELECT * FROM {table} WHERE date IN ({marks})",
+                    tuple(sorted(dates)))
+    out: dict[tuple[str, str], dict[str, Any]] = {}
+    for row in rows:
+        sym = str(row.get("symbol") or "").upper()
+        if sym in symbols:
+            out[(sym, str(row.get("date")))] = row
+    return out
+
 def sync_historical_valuation(
     ratio_rows: list[dict[str, Any]],
     *,
@@ -179,16 +231,28 @@ def sync_historical_valuation(
     if not by_symbol:
         return {"ok": True, "wrote": 0, "note": "no_pivot_rows"}
 
-    # Preserve CMP / market_cap already on today's valuation row when present.
+    # Preserve CMP / market_cap already on today's valuation row, and fill CMP
+    # from the price history when nothing holds one.
+    #
+    # Yahoo used to write both the multiples and the price into this table.
+    # It was stopped as a source of valuation ratios, and the Upstox key-ratios
+    # endpoint carries no price at all, so CMP had no writer left: coverage of
+    # this table fell from 2,889 rows on 19 August to 82 on the 23rd, and the
+    # sector desk reads it for the price it shows. daily_market_history is
+    # collected every thirty minutes and is current, so the price is taken
+    # from there rather than reintroducing the provider.
+    dates = {row.get("date") for row in by_symbol.values() if row.get("date")}
+    closes = _closing_prices(set(by_symbol), dates)
+
     staged: list[dict[str, Any]] = []
+    held_rows = _existing_valuations(set(by_symbol), dates)
     for sym, row in by_symbol.items():
-        existing = store.fetch(
-            "historical_valuation",
-            filters={"symbol": sym, "date": row.get("date")},
-            limit=1,
-        ).get("rows") or []
-        held = existing[0] if existing else {}
+        held = held_rows.get((sym, str(row.get("date") or ""))) or {}
         merged = {**held, **row, "source": SOURCE}
+        if merged.get("cmp") is None:
+            close = closes.get((sym, str(row.get("date") or "")))
+            if close is not None:
+                merged["cmp"] = close
         # Drop identity columns that are not in historical_valuation schema.
         for drop in ("company_id", "isin", "instrument_key", "ratio_name", "company_value",
                      "sector_value", "reported_date", "reported_time", "snapshot_id",
