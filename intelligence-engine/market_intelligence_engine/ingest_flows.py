@@ -42,6 +42,24 @@ def normalise_upstox_flow(payload: dict[str, Any]) -> list[dict[str, Any]]:
                     row[f"fii_{field}"] = item.get(field)
                 row["time_stamp"] = item.get("time_stamp")
         return list(grouped.values())
+
+    # An empty payload used to fall through here and fabricate a row: today's
+    # date, the default segment, and every figure null. It then sat at the top
+    # of the table making the feed look current while carrying nothing, which
+    # is worse than an obviously stale table because the staleness monitor
+    # reads it as fresh. Found by doing exactly that with a test POST of {}.
+    #
+    # A single-observation payload has to name at least one side of the trade.
+    # Without that there is no measurement, only a date.
+    has_figure = any(
+        (payload.get(participant) or {}).get(field) is not None
+        for participant in ("fii", "dii")
+        for field in ("buy_amount", "sell_amount", "buy", "sell",
+                      "net", "net_buy", "net_sell", "purchase", "sales")
+    )
+    if not has_figure:
+        return []
+
     date = str(payload.get("date") or datetime.now(timezone.utc).date().isoformat())
     raw_segment = str(payload.get("segment") or payload.get("data_type") or "NSE_EQ")
     # Upstox API uses NSE_EQ|CASH; warehouse options are NSE_EQ / CASH.
