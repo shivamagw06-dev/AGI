@@ -20,6 +20,13 @@ workbook that drifts from it is worse than no workbook.
 Every company in the eligible universe gets a row even when it has no data.
 An admin sheet exists to show gaps; dropping the empty rows would hide exactly
 the companies worth looking at.
+
+Both the workbook and the pivot are built for a process that has run out of
+memory before. openpyxl's normal mode held 940 MB for 2,400 companies by 250
+dates and write-only holds 51 MB for the same sheet, so this streams. The
+pivot is per-ratio arrays aligned to the date list rather than one dict keyed
+by (symbol, ratio, date) - the tuple-keyed version measured 403 MB where the
+arrays cost a fraction of it.
 """
 
 from __future__ import annotations
@@ -43,7 +50,10 @@ SHEET_TITLES: dict[str, str] = {
 COVERAGE_SHEET = "Coverage"
 IDENTITY_HEADERS = ("Symbol", "Company", "Sector")
 DEFAULT_DAYS = 120
-MAX_DAYS = 750
+# About two trading years. Past this the pivot and the response both grow
+# faster than they are worth: 750 dates is a 28 MB download and roughly forty
+# seconds of building, which is long enough for a proxy to give up on it.
+MAX_DAYS = 500
 
 
 def _physical() -> str:
@@ -106,8 +116,12 @@ def recent_dates(days: int) -> list[str]:
     return dates[:days]
 
 
-def _values(dates: list[str]) -> dict[tuple[str, str, str], float]:
-    """(symbol, ratio, date) -> company value, latest snapshot wins.
+def series_by_ratio(dates: list[str]) -> dict[str, dict[str, list[Optional[float]]]]:
+    """{ratio: {symbol: [value per date, aligned to ``dates``]}}.
+
+    Arrays rather than a dict keyed by (symbol, ratio, date): the tuple-keyed
+    form measured 403 MB at 3.6 million entries, which this process cannot
+    afford alongside everything else it runs.
 
     The natural key carries ``snapshot_id``, so a day re-swept holds more than
     one row per company and ratio. Ordering by reported_time then snapshot_id
@@ -116,81 +130,99 @@ def _values(dates: list[str]) -> dict[tuple[str, str, str], float]:
     """
     from institutional_warehouse import db
 
+    out: dict[str, dict[str, list[Optional[float]]]] = {r: {} for r in EXPECTED}
     if not dates:
-        return {}
+        return out
+    index = {day: position for position, day in enumerate(dates)}
     placeholders = ",".join(["?"] * len(dates))
     # "?" on both backends: db._bind rewrites it to named binds for
     # SQLAlchemy, so writing dialect-specific placeholders here would break
     # Postgres rather than support it.
-    sql = (
+    rows = db.query(
         "SELECT symbol, ratio_name, reported_date, company_value "
         f"FROM {_physical()} WHERE reported_date IN ({placeholders}) "
-        "ORDER BY reported_time ASC, snapshot_id ASC"
+        "ORDER BY reported_time ASC, snapshot_id ASC",
+        tuple(dates),
     )
-
-    out: dict[tuple[str, str, str], float] = {}
-    for row in db.query(sql, tuple(dates)):
+    for row in rows:
         value = row.get("company_value")
         if value is None:
             continue
-        key = (
-            str(row.get("symbol") or "").strip().upper(),
-            str(row.get("ratio_name") or "").strip().lower(),
-            str(row.get("reported_date") or ""),
-        )
+        bucket = out.get(str(row.get("ratio_name") or "").strip().lower())
+        if bucket is None:
+            continue
+        position = index.get(str(row.get("reported_date") or ""))
+        if position is None:
+            continue
+        symbol = str(row.get("symbol") or "").strip().upper()
+        line = bucket.get(symbol)
+        if line is None:
+            line = bucket[symbol] = [None] * len(dates)
         try:
-            out[key] = float(value)
+            line[position] = float(value)
         except (TypeError, ValueError):
             continue
     return out
 
 
-def _autofilter(sheet, rows: int, cols: int) -> None:
+def _prepare(sheet, headers: list[str], date_columns: int) -> None:
+    """Layout must be set before rows stream out; write-only cannot go back."""
     from openpyxl.utils import get_column_letter
 
     sheet.freeze_panes = "D2"
-    sheet.auto_filter.ref = f"A1:{get_column_letter(max(cols, 1))}{max(rows, 1)}"
-    sheet.column_dimensions["A"].width = 16
-    sheet.column_dimensions["B"].width = 38
-    sheet.column_dimensions["C"].width = 22
+    sheet.auto_filter.ref = f"A1:{get_column_letter(len(headers))}1048576"
+    for column, width in ((1, 16), (2, 38), (3, 22)):
+        sheet.column_dimensions[get_column_letter(column)].width = width
+    for offset in range(date_columns):
+        sheet.column_dimensions[get_column_letter(4 + offset)].width = 11
 
 
-def build(*, days: int = DEFAULT_DAYS) -> tuple[Any, dict[str, Any]]:
-    """Return (workbook, summary). Summary is what the route reports as headers."""
-    from openpyxl import Workbook
+def _header_row(sheet, headers: list[str], *, tilt_from: int = 0):
+    from openpyxl.cell import WriteOnlyCell
     from openpyxl.styles import Alignment, Font
-    from openpyxl.utils import get_column_letter
+
+    bold = Font(bold=True)
+    tilted = Alignment(textRotation=60, horizontal="center")
+    cells = []
+    for position, title in enumerate(headers, start=1):
+        cell = WriteOnlyCell(sheet, value=title)
+        cell.font = bold
+        if tilt_from and position > tilt_from:
+            cell.alignment = tilted
+        cells.append(cell)
+    return cells
+
+
+def build_bytes(*, days: int = DEFAULT_DAYS) -> tuple[bytes, dict[str, Any]]:
+    """Serialise to memory. The engine has no writable disk it should rely on."""
+    import io
+
+    from openpyxl import Workbook
 
     days = max(1, min(int(days or DEFAULT_DAYS), MAX_DAYS))
     universe = _universe()
     dates = recent_dates(days)
-    values = _values(dates)
+    series = series_by_ratio(dates)
+    latest = dates[0] if dates else None
 
-    workbook = Workbook()
-    workbook.remove(workbook.active)
-    header_font = Font(bold=True)
-    tilted = Alignment(textRotation=60, horizontal="center")
+    workbook = Workbook(write_only=True)
+    blank: list[Optional[float]] = [None] * len(dates)
+    values = 0
 
     for ratio in EXPECTED:
         sheet = workbook.create_sheet(SHEET_TITLES[ratio])
-        sheet.append(list(IDENTITY_HEADERS) + list(dates))
-        for index, cell in enumerate(sheet[1], start=1):
-            cell.font = header_font
-            if index > len(IDENTITY_HEADERS):
-                cell.alignment = tilted
+        headers = list(IDENTITY_HEADERS) + list(dates)
+        _prepare(sheet, headers, len(dates))
+        sheet.append(_header_row(sheet, headers, tilt_from=len(IDENTITY_HEADERS)))
+        bucket = series[ratio]
         for company in universe:
-            symbol = company["symbol"]
-            sheet.append(
-                [symbol, company["company"], company["sector"]]
-                + [values.get((symbol, ratio, day)) for day in dates]
-            )
-        for column in range(len(IDENTITY_HEADERS) + 1, len(IDENTITY_HEADERS) + len(dates) + 1):
-            sheet.column_dimensions[get_column_letter(column)].width = 11
-        _autofilter(sheet, len(universe) + 1, len(IDENTITY_HEADERS) + len(dates))
+            line = bucket.get(company["symbol"], blank)
+            values += sum(1 for v in line if v is not None)
+            sheet.append([company["symbol"], company["company"],
+                          company["sector"], *line])
 
-    latest = dates[0] if dates else None
     coverage = workbook.create_sheet(COVERAGE_SHEET)
-    coverage.append(
+    headers = (
         list(IDENTITY_HEADERS)
         # Names the date rather than saying "latest", because the column
         # beside it is the company's own latest date and the two differ for
@@ -199,60 +231,49 @@ def build(*, days: int = DEFAULT_DAYS) -> tuple[Any, dict[str, Any]]:
            f"Ratios On {latest}" if latest else "Ratios On Newest Date"]
         + [f"Latest {SHEET_TITLES[r]}" for r in EXPECTED]
     )
-    for cell in coverage[1]:
-        cell.font = header_font
+    _prepare(coverage, headers, 0)
+    coverage.append(_header_row(coverage, headers))
 
+    covered = 0
     for company in universe:
         symbol = company["symbol"]
-        present = [d for d in dates
-                   if any((symbol, r, d) in values for r in EXPECTED)]
-        on_latest = sum(1 for r in EXPECTED if (symbol, r, latest) in values) if latest else 0
-        latest_each = []
-        for ratio in EXPECTED:
-            # First hit walking newest-first is the most recent reading, which
-            # is not the same as the value on the latest date - a ratio missing
-            # today still has a last known value, and blanking it would report
-            # a collection gap as an absent ratio.
-            latest_each.append(next(
-                (values[(symbol, ratio, d)] for d in dates
-                 if (symbol, ratio, d) in values), None))
+        lines = [series[r].get(symbol, blank) for r in EXPECTED]
+        collected = [dates[i] for i in range(len(dates))
+                     if any(line[i] is not None for line in lines)]
+        on_latest = sum(1 for line in lines if line and line[0] is not None)
+        covered += 1 if on_latest else 0
+        # First non-empty walking newest-first is the most recent reading,
+        # which is not the same as the value on the latest date - a ratio
+        # missing today still has a last known value, and blanking it would
+        # report a collection gap as an absent ratio.
+        latest_each = [next((v for v in line if v is not None), None) for line in lines]
         coverage.append(
             [symbol, company["company"], company["sector"], company["isin"],
-             "yes" if company["eligible"] else "no", len(present),
-             present[-1] if present else None, present[0] if present else None,
-             on_latest]
-            + latest_each
+             "yes" if company["eligible"] else "no", len(collected),
+             collected[-1] if collected else None,
+             collected[0] if collected else None, on_latest, *latest_each]
         )
-    _autofilter(coverage, len(universe) + 1, 9 + len(EXPECTED))
-    coverage.freeze_panes = "D2"
 
-    covered = sum(
-        1 for c in universe
-        if latest and any((c["symbol"], r, latest) in values for r in EXPECTED)
-    )
+    buffer = io.BytesIO()
+    workbook.save(buffer)
+    payload = buffer.getvalue()
     summary = {
         "companies": len(universe),
         "dates": len(dates),
         "latest_date": latest,
         "oldest_date": dates[-1] if dates else None,
-        "values": len(values),
+        "values": values,
         "companies_on_latest_date": covered,
         "sheets": [SHEET_TITLES[r] for r in EXPECTED] + [COVERAGE_SHEET],
         "generated_at": datetime.now(timezone.utc).isoformat(),
+        "bytes": len(payload),
     }
-    return workbook, summary
-
-
-def build_bytes(*, days: int = DEFAULT_DAYS) -> tuple[bytes, dict[str, Any]]:
-    """Serialise to memory. The engine has no writable disk it should rely on."""
-    import io
-
-    workbook, summary = build(days=days)
-    buffer = io.BytesIO()
-    workbook.save(buffer)
-    payload = buffer.getvalue()
-    summary["bytes"] = len(payload)
     return payload, summary
+
+
+def summarise(*, days: int = DEFAULT_DAYS) -> dict[str, Any]:
+    """What the workbook would contain, without holding the file."""
+    return build_bytes(days=days)[1]
 
 
 def filename(summary: Optional[dict[str, Any]] = None) -> str:

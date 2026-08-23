@@ -37,6 +37,14 @@ def warehouse(monkeypatch, tmp_path):
     db.reset_backend()
 
 
+def _open(days=30):
+    """Reopen the saved file. Write-only workbooks cannot be read in place."""
+    from openpyxl import load_workbook
+
+    payload, summary = workbook.build_bytes(days=days)
+    return load_workbook(io.BytesIO(payload)), summary
+
+
 def _ratio(symbol, name, date, value, *, snapshot="s1", time="09:00"):
     return {"symbol": symbol, "isin": f"INE{symbol}", "ratio_name": name,
             "company_value": value, "reported_date": date,
@@ -53,7 +61,7 @@ def _write(rows):
 def test_one_sheet_per_ratio_plus_coverage(warehouse):
     """Seven sheets: the six ratios Upstox reports, and the gap sheet."""
     _write([_ratio("AAA", "pe", "2026-08-20", 25.0)])
-    book, summary = workbook.build(days=30)
+    book, summary = _open(30)
 
     assert book.sheetnames == ["P-E", "P-B", "ROA", "ROE", "ROCE",
                                "EV-EBITDA", "Coverage"]
@@ -66,7 +74,7 @@ def test_companies_go_down_column_a_and_dates_across(warehouse):
         _ratio("AAA", "pe", "2026-08-21", 26.0),
         _ratio("BBB", "pe", "2026-08-21", 12.0),
     ])
-    sheet = workbook.build(days=30)[0]["P-E"]
+    sheet = _open(30)[0]["P-E"]
 
     assert [c.value for c in sheet[1][:3]] == ["Symbol", "Company", "Sector"]
     # Newest first. A year of collection is 250 columns, and appending on the
@@ -80,7 +88,7 @@ def test_companies_go_down_column_a_and_dates_across(warehouse):
 def test_a_company_with_no_data_still_gets_a_row(warehouse):
     """An admin sheet exists to show gaps, so it must not drop the gaps."""
     _write([_ratio("AAA", "pe", "2026-08-20", 25.0)])
-    sheet = workbook.build(days=30)[0]["P-E"]
+    sheet = _open(30)[0]["P-E"]
 
     symbols = [sheet.cell(row=r, column=1).value for r in range(2, sheet.max_row + 1)]
     assert "CCC" in symbols
@@ -100,7 +108,7 @@ def test_a_resweep_shows_the_later_snapshot(warehouse):
     """The key carries snapshot_id, so one day can hold several readings."""
     _write([_ratio("AAA", "pe", "2026-08-21", 25.0, snapshot="s1", time="09:00")])
     _write([_ratio("AAA", "pe", "2026-08-21", 31.5, snapshot="s2", time="17:00")])
-    sheet = workbook.build(days=30)[0]["P-E"]
+    sheet = _open(30)[0]["P-E"]
 
     assert sheet.cell(row=2, column=4).value == 31.5
 
@@ -112,7 +120,7 @@ def test_coverage_reports_the_last_known_value_not_only_todays(warehouse):
         _ratio("AAA", "pe", "2026-08-20", 25.0),
         _ratio("AAA", "pb", "2026-08-21", 3.2),
     ])
-    sheet = workbook.build(days=30)[0]["Coverage"]
+    sheet = _open(30)[0]["Coverage"]
     headers = [c.value for c in sheet[1]]
     row = {h: sheet.cell(row=2, column=i + 1).value for i, h in enumerate(headers)}
 
@@ -151,7 +159,7 @@ def test_days_is_bounded(warehouse):
 
 def test_the_filename_carries_the_latest_date(warehouse):
     _write([_ratio("AAA", "pe", "2026-08-21", 25.0)])
-    assert workbook.filename(workbook.build(days=30)[1]) == \
+    assert workbook.filename(_open(30)[1]) == \
         "agi_valuation_ratios_2026-08-21.xlsx"
 
 
@@ -166,3 +174,41 @@ def test_the_route_is_token_guarded():
         match = re.search(rf'@router\.get\("{re.escape(path)}"[^)]*\)', text)
         assert match, f"{path} route missing"
         assert "Depends(require_token)" in match.group(0), f"{path} is unguarded"
+
+
+def test_the_workbook_streams_rather_than_holding_every_cell():
+    """This runs in a process that has been killed for memory before.
+
+    openpyxl's normal mode measured 940 MB for 2,400 companies by 250 dates;
+    write-only measured 51 MB for the same sheet. The engine's recalculate
+    stage already reached 8.58 GB of an 8.59 GB cap, so the difference is not
+    an optimisation.
+    """
+    import inspect
+
+    src = inspect.getsource(workbook.build_bytes)
+    assert "Workbook(write_only=True)" in src
+
+
+def test_the_pivot_is_arrays_not_one_tuple_keyed_dict():
+    """A dict keyed by (symbol, ratio, date) measured 403 MB at 3.6M entries."""
+    dates = ["2026-08-21", "2026-08-20"]
+    out = workbook.series_by_ratio.__doc__ or ""
+    assert "Arrays rather than a dict" in out
+    assert workbook.MAX_DAYS <= 500
+
+
+def test_every_series_lines_up_with_the_date_columns(warehouse):
+    """An off-by-one here would silently print yesterday's ratio under today."""
+    _write([
+        _ratio("AAA", "pe", "2026-08-20", 25.0),
+        _ratio("AAA", "pe", "2026-08-21", 26.0),
+        _ratio("BBB", "roe", "2026-08-20", 14.5),
+    ])
+    dates = workbook.recent_dates(30)
+    series = workbook.series_by_ratio(dates)
+
+    assert dates == ["2026-08-21", "2026-08-20"]
+    assert series["pe"]["AAA"] == [26.0, 25.0]
+    assert series["roe"]["BBB"] == [None, 14.5]
+    assert "AAA" not in series["roe"]

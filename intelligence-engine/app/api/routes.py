@@ -22060,7 +22060,7 @@ async def valuation_ratios_workbook_summary(days: int = 120):
     """What the workbook would contain, without building the file."""
     from valuation_ratios import workbook
 
-    _, summary = await run_in_threadpool(workbook.build_bytes, days=days)
+    summary = await run_in_threadpool(workbook.summarise, days=days)
     return {"ok": True, **summary}
 
 
