@@ -2620,7 +2620,6 @@ VENDOR_PRICE_HISTORY = Tab(
     ),
 )
 
-@@
 VENDOR_INDUSTRY_CONTEXT = Tab(
     id="vendor_industry_context",
     label="Vendor Industry Context",
@@ -2839,7 +2838,6 @@ STRATEGY_EXECUTION_SIMULATIONS = Tab(
     ),
 )
 
-@@
 STRATEGY_LIVE_ATTRIBUTION = Tab(
     id="strategy_live_attribution",
     label="Strategy Paper and Live Attribution",

@@ -10708,7 +10708,6 @@ async def strategy_lab_scan(strategy_id: str, limit: int = 20):
     return await run_in_threadpool(scan, strategy_id, limit=bounded_limit)
 
 
-@@
 @router.post("/strategy-lab/backtest/{strategy_id}")
 async def strategy_lab_backtest(strategy_id: str, payload: dict[str, Any] = Body(default={})):
     from strategy_lab.production import backtest
@@ -10738,7 +10737,6 @@ async def strategy_lab_definition(strategy_id: str):
         raise HTTPException(status_code=404, detail=str(exc)) from exc
 
 
-@@
 @router.post("/strategy-lab/registry/sync", dependencies=[Depends(require_token)])
 async def strategy_lab_registry_sync(payload: dict[str, Any] = Body(default={})):
     """Seal code-defined versions into the immutable warehouse registry."""

@@ -145,6 +145,11 @@ def warehouse_universe(monkeypatch):
         "hedge_fund_lab.scanner._legacy_consensus",
         lambda ticker: {},
     )
+    # These tests assert source construction, not asynchronous cache timing.
+    # Production _universe() may intentionally return a previous snapshot while
+    # refreshing; route the fixture through the deterministic builder.
+    from hedge_fund_lab import scanner as hfl_scanner
+    monkeypatch.setattr(hfl_scanner, "_universe", hfl_scanner._build_universe)
     return mi_rows
 
 
@@ -244,6 +249,8 @@ def test_legacy_fallback_when_warehouse_empty(monkeypatch):
         ]
 
     monkeypatch.setattr(hfl_scanner, "_universe_from_legacy", _fake_legacy)
-    rows = hfl_scanner._universe()
+    # Exercise the source fallback directly. _universe() is intentionally an
+    # asynchronous snapshot cache and may return an earlier valid snapshot.
+    rows = hfl_scanner._build_universe()
     assert rows[0]["ticker"] == "LEGACY"
     assert hfl_scanner.universe_meta()["source"] == "legacy_valuation_terminal"
