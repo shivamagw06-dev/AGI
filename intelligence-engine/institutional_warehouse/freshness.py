@@ -27,13 +27,21 @@ STATIC = "static"        # a frozen source archive; movement would be the surpri
 # different conversation from a tab the sector desk reads being stale.
 EXPECTED: dict[str, dict[str, Any]] = {
     "daily_market_history": {"cadence": DAILY, "column": "date",
-                             "reader": "prices, valuation, factors"},
+                             "reader": "prices, valuation, factors",
+                             "value_columns": ("close",)},
     "valuation_ratios": {"cadence": DAILY, "column": "reported_date",
-                         "reader": "valuation desk, workbook"},
+                         "reader": "valuation desk, workbook",
+                         "value_columns": ("company_value",)},
     "historical_valuation": {"cadence": DAILY, "column": "date",
-                             "reader": "sector intelligence, factor layer"},
+                             "reader": "sector intelligence, factor layer",
+                             "value_columns": ("pe", "pb", "cmp")},
     "institutional_flow": {"cadence": DAILY, "column": "date",
-                           "reader": "market intelligence flows panel"},
+                           "reader": "market intelligence flows panel",
+                           # A flow row with neither side populated is a date,
+                           # not an observation. One reached the table from an
+                           # empty test POST and made the feed read as current
+                           # while carrying nothing.
+                           "value_columns": ("fii_net", "dii_net")},
     "historical_sector_medians": {"cadence": DAILY, "column": "as_of",
                                   "reader": "sector valuation explorer"},
     "corporate_actions": {"cadence": EVENT, "column": "effective_date",
@@ -77,7 +85,16 @@ def _as_date(value: Any) -> Optional[date]:
         return None
 
 
-def _newest(tab_id: str, column: str) -> tuple[Optional[date], int]:
+def _newest(tab_id: str, column: str,
+            value_columns: tuple[str, ...] = ()) -> tuple[Optional[date], int]:
+    """The newest date the table can actually answer a question from.
+
+    Not simply MAX(date): a row carrying only a date is not an observation,
+    and one of those is enough to make a dead feed read as current. An empty
+    POST to the flows ingest put exactly such a row at the top of
+    institutional_flow, and the first version of this monitor reported the
+    table healthy because of it.
+    """
     from institutional_warehouse import db
 
     table = db.physical_table(tab_id)
@@ -87,10 +104,17 @@ def _newest(tab_id: str, column: str) -> tuple[Optional[date], int]:
         return None, 0
     if not total:
         return None, 0
+    where = ""
+    if value_columns:
+        where = " WHERE " + " OR ".join(f"{c} IS NOT NULL" for c in value_columns)
     try:
-        rows = db.query(f"SELECT MAX({column}) AS newest FROM {table}")
+        rows = db.query(f"SELECT MAX({column}) AS newest FROM {table}{where}")
     except Exception:
-        return None, total
+        # A column this table does not have must not silently report "never".
+        try:
+            rows = db.query(f"SELECT MAX({column}) AS newest FROM {table}")
+        except Exception:
+            return None, total
     return (_as_date((rows or [{}])[0].get("newest")), total)
 
 
@@ -99,7 +123,8 @@ def report(*, today: Optional[str] = None) -> dict[str, Any]:
     now = _as_date(today) or datetime.now(timezone.utc).date()
     tables: list[dict[str, Any]] = []
     for tab_id, spec in sorted(EXPECTED.items()):
-        newest, total = _newest(tab_id, spec["column"])
+        newest, total = _newest(tab_id, spec["column"],
+                                tuple(spec.get("value_columns") or ()))
         age = (now - newest).days if newest else None
         cadence = spec["cadence"]
         allowed = spec.get("quiet_days", TOLERANCE[cadence])

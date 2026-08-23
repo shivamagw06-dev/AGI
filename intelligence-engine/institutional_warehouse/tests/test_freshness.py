@@ -104,3 +104,40 @@ def test_everything_current_reports_ok(warehouse):
 
     assert _status(out, "daily_market_history")["status"] == freshness.OK
     assert _status(out, "valuation_ratios")["status"] == freshness.OK
+
+
+def test_a_row_with_no_measurement_does_not_make_a_feed_look_current(warehouse):
+    """The failure this monitor exists to catch, caused by the monitor itself.
+
+    An empty POST to the flows ingest wrote a row carrying today's date, the
+    default segment and no figures. It sat at the top of institutional_flow
+    and the first version of this report called the table healthy, which is
+    the exact blindness it was written to remove.
+    """
+    _row("institutional_flow", date="2026-08-20", segment="NSE_EQ|CASH", interval="1D",
+         fii_net=-583.36, dii_net=3537.71)
+    _row("institutional_flow", date="2026-08-23", segment="NSE_EQ", interval="1D")  # no figures
+
+    out = freshness.report(today="2026-08-27")
+    row = _status(out, "institutional_flow")
+
+    # Judged on the 20th, the last day carrying a number - not the 23rd.
+    assert row["newest"] == "2026-08-20"
+    assert row["status"] == freshness.LATE
+
+
+def test_a_row_with_one_side_populated_still_counts(warehouse):
+    """A day where only DII reported is a real observation."""
+    _row("institutional_flow", date="2026-08-23", segment="NSE_EQ", interval="1D", dii_net=120.5)
+
+    out = freshness.report(today="2026-08-23")
+    assert _status(out, "institutional_flow")["newest"] == "2026-08-23"
+    assert _status(out, "institutional_flow")["status"] == freshness.OK
+
+
+def test_a_price_row_with_no_close_does_not_count(warehouse):
+    _row("daily_market_history", symbol="AAA", date="2026-08-21", close=10.0)
+    _row("daily_market_history", symbol="BBB", date="2026-08-23")   # no close
+
+    out = freshness.report(today="2026-08-23")
+    assert _status(out, "daily_market_history")["newest"] == "2026-08-21"
