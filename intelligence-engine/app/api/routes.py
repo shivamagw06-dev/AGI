@@ -9,6 +9,8 @@ from fastapi import Body
 from fastapi.responses import HTMLResponse
 from starlette.concurrency import run_in_threadpool
 
+from options_lab import price_option_snapshot
+
 from app.agents.registry import list_agents
 from app.core.config import Settings, get_settings
 from app.engines.e01.consumer import register_e01_with_orch_l2
@@ -10629,6 +10631,26 @@ async def hedge_fund_lab_daily_monitor(limit: int = 6):
     from hedge_fund_lab.scanner import daily_monitor
 
     return await run_in_threadpool(daily_monitor, limit=limit)
+
+
+@router.post("/options-lab/price", dependencies=[Depends(require_token)])
+def options_lab_price(payload: dict[str, Any] = Body(default={})):
+    """Run the provider-neutral local options model without placing an order."""
+    try:
+        return price_option_snapshot(payload)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+
+@router.get(
+    "/options-lab/validation/dashboard",
+    dependencies=[Depends(require_token)],
+)
+async def options_lab_validation_dashboard():
+    """Admin-only, read-only evidence for the frozen V1 validation protocol."""
+    from options_lab.dashboard import validation_dashboard
+
+    return await run_in_threadpool(validation_dashboard)
 
 
 @router.post("/hedge-fund-lab/calculate/{kind}")

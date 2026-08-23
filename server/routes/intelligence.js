@@ -2619,6 +2619,27 @@ export default function createIntelligenceRouter() {
     }
   });
 
+  // Pricing Engine V1 is an internal research instrument. Both calculation
+  // and validation evidence require a verified AGI administrator session.
+  router.post('/options-lab/price', requireStrategyLabAdmin, async (req, res) => {
+    try {
+      const r = await engineFetch('/v1/options-lab/price', {
+        method: 'POST', body: req.body || {}, timeoutMs: 30_000,
+      });
+      return res.status(r.status).json(r.data);
+    } catch (err) {
+      return res.status(503).json({ ok: false, error: err.message || 'options pricing unavailable' });
+    }
+  });
+  router.get('/options-lab/validation/dashboard', requireStrategyLabAdmin, async (_req, res) => {
+    try {
+      const r = await engineFetch('/v1/options-lab/validation/dashboard', { timeoutMs: 30_000 });
+      return res.status(r.status).json(r.data);
+    } catch (err) {
+      return res.status(503).json({ ok: false, error: err.message || 'options validation unavailable' });
+    }
+  });
+
   // Admin Strategy Lab. Authentication is enforced server-side in addition to
   // the React admin route; these responses are never public fallbacks.
   router.get('/strategy-lab/health', requireStrategyLabAdmin, async (_req, res) => {
