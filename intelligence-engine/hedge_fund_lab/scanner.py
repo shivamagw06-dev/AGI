@@ -366,6 +366,9 @@ def _map_warehouse_row(
     legacy_consensus: dict[str, Any],
 ) -> dict[str, Any]:
     """Shape a Market Intelligence / warehouse row for the scanners."""
+    from hedge_fund_lab.current_valuation import overlay as overlay_current_valuation
+
+    mi, current_valuation_context = overlay_current_valuation(mi)
     sym = str(mi.get("symbol") or "").upper()
     # Warehouse debt_equity is a multiple (0.5); scanners use Yahoo-style %.
     debt_ratio = _num(ratios.get("debt_equity"))
@@ -460,6 +463,7 @@ def _map_warehouse_row(
         "valuation_date": mi.get("valuation_date"),
         "data_context": {
             "valuation_period": mi.get("valuation_date"),
+            "current_valuation": current_valuation_context,
             "fundamentals_period": ratios.get("period"),
             "fundamentals_basis": ratios.get("basis") or "annual",
             "accounting_scope": ratios.get("accounting_scope") or ratios.get("scope") or "not_provided",
