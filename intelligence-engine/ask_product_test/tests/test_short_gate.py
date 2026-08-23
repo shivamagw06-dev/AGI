@@ -248,3 +248,81 @@ def test_invalid_shard_coordinates_are_infrastructure(monkeypatch):
     monkeypatch.setenv("SHORT_GATE_SHARD_INDEX", "4")
     with pytest.raises(ValueError, match="invalid shard"):
         sg.shard_config()
+
+
+# --------------------------------------------------------------------------
+# Shard balancing
+#
+# Round-robin split the count evenly and the clock unevenly - 414s, 448s, 572s
+# and 639s across four shards - and the gate is only as quick as its slowest
+# shard. These guard the packing without ever letting it cost coverage.
+# --------------------------------------------------------------------------
+
+
+def _cases(n):
+    return [{"id": f"C-{i:03d}", "question": "q"} for i in range(n)]
+
+
+def test_balanced_partition_still_recombines_to_the_manifest():
+    """Coverage first. A faster gate that loses a case is not a faster gate."""
+    cases = _cases(97)
+    timings = {c["id"]: (i % 11) + 0.5 for i, c in enumerate(cases)}
+    for shards in (1, 2, 3, 4, 8):
+        buckets = sg.partition(cases, shards, timings)
+        assert sg.verify_partition(cases, buckets)["matches_manifest"]
+
+
+def test_it_packs_the_slowest_cases_first():
+    """One 10s case and ten 1s cases must not land on the same shard."""
+    cases = _cases(11)
+    timings = {"C-000": 10.0}
+    timings.update({c["id"]: 1.0 for c in cases[1:]})
+
+    loads = [sum(timings[c["id"]] for c in b) for b in sg.partition(cases, 2, timings)]
+    assert max(loads) == 10.0          # round-robin would have made this 15.0
+    assert sorted(loads) == [10.0, 10.0]
+
+
+def test_an_untimed_case_is_not_treated_as_free():
+    """A newly added case would otherwise all pile onto one shard."""
+    cases = _cases(6)
+    timings = {c["id"]: 4.0 for c in cases[:3]}   # three timed, three not
+
+    buckets = sg.partition(cases, 3, timings)
+    assert sg.verify_partition(cases, buckets)["matches_manifest"]
+    assert all(len(b) == 2 for b in buckets)
+
+
+def test_no_timings_is_exactly_the_old_round_robin():
+    """The first run, and any run with a missing file, behaves as before."""
+    cases = _cases(20)
+    expected = [[c for i, c in enumerate(sorted(cases, key=lambda x: x["id"]))
+                 if i % 4 == shard] for shard in range(4)]
+    assert sg.partition(cases, 4, {}) == expected
+
+
+def test_the_partition_is_reproducible():
+    """Two runs of one commit must shard identically, or coverage is a coin toss."""
+    cases = _cases(40)
+    timings = {c["id"]: 1.0 for c in cases}       # all ties, worst case for stability
+    assert sg.partition(cases, 4, timings) == sg.partition(cases, 4, timings)
+
+
+def test_timings_survive_a_round_trip_through_the_shard_reports():
+    merged = sg.merge_case_seconds([
+        {"case_seconds": {"C-001": 2.5, "C-002": 1.0}},
+        {"case_seconds": {"C-003": 4.25}},
+        {},
+    ])
+    assert merged == {"C-001": 2.5, "C-002": 1.0, "C-003": 4.25}
+
+
+def test_a_corrupt_timings_file_falls_back_rather_than_failing(tmp_path, monkeypatch):
+    """A bad file must cost two minutes, not the whole gate."""
+    bad = tmp_path / "case_timings.json"
+    bad.write_text("{not json")
+    monkeypatch.setenv("SHORT_GATE_TIMINGS", str(bad))
+    assert sg.load_timings() == {}
+
+    bad.write_text('{"case_seconds": {"C-001": "slow", "C-002": -3, "C-003": 2.0}}')
+    assert sg.load_timings() == {"C-003": 2.0}

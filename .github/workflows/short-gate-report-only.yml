@@ -155,7 +155,7 @@ jobs:
           fi
           python - <<'PY'
           import glob, json, os, sys
-          from ask_product_test.run_short_gate import combine_reports
+          from ask_product_test.run_short_gate import combine_reports, merge_case_seconds
 
           files = sorted(
               glob.glob(
@@ -173,6 +173,20 @@ jobs:
           out = "combined-short-gate/short_gate_zero_defect_combined.json"
           with open(out, "w") as handle:
               json.dump(combined, handle, indent=2)
+
+          # Per-case timings for the next run to shard on. Uploaded rather than
+          # committed from CI: a workflow that pushes to its own repository
+          # retriggers itself, and the file only needs refreshing when the case
+          # costs actually move.
+          seconds = merge_case_seconds(reports)
+          with open("combined-short-gate/case_timings.json", "w") as handle:
+              json.dump({"case_seconds": seconds,
+                         "cases": len(seconds),
+                         "source_run": os.environ.get("GITHUB_RUN_ID")},
+                        handle, indent=2, sort_keys=True)
+          spread = [r.get("elapsed_seconds") or 0 for r in reports]
+          print(f"- shard spread: {min(spread)}s .. {max(spread)}s "
+                f"({len(seconds)} cases timed)")
           line = "\n".join([
               "## Required short gate", "",
               f"- decision: **{combined['decision']}**",
@@ -194,5 +208,7 @@ jobs:
         uses: actions/upload-artifact@v6
         with:
           name: short-gate-measurement-combined
-          path: intelligence-engine/combined-short-gate/short_gate_zero_defect_combined.json
+          path: |
+            intelligence-engine/combined-short-gate/short_gate_zero_defect_combined.json
+            intelligence-engine/combined-short-gate/case_timings.json
           if-no-files-found: warn
