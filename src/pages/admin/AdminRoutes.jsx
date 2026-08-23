@@ -67,6 +67,7 @@ const HistoricalCoverage = lazy(() => import('@/pages/admin/HistoricalCoverage')
 const UpstoxBootstrap = lazy(() => import('@/pages/admin/UpstoxBootstrap'));
 const UpstoxFundamentals = lazy(() => import('@/pages/admin/UpstoxFundamentals'));
 const ValuationPolicy = lazy(() => import('@/pages/admin/ValuationPolicy'));
+const ValuationRatiosWorkbook = lazy(() => import('@/pages/admin/ValuationRatiosWorkbook'));
 const HistoricalValuation = lazy(() => import('@/pages/admin/HistoricalValuation'));
 const HvieRuntime = lazy(() => import('@/pages/admin/HvieRuntime'));
 const FinancialWarehouse = lazy(() => import('@/pages/admin/FinancialWarehouse'));
@@ -114,6 +115,7 @@ export default function AdminRoutes() {
           <Route path="upstox-fundamentals" element={<UpstoxFundamentals />} />
           {/* Full-bleed Valuation Policy & Applicability Engine (Phase 8.2A) */}
           <Route path="valuation-policy" element={<ValuationPolicy />} />
+          <Route path="valuation-ratios-workbook" element={<ValuationRatiosWorkbook />} />
           {/* Full-bleed Historical Valuation Intelligence Engine (Phase 8.3) */}
           <Route path="historical-valuation" element={<HistoricalValuation />} />
           <Route path="hvie-runtime" element={<HvieRuntime />} />
