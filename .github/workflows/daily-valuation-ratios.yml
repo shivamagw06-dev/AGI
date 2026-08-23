@@ -55,8 +55,11 @@ jobs:
           except Exception as exc:
               print("  unreadable:", exc)
               raise SystemExit(0)
-          print("  resolved:", d.get("updated") or d.get("resolved") or 0,
-                " still missing:", d.get("still_missing") or d.get("unresolved") or 0)
+          print(f"  masters {d.get('masters')}, already had ISIN "
+                f"{d.get('already_had_isin')}, matched {d.get('matched')}, "
+                f"still unmatched {d.get('unmatched')}, written {d.get('written')}")
+          if d.get("quarantined"):
+              print(f"::warning::{d['quarantined']} ISIN writes quarantined")
           PY
 
       - name: Sweep the universe
