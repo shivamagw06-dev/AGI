@@ -31,7 +31,7 @@ import uuid
 from typing import Any, Iterable, Optional, Sequence
 
 from institutional_warehouse import (
-    audit, canonical_rows, conflicts, db, missing_values, ownership,
+    audit, canonical_rows, conflicts, db, derived_units, missing_values, ownership,
     period_identity, price_basis, quality, statement_identity, store, units,
     validation,
 )
@@ -66,10 +66,22 @@ def write(
     if not tab:
         return {"ok": False, "error": f"unknown_tab:{tab_id}", "written": 0}
 
-    incoming = [r for r in rows if isinstance(r, dict)]
+    incoming = [dict(r) for r in rows if isinstance(r, dict)]
     if not incoming:
         return {"ok": True, "tab": tab_id, "seen": 0, "written": 0, "inserted": 0,
                 "updated": 0, "unchanged": 0, "quarantined": 0}
+
+    # A calculation is an update to the row that supplied its inputs, never an
+    # upsert chosen only by the payload's current keys. Capture that parent proof
+    # before any normaliser sees the row, then remove the private marker so it can
+    # neither be validated nor persisted as warehouse data.
+    derived_parents: dict[str, str] = {}
+    for row in incoming:
+        parent_id = str(row.pop(derived_units.PARENT_ROW_ID, "") or "").strip()
+        target_id = store.make_row_id(tab, row)
+        if derived_units.is_derived_writer(source) and parent_id and target_id:
+            previous = derived_parents.get(target_id)
+            derived_parents[target_id] = parent_id if previous in (None, parent_id) else ""
 
     # 0a. Who is allowed to write what.
     #
@@ -154,7 +166,8 @@ def write(
     if accepted and canonical_rows.is_fundamental(tab_id):
         accepted, guard_counts = canonical_rows.guard(
             tab_id, accepted, _existing_by_row_id(tab, accepted),
-            key_of=lambda row: store.make_row_id(tab, row))
+            key_of=lambda row: store.make_row_id(tab, row), source=source,
+            derived_parents=derived_parents)
 
     # 6. Persist.
     result = store.upsert(tab_id, accepted, source=source, actor=actor,
@@ -164,7 +177,7 @@ def write(
 
     # 7. Unit and quality metadata for the rows that landed. Both are system
     #    columns, which store.upsert does not carry, so they are written here.
-    _stamp_units(tab, accepted)
+    _stamp_units(tab, accepted, source=source)
     stamped = _stamp_quality(tab, accepted, source=source,
                             conflicted={c["row_id"] for c in found_conflicts})
 
@@ -254,7 +267,7 @@ def _quarantine(tab_id: str, rejected: Sequence[dict[str, Any]], *, source: str,
     return len(payload)
 
 
-def _stamp_units(tab, accepted: Sequence[dict[str, Any]]) -> int:
+def _stamp_units(tab, accepted: Sequence[dict[str, Any]], *, source: Any = None) -> int:
     """Persist the unit provenance the normaliser attached to each row.
 
     Without this the stamp never reaches the database, every stored row looks
@@ -266,6 +279,12 @@ def _stamp_units(tab, accepted: Sequence[dict[str, Any]]) -> int:
     table = db.physical_table(tab.id)
     payload: list[tuple[Any, ...]] = []
     for row in accepted:
+        # A derived-only write asserts no unit, so it must not restamp the one
+        # the row already carries. Without this, computing free_cash_flow on an
+        # Upstox row would overwrite its declared "crore" provenance with
+        # whatever the formula engine's source resolved to.
+        if derived_units.is_derived_write(row, source):
+            continue
         unit = row.get("sys_reported_unit")
         if not unit:
             continue
