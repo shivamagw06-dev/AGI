@@ -96,7 +96,7 @@ function Metric({ label, value, sub }) {
 }
 
 function ConfidenceBadge({ confidence, basis }) {
-  const tone = confidence === 'VALIDATED' || confidence === 'HIGH' ? 'good'
+  const tone = confidence === 'SAMPLE-RICH' || confidence === 'HIGH' ? 'good'
     : confidence === 'MEDIUM' ? 'mid'
       : confidence === 'MODEL-ONLY' ? 'warn' : 'low';
   return (
@@ -435,9 +435,9 @@ export default function LiveAlphaPage() {
           sub="two or more engines aligned"
         />
         <Metric
-          label="Empirically validated"
-          value={directional.filter((row) => row.confidence === 'VALIDATED').length}
-          sub="requires 100+ comparables"
+          label="Sample threshold met"
+          value={directional.filter((row) => row.confidence === 'SAMPLE-RICH').length}
+          sub="100+ comparables; not a validation gate"
         />
       </section>
 
@@ -541,8 +541,9 @@ export default function LiveAlphaPage() {
         <p>
           <strong>Confidence</strong> separates model state from evidence. “Model only” means
           no historical comparables exist behind the signal yet — the empirical validation
-          layer is still collecting, and no signal on this page has reached the 100
-          observations required to read as validated.
+          layer is still collecting. Reaching 100 observations is only a sample-size
+          threshold; research validation also requires point-in-time, costed,
+          out-of-sample evidence and does not follow from count alone.
         </p>
         <p>
           <strong>Liquidity</strong> flags components whose bid-ask spread could not be measured

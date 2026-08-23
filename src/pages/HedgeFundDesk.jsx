@@ -77,9 +77,10 @@ function ArithmeticCheck({ strategy, row }) {
 
 function Stage({ card }) {
   if (!card) return <span className="hd-stage">No data</span>;
-  if (card.investment_validated) return <span className="hd-stage op">Investment validated</span>;
-  if (card.research_validated) return <span className="hd-stage op">Research validated</span>;
-  if (card.operational) return <span className="hd-stage op">Operational</span>;
+  if (card.governance) {
+    const mapped = card.governance.mapped !== false;
+    return <span className={`hd-stage ${mapped ? 'exp' : 'blocked'}`}>{mapped ? card.governance.stage : 'Unmapped'}</span>;
+  }
   return <span className="hd-stage exp">Experimental</span>;
 }
 
@@ -134,7 +135,7 @@ export default function HedgeFundDesk() {
           // serves both. Intraday screens compute live rather than from the
           // 15-minute snapshot, so they carry no validation_status.
           card: c ? { ...c, id: s.id, count: c.count, results: c.results,
-                      operational: true, suitability_stars: 0 } : null,
+                      suitability_stars: 0 } : null,
         };
       }),
     ];
@@ -282,6 +283,13 @@ export default function HedgeFundDesk() {
                 <h3>{strategy.name}</h3>
                 <p className="hd-question">{strategy.question}</p>
                 <p className="hd-thesis">{strategy.thesis}</p>
+                {strategy.card?.governance ? (
+                  <p className="hd-thesis">
+                    Governed as <b>{strategy.card.governance.canonical_strategy_id}</b>
+                    {' '}· {String(strategy.card.governance.role || '').replaceAll('_', ' ')}
+                    {' '}· capital blocked
+                  </p>
+                ) : null}
               </div>
 
               <div className="hd-split">

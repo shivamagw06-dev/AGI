@@ -2728,6 +2728,70 @@ export default function createIntelligenceRouter() {
       return res.status(504).json({ ok: false, error: err.message || 'strategy lab backtest unavailable' });
     }
   });
+  router.get('/strategy-lab/operating-system', requireStrategyLabAdmin, async (_req, res) => {
+    try {
+      const r = await engineFetch('/v1/strategy-lab/operating-system', { timeoutMs: 60_000 });
+      return res.status(r.status).json(r.data);
+    } catch (err) {
+      return res.status(503).json({ ok: false, error: err.message || 'alpha operating system unavailable' });
+    }
+  });
+  router.get('/strategy-lab/definitions', requireStrategyLabAdmin, async (_req, res) => {
+    try {
+      const r = await engineFetch('/v1/strategy-lab/definitions', { timeoutMs: 60_000 });
+      return res.status(r.status).json(r.data);
+    } catch (err) {
+      return res.status(503).json({ ok: false, error: err.message || 'strategy definitions unavailable' });
+    }
+  });
+  router.get('/strategy-lab/definition/:strategyId', requireStrategyLabAdmin, async (req, res) => {
+    try {
+      const r = await engineFetch(`/v1/strategy-lab/definition/${encodeURIComponent(req.params.strategyId)}`, { timeoutMs: 60_000 });
+      return res.status(r.status).json(r.data);
+    } catch (err) {
+      return res.status(503).json({ ok: false, error: err.message || 'strategy definition unavailable' });
+    }
+  });
+  router.get('/strategy-lab/data-readiness', requireStrategyLabAdmin, async (_req, res) => {
+    try {
+      const r = await engineFetch('/v1/strategy-lab/data-readiness', { timeoutMs: 60_000 });
+      return res.status(r.status).json(r.data);
+    } catch (err) {
+      return res.status(503).json({ ok: false, error: err.message || 'strategy readiness unavailable' });
+    }
+  });
+  router.get('/strategy-lab/capital-decision/:strategyId', requireStrategyLabAdmin, async (req, res) => {
+    try {
+      const r = await engineFetch(`/v1/strategy-lab/capital-decision/${encodeURIComponent(req.params.strategyId)}`, { timeoutMs: 60_000 });
+      return res.status(r.status).json(r.data);
+    } catch (err) {
+      return res.status(503).json({ ok: false, error: err.message || 'capital decision unavailable' });
+    }
+  });
+  router.post('/strategy-lab/registry/sync', requireStrategyLabAdmin, async (req, res) => {
+    try {
+      const r = await engineFetch('/v1/strategy-lab/registry/sync', { method: 'POST', body: req.body || {}, timeoutMs: 120_000 });
+      return res.status(r.status).json(r.data);
+    } catch (err) {
+      return res.status(503).json({ ok: false, error: err.message || 'strategy registry sync unavailable' });
+    }
+  });
+  router.post('/strategy-lab/research/:strategyId', requireStrategyLabAdmin, async (req, res) => {
+    try {
+      const r = await engineFetch(`/v1/strategy-lab/research/${encodeURIComponent(req.params.strategyId)}`, { method: 'POST', body: req.body || {}, timeoutMs: 180_000 });
+      return res.status(r.status).json(r.data);
+    } catch (err) {
+      return res.status(504).json({ ok: false, error: err.message || 'alpha research unavailable' });
+    }
+  });
+  router.post('/strategy-lab/prospective/capture', requireStrategyLabAdmin, async (req, res) => {
+    try {
+      const r = await engineFetch('/v1/strategy-lab/prospective/capture', { method: 'POST', body: req.body || {}, timeoutMs: 180_000 });
+      return res.status(r.status).json(r.data);
+    } catch (err) {
+      return res.status(504).json({ ok: false, error: err.message || 'prospective evidence capture unavailable' });
+    }
+  });
 
   router.get('/research-factors/health', kfGet('/v1/research-factors/health'));
   router.get('/research-factors/audit', async (req, res) => {

@@ -126,7 +126,7 @@ export function plainSignalDirection(row) {
 }
 
 export function evidenceStrengthLabel(confidence) {
-  if (confidence === 'VALIDATED' || confidence === 'HIGH') return 'HIGH';
+  if (confidence === 'SAMPLE-RICH' || confidence === 'HIGH') return 'HIGH';
   if (confidence === 'MEDIUM') return 'MEDIUM';
   if (confidence === 'LOW') return 'LOW';
   return 'UNAVAILABLE';
@@ -167,7 +167,7 @@ export function buildLiveBrief(allRows, { isFresh = false, now = new Date() } = 
   const strongestSectors = rankedSectors.filter((row) => row.avg > 0).slice(0, 2);
   const weakestSectors = rankedSectors.filter((row) => row.avg < 0).sort((a, b) => a.avg - b.avg).slice(0, 2);
 
-  const highEvidence = directional.filter((row) => row.confidence === 'HIGH' || row.confidence === 'VALIDATED').length;
+  const highEvidence = directional.filter((row) => row.confidence === 'HIGH' || row.confidence === 'SAMPLE-RICH').length;
   const evidenceStrength = !isFresh
     ? 'STALE'
     : highEvidence >= 8 || multi.length >= 5
@@ -253,7 +253,7 @@ export function filterRadarRows(rows, filter, { search = '', sector = '' } = {})
     if (filter === 'all') return true;
     if (filter === 'positive') return row.composite > 0 && row.signal_structure !== 'CONFLICTING';
     if (filter === 'negative') return row.composite < 0 && row.signal_structure !== 'CONFLICTING';
-    if (filter === 'high') return row.confidence === 'HIGH' || row.confidence === 'VALIDATED';
+    if (filter === 'high') return row.confidence === 'HIGH' || row.confidence === 'SAMPLE-RICH';
     if (filter === 'multi') return row.active?.length >= 2 && row.signal_structure !== 'CONFLICTING';
     if (filter === 'conflicting') return row.signal_structure === 'CONFLICTING';
     if (LIVE_ALPHA_STRATEGIES.some(([engine]) => engine === filter)) return Boolean(row.strategies[filter]?.direction);

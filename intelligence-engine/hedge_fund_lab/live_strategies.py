@@ -167,7 +167,9 @@ def size_position(*, price: Optional[float], atr: Optional[float],
     raw = vol_target_weight(sigma, n)
     cap_liq = adv_cap(adv_shares_mn, price)
     limits = [w for w in (raw, cap_liq, MAX_WEIGHT) if w is not None]
-    final = min(limits) if limits else None
+    # A maximum weight can cap a partial estimate, but no position can be
+    # translated into shares or notional without an actual signal price.
+    final = min(limits) if price is not None and limits else None
     binding = None
     if final is not None:
         if raw is not None and abs(final - raw) < 1e-12:
@@ -221,6 +223,14 @@ def _base_row(sig: dict[str, Any], risk_row: Optional[dict], liq_row: Optional[d
     atr = _num(risk_row.get("atr")) if risk_row else None
     adv = _num(liq_row.get("adv_3m")) if liq_row else None
     sizing = size_position(price=price, atr=atr, adv_shares_mn=adv)
+    coverage = _coverage(risk_row, liq_row)
+    if price is None:
+        coverage = {
+            **coverage,
+            "complete": False,
+            "sizeable": False,
+            "missing": [*coverage["missing"], "signal_price"],
+        }
 
     return {
         "ticker": sig.get("symbol"),
@@ -238,7 +248,7 @@ def _base_row(sig: dict[str, Any], risk_row: Optional[dict], liq_row: Optional[d
         "adv_3m_shares_mn": adv,
         "adv_3m_value_inr": round(adv * 1e6 * price) if (adv and price) else None,
         "sizing": sizing,
-        "coverage": _coverage(risk_row, liq_row),
+        "coverage": coverage,
         "policy": POLICY,
     }
 
@@ -394,6 +404,8 @@ _STRATEGY_ENGINE = {
 
 def board(limit: int = 12) -> dict[str, Any]:
     """All three strategies plus the sizing constants they share."""
+    from strategy_lab.governance_view import governance_for
+
     cards = []
     for key, (label, fn) in LIVE_STRATEGIES.items():
         try:
@@ -406,6 +418,7 @@ def board(limit: int = 12) -> dict[str, Any]:
             engine_id = _STRATEGY_ENGINE.get(key)
             if engine_id:
                 result = {**result, "why_empty": engine_funnel(engine_id)}
+        result = {**result, "governance": governance_for(key)}
         cards.append(result)
     return {
         "ok": True,
@@ -424,7 +437,7 @@ def board(limit: int = 12) -> dict[str, Any]:
             "backtest": "NOT RUN",
             "point_in_time": "FAILING — fundamentals are stored by reporting period, not publication date",
             "survivorship": "FAILING — universe is companies listed today",
-            "lifecycle": "OPERATIONAL (stage 2 of 7)",
+            "lifecycle": "DEFINED - prospective validation pending",
             "alpha_claims_permitted": False,
         },
         "policy": POLICY,
