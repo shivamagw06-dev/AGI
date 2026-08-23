@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from statistics import median
-from typing import Any
+from typing import Any, Optional
 
 from market_intelligence_engine import aggregation, breadth, flows, opportunities, rotation, summary, universe
 from market_intelligence_engine.constitution import CONFIDENCE_METHODOLOGY, CONSTITUTION_VERSION, widget_provenance
@@ -178,6 +178,68 @@ _SECTOR_ALIASES = {
 }
 
 
+
+def _rank_within_sector(members: list[dict[str, Any]],
+                        lens: dict[str, Any]) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    """Order a sector by its own primary metric, richest first.
+
+    Computed here rather than read from a stored column: the sector view
+    already holds every member, ranking 149 numbers costs nothing, and a value
+    derived at read time cannot fall behind the data it describes.
+
+    Companies without the metric keep their place in the payload but sort last
+    and are marked, because dropping them would quietly shrink a sector and
+    ranking them as zero would put them at one end of it.
+    """
+    metric = str(lens.get("primary_metric") or "pe")
+    label = str(lens.get("primary_metric_label") or metric.upper())
+
+    def value(row: dict[str, Any]) -> Optional[float]:
+        raw = row.get(metric) if row.get(metric) is not None else row.get("primary_value")
+        try:
+            out = float(raw)
+        except (TypeError, ValueError):
+            return None
+        # A negative multiple is not cheap, it is a loss, and ranking it as the
+        # cheapest company in the sector is how a screen surfaces the worst
+        # business in it as the best opportunity.
+        return out if out > 0 else None
+
+    priced = [(value(m), m) for m in members]
+    known = sorted([(v, m) for v, m in priced if v is not None], key=lambda pair: -pair[0])
+    unknown = [m for v, m in priced if v is None]
+
+    total = len(known)
+    ordered: list[dict[str, Any]] = []
+    for index, (v, row) in enumerate(known):
+        out = dict(row)
+        # Percentile within the sector: 100 is the most expensive name in it.
+        out["sector_rank"] = index + 1
+        out["sector_percentile"] = round(100.0 * (total - index) / total, 1) if total else None
+        out["sector_rank_metric"] = metric
+        out["sector_rank_value"] = v
+        ordered.append(out)
+    for row in unknown:
+        out = dict(row)
+        out["sector_rank"] = None
+        out["sector_percentile"] = None
+        out["sector_rank_metric"] = metric
+        out["sector_rank_value"] = None
+        ordered.append(out)
+
+    basis = {
+        "metric": metric,
+        "metric_label": label,
+        "ranked": total,
+        "unranked": len(unknown),
+        "leaders_meaning": f"highest {label} in the sector",
+        "laggards_meaning": f"lowest {label} in the sector",
+        "note": ("Ranked on the sector's own primary metric. Market "
+                 "capitalisation is not used: it is absent for most of the "
+                 "universe, so ordering by it produced an alphabetical list."),
+    }
+    return ordered, basis
+
 def _resolve_sector_name(sector: str, available: list[str]) -> str:
     raw = str(sector or "").strip()
     if not raw:
@@ -220,11 +282,30 @@ def sector_detail(sector: str, *, universe_limit: int = 5000) -> dict[str, Any]:
     dominant = max(dna_counts, key=dna_counts.get) if dna_counts else None
     lens = lens_for(dominant, name) or {}
 
-    leaders = sorted(members, key=lambda r: -(r.get("market_cap") or 0))[:8]
-    laggards = sorted(
-        [m for m in members if m.get("percentile") is not None],
-        key=lambda m: m["percentile"],
-    )[:8]
+    ranked, basis = _rank_within_sector(members, lens)
+    # Richest and cheapest on the sector's own yardstick. Both lists were
+    # broken and in opposite ways.
+    #
+    # "leaders" sorted by market_cap, which is null for 92% of the universe -
+    # it is only in the price table for the companies Yahoo happened to return,
+    # and the largest of those is a 979 million rupee micro-cap. Every key
+    # collapsed to 0, so the sort did nothing and the page showed the first
+    # eight companies alphabetically while telling the reader they were the
+    # largest constituents.
+    #
+    # "laggards" filtered on the stored percentile, which is written by the
+    # formula engine's valuation stage. That stage only runs on import, never
+    # after a sweep, so the field is null everywhere and the list was empty in
+    # every sector.
+    #
+    # Both are now ranked from the members already in hand, so they need no
+    # pipeline stage and cannot go stale behind the data they describe.
+    leaders = ranked[:8]
+    # Only companies that actually carry the metric. The unranked ones sit at
+    # the end of the list, so reversing the whole thing put a loss-making
+    # company at the top of "cheapest" - which is exactly how a screen
+    # surfaces the worst business in a sector as its best opportunity.
+    laggards = [r for r in reversed(ranked) if r.get("sector_rank") is not None][:8]
 
     sector_row = next((s for s in aggregation.sector_table(uni) if s["sector"] == name), {})
     research = _sector_research_pack(name, members, sector_row)
@@ -237,6 +318,10 @@ def sector_detail(sector: str, *, universe_limit: int = 5000) -> dict[str, Any]:
         "valuation": sector_row,
         "leaders": leaders,
         "laggards": laggards,
+        # Named, because the reader cannot otherwise tell what "leader" means
+        # here - and the previous label ("largest constituents first") was not
+        # true of what was shown.
+        "ranking_basis": basis,
         "distribution": {
             "pe": _distribution([m.get("pe") for m in members]),
             "pb": _distribution([m.get("pb") for m in members]),
@@ -327,18 +412,27 @@ def _sector_research_pack(name: str, members: list[dict[str, Any]], valuation: d
         })
     industry_rows.sort(key=lambda row: (-row["companies"], row["industry"]))
 
+    # Same ranking as leaders and laggards, and for the same reason: sorting
+    # by market_cap here produced an alphabetical table under a heading that
+    # told the reader it was the largest constituents.
+    ranked_members, ranking_basis = _rank_within_sector(members, valuation)
     company_rows = []
-    for row in members:
+    for row in ranked_members:
         company_rows.append({
             "symbol": row.get("symbol"), "company_name": row.get("company_name"),
             "industry": row.get("industry"), "market_cap": row.get("market_cap"),
             "pe": row.get("pe"), "pb": row.get("pb"), "roe": row.get("roe"),
+            # Sector-relative, computed here. The stored percentile comes from
+            # the formula engine's valuation stage, which does not run after a
+            # sweep, so it is null for every company.
             "historical_percentile": row.get("percentile"),
+            "sector_percentile": row.get("sector_percentile"),
+            "sector_rank": row.get("sector_rank"),
         })
-    company_rows.sort(key=lambda row: -(_num(row.get("market_cap")) or 0))
 
     view = _sector_view(valuation, fundamentals, confidence)
     return {
+        "ranking_basis": ranking_basis,
         "snapshot": {
             "companies": len(members), "metric_coverage": current_count,
             "coverage_pct": coverage_pct, "historical_years": years,
