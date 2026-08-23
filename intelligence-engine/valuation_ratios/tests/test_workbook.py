@@ -113,29 +113,34 @@ def test_a_resweep_shows_the_later_snapshot(warehouse):
     assert sheet.cell(row=2, column=4).value == 31.5
 
 
-def test_coverage_reports_the_last_known_value_not_only_todays(warehouse):
-    """A ratio missing today still has a last reading; blanking it would
-    report a collection gap as an absent ratio."""
+def test_coverage_carries_the_same_date_columns_as_every_other_tab(warehouse):
+    """Every tab in the book reads the same way: company down, date across."""
     _write([
         _ratio("AAA", "pe", "2026-08-20", 25.0),
         _ratio("AAA", "pb", "2026-08-21", 3.2),
+        _ratio("AAA", "roe", "2026-08-21", 14.0),
+    ])
+    book = _open(30)[0]
+    for name in book.sheetnames:
+        headers = [c.value for c in book[name][1]]
+        assert headers[:3] == ["Symbol", "Company", "Sector"], name
+        assert headers[3:] == ["2026-08-21", "2026-08-20"], name
+
+
+def test_coverage_counts_the_ratios_collected_each_day(warehouse):
+    """A 0 is a day the sweep missed the company, which is the whole point."""
+    _write([
+        _ratio("AAA", "pe", "2026-08-20", 25.0),
+        _ratio("AAA", "pb", "2026-08-21", 3.2),
+        _ratio("AAA", "roe", "2026-08-21", 14.0),
     ])
     sheet = _open(30)[0]["Coverage"]
-    headers = [c.value for c in sheet[1]]
-    row = {h: sheet.cell(row=2, column=i + 1).value for i, h in enumerate(headers)}
+    rows = {r[0]: r for r in sheet.iter_rows(min_row=2, values_only=True)}
 
-    assert row["Symbol"] == "AAA"
-    assert row["Days Collected"] == 2
-    assert row["First Date"] == "2026-08-20"
-    assert row["Latest Date"] == "2026-08-21"
-    # The header names the date, because the column beside it is the
-    # company's own latest date and they differ whenever a sweep misses one.
-    assert "Ratios On 2026-08-21" in headers
-    # Only P/B was collected on that date...
-    assert row["Ratios On 2026-08-21"] == 1
-    # ...but P/E's last reading is still reported.
-    assert row["Latest P-E"] == 25.0
-    assert row["Latest P-B"] == 3.2
+    # 2026-08-21 collected two ratios, 2026-08-20 collected one.
+    assert rows["AAA"][3:] == (2, 1)
+    # A company never collected reads as zero rather than blank.
+    assert rows["CCC"][3:] == (0, 0)
 
 
 def test_it_serialises_to_a_real_xlsx(warehouse):
