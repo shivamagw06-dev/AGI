@@ -71,6 +71,7 @@ const navItems = [
   { to: '/admin/upstox-fundamentals', label: 'AGI Fundamentals', icon: Building2 },
   { to: '/admin/valuation-policy', label: 'Valuation Policy', icon: Scale },
   { to: '/admin/valuation-ratios-workbook', label: 'Valuation Ratios Workbook', icon: FileSpreadsheet },
+  { to: '/admin/insider-trades-paste', label: 'Insider Trades Paste', icon: FileSpreadsheet },
   { to: '/admin/historical-valuation', label: 'Historical Valuation', icon: CalendarRange },
   { to: '/admin/hvie-runtime', label: 'HVIE Build', icon: Activity },
   { to: '/admin/research-intelligence', label: 'Research Intelligence', icon: BookOpen },

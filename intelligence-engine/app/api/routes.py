@@ -19704,6 +19704,38 @@ def warehouse_import_insider_trades_run(
     return import_trades(actor=_warehouse_actor(payload or {}, x_agi_actor))
 
 
+@router.post("/warehouse/import/insider-trades/preview",
+             dependencies=[Depends(require_token)])
+def warehouse_insider_paste_preview(payload: dict[str, Any] = Body(default_factory=dict)):
+    """Parse a pasted block and report what it holds. Writes nothing.
+
+    Separate from the write so the desk can see the row count, the date range
+    and how many lines were dropped before committing to it - a vendor export
+    that silently lost half its rows should be caught here, not in the data.
+    """
+    from financial_warehouse_completion.insider_trades import parse_pasted
+
+    parsed = parse_pasted(str((payload or {}).get("text") or ""))
+    return {k: v for k, v in parsed.items() if k != "rows"}
+
+
+@router.post("/warehouse/import/insider-trades/paste",
+             dependencies=[Depends(require_token)])
+def warehouse_insider_paste_run(payload: dict[str, Any] = Body(default_factory=dict),
+                                x_agi_actor: str | None = Header(default=None)):
+    """Write a pasted block of insider trades straight to the warehouse.
+
+    Token-guarded: this writes to a production table from free text. The rows
+    go through the same normalisation and the same natural key as the file
+    importer, so pasting a day that was already loaded updates those rows
+    rather than duplicating them.
+    """
+    from financial_warehouse_completion.insider_trades import import_pasted
+
+    return import_pasted(str((payload or {}).get("text") or ""),
+                         actor=_warehouse_actor(payload or {}, x_agi_actor))
+
+
 @router.get("/warehouse/import/forward-estimates")
 def warehouse_import_forward_estimates_status():
     """Preview the current forward EPS and revenue cross-section.
