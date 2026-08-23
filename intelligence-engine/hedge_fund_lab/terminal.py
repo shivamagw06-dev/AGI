@@ -530,6 +530,7 @@ def _overview_uncached(capped: int, cache_key: str, now: float) -> dict[str, Any
         "live_alpha": "Momentum / CTA Trend",
     }
     from reliability_registry import component as reliability_component
+    from strategy_lab.governance_view import governance_for
 
     cards = []
     new_today: list[dict[str, Any]] = []
@@ -572,6 +573,7 @@ def _overview_uncached(capped: int, cache_key: str, now: float) -> dict[str, Any
                 "production_validated": False,
                 "backtest_status": "not_backtested",
                 "reliability": reliability_record,
+                "governance": governance_for(key),
                 "entered_today": len(entered),
                 "exited_today": len(exited),
                 # Embed preview rows so the UI does not re-scan on first paint.

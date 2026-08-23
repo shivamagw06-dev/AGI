@@ -394,6 +394,8 @@ _STRATEGY_ENGINE = {
 
 def board(limit: int = 12) -> dict[str, Any]:
     """All three strategies plus the sizing constants they share."""
+    from strategy_lab.governance_view import governance_for
+
     cards = []
     for key, (label, fn) in LIVE_STRATEGIES.items():
         try:
@@ -406,6 +408,7 @@ def board(limit: int = 12) -> dict[str, Any]:
             engine_id = _STRATEGY_ENGINE.get(key)
             if engine_id:
                 result = {**result, "why_empty": engine_funnel(engine_id)}
+        result = {**result, "governance": governance_for(key)}
         cards.append(result)
     return {
         "ok": True,
@@ -424,7 +427,7 @@ def board(limit: int = 12) -> dict[str, Any]:
             "backtest": "NOT RUN",
             "point_in_time": "FAILING — fundamentals are stored by reporting period, not publication date",
             "survivorship": "FAILING — universe is companies listed today",
-            "lifecycle": "OPERATIONAL (stage 2 of 7)",
+            "lifecycle": "DEFINED - prospective validation pending",
             "alpha_claims_permitted": False,
         },
         "policy": POLICY,
