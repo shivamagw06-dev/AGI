@@ -221,38 +221,26 @@ def build_bytes(*, days: int = DEFAULT_DAYS) -> tuple[bytes, dict[str, Any]]:
             sheet.append([company["symbol"], company["company"],
                           company["sector"], *line])
 
+    # Coverage carries the same date columns as the ratio sheets, so every
+    # tab in the book is read the same way: company down, date across. The
+    # cell is how many of the six ratios were collected for that company on
+    # that day, which is the question this sheet exists to answer - a 0 is a
+    # day the sweep missed the company, and a 4 against a bank is correct
+    # rather than short, because ROCE and EV/EBITDA do not exist for a lender.
     coverage = workbook.create_sheet(COVERAGE_SHEET)
-    headers = (
-        list(IDENTITY_HEADERS)
-        # Names the date rather than saying "latest", because the column
-        # beside it is the company's own latest date and the two differ for
-        # any company the newest sweep did not reach.
-        + ["ISIN", "Eligible", "Days Collected", "First Date", "Latest Date",
-           f"Ratios On {latest}" if latest else "Ratios On Newest Date"]
-        + [f"Latest {SHEET_TITLES[r]}" for r in EXPECTED]
-    )
-    _prepare(coverage, headers, 0)
-    coverage.append(_header_row(coverage, headers))
+    headers = list(IDENTITY_HEADERS) + list(dates)
+    _prepare(coverage, headers, len(dates))
+    coverage.append(_header_row(coverage, headers,
+                                tilt_from=len(IDENTITY_HEADERS)))
 
     covered = 0
     for company in universe:
         symbol = company["symbol"]
         lines = [series[r].get(symbol, blank) for r in EXPECTED]
-        collected = [dates[i] for i in range(len(dates))
-                     if any(line[i] is not None for line in lines)]
-        on_latest = sum(1 for line in lines if line and line[0] is not None)
-        covered += 1 if on_latest else 0
-        # First non-empty walking newest-first is the most recent reading,
-        # which is not the same as the value on the latest date - a ratio
-        # missing today still has a last known value, and blanking it would
-        # report a collection gap as an absent ratio.
-        latest_each = [next((v for v in line if v is not None), None) for line in lines]
-        coverage.append(
-            [symbol, company["company"], company["sector"], company["isin"],
-             "yes" if company["eligible"] else "no", len(collected),
-             collected[-1] if collected else None,
-             collected[0] if collected else None, on_latest, *latest_each]
-        )
+        counts = [sum(1 for line in lines if line[i] is not None)
+                  for i in range(len(dates))]
+        covered += 1 if counts and counts[0] else 0
+        coverage.append([symbol, company["company"], company["sector"], *counts])
 
     buffer = io.BytesIO()
     workbook.save(buffer)
