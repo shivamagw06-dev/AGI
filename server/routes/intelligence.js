@@ -2305,6 +2305,26 @@ export default function createIntelligenceRouter() {
   });
 
   // Valuation Intelligence — Institutional Consensus Dashboard (Capital IQ)
+  // ---- Valuation pivot repair (admin) ----
+  //
+  // The engine route is token-guarded because it writes to a production
+  // table, which leaves it callable only by something holding the token.
+  // This process does; the cron and the browser do not.
+  router.post('/valuation-ratios/pivot-historical', async (req, res) => {
+    try {
+      const result = await engineFetch('/v1/valuation-ratios/pivot-historical', {
+        method: 'POST',
+        body: { date: req.body?.date, actor: req.body?.actor || 'admin_pivot' },
+        // A day is ~12,400 ratio rows through DQIV validation.
+        timeoutMs: 300_000,
+      });
+      return res.status(result.status).json(result.data);
+    } catch (error) {
+      return res.status(503).json({ ok: false, error: 'engine_unavailable',
+                                    detail: error.message });
+    }
+  });
+
   // ---- Insider trades paste (admin) ----
   //
   // Same reason as the workbook below: the engine routes are token-guarded and
