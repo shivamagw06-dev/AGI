@@ -300,3 +300,40 @@ def latest_provider_ratios(symbol: str) -> dict[str, Any]:
         "source": SOURCE,
         "ratios": ratios,
     }
+
+def pivot_stored_ratios(*, date: str | None = None, actor: str = "pivot_backfill",
+                        limit: int = 200_000) -> dict[str, Any]:
+    """Rebuild historical_valuation for a day from ratios already collected.
+
+    Repair, not collection. The sweep now pivots as it goes, but a day swept
+    before that change has its ratios in valuation_ratios and nothing in the
+    table the desk reads, and re-sweeping to fix it would spend the provider
+    budget again to fetch numbers already held.
+
+    It also cannot be done by re-running the sweep: checkpoints are per day,
+    so a resumed sweep finds an empty queue, and an unresumed one restarts at
+    the top of the universe and re-writes the same first companies.
+    """
+    from institutional_warehouse import db
+
+    stamp = date or datetime.now(timezone.utc).date().isoformat()
+    table = db.physical_table("valuation_ratios")
+    rows = db.query(
+        "SELECT symbol, isin, company_id, instrument_key, ratio_name, "
+        "company_value, sector_value, reported_date, reported_time, snapshot_id "
+        f"FROM {table} WHERE reported_date = ? "
+        "ORDER BY reported_time ASC, snapshot_id ASC "
+        f"LIMIT {int(limit)}",
+        (stamp,),
+    )
+    if not rows:
+        return {"ok": False, "error": "no_ratios_for_date", "date": stamp}
+
+    result = sync_historical_valuation(rows, actor=actor)
+    return {
+        "ok": bool(result.get("ok", True)),
+        "date": stamp,
+        "ratio_rows": len(rows),
+        "companies": len({str(r.get("symbol") or "").upper() for r in rows}),
+        "written": result,
+    }
