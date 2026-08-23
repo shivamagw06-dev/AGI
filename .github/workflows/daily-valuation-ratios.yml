@@ -130,6 +130,36 @@ jobs:
                     f"wrote {w.get('inserted', 0)} new / {w.get('updated', 0)} updated")
           PY
 
+      - name: Warehouse freshness
+        shell: bash
+        run: |
+          set -uo pipefail
+          ENGINE='https://agib-intelligence-engine.onrender.com/v1'
+          # Five tables sat on 20 August for three days and nothing said so.
+          # The collectors failed per company with 401s, the schedulers
+          # reported themselves enabled, and the pages showed old numbers with
+          # no sign they were old.
+          curl -sS --max-time 180 "$ENGINE/warehouse/freshness" -o fresh.json \
+            -w 'freshness HTTP %{http_code}\n' || true
+          python3 - <<'PY' || true
+          import json
+          try:
+              d = json.load(open("fresh.json"))
+          except Exception as exc:
+              print(f"::warning::freshness unreadable: {exc}")
+              raise SystemExit(0)
+          for t in d.get("tables") or []:
+              mark = " " if t["status"] == "ok" else "!"
+              print(f"  {mark} {t['tab']:28} {t['status']:6} "
+                    f"newest={t['newest'] or '-':12} age={t['age_days']}")
+          late = [t for t in (d.get("tables") or []) if t["status"] != "ok"]
+          if late:
+              # A warning, not a failure: the ratios this job exists to collect
+              # are already in by now, and failing here would bury that.
+              print(f"::warning::{len(late)} table(s) behind, affecting: "
+                    f"{', '.join(d.get('affected_readers') or []) or 'unknown'}")
+          PY
+
       - name: Verify today landed
         shell: bash
         run: |

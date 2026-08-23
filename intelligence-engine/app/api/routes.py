@@ -19030,6 +19030,20 @@ def _warehouse_actor(payload: dict[str, Any] | None = None, header: str | None =
     return body_actor or (header or "").strip() or "admin"
 
 
+@router.get("/warehouse/freshness")
+def warehouse_freshness(today: str | None = None):
+    """Which tables are current, which are late, and whose desk it affects.
+
+    Five tables sat on 20 August for three days without anything reporting it:
+    the collectors failed per company with 401s, the schedulers reported
+    themselves enabled, and the pages showed old numbers with no indication
+    they were old.
+    """
+    from institutional_warehouse.freshness import report
+
+    return report(today=today)
+
+
 @router.get("/warehouse/health")
 def warehouse_health():
     from institutional_warehouse.production import health
