@@ -35,7 +35,7 @@ from __future__ import annotations
 
 from typing import Any, Iterable, Sequence
 
-from institutional_warehouse import period_identity, units
+from institutional_warehouse import derived_units, period_identity, units
 
 #: Sources whose fundamentals rows may be read as the answer, per tab.
 #:
@@ -113,6 +113,14 @@ def stamp(tab_id: str, rows: Sequence[dict[str, Any]], *, source: Any) -> list[d
         if not isinstance(row, dict):
             continue
         new_row = dict(row)
+        # A derived-only write makes no claim about whether the row may be read
+        # as the answer - it adds computed columns to a row that has already
+        # been judged. Stamping it here would recompute that judgement from the
+        # formula engine's own source and overwrite it, turning a trusted row
+        # non-canonical for the crime of receiving a free_cash_flow.
+        if derived_units.is_derived_write(new_row, source):
+            out.append(new_row)
+            continue
         why = blockers(tab_id, new_row, source=source)
         new_row["is_canonical"] = not why
         new_row["canonical_blockers"] = ", ".join(why)
@@ -156,8 +164,40 @@ def unit_is_known(row: dict[str, Any]) -> bool:
     return str(row.get("sys_unit_method") or "") not in ("", units.METHOD_ASSUMED)
 
 
+def _prior_is_trusted(tab_id: str, prior: dict[str, Any]) -> bool:
+    """Whether the stored row may be read as fact.
+
+    is_canonical is stamped on write, so every row written before that column
+    existed carries NULL - which is every quarterly row in production today. A
+    guard that trusts the flag alone therefore protects none of them: a feed
+    with a known-but-undeclared unit overwrites a declared Upstox row and no
+    refusal is recorded, because NULL is falsy.
+
+    So the flag is used when it was set, and otherwise the same source and unit
+    test the read path applies is computed here. A row is not less protected for
+    having been written before the column existed.
+    """
+    from institutional_warehouse import statement_trust
+
+    flag = prior.get("is_canonical")
+    if flag is not None:
+        return bool(flag)
+    return statement_trust.is_trusted(tab_id, prior)
+
+
+def _row_is_trusted(tab_id: str, row: dict[str, Any]) -> bool:
+    from institutional_warehouse import statement_trust
+
+    flag = row.get("is_canonical")
+    if flag is not None:
+        return bool(flag)
+    return statement_trust.is_trusted(tab_id, row)
+
+
 def guard(tab_id: str, rows: Sequence[dict[str, Any]], existing: dict[str, dict[str, Any]],
-          *, key_of: Any) -> tuple[list[dict[str, Any]], dict[str, int]]:
+          *, key_of: Any, source: Any = None,
+          derived_parents: dict[str, str] | None = None,
+          ) -> tuple[list[dict[str, Any]], dict[str, int]]:
     """Stop a write that would corrupt a row already fit to be read.
 
     Two refusals, both for things that have happened here:
@@ -180,13 +220,54 @@ def guard(tab_id: str, rows: Sequence[dict[str, Any]], existing: dict[str, dict[
     kept: list[dict[str, Any]] = []
     refused_downgrade = 0
     refused_units = 0
+    refused_provenance = 0
+    refused_orphan = 0
+    refused_key_change = 0
     for row in rows or []:
-        prior = existing.get(key_of(row)) or {}
+        row_id = key_of(row)
+        prior = existing.get(row_id) or {}
+        derived = derived_units.is_derived_write(row, source)
+
+        if derived:
+            expected_parent = (derived_parents or {}).get(row_id)
+            if not expected_parent:
+                refused_orphan += 1
+                continue
+            if expected_parent != row_id:
+                refused_key_change += 1
+                continue
+            # The binding names a row, but the row must still exist now. This
+            # makes the operation update-only even if it races a retirement.
+            if not prior:
+                refused_orphan += 1
+                continue
+
         if not prior:
             kept.append(row)
             continue
 
-        if prior.get("is_canonical") and not row.get("is_canonical"):
+        # A derived-only write asserts no unit and claims no provenance. It
+        # carries computed columns onto a row that already has both, so judging
+        # it on a unit it never claimed refused free_cash_flow onto every
+        # declared row while allowing it onto assumed_canonical ones - exactly
+        # backwards. It cannot promote the row either: the payload has no
+        # reported value and store.upsert leaves source untouched on update.
+        if derived:
+            # The exemption adds computed columns. It does not re-own the row.
+            # A derived payload claiming a different source rewrote provenance
+            # through the exemption - upstox became formula_engine on a stable
+            # row_id, which is the drift incident arriving by a new door.
+            # Refused rather than stripped, because a caller sending the wrong
+            # source is a bug worth surfacing.
+            claimed = str(row.get("source") or "").strip().lower()
+            held = str(prior.get("source") or "").strip().lower()
+            if claimed and held and claimed != held:
+                refused_provenance += 1
+                continue
+            kept.append(row)
+            continue
+
+        if _prior_is_trusted(tab_id, prior) and not _row_is_trusted(tab_id, row):
             refused_downgrade += 1
             continue
 
@@ -201,4 +282,10 @@ def guard(tab_id: str, rows: Sequence[dict[str, Any]], existing: dict[str, dict[
         counts["refused_downgrade"] = refused_downgrade
     if refused_units:
         counts["refused_unknown_units"] = refused_units
+    if refused_provenance:
+        counts["refused_provenance_change"] = refused_provenance
+    if refused_orphan:
+        counts["refused_derived_without_parent"] = refused_orphan
+    if refused_key_change:
+        counts["refused_derived_key_change"] = refused_key_change
     return kept, counts
