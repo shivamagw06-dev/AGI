@@ -83,19 +83,87 @@ def manifest(cases: List[Dict[str, Any]]) -> List[str]:
     return sorted(str(c.get("id")) for c in cases)
 
 
-def partition(cases: List[Dict[str, Any]], shards: int) -> List[List[Dict[str, Any]]]:
+TIMINGS_FILE = Path(__file__).resolve().parent / "case_timings.json"
+
+
+def load_timings() -> Dict[str, float]:
+    """Per-case seconds from an earlier run, if we have them.
+
+    Written by the combine job and committed, so every pull request shards on
+    the same measurements. A cache would not do: Actions caches created inside
+    a pull request are scoped to that pull request and are invisible to the
+    next one, so all but the first PR would still shard blind.
+    """
+    path = Path(os.environ.get("SHORT_GATE_TIMINGS") or TIMINGS_FILE)
+    try:
+        raw = json.loads(path.read_text())
+    except Exception:
+        return {}
+    seconds = raw.get("case_seconds") if isinstance(raw, dict) else None
+    if not isinstance(seconds, dict):
+        return {}
+    out: Dict[str, float] = {}
+    for case_id, value in seconds.items():
+        try:
+            taken = float(value)
+        except (TypeError, ValueError):
+            continue
+        if taken > 0:
+            out[str(case_id)] = taken
+    return out
+
+
+def partition(cases: List[Dict[str, Any]], shards: int,
+              timings: Dict[str, float] | None = None) -> List[List[Dict[str, Any]]]:
     """Split the universe across shards without dropping or duplicating a case.
 
     Partitioning is how the gate stays inside its budget if the full 395 cases
     do not. Reducing the case set would be the other way, and it is the one
     thing this gate exists to avoid - a smaller universe chosen to fit the clock
     is the "current count as the test set" error wearing a different hat.
+
+    Round-robin split the count evenly and the clock unevenly: four shards
+    measured 414s, 448s, 572s and 639s, and the gate is only as quick as its
+    slowest shard, so a quarter of the wall time was spent waiting. Cases are
+    not equally expensive, so with measurements in hand they are packed
+    longest-first into whichever shard is currently lightest. Without
+    measurements the behaviour is exactly as before.
     """
     shards = max(1, int(shards))
+    ordered = sorted(cases, key=lambda c: str(c.get("id")))
+    timings = timings if timings is not None else load_timings()
     buckets: List[List[Dict[str, Any]]] = [[] for _ in range(shards)]
-    for i, case in enumerate(sorted(cases, key=lambda c: str(c.get("id")))):
-        buckets[i % shards].append(case)
+    if not timings:
+        for i, case in enumerate(ordered):
+            buckets[i % shards].append(case)
+        return buckets
+
+    # A case we have never timed gets the median rather than zero, so a newly
+    # added case is not treated as free and piled onto one shard.
+    known = sorted(timings.values())
+    default = known[len(known) // 2] if known else 1.0
+    loads = [0.0] * shards
+    # Ties broken on id so the partition is reproducible; two runs of the same
+    # commit must shard identically or the coverage check becomes a coin toss.
+    for case in sorted(ordered,
+                       key=lambda c: (-timings.get(str(c.get("id")), default),
+                                      str(c.get("id")))):
+        target = min(range(shards), key=lambda i: (loads[i], i))
+        buckets[target].append(case)
+        loads[target] += timings.get(str(case.get("id")), default)
     return buckets
+
+
+def merge_case_seconds(reports: List[Dict[str, Any]]) -> Dict[str, float]:
+    """One timings map from every shard, for the next run to shard on."""
+    merged: Dict[str, float] = {}
+    for report in reports:
+        for case_id, value in (report.get("case_seconds") or {}).items():
+            try:
+                merged[str(case_id)] = round(float(value), 3)
+            except (TypeError, ValueError):
+                continue
+    return merged
 
 
 def verify_partition(cases: List[Dict[str, Any]],
@@ -227,7 +295,8 @@ def _artifact_dir() -> Path:
 def build_report(results: List[Dict[str, Any]], *, elapsed: float,
                  cases_planned: int, stub_ok: bool,
                  manifest_ids: List[str] | None = None,
-                 shard_index: int = 0, shard_count: int = 1) -> Dict[str, Any]:
+                 shard_index: int = 0, shard_count: int = 1,
+                 case_seconds: Dict[str, float] | None = None) -> Dict[str, Any]:
     """Counters, unique failing cases, and categories - kept apart."""
     defects = zde.summarise(results, defects=zde.REQUIRED_DEFECTS, provider_ok=stub_ok)
     categories = tax.classify(results)
@@ -263,6 +332,8 @@ def build_report(results: List[Dict[str, Any]], *, elapsed: float,
         "elapsed_seconds": round(elapsed, 1),
         "budget_seconds": budget_seconds(),
         "within_budget": elapsed <= budget_seconds(),
+        # Feeds the next run's partition; see load_timings.
+        "case_seconds": case_seconds or {},
         # unique cases, held separately from label counts
         "unique_failing_cases": len(failing_cases),
         "failing_case_ids": sorted(failing_cases),
@@ -369,7 +440,12 @@ def main() -> int:
     except (TypeError, ValueError) as exc:
         print(f"[short_gate] INFRASTRUCTURE: {exc}", flush=True)
         return EXIT_INFRASTRUCTURE
-    selected_cases = partition(cases, shard_count)[shard_index]
+    timings = load_timings()
+    selected_cases = partition(cases, shard_count, timings)[shard_index]
+    known = sum(1 for c in cases if str(c.get("id")) in timings)
+    print(f"[short_gate] partition: "
+          + (f"balanced on {known}/{len(cases)} timed cases"
+             if timings else "round-robin (no timings file yet)"), flush=True)
     full_manifest = sorted(manifest(cases) + namesake_manifest_ids())
     print(f"[short_gate] shard {shard_index + 1}/{shard_count}: "
           f"{len(selected_cases)} of {len(cases)} core cases — every J_impossible and every "
@@ -386,10 +462,16 @@ def main() -> int:
         latency_budget_ms=int(os.environ.get("ASK_TEST_LATENCY_MS") or "120000"))
     t0 = time.perf_counter()
     results: List[Dict[str, Any]] = []
+    # Timed per case so the next run can pack the shards by cost instead of by
+    # count. Wall clock around the whole case, because that is what a shard
+    # actually pays.
+    case_seconds: Dict[str, float] = {}
     for i, case in enumerate(selected_cases, 1):
+        started = time.perf_counter()
         transport = harness.ask(case["question"], case=case)
         payload = transport.get("payload") if isinstance(transport.get("payload"), dict) else {}
         results.append(evaluate_case(case, payload, int(transport.get("latency_ms") or 0)))
+        case_seconds[str(case.get("id"))] = round(time.perf_counter() - started, 3)
         if i % 50 == 0:
             print(f"  … {i}/{len(selected_cases)}  ({time.perf_counter()-t0:.0f}s)", flush=True)
 
@@ -409,7 +491,8 @@ def main() -> int:
     report = build_report(results, elapsed=elapsed,
                           cases_planned=len(full_manifest), stub_ok=True,
                           manifest_ids=full_manifest,
-                          shard_index=shard_index, shard_count=shard_count)
+                          shard_index=shard_index, shard_count=shard_count,
+                          case_seconds=case_seconds)
     out = _artifact_dir() / artifact_name(shard_index)
     out.write_text(json.dumps(report, indent=2), encoding="utf-8")
 
