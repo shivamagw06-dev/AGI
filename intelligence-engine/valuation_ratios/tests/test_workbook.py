@@ -120,8 +120,11 @@ def test_coverage_reports_the_last_known_value_not_only_todays(warehouse):
     assert row["Days Collected"] == 2
     assert row["First Date"] == "2026-08-20"
     assert row["Latest Date"] == "2026-08-21"
-    # Only P/B was collected on the latest date...
-    assert row["Ratios On Latest Date"] == 1
+    # The header names the date, because the column beside it is the
+    # company's own latest date and they differ whenever a sweep misses one.
+    assert "Ratios On 2026-08-21" in headers
+    # Only P/B was collected on that date...
+    assert row["Ratios On 2026-08-21"] == 1
     # ...but P/E's last reading is still reported.
     assert row["Latest P-E"] == 25.0
     assert row["Latest P-B"] == 3.2

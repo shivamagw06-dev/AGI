@@ -192,8 +192,11 @@ def build(*, days: int = DEFAULT_DAYS) -> tuple[Any, dict[str, Any]]:
     coverage = workbook.create_sheet(COVERAGE_SHEET)
     coverage.append(
         list(IDENTITY_HEADERS)
+        # Names the date rather than saying "latest", because the column
+        # beside it is the company's own latest date and the two differ for
+        # any company the newest sweep did not reach.
         + ["ISIN", "Eligible", "Days Collected", "First Date", "Latest Date",
-           "Ratios On Latest Date"]
+           f"Ratios On {latest}" if latest else "Ratios On Newest Date"]
         + [f"Latest {SHEET_TITLES[r]}" for r in EXPECTED]
     )
     for cell in coverage[1]:
