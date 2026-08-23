@@ -10708,10 +10708,63 @@ async def strategy_lab_scan(strategy_id: str, limit: int = 20):
     return await run_in_threadpool(scan, strategy_id, limit=bounded_limit)
 
 
+@@
 @router.post("/strategy-lab/backtest/{strategy_id}")
 async def strategy_lab_backtest(strategy_id: str, payload: dict[str, Any] = Body(default={})):
     from strategy_lab.production import backtest
     return await run_in_threadpool(backtest, strategy_id, payload or {})
+
+
+@router.get("/strategy-lab/operating-system")
+async def strategy_lab_operating_system(run_limit: int = 10):
+    """Admin evidence board for immutable strategies, runs and capital gates."""
+    from strategy_lab.operating_system import catalog
+    bounded = max(1, min(int(run_limit or 10), 100))
+    return await run_in_threadpool(catalog, run_limit=bounded)
+
+
+@router.get("/strategy-lab/definitions")
+async def strategy_lab_definitions():
+    from strategy_lab.definitions import all_definitions
+    return {"ok": True, "definitions": [item.to_dict() for item in all_definitions()]}
+
+
+@router.get("/strategy-lab/definition/{strategy_id}")
+async def strategy_lab_definition(strategy_id: str):
+    from strategy_lab.operating_system import definition
+    try:
+        return await run_in_threadpool(definition, strategy_id)
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
+@router.post("/strategy-lab/registry/sync")
+async def strategy_lab_registry_sync(payload: dict[str, Any] = Body(default={})):
+    """Seal code-defined versions into the immutable warehouse registry."""
+    from strategy_lab.operating_system import sync_registry
+    return await run_in_threadpool(sync_registry, actor=str((payload or {}).get("actor") or "admin"))
+
+
+@router.post("/strategy-lab/research/{strategy_id}")
+async def strategy_lab_run_research(strategy_id: str, payload: dict[str, Any] = Body(default={})):
+    """Run bounded factor research or a standardized point-in-time backtest."""
+    from strategy_lab.operating_system import run_research
+    try:
+        return await run_in_threadpool(run_research, strategy_id, payload or {})
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+
+@router.get("/strategy-lab/capital-decision/{strategy_id}")
+async def strategy_lab_capital_decision(strategy_id: str):
+    """Fail-closed capital decision; this endpoint never places an order."""
+    from strategy_lab.operating_system import capital_decision
+    try:
+        return await run_in_threadpool(capital_decision, strategy_id)
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
 
 
 # ---------------------------------------------------------------------------
