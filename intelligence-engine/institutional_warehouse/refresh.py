@@ -129,8 +129,15 @@ def stage_yahoo(*, actor: str, limit: Optional[int] = None) -> dict[str, Any]:
                                  reason="refresh:yahoo")
     price_result = gateway.write("daily_market_history", prices, source="yahoo_finance", actor=actor,
                                 reason="refresh:yahoo")
-    valuation_result = gateway.write("historical_valuation", valuations, source="yahoo_finance",
-                                    actor=actor, reason="refresh:yahoo")
+    # Valuation is not sourced from Yahoo. Ratios come from Upstox key-ratios
+    # and from warehouse_reconstruction over the Capital IQ workbook, which is
+    # the annual record. Yahoo kept writing historical_valuation because this
+    # call predates that decision, not because it was chosen.
+    #
+    # The prices and company master above still come from Yahoo, which is a
+    # separate question from valuation and is left alone here.
+    valuation_result = {"ok": True, "skipped": "valuation_not_sourced_from_yahoo",
+                        "candidates": len(valuations), "written": 0}
     return _ok(
         "yahoo",
         companies=len(masters),
