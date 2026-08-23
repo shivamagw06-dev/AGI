@@ -82,6 +82,7 @@ const KulDashboard = lazy(() => import('@/pages/admin/KulDashboard'));
 const MarketResearchNote = lazy(() => import('@/pages/admin/MarketResearchNote'));
 const MarketActivities = lazy(() => import('@/pages/admin/MarketActivities'));
 const StrategyLab = lazy(() => import('@/pages/admin/StrategyLab'));
+const OptionsLab = lazy(() => import('@/pages/OptionsLab'));
 const IntelligenceCmsRoutes = lazy(() => import('@/pages/admin/intelligence/IntelligenceCmsRoutes'));
 
 function AdminPageFallback() {
@@ -128,6 +129,7 @@ export default function AdminRoutes() {
           <Route path="macro-runtime" element={<MacroRuntime />} />
           <Route path="market-research-note" element={<MarketResearchNote />} />
           <Route path="strategy-lab" element={<StrategyLab />} />
+          <Route path="options-lab" element={<OptionsLab />} />
           <Route path="ifac" element={<IfacComposer />} />
           <Route path="aqe" element={<AskProductQuality />} />
           <Route path="kul" element={<KulDashboard />} />
