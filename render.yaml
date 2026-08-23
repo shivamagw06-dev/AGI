@@ -220,6 +220,16 @@ services:
         value: "false"
       - key: INSTITUTIONAL_WAREHOUSE_ROOT
         value: /var/data/kip/institutional_warehouse
+      # Pricing Engine V1 prospective validation. The collector shares this
+      # web service's disk with its admin-only read API; no trading is enabled.
+      - key: OPTIONS_LAB_LIVE_VALIDATION
+        value: "true"
+      - key: OPTIONS_LAB_DB_PATH
+        value: /var/data/kip/options_lab/options_lab.sqlite3
+      - key: OPTIONS_LAB_REPORT_DIR
+        value: /var/data/kip/options_lab/reports
+      - key: UPSTOX_ACCESS_TOKEN
+        sync: false
       - key: INTELLIGENCE_ENGINE_TOKEN
         fromService:
           name: agib-api
