@@ -22027,6 +22027,43 @@ def valuation_ratios_sweep_runs(limit: int = 10):
     return {"ok": True, "runs": recent_jobs(kind=KIND, limit=limit)}
 
 
+@router.get("/valuation-ratios/workbook", dependencies=[Depends(require_token)])
+async def valuation_ratios_workbook(days: int = 120):
+    """Admin-only Excel: one sheet per ratio, companies down, dates across.
+
+    Token-guarded because it is the whole universe in one file - every company,
+    every ratio, every day collected. That is an export, not a page, and it
+    should not be reachable without the engine token.
+    """
+    from fastapi.responses import Response
+    from valuation_ratios import workbook
+
+    payload, summary = await run_in_threadpool(workbook.build_bytes, days=days)
+    return Response(
+        content=payload,
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={
+            "Content-Disposition": f'attachment; filename="{workbook.filename(summary)}"',
+            # Surfaced as headers so a caller can tell a thin workbook from a
+            # complete one without opening it.
+            "X-AGI-Companies": str(summary["companies"]),
+            "X-AGI-Dates": str(summary["dates"]),
+            "X-AGI-Latest-Date": str(summary["latest_date"] or ""),
+            "X-AGI-Values": str(summary["values"]),
+            "Cache-Control": "no-store",
+        },
+    )
+
+
+@router.get("/valuation-ratios/workbook/summary", dependencies=[Depends(require_token)])
+async def valuation_ratios_workbook_summary(days: int = 120):
+    """What the workbook would contain, without building the file."""
+    from valuation_ratios import workbook
+
+    summary = await run_in_threadpool(workbook.summarise, days=days)
+    return {"ok": True, **summary}
+
+
 @router.post("/valuation-ratios/isin-backfill")
 async def valuation_ratios_isin_backfill(payload: dict[str, Any] = Body(default_factory=dict)):
     """Fill company_master.isin from Upstox NSE EQ instruments (blocks key-ratios otherwise)."""
