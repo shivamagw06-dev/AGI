@@ -2305,6 +2305,59 @@ export default function createIntelligenceRouter() {
   });
 
   // Valuation Intelligence — Institutional Consensus Dashboard (Capital IQ)
+  // ---- Valuation ratios workbook (admin) ----
+  //
+  // The engine's workbook route is token-guarded. The token lives in this
+  // process's environment and must stay there: putting it in the bundle would
+  // hand every visitor an admin credential, so the browser asks this proxy and
+  // the proxy adds the header.
+  router.get(
+    '/valuation-ratios/workbook/summary',
+    proxyGet((req) => `/v1/valuation-ratios/workbook/summary?days=${encodeURIComponent(req.query.days || 120)}`)
+  );
+
+  router.get('/valuation-ratios/workbook', async (req, res) => {
+    // Not proxyGet: that parses JSON, and this is a spreadsheet. The body is
+    // read as bytes and passed through unchanged.
+    const { baseUrl, token } = engineConfig();
+    const days = encodeURIComponent(req.query.days || 120);
+    try {
+      const upstream = await fetch(`${baseUrl}/v1/valuation-ratios/workbook?days=${days}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'X-AGI-Intelligence-Token': token,
+        },
+        // A full universe by a year of dates takes real time to build, and a
+        // download that dies at thirty seconds is worse than one that waits.
+        signal: AbortSignal.timeout(240_000),
+      });
+      if (!upstream.ok) {
+        const detail = await upstream.text().catch(() => '');
+        return res
+          .status(upstream.status)
+          .json({ ok: false, error: 'workbook_unavailable', detail: detail.slice(0, 400) });
+      }
+      const buffer = Buffer.from(await upstream.arrayBuffer());
+      const name = upstream.headers.get('content-disposition');
+      res.setHeader(
+        'Content-Type',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+      );
+      res.setHeader('Content-Disposition', name || 'attachment; filename="valuation_ratios.xlsx"');
+      // Echoed so the page can show what it just downloaded without opening it.
+      for (const header of ['x-agi-companies', 'x-agi-dates', 'x-agi-latest-date', 'x-agi-values']) {
+        const value = upstream.headers.get(header);
+        if (value) res.setHeader(header, value);
+      }
+      res.setHeader('Cache-Control', 'no-store');
+      return res.status(200).send(buffer);
+    } catch (error) {
+      return res
+        .status(503)
+        .json({ ok: false, error: 'engine_unavailable', detail: String(error?.message || error) });
+    }
+  });
+
   router.get('/valuation-consensus/health', kfGet('/v1/valuation-consensus/health'));
   router.get('/valuation-consensus/analytics', kfGet('/v1/valuation-consensus/analytics'));
   router.get('/valuation-consensus/rows', kfGet('/v1/valuation-consensus/rows'));
