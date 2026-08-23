@@ -2305,6 +2305,38 @@ export default function createIntelligenceRouter() {
   });
 
   // Valuation Intelligence — Institutional Consensus Dashboard (Capital IQ)
+  // ---- Insider trades paste (admin) ----
+  //
+  // Same reason as the workbook below: the engine routes are token-guarded and
+  // the token belongs in this process, not in the browser bundle.
+  router.post('/insider-trades/preview', async (req, res) => {
+    try {
+      const result = await engineFetch('/v1/warehouse/import/insider-trades/preview', {
+        method: 'POST',
+        body: { text: String(req.body?.text || '') },
+      });
+      return res.status(result.status).json(result.data);
+    } catch (error) {
+      return res.status(503).json({ ok: false, error: 'engine_unavailable',
+                                    detail: error.message });
+    }
+  });
+
+  router.post('/insider-trades/paste', async (req, res) => {
+    try {
+      const result = await engineFetch('/v1/warehouse/import/insider-trades/paste', {
+        method: 'POST',
+        body: { text: String(req.body?.text || ''), actor: 'admin_paste' },
+        // A large paste is thousands of rows through DQIV validation.
+        timeoutMs: 180_000,
+      });
+      return res.status(result.status).json(result.data);
+    } catch (error) {
+      return res.status(503).json({ ok: false, error: 'engine_unavailable',
+                                    detail: error.message });
+    }
+  });
+
   // ---- Valuation ratios workbook (admin) ----
   //
   // The engine's workbook route is token-guarded. The token lives in this

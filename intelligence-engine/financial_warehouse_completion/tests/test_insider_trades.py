@@ -273,3 +273,80 @@ class TestOpenMarketCoverage:
         bare = [r for r in out["rows"] if r["mode"] == "Market"]
         assert bare, "the export writes a bare Market mode"
         assert all(r["is_open_market"] == "true" for r in bare)
+
+
+# --------------------------------------------------------------------------
+# Pasted input
+#
+# The desk pastes a day straight from the spreadsheet. It must be held to the
+# same rules as a downloaded export, or the two routes drift and the paste
+# quietly admits rows the importer would have rejected.
+# --------------------------------------------------------------------------
+
+PASTE_HEADER = ("Stock\tClient Name\tClient Category\tAction*\t"
+          "Reported To/By Exchange\tQuantity\tAvg. Price\tMode")
+PASTE_ROW = ("Liberty Shoes\tAnupam Bansal\tPromoter\tAcquisition\t"
+       "20-Aug-2026\t4548\t305.20\tMarket Purchase")
+
+
+def test_a_tab_separated_paste_parses():
+    out = it.parse_pasted(f"{PASTE_HEADER}\n{PASTE_ROW}")
+    assert out["ok"] and out["row_count"] == 1
+    row = out["rows"][0]
+    assert row["company_name"] == "Liberty Shoes"
+    assert row["person"] == "Anupam Bansal"
+    assert row["reported_on"] == "2026-08-20"
+    assert row["quantity"] == 4548
+    assert row["is_open_market"] == "true"
+
+
+def test_a_comma_separated_paste_parses_the_same_way():
+    csv_text = (PASTE_HEADER.replace("\t", ",") + "\n" + PASTE_ROW.replace("\t", ","))
+    assert it.parse_pasted(csv_text)["rows"] == it.parse_pasted(f"{PASTE_HEADER}\n{PASTE_ROW}")["rows"]
+
+
+def test_a_comma_in_a_company_name_does_not_split_a_tab_paste():
+    """The delimiter is chosen from the header, not by counting commas."""
+    out = it.parse_pasted(f"{PASTE_HEADER}\nTata Motors, Ltd\tA Person\tPromoter\t"
+                          f"Acquisition\t20-Aug-2026\t100\t10.0\tMarket Purchase")
+    assert out["ok"]
+    assert out["rows"][0]["company_name"] == "Tata Motors, Ltd"
+
+
+def test_a_paste_holds_the_same_bar_as_a_file():
+    """No person, no date, no quantity - the file importer drops these too."""
+    missing_qty = ("Liberty Shoes\tAnupam Bansal\tPromoter\tAcquisition\t"
+                   "20-Aug-2026\t\t305.20\tMarket Purchase")
+    out = it.parse_pasted(f"{PASTE_HEADER}\n{PASTE_ROW}\n{missing_qty}")
+    assert out["row_count"] == 1
+    assert out["pasted_rows"] == 2
+    # Reported, not swallowed: half a paste vanishing must be visible.
+    assert out["dropped_rows"] == 1
+
+
+def test_re_pasting_the_same_day_does_not_duplicate():
+    """Overlapping ranges are normal; the fingerprint has to collapse them."""
+    out = it.parse_pasted(f"{PASTE_HEADER}\n{PASTE_ROW}\n{PASTE_ROW}")
+    assert out["row_count"] == 1
+
+
+def test_an_empty_or_header_only_paste_says_which():
+    assert it.parse_pasted("")["error"] == "nothing_pasted"
+    assert it.parse_pasted("   \n  ")["error"] == "nothing_pasted"
+    assert "header_row" in it.parse_pasted(PASTE_HEADER)["error"]
+
+
+def test_wrong_columns_name_what_was_seen():
+    """Otherwise a bad paste is indistinguishable from a broken importer."""
+    out = it.parse_pasted("Foo\tBar\n1\t2")
+    assert out["error"] == "no_usable_rows"
+    assert out["headers_seen"] == ["Foo", "Bar"]
+    assert "Stock" in out["headers_required"]
+
+
+def test_the_paste_route_reuses_the_file_normaliser():
+    """One code path, so the two can never disagree about what is valid."""
+    import inspect
+
+    assert "normalise_rows" in inspect.getsource(it.parse_pasted)
+    assert "normalise_rows" in inspect.getsource(it.parse_file)
