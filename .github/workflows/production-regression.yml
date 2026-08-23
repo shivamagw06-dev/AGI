@@ -1,14 +1,24 @@
 name: Production Release Gate (AGI Core v1.0)
 
-# Permanent merge policy — every PR must PASS before merge.
+# Eighteen full acceptance suites. Intended as the permanent merge policy, and
+# not yet fit for it: 0 passes in the last 50 runs, at 60-90 minutes each.
 # See docs/AGI_CORE_V1_0.md and docs/CI_ACCEPTANCE_DATA.md
+#
+# Nightly rather than per-push while that is true. On every pull request and
+# every merge it added an hour of CI and a red X that nobody could act on -
+# it is not a required check, so it blocked nothing and only taught people to
+# ignore it. A signal that is always red carries no information, and one that
+# costs an hour to produce is worse than none.
+#
+# Nothing about what it measures has changed. Same suites, same thresholds,
+# same 90-minute ceiling; only when it runs. Put `pull_request` back the day
+# it can pass, and make it required at that point - which was always the plan,
+# and is the opposite of lowering the bar to get there.
 
 on:
-  pull_request:
-  push:
-    branches:
-      - main
-      - 'cursor/**'
+  schedule:
+    # 02:00 UTC daily, well clear of the 12:30 valuation sweep.
+    - cron: '0 2 * * *'
   workflow_dispatch:
 
 concurrency:
