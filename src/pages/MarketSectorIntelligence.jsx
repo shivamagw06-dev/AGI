@@ -423,7 +423,7 @@ export default function MarketSectorIntelligence() {
                   </tbody></table></div>
                 </Section>
 
-                <Section title="Company leaders and valuation context" subtitle="Largest constituents first. This is a research starting point, not a security recommendation.">
+                <Section title="Company leaders and valuation context" subtitle={`Ranked by ${selectedResearch?.ranking_basis?.metric_label || "the sector's primary metric"}, richest first. Market capitalisation is not used: it is missing for most of the universe. This is a research starting point, not a security recommendation.`}>
                   <div className="msi-table-wrap"><table className="msi-table"><thead><tr><th>Company</th><th>Industry</th><th>P/E</th><th>P/B</th><th>ROE</th><th>Hist. %ile</th></tr></thead><tbody>
                     {(selectedResearch.companies || []).slice(0, 15).map((row) => <tr key={row.symbol}><td><Link to={`/valuation-terminal?symbol=${encodeURIComponent(row.symbol || '')}`}>{row.company_name || row.symbol}</Link></td><td>{row.industry || '—'}</td><td>{fmt(row.pe)}</td><td>{fmt(row.pb)}</td><td>{fmt(row.roe)}</td><td>{row.historical_percentile != null ? `${fmt(row.historical_percentile, 0)}%ile` : '—'}</td></tr>)}
                   </tbody></table></div>
