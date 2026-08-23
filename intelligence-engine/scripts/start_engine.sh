@@ -30,6 +30,7 @@ flag() {  # flag VALUE DEFAULT -> "true"/"false"
 
 GATHER_PID=""
 DOSSIER_PID=""
+OPTIONS_LAB_PID=""
 
 cleanup() {
   if [[ -n "${GATHER_PID}" ]] && kill -0 "${GATHER_PID}" 2>/dev/null; then
@@ -39,6 +40,10 @@ cleanup() {
   if [[ -n "${DOSSIER_PID}" ]] && kill -0 "${DOSSIER_PID}" 2>/dev/null; then
     kill -TERM "${DOSSIER_PID}" 2>/dev/null || true
     wait "${DOSSIER_PID}" 2>/dev/null || true
+  fi
+  if [[ -n "${OPTIONS_LAB_PID}" ]] && kill -0 "${OPTIONS_LAB_PID}" 2>/dev/null; then
+    kill -TERM "${OPTIONS_LAB_PID}" 2>/dev/null || true
+    wait "${OPTIONS_LAB_PID}" 2>/dev/null || true
   fi
 }
 trap cleanup EXIT INT TERM
@@ -175,6 +180,26 @@ elif [[ "${DOSSIER_ENABLED}" == "true" ]]; then
   echo "[start_engine] company dossier worker pid=${DOSSIER_PID}"
 else
   echo "[start_engine] company dossier worker disabled"
+fi
+
+# Lightweight options validation shares this service's persistent disk so its
+# read-only admin API and the collector always see the same evidence database.
+# It performs no orders, signals or model changes and remains off unless the
+# production service explicitly enables it.
+OPTIONS_LAB_ENABLED="$(flag "${OPTIONS_LAB_LIVE_VALIDATION-}" false)"
+if [[ "${OPTIONS_LAB_ENABLED}" == "true" ]]; then
+  export OPTIONS_LAB_DB_PATH="${OPTIONS_LAB_DB_PATH:-/var/data/kip/options_lab/options_lab.sqlite3}"
+  export OPTIONS_LAB_REPORT_DIR="${OPTIONS_LAB_REPORT_DIR:-/var/data/kip/options_lab/reports}"
+  mkdir -p "$(dirname "${OPTIONS_LAB_DB_PATH}")" "${OPTIONS_LAB_REPORT_DIR}"
+  (
+    export AGI_ROLE=options_lab_validation_worker
+    echo "[start_engine] launching Pricing Engine V1 validation collector"
+    exec nice -n 10 python -m options_lab.automation run --poll-seconds "${OPTIONS_LAB_POLL_SECONDS:-10}"
+  ) &
+  OPTIONS_LAB_PID=$!
+  echo "[start_engine] options validation pid=${OPTIONS_LAB_PID}"
+else
+  echo "[start_engine] options validation collector disabled"
 fi
 
 echo "[start_engine] launching uvicorn on port ${PORT:-8100} (FAA_LIVE_FETCH=${FAA_LIVE_FETCH})"
