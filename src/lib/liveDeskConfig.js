@@ -18,9 +18,11 @@
 // can change and following it should not require a redeploy.
 const DEFAULTS = {
   bloomberg: 'https://www.youtube.com/embed/live_stream?channel=UCIALMKvObZNtJ6AmdCLP7Lg',
-  // Resolved from youtube.com/@NDTVProfitIndia. The previous id was a guess
-  // and the card showed "This video is unavailable" for every visitor.
-  ndtvProfit: 'https://www.youtube.com/embed/live_stream?channel=UCZFMm1mMw0F81Z37aaEzTUA',
+  // Taken from the channel that owns NDTV Profit's live video, not from
+  // scraping the channel page - a page carries many channelIds and the first
+  // one belongs to a recommendation, which is how the two previous ids here
+  // were both wrong.
+  ndtvProfit: 'https://www.youtube.com/embed/live_stream?channel=UC3uJIdRFTGgLWrUziaHbzrg',
 };
 
 // The app is Vite, not Next, so the public prefix is VITE_ rather than
