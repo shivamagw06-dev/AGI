@@ -18,11 +18,22 @@
 // can change and following it should not require a redeploy.
 const DEFAULTS = {
   bloomberg: 'https://www.youtube.com/embed/live_stream?channel=UCIALMKvObZNtJ6AmdCLP7Lg',
-  // Taken from the channel that owns NDTV Profit's live video, not from
-  // scraping the channel page - a page carries many channelIds and the first
-  // one belongs to a recommendation, which is how the two previous ids here
-  // were both wrong.
-  ndtvProfit: 'https://www.youtube.com/embed/live_stream?channel=UC3uJIdRFTGgLWrUziaHbzrg',
+  // A video id here, unlike Bloomberg, and for two reasons.
+  //
+  // The channel form renders "This video is unavailable" for NDTV Profit even
+  // with the correct channel id - it needs a designated default broadcast,
+  // which Bloomberg has and NDTV does not.
+  //
+  // More importantly it would resolve to the wrong programme. NDTV Profit runs
+  // several concurrent streams, and their channel currently answers /live with
+  // "World Humanoid Robot Games 2026" rather than the markets feed. A desk
+  // showing a robot race under the heading INDIA would be worse than an error.
+  //
+  // The cost is that this id is tied to one broadcast and will need replacing
+  // when NDTV restarts the stream. VITE_NDTV_PROFIT_LIVE_URL overrides it
+  // without a code change, and the player falls back to the Watch on YouTube
+  // link rather than a dead frame.
+  ndtvProfit: 'https://www.youtube.com/embed/EN-N1xhtBqU',
 };
 
 // The app is Vite, not Next, so the public prefix is VITE_ rather than
@@ -82,7 +93,7 @@ export const BROADCASTS = Object.freeze([
     title: 'NDTV Profit Live',
     provider: 'NDTV Profit',
     embedUrl: ndtvEmbed,
-    externalUrl: toWatchUrl(ndtvEmbed, 'https://www.youtube.com/@NDTVProfitIndia'),
+    externalUrl: toWatchUrl(ndtvEmbed, 'https://www.youtube.com/@NDTVProfitIndia/live'),
     attribution: 'Source: NDTV Profit / YouTube',
   }),
 ]);
