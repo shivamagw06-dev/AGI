@@ -18,7 +18,9 @@
 // can change and following it should not require a redeploy.
 const DEFAULTS = {
   bloomberg: 'https://www.youtube.com/embed/live_stream?channel=UCIALMKvObZNtJ6AmdCLP7Lg',
-  ndtvProfit: 'https://www.youtube.com/embed/live_stream?channel=UC5LBDdnEQUOtcccQTZ4LGSg',
+  // Resolved from youtube.com/@NDTVProfitIndia. The previous id was a guess
+  // and the card showed "This video is unavailable" for every visitor.
+  ndtvProfit: 'https://www.youtube.com/embed/live_stream?channel=UCZFMm1mMw0F81Z37aaEzTUA',
 };
 
 // The app is Vite, not Next, so the public prefix is VITE_ rather than
