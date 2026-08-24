@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import {
   BookOpen,
@@ -9,7 +9,6 @@ import {
   Landmark,
   LineChart,
 } from 'lucide-react';
-import AskAgiBar from '@/components/Home/AskAgiBar';
 import NewsletterSection from '@/components/Home/NewsletterSection';
 import usePublishedArticles from '@/hooks/usePublishedArticles';
 import useHomepageLatest from '@/hooks/useHomepageLatest';
@@ -21,14 +20,6 @@ import {
   getDeskForSection,
   getSectionsForDesk,
 } from '@/lib/deskSections';
-
-const ASK_SUGGESTIONS = [
-  'Analyse Reliance Industries',
-  'Why is Nifty falling today?',
-  'Should I apply for this IPO?',
-  "Explain today's RBI policy",
-  'Compare HDFC Bank vs ICICI Bank',
-];
 
 const DESK_BUTTONS = [
   { id: RESEARCH_DESK_ALL, label: 'Articles', icon: BookOpen, hint: 'All research' },
@@ -268,7 +259,6 @@ function LatestRail({ articles, loading }) {
 }
 
 export default function ResearchTerminalHome() {
-  const navigate = useNavigate();
   const [activeDesk, setActiveDesk] = useState(RESEARCH_DESK_ALL);
   const deskSections = useMemo(
     () => (activeDesk === RESEARCH_DESK_ALL ? null : getSectionsForDesk(activeDesk)),
@@ -305,47 +295,6 @@ export default function ResearchTerminalHome() {
           content="Ask AGI and read institutional research across Indian markets, global markets, private equity, hedge funds and economics."
         />
       </Helmet>
-
-      {/* Compact Ask — under the strip */}
-      <section id="agi-ask" className="border-b border-[#e8eaee] bg-[#f7f8fa]" aria-label="Ask AGI">
-        <div className="mx-auto max-w-[1680px] px-4 sm:px-6 lg:px-8 py-4 home-hero-brand">
-          <div className="rounded-xl border border-[#e4e7ec] bg-white px-4 py-3.5 sm:px-5">
-            <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:gap-6">
-              <div className="shrink-0 lg:w-40">
-                <p className="text-sm font-bold text-[#0b1f33]">Ask AGI</p>
-                <p className="mt-0.5 text-xs text-[#767676]">Institutional research questions</p>
-              </div>
-              <div className="min-w-0 flex-1">
-                <AskAgiBar
-                  placeholder="Ask AGI anything..."
-                  size="default"
-                  autoFocus={false}
-                  buttonLabel="Ask"
-                  ariaLabel="Ask AGI"
-                />
-              </div>
-              <Link
-                to="/research"
-                className="hidden shrink-0 text-xs font-semibold text-[#111111] underline-offset-4 hover:underline xl:inline"
-              >
-                Explore Research →
-              </Link>
-            </div>
-            <div className="mt-3 flex flex-wrap gap-1.5">
-              {ASK_SUGGESTIONS.map((q) => (
-                <button
-                  key={q}
-                  type="button"
-                  onClick={() => navigate(`/ask?q=${encodeURIComponent(q)}`)}
-                  className="rounded-full border border-[#e6e8ec] bg-[#fafbfc] px-2.5 py-1 text-[11px] font-medium text-[#444] transition-colors hover:border-[#111] hover:text-[#111]"
-                >
-                  {q}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* Desk navigation — six equal professional buttons */}
       <section className="border-b border-[#e8eaee] bg-white" aria-label="Research desks">
@@ -425,8 +374,8 @@ export default function ResearchTerminalHome() {
               </p>
               <p className="mt-2 text-sm text-[#555555]">
                 {activeDesk === RESEARCH_DESK_ALL
-                  ? 'Ask AGI while the desk prepares the next notes.'
-                  : 'Try another desk or ask AGI for a research question.'}
+                  ? 'New notes appear here as the desk publishes them.'
+                  : 'Try another desk.'}
               </p>
             </div>
           ) : (

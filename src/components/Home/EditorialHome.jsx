@@ -2,7 +2,6 @@ import { Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { ChevronRight } from 'lucide-react';
 import MorningBriefHero from '@/components/Home/MorningBriefHero';
-import AskAgiBar from '@/components/Home/AskAgiBar';
 import PopularInvestorQuestions from '@/components/Home/PopularInvestorQuestions';
 import TodayDashboard from '@/components/Home/TodayDashboard';
 import IndexSentimentTicker from '@/components/Home/IndexSentimentTicker';
@@ -201,13 +200,6 @@ export default function EditorialHome() {
               Ask about markets, companies, sectors or the economy. Every answer is evidence-based —
               house view, confidence, research and conflicting opinions.
             </p>
-            <div className="mt-5">
-              <AskAgiBar
-                placeholder={uiHome?.ask_placeholder}
-                examples={uiHome?.example_questions || []}
-                autoFocus={false}
-              />
-            </div>
             <div className="mt-4 flex flex-wrap gap-2 text-[11px] font-bold">
               <Link to="/ask" className="border border-[#ddd] px-2.5 py-1.5 hover:text-[#ff6600]">Open Ask AGI</Link>
               <Link to="/predictions" className="border border-[#ddd] px-2.5 py-1.5 hover:text-[#ff6600]">Prediction Centre</Link>

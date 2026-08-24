@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import AskAgiBar from '@/components/Home/AskAgiBar';
 import DiscoveryRail from '@/components/Product/DiscoveryRail';
 import { getUiSector } from '@/lib/uiApi';
 import { trackProductEvent } from '@/lib/productAnalytics';
@@ -54,17 +53,6 @@ export default function SectorDesk() {
           })}
         </script>
       </Helmet>
-
-      <div className="sticky top-0 z-20 bg-white/95 backdrop-blur border-b border-[#dddddd]">
-        <div className="max-w-[1100px] mx-auto px-4 sm:px-6 py-3">
-          <AskAgiBar
-            size="compact"
-            placeholder={`Ask AGI about ${sectorId}…`}
-            onAsk={onAsk}
-            examples={(data?.follow_up_questions || []).slice(0, 3)}
-          />
-        </div>
-      </div>
 
       <div className="max-w-[1100px] mx-auto px-4 sm:px-6 py-8">
         <Link to="/research" className="text-xs font-bold text-[#111] hover:text-[#ff6600]">← Research</Link>
