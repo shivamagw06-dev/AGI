@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  DISCLOSURE, DISCLOSURE_VERSION, SEBI_REGISTRATION, STORAGE_KEY,
+  DISCLOSURE, DISCLOSURE_VERSION, SEBI_REGISTRATION, STORAGE_KEY, disclosureHash,
 } from '@/lib/riskDisclosure';
 import './riskDisclosure.css';
 
@@ -31,6 +31,9 @@ function readAck() {
 
 export default function RiskDisclosureModal() {
   const [open, setOpen] = useState(false);
+  // Continue stays disabled until this is ticked. A button that dismisses on
+  // one click records a dismissal; a tick records an acknowledgement.
+  const [acknowledged, setAcknowledged] = useState(false);
   const dialogRef = useRef(null);
   const acceptRef = useRef(null);
   const restoreFocusTo = useRef(null);
@@ -47,10 +50,16 @@ export default function RiskDisclosureModal() {
   }, []);
 
   const accept = useCallback(() => {
+    if (!acknowledged) return;
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify({
         version: DISCLOSURE_VERSION,
+        // Which words were on screen, not merely which version number. If this
+        // is ever examined, "they accepted v2026-08-2" is worth much less than
+        // a fingerprint of the text itself.
+        disclosureHash: disclosureHash(),
         acknowledgedAt: new Date().toISOString(),
+        acknowledged: true,
       }));
     } catch {
       // Private mode or a full quota. The notice was still shown and read;
@@ -58,7 +67,7 @@ export default function RiskDisclosureModal() {
     }
     setOpen(false);
     restoreFocusTo.current?.focus?.();
-  }, []);
+  }, [acknowledged]);
 
   // Focus moves into the dialog, and stays there while it is open.
   useEffect(() => {
@@ -89,12 +98,10 @@ export default function RiskDisclosureModal() {
 
   if (!open) return null;
 
-  // Never guessed. If the status has not been configured the notice says so
-  // rather than implying a registration that may not exist, or denying one
-  // that does.
-  const registrationLine = SEBI_REGISTRATION === null
-    ? 'AGI has not configured its regulatory status for display. Please contact us before relying on any content as regulated research or advice.'
-    : SEBI_REGISTRATION.registered
+  // No "not configured" branch. The owner has confirmed the position, and an
+  // unanswered regulatory question on screen reads as an unfinished site while
+  // telling the visitor nothing.
+  const registrationLine = SEBI_REGISTRATION?.registered
       ? `AGI is registered with SEBI as a ${SEBI_REGISTRATION.type}${
           SEBI_REGISTRATION.number ? ` (registration number ${SEBI_REGISTRATION.number})` : ''
         }. Registration does not guarantee performance or assure returns.`
@@ -141,9 +148,23 @@ export default function RiskDisclosureModal() {
         </div>
 
         <div className="rd-foot">
-          <p className="rd-ack">{DISCLOSURE.acknowledgement}</p>
-          <button type="button" className="rd-accept" onClick={accept} ref={acceptRef}>
-            I understand and agree
+          <label className="rd-tick" htmlFor="rd-ack">
+            <input
+              id="rd-ack"
+              type="checkbox"
+              checked={acknowledged}
+              onChange={(event) => setAcknowledged(event.target.checked)}
+              ref={acceptRef}
+            />
+            <span>{DISCLOSURE.acknowledgement}</span>
+          </label>
+          <button
+            type="button"
+            className="rd-accept"
+            onClick={accept}
+            disabled={!acknowledged}
+          >
+            Continue
           </button>
         </div>
       </div>

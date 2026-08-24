@@ -21,33 +21,37 @@
  * user to read and accept again. That is the point: an acknowledgement of text
  * somebody never saw is worth nothing if it is ever examined.
  */
-export const DISCLOSURE_VERSION = '2026-08-1';
+export const DISCLOSURE_VERSION = '2026-08-2';
 
 export const STORAGE_KEY = 'agi_risk_disclosure_ack';
 
 /**
- * Registration status.
+ * Registration status, confirmed by the business owner: none held.
  *
- * Left as null on purpose. I do not know whether AGI holds SEBI Research
- * Analyst or Investment Adviser registration, and stating either way would put
- * a claim about a regulated status into production on a guess. Set this to the
- * true value - including the registration number where one exists - before
- * this ships, and if no registration is held, say so plainly rather than
- * leaving the question unanswered.
+ * Stated as a fact rather than left unset. "Regulatory status not configured"
+ * reads as an unfinished site, and a visitor cannot tell an absent claim from
+ * an unanswered one - so the notice says plainly that AGI is not registered.
  *
- * Example when registered:
- *   { registered: true, type: 'Research Analyst', number: 'INH000000000' }
- * Example when not:
- *   { registered: false }
+ * Set this if that ever changes, including the registration number, and raise
+ * DISCLOSURE_VERSION so everyone is asked to read the new position.
  */
-export const SEBI_REGISTRATION = null;
+export const SEBI_REGISTRATION = Object.freeze({ registered: false });
 
 export const DISCLOSURE = Object.freeze({
-  title: 'Important information before you continue',
+  title: 'You are entering the Founders Intelligence Portal',
   intro:
-    'Agarwal Global Investments (AGI) publishes market research, data and analysis. '
-    + 'Please read the following before using this website.',
+    'Agarwal Global Investments (AGI) publishes market research, data and analysis for '
+    + 'information and education. Please read the following in full before you continue.',
   sections: [
+    {
+      heading: 'AGI is not registered with SEBI',
+      body:
+        'Agarwal Global Investments is not registered with the Securities and Exchange '
+        + 'Board of India as a Research Analyst or as an Investment Adviser. AGI does not '
+        + 'provide personalised investment advice, portfolio management services, or '
+        + 'trade execution. Content and analytical tools on this platform are intended '
+        + 'for informational, educational and research purposes only.',
+    },
     {
       heading: 'This is information, not advice',
       body:
@@ -133,3 +137,32 @@ export const DISCLOSURE = Object.freeze({
     + 'information only, does not constitute investment advice or a recommendation to '
     + 'buy or sell, and that I am responsible for my own investment decisions.',
 });
+
+/**
+ * A stable fingerprint of the exact text a user was shown.
+ *
+ * The version alone records that somebody clicked a button on "2026-08-2". The
+ * hash records which words were on the screen when they did, which is the part
+ * that matters if the acknowledgement is ever examined and the file has been
+ * edited since.
+ *
+ * FNV-1a: not cryptographic, and does not need to be. It is a change detector,
+ * and using it avoids pulling a hashing dependency into the bundle for a
+ * notice that renders once.
+ */
+export function disclosureHash() {
+  const text = [
+    DISCLOSURE.title,
+    DISCLOSURE.intro,
+    ...DISCLOSURE.sections.flatMap((section) => [section.heading, section.body]),
+    DISCLOSURE.acknowledgement,
+    SEBI_REGISTRATION?.registered ? `registered:${SEBI_REGISTRATION.number || ''}` : 'registered:false',
+  ].join('\u0000');
+
+  let hash = 0x811c9dc5;
+  for (let i = 0; i < text.length; i += 1) {
+    hash ^= text.charCodeAt(i);
+    hash = Math.imul(hash, 0x01000193) >>> 0;
+  }
+  return hash.toString(16).padStart(8, '0');
+}

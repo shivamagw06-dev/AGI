@@ -44,3 +44,12 @@
   .rd-dialog { max-height: 92vh; }
   .rd-head, .rd-body, .rd-foot { padding-left: 1rem; padding-right: 1rem; }
 }
+
+/* Tick, then continue. The checkbox is the acknowledgement; the button only
+   acts on it, and stays disabled until it is ticked. */
+.rd-tick {
+  display: flex; align-items: flex-start; gap: 0.6rem;
+  font-size: 0.82rem; line-height: 1.55; cursor: pointer;
+}
+.rd-tick input { margin-top: 0.2rem; flex: none; width: 16px; height: 16px; cursor: pointer; }
+.rd-accept:disabled { opacity: 0.45; cursor: not-allowed; }
