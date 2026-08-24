@@ -8,6 +8,7 @@ import Footer from '@/components/Footer';
 import { Toaster } from '@/components/ui/toaster';
 import PinGate from '@/components/auth/PinGate';
 import RequireRegistration from '@/components/auth/RequireRegistration';
+import RequireAskAgiAdmin, { AskAgiVisibility } from '@/components/auth/AskAgiAdminAccess';
 import FunnelRouteTracker from '@/components/analytics/FunnelRouteTracker';
 
 const AdminRoutes = React.lazy(() => import('@/pages/admin/AdminRoutes'));
@@ -124,13 +125,13 @@ function AppShell() {
     return (
       <MarketDataProvider>
         <PinGate>
-          <RequireRegistration feature="ask_agi">
+          <RequireAskAgiAdmin>
             <Suspense fallback={<div className="min-h-screen bg-[#0b0e14] p-8 text-center text-slate-300">Loading Ask AGI…</div>}>
               <Routes>
                 <Route path="/ask" element={<AskAgiPage />} />
               </Routes>
             </Suspense>
-          </RequireRegistration>
+          </RequireAskAgiAdmin>
           <Toaster />
         </PinGate>
       </MarketDataProvider>
@@ -182,7 +183,7 @@ function PublicRoutes() {
   return (
     <Routes>
       <Route path="/" element={<HomeLayout />} />
-      <Route path="/ask" element={gate('ask_agi', <AskAgiPage />)} />
+      <Route path="/ask" element={<RequireAskAgiAdmin><AskAgiPage /></RequireAskAgiAdmin>} />
       <Route path="/predictions" element={gate('forecasts', <PredictionCentre />)} />
       <Route path="/workspace" element={gate('workspace', <PersonalWorkspace />)} />
 
@@ -316,6 +317,7 @@ function App() {
               rel="stylesheet"
             />
           </Helmet>
+          <AskAgiVisibility />
           <FunnelRouteTracker />
           <AppShell />
         </div>

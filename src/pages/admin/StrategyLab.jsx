@@ -1,8 +1,13 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Activity, AlertTriangle, Beaker, Database, Pause, Play, RefreshCw, ShieldCheck } from 'lucide-react';
-import { getStrategyLabDashboard, getStrategyLabHealth, getStrategyLabScan, runStrategyLabBacktest } from '@/lib/strategyLabApi';
+import {
+  getAlphaOperatingSystem, getStrategyDataReadiness, getStrategyDefinitions,
+  getStrategyLabDashboard, getStrategyLabHealth, getStrategyLabScan,
+  runStrategyLabBacktest,
+} from '@/lib/strategyLabApi';
 import './StrategyLab.css';
 import './StrategyLabGovernance.css';
+import './StrategyLabRegistry.css';
 
 const SIGNAL_ORDER = { BUY: 1, SELL: 2, EXIT: 3, HOLD: 4 };
 
@@ -19,6 +24,9 @@ function Status({ children, tone = '' }) {
 export default function StrategyLab() {
   const [health, setHealth] = useState(null);
   const [dashboard, setDashboard] = useState(null);
+  const [operatingSystem, setOperatingSystem] = useState(null);
+  const [definitions, setDefinitions] = useState(null);
+  const [readiness, setReadiness] = useState(null);
   const [selected, setSelected] = useState('time_series_momentum');
   const [scan, setScan] = useState(null);
   const [backtest, setBacktest] = useState(null);
@@ -29,8 +37,11 @@ export default function StrategyLab() {
   const load = useCallback(async () => {
     setLoading(true); setError('');
     try {
-      const [h, d] = await Promise.all([getStrategyLabHealth(), getStrategyLabDashboard(5)]);
-      setHealth(h); setDashboard(d);
+      const [h, d, os, defs, ready] = await Promise.all([
+        getStrategyLabHealth(), getStrategyLabDashboard(5), getAlphaOperatingSystem(),
+        getStrategyDefinitions(), getStrategyDataReadiness(),
+      ]);
+      setHealth(h); setDashboard(d); setOperatingSystem(os); setDefinitions(defs); setReadiness(ready);
     } catch (err) { setError(err?.message || 'Strategy Lab unavailable'); }
     finally { setLoading(false); }
   }, []);
@@ -43,6 +54,15 @@ export default function StrategyLab() {
     ['BLOCKED', 'Blocked'],
   ].map(([key, label]) => ({ key, label, rows: strategies.filter((item) => item.category === key) }))), [strategies]);
   const current = strategies.find((item) => item.strategy_id === selected) || strategies[0];
+  const governedDefinitions = useMemo(() => {
+    const rows = Array.isArray(definitions) ? definitions : (definitions?.definitions || definitions?.strategies || []);
+    return Array.isArray(rows) ? rows : Object.values(rows || {});
+  }, [definitions]);
+  const readinessRows = useMemo(() => {
+    const rows = Array.isArray(readiness) ? readiness : (readiness?.reports || readiness?.strategies || readiness?.rows || []);
+    return Array.isArray(rows) ? rows : Object.values(rows || {});
+  }, [readiness]);
+  const readinessById = useMemo(() => Object.fromEntries(readinessRows.map((row) => [row.strategy_id, row])), [readinessRows]);
   const registry = current?.validation_registry;
   const signals = useMemo(() => [...(scan?.signals || current?.signals || [])].sort((a, b) => (SIGNAL_ORDER[a.signal] || 9) - (SIGNAL_ORDER[b.signal] || 9)), [scan, current]);
   const live = scan?.live_market || dashboard?.live_market || health?.live_market;
@@ -135,6 +155,23 @@ export default function StrategyLab() {
             <section className="sl-validation">
               <div><span className="sl-kicker">Validation registry · {registry?.registry_version || dashboard?.validation_registry?.version || '—'}</span><h3>{registry?.lifecycle || 'EXPERIMENTAL'} / {registry?.health || 'DEGRADED'}</h3><p>{registry?.allowed_use || 'Research only'} · Execution {registry?.execution || 'BLOCKED'}</p><small>{registry?.health_reason}</small></div>
               <ul>{Object.entries(registry?.evidence || {}).map(([gate, evidence]) => <li key={gate}><i className={evidence?.status === 'PASSED' ? 'pass' : ''} />{gate.replaceAll('_', ' ')} · {evidence?.status || 'MISSING'}</li>)}</ul>
+            </section>
+
+            <section className="sl-panel sl-registry-panel">
+              <header><div><span className="sl-kicker">Central promotion authority</span><h3>Immutable alpha registry</h3></div><Status tone="restricted">CAPITAL FAIL-CLOSED</Status></header>
+              <div className="sl-grid metrics">
+                <div><span>Canonical definitions</span><strong>{governedDefinitions.length}</strong><small>Versioned and hash-addressed</small></div>
+                <div><span>Prospective reports</span><strong>{readinessRows.length}</strong><small>Legacy facts are never backdated</small></div>
+                <div><span>Capital approvals</span><strong>{fmt(operatingSystem?.capital_allowed_count ?? 0, 0)}</strong><small>All gates must pass</small></div>
+                <div><span>Operating-system status</span><strong>{operatingSystem?.status || 'ACTIVE'}</strong><small>Research and execution remain separated</small></div>
+              </div>
+              <div className="sl-table-wrap sl-registry-table"><table><thead><tr><th>Canonical strategy</th><th>Role</th><th>Stage</th><th>Prospective evidence</th><th>Capital</th><th>Definition hash</th></tr></thead>
+                <tbody>{governedDefinitions.map((definition) => {
+                  const id = definition.strategy_id || definition.id;
+                  const ready = readinessById[id] || {};
+                  return <tr key={id}><td><strong>{definition.name || id}</strong><small>{id} · v{definition.version || '1'}</small></td><td>{String(definition.role || definition.family || 'research').replaceAll('_', ' ')}</td><td><Status>{definition.stage || definition.lifecycle || 'DEFINED'}</Status></td><td><Status tone={ready.ready ? 'research' : 'restricted'}>{ready.ready ? 'READY' : (ready.status || 'BUILDING')}</Status><small>{ready.as_of || readiness?.as_of || 'No completed evidence window'}</small></td><td><Status tone="restricted">{definition.capital_allowed ? 'ALLOWED' : 'BLOCKED'}</Status></td><td><code>{String(definition.definition_hash || definition.hash || '—').slice(0, 12)}</code></td></tr>;
+                })}</tbody></table></div>
+              {!governedDefinitions.length ? <p className="sl-empty">The immutable registry is unavailable; capital remains blocked.</p> : null}
             </section>
 
             <section className="sl-panel">

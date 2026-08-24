@@ -10714,6 +10714,81 @@ async def strategy_lab_backtest(strategy_id: str, payload: dict[str, Any] = Body
     return await run_in_threadpool(backtest, strategy_id, payload or {})
 
 
+@router.get("/strategy-lab/operating-system")
+async def strategy_lab_operating_system(run_limit: int = 10):
+    """Admin evidence board for immutable strategies, runs and capital gates."""
+    from strategy_lab.operating_system import catalog
+    bounded = max(1, min(int(run_limit or 10), 100))
+    return await run_in_threadpool(catalog, run_limit=bounded)
+
+
+@router.get("/strategy-lab/definitions")
+async def strategy_lab_definitions():
+    from strategy_lab.definitions import all_definitions
+    return {"ok": True, "definitions": [item.to_dict() for item in all_definitions()]}
+
+
+@router.get("/strategy-lab/definition/{strategy_id}")
+async def strategy_lab_definition(strategy_id: str):
+    from strategy_lab.operating_system import definition
+    try:
+        return await run_in_threadpool(definition, strategy_id)
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
+@router.post("/strategy-lab/registry/sync", dependencies=[Depends(require_token)])
+async def strategy_lab_registry_sync(payload: dict[str, Any] = Body(default={})):
+    """Seal code-defined versions into the immutable warehouse registry."""
+    from strategy_lab.operating_system import sync_registry
+    return await run_in_threadpool(sync_registry, actor=str((payload or {}).get("actor") or "admin"))
+
+
+@router.post("/strategy-lab/research/{strategy_id}", dependencies=[Depends(require_token)])
+async def strategy_lab_run_research(strategy_id: str, payload: dict[str, Any] = Body(default={})):
+    """Run bounded factor research or a standardized point-in-time backtest."""
+    from strategy_lab.operating_system import run_research
+    try:
+        return await run_in_threadpool(run_research, strategy_id, payload or {})
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+
+@router.get("/strategy-lab/capital-decision/{strategy_id}")
+async def strategy_lab_capital_decision(strategy_id: str):
+    """Fail-closed capital decision; this endpoint never places an order."""
+    from strategy_lab.operating_system import capital_decision
+    try:
+        return await run_in_threadpool(capital_decision, strategy_id)
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
+@router.get("/strategy-lab/data-readiness")
+async def strategy_lab_data_readiness(as_of: str | None = None):
+    """Read-only point-in-time, universe, action and price readiness evidence."""
+    from strategy_lab.prospective import readiness
+    return await run_in_threadpool(readiness, as_of)
+
+
+@router.post("/strategy-lab/prospective/capture", dependencies=[Depends(require_token)])
+async def strategy_lab_prospective_capture(payload: dict[str, Any] = Body(default={})):
+    """Capture facts from now forward; legacy facts are never backdated."""
+    from strategy_lab.prospective import capture
+    try:
+        return await run_in_threadpool(
+            capture,
+            as_of=(payload or {}).get("as_of"),
+            actor=str((payload or {}).get("actor") or "daily_validation_cron"),
+            confirm=(payload or {}).get("confirm"),
+            dry_run=bool((payload or {}).get("dry_run", False)),
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+
 # ---------------------------------------------------------------------------
 # Valuation Intelligence Terminal — market multiples plus AGI interpretation.
 # ---------------------------------------------------------------------------
@@ -12185,7 +12260,7 @@ async def institutional_orchestrator_health():
     return health()
 
 
-@router.post("/ask")
+@router.post("/ask", dependencies=[Depends(require_token)])
 async def universal_ask_post(payload: dict[str, Any] = Body(default={})):
     """UAG-01: orchestrate registered institutional objects. Does not generate recommendations."""
     from institutional_orchestrator.production import ask
@@ -12193,7 +12268,7 @@ async def universal_ask_post(payload: dict[str, Any] = Body(default={})):
     return ask(payload or {})
 
 
-@router.post("/ask/stream")
+@router.post("/ask/stream", dependencies=[Depends(require_token)])
 async def universal_ask_stream(payload: dict[str, Any] = Body(default={})):
     from institutional_orchestrator.production import ask_stream
 
@@ -12201,7 +12276,7 @@ async def universal_ask_stream(payload: dict[str, Any] = Body(default={})):
     return {"ok": True, "events": list(ask_stream(payload or {})), "stream": True}
 
 
-@router.get("/query/{query_id}")
+@router.get("/query/{query_id}", dependencies=[Depends(require_token)])
 async def universal_ask_query_get(query_id: str):
     from institutional_orchestrator.production import get_query
 
