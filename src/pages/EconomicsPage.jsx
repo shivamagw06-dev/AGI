@@ -232,7 +232,7 @@ export default function EconomicsPage() {
               <b>{error ? 'Reference feed interrupted' : loading && !payload ? 'Connecting to market reference' : 'Market reference online'}</b>
               <small>
                 {payload
-                  ? `Updated ${freshTime(payload.asOf)} · ${payload.providers?.upstox?.ok ? 'Upstox 20s active' : 'Yahoo fallback'}`
+                  ? `Updated ${freshTime(payload.asOf)} · ${payload.providers?.upstox?.ok ? `Upstox ${payload.providers.upstox.quotes}/${payload.providers.upstox.targets || 2} active · Yahoo history/fallback` : 'Yahoo fallback'}`
                   : 'Read-only, delayed data'}
               </small>
             </div>
