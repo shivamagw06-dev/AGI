@@ -1,6 +1,11 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { normalizeUpstoxGlobalLtp } from '../providers/upstoxFx.js';
+import {
+  fetchUpstoxGlobalFxQuotes,
+  normalizeUpstoxGlobalCandle,
+  normalizeUpstoxGlobalLtp,
+  UPSTOX_GLOBAL_TARGETS,
+} from '../providers/upstoxFx.js';
 import { fetchFxIntelligence, mergeFxProviders } from './fxIntelligenceService.js';
 
 const yahooPayload = {
@@ -43,6 +48,48 @@ test('normalizes the official Upstox LTP V3 response by instrument token', () =>
   assert.equal(quotes[0].latencySeconds, 20);
 });
 
+test('normalizes the latest official Upstox intraday candle without inventing a previous close', () => {
+  const quote = normalizeUpstoxGlobalCandle(UPSTOX_GLOBAL_TARGETS[1], {
+    status: 'success',
+    data: { candles: [['2026-08-25T02:13:00+05:30', 90.31, 90.31, 90.31, 90.31, 0, 0]] },
+  });
+
+  assert.equal(quote.target, 'Brent crude');
+  assert.equal(quote.price, 90.31);
+  assert.equal(quote.previousClose, null);
+  assert.equal(quote.latencySeconds, 60);
+  assert.equal(quote.quoteMode, '1-minute candle');
+});
+
+test('falls back per instrument to Upstox intraday candles when global LTP rejects published keys', async () => {
+  const fetchFn = async (url) => {
+    if (url.includes('/market-quote/ltp')) {
+      return {
+        ok: false,
+        status: 400,
+        json: async () => ({ errors: [{ errorCode: 'UDAPI100095', message: 'Invalid Instrument key' }] }),
+      };
+    }
+    const isBrent = url.includes('BZUSD');
+    return {
+      ok: true,
+      status: 200,
+      json: async () => ({
+        status: 'success',
+        data: { candles: isBrent ? [['2026-08-25T02:13:00+05:30', 90, 91, 89, 90.31, 0, 0]] : [] },
+      }),
+    };
+  };
+
+  const result = await fetchUpstoxGlobalFxQuotes({ fetchFn, token: 'test-token' });
+
+  assert.equal(result.ok, true);
+  assert.equal(result.mode, 'intraday_fallback');
+  assert.equal(result.reason, 'partial_intraday_fallback');
+  assert.equal(result.quotes.length, 1);
+  assert.equal(result.quotes[0].target, 'Brent crude');
+});
+
 test('overlays latest Upstox prices while preserving Yahoo historical anchors', () => {
   const merged = mergeFxProviders(yahooPayload, {
     ok: true,
@@ -61,6 +108,7 @@ test('overlays latest Upstox prices while preserving Yahoo historical anchors', 
   assert.equal(merged.pairs[0].historySource, 'Yahoo Finance');
   assert.equal(merged.pairs[0].source, 'Upstox Global Indicator');
   assert.equal(merged.providers.upstox.ok, true);
+  assert.equal(merged.providers.upstox.targets, 2);
   assert.match(merged.source, /Upstox/);
 });
 
