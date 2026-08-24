@@ -10,6 +10,8 @@ const HORIZONS = [
   { key: 'm1', label: '1M' },
 ];
 
+const SCENARIO_STEPS = [1, 2, 5];
+
 function signedPct(value) {
   const number = Number(value);
   if (!Number.isFinite(number)) return '—';
@@ -55,16 +57,18 @@ function Sparkline({ values = [], tone = 'up' }) {
       return `${x.toFixed(1)},${y.toFixed(1)}`;
     })
     .join(' ');
+  const areaPoints = `0,${height} ${points} ${width},${height}`;
 
   return (
     <svg className={`fx-spark fx-spark--${tone}`} viewBox={`0 0 ${width} ${height}`} role="img" aria-label="One month price path">
+      <polygon points={areaPoints} className="fx-spark-area" />
       <line x1="0" y1={height / 2} x2={width} y2={height / 2} className="fx-spark-mid" />
       <polyline points={points} fill="none" vectorEffect="non-scaling-stroke" />
     </svg>
   );
 }
 
-function HeatCell({ row, horizon }) {
+function HeatCell({ row, horizon, active, onSelect }) {
   const move = Number(row?.returns?.[horizon]);
   const intensity = Number.isFinite(move) ? Math.min(Math.abs(move) / 1.75, 1) : 0;
   const tone = moveTone(move);
@@ -76,7 +80,13 @@ function HeatCell({ row, horizon }) {
         : 'rgba(255, 255, 255, 0.05)';
 
   return (
-    <article className={`fx-heat-cell fx-tone-${tone}`} style={{ background }}>
+    <button
+      type="button"
+      className={`fx-heat-cell fx-tone-${tone} ${active ? 'is-active' : ''}`}
+      style={{ background }}
+      onClick={() => onSelect(row.pair)}
+      aria-pressed={active}
+    >
       <div className="fx-heat-topline">
         <span>{row.pair}</span>
         <small>{row.region}</small>
@@ -86,7 +96,8 @@ function HeatCell({ row, horizon }) {
         {price(row.price, row.decimals)}
         <span>{row.base} per {row.quote}</span>
       </div>
-    </article>
+      <small className="fx-heat-action">Open pair</small>
+    </button>
   );
 }
 
@@ -126,6 +137,8 @@ function ScenarioCard({ label, value, delta, note, tone }) {
 
 export default function EconomicsPage() {
   const [horizon, setHorizon] = useState('d1');
+  const [selectedPair, setSelectedPair] = useState('USD/INR');
+  const [scenarioShift, setScenarioShift] = useState(2);
   const [payload, setPayload] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -152,10 +165,38 @@ export default function EconomicsPage() {
   const drivers = payload?.drivers || [];
   const strength = payload?.strength?.[horizon] || [];
   const usdInr = useMemo(() => pairs.find((row) => row.pair === 'USD/INR'), [pairs]);
-  const move = Number(usdInr?.returns?.[horizon]);
-  const tone = moveTone(move);
+  const selected = useMemo(
+    () => pairs.find((row) => row.pair === selectedPair) || usdInr || pairs[0],
+    [pairs, selectedPair, usdInr],
+  );
+  const leaders = useMemo(
+    () => [...pairs]
+      .filter((row) => Number.isFinite(Number(row?.returns?.[horizon])))
+      .sort((left, right) => Number(right.returns[horizon]) - Number(left.returns[horizon])),
+    [pairs, horizon],
+  );
+  const selectedMove = Number(selected?.returns?.[horizon]);
+  const selectedTone = moveTone(selectedMove);
   const maxStrength = Math.max(0.01, ...strength.map((row) => Math.abs(Number(row.score) || 0)));
   const scenarioBase = Number(usdInr?.price);
+  const scenarioFactor = scenarioShift / 100;
+  const rangeLow = Number(selected?.low);
+  const rangeHigh = Number(selected?.high);
+  const selectedPrice = Number(selected?.price);
+  const rangePosition = Number.isFinite(rangeLow) && Number.isFinite(rangeHigh) && rangeHigh > rangeLow
+    ? Math.max(0, Math.min(100, ((selectedPrice - rangeLow) / (rangeHigh - rangeLow)) * 100))
+    : null;
+  const regime = Math.abs(selectedMove) < 0.08
+    ? 'Range-bound'
+    : Math.abs(selectedMove) >= 0.75
+      ? 'Expansion'
+      : 'Directional';
+
+  useEffect(() => {
+    if (pairs.length && !pairs.some((row) => row.pair === selectedPair)) {
+      setSelectedPair(pairs[0].pair);
+    }
+  }, [pairs, selectedPair]);
 
   return (
     <PageShell
@@ -171,11 +212,16 @@ export default function EconomicsPage() {
         <section className="fx-command">
           <div className="fx-command-copy">
             <p className="fx-kicker">GLOBAL CURRENCY NETWORK</p>
-            <h2>Currencies are the transmission layer.</h2>
+            <h2>The market, translated through currencies.</h2>
             <p>
-              See where pressure is building across the dollar, rupee, G10 and Asian FX.
-              Then connect the move to rates, energy and risk appetite.
+              Track relative force across the dollar, rupee, G10 and Asian FX, then inspect
+              the rates, energy and risk channels behind each move.
             </p>
+            <div className="fx-hero-proof" aria-label="FX desk coverage">
+              <span><b>{payload?.coverage?.available || 0}/{payload?.coverage?.expected || 15}</b> pairs reporting</span>
+              <span><b>5 min</b> automatic refresh</span>
+              <span><b>Reference</b> research pricing</span>
+            </div>
           </div>
           <div className="fx-command-status">
             <span className={`fx-live-dot ${error ? 'fx-live-dot--error' : ''}`} />
@@ -198,6 +244,30 @@ export default function EconomicsPage() {
             <button type="button" onClick={load}>Try again</button>
           </div>
         ) : null}
+
+        <section className="fx-market-tape" aria-label="Currency market tape">
+          <div className="fx-tape-label">
+            <span>FX</span>
+            <b>MARKET TAPE</b>
+          </div>
+          <div className="fx-tape-track">
+            {pairs.map((row) => {
+              const rowMove = Number(row?.returns?.[horizon]);
+              return (
+                <button
+                  type="button"
+                  key={row.pair}
+                  className={selected?.pair === row.pair ? 'is-active' : ''}
+                  onClick={() => setSelectedPair(row.pair)}
+                >
+                  <span>{row.pair}</span>
+                  <b>{price(row.price, row.decimals)}</b>
+                  <em className={`fx-tone-${moveTone(rowMove)}`}>{signedPct(rowMove)}</em>
+                </button>
+              );
+            })}
+          </div>
+        </section>
 
         <nav className="fx-horizons" aria-label="Return horizon">
           <span>Market move</span>
@@ -225,7 +295,15 @@ export default function EconomicsPage() {
             </header>
             {pairs.length ? (
               <div className="fx-heatmap">
-                {pairs.map((row) => <HeatCell key={row.pair} row={row} horizon={horizon} />)}
+                {pairs.map((row) => (
+                  <HeatCell
+                    key={row.pair}
+                    row={row}
+                    horizon={horizon}
+                    active={selected?.pair === row.pair}
+                    onSelect={setSelectedPair}
+                  />
+                ))}
               </div>
             ) : (
               <div className="fx-loading-grid" aria-label="Loading currency heatmap">
@@ -267,24 +345,43 @@ export default function EconomicsPage() {
         </section>
 
         <section className="fx-inr-grid">
-          <article className="fx-panel fx-inr-focus">
+          <article className="fx-panel fx-inr-focus fx-pair-focus">
             <header className="fx-panel-head">
               <div>
-                <span>03 / INDIA COCKPIT</span>
-                <h3>USD/INR pressure monitor</h3>
+                <span>03 / PAIR WORKSTATION</span>
+                <h3>{selected?.pair || 'Currency pair'} monitor</h3>
               </div>
-              <div className={`fx-inr-badge fx-tone-${tone}`}>
-                {tone === 'up' ? 'INR under pressure' : tone === 'down' ? 'INR gaining' : 'INR steady'}
+              <div className={`fx-inr-badge fx-tone-${selectedTone}`}>
+                {regime}
               </div>
             </header>
-            <div className="fx-inr-number">
-              <strong>{price(usdInr?.price, 4)}</strong>
-              <span className={`fx-tone-${tone}`}>{signedPct(move)} / {HORIZONS.find((item) => item.key === horizon)?.label}</span>
+            <div className="fx-pair-context">
+              <span>{selected?.region || 'Global FX'}</span>
+              <b>{selected?.base || 'Base'} strength versus {selected?.quote || 'quote'}</b>
             </div>
-            <Sparkline values={usdInr?.sparkline || []} tone={tone} />
+            <div className="fx-inr-number">
+              <strong>{price(selected?.price, selected?.decimals ?? 4)}</strong>
+              <span className={`fx-tone-${selectedTone}`}>{signedPct(selectedMove)} / {HORIZONS.find((item) => item.key === horizon)?.label}</span>
+            </div>
+            <Sparkline values={selected?.sparkline || []} tone={selectedTone} />
+            <div className="fx-pair-stats">
+              {HORIZONS.map((item) => (
+                <div key={item.key}>
+                  <span>{item.label} return</span>
+                  <b className={`fx-tone-${moveTone(selected?.returns?.[item.key])}`}>{signedPct(selected?.returns?.[item.key])}</b>
+                </div>
+              ))}
+              <div>
+                <span>Range position</span>
+                <b>{rangePosition == null ? '—' : `${rangePosition.toFixed(0)}%`}</b>
+              </div>
+            </div>
+            <div className="fx-range-meter" aria-label="Position inside one month range">
+              <span style={{ width: `${rangePosition ?? 0}%` }} />
+            </div>
             <div className="fx-range">
-              <span>1-month low <b>{price(usdInr?.low, 4)}</b></span>
-              <span>1-month high <b>{price(usdInr?.high, 4)}</b></span>
+              <span>1-month low <b>{price(selected?.low, selected?.decimals ?? 4)}</b></span>
+              <span>1-month high <b>{price(selected?.high, selected?.decimals ?? 4)}</b></span>
             </div>
           </article>
 
@@ -292,8 +389,9 @@ export default function EconomicsPage() {
             <header className="fx-panel-head">
               <div>
                 <span>04 / TRANSMISSION</span>
-                <h3>What is moving the rupee?</h3>
+                <h3>Macro driver lens</h3>
               </div>
+              <p>Observed market channels for context, not a causal model.</p>
             </header>
             <div className="fx-driver-grid">
               {drivers.length
@@ -309,13 +407,28 @@ export default function EconomicsPage() {
               <span>05 / RANGE TEST</span>
               <h3>USD/INR scenario paths</h3>
             </div>
-            <p>Mechanical scenarios from the current reference rate, not AGI forecasts.</p>
+            <div className="fx-scenario-controls">
+              <span>Stress distance</span>
+              <div>
+                {SCENARIO_STEPS.map((step) => (
+                  <button
+                    type="button"
+                    key={step}
+                    className={scenarioShift === step ? 'is-active' : ''}
+                    onClick={() => setScenarioShift(step)}
+                  >
+                    {step}%
+                  </button>
+                ))}
+              </div>
+              <small>Mechanical, not a forecast</small>
+            </div>
           </header>
           <div className="fx-scenario-grid">
             <ScenarioCard
               label="INR strengthens"
-              value={Number.isFinite(scenarioBase) ? scenarioBase * 0.98 : null}
-              delta="-2.0%"
+              value={Number.isFinite(scenarioBase) ? scenarioBase * (1 - scenarioFactor) : null}
+              delta={`-${scenarioShift.toFixed(1)}%`}
               tone="stronger"
               note="Lower imported inflation pressure; exporters face a translation headwind."
             />
@@ -328,8 +441,8 @@ export default function EconomicsPage() {
             />
             <ScenarioCard
               label="INR weakens"
-              value={Number.isFinite(scenarioBase) ? scenarioBase * 1.02 : null}
-              delta="+2.0%"
+              value={Number.isFinite(scenarioBase) ? scenarioBase * (1 + scenarioFactor) : null}
+              delta={`+${scenarioShift.toFixed(1)}%`}
               tone="weaker"
               note="Higher import-cost pressure; exporters gain a translation tailwind."
             />
@@ -339,8 +452,8 @@ export default function EconomicsPage() {
         <section className="fx-method-grid">
           <article>
             <span>DATA</span>
-            <h3>Delayed market reference</h3>
-            <p>Yahoo Finance daily closes. Designed for market context and research, never execution pricing.</p>
+            <h3>Source-aware reference</h3>
+            <p>{payload?.source || 'Yahoo Finance market reference'}. Designed for research context, never execution pricing.</p>
           </article>
           <article>
             <span>CALCULATION</span>
