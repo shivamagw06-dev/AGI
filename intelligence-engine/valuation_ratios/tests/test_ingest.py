@@ -88,3 +88,44 @@ def test_schema_registers_valuation_ratios_tab():
     assert t.mode == "append"
     keys = {c.key for c in t.columns}
     assert {"symbol", "isin", "ratio_name", "company_value", "sector_value", "snapshot_id"} <= keys
+
+
+def test_fold_latest_ratio_rows_keeps_newest_per_symbol():
+    from valuation_ratios.ingest import fold_latest_ratio_rows
+
+    out = fold_latest_ratio_rows([
+        {"symbol": "aaa", "ratio_name": "pe", "company_value": 10, "reported_date": "2026-08-20"},
+        {"symbol": "AAA", "ratio_name": "pe", "company_value": 12.5, "reported_date": "2026-08-24",
+         "sector_value": 18.0},
+        {"symbol": "AAA", "ratio_name": "pb", "company_value": 2.1, "reported_date": "2026-08-24"},
+        {"symbol": "BBB", "ratio_name": "roe", "company_value": 22, "reported_date": "2026-08-23"},
+    ])
+    assert out["AAA"]["pe"] == 12.5
+    assert out["AAA"]["pe_sector"] == 18.0
+    assert out["AAA"]["pb"] == 2.1
+    assert out["AAA"]["as_of"] == "2026-08-24"
+    assert out["BBB"]["roe"] == 22
+
+
+def test_apply_latest_ratios_overlays_scanner_and_sector_fields():
+    from valuation_ratios.ingest import apply_latest_ratios
+
+    latest = {
+        "INFY": {
+            "pe": 22.5,
+            "pb": 6.1,
+            "roe": 31.0,
+            "roce": 28.4,
+            "ev_ebitda": 14.2,
+            "as_of": "2026-08-24",
+            "source": "warehouse.valuation_ratios",
+        }
+    }
+    row = apply_latest_ratios({"ticker": "INFY", "pe": 18.0, "pb": 5.0}, latest=latest)
+    assert row["pe"] == 22.5
+    assert row["trailing_pe"] == 22.5
+    assert row["pb"] == 6.1
+    assert row["roe"] == 31.0
+    assert row["roic"] == 28.4
+    assert row["ev_ebitda"] == 14.2
+    assert row["valuation_ratios_as_of"] == "2026-08-24"
