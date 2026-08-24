@@ -109,13 +109,46 @@ def _number(value: Any) -> Optional[float]:
     return out if out == out else None
 
 
+# Every shape these exports have arrived in. Two-digit years are last so a
+# four-digit year is never truncated into one: "24/08/2026" must not be read as
+# 24 August 2020 by a %y pattern matching the first two digits.
+_DATE_FORMATS = (
+    "%Y-%m-%d",      # 2026-08-24, and the date half of an Excel datetime
+    "%d-%b-%Y",      # 24-Aug-2026
+    "%d %b %Y",      # 24 Aug 2026
+    "%d/%m/%Y",      # 24/08/2026
+    "%d-%m-%Y",      # 24-08-2026
+    "%d/%m/%y",      # 24/08/26  - the NSE web export's default
+    "%d-%m-%y",      # 24-08-26
+)
+
+
 def _date(value: Any) -> Optional[date]:
+    """A reported date, or nothing.
+
+    The web export writes 24/08/26 while the file download writes a full
+    datetime, and a pasted day without a usable date is dropped as unstorable -
+    so an unhandled format silently empties the entire paste. That is exactly
+    what happened: every row of a 36-row paste was rejected because the year
+    had two digits.
+
+    Slicing to 11 characters trims Excel's " 00:00:00" without cutting any of
+    the formats above, all of which are 10 characters or fewer.
+    """
     text = str(value or "").strip()
-    for fmt in ("%Y-%m-%d", "%d-%b-%Y", "%d %b %Y", "%d/%m/%Y"):
+    if not text:
+        return None
+    candidate = text[:11].strip()
+    for fmt in _DATE_FORMATS:
         try:
-            return datetime.strptime(text[:11].strip(), fmt).date()
+            parsed = datetime.strptime(candidate, fmt).date()
         except ValueError:
             continue
+        # A two-digit year lands in 20xx. These filings are current, and a
+        # 1926 reported date would be stored happily and be wrong forever.
+        if parsed.year < 100:
+            parsed = parsed.replace(year=parsed.year + 2000)
+        return parsed
     return None
 
 
