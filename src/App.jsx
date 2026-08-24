@@ -63,6 +63,7 @@ const HedgeFundPage = React.lazy(() => import('@/pages/HedgeFundPage'));
 const HedgeFundSignalPage = React.lazy(() => import('@/pages/HedgeFundSignalPage'));
 const LiveAlphaPage = React.lazy(() => import('@/pages/LiveAlphaPage'));
 const LiveDeskPage = React.lazy(() => import('@/pages/LiveDeskPage'));
+import RiskDisclosureModal from '@/components/Compliance/RiskDisclosureModal';
 const PrivateEquityPage = React.lazy(() => import('@/pages/PrivateEquityPage'));
 const PrivateEquityFirmPage = React.lazy(() => import('@/pages/PrivateEquityFirmPage'));
 const IntelligenceEntityPage = React.lazy(() => import('@/pages/IntelligenceEntityPage'));
@@ -318,6 +319,7 @@ function App() {
             />
           </Helmet>
           <AskAgiVisibility />
+          <RiskDisclosureModal />
           <FunnelRouteTracker />
           <AppShell />
         </div>
