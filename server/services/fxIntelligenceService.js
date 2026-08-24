@@ -43,7 +43,7 @@ function overlayLatest(row, quote) {
     historySource: row?.source || 'Yahoo Finance',
     latencySeconds: quote.latencySeconds,
     instrumentKey: quote.instrumentKey,
-    quoteMode: '20-second delayed',
+    quoteMode: quote.quoteMode || '20-second delayed',
   };
 }
 
@@ -70,7 +70,7 @@ export function mergeFxProviders(yahoo, upstox) {
     },
     asOf: [...pairs, ...drivers].map((row) => row?.asOf).filter(Boolean).sort().at(-1) || yahoo?.asOf,
     source: upstoxQuotes
-      ? 'Upstox 20-second indicators + Yahoo Finance history and global FX'
+      ? 'Upstox official global indicators + Yahoo Finance history and fallback'
       : 'Yahoo Finance market reference (Upstox fallback)',
     providers: {
       yahoo: { ok: Boolean(yahoo?.pairs?.length), role: 'global FX and historical series' },
@@ -78,7 +78,9 @@ export function mergeFxProviders(yahoo, upstox) {
         ok: Boolean(upstox?.ok && upstoxQuotes),
         configured: Boolean(upstox?.configured),
         quotes: upstoxQuotes,
+        targets: 2,
         latencySeconds: upstox?.latencySeconds || 20,
+        mode: upstox?.mode || null,
         role: 'latest USD/INR and Brent reference',
         reason: upstox?.reason || null,
       },
