@@ -18,7 +18,11 @@
 // can change and following it should not require a redeploy.
 const DEFAULTS = {
   bloomberg: 'https://www.youtube.com/embed/live_stream?channel=UCIALMKvObZNtJ6AmdCLP7Lg',
-  ndtvProfit: 'https://www.youtube.com/embed/live_stream?channel=UC5LBDdnEQUOtcccQTZ4LGSg',
+  // Taken from the channel that owns NDTV Profit's live video, not from
+  // scraping the channel page - a page carries many channelIds and the first
+  // one belongs to a recommendation, which is how the two previous ids here
+  // were both wrong.
+  ndtvProfit: 'https://www.youtube.com/embed/live_stream?channel=UC3uJIdRFTGgLWrUziaHbzrg',
 };
 
 // The app is Vite, not Next, so the public prefix is VITE_ rather than
