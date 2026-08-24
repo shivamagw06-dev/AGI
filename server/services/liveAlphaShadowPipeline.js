@@ -14,6 +14,20 @@ function sessionDateIst(ms) {
   return new Date(ms + 5.5 * 60 * 60_000).toISOString().slice(0, 10);
 }
 
+function compactFeaturePoint(point, at) {
+  const finiteOrNull = (value) => Number.isFinite(Number(value)) ? Number(value) : null;
+  return {
+    instrument_key: String(point.instrument_key || ''),
+    received_at: new Date(at).toISOString(),
+    ltp: Number(point.ltp),
+    cumulative_volume: finiteOrNull(point.cumulative_volume),
+    open_interest: finiteOrNull(point.open_interest),
+    spread_bps: finiteOrNull(point.spread_bps),
+    implied_volatility: finiteOrNull(point.implied_volatility),
+    source: point.source || 'live_feed',
+  };
+}
+
 export class IntradayFeatureStore {
   constructor({ retentionMs = 2 * 60 * 60_000 } = {}) {
     this.retentionMs = retentionMs;
@@ -67,18 +81,21 @@ export class IntradayFeatureStore {
 
   #upsertPoint(instrumentKey, point, at) {
     const values = this.series.get(instrumentKey) || [];
+    const minuteBucket = Math.floor(at / 60_000);
     let index = values.length - 1;
-    while (index >= 0 && Date.parse(values[index].received_at) > at) index -= 1;
-    if (index >= 0 && Date.parse(values[index].received_at) === at) {
+    while (index >= 0 && Math.floor(Date.parse(values[index].received_at) / 60_000) > minuteBucket) index -= 1;
+    if (index >= 0 && Math.floor(Date.parse(values[index].received_at) / 60_000) === minuteBucket) {
       const existing = values[index];
       // Live ticks replace synthetic OHLC; never overwrite a live tick with OHLC.
       if (point.source === 'upstox_ohlc_1m' && existing.source !== 'upstox_ohlc_1m') {
         /* keep live */
+      } else if (Date.parse(existing.received_at) > at) {
+        /* keep the newest observation in this minute */
       } else {
-        values[index] = point;
+        values[index] = compactFeaturePoint(point, at);
       }
     } else {
-      values.splice(index + 1, 0, point);
+      values.splice(index + 1, 0, compactFeaturePoint(point, at));
     }
     const cutoff = at - this.retentionMs;
     while (values.length && Date.parse(values[0].received_at) < cutoff) values.shift();
