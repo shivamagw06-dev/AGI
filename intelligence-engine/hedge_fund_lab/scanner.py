@@ -421,7 +421,7 @@ def _map_warehouse_row(
         ),
     }
 
-    return {
+    mapped = {
         "ticker": sym,
         "company_name": mi.get("company_name") or sym,
         # Most company_master records carry an explicit Upstox instrument key.
@@ -477,6 +477,13 @@ def _map_warehouse_row(
                                or (legacy_consensus or {}).get("consensus_date")),
         },
     }
+    try:
+        from valuation_ratios.ingest import apply_latest_ratios
+
+        mapped = apply_latest_ratios(mapped)
+    except Exception:
+        pass
+    return mapped
 
 
 def _universe_from_warehouse() -> list[dict[str, Any]]:

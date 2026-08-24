@@ -26,6 +26,16 @@ def _constituents(sector: str) -> list[str]:
     return sorted(set(members))
 
 
+def _overlay_provider_metrics(out: dict[str, Any]) -> dict[str, Any]:
+    """Prefer live warehouse.valuation_ratios for current PE/PB/ROE/ROCE/EV."""
+    try:
+        from valuation_ratios.ingest import apply_latest_ratios
+
+        return apply_latest_ratios(out)
+    except Exception:
+        return out
+
+
 def _company_metrics(ticker: str) -> dict[str, Any]:
     """Pull latest PE/ROIC/etc from Historical Depth, else KF company object."""
     out: dict[str, Any] = {"ticker": ticker}
@@ -54,7 +64,7 @@ def _company_metrics(ticker: str) -> dict[str, Any]:
             risk = obj.get("historical_risk") or {}
             out["max_drawdown_pct"] = risk.get("max_drawdown_pct")
             out["history_years"] = (obj.get("coverage") or {}).get("history_years") or len(pe)
-            return out
+            return _overlay_provider_metrics(out)
         # derive on the fly if series exist
         series = hd_store.get_series("financials_annual", ticker)
         if series:
@@ -66,7 +76,7 @@ def _company_metrics(ticker: str) -> dict[str, Any]:
             out["roic_history"] = roic
             out["roic"] = list(roic.values())[-1] if roic else None
             out["history_years"] = d.get("n_periods") or 0
-            return out
+            return _overlay_provider_metrics(out)
     except Exception:
         pass
     try:
@@ -80,7 +90,7 @@ def _company_metrics(ticker: str) -> dict[str, Any]:
         out["history_years"] = len(pe)
     except Exception:
         pass
-    return out
+    return _overlay_provider_metrics(out)
 
 
 def _median(vals: list[float]) -> float | None:
