@@ -1,0 +1,132 @@
+name: Publish to deploy branch
+
+# main is the gated source of truth. This builds it and publishes the result to
+# `deploy`, which Hostinger serves.
+#
+# It replaces a chain that could not work: the Hostinger workflow built the site
+# and then pushed the artifacts straight to main, which requires the short gate,
+# which a direct push can never satisfy because it has no pull request to run
+# it. Every deploy therefore failed at that step, the FTP steps below it were
+# skipped, and the site served a build from 21 August while later runs reported
+# success. Shipping anything meant hand-building and opening an artifact PR.
+#
+# `deploy` is machine-owned. Nobody should branch from it, open pull requests
+# into it, or treat it as canonical - it is rebuilt and force-pushed on every
+# merge to main, and any commit made on it directly will be discarded without
+# warning.
+#
+# It is not a mirror of main. Hostinger serves built output, not source, so this
+# publishes main's tree plus the build. The commit message records the source
+# SHA, so any deploy can be reconstructed by checking out that commit and
+# running the same build - which is the property a mirror would have given us
+# and a hand-made artifact commit does not.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  # Deploys are last-write-wins by nature. A superseded build should be
+  # abandoned rather than raced against the newer one.
+  group: publish-deploy
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    # Skip the workflow's own bookkeeping commits, if any ever land on main.
+    if: ${{ !contains(github.event.head_commit.message || '', '[skip ci]') }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm install --no-audit --no-fund
+
+      - name: Build the production site
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_API_URL: ${{ secrets.VITE_API_URL }}
+          VITE_ADMIN_ID: ${{ secrets.VITE_ADMIN_ID }}
+          VITE_ADMIN_EMAILS: ${{ secrets.VITE_ADMIN_EMAILS }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import os
+          from pathlib import Path
+          keys = ["VITE_SUPABASE_URL", "VITE_SUPABASE_ANON_KEY", "VITE_API_URL",
+                  "VITE_ADMIN_ID", "VITE_ADMIN_EMAILS"]
+          lines = []
+          for key in keys:
+              value = (os.environ.get(key) or "").strip()
+              if value:
+                  lines.append(f'{key}="' + value.replace("\\", "\\\\").replace('"', '\\"') + '"')
+          Path(".env.production.local").write_text("\n".join(lines) + "\n")
+          PY
+          npm run build:hostinger
+          rm -f .env.production.local
+
+      - name: Verify the bundle before publishing it
+        run: |
+          # The same checks the Hostinger workflow runs. A build that bakes the
+          # wrong API origin or a truncated key is worse than no deploy, because
+          # it looks like a working site.
+          python3 - <<'PY'
+          import re, sys
+          from pathlib import Path
+          files = sorted(Path("assets").glob("index-*.js"))
+          if not files:
+              sys.exit("No assets/index-*.js produced")
+          text = files[-1].read_text(errors="ignore")
+          if "supabase.co" not in text:
+              sys.exit("Bundle is missing the Supabase URL")
+          keys = re.findall(r'"(eyJhbGciOiJIUzI1NiIs[^"]+)"', text)
+          if not keys:
+              sys.exit("Bundle carries no anon key")
+          key = max(keys, key=len)
+          if len(key) < 100 or key.count(".") != 2:
+              sys.exit(f"Baked anon key is truncated (len={len(key)})")
+          if "onrender.com" not in text:
+              sys.exit("Bundle is missing the API origin")
+          # The client compares this against the bundle and reloads on a
+          # mismatch, so a wrong stamp means a reload every session forever.
+          import json
+          shipped = json.loads(Path("version.json").read_text())["buildId"]
+          baked = Path(".build-id").read_text().strip()
+          if shipped != baked:
+              sys.exit(f"version.json says {shipped}, bundle was built as {baked}")
+          print("bundle checks passed:", files[-1].name, "build", baked)
+          PY
+
+      - name: Publish to deploy
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          # Orphan commit: deploy carries one commit per publish rather than a
+          # parallel history that would slowly diverge from main and invite
+          # someone to merge it back.
+          git checkout --orphan deploy-tmp
+          git add -A
+          git commit -q -m "Publish ${GITHUB_SHA::9}
+
+          Built from main@${GITHUB_SHA} by ${GITHUB_WORKFLOW} run ${GITHUB_RUN_ID}.
+          Reconstruct with: git checkout ${GITHUB_SHA} && npm run build:hostinger
+
+          This branch is machine-owned. It is force-pushed on every merge to
+          main and any commit made here directly will be discarded." || {
+            echo "nothing to publish"; exit 0; }
+
+          git push --force origin HEAD:deploy
+          echo "published main@${GITHUB_SHA::9} to deploy"
