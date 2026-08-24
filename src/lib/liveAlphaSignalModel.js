@@ -28,7 +28,7 @@ export function signedSignalScore(signal) {
 export function confidenceLabel(score, sample = 0) {
   const samples = Number(sample) || 0;
   if (samples < 30) return score >= 60 ? 'MODEL-ONLY' : 'LOW';
-  if (samples >= 100 && score >= 70) return 'VALIDATED';
+  if (samples >= 100 && score >= 70) return 'SAMPLE-RICH';
   return score >= 80 ? 'HIGH' : score >= 60 ? 'MEDIUM' : 'LOW';
 }
 
@@ -37,7 +37,7 @@ export function confidenceBasis(sample = 0) {
   const samples = Number(sample) || 0;
   if (samples < 30) return 'Model state only — no historical comparables behind this signal yet.';
   if (samples < 100) return `Partial evidence — ${samples} comparable observations, below the 100 required.`;
-  return `${samples} comparable observations.`;
+  return `${samples} comparable observations - sample threshold met, not research validation.`;
 }
 
 export function componentState(signal, strategyHealth = {}) {
@@ -104,7 +104,7 @@ export function buildCanonicalSignals(signals, strategyHealth = {}) {
       ...row, newest: row.timestamp, input_timestamp: row.timestamp, data_cutoff: row.timestamp,
       signal_score: composite, composite, quality, samples, confidence: confidenceLabel(quality, samples),
       confidence_basis: confidenceBasis(samples), active,
-      validation_status: samples >= 100 ? 'RESEARCH VALIDATED' : 'VALIDATION PENDING', strategy_status: 'OPERATIONAL',
+      validation_status: samples >= 100 ? 'SAMPLE THRESHOLD MET' : 'EVIDENCE BUILDING', strategy_status: 'RESEARCH ONLY',
       strategy_version: 'live-alpha-v1', model_version: 'signal-composite-v1',
       input_data_status: active.every((signal) => signal.liquidity_ok) ? 'READY' : 'REVIEW REQUIRED',
       data_fingerprint: active.map((signal) => signal.id).filter(Boolean).sort().join(':'),

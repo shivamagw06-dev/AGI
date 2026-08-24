@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search } from 'lucide-react';
+import { AdminOnly } from '@/components/auth/AskAgiAdminAccess';
 import { getUiAutocomplete } from '@/lib/uiApi';
 import { getRecentSearches, pushSearch } from '@/lib/searchHistory';
 
@@ -87,7 +88,8 @@ export default function AskAgiBar({
   ];
 
   return (
-    <div ref={boxRef} className="relative w-full">
+    <AdminOnly>
+      <div ref={boxRef} className="relative w-full">
       <form
         role="search"
         aria-label={ariaLabel}
@@ -219,6 +221,7 @@ export default function AskAgiBar({
           )}
         </div>
       )}
-    </div>
+      </div>
+    </AdminOnly>
   );
 }
