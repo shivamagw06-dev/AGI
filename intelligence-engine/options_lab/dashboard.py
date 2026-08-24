@@ -3,10 +3,12 @@
 from __future__ import annotations
 
 import json
+import sqlite3
+from contextlib import closing
 from datetime import datetime, time as clock_time, timezone
+from pathlib import Path
 from typing import Any
 
-from .store import OptionEvidenceStore
 from .upstox_live import IST, LiveConfig
 
 
@@ -28,6 +30,19 @@ def _row(row: Any) -> dict[str, Any] | None:
 def _parse_timestamp(value: str | None) -> datetime | None:
     if not value:
         return None
+
+
+def _read_only_connection(path: Path) -> sqlite3.Connection:
+    resolved = path.expanduser().resolve()
+    connection = sqlite3.connect(
+        f"file:{resolved}?mode=ro",
+        uri=True,
+        timeout=2,
+    )
+    connection.row_factory = sqlite3.Row
+    connection.execute("PRAGMA query_only=ON")
+    connection.execute("PRAGMA busy_timeout=2000")
+    return connection
     try:
         return datetime.fromisoformat(value.replace("Z", "+00:00"))
     except ValueError:
@@ -37,74 +52,84 @@ def _parse_timestamp(value: str | None) -> datetime | None:
 def validation_dashboard() -> dict[str, Any]:
     """Return sanitized collector and report state; never return quotes or tokens."""
     config = LiveConfig.from_environment()
-    store = OptionEvidenceStore(config.database_path)
-    with store.connect() as connection:
-        latest_run = _row(
-            connection.execute(
-                """
-                SELECT run_id, started_at, completed_at, status,
-                       expiries_json, counts_json, error
-                FROM collector_runs
-                ORDER BY started_at DESC
-                LIMIT 1
-                """
-            ).fetchone()
-        )
-        snapshot = _row(
-            connection.execute(
-                """
-                SELECT COUNT(*) AS snapshots,
-                       COUNT(DISTINCT instrument_key) AS contracts,
-                       MIN(captured_at) AS first_captured_at,
-                       MAX(captured_at) AS latest_captured_at
-                FROM option_snapshots
-                """
-            ).fetchone()
-        ) or {}
-        observations = _row(
-            connection.execute(
-                """
-                SELECT COUNT(*) AS observations,
-                       COUNT(DISTINCT local_date) AS trading_days,
-                       MAX(observed_at) AS latest_observed_at
-                FROM validation_observations
-                """
-            ).fetchone()
-        ) or {}
-        coverage = [
-            dict(item)
-            for item in connection.execute(
-                """
-                SELECT expiry, option_type,
-                       COUNT(DISTINCT instrument_key) AS contracts,
-                       COUNT(*) AS snapshots
-                FROM option_snapshots
-                GROUP BY expiry, option_type
-                ORDER BY expiry, option_type
-                """
-            ).fetchall()
-        ]
-        latest_report_row = _row(
-            connection.execute(
-                """
-                SELECT report_date, generated_at, status, report_json
-                FROM daily_reports
-                ORDER BY report_date DESC
-                LIMIT 1
-                """
-            ).fetchone()
-        )
-        recent_report_rows = [
-            dict(item)
-            for item in connection.execute(
-                """
-                SELECT report_date, generated_at, status, report_json
-                FROM daily_reports
-                ORDER BY report_date DESC
-                LIMIT 20
-                """
-            ).fetchall()
-        ]
+    latest_run = None
+    snapshot: dict[str, Any] = {}
+    observations: dict[str, Any] = {}
+    coverage: list[dict[str, Any]] = []
+    latest_report_row = None
+    recent_report_rows: list[dict[str, Any]] = []
+    if config.database_path.expanduser().exists():
+        try:
+            with closing(_read_only_connection(config.database_path)) as connection:
+                latest_run = _row(
+                    connection.execute(
+                        """
+                        SELECT run_id, started_at, completed_at, status,
+                               expiries_json, counts_json, error
+                        FROM collector_runs
+                        ORDER BY started_at DESC
+                        LIMIT 1
+                        """
+                    ).fetchone()
+                )
+                snapshot = _row(
+                    connection.execute(
+                        """
+                        SELECT COUNT(*) AS snapshots,
+                               COUNT(DISTINCT instrument_key) AS contracts,
+                               MIN(captured_at) AS first_captured_at,
+                               MAX(captured_at) AS latest_captured_at
+                        FROM option_snapshots
+                        """
+                    ).fetchone()
+                ) or {}
+                observations = _row(
+                    connection.execute(
+                        """
+                        SELECT COUNT(*) AS observations,
+                               COUNT(DISTINCT local_date) AS trading_days,
+                               MAX(observed_at) AS latest_observed_at
+                        FROM validation_observations
+                        """
+                    ).fetchone()
+                ) or {}
+                coverage = [
+                    dict(item)
+                    for item in connection.execute(
+                        """
+                        SELECT expiry, option_type,
+                               COUNT(DISTINCT instrument_key) AS contracts,
+                               COUNT(*) AS snapshots
+                        FROM option_snapshots
+                        GROUP BY expiry, option_type
+                        ORDER BY expiry, option_type
+                        """
+                    ).fetchall()
+                ]
+                latest_report_row = _row(
+                    connection.execute(
+                        """
+                        SELECT report_date, generated_at, status, report_json
+                        FROM daily_reports
+                        ORDER BY report_date DESC
+                        LIMIT 1
+                        """
+                    ).fetchone()
+                )
+                recent_report_rows = [
+                    dict(item)
+                    for item in connection.execute(
+                        """
+                        SELECT report_date, generated_at, status, report_json
+                        FROM daily_reports
+                        ORDER BY report_date DESC
+                        LIMIT 20
+                        """
+                    ).fetchall()
+                ]
+        except sqlite3.OperationalError as exc:
+            if "no such table" not in str(exc).lower():
+                raise
 
     if latest_run:
         latest_run["expiries"] = _json(latest_run.pop("expiries_json"), [])

@@ -76,16 +76,30 @@ def reset_cache() -> None:
 
 
 def _cached(key: str, producer):
-    """Single-flight, TTL cache shared by every strategy in one board() call."""
+    """TTL cache that never holds its shared lock during external I/O."""
     with _CACHE_LOCK:
         now = time.monotonic()
         if _CACHE["at"] and (now - _CACHE["at"]) > _CACHE_TTL:
             _CACHE.update({"risk": None, "liq": None, "signals": None, "at": 0.0})
-        if _CACHE.get(key) is None:
-            _CACHE[key] = producer()
-            if not _CACHE["at"]:
-                _CACHE["at"] = now
-        return _CACHE[key]
+        cached = _CACHE.get(key)
+        if cached is not None:
+            return cached
+
+    # Producers read Supabase and can be slow. Holding _CACHE_LOCK here used
+    # to serialize every concurrent live-strategies request behind one network
+    # call, amplifying a bounded delay into repeated 120-second timeouts.
+    produced = producer()
+
+    with _CACHE_LOCK:
+        # Another request may have completed the same refresh while this one
+        # was outside the lock. Prefer its already-published value.
+        cached = _CACHE.get(key)
+        if cached is not None:
+            return cached
+        _CACHE[key] = produced
+        if not _CACHE["at"]:
+            _CACHE["at"] = time.monotonic()
+        return produced
 
 
 def _risk_and_liquidity() -> tuple[dict[str, dict], dict[str, dict]]:

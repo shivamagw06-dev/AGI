@@ -45,7 +45,7 @@ def _credentials() -> Optional[tuple[str, str]]:
     return url, key
 
 
-def _rest(path: str, *, timeout_seconds: float = 10.0) -> Any:
+def _rest(path: str, *, timeout_seconds: float = 4.0) -> Any:
     creds = _credentials()
     if not creds:
         return None

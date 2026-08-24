@@ -1,8 +1,13 @@
 import math
+import sqlite3
+import time
 
 import pytest
 
 from options_lab import price_option_snapshot
+from options_lab.dashboard import validation_dashboard
+from options_lab.store import OptionEvidenceStore
+from options_lab.upstox_live import LiveConfig
 
 
 def _request(**overrides):
@@ -64,3 +69,44 @@ def test_scenarios_are_contract_scaled_and_complete():
 def test_crossed_market_is_rejected():
     with pytest.raises(ValueError, match="ask must be greater"):
         price_option_snapshot(_request(bid=12.0, ask=11.0))
+
+
+def test_validation_dashboard_reads_while_collector_holds_write_lock(tmp_path, monkeypatch):
+    database_path = tmp_path / "options.sqlite3"
+    store = OptionEvidenceStore(database_path)
+    with store.connect() as connection:
+        connection.execute(
+            """
+            INSERT INTO collector_runs(
+                run_id, started_at, completed_at, status, expiries_json, counts_json
+            ) VALUES ('run-1', '2026-08-24T03:45:00+00:00',
+                      '2026-08-24T03:46:00+00:00', 'success', '[]', '{}')
+            """
+        )
+
+    config = LiveConfig(
+        database_path=database_path,
+        report_directory=tmp_path / "reports",
+    )
+    monkeypatch.setattr(
+        LiveConfig,
+        "from_environment",
+        classmethod(lambda cls: config),
+    )
+
+    writer = sqlite3.connect(database_path)
+    writer.execute("BEGIN IMMEDIATE")
+    writer.execute(
+        "UPDATE collector_runs SET status = 'running' WHERE run_id = 'run-1'"
+    )
+    try:
+        started = time.monotonic()
+        dashboard = validation_dashboard()
+        elapsed = time.monotonic() - started
+    finally:
+        writer.rollback()
+        writer.close()
+
+    assert elapsed < 2
+    assert dashboard["ok"] is True
+    assert dashboard["worker"]["latest_run"]["status"] == "success"
