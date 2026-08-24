@@ -12,7 +12,8 @@ import { getUpstoxCapabilities, getUpstoxHealth } from '../services/upstoxHealth
 import { getMarketBriefing, startMarketBriefingScheduler } from '../services/marketBriefingService.js';
 import { getMacroBriefing, askMacroEconomist, startMacroBriefingScheduler } from '../services/macroBriefingService.js';
 import { getPreMarketBriefing, startPreMarketBriefingScheduler } from '../services/preMarketBriefingService.js';
-import { fetchYahooFxIntelligence, fetchYahooIndices } from '../providers/yahooIndices.js';
+import { fetchYahooIndices } from '../providers/yahooIndices.js';
+import { fetchFxIntelligence } from '../services/fxIntelligenceService.js';
 
 const CACHE_CONTROL = `public, max-age=${Math.floor(MARKET_REFRESH_MS / 1000)}, stale-while-revalidate=60`;
 
@@ -550,7 +551,7 @@ export default function createMarketRouter(env = {}) {
 
   router.get('/fx-intelligence', async (_req, res) => {
     try {
-      const data = await fetchYahooFxIntelligence();
+      const data = await fetchFxIntelligence();
       res.set('Cache-Control', 'public, max-age=120, stale-while-revalidate=300');
       return sendJson(res, data);
     } catch (err) {
