@@ -9,6 +9,7 @@ row download cap that silently truncates, heavy overlap between exports, and a
 
 from __future__ import annotations
 
+from datetime import date
 from pathlib import Path
 
 import pytest
@@ -350,3 +351,61 @@ def test_the_paste_route_reuses_the_file_normaliser():
 
     assert "normalise_rows" in inspect.getsource(it.parse_pasted)
     assert "normalise_rows" in inspect.getsource(it.parse_file)
+
+
+# --------------------------------------------------------------------------
+# Date formats
+#
+# A 36-row paste was rejected in full with "every row needs a company, a
+# person, a reported date and a quantity". Every row had all four. The export
+# wrote 24/08/26 and the parser knew %d/%m/%Y but not %d/%m/%y, so the date
+# came back as None and each row was dropped as unstorable.
+# --------------------------------------------------------------------------
+
+
+def test_a_two_digit_year_is_read():
+    """The NSE web export's default format."""
+    assert it._date("24/08/26") == date(2026, 8, 24)
+    assert it._date("24-08-26") == date(2026, 8, 24)
+
+
+def test_a_four_digit_year_is_not_truncated_by_the_two_digit_pattern():
+    """Order matters: %y matching "24/08/20" out of "24/08/2026" would file a
+    2026 trade under 2020 and store it happily."""
+    assert it._date("24/08/2026") == date(2026, 8, 24)
+    assert it._date("24-08-2026") == date(2026, 8, 24)
+
+
+def test_the_other_shapes_still_parse():
+    assert it._date("2026-08-24") == date(2026, 8, 24)
+    assert it._date("24-Aug-2026") == date(2026, 8, 24)
+    assert it._date("19 Aug 2026") == date(2026, 8, 19)
+    # Excel hands back a datetime; the time must not defeat the match.
+    assert it._date("2026-08-24 00:00:00") == date(2026, 8, 24)
+
+
+def test_nothing_usable_is_still_nothing():
+    assert it._date("") is None
+    assert it._date(None) is None
+    assert it._date("not a date") is None
+
+
+def test_the_paste_that_was_rejected_now_parses():
+    """The real export, including a quoted cell containing newlines - the
+    holding column arrives as "0\\n\\n(0%)" and must not split the row."""
+    header = ("Stock\tClient Name\tClient Category\tAction*\tReported To/By Exchange\t"
+              "Quantity\tPost Transaction Holding\tTraded %\tAvg. Price\tValue\tPeriod\t"
+              "Regulation (Insider/SAST)\tSecurity Type\tMode")
+    simple = ("Sterling Tools\tANIL AGGARWAL\tPromoter and Director\tDisposal\t24/08/26\t"
+              "80000\t5030583\t0.22\t0\t0\t24 Aug 2026  24 Aug 2026\tInsider Trading\t"
+              "Equity\tGift")
+    multiline = ('Dr. Lal Pathlabs\tAmit Aggarwal\tDesignated Person\tDisposal\t24/08/26\t'
+                 '2050\t"0\n    \n    (0%)"\t0.00\t1885.5\t38,65,357\t'
+                 '19 Aug 2026  19 Aug 2026\tInsider Trading\tEquity\tMarket Sale')
+
+    out = it.parse_pasted(f"{header}\n{simple}\n{multiline}")
+
+    assert out["ok"] is True
+    assert out["row_count"] == 2
+    assert out["dropped_rows"] == 0
+    assert {r["reported_on"] for r in out["rows"]} == {"2026-08-24"}
