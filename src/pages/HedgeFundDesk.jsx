@@ -98,25 +98,35 @@ export default function HedgeFundDesk() {
     setLoading(true); setError('');
     try {
       if (!API_ORIGIN) throw new Error('AGI backend origin is not configured.');
-      const json = async (path) => {
-        const res = await fetch(`${API_ORIGIN}${path}`, { headers: { Accept: 'application/json' } });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        if (!(res.headers.get('content-type') || '').includes('application/json')) {
-          throw new Error('invalid response');
+      const json = async (path, timeoutMs) => {
+        const controller = new AbortController();
+        const timer = window.setTimeout(() => controller.abort(), timeoutMs);
+        try {
+          const res = await fetch(`${API_ORIGIN}${path}`, {
+            headers: { Accept: 'application/json' },
+            signal: controller.signal,
+          });
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          if (!(res.headers.get('content-type') || '').includes('application/json')) {
+            throw new Error('invalid response');
+          }
+          return res.json();
+        } finally {
+          window.clearTimeout(timer);
         }
-        return res.json();
       };
-      const [snapshot, intraday] = await Promise.allSettled([
-        json('/api/intelligence/hedge-fund-lab/terminal?limit=40'),
-        json('/api/intelligence/hedge-fund-lab/live-strategies?limit=25'),
-      ]);
-      if (snapshot.status === 'fulfilled') setData(snapshot.value);
-      else throw new Error(`The desk feed is unavailable (${snapshot.reason?.message}).`);
-      // The intraday board is additive: if it fails those cards report it and
-      // the nine fundamental screens are unaffected.
-      setLive(intraday.status === 'fulfilled' ? intraday.value : null);
+
+      // Live Alpha is additive. Start it concurrently, but never make the
+      // fundamental desk wait for an optional intraday overlay.
+      void json('/api/intelligence/hedge-fund-lab/live-strategies?limit=25', 8000)
+        .then(setLive)
+        .catch(() => setLive(null));
+
+      const snapshot = await json('/api/intelligence/hedge-fund-lab/terminal?limit=40', 15000);
+      setData(snapshot);
     } catch (e) {
-      setError(e.message || 'The desk feed is unavailable.');
+      const detail = e?.name === 'AbortError' ? 'request timed out' : e?.message;
+      setError(`The desk feed is unavailable (${detail || 'unknown error'}).`);
     } finally { setLoading(false); }
   };
 
