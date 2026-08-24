@@ -5,9 +5,11 @@ from __future__ import annotations
 import argparse
 import json
 import signal
+import threading
 import time
+from dataclasses import dataclass, field
 from datetime import datetime, time as clock_time, timezone
-from typing import Any
+from typing import Any, Callable
 
 from .store import OptionEvidenceStore
 from .upstox_live import IST, LiveConfig, UpstoxLiveError, collect_once
@@ -73,6 +75,75 @@ def report_command(config: LiveConfig, report_date: str | None) -> int:
     return 0
 
 
+@dataclass
+class WorkerState:
+    """Carried between ticks so a collection happens once per 15-minute bucket
+    and the daily report happens once per day."""
+
+    last_bucket: str | None = None
+    reported_dates: set[str] = field(default_factory=set)
+    last_event: dict[str, Any] | None = None
+    ticks: int = 0
+    collections: int = 0
+    failures: int = 0
+    started_at: str = ""
+
+
+def worker_tick(config: LiveConfig, state: WorkerState) -> None:
+    """One pass of the automation loop.
+
+    Lifted out of run_worker so the embedded collector inside the API server
+    runs the same code rather than a copy of it that quietly drifts.
+    """
+    now = datetime.now(timezone.utc)
+    local = now.astimezone(IST)
+    state.ticks += 1
+    if _is_market_session(now):
+        bucket = _collection_bucket(now)
+        if bucket != state.last_bucket:
+            exit_code = collect_command(config, force=True)
+            state.last_bucket = bucket
+            if exit_code:
+                state.failures += 1
+                state.last_event = {
+                    "at": now.isoformat(),
+                    "kind": "collection_failed",
+                    "exit_code": exit_code,
+                }
+                _emit(
+                    "worker_warning",
+                    {"reason": "collection_failed", "exit_code": exit_code},
+                )
+            else:
+                state.collections += 1
+                state.last_event = {
+                    "at": now.isoformat(),
+                    "kind": "collected",
+                    "bucket": bucket,
+                }
+    elif (
+        local.weekday() < 5
+        and local.time().replace(tzinfo=None) >= REPORT_TIME
+        and local.date().isoformat() not in state.reported_dates
+    ):
+        try:
+            report_command(config, local.date().isoformat())
+            state.reported_dates.add(local.date().isoformat())
+            state.last_event = {
+                "at": now.isoformat(),
+                "kind": "daily_report",
+                "date": local.date().isoformat(),
+            }
+        except Exception as error:
+            state.failures += 1
+            state.last_event = {
+                "at": now.isoformat(),
+                "kind": "daily_report_failed",
+                "error": str(error)[:300],
+            }
+            _emit("daily_report_failed", {"error": str(error)[:1000]})
+
+
 def run_worker(config: LiveConfig, *, poll_seconds: int = 10) -> int:
     stopping = False
 
@@ -82,8 +153,6 @@ def run_worker(config: LiveConfig, *, poll_seconds: int = 10) -> int:
 
     signal.signal(signal.SIGTERM, stop)
     signal.signal(signal.SIGINT, stop)
-    last_bucket: str | None = None
-    reported_dates: set[str] = set()
     _emit(
         "worker_started",
         {
@@ -92,29 +161,9 @@ def run_worker(config: LiveConfig, *, poll_seconds: int = 10) -> int:
             "underlying": config.underlying_key,
         },
     )
+    state = WorkerState()
     while not stopping:
-        now = datetime.now(timezone.utc)
-        local = now.astimezone(IST)
-        if _is_market_session(now):
-            bucket = _collection_bucket(now)
-            if bucket != last_bucket:
-                exit_code = collect_command(config, force=True)
-                last_bucket = bucket
-                if exit_code:
-                    _emit(
-                        "worker_warning",
-                        {"reason": "collection_failed", "exit_code": exit_code},
-                    )
-        elif (
-            local.weekday() < 5
-            and local.time().replace(tzinfo=None) >= REPORT_TIME
-            and local.date().isoformat() not in reported_dates
-        ):
-            try:
-                report_command(config, local.date().isoformat())
-                reported_dates.add(local.date().isoformat())
-            except Exception as error:
-                _emit("daily_report_failed", {"error": str(error)[:1000]})
+        worker_tick(config, state)
         time.sleep(max(2, poll_seconds))
     _emit("worker_stopped", {})
     return 0
