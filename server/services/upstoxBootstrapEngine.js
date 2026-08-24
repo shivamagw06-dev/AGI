@@ -13,6 +13,11 @@ import crypto from 'node:crypto';
 const STATES = Object.freeze(['PENDING', 'RUNNING', 'SUCCESS', 'FAILED', 'RETRY', 'SKIPPED']);
 const RETRY_BACKOFF_MS = [30_000, 120_000, 600_000, 1_800_000]; // 30s, 2m, 10m, 30m
 const MAX_RETRIES = RETRY_BACKOFF_MS.length;
+// Official Upstox cap for standard APIs: 2000 requests / 30 minutes.
+const UPSTOX_WINDOW_MS = envInt('UPSTOX_WINDOW_MS', 30 * 60 * 1000);
+const UPSTOX_WINDOW_MAX = envInt('UPSTOX_WINDOW_MAX_CALLS', 2000);
+/** @type {number[]} timestamps of Upstox calls in the rolling window */
+let upstoxCallTimes = [];
 
 function envInt(name, fallback) {
   const n = Number(process.env[name]);
@@ -178,6 +183,28 @@ function adjustThrottle({ hit429 = false, healthy = false } = {}) {
 
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function awaitUpstoxQuota(n) {
+  const need = Math.max(1, Number(n) || 1);
+  while (true) {
+    const cutoff = Date.now() - UPSTOX_WINDOW_MS;
+    upstoxCallTimes = upstoxCallTimes.filter((stamp) => stamp > cutoff);
+    if (upstoxCallTimes.length + need <= UPSTOX_WINDOW_MAX) {
+      const now = Date.now();
+      for (let i = 0; i < need; i += 1) upstoxCallTimes.push(now);
+      return;
+    }
+    const oldest = upstoxCallTimes[0] || Date.now();
+    const waitMs = Math.max(1_000, oldest + UPSTOX_WINDOW_MS - Date.now() + 1_000);
+    pushLog({
+      symbol: '*',
+      state: 'RETRY',
+      reason: `upstox_quota_${upstoxCallTimes.length}/${UPSTOX_WINDOW_MAX} wait_${Math.round(waitMs / 1000)}s`,
+    });
+    persist();
+    await sleep(Math.min(waitMs, 60_000));
+  }
 }
 
 async function loadUniverse() {
@@ -458,6 +485,7 @@ async function loop() {
         continue;
       }
 
+      await awaitUpstoxQuota(batch.length);
       await processBatch(batch);
       if (stopRequested) break;
       await sleep(run.pauseMs || 2_000);
