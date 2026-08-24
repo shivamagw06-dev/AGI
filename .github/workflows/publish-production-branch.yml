@@ -1,7 +1,19 @@
-name: Publish to deploy branch
+name: Publish to production branch
 
 # main is the gated source of truth. This builds it and publishes the result to
-# `deploy`, which Hostinger serves.
+# `production`, which Hostinger serves.
+#
+# The branch is `production` and not `deploy` because git cannot create a ref
+# named `deploy` while any `deploy/*` ref exists - it is a directory/file
+# conflict, and the push is rejected outright:
+#
+#   ! [remote rejected] HEAD -> deploy (directory file conflict)
+#
+# This repository already had deploy/hostinger-options-build-801,
+# deploy/hostinger-options-build-generator and deploy/options-lab-validation,
+# and the convention of naming deployment branches deploy/* is established
+# enough that deleting them would only postpone the collision. Nothing creates
+# production/* branches, so this name cannot be taken the same way.
 #
 # It replaces a chain that could not work: the Hostinger workflow built the site
 # and then pushed the artifacts straight to main, which requires the short gate,
@@ -10,7 +22,7 @@ name: Publish to deploy branch
 # skipped, and the site served a build from 21 August while later runs reported
 # success. Shipping anything meant hand-building and opening an artifact PR.
 #
-# `deploy` is machine-owned. Nobody should branch from it, open pull requests
+# `production` is machine-owned. Nobody should branch from it, open pull requests
 # into it, or treat it as canonical - it is rebuilt and force-pushed on every
 # merge to main, and any commit made on it directly will be discarded without
 # warning.
@@ -29,7 +41,7 @@ on:
 concurrency:
   # Deploys are last-write-wins by nature. A superseded build should be
   # abandoned rather than raced against the newer one.
-  group: publish-deploy
+  group: publish-production
   cancel-in-progress: true
 
 permissions:
@@ -117,7 +129,7 @@ jobs:
           # Orphan commit: deploy carries one commit per publish rather than a
           # parallel history that would slowly diverge from main and invite
           # someone to merge it back.
-          git checkout --orphan deploy-tmp
+          git checkout --orphan production-tmp
           git add -A
           git commit -q -m "Publish ${GITHUB_SHA::9}
 
@@ -128,5 +140,5 @@ jobs:
           main and any commit made here directly will be discarded." || {
             echo "nothing to publish"; exit 0; }
 
-          git push --force origin HEAD:deploy
-          echo "published main@${GITHUB_SHA::9} to deploy"
+          git push --force origin HEAD:production
+          echo "published main@${GITHUB_SHA::9} to production"
