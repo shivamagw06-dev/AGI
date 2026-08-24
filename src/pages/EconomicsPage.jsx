@@ -119,7 +119,10 @@ function DriverCard({ row, horizon }) {
         <span>{row.unit}</span>
       </div>
       <div className={`fx-driver-move fx-tone-${tone}`}>{signedPct(move)}</div>
-      <small>{interpretations[row.name]}</small>
+      <small>
+        <span>{interpretations[row.name]}</span>
+        <b>{row.source || 'Yahoo Finance'}{row.latencySeconds ? ` / ${row.latencySeconds}s` : ' / reference'}</b>
+      </small>
     </article>
   );
 }
@@ -227,7 +230,11 @@ export default function EconomicsPage() {
             <span className={`fx-live-dot ${error ? 'fx-live-dot--error' : ''}`} />
             <div>
               <b>{error ? 'Reference feed interrupted' : loading && !payload ? 'Connecting to market reference' : 'Market reference online'}</b>
-              <small>{payload ? `Updated ${freshTime(payload.asOf)}` : 'Read-only, delayed data'}</small>
+              <small>
+                {payload
+                  ? `Updated ${freshTime(payload.asOf)} · ${payload.providers?.upstox?.ok ? 'Upstox 20s active' : 'Yahoo fallback'}`
+                  : 'Read-only, delayed data'}
+              </small>
             </div>
             <button type="button" onClick={load} disabled={loading}>
               {loading ? 'Refreshing' : 'Refresh'}
@@ -358,6 +365,7 @@ export default function EconomicsPage() {
             <div className="fx-pair-context">
               <span>{selected?.region || 'Global FX'}</span>
               <b>{selected?.base || 'Base'} strength versus {selected?.quote || 'quote'}</b>
+              <em>{selected?.source || 'Yahoo Finance'}{selected?.latencySeconds ? ` · ${selected.latencySeconds}s` : ' · reference'}</em>
             </div>
             <div className="fx-inr-number">
               <strong>{price(selected?.price, selected?.decimals ?? 4)}</strong>

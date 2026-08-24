@@ -565,6 +565,15 @@
   font-weight: 600;
 }
 
+.fx-pair-context em {
+  background: rgba(216, 255, 98, 0.09);
+  border: 1px solid rgba(216, 255, 98, 0.25);
+  border-radius: 999px;
+  color: var(--fx-lime);
+  font-style: normal;
+  padding: 5px 8px;
+}
+
 .fx-spark {
   height: 150px;
   margin: 18px 0 6px;
@@ -719,6 +728,19 @@
   grid-column: 1 / -1;
   line-height: 1.45;
   padding-top: 10px;
+}
+
+.fx-driver-card > small span,
+.fx-driver-card > small b {
+  display: block;
+}
+
+.fx-driver-card > small b {
+  color: var(--fx-lime);
+  font-size: 7px;
+  letter-spacing: 0.08em;
+  margin-top: 7px;
+  text-transform: uppercase;
 }
 
 .fx-driver-skeleton,

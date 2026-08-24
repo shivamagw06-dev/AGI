@@ -185,6 +185,8 @@ async function fetchYahooSeries(target) {
     ...target,
     price: current,
     asOf,
+    source: 'Yahoo Finance',
+    latencySeconds: null,
     low: Math.min(...values),
     high: Math.max(...values),
     returns: {
@@ -210,7 +212,7 @@ async function mapWithConcurrency(items, concurrency, worker) {
   return output.filter(Boolean);
 }
 
-function currencyStrength(pairs, horizon) {
+export function currencyStrength(pairs, horizon) {
   const totals = new Map();
   const add = (currency, value) => {
     const current = totals.get(currency) || { total: 0, observations: 0 };
