@@ -140,5 +140,5 @@ jobs:
           main and any commit made here directly will be discarded." || {
             echo "nothing to publish"; exit 0; }
 
-          git push --force origin HEAD:production
+          git push --force origin HEAD:production HEAD:0-production
           echo "published main@${GITHUB_SHA::9} to production"
