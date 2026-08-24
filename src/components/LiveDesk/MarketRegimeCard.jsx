@@ -8,7 +8,7 @@ import { Card, State } from './Primitives';
  * shows the unavailable state rather than presenting the engine's error as a
  * market condition.
  */
-export default function MarketRegimeCard({ regime, loading, error }) {
+export default function MarketRegimeCard({ regime, flows, loading, error }) {
   const breadth = regime?.breadth;
   const rows = [];
   if (regime?.regime) rows.push(['Regime', regime.regime]);
@@ -17,6 +17,21 @@ export default function MarketRegimeCard({ regime, loading, error }) {
     const advancing = Number(breadth.advancing);
     const declining = Number(breadth.declining);
     rows.push(['Breadth', `${advancing} advancing / ${declining} declining`]);
+  }
+  if (breadth?.sentiment) rows.push(['Sentiment', breadth.sentiment]);
+  // FII/DII is India-only. The latest day can be present with no figures on it,
+  // which the engine reports separately - so the trend is shown when the day is
+  // not yet populated, rather than a blank row implying no flows.
+  if (flows) {
+    if (flows.hasLatest && flows.fiiNet !== null) {
+      rows.push(['FII net', `${flows.fiiNet > 0 ? '+' : ''}${flows.fiiNet.toLocaleString('en-IN')} Cr`]);
+    }
+    if (flows.hasLatest && flows.diiNet !== null) {
+      rows.push(['DII net', `${flows.diiNet > 0 ? '+' : ''}${flows.diiNet.toLocaleString('en-IN')} Cr`]);
+    }
+    if (!flows.hasLatest && flows.trend5d !== null) {
+      rows.push(['Flows, 5d', `${flows.trend5d > 0 ? '+' : ''}${flows.trend5d.toLocaleString('en-IN')} Cr`]);
+    }
   }
 
   return (

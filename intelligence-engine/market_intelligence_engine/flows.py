@@ -24,7 +24,17 @@ def institutional_flows(*, limit: int = 120) -> dict[str, Any]:
     rows = sorted(rows, key=lambda r: (str(r.get("date") or ""), str(r.get("segment") or "")))
     cash_rows = [r for r in rows if str(r.get("segment") or "") in {"NSE_EQ", "CASH", "NSE_EQ|CASH"}]
     headline_rows = cash_rows or rows
-    latest = headline_rows[-1] if headline_rows else {}
+    # The newest row that carries a figure, not simply the newest row.
+    #
+    # A row with a date and no values is not a session. One reached the table
+    # from an empty POST to the ingest route and, being the newest by date, it
+    # took the headline slot and blanked FII and DII on the dashboard while
+    # real readings sat one row below it.
+    def _has_values(row: dict[str, Any]) -> bool:
+        return _num(row.get("fii_net")) is not None or _num(row.get("dii_net")) is not None
+
+    priced_rows = [r for r in headline_rows if _has_values(r)]
+    latest = (priced_rows or headline_rows)[-1] if headline_rows else {}
     fii_net = _num(latest.get("fii_net"))
     dii_net = _num(latest.get("dii_net"))
     latest_values_available = fii_net is not None or dii_net is not None

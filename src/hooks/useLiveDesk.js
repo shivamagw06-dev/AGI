@@ -43,13 +43,14 @@ async function getJson(path, { timeoutMs = 20_000 } = {}) {
  *  thing a reader trusts once and never again. INDIA VIX is labelled as such
  *  rather than as "VIX", which is a different index. */
 const CROSS_ASSET = [
-  { key: 'NIFTY', label: 'Nifty 50', klass: 'Equities' },
-  { key: 'S&P', label: 'S&P 500', klass: 'Equities' },
-  { key: 'NASDAQ', label: 'Nasdaq', klass: 'Equities' },
-  { key: 'USDINR', label: 'USD/INR', klass: 'FX' },
-  { key: 'Brent', label: 'Brent', klass: 'Commodities' },
-  { key: 'Gold', label: 'Gold', klass: 'Commodities' },
-  { key: 'INDIA VIX', label: 'India VIX', klass: 'Volatility' },
+  { key: 'NIFTY', label: 'Nifty 50', klass: 'India equities' },
+  { key: 'BANK NIFTY', label: 'Bank Nifty', klass: 'India financials' },
+  { key: 'USDINR', label: 'USD/INR', klass: 'India FX' },
+  { key: 'INDIA VIX', label: 'India VIX', klass: 'India volatility' },
+  { key: 'S&P', label: 'S&P 500', klass: 'Global equities' },
+  { key: 'NASDAQ', label: 'Nasdaq', klass: 'Global equities' },
+  { key: 'Brent', label: 'Brent', klass: 'Global commodities' },
+  { key: 'Gold', label: 'Gold', klass: 'Global commodities' },
 ];
 
 function num(value) {
@@ -124,64 +125,10 @@ function buildAlerts(snapshot) {
   return out.sort((a, b) => Math.abs(b.changePct) - Math.abs(a.changePct));
 }
 
-/**
- * What is moving the session, derived only from what the snapshot shows.
- *
- * Returns null unless several assets agree. A single index being down is not a
- * market driver, and naming one anyway is how a research page starts inventing
- * narrative to fill a card.
- */
-function buildDrivers(snapshot) {
-  const by = new Map((snapshot || []).map((row) => [String(row?.name || '').trim(), num(row?.percentChange)]));
-  const equities = ['NIFTY', 'SENSEX', 'S&P', 'NASDAQ'].map((k) => by.get(k)).filter((v) => v !== null && v !== undefined);
-  if (equities.length < 2) return null;
-
-  const equityAvg = equities.reduce((a, b) => a + b, 0) / equities.length;
-  const vix = by.get('INDIA VIX');
-  const gold = by.get('Gold');
-  const brent = by.get('Brent');
-  const usdinr = by.get('USDINR');
-
-  const confirmations = [];
-  if (vix !== null && vix !== undefined && Math.abs(vix) >= 1)
-    confirmations.push({ label: 'India VIX', value: vix, reads: vix > 0 ? 'volatility bid' : 'volatility easing' });
-  if (gold !== null && gold !== undefined && Math.abs(gold) >= 0.5)
-    confirmations.push({ label: 'Gold', value: gold, reads: gold > 0 ? 'defensive bid' : 'defensive bid easing' });
-  if (brent !== null && brent !== undefined && Math.abs(brent) >= 1)
-    confirmations.push({ label: 'Brent', value: brent, reads: brent > 0 ? 'crude firmer' : 'crude softer' });
-  if (usdinr !== null && usdinr !== undefined && Math.abs(usdinr) >= 0.2)
-    confirmations.push({ label: 'USD/INR', value: usdinr, reads: usdinr > 0 ? 'rupee weaker' : 'rupee firmer' });
-
-  // One asset moving is noise. Two agreeing is a session.
-  if (confirmations.length < 2 && Math.abs(equityAvg) < 0.5) return null;
-
-  const riskOff = equityAvg < 0;
-  const primary = riskOff ? 'Equities under pressure' : 'Equities firmer';
-  const secondary = confirmations.length ? `${confirmations[0].label} ${confirmations[0].reads}` : null;
-
-  const parts = [
-    `Equity benchmarks are ${riskOff ? 'lower' : 'higher'} on average by ${Math.abs(equityAvg).toFixed(2)}% across the indices AGI tracks.`,
-  ];
-  if (confirmations.length) {
-    parts.push(`Cross-asset moves are consistent with that: ${confirmations
-      .slice(0, 3)
-      .map((c) => `${c.label} ${c.value > 0 ? '+' : ''}${c.value.toFixed(2)}% (${c.reads})`)
-      .join(', ')}.`);
-  }
-
-  return {
-    primary,
-    secondary,
-    confirmations,
-    equityAvg,
-    view: parts.join(' '),
-    basis: 'Derived from the current market snapshot only.',
-  };
-}
 
 const EMPTY = {
   snapshot: [], events: [], research: [], themes: [],
-  crossAsset: [], alerts: [], drivers: null, regime: null, liveAlpha: null,
+  crossAsset: [], alerts: [], regime: null, flows: null, liveAlpha: null,
 };
 
 export default function useLiveDesk() {
@@ -234,6 +181,7 @@ export default function useLiveDesk() {
     }
 
     let regime = null;
+    let flows = null;
     if (miResult.status === 'fulfilled') {
       const mi = miResult.value || {};
       const mr = mi.market_regime || {};
@@ -242,9 +190,24 @@ export default function useLiveDesk() {
       if (mi.ok && ok(mr.regime) && String(mr.regime).toLowerCase() !== 'unavailable') {
         regime = {
           regime: mr.regime,
-          drivers: Array.isArray(mr.drivers) ? mr.drivers : [],
+          participation: mr.participation || null,
+          drivers: Array.isArray(mi.market_drivers?.drivers) ? mi.market_drivers.drivers : [],
           breadth: mi.breadth || null,
           health: mi.market_health || null,
+        };
+      }
+      // FII/DII, which is India-only and has its own availability flags. The
+      // engine reports latest_values_available separately from available,
+      // because a day can be present with no figures on it.
+      const f = mi.flows || {};
+      if (f.available) {
+        flows = {
+          latestDate: f.latest_date || null,
+          hasLatest: Boolean(f.latest_values_available),
+          fiiNet: ok(f.fii_net) ? Number(f.fii_net) : null,
+          diiNet: ok(f.dii_net) ? Number(f.dii_net) : null,
+          trend5d: ok(f.trend_5d) ? Number(f.trend_5d) : null,
+          trend20d: ok(f.trend_20d) ? Number(f.trend_20d) : null,
         };
       }
     } else {
@@ -257,11 +220,11 @@ export default function useLiveDesk() {
       snapshot,
       crossAsset: buildCrossAsset(snapshot),
       alerts: buildAlerts(snapshot),
-      drivers: buildDrivers(snapshot),
       events: Array.isArray(home.economic_calendar) ? home.economic_calendar : [],
       research: Array.isArray(home.featured_research) ? home.featured_research : [],
       themes: Array.isArray(home.market_themes) ? home.market_themes : [],
       regime,
+      flows,
       liveAlpha,
       updatedAt: snapshot[0]?.updatedAt || null,
       stale,

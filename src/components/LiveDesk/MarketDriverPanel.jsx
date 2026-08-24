@@ -8,16 +8,16 @@ import { Card, State, pct } from './Primitives';
  * page starts writing narrative to fill a card, which is the opposite of what
  * this product is for.
  */
-export default function MarketDriverPanel({ drivers, loading, error }) {
+export default function MarketDriverPanel({ drivers, loading, error, title = 'Why Markets Are Moving', emptyLabel }) {
   return (
-    <Card title="Why Markets Are Moving">
+    <Card title={title}>
       <State
         loading={loading}
         error={error}
         empty={!drivers}
         labels={{
           loading: 'Assessing market drivers…',
-          empty: 'No single dominant market driver has been identified.',
+          empty: emptyLabel || 'No single dominant market driver has been identified.',
         }}
       >
         {drivers ? (

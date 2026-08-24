@@ -39,7 +39,7 @@
   --ld-mono: 'IBM Plex Mono', ui-monospace, Menlo, monospace;
 
   --ld-gutter: clamp(0.9rem, 2.2vw, 2.25rem);
-  --ld-max: min(1880px, 96vw);
+  --ld-max: min(1680px, 96vw);
 
   background: var(--ld-bg);
   color: var(--ld-ink);
@@ -98,12 +98,36 @@
 .ld-state { padding: 1.4rem 0.95rem; color: var(--ld-faint); font-size: 0.85rem; text-align: center; }
 .ld-state-err { color: var(--ld-warn); }
 
-/* --- Main grid --- */
-.ld-main { display: grid; grid-template-columns: 1fr; gap: 1rem; margin-top: 1.1rem; }
-@media (min-width: 1080px) { .ld-main { grid-template-columns: 65fr 35fr; } }
+/* --- Dual broadcast grid ---
+   Equal columns, deliberately. Global and India carry the same weight, so
+   neither gets more width, a higher position, or a tab that hides it.
+   Stacked below 1024px, where two 16:9 frames side by side are each too small
+   to read. */
+.ld-broadcasts { display: grid; grid-template-columns: 1fr; gap: 1rem; margin-top: 1.1rem; }
+@media (min-width: 1024px) { .ld-broadcasts { grid-template-columns: 1fr 1fr; } }
+.ld-broadcast { display: flex; flex-direction: column; }
+.ld-broadcast-head-right { display: flex; align-items: center; gap: 0.8rem; }
+.ld-broadcast-title {
+  padding: 0.5rem 0.95rem 0.6rem; font-size: 0.95rem; font-weight: 550;
+  border-bottom: 1px solid var(--ld-line);
+}
+.ld-minimize {
+  background: none; border: 0; cursor: pointer; color: var(--ld-muted);
+  font-family: var(--ld-mono); font-size: 0.64rem; letter-spacing: 0.08em; text-transform: uppercase;
+}
+.ld-minimize:hover { color: var(--ld-ink); }
+.ld-poster-hint { font-size: 0.74rem; color: var(--ld-muted); text-align: center; padding: 0 1rem; }
 
+.ld-section { margin-top: 1rem; }
 .ld-grid-2 { display: grid; grid-template-columns: 1fr; gap: 1rem; margin-top: 1rem; }
 @media (min-width: 900px) { .ld-grid-2 { grid-template-columns: 1fr 1fr; } }
+
+/* --- Cross-market --- */
+.ld-xm-row {
+  display: flex; justify-content: space-between; gap: 1rem; align-items: baseline;
+  padding: 0.3rem 0; font-size: 0.86rem;
+}
+.ld-pulse-missing { opacity: 0.55; }
 
 /* --- Bloomberg player --- */
 .ld-video-frame {
@@ -111,6 +135,7 @@
   background: #000; border-bottom: 1px solid var(--ld-line);
 }
 .ld-video-frame iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+.ld-video-compact { aspect-ratio: 16 / 9; }
 .ld-video-poster {
   position: absolute; inset: 0; display: flex; flex-direction: column;
   align-items: center; justify-content: center; gap: 0.8rem;

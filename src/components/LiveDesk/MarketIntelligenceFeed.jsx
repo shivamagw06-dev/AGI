@@ -11,10 +11,10 @@ import { Card, State, dirClass, istTime, pct } from './Primitives';
  * because a desk that always has something to say is one that is sometimes
  * making it up.
  */
-export default function MarketIntelligenceFeed({ items, loading, error, updatedAt, onEvidence }) {
+export default function MarketIntelligenceFeed({ items, loading, error, updatedAt, onEvidence, title = 'AGI Market Intelligence', emptyLabel }) {
   return (
     <Card
-      title="AGI Market Intelligence"
+      title={title}
       right={updatedAt ? <span className="ld-refresh">{istTime(updatedAt)}</span> : null}
       tight
     >
@@ -24,7 +24,7 @@ export default function MarketIntelligenceFeed({ items, loading, error, updatedA
         empty={!items?.length}
         labels={{
           loading: 'Loading market intelligence…',
-          empty: 'No high-confidence intelligence signals right now.',
+          empty: emptyLabel || 'No high-confidence intelligence signals right now.',
         }}
       >
         <div className="ld-feed">
@@ -48,6 +48,11 @@ export default function MarketIntelligenceFeed({ items, loading, error, updatedA
                 ) : null}
               </div>
               {item.body ? <div className="ld-feed-body">{item.body}</div> : null}
+              {item.affected?.length ? (
+                <div className="ld-feed-body" style={{ color: 'var(--ld-faint)' }}>
+                  Affected: {item.affected.join(' · ')}
+                </div>
+              ) : null}
               {item.evidence?.length ? (
                 <button type="button" className="ld-evidence" onClick={() => onEvidence(item)}>
                   View evidence
