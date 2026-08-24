@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import time
 import uuid
 from datetime import datetime, timezone
 from typing import Any, Optional
@@ -25,6 +26,19 @@ _RATIO_MAP = {
 
 # Ratios the Unified Valuation Engine must prefer from the provider.
 PROVIDER_OWNED = frozenset({"pe", "pb", "roa", "roe", "roce", "ev_ebitda"})
+
+# Row fields each consumer reads for the same provider metric.
+_CONSUMER_RATIO_FIELDS = (
+    ("pe", ("pe", "trailing_pe")),
+    ("pb", ("pb",)),
+    ("roe", ("roe",)),
+    ("roa", ("roa",)),
+    ("roce", ("roce", "roic")),
+    ("ev_ebitda", ("ev_ebitda",)),
+)
+
+_LATEST_RATIO_TTL = 300.0
+_LATEST_RATIO_CACHE: dict[str, Any] = {"at": 0.0, "map": {}}
 
 
 def _num(value: Any) -> Optional[float]:
@@ -300,6 +314,93 @@ def latest_provider_ratios(symbol: str) -> dict[str, Any]:
         "source": SOURCE,
         "ratios": ratios,
     }
+
+
+def fold_latest_ratio_rows(rows: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:
+    """Newest company_value per (symbol, ratio_name) from long-format warehouse rows."""
+    staged: dict[str, dict[str, dict[str, Any]]] = {}
+    for row in rows:
+        symbol = str(row.get("symbol") or "").strip().upper()
+        name = str(row.get("ratio_name") or "").strip().lower()
+        if not symbol or name not in PROVIDER_OWNED:
+            continue
+        as_of = str(row.get("reported_date") or "")
+        pack = staged.setdefault(symbol, {})
+        prev = pack.get(name)
+        if prev and str(prev.get("reported_date") or "") >= as_of:
+            continue
+        pack[name] = row
+
+    out: dict[str, dict[str, Any]] = {}
+    for symbol, pack in staged.items():
+        as_of = max((str(item.get("reported_date") or "") for item in pack.values()), default="")
+        values: dict[str, Any] = {
+            "as_of": as_of,
+            "source": "warehouse.valuation_ratios",
+        }
+        for name, item in pack.items():
+            company = _num(item.get("company_value"))
+            if company is None:
+                continue
+            values[name] = company
+            sector = _num(item.get("sector_value"))
+            if sector is not None:
+                values[f"{name}_sector"] = sector
+        if any(key in PROVIDER_OWNED for key in values):
+            out[symbol] = values
+    return out
+
+
+def latest_ratio_map(*, force: bool = False) -> dict[str, dict[str, Any]]:
+    """Cached symbol → latest Upstox PE/PB/ROE/ROA/ROCE/EV-EBITDA pack."""
+    now = time.monotonic()
+    cached = _LATEST_RATIO_CACHE.get("map") or {}
+    if not force and cached and now - float(_LATEST_RATIO_CACHE.get("at") or 0) < _LATEST_RATIO_TTL:
+        return cached
+
+    rows: list[dict[str, Any]] = []
+    try:
+        from institutional_warehouse import db
+
+        table = db.physical_table("valuation_ratios")
+        rows = db.query(
+            f'SELECT symbol, ratio_name, company_value, sector_value, reported_date '
+            f'FROM {table} WHERE COALESCE(sys_published, 1) = 1'
+        ) or []
+    except Exception:
+        try:
+            from institutional_warehouse import store
+
+            rows = store.all_rows("valuation_ratios", limit=250_000) or []
+        except Exception:
+            rows = []
+
+    folded = fold_latest_ratio_rows(rows)
+    _LATEST_RATIO_CACHE["at"] = now
+    _LATEST_RATIO_CACHE["map"] = folded
+    return folded
+
+
+def apply_latest_ratios(
+    row: dict[str, Any],
+    latest: dict[str, dict[str, Any]] | None = None,
+) -> dict[str, Any]:
+    """Overlay warehouse.valuation_ratios onto a company row used by desks/scanners."""
+    ticker = str(row.get("ticker") or row.get("symbol") or "").strip().upper()
+    pack = (latest if latest is not None else latest_ratio_map()).get(ticker)
+    if not pack:
+        return row
+    out = dict(row)
+    for src, dests in _CONSUMER_RATIO_FIELDS:
+        value = pack.get(src)
+        if value is None:
+            continue
+        for dest in dests:
+            out[dest] = value
+    out["valuation_ratios_as_of"] = pack.get("as_of")
+    out["valuation_ratios_source"] = pack.get("source")
+    return out
+
 
 def pivot_stored_ratios(*, date: str | None = None, actor: str = "pivot_backfill",
                         limit: int = 200_000) -> dict[str, Any]:

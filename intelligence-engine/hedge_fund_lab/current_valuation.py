@@ -13,7 +13,7 @@ from time import monotonic
 from typing import Any, Optional
 
 
-CURRENT_METRICS = frozenset({"pe", "pb", "ev_ebitda"})
+CURRENT_METRICS = frozenset({"pe", "pb", "ev_ebitda", "roe", "roa", "roce"})
 FRESH_WITHIN_DAYS = 1
 CACHE_SECONDS = 300.0
 
@@ -23,14 +23,16 @@ _cache_reference_date: Optional[str] = None
 _cache_by_symbol: dict[str, dict[str, dict[str, Any]]] = {}
 
 
-def _number(value: Any) -> Optional[float]:
+def _number(value: Any, *, allow_negative: bool = False) -> Optional[float]:
     if value is None or isinstance(value, bool):
         return None
     try:
         number = float(value)
     except (TypeError, ValueError):
         return None
-    if number != number or number <= 0:
+    if number != number:
+        return None
+    if not allow_negative and number <= 0:
         return None
     return number
 
@@ -45,48 +47,39 @@ def _days_between(older: str, newer: str) -> Optional[int]:
 
 
 def _load() -> tuple[Optional[str], dict[str, dict[str, dict[str, Any]]]]:
-    from institutional_warehouse import store
+    from valuation_ratios.ingest import latest_ratio_map
 
     try:
-        rows = store.all_rows("valuation_ratios", limit=200_000)
+        folded = latest_ratio_map()
     except Exception:
         return None, {}
 
-    eligible = []
-    reference_date: Optional[str] = None
-    for row in rows:
-        if str(row.get("source") or row.get("provider") or "").lower() != "upstox":
-            continue
-        symbol = str(row.get("symbol") or "").strip().upper()
-        metric = str(row.get("ratio_name") or "").strip().lower()
-        as_of = str(row.get("reported_date") or "")[:10]
-        value = _number(row.get("company_value"))
-        if not symbol or metric not in CURRENT_METRICS or not as_of or value is None:
-            continue
-        reference_date = max(reference_date or as_of, as_of)
-        eligible.append((symbol, metric, as_of, value, row))
-
-    if not reference_date:
-        return None, {}
-
+    reference_date = max(
+        (str(pack.get("as_of") or "")[:10] for pack in folded.values()),
+        default="",
+    ) or None
     by_symbol: dict[str, dict[str, dict[str, Any]]] = {}
-    for symbol, metric, as_of, value, row in sorted(
-        eligible, key=lambda item: item[2], reverse=True
-    ):
-        if metric in by_symbol.setdefault(symbol, {}):
-            continue
-        age = _days_between(as_of, reference_date)
-        if age is None or age > FRESH_WITHIN_DAYS:
-            continue
-        by_symbol[symbol][metric] = {
-            "value": value,
-            "sector_value": _number(row.get("sector_value")),
-            "as_of": as_of,
-            "freshness": "FRESH",
-            "source": "upstox",
-            "snapshot_id": row.get("snapshot_id"),
-            "dqiv_status": row.get("dqiv_status"),
-        }
+    for symbol, pack in folded.items():
+        as_of = str(pack.get("as_of") or "")[:10]
+        age = _days_between(as_of, reference_date or as_of) if as_of else None
+        freshness = "FRESH" if age is not None and age <= FRESH_WITHIN_DAYS else "LATEST"
+        metrics: dict[str, dict[str, Any]] = {}
+        for metric in CURRENT_METRICS:
+            value = _number(
+                pack.get(metric),
+                allow_negative=metric in {"roe", "roa", "roce"},
+            )
+            if value is None:
+                continue
+            metrics[metric] = {
+                "value": value,
+                "sector_value": _number(pack.get(f"{metric}_sector"), allow_negative=True),
+                "as_of": as_of,
+                "freshness": freshness,
+                "source": "upstox",
+            }
+        if metrics:
+            by_symbol[symbol] = metrics
     return reference_date, by_symbol
 
 
