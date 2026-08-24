@@ -47,9 +47,9 @@ const FEATURE_COPY = {
     blurb: 'Full desk coverage beyond the public market snapshot.',
   },
   economics: {
-    eyebrow: 'Economics',
-    title: 'Unlock Economic Intelligence',
-    blurb: 'G20 macro network, country pulse and governed macro evidence.',
+    eyebrow: 'FX Intelligence',
+    title: 'Unlock FX & Macro Intelligence',
+    blurb: 'Currency heatmaps, macro transmission signals and governed FX research.',
   },
   global_markets: {
     eyebrow: 'Global Markets',

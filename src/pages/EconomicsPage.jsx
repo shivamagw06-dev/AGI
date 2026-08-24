@@ -1,160 +1,373 @@
-import { useEffect, useMemo, useState } from 'react';
-import { Activity, ArrowRight, BarChart3, ChevronDown, Database, ExternalLink, Globe2, Landmark, RefreshCw, ShieldCheck, TrendingUp } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import PageShell from '@/components/Layout/PageShell';
-import AskAgiBar from '@/components/Home/AskAgiBar';
-import DeskResearchFeed from '@/components/Research/DeskResearchFeed';
-import { getMieDataReadiness, getMieG20Matrix, getMieLatestPublicObservations, getMieSupplementalObservations } from '@/lib/intelligenceApi';
+import DeskResearchFeed from '@/components/research/DeskResearchFeed';
+import { getFxIntelligence } from '@/lib/fxApi';
 import './economicsPage.css';
 
-const LENSES = [
-  { id: 'growth', label: 'Growth', ids: ['gdp_growth', 'gdp', 'investment', 'industrial_production'], summary: 'Output, investment and industrial momentum', color: '#ff9f43' },
-  { id: 'inflation', label: 'Inflation', ids: ['cpi', 'core_cpi', 'food_inflation', 'ppi'], summary: 'Price pressure and household purchasing power', color: '#ef5b5b' },
-  { id: 'monetary', label: 'Rates', ids: ['policy_rate', 'real_policy_rate', 'yield_10y', 'yield_2y'], summary: 'RBI stance, real rates and the sovereign curve', color: '#4e8cff' },
-  { id: 'external', label: 'External', ids: ['usd_fx', 'current_account_gdp', 'exports', 'imports', 'fx_reserves'], summary: 'Currency, trade and external resilience', color: '#18b77a' },
-  { id: 'credit', label: 'Credit', ids: ['bank_credit', 'credit_growth', 'private_credit_gdp', 'debt_service_ratio'], summary: 'Funding, leverage and domestic demand', color: '#a778e8' },
-  { id: 'global', label: 'Global', ids: ['oil', 'gas', 'copper', 'gold', 'global_risk'], summary: 'Input costs, risk appetite and world demand', color: '#e4b53f' },
+const HORIZONS = [
+  { key: 'd1', label: '1D' },
+  { key: 'w1', label: '1W' },
+  { key: 'm1', label: '1M' },
 ];
 
-const TRANSMISSION = [
-  { trigger: 'Rates stay restrictive', effect: 'Banks, housing and duration', detail: 'Deposit repricing, credit demand and refinancing costs become the decisive transmission channels.' },
-  { trigger: 'Oil moves higher', effect: 'Inflation and margins', detail: 'Import costs pressure aviation, logistics, paints and consumption; upstream energy benefits.' },
-  { trigger: 'INR weakens', effect: 'Exporters versus importers', detail: 'IT and pharma may receive translation support while import-intensive businesses face margin pressure.' },
-  { trigger: 'Growth broadens', effect: 'Domestic cyclicals', detail: 'Credit, capital goods and discretionary demand improve when investment and consumption move together.' },
-];
-
-const SOURCE_STACK = [
-  ['India official', 'RBI · MoSPI · Ministry of Commerce', 'Primary releases and policy evidence'],
-  ['Global official', 'World Bank · BIS · OECD · ILO', 'Comparable history and cross-country context'],
-  ['Market context', 'Yahoo Finance · FMP', 'FX, commodities, yields and release calendar'],
-];
-
-const fmt = (value) => {
+function signedPct(value) {
   const number = Number(value);
-  if (!Number.isFinite(number)) return 'Awaiting release';
-  if (Math.abs(number) >= 1e9) return `${(number / 1e9).toFixed(1)}bn`;
-  return number.toLocaleString('en-IN', { maximumFractionDigits: 2 });
-};
-
-const shortDate = (value) => {
-  if (!value) return 'Date pending';
-  const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? String(value) : date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
-};
-
-function LensCard({ lens, observations, onOpen }) {
-  const rows = lens.ids.map((id) => observations[id]).filter(Boolean);
-  const lead = rows[0];
-  return <button type="button" className="eco-client-lens" style={{ '--lens': lens.color }} onClick={() => onOpen(lens)}>
-    <span className="eco-client-lens-mark"><Activity size={15} />{lens.label}</span>
-    <strong>{lead ? fmt(lead.value) : 'Building'}</strong>
-    <small>{lead ? `${lead.label} · ${lead.unit || ''}` : lens.summary}</small>
-    <footer><span>{rows.length} of {lens.ids.length} inputs</span><ArrowRight size={15} /></footer>
-  </button>;
+  if (!Number.isFinite(number)) return '—';
+  return `${number > 0 ? '+' : ''}${number.toFixed(2)}%`;
 }
 
-function EvidenceDrawer({ lens, observations, onClose }) {
-  return <div className="eco-client-drawer">
-    <header><div><small>Macro lens</small><h3>{lens.label}</h3><p>{lens.summary}</p></div><button type="button" onClick={onClose}>Close</button></header>
-    <div>{lens.ids.map((id) => {
-      const row = observations[id];
-      return <article key={id} className={!row ? 'missing' : ''}>
-        <span>{row?.label || id.replaceAll('_', ' ')}</span>
-        <strong>{row ? `${fmt(row.value)} ${row.unit || ''}` : 'Awaiting official source'}</strong>
-        <small>{row ? `${shortDate(row.observation_date)} · ${row.source || 'Official/public source'}` : 'Not inferred or estimated'}</small>
-      </article>;
-    })}</div>
-    <footer><ShieldCheck size={15} /> AGI separates observed data from interpretation and does not manufacture missing values.</footer>
-  </div>;
+function price(value, decimals = 2) {
+  const number = Number(value);
+  if (!Number.isFinite(number)) return '—';
+  return new Intl.NumberFormat('en-IN', {
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals,
+  }).format(number);
 }
 
-function G20View({ matrix }) {
-  const countries = matrix?.countries || [];
-  return <section className="eco-client-section">
-    <header className="eco-client-heading"><div><small>Global comparison</small><h2>G20 macro pulse</h2><p>Comparable evidence across major economies. Select indicators remain under construction.</p></div><span>{matrix?.coverage_percent ?? 0}% coverage</span></header>
-    <div className="eco-client-g20">
-      <div className="head"><b>Economy</b><b>Growth</b><b>Inflation</b><b>Unemployment</b><b>Debt / GDP</b><b>Coverage</b></div>
-      {countries.map((country) => {
-        const cell = (id) => country.indicators?.[id] ? `${fmt(country.indicators[id].value)} ${country.indicators[id].unit || ''}` : '—';
-        return <div key={country.iso3} className={country.iso3 === 'IND' ? 'india' : ''}><b>{country.country}<small>{country.iso3}</small></b><span>{cell('gdp_growth')}</span><span>{cell('inflation')}</span><span>{cell('unemployment')}</span><span>{cell('government_debt_gdp')}</span><strong>{country.observed} / {country.total}</strong></div>;
-      })}
-    </div>
-  </section>;
+function freshTime(value) {
+  if (!value) return 'Awaiting update';
+  return new Date(value).toLocaleString('en-IN', {
+    day: '2-digit',
+    month: 'short',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}
+
+function moveTone(value) {
+  const number = Number(value);
+  if (!Number.isFinite(number) || Math.abs(number) < 0.03) return 'flat';
+  return number > 0 ? 'up' : 'down';
+}
+
+function Sparkline({ values = [], tone = 'up' }) {
+  if (values.length < 2) return <div className="fx-spark-empty">No chart yet</div>;
+  const width = 420;
+  const height = 124;
+  const low = Math.min(...values);
+  const high = Math.max(...values);
+  const spread = high - low || 1;
+  const points = values
+    .map((value, index) => {
+      const x = (index / (values.length - 1)) * width;
+      const y = height - ((value - low) / spread) * (height - 16) - 8;
+      return `${x.toFixed(1)},${y.toFixed(1)}`;
+    })
+    .join(' ');
+
+  return (
+    <svg className={`fx-spark fx-spark--${tone}`} viewBox={`0 0 ${width} ${height}`} role="img" aria-label="One month price path">
+      <line x1="0" y1={height / 2} x2={width} y2={height / 2} className="fx-spark-mid" />
+      <polyline points={points} fill="none" vectorEffect="non-scaling-stroke" />
+    </svg>
+  );
+}
+
+function HeatCell({ row, horizon }) {
+  const move = Number(row?.returns?.[horizon]);
+  const intensity = Number.isFinite(move) ? Math.min(Math.abs(move) / 1.75, 1) : 0;
+  const tone = moveTone(move);
+  const background =
+    tone === 'up'
+      ? `rgba(32, 199, 164, ${0.1 + intensity * 0.42})`
+      : tone === 'down'
+        ? `rgba(255, 111, 97, ${0.1 + intensity * 0.42})`
+        : 'rgba(255, 255, 255, 0.05)';
+
+  return (
+    <article className={`fx-heat-cell fx-tone-${tone}`} style={{ background }}>
+      <div className="fx-heat-topline">
+        <span>{row.pair}</span>
+        <small>{row.region}</small>
+      </div>
+      <strong>{signedPct(move)}</strong>
+      <div className="fx-heat-price">
+        {price(row.price, row.decimals)}
+        <span>{row.base} per {row.quote}</span>
+      </div>
+    </article>
+  );
+}
+
+function DriverCard({ row, horizon }) {
+  const move = Number(row?.returns?.[horizon]);
+  const tone = moveTone(move);
+  const interpretations = {
+    'Dollar index': move >= 0 ? 'Broad dollar demand is firmer.' : 'Broad dollar pressure is easing.',
+    'Brent crude': move >= 0 ? 'India import-cost pressure is rising.' : 'India import-cost pressure is easing.',
+    'US 10Y yield': move >= 0 ? 'Dollar carry support is firming.' : 'Dollar carry support is softening.',
+    Gold: move >= 0 ? 'Defensive asset demand is rising.' : 'Defensive asset demand is cooling.',
+  };
+
+  return (
+    <article className="fx-driver-card">
+      <div>
+        <p>{row.name}</p>
+        <strong>{price(row.price, row.decimals)}</strong>
+        <span>{row.unit}</span>
+      </div>
+      <div className={`fx-driver-move fx-tone-${tone}`}>{signedPct(move)}</div>
+      <small>{interpretations[row.name]}</small>
+    </article>
+  );
+}
+
+function ScenarioCard({ label, value, delta, note, tone }) {
+  return (
+    <article className={`fx-scenario fx-scenario--${tone}`}>
+      <span>{label}</span>
+      <strong>{price(value, 4)}</strong>
+      <b>{delta}</b>
+      <p>{note}</p>
+    </article>
+  );
 }
 
 export default function EconomicsPage() {
-  const [scope, setScope] = useState('india');
-  const [readiness, setReadiness] = useState(null);
-  const [publicData, setPublicData] = useState(null);
-  const [supplemental, setSupplemental] = useState(null);
-  const [g20, setG20] = useState(null);
-  const [selectedLens, setSelectedLens] = useState(null);
-  const [methodOpen, setMethodOpen] = useState(false);
+  const [horizon, setHorizon] = useState('d1');
+  const [payload, setPayload] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
-  useEffect(() => {
-    let mounted = true;
-    Promise.allSettled([getMieDataReadiness('India'), getMieLatestPublicObservations('India'), getMieSupplementalObservations(), getMieG20Matrix()]).then(([ready, latest, extra, matrix]) => {
-      if (!mounted) return;
-      if (ready.status === 'fulfilled') setReadiness(ready.value);
-      if (latest.status === 'fulfilled') setPublicData(latest.value);
-      if (extra.status === 'fulfilled') setSupplemental(extra.value);
-      if (matrix.status === 'fulfilled') setG20(matrix.value);
-    });
-    return () => { mounted = false; };
+  const load = useCallback(async () => {
+    setLoading(true);
+    setError('');
+    try {
+      setPayload(await getFxIntelligence());
+    } catch (reason) {
+      setError(reason?.message || 'FX reference feed is unavailable.');
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  const observations = useMemo(() => [...(publicData?.observations || []), ...(supplemental?.observations || [])], [publicData, supplemental]);
-  const byId = useMemo(() => Object.fromEntries(observations.map((row) => [row.series_id, row])), [observations]);
-  const latestAt = publicData?.latest_available_at;
-  const coverage = readiness?.coverage_percent ?? 0;
-  const headline = byId.gdp_growth || byId.gdp || observations[0];
-  const tape = observations.slice(0, 7);
+  useEffect(() => {
+    load();
+    const timer = window.setInterval(load, 5 * 60_000);
+    return () => window.clearInterval(timer);
+  }, [load]);
 
-  return <PageShell title="India Economic Intelligence" eyebrow="AGI Economics" description="The forces shaping growth, inflation, rates and Indian assets." metaTitle="India Economic Intelligence | Agarwal Global Investments" wide>
-    <div className="eco-client-root">
-      <section className="eco-client-hero">
-        <div className="eco-client-hero-copy">
-          <span><i /> Evidence updated {shortDate(latestAt)}</span>
-          <h1>Read the economy.<br /><em>Understand the market.</em></h1>
-          <p>Official economic releases, global context and AGI's market-transmission framework in one concise research view.</p>
-          <div className="eco-client-scope"><button className={scope === 'india' ? 'active' : ''} onClick={() => setScope('india')}>India</button><button className={scope === 'g20' ? 'active' : ''} onClick={() => setScope('g20')}>G20 comparison</button></div>
+  const pairs = payload?.pairs || [];
+  const drivers = payload?.drivers || [];
+  const strength = payload?.strength?.[horizon] || [];
+  const usdInr = useMemo(() => pairs.find((row) => row.pair === 'USD/INR'), [pairs]);
+  const move = Number(usdInr?.returns?.[horizon]);
+  const tone = moveTone(move);
+  const maxStrength = Math.max(0.01, ...strength.map((row) => Math.abs(Number(row.score) || 0)));
+  const scenarioBase = Number(usdInr?.price);
+
+  return (
+    <PageShell
+      title="FX Intelligence"
+      metaTitle="FX Intelligence | Agarwal Global Investments"
+      eyebrow="Markets / Currency desk"
+      description="Live currency heatmaps, India FX transmission signals and scenario tools built for decisions, not decoration."
+      className="fx-shell"
+      theme="dark"
+      wide
+    >
+      <main className="fx-page">
+        <section className="fx-command">
+          <div className="fx-command-copy">
+            <p className="fx-kicker">GLOBAL CURRENCY NETWORK</p>
+            <h2>Currencies are the transmission layer.</h2>
+            <p>
+              See where pressure is building across the dollar, rupee, G10 and Asian FX.
+              Then connect the move to rates, energy and risk appetite.
+            </p>
+          </div>
+          <div className="fx-command-status">
+            <span className={`fx-live-dot ${error ? 'fx-live-dot--error' : ''}`} />
+            <div>
+              <b>{error ? 'Reference feed interrupted' : loading && !payload ? 'Connecting to market reference' : 'Market reference online'}</b>
+              <small>{payload ? `Updated ${freshTime(payload.asOf)}` : 'Read-only, delayed data'}</small>
+            </div>
+            <button type="button" onClick={load} disabled={loading}>
+              {loading ? 'Refreshing' : 'Refresh'}
+            </button>
+          </div>
+        </section>
+
+        {error ? (
+          <div className="fx-alert">
+            <div>
+              <strong>FX desk is temporarily unavailable.</strong>
+              <span>{error}</span>
+            </div>
+            <button type="button" onClick={load}>Try again</button>
+          </div>
+        ) : null}
+
+        <nav className="fx-horizons" aria-label="Return horizon">
+          <span>Market move</span>
+          {HORIZONS.map((item) => (
+            <button
+              key={item.key}
+              type="button"
+              className={horizon === item.key ? 'is-active' : ''}
+              onClick={() => setHorizon(item.key)}
+            >
+              {item.label}
+            </button>
+          ))}
+          <small>Positive means the first currency in the pair appreciated.</small>
+        </nav>
+
+        <section className="fx-primary-grid">
+          <div className="fx-panel fx-heatmap-panel">
+            <header className="fx-panel-head">
+              <div>
+                <span>01 / CROSS-ASSET VIEW</span>
+                <h3>Currency heatmap</h3>
+              </div>
+              <p>{payload?.coverage?.available || 0}/{payload?.coverage?.expected || 15} pairs reporting</p>
+            </header>
+            {pairs.length ? (
+              <div className="fx-heatmap">
+                {pairs.map((row) => <HeatCell key={row.pair} row={row} horizon={horizon} />)}
+              </div>
+            ) : (
+              <div className="fx-loading-grid" aria-label="Loading currency heatmap">
+                {Array.from({ length: 9 }).map((_, index) => <span key={index} />)}
+              </div>
+            )}
+          </div>
+
+          <aside className="fx-panel fx-strength-panel">
+            <header className="fx-panel-head">
+              <div>
+                <span>02 / RELATIVE FORCE</span>
+                <h3>Currency strength</h3>
+              </div>
+            </header>
+            <p className="fx-panel-note">
+              Average signed return across the available pair network. This is a relative market measure, not a trading signal.
+            </p>
+            <div className="fx-strength-list">
+              {strength.slice(0, 11).map((row, index) => {
+                const score = Number(row.score) || 0;
+                const width = Math.max(4, (Math.abs(score) / maxStrength) * 50);
+                return (
+                  <div className="fx-strength-row" key={row.currency}>
+                    <b>{String(index + 1).padStart(2, '0')}</b>
+                    <strong>{row.currency}</strong>
+                    <div className="fx-strength-track">
+                      <span
+                        className={score >= 0 ? 'is-positive' : 'is-negative'}
+                        style={score >= 0 ? { left: '50%', width: `${width}%` } : { right: '50%', width: `${width}%` }}
+                      />
+                    </div>
+                    <em className={`fx-tone-${moveTone(score)}`}>{signedPct(score)}</em>
+                  </div>
+                );
+              })}
+            </div>
+          </aside>
+        </section>
+
+        <section className="fx-inr-grid">
+          <article className="fx-panel fx-inr-focus">
+            <header className="fx-panel-head">
+              <div>
+                <span>03 / INDIA COCKPIT</span>
+                <h3>USD/INR pressure monitor</h3>
+              </div>
+              <div className={`fx-inr-badge fx-tone-${tone}`}>
+                {tone === 'up' ? 'INR under pressure' : tone === 'down' ? 'INR gaining' : 'INR steady'}
+              </div>
+            </header>
+            <div className="fx-inr-number">
+              <strong>{price(usdInr?.price, 4)}</strong>
+              <span className={`fx-tone-${tone}`}>{signedPct(move)} / {HORIZONS.find((item) => item.key === horizon)?.label}</span>
+            </div>
+            <Sparkline values={usdInr?.sparkline || []} tone={tone} />
+            <div className="fx-range">
+              <span>1-month low <b>{price(usdInr?.low, 4)}</b></span>
+              <span>1-month high <b>{price(usdInr?.high, 4)}</b></span>
+            </div>
+          </article>
+
+          <article className="fx-panel fx-transmission">
+            <header className="fx-panel-head">
+              <div>
+                <span>04 / TRANSMISSION</span>
+                <h3>What is moving the rupee?</h3>
+              </div>
+            </header>
+            <div className="fx-driver-grid">
+              {drivers.length
+                ? drivers.map((row) => <DriverCard key={row.name} row={row} horizon={horizon} />)
+                : Array.from({ length: 4 }).map((_, index) => <div className="fx-driver-skeleton" key={index} />)}
+            </div>
+          </article>
+        </section>
+
+        <section className="fx-panel fx-scenario-panel">
+          <header className="fx-panel-head">
+            <div>
+              <span>05 / RANGE TEST</span>
+              <h3>USD/INR scenario paths</h3>
+            </div>
+            <p>Mechanical scenarios from the current reference rate, not AGI forecasts.</p>
+          </header>
+          <div className="fx-scenario-grid">
+            <ScenarioCard
+              label="INR strengthens"
+              value={Number.isFinite(scenarioBase) ? scenarioBase * 0.98 : null}
+              delta="-2.0%"
+              tone="stronger"
+              note="Lower imported inflation pressure; exporters face a translation headwind."
+            />
+            <ScenarioCard
+              label="Reference path"
+              value={scenarioBase}
+              delta="0.0%"
+              tone="base"
+              note="Current market reference held constant to isolate portfolio sensitivity."
+            />
+            <ScenarioCard
+              label="INR weakens"
+              value={Number.isFinite(scenarioBase) ? scenarioBase * 1.02 : null}
+              delta="+2.0%"
+              tone="weaker"
+              note="Higher import-cost pressure; exporters gain a translation tailwind."
+            />
+          </div>
+        </section>
+
+        <section className="fx-method-grid">
+          <article>
+            <span>DATA</span>
+            <h3>Delayed market reference</h3>
+            <p>Yahoo Finance daily closes. Designed for market context and research, never execution pricing.</p>
+          </article>
+          <article>
+            <span>CALCULATION</span>
+            <h3>Transparent transformations</h3>
+            <p>Pair returns, ranges and strength scores are computed by AGI from the returned close series.</p>
+          </article>
+          <article>
+            <span>INTERPRETATION</span>
+            <h3>Evidence before conviction</h3>
+            <p>Driver cards describe observed transmission channels. They do not assert causality or predict direction.</p>
+          </article>
+        </section>
+
+        <div className="fx-research-wrap">
+          <DeskResearchFeed
+            deskId="economics"
+            title="Latest macro & FX research"
+            emptyHint="Publish macro and currency research from the Economics desk in Admin."
+          />
         </div>
-        <aside>
-          <span>Latest macro evidence</span>
-          <strong>{headline ? fmt(headline.value) : 'Collecting'}</strong>
-          <b>{headline?.label || 'India Core 50'}</b>
-          <p>{headline ? `${headline.unit || ''} · observation ${shortDate(headline.observation_date)}` : 'AGI is refreshing official and public sources.'}</p>
-          <div><span><Database size={15} />{readiness?.observed ?? 0} series observed</span><span><RefreshCw size={15} />{coverage}% coverage</span></div>
-        </aside>
-      </section>
 
-      <section className="eco-client-ask"><div><small>Ask AGI</small><h2>What does the macro picture mean for investors?</h2></div><AskAgiBar placeholder="Ask how rates, oil or growth affect Indian sectors..." size="large" buttonLabel="Ask AGI" ariaLabel="Ask AGI about economics" /></section>
-
-      {scope === 'india' ? <>
-        <section className="eco-client-section">
-          <header className="eco-client-heading"><div><small>India dashboard</small><h2>Six lenses that shape the investment environment</h2><p>Open a lens to see the underlying evidence and fields still awaiting official data.</p></div><span>{readiness?.observed ?? 0} / {readiness?.total ?? 50} core series</span></header>
-          <div className="eco-client-lenses">{LENSES.map((lens) => <LensCard key={lens.id} lens={lens} observations={byId} onOpen={setSelectedLens} />)}</div>
-          {selectedLens ? <EvidenceDrawer lens={selectedLens} observations={byId} onClose={() => setSelectedLens(null)} /> : null}
-        </section>
-
-        <section className="eco-client-section eco-client-tape-wrap">
-          <header className="eco-client-heading"><div><small>Latest evidence</small><h2>Macro release tape</h2><p>Persisted observations with dates and source links.</p></div><span>Observed, not forecast</span></header>
-          <div className="eco-client-tape">{tape.length ? tape.map((row) => <article key={row.series_id}><div><span>{row.label}</span><small>{shortDate(row.observation_date)}</small></div><strong>{fmt(row.value)} <small>{row.unit}</small></strong>{row.source_url ? <a href={row.source_url} target="_blank" rel="noreferrer" title="Open source"><ExternalLink size={15} /></a> : <ShieldCheck size={15} />}</article>) : <p>AGI is refreshing the latest official releases.</p>}</div>
-        </section>
-
-        <section className="eco-client-section">
-          <header className="eco-client-heading"><div><small>Investment transmission</small><h2>How macro changes reach markets</h2><p>Research pathways, not automatic trade signals.</p></div></header>
-          <div className="eco-client-transmission">{TRANSMISSION.map((item, index) => <article key={item.trigger}><span>0{index + 1}</span><b>{item.trigger}</b><ArrowRight size={17} /><h3>{item.effect}</h3><p>{item.detail}</p></article>)}</div>
-        </section>
-      </> : <G20View matrix={g20} />}
-
-      <section className="eco-client-section eco-client-sources">
-        <header className="eco-client-heading"><div><small>Evidence architecture</small><h2>Automatic, source-aware collection</h2><p>AGI refreshes connected feeds without requiring manual spreadsheets.</p></div><button type="button" onClick={() => setMethodOpen((value) => !value)}>Methodology <ChevronDown size={15} /></button></header>
-        <div>{SOURCE_STACK.map(([tier, source, use]) => <article key={tier}><span>{tier}</span><strong>{source}</strong><p>{use}</p></article>)}</div>
-        {methodOpen ? <aside><ShieldCheck size={17} /><p><b>Evidence policy.</b> Every observation retains its source, period, collection time and quality status. Missing data is shown explicitly and is never estimated on page load. Interpretation remains separate from observed facts.</p></aside> : null}
-      </section>
-
-      <section className="eco-client-research"><header><div><small>AGI Research</small><h2>Economics desk</h2></div><BarChart3 size={24} /></header><DeskResearchFeed deskId="economics" title="Latest economics research" /></section>
-      <footer className="eco-client-footer"><Landmark size={16} /><p>AGI Economics is institutional research context, not personalised investment advice. Source availability and publication schedules vary.</p><span><Globe2 size={15} /> India + G20</span><span><TrendingUp size={15} /> Market transmission</span></footer>
-    </div>
-  </PageShell>;
+        <footer className="fx-disclosure">
+          <b>Research use only.</b>
+          <span>Market-reference data may be delayed, incomplete or revised. Nothing on this page is an execution quote, recommendation or solicitation.</span>
+        </footer>
+      </main>
+    </PageShell>
+  );
 }
+

@@ -29,7 +29,7 @@ const NAV = [
   { name: 'Insider Activity', path: '/insider-activity' },
   { name: 'Private Markets', path: '/private-markets' },
   { name: 'Global Markets', path: '/global-markets' },
-  { name: 'Economics', path: '/economics' },
+    { name: 'FX Intelligence', path: '/economics' },
 ];
 
 export default function Header() {
