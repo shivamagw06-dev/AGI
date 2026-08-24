@@ -225,6 +225,7 @@ async function companyMatches(query, limit = 8) {
 
 export default function createIntelligenceRouter() {
   const router = Router();
+  router.use('/ask', requireStrategyLabAdmin);
   router.get('/learning/status', async (_req, res) => res.json(intelligenceLearningStatus()));
 
   // Soft daily CMS → KIP/KF/KC learner (IST learning_date calendar)
