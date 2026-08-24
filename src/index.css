@@ -885,3 +885,11 @@
 }
 
 /* End of file */
+
+/* Ask AGI remains an internal training surface until it is client-ready. */
+html:not([data-ask-agi-access='admin']) a[href='/ask'],
+html:not([data-ask-agi-access='admin']) a[href^='/ask?'],
+html:not([data-ask-agi-access='admin']) a[href='/agi/ask'],
+html:not([data-ask-agi-access='admin']) a[href^='/agi/ask?'] {
+  display: none !important;
+}

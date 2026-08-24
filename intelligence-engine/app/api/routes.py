@@ -12260,7 +12260,7 @@ async def institutional_orchestrator_health():
     return health()
 
 
-@router.post("/ask")
+@router.post("/ask", dependencies=[Depends(require_token)])
 async def universal_ask_post(payload: dict[str, Any] = Body(default={})):
     """UAG-01: orchestrate registered institutional objects. Does not generate recommendations."""
     from institutional_orchestrator.production import ask
@@ -12268,7 +12268,7 @@ async def universal_ask_post(payload: dict[str, Any] = Body(default={})):
     return ask(payload or {})
 
 
-@router.post("/ask/stream")
+@router.post("/ask/stream", dependencies=[Depends(require_token)])
 async def universal_ask_stream(payload: dict[str, Any] = Body(default={})):
     from institutional_orchestrator.production import ask_stream
 
@@ -12276,7 +12276,7 @@ async def universal_ask_stream(payload: dict[str, Any] = Body(default={})):
     return {"ok": True, "events": list(ask_stream(payload or {})), "stream": True}
 
 
-@router.get("/query/{query_id}")
+@router.get("/query/{query_id}", dependencies=[Depends(require_token)])
 async def universal_ask_query_get(query_id: str):
     from institutional_orchestrator.production import get_query
 
