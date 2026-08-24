@@ -62,6 +62,7 @@ const HedgeFundDesk = React.lazy(() => import('@/pages/HedgeFundDesk'));
 const HedgeFundPage = React.lazy(() => import('@/pages/HedgeFundPage'));
 const HedgeFundSignalPage = React.lazy(() => import('@/pages/HedgeFundSignalPage'));
 const LiveAlphaPage = React.lazy(() => import('@/pages/LiveAlphaPage'));
+const LiveDeskPage = React.lazy(() => import('@/pages/LiveDeskPage'));
 const PrivateEquityPage = React.lazy(() => import('@/pages/PrivateEquityPage'));
 const PrivateEquityFirmPage = React.lazy(() => import('@/pages/PrivateEquityFirmPage'));
 const IntelligenceEntityPage = React.lazy(() => import('@/pages/IntelligenceEntityPage'));
@@ -205,6 +206,7 @@ function PublicRoutes() {
       {/* Superseded by the desk; kept addressable while the factor audit is ported. */}
       <Route path="/hedge-fund/factor-audit" element={gate('hedge_fund', <HedgeFundPage />)} />
       <Route path="/live-alpha" element={gate('live_alpha', <LiveAlphaPage />)} />
+      <Route path="/live-desk" element={gate('market_intelligence', <LiveDeskPage />)} />
       <Route path="/hedge-fund/alpha-opportunities" element={gate('hedge_fund', <HedgeFundSignalPage kind="alpha" />)} />
       <Route path="/hedge-fund/technical-analysis" element={<Navigate replace to="/hedge-fund/alpha-opportunities" />} />
       <Route path="/hedge-fund/strategy-lab" element={<Navigate replace to="/hedge-fund" />} />

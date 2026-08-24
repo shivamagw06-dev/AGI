@@ -23,6 +23,7 @@ import { buildLoginUrl } from '@/lib/accessPolicy';
 const NAV = [
   { name: 'Home', path: '/' },
   { name: 'Market Intelligence', path: '/market-intelligence' },
+  { name: 'Live Desk', path: '/live-desk' },
   { name: 'Hedge Fund', path: '/hedge-fund' },
   { name: 'Live Alpha', path: '/live-alpha' },
   { name: 'Insider Activity', path: '/insider-activity' },
