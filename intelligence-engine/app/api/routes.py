@@ -10633,6 +10633,50 @@ async def hedge_fund_lab_daily_monitor(limit: int = 6):
     return await run_in_threadpool(daily_monitor, limit=limit)
 
 
+@router.get("/options-lab/collector", dependencies=[Depends(require_token)])
+async def options_lab_collector_status():
+    """Whether the embedded collector is actually running, and what it has done.
+
+    Without this the only way to tell a live collector from a dead one is to
+    watch the tables stay empty and guess why.
+    """
+    from options_lab.embedded import status
+
+    return status()
+
+
+@router.post("/options-lab/collect", dependencies=[Depends(require_token)])
+async def options_lab_collect(payload: dict[str, Any] = Body(default_factory=dict)):
+    """Capture one option-chain snapshot.
+
+    The lab had storage configured in render.yaml and no process writing to it:
+    options_lab.automation.run_worker polls through the session, and nothing
+    starts it, so every table behind the validation dashboard was empty.
+
+    This is the same collection driven from the outside instead. A schedule
+    calling it several times a session is not the same as a worker polling
+    every ten seconds, but it produces real snapshots on a service that is
+    already deployed, which the worker does not.
+    """
+    from options_lab.automation import collect_command
+    from options_lab.upstox_live import LiveConfig
+
+    body = payload or {}
+    config = LiveConfig.from_environment()
+    # force skips the market-session gate. Off by default so a scheduled call
+    # outside session hours records a skip rather than a snapshot of a closed
+    # book, and available because an operator checking the wiring should not
+    # have to wait for Monday.
+    code = await run_in_threadpool(collect_command, config, force=bool(body.get("force")))
+    return {
+        "ok": code == 0,
+        "exit_code": code,
+        "forced": bool(body.get("force")),
+        "note": ("0 collected or skipped outside session, 2 means the provider "
+                 "call failed"),
+    }
+
+
 @router.post("/options-lab/price", dependencies=[Depends(require_token)])
 def options_lab_price(payload: dict[str, Any] = Body(default={})):
     """Run the provider-neutral local options model without placing an order."""

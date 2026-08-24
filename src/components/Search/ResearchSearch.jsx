@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Building2, Loader2, Search, Sparkles, X } from 'lucide-react';
-import AskAgiBar from '@/components/Home/AskAgiBar';
+import { Building2, Loader2, Search, X } from 'lucide-react';
 import { getRecentSearches } from '@/lib/searchHistory';
 import { useUniversalSearch } from '@/hooks/useIntelligencePlatform';
 
@@ -150,17 +149,6 @@ export default function ResearchSearch({ onClose }) {
               </div>
             </>
           )}
-
-          <div className="border-t border-[#eee] pt-5">
-            <div className="flex items-center gap-2 mb-3">
-              <Sparkles className="w-4 h-4 text-[#0b3b60]" />
-              <p className="text-[11px] font-bold uppercase tracking-wider text-[#0b3b60]">Ask AGI</p>
-            </div>
-            <AskAgiBar
-              examples={EXAMPLES}
-              placeholder="Ask AGI anything about markets, companies, sectors, investing or the economy..."
-            />
-          </div>
 
           <div className="mt-5">
             <p className="text-[10px] font-bold uppercase tracking-wide text-[#767676] mb-2">

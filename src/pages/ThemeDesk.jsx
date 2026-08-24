@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import AskAgiBar from '@/components/Home/AskAgiBar';
 import DiscoveryRail from '@/components/Product/DiscoveryRail';
 import { getUiTheme } from '@/lib/uiApi';
 import { toggleFavouriteTheme, getFavouriteThemes } from '@/lib/searchHistory';
@@ -71,17 +70,6 @@ export default function ThemeDesk() {
           })}
         </script>
       </Helmet>
-
-      <div className="sticky top-0 z-20 bg-white/95 backdrop-blur border-b border-[#dddddd]">
-        <div className="max-w-[1100px] mx-auto px-4 sm:px-6 py-3">
-          <AskAgiBar
-            size="compact"
-            placeholder={`Ask AGI about ${themeId}…`}
-            onAsk={onAsk}
-            examples={(data?.follow_up_questions || []).slice(0, 3)}
-          />
-        </div>
-      </div>
 
       <div className="max-w-[1100px] mx-auto px-4 sm:px-6 py-8">
         <div className="flex flex-wrap items-center justify-between gap-3">
