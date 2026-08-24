@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import PageShell from '@/components/Layout/PageShell';
-import DeskResearchFeed from '@/components/research/DeskResearchFeed';
+import DeskResearchFeed from '@/components/Research/DeskResearchFeed';
 import { getFxIntelligence } from '@/lib/fxApi';
 import './economicsPage.css';
 
@@ -370,4 +370,3 @@ export default function EconomicsPage() {
     </PageShell>
   );
 }
-
