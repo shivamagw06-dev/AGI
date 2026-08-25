@@ -12,7 +12,11 @@ import statistics as stats
 from typing import Any, Optional
 
 from hedge_fund_lab import desk_snapshot
-from hedge_fund_lab.ratio_audit import audit_quality_metrics, pick_latest_annual_ratio
+from hedge_fund_lab.ratio_audit import (
+    ROE_VENDOR_GAP_PP,
+    audit_quality_metrics,
+    pick_latest_annual_ratio,
+)
 
 
 def _num(value: Any) -> Optional[float]:
@@ -608,10 +612,15 @@ def _map_warehouse_row(
             ),
         },
     }
+    overlay_roe = None
     try:
         from valuation_ratios.ingest import apply_latest_ratios
 
         mapped = apply_latest_ratios(mapped)
+        # Identity overlays leave the annual print in place. A real Upstox pack
+        # stamps source/as-of; only then is mapped ROE the vendor TTM.
+        if mapped.get("valuation_ratios_source") or mapped.get("valuation_ratios_as_of"):
+            overlay_roe = _num(mapped.get("roe"))
     except Exception:
         pass
     try:
@@ -621,9 +630,25 @@ def _map_warehouse_row(
     except Exception:
         pass
     # apply_latest_ratios copies Upstox TTM ROE onto the row. Quality ranks on
-    # the annual warehouse print; put that back when we have it.
-    if _num(ratios.get("roe")) is not None:
-        mapped["roe"] = round(_num(ratios.get("roe")), 4)
+    # the annual warehouse print; put that back when we have it, and keep the
+    # TTM as the vendor check so a one-off annual (Ashoka 77.5% vs ~15%) fails.
+    annual_roe = _num(ratios.get("roe"))
+    if overlay_roe is not None:
+        vendor_roe = overlay_roe
+    if annual_roe is not None:
+        mapped["roe"] = round(annual_roe, 4)
+    ctx = mapped.setdefault("data_context", {})
+    ctx["vendor_roe"] = vendor_roe
+    if overlay_roe is not None and mapped.get("valuation_ratios_source"):
+        ctx["vendor_roe_source"] = mapped.get("valuation_ratios_source")
+    ctx["ratio_audit"] = audit_quality_metrics(
+        roe=_num(mapped.get("roe")),
+        net_margin=profit_margin,
+        debt_equity=debt_to_equity,
+        vendor_roe=vendor_roe,
+        gross_margin=_num(ratios.get("gross_margin")),
+        ebitda_margin=_num(ratios.get("ebitda_margin")),
+    )
     return mapped
 
 
@@ -1277,6 +1302,11 @@ def _scan_quality(universe, medians, limit) -> list[dict[str, Any]]:
             vendor_roe=_num(ctx.get("vendor_roe")),
         )
         failed = audit.get("status") == "data_quality_fail"
+        vendor_gap = audit.get("vendor_roe_gap_pp")
+        if failed and vendor_gap is not None and vendor_gap >= ROE_VENDOR_GAP_PP:
+            # A one-off / exceptional annual vs TTM is not a quality compounder.
+            # Mapping fails (80% NPM) still list after validated rows.
+            continue
         roe = _sane(row, "roe") if not failed else _num(row.get("roe"))
         margin = _sane(row, "profit_margin") if not failed else _num(row.get("profit_margin"))
         debt = _sane(row, "debt_to_equity") if not failed else _num(row.get("debt_to_equity"))

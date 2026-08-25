@@ -21,7 +21,9 @@ NET_MARGIN_HARD_MIN = -80.0
 # Debt/equity as a multiple. 25.5 is 0.255 stored as percent.
 DEBT_EQUITY_HARD_MAX = 8.0
 ROE_HARD_MAX = 120.0
-# Vendor TTM vs annual ROE often differs; flag, do not replace, above this.
+# Vendor TTM vs annual ROE often differs. A *higher* annual than TTM by this
+# much is a one-off or a mapping error (Ashoka FY26 77.5% vs TTM ~15–48%).
+# A higher TTM is noisy; keep the annual and warn.
 ROE_VENDOR_GAP_PP = 8.0
 # PAT/revenue vs the stored net-margin print.
 INDEPENDENT_MARGIN_TOLERANCE_PP = 2.0
@@ -139,7 +141,12 @@ def audit_quality_metrics(
     vendor_gap = None
     if roe is not None and vendor_roe is not None:
         vendor_gap = round(roe - vendor_roe, 2)
-        if abs(vendor_gap) >= ROE_VENDOR_GAP_PP:
+        if vendor_gap >= ROE_VENDOR_GAP_PP:
+            reasons.append(
+                f"annual ROE {roe}% exceeds vendor TTM {vendor_roe}% by {vendor_gap}pp "
+                "— a one-off year or a mapping error, not durable quality"
+            )
+        elif vendor_gap <= -ROE_VENDOR_GAP_PP:
             warnings.append(
                 f"annual ROE {roe}% differs from vendor TTM {vendor_roe}% by {vendor_gap}pp"
             )
