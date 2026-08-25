@@ -110,7 +110,8 @@ export class IntradayFeatureStore {
     const previous = Number(row.previous_close);
     if (!(previous > 0)) return;
     const existing = this.series.get(instrumentKey) || [];
-    if (existing.length) return;
+    const hourAgo = at - 60 * 60_000;
+    if (existing.some((point) => Date.parse(point.received_at) <= hourAgo)) return;
     const seed = {
       instrument_key: instrumentKey,
       ltp: previous,
