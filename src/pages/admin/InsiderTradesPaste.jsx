@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import { CheckCircle2, ClipboardPaste, Loader2, Upload } from 'lucide-react';
 import { API_ORIGIN } from '@/config';
+import { parsePaste } from '@/lib/pastedTable';
 import './insiderTradesPaste.css';
 
 const BASE = `${API_ORIGIN || ''}/api/intelligence/insider-trades`;
@@ -14,11 +15,11 @@ function fmt(n) {
 
 // Preview only. The server parses for real; this is so the desk sees the grid
 // it pasted before sending it, rather than trusting a textarea.
-function previewGrid(text) {
-  const lines = text.split('\n').filter((l) => l.trim()).slice(0, 6);
-  if (!lines.length) return null;
-  const delimiter = lines[0].includes('\t') ? '\t' : ',';
-  return lines.map((l) => l.split(delimiter).map((c) => c.replace(/^"|"$/g, '')));
+function previewGrid(rows) {
+  if (!rows.length) return null;
+  // The embedded newlines are real data, but a cell three lines tall wrecks the
+  // grid, so show it on one line here. Nothing is sent from this copy.
+  return rows.slice(0, 6).map((r) => r.map((c) => c.replace(/\s+/g, ' ').trim()));
 }
 
 export default function InsiderTradesPaste() {
@@ -28,11 +29,10 @@ export default function InsiderTradesPaste() {
   const [busy, setBusy] = useState(null);
   const [error, setError] = useState(null);
 
-  const grid = useMemo(() => previewGrid(text), [text]);
-  const lineCount = useMemo(
-    () => text.split('\n').filter((l) => l.trim()).length,
-    [text]
-  );
+  const rows = useMemo(() => parsePaste(text), [text]);
+  const grid = useMemo(() => previewGrid(rows), [rows]);
+  // Rows, not lines: a single trade can span several lines of the paste.
+  const rowCount = rows.length;
 
   const call = useCallback(async (path, label) => {
     setBusy(label);
@@ -108,7 +108,7 @@ export default function InsiderTradesPaste() {
 
       <div className="itp-bar">
         <span className="itp-count">
-          {lineCount ? `${fmt(lineCount - 1)} rows + header` : 'nothing pasted yet'}
+          {rowCount ? `${fmt(rowCount - 1)} rows + header` : 'nothing pasted yet'}
         </span>
         <button type="button" className="itp-ghost" onClick={check} disabled={!text.trim() || !!busy}>
           {busy === 'check' ? <Loader2 size={15} className="itp-spin" /> : null} Check
