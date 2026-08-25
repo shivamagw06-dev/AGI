@@ -17,3 +17,5 @@ values
   ('global', 'QB5BNdBFujE', 'https://www.youtube.com/watch?v=QB5BNdBFujE'),
   ('india', 'EN-N1xhtBqU', 'https://www.youtube.com/watch?v=EN-N1xhtBqU')
 on conflict (id) do nothing;
+revoke all on table public.live_desk_broadcasts from anon, authenticated;
+grant select, insert, update on table public.live_desk_broadcasts to service_role;
