@@ -145,7 +145,7 @@ def _scan_dividend(universe, medians, limit) -> list[dict[str, Any]]:
             continue
         if roe is not None and roe < 8:
             continue
-        if debt is not None and debt > 200:
+        if debt is not None and debt > 2.0:
             continue
         out.append(
             {
@@ -156,7 +156,7 @@ def _scan_dividend(universe, medians, limit) -> list[dict[str, Any]]:
                 "why": (
                     f"Yields {yld}%"
                     + (f" on a {roe}% return on equity" if roe is not None else "")
-                    + (f" with debt/equity at {debt}" if debt is not None else "")
+                    + (f" with debt/equity at {debt}x" if debt is not None else "")
                     + " — income supported by returns rather than by a falling share price."
                     + (
                         " Verify the payout is recurring: yields this high often include a special dividend."
@@ -176,7 +176,14 @@ def _scan_live_alpha(universe, medians, limit) -> list[dict[str, Any]]:
     fetched = fetch_live_alpha_rows(limit=limit)
     if not fetched.get("ok"):
         return []
-    return list(fetched.get("rows") or [])
+    rows = list(fetched.get("rows") or [])
+    try:
+        from hedge_fund_lab.live_prices import overlay_live_prices_on_payload
+
+        rows = overlay_live_prices_on_payload(rows)
+    except Exception:
+        pass
+    return rows
 
 
 SCANS: dict[str, tuple[str, Callable]] = {
@@ -1058,7 +1065,7 @@ def factor_dashboard(universe=None, medians=None) -> dict[str, Any]:
         ("Momentum", lambda r: (_num((r.get("consensus") or {}).get("return_1y")) or -999) > 25,
          "One-year return above 25%"),
         ("Dividend", lambda r: (_sane(r, "dividend_yield") or -1) > 3, "Yield above 3%"),
-        ("Leverage risk", lambda r: (_sane(r, "debt_to_equity") or -1) > 150, "Debt/equity above 150"),
+        ("Leverage risk", lambda r: (_sane(r, "debt_to_equity") or -1) > 1.5, "Debt/equity above 1.5x"),
     ]
     for name, predicate, definition in definitions:
         count, pct = share(predicate)
@@ -1095,6 +1102,12 @@ def opportunity(ticker: str, limit: int = 1000) -> dict[str, Any]:
     row = next((r for r in universe if str(r.get("ticker") or "").upper() == tk), None)
     if row is None:
         return {"ok": False, "error": "not_covered", "ticker": tk}
+    try:
+        from hedge_fund_lab.live_prices import apply_latest_live_price
+
+        row = apply_latest_live_price(row)
+    except Exception:
+        pass
 
     industry = row.get("primary_industry")
     med = medians.get(industry) or {}
@@ -1137,8 +1150,8 @@ def opportunity(ticker: str, limit: int = 1000) -> dict[str, Any]:
         ]
 
     risks, catalysts = [], []
-    if debt is not None and debt > 120:
-        risks.append(f"Leverage: debt/equity at {debt}.")
+    if debt is not None and debt > 1.2:
+        risks.append(f"Leverage: debt/equity at {debt}x.")
     if margin is not None and margin < 5:
         risks.append(f"Thin profitability: net margin of {margin}%.")
     if gap is not None and gap < -25 and roe is not None and roe_med is not None and roe < roe_med:

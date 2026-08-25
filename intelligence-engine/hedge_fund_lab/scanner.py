@@ -12,6 +12,7 @@ import statistics as stats
 from typing import Any, Optional
 
 from hedge_fund_lab import desk_snapshot
+from hedge_fund_lab.ratio_audit import audit_quality_metrics, pick_latest_annual_ratio
 
 
 def _num(value: Any) -> Optional[float]:
@@ -30,9 +31,10 @@ _SANE_BOUNDS: dict[str, tuple[float, float]] = {
     "ev_ebitda": (3.0, 60.0),
     "ev_sales": (0.05, 60.0),
     "roe": (-100.0, 150.0),
-    "profit_margin": (-100.0, 100.0),
+    "profit_margin": (-80.0, 65.0),
     "dividend_yield": (0.0, 25.0),
-    "debt_to_equity": (0.0, 1000.0),
+    # Warehouse debt_equity is a multiple (0.25 = 0.25x). 25.5 is percent wrongly scaled.
+    "debt_to_equity": (0.0, 8.0),
 }
 
 
@@ -58,6 +60,18 @@ def _sane(row: dict[str, Any], field: str) -> Optional[float]:
         return None
     low, high = _SANE_BOUNDS.get(field, (float("-inf"), float("inf")))
     return value if low <= value <= high else None
+
+
+# Debt/equity is a multiple. Quality used to treat 0.25x as 25 after a *100
+# scale, then gate on 150 and penalise by /20 as if the figure were percent.
+LEVERAGE_QUALITY_MAX = 1.5
+LEVERAGE_STRESS_MAX = 1.5
+LEVERAGE_ALPHA_MAX = 2.0
+
+
+def _quality_score(roe: float, margin: float, debt: Optional[float]) -> float:
+    """AGIB Score: ROE + half the net margin, minus 5× debt/equity."""
+    return round(min(100.0, roe + margin / 2 - (debt or 0.0) * 5), 1)
 
 
 def _median(values: list[Any]) -> Optional[float]:
@@ -102,7 +116,7 @@ def _latest_ratios_by_symbol(*, limit: int = 8000) -> dict[str, dict[str, Any]]:
         from institutional_warehouse import store
     except Exception:
         return {}
-    out: dict[str, dict[str, Any]] = {}
+    grouped: dict[str, list[dict[str, Any]]] = {}
     try:
         for row in store.all_rows("historical_ratios", limit=limit) or []:
             if str(row.get("basis") or "").lower() not in ("", "annual"):
@@ -110,12 +124,14 @@ def _latest_ratios_by_symbol(*, limit: int = 8000) -> dict[str, dict[str, Any]]:
             sym = str(row.get("symbol") or "").upper()
             if not sym:
                 continue
-            prev = out.get(sym)
-            if not prev or str(row.get("period") or "") > str(prev.get("period") or ""):
-                out[sym] = row
+            grouped.setdefault(sym, []).append(row)
     except Exception:
         return {}
-    return out
+    return {
+        sym: picked
+        for sym, rows in grouped.items()
+        if (picked := pick_latest_annual_ratio(rows))
+    }
 
 
 def _factors_by_symbol(*, limit: int = 8000) -> dict[str, dict[str, Any]]:
@@ -212,11 +228,13 @@ def _return_1y_by_symbol(*, limit: int = 200000) -> dict[str, Optional[float]]:
             " WHEN source LIKE 'upstox%' THEN 'upstox'"
             " WHEN source LIKE 'yahoo%' THEN 'yahoo'"
             " WHEN source = 'nse_bhavcopy' THEN 'nse'"
+            " WHEN source LIKE 'groww%' THEN 'groww'"
             " ELSE source END)")
     basis = ("COALESCE(price_basis, CASE"
              " WHEN source LIKE 'upstox%' THEN 'SPLIT_ADJUSTED'"
              " WHEN source LIKE 'yahoo%' THEN 'RAW'"
              " WHEN source = 'nse_bhavcopy' THEN 'RAW'"
+             " WHEN source LIKE 'groww%' THEN 'SPLIT_ADJUSTED'"
              " ELSE 'UNKNOWN' END)")
     try:
         rows = db.query(
@@ -370,13 +388,19 @@ def _map_warehouse_row(
 
     mi, current_valuation_context = overlay_current_valuation(mi)
     sym = str(mi.get("symbol") or "").upper()
-    # Warehouse debt_equity is a multiple (0.5); scanners use Yahoo-style %.
-    debt_ratio = _num(ratios.get("debt_equity"))
-    debt_to_equity = round(debt_ratio * 100.0, 2) if debt_ratio is not None else None
+    # Keep D/E as a multiple. Multiplying by 100 printed 0.25x as 25.5x.
+    debt_to_equity = _num(ratios.get("debt_equity"))
+    if debt_to_equity is not None:
+        debt_to_equity = round(debt_to_equity, 4)
     profit_margin = _num(ratios.get("net_margin"))
-    roe = _num(mi.get("roe"))
+    # Quality ranks on annual statements. Upstox TTM ROE stays on the overlay.
+    vendor_metrics = (current_valuation_context.get("metrics") or {}).get("roe") or {}
+    vendor_roe = _num(vendor_metrics.get("value") if isinstance(vendor_metrics, dict) else vendor_metrics)
+    if vendor_roe is None:
+        vendor_roe = _num(mi.get("roe"))
+    roe = _num(ratios.get("roe"))
     if roe is None:
-        roe = _num(ratios.get("roe"))
+        roe = vendor_roe
 
     # Recomputed from the two numbers the page prints beside it, so the target,
     # the price and the upside always reconcile. The pre-computed value carried
@@ -398,16 +422,9 @@ def _map_warehouse_row(
     if buy_count is None:
         buy_count = _num((legacy_consensus or {}).get("buy"))
 
-    # Measured from prices when available. The file-store value is a stale
-    # snapshot and only fills gaps.
+    # Measured from prices when available. A missing year is missing: do not
+    # print 0.0% from a file store or from 12–1 momentum.
     r1 = return_1y
-    if r1 is None:
-        r1 = _num(legacy_consensus.get("return_1y"))
-    if r1 is None:
-        # The factor warehouse already carries a bounded 12-minus-1 momentum
-        # observation. Use it as the lightweight return context when the
-        # expensive daily-history join is intentionally disabled.
-        r1 = _num(factors.get("momentum_12_1_pct"))
 
     consensus = {
         "upside": upside,
@@ -475,6 +492,15 @@ def _map_warehouse_row(
             # the analyst view was.
             "consensus_date": (mi.get("consensus_date")
                                or (legacy_consensus or {}).get("consensus_date")),
+            "vendor_roe": vendor_roe,
+            "ratio_audit": audit_quality_metrics(
+                roe=roe,
+                net_margin=profit_margin,
+                debt_equity=debt_to_equity,
+                vendor_roe=vendor_roe,
+                gross_margin=_num(ratios.get("gross_margin")),
+                ebitda_margin=_num(ratios.get("ebitda_margin")),
+            ),
         },
     }
     try:
@@ -483,6 +509,16 @@ def _map_warehouse_row(
         mapped = apply_latest_ratios(mapped)
     except Exception:
         pass
+    try:
+        from hedge_fund_lab.live_prices import apply_latest_live_price
+
+        mapped = apply_latest_live_price(mapped)
+    except Exception:
+        pass
+    # apply_latest_ratios copies Upstox TTM ROE onto the row. Quality ranks on
+    # the annual warehouse print; put that back when we have it.
+    if _num(ratios.get("roe")) is not None:
+        mapped["roe"] = round(_num(ratios.get("roe")), 4)
     return mapped
 
 
@@ -908,6 +944,12 @@ def _industry_medians(universe: list[dict[str, Any]]) -> dict[str, dict[str, Any
 
 
 def _base(row: dict[str, Any]) -> dict[str, Any]:
+    try:
+        from hedge_fund_lab.live_prices import apply_latest_live_price
+
+        row = apply_latest_live_price(row)
+    except Exception:
+        pass
     consensus = row.get("consensus") or {}
     return {
         "ticker": row["ticker"],
@@ -916,6 +958,9 @@ def _base(row: dict[str, Any]) -> dict[str, Any]:
         "sector": row.get("primary_sector"),
         "industry": row.get("primary_industry"),
         "market_cap": row.get("market_cap"),
+        "price": row.get("price"),
+        "price_source": row.get("price_source"),
+        "price_as_of": row.get("price_as_of"),
         "consensus_upside": consensus.get("upside"),
         "coverage": consensus.get("coverage"),
         "return_1y": consensus.get("return_1y"),
@@ -1093,38 +1138,68 @@ def _scan_value(universe, medians, limit) -> list[dict[str, Any]]:
 def _scan_quality(universe, medians, limit) -> list[dict[str, Any]]:
     out = []
     for row in universe:
-        roe = _sane(row, "roe")
-        margin = _sane(row, "profit_margin")
-        debt = _sane(row, "debt_to_equity")
-        if roe is None or margin is None or roe < 15 or margin < 10:
+        ctx = row.get("data_context") or {}
+        audit = ctx.get("ratio_audit") or audit_quality_metrics(
+            roe=_num(row.get("roe")),
+            net_margin=_num(row.get("profit_margin")),
+            debt_equity=_num(row.get("debt_to_equity")),
+            vendor_roe=_num(ctx.get("vendor_roe")),
+        )
+        failed = audit.get("status") == "data_quality_fail"
+        roe = _sane(row, "roe") if not failed else _num(row.get("roe"))
+        margin = _sane(row, "profit_margin") if not failed else _num(row.get("profit_margin"))
+        debt = _sane(row, "debt_to_equity") if not failed else _num(row.get("debt_to_equity"))
+        if roe is None or margin is None:
             continue
-        if debt is not None and debt > 150:
+        if not failed and (roe < 15 or margin < 10):
             continue
+        if not failed and debt is not None and debt > LEVERAGE_QUALITY_MAX:
+            continue
+        if failed and (roe < 15 or margin < 10):
+            # Only keep a fail that would have ranked as quality on its face.
+            continue
+        scope_missing = debt is not None and ctx.get("accounting_scope") == "not_provided"
+        if failed:
+            validation = "data_quality_fail"
+        elif scope_missing:
+            validation = "accounting_basis_verification_required"
+        else:
+            validation = "screen_validated"
+        fail_note = "; ".join(audit.get("reasons") or [])
         out.append(
             {
                 **_base(row),
                 "roe": roe,
                 "profit_margin": margin,
                 "debt_to_equity": debt,
-                "quality_score": round(min(100.0, roe + margin / 2 - (debt or 0) / 20), 1),
-                "validation_status": "accounting_basis_verification_required" if debt is not None and (row.get("data_context") or {}).get("accounting_scope") == "not_provided" else "screen_validated",
+                "quality_score": _quality_score(roe, margin, debt),
+                "validation_status": validation,
+                "ratio_audit": audit,
                 "debt_to_equity_basis": {
-                    "status": "verify_accounting_basis" if debt is not None and (row.get("data_context") or {}).get("accounting_scope") == "not_provided" else "reported_basis_available",
-                    "period": (row.get("data_context") or {}).get("fundamentals_period"),
-                    "scope": (row.get("data_context") or {}).get("accounting_scope"),
+                    "status": "verify_accounting_basis" if scope_missing else "reported_basis_available",
+                    "period": ctx.get("fundamentals_period"),
+                    "scope": ctx.get("accounting_scope"),
                     "debt_definition": "not_provided",
                     "lease_liabilities_included": "not_provided",
                     "equity_basis": "not_provided",
-                    "source": (row.get("data_context") or {}).get("fundamentals_source"),
+                    "source": ctx.get("fundamentals_source"),
                 },
                 "why": (
-                    f"Return on equity of {roe}% on a {margin}% net margin"
-                    + (f" with debt/equity at {debt}x — verify accounting basis" if debt is not None and (row.get("data_context") or {}).get("accounting_scope") == "not_provided" else f" with debt/equity at {debt}x" if debt is not None else "")
-                    + " — the profitability profile institutions screen for."
+                    f"DATA QUALITY: FAIL — {fail_note}."
+                    if failed else
+                    (
+                        f"Return on equity of {roe}% on a {margin}% net margin"
+                        + (f" with debt/equity at {debt}x — verify accounting basis" if scope_missing else f" with debt/equity at {debt}x" if debt is not None else "")
+                        + " — the profitability profile institutions screen for."
+                    )
                 ),
             }
         )
-    out.sort(key=lambda r: -r["quality_score"])
+    out.sort(key=lambda r: (
+        r["validation_status"] == "data_quality_fail",
+        r["validation_status"] != "screen_validated",
+        -r["quality_score"],
+    ))
     return out[:limit]
 
 
@@ -1193,8 +1268,8 @@ def _scan_stress(universe, medians, limit) -> list[dict[str, Any]]:
         margin = _sane(row, "profit_margin")
         r1 = _num((row.get("consensus") or {}).get("return_1y"))
         flags = []
-        if debt is not None and debt > 150:
-            flags.append(f"debt/equity at {debt}")
+        if debt is not None and debt > LEVERAGE_STRESS_MAX:
+            flags.append(f"debt/equity at {debt}x")
         if margin is not None and margin < 0:
             flags.append(f"negative net margin of {margin}%")
         if r1 is not None and r1 < -20:
@@ -1351,7 +1426,7 @@ def _scan_alpha(universe, medians, limit) -> list[dict[str, Any]]:
         debt = _sane(row, "debt_to_equity")
         margin = _sane(row, "profit_margin")
         risks = []
-        if debt is not None and debt > 200:
+        if debt is not None and debt > LEVERAGE_ALPHA_MAX:
             risks.append("elevated leverage")
         if margin is not None and margin < 0:
             risks.append("negative profitability")

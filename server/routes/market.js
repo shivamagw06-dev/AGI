@@ -14,11 +14,16 @@ import { getMacroBriefing, askMacroEconomist, startMacroBriefingScheduler } from
 import { getPreMarketBriefing, startPreMarketBriefingScheduler } from '../services/preMarketBriefingService.js';
 import { fetchYahooIndices } from '../providers/yahooIndices.js';
 import { fetchFxIntelligence } from '../services/fxIntelligenceService.js';
+import {
+  getLiveDeskBroadcasts,
+  saveLiveDeskBroadcast,
+} from '../services/liveDeskBroadcastService.js';
+import { requireStrategyLabAdmin } from '../services/strategyLabAdminAuth.js';
 
 const CACHE_CONTROL = `public, max-age=${Math.floor(MARKET_REFRESH_MS / 1000)}, stale-while-revalidate=60`;
 
 function sendJson(res, data) {
-  res.set('Cache-Control', CACHE_CONTROL);
+  if (!res.get('Cache-Control')) res.set('Cache-Control', CACHE_CONTROL);
   return res.status(200).json(data);
 }
 
@@ -549,13 +554,35 @@ export default function createMarketRouter(env = {}) {
     }
   });
 
+  router.get('/live-broadcasts', async (_req, res) => {
+    res.set('Cache-Control', 'public, max-age=30, stale-while-revalidate=30');
+    return res.status(200).json(await getLiveDeskBroadcasts());
+  });
+
+  router.put('/live-broadcasts/:id', requireStrategyLabAdmin, async (req, res) => {
+    res.set('Cache-Control', 'no-store');
+    try {
+      return res.status(200).json(await saveLiveDeskBroadcast({
+        id: req.params.id,
+        youtubeUrl: req.body?.youtubeUrl,
+        actor: req.strategyLabActor,
+      }));
+    } catch (error) {
+      return res.status(error.status || 400).json({
+        ok: false,
+        error: error.message || 'Broadcast update failed.',
+      });
+    }
+  });
+
   router.get('/fx-intelligence', async (_req, res) => {
     try {
       const data = await fetchFxIntelligence();
-      res.set('Cache-Control', 'public, max-age=120, stale-while-revalidate=300');
+      res.set('Cache-Control', 'public, max-age=30, stale-while-revalidate=30');
       return sendJson(res, data);
     } catch (err) {
       console.error('[market/fx-intelligence]', err?.message || err);
+      res.set('Cache-Control', 'public, max-age=15, stale-while-revalidate=15');
       return sendJson(res, {
         ok: false,
         pairs: [],

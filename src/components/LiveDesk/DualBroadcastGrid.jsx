@@ -1,4 +1,4 @@
-import { BROADCASTS } from '@/lib/liveDeskConfig';
+import useLiveBroadcasts from '@/hooks/useLiveBroadcasts';
 import LiveBroadcastPlayer from './LiveBroadcastPlayer';
 
 /**
@@ -12,11 +12,13 @@ import LiveBroadcastPlayer from './LiveBroadcastPlayer';
  * side would each be too small to read.
  */
 export default function DualBroadcastGrid({ minimizedId, onMinimize }) {
+  const broadcasts = useLiveBroadcasts();
+
   return (
     <div className="ld-broadcasts">
-      {BROADCASTS.map((broadcast) => (
+      {broadcasts.map((broadcast) => (
         <LiveBroadcastPlayer
-          key={broadcast.id}
+          key={`${broadcast.id}:${broadcast.embedUrl}`}
           broadcast={broadcast}
           // Only one player may float at a time, so the other card keeps its
           // place rather than both leaving the layout.

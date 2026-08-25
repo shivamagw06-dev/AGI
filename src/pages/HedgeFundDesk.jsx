@@ -293,6 +293,13 @@ export default function HedgeFundDesk() {
                 <h3>{strategy.name}</h3>
                 <p className="hd-question">{strategy.question}</p>
                 <p className="hd-thesis">{strategy.thesis}</p>
+                {strategy.data ? (
+                  <p className="hd-eq-note">
+                    Ranks on {strategy.data.rank}. Last price from {strategy.data.displayPrice}
+                    {strategy.data.derived ? `. ${strategy.data.derived}` : ''}
+                    {strategy.data.size ? `. Sizing uses ${strategy.data.size}` : ''}.
+                  </p>
+                ) : null}
                 {strategy.card?.governance ? (
                   <p className="hd-thesis">
                     Governed as <b>{strategy.card.governance.canonical_strategy_id}</b>

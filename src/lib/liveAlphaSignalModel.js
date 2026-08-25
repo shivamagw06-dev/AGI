@@ -91,6 +91,11 @@ export function buildCanonicalSignals(signals, strategyHealth = {}) {
   for (const signal of latest.values()) {
     const row = symbols.get(signal.symbol) || { instrument: signal.instrument_key, symbol: signal.symbol, sector: signal.sector || '—', strategies: {}, timestamp: signal.as_of };
     row.strategies[signal.engine] = signal;
+    if (signal.live_price || signal.price) {
+      row.live_price = signal.live_price || signal.price;
+      row.price_as_of = signal.price_as_of || row.price_as_of;
+      row.price_source = signal.price_source || row.price_source;
+    }
     if (Date.parse(signal.as_of) > Date.parse(row.timestamp)) row.timestamp = signal.as_of;
     symbols.set(signal.symbol, row);
   }

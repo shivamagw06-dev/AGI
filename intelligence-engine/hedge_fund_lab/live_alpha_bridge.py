@@ -189,7 +189,7 @@ def fetch_live_alpha_rows(*, limit: int = 200) -> dict[str, Any]:
     signals = _rest(
         "live_alpha_signals"
         f"?select=symbol,sector,run_id,direction,alpha_z,signal_quality_score,"
-        f"signal_quality_label,liquidity_ok,classification,factor_values,price_at_signal,created_at"
+        f"signal_quality_label,liquidity_ok,classification,factor_values,price_at_signal,instrument_key,created_at"
         f"&run_id=in.({in_clause})"
         f"&order=created_at.desc"
         f"&limit={_SIGNAL_FETCH_LIMIT}"
@@ -240,6 +240,8 @@ def fetch_live_alpha_rows(*, limit: int = 200) -> dict[str, Any]:
             },
         )
         row["engines"][sig["engine"]] = sig
+        if sig.get("instrument_key"):
+            row["instrument_key"] = sig.get("instrument_key")
         ts = _parse_ts(sig.get("as_of") or sig.get("created_at"))
         newest = _parse_ts(row.get("newest"))
         if ts and (newest is None or ts > newest):
@@ -260,6 +262,7 @@ def fetch_live_alpha_rows(*, limit: int = 200) -> dict[str, Any]:
                 "ticker": symbol,
                 "company_name": symbol,
                 "sector": row.get("sector"),
+                "instrument_key": row.get("instrument_key"),
                 "direction": direction,
                 "live_alpha_score": abs(comp),
                 "live_alpha_signed": comp,

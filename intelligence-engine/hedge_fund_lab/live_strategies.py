@@ -222,15 +222,28 @@ def _coverage(risk_row: Optional[dict], liq_row: Optional[dict]) -> dict[str, An
     }
 
 
-def _base_row(sig: dict[str, Any], risk_row: Optional[dict], liq_row: Optional[dict]) -> dict[str, Any]:
-    # The signal writer persists the actual traded price separately from
-    # factor_values. Prefer that explicit field; older signals may still carry
-    # last_price inside factor_values.
-    price = _num(sig.get("price_at_signal"))
-    price_source = "price_at_signal" if price is not None else None
-    if price is None and isinstance(sig.get("factor_values"), dict):
-        price = _num((sig.get("factor_values") or {}).get("last_price"))
-        price_source = "live_signal_factor" if price is not None else None
+def _base_row(sig: dict[str, Any], risk_row: Optional[dict], liq_row: Optional[dict],
+              live: Optional[dict[str, dict[str, Any]]] = None) -> dict[str, Any]:
+    # Prefer the last observed trade from live_market_snapshots. The signal
+    # writer persists price_at_signal at evaluation time, which lags the tape
+    # when engines are in warm-up or a run is skipped.
+    from hedge_fund_lab.live_prices import lookup_live_price
+
+    live_pack = lookup_live_price(
+        {"ticker": sig.get("symbol"), "instrument_key": sig.get("instrument_key")},
+        live,
+    )
+    if live_pack:
+        price = _num(live_pack.get("ltp"))
+        price_source = "live_market_snapshots"
+        price_as_of = live_pack.get("observed_at")
+    else:
+        price = _num(sig.get("price_at_signal"))
+        price_source = "price_at_signal" if price is not None else None
+        price_as_of = sig.get("as_of") or sig.get("created_at")
+        if price is None and isinstance(sig.get("factor_values"), dict):
+            price = _num((sig.get("factor_values") or {}).get("last_price"))
+            price_source = "live_signal_factor" if price is not None else None
     # Never substitute SMA50 for a quote. A moving average is valid risk context,
     # but presenting it as "Price" corrupts stops, ADV value and position sizing.
 
@@ -257,6 +270,7 @@ def _base_row(sig: dict[str, Any], risk_row: Optional[dict], liq_row: Optional[d
         "as_of": sig.get("as_of"),
         "price": round(price, 2) if price is not None else None,
         "price_source": price_source,
+        "price_as_of": price_as_of,
         "atr": round(atr, 2) if atr is not None else None,
         "beta_1y": _num(risk_row.get("beta_1y")) if risk_row else None,
         "adv_3m_shares_mn": adv,
@@ -303,6 +317,12 @@ def _engine_rows(engine: str, limit: int) -> list[dict[str, Any]]:
     if not payload.get("ok"):
         return []
     risk, liq = _risk_and_liquidity()
+    try:
+        from hedge_fund_lab.live_prices import latest_live_price_map
+
+        live = latest_live_price_map()
+    except Exception:
+        live = {}
     out: list[dict[str, Any]] = []
     for row in payload.get("rows") or []:
         sig = (row.get("engines") or {}).get(engine)
@@ -312,8 +332,9 @@ def _engine_rows(engine: str, limit: int) -> list[dict[str, Any]]:
         if not sym:
             continue
         sig = {**sig, "symbol": sym, "engine": engine,
-               "sector": sig.get("sector") or row.get("sector")}
-        out.append(_base_row(sig, risk.get(sym), liq.get(sym)))
+               "sector": sig.get("sector") or row.get("sector"),
+               "instrument_key": sig.get("instrument_key") or row.get("instrument_key")}
+        out.append(_base_row(sig, risk.get(sym), liq.get(sym), live))
     out.sort(key=lambda r: -(abs(r.get("signed_score") or 0)))
     return out[:limit]
 

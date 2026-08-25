@@ -7,17 +7,13 @@
  * YouTube's chrome are left as the publisher ships them.
  */
 
-// Channel live_stream URLs rather than video ids.
-//
-// Both broadcasters start a new video for each session, so a hardcoded id dies
-// at the next restart and the card would show "video unavailable" until
-// somebody noticed. The channel form resolves to whatever that channel is
-// currently airing.
-//
-// These are public URLs, not secrets. They are configurable because a channel
-// can change and following it should not require a redeploy.
+// Explicit publisher-selected broadcasts. YouTube no longer serves Bloomberg
+// through the channel-based live_stream embed: the public channel /live page
+// redirects to the current broadcast, but the equivalent iframe reports
+// "This video is unavailable". Admin overrides are loaded at runtime, so a
+// future restart no longer requires a deploy.
 const DEFAULTS = {
-  bloomberg: 'https://www.youtube.com/embed/live_stream?channel=UCIALMKvObZNtJ6AmdCLP7Lg',
+  bloomberg: 'https://www.youtube.com/embed/QB5BNdBFujE',
   // A video id here, unlike Bloomberg, and for two reasons.
   //
   // The channel form renders "This video is unavailable" for NDTV Profit even

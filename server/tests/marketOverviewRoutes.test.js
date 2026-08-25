@@ -50,6 +50,15 @@ vi.mock('../services/preMarketBriefingService.js', () => ({
   startPreMarketBriefingScheduler: vi.fn(),
 }));
 
+vi.mock('../services/fxIntelligenceService.js', () => ({
+  fetchFxIntelligence: vi.fn(async () => ({
+    ok: true,
+    pairs: [],
+    drivers: [],
+    providers: { upstox: { ok: true, quotes: 1, targets: 2 } },
+  })),
+}));
+
 import express from 'express';
 import createMarketRouter from '../routes/market.js';
 
@@ -90,5 +99,18 @@ describe('market overview / global-snapshot routes', () => {
     expect(res.status).toBe(200);
     expect(body.source).toBe('yahoo');
     expect(body.items[0].name).toBe('NASDAQ');
+  });
+
+  it('keeps the FX route cache aligned with its one-minute reference feed', async () => {
+    const app = express();
+    app.use('/api/market', createMarketRouter({}));
+    const server = await listen(app);
+    const { port } = server.address();
+    const res = await fetch(`http://127.0.0.1:${port}/api/market/fx-intelligence`);
+    const body = await res.json();
+    server.close();
+    expect(res.status).toBe(200);
+    expect(body.ok).toBe(true);
+    expect(res.headers.get('cache-control')).toBe('public, max-age=30, stale-while-revalidate=30');
   });
 });

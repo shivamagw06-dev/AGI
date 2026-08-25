@@ -40,6 +40,7 @@ import {
   hflStaticStrategy,
 } from '../services/hflStaticLibrary.js';
 import { getHflTerminalFromReadModel } from '../services/hflTerminalSnapshot.js';
+import { overlayHflLivePrices } from '../services/hflLivePriceOverlay.js';
 import { getValuationCompanyPackFromReadModel } from '../services/valuationCompanyPackSnapshot.js';
 import { requireStrategyLabAdmin } from '../services/strategyLabAdminAuth.js';
 import { enrichStrategyLabWithLiveMarket } from '../services/strategyLabLiveMarket.js';
@@ -174,6 +175,13 @@ function readHflTerminalCache(key, { allowStale = false } = {}) {
 
 function writeHflTerminalCache(key, data) {
   if (data && typeof data === 'object') hflTerminalCache.set(key, { data, at: Date.now() });
+}
+
+async function sendHflTerminal(res, data, cacheHeader) {
+  const body = await overlayHflLivePrices(data);
+  if (cacheHeader) res.set('X-AGI-Hedge-Fund-Cache', cacheHeader);
+  res.set('X-AGI-Hedge-Fund-Freshness', body?.freshness || data?.freshness || 'unknown');
+  return res.status(200).json(body);
 }
 
 const MI_DASHBOARD_FRESH_MS = 5 * 60_000;
@@ -2497,9 +2505,29 @@ export default function createIntelligenceRouter() {
 
   // Hedge Fund Strategy Lab — cold-start heavy; timeouts must exceed client AbortSignal.
   router.get('/hedge-fund-lab/corporate-action-audit', kfGet('/v1/hedge-fund-lab/corporate-action-audit'));
-  router.get('/hedge-fund-lab/live-strategies', kfGet('/v1/hedge-fund-lab/live-strategies'));
-  router.get('/hedge-fund-lab/live-strategies/:id', (req, res, next) =>
-    kfGet(`/v1/hedge-fund-lab/live-strategies/${encode(req.params.id)}`)(req, res, next));
+  router.get('/hedge-fund-lab/live-strategies', async (req, res) => {
+    try {
+      const qs = new URLSearchParams(req.query || {}).toString();
+      const r = await engineFetch(`/v1/hedge-fund-lab/live-strategies${qs ? `?${qs}` : ''}`, { timeoutMs: 45_000 });
+      const data = r.ok ? await overlayHflLivePrices(r.data) : r.data;
+      return res.status(r.status).json(data);
+    } catch (err) {
+      res.status(504).json({ error: err.message || 'hedge-fund-lab live-strategies failed', timeout: true });
+    }
+  });
+  router.get('/hedge-fund-lab/live-strategies/:id', async (req, res) => {
+    try {
+      const qs = new URLSearchParams(req.query || {}).toString();
+      const r = await engineFetch(
+        `/v1/hedge-fund-lab/live-strategies/${encodeURIComponent(req.params.id)}${qs ? `?${qs}` : ''}`,
+        { timeoutMs: 45_000 },
+      );
+      const data = r.ok ? await overlayHflLivePrices(r.data) : r.data;
+      return res.status(r.status).json(data);
+    } catch (err) {
+      res.status(504).json({ error: err.message || 'hedge-fund-lab live-strategy failed', timeout: true });
+    }
+  });
   router.get('/hedge-fund-lab/health', async (_req, res) => {
     try {
       const r = await engineFetch('/v1/hedge-fund-lab/health', { timeoutMs: 30_000 });
@@ -2562,9 +2590,7 @@ export default function createIntelligenceRouter() {
       if (!forceRefresh) {
         const fresh = readHflTerminalCache(cacheKey);
         if (fresh) {
-          res.set('X-AGI-Hedge-Fund-Cache', 'memory-fresh');
-          res.set('X-AGI-Hedge-Fund-Freshness', fresh.data?.freshness || (fresh.stale ? 'aging' : 'fresh'));
-          return res.status(200).json(fresh.data);
+          return sendHflTerminal(res, fresh.data, 'memory-fresh');
         }
       }
 
@@ -2577,9 +2603,7 @@ export default function createIntelligenceRouter() {
       });
       if (fromStore?.data) {
         writeHflTerminalCache(cacheKey, fromStore.data);
-        res.set('X-AGI-Hedge-Fund-Cache', fromStore.source || 'supabase');
-        res.set('X-AGI-Hedge-Fund-Freshness', fromStore.data.freshness || 'unknown');
-        return res.status(200).json(fromStore.data);
+        return sendHflTerminal(res, fromStore.data, fromStore.source || 'supabase');
       }
 
       // Legacy live engine path (pre-migration / no Supabase credentials).
@@ -2589,13 +2613,11 @@ export default function createIntelligenceRouter() {
       );
       if (r.ok) {
         writeHflTerminalCache(cacheKey, r.data);
-        res.set('X-AGI-Hedge-Fund-Cache', 'engine_live');
-        return res.status(r.status).json(r.data);
+        return sendHflTerminal(res, r.data, 'engine_live');
       }
       const stale = readHflTerminalCache(cacheKey, { allowStale: true });
       if (stale) {
-        res.set('X-AGI-Hedge-Fund-Cache', 'memory-stale');
-        return res.status(200).json({ ...stale.data, cache: { stale: true, age_ms: stale.age } });
+        return sendHflTerminal(res, { ...stale.data, cache: { stale: true, age_ms: stale.age } }, 'memory-stale');
       }
       return res.status(r.status).json(r.data);
     } catch (err) {
@@ -2603,8 +2625,7 @@ export default function createIntelligenceRouter() {
       if (query.limit == null || query.limit === '') query.limit = '12';
       const stale = readHflTerminalCache(new URLSearchParams(query).toString(), { allowStale: true });
       if (stale) {
-        res.set('X-AGI-Hedge-Fund-Cache', 'memory-stale');
-        return res.status(200).json({ ...stale.data, cache: { stale: true, age_ms: stale.age } });
+        return sendHflTerminal(res, { ...stale.data, cache: { stale: true, age_ms: stale.age } }, 'memory-stale');
       }
       res.status(504).json({ error: err.message || 'hedge-fund-lab terminal failed', timeout: true });
     }
@@ -2614,7 +2635,8 @@ export default function createIntelligenceRouter() {
       const r = await engineFetch(`/v1/hedge-fund-lab/opportunity/${encodeURIComponent(req.params.ticker)}`, {
         timeoutMs: 30_000,
       });
-      res.status(r.status).json(r.data);
+      const data = r.ok ? await overlayHflLivePrices(r.data) : r.data;
+      res.status(r.status).json(data);
     } catch (err) {
       res.status(504).json({ error: err.message || 'hedge-fund-lab opportunity failed', timeout: true });
     }
@@ -2628,7 +2650,8 @@ export default function createIntelligenceRouter() {
         `/v1/hedge-fund-lab/scan/${encodeURIComponent(req.params.strategy)}${qs ? `?${qs}` : ''}`,
         { timeoutMs: 45_000 },
       );
-      res.status(r.status).json(r.data);
+      const data = r.ok ? await overlayHflLivePrices(r.data) : r.data;
+      res.status(r.status).json(data);
     } catch (err) {
       res.status(504).json({ error: err.message || 'hedge-fund-lab scan failed', timeout: true });
     }

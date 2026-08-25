@@ -267,7 +267,7 @@ def serve_terminal_overview(*, limit: int = 12, refresh: bool = False) -> dict[s
         row = None
     payload = row.get("payload") if isinstance(row, dict) else None
     if isinstance(payload, dict) and (payload.get("cards") is not None or payload.get("ok")):
-        return {
+        served = {
             **payload,
             "ok": payload.get("ok", True),
             "read_model": "supabase_hfl_terminal",
@@ -275,6 +275,13 @@ def serve_terminal_overview(*, limit: int = 12, refresh: bool = False) -> dict[s
             "source_as_of": row.get("source_as_of") or payload.get("source_as_of") or payload.get("as_of"),
             "freshness": row.get("freshness") or payload.get("freshness") or "unknown",
         }
+        try:
+            from hedge_fund_lab.live_prices import overlay_live_prices_on_payload
+
+            served = overlay_live_prices_on_payload(served)
+        except Exception:
+            pass
+        return served
     return {
         "ok": True,
         "status": "warming",

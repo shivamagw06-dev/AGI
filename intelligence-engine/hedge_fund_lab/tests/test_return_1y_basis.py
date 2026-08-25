@@ -103,6 +103,11 @@ class TestOneConvention:
                 + _series("PAIRCO", "upstox_v3_daily", "2026-08-10", 10, 120.0))
         assert _returns(bars)["PAIRCO"] == 20.0
 
+    def test_a_groww_series_that_spans_the_year_is_used(self):
+        bars = (_series("GROWCO", "groww", "2025-08-18", 10, 71.50)
+                + _series("GROWCO", "groww", "2026-08-10", 10, 67.00))
+        assert _returns(bars)["GROWCO"] == pytest.approx(-6.3, abs=0.1)
+
     def test_the_raw_feed_is_used_when_it_is_the_only_one(self):
         """A delisted company exists nowhere else, and a raw series is internally
         consistent - the rule is one convention, not one preferred vendor."""
