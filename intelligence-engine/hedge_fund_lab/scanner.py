@@ -12,7 +12,11 @@ import statistics as stats
 from typing import Any, Optional
 
 from hedge_fund_lab import desk_snapshot
-from hedge_fund_lab.ratio_audit import audit_quality_metrics, pick_latest_annual_ratio
+from hedge_fund_lab.ratio_audit import (
+    ROE_VENDOR_GAP_PP,
+    audit_quality_metrics,
+    pick_latest_annual_ratio,
+)
 
 
 def _num(value: Any) -> Optional[float]:
@@ -66,6 +70,9 @@ def _sane(row: dict[str, Any], field: str) -> Optional[float]:
 # scale, then gate on 150 and penalise by /20 as if the figure were percent.
 LEVERAGE_QUALITY_MAX = 1.5
 LEVERAGE_STRESS_MAX = 1.5
+PAIRS_MAX_SPREAD = 8.0
+PAIRS_MIN_PRICE = 10.0
+PAIRS_ROE_GAP = 10.0
 LEVERAGE_ALPHA_MAX = 2.0
 
 
@@ -177,8 +184,15 @@ LATEST_CLOSE_WINDOW_DAYS = 30
 
 RETURN_FLOOR_PCT = -60.0
 RETURN_CEILING_PCT = 200.0
+# Same-feed pairing can fail when a later writer replaced the anniversary bar
+# with a different convention (NSE raw over Upstox adjusted). A nearby bar on
+# the last feed is the witness that the cross-feed ratio is a return, not a
+# split: Dr. Lal PathLabs disagrees by ~50 points and is withheld; SUNTECK
+# disagrees by ~9 and is published.
+RETURN_CROSS_WITNESS_TOLERANCE = 0.20
 
 _LAST_EXTREMES: list[dict[str, Any]] = []
+_LAST_RETURN_META: dict[str, dict[str, Any]] = {}
 
 
 def _return_1y_by_symbol(*, limit: int = 200000) -> dict[str, Optional[float]]:
@@ -209,6 +223,12 @@ def _return_1y_by_symbol(*, limit: int = 200000) -> dict[str, Optional[float]]:
     symbol's latest, so a feed that stopped months ago cannot quietly serve a
     stale return, and its base bar has to sit in a 60-day window around the
     anniversary rather than wherever its history happens to start.
+
+    When the anniversary bar was later overwritten by a different convention
+    (the bhavcopy replacing an Upstox close), same-feed pairing finds nothing.
+    A nearby surviving bar on the last feed is the witness that a cross-feed
+    ratio is still a return: if it disagrees by more than twenty points the
+    move is a split, not a year, and the reading is withheld.
     """
     try:
         from institutional_warehouse import db
@@ -224,13 +244,18 @@ def _return_1y_by_symbol(*, limit: int = 200000) -> dict[str, Optional[float]]:
     # covers the rows written before those columns existed, and it is the same
     # table `institutional_warehouse.price_basis` declares - not a second
     # opinion, just one the database can read.
-    feed = ("COALESCE(feed_family, CASE"
+    #
+    # A stamp of UNKNOWN is treated as missing. Groww quotes were labelled
+    # UNKNOWN by an earlier writer; the declaration still says they are
+    # split-adjusted, and two unknowns agreeing means nothing but a known
+    # source agreeing with its own table does.
+    feed = ("COALESCE(NULLIF(feed_family, 'UNKNOWN'), CASE"
             " WHEN source LIKE 'upstox%' THEN 'upstox'"
             " WHEN source LIKE 'yahoo%' THEN 'yahoo'"
             " WHEN source = 'nse_bhavcopy' THEN 'nse'"
             " WHEN source LIKE 'groww%' THEN 'groww'"
             " ELSE source END)")
-    basis = ("COALESCE(price_basis, CASE"
+    basis = ("COALESCE(NULLIF(price_basis, 'UNKNOWN'), CASE"
              " WHEN source LIKE 'upstox%' THEN 'SPLIT_ADJUSTED'"
              " WHEN source LIKE 'yahoo%' THEN 'RAW'"
              " WHEN source = 'nse_bhavcopy' THEN 'RAW'"
@@ -239,7 +264,8 @@ def _return_1y_by_symbol(*, limit: int = 200000) -> dict[str, Optional[float]]:
     try:
         rows = db.query(
             f"""WITH usable AS (
-                    SELECT symbol, {feed} || '|' || {basis} AS src, date, close FROM {table}
+                    SELECT symbol, {feed} || '|' || {basis} AS src, date, close, source
+                    FROM {table}
                     WHERE COALESCE(sys_published, 1) = 1
                       -- Bounded before anything else. Unbounded this walks all
                       -- 7.1m rows and calls strftime on every one of them, which
@@ -265,12 +291,25 @@ def _return_1y_by_symbol(*, limit: int = 200000) -> dict[str, Optional[float]]:
                     FROM src_depth d JOIN sym_latest y ON y.symbol = d.symbol
                     WHERE d.src_latest >= date(y.latest, '-7 day')
                 ),
-                last_px AS (
+                ranked_last AS (
                     SELECT u.symbol, u.src, u.close AS last_close, u.date AS last_date,
-                           f.bars
+                           f.bars,
+                           ROW_NUMBER() OVER (
+                               PARTITION BY u.symbol, u.src
+                               ORDER BY CASE
+                                   WHEN u.source LIKE 'upstox_v3_historical%' THEN 0
+                                   WHEN u.source LIKE 'upstox_v3_daily%' THEN 1
+                                   WHEN u.source LIKE 'upstox%' THEN 2
+                                   ELSE 3
+                               END
+                           ) AS rn
                     FROM usable u
                     JOIN fresh_src f ON f.symbol = u.symbol AND f.src = u.src
                                     AND u.date = f.src_latest
+                ),
+                last_px AS (
+                    SELECT symbol, src, last_close, last_date, bars
+                    FROM ranked_last WHERE rn = 1
                 ),
                 base AS (
                     SELECT u.symbol, u.src, u.close AS base_close, u.date AS base_date,
@@ -283,20 +322,67 @@ def _return_1y_by_symbol(*, limit: int = 200000) -> dict[str, Optional[float]]:
                       AND u.date >= date(l.last_date, '-425 day')
                 ),
                 paired AS (
-                    SELECT l.symbol, l.src, l.last_close, b.base_close, l.bars,
+                    SELECT l.symbol, l.src, l.last_close, l.last_date,
+                           b.base_close, b.base_date, l.bars,
                            ROW_NUMBER() OVER (
                                PARTITION BY l.symbol ORDER BY l.bars DESC, l.src
                            ) AS pick
                     FROM last_px l
                     JOIN base b ON b.symbol = l.symbol AND b.src = l.src AND b.rn = 1
+                ),
+                best_last AS (
+                    SELECT symbol, src, last_close, last_date, bars,
+                           ROW_NUMBER() OVER (
+                               PARTITION BY symbol ORDER BY bars DESC, src
+                           ) AS pick
+                    FROM last_px
+                ),
+                fallback_base AS (
+                    SELECT u.symbol, u.src AS base_src, u.close AS base_close,
+                           u.date AS base_date,
+                           ROW_NUMBER() OVER (
+                               PARTITION BY u.symbol ORDER BY u.date DESC
+                           ) AS rn
+                    FROM usable u
+                    JOIN best_last l ON l.symbol = u.symbol AND l.pick = 1
+                    WHERE u.date <= date(l.last_date, '-365 day')
+                      AND u.date >= date(l.last_date, '-425 day')
+                ),
+                witness AS (
+                    SELECT u.symbol, u.close AS witness_close,
+                           ROW_NUMBER() OVER (
+                               PARTITION BY u.symbol
+                               ORDER BY ABS(julianday(u.date)
+                                          - julianday(date(l.last_date, '-365 day')))
+                           ) AS rn
+                    FROM usable u
+                    JOIN best_last l ON l.symbol = u.symbol AND l.pick = 1
+                                    AND u.src = l.src
+                    WHERE u.date <= date(l.last_date, '-300 day')
+                      AND u.date >= date(l.last_date, '-500 day')
+                ),
+                fallback AS (
+                    SELECT l.symbol, l.src || '>' || b.base_src AS src,
+                           l.last_close, l.last_date, b.base_close, b.base_date
+                    FROM best_last l
+                    JOIN fallback_base b ON b.symbol = l.symbol AND b.rn = 1
+                    JOIN witness w ON w.symbol = l.symbol AND w.rn = 1
+                    WHERE l.pick = 1
+                      AND l.symbol NOT IN (SELECT symbol FROM paired WHERE pick = 1)
+                      AND ABS((l.last_close / b.base_close - 1.0)
+                            - (l.last_close / w.witness_close - 1.0)) <= 0.20
                 )
-                SELECT symbol, src, last_close, base_close
-                FROM paired WHERE pick = 1"""
+                SELECT symbol, src, last_close, base_close, last_date, base_date
+                FROM paired WHERE pick = 1
+                UNION ALL
+                SELECT symbol, src, last_close, base_close, last_date, base_date
+                FROM fallback"""
         ) or []
     except Exception:
         return {}
 
     out: dict[str, Optional[float]] = {}
+    meta: dict[str, dict[str, Any]] = {}
     extremes: list[dict[str, Any]] = []
     for row in rows:
         symbol = str(row.get("symbol") or "").upper()
@@ -305,15 +391,30 @@ def _return_1y_by_symbol(*, limit: int = 200000) -> dict[str, Optional[float]]:
         if not (symbol and last_close and base_close and base_close > 0):
             continue
         value = round((last_close / base_close - 1.0) * 100.0, 2)
+        pack = {
+            "return_1y": value,
+            "src": row.get("src"),
+            "last_close": last_close,
+            "base_close": base_close,
+            "last_date": row.get("last_date"),
+            "base_date": row.get("base_date"),
+        }
         if value < RETURN_FLOOR_PCT or value > RETURN_CEILING_PCT:
             extremes.append({"symbol": symbol, "return_1y": value,
                              "basis": row.get("src"), "base": base_close, "last": last_close})
             continue
         out[symbol] = value
+        meta[symbol] = pack
 
-    global _LAST_EXTREMES
+    global _LAST_EXTREMES, _LAST_RETURN_META
     _LAST_EXTREMES = sorted(extremes, key=lambda e: abs(e["return_1y"]), reverse=True)
+    _LAST_RETURN_META = meta
     return out
+
+
+def return_1y_meta(symbol: str) -> dict[str, Any]:
+    """Provenance for the last computed one-year return, if any."""
+    return dict(_LAST_RETURN_META.get(str(symbol or "").upper()) or {})
 
 
 def extreme_returns() -> list[dict[str, Any]]:
@@ -382,6 +483,7 @@ def _map_warehouse_row(
     factors: dict[str, Any],
     return_1y: Optional[float],
     legacy_consensus: dict[str, Any],
+    return_pack: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
     """Shape a Market Intelligence / warehouse row for the scanners."""
     from hedge_fund_lab.current_valuation import overlay as overlay_current_valuation
@@ -433,6 +535,8 @@ def _map_warehouse_row(
         "target_price": target_price,
         "return_1y": r1,
         "return_3y": _num(legacy_consensus.get("return_3y")),
+        "consensus_date": (mi.get("consensus_date")
+                           or (legacy_consensus or {}).get("consensus_date")),
         "source": "warehouse.consensus" if upside is not None or coverage is not None else (
             "valuation_consensus" if legacy_consensus else None
         ),
@@ -493,6 +597,11 @@ def _map_warehouse_row(
             "consensus_date": (mi.get("consensus_date")
                                or (legacy_consensus or {}).get("consensus_date")),
             "vendor_roe": vendor_roe,
+            "return_1y_src": (return_pack or {}).get("src"),
+            "return_1y_last_close": (return_pack or {}).get("last_close"),
+            "return_1y_base_close": (return_pack or {}).get("base_close"),
+            "return_1y_last_date": (return_pack or {}).get("last_date"),
+            "return_1y_base_date": (return_pack or {}).get("base_date"),
             "ratio_audit": audit_quality_metrics(
                 roe=roe,
                 net_margin=profit_margin,
@@ -503,10 +612,15 @@ def _map_warehouse_row(
             ),
         },
     }
+    overlay_roe = None
     try:
         from valuation_ratios.ingest import apply_latest_ratios
 
         mapped = apply_latest_ratios(mapped)
+        # Identity overlays leave the annual print in place. A real Upstox pack
+        # stamps source/as-of; only then is mapped ROE the vendor TTM.
+        if mapped.get("valuation_ratios_source") or mapped.get("valuation_ratios_as_of"):
+            overlay_roe = _num(mapped.get("roe"))
     except Exception:
         pass
     try:
@@ -516,9 +630,25 @@ def _map_warehouse_row(
     except Exception:
         pass
     # apply_latest_ratios copies Upstox TTM ROE onto the row. Quality ranks on
-    # the annual warehouse print; put that back when we have it.
-    if _num(ratios.get("roe")) is not None:
-        mapped["roe"] = round(_num(ratios.get("roe")), 4)
+    # the annual warehouse print; put that back when we have it, and keep the
+    # TTM as the vendor check so a one-off annual (Ashoka 77.5% vs ~15%) fails.
+    annual_roe = _num(ratios.get("roe"))
+    if overlay_roe is not None:
+        vendor_roe = overlay_roe
+    if annual_roe is not None:
+        mapped["roe"] = round(annual_roe, 4)
+    ctx = mapped.setdefault("data_context", {})
+    ctx["vendor_roe"] = vendor_roe
+    if overlay_roe is not None and mapped.get("valuation_ratios_source"):
+        ctx["vendor_roe_source"] = mapped.get("valuation_ratios_source")
+    ctx["ratio_audit"] = audit_quality_metrics(
+        roe=_num(mapped.get("roe")),
+        net_margin=profit_margin,
+        debt_equity=debt_to_equity,
+        vendor_roe=vendor_roe,
+        gross_margin=_num(ratios.get("gross_margin")),
+        ebitda_margin=_num(ratios.get("ebitda_margin")),
+    )
     return mapped
 
 
@@ -619,6 +749,7 @@ def _universe_from_warehouse() -> list[dict[str, Any]]:
             ratios=ratios.get(sym) or {},
             factors=fac,
             return_1y=returns.get(sym),
+            return_pack=return_1y_meta(sym),
             legacy_consensus=legacy,
         )
         out.append(mapped)
@@ -646,7 +777,11 @@ def _universe_from_legacy() -> list[dict[str, Any]]:
     for ticker, row in (all_rows() or {}).items():
         merged = dict(row)
         merged["ticker"] = ticker
-        merged["consensus"] = consensus_row(ticker) or {}
+        consensus = dict(consensus_row(ticker) or {})
+        # File-store 1Y goes stale the moment prices move. SUNTECK printed
+        # +23.1% from this field while the stock was down over the year.
+        consensus["return_1y"] = None
+        merged["consensus"] = consensus
         out.append(merged)
     _UNIVERSE_META.update(
         {
@@ -933,6 +1068,7 @@ def _industry_medians(universe: list[dict[str, Any]]) -> dict[str, dict[str, Any
         out[industry] = {
             "count": len(members),
             "pe": _median([_sane(m, "pe") for m in members]),
+            "forward_pe": _median([_sane(m, "forward_pe") for m in members]),
             "pb": _median([_sane(m, "pb") for m in members]),
             "ev_ebitda": _median([_sane(m, "ev_ebitda") for m in members]),
             "roe": _median([_sane(m, "roe") for m in members]),
@@ -963,7 +1099,27 @@ def _base(row: dict[str, Any]) -> dict[str, Any]:
         "price_as_of": row.get("price_as_of"),
         "consensus_upside": consensus.get("upside"),
         "coverage": consensus.get("coverage"),
-        "return_1y": consensus.get("return_1y"),
+        "buy": consensus.get("buy_count") or consensus.get("buy"),
+        "target_price": consensus.get("target_price") or row.get("target_price"),
+        "consensus_date": (
+            (row.get("data_context") or {}).get("consensus_date")
+            or consensus.get("consensus_date")
+        ),
+        "return_1y": row.get("return_1y") if row.get("return_1y") is not None else consensus.get("return_1y"),
+        "return_1y_base_close": (row.get("data_context") or {}).get("return_1y_base_close"),
+        "return_1y_base_date": (row.get("data_context") or {}).get("return_1y_base_date"),
+        # Node live overlay recomputes upside and 1Y from these fields.
+        "consensus": {
+            "upside": consensus.get("upside"),
+            "coverage": consensus.get("coverage"),
+            "buy_count": consensus.get("buy_count") or consensus.get("buy"),
+            "target_price": consensus.get("target_price") or row.get("target_price"),
+            "return_1y": row.get("return_1y") if row.get("return_1y") is not None else consensus.get("return_1y"),
+            "consensus_date": (
+                (row.get("data_context") or {}).get("consensus_date")
+                or consensus.get("consensus_date")
+            ),
+        },
         "data_context": row.get("data_context") or {},
     }
 
@@ -1146,6 +1302,11 @@ def _scan_quality(universe, medians, limit) -> list[dict[str, Any]]:
             vendor_roe=_num(ctx.get("vendor_roe")),
         )
         failed = audit.get("status") == "data_quality_fail"
+        vendor_gap = audit.get("vendor_roe_gap_pp")
+        if failed and vendor_gap is not None and vendor_gap >= ROE_VENDOR_GAP_PP:
+            # A one-off / exceptional annual vs TTM is not a quality compounder.
+            # Mapping fails (80% NPM) still list after validated rows.
+            continue
         roe = _sane(row, "roe") if not failed else _num(row.get("roe"))
         margin = _sane(row, "profit_margin") if not failed else _num(row.get("profit_margin"))
         debt = _sane(row, "debt_to_equity") if not failed else _num(row.get("debt_to_equity"))
@@ -1161,9 +1322,10 @@ def _scan_quality(universe, medians, limit) -> list[dict[str, Any]]:
         scope_missing = debt is not None and ctx.get("accounting_scope") == "not_provided"
         if failed:
             validation = "data_quality_fail"
-        elif scope_missing:
-            validation = "accounting_basis_verification_required"
         else:
+            # Missing consolidated/standalone metadata is a caveat, not a
+            # broken ratio. Putting it on validation_status hid every Quality
+            # row behind "Show anyway".
             validation = "screen_validated"
         fail_note = "; ".join(audit.get("reasons") or [])
         out.append(
@@ -1174,6 +1336,9 @@ def _scan_quality(universe, medians, limit) -> list[dict[str, Any]]:
                 "debt_to_equity": debt,
                 "quality_score": _quality_score(roe, margin, debt),
                 "validation_status": validation,
+                "comparability_status": (
+                    "accounting_basis_verification_required" if scope_missing and not failed else None
+                ),
                 "ratio_audit": audit,
                 "debt_to_equity_basis": {
                     "status": "verify_accounting_basis" if scope_missing else "reported_basis_available",
@@ -1261,6 +1426,18 @@ def _scan_conviction(universe, medians, limit) -> list[dict[str, Any]]:
     return out[:limit]
 
 
+def _is_financial_business(row: dict[str, Any]) -> bool:
+    blob = " ".join(
+        str(row.get(k) or "")
+        for k in ("primary_industry", "primary_sector", "industry", "sector", "industry_dna")
+    ).lower()
+    return any(
+        token in blob
+        for token in ("bank", "nbfc", "housing finance", "consumer finance",
+                      "mortgage", "insurance", "asset management")
+    )
+
+
 def _scan_stress(universe, medians, limit) -> list[dict[str, Any]]:
     out = []
     for row in universe:
@@ -1268,7 +1445,8 @@ def _scan_stress(universe, medians, limit) -> list[dict[str, Any]]:
         margin = _sane(row, "profit_margin")
         r1 = _num((row.get("consensus") or {}).get("return_1y"))
         flags = []
-        if debt is not None and debt > LEVERAGE_STRESS_MAX:
+        # A housing financier at 4x D/E is the book, not distress.
+        if debt is not None and debt > LEVERAGE_STRESS_MAX and not _is_financial_business(row):
             flags.append(f"debt/equity at {debt}x")
         if margin is not None and margin < 0:
             flags.append(f"negative net margin of {margin}%")
@@ -1306,7 +1484,21 @@ def _scan_pairs(universe, medians, limit) -> list[dict[str, Any]]:
         members.sort(key=lambda m: m["_value"])
         cheap, rich = members[0], members[-1]
         spread = round((rich["_value"] / cheap["_value"]), 2)
-        if spread < 2.0:
+        if spread < 2.0 or spread > PAIRS_MAX_SPREAD:
+            continue
+        cheap_px = _num(cheap.get("price"))
+        rich_px = _num(rich.get("price"))
+        if (cheap_px is not None and cheap_px < PAIRS_MIN_PRICE) or (
+            rich_px is not None and rich_px < PAIRS_MIN_PRICE
+        ):
+            continue
+        cheap_roe = _num(cheap.get("roe"))
+        rich_roe = _num(rich.get("roe"))
+        if (
+            cheap_roe is not None
+            and rich_roe is not None
+            and cheap_roe + PAIRS_ROE_GAP < rich_roe
+        ):
             continue
         metric = cheap["_metric"]
         out.append(

@@ -2,7 +2,7 @@ import { NavLink } from "react-router-dom";
 
 const navItems = [
   { title: "Research", href: "/sections/live-articles" },
-  { title: "Markets", href: "/sections/markets" },
+  { title: "Markets", href: "/markets/stocks" },
   { title: "Economy", href: "/economy" },
   { title: "Companies", href: "/companies" },
   { title: "Business", href: "/business" },

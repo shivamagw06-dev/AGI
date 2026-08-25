@@ -70,6 +70,12 @@ async function intelligenceFetch(path, { method = 'GET', body, timeoutMs = 45_00
 }
 
 export const getIntelligenceHealth = () => intelligenceFetch('/health');
+export const getUsStockIntelligence = (symbol = 'AAPL') => {
+  const qs = new URLSearchParams({ symbol: String(symbol || 'AAPL').trim().toUpperCase() });
+  return intelligenceFetch(`/us-stock-intelligence/analyse?${qs}`, { timeoutMs: 55_000 });
+};
+export const getUsMarketOverview = () =>
+  intelligenceFetch('/us-stock-intelligence/market-overview', { timeoutMs: 40_000 });
 export const createResearchRun = (payload) => intelligenceFetch('/research/runs', { method: 'POST', body: payload });
 export const getResearchRun = (runId) => intelligenceFetch(`/research/runs/${encodeURIComponent(runId)}`);
 export const listResearchRuns = (params = {}) => {

@@ -820,6 +820,22 @@ class TestBhavcopyFillsGapsOnly:
                 if r.get("symbol") == "TESTCO"]
         assert rows[0]["close"] == 11.0
 
+    def test_a_raw_feed_cannot_replace_an_adjusted_close_even_without_fill_only(self):
+        """Nightly bhavcopy refresh omitted fill_only and overwrote a year of
+        Upstox history. The anniversary bar then could not pair."""
+        gateway.write("daily_market_history", self.ADJUSTED,
+                      source="upstox_v3_historical", actor="t", reason="seed")
+        out = gateway.write("daily_market_history", self.RAW,
+                            source="nse_bhavcopy", actor="t", reason="refresh:nse")
+        assert self._close() == 1654.45
+        assert out.get("left_alone", 0) >= 1
+
+    def test_the_nightly_bhavcopy_refresh_is_a_gap_filler(self):
+        import inspect
+        from institutional_warehouse import refresh
+        src = inspect.getsource(refresh.stage_nse)
+        assert "fill_only=True" in src
+
     def test_the_walker_writes_as_a_gap_filler(self):
         """The guard belongs on the collector, not on the caller remembering."""
         import inspect

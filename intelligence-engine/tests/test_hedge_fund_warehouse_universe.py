@@ -145,6 +145,10 @@ def warehouse_universe(monkeypatch):
         "hedge_fund_lab.scanner._legacy_consensus",
         lambda ticker: {},
     )
+    monkeypatch.setattr(
+        "hedge_fund_lab.scanner._return_1y_by_symbol",
+        lambda **k: {"AAA": 50.0},
+    )
     # These tests assert source construction, not asynchronous cache timing.
     # Production _universe() may intentionally return a previous snapshot while
     # refreshing; route the fixture through the deterministic builder.
@@ -161,7 +165,7 @@ def test_universe_prefers_warehouse(warehouse_universe):
     by_tk = {r["ticker"]: r for r in rows}
     assert by_tk["AAA"]["primary_sector"] == "Industrials"
     assert by_tk["AAA"]["profit_margin"] == pytest.approx(14.0)
-    assert by_tk["AAA"]["debt_to_equity"] == pytest.approx(40.0)  # 0.4 × 100
+    assert by_tk["AAA"]["debt_to_equity"] == pytest.approx(0.4)
     assert by_tk["AAA"]["consensus"]["upside"] == pytest.approx(20.0)
     assert by_tk["AAA"]["consensus"]["buy_count"] == pytest.approx(10)
     assert by_tk["AAA"]["forward_pe"] == pytest.approx(10.0)

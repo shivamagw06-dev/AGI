@@ -63,7 +63,7 @@ const Header = ({ currentPage, setCurrentPage }) => {
   }, [user]);
   const navItems = [
     { name: "Research", page: "research", path: "/research" },
-    { name: "Markets", page: "markets", path: "/markets" },
+    { name: "Markets", page: "markets", path: "/markets/stocks" },
     { name: "Economy", page: "economy", path: "/economy" },
     { name: "Companies", page: "companies", path: "/companies" },
     { name: "Private Markets", page: "private-markets", path: "/private-markets" },

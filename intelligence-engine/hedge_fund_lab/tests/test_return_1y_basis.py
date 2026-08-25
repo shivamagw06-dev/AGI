@@ -199,6 +199,15 @@ class TestStampedBasis:
                              "2026-08-10", 10, 150.0))
         assert "VAGUE" not in _returns(bars)
 
+    def test_a_groww_row_stamped_unknown_still_uses_the_declared_basis(self):
+        """Groww quotes landed as UNKNOWN; the declaration still says they are
+        split-adjusted, and that is enough to pair them with themselves."""
+        bars = (self._bars("GROWCO", "groww", "UNKNOWN", "UNKNOWN",
+                           "2025-08-18", 10, 71.50)
+                + self._bars("GROWCO", "groww", "UNKNOWN", "UNKNOWN",
+                             "2026-08-10", 10, 67.00))
+        assert _returns(bars)["GROWCO"] == pytest.approx(-6.3, abs=0.1)
+
     def test_an_unstamped_row_falls_back_to_the_declared_table(self):
         """7.1m rows predate the columns. They read the same declaration the
         stamp would have written."""
@@ -270,3 +279,32 @@ class TestQueryWindow:
         """It only has to find today, not a decade of yesterdays."""
         from hedge_fund_lab import scanner
         assert 7 <= scanner.LATEST_CLOSE_WINDOW_DAYS <= 90
+
+
+class TestOverwrittenAnniversary:
+    """The bhavcopy replaced Upstox's anniversary bar, so same-feed pairing
+    finds nothing. A nearby surviving bar on the last feed is the witness that
+    the cross-feed ratio is a return, not a split.
+    """
+
+    def test_sunteck_style_overwrite_still_reports_the_true_return(self):
+        """Google Finance: 314.85 vs ~393.7 a year earlier, about -20%.
+        The desk showed +23% from a stale file while this series was in the
+        warehouse all along."""
+        last = _series("SUNTECK", "upstox_v3_historical", "2026-08-10", 10, 314.1)
+        nse = _series("SUNTECK", "nse_bhavcopy", "2025-08-18", 10, 393.65)
+        witness = _series("SUNTECK", "upstox_v3_historical", "2025-09-10", 5, 443.45)
+        assert _returns(last + nse + witness)["SUNTECK"] == pytest.approx(-20.2, abs=0.2)
+
+    def test_a_two_for_one_split_is_still_withheld(self):
+        """Dr. Lal PathLabs: last 1700 adjusted, anniversary 3400 raw, nearby
+        adjusted bar still 1700. The witness disagrees by 50 points."""
+        last = _series("LALPATHLAB", "upstox_v3_historical", "2026-08-10", 10, 1700.0)
+        nse = _series("LALPATHLAB", "nse_bhavcopy", "2025-08-18", 10, 3400.0)
+        witness = _series("LALPATHLAB", "upstox_v3_historical", "2025-09-10", 5, 1700.0)
+        assert "LALPATHLAB" not in _returns(last + nse + witness)
+
+    def test_the_witness_tolerance_is_the_one_that_was_agreed(self):
+        from hedge_fund_lab import scanner
+        assert scanner.RETURN_CROSS_WITNESS_TOLERANCE == 0.20
+        assert "<= 0.20" in SCANNER.read_text()

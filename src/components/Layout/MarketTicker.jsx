@@ -40,7 +40,7 @@ export default function MarketTicker() {
               return (
                 <Link
                   key={item.id || item.name}
-                  to="/markets"
+                  to="/markets/stocks"
                   className="flex items-baseline gap-2 shrink-0 hover:opacity-75 transition-opacity group"
                 >
                   <span className="text-[11px] font-bold uppercase tracking-wide text-[#111111]">
@@ -61,7 +61,7 @@ export default function MarketTicker() {
           )}
         </div>
         <Link
-          to="/markets"
+          to="/markets/stocks"
           className="hidden md:block shrink-0 text-[11px] font-bold text-[#111111] hover:text-[#ff6600] whitespace-nowrap"
         >
           Live market data →

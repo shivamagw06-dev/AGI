@@ -9576,6 +9576,26 @@ async def market_data_health():
 # --- YFP V1 (Yahoo Finance Institutional Provider — secondary MarketData adapter) ---
 
 
+@router.get("/us-stock-intelligence/analyse")
+async def us_stock_intelligence_analyse(symbol: str = "AAPL"):
+    """Canonical US equity research package backed by Yahoo Finance."""
+    from fastapi import HTTPException
+    from us_stock_intelligence.production import analyse_us_stock
+
+    try:
+        return await analyse_us_stock(symbol)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+
+@router.get("/us-stock-intelligence/market-overview")
+async def us_stock_intelligence_market_overview():
+    """Live/daily US benchmarks, sectors, breadth and screeners."""
+    from us_stock_intelligence.production import market_overview
+
+    return await market_overview()
+
+
 @router.get("/yfp/health")
 async def yfp_health():
     from yfp.production import is_yfp_enabled, production_dashboard

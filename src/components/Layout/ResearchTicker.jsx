@@ -6,7 +6,7 @@ const items = [
   { label: "Research Library", path: "/sections/live-articles" },
   { label: "Research Notes", path: "/sections/research-notes" },
   { label: "Deal Tracker", path: "/sections/deal-tracker" },
-  { label: "Markets", path: "/markets" },
+  { label: "Markets", path: "/markets/stocks" },
   { label: "Economy", path: "/sections/research-notes" },
   { label: "Private Equity", path: "/sections/deal-tracker" },
   { label: "Opinions", path: "/sections/opinions-editorials" },

@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import pytest
+
 from hedge_fund_lab.live_prices import apply_latest_live_price, lookup_live_price, reset_cache
 
 
@@ -80,3 +82,34 @@ def test_walks_a_terminal_payload():
     assert row["price"] == 1300.6
     assert row["market"]["price"] == 1300.6
     assert row["data_context"]["price_freshness"] == "LIVE"
+
+
+def test_recomputes_upside_from_row_target_when_consensus_is_missing():
+    row = apply_latest_live_price(
+        {"ticker": "HDFCBANK", "price": 700.0, "target_price": 840.0},
+        {"HDFCBANK": {"ltp": 727.5, "observed_at": "2026-08-25T12:00:00+00:00",
+                      "source": "live_market_snapshots"}},
+    )
+    assert row["consensus"]["target_price"] == 840.0
+    assert row["consensus_upside"] == round((840.0 / 727.5 - 1) * 100, 2)
+    assert row["target_price"] == 840.0
+
+
+def test_recomputes_one_year_return_from_the_live_print():
+    """SUNTECK: overlaying 314.85 onto a stale +23% without the year-ago
+    close is what the page printed. With the base, the tape matches Google."""
+    row = apply_latest_live_price(
+        {
+            "ticker": "SUNTECK",
+            "price": 307.6,
+            "return_1y": 23.1,
+            "consensus": {"return_1y": 23.1, "target_price": 435.93},
+            "data_context": {"return_1y_base_close": 393.65},
+        },
+        {"SUNTECK": {"ltp": 314.85, "observed_at": "2026-08-25T12:00:00+00:00",
+                     "source": "live_market_snapshots"}},
+    )
+    assert row["price"] == 314.85
+    assert row["return_1y"] == round((314.85 / 393.65 - 1) * 100, 2)
+    assert row["consensus"]["return_1y"] == row["return_1y"]
+    assert row["return_1y"] == pytest.approx(-20.02, abs=0.05)

@@ -38,9 +38,11 @@ const PinUnlockPage = React.lazy(() => import('@/pages/auth/PinUnlockPage'));
 const AccountSecurityPage = React.lazy(() => import('@/pages/auth/AccountSecurityPage'));
 const Opinions = React.lazy(() => import('@/components/Opinions'));
 const Markets = React.lazy(() => import('@/pages/Markets'));
+const StocksBoardPage = React.lazy(() => import('@/pages/StocksBoardPage'));
 const MarketIntelligence = React.lazy(() => import('@/pages/MarketIntelligence'));
 const MarketSectorIntelligence = React.lazy(() => import('@/pages/MarketSectorIntelligence'));
 const GlobalMarketsPage = React.lazy(() => import('@/pages/GlobalMarketsPage'));
+const UsStockIntelligence = React.lazy(() => import('@/pages/UsStockIntelligence'));
 const PreMarketIntelligence = React.lazy(() => import('@/pages/PreMarketIntelligence'));
 const Nifty500StockResearch = React.lazy(() => import('@/pages/Nifty500StockResearch'));
 const IpoDetailPage = React.lazy(() => import('@/pages/IpoDetailPage'));
@@ -199,6 +201,7 @@ function PublicRoutes() {
       <Route path="/category/:slug" element={<CategoryPage />} />
 
       <Route path="/markets" element={<Markets />} />
+      <Route path="/markets/stocks" element={<StocksBoardPage />} />
       <Route path="/sections/markets" element={<Navigate replace to="/markets" />} />
       <Route path="/market-intelligence" element={gate('market_intelligence', <MarketIntelligence />)} />
       <Route path="/market-sector-intelligence" element={gate('market_intelligence', <MarketSectorIntelligence />)} />
@@ -217,6 +220,7 @@ function PublicRoutes() {
       <Route path="/private-equity" element={<Navigate replace to="/private-markets" />} />
       <Route path="/private-equity/firms/:slug" element={gate('private_markets', <PrivateEquityFirmPage />)} />
       <Route path="/global-markets" element={gate('global_markets', <GlobalMarketsPage />)} />
+      <Route path="/us-stock-intelligence" element={gate('global_markets', <UsStockIntelligence />)} />
       <Route path="/economics" element={gate('economics', <EconomicsPage />)} />
       <Route path="/insider-activity" element={gate('insider', <InsiderActivityPage />)} />
       <Route path="/global" element={<Navigate replace to="/global-markets" />} />

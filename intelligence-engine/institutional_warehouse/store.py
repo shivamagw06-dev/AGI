@@ -421,6 +421,34 @@ def upsert(
                     "unchanged": 0, "skipped": skipped, "left_alone": left_alone,
                     "nulls_refused": nulled}
 
+    # A raw close must never replace a split-adjusted one, even when the
+    # caller forgot fill_only. The nightly bhavcopy refresh did that for a
+    # year of Upstox history; same-feed 1Y pairing then found nothing.
+    if tab.id == "daily_market_history" and existing:
+        from institutional_warehouse.price_basis import RAW, SPLIT_ADJUSTED, describe
+
+        kept: list[dict[str, Any]] = []
+        for item in prepared:
+            prior = existing.get(item["row_id"])
+            if not prior:
+                kept.append(item)
+                continue
+            prior_basis = str(
+                prior.get("price_basis") or describe(prior.get("source"))[1] or ""
+            ).upper()
+            new_basis = str(
+                item["values"].get("price_basis") or describe(source)[1] or ""
+            ).upper()
+            if prior_basis == SPLIT_ADJUSTED and new_basis == RAW:
+                left_alone += 1
+                continue
+            kept.append(item)
+        prepared = kept
+        if not prepared:
+            return {"ok": True, "tab": tab.id, "inserted": 0, "updated": 0,
+                    "unchanged": 0, "skipped": skipped, "left_alone": left_alone,
+                    "nulls_refused": nulled}
+
     stamp = now_iso()
     inserted = updated = unchanged = 0
     cell_entries: list[dict[str, Any]] = []

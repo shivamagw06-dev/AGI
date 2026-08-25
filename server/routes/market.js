@@ -529,6 +529,26 @@ export default function createMarketRouter(env = {}) {
     }
   });
 
+  router.get('/stocks-board', async (_req, res) => {
+    try {
+      const { getStocksBoard } = await import('../services/stocksBoardService.js');
+      const data = await getStocksBoard({ force: _req.query?.force === '1' });
+      res.set('Cache-Control', 'public, max-age=60, stale-while-revalidate=180');
+      return sendJson(res, data);
+    } catch (err) {
+      console.error('[market/stocks-board]', err?.message || err);
+      res.set('Cache-Control', 'public, max-age=15, stale-while-revalidate=15');
+      return sendJson(res, {
+        ok: false,
+        delayed: true,
+        regions: {},
+        popular: [],
+        error: err?.message || 'stocks_board_unavailable',
+        asOf: new Date().toISOString(),
+      });
+    }
+  });
+
   router.get('/global-snapshot', async (_req, res) => {
     try {
       const wanted = ['NASDAQ', 'S&P', 'Dow', 'Gold', 'Silver', 'Brent', 'Bitcoin', 'USDINR'];
