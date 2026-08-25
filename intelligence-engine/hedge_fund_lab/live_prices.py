@@ -159,11 +159,13 @@ def apply_latest_live_price(
     context["price_freshness"] = "LIVE"
     out["data_context"] = context
     consensus = dict(out.get("consensus") or {})
-    target = _num(consensus.get("target_price"))
+    target = _num(consensus.get("target_price")) or _num(out.get("target_price"))
     if target is not None:
+        consensus["target_price"] = target
         consensus["upside"] = round((target / ltp - 1.0) * 100.0, 2)
         out["consensus"] = consensus
         out["consensus_upside"] = consensus["upside"]
+        out["target_price"] = target
     if prior_price and prior_yield is not None:
         dps = (prior_yield / 100.0) * prior_price
         out["dividend_yield"] = round((dps / ltp) * 100.0, 2)
@@ -176,7 +178,34 @@ def apply_latest_live_price(
         market = dict(market)
         market["price"] = ltp
         out["market"] = market
+    _recompute_return_1y(out, ltp)
     return out
+
+
+def _recompute_return_1y(row: dict[str, Any], last_price: float) -> None:
+    """Keep 1Y on the same last price the page is showing.
+
+    Overlaying LTP without touching the year left SUNTECK at +23% against a
+    live print of 314, while the stock was down 20% over the year.
+    """
+    context = dict(row.get("data_context") or {})
+    base = _num(context.get("return_1y_base_close")) or _num(row.get("return_1y_base_close"))
+    if not (base and last_price and base > 0):
+        return
+    try:
+        from hedge_fund_lab.scanner import RETURN_CEILING_PCT, RETURN_FLOOR_PCT
+    except Exception:
+        RETURN_FLOOR_PCT, RETURN_CEILING_PCT = -60.0, 200.0
+    value = round((last_price / base - 1.0) * 100.0, 2)
+    consensus = dict(row.get("consensus") or {})
+    if value < RETURN_FLOOR_PCT or value > RETURN_CEILING_PCT:
+        consensus["return_1y"] = None
+        row["return_1y"] = None
+        row["consensus"] = consensus
+        return
+    consensus["return_1y"] = value
+    row["consensus"] = consensus
+    row["return_1y"] = value
 
 
 def overlay_live_prices_on_payload(payload: Any, latest: dict[str, dict[str, Any]] | None = None) -> Any:

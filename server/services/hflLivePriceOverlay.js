@@ -125,13 +125,15 @@ function overlayRow(row, prices) {
     price_as_of: pack.observed_at,
     price_freshness: 'LIVE',
   };
-  const target = Number(row.consensus?.target_price);
-  if (row.consensus && target > 0) {
+  const target = Number(row.consensus?.target_price ?? row.target_price);
+  if (target > 0) {
     row.consensus = {
-      ...row.consensus,
+      ...(row.consensus || {}),
+      target_price: target,
       upside: Number((((target / pack.ltp) - 1) * 100).toFixed(2)),
     };
     row.consensus_upside = row.consensus.upside;
+    row.target_price = target;
   }
   if (priorPrice > 0 && Number.isFinite(priorYield) && priorYield >= 0) {
     const dps = (priorYield / 100) * priorPrice;
@@ -141,6 +143,15 @@ function overlayRow(row, prices) {
   if (forwardEps > 0) row.forward_pe = Number((pack.ltp / forwardEps).toFixed(2));
   if (row.market && typeof row.market === 'object') {
     row.market = { ...row.market, price: pack.ltp };
+  }
+  const base = Number(row.return_1y_base_close ?? row.data_context?.return_1y_base_close);
+  if (base > 0 && pack.ltp > 0) {
+    const value = Number((((pack.ltp / base) - 1) * 100).toFixed(2));
+    const next = (value < -60 || value > 200) ? null : value;
+    row.return_1y = next;
+    if (row.consensus && typeof row.consensus === 'object') {
+      row.consensus = { ...row.consensus, return_1y: next };
+    }
   }
 }
 

@@ -129,6 +129,25 @@ class TestMapping:
         )
         assert row["consensus"]["return_1y"] == pytest.approx(-6.3)
 
+    def test_return_provenance_is_stamped_on_the_row(self):
+        row = scanner._map_warehouse_row(
+            {"symbol": "SUNTECK", "cmp": 314.1},
+            ratios={},
+            factors={},
+            return_1y=-20.2,
+            legacy_consensus={"return_1y": 23.1},
+            return_pack={
+                "src": "upstox|SPLIT_ADJUSTED>nse|RAW",
+                "last_close": 314.1,
+                "base_close": 393.65,
+                "last_date": "2026-08-24",
+                "base_date": "2025-08-25",
+            },
+        )
+        assert row["consensus"]["return_1y"] == pytest.approx(-20.2)
+        assert row["data_context"]["return_1y_base_close"] == pytest.approx(393.65)
+        assert row["data_context"]["return_1y_src"].startswith("upstox")
+
 
 class TestQualityScan:
     def _row(self, **fields):

@@ -331,7 +331,9 @@ export const STRATEGIES = [
       { key: 'buy', label: 'Buy', dp: 0 },
       { key: 'coverage', label: 'Coverage', dp: 0 },
       { key: 'buy_share_pct', label: 'Buy share', dp: 1, suffix: '%' },
+      { key: 'target_price', label: 'Target', dp: 2 },
       { key: 'consensus_upside', label: 'Implied upside', dp: 1, suffix: '%', signed: true },
+      { key: 'consensus_date', label: 'Target as of', type: 'text' },
       { key: 'return_1y', label: '1Y return', dp: 1, suffix: '%', signed: true },
     ],
     risks: [
@@ -422,8 +424,8 @@ export const STRATEGIES = [
     verify: () => null,
     columns: [
       { key: 'price', label: 'Last price', dp: 2 },
-      { key: 'metric', label: 'Metric', type: 'text' },
-      { key: 'value', label: 'Value', dp: 2 },
+      { key: 'debt_to_equity', label: 'D/E', dp: 2, suffix: 'x' },
+      { key: 'profit_margin', label: 'Net margin', dp: 1, suffix: '%' },
       { key: 'return_1y', label: '1Y return', dp: 1, suffix: '%', signed: true },
       { key: 'market_cap', label: 'Mkt cap', money: true },
     ],
@@ -499,7 +501,7 @@ export const STRATEGIES = [
       {
         label: 'Agreement gate',
         tex: '\\left|\\mathcal{K}_i\\right| \\geq 3 \\;\\wedge\\; \\sum_{k} \\mathbb{1}\\{f_{k,i} \\geq 60\\} \\geq 3 \\;\\wedge\\; A_i \\geq 62',
-        note: 'All three conditions must hold. Growth is currently unavailable, which drops every company below the first condition — this is why the screen is empty.',
+        note: 'All three conditions must hold. Names drop out when fewer than three warehouse factor scores are present or the composite is below 62.',
       },
     ],
     verify: () => null,
@@ -513,7 +515,6 @@ export const STRATEGIES = [
       'A composite hides which component is doing the work — always read the parts.',
       'Equal-ish weights across correlated factors overstate independence.',
     ],
-    blockedBy: 'Forward earnings estimates are not ingested, so the growth component is unavailable and the three-of-four agreement gate cannot be met.',
   },
 
   {
@@ -545,18 +546,28 @@ export const STRATEGIES = [
         note: 'Only meaningful where growth is positive and the earnings base is not depressed.',
       },
     ],
-    verify: () => null,
+    verify: (row) => {
+      const pe = num(row.pe);
+      const fwd = num(row.forward_pe);
+      if (!pe || !fwd) return null;
+      return [{
+        label: 'g_imp %',
+        expected: (pe / fwd - 1) * 100,
+        actual: num(row.implied_earnings_growth_pct),
+        dp: 1,
+      }];
+    },
     columns: [
       { key: 'price', label: 'Last price', dp: 2 },
-      { key: 'value', label: 'Fwd P/E', dp: 2 },
-      { key: 'industry_median', label: 'Ind. med.', dp: 2 },
+      { key: 'pe', label: 'P/E', dp: 1 },
+      { key: 'forward_pe', label: 'Fwd P/E', dp: 1 },
+      { key: 'implied_earnings_growth_pct', label: 'Implied g', dp: 1, suffix: '%' },
       { key: 'return_1y', label: '1Y return', dp: 1, suffix: '%', signed: true },
     ],
     risks: [
       'De-rating is violent when growth disappoints.',
       'Not a revenue or historical CAGR screen — those are different and easier.',
     ],
-    blockedBy: 'Forward consensus estimates are not ingested. Trendlyne returns "Export NA" for forward P/E at every universe size, so this requires a Capital IQ estimates export.',
   },
 
   {
@@ -589,6 +600,7 @@ export const STRATEGIES = [
       { key: 'price', label: 'Last price', dp: 2 },
       { key: 'dividend_yield', label: 'Yield', dp: 2, suffix: '%' },
       { key: 'roe', label: 'ROE', dp: 1, suffix: '%' },
+      { key: 'debt_to_equity', label: 'D/E', dp: 2, suffix: 'x' },
       { key: 'return_1y', label: '1Y return', dp: 1, suffix: '%', signed: true },
     ],
     risks: [
@@ -658,6 +670,21 @@ export const caveatOf = (row) => {
   if (c && !CLEAN.has(c)) return VALIDATION_LABELS[c] || c.replaceAll('_', ' ');
   if (p && !CLEAN.has(p)) return VALIDATION_LABELS[p] || p.replaceAll('_', ' ');
   return null;
+};
+
+/** Resolve a desk cell, including nested consensus fields on older snapshots. */
+export const cellOf = (row, col) => {
+  if (!row || !col) return undefined;
+  const key = col.key;
+  const direct = row[key];
+  if (direct !== null && direct !== undefined && direct !== '') return direct;
+  if (key === 'return_1y') return row.consensus?.return_1y;
+  if (key === 'target_price') return row.consensus?.target_price;
+  if (key === 'consensus_date') {
+    return row.consensus?.consensus_date || row.data_context?.consensus_date;
+  }
+  if (key === 'forward_pe') return row.value;
+  return direct;
 };
 
 export const LIMITS = [
