@@ -269,6 +269,18 @@ export default function createIntelligenceRouter() {
     proxyGet((req) => `/v1/company/statements/${encodeURIComponent(req.params.symbol)}`),
   );
 
+  router.get(
+    '/us-stock-intelligence/market-overview',
+    proxyGet('/v1/us-stock-intelligence/market-overview'),
+  );
+  router.get(
+    '/us-stock-intelligence/analyse',
+    proxyGet((req) => {
+      const symbol = String(req.query.symbol || 'AAPL').trim() || 'AAPL';
+      return `/v1/us-stock-intelligence/analyse?symbol=${encodeURIComponent(symbol)}`;
+    }),
+  );
+
   router.get('/company/resolve', async (req, res) => {
     const query = String(req.query.q || '').trim();
     if (!query) return res.status(400).json({ error: 'Enter a company name or NSE symbol.' });
