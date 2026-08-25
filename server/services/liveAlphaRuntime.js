@@ -166,6 +166,7 @@ export async function startLiveAlphaRuntime({ Feed = null, FallbackFeed = GrowwL
     if (openingSnapshots.length) pipeline.ingest({ snapshots: openingSnapshots });
     if (recentSnapshots.length) pipeline.ingest({ snapshots: recentSnapshots });
     const store = new SynchronizedSnapshotStore();
+    if (recentSnapshots.length) store.ingest({ snapshots: recentSnapshots });
     const instrumentKeys = [...new Set([universe.benchmarkKey, ...universe.members.flatMap((row) => [row.instrumentKey, row.sectorInstrumentKey, row.derivativeInstrumentKey]).filter(Boolean)])];
     let lastEvaluationMs = 0;
     const batchQueue = {
@@ -178,6 +179,7 @@ export async function startLiveAlphaRuntime({ Feed = null, FallbackFeed = GrowwL
     const FeedClass = Feed || (provider === 'groww' ? GrowwLiveAlphaFeed : UpstoxMarketFeedV3);
     // Upstox-only mode: full websocket feed. Do not mix Groww quote polling.
     const processBatch = async (batch) => {
+      store.ingest(batch);
       pipeline.ingest(batch);
       await persistence.persistBatch(batch);
       if (Date.now() - lastEvaluationMs >= 5_000) {
@@ -354,6 +356,44 @@ export function getLiveAlphaRuntimeStatus() {
     research_only: true,
     execution_enabled: false,
   };
+}
+
+export function latestLiveAlphaPrints() {
+  const prices = new Map();
+  const put = (key, ltp, observedAt, source) => {
+    const id = String(key || '').trim();
+    const px = Number(ltp);
+    if (!id || !(px > 0)) return;
+    const existing = prices.get(id);
+    const nextMs = Date.parse(observedAt || '') || 0;
+    const prevMs = Date.parse(existing?.observed_at || '') || 0;
+    if (existing && prevMs >= nextMs) return;
+    prices.set(id, {
+      ltp: px,
+      observed_at: observedAt || null,
+      source: source || 'live_alpha',
+    });
+  };
+  try {
+    for (const [key, row] of runtime?.store?.latest || []) {
+      put(key, row?.ltp, row?.received_at || row?.effective_timestamp, row?.source || 'live_alpha_store');
+    }
+  } catch {
+    /* store is optional until the feed starts */
+  }
+  try {
+    for (const [key, values] of runtime?.pipeline?.featureStore?.series || []) {
+      const last = values?.at?.(-1);
+      put(key, last?.ltp, last?.received_at, last?.source || 'live_alpha_features');
+    }
+  } catch {
+    /* feature store is optional until the first ingest */
+  }
+  for (const member of runtime?.universe?.members || []) {
+    const pack = prices.get(member.instrumentKey);
+    if (pack && member.symbol) prices.set(member.symbol, pack);
+  }
+  return prices;
 }
 
 export function getLiveAlphaMarketSnapshot(symbols = [], { now = new Date() } = {}) {

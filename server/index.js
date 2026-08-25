@@ -330,12 +330,17 @@ reg('/', (req, res) => res.json({ service: 'finance-news-backend', status: 'runn
 reg('/api/market/live-alpha/status', (_req, res) => res.json(getLiveAlphaRuntimeStatus()));
 reg('/api/market/trading-calendar/status', (_req, res) => res.json(tradingCalendar.health()));
 reg('/api/market/live-alpha/workspace', async (_req, res) => {
-  try { res.json(await getLiveAlphaWorkspace()); }
+  try {
+    const { overlayHflLivePrices } = await import('./services/hflLivePriceOverlay.js');
+    const workspace = await getLiveAlphaWorkspace();
+    res.json(await overlayHflLivePrices(workspace));
+  }
   catch (error) { res.status(503).json({ error: error.message, research_only: true, execution_enabled: false }); }
 });
 reg('/api/market/research-confluence', async (req, res) => {
   try {
-    const workspace = await getLiveAlphaWorkspace();
+    const { overlayHflLivePrices } = await import('./services/hflLivePriceOverlay.js');
+    const workspace = await overlayHflLivePrices(await getLiveAlphaWorkspace());
     const limit = Number(req.query.limit) || 25;
     const research = await getResearchEvidence({ workspace, limit });
     res.json({ ...buildConfluenceQueue({ workspace, research: research.evidence, limit }), evidence_health: research.health });

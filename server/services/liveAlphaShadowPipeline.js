@@ -15,7 +15,11 @@ function sessionDateIst(ms) {
 }
 
 function compactFeaturePoint(point, at) {
-  const finiteOrNull = (value) => Number.isFinite(Number(value)) ? Number(value) : null;
+  const finiteOrNull = (value) => {
+    if (value == null || value === '') return null;
+    const number = Number(value);
+    return Number.isFinite(number) ? number : null;
+  };
   return {
     instrument_key: String(point.instrument_key || ''),
     received_at: new Date(at).toISOString(),
@@ -102,11 +106,27 @@ export class IntradayFeatureStore {
     this.series.set(instrumentKey, values);
   }
 
+  #seedLookback(instrumentKey, row, at) {
+    const previous = Number(row.previous_close);
+    if (!(previous > 0)) return;
+    const existing = this.series.get(instrumentKey) || [];
+    if (existing.length) return;
+    const seed = {
+      instrument_key: instrumentKey,
+      ltp: previous,
+      cumulative_volume: null,
+      source: 'previous_close_seed',
+    };
+    this.#upsertPoint(instrumentKey, seed, at - 60 * 60_000);
+    this.#upsertPoint(instrumentKey, seed, at - 15 * 60_000);
+  }
+
   ingest(batch) {
     for (const row of batch?.snapshots || []) {
       const at = Date.parse(row.received_at);
       if (!Number.isFinite(at) || !(row.ltp > 0)) continue;
       this.#ingestOhlc(row.instrument_key, row.ohlc, at);
+      this.#seedLookback(row.instrument_key, row, at);
       this.#upsertPoint(row.instrument_key, row, at);
       const minute = minuteOfSession(row.received_at);
       if (minute >= 0 && minute < 15) {

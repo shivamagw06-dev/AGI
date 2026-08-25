@@ -12,6 +12,7 @@
  */
 import { getLTP, getOHLC, isGrowwConfigured } from '../providers/groww.js';
 import { readLatestHflTerminalSnapshot } from './hflTerminalSnapshot.js';
+import { LiveAlphaPersistence } from './liveAlphaPersistence.js';
 
 let timer = null;
 let lastRun = null;
@@ -46,19 +47,28 @@ async function engineFetch(path, { method = 'GET', body, timeoutMs = 45_000 } = 
   return data;
 }
 
+function addCandidate(out, seen, ticker, instrumentKey) {
+  const symbol = String(ticker || '').trim().toUpperCase();
+  if (!symbol || seen.has(symbol)) return;
+  seen.add(symbol);
+  out.push({ symbol, instrument_key: String(instrumentKey || '').trim() || null });
+}
+
 function symbolsFromTerminal(pack) {
-  const symbols = new Set();
-  for (const row of [...(pack?.research_queue || []), ...(pack?.overlap || [])]) {
-    if (row?.ticker) symbols.add(String(row.ticker).toUpperCase());
+  const out = [];
+  const seen = new Set();
+  const addRow = (row) => {
+    if (!row || typeof row !== 'object') return;
+    addCandidate(out, seen, row.ticker || row.symbol, row.instrument_key);
+    addCandidate(out, seen, row.long_leg?.ticker, row.long_leg?.instrument_key);
+    addCandidate(out, seen, row.short_leg?.ticker, row.short_leg?.instrument_key);
+  };
+  for (const card of pack?.cards || []) {
+    for (const row of card?.results || []) addRow(row);
   }
-  for (const hit of pack?.hero?.highlights || []) {
-    const row = hit?.row || {};
-    if (row.ticker) symbols.add(String(row.ticker).toUpperCase());
-    if (row.long_leg?.ticker) symbols.add(String(row.long_leg.ticker).toUpperCase());
-    if (row.short_leg?.ticker) symbols.add(String(row.short_leg.ticker).toUpperCase());
-  }
-  // Prefer a small candidate set — Groww rate limits and engine load both matter.
-  return [...symbols].filter(Boolean).slice(0, Number(process.env.HEDGE_FUND_LIVE_QUOTE_LIMIT || 25));
+  for (const row of [...(pack?.research_queue || []), ...(pack?.overlap || [])]) addRow(row);
+  for (const hit of pack?.hero?.highlights || []) addRow(hit?.row);
+  return out.slice(0, Number(process.env.HEDGE_FUND_LIVE_QUOTE_LIMIT || 50));
 }
 
 function quoteValue(map, key) {
@@ -71,6 +81,12 @@ function ohlcValue(map, key) {
   if (!value) return {};
   if (typeof value === 'object') return value;
   try { return JSON.parse(value); } catch { return {}; }
+}
+
+function candlePrevious(map, key) {
+  const candle = ohlcValue(map, key);
+  const previous = Number(candle.previous_close ?? candle.prev_close ?? candle.close);
+  return Number.isFinite(previous) && previous > 0 ? previous : null;
 }
 
 async function commitQuotes(rows) {
@@ -110,18 +126,20 @@ export async function refreshHedgeFundLiveQuotes({ force = false } = {}) {
       }
     }
     if (!terminal?.ok) return { ok: true, skipped: true, reason: 'no_terminal_snapshot' };
-    const symbols = symbolsFromTerminal(terminal);
-    if (!symbols.length) return { ok: true, skipped: true, reason: 'no_research_candidates' };
-    const keys = symbols.map((symbol) => `NSE_${symbol}`);
+    const candidates = symbolsFromTerminal(terminal);
+    if (!candidates.length) return { ok: true, skipped: true, reason: 'no_research_candidates' };
+    const keys = candidates.map((row) => `NSE_${row.symbol}`);
     const [ltp, ohlc] = await Promise.all([getLTP(keys), getOHLC(keys)]);
     const date = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata' }).format(new Date());
-    const rows = symbols.map((symbol) => {
-      const key = `NSE_${symbol}`;
+    const receivedAt = new Date().toISOString();
+    const rows = candidates.map((candidate) => {
+      const key = `NSE_${candidate.symbol}`;
       const candle = ohlcValue(ohlc, key);
       const close = Number(quoteValue(ltp, key) ?? candle.close);
       if (!Number.isFinite(close) || close <= 0) return null;
       return {
-        symbol,
+        symbol: candidate.symbol,
+        instrument_key: candidate.instrument_key,
         date,
         open: Number(candle.open) || null,
         high: Number(candle.high) || null,
@@ -129,11 +147,34 @@ export async function refreshHedgeFundLiveQuotes({ force = false } = {}) {
         close,
         volume: Number(candle.volume) || null,
         source: 'groww',
-        import_time: new Date().toISOString(),
+        import_time: receivedAt,
       };
     }).filter(Boolean);
-    const committed = await commitQuotes(rows);
-    return { ok: true, candidates: symbols.length, quotes: rows.length, committed };
+    const snapshots = rows.map((row) => ({
+        instrument_key: row.instrument_key || row.symbol,
+        received_at: receivedAt,
+        ltp: row.close,
+        previous_close: candlePrevious(ohlc, `NSE_${row.symbol}`),
+        cumulative_volume: row.volume,
+        source: 'groww_hfl',
+      }));
+    let snapshotWrites = 0;
+    if (snapshots.length) {
+      snapshotWrites = await new LiveAlphaPersistence().persistBatch({ snapshots });
+    }
+    let committed = { skipped: true, reason: 'warehouse_optional' };
+    try {
+      committed = await commitQuotes(rows);
+    } catch (error) {
+      committed = { ok: false, error: error.message };
+    }
+    return {
+      ok: true,
+      candidates: candidates.length,
+      quotes: rows.length,
+      snapshots: snapshotWrites,
+      committed,
+    };
   })();
 
   try {
@@ -144,8 +185,8 @@ export async function refreshHedgeFundLiveQuotes({ force = false } = {}) {
 }
 
 export function startHedgeFundLiveQuoteScheduler() {
-  // Quote refresh currently depends on a terminal rebuild plus warehouse
-  // import. Keep it off until it is moved to an isolated data worker.
+  // Quotes persist to live_market_snapshots first; warehouse import is
+  // best-effort. Cap candidates so this never competes with the Live Alpha 500.
   if (
     timer ||
     String(process.env.HEDGE_FUND_LIVE_REFRESH_ENABLED || 'true').toLowerCase() !== 'true' ||

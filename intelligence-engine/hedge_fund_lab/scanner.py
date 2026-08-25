@@ -483,6 +483,12 @@ def _map_warehouse_row(
         mapped = apply_latest_ratios(mapped)
     except Exception:
         pass
+    try:
+        from hedge_fund_lab.live_prices import apply_latest_live_price
+
+        mapped = apply_latest_live_price(mapped)
+    except Exception:
+        pass
     return mapped
 
 
@@ -908,6 +914,12 @@ def _industry_medians(universe: list[dict[str, Any]]) -> dict[str, dict[str, Any
 
 
 def _base(row: dict[str, Any]) -> dict[str, Any]:
+    try:
+        from hedge_fund_lab.live_prices import apply_latest_live_price
+
+        row = apply_latest_live_price(row)
+    except Exception:
+        pass
     consensus = row.get("consensus") or {}
     return {
         "ticker": row["ticker"],
@@ -916,6 +928,9 @@ def _base(row: dict[str, Any]) -> dict[str, Any]:
         "sector": row.get("primary_sector"),
         "industry": row.get("primary_industry"),
         "market_cap": row.get("market_cap"),
+        "price": row.get("price"),
+        "price_source": row.get("price_source"),
+        "price_as_of": row.get("price_as_of"),
         "consensus_upside": consensus.get("upside"),
         "coverage": consensus.get("coverage"),
         "return_1y": consensus.get("return_1y"),

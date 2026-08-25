@@ -25,6 +25,31 @@ export function growwSymbolForIndex(instrumentKey) {
   return SECTOR_INDEX_GROWW[String(instrumentKey || '').trim()] || null;
 }
 
+/** Groww REST LTP expects NSE_NIFTY, not the bare trading symbol NIFTY. */
+export function growwExchangeSymbol(instrumentKey) {
+  const symbol = growwSymbolForIndex(instrumentKey);
+  return symbol ? `NSE_${symbol}` : null;
+}
+
+export function readGrowwLtpRow(payload, symbol) {
+  if (!payload || typeof payload !== 'object' || !symbol) return null;
+  const row = payload[symbol]
+    ?? payload[`NSE_${symbol}`]
+    ?? payload[`NSE:${symbol}`]
+    ?? payload[`NSE-${symbol}`];
+  if (row == null) return null;
+  if (typeof row === 'number') {
+    return Number.isFinite(row) && row > 0 ? { ltp: row, previous_close: null } : null;
+  }
+  const ltp = Number(row.ltp ?? row.last_price ?? row.close);
+  if (!Number.isFinite(ltp) || ltp <= 0) return null;
+  const previous = Number(row.previous_close ?? row.prev_close ?? row.cp);
+  return {
+    ltp,
+    previous_close: Number.isFinite(previous) && previous > 0 ? previous : null,
+  };
+}
+
 export async function pollGrowwIndexSnapshots(instrumentKeys = []) {
   if (!isGrowwConfigured()) return [];
   const keys = [...new Set((instrumentKeys || []).map(String).filter(Boolean))];
@@ -35,17 +60,18 @@ export async function pollGrowwIndexSnapshots(instrumentKeys = []) {
   }
   if (!growwByKey.size) return [];
 
-  const ltp = await getLTP([...new Set(growwByKey.values())], 'CASH');
+  const exchangeSymbols = [...new Set([...growwByKey.values()].map((symbol) => `NSE_${symbol}`))];
+  const ltp = await getLTP(exchangeSymbols, 'CASH');
   const receivedAt = new Date().toISOString();
   const snapshots = [];
   for (const [instrumentKey, symbol] of growwByKey.entries()) {
-    const row = ltp?.[symbol] ?? ltp?.[`NSE_${symbol}`] ?? ltp?.[`NSE:${symbol}`];
-    const price = Number(row?.ltp ?? row?.last_price ?? row?.close);
-    if (!Number.isFinite(price) || price <= 0) continue;
+    const quote = readGrowwLtpRow(ltp, symbol);
+    if (!quote) continue;
     snapshots.push({
       instrument_key: instrumentKey,
       received_at: receivedAt,
-      ltp: price,
+      ltp: quote.ltp,
+      previous_close: quote.previous_close,
       source: 'groww_fallback',
     });
   }

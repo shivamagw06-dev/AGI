@@ -37,6 +37,11 @@ export const LIVE_STRATEGIES = [
     source: 'live',
     name: 'Opening-Range Breakout',
     family: 'Intraday',
+    data: {
+      rank: 'Live Alpha opening_range_expansion_v1',
+      displayPrice: 'Live tape',
+      size: 'EOD ATR and ADV',
+    },
     question: 'Is this expansion real, or noise inside the normal range?',
     edge: 'Expansion out of the opening range that clears the day\'s true range.',
     thesis:
@@ -66,7 +71,7 @@ export const LIVE_STRATEGIES = [
     columns: [
       { key: 'direction', label: 'Direction', type: 'text' },
       { key: 'signal_quality', label: 'Quality', dp: 0 },
-      { key: 'price', label: 'Signal price', dp: 2 },
+      { key: 'price', label: 'Last price', dp: 2 },
       { key: 'atr', label: 'ATR', dp: 2 },
       { key: 'stop', label: 'Stop', dp: 2 },
       { key: 'stop_distance_pct', label: 'Stop dist', dp: 1, suffix: '%' },
@@ -83,6 +88,11 @@ export const LIVE_STRATEGIES = [
     source: 'live',
     name: 'Intraday Mean Reversion',
     family: 'Intraday',
+    data: {
+      rank: 'Live Alpha intraday_mean_reversion_v1',
+      displayPrice: 'Live tape',
+      size: 'EOD ATR and 1Y beta',
+    },
     question: 'Is the mean stable, or has the level genuinely reset?',
     edge: 'Short-horizon dislocation from a stable intraday mean.',
     thesis:
@@ -107,7 +117,7 @@ export const LIVE_STRATEGIES = [
     columns: [
       { key: 'direction', label: 'Direction', type: 'text' },
       { key: 'signal_quality', label: 'Quality', dp: 0 },
-      { key: 'price', label: 'Signal price', dp: 2 },
+      { key: 'price', label: 'Last price', dp: 2 },
       { key: 'band_pct', label: 'ATR band', dp: 2, suffix: '%' },
       { key: 'beta_1y', label: 'Beta 1Y', dp: 2 },
       { key: 'market_hedge_ratio', label: 'Hedge ratio', dp: 2 },
@@ -124,6 +134,11 @@ export const LIVE_STRATEGIES = [
     source: 'live',
     name: 'Volume / Liquidity Anomaly',
     family: 'Intraday',
+    data: {
+      rank: 'Live Alpha volume_liquidity_anomaly_v1',
+      displayPrice: 'Live tape',
+      size: 'EOD 3m ADV',
+    },
     question: 'Is this accumulation, distribution, or a single print?',
     edge: 'Volume dislocated from its own baseline often precedes a directional move.',
     thesis:
@@ -143,7 +158,7 @@ export const LIVE_STRATEGIES = [
     columns: [
       { key: 'direction', label: 'Direction', type: 'text' },
       { key: 'signal_quality', label: 'Quality', dp: 0 },
-      { key: 'price', label: 'Signal price', dp: 2 },
+      { key: 'price', label: 'Last price', dp: 2 },
       { key: 'adv_3m_value_cr', label: 'ADV', dp: 1, suffix: 'cr' },
       { key: 'alpha_z', label: 'z', dp: 2, signed: true },
     ],
@@ -162,6 +177,10 @@ export const STRATEGIES = [
     id: 'value',
     name: 'Relative Value',
     family: 'Fundamental',
+    data: {
+      rank: 'Latest Upstox PE/PB vs industry median',
+      displayPrice: 'Live tape',
+    },
     question: 'Is the discount a mispricing or a verdict?',
     edge: 'Multiple re-rating toward the industry median.',
     thesis:
@@ -195,6 +214,7 @@ export const STRATEGIES = [
       ];
     },
     columns: [
+      { key: 'price', label: 'Last price', dp: 2 },
       { key: 'metric', label: 'Metric', type: 'text' },
       { key: 'value', label: 'Multiple', dp: 2 },
       { key: 'industry_median', label: 'Industry med.', dp: 2 },
@@ -213,6 +233,10 @@ export const STRATEGIES = [
     id: 'quality',
     name: 'Quality',
     family: 'Fundamental',
+    data: {
+      rank: 'Annual ROE, margin, leverage',
+      displayPrice: 'Live tape',
+    },
     question: 'Are the returns on capital durable, or a good year?',
     edge: 'Compounding returns on capital held through a full cycle.',
     thesis:
@@ -236,6 +260,7 @@ export const STRATEGIES = [
     ],
     verify: () => null,
     columns: [
+      { key: 'price', label: 'Last price', dp: 2 },
       { key: 'roe', label: 'ROE', dp: 1, suffix: '%' },
       { key: 'profit_margin', label: 'Net margin', dp: 1, suffix: '%' },
       { key: 'debt_to_equity', label: 'D/E', dp: 1 },
@@ -253,6 +278,11 @@ export const STRATEGIES = [
     id: 'conviction',
     name: 'Consensus Conviction',
     family: 'Sell-side',
+    data: {
+      rank: 'Warehouse consensus coverage and buy share',
+      displayPrice: 'Live tape',
+      derived: 'Target / last price = implied upside',
+    },
     question: 'Where is sell-side agreement strongest, and what would break it?',
     edge: 'Expectation gaps that resolve on results.',
     thesis:
@@ -281,6 +311,7 @@ export const STRATEGIES = [
       return [{ label: 'b_i %', expected: (buy / cov) * 100, actual: num(row.buy_share_pct), dp: 1 }];
     },
     columns: [
+      { key: 'price', label: 'Last price', dp: 2 },
       { key: 'buy', label: 'Buy', dp: 0 },
       { key: 'coverage', label: 'Coverage', dp: 0 },
       { key: 'buy_share_pct', label: 'Buy share', dp: 1, suffix: '%' },
@@ -298,6 +329,10 @@ export const STRATEGIES = [
     id: 'pairs',
     name: 'Valuation Dispersion',
     family: 'Relative value',
+    data: {
+      rank: 'Latest Upstox multiples, same industry',
+      displayPrice: 'Live tape on each leg',
+    },
     question: 'Is the gap between these two peers a mispricing or a real difference?',
     edge: 'Convergence of a valuation gap between industry peers.',
     thesis:
@@ -343,6 +378,10 @@ export const STRATEGIES = [
     id: 'stress',
     name: 'Balance-Sheet Stress',
     family: 'Distress',
+    data: {
+      rank: 'Annual leverage/margin plus 1Y warehouse return',
+      displayPrice: 'Live tape',
+    },
     question: 'Is this forced selling, or a business that is actually failing?',
     edge: 'Dislocation from forced selling and balance-sheet repair.',
     thesis:
@@ -366,6 +405,7 @@ export const STRATEGIES = [
     ],
     verify: () => null,
     columns: [
+      { key: 'price', label: 'Last price', dp: 2 },
       { key: 'metric', label: 'Metric', type: 'text' },
       { key: 'value', label: 'Value', dp: 2 },
       { key: 'return_1y', label: '1Y return', dp: 1, suffix: '%', signed: true },
@@ -382,6 +422,10 @@ export const STRATEGIES = [
     id: 'live_alpha',
     name: 'Live Alpha Confirmation',
     family: 'Intraday overlay',
+    data: {
+      rank: 'Session-fresh Live Alpha signals',
+      displayPrice: 'Live tape',
+    },
     question: 'Does today\'s tape confirm or contradict the fundamental thesis?',
     edge: 'Intraday leadership, activity, breakout, dislocation and positioning.',
     thesis:
@@ -405,8 +449,8 @@ export const STRATEGIES = [
     ],
     verify: () => null,
     columns: [
+      { key: 'price', label: 'Last price', dp: 2 },
       { key: 'direction', label: 'Direction', type: 'text' },
-      { key: 'live_alpha_score', label: 'Score', dp: 0 },
       { key: 'engine_agreement', label: 'Agreement', type: 'text' },
       { key: 'engine_count', label: 'Engines', dp: 0 },
       { key: 'signal_age_minutes', label: 'Age (min)', dp: 0 },
@@ -422,6 +466,10 @@ export const STRATEGIES = [
     id: 'alpha',
     name: 'Multi-Factor Composite',
     family: 'Composite',
+    data: {
+      rank: 'Warehouse factor scores',
+      displayPrice: 'Live tape',
+    },
     question: 'Which component is genuinely differentiated, and what invalidates the combination?',
     edge: 'Agreement across value, quality, growth and consensus.',
     thesis:
@@ -440,6 +488,7 @@ export const STRATEGIES = [
     ],
     verify: () => null,
     columns: [
+      { key: 'price', label: 'Last price', dp: 2 },
       { key: 'alpha_opportunity_score', label: 'Composite', dp: 1 },
       { key: 'factor_agreement', label: 'Agreement', dp: 0 },
       { key: 'return_1y', label: '1Y return', dp: 1, suffix: '%', signed: true },
@@ -455,6 +504,10 @@ export const STRATEGIES = [
     id: 'growth',
     name: 'Forward Earnings Growth',
     family: 'Fundamental',
+    data: {
+      rank: 'Trailing Upstox PE vs forward PE',
+      displayPrice: 'Live tape',
+    },
     question: 'Can the implied forward EPS growth actually be delivered?',
     edge: 'Forward EPS delivery against the trailing-to-forward P/E gap.',
     thesis:
@@ -478,6 +531,7 @@ export const STRATEGIES = [
     ],
     verify: () => null,
     columns: [
+      { key: 'price', label: 'Last price', dp: 2 },
       { key: 'value', label: 'Fwd P/E', dp: 2 },
       { key: 'industry_median', label: 'Ind. med.', dp: 2 },
       { key: 'return_1y', label: '1Y return', dp: 1, suffix: '%', signed: true },
@@ -493,6 +547,11 @@ export const STRATEGIES = [
     id: 'dividend',
     name: 'Dividend / Income',
     family: 'Income',
+    data: {
+      rank: 'Warehouse yield plus quality gates',
+      displayPrice: 'Live tape',
+      derived: 'DPS / last price = displayed yield',
+    },
     question: 'Is the yield covered by cash the business actually generates?',
     edge: 'Cash return supported by profitability.',
     thesis:
@@ -511,7 +570,8 @@ export const STRATEGIES = [
     ],
     verify: () => null,
     columns: [
-      { key: 'value', label: 'Yield', dp: 2, suffix: '%' },
+      { key: 'price', label: 'Last price', dp: 2 },
+      { key: 'dividend_yield', label: 'Yield', dp: 2, suffix: '%' },
       { key: 'roe', label: 'ROE', dp: 1, suffix: '%' },
       { key: 'return_1y', label: '1Y return', dp: 1, suffix: '%', signed: true },
     ],
