@@ -68,6 +68,12 @@ export default function GlobalMarketsPage() {
           <p className="mt-4 max-w-3xl text-sm leading-7 text-slate-400 md:text-base">
             Independent research on global growth, central banks, rates, currencies, commodities and their potential implications for India.
           </p>
+          <Link
+            to="/us-stock-intelligence"
+            className="mt-6 inline-flex items-center border border-emerald-700/70 bg-emerald-950/30 px-4 py-2 text-xs font-semibold uppercase tracking-[0.12em] text-emerald-200 transition hover:border-emerald-400 hover:bg-emerald-950/60"
+          >
+            Open US Stock Intelligence
+          </Link>
         </header>
 
         <section className="py-7 md:py-9">
