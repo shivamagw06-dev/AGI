@@ -33,6 +33,45 @@ test('leaves names without a live print on the snapshot price', () => {
   assert.equal(overlaid.research_queue[0].price, 96.15);
 });
 
+test('recomputes upside from a row-level target when nested consensus is missing', () => {
+  const overlaid = overlayPayloadWithPrices({
+    cards: [{
+      results: [{
+        ticker: 'HDFCBANK',
+        price: 700,
+        target_price: 840,
+      }],
+    }],
+  }, new Map([
+    ['HDFCBANK', { ltp: 727.5, observed_at: '2026-08-25T12:00:00Z', source: 'live_market_snapshots' }],
+  ]));
+  const row = overlaid.cards[0].results[0];
+  assert.equal(row.target_price, 840);
+  assert.equal(row.consensus.target_price, 840);
+  assert.equal(row.consensus_upside, Number((((840 / 727.5) - 1) * 100).toFixed(2)));
+});
+
+test('recomputes 1Y return from the year-ago close and live LTP', () => {
+  const overlaid = overlayPayloadWithPrices({
+    cards: [{
+      results: [{
+        ticker: 'SUNTECK',
+        price: 307.6,
+        return_1y: 23.1,
+        consensus: { return_1y: 23.1, target_price: 435.93 },
+        data_context: { return_1y_base_close: 393.65 },
+      }],
+    }],
+  }, new Map([
+    ['SUNTECK', { ltp: 314.85, observed_at: '2026-08-25T12:00:00Z', source: 'live_market_snapshots' }],
+  ]));
+  const row = overlaid.cards[0].results[0];
+  const expected = Number((((314.85 / 393.65) - 1) * 100).toFixed(2));
+  assert.equal(row.price, 314.85);
+  assert.equal(row.return_1y, expected);
+  assert.equal(row.consensus.return_1y, expected);
+});
+
 test('scales dividend yield from implied DPS and does not rewrite trailing PE', () => {
   const overlaid = overlayPayloadWithPrices({
     cards: [{

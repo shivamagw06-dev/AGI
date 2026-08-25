@@ -339,7 +339,7 @@ def stage_nse(*, actor: str, days: int = 30, symbols: Optional[Iterable[str]] = 
         if not rows:
             continue
         result = gateway.write("daily_market_history", rows, source="nse_bhavcopy", actor=actor,
-                              reason=f"refresh:nse:{trade_date}")
+                              reason=f"refresh:nse:{trade_date}", fill_only=True)
         for key in totals:
             totals[key] += int(result.get(key) or 0)
         traded.update(r["symbol"] for r in rows)

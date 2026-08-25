@@ -90,7 +90,8 @@ _own("historical_ratios", ("roe", "roa", "roce"), {"formula_engine"})
 # the wrong writer from filling it in.
 _own("daily_market_history", ("price_basis", "feed_family"),
      {"upstox_v3_historical", "upstox_v3_daily", "upstox_v3", "upstox",
-      "nse_bhavcopy", "yahoo_finance", "yahoo_finance_history"})
+      "nse_bhavcopy", "yahoo_finance", "yahoo_finance_history",
+      "groww", "groww_hfl"})
 
 
 def owners_of(tab: str, field: str) -> Optional[frozenset[str]]:
