@@ -12,6 +12,7 @@ describe('accessPolicy', () => {
     expect(getFeatureForPath('/research')).toBeNull();
     expect(getFeatureForPath('/article/nse-ipo')).toBeNull();
     expect(getFeatureForPath('/markets')).toBeNull();
+    expect(getFeatureForPath('/markets/stocks')).toBeNull();
     expect(isPathGated('/category/economics')).toBe(false);
   });
 

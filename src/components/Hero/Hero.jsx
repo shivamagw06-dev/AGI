@@ -12,7 +12,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 
 const quickLinks = [
-  { title: 'Markets', path: '/markets' },
+  { title: 'Markets', path: '/markets/stocks' },
   { title: 'Research Library', path: '/sections/live-articles' },
   { title: 'Deal Tracker', path: '/sections/deal-tracker' },
 ];
@@ -122,7 +122,7 @@ export default function Hero() {
                     variant="outline"
                     size="lg"
                     className="rounded-lg h-12 px-7 border-white/20 text-white hover:bg-white/10"
-                    onClick={() => navigate('/markets')}
+                    onClick={() => navigate('/markets/stocks')}
                   >
                     View Markets
                   </Button>

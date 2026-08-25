@@ -38,6 +38,7 @@ const PinUnlockPage = React.lazy(() => import('@/pages/auth/PinUnlockPage'));
 const AccountSecurityPage = React.lazy(() => import('@/pages/auth/AccountSecurityPage'));
 const Opinions = React.lazy(() => import('@/components/Opinions'));
 const Markets = React.lazy(() => import('@/pages/Markets'));
+const StocksBoardPage = React.lazy(() => import('@/pages/StocksBoardPage'));
 const MarketIntelligence = React.lazy(() => import('@/pages/MarketIntelligence'));
 const MarketSectorIntelligence = React.lazy(() => import('@/pages/MarketSectorIntelligence'));
 const GlobalMarketsPage = React.lazy(() => import('@/pages/GlobalMarketsPage'));
@@ -200,6 +201,7 @@ function PublicRoutes() {
       <Route path="/category/:slug" element={<CategoryPage />} />
 
       <Route path="/markets" element={<Markets />} />
+      <Route path="/markets/stocks" element={<StocksBoardPage />} />
       <Route path="/sections/markets" element={<Navigate replace to="/markets" />} />
       <Route path="/market-intelligence" element={gate('market_intelligence', <MarketIntelligence />)} />
       <Route path="/market-sector-intelligence" element={gate('market_intelligence', <MarketSectorIntelligence />)} />

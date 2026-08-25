@@ -2,6 +2,7 @@ import React, { useMemo, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { useSearchParams } from "react-router-dom";
 import { Search, BarChart3 } from "lucide-react";
+import MarketsDeskNav from "@/components/markets/MarketsDeskNav";
 import TrendlyneWidget, { buildTrendlyneUrls } from "@/components/markets/TrendlyneWidget";
 import {
   TradingViewFinancials,
@@ -84,6 +85,7 @@ export default function Markets() {
             <p className="reuters-body mt-3 text-base max-w-2xl">
               Search a stock to update SWOT, technical analysis, and fundamentals widgets below.
             </p>
+            <MarketsDeskNav />
 
             <div className="mt-6">
               <span className="inline-block border border-[#dddddd] bg-[#f7f7f7] px-3 py-1 text-xs font-semibold text-[#555555]">

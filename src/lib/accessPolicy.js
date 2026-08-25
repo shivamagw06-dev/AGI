@@ -134,6 +134,7 @@ export function getFeatureForPath(pathname = '') {
   // Explicit free acquisition surfaces
   const freeExact = new Set([
     '/markets',
+    '/markets/stocks',
     '/research',
     '/about',
     '/contact',
