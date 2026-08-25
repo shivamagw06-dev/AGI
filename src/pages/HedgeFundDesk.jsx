@@ -6,7 +6,7 @@ import { AlertTriangle, RefreshCw } from 'lucide-react';
 import API_ORIGIN from '@/config';
 import {
   STRATEGIES, LIVE_STRATEGIES, SIZING_MATH, LIMITS, VALIDATION_LABELS,
-  DEFAULT_SCREEN, isValidated, caveatOf,
+  DEFAULT_SCREEN, isValidated, caveatOf, cellOf,
 } from '@/lib/hedgeFundStrategies';
 import './hedgeFundDesk.css';
 
@@ -373,9 +373,10 @@ export default function HedgeFundDesk() {
                                   {caveatOf(r) ? <span className="hd-flag">{caveatOf(r)}</span> : null}
                                 </td>
                                 {strategy.columns.map((c) => {
-                                  const v = n(r[c.key]);
+                                  const raw = cellOf(r, c);
+                                  const v = n(raw);
                                   const cls = c.signed && v !== null ? (v > 0 ? 'hd-pos' : v < 0 ? 'hd-neg' : '') : '';
-                                  return <td key={c.key} className={cls}>{fmt(r[c.key], c)}</td>;
+                                  return <td key={c.key} className={cls}>{fmt(raw, c)}</td>;
                                 })}
                                 <td>{n(r.confidence) !== null ? n(r.confidence).toFixed(0) : '—'}</td>
                               </tr>

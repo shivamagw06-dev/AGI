@@ -116,11 +116,14 @@ def _scan_growth(universe, medians, limit) -> list[dict[str, Any]]:
         if coverage < 5 and (_num(row.get("market_cap")) or 0) < 2e10:
             continue
         upside = _num((row.get("consensus") or {}).get("upside"))
+        med = medians.get(row.get("primary_industry")) or {}
         out.append(
             {
                 **_base(row),
                 "pe": pe,
                 "forward_pe": fwd,
+                "value": fwd,
+                "industry_median": _num(med.get("forward_pe")) or _num(med.get("pe")),
                 "implied_earnings_growth_pct": implied,
                 "why": (
                     f"Trailing P/E of {pe} against a forward P/E of {fwd} implies {implied}% "
@@ -172,8 +175,16 @@ def _scan_dividend(universe, medians, limit) -> list[dict[str, Any]]:
 
 def _scan_live_alpha(universe, medians, limit) -> list[dict[str, Any]]:
     """Ninth scanner — intraday Live Alpha engines (research-only)."""
-    del universe, medians  # Live Alpha reads Supabase, not the warehouse scan.
-    fetched = fetch_live_alpha_rows(limit=limit)
+    del medians
+    names = {
+        str(row.get("ticker") or "").upper(): row.get("company_name")
+        for row in universe or []
+        if row.get("ticker")
+    }
+    # Cap after the two-engine filter. Fetching `limit` first kept a card of
+    # forty single-engine prints and hid every name that actually had votes.
+    min_engines = max(1, int(os.getenv("HFL_LIVE_ALPHA_MIN_ENGINES", "2")))
+    fetched = fetch_live_alpha_rows(limit=max(int(limit or 40) * 8, 200))
     if not fetched.get("ok"):
         return []
     rows = list(fetched.get("rows") or [])
@@ -183,7 +194,17 @@ def _scan_live_alpha(universe, medians, limit) -> list[dict[str, Any]]:
         rows = overlay_live_prices_on_payload(rows)
     except Exception:
         pass
-    return rows
+    kept = []
+    for row in rows:
+        if (row.get("engine_count") or 0) < min_engines:
+            continue
+        name = names.get(str(row.get("ticker") or "").upper())
+        if name:
+            row["company_name"] = name
+        kept.append(row)
+        if len(kept) >= int(limit or 40):
+            break
+    return kept
 
 
 SCANS: dict[str, tuple[str, Callable]] = {
