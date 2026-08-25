@@ -97,6 +97,16 @@ def to_yahoo_symbol(symbol: str | None, *, exchange: str = "NSE") -> str:
     if not raw:
         return ""
 
+    # Callers that own exchange identity can explicitly mark an unqualified US
+    # ticker. This prevents a legitimate but unknown US symbol being silently
+    # rewritten as an NSE listing by the India-first default below.
+    explicit_us = raw.upper().startswith("US:")
+    if explicit_us:
+        raw = raw[3:].strip()
+        exchange = "US"
+        if not raw:
+            return ""
+
     cache_key = f"ysym:{raw.upper()}|{exchange.upper()}"
     try:
         from app.market_data.providers.yahoo_request_cache import cached_get, cached_set
