@@ -66,7 +66,7 @@ def _payload():
     }
 
 
-def _patch(monkeypatch, payload=None):
+def _patch(monkeypatch, payload=None, live=None):
     monkeypatch.setattr(ls, "fetch_live_alpha_rows", lambda **_: payload or _payload())
     monkeypatch.setattr(ls, "_risk_and_liquidity", lambda: (
         {"ALPHA": {"symbol": "ALPHA", "atr": 10.0, "beta_1y": 1.2, "sma50": 495.0},
@@ -74,6 +74,10 @@ def _patch(monkeypatch, payload=None):
         {"ALPHA": {"symbol": "ALPHA", "adv_3m": 4.0},
          "BETA": {"symbol": "BETA", "adv_3m": 1.5}},
     ))
+    monkeypatch.setattr(
+        "hedge_fund_lab.live_prices.latest_live_price_map",
+        lambda **_: live if live is not None else {},
+    )
 
 
 class TestEngineRouting:
@@ -116,6 +120,19 @@ class TestRowContent:
         assert row["sizing"]["target_weight"] is not None
         assert row["sizing"]["binding_constraint"] in {
             "volatility_target", "liquidity", "max_weight"}
+
+    def test_live_print_overrides_signal_price_and_the_stop(self, monkeypatch):
+        _patch(monkeypatch, live={
+            "ALPHA": {
+                "ltp": 512.25,
+                "observed_at": "2026-08-25T07:00:00+00:00",
+                "source": "live_market_snapshots",
+            },
+        })
+        row = ls.scan_opening_range_breakout(10)["results"][0]
+        assert row["price"] == 512.25
+        assert row["price_source"] == "live_market_snapshots"
+        assert row["stop"] == 512.25 - ls.ATR_STOP_MULTIPLE * 10.0
 
     def test_missing_signal_price_is_never_replaced_by_sma50(self, monkeypatch):
         payload = _payload()

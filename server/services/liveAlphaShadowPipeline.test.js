@@ -13,6 +13,21 @@ test('builds median minute baselines using prior sessions only', () => {
   assert.equal(baseline[0].sample_sessions, 6);
 });
 
+test('seeds 15m and 60m returns from previous close on the first tick', () => {
+  const store = new IntradayFeatureStore();
+  store.ingest({ snapshots: [{
+    instrument_key: 'NSE_INDEX|Nifty 50',
+    received_at: '2026-08-25T06:00:00Z',
+    ltp: 24178.85,
+    previous_close: 24219.0,
+  }] });
+  const result = store.returns('NSE_INDEX|Nifty 50', Date.parse('2026-08-25T06:00:00Z'));
+  assert.ok(result.return15m !== null);
+  assert.ok(result.return60m !== null);
+  assert.equal(Number(result.return15m.toFixed(4)), Number((((24178.85 / 24219.0) - 1) * 100).toFixed(4)));
+  assert.equal(Number(result.return60m.toFixed(4)), Number((((24178.85 / 24219.0) - 1) * 100).toFixed(4)));
+});
+
 test('retains rolling observations and calculates returns', () => {
   const store = new IntradayFeatureStore();
   store.ingest({ snapshots: [

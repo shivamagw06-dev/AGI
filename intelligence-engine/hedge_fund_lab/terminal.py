@@ -176,7 +176,14 @@ def _scan_live_alpha(universe, medians, limit) -> list[dict[str, Any]]:
     fetched = fetch_live_alpha_rows(limit=limit)
     if not fetched.get("ok"):
         return []
-    return list(fetched.get("rows") or [])
+    rows = list(fetched.get("rows") or [])
+    try:
+        from hedge_fund_lab.live_prices import overlay_live_prices_on_payload
+
+        rows = overlay_live_prices_on_payload(rows)
+    except Exception:
+        pass
+    return rows
 
 
 SCANS: dict[str, tuple[str, Callable]] = {
@@ -1095,6 +1102,12 @@ def opportunity(ticker: str, limit: int = 1000) -> dict[str, Any]:
     row = next((r for r in universe if str(r.get("ticker") or "").upper() == tk), None)
     if row is None:
         return {"ok": False, "error": "not_covered", "ticker": tk}
+    try:
+        from hedge_fund_lab.live_prices import apply_latest_live_price
+
+        row = apply_latest_live_price(row)
+    except Exception:
+        pass
 
     industry = row.get("primary_industry")
     med = medians.get(industry) or {}
