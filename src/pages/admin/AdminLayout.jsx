@@ -116,6 +116,7 @@ const navItems = [
   { to: '/admin/open-intelligence', label: 'Open Intelligence', icon: Radar },
   { to: '/admin/evidence', label: 'Evidence', icon: Shield },
   { to: '/admin/live-evidence', label: 'Live Evidence (LEO)', icon: Activity },
+  { to: '/admin/broadcast-links', label: 'Broadcast Links', icon: Radio },
   { to: '/admin/company-dossiers', label: 'Company Dossiers', icon: Briefcase },
   { to: '/admin/yahoo-provider', label: 'Yahoo Provider', icon: Radio },
   { to: '/admin/data-quality', label: 'Data Quality (DVC)', icon: ShieldCheck },

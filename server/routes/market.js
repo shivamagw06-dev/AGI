@@ -14,6 +14,11 @@ import { getMacroBriefing, askMacroEconomist, startMacroBriefingScheduler } from
 import { getPreMarketBriefing, startPreMarketBriefingScheduler } from '../services/preMarketBriefingService.js';
 import { fetchYahooIndices } from '../providers/yahooIndices.js';
 import { fetchFxIntelligence } from '../services/fxIntelligenceService.js';
+import {
+  getLiveDeskBroadcasts,
+  saveLiveDeskBroadcast,
+} from '../services/liveDeskBroadcastService.js';
+import { requireStrategyLabAdmin } from '../services/strategyLabAdminAuth.js';
 
 const CACHE_CONTROL = `public, max-age=${Math.floor(MARKET_REFRESH_MS / 1000)}, stale-while-revalidate=60`;
 
@@ -545,6 +550,27 @@ export default function createMarketRouter(env = {}) {
         error: err?.message || 'global_snapshot_unavailable',
         stale: true,
         updatedAt: new Date().toISOString(),
+      });
+    }
+  });
+
+  router.get('/live-broadcasts', async (_req, res) => {
+    res.set('Cache-Control', 'public, max-age=30, stale-while-revalidate=30');
+    return res.status(200).json(await getLiveDeskBroadcasts());
+  });
+
+  router.put('/live-broadcasts/:id', requireStrategyLabAdmin, async (req, res) => {
+    res.set('Cache-Control', 'no-store');
+    try {
+      return res.status(200).json(await saveLiveDeskBroadcast({
+        id: req.params.id,
+        youtubeUrl: req.body?.youtubeUrl,
+        actor: req.strategyLabActor,
+      }));
+    } catch (error) {
+      return res.status(error.status || 400).json({
+        ok: false,
+        error: error.message || 'Broadcast update failed.',
       });
     }
   });
