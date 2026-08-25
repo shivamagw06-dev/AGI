@@ -28,6 +28,21 @@ test('seeds 15m and 60m returns from previous close on the first tick', () => {
   assert.equal(Number(result.return60m.toFixed(4)), Number((((24178.85 / 24219.0) - 1) * 100).toFixed(4)));
 });
 
+test('still seeds 60m lookback when a same-minute OHLC bar already exists', () => {
+  const store = new IntradayFeatureStore();
+  const at = Date.parse('2026-08-25T09:00:00Z');
+  store.ingest({ snapshots: [{
+    instrument_key: 'NSE_INDEX|Nifty 50',
+    received_at: '2026-08-25T09:00:00Z',
+    ltp: 24178.85,
+    previous_close: 24219.0,
+    ohlc: [{ interval: 'I1', close: 24178.85, high: 24180, low: 24170, timestamp: at }],
+  }] });
+  const result = store.returns('NSE_INDEX|Nifty 50', at);
+  assert.ok(result.return15m !== null);
+  assert.ok(result.return60m !== null);
+});
+
 test('retains rolling observations and calculates returns', () => {
   const store = new IntradayFeatureStore();
   store.ingest({ snapshots: [

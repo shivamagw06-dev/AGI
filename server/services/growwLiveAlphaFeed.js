@@ -1,6 +1,6 @@
 import { parse } from 'csv-parse/sync';
 import { getQuote, isGrowwConfigured } from '../providers/groww.js';
-import { pollGrowwIndexSnapshots } from './sectorIndexGrowwFallback.js';
+import { pollGrowwIndexSnapshots, growwQuotePreviousClose } from './sectorIndexGrowwFallback.js';
 
 const INSTRUMENTS_URL = process.env.GROWW_INSTRUMENTS_URL || 'https://growwapi-assets.groww.in/instruments/instrument.csv';
 
@@ -41,7 +41,7 @@ function normalizeQuote(instrumentKey, quote, receivedAt) {
   return {
     instrument_key: instrumentKey, received_at: receivedAt,
     exchange_timestamp: normalizeExchangeTimestamp(quote?.last_trade_time), ltp,
-    previous_close: positiveNumber(ohlc(quote?.ohlc)?.[0]?.close),
+    previous_close: growwQuotePreviousClose(quote),
     last_traded_quantity: number(quote?.last_trade_quantity),
     average_traded_price: positiveNumber(quote?.average_price),
     cumulative_volume: number(quote?.volume), open_interest: number(quote?.open_interest),
