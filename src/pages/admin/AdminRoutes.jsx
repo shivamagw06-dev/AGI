@@ -84,6 +84,7 @@ const MarketResearchNote = lazy(() => import('@/pages/admin/MarketResearchNote')
 const MarketActivities = lazy(() => import('@/pages/admin/MarketActivities'));
 const StrategyLab = lazy(() => import('@/pages/admin/StrategyLab'));
 const OptionsLab = lazy(() => import('@/pages/OptionsLab'));
+const BroadcastLinks = lazy(() => import('@/pages/admin/BroadcastLinks'));
 const IntelligenceCmsRoutes = lazy(() => import('@/pages/admin/intelligence/IntelligenceCmsRoutes'));
 
 function AdminPageFallback() {
@@ -151,6 +152,7 @@ export default function AdminRoutes() {
             <Route path="open-intelligence" element={<OpenIntelligence />} />
             <Route path="evidence" element={<Evidence />} />
             <Route path="live-evidence" element={<LiveEvidence />} />
+            <Route path="broadcast-links" element={<BroadcastLinks />} />
             <Route path="company-dossiers" element={<CompanyDossiers />} />
             <Route path="yahoo-provider" element={<YahooProvider />} />
             <Route path="data-quality" element={<DataQuality />} />
