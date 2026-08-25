@@ -30,7 +30,7 @@ import time
 from pathlib import Path
 from typing import Any, Callable, Optional
 
-SNAPSHOT_VERSION = 4
+SNAPSHOT_VERSION = 5
 
 # Default staleness budget. Overridden per artifact, because "how old may this
 # be" is a question about the data, not about how long it takes to build.

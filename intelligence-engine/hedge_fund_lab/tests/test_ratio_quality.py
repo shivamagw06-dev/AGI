@@ -93,6 +93,26 @@ class TestAudit:
         )
         assert audit["status"] == "data_quality_fail"
 
+    def test_annual_roe_above_vendor_ttm_fails(self):
+        audit = audit_quality_metrics(
+            roe=77.5, net_margin=33.9, debt_equity=0.24, vendor_roe=15.3,
+        )
+        assert audit["status"] == "data_quality_fail"
+        assert audit["vendor_roe_gap_pp"] == pytest.approx(62.2)
+
+    def test_modest_annual_vs_ttm_gap_passes(self):
+        audit = audit_quality_metrics(
+            roe=28.37, net_margin=14.18, debt_equity=0.255, vendor_roe=24.84,
+        )
+        assert audit["status"] == "pass"
+
+    def test_higher_vendor_ttm_is_a_warning_not_a_fail(self):
+        audit = audit_quality_metrics(
+            roe=20.0, net_margin=14.0, debt_equity=0.3, vendor_roe=35.0,
+        )
+        assert audit["status"] == "pass"
+        assert audit["warnings"]
+
 
 class TestMapping:
     def test_debt_equity_stays_a_multiple(self):
@@ -147,6 +167,31 @@ class TestMapping:
         assert row["consensus"]["return_1y"] == pytest.approx(-20.2)
         assert row["data_context"]["return_1y_base_close"] == pytest.approx(393.65)
         assert row["data_context"]["return_1y_src"].startswith("upstox")
+
+    def test_upstox_ttm_is_stamped_and_annual_roe_is_kept(self, monkeypatch):
+        def overlay(row, latest=None):
+            out = dict(row)
+            out["roe"] = 15.3
+            out["valuation_ratios_source"] = "upstox"
+            out["valuation_ratios_as_of"] = "2026-08-25"
+            return out
+
+        monkeypatch.setattr(
+            "valuation_ratios.ingest.apply_latest_ratios", overlay, raising=False,
+        )
+        row = scanner._map_warehouse_row(
+            {"symbol": "ASHOKA", "cmp": 121.0},
+            ratios=_ratio(
+                symbol="ASHOKA", period="FY2026",
+                roe=77.5, net_margin=33.9, debt_equity=0.24,
+            ),
+            factors={},
+            return_1y=-39.0,
+            legacy_consensus={},
+        )
+        assert row["roe"] == pytest.approx(77.5)
+        assert row["data_context"]["vendor_roe"] == pytest.approx(15.3)
+        assert row["data_context"]["ratio_audit"]["status"] == "data_quality_fail"
 
 
 class TestQualityScan:
@@ -224,3 +269,33 @@ class TestQualityScan:
         tickers = [h["ticker"] for h in hits]
         assert "PLAIN" in tickers
         assert "GEARED" not in tickers
+
+    def test_exceptional_annual_vs_vendor_ttm_is_dropped(self):
+        hits = scanner._scan_quality(
+            [
+                self._row(
+                    ticker="ASHOKA",
+                    roe=77.5,
+                    profit_margin=33.9,
+                    debt_to_equity=0.24,
+                    data_context={
+                        "accounting_scope": "consolidated",
+                        "vendor_roe": 15.3,
+                        "ratio_audit": audit_quality_metrics(
+                            roe=77.5, net_margin=33.9, debt_equity=0.24,
+                            vendor_roe=15.3,
+                        ),
+                    },
+                ),
+                self._row(
+                    ticker="ANANDRATHI",
+                    roe=46.7,
+                    profit_margin=32.0,
+                    debt_to_equity=0.08,
+                ),
+            ],
+            {},
+            15,
+        )
+        assert [h["ticker"] for h in hits] == ["ANANDRATHI"]
+        assert hits[0]["validation_status"] == "screen_validated"
