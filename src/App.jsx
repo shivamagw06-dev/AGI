@@ -41,6 +41,7 @@ const Markets = React.lazy(() => import('@/pages/Markets'));
 const MarketIntelligence = React.lazy(() => import('@/pages/MarketIntelligence'));
 const MarketSectorIntelligence = React.lazy(() => import('@/pages/MarketSectorIntelligence'));
 const GlobalMarketsPage = React.lazy(() => import('@/pages/GlobalMarketsPage'));
+const UsStockIntelligence = React.lazy(() => import('@/pages/UsStockIntelligence'));
 const PreMarketIntelligence = React.lazy(() => import('@/pages/PreMarketIntelligence'));
 const Nifty500StockResearch = React.lazy(() => import('@/pages/Nifty500StockResearch'));
 const IpoDetailPage = React.lazy(() => import('@/pages/IpoDetailPage'));
@@ -217,6 +218,7 @@ function PublicRoutes() {
       <Route path="/private-equity" element={<Navigate replace to="/private-markets" />} />
       <Route path="/private-equity/firms/:slug" element={gate('private_markets', <PrivateEquityFirmPage />)} />
       <Route path="/global-markets" element={gate('global_markets', <GlobalMarketsPage />)} />
+      <Route path="/us-stock-intelligence" element={gate('global_markets', <UsStockIntelligence />)} />
       <Route path="/economics" element={gate('economics', <EconomicsPage />)} />
       <Route path="/insider-activity" element={gate('insider', <InsiderActivityPage />)} />
       <Route path="/global" element={<Navigate replace to="/global-markets" />} />
