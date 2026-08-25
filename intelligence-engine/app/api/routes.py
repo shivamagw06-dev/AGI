@@ -10697,6 +10697,27 @@ async def options_lab_collect(payload: dict[str, Any] = Body(default_factory=dic
     }
 
 
+@router.post("/warehouse/company-names/repair", dependencies=[Depends(require_token)])
+async def warehouse_company_names_repair(payload: dict[str, Any] = Body(default_factory=dict)):
+    """Put real company names back where a row is named after its own ticker.
+
+    Defaults to a dry run: pass {"apply": true} to write. A repair that runs
+    on a bare call is how a couple of thousand rows get rewritten by accident.
+    """
+    from financial_warehouse_completion import company_names
+
+    apply = bool((payload or {}).get("apply"))
+    return await run_in_threadpool(company_names.repair, dry_run=not apply)
+
+
+@router.get("/warehouse/company-names/audit")
+async def warehouse_company_names_audit():
+    """How many master rows carry their ticker instead of a name."""
+    from financial_warehouse_completion import company_names
+
+    return await run_in_threadpool(company_names.audit)
+
+
 @router.post("/options-lab/price", dependencies=[Depends(require_token)])
 def options_lab_price(payload: dict[str, Any] = Body(default={})):
     """Run the provider-neutral local options model without placing an order."""
