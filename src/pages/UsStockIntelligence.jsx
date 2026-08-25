@@ -1,3 +1,4 @@
+import TradingViewUsDesk from "../components/TradingViewUsDesk";
 import { useEffect, useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import {
@@ -496,6 +497,7 @@ export default function UsStockIntelligence() {
           Yahoo Finance data may be delayed, incomplete or revised. AGI calculations are for research discussion only and are not investment advice, a recommendation, or an offer to transact.
         </footer>
       </section>
+      <TradingViewUsDesk />
     </main>
   );
 }
