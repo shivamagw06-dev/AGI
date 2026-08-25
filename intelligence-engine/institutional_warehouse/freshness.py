@@ -10,6 +10,19 @@ Staleness is measured against a declared cadence rather than a fixed number of
 days, because the tables are not all daily. A fiscal-year archive that has not
 moved since March 2025 is correct; a price table that has not moved since
 Thursday is not, and a single threshold cannot tell them apart.
+
+Two levels of check, because there are 85 tables and only some have a cadence
+anyone has thought about:
+
+  declared  -- a business-date column and a cadence, written down below. Asks
+               "is the data current?" and is the check worth alerting on.
+  derived   -- everything else, measured on whatever column records when a row
+               was written. Asks only "is anything still writing here?", which
+               needs no cadence to answer and still catches a dead collector.
+
+The second kind exists because the first covered thirteen tables and the other
+seventy-two could stop without anything noticing. A weak check on all of them
+beats a sharp check on a sixth of them.
 """
 
 from __future__ import annotations
@@ -73,6 +86,22 @@ OK = "ok"
 LATE = "late"
 EMPTY = "empty"
 UNKNOWN = "unknown"
+SILENT = "silent"            # derived: nothing has written here in a long time
+UNWATCHABLE = "unwatchable"  # derived: no column records when a row was written
+
+# Where to look for "when was this row written", best first. last_updated is on
+# 76 of the 85 tables; the rest carry one of the others. Deliberately not a
+# business date -- max(listing_date) on company_master is the newest listing,
+# not a sign the table is alive, and reading it as one is how a monitor comes
+# to report a dead table healthy.
+AUDIT_COLUMNS = ("last_updated", "created_at", "as_of", "started_at",
+                 "captured_at", "updated_at")
+
+# A derived check has no cadence to compare against, so it only asks whether a
+# table has gone quiet for longer than any collector plausibly should. Set well
+# past monthly on purpose: a threshold that fires on ordinary gaps trains people
+# to ignore the report, which is worse than not having it.
+SILENT_AFTER_DAYS = 45
 
 
 def _as_date(value: Any) -> Optional[date]:
@@ -118,6 +147,62 @@ def _newest(tab_id: str, column: str,
     return (_as_date((rows or [{}])[0].get("newest")), total)
 
 
+def _audit_column(tab_id: str) -> Optional[str]:
+    """The column recording when a row was written, or None if there is none."""
+    try:
+        from institutional_warehouse import schema
+        tab = schema.find_tab(tab_id)
+    except Exception:
+        return None
+    if tab is None:
+        return None
+    present = {c.key for c in tab.columns}
+    for candidate in AUDIT_COLUMNS:
+        if candidate in present:
+            return candidate
+    return None
+
+
+def _derived_row(tab_id: str, now: date) -> dict[str, Any]:
+    """A table nobody declared a cadence for: is anything still writing to it?
+
+    Deliberately not an opinion about whether the data is current -- that needs
+    a cadence and a business date. This only separates a table being filled
+    from one that stopped, which is the failure that went unnoticed before.
+    """
+    from institutional_warehouse import db
+
+    column = _audit_column(tab_id)
+    try:
+        total = db.count(db.physical_table(tab_id))
+    except Exception:
+        total = 0
+
+    row = {"tab": tab_id, "cadence": None, "rows": total, "check": "derived",
+           "column": column, "newest": None, "age_days": None,
+           "allowed_days": SILENT_AFTER_DAYS, "reader": None, "note": None}
+
+    if not total:
+        # Empty and never declared is not automatically wrong: some tables are
+        # for work that has not started. Reported, not alarmed about.
+        row["status"] = EMPTY
+        return row
+    if not column:
+        row["status"] = UNWATCHABLE
+        row["note"] = "no column records when a row was written"
+        return row
+
+    newest, _ = _newest(tab_id, column)
+    if newest is None:
+        row["status"] = UNKNOWN
+        return row
+    age = (now - newest).days
+    row["newest"] = newest.isoformat()
+    row["age_days"] = age
+    row["status"] = SILENT if age > SILENT_AFTER_DAYS else OK
+    return row
+
+
 def report(*, today: Optional[str] = None) -> dict[str, Any]:
     """One row per watched table: what it holds, and whether that is current."""
     now = _as_date(today) or datetime.now(timezone.utc).date()
@@ -138,6 +223,7 @@ def report(*, today: Optional[str] = None) -> dict[str, Any]:
             status = OK
         tables.append({
             "tab": tab_id,
+            "check": "declared",
             "cadence": cadence,
             "rows": total,
             "newest": newest.isoformat() if newest else None,
@@ -149,7 +235,20 @@ def report(*, today: Optional[str] = None) -> dict[str, Any]:
         })
 
     late = [t for t in tables if t["status"] in (LATE, EMPTY)]
+
+    # Every remaining table, so that a collector stopping is visible even where
+    # nobody has declared what current looks like.
+    try:
+        from institutional_warehouse import schema
+        every = schema.tab_ids()
+    except Exception:
+        every = []
+    derived = [_derived_row(t, now) for t in every if t not in EXPECTED]
+    silent = [t for t in derived if t["status"] == SILENT]
+
+    tables = tables + derived
     return {
+        # Unchanged meaning: the declared checks are the ones worth waking for.
         "ok": not late,
         "as_of": now.isoformat(),
         "watched": len(tables),
@@ -157,5 +256,20 @@ def report(*, today: Optional[str] = None) -> dict[str, Any]:
         # Named so an alert can say which desk is affected rather than only
         # which table, because the table name means nothing to whoever reads it.
         "affected_readers": sorted({t["reader"] for t in late if t.get("reader")}),
+        # A table that stopped being written to. Separate from `late` because it
+        # is a weaker claim, and mixing the two would let noise from seventy-two
+        # tables drown the thirteen that have a real cadence behind them.
+        "silent": [t["tab"] for t in silent],
+        # Built, wired into the schema, never filled. Twenty-five of these on
+        # the day this was written -- the whole macro layer, the whole portfolio
+        # layer, every strategy table. Not an alert, because none of them broke;
+        # they were never started. But invisible was the wrong way to hold it.
+        "never_filled": [t["tab"] for t in derived if t["status"] == EMPTY],
+        "coverage": {
+            "tables": len(tables),
+            "declared": len(EXPECTED),
+            "derived": len(derived),
+            "unwatchable": sum(1 for t in derived if t["status"] == UNWATCHABLE),
+        },
         "tables": tables,
     }

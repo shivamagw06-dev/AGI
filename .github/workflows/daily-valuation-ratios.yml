@@ -148,16 +148,35 @@ jobs:
           except Exception as exc:
               print(f"::warning::freshness unreadable: {exc}")
               raise SystemExit(0)
+          cov = d.get("coverage") or {}
+          print(f"  covering {cov.get('tables','?')} tables "
+                f"({cov.get('declared','?')} declared, {cov.get('derived','?')} derived)")
           for t in d.get("tables") or []:
+              # Only the declared checks carry a cadence, so only they can be
+              # "behind". The rest are printed to show they are being looked at.
               mark = " " if t["status"] == "ok" else "!"
-              print(f"  {mark} {t['tab']:28} {t['status']:6} "
-                    f"newest={t['newest'] or '-':12} age={t['age_days']}")
-          late = [t for t in (d.get("tables") or []) if t["status"] != "ok"]
+              print(f"  {mark} {t['tab']:32} {t.get('check','declared'):8} "
+                    f"{t['status']:11} newest={t['newest'] or '-':12} "
+                    f"age={t['age_days']}")
+          late = [t for t in (d.get("tables") or [])
+                  if t.get("check", "declared") == "declared" and t["status"] != "ok"]
           if late:
               # A warning, not a failure: the ratios this job exists to collect
               # are already in by now, and failing here would bury that.
               print(f"::warning::{len(late)} table(s) behind, affecting: "
                     f"{', '.join(d.get('affected_readers') or []) or 'unknown'}")
+          # A table that was being written and stopped. Worth a warning even
+          # without a declared cadence -- that is the failure that went unseen.
+          silent = d.get("silent") or []
+          if silent:
+              print(f"::warning::{len(silent)} table(s) have had no new rows in "
+                    f"{45}+ days: {', '.join(silent[:8])}")
+          # Built and never filled. Stated once, not warned about: nothing is
+          # broken, the work simply has not started.
+          never = d.get("never_filled") or []
+          if never:
+              print(f"  {len(never)} table(s) built but never filled: "
+                    f"{', '.join(never[:10])}")
           PY
 
       - name: Verify today landed
