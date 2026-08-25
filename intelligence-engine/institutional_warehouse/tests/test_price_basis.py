@@ -22,6 +22,10 @@ class TestDescribe:
         column, so `close` is the raw price despite Yahoo offering both."""
         assert pb.describe("yahoo_finance_history")[1] == pb.RAW
 
+    def test_groww_last_price_is_split_adjusted(self):
+        assert pb.describe("groww") == ("groww", pb.SPLIT_ADJUSTED)
+        assert pb.describe("groww_hfl") == ("groww", pb.SPLIT_ADJUSTED)
+
     def test_an_unrecognised_source_is_unknown_not_assumed(self):
         """A wrong basis is worse than an absent one - it lets a reader pair two
         prices that do not belong together while believing it checked."""

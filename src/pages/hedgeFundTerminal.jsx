@@ -258,7 +258,7 @@ function Explanation({ ticker }) {
           <table className="hft-chain">
             <tbody>
               <tr><td>Market data · Yahoo</td><td>P/E {n(data.market?.pe)} · P/B {n(data.market?.pb)} · yield {pct(data.market?.dividend_yield)}</td></tr>
-              <tr><td>Quality · Yahoo</td><td>ROE {pct(data.quality?.roe)} · margin {pct(data.quality?.profit_margin)} · D/E {n(data.quality?.debt_to_equity)}</td></tr>
+              <tr><td>Quality · annual warehouse</td><td>ROE {pct(data.quality?.roe)} · margin {pct(data.quality?.profit_margin)} · D/E {data.quality?.debt_to_equity == null ? '—' : `${n(data.quality.debt_to_equity)}x`}</td></tr>
               <tr><td>Industry · AGI</td><td>{data.industry_context?.primary_metric?.toUpperCase()} {n(data.industry_context?.company_value)} vs median {n(data.industry_context?.industry_median)} ({pct(data.industry_context?.gap_pct)})</td></tr>
               <tr><td>AGI Market Consensus</td><td>{pct(data.consensus?.upside)} upside · {n(data.consensus?.coverage)} brokers</td></tr>
             </tbody>

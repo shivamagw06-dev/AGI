@@ -147,6 +147,8 @@ export async function refreshHedgeFundLiveQuotes({ force = false } = {}) {
         close,
         volume: Number(candle.volume) || null,
         source: 'groww',
+        price_basis: 'SPLIT_ADJUSTED',
+        feed_family: 'groww',
         import_time: receivedAt,
       };
     }).filter(Boolean);

@@ -48,8 +48,12 @@ _SOURCES: dict[str, tuple[str, str]] = {
     "nse_bhavcopy": ("nse", RAW),
     # Yahoo's chart API returns both. This reader takes indicators.quote.close,
     # which is unadjusted, and keeps indicators.adjclose in `adjusted_close`.
+    # Yahoo's chart API returns both. This reader takes indicators.quote.close,
+    # which is unadjusted, and keeps indicators.adjclose in `adjusted_close`.
     "yahoo_finance": ("yahoo", RAW),
     "yahoo_finance_history": ("yahoo", RAW),
+    # Groww's LTP/OHLC is the split-adjusted last price the tape shows.
+    "groww": ("groww", SPLIT_ADJUSTED),
     "knowledge_factory_hd": ("kf_hd", UNKNOWN),
 }
 
@@ -69,6 +73,7 @@ _VENDOR_PREFIXES: tuple[tuple[str, str, str], ...] = (
     ("upstox", "upstox", SPLIT_ADJUSTED),
     ("yahoo", "yahoo", RAW),
     ("nse_bhavcopy", "nse", RAW),
+    ("groww", "groww", SPLIT_ADJUSTED),
 )
 
 

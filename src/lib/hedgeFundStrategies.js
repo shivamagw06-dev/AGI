@@ -253,18 +253,34 @@ export const STRATEGIES = [
         note: 'ROE times the retention ratio — the growth a company can fund without issuing equity or adding leverage.',
       },
       {
+        label: 'AGIB Score',
+        tex: 'Q_i = r_i + \\tfrac{1}{2} m_i - 5 d_i',
+        note: 'Internal rank: return on equity plus half the net margin, minus five times debt/equity (as a multiple). This is not a published ratio.',
+      },
+      {
         label: 'DuPont decomposition',
         tex: 'r_i = \\underbrace{\\dfrac{NI}{S}}_{\\text{margin}} \\times \\underbrace{\\dfrac{S}{A}}_{\\text{turnover}} \\times \\underbrace{\\dfrac{A}{E}}_{\\text{leverage}}',
         note: 'Separates operating quality from balance-sheet gearing. A high ROE driven by the third term is a different business from one driven by the first.',
       },
     ],
-    verify: () => null,
+    verify: (row) => {
+      const roe = num(row.roe);
+      const margin = num(row.profit_margin);
+      if (roe === null || margin === null) return null;
+      const debt = num(row.debt_to_equity) || 0;
+      return [{
+        label: 'AGIB Score',
+        expected: Math.min(100, roe + margin / 2 - debt * 5),
+        actual: num(row.quality_score),
+        dp: 1,
+      }];
+    },
     columns: [
       { key: 'price', label: 'Last price', dp: 2 },
       { key: 'roe', label: 'ROE', dp: 1, suffix: '%' },
       { key: 'profit_margin', label: 'Net margin', dp: 1, suffix: '%' },
-      { key: 'debt_to_equity', label: 'D/E', dp: 1 },
-      { key: 'quality_score', label: 'Score', dp: 0 },
+      { key: 'debt_to_equity', label: 'D/E', dp: 2, suffix: 'x' },
+      { key: 'quality_score', label: 'AGIB Score', dp: 1 },
       { key: 'return_1y', label: '1Y return', dp: 1, suffix: '%', signed: true },
     ],
     risks: [
@@ -616,6 +632,7 @@ export const SIZING_MATH = [
 export const VALIDATION_LABELS = {
   normalization_required: 'Units or accounting basis need normalising before this multiple can be compared.',
   accounting_basis_verification_required: 'Consolidated vs standalone basis is not confirmed for this company.',
+  data_quality_fail: 'DATA QUALITY: FAIL — stored ratios disagree with PAT/revenue, a vendor print, or a plausible band.',
   fundamental_comparability_required: 'Business models must be shown comparable before the pair is meaningful.',
   not_market_neutral: 'The pair is not hedged to zero market exposure.',
 };
