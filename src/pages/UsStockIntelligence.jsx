@@ -28,6 +28,17 @@ import { getUsMarketOverview, getUsStockIntelligence } from '@/lib/intelligenceA
 import './usStockIntelligence.css';
 
 const QUICK_TICKERS = ['AAPL', 'MSFT', 'NVDA', 'AMZN', 'GOOGL', 'META', 'JPM', 'BRK-B'];
+const US_STOCK_SUGGESTIONS = [
+  ['AAPL', 'Apple'], ['MSFT', 'Microsoft'], ['NVDA', 'NVIDIA'], ['AMZN', 'Amazon'],
+  ['GOOGL', 'Alphabet (Google)'], ['META', 'Meta Platforms'], ['TSLA', 'Tesla'], ['AVGO', 'Broadcom'],
+  ['AMD', 'Advanced Micro Devices'], ['ORCL', 'Oracle'], ['CRM', 'Salesforce'], ['NFLX', 'Netflix'],
+  ['JPM', 'JPMorgan Chase'], ['BAC', 'Bank of America'], ['GS', 'Goldman Sachs'], ['MS', 'Morgan Stanley'],
+  ['IBKR', 'Interactive Brokers'], ['V', 'Visa'], ['MA', 'Mastercard'], ['BRK-B', 'Berkshire Hathaway'],
+  ['WMT', 'Walmart'], ['COST', 'Costco'], ['KO', 'Coca-Cola'], ['PEP', 'PepsiCo'],
+  ['LLY', 'Eli Lilly'], ['UNH', 'UnitedHealth'], ['JNJ', 'Johnson & Johnson'], ['XOM', 'Exxon Mobil'],
+  ['CVX', 'Chevron'], ['GE', 'GE Aerospace'], ['CAT', 'Caterpillar'], ['BA', 'Boeing'],
+  ['DIS', 'Walt Disney'], ['PLTR', 'Palantir Technologies'],
+];
 const SCREENER_LABELS = {
   day_gainers: 'Top gainers',
   day_losers: 'Top losers',
@@ -179,8 +190,19 @@ export default function UsStockIntelligence() {
 
   const submit = (event) => {
     event?.preventDefault();
-    const next = input.trim().toUpperCase().replace('BRK.B', 'BRK-B');
-    if (next) { setSymbol(next); setDesk('stock'); }
+    const raw = input.trim();
+    const companyMatch = US_STOCK_SUGGESTIONS.find(([, name]) => name.toLowerCase() === raw.toLowerCase());
+    const next = (companyMatch?.[0] || raw).toUpperCase().replace('BRK.B', 'BRK-B');
+    if (!/^[A-Z0-9][A-Z0-9.-]{0,14}$/.test(next)) {
+      setData(null);
+      setError('Enter the US ticker code, for example IBKR for Interactive Brokers.');
+      setLoading(false);
+      setDesk('stock');
+      return;
+    }
+    setError('');
+    setSymbol(next);
+    setDesk('stock');
   };
 
   const openStock = (ticker) => {
@@ -205,6 +227,11 @@ export default function UsStockIntelligence() {
         <title>US Stock Intelligence | AGI</title>
         <meta name="description" content="US equity market, valuation, financial and risk intelligence using canonical Yahoo Finance data." />
       </Helmet>
+      <datalist id="us-stock-suggestions">
+        {US_STOCK_SUGGESTIONS.map(([ticker, name]) => (
+          <option key={ticker} value={ticker}>{name}</option>
+        ))}
+      </datalist>
 
       <div className="usi-grid-lines" aria-hidden="true" />
       <section className="usi-shell">
@@ -226,7 +253,8 @@ export default function UsStockIntelligence() {
             <input
               value={input}
               onChange={(event) => setInput(event.target.value)}
-              placeholder="Enter a US ticker: AAPL, MSFT, NVDA"
+              list="us-stock-suggestions"
+              placeholder="Search ticker or company: AAPL, Apple, IBKR..."
               aria-label="US stock ticker"
             />
             <button type="submit">Build intelligence</button>

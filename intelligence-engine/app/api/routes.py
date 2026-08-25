@@ -9579,9 +9579,13 @@ async def market_data_health():
 @router.get("/us-stock-intelligence/analyse")
 async def us_stock_intelligence_analyse(symbol: str = "AAPL"):
     """Canonical US equity research package backed by Yahoo Finance."""
+    from fastapi import HTTPException
     from us_stock_intelligence.production import analyse_us_stock
 
-    return await analyse_us_stock(symbol)
+    try:
+        return await analyse_us_stock(symbol)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
 
 
 @router.get("/us-stock-intelligence/market-overview")
