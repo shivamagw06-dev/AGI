@@ -79,10 +79,24 @@ def _call(method: str, path: str, *, body: Any = None, prefer: str = "",
 
 
 def ensure_partition(day: date | str) -> str:
-    """Create the month's partition if it does not exist yet."""
+    """Ask for the month's partition, and do not treat a refusal as fatal.
+
+    Creating a partition creates a table, which needs CREATE on schema public.
+    service_role does not hold that on a current Supabase project, so this call
+    can answer 42501 even though the partition it wanted already exists --
+    partitions are pre-created by migration for years either side of today.
+
+    Failing the whole ingest on that would be refusing to write 828 good rows
+    because a helper that had nothing to do was not allowed to do it. If the
+    partition genuinely is missing, the insert that follows fails on its own
+    and says so, which is the honest place for that error to surface.
+    """
     day = day if isinstance(day, date) else date.fromisoformat(str(day)[:10])
-    result = _call("POST", "/rest/v1/rpc/ensure_option_eod_partition",
-                   body={"target": day.isoformat()})
+    try:
+        result = _call("POST", "/rest/v1/rpc/ensure_option_eod_partition",
+                       body={"target": day.isoformat()})
+    except CanonicalStoreError as exc:
+        return f"unavailable: {str(exc)[:120]}"
     return str(result) if result else ""
 
 
