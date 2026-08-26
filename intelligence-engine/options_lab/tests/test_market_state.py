@@ -178,3 +178,35 @@ class SelectCoversWhatIsRead(unittest.TestCase):
         for column in ("underlying_spot", "open_interest", "volume",
                        "change_open_interest"):
             self.assertIn(column, self._selected())
+
+
+class RealisedVolWindow(unittest.TestCase):
+    """A twenty-day number must be built from twenty days."""
+
+    def _closes(self, n):
+        return [(f"d{i}", 100 * (1 + 0.01 * ((-1) ** i))) for i in range(n)]
+
+    def test_a_short_window_is_null_not_a_smaller_number(self):
+        # The first week of the warehouse reported rv20 of 4.65 and 4.95 from
+        # three returns, where every later day sat between 8.9 and 13.5. Half
+        # the true level, wearing the right label, and it inflated the whole
+        # implied-minus-realised series.
+        self.assertIsNone(realised := ms.realised_vols(self._closes(8))["realised_vol_20d"])
+
+    def test_the_five_day_window_fills_long_before_the_twenty(self):
+        out = ms.realised_vols(self._closes(8))
+        self.assertIsNotNone(out["realised_vol_5d"])
+        self.assertIsNone(out["realised_vol_20d"])
+
+    def test_a_filled_window_measures(self):
+        out = ms.realised_vols(self._closes(25))
+        self.assertIsNotNone(out["realised_vol_20d"])
+        self.assertGreater(out["realised_vol_20d"], 0)
+
+    def test_a_short_window_never_reads_lower_than_the_full_one(self):
+        # The failure mode was directional: too few returns understated
+        # volatility, which overstated every premium built on it.
+        full = ms.realised_vols(self._closes(25))["realised_vol_20d"]
+        self.assertIsNone(ms.realised_vols(self._closes(10))["realised_vol_20d"],
+                          "a partial window must not report a number at all")
+        self.assertIsNotNone(full)
