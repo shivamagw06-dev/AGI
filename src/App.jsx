@@ -50,6 +50,7 @@ const IpoIntelligencePage = React.lazy(() => import('@/pages/IpoIntelligencePage
 const MarketDataCentre = React.lazy(() => import('@/pages/MarketDataCentre'));
 const DataHealthSheet = React.lazy(() => import('@/pages/DataHealthSheet'));
 const PortfolioHub = React.lazy(() => import('@/pages/PortfolioHub'));
+const FounderPortfolio = React.lazy(() => import('@/pages/FounderPortfolio'));
 const ThemeDesk = React.lazy(() => import('@/pages/ThemeDesk'));
 const SectorDesk = React.lazy(() => import('@/pages/SectorDesk'));
 const ResearchWorkflowDesk = React.lazy(() => import('@/pages/ResearchWorkflowDesk'));
@@ -231,6 +232,7 @@ function PublicRoutes() {
       <Route path="/market-data" element={gate('market_intelligence', <MarketDataCentre />)} />
       <Route path="/data-health" element={gate('market_intelligence', <DataHealthSheet />)} />
       <Route path="/research/stocks/:symbol" element={gate('company_research', <Nifty500StockResearch />)} />
+      <Route path="/portfolio/founder" element={<FounderPortfolio />} />
       <Route path="/portfolio/*" element={gate('sector_theme', <PortfolioHub />)} />
       <Route path="/themes/:themeId" element={gate('sector_theme', <ThemeDesk />)} />
       <Route path="/themes" element={<Navigate replace to="/themes/credit_growth" />} />
