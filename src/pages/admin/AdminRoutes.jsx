@@ -33,6 +33,7 @@ const AccountingIntelligence = lazy(() => import('@/pages/admin/AccountingIntell
 const FinancialStatementsEngine = lazy(() => import('@/pages/admin/FinancialStatementsEngine'));
 const FinancialKnowledgeBase = lazy(() => import('@/pages/admin/FinancialKnowledgeBase'));
 const PortfolioIntelligence = lazy(() => import('@/pages/admin/PortfolioIntelligence'));
+const FounderPortfolioAdmin = lazy(() => import('@/pages/admin/FounderPortfolioAdmin'));
 const CausalIntelligence = lazy(() => import('@/pages/admin/CausalIntelligence'));
 const ForecastIntelligence = lazy(() => import('@/pages/admin/ForecastIntelligence'));
 const KnowledgeGraph = lazy(() => import('@/pages/admin/KnowledgeGraph'));
@@ -164,6 +165,7 @@ export default function AdminRoutes() {
             <Route path="financial-statements" element={<FinancialStatementsEngine />} />
             <Route path="financial-knowledge" element={<FinancialKnowledgeBase />} />
             <Route path="portfolio-intelligence" element={<PortfolioIntelligence />} />
+            <Route path="founder-portfolio" element={<FounderPortfolioAdmin />} />
             <Route path="causal-intelligence" element={<CausalIntelligence />} />
             <Route path="forecast-intelligence" element={<ForecastIntelligence />} />
             <Route path="knowledge-graph" element={<KnowledgeGraph />} />

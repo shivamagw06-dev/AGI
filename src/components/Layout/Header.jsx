@@ -23,6 +23,7 @@ import { buildLoginUrl } from '@/lib/accessPolicy';
 const NAV = [
   { name: 'Home', path: '/' },
   { name: 'Market Intelligence', path: '/market-intelligence' },
+  { name: 'Portfolio', path: '/portfolio' },
   { name: 'Live Desk', path: '/live-desk' },
   { name: 'Hedge Fund', path: '/hedge-fund' },
   { name: 'Live Alpha', path: '/live-alpha' },
@@ -229,6 +230,9 @@ export default function Header() {
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => go('/admin/investment-office')}>
                             <Landmark className="w-4 h-4 mr-2" /> Investment Office
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => go('/admin/founder-portfolio')}>
+                            <Briefcase className="w-4 h-4 mr-2" /> Founder Portfolio
                           </DropdownMenuItem>
                         </>
                       )}
