@@ -153,18 +153,28 @@ class ZeroIsAMeasurement(unittest.TestCase):
     """A calm market is not a missing market."""
 
     def test_a_zero_realised_volatility_still_yields_a_premium(self):
-        # A perfectly steady path has zero variance. Truthiness treated that as
-        # missing, which silently dropped the calmest days -- precisely the ones
-        # where implied volatility looks most expensive, and so exactly the days
-        # a variance-premium study most needs.
+        # A market that did not move has zero volatility, and zero is falsy.
+        # Truthiness treated it as missing, silently dropping the calmest days --
+        # precisely the ones where implied volatility looks most expensive, and
+        # so exactly the days a variance-premium study most needs.
         sig = sg.build_for_day(state("2026-07-10", iv=12.0, spot=24000.0),
                                history(30))[0]
-        steady = [state(f"2026-07-{d}", spot=24000.0 * (1.01 ** i))
-                  for i, d in enumerate((11, 12, 13, 14, 15), 1)]
-        out = oc.build(sig, steady)
+        flat = [state(f"2026-07-{d}", spot=24000.0) for d in (11, 12, 13, 14, 15)]
+        out = oc.build(sig, flat)
         self.assertEqual(out["forward_realised_vol_5d"], 0.0)
         self.assertIsNotNone(out["variance_premium_5d"])
         self.assertAlmostEqual(out["variance_premium_5d"], 12.0, places=2)
+
+    def test_a_steadily_trending_market_is_not_called_calm(self):
+        # The estimator assumes zero drift, so a market rising one percent a day
+        # is moving, not still. The mean-subtracting version called this zero
+        # volatility, which would price a persistent trend as a dead market.
+        sig = sg.build_for_day(state("2026-07-10", iv=12.0, spot=24000.0),
+                               history(30))[0]
+        trending = [state(f"2026-07-{d}", spot=24000.0 * (1.01 ** i))
+                    for i, d in enumerate((11, 12, 13, 14, 15), 1)]
+        out = oc.build(sig, trending)
+        self.assertGreater(out["forward_realised_vol_5d"], 5.0)
 
     def test_an_unchanged_implied_volatility_records_a_zero_change(self):
         sig = sg.build_for_day(state("2026-07-10", iv=12.0), history(30))[0]
