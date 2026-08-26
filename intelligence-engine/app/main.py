@@ -488,6 +488,8 @@ app.add_middleware(
     allow_headers=["Accept", "Content-Type"],
 )
 app.include_router(router)
+from app.founder_portfolio.router import router as founder_portfolio_router
+app.include_router(founder_portfolio_router)
 
 # Keep lightweight liveness endpoints on the main event loop. The remaining
 # legacy API surface is offloaded because its async handlers frequently invoke
