@@ -10710,6 +10710,36 @@ async def warehouse_company_names_repair(payload: dict[str, Any] = Body(default_
     return await run_in_threadpool(company_names.repair, dry_run=not apply)
 
 
+@router.post("/options-lab/nse-history/backfill", dependencies=[Depends(require_token)])
+async def options_lab_nse_history_backfill(payload: dict[str, Any] = Body(default_factory=dict)):
+    """Walk a range of trading days into the warehouse, a chunk at a time.
+
+    Bounded on purpose. Six months of fetching outlives the request, so a call
+    does max_days and returns resume_from; calling again with the same range
+    continues, because days already holding rows are skipped. The table is the
+    only state, so a half-finished run is just a shorter next run.
+
+    Dry by default, like the single-day ingest.
+    """
+    from options_lab import nse_history
+
+    body = payload or {}
+    start, end = str(body.get("start") or "").strip(), str(body.get("end") or "").strip()
+    if not start or not end:
+        raise HTTPException(status_code=400,
+                            detail="start and end are required, as YYYY-MM-DD")
+    raw = body.get("underlyings")
+    underlyings = {str(u).strip().upper() for u in raw if str(u).strip()} if raw else None
+    try:
+        max_days = max(1, min(60, int(body.get("max_days") or nse_history.DEFAULT_MAX_DAYS)))
+    except (TypeError, ValueError):
+        raise HTTPException(status_code=400, detail="max_days must be a number")
+    return await run_in_threadpool(
+        nse_history.backfill, start, end,
+        underlyings=underlyings, dry_run=not bool(body.get("apply")),
+        max_days=max_days)
+
+
 @router.post("/options-lab/nse-history/ingest", dependencies=[Depends(require_token)])
 async def options_lab_nse_history_ingest(payload: dict[str, Any] = Body(default_factory=dict)):
     """Pull one NSE trading day into the canonical warehouse.

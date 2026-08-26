@@ -427,3 +427,125 @@ def ingest_day(day: date | str, *, underlyings: Optional[set[str]] = None,
                 "error": str(exc)[:300]}
     return {"ok": True, "stage": "complete", "file_rows": len(rows),
             "derived": len(records), "iv_quality": quality, "write": written}
+
+
+# NSE serves these from an archive, not an API, and a tight loop over a hundred
+# files gets throttled. Slow enough to be a good citizen, fast enough that a
+# chunk finishes inside one request.
+PAUSE_SECONDS = 2.0
+
+# A backfill of six months takes roughly twenty minutes of fetching, which is
+# longer than the engine will hold a request open. So a call does a bounded
+# chunk and says where it stopped; calling again continues from there, because
+# days already stored are skipped.
+DEFAULT_MAX_DAYS = 10
+
+
+def trading_days(start: date | str, end: date | str) -> list[date]:
+    """Weekdays between two dates, inclusive.
+
+    Holidays are not known here and are not guessed: NSE simply has no file for
+    one, which the fetch reports as a 404 and the backfill records as a holiday.
+    Guessing a calendar would be one more thing to keep correct.
+    """
+    start = start if isinstance(start, date) else date.fromisoformat(str(start)[:10])
+    end = end if isinstance(end, date) else date.fromisoformat(str(end)[:10])
+    out, day = [], start
+    while day <= end:
+        if day.weekday() < 5:
+            out.append(day)
+        day = date.fromordinal(day.toordinal() + 1)
+    return out
+
+
+def backfill(start: date | str, end: date | str, *,
+             underlyings: Optional[set[str]] = None,
+             dry_run: bool = True,
+             max_days: int = DEFAULT_MAX_DAYS,
+             pause_seconds: float = PAUSE_SECONDS,
+             skip_existing: bool = True) -> dict[str, Any]:
+    """Walk trading days into the warehouse, a chunk at a time.
+
+    Resumable by construction rather than by bookkeeping: a day already holding
+    rows is skipped, so the only state the next call needs is what the table
+    already contains. Nothing to corrupt, and a half-finished run is just a
+    shorter next run.
+
+    One bad day does not stop the walk. A holiday has no file, and a single
+    malformed day should not strand the ninety after it -- both are recorded
+    and the loop continues.
+    """
+    import time
+
+    from . import canonical_store
+
+    days = trading_days(start, end)
+    done: list[dict[str, Any]] = []
+    skipped: list[str] = []
+    holidays: list[str] = []
+    failed: list[dict[str, str]] = []
+    written_total = 0
+    stopped_before: Optional[str] = None
+
+    for index, day in enumerate(days):
+        if len(done) >= max_days:
+            stopped_before = day.isoformat()
+            break
+
+        iso = day.isoformat()
+        if skip_existing and not dry_run:
+            try:
+                if canonical_store.stored_for_day(
+                        day, next(iter(underlyings)) if underlyings and
+                        len(underlyings) == 1 else None) > 0:
+                    skipped.append(iso)
+                    continue
+            except canonical_store.CanonicalStoreError as exc:
+                failed.append({"day": iso, "stage": "check", "error": str(exc)[:160]})
+                continue
+
+        if done or failed:
+            time.sleep(pause_seconds)
+
+        try:
+            rows = fetch_bhavcopy(day)
+        except NseHistoryError as exc:
+            # No file is the normal shape of a holiday, not a failure.
+            if "no bhavcopy" in str(exc):
+                holidays.append(iso)
+            else:
+                failed.append({"day": iso, "stage": "fetch", "error": str(exc)[:160]})
+            continue
+
+        records = option_records(rows, underlyings=underlyings, with_greeks=False)
+        if not records:
+            failed.append({"day": iso, "stage": "derive",
+                           "error": "no traded options derived"})
+            continue
+
+        try:
+            result = canonical_store.upsert(records, dry_run=dry_run)
+        except canonical_store.CanonicalStoreError as exc:
+            failed.append({"day": iso, "stage": "write", "error": str(exc)[:160]})
+            continue
+
+        written = int(result.get("written") or 0)
+        written_total += written
+        done.append({"day": iso, "derived": len(records), "written": written})
+
+    remaining = [d.isoformat() for d in days
+                 if stopped_before and d.isoformat() >= stopped_before]
+    return {
+        "ok": not failed,
+        "requested": {"start": str(start)[:10], "end": str(end)[:10],
+                      "trading_days": len(days)},
+        "ingested": done,
+        "written_total": written_total,
+        "skipped_already_present": skipped,
+        "holidays": holidays,
+        "failed": failed,
+        "dry_run": dry_run,
+        # What to pass next time. Present only when the chunk limit stopped it.
+        "resume_from": stopped_before,
+        "remaining_days": len(remaining),
+    }
