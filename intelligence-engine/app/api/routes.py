@@ -10710,6 +10710,21 @@ async def warehouse_company_names_repair(payload: dict[str, Any] = Body(default_
     return await run_in_threadpool(company_names.repair, dry_run=not apply)
 
 
+@router.get("/options-lab/expired-history/probe")
+async def options_lab_expired_history_probe(instrument_key: str | None = Query(default=None)):
+    """Whether this account can read expired instruments, and how far back.
+
+    Unauthenticated because it is read-only, returns no market data beyond one
+    sample candle, and exists to answer a capability question before anyone
+    plans a backfill on it. The endpoints behind it are an Upstox paid tier, so
+    "can we" is a real question with a real answer rather than an assumption.
+    """
+    from options_lab import expired_history
+
+    key = (instrument_key or expired_history.NIFTY_KEY).strip()
+    return await run_in_threadpool(expired_history.probe, key)
+
+
 @router.get("/warehouse/company-names/audit")
 async def warehouse_company_names_audit():
     """How many master rows carry their ticker instead of a name."""
