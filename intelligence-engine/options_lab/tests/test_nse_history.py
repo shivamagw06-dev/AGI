@@ -158,3 +158,103 @@ class YearFraction(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class ForwardHierarchy(unittest.TestCase):
+    def test_a_traded_future_outranks_parity(self):
+        # Someone paid for the future. Parity is an inference; where the market
+        # has stated its forward outright, nothing should be inferred.
+        rows = chain_at(24287.0, 0.15, [24200, 24300, 24400]) + [future(24286.0)]
+        fwd = nh.forward_for_expiry(rows)
+        self.assertEqual(fwd.source, "future")
+        self.assertEqual(fwd.value, 24286.0)
+        self.assertEqual(fwd.quality, "high")
+
+    def test_an_untraded_future_does_not_outrank_parity(self):
+        # A settlement mark is not someone's price.
+        stale = future(29999.0)
+        stale["TtlTradgVol"] = "0"
+        fwd = nh.forward_for_expiry(chain_at(24287.0, 0.15, [24200, 24300]) + [stale])
+        self.assertEqual(fwd.source, "parity")
+
+    def test_parity_uses_several_pairs_and_reports_how_many(self):
+        rows = chain_at(24287.0, 0.15, [23900, 24100, 24200, 24300, 24400, 24600])
+        fwd = nh.forward_for_expiry(rows)
+        self.assertEqual(fwd.source, "parity")
+        self.assertGreaterEqual(fwd.pair_count, 5)
+        self.assertEqual(fwd.quality, "high")
+        self.assertLess(fwd.dispersion_bp, nh.MAX_DISPERSION_HIGH_BP)
+
+    def test_a_single_pair_is_never_high_quality(self):
+        # It cannot disagree with anything, which is when it is most dangerous.
+        fwd = nh.forward_for_expiry(chain_at(24287.0, 0.15, [24300]))
+        self.assertEqual(fwd.pair_count, 1)
+        self.assertEqual(fwd.quality, "low")
+
+    def test_pairs_that_disagree_are_not_reported_as_agreeing(self):
+        rows = chain_at(24287.0, 0.15, [24200, 24300, 24400])
+        for r in rows:                       # mismark one leg badly
+            if r["OptnTp"] == "PE" and float(r["StrkPric"]) == 24200:
+                r["ClsPric"] = str(float(r["ClsPric"]) + 400.0)
+        fwd = nh.forward_for_expiry(rows)
+        self.assertGreater(fwd.dispersion_bp, nh.MAX_DISPERSION_HIGH_BP)
+        self.assertIn(fwd.quality, ("medium", "low"))
+
+    def test_the_median_survives_one_bad_pair(self):
+        # The reason for a median rather than the single nearest strike.
+        clean = nh.forward_for_expiry(
+            chain_at(24287.0, 0.15, [24100, 24200, 24300, 24400, 24500]))
+        rows = chain_at(24287.0, 0.15, [24100, 24200, 24300, 24400, 24500])
+        for r in rows:
+            if r["OptnTp"] == "CE" and float(r["StrkPric"]) == 24100:
+                r["ClsPric"] = str(float(r["ClsPric"]) + 500.0)
+        dirty = nh.forward_for_expiry(rows)
+        self.assertLess(abs(dirty.value - clean.value), 60.0)
+
+    def test_spot_fallback_is_marked_low(self):
+        fwd = nh.forward_for_expiry([option(24300, "CE", 70.0)])
+        self.assertEqual((fwd.source, fwd.quality), ("spot", "low"))
+
+
+class IvQualityGates(unittest.TestCase):
+    def _one(self, rows):
+        recs = nh.option_records(rows, underlyings={"NIFTY"})
+        return next(r for r in recs if r["strike"] == 24350)
+
+    def test_a_price_below_intrinsic_yields_no_volatility(self):
+        # A solver answers for these, at the floor. That number would look like
+        # data and drag every percentile it lands in.
+        rows = chain_at(24287.0, 0.15, [24200, 24300, 24400])
+        deep = option(24350, "PE", 1.0)      # far below its intrinsic value
+        rec = self._one(rows + [deep])
+        self.assertIsNone(rec["iv"])
+        self.assertEqual(rec["iv_quality"], "below_intrinsic")
+        self.assertEqual(rec["close"], 1.0)  # the observation survives
+
+    def test_an_absurd_price_is_refused_rather_than_clamped(self):
+        rows = chain_at(24287.0, 0.15, [24200, 24300, 24400])
+        silly = option(24350, "CE", 20000.0)
+        rec = self._one(rows + [silly])
+        self.assertIsNone(rec["iv"])
+        self.assertIn(rec["iv_quality"], ("implausible", "unsolved"))
+
+    def test_a_good_row_is_marked_ok_and_keeps_its_volatility(self):
+        rows = chain_at(24287.0, 0.18, [24100, 24200, 24300, 24400, 24500, 24350])
+        rec = self._one(rows)
+        self.assertAlmostEqual(rec["iv"], 18.0, delta=0.5)
+        self.assertEqual(rec["iv_quality"], "ok")
+
+    def test_a_volatility_solved_against_a_lone_pair_says_so(self):
+        # It solved, but nothing corroborates the forward it solved against.
+        rows = chain_at(24287.0, 0.18, [24350])
+        recs = nh.option_records(rows, underlyings={"NIFTY"})
+        self.assertTrue(recs)
+        self.assertEqual({r["iv_quality"] for r in recs}, {"weak_forward"})
+        self.assertTrue(all(r["iv"] for r in recs))
+
+    def test_quality_columns_travel_with_every_record(self):
+        rows = chain_at(24287.0, 0.15, [24200, 24300, 24400])
+        rec = nh.option_records(rows, underlyings={"NIFTY"})[0]
+        for key in ("iv_quality", "forward_quality", "forward_pair_count",
+                    "forward_dispersion_bp"):
+            self.assertIn(key, rec)
