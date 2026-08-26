@@ -13,8 +13,10 @@ import {
   sanitizeArticleSlug,
   siteUrlFromEnv,
 } from '../src/lib/articleShareMeta.js';
+import { loadHostingerEnv } from './loadHostingerEnv.js';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+loadHostingerEnv(root);
 const SELECT = 'title,slug,excerpt,cover_url,content,published_at';
 
 function readShell() {

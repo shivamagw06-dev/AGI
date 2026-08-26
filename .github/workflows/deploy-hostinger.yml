@@ -86,6 +86,10 @@ jobs:
 
       - name: Build production site for Hostinger root
         if: steps.prep.outputs.rebuild == 'true'
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_API_URL: ${{ secrets.VITE_API_URL }}
         run: npm run build:hostinger
 
       - name: Verify baked Supabase anon key in bundle
@@ -132,11 +136,13 @@ jobs:
       # a push that protection is designed to refuse.
       - name: Commit Hostinger root artifacts for Git sync
         if: steps.prep.outputs.rebuild == 'true'
+        continue-on-error: true
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add index.html .htaccess version.json og-article.php robots.txt agi-og-cover.png
-          git add -A assets article
+          git add index.html .htaccess version.json og-article.php robots.txt agi-og-cover.png || true
+          git add -A assets || true
+          if [ -d article ]; then git add -A article || true; fi
           if git diff --cached --quiet; then
             echo "No Hostinger root artifact changes to commit."
           elif git commit -m "chore: sync Hostinger production build [skip ci]" \
