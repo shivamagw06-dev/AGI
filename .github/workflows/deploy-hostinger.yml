@@ -135,8 +135,8 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add index.html .htaccess version.json
-          git add -A assets
+          git add index.html .htaccess version.json og-article.php robots.txt agi-og-cover.png
+          git add -A assets article
           if git diff --cached --quiet; then
             echo "No Hostinger root artifact changes to commit."
           elif git commit -m "chore: sync Hostinger production build [skip ci]" \
@@ -167,6 +167,14 @@ jobs:
           cp -R assets dist/assets
           cp .htaccess dist/.htaccess 2>/dev/null || true
           cp version.json dist/version.json
+          cp og-article.php dist/og-article.php 2>/dev/null || true
+          cp robots.txt dist/robots.txt 2>/dev/null || true
+          cp agi-og-cover.png dist/agi-og-cover.png 2>/dev/null || true
+          cp og-config.php dist/og-config.php 2>/dev/null || true
+          if [ -d article ]; then
+            rm -rf dist/article
+            cp -R article dist/article
+          fi
           # Drop accidental Hostinger dashboard captures from FTP payload
           rm -rf "dist/Dashboard _ Hostinger.html" "dist/Dashboard _ Hostinger_files" || true
           echo "FTP payload ready:"

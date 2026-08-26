@@ -16,6 +16,7 @@ import createIntelligenceCmsRouter from "./routes/intelligenceCms.js";
 import createIntelligencePlatformRouter from "./routes/intelligencePlatform.js";
 import createAuthRouter from "./routes/auth.js";
 import createNewsletterRouter from "./routes/newsletter.js";
+import createArticleShareRouter from "./routes/articleShare.js";
 import createResearchSignalsRouter from "./routes/researchSignals.js";
 import { getNewsHeadlines } from "./services/newsHeadlinesService.js";
 import { getIpoDetail, getIpoPlatform, getIpoSummary } from "./services/ipoService.js";
@@ -426,6 +427,7 @@ app.use('/api/intelligence/platform', createIntelligencePlatformRouter());
 app.use('/api/auth', createAuthRouter());
 const newsletterRouter = createNewsletterRouter();
 app.use('/api/newsletter', newsletterRouter);
+app.use('/api/public', createArticleShareRouter());
 // Legacy alias used by older CMS publish helpers
 app.post('/api/notify-subscribers', (req, res, next) => {
   req.url = '/notify-subscribers';
