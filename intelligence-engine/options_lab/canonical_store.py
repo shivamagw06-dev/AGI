@@ -242,3 +242,47 @@ def upsert_surfaces(surfaces: list[dict[str, Any]], *,
     summary["written"] = written
     summary["completed_at"] = datetime.now(timezone.utc).isoformat()
     return summary
+
+
+STATE_TABLE = "options_market_state_eod"
+
+
+def spot_history(upto: date | str, underlying: str = "NIFTY",
+                 *, days: int = 40) -> list[tuple[str, float]]:
+    """Closing spot for the trading days up to and including a date.
+
+    Reads only what precedes the day being described. A realised volatility
+    built from a window that reaches past it would be accurate and untradeable.
+    """
+    upto = upto if isinstance(upto, date) else date.fromisoformat(str(upto)[:10])
+    start = date.fromordinal(upto.toordinal() - days * 2)
+    query = (f"?observation_date=gte.{start.isoformat()}"
+             f"&observation_date=lte.{upto.isoformat()}"
+             f"&underlying_symbol=eq.{underlying}"
+             f"&select=observation_date,underlying_spot"
+             f"&order=observation_date.asc&limit=200000")
+    rows = _call("GET", f"/rest/v1/{TABLE}{query}") or []
+    seen: dict[str, float] = {}
+    for r in rows:
+        spot = r.get("underlying_spot")
+        if spot:
+            seen.setdefault(str(r["observation_date"]), float(spot))
+    return sorted(seen.items())[-days:]
+
+
+def surfaces_for_day(day: date | str, underlying: str = "NIFTY") -> list[dict[str, Any]]:
+    day = day if isinstance(day, date) else date.fromisoformat(str(day)[:10])
+    query = (f"?observation_date=eq.{day.isoformat()}"
+             f"&underlying_symbol=eq.{underlying}&limit=500")
+    return _call("GET", f"/rest/v1/{SURFACE_TABLE}{query}") or []
+
+
+def upsert_state(state: dict[str, Any], *, dry_run: bool = True) -> dict[str, Any]:
+    row = {**state, "source": "nse_bhavcopy", "pipeline_version": PIPELINE_VERSION}
+    if dry_run:
+        return {"ok": True, "rows": 1, "dry_run": True, "sample": row,
+                "note": "dry run: nothing written"}
+    _call("POST", f"/rest/v1/{STATE_TABLE}", body=[row],
+          prefer="resolution=merge-duplicates,return=minimal")
+    return {"ok": True, "rows": 1, "written": 1, "dry_run": False,
+            "completed_at": datetime.now(timezone.utc).isoformat()}

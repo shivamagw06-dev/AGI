@@ -10710,6 +10710,27 @@ async def warehouse_company_names_repair(payload: dict[str, Any] = Body(default_
     return await run_in_threadpool(company_names.repair, dry_run=not apply)
 
 
+@router.post("/options-lab/market-state/build", dependencies=[Depends(require_token)])
+async def options_lab_market_state_build(payload: dict[str, Any] = Body(default_factory=dict)):
+    """Describe one stored trading day: volatility, positioning, regime.
+
+    Built only from what was knowable at that close. The variance premium
+    against the volatility that followed is deliberately not here -- it is an
+    outcome, and a state row carrying it would let a study condition on the
+    future and report an edge nobody could have traded.
+    """
+    from options_lab import market_state
+
+    body = payload or {}
+    day = str(body.get("day") or "").strip()
+    if not day:
+        raise HTTPException(status_code=400, detail="day is required, as YYYY-MM-DD")
+    return await run_in_threadpool(
+        market_state.build_day, day,
+        underlying=str(body.get("underlying") or "NIFTY").strip().upper(),
+        dry_run=not bool(body.get("apply")))
+
+
 @router.post("/options-lab/surfaces/build", dependencies=[Depends(require_token)])
 async def options_lab_surfaces_build(payload: dict[str, Any] = Body(default_factory=dict)):
     """Fit and store the volatility surfaces for one stored trading day.
