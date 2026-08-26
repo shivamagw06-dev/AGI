@@ -22,6 +22,8 @@ import statistics
 from datetime import date
 from typing import Any, Optional
 
+from . import volatility
+
 STATE_VERSION = "state-1"
 
 # Positioning windows. Beyond about two months, open interest is hedging and
