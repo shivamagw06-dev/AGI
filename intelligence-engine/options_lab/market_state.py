@@ -282,7 +282,10 @@ def build_day(day, *, underlying: str = "NIFTY",
     from . import canonical_store
 
     try:
-        observations = canonical_store.observations_for_day(day, underlying)
+        # Every contract, not only the ones whose volatility solved. Open
+        # interest is real whether or not a smile could be fitted to it.
+        observations = canonical_store.observations_for_day(
+            day, underlying, usable_iv_only=False)
         surfaces = canonical_store.surfaces_for_day(day, underlying)
         history = canonical_store.spot_history(day, underlying)
     except canonical_store.CanonicalStoreError as exc:

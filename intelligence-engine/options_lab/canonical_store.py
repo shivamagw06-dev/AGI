@@ -202,7 +202,8 @@ SURFACE_TABLE = "option_surface_eod"
 
 
 def observations_for_day(day: date | str, underlying: Optional[str] = None,
-                         *, limit: int = 60000) -> list[dict[str, Any]]:
+                         *, limit: int = 60000,
+                         usable_iv_only: bool = True) -> list[dict[str, Any]]:
     """Read back a day's canonical rows, for the research layer to build on.
 
     Only the columns a surface needs. Pulling the whole row would move several
@@ -210,9 +211,19 @@ def observations_for_day(day: date | str, underlying: Optional[str] = None,
     """
     day = day if isinstance(day, date) else date.fromisoformat(str(day)[:10])
     cols = ("observation_date,underlying_symbol,expiry,strike,option_type,"
-            "dte_days,implied_volatility,iv_quality,forward,forward_quality")
-    query = (f"?observation_date=eq.{day.isoformat()}&select={cols}"
-             f"&iv_quality=eq.ok&limit={limit}")
+            "dte_days,implied_volatility,iv_quality,forward,forward_quality,"
+            # Positioning and the spot series read these. Leaving them out of
+            # the select does not fail: the rows arrive, the keys are simply
+            # absent, and every number built from them is null. That is how
+            # spot stayed empty on fifty-nine days while nothing errored.
+            "underlying_spot,volume,open_interest,change_open_interest")
+    query = f"?observation_date=eq.{day.isoformat()}&select={cols}&limit={limit}"
+    if usable_iv_only:
+        # Right for fitting a smile, wrong for counting open interest: a
+        # contract whose volatility could not be solved still carries a real
+        # position, and dropping it biases every put-call ratio and max pain
+        # toward the strikes that happened to price cleanly.
+        query += "&iv_quality=eq.ok"
     if underlying:
         query += f"&underlying_symbol=eq.{underlying}"
     return _call("GET", f"/rest/v1/{TABLE}{query}") or []

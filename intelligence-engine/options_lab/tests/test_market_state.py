@@ -135,3 +135,46 @@ class Build(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class SelectCoversWhatIsRead(unittest.TestCase):
+    """The bug that left spot null on fifty-nine days without erroring.
+
+    build() read o["underlying_spot"], and the query that fetches those rows
+    never selected it. PostgREST does not object to a column you did not ask
+    for -- the rows arrive, the key is absent, .get returns None, and every
+    number built from it is null. Nothing fails, so nothing tells you.
+    """
+
+    def _selected(self) -> set:
+        import re
+        from pathlib import Path
+        src = Path(__file__).resolve().parents[1].joinpath("canonical_store.py").read_text()
+        block = src[src.index("def observations_for_day"):src.index("def upsert_surfaces")]
+        cols = re.findall(r'"([a-z_,]+)"', block[block.index("cols = ("):block.index("query =")])
+        return {c for chunk in cols for c in chunk.split(",") if c}
+
+    def test_every_column_market_state_reads_is_selected(self):
+        import re
+        from pathlib import Path
+        src = Path(__file__).resolve().parents[1].joinpath("market_state.py").read_text()
+        read = set(re.findall(r'\.get\("([a-z_]+)"', src))
+        read |= set(re.findall(r'row\["([a-z_]+)"\]', src))
+        read |= set(re.findall(r'total\([a-z]+, "([a-z_]+)"\)', src))
+        read |= set(re.findall(r'o\["([a-z_]+)"\]', src))
+        # only the columns that come from an observation row
+        from_observation = read & {
+            "observation_date", "underlying_symbol", "expiry", "strike",
+            "option_type", "dte_days", "implied_volatility", "iv_quality",
+            "forward", "forward_quality", "underlying_spot", "volume",
+            "open_interest", "change_open_interest"}
+        missing = from_observation - self._selected()
+        self.assertEqual(missing, set(),
+                         f"market_state reads {sorted(missing)} but the query does "
+                         f"not select them; they will silently be None")
+
+    def test_spot_and_the_positioning_columns_are_selected(self):
+        # Named explicitly so a future trim of the select fails here loudly.
+        for column in ("underlying_spot", "open_interest", "volume",
+                       "change_open_interest"):
+            self.assertIn(column, self._selected())
