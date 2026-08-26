@@ -30,14 +30,24 @@ NEAR_DTE = 45
 # Enough of a chain to say anything about concentration or max pain.
 MIN_CONTRACTS = 40
 MIN_CONTRACTS_HIGH = 200
-# Realised volatility needs a window; a 20-day number from six closes is a
-# different statistic wearing the same name.
+# Realised volatility needs its window filled. A twenty-day number computed
+# from three returns is a three-day number wearing a twenty-day label, and it
+# reads about half the true level: the first week of the warehouse produced
+# 4.65 and 4.95 where every later day sat between 8.9 and 13.5, which inflated
+# the implied-minus-realised spread from +0.22 to +1.20 across the series.
+#
+# So a window must be full, not merely non-empty. Short of that the column is
+# null, which is the honest answer for a statistic that cannot yet be measured.
 RV_WINDOWS = (5, 20)
+# A little tolerance for the odd missing close, but not enough to change what
+# the number means.
+RV_MIN_FILL = 0.9
 TRADING_DAYS = 252
 
 
-def _annualised(returns: list[float]) -> Optional[float]:
-    if len(returns) < 3:
+def _annualised(returns: list[float], window: int) -> Optional[float]:
+    """Annualised volatility, or nothing if the window is not filled."""
+    if len(returns) < max(3, int(window * RV_MIN_FILL)):
         return None
     return statistics.pstdev(returns) * math.sqrt(TRADING_DAYS) * 100.0
 
@@ -51,7 +61,8 @@ def realised_vols(closes: list[tuple[str, float]]) -> dict[str, Optional[float]]
     rets = [math.log(series[i] / series[i - 1]) for i in range(1, len(series))]
     out: dict[str, Optional[float]] = {}
     for window in RV_WINDOWS:
-        out[f"realised_vol_{window}d"] = _annualised(rets[-window:]) if rets else None
+        out[f"realised_vol_{window}d"] = (
+            _annualised(rets[-window:], window) if rets else None)
     out["return_1d_pct"] = round(rets[-1] * 100.0, 4) if rets else None
     return out
 
