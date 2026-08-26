@@ -5,9 +5,10 @@
   "private": true,
   "scripts": {
     "test:auth": "node --test src/lib/authValidation.test.js server/routes/auth.test.js",
+    "test:share": "node --test src/lib/articleShareMeta.test.js",
     "dev": "node scripts/write-build-version.js && cp index.vite.html index.html && vite --host :: --port 3000",
     "build": "node scripts/write-build-version.js && cp index.vite.html index.html && vite build",
-    "build:hostinger": "node scripts/write-build-version.js && cp index.vite.html index.html && vite build && cp dist/index.html index.html && rm -rf assets && cp -R dist/assets assets && cp dist/.htaccess .htaccess && cp dist/version.json version.json",
+    "build:hostinger": "node scripts/write-build-version.js && cp index.vite.html index.html && vite build && cp dist/index.html index.html && rm -rf assets && cp -R dist/assets assets && cp dist/.htaccess .htaccess && cp dist/version.json version.json && cp dist/og-article.php og-article.php && cp dist/robots.txt robots.txt && cp dist/agi-og-cover.png agi-og-cover.png && node scripts/write-og-config.js && node scripts/prerender-article-og.js",
     "preview": "vite preview --host :: --port 3000",
     "worker:cms-ingest": "CMS_INGEST_IS_WORKER=1 node server/workers/cmsIngestWorker.js"
   },

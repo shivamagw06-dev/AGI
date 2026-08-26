@@ -1,13 +1,26 @@
 <IfModule mod_rewrite.c>
   RewriteEngine On
   RewriteBase /
+
+  RewriteCond %{HTTP_HOST} ^www\.agarwalglobalinvestments\.com$ [NC]
+  RewriteRule ^ https://agarwalglobalinvestments.com%{REQUEST_URI} [R=301,L]
+
+  # Serve prerendered article shells when present (cover photo for LinkedIn/X/WhatsApp).
+  RewriteCond %{DOCUMENT_ROOT}/article/$1/index.html -f
+  RewriteRule ^article/([^/]+)/?$ /article/$1/index.html [L]
+
+  # Otherwise inject OG tags for social crawlers that do not run JavaScript.
+  RewriteCond %{DOCUMENT_ROOT}/og-article.php -f
+  RewriteCond %{HTTP_USER_AGENT} (facebookexternalhit|Facebot|LinkedInBot|Twitterbot|WhatsApp|Slackbot|TelegramBot|Discordbot|Pinterest|redditbot|Applebot|Googlebot|bingbot|Embedly|Iframely|SkypeUriPreview|W3C_Validator)
+  RewriteRule ^article/([^/]+)/?$ /og-article.php?slug=$1 [L,QSA]
+
   RewriteCond %{REQUEST_FILENAME} !-f
   RewriteCond %{REQUEST_FILENAME} !-d
   RewriteRule ^ index.html [L]
 </IfModule>
 
 <IfModule mod_headers.c>
-  Header set X-Powered-By "Hostinger Horizons"
+    Header set X-Powered-By "Hostinger Horizons"
 
   # Default: CDN may cache; browsers revalidate HTML shell
   Header set Cache-Control "public, s-maxage=60, max-age=0, must-revalidate"

@@ -20,3 +20,4 @@ artifacts/*.json
 artifacts/*.log
 artifacts/*.md
 .env.production
+og-config.php
