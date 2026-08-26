@@ -2,8 +2,10 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { loadHostingerEnv } from './loadHostingerEnv.js';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+loadHostingerEnv(root);
 const supabaseUrl = String(process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '')
   .trim()
   .replace(/\/$/, '');
