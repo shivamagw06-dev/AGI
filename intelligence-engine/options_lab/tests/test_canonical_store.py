@@ -122,3 +122,46 @@ class Credentials(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class PartitionRefusal(unittest.TestCase):
+    def test_a_refused_partition_call_does_not_abandon_the_write(self):
+        # Partitions are pre-created by migration, so the helper usually has
+        # nothing to do. Failing 828 good rows because it was not allowed to do
+        # nothing is the wrong trade.
+        calls = []
+
+        def fake(method, path, **kw):
+            calls.append(path)
+            if "rpc/ensure_option_eod_partition" in path:
+                raise cs.CanonicalStoreError(
+                    "failed (403): 42501 permission denied for schema public")
+            return None
+
+        with mock.patch.object(cs, "_call", side_effect=fake):
+            out = cs.upsert([RECORD], dry_run=False)
+
+        self.assertEqual(out["written"], 1)
+        self.assertTrue(any(cs.TABLE in c and "rpc" not in c for c in calls),
+                        "the rows must still be posted")
+
+    def test_the_refusal_is_reported_rather_than_hidden(self):
+        # Swallowing it silently would leave a real missing-partition problem
+        # looking like a clean run.
+        with mock.patch.object(cs, "_call",
+                               side_effect=cs.CanonicalStoreError("403 denied")):
+            note = cs.ensure_partition("2026-08-21")
+        self.assertIn("unavailable", note)
+
+    def test_a_genuinely_missing_partition_still_fails_the_write(self):
+        # The insert is the honest place for that error to surface.
+        def fake(method, path, **kw):
+            if "rpc/" in path:
+                raise cs.CanonicalStoreError("403 denied")
+            raise cs.CanonicalStoreError(
+                'no partition of relation "option_eod_observation" found')
+
+        with mock.patch.object(cs, "_call", side_effect=fake):
+            with self.assertRaises(cs.CanonicalStoreError) as caught:
+                cs.upsert([RECORD], dry_run=False)
+        self.assertIn("no partition", str(caught.exception))
