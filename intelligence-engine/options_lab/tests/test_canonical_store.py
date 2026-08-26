@@ -165,3 +165,62 @@ class PartitionRefusal(unittest.TestCase):
             with self.assertRaises(cs.CanonicalStoreError) as caught:
                 cs.upsert([RECORD], dry_run=False)
         self.assertIn("no partition", str(caught.exception))
+
+
+class SpotHistory(unittest.TestCase):
+    """The row cap that made every realised volatility null."""
+
+    def test_it_reads_one_row_per_day_not_one_per_contract(self):
+        # Asking the observations for forty days of spot is ~50,000 rows to
+        # extract forty numbers, and PostgREST caps the answer silently.
+        seen = []
+
+        def fake(method, path, **kw):
+            seen.append(path)
+            if cs.STATE_TABLE in path:
+                return [{"observation_date": f"2026-08-{d:02d}", "spot": 24000.0 + d}
+                        for d in range(1, 21)]
+            return [{"underlying_spot": 24252.0}]
+
+        with mock.patch.object(cs, "_call", side_effect=fake):
+            out = cs.spot_history("2026-08-21", "NIFTY")
+        self.assertEqual(len(out), 21)
+        state_calls = [p for p in seen if cs.STATE_TABLE in p]
+        self.assertEqual(len(state_calls), 1, "one call, not one per day")
+        # the observations are asked only for the day being described
+        obs_calls = [p for p in seen if cs.TABLE in p and cs.STATE_TABLE not in p]
+        self.assertTrue(all("limit=1" in p for p in obs_calls))
+
+    def test_the_day_itself_is_included_even_before_it_has_a_state_row(self):
+        def fake(method, path, **kw):
+            if cs.STATE_TABLE in path:
+                return [{"observation_date": "2026-08-20", "spot": 24232.0}]
+            return [{"underlying_spot": 24252.0}]
+
+        with mock.patch.object(cs, "_call", side_effect=fake):
+            out = cs.spot_history("2026-08-21", "NIFTY")
+        self.assertEqual(out[-1], ("2026-08-21", 24252.0))
+
+    def test_a_missing_state_table_does_not_break_the_first_build(self):
+        def fake(method, path, **kw):
+            if cs.STATE_TABLE in path:
+                raise cs.CanonicalStoreError("404 relation does not exist")
+            return [{"underlying_spot": 24252.0}]
+
+        with mock.patch.object(cs, "_call", side_effect=fake):
+            out = cs.spot_history("2026-08-21", "NIFTY")
+        self.assertEqual(out, [("2026-08-21", 24252.0)])
+
+    def test_it_never_reaches_past_the_day_being_described(self):
+        # A realised volatility built from a window reaching forward would be
+        # accurate and untradeable.
+        seen = {}
+
+        def fake(method, path, **kw):
+            seen[path] = True
+            return []
+
+        with mock.patch.object(cs, "_call", side_effect=fake):
+            cs.spot_history("2026-08-21", "NIFTY")
+        state = [p for p in seen if cs.STATE_TABLE in p][0]
+        self.assertIn("observation_date=lte.2026-08-21", state)
