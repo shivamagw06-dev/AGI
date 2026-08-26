@@ -196,3 +196,49 @@ def stored_for_day(day: date | str, underlying: Optional[str] = None) -> int:
                        prefer="count=exact", want_headers=True)
     total = str(headers.get("Content-Range") or "").rsplit("/", 1)[-1]
     return int(total) if total.isdigit() else 0
+
+
+SURFACE_TABLE = "option_surface_eod"
+
+
+def observations_for_day(day: date | str, underlying: Optional[str] = None,
+                         *, limit: int = 60000) -> list[dict[str, Any]]:
+    """Read back a day's canonical rows, for the research layer to build on.
+
+    Only the columns a surface needs. Pulling the whole row would move several
+    megabytes to compute a dozen numbers from it.
+    """
+    day = day if isinstance(day, date) else date.fromisoformat(str(day)[:10])
+    cols = ("observation_date,underlying_symbol,expiry,strike,option_type,"
+            "dte_days,implied_volatility,iv_quality,forward,forward_quality")
+    query = (f"?observation_date=eq.{day.isoformat()}&select={cols}"
+             f"&iv_quality=eq.ok&limit={limit}")
+    if underlying:
+        query += f"&underlying_symbol=eq.{underlying}"
+    return _call("GET", f"/rest/v1/{TABLE}{query}") or []
+
+
+def upsert_surfaces(surfaces: list[dict[str, Any]], *,
+                    dry_run: bool = True) -> dict[str, Any]:
+    """Write fitted surfaces, replacing any already stored for the same day."""
+    if not surfaces:
+        return {"ok": True, "rows": 0, "written": 0, "dry_run": dry_run,
+                "note": "nothing to write"}
+    rows = [{**s, "source": "nse_bhavcopy",
+             "pipeline_version": PIPELINE_VERSION,
+             "pricing_version": PRICING_VERSION} for s in surfaces]
+    summary = {"ok": True, "rows": len(rows), "dry_run": dry_run,
+               "surface_version": rows[0].get("surface_version")}
+    if dry_run:
+        summary["sample"] = rows[0]
+        summary["note"] = "dry run: nothing written"
+        return summary
+    written = 0
+    for start in range(0, len(rows), BATCH):
+        chunk = rows[start:start + BATCH]
+        _call("POST", f"/rest/v1/{SURFACE_TABLE}", body=chunk,
+              prefer="resolution=merge-duplicates,return=minimal")
+        written += len(chunk)
+    summary["written"] = written
+    summary["completed_at"] = datetime.now(timezone.utc).isoformat()
+    return summary
