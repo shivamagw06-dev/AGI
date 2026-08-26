@@ -40,6 +40,7 @@ import {
   hflStaticStrategy,
 } from '../services/hflStaticLibrary.js';
 import { getHflTerminalFromReadModel } from '../services/hflTerminalSnapshot.js';
+import { overlayHflLivePrices } from '../services/hflLivePriceOverlay.js';
 import { getValuationCompanyPackFromReadModel } from '../services/valuationCompanyPackSnapshot.js';
 import { requireStrategyLabAdmin } from '../services/strategyLabAdminAuth.js';
 import { enrichStrategyLabWithLiveMarket } from '../services/strategyLabLiveMarket.js';
@@ -176,6 +177,13 @@ function writeHflTerminalCache(key, data) {
   if (data && typeof data === 'object') hflTerminalCache.set(key, { data, at: Date.now() });
 }
 
+async function sendHflTerminal(res, data, cacheHeader) {
+  const body = await overlayHflLivePrices(data);
+  if (cacheHeader) res.set('X-AGI-Hedge-Fund-Cache', cacheHeader);
+  res.set('X-AGI-Hedge-Fund-Freshness', body?.freshness || data?.freshness || 'unknown');
+  return res.status(200).json(body);
+}
+
 const MI_DASHBOARD_FRESH_MS = 5 * 60_000;
 const MI_DASHBOARD_STALE_MS = 60 * 60_000;
 let miDashboardCache = null;
@@ -225,6 +233,7 @@ async function companyMatches(query, limit = 8) {
 
 export default function createIntelligenceRouter() {
   const router = Router();
+  router.use('/ask', requireStrategyLabAdmin);
   router.get('/learning/status', async (_req, res) => res.json(intelligenceLearningStatus()));
 
   // Soft daily CMS → KIP/KF/KC learner (IST learning_date calendar)
@@ -258,6 +267,18 @@ export default function createIntelligenceRouter() {
   router.get(
     '/company/statements/:symbol',
     proxyGet((req) => `/v1/company/statements/${encodeURIComponent(req.params.symbol)}`),
+  );
+
+  router.get(
+    '/us-stock-intelligence/market-overview',
+    proxyGet('/v1/us-stock-intelligence/market-overview'),
+  );
+  router.get(
+    '/us-stock-intelligence/analyse',
+    proxyGet((req) => {
+      const symbol = String(req.query.symbol || 'AAPL').trim() || 'AAPL';
+      return `/v1/us-stock-intelligence/analyse?symbol=${encodeURIComponent(symbol)}`;
+    }),
   );
 
   router.get('/company/resolve', async (req, res) => {
@@ -2305,6 +2326,111 @@ export default function createIntelligenceRouter() {
   });
 
   // Valuation Intelligence — Institutional Consensus Dashboard (Capital IQ)
+  // ---- Valuation pivot repair (admin) ----
+  //
+  // The engine route is token-guarded because it writes to a production
+  // table, which leaves it callable only by something holding the token.
+  // This process does; the cron and the browser do not.
+  router.post('/valuation-ratios/pivot-historical', async (req, res) => {
+    try {
+      const result = await engineFetch('/v1/valuation-ratios/pivot-historical', {
+        method: 'POST',
+        body: { date: req.body?.date, actor: req.body?.actor || 'admin_pivot' },
+        // A day is ~12,400 ratio rows through DQIV validation.
+        timeoutMs: 300_000,
+      });
+      return res.status(result.status).json(result.data);
+    } catch (error) {
+      return res.status(503).json({ ok: false, error: 'engine_unavailable',
+                                    detail: error.message });
+    }
+  });
+
+  // ---- Insider trades paste (admin) ----
+  //
+  // Same reason as the workbook below: the engine routes are token-guarded and
+  // the token belongs in this process, not in the browser bundle.
+  router.post('/insider-trades/preview', async (req, res) => {
+    try {
+      const result = await engineFetch('/v1/warehouse/import/insider-trades/preview', {
+        method: 'POST',
+        body: { text: String(req.body?.text || '') },
+      });
+      return res.status(result.status).json(result.data);
+    } catch (error) {
+      return res.status(503).json({ ok: false, error: 'engine_unavailable',
+                                    detail: error.message });
+    }
+  });
+
+  router.post('/insider-trades/paste', async (req, res) => {
+    try {
+      const result = await engineFetch('/v1/warehouse/import/insider-trades/paste', {
+        method: 'POST',
+        body: { text: String(req.body?.text || ''), actor: 'admin_paste' },
+        // A large paste is thousands of rows through DQIV validation.
+        timeoutMs: 180_000,
+      });
+      return res.status(result.status).json(result.data);
+    } catch (error) {
+      return res.status(503).json({ ok: false, error: 'engine_unavailable',
+                                    detail: error.message });
+    }
+  });
+
+  // ---- Valuation ratios workbook (admin) ----
+  //
+  // The engine's workbook route is token-guarded. The token lives in this
+  // process's environment and must stay there: putting it in the bundle would
+  // hand every visitor an admin credential, so the browser asks this proxy and
+  // the proxy adds the header.
+  router.get(
+    '/valuation-ratios/workbook/summary',
+    proxyGet((req) => `/v1/valuation-ratios/workbook/summary?days=${encodeURIComponent(req.query.days || 120)}`)
+  );
+
+  router.get('/valuation-ratios/workbook', async (req, res) => {
+    // Not proxyGet: that parses JSON, and this is a spreadsheet. The body is
+    // read as bytes and passed through unchanged.
+    const { baseUrl, token } = engineConfig();
+    const days = encodeURIComponent(req.query.days || 120);
+    try {
+      const upstream = await fetch(`${baseUrl}/v1/valuation-ratios/workbook?days=${days}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'X-AGI-Intelligence-Token': token,
+        },
+        // A full universe by a year of dates takes real time to build, and a
+        // download that dies at thirty seconds is worse than one that waits.
+        signal: AbortSignal.timeout(240_000),
+      });
+      if (!upstream.ok) {
+        const detail = await upstream.text().catch(() => '');
+        return res
+          .status(upstream.status)
+          .json({ ok: false, error: 'workbook_unavailable', detail: detail.slice(0, 400) });
+      }
+      const buffer = Buffer.from(await upstream.arrayBuffer());
+      const name = upstream.headers.get('content-disposition');
+      res.setHeader(
+        'Content-Type',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+      );
+      res.setHeader('Content-Disposition', name || 'attachment; filename="valuation_ratios.xlsx"');
+      // Echoed so the page can show what it just downloaded without opening it.
+      for (const header of ['x-agi-companies', 'x-agi-dates', 'x-agi-latest-date', 'x-agi-values']) {
+        const value = upstream.headers.get(header);
+        if (value) res.setHeader(header, value);
+      }
+      res.setHeader('Cache-Control', 'no-store');
+      return res.status(200).send(buffer);
+    } catch (error) {
+      return res
+        .status(503)
+        .json({ ok: false, error: 'engine_unavailable', detail: String(error?.message || error) });
+    }
+  });
+
   router.get('/valuation-consensus/health', kfGet('/v1/valuation-consensus/health'));
   router.get('/valuation-consensus/analytics', kfGet('/v1/valuation-consensus/analytics'));
   router.get('/valuation-consensus/rows', kfGet('/v1/valuation-consensus/rows'));
@@ -2391,9 +2517,29 @@ export default function createIntelligenceRouter() {
 
   // Hedge Fund Strategy Lab — cold-start heavy; timeouts must exceed client AbortSignal.
   router.get('/hedge-fund-lab/corporate-action-audit', kfGet('/v1/hedge-fund-lab/corporate-action-audit'));
-  router.get('/hedge-fund-lab/live-strategies', kfGet('/v1/hedge-fund-lab/live-strategies'));
-  router.get('/hedge-fund-lab/live-strategies/:id', (req, res, next) =>
-    kfGet(`/v1/hedge-fund-lab/live-strategies/${encode(req.params.id)}`)(req, res, next));
+  router.get('/hedge-fund-lab/live-strategies', async (req, res) => {
+    try {
+      const qs = new URLSearchParams(req.query || {}).toString();
+      const r = await engineFetch(`/v1/hedge-fund-lab/live-strategies${qs ? `?${qs}` : ''}`, { timeoutMs: 45_000 });
+      const data = r.ok ? await overlayHflLivePrices(r.data) : r.data;
+      return res.status(r.status).json(data);
+    } catch (err) {
+      res.status(504).json({ error: err.message || 'hedge-fund-lab live-strategies failed', timeout: true });
+    }
+  });
+  router.get('/hedge-fund-lab/live-strategies/:id', async (req, res) => {
+    try {
+      const qs = new URLSearchParams(req.query || {}).toString();
+      const r = await engineFetch(
+        `/v1/hedge-fund-lab/live-strategies/${encodeURIComponent(req.params.id)}${qs ? `?${qs}` : ''}`,
+        { timeoutMs: 45_000 },
+      );
+      const data = r.ok ? await overlayHflLivePrices(r.data) : r.data;
+      return res.status(r.status).json(data);
+    } catch (err) {
+      res.status(504).json({ error: err.message || 'hedge-fund-lab live-strategy failed', timeout: true });
+    }
+  });
   router.get('/hedge-fund-lab/health', async (_req, res) => {
     try {
       const r = await engineFetch('/v1/hedge-fund-lab/health', { timeoutMs: 30_000 });
@@ -2456,9 +2602,7 @@ export default function createIntelligenceRouter() {
       if (!forceRefresh) {
         const fresh = readHflTerminalCache(cacheKey);
         if (fresh) {
-          res.set('X-AGI-Hedge-Fund-Cache', 'memory-fresh');
-          res.set('X-AGI-Hedge-Fund-Freshness', fresh.data?.freshness || (fresh.stale ? 'aging' : 'fresh'));
-          return res.status(200).json(fresh.data);
+          return sendHflTerminal(res, fresh.data, 'memory-fresh');
         }
       }
 
@@ -2471,9 +2615,7 @@ export default function createIntelligenceRouter() {
       });
       if (fromStore?.data) {
         writeHflTerminalCache(cacheKey, fromStore.data);
-        res.set('X-AGI-Hedge-Fund-Cache', fromStore.source || 'supabase');
-        res.set('X-AGI-Hedge-Fund-Freshness', fromStore.data.freshness || 'unknown');
-        return res.status(200).json(fromStore.data);
+        return sendHflTerminal(res, fromStore.data, fromStore.source || 'supabase');
       }
 
       // Legacy live engine path (pre-migration / no Supabase credentials).
@@ -2483,13 +2625,11 @@ export default function createIntelligenceRouter() {
       );
       if (r.ok) {
         writeHflTerminalCache(cacheKey, r.data);
-        res.set('X-AGI-Hedge-Fund-Cache', 'engine_live');
-        return res.status(r.status).json(r.data);
+        return sendHflTerminal(res, r.data, 'engine_live');
       }
       const stale = readHflTerminalCache(cacheKey, { allowStale: true });
       if (stale) {
-        res.set('X-AGI-Hedge-Fund-Cache', 'memory-stale');
-        return res.status(200).json({ ...stale.data, cache: { stale: true, age_ms: stale.age } });
+        return sendHflTerminal(res, { ...stale.data, cache: { stale: true, age_ms: stale.age } }, 'memory-stale');
       }
       return res.status(r.status).json(r.data);
     } catch (err) {
@@ -2497,8 +2637,7 @@ export default function createIntelligenceRouter() {
       if (query.limit == null || query.limit === '') query.limit = '12';
       const stale = readHflTerminalCache(new URLSearchParams(query).toString(), { allowStale: true });
       if (stale) {
-        res.set('X-AGI-Hedge-Fund-Cache', 'memory-stale');
-        return res.status(200).json({ ...stale.data, cache: { stale: true, age_ms: stale.age } });
+        return sendHflTerminal(res, { ...stale.data, cache: { stale: true, age_ms: stale.age } }, 'memory-stale');
       }
       res.status(504).json({ error: err.message || 'hedge-fund-lab terminal failed', timeout: true });
     }
@@ -2508,7 +2647,8 @@ export default function createIntelligenceRouter() {
       const r = await engineFetch(`/v1/hedge-fund-lab/opportunity/${encodeURIComponent(req.params.ticker)}`, {
         timeoutMs: 30_000,
       });
-      res.status(r.status).json(r.data);
+      const data = r.ok ? await overlayHflLivePrices(r.data) : r.data;
+      res.status(r.status).json(data);
     } catch (err) {
       res.status(504).json({ error: err.message || 'hedge-fund-lab opportunity failed', timeout: true });
     }
@@ -2522,7 +2662,8 @@ export default function createIntelligenceRouter() {
         `/v1/hedge-fund-lab/scan/${encodeURIComponent(req.params.strategy)}${qs ? `?${qs}` : ''}`,
         { timeoutMs: 45_000 },
       );
-      res.status(r.status).json(r.data);
+      const data = r.ok ? await overlayHflLivePrices(r.data) : r.data;
+      res.status(r.status).json(data);
     } catch (err) {
       res.status(504).json({ error: err.message || 'hedge-fund-lab scan failed', timeout: true });
     }
@@ -2566,6 +2707,27 @@ export default function createIntelligenceRouter() {
     }
   });
 
+  // Pricing Engine V1 is an internal research instrument. Both calculation
+  // and validation evidence require a verified AGI administrator session.
+  router.post('/options-lab/price', requireStrategyLabAdmin, async (req, res) => {
+    try {
+      const r = await engineFetch('/v1/options-lab/price', {
+        method: 'POST', body: req.body || {}, timeoutMs: 30_000,
+      });
+      return res.status(r.status).json(r.data);
+    } catch (err) {
+      return res.status(503).json({ ok: false, error: err.message || 'options pricing unavailable' });
+    }
+  });
+  router.get('/options-lab/validation/dashboard', requireStrategyLabAdmin, async (_req, res) => {
+    try {
+      const r = await engineFetch('/v1/options-lab/validation/dashboard', { timeoutMs: 30_000 });
+      return res.status(r.status).json(r.data);
+    } catch (err) {
+      return res.status(503).json({ ok: false, error: err.message || 'options validation unavailable' });
+    }
+  });
+
   // Admin Strategy Lab. Authentication is enforced server-side in addition to
   // the React admin route; these responses are never public fallbacks.
   router.get('/strategy-lab/health', requireStrategyLabAdmin, async (_req, res) => {
@@ -2600,6 +2762,70 @@ export default function createIntelligenceRouter() {
       return res.status(r.status).json(r.data);
     } catch (err) {
       return res.status(504).json({ ok: false, error: err.message || 'strategy lab backtest unavailable' });
+    }
+  });
+  router.get('/strategy-lab/operating-system', requireStrategyLabAdmin, async (_req, res) => {
+    try {
+      const r = await engineFetch('/v1/strategy-lab/operating-system', { timeoutMs: 60_000 });
+      return res.status(r.status).json(r.data);
+    } catch (err) {
+      return res.status(503).json({ ok: false, error: err.message || 'alpha operating system unavailable' });
+    }
+  });
+  router.get('/strategy-lab/definitions', requireStrategyLabAdmin, async (_req, res) => {
+    try {
+      const r = await engineFetch('/v1/strategy-lab/definitions', { timeoutMs: 60_000 });
+      return res.status(r.status).json(r.data);
+    } catch (err) {
+      return res.status(503).json({ ok: false, error: err.message || 'strategy definitions unavailable' });
+    }
+  });
+  router.get('/strategy-lab/definition/:strategyId', requireStrategyLabAdmin, async (req, res) => {
+    try {
+      const r = await engineFetch(`/v1/strategy-lab/definition/${encodeURIComponent(req.params.strategyId)}`, { timeoutMs: 60_000 });
+      return res.status(r.status).json(r.data);
+    } catch (err) {
+      return res.status(503).json({ ok: false, error: err.message || 'strategy definition unavailable' });
+    }
+  });
+  router.get('/strategy-lab/data-readiness', requireStrategyLabAdmin, async (_req, res) => {
+    try {
+      const r = await engineFetch('/v1/strategy-lab/data-readiness', { timeoutMs: 60_000 });
+      return res.status(r.status).json(r.data);
+    } catch (err) {
+      return res.status(503).json({ ok: false, error: err.message || 'strategy readiness unavailable' });
+    }
+  });
+  router.get('/strategy-lab/capital-decision/:strategyId', requireStrategyLabAdmin, async (req, res) => {
+    try {
+      const r = await engineFetch(`/v1/strategy-lab/capital-decision/${encodeURIComponent(req.params.strategyId)}`, { timeoutMs: 60_000 });
+      return res.status(r.status).json(r.data);
+    } catch (err) {
+      return res.status(503).json({ ok: false, error: err.message || 'capital decision unavailable' });
+    }
+  });
+  router.post('/strategy-lab/registry/sync', requireStrategyLabAdmin, async (req, res) => {
+    try {
+      const r = await engineFetch('/v1/strategy-lab/registry/sync', { method: 'POST', body: req.body || {}, timeoutMs: 120_000 });
+      return res.status(r.status).json(r.data);
+    } catch (err) {
+      return res.status(503).json({ ok: false, error: err.message || 'strategy registry sync unavailable' });
+    }
+  });
+  router.post('/strategy-lab/research/:strategyId', requireStrategyLabAdmin, async (req, res) => {
+    try {
+      const r = await engineFetch(`/v1/strategy-lab/research/${encodeURIComponent(req.params.strategyId)}`, { method: 'POST', body: req.body || {}, timeoutMs: 180_000 });
+      return res.status(r.status).json(r.data);
+    } catch (err) {
+      return res.status(504).json({ ok: false, error: err.message || 'alpha research unavailable' });
+    }
+  });
+  router.post('/strategy-lab/prospective/capture', requireStrategyLabAdmin, async (req, res) => {
+    try {
+      const r = await engineFetch('/v1/strategy-lab/prospective/capture', { method: 'POST', body: req.body || {}, timeoutMs: 180_000 });
+      return res.status(r.status).json(r.data);
+    } catch (err) {
+      return res.status(504).json({ ok: false, error: err.message || 'prospective evidence capture unavailable' });
     }
   });
 

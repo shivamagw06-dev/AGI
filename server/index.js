@@ -16,6 +16,7 @@ import createIntelligenceCmsRouter from "./routes/intelligenceCms.js";
 import createIntelligencePlatformRouter from "./routes/intelligencePlatform.js";
 import createAuthRouter from "./routes/auth.js";
 import createNewsletterRouter from "./routes/newsletter.js";
+import createArticleShareRouter from "./routes/articleShare.js";
 import createResearchSignalsRouter from "./routes/researchSignals.js";
 import { getNewsHeadlines } from "./services/newsHeadlinesService.js";
 import { getIpoDetail, getIpoPlatform, getIpoSummary } from "./services/ipoService.js";
@@ -330,12 +331,17 @@ reg('/', (req, res) => res.json({ service: 'finance-news-backend', status: 'runn
 reg('/api/market/live-alpha/status', (_req, res) => res.json(getLiveAlphaRuntimeStatus()));
 reg('/api/market/trading-calendar/status', (_req, res) => res.json(tradingCalendar.health()));
 reg('/api/market/live-alpha/workspace', async (_req, res) => {
-  try { res.json(await getLiveAlphaWorkspace()); }
+  try {
+    const { overlayHflLivePrices } = await import('./services/hflLivePriceOverlay.js');
+    const workspace = await getLiveAlphaWorkspace();
+    res.json(await overlayHflLivePrices(workspace));
+  }
   catch (error) { res.status(503).json({ error: error.message, research_only: true, execution_enabled: false }); }
 });
 reg('/api/market/research-confluence', async (req, res) => {
   try {
-    const workspace = await getLiveAlphaWorkspace();
+    const { overlayHflLivePrices } = await import('./services/hflLivePriceOverlay.js');
+    const workspace = await overlayHflLivePrices(await getLiveAlphaWorkspace());
     const limit = Number(req.query.limit) || 25;
     const research = await getResearchEvidence({ workspace, limit });
     res.json({ ...buildConfluenceQueue({ workspace, research: research.evidence, limit }), evidence_health: research.health });
@@ -421,6 +427,7 @@ app.use('/api/intelligence/platform', createIntelligencePlatformRouter());
 app.use('/api/auth', createAuthRouter());
 const newsletterRouter = createNewsletterRouter();
 app.use('/api/newsletter', newsletterRouter);
+app.use('/api/public', createArticleShareRouter());
 // Legacy alias used by older CMS publish helpers
 app.post('/api/notify-subscribers', (req, res, next) => {
   req.url = '/notify-subscribers';

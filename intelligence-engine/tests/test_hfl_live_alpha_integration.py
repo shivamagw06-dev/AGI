@@ -150,6 +150,33 @@ def test_fetch_live_alpha_rows_without_supabase():
     assert out["rows"] == []
 
 
+def test_live_alpha_desk_drops_single_engine(monkeypatch):
+    from hedge_fund_lab import terminal as hfl
+
+    monkeypatch.setattr(
+        hfl,
+        "fetch_live_alpha_rows",
+        lambda limit=200: {
+            "ok": True,
+            "rows": [
+                {"ticker": "NOISE", "engine_count": 1, "company_name": "NOISE", "live_alpha_score": 90},
+                {"ticker": "TCS", "engine_count": 2, "company_name": "TCS", "live_alpha_score": 40},
+            ],
+        },
+    )
+    monkeypatch.setattr(
+        "hedge_fund_lab.live_prices.overlay_live_prices_on_payload",
+        lambda rows, latest=None: rows,
+    )
+    rows = hfl._scan_live_alpha(
+        [{"ticker": "TCS", "company_name": "Tata Consultancy Services"}],
+        {},
+        10,
+    )
+    assert [row["ticker"] for row in rows] == ["TCS"]
+    assert rows[0]["company_name"] == "Tata Consultancy Services"
+
+
 def test_overview_requests_inventory_limit(monkeypatch, tmp_path):
     monkeypatch.setenv("HEDGE_FUND_LAB_ROOT", str(tmp_path))
     from hedge_fund_lab import terminal as hfl_terminal

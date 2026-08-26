@@ -24,12 +24,14 @@ const NAV = [
   { name: 'Home', path: '/' },
   { name: 'Market Intelligence', path: '/market-intelligence' },
   { name: 'Portfolio', path: '/portfolio' },
+  { name: 'Live Desk', path: '/live-desk' },
   { name: 'Hedge Fund', path: '/hedge-fund' },
   { name: 'Live Alpha', path: '/live-alpha' },
   { name: 'Insider Activity', path: '/insider-activity' },
   { name: 'Private Markets', path: '/private-markets' },
   { name: 'Global Markets', path: '/global-markets' },
-  { name: 'Economics', path: '/economics' },
+  { name: 'FX Intelligence', path: '/economics' },
+  { name: 'US Market', path: '/us-stock-intelligence' },
 ];
 
 export default function Header() {

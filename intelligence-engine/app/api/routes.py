@@ -9,6 +9,8 @@ from fastapi import Body
 from fastapi.responses import HTMLResponse
 from starlette.concurrency import run_in_threadpool
 
+from options_lab import price_option_snapshot
+
 from app.agents.registry import list_agents
 from app.core.config import Settings, get_settings
 from app.engines.e01.consumer import register_e01_with_orch_l2
@@ -9574,6 +9576,26 @@ async def market_data_health():
 # --- YFP V1 (Yahoo Finance Institutional Provider — secondary MarketData adapter) ---
 
 
+@router.get("/us-stock-intelligence/analyse")
+async def us_stock_intelligence_analyse(symbol: str = "AAPL"):
+    """Canonical US equity research package backed by Yahoo Finance."""
+    from fastapi import HTTPException
+    from us_stock_intelligence.production import analyse_us_stock
+
+    try:
+        return await analyse_us_stock(symbol)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+
+@router.get("/us-stock-intelligence/market-overview")
+async def us_stock_intelligence_market_overview():
+    """Live/daily US benchmarks, sectors, breadth and screeners."""
+    from us_stock_intelligence.production import market_overview
+
+    return await market_overview()
+
+
 @router.get("/yfp/health")
 async def yfp_health():
     from yfp.production import is_yfp_enabled, production_dashboard
@@ -10631,6 +10653,200 @@ async def hedge_fund_lab_daily_monitor(limit: int = 6):
     return await run_in_threadpool(daily_monitor, limit=limit)
 
 
+@router.get("/options-lab/collector", dependencies=[Depends(require_token)])
+async def options_lab_collector_status():
+    """Whether the embedded collector is actually running, and what it has done.
+
+    Without this the only way to tell a live collector from a dead one is to
+    watch the tables stay empty and guess why.
+    """
+    from options_lab.embedded import status
+
+    return status()
+
+
+@router.post("/options-lab/collect", dependencies=[Depends(require_token)])
+async def options_lab_collect(payload: dict[str, Any] = Body(default_factory=dict)):
+    """Capture one option-chain snapshot.
+
+    The lab had storage configured in render.yaml and no process writing to it:
+    options_lab.automation.run_worker polls through the session, and nothing
+    starts it, so every table behind the validation dashboard was empty.
+
+    This is the same collection driven from the outside instead. A schedule
+    calling it several times a session is not the same as a worker polling
+    every ten seconds, but it produces real snapshots on a service that is
+    already deployed, which the worker does not.
+    """
+    from options_lab.automation import collect_command
+    from options_lab.upstox_live import LiveConfig
+
+    body = payload or {}
+    config = LiveConfig.from_environment()
+    # force skips the market-session gate. Off by default so a scheduled call
+    # outside session hours records a skip rather than a snapshot of a closed
+    # book, and available because an operator checking the wiring should not
+    # have to wait for Monday.
+    code = await run_in_threadpool(collect_command, config, force=bool(body.get("force")))
+    return {
+        "ok": code == 0,
+        "exit_code": code,
+        "forced": bool(body.get("force")),
+        "note": ("0 collected or skipped outside session, 2 means the provider "
+                 "call failed"),
+    }
+
+
+@router.post("/warehouse/company-names/repair", dependencies=[Depends(require_token)])
+async def warehouse_company_names_repair(payload: dict[str, Any] = Body(default_factory=dict)):
+    """Put real company names back where a row is named after its own ticker.
+
+    Defaults to a dry run: pass {"apply": true} to write. A repair that runs
+    on a bare call is how a couple of thousand rows get rewritten by accident.
+    """
+    from financial_warehouse_completion import company_names
+
+    apply = bool((payload or {}).get("apply"))
+    return await run_in_threadpool(company_names.repair, dry_run=not apply)
+
+
+@router.post("/options-lab/surfaces/build", dependencies=[Depends(require_token)])
+async def options_lab_surfaces_build(payload: dict[str, Any] = Body(default_factory=dict)):
+    """Fit and store the volatility surfaces for one stored trading day.
+
+    Reads the canonical observations back rather than re-deriving from NSE, so
+    a surface always describes the same numbers a study will join to.
+
+    Dry by default, like every other write here.
+    """
+    from options_lab import surfaces
+
+    body = payload or {}
+    day = str(body.get("day") or "").strip()
+    if not day:
+        raise HTTPException(status_code=400, detail="day is required, as YYYY-MM-DD")
+    underlying = str(body.get("underlying") or "NIFTY").strip().upper() or None
+    return await run_in_threadpool(
+        surfaces.build_day, day,
+        underlying=underlying, dry_run=not bool(body.get("apply")))
+
+
+@router.post("/options-lab/nse-history/backfill", dependencies=[Depends(require_token)])
+async def options_lab_nse_history_backfill(payload: dict[str, Any] = Body(default_factory=dict)):
+    """Walk a range of trading days into the warehouse, a chunk at a time.
+
+    Bounded on purpose. Six months of fetching outlives the request, so a call
+    does max_days and returns resume_from; calling again with the same range
+    continues, because days already holding rows are skipped. The table is the
+    only state, so a half-finished run is just a shorter next run.
+
+    Dry by default, like the single-day ingest.
+    """
+    from options_lab import nse_history
+
+    body = payload or {}
+    start, end = str(body.get("start") or "").strip(), str(body.get("end") or "").strip()
+    if not start or not end:
+        raise HTTPException(status_code=400,
+                            detail="start and end are required, as YYYY-MM-DD")
+    raw = body.get("underlyings")
+    underlyings = {str(u).strip().upper() for u in raw if str(u).strip()} if raw else None
+    try:
+        max_days = max(1, min(60, int(body.get("max_days") or nse_history.DEFAULT_MAX_DAYS)))
+    except (TypeError, ValueError):
+        raise HTTPException(status_code=400, detail="max_days must be a number")
+    return await run_in_threadpool(
+        nse_history.backfill, start, end,
+        underlyings=underlyings, dry_run=not bool(body.get("apply")),
+        max_days=max_days)
+
+
+@router.post("/options-lab/nse-history/ingest", dependencies=[Depends(require_token)])
+async def options_lab_nse_history_ingest(payload: dict[str, Any] = Body(default_factory=dict)):
+    """Pull one NSE trading day into the canonical warehouse.
+
+    Defaults to a dry run: pass {"apply": true} to write. A methodology change
+    plus an ingest that runs on a bare call is how history gets restated
+    without anyone deciding to restate it.
+
+    Token-guarded because unlike the probes this writes.
+    """
+    from options_lab import nse_history
+
+    body = payload or {}
+    day = str(body.get("day") or "").strip()
+    if not day:
+        raise HTTPException(status_code=400, detail="day is required, as YYYY-MM-DD")
+    raw = body.get("underlyings")
+    underlyings = {str(u).strip().upper() for u in raw if str(u).strip()} if raw else None
+    return await run_in_threadpool(
+        nse_history.ingest_day, day,
+        underlyings=underlyings, dry_run=not bool(body.get("apply")))
+
+
+@router.get("/options-lab/nse-history/probe")
+async def options_lab_nse_history_probe(
+    day: str | None = Query(default=None),
+    underlying: str = Query(default="NIFTY"),
+):
+    """Read one real bhavcopy end to end and report what came out.
+
+    Separate from the intraday collector on purpose. Bhavcopy is end-of-day: it
+    carries no path within the day, so anything built on it is close-to-close
+    and must not be folded into the 5-30 minute repricing test.
+
+    Read-only, and unauthenticated for the same reason the other probes are --
+    it fetches a public NSE file and derives from it, writing nothing.
+    """
+    from options_lab import nse_history
+
+    return await run_in_threadpool(
+        nse_history.probe, (day or "2026-08-21"), underlying.strip().upper())
+
+
+@router.get("/options-lab/expired-history/probe")
+async def options_lab_expired_history_probe(instrument_key: str | None = Query(default=None)):
+    """Whether this account can read expired instruments, and how far back.
+
+    Unauthenticated because it is read-only, returns no market data beyond one
+    sample candle, and exists to answer a capability question before anyone
+    plans a backfill on it. The endpoints behind it are an Upstox paid tier, so
+    "can we" is a real question with a real answer rather than an assumption.
+    """
+    from options_lab import expired_history
+
+    key = (instrument_key or expired_history.NIFTY_KEY).strip()
+    return await run_in_threadpool(expired_history.probe, key)
+
+
+@router.get("/warehouse/company-names/audit")
+async def warehouse_company_names_audit():
+    """How many master rows carry their ticker instead of a name."""
+    from financial_warehouse_completion import company_names
+
+    return await run_in_threadpool(company_names.audit)
+
+
+@router.post("/options-lab/price", dependencies=[Depends(require_token)])
+def options_lab_price(payload: dict[str, Any] = Body(default={})):
+    """Run the provider-neutral local options model without placing an order."""
+    try:
+        return price_option_snapshot(payload)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+
+@router.get(
+    "/options-lab/validation/dashboard",
+    dependencies=[Depends(require_token)],
+)
+async def options_lab_validation_dashboard():
+    """Admin-only, read-only evidence for the frozen V1 validation protocol."""
+    from options_lab.dashboard import validation_dashboard
+
+    return await run_in_threadpool(validation_dashboard)
+
+
 @router.post("/hedge-fund-lab/calculate/{kind}")
 async def hedge_fund_lab_calculate(kind: str, payload: dict[str, Any] = Body(default={})):
     """Every strategy calculation runs here, never in the browser."""
@@ -10690,6 +10906,81 @@ async def strategy_lab_scan(strategy_id: str, limit: int = 20):
 async def strategy_lab_backtest(strategy_id: str, payload: dict[str, Any] = Body(default={})):
     from strategy_lab.production import backtest
     return await run_in_threadpool(backtest, strategy_id, payload or {})
+
+
+@router.get("/strategy-lab/operating-system")
+async def strategy_lab_operating_system(run_limit: int = 10):
+    """Admin evidence board for immutable strategies, runs and capital gates."""
+    from strategy_lab.operating_system import catalog
+    bounded = max(1, min(int(run_limit or 10), 100))
+    return await run_in_threadpool(catalog, run_limit=bounded)
+
+
+@router.get("/strategy-lab/definitions")
+async def strategy_lab_definitions():
+    from strategy_lab.definitions import all_definitions
+    return {"ok": True, "definitions": [item.to_dict() for item in all_definitions()]}
+
+
+@router.get("/strategy-lab/definition/{strategy_id}")
+async def strategy_lab_definition(strategy_id: str):
+    from strategy_lab.operating_system import definition
+    try:
+        return await run_in_threadpool(definition, strategy_id)
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
+@router.post("/strategy-lab/registry/sync", dependencies=[Depends(require_token)])
+async def strategy_lab_registry_sync(payload: dict[str, Any] = Body(default={})):
+    """Seal code-defined versions into the immutable warehouse registry."""
+    from strategy_lab.operating_system import sync_registry
+    return await run_in_threadpool(sync_registry, actor=str((payload or {}).get("actor") or "admin"))
+
+
+@router.post("/strategy-lab/research/{strategy_id}", dependencies=[Depends(require_token)])
+async def strategy_lab_run_research(strategy_id: str, payload: dict[str, Any] = Body(default={})):
+    """Run bounded factor research or a standardized point-in-time backtest."""
+    from strategy_lab.operating_system import run_research
+    try:
+        return await run_in_threadpool(run_research, strategy_id, payload or {})
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+
+@router.get("/strategy-lab/capital-decision/{strategy_id}")
+async def strategy_lab_capital_decision(strategy_id: str):
+    """Fail-closed capital decision; this endpoint never places an order."""
+    from strategy_lab.operating_system import capital_decision
+    try:
+        return await run_in_threadpool(capital_decision, strategy_id)
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
+@router.get("/strategy-lab/data-readiness")
+async def strategy_lab_data_readiness(as_of: str | None = None):
+    """Read-only point-in-time, universe, action and price readiness evidence."""
+    from strategy_lab.prospective import readiness
+    return await run_in_threadpool(readiness, as_of)
+
+
+@router.post("/strategy-lab/prospective/capture", dependencies=[Depends(require_token)])
+async def strategy_lab_prospective_capture(payload: dict[str, Any] = Body(default={})):
+    """Capture facts from now forward; legacy facts are never backdated."""
+    from strategy_lab.prospective import capture
+    try:
+        return await run_in_threadpool(
+            capture,
+            as_of=(payload or {}).get("as_of"),
+            actor=str((payload or {}).get("actor") or "daily_validation_cron"),
+            confirm=(payload or {}).get("confirm"),
+            dry_run=bool((payload or {}).get("dry_run", False)),
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
 
 
 # ---------------------------------------------------------------------------
@@ -12163,7 +12454,7 @@ async def institutional_orchestrator_health():
     return health()
 
 
-@router.post("/ask")
+@router.post("/ask", dependencies=[Depends(require_token)])
 async def universal_ask_post(payload: dict[str, Any] = Body(default={})):
     """UAG-01: orchestrate registered institutional objects. Does not generate recommendations."""
     from institutional_orchestrator.production import ask
@@ -12171,7 +12462,7 @@ async def universal_ask_post(payload: dict[str, Any] = Body(default={})):
     return ask(payload or {})
 
 
-@router.post("/ask/stream")
+@router.post("/ask/stream", dependencies=[Depends(require_token)])
 async def universal_ask_stream(payload: dict[str, Any] = Body(default={})):
     from institutional_orchestrator.production import ask_stream
 
@@ -12179,7 +12470,7 @@ async def universal_ask_stream(payload: dict[str, Any] = Body(default={})):
     return {"ok": True, "events": list(ask_stream(payload or {})), "stream": True}
 
 
-@router.get("/query/{query_id}")
+@router.get("/query/{query_id}", dependencies=[Depends(require_token)])
 async def universal_ask_query_get(query_id: str):
     from institutional_orchestrator.production import get_query
 
@@ -19008,6 +19299,20 @@ def _warehouse_actor(payload: dict[str, Any] | None = None, header: str | None =
     return body_actor or (header or "").strip() or "admin"
 
 
+@router.get("/warehouse/freshness")
+def warehouse_freshness(today: str | None = None):
+    """Which tables are current, which are late, and whose desk it affects.
+
+    Five tables sat on 20 August for three days without anything reporting it:
+    the collectors failed per company with 401s, the schedulers reported
+    themselves enabled, and the pages showed old numbers with no indication
+    they were old.
+    """
+    from institutional_warehouse.freshness import report
+
+    return report(today=today)
+
+
 @router.get("/warehouse/health")
 def warehouse_health():
     from institutional_warehouse.production import health
@@ -19680,6 +19985,38 @@ def warehouse_import_insider_trades_run(
     from financial_warehouse_completion.insider_trades import import_trades
 
     return import_trades(actor=_warehouse_actor(payload or {}, x_agi_actor))
+
+
+@router.post("/warehouse/import/insider-trades/preview",
+             dependencies=[Depends(require_token)])
+def warehouse_insider_paste_preview(payload: dict[str, Any] = Body(default_factory=dict)):
+    """Parse a pasted block and report what it holds. Writes nothing.
+
+    Separate from the write so the desk can see the row count, the date range
+    and how many lines were dropped before committing to it - a vendor export
+    that silently lost half its rows should be caught here, not in the data.
+    """
+    from financial_warehouse_completion.insider_trades import parse_pasted
+
+    parsed = parse_pasted(str((payload or {}).get("text") or ""))
+    return {k: v for k, v in parsed.items() if k != "rows"}
+
+
+@router.post("/warehouse/import/insider-trades/paste",
+             dependencies=[Depends(require_token)])
+def warehouse_insider_paste_run(payload: dict[str, Any] = Body(default_factory=dict),
+                                x_agi_actor: str | None = Header(default=None)):
+    """Write a pasted block of insider trades straight to the warehouse.
+
+    Token-guarded: this writes to a production table from free text. The rows
+    go through the same normalisation and the same natural key as the file
+    importer, so pasting a day that was already loaded updates those rows
+    rather than duplicating them.
+    """
+    from financial_warehouse_completion.insider_trades import import_pasted
+
+    return import_pasted(str((payload or {}).get("text") or ""),
+                         actor=_warehouse_actor(payload or {}, x_agi_actor))
 
 
 @router.get("/warehouse/import/forward-estimates")
@@ -21772,6 +22109,31 @@ async def market_intelligence_sector(sector: str, universe_limit: int = 5000):
         }
 
 
+@router.post("/market-intelligence/flows/refresh")
+async def market_intelligence_flows_refresh(payload: dict[str, Any] = Body(default_factory=dict)):
+    """Pull FII/DII from Upstox and write it. The route the engine already
+    tells people to call.
+
+    It did not exist: the flows service answers "No FII/DII rows in warehouse
+    yet. Run POST /v1/market-intelligence/flows/refresh", and that path
+    returned 404. The only way in was the push-based ingest, which needs
+    somebody to supply the payload.
+
+    The fetch lives here rather than in the web service because that service's
+    Upstox token answers "Invalid token used to access API", which is why the
+    table stopped on 20 August.
+    """
+    from market_intelligence_engine.fetch_flows import refresh
+
+    body = payload or {}
+    return await run_in_threadpool(
+        refresh,
+        interval=str(body.get("interval") or "1D"),
+        since=body.get("since"),
+        actor=str(body.get("actor") or "flow_refresh"),
+    )
+
+
 @router.post("/market-intelligence/flows/ingest")
 async def market_intelligence_flows_ingest(payload: dict[str, Any] = Body(default_factory=dict)):
     """Persist FII/DII rows into warehouse (called by BFF after Upstox fetch)."""
@@ -22025,6 +22387,63 @@ def valuation_ratios_sweep_runs(limit: int = 10):
     from valuation_ratios.sweep import KIND
 
     return {"ok": True, "runs": recent_jobs(kind=KIND, limit=limit)}
+
+
+@router.get("/valuation-ratios/workbook", dependencies=[Depends(require_token)])
+async def valuation_ratios_workbook(days: int = 120):
+    """Admin-only Excel: one sheet per ratio, companies down, dates across.
+
+    Token-guarded because it is the whole universe in one file - every company,
+    every ratio, every day collected. That is an export, not a page, and it
+    should not be reachable without the engine token.
+    """
+    from fastapi.responses import Response
+    from valuation_ratios import workbook
+
+    payload, summary = await run_in_threadpool(workbook.build_bytes, days=days)
+    return Response(
+        content=payload,
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={
+            "Content-Disposition": f'attachment; filename="{workbook.filename(summary)}"',
+            # Surfaced as headers so a caller can tell a thin workbook from a
+            # complete one without opening it.
+            "X-AGI-Companies": str(summary["companies"]),
+            "X-AGI-Dates": str(summary["dates"]),
+            "X-AGI-Latest-Date": str(summary["latest_date"] or ""),
+            "X-AGI-Values": str(summary["values"]),
+            "Cache-Control": "no-store",
+        },
+    )
+
+
+@router.get("/valuation-ratios/workbook/summary", dependencies=[Depends(require_token)])
+async def valuation_ratios_workbook_summary(days: int = 120):
+    """What the workbook would contain, without building the file."""
+    from valuation_ratios import workbook
+
+    summary = await run_in_threadpool(workbook.summarise, days=days)
+    return {"ok": True, **summary}
+
+
+@router.post("/valuation-ratios/pivot-historical",
+             dependencies=[Depends(require_token)])
+async def valuation_ratios_pivot_historical(payload: dict[str, Any] = Body(default_factory=dict)):
+    """Rebuild historical_valuation for one day from ratios already collected.
+
+    Repair for days swept before the sweep learned to pivot. Re-sweeping
+    cannot do it: checkpoints are per day, so a resumed sweep finds an empty
+    queue and an unresumed one restarts at the top of the universe and
+    rewrites the same first companies. This spends no provider budget.
+    """
+    from valuation_ratios.ingest import pivot_stored_ratios
+
+    body = payload or {}
+    return await run_in_threadpool(
+        pivot_stored_ratios,
+        date=body.get("date"),
+        actor=str(body.get("actor") or "pivot_backfill"),
+    )
 
 
 @router.post("/valuation-ratios/isin-backfill")

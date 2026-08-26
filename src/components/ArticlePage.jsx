@@ -4,6 +4,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import DOMPurify from 'dompurify';
 import { supabase } from '@/lib/supabaseClient';
+import { buildArticleShareMeta } from '@/lib/articleShareMeta';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 
@@ -620,13 +621,16 @@ export default function ArticlePage() {
       ? window.location.href
       : `https://agarwalglobalinvestments.com/article/${article.slug}`;
 
-  const title = article.title || 'Article';
-  const description =
-    article.excerpt ||
-    (htmlToUse ? String(htmlToUse).replace(/<[^>]*>/g, ' ').slice(0, 160) : 'AGI article');
-  const image = article.cover_url || 'https://agarwalglobalinvestments.com/assets/og-image.png';
-  const siteName = 'Agarwal Global Investments';
-  const canonical = `https://agarwalglobalinvestments.com/article/${article.slug}`;
+  const inlineCover = String(htmlToUse || '').match(/<img\b[^>]*\bsrc=["'](https?:\/\/[^"']+)["']/i)?.[1] || '';
+  const shareMeta = buildArticleShareMeta({
+    ...article,
+    cover_url: article.cover_url || inlineCover,
+  });
+  const title = shareMeta.title;
+  const description = shareMeta.description;
+  const image = shareMeta.image;
+  const siteName = shareMeta.siteName;
+  const canonical = shareMeta.url;
 
   const sanitizedHtml = DOMPurify.sanitize(htmlToUse);
 
@@ -663,10 +667,14 @@ export default function ArticlePage() {
         <link rel="canonical" href={canonical} />
         <meta property="og:site_name" content={siteName} />
         <meta property="og:type" content="article" />
-        <meta property="og:url" content={shareUrl} />
+        <meta property="og:url" content={canonical} />
         <meta property="og:title" content={`${title} | ${siteName}`} />
         <meta property="og:description" content={description} />
         <meta property="og:image" content={image} />
+        <meta property="og:image:secure_url" content={image} />
+        <meta property="og:image:type" content={shareMeta.imageType} />
+        {shareMeta.imageWidth && <meta property="og:image:width" content={String(shareMeta.imageWidth)} />}
+        {shareMeta.imageHeight && <meta property="og:image:height" content={String(shareMeta.imageHeight)} />}
         {isoPubDate && <meta property="article:published_time" content={isoPubDate} />}
         {Array.isArray(article.tags) &&
           article.tags.map((t, i) => <meta key={i} property="article:tag" content={t} />)}
@@ -674,7 +682,9 @@ export default function ArticlePage() {
         <meta name="twitter:title" content={`${title} | ${siteName}`} />
         <meta name="twitter:description" content={description} />
         <meta name="twitter:image" content={image} />
-        {image && <meta property="og:image:alt" content={title} />}
+        <meta property="og:image:alt" content={title} />
+        <meta name="author" content={author?.full_name || author?.display_name || 'AGI Research'} />
+        <meta property="article:author" content={author?.full_name || author?.display_name || 'AGI Research'} />
         <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
       </Helmet>
 

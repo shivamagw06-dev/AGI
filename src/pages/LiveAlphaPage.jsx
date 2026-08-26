@@ -96,7 +96,7 @@ function Metric({ label, value, sub }) {
 }
 
 function ConfidenceBadge({ confidence, basis }) {
-  const tone = confidence === 'VALIDATED' || confidence === 'HIGH' ? 'good'
+  const tone = confidence === 'SAMPLE-RICH' || confidence === 'HIGH' ? 'good'
     : confidence === 'MEDIUM' ? 'mid'
       : confidence === 'MODEL-ONLY' ? 'warn' : 'low';
   return (
@@ -254,7 +254,7 @@ export function EquityOpportunities({ groww }) {
           <table className="la-table la-table--compact">
             <thead>
               <tr>
-                <th>#</th><th>Stock</th><th className="la-num">Score</th>
+                <th>#</th><th>Stock</th><th className="la-num">Last price</th><th className="la-num">Score</th>
                 <th className="la-num">20d rel.</th><th className="la-num">60d rel.</th><th>Volume</th>
               </tr>
             </thead>
@@ -263,6 +263,11 @@ export function EquityOpportunities({ groww }) {
                 <tr key={row.symbol}>
                   <td className="la-muted">{row.rank}</td>
                   <td><strong>{row.symbol}</strong></td>
+                  <td className="la-num">
+                    {row.price
+                      ? Number(row.price).toLocaleString('en-IN', { maximumFractionDigits: 2 })
+                      : '—'}
+                  </td>
                   <td className="la-num">{Number(row.score).toFixed(0)}</td>
                   <td className={`la-num ${Number(row.relative_20d) >= 0 ? 'la-pos' : 'la-neg'}`}>
                     {Number(row.relative_20d) >= 0 ? '+' : ''}{Number(row.relative_20d).toFixed(1)}%
@@ -307,6 +312,11 @@ export function SignalRow({ row, expanded, onToggle }) {
             {direction}
           </span>
         </td>
+        <td className="la-num">
+          {row.live_price
+            ? Number(row.live_price).toLocaleString('en-IN', { maximumFractionDigits: 2 })
+            : '—'}
+        </td>
         <td className="la-num">{row.composite > 0 ? '+' : ''}{row.composite}</td>
         <td><ConfidenceBadge confidence={row.confidence} basis={row.confidence_basis} /></td>
         <td className="la-cell-drivers">
@@ -324,7 +334,7 @@ export function SignalRow({ row, expanded, onToggle }) {
       </tr>
       {expanded ? (
         <tr className="la-detail">
-          <td colSpan={6}>
+          <td colSpan={7}>
             <div className="la-detail__grid">
               <div>
                 <h4>What the model sees</h4>
@@ -435,9 +445,9 @@ export default function LiveAlphaPage() {
           sub="two or more engines aligned"
         />
         <Metric
-          label="Empirically validated"
-          value={directional.filter((row) => row.confidence === 'VALIDATED').length}
-          sub="requires 100+ comparables"
+          label="Sample threshold met"
+          value={directional.filter((row) => row.confidence === 'SAMPLE-RICH').length}
+          sub="100+ comparables; not a validation gate"
         />
       </section>
 
@@ -479,6 +489,7 @@ export default function LiveAlphaPage() {
                 <tr>
                   <th>Company</th>
                   <th>Direction</th>
+                  <th className="la-num">Last price</th>
                   <th className="la-num">Score</th>
                   <th>Confidence</th>
                   <th>Driven by</th>
@@ -541,8 +552,9 @@ export default function LiveAlphaPage() {
         <p>
           <strong>Confidence</strong> separates model state from evidence. “Model only” means
           no historical comparables exist behind the signal yet — the empirical validation
-          layer is still collecting, and no signal on this page has reached the 100
-          observations required to read as validated.
+          layer is still collecting. Reaching 100 observations is only a sample-size
+          threshold; research validation also requires point-in-time, costed,
+          out-of-sample evidence and does not follow from count alone.
         </p>
         <p>
           <strong>Liquidity</strong> flags components whose bid-ask spread could not be measured

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import time
 import uuid
 from datetime import datetime, timezone
 from typing import Any, Optional
@@ -25,6 +26,19 @@ _RATIO_MAP = {
 
 # Ratios the Unified Valuation Engine must prefer from the provider.
 PROVIDER_OWNED = frozenset({"pe", "pb", "roa", "roe", "roce", "ev_ebitda"})
+
+# Row fields each consumer reads for the same provider metric.
+_CONSUMER_RATIO_FIELDS = (
+    ("pe", ("pe", "trailing_pe")),
+    ("pb", ("pb",)),
+    ("roe", ("roe",)),
+    ("roa", ("roa",)),
+    ("roce", ("roce", "roic")),
+    ("ev_ebitda", ("ev_ebitda",)),
+)
+
+_LATEST_RATIO_TTL = 300.0
+_LATEST_RATIO_CACHE: dict[str, Any] = {"at": 0.0, "map": {}}
 
 
 def _num(value: Any) -> Optional[float]:
@@ -151,6 +165,58 @@ def ingest_key_ratios(
     return out
 
 
+
+def _closing_prices(symbols: set[str], dates: set[str]) -> dict[tuple[str, str], float]:
+    """Closing price per (symbol, date), in one query rather than 2,400.
+
+    Only the dates being written are looked up. Carrying a stale close forward
+    onto today's row would print a price the market never traded at, which is
+    worse than showing none.
+    """
+    from institutional_warehouse import db
+
+    if not symbols or not dates:
+        return {}
+    table = db.physical_table("daily_market_history")
+    marks = ",".join(["?"] * len(dates))
+    rows = db.query(
+        f"SELECT symbol, date, close FROM {table} "
+        f"WHERE date IN ({marks}) AND close IS NOT NULL",
+        tuple(sorted(dates)),
+    )
+    out: dict[tuple[str, str], float] = {}
+    for row in rows:
+        sym = str(row.get("symbol") or "").upper()
+        if sym not in symbols:
+            continue
+        try:
+            out[(sym, str(row.get("date")))] = float(row["close"])
+        except (TypeError, ValueError):
+            continue
+    return out
+
+
+def _existing_valuations(symbols: set[str], dates: set[str]) -> dict[tuple[str, str], dict[str, Any]]:
+    """What the table already holds for these keys, in one query.
+
+    The per-symbol fetch this replaces ran once per company: a full sweep of
+    2,400 companies meant 2,400 round trips before a single row was written.
+    """
+    from institutional_warehouse import db
+
+    if not symbols or not dates:
+        return {}
+    table = db.physical_table("historical_valuation")
+    marks = ",".join(["?"] * len(dates))
+    rows = db.query(f"SELECT * FROM {table} WHERE date IN ({marks})",
+                    tuple(sorted(dates)))
+    out: dict[tuple[str, str], dict[str, Any]] = {}
+    for row in rows:
+        sym = str(row.get("symbol") or "").upper()
+        if sym in symbols:
+            out[(sym, str(row.get("date")))] = row
+    return out
+
 def sync_historical_valuation(
     ratio_rows: list[dict[str, Any]],
     *,
@@ -179,16 +245,28 @@ def sync_historical_valuation(
     if not by_symbol:
         return {"ok": True, "wrote": 0, "note": "no_pivot_rows"}
 
-    # Preserve CMP / market_cap already on today's valuation row when present.
+    # Preserve CMP / market_cap already on today's valuation row, and fill CMP
+    # from the price history when nothing holds one.
+    #
+    # Yahoo used to write both the multiples and the price into this table.
+    # It was stopped as a source of valuation ratios, and the Upstox key-ratios
+    # endpoint carries no price at all, so CMP had no writer left: coverage of
+    # this table fell from 2,889 rows on 19 August to 82 on the 23rd, and the
+    # sector desk reads it for the price it shows. daily_market_history is
+    # collected every thirty minutes and is current, so the price is taken
+    # from there rather than reintroducing the provider.
+    dates = {row.get("date") for row in by_symbol.values() if row.get("date")}
+    closes = _closing_prices(set(by_symbol), dates)
+
     staged: list[dict[str, Any]] = []
+    held_rows = _existing_valuations(set(by_symbol), dates)
     for sym, row in by_symbol.items():
-        existing = store.fetch(
-            "historical_valuation",
-            filters={"symbol": sym, "date": row.get("date")},
-            limit=1,
-        ).get("rows") or []
-        held = existing[0] if existing else {}
+        held = held_rows.get((sym, str(row.get("date") or ""))) or {}
         merged = {**held, **row, "source": SOURCE}
+        if merged.get("cmp") is None:
+            close = closes.get((sym, str(row.get("date") or "")))
+            if close is not None:
+                merged["cmp"] = close
         # Drop identity columns that are not in historical_valuation schema.
         for drop in ("company_id", "isin", "instrument_key", "ratio_name", "company_value",
                      "sector_value", "reported_date", "reported_time", "snapshot_id",
@@ -235,4 +313,128 @@ def latest_provider_ratios(symbol: str) -> dict[str, Any]:
         "as_of": as_of,
         "source": SOURCE,
         "ratios": ratios,
+    }
+
+
+def fold_latest_ratio_rows(rows: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:
+    """Newest company_value per (symbol, ratio_name) from long-format warehouse rows."""
+    staged: dict[str, dict[str, dict[str, Any]]] = {}
+    for row in rows:
+        symbol = str(row.get("symbol") or "").strip().upper()
+        name = str(row.get("ratio_name") or "").strip().lower()
+        if not symbol or name not in PROVIDER_OWNED:
+            continue
+        as_of = str(row.get("reported_date") or "")
+        pack = staged.setdefault(symbol, {})
+        prev = pack.get(name)
+        if prev and str(prev.get("reported_date") or "") >= as_of:
+            continue
+        pack[name] = row
+
+    out: dict[str, dict[str, Any]] = {}
+    for symbol, pack in staged.items():
+        as_of = max((str(item.get("reported_date") or "") for item in pack.values()), default="")
+        values: dict[str, Any] = {
+            "as_of": as_of,
+            "source": "warehouse.valuation_ratios",
+        }
+        for name, item in pack.items():
+            company = _num(item.get("company_value"))
+            if company is None:
+                continue
+            values[name] = company
+            sector = _num(item.get("sector_value"))
+            if sector is not None:
+                values[f"{name}_sector"] = sector
+        if any(key in PROVIDER_OWNED for key in values):
+            out[symbol] = values
+    return out
+
+
+def latest_ratio_map(*, force: bool = False) -> dict[str, dict[str, Any]]:
+    """Cached symbol → latest Upstox PE/PB/ROE/ROA/ROCE/EV-EBITDA pack."""
+    now = time.monotonic()
+    cached = _LATEST_RATIO_CACHE.get("map") or {}
+    if not force and cached and now - float(_LATEST_RATIO_CACHE.get("at") or 0) < _LATEST_RATIO_TTL:
+        return cached
+
+    rows: list[dict[str, Any]] = []
+    try:
+        from institutional_warehouse import db
+
+        table = db.physical_table("valuation_ratios")
+        rows = db.query(
+            f'SELECT symbol, ratio_name, company_value, sector_value, reported_date '
+            f'FROM {table} WHERE COALESCE(sys_published, 1) = 1'
+        ) or []
+    except Exception:
+        try:
+            from institutional_warehouse import store
+
+            rows = store.all_rows("valuation_ratios", limit=250_000) or []
+        except Exception:
+            rows = []
+
+    folded = fold_latest_ratio_rows(rows)
+    _LATEST_RATIO_CACHE["at"] = now
+    _LATEST_RATIO_CACHE["map"] = folded
+    return folded
+
+
+def apply_latest_ratios(
+    row: dict[str, Any],
+    latest: dict[str, dict[str, Any]] | None = None,
+) -> dict[str, Any]:
+    """Overlay warehouse.valuation_ratios onto a company row used by desks/scanners."""
+    ticker = str(row.get("ticker") or row.get("symbol") or "").strip().upper()
+    pack = (latest if latest is not None else latest_ratio_map()).get(ticker)
+    if not pack:
+        return row
+    out = dict(row)
+    for src, dests in _CONSUMER_RATIO_FIELDS:
+        value = pack.get(src)
+        if value is None:
+            continue
+        for dest in dests:
+            out[dest] = value
+    out["valuation_ratios_as_of"] = pack.get("as_of")
+    out["valuation_ratios_source"] = pack.get("source")
+    return out
+
+
+def pivot_stored_ratios(*, date: str | None = None, actor: str = "pivot_backfill",
+                        limit: int = 200_000) -> dict[str, Any]:
+    """Rebuild historical_valuation for a day from ratios already collected.
+
+    Repair, not collection. The sweep now pivots as it goes, but a day swept
+    before that change has its ratios in valuation_ratios and nothing in the
+    table the desk reads, and re-sweeping to fix it would spend the provider
+    budget again to fetch numbers already held.
+
+    It also cannot be done by re-running the sweep: checkpoints are per day,
+    so a resumed sweep finds an empty queue, and an unresumed one restarts at
+    the top of the universe and re-writes the same first companies.
+    """
+    from institutional_warehouse import db
+
+    stamp = date or datetime.now(timezone.utc).date().isoformat()
+    table = db.physical_table("valuation_ratios")
+    rows = db.query(
+        "SELECT symbol, isin, company_id, instrument_key, ratio_name, "
+        "company_value, sector_value, reported_date, reported_time, snapshot_id "
+        f"FROM {table} WHERE reported_date = ? "
+        "ORDER BY reported_time ASC, snapshot_id ASC "
+        f"LIMIT {int(limit)}",
+        (stamp,),
+    )
+    if not rows:
+        return {"ok": False, "error": "no_ratios_for_date", "date": stamp}
+
+    result = sync_historical_valuation(rows, actor=actor)
+    return {
+        "ok": bool(result.get("ok", True)),
+        "date": stamp,
+        "ratio_rows": len(rows),
+        "companies": len({str(r.get("symbol") or "").upper() for r in rows}),
+        "written": result,
     }

@@ -76,19 +76,23 @@ def load_universe(*, limit: int = 5000) -> dict[str, Any]:
         if not existing or str(row.get("consensus_date") or "") > str(existing.get("consensus_date") or ""):
             consensus_map[sym] = row
 
-    # Latest Upstox valuation_ratios (long format) → per-symbol packs.
+    # Latest Upstox valuation_ratios for the full universe (not a truncated page).
     provider_map: dict[str, dict[str, dict[str, Any]]] = {}
     try:
-        for row in store.all_rows("valuation_ratios", limit=limit * 8):
-            sym = str(row.get("symbol") or "").upper()
-            name = str(row.get("ratio_name") or "")
-            if not sym or not name:
-                continue
-            pack = provider_map.setdefault(sym, {})
-            prev = pack.get(name)
-            if prev and str(prev.get("reported_date") or "") >= str(row.get("reported_date") or ""):
-                continue
-            pack[name] = row
+        from valuation_ratios.ingest import PROVIDER_OWNED, latest_ratio_map
+
+        for sym, pack in latest_ratio_map().items():
+            inner: dict[str, dict[str, Any]] = {}
+            for name in PROVIDER_OWNED:
+                if pack.get(name) is None:
+                    continue
+                inner[name] = {
+                    "company_value": pack[name],
+                    "sector_value": pack.get(f"{name}_sector"),
+                    "reported_date": pack.get("as_of"),
+                }
+            if inner:
+                provider_map[sym] = inner
     except Exception:
         provider_map = {}
 

@@ -109,13 +109,46 @@ def _number(value: Any) -> Optional[float]:
     return out if out == out else None
 
 
+# Every shape these exports have arrived in. Two-digit years are last so a
+# four-digit year is never truncated into one: "24/08/2026" must not be read as
+# 24 August 2020 by a %y pattern matching the first two digits.
+_DATE_FORMATS = (
+    "%Y-%m-%d",      # 2026-08-24, and the date half of an Excel datetime
+    "%d-%b-%Y",      # 24-Aug-2026
+    "%d %b %Y",      # 24 Aug 2026
+    "%d/%m/%Y",      # 24/08/2026
+    "%d-%m-%Y",      # 24-08-2026
+    "%d/%m/%y",      # 24/08/26  - the NSE web export's default
+    "%d-%m-%y",      # 24-08-26
+)
+
+
 def _date(value: Any) -> Optional[date]:
+    """A reported date, or nothing.
+
+    The web export writes 24/08/26 while the file download writes a full
+    datetime, and a pasted day without a usable date is dropped as unstorable -
+    so an unhandled format silently empties the entire paste. That is exactly
+    what happened: every row of a 36-row paste was rejected because the year
+    had two digits.
+
+    Slicing to 11 characters trims Excel's " 00:00:00" without cutting any of
+    the formats above, all of which are 10 characters or fewer.
+    """
     text = str(value or "").strip()
-    for fmt in ("%Y-%m-%d", "%d-%b-%Y", "%d %b %Y", "%d/%m/%Y"):
+    if not text:
+        return None
+    candidate = text[:11].strip()
+    for fmt in _DATE_FORMATS:
         try:
-            return datetime.strptime(text[:11].strip(), fmt).date()
+            parsed = datetime.strptime(candidate, fmt).date()
         except ValueError:
             continue
+        # A two-digit year lands in 20xx. These filings are current, and a
+        # 1926 reported date would be stored happily and be wrong forever.
+        if parsed.year < 100:
+            parsed = parsed.replace(year=parsed.year + 2000)
+        return parsed
     return None
 
 
@@ -158,6 +191,16 @@ def _read_xlsx(path: Path) -> list[dict[str, Any]]:
 
 def parse_file(path: Path) -> list[dict[str, Any]]:
     raw = _read_xlsx(path) if path.suffix.lower() in {".xlsx", ".xlsm"} else _read_csv(path)
+    return normalise_rows(raw)
+
+
+def normalise_rows(raw: Iterable[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Header-keyed rows to storable trades.
+
+    Split out of parse_file so a pasted block and an exported file are held to
+    the same rules. A paste that skipped this would accept rows the file
+    importer rejects, and the difference would only show up as bad data later.
+    """
     out: list[dict[str, Any]] = []
     for row in raw:
         clean = {str(k).strip(): v for k, v in row.items() if k}
@@ -320,6 +363,11 @@ def parse(root: Path = REPO_ROOT) -> dict[str, Any]:
                          "new": len(merged) - before,
                          "duplicate": len(rows) - (len(merged) - before)})
 
+    return {**finalise(merged), "files": per_file}
+
+
+def finalise(merged: dict[tuple, dict[str, Any]]) -> dict[str, Any]:
+    """Resolve tickers, collapse the overlap, and report what came out."""
     # Attach tickers where the master knows the company. Roughly two thirds do
     # not resolve - the export covers small companies outside our universe -
     # and those keep a blank symbol rather than a fabricated one.
@@ -337,7 +385,6 @@ def parse(root: Path = REPO_ROOT) -> dict[str, Any]:
     return {
         "ok": bool(rows),
         "source": SOURCE,
-        "files": per_file,
         "rows": rows,
         "row_count": len(rows),
         "companies": len({r["company_name"] for r in rows}),
@@ -366,5 +413,78 @@ def import_trades(*, actor: str = "fwcp", root: Path = REPO_ROOT) -> dict[str, A
         return parsed
     written = gateway.write("insider_trades", parsed["rows"], source=SOURCE,
                             actor=actor, reason="trendlyne_insider_export")
+    return {**{k: v for k, v in parsed.items() if k != "rows"},
+            "written": written, "ok": bool(written.get("ok"))}
+
+# --------------------------------------------------------------------------
+# Pasted input
+#
+# The exports are downloaded by hand and land in the repo, which means a day's
+# disclosures only reach the warehouse when someone remembers to commit and
+# deploy. Pasting straight from the spreadsheet skips that, and goes through
+# exactly the same normalisation so the two routes cannot drift apart.
+# --------------------------------------------------------------------------
+
+
+def _delimiter(header: str) -> str:
+    """Excel and Sheets both copy as tab-separated; a saved CSV is not.
+
+    Chosen from the header alone: a company name legitimately contains a comma
+    ("Tata Motors, Ltd"), so counting commas across the whole block would pick
+    the wrong split on data that is genuinely tab-separated.
+    """
+    if "\t" in header:
+        return "\t"
+    return ";" if header.count(";") > header.count(",") else ","
+
+
+def parse_pasted(text: str) -> dict[str, Any]:
+    """A clipboard block to the same rows a file would have produced."""
+    body = (text or "").strip("\n")
+    if not body.strip():
+        return {"ok": False, "error": "nothing_pasted", "rows": []}
+
+    lines = [line for line in body.splitlines() if line.strip()]
+    if len(lines) < 2:
+        return {"ok": False, "error": "header_row_and_at_least_one_trade_required",
+                "rows": []}
+
+    reader = csv.DictReader(lines, delimiter=_delimiter(lines[0]))
+    try:
+        raw = [dict(row) for row in reader]
+    except csv.Error as exc:
+        return {"ok": False, "error": f"unreadable:{exc}"[:160], "rows": []}
+
+    headers = [h for h in (reader.fieldnames or []) if h]
+    rows = normalise_rows(raw)
+    if not rows:
+        # Naming the headers we did get is the difference between a user
+        # fixing their paste in ten seconds and filing a bug.
+        return {"ok": False, "error": "no_usable_rows", "rows": [],
+                "pasted_rows": len(raw), "headers_seen": headers,
+                "headers_required": ["Stock", "Client Name",
+                                     "Reported To/By Exchange", "Quantity"],
+                "hint": ("Every row needs a company, a person, a reported date "
+                         "and a quantity. Copy the header row too.")}
+
+    merged = {_fingerprint(row): row for row in rows}
+    out = finalise(merged)
+    out["pasted_rows"] = len(raw)
+    out["headers_seen"] = headers
+    # Rows in, rows kept: a paste that silently loses half its lines to a
+    # missing quantity should say so before anyone trusts the total.
+    out["dropped_rows"] = len(raw) - len(rows)
+    return out
+
+
+def import_pasted(text: str, *, actor: str = "insider_paste") -> dict[str, Any]:
+    """Parse a pasted block and write it. Same table, same gateway, same keys."""
+    from institutional_warehouse import gateway
+
+    parsed = parse_pasted(text)
+    if not parsed.get("ok"):
+        return parsed
+    written = gateway.write("insider_trades", parsed["rows"], source=SOURCE,
+                            actor=actor, reason="insider_paste")
     return {**{k: v for k, v in parsed.items() if k != "rows"},
             "written": written, "ok": bool(written.get("ok"))}

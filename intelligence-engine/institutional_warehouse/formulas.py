@@ -16,7 +16,7 @@ from __future__ import annotations
 import statistics
 from typing import Any, Iterable, Optional
 
-from institutional_warehouse import audit, gateway, store, units
+from institutional_warehouse import audit, derived_units, gateway, store, units
 from institutional_warehouse.financials import canonical_statement_series
 from institutional_warehouse.values import now_iso, today_iso
 
@@ -123,6 +123,10 @@ def recalc_statement_derivations(*, actor: str = "system", entity: Optional[str]
                 continue
             updates.append(
                 {
+                    # Bind the update to the exact stored row that supplied the
+                    # inputs. The gateway consumes this marker and refuses an
+                    # insert or a calculation retargeted through changed keys.
+                    derived_units.PARENT_ROW_ID: row.get("row_id"),
                     "symbol": row.get("symbol"),
                     # statement_type is part of the key: without it this partial
                     # update would land on a different row than the one it was
@@ -261,8 +265,21 @@ def _statement_type_rank(row: dict[str, Any]) -> tuple[int, str]:
 
 
 def _preferred_statement_series(statements: list[dict[str, Any]], key: str) -> list[dict[str, Any]]:
+    """Every period, trusted or not.
+
+    The formula engine derives columns for the rows that exist rather than
+    reading an answer, so it opts in deliberately: the derivation inherits the
+    trust of the row it came from, and the read path is where filtering belongs.
+
+    Deriving from an unverified row does not promote it. Measured end to end -
+    source, unit method, reported unit and is_canonical are all unchanged after
+    free_cash_flow lands, and the row stays out of the default read. That is the
+    guarantee the source-drift incident needs, where formula_engine once rewrote
+    `source` on rows it derived from.
+    """
     return canonical_statement_series(
-        statements, period_key=key, annual=key == "fiscal_year"
+        statements, period_key=key, annual=key == "fiscal_year",
+        include_unverified=True,
     )
 
 

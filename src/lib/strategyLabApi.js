@@ -19,3 +19,11 @@ export const getStrategyLabHealth = () => request('/health', { timeoutMs: 35_000
 export const getStrategyLabDashboard = (limit = 5) => request(`/dashboard?limit=${limit}`);
 export const getStrategyLabScan = (strategyId, limit = 30) => request(`/scan/${encodeURIComponent(strategyId)}?limit=${limit}`);
 export const runStrategyLabBacktest = (strategyId, parameters = {}) => request(`/backtest/${encodeURIComponent(strategyId)}`, { method: 'POST', body: JSON.stringify(parameters) });
+export const getAlphaOperatingSystem = () => request('/operating-system', { timeoutMs: 60_000 });
+export const getStrategyDefinitions = () => request('/definitions', { timeoutMs: 60_000 });
+export const getStrategyDefinition = (strategyId) => request(`/definition/${encodeURIComponent(strategyId)}`, { timeoutMs: 60_000 });
+export const getStrategyDataReadiness = () => request('/data-readiness', { timeoutMs: 60_000 });
+export const getStrategyCapitalDecision = (strategyId) => request(`/capital-decision/${encodeURIComponent(strategyId)}`, { timeoutMs: 60_000 });
+export const syncStrategyRegistry = () => request('/registry/sync', { method: 'POST', body: '{}' });
+export const runAlphaResearch = (strategyId, payload = {}) => request(`/research/${encodeURIComponent(strategyId)}`, { method: 'POST', body: JSON.stringify(payload) });
+export const captureProspectiveEvidence = (payload = {}) => request('/prospective/capture', { method: 'POST', body: JSON.stringify(payload), timeoutMs: 180_000 });

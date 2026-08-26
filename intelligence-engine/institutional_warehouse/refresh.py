@@ -129,8 +129,15 @@ def stage_yahoo(*, actor: str, limit: Optional[int] = None) -> dict[str, Any]:
                                  reason="refresh:yahoo")
     price_result = gateway.write("daily_market_history", prices, source="yahoo_finance", actor=actor,
                                 reason="refresh:yahoo")
-    valuation_result = gateway.write("historical_valuation", valuations, source="yahoo_finance",
-                                    actor=actor, reason="refresh:yahoo")
+    # Valuation is not sourced from Yahoo. Ratios come from Upstox key-ratios
+    # and from warehouse_reconstruction over the Capital IQ workbook, which is
+    # the annual record. Yahoo kept writing historical_valuation because this
+    # call predates that decision, not because it was chosen.
+    #
+    # The prices and company master above still come from Yahoo, which is a
+    # separate question from valuation and is left alone here.
+    valuation_result = {"ok": True, "skipped": "valuation_not_sourced_from_yahoo",
+                        "candidates": len(valuations), "written": 0}
     return _ok(
         "yahoo",
         companies=len(masters),
@@ -332,7 +339,7 @@ def stage_nse(*, actor: str, days: int = 30, symbols: Optional[Iterable[str]] = 
         if not rows:
             continue
         result = gateway.write("daily_market_history", rows, source="nse_bhavcopy", actor=actor,
-                              reason=f"refresh:nse:{trade_date}")
+                              reason=f"refresh:nse:{trade_date}", fill_only=True)
         for key in totals:
             totals[key] += int(result.get(key) or 0)
         traded.update(r["symbol"] for r in rows)
@@ -676,6 +683,7 @@ def stage_knowledge_factory(*, actor: str, limit: Optional[int] = None) -> dict[
 
 def _statement_row(entity: str, record: dict[str, Any], *, annual: bool) -> Optional[dict[str, Any]]:
     payload = record.get("payload") or {}
+    metadata = payload.get("metadata") if isinstance(payload.get("metadata"), dict) else {}
     period = str(record.get("period") or "").strip()
     if not period:
         return None
@@ -694,6 +702,18 @@ def _statement_row(entity: str, record: dict[str, Any], *, annual: bool) -> Opti
         "source": str(record.get("source") or "knowledge_factory_hd"),
         "statement_version": str(payload.get("statement") or "mixed"),
     }
+    units_in = payload.get("units_in") or metadata.get("units_in")
+    if units_in:
+        row["units_in"] = units_in
+    source_document = payload.get("source_document") or metadata.get("xbrl_url")
+    if source_document:
+        row["source_document"] = source_document
+    provider = payload.get("provider") or metadata.get("provider")
+    parser_path = payload.get("parser_path") or metadata.get("parser_path")
+    if provider and parser_path:
+        row["statement_version"] = f"{provider}:{parser_path}"
+    elif provider or parser_path:
+        row["statement_version"] = str(provider or parser_path)
     if annual:
         row["fiscal_year"] = period
     else:

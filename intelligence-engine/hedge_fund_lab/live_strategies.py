@@ -76,16 +76,30 @@ def reset_cache() -> None:
 
 
 def _cached(key: str, producer):
-    """Single-flight, TTL cache shared by every strategy in one board() call."""
+    """TTL cache that never holds its shared lock during external I/O."""
     with _CACHE_LOCK:
         now = time.monotonic()
         if _CACHE["at"] and (now - _CACHE["at"]) > _CACHE_TTL:
             _CACHE.update({"risk": None, "liq": None, "signals": None, "at": 0.0})
-        if _CACHE.get(key) is None:
-            _CACHE[key] = producer()
-            if not _CACHE["at"]:
-                _CACHE["at"] = now
-        return _CACHE[key]
+        cached = _CACHE.get(key)
+        if cached is not None:
+            return cached
+
+    # Producers read Supabase and can be slow. Holding _CACHE_LOCK here used
+    # to serialize every concurrent live-strategies request behind one network
+    # call, amplifying a bounded delay into repeated 120-second timeouts.
+    produced = producer()
+
+    with _CACHE_LOCK:
+        # Another request may have completed the same refresh while this one
+        # was outside the lock. Prefer its already-published value.
+        cached = _CACHE.get(key)
+        if cached is not None:
+            return cached
+        _CACHE[key] = produced
+        if not _CACHE["at"]:
+            _CACHE["at"] = time.monotonic()
+        return produced
 
 
 def _risk_and_liquidity() -> tuple[dict[str, dict], dict[str, dict]]:
@@ -167,7 +181,9 @@ def size_position(*, price: Optional[float], atr: Optional[float],
     raw = vol_target_weight(sigma, n)
     cap_liq = adv_cap(adv_shares_mn, price)
     limits = [w for w in (raw, cap_liq, MAX_WEIGHT) if w is not None]
-    final = min(limits) if limits else None
+    # A maximum weight can cap a partial estimate, but no position can be
+    # translated into shares or notional without an actual signal price.
+    final = min(limits) if price is not None and limits else None
     binding = None
     if final is not None:
         if raw is not None and abs(final - raw) < 1e-12:
@@ -206,21 +222,42 @@ def _coverage(risk_row: Optional[dict], liq_row: Optional[dict]) -> dict[str, An
     }
 
 
-def _base_row(sig: dict[str, Any], risk_row: Optional[dict], liq_row: Optional[dict]) -> dict[str, Any]:
-    # The signal writer persists the actual traded price separately from
-    # factor_values. Prefer that explicit field; older signals may still carry
-    # last_price inside factor_values.
-    price = _num(sig.get("price_at_signal"))
-    price_source = "price_at_signal" if price is not None else None
-    if price is None and isinstance(sig.get("factor_values"), dict):
-        price = _num((sig.get("factor_values") or {}).get("last_price"))
-        price_source = "live_signal_factor" if price is not None else None
+def _base_row(sig: dict[str, Any], risk_row: Optional[dict], liq_row: Optional[dict],
+              live: Optional[dict[str, dict[str, Any]]] = None) -> dict[str, Any]:
+    # Prefer the last observed trade from live_market_snapshots. The signal
+    # writer persists price_at_signal at evaluation time, which lags the tape
+    # when engines are in warm-up or a run is skipped.
+    from hedge_fund_lab.live_prices import lookup_live_price
+
+    live_pack = lookup_live_price(
+        {"ticker": sig.get("symbol"), "instrument_key": sig.get("instrument_key")},
+        live,
+    )
+    if live_pack:
+        price = _num(live_pack.get("ltp"))
+        price_source = "live_market_snapshots"
+        price_as_of = live_pack.get("observed_at")
+    else:
+        price = _num(sig.get("price_at_signal"))
+        price_source = "price_at_signal" if price is not None else None
+        price_as_of = sig.get("as_of") or sig.get("created_at")
+        if price is None and isinstance(sig.get("factor_values"), dict):
+            price = _num((sig.get("factor_values") or {}).get("last_price"))
+            price_source = "live_signal_factor" if price is not None else None
     # Never substitute SMA50 for a quote. A moving average is valid risk context,
     # but presenting it as "Price" corrupts stops, ADV value and position sizing.
 
     atr = _num(risk_row.get("atr")) if risk_row else None
     adv = _num(liq_row.get("adv_3m")) if liq_row else None
     sizing = size_position(price=price, atr=atr, adv_shares_mn=adv)
+    coverage = _coverage(risk_row, liq_row)
+    if price is None:
+        coverage = {
+            **coverage,
+            "complete": False,
+            "sizeable": False,
+            "missing": [*coverage["missing"], "signal_price"],
+        }
 
     return {
         "ticker": sig.get("symbol"),
@@ -233,12 +270,13 @@ def _base_row(sig: dict[str, Any], risk_row: Optional[dict], liq_row: Optional[d
         "as_of": sig.get("as_of"),
         "price": round(price, 2) if price is not None else None,
         "price_source": price_source,
+        "price_as_of": price_as_of,
         "atr": round(atr, 2) if atr is not None else None,
         "beta_1y": _num(risk_row.get("beta_1y")) if risk_row else None,
         "adv_3m_shares_mn": adv,
         "adv_3m_value_inr": round(adv * 1e6 * price) if (adv and price) else None,
         "sizing": sizing,
-        "coverage": _coverage(risk_row, liq_row),
+        "coverage": coverage,
         "policy": POLICY,
     }
 
@@ -279,6 +317,12 @@ def _engine_rows(engine: str, limit: int) -> list[dict[str, Any]]:
     if not payload.get("ok"):
         return []
     risk, liq = _risk_and_liquidity()
+    try:
+        from hedge_fund_lab.live_prices import latest_live_price_map
+
+        live = latest_live_price_map()
+    except Exception:
+        live = {}
     out: list[dict[str, Any]] = []
     for row in payload.get("rows") or []:
         sig = (row.get("engines") or {}).get(engine)
@@ -288,8 +332,9 @@ def _engine_rows(engine: str, limit: int) -> list[dict[str, Any]]:
         if not sym:
             continue
         sig = {**sig, "symbol": sym, "engine": engine,
-               "sector": sig.get("sector") or row.get("sector")}
-        out.append(_base_row(sig, risk.get(sym), liq.get(sym)))
+               "sector": sig.get("sector") or row.get("sector"),
+               "instrument_key": sig.get("instrument_key") or row.get("instrument_key")}
+        out.append(_base_row(sig, risk.get(sym), liq.get(sym), live))
     out.sort(key=lambda r: -(abs(r.get("signed_score") or 0)))
     return out[:limit]
 
@@ -394,6 +439,8 @@ _STRATEGY_ENGINE = {
 
 def board(limit: int = 12) -> dict[str, Any]:
     """All three strategies plus the sizing constants they share."""
+    from strategy_lab.governance_view import governance_for
+
     cards = []
     for key, (label, fn) in LIVE_STRATEGIES.items():
         try:
@@ -406,6 +453,7 @@ def board(limit: int = 12) -> dict[str, Any]:
             engine_id = _STRATEGY_ENGINE.get(key)
             if engine_id:
                 result = {**result, "why_empty": engine_funnel(engine_id)}
+        result = {**result, "governance": governance_for(key)}
         cards.append(result)
     return {
         "ok": True,
@@ -424,7 +472,7 @@ def board(limit: int = 12) -> dict[str, Any]:
             "backtest": "NOT RUN",
             "point_in_time": "FAILING — fundamentals are stored by reporting period, not publication date",
             "survivorship": "FAILING — universe is companies listed today",
-            "lifecycle": "OPERATIONAL (stage 2 of 7)",
+            "lifecycle": "DEFINED - prospective validation pending",
             "alpha_claims_permitted": False,
         },
         "policy": POLICY,

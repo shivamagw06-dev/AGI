@@ -5,7 +5,6 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Bookmark, Copy, Download, Link2, Share2 } from 'lucide-react';
-import AskAgiBar from '@/components/Home/AskAgiBar';
 import { getFavouriteCompanies, toggleFavouriteCompany } from '@/lib/searchHistory';
 
 function Block({ id, title, children, className = '' }) {
@@ -747,23 +746,6 @@ export default function InstitutionalAnswer({ pack, onFollowUp, onContinue, onSa
           </div>
         </Block>
 
-        {/* Search inside answer — maintain context */}
-        <section className="border border-[#dddddd] p-5 bg-[#fafafa]">
-          <h2 className="text-xs font-bold uppercase tracking-wide text-[#767676]">Continue the briefing</h2>
-          <p className="mt-1 text-xs text-[#767676] mb-3">
-            Ask a follow-up without leaving this workspace. Context from the current answer is preserved in your next question.
-          </p>
-          <AskAgiBar
-            size="compact"
-            onAsk={(q) => (onFollowUp || onContinue)?.(q)}
-            placeholder={
-              ticker
-                ? `Ask a follow-up about ${ticker}…`
-                : 'Ask a follow-up question…'
-            }
-            examples={(pack.follow_up_questions || []).slice(0, 3)}
-          />
-        </section>
       </div>
     </div>
   );

@@ -86,6 +86,10 @@ jobs:
 
       - name: Build production site for Hostinger root
         if: steps.prep.outputs.rebuild == 'true'
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_API_URL: ${{ secrets.VITE_API_URL }}
         run: npm run build:hostinger
 
       - name: Verify baked Supabase anon key in bundle
@@ -117,20 +121,42 @@ jobs:
           print("Bundle API origin OK")
           PY
 
+      # Best effort, and deliberately not fatal.
+      #
+      # This pushes straight to main, and main now requires the short gate. A
+      # direct push carries no pull request, so the check can never report on
+      # it and the push is rejected every time:
+      #
+      #   GH006: Protected branch update failed for refs/heads/main
+      #   - Required status check "Required short gate" is expected
+      #
+      # The step used to fail on that, which skipped every FTP step below it,
+      # so nothing reached Hostinger between 21 and 23 August while the builds
+      # themselves were fine. FTP is the delivery path and must not depend on
+      # a push that protection is designed to refuse.
       - name: Commit Hostinger root artifacts for Git sync
         if: steps.prep.outputs.rebuild == 'true'
+        continue-on-error: true
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add index.html .htaccess version.json
-          git add -A assets
+          git add index.html .htaccess version.json og-article.php robots.txt agi-og-cover.png || true
+          git add -A assets || true
+          if [ -d article ]; then git add -A article || true; fi
           if git diff --cached --quiet; then
             echo "No Hostinger root artifact changes to commit."
-          else
-            git commit -m "chore: sync Hostinger production build [skip ci]"
-            git push origin HEAD:main
+          elif git commit -m "chore: sync Hostinger production build [skip ci]" \
+               && git push origin HEAD:main; then
             echo "Committed and pushed Hostinger root build for Horizons Git sync."
+          else
+            echo "::warning::Could not push build artifacts to main; branch protection "
+            echo "::warning::requires the short gate on every push and a direct push has "
+            echo "::warning::no pull request to run it. FTP below still publishes this "
+            echo "::warning::build. To restore the Git-sync path, allow this actor to "
+            echo "::warning::bypass protection. The committed artifacts are stale until then."
           fi
+          # No reset: the checkout is ephemeral, and FTP ships the files on
+          # disk rather than anything from git history.
 
       # Always publish the Hostinger Git root (index.html + /assets). Never FTP an empty
       # dist/assets tree — that deletes the live /assets folder and leaves the old site stuck.
@@ -147,6 +173,14 @@ jobs:
           cp -R assets dist/assets
           cp .htaccess dist/.htaccess 2>/dev/null || true
           cp version.json dist/version.json
+          cp og-article.php dist/og-article.php 2>/dev/null || true
+          cp robots.txt dist/robots.txt 2>/dev/null || true
+          cp agi-og-cover.png dist/agi-og-cover.png 2>/dev/null || true
+          cp og-config.php dist/og-config.php 2>/dev/null || true
+          if [ -d article ]; then
+            rm -rf dist/article
+            cp -R article dist/article
+          fi
           # Drop accidental Hostinger dashboard captures from FTP payload
           rm -rf "dist/Dashboard _ Hostinger.html" "dist/Dashboard _ Hostinger_files" || true
           echo "FTP payload ready:"

@@ -1,0 +1,232 @@
+name: Daily valuation ratios
+
+# Collects P/E, P/B, ROA, ROE, ROCE and EV/EBITDA for the whole universe,
+# every trading day.
+#
+# This has to be a schedule rather than a pipeline stage. Upstox's key-ratios
+# endpoint carries no time dimension - it answers "what is it now" and nothing
+# else - so a day not collected is a day that cannot be recovered later. The
+# table was previously fed by whatever happened to be looked at, twenty-five to
+# eighty companies a day out of 2,431, and the only full sweeps were run by
+# hand on 2026-08-21.
+#
+# The engine's own daily refresh (WAREHOUSE_DAILY_REFRESH) is off and its
+# recalculate stage has stalled on memory, so this deliberately does not depend
+# on it.
+
+on:
+  schedule:
+    # 12:30 UTC = 18:00 IST, weekdays. After the NSE close at 15:30 IST, with
+    # enough margin that the provider has settled on end-of-day figures.
+    - cron: '30 12 * * 1-5'
+  workflow_dispatch:
+    inputs:
+      max_calls:
+        description: 'Maximum sweep calls (300 companies each)'
+        required: false
+        default: '15'
+
+concurrency:
+  # Two sweeps of the same day would duplicate snapshot rows and double the
+  # provider call budget for no extra coverage.
+  group: daily-valuation-ratios
+  cancel-in-progress: false
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    steps:
+      - name: Fill missing ISINs
+        shell: bash
+        run: |
+          set -uo pipefail
+          ENGINE='https://agib-intelligence-engine.onrender.com/v1'
+          # key-ratios is addressed by ISIN, so a company without one cannot be
+          # asked at all. Cheap, idempotent, and it runs first because a symbol
+          # resolved today should be collected today rather than tomorrow.
+          curl -sS --max-time 240 -X POST "$ENGINE/valuation-ratios/isin-backfill" \
+            -H 'Content-Type: application/json' -d '{"actor":"daily_cron"}' \
+            -o backfill.json -w 'isin-backfill HTTP %{http_code}\n' || true
+          python3 - <<'PY' || true
+          import json
+          try:
+              d = json.load(open("backfill.json"))
+          except Exception as exc:
+              print("  unreadable:", exc)
+              raise SystemExit(0)
+          print(f"  masters {d.get('masters')}, already had ISIN "
+                f"{d.get('already_had_isin')}, matched {d.get('matched')}, "
+                f"still unmatched {d.get('unmatched')}, written {d.get('written')}")
+          if d.get("quarantined"):
+              print(f"::warning::{d['quarantined']} ISIN writes quarantined")
+          PY
+
+      - name: Sweep the universe
+        id: sweep
+        shell: bash
+        run: |
+          set -uo pipefail
+          ENGINE='https://agib-intelligence-engine.onrender.com/v1'
+          MAX_CALLS='${{ github.event.inputs.max_calls || 15 }}'
+
+          # Bounded per call on purpose. An unbounded sweep is a half-hour
+          # request, and the first one was killed at twenty minutes by a deploy
+          # landing on top of it. Progress is checkpointed per company per day,
+          # so repeated calls walk the universe and a lost call costs one batch.
+          total=0; calls=0; last_status='NONE'
+          for i in $(seq 1 "$MAX_CALLS"); do
+            calls=$i
+            code="$(curl -sS -o batch.json -w '%{http_code}' --max-time 900 \
+              -X POST "$ENGINE/valuation-ratios/sweep" \
+              -H 'Content-Type: application/json' \
+              -d '{"max_companies":300,"batch_size":40,"resume":true,"actor":"daily_cron"}')" || code='000'
+            if [ "$code" != "200" ]; then
+              echo "::warning::sweep call $i returned HTTP $code"
+              sleep 20
+              continue
+            fi
+            read -r remaining ok status <<<"$(python3 -c 'import json; d=json.load(open("batch.json")); print(d.get("universe",0), d.get("successful",0), d.get("status","NONE"))')"
+            total=$((total + ok)); last_status="$status"
+            echo "call $i: collected $ok, batch of $remaining, status $status"
+            # A batch smaller than the cap means the pending queue is drained -
+            # every company either answered, was skipped, or failed today.
+            [ "$remaining" -lt 300 ] && break
+          done
+          echo "collected=$total" >> "$GITHUB_OUTPUT"
+          echo "calls=$calls" >> "$GITHUB_OUTPUT"
+          echo "status=$last_status" >> "$GITHUB_OUTPUT"
+
+      - name: Collect FII/DII flows
+        shell: bash
+        run: |
+          set -uo pipefail
+          ENGINE='https://agib-intelligence-engine.onrender.com/v1'
+          # institutional_flow stopped on 20 August. The fetcher lived in the
+          # web service, whose Upstox token answers "Invalid token used to
+          # access API", and its scheduler was in-memory on a service that
+          # redeploys several times a day - its own status reported
+          # lastRun: null. Running it from here depends on no process staying
+          # up, and the engine's token is the one that works.
+          curl -sS --max-time 300 -X POST "$ENGINE/market-intelligence/flows/refresh" \
+            -H 'Content-Type: application/json' -d '{"actor":"daily_cron"}' \
+            -o flows.json -w 'flows HTTP %{http_code}\n' || true
+          python3 - <<'PY' || true
+          import json
+          try:
+              d = json.load(open("flows.json"))
+          except Exception as exc:
+              print(f"::warning::flows response unreadable: {exc}")
+              raise SystemExit(0)
+          if not d.get("ok"):
+              # Not fatal: valuation ratios are the job's reason to exist and
+              # they are already collected by this point.
+              print(f"::warning::flows refresh failed: {d.get('error')} "
+                    f"{str(d.get('failures'))[:200]}")
+          else:
+              w = d.get("written") or {}
+              print(f"  fetched {d.get('fetched')} observations over "
+                    f"{d.get('days')} days ({d.get('first_day')} .. {d.get('last_day')}), "
+                    f"wrote {w.get('inserted', 0)} new / {w.get('updated', 0)} updated")
+          PY
+
+      - name: Warehouse freshness
+        shell: bash
+        run: |
+          set -uo pipefail
+          ENGINE='https://agib-intelligence-engine.onrender.com/v1'
+          # Five tables sat on 20 August for three days and nothing said so.
+          # The collectors failed per company with 401s, the schedulers
+          # reported themselves enabled, and the pages showed old numbers with
+          # no sign they were old.
+          curl -sS --max-time 180 "$ENGINE/warehouse/freshness" -o fresh.json \
+            -w 'freshness HTTP %{http_code}\n' || true
+          python3 - <<'PY' || true
+          import json
+          try:
+              d = json.load(open("fresh.json"))
+          except Exception as exc:
+              print(f"::warning::freshness unreadable: {exc}")
+              raise SystemExit(0)
+          cov = d.get("coverage") or {}
+          print(f"  covering {cov.get('tables','?')} tables "
+                f"({cov.get('declared','?')} declared, {cov.get('derived','?')} derived)")
+          for t in d.get("tables") or []:
+              # Only the declared checks carry a cadence, so only they can be
+              # "behind". The rest are printed to show they are being looked at.
+              mark = " " if t["status"] == "ok" else "!"
+              print(f"  {mark} {t['tab']:32} {t.get('check','declared'):8} "
+                    f"{t['status']:11} newest={t['newest'] or '-':12} "
+                    f"age={t['age_days']}")
+          late = [t for t in (d.get("tables") or [])
+                  if t.get("check", "declared") == "declared" and t["status"] != "ok"]
+          if late:
+              # A warning, not a failure: the ratios this job exists to collect
+              # are already in by now, and failing here would bury that.
+              print(f"::warning::{len(late)} table(s) behind, affecting: "
+                    f"{', '.join(d.get('affected_readers') or []) or 'unknown'}")
+          # A table that was being written and stopped. Worth a warning even
+          # without a declared cadence -- that is the failure that went unseen.
+          silent = d.get("silent") or []
+          if silent:
+              print(f"::warning::{len(silent)} table(s) have had no new rows in "
+                    f"{45}+ days: {', '.join(silent[:8])}")
+          # Built and never filled. Stated once, not warned about: nothing is
+          # broken, the work simply has not started.
+          never = d.get("never_filled") or []
+          if never:
+              print(f"  {len(never)} table(s) built but never filled: "
+                    f"{', '.join(never[:10])}")
+          PY
+
+      - name: Verify today landed
+        shell: bash
+        run: |
+          set -uo pipefail
+          ENGINE='https://agib-intelligence-engine.onrender.com/v1'
+          TODAY="$(date -u +%F)"
+
+          # Ask the warehouse what exists for today rather than trusting what
+          # this run happened to collect. Checkpoints are per day, so a second
+          # run finds an empty queue and honestly reports universe=0,
+          # successful=0, FAILED - and judging the day by that number fails a
+          # day whose data is complete. The same applies to a re-run after a
+          # partial failure, where this run only ever sees the remainder.
+          curl -sS --max-time 120 -o today.json -w 'today HTTP %{http_code}\n' \
+            --get "$ENGINE/warehouse/tab/valuation_ratios" \
+            --data-urlencode 'limit=1' \
+            --data-urlencode "filters={\"reported_date\":\"$TODAY\"}" || true
+          export TODAY
+
+          # The job fails loudly on a thin day. The keep-warm workflow in this
+          # repo emitted ::warning:: and exited 0 while the engine was down for
+          # hours and every run read "success"; a warning nobody receives is
+          # not an early warning, so this exits non-zero instead.
+          COLLECTED='${{ steps.sweep.outputs.collected }}'
+          CALLS='${{ steps.sweep.outputs.calls }}'
+          STATUS='${{ steps.sweep.outputs.status }}'
+          export COLLECTED CALLS STATUS
+          python3 - <<'PY'
+          import json, os, sys
+
+          day = os.environ.get("TODAY")
+          collected = int(os.environ.get("COLLECTED") or 0)
+          print(f"this run collected {collected} companies in "
+                f"{os.environ.get('CALLS')} calls "
+                f"(last batch {os.environ.get('STATUS')})")
+
+          try:
+              rows = int(json.load(open("today.json")).get("total") or 0)
+          except Exception as exc:
+              sys.exit(f"::error::cannot read today's row count: {exc}")
+
+          # Six ratios per company, minus the ones that do not exist for a
+          # lender - ROCE and EV/EBITDA are correctly absent for banks - so
+          # this is a floor, not a company count.
+          print(f"warehouse holds {rows} rows dated {day} "
+                f"(~{rows // 6} companies)")
+          # ~1,000 companies. A full day is about 12,400 rows; well under this
+          # means the sweep did not get round the universe, whoever ran it.
+          if rows < 6000:
+              sys.exit(f"::error::only {rows} rows dated {day}; expected ~12,400")
+          PY

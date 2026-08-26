@@ -9,6 +9,7 @@ row download cap that silently truncates, heavy overlap between exports, and a
 
 from __future__ import annotations
 
+from datetime import date
 from pathlib import Path
 
 import pytest
@@ -273,3 +274,138 @@ class TestOpenMarketCoverage:
         bare = [r for r in out["rows"] if r["mode"] == "Market"]
         assert bare, "the export writes a bare Market mode"
         assert all(r["is_open_market"] == "true" for r in bare)
+
+
+# --------------------------------------------------------------------------
+# Pasted input
+#
+# The desk pastes a day straight from the spreadsheet. It must be held to the
+# same rules as a downloaded export, or the two routes drift and the paste
+# quietly admits rows the importer would have rejected.
+# --------------------------------------------------------------------------
+
+PASTE_HEADER = ("Stock\tClient Name\tClient Category\tAction*\t"
+          "Reported To/By Exchange\tQuantity\tAvg. Price\tMode")
+PASTE_ROW = ("Liberty Shoes\tAnupam Bansal\tPromoter\tAcquisition\t"
+       "20-Aug-2026\t4548\t305.20\tMarket Purchase")
+
+
+def test_a_tab_separated_paste_parses():
+    out = it.parse_pasted(f"{PASTE_HEADER}\n{PASTE_ROW}")
+    assert out["ok"] and out["row_count"] == 1
+    row = out["rows"][0]
+    assert row["company_name"] == "Liberty Shoes"
+    assert row["person"] == "Anupam Bansal"
+    assert row["reported_on"] == "2026-08-20"
+    assert row["quantity"] == 4548
+    assert row["is_open_market"] == "true"
+
+
+def test_a_comma_separated_paste_parses_the_same_way():
+    csv_text = (PASTE_HEADER.replace("\t", ",") + "\n" + PASTE_ROW.replace("\t", ","))
+    assert it.parse_pasted(csv_text)["rows"] == it.parse_pasted(f"{PASTE_HEADER}\n{PASTE_ROW}")["rows"]
+
+
+def test_a_comma_in_a_company_name_does_not_split_a_tab_paste():
+    """The delimiter is chosen from the header, not by counting commas."""
+    out = it.parse_pasted(f"{PASTE_HEADER}\nTata Motors, Ltd\tA Person\tPromoter\t"
+                          f"Acquisition\t20-Aug-2026\t100\t10.0\tMarket Purchase")
+    assert out["ok"]
+    assert out["rows"][0]["company_name"] == "Tata Motors, Ltd"
+
+
+def test_a_paste_holds_the_same_bar_as_a_file():
+    """No person, no date, no quantity - the file importer drops these too."""
+    missing_qty = ("Liberty Shoes\tAnupam Bansal\tPromoter\tAcquisition\t"
+                   "20-Aug-2026\t\t305.20\tMarket Purchase")
+    out = it.parse_pasted(f"{PASTE_HEADER}\n{PASTE_ROW}\n{missing_qty}")
+    assert out["row_count"] == 1
+    assert out["pasted_rows"] == 2
+    # Reported, not swallowed: half a paste vanishing must be visible.
+    assert out["dropped_rows"] == 1
+
+
+def test_re_pasting_the_same_day_does_not_duplicate():
+    """Overlapping ranges are normal; the fingerprint has to collapse them."""
+    out = it.parse_pasted(f"{PASTE_HEADER}\n{PASTE_ROW}\n{PASTE_ROW}")
+    assert out["row_count"] == 1
+
+
+def test_an_empty_or_header_only_paste_says_which():
+    assert it.parse_pasted("")["error"] == "nothing_pasted"
+    assert it.parse_pasted("   \n  ")["error"] == "nothing_pasted"
+    assert "header_row" in it.parse_pasted(PASTE_HEADER)["error"]
+
+
+def test_wrong_columns_name_what_was_seen():
+    """Otherwise a bad paste is indistinguishable from a broken importer."""
+    out = it.parse_pasted("Foo\tBar\n1\t2")
+    assert out["error"] == "no_usable_rows"
+    assert out["headers_seen"] == ["Foo", "Bar"]
+    assert "Stock" in out["headers_required"]
+
+
+def test_the_paste_route_reuses_the_file_normaliser():
+    """One code path, so the two can never disagree about what is valid."""
+    import inspect
+
+    assert "normalise_rows" in inspect.getsource(it.parse_pasted)
+    assert "normalise_rows" in inspect.getsource(it.parse_file)
+
+
+# --------------------------------------------------------------------------
+# Date formats
+#
+# A 36-row paste was rejected in full with "every row needs a company, a
+# person, a reported date and a quantity". Every row had all four. The export
+# wrote 24/08/26 and the parser knew %d/%m/%Y but not %d/%m/%y, so the date
+# came back as None and each row was dropped as unstorable.
+# --------------------------------------------------------------------------
+
+
+def test_a_two_digit_year_is_read():
+    """The NSE web export's default format."""
+    assert it._date("24/08/26") == date(2026, 8, 24)
+    assert it._date("24-08-26") == date(2026, 8, 24)
+
+
+def test_a_four_digit_year_is_not_truncated_by_the_two_digit_pattern():
+    """Order matters: %y matching "24/08/20" out of "24/08/2026" would file a
+    2026 trade under 2020 and store it happily."""
+    assert it._date("24/08/2026") == date(2026, 8, 24)
+    assert it._date("24-08-2026") == date(2026, 8, 24)
+
+
+def test_the_other_shapes_still_parse():
+    assert it._date("2026-08-24") == date(2026, 8, 24)
+    assert it._date("24-Aug-2026") == date(2026, 8, 24)
+    assert it._date("19 Aug 2026") == date(2026, 8, 19)
+    # Excel hands back a datetime; the time must not defeat the match.
+    assert it._date("2026-08-24 00:00:00") == date(2026, 8, 24)
+
+
+def test_nothing_usable_is_still_nothing():
+    assert it._date("") is None
+    assert it._date(None) is None
+    assert it._date("not a date") is None
+
+
+def test_the_paste_that_was_rejected_now_parses():
+    """The real export, including a quoted cell containing newlines - the
+    holding column arrives as "0\\n\\n(0%)" and must not split the row."""
+    header = ("Stock\tClient Name\tClient Category\tAction*\tReported To/By Exchange\t"
+              "Quantity\tPost Transaction Holding\tTraded %\tAvg. Price\tValue\tPeriod\t"
+              "Regulation (Insider/SAST)\tSecurity Type\tMode")
+    simple = ("Sterling Tools\tANIL AGGARWAL\tPromoter and Director\tDisposal\t24/08/26\t"
+              "80000\t5030583\t0.22\t0\t0\t24 Aug 2026  24 Aug 2026\tInsider Trading\t"
+              "Equity\tGift")
+    multiline = ('Dr. Lal Pathlabs\tAmit Aggarwal\tDesignated Person\tDisposal\t24/08/26\t'
+                 '2050\t"0\n    \n    (0%)"\t0.00\t1885.5\t38,65,357\t'
+                 '19 Aug 2026  19 Aug 2026\tInsider Trading\tEquity\tMarket Sale')
+
+    out = it.parse_pasted(f"{header}\n{simple}\n{multiline}")
+
+    assert out["ok"] is True
+    assert out["row_count"] == 2
+    assert out["dropped_rows"] == 0
+    assert {r["reported_on"] for r in out["rows"]} == {"2026-08-24"}

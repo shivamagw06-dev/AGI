@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link, useNavigate } from 'react-router-dom';
-import AskAgiBar from '@/components/Home/AskAgiBar';
 import DiscoveryRail from '@/components/Product/DiscoveryRail';
 import { getUiPredictions } from '@/lib/uiApi';
 import { trackProductEvent } from '@/lib/productAnalytics';
@@ -51,12 +50,6 @@ export default function PredictionCentre() {
           })}
         </script>
       </Helmet>
-
-      <div className="sticky top-0 z-20 bg-white/95 backdrop-blur border-b border-[#dddddd]">
-        <div className="max-w-[1100px] mx-auto px-4 sm:px-6 py-3">
-          <AskAgiBar size="compact" placeholder="Ask about prediction accuracy or a company call…" onAsk={onAsk} />
-        </div>
-      </div>
 
       <div className="max-w-[1100px] mx-auto px-4 sm:px-6 py-8">
         <Link to="/" className="text-xs font-bold text-[#111] hover:text-[#ff6600]">← Home</Link>

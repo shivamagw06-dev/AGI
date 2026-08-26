@@ -6,7 +6,7 @@ import { AlertTriangle, RefreshCw } from 'lucide-react';
 import API_ORIGIN from '@/config';
 import {
   STRATEGIES, LIVE_STRATEGIES, SIZING_MATH, LIMITS, VALIDATION_LABELS,
-  DEFAULT_SCREEN, isValidated, caveatOf,
+  DEFAULT_SCREEN, isValidated, caveatOf, cellOf,
 } from '@/lib/hedgeFundStrategies';
 import './hedgeFundDesk.css';
 
@@ -77,9 +77,10 @@ function ArithmeticCheck({ strategy, row }) {
 
 function Stage({ card }) {
   if (!card) return <span className="hd-stage">No data</span>;
-  if (card.investment_validated) return <span className="hd-stage op">Investment validated</span>;
-  if (card.research_validated) return <span className="hd-stage op">Research validated</span>;
-  if (card.operational) return <span className="hd-stage op">Operational</span>;
+  if (card.governance) {
+    const mapped = card.governance.mapped !== false;
+    return <span className={`hd-stage ${mapped ? 'exp' : 'blocked'}`}>{mapped ? card.governance.stage : 'Unmapped'}</span>;
+  }
   return <span className="hd-stage exp">Experimental</span>;
 }
 
@@ -97,25 +98,35 @@ export default function HedgeFundDesk() {
     setLoading(true); setError('');
     try {
       if (!API_ORIGIN) throw new Error('AGI backend origin is not configured.');
-      const json = async (path) => {
-        const res = await fetch(`${API_ORIGIN}${path}`, { headers: { Accept: 'application/json' } });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        if (!(res.headers.get('content-type') || '').includes('application/json')) {
-          throw new Error('invalid response');
+      const json = async (path, timeoutMs) => {
+        const controller = new AbortController();
+        const timer = window.setTimeout(() => controller.abort(), timeoutMs);
+        try {
+          const res = await fetch(`${API_ORIGIN}${path}`, {
+            headers: { Accept: 'application/json' },
+            signal: controller.signal,
+          });
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          if (!(res.headers.get('content-type') || '').includes('application/json')) {
+            throw new Error('invalid response');
+          }
+          return res.json();
+        } finally {
+          window.clearTimeout(timer);
         }
-        return res.json();
       };
-      const [snapshot, intraday] = await Promise.allSettled([
-        json('/api/intelligence/hedge-fund-lab/terminal?limit=40'),
-        json('/api/intelligence/hedge-fund-lab/live-strategies?limit=25'),
-      ]);
-      if (snapshot.status === 'fulfilled') setData(snapshot.value);
-      else throw new Error(`The desk feed is unavailable (${snapshot.reason?.message}).`);
-      // The intraday board is additive: if it fails those cards report it and
-      // the nine fundamental screens are unaffected.
-      setLive(intraday.status === 'fulfilled' ? intraday.value : null);
+
+      // Live Alpha is additive. Start it concurrently, but never make the
+      // fundamental desk wait for an optional intraday overlay.
+      void json('/api/intelligence/hedge-fund-lab/live-strategies?limit=25', 8000)
+        .then(setLive)
+        .catch(() => setLive(null));
+
+      const snapshot = await json('/api/intelligence/hedge-fund-lab/terminal?limit=40', 15000);
+      setData(snapshot);
     } catch (e) {
-      setError(e.message || 'The desk feed is unavailable.');
+      const detail = e?.name === 'AbortError' ? 'request timed out' : e?.message;
+      setError(`The desk feed is unavailable (${detail || 'unknown error'}).`);
     } finally { setLoading(false); }
   };
 
@@ -134,7 +145,7 @@ export default function HedgeFundDesk() {
           // serves both. Intraday screens compute live rather than from the
           // 15-minute snapshot, so they carry no validation_status.
           card: c ? { ...c, id: s.id, count: c.count, results: c.results,
-                      operational: true, suitability_stars: 0 } : null,
+                      suitability_stars: 0 } : null,
         };
       }),
     ];
@@ -282,6 +293,20 @@ export default function HedgeFundDesk() {
                 <h3>{strategy.name}</h3>
                 <p className="hd-question">{strategy.question}</p>
                 <p className="hd-thesis">{strategy.thesis}</p>
+                {strategy.data ? (
+                  <p className="hd-eq-note">
+                    Ranks on {strategy.data.rank}. Last price from {strategy.data.displayPrice}
+                    {strategy.data.derived ? `. ${strategy.data.derived}` : ''}
+                    {strategy.data.size ? `. Sizing uses ${strategy.data.size}` : ''}.
+                  </p>
+                ) : null}
+                {strategy.card?.governance ? (
+                  <p className="hd-thesis">
+                    Governed as <b>{strategy.card.governance.canonical_strategy_id}</b>
+                    {' '}· {String(strategy.card.governance.role || '').replaceAll('_', ' ')}
+                    {' '}· capital blocked
+                  </p>
+                ) : null}
               </div>
 
               <div className="hd-split">
@@ -348,9 +373,10 @@ export default function HedgeFundDesk() {
                                   {caveatOf(r) ? <span className="hd-flag">{caveatOf(r)}</span> : null}
                                 </td>
                                 {strategy.columns.map((c) => {
-                                  const v = n(r[c.key]);
+                                  const raw = cellOf(r, c);
+                                  const v = n(raw);
                                   const cls = c.signed && v !== null ? (v > 0 ? 'hd-pos' : v < 0 ? 'hd-neg' : '') : '';
-                                  return <td key={c.key} className={cls}>{fmt(r[c.key], c)}</td>;
+                                  return <td key={c.key} className={cls}>{fmt(raw, c)}</td>;
                                 })}
                                 <td>{n(r.confidence) !== null ? n(r.confidence).toFixed(0) : '—'}</td>
                               </tr>

@@ -8,6 +8,7 @@ import Footer from '@/components/Footer';
 import { Toaster } from '@/components/ui/toaster';
 import PinGate from '@/components/auth/PinGate';
 import RequireRegistration from '@/components/auth/RequireRegistration';
+import RequireAskAgiAdmin, { AskAgiVisibility } from '@/components/auth/AskAgiAdminAccess';
 import FunnelRouteTracker from '@/components/analytics/FunnelRouteTracker';
 
 const AdminRoutes = React.lazy(() => import('@/pages/admin/AdminRoutes'));
@@ -37,9 +38,11 @@ const PinUnlockPage = React.lazy(() => import('@/pages/auth/PinUnlockPage'));
 const AccountSecurityPage = React.lazy(() => import('@/pages/auth/AccountSecurityPage'));
 const Opinions = React.lazy(() => import('@/components/Opinions'));
 const Markets = React.lazy(() => import('@/pages/Markets'));
+const StocksBoardPage = React.lazy(() => import('@/pages/StocksBoardPage'));
 const MarketIntelligence = React.lazy(() => import('@/pages/MarketIntelligence'));
 const MarketSectorIntelligence = React.lazy(() => import('@/pages/MarketSectorIntelligence'));
 const GlobalMarketsPage = React.lazy(() => import('@/pages/GlobalMarketsPage'));
+const UsStockIntelligence = React.lazy(() => import('@/pages/UsStockIntelligence'));
 const PreMarketIntelligence = React.lazy(() => import('@/pages/PreMarketIntelligence'));
 const Nifty500StockResearch = React.lazy(() => import('@/pages/Nifty500StockResearch'));
 const IpoDetailPage = React.lazy(() => import('@/pages/IpoDetailPage'));
@@ -61,6 +64,8 @@ const HedgeFundDesk = React.lazy(() => import('@/pages/HedgeFundDesk'));
 const HedgeFundPage = React.lazy(() => import('@/pages/HedgeFundPage'));
 const HedgeFundSignalPage = React.lazy(() => import('@/pages/HedgeFundSignalPage'));
 const LiveAlphaPage = React.lazy(() => import('@/pages/LiveAlphaPage'));
+const LiveDeskPage = React.lazy(() => import('@/pages/LiveDeskPage'));
+import RiskDisclosureModal from '@/components/Compliance/RiskDisclosureModal';
 const PrivateEquityPage = React.lazy(() => import('@/pages/PrivateEquityPage'));
 const PrivateEquityFirmPage = React.lazy(() => import('@/pages/PrivateEquityFirmPage'));
 const IntelligenceEntityPage = React.lazy(() => import('@/pages/IntelligenceEntityPage'));
@@ -123,13 +128,13 @@ function AppShell() {
     return (
       <MarketDataProvider>
         <PinGate>
-          <RequireRegistration feature="ask_agi">
+          <RequireAskAgiAdmin>
             <Suspense fallback={<div className="min-h-screen bg-[#0b0e14] p-8 text-center text-slate-300">Loading Ask AGI…</div>}>
               <Routes>
                 <Route path="/ask" element={<AskAgiPage />} />
               </Routes>
             </Suspense>
-          </RequireRegistration>
+          </RequireAskAgiAdmin>
           <Toaster />
         </PinGate>
       </MarketDataProvider>
@@ -181,7 +186,7 @@ function PublicRoutes() {
   return (
     <Routes>
       <Route path="/" element={<HomeLayout />} />
-      <Route path="/ask" element={gate('ask_agi', <AskAgiPage />)} />
+      <Route path="/ask" element={<RequireAskAgiAdmin><AskAgiPage /></RequireAskAgiAdmin>} />
       <Route path="/predictions" element={gate('forecasts', <PredictionCentre />)} />
       <Route path="/workspace" element={gate('workspace', <PersonalWorkspace />)} />
 
@@ -196,6 +201,7 @@ function PublicRoutes() {
       <Route path="/category/:slug" element={<CategoryPage />} />
 
       <Route path="/markets" element={<Markets />} />
+      <Route path="/markets/stocks" element={<StocksBoardPage />} />
       <Route path="/sections/markets" element={<Navigate replace to="/markets" />} />
       <Route path="/market-intelligence" element={gate('market_intelligence', <MarketIntelligence />)} />
       <Route path="/market-sector-intelligence" element={gate('market_intelligence', <MarketSectorIntelligence />)} />
@@ -204,6 +210,7 @@ function PublicRoutes() {
       {/* Superseded by the desk; kept addressable while the factor audit is ported. */}
       <Route path="/hedge-fund/factor-audit" element={gate('hedge_fund', <HedgeFundPage />)} />
       <Route path="/live-alpha" element={gate('live_alpha', <LiveAlphaPage />)} />
+      <Route path="/live-desk" element={gate('market_intelligence', <LiveDeskPage />)} />
       <Route path="/hedge-fund/alpha-opportunities" element={gate('hedge_fund', <HedgeFundSignalPage kind="alpha" />)} />
       <Route path="/hedge-fund/technical-analysis" element={<Navigate replace to="/hedge-fund/alpha-opportunities" />} />
       <Route path="/hedge-fund/strategy-lab" element={<Navigate replace to="/hedge-fund" />} />
@@ -213,6 +220,7 @@ function PublicRoutes() {
       <Route path="/private-equity" element={<Navigate replace to="/private-markets" />} />
       <Route path="/private-equity/firms/:slug" element={gate('private_markets', <PrivateEquityFirmPage />)} />
       <Route path="/global-markets" element={gate('global_markets', <GlobalMarketsPage />)} />
+      <Route path="/us-stock-intelligence" element={gate('global_markets', <UsStockIntelligence />)} />
       <Route path="/economics" element={gate('economics', <EconomicsPage />)} />
       <Route path="/insider-activity" element={gate('insider', <InsiderActivityPage />)} />
       <Route path="/global" element={<Navigate replace to="/global-markets" />} />
@@ -314,6 +322,8 @@ function App() {
               rel="stylesheet"
             />
           </Helmet>
+          <AskAgiVisibility />
+          <RiskDisclosureModal />
           <FunnelRouteTracker />
           <AppShell />
         </div>

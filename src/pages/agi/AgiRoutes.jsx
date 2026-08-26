@@ -1,4 +1,5 @@
 import { Route, Routes } from 'react-router-dom';
+import RequireAskAgiAdmin from '@/components/auth/AskAgiAdminAccess';
 import AgiLayout from './AgiLayout';
 import DashboardPage from './DashboardPage';
 import AskAgiProductPage from './AskAgiProductPage';
@@ -17,7 +18,7 @@ export default function AgiRoutes() {
     <Routes>
       <Route element={<AgiLayout />}>
         <Route index element={<DashboardPage />} />
-        <Route path="ask" element={<AskAgiProductPage />} />
+        <Route path="ask" element={<RequireAskAgiAdmin><AskAgiProductPage /></RequireAskAgiAdmin>} />
         <Route path="companies" element={<CompaniesIndexPage />} />
         <Route path="companies/:ticker" element={<CompanyWorkspacePage />} />
         <Route path="portfolio" element={<PortfolioWorkspacePage />} />

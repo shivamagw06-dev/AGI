@@ -421,11 +421,31 @@ async def lifespan(_app: FastAPI):
         # not a reason to refuse to start.
         log.warning("desk_artifacts_prime_failed", extra={"error": str(exc)[:200]})
 
+    # Options lab: collect the NIFTY option chain through the session.
+    # OPTIONS_LAB_LIVE_VALIDATION was already true in render.yaml with nothing
+    # reading it, so the lab's tables stayed empty. It runs here rather than in
+    # a worker of its own because it is idle outside market hours and needs the
+    # Upstox token and /var/data disk this service already has.
+    try:
+        from options_lab.embedded import start as start_options_lab
+
+        start_options_lab()
+    except Exception as exc:
+        log.warning(
+            "options_lab_collector_start_failed", extra={"error": str(exc)[:200]}
+        )
+
     log.info(
         "intelligence_engine_started",
         extra={"env": settings.app_env, "agib_base": settings.agib_api_base_url},
     )
     yield
+    try:
+        from options_lab.embedded import stop as stop_options_lab
+
+        stop_options_lab()
+    except Exception:
+        pass
     try:
         if stop_cgl is not None:
             stop_cgl()

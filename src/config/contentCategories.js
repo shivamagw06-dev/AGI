@@ -60,7 +60,7 @@ export const HOME_CATEGORIES = [
     description:
       'Live indices, commodities, currencies, global markets, and economic indicators.',
     icon: BarChart3,
-    path: '/markets',
+    path: '/markets/stocks',
     section: null,
   },
 ];

@@ -90,7 +90,8 @@ _own("historical_ratios", ("roe", "roa", "roce"), {"formula_engine"})
 # the wrong writer from filling it in.
 _own("daily_market_history", ("price_basis", "feed_family"),
      {"upstox_v3_historical", "upstox_v3_daily", "upstox_v3", "upstox",
-      "nse_bhavcopy", "yahoo_finance", "yahoo_finance_history"})
+      "nse_bhavcopy", "yahoo_finance", "yahoo_finance_history",
+      "groww", "groww_hfl"})
 
 
 def owners_of(tab: str, field: str) -> Optional[frozenset[str]]:
@@ -114,9 +115,49 @@ def deep_history_sources() -> tuple[str, ...]:
 # is not what a snapshot of today knows about.
 CURRENT_PERIOD_SLACK_DAYS = 120
 
+# The checked-in Capital IQ master exclusively owns reported annual facts for
+# FY2017-FY2026. Formula-derived FCF/book value may enrich those rows but may
+# not replace any vendor-reported field.
+PROTECTED_ANNUAL_YEARS = frozenset(range(2017, 2027))
+PROTECTED_ANNUAL_SOURCE = "capital_iq_workbook"
+PROTECTED_ANNUAL_DERIVED_FIELDS = frozenset({
+    "symbol", "statement_type", "statement_frequency", "fiscal_year", "source",
+    "free_cash_flow", "book_value",
+})
+
 
 def _violation(rule: str, detail: str, **extra: Any) -> dict[str, Any]:
     return {"rule": rule, "detail": detail, **extra}
+
+
+def check_protected_annual_slice(
+    tab: str, rows: Iterable[dict[str, Any]], *, source: str,
+) -> list[dict[str, Any]]:
+    """Only the master workbook may write reported FY2017-FY2026 annual facts."""
+    src = str(source or "").strip().lower()
+    if tab != "financials_annual" or src == PROTECTED_ANNUAL_SOURCE:
+        return []
+    for row in rows or []:
+        raw = str((row or {}).get("fiscal_year") or "").strip().upper().replace("FY", "")
+        try:
+            year = int(raw)
+        except (TypeError, ValueError):
+            continue
+        if year < 100:
+            year += 2000
+        if year not in PROTECTED_ANNUAL_YEARS:
+            continue
+        non_null_fields = {key for key, value in row.items() if value is not None}
+        if src == "formula_engine" and non_null_fields <= PROTECTED_ANNUAL_DERIVED_FIELDS:
+            continue
+        return [_violation(
+            "protected_annual_slice",
+            f"{src} may not write financials_annual FY2017-FY2026; "
+            f"owned exclusively by {PROTECTED_ANNUAL_SOURCE}",
+            tab=tab, source=src, fiscal_year=year,
+            owners=[PROTECTED_ANNUAL_SOURCE],
+        )]
+    return []
 
 
 def check_fields(tab: str, rows: Iterable[dict[str, Any]], *, source: str) -> list[dict[str, Any]]:
@@ -262,7 +303,8 @@ def check(tab: str, rows: Iterable[dict[str, Any]], *, source: str,
           today: Optional[str] = None) -> list[dict[str, Any]]:
     """Everything the contract forbids about this write."""
     rows = list(rows or [])
-    return (check_fields(tab, rows, source=source)
+    return (check_protected_annual_slice(tab, rows, source=source)
+            + check_fields(tab, rows, source=source)
             + check_period_scope(tab, rows, source=source, today=today)
             + check_canonical_claim(tab, rows, source=source)
             + (check_price_basis(rows, source=source)

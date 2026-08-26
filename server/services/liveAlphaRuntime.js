@@ -166,11 +166,20 @@ export async function startLiveAlphaRuntime({ Feed = null, FallbackFeed = GrowwL
     if (openingSnapshots.length) pipeline.ingest({ snapshots: openingSnapshots });
     if (recentSnapshots.length) pipeline.ingest({ snapshots: recentSnapshots });
     const store = new SynchronizedSnapshotStore();
+    if (recentSnapshots.length) store.ingest({ snapshots: recentSnapshots });
     const instrumentKeys = [...new Set([universe.benchmarkKey, ...universe.members.flatMap((row) => [row.instrumentKey, row.sectorInstrumentKey, row.derivativeInstrumentKey]).filter(Boolean)])];
     let lastEvaluationMs = 0;
+    const batchQueue = {
+      processing: false,
+      pending: new Map(),
+      processed_batches: 0,
+      coalesced_messages: 0,
+      max_pending_snapshots: 0,
+    };
     const FeedClass = Feed || (provider === 'groww' ? GrowwLiveAlphaFeed : UpstoxMarketFeedV3);
     // Upstox-only mode: full websocket feed. Do not mix Groww quote polling.
-    const onBatch = async (batch) => {
+    const processBatch = async (batch) => {
+      store.ingest(batch);
       pipeline.ingest(batch);
       await persistence.persistBatch(batch);
       if (Date.now() - lastEvaluationMs >= 5_000) {
@@ -190,8 +199,40 @@ export async function startLiveAlphaRuntime({ Feed = null, FallbackFeed = GrowwL
         if (!currentEvaluation.skipped) state.last_successful_evaluation = currentEvaluation;
       }
     };
+    // EventEmitter does not await async WebSocket handlers. Without explicit
+    // backpressure, every market-data message can retain a decoded batch while
+    // the previous Supabase write/evaluation is still in flight. Keep at most
+    // one pending snapshot per instrument and drain serially. Intermediate
+    // updates are safely coalesced because the synchronized quote store above
+    // still ingests every message and this research pipeline persists at most
+    // one observation per instrument/minute.
+    const onBatch = async (batch) => {
+      for (const snapshot of batch?.snapshots || []) {
+        const key = String(snapshot?.instrument_key || '').trim();
+        if (key) batchQueue.pending.set(key, snapshot);
+      }
+      batchQueue.max_pending_snapshots = Math.max(
+        batchQueue.max_pending_snapshots,
+        batchQueue.pending.size,
+      );
+      if (batchQueue.processing) {
+        batchQueue.coalesced_messages += 1;
+        return;
+      }
+      batchQueue.processing = true;
+      try {
+        while (batchQueue.pending.size) {
+          const snapshots = [...batchQueue.pending.values()];
+          batchQueue.pending.clear();
+          await processBatch({ snapshots });
+          batchQueue.processed_batches += 1;
+        }
+      } finally {
+        batchQueue.processing = false;
+      }
+    };
     let feed = new FeedClass({ instrumentKeys, universe, snapshotStore: store, mode: 'full', onBatch });
-    runtime = { provider, feed, pipeline, persistence, store, universe, bootstrap: { opening_snapshots: openingSnapshots.length, recent_snapshots: recentSnapshots.length, volume_baselines: baselines.values.size, restore_errors: restored.errors, derivatives: universe.derivativeResolution } };
+    runtime = { provider, feed, pipeline, persistence, store, universe, batchQueue, bootstrap: { opening_snapshots: openingSnapshots.length, recent_snapshots: recentSnapshots.length, volume_baselines: baselines.values.size, restore_errors: restored.errors, derivatives: universe.derivativeResolution } };
     state = {
       enabled: true, status: 'starting', evaluation_status: 'warming_up',
       started_at: new Date().toISOString(), last_evaluation: null,
@@ -298,6 +339,13 @@ export function getLiveAlphaRuntimeStatus() {
     feed,
     universe: runtime ? { name: runtime.universe.name, members: runtime.universe.members.length, expected_members: runtime.universe.expectedMembers, coverage_complete: runtime.universe.members.length === runtime.universe.expectedMembers, subscribed_instruments: runtime.feed.instrumentKeys.length, benchmark_key: runtime.universe.benchmarkKey, derivatives: runtime.universe.derivativeResolution } : null,
     bootstrap: runtime?.bootstrap || null,
+    batch_queue: runtime?.batchQueue ? {
+      processing: runtime.batchQueue.processing,
+      pending_snapshots: runtime.batchQueue.pending.size,
+      processed_batches: runtime.batchQueue.processed_batches,
+      coalesced_messages: runtime.batchQueue.coalesced_messages,
+      max_pending_snapshots: runtime.batchQueue.max_pending_snapshots,
+    } : null,
     provider_policy: {
       primary: String(process.env.LIVE_ALPHA_PROVIDER || 'upstox').trim().toLowerCase(),
       fallback: 'groww',
@@ -308,6 +356,44 @@ export function getLiveAlphaRuntimeStatus() {
     research_only: true,
     execution_enabled: false,
   };
+}
+
+export function latestLiveAlphaPrints() {
+  const prices = new Map();
+  const put = (key, ltp, observedAt, source) => {
+    const id = String(key || '').trim();
+    const px = Number(ltp);
+    if (!id || !(px > 0)) return;
+    const existing = prices.get(id);
+    const nextMs = Date.parse(observedAt || '') || 0;
+    const prevMs = Date.parse(existing?.observed_at || '') || 0;
+    if (existing && prevMs >= nextMs) return;
+    prices.set(id, {
+      ltp: px,
+      observed_at: observedAt || null,
+      source: source || 'live_alpha',
+    });
+  };
+  try {
+    for (const [key, row] of runtime?.store?.latest || []) {
+      put(key, row?.ltp, row?.received_at || row?.effective_timestamp, row?.source || 'live_alpha_store');
+    }
+  } catch {
+    /* store is optional until the feed starts */
+  }
+  try {
+    for (const [key, values] of runtime?.pipeline?.featureStore?.series || []) {
+      const last = values?.at?.(-1);
+      put(key, last?.ltp, last?.received_at, last?.source || 'live_alpha_features');
+    }
+  } catch {
+    /* feature store is optional until the first ingest */
+  }
+  for (const member of runtime?.universe?.members || []) {
+    const pack = prices.get(member.instrumentKey);
+    if (pack && member.symbol) prices.set(member.symbol, pack);
+  }
+  return prices;
 }
 
 export function getLiveAlphaMarketSnapshot(symbols = [], { now = new Date() } = {}) {

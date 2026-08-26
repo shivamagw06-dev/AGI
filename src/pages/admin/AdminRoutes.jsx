@@ -68,6 +68,8 @@ const HistoricalCoverage = lazy(() => import('@/pages/admin/HistoricalCoverage')
 const UpstoxBootstrap = lazy(() => import('@/pages/admin/UpstoxBootstrap'));
 const UpstoxFundamentals = lazy(() => import('@/pages/admin/UpstoxFundamentals'));
 const ValuationPolicy = lazy(() => import('@/pages/admin/ValuationPolicy'));
+const ValuationRatiosWorkbook = lazy(() => import('@/pages/admin/ValuationRatiosWorkbook'));
+const InsiderTradesPaste = lazy(() => import('@/pages/admin/InsiderTradesPaste'));
 const HistoricalValuation = lazy(() => import('@/pages/admin/HistoricalValuation'));
 const HvieRuntime = lazy(() => import('@/pages/admin/HvieRuntime'));
 const FinancialWarehouse = lazy(() => import('@/pages/admin/FinancialWarehouse'));
@@ -82,6 +84,8 @@ const KulDashboard = lazy(() => import('@/pages/admin/KulDashboard'));
 const MarketResearchNote = lazy(() => import('@/pages/admin/MarketResearchNote'));
 const MarketActivities = lazy(() => import('@/pages/admin/MarketActivities'));
 const StrategyLab = lazy(() => import('@/pages/admin/StrategyLab'));
+const OptionsLab = lazy(() => import('@/pages/OptionsLab'));
+const BroadcastLinks = lazy(() => import('@/pages/admin/BroadcastLinks'));
 const IntelligenceCmsRoutes = lazy(() => import('@/pages/admin/intelligence/IntelligenceCmsRoutes'));
 
 function AdminPageFallback() {
@@ -115,6 +119,8 @@ export default function AdminRoutes() {
           <Route path="upstox-fundamentals" element={<UpstoxFundamentals />} />
           {/* Full-bleed Valuation Policy & Applicability Engine (Phase 8.2A) */}
           <Route path="valuation-policy" element={<ValuationPolicy />} />
+          <Route path="valuation-ratios-workbook" element={<ValuationRatiosWorkbook />} />
+          <Route path="insider-trades-paste" element={<InsiderTradesPaste />} />
           {/* Full-bleed Historical Valuation Intelligence Engine (Phase 8.3) */}
           <Route path="historical-valuation" element={<HistoricalValuation />} />
           <Route path="hvie-runtime" element={<HvieRuntime />} />
@@ -127,6 +133,7 @@ export default function AdminRoutes() {
           <Route path="macro-runtime" element={<MacroRuntime />} />
           <Route path="market-research-note" element={<MarketResearchNote />} />
           <Route path="strategy-lab" element={<StrategyLab />} />
+          <Route path="options-lab" element={<OptionsLab />} />
           <Route path="ifac" element={<IfacComposer />} />
           <Route path="aqe" element={<AskProductQuality />} />
           <Route path="kul" element={<KulDashboard />} />
@@ -146,6 +153,7 @@ export default function AdminRoutes() {
             <Route path="open-intelligence" element={<OpenIntelligence />} />
             <Route path="evidence" element={<Evidence />} />
             <Route path="live-evidence" element={<LiveEvidence />} />
+            <Route path="broadcast-links" element={<BroadcastLinks />} />
             <Route path="company-dossiers" element={<CompanyDossiers />} />
             <Route path="yahoo-provider" element={<YahooProvider />} />
             <Route path="data-quality" element={<DataQuality />} />

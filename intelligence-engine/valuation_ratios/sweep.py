@@ -262,6 +262,7 @@ def run(*, limit: Optional[int] = None, batch_size: int = 40, actor: str = "rati
     """
     from institutional_warehouse import gateway
     from institutional_warehouse.backfill import checkpoints
+    from valuation_ratios import ingest
 
     fetch = fetch or (lambda isin: fetch_ratios(isin))
     pause_seconds = safe_pause(pause_seconds)
@@ -283,6 +284,7 @@ def run(*, limit: Optional[int] = None, batch_size: int = 40, actor: str = "rati
     failures: list[dict[str, Any]] = []
     staged: list[dict[str, Any]] = []
     written = {"inserted": 0, "updated": 0, "unchanged": 0, "quarantined": 0}
+    valuation = {"wrote": 0, "errors": []}
 
     def promote() -> None:
         """Batched on purpose: one commit per company is 2,431 write locks."""
@@ -293,6 +295,18 @@ def run(*, limit: Optional[int] = None, batch_size: int = 40, actor: str = "rati
                             reason=f"daily_key_ratios:{run_id}")
         for key in written:
             written[key] += int(out.get(key) or 0)
+        # The desk reads historical_valuation, not this table. Writing only the
+        # long form left the sector pages on whatever Yahoo had last written,
+        # and once Yahoo was stopped they had nothing: coverage of that table
+        # fell from 2,889 rows on 19 August to 82 on the 23rd. The push-based
+        # ingest always did both; the sweep did not, and the sweep is what runs
+        # daily. A failure here must not lose the ratios already written, so it
+        # is recorded rather than raised.
+        try:
+            synced = ingest.sync_historical_valuation(staged, actor=actor)
+            valuation["wrote"] += int(synced.get("inserted") or 0) + int(synced.get("updated") or 0)
+        except Exception as exc:  # noqa: BLE001 - reported, never fatal
+            valuation["errors"].append(str(exc)[:200])
         staged = []
 
     eligible_count = 0
@@ -387,9 +401,17 @@ def run(*, limit: Optional[int] = None, batch_size: int = 40, actor: str = "rati
         "universe_coverage_pct": universe_coverage,
         "status": status,
         "written": written,
+        # Reported separately: the ratios can land while the pivot fails, and
+        # a run that says "ok" while the desk sees nothing is the bug this
+        # whole change exists to fix.
+        "historical_valuation": valuation,
         "seconds": round((datetime.now(timezone.utc) - started).total_seconds(), 1),
     }
-    checkpoints.finish_job(run_id, ok=status == HEALTHY, stats=stats)
+    # A DEGRADED run wrote data; only FAILED wrote none. Recording DEGRADED as a
+    # failed job made a batch that fetched 253 companies at 90.68% coverage read
+    # as a dead integration, which is why this collector looked broken for
+    # months while it was running two days ago.
+    checkpoints.finish_job(run_id, ok=status != FAILED, stats=stats)
     return {"ok": status != FAILED, "run_id": run_id, **stats,
             "failures": failures[:25], "incomplete_sample": incomplete[:25],
             "note": ("coverage below 95% is reported DEGRADED rather than as a "

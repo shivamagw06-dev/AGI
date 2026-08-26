@@ -99,6 +99,29 @@ def test_financial_validate_pit():
     assert conn.validate(bad)["ok"] is False
 
 
+def test_yahoo_financial_records_keep_provider_and_rupee_unit():
+    from institutional_data.connectors.financials import FinancialStatementsConnector
+
+    payload = {
+        "quoteSummary": {
+            "result": [{
+                "incomeStatementHistory": {
+                    "incomeStatementHistory": [{
+                        "endDate": {"raw": 1711843200},
+                        "totalRevenue": {"raw": 1_000_000_000},
+                    }]
+                }
+            }]
+        }
+    }
+    rows = FinancialStatementsConnector()._extract_statements(
+        payload, entity="INFY", frequency="annual",
+    )
+    assert rows[0]["units_in"] == "rupee"
+    assert rows[0]["metadata"]["provider"] == "yahoo_finance"
+    assert rows[0]["metadata"]["parser_path"] == "yahoo_quotesummary"
+
+
 def test_shareholding_normalize_and_store():
     from institutional_data.connectors.shareholding import ShareholdingConnector
     from knowledge_factory.historical_depth import store as hd_store
