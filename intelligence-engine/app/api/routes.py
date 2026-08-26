@@ -10710,6 +10710,29 @@ async def warehouse_company_names_repair(payload: dict[str, Any] = Body(default_
     return await run_in_threadpool(company_names.repair, dry_run=not apply)
 
 
+@router.post("/options-lab/nse-history/ingest", dependencies=[Depends(require_token)])
+async def options_lab_nse_history_ingest(payload: dict[str, Any] = Body(default_factory=dict)):
+    """Pull one NSE trading day into the canonical warehouse.
+
+    Defaults to a dry run: pass {"apply": true} to write. A methodology change
+    plus an ingest that runs on a bare call is how history gets restated
+    without anyone deciding to restate it.
+
+    Token-guarded because unlike the probes this writes.
+    """
+    from options_lab import nse_history
+
+    body = payload or {}
+    day = str(body.get("day") or "").strip()
+    if not day:
+        raise HTTPException(status_code=400, detail="day is required, as YYYY-MM-DD")
+    raw = body.get("underlyings")
+    underlyings = {str(u).strip().upper() for u in raw if str(u).strip()} if raw else None
+    return await run_in_threadpool(
+        nse_history.ingest_day, day,
+        underlyings=underlyings, dry_run=not bool(body.get("apply")))
+
+
 @router.get("/options-lab/nse-history/probe")
 async def options_lab_nse_history_probe(
     day: str | None = Query(default=None),

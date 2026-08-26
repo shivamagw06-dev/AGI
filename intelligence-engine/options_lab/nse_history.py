@@ -269,7 +269,8 @@ def _implied(kind: str, close: float, strike: float, forward: Forward,
 def option_records(rows: Iterable[dict[str, str]], *,
                    underlyings: Optional[set[str]] = None,
                    rate_pct: float = DEFAULT_RATE_PCT,
-                   traded_only: bool = True) -> list[dict[str, Any]]:
+                   traded_only: bool = True,
+                   with_greeks: bool = True) -> list[dict[str, Any]]:
     """Bhavcopy rows to option observations with implied volatility and greeks.
 
     Volatility is implied against the forward, using Black-76. The engine here
@@ -316,7 +317,7 @@ def option_records(rows: Iterable[dict[str, str]], *,
             iv, iv_quality = _implied(kind, close, strike, forward,
                                       time_years, dte, rate_pct)
             greeks = {}
-            if iv:
+            if iv and with_greeks:
                 greeks = _greeks(kind, forward.value, strike, time_years,
                                  rate_pct / 100.0, rate_pct / 100.0, iv) or {}
             out.append({
@@ -391,3 +392,38 @@ def probe(day: date | str = "2026-08-21", underlying: str = "NIFTY") -> dict[str
                                 "open_interest", "change_in_oi")
         } if atm else None,
     }
+
+
+def ingest_day(day: date | str, *, underlyings: Optional[set[str]] = None,
+               dry_run: bool = True) -> dict[str, Any]:
+    """One trading day from NSE into the canonical warehouse.
+
+    Greeks are not computed here. They are functions of columns the table keeps,
+    so the research layer derives them; paying for 35,000 of them on the way in
+    buys nothing that is stored.
+
+    Defaults to a dry run. An ingest that writes on a bare call is how a
+    methodology change quietly restates history.
+    """
+    from . import canonical_store
+
+    try:
+        rows = fetch_bhavcopy(day)
+    except NseHistoryError as exc:
+        return {"ok": False, "stage": "fetch", "error": str(exc)[:200]}
+
+    records = option_records(rows, underlyings=underlyings, with_greeks=False)
+    if not records:
+        return {"ok": False, "stage": "derive", "file_rows": len(rows),
+                "error": "no traded options derived"}
+
+    quality: dict[str, int] = {}
+    for r in records:
+        quality[r["iv_quality"]] = quality.get(r["iv_quality"], 0) + 1
+    try:
+        written = canonical_store.upsert(records, dry_run=dry_run)
+    except canonical_store.CanonicalStoreError as exc:
+        return {"ok": False, "stage": "write", "derived": len(records),
+                "error": str(exc)[:300]}
+    return {"ok": True, "stage": "complete", "file_rows": len(rows),
+            "derived": len(records), "iv_quality": quality, "write": written}
