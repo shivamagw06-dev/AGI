@@ -251,23 +251,47 @@ def spot_history(upto: date | str, underlying: str = "NIFTY",
                  *, days: int = 40) -> list[tuple[str, float]]:
     """Closing spot for the trading days up to and including a date.
 
-    Reads only what precedes the day being described. A realised volatility
-    built from a window that reaches past it would be accurate and untradeable.
+    Read one row per day, not one row per contract. The obvious query -- select
+    the spot column from the observations over the last forty days -- asks for
+    roughly fifty thousand rows to extract forty numbers, and PostgREST caps
+    what it returns. The cap is silent: the call succeeds, returns about a day
+    of prices, and every realised volatility built from it comes back null.
+    That is exactly what happened, on all fifty-nine days.
+
+    So the state table answers first, since it already holds one spot per day,
+    and the observations are asked only for the day being described, one row.
+
+    Reads only what precedes the day in question. A realised volatility built
+    from a window reaching past it would be accurate and untradeable.
     """
     upto = upto if isinstance(upto, date) else date.fromisoformat(str(upto)[:10])
     start = date.fromordinal(upto.toordinal() - days * 2)
+    history: dict[str, float] = {}
+
     query = (f"?observation_date=gte.{start.isoformat()}"
              f"&observation_date=lte.{upto.isoformat()}"
              f"&underlying_symbol=eq.{underlying}"
-             f"&select=observation_date,underlying_spot"
-             f"&order=observation_date.asc&limit=200000")
-    rows = _call("GET", f"/rest/v1/{TABLE}{query}") or []
-    seen: dict[str, float] = {}
-    for r in rows:
-        spot = r.get("underlying_spot")
-        if spot:
-            seen.setdefault(str(r["observation_date"]), float(spot))
-    return sorted(seen.items())[-days:]
+             f"&select=observation_date,spot&order=observation_date.asc"
+             f"&limit={days * 2}")
+    try:
+        for row in _call("GET", f"/rest/v1/{STATE_TABLE}{query}") or []:
+            if row.get("spot"):
+                history[str(row["observation_date"])] = float(row["spot"])
+    except CanonicalStoreError:
+        # The state table may not exist yet on a first build. The day's own
+        # spot below is enough to store the row; realised volatility simply
+        # stays null until there are prior days to measure against.
+        pass
+
+    if upto.isoformat() not in history:
+        one = _call("GET", f"/rest/v1/{TABLE}"
+                           f"?observation_date=eq.{upto.isoformat()}"
+                           f"&underlying_symbol=eq.{underlying}"
+                           f"&select=underlying_spot&limit=1") or []
+        if one and one[0].get("underlying_spot"):
+            history[upto.isoformat()] = float(one[0]["underlying_spot"])
+
+    return sorted(history.items())[-days:]
 
 
 def surfaces_for_day(day: date | str, underlying: str = "NIFTY") -> list[dict[str, Any]]:
