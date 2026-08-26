@@ -10710,6 +10710,26 @@ async def warehouse_company_names_repair(payload: dict[str, Any] = Body(default_
     return await run_in_threadpool(company_names.repair, dry_run=not apply)
 
 
+@router.get("/options-lab/nse-history/probe")
+async def options_lab_nse_history_probe(
+    day: str | None = Query(default=None),
+    underlying: str = Query(default="NIFTY"),
+):
+    """Read one real bhavcopy end to end and report what came out.
+
+    Separate from the intraday collector on purpose. Bhavcopy is end-of-day: it
+    carries no path within the day, so anything built on it is close-to-close
+    and must not be folded into the 5-30 minute repricing test.
+
+    Read-only, and unauthenticated for the same reason the other probes are --
+    it fetches a public NSE file and derives from it, writing nothing.
+    """
+    from options_lab import nse_history
+
+    return await run_in_threadpool(
+        nse_history.probe, (day or "2026-08-21"), underlying.strip().upper())
+
+
 @router.get("/options-lab/expired-history/probe")
 async def options_lab_expired_history_probe(instrument_key: str | None = Query(default=None)):
     """Whether this account can read expired instruments, and how far back.
