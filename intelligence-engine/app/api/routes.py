@@ -10710,6 +10710,30 @@ async def warehouse_company_names_repair(payload: dict[str, Any] = Body(default_
     return await run_in_threadpool(company_names.repair, dry_run=not apply)
 
 
+@router.post("/options-lab/signals/build", dependencies=[Depends(require_token)])
+async def options_lab_signals_build(payload: dict[str, Any] = Body(default_factory=dict)):
+    """Signals over a range of stored days, and what followed each.
+
+    Two tables, written together. A signal is a claim made from what was
+    knowable that day; an outcome is what the market did next. Kept apart so an
+    outcome cannot be reached from the condition that selected it -- a signal
+    row simply has no forward column to filter on by accident.
+
+    Dry by default.
+    """
+    from options_lab import signals
+
+    body = payload or {}
+    start, end = str(body.get("start") or "").strip(), str(body.get("end") or "").strip()
+    if not start or not end:
+        raise HTTPException(status_code=400,
+                            detail="start and end are required, as YYYY-MM-DD")
+    return await run_in_threadpool(
+        signals.build_range, start, end,
+        underlying=str(body.get("underlying") or "NIFTY").strip().upper(),
+        dry_run=not bool(body.get("apply")))
+
+
 @router.post("/options-lab/market-state/build", dependencies=[Depends(require_token)])
 async def options_lab_market_state_build(payload: dict[str, Any] = Body(default_factory=dict)):
     """Describe one stored trading day: volatility, positioning, regime.

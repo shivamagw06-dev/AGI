@@ -321,3 +321,50 @@ def upsert_state(state: dict[str, Any], *, dry_run: bool = True) -> dict[str, An
           prefer="resolution=merge-duplicates,return=minimal")
     return {"ok": True, "rows": 1, "written": 1, "dry_run": False,
             "completed_at": datetime.now(timezone.utc).isoformat()}
+
+
+SIGNAL_TABLE = "option_signal_observation"
+OUTCOME_TABLE = "option_signal_outcome"
+
+
+def states_between(start: date | str, end: date | str,
+                   underlying: str = "NIFTY") -> list[dict[str, Any]]:
+    """Market state rows over a range, oldest first. One row per day."""
+    start = start if isinstance(start, date) else date.fromisoformat(str(start)[:10])
+    end = end if isinstance(end, date) else date.fromisoformat(str(end)[:10])
+    query = (f"?observation_date=gte.{start.isoformat()}"
+             f"&observation_date=lte.{end.isoformat()}"
+             f"&underlying_symbol=eq.{underlying}"
+             f"&order=observation_date.asc&limit=5000")
+    return _call("GET", f"/rest/v1/{STATE_TABLE}{query}") or []
+
+
+def upsert_signals(rows: list[dict[str, Any]], *,
+                   dry_run: bool = True) -> dict[str, Any]:
+    return _upsert_rows(SIGNAL_TABLE, rows, dry_run=dry_run)
+
+
+def upsert_outcomes(rows: list[dict[str, Any]], *,
+                    dry_run: bool = True) -> dict[str, Any]:
+    return _upsert_rows(OUTCOME_TABLE, rows, dry_run=dry_run)
+
+
+def _upsert_rows(table: str, rows: list[dict[str, Any]], *,
+                 dry_run: bool) -> dict[str, Any]:
+    if not rows:
+        return {"ok": True, "rows": 0, "written": 0, "dry_run": dry_run,
+                "note": "nothing to write"}
+    summary = {"ok": True, "rows": len(rows), "dry_run": dry_run, "table": table}
+    if dry_run:
+        summary["sample"] = rows[0]
+        summary["note"] = "dry run: nothing written"
+        return summary
+    written = 0
+    for start in range(0, len(rows), BATCH):
+        chunk = rows[start:start + BATCH]
+        _call("POST", f"/rest/v1/{table}", body=chunk,
+              prefer="resolution=merge-duplicates,return=minimal")
+        written += len(chunk)
+    summary["written"] = written
+    summary["completed_at"] = datetime.now(timezone.utc).isoformat()
+    return summary
