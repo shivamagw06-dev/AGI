@@ -10710,6 +10710,27 @@ async def warehouse_company_names_repair(payload: dict[str, Any] = Body(default_
     return await run_in_threadpool(company_names.repair, dry_run=not apply)
 
 
+@router.post("/options-lab/surfaces/build", dependencies=[Depends(require_token)])
+async def options_lab_surfaces_build(payload: dict[str, Any] = Body(default_factory=dict)):
+    """Fit and store the volatility surfaces for one stored trading day.
+
+    Reads the canonical observations back rather than re-deriving from NSE, so
+    a surface always describes the same numbers a study will join to.
+
+    Dry by default, like every other write here.
+    """
+    from options_lab import surfaces
+
+    body = payload or {}
+    day = str(body.get("day") or "").strip()
+    if not day:
+        raise HTTPException(status_code=400, detail="day is required, as YYYY-MM-DD")
+    underlying = str(body.get("underlying") or "NIFTY").strip().upper() or None
+    return await run_in_threadpool(
+        surfaces.build_day, day,
+        underlying=underlying, dry_run=not bool(body.get("apply")))
+
+
 @router.post("/options-lab/nse-history/backfill", dependencies=[Depends(require_token)])
 async def options_lab_nse_history_backfill(payload: dict[str, Any] = Body(default_factory=dict)):
     """Walk a range of trading days into the warehouse, a chunk at a time.
