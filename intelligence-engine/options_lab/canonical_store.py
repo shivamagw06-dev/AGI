@@ -368,3 +368,31 @@ def _upsert_rows(table: str, rows: list[dict[str, Any]], *,
     summary["written"] = written
     summary["completed_at"] = datetime.now(timezone.utc).isoformat()
     return summary
+
+
+def signals_with_outcomes(start: date | str, end: date | str,
+                          underlying: str = "NIFTY") -> list[dict[str, Any]]:
+    """Signals joined to what followed them, over a range.
+
+    PostgREST embeds the outcome through the foreign key, so this is one
+    request rather than two and a client-side join that could silently drop
+    the signals whose horizon has not elapsed.
+    """
+    start = start if isinstance(start, date) else date.fromisoformat(str(start)[:10])
+    end = end if isinstance(end, date) else date.fromisoformat(str(end)[:10])
+    query = (f"?observation_date=gte.{start.isoformat()}"
+             f"&observation_date=lte.{end.isoformat()}"
+             f"&underlying_symbol=eq.{underlying}"
+             f"&select=*,{OUTCOME_TABLE}(*)"
+             f"&order=observation_date.asc&limit=20000")
+    rows = _call("GET", f"/rest/v1/{SIGNAL_TABLE}{query}") or []
+    flat = []
+    for row in rows:
+        outcome = row.pop(OUTCOME_TABLE, None)
+        if isinstance(outcome, list):
+            outcome = outcome[0] if outcome else None
+        # A signal whose horizon has not elapsed has no outcome yet. Kept, so a
+        # study can count how much of its range is still unresolved rather than
+        # silently studying only the older half.
+        flat.append({**row, **(outcome or {})})
+    return flat
