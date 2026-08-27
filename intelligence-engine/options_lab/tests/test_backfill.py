@@ -140,3 +140,32 @@ class Totals(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class ArchiveFloor(unittest.TestCase):
+    """A 404 from before the archive begins is not a holiday."""
+
+    def test_a_range_before_the_floor_is_refused_whole(self):
+        # Swallowed day by day this returns a thousand false holidays, which is
+        # a convincing-looking result. The point of the floor is that nobody
+        # ever sees one.
+        out = nh.backfill("2020-01-01", "2020-03-01", dry_run=True)
+        self.assertFalse(out["ok"])
+        self.assertEqual(out["stage"], "range")
+        self.assertIn("2024-01-01", out["error"])
+
+    def test_a_partly_early_range_is_refused_rather_than_trimmed(self):
+        # Silently starting later would give a shorter history than asked for,
+        # and nothing would say so.
+        out = nh.backfill("2023-12-01", "2024-02-01", dry_run=True)
+        self.assertFalse(out["ok"])
+        self.assertIn("fall before", out["error"])
+
+    def test_a_single_early_day_says_why(self):
+        with self.assertRaises(nh.NseHistoryError) as caught:
+            nh.fetch_bhavcopy("2023-06-01")
+        self.assertIn("earliest", str(caught.exception))
+
+    def test_a_supported_range_still_runs(self):
+        out = run("2026-08-19", "2026-08-21", dry_run=True, max_days=3)
+        self.assertTrue(out["ok"])

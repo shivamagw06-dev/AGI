@@ -36,6 +36,12 @@ from .engine import _implied_volatility, _greeks
 ARCHIVE = ("https://nsearchives.nseindia.com/content/fo/"
            "BhavCopy_NSE_FO_0_0_0_{yyyymmdd}_F_0000.csv.zip")
 
+# NSE publishes this filename back to the start of 2024 and nothing before it;
+# earlier dates answer 404, which is indistinguishable from a holiday. A
+# backfill from 2020 would therefore report a thousand holidays and look like
+# it had worked, so the floor is refused explicitly instead.
+EARLIEST = date(2024, 1, 1)
+
 # NSE serves the archive only to something that looks like a browser.
 _HEADERS = {
     "User-Agent": ("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
@@ -84,6 +90,10 @@ class Forward:
 def fetch_bhavcopy(day: date | str, *, timeout: int = 60) -> list[dict[str, str]]:
     """One trading day of F&O rows. Raises if NSE has no file for that date."""
     day = day if isinstance(day, date) else date.fromisoformat(str(day)[:10])
+    if day < EARLIEST:
+        raise NseHistoryError(
+            f"{day.isoformat()} is before {EARLIEST.isoformat()}, the earliest "
+            f"date NSE publishes in this archive format")
     url = ARCHIVE.format(yyyymmdd=day.strftime("%Y%m%d"))
     request = urllib.request.Request(url, headers=_HEADERS)
     try:
@@ -480,6 +490,16 @@ def backfill(start: date | str, end: date | str, *,
     from . import canonical_store
 
     days = trading_days(start, end)
+    too_early = [d for d in days if d < EARLIEST]
+    if too_early:
+        # Refused as a range rather than swallowed day by day: hundreds of
+        # false holidays is a convincing-looking result, and the point of the
+        # floor is that nobody sees one.
+        return {"ok": False, "stage": "range",
+                "error": (f"{len(too_early)} of {len(days)} requested days fall "
+                          f"before {EARLIEST.isoformat()}, which NSE does not "
+                          f"publish in this format"),
+                "earliest_supported": EARLIEST.isoformat()}
     done: list[dict[str, Any]] = []
     skipped: list[str] = []
     holidays: list[str] = []
