@@ -5,6 +5,7 @@ from __future__ import annotations
 import sys
 import unittest
 from pathlib import Path
+from unittest import mock
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
@@ -182,3 +183,50 @@ class ZeroIsAMeasurement(unittest.TestCase):
         out = oc.build(sig, flat)
         self.assertEqual(out["iv_change_1d"], 0.0)
         self.assertIsNotNone(out["iv_change_5d"])
+
+
+class RebuildReplaces(unittest.TestCase):
+    """A rebuild must not leave the previous definition behind.
+
+    When the realised-volatility window was corrected, VRP correctly stopped
+    producing on days it should never have produced on: 344 signals became 329.
+    The upsert updated 329 rows and left 15 untouched, and the studies then read
+    344 -- two definitions mixed into one result, reported as one.
+    """
+
+    def _run(self, *, dry_run):
+        from options_lab import canonical_store as cs
+        calls = []
+
+        def fake_call(method, path, **kw):
+            calls.append((method, path))
+            if method == "GET" and cs.STATE_TABLE in path:
+                return [dict(state(f"2026-07-{d:02d}"), spot=24000.0 + d)
+                        for d in range(1, 29)]
+            if method == "GET":
+                return [{"signal_id": "old-one"}]
+            return None
+
+        with mock.patch.object(cs, "_call", side_effect=fake_call):
+            out = sg.build_range("2026-07-10", "2026-07-20", dry_run=dry_run)
+        return out, calls
+
+    def test_a_real_rebuild_clears_the_range_first(self):
+        out, calls = self._run(dry_run=False)
+        deletes = [p for m, p in calls if m == "DELETE"]
+        self.assertTrue(deletes, "the range must be cleared before writing")
+        self.assertIn("observation_date=gte.2026-07-10", deletes[0])
+        self.assertIn("observation_date=lte.2026-07-20", deletes[0])
+
+    def test_the_delete_precedes_the_write(self):
+        out, calls = self._run(dry_run=False)
+        order = [m for m, p in calls if m in ("DELETE", "POST")]
+        self.assertEqual(order[0], "DELETE")
+
+    def test_it_reports_how_many_it_replaced(self):
+        out, _ = self._run(dry_run=False)
+        self.assertIn("replaced", out)
+
+    def test_a_dry_run_deletes_nothing(self):
+        out, calls = self._run(dry_run=True)
+        self.assertEqual([p for m, p in calls if m == "DELETE"], [])
