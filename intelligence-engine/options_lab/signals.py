@@ -204,6 +204,12 @@ def build_range(start: str, end: str, *, underlying: str = "NIFTY",
     with_z = sum(1 for s in built if s["signal_zscore"] is not None)
 
     try:
+        # Clear the range first. Upserting alone leaves behind any signal the
+        # previous definition produced and this one does not, and a study then
+        # reads two definitions as though they were one.
+        removed = 0
+        if not dry_run:
+            removed = canonical_store.delete_signals_in_range(start, end, underlying)
         wrote_signals = canonical_store.upsert_signals(built, dry_run=dry_run)
         wrote_outcomes = canonical_store.upsert_outcomes(resolved, dry_run=dry_run)
     except canonical_store.CanonicalStoreError as exc:
@@ -212,4 +218,5 @@ def build_range(start: str, end: str, *, underlying: str = "NIFTY",
     return {"ok": True, "stage": "complete", "days": len(in_range),
             "signals": len(built), "with_zscore": with_z,
             "families": families, "outcomes": len(resolved),
+            "replaced": removed,
             "write": {"signals": wrote_signals, "outcomes": wrote_outcomes}}

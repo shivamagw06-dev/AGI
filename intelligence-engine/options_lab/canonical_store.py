@@ -396,3 +396,29 @@ def signals_with_outcomes(start: date | str, end: date | str,
         # silently studying only the older half.
         flat.append({**row, **(outcome or {})})
     return flat
+
+
+def delete_signals_in_range(start: date | str, end: date | str,
+                            underlying: str = "NIFTY") -> int:
+    """Remove every signal in a range before rebuilding it.
+
+    An upsert alone is not enough. A rebuild after a definition changes writes
+    fewer signals than the run before it -- when the realised-volatility window
+    was corrected, VRP stopped producing on days it should never have produced
+    on, and fifteen rows from the previous run stayed behind. The studies then
+    read 344 signals where the rebuild had written 329, mixing two definitions
+    in one result and reporting it as one.
+
+    Outcomes cascade from the signal, so this clears both halves together and
+    they cannot fall out of step.
+    """
+    start = start if isinstance(start, date) else date.fromisoformat(str(start)[:10])
+    end = end if isinstance(end, date) else date.fromisoformat(str(end)[:10])
+    query = (f"?observation_date=gte.{start.isoformat()}"
+             f"&observation_date=lte.{end.isoformat()}"
+             f"&underlying_symbol=eq.{underlying}")
+    existing = _call("GET", f"/rest/v1/{SIGNAL_TABLE}{query}&select=signal_id"
+                            f"&limit=50000") or []
+    if existing:
+        _call("DELETE", f"/rest/v1/{SIGNAL_TABLE}{query}", prefer="return=minimal")
+    return len(existing)
