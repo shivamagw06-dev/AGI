@@ -78,6 +78,40 @@ def _call(method: str, path: str, *, body: Any = None, prefer: str = "",
         raise CanonicalStoreError(f"{method} {path} failed: {exc}") from exc
 
 
+# PostgREST caps how many rows it returns regardless of the limit asked for --
+# a thousand, on this project. The cap is silent: the request succeeds, returns
+# a page, and the caller believes it has everything.
+#
+# It has now cost two results. The spot history read a day of prices instead of
+# forty and every realised volatility came back null. The studies read a
+# thousand signals of 3,873 and reported the first hundred and seventy days as
+# though they were all six hundred and fifty-one.
+#
+# Any read whose row count grows with the warehouse goes through here.
+PAGE = 1000
+
+
+def _call_paged(path: str, *, page: int = PAGE,
+                max_rows: int = 200_000) -> list[dict[str, Any]]:
+    """Every row matching a query, one page at a time.
+
+    Stops on a short page, which is the only honest end-of-data signal
+    PostgREST gives, and refuses to loop forever if one never arrives.
+    """
+    joiner = "&" if "?" in path else "?"
+    out: list[dict[str, Any]] = []
+    offset = 0
+    while offset < max_rows:
+        rows = _call("GET", f"{path}{joiner}offset={offset}&limit={page}")
+        if not rows:
+            break
+        out.extend(rows)
+        if len(rows) < page:
+            break
+        offset += page
+    return out
+
+
 def ensure_partition(day: date | str) -> str:
     """Ask for the month's partition, and do not treat a refusal as fatal.
 
@@ -217,7 +251,7 @@ def observations_for_day(day: date | str, underlying: Optional[str] = None,
             # absent, and every number built from them is null. That is how
             # spot stayed empty on fifty-nine days while nothing errored.
             "underlying_spot,volume,open_interest,change_open_interest")
-    query = f"?observation_date=eq.{day.isoformat()}&select={cols}&limit={limit}"
+    query = f"?observation_date=eq.{day.isoformat()}&select={cols}"
     if usable_iv_only:
         # Right for fitting a smile, wrong for counting open interest: a
         # contract whose volatility could not be solved still carries a real
@@ -226,7 +260,7 @@ def observations_for_day(day: date | str, underlying: Optional[str] = None,
         query += "&iv_quality=eq.ok"
     if underlying:
         query += f"&underlying_symbol=eq.{underlying}"
-    return _call("GET", f"/rest/v1/{TABLE}{query}") or []
+    return _call_paged(f"/rest/v1/{TABLE}{query}", max_rows=limit)
 
 
 def upsert_surfaces(surfaces: list[dict[str, Any]], *,
@@ -335,8 +369,8 @@ def states_between(start: date | str, end: date | str,
     query = (f"?observation_date=gte.{start.isoformat()}"
              f"&observation_date=lte.{end.isoformat()}"
              f"&underlying_symbol=eq.{underlying}"
-             f"&order=observation_date.asc&limit=5000")
-    return _call("GET", f"/rest/v1/{STATE_TABLE}{query}") or []
+             f"&order=observation_date.asc")
+    return _call_paged(f"/rest/v1/{STATE_TABLE}{query}")
 
 
 def upsert_signals(rows: list[dict[str, Any]], *,
@@ -384,8 +418,8 @@ def signals_with_outcomes(start: date | str, end: date | str,
              f"&observation_date=lte.{end.isoformat()}"
              f"&underlying_symbol=eq.{underlying}"
              f"&select=*,{OUTCOME_TABLE}(*)"
-             f"&order=observation_date.asc&limit=20000")
-    rows = _call("GET", f"/rest/v1/{SIGNAL_TABLE}{query}") or []
+             f"&order=observation_date.asc")
+    rows = _call_paged(f"/rest/v1/{SIGNAL_TABLE}{query}")
     flat = []
     for row in rows:
         outcome = row.pop(OUTCOME_TABLE, None)
@@ -417,8 +451,7 @@ def delete_signals_in_range(start: date | str, end: date | str,
     query = (f"?observation_date=gte.{start.isoformat()}"
              f"&observation_date=lte.{end.isoformat()}"
              f"&underlying_symbol=eq.{underlying}")
-    existing = _call("GET", f"/rest/v1/{SIGNAL_TABLE}{query}&select=signal_id"
-                            f"&limit=50000") or []
+    existing = _call_paged(f"/rest/v1/{SIGNAL_TABLE}{query}&select=signal_id")
     if existing:
         _call("DELETE", f"/rest/v1/{SIGNAL_TABLE}{query}", prefer="return=minimal")
     return len(existing)

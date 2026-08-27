@@ -224,3 +224,57 @@ class SpotHistory(unittest.TestCase):
             cs.spot_history("2026-08-21", "NIFTY")
         state = [p for p in seen if cs.STATE_TABLE in p][0]
         self.assertIn("observation_date=lte.2026-08-21", state)
+
+
+class Pagination(unittest.TestCase):
+    """The silent row cap, which has now cost two results."""
+
+    def _pages(self, total, page=None):
+        page = page or cs.PAGE
+        seen = []
+
+        def fake(method, path, **kw):
+            seen.append(path)
+            import re
+            off = int(re.search(r"offset=(\d+)", path).group(1))
+            lim = int(re.search(r"limit=(\d+)", path).group(1))
+            return [{"i": i} for i in range(off, min(off + lim, total))]
+
+        with mock.patch.object(cs, "_call", side_effect=fake):
+            rows = cs._call_paged("/rest/v1/thing?x=1")
+        return rows, seen
+
+    def test_it_returns_everything_not_the_first_page(self):
+        # The studies read 1,000 signals of 3,873 and reported the first 170
+        # days as though they were all 651.
+        rows, calls = self._pages(3873)
+        self.assertEqual(len(rows), 3873)
+        self.assertGreater(len(calls), 1)
+
+    def test_it_stops_on_a_short_page(self):
+        # The only honest end-of-data signal PostgREST gives.
+        rows, calls = self._pages(1500)
+        self.assertEqual(len(rows), 1500)
+        self.assertEqual(len(calls), 2)
+
+    def test_an_exact_multiple_does_not_lose_the_last_page(self):
+        rows, _ = self._pages(cs.PAGE * 2)
+        self.assertEqual(len(rows), cs.PAGE * 2)
+
+    def test_an_empty_result_is_not_an_infinite_loop(self):
+        rows, calls = self._pages(0)
+        self.assertEqual(rows, [])
+        self.assertEqual(len(calls), 1)
+
+    def test_it_refuses_to_loop_forever_if_pages_never_shorten(self):
+        # A server that always returns a full page would otherwise spin.
+        def always_full(method, path, **kw):
+            return [{"i": 0}] * cs.PAGE
+
+        with mock.patch.object(cs, "_call", side_effect=always_full):
+            rows = cs._call_paged("/rest/v1/thing", max_rows=5000)
+        self.assertLessEqual(len(rows), 5000 + cs.PAGE)
+
+    def test_the_query_string_is_preserved_across_pages(self):
+        _, calls = self._pages(2500)
+        self.assertTrue(all("x=1" in c for c in calls))
