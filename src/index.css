@@ -186,6 +186,126 @@
   color: #555555;
 }
 
+.live-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 999px;
+  background: #e1251b;
+  color: #fff;
+  font-family: 'IBM Plex Sans', 'Helvetica Neue', sans-serif;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  line-height: 1;
+  vertical-align: middle;
+}
+
+.live-badge--sm {
+  height: 18px;
+  padding: 0 7px;
+  font-size: 9px;
+}
+
+.live-badge--md,
+.live-badge--lg {
+  height: 22px;
+  padding: 0 9px;
+  font-size: 10px;
+}
+
+.live-badge-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.65);
+  animation: live-pulse 1.5s ease-out infinite;
+}
+
+@keyframes live-pulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7);
+  }
+  70% {
+    transform: scale(1.15);
+    box-shadow: 0 0 0 7px rgba(255, 255, 255, 0);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
+  }
+}
+
+.article-live-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 4px;
+  font-family: 'IBM Plex Sans', 'Helvetica Neue', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: #111111;
+}
+
+.article-live-bar-meta {
+  color: #555555;
+  font-weight: 500;
+}
+
+.article-live-updates {
+  margin: 0 0 36px;
+}
+
+.article-live-updates-heading {
+  margin: 0 0 16px;
+  font-family: 'IBM Plex Sans', 'Helvetica Neue', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #e1251b;
+}
+
+.article-live-update {
+  border-left: 2px solid #e1251b;
+  padding: 0 0 22px 16px;
+}
+
+.article-live-update:last-child {
+  padding-bottom: 0;
+}
+
+.article-live-update time {
+  display: block;
+  font-family: 'IBM Plex Sans', 'Helvetica Neue', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: #767676;
+}
+
+.article-live-update h2 {
+  margin: 6px 0 8px;
+  font-family: 'IBM Plex Sans', 'Helvetica Neue', sans-serif;
+  font-size: 1.2rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.3;
+  color: #111111;
+}
+
+.article-story-so-far {
+  margin: 8px 0 14px;
+  font-family: 'IBM Plex Sans', 'Helvetica Neue', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #6b7280;
+}
+
 .article-page-header h1,
 .article-preview-header h1 {
   margin: 12px 0 0;

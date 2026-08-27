@@ -1,3 +1,5 @@
+import { isLiveArticle, latestLiveTimestamp } from './liveArticle.js';
+
 export const DEFAULT_SITE_URL = 'https://agarwalglobalinvestments.com';
 export const DEFAULT_SHARE_IMAGE_PATH = '/agi-og-cover.png';
 export const SITE_NAME = 'Agarwal Global Investments';
@@ -59,7 +61,9 @@ function asText(value, fallback = '') {
 export function buildArticleShareMeta(article = {}, { site } = {}) {
   const origin = String(site || siteUrlFromEnv()).replace(/\/$/, '');
   const slug = sanitizeArticleSlug(article.slug);
-  const title = asText(article.title, SITE_NAME);
+  const rawTitle = asText(article.title, SITE_NAME);
+  const live = isLiveArticle(article);
+  const title = live ? `LIVE: ${rawTitle}` : rawTitle;
   const description = asText(
     article.excerpt || article.meta_description,
     DEFAULT_SHARE_DESCRIPTION
@@ -91,6 +95,7 @@ export function buildArticleShareMeta(article = {}, { site } = {}) {
     siteName: SITE_NAME,
     type: slug ? 'article' : 'website',
     publishedTime: article.published_at || article.publishedAt || null,
+    modifiedTime: latestLiveTimestamp(article) || article.updated_at || article.updatedAt || null,
     author,
   };
 }
@@ -123,6 +128,11 @@ export function shareMetaTagHtml(meta) {
   if (meta.publishedTime) {
     tags.push(
       `<meta property="article:published_time" content="${escapeHtmlAttr(meta.publishedTime)}" />`
+    );
+  }
+  if (meta.modifiedTime) {
+    tags.push(
+      `<meta property="article:modified_time" content="${escapeHtmlAttr(meta.modifiedTime)}" />`
     );
   }
   if (meta.author) {

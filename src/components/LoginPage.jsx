@@ -76,7 +76,12 @@ export default function LoginPage() {
   const unlockFeature = getFeatureForPath(safeNext);
   const unlockCopy = unlockFeature ? getFeatureCopy(unlockFeature) : null;
   const wantGoogle = searchParams.get('oauth') === 'google';
-  const [mode, setMode] = useState(searchParams.get('mode') === 'signin' ? 'signin' : 'signup');
+  const [mode, setMode] = useState(
+    searchParams.get('mode') === 'signin' ||
+      Boolean(searchParams.get('redirect') || searchParams.get('next'))
+      ? 'signin'
+      : 'signup'
+  );
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [mobile, setMobile] = useState('');

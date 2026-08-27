@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { HOMEPAGE_FEATURED_TAG, mapArticleForCard } from '@/lib/articleUtils';
-
-const ARTICLE_SELECT = 'id, title, slug, excerpt, cover_url, tags, published_at, section, status';
+import { queryArticlesSelectingLive } from '@/lib/liveArticle';
 
 export default function usePublishedArticles({
   limit = 6,
@@ -26,25 +25,27 @@ export default function usePublishedArticles({
       setLoading(true);
       setError(null);
 
-      let query = supabase
-        .from('articles')
-        .select(ARTICLE_SELECT)
-        .eq('status', 'published')
-        .order('published_at', { ascending: false })
-        .range(offset, offset + limit + (excludeSlug ? 1 : 0) - 1);
-
-      if (section) query = query.eq('section', section);
-      else if (sectionList?.length) query = query.in('section', sectionList);
-
       const [{ data, error: fetchError }, featuredResult] = await Promise.all([
-        query,
+        queryArticlesSelectingLive((select) => {
+          let query = supabase
+            .from('articles')
+            .select(select)
+            .eq('status', 'published')
+            .order('published_at', { ascending: false })
+            .range(offset, offset + limit + (excludeSlug ? 1 : 0) - 1);
+          if (section) query = query.eq('section', section);
+          else if (sectionList?.length) query = query.in('section', sectionList);
+          return query;
+        }),
         featuredFirst && !section && !sectionList?.length
-          ? supabase
-              .from('articles')
-              .select(ARTICLE_SELECT)
-              .eq('status', 'published')
-              .contains('tags', [HOMEPAGE_FEATURED_TAG])
-              .limit(1)
+          ? queryArticlesSelectingLive((select) =>
+              supabase
+                .from('articles')
+                .select(select)
+                .eq('status', 'published')
+                .contains('tags', [HOMEPAGE_FEATURED_TAG])
+                .limit(1)
+            )
           : Promise.resolve({ data: null, error: null }),
       ]);
       if (cancelled) return;

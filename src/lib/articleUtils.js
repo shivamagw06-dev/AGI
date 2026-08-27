@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabaseClient';
+import { isLiveArticle, latestLiveTimestamp } from '@/lib/liveArticle';
 
 export const HOMEPAGE_LATEST_TAG = 'homepage:latest';
 export const HOMEPAGE_FEATURED_TAG = 'homepage:featured';
@@ -140,6 +141,8 @@ const DEFAULT_COVER =
 
 export function mapArticleForCard(row) {
   if (!row) return null;
+  const live = isLiveArticle(row);
+  const lastUpdatedAt = latestLiveTimestamp(row);
   return {
     id: row.id,
     title: row.title,
@@ -155,5 +158,7 @@ export function mapArticleForCard(row) {
     date: row.published_at,
     publishedLabel: formatRelativePublishedDate(row.published_at),
     readTime: estimateReadTimeFromExcerpt(row.excerpt),
+    isLive: live,
+    lastUpdatedAt,
   };
 }

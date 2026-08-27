@@ -13,7 +13,7 @@ import { Table } from '@tiptap/extension-table';
 import TableRow from '@tiptap/extension-table-row';
 import TableCell from '@tiptap/extension-table-cell';
 import TableHeader from '@tiptap/extension-table-header';
-import { Eye, Save, Send, ImageIcon, Loader2, Brain, Mail } from 'lucide-react';
+import { Eye, Save, Send, ImageIcon, Loader2, Brain, Mail, Radio } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
 import { useAuth } from '@/contexts/AuthContext';
 import useCategories from '@/hooks/useCategories';
@@ -38,8 +38,27 @@ import { RESEARCH_DESK_SECTIONS } from '@/lib/deskSections';
 import { canEditArticle, isAdmin } from '@/lib/adminAuth';
 import { Button } from '@/components/ui/button';
 import { insertImageAtPosition, uploadArticleImage } from '@/lib/articleImageUpload';
+import LiveBadge from '@/components/Article/LiveBadge';
+import {
+  LIVE_TAG,
+  createLiveUpdate,
+  formatLiveClock,
+  isLiveArticle,
+  isMissingLiveColumnError,
+  normalizeLiveUpdates,
+  withLiveTag,
+} from '@/lib/liveArticle';
 
 const AUTOSAVE_MS = 4000;
+const EDITOR_SELECT =
+  'id, title, slug, section, excerpt, meta_description, content_md, content, cover_url, tags, status, author_id, published_at, is_live, live_updates, live_started_at, live_ended_at';
+const EDITOR_SELECT_FALLBACK =
+  'id, title, slug, section, excerpt, meta_description, content_md, content, cover_url, tags, status, author_id, published_at';
+
+function stripLiveCoverageColumns(payload) {
+  const { is_live, live_updates, live_started_at, live_ended_at, ...rest } = payload;
+  return rest;
+}
 
 function toEmbedUrl(raw) {
   const url = raw.trim();
@@ -77,6 +96,13 @@ export default function ArticleEditor() {
   const [inlineImageUploading, setInlineImageUploading] = useState(false);
   const [loaded, setLoaded] = useState(!editSlug);
   const [originalAuthorId, setOriginalAuthorId] = useState(null);
+  const [originallyPublishedAt, setOriginallyPublishedAt] = useState(null);
+  const [isLive, setIsLive] = useState(false);
+  const [liveUpdates, setLiveUpdates] = useState([]);
+  const [liveStartedAt, setLiveStartedAt] = useState(null);
+  const [liveEndedAt, setLiveEndedAt] = useState(null);
+  const [updateHeadline, setUpdateHeadline] = useState('');
+  const [updateBody, setUpdateBody] = useState('');
 
   const pendingContentRef = useRef('');
   const autosaveTimer = useRef(null);
@@ -129,13 +155,19 @@ export default function ArticleEditor() {
     let mounted = true;
 
     (async () => {
-      const { data, error: loadError } = await supabase
+      let { data, error: loadError } = await supabase
         .from('articles')
-        .select(
-          'id, title, slug, section, excerpt, meta_description, content_md, content, cover_url, tags, status, author_id'
-        )
+        .select(EDITOR_SELECT)
         .eq('slug', editSlug)
         .maybeSingle();
+
+      if (loadError && isMissingLiveColumnError(loadError)) {
+        ({ data, error: loadError } = await supabase
+          .from('articles')
+          .select(EDITOR_SELECT_FALLBACK)
+          .eq('slug', editSlug)
+          .maybeSingle());
+      }
 
       if (!mounted) return;
       if (loadError || !data) {
@@ -152,6 +184,7 @@ export default function ArticleEditor() {
 
       setDraftId(data.id);
       setOriginalAuthorId(data.author_id || user.id);
+      setOriginallyPublishedAt(data.published_at || null);
       setTitle(data.title || '');
       setSlug(data.slug || '');
       setSlugManual(true);
@@ -161,12 +194,21 @@ export default function ArticleEditor() {
       const loadedTags = Array.isArray(data.tags) ? data.tags : [];
       setTagsInput(
         loadedTags
-          .filter((tag) => tag !== HOMEPAGE_LATEST_TAG && tag !== HOMEPAGE_FEATURED_TAG)
+          .filter(
+            (tag) =>
+              tag !== HOMEPAGE_LATEST_TAG &&
+              tag !== HOMEPAGE_FEATURED_TAG &&
+              tag !== LIVE_TAG
+          )
           .join(', ')
       );
       setShowInLatest(loadedTags.includes(HOMEPAGE_LATEST_TAG));
       setShowAsHomepageLead(loadedTags.includes(HOMEPAGE_FEATURED_TAG));
       setStatus(data.status || 'draft');
+      setIsLive(isLiveArticle(data));
+      setLiveUpdates(normalizeLiveUpdates(data.live_updates));
+      setLiveStartedAt(data.live_started_at || null);
+      setLiveEndedAt(data.live_ended_at || null);
 
       const html = data.content_md || data.content || '';
       if (editor) editor.commands.setContent(html, false);
@@ -335,7 +377,15 @@ export default function ArticleEditor() {
       }
 
       if (metaDescription.trim()) payload.meta_description = metaDescription.trim();
-      if (publishStatus === 'published') payload.published_at = new Date().toISOString();
+      if (publishStatus === 'published' && !originallyPublishedAt) {
+        payload.published_at = new Date().toISOString();
+      }
+      payload.is_live = publishStatus === 'published' ? isLive : false;
+      payload.live_updates = liveUpdates;
+      payload.live_started_at = isLive ? liveStartedAt || new Date().toISOString() : liveStartedAt;
+      payload.live_ended_at = isLive ? null : liveEndedAt;
+      payload.tags = withLiveTag(payload.tags, payload.is_live);
+      payload.tags = payload.tags.length ? payload.tags : null;
       // Private intelligence notes must never appear as website posts.
       if (publishStatus === 'intelligence') {
         payload.published_at = null;
@@ -346,11 +396,29 @@ export default function ArticleEditor() {
 
       return payload;
     },
-    [editor, tagsInput, showInLatest, showAsHomepageLead, metaDescription, user, title, slug, section, coverUrl, draftId, originalAuthorId]
+    [
+      editor,
+      tagsInput,
+      showInLatest,
+      showAsHomepageLead,
+      metaDescription,
+      user,
+      title,
+      slug,
+      section,
+      coverUrl,
+      draftId,
+      originalAuthorId,
+      originallyPublishedAt,
+      isLive,
+      liveUpdates,
+      liveStartedAt,
+      liveEndedAt,
+    ]
   );
 
   const persist = useCallback(
-    async (publishStatus, { silent = false, ingest = false, stayInEditor = false } = {}) => {
+    async (publishStatus, { silent = false, ingest = false, stayInEditor = false, skipNotify = false, payloadPatch = null } = {}) => {
       if (!editor) return null;
       setSaving(true);
       setError('');
@@ -359,7 +427,15 @@ export default function ArticleEditor() {
         let articleSlug = slug || (await generateUniqueSlug(title, draftId));
         if (!slugManual) setSlug(articleSlug);
 
-        let payload = { ...buildPayload(publishStatus), slug: articleSlug };
+        let payload = { ...buildPayload(publishStatus), slug: articleSlug, ...(payloadPatch || {}) };
+        if (payload.is_live === true) {
+          payload.tags = withLiveTag(payload.tags, true);
+          payload.live_ended_at = null;
+          payload.live_started_at = payload.live_started_at || liveStartedAt || new Date().toISOString();
+        } else if (payload.is_live === false) {
+          payload.tags = withLiveTag(payload.tags, false);
+        }
+        payload.tags = payload.tags?.length ? payload.tags : null;
 
         let result;
         if (draftId) {
@@ -424,11 +500,36 @@ export default function ArticleEditor() {
             : await supabase.from('articles').insert(fallbackPayload).select('id, slug, status').single();
           ({ data, error: saveError } = result);
         }
+        if (saveError && isMissingLiveColumnError(saveError)) {
+          const fallbackPayload = {
+            ...stripLiveCoverageColumns(payload),
+            tags: withLiveTag(payload.tags, payload.is_live === true),
+          };
+          fallbackPayload.tags = fallbackPayload.tags?.length ? fallbackPayload.tags : null;
+          result = draftId
+            ? await supabase.from('articles').update(fallbackPayload).eq('id', draftId).select('id, slug, status').single()
+            : await supabase.from('articles').insert(fallbackPayload).select('id, slug, status').single();
+          ({ data, error: saveError } = result);
+          if (!saveError) {
+            setError(
+              'This story is tagged live. Timestamped updates need the live coverage columns in Supabase — run articles_live_coverage.'
+            );
+          }
+        }
         if (saveError) throw saveError;
 
         setDraftId(data.id);
         setSlug(data.slug);
         setStatus(publishStatus === 'intelligence' ? 'intelligence' : data.status);
+        if (publishStatus === 'published' && !originallyPublishedAt) {
+          setOriginallyPublishedAt(payload.published_at || new Date().toISOString());
+        }
+        if (payloadPatch?.live_updates) setLiveUpdates(payloadPatch.live_updates);
+        if (payloadPatch?.is_live !== undefined) setIsLive(payloadPatch.is_live);
+        if (payloadPatch?.live_started_at) setLiveStartedAt(payloadPatch.live_started_at);
+        if (Object.prototype.hasOwnProperty.call(payloadPatch || {}, 'live_ended_at')) {
+          setLiveEndedAt(payloadPatch.live_ended_at);
+        }
         setLastSaved(new Date());
         dirtyRef.current = false;
 
@@ -512,7 +613,7 @@ export default function ArticleEditor() {
         }
 
         let notifyResult = null;
-        if (publishStatus === 'published' && notifyOnPublish) {
+        if (publishStatus === 'published' && notifyOnPublish && !skipNotify) {
           const html = editor.getHTML();
           notifyResult = await notifySubscribers({
             title: title.trim(),
@@ -582,8 +683,75 @@ export default function ArticleEditor() {
         setSaving(false);
       }
     },
-    [editor, slug, slugManual, title, draftId, buildPayload, navigate, section, tagsInput, notifyOnPublish, coverUrl, showAsHomepageLead]
+    [
+      editor,
+      slug,
+      slugManual,
+      title,
+      draftId,
+      buildPayload,
+      navigate,
+      section,
+      tagsInput,
+      notifyOnPublish,
+      coverUrl,
+      showAsHomepageLead,
+      user,
+      originallyPublishedAt,
+      liveStartedAt,
+    ]
   );
+
+  const startLiveCoverage = useCallback(() => {
+    const started = liveStartedAt || new Date().toISOString();
+    setIsLive(true);
+    setLiveStartedAt(started);
+    setLiveEndedAt(null);
+    dirtyRef.current = true;
+  }, [liveStartedAt]);
+
+  const endLiveCoverage = useCallback(async () => {
+    const ended = new Date().toISOString();
+    setIsLive(false);
+    setLiveEndedAt(ended);
+    dirtyRef.current = true;
+    if (status !== 'published') return;
+    await persist('published', {
+      stayInEditor: true,
+      skipNotify: true,
+      payloadPatch: { is_live: false, live_ended_at: ended },
+    });
+  }, [persist, status]);
+
+  const postLiveUpdate = useCallback(async () => {
+    const headline = updateHeadline.trim();
+    const body = updateBody.trim();
+    if (!headline && !body) {
+      setError('Write an update headline or a few sentences before posting.');
+      return;
+    }
+    const next = [createLiveUpdate({ headline, body }), ...liveUpdates];
+    const started = liveStartedAt || new Date().toISOString();
+    setLiveUpdates(next);
+    setIsLive(true);
+    setLiveStartedAt(started);
+    setLiveEndedAt(null);
+    setUpdateHeadline('');
+    setUpdateBody('');
+    const firstPublish = status !== 'published';
+    const saved = await persist('published', {
+      stayInEditor: true,
+      ingest: firstPublish,
+      skipNotify: true,
+      payloadPatch: {
+        is_live: true,
+        live_updates: next,
+        live_started_at: started,
+        live_ended_at: null,
+      },
+    });
+    if (saved) setError('');
+  }, [updateHeadline, updateBody, liveUpdates, liveStartedAt, status, persist]);
 
   const notifyNow = useCallback(async () => {
     if (!editor || notifying) return;
@@ -622,12 +790,16 @@ export default function ArticleEditor() {
 
     autosaveTimer.current = setInterval(() => {
       if (dirtyRef.current && title.trim()) {
-        persist('draft', { silent: true });
+        persist(status === 'published' || status === 'intelligence' ? status : 'draft', {
+          silent: true,
+          skipNotify: true,
+          stayInEditor: true,
+        });
       }
     }, AUTOSAVE_MS);
 
     return () => clearInterval(autosaveTimer.current);
-  }, [editor, loaded, user, title, persist]);
+  }, [editor, loaded, user, title, persist, status]);
 
   const html = editor?.getHTML() || '';
   const words = wordCountFromHTML(html);
@@ -658,6 +830,7 @@ export default function ArticleEditor() {
       {/* Top bar */}
       <div className="shrink-0 bg-white border-b border-slate-200 px-6 py-3 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3 text-sm text-slate-500">
+          {isLive ? <LiveBadge /> : null}
           <span
             className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
               status === 'published'
@@ -701,15 +874,24 @@ export default function ArticleEditor() {
           <Button
             size="sm"
             className="bg-blue-700 hover:bg-blue-800"
-            onClick={() => persist('published', { ingest: true })}
+            onClick={() =>
+              persist('published', {
+                ingest: status !== 'published',
+                stayInEditor: isLive && status === 'published',
+                skipNotify: isLive && status === 'published',
+              })
+            }
             disabled={saving || !title.trim()}
             title={
-              notifyOnPublish
-                ? 'Goes live on the website, emails subscribers, and is studied by AGI Intelligence'
-                : 'Goes live on the website without emailing subscribers'
+              isLive && status === 'published'
+                ? 'Saves the continuing story without resetting the original publish time or emailing subscribers'
+                : notifyOnPublish
+                  ? 'Goes live on the website, emails subscribers, and is studied by AGI Intelligence'
+                  : 'Goes live on the website without emailing subscribers'
             }
           >
-            <Send size={15} className="mr-1.5" /> Publish to Website
+            <Send size={15} className="mr-1.5" />
+            {isLive && status === 'published' ? 'Save live story' : 'Publish to Website'}
           </Button>
           <Button
             size="sm"
@@ -796,6 +978,59 @@ export default function ArticleEditor() {
               className="w-full px-8 pt-8 pb-4 text-3xl md:text-4xl font-bold text-slate-900 bg-white border-b border-slate-100 outline-none placeholder:text-slate-300"
             />
 
+            {isLive ? (
+              <div className="mx-4 mt-4 rounded-xl border border-red-200 bg-red-50 p-4">
+                <div className="flex flex-wrap items-center gap-2">
+                  <LiveBadge />
+                  <p className="text-sm font-semibold text-red-900">Post a timestamped update</p>
+                </div>
+                <p className="mt-1 text-xs leading-relaxed text-red-800/80">
+                  The headline and original article stay put. Each update appears at the top of the live page with the time it was posted.
+                </p>
+                <input
+                  className="mt-3 w-full rounded-lg border border-red-200 bg-white px-3 py-2 text-sm"
+                  placeholder="Update headline (optional)"
+                  value={updateHeadline}
+                  onChange={(e) => setUpdateHeadline(e.target.value)}
+                />
+                <textarea
+                  className="mt-2 w-full min-h-[88px] rounded-lg border border-red-200 bg-white px-3 py-2 text-sm"
+                  placeholder="What just happened…"
+                  value={updateBody}
+                  onChange={(e) => setUpdateBody(e.target.value)}
+                />
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <Button
+                    size="sm"
+                    className="bg-[#e1251b] hover:bg-[#c41f17]"
+                    onClick={postLiveUpdate}
+                    disabled={saving}
+                  >
+                    Post update
+                  </Button>
+                  {status === 'published' ? (
+                    <Button size="sm" variant="outline" onClick={endLiveCoverage} disabled={saving}>
+                      End live coverage
+                    </Button>
+                  ) : null}
+                </div>
+                {liveUpdates.length ? (
+                  <ol className="mt-4 space-y-3">
+                    {liveUpdates.map((update) => (
+                      <li key={update.id} className="border-l-2 border-[#e1251b] pl-3">
+                        <p className="text-[11px] font-semibold uppercase tracking-wide text-red-700">
+                          {formatLiveClock(update.at)}
+                        </p>
+                        {update.headline ? (
+                          <p className="mt-0.5 text-sm font-semibold text-slate-900">{update.headline}</p>
+                        ) : null}
+                      </li>
+                    ))}
+                  </ol>
+                ) : null}
+              </div>
+            ) : null}
+
             <div className="bg-white border border-slate-200 rounded-b-xl shadow-sm mx-4 mb-8 overflow-hidden">
               <EditorToolbar
                 editor={editor}
@@ -835,6 +1070,33 @@ export default function ArticleEditor() {
               Choose which homepage desk this research belongs to.
             </p>
           </div>
+
+          <label className="block rounded-lg border border-red-200 bg-red-50 p-3 cursor-pointer">
+            <span className="flex items-start gap-3">
+              <input
+                type="checkbox"
+                className="mt-0.5 h-4 w-4 accent-red-600"
+                checked={isLive}
+                onChange={(e) => {
+                  if (e.target.checked) startLiveCoverage();
+                  else if (status === 'published') void endLiveCoverage();
+                  else {
+                    setIsLive(false);
+                    setLiveEndedAt(new Date().toISOString());
+                    dirtyRef.current = true;
+                  }
+                }}
+              />
+              <span>
+                <span className="flex items-center gap-2 text-sm font-semibold text-red-800">
+                  <Radio size={14} /> Live continuing story
+                </span>
+                <span className="mt-1 block text-xs leading-relaxed text-red-700/80">
+                  Same URL, red LIVE badge above the headline. Add timestamped updates as news lands. Does not reset the original publish time.
+                </span>
+              </span>
+            </span>
+          </label>
 
           <label className="block rounded-lg border border-blue-200 bg-blue-50 p-3 cursor-pointer">
             <span className="flex items-start gap-3">
@@ -936,7 +1198,7 @@ export default function ArticleEditor() {
       <ArticlePreview
         open={previewOpen}
         onClose={() => setPreviewOpen(false)}
-        article={{ title, section, metaDescription, coverUrl, status }}
+        article={{ title, section, metaDescription, coverUrl, status, isLive, liveUpdates }}
         html={html}
       />
     </div>

@@ -1,6 +1,8 @@
 import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { readingTime } from '@/lib/articleUtils';
+import LiveBadge from '@/components/Article/LiveBadge';
+import { formatLiveClock, normalizeLiveUpdates } from '@/lib/liveArticle';
 
 /**
  * CMS preview mirrors the published article shell:
@@ -10,6 +12,8 @@ export default function ArticlePreview({ open, onClose, article, html }) {
   if (!open) return null;
 
   const minutes = readingTime(html);
+  const liveUpdates = normalizeLiveUpdates(article.liveUpdates);
+  const showLive = Boolean(article.isLive);
 
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/70 overflow-y-auto py-8 px-4">
@@ -26,6 +30,12 @@ export default function ArticlePreview({ open, onClose, article, html }) {
 
         <div className="article-preview-shell mx-auto w-full px-6 py-8">
           <header className="article-preview-header article-preview-wide mx-auto">
+            {showLive ? (
+              <div className="article-live-bar">
+                <LiveBadge size="md" />
+                <span>Coverage is live</span>
+              </div>
+            ) : null}
             {article.section && <p className="article-kicker">{article.section}</p>}
             <h1>
               {article.title || 'Untitled'}
@@ -42,6 +52,18 @@ export default function ArticlePreview({ open, onClose, article, html }) {
             </div>
             </div>
           )}
+
+          {liveUpdates.length ? (
+            <div className="article-preview-reading mx-auto mt-8 w-full">
+              <p className="article-live-updates-heading">Live updates</p>
+              {liveUpdates.map((update) => (
+                <article key={update.id} className="article-live-update">
+                  {update.at ? <time dateTime={update.at}>{formatLiveClock(update.at)}</time> : null}
+                  {update.headline ? <h2>{update.headline}</h2> : null}
+                </article>
+              ))}
+            </div>
+          ) : null}
 
           <div
             className="article-prose prose prose-lg prose-neutral article-preview-reading mx-auto mt-8 w-full"

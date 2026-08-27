@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import { enrichResearchCard } from '@/components/Home/homeTerminalData';
 import { formatTimeAgo } from '@/lib/articleUtils';
+import LiveBadge from '@/components/Article/LiveBadge';
 
 function ChipList({ items }) {
   const list = (Array.isArray(items) ? items : []).filter(Boolean).slice(0, 4);
@@ -30,6 +31,7 @@ export default function ResearchFeedCard({ article, index = 0 }) {
       style={{ animationDelay: `${Math.min(index, 8) * 45}ms` }}
     >
       <div className="flex flex-wrap items-center gap-2 mb-2">
+        {row.isLive ? <LiveBadge /> : null}
         <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-[#ff6600]">
           {row.section || row.category || 'Research Note'}
         </span>
