@@ -13,17 +13,13 @@ import { getMarketBriefing, startMarketBriefingScheduler } from '../services/mar
 import { getMacroBriefing, askMacroEconomist, startMacroBriefingScheduler } from '../services/macroBriefingService.js';
 import { getPreMarketBriefing, startPreMarketBriefingScheduler } from '../services/preMarketBriefingService.js';
 import { fetchYahooIndices } from '../providers/yahooIndices.js';
-import { fetchFxIntelligence } from '../services/fxIntelligenceService.js';
-import {
-  getLiveDeskBroadcasts,
-  saveLiveDeskBroadcast,
-} from '../services/liveDeskBroadcastService.js';
-import { requireStrategyLabAdmin } from '../services/strategyLabAdminAuth.js';
+import { getPortfolioMarketPackage } from '../services/portfolioMarketService.js';
+import { getClientPortfolioSnapshotStatus, startClientPortfolioSnapshotScheduler } from '../services/clientPortfolioSnapshotScheduler.js';
 
 const CACHE_CONTROL = `public, max-age=${Math.floor(MARKET_REFRESH_MS / 1000)}, stale-while-revalidate=60`;
 
 function sendJson(res, data) {
-  if (!res.get('Cache-Control')) res.set('Cache-Control', CACHE_CONTROL);
+  res.set('Cache-Control', CACHE_CONTROL);
   return res.status(200).json(data);
 }
 
@@ -31,7 +27,27 @@ export default function createMarketRouter(env = {}) {
   startMarketBriefingScheduler();
   startMacroBriefingScheduler();
   startPreMarketBriefingScheduler();
+  startClientPortfolioSnapshotScheduler();
   const router = Router();
+
+  router.post('/portfolio-package', async (req, res) => {
+    try {
+      const instruments = Array.isArray(req.body?.instruments) ? req.body.instruments : [];
+      if (!instruments.length || instruments.length > 40) {
+        return res.status(400).json({ ok: false, error: 'Provide between 1 and 40 portfolio instruments.' });
+      }
+      const data = await getPortfolioMarketPackage({ instruments, days: req.body?.days });
+      res.set('Cache-Control', 'private, max-age=300, stale-while-revalidate=600');
+      return res.status(200).json(data);
+    } catch (error) {
+      return res.status(502).json({ ok: false, error: error?.message || 'portfolio_package_unavailable' });
+    }
+  });
+
+  router.get('/portfolio-snapshots/status', (_req, res) => {
+    res.set('Cache-Control', 'no-store');
+    return res.status(200).json({ ok: true, ...getClientPortfolioSnapshotStatus() });
+  });
 
   router.get('/groww-health', async (_req, res) => {
     const health = await getGrowwHealth();
@@ -529,26 +545,6 @@ export default function createMarketRouter(env = {}) {
     }
   });
 
-  router.get('/stocks-board', async (_req, res) => {
-    try {
-      const { getStocksBoard } = await import('../services/stocksBoardService.js');
-      const data = await getStocksBoard({ force: _req.query?.force === '1' });
-      res.set('Cache-Control', 'public, max-age=60, stale-while-revalidate=180');
-      return sendJson(res, data);
-    } catch (err) {
-      console.error('[market/stocks-board]', err?.message || err);
-      res.set('Cache-Control', 'public, max-age=15, stale-while-revalidate=15');
-      return sendJson(res, {
-        ok: false,
-        delayed: true,
-        regions: {},
-        popular: [],
-        error: err?.message || 'stocks_board_unavailable',
-        asOf: new Date().toISOString(),
-      });
-    }
-  });
-
   router.get('/global-snapshot', async (_req, res) => {
     try {
       const wanted = ['NASDAQ', 'S&P', 'Dow', 'Gold', 'Silver', 'Brent', 'Bitcoin', 'USDINR'];
@@ -570,47 +566,6 @@ export default function createMarketRouter(env = {}) {
         error: err?.message || 'global_snapshot_unavailable',
         stale: true,
         updatedAt: new Date().toISOString(),
-      });
-    }
-  });
-
-  router.get('/live-broadcasts', async (_req, res) => {
-    res.set('Cache-Control', 'public, max-age=30, stale-while-revalidate=30');
-    return res.status(200).json(await getLiveDeskBroadcasts());
-  });
-
-  router.put('/live-broadcasts/:id', requireStrategyLabAdmin, async (req, res) => {
-    res.set('Cache-Control', 'no-store');
-    try {
-      return res.status(200).json(await saveLiveDeskBroadcast({
-        id: req.params.id,
-        youtubeUrl: req.body?.youtubeUrl,
-        actor: req.strategyLabActor,
-      }));
-    } catch (error) {
-      return res.status(error.status || 400).json({
-        ok: false,
-        error: error.message || 'Broadcast update failed.',
-      });
-    }
-  });
-
-  router.get('/fx-intelligence', async (_req, res) => {
-    try {
-      const data = await fetchFxIntelligence();
-      res.set('Cache-Control', 'public, max-age=30, stale-while-revalidate=30');
-      return sendJson(res, data);
-    } catch (err) {
-      console.error('[market/fx-intelligence]', err?.message || err);
-      res.set('Cache-Control', 'public, max-age=15, stale-while-revalidate=15');
-      return sendJson(res, {
-        ok: false,
-        pairs: [],
-        drivers: [],
-        strength: { d1: [], w1: [], m1: [] },
-        error: err?.message || 'fx_reference_unavailable',
-        delayed: true,
-        asOf: new Date().toISOString(),
       });
     }
   });
