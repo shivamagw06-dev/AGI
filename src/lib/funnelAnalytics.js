@@ -10,7 +10,7 @@
  * when Google Analytics is present (VITE_GA_MEASUREMENT_ID or existing gtag).
  */
 
-import { trackProductEvent } from '@/lib/productAnalytics';
+import { trackProductEvent } from './productAnalytics.js';
 
 const KEY = 'agi_funnel_analytics_v1';
 const MAX_EVENTS = 300;
