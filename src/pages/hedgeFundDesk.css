@@ -1,0 +1,270 @@
+/* ============================================================================
+   Hedge Fund Desk — design tokens and layout.
+
+   PALETTE RATIONALE
+   This is a working screen, not a brochure, so it is built light: warm paper
+   ground, near-black ink, hairline rules instead of boxes. Data density comes
+   from typography and alignment rather than from borders and fills, which is
+   what separates a research terminal from a dashboard template.
+
+   One accent (deep pine) carries interaction and validated state. Two status
+   colours are reserved and never decorative — ochre means "the engine has not
+   validated this", clay means "this is a risk or a failure". Because they are
+   never used for emphasis, seeing one always means something.
+
+   TYPOGRAPHY
+   Source Serif 4 for display and IBM Plex Sans for body are already loaded by
+   the host app. IBM Plex Mono carries every number, with tabular lining
+   figures so columns align and digits do not shift as values update.
+
+   SCOPING
+   Everything is namespaced under .hd-root with an `hd-` prefix, and the page
+   does not touch tailwind.config.js — that theme is global to every route.
+   ============================================================================ */
+
+.hd-root {
+  /* --- Core palette --- */
+  --hd-paper: #fbfaf7;
+  --hd-surface: #ffffff;
+  --hd-ink: #14181b;
+  --hd-muted: #6a7178;
+  --hd-faint: #9aa1a7;
+  --hd-line: #e6e4dd;
+  --hd-line-strong: #d2cfc6;
+  --hd-accent: #1f5f5b;
+  --hd-ochre: #9a6b28;
+  --hd-clay: #a4402c;
+
+  --hd-accent-soft: rgba(31, 95, 91, 0.08);
+  --hd-ochre-soft: rgba(154, 107, 40, 0.09);
+  --hd-clay-soft: rgba(164, 64, 44, 0.08);
+
+  /* --- Type --- */
+  --hd-display: 'Source Serif 4', Georgia, serif;
+  --hd-body: 'IBM Plex Sans', 'Segoe UI', sans-serif;
+  --hd-mono: 'IBM Plex Mono', ui-monospace, Menlo, monospace;
+
+  --hd-gutter: clamp(1rem, 2.4vw, 2.5rem);
+  /* Use the display rather than a fixed box. Capped so line length stays
+     readable on ultrawides, but a 1440-1800px screen fills properly. */
+  --hd-max: min(1880px, 95vw);
+
+  background: var(--hd-paper);
+  color: var(--hd-ink);
+  font-family: var(--hd-body);
+  /* Base bumped from the browser default; every rem below scales with it. */
+  font-size: 17px;
+  font-feature-settings: 'tnum' 1, 'lnum' 1;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+.hd-root *, .hd-root *::before, .hd-root *::after { box-sizing: border-box; }
+.hd-root h1, .hd-root h2, .hd-root h3 {
+  font-family: var(--hd-display); font-weight: 600;
+  letter-spacing: -0.015em; line-height: 1.15; margin: 0;
+}
+.hd-root p { margin: 0; line-height: 1.6; }
+.hd-root :focus-visible { outline: 2px solid var(--hd-accent); outline-offset: 2px; }
+
+.hd-num { font-family: var(--hd-mono); font-variant-numeric: tabular-nums lining-nums; }
+.hd-shell { max-width: var(--hd-max); margin: 0 auto; padding: 0 var(--hd-gutter); }
+
+.hd-label {
+  font-family: var(--hd-mono); font-size: 0.72rem; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--hd-muted);
+}
+
+/* ---------------------------------------------------------------- masthead */
+.hd-masthead { border-bottom: 1px solid var(--hd-line); background: var(--hd-surface); }
+.hd-masthead-inner {
+  padding: clamp(1.75rem, 4vh, 2.75rem) 0 clamp(1.25rem, 3vh, 1.75rem);
+  display: flex; flex-wrap: wrap; gap: 1.5rem;
+  align-items: flex-end; justify-content: space-between;
+}
+.hd-masthead h1 { font-size: clamp(1.9rem, 3.6vw, 2.9rem); margin-top: 0.5rem; }
+.hd-masthead p { margin-top: 0.6rem; color: var(--hd-muted); max-width: 62ch; font-size: 1rem; }
+.hd-asof { text-align: right; }
+.hd-asof b { display: block; font-family: var(--hd-mono); font-size: 1.2rem; font-weight: 500; }
+.hd-asof span { display: block; margin-top: 0.2rem; font-size: 0.7rem; color: var(--hd-faint); font-family: var(--hd-mono); }
+
+/* ------------------------------------------------------------ regime strip */
+.hd-regime { border-bottom: 1px solid var(--hd-line); background: var(--hd-surface); }
+.hd-regime-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 0; border-left: 1px solid var(--hd-line);
+}
+.hd-regime-cell { padding: 1.05rem 1.1rem; border-right: 1px solid var(--hd-line); }
+.hd-regime-cell b {
+  display: block; font-family: var(--hd-mono);
+  font-variant-numeric: tabular-nums lining-nums;
+  font-size: clamp(1.45rem, 1.9vw, 1.85rem); font-weight: 500; line-height: 1.1;
+}
+.hd-regime-cell span { display: block; margin-top: 0.4rem; font-size: 0.72rem; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--hd-faint); font-family: var(--hd-mono); }
+.hd-regime-cell.accent b { color: var(--hd-accent); }
+
+/* -------------------------------------------------------------- section */
+.hd-section { padding: clamp(2rem, 5vh, 3.25rem) 0; }
+.hd-section-head { display: flex; flex-wrap: wrap; gap: 1rem; align-items: baseline;
+  justify-content: space-between; margin-bottom: 1.4rem; }
+.hd-section-head h2 { font-size: clamp(1.35rem, 2.3vw, 1.75rem); }
+.hd-section-head p { color: var(--hd-muted); font-size: 0.94rem; max-width: 72ch; margin-top: 0.4rem; }
+
+/* ------------------------------------------------------------ strategy grid */
+.hd-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 0;
+  /* Dividers come from per-card borders, not a 1px gap over a coloured
+     background. That technique painted every empty track in the last row —
+     with 12 cards on a 5-wide grid it left a grey block on screen. */
+  background: var(--hd-surface);
+  border: 1px solid var(--hd-line);
+}
+.hd-card {
+  background: var(--hd-surface); padding: 1.15rem 1.2rem 1.1rem; text-align: left;
+  border: 0;
+  border-top: 2px solid transparent;
+  border-right: 1px solid var(--hd-line);
+  border-bottom: 1px solid var(--hd-line); cursor: pointer; font-family: var(--hd-body);
+  display: flex; flex-direction: column; gap: 0.55rem; min-height: 148px;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+.hd-card:hover { background: #fcfcfa; }
+.hd-card[aria-selected='true'] { border-top-color: var(--hd-accent); background: var(--hd-accent-soft); }
+.hd-card[disabled] { cursor: default; opacity: 0.62; }
+.hd-card-top { display: flex; align-items: baseline; justify-content: space-between; gap: 0.5rem; }
+.hd-card-name { font-size: 1.04rem; font-weight: 600; line-height: 1.25; }
+.hd-card-count { font-family: var(--hd-mono); font-size: 1.85rem; font-weight: 500; line-height: 1; }
+.hd-card-count.zero { color: var(--hd-faint); }
+.hd-card-edge { font-size: 0.86rem; color: var(--hd-muted); line-height: 1.45; flex: 1; }
+.hd-card-foot { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
+
+.hd-stars { font-family: var(--hd-mono); font-size: 0.72rem; color: var(--hd-accent); letter-spacing: 0.06em; }
+.hd-stage {
+  font-family: var(--hd-mono); font-size: 0.66rem; letter-spacing: 0.08em; text-transform: uppercase;
+  padding: 0.16rem 0.4rem; border: 1px solid var(--hd-line-strong); color: var(--hd-muted); white-space: nowrap;
+}
+.hd-stage.op { border-color: var(--hd-accent); color: var(--hd-accent); }
+.hd-stage.exp { border-color: var(--hd-ochre); color: var(--hd-ochre); }
+.hd-stage.blocked { border-color: var(--hd-clay); color: var(--hd-clay); }
+
+/* ------------------------------------------------------------------ detail */
+.hd-detail { border: 1px solid var(--hd-line); background: var(--hd-surface); margin-top: 1.5rem; }
+.hd-detail-head { padding: 1.4rem 1.5rem; border-bottom: 1px solid var(--hd-line); }
+.hd-detail-head h3 { font-size: clamp(1.5rem, 2.7vw, 2.1rem); margin-top: 0.5rem; }
+.hd-question { margin-top: 0.7rem; font-family: var(--hd-display); font-style: italic;
+  font-size: 1.12rem; color: var(--hd-accent); }
+.hd-thesis { margin-top: 0.85rem; color: var(--hd-muted); max-width: 82ch; font-size: 0.98rem; }
+
+.hd-split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 340px); }
+.hd-split > * { min-width: 0; }
+.hd-pane { padding: 1.4rem 1.5rem; }
+.hd-pane + .hd-pane { border-left: 1px solid var(--hd-line); }
+.hd-pane > h4, .hd-block > h4 {
+  font-family: var(--hd-mono); font-size: 0.7rem; font-weight: 600; letter-spacing: 0.13em;
+  text-transform: uppercase; color: var(--hd-faint); margin: 0 0 0.9rem;
+}
+.hd-block + .hd-block { margin-top: 1.6rem; }
+
+/* --------------------------------------------------------------------- math */
+.hd-eq + .hd-eq { margin-top: 1.15rem; padding-top: 1.15rem; border-top: 1px dotted var(--hd-line-strong); }
+.hd-eq-label { font-family: var(--hd-mono); font-size: 0.66rem; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--hd-accent); margin-bottom: 0.45rem; }
+.hd-eq-render { overflow-x: auto; overflow-y: hidden; padding: 0.3rem 0 0.5rem; }
+.hd-eq-render .katex { font-size: 1.08em; }
+.hd-eq-note { font-size: 0.89rem; color: var(--hd-muted); line-height: 1.55; }
+
+/* Live arithmetic check against the engine's own output. */
+.hd-check { margin-top: 0.9rem; border: 1px solid var(--hd-line); background: var(--hd-paper); padding: 0.7rem 0.8rem; }
+.hd-check-row { display: flex; justify-content: space-between; gap: 0.6rem; font-family: var(--hd-mono);
+  font-size: 0.74rem; padding: 0.16rem 0; }
+.hd-check-row b { font-weight: 500; }
+.hd-check-ok { color: var(--hd-accent); }
+.hd-check-bad { color: var(--hd-clay); }
+
+/* -------------------------------------------------------------------- table */
+.hd-table-wrap { overflow-x: auto; }
+.hd-table { width: 100%; border-collapse: collapse; font-size: 0.92rem; }
+.hd-table th {
+  text-align: right; padding: 0.5rem 0.6rem; border-bottom: 1px solid var(--hd-line-strong);
+  font-family: var(--hd-mono); font-size: 0.68rem; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--hd-faint); font-weight: 600; white-space: nowrap;
+}
+.hd-table th:first-child, .hd-table td:first-child { text-align: left; }
+.hd-table td { padding: 0.55rem 0.6rem; border-bottom: 1px solid var(--hd-line); text-align: right;
+  font-family: var(--hd-mono); font-variant-numeric: tabular-nums lining-nums; white-space: nowrap; }
+.hd-table tbody tr:hover { background: var(--hd-paper); }
+.hd-tick { font-family: var(--hd-body); }
+.hd-tick b { display: block; font-size: 0.95rem; font-weight: 600; }
+.hd-tick span { display: block; font-size: 0.72rem; color: var(--hd-faint); max-width: 24ch;
+  overflow: hidden; text-overflow: ellipsis; }
+.hd-pos { color: var(--hd-accent); }
+.hd-neg { color: var(--hd-clay); }
+.hd-flag { color: var(--hd-ochre); font-family: var(--hd-mono); font-size: 0.68rem; }
+
+.hd-why { font-family: var(--hd-body); font-size: 0.8rem; color: var(--hd-muted); text-align: left !important;
+  white-space: normal !important; line-height: 1.5; }
+
+/* --------------------------------------------------------------- notices */
+.hd-notice { border: 1px solid var(--hd-ochre); background: var(--hd-ochre-soft); padding: 0.85rem 1rem;
+  font-size: 0.84rem; line-height: 1.55; margin-bottom: 1.1rem; }
+.hd-notice b { color: var(--hd-ochre); }
+.hd-notice.blocked { border-color: var(--hd-clay); background: var(--hd-clay-soft); }
+.hd-notice.blocked b { color: var(--hd-clay); }
+.hd-empty { padding: 2rem 1rem; text-align: center; color: var(--hd-muted); font-size: 0.88rem;
+  border: 1px dashed var(--hd-line-strong); }
+
+.hd-risks { list-style: none; padding: 0; margin: 0; display: grid; gap: 0.5rem; }
+.hd-risks li { display: grid; grid-template-columns: 0.5rem 1fr; gap: 0.55rem; font-size: 0.82rem;
+  color: var(--hd-muted); line-height: 1.5; }
+.hd-risks li::before { content: ''; width: 4px; height: 4px; border-radius: 50%;
+  background: var(--hd-clay); margin-top: 0.5em; }
+
+/* -------------------------------------------------------------- queue */
+.hd-queue { border: 1px solid var(--hd-line); background: var(--hd-surface); }
+.hd-queue-row { display: grid; grid-template-columns: 2.2rem minmax(0,1fr) auto;
+  gap: 0.9rem; align-items: center; padding: 0.8rem 1.1rem; border-bottom: 1px solid var(--hd-line); }
+.hd-queue-row:last-child { border-bottom: 0; }
+.hd-queue-row > i { font-family: var(--hd-mono); font-style: normal; font-size: 0.78rem; color: var(--hd-faint); }
+.hd-queue-name b { font-size: 0.9rem; font-weight: 600; }
+.hd-queue-name span { display: block; font-size: 0.76rem; color: var(--hd-muted); margin-top: 0.15rem; }
+.hd-queue-score { font-family: var(--hd-mono); font-size: 1.05rem; font-weight: 500; text-align: right; }
+.hd-queue-score span { display: block; font-size: 0.62rem; color: var(--hd-faint); letter-spacing: 0.08em; }
+
+/* ------------------------------------------------------------- limits */
+.hd-limits { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1px;
+  background: var(--hd-line); border: 1px solid var(--hd-line); }
+.hd-limit { background: var(--hd-surface); padding: 0.95rem 1.05rem; }
+.hd-limit-top { display: flex; align-items: baseline; justify-content: space-between; gap: 0.6rem; }
+.hd-limit-top b { font-size: 0.86rem; }
+.hd-limit p { font-size: 0.79rem; color: var(--hd-muted); margin-top: 0.4rem; line-height: 1.5; }
+
+.hd-foot { border-top: 1px solid var(--hd-line); background: var(--hd-surface);
+  padding: 1.6rem 0 2.4rem; margin-top: 2rem; }
+.hd-foot p { font-size: 0.78rem; color: var(--hd-muted); max-width: 92ch; line-height: 1.65; }
+
+/* ---------------------------------------------------------------- states */
+.hd-skeleton { height: 10px; background: linear-gradient(90deg, var(--hd-line) 25%, #efeee9 50%, var(--hd-line) 75%);
+  background-size: 200% 100%; animation: hd-shimmer 1.3s linear infinite; }
+@keyframes hd-shimmer { to { background-position: -200% 0; } }
+.hd-error { border: 1px solid var(--hd-clay); background: var(--hd-clay-soft); padding: 1rem 1.15rem;
+  font-size: 0.86rem; }
+.hd-error b { display: block; color: var(--hd-clay); margin-bottom: 0.3rem; }
+
+/* ------------------------------------------------------------ responsive */
+@media (max-width: 940px) {
+  .hd-split { grid-template-columns: 1fr; }
+  .hd-pane + .hd-pane { border-left: 0; border-top: 1px solid var(--hd-line); }
+  .hd-masthead-inner { flex-direction: column; align-items: flex-start; }
+  .hd-asof { text-align: left; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hd-root *, .hd-root *::before, .hd-root *::after {
+    animation-duration: 0.001ms !important; transition-duration: 0.001ms !important;
+  }
+}
+
+/* Intraday screens publish a sizing chain; the table scrolls on narrow views. */
+.hd-readout-wrap { overflow-x: auto; }

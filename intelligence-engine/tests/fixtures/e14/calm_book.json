@@ -1,0 +1,40 @@
+{
+  "as_of": "2024-06-15",
+  "e01": {
+    "primary_regime": "expansion_risk_on",
+    "risk_level": "low",
+    "size_multiplier": 1.15,
+    "vol_target": 0.12,
+    "macro_score": 62.0,
+    "axes": {
+      "R_STRESS": {"state": "normal", "confidence": 0.75},
+      "R_VOL": {"state": "low_vol", "confidence": 0.7},
+      "R_RISK": {"state": "risk_on", "confidence": 0.7},
+      "R_CYCLE": {"state": "expansion", "confidence": 0.65},
+      "R_MARKET": {"state": "bull", "confidence": 0.65},
+      "R_INFL": {"state": "disinflationary", "confidence": 0.6},
+      "R_LIQ": {"state": "liq_neutral", "confidence": 0.55},
+      "R_POLICY": {"state": "on_hold", "confidence": 0.7},
+      "R_EARN": {"state": "post_earnings", "confidence": 0.8}
+    }
+  },
+  "features": {
+    "vix_pctile_5y": 0.18,
+    "corr_avg_20d": 0.28,
+    "corr_spike": 0.02,
+    "liquidity_index": 82.0,
+    "days_to_exit_stress": 2.0,
+    "crowding_index": 28.0,
+    "fragility_index": 30.0,
+    "tail_risk_score": 28.0,
+    "name_hhi": 0.04,
+    "portfolio_beta": 0.95,
+    "stress_worst_pnl": -6.0,
+    "expected_dd_3m_p95": 0.07,
+    "hy_oas": -0.3,
+    "credit_stress": -0.4,
+    "exec_impact_bps": 8.0,
+    "gross": 1.2,
+    "net": 0.5
+  }
+}

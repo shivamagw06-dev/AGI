@@ -1,0 +1,58 @@
+{
+  "as_of": "2026-07-24",
+  "universe_id": "NSE_INVESTABLE_L1",
+  "panels": {
+    "TCS": {
+      "sector_id": "IT",
+      "name": "Tata Consultancy Services",
+      "aliases": ["TATA CONSULTANCY"],
+      "news_tone": 0.45,
+      "news_volume": 18,
+      "news_recency_hours": 8,
+      "news_source": "tier1_news",
+      "news_docs": [
+        {
+          "doc_id": "tcs_1",
+          "tone": 0.5,
+          "age_hours": 6,
+          "source_class": "tier1_news",
+          "entity_link": 0.95,
+          "headline": "TCS beat estimates on strong growth"
+        },
+        {
+          "doc_id": "tcs_2",
+          "tone": 0.3,
+          "age_hours": 20,
+          "source_class": "tier1_news",
+          "entity_link": 0.9,
+          "headline": "Upgrade on expansion plans"
+        }
+      ]
+    },
+    "INFY": {
+      "sector_id": "IT",
+      "name": "Infosys",
+      "news_tone": -0.35,
+      "news_volume": 12,
+      "news_recency_hours": 14,
+      "news_source": "tier1_news",
+      "news_docs": [
+        {
+          "doc_id": "infy_1",
+          "tone": -0.4,
+          "age_hours": 10,
+          "source_class": "tier1_news",
+          "entity_link": 0.92,
+          "headline": "Infosys miss guidance cut weak demand"
+        }
+      ]
+    },
+    "HDFCBANK": {
+      "sector_id": "BANK",
+      "news_tone": 0.05,
+      "news_volume": 7,
+      "news_recency_hours": 30,
+      "news_source": "news"
+    }
+  }
+}

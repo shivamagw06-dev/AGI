@@ -1,0 +1,469 @@
+{
+  "accounting": {
+    "cash_conversion": 1.0423,
+    "derived_not_stored": true,
+    "entity": "HDFCBANK",
+    "found": true,
+    "leverage": 7.1569,
+    "provider": "kf_accounting_producer",
+    "revenue_cagr": 0.189737
+  },
+  "business_quality": {
+    "entity": "HDFCBANK",
+    "found": true,
+    "insufficient": false,
+    "provider": "kf_bq_producer",
+    "quality_score": 55.0,
+    "roic": 7.076781
+  },
+  "company_profile": {
+    "entity": "HDFCBANK",
+    "market_cap": 131707.85,
+    "sector": "banks"
+  },
+  "corporate_actions": [
+    {
+      "date": "2025-05-10",
+      "filing_id": "HDFCBANK-DIV-2025",
+      "title": "Dividend Declaration",
+      "type": "dividend"
+    }
+  ],
+  "coverage": 1.0,
+  "entity": "HDFCBANK",
+  "evidence_packs": {
+    "coverage": 0.75,
+    "current_pe": 18.994709,
+    "downside_case": -0.07450999999999999,
+    "entity": "HDFCBANK",
+    "entity_confidence": 0.95,
+    "freshness": "2026-08-01T13:04:22Z",
+    "historical_pe": 22.4477,
+    "missing_fields": [],
+    "provenance": "knowledge_factory",
+    "quality": 90.0,
+    "risk_drivers": "market_beta,volatility",
+    "version": "kf-pipeline-v1.0.0"
+  },
+  "historical_financials": {
+    "bvps": {
+      "FY17": 349.0,
+      "FY18": 409.0,
+      "FY19": 550.0,
+      "FY20": 311.0,
+      "FY21": 369.0,
+      "FY22": 432.0,
+      "FY23": 502.0,
+      "FY24": 600.0,
+      "FY25": 660.0,
+      "FY26": 715.0
+    },
+    "capex": {
+      "FY17": 1200.0,
+      "FY18": 1300.0,
+      "FY19": 1500.0,
+      "FY20": 1600.0,
+      "FY21": 1400.0,
+      "FY22": 1700.0,
+      "FY23": 2000.0,
+      "FY24": 2400.0,
+      "FY25": 2600.0,
+      "FY26": 2750.0
+    },
+    "cash": {
+      "FY17": 37897.0,
+      "FY18": 104670.0,
+      "FY19": 46764.0,
+      "FY20": 72205.0,
+      "FY21": 97340.0,
+      "FY22": 129995.0,
+      "FY23": 117161.0,
+      "FY24": 178683.0,
+      "FY25": 190000.0,
+      "FY26": 198000.0
+    },
+    "ebit": {
+      "FY17": 26000.0,
+      "FY18": 32000.0,
+      "FY19": 39000.0,
+      "FY20": 45000.0,
+      "FY21": 51000.0,
+      "FY22": 57000.0,
+      "FY23": 64000.0,
+      "FY24": 88000.0,
+      "FY25": 96000.0,
+      "FY26": 102000.0
+    },
+    "ebitda": {
+      "FY17": 26000.0,
+      "FY18": 32000.0,
+      "FY19": 39000.0,
+      "FY20": 45000.0,
+      "FY21": 51000.0,
+      "FY22": 57000.0,
+      "FY23": 64000.0,
+      "FY24": 88000.0,
+      "FY25": 96000.0,
+      "FY26": 102000.0
+    },
+    "eps": {
+      "FY17": 56.78,
+      "FY18": 67.76,
+      "FY19": 78.65,
+      "FY20": 48.01,
+      "FY21": 56.58,
+      "FY22": 66.8,
+      "FY23": 79.25,
+      "FY24": 84.55,
+      "FY25": 90.0,
+      "FY26": 94.5
+    },
+    "equity": {
+      "FY17": 89462.0,
+      "FY18": 106295.0,
+      "FY19": 149206.0,
+      "FY20": 170986.0,
+      "FY21": 203720.0,
+      "FY22": 240092.0,
+      "FY23": 280199.0,
+      "FY24": 455000.0,
+      "FY25": 505000.0,
+      "FY26": 549000.0
+    },
+    "net_income": {
+      "FY17": 14550.0,
+      "FY18": 17487.0,
+      "FY19": 21078.0,
+      "FY20": 26257.0,
+      "FY21": 31117.0,
+      "FY22": 36961.0,
+      "FY23": 44109.0,
+      "FY24": 60812.0,
+      "FY25": 67000.0,
+      "FY26": 71000.0
+    },
+    "ocf": {
+      "FY17": 17000.0,
+      "FY18": 20000.0,
+      "FY19": 24000.0,
+      "FY20": 29000.0,
+      "FY21": 34000.0,
+      "FY22": 40000.0,
+      "FY23": 47000.0,
+      "FY24": 64000.0,
+      "FY25": 70000.0,
+      "FY26": 74000.0
+    },
+    "price": {
+      "FY17": 1442.0,
+      "FY18": 1889.0,
+      "FY19": 2308.0,
+      "FY20": 862.0,
+      "FY21": 1493.0,
+      "FY22": 1470.0,
+      "FY23": 1608.0,
+      "FY24": 1447.0,
+      "FY25": 1720.0,
+      "FY26": 1795.0
+    },
+    "revenue": {
+      "FY17": 69306.0,
+      "FY18": 80241.0,
+      "FY19": 98972.0,
+      "FY20": 114813.0,
+      "FY21": 120858.0,
+      "FY22": 127753.0,
+      "FY23": 161586.0,
+      "FY24": 283649.0,
+      "FY25": 312000.0,
+      "FY26": 331000.0
+    },
+    "shares": {
+      "FY17": 256.0,
+      "FY18": 259.0,
+      "FY19": 272.0,
+      "FY20": 548.0,
+      "FY21": 551.0,
+      "FY22": 554.0,
+      "FY23": 557.0,
+      "FY24": 759.0,
+      "FY25": 765.0,
+      "FY26": 768.0
+    },
+    "total_debt": {
+      "FY17": 74029.0,
+      "FY18": 123105.0,
+      "FY19": 117085.0,
+      "FY20": 144628.0,
+      "FY21": 135487.0,
+      "FY22": 184817.0,
+      "FY23": 206766.0,
+      "FY24": 662153.0,
+      "FY25": 700000.0,
+      "FY26": 730000.0
+    }
+  },
+  "historical_valuation": {
+    "derived_not_stored": true,
+    "entity": "HDFCBANK",
+    "found": true,
+    "insufficient": [],
+    "metrics": {
+      "Cash_Conversion": {
+        "derived_from": [
+          "ocf",
+          "capex",
+          "net_income"
+        ],
+        "formula": "(ocf - capex) / net_income * 100",
+        "points": {
+          "FY17": 108.591065,
+          "FY18": 106.936581,
+          "FY19": 106.746371,
+          "FY20": 104.353125,
+          "FY21": 104.765884,
+          "FY22": 103.622737,
+          "FY23": 102.019996,
+          "FY24": 101.295797,
+          "FY25": 100.597015,
+          "FY26": 100.352113
+        },
+        "provider": "kf_derived_producer",
+        "rejected_periods": {}
+      },
+      "EV_EBITDA": {
+        "derived_from": [
+          "price",
+          "shares",
+          "total_debt",
+          "cash",
+          "ebitda"
+        ],
+        "formula": "(price * shares + total_debt - cash) / ebitda",
+        "points": {
+          "FY17": 15.587846,
+          "FY18": 15.865187,
+          "FY19": 17.899923,
+          "FY20": 12.106644,
+          "FY21": 16.878235,
+          "FY22": 15.249158,
+          "FY23": 15.394703,
+          "FY24": 17.974352,
+          "FY25": 19.01875,
+          "FY26": 18.73098
+        },
+        "provider": "kf_derived_producer",
+        "rejected_periods": {}
+      },
+      "Net_Margin": {
+        "derived_from": [
+          "net_income",
+          "revenue"
+        ],
+        "formula": "net_income / revenue * 100",
+        "points": {
+          "FY17": 20.993853,
+          "FY18": 21.793098,
+          "FY19": 21.296932,
+          "FY20": 22.869361,
+          "FY21": 25.746744,
+          "FY22": 28.93161,
+          "FY23": 27.297538,
+          "FY24": 21.439173,
+          "FY25": 21.474359,
+          "FY26": 21.450151
+        },
+        "provider": "kf_derived_producer",
+        "rejected_periods": {}
+      },
+      "PB": {
+        "derived_from": [
+          "price",
+          "bvps"
+        ],
+        "formula": "price / book_value_per_share",
+        "points": {
+          "FY17": 4.131805,
+          "FY18": 4.618582,
+          "FY19": 4.196364,
+          "FY20": 2.771704,
+          "FY21": 4.04607,
+          "FY22": 3.402778,
+          "FY23": 3.203187,
+          "FY24": 2.411667,
+          "FY25": 2.606061,
+          "FY26": 2.51049
+        },
+        "provider": "kf_derived_producer",
+        "rejected_periods": {}
+      },
+      "PE": {
+        "derived_from": [
+          "price",
+          "eps"
+        ],
+        "formula": "price / eps",
+        "points": {
+          "FY17": 25.396266,
+          "FY18": 27.877804,
+          "FY19": 29.3452,
+          "FY20": 17.954593,
+          "FY21": 26.387416,
+          "FY22": 22.005988,
+          "FY23": 20.290221,
+          "FY24": 17.114134,
+          "FY25": 19.111111,
+          "FY26": 18.994709
+        },
+        "provider": "kf_derived_producer",
+        "rejected_periods": {}
+      },
+      "ROE": {
+        "derived_from": [
+          "net_income",
+          "equity"
+        ],
+        "formula": "net_income / equity * 100",
+        "points": {
+          "FY17": 16.263889,
+          "FY18": 16.451385,
+          "FY19": 14.126778,
+          "FY20": 15.356228,
+          "FY21": 15.274396,
+          "FY22": 15.394515,
+          "FY23": 15.742026,
+          "FY24": 13.365275,
+          "FY25": 13.267327,
+          "FY26": 12.932605
+        },
+        "provider": "kf_derived_producer",
+        "rejected_periods": {}
+      },
+      "ROIC": {
+        "derived_from": [
+          "ebit",
+          "total_debt",
+          "equity",
+          "cash"
+        ],
+        "formula": "ebit * (1 - tax) / (total_debt + equity - cash) * 100",
+        "points": {
+          "FY17": 15.526219,
+          "FY18": 19.241562,
+          "FY19": 13.324101,
+          "FY20": 13.865551,
+          "FY21": 15.814477,
+          "FY22": 14.495751,
+          "FY23": 12.979849,
+          "FY24": 7.032723,
+          "FY25": 7.093596,
+          "FY26": 7.076781
+        },
+        "provider": "kf_derived_producer",
+        "rejected_periods": {}
+      }
+    },
+    "provider": "kf_derived_producer"
+  },
+  "kind": "company_knowledge_object",
+  "last_updated": "2026-08-01T13:04:22Z",
+  "macro_sensitivity": {
+    "beta": 1.1442,
+    "sector": "banks"
+  },
+  "management": {
+    "events": []
+  },
+  "missing_fields": [],
+  "object_version": "kf-objects-v1.0.0",
+  "peer_group": {
+    "entity": "HDFCBANK",
+    "fabricated": false,
+    "found": true,
+    "insufficient": false,
+    "peers": [
+      "AXISBANK",
+      "BANKBARODA",
+      "CANBK",
+      "ICICIBANK",
+      "INDUSINDBK",
+      "SBIN",
+      "YESBANK",
+      "KOTAKBANK",
+      "PNB",
+      "FEDERALBNK",
+      "IDFCFIRSTB",
+      "BANDHANBNK",
+      "AUBANK",
+      "RBLBANK",
+      "UNIONBANK",
+      "INDIANB",
+      "BANKINDIA",
+      "MAHABANK",
+      "IOB",
+      "UCOBANK",
+      "CENTRALBK",
+      "J&KBANK",
+      "KARURVYSYA",
+      "CUB",
+      "SOUTHBANK",
+      "UJJIVANSFB",
+      "EQUITASBNK",
+      "SURYODAY",
+      "ESAF"
+    ],
+    "provider": "kf_peer_producer"
+  },
+  "provider": "knowledge_factory",
+  "quality_score": 88.0,
+  "risk": {
+    "beta": 1.1442,
+    "correlation": 0.9985,
+    "derived_not_stored": true,
+    "entity": "HDFCBANK",
+    "expected_shortfall_95_pct": 7.58,
+    "factor_exposure": {
+      "market_beta": 1.1442,
+      "residual_vol_pct": 0.0325
+    },
+    "formulas": {
+      "beta": "cov(asset, benchmark) / var(benchmark)",
+      "downside_deviation": "stdev(negative_returns) * sqrt(12)",
+      "expected_shortfall_95": "mean(losses >= VaR95)",
+      "var_95": "historical_simulation_percentile(losses, 95)",
+      "volatility_ann": "stdev(monthly_returns) * sqrt(12)"
+    },
+    "found": true,
+    "liquidity_score": 0.7272,
+    "max_drawdown_pct": 7.64,
+    "provider": "kf_risk_producer",
+    "var_95_monthly_pct": 7.451,
+    "volatility_ann_pct": 21.8277
+  },
+  "sector": "banks",
+  "timeline": {
+    "entity": "HDFCBANK",
+    "events": [
+      {
+        "date": "2025-04-20",
+        "filing_id": "HDFCBANK-Q4-2025",
+        "title": "Q4 Results",
+        "type": "earnings"
+      },
+      {
+        "date": "2025-05-10",
+        "filing_id": "HDFCBANK-DIV-2025",
+        "title": "Dividend Declaration",
+        "type": "dividend"
+      },
+      {
+        "date": "2025-06-15",
+        "filing_id": "HDFCBANK-AR-2025",
+        "title": "Annual Report FY25",
+        "type": "annual_report"
+      }
+    ],
+    "n": 3,
+    "provider": "kf_timeline_producer"
+  }
+}

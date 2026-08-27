@@ -1,0 +1,22 @@
+{
+  "case_id": "larsentoubro_fy2025_annual",
+  "company_id": "nse:LT",
+  "company_name": "Larsen & Toubro",
+  "currency": "INR",
+  "document_hash": "911fb321f9a6c623b514bec47389d85e6ea12d9fe68f42d3d4e294d01f721fa3",
+  "exchange": "NSE",
+  "filing_type": "json",
+  "financial_year": "FY2025",
+  "immutable": true,
+  "industry": "Engineering & Construction",
+  "manual_verification": true,
+  "period_end": "2025-03-31",
+  "quarter": null,
+  "reporting_standard": "IND_AS",
+  "sector": "manufacturing",
+  "statement_frequency": "annual",
+  "taxonomy_version": "nse_indas_integrated_filing.2024.1",
+  "ticker": "LT",
+  "verified_at": "2026-07-30T00:00:00Z",
+  "verified_by": "agib_pcc_seed"
+}

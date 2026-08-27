@@ -1,0 +1,23 @@
+
+/books/
+dist/
+.build-id
+.DS_Store
+.env
+.env.local
+.env.production.local
+!intelligence-engine/academy/books/
+!intelligence-engine/academy/books/**
+intelligence-engine/data/
+knowledge-platform/data/
+knowledge-platform/.venv/
+# Keep Academy Books programme source (structured knowledge; not PDF corpus)
+# Local book PDFs (copyrighted; do not commit) — root corpus only
+node_modules/
+*.pdf
+__pycache__/
+artifacts/*.json
+artifacts/*.log
+artifacts/*.md
+.env.production
+og-config.php

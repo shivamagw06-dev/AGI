@@ -1,0 +1,156 @@
+/* Institutional Coverage Health — Valuation Terminal panel */
+
+.ich-panel {
+  margin: 1.1rem 0 1.6rem;
+  padding: 1.1rem 1.15rem 1.2rem;
+  border: 1px solid var(--vi-line, #d5dde6);
+  background:
+    linear-gradient(165deg, rgba(248, 251, 254, 0.98), rgba(236, 243, 248, 0.92)),
+    radial-gradient(90% 70% at 100% 0%, rgba(30, 78, 110, 0.07), transparent 55%);
+  color: var(--vi-ink, #15202b);
+}
+
+.ich-head h3 {
+  margin: 0.15rem 0 0.35rem;
+  font-size: 1.05rem;
+  letter-spacing: 0.02em;
+}
+
+.ich-head p {
+  margin: 0;
+  color: var(--vi-muted, #5b6b7a);
+  font-size: 0.84rem;
+  max-width: 52rem;
+  line-height: 1.45;
+}
+
+.ich-eyebrow {
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #3d5a70;
+  font-weight: 650;
+}
+
+.ich-dashboard {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 0.75rem;
+  margin: 1rem 0 1.15rem;
+}
+
+.ich-layer {
+  min-width: 0;
+}
+
+.ich-layer-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: 0.78rem;
+  margin-bottom: 0.28rem;
+}
+
+.ich-layer-name {
+  color: var(--vi-muted, #5b6b7a);
+}
+
+.ich-layer-pct {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.ich-bar {
+  height: 6px;
+  background: rgba(30, 55, 75, 0.12);
+  overflow: hidden;
+}
+
+.ich-bar > span {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, #2f5f7a, #1f7a5a);
+  transition: width 0.45s ease;
+}
+
+.ich-layer-meta {
+  margin-top: 0.22rem;
+  font-size: 0.7rem;
+  color: var(--vi-muted, #5b6b7a);
+  font-variant-numeric: tabular-nums;
+}
+
+.ich-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 0.85rem;
+}
+
+.ich-block {
+  padding: 0.7rem 0.75rem 0.8rem;
+  border-top: 1px solid rgba(30, 55, 75, 0.14);
+}
+
+.ich-block h4 {
+  margin: 0 0 0.55rem;
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #3d5a70;
+  font-weight: 650;
+}
+
+.ich-metric-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.ich-metric-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  font-size: 0.8rem;
+  padding: 0.18rem 0;
+}
+
+.ich-metric-list span {
+  color: var(--vi-muted, #5b6b7a);
+}
+
+.ich-metric-list strong {
+  font-variant-numeric: tabular-nums;
+  font-weight: 650;
+}
+
+.ich-stat-xl {
+  font-size: 1.55rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  margin-bottom: 0.15rem;
+}
+
+.ich-vpae-note {
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(30, 55, 75, 0.12);
+  font-size: 0.78rem;
+  color: var(--vi-muted, #5b6b7a);
+  line-height: 1.45;
+}
+
+.ich-vpae-note strong {
+  color: var(--vi-ink, #15202b);
+}
+
+@media (max-width: 720px) {
+  .ich-panel {
+    padding: 0.9rem;
+  }
+
+  .ich-dashboard,
+  .ich-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}

@@ -1,0 +1,778 @@
+{
+  "tables": {
+    "business_model": {
+      "description": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:29.781912Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Larsen & Toubro Limited operates as a technology, engineering, construction, manufacturing and financial services conglomerate worldwide.\n\nThe company addresses major needs in key sectors, such as hydrocarbon, infrastructure, power, process industries and defense for customers in approximately 30 countries worldwide.\n\nSegments\n\nInfrastructure\n\nThis segment includes the engineering and construction of building and factories, transportation infrastructure,\nheavy civil infrastructure, power transmission & distribution, water & effluent treatment, smart world & communication projects and metallurgical & material handling systems.\n\nPower\n\nThis segment includes turnkey solutions for coal-based and gas-based thermal power plants, including power generation equipment with associated systems and/or balance-of-plant packages.\n\nHeavy Engineering\n\nThis segment includes the manufacture and supply of custom designed, engineered critical equipment & systems to core sector industries, such as fertilizer, refinery, petrochemical, chemical, oil & gas and thermal & nuclear power.\n\nDefense Engineering\n\nThis segment includes the design, development, serial production and through life-support of equipment, systems and platforms for defense and aerospace sectors; and the design, construction and repair/refit of defense vessels.\n\nElectrical & Automation\n\nThis segment includes the manufacture and sale of low and medium voltage switchgear components, custom built low and medium voltage switchboards, electronic energy meters/protection (relays) systems and control & automation products.\n\nHydrocarbon\n\nThis segment includes complete engineering, procurement and construction solutions for the global oil & gas industry from front-end design through detailed engineering, modular fabrication, procurement, project management, construction, installation and commissioning.\n\nIT & Technology Services\n\nThis segment includes information technology and integrated engineering services.\n\nFinancial Services\n\nThis segment includes rural finance, housing finance, wholesale finance, mutual fund and wealth management.\n\nDevelopmental Projects\n\nThis segment includes development, operation and maintenance of basic infrastructure projects, toll and fare collection, power development, development and operation of port facilities (till the date of sale) and providing related advisory services.\n\nOthers\n\nThis segment includes the realty, manufacture and sale of industrial valves, manufacture, marketing and servicing of construction equipment and parts thereof, marketing and servicing of mining machinery and parts thereof, manufacture and sale of rubber processing machinery, mining and aviation.\n\nHistory\n\nLarsen & Toubro Limited was founded in 1938.",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:20.176689Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Larsen & Toubro Limited operates as a technology, engineering, construction, manufacturing and financial services conglomerate worldwide.\n\nThe company addresses major needs in key sectors, such as hydrocarbon, infrastructure, power, process industries and defense for customers in approximately 30 countries worldwide.\n\nSegments\n\nInfrastructure\n\nThis segment includes the engineering and construction of building and factories, transportation infrastructure,\nheavy civil infrastructure, power transmission & distribution, water & effluent treatment, smart world & communication projects and metallurgical & material handling systems.\n\nPower\n\nThis segment includes turnkey solutions for coal-based and gas-based thermal power plants, including power generation equipment with associated systems and/or balance-of-plant packages.\n\nHeavy Engineering\n\nThis segment includes the manufacture and supply of custom designed, engineered critical equipment & systems to core sector industries, such as fertilizer, refinery, petrochemical, chemical, oil & gas and thermal & nuclear power.\n\nDefense Engineering\n\nThis segment includes the design, development, serial production and through life-support of equipment, systems and platforms for defense and aerospace sectors; and the design, construction and repair/refit of defense vessels.\n\nElectrical & Automation\n\nThis segment includes the manufacture and sale of low and medium voltage switchgear components, custom built low and medium voltage switchboards, electronic energy meters/protection (relays) systems and control & automation products.\n\nHydrocarbon\n\nThis segment includes complete engineering, procurement and construction solutions for the global oil & gas industry from front-end design through detailed engineering, modular fabrication, procurement, project management, construction, installation and commissioning.\n\nIT & Technology Services\n\nThis segment includes information technology and integrated engineering services.\n\nFinancial Services\n\nThis segment includes rural finance, housing finance, wholesale finance, mutual fund and wealth management.\n\nDevelopmental Projects\n\nThis segment includes development, operation and maintenance of basic infrastructure projects, toll and fare collection, power development, development and operation of port facilities (till the date of sale) and providing related advisory services.\n\nOthers\n\nThis segment includes the realty, manufacture and sale of industrial valves, manufacture, marketing and servicing of construction equipment and parts thereof, marketing and servicing of mining machinery and parts thereof, manufacture and sale of rubber processing machinery, mining and aviation.\n\nHistory\n\nLarsen & Toubro Limited was founded in 1938.",
+          "version": 2
+        }
+      ],
+      "description_short": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:29.770171Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Larsen & Toubro Limited engages in engineering, procurement, and construction projects (EPC) in India and internationally. The company operates through four segments: Infrastructure Projects, Energy Projects, Hi-Tech Manufacturing, and Others. The Infrastructure Projects segment is involved in the engineering and construction of building and factories, transportation infrastructure, heavy civil infrastructure, power transmission & distribution, renewables, water and effluent treatment, and minerals and metals. The Energy Projects segment provides EPC solutions in clean energy space, oil & gas, refineries, petrochemicals & offshore wind energy sectors, from front-end design through detailed engineering, modular fabrication, procurement, project management, construction, installation and commissioning; CarbonLite solutions for power generation plants including power generation equipment with associated systems; and carbon capture utilization and utility packages. The Hi-Tech Manufacturing segment designs, manufactures/constructs, supplies, and revamps/retrofits custom designed engineered critical equipment and systems for the process plants, nuclear energy, and green hydrogen sectors; marine and land platforms, related equipment and systems, and aerospace products and systems; precision and electronics products and systems; and electrolysers. The other segment engages in realty; smart infrastructure and communication projects; construction equipment; and industrial product design development, including marketing and servicing of construction equipment, mining machinery and parts thereof, manufacture and sale of rubber processing machinery, and ecommerce/digital platforms and data centers. It has a strategic partnership with General Atomics Aeronautical Systems, Inc. to manufacture Medium Altitude Long Endurance (MALE) Remotely Piloted Aircraft Systems (RPAS) in India, for the Indian armed forces. The company was founded in 1938 and is headquartered in Mumbai, India.",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:20.163082Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Larsen & Toubro Limited engages in engineering, procurement, and construction projects (EPC) in India and internationally. The company operates through four segments: Infrastructure Projects, Energy Projects, Hi-Tech Manufacturing, and Others. The Infrastructure Projects segment is involved in the engineering and construction of building and factories, transportation infrastructure, heavy civil infrastructure, power transmission & distribution, renewables, water and effluent treatment, and minerals and metals. The Energy Projects segment provides EPC solutions in clean energy space, oil & gas, refineries, petrochemicals & offshore wind energy sectors, from front-end design through detailed engineering, modular fabrication, procurement, project management, construction, installation and commissioning; CarbonLite solutions for power generation plants including power generation equipment with associated systems; and carbon capture utilization and utility packages. The Hi-Tech Manufacturing segment designs, manufactures/constructs, supplies, and revamps/retrofits custom designed engineered critical equipment and systems for the process plants, nuclear energy, and green hydrogen sectors; marine and land platforms, related equipment and systems, and aerospace products and systems; precision and electronics products and systems; and electrolysers. The other segment engages in realty; smart infrastructure and communication projects; construction equipment; and industrial product design development, including marketing and servicing of construction equipment, mining machinery and parts thereof, manufacture and sale of rubber processing machinery, and ecommerce/digital platforms and data centers. It has a strategic partnership with General Atomics Aeronautical Systems, Inc. to manufacture Medium Altitude Long Endurance (MALE) Remotely Piloted Aircraft Systems (RPAS) in India, for the Indian armed forces. The company was founded in 1938 and is headquartered in Mumbai, India.",
+          "version": 2
+        }
+      ],
+      "index_constituents": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:29.741791Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "MSCI EM Large Cap Ex Fossil Fuels Index\n\nMSCI MPF ACWI Ex HK Unhedged Index\n\nMSCI AC Asia Ex Japan Momentum Tilt Index\n\nMSCI IN/Industrials (Sector) Index\n\nMSCI AC Asia IMI Growth Index\n\nMSCI ACWI Ex Israel Index\n\nMSCI ACWI Ex USA Large Growth Index\n\nMSCI BRIC/Constr & Engin (Industry) Index\n\nMSCI ACWI Ex CA/Capital Goods (Industry Group) Index\n\nFTSE All-World Ex UK Industrials Index",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:20.127241Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "MSCI ACWI Ex USA Ex Coal Index\n\nMSCI ACWI Ex JP Large/Industrials (Sector) Index\n\nMSCI ACWI/Capital Goods (Industry Group) Index\n\nMSCI ACWI Ex UK Large Cap Index\n\nMSCI ACWIFM Ex US/Industrials (Sector) Index\n\nMSCI ACWIFM/Industrials (Sector) Index\n\nMSCI BRIC IMI Growth Index\n\nMSCI BRIC/Constr & Engin (Industry) Index\n\nMSCI BRIC/Capital Goods (Industry Group) Index\n\nMSCI EFM IMI/Industrials (Sector) Index",
+          "version": 2
+        }
+      ],
+      "industry_classifications": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:29.763657Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Industrials (Primary)",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:20.156751Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Industrials (Primary)",
+          "version": 2
+        }
+      ],
+      "investors": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:29.765454Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Life Insurance Corporation of India (NSEI:LICI) (Current Investor); General Insurance Corporation of India (NSEI:GICRE) (Current Investor)",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:20.158599Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Life Insurance Corporation of India (NSEI:LICI) (Current Investor); General Insurance Corporation of India (NSEI:GICRE) (Current Investor)",
+          "version": 2
+        }
+      ],
+      "subsidiaries_count": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:29.771690Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 159,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:20.165242Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 159,
+          "version": 2
+        }
+      ]
+    },
+    "company_master": {
+      "company_name": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:29.739697Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Larsen & Toubro Limited",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:20.125642Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Larsen & Toubro Limited",
+          "version": 2
+        }
+      ],
+      "company_type": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:29.773523Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Public Company",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:20.167116Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Public Company",
+          "version": 2
+        }
+      ],
+      "country": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:29.768526Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "India",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:20.161953Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "India",
+          "version": 2
+        }
+      ],
+      "currency": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:29.746927Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Indian Rupee",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:20.132872Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Indian Rupee",
+          "version": 2
+        }
+      ],
+      "external_id": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:29.745373Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "IQT20106322",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:20.131038Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "IQT46356181",
+          "version": 2
+        }
+      ],
+      "industry": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:29.761855Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Construction and Engineering",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:20.155018Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Construction and Engineering",
+          "version": 2
+        }
+      ],
+      "parent_company": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:29.767110Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Larsen & Toubro Limited (BSE:500510)",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:20.160526Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Larsen & Toubro Limited (BSE:500510)",
+          "version": 2
+        }
+      ],
+      "research_coverage_count": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:29.785526Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 53,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:20.180664Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 53,
+          "version": 2
+        }
+      ],
+      "sector": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:29.760999Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Industrials",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:20.152927Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Industrials",
+          "version": 2
+        }
+      ],
+      "status": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:29.743385Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Active",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:20.129380Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Active",
+          "version": 2
+        }
+      ],
+      "ticker": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:29.737892Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "LT",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:20.123074Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "LT",
+          "version": 2
+        }
+      ],
+      "website": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:29.790236Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "www.larsentoubro.com",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:20.186471Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "www.larsentoubro.com",
+          "version": 2
+        }
+      ]
+    },
+    "competitors": {
+      "peer": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:29.774987Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "The New IEM LLC; Aqua Design, Inc.; Colas SA; Mahindra & Mahindra Limited (NSEI:M&M); Secure Meters Pvt Ltd.; Godrej & Boyce Manufacturing Company Limited; Offshore Oil Engineering Co.,Ltd (SHSE:600583); Tso SA; Worley Limited (ASX:WOR); LMW Limited (BSE:500252); Aditya Birla Management Corporation Private Limited; Vigie SA; Kalpataru Projects International Limited (NSEI:KPIL); Essar Constructions (India) Limited; Chembond Material Technologies Limited (BSE:530871); Taneja Aerospace and Aviation Limited (BSE:522229); Petrofac International Ltd; Rail Vikas Nigam Limited (NSEI:RVNL); BGR Energy Systems Limited (BSE:532930); Tata Projects Limited; Sansera Engineering Limited (NSEI:SANSERA); ACME Group; IRB Infrastructure Developers Limited (NSEI:IRB); PNC Infratech Limited (NSEI:PNCINFRA); Skipper Limited (BSE:538562); HPL Electric & Power Limited (NSEI:HPL); Karamtara Engineering Limited; ESL Power Systems, Inc.; G R Infraprojects Limited (NSEI:GRINFRA); Laser Power & Infra Limited (NSEI:LASERPOWER); Lumino Industries Limited; Tata Power Renewable Energy Limited; Mitsubishi Power, Ltd.; Capacit'e Infraprojects Limited (NSEI:CAPACITE); Mahindra Susten Private Limited; Mazagon Dock Shipbuilders Limited (NSEI:MAZDOCK); Innovision Limited (NSEI:INNOVISION); Adani Aerospace And Defence Limited; Jayant Infratech Limited (BSE:543544); Merck & Co., Inc. (NYSE:MRK); Infosys Limited (NSEI:INFY); Tata Motors Passenger Vehicles Limited (BSE:500570); Wood plc; Reliance Industries Limited (NSEI:RELIANCE); ABB India Limited (BSE:500002); Thermax Limited (NSEI:THERMAX); T\u00e9cnicas Reunidas, S.A. (BME:TRE); Honeywell UOP Inc.; Axens SA; Gensol Limited; Bharat Electronics Limited (BSE:500049); Punj Lloyd Limited; Schaeffler India Limited (BSE:505790); Metito (Overseas) Limited; Ion Exchange (India) Limited (BSE:500214); Tata Advanced Materials Limited; Tema India Limited; Navayuga Engineering Company Limited; RMZ Corp Holdings Private Limited; Angelique International Limited; MTAR Technologies Limited (NSEI:MTARTECH); National Highways Authority of India; Brahmaputra Infrastructure Limited (BSE:535693); KEC International Limited (NSEI:KEC); Hitachi Rail Limited; Xylem Inc. (NYSE:XYL); ReNew Energy Global Plc (NasdaqGS:RNW); Bright Power Projects (India) Private Limited; Vem Technologies Private Limited; Novatech Projects (India) Private Limited; The Shalimar Works (1980) Limited; Pmi Engineering Exports Private Limited; VPower Group International Holdings Limited (SEHK:1608); Deepak Builders & Engineers India Limited (NSEI:DBEIL); Oriana Power Limited (NSEI:ORIANA); Vdeal System Limited (NSEI:VDEAL); Melange Systems Private Limited; Wipro Limited (BSE:507685); Saipem SpA (BIT:SPM); Hindustan Dorr-Oliver Limited; Samsung Heavy Industries Co., Ltd. (KOSE:A010140); Tata Consultancy Services Limited (NSEI:TCS); NCC Limited (BSE:500294); NHPC Limited (NSEI:NHPC); Dynamatic Technologies Limited (BSE:505242); Alcock Ashdown (Gujarat) Ltd.; Goa Shipyard Limited; Toshiba India Private Limited; Sterling And Wilson Pvt. Ltd.; Hooghly Dock & Port Engineers Limited; Power Mech Projects Limited (NSEI:POWERMECH); CoreEL Technologies (I) Pvt. Ltd.; Bechtel Group, Inc.; Hmm Infra Limited; Globe Civil Projects Limited (NSEI:GLOBECIVIL); RKEC Projects Limited (NSEI:RKEC); ACME Solar Holdings Limited (NSEI:ACMESOLAR); Sharika Enterprises Limited (BSE:540786); Springer Nature AG & Co. KGaA (XTRA:SPG); Garuda Construction and Engineering Limited (NSEI:GARUDA); Solarworld Energy Solutions Limited (NSEI:SOLARWORLD); Jakson Green Limited; NTPC Green Energy Limited (NSEI:NTPCGREEN); SKV Engineering India Private Limited; Siemens Corporation; Subsea 7 S.A. (OB:SUBC); Ashok Leyland Limited (NSEI:ASHOKLEY); Bharat Heavy Electricals Limited (BSE:500103); Advanced Electronics Company Limited; SPML Infra Limited (NSEI:SPMLINFRA); Ahluwalia Contracts (India) Limited (BSE:532811); Afcons Infrastructure Limited (NSEI:AFCONS); Vascon Engineers Limited (NSEI:VASCONEQ); B.L. Kashyap and Sons Limited (NSEI:BLKASHYAP); Kirby Building Systems India Ltd.; DivyaSree Developers Pvt. Ltd.; Greenko Group PLC; Valentine Maritime( Gulf) L.L.C.; Arvind Envisol Limited; Paras Defence and Space Technologies Limited (NSEI:PARAS); Shyam Indus Power Solutions Private Limited; Marine Electricals (India) Limited (NSEI:MARINE); Shapoorji Pallonji And Company Private Limited (CMG); Maven Systems Pvt. Ltd.; Piramal Finance Limited (NSEI:PIRAMALFIN); Sterling and Wilson Renewable Energy Limited (NSEI:SWSOLAR); Alstom SA (ENXTPA:ALO); Schindler Holding AG (SWX:SCHN); The Tata Power Company Limited (BSE:500400); Olympia Industries Berhad (KLSE:OLYMPIA); Siemens Limited (NSEI:SIEMENS); Torrent Power Limited (NSEI:TORNTPOWER); Mistral Solutions Pvt. Ltd.; Elster Group SE; Advanced Building Industries Co. (SASE:2240); Engineers India Limited (NSEI:ENGINERSIN); ABG Shipyard Limited; Pennar Industries Limited (BSE:513228); Petron Engineering Construction Limited; Centum Electronics Limited (BSE:517544); JSW Energy Limited (BSE:533148); Tata Projects Ltd; Atmastco Limited (NSEI:ATMASTCO); Salasar Techno Engineering Limited (NSEI:SALASAR); Alpha Design Technologies Private Limited; Akanksha Power and Infrastructure Limited (NSEI:AKANKSHA); IDDC Cementation Limited; Saatvik Green Energy Limited (NSEI:SAATVIKGL); Godrej Process Equipment; Enviro Infra Engineers Limited (NSEI:EIEL); Vasu Chemicals (India) Private Limited; Atmastco Defence Systems Private Limited; Prozeal Green Energy Limited; McDermott International, Inc.; SKF India Limited (BSE:500472); JSW Steel Limited (BSE:500228); KBR, Inc. (NYSE:KBR); Hindustan Aeronautics Limited (NSEI:HAL); Ircon International Limited (NSEI:IRCON); Hindustan Shipyard Ltd.; SEPC Limited (BSE:532945); Genus Power Infrastructures Limited (BSE:530343); McNally Bharat Engineering Company Limited (BSE:532629); K&R Rail Engineering Limited (BSE:514360); NMDC Group PJSC (ADX:NMDC); Swiber Holdings Limited; Shapoorji Pallonji And Company Private Limited; Salarpuria Sattva Pvt Ltd; Dilip Buildcon Limited (NSEI:DBL); Aequs Limited (NSEI:AEQUS); Steel Infra Solutions Company Limited; Zetwerk Manufacturing Businesses Limited; Zenmeter Solutions Private Limited; EMS Limited (NSEI:EMSLIMITED); Meba Electric Co.,Ltd; Itron, Inc. (NasdaqGS:ITRI); Housing Development Finance Corporation Limited; W. R. Grace & Co.; Fluor Corporation (NYSE:FLR); Hager TeleCom, Inc.; LyondellBasell Industries N.V. (NYSE:LYB); Voltas Limited (NSEI:VOLTAS); Keppel Ltd. (SGX:BN4); Jyoti Structures Limited (NSEI:JYOTISTRUC); Legrand SA (ENXTPA:LR); Shanthi Gears Limited (NSEI:SHANTIGEAR); Simplex Infrastructures Limited (BSE:523838); Garden Reach Shipbuilders & Engineers Limited (NSEI:GRSE); Sika Interplant Systems Limited (BSE:523606); Bhilai Engineering Corporation Limited; Sunil Hitech Engineers Limited; NHH Coltec Ltd.; Jakson Ltd; Data Patterns (India) Limited (NSEI:DATAPATTNS); Greenko Energy Holdings; JWIL Infra Limited; NHP Electrical Engineering Products Pty Ltd; Diamond Engineering Chennai Private Limited; Vikram Solar Limited (NSEI:VIKRAMSOLR); Mahindra Defence Systems Limited; Waaree Energies Limited (NSEI:WAAREEENER); Eppeltone Engineers Limited (NSEI:EEPL); Avon Meters Private Limited; Telix Pharmaceuticals Limited (ASX:TLX); Reliance Infrastructure Limited (BSE:500390); TechnipFMC plc (NYSE:FTI); QXO Building Products, Inc.; Timken India Limited (BSE:522113); Bharati Defence And Infrastructure Limited; Cochin Shipyard Limited (NSEI:COCHINSHIP); Astra Microwave Products Limited (BSE:532493); Isgec Heavy Engineering Limited (BSE:533033); Jaihind Projects Limited; alfanar Group; Sammaan Capital Limited (NSEI:SAMMAANCAP); iLabs Hyderabad Technology Center Private Limited; VA Tech Wabag Limited (NSEI:WABAG); Kiewit Corporation; K Raheja Corp Private Limited; Hero Future Energies Private Limited; BCPL Railway Infrastructure Limited (BSE:542057); CIM Tools Private Limited; PSP Projects Limited (NSEI:PSPPROJECT); Cospower Engineering Limited (BSE:543172)",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:20.168758Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Reliance Infrastructure Limited (BSE:500390); TechnipFMC plc (NYSE:FTI); QXO Building Products, Inc.; Timken India Limited (BSE:522113); Bharati Defence And Infrastructure Limited; Cochin Shipyard Limited (NSEI:COCHINSHIP); Astra Microwave Products Limited (BSE:532493); Isgec Heavy Engineering Limited (BSE:533033); Jaihind Projects Limited; alfanar Group; Sammaan Capital Limited (NSEI:SAMMAANCAP); iLabs Hyderabad Technology Center Private Limited; VA Tech Wabag Limited (NSEI:WABAG); Kiewit Corporation; K Raheja Corp Private Limited; Hero Future Energies Private Limited; BCPL Railway Infrastructure Limited (BSE:542057); CIM Tools Private Limited; PSP Projects Limited (NSEI:PSPPROJECT); Cospower Engineering Limited (BSE:543172); Merck & Co., Inc. (NYSE:MRK); Infosys Limited (NSEI:INFY); Tata Motors Passenger Vehicles Limited (BSE:500570); Wood plc; Reliance Industries Limited (NSEI:RELIANCE); ABB India Limited (BSE:500002); Thermax Limited (NSEI:THERMAX); T\u00e9cnicas Reunidas, S.A. (BME:TRE); Honeywell UOP Inc.; Axens SA; Gensol Limited; Bharat Electronics Limited (BSE:500049); Punj Lloyd Limited; Schaeffler India Limited (BSE:505790); Metito (Overseas) Limited; Ion Exchange (India) Limited (BSE:500214); Tata Advanced Materials Limited; Tema India Limited; Navayuga Engineering Company Limited; RMZ Corp Holdings Private Limited; Angelique International Limited; MTAR Technologies Limited (NSEI:MTARTECH); National Highways Authority of India; Brahmaputra Infrastructure Limited (BSE:535693); KEC International Limited (NSEI:KEC); Hitachi Rail Limited; Xylem Inc. (NYSE:XYL); ReNew Energy Global Plc (NasdaqGS:RNW); Bright Power Projects (India) Private Limited; Vem Technologies Private Limited; Novatech Projects (India) Private Limited; The Shalimar Works (1980) Limited; Pmi Engineering Exports Private Limited; VPower Group International Holdings Limited (SEHK:1608); Deepak Builders & Engineers India Limited (NSEI:DBEIL); Oriana Power Limited (NSEI:ORIANA); Vdeal System Limited (NSEI:VDEAL); Melange Systems Private Limited; Siemens Corporation; Subsea 7 S.A. (OB:SUBC); Ashok Leyland Limited (NSEI:ASHOKLEY); Bharat Heavy Electricals Limited (BSE:500103); Advanced Electronics Company Limited; SPML Infra Limited (NSEI:SPMLINFRA); Ahluwalia Contracts (India) Limited (BSE:532811); Afcons Infrastructure Limited (NSEI:AFCONS); Vascon Engineers Limited (NSEI:VASCONEQ); B.L. Kashyap and Sons Limited (NSEI:BLKASHYAP); Kirby Building Systems India Ltd.; DivyaSree Developers Pvt. Ltd.; Greenko Group PLC; Valentine Maritime( Gulf) L.L.C.; Arvind Envisol Limited; Paras Defence and Space Technologies Limited (NSEI:PARAS); Shyam Indus Power Solutions Private Limited; Marine Electricals (India) Limited (NSEI:MARINE); Shapoorji Pallonji And Company Private Limited (CMG); Maven Systems Pvt. Ltd.; Piramal Finance Limited (NSEI:PIRAMALFIN); Sterling and Wilson Renewable Energy Limited (NSEI:SWSOLAR); McDermott International, Inc.; SKF India Limited (BSE:500472); JSW Steel Limited (BSE:500228); KBR, Inc. (NYSE:KBR); Hindustan Aeronautics Limited (NSEI:HAL); Ircon International Limited (NSEI:IRCON); Hindustan Shipyard Ltd.; SEPC Limited (BSE:532945); Genus Power Infrastructures Limited (BSE:530343); McNally Bharat Engineering Company Limited (BSE:532629); K&R Rail Engineering Limited (BSE:514360); NMDC Group PJSC (ADX:NMDC); Swiber Holdings Limited; Shapoorji Pallonji And Company Private Limited; Salarpuria Sattva Pvt Ltd; Dilip Buildcon Limited (NSEI:DBL); Aequs Limited (NSEI:AEQUS); Steel Infra Solutions Company Limited; Zetwerk Manufacturing Businesses Limited; Zenmeter Solutions Private Limited; EMS Limited (NSEI:EMSLIMITED); Meba Electric Co.,Ltd; Alstom SA (ENXTPA:ALO); Schindler Holding AG (SWX:SCHN); The Tata Power Company Limited (BSE:500400); Olympia Industries Berhad (KLSE:OLYMPIA); Siemens Limited (NSEI:SIEMENS); Torrent Power Limited (NSEI:TORNTPOWER); Mistral Solutions Pvt. Ltd.; Elster Group SE; Advanced Building Industries Co. (SASE:2240); Engineers India Limited (NSEI:ENGINERSIN); ABG Shipyard Limited; Pennar Industries Limited (BSE:513228); Petron Engineering Construction Limited; Centum Electronics Limited (BSE:517544); JSW Energy Limited (BSE:533148); Tata Projects Ltd; Atmastco Limited (NSEI:ATMASTCO); Salasar Techno Engineering Limited (NSEI:SALASAR); Alpha Design Technologies Private Limited; Akanksha Power and Infrastructure Limited (NSEI:AKANKSHA); IDDC Cementation Limited; Saatvik Green Energy Limited (NSEI:SAATVIKGL); Godrej Process Equipment; Enviro Infra Engineers Limited (NSEI:EIEL); Vasu Chemicals (India) Private Limited; Atmastco Defence Systems Private Limited; Prozeal Green Energy Limited; Wipro Limited (BSE:507685); Saipem SpA (BIT:SPM); Hindustan Dorr-Oliver Limited; Samsung Heavy Industries Co., Ltd. (KOSE:A010140); Tata Consultancy Services Limited (NSEI:TCS); NCC Limited (BSE:500294); NHPC Limited (NSEI:NHPC); Dynamatic Technologies Limited (BSE:505242); Alcock Ashdown (Gujarat) Ltd.; Goa Shipyard Limited; Toshiba India Private Limited; Sterling And Wilson Pvt. Ltd.; Hooghly Dock & Port Engineers Limited; Power Mech Projects Limited (NSEI:POWERMECH); CoreEL Technologies (I) Pvt. Ltd.; Bechtel Group, Inc.; Hmm Infra Limited; Globe Civil Projects Limited (NSEI:GLOBECIVIL); RKEC Projects Limited (NSEI:RKEC); ACME Solar Holdings Limited (NSEI:ACMESOLAR); Sharika Enterprises Limited (BSE:540786); Springer Nature AG & Co. KGaA (XTRA:SPG); Garuda Construction and Engineering Limited (NSEI:GARUDA); Solarworld Energy Solutions Limited (NSEI:SOLARWORLD); Jakson Green Limited; NTPC Green Energy Limited (NSEI:NTPCGREEN); SKV Engineering India Private Limited; Itron, Inc. (NasdaqGS:ITRI); Housing Development Finance Corporation Limited; W. R. Grace & Co.; Fluor Corporation (NYSE:FLR); Hager TeleCom, Inc.; LyondellBasell Industries N.V. (NYSE:LYB); Voltas Limited (NSEI:VOLTAS); Keppel Ltd. (SGX:BN4); Jyoti Structures Limited (NSEI:JYOTISTRUC); Legrand SA (ENXTPA:LR); Shanthi Gears Limited (NSEI:SHANTIGEAR); Simplex Infrastructures Limited (BSE:523838); Garden Reach Shipbuilders & Engineers Limited (NSEI:GRSE); Sika Interplant Systems Limited (BSE:523606); Bhilai Engineering Corporation Limited; Sunil Hitech Engineers Limited; NHH Coltec Ltd.; Jakson Ltd; Data Patterns (India) Limited (NSEI:DATAPATTNS); Greenko Energy Holdings; JWIL Infra Limited; NHP Electrical Engineering Products Pty Ltd; Diamond Engineering Chennai Private Limited; Vikram Solar Limited (NSEI:VIKRAMSOLR); Mahindra Defence Systems Limited; Waaree Energies Limited (NSEI:WAAREEENER); Eppeltone Engineers Limited (NSEI:EEPL); Avon Meters Private Limited; Telix Pharmaceuticals Limited (ASX:TLX); The New IEM LLC; Aqua Design, Inc.; Colas SA; Mahindra & Mahindra Limited (NSEI:M&M); Secure Meters Pvt Ltd.; Godrej & Boyce Manufacturing Company Limited; Offshore Oil Engineering Co.,Ltd (SHSE:600583); Tso SA; Worley Limited (ASX:WOR); LMW Limited (BSE:500252); Aditya Birla Management Corporation Private Limited; Vigie SA; Kalpataru Projects International Limited (NSEI:KPIL); Essar Constructions (India) Limited; Chembond Material Technologies Limited (BSE:530871); Taneja Aerospace and Aviation Limited (BSE:522229); Petrofac International Ltd; Rail Vikas Nigam Limited (NSEI:RVNL); BGR Energy Systems Limited (BSE:532930); Tata Projects Limited; Sansera Engineering Limited (NSEI:SANSERA); ACME Group; IRB Infrastructure Developers Limited (NSEI:IRB); PNC Infratech Limited (NSEI:PNCINFRA); Skipper Limited (BSE:538562); HPL Electric & Power Limited (NSEI:HPL); Karamtara Engineering Limited; ESL Power Systems, Inc.; G R Infraprojects Limited (NSEI:GRINFRA); Laser Power & Infra Limited (NSEI:LASERPOWER); Lumino Industries Limited; Tata Power Renewable Energy Limited; Mitsubishi Power, Ltd.; Capacit'e Infraprojects Limited (NSEI:CAPACITE); Mahindra Susten Private Limited; Mazagon Dock Shipbuilders Limited (NSEI:MAZDOCK); Innovision Limited (NSEI:INNOVISION); Adani Aerospace And Defence Limited; Jayant Infratech Limited (BSE:543544)",
+          "version": 2
+        }
+      ]
+    },
+    "financial_statements": {
+      "LTM::ebitda": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:29.776807Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 3675.7,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:20.170507Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 3675.7,
+          "version": 2
+        }
+      ],
+      "LTM::revenue": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:29.779878Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 31400.9,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:20.172873Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 31400.9,
+          "version": 2
+        }
+      ]
+    },
+    "market_data": {
+      "latest::close": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:29.748364Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 41,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:20.134243Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 41,
+          "version": 2
+        }
+      ],
+      "latest::enterprise_value": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:29.778309Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 63890.4,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:20.171685Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 63890.4,
+          "version": 2
+        }
+      ],
+      "latest::market_cap": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:29.780881Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 56754.6,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:20.174888Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 56754.6,
+          "version": 2
+        }
+      ],
+      "latest::next_earnings_date_expected": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:29.783712Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "2026-10-28 00:00:00",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:20.178893Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "2026-10-28 00:00:00",
+          "version": 2
+        }
+      ],
+      "latest::returns_1d": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:29.750007Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 2.55,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:20.137478Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 2.59,
+          "version": 2
+        }
+      ],
+      "latest::returns_1m": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:29.751463Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": -5.61,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:20.140705Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": -5.61,
+          "version": 2
+        }
+      ],
+      "latest::returns_1w": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:29.750737Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 2.97,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:20.139239Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 2.99,
+          "version": 2
+        }
+      ],
+      "latest::returns_1y": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:29.757358Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 12.5,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:20.147044Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 12.5,
+          "version": 2
+        }
+      ],
+      "latest::returns_3m": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:29.752712Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": -4.04,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:20.141902Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": -4.02,
+          "version": 2
+        }
+      ],
+      "latest::returns_3y": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:29.758363Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 48.3,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:20.148949Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 48.4,
+          "version": 2
+        }
+      ],
+      "latest::returns_5y": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:29.759237Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 146.3,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:20.150385Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 146.3,
+          "version": 2
+        }
+      ],
+      "latest::returns_6m": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:29.754355Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": -0.053,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:20.142941Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": -0.038,
+          "version": 2
+        }
+      ],
+      "latest::returns_9m": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:29.755717Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": -0.54,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:20.145155Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": -0.675,
+          "version": 2
+        }
+      ],
+      "latest::returns_ytd": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:29.749228Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": -5.05,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:20.135996Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": -5.05,
+          "version": 2
+        }
+      ],
+      "latest::volume": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:29.760120Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 0.2,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:20.151637Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 2.24,
+          "version": 2
+        }
+      ]
+    },
+    "products": {
+      "product": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:29.789164Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Adaptive Optics; Air Defense Guns; Air Preheaters; Application Integration Services; Armored Systems; Asset Life Services; Asset Management Services; Axial Fans; Ballastless Trackwork Services; Boosters; Bridging Systems; Cabling Services; Coal; Coal Crushing Equipment; Coal/Pet-Coke Gasification System; Colocation Services; Combat Vehicles; Commissioning and Decommissioning Services; Compressed Air-Free Tyre Curing Press Machines; Consulting Services; Control Room and Substation Automation Solutions; Conveyor Systems; Crushers; Customized Trenching and Pipe Laying Equipment; Deep-Water Structures and Manifold; Development of Properties; Distribution of Dump Trucks; Distribution of Hydraulic Excavators; Drum Coolers; Electric Level Luffing Cranes; Electricity Generation and Distribution; Electrostatic Precipitators; Energy Storage Controllers; Engineering, Procurement and Construction Services; Fabrication Services; Feeders; Freight Handling Services; Generators; GPU-based Cloud Solutions; Heat Transfer Equipment; High Precision Radars; Hybrid Energy Management Systems; Hydraulic Tyre Curing Press Machines; Installation Services; Instrumentation and Control Works; Integrated Logistics Management System; Iron Ore; Knowledgeable AI; L&T-SuFin; Learning and Assessment Solutions",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:20.184384Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Adaptive Optics; Air Defense Guns; Air Preheaters; Application Integration Services; Armored Systems; Asset Life Services; Asset Management Services; Axial Fans; Ballastless Trackwork Services; Boosters; Bridging Systems; Cabling Services; Coal; Coal Crushing Equipment; Coal/Pet-Coke Gasification System; Colocation Services; Combat Vehicles; Commissioning and Decommissioning Services; Compressed Air-Free Tyre Curing Press Machines; Consulting Services; Control Room and Substation Automation Solutions; Conveyor Systems; Crushers; Customized Trenching and Pipe Laying Equipment; Deep-Water Structures and Manifold; Development of Properties; Distribution of Dump Trucks; Distribution of Hydraulic Excavators; Drum Coolers; Electric Level Luffing Cranes; Electricity Generation and Distribution; Electrostatic Precipitators; Energy Storage Controllers; Engineering, Procurement and Construction Services; Fabrication Services; Feeders; Freight Handling Services; Generators; GPU-based Cloud Solutions; Heat Transfer Equipment; High Precision Radars; Hybrid Energy Management Systems; Hydraulic Tyre Curing Press Machines; Installation Services; Instrumentation and Control Works; Integrated Logistics Management System; Iron Ore; Knowledgeable AI; L&T-SuFin; Learning and Assessment Solutions",
+          "version": 2
+        }
+      ],
+      "product_description": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:29.787327Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Asset Management Services:\nAsset Management Services for oil and gas extraction and processing.\n\nBridging Systems:\nBridging Systems includes Tactical and Assault Bridging Systems and Army Bridging Systems.\n\nCabling Services:\nCabling Services include extra high voltage cabling services for infrastructure projects, such as airports, oil & gas industries, etc.\n\nColocation Services:\nColocation Services include space, power, CCTV monitoring,.\n\nCommissioning and Decommissioning Services:\nCommissioning and Decommissioning Services are provided for transmission lines underground cable networks, substations, distribution networks, electrical, instrumentation & communication works for power, process & infrastructure projects in both domestic & international markets. it also includes concept-to-commissioning services for setting up data centres.",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:20.182714Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Asset Management Services:\nAsset Management Services for oil and gas extraction and processing.\n\nBridging Systems:\nBridging Systems includes Tactical and Assault Bridging Systems and Army Bridging Systems.\n\nCabling Services:\nCabling Services include extra high voltage cabling services for infrastructure projects, such as airports, oil & gas industries, etc.\n\nColocation Services:\nColocation Services include space, power, CCTV monitoring,.\n\nCommissioning and Decommissioning Services:\nCommissioning and Decommissioning Services are provided for transmission lines underground cable networks, substations, distribution networks, electrical, instrumentation & communication works for power, process & infrastructure projects in both domestic & international markets. it also includes concept-to-commissioning services for setting up data centres.",
+          "version": 2
+        }
+      ]
+    }
+  },
+  "ticker": "LT",
+  "updated_at": "2026-08-01T19:37:20.186477Z"
+}

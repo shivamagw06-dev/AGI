@@ -1,0 +1,887 @@
+{
+  "relationships": [
+    {
+      "id": "349e6205-6b9a-4a58-b36e-19eba9faabb3",
+      "from_entity_id": "firm-blackstone",
+      "to_entity_id": "f-1",
+      "relation_type": "MANAGES",
+      "label": null,
+      "metadata": {},
+      "created_at": "2026-07-31T18:54:37.793Z"
+    },
+    {
+      "id": "a8bdb520-ccef-4794-b09c-fc3ba7bee14d",
+      "from_entity_id": "firm-kkr",
+      "to_entity_id": "f-2",
+      "relation_type": "MANAGES",
+      "label": null,
+      "metadata": {},
+      "created_at": "2026-07-31T18:54:37.793Z"
+    },
+    {
+      "id": "b45b0ae0-383d-4b5b-a271-728c594b8a3f",
+      "from_entity_id": "firm-apollo",
+      "to_entity_id": "f-3",
+      "relation_type": "MANAGES",
+      "label": null,
+      "metadata": {},
+      "created_at": "2026-07-31T18:54:37.793Z"
+    },
+    {
+      "id": "5db0ec15-70b4-4460-8a45-a0b382e095d8",
+      "from_entity_id": "firm-carlyle",
+      "to_entity_id": "f-4",
+      "relation_type": "MANAGES",
+      "label": null,
+      "metadata": {},
+      "created_at": "2026-07-31T18:54:37.793Z"
+    },
+    {
+      "id": "57ed5700-6640-4bfe-a706-0bca43a83678",
+      "from_entity_id": "firm-vista",
+      "to_entity_id": "f-5",
+      "relation_type": "MANAGES",
+      "label": null,
+      "metadata": {},
+      "created_at": "2026-07-31T18:54:37.793Z"
+    },
+    {
+      "id": "a69cb999-7a83-41f6-aad1-20b188e92c28",
+      "from_entity_id": "firm-kkr",
+      "to_entity_id": "co-healthcare-services-co",
+      "relation_type": "INVESTED_IN",
+      "label": null,
+      "metadata": {},
+      "created_at": "2026-07-31T18:54:37.793Z"
+    },
+    {
+      "id": "2f0f5a35-977d-4289-b38e-7187cec861ad",
+      "from_entity_id": "firm-kkr",
+      "to_entity_id": "tx-1",
+      "relation_type": "SPONSORED_BY",
+      "label": null,
+      "metadata": {},
+      "created_at": "2026-07-31T18:54:37.793Z"
+    },
+    {
+      "id": "2a32b9b1-2503-48f0-8147-fbac92b02bac",
+      "from_entity_id": "firm-blackstone",
+      "to_entity_id": "co-data-center-platform",
+      "relation_type": "INVESTED_IN",
+      "label": null,
+      "metadata": {},
+      "created_at": "2026-07-31T18:54:37.793Z"
+    },
+    {
+      "id": "030d8b22-2e40-4b13-9394-cbfaab1024cb",
+      "from_entity_id": "firm-blackstone",
+      "to_entity_id": "tx-2",
+      "relation_type": "SPONSORED_BY",
+      "label": null,
+      "metadata": {},
+      "created_at": "2026-07-31T18:54:37.793Z"
+    },
+    {
+      "id": "7e8f7690-f618-468e-97d0-61c7f8486243",
+      "from_entity_id": "firm-apollo",
+      "to_entity_id": "co-industrial-tech-platform",
+      "relation_type": "INVESTED_IN",
+      "label": null,
+      "metadata": {},
+      "created_at": "2026-07-31T18:54:37.793Z"
+    },
+    {
+      "id": "66672de4-fe6f-452e-bc8e-5213f80eb20d",
+      "from_entity_id": "firm-apollo",
+      "to_entity_id": "tx-3",
+      "relation_type": "SPONSORED_BY",
+      "label": null,
+      "metadata": {},
+      "created_at": "2026-07-31T18:54:37.793Z"
+    },
+    {
+      "id": "80858cbd-dc9b-47ac-a900-b125e3154da3",
+      "from_entity_id": "firm-bain-capital",
+      "to_entity_id": "co-consumer-retail-chain",
+      "relation_type": "INVESTED_IN",
+      "label": null,
+      "metadata": {},
+      "created_at": "2026-07-31T18:54:37.793Z"
+    },
+    {
+      "id": "2b822f51-37bc-45e2-9011-5290f55091e7",
+      "from_entity_id": "firm-bain-capital",
+      "to_entity_id": "tx-4",
+      "relation_type": "SPONSORED_BY",
+      "label": null,
+      "metadata": {},
+      "created_at": "2026-07-31T18:54:37.793Z"
+    },
+    {
+      "id": "cb1e0768-540b-4d26-bd83-f22be1c25cc7",
+      "from_entity_id": "firm-advent",
+      "to_entity_id": "co-business-services-group",
+      "relation_type": "INVESTED_IN",
+      "label": null,
+      "metadata": {},
+      "created_at": "2026-07-31T18:54:37.793Z"
+    },
+    {
+      "id": "5510c18b-e27d-402b-8dc9-aec8ad69838b",
+      "from_entity_id": "firm-advent",
+      "to_entity_id": "tx-5",
+      "relation_type": "SPONSORED_BY",
+      "label": null,
+      "metadata": {},
+      "created_at": "2026-07-31T18:54:37.793Z"
+    },
+    {
+      "id": "1fd35c7a-32c2-4868-b18b-5b96edc0d01f",
+      "from_entity_id": "firm-tpg",
+      "to_entity_id": "co-healthtech-platform",
+      "relation_type": "INVESTED_IN",
+      "label": null,
+      "metadata": {},
+      "created_at": "2026-07-31T18:54:37.793Z"
+    },
+    {
+      "id": "d14b4222-c2f3-412d-830a-892768009310",
+      "from_entity_id": "firm-tpg",
+      "to_entity_id": "tx-6",
+      "relation_type": "SPONSORED_BY",
+      "label": null,
+      "metadata": {},
+      "created_at": "2026-07-31T18:54:37.793Z"
+    },
+    {
+      "id": "059b0993-49bb-4935-9701-0ba2c35ba2f1",
+      "from_entity_id": "firm-kkr",
+      "to_entity_id": "pc-simple",
+      "relation_type": "INVESTED_IN",
+      "label": null,
+      "metadata": {},
+      "created_at": "2026-07-31T18:54:37.793Z"
+    },
+    {
+      "id": "a296c24e-7abe-4a73-8edb-7d8ff6347ea2",
+      "from_entity_id": "firm-kkr",
+      "to_entity_id": "pc-1-800-contacts-inc",
+      "relation_type": "INVESTED_IN",
+      "label": null,
+      "metadata": {},
+      "created_at": "2026-07-31T18:54:37.793Z"
+    },
+    {
+      "id": "5b8de9c3-2b37-40ea-84d0-7e06b9c03600",
+      "from_entity_id": "firm-kkr",
+      "to_entity_id": "pc-123dentist",
+      "relation_type": "INVESTED_IN",
+      "label": null,
+      "metadata": {},
+      "created_at": "2026-07-31T18:54:37.793Z"
+    },
+    {
+      "id": "d032aeca-141d-4b78-8b06-473beed29860",
+      "from_entity_id": "firm-kkr",
+      "to_entity_id": "pc-a-gas",
+      "relation_type": "INVESTED_IN",
+      "label": null,
+      "metadata": {},
+      "created_at": "2026-07-31T18:54:37.793Z"
+    },
+    {
+      "id": "94a1f683-436c-4d49-92f7-cc8e8e0dd01c",
+      "from_entity_id": "firm-kkr",
+      "to_entity_id": "pc-aep-transmission",
+      "relation_type": "INVESTED_IN",
+      "label": null,
+      "metadata": {},
+      "created_at": "2026-07-31T18:54:37.793Z"
+    },
+    {
+      "id": "0cba9580-0a53-4950-901e-263473b96916",
+      "from_entity_id": "firm-kkr",
+      "to_entity_id": "pc-aviv-group",
+      "relation_type": "INVESTED_IN",
+      "label": null,
+      "metadata": {},
+      "created_at": "2026-07-31T18:54:37.793Z"
+    },
+    {
+      "id": "af0ce5bf-9796-48fe-a04c-a151ea867bbf",
+      "from_entity_id": "firm-kkr",
+      "to_entity_id": "pc-accuris",
+      "relation_type": "INVESTED_IN",
+      "label": null,
+      "metadata": {},
+      "created_at": "2026-07-31T18:54:37.793Z"
+    },
+    {
+      "id": "b0620a5f-d73c-4276-af19-fe346007c077",
+      "from_entity_id": "firm-kkr",
+      "to_entity_id": "pc-adopt-a-cow",
+      "relation_type": "INVESTED_IN",
+      "label": null,
+      "metadata": {},
+      "created_at": "2026-07-31T18:54:37.793Z"
+    },
+    {
+      "id": "02185bb7-d4e5-45e9-a1e1-bf5ddbf6a7d8",
+      "from_entity_id": "firm-kkr",
+      "to_entity_id": "pc-advanced-navigation",
+      "relation_type": "INVESTED_IN",
+      "label": null,
+      "metadata": {},
+      "created_at": "2026-07-31T18:54:37.793Z"
+    },
+    {
+      "id": "b5a7d35e-9fc8-415b-9eb6-ebb7b4a1a1e9",
+      "from_entity_id": "firm-kkr",
+      "to_entity_id": "pc-advanta-seeds",
+      "relation_type": "INVESTED_IN",
+      "label": null,
+      "metadata": {},
+      "created_at": "2026-07-31T18:54:37.793Z"
+    },
+    {
+      "id": "297375b7-d52f-426c-8167-a54960237dff",
+      "from_entity_id": "firm-kkr",
+      "to_entity_id": "pc-agiloft",
+      "relation_type": "INVESTED_IN",
+      "label": null,
+      "metadata": {},
+      "created_at": "2026-07-31T18:54:37.793Z"
+    },
+    {
+      "id": "e173a9f6-a0be-48ef-b0af-c62a12cc9f28",
+      "from_entity_id": "firm-kkr",
+      "to_entity_id": "pc-aiwyn-inc",
+      "relation_type": "INVESTED_IN",
+      "label": null,
+      "metadata": {},
+      "created_at": "2026-07-31T18:54:37.793Z"
+    },
+    {
+      "id": "80af294b-6cc7-46bf-8af3-d2e4cddd58b4",
+      "from_entity_id": "firm-kkr",
+      "to_entity_id": "pc-albioma",
+      "relation_type": "INVESTED_IN",
+      "label": null,
+      "metadata": {},
+      "created_at": "2026-07-31T18:54:37.793Z"
+    },
+    {
+      "id": "d5552974-4d7b-4e95-b78c-32cc92d9746e",
+      "from_entity_id": "firm-kkr",
+      "to_entity_id": "pc-alchemer",
+      "relation_type": "INVESTED_IN",
+      "label": null,
+      "metadata": {},
+      "created_at": "2026-07-31T18:54:37.793Z"
+    },
+    {
+      "id": "880b4710-de84-45f1-8a37-d8efc102ce2a",
+      "from_entity_id": "firm-kkr",
+      "to_entity_id": "pc-altitude-aircraft-leasing",
+      "relation_type": "INVESTED_IN",
+      "label": null,
+      "metadata": {},
+      "created_at": "2026-07-31T18:54:37.793Z"
+    },
+    {
+      "id": "e53df2f1-26b5-4009-adc1-aeb5addc09ac",
+      "from_entity_id": "firm-kkr",
+      "to_entity_id": "pc-anchorage-digital",
+      "relation_type": "INVESTED_IN",
+      "label": null,
+      "metadata": {},
+      "created_at": "2026-07-31T18:54:37.793Z"
+    },
+    {
+      "id": "ba7ef0e3-048f-4814-9151-1d82732a21d6",
+      "from_entity_id": "firm-kkr",
+      "to_entity_id": "pc-apex-analytix",
+      "relation_type": "INVESTED_IN",
+      "label": null,
+      "metadata": {},
+      "created_at": "2026-07-31T18:54:37.793Z"
+    },
+    {
+      "id": "d920cbea-d285-4336-8197-72a3f22037fd",
+      "from_entity_id": "firm-kkr",
+      "to_entity_id": "pc-april",
+      "relation_type": "INVESTED_IN",
+      "label": null,
+      "metadata": {},
+      "created_at": "2026-07-31T18:54:37.793Z"
+    },
+    {
+      "id": "ee6344e6-4533-4964-9974-30cfe8e8e807",
+      "from_entity_id": "firm-kkr",
+      "to_entity_id": "pc-argenta",
+      "relation_type": "INVESTED_IN",
+      "label": null,
+      "metadata": {},
+      "created_at": "2026-07-31T18:54:37.793Z"
+    },
+    {
+      "id": "6a15b8d6-9d3c-402b-bcb7-8648e10a2d12",
+      "from_entity_id": "firm-kkr",
+      "to_entity_id": "pc-arnott-s",
+      "relation_type": "INVESTED_IN",
+      "label": null,
+      "metadata": {},
+      "created_at": "2026-07-31T18:54:37.793Z"
+    },
+    {
+      "id": "2466f56b-910c-4fb9-9500-eaf65f97e367",
+      "from_entity_id": "firm-kkr",
+      "to_entity_id": "pc-artlist",
+      "relation_type": "INVESTED_IN",
+      "label": null,
+      "metadata": {},
+      "created_at": "2026-07-31T18:54:37.793Z"
+    },
+    {
+      "id": "916fb1ab-8cfc-4f17-bf00-39fb60302e1e",
+      "from_entity_id": "firm-kkr",
+      "to_entity_id": "pc-ascend-asia",
+      "relation_type": "INVESTED_IN",
+      "label": null,
+      "metadata": {},
+      "created_at": "2026-07-31T18:54:37.793Z"
+    },
+    {
+      "id": "495bae8f-b513-4423-a039-77f8d2dbfe0a",
+      "from_entity_id": "firm-kkr",
+      "to_entity_id": "pc-aster-renewable-energy",
+      "relation_type": "INVESTED_IN",
+      "label": null,
+      "metadata": {},
+      "created_at": "2026-07-31T18:54:37.793Z"
+    },
+    {
+      "id": "9f2f4d80-17a6-4a9d-a6f4-1d4f53fae80a",
+      "from_entity_id": "firm-kkr",
+      "to_entity_id": "pc-atlantic-aviation",
+      "relation_type": "INVESTED_IN",
+      "label": null,
+      "metadata": {},
+      "created_at": "2026-07-31T18:54:37.793Z"
+    },
+    {
+      "id": "600c8d4d-8d47-45d1-8384-c15a0b9fe425",
+      "from_entity_id": "firm-kkr",
+      "to_entity_id": "pc-avantus",
+      "relation_type": "INVESTED_IN",
+      "label": null,
+      "metadata": {},
+      "created_at": "2026-07-31T18:54:37.793Z"
+    },
+    {
+      "id": "1e9926ae-623d-46a1-8f0b-1de8360ff135",
+      "from_entity_id": "firm-kkr",
+      "to_entity_id": "pc-avendus-capital",
+      "relation_type": "INVESTED_IN",
+      "label": null,
+      "metadata": {},
+      "created_at": "2026-07-31T18:54:37.793Z"
+    },
+    {
+      "id": "f0c83274-ff81-4201-9e00-24725751c350",
+      "from_entity_id": "firm-kkr",
+      "to_entity_id": "pc-axius-water",
+      "relation_type": "INVESTED_IN",
+      "label": null,
+      "metadata": {},
+      "created_at": "2026-07-31T18:54:37.793Z"
+    },
+    {
+      "id": "14bd427f-27fe-4492-9eec-13a83d75d8fa",
+      "from_entity_id": "firm-kkr",
+      "to_entity_id": "pc-bmc",
+      "relation_type": "INVESTED_IN",
+      "label": null,
+      "metadata": {},
+      "created_at": "2026-07-31T18:54:37.793Z"
+    },
+    {
+      "id": "7d336e8e-7cb6-4abe-be09-4ff376cd7125",
+      "from_entity_id": "firm-kkr",
+      "to_entity_id": "pc-bmh",
+      "relation_type": "INVESTED_IN",
+      "label": null,
+      "metadata": {},
+      "created_at": "2026-07-31T18:54:37.793Z"
+    },
+    {
+      "id": "9acc73f3-262b-48ee-ae7d-8bb61bb22ab9",
+      "from_entity_id": "firm-kkr",
+      "to_entity_id": "pc-ballast",
+      "relation_type": "INVESTED_IN",
+      "label": null,
+      "metadata": {},
+      "created_at": "2026-07-31T18:54:37.793Z"
+    },
+    {
+      "id": "781aa298-6858-4028-bba0-6baa794a482d",
+      "from_entity_id": "firm-kkr",
+      "to_entity_id": "pc-barracuda-networks",
+      "relation_type": "INVESTED_IN",
+      "label": null,
+      "metadata": {},
+      "created_at": "2026-07-31T18:54:37.793Z"
+    },
+    {
+      "id": "8a82a689-4e9c-4e2a-8edf-e9853a083b0e",
+      "from_entity_id": "firm-kkr",
+      "to_entity_id": "pc-bay-club",
+      "relation_type": "INVESTED_IN",
+      "label": null,
+      "metadata": {},
+      "created_at": "2026-07-31T18:54:37.793Z"
+    },
+    {
+      "id": "6beafa4a-3ff6-4dd9-9307-ba73a83cceba",
+      "from_entity_id": "firm-kkr",
+      "to_entity_id": "pc-beacon-pointe-advisors-holdings-llc",
+      "relation_type": "INVESTED_IN",
+      "label": null,
+      "metadata": {},
+      "created_at": "2026-07-31T18:54:37.793Z"
+    },
+    {
+      "id": "c2b48a3e-d910-4118-a388-ea07247723e9",
+      "from_entity_id": "firm-kkr",
+      "to_entity_id": "pc-biosynth",
+      "relation_type": "INVESTED_IN",
+      "label": null,
+      "metadata": {},
+      "created_at": "2026-07-31T18:54:37.793Z"
+    },
+    {
+      "id": "f810e01a-7e77-4e08-9697-c9241ac8fae2",
+      "from_entity_id": "firm-kkr",
+      "to_entity_id": "pc-biotage",
+      "relation_type": "INVESTED_IN",
+      "label": null,
+      "metadata": {},
+      "created_at": "2026-07-31T18:54:37.793Z"
+    },
+    {
+      "id": "644ec485-1a7d-4fc9-bf47-809eb8932844",
+      "from_entity_id": "firm-kkr",
+      "to_entity_id": "pc-blue-sprig",
+      "relation_type": "INVESTED_IN",
+      "label": null,
+      "metadata": {},
+      "created_at": "2026-07-31T18:54:37.793Z"
+    },
+    {
+      "id": "6341a0f6-4921-4619-ad24-3cf4dd3cdd6e",
+      "from_entity_id": "firm-kkr",
+      "to_entity_id": "pc-bridgebio-pharma",
+      "relation_type": "INVESTED_IN",
+      "label": null,
+      "metadata": {},
+      "created_at": "2026-07-31T18:54:37.793Z"
+    },
+    {
+      "id": "2bc06f8b-ae37-46b8-960b-354f3a63f5e9",
+      "from_entity_id": "firm-kkr",
+      "to_entity_id": "pc-brightspring-health-services",
+      "relation_type": "INVESTED_IN",
+      "label": null,
+      "metadata": {},
+      "created_at": "2026-07-31T18:54:37.793Z"
+    },
+    {
+      "id": "c524d0b1-188c-427f-ab01-8f31a6f433b4",
+      "from_entity_id": "firm-kkr",
+      "to_entity_id": "pc-brightview",
+      "relation_type": "INVESTED_IN",
+      "label": null,
+      "metadata": {},
+      "created_at": "2026-07-31T18:54:37.793Z"
+    },
+    {
+      "id": "26b61ebf-7f0b-4cf6-a4dc-8513d6557929",
+      "from_entity_id": "firm-kkr",
+      "to_entity_id": "pc-brightline-inc",
+      "relation_type": "INVESTED_IN",
+      "label": null,
+      "metadata": {},
+      "created_at": "2026-07-31T18:54:37.793Z"
+    },
+    {
+      "id": "6f37eaaf-f7ff-42b6-b686-eb5ff519592d",
+      "from_entity_id": "firm-kkr",
+      "to_entity_id": "pc-bushu-pharma",
+      "relation_type": "INVESTED_IN",
+      "label": null,
+      "metadata": {},
+      "created_at": "2026-07-31T18:54:37.793Z"
+    },
+    {
+      "id": "154c0f3b-6360-4dfd-9467-d576b4137dc4",
+      "from_entity_id": "firm-kkr",
+      "to_entity_id": "pc-bytedance",
+      "relation_type": "INVESTED_IN",
+      "label": null,
+      "metadata": {},
+      "created_at": "2026-07-31T18:54:37.793Z"
+    },
+    {
+      "id": "3341ed43-cb80-4925-97b2-2712452c0a54",
+      "from_entity_id": "firm-kkr",
+      "to_entity_id": "pc-circor",
+      "relation_type": "INVESTED_IN",
+      "label": null,
+      "metadata": {},
+      "created_at": "2026-07-31T18:54:37.793Z"
+    },
+    {
+      "id": "7dbaaa8b-d985-42bd-b0a7-9cbbc21262e4",
+      "from_entity_id": "firm-kkr",
+      "to_entity_id": "pc-cmc-packaging-automation",
+      "relation_type": "INVESTED_IN",
+      "label": null,
+      "metadata": {},
+      "created_at": "2026-07-31T18:54:37.793Z"
+    },
+    {
+      "id": "83e5914a-33d7-43d5-8533-ca9bef036ad6",
+      "from_entity_id": "firm-kkr",
+      "to_entity_id": "pc-capeomega",
+      "relation_type": "INVESTED_IN",
+      "label": null,
+      "metadata": {},
+      "created_at": "2026-07-31T18:54:37.793Z"
+    },
+    {
+      "id": "299fd439-200d-48fa-a7ba-0024dd434ddf",
+      "from_entity_id": "firm-kkr",
+      "to_entity_id": "pc-captive-resources",
+      "relation_type": "INVESTED_IN",
+      "label": null,
+      "metadata": {},
+      "created_at": "2026-07-31T18:54:37.793Z"
+    },
+    {
+      "id": "e6e3a0d7-ec8f-4660-be96-0aa548916b5f",
+      "from_entity_id": "firm-kkr",
+      "to_entity_id": "pc-carboncount-holdings",
+      "relation_type": "INVESTED_IN",
+      "label": null,
+      "metadata": {},
+      "created_at": "2026-07-31T18:54:37.793Z"
+    },
+    {
+      "id": "bec427bd-b9ce-4130-a289-b16e97990128",
+      "from_entity_id": "firm-kkr",
+      "to_entity_id": "pc-caruna-oy",
+      "relation_type": "INVESTED_IN",
+      "label": null,
+      "metadata": {},
+      "created_at": "2026-07-31T18:54:37.793Z"
+    },
+    {
+      "id": "7bf4ec36-bc52-484c-8a86-54309b5e4763",
+      "from_entity_id": "firm-kkr",
+      "to_entity_id": "pc-cegid",
+      "relation_type": "INVESTED_IN",
+      "label": null,
+      "metadata": {},
+      "created_at": "2026-07-31T18:54:37.793Z"
+    },
+    {
+      "id": "6e7655a6-427b-4276-87b1-cbb2f558336b",
+      "from_entity_id": "firm-kkr",
+      "to_entity_id": "pc-central-tank-terminal",
+      "relation_type": "INVESTED_IN",
+      "label": null,
+      "metadata": {},
+      "created_at": "2026-07-31T18:54:37.793Z"
+    },
+    {
+      "id": "b4e3028d-dd94-45ed-8352-09afa65cf6eb",
+      "from_entity_id": "firm-kkr",
+      "to_entity_id": "pc-charter-next-generation",
+      "relation_type": "INVESTED_IN",
+      "label": null,
+      "metadata": {},
+      "created_at": "2026-07-31T18:54:37.793Z"
+    },
+    {
+      "id": "fb769e3e-04dc-48d8-a11e-2f44854469ce",
+      "from_entity_id": "firm-kkr",
+      "to_entity_id": "pc-chase-corp",
+      "relation_type": "INVESTED_IN",
+      "label": null,
+      "metadata": {},
+      "created_at": "2026-07-31T18:54:37.793Z"
+    },
+    {
+      "id": "8d2ca9cf-6df2-427c-bbff-5735dc5a18d3",
+      "from_entity_id": "firm-kkr",
+      "to_entity_id": "pc-citation-group",
+      "relation_type": "INVESTED_IN",
+      "label": null,
+      "metadata": {},
+      "created_at": "2026-07-31T18:54:37.793Z"
+    },
+    {
+      "id": "0ce21e4c-f24c-4cd1-b8b7-5a0f648591c2",
+      "from_entity_id": "firm-kkr",
+      "to_entity_id": "pc-clarify-health-solutions",
+      "relation_type": "INVESTED_IN",
+      "label": null,
+      "metadata": {},
+      "created_at": "2026-07-31T18:54:37.793Z"
+    },
+    {
+      "id": "8b96bbc7-12f7-4b38-a2ca-92f1a7b1b612",
+      "from_entity_id": "firm-kkr",
+      "to_entity_id": "pc-cleanpeak-energy",
+      "relation_type": "INVESTED_IN",
+      "label": null,
+      "metadata": {},
+      "created_at": "2026-07-31T18:54:37.793Z"
+    },
+    {
+      "id": "c6098a98-833e-4edc-aa68-8e446dccd569",
+      "from_entity_id": "firm-kkr",
+      "to_entity_id": "pc-clinisupplies",
+      "relation_type": "INVESTED_IN",
+      "label": null,
+      "metadata": {},
+      "created_at": "2026-07-31T18:54:37.793Z"
+    },
+    {
+      "id": "1326db12-a40d-4a82-b65e-9084e731b1fd",
+      "from_entity_id": "firm-kkr",
+      "to_entity_id": "pc-cloudera",
+      "relation_type": "INVESTED_IN",
+      "label": null,
+      "metadata": {},
+      "created_at": "2026-07-31T18:54:37.793Z"
+    },
+    {
+      "id": "467720c3-c644-4836-b01d-b2536f166e1a",
+      "from_entity_id": "firm-kkr",
+      "to_entity_id": "pc-coastal-gaslink",
+      "relation_type": "INVESTED_IN",
+      "label": null,
+      "metadata": {},
+      "created_at": "2026-07-31T18:54:37.793Z"
+    },
+    {
+      "id": "3a7dfa5e-2a8b-4e91-a864-a3252b3adff7",
+      "from_entity_id": "firm-kkr",
+      "to_entity_id": "pc-coder-technologies",
+      "relation_type": "INVESTED_IN",
+      "label": null,
+      "metadata": {},
+      "created_at": "2026-07-31T18:54:37.793Z"
+    },
+    {
+      "id": "c8abeff0-26a7-45ed-ac85-5fb9fbd8b1d4",
+      "from_entity_id": "firm-kkr",
+      "to_entity_id": "pc-coherus-biosciences",
+      "relation_type": "INVESTED_IN",
+      "label": null,
+      "metadata": {},
+      "created_at": "2026-07-31T18:54:37.793Z"
+    },
+    {
+      "id": "8de92d16-5db3-4544-b43c-271d890a11d4",
+      "from_entity_id": "person-henry-kravis",
+      "to_entity_id": "firm-kkr",
+      "relation_type": "WORKS_AT",
+      "label": null,
+      "metadata": {},
+      "created_at": "2026-07-31T18:54:37.793Z"
+    },
+    {
+      "id": "21f06f64-62d8-4912-a4ce-45826ab68fcf",
+      "from_entity_id": "person-george-roberts",
+      "to_entity_id": "firm-kkr",
+      "relation_type": "WORKS_AT",
+      "label": null,
+      "metadata": {},
+      "created_at": "2026-07-31T18:54:37.793Z"
+    },
+    {
+      "id": "29aae772-8db4-4c14-94e3-d241110b6b1d",
+      "from_entity_id": "person-joseph-bae",
+      "to_entity_id": "firm-kkr",
+      "relation_type": "WORKS_AT",
+      "label": null,
+      "metadata": {},
+      "created_at": "2026-07-31T18:54:37.793Z"
+    },
+    {
+      "id": "2a2579f6-aa3f-4711-adeb-959357e03016",
+      "from_entity_id": "rf-1",
+      "to_entity_id": "firm-kkr",
+      "relation_type": "MENTIONS",
+      "label": null,
+      "metadata": {},
+      "created_at": "2026-07-31T18:54:37.793Z"
+    },
+    {
+      "id": "672316f2-8c18-45a9-b13b-350895af42ce",
+      "from_entity_id": "rf-2",
+      "to_entity_id": "firm-blackstone",
+      "relation_type": "MENTIONS",
+      "label": null,
+      "metadata": {},
+      "created_at": "2026-07-31T18:54:37.793Z"
+    },
+    {
+      "id": "75f6ebf2-dfcf-4795-be29-811c4a7710f2",
+      "from_entity_id": "rf-3",
+      "to_entity_id": "firm-apollo",
+      "relation_type": "MENTIONS",
+      "label": null,
+      "metadata": {},
+      "created_at": "2026-07-31T18:54:37.793Z"
+    },
+    {
+      "id": "37a1e57f-e8f0-4aec-a968-b63d1c1a116b",
+      "from_entity_id": "rf-4",
+      "to_entity_id": "firm-kkr",
+      "relation_type": "MENTIONS",
+      "label": null,
+      "metadata": {},
+      "created_at": "2026-07-31T18:54:37.793Z"
+    },
+    {
+      "id": "3485e8de-19e6-4859-abc8-4739d0f0664a",
+      "from_entity_id": "rf-5",
+      "to_entity_id": "firm-vista",
+      "relation_type": "MENTIONS",
+      "label": null,
+      "metadata": {},
+      "created_at": "2026-07-31T18:54:37.793Z"
+    },
+    {
+      "id": "a966247c-8fae-4621-bda1-070d20ad8559",
+      "from_entity_id": "rf-6",
+      "to_entity_id": "firm-tpg",
+      "relation_type": "MENTIONS",
+      "label": null,
+      "metadata": {},
+      "created_at": "2026-07-31T18:54:37.793Z"
+    },
+    {
+      "id": "db6ad650-204e-4c80-a9e2-9fdd5eb972f7",
+      "from_entity_id": "rf-7",
+      "to_entity_id": "firm-eqt",
+      "relation_type": "MENTIONS",
+      "label": null,
+      "metadata": {},
+      "created_at": "2026-07-31T18:54:37.793Z"
+    },
+    {
+      "id": "fb4cbf32-3b1b-42aa-9047-55c51a9e21a0",
+      "from_entity_id": "rf-8",
+      "to_entity_id": "firm-carlyle",
+      "relation_type": "MENTIONS",
+      "label": null,
+      "metadata": {},
+      "created_at": "2026-07-31T18:54:37.793Z"
+    },
+    {
+      "id": "884a92b6-f00e-4bbd-aacb-32fe32653820",
+      "from_entity_id": "firm-blackstone",
+      "to_entity_id": "firm-kkr",
+      "relation_type": "COMPETES_WITH",
+      "label": null,
+      "metadata": {},
+      "created_at": "2026-07-31T19:04:58.768Z"
+    },
+    {
+      "id": "5dfdd808-226d-4f60-b9ee-4b9b1b94443e",
+      "from_entity_id": "firm-kkr",
+      "to_entity_id": "firm-apollo",
+      "relation_type": "COMPETES_WITH",
+      "label": null,
+      "metadata": {},
+      "created_at": "2026-07-31T19:04:58.768Z"
+    },
+    {
+      "id": "7fcf1597-70f0-47a8-861f-7ab22ed460cc",
+      "from_entity_id": "firm-apollo",
+      "to_entity_id": "firm-carlyle",
+      "relation_type": "COMPETES_WITH",
+      "label": null,
+      "metadata": {},
+      "created_at": "2026-07-31T19:04:58.768Z"
+    },
+    {
+      "id": "dcbfb816-ea30-4efd-8896-30f51c258f1e",
+      "from_entity_id": "firm-carlyle",
+      "to_entity_id": "firm-advent",
+      "relation_type": "COMPETES_WITH",
+      "label": null,
+      "metadata": {},
+      "created_at": "2026-07-31T19:04:58.768Z"
+    },
+    {
+      "id": "5c0bbfa0-05f9-4a7d-9842-423d5e37802b",
+      "from_entity_id": "firm-advent",
+      "to_entity_id": "firm-bain-capital",
+      "relation_type": "COMPETES_WITH",
+      "label": null,
+      "metadata": {},
+      "created_at": "2026-07-31T19:04:58.768Z"
+    },
+    {
+      "id": "2c50ecdc-4d33-4d81-84a1-8dd5d95aaf84",
+      "from_entity_id": "firm-bain-capital",
+      "to_entity_id": "firm-tpg",
+      "relation_type": "COMPETES_WITH",
+      "label": null,
+      "metadata": {},
+      "created_at": "2026-07-31T19:04:58.768Z"
+    },
+    {
+      "id": "baf9ba92-d48b-4d6e-bbcd-edc60f999f17",
+      "from_entity_id": "firm-tpg",
+      "to_entity_id": "firm-eqt",
+      "relation_type": "COMPETES_WITH",
+      "label": null,
+      "metadata": {},
+      "created_at": "2026-07-31T19:04:58.768Z"
+    },
+    {
+      "id": "3fd43d40-4eb2-4b3c-a470-93bfdb0541c8",
+      "from_entity_id": "firm-eqt",
+      "to_entity_id": "firm-vista",
+      "relation_type": "COMPETES_WITH",
+      "label": null,
+      "metadata": {},
+      "created_at": "2026-07-31T19:04:58.768Z"
+    },
+    {
+      "id": "25f6e615-8f04-4772-9532-d46e6e694b04",
+      "from_entity_id": "firm-vista",
+      "to_entity_id": "firm-warburg-pincus",
+      "relation_type": "COMPETES_WITH",
+      "label": null,
+      "metadata": {},
+      "created_at": "2026-07-31T19:04:58.768Z"
+    },
+    {
+      "id": "9dd3dbf8-1a14-48e4-a447-8913cabaf5f1",
+      "from_entity_id": "firm-warburg-pincus",
+      "to_entity_id": "firm-blackstone",
+      "relation_type": "COMPETES_WITH",
+      "label": null,
+      "metadata": {},
+      "created_at": "2026-07-31T19:04:58.768Z"
+    }
+  ],
+  "updated_at": "2026-07-31T19:04:58.768Z"
+}

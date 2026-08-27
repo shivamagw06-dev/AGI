@@ -1,0 +1,32 @@
+{
+  "sprint": "3.4",
+  "name": "Intent Optimisation",
+  "irl_version": "intent-resolution-v1.1.0",
+  "suite": "institutional_1000",
+  "mode": "soft",
+  "baseline_fo": {
+    "pass_pct": 92.6,
+    "framework_accuracy_pct": 96.3,
+    "intent_accuracy_pct": 84.7,
+    "mean_score": 87.23
+  },
+  "post_io": {
+    "pass_pct": 98.4,
+    "framework_accuracy_pct": 97.7,
+    "intent_accuracy_pct": 100.0,
+    "mean_score": 89.99,
+    "n": 1000,
+    "passed": 984,
+    "failed": 16
+  },
+  "cio_frozen_25": {
+    "pass_pct": 100.0,
+    "note": "pass rate unchanged; no quality-gate regression"
+  },
+  "rci": {
+    "intent_mismatch_portfolio_clusters": 0,
+    "dominant_remaining": "future_leakage|historical_replay"
+  },
+  "regression": false,
+  "fabricated": false
+}

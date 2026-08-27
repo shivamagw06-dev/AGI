@@ -1,0 +1,895 @@
+/* ============================================================================
+   Theme + Tailwind-ready CSS
+   Paste into src/index.css (or whichever file Tailwind compiles).
+   Rebuild after updating: npm run build
+   ============================================================================ */
+
+/* =========================
+   Design tokens (define first)
+   ========================= */
+:root {
+  --background: 0 0% 100%;
+  --foreground: 0 0% 7%;
+  --card: 0 0% 100%;
+  --card-foreground: 0 0% 7%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 0 0% 7%;
+  --primary: 28 100% 50%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 0 0% 96%;
+  --secondary-foreground: 0 0% 7%;
+  --muted: 0 0% 96%;
+  --muted-foreground: 0 0% 40%;
+  --accent: 0 0% 96%;
+  --accent-foreground: 0 0% 7%;
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 0 0% 88%;
+  --input: 0 0% 88%;
+  --ring: 28 100% 50%;
+  --radius: 0.25rem;
+
+  --reuters-orange: #ff8000;
+  --reuters-black: #111111;
+  --reuters-gray: #555555;
+  --reuters-muted: #767676;
+  --reuters-border: #dddddd;
+  --reuters-bg-subtle: #f7f7f7;
+
+  /* convenience mappings */
+  --bg-hsl: var(--background);
+  --fg-hsl: var(--foreground);
+  --card-hsl: var(--card);
+  --card-fg-hsl: var(--card-foreground);
+  --border-hsl: var(--border);
+  --input-hsl: var(--input);
+  --muted-hsl: var(--muted);
+  --muted-fg-hsl: var(--muted-foreground);
+}
+
+/* ========================= Tailwind directives (required) ========================= */
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ========================= Base layer: accessible defaults ========================= */
+@layer base {
+  html, body {
+    background-color: #ffffff;
+    color: var(--reuters-black);
+    font-family: 'IBM Plex Sans', 'Segoe UI', 'Helvetica Neue', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  .font-serif {
+    font-family: 'Source Serif 4', Georgia, 'Times New Roman', serif;
+  }
+
+  html.dark body {
+    background-color: #ffffff;
+    color: var(--reuters-black);
+  }
+
+  a {
+    color: var(--reuters-black);
+    text-decoration: none;
+  }
+  a:hover, a:focus {
+    color: var(--reuters-orange);
+  }
+
+  /* inputs */
+  input, textarea, select, .search-input {
+    background: hsl(var(--input-hsl));
+    color: hsl(var(--fg-hsl));
+    border: 1px solid hsl(var(--border-hsl));
+    padding: 0.5rem 0.75rem;
+    outline: none;
+    transition: box-shadow 0.12s ease, border-color 0.12s ease, background-color 0.12s ease, color 0.12s ease;
+  }
+
+  ::placeholder {
+    color: hsl(var(--muted-hsl));
+    opacity: 1;
+  }
+
+  /* muted / small text */
+  .text-muted, .muted, small {
+    color: hsl(var(--muted-fg-hsl));
+  }
+
+  /* card surfaces */
+  .card, .panel, .box {
+    background-color: hsl(var(--card-hsl));
+    color: hsl(var(--card-fg-hsl));
+    border: 1px solid hsl(var(--border-hsl));
+    padding: 1rem;
+  }
+
+  /* accessible focus ring for keyboard users */
+  :focus {
+    box-shadow: 0 0 0 4px hsl(var(--ring) / 0.12);
+  }
+}
+
+/* sensible border defaults (avoid global * rule) */
+.container, .card, .panel, input, textarea, select, button {
+  border: 1px solid hsl(var(--border-hsl));
+}
+
+/* ========================= Decorative helpers ========================= */
+.bg-grid-slate-200 {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32' width='32' height='32' fill='none' stroke='hsl(240 4% 89% / 0.5)'%3e%3cpath d='M0 .5H31.5V32'/%3e%3c/svg%3e");
+}
+
+/* ========================= TipTap editor (theme-aware) ========================= */
+.tiptap {
+  min-height: 360px;
+  outline: none;
+  background-color: hsl(var(--card-hsl));
+  color: hsl(var(--card-fg-hsl)) !important;
+  caret-color: hsl(var(--card-fg-hsl));
+  border-radius: var(--radius);
+  padding: 1rem;
+  border: 1px solid hsl(var(--border-hsl));
+  transition: background-color 0.12s ease, color 0.12s ease;
+}
+
+.tiptap p { margin: 0.75rem 0; line-height: 1.7; color: inherit; }
+.tiptap h1 { font-size: 1.8rem; font-weight: 800; margin: 1.25rem 0 0.5rem; color: inherit; }
+.tiptap h2 { font-size: 1.4rem; font-weight: 700; margin: 1rem 0 0.5rem; color: inherit; }
+.tiptap ul, .tiptap ol { padding-left: 1.25rem; margin: 0.5rem 0; }
+.tiptap blockquote {
+  border-left: 3px solid hsl(var(--border-hsl));
+  padding-left: 0.75rem;
+  color: hsl(var(--muted-fg-hsl));
+  background: transparent;
+}
+.tiptap-img-full {
+  width: auto;
+  max-width: 100%;
+  max-height: none;
+  height: auto;
+  display: block;
+  margin: 1rem auto;
+  border-radius: 8px;
+}
+.tiptap-img-small {
+  width: auto;
+  max-width: min(100%, 32rem);
+  height: auto;
+  display: block;
+  margin: 1rem auto;
+}
+
+/* Bloomberg-style article: centered reading column, serif body, photos = text width. */
+.article-page-shell,
+.article-preview-shell {
+  min-width: 0;
+}
+
+.article-page-column {
+  width: 100%;
+  max-width: 720px;
+  margin-inline: auto;
+}
+
+.article-kicker {
+  margin: 0;
+  font-family: 'IBM Plex Sans', 'Helvetica Neue', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #555555;
+}
+
+.article-page-header h1,
+.article-preview-header h1 {
+  margin: 12px 0 0;
+  font-family: 'IBM Plex Sans', 'Helvetica Neue', sans-serif;
+  font-size: clamp(2.1rem, 4.4vw, 3.15rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.12;
+  color: #111111;
+}
+
+.article-dek {
+  margin: 16px 0 0;
+  font-family: 'IBM Plex Sans', 'Helvetica Neue', sans-serif;
+  font-size: 1.125rem;
+  font-weight: 400;
+  line-height: 1.45;
+  color: #555555;
+}
+
+.article-byline {
+  margin: 22px 0 0;
+  font-family: 'IBM Plex Sans', 'Helvetica Neue', sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #111111;
+}
+
+.article-byline .article-byline-name {
+  font-weight: 600;
+}
+
+.article-byline .article-byline-meta {
+  color: #767676;
+}
+
+.article-editor-content,
+.article-prose,
+.article-prose.prose {
+  min-width: 0;
+  max-width: none !important;
+  width: 100%;
+  overflow-wrap: anywhere;
+  font-family: 'Source Serif 4', Georgia, 'Times New Roman', serif;
+  font-size: 1.25rem;
+  line-height: 1.7;
+  color: #111111;
+}
+
+.article-prose p,
+.article-prose li,
+.article-editor-content p,
+.article-editor-content li {
+  font-family: 'Source Serif 4', Georgia, 'Times New Roman', serif;
+  font-size: 1.25rem;
+  line-height: 1.7;
+  color: #111111;
+}
+
+.article-prose h2,
+.article-prose h3,
+.article-editor-content h2,
+.article-editor-content h3 {
+  font-family: 'IBM Plex Sans', 'Helvetica Neue', sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #111111;
+}
+
+.article-prose h2,
+.article-editor-content h2 {
+  margin-top: 2.4rem;
+  margin-bottom: 0.85rem;
+  font-size: 1.65rem;
+  line-height: 1.2;
+}
+
+.article-prose a,
+.article-editor-content a {
+  color: #111111;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.article-editor-content img,
+.article-editor-content video,
+.article-editor-content svg,
+.article-editor-content canvas,
+.article-editor-content figure,
+.article-editor-content .tiptap-img-full,
+.article-editor-content .tiptap-img-center,
+.article-prose img,
+.article-prose video,
+.article-prose svg,
+.article-prose canvas,
+.article-prose figure,
+.article-prose .tiptap-img-full,
+.article-prose .tiptap-img-center,
+.article-prose .tiptap-img-small,
+.article-editor-content .tiptap-img-small {
+  display: block;
+  box-sizing: border-box;
+  width: 100% !important;
+  max-width: 100% !important;
+  height: auto !important;
+  max-height: none !important;
+  margin: 2rem 0 !important;
+  object-fit: contain;
+  object-position: center;
+  background: #ffffff;
+}
+
+.article-editor-content p:has(> img),
+.article-prose p:has(> img) {
+  margin-left: 0;
+  margin-right: 0;
+}
+
+.article-editor-content iframe,
+.article-editor-content video,
+.article-prose iframe,
+.article-prose video {
+  display: block;
+  width: 100% !important;
+  max-width: 100% !important;
+  border: 0;
+}
+
+.article-editor-content iframe,
+.article-prose iframe {
+  aspect-ratio: 16 / 9;
+  height: auto !important;
+  min-height: 260px;
+}
+
+.article-editor-content pre,
+.article-prose pre {
+  max-width: 100%;
+  overflow-x: auto;
+  white-space: pre;
+  -webkit-overflow-scrolling: touch;
+}
+
+.article-editor-content table,
+.article-prose table {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  border-collapse: collapse;
+  -webkit-overflow-scrolling: touch;
+}
+
+.article-editor-content table > *,
+.article-prose table > * {
+  width: max-content;
+  min-width: 100%;
+}
+
+.article-editor-content a,
+.article-prose a {
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 639px) {
+  .article-page-shell,
+  .article-preview-shell {
+    overflow-x: clip;
+  }
+
+  .article-page-header h1,
+  .article-preview-header h1 {
+    font-size: clamp(1.85rem, 8.5vw, 2.4rem);
+  }
+
+  .article-editor-content,
+  .article-prose {
+    margin-top: 1.5rem;
+    font-size: 1.125rem;
+  }
+
+  .article-editor-content iframe,
+  .article-prose iframe {
+    min-height: 0;
+  }
+}
+
+.article-editor-content iframe,
+.article-editor-content video,
+.article-prose iframe,
+.article-prose video {
+  display: block;
+  width: 100% !important;
+  max-width: 100% !important;
+  border: 0;
+}
+
+.article-editor-content iframe,
+.article-prose iframe {
+  aspect-ratio: 16 / 9;
+  height: auto !important;
+  min-height: 260px;
+}
+
+.article-editor-content pre,
+.article-prose pre {
+  max-width: 100%;
+  overflow-x: auto;
+  white-space: pre;
+  -webkit-overflow-scrolling: touch;
+}
+
+.article-editor-content table,
+.article-prose table {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  border-collapse: collapse;
+  -webkit-overflow-scrolling: touch;
+}
+
+.article-editor-content table > *,
+.article-prose table > * {
+  width: max-content;
+  min-width: 100%;
+}
+
+.article-editor-content a,
+.article-prose a {
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 639px) {
+  .article-page-shell,
+  .article-preview-shell {
+    overflow-x: clip;
+  }
+
+  .article-page-header h1,
+  .article-preview-header h1 {
+    font-size: clamp(2rem, 10vw, 2.75rem);
+  }
+
+  .article-editor-content,
+  .article-prose {
+    margin-top: 1.5rem;
+    font-size: 1rem;
+  }
+
+  .article-editor-content iframe,
+  .article-prose iframe {
+    min-height: 0;
+  }
+}
+
+.tiptap .img-caption {
+  font-size: 0.9rem;
+  color: hsl(var(--muted-hsl));
+  text-align: center;
+  margin-top: 0.25rem;
+  margin-bottom: 1rem;
+}
+
+/* accessible colors for market values */
+.value.positive { color: #16a34a; }
+.value.negative { color: #dc2626; }
+
+/* ========================= Small helpers / accessibility ========================= */
+.small, small, .caption { color: hsl(var(--muted-fg-hsl)); }
+
+:focus-visible {
+  outline: 3px solid hsl(var(--ring) / 0.18);
+  outline-offset: 2px;
+}
+
+.force-contrast { color: var(--reuters-black) !important; background: transparent !important; }
+
+/* Reuters-style public site helpers */
+.reuters-page {
+  background: #ffffff;
+  color: var(--reuters-black);
+}
+.reuters-heading {
+  color: var(--reuters-black);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.reuters-body {
+  color: var(--reuters-gray);
+}
+.reuters-muted {
+  color: var(--reuters-muted);
+}
+.reuters-card {
+  background: #ffffff;
+  border: 1px solid var(--reuters-border);
+  border-radius: 2px;
+}
+.reuters-card:hover {
+  border-color: #bbbbbb;
+}
+.reuters-btn {
+  background: var(--reuters-orange);
+  color: #ffffff;
+  font-weight: 600;
+  border-radius: 2px;
+}
+.reuters-btn:hover {
+  background: #e67300;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.agi-sentiment-ticker {
+  overflow: hidden;
+}
+.agi-sentiment-ticker-track {
+  display: flex;
+  width: max-content;
+  min-width: 100%;
+  animation: agi-sentiment-marquee 42s linear infinite;
+}
+.agi-sentiment-ticker:hover .agi-sentiment-ticker-track {
+  animation-play-state: paused;
+}
+@keyframes agi-sentiment-marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .agi-sentiment-ticker-track { animation: none; }
+}
+
+.agi-headline-ticker {
+  overflow: hidden;
+}
+.agi-headline-ticker-track {
+  display: flex;
+  width: max-content;
+  min-width: 100%;
+  animation: agi-headline-marquee 58s linear infinite;
+}
+.agi-headline-ticker:hover .agi-headline-ticker-track {
+  animation-play-state: paused;
+}
+@keyframes agi-headline-marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .agi-headline-ticker-track { animation: none; }
+}
+
+/* ------------------------- Emergency mobile responsive fixes ------------------------- */
+@media (max-width: 768px) {
+  html, body { overflow-x: hidden; }
+
+  /* Legacy form/layout pages only. Do not target Tailwind's generic .grid or
+     all buttons here: those rules break public dashboards and auth controls. */
+  .tax-container, .main-layout, .page-grid {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  /* hide the right-hand summary panels */
+  .right-sidebar, .summary-panel, .tax-summary, .right-column, .floating-panel, .sticky-panel {
+    display: none !important;
+    visibility: hidden !important;
+    height: auto !important;
+  }
+
+  /* main content area full width */
+  .main-form, .content, main {
+    width: 100% !important;
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Full-width controls are appropriate only for the legacy form screens. */
+  .main-form input, .main-form select, .main-form textarea,
+  .tax-container input, .tax-container select, .tax-container textarea,
+  .main-form .btn, .tax-container .btn {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  /* remove sticky/fixed positioning */
+  .sticky, .fixed, .sidebar, .panel-fixed {
+    position: static !important;
+    top: auto !important;
+    left: auto !important;
+    right: auto !important;
+  }
+
+  /* form tweaks */
+  .form-row {
+    display: block !important;
+    margin-bottom: 0.75rem !important;
+  }
+  .preset-buttons {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0.5rem !important;
+  }
+  .summary-card { margin: 0.75rem 0 !important; }
+
+  /* table adjustments */
+  table {
+    width: 100% !important;
+    display: block !important;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    box-sizing: border-box;
+  }
+}
+
+/* ========================= CMS Editor styles ========================= */
+.ProseMirror table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1rem 0;
+}
+.ProseMirror td,
+.ProseMirror th {
+  border: 1px solid #cbd5e1;
+  padding: 0.5rem 0.75rem;
+  min-width: 80px;
+}
+.ProseMirror th {
+  background: #f1f5f9;
+  font-weight: 600;
+}
+.iframe-embed-wrapper iframe {
+  width: 100%;
+  border: 0;
+  border-radius: 0.5rem;
+}
+.article-editor-content .tiptap-img-full,
+.article-prose .tiptap-img-full { max-width: 100%; height: auto; display: block; margin: 1.5rem 0; }
+.article-editor-content .tiptap-img-small,
+.article-prose .tiptap-img-small { max-width: 320px; height: auto; display: block; margin: 1.5rem 0; }
+
+/* Wide financial-news article stage with a disciplined reading measure. */
+.article-story-stage {
+  display: grid;
+  grid-template-columns: minmax(150px, 220px) minmax(0, 1180px);
+  column-gap: clamp(28px, 3.2vw, 64px);
+  width: min(100% - 48px, 1680px);
+  margin-inline: auto;
+}
+.article-section-rail {
+  grid-column: 1;
+  grid-row: 1;
+  padding-top: 5px;
+  font-family: 'IBM Plex Sans', 'Helvetica Neue', sans-serif;
+  font-size: clamp(1.2rem, 1.7vw, 2rem);
+  line-height: 1.1;
+  color: #111;
+}
+.article-page-header { grid-column: 2; width: 100%; max-width: 1180px; }
+.article-page-header .article-kicker { display: none; }
+.article-page-header h1,
+.article-preview-header h1 {
+  font-size: clamp(3rem, 5.1vw, 5.35rem);
+  line-height: .99;
+}
+.article-dek {
+  max-width: 980px;
+  font-size: clamp(1.15rem, 1.45vw, 1.5rem);
+}
+.article-hero-media {
+  grid-column: 2;
+  width: 100%;
+  margin: clamp(36px, 4vw, 64px) 0 0 !important;
+  border-radius: 0 !important;
+  background: #f3f3f3;
+}
+.article-hero-media img {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 820px;
+  object-fit: contain;
+  object-position: left center;
+}
+.article-reading-stage {
+  display: grid;
+  grid-template-columns: minmax(150px, 220px) minmax(0, 880px) minmax(180px, 300px);
+  column-gap: clamp(28px, 3.2vw, 64px);
+  align-items: start;
+  width: min(100% - 48px, 1680px);
+  margin: clamp(38px, 5vw, 76px) auto 0;
+}
+.article-reading-column { min-width: 0; }
+.article-reading-rail {
+  position: sticky;
+  top: 140px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding-top: 7px;
+  border-top: 1px solid #111;
+  font-family: 'IBM Plex Sans', 'Helvetica Neue', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: #555;
+}
+.article-context-rail { min-height: 1px; }
+.article-reading-column .article-prose,
+.article-reading-column .article-prose p,
+.article-reading-column .article-prose li {
+  font-size: 1.32rem;
+  line-height: 1.68;
+}
+.article-preview-wide { width: min(100% - 48px, 1180px); }
+.article-preview-reading { max-width: 880px !important; }
+
+@media (max-width: 1050px) {
+  .article-story-stage,
+  .article-reading-stage {
+    grid-template-columns: minmax(0, 1fr);
+    width: min(100% - 40px, 920px);
+  }
+  .article-section-rail,
+  .article-reading-rail,
+  .article-context-rail { display: none; }
+  .article-page-header,
+  .article-hero-media,
+  .article-reading-column { grid-column: 1; }
+  .article-page-header .article-kicker { display: block; }
+}
+
+@media (max-width: 639px) {
+  .article-story-stage,
+  .article-reading-stage { width: calc(100% - 32px); }
+  .article-page-header h1,
+  .article-preview-header h1 {
+    font-size: clamp(2.35rem, 11.5vw, 3.25rem);
+    line-height: 1.02;
+  }
+  .article-dek { font-size: 1.08rem; }
+  .article-reading-column .article-prose,
+  .article-reading-column .article-prose p,
+  .article-reading-column .article-prose li {
+    font-size: 1.08rem;
+    line-height: 1.65;
+  }
+  .article-hero-media { margin-top: 30px !important; }
+}
+
+/* Research terminal homepage motion — subtle editorial presence only */
+.home-terminal .home-hero-brand {
+  animation: home-brand-in 650ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.home-terminal .home-hero-panel {
+  animation: home-panel-in 700ms 90ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.home-terminal .animate-home-rise {
+  animation: home-rise 480ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes home-brand-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes home-panel-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes home-rise {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Live market strip — continuous marquee, pause on hover */
+.market-ticker-viewport {
+  mask-image: linear-gradient(to right, transparent, #000 24px, #000 calc(100% - 24px), transparent);
+}
+.market-ticker-track {
+  animation: market-ticker-scroll 42s linear infinite;
+}
+.market-ticker-track:hover {
+  animation-play-state: paused;
+}
+.market-ticker-chip {
+  min-width: 148px;
+}
+@keyframes market-ticker-scroll {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-terminal .home-hero-brand,
+  .home-terminal .home-hero-panel,
+  .home-terminal .animate-home-rise {
+    animation: none;
+  }
+  .market-ticker-track {
+    animation: none;
+  }
+}
+
+@layer components {
+  .agi-cover {
+    position: relative;
+    overflow: hidden;
+    background-color: #f3f4f6;
+  }
+
+  .agi-cover img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+  }
+
+  .agi-cover--16-10 {
+    aspect-ratio: 16 / 10;
+    background-color: #ffffff;
+  }
+
+  .agi-cover--16-9 {
+    aspect-ratio: 16 / 9;
+  }
+
+  .agi-cover--featured {
+    aspect-ratio: 16 / 10;
+    min-height: 220px;
+    min-width: 0;
+    max-width: 100%;
+    background-color: #ffffff;
+  }
+
+  /* Desktop featured mosaic: fill the grid cell without overflowing into copy. */
+  @media (min-width: 1024px) {
+    .agi-cover--featured {
+      aspect-ratio: auto;
+      height: 100%;
+      min-height: 280px;
+    }
+  }
+
+  .agi-cover--thumb {
+    width: 118px;
+    height: 88px;
+    min-width: 118px;
+    max-width: 118px;
+    flex-shrink: 0;
+    background-color: #ffffff;
+  }
+
+  /* Home/research cards: show full infographic covers without grey letterboxing. */
+  .agi-cover--featured img,
+  .agi-cover--16-10 img,
+  .agi-cover--thumb img {
+    object-fit: contain;
+  }
+
+  .agi-cover--article {
+    aspect-ratio: auto;
+    width: 100%;
+    max-width: 100%;
+    margin-inline: auto;
+    background-color: #ffffff;
+    border: none;
+    border-radius: 0;
+    overflow: hidden;
+  }
+
+  .agi-cover--article img {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    max-height: none;
+    object-fit: contain;
+    object-position: center;
+    border-radius: 0;
+  }
+
+  .agi-cover--editor {
+    aspect-ratio: 16 / 10;
+    max-height: 288px;
+  }
+}
+
+/* End of file */
+
+/* Ask AGI remains an internal training surface until it is client-ready. */
+html:not([data-ask-agi-access='admin']) a[href='/ask'],
+html:not([data-ask-agi-access='admin']) a[href^='/ask?'],
+html:not([data-ask-agi-access='admin']) a[href='/agi/ask'],
+html:not([data-ask-agi-access='admin']) a[href^='/agi/ask?'] {
+  display: none !important;
+}

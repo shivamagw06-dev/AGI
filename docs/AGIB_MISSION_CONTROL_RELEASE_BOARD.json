@@ -1,0 +1,50 @@
+{
+  "board": "Mission Control \u2014 Release Board",
+  "company": "AGI",
+  "programme": "AGI v3.5",
+  "updated_at": "2026-07-28",
+  "commit": "3766ae12",
+  "engineering_baseline_frozen": true,
+  "banner": "ENGINEERING BASELINE FROZEN \u2014 CERTIFIED (post-TIRC)",
+  "board_verdict": "CERTIFIED",
+  "scorecard": {
+    "pass_pct": 99.9,
+    "mean_score": 90.24,
+    "intent": 99.8,
+    "framework": 97.76,
+    "playbook": 99.61,
+    "evidence": 100.0,
+    "replay_all": 100.0,
+    "replay_historical": 100.0,
+    "future_leakage": 0,
+    "hallucinated": 0,
+    "n": 1025
+  },
+  "tirc": {
+    "certification_result": "CERTIFIED",
+    "future_leakage_count": 0,
+    "replay_accuracy_pct": 100.0
+  },
+  "compare_pr234": {
+    "pass_pct": {
+      "before": 98.44,
+      "after": 99.9
+    },
+    "future_leakage": {
+      "before": 15,
+      "after": 0
+    },
+    "replay_historical": {
+      "before": 73.21,
+      "after": 100.0
+    },
+    "intent": {
+      "before": 99.8,
+      "after": 99.8
+    },
+    "framework": {
+      "before": 97.76,
+      "after": 97.76
+    }
+  }
+}

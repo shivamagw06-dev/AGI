@@ -1,0 +1,675 @@
+services:
+  # Existing AGIB Node API gateway (finance-news-backend)
+  - type: web
+    name: agib-api
+    runtime: node
+    rootDir: server
+    # Always-on requires a PAID plan. Render's "free" web services spin down
+    # after ~15 min of no traffic and cold-start (30-60s, sometimes a raw 502)
+    # on the next request. Any paid plan (starter+) never sleeps on inactivity.
+    # Set to the account's actual live plan (Pro) — if this value drifts below
+    # what's really configured in the Render dashboard, a Blueprint re-sync
+    # can DOWNGRADE the live service to match this file. Keep it in sync.
+    plan: pro
+    buildCommand: npm install --no-audit --no-fund
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: INTELLIGENCE_ENGINE_URL
+        fromService:
+          name: agib-intelligence-engine
+          type: web
+          property: host
+      - key: INTELLIGENCE_ENGINE_TOKEN
+        generateValue: true
+      - key: CIO_MORNING_SCHEDULER
+        value: "false"
+      # Gather runs on the engine gather sidecar / dedicated worker — do not
+      # POST heavy CGL cycles into the HTTP process from Node (causes 502s).
+      - key: CONTINUOUS_GATHER_LEARN_SCHEDULER
+        value: "false"
+      - key: CONTINUOUS_GATHER_LEARN_NODE_INTERVAL_MS
+        value: "1800000"
+      - key: CONTINUOUS_MORNING_DAG
+        value: "false"
+      - key: CONTINUOUS_FAA_REFRESH
+        value: "true"
+      # embedded = API also runs the ingest worker (default on Free).
+      # Set to external when the dedicated worker below is enabled.
+      - key: CMS_INGEST_WORKER_MODE
+        value: embedded
+      # Research-only Hedge Fund refreshers. These populate observations and
+      # candles; neither path places orders or enables execution.
+      - key: HEDGE_FUND_LIVE_REFRESH_ENABLED
+        value: "true"
+      - key: HEDGE_FUND_LIVE_QUOTES
+        value: "true"
+      - key: HEDGE_FUND_TECHNICAL_RESEARCH_ENABLED
+        value: "true"
+      - key: HEDGE_FUND_UPSTOX_CANDLES
+        value: "true"
+      - key: HFL_SNAPSHOT_SCHEDULER_ENABLED
+        value: "true"
+      - key: VALUATION_PACK_SCHEDULER_ENABLED
+        value: "true"
+      - key: VALUATION_RATIOS_SCHEDULER
+        value: "true"
+      - key: INSTITUTIONAL_FLOW_SCHEDULER
+        value: "true"
+      - key: HVIE_RUNTIME_SCHEDULER
+        value: "true"
+      - key: UIFI_SCHEDULER
+        value: "true"
+      - key: UPSTOX_STATEMENT_SCHEDULER
+        value: "true"
+      - key: CONFLUENCE_VALIDATION_ENABLED
+        value: "true"
+      - key: LIVE_ALPHA_SHADOW_ENABLED
+        value: "true"
+      # Live Alpha equity engines cover the full tracked Nifty 500 universe.
+      # Futures remain limited to contracts actually listed in NSE_FO.
+      - key: LIVE_ALPHA_UNIVERSE_PRESET
+        value: nifty500
+      - key: AGI_MAX_SYMBOLS
+        value: "500"
+      - key: LIVE_ALPHA_PROVIDER
+        value: upstox
+      # Official V3 WS: Bearer + followRedirects (override with authorize if needed)
+      - key: UPSTOX_FEED_CONNECT_MODE
+        value: redirect
+      - key: LIVE_ALPHA_ALLOW_GROWW_FALLBACK
+        value: "true"
+      - key: LIVE_ALPHA_GROWW_POLL_MS
+        value: "180000"
+      # Groww Cloud cannot reach Render/Supabase; compute equity opportunity here.
+      - key: GROWW_EQUITY_OPPORTUNITY_SCHEDULER
+        value: "true"
+      - key: GROWW_EQUITY_OPPORTUNITY_SCHEDULE_IST
+        value: "16:30"
+      - key: GROWW_EQUITY_OPPORTUNITY_SLOTS_IST
+        value: "10:00,11:00,12:00,13:00,14:00,15:00,16:30"
+      - key: GROWW_SECTOR_ROTATION_SCHEDULER
+        value: "true"
+      - key: GROWW_SECTOR_ROTATION_SCHEDULE_IST
+        value: "16:35"
+      - key: GROWW_SECTOR_ROTATION_SLOTS_IST
+        value: "10:05,11:05,12:05,13:05,14:05,15:05,16:35"
+      - key: ENGINE_KEEP_WARM_MS
+        value: "300000"
+      - key: ASK_ENGINE_TIMEOUT_MS
+        value: "55000"
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: AGI_INTELLIGENCE_LEARNING_ENABLED
+        value: "true"
+      - key: AGI_REASONING_PROVIDER
+        value: openai
+      - key: AGI_LEARNING_EXTRACTION_MODEL
+        value: gpt-5.6-luna
+      - key: AGI_LEARNING_REASONING_MODEL
+        value: gpt-5.6-terra
+      - key: AGI_LEARNING_CRITIC_MODEL
+        value: gpt-5.6-terra
+      - key: AGI_LEARNING_DAILY_JOB_LIMIT
+        value: "5"
+      - key: AGI_LEARNING_INTERVAL_MS
+        value: "300000"
+      - key: AGI_LEARNING_INITIAL_DELAY_MS
+        value: "90000"
+      - key: AGI_LEARNING_MAX_OUTPUT_TOKENS
+        value: "6000"
+      - key: GROWW_SECTOR_ROTATION_BACKFILL_DELAY_MS
+        value: "120000"
+
+  # Optional dedicated ingest worker (Starter+). Decouples queue processing from
+  # the HTTP process so deploys/restarts of the API do not drop in-flight work
+  # as long as jobs are persisted in Supabase.
+  - type: worker
+    name: agib-cms-ingest-worker
+    runtime: node
+    rootDir: .
+    plan: starter
+    buildCommand: npm install --no-audit --no-fund --prefix server && npm install --no-audit --no-fund
+    startCommand: CMS_INGEST_IS_WORKER=1 CMS_INGEST_WORKER_MODE=external node server/workers/cmsIngestWorker.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: CMS_INGEST_IS_WORKER
+        value: "1"
+      - key: CMS_INGEST_WORKER_MODE
+        value: external
+      - key: INTELLIGENCE_ENGINE_URL
+        fromService:
+          name: agib-intelligence-engine
+          type: web
+          property: host
+      - key: INTELLIGENCE_ENGINE_TOKEN
+        fromService:
+          name: agib-api
+          type: web
+          envVarKey: INTELLIGENCE_ENGINE_TOKEN
+  # Python multi-agent Intelligence Engine
+  - type: web
+    name: agib-intelligence-engine
+    runtime: python
+    rootDir: intelligence-engine
+    # Pro plan (8 GB / 4 CPU) — matches the live Render service. A persistent
+    # disk requires at least Starter; Pro comfortably exceeds that minimum.
+    # If this value drifts below the actual dashboard plan, a Blueprint
+    # re-sync can DOWNGRADE the live service to match this file. Keep it in sync.
+    plan: pro
+    # The warehouse is append-only financial history.  Without this disk, its
+    # SQLite store disappears on an engine restart/deploy and Ask AGI sees no
+    # verified company data.  A disk also makes the collection ledger durable.
+    disk:
+      name: intelligence-data
+      mountPath: /var/data/kip
+      sizeGB: 50
+    # Chromium for FAA Playwright JS-render + free web search.
+    # If the live Render service ignores Blueprint buildCommand, start.sh
+    # and FAA_PLAYWRIGHT_AUTO_INSTALL still attempt a one-shot install.
+    buildCommand: pip install -r requirements.txt && python -m playwright install chromium
+    # HTTP + gather sidecar (separate OS process, shared disk). See
+    # docs/AGI_GATHER_WORKER.md. Sidecar keeps Ask/Mission Control responsive
+    # while CGL/FAA/FSE continue gathering.
+    startCommand: bash scripts/start_engine.sh
+    healthCheckPath: /v1/health
+    envVars:
+      - key: APP_ENV
+        value: production
+      # Historical backfill is intentionally disabled: the warehouse already
+      # has the required history, while live market collection is owned by the
+      # Node Upstox/Groww schedulers. Keep HTTP capacity for Ask and strategies.
+      - key: AGI_GATHER_SIDECAR
+        value: "false"
+      - key: AGI_GATHER_SIDECAR_PROFILE
+        value: forecast_only
+      - key: AGI_GATHER_SIDECAR_DELAY_SEC
+        value: "120"
+      - key: FIE_RUNTIME
+        value: "false"
+      - key: FIE_SIDECAR
+        value: "false"
+      - key: FIE_BATCH
+        value: "2"
+      - key: FIE_INTERVAL_SECONDS
+        value: "120"
+      - key: STRATEGY_REGISTRY_REFRESH_SECONDS
+        value: "1800"
+      - key: STRATEGY_VALIDATION_INTERVAL_SECONDS
+        value: "1800"
+      - key: ANSWER_PACK_MATERIALIZER_ENABLED
+        value: "false"
+      - key: ANSWER_PACK_MATERIALIZER_INTERVAL_SECONDS
+        value: "600"
+      - key: ANSWER_PACK_MATERIALIZER_BATCH
+        value: "10"
+      # Durable data roots.  KIP keeps research objects; the warehouse keeps
+      # imported financial statements, valuation snapshots and live prices.
+      - key: KIP_DATA_DIR
+        value: /var/data/kip
+      - key: KIP_REQUIRE_PERSISTENT
+        value: "1"
+      - key: KIP_ALLOW_EPHEMERAL
+        value: "false"
+      - key: INSTITUTIONAL_WAREHOUSE_ROOT
+        value: /var/data/kip/institutional_warehouse
+      # Pricing Engine V1 prospective validation. The collector shares this
+      # web service's disk with its admin-only read API; no trading is enabled.
+      - key: OPTIONS_LAB_LIVE_VALIDATION
+        value: "true"
+      - key: OPTIONS_LAB_DB_PATH
+        value: /var/data/kip/options_lab/options_lab.sqlite3
+      - key: OPTIONS_LAB_REPORT_DIR
+        value: /var/data/kip/options_lab/reports
+      - key: UPSTOX_ACCESS_TOKEN
+        sync: false
+      - key: INTELLIGENCE_ENGINE_TOKEN
+        fromService:
+          name: agib-api
+          type: web
+          envVarKey: INTELLIGENCE_ENGINE_TOKEN
+      - key: INTELLIGENCE_ENGINE_URL
+        fromService:
+          name: agib-intelligence-engine
+          type: web
+          property: host
+      - key: AGIB_API_BASE_URL
+        fromService:
+          name: agib-api
+          type: web
+          property: host
+      # Optional: mirror KIP snapshots to Supabase (set in dashboard)
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      # Ask AGI grounded synthesis. OPENAI_API_KEY is entered in Render and
+      # never committed; deterministic ICE remains the automatic fallback.
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: CID_DOSSIER_WORKER_ENABLED
+        value: "false"
+      - key: CID_DOSSIER_PAUSED
+        value: "true"
+      - key: CID_DOSSIER_WORKERS
+        value: "15"
+      - key: CID_DOSSIER_SPRINT_MODE
+        value: "false"
+      - key: CID_DOSSIER_BATCH_PAUSE_SECONDS
+        value: "5"
+      - key: CID_DOSSIER_LIVE_ENRICHMENT_ENABLED
+        value: "true"
+      - key: CID_DOSSIER_ALLOW_FALLBACK
+        value: "false"
+      - key: CID_OPENAI_ENABLED
+        value: "true"
+      - key: CID_DOSSIER_START_DELAY_SECONDS
+        value: "120"
+      - key: CID_DOSSIER_REFRESH_DAYS
+        value: "30"
+      - key: CID_DOSSIER_IDLE_SECONDS
+        value: "300"
+      - key: CID_FALLBACK_MIN_EXAMPLES
+        value: "1"
+      - key: CID_OPENAI_MODEL
+        value: gpt-5-mini
+      - key: CID_OPENAI_TIMEOUT_SECONDS
+        value: "120"
+      - key: CID_OPENAI_MAX_OUTPUT_TOKENS
+        value: "12000"
+      - key: ASK_LLM_ENABLED
+        value: "true"
+      - key: ASK_REASONING_MODEL
+        value: gpt-5.6-terra
+      - key: ASK_REASONING_EFFORT
+        value: medium
+      - key: ASK_LLM_TIMEOUT_SECONDS
+        value: "25"
+      - key: ASK_LLM_MAX_OUTPUT_TOKENS
+        value: "1400"
+      # FAA live public acquisition — search + page enrichment
+      # Set EXA / FIRECRAWL / BROWSERBASE / TAVILY keys in Render dashboard
+      - key: FAA
+        value: "true"
+      - key: FAA_LIVE_FETCH
+        value: "true"
+      - key: FAA_MAX_WORKERS
+        value: "6"
+      - key: FAA_SEARCH_API
+        value: "true"
+      - key: FAA_PLAYWRIGHT
+        value: "true"
+      # Keep false on free tier — Chromium must come from buildCommand.
+      - key: FAA_PLAYWRIGHT_AUTO_INSTALL
+        value: "false"
+      # Exa / Firecrawl / Browserbase — hard-disabled (unpaid; every call was
+      # returning 402 Payment Required every background cycle, wasting time
+      # for zero benefit). Disabling here works even if the API keys remain
+      # set in the dashboard. Flip back to "true" once/if billing resumes.
+      - key: FAA_EXA_ENABLED
+        value: "false"
+      - key: FAA_FIRECRAWL_ENABLED
+        value: "false"
+      - key: FAA_BROWSERBASE_ENABLED
+        value: "false"
+      # Ask desk: offices soft-wire off on Starter (memory); persist always off.
+      - key: AGI_V4_OFFICES_IN_ASK
+        value: "0"
+      - key: AGI_V4_OFFICE_PERSIST
+        value: "0"
+      # HTTP process gather flags — start_engine.sh forces these false for
+      # uvicorn. Sidecar re-enables them in its own process. Keep false here
+      # so a plain `uvicorn` fallback also stays responsive.
+      - key: CONTINUOUS_GATHER_LEARN
+        value: "false"
+      - key: CONTINUOUS_GATHER_LEARN_INTERVAL_SEC
+        value: "1800"
+      - key: CONTINUOUS_MORNING_DAG
+        value: "false"
+      # Paused product surfaces: macro and portfolio are not currently used.
+      # Keep company research, Ask, evidence, warehouse and forecasting active.
+      - key: MIE_RUNTIME_ENABLED
+        value: "false"
+      - key: E01_P0
+        value: "false"
+      - key: E10_P0
+        value: "false"
+      - key: KF_MACRO
+        value: "false"
+      - key: AOI_RBI
+        value: "false"
+      - key: IKG_MACRO
+        value: "false"
+      - key: ILM_PORTFOLIO
+        value: "false"
+      - key: CIG_PORTFOLIO_IMPACT
+        value: "false"
+      - key: PORTFOLIO_OFFICE
+        value: "false"
+      - key: PO01
+        value: "false"
+      - key: AGI_MPC_01_ENABLED
+        value: "false"
+      - key: AGI_PRE_01_ENABLED
+        value: "false"
+      - key: AGI_CIO_01_ENABLED
+        value: "false"
+      - key: AGI_PKG_01_ENABLED
+        value: "false"
+      - key: CONTINUOUS_LIDI
+        value: "false"
+      - key: CONTINUOUS_KF_HD
+        value: "false"
+      - key: CONTINUOUS_FAA_REFRESH
+        value: "false"
+      - key: CONTINUOUS_LEARNING_LOOP
+        value: "false"
+      - key: CONTINUOUS_DIRECTOR_LEARNING
+        value: "false"
+      - key: CONTINUOUS_HISTORICAL_BACKFILL
+        value: "false"
+      # Keep draining backlog until every listed company is fully backfilled, then maintenance-only.
+      - key: CONTINUOUS_BACKFILL_UNTIL_COMPLETE
+        value: "false"
+      - key: CONTINUOUS_BACKFILL_ACTIVE_INTERVAL_SEC
+        value: "300"
+      # Knowledge Factory Historical Depth — owned by gather sidecar/worker.
+      - key: KF_HD_LIVE_COLLECTORS
+        value: "false"
+      - key: KF_HD_BACKFILL_BATCH
+        value: "12"
+      - key: KF_HD_BACKFILL_BATCHES_PER_CYCLE
+        value: "3"
+      - key: KF_HD_BACKFILL_WORKERS
+        value: "2"
+      - key: KF_HD_TARGET_YEARS
+        value: "15"
+      # Durable roots — set AFTER disk /var/data/kip is attached:
+      #   KIP_DATA_DIR=/var/data/kip
+      #   CGL_STORE_ROOT=/var/data/kip/continuous_gather_learn
+      #   KF_HD_STORE_ROOT=/var/data/kip/historical_depth
+      #   LIDI_STORE_ROOT=/var/data/kip/live_data
+      - key: CGL_STORE_ROOT
+        sync: false
+      - key: KF_HD_STORE_ROOT
+        sync: false
+      - key: LIDI_STORE_ROOT
+        sync: false
+      # Never pad production financials with fixtures.
+      - key: KF_HD_FIXTURE_QUARTERLY
+        value: "false"
+      - key: INSTITUTIONAL_DATA_CONNECTORS
+        value: "true"
+      - key: KF_HD_CHUNK_YEARS
+        value: "5"
+      # FAA background collector — owned by gather sidecar/worker, not HTTP.
+      - key: FAA_BACKGROUND_COLLECTOR
+        value: "false"
+      - key: FAA_COLLECTOR_INTERVAL_SEC
+        value: "900"
+      - key: FAA_COLLECTOR_LIMIT
+        value: "2"
+      - key: ASK_EXT_TIMEOUT_SEC
+        value: "5"
+      # Starter-safe Ask: skip live LEO/ECP/CAE/AIL fan-out that OOMs under load.
+      # Set ASK_SLIM=0 only after memory profiling proves headroom.
+      - key: ASK_SLIM
+        value: "true"
+      - key: EXA_API_KEY
+        sync: false
+      - key: FIRECRAWL_API_KEY
+        sync: false
+      - key: BROWSERBASE_API_KEY
+        sync: false
+      - key: TAVILY_API_KEY
+        sync: false
+      # AGI Observability — LangSmith tracing (observability only).
+      # Set LANGSMITH_API_KEY in the Render dashboard for THIS service; tracing
+      # turns on automatically when the key is present. No key = silent no-op.
+      - key: LANGSMITH_API_KEY
+        sync: false
+      - key: LANGSMITH_TRACING
+        value: "true"
+      - key: LANGSMITH_PROJECT
+        value: agi-intelligence-engine
+      - key: LANGSMITH_WORKSPACE_ID
+        sync: false
+      # AGIB Intelligence Layer V2
+      - key: AIL
+        value: "true"
+      - key: AIL_ASK_AGI
+        value: "true"
+      # Ask must not call unbound faa.acquire (Playwright / live search hangs >90s).
+      - key: AIL_LIVE_FAA
+        value: "false"
+      - key: FRE
+        value: "true"
+      - key: FRE_ASK_AGI
+        value: "true"
+      # AGIB v3 institutional stack (architecture frozen after IDE V2)
+      # Keys match Settings field names in intelligence-engine/app/core/config.py
+      - key: INSTITUTIONAL_STACK
+        value: "true"
+      - key: FILING_INTELLIGENCE
+        value: "true"
+      - key: FILING_DIFF_ENGINE
+        value: "true"
+      - key: MANAGEMENT_INTELLIGENCE
+        value: "true"
+      - key: ACCOUNTING_INTELLIGENCE
+        value: "true"
+      - key: PORTFOLIO_INTELLIGENCE
+        value: "true"
+      - key: PEER_INTELLIGENCE
+        value: "true"
+      - key: CAUSAL_INTELLIGENCE
+        value: "true"
+      - key: FORECAST_INTELLIGENCE
+        value: "true"
+      - key: KNOWLEDGE_GRAPH
+        value: "true"
+      - key: INSTITUTIONAL_MEMORY
+        value: "true"
+      - key: SIMULATION_LAB
+        value: "false"
+      - key: DECISION_ENGINE_V2
+        value: "true"
+      - key: EVIDENCE_INTELLIGENCE_LAYER
+        value: "true"
+      - key: INSTITUTIONAL_ANALYSTS
+        value: "true"
+      - key: INVESTMENT_COMMITTEE_INTELLIGENCE
+        value: "true"
+      - key: INSTITUTIONAL_RESEARCH_WRITER
+        value: "true"
+      - key: ACADEMY_CERTIFICATION_SUITE
+        value: "true"
+      - key: INSTITUTIONAL_REGRESSION_SUITE
+        value: "true"
+
+  # Optional dedicated gather worker (separate billable instance).
+  # Default path is the sidecar on agib-intelligence-engine ($0 extra, shared
+  # disk). Enable this worker only when you want gather on its own CPU/RAM:
+  #   1. Create/sync this service on Standard or Pro
+  #   2. Attach a disk at /var/data/kip (Render disks are NOT shareable —
+  #      prefer Supabase mirror, or migrate the primary disk here)
+  #   3. On agib-intelligence-engine set AGI_GATHER_SIDECAR=false
+  # See docs/AGI_GATHER_WORKER.md
+  - type: worker
+    name: agib-intelligence-worker
+    runtime: python
+    rootDir: intelligence-engine
+    plan: standard
+    buildCommand: pip install -r requirements.txt && python -m playwright install chromium
+    startCommand: python scripts/gather_worker.py
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: AGI_ROLE
+        value: gather_worker
+      - key: AGI_GATHER_FORCE
+        value: "true"
+      # Forecast builds are heavy warehouse jobs. Run them here, never in the
+      # user-facing HTTP process. Conservative pacing protects shared services.
+      - key: FIE_RUNTIME
+        value: "true"
+      - key: FIE_BATCH
+        value: "1"
+      - key: FIE_INTERVAL_SECONDS
+        value: "180"
+      - key: KIP_DATA_DIR
+        sync: false
+      - key: KIP_REQUIRE_PERSISTENT
+        sync: false
+      - key: KIP_ALLOW_EPHEMERAL
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: INTELLIGENCE_ENGINE_TOKEN
+        fromService:
+          name: agib-api
+          type: web
+          envVarKey: INTELLIGENCE_ENGINE_TOKEN
+      - key: AGIB_API_BASE_URL
+        fromService:
+          name: agib-api
+          type: web
+          property: host
+      - key: FAA
+        value: "true"
+      - key: FAA_LIVE_FETCH
+        value: "true"
+      - key: FAA_MAX_WORKERS
+        value: "4"
+      - key: FAA_SEARCH_API
+        value: "true"
+      - key: FAA_PLAYWRIGHT
+        value: "true"
+      - key: FAA_PLAYWRIGHT_AUTO_INSTALL
+        value: "false"
+      - key: FAA_EXA_ENABLED
+        value: "false"
+      - key: FAA_FIRECRAWL_ENABLED
+        value: "false"
+      - key: FAA_BROWSERBASE_ENABLED
+        value: "false"
+      - key: CONTINUOUS_GATHER_LEARN
+        value: "true"
+      - key: CONTINUOUS_GATHER_LEARN_INTERVAL_SEC
+        value: "1800"
+      - key: CONTINUOUS_MORNING_DAG
+        value: "false"
+      # Macro public-data collection runs on the dedicated worker. The runtime
+      # checks hourly but enforces a 24-hour public-source refresh internally.
+      # Other paused product loops remain disabled and no dossier work resumes.
+      - key: MIE_RUNTIME_ENABLED
+        value: "true"
+      - key: MIE_PUBLIC_DATA_ENABLED
+        value: "true"
+      # Bounded India Core 50 gap discovery. Values remain Tier-D PROPOSED
+      # evidence until an official connector or reviewer validates them.
+      - key: MIE_WEB_FALLBACK_ENABLED
+        value: "true"
+      - key: MIE_WEB_FALLBACK_LIMIT
+        value: "8"
+      - key: MIE_WEB_EXTRACT_MODEL
+        value: gpt-4.1-mini
+      - key: MIE_FMP_ENABLED
+        value: "true"
+      - key: MIE_RUNTIME_INTERVAL_SEC
+        value: "3600"
+      - key: E01_P0
+        value: "false"
+      - key: E10_P0
+        value: "false"
+      - key: KF_MACRO
+        value: "false"
+      - key: AOI_RBI
+        value: "false"
+      - key: IKG_MACRO
+        value: "false"
+      - key: ILM_PORTFOLIO
+        value: "false"
+      - key: CIG_PORTFOLIO_IMPACT
+        value: "false"
+      - key: PORTFOLIO_INTELLIGENCE
+        value: "true"
+      - key: SIMULATION_LAB
+        value: "false"
+      - key: PORTFOLIO_OFFICE
+        value: "false"
+      - key: PO01
+        value: "false"
+      - key: AGI_MPC_01_ENABLED
+        value: "false"
+      - key: AGI_PRE_01_ENABLED
+        value: "false"
+      - key: AGI_CIO_01_ENABLED
+        value: "false"
+      - key: AGI_PKG_01_ENABLED
+        value: "false"
+      - key: CONTINUOUS_LIDI
+        value: "true"
+      - key: CONTINUOUS_KF_HD
+        value: "true"
+      - key: CONTINUOUS_FAA_REFRESH
+        value: "true"
+      - key: CONTINUOUS_LEARNING_LOOP
+        value: "true"
+      - key: CONTINUOUS_DIRECTOR_LEARNING
+        value: "true"
+      - key: CONTINUOUS_HISTORICAL_BACKFILL
+        value: "true"
+      - key: CONTINUOUS_BACKFILL_UNTIL_COMPLETE
+        value: "true"
+      - key: CONTINUOUS_BACKFILL_ACTIVE_INTERVAL_SEC
+        value: "300"
+      - key: KF_HD_LIVE_COLLECTORS
+        value: "true"
+      - key: KF_HD_BACKFILL_BATCH
+        value: "12"
+      - key: KF_HD_BACKFILL_BATCHES_PER_CYCLE
+        value: "3"
+      - key: KF_HD_BACKFILL_WORKERS
+        value: "2"
+      - key: KF_HD_TARGET_YEARS
+        value: "15"
+      - key: FAA_BACKGROUND_COLLECTOR
+        value: "true"
+      - key: FAA_COLLECTOR_INTERVAL_SEC
+        value: "900"
+      - key: FAA_COLLECTOR_LIMIT
+        value: "2"
+      - key: CGL_STORE_ROOT
+        sync: false
+      - key: KF_HD_STORE_ROOT
+        sync: false
+      - key: LIDI_STORE_ROOT
+        sync: false
+      - key: KF_HD_FIXTURE_QUARTERLY
+        value: "false"
+      - key: INSTITUTIONAL_DATA_CONNECTORS
+        value: "true"
+      - key: KF_HD_CHUNK_YEARS
+        value: "5"
+      - key: EXA_API_KEY
+        sync: false
+      - key: FMP_API_KEY
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: FIRECRAWL_API_KEY
+        sync: false
+      - key: BROWSERBASE_API_KEY
+        sync: false
+      - key: TAVILY_API_KEY
+        sync: false

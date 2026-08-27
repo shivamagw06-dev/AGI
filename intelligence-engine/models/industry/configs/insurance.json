@@ -1,0 +1,19 @@
+{
+  "industry_id": "insurance",
+  "name": "Insurance",
+  "demand_drivers": ["protection_gap", "financialisation", "regulation"],
+  "supply_drivers": ["solvency", "distribution", "underwriting"],
+  "capacity": "solvency_and_distribution",
+  "pricing": "premiums_and_combined_ratio",
+  "margins": {"vnb_margin": "life", "combined_ratio": "general"},
+  "competition": "life_and_general_peers",
+  "regulation": ["irdai", "solvency"],
+  "capital_intensity": "high",
+  "typical_risks": ["underwriting", "investment", "persistency", "regulatory"],
+  "important_kpis": ["ape", "vnb", "persistency", "solvency", "combined_ratio"],
+  "preferred_valuation_models": ["embedded_value", "relative_pe", "dcf_fcff"],
+  "historical_cycles": ["ulip_cycles", "covid_claims"],
+  "industry_structure": "regulated_with_bank_assurance",
+  "business_characteristics": ["long_duration", "actuarial"],
+  "capital_cycle": "solvency_and_growth"
+}
