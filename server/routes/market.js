@@ -19,6 +19,8 @@ import {
   saveLiveDeskBroadcast,
 } from '../services/liveDeskBroadcastService.js';
 import { requireStrategyLabAdmin } from '../services/strategyLabAdminAuth.js';
+import { getPortfolioMarketPackage } from '../services/portfolioMarketService.js';
+import { getClientPortfolioSnapshotStatus, startClientPortfolioSnapshotScheduler } from '../services/clientPortfolioSnapshotScheduler.js';
 
 const CACHE_CONTROL = `public, max-age=${Math.floor(MARKET_REFRESH_MS / 1000)}, stale-while-revalidate=60`;
 
@@ -31,7 +33,27 @@ export default function createMarketRouter(env = {}) {
   startMarketBriefingScheduler();
   startMacroBriefingScheduler();
   startPreMarketBriefingScheduler();
+  startClientPortfolioSnapshotScheduler();
   const router = Router();
+
+  router.post('/portfolio-package', async (req, res) => {
+    try {
+      const instruments = Array.isArray(req.body?.instruments) ? req.body.instruments : [];
+      if (!instruments.length || instruments.length > 40) {
+        return res.status(400).json({ ok: false, error: 'Provide between 1 and 40 portfolio instruments.' });
+      }
+      const data = await getPortfolioMarketPackage({ instruments, days: req.body?.days });
+      res.set('Cache-Control', 'private, max-age=300, stale-while-revalidate=600');
+      return res.status(200).json(data);
+    } catch (error) {
+      return res.status(502).json({ ok: false, error: error?.message || 'portfolio_package_unavailable' });
+    }
+  });
+
+  router.get('/portfolio-snapshots/status', (_req, res) => {
+    res.set('Cache-Control', 'no-store');
+    return res.status(200).json({ ok: true, ...getClientPortfolioSnapshotStatus() });
+  });
 
   router.get('/groww-health', async (_req, res) => {
     const health = await getGrowwHealth();
