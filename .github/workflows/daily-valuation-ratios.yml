@@ -13,6 +13,12 @@ name: Daily valuation ratios
 # The engine's own daily refresh (WAREHOUSE_DAILY_REFRESH) is off and its
 # recalculate stage has stalled on memory, so this deliberately does not depend
 # on it.
+#
+# Two jobs on purpose. They used to be five sequential steps under one 55-minute
+# timeout. The sweep is the slow one; when it hit the clock, GitHub cancelled
+# the job and FII/DII flows, freshness and verify were skipped. institutional_flow
+# then sat at a few hundred rows even though the collector itself was fine.
+# Cheap warehouse work now has its own job and cannot be starved.
 
 on:
   schedule:
@@ -28,14 +34,107 @@ on:
 
 concurrency:
   # Two sweeps of the same day would duplicate snapshot rows and double the
-  # provider call budget for no extra coverage.
+  # provider call budget for no extra coverage. Flows share this group so a
+  # manual re-run does not stack a second flow refresh on a live one.
   group: daily-valuation-ratios
   cancel-in-progress: false
 
 jobs:
-  collect:
+  warehouse-ops:
+    name: Flows and freshness
     runs-on: ubuntu-latest
-    timeout-minutes: 55
+    timeout-minutes: 10
+    steps:
+      - name: Collect FII/DII flows
+        shell: bash
+        run: |
+          set -uo pipefail
+          ENGINE='https://agib-intelligence-engine.onrender.com/v1'
+          # institutional_flow stopped on 20 August. The fetcher lived in the
+          # web service, whose Upstox token answers "Invalid token used to
+          # access API", and its scheduler was in-memory on a service that
+          # redeploys several times a day - its own status reported
+          # lastRun: null. Running it from here depends on no process staying
+          # up, and the engine's token is the one that works.
+          #
+          # This step used to sit behind the valuation sweep. The sweep ate
+          # the shared 55-minute job timeout, GitHub cancelled the run, and
+          # flows were skipped. It is its own job now so a slow crawl cannot
+          # drop a day of FII/DII.
+          curl -sS --max-time 300 -X POST "$ENGINE/market-intelligence/flows/refresh" \
+            -H 'Content-Type: application/json' -d '{"actor":"daily_cron"}' \
+            -o flows.json -w 'flows HTTP %{http_code}\n' || true
+          python3 - <<'PY' || true
+          import json
+          try:
+              d = json.load(open("flows.json"))
+          except Exception as exc:
+              print(f"::warning::flows response unreadable: {exc}")
+              raise SystemExit(0)
+          if not d.get("ok"):
+              print(f"::warning::flows refresh failed: {d.get('error')} "
+                    f"{str(d.get('failures'))[:200]}")
+          else:
+              w = d.get("written") or {}
+              print(f"  fetched {d.get('fetched')} observations over "
+                    f"{d.get('days')} days ({d.get('first_day')} .. {d.get('last_day')}), "
+                    f"wrote {w.get('inserted', 0)} new / {w.get('updated', 0)} updated")
+          PY
+
+      - name: Warehouse freshness
+        shell: bash
+        run: |
+          set -uo pipefail
+          ENGINE='https://agib-intelligence-engine.onrender.com/v1'
+          # Five tables sat on 20 August for three days and nothing said so.
+          # The collectors failed per company with 401s, the schedulers
+          # reported themselves enabled, and the pages showed old numbers with
+          # no sign they were old.
+          #
+          # Runs beside the sweep, not after it. On a cancelled crawl we still
+          # want the lag report; waiting for today's ratios would skip it.
+          curl -sS --max-time 180 "$ENGINE/warehouse/freshness" -o fresh.json \
+            -w 'freshness HTTP %{http_code}\n' || true
+          python3 - <<'PY' || true
+          import json
+          try:
+              d = json.load(open("fresh.json"))
+          except Exception as exc:
+              print(f"::warning::freshness unreadable: {exc}")
+              raise SystemExit(0)
+          cov = d.get("coverage") or {}
+          print(f"  covering {cov.get('tables','?')} tables "
+                f"({cov.get('declared','?')} declared, {cov.get('derived','?')} derived)")
+          for t in d.get("tables") or []:
+              # Only the declared checks carry a cadence, so only they can be
+              # "behind". The rest are printed to show they are being looked at.
+              mark = " " if t["status"] == "ok" else "!"
+              print(f"  {mark} {t['tab']:32} {t.get('check','declared'):8} "
+                    f"{t['status']:11} newest={t['newest'] or '-':12} "
+                    f"age={t['age_days']}")
+          late = [t for t in (d.get("tables") or [])
+                  if t.get("check", "declared") == "declared" and t["status"] != "ok"]
+          if late:
+              print(f"::warning::{len(late)} table(s) behind, affecting: "
+                    f"{', '.join(d.get('affected_readers') or []) or 'unknown'}")
+          # A table that was being written and stopped. Worth a warning even
+          # without a declared cadence -- that is the failure that went unseen.
+          silent = d.get("silent") or []
+          if silent:
+              print(f"::warning::{len(silent)} table(s) have had no new rows in "
+                    f"{45}+ days: {', '.join(silent[:8])}")
+          # Built and never filled. Stated once, not warned about: nothing is
+          # broken, the work simply has not started.
+          never = d.get("never_filled") or []
+          if never:
+              print(f"  {len(never)} table(s) built but never filled: "
+                    f"{', '.join(never[:10])}")
+          PY
+
+  collect:
+    name: Valuation sweep
+    runs-on: ubuntu-latest
+    timeout-minutes: 70
     steps:
       - name: Fill missing ISINs
         shell: bash
@@ -64,6 +163,8 @@ jobs:
 
       - name: Sweep the universe
         id: sweep
+        timeout-minutes: 55
+        continue-on-error: true
         shell: bash
         run: |
           set -uo pipefail
@@ -74,6 +175,10 @@ jobs:
           # request, and the first one was killed at twenty minutes by a deploy
           # landing on top of it. Progress is checkpointed per company per day,
           # so repeated calls walk the universe and a lost call costs one batch.
+          #
+          # Step timeout is 55 minutes with continue-on-error so a crawl that
+          # still is not done cannot cancel the job and skip verify. The job
+          # budget above that is only for ISIN fill and the warehouse check.
           total=0; calls=0; last_status='NONE'
           for i in $(seq 1 "$MAX_CALLS"); do
             calls=$i
@@ -97,89 +202,8 @@ jobs:
           echo "calls=$calls" >> "$GITHUB_OUTPUT"
           echo "status=$last_status" >> "$GITHUB_OUTPUT"
 
-      - name: Collect FII/DII flows
-        shell: bash
-        run: |
-          set -uo pipefail
-          ENGINE='https://agib-intelligence-engine.onrender.com/v1'
-          # institutional_flow stopped on 20 August. The fetcher lived in the
-          # web service, whose Upstox token answers "Invalid token used to
-          # access API", and its scheduler was in-memory on a service that
-          # redeploys several times a day - its own status reported
-          # lastRun: null. Running it from here depends on no process staying
-          # up, and the engine's token is the one that works.
-          curl -sS --max-time 300 -X POST "$ENGINE/market-intelligence/flows/refresh" \
-            -H 'Content-Type: application/json' -d '{"actor":"daily_cron"}' \
-            -o flows.json -w 'flows HTTP %{http_code}\n' || true
-          python3 - <<'PY' || true
-          import json
-          try:
-              d = json.load(open("flows.json"))
-          except Exception as exc:
-              print(f"::warning::flows response unreadable: {exc}")
-              raise SystemExit(0)
-          if not d.get("ok"):
-              # Not fatal: valuation ratios are the job's reason to exist and
-              # they are already collected by this point.
-              print(f"::warning::flows refresh failed: {d.get('error')} "
-                    f"{str(d.get('failures'))[:200]}")
-          else:
-              w = d.get("written") or {}
-              print(f"  fetched {d.get('fetched')} observations over "
-                    f"{d.get('days')} days ({d.get('first_day')} .. {d.get('last_day')}), "
-                    f"wrote {w.get('inserted', 0)} new / {w.get('updated', 0)} updated")
-          PY
-
-      - name: Warehouse freshness
-        shell: bash
-        run: |
-          set -uo pipefail
-          ENGINE='https://agib-intelligence-engine.onrender.com/v1'
-          # Five tables sat on 20 August for three days and nothing said so.
-          # The collectors failed per company with 401s, the schedulers
-          # reported themselves enabled, and the pages showed old numbers with
-          # no sign they were old.
-          curl -sS --max-time 180 "$ENGINE/warehouse/freshness" -o fresh.json \
-            -w 'freshness HTTP %{http_code}\n' || true
-          python3 - <<'PY' || true
-          import json
-          try:
-              d = json.load(open("fresh.json"))
-          except Exception as exc:
-              print(f"::warning::freshness unreadable: {exc}")
-              raise SystemExit(0)
-          cov = d.get("coverage") or {}
-          print(f"  covering {cov.get('tables','?')} tables "
-                f"({cov.get('declared','?')} declared, {cov.get('derived','?')} derived)")
-          for t in d.get("tables") or []:
-              # Only the declared checks carry a cadence, so only they can be
-              # "behind". The rest are printed to show they are being looked at.
-              mark = " " if t["status"] == "ok" else "!"
-              print(f"  {mark} {t['tab']:32} {t.get('check','declared'):8} "
-                    f"{t['status']:11} newest={t['newest'] or '-':12} "
-                    f"age={t['age_days']}")
-          late = [t for t in (d.get("tables") or [])
-                  if t.get("check", "declared") == "declared" and t["status"] != "ok"]
-          if late:
-              # A warning, not a failure: the ratios this job exists to collect
-              # are already in by now, and failing here would bury that.
-              print(f"::warning::{len(late)} table(s) behind, affecting: "
-                    f"{', '.join(d.get('affected_readers') or []) or 'unknown'}")
-          # A table that was being written and stopped. Worth a warning even
-          # without a declared cadence -- that is the failure that went unseen.
-          silent = d.get("silent") or []
-          if silent:
-              print(f"::warning::{len(silent)} table(s) have had no new rows in "
-                    f"{45}+ days: {', '.join(silent[:8])}")
-          # Built and never filled. Stated once, not warned about: nothing is
-          # broken, the work simply has not started.
-          never = d.get("never_filled") or []
-          if never:
-              print(f"  {len(never)} table(s) built but never filled: "
-                    f"{', '.join(never[:10])}")
-          PY
-
       - name: Verify today landed
+        if: always() && !cancelled()
         shell: bash
         run: |
           set -uo pipefail
