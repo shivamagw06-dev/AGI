@@ -7,7 +7,7 @@ import {
 import { useAuth } from '@/contexts/AuthContext';
 import {
   deleteClientHolding, getOrCreateClientPortfolio, recordClientTransaction,
-  savePortfolioScenario, savePortfolioSnapshot,
+  savePortfolioScenario, savePortfolioSnapshot, syncClientPortfolioMarketPackage,
 } from '@/lib/clientPortfolio';
 import { getPortfolioMarketPackage } from '@/lib/portfolioMarketApi';
 import {
@@ -86,17 +86,22 @@ export default function ClientPortfolioIntelligence() {
   const [customShocks, setCustomShocks] = useState({ India: -8, US: -10, USD: 4, equities: -6 });
   const snapshotDay = useRef(null);
 
-  const loadMarket = async (holdings) => {
+  const loadMarket = async (holdings, portfolioId = data.portfolio?.id) => {
     if (!holdings.length) { setMarketPackage(null); return; }
     setMarketBusy(true);
-    try { setMarketPackage(await getPortfolioMarketPackage(holdings, 750)); setMessage('Market prices, benchmarks, FX and portfolio events refreshed.'); }
+    try {
+      const nextMarketPackage = await getPortfolioMarketPackage(holdings, 750);
+      setMarketPackage(nextMarketPackage);
+      if (portfolioId) await syncClientPortfolioMarketPackage(portfolioId, holdings, nextMarketPackage);
+      setMessage('Market prices, identifiers, benchmarks, FX and portfolio events refreshed and stored.');
+    }
     catch (error) { setMessage(`${error.message}. Manual prices remain visible and are labelled.`); }
     finally { setMarketBusy(false); }
   };
   const load = async () => {
     if (!user) return;
     setBusy(true);
-    try { const result = await getOrCreateClientPortfolio(); setData(result); void loadMarket(result.holdings); }
+    try { const result = await getOrCreateClientPortfolio(); setData(result); void loadMarket(result.holdings, result.portfolio.id); }
     catch (error) { setMessage(error?.message || 'Your portfolio could not be loaded.'); }
     finally { setBusy(false); }
   };
@@ -108,10 +113,7 @@ export default function ClientPortfolioIntelligence() {
   useEffect(() => {
     if (!data.portfolio || !marketPackage || !analytics.positions.length || snapshotDay.current === today()) return;
     snapshotDay.current = today();
-    const latest = data.snapshots.at(-1);
-    const netExternalFlow = (data.transactions || []).filter((row) => String(row.trade_date || '').slice(0, 10) === today()).reduce((sum, row) => sum + Number(row.external_flow_base || 0), 0);
-    const dailyReturn = latest?.total_value_inr ? ((analytics.totalValue - netExternalFlow) / Number(latest.total_value_inr) - 1) * 100 : null;
-    savePortfolioSnapshot(data.portfolio.id, { totalValue: analytics.totalValue, investedValue: analytics.investedValue, cashValue: analytics.cashValue, externalFlow: netExternalFlow, dailyReturn, twr: analytics.performance.twrPct, xirr: analytics.performance.xirrPct, analytics: { risk: analytics.risk, allocation: analytics.allocation, factors: analytics.factors }, dataQuality: analytics.dataQuality }, analytics.positions).catch(() => { snapshotDay.current = null; });
+    savePortfolioSnapshot(data.portfolio.id, { totalValue: analytics.totalValue, investedValue: analytics.investedValue, cashValue: analytics.cashValue, externalFlow: analytics.externalFlow, dailyReturn: analytics.dailyReturn, portfolioIndex: analytics.portfolioIndex, benchmarkIndex: analytics.benchmarkIndex, twr: analytics.performance.twrPct, xirr: analytics.performance.xirrPct, analytics: { risk: analytics.risk, allocation: analytics.allocation, factors: analytics.factors }, dataQuality: analytics.dataQuality }, analytics.positions).catch(() => { snapshotDay.current = null; });
   }, [data.portfolio?.id, marketPackage?.generatedAt]);
 
   const updateTransaction = (key) => (event) => {
@@ -194,7 +196,8 @@ function Analyst({ analytics, question, setQuestion, answer, onAsk }) {
 }
 
 function DataQuality({ analytics, transactions }) {
-  return <section><SectionTitle eyebrow="Trust before interpretation" title="Data quality & ledger" description="Every output is traceable to transactions, market providers, FX inputs and stored daily snapshots." icon={Database} /><div className="grid gap-px bg-[#dfe4df] sm:grid-cols-2 xl:grid-cols-4"><Metric label="Quality grade" value={analytics.dataQuality.grade} detail="Coverage and history based" /><Metric label="Price coverage" value={`${analytics.dataQuality.priceCoveragePct.toFixed(0)}%`} /><Metric label="Dated transactions" value={analytics.dataQuality.transactionCount} /><Metric label="Daily snapshots" value={analytics.dataQuality.snapshotCount} /></div><div className="mt-6 grid gap-6 xl:grid-cols-[1.15fr_.85fr]"><div className={`${cardClass} overflow-hidden`}><div className="border-b border-[#e5e9e5] p-5"><h3 className="font-semibold">Transaction ledger</h3></div>{transactions.length ? <div className="overflow-x-auto"><table className="w-full min-w-[760px] text-left text-sm"><thead><tr className="bg-[#f7f9f6] text-[10px] uppercase text-[#7b8883]"><th className="px-5 py-3">Date</th><th>Action</th><th>Instrument</th><th>Quantity</th><th>Price</th><th>Amount</th></tr></thead><tbody>{transactions.map((row) => <tr key={row.id} className="border-t border-[#edf0ed]"><td className="px-5 py-4">{row.trade_date}</td><td><span className="bg-[#edf5f1] px-2 py-1 text-[10px] font-bold text-[#0f7562]">{row.action}</span></td><td><p className="font-semibold">{row.symbol}</p><p className="text-xs text-[#7b8883]">{row.asset_name}</p></td><td>{Number(row.quantity).toLocaleString('en-IN')}</td><td>{quote(row.price, row.currency)}</td><td>{quote(row.amount, row.currency)}</td></tr>)}</tbody></table></div> : <div className="p-10 text-center text-sm text-[#75827d]">Existing positions are opening balances. Record the next transaction to begin the dated ledger.</div>}</div><Panel title="Source register"><div className="mt-5 space-y-4">{[['Indian live prices','Groww live quote; Yahoo chart fallback'],['US prices and history','Yahoo Finance chart'],['Corporate actions','Upstox when ISIN is available'],['FX and benchmarks','USD/INR, NIFTY 50, S&P 500'],['Mutual-fund NAV','Manual until AMFI is connected'],['Portfolio truth','Private Supabase transaction ledger']].map(([label,value]) => <div key={label} className="border-b border-[#e8ece8] pb-4"><p className="text-xs font-semibold">{label}</p><p className="mt-1 text-xs leading-5 text-[#78857f]">{value}</p></div>)}</div></Panel></div></section>;
+  const quality = analytics.dataQuality;
+  return <section><SectionTitle eyebrow="Trust before interpretation" title="Data quality & ledger" description="Every output is traceable to transactions, market providers, FX inputs and stored daily snapshots." icon={Database} /><div className="grid gap-px bg-[#dfe4df] sm:grid-cols-2 xl:grid-cols-4"><Metric label="Quality grade" value={quality.grade} detail={quality.issues.length ? `${quality.issues.length} open evidence gap${quality.issues.length === 1 ? '' : 's'}` : 'All core checks passed'} /><Metric label="Price coverage" value={`${quality.priceCoveragePct.toFixed(0)}%`} /><Metric label="Instrument identity" value={`${quality.identifierCoveragePct.toFixed(0)}%`} /><Metric label="Cash ledger" value={quality.cashStatus === 'reconciled' ? 'Reconciled' : quality.cashStatus === 'negative' ? 'Negative' : 'Holdings only'} tone={quality.cashStatus === 'negative' ? 'bad' : quality.cashStatus === 'reconciled' ? 'good' : 'amber'} /></div>{quality.issues.length ? <div className="mt-5 border border-[#ead8c3] bg-[#fff9f0] p-4 text-sm text-[#76552c]"><p className="font-semibold">Evidence gaps</p><ul className="mt-2 list-disc space-y-1 pl-5">{quality.issues.map((issue) => <li key={issue}>{issue}</li>)}</ul></div> : null}<div className="mt-6 grid gap-6 xl:grid-cols-[1.15fr_.85fr]"><div className={`${cardClass} overflow-hidden`}><div className="border-b border-[#e5e9e5] p-5"><h3 className="font-semibold">Transaction ledger</h3></div>{transactions.length ? <div className="overflow-x-auto"><table className="w-full min-w-[760px] text-left text-sm"><thead><tr className="bg-[#f7f9f6] text-[10px] uppercase text-[#7b8883]"><th className="px-5 py-3">Date</th><th>Action</th><th>Instrument</th><th>Quantity</th><th>Price</th><th>Amount</th></tr></thead><tbody>{transactions.map((row) => <tr key={row.id} className="border-t border-[#edf0ed]"><td className="px-5 py-4">{row.trade_date}</td><td><span className="bg-[#edf5f1] px-2 py-1 text-[10px] font-bold text-[#0f7562]">{row.action}</span></td><td><p className="font-semibold">{row.symbol}</p><p className="text-xs text-[#7b8883]">{row.asset_name}</p></td><td>{Number(row.quantity).toLocaleString('en-IN')}</td><td>{quote(row.price, row.currency)}</td><td>{quote(row.amount, row.currency)}</td></tr>)}</tbody></table></div> : <div className="p-10 text-center text-sm text-[#75827d]">Existing positions are opening balances. Record the next transaction to begin the dated ledger.</div>}</div><Panel title="Source register"><div className="mt-5 space-y-4">{[['Indian live prices','Groww live quote; Yahoo chart fallback'],['US prices and history','Yahoo Finance chart'],['Corporate actions','Upstox when ISIN is available'],['FX and benchmarks','USD/INR, NIFTY 50, S&P 500'],['Mutual-fund NAV','Manual until AMFI is connected'],['Portfolio truth','Private Supabase transaction ledger']].map(([label,value]) => <div key={label} className="border-b border-[#e8ece8] pb-4"><p className="text-xs font-semibold">{label}</p><p className="mt-1 text-xs leading-5 text-[#78857f]">{value}</p></div>)}</div></Panel></div></section>;
 }
 
 function TransactionDrawer({ transaction, update, submit, close, busy }) {
