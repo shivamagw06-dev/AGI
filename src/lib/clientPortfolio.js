@@ -112,6 +112,47 @@ export async function recordClientTransaction(portfolioId, transaction) {
   return result.data;
 }
 
+export async function syncClientPortfolioMarketPackage(portfolioId, holdings, marketPackage) {
+  const rows = holdings.map((holding) => {
+    const market = marketPackage?.instruments?.[holding.id] || {};
+    return {
+      holding_id: holding.id,
+      symbol: holding.symbol,
+      asset_name: holding.asset_name,
+      asset_type: holding.asset_type,
+      market: holding.market,
+      country: holding.country || (holding.currency === 'USD' ? 'US' : 'India'),
+      currency: holding.currency,
+      sector: market.sector || holding.sector || null,
+      isin: market.isin || holding.isin || null,
+      provider_key: market.providerKey || holding.provider_key || null,
+      price: market.price == null ? holding.current_price : market.price,
+      source: market.source || holding.price_source || 'manual',
+      as_of: market.asOf || holding.price_as_of || null,
+      quality: market.quality || holding.data_quality || 'manual',
+    };
+  });
+  const events = (marketPackage?.events || []).map((event) => ({
+    event_key: event.eventKey || event.event_key,
+    holding_id: event.holdingId || event.holding_id || null,
+    symbol: event.symbol || null,
+    event_type: event.eventType || event.event_type || 'market_event',
+    title: event.title,
+    summary: event.summary || null,
+    occurred_at: event.occurredAt || event.occurred_at || null,
+    source: event.source || 'market_package',
+    source_url: event.sourceUrl || event.source_url || null,
+    payload: event,
+  }));
+  const result = await supabase.rpc('sync_client_portfolio_market_package', {
+    p_portfolio_id: portfolioId,
+    p_rows: rows,
+    p_events: events,
+  });
+  throwIfError(result.error);
+  return result.data;
+}
+
 export async function savePortfolioSnapshot(portfolioId, snapshot, positions = []) {
   const day = new Date().toISOString().slice(0, 10);
   const snapshotResult = await supabase.from('client_portfolio_snapshots').upsert({
@@ -132,9 +173,10 @@ export async function savePortfolioSnapshot(portfolioId, snapshot, positions = [
   }, { onConflict: 'portfolio_id,snapshot_date' }).select().single();
   throwIfError(snapshotResult.error);
 
-  if (positions.length) {
+  const persistedPositions = positions.filter((position) => position.id && position.id !== 'ledger-cash');
+  if (persistedPositions.length) {
     const positionResult = await supabase.from('client_portfolio_position_snapshots').upsert(
-      positions.map((position) => ({
+      persistedPositions.map((position) => ({
         portfolio_id: portfolioId,
         snapshot_date: day,
         holding_id: position.id,

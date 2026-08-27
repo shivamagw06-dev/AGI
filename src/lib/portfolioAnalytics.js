@@ -108,7 +108,9 @@ function alignedPortfolioReturns(positions, marketPackage) {
         weighted += row.weight * row.map.get(date);
         coveredWeight += row.weight;
       });
-      return coveredWeight ? weighted / coveredWeight : 0;
+      // Do not renormalize away cash or positions without history. Their weight
+      // remains part of the portfolio even when they contribute a zero return.
+      return coveredWeight ? weighted : 0;
     }),
   };
 }
@@ -155,16 +157,47 @@ function factorExposures(positions, beta) {
   ];
 }
 
+function normalizedCountry(country, currency) {
+  const value = String(country || '').trim().toUpperCase();
+  if (currency === 'USD' || ['US', 'USA', 'UNITED STATES', 'UNITED STATES OF AMERICA'].includes(value)) return 'US';
+  if (value === 'INDIA' || (!value && currency === 'INR')) return 'India';
+  return country || 'Other';
+}
+
+function transactionCashBalance(transactions) {
+  const externalActions = new Set(['DEPOSIT', 'WITHDRAWAL', 'TRANSFER_IN', 'TRANSFER_OUT']);
+  const hasExplicitCashLedger = transactions.some((row) => externalActions.has(String(row.action || '').toUpperCase()));
+  if (!hasExplicitCashLedger) return { value: null, source: 'holdings', hasExplicitCashLedger: false };
+
+  const value = transactions.reduce((cash, row) => {
+    const action = String(row.action || '').toUpperCase();
+    const fx = num(row.fx_rate_to_inr, 1);
+    const gross = Math.abs(num(row.amount, num(row.quantity) * num(row.price))) * fx;
+    const fees = Math.abs(num(row.fees)) * fx;
+    if (['DEPOSIT', 'TRANSFER_IN', 'DIVIDEND', 'INTEREST'].includes(action)) return cash + gross - fees;
+    if (['WITHDRAWAL', 'TRANSFER_OUT', 'BUY'].includes(action)) return cash - gross - fees;
+    if (action === 'SELL') return cash + gross - fees;
+    if (['FEE', 'TAX'].includes(action)) return cash - gross - fees;
+    return cash;
+  }, 0);
+  return { value: Math.abs(value) < 0.005 ? 0 : value, source: 'transaction_ledger', hasExplicitCashLedger: true };
+}
+
+function growthIndex(returns) {
+  return returns.reduce((wealth, value) => wealth * (1 + num(value)), 100);
+}
+
 export function buildPortfolioAnalytics({ holdings = [], transactions = [], snapshots = [], portfolio, marketPackage }) {
   const positions = holdings.map((holding) => {
     const market = marketPackage?.instruments?.[holding.id] || {};
     const effectivePrice = num(market.price, num(holding.current_price, num(holding.average_cost)));
     const effectiveFx = holding.currency === 'USD' ? num(marketPackage?.fx?.usdInr?.price, num(holding.fx_rate_to_inr, 1)) : 1;
-    const investedValue = num(holding.quantity) * num(holding.average_cost) * effectiveFx;
+    const costFx = holding.currency === 'USD' ? num(holding.fx_rate_to_inr, effectiveFx) : 1;
+    const investedValue = num(holding.quantity) * num(holding.average_cost) * costFx;
     const currentValue = num(holding.quantity) * effectivePrice * effectiveFx;
     return {
       ...holding,
-      country: holding.country || (holding.currency === 'USD' ? 'US' : 'India'),
+      country: normalizedCountry(holding.country, holding.currency),
       effectivePrice,
       effectiveFx,
       investedValue,
@@ -178,11 +211,23 @@ export function buildPortfolioAnalytics({ holdings = [], transactions = [], snap
       fundamentals: market.fundamentals || null,
     };
   });
-  const totalValue = positions.reduce((sum, row) => sum + row.currentValue, 0);
-  const investedValue = positions.reduce((sum, row) => sum + row.investedValue, 0);
+  const securityValue = positions.filter((row) => row.asset_type !== 'cash').reduce((sum, row) => sum + row.currentValue, 0);
+  const directCashValue = positions.filter((row) => row.asset_type === 'cash').reduce((sum, row) => sum + row.currentValue, 0);
+  const ledgerCash = transactionCashBalance(transactions);
+  const cashValue = ledgerCash.value == null ? directCashValue : ledgerCash.value;
+  const totalValue = securityValue + cashValue;
+  const investedValue = positions.filter((row) => row.asset_type !== 'cash').reduce((sum, row) => sum + row.investedValue, 0);
   positions.forEach((row) => { row.weight = totalValue ? row.currentValue / totalValue : 0; row.weightPct = row.weight * 100; });
-  const hhi = positions.reduce((sum, row) => sum + (row.weight ** 2), 0);
-  const topFive = [...positions].sort((a, b) => b.currentValue - a.currentValue).slice(0, 5).reduce((sum, row) => sum + row.weightPct, 0);
+  const cashExposure = cashValue ? [{
+    id: 'ledger-cash', symbol: 'CASH', asset_name: 'Cash ledger', asset_type: 'cash', market: 'CASH',
+    country: 'India', currency: 'INR', sector: 'Cash', currentValue: cashValue,
+    investedValue: 0, gain: 0, gainPct: 0, effectivePrice: 1, effectiveFx: 1,
+    weight: totalValue ? cashValue / totalValue : 0, weightPct: totalValue ? (cashValue / totalValue) * 100 : 0,
+    priceSource: ledgerCash.source, priceQuality: 'ledger', priceAsOf: new Date().toISOString(),
+  }] : [];
+  const exposurePositions = [...positions.filter((row) => row.asset_type !== 'cash'), ...cashExposure];
+  const hhi = exposurePositions.reduce((sum, row) => sum + (row.weight ** 2), 0);
+  const topFive = [...exposurePositions].sort((a, b) => b.currentValue - a.currentValue).slice(0, 5).reduce((sum, row) => sum + row.weightPct, 0);
 
   const portfolioSeries = alignedPortfolioReturns(positions, marketPackage);
   const benchmarkMap = benchmarkReturns(marketPackage, portfolio?.benchmark_components || [{ symbol: 'NIFTY', weight: 0.6 }, { symbol: '^GSPC', weight: 0.4 }]);
@@ -199,10 +244,9 @@ export function buildPortfolioAnalytics({ holdings = [], transactions = [], snap
   const tail = portfolioReturns.filter((value) => value <= varDaily);
   const expectedShortfall = tail.length ? mean(tail) : varDaily;
 
-  const cashflows = transactions.map((row) => {
-    const direction = ['BUY', 'OPENING_BALANCE', 'FEE', 'TAX', 'DEPOSIT', 'TRANSFER_IN'].includes(row.action) ? -1 : 1;
-    return { date: new Date(`${row.trade_date}T00:00:00`), amount: direction * (Math.abs(num(row.amount) * num(row.fx_rate_to_inr, 1)) + (direction < 0 ? num(row.fees) * num(row.fx_rate_to_inr, 1) : 0)) };
-  });
+  const cashflows = transactions
+    .filter((row) => num(row.external_flow_inr) !== 0)
+    .map((row) => ({ date: new Date(`${row.trade_date}T00:00:00`), amount: -num(row.external_flow_inr) }));
   if (totalValue > 0) cashflows.push({ date: new Date(), amount: totalValue });
   const xirrPct = xirr(cashflows);
   const twrPct = timeWeightedReturn(snapshots);
@@ -231,29 +275,60 @@ export function buildPortfolioAnalytics({ holdings = [], transactions = [], snap
     };
   });
 
-  const covered = positions.filter((row) => ['live', 'observed'].includes(row.priceQuality)).length;
+  const pricedPositions = positions.filter((row) => row.asset_type !== 'cash');
+  const covered = pricedPositions.filter((row) => ['live', 'observed'].includes(row.priceQuality)).length;
+  const identified = pricedPositions.filter((row) => row.instrument_id || row.provider_key || row.isin).length;
+  const sourced = pricedPositions.filter((row) => row.priceSource && row.priceSource !== 'manual').length;
+  const timestamped = pricedPositions.filter((row) => row.priceAsOf).length;
+  const funds = pricedPositions.filter((row) => row.asset_type === 'mutual_fund');
+  const observedFunds = funds.filter((row) => ['live', 'observed'].includes(row.priceQuality)).length;
   const historyDays = portfolioReturns.length;
+  const priceCoveragePct = pricedPositions.length ? (covered / pricedPositions.length) * 100 : 100;
+  const identifierCoveragePct = pricedPositions.length ? (identified / pricedPositions.length) * 100 : 100;
+  const sourceCoveragePct = pricedPositions.length ? (sourced / pricedPositions.length) * 100 : 100;
+  const timestampCoveragePct = pricedPositions.length ? (timestamped / pricedPositions.length) * 100 : 100;
+  const issues = [];
+  if (priceCoveragePct < 100) issues.push(`${(100 - priceCoveragePct).toFixed(0)}% of holdings use manual or fallback prices.`);
+  if (identifierCoveragePct < 100) issues.push(`${(100 - identifierCoveragePct).toFixed(0)}% of holdings lack a durable market identifier.`);
+  if (cashValue < 0) issues.push('The transaction ledger has a negative cash balance; review funding or margin activity.');
+  if (!ledgerCash.hasExplicitCashLedger && transactions.some((row) => ['BUY', 'SELL'].includes(String(row.action || '').toUpperCase()))) issues.push('No explicit deposit or transfer ledger exists, so cash is sourced from cash holdings only.');
+  if (funds.length && observedFunds < funds.length) issues.push('One or more mutual-fund NAVs remain manual.');
+  if (snapshots.length < 2) issues.push('At least two daily snapshots are required for TWR.');
+  const grade = cashValue < 0 || priceCoveragePct < 50 ? 'D'
+    : priceCoveragePct >= 95 && identifierCoveragePct >= 90 && historyDays >= 120 && snapshots.length >= 2 ? 'A'
+      : priceCoveragePct >= 80 && historyDays >= 60 ? 'B' : 'C';
+  const portfolioIndex = growthIndex(portfolioReturns);
+  const benchmarkIndex = growthIndex(benchmark);
+  const dailyReturn = portfolioReturns.length ? portfolioReturns.at(-1) * 100 : null;
+  const currentDay = new Date().toISOString().slice(0, 10);
+  const externalFlow = transactions.filter((row) => String(row.trade_date || '').slice(0, 10) === currentDay).reduce((sum, row) => sum + num(row.external_flow_inr), 0);
   return {
     positions,
     totalValue,
+    securityValue,
     investedValue,
-    gain: totalValue - investedValue,
-    gainPct: investedValue ? ((totalValue / investedValue) - 1) * 100 : 0,
-    cashValue: positions.filter((row) => row.asset_type === 'cash').reduce((sum, row) => sum + row.currentValue, 0),
+    gain: securityValue - investedValue,
+    gainPct: investedValue ? ((securityValue / investedValue) - 1) * 100 : 0,
+    cashValue,
+    cashSource: ledgerCash.source,
+    externalFlow,
+    dailyReturn,
+    portfolioIndex,
+    benchmarkIndex,
     hhi,
     concentration: hhi >= 0.25 ? 'High' : hhi >= 0.15 ? 'Moderate' : 'Diversified',
     largestPositionPct: Math.max(0, ...positions.map((row) => row.weightPct)),
     topFivePct: topFive,
     allocation: {
-      asset: allocation(positions, 'asset_type'),
-      sector: allocation(positions, 'sector'),
-      country: allocation(positions, 'country'),
-      currency: allocation(positions, 'currency'),
+      asset: allocation(exposurePositions, 'asset_type'),
+      sector: allocation(exposurePositions, 'sector'),
+      country: allocation(exposurePositions, 'country'),
+      currency: allocation(exposurePositions, 'currency'),
     },
     performance: {
       twrPct,
       xirrPct,
-      costReturnPct: investedValue ? ((totalValue / investedValue) - 1) * 100 : 0,
+      costReturnPct: investedValue ? ((securityValue / investedValue) - 1) * 100 : 0,
       annualizedReturnPct: annualReturn * 100,
       observations: portfolioReturns.length,
       attribution,
@@ -269,13 +344,19 @@ export function buildPortfolioAnalytics({ holdings = [], transactions = [], snap
       drawdownCurve: drawdown.curve,
       correlations,
     },
-    factors: factorExposures(positions, beta),
+    factors: factorExposures(exposurePositions, beta),
     dataQuality: {
-      priceCoveragePct: positions.length ? (covered / positions.length) * 100 : 0,
+      priceCoveragePct,
+      identifierCoveragePct,
+      sourceCoveragePct,
+      timestampCoveragePct,
+      fundNavCoveragePct: funds.length ? (observedFunds / funds.length) * 100 : 100,
+      cashStatus: ledgerCash.hasExplicitCashLedger ? (cashValue < 0 ? 'negative' : 'reconciled') : 'holdings_only',
       historyObservations: historyDays,
       transactionCount: transactions.length,
       snapshotCount: snapshots.length,
-      grade: covered === positions.length && historyDays >= 120 ? 'A' : covered >= Math.ceil(positions.length * 0.7) ? 'B' : 'C',
+      issues,
+      grade,
     },
     series: { dates: aligned, portfolioReturns, benchmarkReturns: benchmark },
   };
