@@ -13,6 +13,7 @@ import { getPortfolioMarketPackage } from '@/lib/portfolioMarketApi';
 import {
   answerPortfolioQuestion, buildPortfolioAnalytics, presetScenarios, runPortfolioScenario,
 } from '@/lib/portfolioAnalytics';
+import InstitutionalPortfolioPanel from '@/components/portfolio/InstitutionalPortfolioPanel';
 
 const assetLabels = {
   indian_stock: 'Indian stock', us_stock: 'US stock', mutual_fund: 'Mutual fund', etf: 'ETF', cash: 'Cash',
@@ -22,7 +23,8 @@ const tabs = [
   ['overview', 'Overview', Briefcase], ['performance', 'Performance', LineChart],
   ['risk', 'Risk', Gauge], ['exposure', 'Exposure', Globe2],
   ['intelligence', 'Intelligence', Newspaper], ['scenario', 'Scenario lab', Target],
-  ['analyst', 'Analyst', BrainCircuit], ['data', 'Data quality', Database],
+  ['institutional', 'Institutional', ShieldCheck], ['analyst', 'Analyst', BrainCircuit],
+  ['data', 'Data quality', Database],
 ];
 
 const today = () => new Date().toISOString().slice(0, 10);
@@ -151,6 +153,7 @@ export default function ClientPortfolioIntelligence() {
       {analytics.positions.length && activeTab === 'exposure' ? <Exposure analytics={analytics} /> : null}
       {analytics.positions.length && activeTab === 'intelligence' ? <><Intelligence analytics={analytics} events={events} /><FundamentalContext analytics={analytics} /></> : null}
       {analytics.positions.length && activeTab === 'scenario' ? <ScenarioLab analytics={analytics} scenario={scenario} customShocks={customShocks} setCustomShocks={setCustomShocks} onPreset={runPreset} onCustom={runCustom} onSave={saveScenario} /> : null}
+      {analytics.positions.length && activeTab === 'institutional' ? <InstitutionalPortfolioPanel portfolioId={data.portfolio?.id} /> : null}
       {analytics.positions.length && activeTab === 'analyst' ? <Analyst analytics={analytics} question={question} setQuestion={setQuestion} answer={answer} onAsk={ask} /> : null}
       {analytics.positions.length && activeTab === 'data' ? <DataQuality analytics={analytics} transactions={data.transactions} /> : null}
     </div>
