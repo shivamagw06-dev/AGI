@@ -488,3 +488,69 @@ def import_pasted(text: str, *, actor: str = "insider_paste") -> dict[str, Any]:
                             actor=actor, reason="insider_paste")
     return {**{k: v for k, v in parsed.items() if k != "rows"},
             "written": written, "ok": bool(written.get("ok"))}
+
+
+def reresolve_symbols(*, dry_run: bool = True,
+                      limit: int = 50000) -> dict[str, Any]:
+    """Attach tickers to trades stored before the master knew their names.
+
+    Symbols are resolved once, at write time, and kept on the row. That is the
+    right design -- resolution is expensive to repeat on every read, and a
+    stored match with a recorded symbol_match is auditable in a way a computed
+    one is not. It has one consequence: when company_master improves, the rows
+    already written keep the null they were written with.
+
+    Repairing 1,179 master names changed nothing on the site for exactly that
+    reason. 56% of stored insider trades carried no symbol, and an insider
+    trade with no symbol cannot reach the company page it belongs to.
+
+    Only fills what is currently blank. A row that already resolved is left
+    alone: re-deciding a match that a person may have seen and trusted is a
+    different operation from filling one that was never made.
+    """
+    from institutional_warehouse import db, gateway
+
+    table = db.physical_table("insider_trades")
+    try:
+        rows = db.query(
+            f"SELECT * FROM {table} "
+            f"WHERE symbol IS NULL OR symbol = '' LIMIT {int(limit)}")
+    except Exception as exc:
+        return {"ok": False, "stage": "read", "error": str(exc)[:250]}
+    if not rows:
+        return {"ok": True, "stage": "complete", "unresolved": 0,
+                "note": "every stored trade already carries a symbol"}
+
+    index = symbol_index()
+    if not index[0]:
+        # An empty index resolves nothing and would report a clean run.
+        return {"ok": False, "stage": "index",
+                "error": "company_master returned no usable names"}
+
+    fixed: list[dict[str, Any]] = []
+    counts: dict[str, int] = {}
+    for row in rows:
+        symbol, how = resolve_symbol(row.get("company_name"), index)
+        counts[how] = counts.get(how, 0) + 1
+        if symbol:
+            fixed.append({**dict(row), "symbol": symbol, "symbol_match": how})
+
+    summary = {
+        "ok": True,
+        "unresolved_before": len(rows),
+        "now_resolvable": len(fixed),
+        "still_unmatched": len(rows) - len(fixed),
+        "match_types": counts,
+        "dry_run": dry_run,
+        "sample": [{"company": r["company_name"], "symbol": r["symbol"],
+                    "how": r["symbol_match"]} for r in fixed[:10]],
+    }
+    if dry_run or not fixed:
+        summary["note"] = "dry run: nothing written"
+        return summary
+
+    written = gateway.write("insider_trades", fixed, source=SOURCE,
+                            actor="symbol_reresolve", reason="master_names_repaired")
+    summary["written"] = written
+    summary["ok"] = bool(written.get("ok"))
+    return summary

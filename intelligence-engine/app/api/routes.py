@@ -10922,6 +10922,24 @@ async def options_lab_expired_history_probe(instrument_key: str | None = Query(d
     return await run_in_threadpool(expired_history.probe, key)
 
 
+@router.post("/warehouse/insider-symbols/reresolve",
+             dependencies=[Depends(require_token)])
+async def warehouse_insider_symbols_reresolve(payload: dict[str, Any] = Body(default_factory=dict)):
+    """Attach tickers to insider trades stored before the master knew the names.
+
+    Repairing 1,179 master names changed nothing visible, because symbols are
+    resolved at write time and kept on the row. The rows already stored keep
+    the null they were written with, so an insider trade still cannot reach the
+    company page it belongs to until this runs.
+
+    Only fills what is blank. Defaults to a dry run.
+    """
+    from financial_warehouse_completion import insider_trades
+
+    apply = bool((payload or {}).get("apply"))
+    return await run_in_threadpool(insider_trades.reresolve_symbols, dry_run=not apply)
+
+
 @router.get("/warehouse/company-names/audit")
 async def warehouse_company_names_audit():
     """How many master rows carry their ticker instead of a name."""
