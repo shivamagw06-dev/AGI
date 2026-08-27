@@ -1,6 +1,9 @@
 const TRADING_DAYS = 252;
 
+const isMissingNumeric = (value) => value == null || (typeof value === 'string' && value.trim() === '');
+
 const num = (value, fallback = 0) => {
+  if (isMissingNumeric(value)) return fallback;
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : fallback;
 };
@@ -31,6 +34,7 @@ const percentile = (values, p) => {
 };
 
 function maximumDrawdown(returns) {
+  if (!returns.length) return { value: null, curve: [] };
   let wealth = 1;
   let peak = 1;
   let worst = 0;
@@ -184,7 +188,86 @@ function transactionCashBalance(transactions) {
 }
 
 function growthIndex(returns) {
-  return returns.reduce((wealth, value) => wealth * (1 + num(value)), 100);
+  return returns.length ? returns.reduce((wealth, value) => wealth * (1 + num(value)), 100) : null;
+}
+
+function compoundReturnPct(returns) {
+  const values = returns.filter((value) => Number.isFinite(value));
+  return values.length ? (values.reduce((wealth, value) => wealth * (1 + value), 1) - 1) * 100 : null;
+}
+
+function periodPerformance(label, dates, returns, benchmarkMap, predicate) {
+  const observations = dates.map((date, index) => ({ date, value: returns[index] }))
+    .filter((row) => predicate(row.date) && Number.isFinite(row.value));
+  const comparable = observations.filter((row) => benchmarkMap.has(row.date));
+  const portfolioPct = compoundReturnPct(observations.map((row) => row.value));
+  const comparablePortfolioPct = compoundReturnPct(comparable.map((row) => row.value));
+  const benchmarkPct = compoundReturnPct(comparable.map((row) => benchmarkMap.get(row.date)));
+  return {
+    label,
+    portfolioPct,
+    benchmarkPct,
+    activePct: comparablePortfolioPct == null || benchmarkPct == null ? null : comparablePortfolioPct - benchmarkPct,
+    observations: observations.length,
+    benchmarkObservations: comparable.length,
+  };
+}
+
+function groupedPerformance(dates, returns, benchmarkMap, granularity) {
+  const groups = new Map();
+  dates.forEach((date, index) => {
+    const key = granularity === 'year' ? date.slice(0, 4) : date.slice(0, 7);
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push({ date, value: returns[index] });
+  });
+  return [...groups.entries()].map(([label, rows]) => {
+    const comparable = rows.filter((row) => benchmarkMap.has(row.date));
+    const portfolioPct = compoundReturnPct(rows.map((row) => row.value));
+    const comparablePortfolioPct = compoundReturnPct(comparable.map((row) => row.value));
+    const benchmarkPct = compoundReturnPct(comparable.map((row) => benchmarkMap.get(row.date)));
+    return {
+      label,
+      portfolioPct,
+      benchmarkPct,
+      activePct: comparablePortfolioPct == null || benchmarkPct == null ? null : comparablePortfolioPct - benchmarkPct,
+      observations: rows.length,
+    };
+  }).sort((left, right) => right.label.localeCompare(left.label));
+}
+
+function transactionPerformance(transactions, positions) {
+  const action = (row) => String(row.action || '').toUpperCase();
+  const valueInInr = (row) => {
+    const amount = num(row.amount, null);
+    const quantity = num(row.quantity, null);
+    const price = num(row.price, null);
+    const gross = amount == null && (quantity == null || price == null) ? null : Math.abs(amount ?? (quantity * price));
+    const fx = row.currency === 'USD' ? num(row.fx_rate_to_inr, null) : num(row.fx_rate_to_inr, 1);
+    return gross == null || fx == null ? null : gross * fx;
+  };
+  const sumRows = (rows, resolver) => {
+    if (!rows.length) return 0;
+    const values = rows.map(resolver);
+    return values.some((value) => value == null || !Number.isFinite(value)) ? null : values.reduce((sum, value) => sum + value, 0);
+  };
+  const incomeRows = transactions.filter((row) => ['DIVIDEND', 'INTEREST'].includes(action(row)));
+  const feeRows = transactions.filter((row) => action(row) === 'FEE' || num(row.fees, null) !== 0);
+  const sellRows = transactions.filter((row) => action(row) === 'SELL');
+  const realizedPnl = sellRows.length ? sumRows(sellRows, (row) => num(row.realized_pnl_inr ?? row.realized_pnl, null)) : 0;
+  const costPositions = positions.filter((row) => row.asset_type !== 'cash');
+  const unrealizedPnl = costPositions.length && costPositions.every((row) => num(row.quantity, null) != null && num(row.average_cost, null) != null)
+    ? costPositions.reduce((sum, row) => sum + row.gain, 0) : null;
+  return {
+    incomeInr: sumRows(incomeRows, valueInInr),
+    feesInr: sumRows(feeRows, (row) => {
+      if (action(row) === 'FEE') return valueInInr(row);
+      const fee = num(row.fees, null);
+      const fx = row.currency === 'USD' ? num(row.fx_rate_to_inr, null) : num(row.fx_rate_to_inr, 1);
+      return fee == null || fx == null ? null : Math.abs(fee) * fx;
+    }),
+    realizedPnlInr: realizedPnl,
+    unrealizedPnlInr: unrealizedPnl,
+  };
 }
 
 export function buildPortfolioAnalytics({ holdings = [], transactions = [], snapshots = [], portfolio, marketPackage }) {
@@ -234,18 +317,25 @@ export function buildPortfolioAnalytics({ holdings = [], transactions = [], snap
     || portfolio?.settings?.benchmarkSelectionConfirmed === true
     || portfolio?.settings?.benchmark_selection_confirmed === true;
   const benchmarkMap = benchmarkReturns(marketPackage, benchmarkIsExplicit ? (portfolio?.benchmark_components || []) : []);
-  const aligned = portfolioSeries.dates.filter((date) => benchmarkMap.has(date));
-  const portfolioReturns = aligned.map((date) => portfolioSeries.returns[portfolioSeries.dates.indexOf(date)]);
-  const benchmark = aligned.map((date) => benchmarkMap.get(date));
-  const annualReturn = portfolioReturns.length ? ((portfolioReturns.reduce((wealth, value) => wealth * (1 + value), 1) ** (TRADING_DAYS / portfolioReturns.length)) - 1) : 0;
-  const volatility = stdev(portfolioReturns) * Math.sqrt(TRADING_DAYS);
-  const downside = stdev(portfolioReturns.filter((value) => value < 0)) * Math.sqrt(TRADING_DAYS);
+  const portfolioReturns = portfolioSeries.returns;
+  const comparisonDates = portfolioSeries.dates.filter((date) => benchmarkMap.has(date));
+  const comparisonPortfolioReturns = comparisonDates.map((date) => portfolioSeries.returns[portfolioSeries.dates.indexOf(date)]);
+  const benchmark = comparisonDates.map((date) => benchmarkMap.get(date));
+  const annualReturn = portfolioReturns.length >= 2
+    ? (portfolioReturns.reduce((wealth, value) => wealth * (1 + value), 1) ** (TRADING_DAYS / portfolioReturns.length)) - 1 : null;
+  const volatility = portfolioReturns.length >= 2 ? stdev(portfolioReturns) * Math.sqrt(TRADING_DAYS) : null;
+  const negativeReturns = portfolioReturns.filter((value) => value < 0);
+  const downside = negativeReturns.length >= 2 ? stdev(negativeReturns) * Math.sqrt(TRADING_DAYS) : null;
   const riskFree = num(portfolio?.risk_free_rate, 0.065);
-  const beta = benchmark.length && stdev(benchmark) ? covariance(portfolioReturns, benchmark) / (stdev(benchmark) ** 2) : null;
+  const benchmarkDeviation = benchmark.length >= 2 ? stdev(benchmark) : null;
+  const beta = benchmarkDeviation ? covariance(comparisonPortfolioReturns, benchmark) / (benchmarkDeviation ** 2) : null;
   const drawdown = maximumDrawdown(portfolioReturns);
-  const varDaily = percentile(portfolioReturns, 0.05);
-  const tail = portfolioReturns.filter((value) => value <= varDaily);
-  const expectedShortfall = tail.length ? mean(tail) : varDaily;
+  const varDaily = portfolioReturns.length >= 20 ? percentile(portfolioReturns, 0.05) : null;
+  const tail = varDaily == null ? [] : portfolioReturns.filter((value) => value <= varDaily);
+  const expectedShortfall = tail.length ? mean(tail) : null;
+  const activeReturns = comparisonPortfolioReturns.map((value, index) => value - benchmark[index]);
+  const trackingError = activeReturns.length >= 2 ? stdev(activeReturns) * Math.sqrt(TRADING_DAYS) : null;
+  const informationRatio = trackingError ? (mean(activeReturns) * TRADING_DAYS) / trackingError : null;
 
   const cashflows = transactions
     .filter((row) => num(row.external_flow_inr) !== 0)
@@ -253,6 +343,17 @@ export function buildPortfolioAnalytics({ holdings = [], transactions = [], snap
   if (totalValue > 0) cashflows.push({ date: new Date(), amount: totalValue });
   const xirrPct = xirr(cashflows);
   const twrPct = timeWeightedReturn(snapshots);
+  const latestDate = portfolioSeries.dates.at(-1) || null;
+  const latestYear = latestDate?.slice(0, 4);
+  const oneYearCutoff = latestDate ? new Date(`${latestDate}T00:00:00`) : null;
+  if (oneYearCutoff) oneYearCutoff.setFullYear(oneYearCutoff.getFullYear() - 1);
+  const periods = [
+    periodPerformance('Today', portfolioSeries.dates, portfolioReturns, benchmarkMap, (date) => date === latestDate),
+    periodPerformance('YTD', portfolioSeries.dates, portfolioReturns, benchmarkMap, (date) => date.slice(0, 4) === latestYear),
+    periodPerformance('1Y', portfolioSeries.dates, portfolioReturns, benchmarkMap, (date) => oneYearCutoff && new Date(`${date}T00:00:00`) >= oneYearCutoff),
+    periodPerformance('Observed history', portfolioSeries.dates, portfolioReturns, benchmarkMap, () => true),
+  ];
+  const transactionMetrics = transactionPerformance(transactions, positions);
 
   const attribution = positions.map((row) => ({
     symbol: row.symbol,
@@ -332,18 +433,27 @@ export function buildPortfolioAnalytics({ holdings = [], transactions = [], snap
       twrPct,
       xirrPct,
       costReturnPct: investedValue ? ((securityValue / investedValue) - 1) * 100 : 0,
-      annualizedReturnPct: annualReturn * 100,
+      annualizedReturnPct: annualReturn == null ? null : annualReturn * 100,
+      benchmarkReturnPct: periods.at(-1).benchmarkPct,
+      activeReturnPct: periods.at(-1).activePct,
+      trackingErrorPct: trackingError == null ? null : trackingError * 100,
+      informationRatio,
+      periods,
+      monthly: groupedPerformance(portfolioSeries.dates, portfolioReturns, benchmarkMap, 'month').slice(0, 12),
+      annual: groupedPerformance(portfolioSeries.dates, portfolioReturns, benchmarkMap, 'year'),
+      benchmarkConfigured: benchmarkIsExplicit && benchmarkMap.size > 0,
+      ...transactionMetrics,
       observations: portfolioReturns.length,
       attribution,
     },
     risk: {
-      volatilityPct: volatility * 100,
+      volatilityPct: volatility == null ? null : volatility * 100,
       beta,
-      sharpe: volatility ? (annualReturn - riskFree) / volatility : null,
-      sortino: downside ? (annualReturn - riskFree) / downside : null,
+      sharpe: volatility && annualReturn != null ? (annualReturn - riskFree) / volatility : null,
+      sortino: downside && annualReturn != null ? (annualReturn - riskFree) / downside : null,
       maxDrawdownPct: drawdown.value,
-      var95Pct: varDaily * 100,
-      expectedShortfall95Pct: expectedShortfall * 100,
+      var95Pct: varDaily == null ? null : varDaily * 100,
+      expectedShortfall95Pct: expectedShortfall == null ? null : expectedShortfall * 100,
       drawdownCurve: drawdown.curve,
       correlations,
     },
@@ -361,7 +471,7 @@ export function buildPortfolioAnalytics({ holdings = [], transactions = [], snap
       issues,
       grade,
     },
-    series: { dates: aligned, portfolioReturns, benchmarkReturns: benchmark },
+    series: { dates: portfolioSeries.dates, portfolioReturns, comparisonDates, comparisonPortfolioReturns, benchmarkReturns: benchmark },
   };
 }
 
@@ -399,7 +509,10 @@ export function answerPortfolioQuestion(question, analytics, events = []) {
   if (!query.trim()) return 'Ask about risk, concentration, performance, currency exposure, scenarios, or what changed today.';
   const top = analytics.positions.slice().sort((a, b) => b.currentValue - a.currentValue)[0];
   if (/risk|safe|danger|drawdown|var/.test(query)) {
-    return `Risk is ${analytics.concentration.toLowerCase()} by concentration. Estimated annualized volatility is ${analytics.risk.volatilityPct.toFixed(1)}%, maximum observed drawdown is ${analytics.risk.maxDrawdownPct.toFixed(1)}%, and one-day 95% historical VaR is ${Math.abs(analytics.risk.var95Pct).toFixed(1)}%. These estimates use ${analytics.performance.observations} aligned daily observations.`;
+    const volatilityText = analytics.risk.volatilityPct == null ? 'unavailable' : `${analytics.risk.volatilityPct.toFixed(1)}%`;
+    const drawdownText = analytics.risk.maxDrawdownPct == null ? 'unavailable' : `${analytics.risk.maxDrawdownPct.toFixed(1)}%`;
+    const varText = analytics.risk.var95Pct == null ? 'unavailable' : `${Math.abs(analytics.risk.var95Pct).toFixed(1)}%`;
+    return `Risk is ${analytics.concentration.toLowerCase()} by concentration. Estimated annualized volatility is ${volatilityText}, maximum observed drawdown is ${drawdownText}, and one-day 95% historical VaR is ${varText}. These estimates use ${analytics.performance.observations} aligned daily observations; unavailable measures need more valid history.`;
   }
   if (/concentr|largest|top holding/.test(query)) {
     return top ? `${top.asset_name} is the largest position at ${top.weightPct.toFixed(1)}%. The top five positions represent ${analytics.topFivePct.toFixed(1)}% and portfolio HHI is ${analytics.hhi.toFixed(3)}.` : 'There are no positions to assess.';
