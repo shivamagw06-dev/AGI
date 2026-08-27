@@ -230,7 +230,10 @@ export function buildPortfolioAnalytics({ holdings = [], transactions = [], snap
   const topFive = [...exposurePositions].sort((a, b) => b.currentValue - a.currentValue).slice(0, 5).reduce((sum, row) => sum + row.weightPct, 0);
 
   const portfolioSeries = alignedPortfolioReturns(positions, marketPackage);
-  const benchmarkMap = benchmarkReturns(marketPackage, portfolio?.benchmark_components || [{ symbol: 'NIFTY', weight: 0.6 }, { symbol: '^GSPC', weight: 0.4 }]);
+  const benchmarkIsExplicit = portfolio?.benchmark_policy?.mode === 'explicit'
+    || portfolio?.settings?.benchmarkSelectionConfirmed === true
+    || portfolio?.settings?.benchmark_selection_confirmed === true;
+  const benchmarkMap = benchmarkReturns(marketPackage, benchmarkIsExplicit ? (portfolio?.benchmark_components || []) : []);
   const aligned = portfolioSeries.dates.filter((date) => benchmarkMap.has(date));
   const portfolioReturns = aligned.map((date) => portfolioSeries.returns[portfolioSeries.dates.indexOf(date)]);
   const benchmark = aligned.map((date) => benchmarkMap.get(date));
