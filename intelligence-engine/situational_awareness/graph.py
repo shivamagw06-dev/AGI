@@ -30,6 +30,13 @@ from typing import Any, Iterable, Optional
 
 PROPAGATION_VERSION = "sa-graph-1"
 
+# Deliberately not called an effect on the share price. What propagates here is
+# a change in the demand a company is exposed to, before any of the things that
+# decide whether the company captures it -- capacity, backlog, pricing power,
+# competition -- and long before it reaches revenue, margin or EPS. Naming it
+# "effect_pct" invited a later reader, or another model, to treat a demand
+# exposure as an expected return. It is neither a forecast nor a return.
+
 # Below this an effect is not worth carrying further: a 0.5% move on a
 # confidence of 0.3 is indistinguishable from the error in the elasticity that
 # produced it.
@@ -62,6 +69,20 @@ def build_index(edges: Iterable[dict[str, Any]]) -> dict[str, list[dict[str, Any
     return dict(out)
 
 
+def _elasticities(edge: dict[str, Any]) -> tuple[float, float, float]:
+    """Low, base and high for one edge.
+
+    An elasticity of 0.54 is not precise, and propagating it as a point produces
+    a confident-looking single number four hops away. Where a range is supplied
+    it is carried; where it is not, the base fills all three, so an edge that
+    never stated a range does not silently widen the answer.
+    """
+    base = float(edge["elasticity"])
+    lo, hi = edge.get("elasticity_low"), edge.get("elasticity_high")
+    return (float(lo) if lo is not None else base, base,
+            float(hi) if hi is not None else base)
+
+
 def propagate(origin: str, shock_pct: float,
               edges: Iterable[dict[str, Any]], *,
               origin_confidence: float = 1.0,
@@ -80,7 +101,9 @@ def propagate(origin: str, shock_pct: float,
         raise GraphError(f"{origin!r} is not in the graph")
 
     reached: dict[str, dict[str, Any]] = {
-        origin: {"effect_pct": float(shock_pct),
+        origin: {"exposure_effect_pct": float(shock_pct),
+                 "exposure_effect_low": float(shock_pct),
+                 "exposure_effect_high": float(shock_pct),
                  "confidence": float(origin_confidence),
                  "lag_min": 0, "lag_max": 0, "hops": 0, "path": [origin]},
     }
@@ -92,12 +115,21 @@ def propagate(origin: str, shock_pct: float,
             here = reached[node]
             for edge in index.get(node, []):
                 to = str(edge["to_node"])
-                effect = here["effect_pct"] * float(edge["elasticity"])
+                lo_e, base_e, hi_e = _elasticities(edge)
+                effect = here["exposure_effect_pct"] * base_e
+                # The range compounds along the whole path: a bear case is the
+                # low elasticity applied at every hop, not once at the last.
+                ends = [here["exposure_effect_low"] * lo_e,
+                        here["exposure_effect_low"] * hi_e,
+                        here["exposure_effect_high"] * lo_e,
+                        here["exposure_effect_high"] * hi_e]
                 conf = here["confidence"] * float(edge["confidence"])
                 if abs(effect) < MIN_EFFECT_PCT or conf < MIN_CONFIDENCE:
                     continue
                 cand = {
-                    "effect_pct": round(effect, 4),
+                    "exposure_effect_pct": round(effect, 4),
+                    "exposure_effect_low": round(min(ends), 4),
+                    "exposure_effect_high": round(max(ends), 4),
                     "confidence": round(conf, 4),
                     "lag_min": here["lag_min"] + int(edge.get("lag_months_min") or 0),
                     "lag_max": here["lag_max"] + int(edge.get("lag_months_max") or 0),
@@ -108,8 +140,8 @@ def propagate(origin: str, shock_pct: float,
                 # Strongest path wins, measured on the effect actually carried
                 # rather than on raw size: a large effect at low confidence is
                 # a worse account of what happens than a smaller certain one.
-                if prev is None or abs(cand["effect_pct"]) * cand["confidence"] > \
-                                   abs(prev["effect_pct"]) * prev["confidence"]:
+                if prev is None or abs(cand["exposure_effect_pct"]) * cand["confidence"] > \
+                                   abs(prev["exposure_effect_pct"]) * prev["confidence"]:
                     reached[to] = cand
                     nxt.append(to)
         if not nxt:
@@ -140,18 +172,18 @@ def company_impacts(reached: dict[str, dict[str, Any]],
         if not hit:
             continue
         exposure = float(x["exposure"])
-        contribution = hit["effect_pct"] * exposure
+        contribution = hit["exposure_effect_pct"] * exposure
         conf = hit["confidence"] * float(x["confidence"])
         if abs(contribution) < MIN_EFFECT_PCT or conf < MIN_CONFIDENCE:
             continue
         row = per.setdefault(symbol, {
-            "symbol": symbol, "effect_pct": 0.0, "via": [],
+            "symbol": symbol, "exposure_effect_pct": 0.0, "via": [],
             "lag_min": hit["lag_min"], "lag_max": hit["lag_max"],
         })
-        row["effect_pct"] += contribution
+        row["exposure_effect_pct"] += contribution
         row["via"].append({
             "node": node, "exposure": exposure,
-            "node_effect_pct": hit["effect_pct"],
+            "node_exposure_effect_pct": hit["exposure_effect_pct"],
             "contribution_pct": round(contribution, 4),
             "confidence": round(conf, 4),
             "hops": hit["hops"], "path": hit["path"],
@@ -167,9 +199,9 @@ def company_impacts(reached: dict[str, dict[str, Any]],
         # not be averaged away by three confident ones.
         confs = [v["confidence"] for v in row["via"]]
         row["confidence"] = round(math.exp(sum(math.log(c) for c in confs) / len(confs)), 4)
-        row["effect_pct"] = round(row["effect_pct"], 4)
+        row["exposure_effect_pct"] = round(row["exposure_effect_pct"], 4)
         row["via"].sort(key=lambda v: -abs(v["contribution_pct"]))
         row["version"] = PROPAGATION_VERSION
         out.append(row)
-    out.sort(key=lambda r: -abs(r["effect_pct"]) * r["confidence"])
+    out.sort(key=lambda r: -abs(r["exposure_effect_pct"]) * r["confidence"])
     return out

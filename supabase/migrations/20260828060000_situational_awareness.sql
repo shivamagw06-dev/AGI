@@ -30,6 +30,16 @@ CREATE TABLE IF NOT EXISTS public.sa_edge (
   to_node        text        NOT NULL REFERENCES public.sa_node (node_id),
   as_of          date        NOT NULL,
   elasticity     numeric(8,4) NOT NULL,
+  -- A range, so the engine can propagate a bear and bull case rather than
+  -- carrying 0.54 four hops as though it were measured. Nullable: an edge that
+  -- has no honest range says so, and the engine then uses the base for all
+  -- three rather than inventing width.
+  elasticity_low  numeric(8,4),
+  elasticity_high numeric(8,4),
+  CONSTRAINT causal_edge_elasticity_range CHECK (
+    (elasticity_low IS NULL OR elasticity_low <= elasticity) AND
+    (elasticity_high IS NULL OR elasticity_high >= elasticity)
+  ),
   lag_months_min smallint    NOT NULL DEFAULT 0,
   lag_months_max smallint    NOT NULL DEFAULT 0,
   confidence     numeric(4,3) NOT NULL,

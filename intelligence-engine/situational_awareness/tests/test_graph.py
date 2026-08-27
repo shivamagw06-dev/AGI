@@ -39,7 +39,7 @@ class Propagation(unittest.TestCase):
     def test_the_effect_decays_with_distance(self):
         out = g.propagate("ai_compute_demand", 20.0, CHAIN)
         chain = ["ai_compute_demand", "dc_buildout", "dc_power_demand", "transformer_demand"]
-        sizes = [abs(out[n]["effect_pct"]) for n in chain]
+        sizes = [abs(out[n]["exposure_effect_pct"]) for n in chain]
         self.assertEqual(sizes, sorted(sizes, reverse=True))
 
     def test_confidence_decays_too(self):
@@ -58,7 +58,7 @@ class Propagation(unittest.TestCase):
     def test_a_negative_edge_carries_its_sign(self):
         neg = [edge("agent_capability", "it_services_demand", -0.30, 0.55, 24, 60)]
         out = g.propagate("agent_capability", 30.0, neg)
-        self.assertLess(out["it_services_demand"]["effect_pct"], 0)
+        self.assertLess(out["it_services_demand"]["exposure_effect_pct"], 0)
 
     def test_a_cycle_terminates(self):
         # Power scarcity raises prices, which slows buildout, which reduces
@@ -82,7 +82,7 @@ class Propagation(unittest.TestCase):
         vintages = [edge("a", "b", 0.10, 0.9, as_of="2026-01-01"),
                     edge("a", "b", 0.90, 0.9, as_of="2026-08-01")]
         out = g.propagate("a", 10.0, vintages)
-        self.assertAlmostEqual(out["b"]["effect_pct"], 9.0, places=3)
+        self.assertAlmostEqual(out["b"]["exposure_effect_pct"], 9.0, places=3)
 
     def test_two_paths_to_one_node_do_not_add_up(self):
         # Both routes usually describe the same economics at different
@@ -91,7 +91,7 @@ class Propagation(unittest.TestCase):
         two = [edge("a", "b", 0.5, 0.9), edge("a", "c", 0.5, 0.9),
                edge("b", "d", 0.5, 0.9), edge("c", "d", 0.5, 0.9)]
         out = g.propagate("a", 100.0, two)
-        self.assertAlmostEqual(out["d"]["effect_pct"], 25.0, places=3)
+        self.assertAlmostEqual(out["d"]["exposure_effect_pct"], 25.0, places=3)
 
 
 class CompanyImpact(unittest.TestCase):
@@ -101,7 +101,7 @@ class CompanyImpact(unittest.TestCase):
     def test_a_company_is_reached_through_its_exposure(self):
         out = g.company_impacts(self._reached(), [exp("POWERGRID", "dc_power_demand", 0.6)])
         self.assertEqual(out[0]["symbol"], "POWERGRID")
-        self.assertGreater(out[0]["effect_pct"], 0)
+        self.assertGreater(out[0]["exposure_effect_pct"], 0)
 
     def test_exposure_to_several_nodes_adds_up(self):
         # Genuinely separate revenue lines, unlike two paths to one node.
@@ -110,13 +110,13 @@ class CompanyImpact(unittest.TestCase):
             exp("SIEMENS", "cooling_demand", 0.3)])
         via = out[0]["via"]
         self.assertEqual(len(via), 2)
-        self.assertAlmostEqual(out[0]["effect_pct"],
+        self.assertAlmostEqual(out[0]["exposure_effect_pct"],
                                sum(v["contribution_pct"] for v in via), places=3)
 
     def test_a_negative_exposure_produces_a_negative_impact(self):
         out = g.company_impacts(self._reached(),
                                 [exp("TCS", "dc_power_demand", -0.4)])
-        self.assertLess(out[0]["effect_pct"], 0)
+        self.assertLess(out[0]["exposure_effect_pct"], 0)
 
     def test_confidence_is_dragged_down_by_the_weakest_leg(self):
         # A thesis is only as good as its weakest necessary link. An
@@ -158,3 +158,39 @@ class CompanyImpact(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+def _ranged(frm, to, base, lo, hi, conf=0.9):
+    return {"from_node": frm, "to_node": to, "elasticity": base,
+            "elasticity_low": lo, "elasticity_high": hi,
+            "confidence": conf, "as_of": "2026-08-28"}
+
+
+def test_range_brackets_base_and_widens_with_distance():
+    """A three-hop chain must get less certain, not more."""
+    edges = [_ranged("OIL", "FREIGHT", 0.60, 0.40, 0.85),
+             _ranged("FREIGHT", "COST", 0.50, 0.30, 0.70)]
+    r = g.propagate("OIL", 20.0, edges)
+    for node in ("FREIGHT", "COST"):
+        hit = r[node]
+        assert hit["exposure_effect_low"] <= hit["exposure_effect_pct"] <= hit["exposure_effect_high"]
+    near = r["FREIGHT"]["exposure_effect_high"] - r["FREIGHT"]["exposure_effect_low"]
+    far = r["COST"]["exposure_effect_high"] - r["COST"]["exposure_effect_low"]
+    assert far > near
+
+
+def test_negative_elasticity_keeps_bounds_ordered():
+    """A cost rise cuts margin. Low must stay below high through the sign flip."""
+    edges = [_ranged("COST", "MARGIN", -0.90, -1.20, -0.60)]
+    hit = g.propagate("COST", 10.0, edges)["MARGIN"]
+    assert hit["exposure_effect_low"] < hit["exposure_effect_high"]
+    assert hit["exposure_effect_low"] <= hit["exposure_effect_pct"] <= hit["exposure_effect_high"]
+    assert hit["exposure_effect_high"] < 0  # every case is a margin hit
+
+
+def test_edge_without_range_does_not_invent_width():
+    """Silence about uncertainty is not a claim of uncertainty."""
+    edges = [{"from_node": "A", "to_node": "B", "elasticity": 0.5,
+              "confidence": 0.9, "as_of": "2026-08-28"}]
+    hit = g.propagate("A", 10.0, edges)["B"]
+    assert hit["exposure_effect_low"] == hit["exposure_effect_pct"] == hit["exposure_effect_high"]
