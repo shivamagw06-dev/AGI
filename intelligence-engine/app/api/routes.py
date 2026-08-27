@@ -10734,6 +10734,47 @@ async def options_lab_signals_build(payload: dict[str, Any] = Body(default_facto
         dry_run=not bool(body.get("apply")))
 
 
+@router.get("/options-lab/studies/conditional")
+async def options_lab_studies_conditional(
+    start: str = Query(...),
+    end: str = Query(...),
+    family: str = Query(default="VRP"),
+    outcome: str = Query(default="variance_premium_5d"),
+    condition: str = Query(default="atm_iv_30d"),
+    groups: int = Query(default=3),
+    underlying: str = Query(default="NIFTY"),
+):
+    """What followed a family's signals, split by a second observed variable.
+
+    The unconditional study asks whether a signal preceded anything on average.
+    This asks whether it preceded something different in different conditions,
+    which is the question a strategy depends on -- and the question that makes
+    it easy to find an edge that is not there.
+
+    So the result carries how many cells were examined and how many would clear
+    two standard errors by chance. Read only against the reading, is a
+    conclusion; read alongside the denominator, it is evidence.
+    """
+    from options_lab import canonical_store, studies
+
+    try:
+        rows = canonical_store.signals_with_outcomes(
+            start, end, underlying.strip().upper())
+    except canonical_store.CanonicalStoreError as exc:
+        return {"ok": False, "stage": "read", "error": str(exc)[:250]}
+    if not rows:
+        return {"ok": False, "stage": "read", "error": "no signals in that range"}
+    return {
+        "ok": True,
+        "range": {"start": start, "end": end, "underlying": underlying},
+        "signals_available": len(rows),
+        **studies.conditional(rows, family=family.strip().upper(),
+                              outcome_field=outcome.strip(),
+                              condition=condition.strip(),
+                              groups=max(2, min(5, groups))),
+    }
+
+
 @router.get("/options-lab/studies")
 async def options_lab_studies(
     start: str = Query(...),
