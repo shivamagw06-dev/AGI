@@ -7,7 +7,7 @@ export default function Logo({ compact = false, className = '' }) {
   return (
     <Link
       to="/"
-      className={`group inline-flex items-center gap-2.5 hover:opacity-90 transition-opacity ${className}`}
+      className={`group inline-flex shrink-0 items-center gap-2.5 hover:opacity-90 transition-opacity ${className}`}
       aria-label="Agarwal Global Investments — Home"
     >
       <img

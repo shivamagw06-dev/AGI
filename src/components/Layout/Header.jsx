@@ -1,4 +1,4 @@
-import { Search, Menu, X, User, LogOut, Edit2, Shield, Briefcase, LayoutDashboard, Gauge, Activity, Bell, Bookmark, CreditCard, Settings, Newspaper, ListChecks, Library, Landmark } from 'lucide-react';
+import { Search, Menu, X, User, LogOut, Edit2, Shield, Briefcase, LayoutDashboard, Gauge, Activity, Bell, Bookmark, CreditCard, Settings, Newspaper, ListChecks, Library, Landmark, ChevronDown } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -20,19 +20,31 @@ import MarketOutlookStrip from '@/components/Home/MarketOutlookStrip';
 import ResearchSearch from '@/components/Search/ResearchSearch';
 import { buildLoginUrl } from '@/lib/accessPolicy';
 
-const NAV = [
-  { name: 'Home', path: '/' },
+const PRIMARY_NAV = [
   { name: 'Market Intelligence', path: '/market-intelligence' },
   { name: 'Portfolio', path: '/portfolio' },
   { name: 'Live Desk', path: '/live-desk' },
   { name: 'Hedge Fund', path: '/hedge-fund' },
   { name: 'Live Alpha', path: '/live-alpha' },
+];
+
+const MORE_NAV = [
   { name: 'Insider Activity', path: '/insider-activity' },
   { name: 'Private Markets', path: '/private-markets' },
   { name: 'Global Markets', path: '/global-markets' },
   { name: 'FX Intelligence', path: '/economics' },
   { name: 'US Market', path: '/us-stock-intelligence' },
 ];
+
+const MOBILE_NAV = [{ name: 'Home', path: '/' }, ...PRIMARY_NAV, ...MORE_NAV];
+
+function navItemClass(active) {
+  return `h-full shrink-0 px-2.5 xl:px-3 text-[13px] font-medium border-b-2 border-transparent transition-colors whitespace-nowrap focus:outline-none focus:shadow-none focus-visible:bg-[#f5f5f5] ${
+    active
+      ? 'text-[#111111] border-b-[#111111]'
+      : 'text-[#444444] hover:text-[#111111] hover:border-b-[#cccccc]'
+  }`;
+}
 
 export default function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -129,27 +141,58 @@ export default function Header() {
     <header className="sticky top-0 z-50 bg-white shadow-sm">
       <div className="border-b border-[#dddddd]">
         <div className="max-w-[1800px] mx-auto px-4 sm:px-6">
-          <div className="flex items-center justify-between h-[58px] gap-4">
-            <Logo />
+          <div className="flex items-center h-[58px] gap-3 min-w-0 overflow-hidden">
+            <Logo className="relative z-20 shrink-0" />
 
-            <nav className="hidden lg:flex items-center h-full">
-              {NAV.map((item) => (
+            <nav className="hidden xl:flex min-w-0 flex-1 items-center justify-end h-full overflow-hidden">
+              {PRIMARY_NAV.map((item) => (
                 <button
                   key={item.path}
                   type="button"
                   onClick={() => go(item.path)}
-                  className={`h-full px-2.5 xl:px-3 text-[13px] font-medium border-b-2 transition-colors whitespace-nowrap ${
-                    isActive(item.path)
-                      ? 'text-[#111111] border-[#111111]'
-                      : 'text-[#444444] border-transparent hover:text-[#111111] hover:border-[#cccccc]'
-                  }`}
+                  className={navItemClass(isActive(item.path))}
                 >
                   {item.name}
                 </button>
               ))}
+              <div className="hidden min-[1680px]:flex h-full items-center">
+                {MORE_NAV.map((item) => (
+                  <button
+                    key={item.path}
+                    type="button"
+                    onClick={() => go(item.path)}
+                    className={navItemClass(isActive(item.path))}
+                  >
+                    {item.name}
+                  </button>
+                ))}
+              </div>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    type="button"
+                    className={`${navItemClass(MORE_NAV.some((item) => isActive(item.path)))} min-[1680px]:hidden inline-flex items-center gap-0.5`}
+                    aria-label="More desks"
+                  >
+                    More
+                    <ChevronDown className="w-3.5 h-3.5" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-52">
+                  {MORE_NAV.map((item) => (
+                    <DropdownMenuItem
+                      key={item.path}
+                      onClick={() => go(item.path)}
+                      className={isActive(item.path) ? 'font-semibold text-[#111]' : ''}
+                    >
+                      {item.name}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
             </nav>
 
-            <div className="flex items-center gap-1.5">
+            <div className="ml-auto flex items-center gap-1.5 shrink-0 relative z-20">
               <button
                 type="button"
                 onClick={() => setSearchOpen(true)}
@@ -267,7 +310,7 @@ export default function Header() {
 
               <button
                 type="button"
-                className="lg:hidden p-2"
+                className="xl:hidden p-2"
                 onClick={() => setMobileOpen(!mobileOpen)}
                 aria-label="Menu"
               >
@@ -279,8 +322,8 @@ export default function Header() {
       </div>
 
       {mobileOpen && (
-        <nav className="lg:hidden border-b border-[#ddd] bg-white px-4 py-2">
-          {NAV.map((item) => (
+        <nav className="xl:hidden border-b border-[#ddd] bg-white px-4 py-2">
+          {MOBILE_NAV.map((item) => (
             <button
               key={item.path}
               type="button"
