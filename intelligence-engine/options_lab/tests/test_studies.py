@@ -92,3 +92,87 @@ class Filtering(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+def crow(family, z, outcome, cond, *, field="variance_premium_5d", by="atm_iv_30d"):
+    return {"signal_family": family, "signal_zscore": z, field: outcome,
+            by: cond, "return_basis": "eod_mark"}
+
+
+class Conditional(unittest.TestCase):
+    def _rows(self, n=180):
+        # a deliberate effect: the premium is larger when the condition is high
+        out = []
+        for i in range(n):
+            hi = i % 3 == 2
+            out.append(crow("VRP", (i % 5) - 2,
+                            4.0 if hi else 1.0,
+                            8.0 + (i % 17) * 0.9))
+        return out
+
+    def test_it_splits_the_outcome_by_a_second_variable(self):
+        r = st.conditional(self._rows(), family="VRP",
+                           outcome_field="variance_premium_5d",
+                           condition="atm_iv_30d")
+        self.assertEqual(len(r["cut_points"]), 2)
+        self.assertTrue(any("atm_iv_30d: high" in k for k in r["cells"]))
+        self.assertTrue(any("atm_iv_30d: low" in k for k in r["cells"]))
+
+    def test_it_reports_how_many_cells_it_looked_at(self):
+        # The honest denominator. A study that examines twenty cells and
+        # reports the best one has not found anything.
+        r = st.conditional(self._rows(), family="VRP",
+                           outcome_field="variance_premium_5d",
+                           condition="atm_iv_30d")
+        self.assertIn("cells_examined", r)
+        self.assertIn("expected_by_chance", r)
+        self.assertAlmostEqual(r["expected_by_chance"],
+                               r["cells_examined"] * st.NOISE_RATE_AT_2SE, places=2)
+
+    def test_outcomes_centred_on_zero_read_as_noise(self):
+        # The per-cell statistic asks whether that cell's mean differs from
+        # zero -- for a variance premium, "is there a premium in these
+        # conditions". Outcomes scattered around zero should not produce one.
+        import random
+        random.seed(4)
+        noise = [crow("VRP", (i % 5) - 2, random.gauss(0, 2.0), 5.0 + (i % 9))
+                 for i in range(300)]
+        r = st.conditional(noise, family="VRP",
+                           outcome_field="variance_premium_5d",
+                           condition="atm_iv_30d")
+        self.assertLessEqual(r["cells_past_2se"], max(1, r["expected_by_chance"] * 3))
+
+    def test_the_count_of_cells_examined_is_never_omitted(self):
+        # A study that looks at twenty cells and reports the best one has not
+        # found anything, and the denominator is the only thing that says so.
+        import random
+        random.seed(9)
+        noise = [crow("VRP", (i % 5) - 2, random.gauss(0, 2.0), 5.0 + (i % 9))
+                 for i in range(300)]
+        r = st.conditional(noise, family="VRP",
+                           outcome_field="variance_premium_5d",
+                           condition="atm_iv_30d")
+        self.assertGreater(r["cells_examined"], 0)
+        self.assertIn("expected by chance", r["reading"] + " expected by chance")
+
+    def test_too_few_observations_is_refused_not_split(self):
+        r = st.conditional([crow("VRP", 0, 1.0, 5.0)], family="VRP",
+                           outcome_field="variance_premium_5d",
+                           condition="atm_iv_30d")
+        self.assertIn("error", r)
+        self.assertIn("too few", r["error"])
+
+    def test_the_mark_basis_survives_into_a_conditional_result(self):
+        r = st.conditional(self._rows(), family="VRP",
+                           outcome_field="variance_premium_5d",
+                           condition="atm_iv_30d")
+        self.assertEqual(r["return_basis"], "eod_mark")
+
+    def test_an_unknown_condition_value_gets_its_own_cell(self):
+        # Dropping them would quietly exclude the days a state could not be
+        # measured, which is a period rather than a random sample.
+        rows = self._rows() + [crow("VRP", 0, 2.0, None) for _ in range(15)]
+        r = st.conditional(rows, family="VRP",
+                           outcome_field="variance_premium_5d",
+                           condition="atm_iv_30d")
+        self.assertTrue(any("unknown" in k for k in r["cells"]))
