@@ -330,3 +330,31 @@ class OptionEvidenceStore:
                 "SELECT MAX(captured_at) FROM option_snapshots"
             ).fetchone()[0]
             return result
+
+    def coverage(self) -> dict[str, Any]:
+        """How much live evidence this disk actually holds.
+
+        The intraday snapshots carry bid and ask, and a quote that was not
+        stored cannot be recovered later -- unlike candles, which can always be
+        fetched again. So how far back this goes is the one number that decides
+        whether an execution study is possible at all, and nothing was
+        reporting it.
+        """
+        with self.connect() as connection:
+            row = connection.execute("""
+                SELECT COUNT(*)                       AS snapshots,
+                       COUNT(DISTINCT local_date)     AS days,
+                       MIN(local_date)                AS first_day,
+                       MAX(local_date)                AS last_day,
+                       COUNT(DISTINCT instrument_key) AS contracts,
+                       SUM(CASE WHEN bid IS NOT NULL
+                                 AND ask IS NOT NULL THEN 1 ELSE 0 END) AS with_quote
+                FROM option_snapshots
+            """).fetchone()
+            observations = connection.execute(
+                "SELECT COUNT(*) FROM validation_observations").fetchone()[0]
+        out = dict(row) if row else {}
+        out["validation_observations"] = observations
+        total, quoted = out.get("snapshots") or 0, out.get("with_quote") or 0
+        out["quote_share"] = round(quoted / total, 4) if total else None
+        return out

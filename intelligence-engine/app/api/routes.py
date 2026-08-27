@@ -10865,6 +10865,28 @@ async def options_lab_nse_history_ingest(payload: dict[str, Any] = Body(default_
         underlyings=underlyings, dry_run=not bool(body.get("apply")))
 
 
+@router.get("/options-lab/live-coverage")
+async def options_lab_live_coverage():
+    """How much intraday evidence the engine disk holds, and how far back.
+
+    Read-only. Exists because the live snapshots carry bid and ask, and a quote
+    that was never stored cannot be fetched again later -- unlike candles.
+    How far this reaches back therefore decides whether an execution study is
+    possible at all, and nothing was reporting it.
+    """
+    from options_lab.store import OptionEvidenceStore
+    from options_lab.upstox_live import LiveConfig
+
+    def _read():
+        store = OptionEvidenceStore(LiveConfig.from_environment().database_path)
+        return store.coverage()
+
+    try:
+        return {"ok": True, **(await run_in_threadpool(_read))}
+    except Exception as exc:
+        return {"ok": False, "error": str(exc)[:250]}
+
+
 @router.get("/options-lab/nse-history/probe")
 async def options_lab_nse_history_probe(
     day: str | None = Query(default=None),
