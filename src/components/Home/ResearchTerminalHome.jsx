@@ -10,6 +10,7 @@ import {
   LineChart,
 } from 'lucide-react';
 import NewsletterSection from '@/components/Home/NewsletterSection';
+import LiveBadge from '@/components/Article/LiveBadge';
 import usePublishedArticles from '@/hooks/usePublishedArticles';
 import useHomepageLatest from '@/hooks/useHomepageLatest';
 import { formatTimeAgo } from '@/lib/articleUtils';
@@ -56,11 +57,14 @@ function articleAuthor(article) {
 }
 
 function articleMeta(article) {
-  const published = article?.publishedLabel
-    ? formatTimeAgo(article.publishedLabel) || article.publishedLabel
-    : article?.date
-      ? formatTimeAgo(article.date)
-      : 'Recently';
+  const published =
+    article?.isLive && article?.lastUpdatedAt
+      ? `Updated ${formatTimeAgo(article.lastUpdatedAt)}`
+      : article?.publishedLabel
+        ? formatTimeAgo(article.publishedLabel) || article.publishedLabel
+        : article?.date
+          ? formatTimeAgo(article.date)
+          : 'Recently';
   return {
     category: getDeskForSection(article?.section || article?.category)?.label
       || article?.section
@@ -71,6 +75,36 @@ function articleMeta(article) {
     published,
     readTime: article?.readTime || '5 min read',
   };
+}
+
+function DeskCategory({ article, className = '' }) {
+  const meta = articleMeta(article);
+  return (
+    <p className={`flex flex-wrap items-center gap-2 ${className}`.trim()}>
+      {article?.isLive ? <LiveBadge /> : null}
+      <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-[#6b7280]">{meta.category}</span>
+    </p>
+  );
+}
+
+function LiveNowStrip({ articles }) {
+  const live = (articles || []).filter((article) => article?.isLive).slice(0, 3);
+  if (!live.length) return null;
+  return (
+    <div className="mt-8 mb-0 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-xl border border-[#f3d0cc] bg-[#fff7f6] px-4 py-3">
+      <LiveBadge />
+      <span className="text-sm font-semibold text-[#111]">Live coverage</span>
+      {live.map((article) => (
+        <Link
+          key={article.id || article.slug}
+          to={articleHref(article)}
+          className="text-sm font-medium text-[#111] underline-offset-4 hover:underline"
+        >
+          {article.title}
+        </Link>
+      ))}
+    </div>
+  );
 }
 
 function isMorning(article) {
@@ -101,7 +135,7 @@ function FeaturedArticle({ article }) {
         />
       </Link>
       <div className="flex min-w-0 flex-col justify-center p-6 md:p-8">
-        <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#6b7280]">{meta.category}</p>
+        <DeskCategory article={article} className="text-[11px]" />
         <h3 className="mt-3 font-serif text-2xl md:text-[1.75rem] font-bold leading-snug text-[#111111]">
           <Link to={href} className="hover:underline underline-offset-4 decoration-[#111]/25">
             {article.title}
@@ -147,7 +181,7 @@ function StackArticle({ article, index = 0 }) {
         />
       </Link>
       <div className="min-w-0 flex-1 py-0.5">
-        <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-[#6b7280]">{meta.category}</p>
+        <DeskCategory article={article} />
         <h3 className="mt-1 font-serif text-[1.05rem] font-bold leading-snug text-[#111111] line-clamp-2">
           <Link to={href} className="hover:underline underline-offset-4 decoration-[#111]/25">
             {article.title}
@@ -184,7 +218,7 @@ function GridArticle({ article, index = 0 }) {
         />
       </Link>
       <div className="flex flex-1 flex-col p-5">
-        <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-[#6b7280]">{meta.category}</p>
+        <DeskCategory article={article} />
         <h3 className="mt-2 font-serif text-lg font-bold leading-snug text-[#111111] line-clamp-2">
           <Link to={href} className="hover:underline underline-offset-4 decoration-[#111]/25">
             {article.title}
@@ -238,7 +272,13 @@ function LatestRail({ articles, loading }) {
             const meta = articleMeta(article);
             return (
               <article key={article.id || article.slug} className="grid grid-cols-[68px_minmax(0,1fr)] gap-3 border-b border-[#eceef2] py-5 last:border-b-0">
-                <time className="pt-0.5 text-sm font-semibold text-[#e1251b]">{meta.published}</time>
+                <div className="pt-0.5">
+                  {article.isLive ? (
+                    <LiveBadge />
+                  ) : (
+                    <time className="text-sm font-semibold text-[#e1251b]">{meta.published}</time>
+                  )}
+                </div>
                 <h3 className="font-serif text-lg font-bold leading-snug text-[#111]">
                   <Link to={articleHref(article)} className="hover:underline underline-offset-4">{article.title}</Link>
                 </h3>
@@ -357,6 +397,8 @@ export default function ResearchTerminalHome() {
               View all research →
             </Link>
           </div>
+
+          <LiveNowStrip articles={articles} />
 
           <div className="mt-8 grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_clamp(320px,20vw,380px)] xl:items-start">
           <div className="min-w-0">

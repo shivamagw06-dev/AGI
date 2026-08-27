@@ -21,7 +21,7 @@ export default function RequireAdmin({ children }) {
 
   if (!user) {
     const redirect = encodeURIComponent(location.pathname + location.search);
-    return <Navigate to={`/login?redirect=${redirect}`} replace />;
+    return <Navigate to={`/login?mode=signin&redirect=${redirect}`} replace />;
   }
 
   if (!canAccessCms(user)) {

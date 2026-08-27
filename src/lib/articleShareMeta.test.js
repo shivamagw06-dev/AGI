@@ -88,3 +88,17 @@ test('injectShareMetaIntoHtml puts crawler-visible OG tags in the SPA shell', ()
   assert.match(injected, /property="og:title" content="Private banks could lead"/);
   assert.doesNotMatch(injected, /AGI — Agarwal Global Investments/);
 });
+
+test('live stories prefix share title and expose modified time', () => {
+  const meta = buildArticleShareMeta({
+    title: 'Zinc jumps on China prints',
+    slug: 'zinc-jumps-on-china-prints',
+    excerpt: 'Prices lifted.',
+    is_live: true,
+    published_at: '2026-08-27T04:00:00.000Z',
+    live_updates: [{ id: 'u1', at: '2026-08-27T09:15:00.000Z', html: '<p>Spot lifted.</p>' }],
+  });
+  assert.equal(meta.title, 'LIVE: Zinc jumps on China prints');
+  assert.equal(meta.pageTitle, 'LIVE: Zinc jumps on China prints • AGI');
+  assert.equal(meta.modifiedTime, '2026-08-27T09:15:00.000Z');
+});

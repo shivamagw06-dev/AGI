@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useMemo } from 'react';
 import usePublishedArticles from '@/hooks/usePublishedArticles';
+import LiveBadge from '@/components/Article/LiveBadge';
 import {
   articleMatchesDesk,
   getDeskById,
@@ -107,8 +108,9 @@ export default function DeskResearchFeed({
                   <img src={cover} alt="" loading="lazy" />
                 </Link>
                 <div className="flex min-w-0 flex-1 flex-col p-5">
-                  <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-[#6b7280]">
-                    {article.section || deskLabel}
+                  <p className="flex flex-wrap items-center gap-2 text-[10px] font-bold uppercase tracking-[0.12em] text-[#6b7280]">
+                    {article.isLive ? <LiveBadge /> : null}
+                    <span>{article.section || deskLabel}</span>
                   </p>
                   <h3 className="mt-2 font-serif text-lg font-bold leading-snug text-[#111111] line-clamp-2">
                     <Link to={href} className="hover:underline underline-offset-4">

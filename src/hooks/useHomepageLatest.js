@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { HOMEPAGE_LATEST_TAG, mapArticleForCard } from '@/lib/articleUtils';
+import { queryArticlesSelectingLive } from '@/lib/liveArticle';
 
 export default function useHomepageLatest(limit = 7) {
   const [articles, setArticles] = useState([]);
@@ -11,13 +12,15 @@ export default function useHomepageLatest(limit = 7) {
 
     async function load() {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('articles')
-        .select('id, title, slug, excerpt, cover_url, tags, published_at, section, status')
-        .eq('status', 'published')
-        .contains('tags', [HOMEPAGE_LATEST_TAG])
-        .order('published_at', { ascending: false })
-        .limit(limit);
+      const { data, error } = await queryArticlesSelectingLive((select) =>
+        supabase
+          .from('articles')
+          .select(select)
+          .eq('status', 'published')
+          .contains('tags', [HOMEPAGE_LATEST_TAG])
+          .order('published_at', { ascending: false })
+          .limit(limit)
+      );
 
       if (cancelled) return;
       setArticles(error ? [] : (data || []).map(mapArticleForCard).filter(Boolean));

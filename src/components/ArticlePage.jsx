@@ -7,6 +7,16 @@ import { supabase } from '@/lib/supabaseClient';
 import { buildArticleShareMeta } from '@/lib/articleShareMeta';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
+import LiveBadge from '@/components/Article/LiveBadge';
+import { formatTimeAgo } from '@/lib/articleUtils';
+import {
+  LIVE_POLL_MS,
+  formatLiveClock,
+  isLiveArticle,
+  isMissingLiveColumnError,
+  latestLiveTimestamp,
+  normalizeLiveUpdates,
+} from '@/lib/liveArticle';
 
 const ArticleKnowledgePanel = lazy(() => import('@/components/Article/ArticleKnowledgePanel'));
 
@@ -398,30 +408,43 @@ export default function ArticlePage() {
       setErrorMessage(null);
 
       try {
+        const liveSelect =
+          'id, title, slug, section, excerpt, cover_url, content, content_md, tags, status, published_at, author_id, created_at, is_live, live_updates, live_started_at, live_ended_at, updated_at';
         const baseSelect =
           'id, title, slug, section, excerpt, cover_url, content, content_md, tags, status, published_at, author_id, created_at';
 
-        let { data, error } = await supabase
-          .from('articles')
-          .select(baseSelect)
-          .eq('slug', slug)
-          .eq('status', 'published')
-          .maybeSingle();
-
-        // if not found and user is the author, allow them to view their draft
-        if ((!data || error) && user?.id) {
-          const { data: authorData, error: authorErr } = await supabase
+        const loadWithSelect = async (select) => {
+          let { data, error } = await supabase
             .from('articles')
-            .select(baseSelect)
+            .select(select)
             .eq('slug', slug)
-            .eq('author_id', user.id)
+            .eq('status', 'published')
             .maybeSingle();
 
-          if (authorErr) {
-            console.warn('Author fetch error for draft fallback', authorErr);
+          if ((!data || error) && user?.id) {
+            const { data: authorData, error: authorErr } = await supabase
+              .from('articles')
+              .select(select)
+              .eq('slug', slug)
+              .eq('author_id', user.id)
+              .maybeSingle();
+            if (authorErr) {
+              console.warn('Author fetch error for draft fallback', authorErr);
+            }
+            if (authorData) {
+              data = authorData;
+              error = null;
+            }
           }
+          return { data, error };
+        };
 
-          if (authorData) data = authorData;
+        let { data, error } = await loadWithSelect(liveSelect);
+        if (error && isMissingLiveColumnError(error)) {
+          ({ data, error } = await loadWithSelect(baseSelect));
+        }
+        if (error) {
+          console.warn('Article fetch error', error);
         }
 
         if (mounted) {
@@ -439,6 +462,23 @@ export default function ArticlePage() {
       mounted = false;
     };
   }, [slug, user?.id]);
+
+  const articleIsLive = isLiveArticle(article);
+
+  useEffect(() => {
+    if (!article?.id || !articleIsLive) return undefined;
+    const id = article.id;
+    const timer = window.setInterval(async () => {
+      const { data, error } = await supabase
+        .from('articles')
+        .select('is_live, live_updates, live_ended_at, updated_at, content, content_md, excerpt, tags')
+        .eq('id', id)
+        .maybeSingle();
+      if (error || !data) return;
+      setArticle((prev) => (prev ? { ...prev, ...data } : prev));
+    }, LIVE_POLL_MS);
+    return () => window.clearInterval(timer);
+  }, [article?.id, articleIsLive]);
 
   // --- Fetch author profile once we have article
   useEffect(() => {
@@ -633,6 +673,8 @@ export default function ArticlePage() {
   const canonical = shareMeta.url;
 
   const sanitizedHtml = DOMPurify.sanitize(htmlToUse);
+  const liveUpdates = normalizeLiveUpdates(article.live_updates);
+  const lastLiveAt = latestLiveTimestamp(article);
 
   const jsonLd = {
     '@context': 'https://schema.org',
@@ -644,6 +686,7 @@ export default function ArticlePage() {
     headline: title,
     image: [image],
     datePublished: isoPubDate,
+    dateModified: shareMeta.modifiedTime || isoPubDate,
     author: {
       '@type': 'Person',
       name: author?.full_name || author?.display_name || 'Author'
@@ -676,6 +719,9 @@ export default function ArticlePage() {
         {shareMeta.imageWidth && <meta property="og:image:width" content={String(shareMeta.imageWidth)} />}
         {shareMeta.imageHeight && <meta property="og:image:height" content={String(shareMeta.imageHeight)} />}
         {isoPubDate && <meta property="article:published_time" content={isoPubDate} />}
+        {shareMeta.modifiedTime && (
+          <meta property="article:modified_time" content={shareMeta.modifiedTime} />
+        )}
         {Array.isArray(article.tags) &&
           article.tags.map((t, i) => <meta key={i} property="article:tag" content={t} />)}
         <meta name="twitter:card" content="summary_large_image" />
@@ -694,6 +740,17 @@ export default function ArticlePage() {
             {article.section && <span>{article.section}</span>}
           </div>
           <header className="article-page-header">
+            {articleIsLive ? (
+              <div className="article-live-bar">
+                <LiveBadge size="md" />
+                <span>Coverage is live</span>
+                {lastLiveAt ? (
+                  <span className="article-live-bar-meta">
+                    · Updated {formatTimeAgo(lastLiveAt)}
+                  </span>
+                ) : null}
+              </div>
+            ) : null}
             {article.section && <p className="article-kicker">{article.section}</p>}
 
         <h1>
@@ -711,7 +768,7 @@ export default function ArticlePage() {
           {niceDate ? (
             <span className="article-byline-meta">
               {' '}
-              {niceDate}
+              {articleIsLive && niceDate ? `First published ${niceDate}` : niceDate}
               {minutes ? ` · ${minutes} min read` : ''}
             </span>
           ) : null}
@@ -752,6 +809,30 @@ export default function ArticlePage() {
             <span>{minutes} min read</span>
           </aside>
           <div className="article-reading-column">
+            {liveUpdates.length ? (
+              <section className="article-live-updates" aria-label="Live updates">
+                <h2 className="article-live-updates-heading">
+                  {articleIsLive ? 'Live updates' : 'Updates'}
+                </h2>
+                {liveUpdates.map((update) => (
+                  <article key={update.id} className="article-live-update">
+                    {update.at ? <time dateTime={update.at}>{formatLiveClock(update.at)}</time> : null}
+                    {update.headline ? <h2>{update.headline}</h2> : null}
+                    {update.html ? (
+                      <div
+                        className="article-prose prose prose-lg prose-neutral w-full max-w-none"
+                        dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(update.html) }}
+                      />
+                    ) : null}
+                  </article>
+                ))}
+              </section>
+            ) : null}
+
+            {liveUpdates.length && sanitizedHtml ? (
+              <p className="article-story-so-far">The story so far</p>
+            ) : null}
+
             <article
               className="article-prose prose prose-lg prose-neutral w-full max-w-none"
               dangerouslySetInnerHTML={{ __html: sanitizedHtml }}
