@@ -152,7 +152,7 @@ export default function ClientPortfolioIntelligence() {
       {analytics.positions.length && activeTab === 'overview' ? <section><SectionTitle eyebrow="Portfolio command centre" title="Overview" description="Current book, capital allocation, change on recorded cost and the freshness of each market input." icon={Briefcase} /><div className="grid gap-px bg-[#dfe4df] sm:grid-cols-2 xl:grid-cols-6"><Metric label="Current value" value={money(analytics.totalValue, true)} detail={money(analytics.totalValue)} /><Metric label="Recorded cost" value={money(analytics.investedValue, true)} /><Metric label="Change on cost" value={percent(analytics.gainPct)} tone={analytics.gain >= 0 ? 'good' : 'bad'} detail={money(analytics.gain)} /><Metric label="Largest position" value={percent(analytics.largestPositionPct)} tone={analytics.largestPositionPct > 25 ? 'amber' : 'ink'} /><Metric label="Concentration" value={analytics.concentration} detail={`HHI ${analytics.hhi.toFixed(3)}`} /><Metric label="Observed prices" value={`${analytics.dataQuality.priceCoveragePct.toFixed(0)}%`} detail={`${analytics.dataQuality.historyObservations} aligned days`} /></div><div className="mt-7 grid gap-6 xl:grid-cols-[1.55fr_.75fr]"><HoldingsTable analytics={analytics} onRemove={removeHolding} /><div className="space-y-6"><Panel title="Asset allocation" icon={PieChart}><AllocationBars rows={analytics.allocation.asset.map((row) => ({ ...row, label: assetLabels[row.label] || row.label }))} /></Panel><Panel title="Today&apos;s portfolio pulse" icon={Activity}><div className="mt-4 space-y-3">{analytics.positions.slice().sort((a, b) => Math.abs(b.dailyChangePct || 0) - Math.abs(a.dailyChangePct || 0)).slice(0, 5).map((row) => <div key={row.id} className="flex items-center justify-between border-b border-[#edf0ed] pb-3 text-sm"><span>{row.symbol}</span><span className={(row.dailyChangePct || 0) >= 0 ? 'font-semibold text-[#087a62]' : 'font-semibold text-[#b3483f]'}>{percent(row.dailyChangePct)}</span></div>)}</div></Panel></div></div></section> : null}
       {analytics.positions.length && activeTab === 'performance' ? <Performance analytics={analytics} /> : null}
       {analytics.positions.length && activeTab === 'risk' ? <Risk analytics={analytics} /> : null}
-      {analytics.positions.length && activeTab === 'exposure' ? <Exposure analytics={analytics} /> : null}
+          {analytics.positions.length && activeTab === 'exposure' ? <EffectiveExposure analytics={analytics} portfolioId={data.portfolio?.id} /> : null}
       {analytics.positions.length && activeTab === 'intelligence' ? <><Intelligence analytics={analytics} events={events} /><FundamentalContext analytics={analytics} /></> : null}
       {analytics.positions.length && activeTab === 'scenario' ? <ScenarioLab analytics={analytics} scenario={scenario} customShocks={customShocks} setCustomShocks={setCustomShocks} onPreset={runPreset} onCustom={runCustom} onSave={saveScenario} /> : null}
       {analytics.positions.length && activeTab === 'institutional' ? <InstitutionalPortfolioPanel portfolioId={data.portfolio?.id} /> : null}
@@ -208,6 +208,167 @@ function FundamentalContext({ analytics }) {
   return <section className="mt-6"><div className={`${cardClass} overflow-x-auto p-5`}><div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between"><div><p className="text-[10px] font-bold uppercase tracking-[.18em] text-[#0f7562]">Fundamental context</p><h3 className="mt-2 text-xl font-semibold">Valuation and market reference</h3></div><p className="text-xs text-[#7b8883]">Secondary context from Yahoo quote data; portfolio prices retain their own source labels.</p></div>{rows.length ? <table className="mt-5 min-w-[900px] w-full text-left text-xs"><thead className="border-y border-[#e2e7e2] text-[9px] uppercase tracking-[.12em] text-[#7b8883]"><tr><th className="py-3">Holding</th><th>Market cap</th><th>Trailing P/E</th><th>Forward P/E</th><th>Price / book</th><th>Dividend yield</th><th>52-week change</th><th>Source</th></tr></thead><tbody>{rows.map((row) => <tr key={row.id} className="border-b border-[#edf0ed]"><td className="py-4"><p className="font-semibold">{row.symbol}</p><p className="mt-1 text-[#81908a]">{row.asset_name}</p></td><td>{compact(row.fundamentals.marketCap, row.currency)}</td><td>{row.fundamentals.trailingPe == null ? '—' : `${row.fundamentals.trailingPe.toFixed(1)}x`}</td><td>{row.fundamentals.forwardPe == null ? '—' : `${row.fundamentals.forwardPe.toFixed(1)}x`}</td><td>{row.fundamentals.priceToBook == null ? '—' : `${row.fundamentals.priceToBook.toFixed(1)}x`}</td><td>{row.fundamentals.dividendYield == null ? '—' : percent(row.fundamentals.dividendYield * 100)}</td><td>{row.fundamentals.fiftyTwoWeekChangePct == null ? '—' : percent(row.fundamentals.fiftyTwoWeekChangePct)}</td><td className="text-[#71807a]">Yahoo Finance</td></tr>)}</tbody></table> : <div className="mt-5 border border-dashed border-[#d5ddd7] bg-[#f8faf7] p-6 text-sm text-[#6c7974]">Fundamental fields were unavailable in this refresh. The desk leaves them blank rather than estimating them.</div>}</div></section>;
 }
 function Impact({ title, text, color }) { return <div className="border-l-2 pl-4" style={{ borderColor: color }}><p className="text-sm font-semibold">{title}</p><p className="mt-1 text-xs leading-5 text-[#71807a]">{text}</p></div>; }
+
+function EffectiveExposure({ analytics, portfolioId }) {
+  const [exposureState, setExposureState] = useState({ loading: true, analysis: null, error: null });
+
+  useEffect(() => {
+    let active = true;
+    if (!portfolioId) {
+      setExposureState({ loading: false, analysis: null, error: 'Portfolio context is unavailable.' });
+      return () => { active = false; };
+    }
+    setExposureState({ loading: true, analysis: null, error: null });
+    Promise.all([
+      import('../lib/institutionalPortfolioStore.js'),
+      import('../lib/portfolioInstitutionalMethodology.js'),
+    ])
+      .then(async ([store, methodology]) => {
+        const context = await store.loadInstitutionalPortfolioContext(portfolioId);
+        const analysis = methodology.buildEffectiveExposureAnalysis({
+          holdings: context.holdings || [],
+          fundConstituents: context.fundConstituents || [],
+          asOf: context.portfolio?.as_of || context.portfolio?.updated_at || null,
+        });
+        if (active) setExposureState({ loading: false, analysis, error: null });
+      })
+      .catch((error) => {
+        if (active) {
+          setExposureState({
+            loading: false,
+            analysis: null,
+            error: error?.message || 'Effective exposure could not be resolved.',
+          });
+        }
+      });
+    return () => { active = false; };
+  }, [portfolioId]);
+
+  const analysis = exposureState.analysis;
+  const displayPercent = (value) => Number.isFinite(Number(value)) ? `${Number(value).toFixed(1)}%` : 'Unavailable';
+  const displayHhi = (value) => Number.isFinite(Number(value)) ? Math.round(Number(value)).toLocaleString('en-IN') : 'Unavailable';
+  const allocationSets = analysis ? [
+    ['Asset class', analysis.allocations.assetClass],
+    ['Country', analysis.allocations.country],
+    ['Currency', analysis.allocations.currency],
+    ['Sector', analysis.allocations.sector],
+  ] : [
+    ['Asset class', analytics.allocation?.asset || []],
+    ['Country', analytics.allocation?.country || []],
+    ['Currency', analytics.allocation?.currency || []],
+    ['Sector', analytics.allocation?.sector || []],
+  ];
+  const allocationWeight = (row) => {
+    const value = Number(row.weightPct ?? row.weight);
+    return Number.isFinite(value) ? (value <= 1 ? value * 100 : value) : null;
+  };
+
+  return (
+    <section className="space-y-5">
+      <div className="rounded-[28px] border border-slate-200 bg-[linear-gradient(135deg,#f8fbf7_0%,#ffffff_48%,#f2f7fb_100%)] p-6 shadow-sm md:p-8">
+        <div className="flex flex-col justify-between gap-5 md:flex-row md:items-end">
+          <div className="max-w-3xl">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-emerald-700">Effective exposure</p>
+            <h2 className="mt-2 text-2xl font-semibold tracking-tight text-slate-950 md:text-3xl">See through funds, not just around them</h2>
+            <p className="mt-3 text-sm leading-6 text-slate-600">Direct holdings are combined with available mutual-fund and ETF constituents to expose hidden stock, sector, country and currency concentration.</p>
+          </div>
+          <div className="rounded-2xl border border-slate-200 bg-white/85 px-4 py-3 text-sm text-slate-600">
+            {exposureState.loading ? 'Resolving fund and ETF holdings…' : exposureState.error ? 'Direct view shown; look-through unavailable' : `${displayPercent(analysis?.coveragePct)} look-through coverage`}
+          </div>
+        </div>
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        {[
+          ['Largest underlying', displayPercent(analysis?.largestUnderlyingPct), 'Single-stock effective weight'],
+          ['Top five', displayPercent(analysis?.topFiveUnderlyingPct), 'Combined effective weight'],
+          ['Concentration index', displayHhi(analysis?.effectiveHhi), 'HHI after look-through'],
+          ['Hidden overlaps', analysis ? String(analysis.overlaps.length) : 'Unavailable', 'Repeated direct or fund routes'],
+        ].map(([label, value, detail]) => (
+          <div key={label} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">{label}</p>
+            <p className="mt-3 text-2xl font-semibold text-slate-950">{value}</p>
+            <p className="mt-1 text-xs text-slate-500">{detail}</p>
+          </div>
+        ))}
+      </div>
+
+      <div className="grid gap-4 xl:grid-cols-2">
+        {allocationSets.map(([title, rows]) => (
+          <div key={title} className="rounded-[24px] border border-slate-200 bg-white p-5 shadow-sm md:p-6">
+            <div className="flex items-center justify-between gap-3">
+              <h3 className="text-base font-semibold text-slate-950">{title}</h3>
+              <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-400">Effective weight</span>
+            </div>
+            <div className="mt-5 space-y-4">
+              {(rows || []).slice(0, 8).map((row) => {
+                const weight = allocationWeight(row);
+                return (
+                  <div key={`${title}-${row.label}`}>
+                    <div className="mb-1.5 flex items-center justify-between gap-4 text-sm">
+                      <span className="truncate text-slate-700">{row.label || 'Unknown'}</span>
+                      <span className="font-medium text-slate-950">{displayPercent(weight)}</span>
+                    </div>
+                    <div className="h-2 overflow-hidden rounded-full bg-slate-100">
+                      <div className="h-full rounded-full bg-[linear-gradient(90deg,#0f766e,#4f9f8f)]" style={{ width: `${Math.max(0, Math.min(100, weight || 0))}%` }} />
+                    </div>
+                  </div>
+                );
+              })}
+              {!rows?.length ? <p className="text-sm text-slate-500">No valid exposure values are available for this dimension.</p> : null}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="grid gap-4 xl:grid-cols-[1.25fr_0.75fr]">
+        <div className="overflow-hidden rounded-[24px] border border-slate-200 bg-white shadow-sm">
+          <div className="border-b border-slate-100 px-5 py-4 md:px-6">
+            <h3 className="text-base font-semibold text-slate-950">Underlying overlap map</h3>
+            <p className="mt-1 text-sm text-slate-500">Securities reached through more than one direct, mutual-fund or ETF route.</p>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="min-w-full text-left text-sm">
+              <thead className="bg-slate-50 text-[10px] uppercase tracking-[0.14em] text-slate-500">
+                <tr><th className="px-5 py-3 md:px-6">Underlying</th><th className="px-4 py-3">Effective weight</th><th className="px-4 py-3">Routes</th><th className="px-5 py-3 text-right md:px-6">Source mix</th></tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {(analysis?.overlaps || []).slice(0, 10).map((row) => (
+                  <tr key={row.instrumentKey || row.symbol} className="text-slate-700">
+                    <td className="px-5 py-4 md:px-6"><span className="font-semibold text-slate-950">{row.symbol}</span><span className="ml-2 text-xs text-slate-400">{row.name}</span></td>
+                    <td className="px-4 py-4 font-medium text-slate-950">{displayPercent(row.weightPct)}</td>
+                    <td className="px-4 py-4">{row.originCount}</td>
+                    <td className="px-5 py-4 text-right text-xs md:px-6">{row.hasDirectOrigin && row.hasLookThroughOrigin ? 'Direct + fund' : row.hasLookThroughOrigin ? 'Multiple funds' : 'Multiple direct lots'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {!analysis?.overlaps?.length ? <p className="px-5 py-8 text-sm text-slate-500 md:px-6">No hidden overlap can be established from the constituent data currently available.</p> : null}
+          </div>
+        </div>
+
+        <div className="rounded-[24px] border border-slate-200 bg-white p-5 shadow-sm md:p-6">
+          <h3 className="text-base font-semibold text-slate-950">Concentration review</h3>
+          <div className="mt-4 space-y-3">
+            {(analysis?.concentrationSignals || []).slice(0, 8).map((signal) => (
+              <div key={`${signal.type}-${signal.label}`} className={`rounded-2xl border p-4 ${signal.severity === 'high' ? 'border-rose-200 bg-rose-50' : 'border-amber-200 bg-amber-50'}`}>
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-sm font-semibold text-slate-950">{signal.label}</span>
+                  <span className="text-sm font-semibold text-slate-950">{displayPercent(signal.weightPct)}</span>
+                </div>
+                <p className="mt-1 text-xs capitalize text-slate-500">{signal.type} · {signal.severity}</p>
+                <p className="mt-2 text-xs leading-5 text-slate-600">{signal.explanation}</p>
+              </div>
+            ))}
+            {analysis && !analysis.concentrationSignals.length ? <p className="text-sm leading-6 text-slate-500">No effective exposure crosses the current concentration review thresholds.</p> : null}
+            {!analysis ? <p className="text-sm leading-6 text-slate-500">Concentration signals require valid market values and available fund constituents. Missing information remains unavailable, never zero.</p> : null}
+          </div>
+          {analysis?.unresolved?.length ? <div className="mt-5 rounded-2xl bg-slate-50 p-4 text-xs leading-5 text-slate-600">{analysis.unresolved.length} fund or ETF position{analysis.unresolved.length === 1 ? '' : 's'} could not be fully resolved. Results are labelled partial rather than treated as complete.</div> : null}
+        </div>
+      </div>
+    </section>
+  );
+}
 
 function ScenarioLab({ analytics, scenario, customShocks, setCustomShocks, onPreset, onCustom, onSave }) {
   return <section><SectionTitle eyebrow="Forward risk, not prediction" title="Scenario laboratory" description="Apply transparent shocks to the actual current book. Results are arithmetic exposure estimates, not forecasts." icon={Target} /><div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">{presetScenarios.map((preset) => <button key={preset.name} onClick={() => onPreset(preset)} className={`${cardClass} p-5 text-left transition hover:-translate-y-0.5 hover:border-[#8bb8a9]`}><p className="text-xs font-bold uppercase tracking-[.14em] text-[#0f7562]">Preset</p><h3 className="mt-3 text-lg font-semibold">{preset.name}</h3><p className="mt-2 text-xs leading-5 text-[#75827d]">Apply defined country, asset, sector and currency shocks.</p></button>)}</div><div className="mt-6 grid gap-6 xl:grid-cols-[.8fr_1.2fr]"><Panel title="Custom shocks"><div className="mt-5 grid grid-cols-2 gap-4">{[['India','India market %'],['US','US market %'],['USD','USD/INR %'],['equities','All equities %']].map(([key,label]) => <label key={key} className="text-xs font-semibold text-[#61706b]">{label}<input type="number" step="1" value={customShocks[key]} onChange={(event) => setCustomShocks((current) => ({ ...current, [key]: event.target.value }))} className={`${inputClass} mt-1`} /></label>)}</div><button onClick={onCustom} className="mt-5 w-full bg-[#173b33] px-4 py-3 text-sm font-bold text-white">Run custom scenario</button></Panel><div className={`${cardClass} p-5`}>{scenario ? <><div className="flex items-center justify-between"><div><p className="text-[10px] font-bold uppercase tracking-[.18em] text-[#0f7562]">Scenario result</p><h3 className="mt-2 text-xl font-semibold">{scenario.name}</h3></div><button onClick={onSave} className="flex items-center gap-2 border border-[#d6ded8] px-3 py-2 text-xs font-semibold"><Save size={14} /> Save</button></div><div className="mt-6 grid grid-cols-3 gap-px bg-[#dfe4df]"><div className="bg-white p-4"><p className="text-[9px] uppercase text-[#7b8883]">Impact</p><p className={scenario.result.impact >= 0 ? 'mt-2 text-xl font-semibold text-[#087a62]' : 'mt-2 text-xl font-semibold text-[#b3483f]'}>{money(scenario.result.impact, true)}</p></div><div className="bg-white p-4"><p className="text-[9px] uppercase text-[#7b8883]">Impact %</p><p className="mt-2 text-xl font-semibold">{percent(scenario.result.impactPct)}</p></div><div className="bg-white p-4"><p className="text-[9px] uppercase text-[#7b8883]">Stressed value</p><p className="mt-2 text-xl font-semibold">{money(scenario.result.stressedValue, true)}</p></div></div><div className="mt-5 space-y-3">{scenario.result.positions.slice(0, 6).map((row) => <div key={row.symbol} className="flex items-center justify-between border-b border-[#edf0ed] pb-3 text-sm"><span>{row.symbol}</span><span className={row.impact >= 0 ? 'font-semibold text-[#087a62]' : 'font-semibold text-[#b3483f]'}>{money(row.impact)} · {percent(row.impactPct)}</span></div>)}</div></> : <div className="flex min-h-[310px] items-center justify-center text-center"><div><Target className="mx-auto text-[#0f7562]" size={32} /><p className="mt-4 font-semibold">Choose a scenario</p><p className="mt-2 text-sm text-[#78857f]">The result will show book-level and position-level impact.</p></div></div>}</div></div></section>;
