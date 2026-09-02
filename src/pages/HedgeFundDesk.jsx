@@ -376,7 +376,27 @@ export default function HedgeFundDesk() {
                                   const raw = cellOf(r, c);
                                   const v = n(raw);
                                   const cls = c.signed && v !== null ? (v > 0 ? 'hd-pos' : v < 0 ? 'hd-neg' : '') : '';
-                                  return <td key={c.key} className={cls}>{fmt(raw, c)}</td>;
+                                  // A price is only "last" if it was struck today.
+                                  // INDIASHLTR showed 648.55 against a 652.00 close
+                                  // because the row carried its 28 August price, and
+                                  // the column said Last price either way. Implied
+                                  // upside is target over this number and it ranks
+                                  // the screen, so a stale one misorders the table
+                                  // rather than just misreporting a cell.
+                                  const staleDays = c.key === 'price' ? n(r.price_stale_days) : null;
+                                  return (
+                                    <td key={c.key} className={cls}>
+                                      {fmt(raw, c)}
+                                      {staleDays > 0 ? (
+                                        <span
+                                          className="hd-flag hd-stale"
+                                          title={`Priced ${r.price_as_of?.slice(0, 10) || 'earlier'}, ${staleDays} day${staleDays === 1 ? '' : 's'} behind the rest of the universe`}
+                                        >
+                                          {staleDays}d old
+                                        </span>
+                                      ) : null}
+                                    </td>
+                                  );
                                 })}
                                 <td>{n(r.confidence) !== null ? n(r.confidence).toFixed(0) : '—'}</td>
                               </tr>
