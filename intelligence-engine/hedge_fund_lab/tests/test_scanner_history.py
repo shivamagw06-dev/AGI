@@ -261,12 +261,65 @@ class TestTradedClose:
     daily_market_history on 2026-08-19, 1,050 of 1,162 symbols differed and
     only 112 matched - RSDFIN at 152.44 against a true close of 96.15."""
 
-    def test_returns_the_last_traded_close(self, monkeypatch):
-        rows = [{"symbol": "RSDFIN", "close": 96.15}, {"symbol": "SUNTECK", "close": 294.25}]
+    def test_returns_the_last_traded_close_with_its_date(self, monkeypatch):
+        rows = [{"symbol": "RSDFIN", "close": 96.15, "date": "2026-09-02"},
+                {"symbol": "SUNTECK", "close": 294.25, "date": "2026-09-02"}]
         monkeypatch.setattr("institutional_warehouse.db.query", lambda *a, **k: rows)
         monkeypatch.setattr("institutional_warehouse.db.physical_table", lambda t: "t")
         out = scanner._latest_close_by_symbol()
-        assert out["RSDFIN"] == 96.15 and out["SUNTECK"] == 294.25
+        assert out["RSDFIN"]["close"] == 96.15
+        assert out["SUNTECK"]["close"] == 294.25
+        # The date travels with the price; without it a stale close is
+        # indistinguishable from a current one.
+        assert out["RSDFIN"]["as_of"] == "2026-09-02"
+
+    def test_a_symbol_left_behind_is_measurably_stale(self, monkeypatch):
+        """INDIASHLTR sat on its 2026-08-28 close while the rest moved on."""
+        rows = [{"symbol": "INDIASHLTR", "close": 648.55, "date": "2026-08-28"},
+                {"symbol": "SUNTECK", "close": 295.40, "date": "2026-09-02"}]
+        monkeypatch.setattr("institutional_warehouse.db.query", lambda *a, **k: rows)
+        monkeypatch.setattr("institutional_warehouse.db.physical_table", lambda t: "t")
+        out = scanner._latest_close_by_symbol()
+        high_water = scanner._market_last_close_date(out)
+        assert high_water == "2026-09-02"
+        assert scanner._price_stale_days(out["INDIASHLTR"]["as_of"], high_water) == 5
+        assert scanner._price_stale_days(out["SUNTECK"]["as_of"], high_water) == 0
+
+    def test_a_universe_wide_pause_is_not_staleness(self, monkeypatch):
+        """If nobody traded, the last trading day is not a stale price."""
+        rows = [{"symbol": "A", "close": 10.0, "date": "2026-08-28"},
+                {"symbol": "B", "close": 20.0, "date": "2026-08-28"}]
+        monkeypatch.setattr("institutional_warehouse.db.query", lambda *a, **k: rows)
+        monkeypatch.setattr("institutional_warehouse.db.physical_table", lambda t: "t")
+        out = scanner._latest_close_by_symbol()
+        hw = scanner._market_last_close_date(out)
+        assert all(scanner._price_stale_days(v["as_of"], hw) == 0 for v in out.values())
+
+    def test_the_query_actually_selects_the_date_column(self):
+        """The mocked rows carry a date; the real query has to ask for one.
+
+        Every test here feeds db.query rows that already contain `date`, so a
+        SELECT that omits it passes them all while returning a null as_of for
+        every symbol in production -- which is exactly what happened: price_source
+        reached the desk and price_as_of did not.
+        """
+        import inspect
+        src = inspect.getsource(scanner._latest_close_by_symbol__measured)
+        select = src[src.index("SELECT u.symbol"):src.index("JOIN latest")]
+        assert "u.date" in select, "the close's date must be selected, not just its value"
+
+    def test_a_row_without_a_date_yields_no_as_of(self, monkeypatch):
+        """Degrade to unknown rather than inventing a date."""
+        rows = [{"symbol": "A", "close": 10.0}]
+        monkeypatch.setattr("institutional_warehouse.db.query", lambda *a, **k: rows)
+        monkeypatch.setattr("institutional_warehouse.db.physical_table", lambda t: "t")
+        out = scanner._latest_close_by_symbol()
+        assert out["A"]["close"] == 10.0
+        assert out["A"]["as_of"] is None
+
+    def test_an_unknown_price_date_is_unknown_not_fresh(self):
+        assert scanner._price_stale_days(None, "2026-09-02") is None
+        assert scanner._price_stale_days("2026-09-02", None) is None
 
     def test_unusable_rows_are_skipped(self, monkeypatch):
         rows = [{"symbol": "A", "close": 0}, {"symbol": "", "close": 10.0},
