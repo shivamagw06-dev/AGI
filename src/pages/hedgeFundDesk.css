@@ -268,3 +268,17 @@
 
 /* Intraday screens publish a sizing chain; the table scrolls on narrow views. */
 .hd-readout-wrap { overflow-x: auto; }
+
+/* A price that is behind the rest of the universe. Warning-coloured rather
+   than error-coloured: the number is real, it is simply not today's. */
+.hd-table .hd-stale {
+  margin-left: 0.4rem;
+  font-size: 0.72em;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  border-color: #b7791f;
+  color: #b7791f;
+}
+@media (prefers-color-scheme: dark) {
+  .hd-table .hd-stale { border-color: #d69e2e; color: #d69e2e; }
+}
