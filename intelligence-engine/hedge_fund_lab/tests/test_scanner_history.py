@@ -261,12 +261,43 @@ class TestTradedClose:
     daily_market_history on 2026-08-19, 1,050 of 1,162 symbols differed and
     only 112 matched - RSDFIN at 152.44 against a true close of 96.15."""
 
-    def test_returns_the_last_traded_close(self, monkeypatch):
-        rows = [{"symbol": "RSDFIN", "close": 96.15}, {"symbol": "SUNTECK", "close": 294.25}]
+    def test_returns_the_last_traded_close_with_its_date(self, monkeypatch):
+        rows = [{"symbol": "RSDFIN", "close": 96.15, "date": "2026-09-02"},
+                {"symbol": "SUNTECK", "close": 294.25, "date": "2026-09-02"}]
         monkeypatch.setattr("institutional_warehouse.db.query", lambda *a, **k: rows)
         monkeypatch.setattr("institutional_warehouse.db.physical_table", lambda t: "t")
         out = scanner._latest_close_by_symbol()
-        assert out["RSDFIN"] == 96.15 and out["SUNTECK"] == 294.25
+        assert out["RSDFIN"]["close"] == 96.15
+        assert out["SUNTECK"]["close"] == 294.25
+        # The date travels with the price; without it a stale close is
+        # indistinguishable from a current one.
+        assert out["RSDFIN"]["as_of"] == "2026-09-02"
+
+    def test_a_symbol_left_behind_is_measurably_stale(self, monkeypatch):
+        """INDIASHLTR sat on its 2026-08-28 close while the rest moved on."""
+        rows = [{"symbol": "INDIASHLTR", "close": 648.55, "date": "2026-08-28"},
+                {"symbol": "SUNTECK", "close": 295.40, "date": "2026-09-02"}]
+        monkeypatch.setattr("institutional_warehouse.db.query", lambda *a, **k: rows)
+        monkeypatch.setattr("institutional_warehouse.db.physical_table", lambda t: "t")
+        out = scanner._latest_close_by_symbol()
+        high_water = scanner._market_last_close_date(out)
+        assert high_water == "2026-09-02"
+        assert scanner._price_stale_days(out["INDIASHLTR"]["as_of"], high_water) == 5
+        assert scanner._price_stale_days(out["SUNTECK"]["as_of"], high_water) == 0
+
+    def test_a_universe_wide_pause_is_not_staleness(self, monkeypatch):
+        """If nobody traded, the last trading day is not a stale price."""
+        rows = [{"symbol": "A", "close": 10.0, "date": "2026-08-28"},
+                {"symbol": "B", "close": 20.0, "date": "2026-08-28"}]
+        monkeypatch.setattr("institutional_warehouse.db.query", lambda *a, **k: rows)
+        monkeypatch.setattr("institutional_warehouse.db.physical_table", lambda t: "t")
+        out = scanner._latest_close_by_symbol()
+        hw = scanner._market_last_close_date(out)
+        assert all(scanner._price_stale_days(v["as_of"], hw) == 0 for v in out.values())
+
+    def test_an_unknown_price_date_is_unknown_not_fresh(self):
+        assert scanner._price_stale_days(None, "2026-09-02") is None
+        assert scanner._price_stale_days("2026-09-02", None) is None
 
     def test_unusable_rows_are_skipped(self, monkeypatch):
         rows = [{"symbol": "A", "close": 0}, {"symbol": "", "close": 10.0},
