@@ -953,6 +953,30 @@ def run(
 
     results: dict[str, Any] = {}
     errors: list[dict[str, str]] = []
+    completed: list[str] = []
+
+    def _checkpoint() -> None:
+        """Record progress after every stage, not once at the end.
+
+        Eight consecutive daily runs reported ok=False with an empty errors
+        list and a null finished_at, which is the row exactly as inserted. The
+        per-stage try/except below cannot produce that: a stage that raises is
+        caught and recorded. The run was therefore dying somewhere the loop
+        could not observe, and because nothing was written until the very end
+        there was no evidence of where.
+
+        Checkpointing costs one small UPDATE per stage and turns a silent death
+        into a record of the last stage that finished.
+        """
+        try:
+            db.execute(
+                "UPDATE wh_refresh_runs SET counts = ?, errors = ? WHERE id = ?",
+                (json.dumps({"stages_completed": completed}), json.dumps(errors), run_id),
+            )
+        except Exception:
+            # A failed checkpoint must never be the thing that fails the run.
+            pass
+
     for stage in wanted:
         try:
             results[stage] = runners[stage]()
@@ -961,8 +985,20 @@ def run(
         except Exception as exc:
             results[stage] = _fail(stage, str(exc))
             errors.append({"stage": stage, "error": str(exc)})
+        completed.append(stage)
+        _checkpoint()
 
-    counts = {tab: store.row_count(tab) for tab in [t for t in _tab_ids()]}
+    # Row counts scan every tab, daily_market_history among them at roughly
+    # seven million rows. That is a diagnostic, and it used to run before the
+    # finalising UPDATE, so if it were slow enough to be killed it would take
+    # the entire run record with it -- which matches eight runs that did all
+    # their work and then recorded none of it. It is now best-effort, and the
+    # run is marked finished either way.
+    try:
+        counts = {tab: store.row_count(tab) for tab in [t for t in _tab_ids()]}
+    except Exception as exc:
+        counts = {"error": f"row_count_failed:{exc}"[:200]}
+    counts["stages_completed"] = completed
     finished = now_iso()
     db.execute(
         "UPDATE wh_refresh_runs SET finished_at = ?, ok = ?, counts = ?, errors = ? WHERE id = ?",
