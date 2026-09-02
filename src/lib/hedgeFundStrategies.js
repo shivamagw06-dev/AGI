@@ -7,6 +7,12 @@
  * up on the page instead of silently disagreeing with the maths beside it.
  *
  * Scan ids come from /api/intelligence/hedge-fund-lab/terminal -> cards[].id.
+ *
+ * displayPrice says what the number actually is. The live Upstox/Groww tape
+ * only overlays a row while the snapshot is under twenty minutes old
+ * (live_prices.MAX_AGE_MINUTES); past that the desk shows the last daily
+ * close. Claiming "Live tape" unconditionally is how a 28 August price was
+ * read as the current one.
  */
 
 /** Sizing constants used by the position-sizing panel. */
@@ -39,7 +45,7 @@ export const LIVE_STRATEGIES = [
     family: 'Intraday',
     data: {
       rank: 'Live Alpha opening_range_expansion_v1',
-      displayPrice: 'Live tape',
+      displayPrice: 'Live tape, falling back to the last daily close',
       size: 'EOD ATR and ADV',
     },
     question: 'Is this expansion real, or noise inside the normal range?',
@@ -90,7 +96,7 @@ export const LIVE_STRATEGIES = [
     family: 'Intraday',
     data: {
       rank: 'Live Alpha intraday_mean_reversion_v1',
-      displayPrice: 'Live tape',
+      displayPrice: 'Live tape, falling back to the last daily close',
       size: 'EOD ATR and 1Y beta',
     },
     question: 'Is the mean stable, or has the level genuinely reset?',
@@ -136,7 +142,7 @@ export const LIVE_STRATEGIES = [
     family: 'Intraday',
     data: {
       rank: 'Live Alpha volume_liquidity_anomaly_v1',
-      displayPrice: 'Live tape',
+      displayPrice: 'Live tape, falling back to the last daily close',
       size: 'EOD 3m ADV',
     },
     question: 'Is this accumulation, distribution, or a single print?',
@@ -179,7 +185,7 @@ export const STRATEGIES = [
     family: 'Fundamental',
     data: {
       rank: 'Latest Upstox PE/PB vs industry median',
-      displayPrice: 'Live tape',
+      displayPrice: 'Live tape, falling back to the last daily close',
     },
     question: 'Is the discount a mispricing or a verdict?',
     edge: 'Multiple re-rating toward the industry median.',
@@ -235,7 +241,7 @@ export const STRATEGIES = [
     family: 'Fundamental',
     data: {
       rank: 'Annual ROE, margin, leverage',
-      displayPrice: 'Live tape',
+      displayPrice: 'Live tape, falling back to the last daily close',
     },
     question: 'Are the returns on capital durable, or a good year?',
     edge: 'Compounding returns on capital held through a full cycle.',
@@ -296,7 +302,7 @@ export const STRATEGIES = [
     family: 'Sell-side',
     data: {
       rank: 'Warehouse consensus coverage and buy share',
-      displayPrice: 'Live tape',
+      displayPrice: 'Live tape, falling back to the last daily close',
       derived: 'Target / last price = implied upside',
     },
     question: 'Where is sell-side agreement strongest, and what would break it?',
@@ -349,7 +355,7 @@ export const STRATEGIES = [
     family: 'Relative value',
     data: {
       rank: 'Latest Upstox multiples, same industry',
-      displayPrice: 'Live tape on each leg',
+      displayPrice: 'Live tape on each leg, falling back to the last daily close',
     },
     question: 'Is the gap between these two peers a mispricing or a real difference?',
     edge: 'Convergence of a valuation gap between industry peers.',
@@ -398,7 +404,7 @@ export const STRATEGIES = [
     family: 'Distress',
     data: {
       rank: 'Annual leverage/margin plus 1Y warehouse return',
-      displayPrice: 'Live tape',
+      displayPrice: 'Live tape, falling back to the last daily close',
     },
     question: 'Is this forced selling, or a business that is actually failing?',
     edge: 'Dislocation from forced selling and balance-sheet repair.',
@@ -442,7 +448,7 @@ export const STRATEGIES = [
     family: 'Intraday overlay',
     data: {
       rank: 'Session-fresh Live Alpha signals',
-      displayPrice: 'Live tape',
+      displayPrice: 'Live tape, falling back to the last daily close',
     },
     question: 'Does today\'s tape confirm or contradict the fundamental thesis?',
     edge: 'Intraday leadership, activity, breakout, dislocation and positioning.',
@@ -486,7 +492,7 @@ export const STRATEGIES = [
     family: 'Composite',
     data: {
       rank: 'Warehouse factor scores',
-      displayPrice: 'Live tape',
+      displayPrice: 'Live tape, falling back to the last daily close',
     },
     question: 'Which component is genuinely differentiated, and what invalidates the combination?',
     edge: 'Agreement across value, quality, growth and consensus.',
@@ -523,7 +529,7 @@ export const STRATEGIES = [
     family: 'Fundamental',
     data: {
       rank: 'Trailing Upstox PE vs forward PE',
-      displayPrice: 'Live tape',
+      displayPrice: 'Live tape, falling back to the last daily close',
     },
     question: 'Can the implied forward EPS growth actually be delivered?',
     edge: 'Forward EPS delivery against the trailing-to-forward P/E gap.',
@@ -576,7 +582,7 @@ export const STRATEGIES = [
     family: 'Income',
     data: {
       rank: 'Warehouse yield plus quality gates',
-      displayPrice: 'Live tape',
+      displayPrice: 'Live tape, falling back to the last daily close',
       derived: 'DPS / last price = displayed yield',
     },
     question: 'Is the yield covered by cash the business actually generates?',
