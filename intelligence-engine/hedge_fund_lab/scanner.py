@@ -422,8 +422,20 @@ def extreme_returns() -> list[dict[str, Any]]:
     return list(_LAST_EXTREMES)
 
 
-def _latest_close_by_symbol__measured() -> dict[str, float]:
-    """Last traded close per symbol, from the price table that records trades.
+def _latest_close_by_symbol__measured() -> dict[str, dict[str, Any]]:
+    """Last traded close per symbol, with the date that close was struck.
+
+    The date is not decoration. daily_market_history is written per symbol and
+    can fall behind for a subset of them while the rest stay current: on
+    2026-09-02 INDIASHLTR, SAFARI and STARCEMENT still carried their 2026-08-28
+    closes while RELIANCE, TCS, INFY and SUNTECK were up to date. Three of the
+    five names ranked on the Consensus Conviction screen were therefore priced
+    five days stale, and nothing said so, because the map returned a bare float
+    and the acceptance window below silently swallows anything inside a month.
+
+    A stale price is not only a wrong number on the page. Implied upside is
+    target over price, so it ranks the screen, and mixing prices struck on
+    different days corrupts the ordering rather than just one cell.
 
     historical_valuation carries its own `cmp`, and it does not agree with the
     market. Compared against daily_market_history on 2026-08-19, 1,050 of 1,162
@@ -447,7 +459,10 @@ def _latest_close_by_symbol__measured() -> dict[str, float]:
                     WHERE COALESCE(sys_published, 1) = 1
                       -- The latest close per symbol needs recent bars only.
                       -- Unbounded this scans all 7.1m rows, measured at 63
-                      -- seconds; a fortnight of slack covers a long holiday.
+                      -- seconds. The window is slack for a long holiday, not
+                      -- a freshness guarantee: a close from inside it can still
+                      -- be days behind the rest of the universe, so staleness
+                      -- is judged against the market high-water mark instead.
                       AND date >= date('now', '-{LATEST_CLOSE_WINDOW_DAYS} day')
                       AND close IS NOT NULL AND close > 0
                       AND CAST(strftime('%w', date) AS INTEGER) BETWEEN 1 AND 5
@@ -458,13 +473,26 @@ def _latest_close_by_symbol__measured() -> dict[str, float]:
         ) or []
     except Exception:
         return {}
-    out: dict[str, float] = {}
+    out: dict[str, dict[str, Any]] = {}
     for row in rows:
         symbol = str(row.get("symbol") or "").upper()
         close = _num(row.get("close"))
+        as_of = str(row.get("date") or "") or None
         if symbol and close and close > 0:
-            out[symbol] = close
+            out[symbol] = {"close": close, "as_of": as_of}
     return out
+
+
+def _market_last_close_date(closes: dict[str, dict[str, Any]]) -> Optional[str]:
+    """The newest close date anyone has, used as the market's own high-water mark.
+
+    Derived from the data rather than from a holiday calendar: if the whole
+    universe stops on a Friday that is simply the last trading day, and nothing
+    should be called stale for it. A symbol is behind only when other symbols
+    have moved on without it.
+    """
+    dates = [str(v.get("as_of")) for v in closes.values() if v.get("as_of")]
+    return max(dates) if dates else None
 
 
 def _legacy_consensus(ticker: str) -> dict[str, Any]:
@@ -474,6 +502,25 @@ def _legacy_consensus(ticker: str) -> dict[str, Any]:
         return consensus_row(ticker) or {}
     except Exception:
         return {}
+
+
+def _price_stale_days(price_as_of: Any, market_last_close: Any) -> Optional[int]:
+    """Calendar days between this price and the newest close in the universe.
+
+    Zero is current. None means it cannot be judged -- an unknown price date or
+    an empty universe -- which is reported as unknown rather than as fresh,
+    because defaulting to fresh is what let a five-day-old close through.
+    """
+    left, right = str(price_as_of or ""), str(market_last_close or "")
+    if len(left) < 10 or len(right) < 10:
+        return None
+    try:
+        from datetime import date as _date
+        a = _date(*map(int, left[:10].split("-")))
+        b = _date(*map(int, right[:10].split("-")))
+    except (TypeError, ValueError):
+        return None
+    return max(0, (b - a).days)
 
 
 def _map_warehouse_row(
@@ -557,6 +604,14 @@ def _map_warehouse_row(
         "industry_dna": mi.get("industry_dna"),
         "market_cap": _num(mi.get("market_cap")),
         "price": _num(mi.get("cmp")),
+        # The date the price was struck, and how far behind the rest of the
+        # universe it is. Both were read downstream and never written here, so
+        # the payload reported price_as_of: None for every row and a stale
+        # close looked exactly like a current one.
+        "price_as_of": mi.get("price_as_of"),
+        "price_source": mi.get("price_source"),
+        "price_stale_days": _price_stale_days(mi.get("price_as_of"),
+                                              mi.get("market_last_close")),
         "pe": _num(mi.get("pe")),
         "forward_pe": _num(mi.get("forward_pe")),
         "pb": _num(mi.get("pb")),
@@ -672,6 +727,7 @@ def _universe_from_warehouse() -> list[dict[str, Any]]:
     # The traded close, which historical_valuation.cmp disagrees with for about
     # 90% of symbols.
     closes = _latest_close_by_symbol()
+    market_last_close = _market_last_close_date(closes)
 
     # Soft-fill buy_count / forward_pe from warehouse tabs when CapIQ file store is thin.
     wh_consensus: dict[str, dict[str, Any]] = {}
@@ -734,7 +790,14 @@ def _universe_from_warehouse() -> list[dict[str, Any]]:
                 **mi,
                 "valuation_date": pack.get("valuation_date"),
                 # Traded close wins over the valuation table's own cmp.
-                "cmp": closes.get(sym) or mi.get("cmp"),
+                "cmp": (closes.get(sym) or {}).get("close") or mi.get("cmp"),
+                # Carried so the desk can say when the price was struck. Absent
+                # this the payload returned price_as_of: None and a five-day-old
+                # close was indistinguishable from today's.
+                "price_as_of": (closes.get(sym) or {}).get("as_of"),
+                "price_source": ("daily_market_history" if (closes.get(sym) or {}).get("close")
+                                 else "historical_valuation.cmp"),
+                "market_last_close": market_last_close,
                 "forward_pe": (
                     mi.get("forward_pe")
                     if mi.get("forward_pe") is not None
@@ -1097,6 +1160,10 @@ def _base(row: dict[str, Any]) -> dict[str, Any]:
         "price": row.get("price"),
         "price_source": row.get("price_source"),
         "price_as_of": row.get("price_as_of"),
+        # 0 is current; a positive value means this price is that many days
+        # behind the newest close in the universe. None means unknown, which is
+        # deliberately not the same as fresh.
+        "price_stale_days": row.get("price_stale_days"),
         "consensus_upside": consensus.get("upside"),
         "coverage": consensus.get("coverage"),
         "buy": consensus.get("buy_count") or consensus.get("buy"),
@@ -1724,7 +1791,7 @@ def daily_monitor(limit: int = 6) -> dict[str, Any]:
 # A builder that settles back to its starting RSS can still have held two full
 # copies at once, and an 8 GB ceiling cannot absorb that.
 
-def _latest_close_by_symbol() -> dict[str, float]:
+def _latest_close_by_symbol() -> dict[str, dict[str, Any]]:
     from observability import memory_stages as ms
 
     with ms.stage("desk_latest_price_map") as detail:
