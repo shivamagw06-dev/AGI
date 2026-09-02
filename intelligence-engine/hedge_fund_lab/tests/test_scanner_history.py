@@ -295,6 +295,28 @@ class TestTradedClose:
         hw = scanner._market_last_close_date(out)
         assert all(scanner._price_stale_days(v["as_of"], hw) == 0 for v in out.values())
 
+    def test_the_query_actually_selects_the_date_column(self):
+        """The mocked rows carry a date; the real query has to ask for one.
+
+        Every test here feeds db.query rows that already contain `date`, so a
+        SELECT that omits it passes them all while returning a null as_of for
+        every symbol in production -- which is exactly what happened: price_source
+        reached the desk and price_as_of did not.
+        """
+        import inspect
+        src = inspect.getsource(scanner._latest_close_by_symbol__measured)
+        select = src[src.index("SELECT u.symbol"):src.index("JOIN latest")]
+        assert "u.date" in select, "the close's date must be selected, not just its value"
+
+    def test_a_row_without_a_date_yields_no_as_of(self, monkeypatch):
+        """Degrade to unknown rather than inventing a date."""
+        rows = [{"symbol": "A", "close": 10.0}]
+        monkeypatch.setattr("institutional_warehouse.db.query", lambda *a, **k: rows)
+        monkeypatch.setattr("institutional_warehouse.db.physical_table", lambda t: "t")
+        out = scanner._latest_close_by_symbol()
+        assert out["A"]["close"] == 10.0
+        assert out["A"]["as_of"] is None
+
     def test_an_unknown_price_date_is_unknown_not_fresh(self):
         assert scanner._price_stale_days(None, "2026-09-02") is None
         assert scanner._price_stale_days("2026-09-02", None) is None
