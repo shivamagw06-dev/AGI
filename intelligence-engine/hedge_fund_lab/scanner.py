@@ -468,7 +468,13 @@ def _latest_close_by_symbol__measured() -> dict[str, dict[str, Any]]:
                       AND CAST(strftime('%w', date) AS INTEGER) BETWEEN 1 AND 5
                 ),
                 latest AS (SELECT symbol, MAX(date) AS d FROM usable GROUP BY symbol)
-                SELECT u.symbol, u.close FROM usable u
+                -- u.date is selected because the caller records when the
+                -- close was struck. Without it every row came back with a
+                -- null as_of, price_stale_days could not be computed at all,
+                -- and a five-day-old close stayed indistinguishable from a
+                -- current one -- the exact failure this query was changed to
+                -- expose.
+                SELECT u.symbol, u.close, u.date FROM usable u
                 JOIN latest l ON u.symbol = l.symbol AND u.date = l.d"""
         ) or []
     except Exception:
