@@ -95,11 +95,35 @@ ALTER TABLE public.client_portfolio_holdings
   ADD COLUMN IF NOT EXISTS is_active boolean NOT NULL DEFAULT true,
   ADD COLUMN IF NOT EXISTS closed_at timestamptz;
 
+-- NOT VALID on purpose. asset_type already exists in production, so this
+-- constraint meets rows written long before the vocabulary was defined. A
+-- validated constraint would scan them all and fail on the first unknown
+-- value with an error naming no row, turning a deploy into a hunt.
+--
+-- NOT VALID constrains every insert and update from now on while leaving
+-- existing rows alone, which is what makes this safe to ship before the data
+-- is audited. Nothing is silently converted: legacy values stay exactly as
+-- they are until somebody looks at them and decides.
+--
+-- Once the audit below returns nothing, run:
+--
+--   ALTER TABLE public.client_portfolio_holdings
+--     VALIDATE CONSTRAINT client_portfolio_holdings_asset_type_known;
+--
+--   SELECT id, user_id, symbol, isin, asset_type
+--     FROM public.client_portfolio_holdings
+--    WHERE asset_type IS NOT NULL
+--      AND asset_type NOT IN ('EQUITY','ETF','MUTUAL_FUND','BOND','REIT',
+--                             'INVIT','CASH','OTHER');
+--
+-- NULL is not listed there because a CHECK passes on NULL: an untyped holding
+-- is permitted and is a separate question from a wrongly typed one.
 ALTER TABLE public.client_portfolio_holdings
   DROP CONSTRAINT IF EXISTS client_portfolio_holdings_asset_type_known;
 ALTER TABLE public.client_portfolio_holdings
   ADD CONSTRAINT client_portfolio_holdings_asset_type_known CHECK (
-    asset_type IN ('EQUITY','ETF','MUTUAL_FUND','BOND','REIT','INVIT','CASH','OTHER'));
+    asset_type IN ('EQUITY','ETF','MUTUAL_FUND','BOND','REIT','INVIT','CASH','OTHER'))
+  NOT VALID;
 
 -- One row per security per connection. The same stock held at two brokers is
 -- two lots and stays two lots -- merging them at write time would destroy the
