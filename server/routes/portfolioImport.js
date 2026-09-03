@@ -6,11 +6,16 @@
  * arbitrary rows to a confirm endpoint can write any position into a
  * portfolio. The authoritative plan is the one the server stored.
  *
- * Nothing about the uploaded document survives the request. The bytes are held
- * in memory, passed to the engine, and dropped. The password is never written
- * anywhere and never appears in a log line or an error body — every failure
- * here is a code from a fixed list, so no underlying message can leak the
- * input by being helpful.
+ * The document and the password are not persisted and not logged, and their
+ * references are discarded promptly. That is the accurate claim: the buffer is
+ * overwritten and dereferenced once the engine has answered, but a JavaScript
+ * string cannot be reliably zeroed, and neither can copies the runtime may have
+ * made. Nothing here guarantees erasure from memory, and it would be wrong to
+ * say otherwise.
+ *
+ * What is guaranteed is that neither reaches storage or a log. Every failure is
+ * a code from a fixed list, so no underlying message can leak the input by
+ * being helpful.
  *
  * The upload is multipart/form-data. Base64 in JSON was the first design and
  * was wrong: it inflates the document by a third, forces Express to
@@ -137,9 +142,15 @@ export function createPortfolioImportRouter({ requireUser, engineFetch, db }) {
         if (error?.name === 'AbortError') return fail(res, 504, 'parse_timeout');
         return fail(res, 502, 'parse_failed');
       } finally {
-        // Drop both references so neither the document nor the password lives
-        // as long as the request object does.
-        if (req.file) req.file.buffer = null;
+        // Overwrite the document before dropping it. A Buffer can be zeroed,
+        // which is worth doing while the page is still ours; the password is a
+        // string and cannot be, so it is only dereferenced. Neither is erasure
+        // from memory in any strong sense - it shortens the window, and that is
+        // all it claims to do.
+        if (req.file?.buffer) {
+          try { req.file.buffer.fill(0); } catch { /* already detached */ }
+          req.file.buffer = null;
+        }
         req.casPassword = '';
       }
 

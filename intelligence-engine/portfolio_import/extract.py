@@ -3,10 +3,12 @@
 Three rules this module exists to enforce, because they are easy to state and
 easy to violate accidentally:
 
-* The password is used and dropped. It is never written to a table, a log, a
-  temp file, or an exception message. A traceback that quotes the password
-  turns an error report into a credential leak, so failures here name the
-  failure and not the input.
+* The password is not persisted and not logged: never written to a table, a
+  log, a temp file, or an exception message. A traceback quoting it would turn
+  an error report into a credential leak, so failures here name the failure and
+  not the input. It is dropped when the request ends, which is not the same as
+  being erased from memory -- a Python str cannot be reliably zeroed, and this
+  module does not pretend otherwise.
 * Extraction is in memory. The bytes arrive, the text comes out, and nothing
   touches disk. There is no temp file to forget to delete.
 * Nothing here writes to the warehouse. Parsing produces a result for a human

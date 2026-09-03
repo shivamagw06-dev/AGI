@@ -95,14 +95,125 @@ jobs:
           GRANT USAGE ON SCHEMA public, auth TO authenticated, service_role, anon;
           SQL
 
-      - name: Apply the migration chain from empty
+      - name: Apply the full migration history to a blank database
         run: |
           set -euo pipefail
           shopt -s nullglob
+          # The database is the service container's fresh one. Nothing has been
+          # applied to it, so this exercises the whole history in order rather
+          # than whatever state a long-lived environment happens to be in.
+          count=0
           for file in $(ls supabase/migrations/*.sql | sort); do
             echo "  applying $(basename "$file")"
             psql -v ON_ERROR_STOP=1 -q -f "$file"
+            count=$((count + 1))
           done
+          echo "  applied $count migrations"
+          if [ "$count" -eq 0 ]; then
+            echo "::error::no migrations were found to apply"
+            exit 1
+          fi
+
+      - name: Verify the schema the migrations were supposed to build
+        run: |
+          set -euo pipefail
+          # A migration can apply cleanly and still not create what a later
+          # step depends on -- an IF NOT EXISTS that silently matched
+          # something else, or a file that was never added to the chain. These
+          # assertions run before pgTAP so a missing object is reported as a
+          # missing object rather than as a confusing test failure.
+          psql -v ON_ERROR_STOP=1 <<'SQL'
+          DO $$
+          DECLARE
+            missing text[] := ARRAY[]::text[];
+            expected_tables text[] := ARRAY[
+              'client_portfolios', 'client_portfolio_holdings',
+              'portfolio_imports', 'portfolio_import_review',
+              'broker_connections', 'broker_connection_secrets'];
+            expected_functions text[] := ARRAY[
+              'create_cas_import_plan', 'confirm_cas_import', 'discard_cas_import'];
+            expected_columns text[][] := ARRAY[
+              ARRAY['client_portfolios', 'portfolio_version'],
+              ARRAY['portfolio_imports', 'base_portfolio_version'],
+              ARRAY['portfolio_imports', 'expires_at'],
+              ARRAY['portfolio_imports', 'statement_fingerprint'],
+              ARRAY['client_portfolio_holdings', 'source'],
+              ARRAY['client_portfolio_holdings', 'is_active'],
+              ARRAY['client_portfolio_holdings', 'broker_connection_id']];
+            expected_indexes text[] := ARRAY[
+              'client_portfolio_holdings_broker_lot_idx',
+              'portfolio_imports_fingerprint_once'];
+            expected_constraints text[] := ARRAY[
+              'client_portfolio_holdings_asset_type_known',
+              'portfolio_imports_status_known',
+              'broker_connections_broker_known'];
+            item text;
+          BEGIN
+            FOREACH item IN ARRAY expected_tables LOOP
+              IF to_regclass('public.' || item) IS NULL THEN
+                missing := missing || ('table ' || item);
+              END IF;
+            END LOOP;
+
+            FOREACH item IN ARRAY expected_functions LOOP
+              IF NOT EXISTS (
+                SELECT 1 FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace
+                 WHERE n.nspname = 'public' AND p.proname = item
+              ) THEN
+                missing := missing || ('function ' || item);
+              END IF;
+            END LOOP;
+
+            FOR i IN 1 .. array_length(expected_columns, 1) LOOP
+              IF NOT EXISTS (
+                SELECT 1 FROM information_schema.columns
+                 WHERE table_schema = 'public'
+                   AND table_name = expected_columns[i][1]
+                   AND column_name = expected_columns[i][2]
+              ) THEN
+                missing := missing
+                  || ('column ' || expected_columns[i][1] || '.' || expected_columns[i][2]);
+              END IF;
+            END LOOP;
+
+            FOREACH item IN ARRAY expected_indexes LOOP
+              IF NOT EXISTS (
+                SELECT 1 FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
+                 WHERE n.nspname = 'public' AND c.relname = item
+              ) AND NOT EXISTS (
+                SELECT 1 FROM pg_constraint WHERE conname = item
+              ) THEN
+                missing := missing || ('index or constraint ' || item);
+              END IF;
+            END LOOP;
+
+            FOREACH item IN ARRAY expected_constraints LOOP
+              IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = item) THEN
+                missing := missing || ('constraint ' || item);
+              END IF;
+            END LOOP;
+
+            -- The secrets table must have no policy for the browser role. RLS
+            -- hides rows, not columns, which is why the tokens live here at
+            -- all; a policy appearing on it would undo that.
+            IF EXISTS (
+              SELECT 1 FROM pg_policies
+               WHERE schemaname = 'public' AND tablename = 'broker_connection_secrets'
+                 AND 'authenticated' = ANY (roles)
+            ) THEN
+              missing := missing || 'broker_connection_secrets is readable by authenticated';
+            END IF;
+
+            IF array_length(missing, 1) IS NOT NULL THEN
+              RAISE EXCEPTION 'schema verification failed: %', array_to_string(missing, ', ');
+            END IF;
+
+            RAISE NOTICE 'schema verified: % tables, % functions, % columns',
+              array_length(expected_tables, 1), array_length(expected_functions, 1),
+              array_length(expected_columns, 1);
+          END;
+          $$;
+          SQL
 
       - name: RPC behaviour, isolation and rollback
         run: |
