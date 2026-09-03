@@ -1,0 +1,60 @@
+-- What hosted Supabase provides and a bare Postgres does not.
+--
+-- The migrations reference auth.uid(), auth.jwt(), auth.role(), auth.users and
+-- the authenticated / service_role / anon roles. These are recreated with the
+-- same shapes and the same semantics, not as stubs that merely satisfy a
+-- parser: auth.uid() really does read request.jwt.claims, which is how the
+-- tests switch identity and how RLS then behaves exactly as it will in
+-- production.
+
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+CREATE EXTENSION IF NOT EXISTS pgtap;
+CREATE EXTENSION IF NOT EXISTS vector;
+
+DO $$ BEGIN
+  CREATE ROLE authenticated NOLOGIN;
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+DO $$ BEGIN
+  CREATE ROLE service_role NOLOGIN BYPASSRLS;
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+DO $$ BEGIN
+  CREATE ROLE anon NOLOGIN;
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+CREATE SCHEMA IF NOT EXISTS auth;
+
+CREATE TABLE IF NOT EXISTS auth.users (
+  id    uuid PRIMARY KEY,
+  email text
+);
+
+-- Supabase resolves these from the request JWT claims, which the tests set
+-- with set_config. This is that behaviour, not a different one.
+CREATE OR REPLACE FUNCTION auth.uid() RETURNS uuid
+LANGUAGE sql STABLE AS $fn$
+  SELECT NULLIF(current_setting('request.jwt.claims', true)::json->>'sub', '')::uuid;
+$fn$;
+
+CREATE OR REPLACE FUNCTION auth.jwt() RETURNS jsonb
+LANGUAGE sql STABLE AS $fn$
+  SELECT COALESCE(
+    NULLIF(current_setting('request.jwt.claims', true), '')::jsonb,
+    '{}'::jsonb);
+$fn$;
+
+CREATE OR REPLACE FUNCTION auth.role() RETURNS text
+LANGUAGE sql STABLE AS $fn$
+  SELECT COALESCE(
+    NULLIF(current_setting('request.jwt.claims', true)::json->>'role', ''),
+    'anon');
+$fn$;
+
+CREATE OR REPLACE FUNCTION auth.email() RETURNS text
+LANGUAGE sql STABLE AS $fn$
+  SELECT NULLIF(current_setting('request.jwt.claims', true)::json->>'email', '');
+$fn$;
+
+GRANT USAGE ON SCHEMA public, auth TO authenticated, service_role, anon;
+GRANT SELECT ON auth.users TO authenticated, service_role;

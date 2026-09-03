@@ -65,41 +65,11 @@ jobs:
       - name: Stand up the Supabase shims this schema expects
         run: |
           set -euo pipefail
-          # The migrations reference auth.uid(), auth.users and the service_role
-          # and authenticated roles. Hosted Supabase provides them; a bare
-          # Postgres does not, so they are recreated with the same shapes.
-          psql -v ON_ERROR_STOP=1 <<'SQL'
-          CREATE EXTENSION IF NOT EXISTS pgtap;
-          CREATE EXTENSION IF NOT EXISTS pgcrypto;
-
-          DO $$ BEGIN
-            CREATE ROLE authenticated NOLOGIN;
-          EXCEPTION WHEN duplicate_object THEN NULL; END $$;
-          DO $$ BEGIN
-            CREATE ROLE service_role NOLOGIN BYPASSRLS;
-          EXCEPTION WHEN duplicate_object THEN NULL; END $$;
-          DO $$ BEGIN
-            CREATE ROLE anon NOLOGIN;
-          EXCEPTION WHEN duplicate_object THEN NULL; END $$;
-
-          CREATE SCHEMA IF NOT EXISTS auth;
-          CREATE TABLE IF NOT EXISTS auth.users (
-            id uuid PRIMARY KEY,
-            email text
-          );
-
-          -- Supabase resolves auth.uid() from the request JWT claims, which
-          -- tests set with set_config. This is that function, not a stub with
-          -- different behaviour.
-          CREATE OR REPLACE FUNCTION auth.uid() RETURNS uuid
-          LANGUAGE sql STABLE AS $fn$
-            SELECT NULLIF(
-              current_setting('request.jwt.claims', true)::json->>'sub', ''
-            )::uuid;
-          $fn$;
-
-          GRANT USAGE ON SCHEMA public, auth TO authenticated, service_role, anon;
-          SQL
+          # One file, used here and by the full-chain probe below, so the two
+          # cannot drift apart and report different failures for the same
+          # missing function.
+          psql -v ON_ERROR_STOP=1 -q -f supabase/tests/supabase_shims.sql
+          echo "  shims applied"
 
       - name: Create the base tables the chain alters but never creates
         run: |
@@ -305,8 +275,7 @@ jobs:
           sudo -u postgres dropdb --if-exists chain_probe
           sudo -u postgres createdb chain_probe
           export PGDATABASE=chain_probe
-          psql -q -c 'CREATE EXTENSION IF NOT EXISTS pgcrypto;' >/dev/null 2>&1 || true
-          psql -q -c 'CREATE EXTENSION IF NOT EXISTS vector;' >/dev/null 2>&1 || true
+          psql -q -f supabase/tests/supabase_shims.sql >/dev/null 2>&1 || true
           psql -q -f supabase/tests/bootstrap_base_tables.sql >/dev/null 2>&1 || true
           applied=0
           failed=""
