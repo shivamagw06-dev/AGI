@@ -27,7 +27,7 @@ import multer from 'multer';
 
 import {
   CLIENT_SAFE_ERRORS, MAX_PDF_BYTES, PARSE_TIMEOUT_MS, PLAN_TTL_MINUTES,
-  checkUpload, cleanSelection,
+  checkUpload, cleanSelection, redactBody, uploadErrorCode,
 } from './portfolioImportGuards.js';
 
 /**
@@ -39,8 +39,35 @@ import {
  */
 const upload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: MAX_PDF_BYTES, files: 1, fields: 8 },
+  limits: {
+    fileSize: MAX_PDF_BYTES,
+    files: 1,          // exactly one document
+    parts: 4,          // the file plus at most three small fields
+    fields: 3,         // password, portfolio_id, and room for one more
+    fieldSize: 512,    // a password, not a payload
+    fieldNameSize: 64,
+    headerPairs: 32,
+  },
 }).single('statement');
+
+/**
+ * Keep the request body away from anything that logs bodies.
+ *
+ * redactBody is only useful if it runs before a logger sees the object, and
+ * APM agents commonly capture req.body from instrumentation that runs ahead of
+ * ordinary middleware. So the raw body is replaced on the request itself: by
+ * the time any downstream logger or tracer reads req.body, the password is
+ * already gone, and there is no ordering to get right.
+ */
+function scrubRequest(req, _res, next) {
+  if (req.body && typeof req.body === 'object') {
+    req.body = redactBody(req.body);
+  }
+  // Marks the request for log processors that honour it, and is harmless
+  // where nothing reads it.
+  req.suppressBodyCapture = true;
+  next();
+}
 
 /** Codes are returned; underlying messages never are. */
 function fail(res, status, code) {
@@ -65,11 +92,16 @@ export function createPortfolioImportRouter({ requireUser, engineFetch, db }) {
 
   /** multer's own errors, translated into codes a client may see. */
   const receive = (req, res, next) => upload(req, res, (err) => {
-    if (!err) return next();
-    const code = err.code === 'LIMIT_FILE_SIZE' ? 'file_too_large'
-      : err.code === 'LIMIT_UNEXPECTED_FILE' ? 'no_file'
-      : 'upload_failed';
-    return fail(res, code === 'file_too_large' ? 413 : 400, code);
+    if (err) {
+      const code = uploadErrorCode(err);
+      return fail(res, code === 'file_too_large' ? 413 : 400, code);
+    }
+    // Lift the two fields we need, then scrub. Everything downstream sees a
+    // body with no password in it.
+    req.casPassword = typeof req.body?.password === 'string' ? req.body.password : '';
+    req.casPortfolioId = typeof req.body?.portfolio_id === 'string'
+      ? req.body.portfolio_id : null;
+    return scrubRequest(req, res, next);
   });
 
   /** Parse a statement and store the plan. Writes no holdings. */
@@ -84,10 +116,10 @@ export function createPortfolioImportRouter({ requireUser, engineFetch, db }) {
         return fail(res, decoded.error === 'file_too_large' ? 413 : 415, decoded.error);
       }
 
-      // Read once. Never stored, never logged, never echoed.
-      const password = typeof req.body?.password === 'string' ? req.body.password : '';
-      const portfolioId = typeof req.body?.portfolio_id === 'string'
-        ? req.body.portfolio_id : null;
+      // Lifted in `receive` before the body was scrubbed. Never stored,
+      // never logged, never echoed.
+      const password = req.casPassword || '';
+      const portfolioId = req.casPortfolioId;
 
       let parsed;
       try {
@@ -105,9 +137,10 @@ export function createPortfolioImportRouter({ requireUser, engineFetch, db }) {
         if (error?.name === 'AbortError') return fail(res, 504, 'parse_timeout');
         return fail(res, 502, 'parse_failed');
       } finally {
-        // Drop our reference so the buffer is collectable rather than living
+        // Drop both references so neither the document nor the password lives
         // as long as the request object does.
         if (req.file) req.file.buffer = null;
+        req.casPassword = '';
       }
 
       if (!parsed?.ok) {

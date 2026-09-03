@@ -8,7 +8,7 @@
 -- resolves it, so the policies and the functions see a real identity.
 
 BEGIN;
-SELECT plan(27);
+SELECT plan(34);
 
 -- ---------------------------------------------------------------------------
 -- Fixtures: two users, so isolation can be asserted rather than assumed.
@@ -262,6 +262,77 @@ SELECT is(
       AND p.proname IN ('create_cas_import_plan','confirm_cas_import','discard_cas_import')
       AND pg_get_functiondef(p.oid) LIKE '%broker_connection_secrets%'), 0::bigint,
   'no import function reads the secrets table');
+
+-- ---------------------------------------------------------------------------
+-- Rollback. A function body is one statement to the caller, so a failure on a
+-- later action must undo the earlier ones. This needs no second session:
+-- Postgres rolls the whole call back, and pgTAP's throws_ok wraps it in a
+-- subtransaction so the outer test survives to inspect the wreckage.
+-- ---------------------------------------------------------------------------
+DO $$
+DECLARE v_id uuid;
+BEGIN
+  -- Two adds. The first is valid; the second carries an asset_type the CHECK
+  -- constraint rejects, so it fails after the first has already been written.
+  INSERT INTO public.portfolio_imports (
+    user_id, portfolio_id, source_type, statement_date, statement_fingerprint,
+    plan_summary, status, expires_at, base_portfolio_version)
+  VALUES (
+    '11111111-1111-1111-1111-111111111111',
+    'aaaaaaaa-0000-0000-0000-000000000001',
+    'NSDL', DATE '2026-08-31', 'fp-rollback',
+    jsonb_build_object(
+      'source', 'NSDL',
+      'adds', jsonb_build_array(
+        jsonb_build_object('row_id', 'good-1',
+          'holding', jsonb_build_object('isin', 'INE123A01016', 'name', 'Written first',
+                                        'quantity', 5, 'asset_type', 'EQUITY')),
+        jsonb_build_object('row_id', 'bad-1',
+          'holding', jsonb_build_object('isin', 'INE456A01017', 'name', 'Fails the check',
+                                        'quantity', 5, 'asset_type', 'NOT_AN_ASSET_TYPE'))),
+      'updates', '[]'::jsonb, 'closures', '[]'::jsonb, 'review_queue', '[]'::jsonb),
+    'parsed', now() + interval '1 hour',
+    (SELECT portfolio_version FROM public.client_portfolios
+      WHERE id = 'aaaaaaaa-0000-0000-0000-000000000001'))
+  RETURNING id INTO v_id;
+  CREATE TEMP TABLE rb AS
+    SELECT v_id AS id,
+           (SELECT portfolio_version FROM public.client_portfolios
+             WHERE id = 'aaaaaaaa-0000-0000-0000-000000000001') AS version_before,
+           (SELECT count(*) FROM public.client_portfolio_holdings
+             WHERE portfolio_id = 'aaaaaaaa-0000-0000-0000-000000000001') AS holdings_before,
+           (SELECT count(*) FROM public.portfolio_import_review) AS review_before;
+END;
+$$;
+
+SELECT throws_ok(
+  format('SELECT public.confirm_cas_import(%L::uuid, ARRAY[''good-1'',''bad-1''])',
+         (SELECT id FROM rb)),
+  '23514', 'a constraint failure on a later action raises');
+
+SELECT is((SELECT count(*) FROM public.client_portfolio_holdings
+            WHERE portfolio_id = 'aaaaaaaa-0000-0000-0000-000000000001'),
+          (SELECT holdings_before FROM rb),
+          'the earlier holding was rolled back, not left behind');
+
+SELECT is((SELECT count(*) FROM public.client_portfolio_holdings
+            WHERE asset_name = 'Written first'), 0::bigint,
+          'the row written before the failure is gone');
+
+SELECT is((SELECT portfolio_version FROM public.client_portfolios
+            WHERE id = 'aaaaaaaa-0000-0000-0000-000000000001'),
+          (SELECT version_before FROM rb),
+          'portfolio_version was not incremented');
+
+SELECT is((SELECT status FROM public.portfolio_imports WHERE id = (SELECT id FROM rb)),
+          'parsed', 'the plan remains unconfirmed and can be retried');
+
+SELECT is((SELECT confirmed_at FROM public.portfolio_imports WHERE id = (SELECT id FROM rb)),
+          NULL, 'no confirmation timestamp was recorded');
+
+SELECT is((SELECT count(*) FROM public.portfolio_import_review),
+          (SELECT review_before FROM rb),
+          'audit and review rows were rolled back too');
 
 SELECT * FROM finish();
 ROLLBACK;

@@ -90,6 +90,26 @@ export function redactBody(body) {
   return out;
 }
 
+/**
+ * Translate a multer error into a code a client may see.
+ *
+ * Only `code` is read. Multer attaches the offending `field`, and for a
+ * field-size violation the value itself, so returning the error or its message
+ * would hand back the very input this endpoint exists to keep quiet about.
+ */
+export function uploadErrorCode(error) {
+  switch (error?.code) {
+    case 'LIMIT_FILE_SIZE': return 'file_too_large';
+    case 'LIMIT_UNEXPECTED_FILE': return 'no_file';
+    case 'LIMIT_FIELD_VALUE':
+    case 'LIMIT_FIELD_KEY': return 'field_too_large';
+    case 'LIMIT_PART_COUNT':
+    case 'LIMIT_FIELD_COUNT':
+    case 'LIMIT_FILE_COUNT': return 'too_many_fields';
+    default: return 'upload_failed';
+  }
+}
+
 /** Error codes a client may see verbatim. Anything else becomes a generic 500. */
 export const CLIENT_SAFE_ERRORS = new Set([
   'not_your_import', 'import_expired', 'portfolio_changed',

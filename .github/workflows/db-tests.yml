@@ -95,7 +95,7 @@ jobs:
           GRANT USAGE ON SCHEMA public, auth TO authenticated, service_role, anon;
           SQL
 
-      - name: Apply migrations in order
+      - name: Apply the migration chain from empty
         run: |
           set -euo pipefail
           shopt -s nullglob
@@ -104,7 +104,99 @@ jobs:
             psql -v ON_ERROR_STOP=1 -q -f "$file"
           done
 
-      - name: Run the RPC tests
+      - name: RPC behaviour, isolation and rollback
         run: |
           set -euo pipefail
           psql -v ON_ERROR_STOP=1 -f supabase/tests/cas_import_rpc_test.sql
+
+      - name: Two sessions confirm the same plan
+        run: |
+          set -euo pipefail
+          psql -v ON_ERROR_STOP=1 -q -f supabase/tests/concurrent_setup.sql
+
+          claims='{"sub":"33333333-3333-3333-3333-333333333333"}'
+
+          # Session A takes the row lock and holds it while it sleeps, so the
+          # overlap is deterministic rather than a matter of timing luck.
+          psql -q <<SQL > /tmp/session_a.log 2>&1 &
+          BEGIN;
+          SELECT set_config('request.jwt.claims', '$claims', true);
+          SELECT public.confirm_cas_import(
+            'dddddddd-0000-0000-0000-000000000003'::uuid, ARRAY['race-add']);
+          SELECT pg_sleep(4);
+          COMMIT;
+          SQL
+          a_pid=$!
+
+          sleep 1
+
+          # Session B blocks on A's lock, then finds the plan already resolved.
+          set +e
+          psql -q <<SQL > /tmp/session_b.log 2>&1
+          SELECT set_config('request.jwt.claims', '$claims', false);
+          SELECT public.confirm_cas_import(
+            'dddddddd-0000-0000-0000-000000000003'::uuid, ARRAY['race-add']);
+          SQL
+          b_status=$?
+          set -e
+
+          wait "$a_pid"
+
+          echo "--- session A ---"; cat /tmp/session_a.log
+          echo "--- session B (exit $b_status) ---"; cat /tmp/session_b.log
+
+          if [ "$b_status" -eq 0 ]; then
+            echo "::error::both sessions confirmed the same plan"
+            exit 1
+          fi
+          if ! grep -qE 'import_already_resolved|portfolio_changed' /tmp/session_b.log; then
+            echo "::error::the losing session failed for the wrong reason"
+            exit 1
+          fi
+
+          psql -v ON_ERROR_STOP=1 -f supabase/tests/concurrent_assert.sql
+
+  dependency-gate:
+    name: Multer pin and audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: The lockfile must carry the reviewed multer version
+        working-directory: server
+        run: |
+          set -euo pipefail
+          WANT=$(node -p "require('./package.json').dependencies.multer")
+          echo "  package.json pins multer at $WANT"
+          case "$WANT" in
+            *^*|*~*|*'>'*|*'<'*|*'*'*)
+              echo "::error::multer must be pinned exactly, not ranged: $WANT"; exit 1 ;;
+          esac
+          if [ ! -f package-lock.json ]; then
+            echo "::warning::no lockfile in server/; skipping lockfile pin check"
+            exit 0
+          fi
+          GOT=$(node -e "
+            const lock = require('./package-lock.json');
+            const entry = (lock.packages && lock.packages['node_modules/multer'])
+              || (lock.dependencies && lock.dependencies.multer);
+            process.stdout.write(entry ? entry.version : 'absent');
+          ")
+          echo "  lockfile has multer $GOT"
+          if [ "$GOT" != "$WANT" ]; then
+            echo "::error::lockfile multer $GOT does not match the reviewed $WANT"
+            exit 1
+          fi
+
+      - name: Audit for high and critical advisories
+        working-directory: server
+        run: |
+          set -euo pipefail
+          npm audit --omit=dev --audit-level=high || {
+            echo "::error::npm audit reported a high or critical advisory"
+            exit 1
+          }

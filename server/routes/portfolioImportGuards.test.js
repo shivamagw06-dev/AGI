@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   MAX_PDF_BYTES, checkUpload, cleanSelection, looksLikePdf, redactBody,
+  uploadErrorCode,
 } from './portfolioImportGuards.js';
 
 describe('content inspection, not the filename', () => {
@@ -99,5 +100,29 @@ describe('bodies are redacted before anything logs them', () => {
     expect(redactBody({ selected_row_ids: ['a', 'b'] }).selected_row_ids).toEqual(['a', 'b']);
     expect(redactBody(null)).toBeNull();
     expect(redactBody('text')).toBe('text');
+  });
+});
+
+describe('multer errors never carry field values outward', () => {
+  it('maps each limit to a fixed client code', () => {
+    expect(uploadErrorCode({ code: 'LIMIT_FILE_SIZE' })).toBe('file_too_large');
+    expect(uploadErrorCode({ code: 'LIMIT_UNEXPECTED_FILE' })).toBe('no_file');
+    expect(uploadErrorCode({ code: 'LIMIT_FIELD_VALUE' })).toBe('field_too_large');
+    expect(uploadErrorCode({ code: 'LIMIT_PART_COUNT' })).toBe('too_many_fields');
+    expect(uploadErrorCode({ code: 'LIMIT_FIELD_COUNT' })).toBe('too_many_fields');
+  });
+
+  it('falls back to a generic code for anything unrecognised', () => {
+    expect(uploadErrorCode({ code: 'SOMETHING_NEW' })).toBe('upload_failed');
+    expect(uploadErrorCode(undefined)).toBe('upload_failed');
+  });
+
+  it('never returns the field or the value that tripped the limit', () => {
+    // multer attaches both; returning the error would hand back the input.
+    const err = { code: 'LIMIT_FIELD_VALUE', field: 'password', value: 'the-secret' };
+    const out = uploadErrorCode(err);
+    expect(out).toBe('field_too_large');
+    expect(JSON.stringify(out)).not.toContain('the-secret');
+    expect(JSON.stringify(out)).not.toContain('password');
   });
 });
