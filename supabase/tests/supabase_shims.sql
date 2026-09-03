@@ -32,9 +32,14 @@ CREATE TABLE IF NOT EXISTS auth.users (
 
 -- Supabase resolves these from the request JWT claims, which the tests set
 -- with set_config. This is that behaviour, not a different one.
+-- COALESCE to an empty object first. set_config(..., NULL, ...) stores an
+-- empty string, and ''::json raises 22P02 rather than returning NULL, so an
+-- unauthenticated caller got a json syntax error where production returns NULL.
 CREATE OR REPLACE FUNCTION auth.uid() RETURNS uuid
 LANGUAGE sql STABLE AS $fn$
-  SELECT NULLIF(current_setting('request.jwt.claims', true)::json->>'sub', '')::uuid;
+  SELECT NULLIF(
+    COALESCE(NULLIF(current_setting('request.jwt.claims', true), ''), '{}')::json->>'sub',
+    '')::uuid;
 $fn$;
 
 CREATE OR REPLACE FUNCTION auth.jwt() RETURNS jsonb
@@ -47,13 +52,14 @@ $fn$;
 CREATE OR REPLACE FUNCTION auth.role() RETURNS text
 LANGUAGE sql STABLE AS $fn$
   SELECT COALESCE(
-    NULLIF(current_setting('request.jwt.claims', true)::json->>'role', ''),
+    NULLIF(COALESCE(NULLIF(current_setting('request.jwt.claims', true), ''), '{}')::json->>'role', ''),
     'anon');
 $fn$;
 
 CREATE OR REPLACE FUNCTION auth.email() RETURNS text
 LANGUAGE sql STABLE AS $fn$
-  SELECT NULLIF(current_setting('request.jwt.claims', true)::json->>'email', '');
+  SELECT NULLIF(
+    COALESCE(NULLIF(current_setting('request.jwt.claims', true), ''), '{}')::json->>'email', '');
 $fn$;
 
 GRANT USAGE ON SCHEMA public, auth TO authenticated, service_role, anon;

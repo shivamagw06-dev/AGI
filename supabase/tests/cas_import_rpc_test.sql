@@ -13,11 +13,14 @@ SELECT plan(34);
 -- ---------------------------------------------------------------------------
 -- Fixtures: two users, so isolation can be asserted rather than assumed.
 -- ---------------------------------------------------------------------------
-CREATE TEMP TABLE ids AS
-SELECT '11111111-1111-1111-1111-111111111111'::uuid AS user_a,
-       '22222222-2222-2222-2222-222222222222'::uuid AS user_b,
-       'aaaaaaaa-0000-0000-0000-000000000001'::uuid AS folio_a,
-       'aaaaaaaa-0000-0000-0000-000000000002'::uuid AS folio_b;
+-- Identifiers are written out rather than held in a temp table: once a test
+-- switches the session role to `authenticated`, a temp table created as
+-- postgres is no longer readable, and the failure surfaces as an unrelated
+-- 'permission denied for table ids' several assertions later.
+\set user_a '11111111-1111-1111-1111-111111111111'
+\set user_b '22222222-2222-2222-2222-222222222222'
+\set folio_a 'aaaaaaaa-0000-0000-0000-000000000001'
+\set folio_b 'aaaaaaaa-0000-0000-0000-000000000002'
 
 CREATE OR REPLACE FUNCTION act_as(p_user uuid) RETURNS void
 LANGUAGE plpgsql AS $$
@@ -28,25 +31,25 @@ BEGIN
 END;
 $$;
 
-INSERT INTO auth.users (id, email) SELECT user_a, 'a@example.test' FROM ids
-  ON CONFLICT DO NOTHING;
-INSERT INTO auth.users (id, email) SELECT user_b, 'b@example.test' FROM ids
-  ON CONFLICT DO NOTHING;
+INSERT INTO auth.users (id, email)
+VALUES (:'user_a'::uuid, 'a@example.test') ON CONFLICT DO NOTHING;
+INSERT INTO auth.users (id, email)
+VALUES (:'user_b'::uuid, 'b@example.test') ON CONFLICT DO NOTHING;
 
 INSERT INTO public.client_portfolios (id, user_id, name, portfolio_version)
-SELECT folio_a, user_a, 'A', 1 FROM ids;
+VALUES (:'folio_a'::uuid, :'user_a'::uuid, 'A', 1);
 INSERT INTO public.client_portfolios (id, user_id, name, portfolio_version)
-SELECT folio_b, user_b, 'B', 1 FROM ids;
+VALUES (:'folio_b'::uuid, :'user_b'::uuid, 'B', 1);
 
 -- One imported lot and one manual lot, so protection can be asserted.
 INSERT INTO public.client_portfolio_holdings
   (id, user_id, portfolio_id, source, isin, asset_name, quantity, average_cost, is_active)
-SELECT 'cccccccc-0000-0000-0000-000000000001', user_a, folio_a, 'NSDL',
-       'INE002A01018', 'Reliance', 25, 2715.4, true FROM ids;
+VALUES ('cccccccc-0000-0000-0000-000000000001', :'user_a'::uuid, :'folio_a'::uuid,
+        'NSDL', 'INE002A01018', 'Reliance', 25, 2715.4, true);
 INSERT INTO public.client_portfolio_holdings
   (id, user_id, portfolio_id, source, isin, asset_name, quantity, average_cost, is_active)
-SELECT 'cccccccc-0000-0000-0000-000000000002', user_a, folio_a, 'MANUAL',
-       'INE009A01021', 'Infosys (typed by client)', 10, 1500, true FROM ids;
+VALUES ('cccccccc-0000-0000-0000-000000000002', :'user_a'::uuid, :'folio_a'::uuid,
+        'MANUAL', 'INE009A01021', 'Infosys (typed by client)', 10, 1500, true);
 
 -- A plan proposing one add, one update and one closure.
 CREATE OR REPLACE FUNCTION make_plan(p_user uuid, p_folio uuid, p_version bigint)
@@ -84,7 +87,7 @@ END;
 $$;
 
 -- ---------------------------------------------------------------------------
-SELECT act_as(user_a) FROM ids;
+SELECT act_as(:'user_a'::uuid);
 
 -- 1-3: a straightforward confirmation
 DO $$
@@ -250,7 +253,7 @@ SELECT throws_ok(
   'authentication_required', 'an anonymous caller is refused');
 
 -- 25-26: the functions never expose secrets
-SELECT act_as(user_a) FROM ids;
+SELECT act_as(:'user_a'::uuid);
 SELECT is(
   (SELECT count(*) FROM pg_proc p
      JOIN pg_namespace n ON n.oid = p.pronamespace
