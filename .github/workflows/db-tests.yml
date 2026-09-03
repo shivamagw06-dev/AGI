@@ -224,7 +224,7 @@ jobs:
 
           # Session A takes the row lock and holds it while it sleeps, so the
           # overlap is deterministic rather than a matter of timing luck.
-          psql -q <<SQL > /tmp/session_a.log 2>&1 &
+          psql -v ON_ERROR_STOP=1 -q <<SQL > /tmp/session_a.log 2>&1 &
           BEGIN;
           SELECT set_config('request.jwt.claims', '$claims', true);
           SELECT public.confirm_cas_import(
@@ -237,8 +237,11 @@ jobs:
           sleep 1
 
           # Session B blocks on A's lock, then finds the plan already resolved.
+          # ON_ERROR_STOP matters here: without it psql exits 0 even when a
+          # statement raises, so a losing session would look like a winning one
+          # and the race would appear to have no winner at all.
           set +e
-          psql -q <<SQL > /tmp/session_b.log 2>&1
+          psql -v ON_ERROR_STOP=1 -q <<SQL > /tmp/session_b.log 2>&1
           SELECT set_config('request.jwt.claims', '$claims', false);
           SELECT public.confirm_cas_import(
             'dddddddd-0000-0000-0000-000000000003'::uuid, ARRAY['race-add']);
