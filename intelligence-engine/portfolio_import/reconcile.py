@@ -24,10 +24,39 @@ closure is scoped to the accounts the statement actually reported.
 
 from __future__ import annotations
 
+import hashlib
+import json
 from dataclasses import dataclass, field
 from typing import Any, Iterable, Optional
 
 MANUAL = "MANUAL"
+
+
+def row_id(kind: str, key: tuple) -> str:
+    """A stable id for one proposed change.
+
+    The browser sends these back to say which rows to import, so they must be
+    derived from the change itself rather than from list position: a plan
+    rebuilt in a different order would otherwise silently reassign a client's
+    selection to different holdings.
+    """
+    raw = json.dumps([kind, [str(part) if part is not None else None for part in key]],
+                     separators=(",", ":"))
+    return hashlib.sha256(raw.encode("utf-8")).hexdigest()[:24]
+
+
+def basis_hash(existing_holdings: Iterable[dict[str, Any]]) -> str:
+    """A digest of the portfolio the plan was computed against.
+
+    Checked again at confirmation. If the portfolio moved in between -- another
+    device, another import, a manual edit -- the plan describes a state that no
+    longer exists, and applying it would write changes the client never saw.
+    """
+    rows = sorted(
+        (f"{r.get('id')}|{r.get('source')}|{r.get('account_ref')}|{r.get('isin')}"
+         f"|{r.get('folio')}|{r.get('quantity')}|{r.get('average_cost')}"
+         for r in existing_holdings or []))
+    return hashlib.sha256("\n".join(rows).encode("utf-8")).hexdigest()
 
 
 def lot_key(*, source: str, account_ref: Optional[str],
@@ -45,6 +74,7 @@ class ImportPlan:
     statement_date: Optional[str] = None
     statement_fingerprint: Optional[str] = None
     already_imported: bool = False
+    basis: str = ""
     adds: list[dict[str, Any]] = field(default_factory=list)
     updates: list[dict[str, Any]] = field(default_factory=list)
     closures: list[dict[str, Any]] = field(default_factory=list)
@@ -57,8 +87,10 @@ class ImportPlan:
         return {
             "source": self.source,
             "statement_date": self.statement_date,
-            "statement_fingerprint": self.statement_fingerprint,
+            # Deliberately not the fingerprint: it identifies the document and
+            # is never returned to a browser.
             "already_imported": self.already_imported,
+            "basis": self.basis,
             "counts": {
                 "add": len(self.adds), "update": len(self.updates),
                 "close": len(self.closures), "unchanged": len(self.unchanged),
@@ -106,8 +138,11 @@ def build_plan(*, parsed_holdings: Iterable[dict[str, Any]],
             "This statement has already been imported. Nothing will change.")
         return plan
 
+    existing_list = list(existing_holdings or [])
+    plan.basis = basis_hash(existing_list)
+
     existing_by_key: dict[tuple, dict[str, Any]] = {}
-    for row in existing_holdings or []:
+    for row in existing_list:
         row_source = str(row.get("source") or MANUAL).upper()
         if row_source == MANUAL:
             # Never touched by an import, and not counted as a candidate for
@@ -135,12 +170,14 @@ def build_plan(*, parsed_holdings: Iterable[dict[str, Any]],
         seen_keys.add(key)
         current = existing_by_key.get(key)
         if current is None:
-            plan.adds.append({"key": list(key), "holding": holding})
+            plan.adds.append({"row_id": row_id("add", key), "key": list(key),
+                              "holding": holding})
             continue
         diff = _changed(current, holding)
         if diff:
-            plan.updates.append({"key": list(key), "id": current.get("id"),
-                                 "changes": diff, "holding": holding})
+            plan.updates.append({"row_id": row_id("update", key), "key": list(key),
+                                 "id": current.get("id"), "changes": diff,
+                                 "holding": holding})
         else:
             plan.unchanged.append({"key": list(key), "id": current.get("id")})
 
@@ -157,7 +194,8 @@ def build_plan(*, parsed_holdings: Iterable[dict[str, Any]],
             continue
         if scoped_accounts and not account:
             continue
-        plan.closures.append({"key": list(key), "id": row.get("id"),
+        plan.closures.append({"row_id": row_id("close", key), "key": list(key),
+                              "id": row.get("id"),
                               "quantity": row.get("quantity"),
                               "reason": "absent_from_statement"})
 
