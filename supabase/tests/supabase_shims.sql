@@ -58,3 +58,24 @@ $fn$;
 
 GRANT USAGE ON SCHEMA public, auth TO authenticated, service_role, anon;
 GRANT SELECT ON auth.users TO authenticated, service_role;
+
+-- Supabase grants table privileges to these roles through default privileges
+-- on the public schema, which is why its migrations create tables without a
+-- GRANT and the policies still apply to a signed-in user. A bare Postgres does
+-- not, so 'permission denied for table portfolio_imports' is an artefact of
+-- the harness rather than of the schema.
+--
+-- Reproducing the default privileges is the faithful fix. Adding explicit
+-- grants to the migrations instead would make them differ from what runs in
+-- production, and the point of these shims is that the migrations are exercised
+-- exactly as written.
+ALTER DEFAULT PRIVILEGES IN SCHEMA public
+  GRANT ALL ON TABLES TO authenticated, anon, service_role;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public
+  GRANT ALL ON SEQUENCES TO authenticated, anon, service_role;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public
+  GRANT EXECUTE ON FUNCTIONS TO authenticated, anon, service_role;
+
+-- And for anything already created before this point.
+GRANT ALL ON ALL TABLES IN SCHEMA public TO authenticated, anon, service_role;
+GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO authenticated, anon, service_role;
