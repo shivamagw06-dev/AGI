@@ -1,0 +1,110 @@
+name: Database tests
+
+# The CAS import RPCs assert things that cannot be checked by reading SQL:
+# row locking, rollback on failure, version conflicts, and RLS isolation
+# between two real users. Those need a real Postgres, so this runs one.
+#
+# Written because the machine these were authored on had no Postgres, no
+# Docker and no psycopg2. Untested SQL that looks right is exactly how a
+# confirmation ends up writing half a statement.
+
+on:
+  pull_request:
+    paths:
+      - 'supabase/migrations/**'
+      - 'supabase/tests/**'
+      - '.github/workflows/db-tests.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: db-tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  rpc-tests:
+    name: CAS import RPCs
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: agi_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      PGHOST: localhost
+      PGPORT: '5432'
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: agi_test
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Install psql and pgTAP
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends postgresql-client postgresql-16-pgtap
+
+      - name: Stand up the Supabase shims this schema expects
+        run: |
+          set -euo pipefail
+          # The migrations reference auth.uid(), auth.users and the service_role
+          # and authenticated roles. Hosted Supabase provides them; a bare
+          # Postgres does not, so they are recreated with the same shapes.
+          psql -v ON_ERROR_STOP=1 <<'SQL'
+          CREATE EXTENSION IF NOT EXISTS pgtap;
+          CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
+          DO $$ BEGIN
+            CREATE ROLE authenticated NOLOGIN;
+          EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+          DO $$ BEGIN
+            CREATE ROLE service_role NOLOGIN BYPASSRLS;
+          EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+          DO $$ BEGIN
+            CREATE ROLE anon NOLOGIN;
+          EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+          CREATE SCHEMA IF NOT EXISTS auth;
+          CREATE TABLE IF NOT EXISTS auth.users (
+            id uuid PRIMARY KEY,
+            email text
+          );
+
+          -- Supabase resolves auth.uid() from the request JWT claims, which
+          -- tests set with set_config. This is that function, not a stub with
+          -- different behaviour.
+          CREATE OR REPLACE FUNCTION auth.uid() RETURNS uuid
+          LANGUAGE sql STABLE AS $fn$
+            SELECT NULLIF(
+              current_setting('request.jwt.claims', true)::json->>'sub', ''
+            )::uuid;
+          $fn$;
+
+          GRANT USAGE ON SCHEMA public, auth TO authenticated, service_role, anon;
+          SQL
+
+      - name: Apply migrations in order
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          for file in $(ls supabase/migrations/*.sql | sort); do
+            echo "  applying $(basename "$file")"
+            psql -v ON_ERROR_STOP=1 -q -f "$file"
+          done
+
+      - name: Run the RPC tests
+        run: |
+          set -euo pipefail
+          psql -v ON_ERROR_STOP=1 -f supabase/tests/cas_import_rpc_test.sql
