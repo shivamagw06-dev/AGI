@@ -26,20 +26,6 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
-    services:
-      postgres:
-        image: postgres:16
-        env:
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: agi_test
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
     env:
       PGHOST: localhost
       PGPORT: '5432'
@@ -50,11 +36,28 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      - name: Install psql and pgTAP
+      - name: Start Postgres with pgTAP on the runner
         run: |
           set -euo pipefail
+          # Postgres runs here rather than in a service container. pgTAP is a
+          # server-side extension: its control file has to sit on the same
+          # filesystem as the postmaster, so installing it on the runner while
+          # the server lived in a container left CREATE EXTENSION reporting
+          # 'extension "pgtap" is not available'. Co-locating them is simpler
+          # than baking a custom image.
           sudo apt-get update -qq
-          sudo apt-get install -y --no-install-recommends postgresql-client postgresql-16-pgtap
+          sudo apt-get install -y --no-install-recommends \
+            postgresql postgresql-contrib postgresql-16-pgtap
+          sudo pg_ctlcluster 16 main start || sudo systemctl start postgresql
+          for i in $(seq 1 30); do
+            pg_isready -h localhost -p 5432 && break
+            sleep 1
+          done
+          pg_isready -h localhost -p 5432
+          sudo -u postgres psql -v ON_ERROR_STOP=1 -c \
+            "ALTER ROLE postgres WITH PASSWORD 'postgres';"
+          sudo -u postgres createdb agi_test
+          psql -v ON_ERROR_STOP=1 -c 'SELECT version();' -t | sed 's/^/  /'
 
       - name: Stand up the Supabase shims this schema expects
         run: |
