@@ -51,6 +51,14 @@ CREATE TABLE IF NOT EXISTS public.client_portfolio_holdings (
   asset_name   text,
   quantity     numeric,
   average_cost numeric,
+  -- Referenced by migrations that run before the ones adding them, so
+  -- production must already have these. asset_type and source in particular
+  -- are re-added by 20260903060000 with IF NOT EXISTS, which is a no-op there
+  -- and the reason that migration cannot assume it is creating them.
+  asset_type   text,
+  currency     text NOT NULL DEFAULT 'INR',
+  market       text,
+  source       text,
   created_at   timestamptz NOT NULL DEFAULT now(),
   updated_at   timestamptz NOT NULL DEFAULT now()
 );
