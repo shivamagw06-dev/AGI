@@ -46,8 +46,11 @@ jobs:
           # 'extension "pgtap" is not available'. Co-locating them is simpler
           # than baking a custom image.
           sudo apt-get update -qq
+          # Extensions the chain actually creates: pgcrypto (in contrib) and
+          # vector. pgTAP is for the tests themselves. Installed together so a
+          # missing one is found here rather than one CI round trip at a time.
           sudo apt-get install -y --no-install-recommends \
-            postgresql postgresql-contrib postgresql-16-pgtap
+            postgresql postgresql-contrib postgresql-16-pgtap postgresql-16-pgvector
           sudo pg_ctlcluster 16 main start || sudo systemctl start postgresql
           for i in $(seq 1 30); do
             pg_isready -h localhost -p 5432 && break
