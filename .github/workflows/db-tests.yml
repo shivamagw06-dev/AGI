@@ -98,13 +98,26 @@ jobs:
           GRANT USAGE ON SCHEMA public, auth TO authenticated, service_role, anon;
           SQL
 
+      - name: Create the base tables the chain alters but never creates
+        run: |
+          set -euo pipefail
+          # The migration history is not self-contained and has not been since
+          # 001, whose own comment says "Run this in Supabase SQL Editor".
+          # Four tables were made by hand in the dashboard and are only ever
+          # altered by migrations - articles, profiles, client_portfolios and
+          # client_portfolio_holdings - and two of those are the ones CAS
+          # import extends. Without them a blank database cannot replay the
+          # chain at all.
+          psql -v ON_ERROR_STOP=1 -q -f supabase/tests/bootstrap_base_tables.sql
+          echo "  base tables created"
+
       - name: Apply the full migration history to a blank database
         run: |
           set -euo pipefail
           shopt -s nullglob
-          # The database is the service container's fresh one. Nothing has been
-          # applied to it, so this exercises the whole history in order rather
-          # than whatever state a long-lived environment happens to be in.
+          # Nothing but the bootstrap above has been applied, so this exercises
+          # the whole history in order rather than whatever state a long-lived
+          # environment happens to be in.
           count=0
           for file in $(ls supabase/migrations/*.sql | sort); do
             echo "  applying $(basename "$file")"
