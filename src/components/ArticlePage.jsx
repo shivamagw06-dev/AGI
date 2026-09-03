@@ -8,6 +8,7 @@ import { buildArticleShareMeta } from '@/lib/articleShareMeta';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import LiveBadge from '@/components/Article/LiveBadge';
+import EquityResearchReport from '@/components/Article/EquityResearchReport';
 import { formatTimeAgo } from '@/lib/articleUtils';
 import {
   LIVE_POLL_MS,
@@ -409,9 +410,9 @@ export default function ArticlePage() {
 
       try {
         const liveSelect =
-          'id, title, slug, section, excerpt, cover_url, content, content_md, tags, status, published_at, author_id, created_at, is_live, live_updates, live_started_at, live_ended_at, updated_at';
+          'id, title, slug, section, excerpt, cover_url, content, content_md, tags, status, published_at, author_id, created_at, is_live, live_updates, live_started_at, live_ended_at, updated_at, article_type, equity_research';
         const baseSelect =
-          'id, title, slug, section, excerpt, cover_url, content, content_md, tags, status, published_at, author_id, created_at';
+          'id, title, slug, section, excerpt, cover_url, content, content_md, tags, status, published_at, author_id, created_at, article_type, equity_research';
 
         const loadWithSelect = async (select) => {
           let { data, error } = await supabase
@@ -676,6 +677,21 @@ export default function ArticlePage() {
   const liveUpdates = normalizeLiveUpdates(article.live_updates);
   const lastLiveAt = latestLiveTimestamp(article);
 
+  if (article.article_type === 'equity_research') {
+    return (
+      <EquityResearchReport
+        article={article}
+        author={author}
+        html={sanitizedHtml}
+        niceDate={niceDate}
+        minutes={minutes}
+        shareMeta={shareMeta}
+        isoPubDate={isoPubDate}
+        isOwner={user?.id === article.author_id}
+      />
+    );
+  }
+
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'Article',
@@ -887,7 +903,7 @@ export default function ArticlePage() {
         <Suspense fallback={null}>
           <ArticleKnowledgePanel
             researchId={article.research_id || article.rms_id || null}
-            ticker={(Array.isArray(article.tickers) && article.tickers[0]) || null}
+            ticker={article.equity_research?.ticker || (Array.isArray(article.tickers) && article.tickers[0]) || null}
             title={article.title}
           />
         </Suspense>
