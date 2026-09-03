@@ -210,6 +210,108 @@ jobs:
           $$;
           SQL
 
+      - name: Security posture of what the migrations created
+        run: |
+          set -euo pipefail
+          # The checks Supabase's advisor runs, made to fail here rather than
+          # be noticed in staging. Each one is a mistake that leaves the
+          # database looking fine.
+          psql -v ON_ERROR_STOP=1 <<'SQL'
+          DO $$
+          DECLARE
+            problems text[] := ARRAY[]::text[];
+            rec record;
+          BEGIN
+            -- A DEFINER function without a pinned search_path runs the
+            -- caller's schemas with the owner's rights, which is how a
+            -- shadowed table becomes privilege escalation.
+            FOR rec IN
+              SELECT p.proname
+                FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace
+               WHERE n.nspname = 'public' AND p.prosecdef
+                 AND NOT EXISTS (
+                   SELECT 1 FROM unnest(COALESCE(p.proconfig, ARRAY[]::text[])) cfg
+                    WHERE cfg LIKE 'search_path=%')
+            LOOP
+              problems := problems || ('SECURITY DEFINER without search_path: ' || rec.proname);
+            END LOOP;
+
+            -- Every table this feature creates must have RLS on. A table
+            -- holding one client's positions without it is readable by every
+            -- other client.
+            FOR rec IN
+              SELECT c.relname
+                FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
+               WHERE n.nspname = 'public' AND c.relkind = 'r'
+                 AND c.relname IN ('portfolio_imports', 'portfolio_import_review',
+                                   'broker_connections', 'broker_connection_secrets',
+                                   'client_portfolios', 'client_portfolio_holdings')
+                 AND NOT c.relrowsecurity
+            LOOP
+              problems := problems || ('RLS not enabled: ' || rec.relname);
+            END LOOP;
+
+            -- PUBLIC must not execute the import RPCs. They write holdings.
+            FOR rec IN
+              SELECT p.proname
+                FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace
+               WHERE n.nspname = 'public'
+                 AND p.proname IN ('create_cas_import_plan', 'confirm_cas_import',
+                                   'discard_cas_import')
+                 AND has_function_privilege('public', p.oid, 'EXECUTE')
+            LOOP
+              problems := problems || ('PUBLIC can execute: ' || rec.proname);
+            END LOOP;
+
+            -- And the roles that should execute them must actually be able to,
+            -- or the feature is broken in a way tests using postgres would miss.
+            FOR rec IN
+              SELECT p.proname
+                FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace
+               WHERE n.nspname = 'public'
+                 AND p.proname IN ('create_cas_import_plan', 'confirm_cas_import',
+                                   'discard_cas_import')
+                 AND NOT has_function_privilege('authenticated', p.oid, 'EXECUTE')
+            LOOP
+              problems := problems || ('authenticated cannot execute: ' || rec.proname);
+            END LOOP;
+
+            -- An RLS table with no policy denies everyone, which reads as
+            -- working isolation and is really a broken feature. The secrets
+            -- table is the deliberate exception: no policy is the point, since
+            -- RLS hides rows and not columns.
+            FOR rec IN
+              SELECT c.relname
+                FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
+               WHERE n.nspname = 'public' AND c.relkind = 'r' AND c.relrowsecurity
+                 AND c.relname IN ('portfolio_imports', 'portfolio_import_review',
+                                   'broker_connections')
+                 AND NOT EXISTS (
+                   SELECT 1 FROM pg_policies
+                    WHERE schemaname = 'public' AND tablename = c.relname)
+            LOOP
+              problems := problems || ('RLS enabled but no policy: ' || rec.relname);
+            END LOOP;
+
+            -- The inverse for the secrets table: a policy appearing on it
+            -- would undo the reason it exists.
+            IF EXISTS (
+              SELECT 1 FROM pg_policies
+               WHERE schemaname = 'public'
+                 AND tablename = 'broker_connection_secrets'
+                 AND 'authenticated' = ANY (roles)
+            ) THEN
+              problems := problems || 'broker_connection_secrets exposed to authenticated';
+            END IF;
+
+            IF array_length(problems, 1) IS NOT NULL THEN
+              RAISE EXCEPTION 'security posture: %', array_to_string(problems, '; ');
+            END IF;
+            RAISE NOTICE 'security posture clean';
+          END;
+          $$;
+          SQL
+
       - name: RPC behaviour, isolation and rollback
         run: |
           set -euo pipefail
