@@ -57,7 +57,10 @@ BEGIN
     user_id, portfolio_id, source_type, statement_date, statement_fingerprint,
     plan_summary, status, expires_at, base_portfolio_version)
   VALUES (
-    p_user, p_folio, 'NSDL', DATE '2026-08-31', 'fp-' || p_folio::text,
+    -- A distinct fingerprint per plan. Reusing one trips
+    -- portfolio_imports_fingerprint_once, which is correct behaviour and the
+    -- subject of its own assertion; here it would only mask the test below it.
+    p_user, p_folio, 'NSDL', DATE '2026-08-31', 'fp-' || gen_random_uuid()::text,
     jsonb_build_object(
       'source', 'NSDL',
       'adds', jsonb_build_array(jsonb_build_object(
@@ -280,7 +283,7 @@ BEGIN
   VALUES (
     '11111111-1111-1111-1111-111111111111',
     'aaaaaaaa-0000-0000-0000-000000000001',
-    'NSDL', DATE '2026-08-31', 'fp-rollback',
+    'NSDL', DATE '2026-08-31', 'fp-rollback-' || gen_random_uuid()::text,
     jsonb_build_object(
       'source', 'NSDL',
       'adds', jsonb_build_array(
