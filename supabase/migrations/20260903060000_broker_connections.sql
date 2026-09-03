@@ -117,7 +117,19 @@ ALTER TABLE public.client_portfolio_holdings
 --                             'INVIT','CASH','OTHER');
 --
 -- NULL is not listed there because a CHECK passes on NULL: an untyped holding
--- is permitted and is a separate question from a wrongly typed one.
+-- is permitted and is a separate question from a wrongly typed one. Count them
+-- separately and do not add NOT NULL until they are resolved and every writer
+-- supplies a value:
+--
+--   SELECT count(*) AS untyped_holdings
+--     FROM public.client_portfolio_holdings
+--    WHERE asset_type IS NULL;
+--
+-- NOT VALID is a reprieve, not a permanent exemption. An untouched legacy row
+-- stays as it is, but the first UPDATE to one is checked like any other write
+-- and will fail. So a bad value sits quietly until somebody edits that
+-- holding, and then surfaces as an error in front of a client. Audit soon
+-- rather than eventually.
 ALTER TABLE public.client_portfolio_holdings
   DROP CONSTRAINT IF EXISTS client_portfolio_holdings_asset_type_known;
 ALTER TABLE public.client_portfolio_holdings
