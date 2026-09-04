@@ -22,6 +22,7 @@ import { buildLoginUrl } from '@/lib/accessPolicy';
 
 const PRIMARY_NAV = [
   { name: 'Equity Research', path: '/equity-research' },
+  { name: 'IPO Intelligence', path: '/ipo-intelligence' },
   { name: 'Portfolio', path: '/portfolio' },
   { name: 'Live Desk', path: '/live-desk' },
   { name: 'Live Alpha', path: '/live-alpha' },
@@ -30,6 +31,7 @@ const PRIMARY_NAV = [
 const MORE_NAV = [
   { name: 'Insider Activity', path: '/insider-activity' },
   { name: 'Private Markets', path: '/private-markets' },
+  { name: 'Global Markets', path: '/global-markets' },
 ];
 
 const MOBILE_NAV = [{ name: 'Home', path: '/' }, ...PRIMARY_NAV, ...MORE_NAV];

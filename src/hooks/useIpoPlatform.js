@@ -28,7 +28,7 @@ export default function useIpoPlatform() {
     (async () => {
       setArticleState((prev) => ({ ...prev, loading: true }));
       const select =
-        'id, title, slug, excerpt, cover_url, tags, published_at, section, status, author_id';
+        'id, title, slug, excerpt, cover_url, tags, published_at, section, status, author_id, equity_research';
       let { data, error } = await supabase
         .from('articles')
         .select(select)

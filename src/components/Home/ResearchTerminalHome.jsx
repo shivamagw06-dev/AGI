@@ -4,6 +4,7 @@ import { Helmet } from 'react-helmet-async';
 import {
   BookOpen,
   Briefcase,
+  Globe2,
   Landmark,
   Library,
   LineChart,
@@ -31,16 +32,18 @@ const DESK_BUTTONS = [
     href: '/equity-research',
   },
   ...RESEARCH_DESKS.filter((desk) =>
-    ['indian-market', 'private-markets', 'economics'].includes(desk.id)
+    ['indian-market', 'global-markets', 'private-markets', 'economics'].includes(desk.id)
   ).map((desk) => ({
     id: desk.id,
     label: desk.label,
     icon:
       desk.id === 'indian-market'
         ? LineChart
-        : desk.id === 'private-markets'
-          ? Briefcase
-          : Landmark,
+        : desk.id === 'global-markets'
+          ? Globe2
+          : desk.id === 'private-markets'
+            ? Briefcase
+            : Landmark,
     hint: desk.hint,
   })),
 ];
