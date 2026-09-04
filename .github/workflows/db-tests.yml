@@ -14,6 +14,16 @@ on:
       - 'supabase/migrations/**'
       - 'supabase/tests/**'
       - '.github/workflows/db-tests.yml'
+  # Also on main. Without this the suite only ever ran on PR branches, so the
+  # schema that actually ships was never verified after merge - which is how a
+  # trigger that silently cancelled every delete reached main with 34 green
+  # assertions behind it.
+  push:
+    branches: [main]
+    paths:
+      - 'supabase/migrations/**'
+      - 'supabase/tests/**'
+      - '.github/workflows/db-tests.yml'
   workflow_dispatch:
 
 concurrency:
