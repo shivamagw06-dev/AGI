@@ -133,3 +133,36 @@ class PdfGuards(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class KeyedFingerprint(unittest.TestCase):
+    """A bare document hash is an oracle: it confirms a guessed document."""
+
+    def test_a_key_changes_the_fingerprint(self):
+        data = b"%PDF-1.4 statement"
+        unkeyed = extract.fingerprint_bytes(data)
+        keyed = extract.fingerprint_bytes(data, key=b"server-secret")
+        self.assertNotEqual(unkeyed, keyed)
+
+    def test_the_same_key_and_bytes_stay_idempotent(self):
+        data = b"%PDF-1.4 statement"
+        self.assertEqual(extract.fingerprint_bytes(data, key=b"k"),
+                         extract.fingerprint_bytes(data, key=b"k"))
+
+    def test_a_different_key_cannot_reproduce_it(self):
+        data = b"%PDF-1.4 statement"
+        self.assertNotEqual(extract.fingerprint_bytes(data, key=b"k1"),
+                            extract.fingerprint_bytes(data, key=b"k2"))
+
+    def test_the_key_is_read_from_the_environment_and_reported(self):
+        import os
+        previous = os.environ.pop("CAS_FINGERPRINT_KEY", None)
+        try:
+            self.assertFalse(extract.fingerprint_is_keyed())
+            os.environ["CAS_FINGERPRINT_KEY"] = "s3cret"
+            self.assertTrue(extract.fingerprint_is_keyed())
+            self.assertEqual(extract.fingerprint_key(), b"s3cret")
+        finally:
+            os.environ.pop("CAS_FINGERPRINT_KEY", None)
+            if previous is not None:
+                os.environ["CAS_FINGERPRINT_KEY"] = previous

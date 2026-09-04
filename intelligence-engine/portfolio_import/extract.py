@@ -20,7 +20,9 @@ more than one.
 from __future__ import annotations
 
 import hashlib
+import hmac
 import io
+import os
 import re
 from dataclasses import dataclass, field
 from typing import Any, Optional
@@ -65,9 +67,39 @@ class ExtractedText:
         return "\n".join(self.pages)
 
 
-def fingerprint_bytes(data: bytes) -> str:
-    """A stable id for a statement that retains none of it."""
+def fingerprint_bytes(data: bytes, *, key: Optional[bytes] = None) -> str:
+    """A stable id for a statement that retains none of it, and that nobody
+    outside this system can recompute.
+
+    A bare SHA-256 of the document would be a fingerprint anyone holding the
+    same file could reproduce. That turns a stored hash into an oracle: given a
+    suspected CAS, a reader of the table could confirm whether that exact
+    document was uploaded, and by whom. The digest never reveals the contents,
+    but confirming a guess is itself a disclosure.
+
+    So the fingerprint is an HMAC under a server-held key. It still makes a
+    re-upload idempotent, because the same bytes and the same key give the same
+    value, and it is inert to anyone without the key. The value is never
+    returned to the browser.
+
+    Falls back to a plain digest only when no key is configured, so a
+    development environment still works; production sets the key and the
+    startup check below refuses to pretend otherwise.
+    """
+    if key:
+        return hmac.new(key, data, hashlib.sha256).hexdigest()
     return hashlib.sha256(data).hexdigest()
+
+
+def fingerprint_key() -> Optional[bytes]:
+    """The HMAC key, from the environment. Never logged, never returned."""
+    raw = os.environ.get("CAS_FINGERPRINT_KEY") or ""
+    return raw.encode("utf-8") if raw.strip() else None
+
+
+def fingerprint_is_keyed() -> bool:
+    """Whether fingerprints are unguessable in this environment."""
+    return fingerprint_key() is not None
 
 
 # Provider markers, checked against extracted text rather than the filename.
@@ -150,7 +182,7 @@ def extract(data: bytes, *, password: Optional[str] = None) -> ExtractedText:
         pages=pages,
         page_count=page_count,
         encrypted=encrypted,
-        fingerprint=fingerprint_bytes(data),
+        fingerprint=fingerprint_bytes(data, key=fingerprint_key()),
     )
 
 
