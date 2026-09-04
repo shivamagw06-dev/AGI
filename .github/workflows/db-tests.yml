@@ -138,8 +138,11 @@ jobs:
             expected_indexes text[] := ARRAY[
               'client_portfolio_holdings_broker_lot_idx',
               'portfolio_imports_fingerprint_once'];
+            -- client_portfolio_holdings_asset_type_known is deliberately
+            -- absent: it rejected every asset_type the application writes, and
+            -- the migration explains why the column stays unconstrained until
+            -- the two vocabularies are unified.
             expected_constraints text[] := ARRAY[
-              'client_portfolio_holdings_asset_type_known',
               'portfolio_imports_status_known',
               'broker_connections_broker_known'];
             item text;
