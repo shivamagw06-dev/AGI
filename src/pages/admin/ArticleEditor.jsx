@@ -73,6 +73,11 @@ const initialEquityResearch = () => ({
   thesis: '',
   strengths: '',
   risks: '',
+  ipo_gmp: {
+    value: '',
+    source: '',
+    updated_at: '',
+  },
   ipo_scores: {
     business_quality: '',
     financial_quality: '',
@@ -1110,6 +1115,20 @@ export default function ArticleEditor() {
                         <label className="text-sm font-medium text-slate-700 lg:col-span-2">Thesis summary<textarea className={`${researchInputClass} min-h-20 resize-y`} value={equityResearch.thesis || ''} onChange={(e) => updateEquityResearch('thesis', e.target.value)} placeholder="State the core investment thesis and what would change it." /></label>
                         <label className="text-sm font-medium text-slate-700">Potential strengths<textarea className={`${researchInputClass} min-h-28 resize-y`} value={equityResearch.strengths || ''} onChange={(e) => updateEquityResearch('strengths', e.target.value)} placeholder={'Revenue visibility supported by...\nMargins can expand because...'} /></label>
                         <label className="text-sm font-medium text-slate-700">Principal risks<textarea className={`${researchInputClass} min-h-28 resize-y`} value={equityResearch.risks || ''} onChange={(e) => updateEquityResearch('risks', e.target.value)} placeholder={'Customer concentration remains...\nOFS-heavy structure limits...'} /></label>
+                      </div>
+                      <div className="mt-4 rounded-xl border border-slate-200 bg-white p-4">
+                        <div className="flex flex-wrap items-start justify-between gap-2">
+                          <div>
+                            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-700">Manual GMP fallback</p>
+                            <p className="mt-1 text-xs text-slate-500">Use until the IPO Guru key is connected. Automatic daily data takes priority when available.</p>
+                          </div>
+                          <span className="rounded-full bg-amber-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-amber-700">Unofficial</span>
+                        </div>
+                        <div className="mt-3 grid gap-3 sm:grid-cols-3">
+                          <label className="text-xs font-semibold text-slate-600">GMP per share (INR)<input inputMode="decimal" className={researchInputClass} value={equityResearch.ipo_gmp?.value || ''} onChange={(e) => updateEquityResearch('ipo_gmp', { ...(equityResearch.ipo_gmp || {}), value: e.target.value })} placeholder="55" /></label>
+                          <label className="text-xs font-semibold text-slate-600">Source<input className={researchInputClass} value={equityResearch.ipo_gmp?.source || ''} onChange={(e) => updateEquityResearch('ipo_gmp', { ...(equityResearch.ipo_gmp || {}), source: e.target.value })} placeholder="IPO Guru" /></label>
+                          <label className="text-xs font-semibold text-slate-600">Observed at<input type="datetime-local" className={researchInputClass} value={equityResearch.ipo_gmp?.updated_at || ''} onChange={(e) => updateEquityResearch('ipo_gmp', { ...(equityResearch.ipo_gmp || {}), updated_at: e.target.value })} /></label>
+                        </div>
                       </div>
                       <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                         {IPO_SCORE_FIELDS.map(([field, label, weight]) => (

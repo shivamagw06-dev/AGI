@@ -66,6 +66,11 @@ function listingReturn(ipo) {
   return Number.isFinite(listed) && Number.isFinite(issue) && listed > 0 && issue > 0 ? ((listed - issue) / issue) * 100 : null;
 }
 
+function formatObservedAt(value) {
+  const date = parseDate(value);
+  return date ? date.toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' }) : null;
+}
+
 function hasVerifiedScore(value) {
   return value !== '' && value !== null && value !== undefined && Number.isFinite(Number(value));
 }
@@ -118,6 +123,27 @@ export default function IpoDetailPage() {
   const confidence = meta ? panel.confidence : 0;
   const demand = demandScore(ipo?.subscriptionRate);
   const listedReturn = listingReturn(ipo);
+  const automaticGmp = ipo?.gmp && Number.isFinite(Number(ipo.gmp.value)) ? ipo.gmp : null;
+  const manualGmp = meta?.ipo_gmp && Number.isFinite(Number(meta.ipo_gmp.value))
+    ? { value: Number(meta.ipo_gmp.value), source: meta.ipo_gmp.source || 'AGI manual verification', updatedAt: meta.ipo_gmp.updated_at || null, unofficial: true }
+    : null;
+  const gmp = automaticGmp || manualGmp;
+  const gmpValue = gmp ? Number(gmp.value) : null;
+  const gmpIssuePrice = Number(ipo?.cutOffPrice || ipo?.maxPrice);
+  const gmpPercentage = gmp && Number.isFinite(Number(gmp.percentage))
+    ? Number(gmp.percentage)
+    : Number.isFinite(gmpValue) && Number.isFinite(gmpIssuePrice) && gmpIssuePrice > 0
+      ? (gmpValue / gmpIssuePrice) * 100
+      : null;
+  const indicativeListingPrice = gmp && Number.isFinite(Number(gmp.indicativeListingPrice))
+    ? Number(gmp.indicativeListingPrice)
+    : Number.isFinite(gmpValue) && Number.isFinite(gmpIssuePrice)
+      ? gmpIssuePrice + gmpValue
+      : null;
+  const applicationQuantity = Number(ipo?.minimumBidQuantity || ipo?.lotSize);
+  const estimatedApplicationGain = Number.isFinite(gmpValue) && Number.isFinite(applicationQuantity)
+    ? gmpValue * applicationQuantity
+    : null;
 
   const suppliedScores = meta?.ipo_scores || meta?.scores || {};
   const scorecards = [
@@ -182,12 +208,13 @@ export default function IpoDetailPage() {
       </div>
 
       <main className="mx-auto max-w-[1450px] px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
-        <section className="grid grid-cols-2 gap-3 lg:grid-cols-5">
+        <section className="grid grid-cols-2 gap-3 lg:grid-cols-6">
           <Fact label="Price band" value={priceBand(ipo)} />
           <Fact label="Minimum investment" value={minimumInvestment(ipo) ? `₹${number(minimumInvestment(ipo))}` : 'Pending'} />
           <Fact label="Lot size" value={ipo.lotSize ? `${number(ipo.lotSize)} shares` : 'Pending'} />
           <Fact label="Issue size" value={ipo.issueSize != null ? `₹${number(ipo.issueSize)} crore` : 'Pending'} />
           <Fact label="Total subscription" value={ipo.subscriptionRate != null ? `${number(ipo.subscriptionRate)}x` : 'Awaiting data'} />
+          <Fact label="Unofficial GMP" value={gmpValue != null ? `${gmpValue >= 0 ? '+' : ''}₹${number(gmpValue)}` : 'Awaiting quote'} note={gmpPercentage != null ? `${gmpPercentage >= 0 ? '+' : ''}${gmpPercentage.toFixed(1)}% indicative premium` : null} />
         </section>
 
         {tab === 'overview' && (
@@ -219,6 +246,18 @@ export default function IpoDetailPage() {
             <aside className="space-y-5">
               <section className="rounded-[24px] bg-[#173a4d] p-6 text-white"><Gauge className="h-5 w-5 text-[#d5b694]" /><p className="mt-4 text-[10px] font-bold uppercase tracking-[0.16em] text-white/50">AGI intelligence score</p><p className="mt-2 font-serif text-5xl font-semibold">{overallScore ?? '—'}</p><p className="mt-3 text-sm leading-6 text-white/65">{overallScore != null ? 'Weighted score based on available evidence.' : 'Withheld until at least four scoring pillars have verified evidence.'}</p><Link to="#" onClick={(event) => { event.preventDefault(); setTab('scorecard'); }} className="mt-5 inline-flex items-center gap-2 text-xs font-bold text-[#e1b990]">Open scorecard <ArrowRight className="h-4 w-4" /></Link></section>
               <section className="rounded-[24px] border border-[#dfe5e7] bg-white p-6"><p className="text-[10px] font-bold uppercase tracking-[0.16em] text-[#8a969c]">Market demand signal</p><div className="mt-3 flex items-end justify-between"><p className="font-serif text-4xl font-semibold">{demand ?? '—'}</p><p className="text-sm font-bold text-[#9a6944]">{ipo.subscriptionRate != null ? `${number(ipo.subscriptionRate)}x subscribed` : 'Pending'}</p></div>{demand != null ? <ScoreBar score={demand} /> : <EvidencePending />}</section>
+              <section className="rounded-[24px] border border-[#d8c7b8] bg-[#fffaf4] p-6">
+                <div className="flex items-start justify-between gap-3"><TrendingUp className="h-5 w-5 text-[#9a6944]" /><span className="rounded-full bg-[#f2e4d6] px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.14em] text-[#875d3d]">Unofficial</span></div>
+                <p className="mt-4 text-[10px] font-bold uppercase tracking-[0.16em] text-[#8a969c]">Grey market signal</p>
+                {gmpValue != null ? (
+                  <>
+                    <div className="mt-2 flex items-end justify-between gap-3"><p className={`font-serif text-4xl font-semibold ${gmpValue >= 0 ? 'text-[#27734d]' : 'text-[#a33e28]'}`}>{gmpValue >= 0 ? '+' : ''}₹{number(gmpValue)}</p><p className="text-sm font-bold text-[#9a6944]">{gmpPercentage != null ? `${gmpPercentage >= 0 ? '+' : ''}${gmpPercentage.toFixed(1)}%` : '—'}</p></div>
+                    <div className="mt-4 grid grid-cols-2 gap-3"><Fact label="Indicative listing" value={indicativeListingPrice != null ? `₹${number(indicativeListingPrice)}` : 'Pending'} /><Fact label="Est. application gain" value={estimatedApplicationGain != null ? `₹${number(estimatedApplicationGain)}` : 'Pending'} /></div>
+                    <p className="mt-3 text-[11px] leading-5 text-[#7a6b60]">Source: {gmp.source || 'IPO Guru'}{formatObservedAt(gmp.updatedAt) ? ` · Updated ${formatObservedAt(gmp.updatedAt)}` : ''}</p>
+                  </>
+                ) : <EvidencePending>No verified GMP quote is available. Enter a manual CMS value or add the IPO Guru API key.</EvidencePending>}
+                <p className="mt-3 text-[10px] leading-4 text-[#8a7768]">GMP is unregulated and may change sharply. It is not a listing-price guarantee or investment recommendation.</p>
+              </section>
               {listedReturn != null && <section className="rounded-[24px] border border-[#dfe5e7] bg-white p-6"><TrendingUp className="h-5 w-5 text-[#27734d]" /><p className="mt-4 text-[10px] font-bold uppercase tracking-[0.16em] text-[#8a969c]">Listing performance</p><p className={`mt-2 font-serif text-4xl font-semibold ${listedReturn >= 0 ? 'text-[#27734d]' : 'text-[#a33e28]'}`}>{listedReturn >= 0 ? '+' : ''}{listedReturn.toFixed(1)}%</p><p className="mt-2 text-xs text-[#738087]">Listing price ₹{number(ipo.listingPrice)} versus issue price ₹{number(ipo.cutOffPrice || ipo.maxPrice)}</p></section>}
             </aside>
           </motion.div>

@@ -17,6 +17,8 @@ services:
     envVars:
       - key: NODE_ENV
         value: production
+      - key: IPOGURU_API_KEY
+        sync: false
       - key: INTELLIGENCE_ENGINE_URL
         fromService:
           name: agib-intelligence-engine

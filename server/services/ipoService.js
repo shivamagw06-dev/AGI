@@ -3,12 +3,14 @@ const CACHE_TTL_MS = 5 * 60 * 1000;
 const UPCOMING_LIMIT = 6;
 const ACTIVE_LIMIT = 6;
 const UPSTOX_BASE = (process.env.UPSTOX_API_BASE || 'https://api.upstox.com/v2').replace(/\/$/, '');
+const IPO_GURU_BASE = (process.env.IPOGURU_API_BASE || 'https://www.ipoguru.in/api/v1').replace(/\/$/, '');
 
 let cache = null;
 let cacheAt = 0;
 let refreshTimer = null;
 let inflight = null;
 const detailCache = new Map();
+let gmpCache = { day: null, records: [], fetchedAt: null, unavailable: true };
 
 function upstoxToken() {
   return String(
@@ -25,6 +27,24 @@ function nextNoonIstMs() {
   let targetUtc = Date.UTC(ist.getUTCFullYear(), ist.getUTCMonth(), ist.getUTCDate(), 6, 30, 0);
   if (targetUtc <= now.getTime()) targetUtc += 24 * 60 * 60 * 1000;
   return targetUtc;
+}
+
+function istDayKey() {
+  return new Date(Date.now() + IST_OFFSET_MS).toISOString().slice(0, 10);
+}
+
+function finiteNumber(value) {
+  if (value == null || value === '') return null;
+  const parsed = Number(String(value).replace(/[^0-9.-]/g, ''));
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function comparableIpoName(value = '') {
+  return String(value)
+    .toLowerCase()
+    .replace(/\b(initial public offering|public issue|ipo|limited|ltd|company|co)\b/g, ' ')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim();
 }
 
 async function fetchJson(url, options = {}, timeoutMs = 15000) {
@@ -184,18 +204,80 @@ async function loadIndianApiSnapshot() {
   };
 }
 
+async function loadDailyGmpSnapshot() {
+  const day = istDayKey();
+  if (gmpCache.day === day) return gmpCache;
+
+  const apiKey = String(process.env.IPOGURU_API_KEY || '').trim();
+  if (!apiKey) {
+    gmpCache = { day, records: [], fetchedAt: null, unavailable: true };
+    return gmpCache;
+  }
+
+  try {
+    const payload = await fetchJson(`${IPO_GURU_BASE}/ipos?status=open`, {
+      headers: { Accept: 'application/json', 'X-API-KEY': apiKey },
+    });
+    gmpCache = {
+      day,
+      records: Array.isArray(payload?.data) ? payload.data : [],
+      fetchedAt: new Date().toISOString(),
+      unavailable: false,
+    };
+  } catch (error) {
+    console.warn('[ipo][gmp]', error.message);
+    gmpCache = { ...gmpCache, day, unavailable: true };
+  }
+  return gmpCache;
+}
+
+function matchGmpRecord(ipo, records = []) {
+  const symbol = String(ipo?.symbol || '').trim().toUpperCase();
+  const name = comparableIpoName(ipo?.name);
+  return records.find((record) => {
+    const recordSymbol = String(record?.symbol || '').trim().toUpperCase();
+    if (symbol && recordSymbol && symbol === recordSymbol) return true;
+    const recordName = comparableIpoName(record?.name);
+    return Boolean(name && recordName && (name === recordName || name.includes(recordName) || recordName.includes(name)));
+  }) || null;
+}
+
+async function attachDailyGmp(snapshot) {
+  const daily = await loadDailyGmpSnapshot();
+  const active = snapshot.active.map((ipo) => {
+    const record = matchGmpRecord(ipo, daily.records);
+    const value = finiteNumber(record?.gmp?.price);
+    if (value == null) return { ...ipo, gmp: null };
+    const issuePrice = finiteNumber(record?.issue_price) ?? finiteNumber(ipo.cutOffPrice) ?? finiteNumber(ipo.maxPrice);
+    const suppliedPercentage = finiteNumber(record?.gmp?.percentage);
+    return {
+      ...ipo,
+      gmp: {
+        value,
+        percentage: suppliedPercentage ?? (issuePrice ? (value / issuePrice) * 100 : null),
+        indicativeListingPrice: issuePrice != null ? issuePrice + value : null,
+        source: 'IPO Guru',
+        updatedAt: record?.gmp?.updated_at || daily.fetchedAt,
+        fetchedAt: daily.fetchedAt,
+        unofficial: true,
+      },
+    };
+  });
+  return { ...snapshot, active, gmpSource: 'IPO Guru', gmpUpdatedAt: daily.fetchedAt, gmpUnavailable: daily.unavailable };
+}
+
 async function refreshIpoSnapshot(force = false) {
   if (!force && cache && Date.now() - cacheAt < CACHE_TTL_MS) return cache;
   if (inflight) return inflight;
   inflight = (async () => {
     try {
-      cache = await loadUpstoxSnapshot();
+      cache = await attachDailyGmp(await loadUpstoxSnapshot());
       cacheAt = Date.now();
       return cache;
     } catch (upstoxError) {
       console.warn('[ipo][upstox]', upstoxError.message);
       try {
-        cache = await loadIndianApiSnapshot();
+        cache = await attachDailyGmp(await loadIndianApiSnapshot());
         cacheAt = Date.now();
         return cache;
       } catch (fallbackError) {
