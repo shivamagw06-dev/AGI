@@ -124,6 +124,11 @@ function isEvening(article) {
   return /evening|post\s*market|day\s*close|market\s*close|wrap/i.test(hay);
 }
 
+function isIpoArticle(article) {
+  const section = String(article?.section || article?.category || '').trim().toLowerCase();
+  return section === 'ipos' || section === 'ipo';
+}
+
 /** Featured story — image + copy in one balanced row on desktop. */
 function FeaturedArticle({ article }) {
   if (!article) return null;
@@ -321,9 +326,14 @@ export default function ResearchTerminalHome() {
   const { articles: latestArticles, loading: latestLoading } = useHomepageLatest(7);
 
   const articles = useMemo(() => {
-    if (activeDesk === RESEARCH_DESK_ALL) return fetchedArticles;
-    return fetchedArticles.filter((article) => articleMatchesDesk(article, activeDesk));
+    const homepageArticles = fetchedArticles.filter((article) => !isIpoArticle(article));
+    if (activeDesk === RESEARCH_DESK_ALL) return homepageArticles;
+    return homepageArticles.filter((article) => articleMatchesDesk(article, activeDesk));
   }, [activeDesk, fetchedArticles]);
+  const homepageLatestArticles = useMemo(
+    () => latestArticles.filter((article) => !isIpoArticle(article)),
+    [latestArticles]
+  );
 
   const activeDeskLabel = DESK_BUTTONS.find((desk) => desk.id === activeDesk)?.label || 'Articles';
 
@@ -454,7 +464,7 @@ export default function ResearchTerminalHome() {
             </>
           )}
           </div>
-          <LatestRail articles={latestArticles} loading={latestLoading} />
+          <LatestRail articles={homepageLatestArticles} loading={latestLoading} />
           </div>
         </div>
       </section>
