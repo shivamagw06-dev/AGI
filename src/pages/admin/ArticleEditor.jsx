@@ -329,45 +329,61 @@ export default function ArticleEditor() {
 
   useEffect(() => {
     if (!editor) return;
-    const view = editor.view;
-    if (!view?.dom) return;
+    let detach = () => {};
 
-    const dropHandler = (event) => {
-      const files = event.dataTransfer?.files;
-      if (!files?.length) return;
-      const imageFiles = Array.from(files).filter((file) => file.type.startsWith('image/'));
-      if (!imageFiles.length) return;
-      event.preventDefault();
-      const coords = { left: event.clientX, top: event.clientY };
-      const pos = view.posAtCoords(coords)?.pos ?? editor.state.selection.anchor;
-      void (async () => {
-        for (const file of imageFiles) {
-          // eslint-disable-next-line no-await-in-loop
-          await insertImageFile(file, pos);
-        }
-      })();
+    const attachImageHandlers = () => {
+      let view;
+      try {
+        view = editor.view;
+      } catch {
+        return;
+      }
+      if (!view?.dom) return;
+
+      const dropHandler = (event) => {
+        const files = event.dataTransfer?.files;
+        if (!files?.length) return;
+        const imageFiles = Array.from(files).filter((file) => file.type.startsWith('image/'));
+        if (!imageFiles.length) return;
+        event.preventDefault();
+        const coords = { left: event.clientX, top: event.clientY };
+        const pos = view.posAtCoords(coords)?.pos ?? editor.state.selection.anchor;
+        void (async () => {
+          for (const file of imageFiles) {
+            // eslint-disable-next-line no-await-in-loop
+            await insertImageFile(file, pos);
+          }
+        })();
+      };
+
+      const pasteHandler = (event) => {
+        const files = event.clipboardData?.files;
+        if (!files?.length) return;
+        const imageFiles = Array.from(files).filter((file) => file.type.startsWith('image/'));
+        if (!imageFiles.length) return;
+        event.preventDefault();
+        const position = editor.state.selection.anchor;
+        void (async () => {
+          for (const file of imageFiles) {
+            // eslint-disable-next-line no-await-in-loop
+            await insertImageFile(file, position);
+          }
+        })();
+      };
+
+      view.dom.addEventListener('drop', dropHandler);
+      view.dom.addEventListener('paste', pasteHandler);
+      detach = () => {
+        view.dom.removeEventListener('drop', dropHandler);
+        view.dom.removeEventListener('paste', pasteHandler);
+      };
     };
 
-    const pasteHandler = (event) => {
-      const files = event.clipboardData?.files;
-      if (!files?.length) return;
-      const imageFiles = Array.from(files).filter((file) => file.type.startsWith('image/'));
-      if (!imageFiles.length) return;
-      event.preventDefault();
-      const position = editor.state.selection.anchor;
-      void (async () => {
-        for (const file of imageFiles) {
-          // eslint-disable-next-line no-await-in-loop
-          await insertImageFile(file, position);
-        }
-      })();
-    };
-
-    view.dom.addEventListener('drop', dropHandler);
-    view.dom.addEventListener('paste', pasteHandler);
+    editor.on('create', attachImageHandlers);
+    if (editor.isInitialized) attachImageHandlers();
     return () => {
-      view.dom.removeEventListener('drop', dropHandler);
-      view.dom.removeEventListener('paste', pasteHandler);
+      editor.off('create', attachImageHandlers);
+      detach();
     };
   }, [editor, insertImageFile]);
 
