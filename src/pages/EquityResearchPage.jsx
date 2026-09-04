@@ -27,6 +27,11 @@ function articleMarket(article) {
   return 'india';
 }
 
+function isIpoArticle(article) {
+  const section = String(article?.section || '').trim().toLowerCase();
+  return section === 'ipo' || section === 'ipos';
+}
+
 function formatDate(value) {
   if (!value) return 'Recently published';
   const date = new Date(value);
@@ -131,7 +136,7 @@ export default function EquityResearchPage() {
         setError('Equity research could not be loaded right now.');
         setArticles([]);
       } else {
-        setArticles(data || []);
+        setArticles((data || []).filter((article) => !isIpoArticle(article)));
       }
       setLoading(false);
     }
