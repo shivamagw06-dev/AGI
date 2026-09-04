@@ -10,6 +10,12 @@ export const RESEARCH_DESKS = [
     hint: 'India desk',
   },
   {
+    id: 'ipos',
+    label: 'IPO Research',
+    section: 'IPOs',
+    hint: 'Primary markets',
+  },
+  {
     id: 'global-markets',
     label: 'Global Markets',
     section: 'Global Markets',
@@ -49,7 +55,7 @@ const LEGACY_SECTION_TO_DESK = {
   'Research Reports': 'indian-market',
   'Stock Analysis': 'indian-market',
   'Company Updates': 'indian-market',
-  IPOs: 'indian-market',
+  IPOs: 'ipos',
   'Market Close Update': 'indian-market',
   'Day Close Update': 'indian-market',
   'Market Close Summary': 'indian-market',
