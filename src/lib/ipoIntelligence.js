@@ -192,6 +192,7 @@ export function enrichArticle(raw = {}, previousArticles = []) {
     sentiment: sentiment.label,
     sentimentScore: sentiment.score,
     readingTime: readingTimeMinutes(`${raw.title || ''} ${excerpt}`),
+    researchMeta: raw.equity_research && typeof raw.equity_research === 'object' ? raw.equity_research : null,
   };
   article.ai = buildAiSummary(article, previousArticles);
   return article;
