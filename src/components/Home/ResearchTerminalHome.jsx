@@ -1,12 +1,11 @@
 import { useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import {
   BookOpen,
-  Building2,
   Briefcase,
-  Globe2,
   Landmark,
+  Library,
   LineChart,
 } from 'lucide-react';
 import NewsletterSection from '@/components/Home/NewsletterSection';
@@ -24,19 +23,24 @@ import {
 
 const DESK_BUTTONS = [
   { id: RESEARCH_DESK_ALL, label: 'Articles', icon: BookOpen, hint: 'All research' },
-  ...RESEARCH_DESKS.map((desk) => ({
+  {
+    id: 'equity-research',
+    label: 'Equity Research',
+    icon: Library,
+    hint: 'India & US',
+    href: '/equity-research',
+  },
+  ...RESEARCH_DESKS.filter((desk) =>
+    ['indian-market', 'private-markets', 'economics'].includes(desk.id)
+  ).map((desk) => ({
     id: desk.id,
     label: desk.label,
     icon:
       desk.id === 'indian-market'
         ? LineChart
-        : desk.id === 'global-markets'
-          ? Globe2
-          : desk.id === 'private-markets'
-            ? Briefcase
-            : desk.id === 'hedge-funds'
-              ? Building2
-              : Landmark,
+        : desk.id === 'private-markets'
+          ? Briefcase
+          : Landmark,
     hint: desk.hint,
   })),
 ];
@@ -299,6 +303,7 @@ function LatestRail({ articles, loading }) {
 }
 
 export default function ResearchTerminalHome() {
+  const navigate = useNavigate();
   const [activeDesk, setActiveDesk] = useState(RESEARCH_DESK_ALL);
   const deskSections = useMemo(
     () => (activeDesk === RESEARCH_DESK_ALL ? null : getSectionsForDesk(activeDesk)),
@@ -332,7 +337,7 @@ export default function ResearchTerminalHome() {
         <title>AGI — Institutional Research</title>
         <meta
           name="description"
-          content="Ask AGI and read institutional research across Indian markets, global markets, private equity, hedge funds and economics."
+          content="Read institutional equity research across Indian and US companies, Indian markets, private equity and economics."
         />
       </Helmet>
 
@@ -347,8 +352,8 @@ export default function ResearchTerminalHome() {
                 <button
                   key={desk.id}
                   type="button"
-                  onClick={() => setActiveDesk(desk.id)}
-                  aria-pressed={isActive}
+                  onClick={() => desk.href ? navigate(desk.href) : setActiveDesk(desk.id)}
+                  aria-pressed={desk.href ? undefined : isActive}
                   className={`group flex items-center gap-3 rounded-xl border px-3.5 py-3.5 text-left transition-colors ${
                     isActive
                       ? 'border-[#0b1f33] bg-[#0b1f33] text-white'
