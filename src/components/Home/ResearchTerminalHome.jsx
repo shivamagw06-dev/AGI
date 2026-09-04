@@ -1,12 +1,12 @@
 import { useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import {
   BookOpen,
-  Building2,
   Briefcase,
   Globe2,
   Landmark,
+  Library,
   LineChart,
 } from 'lucide-react';
 import NewsletterSection from '@/components/Home/NewsletterSection';
@@ -24,7 +24,16 @@ import {
 
 const DESK_BUTTONS = [
   { id: RESEARCH_DESK_ALL, label: 'Articles', icon: BookOpen, hint: 'All research' },
-  ...RESEARCH_DESKS.map((desk) => ({
+  {
+    id: 'equity-research',
+    label: 'Equity Research',
+    icon: Library,
+    hint: 'India & US',
+    href: '/equity-research',
+  },
+  ...RESEARCH_DESKS.filter((desk) =>
+    ['indian-market', 'global-markets', 'private-markets', 'economics'].includes(desk.id)
+  ).map((desk) => ({
     id: desk.id,
     label: desk.label,
     icon:
@@ -34,9 +43,7 @@ const DESK_BUTTONS = [
           ? Globe2
           : desk.id === 'private-markets'
             ? Briefcase
-            : desk.id === 'hedge-funds'
-              ? Building2
-              : Landmark,
+            : Landmark,
     hint: desk.hint,
   })),
 ];
@@ -115,6 +122,11 @@ function isMorning(article) {
 function isEvening(article) {
   const hay = `${article?.section || ''} ${article?.category || ''} ${article?.title || ''}`;
   return /evening|post\s*market|day\s*close|market\s*close|wrap/i.test(hay);
+}
+
+function isIpoArticle(article) {
+  const section = String(article?.section || article?.category || '').trim().toLowerCase();
+  return section === 'ipos' || section === 'ipo';
 }
 
 /** Featured story — image + copy in one balanced row on desktop. */
@@ -299,6 +311,7 @@ function LatestRail({ articles, loading }) {
 }
 
 export default function ResearchTerminalHome() {
+  const navigate = useNavigate();
   const [activeDesk, setActiveDesk] = useState(RESEARCH_DESK_ALL);
   const deskSections = useMemo(
     () => (activeDesk === RESEARCH_DESK_ALL ? null : getSectionsForDesk(activeDesk)),
@@ -313,9 +326,14 @@ export default function ResearchTerminalHome() {
   const { articles: latestArticles, loading: latestLoading } = useHomepageLatest(7);
 
   const articles = useMemo(() => {
-    if (activeDesk === RESEARCH_DESK_ALL) return fetchedArticles;
-    return fetchedArticles.filter((article) => articleMatchesDesk(article, activeDesk));
+    const homepageArticles = fetchedArticles.filter((article) => !isIpoArticle(article));
+    if (activeDesk === RESEARCH_DESK_ALL) return homepageArticles;
+    return homepageArticles.filter((article) => articleMatchesDesk(article, activeDesk));
   }, [activeDesk, fetchedArticles]);
+  const homepageLatestArticles = useMemo(
+    () => latestArticles.filter((article) => !isIpoArticle(article)),
+    [latestArticles]
+  );
 
   const activeDeskLabel = DESK_BUTTONS.find((desk) => desk.id === activeDesk)?.label || 'Articles';
 
@@ -332,7 +350,7 @@ export default function ResearchTerminalHome() {
         <title>AGI — Institutional Research</title>
         <meta
           name="description"
-          content="Ask AGI and read institutional research across Indian markets, global markets, private equity, hedge funds and economics."
+          content="Read institutional equity research across Indian and US companies, Indian markets, private equity and economics."
         />
       </Helmet>
 
@@ -347,8 +365,8 @@ export default function ResearchTerminalHome() {
                 <button
                   key={desk.id}
                   type="button"
-                  onClick={() => setActiveDesk(desk.id)}
-                  aria-pressed={isActive}
+                  onClick={() => desk.href ? navigate(desk.href) : setActiveDesk(desk.id)}
+                  aria-pressed={desk.href ? undefined : isActive}
                   className={`group flex items-center gap-3 rounded-xl border px-3.5 py-3.5 text-left transition-colors ${
                     isActive
                       ? 'border-[#0b1f33] bg-[#0b1f33] text-white'
@@ -446,7 +464,7 @@ export default function ResearchTerminalHome() {
             </>
           )}
           </div>
-          <LatestRail articles={latestArticles} loading={latestLoading} />
+          <LatestRail articles={homepageLatestArticles} loading={latestLoading} />
           </div>
         </div>
       </section>

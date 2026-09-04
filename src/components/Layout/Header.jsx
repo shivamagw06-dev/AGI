@@ -21,10 +21,10 @@ import ResearchSearch from '@/components/Search/ResearchSearch';
 import { buildLoginUrl } from '@/lib/accessPolicy';
 
 const PRIMARY_NAV = [
-  { name: 'Market Intelligence', path: '/market-intelligence' },
+  { name: 'Equity Research', path: '/equity-research' },
+  { name: 'IPO Intelligence', path: '/ipo-intelligence' },
   { name: 'Portfolio', path: '/portfolio' },
   { name: 'Live Desk', path: '/live-desk' },
-  { name: 'Hedge Fund', path: '/hedge-fund' },
   { name: 'Live Alpha', path: '/live-alpha' },
 ];
 
@@ -32,8 +32,6 @@ const MORE_NAV = [
   { name: 'Insider Activity', path: '/insider-activity' },
   { name: 'Private Markets', path: '/private-markets' },
   { name: 'Global Markets', path: '/global-markets' },
-  { name: 'FX Intelligence', path: '/economics' },
-  { name: 'US Market', path: '/us-stock-intelligence' },
 ];
 
 const MOBILE_NAV = [{ name: 'Home', path: '/' }, ...PRIMARY_NAV, ...MORE_NAV];
