@@ -1,0 +1,485 @@
+name: Database tests
+
+# The CAS import RPCs assert things that cannot be checked by reading SQL:
+# row locking, rollback on failure, version conflicts, and RLS isolation
+# between two real users. Those need a real Postgres, so this runs one.
+#
+# Written because the machine these were authored on had no Postgres, no
+# Docker and no psycopg2. Untested SQL that looks right is exactly how a
+# confirmation ends up writing half a statement.
+
+on:
+  pull_request:
+    paths:
+      - 'supabase/migrations/**'
+      - 'supabase/tests/**'
+      - '.github/workflows/db-tests.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: db-tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  rpc-tests:
+    name: CAS import RPCs
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    env:
+      PGHOST: localhost
+      PGPORT: '5432'
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: agi_test
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Start Postgres with pgTAP on the runner
+        run: |
+          set -euo pipefail
+          # Postgres runs here rather than in a service container. pgTAP is a
+          # server-side extension: its control file has to sit on the same
+          # filesystem as the postmaster, so installing it on the runner while
+          # the server lived in a container left CREATE EXTENSION reporting
+          # 'extension "pgtap" is not available'. Co-locating them is simpler
+          # than baking a custom image.
+          sudo apt-get update -qq
+          # Extensions the chain actually creates: pgcrypto (in contrib) and
+          # vector. pgTAP is for the tests themselves. Installed together so a
+          # missing one is found here rather than one CI round trip at a time.
+          sudo apt-get install -y --no-install-recommends \
+            postgresql postgresql-contrib postgresql-16-pgtap postgresql-16-pgvector
+          sudo pg_ctlcluster 16 main start || sudo systemctl start postgresql
+          for i in $(seq 1 30); do
+            pg_isready -h localhost -p 5432 && break
+            sleep 1
+          done
+          pg_isready -h localhost -p 5432
+          sudo -u postgres psql -v ON_ERROR_STOP=1 -c \
+            "ALTER ROLE postgres WITH PASSWORD 'postgres';"
+          sudo -u postgres createdb agi_test
+          psql -v ON_ERROR_STOP=1 -c 'SELECT version();' -t | sed 's/^/  /'
+
+      - name: Stand up the Supabase shims this schema expects
+        run: |
+          set -euo pipefail
+          # One file, used here and by the full-chain probe below, so the two
+          # cannot drift apart and report different failures for the same
+          # missing function.
+          psql -v ON_ERROR_STOP=1 -q -f supabase/tests/supabase_shims.sql
+          echo "  shims applied"
+
+      - name: Create the base tables the chain alters but never creates
+        run: |
+          set -euo pipefail
+          # The migration history is not self-contained and has not been since
+          # 001, whose own comment says "Run this in Supabase SQL Editor".
+          # Four tables were made by hand in the dashboard and are only ever
+          # altered by migrations - articles, profiles, client_portfolios and
+          # client_portfolio_holdings - and two of those are the ones CAS
+          # import extends. Without them a blank database cannot replay the
+          # chain at all.
+          psql -v ON_ERROR_STOP=1 -q -f supabase/tests/bootstrap_base_tables.sql
+          echo "  base tables created"
+
+      - name: Apply the migrations this feature owns
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          # Scoped deliberately. The full history cannot replay from empty --
+          # see the non-blocking step below -- and that is a pre-existing
+          # problem far larger than this PR. What must be proven here is that
+          # the portfolio, broker and CAS migrations apply in order onto the
+          # base tables, and that the RPCs they create behave.
+          count=0
+          for file in $(ls supabase/migrations/*.sql | sort); do
+            case "$(basename "$file")" in
+              *portfolio*|*broker*|*import*|*cas_*) ;;
+              *) continue ;;
+            esac
+            echo "  applying $(basename "$file")"
+            psql -v ON_ERROR_STOP=1 -q -f "$file"
+            count=$((count + 1))
+          done
+          echo "  applied $count feature migrations"
+          if [ "$count" -eq 0 ]; then
+            echo "::error::no feature migrations matched"
+            exit 1
+          fi
+
+      - name: Verify the schema the migrations were supposed to build
+        run: |
+          set -euo pipefail
+          # A migration can apply cleanly and still not create what a later
+          # step depends on -- an IF NOT EXISTS that silently matched
+          # something else, or a file that was never added to the chain. These
+          # assertions run before pgTAP so a missing object is reported as a
+          # missing object rather than as a confusing test failure.
+          psql -v ON_ERROR_STOP=1 <<'SQL'
+          DO $$
+          DECLARE
+            missing text[] := ARRAY[]::text[];
+            expected_tables text[] := ARRAY[
+              'client_portfolios', 'client_portfolio_holdings',
+              'portfolio_imports', 'portfolio_import_review',
+              'broker_connections', 'broker_connection_secrets'];
+            expected_functions text[] := ARRAY[
+              'create_cas_import_plan', 'confirm_cas_import', 'discard_cas_import'];
+            expected_columns text[][] := ARRAY[
+              ARRAY['client_portfolios', 'portfolio_version'],
+              ARRAY['portfolio_imports', 'base_portfolio_version'],
+              ARRAY['portfolio_imports', 'expires_at'],
+              ARRAY['portfolio_imports', 'statement_fingerprint'],
+              ARRAY['client_portfolio_holdings', 'source'],
+              ARRAY['client_portfolio_holdings', 'is_active'],
+              ARRAY['client_portfolio_holdings', 'broker_connection_id']];
+            expected_indexes text[] := ARRAY[
+              'client_portfolio_holdings_broker_lot_idx',
+              'portfolio_imports_fingerprint_once'];
+            -- client_portfolio_holdings_asset_type_known is deliberately
+            -- absent: it rejected every asset_type the application writes, and
+            -- the migration explains why the column stays unconstrained until
+            -- the two vocabularies are unified.
+            expected_constraints text[] := ARRAY[
+              'portfolio_imports_status_known',
+              'broker_connections_broker_known'];
+            item text;
+          BEGIN
+            FOREACH item IN ARRAY expected_tables LOOP
+              IF to_regclass('public.' || item) IS NULL THEN
+                missing := missing || ('table ' || item);
+              END IF;
+            END LOOP;
+
+            FOREACH item IN ARRAY expected_functions LOOP
+              IF NOT EXISTS (
+                SELECT 1 FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace
+                 WHERE n.nspname = 'public' AND p.proname = item
+              ) THEN
+                missing := missing || ('function ' || item);
+              END IF;
+            END LOOP;
+
+            FOR i IN 1 .. array_length(expected_columns, 1) LOOP
+              IF NOT EXISTS (
+                SELECT 1 FROM information_schema.columns
+                 WHERE table_schema = 'public'
+                   AND table_name = expected_columns[i][1]
+                   AND column_name = expected_columns[i][2]
+              ) THEN
+                missing := missing
+                  || ('column ' || expected_columns[i][1] || '.' || expected_columns[i][2]);
+              END IF;
+            END LOOP;
+
+            FOREACH item IN ARRAY expected_indexes LOOP
+              IF NOT EXISTS (
+                SELECT 1 FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
+                 WHERE n.nspname = 'public' AND c.relname = item
+              ) AND NOT EXISTS (
+                SELECT 1 FROM pg_constraint WHERE conname = item
+              ) THEN
+                missing := missing || ('index or constraint ' || item);
+              END IF;
+            END LOOP;
+
+            FOREACH item IN ARRAY expected_constraints LOOP
+              IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = item) THEN
+                missing := missing || ('constraint ' || item);
+              END IF;
+            END LOOP;
+
+            -- The secrets table must have no policy for the browser role. RLS
+            -- hides rows, not columns, which is why the tokens live here at
+            -- all; a policy appearing on it would undo that.
+            IF EXISTS (
+              SELECT 1 FROM pg_policies
+               WHERE schemaname = 'public' AND tablename = 'broker_connection_secrets'
+                 AND 'authenticated' = ANY (roles)
+            ) THEN
+              missing := missing || 'broker_connection_secrets is readable by authenticated';
+            END IF;
+
+            IF array_length(missing, 1) IS NOT NULL THEN
+              RAISE EXCEPTION 'schema verification failed: %', array_to_string(missing, ', ');
+            END IF;
+
+            RAISE NOTICE 'schema verified: % tables, % functions, % columns',
+              array_length(expected_tables, 1), array_length(expected_functions, 1),
+              array_length(expected_columns, 1);
+          END;
+          $$;
+          SQL
+
+      - name: Security posture of what the migrations created
+        run: |
+          set -euo pipefail
+          # The checks Supabase's advisor runs, made to fail here rather than
+          # be noticed in staging. Each one is a mistake that leaves the
+          # database looking fine.
+          psql -v ON_ERROR_STOP=1 <<'SQL'
+          DO $$
+          DECLARE
+            problems text[] := ARRAY[]::text[];
+            rec record;
+          BEGIN
+            -- A DEFINER function without a pinned search_path runs the
+            -- caller's schemas with the owner's rights, which is how a
+            -- shadowed table becomes privilege escalation.
+            FOR rec IN
+              SELECT p.proname
+                FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace
+               WHERE n.nspname = 'public' AND p.prosecdef
+                 AND NOT EXISTS (
+                   SELECT 1 FROM unnest(COALESCE(p.proconfig, ARRAY[]::text[])) cfg
+                    WHERE cfg LIKE 'search_path=%')
+            LOOP
+              problems := problems || ('SECURITY DEFINER without search_path: ' || rec.proname);
+            END LOOP;
+
+            -- Every table this feature creates must have RLS on. A table
+            -- holding one client's positions without it is readable by every
+            -- other client.
+            FOR rec IN
+              SELECT c.relname
+                FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
+               WHERE n.nspname = 'public' AND c.relkind = 'r'
+                 AND c.relname IN ('portfolio_imports', 'portfolio_import_review',
+                                   'broker_connections', 'broker_connection_secrets',
+                                   'client_portfolios', 'client_portfolio_holdings')
+                 AND NOT c.relrowsecurity
+            LOOP
+              problems := problems || ('RLS not enabled: ' || rec.relname);
+            END LOOP;
+
+            -- PUBLIC must not execute the import RPCs. They write holdings.
+            FOR rec IN
+              SELECT p.proname
+                FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace
+               WHERE n.nspname = 'public'
+                 AND p.proname IN ('create_cas_import_plan', 'confirm_cas_import',
+                                   'discard_cas_import')
+                 AND has_function_privilege('public', p.oid, 'EXECUTE')
+            LOOP
+              problems := problems || ('PUBLIC can execute: ' || rec.proname);
+            END LOOP;
+
+            -- And the roles that should execute them must actually be able to,
+            -- or the feature is broken in a way tests using postgres would miss.
+            FOR rec IN
+              SELECT p.proname
+                FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace
+               WHERE n.nspname = 'public'
+                 AND p.proname IN ('create_cas_import_plan', 'confirm_cas_import',
+                                   'discard_cas_import')
+                 AND NOT has_function_privilege('authenticated', p.oid, 'EXECUTE')
+            LOOP
+              problems := problems || ('authenticated cannot execute: ' || rec.proname);
+            END LOOP;
+
+            -- An RLS table with no policy denies everyone, which reads as
+            -- working isolation and is really a broken feature. The secrets
+            -- table is the deliberate exception: no policy is the point, since
+            -- RLS hides rows and not columns.
+            FOR rec IN
+              SELECT c.relname
+                FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
+               WHERE n.nspname = 'public' AND c.relkind = 'r' AND c.relrowsecurity
+                 AND c.relname IN ('portfolio_imports', 'portfolio_import_review',
+                                   'broker_connections')
+                 AND NOT EXISTS (
+                   SELECT 1 FROM pg_policies
+                    WHERE schemaname = 'public' AND tablename = c.relname)
+            LOOP
+              problems := problems || ('RLS enabled but no policy: ' || rec.relname);
+            END LOOP;
+
+            -- The inverse for the secrets table: a policy appearing on it
+            -- would undo the reason it exists.
+            IF EXISTS (
+              SELECT 1 FROM pg_policies
+               WHERE schemaname = 'public'
+                 AND tablename = 'broker_connection_secrets'
+                 AND 'authenticated' = ANY (roles)
+            ) THEN
+              problems := problems || 'broker_connection_secrets exposed to authenticated';
+            END IF;
+
+            IF array_length(problems, 1) IS NOT NULL THEN
+              RAISE EXCEPTION 'security posture: %', array_to_string(problems, '; ');
+            END IF;
+            RAISE NOTICE 'security posture clean';
+          END;
+          $$;
+          SQL
+
+      - name: RPC behaviour, isolation and rollback
+        run: |
+          set -euo pipefail
+          psql -v ON_ERROR_STOP=1 -f supabase/tests/cas_import_rpc_test.sql
+
+      - name: Two sessions confirm the same plan
+        run: |
+          set -euo pipefail
+          psql -v ON_ERROR_STOP=1 -q -f supabase/tests/concurrent_setup.sql
+
+          claims='{"sub":"33333333-3333-3333-3333-333333333333"}'
+
+          # Session A takes the row lock and holds it while it sleeps, so the
+          # overlap is deterministic rather than a matter of timing luck.
+          psql -v ON_ERROR_STOP=1 -q <<SQL > /tmp/session_a.log 2>&1 &
+          BEGIN;
+          SELECT set_config('request.jwt.claims', '$claims', true);
+          SELECT public.confirm_cas_import(
+            'dddddddd-0000-0000-0000-000000000003'::uuid, ARRAY['race-add']);
+          SELECT pg_sleep(4);
+          COMMIT;
+          SQL
+          a_pid=$!
+
+          sleep 1
+
+          # Session B blocks on A's lock, then finds the plan already resolved.
+          # ON_ERROR_STOP matters here: without it psql exits 0 even when a
+          # statement raises, so a losing session would look like a winning one
+          # and the race would appear to have no winner at all.
+          set +e
+          psql -v ON_ERROR_STOP=1 -q <<SQL > /tmp/session_b.log 2>&1
+          SELECT set_config('request.jwt.claims', '$claims', false);
+          SELECT public.confirm_cas_import(
+            'dddddddd-0000-0000-0000-000000000003'::uuid, ARRAY['race-add']);
+          SQL
+          b_status=$?
+          set -e
+
+          wait "$a_pid"
+
+          echo "--- session A ---"; cat /tmp/session_a.log
+          echo "--- session B (exit $b_status) ---"; cat /tmp/session_b.log
+
+          if [ "$b_status" -eq 0 ]; then
+            echo "::error::both sessions confirmed the same plan"
+            exit 1
+          fi
+          if ! grep -qE 'import_already_resolved|portfolio_changed' /tmp/session_b.log; then
+            echo "::error::the losing session failed for the wrong reason"
+            exit 1
+          fi
+
+          psql -v ON_ERROR_STOP=1 -f supabase/tests/concurrent_assert.sql
+
+      - name: How far the full history gets from empty (reporting only)
+        if: always()
+        continue-on-error: true
+        run: |
+          set -uo pipefail
+          # Not a gate. The chain has never been self-contained: 001's own
+          # comment says "Run this in Supabase SQL Editor", and four tables are
+          # altered but never created. This records how far a blank database
+          # gets and on what, so the gap stays visible and measurable instead
+          # of being rediscovered later.
+          sudo -u postgres dropdb --if-exists chain_probe
+          sudo -u postgres createdb chain_probe
+          export PGDATABASE=chain_probe
+          psql -q -f supabase/tests/supabase_shims.sql >/dev/null 2>&1 || true
+          psql -q -f supabase/tests/bootstrap_base_tables.sql >/dev/null 2>&1 || true
+          applied=0
+          failed=""
+          for file in $(ls supabase/migrations/*.sql | sort); do
+            if psql -v ON_ERROR_STOP=1 -q -f "$file" >/tmp/probe.log 2>&1; then
+              applied=$((applied + 1))
+            else
+              failed="$(basename "$file")"
+              break
+            fi
+          done
+          total=$(ls supabase/migrations/*.sql | wc -l | tr -d " ")
+          if [ -n "$failed" ]; then
+            echo "::warning::full chain from empty stops after $applied of $total at $failed"
+            tail -3 /tmp/probe.log | sed "s/^/    /"
+          else
+            echo "  full chain applied cleanly: $applied of $total"
+          fi
+
+  dependency-gate:
+    name: Multer pin and audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: The lockfile must carry the reviewed multer version
+        working-directory: server
+        run: |
+          set -euo pipefail
+          WANT=$(node -p "require('./package.json').dependencies.multer")
+          echo "  package.json pins multer at $WANT"
+          case "$WANT" in
+            *^*|*~*|*'>'*|*'<'*|*'*'*)
+              echo "::error::multer must be pinned exactly, not ranged: $WANT"; exit 1 ;;
+          esac
+          if [ ! -f package-lock.json ]; then
+            echo "::warning::no lockfile in server/; skipping lockfile pin check"
+            exit 0
+          fi
+          GOT=$(node -e "
+            const lock = require('./package-lock.json');
+            const entry = (lock.packages && lock.packages['node_modules/multer'])
+              || (lock.dependencies && lock.dependencies.multer);
+            process.stdout.write(entry ? entry.version : 'absent');
+          ")
+          echo "  lockfile has multer $GOT"
+          if [ "$GOT" != "$WANT" ]; then
+            echo "::error::lockfile multer $GOT does not match the reviewed $WANT"
+            exit 1
+          fi
+
+      - name: Audit, scoped to what this dependency introduces
+        working-directory: server
+        run: |
+          set -euo pipefail
+          # A blanket audit gate fails on advisories that have nothing to do
+          # with the change under review -- express 4.21.2 already carries a
+          # high path-to-regexp ReDoS, and blocking every future PR on it would
+          # train people to ignore this job. So a high or critical advisory
+          # inside multer's own tree fails the build, and anything else is
+          # reported as a warning that someone still has to act on.
+          npm audit --omit=dev --json > audit.json 2>/dev/null || true
+          node <<'JS'
+          const audit = JSON.parse(require('fs').readFileSync('audit.json', 'utf8'));
+          const lock = require('./package-lock.json');
+
+          // Everything reachable from multer.
+          const tree = new Set();
+          const walk = (name) => {
+            if (tree.has(name)) return;
+            tree.add(name);
+            const entry = lock.packages[`node_modules/${name}`];
+            for (const dep of Object.keys(entry?.dependencies || {})) walk(dep);
+          };
+          walk('multer');
+
+          const bad = [];
+          const elsewhere = [];
+          for (const [name, v] of Object.entries(audit.vulnerabilities || {})) {
+            if (!['high', 'critical'].includes(v.severity)) continue;
+            (tree.has(name) ? bad : elsewhere).push(`${v.severity} ${name}`);
+          }
+
+          for (const line of elsewhere) {
+            console.log(`::warning::pre-existing advisory outside this change: ${line}`);
+          }
+          if (bad.length) {
+            for (const line of bad) {
+              console.log(`::error::advisory inside multer's dependency tree: ${line}`);
+            }
+            process.exit(1);
+          }
+          console.log(`  multer tree clean (${tree.size} packages checked)`);
+          console.log(`  ${elsewhere.length} pre-existing advisory/advisories elsewhere`);
+          JS

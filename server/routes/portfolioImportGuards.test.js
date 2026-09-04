@@ -1,9 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import {
-  MAX_PDF_BYTES, cleanSelection, decodeUpload, looksLikePdf,
+  MAX_PDF_BYTES, checkUpload, cleanSelection, looksLikePdf, redactBody,
+  uploadErrorCode,
 } from './portfolioImportGuards.js';
-
-const b64 = (text) => Buffer.from(text).toString('base64');
 
 describe('content inspection, not the filename', () => {
   it('accepts a real PDF header', () => {
@@ -27,26 +26,24 @@ describe('content inspection, not the filename', () => {
   });
 });
 
-describe('decoding an upload', () => {
-  it('accepts a base64 PDF', () => {
-    const out = decodeUpload({ pdf_base64: b64('%PDF-1.7 hello') });
+describe('checking an uploaded file', () => {
+  it('accepts a PDF within the limit', () => {
+    const out = checkUpload({ buffer: Buffer.from('%PDF-1.7 hello') });
     expect(out.ok).toBe(true);
-    expect(out.buffer.length).toBeGreaterThan(0);
   });
 
-  it('refuses a missing document', () => {
-    expect(decodeUpload({}).error).toBe('no_file');
-    expect(decodeUpload({ pdf_base64: '' }).error).toBe('no_file');
+  it('refuses a missing file', () => {
+    expect(checkUpload(undefined).error).toBe('no_file');
+    expect(checkUpload({ buffer: Buffer.alloc(0) }).error).toBe('no_file');
   });
 
-  it('refuses a non-PDF even when it decodes cleanly', () => {
-    expect(decodeUpload({ pdf_base64: b64('PK zipped') }).error).toBe('not_a_pdf');
+  it('refuses a non-PDF that arrived under a pdf field name', () => {
+    expect(checkUpload({ buffer: Buffer.from('PK zipped') }).error).toBe('not_a_pdf');
   });
 
-  it('refuses an oversized document before allocating it', () => {
-    // Base64 length alone is enough to know it is too big.
-    const oversized = 'A'.repeat(Math.ceil((MAX_PDF_BYTES + 1024) / 0.75));
-    expect(decodeUpload({ pdf_base64: oversized }).error).toBe('file_too_large');
+  it('refuses an oversized file even if multer let it through', () => {
+    const big = Buffer.concat([Buffer.from('%PDF'), Buffer.alloc(MAX_PDF_BYTES)]);
+    expect(checkUpload({ buffer: big }).error).toBe('file_too_large');
   });
 });
 
@@ -77,5 +74,55 @@ describe('a confirmation carries ids and nothing else', () => {
   it('returns nothing for a non-array', () => {
     expect(cleanSelection('abc')).toEqual([]);
     expect(cleanSelection(null)).toEqual([]);
+  });
+});
+
+describe('bodies are redacted before anything logs them', () => {
+  it('masks the password', () => {
+    // Multipart keeps the document out of the JSON body, but the password is
+    // still a form field and APM captures bodies by default.
+    const out = redactBody({ password: 'PAN-of-the-client', portfolio_id: 'p1' });
+    expect(out.password).toBe('[redacted]');
+    expect(out.portfolio_id).toBe('p1');
+  });
+
+  it('masks a document and a fingerprint wherever they appear', () => {
+    const out = redactBody({
+      pdf_base64: 'JVBERi0xLjc=',
+      nested: { statement_fingerprint: 'abc', access_token: 'tok' },
+    });
+    expect(out.pdf_base64).toBe('[redacted]');
+    expect(out.nested.statement_fingerprint).toBe('[redacted]');
+    expect(out.nested.access_token).toBe('[redacted]');
+  });
+
+  it('leaves harmless values alone and tolerates non-objects', () => {
+    expect(redactBody({ selected_row_ids: ['a', 'b'] }).selected_row_ids).toEqual(['a', 'b']);
+    expect(redactBody(null)).toBeNull();
+    expect(redactBody('text')).toBe('text');
+  });
+});
+
+describe('multer errors never carry field values outward', () => {
+  it('maps each limit to a fixed client code', () => {
+    expect(uploadErrorCode({ code: 'LIMIT_FILE_SIZE' })).toBe('file_too_large');
+    expect(uploadErrorCode({ code: 'LIMIT_UNEXPECTED_FILE' })).toBe('no_file');
+    expect(uploadErrorCode({ code: 'LIMIT_FIELD_VALUE' })).toBe('field_too_large');
+    expect(uploadErrorCode({ code: 'LIMIT_PART_COUNT' })).toBe('too_many_fields');
+    expect(uploadErrorCode({ code: 'LIMIT_FIELD_COUNT' })).toBe('too_many_fields');
+  });
+
+  it('falls back to a generic code for anything unrecognised', () => {
+    expect(uploadErrorCode({ code: 'SOMETHING_NEW' })).toBe('upload_failed');
+    expect(uploadErrorCode(undefined)).toBe('upload_failed');
+  });
+
+  it('never returns the field or the value that tripped the limit', () => {
+    // multer attaches both; returning the error would hand back the input.
+    const err = { code: 'LIMIT_FIELD_VALUE', field: 'password', value: 'the-secret' };
+    const out = uploadErrorCode(err);
+    expect(out).toBe('field_too_large');
+    expect(JSON.stringify(out)).not.toContain('the-secret');
+    expect(JSON.stringify(out)).not.toContain('password');
   });
 });
