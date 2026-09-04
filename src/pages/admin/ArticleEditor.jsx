@@ -70,7 +70,27 @@ const initialEquityResearch = () => ({
   analyst_title: 'Equity Research Analyst',
   analyst_contact: '',
   key_data: '',
+  thesis: '',
+  strengths: '',
+  risks: '',
+  ipo_scores: {
+    business_quality: '',
+    financial_quality: '',
+    valuation: '',
+    governance: '',
+    issue_structure: '',
+    demand_quality: '',
+  },
 });
+
+const IPO_SCORE_FIELDS = [
+  ['business_quality', 'Business quality', '25%'],
+  ['financial_quality', 'Financial quality', '20%'],
+  ['valuation', 'Valuation', '20%'],
+  ['governance', 'Governance', '15%'],
+  ['issue_structure', 'Issue structure', '10%'],
+  ['demand_quality', 'Demand quality', '10%'],
+];
 
 const researchInputClass =
   'mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100';
@@ -232,11 +252,19 @@ export default function ArticleEditor() {
       setLiveStartedAt(data.live_started_at || null);
       setLiveEndedAt(data.live_ended_at || null);
       setArticleType(data.article_type || 'article');
+      const savedEquityResearch = data.equity_research && typeof data.equity_research === 'object'
+        ? data.equity_research
+        : {};
+      const equityDefaults = initialEquityResearch();
       setEquityResearch({
-        ...initialEquityResearch(),
-        ...(data.equity_research && typeof data.equity_research === 'object'
-          ? data.equity_research
-          : {}),
+        ...equityDefaults,
+        ...savedEquityResearch,
+        ipo_scores: {
+          ...equityDefaults.ipo_scores,
+          ...(savedEquityResearch.ipo_scores && typeof savedEquityResearch.ipo_scores === 'object'
+            ? savedEquityResearch.ipo_scores
+            : {}),
+        },
       });
 
       const html = data.content_md || data.content || '';
@@ -380,6 +408,11 @@ export default function ArticleEditor() {
       const tags = tagsInput.split(',').map((t) => t.trim()).filter(Boolean);
       if (articleType === 'equity_research' && !tags.includes('equity-research')) {
         tags.push('equity-research');
+      }
+      if (section === 'IPOs') {
+        if (!tags.some((tag) => tag.toLowerCase() === 'ipo')) tags.push('IPO');
+        const tickerTag = String(equityResearch.ticker || '').trim().toUpperCase();
+        if (tickerTag && !tags.some((tag) => tag.toUpperCase() === tickerTag)) tags.push(tickerTag);
       }
       if (showInLatest && publishStatus !== 'intelligence') tags.push(HOMEPAGE_LATEST_TAG);
       if (showAsHomepageLead && publishStatus === 'published') tags.push(HOMEPAGE_FEATURED_TAG);
@@ -1031,8 +1064,8 @@ export default function ArticleEditor() {
               <section className="mx-4 mt-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
                 <div className="mb-5 flex flex-wrap items-start justify-between gap-3 border-b border-slate-100 pb-4">
                   <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-blue-700">Equity research cover sheet</p>
-                    <h2 className="mt-1 text-xl font-semibold text-slate-950">Company, stance and valuation snapshot</h2>
+                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-blue-700">{section === 'IPOs' ? 'IPO research cover sheet' : 'Equity research cover sheet'}</p>
+                    <h2 className="mt-1 text-xl font-semibold text-slate-950">{section === 'IPOs' ? 'Issue thesis and intelligence scorecard' : 'Company, stance and valuation snapshot'}</h2>
                     <p className="mt-1 text-sm text-slate-500">These fields create the institutional header and facts panel on the published report.</p>
                   </div>
                   <span className="rounded-full bg-amber-50 px-3 py-1 text-xs font-medium text-amber-800">Editorial view, not a trade recommendation</span>
@@ -1053,6 +1086,37 @@ export default function ArticleEditor() {
                   <label className="text-sm font-medium text-slate-700">Analyst title<input className={researchInputClass} value={equityResearch.analyst_title} onChange={(e) => updateEquityResearch('analyst_title', e.target.value)} /></label>
                   <label className="text-sm font-medium text-slate-700">Analyst contact<input className={researchInputClass} value={equityResearch.analyst_contact} onChange={(e) => updateEquityResearch('analyst_contact', e.target.value)} placeholder="research@..." /></label>
                   <label className="text-sm font-medium text-slate-700 sm:col-span-2 lg:col-span-4">Key data<textarea className={`${researchInputClass} min-h-28 resize-y`} value={equityResearch.key_data} onChange={(e) => updateEquityResearch('key_data', e.target.value)} placeholder={'Market cap: INR 19.9tn\nEnterprise value: INR 22.1tn\n3m average turnover: INR 9.4bn\nSector: Energy & Retail'} /><span className="mt-1 block text-xs font-normal text-slate-400">Enter one label and value per line.</span></label>
+                  {section === 'IPOs' && (
+                    <div className="rounded-xl border border-amber-200 bg-amber-50/50 p-4 sm:col-span-2 lg:col-span-4">
+                      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-amber-700">IPO intelligence inputs</p>
+                      <p className="mt-1 text-xs text-slate-500">These fields feed the client IPO page. Enter one evidence-backed strength or risk per line.</p>
+                      <div className="mt-4 grid gap-4 lg:grid-cols-2">
+                        <label className="text-sm font-medium text-slate-700 lg:col-span-2">Thesis summary<textarea className={`${researchInputClass} min-h-20 resize-y`} value={equityResearch.thesis || ''} onChange={(e) => updateEquityResearch('thesis', e.target.value)} placeholder="State the core investment thesis and what would change it." /></label>
+                        <label className="text-sm font-medium text-slate-700">Potential strengths<textarea className={`${researchInputClass} min-h-28 resize-y`} value={equityResearch.strengths || ''} onChange={(e) => updateEquityResearch('strengths', e.target.value)} placeholder={'Revenue visibility supported by...\nMargins can expand because...'} /></label>
+                        <label className="text-sm font-medium text-slate-700">Principal risks<textarea className={`${researchInputClass} min-h-28 resize-y`} value={equityResearch.risks || ''} onChange={(e) => updateEquityResearch('risks', e.target.value)} placeholder={'Customer concentration remains...\nOFS-heavy structure limits...'} /></label>
+                      </div>
+                      <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                        {IPO_SCORE_FIELDS.map(([field, label, weight]) => (
+                          <label key={field} className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-600">
+                            {label} <span className="font-normal text-slate-400">({weight})</span>
+                            <input
+                              type="number"
+                              min="0"
+                              max="100"
+                              className={`${researchInputClass} normal-case tracking-normal`}
+                              value={equityResearch.ipo_scores?.[field] ?? ''}
+                              onChange={(e) => updateEquityResearch('ipo_scores', {
+                                ...(equityResearch.ipo_scores || {}),
+                                [field]: e.target.value,
+                              })}
+                              placeholder="0-100"
+                            />
+                          </label>
+                        ))}
+                      </div>
+                      <p className="mt-3 text-xs text-slate-500">The overall score appears only after at least four pillars have verified evidence. Leave demand quality blank to use live subscription demand.</p>
+                    </div>
+                  )}
                 </div>
               </section>
             )}
@@ -1160,7 +1224,14 @@ export default function ArticleEditor() {
               className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm"
               value={section}
               onChange={(e) => {
-                setSection(e.target.value);
+                const nextSection = e.target.value;
+                setSection(nextSection);
+                if (nextSection === 'IPOs' && articleType === 'equity_research') {
+                  setEquityResearch((current) => ({
+                    ...current,
+                    report_label: current.report_label === 'Equity Research' ? 'IPO Research' : current.report_label,
+                  }));
+                }
                 dirtyRef.current = true;
               }}
             >

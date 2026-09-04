@@ -63,7 +63,11 @@ function demandScore(subscription) {
 function listingReturn(ipo) {
   const listed = Number(ipo?.listingPrice);
   const issue = Number(ipo?.cutOffPrice || ipo?.maxPrice);
-  return Number.isFinite(listed) && Number.isFinite(issue) && issue !== 0 ? ((listed - issue) / issue) * 100 : null;
+  return Number.isFinite(listed) && Number.isFinite(issue) && listed > 0 && issue > 0 ? ((listed - issue) / issue) * 100 : null;
+}
+
+function hasVerifiedScore(value) {
+  return value !== '' && value !== null && value !== undefined && Number.isFinite(Number(value));
 }
 
 function stanceTone(stance = '') {
@@ -124,7 +128,7 @@ export default function IpoDetailPage() {
     { key: 'issue_structure', label: 'Issue structure', weight: 10, score: suppliedScores.issue_structure, icon: Landmark, detail: 'Fresh issue, OFS, dilution and use of proceeds' },
     { key: 'demand_quality', label: 'Demand quality', weight: 10, score: suppliedScores.demand_quality ?? demand, icon: TrendingUp, detail: 'Subscription strength and investor participation' },
   ];
-  const scored = scorecards.filter((item) => Number.isFinite(Number(item.score)));
+  const scored = scorecards.filter((item) => hasVerifiedScore(item.score));
   const overallScore = scored.length >= 4
     ? Math.round(scored.reduce((sum, item) => sum + Number(item.score) * item.weight, 0) / scored.reduce((sum, item) => sum + item.weight, 0))
     : null;
@@ -225,7 +229,7 @@ export default function IpoDetailPage() {
             <div className="grid gap-6 lg:grid-cols-[330px_1fr]">
               <div className="rounded-[26px] bg-[#173a4d] p-7 text-white"><p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#d5b694]">Weighted framework</p><p className="mt-4 font-serif text-6xl font-semibold">{overallScore ?? '—'}</p><p className="mt-3 text-sm leading-6 text-white/65">{overallScore != null ? 'Overall AGI IPO score out of 100.' : 'No overall score is published until at least four pillars are evidence-backed.'}</p><div className="mt-6 border-t border-white/10 pt-5 text-xs leading-5 text-white/55">{scored.length} of 6 components currently scored</div></div>
               <div className="grid gap-4 md:grid-cols-2">
-                {scorecards.map((item) => { const Icon = item.icon; const score = Number(item.score); const available = Number.isFinite(score); return <div key={item.key} className="rounded-[22px] border border-[#dfe5e7] bg-white p-5"><div className="flex items-start justify-between gap-3"><div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#edf3f5] text-[#173a4d]"><Icon className="h-4 w-4" /></div><span className="text-[10px] font-bold uppercase tracking-[0.12em] text-[#8b969c]">Weight {item.weight}%</span></div><div className="mt-4 flex items-end justify-between"><div><h3 className="font-serif text-lg font-semibold">{item.label}</h3><p className="mt-1 text-xs text-[#76838a]">{item.detail}</p></div><p className="text-2xl font-semibold">{available ? score : '—'}</p></div>{available ? <ScoreBar score={score} /> : <EvidencePending />}</div>; })}
+                {scorecards.map((item) => { const Icon = item.icon; const score = Number(item.score); const available = hasVerifiedScore(item.score); return <div key={item.key} className="rounded-[22px] border border-[#dfe5e7] bg-white p-5"><div className="flex items-start justify-between gap-3"><div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#edf3f5] text-[#173a4d]"><Icon className="h-4 w-4" /></div><span className="text-[10px] font-bold uppercase tracking-[0.12em] text-[#8b969c]">Weight {item.weight}%</span></div><div className="mt-4 flex items-end justify-between"><div><h3 className="font-serif text-lg font-semibold">{item.label}</h3><p className="mt-1 text-xs text-[#76838a]">{item.detail}</p></div><p className="text-2xl font-semibold">{available ? score : '—'}</p></div>{available ? <ScoreBar score={score} /> : <EvidencePending />}</div>; })}
               </div>
             </div>
           </motion.section>

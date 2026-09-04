@@ -80,6 +80,13 @@ function stripHtml(html = '') {
     .trim();
 }
 
+function splitAuthoredPoints(value = '') {
+  return String(value)
+    .split(/\n|•/)
+    .map((item) => item.replace(/^[-*\d.)\s]+/, '').trim())
+    .filter(Boolean);
+}
+
 function readingTimeMinutes(text = '') {
   const words = String(text).split(/\s+/).filter(Boolean).length;
   return Math.max(1, Math.round(words / 220));
@@ -134,11 +141,17 @@ function extractBullets(text, pattern, limit = 3) {
 }
 
 export function buildAiSummary(article = {}, previousArticles = []) {
-  const text = `${article.title || ''}. ${article.excerpt || ''}`;
-  const sentiment = detectSentiment(text);
-  const takeaways = extractBullets(text, /./, 3);
-  const opportunities = extractBullets(text, OPPORTUNITY, 3);
-  const risks = extractBullets(text, RISK_WORD, 3);
+  const meta = article.researchMeta || {};
+  const text = `${article.title || ''}. ${article.excerpt || ''} ${article.analysisText || ''}`;
+  const sentiment = article.sentimentScore != null
+    ? { label: article.sentiment, impact: article.sentimentImpact, score: article.sentimentScore }
+    : detectSentiment(text);
+  const thesis = splitAuthoredPoints(meta.thesis);
+  const authoredStrengths = splitAuthoredPoints(meta.strengths);
+  const authoredRisks = splitAuthoredPoints(meta.risks);
+  const takeaways = [...thesis, ...authoredStrengths, ...extractBullets(text, /./, 3)].slice(0, 3);
+  const opportunities = [...authoredStrengths, ...extractBullets(text, OPPORTUNITY, 3)].slice(0, 3);
+  const risks = [...authoredRisks, ...extractBullets(text, RISK_WORD, 3)].slice(0, 3);
   const prevText = previousArticles.map((a) => `${a.title} ${a.excerpt}`).join(' ');
   const changes = [];
   if (previousArticles.length) {
@@ -171,16 +184,24 @@ export function buildAiSummary(article = {}, previousArticles = []) {
 }
 
 export function enrichArticle(raw = {}, previousArticles = []) {
-  const excerpt = stripHtml(raw.excerpt || raw.content || '');
+  const analysisText = stripHtml(raw.content_md || raw.content || '');
+  const excerpt = stripHtml(raw.excerpt || analysisText);
   const publisher = detectPublisher({ ...raw, excerpt });
   const credibility = credibilityFor(publisher);
   const topics = classifyTags({ ...raw, excerpt });
-  const sentiment = detectSentiment(`${raw.title || ''} ${excerpt}`);
+  const explicitStance = String(raw.equity_research?.stance || '').toLowerCase();
+  const stanceMap = {
+    bullish: { label: 'Bullish', impact: 'Positive', score: 70 },
+    neutral: { label: 'Neutral', impact: 'Neutral', score: 50 },
+    bearish: { label: 'Bearish', impact: 'Negative', score: 30 },
+  };
+  const sentiment = stanceMap[explicitStance] || detectSentiment(`${raw.title || ''} ${excerpt} ${analysisText}`);
   const article = {
     id: raw.id,
     title: raw.title || 'Untitled',
     slug: raw.slug,
     excerpt,
+    analysisText,
     coverUrl: raw.cover_url || null,
     section: raw.section || 'IPOs',
     tags: raw.tags || [],
@@ -190,6 +211,7 @@ export function enrichArticle(raw = {}, previousArticles = []) {
     credibility,
     topics,
     sentiment: sentiment.label,
+    sentimentImpact: sentiment.impact,
     sentimentScore: sentiment.score,
     readingTime: readingTimeMinutes(`${raw.title || ''} ${excerpt}`),
     researchMeta: raw.equity_research && typeof raw.equity_research === 'object' ? raw.equity_research : null,
@@ -378,10 +400,7 @@ export function answerIpoQuestion(question, articles = [], ipo = null) {
 
   const reason = primary[0] || 'Evidence remains limited for an ownership call.';
   const risk = insights.topRisks[0] || primary[1] || 'Offer document and subscription data may still be incomplete.';
-  let recommendation = 'Hold';
-  if (panel.consensus === 'Bullish') recommendation = 'Accumulate';
-  else if (panel.consensus === 'Bearish') recommendation = 'Avoid';
-  if (!articles.length) recommendation = 'Withheld';
+  const recommendation = articles.length ? panel.consensus : 'View withheld';
 
   const institutional = reco
     ? {
@@ -390,9 +409,9 @@ export function answerIpoQuestion(question, articles = [], ipo = null) {
         risk,
         horizon: 'Medium Term',
         text:
-          recommendation === 'Withheld'
-            ? `Recommendation: Withheld\n\nEvidence is insufficient for an institutional IPO ownership call${ipo?.name ? ` on ${ipo.name}` : ''}. ${reason}`
-            : `Recommendation: ${recommendation}\n\n${reason} ${risk} Suitable for a medium term institutional horizon.`,
+          recommendation === 'View withheld'
+            ? `Research view: Withheld\n\nEvidence is insufficient for an institutional IPO view${ipo?.name ? ` on ${ipo.name}` : ''}. ${reason}`
+            : `Research view: ${recommendation}\n\n${reason} ${risk} Suitable for a medium term research horizon.`,
       }
     : null;
 
