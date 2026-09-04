@@ -14,6 +14,11 @@ import {
 
 const DEFAULT_CATEGORIES = ['All', ...RESEARCH_DESKS.map((desk) => desk.label)];
 
+function isIpoArticle(article) {
+  const section = String(article?.section || '').trim().toLowerCase();
+  return section === 'ipo' || section === 'ipos';
+}
+
 /**
  * Props:
  *   section?: string  -> filters by articles.section in DB (e.g., 'Research Notes')
@@ -49,7 +54,7 @@ export default function ArticlesFeed({ section, variant = 'light' }) {
         setArticles([]);
       } else {
         // Normalize for UI
-        const mapped = (data || []).map((a) => ({
+        const mapped = (data || []).filter((a) => !isIpoArticle(a)).map((a) => ({
           id: a.id,
           title: a.title,
           excerpt: a.excerpt,
