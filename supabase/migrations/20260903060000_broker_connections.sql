@@ -95,47 +95,40 @@ ALTER TABLE public.client_portfolio_holdings
   ADD COLUMN IF NOT EXISTS is_active boolean NOT NULL DEFAULT true,
   ADD COLUMN IF NOT EXISTS closed_at timestamptz;
 
--- NOT VALID on purpose. asset_type already exists in production, so this
--- constraint meets rows written long before the vocabulary was defined. A
--- validated constraint would scan them all and fail on the first unknown
--- value with an error naming no row, turning a deploy into a hunt.
+-- No asset_type CHECK here, deliberately.
 --
--- NOT VALID constrains every insert and update from now on while leaving
--- existing rows alone, which is what makes this safe to ship before the data
--- is audited. Nothing is silently converted: legacy values stay exactly as
--- they are until somebody looks at them and decides.
+-- An earlier version of this migration added one allowing
+-- ('EQUITY','ETF','MUTUAL_FUND','BOND','REIT','INVIT','CASH','OTHER'). That
+-- vocabulary came from the CAS normaliser and was never checked against what
+-- the application already writes, which is lowercase and narrower:
 --
--- Once the audit below returns nothing, run:
+--   indian_stock, us_stock, mutual_fund, etf, cash
+--     (src/pages/ClientPortfolioIntelligence.jsx, assetLabels)
 --
---   ALTER TABLE public.client_portfolio_holdings
---     VALIDATE CONSTRAINT client_portfolio_holdings_asset_type_known;
+-- The two sets are disjoint. A Postgres CHECK is case-sensitive, so 'etf'
+-- fails 'ETF', and indian_stock and us_stock have no member at all. NOT VALID
+-- would not have saved it either: it skips the initial scan but enforces on
+-- every INSERT and UPDATE afterwards, including updates that never touch the
+-- column. Applying it would have broken saveClientHolding's upsert
+-- (client_portfolio_holdings has a unique key on portfolio_id, symbol,
+-- asset_type, market) and both write paths in record_client_transaction --
+-- that is, adding a holding, recording a trade, and editing an existing
+-- position. The entire manual holdings feature, which is the only part of this
+-- product currently in use.
 --
---   SELECT id, user_id, symbol, isin, asset_type
---     FROM public.client_portfolio_holdings
---    WHERE asset_type IS NOT NULL
---      AND asset_type NOT IN ('EQUITY','ETF','MUTUAL_FUND','BOND','REIT',
---                             'INVIT','CASH','OTHER');
+-- Constraining the column needs a decision this migration cannot make. The
+-- application vocabulary is narrower than CAS requires: EQUITY maps to
+-- indian_stock or us_stock depending on the exchange, and BOND, REIT and INVIT
+-- have no equivalent at all. Widening the constraint to accept both spellings
+-- would put two vocabularies in one column and hand every reader the job of
+-- knowing both.
 --
--- NULL is not listed there because a CHECK passes on NULL: an untyped holding
--- is permitted and is a separate question from a wrongly typed one. Count them
--- separately and do not add NOT NULL until they are resolved and every writer
--- supplies a value:
---
---   SELECT count(*) AS untyped_holdings
---     FROM public.client_portfolio_holdings
---    WHERE asset_type IS NULL;
---
--- NOT VALID is a reprieve, not a permanent exemption. An untouched legacy row
--- stays as it is, but the first UPDATE to one is checked like any other write
--- and will fail. So a bad value sits quietly until somebody edits that
--- holding, and then surfaces as an error in front of a client. Audit soon
--- rather than eventually.
-ALTER TABLE public.client_portfolio_holdings
-  DROP CONSTRAINT IF EXISTS client_portfolio_holdings_asset_type_known;
-ALTER TABLE public.client_portfolio_holdings
-  ADD CONSTRAINT client_portfolio_holdings_asset_type_known CHECK (
-    asset_type IN ('EQUITY','ETF','MUTUAL_FUND','BOND','REIT','INVIT','CASH','OTHER'))
-  NOT VALID;
+-- So the column stays unconstrained until the vocabularies are unified on
+-- purpose. The CAS importer validates its own values before writing
+-- (portfolio_import/cas_parser.py _asset_type, server/services/brokers/
+-- normalise.js assetTypeOf), so nothing is unchecked in the new path; what is
+-- absent is a database-level guarantee, and that is the honest position while
+-- two producers disagree about what the values mean.
 
 -- One row per security per connection. The same stock held at two brokers is
 -- two lots and stays two lots -- merging them at write time would destroy the
