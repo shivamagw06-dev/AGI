@@ -270,6 +270,8 @@ def _load_stub():
     # credentials can otherwise make the same commit exercise a live model in
     # one environment and deterministic synthesis in another.
     os.environ["ASK_LLM_ENABLED"] = "false"
+    os.environ["YAHOO_PROVIDER"] = "false"
+    os.environ["YAHOO_YFINANCE_FALLBACK"] = "false"
 
     probe = provider_stub.answer_for("probe", mode="honest")
     if not (probe.get("answer") or {}).get("summary"):

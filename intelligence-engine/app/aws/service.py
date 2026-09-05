@@ -457,12 +457,24 @@ class AwsService:
             recent_research=recent,
         )
 
-    def search(self, query: str, *, limit: int = 20) -> SearchResponse:
+    def search(
+        self,
+        query: str,
+        *,
+        limit: int = 20,
+        ticker: str | None = None,
+    ) -> SearchResponse:
         self._require()
         q = (query or "").strip()
         hits: list[SearchHit] = []
         if self.kip and q:
-            sr = soft(self.kip.search, q, mode="hybrid", limit=limit)
+            sr = soft(
+                self.kip.search,
+                q,
+                mode="hybrid",
+                limit=limit,
+                ticker=ticker,
+            )
             if sr:
                 for h in sr.hits:
                     d = dump(h) or {}

@@ -29,6 +29,8 @@ jobs:
       # in-process routing/retrieval/identity pipeline and editorial stub still
       # run; this only removes an external, retry-prone final prose request.
       ASK_LLM_ENABLED: 'false'
+      YAHOO_PROVIDER: 'false'
+      YAHOO_YFINANCE_FALLBACK: 'false'
       ASK_TEST_CASE_COOLDOWN_SEC: '0'
       ASK_SLIM: 'true'
       FAA_BACKGROUND_COLLECTOR: 'false'

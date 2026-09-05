@@ -4119,7 +4119,11 @@ class UiService:
                 if hv.get("ticker"):
                     detected_ticker = str(hv["ticker"]).upper()
 
-        aws_hits = dump(soft(self.aws.search, q, limit=12)) if self.aws and q else None
+        aws_hits = (
+            dump(soft(self.aws.search, q, limit=12, ticker=detected_ticker))
+            if self.aws and q
+            else None
+        )
         hits = []
         for h in (aws_hits or {}).get("hits") or []:
             hits.append(
