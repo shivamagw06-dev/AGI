@@ -33,6 +33,7 @@ import {
   getInstitutionalOverview,
   getInstitutionalStock,
 } from '@/lib/institutionalHoldingsApi';
+import InstitutionalManagerExplorer from '@/components/Research/InstitutionalManagerExplorer';
 import './institutionalHoldingsTheme.css';
 
 const FUND_BRANDS = {
@@ -255,7 +256,7 @@ function OverviewPage() {
     <ModuleShell
       eyebrow="Public filings transformed into decision context"
       title="See where conviction is moving."
-      subtitle="Explore ten distinctive institutional portfolios, understand what changed quarter by quarter, and see where manager conviction overlaps."
+      subtitle="Search fifty institutional portfolios, expand every latest holding, and understand what changed quarter by quarter."
     >
       <main className="mx-auto max-w-[1500px] px-5 pb-16 sm:px-8">
         <motion.section
@@ -312,36 +313,7 @@ function OverviewPage() {
                 </label>
               </div>
 
-              <div className="mt-7 grid gap-5 md:grid-cols-2 xl:grid-cols-5">
-                {funds.map((fund, index) => {
-                  const brand = FUND_BRANDS[fund.slug] || {};
-                  return (
-                    <motion.div key={fund.id || fund.slug} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.04 }}>
-                      <Link
-                        to={`/institutional-holdings/funds/${fund.slug}`}
-                        className="group flex h-full min-h-[310px] flex-col overflow-hidden rounded-[28px] border border-white bg-white/85 p-5 shadow-[0_18px_45px_rgba(12,48,59,.07)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_28px_65px_rgba(12,48,59,.14)]"
-                      >
-                        <div className="flex items-start justify-between gap-3">
-                          <FundLogo fund={fund} />
-                          <span className="text-[10px] font-bold text-[#99a3a6]">0{index + 1}</span>
-                        </div>
-                        <p className="mt-7 text-[9px] font-extrabold uppercase tracking-[.17em]" style={{ color: brand.accent || '#a66e3b' }}>{brand.strap || fund.strategy}</p>
-                        <h3 className="mt-2 font-serif text-xl font-bold leading-tight">{fund.display_name}</h3>
-                        <p className="mt-2 line-clamp-2 text-xs leading-5 text-[#748187]">{fund.strategy}</p>
-                        <div className="mt-auto grid grid-cols-3 gap-2 border-t border-[#e8edeb] pt-5 text-center">
-                          <div><strong className="block font-serif text-xl">{fund.position_count || 0}</strong><span className="text-[9px] uppercase text-[#8d999d]">Positions</span></div>
-                          <div><strong className="block font-serif text-xl text-[#19806b]">{fund.new_positions || 0}</strong><span className="text-[9px] uppercase text-[#8d999d]">New</span></div>
-                          <div><strong className="block font-serif text-xl text-[#b25749]">{fund.exits || 0}</strong><span className="text-[9px] uppercase text-[#8d999d]">Exits</span></div>
-                        </div>
-                        <div className="mt-5 flex items-center justify-between text-[10px] font-bold uppercase tracking-[.08em] text-[#52666d]">
-                          <span>{fund.latest_filing?.report_date || 'Awaiting filing'}</span>
-                          <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" />
-                        </div>
-                      </Link>
-                    </motion.div>
-                  );
-                })}
-              </div>
+              <InstitutionalManagerExplorer funds={funds} />
             </section>
 
             <section id="consensus" className="mt-16 grid gap-6 xl:grid-cols-[1.55fr_.75fr]">

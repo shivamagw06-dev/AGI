@@ -11,16 +11,56 @@ const AUTO_REFRESH_INTERVAL_MS = 24 * 60 * 60 * 1000;
 const POST_2022_VALUE_RULE_DATE = '2023-01-03';
 
 export const DEFAULT_MANAGERS = [
-  { slug: 'berkshire-hathaway', display_name: 'Berkshire Hathaway', legal_name: 'BERKSHIRE HATHAWAY INC', cik: '0001067983', strategy: 'Concentrated quality and value', quality_weight: 1.20, active: true },
-  { slug: 'pershing-square', display_name: 'Pershing Square', legal_name: 'PERSHING SQUARE CAPITAL MANAGEMENT, L.P.', cik: '0001336528', strategy: 'Concentrated activist', quality_weight: 1.15, active: true },
-  { slug: 'appaloosa-management', display_name: 'Appaloosa Management', legal_name: 'APPALOOSA LP', cik: '0001656456', strategy: 'Opportunistic value', quality_weight: 1.05, active: true },
-  { slug: 'baupost-group', display_name: 'Baupost Group', legal_name: 'BAUPOST GROUP LLC/MA', cik: '0001061768', strategy: 'Deep value and special situations', quality_weight: 1.15, active: true },
-  { slug: 'third-point', display_name: 'Third Point', legal_name: 'THIRD POINT LLC', cik: '0001040273', strategy: 'Event-driven and activist', quality_weight: 1.05, active: true },
-  { slug: 'greenlight-capital', display_name: 'Greenlight Capital', legal_name: 'GREENLIGHT CAPITAL INC', cik: '0001079114', strategy: 'Value-oriented long/short', quality_weight: 1.00, active: true },
-  { slug: 'coatue-management', display_name: 'Coatue Management', legal_name: 'COATUE MANAGEMENT LLC', cik: '0001135730', strategy: 'Technology and growth', quality_weight: 1.00, active: true },
-  { slug: 'viking-global', display_name: 'Viking Global', legal_name: 'VIKING GLOBAL INVESTORS LP', cik: '0001103804', strategy: 'Fundamental growth', quality_weight: 1.05, active: true },
-  { slug: 'lone-pine-capital', display_name: 'Lone Pine Capital', legal_name: 'LONE PINE CAPITAL LLC', cik: '0001061165', strategy: 'Fundamental growth', quality_weight: 1.00, active: true },
-  { slug: 'tiger-global', display_name: 'Tiger Global Management', legal_name: 'TIGER GLOBAL MANAGEMENT LLC', cik: '0001167483', strategy: 'Technology and growth', quality_weight: 0.95, active: true },
+  { slug: 'situational-awareness', display_name: 'Situational Awareness', legal_name: 'SITUATIONAL AWARENESS LP', cik: '0002045724', strategy: 'AI and technology concentration', manager_type: 'Investment manager', quality_weight: 1.10, earliest_report_date: '2024-12-31', city: 'San Francisco', state: 'CA', country: 'United States', postal_code: '94107', active: true },
+  { slug: 'berkshire-hathaway', display_name: 'Berkshire Hathaway', legal_name: 'BERKSHIRE HATHAWAY INC', cik: '0001067983', strategy: 'Concentrated quality and value', manager_type: 'Holding company', quality_weight: 1.20, earliest_report_date: '2001-03-31', city: 'Omaha', state: 'NE', country: 'United States', postal_code: '68131', active: true },
+  { slug: 'duquesne-family-office', display_name: 'Duquesne Family Office', legal_name: 'DUQUESNE FAMILY OFFICE LLC', cik: '0001536411', strategy: 'Macro and concentrated equities', manager_type: 'Family office', quality_weight: 1.15, earliest_report_date: '2011-12-31', city: 'New York', state: 'NY', country: 'United States', postal_code: '10019', active: true },
+  { slug: 'blackrock', display_name: 'BlackRock', legal_name: 'BLACKROCK INC.', cik: '0001364742', strategy: 'Diversified global asset management', manager_type: 'Asset manager', quality_weight: 0.85, earliest_report_date: '2006-03-31', city: 'New York', state: 'NY', country: 'United States', postal_code: '10001', active: true },
+  { slug: 'pershing-square', display_name: 'Pershing Square Capital Management', legal_name: 'PERSHING SQUARE CAPITAL MANAGEMENT, L.P.', cik: '0001336528', strategy: 'Concentrated activist', manager_type: 'Investment manager', quality_weight: 1.15, earliest_report_date: '2005-12-31', city: 'New York', state: 'NY', country: 'United States', postal_code: '10019', active: true },
+  { slug: 'scion-asset-management', display_name: 'Scion Asset Management', legal_name: 'SCION ASSET MANAGEMENT, LLC', cik: '0001649339', strategy: 'Contrarian and special situations', manager_type: 'Investment manager', quality_weight: 1.05, earliest_report_date: '2015-12-31', city: 'Saratoga', state: 'CA', country: 'United States', postal_code: '95070', active: true },
+  { slug: 'tci-fund-management', display_name: 'TCI Fund Management', legal_name: 'TCI FUND MANAGEMENT LTD', cik: '0001647251', strategy: 'Concentrated global activist', manager_type: 'Investment manager', quality_weight: 1.15, earliest_report_date: '2006-03-31', city: 'London', state: '', country: 'United Kingdom', postal_code: 'W1S 2FT', active: true },
+  { slug: 'bridgewater-associates', display_name: 'Bridgewater Associates', legal_name: 'BRIDGEWATER ASSOCIATES, LP', cik: '0001350694', strategy: 'Systematic global macro', manager_type: 'Investment manager', quality_weight: 1.00, earliest_report_date: '2005-12-31', city: 'Westport', state: 'CT', country: 'United States', postal_code: '06880', active: true },
+  { slug: 'national-pension-service', display_name: 'National Pension Service', legal_name: 'NATIONAL PENSION SERVICE', cik: '0001608046', strategy: 'Diversified pension allocation', manager_type: 'Pension fund', quality_weight: 0.85, earliest_report_date: '2014-09-30', city: 'Jeonju-si, Jeollabuk-do', state: '', country: 'Korea, Republic of', postal_code: '54870', active: true },
+  { slug: 'altimeter-capital', display_name: 'Altimeter Capital Management', legal_name: 'ALTIMETER CAPITAL MANAGEMENT, LP', cik: '0001541617', strategy: 'Technology and growth', manager_type: 'Investment manager', quality_weight: 1.05, earliest_report_date: '2011-12-31', city: 'Menlo Park', state: 'CA', country: 'United States', postal_code: '94025', active: true },
+  { slug: 'atreides-management', display_name: 'Atreides Management', legal_name: 'ATREIDES MANAGEMENT, LP', cik: '0001777813', strategy: 'Technology and thematic equities', manager_type: 'Investment manager', quality_weight: 1.00, earliest_report_date: '2019-12-31', city: 'Boston', state: 'MA', country: 'United States', postal_code: '02110', active: true },
+  { slug: 'renaissance-technologies', display_name: 'Renaissance Technologies', legal_name: 'RENAISSANCE TECHNOLOGIES LLC', cik: '0001037389', strategy: 'Systematic quantitative equities', manager_type: 'Investment manager', quality_weight: 0.95, earliest_report_date: '2001-03-31', city: 'New York', state: 'NY', country: 'United States', postal_code: '10022', active: true },
+  { slug: 'appaloosa-management', display_name: 'Appaloosa', legal_name: 'APPALOOSA LP', cik: '0001656456', strategy: 'Opportunistic value', manager_type: 'Investment manager', quality_weight: 1.05, earliest_report_date: '2001-03-31', city: 'Short Hills', state: 'NJ', country: 'United States', postal_code: '07078', active: true },
+  { slug: 'nvidia', display_name: 'NVIDIA Corp', legal_name: 'NVIDIA CORP', cik: '0001045810', strategy: 'Corporate investment holdings', manager_type: 'Corporate filer', quality_weight: 0.75, earliest_report_date: '2023-12-31', city: 'Santa Clara', state: 'CA', country: 'United States', postal_code: '95051', active: true },
+  { slug: 'himalaya-capital', display_name: 'Himalaya Capital Management', legal_name: 'HIMALAYA CAPITAL MANAGEMENT LLC', cik: '0001709323', strategy: 'Long-term value', manager_type: 'Investment manager', quality_weight: 1.10, earliest_report_date: '2016-12-31', city: 'Seattle', state: 'WA', country: 'United States', postal_code: '98101', active: true },
+  { slug: 'coatue-management', display_name: 'Coatue Management', legal_name: 'COATUE MANAGEMENT LLC', cik: '0001135730', strategy: 'Technology and growth', manager_type: 'Investment manager', quality_weight: 1.00, earliest_report_date: '2001-03-31', city: 'New York', state: 'NY', country: 'United States', postal_code: '10019', active: true },
+  { slug: 'tiger-global', display_name: 'Tiger Global Management', legal_name: 'TIGER GLOBAL MANAGEMENT LLC', cik: '0001167483', strategy: 'Technology and growth', manager_type: 'Investment manager', quality_weight: 0.95, earliest_report_date: '2001-12-31', city: 'New York', state: 'NY', country: 'United States', postal_code: '10019', active: true },
+  { slug: 'baker-bros-advisors', display_name: 'Baker Bros Advisors', legal_name: 'BAKER BROS. ADVISORS LP', cik: '0001263508', strategy: 'Healthcare and biotechnology', manager_type: 'Investment manager', quality_weight: 1.05, earliest_report_date: '2001-12-31', city: 'New York', state: 'NY', country: 'United States', postal_code: '10014', active: true },
+  { slug: 'baupost-group', display_name: 'The Baupost Group', legal_name: 'BAUPOST GROUP LLC/MA', cik: '0001061768', strategy: 'Deep value and special situations', manager_type: 'Investment manager', quality_weight: 1.15, value_scale_override: 1000, earliest_report_date: '2001-03-31', city: 'Boston', state: 'MA', country: 'United States', postal_code: '02116', active: true },
+  { slug: 'citadel-advisors', display_name: 'Citadel Advisors', legal_name: 'CITADEL ADVISORS LLC', cik: '0001423053', strategy: 'Multi-strategy and market neutral', manager_type: 'Investment manager', quality_weight: 0.90, earliest_report_date: '2002-06-30', city: 'Miami', state: 'FL', country: 'United States', postal_code: '33131', active: true },
+  { slug: 'whale-rock-capital', display_name: 'Whale Rock Capital Management', legal_name: 'WHALE ROCK CAPITAL MANAGEMENT LLC', cik: '0001387322', strategy: 'Technology and communications', manager_type: 'Investment manager', quality_weight: 1.00, earliest_report_date: '2006-12-31', city: 'Boston', state: 'MA', country: 'United States', postal_code: '02110', active: true },
+  { slug: 'vanguard-group', display_name: 'The Vanguard Group', legal_name: 'VANGUARD GROUP INC', cik: '0000102909', strategy: 'Diversified index and active management', manager_type: 'Asset manager', quality_weight: 0.80, earliest_report_date: '2001-03-31', city: 'Malvern', state: 'PA', country: 'United States', postal_code: '19355', active: true },
+  { slug: 'd1-capital-partners', display_name: 'D1 Capital Partners', legal_name: 'D1 CAPITAL PARTNERS L.P.', cik: '0001747057', strategy: 'Global growth and technology', manager_type: 'Investment manager', quality_weight: 1.00, earliest_report_date: '2018-12-31', city: 'New York', state: 'NY', country: 'United States', postal_code: '10019', active: true },
+  { slug: 'baillie-gifford', display_name: 'Baillie Gifford & Company', legal_name: 'BAILLIE GIFFORD & CO', cik: '0001088875', strategy: 'Long-duration global growth', manager_type: 'Asset manager', quality_weight: 1.00, earliest_report_date: '2001-03-31', city: 'Edinburgh', state: '', country: 'United Kingdom', postal_code: 'EH3 8RY', active: true },
+  { slug: 'lone-pine-capital', display_name: 'Lone Pine Capital', legal_name: 'LONE PINE CAPITAL LLC', cik: '0001061165', strategy: 'Fundamental growth', manager_type: 'Investment manager', quality_weight: 1.00, earliest_report_date: '2004-12-31', city: 'Greenwich', state: 'CT', country: 'United States', postal_code: '06830', active: true },
+  { slug: 'soros-fund-management', display_name: 'Soros Fund Management', legal_name: 'SOROS FUND MANAGEMENT LLC', cik: '0001029160', strategy: 'Global macro and event-driven', manager_type: 'Family office', quality_weight: 1.05, earliest_report_date: '2001-03-31', city: 'New York', state: 'NY', country: 'United States', postal_code: '10019', active: true },
+  { slug: 'praetorian-pr', display_name: 'Praetorian PR', legal_name: 'PRAETORIAN PR LLC', cik: '0001949877', strategy: 'Contrarian macro equities', manager_type: 'Investment manager', quality_weight: 1.00, earliest_report_date: '2023-03-31', city: 'Rincon', state: '', country: 'Puerto Rico', postal_code: '00677', active: true },
+  { slug: 'dalal-street', display_name: 'Dalal Street', legal_name: 'DALAL STREET, LLC', cik: '0001549575', strategy: 'Concentrated global value', manager_type: 'Investment manager', quality_weight: 1.05, earliest_report_date: '2004-12-31', city: 'West Lake Hills', state: 'TX', country: 'United States', postal_code: '78746-6496', active: true },
+  { slug: 'viking-global', display_name: 'Viking Global Investors', legal_name: 'VIKING GLOBAL INVESTORS LP', cik: '0001103804', strategy: 'Fundamental growth', manager_type: 'Investment manager', quality_weight: 1.05, earliest_report_date: '2001-03-31', city: 'Stamford', state: 'CT', country: 'United States', postal_code: '06901-6000', active: true },
+  { slug: 'alphabet', display_name: 'Alphabet', legal_name: 'ALPHABET INC.', cik: '0001652044', strategy: 'Corporate investment holdings', manager_type: 'Corporate filer', quality_weight: 0.75, earliest_report_date: '2013-12-31', city: 'Mountain View', state: 'CA', country: 'United States', postal_code: '94043', active: true },
+  { slug: 'jpmorgan-chase', display_name: 'JPMorgan Chase & Company', legal_name: 'JPMORGAN CHASE & CO', cik: '0000019617', strategy: 'Diversified financial institution', manager_type: 'Bank', quality_weight: 0.80, earliest_report_date: '2001-03-31', city: 'New York', state: 'NY', country: 'United States', postal_code: '10017', active: true },
+  { slug: 'millennium-management', display_name: 'Millennium Management', legal_name: 'MILLENNIUM MANAGEMENT LLC', cik: '0001273087', strategy: 'Multi-manager multi-strategy', manager_type: 'Investment manager', quality_weight: 0.90, earliest_report_date: '2003-12-31', city: 'New York', state: 'NY', country: 'United States', postal_code: '10022', active: true },
+  { slug: 'hh-international', display_name: 'H&H International Investment', legal_name: 'H&H INTERNATIONAL INVESTMENT, LLC', cik: '0001759760', strategy: 'Concentrated global equities', manager_type: 'Investment manager', quality_weight: 1.00, earliest_report_date: '2018-12-31', city: 'Palo Alto', state: 'CA', country: 'United States', postal_code: '94303', active: true },
+  { slug: 'third-point', display_name: 'Third Point', legal_name: 'THIRD POINT LLC', cik: '0001040273', strategy: 'Event-driven and activist', manager_type: 'Investment manager', quality_weight: 1.05, earliest_report_date: '2001-03-31', city: 'New York', state: 'NY', country: 'United States', postal_code: '10001', active: true },
+  { slug: 'surgocap-partners', display_name: 'Surgocap Partners', legal_name: 'SURGOCAP PARTNERS LP', cik: '0001960830', strategy: 'Healthcare and technology growth', manager_type: 'Investment manager', quality_weight: 1.00, earliest_report_date: '2023-12-31', city: 'New York', state: 'NY', country: 'United States', postal_code: '10011', active: true },
+  { slug: 'thiel-macro', display_name: 'Thiel Macro', legal_name: 'THIEL MACRO LLC', cik: '0001562087', strategy: 'Macro and technology', manager_type: 'Family office', quality_weight: 1.00, earliest_report_date: '2014-12-31', city: 'Los Angeles', state: 'CA', country: 'United States', postal_code: '90067', active: true },
+  { slug: 'ra-capital', display_name: 'RA Capital Management', legal_name: 'RA CAPITAL MANAGEMENT, L.P.', cik: '0001346824', strategy: 'Healthcare and life sciences', manager_type: 'Investment manager', quality_weight: 1.05, earliest_report_date: '2007-12-31', city: 'Boston', state: 'MA', country: 'United States', postal_code: '02116', active: true },
+  { slug: 'fundsmith', display_name: 'Fundsmith', legal_name: 'FUNDSMITH LLP', cik: '0001569205', strategy: 'High-quality global compounders', manager_type: 'Asset manager', quality_weight: 1.10, earliest_report_date: '2012-12-31', city: 'London', state: '', country: 'United Kingdom', postal_code: 'W1G 0PW', active: true },
+  { slug: 'jane-street', display_name: 'Jane Street Group', legal_name: 'JANE STREET GROUP, LLC', cik: '0001595888', strategy: 'Quantitative market making', manager_type: 'Trading firm', quality_weight: 0.80, earliest_report_date: '2014-03-31', city: 'New York', state: 'NY', country: 'United States', postal_code: '10281', active: true },
+  { slug: 'gates-foundation-trust', display_name: 'Gates Foundation Trust', legal_name: 'BILL & MELINDA GATES FOUNDATION TRUST', cik: '0001166559', strategy: 'Long-term concentrated endowment', manager_type: 'Foundation trust', quality_weight: 1.05, earliest_report_date: '2002-09-30', city: 'Kirkland', state: 'WA', country: 'United States', postal_code: '98033', active: true },
+  { slug: 'goldman-sachs-group', display_name: 'Goldman Sachs Group', legal_name: 'GOLDMAN SACHS GROUP INC', cik: '0000886982', strategy: 'Diversified financial institution', manager_type: 'Bank', quality_weight: 0.80, earliest_report_date: '2001-03-31', city: 'New York', state: 'NY', country: 'United States', postal_code: '10282', active: true },
+  { slug: 'durable-capital', display_name: 'Durable Capital Partners', legal_name: 'DURABLE CAPITAL PARTNERS LP', cik: '0001798849', strategy: 'Long-duration growth', manager_type: 'Investment manager', quality_weight: 1.00, earliest_report_date: '2019-12-31', city: 'Bethesda', state: 'MD', country: 'United States', postal_code: '20814', active: true },
+  { slug: 'value-aligned-research', display_name: 'Value Aligned Research Advisors', legal_name: 'VALUE ALIGNED RESEARCH ADVISORS, LLC', cik: '0001963565', strategy: 'Concentrated value', manager_type: 'Investment manager', quality_weight: 1.00, earliest_report_date: '2022-12-31', city: 'Princeton', state: 'NJ', country: 'United States', postal_code: '08542', active: true },
+  { slug: 'akre-capital', display_name: 'Akre Capital Management', legal_name: 'AKRE CAPITAL MANAGEMENT LLC', cik: '0001112520', strategy: 'Compounding and quality growth', manager_type: 'Investment manager', quality_weight: 1.10, earliest_report_date: '2001-03-31', city: 'Middleburg', state: 'VA', country: 'United States', postal_code: '20117', active: true },
+  { slug: 'valley-forge-capital', display_name: 'Valley Forge Capital Management', legal_name: 'VALLEY FORGE CAPITAL MANAGEMENT, LP', cik: '0001697868', strategy: 'Concentrated quality growth', manager_type: 'Investment manager', quality_weight: 1.05, earliest_report_date: '2016-12-31', city: 'Miami', state: 'FL', country: 'United States', postal_code: '33131', active: true },
+  { slug: 'fidelity-investments-money-management', display_name: 'Fidelity Investments Money Management', legal_name: 'FIDELITY INVESTMENTS MONEY MANAGEMENT INC', cik: '0001092580', strategy: 'Diversified active asset management', manager_type: 'Asset manager', quality_weight: 0.85, earliest_report_date: '2001-03-31', city: 'Boston', state: 'MA', country: 'United States', postal_code: '02210', active: true },
+  { slug: 'maverick-capital', display_name: 'Maverick Capital', legal_name: 'MAVERICK CAPITAL LTD', cik: '0000934639', strategy: 'Fundamental long-short equities', manager_type: 'Investment manager', quality_weight: 1.00, earliest_report_date: '2001-03-31', city: 'Dallas', state: 'TX', country: 'United States', postal_code: '75201', active: true },
+  { slug: 'norges-bank', display_name: 'Norges Bank', legal_name: 'NORGES BANK', cik: '0001374170', strategy: 'Sovereign diversified allocation', manager_type: 'Sovereign fund', quality_weight: 0.85, earliest_report_date: '2001-03-31', city: 'Oslo', state: '', country: 'Norway', postal_code: '0107', active: true },
+  { slug: 'perceptive-advisors', display_name: 'Perceptive Advisors', legal_name: 'PERCEPTIVE ADVISORS LLC', cik: '0001224962', strategy: 'Healthcare and biotechnology', manager_type: 'Investment manager', quality_weight: 1.05, earliest_report_date: '2001-12-31', city: 'New York', state: 'NY', country: 'United States', postal_code: '10003', active: true },
+  { slug: 'aqr-capital', display_name: 'AQR Capital Management', legal_name: 'AQR CAPITAL MANAGEMENT LLC', cik: '0001167557', strategy: 'Systematic factor investing', manager_type: 'Investment manager', quality_weight: 0.90, earliest_report_date: '2001-12-31', city: 'Greenwich', state: 'CT', country: 'United States', postal_code: '06830', active: true },
 ];
 
 function db() {
@@ -114,7 +154,7 @@ async function collect(factory, pageSize = PAGE_SIZE) {
 async function seedManagers(client) {
   const { error } = await client.from('institutional_managers').upsert(DEFAULT_MANAGERS, {
     onConflict: 'cik',
-    ignoreDuplicates: true,
+    ignoreDuplicates: false,
   });
   if (error) throw error;
 }
@@ -177,6 +217,24 @@ function aggregateConsensus(latestHoldings, changes, managerCount) {
   }
   return [...map.values()].map((item) => {
     const related = changeMap.get(item.key) || changeMap.get(item.cusip) || [];
+    const activityByManager = new Map();
+    for (const row of related) {
+      if (!activityByManager.has(row.manager_id)) activityByManager.set(row.manager_id, []);
+      activityByManager.get(row.manager_id).push(row);
+    }
+    const activity = { new: 0, increased: 0, reduced: 0, exited: 0 };
+    for (const [managerId, rows] of activityByManager) {
+      const netShares = rows.reduce((sum, row) => sum + n(row.share_change), 0);
+      const types = new Set(rows.map((row) => row.change_type));
+      let type;
+      if (!item.owners.has(managerId) && types.has('exited')) type = 'exited';
+      else if (types.has('new') && !types.has('reduced') && !types.has('exited')) type = 'new';
+      else if (netShares > 0) type = 'increased';
+      else if (netShares < 0) type = 'reduced';
+      else if (types.has('increased')) type = 'increased';
+      else if (types.has('reduced')) type = 'reduced';
+      if (type) activity[type] += 1;
+    }
     const owners = item.owners.size;
     const breadth = managerCount ? owners / managerCount : 0;
     const consensusReady = managerCount >= CONSENSUS_MIN_MANAGERS;
@@ -188,10 +246,10 @@ function aggregateConsensus(latestHoldings, changes, managerCount) {
       aggregate_weight: Math.round(item.aggregate_weight * 100) / 100,
       consensus_score: consensusScore,
       score_status: consensusReady ? 'available' : 'withheld',
-      new_buyers: related.filter((row) => row.change_type === 'new').length,
-      increasers: related.filter((row) => row.change_type === 'increased').length,
-      reducers: related.filter((row) => row.change_type === 'reduced').length,
-      exits: related.filter((row) => row.change_type === 'exited').length,
+      new_buyers: activity.new,
+      increasers: activity.increased,
+      reducers: activity.reduced,
+      exits: activity.exited,
     };
   }).sort((a, b) => n(b.consensus_score) - n(a.consensus_score) || b.aggregate_weight - a.aggregate_weight);
 }
@@ -534,9 +592,13 @@ async function ingestFiling(client, manager, source) {
   const archive = await filingDocuments(manager.cik, source.accession_number);
   const infoDocument = archive.documents.find((doc) => /<(?:\w+:)?infoTable[\s>]/i.test(doc.text));
   if (!infoDocument) throw new Error(`No 13F information table found in ${source.accession_number}`);
-  const valueScale = String(source.accepted_at || source.filing_date) < POST_2022_VALUE_RULE_DATE ? 1000 : 1;
-  const rawRows = collapseDuplicateRows(parseInformationTable(infoDocument.text, valueScale));
+  let rawRows = collapseDuplicateRows(parseInformationTable(infoDocument.text, 1));
   if (!rawRows.length) throw new Error(`The SEC information table was empty for ${source.accession_number}`);
+  const ratios = rawRows.filter((row) => row.shares > 0 && row.value_usd > 0 && !row.put_call).map((row) => row.value_usd / row.shares).sort((a, b) => a - b);
+  const medianRatio = ratios.length ? ratios[Math.floor(ratios.length / 2)] : null;
+  const legacyScaleDetected = ratios.length >= 5 && medianRatio < 1 && ratios.filter((ratio) => ratio < 1).length / ratios.length >= 0.6;
+  const valueScale = n(manager.value_scale_override) || (String(source.accepted_at || source.filing_date) < POST_2022_VALUE_RULE_DATE || legacyScaleDetected ? 1000 : 1);
+  if (valueScale !== 1) rawRows = rawRows.map((row) => ({ ...row, value_usd: n(row.value_usd) * valueScale }));
   const combined = archive.documents.map((doc) => doc.text).join('\n');
   const isRestatement = /<(?:\w+:)?isRestatement>\s*true\s*</i.test(combined);
   const amendmentType = source.form_type === '13F-HR' ? 'original' : isRestatement ? 'restatement' : 'additional_holdings';
