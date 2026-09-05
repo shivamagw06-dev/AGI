@@ -13,7 +13,7 @@ import { Table } from '@tiptap/extension-table';
 import TableRow from '@tiptap/extension-table-row';
 import TableCell from '@tiptap/extension-table-cell';
 import TableHeader from '@tiptap/extension-table-header';
-import { Eye, Save, Send, ImageIcon, Loader2, Brain, Mail, Radio } from 'lucide-react';
+import { Eye, Save, Send, ImageIcon, Loader2, Brain, Mail, Radio, ClipboardPaste, CheckCircle2, AlertTriangle } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
 import { useAuth } from '@/contexts/AuthContext';
 import useCategories from '@/hooks/useCategories';
@@ -48,6 +48,14 @@ import {
   normalizeLiveUpdates,
   withLiveTag,
 } from '@/lib/liveArticle';
+import { getIpoPlatform } from '@/lib/ipoApi';
+import {
+  buildIpoArticleHtml,
+  buildIpoKeyData,
+  comparePastedWithUpstox,
+  matchPastedIpoToUpstox,
+  parseIpoPaste,
+} from '@/lib/ipoPasteParser';
 
 const AUTOSAVE_MS = 4000;
 const EDITOR_SELECT =
@@ -86,6 +94,7 @@ const initialEquityResearch = () => ({
     issue_structure: '',
     demand_quality: '',
   },
+  ipo_facts: null,
 });
 
 const IPO_SCORE_FIELDS = [
@@ -150,6 +159,10 @@ export default function ArticleEditor() {
   const [updateBody, setUpdateBody] = useState('');
   const [articleType, setArticleType] = useState('article');
   const [equityResearch, setEquityResearch] = useState(initialEquityResearch);
+  const [ipoPasteText, setIpoPasteText] = useState('');
+  const [ipoSourceUrl, setIpoSourceUrl] = useState('');
+  const [ipoPastePreview, setIpoPastePreview] = useState(null);
+  const [ipoPasteBusy, setIpoPasteBusy] = useState(false);
 
   const pendingContentRef = useRef('');
   const autosaveTimer = useRef(null);
@@ -525,9 +538,9 @@ export default function ArticleEditor() {
         if (
           publishStatus === 'published' &&
           articleType === 'equity_research' &&
-          (!equityResearch.company_name?.trim() || !equityResearch.ticker?.trim())
+          (!equityResearch.company_name?.trim() || (section !== 'IPOs' && !equityResearch.ticker?.trim()))
         ) {
-          throw new Error('Company name and ticker are required before publishing equity research.');
+          throw new Error(section === 'IPOs' ? 'Company name is required before publishing IPO research.' : 'Company name and ticker are required before publishing equity research.');
         }
 
         let articleSlug = slug || (await generateUniqueSlug(title, draftId));
@@ -918,6 +931,79 @@ export default function ArticleEditor() {
     dirtyRef.current = true;
   };
 
+  const extractIpoPaste = async () => {
+    setIpoPasteBusy(true);
+    setError('');
+    try {
+      const parsed = parseIpoPaste(ipoPasteText, { sourceUrl: ipoSourceUrl });
+      let matchedIpo = null;
+      let matchError = null;
+      try {
+        const platform = await getIpoPlatform();
+        matchedIpo = matchPastedIpoToUpstox(parsed, platform);
+      } catch (err) {
+        matchError = err?.message || 'Upstox matching is temporarily unavailable.';
+      }
+      setIpoPastePreview({
+        parsed,
+        matchedIpo,
+        conflicts: comparePastedWithUpstox(parsed, matchedIpo),
+        matchError,
+      });
+    } catch (err) {
+      setIpoPastePreview(null);
+      setError(err?.message || 'IPO text could not be extracted.');
+    } finally {
+      setIpoPasteBusy(false);
+    }
+  };
+
+  const applyIpoPaste = () => {
+    if (!ipoPastePreview || !editor) return;
+    const { parsed, matchedIpo, conflicts } = ipoPastePreview;
+    const issuer = parsed.companyName.replace(/\s+IPO$/i, '').trim();
+    const ticker = matchedIpo?.symbol || equityResearch.ticker || '';
+    const exchange = parsed.issue.listingAt || matchedIpo?.listingExchange || equityResearch.exchange || 'NSE';
+    const suggestedScores = parsed.suggestedScores || {};
+    setArticleType('equity_research');
+    setSection('IPOs');
+    setEquityResearch((current) => ({
+      ...current,
+      company_name: issuer,
+      ticker,
+      exchange,
+      stance: current.stance || 'neutral',
+      report_label: 'IPO Research',
+      report_date: new Date().toISOString().slice(0, 10),
+      key_data: buildIpoKeyData(parsed, matchedIpo),
+      thesis: parsed.thesis,
+      strengths: parsed.strengths.join('\n'),
+      risks: parsed.risks.join('\n'),
+      ipo_scores: {
+        ...current.ipo_scores,
+        ...Object.fromEntries(Object.entries(suggestedScores).filter(([, value]) => value !== '')),
+      },
+      ipo_facts: {
+        ...parsed,
+        ipo_id: matchedIpo?.ipoId || null,
+        symbol: ticker || null,
+        upstox_status: matchedIpo?.status || null,
+        upstox_matched_at: matchedIpo ? new Date().toISOString() : null,
+        conflicts,
+      },
+    }));
+    if (!title.trim()) setTitle(`${issuer} IPO: Growth, valuation and key risks`);
+    if (!metaDescription.trim()) {
+      setMetaDescription(`${issuer} IPO research covering issue structure, financial performance, valuation, strengths and principal risks.`.slice(0, 160));
+    }
+    const nextTags = new Set(tagsInput.split(',').map((tag) => tag.trim()).filter(Boolean));
+    ['IPO', 'equity-research', issuer, ticker, matchedIpo?.ipoId].filter(Boolean).forEach((tag) => nextTags.add(tag));
+    setTagsInput([...nextTags].join(', '));
+    editor.commands.setContent(buildIpoArticleHtml(parsed, matchedIpo), false);
+    dirtyRef.current = true;
+    setError(conflicts.length ? `${conflicts.length} pasted value${conflicts.length === 1 ? '' : 's'} differ from Upstox. Upstox remains the live source on the client page.` : 'IPO intelligence applied. Review the stance, risks and suggested scores before publishing.');
+  };
+
   if (!loaded) {
     return (
       <div className="flex items-center justify-center h-64 text-slate-400">
@@ -1111,6 +1197,40 @@ export default function ArticleEditor() {
                     <div className="rounded-xl border border-amber-200 bg-amber-50/50 p-4 sm:col-span-2 lg:col-span-4">
                       <p className="text-xs font-semibold uppercase tracking-[0.16em] text-amber-700">IPO intelligence inputs</p>
                       <p className="mt-1 text-xs text-slate-500">These fields feed the client IPO page. Enter one evidence-backed strength or risk per line.</p>
+                      <div className="mt-4 rounded-xl border border-blue-200 bg-blue-50/70 p-4">
+                        <div className="flex items-start gap-3">
+                          <ClipboardPaste className="mt-0.5 h-5 w-5 shrink-0 text-blue-700" />
+                          <div>
+                            <p className="text-sm font-semibold text-blue-950">Paste IPO data and build the dossier</p>
+                            <p className="mt-1 text-xs leading-5 text-blue-800/75">Paste the complete Chittorgarh IPO page text. The CMS extracts facts, matches Upstox, drafts intelligence and shows conflicts before anything is applied.</p>
+                          </div>
+                        </div>
+                        <label className="mt-4 block text-xs font-semibold text-slate-700">Source URL<input className={researchInputClass} value={ipoSourceUrl} onChange={(e) => setIpoSourceUrl(e.target.value)} placeholder="https://www.chittorgarh.com/ipo/..." /></label>
+                        <label className="mt-3 block text-xs font-semibold text-slate-700">Copied IPO information<textarea className={`${researchInputClass} min-h-44 resize-y font-mono text-xs leading-5`} value={ipoPasteText} onChange={(e) => { setIpoPasteText(e.target.value); setIpoPastePreview(null); }} placeholder="Paste the full IPO details, company profile, financials, KPIs, objects and subscription tables here..." /></label>
+                        <Button type="button" size="sm" className="mt-3 bg-blue-700 hover:bg-blue-800" onClick={extractIpoPaste} disabled={ipoPasteBusy || ipoPasteText.trim().length < 120}>
+                          {ipoPasteBusy ? <Loader2 size={15} className="mr-1.5 animate-spin" /> : <ClipboardPaste size={15} className="mr-1.5" />}
+                          Extract and review
+                        </Button>
+                        {ipoPastePreview && (
+                          <div className="mt-4 rounded-xl border border-slate-200 bg-white p-4">
+                            <div className="flex flex-wrap items-start justify-between gap-3">
+                              <div><p className="font-semibold text-slate-950">{ipoPastePreview.parsed.companyName}</p><p className="mt-1 text-xs text-slate-500">{ipoPastePreview.parsed.completeness}% structured evidence captured</p></div>
+                              <span className={`rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide ${ipoPastePreview.matchedIpo ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'}`}>{ipoPastePreview.matchedIpo ? `Upstox matched${ipoPastePreview.matchedIpo.symbol ? `: ${ipoPastePreview.matchedIpo.symbol}` : ''}` : 'Upstox match pending'}</span>
+                            </div>
+                            <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+                              {[
+                                ['Issue size', ipoPastePreview.parsed.issue.issueSizeCr != null ? `₹${ipoPastePreview.parsed.issue.issueSizeCr} cr` : 'Pending'],
+                                ['Price band', ipoPastePreview.parsed.issue.priceMax != null ? `₹${ipoPastePreview.parsed.issue.priceMin}-₹${ipoPastePreview.parsed.issue.priceMax}` : 'Pending'],
+                                ['Financial rows', Object.keys(ipoPastePreview.parsed.financials.rows).length],
+                                ['Strengths / risks', `${ipoPastePreview.parsed.strengths.length} / ${ipoPastePreview.parsed.risks.length}`],
+                              ].map(([label, value]) => <div key={label} className="rounded-lg bg-slate-50 p-3"><p className="text-[10px] font-bold uppercase tracking-wide text-slate-400">{label}</p><p className="mt-1 text-sm font-semibold text-slate-800">{value}</p></div>)}
+                            </div>
+                            {ipoPastePreview.conflicts.length > 0 && <div className="mt-3 flex items-start gap-2 rounded-lg bg-amber-50 p-3 text-xs leading-5 text-amber-800"><AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />{ipoPastePreview.conflicts.length} value{ipoPastePreview.conflicts.length === 1 ? '' : 's'} differ from Upstox. The client page will continue using Upstox for live issue terms.</div>}
+                            {!ipoPastePreview.conflicts.length && ipoPastePreview.matchedIpo && <div className="mt-3 flex items-start gap-2 rounded-lg bg-emerald-50 p-3 text-xs leading-5 text-emerald-800"><CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" />No conflicts found in the comparable pasted and Upstox fields.</div>}
+                            <Button type="button" size="sm" className="mt-3 bg-slate-900 hover:bg-slate-800" onClick={applyIpoPaste}><CheckCircle2 size={15} className="mr-1.5" />Apply to IPO article</Button>
+                          </div>
+                        )}
+                      </div>
                       <div className="mt-4 grid gap-4 lg:grid-cols-2">
                         <label className="text-sm font-medium text-slate-700 lg:col-span-2">Thesis summary<textarea className={`${researchInputClass} min-h-20 resize-y`} value={equityResearch.thesis || ''} onChange={(e) => updateEquityResearch('thesis', e.target.value)} placeholder="State the core investment thesis and what would change it." /></label>
                         <label className="text-sm font-medium text-slate-700">Potential strengths<textarea className={`${researchInputClass} min-h-28 resize-y`} value={equityResearch.strengths || ''} onChange={(e) => updateEquityResearch('strengths', e.target.value)} placeholder={'Revenue visibility supported by...\nMargins can expand because...'} /></label>
