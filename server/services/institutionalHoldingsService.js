@@ -76,7 +76,28 @@ function parseInformationTable(xml, valueScale = 1) {
 }
 
 function filingKey(row) {
-  return `${row.cusip}|${row.title_of_class || ''}|${row.put_call || ''}|${row.investment_discretion || ''}`;
+  return `${row.cusip}|${row.title_of_class || ''}|${row.put_call || ''}|${row.investment_discretion || ''}|${row.other_manager || ''}`;
+}
+
+function collapseDuplicateRows(rows) {
+  const combined = new Map();
+  for (const row of rows) {
+    const key = filingKey(row);
+    const current = combined.get(key);
+    if (!current) {
+      combined.set(key, { ...row });
+      continue;
+    }
+    combined.set(key, {
+      ...current,
+      value_usd: n(current.value_usd) + n(row.value_usd),
+      shares: n(current.shares) + n(row.shares),
+      voting_sole: n(current.voting_sole) + n(row.voting_sole),
+      voting_shared: n(current.voting_shared) + n(row.voting_shared),
+      voting_none: n(current.voting_none) + n(row.voting_none),
+    });
+  }
+  return [...combined.values()];
 }
 
 async function collect(factory, pageSize = PAGE_SIZE) {
@@ -488,12 +509,15 @@ async function createAlerts(client, manager, filing, changes) {
 
 async function ingestFiling(client, manager, source) {
   const { data: existing } = await client.from('institutional_filings').select('*').eq('accession_number', source.accession_number).maybeSingle();
-  if (existing?.holdings_count > 0) return { accession_number: source.accession_number, status: 'already_ingested', holdings: existing.holdings_count };
+  if (existing?.holdings_count > 0) {
+    const { count } = await client.from('institutional_holdings').select('id', { count: 'exact', head: true }).eq('filing_id', existing.id);
+    if (n(count) >= n(existing.holdings_count)) return { accession_number: source.accession_number, status: 'already_ingested', holdings: existing.holdings_count };
+  }
   const archive = await filingDocuments(manager.cik, source.accession_number);
   const infoDocument = archive.documents.find((doc) => /<(?:\w+:)?infoTable[\s>]/i.test(doc.text));
   if (!infoDocument) throw new Error(`No 13F information table found in ${source.accession_number}`);
   const valueScale = String(source.accepted_at || source.filing_date) < POST_2022_VALUE_RULE_DATE ? 1000 : 1;
-  const rawRows = parseInformationTable(infoDocument.text, valueScale);
+  const rawRows = collapseDuplicateRows(parseInformationTable(infoDocument.text, valueScale));
   if (!rawRows.length) throw new Error(`The SEC information table was empty for ${source.accession_number}`);
   const combined = archive.documents.map((doc) => doc.text).join('\n');
   const isRestatement = /<(?:\w+:)?isRestatement>\s*true\s*</i.test(combined);
@@ -504,7 +528,7 @@ async function ingestFiling(client, manager, source) {
     const priorVersionRows = await collect(() => client.from('institutional_holdings').select('*').eq('filing_id', previousVersion.id));
     const merged = new Map(priorVersionRows.map((row) => [filingKey(row), row]));
     for (const row of rawRows) merged.set(filingKey(row), row);
-    rows = [...merged.values()].map(({ id, filing_id, manager_id, report_date, portfolio_weight, created_at, ...row }) => row);
+    rows = collapseDuplicateRows([...merged.values()].map(({ id, filing_id, manager_id, report_date, portfolio_weight, created_at, ...row }) => row));
   }
   const identifierMap = await mappingsFor(client, [...new Set(rows.map((row) => row.cusip))]);
   const totalValue = rows.reduce((sum, row) => sum + n(row.value_usd), 0);
