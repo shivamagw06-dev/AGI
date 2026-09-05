@@ -3,7 +3,12 @@ import { createSupabaseAdmin } from '../lib/supabaseAdmin.js';
 const SEC_ROOT = 'https://www.sec.gov';
 const SEC_DATA = 'https://data.sec.gov';
 const SEC_USER_AGENT = (process.env.SEC_USER_AGENT || 'AGI Institutional Research research@agarwalglobalinvestments.com').trim();
+const OPENFIGI_URL = 'https://api.openfigi.com/v3/mapping';
+const OPENFIGI_API_KEY = String(process.env.OPENFIGI_API_KEY || '').trim();
 const PAGE_SIZE = 1000;
+const CONSENSUS_MIN_MANAGERS = 4;
+const AUTO_REFRESH_INTERVAL_MS = 24 * 60 * 60 * 1000;
+const POST_2022_VALUE_RULE_DATE = '2023-01-03';
 
 export const DEFAULT_MANAGERS = [
   { slug: 'berkshire-hathaway', display_name: 'Berkshire Hathaway', legal_name: 'BERKSHIRE HATHAWAY INC', cik: '0001067983', strategy: 'Concentrated quality and value', quality_weight: 1.20, active: true },
@@ -49,7 +54,7 @@ function xmlValue(block, tag) {
   return decodeXml(match?.[1] || '').replace(/<[^>]+>/g, '').trim();
 }
 
-function parseInformationTable(xml) {
+function parseInformationTable(xml, valueScale = 1) {
   const blocks = [...String(xml).matchAll(/<(?:\w+:)?infoTable(?:\s[^>]*)?>([\s\S]*?)<\/(?:\w+:)?infoTable>/gi)];
   return blocks.map((match) => {
     const block = match[1];
@@ -57,7 +62,7 @@ function parseInformationTable(xml) {
       cusip: xmlValue(block, 'cusip').toUpperCase(),
       issuer_name: xmlValue(block, 'nameOfIssuer'),
       title_of_class: xmlValue(block, 'titleOfClass'),
-      value_usd: n(xmlValue(block, 'value')) * 1000,
+      value_usd: n(xmlValue(block, 'value')) * valueScale,
       shares: n(xmlValue(block, 'sshPrnamt')),
       share_type: xmlValue(block, 'sshPrnamtType'),
       put_call: xmlValue(block, 'putCall').toUpperCase() || null,
@@ -144,19 +149,21 @@ function aggregateConsensus(latestHoldings, changes, managerCount) {
     const related = changeMap.get(item.key) || changeMap.get(item.cusip) || [];
     const owners = item.owners.size;
     const breadth = managerCount ? owners / managerCount : 0;
-    const consensusScore = clamp(breadth * 80 + Math.min(item.aggregate_weight / Math.max(owners, 1), 10) * 2);
+    const consensusReady = managerCount >= CONSENSUS_MIN_MANAGERS;
+    const consensusScore = consensusReady ? clamp(breadth * 80 + Math.min(item.aggregate_weight / Math.max(owners, 1), 10) * 2) : null;
     return {
       ...item,
       owners,
       owner_ids: [...item.owners],
       aggregate_weight: Math.round(item.aggregate_weight * 100) / 100,
       consensus_score: consensusScore,
+      score_status: consensusReady ? 'available' : 'withheld',
       new_buyers: related.filter((row) => row.change_type === 'new').length,
       increasers: related.filter((row) => row.change_type === 'increased').length,
       reducers: related.filter((row) => row.change_type === 'reduced').length,
       exits: related.filter((row) => row.change_type === 'exited').length,
     };
-  }).sort((a, b) => b.consensus_score - a.consensus_score || b.aggregate_weight - a.aggregate_weight);
+  }).sort((a, b) => n(b.consensus_score) - n(a.consensus_score) || b.aggregate_weight - a.aggregate_weight);
 }
 
 export async function getInstitutionalOverview() {
@@ -168,7 +175,7 @@ export async function getInstitutionalOverview() {
   const filingIds = [...latest.values()].map((row) => row.id);
   const holdings = filingIds.length ? await collect(() => client.from('institutional_holdings').select('*').in('filing_id', filingIds)) : [];
   const changes = filingIds.length ? await collect(() => client.from('holding_changes').select('*').in('filing_id', filingIds)) : [];
-  const consensus = aggregateConsensus(holdings, changes, managerRows.length);
+  const consensus = aggregateConsensus(holdings, changes, latest.size);
   const fundCards = managerRows.map((manager) => {
     const filing = latest.get(manager.id) || null;
     const owned = filing ? holdings.filter((row) => row.filing_id === filing.id && !row.put_call) : [];
@@ -190,6 +197,8 @@ export async function getInstitutionalOverview() {
     alerts: alerts || [],
     covered_managers: managerRows.length,
     managers_with_filings: latest.size,
+    consensus_ready: latest.size >= CONSENSUS_MIN_MANAGERS,
+    consensus_min_managers: CONSENSUS_MIN_MANAGERS,
     latest_report_date: [...latest.values()].map((row) => row.report_date).sort().reverse()[0] || null,
   };
 }
@@ -226,30 +235,47 @@ export async function getInstitutionalStock(rawKey) {
   const managerMap = new Map(managerRows.map((row) => [row.id, row]));
   const owners = holdings.filter((row) => !row.put_call).map((row) => ({ ...row, manager: managerMap.get(row.manager_id), filing: latest.get(row.manager_id) }));
   const { data: changes } = await client.from('holding_changes').select('*').in('filing_id', ids).eq('cusip', identity.cusip);
-  const consensusScore = clamp((owners.length / Math.max(managerRows.length, 1)) * 80 + Math.min(owners.reduce((sum, row) => sum + n(row.portfolio_weight), 0) / Math.max(owners.length, 1), 10) * 2);
+  const consensusReady = latest.size >= CONSENSUS_MIN_MANAGERS;
+  const consensusScore = consensusReady ? clamp((owners.length / Math.max(latest.size, 1)) * 80 + Math.min(owners.reduce((sum, row) => sum + n(row.portfolio_weight), 0) / Math.max(owners.length, 1), 10) * 2) : null;
   return {
     key: identity.ticker || identity.cusip,
     ticker: identity.ticker,
     cusip: identity.cusip,
     issuer_name: identity.issuer_name,
     manager_count: managerRows.length,
+    covered_manager_count: latest.size,
     owner_count: owners.length,
     aggregate_weight: owners.reduce((sum, row) => sum + n(row.portfolio_weight), 0),
     aggregate_value_usd: owners.reduce((sum, row) => sum + n(row.value_usd), 0),
     consensus_score: consensusScore,
+    consensus_ready: consensusReady,
+    consensus_min_managers: CONSENSUS_MIN_MANAGERS,
     owners: owners.sort((a, b) => n(b.portfolio_weight) - n(a.portfolio_weight)),
     changes: changes || [],
     history: allHistory,
   };
 }
 
+const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
 async function secFetch(url, asJson = false) {
-  const response = await fetch(url, {
-    headers: { Accept: asJson ? 'application/json' : 'application/xml,text/xml,text/plain,*/*', 'User-Agent': SEC_USER_AGENT },
-    signal: AbortSignal.timeout(25_000),
-  });
-  if (!response.ok) throw new Error(`SEC request failed (${response.status}) for ${url}`);
-  return asJson ? response.json() : response.text();
+  let lastError;
+  for (let attempt = 0; attempt < 4; attempt += 1) {
+    try {
+      const response = await fetch(url, {
+        headers: { Accept: asJson ? 'application/json' : 'application/xml,text/xml,text/plain,*/*', 'User-Agent': SEC_USER_AGENT },
+        signal: AbortSignal.timeout(30_000),
+      });
+      if (response.ok) return asJson ? response.json() : response.text();
+      lastError = new Error(`SEC request failed (${response.status}) for ${url}`);
+      if (response.status !== 429 && response.status < 500) throw lastError;
+    } catch (error) {
+      lastError = error;
+      if (attempt === 3) break;
+    }
+    await wait(500 * (2 ** attempt));
+  }
+  throw lastError || new Error(`SEC request failed for ${url}`);
 }
 
 function recent13fFilings(submissions, quarters) {
@@ -272,7 +298,13 @@ async function filingDocuments(cik, accession) {
   const compactAccession = accession.replace(/-/g, '');
   const base = `${SEC_ROOT}/Archives/edgar/data/${compactCik}/${compactAccession}`;
   const index = await secFetch(`${base}/index.json`, true);
-  const names = (index?.directory?.item || []).map((item) => item.name).filter((name) => /\.(xml|txt)$/i.test(name));
+  const names = (index?.directory?.item || [])
+    .map((item) => item.name)
+    .filter((name) => /\.(xml|txt)$/i.test(name))
+    .sort((a, b) => {
+      const rank = (name) => /info.*table|form13f.*info/i.test(name) ? 0 : /primary/i.test(name) ? 2 : 1;
+      return rank(a) - rank(b);
+    });
   const documents = [];
   for (const name of names.slice(0, 12)) {
     const text = await secFetch(`${base}/${name}`);
@@ -293,6 +325,98 @@ async function mappingsFor(client, cusips) {
   const map = new Map();
   for (const row of rows) if (!map.has(row.cusip)) map.set(row.cusip, row);
   return map;
+}
+
+function preferredFigiCandidate(result) {
+  const candidates = (result?.data || []).filter((row) => row?.ticker && row?.marketSector === 'Equity');
+  return candidates.sort((a, b) => {
+    const score = (row) => (row.exchCode === 'US' ? 20 : 0)
+      + (/Common Stock|Depositary Receipt|REIT|ETP/i.test(row.securityType2 || '') ? 10 : 0)
+      + (row.compositeFIGI ? 2 : 0);
+    return score(b) - score(a);
+  })[0] || null;
+}
+
+async function openFigiBatch(cusips) {
+  const headers = { Accept: 'application/json', 'Content-Type': 'application/json' };
+  if (OPENFIGI_API_KEY) headers['X-OPENFIGI-APIKEY'] = OPENFIGI_API_KEY;
+  let lastError;
+  for (let attempt = 0; attempt < 4; attempt += 1) {
+    try {
+      const response = await fetch(OPENFIGI_URL, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(cusips.map((cusip) => ({ idType: 'ID_CUSIP', idValue: cusip }))),
+        signal: AbortSignal.timeout(30_000),
+      });
+      if (response.ok) return response.json();
+      lastError = new Error(`OpenFIGI mapping failed (${response.status})`);
+      if (response.status !== 429 && response.status < 500) throw lastError;
+      const resetSeconds = Math.max(1, n(response.headers.get('ratelimit-reset')));
+      await wait(resetSeconds * 1000);
+    } catch (error) {
+      lastError = error;
+      if (attempt < 3) await wait(750 * (2 ** attempt));
+    }
+  }
+  throw lastError || new Error('OpenFIGI mapping failed.');
+}
+
+async function enrichSecurityIdentifiers(client, limit = 1000) {
+  const unresolved = await collect(() => client.from('institutional_holdings').select('cusip,issuer_name,value_usd').is('ticker', null).order('value_usd', { ascending: false }));
+  const unique = [];
+  const seen = new Set();
+  for (const row of unresolved) {
+    if (!seen.has(row.cusip)) {
+      seen.add(row.cusip);
+      unique.push(row);
+    }
+    if (unique.length >= limit) break;
+  }
+  const batchSize = OPENFIGI_API_KEY ? 100 : 5;
+  const mappings = [];
+  const errors = [];
+  for (let index = 0; index < unique.length; index += batchSize) {
+    const batch = unique.slice(index, index + batchSize);
+    try {
+      const results = await openFigiBatch(batch.map((row) => row.cusip));
+      results.forEach((result, resultIndex) => {
+        const source = batch[resultIndex];
+        const match = preferredFigiCandidate(result);
+        if (source && match) mappings.push({
+          cusip: source.cusip,
+          ticker: String(match.ticker).trim().toUpperCase(),
+          issuer_name: source.issuer_name,
+          valid_from: '1900-01-01',
+          source: 'openfigi',
+          manually_verified: false,
+          updated_at: new Date().toISOString(),
+        });
+      });
+    } catch (error) {
+      errors.push(error.message);
+    }
+    if (!OPENFIGI_API_KEY && index + batchSize < unique.length) await wait(2500);
+  }
+  if (mappings.length) {
+    const { error } = await client.from('security_identifier_history').upsert(mappings, { onConflict: 'cusip,valid_from' });
+    if (error) throw error;
+  }
+  return { attempted: unique.length, mapped: mappings.length, unresolved: Math.max(0, unique.length - mappings.length), errors: [...new Set(errors)] };
+}
+
+async function mapWithConcurrency(items, concurrency, worker) {
+  const output = new Array(items.length);
+  let cursor = 0;
+  async function run() {
+    while (cursor < items.length) {
+      const index = cursor;
+      cursor += 1;
+      output[index] = await worker(items[index], index);
+    }
+  }
+  await Promise.all(Array.from({ length: Math.min(concurrency, items.length) }, run));
+  return output;
 }
 
 function buildChanges(current, previous, filing) {
@@ -368,7 +492,8 @@ async function ingestFiling(client, manager, source) {
   const archive = await filingDocuments(manager.cik, source.accession_number);
   const infoDocument = archive.documents.find((doc) => /<(?:\w+:)?infoTable[\s>]/i.test(doc.text));
   if (!infoDocument) throw new Error(`No 13F information table found in ${source.accession_number}`);
-  const rawRows = parseInformationTable(infoDocument.text);
+  const valueScale = String(source.accepted_at || source.filing_date) < POST_2022_VALUE_RULE_DATE ? 1000 : 1;
+  const rawRows = parseInformationTable(infoDocument.text, valueScale);
   if (!rawRows.length) throw new Error(`The SEC information table was empty for ${source.accession_number}`);
   const combined = archive.documents.map((doc) => doc.text).join('\n');
   const isRestatement = /<(?:\w+:)?isRestatement>\s*true\s*</i.test(combined);
@@ -428,7 +553,8 @@ async function rebuildSignals(client) {
   if (!ids.length) return { funds: 0, stocks: 0 };
   const holdings = await collect(() => client.from('institutional_holdings').select('*').in('filing_id', ids));
   const changes = await collect(() => client.from('holding_changes').select('*').in('filing_id', ids));
-  const consensus = aggregateConsensus(holdings, changes, managerRows.length);
+  const consensusReady = latest.size >= CONSENSUS_MIN_MANAGERS;
+  const consensus = aggregateConsensus(holdings, changes, latest.size);
   const breadth = new Map(consensus.map((row) => [row.cusip, row.owners]));
   const signalRows = [];
   for (const manager of managerRows) {
@@ -446,13 +572,13 @@ async function rebuildSignals(client) {
       signal('accumulation', accumulationWeight * 4, { positive_weight_change_pct: accumulationWeight }, 'Positive weight added through new and increased positions, scaled against 25%.'),
       signal('new_idea', newWeight * 8, { new_position_weight_pct: newWeight }, 'Current portfolio weight represented by newly disclosed positions, scaled against 12.5%.'),
       signal('exit_pressure', exitWeight * 4, { reduced_or_exited_weight_pct: exitWeight }, 'Portfolio weight removed through reductions and exits, scaled against 25%.'),
-      signal('consensus', (avgBreadth / Math.max(managerRows.length, 1)) * 100, { average_top10_owner_count: avgBreadth, tracked_managers: managerRows.length }, 'Average ownership breadth across the fund top ten positions.'),
-    ];
+      consensusReady ? signal('consensus', (avgBreadth / Math.max(latest.size, 1)) * 100, { average_top10_owner_count: avgBreadth, covered_managers: latest.size, tracked_managers: managerRows.length }, 'Average ownership breadth across the fund top ten positions.') : null,
+    ].filter(Boolean);
     signalRows.push(...scores.map((row) => ({ ...row, scope_type: 'fund', scope_id: manager.id, as_of: filing.report_date })));
   }
-  for (const row of consensus) {
+  for (const row of consensus.filter(() => consensusReady)) {
     signalRows.push({
-      ...signal('consensus', row.consensus_score, { owners: row.owners, tracked_managers: managerRows.length, aggregate_weight_pct: row.aggregate_weight }, 'Tracked-manager breadth plus average disclosed portfolio importance.'),
+      ...signal('consensus', row.consensus_score, { owners: row.owners, covered_managers: latest.size, tracked_managers: managerRows.length, aggregate_weight_pct: row.aggregate_weight }, 'Covered-manager breadth plus average disclosed portfolio importance.'),
       scope_type: 'stock', scope_id: row.cusip, as_of: [...latest.values()].map((item) => item.report_date).sort().reverse()[0],
     });
   }
@@ -464,25 +590,57 @@ async function rebuildSignals(client) {
   return { funds: latest.size, stocks: consensus.length };
 }
 
-export async function refreshInstitutionalFilings({ managerSlug, quarters = 4 } = {}) {
+async function performInstitutionalRefresh({ managerSlug, quarters = 4 } = {}) {
   const client = db();
   const managerRows = await managers(client);
   const selected = managerSlug && managerSlug !== 'all' ? managerRows.filter((row) => row.slug === managerSlug) : managerRows;
   if (!selected.length) throw new Error('Select a tracked manager.');
-  const results = [];
-  for (const manager of selected) {
+  const results = await mapWithConcurrency(selected, 3, async (manager) => {
+    await client.from('institutional_managers').update({ last_refresh_at: new Date().toISOString(), last_refresh_status: 'running', last_refresh_error: null }).eq('id', manager.id);
     try {
       const submissions = await secFetch(`${SEC_DATA}/submissions/CIK${cleanCik(manager.cik)}.json`, true);
       const filingRows = recent13fFilings(submissions, quarters);
+      if (!filingRows.length) throw new Error('No Form 13F filings were found for this SEC filer.');
       const filings = [];
       for (const filing of filingRows) filings.push(await ingestFiling(client, manager, filing));
-      results.push({ manager: manager.display_name, cik: manager.cik, ok: true, filings });
+      const newestReport = filingRows.map((row) => row.report_date).sort().reverse()[0];
+      const staleCutoff = new Date(Date.now() - (240 * 24 * 60 * 60 * 1000)).toISOString().slice(0, 10);
+      const status = newestReport < staleCutoff ? 'stale' : 'success';
+      await client.from('institutional_managers').update({ last_refresh_at: new Date().toISOString(), last_successful_refresh_at: new Date().toISOString(), last_refresh_status: status, last_refresh_error: status === 'stale' ? `Latest available 13F reports ${newestReport}.` : null }).eq('id', manager.id);
+      return { manager: manager.display_name, cik: manager.cik, ok: true, status, latest_report_date: newestReport, filings };
     } catch (error) {
-      results.push({ manager: manager.display_name, cik: manager.cik, ok: false, error: error.message });
+      await client.from('institutional_managers').update({ last_refresh_at: new Date().toISOString(), last_refresh_status: 'error', last_refresh_error: error.message }).eq('id', manager.id);
+      return { manager: manager.display_name, cik: manager.cik, ok: false, status: 'error', error: error.message };
     }
-  }
+  });
+  const enrichment = await enrichSecurityIdentifiers(client);
   const scores = await rebuildSignals(client);
-  return { ok: results.some((row) => row.ok), refreshed_at: new Date().toISOString(), results, scores };
+  return { ok: results.some((row) => row.ok), refreshed_at: new Date().toISOString(), results, enrichment, scores };
+}
+
+let fullRefreshPromise = null;
+
+export function refreshInstitutionalFilings(options = {}) {
+  const isFullRefresh = !options.managerSlug || options.managerSlug === 'all';
+  if (isFullRefresh && fullRefreshPromise) return fullRefreshPromise;
+  const promise = performInstitutionalRefresh(options);
+  if (!isFullRefresh) return promise;
+  fullRefreshPromise = promise.finally(() => { fullRefreshPromise = null; });
+  return fullRefreshPromise;
+}
+
+let automationStarted = false;
+
+export function startInstitutionalHoldingsAutomation() {
+  if (automationStarted || String(process.env.INSTITUTIONAL_AUTO_REFRESH || 'true').toLowerCase() === 'false') return;
+  automationStarted = true;
+  const execute = () => refreshInstitutionalFilings({ managerSlug: 'all', quarters: 4 })
+    .then((result) => console.info(`[institutional-holdings] automatic refresh complete: ${result.results.filter((row) => row.ok).length}/${result.results.length} managers, ${result.enrichment.mapped} identifiers mapped`))
+    .catch((error) => console.error('[institutional-holdings] automatic refresh failed:', error.message));
+  const initial = setTimeout(execute, 15_000);
+  const recurring = setInterval(execute, AUTO_REFRESH_INTERVAL_MS);
+  initial.unref?.();
+  recurring.unref?.();
 }
 
 export async function getInstitutionalAdmin() {
