@@ -6,6 +6,7 @@ import { getNifty500StockResearch } from '@/lib/nifty500ResearchApi';
 import { getUiCompany } from '@/lib/uiApi';
 import { getInstitutionalStackCompany } from '@/lib/intelligenceApi';
 import CompanyIntelligencePanels from '@/components/Company/CompanyIntelligencePanels';
+import CompanyValuationPanel from '@/components/Company/CompanyValuationPanel';
 
 function tone(sentiment = '') {
   if (/bullish/i.test(sentiment)) return 'bg-[#ecfdf3] text-[#087443] border-[#b7ebcc]';
@@ -155,8 +156,8 @@ export default function Nifty500StockResearch() {
         <meta name="description" content="AGI’s derived technical research for Nifty 500 companies. Informational only, not investment advice." />
       </Helmet>
       <main className="mx-auto max-w-[1200px] px-4 py-7 sm:px-6 sm:py-10">
-        <Link to="/market-intelligence#nifty500-research" className="inline-flex items-center gap-2 text-xs font-bold text-[#274c77] hover:underline">
-          <ArrowLeft className="h-4 w-4" /> Back to Market Intelligence
+        <Link to="/india-stock-intelligence" className="inline-flex items-center gap-2 text-xs font-bold text-[#274c77] hover:underline">
+          <ArrowLeft className="h-4 w-4" /> Back to India Stock Intelligence
         </Link>
 
         {state.loading && !companyIntel ? (
@@ -195,6 +196,8 @@ export default function Nifty500StockResearch() {
                 </div>
               )}
             </section>
+
+            <CompanyValuationPanel symbol={symbol} />
 
             <CompanyIntelligencePanels data={companyIntel} />
 

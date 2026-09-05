@@ -61,6 +61,7 @@ const PredictionCentre = React.lazy(() => import('@/pages/PredictionCentre'));
 const PersonalWorkspace = React.lazy(() => import('@/pages/PersonalWorkspace'));
 const ResearchTerminalHome = React.lazy(() => import('@/components/Home/ResearchTerminalHome'));
 const EquityResearchPage = React.lazy(() => import('@/pages/EquityResearchPage'));
+const IndiaStockIntelligencePage = React.lazy(() => import('@/pages/IndiaStockIntelligencePage'));
 const HedgeFundDesk = React.lazy(() => import('@/pages/HedgeFundDesk'));
 const HedgeFundPage = React.lazy(() => import('@/pages/HedgeFundPage'));
 const HedgeFundSignalPage = React.lazy(() => import('@/pages/HedgeFundSignalPage'));
@@ -197,6 +198,7 @@ function PublicRoutes() {
 
       <Route path="/research" element={<ArticlesFeed variant="light" />} />
       <Route path="/equity-research" element={<EquityResearchPage />} />
+      <Route path="/india-stock-intelligence" element={<IndiaStockIntelligencePage />} />
       <Route path="/sections/live-articles" element={<Navigate replace to="/research" />} />
       <Route path="/live-articles" element={<Navigate replace to="/research" />} />
 
