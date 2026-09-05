@@ -16,12 +16,70 @@ const money = (value) => {
 const number = (value) => Number(value || 0).toLocaleString('en-US', { maximumFractionDigits: 0 });
 const percent = (value) => `${Number(value || 0).toFixed(2)}%`;
 
+const MANAGER_DOMAINS = {
+  'Akre Capital Management': 'akrecapital.com',
+  Alphabet: 'abc.xyz',
+  'Altimeter Capital Management': 'altimeter.com',
+  Appaloosa: 'appaloosamanagement.com',
+  'AQR Capital Management': 'aqr.com',
+  'Atreides Management': 'atreidesmgmt.com',
+  'Baillie Gifford & Company': 'bailliegifford.com',
+  'Baker Bros Advisors': 'bakerbros.com',
+  'Berkshire Hathaway': 'berkshirehathaway.com',
+  BlackRock: 'blackrock.com',
+  'Bridgewater Associates': 'bridgewater.com',
+  'Citadel Advisors': 'citadel.com',
+  'Coatue Management': 'coatue.com',
+  'D1 Capital Partners': 'd1.com',
+  'Durable Capital Partners': 'durablecapital.com',
+  'Fidelity Investments Money Management': 'fidelity.com',
+  Fundsmith: 'fundsmith.co.uk',
+  'Gates Foundation Trust': 'gatesfoundation.org',
+  'Goldman Sachs Group': 'goldmansachs.com',
+  'Himalaya Capital Management': 'himalayacapital.com',
+  'Jane Street Group': 'janestreet.com',
+  'JPMorgan Chase & Company': 'jpmorganchase.com',
+  'Lone Pine Capital': 'lonepinecapital.com',
+  'Maverick Capital': 'maverickcap.com',
+  'Millennium Management': 'mlp.com',
+  'National Pension Service': 'nps.or.kr',
+  'Norges Bank': 'nbim.no',
+  'NVIDIA Corp': 'nvidia.com',
+  'Perceptive Advisors': 'perceptivelife.com',
+  'Pershing Square Capital Management': 'pershingsquareholdings.com',
+  'RA Capital Management': 'racap.com',
+  'Renaissance Technologies': 'rentec.com',
+  'Situational Awareness': 'situational-awareness.ai',
+  'Soros Fund Management': 'sorosfundmgmt.com',
+  'Surgocap Partners': 'surgocap.com',
+  'TCI Fund Management': 'tcifund.com',
+  'The Baupost Group': 'baupost.com',
+  'The Vanguard Group': 'vanguard.com',
+  'Thiel Macro': 'thielcapital.com',
+  'Third Point': 'thirdpoint.com',
+  'Tiger Global Management': 'tigerglobal.com',
+  'Valley Forge Capital Management': 'valleyforgecapital.com',
+  'Viking Global Investors': 'vikingglobal.com',
+  'Whale Rock Capital Management': 'whalerockcapital.com',
+};
+
 function ManagerMark({ manager }) {
   const mark = String(manager.display_name || 'AGI').split(/\s+/).map((word) => word[0]).join('').slice(0, 3);
+  const domain = MANAGER_DOMAINS[manager.display_name];
   return (
     <div className="relative grid h-11 w-11 shrink-0 place-items-center overflow-hidden rounded-xl border border-cyan-100/15 bg-gradient-to-br from-[#174c5c] to-[#071e2b] font-serif text-xs font-bold text-white shadow-[0_8px_22px_rgba(5,31,42,.2)]">
       <span className="absolute inset-x-2 top-1.5 h-px bg-[#d9a766]" />
-      {mark}
+      <span aria-hidden="true">{mark}</span>
+      {domain ? (
+        <img
+          src={`https://www.google.com/s2/favicons?domain_url=https://${domain}&sz=128`}
+          alt={`${manager.display_name} logo`}
+          loading="lazy"
+          referrerPolicy="no-referrer"
+          className="absolute inset-0 h-full w-full bg-white object-contain p-1.5"
+          onError={(event) => { event.currentTarget.style.display = 'none'; }}
+        />
+      ) : null}
     </div>
   );
 }
