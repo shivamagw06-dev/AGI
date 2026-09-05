@@ -19,7 +19,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        shard: [0, 1, 2, 3]
+        shard: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
     # Generous against the 900s budget in the code, so the job does not kill the
     # very measurement it exists to take.
     timeout-minutes: 45
@@ -36,7 +36,7 @@ jobs:
       IERE_STORE_ROOT: ${{ github.workspace }}/intelligence-engine/data/evidence_retrieval
       ACCEPTANCE_FIXTURES_ROOT: ${{ github.workspace }}/intelligence-engine/acceptance_fixtures
       ASK_TEST_ARTIFACTS: ${{ github.workspace }}/intelligence-engine/artifacts
-      SHORT_GATE_SHARD_COUNT: '4'
+      SHORT_GATE_SHARD_COUNT: '16'
       SHORT_GATE_SHARD_INDEX: ${{ matrix.shard }}
 
     steps:
@@ -68,8 +68,16 @@ jobs:
         run: |
           set +e
           start=$(date +%s)
-          python -m ask_product_test.run_short_gate
+          # The Python report records the 900-second budget but cannot interrupt
+          # a blocked provider/pipeline call. Enforce the same ceiling here so a
+          # hung shard fails as infrastructure instead of occupying the required
+          # production check until the 45-minute job timeout.
+          timeout --signal=TERM --kill-after=30s 900s python -m ask_product_test.run_short_gate
           rc=$?
+          if [ "$rc" = "124" ] || [ "$rc" = "137" ]; then
+            echo "::error::short gate exceeded its enforced 900-second budget"
+            rc=2
+          fi
           echo "duration_seconds=$(( $(date +%s) - start ))" >> "$GITHUB_OUTPUT"
           echo "exit_code=$rc" >> "$GITHUB_OUTPUT"
           # 2 is infrastructure — the stub failed to install, or the harness was
