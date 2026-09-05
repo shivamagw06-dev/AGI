@@ -135,6 +135,15 @@ function latestByManager(filings) {
   return map;
 }
 
+function consensusEligibleLatest(latest) {
+  const newestReport = [...latest.values()].map((row) => row.report_date).sort().reverse()[0];
+  if (!newestReport) return new Map();
+  const cutoff = new Date(`${newestReport}T00:00:00Z`);
+  cutoff.setUTCDate(cutoff.getUTCDate() - 200);
+  const cutoffDate = cutoff.toISOString().slice(0, 10);
+  return new Map([...latest.entries()].filter(([, filing]) => filing.report_date >= cutoffDate));
+}
+
 function securityKey(row) {
   return row.ticker || row.cusip;
 }
@@ -193,10 +202,16 @@ export async function getInstitutionalOverview() {
   const { data: filingRows, error: filingError } = await client.from('institutional_filings').select('*').eq('is_active', true).order('report_date', { ascending: false });
   if (filingError) throw filingError;
   const latest = latestByManager(filingRows || []);
+  const consensusLatest = consensusEligibleLatest(latest);
   const filingIds = [...latest.values()].map((row) => row.id);
   const holdings = filingIds.length ? await collect(() => client.from('institutional_holdings').select('*').in('filing_id', filingIds)) : [];
   const changes = filingIds.length ? await collect(() => client.from('holding_changes').select('*').in('filing_id', filingIds)) : [];
-  const consensus = aggregateConsensus(holdings, changes, latest.size);
+  const consensusFilingIds = new Set([...consensusLatest.values()].map((row) => row.id));
+  const consensus = aggregateConsensus(
+    holdings.filter((row) => consensusFilingIds.has(row.filing_id)),
+    changes.filter((row) => consensusFilingIds.has(row.filing_id)),
+    consensusLatest.size,
+  );
   const fundCards = managerRows.map((manager) => {
     const filing = latest.get(manager.id) || null;
     const owned = filing ? holdings.filter((row) => row.filing_id === filing.id && !row.put_call) : [];
@@ -218,7 +233,8 @@ export async function getInstitutionalOverview() {
     alerts: alerts || [],
     covered_managers: managerRows.length,
     managers_with_filings: latest.size,
-    consensus_ready: latest.size >= CONSENSUS_MIN_MANAGERS,
+    consensus_managers: consensusLatest.size,
+    consensus_ready: consensusLatest.size >= CONSENSUS_MIN_MANAGERS,
     consensus_min_managers: CONSENSUS_MIN_MANAGERS,
     latest_report_date: [...latest.values()].map((row) => row.report_date).sort().reverse()[0] || null,
   };
@@ -247,7 +263,8 @@ export async function getInstitutionalStock(rawKey) {
   const { data: filingRows, error: filingError } = await client.from('institutional_filings').select('*').eq('is_active', true).order('report_date', { ascending: false });
   if (filingError) throw filingError;
   const latest = latestByManager(filingRows || []);
-  const ids = [...latest.values()].map((row) => row.id);
+  const consensusLatest = consensusEligibleLatest(latest);
+  const ids = [...consensusLatest.values()].map((row) => row.id);
   if (!ids.length) return { key, owners: [], history: [], manager_count: managerRows.length };
   const holdings = await collect(() => client.from('institutional_holdings').select('*').in('filing_id', ids).or(`ticker.eq.${key},cusip.eq.${key}`));
   const identity = holdings[0] || null;
@@ -256,14 +273,15 @@ export async function getInstitutionalStock(rawKey) {
   const managerMap = new Map(managerRows.map((row) => [row.id, row]));
   const owners = holdings.filter((row) => !row.put_call).map((row) => ({ ...row, manager: managerMap.get(row.manager_id), filing: latest.get(row.manager_id) }));
   const { data: changes } = await client.from('holding_changes').select('*').in('filing_id', ids).eq('cusip', identity.cusip);
-  const consensusReady = latest.size >= CONSENSUS_MIN_MANAGERS;
-  const consensusScore = consensusReady ? clamp((owners.length / Math.max(latest.size, 1)) * 80 + Math.min(owners.reduce((sum, row) => sum + n(row.portfolio_weight), 0) / Math.max(owners.length, 1), 10) * 2) : null;
+  const consensusReady = consensusLatest.size >= CONSENSUS_MIN_MANAGERS;
+  const consensusScore = consensusReady ? clamp((owners.length / Math.max(consensusLatest.size, 1)) * 80 + Math.min(owners.reduce((sum, row) => sum + n(row.portfolio_weight), 0) / Math.max(owners.length, 1), 10) * 2) : null;
   return {
     key: identity.ticker || identity.cusip,
     ticker: identity.ticker,
     cusip: identity.cusip,
     issuer_name: identity.issuer_name,
-    manager_count: managerRows.length,
+    manager_count: consensusLatest.size,
+    tracked_manager_count: managerRows.length,
     covered_manager_count: latest.size,
     owner_count: owners.length,
     aggregate_weight: owners.reduce((sum, row) => sum + n(row.portfolio_weight), 0),
@@ -573,12 +591,18 @@ async function rebuildSignals(client) {
   const { data: filings, error } = await client.from('institutional_filings').select('*').eq('is_active', true).order('report_date', { ascending: false });
   if (error) throw error;
   const latest = latestByManager(filings || []);
+  const consensusLatest = consensusEligibleLatest(latest);
   const ids = [...latest.values()].map((row) => row.id);
   if (!ids.length) return { funds: 0, stocks: 0 };
   const holdings = await collect(() => client.from('institutional_holdings').select('*').in('filing_id', ids));
   const changes = await collect(() => client.from('holding_changes').select('*').in('filing_id', ids));
-  const consensusReady = latest.size >= CONSENSUS_MIN_MANAGERS;
-  const consensus = aggregateConsensus(holdings, changes, latest.size);
+  const consensusReady = consensusLatest.size >= CONSENSUS_MIN_MANAGERS;
+  const consensusFilingIds = new Set([...consensusLatest.values()].map((row) => row.id));
+  const consensus = aggregateConsensus(
+    holdings.filter((row) => consensusFilingIds.has(row.filing_id)),
+    changes.filter((row) => consensusFilingIds.has(row.filing_id)),
+    consensusLatest.size,
+  );
   const breadth = new Map(consensus.map((row) => [row.cusip, row.owners]));
   const signalRows = [];
   for (const manager of managerRows) {
@@ -596,13 +620,13 @@ async function rebuildSignals(client) {
       signal('accumulation', accumulationWeight * 4, { positive_weight_change_pct: accumulationWeight }, 'Positive weight added through new and increased positions, scaled against 25%.'),
       signal('new_idea', newWeight * 8, { new_position_weight_pct: newWeight }, 'Current portfolio weight represented by newly disclosed positions, scaled against 12.5%.'),
       signal('exit_pressure', exitWeight * 4, { reduced_or_exited_weight_pct: exitWeight }, 'Portfolio weight removed through reductions and exits, scaled against 25%.'),
-      consensusReady ? signal('consensus', (avgBreadth / Math.max(latest.size, 1)) * 100, { average_top10_owner_count: avgBreadth, covered_managers: latest.size, tracked_managers: managerRows.length }, 'Average ownership breadth across the fund top ten positions.') : null,
+      consensusReady && consensusLatest.has(manager.id) ? signal('consensus', (avgBreadth / Math.max(consensusLatest.size, 1)) * 100, { average_top10_owner_count: avgBreadth, consensus_managers: consensusLatest.size, tracked_managers: managerRows.length }, 'Average ownership breadth across current fund top ten positions.') : null,
     ].filter(Boolean);
     signalRows.push(...scores.map((row) => ({ ...row, scope_type: 'fund', scope_id: manager.id, as_of: filing.report_date })));
   }
   for (const row of consensus.filter(() => consensusReady)) {
     signalRows.push({
-      ...signal('consensus', row.consensus_score, { owners: row.owners, covered_managers: latest.size, tracked_managers: managerRows.length, aggregate_weight_pct: row.aggregate_weight }, 'Covered-manager breadth plus average disclosed portfolio importance.'),
+      ...signal('consensus', row.consensus_score, { owners: row.owners, consensus_managers: consensusLatest.size, tracked_managers: managerRows.length, aggregate_weight_pct: row.aggregate_weight }, 'Current-manager breadth plus average disclosed portfolio importance.'),
       scope_type: 'stock', scope_id: row.cusip, as_of: [...latest.values()].map((item) => item.report_date).sort().reverse()[0],
     });
   }

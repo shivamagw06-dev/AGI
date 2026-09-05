@@ -287,7 +287,7 @@ function OverviewPage() {
             <p className="text-[10px] font-extrabold uppercase tracking-[.2em] text-[#e3ad69]">Coverage pulse</p>
             <div className="mt-6 grid grid-cols-2 gap-4">
               <div><span className="font-serif text-4xl font-bold">{data?.covered_managers || 10}</span><p className="mt-1 text-xs text-[#adc4cb]">Selected managers</p></div>
-              <div><span className="font-serif text-4xl font-bold">{data?.managers_with_filings || 0}</span><p className="mt-1 text-xs text-[#adc4cb]">Portfolios active</p></div>
+              <div><span className="font-serif text-4xl font-bold">{data?.consensus_managers || 0}</span><p className="mt-1 text-xs text-[#adc4cb]">Current for consensus</p></div>
               <div><span className="font-serif text-2xl font-bold">{data?.latest_report_date || 'Pending'}</span><p className="mt-1 text-xs text-[#adc4cb]">Latest quarter</p></div>
               <div><span className="font-serif text-4xl font-bold">{data?.consensus?.length || 0}</span><p className="mt-1 text-xs text-[#adc4cb]">Consensus names</p></div>
             </div>
@@ -369,8 +369,8 @@ function OverviewPage() {
                             </div>
                           </td>
                           <td className="px-4 py-4">
-                            <strong className="text-sm">{row.owners}/{data.covered_managers}</strong>
-                            <div className="mt-2 h-1.5 w-24 overflow-hidden rounded-full bg-[#e1e9e7]"><div className="h-full rounded-full bg-[#38a99f]" style={{ width: `${(row.owners / Math.max(data.covered_managers, 1)) * 100}%` }} /></div>
+                            <strong className="text-sm">{row.owners}/{data.consensus_managers}</strong>
+                            <div className="mt-2 h-1.5 w-24 overflow-hidden rounded-full bg-[#e1e9e7]"><div className="h-full rounded-full bg-[#38a99f]" style={{ width: `${(row.owners / Math.max(data.consensus_managers, 1)) * 100}%` }} /></div>
                           </td>
                           <td className="px-4 py-4 text-sm font-semibold">{pct(row.aggregate_weight)}</td>
                           <td className="px-4 py-4"><span className="text-xs font-bold text-emerald-700">+{row.new_buyers + row.increasers}</span><span className="mx-2 text-[#b6c0bd]">/</span><span className="text-xs font-bold text-rose-700">-{row.reducers + row.exits}</span></td>
@@ -547,7 +547,7 @@ function StockPage({ stockKey }) {
       back="/institutional-holdings"
       eyebrow={`Consensus security / CUSIP ${data.cusip}`}
       title={data.ticker || data.issuer_name}
-      subtitle={`${data.owner_count} of ${data.manager_count} tracked managers disclose this security in their latest available Form 13F portfolios.`}
+      subtitle={`${data.owner_count} of ${data.manager_count} current manager portfolios disclose this security. Stale fund histories are excluded from consensus scoring.`}
     >
       <main className="mx-auto max-w-[1380px] px-5 pb-16 sm:px-8">
         <section className="-mt-8 grid overflow-hidden rounded-[32px] border border-white bg-white/90 shadow-[0_30px_80px_rgba(6,37,48,.13)] backdrop-blur lg:grid-cols-[360px_1fr]">
