@@ -8,11 +8,18 @@ const FALLBACK = [
   { name: 'INDIA VIX', value: '—', change: 0 },
 ];
 
-export default function useMarketIndices() {
+/**
+ * @param {boolean} [enabled=true] Fetch only when true. The Markets dropdown
+ *   passes false until it is first opened, so a nav menu most visitors never
+ *   touch costs no request on page load. Defaults to true, so existing callers
+ *   behave exactly as before.
+ */
+export default function useMarketIndices(enabled = true) {
   const [indices, setIndices] = useState(FALLBACK);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(enabled);
 
   useEffect(() => {
+    if (!enabled) return undefined;
     let cancelled = false;
 
     getIndices()
@@ -35,7 +42,7 @@ export default function useMarketIndices() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [enabled]);
 
   return { indices, loading };
 }
