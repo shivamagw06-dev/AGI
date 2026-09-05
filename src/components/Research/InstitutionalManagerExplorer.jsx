@@ -63,6 +63,25 @@ const MANAGER_DOMAINS = {
   'Whale Rock Capital Management': 'whalerockcapital.com',
 };
 
+const MANAGER_HIERARCHY = [
+  'Situational Awareness', 'Berkshire Hathaway', 'Duquesne Family Office', 'BlackRock',
+  'Pershing Square Capital Management', 'Scion Asset Management', 'TCI Fund Management',
+  'Bridgewater Associates', 'National Pension Service', 'Altimeter Capital Management',
+  'Atreides Management', 'Renaissance Technologies', 'Appaloosa', 'NVIDIA Corp',
+  'Himalaya Capital Management', 'Coatue Management', 'Tiger Global Management',
+  'Baker Bros Advisors', 'The Baupost Group', 'Citadel Advisors', 'Whale Rock Capital Management',
+  'The Vanguard Group', 'D1 Capital Partners', 'Baillie Gifford & Company', 'Lone Pine Capital',
+  'Soros Fund Management', 'Praetorian PR', 'Dalal Street', 'Viking Global Investors', 'Alphabet',
+  'JPMorgan Chase & Company', 'Millennium Management', 'H&H International Investment',
+  'Third Point', 'Surgocap Partners', 'Thiel Macro', 'RA Capital Management', 'Fundsmith',
+  'Jane Street Group', 'Gates Foundation Trust', 'Goldman Sachs Group', 'Durable Capital Partners',
+  'Value Aligned Research Advisors', 'Akre Capital Management', 'Valley Forge Capital Management',
+  'Fidelity Investments Money Management', 'Maverick Capital', 'Norges Bank', 'Perceptive Advisors',
+  'AQR Capital Management',
+];
+
+const MANAGER_RANK = new Map(MANAGER_HIERARCHY.map((name, index) => [name, index]));
+
 function ManagerMark({ manager }) {
   const mark = String(manager.display_name || 'AGI').split(/\s+/).map((word) => word[0]).join('').slice(0, 3);
   const domain = MANAGER_DOMAINS[manager.display_name];
@@ -79,6 +98,79 @@ function ManagerMark({ manager }) {
           className="absolute inset-0 h-full w-full bg-white object-contain p-1.5"
           onError={(event) => { event.currentTarget.style.display = 'none'; }}
         />
+      ) : null}
+    </div>
+  );
+}
+
+function AumSparkline({ history = [] }) {
+  const [hovered, setHovered] = useState(null);
+  const source = history.filter((row) => Number.isFinite(Number(row?.total_value_usd))).slice(-12);
+  if (!source.length) return <span className="text-[10px] text-slate-400">No history</span>;
+
+  const width = 154;
+  const height = 48;
+  const pad = 5;
+  const values = source.map((row) => Number(row.total_value_usd));
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  const range = max - min || Math.max(max, 1);
+  const points = source.map((row, index) => ({
+    row,
+    x: source.length === 1 ? width / 2 : pad + (index * (width - pad * 2)) / (source.length - 1),
+    y: height - pad - ((Number(row.total_value_usd) - min) / range) * (height - pad * 2),
+  }));
+  const line = points.map((point, index) => `${index ? 'L' : 'M'} ${point.x} ${point.y}`).join(' ');
+  const area = `${line} L ${points.at(-1).x} ${height - pad} L ${points[0].x} ${height - pad} Z`;
+  const active = hovered === null ? null : points[hovered];
+
+  return (
+    <div className="relative w-[154px]" onMouseLeave={() => setHovered(null)}>
+      <svg viewBox={`0 0 ${width} ${height}`} className="h-12 w-full overflow-visible" role="img" aria-label="Quarterly 13F assets under management">
+        <path d={area} fill="rgba(58,170,171,.13)" />
+        <path d={line} fill="none" stroke="#3aaaab" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
+        {points.map((point, index) => (
+          <circle key={`${point.row.report_date}-${index}`} cx={point.x} cy={point.y} r={hovered === index ? 4 : 6} fill={hovered === index ? '#d4a55d' : 'transparent'} stroke={hovered === index ? '#fff' : 'transparent'} strokeWidth="2" className="cursor-crosshair" onMouseEnter={() => setHovered(index)} />
+        ))}
+      </svg>
+      {active ? (
+        <div className="pointer-events-none absolute bottom-[54px] z-30 min-w-[112px] -translate-x-1/2 rounded border border-[#d4a55d]/40 bg-[#071b27] px-2.5 py-2 text-left shadow-xl" style={{ left: `${Math.min(82, Math.max(18, (active.x / width) * 100))}%` }}>
+          <div className="text-[9px] font-bold uppercase tracking-[.16em] text-[#d4a55d]">{active.row.report_date}</div>
+          <div className="mt-1 text-xs font-bold text-white">{money(active.row.total_value_usd)}</div>
+          <div className="text-[9px] text-slate-400">{number(active.row.holdings_count)} holdings</div>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function PortfolioDonut({ positions = [] }) {
+  const [hovered, setHovered] = useState(null);
+  const colors = ['#3aaaab', '#d4a55d', '#5c7f90', '#263f4b'];
+  const named = positions.slice(0, 3).map((position) => ({ label: position.ticker || position.issuer_name || 'Position', value: Math.max(0, Number(position.portfolio_weight) || 0) }));
+  if (!named.length) return <span className="text-[10px] text-slate-400">No positions</span>;
+
+  const used = Math.min(100, named.reduce((sum, item) => sum + item.value, 0));
+  const segments = [...named, { label: 'Other', value: Math.max(0, 100 - used) }].filter((item) => item.value > 0);
+  const circumference = 2 * Math.PI * 17;
+  let offset = 0;
+  const active = hovered === null ? null : segments[hovered];
+
+  return (
+    <div className="relative flex w-[94px] justify-center" onMouseLeave={() => setHovered(null)}>
+      <svg viewBox="0 0 44 44" className="h-12 w-12 -rotate-90" role="img" aria-label="Portfolio concentration by top positions">
+        {segments.map((segment, index) => {
+          const dash = (Math.min(segment.value, 100) / 100) * circumference;
+          const dashOffset = -offset;
+          offset += dash;
+          return <circle key={`${segment.label}-${index}`} cx="22" cy="22" r="17" fill="none" stroke={colors[index]} strokeWidth={hovered === index ? 10 : 8} strokeDasharray={`${dash} ${circumference - dash}`} strokeDashoffset={dashOffset} className="cursor-pointer transition-all" onMouseEnter={() => setHovered(index)} />;
+        })}
+      </svg>
+      {active ? (
+        <div className="pointer-events-none absolute bottom-[54px] z-30 min-w-[104px] rounded border border-[#d4a55d]/40 bg-[#071b27] px-2.5 py-2 text-center shadow-xl">
+          <div className="text-[9px] font-bold uppercase tracking-[.12em] text-[#d4a55d]">{active.label}</div>
+          <div className="mt-1 text-xs font-bold text-white">{active.value.toFixed(1)}%</div>
+        </div>
       ) : null}
     </div>
   );
@@ -128,7 +220,7 @@ export default function InstitutionalManagerExplorer({ funds = [] }) {
   return (
     <div className="mt-7 overflow-hidden rounded-[26px] border border-white bg-white/90 shadow-[0_20px_55px_rgba(12,48,59,.08)]">
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[1120px] text-left">
+        <table className="w-full min-w-[1320px] text-left">
           <thead className="bg-[#0b2d3a] text-[9px] font-extrabold uppercase tracking-[.15em] text-[#a9c3ca]">
             <tr>
               <th className="w-12 px-4 py-4" aria-label="Expand holdings" />
@@ -136,13 +228,14 @@ export default function InstitutionalManagerExplorer({ funds = [] }) {
               <th className="px-3 py-4">Latest 13F</th>
               <th className="px-3 py-4">Earliest coverage</th>
               <th className="px-3 py-4">Location</th>
-              <th className="px-3 py-4 text-right">13F value</th>
+              <th className="px-3 py-4 text-right">13F AUM</th>
+              <th className="px-3 py-4 text-center">Concentration</th>
               <th className="px-3 py-4 text-right">Holdings</th>
               <th className="px-5 py-4">Filing status</th>
             </tr>
           </thead>
           <tbody>
-            {funds.map((fund) => {
+            {[...funds].sort((a, b) => (MANAGER_RANK.get(a.display_name) ?? 999) - (MANAGER_RANK.get(b.display_name) ?? 999)).map((fund) => {
               const expanded = expandedSlug === fund.slug;
               const detail = details[fund.slug];
               const changes = new Map((detail?.changes || []).map((row) => [row.cusip, row]));
@@ -163,13 +256,14 @@ export default function InstitutionalManagerExplorer({ funds = [] }) {
                   <td className="px-3 py-4 text-xs font-bold text-[#314f59]">{fund.latest_filing?.report_date || 'Pending'}</td>
                   <td className="px-3 py-4 text-xs text-[#65777d]">{fund.earliest_report_date || 'Pending'}</td>
                   <td className="px-3 py-4"><div className="flex max-w-[210px] items-start gap-2 text-xs text-[#65777d]"><MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#a56e3d]" /><span>{location || 'SEC address pending'}{fund.postal_code ? ` ${fund.postal_code}` : ''}</span></div></td>
-                  <td className="px-3 py-4 text-right font-serif text-base font-bold text-[#102f3c]">{fund.latest_filing ? money(fund.latest_filing.total_value_usd) : '--'}</td>
+                  <td className="px-3 py-4"><div className="flex flex-col items-end"><span className="mb-1 text-[10px] font-bold text-[#102f3c]">{fund.latest_filing ? money(fund.latest_filing.total_value_usd) : '--'}</span><AumSparkline history={fund.filing_history} /></div></td>
+                  <td className="px-3 py-4"><PortfolioDonut positions={fund.top_positions} /></td>
                   <td className="px-3 py-4 text-right text-sm font-bold">{fund.position_count || 0}</td>
                   <td className="px-5 py-4"><span className={`inline-flex items-center gap-2 rounded-full px-2.5 py-1 text-[9px] font-extrabold uppercase tracking-[.1em] ${fund.last_refresh_status === 'success' ? 'bg-emerald-100 text-emerald-800' : fund.last_refresh_status === 'error' ? 'bg-rose-100 text-rose-800' : 'bg-amber-100 text-amber-800'}`}><span className="h-1.5 w-1.5 rounded-full bg-current" />{fund.last_refresh_status || 'queued'}</span></td>
                 </tr>,
                 expanded ? (
                   <tr key={`${fund.slug}-holdings`} className="border-t border-[#cfddda] bg-[#f4f8f7]">
-                    <td colSpan="8" className="p-0">
+                    <td colSpan="9" className="p-0">
                       <div className="border-l-4 border-[#2a9c99] px-5 py-6 sm:px-8">
                         {loadingSlug === fund.slug ? <div className="flex items-center justify-center gap-3 py-14 text-sm text-[#63777e]"><Loader2 className="h-5 w-5 animate-spin" /> Loading latest SEC holdings</div> : loadError && !detail ? <p className="py-10 text-center text-sm text-rose-700">{loadError}</p> : detail ? (
                           <>
