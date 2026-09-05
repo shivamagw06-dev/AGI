@@ -2,8 +2,37 @@
 
 from __future__ import annotations
 
+from threading import Lock
+
 from app.kip.embeddings import cosine, embed_text, tokenize
 from app.kip.models import KipChunk, KipDocument, SearchHit, SearchResponse
+
+
+_chunk_index_lock = Lock()
+_chunk_index_key: tuple[int, int, int, int] | None = None
+_chunk_index: dict[str, list[KipChunk]] = {}
+
+
+def _chunks_by_document(chunks: list[KipChunk]) -> dict[str, list[KipChunk]]:
+    """Build the corpus index once instead of rescanning every chunk per query."""
+    global _chunk_index_key, _chunk_index
+
+    key = (
+        id(chunks),
+        len(chunks),
+        id(chunks[0]) if chunks else 0,
+        id(chunks[-1]) if chunks else 0,
+    )
+    if _chunk_index_key == key:
+        return _chunk_index
+    with _chunk_index_lock:
+        if _chunk_index_key != key:
+            grouped: dict[str, list[KipChunk]] = {}
+            for chunk in chunks:
+                grouped.setdefault(chunk.document_id, []).append(chunk)
+            _chunk_index = grouped
+            _chunk_index_key = key
+    return _chunk_index
 
 
 def search(
@@ -40,7 +69,13 @@ def search(
         docs = [d for d in docs if b in (d.document.broker or "").lower()]
 
     allowed = {d.document_id for d in docs}
-    active_chunks = [c for c in chunks if c.document_id in allowed] if allowed else []
+    if allowed:
+        by_document = _chunks_by_document(chunks)
+        active_chunks = [
+            chunk for document_id in allowed for chunk in by_document.get(document_id, ())
+        ]
+    else:
+        active_chunks = []
 
     if mode_l in {"entity", "company", "sector", "theme", "broker", "timeline"}:
         hits = _entity_hits(docs, mode_l, q, ticker=ticker, sector=sector, theme=theme, broker=broker)

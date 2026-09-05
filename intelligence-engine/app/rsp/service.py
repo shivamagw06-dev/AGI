@@ -112,6 +112,8 @@ class RspService:
         *,
         ticker: str | None = None,
         engines: EngineBundle | dict[str, Any] | None = None,
+        kip_context: dict[str, Any] | None = None,
+        house_view: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         """
         Soft hook for Research Director / client answers.
@@ -123,6 +125,8 @@ class RspService:
             ReasonRequest(
                 question=question,
                 ticker=ticker,
+                kip_context=kip_context,
+                house_view=house_view,
                 engines=engines if isinstance(engines, EngineBundle) else EngineBundle(**(engines or {})),
             )
         )

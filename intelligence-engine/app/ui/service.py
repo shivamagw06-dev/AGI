@@ -4119,7 +4119,11 @@ class UiService:
                 if hv.get("ticker"):
                     detected_ticker = str(hv["ticker"]).upper()
 
-        aws_hits = dump(soft(self.aws.search, q, limit=12)) if self.aws and q else None
+        aws_hits = (
+            dump(soft(self.aws.search, q, limit=12, ticker=detected_ticker))
+            if self.aws and q
+            else None
+        )
         hits = []
         for h in (aws_hits or {}).get("hits") or []:
             hits.append(
@@ -4154,7 +4158,13 @@ class UiService:
         # Soft RSP reasoning package for thesis / bull / bear / risks
         # (skipped when IRP already ran the Research Committee pass)
         if not rsp_pkg and self.rsp and detected_ticker:
-            raw = soft(self.rsp.reason_for_writer, q or f"{detected_ticker} search", ticker=detected_ticker)
+            raw = soft(
+                self.rsp.reason_for_writer,
+                q or f"{detected_ticker} search",
+                ticker=detected_ticker,
+                kip_context=evidence if isinstance(evidence, dict) else None,
+                house_view=house if isinstance(house, dict) else None,
+            )
             rsp_pkg = dump(raw) if raw is not None and not isinstance(raw, dict) else (raw or {})
             if not isinstance(rsp_pkg, dict):
                 rsp_pkg = {}

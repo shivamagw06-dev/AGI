@@ -260,9 +260,18 @@ def _load_stub():
 
     Its absence is infrastructure, not a result. A required lane that downgrades
     to NOT_RUN when its determinism source is missing reports nothing while
-    looking like it found nothing.
+    looking like it found nothing. The separate grounded-synthesis model must
+    also stay off: it is a final prose layer, not routing or identity logic, and
+    allowing it here makes a required check depend on network retries.
     """
     from ask_product_test import provider_stub
+
+    # Enforce this in the runner, not only in workflow YAML. Repository or host
+    # credentials can otherwise make the same commit exercise a live model in
+    # one environment and deterministic synthesis in another.
+    os.environ["ASK_LLM_ENABLED"] = "false"
+    os.environ["YAHOO_PROVIDER"] = "false"
+    os.environ["YAHOO_YFINANCE_FALLBACK"] = "false"
 
     probe = provider_stub.answer_for("probe", mode="honest")
     if not (probe.get("answer") or {}).get("summary"):
@@ -468,7 +477,9 @@ def main() -> int:
     case_seconds: Dict[str, float] = {}
     for i, case in enumerate(selected_cases, 1):
         started = time.perf_counter()
-        transport = harness.ask(case["question"], case=case)
+        transport = harness.ask(
+            case["question"], ticker=case.get("ticker"), case=case
+        )
         payload = transport.get("payload") if isinstance(transport.get("payload"), dict) else {}
         results.append(evaluate_case(case, payload, int(transport.get("latency_ms") or 0)))
         case_seconds[str(case.get("id"))] = round(time.perf_counter() - started, 3)
