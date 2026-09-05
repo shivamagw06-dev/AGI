@@ -350,7 +350,7 @@ function OverviewPage() {
                   <div>
                     <p className="text-[10px] font-extrabold uppercase tracking-[.2em] text-[#a56e3d]">Collective positioning</p>
                     <h2 className="mt-2 font-serif text-3xl font-bold">Consensus radar</h2>
-                    <p className="mt-2 text-xs text-[#78878c]">Breadth across the tracked manager network, not a recommendation.</p>
+                    <p className="mt-2 text-xs text-[#78878c]">{data.consensus_ready ? 'Breadth across active tracked portfolios, not a recommendation.' : `Scores activate after ${data.consensus_min_managers || 4} manager portfolios are verified. Holdings remain visible meanwhile.`}</p>
                   </div>
                   <div className="grid h-12 w-12 place-items-center rounded-2xl bg-[#0c3544] text-[#6dd2c5]"><Radar className="h-6 w-6" /></div>
                 </div>
@@ -374,7 +374,7 @@ function OverviewPage() {
                           </td>
                           <td className="px-4 py-4 text-sm font-semibold">{pct(row.aggregate_weight)}</td>
                           <td className="px-4 py-4"><span className="text-xs font-bold text-emerald-700">+{row.new_buyers + row.increasers}</span><span className="mx-2 text-[#b6c0bd]">/</span><span className="text-xs font-bold text-rose-700">-{row.reducers + row.exits}</span></td>
-                          <td className="px-8 py-4 text-right"><span className="font-serif text-2xl font-bold">{Math.round(row.consensus_score)}</span><span className="ml-1 text-[9px] text-[#89969a]">/100</span></td>
+                          <td className="px-8 py-4 text-right"><span className="font-serif text-2xl font-bold">{data.consensus_ready ? Math.round(row.consensus_score) : '--'}</span><span className="ml-1 text-[9px] text-[#89969a]">{data.consensus_ready ? '/100' : 'gated'}</span></td>
                         </tr>
                       ))}
                     </tbody>
@@ -540,7 +540,8 @@ function StockPage({ stockKey }) {
   if (!data && !error) return <Loading />;
   if (error || !data) return <Empty error={error} />;
 
-  const score = Math.round(Number(data.consensus_score || 0));
+  const scoreAvailable = Boolean(data.consensus_ready) && Number.isFinite(Number(data.consensus_score));
+  const score = scoreAvailable ? Math.round(Number(data.consensus_score)) : 0;
   return (
     <ModuleShell
       back="/institutional-holdings"
@@ -554,10 +555,10 @@ function StockPage({ stockKey }) {
             <div className="absolute inset-0 opacity-30 [background-image:radial-gradient(circle_at_center,rgba(101,210,199,.25),transparent_60%)]" />
             <div className="relative grid h-52 w-52 place-items-center rounded-full" style={{ background: `conic-gradient(#63cec1 ${score}%, rgba(255,255,255,.1) 0)` }}>
               <div className="grid h-[174px] w-[174px] place-items-center rounded-full bg-[#0c3544] text-center">
-                <div><span className="font-serif text-6xl font-bold">{score}</span><span className="block text-[10px] font-extrabold uppercase tracking-[.18em] text-[#9db8bf]">Consensus score</span></div>
+                <div><span className="font-serif text-6xl font-bold">{scoreAvailable ? score : '--'}</span><span className="block text-[10px] font-extrabold uppercase tracking-[.18em] text-[#9db8bf]">{scoreAvailable ? 'Consensus score' : 'Coverage building'}</span></div>
               </div>
             </div>
-            <p className="relative mt-5 text-center text-xs leading-5 text-[#b6ccd2]">Breadth plus average disclosed portfolio importance</p>
+            <p className="relative mt-5 text-center text-xs leading-5 text-[#b6ccd2]">{scoreAvailable ? 'Breadth plus average disclosed portfolio importance' : `Available after ${data.consensus_min_managers || 4} manager portfolios are verified`}</p>
           </div>
           <div className="grid gap-px bg-[#e1e9e6] sm:grid-cols-2">
             <div className="bg-white p-7"><Users className="h-5 w-5 text-[#a56e3d]" /><p className="mt-5 text-[10px] font-extrabold uppercase tracking-[.14em] text-[#879499]">Manager ownership</p><p className="mt-2 font-serif text-4xl font-bold">{data.owner_count}<span className="text-xl text-[#8c999d]">/{data.manager_count}</span></p></div>

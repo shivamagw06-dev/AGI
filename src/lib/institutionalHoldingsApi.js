@@ -27,7 +27,7 @@ export const getInstitutionalOverview = () => request('/overview');
 export const getInstitutionalFund = (slug) => request(`/funds/${encodeURIComponent(slug)}`);
 export const getInstitutionalStock = (key) => request(`/stocks/${encodeURIComponent(key)}`);
 export const getInstitutionalAdmin = () => request('/admin', { admin: true });
-export const refreshInstitutionalFilings = (body) => request('/admin/refresh', { method: 'POST', body, admin: true, timeoutMs: 180_000 });
+export const refreshInstitutionalFilings = (body) => request('/admin/refresh', { method: 'POST', body, admin: true, timeoutMs: 600_000 });
 export const saveInstitutionalSecurityMapping = (body) => request('/admin/security-mappings', { method: 'POST', body, admin: true });
 export const updateInstitutionalManager = (id, body) => request(`/admin/managers/${encodeURIComponent(id)}`, { method: 'PATCH', body, admin: true });
 export const markInstitutionalAlert = (id, is_read = true) => request(`/admin/alerts/${encodeURIComponent(id)}`, { method: 'PATCH', body: { is_read }, admin: true });

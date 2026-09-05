@@ -19,6 +19,7 @@ import createNewsletterRouter from "./routes/newsletter.js";
 import createArticleShareRouter from "./routes/articleShare.js";
 import createResearchSignalsRouter from "./routes/researchSignals.js";
 import createInstitutionalHoldingsRouter from "./routes/institutionalHoldings.js";
+import { startInstitutionalHoldingsAutomation } from "./services/institutionalHoldingsService.js";
 import { getNewsHeadlines } from "./services/newsHeadlinesService.js";
 import { getIpoDetail, getIpoPlatform, getIpoSummary } from "./services/ipoService.js";
 import { getMarketContext } from "./services/marketContextService.js";
@@ -76,6 +77,8 @@ app.get("/api/health", (_req, res) => res.json({
 let server = app.listen(PORT, HOST, () => {
   console.log(`🚀 IndianAPI Proxy listening on ${HOST}:${PORT}`);
 });
+
+startInstitutionalHoldingsAutomation();
 
 process.on("uncaughtException", (err) => {
   console.error("[fatal] uncaughtException:", err?.stack || err);
