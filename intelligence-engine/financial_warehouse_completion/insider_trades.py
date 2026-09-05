@@ -264,13 +264,21 @@ def symbol_index() -> tuple[dict[str, str], list[tuple[str, str]]]:
     resolves only a quarter of them.
     """
     try:
-        from institutional_warehouse import store
+        from institutional_warehouse import db
     except Exception:
         return {}, []
     exact: dict[str, str] = {}
     listed: list[tuple[str, str]] = []
     try:
-        rows = store.all_rows("company_master", limit=20000) or []
+        # Matching only needs three raw columns. store.all_rows() also shapes
+        # every row and applies warehouse overrides, which made a 38-row paste
+        # wait until the request was cancelled at 120 seconds.
+        table = db.physical_table("company_master")
+        rows = db.query(
+            f"SELECT symbol, company_name, legal_name FROM {table}"
+            " WHERE COALESCE(sys_published, 1) = 1"
+            " AND symbol IS NOT NULL LIMIT 20000"
+        )
     except Exception:
         return {}, []
     for row in rows:
@@ -366,17 +374,23 @@ def parse(root: Path = REPO_ROOT) -> dict[str, Any]:
     return {**finalise(merged), "files": per_file}
 
 
-def finalise(merged: dict[tuple, dict[str, Any]]) -> dict[str, Any]:
+def finalise(merged: dict[tuple, dict[str, Any]], *,
+             resolve_symbols: bool = True) -> dict[str, Any]:
     """Resolve tickers, collapse the overlap, and report what came out."""
     # Attach tickers where the master knows the company. Roughly two thirds do
     # not resolve - the export covers small companies outside our universe -
     # and those keep a blank symbol rather than a fabricated one.
-    index = symbol_index()
+    index = symbol_index() if resolve_symbols else None
     match_counts: dict[str, int] = {}
     for row in merged.values():
-        symbol, how = resolve_symbol(row["company_name"], index)
-        row["symbol"] = symbol
-        row["symbol_match"] = how
+        if resolve_symbols:
+            symbol, how = resolve_symbol(row["company_name"], index)
+            row["symbol"] = symbol
+            row["symbol_match"] = how
+        else:
+            row["symbol"] = None
+            row["symbol_match"] = "deferred"
+            how = "deferred"
         match_counts[how] = match_counts.get(how, 0) + 1
 
     rows = sorted(_collapse_unspecified(merged.values()),
@@ -393,6 +407,8 @@ def finalise(merged: dict[tuple, dict[str, Any]]) -> dict[str, Any]:
         "open_market_rows": sum(1 for r in rows if r["is_open_market"] == "true"),
         "symbol_match": match_counts,
         "with_symbol": sum(1 for r in rows if r.get("symbol")),
+        "symbol_resolution": ("resolved" if resolve_symbols
+                              else "deferred_until_publish"),
         "limitations": [
             "The vendor caps a download at 1,000 rows and returns the newest "
             "ones without warning, so a wide date range looks complete and is "
@@ -438,7 +454,7 @@ def _delimiter(header: str) -> str:
     return ";" if header.count(";") > header.count(",") else ","
 
 
-def parse_pasted(text: str) -> dict[str, Any]:
+def parse_pasted(text: str, *, resolve_symbols: bool = True) -> dict[str, Any]:
     """A clipboard block to the same rows a file would have produced."""
     body = (text or "").strip("\n")
     if not body.strip():
@@ -468,7 +484,7 @@ def parse_pasted(text: str) -> dict[str, Any]:
                          "and a quantity. Copy the header row too.")}
 
     merged = {_fingerprint(row): row for row in rows}
-    out = finalise(merged)
+    out = finalise(merged, resolve_symbols=resolve_symbols)
     out["pasted_rows"] = len(raw)
     out["headers_seen"] = headers
     # Rows in, rows kept: a paste that silently loses half its lines to a

@@ -20160,7 +20160,10 @@ def warehouse_insider_paste_preview(payload: dict[str, Any] = Body(default_facto
     """
     from financial_warehouse_completion.insider_trades import parse_pasted
 
-    parsed = parse_pasted(str((payload or {}).get("text") or ""))
+    # Preview validates and normalises only. Ticker matching is deferred to
+    # publish so a slow company-master read cannot block the Check button.
+    parsed = parse_pasted(
+        str((payload or {}).get("text") or ""), resolve_symbols=False)
     return {k: v for k, v in parsed.items() if k != "rows"}
 
 

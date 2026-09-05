@@ -1,0 +1,237 @@
+@keyframes ihi-grid-drift {
+  from { background-position: 0 0, 0 0, 0 0; }
+  to { background-position: 160px 92px, -160px 92px, 160px 0; }
+}
+
+@keyframes ihi-scan {
+  0% { transform: translateY(-100%); opacity: 0; }
+  15% { opacity: 0.28; }
+  70% { opacity: 0.08; }
+  100% { transform: translateY(900px); opacity: 0; }
+}
+
+.ihi-theme {
+  --ihi-black: #000000;
+  --ihi-panel: #070707;
+  --ihi-panel-raised: #0b0b0b;
+  --ihi-line: #282828;
+  --ihi-line-soft: #171717;
+  --ihi-white: #f5f5f5;
+  --ihi-muted: #a6a6a6;
+  --ihi-blue: #0878ff;
+  --ihi-blue-bright: #39a0ff;
+  background: var(--ihi-black) !important;
+  color: var(--ihi-white) !important;
+  font-family: "Avenir Next", "Century Gothic", sans-serif;
+}
+
+.ihi-theme > header,
+.ihi-theme > main,
+.ihi-theme > div {
+  position: relative;
+  background-color: var(--ihi-black) !important;
+  background-image:
+    linear-gradient(30deg, transparent 49.55%, rgba(255,255,255,.105) 49.8%, rgba(255,255,255,.105) 50.2%, transparent 50.45%),
+    linear-gradient(-30deg, transparent 49.55%, rgba(255,255,255,.105) 49.8%, rgba(255,255,255,.105) 50.2%, transparent 50.45%),
+    linear-gradient(90deg, transparent 49.6%, rgba(255,255,255,.07) 49.8%, rgba(255,255,255,.07) 50.2%, transparent 50.4%);
+  background-size: 160px 92px, 160px 92px, 160px 92px;
+  background-position: 0 0, 0 0, 80px 0;
+}
+
+.ihi-theme > header {
+  min-height: 470px;
+  border-bottom: 1px solid #242424;
+  animation: ihi-grid-drift 45s linear infinite;
+}
+
+.ihi-theme > header::after {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(180deg, transparent 0%, rgba(8,120,255,.18) 49.8%, transparent 50.2%);
+  height: 2px;
+  animation: ihi-scan 9s ease-in-out infinite;
+}
+
+.ihi-theme > header > div:first-child,
+.ihi-theme > header > div:nth-child(2) {
+  opacity: 0 !important;
+}
+
+.ihi-theme > header > div:last-child {
+  z-index: 2;
+}
+
+.ihi-theme .font-serif {
+  font-family: "Avenir Next", "Century Gothic", sans-serif !important;
+  letter-spacing: -0.035em;
+}
+
+.ihi-theme [class*="bg-white"],
+.ihi-theme [class*="bg-[#f"],
+.ihi-theme [class*="bg-[#e"] {
+  background-color: rgba(7, 7, 7, .96) !important;
+  color: var(--ihi-white) !important;
+  border-color: var(--ihi-line) !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+
+.ihi-theme [class*="bg-[#0c3544]"],
+.ihi-theme [class*="bg-[#0d3443]"],
+.ihi-theme [class*="bg-[#0e3947]"],
+.ihi-theme [class*="bg-[#061f2b]"] {
+  background-color: #050505 !important;
+  background-image: none !important;
+  border-color: var(--ihi-line) !important;
+}
+
+.ihi-theme [class*="border-white"] {
+  border-color: var(--ihi-line) !important;
+}
+
+.ihi-theme [class*="border-[#d"],
+.ihi-theme [class*="border-[#e"] {
+  border-color: var(--ihi-line) !important;
+}
+
+.ihi-theme [class*="text-[#092937]"],
+.ihi-theme [class*="text-[#0b3543]"],
+.ihi-theme [class*="text-[#155"],
+.ihi-theme [class*="text-[#145"],
+.ihi-theme [class*="text-[#167"] {
+  color: var(--ihi-white) !important;
+}
+
+.ihi-theme [class*="text-[#6"],
+.ihi-theme [class*="text-[#7"],
+.ihi-theme [class*="text-[#8"],
+.ihi-theme [class*="text-[#9"],
+.ihi-theme [class*="text-[#a9"],
+.ihi-theme [class*="text-[#ad"],
+.ihi-theme [class*="text-[#b3"],
+.ihi-theme [class*="text-[#b5"] {
+  color: var(--ihi-muted) !important;
+}
+
+.ihi-theme [class*="text-[#a56e3d]"],
+.ihi-theme [class*="text-[#e2ad68]"] {
+  color: var(--ihi-blue-bright) !important;
+}
+
+.ihi-theme button[class*="bg-[#0c3544]"],
+.ihi-theme a[class*="bg-[#0c3544]"],
+.ihi-theme button[class*="bg-[#0d3443]"] {
+  background: var(--ihi-blue) !important;
+  border-color: var(--ihi-blue) !important;
+}
+
+.ihi-theme button[class*="bg-[#0c3544]"]:hover,
+.ihi-theme a[class*="bg-[#0c3544]"]:hover,
+.ihi-theme button[class*="bg-[#0d3443]"]:hover {
+  background: #238cff !important;
+}
+
+.ihi-theme input {
+  color: var(--ihi-white) !important;
+  caret-color: var(--ihi-blue-bright);
+}
+
+.ihi-theme input::placeholder {
+  color: #777 !important;
+}
+
+.ihi-theme table thead,
+.ihi-theme thead[class*="bg-"] {
+  background: #0d0d0d !important;
+  color: #a8a8a8 !important;
+}
+
+.ihi-theme table tr {
+  border-color: #202020 !important;
+}
+
+.ihi-theme table tbody tr:hover {
+  background: #101010 !important;
+}
+
+.ihi-theme [aria-label$="AGI manager mark"] {
+  background: #080808 !important;
+  border: 1px solid #393939 !important;
+  border-radius: 2px !important;
+  box-shadow: none !important;
+}
+
+.ihi-theme [aria-label$="AGI manager mark"] span:first-child {
+  background: var(--ihi-blue) !important;
+}
+
+.ihi-theme [aria-label$="AGI manager mark"] span:last-child {
+  background: var(--ihi-blue-bright) !important;
+}
+
+.ihi-theme a,
+.ihi-theme button {
+  border-radius: 1px;
+}
+
+.ihi-theme article,
+.ihi-theme section > div[class*="rounded-"] {
+  transition: border-color .2s ease, background-color .2s ease, transform .2s ease;
+}
+
+.ihi-theme article:hover,
+.ihi-theme section > div[class*="rounded-"]:hover {
+  border-color: #4a4a4a !important;
+}
+
+.ihi-theme [class*="rounded-[30px]"],
+.ihi-theme [class*="rounded-[32px]"],
+.ihi-theme [class*="rounded-[28px]"] {
+  border-radius: 2px !important;
+}
+
+.ihi-theme [class*="shadow-"] {
+  box-shadow: none !important;
+}
+
+.ihi-theme [class*="bg-gradient-to-r"] {
+  background-image: linear-gradient(90deg, var(--ihi-blue), var(--ihi-blue-bright)) !important;
+}
+
+.ihi-theme main::before {
+  content: "AGI / INSTITUTIONAL DISCLOSURE NETWORK";
+  display: block;
+  max-width: 1500px;
+  margin: 0 auto;
+  padding: 26px 32px 0;
+  color: #686868;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: .22em;
+}
+
+@media (max-width: 767px) {
+  .ihi-theme > header {
+    min-height: 390px;
+  }
+
+  .ihi-theme > header,
+  .ihi-theme > main,
+  .ihi-theme > div {
+    background-size: 112px 65px, 112px 65px, 112px 65px;
+  }
+
+  .ihi-theme main::before {
+    padding-inline: 20px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ihi-theme > header,
+  .ihi-theme > header::after {
+    animation: none;
+  }
+}
