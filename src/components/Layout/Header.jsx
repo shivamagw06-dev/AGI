@@ -22,6 +22,7 @@ import { buildLoginUrl } from '@/lib/accessPolicy';
 
 const PRIMARY_NAV = [
   { name: 'Equity Research', path: '/equity-research' },
+  { name: 'India Stocks', path: '/india-stock-intelligence' },
   { name: 'IPO Intelligence', path: '/ipo-intelligence' },
   { name: 'Portfolio', path: '/portfolio' },
   { name: 'Live Desk', path: '/live-desk' },
