@@ -477,7 +477,9 @@ def main() -> int:
     case_seconds: Dict[str, float] = {}
     for i, case in enumerate(selected_cases, 1):
         started = time.perf_counter()
-        transport = harness.ask(case["question"], case=case)
+        transport = harness.ask(
+            case["question"], ticker=case.get("ticker"), case=case
+        )
         payload = transport.get("payload") if isinstance(transport.get("payload"), dict) else {}
         results.append(evaluate_case(case, payload, int(transport.get("latency_ms") or 0)))
         case_seconds[str(case.get("id"))] = round(time.perf_counter() - started, 3)
