@@ -32,15 +32,71 @@ function sendError(res, error, status = 503) {
   return res.status(status).json({ error: error?.message || 'Institutional Holdings request failed' });
 }
 
+const OVERVIEW_CACHE_TTL_MS = Math.max(
+  30_000,
+  Number(process.env.INSTITUTIONAL_OVERVIEW_CACHE_TTL_MS || 5 * 60_000),
+);
+
+let overviewCache = null;
+let overviewCacheExpiresAt = 0;
+let overviewRefreshPromise = null;
+
+async function refreshOverviewCache() {
+  if (overviewRefreshPromise) return overviewRefreshPromise;
+
+  overviewRefreshPromise = getInstitutionalOverview()
+    .then((data) => {
+      overviewCache = data;
+      overviewCacheExpiresAt = Date.now() + OVERVIEW_CACHE_TTL_MS;
+      return data;
+    })
+    .finally(() => {
+      overviewRefreshPromise = null;
+    });
+
+  return overviewRefreshPromise;
+}
+
+async function getCachedInstitutionalOverview() {
+  const isFresh = overviewCache && Date.now() < overviewCacheExpiresAt;
+  if (isFresh) return { data: overviewCache, cacheStatus: 'HIT' };
+
+  if (overviewCache) {
+    void refreshOverviewCache().catch((error) => {
+      console.warn('[institutional-holdings] Background overview refresh failed:', error?.message || error);
+    });
+    return { data: overviewCache, cacheStatus: 'STALE' };
+  }
+
+  return { data: await refreshOverviewCache(), cacheStatus: 'MISS' };
+}
+
+function rebuildOverviewCache() {
+  overviewCacheExpiresAt = 0;
+  void refreshOverviewCache().catch((error) => {
+    console.warn('[institutional-holdings] Overview cache rebuild failed:', error?.message || error);
+  });
+}
+
 export default function createInstitutionalHoldingsRouter() {
   const router = Router();
-  router.get('/overview', async (_req, res) => { try { return res.json(await getInstitutionalOverview()); } catch (error) { return sendError(res, error); } });
+  rebuildOverviewCache();
+  router.get('/overview', async (_req, res) => {
+    try {
+      const { data, cacheStatus } = await getCachedInstitutionalOverview();
+      res.set('Cache-Control', 'public, max-age=30, stale-while-revalidate=600');
+      res.set('X-AGI-Overview-Cache', cacheStatus);
+      return res.json(data);
+    } catch (error) {
+      return sendError(res, error);
+    }
+  });
   router.get('/funds/:slug', async (req, res) => { try { const data = await getInstitutionalFund(req.params.slug); return data ? res.json(data) : res.status(404).json({ error: 'Tracked fund not found' }); } catch (error) { return sendError(res, error); } });
   router.get('/stocks/:key', async (req, res) => { try { const data = await getInstitutionalStock(req.params.key); return data ? res.json(data) : res.status(404).json({ error: 'No tracked fund currently holds this security' }); } catch (error) { return sendError(res, error); } });
   router.get('/admin', requireAdmin, async (_req, res) => { try { return res.json(await getInstitutionalAdmin()); } catch (error) { return sendError(res, error); } });
-  router.post('/admin/refresh', requireAdmin, async (req, res) => { try { return res.json(await refreshInstitutionalFilings(req.body || {})); } catch (error) { return sendError(res, error, 400); } });
-  router.post('/admin/security-mappings', requireAdmin, async (req, res) => { try { return res.json(await saveSecurityMapping({ ...req.body, actor: req.adminUser?.email || 'admin' })); } catch (error) { return sendError(res, error, 400); } });
-  router.patch('/admin/managers/:id', requireAdmin, async (req, res) => { try { return res.json(await updateInstitutionalManager(req.params.id, req.body || {}, req.adminUser?.email || 'admin')); } catch (error) { return sendError(res, error, 400); } });
+  router.post('/admin/refresh', requireAdmin, async (req, res) => { try { const data = await refreshInstitutionalFilings(req.body || {}); rebuildOverviewCache(); return res.json(data); } catch (error) { return sendError(res, error, 400); } });
+  router.post('/admin/security-mappings', requireAdmin, async (req, res) => { try { const data = await saveSecurityMapping({ ...req.body, actor: req.adminUser?.email || 'admin' }); rebuildOverviewCache(); return res.json(data); } catch (error) { return sendError(res, error, 400); } });
+  router.patch('/admin/managers/:id', requireAdmin, async (req, res) => { try { const data = await updateInstitutionalManager(req.params.id, req.body || {}, req.adminUser?.email || 'admin'); rebuildOverviewCache(); return res.json(data); } catch (error) { return sendError(res, error, 400); } });
   router.patch('/admin/alerts/:id', requireAdmin, async (req, res) => { try { return res.json(await markInstitutionalAlert(req.params.id, req.body?.is_read !== false)); } catch (error) { return sendError(res, error, 400); } });
   return router;
 }

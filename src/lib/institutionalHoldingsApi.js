@@ -3,7 +3,7 @@ import { supabase } from '@/lib/supabaseClient';
 
 const BASE = `${API_ORIGIN || ''}/api/institutional-holdings`;
 
-async function request(path, { method = 'GET', body, admin = false, timeoutMs = 45_000 } = {}) {
+async function request(path, { method = 'GET', body, admin = false, timeoutMs = 180_000 } = {}) {
   const headers = body ? { 'Content-Type': 'application/json' } : {};
   if (admin) {
     const { data } = await supabase.auth.getSession();
