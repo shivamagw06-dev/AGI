@@ -130,7 +130,14 @@ export default function InsiderTradesPaste() {
           <div className="itp-stats">
             <div><span>Rows</span><strong>{fmt(checked.row_count)}</strong></div>
             <div><span>Companies</span><strong>{fmt(checked.companies)}</strong></div>
-            <div><span>With ticker</span><strong>{fmt(checked.with_symbol)}</strong></div>
+            <div>
+              <span>With ticker</span>
+              <strong>
+                {checked.symbol_resolution === 'deferred_until_publish'
+                  ? 'On publish'
+                  : fmt(checked.with_symbol)}
+              </strong>
+            </div>
             <div><span>Open market</span><strong>{fmt(checked.open_market_rows)}</strong></div>
             <div><span>From</span><strong>{checked.first_reported || '—'}</strong></div>
             <div><span>To</span><strong>{checked.last_reported || '—'}</strong></div>
@@ -142,9 +149,9 @@ export default function InsiderTradesPaste() {
             </p>
           ) : null}
           <p className="itp-note">
-            Rows without a ticker are still stored. The export covers a wider universe than
-            company_master, so about two thirds do not resolve and keep a blank symbol
-            rather than a guessed one.
+            {checked.symbol_resolution === 'deferred_until_publish'
+              ? 'Ticker matching runs when you publish. Rows without a match are still stored and can be linked after Company Master is updated.'
+              : 'Rows without a ticker are still stored. The export covers a wider universe than company_master, so unmatched rows keep a blank symbol rather than a guessed one.'}
           </p>
         </section>
       ) : null}

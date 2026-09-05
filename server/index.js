@@ -18,6 +18,7 @@ import createAuthRouter from "./routes/auth.js";
 import createNewsletterRouter from "./routes/newsletter.js";
 import createArticleShareRouter from "./routes/articleShare.js";
 import createResearchSignalsRouter from "./routes/researchSignals.js";
+import createInstitutionalHoldingsRouter from "./routes/institutionalHoldings.js";
 import { getNewsHeadlines } from "./services/newsHeadlinesService.js";
 import { getIpoDetail, getIpoPlatform, getIpoSummary } from "./services/ipoService.js";
 import { getMarketContext } from "./services/marketContextService.js";
@@ -152,6 +153,7 @@ const nifty500ResearchLimiter = rateLimit({
 const researchLimiter = rateLimit({ windowMs: 60_000, max: 30, standardHeaders: true, legacyHeaders: false });
 app.use('/api', apiLimiter);
 app.use('/research', researchLimiter);
+app.use('/api/institutional-holdings', createInstitutionalHoldingsRouter());
 
 // dynamic fetch implementation
 let _fetchImpl = undefined;
