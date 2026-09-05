@@ -273,9 +273,20 @@ export async function getInstitutionalOverview() {
   const fundCards = managerRows.map((manager) => {
     const filing = latest.get(manager.id) || null;
     const owned = filing ? holdings.filter((row) => row.filing_id === filing.id && !row.put_call) : [];
+    const filingHistory = (filingRows || [])
+      .filter((row) => row.manager_id === manager.id)
+      .sort((a, b) => String(a.report_date || '').localeCompare(String(b.report_date || '')))
+      .slice(-12)
+      .map((row) => ({
+        report_date: row.report_date,
+        filed_at: row.filed_at,
+        total_value_usd: row.total_value_usd,
+        holdings_count: row.holdings_count,
+      }));
     return {
       ...manager,
       latest_filing: filing,
+      filing_history: filingHistory,
       position_count: owned.length,
       top_positions: owned.sort((a, b) => n(b.portfolio_weight) - n(a.portfolio_weight)).slice(0, 3),
       new_positions: filing ? changes.filter((row) => row.filing_id === filing.id && row.change_type === 'new').length : 0,
