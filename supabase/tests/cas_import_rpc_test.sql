@@ -8,7 +8,7 @@
 -- resolves it, so the policies and the functions see a real identity.
 
 BEGIN;
-SELECT plan(34);
+SELECT plan(36);
 
 -- ---------------------------------------------------------------------------
 -- Fixtures: two users, so isolation can be asserted rather than assumed.
@@ -339,6 +339,34 @@ SELECT is((SELECT confirmed_at FROM public.portfolio_imports WHERE id = (SELECT 
 SELECT is((SELECT count(*) FROM public.portfolio_import_review),
           (SELECT review_before FROM rb),
           'audit and review rows were rolled back too');
+
+-- ---------------------------------------------------------------------------
+-- Deleting a holding must actually delete it.
+--
+-- The read-only trigger is BEFORE UPDATE OR DELETE and originally ended with
+-- RETURN NEW. On DELETE, NEW is NULL, and returning NULL from a BEFORE trigger
+-- cancels the row silently -- no error, no rows affected. Every delete on this
+-- table vanished, manual holdings included. Nothing in the suite covered a
+-- delete, which is why it shipped.
+-- ---------------------------------------------------------------------------
+INSERT INTO public.client_portfolio_holdings
+  (id, user_id, portfolio_id, source, isin, asset_name, quantity, average_cost, is_active)
+VALUES ('cccccccc-0000-0000-0000-00000000dead', :'user_a'::uuid, :'folio_a'::uuid,
+        'MANUAL', 'INE999A01099', 'To be deleted', 1, 1, true);
+
+DELETE FROM public.client_portfolio_holdings
+ WHERE id = 'cccccccc-0000-0000-0000-00000000dead';
+
+SELECT is((SELECT count(*) FROM public.client_portfolio_holdings
+            WHERE id = 'cccccccc-0000-0000-0000-00000000dead'), 0::bigint,
+          'a manual holding can actually be deleted');
+
+-- And a broker-imported holding is still protected, by an exception rather
+-- than by silent cancellation.
+SELECT throws_ok(
+  $q$DELETE FROM public.client_portfolio_holdings
+      WHERE id = 'cccccccc-0000-0000-0000-000000000001'$q$,
+  '23514', 'a broker-imported holding refuses deletion loudly');
 
 SELECT * FROM finish();
 ROLLBACK;
