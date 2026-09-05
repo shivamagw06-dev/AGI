@@ -88,6 +88,17 @@ def test_contract_mode_is_infrastructure_not_a_green_result(monkeypatch):
     assert sg.main() == sg.EXIT_INFRASTRUCTURE
 
 
+def test_short_gate_forces_live_synthesis_off(monkeypatch):
+    """A configured CI credential must not turn the required lane live."""
+    monkeypatch.setenv("ASK_TEST_MODE", "inprocess")
+    monkeypatch.setenv("ASK_LLM_ENABLED", "true")
+    monkeypatch.setattr(provider_stub, "install", lambda: True)
+
+    sg._load_stub()
+
+    assert sg.os.environ["ASK_LLM_ENABLED"] == "false"
+
+
 def test_installed_stub_uses_pipeline_context_not_expected_case_data():
     """A bad pipeline binding must not be corrected by the test's ground truth."""
     provider = provider_stub.StubEditorialProvider()

@@ -25,6 +25,10 @@ jobs:
     timeout-minutes: 45
     env:
       ASK_TEST_MODE: inprocess
+      # Required checks must not call the live grounded-synthesis model. The
+      # in-process routing/retrieval/identity pipeline and editorial stub still
+      # run; this only removes an external, retry-prone final prose request.
+      ASK_LLM_ENABLED: 'false'
       ASK_TEST_CASE_COOLDOWN_SEC: '0'
       ASK_SLIM: 'true'
       FAA_BACKGROUND_COLLECTOR: 'false'
