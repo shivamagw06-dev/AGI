@@ -116,7 +116,9 @@ function parseInformationTable(xml, valueScale = 1) {
 }
 
 function filingKey(row) {
-  return `${row.cusip}|${row.title_of_class || ''}|${row.put_call || ''}|${row.investment_discretion || ''}|${row.other_manager || ''}`;
+  return [row.cusip, row.title_of_class || '', row.share_type || 'SH', row.put_call || '']
+    .map((value) => String(value).trim().toUpperCase())
+    .join('|');
 }
 
 function collapseDuplicateRows(rows) {
@@ -125,9 +127,20 @@ function collapseDuplicateRows(rows) {
     const key = filingKey(row);
     const current = combined.get(key);
     if (!current) {
-      combined.set(key, { ...row });
+      combined.set(key, {
+        ...row,
+        value_usd: n(row.value_usd),
+        shares: n(row.shares),
+        voting_sole: n(row.voting_sole),
+        voting_shared: n(row.voting_shared),
+        voting_none: n(row.voting_none),
+      });
       continue;
     }
+    const managerIds = [...new Set([
+      ...String(current.other_manager || '').split(','),
+      ...String(row.other_manager || '').split(','),
+    ].map((value) => value.trim()).filter(Boolean))].sort((a, b) => Number(a) - Number(b));
     combined.set(key, {
       ...current,
       value_usd: n(current.value_usd) + n(row.value_usd),
@@ -135,6 +148,10 @@ function collapseDuplicateRows(rows) {
       voting_sole: n(current.voting_sole) + n(row.voting_sole),
       voting_shared: n(current.voting_shared) + n(row.voting_shared),
       voting_none: n(current.voting_none) + n(row.voting_none),
+      other_manager: managerIds.join(',') || null,
+      investment_discretion: current.investment_discretion === row.investment_discretion
+        ? current.investment_discretion
+        : 'MULTIPLE',
     });
   }
   return [...combined.values()];
@@ -528,8 +545,8 @@ async function mapWithConcurrency(items, concurrency, worker) {
 }
 
 function buildChanges(current, previous, filing) {
-  const now = new Map(current.filter((row) => !row.put_call).map((row) => [filingKey(row), row]));
-  const before = new Map(previous.filter((row) => !row.put_call).map((row) => [filingKey(row), row]));
+  const now = new Map(collapseDuplicateRows(current).filter((row) => !row.put_call).map((row) => [filingKey(row), row]));
+  const before = new Map(collapseDuplicateRows(previous).filter((row) => !row.put_call).map((row) => [filingKey(row), row]));
   const output = [];
   for (const key of new Set([...now.keys(), ...before.keys()])) {
     const currentRow = now.get(key);
@@ -595,11 +612,6 @@ async function createAlerts(client, manager, filing, changes) {
 }
 
 async function ingestFiling(client, manager, source) {
-  const { data: existing } = await client.from('institutional_filings').select('*').eq('accession_number', source.accession_number).maybeSingle();
-  if (existing?.holdings_count > 0) {
-    const { count } = await client.from('institutional_holdings').select('id', { count: 'exact', head: true }).eq('filing_id', existing.id);
-    if (n(count) >= n(existing.holdings_count)) return { accession_number: source.accession_number, status: 'already_ingested', holdings: existing.holdings_count };
-  }
   const archive = await filingDocuments(manager.cik, source.accession_number);
   const infoDocument = archive.documents.find((doc) => /<(?:\w+:)?infoTable[\s>]/i.test(doc.text));
   if (!infoDocument) throw new Error(`No 13F information table found in ${source.accession_number}`);
@@ -657,6 +669,268 @@ async function ingestFiling(client, manager, source) {
   if (changes.length) await insertChunks(client, 'holding_changes', changes);
   await createAlerts(client, manager, filing, changes);
   return { accession_number: filing.accession_number, status: 'ingested', holdings: rows.length, report_date: filing.report_date, changes: changes.length };
+}
+
+function pastedAccession(value = '') {
+  const dashed = String(value).match(/\b\d{10}-\d{2}-\d{6}\b/);
+  if (dashed) return dashed[0];
+  const compact = String(value).match(/\b\d{18}\b/);
+  return compact ? `${compact[0].slice(0, 10)}-${compact[0].slice(10, 12)}-${compact[0].slice(12)}` : null;
+}
+
+function stableImportId(value = '') {
+  let hash = 2166136261;
+  for (let index = 0; index < value.length; index += 1) hash = Math.imul(hash ^ value.charCodeAt(index), 16777619);
+  return (hash >>> 0).toString(16).padStart(8, '0');
+}
+
+function xmlImportValue(xml, names) {
+  for (const name of names) {
+    const match = String(xml).match(new RegExp(`<(?:\\w+:)?${name}[^>]*>([\\s\\S]*?)<\\/(?:\\w+:)?${name}>`, 'i'));
+    if (match) return match[1].replace(/<[^>]+>/g, '').trim();
+  }
+  return '';
+}
+
+function pastedNumber(value) {
+  const cleaned = String(value ?? '').replace(/[,$₹%\s]/g, '');
+  return /^-?\d+(?:\.\d+)?$/.test(cleaned) ? Number(cleaned) : null;
+}
+
+function parsePasted13fTable(text, valueScale) {
+  const rows = [];
+  for (const rawLine of String(text).split(/\r?\n/)) {
+    let cells = rawLine.includes('\t') ? rawLine.split(/\t+/) : rawLine.trim().split(/\s{2,}/);
+    cells = cells.map((cell) => cell.trim()).filter(Boolean);
+    const cusipIndex = cells.findIndex((cell) => /^[0-9A-Z*@#]{8,9}$/i.test(cell.replace(/\s/g, '')));
+    if (cusipIndex < 1) continue;
+    const tail = cells.slice(cusipIndex + 1);
+    const numeric = tail.map((cell, index) => ({ index, value: pastedNumber(cell) })).filter((item) => item.value !== null);
+    if (numeric.length < 2) continue;
+    const metadata = tail.slice(numeric[1].index + 1);
+    const voting = numeric.slice(-3).map((item) => item.value);
+    const putCall = metadata.find((cell) => /^(PUT|CALL)$/i.test(cell));
+    rows.push({
+      issuer_name: cells[0],
+      title_of_class: cells.slice(1, cusipIndex).join(' ') || 'COM',
+      cusip: cells[cusipIndex].replace(/\s/g, '').toUpperCase(),
+      value_usd: Math.round(numeric[0].value * valueScale),
+      shares_or_principal: numeric[1].value,
+      share_type: (metadata.find((cell) => /^(SH|PRN)$/i.test(cell)) || 'SH').toUpperCase(),
+      put_call: putCall ? putCall.toUpperCase() : null,
+      investment_discretion: (metadata.find((cell) => /^(SOLE|SHARED|DEFINED)$/i.test(cell)) || 'SOLE').toUpperCase(),
+      other_manager: null,
+      voting_authority_sole: voting.length === 3 ? voting[0] : 0,
+      voting_authority_shared: voting.length === 3 ? voting[1] : 0,
+      voting_authority_none: voting.length === 3 ? voting[2] : 0,
+    });
+  }
+  return collapseDuplicateRows(rows);
+}
+
+function submissionImportRows(submissions) {
+  const recent = submissions?.filings?.recent || {};
+  return (recent.accessionNumber || []).map((accession, index) => ({
+    accession_number: accession,
+    form_type: recent.form?.[index] || '',
+    report_date: recent.reportDate?.[index] || '',
+    filed_at: recent.filingDate?.[index] || '',
+    accepted_at: recent.acceptanceDateTime?.[index] || recent.filingDate?.[index] || '',
+    primary_document: recent.primaryDocument?.[index] || '',
+  })).filter((row) => /^13F-(HR|NT)(\/A)?$/.test(row.form_type));
+}
+
+async function secImportRows(manager, source) {
+  const archive = await filingDocuments(manager.cik, source.accession_number);
+  const names = archive.documents.map((document) => document.name)
+    .filter((name) => /\.xml$/i.test(name) && name !== source.primary_document)
+    .sort((left, right) => Number(/infotable|informationtable/i.test(right)) - Number(/infotable|informationtable/i.test(left)));
+  for (const name of names) {
+    const response = await fetch(`${archive.base}/${name}`, { headers: { 'User-Agent': SEC_USER_AGENT } });
+    if (!response.ok) continue;
+    const scale = source.report_date < POST_2022_VALUE_RULE_DATE ? 1000 : 1;
+    const rows = collapseDuplicateRows(parseInformationTable(await response.text(), scale));
+    if (rows.length) return { rows, primary_document: name, source_url: `${archive.base}/${name}` };
+  }
+  throw new Error('This filing has no readable 13F information table. It may be a notice filing.');
+}
+
+async function previousImportPortfolio(client, manager, reportDate, submissions) {
+  const { data: filing } = await client.from('institutional_filings').select('*').eq('manager_id', manager.id)
+    .eq('is_active', true).lt('report_date', reportDate).order('report_date', { ascending: false }).limit(1).maybeSingle();
+  if (filing) {
+    const { data: rows, error } = await client.from('institutional_holdings').select('*').eq('filing_id', filing.id);
+    if (error) throw error;
+    return { filing, rows: rows || [], source: null };
+  }
+  const source = submissionImportRows(submissions).filter((row) => /^13F-HR/.test(row.form_type) && row.report_date < reportDate)
+    .sort((left, right) => right.report_date.localeCompare(left.report_date))[0];
+  if (!source) return { filing: null, rows: [], source: null };
+  const parsed = await secImportRows(manager, source);
+  return { filing: source, rows: parsed.rows, source: { ...source, ...parsed } };
+}
+
+async function prepareInstitutionalImport(client, payload = {}) {
+  const input = String(payload.input || '').trim();
+  if (!input) throw new Error('Paste a SEC URL, accession number, XML document, or holdings table.');
+  const manager = (await managers(client)).find((item) => item.id === payload.managerId || item.slug === payload.managerId);
+  if (!manager) throw new Error('Choose the manager that owns this filing.');
+  const submissions = await fetchJson(`${SEC_DATA}/submissions/CIK${cleanCik(manager.cik)}.json`);
+  const accession = pastedAccession(input);
+  const isXml = /<(?:\w+:)?informationTable\b|<(?:\w+:)?infoTable\b/i.test(input);
+  let kind = 'table';
+  let source;
+  let rows;
+
+  if (accession) {
+    kind = 'sec';
+    source = submissionImportRows(submissions).find((row) => row.accession_number === accession);
+    if (!source) throw new Error('That accession does not belong to the selected manager in SEC EDGAR.');
+    if (/^13F-NT/.test(source.form_type)) return { manager, kind, source, rows: [], previous: { rows: [] }, noticeOnly: true };
+    const parsed = await secImportRows(manager, source);
+    source = { ...source, ...parsed };
+    rows = parsed.rows;
+  } else {
+    const reportDate = isXml ? (xmlImportValue(input, ['periodOfReport', 'reportCalendarOrQuarter']) || payload.reportDate) : payload.reportDate;
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(reportDate || '')) throw new Error('Enter the filing report date before analysing this content.');
+    kind = isXml ? 'xml' : 'table';
+    source = {
+      accession_number: `manual-${cleanCik(manager.cik)}-${reportDate}-${stableImportId(input)}`,
+      form_type: payload.formType || '13F-HR',
+      report_date: reportDate,
+      filed_at: new Date().toISOString().slice(0, 10),
+      accepted_at: new Date().toISOString(),
+      primary_document: isXml ? 'cms-upload.xml' : 'cms-pasted-table',
+      source_url: null,
+      amendment_type: payload.amendmentType || null,
+    };
+    const scale = reportDate < POST_2022_VALUE_RULE_DATE ? 1000 : 1;
+    rows = isXml ? collapseDuplicateRows(parseInformationTable(input, scale)) : parsePasted13fTable(input, scale);
+  }
+  if (!rows.length) throw new Error('No valid holdings were detected. Preserve tabs between copied columns, or paste the SEC information-table XML.');
+  const mapping = await mappingsFor(client, rows.map((row) => row.cusip));
+  rows = rows.map((row) => ({ ...row, ...(mapping.get(row.cusip) || {}) }));
+  const totalValue = rows.reduce((sum, row) => sum + n(row.value_usd), 0);
+  rows = rows.map((row) => ({ ...row, portfolio_weight: totalValue ? (n(row.value_usd) / totalValue) * 100 : 0 }));
+  const previous = await previousImportPortfolio(client, manager, source.report_date, submissions);
+  return { manager, kind, source, rows, totalValue, previous, noticeOnly: false };
+}
+
+function buildImportPreview(prepared) {
+  const { manager, kind, source, rows, totalValue, previous, noticeOnly } = prepared;
+  const managerView = { id: manager.id, slug: manager.slug, display_name: manager.display_name, cik: manager.cik };
+  if (noticeOnly) return {
+    manager: managerView,
+    source: { ...source, kind },
+    publishable: false,
+    warnings: ['13F-NT is a notice filing. It has no holdings information table and cannot update portfolio intelligence.'],
+  };
+  const changes = buildChanges(rows, previous.rows || [], { id: null, manager_id: manager.id, report_date: source.report_date });
+  const top = rows.filter((row) => !row.put_call).sort((a, b) => n(b.portfolio_weight) - n(a.portfolio_weight)).slice(0, 10);
+  const concentration = top.reduce((sum, row) => sum + n(row.portfolio_weight), 0);
+  const mapped = rows.filter((row) => row.ticker).length;
+  const coverage = rows.length ? (mapped / rows.length) * 100 : 0;
+  const counts = changes.reduce((result, row) => ({ ...result, [row.change_type]: (result[row.change_type] || 0) + 1 }), {});
+  const adds = changes.filter((row) => ['new', 'increased'].includes(row.change_type)).reduce((sum, row) => sum + Math.max(0, n(row.weight_change)), 0);
+  const cuts = changes.filter((row) => ['reduced', 'exited'].includes(row.change_type)).reduce((sum, row) => sum + Math.abs(Math.min(0, n(row.weight_change))), 0);
+  const accumulation = clamp(Math.round(50 + (adds - cuts) * 2), 0, 100);
+  const stance = accumulation >= 66 ? 'Bullish accumulation' : accumulation <= 44 ? 'Defensive reduction' : 'Balanced positioning';
+  const warnings = [];
+  if (!previous.rows?.length) warnings.push('No earlier portfolio was available, so change intelligence is withheld.');
+  if (coverage < 100) warnings.push(`${rows.length - mapped} holding${rows.length - mapped === 1 ? '' : 's'} still require ticker mapping.`);
+  if (rows.some((row) => row.put_call)) warnings.push('Options stay separate and are excluded from ordinary-equity concentration.');
+  if (kind !== 'sec') warnings.push('Manual source: verify manager, period, units, and amendment treatment against EDGAR before publishing.');
+  const label = (row) => row?.ticker || row?.security_name || row?.issuer_name || row?.cusip;
+  const newRows = changes.filter((row) => row.change_type === 'new').sort((a, b) => n(b.current_weight) - n(a.current_weight)).slice(0, 3);
+  const increased = changes.filter((row) => row.change_type === 'increased').sort((a, b) => n(b.weight_change) - n(a.weight_change)).slice(0, 3);
+  const reduced = changes.filter((row) => ['reduced', 'exited'].includes(row.change_type)).sort((a, b) => n(a.weight_change) - n(b.weight_change)).slice(0, 3);
+  const bullets = [];
+  if (newRows.length) bullets.push(`New disclosed positions: ${newRows.map(label).join(', ')}.`);
+  if (increased.length) bullets.push(`Largest disclosed increases: ${increased.map(label).join(', ')}.`);
+  if (reduced.length) bullets.push(`Largest disclosed reductions or exits: ${reduced.map(label).join(', ')}.`);
+  bullets.push(`Top ten ordinary-equity positions represent ${concentration.toFixed(1)}% of disclosed value.`);
+  return {
+    manager: managerView,
+    source: { ...source, kind },
+    publishable: true,
+    metrics: { holdings_count: rows.length, total_value_usd: totalValue, mapping_coverage: Number(coverage.toFixed(1)), option_positions: rows.filter((row) => row.put_call).length, previous_report_date: previous.filing?.report_date || null, top10_concentration: Number(concentration.toFixed(2)) },
+    scores: { conviction: clamp(Math.round(concentration), 0, 100), accumulation, exit_pressure: clamp(Math.round(cuts * 4), 0, 100), stance, confidence: previous.rows?.length && coverage >= 80 ? 'High' : coverage >= 60 ? 'Medium' : 'Low' },
+    activity: { counts, top_changes: [...newRows, ...increased, ...reduced].slice(0, 8) },
+    top_positions: top,
+    warnings,
+    brief: {
+      headline: `${manager.display_name}: ${stance.toLowerCase()} in the ${source.report_date} 13F`,
+      summary: `${manager.display_name} disclosed ${rows.length} reportable line items worth approximately $${(totalValue / 1e9).toFixed(2)}bn. The evidence-based accumulation score is ${accumulation}/100.`,
+      bullets,
+      limitations: ['13F is a delayed quarter-end snapshot, not a live portfolio.', 'It omits shorts, cash, most derivatives, and many non-US securities; value is not cost basis or performance.'],
+    },
+  };
+}
+
+function importedHolding(row, filing, manager) {
+  return {
+    filing_id: filing.id, manager_id: manager.id, report_date: filing.report_date,
+    issuer_name: row.issuer_name, title_of_class: row.title_of_class, cusip: row.cusip,
+    ticker: row.ticker || null, security_name: row.security_name || null, sector: row.sector || null,
+    value_usd: n(row.value_usd), shares_or_principal: n(row.shares_or_principal), share_type: row.share_type || null,
+    put_call: row.put_call || null, investment_discretion: row.investment_discretion || null, other_manager: row.other_manager || null,
+    voting_authority_sole: n(row.voting_authority_sole), voting_authority_shared: n(row.voting_authority_shared),
+    voting_authority_none: n(row.voting_authority_none), portfolio_weight: n(row.portfolio_weight),
+  };
+}
+
+async function publishPreparedImport(client, prepared, actor) {
+  const { manager, source } = prepared;
+  let rows = prepared.rows;
+  const amendmentType = source.form_type === '13F-HR/A' ? (source.amendment_type || 'restatement') : null;
+  if (amendmentType === 'additional_holdings') {
+    const { data: version } = await client.from('institutional_filings').select('id').eq('manager_id', manager.id).eq('report_date', source.report_date).eq('is_active', true).limit(1).maybeSingle();
+    if (version) {
+      const { data: existing } = await client.from('institutional_holdings').select('*').eq('filing_id', version.id);
+      rows = collapseDuplicateRows([...(existing || []), ...rows]);
+      const total = rows.reduce((sum, row) => sum + n(row.value_usd), 0);
+      rows = rows.map((row) => ({ ...row, portfolio_weight: total ? (n(row.value_usd) / total) * 100 : 0 }));
+    }
+  }
+  const filingPayload = {
+    manager_id: manager.id, accession_number: source.accession_number, form_type: source.form_type,
+    report_date: source.report_date, filed_at: source.filed_at, accepted_at: source.accepted_at,
+    primary_document: source.primary_document, source_url: source.source_url,
+    total_value_usd: rows.reduce((sum, row) => sum + n(row.value_usd), 0), holdings_count: rows.length,
+    is_amendment: source.form_type === '13F-HR/A', amendment_type: amendmentType, is_active: true,
+    raw_metadata: { imported_via: 'institutional_cms', approved_by: actor, source_kind: prepared.kind },
+  };
+  const { data: filing, error } = await client.from('institutional_filings').upsert(filingPayload, { onConflict: 'accession_number' }).select('*').single();
+  if (error) throw error;
+  await client.from('institutional_filings').update({ is_active: false }).eq('manager_id', manager.id).eq('report_date', source.report_date).neq('id', filing.id);
+  await client.from('institutional_holdings').delete().eq('filing_id', filing.id);
+  await insertChunks(client, 'institutional_holdings', rows.map((row) => importedHolding(row, filing, manager)));
+  const previous = await previousImportPortfolio(client, manager, source.report_date, { filings: { recent: {} } });
+  await client.from('institutional_holding_changes').delete().eq('filing_id', filing.id);
+  const changes = buildChanges(rows, previous.rows || [], filing);
+  await insertChunks(client, 'institutional_holding_changes', changes);
+  await createAlerts(client, manager, filing, changes);
+  return { filing, changes: changes.length };
+}
+
+export async function previewInstitutionalImport(payload) {
+  const prepared = await prepareInstitutionalImport(db(), payload);
+  prepared.source.amendment_type = payload.amendmentType || prepared.source.amendment_type || null;
+  return buildImportPreview(prepared);
+}
+
+export async function publishInstitutionalImport(payload) {
+  const client = db();
+  const prepared = await prepareInstitutionalImport(client, payload);
+  prepared.source.amendment_type = payload.amendmentType || prepared.source.amendment_type || null;
+  const preview = buildImportPreview(prepared);
+  if (!preview.publishable) throw new Error('This filing has no publishable holdings table.');
+  if (prepared.previous.source) await ingestFiling(client, prepared.manager, prepared.previous.source);
+  const ingestion = prepared.kind === 'sec' ? await ingestFiling(client, prepared.manager, prepared.source) : await publishPreparedImport(client, prepared, payload.actor || 'admin');
+  const enrichment = await enrichSecurityIdentifiers(client);
+  const signals = await rebuildSignals(client);
+  await client.from('institutional_managers').update({ last_refresh_at: new Date().toISOString(), last_refresh_status: 'success', last_refresh_error: null }).eq('id', prepared.manager.id);
+  return { ok: true, manager: preview.manager, filing: preview.source, ingestion, enrichment, signals, intelligence: preview.brief };
 }
 
 async function rebuildSignals(client) {
