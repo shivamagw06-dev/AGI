@@ -1,5 +1,6 @@
 import crypto from 'node:crypto';
 import { createSupabaseAdmin } from '../lib/supabaseAdmin.js';
+import { scheduleSecRequest } from './secRateLimiter.js';
 
 const SEC_DATA = 'https://data.sec.gov';
 const SEC_ARCHIVES = 'https://www.sec.gov/Archives/edgar/data';
@@ -20,7 +21,7 @@ const valueOf = (row = {}) => number(row.value_usd || row.reported_value_usd || 
 const sharesOf = (row = {}) => number(row.shares || row.share_count || row.ssh_prnamt || row.quantity);
 
 async function sourceJson(url) {
-  const response = await fetch(url, { headers: { Accept: 'application/json', 'User-Agent': process.env.SEC_USER_AGENT || 'Agarwal Global Investments research@agarwalglobalinvestments.com' }, signal: AbortSignal.timeout(30_000) });
+  const response = await scheduleSecRequest(() => fetch(url, { headers: { Accept: 'application/json', 'User-Agent': process.env.SEC_USER_AGENT || 'Agarwal Global Investments research@agarwalglobalinvestments.com' }, signal: AbortSignal.timeout(30_000) }));
   if (!response.ok) throw new Error(`Source request failed (${response.status})`);
   return response.json();
 }
@@ -59,7 +60,7 @@ function classifySic(code, description) {
 
 async function adjustedPrices(ticker) {
   const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(ticker)}?range=5y&interval=1d&events=div%2Csplits`;
-  const response = await fetch(url, { headers: { 'User-Agent': 'Mozilla/5.0 AGIResearch/1.0' }, signal: AbortSignal.timeout(30_000) });
+  const response = await scheduleSecRequest(() => fetch(url, { headers: { 'User-Agent': 'Mozilla/5.0 AGIResearch/1.0' }, signal: AbortSignal.timeout(30_000) }));
   if (!response.ok) throw new Error(`Adjusted prices unavailable for ${ticker}`);
   const result = (await response.json())?.chart?.result?.[0];
   if (!result) throw new Error(`Adjusted prices unavailable for ${ticker}`);

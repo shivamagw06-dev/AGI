@@ -29,6 +29,11 @@ jobs:
       - name: Assert the safety guards hold
         run: node --test server/routes/institutionalSafetyGuards.test.js
 
+      # The limiter is the only thing between this product and an EDGAR IP
+      # block, and its tests measure elapsed time rather than shape.
+      - name: Assert the SEC limiter paces, pauses and breaks the circuit
+        run: node --test server/services/secRateLimiter.test.js
+
       # A test that cannot fail proves nothing. Remove one guard and the suite
       # must go red; if it stays green the assertions have drifted away from
       # what they claim to check, and this job fails on that instead.

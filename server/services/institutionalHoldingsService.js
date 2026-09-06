@@ -2,6 +2,8 @@ import { createSupabaseAdmin } from '../lib/supabaseAdmin.js';
 
 const SEC_ROOT = 'https://www.sec.gov';
 const SEC_DATA = 'https://data.sec.gov';
+import { scheduleSecRequest, recordThrottled, recordSuccess, parseRetryAfter, SecCircuitOpenError } from './secRateLimiter.js';
+
 const SEC_USER_AGENT = (process.env.SEC_USER_AGENT || 'AGI Institutional Research research@agarwalglobalinvestments.com').trim();
 const OPENFIGI_URL = 'https://api.openfigi.com/v3/mapping';
 const OPENFIGI_API_KEY = String(process.env.OPENFIGI_API_KEY || '').trim();
@@ -388,18 +390,34 @@ export async function getInstitutionalStock(rawKey) {
 
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
+// Retry was already here; pacing was not. Every attempt now queues through the
+// process-wide limiter, and a throttle is reported to it rather than absorbed
+// locally - EDGAR's limit is per source, so one caller's 429 is every caller's
+// problem and must slow all of them down.
 async function secFetch(url, asJson = false) {
   let lastError;
   for (let attempt = 0; attempt < 4; attempt += 1) {
     try {
-      const response = await fetch(url, {
+      const response = await scheduleSecRequest(() => fetch(url, {
         headers: { Accept: asJson ? 'application/json' : 'application/xml,text/xml,text/plain,*/*', 'User-Agent': SEC_USER_AGENT },
         signal: AbortSignal.timeout(30_000),
-      });
-      if (response.ok) return asJson ? response.json() : response.text();
+      }));
+      if (response.ok) {
+        recordSuccess();
+        return asJson ? response.json() : response.text();
+      }
       lastError = new Error(`SEC request failed (${response.status}) for ${url}`);
-      if (response.status !== 429 && response.status < 500) throw lastError;
+      // 403 is how EDGAR answers a source it has decided to block, so it counts
+      // as pushback exactly like 429 does.
+      if (response.status === 429 || response.status === 403) {
+        recordThrottled(parseRetryAfter(response.headers.get('retry-after')));
+      } else if (response.status < 500) {
+        throw lastError;
+      }
     } catch (error) {
+      // An open circuit is a decision, not a transient failure. Retrying
+      // against it is the behaviour the circuit exists to prevent.
+      if (error instanceof SecCircuitOpenError) throw error;
       lastError = error;
       if (attempt === 3) break;
     }
@@ -751,7 +769,7 @@ async function secImportRows(manager, source) {
     .filter((name) => /\.xml$/i.test(name) && name !== source.primary_document)
     .sort((left, right) => Number(/infotable|informationtable/i.test(right)) - Number(/infotable|informationtable/i.test(left)));
   for (const name of names) {
-    const response = await fetch(`${archive.base}/${name}`, { headers: { 'User-Agent': SEC_USER_AGENT } });
+    const response = await scheduleSecRequest(() => fetch(`${archive.base}/${name}`, { headers: { 'User-Agent': SEC_USER_AGENT } }));
     if (!response.ok) continue;
     const scale = source.report_date < POST_2022_VALUE_RULE_DATE ? 1000 : 1;
     const rows = collapseDuplicateRows(parseInformationTable(await response.text(), scale));
