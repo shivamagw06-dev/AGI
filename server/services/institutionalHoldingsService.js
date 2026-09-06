@@ -1,4 +1,5 @@
 import { createSupabaseAdmin } from '../lib/supabaseAdmin.js';
+import { getCollectionHealth, listRuns } from './institutionalCollectionRuns.js';
 
 const SEC_ROOT = 'https://www.sec.gov';
 const SEC_DATA = 'https://data.sec.gov';
@@ -1081,10 +1082,21 @@ export async function getInstitutionalAdmin() {
     if (!unresolvedMap.has(row.cusip)) unresolvedMap.set(row.cusip, { ...row, observations: 0 });
     unresolvedMap.get(row.cusip).observations += 1;
   }
+  // Collection telemetry. Wrapped because the admin console must still load
+  // before the run-records migration has been applied, and because an
+  // operations panel failing shut takes the whole CMS page with it - the
+  // opposite of what a health display is for.
+  let collection = null;
+  try {
+    collection = { health: await getCollectionHealth(), runs: await listRuns(10) };
+  } catch (error) {
+    collection = { health: null, runs: [], unavailable: error.message };
+  }
   const { data: filings } = await client.from('institutional_filings').select('*, institutional_managers(display_name,slug)').order('filed_at', { ascending: false }).limit(30);
   const { data: alerts } = await client.from('institutional_filing_alerts').select('*, institutional_managers(display_name,slug)').order('created_at', { ascending: false }).limit(50);
   const { data: corrections } = await client.from('institutional_corrections').select('*').order('created_at', { ascending: false }).limit(50);
   return {
+    collection,
     managers: managerRows,
     filings: filings || [],
     alerts: alerts || [],

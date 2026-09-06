@@ -59,6 +59,12 @@ const state = {
   throttled: 0,
   circuitTrips: 0,
   waitedMs: 0,
+  /**
+   * Time spent waiting specifically because EDGAR pushed back, kept apart from
+   * ordinary pacing. The two mean different things: paced wait is the limiter
+   * working, throttle pause is the limiter having been set too fast.
+   */
+  throttlePauseMs: 0,
 };
 
 export class SecCircuitOpenError extends Error {
@@ -91,6 +97,7 @@ export function recordThrottled(retryAfterMs = null) {
   state.throttled += 1;
   state.consecutiveRejections += 1;
   const pause = retryAfterMs ?? Math.min(1000 * (2 ** Math.min(state.consecutiveRejections, 6)), MAX_BACKOFF_MS);
+  state.throttlePauseMs += pause;
   state.nextAllowedAt = Math.max(state.nextAllowedAt, Date.now() + pause);
   if (state.consecutiveRejections >= CIRCUIT_THRESHOLD) {
     state.circuitOpenUntil = Date.now() + CIRCUIT_COOLDOWN_MS;
@@ -139,6 +146,7 @@ export function secLimiterStats() {
     circuit_trips: state.circuitTrips,
     circuit_open: state.circuitOpenUntil > Date.now(),
     total_wait_ms: state.waitedMs,
+    throttle_pause_ms: state.throttlePauseMs,
   };
 }
 
@@ -152,4 +160,5 @@ export function __resetSecLimiter() {
   state.throttled = 0;
   state.circuitTrips = 0;
   state.waitedMs = 0;
+  state.throttlePauseMs = 0;
 }

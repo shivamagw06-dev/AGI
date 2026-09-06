@@ -493,3 +493,98 @@ jobs:
           console.log(`  multer tree clean (${tree.size} packages checked)`);
           console.log(`  ${elsewhere.length} pre-existing advisory/advisories elsewhere`);
           JS
+
+  institutional-collection-runs:
+    name: Institutional collection run records
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    # The chain-wide job above applies only the portfolio, broker and CAS
+    # migrations, so an institutional migration would otherwise reach production
+    # having never been executed. That is how a CHECK constraint once shipped
+    # allowing values the application never writes and forbidding every value it
+    # does. This job exists so that cannot happen to this one.
+
+    env:
+      PGHOST: localhost
+      PGPORT: '5432'
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: agi_test
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Start Postgres with pgTAP on the runner
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            postgresql postgresql-contrib postgresql-16-pgtap
+          sudo pg_ctlcluster 16 main start || sudo systemctl start postgresql
+          for i in $(seq 1 30); do pg_isready -h localhost -p 5432 && break; sleep 1; done
+          pg_isready -h localhost -p 5432
+          sudo -u postgres psql -v ON_ERROR_STOP=1 -c "ALTER ROLE postgres WITH PASSWORD 'postgres';"
+          sudo -u postgres createdb agi_test
+
+      - name: Stand up the Supabase shims this schema expects
+        run: psql -v ON_ERROR_STOP=1 -q -f supabase/tests/supabase_shims.sql
+
+      - name: Create only what the migration depends on
+        run: |
+          set -euo pipefail
+          # The health view reads institutional_filings. Stubbing just that,
+          # rather than replaying a chain that cannot replay from empty, keeps
+          # this job about the migration under test.
+          psql -v ON_ERROR_STOP=1 -q -c "
+            create extension if not exists pgcrypto;
+            create table if not exists public.institutional_filings (
+              id uuid primary key default gen_random_uuid(),
+              report_date date,
+              accepted_at timestamptz,
+              filed_at timestamptz,
+              form_type text
+            );"
+
+      - name: Apply the collection-runs migration
+        run: |
+          set -euo pipefail
+          psql -v ON_ERROR_STOP=1 -q -f supabase/migrations/20260906120000_institutional_collection_runs.sql
+          echo "  migration applied"
+
+      - name: Applying it twice must be a no-op
+        run: |
+          set -euo pipefail
+          # Supabase replays migrations on some paths; one that fails the second
+          # time is a migration that can wedge a deploy.
+          psql -v ON_ERROR_STOP=1 -q -f supabase/migrations/20260906120000_institutional_collection_runs.sql
+          echo "  migration is idempotent"
+
+      - name: Assert the constraints behave in both directions
+        run: |
+          set -euo pipefail
+          psql -v ON_ERROR_STOP=1 -q -c 'create extension if not exists pgtap;'
+          psql -v ON_ERROR_STOP=1 -f supabase/tests/institutional_collection_runs_test.sql
+
+      - name: Assert the recorder's own vocabulary is accepted
+        run: |
+          set -euo pipefail
+          # The application layer and the schema must agree on the status words.
+          # Read them out of the JavaScript rather than restating them here, so
+          # the two cannot drift apart silently.
+          node -e "
+            const fs = require('fs');
+            const src = fs.readFileSync('server/services/institutionalCollectionRuns.js', 'utf8');
+            const words = [...src.matchAll(/return '(success|partial|failed|aborted|running)'/g)].map(m => m[1]);
+            const unique = [...new Set(words)];
+            if (!unique.length) { console.error('::error::no status words found in the recorder'); process.exit(1); }
+            console.log(unique.join('\n'));
+          " > /tmp/status_words.txt
+          while read -r word; do
+            [ -z "$word" ] && continue
+            psql -v ON_ERROR_STOP=1 -q -c \
+              "insert into public.institutional_collection_runs (status, finished_at)
+               values ('$word', case when '$word' = 'running' then null else now() end);" \
+              || { echo "::error::the schema rejects status '$word', which the recorder writes"; exit 1; }
+          done < /tmp/status_words.txt
+          echo "  schema accepts every status the recorder can produce"

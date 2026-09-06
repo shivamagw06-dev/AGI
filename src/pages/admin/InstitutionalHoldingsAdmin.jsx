@@ -147,6 +147,102 @@ export default function InstitutionalHoldingsAdmin() {
   if (!data && !error) return <div className="flex min-h-[70vh] items-center justify-center bg-slate-50"><Loader2 className="h-8 w-8 animate-spin text-slate-400" /></div>;
   return <div className="min-h-full bg-[#f5f6f7] p-5 text-slate-900 sm:p-8"><div className="mx-auto max-w-[1500px]"><header className="flex flex-col gap-5 border-b border-slate-200 pb-7 lg:flex-row lg:items-end lg:justify-between"><div><p className="text-[10px] font-bold uppercase tracking-[.2em] text-amber-700">SEC disclosure operations</p><h1 className="mt-2 font-serif text-4xl font-bold text-[#102b3a]">Institutional Holdings CMS</h1><p className="mt-2 max-w-3xl text-sm leading-6 text-slate-500">Refresh 13F filings, verify legal filer identities, resolve CUSIPs and review every generated client alert.</p></div><a href="/institutional-holdings" target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-lg bg-[#123b4b] px-4 py-3 text-xs font-bold text-white">Open client page <ExternalLink className="h-4 w-4" /></a></header>{error ? <div className="mt-5 flex items-center gap-3 rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700"><AlertTriangle className="h-5 w-5" />{error}</div> : null}{message ? <div className="mt-5 flex items-center gap-3 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-700"><CheckCircle2 className="h-5 w-5" />{message}</div> : null}
 
+      {/* Collection health.
+          Placed above the counters deliberately: every number below is only as
+          current as the last successful run, and a reader who does not know the
+          collector stopped six days ago will read those counters as today's. */}
+      {(() => {
+        const health = data?.collection?.health;
+        const runs = data?.collection?.runs || [];
+        if (data?.collection?.unavailable) {
+          return (
+            <section className="mt-7 rounded-xl border border-amber-300 bg-amber-50 p-5">
+              <div className="text-[10px] font-extrabold uppercase tracking-[.18em] text-amber-700">Collection health</div>
+              <p className="mt-2 text-sm text-amber-900">
+                Run records are unavailable: {data.collection.unavailable}. Collection may still be
+                running; this panel cannot confirm it either way.
+              </p>
+            </section>
+          );
+        }
+        const hours = Number(health?.hours_since_success);
+        const never = !health?.last_success_at;
+        // Daily schedule, so a day and a half without a success means a run was
+        // missed, not that we are between runs.
+        const stale = never || !Number.isFinite(hours) || hours > 36;
+        const tone = stale
+          ? { border: 'border-rose-300', bg: 'bg-rose-50', label: 'text-rose-700', body: 'text-rose-900' }
+          : { border: 'border-emerald-300', bg: 'bg-emerald-50', label: 'text-emerald-700', body: 'text-emerald-900' };
+        const when = (value) => (value ? new Date(value).toLocaleString() : 'never');
+        return (
+          <section className={`mt-7 rounded-xl border ${tone.border} ${tone.bg} p-5`}>
+            <div className="flex flex-wrap items-baseline justify-between gap-2">
+              <div className={`text-[10px] font-extrabold uppercase tracking-[.18em] ${tone.label}`}>
+                Collection health
+              </div>
+              <div className={`text-xs font-semibold ${tone.body}`}>
+                {never
+                  ? 'No successful collection on record'
+                  : `Last success ${hours < 1 ? 'under an hour' : `${Math.round(hours)}h`} ago`}
+              </div>
+            </div>
+            <div className="mt-3 grid gap-3 text-sm sm:grid-cols-2 lg:grid-cols-4">
+              {[
+                ['Last run', `${when(health?.last_run_started_at)}${health?.last_status ? ` (${health.last_status})` : ''}`],
+                ['Last success', when(health?.last_success_at)],
+                ['Next scheduled', when(health?.next_scheduled_at)],
+                ['Latest filing accepted', when(health?.latest_accepted_at)],
+              ].map(([label, value]) => (
+                <div key={label} className="rounded-lg bg-white/70 px-3 py-2">
+                  <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500">{label}</div>
+                  <div className="mt-1 font-medium text-slate-800">{value}</div>
+                </div>
+              ))}
+            </div>
+            {Number(health?.stalled_runs) > 0 ? (
+              <p className="mt-3 text-xs font-semibold text-rose-800">
+                {health.stalled_runs} run(s) started over two hours ago and never finished. The
+                collector was most likely killed mid-crawl.
+              </p>
+            ) : null}
+            {runs.length ? (
+              <div className="mt-4 overflow-x-auto">
+                <table className="w-full min-w-[720px] text-left text-xs">
+                  <thead className="text-[9px] font-extrabold uppercase tracking-[.14em] text-slate-500">
+                    <tr>
+                      {['Started', 'Status', 'Managers', 'Filings', 'Amendments', 'SEC reqs', 'Throttled', 'Failures'].map((h) => (
+                        <th key={h} className="px-2 py-2">{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody className="text-slate-700">
+                    {runs.map((run) => (
+                      <tr key={run.id} className="border-t border-slate-200/70">
+                        <td className="px-2 py-2 tabular-nums">{when(run.started_at)}</td>
+                        <td className="px-2 py-2 font-semibold">{run.status}</td>
+                        <td className="px-2 py-2 tabular-nums">{run.managers_succeeded}/{run.managers_attempted}</td>
+                        <td className="px-2 py-2 tabular-nums">{run.filings_ingested}</td>
+                        <td className="px-2 py-2 tabular-nums">{run.amendments_detected}</td>
+                        <td className="px-2 py-2 tabular-nums">{run.sec_requests}</td>
+                        <td className="px-2 py-2 tabular-nums">
+                          {run.sec_throttled}
+                          {run.sec_throttle_pause_ms > 0
+                            ? ` (${(run.sec_throttle_pause_ms / 1000).toFixed(0)}s paused)`
+                            : ''}
+                        </td>
+                        <td className="px-2 py-2">{(run.failures || []).length}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <p className="mt-3 text-xs text-slate-600">No collection run has been recorded yet.</p>
+            )}
+          </section>
+        );
+      })()}
+
       <section className="mt-7 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">{[['Managers', data?.managers?.length || 0, Landmark], ['Filing versions', data?.filings?.length || 0, FileClock], ['Unresolved CUSIPs', data?.unresolved?.length || 0, Database], ['Unread alerts', data?.alerts?.filter((row) => !row.is_read).length || 0, ShieldCheck]].map(([label, value, Icon]) => <div key={label} className="rounded-xl border border-slate-200 bg-white p-5"><Icon className="h-5 w-5 text-amber-700" /><p className="mt-4 text-[10px] font-bold uppercase tracking-[.14em] text-slate-400">{label}</p><p className="mt-2 font-serif text-3xl font-bold text-[#102b3a]">{value}</p></div>)}</section>
 
       <InstitutionalResearchLayerAdmin />
