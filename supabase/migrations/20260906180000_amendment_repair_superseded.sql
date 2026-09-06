@@ -21,7 +21,13 @@ comment on column public.institutional_amendment_repairs.positions_removed is
 comment on column public.institutional_amendment_repairs.positions_superseded is
   'Rows replaced by a restated version of the same security. The position is still held; only its figures changed.';
 
-create or replace view public.institutional_amendment_repair_summary
+-- Dropped and recreated rather than replaced. CREATE OR REPLACE VIEW can only
+-- append columns; inserting positions_superseded before positions_retained is
+-- rejected as a rename of an existing column. Nothing depends on this view yet,
+-- and the grants below are reapplied, so dropping it costs nothing.
+drop view if exists public.institutional_amendment_repair_summary;
+
+create view public.institutional_amendment_repair_summary
 with (security_invoker = true) as
 select
   repair_run_id,
