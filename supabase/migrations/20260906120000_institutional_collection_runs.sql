@@ -92,7 +92,9 @@ select
   (select count(*) from public.institutional_collection_runs
     where status = 'running' and started_at < now() - interval '2 hours') as stalled_runs,
   (select max(report_date) from public.institutional_filings) as latest_report_date,
-  (select max(accepted_at) from public.institutional_filings) as latest_accepted_at;
+  -- filed_at is where ingestion stores the SEC acceptance timestamp; there is
+  -- no accepted_at column on this table.
+  (select max(filed_at) from public.institutional_filings) as latest_accepted_at;
 
 alter table public.institutional_collection_runs enable row level security;
 

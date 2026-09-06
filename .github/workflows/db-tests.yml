@@ -536,14 +536,19 @@ jobs:
           # The health view reads institutional_filings. Stubbing just that,
           # rather than replaying a chain that cannot replay from empty, keeps
           # this job about the migration under test.
+          #
+          # The stub must match the real table exactly. An earlier version of it
+          # invented an accepted_at column, so a migration referencing a column
+          # that does not exist in production passed CI and would have failed on
+          # the first apply. Columns here are copied from
+          # 20260905190000_institutional_holdings_intelligence.sql.
           psql -v ON_ERROR_STOP=1 -q -c "
             create extension if not exists pgcrypto;
             create table if not exists public.institutional_filings (
               id uuid primary key default gen_random_uuid(),
-              report_date date,
-              accepted_at timestamptz,
-              filed_at timestamptz,
-              form_type text
+              report_date date not null,
+              filed_at timestamptz not null,
+              form_type text not null
             );"
 
       - name: Apply the collection-runs migration
