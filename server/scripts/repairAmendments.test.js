@@ -95,3 +95,40 @@ test('a failed filing does not abort the run', () => {
   assert.match(code, /process\.exit\(totals\.failed \? 1 : 0\)/,
     'failures must still surface in the exit code');
 });
+
+test('the prior version is found regardless of which filing is active', () => {
+  // Ingesting an amendment makes it the active filing and deactivates the
+  // report it supersedes, so a lookup filtered on is_active excludes the very
+  // filing it is looking for. That returned null for every amendment in the
+  // database: removals reported zero while row counts dropped by hundreds, and
+  // strategy fell through to replace regardless of the cover page - which would
+  // erase valid positions on an additive amendment.
+  // Raw source: the block extracted below contains no comments, and this
+  // branch does not carry the shared comment stripper.
+  const service = readFileSync(
+    new URL('../services/institutionalHoldingsService.js', import.meta.url), 'utf8');
+  const preview = /export async function previewFilingRepair[\s\S]*?\n}/.exec(service)?.[0];
+  assert.ok(preview, 'previewFilingRepair is gone');
+
+  const lookup = /const \{ data: previousVersion \}[\s\S]*?maybeSingle\(\);/.exec(preview)?.[0];
+  assert.ok(lookup, 'the prior-version lookup is gone');
+  assert.equal(/is_active/.test(lookup), false,
+    'the prior-version lookup filters on is_active, so it can never find the filing the amendment superseded');
+});
+
+test('removals are measured against the rows stored today', () => {
+  // Raw source: the block extracted below contains no comments, and this
+  // branch does not carry the shared comment stripper.
+  const service = readFileSync(
+    new URL('../services/institutionalHoldingsService.js', import.meta.url), 'utf8');
+  const preview = /export async function previewFilingRepair[\s\S]*?\n}/.exec(service)?.[0];
+  assert.match(preview, /currentRows/,
+    'removals must be computed against what is stored now - that is what a client sees and what would disappear');
+  assert.match(preview, /const removed = currentRows\.filter/,
+    'removed must be derived from the current rows, not from the prior version');
+});
+
+test('the report refuses to print counts that do not reconcile', () => {
+  assert.match(code, /do not reconcile/,
+    'a report that prints "0 removed" beside a 257-row drop invites someone to trust the smaller number');
+});

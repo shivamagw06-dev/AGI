@@ -1335,10 +1335,19 @@ export async function previewFilingRepair(filingId) {
   const amendmentRows = collapseDuplicateRows(parseInformationTable(infoDocument.text, 1));
   const classification = classifyFiling(filing.form_type, archive.coverPage);
 
-  // The version this amendment amends, as currently stored.
+  // The version this amendment amends.
+  //
+  // is_active is deliberately NOT part of this query. Ingesting the amendment
+  // made it the active filing and deactivated the report it superseded, so
+  // asking for the active one excludes the very filing being looked for. That
+  // returned null on every amendment in the database, with two consequences:
+  // removals were computed against an empty prior set and always reported
+  // zero, and `strategy` fell through to replace regardless of what the cover
+  // page said - which would erase valid positions on an additive amendment.
   const { data: previousVersion } = await client.from('institutional_filings').select('*')
-    .eq('manager_id', manager.id).eq('report_date', filing.report_date).eq('is_active', true)
-    .neq('id', filing.id).order('filed_at', { ascending: false }).limit(1).maybeSingle();
+    .eq('manager_id', manager.id).eq('report_date', filing.report_date)
+    .neq('id', filing.id).lte('filed_at', filing.filed_at)
+    .order('filed_at', { ascending: false }).limit(1).maybeSingle();
   const priorRows = previousVersion
     ? (await collect(() => client.from('institutional_holdings').select('*').eq('filing_id', previousVersion.id)))
       .map(({ id, filing_id, manager_id, report_date, portfolio_weight, created_at, ...row }) => row)
@@ -1348,9 +1357,19 @@ export async function previewFilingRepair(filingId) {
     ? 'replace'
     : classification.strategy;
   const outcome = applyAmendment({ strategy, priorRows, amendmentRows, keyOf: filingKey });
-  const removed = strategy === 'replace' && previousVersion
-    ? droppedPositions({ priorRows, amendmentRows, keyOf: filingKey })
-    : [];
+
+  // What actually disappears from the portfolio, measured against the rows
+  // stored TODAY rather than against the prior version.
+  //
+  // The stored rows are the merged result the broken classification produced,
+  // and they are what a client sees now. Comparing the prior version to the
+  // amendment answers a different question and reported zero removals while
+  // row counts visibly dropped - JPMorgan 7,756 to 7,499 with "0 removed".
+  const currentRows = (await collect(() => client.from('institutional_holdings')
+    .select('*').eq('filing_id', filing.id)))
+    .map(({ id, filing_id, manager_id, report_date, portfolio_weight, created_at, ...row }) => row);
+  const surviving = new Set(outcome.rows.map((row) => filingKey(row)));
+  const removed = currentRows.filter((row) => !surviving.has(filingKey(row)));
 
   return {
     filing,
@@ -1358,6 +1377,7 @@ export async function previewFilingRepair(filingId) {
     classification,
     strategy,
     priorRows,
+    currentRows,
     amendmentRows,
     resultingRows: outcome.rows,
     removed,

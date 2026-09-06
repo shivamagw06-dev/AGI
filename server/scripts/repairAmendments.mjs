@@ -167,7 +167,18 @@ for (const [, amendment] of quarters) {
 
     console.log(`  ${slug} ${amendment.report_date}  ${amendment.accession_number}`);
     console.log(`      ${previous || 'none'} -> ${resolved}${reclassified ? '  RECLASSIFIED' : ''}`);
-    console.log(`      positions ${before.length} -> ${retained}, ${removed.length} removed`);
+    // The three numbers must agree. They did not: removals were computed
+    // against a prior version the lookup never found, so the report said
+    // "0 removed" while the row count visibly dropped by 257. Printing
+    // contradictory numbers is worse than printing none - it invites someone
+    // to trust the smaller one.
+    const added = retained - (before.length - removed.length);
+    const reconciles = before.length - removed.length + Math.max(0, added) === retained;
+    console.log(`      positions ${before.length} -> ${retained}, ${removed.length} removed`
+      + (added > 0 ? `, ${added} added` : ''));
+    if (!reconciles) {
+      console.warn(`      WARNING: counts do not reconcile (${before.length} - ${removed.length} + ${added} != ${retained}); treat this filing's figures as unverified`);
+    }
     for (const row of removed.slice(0, 5)) {
       console.log(`        - ${row.cusip || '?'}  ${(row.issuer_name || '').slice(0, 40)}`);
     }
