@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Bell, BriefcaseBusiness, CheckCircle2, FileSearch, Gauge, Layers3, Loader2, Play, Radar, ShieldCheck, Sparkles } from 'lucide-react';
+import { Bell, Briefcase, CheckCircle2, FileSearch, Gauge, Layers3, Loader2, Play, Radar, ShieldCheck, Sparkles } from 'lucide-react';
 import { createInstitutionalGroup, createInstitutionalWatchlist, getInstitutionalResearchLayer, getInstitutionalWorkspace, markInstitutionalPersonalizedAlert, runInstitutionalBacktest } from '@/lib/institutionalHoldingsApi';
 
 const percent = (value, signed = false) => `${signed && Number(value) > 0 ? '+' : ''}${(Number(value || 0) * 100).toFixed(1)}%`;
@@ -14,7 +14,7 @@ export default function InstitutionalResearchLayer() {
   useEffect(() => { getInstitutionalResearchLayer().then((payload) => { setData(payload); setManagerSlug(payload.managers?.[0]?.slug || ''); }).catch((error) => setMessage(error.message)); }, []);
   const movers = useMemo(() => (data?.sector_rotation || []).filter((row) => row.sector !== 'Unclassified'), [data]);
   const loadWorkspace = async () => { setWorking('workspace'); setMessage(''); try { setWorkspace(await getInstitutionalWorkspace()); } catch (error) { setMessage(error.message); } finally { setWorking(''); } };
-  const tabs = [['rotation', 'Sector rotation', Layers3], ['performance', 'Performance lab', Gauge], ['filings', '13D/G + Form 4', FileSearch], ['briefs', 'Analyst briefs', Sparkles], ['workspace', 'My workspace', BriefcaseBusiness]];
+  const tabs = [['rotation', 'Sector rotation', Layers3], ['performance', 'Performance lab', Gauge], ['filings', '13D/G + Form 4', FileSearch], ['briefs', 'Analyst briefs', Sparkles], ['workspace', 'My workspace', Briefcase]];
   if (!data) return <section className="mx-auto mt-8 flex max-w-7xl items-center justify-center rounded-2xl border border-slate-200 bg-[#07151d] p-16 text-slate-400"><Loader2 className="mr-3 h-5 w-5 animate-spin" /> Loading institutional research layer</section>;
   return <section className="mx-auto mt-8 max-w-7xl overflow-hidden rounded-2xl border border-cyan-300/15 bg-[#07151d] text-slate-100 shadow-2xl shadow-slate-950/10">
     <div className="relative overflow-hidden border-b border-white/10 px-6 py-7 lg:px-8"><div className="absolute inset-0 opacity-40 [background-image:linear-gradient(rgba(34,211,238,.08)_1px,transparent_1px),linear-gradient(90deg,rgba(34,211,238,.08)_1px,transparent_1px)] [background-size:32px_32px]" /><div className="relative flex flex-col justify-between gap-5 lg:flex-row lg:items-end"><div><div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[.28em] text-cyan-300"><Radar className="h-4 w-4" /> Institutional intelligence V3</div><h2 className="mt-3 text-3xl font-semibold tracking-tight text-white">From disclosure to decision</h2><p className="mt-2 max-w-3xl text-sm leading-6 text-slate-400">Point-in-time classifications, filing-aware performance, ownership disclosures and analyst-controlled research in one evidence trail.</p></div><div className="flex items-center gap-2 rounded-full border border-emerald-300/20 bg-emerald-300/10 px-4 py-2 text-xs font-semibold text-emerald-300"><ShieldCheck className="h-4 w-4" /> No look-ahead methodology</div></div>
@@ -31,4 +31,3 @@ export default function InstitutionalResearchLayer() {
     </div>
   </section>;
 }
-
