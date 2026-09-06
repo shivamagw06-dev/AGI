@@ -348,8 +348,19 @@ export async function reviewInstitutionalBrief(id, { status, reviewerNotes, revi
   const client = db(); const { data, error } = await client.from('institutional_intelligence_briefs').update({ status, reviewer_notes: reviewerNotes || null, reviewed_by: reviewer || 'admin', reviewed_at: new Date().toISOString() }).eq('id', id).select().single(); if (error) throw error; return data;
 }
 
+// Opt-in, not opt-out.
+//
+// This used to default to on, so every deploy of the web process started an
+// unthrottled SEC crawl 15 seconds later: 51 managers x 12 quarters of EDGAR
+// requests from a dyno whose job is serving clients, with no rate limiter and
+// no coordination between instances. Restart the service three times and three
+// crawls run at once, against an endpoint whose Fair Access policy is 10
+// requests a second and whose penalty is an IP block.
+//
+// Collection belongs in a scheduled worker with a real limiter. Until that
+// exists, this runs only where someone has deliberately set the flag.
 export function startInstitutionalResearchLayerAutomation() {
-  if (automationStarted || process.env.NODE_ENV === 'test' || String(process.env.INSTITUTIONAL_RESEARCH_AUTOMATION_ENABLED || 'true').toLowerCase() === 'false') return;
+  if (automationStarted || process.env.NODE_ENV === 'test' || String(process.env.INSTITUTIONAL_RESEARCH_AUTOMATION_ENABLED || 'false').toLowerCase() !== 'true') return;
   automationStarted = true;
   const execute = () => refreshInstitutionalResearchLayer().catch((error) => console.error('[institutional-v3] automatic refresh failed:', error.message));
   const initial = setTimeout(execute, Math.max(60_000, number(process.env.INSTITUTIONAL_RESEARCH_INITIAL_DELAY_MS) || 7 * 60_000));

@@ -130,11 +130,17 @@ export default function createInstitutionalHoldingsRouter() {
       return sendError(res, error);
     }
   });
-  // Combined holdings, the screener and the heat map are arithmetic over filed
-  // positions and need no price data, so they work on today's coverage. The
-  // performance evaluator does need prices and reports its own coverage rather
-  // than ranking managers on partial data.
-  router.get('/combined-holdings', async (req, res) => {
+  // Admin-only, deliberately, on two grounds.
+  //
+  // These are not client-ready: the audit found adjusted-price coverage at 0%
+  // and 90.7% of holdings rows unresolved to a ticker, so anything these
+  // return today describes a tenth of the universe while looking complete.
+  //
+  // And each pages the whole holdings table. Measured against production they
+  // time out at 120s on 72,401 rows, which is exactly the anonymous full scan
+  // this release exists to prevent. They stay behind auth until they are both
+  // fast and backed by data worth showing.
+  router.get('/combined-holdings', requireAdmin, async (req, res) => {
     try {
       const ids = String(req.query.managers || '').split(',').map((v) => v.trim()).filter(Boolean);
       return res.json(await getCombinedHoldings({
@@ -143,7 +149,7 @@ export default function createInstitutionalHoldingsRouter() {
     } catch (error) { return sendError(res, error); }
   });
 
-  router.get('/screener', async (req, res) => {
+  router.get('/screener', requireAdmin, async (req, res) => {
     try {
       const q = req.query || {};
       return res.json(await screenStocks({
@@ -155,18 +161,18 @@ export default function createInstitutionalHoldingsRouter() {
     } catch (error) { return sendError(res, error); }
   });
 
-  router.get('/heat-map', async (req, res) => {
+  router.get('/heat-map', requireAdmin, async (req, res) => {
     try { return res.json(await getAccumulationHeatMap({ limit: req.query.limit })); }
     catch (error) { return sendError(res, error); }
   });
 
-  router.get('/fund-performance', async (_req, res) => {
+  router.get('/fund-performance', requireAdmin, async (_req, res) => {
     try { return res.json(await evaluateFundPerformance({})); }
     catch (error) { return sendError(res, error); }
   });
 
   router.get('/research-layer', async (_req, res) => { try { return res.json(await getInstitutionalResearchLayer()); } catch (error) { return sendError(res, error); } });
-  router.post('/backtests', async (req, res) => { try { return res.json(await runInstitutionalBacktest(req.body || {})); } catch (error) { return sendError(res, error, 400); } });
+  router.post('/backtests', requireAdmin, async (req, res) => { try { return res.json(await runInstitutionalBacktest(req.body || {})); } catch (error) { return sendError(res, error, 400); } });
   router.get('/workspace', requireUser, async (req, res) => { try { return res.json(await getInstitutionalWorkspace(req.authUser.id)); } catch (error) { return sendError(res, error); } });
   router.post('/workspace/groups', requireUser, async (req, res) => { try { return res.json(await createInstitutionalGroup(req.authUser.id, req.body || {})); } catch (error) { return sendError(res, error, 400); } });
   router.post('/workspace/watchlists', requireUser, async (req, res) => { try { return res.json(await createInstitutionalWatchlist(req.authUser.id, req.body || {})); } catch (error) { return sendError(res, error, 400); } });
