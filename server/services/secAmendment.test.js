@@ -180,3 +180,41 @@ test('an unknown strategy is refused rather than defaulting to one', () => {
   assert.throws(() => applyAmendment({ strategy: 'sensible-guess', priorRows: PRIOR, amendmentRows: [] }),
     /Unknown amendment strategy/);
 });
+
+// ---------------------------------------------------------------------------
+// Superseding has to reach every surface, not just the ingest path
+// ---------------------------------------------------------------------------
+
+/**
+ * Correct classification is not enough on its own.
+ *
+ * A superseded filing keeps its row - when an amendment restates a quarter the
+ * earlier version is marked inactive rather than deleted, so what was
+ * originally disclosed stays on record. Any surface that loads filings without
+ * filtering on is_active therefore reads both versions of that quarter and
+ * counts the withdrawn positions alongside the restated ones.
+ *
+ * The research layer did exactly that: it selected every filing, ordered by
+ * report_date, with no is_active predicate, so sector rotation and the backtest
+ * read superseded holdings even after classification was fixed. Only
+ * same-quarter versions are ever deactivated, so this filter costs no history.
+ */
+test('every surface that reads filings filters out superseded versions', () => {
+  const surfaces = [
+    ['research layer (sector rotation, backtest input)', '../services/institutionalResearchLayerService.js'],
+    ['screener (combined holdings, heat map, fund performance)', '../services/institutionalScreenerService.js'],
+  ];
+
+  for (const [name, path] of surfaces) {
+    const source = readFileSync(new URL(path, import.meta.url), 'utf8');
+    const selects = [...source.matchAll(/from\('institutional_filings'\)([\s\S]{0,400}?);/g)];
+    assert.ok(selects.length, `${name} reads no filings at all - has it moved?`);
+    for (const [statement] of selects) {
+      assert.match(
+        statement,
+        /is_active/,
+        `${name} loads filings without filtering on is_active, so a restated quarter is counted twice`,
+      );
+    }
+  }
+});

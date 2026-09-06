@@ -85,7 +85,17 @@ async function core() {
   const client = db();
   const [{ data: managers, error: managerError }, { data: filings, error: filingError }] = await Promise.all([
     client.from('institutional_managers').select('*').order('display_name'),
-    client.from('institutional_filings').select('*').order('report_date', { ascending: false }).limit(1000),
+    // is_active, deliberately.
+    //
+    // A superseded filing keeps its row: when an amendment restates a quarter,
+    // the earlier version is marked inactive rather than deleted, so the record
+    // of what was originally disclosed survives. Loading every filing therefore
+    // loaded both versions of the same quarter and counted the restated
+    // positions twice - once from the report the manager withdrew.
+    //
+    // Only same-quarter versions are deactivated, so this keeps the full
+    // history across quarters and drops only what has been superseded.
+    client.from('institutional_filings').select('*').eq('is_active', true).order('report_date', { ascending: false }).limit(1000),
   ]);
   if (managerError || filingError) throw managerError || filingError;
   const holdings = [];
