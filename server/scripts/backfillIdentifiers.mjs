@@ -74,16 +74,33 @@ try {
     const gained = result.coverage_after.mapped_rows - result.coverage_before.mapped_rows;
     console.log(`[identifiers] rows newly mapped: ${gained.toLocaleString()}`);
     console.log(`[identifiers] attempted ${result.attempted}, resolved ${result.mapped},`
-      + ` applied to holdings ${result.applied ?? 0}, unresolved ${result.unresolved}`);
+      + ` applied to holdings ${result.applied ?? 0}, unresolved ${result.unresolved}`
+      + (result.skipped ? `, skipped ${result.skipped} malformed` : ''));
     if (result.mapped && !result.applied) {
       console.warn('[identifiers] mappings were written but none reached the holdings table,'
         + ' so nothing downstream will change. That is a fault, not a quiet success.');
     }
     for (const problem of result.errors || []) console.warn(`[identifiers] ${problem}`);
     if (result.unresolved) {
-      console.log(`[identifiers] ${result.unresolved} could not be resolved. Those are usually private`
-        + ' placements, funds, or securities OpenFIGI has no listing for, and they stay unmapped'
-        + ' rather than being guessed at.');
+      // This used to read "those are usually private placements, funds, or
+      // securities OpenFIGI has no listing for". It was wrong, and being
+      // wrong confidently cost ten runs: the securities it described that way
+      // were Chubb, Linde, Accenture, Spotify, ASML and Medtronic, failing
+      // because they were asked with the wrong identifier scheme. The line now
+      // reports the number and declines to explain it.
+      console.log(`[identifiers] ${result.unresolved} were asked and returned no listing.`
+        + ' They stay unmapped rather than being guessed at. What they are is not something'
+        + ' this run knows - check the issuer names before assuming they are untradeable.');
+    }
+    if (result.attempted >= 20 && result.unresolved >= result.attempted * 0.8) {
+      // The signature of a blocked window rather than a thin tail. Candidates
+      // are ranked by disclosed value and a failure keeps its rank, so a
+      // cohort that cannot resolve stays at the front of the queue and is
+      // re-offered every run. Ten consecutive runs converged on attempted 148
+      // and unresolved 147 before anyone looked at which securities they were.
+      console.warn(`[identifiers] ${result.unresolved} of ${result.attempted} failed.`
+        + ' A ratio this high usually means the same cohort is being retried, not that'
+        + ' the tail has been reached. Look at what they are before running this again.');
     }
   }
 
