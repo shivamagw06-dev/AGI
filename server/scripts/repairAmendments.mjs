@@ -89,7 +89,7 @@ console.log(`[repair] ${amendments.length} amendment filing(s) on record\n`);
 
 const totals = {
   examined: 0, reclassified: 0, repaired: 0, wouldRepair: 0,
-  unchanged: 0, needsReview: 0, failed: 0, removed: 0, retained: 0,
+  unchanged: 0, needsReview: 0, failed: 0, removed: 0, superseded: 0, retained: 0,
 };
 
 // Grouped by quarter: an amendment is only meaningful against the report it
@@ -113,6 +113,7 @@ for (const [, amendment] of quarters) {
 
     const before = await holdingsForFiling(amendment.id);
     const removed = preview.removed;
+    const superseded = preview.superseded || [];
     const retained = preview.resultingRows.length;
 
     if (resolved === 'unknown') {
@@ -163,6 +164,7 @@ for (const [, amendment] of quarters) {
     }
 
     totals.removed += removed.length;
+    totals.superseded += superseded.length;
     totals.retained += retained;
 
     console.log(`  ${slug} ${amendment.report_date}  ${amendment.accession_number}`);
@@ -172,17 +174,23 @@ for (const [, amendment] of quarters) {
     // "0 removed" while the row count visibly dropped by 257. Printing
     // contradictory numbers is worse than printing none - it invites someone
     // to trust the smaller one.
-    const added = retained - (before.length - removed.length);
-    const reconciles = before.length - removed.length + Math.max(0, added) === retained;
-    console.log(`      positions ${before.length} -> ${retained}, ${removed.length} removed`
+    const goingAway = removed.length + superseded.length;
+    const added = retained - (before.length - goingAway);
+    const reconciles = before.length - goingAway + Math.max(0, added) === retained;
+    console.log(`      positions ${before.length} -> ${retained}`
+      + `, ${removed.length} divested`
+      + (superseded.length ? `, ${superseded.length} restated` : '')
       + (added > 0 ? `, ${added} added` : ''));
     if (!reconciles) {
       console.warn(`      WARNING: counts do not reconcile (${before.length} - ${removed.length} + ${added} != ${retained}); treat this filing's figures as unverified`);
     }
     for (const row of removed.slice(0, 5)) {
-      console.log(`        - ${row.cusip || '?'}  ${(row.issuer_name || '').slice(0, 40)}`);
+      console.log(`        divested: ${row.cusip || '?'}  ${(row.issuer_name || '').slice(0, 40)}`);
     }
-    if (removed.length > 5) console.log(`        ... and ${removed.length - 5} more`);
+    if (removed.length > 5) console.log(`        ... and ${removed.length - 5} more divested`);
+    if (superseded.length) {
+      console.log(`        (${superseded.length} row(s) restated in place - same security, corrected figures)`);
+    }
 
     if (!APPLY) {
       totals.wouldRepair += 1;
@@ -191,7 +199,8 @@ for (const [, amendment] of quarters) {
         manager_slug: slug, report_date: amendment.report_date,
         previous_amendment_type: previous, resolved_amendment_type: resolved,
         reclassified, positions_before: before.length, positions_after: retained,
-        positions_removed: removed.length, positions_retained: retained,
+        positions_removed: removed.length,
+      positions_superseded: superseded.length, positions_retained: retained,
         removed_positions: removed.slice(0, 200).map((r) => ({ cusip: r.cusip, issuer: r.issuer_name })),
         outcome: 'would_repair',
       });
@@ -216,7 +225,8 @@ for (const [, amendment] of quarters) {
       manager_slug: slug, report_date: amendment.report_date,
       previous_amendment_type: previous, resolved_amendment_type: resolved,
       reclassified, positions_before: before.length, positions_after: after.length,
-      positions_removed: removed.length, positions_retained: after.length,
+      positions_removed: removed.length,
+      positions_superseded: superseded.length, positions_retained: after.length,
       removed_positions: removed.slice(0, 200).map((r) => ({ cusip: r.cusip, issuer: r.issuer_name })),
       outcome: 'repaired',
     });
@@ -255,7 +265,8 @@ console.log(`
   unchanged:            ${totals.unchanged}
   needs review:         ${totals.needsReview}
   failed:               ${totals.failed}
-  positions removed:    ${totals.removed}
+  positions divested:   ${totals.removed}
+  rows restated:        ${totals.superseded}
   positions retained:   ${totals.retained}
   sec requests:         ${limiter.requests} (throttled ${limiter.throttled})
   elapsed:              ${((Date.now() - started) / 1000).toFixed(1)}s

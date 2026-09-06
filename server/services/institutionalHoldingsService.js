@@ -1369,7 +1369,32 @@ export async function previewFilingRepair(filingId) {
     .select('*').eq('filing_id', filing.id)))
     .map(({ id, filing_id, manager_id, report_date, portfolio_weight, created_at, ...row }) => row);
   const surviving = new Set(outcome.rows.map((row) => filingKey(row)));
-  const removed = currentRows.filter((row) => !surviving.has(filingKey(row)));
+  const goingAway = currentRows.filter((row) => !surviving.has(filingKey(row)));
+
+  // Two very different things look identical at row level, and conflating them
+  // makes the report unreviewable.
+  //
+  // filingKey is cusip|class|shareType|putCall - it carries no value or share
+  // count. When a restatement re-reports the same security with corrected
+  // figures, the old row disappears and a new one takes its place. That is a
+  // superseded row, not a divested position.
+  //
+  // H&H International's Q4-2024 restatement is the case that exposed it: the
+  // report listed APPLE, BERKSHIRE, ALPHABET, PDD and OCCIDENTAL as "removed"
+  // when all five are in the amendment SEC actually filed. Read literally it
+  // says the manager exited Apple. It did not; the row was restated.
+  //
+  // So a position only counts as removed when its security is absent from the
+  // result entirely.
+  const survivingSecurities = new Set(
+    outcome.rows.map((row) => String(row.cusip || '').trim().toUpperCase()),
+  );
+  const removed = goingAway.filter(
+    (row) => !survivingSecurities.has(String(row.cusip || '').trim().toUpperCase()),
+  );
+  const superseded = goingAway.filter(
+    (row) => survivingSecurities.has(String(row.cusip || '').trim().toUpperCase()),
+  );
 
   return {
     filing,
@@ -1378,6 +1403,7 @@ export async function previewFilingRepair(filingId) {
     strategy,
     priorRows,
     currentRows,
+    superseded,
     amendmentRows,
     resultingRows: outcome.rows,
     removed,
