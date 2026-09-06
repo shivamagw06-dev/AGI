@@ -228,6 +228,80 @@ function MetricCard({ icon: Icon, label, value, note }) {
   );
 }
 
+function MarketIntelligencePanel({ data }) {
+  const intelligence = useMemo(() => {
+    const rows = [...(data?.consensus || [])];
+    const activity = (row) => Number(row.new_buyers || 0) + Number(row.increasers || 0) + Number(row.reducers || 0) + Number(row.exits || 0);
+    const netBreadth = (row) => Number(row.new_buyers || 0) + Number(row.increasers || 0) - Number(row.reducers || 0) - Number(row.exits || 0);
+    const byConsensus = [...rows].sort((a, b) => Number(b.consensus_score || 0) - Number(a.consensus_score || 0));
+    const byAccumulation = [...rows].filter((row) => netBreadth(row) > 0).sort((a, b) => netBreadth(b) - netBreadth(a) || Number(b.aggregate_weight || 0) - Number(a.aggregate_weight || 0));
+    const byDistribution = [...rows].filter((row) => netBreadth(row) < 0).sort((a, b) => netBreadth(a) - netBreadth(b) || Number(b.aggregate_weight || 0) - Number(a.aggregate_weight || 0));
+    const activeNames = rows.filter((row) => activity(row) > 0);
+    const grossAdds = rows.reduce((sum, row) => sum + Number(row.new_buyers || 0) + Number(row.increasers || 0), 0);
+    const grossCuts = rows.reduce((sum, row) => sum + Number(row.reducers || 0) + Number(row.exits || 0), 0);
+    const anchor = byConsensus[0];
+    const leader = byAccumulation[0];
+    const pressure = byDistribution[0];
+    const tone = grossAdds > grossCuts ? 'Accumulation-led' : grossCuts > grossAdds ? 'Reduction-led' : 'Balanced rotation';
+    const name = (row) => row?.ticker || row?.issuer_name || 'No verified name';
+    return {
+      anchor,
+      leader,
+      pressure,
+      activeNames: activeNames.length,
+      grossAdds,
+      grossCuts,
+      tone,
+      headline: rows.length
+        ? `${tone}: ${name(leader || anchor)} leads positive breadth${pressure ? ` while ${name(pressure)} carries the clearest reduction pressure` : ''}.`
+        : 'The intelligence brief activates after verified manager portfolios are available.',
+    };
+  }, [data]);
+
+  const cards = [
+    { label: 'Consensus anchor', row: intelligence.anchor, icon: Radar, value: intelligence.anchor ? `${intelligence.anchor.owners}/${data?.consensus_managers || 0} managers` : '--', note: intelligence.anchor ? `${Math.round(Number(intelligence.anchor.consensus_score || 0))}/100 transparent score` : 'Awaiting verified overlap' },
+    { label: 'Accumulation leader', row: intelligence.leader, icon: TrendingUp, value: intelligence.leader ? `+${Number(intelligence.leader.new_buyers || 0) + Number(intelligence.leader.increasers || 0)} managers` : '--', note: 'Initiations plus disclosed increases' },
+    { label: 'Reduction pressure', row: intelligence.pressure, icon: TrendingDown, value: intelligence.pressure ? `-${Number(intelligence.pressure.reducers || 0) + Number(intelligence.pressure.exits || 0)} managers` : '--', note: 'Reductions plus disclosed exits' },
+  ];
+
+  return (
+    <section id="market-intelligence" className="pt-14">
+      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p className="text-[10px] font-extrabold uppercase tracking-[.22em] text-[#a56e3d]">AGI institutional intelligence</p>
+          <h2 className="mt-3 font-serif text-3xl font-bold sm:text-4xl">What the filings say together</h2>
+        </div>
+        <div className="inline-flex items-center gap-2 self-start rounded-full border border-[#cbdad6] bg-white/70 px-3 py-2 text-[10px] font-extrabold uppercase tracking-[.12em] text-[#42626b]">
+          <ShieldCheck className="h-3.5 w-3.5 text-[#29988f]" /> Evidence only
+        </div>
+      </div>
+      <div className="grid overflow-hidden rounded-[30px] border border-white bg-white/85 shadow-[0_24px_70px_rgba(12,48,59,.09)] backdrop-blur xl:grid-cols-[1.1fr_.9fr]">
+        <div className="relative overflow-hidden bg-[#0b2f3d] p-7 text-white sm:p-9">
+          <div className="absolute -right-20 -top-24 h-64 w-64 rounded-full border border-cyan-200/15 bg-cyan-200/5" />
+          <div className="relative">
+            <div className="flex items-center gap-3"><div className="grid h-11 w-11 place-items-center rounded-2xl border border-white/10 bg-white/5 text-[#66d0c3]"><Sparkles className="h-5 w-5" /></div><div><p className="text-[9px] font-extrabold uppercase tracking-[.18em] text-[#dfaa67]">Network read</p><p className="mt-1 text-xs text-[#9db7bf]">Latest verified manager quarters</p></div></div>
+            <h3 className="mt-7 max-w-3xl font-serif text-2xl font-bold leading-tight sm:text-3xl">{intelligence.headline}</h3>
+            <p className="mt-4 max-w-2xl text-sm leading-7 text-[#afc5cb]">Across the tracked network, AGI counts {intelligence.grossAdds} positive manager actions and {intelligence.grossCuts} reductions or exits across {intelligence.activeNames} active consensus names. This measures disclosed breadth, not purchase timing or expected return.</p>
+            <div className="mt-7 flex flex-wrap gap-2">
+              <span className="rounded-full border border-[#63cec1]/25 bg-[#63cec1]/10 px-3 py-2 text-[10px] font-bold uppercase tracking-[.1em] text-[#8fe0d6]">{intelligence.tone}</span>
+              <span className="rounded-full border border-white/10 bg-white/5 px-3 py-2 text-[10px] font-bold uppercase tracking-[.1em] text-[#b5c9ce]">13F delayed disclosure</span>
+            </div>
+          </div>
+        </div>
+        <div className="grid gap-px bg-[#dde7e4] sm:grid-cols-3 xl:grid-cols-1">
+          {cards.map(({ label, row, icon: Icon, value, note }) => (
+            <Link key={label} to={row ? `/institutional-holdings/stocks/${row.ticker || row.cusip}` : '#'} className="group flex items-center gap-4 bg-white p-6 transition hover:bg-[#f4f9f7]">
+              <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-[#eaf3f1] text-[#155767]"><Icon className="h-5 w-5" /></div>
+              <div className="min-w-0 flex-1"><p className="text-[9px] font-extrabold uppercase tracking-[.14em] text-[#8a979b]">{label}</p><div className="mt-1 flex items-baseline gap-2"><strong className="truncate font-serif text-xl">{row?.ticker || row?.issuer_name || 'Building'}</strong><span className="shrink-0 text-xs font-bold text-[#277f7d]">{value}</span></div><p className="mt-1 text-[10px] text-[#7c8b90]">{note}</p></div>
+              <ChevronRight className="h-4 w-4 shrink-0 text-[#9cacb0] transition group-hover:translate-x-1" />
+            </Link>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function OverviewPage() {
   const [data, setData] = useState(null);
   const [error, setError] = useState('');
@@ -300,6 +374,8 @@ function OverviewPage() {
 
         {error ? <div className="mt-8"><Empty error={error} /></div> : (
           <>
+            <MarketIntelligencePanel data={data} />
+
             <section id="funds" className="pt-14">
               <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
                 <div>
@@ -514,6 +590,19 @@ function StockPage({ stockKey }) {
 
   const scoreAvailable = Boolean(data.consensus_ready) && Number.isFinite(Number(data.consensus_score));
   const score = scoreAvailable ? Math.round(Number(data.consensus_score)) : 0;
+  const flow = (data.changes || []).reduce((summary, row) => {
+    const type = row.change_type || 'held';
+    summary[type] = (summary[type] || 0) + 1;
+    return summary;
+  }, { new: 0, increased: 0, reduced: 0, exited: 0, held: 0 });
+  const positiveBreadth = flow.new + flow.increased;
+  const negativeBreadth = flow.reduced + flow.exited;
+  const flowTone = positiveBreadth > negativeBreadth ? 'Positive breadth' : negativeBreadth > positiveBreadth ? 'Negative breadth' : 'Balanced breadth';
+  const flowCopy = positiveBreadth > negativeBreadth
+    ? `${positiveBreadth} tracked managers initiated or increased the security, compared with ${negativeBreadth} reducing or exiting.`
+    : negativeBreadth > positiveBreadth
+      ? `${negativeBreadth} tracked managers reduced or exited the security, compared with ${positiveBreadth} initiating or increasing.`
+      : `${positiveBreadth} managers added exposure and ${negativeBreadth} reduced it, leaving disclosed activity balanced.`;
   return (
     <ModuleShell
       back="/institutional-holdings"
@@ -540,6 +629,19 @@ function StockPage({ stockKey }) {
           </div>
         </section>
 
+        <section className="mt-8 grid overflow-hidden rounded-[28px] border border-white bg-white/85 shadow-[0_18px_50px_rgba(12,48,59,.07)] lg:grid-cols-[1fr_1.2fr]">
+          <div className="bg-[#0b2f3d] p-7 text-white sm:p-8">
+            <div className="flex items-center justify-between"><div><p className="text-[9px] font-extrabold uppercase tracking-[.18em] text-[#dfaa67]">Quarterly flow verdict</p><h2 className="mt-2 font-serif text-2xl font-bold">{flowTone}</h2></div><Activity className="h-6 w-6 text-[#66d0c3]" /></div>
+            <p className="mt-4 text-sm leading-7 text-[#b2c8ce]">{flowCopy}</p>
+            <p className="mt-5 border-t border-white/10 pt-4 text-[10px] leading-5 text-[#819fa8]">The verdict counts reporting managers equally. Use portfolio-weight changes below to judge how material each action was.</p>
+          </div>
+          <div className="grid grid-cols-2 gap-px bg-[#dfe8e5] sm:grid-cols-4 lg:grid-cols-2 xl:grid-cols-4">
+            {[['New', flow.new, TrendingUp, '#17806a'], ['Increased', flow.increased, ArrowRight, '#147887'], ['Reduced', flow.reduced, TrendingDown, '#a56e3d'], ['Exited', flow.exited, ArrowLeft, '#a54b4b']].map(([label, value, Icon, color]) => (
+              <div key={label} className="bg-white p-5 sm:p-6"><Icon className="h-4 w-4" style={{ color }} /><p className="mt-5 text-[9px] font-extrabold uppercase tracking-[.14em] text-[#89969a]">{label}</p><p className="mt-1 font-serif text-3xl font-bold">{value}</p><p className="mt-1 text-[10px] text-[#8a979b]">reporting managers</p></div>
+            ))}
+          </div>
+        </section>
+
         <section className="mt-10">
           <div><p className="text-[10px] font-extrabold uppercase tracking-[.2em] text-[#a56e3d]">Ownership network</p><h2 className="mt-2 font-serif text-3xl font-bold sm:text-4xl">Who owns it and what changed</h2><p className="mt-2 text-sm text-[#718087]">Position weights are comparable within each manager's disclosed 13F portfolio.</p></div>
           <div className="mt-7 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
@@ -552,6 +654,7 @@ function StockPage({ stockKey }) {
                     <div className="flex items-start justify-between gap-4"><div className="flex items-center gap-3"><FundLogo fund={manager} size="sm" /><div><h3 className="font-serif text-lg font-bold">{manager.display_name}</h3><p className="text-[10px] text-[#819095]">Quarter {row.report_date}</p></div></div><SignalPill type={change?.change_type || 'held'} /></div>
                     <div className="mt-7 flex items-end justify-between"><div><p className="text-[9px] font-bold uppercase tracking-[.13em] text-[#89969a]">Portfolio weight</p><p className="mt-1 font-serif text-3xl font-bold">{pct(row.portfolio_weight)}</p></div><p className="text-sm font-semibold">{money(row.value_usd)}</p></div>
                     <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-[#e3ebe8]"><div className="h-full rounded-full bg-gradient-to-r from-[#2aa19d] to-[#d09a5f]" style={{ width: `${Math.min(Number(row.portfolio_weight || 0) * 7, 100)}%` }} /></div>
+                    <div className="mt-4 grid grid-cols-2 gap-3 rounded-2xl bg-[#f2f6f4] p-3 text-[10px]"><div><span className="block uppercase tracking-[.1em] text-[#8a979b]">Previous weight</span><strong className="mt-1 block text-xs text-[#284751]">{change ? pct(change.previous_weight) : '--'}</strong></div><div><span className="block uppercase tracking-[.1em] text-[#8a979b]">Weight change</span><strong className={`mt-1 block text-xs ${Number(change?.weight_change || 0) >= 0 ? 'text-emerald-700' : 'text-rose-700'}`}>{change ? `${Number(change.weight_change || 0) >= 0 ? '+' : ''}${pct(change.weight_change)}` : '--'}</strong></div></div>
                     <div className="mt-5 flex items-center justify-between border-t border-[#e7eeeb] pt-4 text-[10px] font-bold uppercase tracking-[.08em] text-[#5a6e74]"><span>Open manager portfolio</span><ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" /></div>
                   </Link>
                 </motion.div>
