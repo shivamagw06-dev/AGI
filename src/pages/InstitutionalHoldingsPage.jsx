@@ -35,6 +35,7 @@ import {
 } from '@/lib/institutionalHoldingsApi';
 import InstitutionalManagerExplorer from '@/components/Research/InstitutionalManagerExplorer';
 import InstitutionalIntelligenceWorkbench from '@/components/Research/InstitutionalIntelligenceWorkbench';
+import InstitutionalResearchLayer from '@/components/Research/InstitutionalResearchLayer';
 import './institutionalHoldingsTheme.css';
 
 const FUND_BRANDS = {
@@ -377,6 +378,7 @@ function OverviewPage() {
           <>
             <MarketIntelligencePanel data={data} />
             <InstitutionalIntelligenceWorkbench />
+            <InstitutionalResearchLayer />
 
             <section id="funds" className="pt-14">
               <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">

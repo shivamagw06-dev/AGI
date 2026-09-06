@@ -15,6 +15,11 @@ import {
   clearInstitutionalDecisionIntelligenceCache,
   getInstitutionalDecisionIntelligence,
 } from '../services/institutionalDecisionIntelligenceService.js';
+import {
+  createInstitutionalGroup, createInstitutionalWatchlist, getInstitutionalResearchAdmin,
+  getInstitutionalResearchLayer, getInstitutionalWorkspace, markPersonalizedAlert,
+  refreshInstitutionalResearchLayer, reviewInstitutionalBrief, runInstitutionalBacktest,
+} from '../services/institutionalResearchLayerService.js';
 
 async function requireAdmin(req, res, next) {
   try {
@@ -32,6 +37,20 @@ async function requireAdmin(req, res, next) {
   } catch {
     return res.status(401).json({ error: 'Authorization failed' });
   }
+}
+
+async function requireUser(req, res, next) {
+  try {
+    const token = String(req.headers.authorization || '').replace(/^Bearer\s+/i, '');
+    const url = String(process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '').replace(/\/$/, '');
+    const key = String(process.env.SUPABASE_SERVICE_ROLE_KEY || '');
+    if (!token || !url || !key) return res.status(401).json({ error: 'Sign in to use your institutional workspace.' });
+    const response = await fetch(`${url}/auth/v1/user`, { headers: { apikey: key, Authorization: `Bearer ${token}` } });
+    const user = await response.json();
+    if (!response.ok || !user?.id) return res.status(401).json({ error: 'Your session has expired. Sign in again.' });
+    req.authUser = user;
+    return next();
+  } catch { return res.status(401).json({ error: 'Authorization failed' }); }
 }
 
 function sendError(res, error, status = 503) {
@@ -107,6 +126,12 @@ export default function createInstitutionalHoldingsRouter() {
       return sendError(res, error);
     }
   });
+  router.get('/research-layer', async (_req, res) => { try { return res.json(await getInstitutionalResearchLayer()); } catch (error) { return sendError(res, error); } });
+  router.post('/backtests', async (req, res) => { try { return res.json(await runInstitutionalBacktest(req.body || {})); } catch (error) { return sendError(res, error, 400); } });
+  router.get('/workspace', requireUser, async (req, res) => { try { return res.json(await getInstitutionalWorkspace(req.authUser.id)); } catch (error) { return sendError(res, error); } });
+  router.post('/workspace/groups', requireUser, async (req, res) => { try { return res.json(await createInstitutionalGroup(req.authUser.id, req.body || {})); } catch (error) { return sendError(res, error, 400); } });
+  router.post('/workspace/watchlists', requireUser, async (req, res) => { try { return res.json(await createInstitutionalWatchlist(req.authUser.id, req.body || {})); } catch (error) { return sendError(res, error, 400); } });
+  router.patch('/workspace/alerts/:id', requireUser, async (req, res) => { try { return res.json(await markPersonalizedAlert(req.authUser.id, req.params.id, req.body?.is_read !== false)); } catch (error) { return sendError(res, error, 400); } });
   router.get('/funds/:slug', async (req, res) => { try { const data = await getInstitutionalFund(req.params.slug); return data ? res.json(data) : res.status(404).json({ error: 'Tracked fund not found' }); } catch (error) { return sendError(res, error); } });
   router.get('/stocks/:key', async (req, res) => { try { const data = await getInstitutionalStock(req.params.key); return data ? res.json(data) : res.status(404).json({ error: 'No tracked fund currently holds this security' }); } catch (error) { return sendError(res, error); } });
   router.get('/admin', requireAdmin, async (_req, res) => { try { return res.json(await getInstitutionalAdmin()); } catch (error) { return sendError(res, error); } });
@@ -116,5 +141,8 @@ export default function createInstitutionalHoldingsRouter() {
   router.post('/admin/security-mappings', requireAdmin, async (req, res) => { try { const data = await saveSecurityMapping({ ...req.body, actor: req.adminUser?.email || 'admin' }); rebuildOverviewCache(); return res.json(data); } catch (error) { return sendError(res, error, 400); } });
   router.patch('/admin/managers/:id', requireAdmin, async (req, res) => { try { const data = await updateInstitutionalManager(req.params.id, req.body || {}, req.adminUser?.email || 'admin'); rebuildOverviewCache(); return res.json(data); } catch (error) { return sendError(res, error, 400); } });
   router.patch('/admin/alerts/:id', requireAdmin, async (req, res) => { try { return res.json(await markInstitutionalAlert(req.params.id, req.body?.is_read !== false)); } catch (error) { return sendError(res, error, 400); } });
+  router.get('/admin/research-layer', requireAdmin, async (_req, res) => { try { return res.json(await getInstitutionalResearchAdmin()); } catch (error) { return sendError(res, error); } });
+  router.post('/admin/research-layer/refresh', requireAdmin, async (req, res) => { try { return res.json(await refreshInstitutionalResearchLayer(req.body || {})); } catch (error) { return sendError(res, error, 400); } });
+  router.patch('/admin/research-layer/briefs/:id', requireAdmin, async (req, res) => { try { return res.json(await reviewInstitutionalBrief(req.params.id, { ...(req.body || {}), reviewer: req.adminUser?.email || 'admin' })); } catch (error) { return sendError(res, error, 400); } });
   return router;
 }
