@@ -121,3 +121,54 @@ test('a manual mapping is scoped to its interval, not stamped on every filing', 
   assert.match(fn, /order\('report_date', \{ ascending: true \}\)/,
     'the interval must default to the earliest observation, not to 1900');
 });
+
+// ---------------------------------------------------------------------------
+// The runner
+// ---------------------------------------------------------------------------
+
+test('the backfill writes nothing unless asked', () => {
+  // A bulk write of thousands of identifier mappings deserves to be read
+  // first, the same way the amendment repair does.
+  const script = readFileSync(new URL('../scripts/backfillIdentifiers.mjs', import.meta.url), 'utf8');
+  assert.match(script, /const APPLY = args\.includes\('--apply'\)/,
+    'writing must be opt-in');
+  assert.match(script, /nothing will be written/,
+    'a dry run must say so plainly');
+
+  const svc = readFileSync(new URL('./institutionalHoldingsService.js', import.meta.url), 'utf8');
+  const fn = /export async function runIdentifierBackfill[\s\S]*?\n}/.exec(svc)?.[0];
+  assert.ok(fn, 'runIdentifierBackfill is gone');
+  // The anchor must be asserted before slicing on it. A first version did not:
+  // when the mutation deleted `if (!apply)`, indexOf returned -1, the slice came
+  // back empty, and "no write call in an empty string" passed trivially.
+  const guardAt = fn.indexOf('if (!apply)');
+  assert.notEqual(guardAt, -1, 'the dry-run guard is gone, so every run writes');
+  const dryBranch = fn.slice(guardAt, fn.indexOf('const outcome'));
+  assert.ok(dryBranch.length > 40, 'the dry-run branch is empty; the slice anchors have moved');
+  assert.equal(/enrichSecurityIdentifiers/.test(dryBranch), false,
+    'the dry-run branch must not call the routine that writes');
+});
+
+test('the backfill reports coverage either side of itself', () => {
+  const svc = readFileSync(new URL('./institutionalHoldingsService.js', import.meta.url), 'utf8');
+  const fn = /export async function runIdentifierBackfill[\s\S]*?\n}/.exec(svc)?.[0];
+  assert.match(fn, /coverage_before/, 'a claim about coverage must be traceable to a measurement');
+  assert.match(fn, /coverage_after/);
+  assert.match(fn, /const before = await measure\(\)/,
+    'the before measurement must be taken before anything is written');
+});
+
+test('the runner refuses to start without credentials', () => {
+  const script = readFileSync(new URL('../scripts/backfillIdentifiers.mjs', import.meta.url), 'utf8');
+  const check = script.indexOf('SUPABASE_SERVICE_ROLE_KEY');
+  const work = script.indexOf('await runIdentifierBackfill');
+  assert.ok(check !== -1 && check < work,
+    'credentials must be checked before any vendor call, or a config error spends the rate budget');
+  assert.match(script, /process\.exit\(78\)/, 'a configuration failure should be distinguishable from a data one');
+});
+
+test('the limit is clamped', () => {
+  const script = readFileSync(new URL('../scripts/backfillIdentifiers.mjs', import.meta.url), 'utf8');
+  assert.match(script, /Math\.min\(Math\.max\(Number\(flag\('limit'/,
+    'an unbounded limit would page the whole holdings table into memory');
+});

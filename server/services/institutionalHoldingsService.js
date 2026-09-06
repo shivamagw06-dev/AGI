@@ -7,7 +7,7 @@ const SEC_ROOT = 'https://www.sec.gov';
 const SEC_DATA = 'https://data.sec.gov';
 import { scheduleSecRequest, recordThrottled, recordSuccess, parseRetryAfter, SecCircuitOpenError } from './secRateLimiter.js';
 import { resolveAsOf } from './securityIdentity.js';
-import { mappingFromLookup, rankUnmapped } from './identifierBackfill.js';
+import { coverage, mappingFromLookup, rankUnmapped } from './identifierBackfill.js';
 
 const SEC_USER_AGENT = (process.env.SEC_USER_AGENT || 'AGI Institutional Research research@agarwalglobalinvestments.com').trim();
 const OPENFIGI_URL = 'https://api.openfigi.com/v3/mapping';
@@ -1679,4 +1679,75 @@ export async function getRepairStatus() {
       error: error.message,
     };
   }
+}
+
+/**
+ * Run identifier enrichment as a job rather than as a tail on collection.
+ *
+ * enrichSecurityIdentifiers is invoked after every refresh with a modest limit,
+ * which keeps a healthy table healthy and will never close a gap of roughly
+ * ninety per cent. This is the same routine with the limit under the caller's
+ * control, plus a measurement either side so the effect is a figure rather than
+ * an impression.
+ *
+ * `apply` false resolves nothing and writes nothing: it reports which
+ * securities would be attempted and in what order. A bulk write of thousands of
+ * mappings deserves to be looked at first.
+ */
+export async function runIdentifierBackfill({ limit = 500, apply = false } = {}) {
+  const client = db();
+
+  const measure = async () => {
+    const [{ count: total }, { count: mapped }] = await Promise.all([
+      client.from('institutional_holdings').select('id', { count: 'exact', head: true }),
+      client.from('institutional_holdings').select('id', { count: 'exact', head: true }).not('ticker', 'is', null),
+    ]);
+    return coverage({ total: total || 0, mapped: mapped || 0 });
+  };
+
+  const before = await measure();
+
+  // The same ranked, evidence-anchored candidate list the inline enrichment
+  // uses, so a dry run shows exactly what an applied run would attempt.
+  const scanLimit = Math.min(limit * 25, 25_000);
+  const { data: unresolvedRows, error } = await client
+    .from('institutional_holdings')
+    .select('cusip,issuer_name,value_usd,report_date')
+    .is('ticker', null)
+    .order('value_usd', { ascending: false })
+    .limit(scanLimit);
+  if (error) throw new Error(error.message);
+
+  const candidates = rankUnmapped(unresolvedRows || [], limit);
+
+  if (!apply) {
+    return {
+      applied: false,
+      coverage_before: before,
+      coverage_after: before,
+      candidates: candidates.length,
+      sample: candidates.slice(0, 15).map((row) => ({
+        cusip: row.cusip,
+        issuer_name: row.issuer_name,
+        observed_from: row.observed_from,
+        disclosed_value_usd: Math.round(row.value),
+        reported_by: row.observations,
+      })),
+      mapped: 0,
+      unresolved: 0,
+      errors: [],
+    };
+  }
+
+  const outcome = await enrichSecurityIdentifiers(client, limit);
+  const after = await measure();
+
+  return {
+    applied: true,
+    coverage_before: before,
+    coverage_after: after,
+    candidates: candidates.length,
+    sample: [],
+    ...outcome,
+  };
 }
