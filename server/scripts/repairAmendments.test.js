@@ -124,11 +124,43 @@ test('removals are measured against the rows stored today', () => {
   const preview = /export async function previewFilingRepair[\s\S]*?\n}/.exec(service)?.[0];
   assert.match(preview, /currentRows/,
     'removals must be computed against what is stored now - that is what a client sees and what would disappear');
-  assert.match(preview, /const removed = currentRows\.filter/,
-    'removed must be derived from the current rows, not from the prior version');
+  assert.match(preview, /const goingAway = currentRows\.filter/,
+    'what disappears must be derived from the rows stored now, not from the prior version');
 });
 
 test('the report refuses to print counts that do not reconcile', () => {
   assert.match(code, /do not reconcile/,
     'a report that prints "0 removed" beside a 257-row drop invites someone to trust the smaller number');
+});
+
+test('a restated row is not reported as a divestment', () => {
+  // filingKey is cusip|class|shareType|putCall and carries no value, so a
+  // restatement that re-reports the same security with corrected figures drops
+  // the old row and adds a new one. At row level that looks exactly like a sale.
+  //
+  // H&H International's Q4-2024 restatement is the case: the report named
+  // APPLE, BERKSHIRE, ALPHABET, PDD and OCCIDENTAL as removed when all five are
+  // in the amendment SEC filed. A reviewer reading that would refuse to approve
+  // the repair, and would be right to.
+  const service = readFileSync(
+    new URL('../services/institutionalHoldingsService.js', import.meta.url), 'utf8');
+  const preview = /export async function previewFilingRepair[\s\S]*?\n}/.exec(service)?.[0];
+  assert.ok(preview, 'previewFilingRepair is gone');
+
+  assert.match(preview, /survivingSecurities/,
+    'removals must be judged on whether the SECURITY survives, not whether the row key does');
+  assert.match(preview, /const superseded = goingAway\.filter/,
+    'rows replaced by a restated version of the same security must be reported separately');
+
+  // The two sets must be disjoint and cover everything that goes away.
+  assert.match(preview, /const removed = goingAway\.filter\(\s*\n?\s*\(row\) => !survivingSecurities/,
+    'removed must be the complement of superseded over the same set');
+});
+
+test('the report names divestments and only counts restatements', () => {
+  assert.match(code, /divested:/, 'genuine divestments must be named');
+  assert.match(code, /restated in place/,
+    'restated rows must be summarised, not listed as if the position were sold');
+  assert.match(code, /positions divested:/, 'the totals must distinguish the two');
+  assert.match(code, /rows restated:/);
 });
