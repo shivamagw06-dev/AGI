@@ -5,6 +5,7 @@ const navItems = [
   { title: "Markets", href: "/markets/stocks" },
   { title: "Economy", href: "/economy" },
   { title: "Companies", href: "/companies" },
+  { title: "Hedge Funds", href: "/institutional-holdings" },
   { title: "Business", href: "/business" },
   { title: "Insights", href: "/sections/research-notes" },
   { title: "About", href: "/about" },
