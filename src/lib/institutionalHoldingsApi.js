@@ -24,6 +24,8 @@ async function request(path, { method = 'GET', body, admin = false, auth = false
 }
 
 export const getInstitutionalOverview = () => request('/overview');
+export const searchInstitutionalSecurities = (q, limit = 8) =>
+  request(`/securities/search?q=${encodeURIComponent(q)}&limit=${limit}`);
 export const getInstitutionalDecisionIntelligence = () => request('/decision-intelligence');
 export const getInstitutionalResearchLayer = () => request('/research-layer');
 export const runInstitutionalBacktest = (body) => request('/backtests', { method: 'POST', body, timeoutMs: 600_000 });

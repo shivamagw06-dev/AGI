@@ -25,6 +25,7 @@ import {
   clearScreenerCache, evaluateFundPerformance, getAccumulationHeatMap,
   getCombinedHoldings, screenStocks,
 } from '../services/institutionalScreenerService.js';
+import { searchSecurities } from '../services/institutionalSecuritySearch.js';
 
 async function requireAdmin(req, res, next) {
   try {
@@ -112,6 +113,21 @@ function rebuildOverviewCache() {
 export default function createInstitutionalHoldingsRouter() {
   const router = Router();
   rebuildOverviewCache();
+  // Public, and cheap: the index is built once every fifteen minutes and every
+  // query is answered from memory. Deliberately not admin-gated - it is the
+  // front door of the page, and it returns only issuer names and tickers that
+  // are already printed on the page below it.
+  router.get('/securities/search', async (req, res) => {
+    try {
+      const term = String(req.query.q || '').slice(0, 64);
+      const limit = Math.min(Math.max(Number(req.query.limit) || 8, 1), 20);
+      if (term.trim().length < 2) return res.json({ results: [] });
+      return res.json({ results: await searchSecurities(term, limit) });
+    } catch (error) {
+      return sendError(res, error);
+    }
+  });
+
   router.get('/overview', async (_req, res) => {
     try {
       const { data, cacheStatus } = await getCachedInstitutionalOverview();
