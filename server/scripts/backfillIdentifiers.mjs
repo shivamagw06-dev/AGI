@@ -53,12 +53,17 @@ try {
   console.log(`\n[identifiers] coverage before: ${pct(result.coverage_before)}`);
 
   if (!result.applied) {
-    console.log(`[identifiers] ${result.candidates} security(ies) would be attempted, highest disclosed value first:\n`);
+    console.log(`[identifiers] ${result.candidates} security(ies) would be attempted,`
+      + ' ranked by value summed across every manager-quarter observed.');
+    console.log('[identifiers] "latest" is the most recent quarter\'s disclosed value;'
+      + ' "obs" is manager-quarter rows, which is why it exceeds the manager count.\n');
     for (const row of result.sample) {
-      console.log(`  ${row.cusip}  ${String(row.issuer_name || '—').slice(0, 38).padEnd(38)}`
-        + `  $${(row.disclosed_value_usd / 1e6).toFixed(1)}M`
-        + `  ${row.reported_by} manager(s)`
-        + `  seen from ${row.observed_from || '?'}`);
+      const m = (v) => `$${(v / 1e6).toFixed(0)}M`;
+      console.log(`  ${row.cusip}  ${String(row.issuer_name || '—').slice(0, 34).padEnd(34)}`
+        + `  ${m(row.latest_value_usd).padStart(9)} latest`
+        + `  ${String(row.managers).padStart(3)} mgr`
+        + `  ${String(row.observations).padStart(4)} obs`
+        + `  since ${row.observed_from || '?'}`);
     }
     if (result.candidates > result.sample.length) {
       console.log(`  ... and ${result.candidates - result.sample.length} more`);

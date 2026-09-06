@@ -64,7 +64,7 @@ test('the largest disclosed value is resolved first', () => {
   // changes the most numbers.
   const ranked = rankUnmapped(UNMAPPED);
   assert.equal(ranked[0].cusip, 'BIG');
-  assert.equal(ranked[0].value, 1_700_000_000, 'value is summed across observations');
+  assert.equal(ranked[0].cumulative_value, 1_700_000_000, 'cumulative value sums every observation');
   assert.equal(ranked.at(-1).cusip, 'TINY');
 });
 
@@ -75,15 +75,33 @@ test('each ranked entry carries the earliest date it was seen', () => {
   assert.equal(big.observations, 2);
 });
 
-test('breadth breaks a tie on value', () => {
+test('breadth breaks a tie on value, and breadth means managers', () => {
+  // The fixture used to give MANY three quarters from one manager and call that
+  // breadth. Three quarters of a single holding is persistence; breadth is
+  // several managers reaching the same conclusion independently.
   const rows = [
-    { cusip: 'ONE', value_usd: 300, report_date: '2024-03-31' },
-    { cusip: 'MANY', value_usd: 100, report_date: '2024-03-31' },
-    { cusip: 'MANY', value_usd: 100, report_date: '2024-06-30' },
-    { cusip: 'MANY', value_usd: 100, report_date: '2024-09-30' },
+    { cusip: 'ONE',  manager_id: 'm1', value_usd: 300, report_date: '2024-03-31' },
+    { cusip: 'MANY', manager_id: 'm1', value_usd: 100, report_date: '2024-03-31' },
+    { cusip: 'MANY', manager_id: 'm2', value_usd: 100, report_date: '2024-03-31' },
+    { cusip: 'MANY', manager_id: 'm3', value_usd: 100, report_date: '2024-03-31' },
   ];
   const ranked = rankUnmapped(rows);
-  assert.equal(ranked[0].cusip, 'MANY', 'equal value, more managers reporting it');
+  assert.equal(ranked[0].cusip, 'MANY', 'equal value, three managers against one');
+  assert.equal(ranked[0].managers, 3);
+  assert.equal(ranked[1].managers, 1);
+});
+
+test('many quarters from one manager is not breadth', () => {
+  const rows = [
+    { cusip: 'WIDE', manager_id: 'a', value_usd: 100, report_date: '2024-03-31' },
+    { cusip: 'WIDE', manager_id: 'b', value_usd: 100, report_date: '2024-03-31' },
+    { cusip: 'DEEP', manager_id: 'z', value_usd: 100, report_date: '2024-03-31' },
+    { cusip: 'DEEP', manager_id: 'z', value_usd: 100, report_date: '2024-06-30' },
+  ];
+  const ranked = rankUnmapped(rows);
+  assert.equal(ranked.find((r) => r.cusip === 'WIDE').managers, 2);
+  assert.equal(ranked.find((r) => r.cusip === 'DEEP').managers, 1);
+  assert.equal(ranked.find((r) => r.cusip === 'DEEP').observations, 2);
 });
 
 test('the limit is honoured', () => {
@@ -171,4 +189,62 @@ test('the limit is clamped', () => {
   const script = readFileSync(new URL('../scripts/backfillIdentifiers.mjs', import.meta.url), 'utf8');
   assert.match(script, /Math\.min\(Math\.max\(Number\(flag\('limit'/,
     'an unbounded limit would page the whole holdings table into memory');
+});
+
+// ---------------------------------------------------------------------------
+// The report has to say what each number is
+// ---------------------------------------------------------------------------
+
+test('the manager count is distinct managers, not rows', () => {
+  // The dry run reported "52 manager(s)" for Invesco QQQ. That was the row
+  // count: five managers over eleven quarters reads as fifty-five.
+  const rows = [
+    { cusip: 'Q', manager_id: 'm1', value_usd: 100, report_date: '2024-03-31' },
+    { cusip: 'Q', manager_id: 'm1', value_usd: 100, report_date: '2024-06-30' },
+    { cusip: 'Q', manager_id: 'm1', value_usd: 100, report_date: '2024-09-30' },
+    { cusip: 'Q', manager_id: 'm2', value_usd: 100, report_date: '2024-09-30' },
+  ];
+  const [entry] = rankUnmapped(rows);
+  assert.equal(entry.managers, 2, 'two managers');
+  assert.equal(entry.observations, 4, 'four manager-quarter rows');
+});
+
+test('the latest value is one quarter, not the sum of all of them', () => {
+  // "$850,609.3M" for QQQ was every quarter added together, presented as a
+  // holding. That is more than the fund contains.
+  const rows = [
+    { cusip: 'Q', manager_id: 'm1', value_usd: 1000, report_date: '2023-03-31' },
+    { cusip: 'Q', manager_id: 'm1', value_usd: 2000, report_date: '2024-03-31' },
+    { cusip: 'Q', manager_id: 'm2', value_usd: 500,  report_date: '2024-03-31' },
+  ];
+  const [entry] = rankUnmapped(rows);
+  assert.equal(entry.cumulative_value, 3500, 'the ranking figure sums everything');
+  assert.equal(entry.latest_value, 2500, 'the latest quarter is m1 plus m2 in that quarter');
+  assert.equal(entry.latest_date, '2024-03-31');
+});
+
+test('a single-quarter security reports the same figure twice, and says so', () => {
+  const rows = [{ cusip: 'X', manager_id: 'm1', value_usd: 900, report_date: '2025-06-30' }];
+  const [entry] = rankUnmapped(rows);
+  assert.equal(entry.cumulative_value, 900);
+  assert.equal(entry.latest_value, 900);
+});
+
+test('the query selects what the count needs', () => {
+  // Counting distinct managers is impossible without manager_id, and the first
+  // version reported the row count because it had nothing else.
+  const svc = readFileSync(new URL('./institutionalHoldingsService.js', import.meta.url), 'utf8');
+  const selects = [...svc.matchAll(/\.select\('cusip,issuer_name,value_usd[^']*'\)/g)].map((m) => m[0]);
+  assert.ok(selects.length >= 1, 'the unmapped-holdings query is gone');
+  for (const select of selects) {
+    assert.match(select, /manager_id/, `${select} cannot count distinct managers`);
+  }
+});
+
+test('the printed report names each figure', () => {
+  const script = readFileSync(new URL('../scripts/backfillIdentifiers.mjs', import.meta.url), 'utf8');
+  assert.match(script, /latest/, 'the value shown must be identified as the latest quarter');
+  assert.match(script, /obs/, 'observations must be distinguishable from managers');
+  assert.match(script, /manager-quarter/,
+    'the report must explain why observations exceed managers, or the reader assumes a bug');
 });
