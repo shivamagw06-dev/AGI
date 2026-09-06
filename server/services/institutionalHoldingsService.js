@@ -595,6 +595,7 @@ async function enrichSecurityIdentifiers(client, limit = 1000) {
   const batchSize = OPENFIGI_API_KEY ? 100 : 5;
   const mappings = [];
   const errors = [];
+  let applied = 0;
   for (let index = 0; index < unique.length; index += batchSize) {
     const batch = unique.slice(index, index + batchSize);
     try {
@@ -624,8 +625,44 @@ async function enrichSecurityIdentifiers(client, limit = 1000) {
   if (mappings.length) {
     const { error } = await client.from('security_identifier_history').upsert(mappings, { onConflict: 'cusip,valid_from' });
     if (error) throw error;
+
+    // Apply each mapping to the holdings it covers.
+    //
+    // Writing the mapping table alone changed nothing anyone can see: the
+    // search index, consensus, sector weights and every price lookup read
+    // institutional_holdings.ticker, which stayed null. A run could report
+    // "mapped 209" while coverage sat unmoved at 9.93%, because the two
+    // numbers were measuring different tables.
+    //
+    // Scoped to each mapping's validity window rather than applied to every
+    // row for the CUSIP. That is the same discipline as resolution: a mapping
+    // that began in 2023 says nothing about a 2019 filing.
+    //
+    // One statement per security, so a slow one names itself instead of
+    // taking a batch of two hundred down with it.
+    for (const mapping of mappings) {
+      try {
+        let update = client.from('institutional_holdings')
+          .update({ ticker: mapping.ticker })
+          .eq('cusip', mapping.cusip)
+          .is('ticker', null)
+          .gte('report_date', mapping.valid_from);
+        if (mapping.valid_to) update = update.lt('report_date', mapping.valid_to);
+        const { error: applyError } = await update;
+        if (applyError) throw new Error(applyError.message);
+        applied += 1;
+      } catch (applyError) {
+        errors.push(`applying ${mapping.cusip}: ${applyError.message}`);
+      }
+    }
   }
-  return { attempted: unique.length, mapped: mappings.length, unresolved: Math.max(0, unique.length - mappings.length), errors: [...new Set(errors)] };
+  return {
+    attempted: unique.length,
+    mapped: mappings.length,
+    applied,
+    unresolved: Math.max(0, unique.length - mappings.length),
+    errors: [...new Set(errors)],
+  };
 }
 
 async function mapWithConcurrency(items, concurrency, worker) {
@@ -1697,6 +1734,23 @@ export async function getRepairStatus() {
 export async function runIdentifierBackfill({ limit = 500, apply = false } = {}) {
   const client = db();
 
+  // Each phase announces itself. The first apply run died with "canceling
+  // statement due to statement timeout" after 124 seconds and there was no way
+  // to tell which statement: the coverage count, the candidate scan, the vendor
+  // upsert, or the holdings update. Naming the phase costs one line of log and
+  // saves guessing.
+  const phase = async (name, work) => {
+    const at = Date.now();
+    try {
+      const value = await work();
+      console.info(`[identifiers] ${name}: ${((Date.now() - at) / 1000).toFixed(1)}s`);
+      return value;
+    } catch (error) {
+      console.error(`[identifiers] ${name} failed after ${((Date.now() - at) / 1000).toFixed(1)}s: ${error.message}`);
+      throw error;
+    }
+  };
+
   const measure = async () => {
     const [{ count: total }, { count: mapped }] = await Promise.all([
       client.from('institutional_holdings').select('id', { count: 'exact', head: true }),
@@ -1705,20 +1759,23 @@ export async function runIdentifierBackfill({ limit = 500, apply = false } = {})
     return coverage({ total: total || 0, mapped: mapped || 0 });
   };
 
-  const before = await measure();
+  const before = await phase('coverage before', measure);
 
   // The same ranked, evidence-anchored candidate list the inline enrichment
   // uses, so a dry run shows exactly what an applied run would attempt.
   const scanLimit = Math.min(limit * 25, 25_000);
-  const { data: unresolvedRows, error } = await client
-    .from('institutional_holdings')
-    .select('cusip,issuer_name,value_usd,report_date,manager_id')
-    .is('ticker', null)
-    .order('value_usd', { ascending: false })
-    .limit(scanLimit);
-  if (error) throw new Error(error.message);
+  const unresolvedRows = await phase('candidate scan', async () => {
+    const { data, error } = await client
+      .from('institutional_holdings')
+      .select('cusip,issuer_name,value_usd,report_date,manager_id')
+      .is('ticker', null)
+      .order('value_usd', { ascending: false })
+      .limit(scanLimit);
+    if (error) throw new Error(error.message);
+    return data || [];
+  });
 
-  const candidates = rankUnmapped(unresolvedRows || [], limit);
+  const candidates = rankUnmapped(unresolvedRows, limit);
 
   if (!apply) {
     return {
@@ -1745,8 +1802,8 @@ export async function runIdentifierBackfill({ limit = 500, apply = false } = {})
     };
   }
 
-  const outcome = await enrichSecurityIdentifiers(client, limit);
-  const after = await measure();
+  const outcome = await phase('resolve and apply', () => enrichSecurityIdentifiers(client, limit));
+  const after = await phase('coverage after', measure);
 
   return {
     applied: true,
