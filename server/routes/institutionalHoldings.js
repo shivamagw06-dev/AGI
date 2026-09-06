@@ -20,6 +20,10 @@ import {
   getInstitutionalResearchLayer, getInstitutionalWorkspace, markPersonalizedAlert,
   refreshInstitutionalResearchLayer, reviewInstitutionalBrief, runInstitutionalBacktest,
 } from '../services/institutionalResearchLayerService.js';
+import {
+  clearScreenerCache, evaluateFundPerformance, getAccumulationHeatMap,
+  getCombinedHoldings, screenStocks,
+} from '../services/institutionalScreenerService.js';
 
 async function requireAdmin(req, res, next) {
   try {
@@ -126,6 +130,41 @@ export default function createInstitutionalHoldingsRouter() {
       return sendError(res, error);
     }
   });
+  // Combined holdings, the screener and the heat map are arithmetic over filed
+  // positions and need no price data, so they work on today's coverage. The
+  // performance evaluator does need prices and reports its own coverage rather
+  // than ranking managers on partial data.
+  router.get('/combined-holdings', async (req, res) => {
+    try {
+      const ids = String(req.query.managers || '').split(',').map((v) => v.trim()).filter(Boolean);
+      return res.json(await getCombinedHoldings({
+        managerIds: ids.length ? ids : null, limit: req.query.limit,
+      }));
+    } catch (error) { return sendError(res, error); }
+  });
+
+  router.get('/screener', async (req, res) => {
+    try {
+      const q = req.query || {};
+      return res.json(await screenStocks({
+        min_holders: q.min_holders, max_holders: q.max_holders,
+        min_new_buyers: q.min_new_buyers, min_increased: q.min_increased,
+        has_exits: q.has_exits, ticker_resolved: q.ticker_resolved,
+        search: q.search, sort: q.sort, limit: q.limit,
+      }));
+    } catch (error) { return sendError(res, error); }
+  });
+
+  router.get('/heat-map', async (req, res) => {
+    try { return res.json(await getAccumulationHeatMap({ limit: req.query.limit })); }
+    catch (error) { return sendError(res, error); }
+  });
+
+  router.get('/fund-performance', async (_req, res) => {
+    try { return res.json(await evaluateFundPerformance({})); }
+    catch (error) { return sendError(res, error); }
+  });
+
   router.get('/research-layer', async (_req, res) => { try { return res.json(await getInstitutionalResearchLayer()); } catch (error) { return sendError(res, error); } });
   router.post('/backtests', async (req, res) => { try { return res.json(await runInstitutionalBacktest(req.body || {})); } catch (error) { return sendError(res, error, 400); } });
   router.get('/workspace', requireUser, async (req, res) => { try { return res.json(await getInstitutionalWorkspace(req.authUser.id)); } catch (error) { return sendError(res, error); } });
