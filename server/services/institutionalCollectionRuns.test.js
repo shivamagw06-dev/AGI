@@ -9,7 +9,7 @@
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { deriveStatus, summariseRefresh, nextScheduledAt } from './institutionalCollectionRuns.js';
+import { deriveStatus, summariseRefresh, nextScheduledAt } from './collectionRunSummary.js';
 
 test('a run where every manager succeeded is a success', () => {
   assert.equal(deriveStatus({ attempted: 51, succeeded: 51 }), 'success');

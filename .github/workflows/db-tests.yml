@@ -519,8 +519,11 @@ jobs:
         run: |
           set -euo pipefail
           sudo apt-get update -qq
+          # pgvector as well as pgTAP: supabase_shims.sql creates the vector
+          # extension, and it is shared with the job above, so a job that omits
+          # it fails on the shims rather than on anything it is testing.
           sudo apt-get install -y --no-install-recommends \
-            postgresql postgresql-contrib postgresql-16-pgtap
+            postgresql postgresql-contrib postgresql-16-pgtap postgresql-16-pgvector
           sudo pg_ctlcluster 16 main start || sudo systemctl start postgresql
           for i in $(seq 1 30); do pg_isready -h localhost -p 5432 && break; sleep 1; done
           pg_isready -h localhost -p 5432
