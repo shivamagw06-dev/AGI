@@ -976,18 +976,36 @@ const AGI_MARKET_INTEL = new Set([
 ]);
 
 // Mounted AGI routers (must never be forwarded to IndianAPI).
-const AGI_API_PREFIXES = new Set(['ui', 'intelligence', 'research']);
+//
+// This list was three entries while eleven routers were mounted, so an
+// unmatched path under the other eight fell through to the IndianAPI proxy and
+// came back as HTTP 200 with an "upstream_rate_limited" body. Four missing
+// institutional-holdings routes therefore looked like a third-party outage
+// rather than a routing mistake, and no monitor could tell the difference.
+//
+// Keeping it in sync by hand is what failed. Every router mounted under /api
+// belongs here; a new one added below without a line here reintroduces the
+// same disguise.
+const AGI_API_PREFIXES = new Set([
+  'auth', 'institutional-holdings', 'intelligence', 'market', 'newsletter',
+  'pe', 'public', 'research', 'research-signals', 'ui', 'upstox',
+]);
 
 // wildcard fallback (IndianAPI proxy only)
 reg('/api/:path(*)', (req, res) => {
   const path = req.params.path || '';
   const [head, ...rest] = path.split('/').filter(Boolean);
   if (AGI_API_PREFIXES.has(head)) {
-    return res.status(503).json({
-      error: 'AGI API route unavailable on this server build',
+    // A real 404. This path belongs to an AGI router that is mounted, so the
+    // route simply does not exist - forwarding it to IndianAPI would answer a
+    // question about AGI with someone else's data, and returning 200 would
+    // hide the mistake from every monitor watching status codes.
+    return res.status(404).json({
+      ok: false,
+      error: 'route_not_found',
       path: `/api/${path}`,
-      hint: 'Redeploy finance-news-backend from main so /api/ui, /api/intelligence, and /api/research/nifty500 are mounted.',
-      architecture: 'v1.0.1 LOCKED',
+      router: head,
+      hint: `No such route on the ${head} router. If it should exist, the build serving this request predates it.`,
     });
   }
   if (head === 'market' && AGI_MARKET_INTEL.has(rest[0])) {
