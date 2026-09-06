@@ -990,7 +990,7 @@ async function rebuildSignals(client) {
   return { funds: latest.size, stocks: consensus.length };
 }
 
-async function performInstitutionalRefresh({ managerSlug, quarters = 4 } = {}) {
+async function performInstitutionalRefresh({ managerSlug, quarters = 12 } = {}) {
   const client = db();
   const managerRows = await managers(client);
   const selected = managerSlug && managerSlug !== 'all' ? managerRows.filter((row) => row.slug === managerSlug) : managerRows;
@@ -1034,7 +1034,7 @@ let automationStarted = false;
 export function startInstitutionalHoldingsAutomation() {
   if (automationStarted || String(process.env.INSTITUTIONAL_AUTO_REFRESH || 'true').toLowerCase() === 'false') return;
   automationStarted = true;
-  const execute = () => refreshInstitutionalFilings({ managerSlug: 'all', quarters: 4 })
+  const execute = () => refreshInstitutionalFilings({ managerSlug: 'all', quarters: 12 })
     .then((result) => console.info(`[institutional-holdings] automatic refresh complete: ${result.results.filter((row) => row.ok).length}/${result.results.length} managers, ${result.enrichment.mapped} identifiers mapped`))
     .catch((error) => console.error('[institutional-holdings] automatic refresh failed:', error.message));
   const initial = setTimeout(execute, 15_000);

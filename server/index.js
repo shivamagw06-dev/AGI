@@ -20,6 +20,7 @@ import createArticleShareRouter from "./routes/articleShare.js";
 import createResearchSignalsRouter from "./routes/researchSignals.js";
 import createInstitutionalHoldingsRouter from "./routes/institutionalHoldings.js";
 import { startInstitutionalHoldingsAutomation } from "./services/institutionalHoldingsService.js";
+import { startInstitutionalResearchLayerAutomation } from "./services/institutionalResearchLayerService.js";
 import { getNewsHeadlines } from "./services/newsHeadlinesService.js";
 import { getIpoDetail, getIpoPlatform, getIpoSummary } from "./services/ipoService.js";
 import { getMarketContext } from "./services/marketContextService.js";
@@ -79,6 +80,7 @@ let server = app.listen(PORT, HOST, () => {
 });
 
 startInstitutionalHoldingsAutomation();
+startInstitutionalResearchLayerAutomation();
 
 process.on("uncaughtException", (err) => {
   console.error("[fatal] uncaughtException:", err?.stack || err);

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { AlertTriangle, CheckCircle2, Database, ExternalLink, FileClock, Landmark, Loader2, RefreshCw, Save, Search, ShieldCheck } from 'lucide-react';
 import { getInstitutionalAdmin, markInstitutionalAlert, previewInstitutionalImport, publishInstitutionalImport, refreshInstitutionalFilings, saveInstitutionalSecurityMapping, updateInstitutionalManager } from '@/lib/institutionalHoldingsApi';
+import InstitutionalResearchLayerAdmin from '@/components/admin/InstitutionalResearchLayerAdmin';
 
 function Pill({ children, tone = 'slate' }) {
   const styles = { slate: 'bg-slate-100 text-slate-600', green: 'bg-emerald-50 text-emerald-700', amber: 'bg-amber-50 text-amber-700', red: 'bg-rose-50 text-rose-700' };
@@ -114,7 +115,7 @@ export default function InstitutionalHoldingsAdmin() {
   const [selectedId, setSelectedId] = useState('');
   const [managerDraft, setManagerDraft] = useState({});
   const [refreshTarget, setRefreshTarget] = useState('all');
-  const [quarters, setQuarters] = useState(4);
+  const [quarters, setQuarters] = useState(12);
   const [mapping, setMapping] = useState({ cusip: '', ticker: '', issuer_name: '', reason: '' });
   const [query, setQuery] = useState('');
   const [working, setWorking] = useState('');
@@ -148,6 +149,7 @@ export default function InstitutionalHoldingsAdmin() {
 
       <section className="mt-7 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">{[['Managers', data?.managers?.length || 0, Landmark], ['Filing versions', data?.filings?.length || 0, FileClock], ['Unresolved CUSIPs', data?.unresolved?.length || 0, Database], ['Unread alerts', data?.alerts?.filter((row) => !row.is_read).length || 0, ShieldCheck]].map(([label, value, Icon]) => <div key={label} className="rounded-xl border border-slate-200 bg-white p-5"><Icon className="h-5 w-5 text-amber-700" /><p className="mt-4 text-[10px] font-bold uppercase tracking-[.14em] text-slate-400">{label}</p><p className="mt-2 font-serif text-3xl font-bold text-[#102b3a]">{value}</p></div>)}</section>
 
+      <InstitutionalResearchLayerAdmin />
       <FilingImportDesk managers={data?.managers || []} onPublished={load} />
 
       <section className="mt-7 rounded-xl border border-slate-200 bg-white p-6"><div className="grid gap-5 lg:grid-cols-[1fr_180px_160px_auto] lg:items-end"><label className="text-xs font-bold text-slate-600">SEC manager<select value={refreshTarget} onChange={(event) => setRefreshTarget(event.target.value)} className="mt-2 w-full rounded-lg border border-slate-200 bg-white px-3 py-3 text-sm"><option value="all">All tracked managers</option>{data?.managers?.map((row) => <option key={row.id} value={row.slug}>{row.display_name}</option>)}</select></label><label className="text-xs font-bold text-slate-600">Historical quarters<input type="number" min="1" max="16" value={quarters} onChange={(event) => setQuarters(event.target.value)} className="mt-2 w-full rounded-lg border border-slate-200 px-3 py-3 text-sm" /></label><div><p className="text-xs font-bold text-slate-600">SEC identity header</p><Pill tone={data?.sec_user_agent_configured ? 'green' : 'amber'}>{data?.sec_user_agent_configured ? 'Configured' : 'Using default'}</Pill></div><button disabled={Boolean(working)} onClick={() => run('refresh', () => refreshInstitutionalFilings({ managerSlug: refreshTarget, quarters: Number(quarters) }), (result) => `${result.results?.filter((row) => row.ok).length || 0}/${result.results?.length || 0} managers refreshed and ${result.enrichment?.mapped || 0} identifiers mapped.`)} className="inline-flex items-center justify-center gap-2 rounded-lg bg-amber-700 px-5 py-3 text-sm font-bold text-white disabled:opacity-50">{working === 'refresh' ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />} Refresh and auto-map</button></div><p className="mt-4 text-xs leading-5 text-slate-500">All managers refresh automatically every 24 hours. The same workflow handles amendments, retries temporary SEC failures, maps CUSIPs to tickers and rebuilds client scores.</p></section>
