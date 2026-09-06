@@ -1134,11 +1134,16 @@ async function rebuildSignals(client) {
   return { funds: latest.size, stocks: consensus.length };
 }
 
-async function performInstitutionalRefresh({ managerSlug, quarters = 12, onManagerDone = null } = {}) {
+async function performInstitutionalRefresh({ managerSlug, quarters = 12, onManagerDone = null, onRoster = null } = {}) {
   const client = db();
   const managerRows = await managers(client);
   const selected = managerSlug && managerSlug !== 'all' ? managerRows.filter((row) => row.slug === managerSlug) : managerRows;
   if (!selected.length) throw new Error('Select a tracked manager.');
+  // Announced before any work, so a run that dies partway still knows how many
+  // managers it was supposed to cover. Without it the count of managers that
+  // finished is the only number available, and a truncated run reports itself
+  // as having covered everything it attempted.
+  if (onRoster) { try { onRoster(selected.length); } catch { /* telemetry must never break collection */ } }
   const results = await mapWithConcurrency(selected, 3, async (manager) => {
     await client.from('institutional_managers').update({ last_refresh_at: new Date().toISOString(), last_refresh_status: 'running', last_refresh_error: null }).eq('id', manager.id);
     try {

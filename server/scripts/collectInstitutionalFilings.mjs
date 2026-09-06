@@ -95,6 +95,7 @@ let refresh = null;
 // already committed - a record that says nothing happened is worse than no
 // record, because someone will believe it.
 const completed = [];
+let roster = 0;
 
 try {
   refresh = await Promise.race([
@@ -102,6 +103,7 @@ try {
       managerSlug,
       quarters,
       onManagerDone: (result) => completed.push(result),
+      onRoster: (count) => { roster = count; },
     }),
     ceiling,
   ]);
@@ -112,7 +114,7 @@ try {
 }
 
 // Prefer the complete result; fall back to what was observed finishing.
-const work = summariseRefresh(refresh || { results: completed });
+const work = summariseRefresh(refresh || { results: completed }, roster);
 if (!refresh && completed.length) {
   console.log(`[collector] cut short, but ${completed.length} manager(s) completed and were written`);
 }
@@ -122,6 +124,7 @@ const status = deriveStatus({
   succeeded: work.managersSucceeded,
   error: failureMessage,
   aborted,
+  roster: work.managersInRoster,
 });
 
 // The circuit tripping means the run was cut short to protect the address, so
@@ -144,7 +147,8 @@ await finishRun(runId, {
 });
 
 console.log(`[collector] status=${finalStatus} in ${elapsed()}s`);
-console.log(`[collector] managers: ${work.managersSucceeded}/${work.managersAttempted}, `
+console.log(`[collector] managers: ${work.managersSucceeded}/${work.managersInRoster || work.managersAttempted}`
+  + `${work.managersInRoster && work.managersSucceeded < work.managersInRoster ? ` (${work.managersInRoster - work.managersSucceeded} not reached)` : ''}, `
   + `filings: ${work.filingsIngested}, holdings rows: ${work.holdingsRows}, `
   + `amendments: ${work.amendmentsDetected}`);
 console.log(`[collector] sec requests: ${limiter.requests}, throttled: ${limiter.throttled}, `
