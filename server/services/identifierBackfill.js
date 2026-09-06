@@ -74,12 +74,40 @@ export function rankUnmapped(rows, limit = 500) {
     if (!cusip) continue;
     let entry = byCusip.get(cusip);
     if (!entry) {
-      entry = { cusip, issuer_name: row.issuer_name || null, value: 0, observations: 0, dates: [] };
+      entry = {
+        cusip,
+        issuer_name: row.issuer_name || null,
+        // Summed across every manager-quarter row, which is a ranking
+        // heuristic and not a holding. Reported under a name that says so:
+        // presented as "disclosed value" it read as though fifty-two managers
+        // held $850bn of QQQ, which is more than the fund has.
+        cumulative_value: 0,
+        // The latest quarter's value, which is what a position is actually
+        // worth now, and the figure worth eyeballing before writing a mapping.
+        latest_value: 0,
+        latest_date: null,
+        observations: 0,
+        managers: new Set(),
+        dates: [],
+      };
       byCusip.set(cusip, entry);
     }
-    entry.value += Number(row.value_usd) || 0;
+    const value = Number(row.value_usd) || 0;
+    const date = row.report_date ? String(row.report_date).slice(0, 10) : null;
+    entry.cumulative_value += value;
     entry.observations += 1;
-    if (row.report_date) entry.dates.push(row.report_date);
+    // Distinct managers. The count printed before was the row count, so a
+    // holding reported by five managers over eleven quarters read as fifty-five.
+    if (row.manager_id) entry.managers.add(row.manager_id);
+    if (date) {
+      entry.dates.push(date);
+      if (!entry.latest_date || date > entry.latest_date) {
+        entry.latest_date = date;
+        entry.latest_value = value;
+      } else if (date === entry.latest_date) {
+        entry.latest_value += value;
+      }
+    }
     if (!entry.issuer_name && row.issuer_name) entry.issuer_name = row.issuer_name;
   }
 
@@ -87,13 +115,16 @@ export function rankUnmapped(rows, limit = 500) {
     .map((entry) => ({
       cusip: entry.cusip,
       issuer_name: entry.issuer_name,
-      value: entry.value,
+      cumulative_value: entry.cumulative_value,
+      latest_value: entry.latest_value,
+      latest_date: entry.latest_date,
       observations: entry.observations,
+      managers: entry.managers.size,
       observed_from: earliestObservation(entry.dates.map((d) => ({ report_date: d }))),
     }))
-    // Value first, then how many managers reported it: a position several
-    // managers hold matters more than one large single holding.
-    .sort((a, b) => b.value - a.value || b.observations - a.observations)
+    // Cumulative value first, because a position held large across many
+    // quarters matters more than one that appeared once; then distinct managers.
+    .sort((a, b) => b.cumulative_value - a.cumulative_value || b.managers - a.managers)
     .slice(0, limit);
 }
 

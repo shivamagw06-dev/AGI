@@ -582,7 +582,7 @@ async function enrichSecurityIdentifiers(client, limit = 1000) {
   const scanLimit = Math.min(limit * 25, 25_000);
   const { data: unresolvedRows, error: unresolvedError } = await client
     .from('institutional_holdings')
-    .select('cusip,issuer_name,value_usd,report_date')
+    .select('cusip,issuer_name,value_usd,report_date,manager_id')
     .is('ticker', null)
     .order('value_usd', { ascending: false })
     .limit(scanLimit);
@@ -1712,7 +1712,7 @@ export async function runIdentifierBackfill({ limit = 500, apply = false } = {})
   const scanLimit = Math.min(limit * 25, 25_000);
   const { data: unresolvedRows, error } = await client
     .from('institutional_holdings')
-    .select('cusip,issuer_name,value_usd,report_date')
+    .select('cusip,issuer_name,value_usd,report_date,manager_id')
     .is('ticker', null)
     .order('value_usd', { ascending: false })
     .limit(scanLimit);
@@ -1730,8 +1730,14 @@ export async function runIdentifierBackfill({ limit = 500, apply = false } = {})
         cusip: row.cusip,
         issuer_name: row.issuer_name,
         observed_from: row.observed_from,
-        disclosed_value_usd: Math.round(row.value),
-        reported_by: row.observations,
+        // Named for what they are. The previous shape reported the cumulative
+        // sum as "disclosed value" and the row count as "managers", so QQQ read
+        // as fifty-two managers holding $850bn - more than the fund contains.
+        latest_value_usd: Math.round(row.latest_value),
+        latest_report_date: row.latest_date,
+        cumulative_value_usd: Math.round(row.cumulative_value),
+        managers: row.managers,
+        observations: row.observations,
       })),
       mapped: 0,
       unresolved: 0,
