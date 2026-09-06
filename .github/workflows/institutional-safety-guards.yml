@@ -39,6 +39,25 @@ jobs:
       - name: Assert the collection run record tells the truth
         run: node --test server/services/collectionRunSummary.test.js
 
+      # Runs against cover pages captured from real SEC filings. The previous
+      # implementation passed review and was inert against every filing SEC has
+      # ever published, which only real fixtures expose.
+      - name: Assert amendments supersede or add, and are never guessed
+        run: node --test server/services/secAmendment.test.js
+
+      # The repair job rewrites holdings for every quarter carrying an
+      # amendment, so what it refuses to do matters more than what it computes:
+      # no writing unless asked, no overwrite before the archive, and no filing
+      # left out of the reconciliation report.
+      - name: Assert the repair job cannot write without being asked
+        run: node --test server/scripts/repairAmendments.test.js
+
+      # Repair runs quarter by quarter, so there is a window where some history
+      # is corrected and some is not. The gate must fail closed, and the
+      # aggregate surfaces must say so rather than publishing a mixed figure.
+      - name: Assert the data-integrity gate fails closed
+        run: node --test server/services/repairGate.test.js
+
       # A test that cannot fail proves nothing. Remove one guard and the suite
       # must go red; if it stays green the assertions have drifted away from
       # what they claim to check, and this job fails on that instead.

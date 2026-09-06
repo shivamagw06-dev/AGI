@@ -1,6 +1,7 @@
 import crypto from 'node:crypto';
 import { createSupabaseAdmin } from '../lib/supabaseAdmin.js';
 import { scheduleSecRequest } from './secRateLimiter.js';
+import { getRepairStatus } from './institutionalHoldingsService.js';
 
 const SEC_DATA = 'https://data.sec.gov';
 const SEC_ARCHIVES = 'https://www.sec.gov/Archives/edgar/data';
@@ -85,7 +86,17 @@ async function core() {
   const client = db();
   const [{ data: managers, error: managerError }, { data: filings, error: filingError }] = await Promise.all([
     client.from('institutional_managers').select('*').order('display_name'),
-    client.from('institutional_filings').select('*').order('report_date', { ascending: false }).limit(1000),
+    // is_active, deliberately.
+    //
+    // A superseded filing keeps its row: when an amendment restates a quarter,
+    // the earlier version is marked inactive rather than deleted, so the record
+    // of what was originally disclosed survives. Loading every filing therefore
+    // loaded both versions of the same quarter and counted the restated
+    // positions twice - once from the report the manager withdrew.
+    //
+    // Only same-quarter versions are deactivated, so this keeps the full
+    // history across quarters and drops only what has been superseded.
+    client.from('institutional_filings').select('*').eq('is_active', true).order('report_date', { ascending: false }).limit(1000),
   ]);
   if (managerError || filingError) throw managerError || filingError;
   const holdings = [];
@@ -247,7 +258,10 @@ export async function getInstitutionalResearchLayer() {
     ]);
     if (cError || eError || bError || tError) throw cError || eError || bError || tError;
     const history = filingMap(filings);
-    return { status: 'ready', generated_at: new Date().toISOString(), readiness: { managers_tracked: managers.length, managers_with_12_quarters: [...history.values()].filter((rows) => rows.length >= 12).length, classifications: classifications?.length || 0, external_filings: events?.length || 0, approved_briefs: briefs?.length || 0, methodology: 'Point-in-time SEC acceptance dates, adjusted prices and next-session implementation. No look-ahead.' }, sector_rotation: sectorRotation(holdings, filings, classifications || []), filing_events: events || [], approved_briefs: briefs || [], backtests: backtests || [], managers: managers.map(({ id, slug, display_name }) => ({ id, slug, display_name })) };
+    // Sector rotation aggregates disclosed weights across quarters, so it
+    // reads the same gate consensus does.
+    const dataIntegrity = await getRepairStatus();
+    return { status: 'ready', data_integrity: dataIntegrity, generated_at: new Date().toISOString(), readiness: { managers_tracked: managers.length, managers_with_12_quarters: [...history.values()].filter((rows) => rows.length >= 12).length, classifications: classifications?.length || 0, external_filings: events?.length || 0, approved_briefs: briefs?.length || 0, methodology: 'Point-in-time SEC acceptance dates, adjusted prices and next-session implementation. No look-ahead.' }, sector_rotation: sectorRotation(holdings, filings, classifications || []), filing_events: events || [], approved_briefs: briefs || [], backtests: backtests || [], managers: managers.map(({ id, slug, display_name }) => ({ id, slug, display_name })) };
   } catch (error) {
     if (/institutional_(security_classifications|external_filings|intelligence_briefs|backtest_runs)/i.test(error.message || '')) return { status: 'setup_required', message: 'Apply the Institutional Intelligence V3 database migration, then run the first research refresh.' };
     throw error;

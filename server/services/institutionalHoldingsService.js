@@ -1,5 +1,6 @@
 import { createSupabaseAdmin } from '../lib/supabaseAdmin.js';
 import { getCollectionHealth, listRuns } from './institutionalCollectionRuns.js';
+import { classifyFiling, applyAmendment, droppedPositions } from './secAmendment.js';
 
 const SEC_ROOT = 'https://www.sec.gov';
 const SEC_DATA = 'https://data.sec.gov';
@@ -303,7 +304,7 @@ export async function getInstitutionalOverview() {
         total_value_usd: row.total_value_usd,
         holdings_count: row.holdings_count,
       }));
-    return {
+  return {
       ...manager,
       latest_filing: filing,
       filing_history: filingHistory,
@@ -314,8 +315,13 @@ export async function getInstitutionalOverview() {
     };
   });
   const { data: alerts } = await client.from('institutional_filing_alerts').select('*, institutional_managers(display_name, slug)').order('created_at', { ascending: false }).limit(12);
+  // Consensus aggregates across every manager and quarter, so it is precisely
+  // the figure that cannot be trusted while some history is repaired and some
+  // is not. The surface reports the gate; it does not decide for itself.
+  const dataIntegrity = await getRepairStatus();
   return {
     generated_at: new Date().toISOString(),
+    data_integrity: dataIntegrity,
     reporting_basis: 'SEC Form 13F, available only after the SEC acceptance timestamp',
     managers: fundCards,
     consensus: consensus.slice(0, 30),
@@ -460,7 +466,37 @@ async function filingDocuments(cik, accession) {
     documents.push({ name, text });
     if (documents.some((doc) => /<(?:\w+:)?infoTable[\s>]/i.test(doc.text))) break;
   }
-  return { base, documents };
+
+  // The cover page, fetched separately and on purpose.
+  //
+  // The loop above ranks the information table first and stops the moment it
+  // has one, so on a filing laid out as [infotable.xml, submission.txt,
+  // primary_doc.xml] it downloads exactly one file. That is correct for
+  // holdings and wrong for everything else: the cover page is the only place
+  // SEC states whether a 13F-HR/A restates the earlier report or adds to it,
+  // and it was never being read. Verified against Elliott 0000902664-25-003078
+  // and Baupost 0001567619-18-006456, both real restatements, both of which
+  // downloaded only the info table.
+  //
+  // One extra request per filing, and only when the cover page was not already
+  // picked up in the documents above.
+  let coverPage = documents.find((doc) => /primary_doc\.xml$/i.test(doc.name))?.text || null;
+  if (!coverPage && names.some((name) => /primary_doc\.xml$/i.test(name))) {
+    try {
+      coverPage = await secFetch(`${base}/primary_doc.xml`);
+    } catch (error) {
+      // Not fatal. An amendment without a readable cover page is escalated for
+      // review rather than guessed at, which is handled by the caller.
+      console.warn(`[institutional-holdings] cover page unavailable for ${accession}: ${error.message}`);
+    }
+  }
+  // Older filings predate the XML cover page entirely; the full submission text
+  // is the only place the metadata can be.
+  if (!coverPage) {
+    coverPage = documents.find((doc) => /<(?:\w+:)?amendmentType>/i.test(doc.text))?.text || null;
+  }
+
+  return { base, documents, coverPage };
 }
 
 async function mappingsFor(client, cusips) {
@@ -646,17 +682,71 @@ async function ingestFiling(client, manager, source) {
   const legacyScaleDetected = ratios.length >= 5 && medianRatio < 1 && ratios.filter((ratio) => ratio < 1).length / ratios.length >= 0.6;
   const valueScale = n(manager.value_scale_override) || (String(source.accepted_at || source.filing_date) < POST_2022_VALUE_RULE_DATE || legacyScaleDetected ? 1000 : 1);
   if (valueScale !== 1) rawRows = rawRows.map((row) => ({ ...row, value_usd: n(row.value_usd) * valueScale }));
-  const combined = archive.documents.map((doc) => doc.text).join('\n');
-  const isRestatement = /<(?:\w+:)?isRestatement>\s*true\s*</i.test(combined);
-  const amendmentType = source.form_type === '13F-HR' ? 'original' : isRestatement ? 'restatement' : 'additional_holdings';
+  // Amendment handling.
+  //
+  // What was here tested for a tag SEC does not emit, against documents that
+  // did not include the cover page, so every 13F-HR/A ever ingested was
+  // classified additional_holdings and merged. A restatement that removed a
+  // position therefore left it standing as a phantom holding. See
+  // secAmendment.js for the filings this was verified against.
+  const classification = classifyFiling(source.form_type, archive.coverPage);
+  const amendmentType = classification.amendmentType;
   const { data: previousVersion } = await client.from('institutional_filings').select('*').eq('manager_id', manager.id).eq('report_date', source.report_date).eq('is_active', true).order('filed_at', { ascending: false }).limit(1).maybeSingle();
-  let rows = rawRows;
-  if (source.form_type === '13F-HR/A' && !isRestatement && previousVersion) {
-    const priorVersionRows = await collect(() => client.from('institutional_holdings').select('*').eq('filing_id', previousVersion.id));
-    const merged = new Map(priorVersionRows.map((row) => [filingKey(row), row]));
-    for (const row of rawRows) merged.set(filingKey(row), row);
-    rows = collapseDuplicateRows([...merged.values()].map(({ id, filing_id, manager_id, report_date, portfolio_weight, created_at, ...row }) => row));
+
+  const priorVersionRows = previousVersion
+    ? await collect(() => client.from('institutional_holdings').select('*').eq('filing_id', previousVersion.id))
+    : [];
+  const strippedPriorRows = priorVersionRows.map(
+    ({ id, filing_id, manager_id, report_date, portfolio_weight, created_at, ...row }) => row,
+  );
+
+  // An amendment with no prior version to amend is just a filing.
+  const strategy = amendmentType === 'original' || !previousVersion ? 'replace' : classification.strategy;
+  const outcome = applyAmendment({
+    strategy,
+    priorRows: strippedPriorRows,
+    amendmentRows: rawRows,
+    keyOf: filingKey,
+  });
+  const removed = strategy === 'replace' && previousVersion
+    ? droppedPositions({ priorRows: strippedPriorRows, amendmentRows: rawRows, keyOf: filingKey })
+    : [];
+  if (removed.length) {
+    console.info(`[institutional-holdings] ${source.accession_number} restates ${manager.slug || manager.display_name}: ${removed.length} position(s) removed`);
   }
+
+  // An amendment we could not classify must not silently rewrite the report.
+  // The filing is recorded so it is visible, the earlier version stays
+  // authoritative, and an operator decides.
+  if (strategy === 'review') {
+    console.warn(`[institutional-holdings] ${source.accession_number} needs review: ${classification.reviewReason}`);
+    await client.from('institutional_filings').upsert({
+      manager_id: manager.id,
+      accession_number: source.accession_number,
+      form_type: source.form_type,
+      report_date: source.report_date,
+      filed_at: source.accepted_at,
+      primary_document: source.primary_document,
+      amendment_type: 'unknown',
+      is_amendment: true,
+      is_active: false,
+      needs_review: true,
+      review_reason: classification.reviewReason,
+      source_url: `${archive.base}/${source.primary_document || infoDocument.name}`,
+      holdings_count: rawRows.length,
+      ingested_at: new Date().toISOString(),
+    }, { onConflict: 'accession_number' });
+    return {
+      accession_number: source.accession_number,
+      status: 'needs_review',
+      holdings: 0,
+      report_date: source.report_date,
+      changes: 0,
+      review_reason: classification.reviewReason,
+    };
+  }
+
+  let rows = strategy === 'merge' ? collapseDuplicateRows(outcome.rows) : outcome.rows;
   const identifierMap = await mappingsFor(client, [...new Set(rows.map((row) => row.cusip))]);
   const totalValue = rows.reduce((sum, row) => sum + n(row.value_usd), 0);
   rows = rows.map((row) => ({
@@ -1139,4 +1229,272 @@ export async function markInstitutionalAlert(id, isRead = true) {
   const { data, error } = await client.from('institutional_filing_alerts').update({ is_read: Boolean(isRead) }).eq('id', id).select().single();
   if (error) throw error;
   return data;
+}
+
+/**
+ * Re-ingest one already-known filing straight from SEC.
+ *
+ * Exists for the amendment remediation job. Every 13F-HR/A ingested before the
+ * classification was fixed took the merge branch, so a restatement that removed
+ * a position left it in the portfolio. Fixing ingestion forward does not undo
+ * that: the stored rows are the merged result, and the amendment's own holdings
+ * are not recoverable from them. They have to come back from EDGAR.
+ *
+ * The whole point is that this re-runs the same ingestFiling every collection
+ * uses, rather than a parallel repair implementation that could drift from it.
+ * Re-ingesting a manager's filings for one report_date in acceptance order
+ * reproduces the correct end state: the original first, then each amendment
+ * applied under its real classification.
+ */
+export async function reingestFiling(filingId) {
+  const client = db();
+  const { data: filing, error } = await client
+    .from('institutional_filings')
+    .select('*, institutional_managers(*)')
+    .eq('id', filingId)
+    .single();
+  if (error) throw new Error(error.message);
+  if (!filing) throw new Error(`Filing ${filingId} not found`);
+
+  const manager = filing.institutional_managers;
+  if (!manager?.cik) throw new Error(`Filing ${filingId} has no manager CIK to fetch against`);
+
+  return ingestFiling(client, manager, {
+    accession_number: filing.accession_number,
+    form_type: filing.form_type,
+    report_date: filing.report_date,
+    accepted_at: filing.filed_at,
+    primary_document: filing.primary_document,
+  });
+}
+
+/** Holdings currently stored for a filing, for before/after comparison. */
+export async function holdingsForFiling(filingId) {
+  const client = db();
+  return collect(() => client
+    .from('institutional_holdings')
+    .select('cusip,ticker,issuer_name,shares,value_usd,put_call')
+    .eq('filing_id', filingId));
+}
+
+/** Every 13F-HR/A on record, oldest acceptance first, with its manager. */
+export async function amendmentFilings() {
+  const client = db();
+  const { data, error } = await client
+    .from('institutional_filings')
+    .select('id,accession_number,form_type,report_date,filed_at,manager_id,is_active,amendment_type,institutional_managers(slug,display_name,cik)')
+    .like('form_type', '%/A')
+    .order('filed_at', { ascending: true });
+  if (error) throw new Error(error.message);
+  return data || [];
+}
+
+/** Active filings for one manager and quarter, in acceptance order. */
+export async function filingsForQuarter(managerId, reportDate) {
+  const client = db();
+  const { data, error } = await client
+    .from('institutional_filings')
+    .select('id,accession_number,form_type,report_date,filed_at,is_active,amendment_type')
+    .eq('manager_id', managerId)
+    .eq('report_date', reportDate)
+    .order('filed_at', { ascending: true });
+  if (error) throw new Error(error.message);
+  return data || [];
+}
+
+/** Recompute signals after a repair batch. Exported so the job runs it once at the end. */
+export async function rebuildInstitutionalSignals() {
+  return rebuildSignals(db());
+}
+
+/**
+ * What re-ingesting a filing would produce, without writing anything.
+ *
+ * The repair job defaults to a dry run, and a dry run that can only say "this
+ * would be reclassified" is not much of a report. This fetches and parses the
+ * filing exactly as ingestion would, applies the real classification, and hands
+ * back the rows that would result - so the reconciliation report can state
+ * which positions would be removed before anything is changed.
+ */
+export async function previewFilingRepair(filingId) {
+  const client = db();
+  const { data: filing, error } = await client
+    .from('institutional_filings')
+    .select('*, institutional_managers(*)')
+    .eq('id', filingId)
+    .single();
+  if (error) throw new Error(error.message);
+
+  const manager = filing?.institutional_managers;
+  if (!manager?.cik) throw new Error(`Filing ${filingId} has no manager CIK`);
+
+  const archive = await filingDocuments(manager.cik, filing.accession_number);
+  const infoDocument = archive.documents.find((doc) => /<(?:\w+:)?infoTable[\s>]/i.test(doc.text));
+  if (!infoDocument) throw new Error(`No 13F information table in ${filing.accession_number}`);
+
+  const amendmentRows = collapseDuplicateRows(parseInformationTable(infoDocument.text, 1));
+  const classification = classifyFiling(filing.form_type, archive.coverPage);
+
+  // The version this amendment amends, as currently stored.
+  const { data: previousVersion } = await client.from('institutional_filings').select('*')
+    .eq('manager_id', manager.id).eq('report_date', filing.report_date).eq('is_active', true)
+    .neq('id', filing.id).order('filed_at', { ascending: false }).limit(1).maybeSingle();
+  const priorRows = previousVersion
+    ? (await collect(() => client.from('institutional_holdings').select('*').eq('filing_id', previousVersion.id)))
+      .map(({ id, filing_id, manager_id, report_date, portfolio_weight, created_at, ...row }) => row)
+    : [];
+
+  const strategy = classification.amendmentType === 'original' || !previousVersion
+    ? 'replace'
+    : classification.strategy;
+  const outcome = applyAmendment({ strategy, priorRows, amendmentRows, keyOf: filingKey });
+  const removed = strategy === 'replace' && previousVersion
+    ? droppedPositions({ priorRows, amendmentRows, keyOf: filingKey })
+    : [];
+
+  return {
+    filing,
+    manager,
+    classification,
+    strategy,
+    priorRows,
+    amendmentRows,
+    resultingRows: outcome.rows,
+    removed,
+    applied: outcome.applied,
+  };
+}
+
+/**
+ * Take an unclassifiable amendment out of the derived calculations.
+ *
+ * Recording that a filing needs review is not the same as stopping it counting.
+ * An amendment whose type could not be read was ingested under the old merge
+ * behaviour, so its rows are the merged result - and while it stays active,
+ * consensus, sector weights and change signals keep reading them as though the
+ * amendment had been understood.
+ *
+ * The filing itself is preserved: it is the audit record, and it is what a
+ * reviewer resolves against. Only is_active changes, which is the flag every
+ * derived surface filters on. The version it superseded is reactivated so the
+ * quarter still has exactly one authoritative report rather than none - a
+ * quarter with no active filing silently disappears from history, which is a
+ * worse failure than the one being fixed.
+ */
+export async function quarantineAmendment(filingId, reason) {
+  const client = db();
+  const { data: amendment, error } = await client
+    .from('institutional_filings')
+    .select('id,manager_id,report_date,accession_number')
+    .eq('id', filingId)
+    .single();
+  if (error) throw new Error(error.message);
+
+  const { error: flagError } = await client
+    .from('institutional_filings')
+    .update({ is_active: false, needs_review: true, review_reason: reason || 'Amendment type could not be determined.' })
+    .eq('id', filingId);
+  if (flagError) throw new Error(flagError.message);
+
+  // The most recent filing for this quarter that is not itself quarantined.
+  const { data: candidates } = await client
+    .from('institutional_filings')
+    .select('id,form_type,filed_at,needs_review')
+    .eq('manager_id', amendment.manager_id)
+    .eq('report_date', amendment.report_date)
+    .neq('id', filingId)
+    .order('filed_at', { ascending: false });
+
+  const successor = (candidates || []).find((row) => !row.needs_review);
+  if (successor) {
+    await client.from('institutional_filings').update({ is_active: true }).eq('id', successor.id);
+    // Exactly one active version per quarter, or the aggregates double count.
+    await client.from('institutional_filings').update({ is_active: false })
+      .eq('manager_id', amendment.manager_id)
+      .eq('report_date', amendment.report_date)
+      .neq('id', successor.id);
+  }
+
+  return {
+    quarantined: amendment.accession_number,
+    reactivated: successor?.id || null,
+    orphaned_quarter: !successor,
+  };
+}
+
+/**
+ * Whether derived numbers can currently be trusted as a whole.
+ *
+ * Repairing amendments quarter by quarter means there is a window in which
+ * some of the history has been corrected and some has not, and a consensus
+ * figure computed across both is not a figure of anything. Surfaces that
+ * aggregate across managers and quarters ask this and say so, rather than
+ * publishing a number whose inputs are half repaired.
+ *
+ * Deliberately conservative: anything unresolved reports as in progress. A gate
+ * that reads clear while filings sit unreviewed is a gate that does nothing.
+ */
+export async function getRepairStatus() {
+  const client = db();
+  try {
+    const [{ count: pendingReview }, { data: lastRun }] = await Promise.all([
+      client.from('institutional_filings')
+        .select('id', { count: 'exact', head: true })
+        .eq('needs_review', true),
+      client.from('institutional_amendment_repair_summary')
+        .select('*')
+        .order('started_at', { ascending: false })
+        .limit(1)
+        .maybeSingle(),
+    ]);
+
+    const run = lastRun || null;
+    const failed = Number(run?.filings_failed || 0);
+    const needingReview = Number(run?.filings_needing_review || 0);
+    const pending = Number(pendingReview || 0);
+
+    // A dry run has repaired nothing, so it never clears the gate on its own.
+    const repairApplied = Boolean(run?.applied);
+    const incomplete = failed > 0 || needingReview > 0 || pending > 0;
+
+    if (!run) {
+      return {
+        status: 'not_started',
+        clean: false,
+        message: 'Historical amendment repair has not run. Aggregate figures may include positions withdrawn by amendments.',
+      };
+    }
+    if (!repairApplied) {
+      return {
+        status: 'in_progress',
+        clean: false,
+        message: 'Historical repair in progress. Aggregate figures may mix repaired and unrepaired history.',
+        pending_review: pending,
+      };
+    }
+    if (incomplete) {
+      return {
+        status: 'in_progress',
+        clean: false,
+        message: 'Historical repair in progress. Some filings could not be repaired or are awaiting review, so aggregate figures may mix repaired and unrepaired history.',
+        pending_review: pending,
+        failed,
+      };
+    }
+    return {
+      status: 'complete',
+      clean: true,
+      message: null,
+      repaired_at: run.finished_at || null,
+    };
+  } catch (error) {
+    // Before the repair migration is applied the tables do not exist. Unknown
+    // is not clean: it must not read as a clean bill of health.
+    return {
+      status: 'unknown',
+      clean: false,
+      message: 'Repair status is unavailable, so aggregate figures cannot be confirmed as fully repaired.',
+      error: error.message,
+    };
+  }
 }
