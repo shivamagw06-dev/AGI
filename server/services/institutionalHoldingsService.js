@@ -7,6 +7,7 @@ const SEC_ROOT = 'https://www.sec.gov';
 const SEC_DATA = 'https://data.sec.gov';
 import { scheduleSecRequest, recordThrottled, recordSuccess, parseRetryAfter, SecCircuitOpenError } from './secRateLimiter.js';
 import { resolveAsOf } from './securityIdentity.js';
+import { mappingFromLookup, rankUnmapped } from './identifierBackfill.js';
 
 const SEC_USER_AGENT = (process.env.SEC_USER_AGENT || 'AGI Institutional Research research@agarwalglobalinvestments.com').trim();
 const OPENFIGI_URL = 'https://api.openfigi.com/v3/mapping';
@@ -957,7 +958,7 @@ async function prepareInstitutionalImport(client, payload = {}) {
   if (!input) throw new Error('Paste a SEC URL, accession number, XML document, or holdings table.');
   const manager = (await managers(client)).find((item) => item.id === payload.managerId || item.slug === payload.managerId);
   if (!manager) throw new Error('Choose the manager that owns this filing.');
-  const submissions = await fetchJson(`${SEC_DATA}/submissions/CIK${cleanCik(manager.cik)}.json`);
+  const submissions = await secFetch(`${SEC_DATA}/submissions/CIK${cleanCik(manager.cik)}.json`, true);
   const accession = pastedAccession(input);
   const isXml = /<(?:\w+:)?informationTable\b|<(?:\w+:)?infoTable\b/i.test(input);
   let kind = 'table';
