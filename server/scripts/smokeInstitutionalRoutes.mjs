@@ -24,15 +24,25 @@ const BASE = (baseArg >= 0 ? args[baseArg + 1] : process.env.SMOKE_BASE_URL
 const asJson = args.includes('--json');
 const TIMEOUT_MS = 120_000;
 
-/** Every public Institutional Holdings route, and one field proving it answered. */
+/**
+ * Every registered Institutional Holdings route, and what a caller with no
+ * credentials must get back.
+ *
+ * The four admin-only entries are the point of this list. Each pages the whole
+ * holdings table - over 120 seconds against production's 72,401 rows - and each
+ * reports on data whose price coverage is still 0%, so an anonymous 200 from any
+ * of them is a defect, not a success. `expect` names a field that proves the
+ * route answered with its own payload; it only applies to a public route.
+ */
 const ROUTES = [
-  { path: '/api/institutional-holdings/overview', expect: null },
-  { path: '/api/institutional-holdings/decision-intelligence', expect: null },
-  { path: '/api/institutional-holdings/research-layer', expect: 'readiness' },
-  { path: '/api/institutional-holdings/combined-holdings?limit=5', expect: 'positions' },
-  { path: '/api/institutional-holdings/screener?limit=5', expect: 'results' },
-  { path: '/api/institutional-holdings/heat-map?limit=5', expect: 'accumulating' },
-  { path: '/api/institutional-holdings/fund-performance', expect: 'managers' },
+  { path: '/api/institutional-holdings/overview', status: 200, expect: null },
+  { path: '/api/institutional-holdings/decision-intelligence', status: 200, expect: null },
+  { path: '/api/institutional-holdings/research-layer', status: 200, expect: 'readiness' },
+  { path: '/api/institutional-holdings/combined-holdings?limit=5', status: 401 },
+  { path: '/api/institutional-holdings/screener?limit=5', status: 401 },
+  { path: '/api/institutional-holdings/heat-map?limit=5', status: 401 },
+  { path: '/api/institutional-holdings/fund-performance', status: 401 },
+  { path: '/api/institutional-holdings/backtests', method: 'POST', status: 401 },
 ];
 
 /**
@@ -47,13 +57,15 @@ function isRateLimitShell(body) {
     && (body.error === 'upstream_rate_limited' || body.upstream_status === 429);
 }
 
-async function hit(path) {
+async function hit(path, method = 'GET') {
   const started = Date.now();
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
   try {
     const response = await fetch(`${BASE}${path}`, {
-      headers: { Accept: 'application/json' },
+      method,
+      headers: { Accept: 'application/json', ...(method === 'POST' ? { 'Content-Type': 'application/json' } : {}) },
+      body: method === 'POST' ? '{}' : undefined,
       signal: controller.signal,
     });
     const text = await response.text();
@@ -82,6 +94,13 @@ async function hit(path) {
 
 function judge(route, result) {
   if (result.status === 0) return `no response (${result.networkError})`;
+  // An admin-only route answering an anonymous caller is the failure, whatever
+  // it says. 403 is equally acceptable: both mean the guard held.
+  if (route.status === 401) {
+    return [401, 403].includes(result.status)
+      ? null
+      : `expected the admin guard to reject this, got HTTP ${result.status}`;
+  }
   if (result.status < 200 || result.status >= 300) return `HTTP ${result.status}`;
   if (!result.parseable) return 'response was not JSON';
   // The whole reason this script exists.
@@ -97,7 +116,7 @@ function judge(route, result) {
 
 const results = [];
 for (const route of ROUTES) {
-  const result = await hit(route.path);
+  const result = await hit(route.path, route.method);
   const failure = judge(route, result);
   results.push({ path: route.path, status: result.status, ms: result.ms, bytes: result.bytes, failure });
 }

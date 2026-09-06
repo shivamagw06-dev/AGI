@@ -1,0 +1,47 @@
+name: Institutional Safety Guards
+
+# Four protections stand between the Institutional Holdings product and its
+# clients: five admin-only routes, a crawler that does not start on its own, a
+# withheld backtester, and a real 404 on unmatched paths. Each one is a single
+# line that a future edit could quietly undo.
+#
+# The suite runs in well under a second and needs no credentials, no database
+# and no network, so it can run on every push instead of nightly. That is the
+# whole design: a guard nobody waits for is a guard that stays green.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  guards:
+    name: Route auth, crawler default, withheld backtester
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Assert the safety guards hold
+        run: node --test server/routes/institutionalSafetyGuards.test.js
+
+      # A test that cannot fail proves nothing. Remove one guard and the suite
+      # must go red; if it stays green the assertions have drifted away from
+      # what they claim to check, and this job fails on that instead.
+      - name: Prove the guards actually catch a regression
+        run: |
+          set -euo pipefail
+          cp server/routes/institutionalHoldings.js /tmp/routes.bak
+          sed -i "s|router.post('/backtests', requireAdmin,|router.post('/backtests',|" \
+            server/routes/institutionalHoldings.js
+          if node --test server/routes/institutionalSafetyGuards.test.js >/dev/null 2>&1; then
+            cp /tmp/routes.bak server/routes/institutionalHoldings.js
+            echo "::error::Removing admin auth from POST /backtests did not fail the suite."
+            exit 1
+          fi
+          cp /tmp/routes.bak server/routes/institutionalHoldings.js
+          echo "Guards confirmed live: dropping auth on POST /backtests fails the suite."

@@ -538,6 +538,16 @@ function FundPage({ slug }) {
                 ))}
               </div>
             </div>
+            {/* What a reader is entitled to know before reading the table: this is a
+                partial view assembled from filings that were already weeks old when
+                they became public. Stated once, plainly, above the data itself. */}
+            <div className="mx-8 mb-4 flex items-start gap-2.5 rounded-lg border border-[#d8c9b4] bg-[#faf6f0] px-4 py-3">
+              <span className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-[#a56e3d]" />
+              <p className="text-[11px] leading-5 text-[#6b5c48]">
+                <span className="font-bold text-[#4a3f31]">Coverage in build.</span>{' '}
+                Derived from delayed public filings. Not a complete institutional ownership universe.
+              </p>
+            </div>
             <div className="overflow-x-auto">
               <table className="w-full min-w-[820px] text-left">
                 <thead className="bg-[#f5f8f7] text-[9px] font-extrabold uppercase tracking-[.15em] text-[#7c898e]"><tr><th className="px-8 py-4">Security</th><th className="px-4 py-4">Portfolio weight</th><th className="px-4 py-4">Reported value</th><th className="px-4 py-4">Shares</th><th className="px-8 py-4">Quarter signal</th></tr></thead>
