@@ -83,3 +83,20 @@ test('nothing the guard suite imports needs a package installed', () => {
     'the guard workflow installs no dependencies, so these imports will fail in CI:\n'
     + offences.map((o) => `  ${o.package}  in ${o.file}\n    reached via ${o.via}`).join('\n'));
 });
+
+test('the security index is warmed at boot and cleared when holdings change', () => {
+  // Cold, the first query pays for the whole index build - paging every active
+  // filing's holdings - and the first person to type in the box gets a request
+  // that runs long enough to look broken. Observed in production: 60s+ cold,
+  // 0.19s warm.
+  const routes = readFileSync(resolve(ROOT, 'server/routes/institutionalHoldings.js'), 'utf8');
+  assert.match(routes, /warmSecuritySearchIndex\(\);/,
+    'the index must be built before the first query, not during it');
+
+  // An import or refresh changes which securities exist, so a stale index would
+  // keep suggesting a universe that has moved on.
+  const clears = (routes.match(/clearScreenerCache\(\);\s*clearSecuritySearchCache\(\);/g) || []).length;
+  const screener = (routes.match(/clearScreenerCache\(\)/g) || []).length;
+  assert.equal(clears, screener,
+    'every path that invalidates the screener cache must invalidate the search index too');
+});

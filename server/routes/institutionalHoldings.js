@@ -25,7 +25,7 @@ import {
   clearScreenerCache, evaluateFundPerformance, getAccumulationHeatMap,
   getCombinedHoldings, screenStocks,
 } from '../services/institutionalScreenerService.js';
-import { searchSecurities } from '../services/institutionalSecuritySearch.js';
+import { clearSecuritySearchCache, searchSecurities, warmSecuritySearchIndex } from '../services/institutionalSecuritySearch.js';
 
 async function requireAdmin(req, res, next) {
   try {
@@ -113,6 +113,8 @@ function rebuildOverviewCache() {
 export default function createInstitutionalHoldingsRouter() {
   const router = Router();
   rebuildOverviewCache();
+  // Built before the first query rather than during it.
+  warmSecuritySearchIndex();
   // Public, and cheap: the index is built once every fifteen minutes and every
   // query is answered from memory. Deliberately not admin-gated - it is the
   // front door of the page, and it returns only issuer names and tickers that
@@ -219,10 +221,10 @@ export default function createInstitutionalHoldingsRouter() {
   router.get('/stocks/:key', async (req, res) => { try { const data = await getInstitutionalStock(req.params.key); return data ? res.json(data) : res.status(404).json({ error: 'No tracked fund currently holds this security' }); } catch (error) { return sendError(res, error); } });
   router.get('/admin', requireAdmin, async (_req, res) => { try { return res.json(await getInstitutionalAdmin()); } catch (error) { return sendError(res, error); } });
   router.post('/admin/imports/preview', requireAdmin, async (req, res) => { try { return res.json(await previewInstitutionalImport(req.body || {})); } catch (error) { return sendError(res, error, 400); } });
-  router.post('/admin/imports/publish', requireAdmin, async (req, res) => { try { const data = await publishInstitutionalImport({ ...(req.body || {}), actor: req.adminUser?.email || 'admin' }); rebuildOverviewCache(); clearScreenerCache(); return res.json(data); } catch (error) { return sendError(res, error, 400); } });
-  router.post('/admin/refresh', requireAdmin, async (req, res) => { try { const data = await refreshInstitutionalFilings(req.body || {}); rebuildOverviewCache(); clearScreenerCache(); return res.json(data); } catch (error) { return sendError(res, error, 400); } });
-  router.post('/admin/security-mappings', requireAdmin, async (req, res) => { try { const data = await saveSecurityMapping({ ...req.body, actor: req.adminUser?.email || 'admin' }); rebuildOverviewCache(); clearScreenerCache(); return res.json(data); } catch (error) { return sendError(res, error, 400); } });
-  router.patch('/admin/managers/:id', requireAdmin, async (req, res) => { try { const data = await updateInstitutionalManager(req.params.id, req.body || {}, req.adminUser?.email || 'admin'); rebuildOverviewCache(); clearScreenerCache(); return res.json(data); } catch (error) { return sendError(res, error, 400); } });
+  router.post('/admin/imports/publish', requireAdmin, async (req, res) => { try { const data = await publishInstitutionalImport({ ...(req.body || {}), actor: req.adminUser?.email || 'admin' }); rebuildOverviewCache(); clearScreenerCache(); clearSecuritySearchCache(); return res.json(data); } catch (error) { return sendError(res, error, 400); } });
+  router.post('/admin/refresh', requireAdmin, async (req, res) => { try { const data = await refreshInstitutionalFilings(req.body || {}); rebuildOverviewCache(); clearScreenerCache(); clearSecuritySearchCache(); return res.json(data); } catch (error) { return sendError(res, error, 400); } });
+  router.post('/admin/security-mappings', requireAdmin, async (req, res) => { try { const data = await saveSecurityMapping({ ...req.body, actor: req.adminUser?.email || 'admin' }); rebuildOverviewCache(); clearScreenerCache(); clearSecuritySearchCache(); return res.json(data); } catch (error) { return sendError(res, error, 400); } });
+  router.patch('/admin/managers/:id', requireAdmin, async (req, res) => { try { const data = await updateInstitutionalManager(req.params.id, req.body || {}, req.adminUser?.email || 'admin'); rebuildOverviewCache(); clearScreenerCache(); clearSecuritySearchCache(); return res.json(data); } catch (error) { return sendError(res, error, 400); } });
   router.patch('/admin/alerts/:id', requireAdmin, async (req, res) => { try { return res.json(await markInstitutionalAlert(req.params.id, req.body?.is_read !== false)); } catch (error) { return sendError(res, error, 400); } });
   router.get('/admin/research-layer', requireAdmin, async (_req, res) => { try { return res.json(await getInstitutionalResearchAdmin()); } catch (error) { return sendError(res, error); } });
   router.post('/admin/research-layer/refresh', requireAdmin, async (req, res) => { try { return res.json(await refreshInstitutionalResearchLayer(req.body || {})); } catch (error) { return sendError(res, error, 400); } });
