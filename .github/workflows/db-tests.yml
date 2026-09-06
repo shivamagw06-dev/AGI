@@ -549,6 +549,7 @@ jobs:
             create extension if not exists pgcrypto;
             create table if not exists public.institutional_filings (
               id uuid primary key default gen_random_uuid(),
+              accession_number text not null unique,
               report_date date not null,
               filed_at timestamptz not null,
               form_type text not null
@@ -595,8 +596,15 @@ jobs:
           " > /tmp/amendment_types.txt
           while read -r t; do
             [ -z "$t" ] && continue
+            # Every NOT NULL column is supplied, so a failure here can only be
+            # about amendment_type. The first version passed only that column
+            # and report_date, tripped the filed_at NOT NULL constraint, and
+            # then reported the amendment_type as rejected - a check that fails
+            # for one reason and blames another is worse than no check.
             psql -v ON_ERROR_STOP=1 -q -c \
-              "insert into public.institutional_filings (amendment_type, report_date) values ('$t', '2025-03-31');" \
+              "insert into public.institutional_filings
+                 (accession_number, form_type, report_date, filed_at, amendment_type)
+               values ('test-$t', '13F-HR', '2025-03-31', now(), '$t');" \
               || { echo "::error::the schema rejects amendment_type '$t', which the code writes"; exit 1; }
           done < /tmp/amendment_types.txt
           echo "  schema accepts every amendment_type the classifier produces"
