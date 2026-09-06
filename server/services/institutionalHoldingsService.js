@@ -1225,3 +1225,137 @@ export async function markInstitutionalAlert(id, isRead = true) {
   if (error) throw error;
   return data;
 }
+
+/**
+ * Re-ingest one already-known filing straight from SEC.
+ *
+ * Exists for the amendment remediation job. Every 13F-HR/A ingested before the
+ * classification was fixed took the merge branch, so a restatement that removed
+ * a position left it in the portfolio. Fixing ingestion forward does not undo
+ * that: the stored rows are the merged result, and the amendment's own holdings
+ * are not recoverable from them. They have to come back from EDGAR.
+ *
+ * The whole point is that this re-runs the same ingestFiling every collection
+ * uses, rather than a parallel repair implementation that could drift from it.
+ * Re-ingesting a manager's filings for one report_date in acceptance order
+ * reproduces the correct end state: the original first, then each amendment
+ * applied under its real classification.
+ */
+export async function reingestFiling(filingId) {
+  const client = db();
+  const { data: filing, error } = await client
+    .from('institutional_filings')
+    .select('*, institutional_managers(*)')
+    .eq('id', filingId)
+    .single();
+  if (error) throw new Error(error.message);
+  if (!filing) throw new Error(`Filing ${filingId} not found`);
+
+  const manager = filing.institutional_managers;
+  if (!manager?.cik) throw new Error(`Filing ${filingId} has no manager CIK to fetch against`);
+
+  return ingestFiling(client, manager, {
+    accession_number: filing.accession_number,
+    form_type: filing.form_type,
+    report_date: filing.report_date,
+    accepted_at: filing.filed_at,
+    primary_document: filing.primary_document,
+  });
+}
+
+/** Holdings currently stored for a filing, for before/after comparison. */
+export async function holdingsForFiling(filingId) {
+  const client = db();
+  return collect(() => client
+    .from('institutional_holdings')
+    .select('cusip,ticker,issuer_name,shares,value_usd,put_call')
+    .eq('filing_id', filingId));
+}
+
+/** Every 13F-HR/A on record, oldest acceptance first, with its manager. */
+export async function amendmentFilings() {
+  const client = db();
+  const { data, error } = await client
+    .from('institutional_filings')
+    .select('id,accession_number,form_type,report_date,filed_at,manager_id,is_active,amendment_type,institutional_managers(slug,display_name,cik)')
+    .like('form_type', '%/A')
+    .order('filed_at', { ascending: true });
+  if (error) throw new Error(error.message);
+  return data || [];
+}
+
+/** Active filings for one manager and quarter, in acceptance order. */
+export async function filingsForQuarter(managerId, reportDate) {
+  const client = db();
+  const { data, error } = await client
+    .from('institutional_filings')
+    .select('id,accession_number,form_type,report_date,filed_at,is_active,amendment_type')
+    .eq('manager_id', managerId)
+    .eq('report_date', reportDate)
+    .order('filed_at', { ascending: true });
+  if (error) throw new Error(error.message);
+  return data || [];
+}
+
+/** Recompute signals after a repair batch. Exported so the job runs it once at the end. */
+export async function rebuildInstitutionalSignals() {
+  return rebuildSignals(db());
+}
+
+/**
+ * What re-ingesting a filing would produce, without writing anything.
+ *
+ * The repair job defaults to a dry run, and a dry run that can only say "this
+ * would be reclassified" is not much of a report. This fetches and parses the
+ * filing exactly as ingestion would, applies the real classification, and hands
+ * back the rows that would result - so the reconciliation report can state
+ * which positions would be removed before anything is changed.
+ */
+export async function previewFilingRepair(filingId) {
+  const client = db();
+  const { data: filing, error } = await client
+    .from('institutional_filings')
+    .select('*, institutional_managers(*)')
+    .eq('id', filingId)
+    .single();
+  if (error) throw new Error(error.message);
+
+  const manager = filing?.institutional_managers;
+  if (!manager?.cik) throw new Error(`Filing ${filingId} has no manager CIK`);
+
+  const archive = await filingDocuments(manager.cik, filing.accession_number);
+  const infoDocument = archive.documents.find((doc) => /<(?:\w+:)?infoTable[\s>]/i.test(doc.text));
+  if (!infoDocument) throw new Error(`No 13F information table in ${filing.accession_number}`);
+
+  const amendmentRows = collapseDuplicateRows(parseInformationTable(infoDocument.text, 1));
+  const classification = classifyFiling(filing.form_type, archive.coverPage);
+
+  // The version this amendment amends, as currently stored.
+  const { data: previousVersion } = await client.from('institutional_filings').select('*')
+    .eq('manager_id', manager.id).eq('report_date', filing.report_date).eq('is_active', true)
+    .neq('id', filing.id).order('filed_at', { ascending: false }).limit(1).maybeSingle();
+  const priorRows = previousVersion
+    ? (await collect(() => client.from('institutional_holdings').select('*').eq('filing_id', previousVersion.id)))
+      .map(({ id, filing_id, manager_id, report_date, portfolio_weight, created_at, ...row }) => row)
+    : [];
+
+  const strategy = classification.amendmentType === 'original' || !previousVersion
+    ? 'replace'
+    : classification.strategy;
+  const outcome = applyAmendment({ strategy, priorRows, amendmentRows, keyOf: filingKey });
+  const removed = strategy === 'replace' && previousVersion
+    ? droppedPositions({ priorRows, amendmentRows, keyOf: filingKey })
+    : [];
+
+  return {
+    filing,
+    manager,
+    classification,
+    strategy,
+    priorRows,
+    amendmentRows,
+    resultingRows: outcome.rows,
+    removed,
+    applied: outcome.applied,
+  };
+}

@@ -45,6 +45,13 @@ jobs:
       - name: Assert amendments supersede or add, and are never guessed
         run: node --test server/services/secAmendment.test.js
 
+      # The repair job rewrites holdings for every quarter carrying an
+      # amendment, so what it refuses to do matters more than what it computes:
+      # no writing unless asked, no overwrite before the archive, and no filing
+      # left out of the reconciliation report.
+      - name: Assert the repair job cannot write without being asked
+        run: node --test server/scripts/repairAmendments.test.js
+
       # A test that cannot fail proves nothing. Remove one guard and the suite
       # must go red; if it stays green the assertions have drifted away from
       # what they claim to check, and this job fails on that instead.
