@@ -45,6 +45,12 @@ jobs:
       - name: Assert amendments supersede or add, and are never guessed
         run: node --test server/services/secAmendment.test.js
 
+      # A CUSIP is reassigned after corporate actions. Resolving a filing with
+      # today's mapping relabels old holdings as whatever the identifier means
+      # now, and that propagates into consensus, sector weights and prices.
+      - name: Assert identifiers resolve as at the filing date
+        run: node --test server/services/securityIdentity.test.js
+
       # The repair job rewrites holdings for every quarter carrying an
       # amendment, so what it refuses to do matters more than what it computes:
       # no writing unless asked, no overwrite before the archive, and no filing
