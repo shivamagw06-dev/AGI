@@ -2,6 +2,7 @@ import crypto from 'node:crypto';
 import { createSupabaseAdmin } from '../lib/supabaseAdmin.js';
 import { scheduleSecRequest } from './secRateLimiter.js';
 import { getRepairStatus } from './institutionalHoldingsService.js';
+import { firstTradableSession, sessionsFromPrices, periodReturn as pitPeriodReturn, benchmarkReturn, orderByAcceptance } from './pointInTime.js';
 
 const SEC_DATA = 'https://data.sec.gov';
 const SEC_ARCHIVES = 'https://www.sec.gov/Archives/edgar/data';
@@ -261,28 +262,30 @@ export async function getInstitutionalResearchLayer() {
     // Sector rotation aggregates disclosed weights across quarters, so it
     // reads the same gate consensus does.
     const dataIntegrity = await getRepairStatus();
-    return { status: 'ready', data_integrity: dataIntegrity, generated_at: new Date().toISOString(), readiness: { managers_tracked: managers.length, managers_with_12_quarters: [...history.values()].filter((rows) => rows.length >= 12).length, classifications: classifications?.length || 0, external_filings: events?.length || 0, approved_briefs: briefs?.length || 0, methodology: 'Point-in-time SEC acceptance dates, adjusted prices and next-session implementation. No look-ahead.' }, sector_rotation: sectorRotation(holdings, filings, classifications || []), filing_events: events || [], approved_briefs: briefs || [], backtests: backtests || [], managers: managers.map(({ id, slug, display_name }) => ({ id, slug, display_name })) };
+    return { status: 'ready', data_integrity: dataIntegrity, generated_at: new Date().toISOString(), readiness: { managers_tracked: managers.length, managers_with_12_quarters: [...history.values()].filter((rows) => rows.length >= 12).length, classifications: classifications?.length || 0, external_filings: events?.length || 0, approved_briefs: briefs?.length || 0, methodology: 'Entry is the first US trading session strictly after SEC acceptance, read in US Eastern. Positions without an adjusted close at both ends of a period are excluded and reported, never re-weighted. Price coverage is still being built, so most backtests are currently not calculable.' }, sector_rotation: sectorRotation(holdings, filings, classifications || []), filing_events: events || [], approved_briefs: briefs || [], backtests: backtests || [], managers: managers.map(({ id, slug, display_name }) => ({ id, slug, display_name })) };
   } catch (error) {
     if (/institutional_(security_classifications|external_filings|intelligence_briefs|backtest_runs)/i.test(error.message || '')) return { status: 'setup_required', message: 'Apply the Institutional Intelligence V3 database migration, then run the first research refresh.' };
     throw error;
   }
 }
 
-const priceAfter = (rows, date) => rows.find((row) => row.price_date >= date)?.adjusted_close || null;
-function periodReturn(rows, prices, entry, exit, topN) {
-  const positions = [...rows].filter((row) => tickerOf(row) && !row.put_call).sort((a, b) => valueOf(b) - valueOf(a)).slice(0, topN);
-  const total = positions.reduce((sum, row) => sum + valueOf(row), 0);
-  let coverage = 0; let result = 0;
-  positions.forEach((row) => { const weight = total ? valueOf(row) / total : 0; const series = prices.get(tickerOf(row)) || []; const start = priceAfter(series, entry); const end = priceAfter(series, exit); if (!start || !end) return; coverage += weight; result += weight * (end / start - 1); });
-  return { value: coverage ? result / coverage : null, coverage, positions: positions.length };
-}
+// The previous price lookup and period-return helper lived here. They matched
+// prices with `price_date >= date`, which selected the acceptance day's own
+// close, and divided the result by coverage, which re-weighted the priced
+// survivors to 100%. Both are replaced by pointInTime.js. Deleted rather than
+// left unused, so neither can be called again by accident.
 
 export async function runInstitutionalBacktest({ managerSlug, topN = 10, transactionCostBps = 10 } = {}) {
   if (!managerSlug) throw new Error('Choose a manager to run the backtest.');
   const { client, managers, filings, holdings } = await core();
   const manager = managers.find((row) => row.slug === managerSlug || row.id === managerSlug);
   if (!manager) throw new Error('Tracked manager not found.');
-  const managerFilings = (filingMap(filings).get(manager.id) || []).slice(0, 12).reverse();
+  // Ordered by when the market learned of each filing, not by the quarter it
+  // covers. A 13F-HR/A for an older quarter is accepted after later quarters'
+  // originals, so report_date order produced periods whose exit preceded their
+  // entry - a negative holding period, compounded without complaint. Superseded
+  // versions are already excluded upstream by the is_active filter.
+  const managerFilings = orderByAcceptance(filingMap(filings).get(manager.id) || []).slice(-12);
   const ids = new Set(managerFilings.map((row) => row.id));
   const managerHoldings = holdings.filter((row) => ids.has(row.filing_id));
   const targets = [...new Set([...managerHoldings.map(tickerOf).filter(Boolean), ...BENCHMARKS])];
@@ -292,23 +295,104 @@ export async function runInstitutionalBacktest({ managerSlug, topN = 10, transac
     if (error) throw error;
     (data || []).forEach((row) => { const rows = prices.get(row.security_key) || []; rows.push(row); prices.set(row.security_key, rows); });
   }
+
+  // The trading calendar, derived from the benchmark's own price history rather
+  // than a hardcoded holiday table. It is the one series expected to have a
+  // print on every session, so it defines what "next tradable session" means -
+  // correct for every year, including half-days and unscheduled closures, with
+  // no list to maintain.
+  const sessions = sessionsFromPrices(prices.get(BENCHMARKS[0]) || []);
+
   const byFiling = new Map(); managerHoldings.forEach((row) => { const rows = byFiling.get(row.filing_id) || []; rows.push(row); byFiling.set(row.filing_id, rows); });
   const periods = [];
+  const skipped = [];
+  const limit = Math.max(1, Math.min(50, number(topN) || 10));
+
   for (let index = 0; index < managerFilings.length - 1; index += 1) {
     const filing = managerFilings[index]; const next = managerFilings[index + 1];
-    const entry = dateOnly(filing.accepted_at || filing.filed_at); const exit = dateOnly(next.accepted_at || next.filed_at);
-    if (!entry || !exit) continue;
-    const portfolio = periodReturn(byFiling.get(filing.id) || [], prices, entry, exit, Math.max(1, Math.min(50, number(topN) || 10)));
-    if (portfolio.value == null) continue;
-    const benchmark = (ticker) => { const start = priceAfter(prices.get(ticker) || [], entry); const end = priceAfter(prices.get(ticker) || [], exit); return start && end ? end / start - 1 : null; };
-    periods.push({ report_date: filing.report_date, known_at: filing.accepted_at || filing.filed_at, entry_date: entry, exit_date: exit, gross_return: portfolio.value, net_return: portfolio.value - number(transactionCostBps) / 10_000, spy_return: benchmark('SPY'), qqq_return: benchmark('QQQ'), price_coverage: portfolio.coverage, positions: portfolio.positions });
+
+    // Entry is the first session strictly after public acceptance, read in US
+    // Eastern. The previous code truncated the acceptance instant in UTC and
+    // matched prices with '>=', so it entered at the acceptance day's own
+    // close - a price struck before the filing was public.
+    const entry = firstTradableSession(filing.accepted_at || filing.filed_at, sessions);
+    const exit = firstTradableSession(next.accepted_at || next.filed_at, sessions);
+    if (!entry || !exit) {
+      skipped.push({ report_date: filing.report_date, reason: 'no tradable session after acceptance within the price history' });
+      continue;
+    }
+    if (!(exit > entry)) {
+      skipped.push({ report_date: filing.report_date, reason: `exit ${exit} does not follow entry ${entry}` });
+      continue;
+    }
+
+    const positions = [...(byFiling.get(filing.id) || [])]
+      .filter((row) => tickerOf(row) && !row.put_call)
+      .sort((a, b) => valueOf(b) - valueOf(a))
+      .slice(0, limit);
+
+    const portfolio = pitPeriodReturn({
+      positions, prices, entryDate: entry, exitDate: exit,
+      weightOf: valueOf, keyOf: tickerOf,
+    });
+    if (portfolio.value == null) {
+      skipped.push({ report_date: filing.report_date, reason: 'no position in the period could be priced' });
+      continue;
+    }
+
+    // A benchmark that was never measured must invalidate the comparison rather
+    // than win it. Previously a missing series compounded to 0%, so the whole
+    // strategy return was reported as excess over a benchmark that did not exist.
+    const spy = benchmarkReturn(prices.get('SPY') || [], entry, exit);
+    const qqq = benchmarkReturn(prices.get('QQQ') || [], entry, exit);
+
+    periods.push({
+      report_date: filing.report_date,
+      known_at: filing.accepted_at || filing.filed_at,
+      entry_date: entry,
+      exit_date: exit,
+      gross_return: portfolio.value,
+      net_return: portfolio.value - number(transactionCostBps) / 10_000,
+      spy_return: spy,
+      qqq_return: qqq,
+      price_coverage: portfolio.coverage,
+      positions_priced: portfolio.priced,
+      positions_excluded: portfolio.excluded,
+    });
   }
+
   const coverage = periods.length ? periods.reduce((sum, row) => sum + row.price_coverage, 0) / periods.length : 0;
-  const status = periods.length >= 3 && coverage >= 0.7 ? 'calculated' : 'not_calculable';
+  const benchmarkComplete = periods.length > 0 && periods.every((row) => row.spy_return != null);
+
+  // Every gate must hold. A run missing its benchmark is not a run with a zero
+  // benchmark, and a run that skipped periods is not a run over the full window.
+  const status = periods.length >= 3 && coverage >= 0.7 && benchmarkComplete && !skipped.length
+    ? 'calculated'
+    : 'not_calculable';
+  const notCalculableReason = status === 'calculated' ? null
+    : !periods.length ? 'No period could be priced.'
+      : periods.length < 3 ? `Only ${periods.length} priced period(s); at least 3 are required.`
+        : coverage < 0.7 ? `Average price coverage ${(coverage * 100).toFixed(1)}% is below the 70% floor.`
+          : !benchmarkComplete ? 'The benchmark is missing prices in at least one period, so excess return cannot be stated.'
+            : `${skipped.length} period(s) could not be evaluated.`;
+
   const compound = (key) => periods.reduce((value, row) => row[key] == null ? value : value * (1 + row[key]), 1) - 1;
-  const metrics = status === 'calculated' ? { total_return: compound('net_return'), spy_return: compound('spy_return'), qqq_return: compound('qqq_return'), excess_vs_spy: compound('net_return') - compound('spy_return'), periods: periods.length, average_price_coverage: coverage } : { reason: 'At least three filing-to-filing periods and 70% adjusted-price coverage are required.', periods: periods.length, average_price_coverage: coverage };
+  const metrics = status === 'calculated'
+    ? { total_return: compound('net_return'), spy_return: compound('spy_return'), qqq_return: compound('qqq_return'), excess_vs_spy: compound('net_return') - compound('spy_return'), periods: periods.length, average_coverage: coverage }
+    : { reason: notCalculableReason, periods: periods.length, average_coverage: coverage, skipped };
+
   const strategyKey = `top_${topN}_${crypto.createHash('sha1').update(String(transactionCostBps)).digest('hex').slice(0, 6)}`;
-  const payload = { manager_id: manager.id, as_of_date: dateOnly(new Date()), strategy_key: strategyKey, status, methodology: 'Enter only after SEC acceptance, at the next available adjusted close; rebalance after the next filing is public; include transaction cost.', assumptions: { top_n: topN, transaction_cost_bps: transactionCostBps, benchmarks: BENCHMARKS }, metrics, periods, evidence: { filing_ids: managerFilings.map((row) => row.id), no_look_ahead: true }, generated_at: new Date().toISOString() };
+  const payload = {
+    manager_id: manager.id,
+    as_of_date: dateOnly(new Date()),
+    strategy_key: strategyKey,
+    status,
+    methodology: 'Entry is the first US trading session strictly after the SEC acceptance timestamp, read in US Eastern; the session calendar is derived from observed benchmark prices. Positions without an exact adjusted close at both ends are excluded and reported rather than re-weighted. A period whose benchmark cannot be priced makes the run not calculable.',
+    periods,
+    metrics,
+    evidence: { periods, skipped, average_coverage: coverage, benchmark_complete: benchmarkComplete },
+    generated_at: new Date().toISOString(),
+  };
   const { data, error } = await client.from('institutional_backtest_runs').upsert(payload, { onConflict: 'manager_id,as_of_date,strategy_key' }).select().single();
   if (error) throw error;
   return { ...data, manager: { display_name: manager.display_name, slug: manager.slug } };
