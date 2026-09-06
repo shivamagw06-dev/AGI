@@ -796,7 +796,17 @@ async function ingestFiling(client, manager, source) {
   await client.from('holding_changes').delete().eq('filing_id', filing.id);
   if (changes.length) await insertChunks(client, 'holding_changes', changes);
   await createAlerts(client, manager, filing, changes);
-  return { accession_number: filing.accession_number, status: 'ingested', holdings: rows.length, report_date: filing.report_date, changes: changes.length };
+  return {
+    accession_number: filing.accession_number,
+    status: 'ingested',
+    holdings: rows.length,
+    report_date: filing.report_date,
+    changes: changes.length,
+    // Reported so a run summary can count amendments without re-reading the
+    // filings table. Their absence is why every completed run reported zero.
+    form_type: filing.form_type,
+    amendment_type: amendmentType,
+  };
 }
 
 function pastedAccession(value = '') {
@@ -1124,7 +1134,7 @@ async function rebuildSignals(client) {
   return { funds: latest.size, stocks: consensus.length };
 }
 
-async function performInstitutionalRefresh({ managerSlug, quarters = 12 } = {}) {
+async function performInstitutionalRefresh({ managerSlug, quarters = 12, onManagerDone = null } = {}) {
   const client = db();
   const managerRows = await managers(client);
   const selected = managerSlug && managerSlug !== 'all' ? managerRows.filter((row) => row.slug === managerSlug) : managerRows;
@@ -1141,7 +1151,12 @@ async function performInstitutionalRefresh({ managerSlug, quarters = 12 } = {}) 
       const staleCutoff = new Date(Date.now() - (240 * 24 * 60 * 60 * 1000)).toISOString().slice(0, 10);
       const status = newestReport < staleCutoff ? 'stale' : 'success';
       await client.from('institutional_managers').update({ last_refresh_at: new Date().toISOString(), last_successful_refresh_at: new Date().toISOString(), last_refresh_status: status, last_refresh_error: status === 'stale' ? `Latest available 13F reports ${newestReport}.` : null }).eq('id', manager.id);
-      return { manager: manager.display_name, cik: manager.cik, ok: true, status, latest_report_date: newestReport, filings };
+      const done = { manager: manager.display_name, slug: manager.slug, cik: manager.cik, ok: true, status, latest_report_date: newestReport, filings };
+      // Announced as it completes rather than only in the final return. A run
+      // that hits its ceiling abandons that return, and without this the record
+      // reported zero managers for work already committed to the database.
+      if (onManagerDone) { try { onManagerDone(done); } catch { /* telemetry must never break collection */ } }
+      return done;
     } catch (error) {
       await client.from('institutional_managers').update({ last_refresh_at: new Date().toISOString(), last_refresh_status: 'error', last_refresh_error: error.message }).eq('id', manager.id);
       return { manager: manager.display_name, cik: manager.cik, ok: false, status: 'error', error: error.message };

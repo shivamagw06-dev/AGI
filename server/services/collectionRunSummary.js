@@ -59,19 +59,27 @@ export function summariseRefresh(result) {
   const rows = Array.isArray(result?.results) ? result.results : [];
   const succeeded = rows.filter((row) => row?.ok);
 
-  // An amendment is a filing whose SEC form type ends in /A. The service
-  // already classifies these at ingestion; this only counts what it found.
-  const amendments = succeeded.filter((row) => {
-    const form = row?.filing?.form_type || '';
-    return typeof form === 'string' && form.toUpperCase().endsWith('/A');
-  });
+  // Two result shapes reach here and only one used to be handled.
+  //
+  // A single-manager refresh returns { filing, ingestion }. A bulk refresh -
+  // which is what the scheduled collector runs - returns { filings: [...] },
+  // one entry per filing ingested. Reading only the first shape meant every
+  // completed bulk run reported filings: 0, holdings rows: 0, amendments: 0
+  // however much it had actually written.
+  const ingestedFilings = (row) => {
+    if (Array.isArray(row?.filings)) return row.filings;
+    return row?.ingestion ? [{ ...row.ingestion, form_type: row?.filing?.form_type }] : [];
+  };
+
+  const allFilings = succeeded.flatMap(ingestedFilings);
+  const isAmendment = (filing) => String(filing?.form_type || '').toUpperCase().endsWith('/A');
 
   return {
     managersAttempted: rows.length,
     managersSucceeded: succeeded.length,
-    filingsIngested: succeeded.filter((row) => row?.ingestion?.status === 'ingested').length,
-    holdingsRows: succeeded.reduce((total, row) => total + (Number(row?.ingestion?.holdings) || 0), 0),
-    amendmentsDetected: amendments.length,
+    filingsIngested: allFilings.filter((filing) => filing?.status === 'ingested').length,
+    holdingsRows: allFilings.reduce((total, filing) => total + (Number(filing?.holdings) || 0), 0),
+    amendmentsDetected: allFilings.filter(isAmendment).length,
     failures: rows.filter((row) => !row?.ok).map((row) => ({
       manager: row?.manager?.slug || row?.slug || row?.manager?.display_name || 'unknown',
       error: String(row?.error || 'no reason recorded').slice(0, 500),

@@ -36,7 +36,7 @@ const flag = (name, fallback) => {
 
 const managerSlug = flag('manager', 'all');
 const quarters = Number(flag('quarters', '12'));
-const maxMinutes = Number(flag('max-minutes', '20'));
+const maxMinutes = Number(flag('max-minutes', '50'));
 const trigger = flag('trigger', 'schedule');
 // Passed in rather than hardcoded, so the record reflects the schedule that
 // actually invoked this run instead of one this file believes in.
@@ -89,9 +89,20 @@ let aborted = false;
 let failureMessage = null;
 let refresh = null;
 
+// Progress is accumulated as each manager finishes, not read from the final
+// result. Hitting the ceiling abandons that result, and the previous run
+// reported "managers: 0/0, filings: 0, holdings rows: 0" for work that was
+// already committed - a record that says nothing happened is worse than no
+// record, because someone will believe it.
+const completed = [];
+
 try {
   refresh = await Promise.race([
-    refreshInstitutionalFilings({ managerSlug, quarters }),
+    refreshInstitutionalFilings({
+      managerSlug,
+      quarters,
+      onManagerDone: (result) => completed.push(result),
+    }),
     ceiling,
   ]);
 } catch (error) {
@@ -100,7 +111,11 @@ try {
   console.error(`[collector] failed after ${elapsed()}s: ${failureMessage}`);
 }
 
-const work = summariseRefresh(refresh);
+// Prefer the complete result; fall back to what was observed finishing.
+const work = summariseRefresh(refresh || { results: completed });
+if (!refresh && completed.length) {
+  console.log(`[collector] cut short, but ${completed.length} manager(s) completed and were written`);
+}
 const limiter = secLimiterStats();
 const status = deriveStatus({
   attempted: work.managersAttempted,
