@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import {
   getInstitutionalAdmin,
+  getRepairStatus,
   getInstitutionalFund,
   getInstitutionalOverview,
   getInstitutionalStock,
@@ -114,9 +115,30 @@ export default function createInstitutionalHoldingsRouter() {
   router.get('/overview', async (_req, res) => {
     try {
       const { data, cacheStatus } = await getCachedInstitutionalOverview();
+
+      // The integrity gate is never served from cache.
+      //
+      // Everything else in this payload measures filings that changed hours
+      // ago, and five minutes of staleness costs nothing. The gate is a
+      // different kind of statement: it says whether the numbers beside it can
+      // be trusted right now. A cached one is wrong in both directions - it
+      // kept reporting "historical repair in progress" for minutes after a
+      // repair finished, and it would just as readily report a clean bill of
+      // health after a repair had failed.
+      //
+      // Two small queries, so recomputing per request is cheap. If it cannot be
+      // read, the cached value stands, which is the conservative direction:
+      // getRepairStatus itself fails closed.
+      let dataIntegrity = data?.data_integrity ?? null;
+      try {
+        dataIntegrity = await getRepairStatus();
+      } catch (gateError) {
+        console.warn('[institutional-holdings] live gate read failed:', gateError?.message || gateError);
+      }
+
       res.set('Cache-Control', 'public, max-age=30, stale-while-revalidate=600');
       res.set('X-AGI-Overview-Cache', cacheStatus);
-      return res.json(data);
+      return res.json({ ...data, data_integrity: dataIntegrity });
     } catch (error) {
       return sendError(res, error);
     }

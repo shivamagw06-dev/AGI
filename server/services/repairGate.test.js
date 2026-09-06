@@ -13,10 +13,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+import { stripCommentLines } from '../tests/stripComments.js';
 
-const strip = (source) => source
-  .replace(/\/\*[\s\S]*?\*\//g, '')
-  .replace(/(^|[^:])\/\/.*$/gm, '$1');
+const strip = stripCommentLines;
 
 const holdings = strip(readFileSync(new URL('./institutionalHoldingsService.js', import.meta.url), 'utf8'));
 const research = strip(readFileSync(new URL('./institutionalResearchLayerService.js', import.meta.url), 'utf8'));
@@ -99,4 +98,30 @@ test('the repair job excludes on apply and says so on a dry run', () => {
 test('the repair job ends by reporting the gate', () => {
   assert.match(repair, /getRepairStatus\(\)/,
     'the run must end by saying whether the numbers can be published, not only what it touched');
+});
+
+test('the integrity gate is never served from the overview cache', () => {
+  // The overview payload is cached for five minutes with a stale-while-
+  // revalidate fallback. That is fine for consensus, which measures filings
+  // that changed hours ago. It is not fine for the gate: it states whether the
+  // numbers beside it can be trusted right now.
+  //
+  // Observed after the repair completed - the script reported the gate as
+  // complete while /overview kept serving "historical repair in progress" from
+  // cache. The same staleness in the other direction would show a clean bill of
+  // health after a repair had failed, which is the version that matters.
+  const routes = strip(readFileSync(
+    new URL('../routes/institutionalHoldings.js', import.meta.url), 'utf8'));
+
+  const handler = /router\.get\('\/overview'[\s\S]*?\n {2}\}\);/.exec(routes)?.[0];
+  assert.ok(handler, 'the overview handler is gone');
+  assert.match(handler, /await getRepairStatus\(\)/,
+    'the overview handler must read the gate live rather than returning the cached copy');
+  assert.match(handler, /data_integrity: dataIntegrity/,
+    'the live gate must replace whatever the cached payload carried');
+
+  // And the fallback must keep the cached value rather than dropping the gate,
+  // since an absent gate reads as no warning at all.
+  assert.match(handler, /data\?\.data_integrity \?\? null/,
+    'if the live read fails the cached gate must stand; an absent gate shows no warning');
 });
