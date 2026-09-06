@@ -17,6 +17,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+import { stripCommentLines } from '../tests/stripComments.js';
 import { valueScaleFor, filingDeadline, detectScaleMismatch, DOLLAR_RULE_DATE } from './valueScale.js';
 
 test('Q4-2022 filed in February 2023 is whole dollars', () => {
@@ -118,9 +119,8 @@ test('no ingest path decides the value scale for itself', () => {
   // The defect was three independent decisions, two of them wrong. This fails
   // if a fourth appears, or if one of the three starts keying on report_date
   // again.
-  const source = readFileSync(new URL('./institutionalHoldingsService.js', import.meta.url), 'utf8')
-    .replace(/\/\*[\s\S]*?\*\//g, '')
-    .replace(/(^|[^:])\/\/.*$/gm, '$1');
+  const source = stripCommentLines(
+    readFileSync(new URL('./institutionalHoldingsService.js', import.meta.url), 'utf8'));
 
   assert.equal(/POST_2022_VALUE_RULE_DATE/.test(source), false,
     'the local rule-date constant is back; the rule lives in valueScale.js');

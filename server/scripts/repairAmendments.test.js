@@ -13,11 +13,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+import { stripCommentLines } from '../tests/stripComments.js';
 
 const source = readFileSync(new URL('./repairAmendments.mjs', import.meta.url), 'utf8');
-const code = source
-  .replace(/\/\*[\s\S]*?\*\//g, '')
-  .replace(/(^|[^:])\/\/.*$/gm, '$1');
+const code = stripCommentLines(source);
 
 test('the job is a dry run unless --apply is passed', () => {
   assert.match(code, /const APPLY = args\.includes\('--apply'\)/,
