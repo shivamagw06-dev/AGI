@@ -4,7 +4,7 @@
  * earns, what its counters mean, and when the next run is due - because each
  * has a failure mode that reads as good news.
  *
- *   node --test server/services/institutionalCollectionRuns.test.js
+ *   node --test server/services/collectionRunSummary.test.js
  */
 
 import test from 'node:test';

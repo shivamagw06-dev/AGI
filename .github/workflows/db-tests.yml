@@ -580,9 +580,15 @@ jobs:
           # The application layer and the schema must agree on the status words.
           # Read them out of the JavaScript rather than restating them here, so
           # the two cannot drift apart silently.
+          #
+          # Read from collectionRunSummary.js, which is where deriveStatus lives.
+          # It moved out of the recorder so the pure logic could be tested without
+          # a database driver, and this step failed loudly on the stale path
+          # rather than quietly finding nothing - which is the behaviour wanted
+          # from a check whose whole job is to notice drift.
           node -e "
             const fs = require('fs');
-            const src = fs.readFileSync('server/services/institutionalCollectionRuns.js', 'utf8');
+            const src = fs.readFileSync('server/services/collectionRunSummary.js', 'utf8');
             const words = [...src.matchAll(/return '(success|partial|failed|aborted|running)'/g)].map(m => m[1]);
             const unique = [...new Set(words)];
             if (!unique.length) { console.error('::error::no status words found in the recorder'); process.exit(1); }

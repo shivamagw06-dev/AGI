@@ -37,7 +37,7 @@ jobs:
       # A run that half-worked must never be recorded as a success: the whole
       # point of the record is that an operator can trust what it says.
       - name: Assert the collection run record tells the truth
-        run: node --test server/services/institutionalCollectionRuns.test.js
+        run: node --test server/services/collectionRunSummary.test.js
 
       # A test that cannot fail proves nothing. Remove one guard and the suite
       # must go red; if it stays green the assertions have drifted away from
