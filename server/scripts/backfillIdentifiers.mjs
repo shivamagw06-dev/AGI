@@ -73,7 +73,12 @@ try {
     console.log(`[identifiers] coverage after:  ${pct(result.coverage_after)}`);
     const gained = result.coverage_after.mapped_rows - result.coverage_before.mapped_rows;
     console.log(`[identifiers] rows newly mapped: ${gained.toLocaleString()}`);
-    console.log(`[identifiers] attempted ${result.attempted}, mapped ${result.mapped}, unresolved ${result.unresolved}`);
+    console.log(`[identifiers] attempted ${result.attempted}, resolved ${result.mapped},`
+      + ` applied to holdings ${result.applied ?? 0}, unresolved ${result.unresolved}`);
+    if (result.mapped && !result.applied) {
+      console.warn('[identifiers] mappings were written but none reached the holdings table,'
+        + ' so nothing downstream will change. That is a fault, not a quiet success.');
+    }
     for (const problem of result.errors || []) console.warn(`[identifiers] ${problem}`);
     if (result.unresolved) {
       console.log(`[identifiers] ${result.unresolved} could not be resolved. Those are usually private`

@@ -172,8 +172,13 @@ test('the backfill reports coverage either side of itself', () => {
   const fn = /export async function runIdentifierBackfill[\s\S]*?\n}/.exec(svc)?.[0];
   assert.match(fn, /coverage_before/, 'a claim about coverage must be traceable to a measurement');
   assert.match(fn, /coverage_after/);
-  assert.match(fn, /const before = await measure\(\)/,
+  // Matches the measurement, not the exact call shape, which is now wrapped in
+  // phase timing. Pinning the shape made this fail on a change that did not
+  // affect what it was testing.
+  assert.match(fn, /const before = await phase\('coverage before'/,
     'the before measurement must be taken before anything is written');
+  assert.ok(fn.indexOf('const before') < fn.indexOf('enrichSecurityIdentifiers'),
+    'it must be measured before the write, or the comparison means nothing');
 });
 
 test('the runner refuses to start without credentials', () => {
@@ -247,4 +252,53 @@ test('the printed report names each figure', () => {
   assert.match(script, /obs/, 'observations must be distinguishable from managers');
   assert.match(script, /manager-quarter/,
     'the report must explain why observations exceed managers, or the reader assumes a bug');
+});
+
+// ---------------------------------------------------------------------------
+// Writing a mapping has to change something a reader can see
+// ---------------------------------------------------------------------------
+
+test('resolved mappings are applied to the holdings they cover', () => {
+  // Enrichment wrote only to security_identifier_history. The search index,
+  // consensus, sector weights and every price lookup read
+  // institutional_holdings.ticker, which stayed null - so a run could report
+  // "mapped 209" while coverage sat unmoved, the two numbers measuring
+  // different tables.
+  const svc = readFileSync(new URL('./institutionalHoldingsService.js', import.meta.url), 'utf8');
+  const fn = /async function enrichSecurityIdentifiers[\s\S]*?\n}/.exec(svc)?.[0];
+  assert.ok(fn, 'enrichSecurityIdentifiers is gone');
+
+  assert.match(fn, /from\('institutional_holdings'\)\s*\n?\s*\.update\(\{ ticker: mapping\.ticker \}\)/,
+    'a resolved mapping must reach the holdings table or nothing downstream changes');
+  assert.match(fn, /\.gte\('report_date', mapping\.valid_from\)/,
+    'the update must be scoped to the interval the mapping claims');
+  assert.match(fn, /\.is\('ticker', null\)/,
+    'only unmapped rows should be filled; an existing ticker was resolved for its own period');
+});
+
+test('the apply loop reports per-security failures instead of losing the batch', () => {
+  const svc = readFileSync(new URL('./institutionalHoldingsService.js', import.meta.url), 'utf8');
+  const fn = /async function enrichSecurityIdentifiers[\s\S]*?\n}/.exec(svc)?.[0];
+  assert.match(fn, /applying \$\{mapping\.cusip\}/,
+    'one slow or failing security must name itself rather than take two hundred down with it');
+  assert.match(fn, /applied \+= 1/, 'the count of rows actually changed must be reported');
+});
+
+test('each phase is timed, so a timeout says where it happened', () => {
+  // The first apply run died with "canceling statement due to statement
+  // timeout" after 124s, and nothing said whether that was the coverage count,
+  // the candidate scan, the vendor upsert or the holdings update.
+  const svc = readFileSync(new URL('./institutionalHoldingsService.js', import.meta.url), 'utf8');
+  const fn = /export async function runIdentifierBackfill[\s\S]*?\n}/.exec(svc)?.[0];
+  assert.ok(fn, 'runIdentifierBackfill is gone');
+  for (const name of ['coverage before', 'candidate scan', 'resolve and apply', 'coverage after']) {
+    assert.ok(fn.includes(`'${name}'`), `the ${name} phase is not named in the log`);
+  }
+});
+
+test('resolved-but-not-applied is reported as a fault, not a success', () => {
+  const script = readFileSync(new URL('../scripts/backfillIdentifiers.mjs', import.meta.url), 'utf8');
+  assert.match(script, /applied to holdings/, 'the two counts must be distinguishable');
+  assert.match(script, /That is a fault, not a quiet success/,
+    'writing mappings that never reach the holdings table must be called out');
 });
