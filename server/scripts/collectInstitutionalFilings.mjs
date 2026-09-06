@@ -21,8 +21,12 @@
  * database, so it fails loudly rather than proceeding when they are absent.
  */
 
+import { hostname } from 'node:os';
 import { refreshInstitutionalFilings } from '../services/institutionalHoldingsService.js';
 import { secLimiterStats } from '../services/secRateLimiter.js';
+import {
+  startRun, finishRun, deriveStatus, summariseRefresh, nextScheduledAt,
+} from '../services/institutionalCollectionRuns.js';
 
 const args = process.argv.slice(2);
 const flag = (name, fallback) => {
@@ -33,6 +37,10 @@ const flag = (name, fallback) => {
 const managerSlug = flag('manager', 'all');
 const quarters = Number(flag('quarters', '12'));
 const maxMinutes = Number(flag('max-minutes', '20'));
+const trigger = flag('trigger', 'schedule');
+// Passed in rather than hardcoded, so the record reflects the schedule that
+// actually invoked this run instead of one this file believes in.
+const schedule = flag('schedule', process.env.COLLECTION_SCHEDULE || null);
 
 // The collector must be told where to write before it starts crawling. Failing
 // here costs nothing; failing after 900 EDGAR requests wastes the rate budget
@@ -63,45 +71,83 @@ const ceiling = new Promise((_, reject) => {
   timer.unref();
 });
 
-console.log(`[collector] manager=${managerSlug} quarters=${quarters} ceiling=${maxMinutes}m`);
+console.log(`[collector] manager=${managerSlug} quarters=${quarters} ceiling=${maxMinutes}m trigger=${trigger}`);
+
+// Opened before any EDGAR request. A run that dies mid-crawl then leaves a row
+// stuck in 'running', which an operator can see; a record written only at the
+// end would leave nothing, and silence looks exactly like success.
+const runId = await startRun({
+  trigger,
+  host: process.env.RENDER_SERVICE_NAME || hostname(),
+  managerSlug,
+  quarters,
+  scheduleExpression: schedule,
+});
+if (runId) console.log(`[collector] run ${runId}`);
+
+let aborted = false;
+let failureMessage = null;
+let refresh = null;
 
 try {
-  const result = await Promise.race([
+  refresh = await Promise.race([
     refreshInstitutionalFilings({ managerSlug, quarters }),
     ceiling,
   ]);
-
-  const rows = result?.results || [];
-  const ok = rows.filter((row) => row.ok);
-  const failed = rows.filter((row) => !row.ok);
-  const limiter = secLimiterStats();
-
-  console.log(`[collector] ${ok.length}/${rows.length} managers in ${elapsed()}s`);
-  console.log(`[collector] identifiers mapped: ${result?.enrichment?.mapped ?? 0}`);
-  console.log(`[collector] sec requests: ${limiter.requests}, throttled: ${limiter.throttled}, `
-    + `circuit trips: ${limiter.circuit_trips}, paced wait: ${(limiter.total_wait_ms / 1000).toFixed(1)}s`);
-
-  for (const row of failed.slice(0, 20)) {
-    console.error(`[collector]   failed: ${row.slug || row.manager || '?'} - ${row.error || 'no reason given'}`);
-  }
-
-  // Being throttled at all means the pacing is set too high for this address.
-  if (limiter.throttled > 0) {
-    console.warn(`::warning::EDGAR throttled ${limiter.throttled} request(s). `
-      + `Lower SEC_MAX_REQUESTS_PER_SECOND (currently ${limiter.max_requests_per_second}).`);
-  }
-  if (limiter.circuit_trips > 0) {
-    console.error('::error::The SEC circuit breaker tripped. This run was cut short to protect the IP.');
-    process.exit(1);
-  }
-  // A run where every manager failed is a failed run, not a quiet one.
-  if (rows.length && !ok.length) {
-    console.error('::error::No manager was collected successfully.');
-    process.exit(1);
-  }
-  process.exit(0);
 } catch (error) {
-  console.error(`[collector] failed after ${elapsed()}s: ${error?.message || error}`);
-  console.error(`[collector] sec requests attempted: ${secLimiterStats().requests}`);
-  process.exit(1);
+  failureMessage = String(error?.message || error);
+  aborted = /ceiling/.test(failureMessage);
+  console.error(`[collector] failed after ${elapsed()}s: ${failureMessage}`);
 }
+
+const work = summariseRefresh(refresh);
+const limiter = secLimiterStats();
+const status = deriveStatus({
+  attempted: work.managersAttempted,
+  succeeded: work.managersSucceeded,
+  error: failureMessage,
+  aborted,
+});
+
+// The circuit tripping means the run was cut short to protect the address, so
+// it is not a success however many managers happened to complete first.
+const circuitTripped = limiter.circuit_trips > 0;
+const finalStatus = circuitTripped && status === 'success' ? 'partial' : status;
+
+await finishRun(runId, {
+  status: finalStatus,
+  secRequests: limiter.requests,
+  secThrottled: limiter.throttled,
+  secThrottlePauseMs: limiter.throttle_pause_ms,
+  secPacedWaitMs: limiter.total_wait_ms,
+  secCircuitTrips: limiter.circuit_trips,
+  ...work,
+  retryState: circuitTripped
+    ? { circuit_tripped: true, note: 'run cut short to protect the source address' }
+    : null,
+  error: failureMessage,
+});
+
+console.log(`[collector] status=${finalStatus} in ${elapsed()}s`);
+console.log(`[collector] managers: ${work.managersSucceeded}/${work.managersAttempted}, `
+  + `filings: ${work.filingsIngested}, holdings rows: ${work.holdingsRows}, `
+  + `amendments: ${work.amendmentsDetected}`);
+console.log(`[collector] sec requests: ${limiter.requests}, throttled: ${limiter.throttled}, `
+  + `throttle pause: ${(limiter.throttle_pause_ms / 1000).toFixed(1)}s, `
+  + `paced wait: ${(limiter.total_wait_ms / 1000).toFixed(1)}s, `
+  + `circuit trips: ${limiter.circuit_trips}`);
+if (schedule) console.log(`[collector] next scheduled run: ${nextScheduledAt(schedule) || 'unknown'}`);
+
+for (const failure of work.failures.slice(0, 20)) {
+  console.error(`[collector]   failed: ${failure.manager} - ${failure.error}`);
+}
+
+if (limiter.throttled > 0) {
+  console.warn(`[collector] WARNING: EDGAR throttled ${limiter.throttled} request(s). `
+    + `Lower SEC_MAX_REQUESTS_PER_SECOND (currently ${limiter.max_requests_per_second}).`);
+}
+if (circuitTripped) {
+  console.error('[collector] ERROR: the SEC circuit breaker tripped; this run was cut short to protect the IP.');
+}
+
+process.exit(['success', 'partial'].includes(finalStatus) ? 0 : 1);
