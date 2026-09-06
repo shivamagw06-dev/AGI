@@ -568,6 +568,39 @@ jobs:
           psql -v ON_ERROR_STOP=1 -q -f supabase/migrations/20260906120000_institutional_collection_runs.sql
           echo "  migration is idempotent"
 
+      - name: Apply the filing-review migration onto the stub
+        run: |
+          set -euo pipefail
+          psql -v ON_ERROR_STOP=1 -q -c "
+            alter table public.institutional_filings
+              add column if not exists manager_id uuid,
+              add column if not exists amendment_type text not null default 'original',
+              add column if not exists is_active boolean not null default true;"
+          psql -v ON_ERROR_STOP=1 -q -f supabase/migrations/20260906140000_institutional_filing_review.sql
+          psql -v ON_ERROR_STOP=1 -q -f supabase/migrations/20260906140000_institutional_filing_review.sql
+          echo "  filing-review migration applies and is idempotent"
+
+      - name: Assert the schema accepts every amendment_type the code writes
+        run: |
+          set -euo pipefail
+          # The asset_type incident in reverse: prove the column accepts the
+          # application's real vocabulary rather than a plausible-looking one.
+          node -e "
+            const fs=require('fs');
+            const src=fs.readFileSync('server/services/secAmendment.js','utf8');
+            const v=[...src.matchAll(/amendmentType: '([a-z_]+)'/g)].map(m=>m[1]);
+            const u=[...new Set(v)];
+            if(u.length<4){console.error('::error::expected four amendment types, found '+u.join(','));process.exit(1);}
+            console.log(u.join('\n'));
+          " > /tmp/amendment_types.txt
+          while read -r t; do
+            [ -z "$t" ] && continue
+            psql -v ON_ERROR_STOP=1 -q -c \
+              "insert into public.institutional_filings (amendment_type, report_date) values ('$t', '2025-03-31');" \
+              || { echo "::error::the schema rejects amendment_type '$t', which the code writes"; exit 1; }
+          done < /tmp/amendment_types.txt
+          echo "  schema accepts every amendment_type the classifier produces"
+
       - name: Assert the constraints behave in both directions
         run: |
           set -euo pipefail

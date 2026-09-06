@@ -1,5 +1,6 @@
 import { createSupabaseAdmin } from '../lib/supabaseAdmin.js';
 import { getCollectionHealth, listRuns } from './institutionalCollectionRuns.js';
+import { classifyFiling, applyAmendment, droppedPositions } from './secAmendment.js';
 
 const SEC_ROOT = 'https://www.sec.gov';
 const SEC_DATA = 'https://data.sec.gov';
@@ -460,7 +461,37 @@ async function filingDocuments(cik, accession) {
     documents.push({ name, text });
     if (documents.some((doc) => /<(?:\w+:)?infoTable[\s>]/i.test(doc.text))) break;
   }
-  return { base, documents };
+
+  // The cover page, fetched separately and on purpose.
+  //
+  // The loop above ranks the information table first and stops the moment it
+  // has one, so on a filing laid out as [infotable.xml, submission.txt,
+  // primary_doc.xml] it downloads exactly one file. That is correct for
+  // holdings and wrong for everything else: the cover page is the only place
+  // SEC states whether a 13F-HR/A restates the earlier report or adds to it,
+  // and it was never being read. Verified against Elliott 0000902664-25-003078
+  // and Baupost 0001567619-18-006456, both real restatements, both of which
+  // downloaded only the info table.
+  //
+  // One extra request per filing, and only when the cover page was not already
+  // picked up in the documents above.
+  let coverPage = documents.find((doc) => /primary_doc\.xml$/i.test(doc.name))?.text || null;
+  if (!coverPage && names.some((name) => /primary_doc\.xml$/i.test(name))) {
+    try {
+      coverPage = await secFetch(`${base}/primary_doc.xml`);
+    } catch (error) {
+      // Not fatal. An amendment without a readable cover page is escalated for
+      // review rather than guessed at, which is handled by the caller.
+      console.warn(`[institutional-holdings] cover page unavailable for ${accession}: ${error.message}`);
+    }
+  }
+  // Older filings predate the XML cover page entirely; the full submission text
+  // is the only place the metadata can be.
+  if (!coverPage) {
+    coverPage = documents.find((doc) => /<(?:\w+:)?amendmentType>/i.test(doc.text))?.text || null;
+  }
+
+  return { base, documents, coverPage };
 }
 
 async function mappingsFor(client, cusips) {
@@ -646,17 +677,71 @@ async function ingestFiling(client, manager, source) {
   const legacyScaleDetected = ratios.length >= 5 && medianRatio < 1 && ratios.filter((ratio) => ratio < 1).length / ratios.length >= 0.6;
   const valueScale = n(manager.value_scale_override) || (String(source.accepted_at || source.filing_date) < POST_2022_VALUE_RULE_DATE || legacyScaleDetected ? 1000 : 1);
   if (valueScale !== 1) rawRows = rawRows.map((row) => ({ ...row, value_usd: n(row.value_usd) * valueScale }));
-  const combined = archive.documents.map((doc) => doc.text).join('\n');
-  const isRestatement = /<(?:\w+:)?isRestatement>\s*true\s*</i.test(combined);
-  const amendmentType = source.form_type === '13F-HR' ? 'original' : isRestatement ? 'restatement' : 'additional_holdings';
+  // Amendment handling.
+  //
+  // What was here tested for a tag SEC does not emit, against documents that
+  // did not include the cover page, so every 13F-HR/A ever ingested was
+  // classified additional_holdings and merged. A restatement that removed a
+  // position therefore left it standing as a phantom holding. See
+  // secAmendment.js for the filings this was verified against.
+  const classification = classifyFiling(source.form_type, archive.coverPage);
+  const amendmentType = classification.amendmentType;
   const { data: previousVersion } = await client.from('institutional_filings').select('*').eq('manager_id', manager.id).eq('report_date', source.report_date).eq('is_active', true).order('filed_at', { ascending: false }).limit(1).maybeSingle();
-  let rows = rawRows;
-  if (source.form_type === '13F-HR/A' && !isRestatement && previousVersion) {
-    const priorVersionRows = await collect(() => client.from('institutional_holdings').select('*').eq('filing_id', previousVersion.id));
-    const merged = new Map(priorVersionRows.map((row) => [filingKey(row), row]));
-    for (const row of rawRows) merged.set(filingKey(row), row);
-    rows = collapseDuplicateRows([...merged.values()].map(({ id, filing_id, manager_id, report_date, portfolio_weight, created_at, ...row }) => row));
+
+  const priorVersionRows = previousVersion
+    ? await collect(() => client.from('institutional_holdings').select('*').eq('filing_id', previousVersion.id))
+    : [];
+  const strippedPriorRows = priorVersionRows.map(
+    ({ id, filing_id, manager_id, report_date, portfolio_weight, created_at, ...row }) => row,
+  );
+
+  // An amendment with no prior version to amend is just a filing.
+  const strategy = amendmentType === 'original' || !previousVersion ? 'replace' : classification.strategy;
+  const outcome = applyAmendment({
+    strategy,
+    priorRows: strippedPriorRows,
+    amendmentRows: rawRows,
+    keyOf: filingKey,
+  });
+  const removed = strategy === 'replace' && previousVersion
+    ? droppedPositions({ priorRows: strippedPriorRows, amendmentRows: rawRows, keyOf: filingKey })
+    : [];
+  if (removed.length) {
+    console.info(`[institutional-holdings] ${source.accession_number} restates ${manager.slug || manager.display_name}: ${removed.length} position(s) removed`);
   }
+
+  // An amendment we could not classify must not silently rewrite the report.
+  // The filing is recorded so it is visible, the earlier version stays
+  // authoritative, and an operator decides.
+  if (strategy === 'review') {
+    console.warn(`[institutional-holdings] ${source.accession_number} needs review: ${classification.reviewReason}`);
+    await client.from('institutional_filings').upsert({
+      manager_id: manager.id,
+      accession_number: source.accession_number,
+      form_type: source.form_type,
+      report_date: source.report_date,
+      filed_at: source.accepted_at,
+      primary_document: source.primary_document,
+      amendment_type: 'unknown',
+      is_amendment: true,
+      is_active: false,
+      needs_review: true,
+      review_reason: classification.reviewReason,
+      source_url: `${archive.base}/${source.primary_document || infoDocument.name}`,
+      holdings_count: rawRows.length,
+      ingested_at: new Date().toISOString(),
+    }, { onConflict: 'accession_number' });
+    return {
+      accession_number: source.accession_number,
+      status: 'needs_review',
+      holdings: 0,
+      report_date: source.report_date,
+      changes: 0,
+      review_reason: classification.reviewReason,
+    };
+  }
+
+  let rows = strategy === 'merge' ? collapseDuplicateRows(outcome.rows) : outcome.rows;
   const identifierMap = await mappingsFor(client, [...new Set(rows.map((row) => row.cusip))]);
   const totalValue = rows.reduce((sum, row) => sum + n(row.value_usd), 0);
   rows = rows.map((row) => ({

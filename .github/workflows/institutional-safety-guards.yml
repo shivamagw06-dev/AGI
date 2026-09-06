@@ -39,6 +39,12 @@ jobs:
       - name: Assert the collection run record tells the truth
         run: node --test server/services/collectionRunSummary.test.js
 
+      # Runs against cover pages captured from real SEC filings. The previous
+      # implementation passed review and was inert against every filing SEC has
+      # ever published, which only real fixtures expose.
+      - name: Assert amendments supersede or add, and are never guessed
+        run: node --test server/services/secAmendment.test.js
+
       # A test that cannot fail proves nothing. Remove one guard and the suite
       # must go red; if it stays green the assertions have drifted away from
       # what they claim to check, and this job fails on that instead.
