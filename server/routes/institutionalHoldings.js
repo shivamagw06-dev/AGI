@@ -5,6 +5,8 @@ import {
   getInstitutionalOverview,
   getInstitutionalStock,
   markInstitutionalAlert,
+  previewInstitutionalImport,
+  publishInstitutionalImport,
   refreshInstitutionalFilings,
   saveSecurityMapping,
   updateInstitutionalManager,
@@ -94,6 +96,8 @@ export default function createInstitutionalHoldingsRouter() {
   router.get('/funds/:slug', async (req, res) => { try { const data = await getInstitutionalFund(req.params.slug); return data ? res.json(data) : res.status(404).json({ error: 'Tracked fund not found' }); } catch (error) { return sendError(res, error); } });
   router.get('/stocks/:key', async (req, res) => { try { const data = await getInstitutionalStock(req.params.key); return data ? res.json(data) : res.status(404).json({ error: 'No tracked fund currently holds this security' }); } catch (error) { return sendError(res, error); } });
   router.get('/admin', requireAdmin, async (_req, res) => { try { return res.json(await getInstitutionalAdmin()); } catch (error) { return sendError(res, error); } });
+  router.post('/admin/imports/preview', requireAdmin, async (req, res) => { try { return res.json(await previewInstitutionalImport(req.body || {})); } catch (error) { return sendError(res, error, 400); } });
+  router.post('/admin/imports/publish', requireAdmin, async (req, res) => { try { const data = await publishInstitutionalImport({ ...(req.body || {}), actor: req.adminUser?.email || 'admin' }); rebuildOverviewCache(); return res.json(data); } catch (error) { return sendError(res, error, 400); } });
   router.post('/admin/refresh', requireAdmin, async (req, res) => { try { const data = await refreshInstitutionalFilings(req.body || {}); rebuildOverviewCache(); return res.json(data); } catch (error) { return sendError(res, error, 400); } });
   router.post('/admin/security-mappings', requireAdmin, async (req, res) => { try { const data = await saveSecurityMapping({ ...req.body, actor: req.adminUser?.email || 'admin' }); rebuildOverviewCache(); return res.json(data); } catch (error) { return sendError(res, error, 400); } });
   router.patch('/admin/managers/:id', requireAdmin, async (req, res) => { try { const data = await updateInstitutionalManager(req.params.id, req.body || {}, req.adminUser?.email || 'admin'); rebuildOverviewCache(); return res.json(data); } catch (error) { return sendError(res, error, 400); } });
