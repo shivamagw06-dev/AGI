@@ -24,6 +24,7 @@ async function request(path, { method = 'GET', body, admin = false, timeoutMs = 
 }
 
 export const getInstitutionalOverview = () => request('/overview');
+export const getInstitutionalDecisionIntelligence = () => request('/decision-intelligence');
 export const getInstitutionalFund = (slug) => request(`/funds/${encodeURIComponent(slug)}`);
 export const getInstitutionalStock = (key) => request(`/stocks/${encodeURIComponent(key)}`);
 export const getInstitutionalAdmin = () => request('/admin', { admin: true });

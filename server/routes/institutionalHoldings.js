@@ -11,6 +11,10 @@ import {
   saveSecurityMapping,
   updateInstitutionalManager,
 } from '../services/institutionalHoldingsService.js';
+import {
+  clearInstitutionalDecisionIntelligenceCache,
+  getInstitutionalDecisionIntelligence,
+} from '../services/institutionalDecisionIntelligenceService.js';
 
 async function requireAdmin(req, res, next) {
   try {
@@ -75,6 +79,7 @@ async function getCachedInstitutionalOverview() {
 
 function rebuildOverviewCache() {
   overviewCacheExpiresAt = 0;
+  clearInstitutionalDecisionIntelligenceCache();
   void refreshOverviewCache().catch((error) => {
     console.warn('[institutional-holdings] Overview cache rebuild failed:', error?.message || error);
   });
@@ -88,6 +93,15 @@ export default function createInstitutionalHoldingsRouter() {
       const { data, cacheStatus } = await getCachedInstitutionalOverview();
       res.set('Cache-Control', 'public, max-age=30, stale-while-revalidate=600');
       res.set('X-AGI-Overview-Cache', cacheStatus);
+      return res.json(data);
+    } catch (error) {
+      return sendError(res, error);
+    }
+  });
+  router.get('/decision-intelligence', async (_req, res) => {
+    try {
+      const data = await getInstitutionalDecisionIntelligence();
+      res.set('Cache-Control', 'public, max-age=60, stale-while-revalidate=600');
       return res.json(data);
     } catch (error) {
       return sendError(res, error);
