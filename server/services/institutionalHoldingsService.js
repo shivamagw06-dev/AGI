@@ -6,6 +6,7 @@ import { valueScaleFor, detectScaleMismatch } from './valueScale.js';
 const SEC_ROOT = 'https://www.sec.gov';
 const SEC_DATA = 'https://data.sec.gov';
 import { scheduleSecRequest, recordThrottled, recordSuccess, parseRetryAfter, SecCircuitOpenError } from './secRateLimiter.js';
+import { resolveAsOf } from './securityIdentity.js';
 
 const SEC_USER_AGENT = (process.env.SEC_USER_AGENT || 'AGI Institutional Research research@agarwalglobalinvestments.com').trim();
 const OPENFIGI_URL = 'https://api.openfigi.com/v3/mapping';
@@ -509,17 +510,25 @@ async function filingDocuments(cik, accession) {
   return { base, documents, coverPage };
 }
 
-async function mappingsFor(client, cusips) {
+/**
+ * Identifiers for a set of CUSIPs, as they stood on a given date.
+ *
+ * `asOf` is required. Without it this took the newest mapping for each CUSIP
+ * whatever the filing's date, so a reassignment in 2025 relabelled a holding
+ * disclosed in 2023 as whatever that CUSIP means now. A CUSIP with no mapping
+ * in force on the date is left out entirely rather than borrowing one from
+ * another period.
+ */
+async function mappingsFor(client, cusips, asOf) {
   if (!cusips.length) return new Map();
+  if (!asOf) throw new Error('mappingsFor requires the date the identifiers should be resolved as at.');
   const rows = [];
   for (let index = 0; index < cusips.length; index += 400) {
     const { data, error } = await client.from('security_identifier_history').select('*').in('cusip', cusips.slice(index, index + 400)).order('valid_from', { ascending: false });
     if (error) throw error;
     rows.push(...(data || []));
   }
-  const map = new Map();
-  for (const row of rows) if (!map.has(row.cusip)) map.set(row.cusip, row);
-  return map;
+  return resolveAsOf(rows, cusips, asOf);
 }
 
 function preferredFigiCandidate(result) {
@@ -790,7 +799,7 @@ async function ingestFiling(client, manager, source) {
   }
 
   let rows = strategy === 'merge' ? collapseDuplicateRows(outcome.rows) : outcome.rows;
-  const identifierMap = await mappingsFor(client, [...new Set(rows.map((row) => row.cusip))]);
+  const identifierMap = await mappingsFor(client, [...new Set(rows.map((row) => row.cusip))], source.report_date);
   const totalValue = rows.reduce((sum, row) => sum + n(row.value_usd), 0);
   rows = rows.map((row) => ({
     ...row,
@@ -986,8 +995,14 @@ async function prepareInstitutionalImport(client, payload = {}) {
     rows = isXml ? collapseDuplicateRows(parseInformationTable(input, scale)) : parsePasted13fTable(input, scale);
   }
   if (!rows.length) throw new Error('No valid holdings were detected. Preserve tabs between copied columns, or paste the SEC information-table XML.');
-  const mapping = await mappingsFor(client, rows.map((row) => row.cusip));
-  rows = rows.map((row) => ({ ...row, ...(mapping.get(row.cusip) || {}) }));
+  const mapping = await mappingsFor(client, rows.map((row) => row.cusip), source.report_date);
+  // Picked explicitly rather than spread: only these belong on a holding row.
+  rows = rows.map((row) => {
+    const resolved = mapping.get(String(row.cusip || '').trim().toUpperCase());
+    return resolved
+      ? { ...row, ticker: resolved.ticker || row.ticker || null, issuer_name: resolved.issuer_name || row.issuer_name }
+      : row;
+  });
   const totalValue = rows.reduce((sum, row) => sum + n(row.value_usd), 0);
   rows = rows.map((row) => ({ ...row, portfolio_weight: totalValue ? (n(row.value_usd) / totalValue) * 100 : 0 }));
   const previous = await previousImportPortfolio(client, manager, source.report_date, submissions);
