@@ -67,7 +67,14 @@ jobs:
       # a cached index rather than a substring match over 72,401 rows per
       # keystroke, and a clamped term and limit.
       - name: Assert the security search is bounded and ranks sensibly
-        run: node --test server/services/institutionalSecuritySearch.test.js
+        run: node --test server/services/securityRanking.test.js
+
+      # This job installs nothing on purpose. Twice a test has been added that
+      # reaches the Supabase client through an import chain and failed here
+      # only, having passed on a machine with the packages present. This walks
+      # the graph statically so the third time is caught before the push.
+      - name: Assert the guard suite needs no installed packages
+        run: node --test server/tests/noRuntimeDeps.test.js
 
       # Entry timing, time zone, survivorship and the benchmark gate. Each case
       # is one an adversarial audit confirmed produced a flattering number.

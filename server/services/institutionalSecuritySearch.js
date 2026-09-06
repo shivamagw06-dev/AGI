@@ -16,6 +16,11 @@
  */
 
 import { createSupabaseAdmin } from '../lib/supabaseAdmin.js';
+// Re-exported so callers keep one import for the whole concern, while the pure
+// half stays reachable without a database driver.
+import { normalise, rank } from './securityRanking.js';
+
+export { normalise, rank };
 
 const CACHE_TTL_MS = 15 * 60_000;
 const PAGE = 1000;
@@ -29,17 +34,6 @@ function db() {
   const client = createSupabaseAdmin();
   if (!client) throw new Error('Institutional security search is not configured.');
   return client;
-}
-
-/** Fold accents and punctuation so "Moet" finds "Moët" and "AT&T" finds "AT T". */
-export function normalise(value) {
-  return String(value || '')
-    .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
-    .toUpperCase()
-    .replace(/[^A-Z0-9 ]+/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
 }
 
 /**
@@ -110,48 +104,6 @@ async function getIndex() {
     .then((index) => { cached = { at: Date.now(), index }; return index; })
     .finally(() => { building = null; });
   return building;
-}
-
-/**
- * Rank matches the way a person expects them.
- *
- * An exact ticker first - someone typing AAPL means AAPL and nothing else.
- * Then names that start with the term, because "APP" should surface Apple
- * before Applied Materials. Then anything containing it. Breadth of ownership
- * breaks remaining ties, since a name fifty managers hold is more likely the
- * one being looked for than a single position somewhere.
- */
-export function rank(index, rawTerm, limit = 8) {
-  const term = normalise(rawTerm);
-  if (term.length < 2) return [];
-
-  const scored = [];
-  for (const entry of index) {
-    const ticker = normalise(entry.ticker);
-    const name = normalise(entry.issuer_name);
-    let tier;
-    if (ticker && ticker === term) tier = 0;
-    else if (name.startsWith(term)) tier = 1;
-    else if (ticker && ticker.startsWith(term)) tier = 2;
-    else if (entry.haystack.includes(term)) tier = 3;
-    else continue;
-    scored.push({ entry, tier });
-  }
-
-  scored.sort((a, b) =>
-    a.tier - b.tier
-    || b.entry.owners - a.entry.owners
-    || String(a.entry.issuer_name || '').localeCompare(String(b.entry.issuer_name || '')));
-
-  return scored.slice(0, limit).map(({ entry }) => ({
-    cusip: entry.cusip,
-    ticker: entry.ticker,
-    issuer_name: entry.issuer_name,
-    owners: entry.owners,
-    // What the page should navigate to. A ticker when we have one, because the
-    // URL is shareable and readable; the CUSIP when we do not.
-    key: entry.ticker || entry.cusip,
-  }));
 }
 
 export async function searchSecurities(term, limit = 8) {

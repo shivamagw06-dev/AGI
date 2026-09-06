@@ -5,13 +5,13 @@
  * opened a page for a security called APPLE. These tests cover the ordering a
  * person expects when they type a name instead.
  *
- *   node --test server/services/institutionalSecuritySearch.test.js
+ *   node --test server/services/securityRanking.test.js
  */
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { rank, normalise } from './institutionalSecuritySearch.js';
+import { rank, normalise } from './securityRanking.js';
 
 const entry = (issuer_name, ticker, owners, cusip = null) => ({
   issuer_name, ticker, owners, cusip,
