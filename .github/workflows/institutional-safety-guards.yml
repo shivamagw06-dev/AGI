@@ -63,6 +63,12 @@ jobs:
       - name: Assert one value-scale rule, keyed to the filing date
         run: node --test server/services/valueScale.test.js
 
+      # The search route is public and unauthenticated, so its bounds matter:
+      # a cached index rather than a substring match over 72,401 rows per
+      # keystroke, and a clamped term and limit.
+      - name: Assert the security search is bounded and ranks sensibly
+        run: node --test server/services/institutionalSecuritySearch.test.js
+
       # Entry timing, time zone, survivorship and the benchmark gate. Each case
       # is one an adversarial audit confirmed produced a flattering number.
       - name: Assert the backtest cannot look ahead

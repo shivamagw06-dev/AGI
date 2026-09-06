@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -31,6 +31,7 @@ import {
 import {
   getInstitutionalFund,
   getInstitutionalOverview,
+  searchInstitutionalSecurities,
   getInstitutionalStock,
 } from '@/lib/institutionalHoldingsApi';
 import InstitutionalManagerExplorer from '@/components/Research/InstitutionalManagerExplorer';
@@ -309,7 +310,6 @@ function OverviewPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
   const [fundQuery, setFundQuery] = useState('');
-  const [stockQuery, setStockQuery] = useState('');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -320,11 +320,6 @@ function OverviewPage() {
     () => (data?.managers || []).filter((fund) => `${fund.display_name} ${fund.strategy}`.toLowerCase().includes(fundQuery.toLowerCase())),
     [data, fundQuery],
   );
-
-  const openStock = (event) => {
-    event.preventDefault();
-    if (stockQuery.trim()) navigate(`/institutional-holdings/stocks/${stockQuery.trim().toUpperCase()}`);
-  };
 
   if (loading) return <Loading />;
 
@@ -345,19 +340,8 @@ function OverviewPage() {
               <CircleDot className="h-4 w-4" /> Search the smart-money network
             </div>
             <h2 className="mt-4 max-w-2xl text-3xl font-bold leading-tight sm:text-4xl">Which tracked funds own a stock?</h2>
-            <p className="mt-3 max-w-xl text-sm leading-6 text-[#777777]">Enter a US ticker or verified CUSIP to open its manager overlap, quarterly activity and AGI Consensus Score.</p>
-            <form onSubmit={openStock} className="mt-6 flex overflow-hidden rounded-2xl border border-[#dddddd] bg-[#ffffff] p-2 focus-within:border-[#999999]">
-              <Search className="ml-3 mt-3 h-5 w-5 shrink-0 text-[#777777]" />
-              <input
-                value={stockQuery}
-                onChange={(event) => setStockQuery(event.target.value)}
-                placeholder="Try AAPL, AMZN or a CUSIP"
-                className="min-w-0 flex-1 bg-transparent px-3 py-3 text-sm font-semibold uppercase outline-none placeholder:normal-case placeholder:font-normal"
-              />
-              <button className="inline-flex items-center gap-2 rounded-xl bg-[#333333] px-5 text-xs font-bold text-white transition hover:bg-[#444444]">
-                Open stock <ArrowRight className="h-4 w-4" />
-              </button>
-            </form>
+            <p className="mt-3 max-w-xl text-sm leading-6 text-[#777777]">Search by company name or ticker to open its manager overlap, quarterly activity and AGI Consensus Score.</p>
+            <SecuritySearch onOpen={(key) => navigate(`/institutional-holdings/stocks/${encodeURIComponent(key)}`)} />
           </div>
           <div className="relative overflow-hidden bg-[#333333] p-7 text-white sm:p-9">
             <div className="absolute -right-20 -top-20 h-56 w-56 rounded-full border border-neutral-300/20" />
@@ -722,6 +706,141 @@ function StockPage({ stockKey }) {
  * A search box that only works with a mouse is a search box half the desk
  * cannot use quickly.
  */
+/**
+ * Security search by name.
+ *
+ * The box used to say "Enter a US ticker or verified CUSIP" and navigate to
+ * whatever was typed, so APPLE opened a page for a security called APPLE.
+ * Outside a desk almost nobody knows Taiwan Semiconductor files as TSM, or
+ * which of GOOG and GOOGL is the voting class - a search that only rewards
+ * people who already know the answer is not doing any work.
+ *
+ * Queries are debounced and the server answers from a cached index, so typing
+ * does not put a substring match across 72,401 holdings rows on every
+ * keystroke. A request that is overtaken by a newer one is discarded rather
+ * than allowed to render late over a fresher result.
+ */
+function SecuritySearch({ onOpen }) {
+  const [term, setTerm] = useState('');
+  const [results, setResults] = useState([]);
+  const [open, setOpen] = useState(false);
+  const [active, setActive] = useState(-1);
+  const [busy, setBusy] = useState(false);
+  const boxRef = useRef(null);
+  const seq = useRef(0);
+
+  useEffect(() => {
+    const q = term.trim();
+    if (q.length < 2) { setResults([]); setBusy(false); return undefined; }
+    setBusy(true);
+    const mine = ++seq.current;
+    const timer = setTimeout(async () => {
+      try {
+        const payload = await searchInstitutionalSecurities(q, 8);
+        // A slower earlier request must not overwrite a newer answer.
+        if (mine !== seq.current) return;
+        setResults(payload?.results || []);
+        setOpen(true);
+      } catch {
+        if (mine === seq.current) setResults([]);
+      } finally {
+        if (mine === seq.current) setBusy(false);
+      }
+    }, 180);
+    return () => clearTimeout(timer);
+  }, [term]);
+
+  useEffect(() => { setActive(-1); }, [results]);
+
+  useEffect(() => {
+    const away = (event) => { if (boxRef.current && !boxRef.current.contains(event.target)) setOpen(false); };
+    document.addEventListener('mousedown', away);
+    return () => document.removeEventListener('mousedown', away);
+  }, []);
+
+  const choose = useCallback((row) => {
+    setOpen(false);
+    onOpen(row.key);
+  }, [onOpen]);
+
+  const submit = (event) => {
+    event.preventDefault();
+    // Enter with a highlighted suggestion takes it. Otherwise the best match,
+    // because someone who typed a full name and pressed Enter meant that name.
+    if (active >= 0 && results[active]) return choose(results[active]);
+    if (results.length) return choose(results[0]);
+    if (term.trim()) onOpen(term.trim().toUpperCase());
+    return undefined;
+  };
+
+  const onKeyDown = (event) => {
+    if (!open || !results.length) return;
+    if (event.key === 'ArrowDown') { event.preventDefault(); setActive((i) => (i + 1) % results.length); }
+    else if (event.key === 'ArrowUp') { event.preventDefault(); setActive((i) => (i <= 0 ? results.length : i) - 1); }
+    else if (event.key === 'Escape') { setOpen(false); setActive(-1); }
+  };
+
+  return (
+    <div ref={boxRef} className="relative mt-6">
+      <form onSubmit={submit} className="flex overflow-hidden rounded-2xl border border-[#dddddd] bg-[#ffffff] p-2 focus-within:border-[#999999]">
+        <Search className="ml-3 mt-3 h-5 w-5 shrink-0 text-[#777777]" />
+        <input
+          value={term}
+          onChange={(event) => { setTerm(event.target.value); setOpen(true); }}
+          onFocus={() => { if (results.length) setOpen(true); }}
+          onKeyDown={onKeyDown}
+          placeholder="Search a company or ticker — Apple, Taiwan Semiconductor, AMZN"
+          className="min-w-0 flex-1 bg-transparent px-3 py-3 text-sm font-semibold outline-none placeholder:font-normal placeholder:text-[#999999]"
+          role="combobox"
+          aria-expanded={open && results.length > 0}
+          aria-controls="security-search-list"
+          aria-autocomplete="list"
+          aria-activedescendant={active >= 0 ? `security-option-${active}` : undefined}
+          autoComplete="off"
+        />
+        <button className="inline-flex items-center gap-2 rounded-xl bg-[#333333] px-5 text-xs font-bold text-white transition hover:bg-[#444444]">
+          Open stock <ArrowRight className="h-4 w-4" />
+        </button>
+      </form>
+
+      {open && results.length ? (
+        <ul
+          id="security-search-list"
+          role="listbox"
+          className="absolute z-30 mt-2 w-full overflow-hidden rounded-2xl border border-[#dddddd] bg-white shadow-[0_18px_44px_rgba(0,0,0,.14)]"
+        >
+          {results.map((row, index) => (
+            <li key={row.key || row.cusip} role="option" aria-selected={index === active} id={`security-option-${index}`}>
+              <button
+                type="button"
+                onMouseEnter={() => setActive(index)}
+                onClick={() => choose(row)}
+                className={`flex w-full items-baseline justify-between gap-3 px-4 py-3 text-left ${index === active ? 'bg-[#f2f2f2]' : 'bg-white'}`}
+              >
+                <span className="min-w-0">
+                  <span className="block truncate text-sm font-semibold text-[#222222]">{row.issuer_name || row.ticker}</span>
+                  <span className="mt-0.5 block text-[10px] font-bold uppercase tracking-[.14em] text-[#888888]">
+                    {row.ticker || row.cusip}
+                  </span>
+                </span>
+                <span className="shrink-0 text-[11px] text-[#777777]">
+                  {row.owners} {row.owners === 1 ? 'manager' : 'managers'}
+                </span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      ) : null}
+
+      {term.trim().length >= 2 && !busy && !results.length ? (
+        <p className="mt-2 text-xs text-[#888888]">
+          No tracked manager reports a holding matching “{term.trim()}”.
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
 function ManagerSearch({ managers, query, onQuery }) {
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(-1);
