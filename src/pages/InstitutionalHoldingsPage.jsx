@@ -153,7 +153,7 @@ function ModuleShell({ children, title, eyebrow, subtitle, back }) {
         <div className="absolute inset-0 opacity-40 [background-image:linear-gradient(rgba(100,204,210,.08)_1px,transparent_1px),linear-gradient(90deg,rgba(100,204,210,.08)_1px,transparent_1px)] [background-size:42px_42px]" />
         <div className="absolute left-[66%] top-[-180px] h-[560px] w-[560px] rounded-full border border-neutral-300/20 bg-neutral-900/5 shadow-[0_0_160px_rgba(51,189,199,.16)]" />
         <div className="absolute left-[73%] top-[-90px] h-[340px] w-[340px] rounded-full border border-neutral-300/20" />
-        <div className="relative mx-auto max-w-[1500px] px-5 pb-12 pt-7 sm:px-8 sm:pb-16">
+        <div className="relative mx-auto max-w-[1760px] px-5 pb-12 pt-7 sm:px-8 sm:pb-16 xl:px-12">
           <div className="mb-10 flex flex-wrap items-center justify-between gap-4 border-b border-white/10 pb-5">
             <Link to="/institutional-holdings" className="flex items-center gap-3">
               <div className="grid h-9 w-9 place-items-center rounded-xl border border-neutral-200/20 bg-white/5">
@@ -176,7 +176,7 @@ function ModuleShell({ children, title, eyebrow, subtitle, back }) {
           ) : null}
           <p className="text-[10px] font-extrabold uppercase tracking-[.26em] text-[#bbbbbb]">{eyebrow}</p>
           <h1 className="mt-4 max-w-5xl text-4xl font-bold leading-[.98] tracking-[-.04em] sm:text-6xl lg:text-7xl">{title}</h1>
-          <p className="mt-6 max-w-3xl text-sm leading-7 text-[#bbbbbb] sm:text-base">{subtitle}</p>
+          <p className="mt-6 max-w-2xl text-sm leading-7 text-[#bbbbbb] sm:text-base">{subtitle}</p>
         </div>
       </header>
       {children}
@@ -329,7 +329,7 @@ function OverviewPage() {
       title="See where conviction is moving."
       subtitle="Search fifty institutional portfolios, expand every latest holding, and understand what changed quarter by quarter."
     >
-      <main className="mx-auto max-w-[1500px] px-5 pb-16 sm:px-8">
+      <main className="mx-auto max-w-[1760px] px-5 pb-16 sm:px-8 xl:px-12">
         <motion.section
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -450,7 +450,7 @@ function OverviewPage() {
             <section className="mt-14 flex flex-col gap-5 rounded-[28px] border border-[#dddddd] bg-[#ffffff] p-6 sm:flex-row sm:items-center sm:justify-between sm:p-8">
               <div className="flex gap-4">
                 <Info className="mt-1 h-5 w-5 shrink-0 text-[#777777]" />
-                <div><h3 className="text-lg font-bold">A disclosure lens, not a live portfolio</h3><p className="mt-1 max-w-3xl text-xs leading-6 text-[#777777]">Form 13F is delayed and excludes cash, shorts and many non-reportable assets. AGI uses the SEC acceptance timestamp so a quarter is never presented as knowable before publication.</p></div>
+                <div><h3 className="text-lg font-bold">A disclosure lens, not a live portfolio</h3><p className="mt-1 max-w-2xl text-xs leading-6 text-[#777777]">Form 13F is delayed and excludes cash, shorts and many non-reportable assets. AGI uses the SEC acceptance timestamp so a quarter is never presented as knowable before publication.</p></div>
               </div>
               <a href="https://www.sec.gov/rules-regulations/staff-guidance/division-investment-management-frequently-asked-questions/frequently-asked-questions-about-form-13f" target="_blank" rel="noreferrer" className="inline-flex shrink-0 items-center gap-2 text-xs font-bold text-[#555555]">Read SEC methodology <ArrowRight className="h-4 w-4" /></a>
             </section>
@@ -489,7 +489,7 @@ function FundPage({ slug }) {
       title={fund.display_name}
       subtitle={`Explore the portfolio reported for ${data.latest_filing?.report_date || 'the pending coverage period'} and disclosed publicly on ${shortDate(data.latest_filing?.filed_at)}.`}
     >
-      <main className="mx-auto max-w-[1500px] px-5 pb-16 sm:px-8">
+      <main className="mx-auto max-w-[1760px] px-5 pb-16 sm:px-8 xl:px-12">
         <section className="-mt-8 flex flex-col gap-5 rounded-[30px] border border-white bg-white/90 p-6 shadow-[0_28px_80px_rgba(6,37,48,.13)] backdrop-blur sm:flex-row sm:items-center sm:justify-between sm:p-8">
           <div className="flex items-center gap-5"><FundLogo fund={fund} size="lg" /><div><p className="text-[10px] font-extrabold uppercase tracking-[.16em] text-[#777777]">Tracked legal filer</p><h2 className="mt-1 text-2xl font-bold">{fund.legal_name}</h2><p className="mt-1 text-xs text-[#888888]">Quarter {data.latest_filing?.report_date || 'pending'}</p></div></div>
           <div className="flex items-center gap-3 rounded-2xl bg-[#eeeeee] px-4 py-3 text-xs font-bold text-[#666666]"><CheckCircle2 className="h-5 w-5" /> Point-in-time verified</div>
@@ -622,7 +622,7 @@ function StockPage({ stockKey }) {
       title={data.ticker || data.issuer_name}
       subtitle={`${data.owner_count} of ${data.manager_count} current manager portfolios disclose this security. Stale fund histories are excluded from consensus scoring.`}
     >
-      <main className="mx-auto max-w-[1380px] px-5 pb-16 sm:px-8">
+      <main className="mx-auto max-w-[1380px] px-5 pb-16 sm:px-8 xl:px-12">
         <section className="-mt-8 grid overflow-hidden rounded-[32px] border border-white bg-white/90 shadow-[0_30px_80px_rgba(6,37,48,.13)] backdrop-blur lg:grid-cols-[360px_1fr]">
           <div className="relative grid place-items-center overflow-hidden bg-[#333333] p-10 text-white">
             <div className="absolute inset-0 opacity-30 [background-image:radial-gradient(circle_at_center,rgba(101,210,199,.25),transparent_60%)]" />
