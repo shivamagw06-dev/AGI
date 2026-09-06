@@ -6,7 +6,7 @@
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { mappingFromLookup, rankUnmapped, earliestObservation, coverage } from './identifierBackfill.js';
 
 test('a looked-up mapping claims from the first date the CUSIP was seen', () => {
@@ -301,4 +301,51 @@ test('resolved-but-not-applied is reported as a fault, not a success', () => {
   assert.match(script, /applied to holdings/, 'the two counts must be distinguishable');
   assert.match(script, /That is a fault, not a quiet success/,
     'writing mappings that never reach the holdings table must be called out');
+});
+
+// ---------------------------------------------------------------------------
+// The database must not propagate identifiers behind the application's back
+// ---------------------------------------------------------------------------
+
+test('no trigger propagates a ticker to every holding for a CUSIP', () => {
+  // security_identifier_ticker_propagation fired for each mapping row and ran
+  // two unscoped updates over 587,000 holdings rows. Upserting 209 mappings
+  // meant 418 full-table updates inside one statement, which is what produced
+  // "canceling statement due to statement timeout" at 123 seconds.
+  //
+  // And `where cusip = new.cusip` had no date bound, so a mapping valid from
+  // 2023 was written onto holdings disclosed in 2019 - undoing every care taken
+  // over valid_from and valid_to on the read path.
+  const migrations = readdirSync(new URL('../../supabase/migrations/', import.meta.url))
+    .filter((f) => f.endsWith('.sql'))
+    .sort();
+
+  let created = false;
+  let dropped = false;
+  for (const file of migrations) {
+    const sql = readFileSync(new URL(`../../supabase/migrations/${file}`, import.meta.url), 'utf8');
+    if (/create trigger security_identifier_ticker_propagation/i.test(sql)) created = true;
+    if (/drop trigger if exists security_identifier_ticker_propagation/i.test(sql)) dropped = true;
+  }
+  assert.ok(created, 'the trigger history is gone; this test no longer describes the schema');
+  assert.ok(dropped, 'the unscoped propagation trigger must be dropped by a later migration');
+
+  // And the last word on it must be the drop, not a re-creation.
+  const last = migrations.filter((f) => {
+    const sql = readFileSync(new URL(`../../supabase/migrations/${f}`, import.meta.url), 'utf8');
+    return /security_identifier_ticker_propagation/i.test(sql);
+  }).pop();
+  const lastSql = readFileSync(new URL(`../../supabase/migrations/${last}`, import.meta.url), 'utf8');
+  assert.match(lastSql, /drop trigger/i, `${last} re-creates the trigger after it was dropped`);
+});
+
+test('both writers scope propagation to the mapping interval', () => {
+  // Dropping the trigger only helps if the application does the job properly.
+  const svc = readFileSync(new URL('./institutionalHoldingsService.js', import.meta.url), 'utf8');
+  for (const name of ['enrichSecurityIdentifiers', 'saveSecurityMapping']) {
+    const fn = new RegExp(`(?:export )?async function ${name}[\\s\\S]*?\\n}`).exec(svc)?.[0];
+    assert.ok(fn, `${name} is gone`);
+    assert.match(fn, /institutional_holdings/, `${name} must propagate the ticker itself now`);
+    assert.match(fn, /report_date/, `${name} must bound the propagation by date`);
+  }
 });
