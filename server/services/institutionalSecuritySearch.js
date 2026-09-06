@@ -111,5 +111,23 @@ export async function searchSecurities(term, limit = 8) {
   return rank(index, term, limit);
 }
 
+/**
+ * Build the index before anyone asks for it.
+ *
+ * The first query after a deploy otherwise pays for the whole build - paging
+ * every active filing's holdings - and the first person to type in the box got
+ * a request that ran long enough to look broken. Warm, a query answers in
+ * under two tenths of a second.
+ *
+ * Failures are swallowed deliberately: this is a cache warm, and a database
+ * that is not ready at boot must not take the router down with it. The next
+ * request rebuilds.
+ */
+export function warmSecuritySearchIndex() {
+  getIndex().catch((error) => {
+    console.warn(`[institutional-holdings] security index warm failed: ${error.message}`);
+  });
+}
+
 /** Test seam and admin refresh. */
 export function clearSecuritySearchCache() { cached = null; building = null; }
