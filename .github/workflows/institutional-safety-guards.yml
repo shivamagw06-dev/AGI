@@ -103,3 +103,23 @@ jobs:
           fi
           cp /tmp/routes.bak server/routes/institutionalHoldings.js
           echo "Guards confirmed live: dropping auth on POST /backtests fails the suite."
+
+  undefined-identifiers:
+    name: No module uses an identifier it never imported
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      # This job installs, unlike the guard suite above, because no-undef needs
+      # a real parser. It exists because the failure it catches is invisible to
+      # everything else: the syntax is valid, the module imports cleanly, and it
+      # throws at call time on whichever path nobody exercised before a deploy.
+      - run: npm ci --no-audit --no-fund
+
+      - name: Assert no institutional module uses an undefined identifier
+        run: node --test server/tests/noUndefinedIdentifiers.test.js

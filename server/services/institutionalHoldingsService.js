@@ -7,6 +7,7 @@ const SEC_ROOT = 'https://www.sec.gov';
 const SEC_DATA = 'https://data.sec.gov';
 import { scheduleSecRequest, recordThrottled, recordSuccess, parseRetryAfter, SecCircuitOpenError } from './secRateLimiter.js';
 import { resolveAsOf } from './securityIdentity.js';
+import { coverage, mappingFromLookup, rankUnmapped } from './identifierBackfill.js';
 
 const SEC_USER_AGENT = (process.env.SEC_USER_AGENT || 'AGI Institutional Research research@agarwalglobalinvestments.com').trim();
 const OPENFIGI_URL = 'https://api.openfigi.com/v3/mapping';
@@ -581,21 +582,16 @@ async function enrichSecurityIdentifiers(client, limit = 1000) {
   const scanLimit = Math.min(limit * 25, 25_000);
   const { data: unresolvedRows, error: unresolvedError } = await client
     .from('institutional_holdings')
-    .select('cusip,issuer_name,value_usd')
+    .select('cusip,issuer_name,value_usd,report_date')
     .is('ticker', null)
     .order('value_usd', { ascending: false })
     .limit(scanLimit);
   if (unresolvedError) throw new Error(unresolvedError.message);
   const unresolved = unresolvedRows || [];
-  const unique = [];
-  const seen = new Set();
-  for (const row of unresolved) {
-    if (!seen.has(row.cusip)) {
-      seen.add(row.cusip);
-      unique.push(row);
-    }
-    if (unique.length >= limit) break;
-  }
+  // Ranked by disclosed value and then by how many managers report it, and
+  // carrying the earliest date each CUSIP was observed so a looked-up mapping
+  // can be anchored to evidence rather than to 1900.
+  const unique = rankUnmapped(unresolved, limit);
   const batchSize = OPENFIGI_API_KEY ? 100 : 5;
   const mappings = [];
   const errors = [];
@@ -606,15 +602,19 @@ async function enrichSecurityIdentifiers(client, limit = 1000) {
       results.forEach((result, resultIndex) => {
         const source = batch[resultIndex];
         const match = preferredFigiCandidate(result);
-        if (source && match) mappings.push({
-          cusip: source.cusip,
-          ticker: String(match.ticker).trim().toUpperCase(),
-          issuer_name: source.issuer_name,
-          valid_from: '1900-01-01',
-          source: 'openfigi',
-          manually_verified: false,
-          updated_at: new Date().toISOString(),
-        });
+        // OpenFIGI answers what a CUSIP maps to now. Storing that as valid
+        // from 1900 claimed today's ticker applied to every filing ever made -
+        // invisible while resolution took the newest mapping, and actively
+        // wrong now that it asks what was in force on the filing date.
+        const mapping = source && match
+          ? mappingFromLookup({
+            cusip: source.cusip,
+            ticker: match.ticker,
+            issuerName: source.issuer_name,
+            observedFrom: source.observed_from,
+          })
+          : null;
+        if (mapping) mappings.push(mapping);
       });
     } catch (error) {
       errors.push(error.message);
@@ -958,7 +958,7 @@ async function prepareInstitutionalImport(client, payload = {}) {
   if (!input) throw new Error('Paste a SEC URL, accession number, XML document, or holdings table.');
   const manager = (await managers(client)).find((item) => item.id === payload.managerId || item.slug === payload.managerId);
   if (!manager) throw new Error('Choose the manager that owns this filing.');
-  const submissions = await fetchJson(`${SEC_DATA}/submissions/CIK${cleanCik(manager.cik)}.json`);
+  const submissions = await secFetch(`${SEC_DATA}/submissions/CIK${cleanCik(manager.cik)}.json`, true);
   const accession = pastedAccession(input);
   const isXml = /<(?:\w+:)?informationTable\b|<(?:\w+:)?infoTable\b/i.test(input);
   let kind = 'table';
@@ -1312,16 +1312,36 @@ export async function getInstitutionalAdmin() {
   };
 }
 
-export async function saveSecurityMapping({ cusip, ticker, issuer_name, reason, actor } = {}) {
+export async function saveSecurityMapping({ cusip, ticker, issuer_name, reason, actor, validFrom = null, validTo = null } = {}) {
   const client = db();
   const cleanCusip = String(cusip || '').trim().toUpperCase();
   const cleanTicker = String(ticker || '').trim().toUpperCase();
   if (!cleanCusip || !cleanTicker) throw new Error('CUSIP and ticker are required.');
+
+  // An admin asserting a mapping is still asserting it about a period. Default
+  // to the earliest date the CUSIP was actually observed rather than to 1900,
+  // which claims the ticker applied to filings nobody has evidence about.
+  let from = /^\d{4}-\d{2}-\d{2}$/.test(String(validFrom || '')) ? validFrom : null;
+  if (!from) {
+    const { data: earliest } = await client.from('institutional_holdings')
+      .select('report_date').eq('cusip', cleanCusip)
+      .order('report_date', { ascending: true }).limit(1).maybeSingle();
+    from = earliest?.report_date || new Date().toISOString().slice(0, 10);
+  }
+  const to = /^\d{4}-\d{2}-\d{2}$/.test(String(validTo || '')) ? validTo : null;
   const { data: previous } = await client.from('security_identifier_history').select('*').eq('cusip', cleanCusip).order('valid_from', { ascending: false }).limit(1).maybeSingle();
-  const { error } = await client.from('security_identifier_history').upsert({ cusip: cleanCusip, ticker: cleanTicker, issuer_name: issuer_name || previous?.issuer_name || null, valid_from: '1900-01-01', source: 'manual_cms', manually_verified: true, updated_at: new Date().toISOString() }, { onConflict: 'cusip,valid_from' });
+  const { error } = await client.from('security_identifier_history').upsert({ cusip: cleanCusip, ticker: cleanTicker, issuer_name: issuer_name || previous?.issuer_name || null, valid_from: from, valid_to: to, security_key: cleanCusip, source: 'manual_cms', manually_verified: true, updated_at: new Date().toISOString() }, { onConflict: 'cusip,valid_from' });
   if (error) throw error;
-  await client.from('institutional_holdings').update({ ticker: cleanTicker }).eq('cusip', cleanCusip);
-  await client.from('holding_changes').update({ ticker: cleanTicker }).eq('cusip', cleanCusip);
+  // Scoped to the interval the mapping claims. Stamping the ticker onto every
+  // holding for this CUSIP regardless of date is the same error as resolving
+  // with the newest mapping: it relabels filings the mapping says nothing about.
+  const scope = (query) => {
+    let q = query.eq('cusip', cleanCusip).gte('report_date', from);
+    if (to) q = q.lt('report_date', to);
+    return q;
+  };
+  await scope(client.from('institutional_holdings').update({ ticker: cleanTicker }));
+  await scope(client.from('holding_changes').update({ ticker: cleanTicker }));
   await client.from('institutional_corrections').insert({ entity_type: 'security', entity_key: cleanCusip, field_name: 'ticker', old_value: previous?.ticker || null, new_value: cleanTicker, reason: reason || null, actor: actor || 'admin' });
   await rebuildSignals(client);
   return { ok: true, cusip: cleanCusip, ticker: cleanTicker };
@@ -1659,4 +1679,75 @@ export async function getRepairStatus() {
       error: error.message,
     };
   }
+}
+
+/**
+ * Run identifier enrichment as a job rather than as a tail on collection.
+ *
+ * enrichSecurityIdentifiers is invoked after every refresh with a modest limit,
+ * which keeps a healthy table healthy and will never close a gap of roughly
+ * ninety per cent. This is the same routine with the limit under the caller's
+ * control, plus a measurement either side so the effect is a figure rather than
+ * an impression.
+ *
+ * `apply` false resolves nothing and writes nothing: it reports which
+ * securities would be attempted and in what order. A bulk write of thousands of
+ * mappings deserves to be looked at first.
+ */
+export async function runIdentifierBackfill({ limit = 500, apply = false } = {}) {
+  const client = db();
+
+  const measure = async () => {
+    const [{ count: total }, { count: mapped }] = await Promise.all([
+      client.from('institutional_holdings').select('id', { count: 'exact', head: true }),
+      client.from('institutional_holdings').select('id', { count: 'exact', head: true }).not('ticker', 'is', null),
+    ]);
+    return coverage({ total: total || 0, mapped: mapped || 0 });
+  };
+
+  const before = await measure();
+
+  // The same ranked, evidence-anchored candidate list the inline enrichment
+  // uses, so a dry run shows exactly what an applied run would attempt.
+  const scanLimit = Math.min(limit * 25, 25_000);
+  const { data: unresolvedRows, error } = await client
+    .from('institutional_holdings')
+    .select('cusip,issuer_name,value_usd,report_date')
+    .is('ticker', null)
+    .order('value_usd', { ascending: false })
+    .limit(scanLimit);
+  if (error) throw new Error(error.message);
+
+  const candidates = rankUnmapped(unresolvedRows || [], limit);
+
+  if (!apply) {
+    return {
+      applied: false,
+      coverage_before: before,
+      coverage_after: before,
+      candidates: candidates.length,
+      sample: candidates.slice(0, 15).map((row) => ({
+        cusip: row.cusip,
+        issuer_name: row.issuer_name,
+        observed_from: row.observed_from,
+        disclosed_value_usd: Math.round(row.value),
+        reported_by: row.observations,
+      })),
+      mapped: 0,
+      unresolved: 0,
+      errors: [],
+    };
+  }
+
+  const outcome = await enrichSecurityIdentifiers(client, limit);
+  const after = await measure();
+
+  return {
+    applied: true,
+    coverage_before: before,
+    coverage_after: after,
+    candidates: candidates.length,
+    sample: [],
+    ...outcome,
+  };
 }
