@@ -160,6 +160,57 @@ test('the collector accumulates progress instead of trusting the final result', 
   const script = readFileSync(new URL('../scripts/collectInstitutionalFilings.mjs', import.meta.url), 'utf8');
   assert.match(script, /onManagerDone:/,
     'the collector must be told as each manager finishes');
-  assert.match(script, /summariseRefresh\(refresh \|\| \{ results: completed \}\)/,
+  assert.match(script, /summariseRefresh\(refresh \|\| \{ results: completed \}/,
     'on abort it must summarise what it observed completing, not the abandoned result');
+});
+
+// ---------------------------------------------------------------------------
+// The run that reported success after a database timeout
+// ---------------------------------------------------------------------------
+
+test('a run cut short by an error is never a success', () => {
+  // Observed in production: "failed after 2592.6s: canceling statement due to
+  // statement timeout", then "status=success". `attempted` counts only the
+  // managers that reported finishing, so on a truncated run it always equals
+  // `succeeded` and 48/48 looked complete while three of fifty-one never ran.
+  assert.equal(deriveStatus({
+    attempted: 48, succeeded: 48, roster: 51, error: 'canceling statement due to statement timeout',
+  }), 'partial');
+});
+
+test('an error is not a success even when the whole roster was covered', () => {
+  // Isolates the error branch. The previous case had 48 of 51 covered, so the
+  // roster check returned partial on its own and deleting the error check
+  // changed nothing - the test passed while asserting nothing.
+  assert.equal(deriveStatus({
+    attempted: 51, succeeded: 51, roster: 51, error: 'canceling statement due to statement timeout',
+  }), 'partial');
+});
+
+test('covering fewer managers than the roster is partial, error or not', () => {
+  assert.equal(deriveStatus({ attempted: 48, succeeded: 48, roster: 51 }), 'partial');
+  assert.equal(deriveStatus({ attempted: 51, succeeded: 51, roster: 51 }), 'success');
+});
+
+test('a clean full run is still a success', () => {
+  assert.equal(deriveStatus({ attempted: 51, succeeded: 51, roster: 51, error: null }), 'success');
+  // And with no roster known, the old behaviour stands rather than failing shut
+  // on every manual single-manager refresh.
+  assert.equal(deriveStatus({ attempted: 1, succeeded: 1 }), 'success');
+});
+
+test('the summary carries what the run was asked to cover', () => {
+  const summary = summariseRefresh({ results: [
+    { ok: true, filings: [{ status: 'ingested', holdings: 10, form_type: '13F-HR' }] },
+  ] }, 51);
+  assert.equal(summary.managersInRoster, 51);
+  assert.equal(summary.managersAttempted, 1, 'attempted is what reported back');
+  assert.equal(summary.managersSucceeded, 1);
+});
+
+test('the collector reports against the roster, not against what finished', () => {
+  const script = readFileSync(new URL('../scripts/collectInstitutionalFilings.mjs', import.meta.url), 'utf8');
+  assert.match(script, /onRoster:/, 'the collector must be told the roster size before work starts');
+  assert.match(script, /roster: work\.managersInRoster/, 'the status must be derived against the roster');
+  assert.match(script, /not reached/, 'the log must say how many managers were never reached');
 });

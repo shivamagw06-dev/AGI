@@ -39,12 +39,22 @@ export function nextScheduledAt(expression, from = new Date()) {
  * some managers failed is 'partial' rather than 'success'. A dashboard that
  * shows green while half the universe is missing is worse than no dashboard.
  */
-export function deriveStatus({ attempted, succeeded, error, aborted }) {
+export function deriveStatus({ attempted, succeeded, error, aborted, roster = 0 }) {
   if (aborted) return 'aborted';
   if (error && !succeeded) return 'failed';
   if (!attempted) return error ? 'failed' : 'success';
   if (!succeeded) return 'failed';
   if (succeeded < attempted) return 'partial';
+
+  // `attempted` counts the managers that reported finishing, so on a run that
+  // was cut short it always equals `succeeded` - the first version of this
+  // reported "48/48 success" for a run a database timeout had killed with
+  // three of fifty-one never started. Two things therefore override the count:
+  //
+  //   an error at all means the run did not finish cleanly, whatever it wrote;
+  //   and covering fewer managers than the roster means it is incomplete.
+  if (error) return 'partial';
+  if (roster && succeeded < roster) return 'partial';
   return 'success';
 }
 
@@ -55,7 +65,7 @@ export function deriveStatus({ attempted, succeeded, error, aborted }) {
  * shapes without a database, and so the meaning of each counter lives in one
  * place rather than being reconstructed at each call site.
  */
-export function summariseRefresh(result) {
+export function summariseRefresh(result, rosterSize = 0) {
   const rows = Array.isArray(result?.results) ? result.results : [];
   const succeeded = rows.filter((row) => row?.ok);
 
@@ -75,6 +85,9 @@ export function summariseRefresh(result) {
   const isAmendment = (filing) => String(filing?.form_type || '').toUpperCase().endsWith('/A');
 
   return {
+    // What the run was asked to cover, when the caller knows it. Distinct from
+    // `managersAttempted`, which is only what reported back.
+    managersInRoster: Number(rosterSize) || 0,
     managersAttempted: rows.length,
     managersSucceeded: succeeded.length,
     filingsIngested: allFilings.filter((filing) => filing?.status === 'ingested').length,
