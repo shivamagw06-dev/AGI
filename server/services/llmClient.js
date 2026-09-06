@@ -88,7 +88,7 @@ async function completeWithGemini({ system, user, temperature = 0.25, json = tru
   return { provider: 'gemini', model, text, json: json ? extractJsonObject(text) : null };
 }
 
-async function completeWithOpenAi({ system, user, temperature = 0.25, json = true }) {
+async function completeWithOpenAi({ system, user, json = true }) {
   const apiKey = openaiKey();
   if (!apiKey) return null;
   const model = openaiModel();
@@ -103,7 +103,6 @@ async function completeWithOpenAi({ system, user, temperature = 0.25, json = tru
         { role: 'system', content: system },
         { role: 'user', content: user },
       ],
-      temperature,
     }),
   });
   if (!response.ok) {

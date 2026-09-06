@@ -338,7 +338,12 @@ export async function getInstitutionalFund(slug) {
   const holdings = latest ? await collect(() => client.from('institutional_holdings').select('*').eq('filing_id', latest.id).order('portfolio_weight', { ascending: false })) : [];
   const changes = latest ? await collect(() => client.from('holding_changes').select('*').eq('filing_id', latest.id).order('current_weight', { ascending: false })) : [];
   const { data: signals } = latest ? await client.from('institutional_signals').select('*').eq('scope_type', 'fund').eq('scope_id', manager.id).eq('as_of', latest.report_date).order('signal_type') : { data: [] };
-  return { manager, filings: filings || [], latest_filing: latest, holdings, changes, signals: signals || [] };
+  const latestIngestedAt = latest?.ingested_at ? new Date(latest.ingested_at).getTime() : 0;
+  const freshSignals = (signals || []).filter((row) => {
+    const calculatedAt = row?.calculated_at ? new Date(row.calculated_at).getTime() : 0;
+    return calculatedAt >= latestIngestedAt;
+  });
+  return { manager, filings: filings || [], latest_filing: latest, holdings, changes, signals: freshSignals };
 }
 
 export async function getInstitutionalStock(rawKey) {
