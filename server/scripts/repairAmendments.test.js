@@ -70,11 +70,18 @@ test('every filing examined is recorded, not only the ones that changed', () => 
 });
 
 test('an unclassifiable amendment is reported for review, never repaired', () => {
-  const reviewBlock = /if \(resolved === 'unknown'\)[\s\S]{0,700}?continue;/.exec(code)?.[0];
-  assert.ok(reviewBlock, 'there is no branch for an unclassifiable amendment');
+  // Sized to the block itself rather than a fixed window: the branch grew when
+  // quarantine was added, and a window that silently overruns into the next
+  // branch stops testing this one.
+  const opened = code.indexOf("if (resolved === 'unknown')");
+  assert.ok(opened !== -1, 'there is no branch for an unclassifiable amendment');
+  const reviewBlock = code.slice(opened, code.indexOf('continue;', opened));
+
   assert.match(reviewBlock, /needs_review/);
   assert.equal(/reingestFiling/.test(reviewBlock), false,
     'an amendment we cannot classify must not be applied in either direction');
+  assert.match(reviewBlock, /quarantineAmendment/,
+    'recording that it needs review does not stop it counting - it must also be excluded from derived signals');
 });
 
 test('signals are rebuilt after holdings change, and only when they changed', () => {

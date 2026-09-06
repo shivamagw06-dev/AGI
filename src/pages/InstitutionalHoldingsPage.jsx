@@ -538,6 +538,23 @@ function FundPage({ slug }) {
                 ))}
               </div>
             </div>
+            {/* Historical repair.
+                Amendments are repaired quarter by quarter, so there is a window
+                where some history is corrected and some is not. A consensus
+                number computed across both is not a number of anything, so it
+                is labelled rather than quietly published. */}
+            {data?.data_integrity && data.data_integrity.clean === false ? (
+              <div className="mx-8 mb-4 flex items-start gap-2.5 rounded-lg border border-[#c9a227] bg-[#fdf8e7] px-4 py-3">
+                <span className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-[#a8791a]" />
+                <p className="text-[11px] leading-5 text-[#6b5a2b]">
+                  <span className="font-bold text-[#4a3f1f]">Historical repair in progress.</span>{' '}
+                  {data.data_integrity.message}
+                  {Number(data.data_integrity.pending_review) > 0
+                    ? ` ${data.data_integrity.pending_review} filing(s) are awaiting review and are excluded from these figures.`
+                    : ''}
+                </p>
+              </div>
+            ) : null}
             {/* What a reader is entitled to know before reading the table: this is a
                 partial view assembled from filings that were already weeks old when
                 they became public. Stated once, plainly, above the data itself. */}

@@ -304,7 +304,7 @@ export async function getInstitutionalOverview() {
         total_value_usd: row.total_value_usd,
         holdings_count: row.holdings_count,
       }));
-    return {
+  return {
       ...manager,
       latest_filing: filing,
       filing_history: filingHistory,
@@ -315,8 +315,13 @@ export async function getInstitutionalOverview() {
     };
   });
   const { data: alerts } = await client.from('institutional_filing_alerts').select('*, institutional_managers(display_name, slug)').order('created_at', { ascending: false }).limit(12);
+  // Consensus aggregates across every manager and quarter, so it is precisely
+  // the figure that cannot be trusted while some history is repaired and some
+  // is not. The surface reports the gate; it does not decide for itself.
+  const dataIntegrity = await getRepairStatus();
   return {
     generated_at: new Date().toISOString(),
+    data_integrity: dataIntegrity,
     reporting_basis: 'SEC Form 13F, available only after the SEC acceptance timestamp',
     managers: fundCards,
     consensus: consensus.slice(0, 30),
@@ -1358,4 +1363,138 @@ export async function previewFilingRepair(filingId) {
     removed,
     applied: outcome.applied,
   };
+}
+
+/**
+ * Take an unclassifiable amendment out of the derived calculations.
+ *
+ * Recording that a filing needs review is not the same as stopping it counting.
+ * An amendment whose type could not be read was ingested under the old merge
+ * behaviour, so its rows are the merged result - and while it stays active,
+ * consensus, sector weights and change signals keep reading them as though the
+ * amendment had been understood.
+ *
+ * The filing itself is preserved: it is the audit record, and it is what a
+ * reviewer resolves against. Only is_active changes, which is the flag every
+ * derived surface filters on. The version it superseded is reactivated so the
+ * quarter still has exactly one authoritative report rather than none - a
+ * quarter with no active filing silently disappears from history, which is a
+ * worse failure than the one being fixed.
+ */
+export async function quarantineAmendment(filingId, reason) {
+  const client = db();
+  const { data: amendment, error } = await client
+    .from('institutional_filings')
+    .select('id,manager_id,report_date,accession_number')
+    .eq('id', filingId)
+    .single();
+  if (error) throw new Error(error.message);
+
+  const { error: flagError } = await client
+    .from('institutional_filings')
+    .update({ is_active: false, needs_review: true, review_reason: reason || 'Amendment type could not be determined.' })
+    .eq('id', filingId);
+  if (flagError) throw new Error(flagError.message);
+
+  // The most recent filing for this quarter that is not itself quarantined.
+  const { data: candidates } = await client
+    .from('institutional_filings')
+    .select('id,form_type,filed_at,needs_review')
+    .eq('manager_id', amendment.manager_id)
+    .eq('report_date', amendment.report_date)
+    .neq('id', filingId)
+    .order('filed_at', { ascending: false });
+
+  const successor = (candidates || []).find((row) => !row.needs_review);
+  if (successor) {
+    await client.from('institutional_filings').update({ is_active: true }).eq('id', successor.id);
+    // Exactly one active version per quarter, or the aggregates double count.
+    await client.from('institutional_filings').update({ is_active: false })
+      .eq('manager_id', amendment.manager_id)
+      .eq('report_date', amendment.report_date)
+      .neq('id', successor.id);
+  }
+
+  return {
+    quarantined: amendment.accession_number,
+    reactivated: successor?.id || null,
+    orphaned_quarter: !successor,
+  };
+}
+
+/**
+ * Whether derived numbers can currently be trusted as a whole.
+ *
+ * Repairing amendments quarter by quarter means there is a window in which
+ * some of the history has been corrected and some has not, and a consensus
+ * figure computed across both is not a figure of anything. Surfaces that
+ * aggregate across managers and quarters ask this and say so, rather than
+ * publishing a number whose inputs are half repaired.
+ *
+ * Deliberately conservative: anything unresolved reports as in progress. A gate
+ * that reads clear while filings sit unreviewed is a gate that does nothing.
+ */
+export async function getRepairStatus() {
+  const client = db();
+  try {
+    const [{ count: pendingReview }, { data: lastRun }] = await Promise.all([
+      client.from('institutional_filings')
+        .select('id', { count: 'exact', head: true })
+        .eq('needs_review', true),
+      client.from('institutional_amendment_repair_summary')
+        .select('*')
+        .order('started_at', { ascending: false })
+        .limit(1)
+        .maybeSingle(),
+    ]);
+
+    const run = lastRun || null;
+    const failed = Number(run?.filings_failed || 0);
+    const needingReview = Number(run?.filings_needing_review || 0);
+    const pending = Number(pendingReview || 0);
+
+    // A dry run has repaired nothing, so it never clears the gate on its own.
+    const repairApplied = Boolean(run?.applied);
+    const incomplete = failed > 0 || needingReview > 0 || pending > 0;
+
+    if (!run) {
+      return {
+        status: 'not_started',
+        clean: false,
+        message: 'Historical amendment repair has not run. Aggregate figures may include positions withdrawn by amendments.',
+      };
+    }
+    if (!repairApplied) {
+      return {
+        status: 'in_progress',
+        clean: false,
+        message: 'Historical repair in progress. Aggregate figures may mix repaired and unrepaired history.',
+        pending_review: pending,
+      };
+    }
+    if (incomplete) {
+      return {
+        status: 'in_progress',
+        clean: false,
+        message: 'Historical repair in progress. Some filings could not be repaired or are awaiting review, so aggregate figures may mix repaired and unrepaired history.',
+        pending_review: pending,
+        failed,
+      };
+    }
+    return {
+      status: 'complete',
+      clean: true,
+      message: null,
+      repaired_at: run.finished_at || null,
+    };
+  } catch (error) {
+    // Before the repair migration is applied the tables do not exist. Unknown
+    // is not clean: it must not read as a clean bill of health.
+    return {
+      status: 'unknown',
+      clean: false,
+      message: 'Repair status is unavailable, so aggregate figures cannot be confirmed as fully repaired.',
+      error: error.message,
+    };
+  }
 }

@@ -52,6 +52,12 @@ jobs:
       - name: Assert the repair job cannot write without being asked
         run: node --test server/scripts/repairAmendments.test.js
 
+      # Repair runs quarter by quarter, so there is a window where some history
+      # is corrected and some is not. The gate must fail closed, and the
+      # aggregate surfaces must say so rather than publishing a mixed figure.
+      - name: Assert the data-integrity gate fails closed
+        run: node --test server/services/repairGate.test.js
+
       # A test that cannot fail proves nothing. Remove one guard and the suite
       # must go red; if it stays green the assertions have drifted away from
       # what they claim to check, and this job fails on that instead.

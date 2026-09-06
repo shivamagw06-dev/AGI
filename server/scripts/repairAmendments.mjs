@@ -30,6 +30,7 @@ import { createSupabaseAdmin } from '../lib/supabaseAdmin.js';
 import {
   amendmentFilings, filingsForQuarter, holdingsForFiling,
   previewFilingRepair, reingestFiling, rebuildInstitutionalSignals,
+  quarantineAmendment, getRepairStatus,
 } from '../services/institutionalHoldingsService.js';
 import { secLimiterStats } from '../services/secRateLimiter.js';
 
@@ -117,6 +118,26 @@ for (const [, amendment] of quarters) {
     if (resolved === 'unknown') {
       totals.needsReview += 1;
       console.log(`  ${slug} ${amendment.report_date}  ${amendment.accession_number}  NEEDS REVIEW  (${preview.classification.reviewReason})`);
+
+      // Recording that it needs review does not stop it counting. It was
+      // ingested under the merge behaviour, so its rows are the merged result,
+      // and while it stays active consensus and sector weights keep reading
+      // them as though the amendment had been understood. The filing is
+      // preserved; only is_active changes.
+      if (APPLY) {
+        try {
+          const quarantine = await quarantineAmendment(amendment.id, preview.classification.reviewReason);
+          console.log(`      excluded from derived signals${quarantine.reactivated ? '; prior version reactivated' : ''}`);
+          if (quarantine.orphaned_quarter) {
+            console.warn(`      WARNING: no other filing for this quarter, so ${amendment.report_date} now has no active report`);
+          }
+        } catch (quarantineError) {
+          console.error(`      could not exclude it: ${quarantineError.message}`);
+        }
+      } else {
+        console.log('      would be excluded from derived signals');
+      }
+
       await record({
         filing_id: amendment.id, accession_number: amendment.accession_number,
         manager_slug: slug, report_date: amendment.report_date,
@@ -228,6 +249,18 @@ console.log(`
   sec requests:         ${limiter.requests} (throttled ${limiter.throttled})
   elapsed:              ${((Date.now() - started) / 1000).toFixed(1)}s
 `);
+
+// The gate every aggregate surface reads. Printed last so the run ends by
+// saying whether the numbers can be published, not merely what it touched.
+try {
+  const gate = await getRepairStatus();
+  console.log(`[repair] data integrity gate: ${gate.status}${gate.clean ? '' : ` — ${gate.message}`}`);
+  if (!gate.clean) {
+    console.log('[repair] consensus, sector rotation and change signals will show "historical repair in progress" until this clears.');
+  }
+} catch (error) {
+  console.warn(`[repair] could not read the integrity gate: ${error.message}`);
+}
 
 if (!APPLY && (totals.wouldRepair || totals.needsReview)) {
   console.log('[repair] re-run with --apply to make these changes.');
