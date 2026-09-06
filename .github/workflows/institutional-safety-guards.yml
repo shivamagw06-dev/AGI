@@ -58,6 +58,11 @@ jobs:
       - name: Assert the data-integrity gate fails closed
         run: node --test server/services/repairGate.test.js
 
+      # A 1000x error in stored holdings values. Two of three ingest paths keyed
+      # the dollars-vs-thousands rule to the quarter instead of the filing date.
+      - name: Assert one value-scale rule, keyed to the filing date
+        run: node --test server/services/valueScale.test.js
+
       # A test that cannot fail proves nothing. Remove one guard and the suite
       # must go red; if it stays green the assertions have drifted away from
       # what they claim to check, and this job fails on that instead.
