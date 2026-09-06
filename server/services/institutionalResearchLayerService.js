@@ -1,5 +1,5 @@
-import { createClient } from '@supabase/supabase-js';
 import crypto from 'node:crypto';
+import { createSupabaseAdmin } from '../lib/supabaseAdmin.js';
 
 const SEC_DATA = 'https://data.sec.gov';
 const SEC_ARCHIVES = 'https://www.sec.gov/Archives/edgar/data';
@@ -8,10 +8,9 @@ const DAY_MS = 86_400_000;
 let automationStarted = false;
 
 function db() {
-  const url = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) throw new Error('Institutional research database is not configured.');
-  return createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } });
+  const client = createSupabaseAdmin();
+  if (!client) throw new Error('Institutional research database is not configured.');
+  return client;
 }
 const number = (value) => Number.isFinite(Number(value)) ? Number(value) : 0;
 const dateOnly = (value) => { const date = value ? new Date(value) : null; return date && !Number.isNaN(date.getTime()) ? date.toISOString().slice(0, 10) : null; };
@@ -357,4 +356,3 @@ export function startInstitutionalResearchLayerAutomation() {
   const recurring = setInterval(execute, Math.max(6 * 60 * 60_000, number(process.env.INSTITUTIONAL_RESEARCH_INTERVAL_MS) || 24 * 60 * 60_000));
   initial.unref?.(); recurring.unref?.();
 }
-
