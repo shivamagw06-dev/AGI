@@ -66,6 +66,7 @@ const Header = ({ currentPage, setCurrentPage }) => {
     { name: 'Research Notes', page: 'research-notes', path: '/sections/research-notes' },
     { name: 'Deal Tracker', page: 'deal-tracker', path: '/sections/deal-tracker' },
     { name: 'Markets Dashboard', page: 'markets', path: '/sections/markets' },
+    { name: 'Hedge Funds', page: 'hedge-funds', path: '/institutional-holdings' },
     { name: 'Wealth Management', page: 'wealth-management', path: '/wealth-management' },
     // ✅ Added Business Page
     { name: 'Business', page: 'business', path: '/business' },
