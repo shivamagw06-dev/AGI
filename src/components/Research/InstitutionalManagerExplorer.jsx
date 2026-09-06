@@ -86,7 +86,7 @@ function ManagerMark({ manager }) {
   const mark = String(manager.display_name || 'AGI').split(/\s+/).map((word) => word[0]).join('').slice(0, 3);
   const domain = MANAGER_DOMAINS[manager.display_name];
   return (
-    <div className="relative grid h-11 w-11 shrink-0 place-items-center overflow-hidden rounded-xl border border-cyan-100/15 bg-gradient-to-br from-[#444444] to-[#222222] text-xs font-bold text-white shadow-[0_8px_22px_rgba(5,31,42,.2)]">
+    <div className="relative grid h-11 w-11 shrink-0 place-items-center overflow-hidden rounded-xl border border-neutral-200/15 bg-gradient-to-br from-[#444444] to-[#222222] text-xs font-bold text-white shadow-[0_8px_22px_rgba(5,31,42,.2)]">
       <span className="absolute inset-x-2 top-1.5 h-px bg-[#aaaaaa]" />
       <span aria-hidden="true">{mark}</span>
       {domain ? (
@@ -106,7 +106,7 @@ function ManagerMark({ manager }) {
 function AumSparkline({ history = [] }) {
   const [hovered, setHovered] = useState(null);
   const source = history.filter((row) => Number.isFinite(Number(row?.total_value_usd))).slice(-12);
-  if (!source.length) return <span className="text-[10px] text-slate-400">No history</span>;
+  if (!source.length) return <span className="text-[10px] text-neutral-600">No history</span>;
 
   const width = 154;
   const height = 48;
@@ -137,7 +137,7 @@ function AumSparkline({ history = [] }) {
         <div className="pointer-events-none absolute bottom-[54px] z-30 min-w-[112px] -translate-x-1/2 rounded border border-[#aaaaaa]/40 bg-[#222222] px-2.5 py-2 text-left shadow-xl" style={{ left: `${Math.min(82, Math.max(18, (active.x / width) * 100))}%` }}>
           <div className="text-[9px] font-bold uppercase tracking-[.16em] text-[#aaaaaa]">{active.row.report_date}</div>
           <div className="mt-1 text-xs font-bold text-white">{money(active.row.total_value_usd)}</div>
-          <div className="text-[9px] text-slate-400">{number(active.row.holdings_count)} holdings</div>
+          <div className="text-[9px] text-neutral-600">{number(active.row.holdings_count)} holdings</div>
         </div>
       ) : null}
     </div>
@@ -148,7 +148,7 @@ function PortfolioDonut({ positions = [] }) {
   const [hovered, setHovered] = useState(null);
   const colors = ['#999999', '#aaaaaa', '#777777', '#444444'];
   const named = positions.slice(0, 3).map((position) => ({ label: position.ticker || position.issuer_name || 'Position', value: Math.max(0, Number(position.portfolio_weight) || 0) }));
-  if (!named.length) return <span className="text-[10px] text-slate-400">No positions</span>;
+  if (!named.length) return <span className="text-[10px] text-neutral-600">No positions</span>;
 
   const used = Math.min(100, named.reduce((sum, item) => sum + item.value, 0));
   const segments = [...named, { label: 'Other', value: Math.max(0, 100 - used) }].filter((item) => item.value > 0);
@@ -180,10 +180,10 @@ function ChangeBadge({ change }) {
   const type = change?.change_type || 'held';
   const tones = {
     new: 'bg-emerald-100 text-emerald-800',
-    increased: 'bg-cyan-100 text-cyan-800',
-    reduced: 'bg-amber-100 text-amber-800',
+    increased: 'bg-neutral-100 text-neutral-800',
+    reduced: 'bg-neutral-100 text-neutral-800',
     exited: 'bg-rose-100 text-rose-800',
-    held: 'bg-slate-100 text-slate-600',
+    held: 'bg-neutral-100 text-neutral-700',
   };
   return <span className={`rounded-full px-2.5 py-1 text-[9px] font-extrabold uppercase tracking-[.1em] ${tones[type] || tones.held}`}>{type}</span>;
 }
@@ -259,7 +259,7 @@ export default function InstitutionalManagerExplorer({ funds = [] }) {
                   <td className="px-3 py-4"><div className="flex flex-col items-end"><span className="mb-1 text-[10px] font-bold text-[#333333]">{fund.latest_filing ? money(fund.latest_filing.total_value_usd) : '--'}</span><AumSparkline history={fund.filing_history} /></div></td>
                   <td className="px-3 py-4"><PortfolioDonut positions={fund.top_positions} /></td>
                   <td className="px-3 py-4 text-right text-sm font-bold">{fund.position_count || 0}</td>
-                  <td className="px-5 py-4"><span className={`inline-flex items-center gap-2 rounded-full px-2.5 py-1 text-[9px] font-extrabold uppercase tracking-[.1em] ${fund.last_refresh_status === 'success' ? 'bg-emerald-100 text-emerald-800' : fund.last_refresh_status === 'error' ? 'bg-rose-100 text-rose-800' : 'bg-amber-100 text-amber-800'}`}><span className="h-1.5 w-1.5 rounded-full bg-current" />{fund.last_refresh_status || 'queued'}</span></td>
+                  <td className="px-5 py-4"><span className={`inline-flex items-center gap-2 rounded-full px-2.5 py-1 text-[9px] font-extrabold uppercase tracking-[.1em] ${fund.last_refresh_status === 'success' ? 'bg-emerald-100 text-emerald-800' : fund.last_refresh_status === 'error' ? 'bg-rose-100 text-rose-800' : 'bg-neutral-100 text-neutral-800'}`}><span className="h-1.5 w-1.5 rounded-full bg-current" />{fund.last_refresh_status || 'queued'}</span></td>
                 </tr>,
                 expanded ? (
                   <tr key={`${fund.slug}-holdings`} className="border-t border-[#dddddd] bg-[#ffffff]">

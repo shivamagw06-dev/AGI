@@ -95,11 +95,11 @@ function FundLogo({ fund, size = 'md' }) {
 function SignalPill({ type }) {
   const tones = {
     new: 'bg-emerald-100 text-emerald-800',
-    increased: 'bg-cyan-100 text-cyan-800',
-    reduced: 'bg-amber-100 text-amber-800',
+    increased: 'bg-neutral-100 text-neutral-800',
+    reduced: 'bg-neutral-100 text-neutral-800',
     exited: 'bg-rose-100 text-rose-800',
-    held: 'bg-slate-100 text-slate-600',
-    unchanged: 'bg-slate-100 text-slate-600',
+    held: 'bg-neutral-100 text-neutral-700',
+    unchanged: 'bg-neutral-100 text-neutral-700',
   };
   return (
     <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-[.1em] ${tones[type] || tones.held}`}>
@@ -150,12 +150,12 @@ function ModuleShell({ children, title, eyebrow, subtitle, back }) {
       </Helmet>
       <header className="relative overflow-hidden bg-[#222222] text-white">
         <div className="absolute inset-0 opacity-40 [background-image:linear-gradient(rgba(100,204,210,.08)_1px,transparent_1px),linear-gradient(90deg,rgba(100,204,210,.08)_1px,transparent_1px)] [background-size:42px_42px]" />
-        <div className="absolute left-[66%] top-[-180px] h-[560px] w-[560px] rounded-full border border-cyan-300/20 bg-cyan-300/5 shadow-[0_0_160px_rgba(51,189,199,.16)]" />
-        <div className="absolute left-[73%] top-[-90px] h-[340px] w-[340px] rounded-full border border-amber-300/20" />
+        <div className="absolute left-[66%] top-[-180px] h-[560px] w-[560px] rounded-full border border-neutral-300/20 bg-neutral-900/5 shadow-[0_0_160px_rgba(51,189,199,.16)]" />
+        <div className="absolute left-[73%] top-[-90px] h-[340px] w-[340px] rounded-full border border-neutral-300/20" />
         <div className="relative mx-auto max-w-[1500px] px-5 pb-12 pt-7 sm:px-8 sm:pb-16">
           <div className="mb-10 flex flex-wrap items-center justify-between gap-4 border-b border-white/10 pb-5">
             <Link to="/institutional-holdings" className="flex items-center gap-3">
-              <div className="grid h-9 w-9 place-items-center rounded-xl border border-cyan-200/20 bg-white/5">
+              <div className="grid h-9 w-9 place-items-center rounded-xl border border-neutral-200/20 bg-white/5">
                 <Radar className="h-5 w-5 text-[#bbbbbb]" />
               </div>
               <div>
@@ -163,8 +163,8 @@ function ModuleShell({ children, title, eyebrow, subtitle, back }) {
                 <span className="text-xs text-[#bbbbbb]">Institutional Holdings</span>
               </div>
             </Link>
-            <div className="flex items-center gap-2 rounded-full border border-emerald-300/20 bg-emerald-300/10 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[.12em] text-emerald-200">
-              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-300" />
+            <div className="flex items-center gap-2 rounded-full border border-neutral-300 bg-neutral-100 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[.12em] text-neutral-700">
+              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-neutral-500" />
               Filing aware
             </div>
           </div>
@@ -279,7 +279,7 @@ function MarketIntelligencePanel({ data }) {
       </div>
       <div className="grid overflow-hidden rounded-[30px] border border-white bg-white/85 shadow-[0_24px_70px_rgba(12,48,59,.09)] backdrop-blur xl:grid-cols-[1.1fr_.9fr]">
         <div className="relative overflow-hidden bg-[#333333] p-7 text-white sm:p-9">
-          <div className="absolute -right-20 -top-24 h-64 w-64 rounded-full border border-cyan-200/15 bg-cyan-200/5" />
+          <div className="absolute -right-20 -top-24 h-64 w-64 rounded-full border border-neutral-200/15 bg-neutral-200/5" />
           <div className="relative">
             <div className="flex items-center gap-3"><div className="grid h-11 w-11 place-items-center rounded-2xl border border-white/10 bg-white/5 text-[#bbbbbb]"><Sparkles className="h-5 w-5" /></div><div><p className="text-[9px] font-extrabold uppercase tracking-[.18em] text-[#aaaaaa]">Network read</p><p className="mt-1 text-xs text-[#aaaaaa]">Latest verified manager quarters</p></div></div>
             <h3 className="mt-7 max-w-3xl text-2xl font-bold leading-tight sm:text-3xl">{intelligence.headline}</h3>
@@ -360,7 +360,7 @@ function OverviewPage() {
             </form>
           </div>
           <div className="relative overflow-hidden bg-[#333333] p-7 text-white sm:p-9">
-            <div className="absolute -right-20 -top-20 h-56 w-56 rounded-full border border-cyan-300/20" />
+            <div className="absolute -right-20 -top-20 h-56 w-56 rounded-full border border-neutral-300/20" />
             <p className="text-[10px] font-extrabold uppercase tracking-[.2em] text-[#bbbbbb]">Coverage pulse</p>
             <div className="mt-6 grid grid-cols-2 gap-4">
               <div><span className="text-4xl font-bold">{data?.covered_managers || 10}</span><p className="mt-1 text-xs text-[#bbbbbb]">Selected managers</p></div>
@@ -433,7 +433,7 @@ function OverviewPage() {
               </div>
 
               <aside id="alerts" className="relative overflow-hidden rounded-[30px] bg-[#333333] p-7 text-white shadow-[0_24px_65px_rgba(7,37,48,.2)]">
-                <div className="absolute -right-16 -top-16 h-48 w-48 rounded-full border border-cyan-200/10" />
+                <div className="absolute -right-16 -top-16 h-48 w-48 rounded-full border border-neutral-200/10" />
                 <div className="flex items-center justify-between">
                   <div><p className="text-[10px] font-extrabold uppercase tracking-[.2em] text-[#bbbbbb]">Disclosure monitor</p><h2 className="mt-2 text-2xl font-bold">Filing signals</h2></div>
                   <Zap className="h-6 w-6 text-[#bbbbbb]" />
