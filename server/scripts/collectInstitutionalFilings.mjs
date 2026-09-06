@@ -140,8 +140,13 @@ await finishRun(runId, {
   secPacedWaitMs: limiter.total_wait_ms,
   secCircuitTrips: limiter.circuit_trips,
   ...work,
-  retryState: circuitTripped
-    ? { circuit_tripped: true, note: 'run cut short to protect the source address' }
+  retryState: circuitTripped || (work.postProcessingErrors || []).length
+    ? {
+      ...(circuitTripped ? { circuit_tripped: true, note: 'run cut short to protect the source address' } : {}),
+      ...((work.postProcessingErrors || []).length
+        ? { post_processing_errors: work.postProcessingErrors }
+        : {}),
+    }
     : null,
   error: failureMessage,
 });
@@ -156,6 +161,10 @@ console.log(`[collector] sec requests: ${limiter.requests}, throttled: ${limiter
   + `paced wait: ${(limiter.total_wait_ms / 1000).toFixed(1)}s, `
   + `circuit trips: ${limiter.circuit_trips}`);
 if (schedule) console.log(`[collector] next scheduled run: ${nextScheduledAt(schedule) || 'unknown'}`);
+
+for (const problem of work.postProcessingErrors || []) {
+  console.warn(`[collector] post-processing: ${problem}`);
+}
 
 for (const failure of work.failures.slice(0, 20)) {
   console.error(`[collector]   failed: ${failure.manager} - ${failure.error}`);

@@ -93,6 +93,12 @@ export function summariseRefresh(result, rosterSize = 0) {
     filingsIngested: allFilings.filter((filing) => filing?.status === 'ingested').length,
     holdingsRows: allFilings.reduce((total, filing) => total + (Number(filing?.holdings) || 0), 0),
     amendmentsDetected: allFilings.filter(isAmendment).length,
+    // Reported separately from manager failures. Collection writing every
+    // filing and then failing to rebuild signals is a different situation from
+    // failing to collect, and a reader needs to tell them apart.
+    postProcessingErrors: Array.isArray(result?.post_processing_errors)
+      ? result.post_processing_errors
+      : [],
     failures: rows.filter((row) => !row?.ok).map((row) => ({
       manager: row?.manager?.slug || row?.slug || row?.manager?.display_name || 'unknown',
       error: String(row?.error || 'no reason recorded').slice(0, 500),

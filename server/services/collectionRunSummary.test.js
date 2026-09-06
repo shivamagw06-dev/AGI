@@ -214,3 +214,64 @@ test('the collector reports against the roster, not against what finished', () =
   assert.match(script, /roster: work\.managersInRoster/, 'the status must be derived against the roster');
   assert.match(script, /not reached/, 'the log must say how many managers were never reached');
 });
+
+// ---------------------------------------------------------------------------
+// The statement timeout that killed a run after it had written everything
+// ---------------------------------------------------------------------------
+
+test('post-processing failures are reported apart from collection failures', () => {
+  // The run that timed out had already ingested 551 filings and 561,209 rows.
+  // What failed was identifier enrichment afterwards. Conflating the two tells
+  // an operator collection is broken when it is not.
+  const summary = summariseRefresh({
+    results: [{ ok: true, filings: [{ status: 'ingested', holdings: 100, form_type: '13F-HR' }] }],
+    post_processing_errors: ['identifier enrichment: canceling statement due to statement timeout'],
+  }, 51);
+
+  assert.equal(summary.managersSucceeded, 1);
+  assert.deepEqual(summary.failures, [], 'no manager failed');
+  assert.equal(summary.postProcessingErrors.length, 1);
+  assert.match(summary.postProcessingErrors[0], /statement timeout/);
+});
+
+test('a run with no post-processing trouble reports an empty list, not undefined', () => {
+  const summary = summariseRefresh({ results: [{ ok: true, filings: [] }] }, 51);
+  assert.deepEqual(summary.postProcessingErrors, []);
+});
+
+test('the enrichment query is bounded by the database, not by JavaScript', () => {
+  // It selected every unmapped holding - roughly ninety per cent of 561,209
+  // rows - sorted them all by value, and paged the whole result back to keep
+  // the first thousand distinct CUSIPs. Postgres answers a top-N with a
+  // bounded heapsort instead.
+  const src = readFileSync(new URL('./institutionalHoldingsService.js', import.meta.url), 'utf8');
+  const fn = /async function enrichSecurityIdentifiers[\s\S]*?\n}/.exec(src)?.[0];
+  assert.ok(fn, 'enrichSecurityIdentifiers is gone');
+  assert.match(fn, /\.limit\(scanLimit\)/,
+    'the row cap must be pushed into the query, or the sort runs over the whole table');
+  assert.equal(/collect\(\(\) => client\.from\('institutional_holdings'\)[\s\S]*?is\('ticker', null\)/.test(fn), false,
+    'the unbounded paging collect() is back');
+});
+
+test('collect() cannot page without a ceiling', () => {
+  const src = readFileSync(new URL('./institutionalHoldingsService.js', import.meta.url), 'utf8');
+  const fn = /async function collect\([\s\S]*?\n}/.exec(src)?.[0];
+  assert.ok(fn, 'collect() is gone');
+  // The loop condition specifically, not the token anywhere in the function.
+  // A first version asserted /maxRows/ and passed with the bound removed,
+  // because the word survived in the warning message.
+  assert.match(fn, /for \(let from = 0; from < maxRows;/,
+    'the paging loop must be bounded by its condition, not merely mention a ceiling');
+  assert.match(fn, /console\.warn/, 'hitting the ceiling must be announced, not silent');
+});
+
+test('collection succeeding while post-processing fails is not a failed run', () => {
+  const src = readFileSync(new URL('./institutionalHoldingsService.js', import.meta.url), 'utf8');
+  assert.match(src, /post_processing_errors/,
+    'post-processing failures must be reported rather than thrown');
+  const refresh = /async function performInstitutionalRefresh[\s\S]*?\n}/.exec(src)?.[0];
+  assert.match(refresh, /try \{\s*enrichment = await enrichSecurityIdentifiers/,
+    'enrichment must not be able to fail a run that already wrote every filing');
+  assert.match(refresh, /try \{\s*scores = await rebuildSignals/,
+    'the signal rebuild must not either');
+});
