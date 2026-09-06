@@ -1,6 +1,7 @@
 import { createSupabaseAdmin } from '../lib/supabaseAdmin.js';
 import { getCollectionHealth, listRuns } from './institutionalCollectionRuns.js';
 import { classifyFiling, applyAmendment, droppedPositions } from './secAmendment.js';
+import { valueScaleFor, detectScaleMismatch } from './valueScale.js';
 
 const SEC_ROOT = 'https://www.sec.gov';
 const SEC_DATA = 'https://data.sec.gov';
@@ -12,7 +13,6 @@ const OPENFIGI_API_KEY = String(process.env.OPENFIGI_API_KEY || '').trim();
 const PAGE_SIZE = 1000;
 const CONSENSUS_MIN_MANAGERS = 4;
 const AUTO_REFRESH_INTERVAL_MS = 24 * 60 * 60 * 1000;
-const POST_2022_VALUE_RULE_DATE = '2023-01-03';
 
 export const DEFAULT_MANAGERS = [
   { slug: 'situational-awareness', display_name: 'Situational Awareness', legal_name: 'SITUATIONAL AWARENESS LP', cik: '0002045724', strategy: 'AI and technology concentration', manager_type: 'Investment manager', quality_weight: 1.10, earliest_report_date: '2024-12-31', city: 'San Francisco', state: 'CA', country: 'United States', postal_code: '94107', active: true },
@@ -677,10 +677,24 @@ async function ingestFiling(client, manager, source) {
   if (!infoDocument) throw new Error(`No 13F information table found in ${source.accession_number}`);
   let rawRows = collapseDuplicateRows(parseInformationTable(infoDocument.text, 1));
   if (!rawRows.length) throw new Error(`The SEC information table was empty for ${source.accession_number}`);
-  const ratios = rawRows.filter((row) => row.shares > 0 && row.value_usd > 0 && !row.put_call).map((row) => row.value_usd / row.shares).sort((a, b) => a - b);
-  const medianRatio = ratios.length ? ratios[Math.floor(ratios.length / 2)] : null;
-  const legacyScaleDetected = ratios.length >= 5 && medianRatio < 1 && ratios.filter((ratio) => ratio < 1).length / ratios.length >= 0.6;
-  const valueScale = n(manager.value_scale_override) || (String(source.accepted_at || source.filing_date) < POST_2022_VALUE_RULE_DATE || legacyScaleDetected ? 1000 : 1);
+  // The per-share sanity check that lived here now runs inside
+  // detectScaleMismatch, which reports a disagreement instead of silently
+  // overriding the documented rule with a heuristic.
+  // One rule, shared by all three paths. This one was already keyed to the
+  // filing date and correct; the two import paths keyed to report_date and
+  // overstated every Q4-2022 filing by 1000x.
+  const { scale: valueScale, basis: valueScaleBasis } = valueScaleFor({
+    acceptedAt: source.accepted_at,
+    filedAt: source.filing_date,
+    reportDate: source.report_date,
+    override: manager.value_scale_override,
+  });
+  const scaleMismatch = detectScaleMismatch(rawRows, valueScale);
+  if (scaleMismatch) {
+    // Reported, not acted on. A heuristic quietly overruling a documented rule
+    // is how the original confusion took hold.
+    console.warn(`[institutional-holdings] ${source.accession_number}: applied scale ${valueScale} (${valueScaleBasis}) but ${scaleMismatch.reason}`);
+  }
   if (valueScale !== 1) rawRows = rawRows.map((row) => ({ ...row, value_usd: n(row.value_usd) * valueScale }));
   // Amendment handling.
   //
@@ -862,7 +876,14 @@ async function secImportRows(manager, source) {
   for (const name of names) {
     const response = await scheduleSecRequest(() => fetch(`${archive.base}/${name}`, { headers: { 'User-Agent': SEC_USER_AGENT } }));
     if (!response.ok) continue;
-    const scale = source.report_date < POST_2022_VALUE_RULE_DATE ? 1000 : 1;
+    // Was source.report_date, which put Q4-2022 on the wrong side of the rule:
+    // the quarter ends 2022-12-31 but the filing is made in February 2023.
+    const { scale } = valueScaleFor({
+      acceptedAt: source.accepted_at,
+      filedAt: source.filing_date,
+      reportDate: source.report_date,
+      override: manager.value_scale_override,
+    });
     const rows = collapseDuplicateRows(parseInformationTable(await response.text(), scale));
     if (rows.length) return { rows, primary_document: name, source_url: `${archive.base}/${name}` };
   }
@@ -918,7 +939,11 @@ async function prepareInstitutionalImport(client, payload = {}) {
       source_url: null,
       amendment_type: payload.amendmentType || null,
     };
-    const scale = reportDate < POST_2022_VALUE_RULE_DATE ? 1000 : 1;
+    // reportDate only, deliberately. The source above stamps accepted_at with
+    // the moment of upload, which says when an analyst pasted the filing and
+    // nothing about when it was filed - so valueScaleFor falls back to the
+    // 45-day statutory deadline, which is right for any filing made on time.
+    const { scale } = valueScaleFor({ reportDate, override: manager.value_scale_override });
     rows = isXml ? collapseDuplicateRows(parseInformationTable(input, scale)) : parsePasted13fTable(input, scale);
   }
   if (!rows.length) throw new Error('No valid holdings were detected. Preserve tabs between copied columns, or paste the SEC information-table XML.');
