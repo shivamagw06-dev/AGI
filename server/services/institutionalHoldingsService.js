@@ -161,14 +161,24 @@ function collapseDuplicateRows(rows) {
   return [...combined.values()];
 }
 
-async function collect(factory, pageSize = PAGE_SIZE) {
+/**
+ * Page a query to completion, with a ceiling.
+ *
+ * The loop had no upper bound: it kept requesting pages until one came back
+ * short. That is fine while a table is small and becomes a way to pull an
+ * unbounded result into memory as it grows. The cap is high enough that no
+ * present caller reaches it, and it warns rather than truncating silently -
+ * a quietly incomplete result is worse than a slow one.
+ */
+async function collect(factory, pageSize = PAGE_SIZE, maxRows = 250_000) {
   const rows = [];
-  for (let from = 0; ; from += pageSize) {
+  for (let from = 0; from < maxRows; from += pageSize) {
     const { data, error } = await factory().range(from, from + pageSize - 1);
     if (error) throw error;
     rows.push(...(data || []));
-    if (!data || data.length < pageSize) break;
+    if (!data || data.length < pageSize) return rows;
   }
+  console.warn(`[institutional-holdings] collect() stopped at its ${maxRows}-row ceiling; the result is incomplete`);
   return rows;
 }
 
@@ -548,7 +558,26 @@ async function openFigiBatch(cusips) {
 }
 
 async function enrichSecurityIdentifiers(client, limit = 1000) {
-  const unresolved = await collect(() => client.from('institutional_holdings').select('cusip,issuer_name,value_usd').is('ticker', null).order('value_usd', { ascending: false }));
+  // Bounded on the server, not in JavaScript.
+  //
+  // This selected every unmapped holding - about ninety per cent of 561,209
+  // rows - sorted all of them by value, and paged the whole result back just to
+  // keep the first thousand distinct CUSIPs. That is what produced "canceling
+  // statement due to statement timeout" forty-three minutes into a run.
+  //
+  // Postgres can answer a top-N with a bounded heapsort instead of sorting the
+  // whole table. The multiplier is headroom for duplicates: the same CUSIP
+  // appears once per manager holding it, so a few thousand rows comfortably
+  // yields a thousand distinct ones.
+  const scanLimit = Math.min(limit * 25, 25_000);
+  const { data: unresolvedRows, error: unresolvedError } = await client
+    .from('institutional_holdings')
+    .select('cusip,issuer_name,value_usd')
+    .is('ticker', null)
+    .order('value_usd', { ascending: false })
+    .limit(scanLimit);
+  if (unresolvedError) throw new Error(unresolvedError.message);
+  const unresolved = unresolvedRows || [];
   const unique = [];
   const seen = new Set();
   for (const row of unresolved) {
@@ -1167,9 +1196,36 @@ async function performInstitutionalRefresh({ managerSlug, quarters = 12, onManag
       return { manager: manager.display_name, cik: manager.cik, ok: false, status: 'error', error: error.message };
     }
   });
-  const enrichment = await enrichSecurityIdentifiers(client);
-  const scores = await rebuildSignals(client);
-  return { ok: results.some((row) => row.ok), refreshed_at: new Date().toISOString(), results, enrichment, scores };
+  // Identifier enrichment and signal rebuilding are post-processing. By the
+  // time they run, every filing has been ingested and committed. A failure
+  // here - a statement timeout, OpenFIGI being down - must not turn a run that
+  // wrote 561,209 rows into a failed one; it is reported and the run stands.
+  let enrichment = null;
+  let scores = null;
+  const postErrors = [];
+  try {
+    enrichment = await enrichSecurityIdentifiers(client);
+  } catch (error) {
+    postErrors.push(`identifier enrichment: ${error.message}`);
+    console.error(`[institutional-holdings] identifier enrichment failed: ${error.message}`);
+  }
+  try {
+    scores = await rebuildSignals(client);
+  } catch (error) {
+    postErrors.push(`signal rebuild: ${error.message}`);
+    console.error(`[institutional-holdings] signal rebuild failed: ${error.message}`);
+  }
+
+  return {
+    ok: results.some((row) => row.ok),
+    refreshed_at: new Date().toISOString(),
+    results,
+    enrichment,
+    scores,
+    // Surfaced so the run record can say the collection succeeded and the
+    // post-processing did not, rather than conflating the two.
+    post_processing_errors: postErrors,
+  };
 }
 
 let fullRefreshPromise = null;
