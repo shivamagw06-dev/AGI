@@ -86,8 +86,8 @@ function ManagerMark({ manager }) {
   const mark = String(manager.display_name || 'AGI').split(/\s+/).map((word) => word[0]).join('').slice(0, 3);
   const domain = MANAGER_DOMAINS[manager.display_name];
   return (
-    <div className="relative grid h-11 w-11 shrink-0 place-items-center overflow-hidden rounded-xl border border-cyan-100/15 bg-gradient-to-br from-[#174c5c] to-[#071e2b] font-serif text-xs font-bold text-white shadow-[0_8px_22px_rgba(5,31,42,.2)]">
-      <span className="absolute inset-x-2 top-1.5 h-px bg-[#d9a766]" />
+    <div className="relative grid h-11 w-11 shrink-0 place-items-center overflow-hidden rounded-xl border border-cyan-100/15 bg-gradient-to-br from-[#444444] to-[#222222] text-xs font-bold text-white shadow-[0_8px_22px_rgba(5,31,42,.2)]">
+      <span className="absolute inset-x-2 top-1.5 h-px bg-[#aaaaaa]" />
       <span aria-hidden="true">{mark}</span>
       {domain ? (
         <img
@@ -128,14 +128,14 @@ function AumSparkline({ history = [] }) {
     <div className="relative w-[154px]" onMouseLeave={() => setHovered(null)}>
       <svg viewBox={`0 0 ${width} ${height}`} className="h-12 w-full overflow-visible" role="img" aria-label="Quarterly 13F assets under management">
         <path d={area} fill="rgba(58,170,171,.13)" />
-        <path d={line} fill="none" stroke="#3aaaab" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
+        <path d={line} fill="none" stroke="#999999" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
         {points.map((point, index) => (
-          <circle key={`${point.row.report_date}-${index}`} cx={point.x} cy={point.y} r={hovered === index ? 4 : 6} fill={hovered === index ? '#d4a55d' : 'transparent'} stroke={hovered === index ? '#fff' : 'transparent'} strokeWidth="2" className="cursor-crosshair" onMouseEnter={() => setHovered(index)} />
+          <circle key={`${point.row.report_date}-${index}`} cx={point.x} cy={point.y} r={hovered === index ? 4 : 6} fill={hovered === index ? '#aaaaaa' : 'transparent'} stroke={hovered === index ? '#fff' : 'transparent'} strokeWidth="2" className="cursor-crosshair" onMouseEnter={() => setHovered(index)} />
         ))}
       </svg>
       {active ? (
-        <div className="pointer-events-none absolute bottom-[54px] z-30 min-w-[112px] -translate-x-1/2 rounded border border-[#d4a55d]/40 bg-[#071b27] px-2.5 py-2 text-left shadow-xl" style={{ left: `${Math.min(82, Math.max(18, (active.x / width) * 100))}%` }}>
-          <div className="text-[9px] font-bold uppercase tracking-[.16em] text-[#d4a55d]">{active.row.report_date}</div>
+        <div className="pointer-events-none absolute bottom-[54px] z-30 min-w-[112px] -translate-x-1/2 rounded border border-[#aaaaaa]/40 bg-[#222222] px-2.5 py-2 text-left shadow-xl" style={{ left: `${Math.min(82, Math.max(18, (active.x / width) * 100))}%` }}>
+          <div className="text-[9px] font-bold uppercase tracking-[.16em] text-[#aaaaaa]">{active.row.report_date}</div>
           <div className="mt-1 text-xs font-bold text-white">{money(active.row.total_value_usd)}</div>
           <div className="text-[9px] text-slate-400">{number(active.row.holdings_count)} holdings</div>
         </div>
@@ -146,7 +146,7 @@ function AumSparkline({ history = [] }) {
 
 function PortfolioDonut({ positions = [] }) {
   const [hovered, setHovered] = useState(null);
-  const colors = ['#3aaaab', '#d4a55d', '#5c7f90', '#263f4b'];
+  const colors = ['#999999', '#aaaaaa', '#777777', '#444444'];
   const named = positions.slice(0, 3).map((position) => ({ label: position.ticker || position.issuer_name || 'Position', value: Math.max(0, Number(position.portfolio_weight) || 0) }));
   if (!named.length) return <span className="text-[10px] text-slate-400">No positions</span>;
 
@@ -167,8 +167,8 @@ function PortfolioDonut({ positions = [] }) {
         })}
       </svg>
       {active ? (
-        <div className="pointer-events-none absolute bottom-[54px] z-30 min-w-[104px] rounded border border-[#d4a55d]/40 bg-[#071b27] px-2.5 py-2 text-center shadow-xl">
-          <div className="text-[9px] font-bold uppercase tracking-[.12em] text-[#d4a55d]">{active.label}</div>
+        <div className="pointer-events-none absolute bottom-[54px] z-30 min-w-[104px] rounded border border-[#aaaaaa]/40 bg-[#222222] px-2.5 py-2 text-center shadow-xl">
+          <div className="text-[9px] font-bold uppercase tracking-[.12em] text-[#aaaaaa]">{active.label}</div>
           <div className="mt-1 text-xs font-bold text-white">{active.value.toFixed(1)}%</div>
         </div>
       ) : null}
@@ -221,7 +221,7 @@ export default function InstitutionalManagerExplorer({ funds = [] }) {
     <div className="mt-7 overflow-hidden rounded-[26px] border border-white bg-white/90 shadow-[0_20px_55px_rgba(12,48,59,.08)]">
       <div className="overflow-x-auto">
         <table className="w-full min-w-[1320px] text-left">
-          <thead className="bg-[#0b2d3a] text-[9px] font-extrabold uppercase tracking-[.15em] text-[#a9c3ca]">
+          <thead className="bg-[#333333] text-[9px] font-extrabold uppercase tracking-[.15em] text-[#bbbbbb]">
             <tr>
               <th className="w-12 px-4 py-4" aria-label="Expand holdings" />
               <th className="px-3 py-4">Institutional manager</th>
@@ -244,44 +244,44 @@ export default function InstitutionalManagerExplorer({ funds = [] }) {
               const pageRows = filtered.slice((holdingPage - 1) * PAGE_SIZE, holdingPage * PAGE_SIZE);
               const location = [fund.city, fund.state, fund.country].filter(Boolean).join(', ');
               return [
-                <tr key={fund.slug} className={`border-t border-[#e5ecea] transition ${expanded ? 'bg-[#edf5f3]' : 'hover:bg-[#f7faf9]'}`}>
+                <tr key={fund.slug} className={`border-t border-[#eeeeee] transition ${expanded ? 'bg-[#eeeeee]' : 'hover:bg-[#ffffff]'}`}>
                   <td className="px-4 py-4 align-middle">
-                    <button onClick={() => toggle(fund)} className="grid h-8 w-8 place-items-center rounded-lg border border-[#d3dfdc] bg-white text-[#174d5c] transition hover:border-[#4a9da1]" aria-expanded={expanded} aria-label={`${expanded ? 'Hide' : 'Show'} ${fund.display_name} holdings`}>
+                    <button onClick={() => toggle(fund)} className="grid h-8 w-8 place-items-center rounded-lg border border-[#dddddd] bg-white text-[#444444] transition hover:border-[#888888]" aria-expanded={expanded} aria-label={`${expanded ? 'Hide' : 'Show'} ${fund.display_name} holdings`}>
                       <ChevronRight className={`h-4 w-4 transition-transform ${expanded ? 'rotate-90' : ''}`} />
                     </button>
                   </td>
                   <td className="px-3 py-4">
-                    <div className="flex items-center gap-3"><ManagerMark manager={fund} /><div><Link to={`/institutional-holdings/funds/${fund.slug}`} className="font-serif text-base font-bold text-[#0a3341] hover:text-[#14747b]">{fund.display_name}</Link><p className="mt-1 text-[10px] text-[#75868b]">{fund.manager_type || fund.strategy}</p></div></div>
+                    <div className="flex items-center gap-3"><ManagerMark manager={fund} /><div><Link to={`/institutional-holdings/funds/${fund.slug}`} className="text-base font-bold text-[#333333] hover:text-[#666666]">{fund.display_name}</Link><p className="mt-1 text-[10px] text-[#888888]">{fund.manager_type || fund.strategy}</p></div></div>
                   </td>
-                  <td className="px-3 py-4 text-xs font-bold text-[#314f59]">{fund.latest_filing?.report_date || 'Pending'}</td>
-                  <td className="px-3 py-4 text-xs text-[#65777d]">{fund.earliest_report_date || 'Pending'}</td>
-                  <td className="px-3 py-4"><div className="flex max-w-[210px] items-start gap-2 text-xs text-[#65777d]"><MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#a56e3d]" /><span>{location || 'SEC address pending'}{fund.postal_code ? ` ${fund.postal_code}` : ''}</span></div></td>
-                  <td className="px-3 py-4"><div className="flex flex-col items-end"><span className="mb-1 text-[10px] font-bold text-[#102f3c]">{fund.latest_filing ? money(fund.latest_filing.total_value_usd) : '--'}</span><AumSparkline history={fund.filing_history} /></div></td>
+                  <td className="px-3 py-4 text-xs font-bold text-[#444444]">{fund.latest_filing?.report_date || 'Pending'}</td>
+                  <td className="px-3 py-4 text-xs text-[#777777]">{fund.earliest_report_date || 'Pending'}</td>
+                  <td className="px-3 py-4"><div className="flex max-w-[210px] items-start gap-2 text-xs text-[#777777]"><MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#777777]" /><span>{location || 'SEC address pending'}{fund.postal_code ? ` ${fund.postal_code}` : ''}</span></div></td>
+                  <td className="px-3 py-4"><div className="flex flex-col items-end"><span className="mb-1 text-[10px] font-bold text-[#333333]">{fund.latest_filing ? money(fund.latest_filing.total_value_usd) : '--'}</span><AumSparkline history={fund.filing_history} /></div></td>
                   <td className="px-3 py-4"><PortfolioDonut positions={fund.top_positions} /></td>
                   <td className="px-3 py-4 text-right text-sm font-bold">{fund.position_count || 0}</td>
                   <td className="px-5 py-4"><span className={`inline-flex items-center gap-2 rounded-full px-2.5 py-1 text-[9px] font-extrabold uppercase tracking-[.1em] ${fund.last_refresh_status === 'success' ? 'bg-emerald-100 text-emerald-800' : fund.last_refresh_status === 'error' ? 'bg-rose-100 text-rose-800' : 'bg-amber-100 text-amber-800'}`}><span className="h-1.5 w-1.5 rounded-full bg-current" />{fund.last_refresh_status || 'queued'}</span></td>
                 </tr>,
                 expanded ? (
-                  <tr key={`${fund.slug}-holdings`} className="border-t border-[#cfddda] bg-[#f4f8f7]">
+                  <tr key={`${fund.slug}-holdings`} className="border-t border-[#dddddd] bg-[#ffffff]">
                     <td colSpan="9" className="p-0">
-                      <div className="border-l-4 border-[#2a9c99] px-5 py-6 sm:px-8">
-                        {loadingSlug === fund.slug ? <div className="flex items-center justify-center gap-3 py-14 text-sm text-[#63777e]"><Loader2 className="h-5 w-5 animate-spin" /> Loading latest SEC holdings</div> : loadError && !detail ? <p className="py-10 text-center text-sm text-rose-700">{loadError}</p> : detail ? (
+                      <div className="border-l-4 border-[#888888] px-5 py-6 sm:px-8">
+                        {loadingSlug === fund.slug ? <div className="flex items-center justify-center gap-3 py-14 text-sm text-[#777777]"><Loader2 className="h-5 w-5 animate-spin" /> Loading latest SEC holdings</div> : loadError && !detail ? <p className="py-10 text-center text-sm text-rose-700">{loadError}</p> : detail ? (
                           <>
                             <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-                              <div><p className="text-[9px] font-extrabold uppercase tracking-[.18em] text-[#a56e3d]">Taken from latest 13F filing</p><h3 className="mt-2 font-serif text-2xl font-bold">{fund.display_name} holdings</h3><p className="mt-1 text-xs text-[#6f8085]">Report quarter {detail.latest_filing?.report_date} · Public {String(detail.latest_filing?.filed_at || '').slice(0, 10)} · {filtered.length} matching positions</p></div>
+                              <div><p className="text-[9px] font-extrabold uppercase tracking-[.18em] text-[#777777]">Taken from latest 13F filing</p><h3 className="mt-2 text-2xl font-bold">{fund.display_name} holdings</h3><p className="mt-1 text-xs text-[#777777]">Report quarter {detail.latest_filing?.report_date} · Public {String(detail.latest_filing?.filed_at || '').slice(0, 10)} · {filtered.length} matching positions</p></div>
                               <div className="flex flex-col gap-3 sm:flex-row">
-                                <label className="flex items-center gap-2 rounded-xl border border-[#cfdbd8] bg-white px-3"><Search className="h-4 w-4 text-[#71858a]" /><input value={holdingQuery} onChange={(event) => { setHoldingQuery(event.target.value); setHoldingPage(1); }} placeholder="Filter ticker or company" className="w-56 bg-transparent py-3 text-xs outline-none" /></label>
-                                <Link to={`/institutional-holdings/funds/${fund.slug}`} className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#0c3544] px-4 py-3 text-xs font-bold text-white">Full manager profile <ExternalLink className="h-3.5 w-3.5" /></Link>
+                                <label className="flex items-center gap-2 rounded-xl border border-[#dddddd] bg-white px-3"><Search className="h-4 w-4 text-[#888888]" /><input value={holdingQuery} onChange={(event) => { setHoldingQuery(event.target.value); setHoldingPage(1); }} placeholder="Filter ticker or company" className="w-56 bg-transparent py-3 text-xs outline-none" /></label>
+                                <Link to={`/institutional-holdings/funds/${fund.slug}`} className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#333333] px-4 py-3 text-xs font-bold text-white">Full manager profile <ExternalLink className="h-3.5 w-3.5" /></Link>
                               </div>
                             </div>
-                            <div className="mt-5 overflow-x-auto rounded-xl border border-[#d7e1df] bg-white">
+                            <div className="mt-5 overflow-x-auto rounded-xl border border-[#dddddd] bg-white">
                               <table className="w-full min-w-[1060px] text-left">
-                                <thead className="bg-[#152f39] text-[9px] font-extrabold uppercase tracking-[.13em] text-[#b8c9ce]"><tr><th className="px-4 py-3">Security</th><th className="px-4 py-3">Class</th><th className="px-4 py-3 text-right">Shares</th><th className="px-4 py-3 text-right">Market value</th><th className="px-4 py-3 text-right">Portfolio</th><th className="px-4 py-3 text-right">Previous</th><th className="px-4 py-3 text-right">Rank</th><th className="px-4 py-3 text-right">Share change</th><th className="px-4 py-3 text-right">Change %</th><th className="px-4 py-3">Signal</th></tr></thead>
-                                <tbody>{pageRows.map((row, index) => { const change = changes.get(row.cusip); return <tr key={`${row.id || row.cusip}-${index}`} className="border-t border-[#e8eeec] text-xs hover:bg-[#f6f9f8]"><td className="px-4 py-3"><Link to={`/institutional-holdings/stocks/${row.ticker || row.cusip}`} className="font-bold text-[#0d6670] hover:underline">{row.ticker || row.cusip}</Link><span className="block max-w-[220px] truncate text-[10px] text-[#7c8b90]">{row.issuer_name}</span></td><td className="px-4 py-3 text-[#607279]">{row.title_of_class || 'Security'}{row.put_call ? ` / ${row.put_call}` : ''}</td><td className="px-4 py-3 text-right font-medium">{number(row.shares)}</td><td className="px-4 py-3 text-right font-bold">{money(row.value_usd)}</td><td className="px-4 py-3 text-right font-bold">{percent(row.portfolio_weight)}</td><td className="px-4 py-3 text-right text-[#718187]">{change ? percent(change.previous_weight) : '--'}</td><td className="px-4 py-3 text-right font-bold">{(holdingPage - 1) * PAGE_SIZE + index + 1}</td><td className={`px-4 py-3 text-right font-bold ${Number(change?.share_change || 0) >= 0 ? 'text-emerald-700' : 'text-rose-700'}`}>{change ? number(change.share_change) : '--'}</td><td className="px-4 py-3 text-right">{change?.share_change_pct == null ? '--' : percent(change.share_change_pct)}</td><td className="px-4 py-3"><ChangeBadge change={change} /></td></tr>; })}</tbody>
+                                <thead className="bg-[#333333] text-[9px] font-extrabold uppercase tracking-[.13em] text-[#cccccc]"><tr><th className="px-4 py-3">Security</th><th className="px-4 py-3">Class</th><th className="px-4 py-3 text-right">Shares</th><th className="px-4 py-3 text-right">Market value</th><th className="px-4 py-3 text-right">Portfolio</th><th className="px-4 py-3 text-right">Previous</th><th className="px-4 py-3 text-right">Rank</th><th className="px-4 py-3 text-right">Share change</th><th className="px-4 py-3 text-right">Change %</th><th className="px-4 py-3">Signal</th></tr></thead>
+                                <tbody>{pageRows.map((row, index) => { const change = changes.get(row.cusip); return <tr key={`${row.id || row.cusip}-${index}`} className="border-t border-[#eeeeee] text-xs hover:bg-[#ffffff]"><td className="px-4 py-3"><Link to={`/institutional-holdings/stocks/${row.ticker || row.cusip}`} className="font-bold text-[#555555] hover:underline">{row.ticker || row.cusip}</Link><span className="block max-w-[220px] truncate text-[10px] text-[#888888]">{row.issuer_name}</span></td><td className="px-4 py-3 text-[#777777]">{row.title_of_class || 'Security'}{row.put_call ? ` / ${row.put_call}` : ''}</td><td className="px-4 py-3 text-right font-medium">{number(row.shares)}</td><td className="px-4 py-3 text-right font-bold">{money(row.value_usd)}</td><td className="px-4 py-3 text-right font-bold">{percent(row.portfolio_weight)}</td><td className="px-4 py-3 text-right text-[#777777]">{change ? percent(change.previous_weight) : '--'}</td><td className="px-4 py-3 text-right font-bold">{(holdingPage - 1) * PAGE_SIZE + index + 1}</td><td className={`px-4 py-3 text-right font-bold ${Number(change?.share_change || 0) >= 0 ? 'text-emerald-700' : 'text-rose-700'}`}>{change ? number(change.share_change) : '--'}</td><td className="px-4 py-3 text-right">{change?.share_change_pct == null ? '--' : percent(change.share_change_pct)}</td><td className="px-4 py-3"><ChangeBadge change={change} /></td></tr>; })}</tbody>
                               </table>
-                              {!pageRows.length ? <div className="flex items-center justify-center gap-2 py-12 text-sm text-[#708187]"><FileClock className="h-4 w-4" /> No holdings match this filter.</div> : null}
+                              {!pageRows.length ? <div className="flex items-center justify-center gap-2 py-12 text-sm text-[#777777]"><FileClock className="h-4 w-4" /> No holdings match this filter.</div> : null}
                             </div>
-                            <div className="mt-4 flex flex-col gap-3 text-xs text-[#6b7d82] sm:flex-row sm:items-center sm:justify-between"><span>Rows {(holdingPage - 1) * PAGE_SIZE + (pageRows.length ? 1 : 0)}–{Math.min(holdingPage * PAGE_SIZE, filtered.length)} of {filtered.length}</span><div className="flex items-center gap-2"><button disabled={holdingPage <= 1} onClick={() => setHoldingPage((page) => Math.max(1, page - 1))} className="rounded-lg border border-[#cad8d5] bg-white px-3 py-2 font-bold disabled:opacity-40">Previous</button><span className="px-2 font-bold">{holdingPage} / {pageCount}</span><button disabled={holdingPage >= pageCount} onClick={() => setHoldingPage((page) => Math.min(pageCount, page + 1))} className="rounded-lg border border-[#cad8d5] bg-white px-3 py-2 font-bold disabled:opacity-40">Next</button></div></div>
+                            <div className="mt-4 flex flex-col gap-3 text-xs text-[#777777] sm:flex-row sm:items-center sm:justify-between"><span>Rows {(holdingPage - 1) * PAGE_SIZE + (pageRows.length ? 1 : 0)}–{Math.min(holdingPage * PAGE_SIZE, filtered.length)} of {filtered.length}</span><div className="flex items-center gap-2"><button disabled={holdingPage <= 1} onClick={() => setHoldingPage((page) => Math.max(1, page - 1))} className="rounded-lg border border-[#cccccc] bg-white px-3 py-2 font-bold disabled:opacity-40">Previous</button><span className="px-2 font-bold">{holdingPage} / {pageCount}</span><button disabled={holdingPage >= pageCount} onClick={() => setHoldingPage((page) => Math.min(pageCount, page + 1))} className="rounded-lg border border-[#cccccc] bg-white px-3 py-2 font-bold disabled:opacity-40">Next</button></div></div>
                           </>
                         ) : null}
                       </div>
@@ -293,7 +293,7 @@ export default function InstitutionalManagerExplorer({ funds = [] }) {
           </tbody>
         </table>
       </div>
-      {!funds.length ? <p className="p-10 text-center text-sm text-[#708187]">No institutional managers match this search.</p> : null}
+      {!funds.length ? <p className="p-10 text-center text-sm text-[#777777]">No institutional managers match this search.</p> : null}
     </div>
   );
 }
