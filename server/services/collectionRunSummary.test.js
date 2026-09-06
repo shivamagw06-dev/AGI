@@ -9,6 +9,7 @@
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { deriveStatus, summariseRefresh, nextScheduledAt } from './collectionRunSummary.js';
 
 test('a run where every manager succeeded is a success', () => {
@@ -87,4 +88,78 @@ test('an expression this parser does not understand returns null, not a guess', 
 test('an out-of-range time is rejected rather than wrapping', () => {
   assert.equal(nextScheduledAt('70 6 * * *'), null);
   assert.equal(nextScheduledAt('20 25 * * *'), null);
+});
+
+// ---------------------------------------------------------------------------
+// The shape the scheduled collector actually produces
+// ---------------------------------------------------------------------------
+
+test('a bulk refresh result is counted, not read as empty', () => {
+  // performInstitutionalRefresh returns { filings: [...] } per manager, while a
+  // single-manager refresh returns { filing, ingestion }. Only the second shape
+  // was handled, so every completed scheduled run reported filings: 0,
+  // holdings rows: 0, amendments: 0 however much it had written.
+  const summary = summariseRefresh({
+    results: [
+      { ok: true, slug: 'berkshire-hathaway', filings: [
+        { status: 'ingested', holdings: 45, form_type: '13F-HR' },
+        { status: 'ingested', holdings: 44, form_type: '13F-HR/A' },
+      ] },
+      { ok: true, slug: 'citadel-advisors', filings: [
+        { status: 'ingested', holdings: 13572, form_type: '13F-HR' },
+      ] },
+      { ok: false, manager: { slug: 'norges-bank' }, error: 'no information table' },
+    ],
+  });
+
+  assert.equal(summary.managersAttempted, 3);
+  assert.equal(summary.managersSucceeded, 2);
+  assert.equal(summary.filingsIngested, 3);
+  assert.equal(summary.holdingsRows, 45 + 44 + 13572);
+  assert.equal(summary.amendmentsDetected, 1, 'the /A filing must be counted');
+  assert.equal(summary.failures[0].manager, 'norges-bank');
+});
+
+test('the single-manager shape still works', () => {
+  const summary = summariseRefresh({
+    results: [{ ok: true, filing: { form_type: '13F-HR/A' }, ingestion: { status: 'ingested', holdings: 8 } }],
+  });
+  assert.equal(summary.filingsIngested, 1);
+  assert.equal(summary.holdingsRows, 8);
+  assert.equal(summary.amendmentsDetected, 1);
+});
+
+test('a run cut short still reports the managers that finished', () => {
+  // The ceiling abandons the refresh promise, so the collector summarises what
+  // it watched complete. Reporting zeroes for committed work is the failure
+  // this guards: someone reads the record and concludes nothing ran.
+  const partial = summariseRefresh({
+    results: [
+      { ok: true, slug: 'akre-capital', filings: [{ status: 'ingested', holdings: 22, form_type: '13F-HR' }] },
+      { ok: true, slug: 'appaloosa',    filings: [{ status: 'ingested', holdings: 38, form_type: '13F-HR' }] },
+    ],
+  });
+  assert.equal(partial.managersSucceeded, 2);
+  assert.equal(partial.holdingsRows, 60);
+});
+
+test('a filing that was not ingested is not counted as one', () => {
+  const summary = summariseRefresh({
+    results: [{ ok: true, filings: [
+      { status: 'ingested', holdings: 10, form_type: '13F-HR' },
+      { status: 'needs_review', holdings: 0, form_type: '13F-HR/A' },
+    ] }],
+  });
+  assert.equal(summary.filingsIngested, 1);
+  assert.equal(summary.holdingsRows, 10);
+});
+
+test('the collector accumulates progress instead of trusting the final result', () => {
+  // A ceiling abandons the refresh promise. If the script only summarises that
+  // result, an aborted run reports zeroes for work already written.
+  const script = readFileSync(new URL('../scripts/collectInstitutionalFilings.mjs', import.meta.url), 'utf8');
+  assert.match(script, /onManagerDone:/,
+    'the collector must be told as each manager finishes');
+  assert.match(script, /summariseRefresh\(refresh \|\| \{ results: completed \}\)/,
+    'on abort it must summarise what it observed completing, not the abandoned result');
 });
