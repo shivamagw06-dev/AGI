@@ -23,6 +23,7 @@
     "express-rate-limit": "^6.11.2",
     "multer": "2.3.0",
     "node-fetch": "^3.3.2",
+    "pdfjs-dist": "^4.10.38",
     "protobufjs": "^7.6.5",
     "ws": "^8.21.1"
   },

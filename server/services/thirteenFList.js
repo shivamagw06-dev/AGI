@@ -172,7 +172,7 @@ export function normaliseIssuerName(value) {
   s = s.replace(/[^A-Z0-9 ]+/g, ' ');
   const noise = ['INCORPORATED', 'INC', 'CORPORATION', 'CORP', 'CORPO', 'COMPANY', 'COMPANIES',
     'CO', 'COS', 'PLC', 'LTD', 'LIMITED', 'LLC', 'LP', 'HOLDINGS', 'HLDGS', 'HLDG', 'HOLDING',
-    'GROUP', 'GRP', 'THE', 'NV', 'SA', 'AG', 'AB', 'ASA', 'NEW', 'CLASS', 'COM', 'TR', 'TRUST'];
+    'GROUP', 'GRP', 'THE', 'AND', 'NV', 'SA', 'AG', 'AB', 'ASA', 'NEW', 'CLASS', 'COM', 'TR', 'TRUST'];
   for (const word of noise) s = s.replace(new RegExp(`\\b${word}\\b`, 'g'), ' ');
   return s.replace(/\s+/g, ' ').trim();
 }
@@ -186,9 +186,28 @@ export function normaliseIssuerName(value) {
  * lost, which is what turns "Aptiv is not in the vendor's index" into "Aptiv
  * was G6095L109 and is now G3265R107".
  *
- * Only equities are chained. Two different bonds from one issuer share a name
- * and a class while being entirely different instruments, so chaining them
- * would merge securities rather than follow one.
+ * Sharing a name is not sufficient, and assuming it was produced 534 spurious
+ * renames across two consecutive quarters. AstraZeneca carries G0593M107 for
+ * the ordinary shares and 046353108 for the sponsored ADR *at the same time*;
+ * Amcor carries an ORD line and a COM NEW line at the same time. Those are two
+ * securities, not one security renamed, and merging them would put one
+ * instrument's holdings under another's key.
+ *
+ * A rename has a shape that coexistence does not, but the shape is not "never
+ * appear together". Both identifiers are listed during the changeover quarter,
+ * so Aptiv runs G6095L109 through 2024Q4 and G3265R107 from 2024Q4 - one
+ * quarter of overlap, at the join. Requiring no overlap at all rejects every
+ * real rename in the archive.
+ *
+ * What separates them is whether the old identifier *continues*. Aptiv's stops
+ * at the changeover; AstraZeneca's ordinary shares carry on quarter after
+ * quarter alongside the ADR. So the test is that each identifier's last quarter
+ * is no later than the next one's first: the old one ends where the new one
+ * begins. Where an identifier outlives the next one's start the group is left
+ * unchained and marked ambiguous, because a wrong merge is worse than none.
+ *
+ * Only equities are considered at all. Two different bonds from one issuer
+ * share a name and a class while being entirely different instruments.
  */
 export function chainIdentities(records) {
   const groups = new Map();
@@ -199,23 +218,39 @@ export function chainIdentities(records) {
     if (!groups.has(key)) groups.set(key, new Map());
     const byCusip = groups.get(key);
     if (!byCusip.has(record.cusip)) {
-      byCusip.set(record.cusip, { cusip: record.cusip, quarters: [], issuer_name: record.issuer_name });
+      byCusip.set(record.cusip, { cusip: record.cusip, quarters: new Set(), issuer_name: record.issuer_name });
     }
-    if (record.quarter) byCusip.get(record.cusip).quarters.push(record.quarter);
+    if (record.quarter) byCusip.get(record.cusip).quarters.add(record.quarter);
   }
 
   return [...groups.entries()].map(([key, byCusip]) => {
     const cusips = [...byCusip.values()]
-      .map((entry) => ({ ...entry, quarters: [...new Set(entry.quarters)].sort() }))
+      .map((entry) => ({ ...entry, quarters: [...entry.quarters].sort() }))
       .sort((a, b) => (a.quarters[0] || '').localeCompare(b.quarters[0] || ''));
+
+    // Ordered by first appearance, each identifier must end in exactly the
+    // quarter the next one begins. Ending later means it carried on alongside
+    // and they are separate securities; ending earlier leaves a hole, and a
+    // security absent for a year or six before a same-named one appears is not
+    // evidence of a rename - Seadrill and Aspen both show multi-year gaps that
+    // a looser rule chains straight through.
+    let overlapping = false;
+    for (let i = 0; i < cusips.length - 1; i += 1) {
+      const ends = cusips[i].quarters[cusips[i].quarters.length - 1] || '';
+      const nextBegins = cusips[i + 1].quarters[0] || '';
+      if (ends !== nextBegins) overlapping = true;
+    }
+
     return {
       name_key: key,
       // The earliest-observed CUSIP is the security key, so an identifier
-      // change does not orphan the history recorded under the old one.
-      security_key: cusips[0]?.cusip || null,
+      // change does not orphan the history recorded under the old one. An
+      // ambiguous group gets no shared key at all.
+      security_key: overlapping ? null : (cusips[0]?.cusip || null),
       issuer_name: cusips[0]?.issuer_name || null,
       cusips,
-      changed_identifier: cusips.length > 1,
+      changed_identifier: !overlapping && cusips.length > 1,
+      ambiguous: overlapping,
     };
   });
 }
