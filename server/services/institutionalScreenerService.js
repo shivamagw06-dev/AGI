@@ -19,6 +19,7 @@
  */
 
 import { createSupabaseAdmin } from '../lib/supabaseAdmin.js';
+import { coverageFor, blockersFor, disclosuresFor } from './coverageGate.js';
 
 // PostgREST caps a page at 1000 rows and says nothing when it truncates. Every
 // read here pages explicitly: a screener silently built on the first thousand
@@ -447,7 +448,7 @@ async function getAccumulationHeatMapUncached({ limit = 40 } = {}) {
  * manager and refuses to rank on data it does not have. A league table built
  * on 40% price coverage is a table of who happens to hold liquid US large caps.
  */
-async function evaluateFundPerformanceUncached({ minPeriods = 3, minCoverage = 0.7 } = {}) {
+async function evaluateFundPerformanceUncached({ minPeriods = 3, minValueCoverage = 0.95 } = {}) {
   const db = client();
   const managers = await loadManagers(db);
 
@@ -466,69 +467,69 @@ async function evaluateFundPerformanceUncached({ minPeriods = 3, minCoverage = 0
 
   const holdings = await pageAll(() => db
     .from('institutional_holdings')
-    .select('manager_id, cusip, ticker, put_call'));
+    .select('manager_id, cusip, ticker, put_call, value_usd, report_date'));
+
+  // The current book, not every position ever held. Coverage is a statement
+  // about what the reader is being shown, and mixing in securities sold three
+  // years ago describes a portfolio nobody holds.
+  const latestByManager = new Map();
+  for (const row of holdings) {
+    if (row.put_call) continue;
+    const seen = latestByManager.get(row.manager_id);
+    if (!seen || String(row.report_date) > seen) latestByManager.set(row.manager_id, String(row.report_date));
+  }
 
   const securitiesByManager = new Map();
   for (const row of holdings) {
     if (row.put_call) continue;
+    if (String(row.report_date) !== latestByManager.get(row.manager_id)) continue;
     const key = securityKey(row);
     if (!key) continue;
-    const set = securitiesByManager.get(row.manager_id) || new Map();
-    set.set(key, row.ticker || null);
-    securitiesByManager.set(row.manager_id, set);
+    const list = securitiesByManager.get(row.manager_id) || [];
+    list.push({ security_key: key, ticker: row.ticker || null, value_usd: row.value_usd });
+    securitiesByManager.set(row.manager_id, list);
   }
 
-  // Which securities have any adjusted price at all. Coverage is measured on
-  // distinct securities held, not on rows, so a manager holding one covered
-  // name a hundred times does not read as fully covered.
+  // Which symbols have prices, read from the fetch log rather than the price
+  // rows. Asking the price table meant paging every row that has an adjusted
+  // close to build a set of distinct tickers - fine at 73,000 rows, and 3.2
+  // million after the backfill. The log holds one row per symbol and answers
+  // the same question in a single page.
   const priced = new Set();
-  const priceRows = await pageAll(() => db
-    .from('institutional_security_prices')
-    .select('ticker, security_key, adjusted_close')
-    .not('adjusted_close', 'is', null));
-  for (const row of priceRows) {
-    if (row.security_key) priced.add(String(row.security_key).toUpperCase());
-    if (row.ticker) priced.add(String(row.ticker).toUpperCase());
+  const logRows = await pageAll(() => db
+    .from('institutional_price_fetch_log')
+    .select('ticker, status, bars'));
+  for (const row of logRows) {
+    if (!row.ticker || !(Number(row.bars) > 0)) continue;
+    // A rejected symbol wrote no prices: its history belonged to a different
+    // security, or was a single-bar stub.
+    if (row.status === 'rejected' || row.status === 'empty' || row.status === 'not_found') continue;
+    priced.add(String(row.ticker).toUpperCase());
   }
 
   const rows = [];
   for (const [id, manager] of managers) {
     const periods = periodsByManager.get(id)?.size || 0;
-    const securities = securitiesByManager.get(id) || new Map();
-    let covered = 0;
-    let unmapped = 0;
-    for (const [cusip, ticker] of securities) {
-      if (!ticker) { unmapped += 1; continue; }
-      if (priced.has(String(ticker).toUpperCase()) || priced.has(cusip)) covered += 1;
-    }
-    const total = securities.size;
-    const coverage = total > 0 ? covered / total : null;
-
-    const blockers = [];
-    if (periods < minPeriods) blockers.push(`only ${periods} filed period(s); ${minPeriods} required`);
-    if (coverage === null) blockers.push('no holdings recorded');
-    else if (coverage < minCoverage) {
-      blockers.push(`adjusted-price coverage ${(coverage * 100).toFixed(1)}%; ${(minCoverage * 100).toFixed(0)}% required`);
-    }
-    if (unmapped > 0) blockers.push(`${unmapped} holding(s) have no resolved ticker`);
+    const coverage = coverageFor(securitiesByManager.get(id) || [], priced);
+    const blockers = blockersFor({ periods, coverage }, { minPeriods, minValueCoverage });
 
     rows.push({
       manager_id: id,
       slug: manager.slug,
       display_name: manager.display_name,
       filed_periods: periods,
-      securities_held: total,
-      securities_priced: covered,
-      securities_unmapped: unmapped,
-      price_coverage: coverage,
+      as_of: latestByManager.get(id) || null,
+      ...coverage,
       evaluable: blockers.length === 0,
       blockers,
+      // Facts the reader gets even when the manager clears the gate.
+      disclosures: disclosuresFor(coverage),
     });
   }
 
   rows.sort((a, b) =>
     Number(b.evaluable) - Number(a.evaluable)
-    || (b.price_coverage ?? -1) - (a.price_coverage ?? -1));
+    || (b.value_coverage ?? -1) - (a.value_coverage ?? -1));
 
   const evaluable = rows.filter((r) => r.evaluable);
   return {
@@ -536,7 +537,7 @@ async function evaluateFundPerformanceUncached({ minPeriods = 3, minCoverage = 0
     as_of: new Date().toISOString(),
     managers_total: rows.length,
     managers_evaluable: evaluable.length,
-    gate: { min_periods: minPeriods, min_price_coverage: minCoverage },
+    gate: { min_periods: minPeriods, min_value_coverage: minValueCoverage },
     managers: rows,
     // Stated rather than implied. Zero evaluable managers is a real answer and
     // the page should say so instead of rendering an empty league table.
@@ -544,8 +545,13 @@ async function evaluateFundPerformanceUncached({ minPeriods = 3, minCoverage = 0
       ? 'No manager currently clears the gate. Performance is withheld rather than shown on partial data; the blockers above say what each one needs.'
       : `${evaluable.length} of ${rows.length} managers clear the gate.`,
     methodology:
-      'Coverage is the share of distinct securities held that have at least one adjusted close. '
-      + 'Puts and calls are excluded. A manager below the gate is listed with its blockers, never with a partial return.',
+      'Coverage is measured on the most recent filed book, weighted by reported value: the share of '
+      + 'that value held in securities with an adjusted price. A return is a value-weighted quantity, '
+      + 'so the share of line items resolved is reported alongside but is not what the gate turns on - '
+      + 'counting would weigh an odd-lot the same as a core position, and every 13F book contains a '
+      + 'few securities that carry no ticker. Those are disclosed with their weight rather than used '
+      + 'to withhold the whole manager. Puts and calls are excluded. A manager below the gate is '
+      + 'listed with its blockers, never with a partial return.',
     disclosure:
       'Built from delayed public 13F disclosure. Not live positioning and not investment advice.',
   };
