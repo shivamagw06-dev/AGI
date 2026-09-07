@@ -110,7 +110,7 @@ console.log(`[prices] ${freshness.size.toLocaleString()} symbols already current
 
 // ---- the plan -------------------------------------------------------------
 
-let { plans, skipped } = planFetches([...seen.values()], { asOf, freshness });
+let { plans, skipped, foreignVenueSymbols } = planFetches([...seen.values()], { asOf, freshness });
 if (ONLY.length) plans = plans.filter((p) => ONLY.includes(p.symbol));
 if (LIMIT) {
   // Spread across the run, not taken from the front. Symbols are sorted, and
@@ -126,7 +126,11 @@ if (LIMIT) {
 
 console.log('');
 console.log(`[prices] ${plans.length.toLocaleString()} symbols to fetch`);
-console.log(`[prices]   skipped: ${skipped.unusableTicker} unusable ticker, ${skipped.alreadyFresh} already current`);
+console.log(`[prices]   skipped: ${skipped.unusableTicker} unusable ticker, ${skipped.foreignVenue} foreign venue code, ${skipped.alreadyFresh} already current`);
+if (foreignVenueSymbols.length) {
+  console.log(`[prices]   foreign venue codes not asked for: ${foreignVenueSymbols.slice(0, 12).join(', ')}${foreignVenueSymbols.length > 12 ? ` (+${foreignVenueSymbols.length - 12} more)` : ''}`);
+  console.log('[prices]   run recoverVenueTickers.mjs to map these back to their US tickers');
+}
 if (plans.length) {
   console.log(`[prices]   earliest start: ${plans.reduce((a, p) => (p.from < a ? p.from : a), plans[0].from)}`);
   console.log(`[prices]   sample: ${plans.slice(0, 6).map((p) => `${p.symbol}@${p.from}`).join(', ')}`);
