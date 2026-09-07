@@ -199,14 +199,19 @@ function noteFetch(symbol, status, bars, detail) {
 }
 
 async function flushLog() {
-  for (let i = 0; i < fetchLog.length; i += 500) {
-    const chunk = fetchLog.slice(i, i + 500);
+  // Taken from the front, not cleared at the end. Three workers keep appending
+  // while this awaits, and emptying the array afterwards threw those entries
+  // away: the first full run recorded 4,867 of 4,870 outcomes, and the three
+  // it lost were asked for again on the next run. Harmless individually, but
+  // the leak grows with concurrency and never settles.
+  while (fetchLog.length) {
+    const chunk = fetchLog.splice(0, 500);
     const { error } = await client
       .from('institutional_price_fetch_log')
       .upsert(chunk, { onConflict: 'ticker' });
-    if (error) throw new Error(`fetch log: ${error.message}`);
+    // Put them back rather than losing the outcomes to a failed write.
+    if (error) { fetchLog.unshift(...chunk); throw new Error(`fetch log: ${error.message}`); }
   }
-  fetchLog.length = 0;
 }
 
 async function writeRows(rows) {
