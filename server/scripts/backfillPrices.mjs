@@ -112,7 +112,17 @@ console.log(`[prices] ${freshness.size.toLocaleString()} symbols already current
 
 let { plans, skipped } = planFetches([...seen.values()], { asOf, freshness });
 if (ONLY.length) plans = plans.filter((p) => ONLY.includes(p.symbol));
-if (LIMIT) plans = plans.slice(0, LIMIT);
+if (LIMIT) {
+  // Spread across the run, not taken from the front. Symbols are sorted, and
+  // digit-leading venue codes sort first, so `--limit 25` took twenty-five
+  // pieces of junk: every one was unknown to Yahoo, nothing was written, and
+  // the smoke test said nothing at all about the other 4,962 symbols. A
+  // sample meant to answer "is this working" has to look like the run.
+  const step = Math.max(1, Math.floor(plans.length / LIMIT));
+  const spread = [];
+  for (let i = 0; i < plans.length && spread.length < LIMIT; i += step) spread.push(plans[i]);
+  plans = spread;
+}
 
 console.log('');
 console.log(`[prices] ${plans.length.toLocaleString()} symbols to fetch`);
