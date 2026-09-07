@@ -91,22 +91,30 @@ console.log(`[prices] ${seen.size.toLocaleString()} distinct (security_key, tick
 
 // ---- what we already have -------------------------------------------------
 
-// Only the recent window is read. Asking which tickers have a row in the last
-// ten days answers the freshness question exactly, and reads a few thousand
-// rows instead of paging the whole price table to compute a max per ticker.
-const recentFrom = new Date(Date.now() - 10 * 86_400_000).toISOString().slice(0, 10);
-console.log(`[prices] reading stored prices since ${recentFrom}...`);
+// Freshness is when we last fetched a symbol, not how recent its last bar is.
+//
+// Asking whether a ticker has a bar in the last ten days answers a different
+// question, and answers it wrong for exactly the symbols that need it least:
+// a delisted name whose history ends in July can never have a recent bar, so
+// it never counts as done and is refetched on every run forever. Three runs
+// in a row fetched the same ninety symbols and wrote the same 6,223 rows.
+//
+// source_as_of records when the row was written, so a symbol fetched today
+// is finished today whatever its history looks like.
+const fetchedSince = new Date(Date.now() - 10 * 86_400_000).toISOString();
+console.log(`[prices] reading prices fetched since ${fetchedSince.slice(0, 10)}...`);
 const recent = await all(() => client
   .from('institutional_security_prices')
-  .select('ticker,price_date')
-  .gte('price_date', recentFrom)
+  .select('ticker,source_as_of')
+  .gte('source_as_of', fetchedSince)
   .order('ticker'));
 const freshness = new Map();
 for (const r of recent) {
+  const seen = String(r.source_as_of || '').slice(0, 10);
   const cur = freshness.get(r.ticker);
-  if (!cur || r.price_date > cur) freshness.set(r.ticker, r.price_date);
+  if (!cur || seen > cur) freshness.set(r.ticker, seen);
 }
-console.log(`[prices] ${freshness.size.toLocaleString()} symbols already current`);
+console.log(`[prices] ${freshness.size.toLocaleString()} symbols fetched recently`);
 
 // ---- the plan -------------------------------------------------------------
 
@@ -126,7 +134,7 @@ if (LIMIT) {
 
 console.log('');
 console.log(`[prices] ${plans.length.toLocaleString()} symbols to fetch`);
-console.log(`[prices]   skipped: ${skipped.unusableTicker} unusable ticker, ${skipped.foreignVenue} foreign venue code, ${skipped.alreadyFresh} already current`);
+console.log(`[prices]   skipped: ${skipped.unusableTicker} unusable ticker, ${skipped.foreignVenue} foreign venue code, ${skipped.alreadyFresh} fetched recently`);
 if (foreignVenueSymbols.length) {
   console.log(`[prices]   foreign venue codes not asked for: ${foreignVenueSymbols.slice(0, 12).join(', ')}${foreignVenueSymbols.length > 12 ? ` (+${foreignVenueSymbols.length - 12} more)` : ''}`);
   console.log('[prices]   run recoverVenueTickers.mjs to map these back to their US tickers');
