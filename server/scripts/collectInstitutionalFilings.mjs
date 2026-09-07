@@ -25,7 +25,7 @@ import { hostname } from 'node:os';
 import { refreshInstitutionalFilings } from '../services/institutionalHoldingsService.js';
 import { secLimiterStats } from '../services/secRateLimiter.js';
 import {
-  startRun, finishRun, deriveStatus, summariseRefresh, nextScheduledAt,
+  startRun, finishRun, progressRun, deriveStatus, summariseRefresh, nextScheduledAt,
 } from '../services/institutionalCollectionRuns.js';
 
 const args = process.argv.slice(2);
@@ -97,13 +97,66 @@ let refresh = null;
 const completed = [];
 let roster = 0;
 
+// Written as each manager finishes, not only at the end.
+//
+// A hard stop - the platform's runtime limit, an out-of-memory kill, a deploy
+// replacing the container - never reaches the code below, so the row stayed as
+// startRun created it: running, zero managers, no finish time. That zero is
+// the column default rather than a measurement, and it reads as a collector
+// that crawled nothing. Both of the runs that were investigated looked like
+// that, and neither could be told apart from one that never started.
+let lastProgressAt = 0;
+async function reportProgress(force = false) {
+  if (!runId) return;
+  const now = Date.now();
+  if (!force && now - lastProgressAt < 15_000) return;
+  lastProgressAt = now;
+  const done = summariseRefresh({ results: completed }, roster);
+  await progressRun(runId, {
+    // What has actually reported back, not the roster. A row claiming 51
+    // attempted while three have finished is the same lie in the other
+    // direction.
+    managersAttempted: done.managersAttempted,
+    managersSucceeded: done.managersSucceeded,
+    filingsIngested: done.filingsIngested,
+    holdingsRows: done.holdingsRows,
+  });
+}
+
+// Render sends SIGTERM before it kills a job, so there is a moment to record
+// where the crawl actually got to. Filings already written stay written; this
+// only stops the record from claiming nothing happened.
+let terminating = false;
+for (const signal of ['SIGTERM', 'SIGINT']) {
+  process.on(signal, async () => {
+    if (terminating) return;
+    terminating = true;
+    console.error(`[collector] ${signal} after ${elapsed()}s with ${completed.length}/${roster} manager(s) done`);
+    const done = summariseRefresh({ results: completed }, roster);
+    const stats = secLimiterStats();
+    await finishRun(runId, {
+      ...done,
+      status: 'aborted',
+      error: `terminated by ${signal} after ${elapsed()}s`,
+      // Named as finishRun expects. The limiter reports requests/throttled;
+      // spreading it raw would silently record zeros for all of them.
+      secRequests: stats.requests,
+      secThrottled: stats.throttled,
+      secThrottlePauseMs: stats.throttle_pause_ms,
+      secPacedWaitMs: stats.total_wait_ms,
+      secCircuitTrips: stats.circuit_trips,
+    });
+    process.exit(1);
+  });
+}
+
 try {
   refresh = await Promise.race([
     refreshInstitutionalFilings({
       managerSlug,
       quarters,
-      onManagerDone: (result) => completed.push(result),
-      onRoster: (count) => { roster = count; },
+      onManagerDone: (result) => { completed.push(result); void reportProgress(); },
+      onRoster: (count) => { roster = count; void reportProgress(true); },
     }),
     ceiling,
   ]);
