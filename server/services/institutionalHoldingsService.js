@@ -7,6 +7,7 @@ import {
   activityCounts, topWeight, turnover, holdingTenure, averageTenure, topKeys, valueFlow,
 } from './filingActivity.js';
 import { revaluePosition, revalueBook } from './valueSinceDisclosure.js';
+import { rowsFromBlock, needsArchive, archiveFiles, selectThirteenF } from './filingHistory.js';
 
 const SEC_ROOT = 'https://www.sec.gov';
 const SEC_DATA = 'https://data.sec.gov';
@@ -693,19 +694,35 @@ async function secFetch(url, asJson = false) {
   throw lastError || new Error(`SEC request failed for ${url}`);
 }
 
-function recent13fFilings(submissions, quarters) {
-  const recent = submissions?.filings?.recent || {};
-  const forms = recent.form || [];
-  const rows = forms.map((form, index) => ({
-    form_type: form,
-    accession_number: recent.accessionNumber?.[index],
-    report_date: recent.reportDate?.[index],
-    filing_date: recent.filingDate?.[index],
-    accepted_at: recent.acceptanceDateTime?.[index] || `${recent.filingDate?.[index]}T00:00:00Z`,
-    primary_document: recent.primaryDocument?.[index] || '',
-  })).filter((row) => ['13F-HR', '13F-HR/A'].includes(row.form_type) && row.report_date && row.accession_number);
-  const periods = [...new Set(rows.map((row) => row.report_date))].sort().reverse().slice(0, Math.max(1, Math.min(n(quarters) || 4, 16)));
-  return rows.filter((row) => periods.includes(row.report_date)).sort((a, b) => String(a.accepted_at).localeCompare(String(b.accepted_at)));
+/**
+ * A manager's 13F filings, as deep as asked for.
+ *
+ * EDGAR splits a filer's index: `filings.recent` holds the last thousand
+ * filings of every type, and older ones sit in separate files listed under
+ * `filings.files`. Only the first was read, and the result was then capped at
+ * sixteen quarters. For Berkshire that is twelve periods of an available two
+ * hundred and eleven - forty-four in the recent block back to 2016, and one
+ * hundred and sixty-seven more in the archive, to 1998.
+ *
+ * The archive is fetched only when the recent block cannot cover the request,
+ * so a daily run costs exactly what it did before.
+ */
+async function recent13fFilings(submissions, quarters, cik) {
+  let rows = rowsFromBlock(submissions?.filings?.recent);
+  if (cik && needsArchive(rows, quarters)) {
+    for (const file of archiveFiles(submissions)) {
+      try {
+        const older = await secFetch(`${SEC_DATA}/submissions/${file.name}`, true);
+        rows = rows.concat(rowsFromBlock(older));
+      } catch (error) {
+        // A missing archive file limits how far back this goes; it does not
+        // invalidate the filings already in hand.
+        console.warn(`[institutional-holdings] archive ${file.name}: ${error.message}`);
+      }
+      if (!needsArchive(rows, quarters)) break;
+    }
+  }
+  return selectThirteenF(rows, quarters);
 }
 
 async function filingDocuments(cik, accession) {
@@ -1672,7 +1689,7 @@ async function performInstitutionalRefresh({ managerSlug, quarters = 12, onManag
     await client.from('institutional_managers').update({ last_refresh_at: new Date().toISOString(), last_refresh_status: 'running', last_refresh_error: null }).eq('id', manager.id);
     try {
       const submissions = await secFetch(`${SEC_DATA}/submissions/CIK${cleanCik(manager.cik)}.json`, true);
-      const filingRows = recent13fFilings(submissions, quarters);
+      const filingRows = await recent13fFilings(submissions, quarters, manager.cik);
       if (!filingRows.length) throw new Error('No Form 13F filings were found for this SEC filer.');
       const filings = [];
       for (const filing of filingRows) filings.push(await ingestFiling(client, manager, filing));
