@@ -131,6 +131,11 @@ const NOISE = new Set([
   'INC', 'CORP', 'CORPORATION', 'CO', 'COMPANY', 'LTD', 'LIMITED', 'PLC', 'LLC', 'LP',
   'SA', 'NV', 'AG', 'THE', 'NEW', 'DEL', 'DE', 'CL', 'CLASS', 'COM', 'ORD', 'SHS',
   'CAN', 'USA', 'US', 'AMERICA', 'AMERICAN', 'TRUST', 'REIT', 'ADR', 'ADS', 'SPON', 'SPONSORED',
+  // Share class, which the ticker suffix already carries. A holding reading
+  // "Petrobras Pref ADR" is the same company as "PETROBRAS - PETROLEO
+  // BRASILEIRO SA"; the word that differs describes the line, not the issuer,
+  // and PBR/A resolves to PBR-A, whose class is in the ticker itself.
+  'PREF', 'PREFERRED', 'PFD',
 ]);
 
 function tokens(name) {

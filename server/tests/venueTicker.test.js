@@ -131,3 +131,15 @@ test('a shared first word is not enough on its own', () => {
   assert.equal(sameCompany('LIBERTY MEDIA CORP', 'Liberty Broadband Corp'), false);
   assert.ok(sameCompany('LIBERTY MEDIA CORP DEL', 'Liberty Media Corp'));
 });
+
+test('a share-class word does not make it a different company', () => {
+  // The holding reads "Petrobras Pref ADR"; the SEC registers "PETROBRAS -
+  // PETROLEO BRASILEIRO SA". PREF describes the line, not the issuer, and
+  // the class is already carried by the ticker: PBR/A resolves to PBR-A.
+  const secList = new Map([['PBR-A', 'PETROBRAS - PETROLEO BRASILEIRO SA']]);
+  assert.equal(recoverTicker('PBR/A', 'Petrobras Pref ADR', secList).ticker, 'PBR-A');
+});
+
+test('dropping the class word does not merge two different companies', () => {
+  assert.equal(sameCompany('ACME PREFERRED INC', 'Beta Preferred Inc'), false);
+});
