@@ -22503,6 +22503,51 @@ async def fundamentals_value_plausibility(
     return await run_in_threadpool(census, tab, symbols=wanted, sample_rows=int(sample))
 
 
+@router.get("/fundamentals/scale-correction-plan",
+            dependencies=[Depends(require_token)])
+async def fundamentals_scale_correction_plan(symbols: str = "", sample: int = 20):
+    """Rows the Capital IQ reference vouches for as wrongly scaled. Writes nothing.
+
+    A row qualifies only when at least four aggregate-money fields independently
+    imply the same known scale factor against the reference. One field agreeing
+    can be coincidence; four cannot.
+    """
+    from institutional_warehouse.scale_correction import plan
+
+    wanted = [s.strip().upper() for s in symbols.split(",") if s.strip()] or None
+    return await run_in_threadpool(plan, symbols=wanted, sample=int(sample))
+
+
+@router.post("/fundamentals/scale-correction-apply",
+             dependencies=[Depends(require_token)])
+async def fundamentals_scale_correction_apply(
+    confirm: bool = False, limit: int = 0, symbols: str = "",
+    actor: str = "api",
+):
+    """Rescale the vouched-for rows. Refuses unless confirm=true.
+
+    Every prior value is written to wh_provenance_run_rows before a single
+    value moves, so the run reverses against the exact rows it touched. The
+    response carries the run_id needed to roll it back.
+    """
+    from institutional_warehouse.scale_correction import apply
+
+    wanted = [s.strip().upper() for s in symbols.split(",") if s.strip()] or None
+    return await run_in_threadpool(apply, actor=actor, confirm=bool(confirm),
+                                   limit=int(limit) or None, symbols=wanted)
+
+
+@router.post("/fundamentals/scale-correction-rollback",
+             dependencies=[Depends(require_token)])
+async def fundamentals_scale_correction_rollback(
+    run_id: str, confirm: bool = False, actor: str = "api",
+):
+    """Restore every value one correction run changed."""
+    from institutional_warehouse.scale_correction import rollback
+
+    return await run_in_threadpool(rollback, run_id, actor=actor, confirm=bool(confirm))
+
+
 @router.get("/fundamentals/unit-provenance-plan")
 async def fundamentals_unit_provenance_plan(tab: str = "", sample: int = 10):
     """What the Capital IQ provenance backfill would change. Writes nothing.
