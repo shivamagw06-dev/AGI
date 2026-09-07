@@ -52,6 +52,25 @@ function dayNumber(date) {
   return Math.floor(Date.parse(`${date}T00:00:00Z`) / 86_400_000);
 }
 
+async function refreshPreparedIntelligence(symbols) {
+  if (String(process.env.DAILY_INTELLIGENCE_REFRESH || 'false').toLowerCase() !== 'true') {
+    return { ok: true, skipped: true, reason: 'disabled' };
+  }
+  let baseUrl = String(process.env.AGIB_INTELLIGENCE_ENGINE_URL || process.env.INTELLIGENCE_ENGINE_URL || '').replace(/\/$/, '');
+  if (baseUrl && !/^https?:\/\//i.test(baseUrl)) baseUrl = `https://${baseUrl}`;
+  const token = String(process.env.AGIB_SERVICE_TOKEN || process.env.INTELLIGENCE_ENGINE_TOKEN || '').trim();
+  if (!baseUrl || !token) return { ok: false, skipped: true, reason: 'engine_not_configured' };
+  const response = await fetch(`${baseUrl}/v1/warehouse/daily-intelligence-refresh`, {
+    method: 'POST',
+    headers: { Accept: 'application/json', 'Content-Type': 'application/json', Authorization: `Bearer ${token}`, 'X-AGI-Intelligence-Token': token },
+    body: JSON.stringify({ symbols, actor: 'upstox_post_close_statements', max_companies: 12 }),
+    signal: AbortSignal.timeout(90_000),
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(data?.error || data?.detail || `daily_intelligence_http_${response.status}`);
+  return data;
+}
+
 export function getUpstoxStatementSchedulerStatus() {
   const catchup = catchupConfig();
   return {
@@ -88,7 +107,10 @@ export async function triggerUpstoxStatementRefresh({ force = false } = {}) {
       concurrency: Math.max(1, Number(process.env.UPSTOX_STATEMENT_CONCURRENCY || 1)),
       offset: (dayNumber(now.date) * batchSize) + (slot ? catchupRun * batchSize : 0),
     });
-    lastRun = { at: new Date().toISOString(), date: now.date, ok: Boolean(result.ok), fetched: result.fetched || 0, errors: (result.errors || []).length, selection: result.selection || null, error: result.error || null, catchup: Boolean(slot) };
+    const intelligence = result.ok
+      ? await refreshPreparedIntelligence(result.companies || [])
+      : { ok: true, skipped: true, reason: 'statement_refresh_failed' };
+    lastRun = { at: new Date().toISOString(), date: now.date, ok: Boolean(result.ok), fetched: result.fetched || 0, errors: (result.errors || []).length, selection: result.selection || null, intelligence, error: result.error || null, catchup: Boolean(slot) };
     if (result.ok && slot) {
       lastCatchupSlot = slot;
       catchupRun += 1;
