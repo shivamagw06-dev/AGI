@@ -201,16 +201,31 @@ const pct = (n, d) => `${((n / d) * 100).toFixed(1)}%`;
  * history has to reach back to it. When the history begins long after the
  * position does, the symbol has changed hands and the series is not ours.
  */
-export function coverageProblem(plan, bars, { graceDays = 10 } = {}) {
+export function coverageProblem(plan, bars, { graceDays = 10, minBars = 20 } = {}) {
   if (!bars?.length) return 'no history returned';
   const held = plan?.earliestHeld;
   if (!held) return null;
 
   const firstBar = bars[0].price_date;
   const gap = daysBetween(held, firstBar);
-  if (gap > graceDays) {
-    return `history starts ${firstBar} but the position is held from ${held}`
-      + ` (${Math.round(gap)} days) - the symbol has been reassigned to another company`;
+  if (gap <= graceDays) return null;
+
+  // Two different things produce history that begins after the position, and
+  // saying which is which matters because one of them names a cause.
+  //
+  // A full series starting years late is a ticker that changed hands: FB is
+  // a live company with thousands of bars, none of them Facebook's.
+  //
+  // A handful of bars is not that. RMAX, HTZWW and AUROW each come back with
+  // exactly one bar on one recent day - a stub, not another company's chart.
+  // Calling that a reassignment asserts a cause nobody has established. It is
+  // refused either way, since one bar prices nothing, but the reason given
+  // has to be something the response actually shows.
+  if (bars.length < minBars) {
+    return `only ${bars.length} bar${bars.length === 1 ? '' : 's'} returned`
+      + ` (${firstBar}${bars.length > 1 ? `..${bars.at(-1).price_date}` : ''}),`
+      + ` no usable history for a position held from ${held}`;
   }
-  return null;
+  return `history starts ${firstBar} but the position is held from ${held}`
+    + ` (${Math.round(gap)} days) - the symbol now belongs to a different security`;
 }
