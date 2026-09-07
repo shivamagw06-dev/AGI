@@ -9,6 +9,7 @@ import { scheduleSecRequest, recordThrottled, recordSuccess, parseRetryAfter, Se
 import { resolveAsOf, attachKnownTickers } from './securityIdentity.js';
 import { coverage, mappingFromLookup, rankUnmapped } from './identifierBackfill.js';
 import { groupByIdType } from './securityIdentifierType.js';
+import { preferredFigiCandidate, noCandidateReason } from './figiCandidate.js';
 import { partitionByClass, expandThroughChains, readClasses, readChains } from './securityIdentityGate.js';
 
 const SEC_USER_AGENT = (process.env.SEC_USER_AGENT || 'AGI Institutional Research research@agarwalglobalinvestments.com').trim();
@@ -560,16 +561,6 @@ async function withKnownTickers(client, rows, asOf) {
 }
 
 
-function preferredFigiCandidate(result) {
-  const candidates = (result?.data || []).filter((row) => row?.ticker && row?.marketSector === 'Equity');
-  return candidates.sort((a, b) => {
-    const score = (row) => (row.exchCode === 'US' ? 20 : 0)
-      + (/Common Stock|Depositary Receipt|REIT|ETP/i.test(row.securityType2 || '') ? 10 : 0)
-      + (row.compositeFIGI ? 2 : 0);
-    return score(b) - score(a);
-  })[0] || null;
-}
-
 async function openFigiBatch(identifiers) {
   // Ask each identifier with the scheme it actually belongs to.
   //
@@ -709,6 +700,10 @@ async function enrichSecurityIdentifiers(client, limit = 1000) {
   const vendorStartedAt = Date.now();
   const mappings = [];
   const errors = [];
+  // Why identifiers produced no ticker, by reason. "Listed only outside the
+  // US" and "OpenFIGI has never heard of it" need different work, so they are
+  // counted apart rather than both reading as an unmapped identifier.
+  const noCandidate = new Map();
   let applied = 0;
   let skipped = 0;
   for (let index = 0; index < unique.length; index += batchSize) {
@@ -726,6 +721,14 @@ async function enrichSecurityIdentifiers(client, limit = 1000) {
           return;
         }
         const match = preferredFigiCandidate(result);
+        // A vendor answer that names no US listing is now a real outcome
+        // rather than a fallback, so it is counted. Without this the run
+        // reports the same success it always did while quietly mapping
+        // fewer identifiers, and the reason lives only in the vendor's reply.
+        if (!match) {
+          const why = noCandidateReason(result);
+          noCandidate.set(why, (noCandidate.get(why) || 0) + 1);
+        }
         // OpenFIGI answers what a CUSIP maps to now. Storing that as valid
         // from 1900 claimed today's ticker applied to every filing ever made -
         // invisible while resolution took the newest mapping, and actively
@@ -751,6 +754,11 @@ async function enrichSecurityIdentifiers(client, limit = 1000) {
   // since; the vendor knows only the second. 1,872 unmapped identifiers have a
   // sibling that already carries a ticker, and they need no lookup at all -
   // the answer was already bought, under a different number.
+  if (noCandidate.size) {
+    const summary = [...noCandidate.entries()].sort((a, b) => b[1] - a[1]).map(([why, n]) => `${n} ${why}`).join('; ');
+    console.warn(`[identifiers] no US listing for ${[...noCandidate.values()].reduce((a, b) => a + b, 0)} identifiers: ${summary}`);
+  }
+
   let inherited = 0;
   if (mappings.length) {
     const observedFrom = new Map(ranked.map((row) => [row.cusip, row.observed_from]));
