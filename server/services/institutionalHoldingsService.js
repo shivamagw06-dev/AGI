@@ -2,6 +2,7 @@ import { createSupabaseAdmin } from '../lib/supabaseAdmin.js';
 import { getCollectionHealth, listRuns } from './institutionalCollectionRuns.js';
 import { classifyFiling, applyAmendment, droppedPositions } from './secAmendment.js';
 import { valueScaleFor, detectScaleMismatch, resolveScale } from './valueScale.js';
+import { consensusKey, dedupeSignalRows } from './consensusKey.js';
 
 const SEC_ROOT = 'https://www.sec.gov';
 const SEC_DATA = 'https://data.sec.gov';
@@ -244,9 +245,18 @@ function aggregateConsensus(latestHoldings, changes, managerCount) {
   }
   const map = new Map();
   for (const row of latestHoldings.filter((item) => !item.put_call)) {
-    const key = securityKey(row);
+    // Grouped by the identifier the row is published under. Keying on
+    // `ticker || cusip` meant one security formed two groups whenever its
+    // ticker had resolved on some holdings and not others - both publishing
+    // the same CUSIP, which the signals insert then rejected as a duplicate.
+    const key = consensusKey(row);
+    if (!key) continue;
     if (!map.has(key)) map.set(key, { key, cusip: row.cusip, ticker: row.ticker, issuer_name: row.issuer_name, owners: new Set(), aggregate_weight: 0, aggregate_value_usd: 0 });
     const item = map.get(key);
+    // Whichever copy carries the label keeps it, so a group is not left
+    // unnamed because the first holding through had not been enriched.
+    if (!item.ticker && row.ticker) item.ticker = row.ticker;
+    if (!item.issuer_name && row.issuer_name) item.issuer_name = row.issuer_name;
     item.owners.add(row.manager_id);
     item.aggregate_weight += n(row.portfolio_weight);
     item.aggregate_value_usd += n(row.value_usd);
@@ -1395,8 +1405,15 @@ async function rebuildSignals(client) {
     });
   }
   await client.from('institutional_signals').delete().in('scope_type', ['fund', 'stock']);
-  if (signalRows.length) {
-    const { error: insertError } = await client.from('institutional_signals').upsert(signalRows, { onConflict: 'scope_type,scope_id,as_of,signal_type' });
+  // Grouping by CUSIP is what stops duplicates arising; this stops one that
+  // slips through from failing the whole rebuild. A single repeated security
+  // withheld every fund's scores too, which is wildly out of proportion.
+  const { rows: uniqueSignals, dropped } = dedupeSignalRows(signalRows);
+  if (dropped.length) {
+    console.warn(`[institutional-holdings] ${dropped.length} duplicate signal row(s) dropped before insert: ${dropped.slice(0, 5).join(', ')}`);
+  }
+  if (uniqueSignals.length) {
+    const { error: insertError } = await client.from('institutional_signals').upsert(uniqueSignals, { onConflict: 'scope_type,scope_id,as_of,signal_type' });
     if (insertError) throw insertError;
   }
   return { funds: latest.size, stocks: consensus.length };
