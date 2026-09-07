@@ -8,6 +8,7 @@ const SEC_DATA = 'https://data.sec.gov';
 import { scheduleSecRequest, recordThrottled, recordSuccess, parseRetryAfter, SecCircuitOpenError } from './secRateLimiter.js';
 import { resolveAsOf } from './securityIdentity.js';
 import { coverage, mappingFromLookup, rankUnmapped } from './identifierBackfill.js';
+import { groupByIdType } from './securityIdentifierType.js';
 
 const SEC_USER_AGENT = (process.env.SEC_USER_AGENT || 'AGI Institutional Research research@agarwalglobalinvestments.com').trim();
 const OPENFIGI_URL = 'https://api.openfigi.com/v3/mapping';
@@ -542,29 +543,63 @@ function preferredFigiCandidate(result) {
   })[0] || null;
 }
 
-async function openFigiBatch(cusips) {
-  const headers = { Accept: 'application/json', 'Content-Type': 'application/json' };
-  if (OPENFIGI_API_KEY) headers['X-OPENFIGI-APIKEY'] = OPENFIGI_API_KEY;
-  let lastError;
-  for (let attempt = 0; attempt < 4; attempt += 1) {
-    try {
-      const response = await fetch(OPENFIGI_URL, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify(cusips.map((cusip) => ({ idType: 'ID_CUSIP', idValue: cusip }))),
-        signal: AbortSignal.timeout(30_000),
-      });
-      if (response.ok) return response.json();
-      lastError = new Error(`OpenFIGI mapping failed (${response.status})`);
-      if (response.status !== 429 && response.status < 500) throw lastError;
-      const resetSeconds = Math.max(1, n(response.headers.get('ratelimit-reset')));
-      await wait(resetSeconds * 1000);
-    } catch (error) {
-      lastError = error;
-      if (attempt < 3) await wait(750 * (2 ** attempt));
+async function openFigiBatch(identifiers) {
+  // Ask each identifier with the scheme it actually belongs to.
+  //
+  // This asked ID_CUSIP for everything. A CINS - the letter-prefixed scheme
+  // non-US issuers use - answers "No identifier found" to that, which reads
+  // exactly like a security the vendor has never listed. 147 of them were
+  // reported to the operator as probable private placements. They were Chubb,
+  // Linde, Accenture, Spotify, ASML, Medtronic, UBS and Eaton.
+  //
+  // Identifiers whose check digit does not compute are not sent at all. The
+  // vendor's answer for those is "Invalid idValue format", which will not
+  // change, so spending a request on one is spending it to be told no again.
+  const { jobs, invalid } = groupByIdType(identifiers);
+  const skipped = new Map(invalid.map((entry) => [entry.identifier, entry]));
+  const answers = new Map();
+
+  if (jobs.length) {
+    const headers = { Accept: 'application/json', 'Content-Type': 'application/json' };
+    if (OPENFIGI_API_KEY) headers['X-OPENFIGI-APIKEY'] = OPENFIGI_API_KEY;
+    let lastError;
+    let payload = null;
+    for (let attempt = 0; attempt < 4 && !payload; attempt += 1) {
+      try {
+        const response = await fetch(OPENFIGI_URL, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify(jobs),
+          signal: AbortSignal.timeout(30_000),
+        });
+        if (response.ok) {
+          payload = await response.json();
+          break;
+        }
+        lastError = new Error(`OpenFIGI mapping failed (${response.status})`);
+        if (response.status !== 429 && response.status < 500) throw lastError;
+        const resetSeconds = Math.max(1, n(response.headers.get('ratelimit-reset')));
+        await wait(resetSeconds * 1000);
+      } catch (error) {
+        lastError = error;
+        if (attempt < 3) await wait(750 * (2 ** attempt));
+      }
     }
+    if (!payload) throw lastError || new Error('OpenFIGI mapping failed.');
+    // Answers come back positionally against the jobs sent, which is not the
+    // caller's array once malformed identifiers have been dropped. Keyed back
+    // by identifier so the caller's own ordering is what it reads.
+    payload.forEach((result, index) => {
+      if (jobs[index]) answers.set(jobs[index].idValue, result);
+    });
   }
-  throw lastError || new Error('OpenFIGI mapping failed.');
+
+  return (identifiers || []).map((value) => {
+    const key = String(value || '').trim().toUpperCase();
+    const malformed = skipped.get(key);
+    if (malformed) return { data: [], skipped: malformed.reason };
+    return answers.get(key) || { data: [], error: 'no answer returned for this identifier' };
+  });
 }
 
 async function enrichSecurityIdentifiers(client, limit = 1000) {
@@ -600,6 +635,18 @@ async function enrichSecurityIdentifiers(client, limit = 1000) {
       .from('institutional_holdings')
       .select('cusip,issuer_name,value_usd,report_date,manager_id')
       .is('ticker', null)
+      // Option lines are not candidates and never were.
+      //
+      // A put or a call carries the underlying's issuer number with a 90- or
+      // 95-series issue code - 037833900 against Apple's 037833100 - which is
+      // not a valid CUSIP and has no equity ticker to find. They were still
+      // offered to the vendor every run, and because a 13F reports an option
+      // at the underlying's notional they sorted straight to the top of a
+      // ranking by disclosed value: $742bn across eight identifiers, crowding
+      // out real securities. put_call is already how the screener, the
+      // research layer and the value-scale audit exclude them; the enrichment
+      // simply never asked.
+      .is('put_call', null)
       .order('value_usd', { ascending: false })
       .limit(scanLimit);
     if (unresolvedError) throw new Error(unresolvedError.message);
@@ -614,12 +661,21 @@ async function enrichSecurityIdentifiers(client, limit = 1000) {
   const mappings = [];
   const errors = [];
   let applied = 0;
+  let skipped = 0;
   for (let index = 0; index < unique.length; index += batchSize) {
     const batch = unique.slice(index, index + batchSize);
     try {
       const results = await openFigiBatch(batch.map((row) => row.cusip));
       results.forEach((result, resultIndex) => {
         const source = batch[resultIndex];
+        // Counted apart from a vendor miss. "We did not ask because the
+        // identifier is malformed" and "we asked and the vendor has no
+        // listing" are different facts, and a report that merges them is how
+        // 147 blue chips came to be described as private placements.
+        if (result?.skipped) {
+          skipped += 1;
+          return;
+        }
         const match = preferredFigiCandidate(result);
         // OpenFIGI answers what a CUSIP maps to now. Storing that as valid
         // from 1900 claimed today's ticker applied to every filing ever made -
@@ -694,7 +750,10 @@ async function enrichSecurityIdentifiers(client, limit = 1000) {
     attempted: unique.length,
     mapped: mappings.length,
     applied,
-    unresolved: Math.max(0, unique.length - mappings.length),
+    // Asked and answered no.
+    unresolved: Math.max(0, unique.length - mappings.length - skipped),
+    // Never asked, because the identifier could not be one.
+    skipped,
     errors: [...new Set(errors)],
   };
 }
