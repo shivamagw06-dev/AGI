@@ -9,6 +9,7 @@ import { scheduleSecRequest, recordThrottled, recordSuccess, parseRetryAfter, Se
 import { resolveAsOf } from './securityIdentity.js';
 import { coverage, mappingFromLookup, rankUnmapped } from './identifierBackfill.js';
 import { groupByIdType } from './securityIdentifierType.js';
+import { partitionByClass, expandThroughChains, readClasses, readChains } from './securityIdentityGate.js';
 
 const SEC_USER_AGENT = (process.env.SEC_USER_AGENT || 'AGI Institutional Research research@agarwalglobalinvestments.com').trim();
 const OPENFIGI_URL = 'https://api.openfigi.com/v3/mapping';
@@ -655,7 +656,29 @@ async function enrichSecurityIdentifiers(client, limit = 1000) {
   // Ranked by disclosed value and then by how many managers report it, and
   // carrying the earliest date each CUSIP was observed so a looked-up mapping
   // can be anchored to evidence rather than to 1900.
-  const unique = rankUnmapped(unresolved, limit);
+  const ranked = rankUnmapped(unresolved, limit);
+
+  // Ask the SEC's list what these are before asking a vendor what they map to.
+  //
+  // 1,630 of the identifiers with no ticker are convertible notes, preferred
+  // stock, warrants and SPAC units - 12,395 rows and $130bn. Every one of them
+  // consumed a lookup on every run and returned nothing, because a note does
+  // not have a common-equity ticker. Skipping them is not an optimisation: it
+  // is the difference between a run that reports "unresolved" about securities
+  // that could resolve and one that reports it about securities that cannot.
+  //
+  // Only the classes that are definitively not common equity are skipped.
+  // Unclassified identifiers are still asked about.
+  const classByCusip = await step('classify candidates', () => readClasses(client, ranked.map((r) => r.cusip)));
+  const { askable, excluded } = partitionByClass(ranked, classByCusip);
+  const unique = askable;
+  if (excluded.length) {
+    const byClass = {};
+    for (const row of excluded) byClass[row.security_class] = (byClass[row.security_class] || 0) + 1;
+    console.info(`[identifiers]   not asked (${excluded.length}): `
+      + Object.entries(byClass).map(([k, v]) => `${k} ${v}`).join(', '));
+  }
+
   const batchSize = OPENFIGI_API_KEY ? 100 : 5;
   const vendorStartedAt = Date.now();
   const mappings = [];
@@ -696,6 +719,22 @@ async function enrichSecurityIdentifiers(client, limit = 1000) {
     }
     if (!OPENFIGI_API_KEY && index + batchSize < unique.length) await wait(2500);
   }
+  // Carry each answer across the identifiers that are the same security.
+  //
+  // Aptiv's holdings sit under G6095L109 for seven years and under G3265R107
+  // since; the vendor knows only the second. 1,872 unmapped identifiers have a
+  // sibling that already carries a ticker, and they need no lookup at all -
+  // the answer was already bought, under a different number.
+  let inherited = 0;
+  if (mappings.length) {
+    const observedFrom = new Map(ranked.map((row) => [row.cusip, row.observed_from]));
+    const chains = await step('read identity chains', () => readChains(client, mappings.map((m) => m.cusip)));
+    const extra = expandThroughChains(mappings, { ...chains, observedFrom });
+    inherited = extra.length;
+    mappings.push(...extra);
+    if (inherited) console.info(`[identifiers]   inherited through identity chains: ${inherited}`);
+  }
+
   if (mappings.length) {
     console.info(`[identifiers]   vendor lookups: ${((Date.now() - vendorStartedAt) / 1000).toFixed(1)}s`
       + ` for ${unique.length} security(ies)`);
@@ -750,10 +789,15 @@ async function enrichSecurityIdentifiers(client, limit = 1000) {
     attempted: unique.length,
     mapped: mappings.length,
     applied,
-    // Asked and answered no.
-    unresolved: Math.max(0, unique.length - mappings.length - skipped),
+    // Asked and answered no. Counted against what was asked, not against what
+    // was ranked, so skipping a convertible note does not read as a failure.
+    unresolved: Math.max(0, unique.length - (mappings.length - inherited) - skipped),
     // Never asked, because the identifier could not be one.
     skipped,
+    // Not asked about, because the SEC's list says they are not common equity.
+    not_equity: excluded.length,
+    // Resolved from a sibling identifier rather than from the vendor.
+    inherited,
     errors: [...new Set(errors)],
   };
 }
