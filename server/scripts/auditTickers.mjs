@@ -96,8 +96,12 @@ const show = (name, list, note) => {
 
 console.log('');
 console.log(`[audit] ${stats.size.toLocaleString()} distinct tickers held`);
-show('on the SEC ticker list', buckets.secListed, 'US-listed, priceable');
-show('US shape, not SEC-listed', buckets.usShapeNotListed, 'likely delisted or acquired');
+show('on the SEC ticker list', buckets.secListed, 'US-listed operating companies');
+// Not "likely delisted", which is what this said and what I reported from it.
+// company_tickers.json lists operating-company filers, so an ETF (IVV, VOO,
+// BND) and a foreign private issuer filing 20-F (SE) are both absent from it
+// while trading normally. Checked against Yahoo: all of them price fine.
+show('US shape, not SEC-listed', buckets.usShapeNotListed, 'ETFs, 20-F filers, and genuinely delisted names - mostly priceable');
 show('not a US ticker shape', buckets.nonUsShape, 'WRONG - foreign venue code from OpenFIGI');
 show('unusable', buckets.unusable, 'rejected before asking');
 
@@ -108,7 +112,13 @@ for (const [t, s] of buckets.nonUsShape.sort((a, b) => b[1].value - a[1].value).
 }
 
 console.log('');
-console.log('[audit] largest US-shape-but-unlisted (delisted?) by value:');
+console.log('[audit] largest unusable tickers by value (rejected before asking):');
+for (const [t, s2] of buckets.unusable.sort((a, b) => b[1].value - a[1].value).slice(0, 25)) {
+  console.log(`    ${JSON.stringify(t).padEnd(18)} $${(s2.value / 1e9).toFixed(2)}bn  ${String(s2.rows).padStart(5)} rows  ${s2.first}..${s2.last}`);
+}
+
+console.log('');
+console.log('[audit] largest US-shape-but-not-SEC-listed by value (mostly ETFs):');
 for (const [t, s] of buckets.usShapeNotListed.sort((a, b) => b[1].value - a[1].value).slice(0, 20)) {
   console.log(`    ${t.padEnd(8)} $${(s.value / 1e9).toFixed(2)}bn  ${String(s.rows).padStart(5)} rows  ${s.first}..${s.last}`);
 }
