@@ -24,6 +24,7 @@
  */
 import { createSupabaseAdmin, getSupabaseAdminCredentials } from '../lib/supabaseAdmin.js';
 import { recoverTicker } from '../services/venueTicker.js';
+import { conflictingOwner, proposedWindow } from '../services/mappingWindow.js';
 
 const APPLY = process.argv.includes('--apply');
 const SEC_UA = (process.env.SEC_USER_AGENT || 'AGI Institutional Research research@agarwalglobalinvestments.com').trim();
@@ -72,10 +73,11 @@ for (const h of holdings) {
   const t = String(h.ticker).toUpperCase();
   if (US_SHAPE.test(t)) continue;
   const id = `${h.cusip}|${t}`;
-  const cur = suspect.get(id) || { cusip: h.cusip, ticker: t, issuer_name: h.issuer_name, rows: 0, value: 0, earliest: h.report_date };
+  const cur = suspect.get(id) || { cusip: h.cusip, ticker: t, issuer_name: h.issuer_name, rows: 0, value: 0, earliest: h.report_date, latest: h.report_date };
   cur.rows += 1;
   cur.value += Number(h.value_usd) || 0;
   if (h.report_date < cur.earliest) cur.earliest = h.report_date;
+  if (h.report_date > cur.latest) cur.latest = h.report_date;
   if (!cur.issuer_name && h.issuer_name) cur.issuer_name = h.issuer_name;
   suspect.set(id, cur);
 }
@@ -116,31 +118,41 @@ if (!APPLY) {
 
 // ---- write ----------------------------------------------------------------
 
-// A ticker already belonging to a different CUSIP is not taken. The recovery
-// is confident but it is still an inference, and one that silently reassigns
-// another security's symbol is worse than one left unresolved.
+// A ticker already claimed over the same dates is not taken. Ownership is a
+// question about a period, not about a ticker: the resolver picks the mapping
+// valid at a date, so one symbol moving from an old CUSIP to a new one after
+// a corporate action is the model working, not a collision. What must not
+// happen is two CUSIPs claiming one ticker over the same stretch - Carnival
+// Corp and Carnival plc trade together as CCL and CUK, and giving CCL to both
+// would put one company's price on the other's position.
 const existing = await all(() => client
   .from('security_identifier_history')
-  .select('cusip,ticker,valid_from')
+  .select('cusip,ticker,valid_from,valid_to')
   .not('ticker', 'is', null)
   .order('cusip'));
-const ownerOf = new Map();
+const ownersOf = new Map();
 for (const row of existing) {
   const t = String(row.ticker).toUpperCase();
-  if (!ownerOf.has(t)) ownerOf.set(t, row.cusip);
+  if (!ownersOf.has(t)) ownersOf.set(t, []);
+  ownersOf.get(t).push(row);
 }
+
+const latestReportDate = holdings.reduce((a, h) => (h.report_date > a ? h.report_date : a), '');
 
 const writes = [];
 const conflicts = [];
 for (const r of recovered) {
-  const owner = ownerOf.get(r.to);
-  if (owner && owner !== r.cusip) { conflicts.push({ ...r, owner }); continue; }
+  // Bounded to the dates actually held. An open-ended claim would run to the
+  // end of time and block whichever security takes the symbol over next.
+  const window = proposedWindow(r, latestReportDate);
+  const owner = conflictingOwner(ownersOf.get(r.to), r.cusip, window);
+  if (owner) { conflicts.push({ ...r, owner, window }); continue; }
   writes.push({
     cusip: r.cusip,
     ticker: r.to,
     issuer_name: r.issuer_name || null,
-    valid_from: r.earliest,
-    valid_to: null,
+    valid_from: window.from,
+    valid_to: window.to,
     security_key: r.cusip,
     source: 'venue_symbol_recovery',
     manually_verified: false,
@@ -150,8 +162,11 @@ for (const r of recovered) {
 
 if (conflicts.length) {
   console.log('');
-  console.log(`[venue] ${conflicts.length} skipped - the ticker already belongs to another CUSIP:`);
-  for (const c of conflicts.slice(0, 20)) console.log(`  ${c.ticker} -> ${c.to} held by ${c.owner} (ours is ${c.cusip})`);
+  console.log(`[venue] ${conflicts.length} skipped - another CUSIP holds the ticker over the same dates:`);
+  for (const c of conflicts.slice(0, 25)) {
+    console.log(`  ${c.ticker.padEnd(10)} -> ${c.to.padEnd(6)} ours ${c.cusip} wants ${c.window.from}..${c.window.to || 'open'};`
+      + ` ${c.owner.cusip} holds ${c.owner.valid_from}..${c.owner.valid_to || 'open'}`);
+  }
 }
 
 let written = 0;
