@@ -1,7 +1,7 @@
 import { createSupabaseAdmin } from '../lib/supabaseAdmin.js';
 import { getCollectionHealth, listRuns } from './institutionalCollectionRuns.js';
 import { classifyFiling, applyAmendment, droppedPositions } from './secAmendment.js';
-import { valueScaleFor, detectScaleMismatch } from './valueScale.js';
+import { valueScaleFor, detectScaleMismatch, resolveScale } from './valueScale.js';
 
 const SEC_ROOT = 'https://www.sec.gov';
 const SEC_DATA = 'https://data.sec.gov';
@@ -929,16 +929,30 @@ async function ingestFiling(client, manager, source) {
   // One rule, shared by all three paths. This one was already keyed to the
   // filing date and correct; the two import paths keyed to report_date and
   // overstated every Q4-2022 filing by 1000x.
-  const { scale: valueScale, basis: valueScaleBasis } = valueScaleFor({
+  const ruled = valueScaleFor({
     acceptedAt: source.accepted_at,
     filedAt: source.filing_date,
     reportDate: source.report_date,
     override: manager.value_scale_override,
   });
-  const scaleMismatch = detectScaleMismatch(rawRows, valueScale);
-  if (scaleMismatch) {
-    // Reported, not acted on. A heuristic quietly overruling a documented rule
-    // is how the original confusion took hold.
+  const scaleMismatch = detectScaleMismatch(rawRows, ruled.scale);
+  // The rule is right about what filers are required to do and wrong about
+  // what some of them did. Renaissance filed its Q3 2023 table on 2023-11-14,
+  // ten months after values became whole dollars, reporting Apple at 719,357
+  // against 4,201,607 shares - $0.17 a share, or $171.21 at a thousand times,
+  // which is where Apple closed that quarter. Applying the rule stores a $60bn
+  // book as $60m, and nothing downstream can see it: every position is wrong
+  // by the same factor, so weights and share counts still agree.
+  //
+  // A manager override still wins outright. It is a person's decision about a
+  // specific filer and outranks both the rule and the arithmetic.
+  const { scale: valueScale, basis: valueScaleBasis, overridden } = manager.value_scale_override
+    ? { ...ruled, overridden: false }
+    : resolveScale(ruled, scaleMismatch);
+  if (scaleMismatch && overridden) {
+    console.warn(`[institutional-holdings] ${source.accession_number}: scale ${ruled.scale} -> ${valueScale}, ${scaleMismatch.reason}`);
+  } else if (scaleMismatch) {
+    // Not corrected: the evidence was not clear enough to overrule the rule.
     console.warn(`[institutional-holdings] ${source.accession_number}: applied scale ${valueScale} (${valueScaleBasis}) but ${scaleMismatch.reason}`);
   }
   if (valueScale !== 1) rawRows = rawRows.map((row) => ({ ...row, value_usd: n(row.value_usd) * valueScale }));
