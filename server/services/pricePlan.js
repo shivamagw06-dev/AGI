@@ -11,6 +11,16 @@
 const REJECT = new Set(['NONE.', 'NONE', 'N/A', 'NA', '-', '']);
 
 /**
+ * A US ticker: one to five letters, optionally a share-class suffix.
+ *
+ * Anything else in this column came from a foreign venue - HO1 and 8QR are
+ * Frankfurt line codes, ACLXGBX and HONGBP are US shares quoted abroad in
+ * local currency. A 13F security is US-exchange-traded, so none of those can
+ * be priced under that name and asking is a request spent to be told no.
+ */
+const US_TICKER = /^[A-Z]{1,5}(-[A-Z])?$/;
+
+/**
  * Yahoo's symbol for a ticker, or null if the ticker is not usable.
  *
  * The SEC's company_tickers.json and Yahoo agree on share-class punctuation -
@@ -37,11 +47,20 @@ export function yahooSymbol(ticker) {
  */
 export function planFetches(holdings, { asOf, bufferDays = 120, freshness = null } = {}) {
   const bySymbol = new Map();
-  const skipped = { unusableTicker: 0, alreadyFresh: 0 };
+  const skipped = { unusableTicker: 0, alreadyFresh: 0, foreignVenue: 0 };
+  const foreignVenueSymbols = new Set();
 
   for (const row of holdings || []) {
     const symbol = yahooSymbol(row?.ticker);
     if (!symbol) { skipped.unusableTicker += 1; continue; }
+    // Known-unpriceable before a request is spent on it. These also skewed
+    // the health check: they sort to the front of the alphabet, so the first
+    // symbols processed were almost all of them and the run aborted on a
+    // sample made of the one group already known to fail.
+    if (!US_TICKER.test(symbol)) {
+      if (!foreignVenueSymbols.has(symbol)) { foreignVenueSymbols.add(symbol); skipped.foreignVenue += 1; }
+      continue;
+    }
     const key = String(row?.security_key || '').trim().toUpperCase();
     if (!key) continue;
 
@@ -81,8 +100,23 @@ export function planFetches(holdings, { asOf, bufferDays = 120, freshness = null
       to: asOf,
     });
   }
-  plans.sort((a, b) => a.symbol.localeCompare(b.symbol));
-  return { plans, skipped };
+  // Ordered by a hash of the symbol, not alphabetically. Alphabetical order
+  // correlates with what a symbol is - digits and venue codes sort first - so
+  // any statistic taken over the first N processed describes that group
+  // rather than the run. The hash is deterministic, so a resumed run walks
+  // the same order and stays reproducible.
+  plans.sort((a, b) => spread(a.symbol) - spread(b.symbol) || a.symbol.localeCompare(b.symbol));
+  return { plans, skipped, foreignVenueSymbols: [...foreignVenueSymbols].sort() };
+}
+
+/** A stable pseudo-random ordering key. FNV-1a, chosen for being short. */
+function spread(symbol) {
+  let h = 2166136261;
+  for (let i = 0; i < symbol.length; i += 1) {
+    h ^= symbol.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return h >>> 0;
 }
 
 function daysBetween(a, b) {

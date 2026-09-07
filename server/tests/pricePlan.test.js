@@ -134,3 +134,53 @@ test('without a current-holdings sample, unknown symbols are not judged at all',
   // Failures are still judged, because they do not depend on that split.
   assert.match(abortReason({ ok: 10, empty: 0, notFound: 0, failed: 60 }), /refusing traffic/);
 });
+
+test('a foreign venue symbol is not asked for at all', () => {
+  // HO1 and 8QR are Frankfurt line codes; ACLXGBX and HONGBP are US shares
+  // quoted abroad. None can be priced under those names, so the request is
+  // not spent - and they no longer skew the health check by sorting first.
+  const rows = [
+    { ticker: 'AAPL', security_key: 'A', first_report_date: '2024-03-31', last_report_date: '2026-06-30' },
+    { ticker: 'HO1', security_key: 'B', first_report_date: '2024-03-31', last_report_date: '2026-06-30' },
+    { ticker: '8QR', security_key: 'C', first_report_date: '2024-03-31', last_report_date: '2026-06-30' },
+    { ticker: 'HONGBP', security_key: 'D', first_report_date: '2024-03-31', last_report_date: '2026-06-30' },
+    { ticker: 'BRK-B', security_key: 'E', first_report_date: '2024-03-31', last_report_date: '2026-06-30' },
+  ];
+  const { plans, skipped, foreignVenueSymbols } = planFetches(rows, { asOf: '2026-09-07' });
+  assert.deepEqual(plans.map((p) => p.symbol).sort(), ['AAPL', 'BRK-B']);
+  assert.equal(skipped.foreignVenue, 3);
+  assert.deepEqual(foreignVenueSymbols, ['8QR', 'HO1', 'HONGBP']);
+});
+
+test('an ETF is not mistaken for a venue code', () => {
+  // IVV, VOO and BND are five letters or fewer and price normally. The shape
+  // check must not sweep them out along with the Frankfurt codes.
+  const rows = ['IVV', 'VOO', 'BND', 'GOOGL', 'IEMG'].map((t, i) => ({
+    ticker: t, security_key: `K${i}`, first_report_date: '2024-03-31', last_report_date: '2026-06-30',
+  }));
+  const { plans, skipped } = planFetches(rows, { asOf: '2026-09-07' });
+  assert.equal(plans.length, 5);
+  assert.equal(skipped.foreignVenue, 0);
+});
+
+test('processing order does not follow the alphabet', () => {
+  // Alphabetical order correlates with what a symbol is, so a statistic over
+  // the first N processed described the digit-leading codes rather than the
+  // run - which is how a healthy backfill aborted at 61.9% unknown.
+  const rows = ['AAA', 'AAB', 'AAC', 'AAD', 'ZZA', 'ZZB', 'ZZC', 'ZZD'].map((t, i) => ({
+    ticker: t, security_key: `K${i}`, first_report_date: '2024-03-31', last_report_date: '2026-06-30',
+  }));
+  const { plans } = planFetches(rows, { asOf: '2026-09-07' });
+  const order = plans.map((p) => p.symbol);
+  assert.notDeepEqual(order, [...order].sort(), 'order must not be alphabetical');
+  assert.deepEqual([...order].sort(), rows.map((r) => r.ticker).sort(), 'every symbol still planned');
+});
+
+test('the order is stable, so a resumed run is reproducible', () => {
+  const rows = ['MSFT', 'AAPL', 'NVDA', 'TSLA'].map((t, i) => ({
+    ticker: t, security_key: `K${i}`, first_report_date: '2024-03-31', last_report_date: '2026-06-30',
+  }));
+  const once = planFetches(rows, { asOf: '2026-09-07' }).plans.map((p) => p.symbol);
+  const twice = planFetches([...rows].reverse(), { asOf: '2026-09-07' }).plans.map((p) => p.symbol);
+  assert.deepEqual(once, twice);
+});
