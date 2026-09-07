@@ -105,7 +105,7 @@ def _svc(**flag_overrides) -> KipService:
         kip_ocr=flag_overrides.get("kip_ocr", True),
         kip_llm_summary=flag_overrides.get("kip_llm_summary", True),
     )
-    return KipService(flags=flags)
+    return KipService(flags=flags, load_snapshot=False)
 
 
 def test_ingest_pipeline_extracts_institutional_fields():
@@ -174,6 +174,51 @@ def test_ocr_and_versioning_lineage():
     assert refreshed.superseded_by == v2.document_id
     # immutability: content of v1 unchanged
     assert "Target price Rs 1400" in refreshed.cleaned_content
+
+    # Audit history is retained, but stale versions cannot ground Ask AGI.
+    results = svc.search("Target price Rs 1400", mode="hybrid", limit=10)
+    assert all(hit.document_id != v1.document_id for hit in results.hits)
+    assert any(hit.document_id == v2.document_id for hit in results.hits)
+
+
+def test_explicit_nse_ticker_is_not_limited_to_static_lexicon():
+    svc = _svc()
+    doc = svc.ingest(
+        IngestRequest(
+            title="CMS company research",
+            content="The company reported improving cash conversion and order execution.",
+            source="agi",
+            document_type=DocumentType.AGI_RESEARCH,
+            tickers=["WAAREEENER"],
+            article_id="cms-waaree-1",
+        )
+    )
+    assert doc.investment.tickers == ["WAAREEENER"]
+    results = svc.search("cash conversion", ticker="WAAREEENER")
+    assert [hit.document_id for hit in results.hits] == [doc.document_id]
+
+
+def test_unpublished_cms_article_is_retired_from_search_but_kept_for_audit():
+    svc = _svc()
+    doc = svc.ingest(
+        IngestRequest(
+            title="Private CMS thesis",
+            content="A unique private thesis about operating leverage.",
+            source="agi",
+            document_type=DocumentType.AGI_RESEARCH,
+            tickers=["RELIANCE"],
+            article_id="cms-private-1",
+        )
+    )
+    retired = svc.retire_article("cms-private-1")
+    assert retired is not None
+    assert retired.document_id == doc.document_id
+    assert svc.get_document(doc.document_id) is not None
+    assert svc.get_document(doc.document_id).superseded_by == "retired:cms-private-1"
+    assert all(
+        hit.document_id != doc.document_id
+        for hit in svc.search("unique private thesis", limit=10).hits
+    )
 
 
 def test_company_timeline_and_graph():
