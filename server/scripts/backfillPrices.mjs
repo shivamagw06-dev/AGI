@@ -91,30 +91,30 @@ console.log(`[prices] ${seen.size.toLocaleString()} distinct (security_key, tick
 
 // ---- what we already have -------------------------------------------------
 
-// Freshness is when we last fetched a symbol, not how recent its last bar is.
+// Freshness comes from the fetch log: one row per symbol, saying when it was
+// last asked for and how that went.
 //
-// Asking whether a ticker has a bar in the last ten days answers a different
-// question, and answers it wrong for exactly the symbols that need it least:
-// a delisted name whose history ends in July can never have a recent bar, so
-// it never counts as done and is refetched on every run forever. Three runs
-// in a row fetched the same ninety symbols and wrote the same 6,223 rows.
+// Two earlier versions of this read the price rows instead. Asking which
+// tickers had a bar in the last ten days answered a different question, and
+// answered it wrong for the symbols it mattered for - a delisted name whose
+// history ends in July can never have a recent bar, so it never counted as
+// done. Asking which rows were written recently answered the right question
+// but did not scale, and got worse the more the backfill succeeded: every row
+// it writes carries the run's timestamp, so a full pass leaves several million
+// rows matching and the client pages through all of them to derive one date
+// per symbol.
 //
-// source_as_of records when the row was written, so a symbol fetched today
-// is finished today whatever its history looks like.
-const fetchedSince = new Date(Date.now() - 10 * 86_400_000).toISOString();
-console.log(`[prices] reading prices fetched since ${fetchedSince.slice(0, 10)}...`);
-const recent = await all(() => client
-  .from('institutional_security_prices')
-  .select('ticker,source_as_of')
-  .gte('source_as_of', fetchedSince)
+// The log also records the outcomes that write no prices at all - a symbol
+// Yahoo does not know, a single-bar stub - which the price rows could not
+// represent, so those were refetched on every run forever.
+console.log('[prices] reading the fetch log...');
+const logRows = await all(() => client
+  .from('institutional_price_fetch_log')
+  .select('ticker,fetched_at')
   .order('ticker'));
 const freshness = new Map();
-for (const r of recent) {
-  const seen = String(r.source_as_of || '').slice(0, 10);
-  const cur = freshness.get(r.ticker);
-  if (!cur || seen > cur) freshness.set(r.ticker, seen);
-}
-console.log(`[prices] ${freshness.size.toLocaleString()} symbols fetched recently`);
+for (const r of logRows) freshness.set(r.ticker, String(r.fetched_at || '').slice(0, 10));
+console.log(`[prices] ${freshness.size.toLocaleString()} symbols in the fetch log`);
 
 // ---- the plan -------------------------------------------------------------
 
@@ -134,7 +134,7 @@ if (LIMIT) {
 
 console.log('');
 console.log(`[prices] ${plans.length.toLocaleString()} symbols to fetch`);
-console.log(`[prices]   skipped: ${skipped.unusableTicker} unusable ticker, ${skipped.foreignVenue} foreign venue code, ${skipped.alreadyFresh} fetched recently`);
+console.log(`[prices]   skipped: ${skipped.unusableTicker} unusable ticker, ${skipped.foreignVenue} foreign venue code, ${skipped.alreadyFresh} already fetched`);
 if (foreignVenueSymbols.length) {
   console.log(`[prices]   foreign venue codes not asked for: ${foreignVenueSymbols.slice(0, 12).join(', ')}${foreignVenueSymbols.length > 12 ? ` (+${foreignVenueSymbols.length - 12} more)` : ''}`);
   console.log('[prices]   run recoverVenueTickers.mjs to map these back to their US tickers');
@@ -191,6 +191,24 @@ const problems = [];
 let aborted = null;
 let cursor = 0;
 
+// Recorded whatever the outcome, so a symbol that cannot be priced is not
+// asked about again on the next run.
+const fetchLog = [];
+function noteFetch(symbol, status, bars, detail) {
+  fetchLog.push({ ticker: symbol, fetched_at: new Date().toISOString(), status, bars: bars || 0, detail: detail || null });
+}
+
+async function flushLog() {
+  for (let i = 0; i < fetchLog.length; i += 500) {
+    const chunk = fetchLog.slice(i, i + 500);
+    const { error } = await client
+      .from('institutional_price_fetch_log')
+      .upsert(chunk, { onConflict: 'ticker' });
+    if (error) throw new Error(`fetch log: ${error.message}`);
+  }
+  fetchLog.length = 0;
+}
+
 async function writeRows(rows) {
   for (let i = 0; i < rows.length; i += 1000) {
     const chunk = rows.slice(i, i + 1000);
@@ -223,24 +241,31 @@ async function worker() {
       if (badCoverage) {
         tally.reassigned += 1;
         problems.push(`${plan.symbol}: REJECTED - ${badCoverage}`);
+        noteFetch(plan.symbol, 'rejected', res.bars.length, badCoverage);
       } else {
         const status = listingStatus(res.bars, asOf);
         const rows = priceRows(plan, res.bars, { source: SOURCE, listingStatus: status, sourceAsOf });
         await writeRows(rows);
         tally.ok += 1;
         tally.rows += rows.length;
+        noteFetch(plan.symbol, status, res.bars.length, null);
         if (status !== 'active') problems.push(`${plan.symbol}: last bar ${res.bars.at(-1).price_date} (${status})`);
       }
     } else if (res.status === 'empty') {
       tally.empty += 1;
       problems.push(`${plan.symbol}: no bars in window`);
+      noteFetch(plan.symbol, 'empty', 0, 'no bars in window');
     } else if (res.status === 'not_found') {
       tally.notFound += 1;
       problems.push(`${plan.symbol}: unknown to Yahoo`);
+      noteFetch(plan.symbol, 'not_found', 0, 'unknown to Yahoo');
     } else {
+      // A transport failure is not recorded. It says nothing about the symbol,
+      // and logging it would retire a name that simply needs asking again.
       tally.failed += 1;
       problems.push(`${plan.symbol}: ${res.detail}`);
     }
+    if (fetchLog.length >= 200) await flushLog();
 
     if (plan.heldNow) {
       tally.live.done += 1;
@@ -260,6 +285,7 @@ async function worker() {
 console.log('');
 console.log(`[prices] APPLY - fetching ${plans.length.toLocaleString()} symbols at concurrency ${CONCURRENCY}`);
 await Promise.all(Array.from({ length: CONCURRENCY }, worker));
+await flushLog();
 
 console.log('');
 console.log('[prices] ---- result ----');
