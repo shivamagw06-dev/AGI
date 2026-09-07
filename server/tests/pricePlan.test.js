@@ -84,8 +84,9 @@ test('a reassigned ticker is rejected rather than priced off another company', (
   // marks the handover nowhere. Against a 2019 Facebook position it would
   // produce prices that are wrong and look perfectly healthy.
   const plan = { symbol: 'FB', earliestHeld: '2019-06-30' };
-  const reused = [{ price_date: '2025-06-26' }, { price_date: '2026-09-04' }];
-  assert.match(coverageProblem(plan, reused), /reassigned to another company/);
+  const reused = Array.from({ length: 300 }, (_, i) => ({ price_date: `2025-06-${String((i % 28) + 1).padStart(2, '0')}` }));
+  reused[0].price_date = '2025-06-26';
+  assert.match(coverageProblem(plan, reused), /belongs to a different security/);
 });
 
 test('history that reaches the position is accepted', () => {
@@ -183,4 +184,21 @@ test('the order is stable, so a resumed run is reproducible', () => {
   const once = planFetches(rows, { asOf: '2026-09-07' }).plans.map((p) => p.symbol);
   const twice = planFetches([...rows].reverse(), { asOf: '2026-09-07' }).plans.map((p) => p.symbol);
   assert.deepEqual(once, twice);
+});
+
+test('a one-bar stub is refused for being a stub, not blamed on reassignment', () => {
+  // RMAX, HTZWW and AUROW each return exactly one bar on one recent day.
+  // That is not another company's chart, and saying it is asserts a cause
+  // the response does not show. It is still refused - one bar prices nothing.
+  const plan = { symbol: 'RMAX', earliestHeld: '2023-09-30' };
+  const stub = [{ price_date: '2026-07-17' }];
+  const reason = coverageProblem(plan, stub);
+  assert.match(reason, /only 1 bar returned/);
+  assert.doesNotMatch(reason, /different security/);
+});
+
+test('a short but real series is still refused, with the count shown', () => {
+  const plan = { symbol: 'NTZ', earliestHeld: '2025-09-30' };
+  const bars = Array.from({ length: 12 }, (_, i) => ({ price_date: `2026-07-${String(i + 17).padStart(2, '0')}` }));
+  assert.match(coverageProblem(plan, bars), /only 12 bars returned/);
 });
