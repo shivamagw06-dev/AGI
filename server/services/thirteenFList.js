@@ -214,19 +214,40 @@ export function normaliseIssuerName(value) {
  * class while being entirely different instruments.
  */
 export function chainIdentities(records, { throughQuarter = null } = {}) {
-  const groups = new Map();
+  // Collect each identifier once, before grouping.
+  //
+  // Grouping straight off the records put a CUSIP into as many groups as it had
+  // spellings of its issuer name, and names are restated: Cushman & Wakefield
+  // is "CUSHMAN WAKEFIELD PLC" in 2019 and "CUSHMAN AND WAKEFIELD LTD" in 2026
+  // under identifiers that partly overlap. That produced 16,707 chain rows for
+  // 14,920 equities - 1,787 identifiers appearing in two chains at once, which
+  // the database refused as "ON CONFLICT DO UPDATE command cannot affect row a
+  // second time". An identifier belongs to one security, so it is grouped once,
+  // under the name from its latest quarter - the same choice the securities
+  // table makes, so the two agree.
+  const entries = new Map();
   let latest = throughQuarter || '';
   for (const record of records || []) {
     if (record?.quarter && record.quarter > latest) latest = record.quarter;
-    if (record?.security_class !== 'equity') continue;
-    const key = normaliseIssuerName(record.issuer_name);
+    if (record?.security_class !== 'equity' || !record.cusip) continue;
+    let entry = entries.get(record.cusip);
+    if (!entry) {
+      entry = { cusip: record.cusip, quarters: new Set(), issuer_name: record.issuer_name, namedAt: record.quarter || '' };
+      entries.set(record.cusip, entry);
+    }
+    if (record.quarter) entry.quarters.add(record.quarter);
+    if ((record.quarter || '') >= entry.namedAt) {
+      entry.issuer_name = record.issuer_name;
+      entry.namedAt = record.quarter || '';
+    }
+  }
+
+  const groups = new Map();
+  for (const entry of entries.values()) {
+    const key = normaliseIssuerName(entry.issuer_name);
     if (!key) continue;
     if (!groups.has(key)) groups.set(key, new Map());
-    const byCusip = groups.get(key);
-    if (!byCusip.has(record.cusip)) {
-      byCusip.set(record.cusip, { cusip: record.cusip, quarters: new Set(), issuer_name: record.issuer_name });
-    }
-    if (record.quarter) byCusip.get(record.cusip).quarters.add(record.quarter);
+    groups.get(key).set(entry.cusip, entry);
   }
   const edge = throughQuarter || latest;
   const lastOf = (entry) => entry.quarters[entry.quarters.length - 1] || '';
