@@ -91,6 +91,8 @@ test('issuer names normalise across the two sources spelling', () => {
 test('a CUSIP change is chained into one security key', () => {
   const rows = [
     { cusip: 'G6095L109', issuer_name: 'APTIV PLC', security_class: 'equity', quarter: '2024q1' },
+    { cusip: 'G6095L109', issuer_name: 'APTIV PLC', security_class: 'equity', quarter: '2024q4' },
+    { cusip: 'G3265R107', issuer_name: 'APTIV PLC', security_class: 'equity', quarter: '2024q4' },
     { cusip: 'G3265R107', issuer_name: 'APTIV PLC', security_class: 'equity', quarter: '2026q2' },
   ];
   const [chain] = chainIdentities(rows);
@@ -140,4 +142,74 @@ test('fund descriptions carrying a name are equity, not excluded', () => {
   assert.equal(classifySecurity('S&P 500 ETF SHS'), 'equity');
   assert.equal(classifySecurity('CORE S&P500 ETF'), 'equity');
   assert.equal(classifySecurity('RUSSELL 2000 ETF'), 'equity');
+});
+
+test('identifiers that coexist in a quarter are not treated as a rename', () => {
+  // AstraZeneca carries G0593M107 for the ordinary shares and 046353108 for
+  // the sponsored ADR in the same quarter. Chaining on name alone merged them,
+  // and produced 534 spurious renames across two consecutive quarters.
+  const rows = [
+    { cusip: 'G0593M107', issuer_name: 'ASTRAZENECA PLC', security_class: 'equity', quarter: '2026q1' },
+    { cusip: 'G0593M107', issuer_name: 'ASTRAZENECA PLC', security_class: 'equity', quarter: '2026q2' },
+    { cusip: '046353108', issuer_name: 'ASTRAZENECA PLC', security_class: 'equity', quarter: '2026q1' },
+  ];
+  const [group] = chainIdentities(rows);
+  assert.equal(group.ambiguous, true);
+  assert.equal(group.changed_identifier, false);
+  // No shared key: a wrong merge puts one instrument's holdings under another's.
+  assert.equal(group.security_key, null);
+});
+
+test('a rename overlaps for exactly the changeover quarter, and still chains', () => {
+  // Both identifiers are listed while the change happens. Requiring zero
+  // overlap rejects every real rename in the archive - Aptiv, Unilever, Cooper
+  // and Qiagen all show the old CUSIP's last quarter equal to the new one's
+  // first. What disqualifies AstraZeneca is that its ordinary line *continues*
+  // past where the ADR starts, not that they were ever seen together.
+  const rows = [
+    { cusip: 'G6095L109', issuer_name: 'APTIV PLC', security_class: 'equity', quarter: '2019q1' },
+    { cusip: 'G6095L109', issuer_name: 'APTIV PLC', security_class: 'equity', quarter: '2024q4' },
+    { cusip: 'G3265R107', issuer_name: 'APTIV PLC', security_class: 'equity', quarter: '2024q4' },
+    { cusip: 'G3265R107', issuer_name: 'APTIV PLC', security_class: 'equity', quarter: '2026q2' },
+  ];
+  const [group] = chainIdentities(rows);
+  assert.equal(group.ambiguous, false);
+  assert.equal(group.changed_identifier, true);
+  assert.equal(group.security_key, 'G6095L109');
+});
+
+test('the issuer name itself changing defeats name grouping, and is not faked', () => {
+  // "CUSHMAN WAKEFIELD PLC" became "CUSHMAN AND WAKEFIELD LTD" at the same time
+  // as the CUSIP changed. Dropping AND recovers that one. A wholesale rename -
+  // "LABORATORY CORP AMER HLDGS" to "LABCORP HOLDINGS INC" - is not recoverable
+  // from names alone and is deliberately left unlinked rather than guessed.
+  assert.equal(normaliseIssuerName('CUSHMAN WAKEFIELD PLC'), normaliseIssuerName('CUSHMAN AND WAKEFIELD LTD'));
+  assert.notEqual(normaliseIssuerName('LABORATORY CORP AMER HLDGS'), normaliseIssuerName('LABCORP HOLDINGS INC'));
+});
+
+test('a real rename - old stops, new starts - still chains', () => {
+  const rows = [
+    { cusip: 'G6095L109', issuer_name: 'APTIV PLC', security_class: 'equity', quarter: '2024q1' },
+    { cusip: 'G6095L109', issuer_name: 'APTIV PLC', security_class: 'equity', quarter: '2024q2' },
+    { cusip: 'G3265R107', issuer_name: 'APTIV PLC', security_class: 'equity', quarter: '2024q2' },
+    { cusip: 'G3265R107', issuer_name: 'APTIV PLC', security_class: 'equity', quarter: '2026q2' },
+  ];
+  const [group] = chainIdentities(rows);
+  assert.equal(group.ambiguous, false);
+  assert.equal(group.changed_identifier, true);
+  assert.equal(group.security_key, 'G6095L109');
+});
+
+test('a gap between ranges is not a rename', () => {
+  // Seadrill's G7998G106 ends 2020q2 and G7997W102 begins 2025q1 - a five year
+  // hole. Aspen shows six. A security absent for years before a same-named one
+  // appears is not evidence that one became the other.
+  const rows = [
+    { cusip: 'G7998G106', issuer_name: 'SEADRILL LTD', security_class: 'equity', quarter: '2019q1' },
+    { cusip: 'G7998G106', issuer_name: 'SEADRILL LTD', security_class: 'equity', quarter: '2020q2' },
+    { cusip: 'G7997W102', issuer_name: 'SEADRILL LTD', security_class: 'equity', quarter: '2025q1' },
+  ];
+  const [group] = chainIdentities(rows);
+  assert.equal(group.changed_identifier, false);
+  assert.equal(group.ambiguous, true);
 });
