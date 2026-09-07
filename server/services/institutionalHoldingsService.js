@@ -568,6 +568,21 @@ async function openFigiBatch(cusips) {
 }
 
 async function enrichSecurityIdentifiers(client, limit = 1000) {
+  // Sub-step timing. The phase boundary said the failure was somewhere between
+  // the vendor calls and the writes, which is a two-minute window containing
+  // four different statements. Each now reports its own duration, so the next
+  // failure names the statement rather than the phase.
+  const step = async (name, work) => {
+    const at = Date.now();
+    try {
+      const value = await work();
+      console.info(`[identifiers]   ${name}: ${((Date.now() - at) / 1000).toFixed(1)}s`);
+      return value;
+    } catch (error) {
+      console.error(`[identifiers]   ${name} FAILED after ${((Date.now() - at) / 1000).toFixed(1)}s: ${error.message}`);
+      throw error;
+    }
+  };
   // Bounded on the server, not in JavaScript.
   //
   // This selected every unmapped holding - about ninety per cent of 561,209
@@ -580,19 +595,22 @@ async function enrichSecurityIdentifiers(client, limit = 1000) {
   // appears once per manager holding it, so a few thousand rows comfortably
   // yields a thousand distinct ones.
   const scanLimit = Math.min(limit * 25, 25_000);
-  const { data: unresolvedRows, error: unresolvedError } = await client
-    .from('institutional_holdings')
-    .select('cusip,issuer_name,value_usd,report_date,manager_id')
-    .is('ticker', null)
-    .order('value_usd', { ascending: false })
-    .limit(scanLimit);
-  if (unresolvedError) throw new Error(unresolvedError.message);
-  const unresolved = unresolvedRows || [];
+  const unresolved = await step('scan unmapped', async () => {
+    const { data, error: unresolvedError } = await client
+      .from('institutional_holdings')
+      .select('cusip,issuer_name,value_usd,report_date,manager_id')
+      .is('ticker', null)
+      .order('value_usd', { ascending: false })
+      .limit(scanLimit);
+    if (unresolvedError) throw new Error(unresolvedError.message);
+    return data || [];
+  });
   // Ranked by disclosed value and then by how many managers report it, and
   // carrying the earliest date each CUSIP was observed so a looked-up mapping
   // can be anchored to evidence rather than to 1900.
   const unique = rankUnmapped(unresolved, limit);
   const batchSize = OPENFIGI_API_KEY ? 100 : 5;
+  const vendorStartedAt = Date.now();
   const mappings = [];
   const errors = [];
   let applied = 0;
@@ -623,8 +641,21 @@ async function enrichSecurityIdentifiers(client, limit = 1000) {
     if (!OPENFIGI_API_KEY && index + batchSize < unique.length) await wait(2500);
   }
   if (mappings.length) {
-    const { error } = await client.from('security_identifier_history').upsert(mappings, { onConflict: 'cusip,valid_from' });
-    if (error) throw error;
+    console.info(`[identifiers]   vendor lookups: ${((Date.now() - vendorStartedAt) / 1000).toFixed(1)}s`
+      + ` for ${unique.length} security(ies)`);
+
+    // Written in chunks. A single upsert of every mapping is one statement, and
+    // one statement is what statement_timeout applies to - so a slow batch
+    // takes the whole write with it rather than the part that was slow.
+    const CHUNK = 25;
+    await step(`upsert ${mappings.length} mapping(s)`, async () => {
+      for (let i = 0; i < mappings.length; i += CHUNK) {
+        const slice = mappings.slice(i, i + CHUNK);
+        const { error } = await client.from('security_identifier_history')
+          .upsert(slice, { onConflict: 'cusip,valid_from' });
+        if (error) throw new Error(`chunk ${i / CHUNK + 1} (${slice[0]?.cusip}…): ${error.message}`);
+      }
+    });
 
     // Apply each mapping to the holdings it covers.
     //
@@ -640,6 +671,7 @@ async function enrichSecurityIdentifiers(client, limit = 1000) {
     //
     // One statement per security, so a slow one names itself instead of
     // taking a batch of two hundred down with it.
+    const applyStartedAt = Date.now();
     for (const mapping of mappings) {
       try {
         let update = client.from('institutional_holdings')
@@ -655,6 +687,8 @@ async function enrichSecurityIdentifiers(client, limit = 1000) {
         errors.push(`applying ${mapping.cusip}: ${applyError.message}`);
       }
     }
+    console.info(`[identifiers]   apply to holdings: ${((Date.now() - applyStartedAt) / 1000).toFixed(1)}s`
+      + ` for ${applied}/${mappings.length}`);
   }
   return {
     attempted: unique.length,
