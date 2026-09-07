@@ -3,6 +3,9 @@ import { createSupabaseAdmin } from '../lib/supabaseAdmin.js';
 import { scheduleSecRequest } from './secRateLimiter.js';
 import { getRepairStatus } from './institutionalHoldingsService.js';
 import { firstTradableSession, sessionsFromPrices, periodReturn as pitPeriodReturn, benchmarkReturn, orderByAcceptance } from './pointInTime.js';
+import { fetchDailyHistory } from '../providers/yahooDailyHistory.js';
+import { listingStatus } from './dailyBars.js';
+import { coverageProblem } from './pricePlan.js';
 
 const SEC_DATA = 'https://data.sec.gov';
 const SEC_ARCHIVES = 'https://www.sec.gov/Archives/edgar/data';
@@ -60,20 +63,23 @@ function classifySic(code, description) {
   return { sector: match?.[2] || 'Unclassified', industry: description || match?.[3] || 'Unclassified' };
 }
 
-async function adjustedPrices(ticker) {
-  const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(ticker)}?range=5y&interval=1d&events=div%2Csplits`;
-  const response = await scheduleSecRequest(() => fetch(url, { headers: { 'User-Agent': 'Mozilla/5.0 AGIResearch/1.0' }, signal: AbortSignal.timeout(30_000) }));
-  if (!response.ok) throw new Error(`Adjusted prices unavailable for ${ticker}`);
-  const result = (await response.json())?.chart?.result?.[0];
-  if (!result) throw new Error(`Adjusted prices unavailable for ${ticker}`);
-  const quote = result.indicators?.quote?.[0] || {};
-  const adjusted = result.indicators?.adjclose?.[0]?.adjclose || [];
-  const rows = (result.timestamp || []).map((timestamp, index) => ({
-    price_date: new Date(timestamp * 1000).toISOString().slice(0, 10), close: quote.close?.[index] ?? null,
-    adjusted_close: adjusted[index] ?? quote.close?.[index] ?? null,
-  })).filter((row) => row.adjusted_close != null);
-  const lastDate = rows.at(-1)?.price_date;
-  return { rows, currency: result.meta?.currency || 'USD', listingStatus: !lastDate || Date.now() - new Date(lastDate).getTime() > 45 * DAY_MS ? 'stale_or_delisted' : 'active' };
+/**
+ * Daily prices for one symbol.
+ *
+ * This wrapped its own copy of the Yahoo call, and that copy had three faults
+ * the shared one is tested against. It filled a missing adjusted close with
+ * the raw close, which quietly mixes an unadjusted price into a series named
+ * adjusted and makes every return spanning that day wrong. It dated bars by
+ * their UTC calendar day, which is right for US equities only by luck of the
+ * session falling mid-day UTC. And it asked for a fixed five-year window
+ * regardless of how long the position had been held.
+ */
+async function adjustedPrices(ticker, { from } = {}) {
+  const to = new Date().toISOString().slice(0, 10);
+  const start = from || new Date(Date.now() - 5 * 365 * DAY_MS).toISOString().slice(0, 10);
+  const res = await scheduleSecRequest(() => fetchDailyHistory(ticker, { from: start, to }));
+  if (res.status !== 'ok') throw new Error(`Adjusted prices unavailable for ${ticker} (${res.detail || res.status})`);
+  return { rows: res.bars, currency: res.currency || 'USD', listingStatus: listingStatus(res.bars, to) };
 }
 
 async function batches(client, table, rows, onConflict, size = 500) {
@@ -139,13 +145,35 @@ async function collectClassifications(client, holdings, companies, limit) {
 }
 
 async function collectPrices(client, holdings, limit) {
-  const targets = [...new Set(holdings.map(tickerOf).filter(Boolean))].slice(0, limit).map((ticker) => ({ ticker, type: 'equity' }));
-  targets.push(...BENCHMARKS.map((ticker) => ({ ticker, type: 'benchmark' })));
+  // Keyed by the security, not by the symbol. This wrote the ticker into
+  // security_key, which made the price table the one place that column meant
+  // something different from everywhere else, and left two identifiers
+  // sharing a ticker indistinguishable.
+  const byTicker = new Map();
+  for (const holding of holdings) {
+    const ticker = tickerOf(holding);
+    if (!ticker) continue;
+    const entry = byTicker.get(ticker) || { ticker, type: 'equity', key: keyOf(holding), earliestHeld: null };
+    const held = dateOnly(holding.report_date);
+    if (held && (!entry.earliestHeld || held < entry.earliestHeld)) entry.earliestHeld = held;
+    byTicker.set(ticker, entry);
+  }
+  const targets = [...byTicker.values()].slice(0, limit);
+  // A benchmark is its own identity; there is no holding to derive a key from.
+  targets.push(...BENCHMARKS.map((ticker) => ({ ticker, type: 'benchmark', key: ticker, earliestHeld: null })));
+
   let count = 0;
   for (const target of targets) {
     try {
-      const series = await adjustedPrices(target.ticker);
-      const rows = series.rows.map((row) => ({ ...row, security_key: target.ticker, ticker: target.ticker, security_type: target.type, currency: series.currency, listing_status: series.listingStatus, source: 'Yahoo Finance chart', source_as_of: new Date().toISOString() }));
+      const from = target.earliestHeld
+        ? new Date(Date.parse(target.earliestHeld) - 120 * DAY_MS).toISOString().slice(0, 10)
+        : undefined;
+      const series = await adjustedPrices(target.ticker, { from });
+      // A ticker outlives its company - FB now serves an unrelated firm's
+      // history. Writing that against an older holding would fabricate prices.
+      const reassigned = coverageProblem({ symbol: target.ticker, earliestHeld: target.earliestHeld }, series.rows);
+      if (reassigned) { console.warn(`[institutional-v3] prices ${target.ticker}: rejected - ${reassigned}`); continue; }
+      const rows = series.rows.map((row) => ({ price_date: row.price_date, close: row.close, adjusted_close: row.adjusted_close, security_key: target.key, ticker: target.ticker, security_type: target.type, currency: series.currency, listing_status: series.listingStatus, source: 'Yahoo Finance chart', source_as_of: new Date().toISOString() }));
       await batches(client, 'institutional_security_prices', rows, 'security_key,price_date,source');
       count += rows.length;
     } catch (error) { console.warn(`[institutional-v3] prices ${target.ticker}: ${error.message}`); }
@@ -291,9 +319,15 @@ export async function runInstitutionalBacktest({ managerSlug, topN = 10, transac
   const targets = [...new Set([...managerHoldings.map(tickerOf).filter(Boolean), ...BENCHMARKS])];
   const prices = new Map();
   for (let index = 0; index < targets.length; index += 100) {
-    const { data, error } = await client.from('institutional_security_prices').select('security_key,price_date,adjusted_close').in('security_key', targets.slice(index, index + 100)).order('price_date');
+    // Matched on ticker, not on security_key. This asked for security_key
+    // while passing tickers, which worked only because collectPrices wrote
+    // the ticker into that column. The backfill writes the canonical
+    // CUSIP-derived key there, as every other table means it, so the old
+    // query would have matched none of its rows - the backtester would have
+    // run on the handful of legacy symbols and silently ignored the rest.
+    const { data, error } = await client.from('institutional_security_prices').select('ticker,price_date,adjusted_close').in('ticker', targets.slice(index, index + 100)).order('price_date');
     if (error) throw error;
-    (data || []).forEach((row) => { const rows = prices.get(row.security_key) || []; rows.push(row); prices.set(row.security_key, rows); });
+    (data || []).forEach((row) => { const rows = prices.get(row.ticker) || []; rows.push(row); prices.set(row.ticker, rows); });
   }
 
   // The trading calendar, derived from the benchmark's own price history rather
