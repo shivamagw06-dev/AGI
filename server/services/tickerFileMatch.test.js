@@ -97,3 +97,54 @@ test('an identifier the SEC list does not carry is not matched', () => {
     { securities, byName, ambiguousNames: ambiguous, observedFrom, takenTickers: new Map(), normalise });
   assert.equal(proposals.length, 0);
 });
+
+test('two identifiers cannot take one ticker unless a chain vouches for them', () => {
+  // "A K A BRANDS HLDG CORP" is the issuer of both 00152K101 and 00152K200.
+  // That shape is a reverse split, where the ticker legitimately survives an
+  // identifier change, and it is also two share classes, where it does not. A
+  // name cannot separate them. Three of the first fifteen proposals in the
+  // real run had this shape.
+  const file = { 0: { ticker: 'AKA', title: 'A.K.A. Brands Holding Corp' } };
+  const { byName, ambiguous } = indexTickerFile(file, normalise);
+  const args = {
+    securities: new Map([
+      ['00152K101', { issuer_name: 'A K A BRANDS HLDG CORP', security_class: 'equity' }],
+      ['00152K200', { issuer_name: 'A K A BRANDS HLDG CORP', security_class: 'equity' }],
+    ]),
+    byName,
+    ambiguousNames: ambiguous,
+    observedFrom: new Map([['00152K101', '2023-09-30'], ['00152K200', '2023-12-31']]),
+    takenTickers: new Map(),
+    normalise,
+  };
+
+  // No chain link: neither is trusted, and the first is withdrawn too.
+  const unvouched = proposeFromTickerFile(['00152K101', '00152K200'], { ...args, keyByCusip: new Map() });
+  assert.equal(unvouched.proposals.length, 0);
+  assert.equal(unvouched.collisions.length, 1);
+  assert.deepEqual(unvouched.collisions[0].cusips, ['00152K101', '00152K200']);
+
+  // Chain says one security: both may carry it, as a reverse split does.
+  const vouched = proposeFromTickerFile(['00152K101', '00152K200'], {
+    ...args,
+    keyByCusip: new Map([['00152K101', '00152K101'], ['00152K200', '00152K101']]),
+  });
+  assert.equal(vouched.proposals.length, 2);
+  assert.equal(vouched.collisions.length, 0);
+});
+
+test('an uncontested ticker is unaffected by a collision elsewhere', () => {
+  const file = { 0: { ticker: 'AKA', title: 'A.K.A. Brands Holding Corp' },
+                 1: { ticker: 'NUVL', title: 'NUVALENT INC' } };
+  const { byName, ambiguous } = indexTickerFile(file, normalise);
+  const { proposals } = proposeFromTickerFile(['00152K101', '00152K200', '670703107'], {
+    securities: new Map([
+      ['00152K101', { issuer_name: 'A K A BRANDS HLDG CORP', security_class: 'equity' }],
+      ['00152K200', { issuer_name: 'A K A BRANDS HLDG CORP', security_class: 'equity' }],
+      ['670703107', { issuer_name: 'NUVALENT INC', security_class: 'equity' }],
+    ]),
+    byName, ambiguousNames: ambiguous, takenTickers: new Map(), keyByCusip: new Map(), normalise,
+    observedFrom: new Map([['00152K101', '2023-09-30'], ['00152K200', '2023-12-31'], ['670703107', '2021-12-31']]),
+  });
+  assert.deepEqual(proposals.map((p) => p.ticker), ['NUVL']);
+});

@@ -75,13 +75,24 @@ const securityRows = await all(() => client
 const securities = new Map(securityRows.map((row) => [row.cusip, row]));
 console.log(`[tickers] SEC list rows: ${securities.size.toLocaleString()}`);
 
-const { proposals, skipped } = proposeFromTickerFile([...unmapped], {
-  securities, byName, ambiguousNames: ambiguous, observedFrom, takenTickers, normalise: normaliseIssuerName,
+// The chain table is what separates a reverse split, where one ticker
+// legitimately spans two identifiers, from two share classes, where it does
+// not. A name cannot tell those apart.
+const chainRows = await all(() => client.from('sec_13f_identity_chain').select('cusip,security_key').order('cusip'));
+const keyByCusip = new Map(chainRows.map((row) => [row.cusip, row.security_key]));
+
+const { proposals, skipped, collisions } = proposeFromTickerFile([...unmapped], {
+  securities, byName, ambiguousNames: ambiguous, observedFrom, takenTickers, keyByCusip,
+  normalise: normaliseIssuerName,
 });
 
 console.log(`\n[tickers] resolvable: ${proposals.length.toLocaleString()}`);
 console.log('[tickers] not resolved:', Object.entries(skipped)
   .filter(([, v]) => v).map(([k, v]) => `${k} ${v.toLocaleString()}`).join(', '));
+if (collisions.length) {
+  console.warn(`\n[tickers] ${collisions.length} ticker(s) claimed by identifiers no chain links; all claims dropped:`);
+  for (const c of collisions.slice(0, 10)) console.warn(`   ${c.ticker.padEnd(7)} ${c.cusips.join(' / ')}`);
+}
 for (const p of proposals.slice(0, 15)) {
   console.log(`   ${p.cusip} -> ${p.ticker.padEnd(7)} ${String(p.issuer_name).slice(0, 30).padEnd(32)} from ${p.valid_from}`);
 }

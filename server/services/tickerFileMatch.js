@@ -20,6 +20,7 @@
  *
  *   a name that maps to more than one ticker is skipped, not guessed at
  *   a ticker already held by a different security is skipped
+ *   two identifiers cannot take one ticker unless a chain says they are one
  *   matching is exact after normalisation, never by edit distance
  *
  * The last one costs coverage. The 13F list truncates issuer names at 28
@@ -59,10 +60,14 @@ export function indexTickerFile(entries, normalise) {
  * ticker cannot come to describe two different securities.
  */
 export function proposeFromTickerFile(unmapped, {
-  securities, byName, ambiguousNames, observedFrom, takenTickers, normalise,
+  securities, byName, ambiguousNames, observedFrom, takenTickers, keyByCusip, normalise,
 }) {
   const proposals = [];
-  const skipped = { notEquity: 0, noName: 0, ambiguousName: 0, tickerTaken: 0, noMatch: 0, noObservation: 0 };
+  const skipped = { notEquity: 0, noName: 0, ambiguousName: 0, tickerTaken: 0, noMatch: 0, noObservation: 0, collided: 0 };
+  const collisions = [];
+  // Claimed within this batch, so two proposals cannot take one ticker unless
+  // the chain says they are the same security.
+  const claimedBy = new Map();
 
   for (const cusip of unmapped || []) {
     const security = securities?.get?.(cusip);
@@ -88,6 +93,24 @@ export function proposeFromTickerFile(unmapped, {
     const from = observedFrom?.get?.(cusip);
     if (!from) { skipped.noObservation += 1; continue; }
 
+    // Two identifiers wanting one ticker is either a reverse split, where the
+    // ticker legitimately survives an identifier change, or two share classes,
+    // where it does not. A name cannot tell them apart - "A K A BRANDS HLDG
+    // CORP" is the issuer of both issue 10 and issue 20 - but the chain can,
+    // because it already worked out which identifiers are one security. Where
+    // it does not vouch for them, both are dropped and reported rather than one
+    // being picked.
+    const claimant = claimedBy.get(ticker);
+    if (claimant) {
+      const sameSecurity = keyByCusip?.get?.(claimant) && keyByCusip.get(claimant) === keyByCusip?.get?.(cusip);
+      if (!sameSecurity) {
+        collisions.push({ ticker, cusips: [claimant, cusip] });
+        skipped.collided += 1;
+        continue;
+      }
+    }
+    claimedBy.set(ticker, cusip);
+
     proposals.push({
       cusip,
       ticker,
@@ -103,5 +126,11 @@ export function proposeFromTickerFile(unmapped, {
     });
   }
 
-  return { proposals, skipped };
+  // A ticker dropped on collision must not survive on the earlier proposal
+  // either: if the chain does not vouch for the pair, neither claim is trusted.
+  const contested = new Set(collisions.map((c) => c.ticker));
+  const kept = proposals.filter((p) => !contested.has(p.ticker));
+  skipped.collided += proposals.length - kept.length;
+
+  return { proposals: kept, skipped, collisions };
 }
