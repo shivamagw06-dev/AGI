@@ -95,7 +95,7 @@ test('a CUSIP change is chained into one security key', () => {
     { cusip: 'G3265R107', issuer_name: 'APTIV PLC', security_class: 'equity', quarter: '2024q4' },
     { cusip: 'G3265R107', issuer_name: 'APTIV PLC', security_class: 'equity', quarter: '2026q2' },
   ];
-  const [chain] = chainIdentities(rows);
+  const [chain] = chainIdentities(rows, { throughQuarter: '2027q1' });
   assert.equal(chain.changed_identifier, true);
   assert.equal(chain.cusips.length, 2);
   // Earliest observation is the key, so history filed under the old identifier
@@ -153,11 +153,11 @@ test('identifiers that coexist in a quarter are not treated as a rename', () => 
     { cusip: 'G0593M107', issuer_name: 'ASTRAZENECA PLC', security_class: 'equity', quarter: '2026q2' },
     { cusip: '046353108', issuer_name: 'ASTRAZENECA PLC', security_class: 'equity', quarter: '2026q1' },
   ];
-  const [group] = chainIdentities(rows);
-  assert.equal(group.ambiguous, true);
-  assert.equal(group.changed_identifier, false);
-  // No shared key: a wrong merge puts one instrument's holdings under another's.
-  assert.equal(group.security_key, null);
+  const groups = chainIdentities(rows, { throughQuarter: '2027q1' });
+  // Two securities, each its own chain, rather than one merged key.
+  assert.equal(groups.length, 2);
+  assert.ok(groups.every((g) => g.changed_identifier === false));
+  assert.deepEqual(groups.map((g) => g.security_key).sort(), ['046353108', 'G0593M107']);
 });
 
 test('a rename overlaps for exactly the changeover quarter, and still chains', () => {
@@ -172,8 +172,7 @@ test('a rename overlaps for exactly the changeover quarter, and still chains', (
     { cusip: 'G3265R107', issuer_name: 'APTIV PLC', security_class: 'equity', quarter: '2024q4' },
     { cusip: 'G3265R107', issuer_name: 'APTIV PLC', security_class: 'equity', quarter: '2026q2' },
   ];
-  const [group] = chainIdentities(rows);
-  assert.equal(group.ambiguous, false);
+  const [group] = chainIdentities(rows, { throughQuarter: '2027q1' });
   assert.equal(group.changed_identifier, true);
   assert.equal(group.security_key, 'G6095L109');
 });
@@ -194,8 +193,7 @@ test('a real rename - old stops, new starts - still chains', () => {
     { cusip: 'G3265R107', issuer_name: 'APTIV PLC', security_class: 'equity', quarter: '2024q2' },
     { cusip: 'G3265R107', issuer_name: 'APTIV PLC', security_class: 'equity', quarter: '2026q2' },
   ];
-  const [group] = chainIdentities(rows);
-  assert.equal(group.ambiguous, false);
+  const [group] = chainIdentities(rows, { throughQuarter: '2027q1' });
   assert.equal(group.changed_identifier, true);
   assert.equal(group.security_key, 'G6095L109');
 });
@@ -209,7 +207,46 @@ test('a gap between ranges is not a rename', () => {
     { cusip: 'G7998G106', issuer_name: 'SEADRILL LTD', security_class: 'equity', quarter: '2020q2' },
     { cusip: 'G7997W102', issuer_name: 'SEADRILL LTD', security_class: 'equity', quarter: '2025q1' },
   ];
-  const [group] = chainIdentities(rows);
-  assert.equal(group.changed_identifier, false);
-  assert.equal(group.ambiguous, true);
+  const groups = chainIdentities(rows, { throughQuarter: '2027q1' });
+  assert.equal(groups.length, 2);
+  assert.ok(groups.every((g) => g.changed_identifier === false));
+});
+
+test('a changeover in the final loaded quarter is held, not crossed', () => {
+  // Ascendis shows 04351P101 across seven years and K08588103 in the final
+  // quarter alone. That is the shape of a rename in progress and of a newly
+  // listed second class, and nothing published yet distinguishes them. 239 of
+  // 1,660 chains ended on such a link. They are left uncrossed until another
+  // quarter exists to decide.
+  const rows = [
+    { cusip: '04351P101', issuer_name: 'ASCENDIS PHARMA A/S', security_class: 'equity', quarter: '2019q1' },
+    { cusip: '04351P101', issuer_name: 'ASCENDIS PHARMA A/S', security_class: 'equity', quarter: '2026q2' },
+    { cusip: 'K08588103', issuer_name: 'ASCENDIS PHARMA A/S', security_class: 'equity', quarter: '2026q2' },
+  ];
+  const groups = chainIdentities(rows, { throughQuarter: '2026q2' });
+  assert.equal(groups.length, 2);
+  assert.equal(groups[0].held_at_edge, true);
+  assert.equal(groups[0].changed_identifier, false);
+
+  // Given one more quarter in which the old identifier does not reappear, the
+  // same evidence now settles it.
+  const settled = chainIdentities(rows, { throughQuarter: '2026q3' });
+  assert.equal(settled.length, 1);
+  assert.equal(settled[0].changed_identifier, true);
+});
+
+test('a verified chain keeps its earlier links when a later one is held back', () => {
+  // ReTo has four proven reverse splits and an unproven fifth at the edge.
+  // Voiding the group to reject the fifth would discard the four.
+  const q = (c, ...qs) => qs.map((x) => ({ cusip: c, issuer_name: 'RETO ECO SOLUTIONS INC', security_class: 'equity', quarter: x }));
+  const rows = [
+    ...q('G75271109', '2019q1', '2023q2'),
+    ...q('G75271117', '2023q2', '2024q1'),
+    ...q('G75271125', '2024q1', '2025q1'),
+    ...q('G75271406', '2025q1', '2025q1'),
+  ];
+  const groups = chainIdentities(rows, { throughQuarter: '2025q1' });
+  assert.equal(groups[0].cusips.length, 3);
+  assert.equal(groups[0].changed_identifier, true);
+  assert.equal(groups[0].held_at_edge, true);
 });
