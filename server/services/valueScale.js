@@ -114,3 +114,48 @@ export function detectScaleMismatch(rows, appliedScale) {
   }
   return null;
 }
+
+
+/**
+ * The scale to actually use, when the filing's own numbers contradict the rule.
+ *
+ * The rule is documented and correct: values are whole dollars on filings made
+ * from 3 January 2023. Filers do not all follow it. Renaissance Technologies
+ * filed its Q3 2023 table on 14 November 2023 - ten months after the change -
+ * reporting Apple at 719,357 against 4,201,607 shares. That is $0.17 a share.
+ * Multiplied by a thousand it is $171.21, which is what Apple closed at on
+ * 29 September 2023. The table is in thousands and says so nowhere.
+ *
+ * Applying the rule to that filing stores a $60bn book as $60m, and the error
+ * is invisible downstream: every position is wrong by the same factor, so the
+ * portfolio still balances and the weights are still right.
+ *
+ * This is deliberately not "the heuristic wins". The heuristic only wins when
+ * the arithmetic leaves no room for doubt. value / shares is a share price,
+ * and a share price is not four orders of magnitude below a dollar; correcting
+ * it has to land somewhere a share can actually trade. Anything short of that
+ * stays a warning, because a heuristic quietly overruling a documented rule is
+ * how the original thousandfold confusion took hold.
+ */
+export function resolveScale({ scale, basis }, mismatch) {
+  if (!mismatch) return { scale, basis, overridden: false };
+
+  const corrected = mismatch.median * mismatch.suspected / mismatch.applied;
+  // A plausible share price. Wide on purpose - Berkshire's A shares trade
+  // above $700,000 and penny stocks trade below a cent - because this is a
+  // check that the correction is sane, not a view on what a stock should cost.
+  const plausible = corrected >= 0.5 && corrected <= 1_000_000;
+  // The reading being replaced has to be clearly untenable, not merely worse.
+  const untenable = mismatch.applied === 1
+    ? mismatch.median < 0.5
+    : mismatch.median > 500_000;
+
+  if (!plausible || !untenable) return { scale, basis, overridden: false };
+
+  return {
+    scale: mismatch.suspected,
+    basis: `filing's own figures (implied price $${mismatch.median.toPrecision(3)} at scale ${mismatch.applied},`
+      + ` $${corrected.toPrecision(4)} at scale ${mismatch.suspected}); the ${basis} rule says ${mismatch.applied}`,
+    overridden: true,
+  };
+}
