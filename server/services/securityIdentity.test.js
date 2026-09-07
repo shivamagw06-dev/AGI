@@ -11,7 +11,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { mappingAsOf, securityKeyAsOf, resolveAsOf, cleanIdentifier } from './securityIdentity.js';
+import { mappingAsOf, securityKeyAsOf, resolveAsOf, cleanIdentifier, attachKnownTickers } from './securityIdentity.js';
 
 // A CUSIP genuinely reassigned: one issuer until 2024, another after.
 const REASSIGNED = [
@@ -129,4 +129,39 @@ test('the old newest-wins resolution is gone from the service', () => {
     'the newest-mapping-wins loop is back, which relabels old filings with current identifiers');
   assert.match(fn, /asOf|resolveAsOf/,
     'resolution must take the filing date into account');
+});
+
+test('reingesting a filing keeps the tickers already resolved for it', () => {
+  // Ingestion replaces a filing's holdings wholesale and a 13F carries no
+  // ticker, so every reingest returned them to null. A run touching 551 filings
+  // destroyed far more than the enrichment tail could restore, and coverage
+  // decayed every time collection ran.
+  const rows = [
+    { cusip: '037833100', ticker: null, value_usd: 100 },
+    { cusip: '67066G104', ticker: null, value_usd: 200 },
+  ];
+  const mappings = new Map([
+    ['037833100', { ticker: 'AAPL' }],
+    ['67066G104', { ticker: 'NVDA' }],
+  ]);
+  assert.deepEqual(attachKnownTickers(rows, mappings).map((r) => r.ticker), ['AAPL', 'NVDA']);
+});
+
+test('an identifier with no mapping stays null rather than being guessed', () => {
+  const [row] = attachKnownTickers([{ cusip: 'UNKNOWN99', ticker: null }], new Map());
+  assert.equal(row.ticker, null);
+});
+
+test('a ticker already on the row is not overwritten', () => {
+  const [row] = attachKnownTickers(
+    [{ cusip: '037833100', ticker: 'AAPL' }],
+    new Map([['037833100', { ticker: 'WRONG' }]]),
+  );
+  assert.equal(row.ticker, 'AAPL');
+});
+
+test('rows are not mutated in place', () => {
+  const original = { cusip: '037833100', ticker: null };
+  attachKnownTickers([original], new Map([['037833100', { ticker: 'AAPL' }]]));
+  assert.equal(original.ticker, null);
 });

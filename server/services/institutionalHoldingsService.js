@@ -6,7 +6,7 @@ import { valueScaleFor, detectScaleMismatch } from './valueScale.js';
 const SEC_ROOT = 'https://www.sec.gov';
 const SEC_DATA = 'https://data.sec.gov';
 import { scheduleSecRequest, recordThrottled, recordSuccess, parseRetryAfter, SecCircuitOpenError } from './secRateLimiter.js';
-import { resolveAsOf } from './securityIdentity.js';
+import { resolveAsOf, attachKnownTickers } from './securityIdentity.js';
 import { coverage, mappingFromLookup, rankUnmapped } from './identifierBackfill.js';
 import { groupByIdType } from './securityIdentifierType.js';
 import { partitionByClass, expandThroughChains, readClasses, readChains } from './securityIdentityGate.js';
@@ -534,6 +534,32 @@ async function mappingsFor(client, cusips, asOf) {
   return resolveAsOf(rows, cusips, asOf);
 }
 
+/**
+ * Attach the tickers already known for these identifiers.
+ *
+ * Ingestion replaces a filing's holdings wholesale - delete by filing_id, then
+ * insert what the XML said. A 13F carries no ticker, so every row came back
+ * null and every ticker resolved for that filing was destroyed. The enrichment
+ * tail that follows a refresh handles about a thousand securities, nowhere near
+ * enough to restore a run that touched 551 filings, so coverage decayed every
+ * time collection ran. Numbers were being measured against something quietly
+ * resetting them.
+ *
+ * Resolved as at the filing's report date rather than as at today, for the same
+ * reason resolution everywhere else is: a mapping that began in 2023 says
+ * nothing about a 2019 filing, and stamping it on one relabels holdings the
+ * mapping does not cover.
+ *
+ * Nothing is invented here. Only identifiers that already have a mapping get a
+ * ticker; the rest stay null and are picked up by enrichment as before.
+ */
+async function withKnownTickers(client, rows, asOf) {
+  const cusips = [...new Set((rows || []).map((row) => row?.cusip).filter(Boolean))];
+  if (!cusips.length || !asOf) return rows || [];
+  return attachKnownTickers(rows, await mappingsFor(client, cusips, asOf));
+}
+
+
 function preferredFigiCandidate(result) {
   const candidates = (result?.data || []).filter((row) => row?.ticker && row?.marketSector === 'Equity');
   return candidates.sort((a, b) => {
@@ -1001,7 +1027,8 @@ async function ingestFiling(client, manager, source) {
   if (filingError) throw filingError;
   await client.from('institutional_filings').update({ is_active: false }).eq('manager_id', manager.id).eq('report_date', source.report_date).neq('id', filing.id);
   await client.from('institutional_holdings').delete().eq('filing_id', filing.id);
-  await insertChunks(client, 'institutional_holdings', rows.map((row) => ({ ...row, filing_id: filing.id })));
+  await insertChunks(client, 'institutional_holdings',
+    await withKnownTickers(client, rows.map((row) => ({ ...row, filing_id: filing.id })), filing.report_date));
   const { data: priorFiling } = await client.from('institutional_filings').select('*').eq('manager_id', manager.id).eq('is_active', true).lt('report_date', source.report_date).order('report_date', { ascending: false }).order('filed_at', { ascending: false }).limit(1).maybeSingle();
   const previousRows = priorFiling ? await collect(() => client.from('institutional_holdings').select('*').eq('filing_id', priorFiling.id)) : [];
   const changes = buildChanges(rows, previousRows, filing);
@@ -1271,7 +1298,8 @@ async function publishPreparedImport(client, prepared, actor) {
   if (error) throw error;
   await client.from('institutional_filings').update({ is_active: false }).eq('manager_id', manager.id).eq('report_date', source.report_date).neq('id', filing.id);
   await client.from('institutional_holdings').delete().eq('filing_id', filing.id);
-  await insertChunks(client, 'institutional_holdings', rows.map((row) => importedHolding(row, filing, manager)));
+  await insertChunks(client, 'institutional_holdings',
+    await withKnownTickers(client, rows.map((row) => importedHolding(row, filing, manager)), filing.report_date));
   const previous = await previousImportPortfolio(client, manager, source.report_date, { filings: { recent: {} } });
   await client.from('institutional_holding_changes').delete().eq('filing_id', filing.id);
   const changes = buildChanges(rows, previous.rows || [], filing);
