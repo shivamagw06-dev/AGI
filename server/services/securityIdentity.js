@@ -107,3 +107,26 @@ export function resolveAsOf(historyRows, cusips, asOf) {
   }
   return out;
 }
+
+/**
+ * Attach already-known tickers to rows about to be written.
+ *
+ * Ingestion replaces a filing's holdings wholesale, and a 13F carries no
+ * ticker, so every reingest returned its rows to null and destroyed whatever
+ * had been resolved for that filing. The enrichment tail that follows a refresh
+ * covers about a thousand securities - nowhere near a run that touched 551
+ * filings - so coverage decayed each time collection ran, and every number we
+ * measured was being quietly reset by something else.
+ *
+ * Nothing is invented. A row already carrying a ticker keeps it, an identifier
+ * with no mapping stays null and is picked up by enrichment as before, and the
+ * mapping used must be the one in force on the filing's own report date - a
+ * mapping that began in 2023 says nothing about a 2019 filing.
+ */
+export function attachKnownTickers(rows, mappings) {
+  return (rows || []).map((row) => {
+    if (!row || row.ticker) return row;
+    const ticker = mappings?.get?.(row.cusip)?.ticker;
+    return ticker ? { ...row, ticker } : row;
+  });
+}
