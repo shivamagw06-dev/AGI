@@ -11,7 +11,7 @@
  * a resolved ticker to holdings is a separate step, so a bad load can be
  * inspected and corrected before it reaches anything a client sees.
  */
-import { createClient } from '@supabase/supabase-js';
+import { createSupabaseAdmin, getSupabaseAdminCredentials } from '../lib/supabaseAdmin.js';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -100,6 +100,27 @@ async function upsertChunks(client, table, rows, conflict, size = 500) {
 const quarters = quartersBetween(flag('from', '2019q1'), flag('to', '2026q2'));
 console.log(`[identity] mode=${APPLY ? 'APPLY' : 'DRY RUN'}  ${quarters.length} quarter(s)`);
 
+// Built before the first download rather than after the last parse.
+//
+// supabase-js constructs a realtime client whichever way you reach it, and that
+// wants a WebSocket constructor Node 20 does not have; the shared factory
+// passes `ws` as the transport. Building it at the point of writing meant the
+// failure landed after thirty PDFs had been fetched and parsed - two minutes of
+// work discarded to learn something knowable in the first second.
+let client = null;
+if (APPLY) {
+  if (!getSupabaseAdminCredentials()) {
+    console.error('[identity] SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required to apply.');
+    process.exit(78);
+  }
+  client = createSupabaseAdmin();
+  if (!client) {
+    console.error('[identity] could not build a Supabase admin client.');
+    process.exit(78);
+  }
+  console.log('[identity] database client ready.');
+}
+
 const dir = fs.mkdtempSync(path.join(os.tmpdir(), '13f-identity-'));
 const all = [];
 const loads = [];
@@ -147,14 +168,6 @@ if (!APPLY) {
   console.log('\n[identity] dry run. Nothing written. Re-run with --apply.');
   process.exit(0);
 }
-
-const url = process.env.SUPABASE_URL;
-const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-if (!url || !key) {
-  console.error('[identity] SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required to apply.');
-  process.exit(78);
-}
-const client = createClient(url, key, { auth: { persistSession: false } });
 
 console.log('\n[identity] writing...');
 await upsertChunks(client, 'sec_13f_securities', securities.map((s) => ({ ...s, updated_at: new Date().toISOString() })), 'cusip');
