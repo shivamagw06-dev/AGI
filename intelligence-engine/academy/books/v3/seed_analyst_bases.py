@@ -1,0 +1,166 @@
+"""Analyst knowledge bases — what each analyst retrieves from Academy V3."""
+
+from __future__ import annotations
+
+from typing import Any
+
+
+def seed_analyst_bases() -> dict[str, dict[str, Any]]:
+    return {
+        "business": {
+            "receives": [
+                "Strategy",
+                "Moats",
+                "Management",
+                "Business Models",
+                "Capital Cycle",
+                "Customer Economics",
+            ],
+            "concept_ids": [
+                "concept_moat",
+                "concept_pricing_power",
+                "concept_capital_allocation",
+            ],
+            "framework_ids": ["fw_moat", "fw_porter", "fw_pricing_power", "fw_capital_cycle"],
+            "mental_model_ids": [
+                "mm_network_effects",
+                "mm_switching_costs",
+                "mm_pricing_power",
+                "mm_capital_cycle",
+                "mm_creative_destruction",
+                "mm_platform_economics",
+            ],
+            "checklist_ids": ["cl_business", "cl_management"],
+            "pattern_ids": [
+                "pat_compounder",
+                "pat_platform",
+                "pat_network_effect",
+                "pat_premium_consumer",
+                "pat_financial_franchise",
+            ],
+            "decision_rule_ids": ["dr_business_quality_up", "dr_capital_cycle_caution"],
+            "reasoning_chain_ids": ["rc_brand_to_value", "rc_capital_cycle"],
+        },
+        "financial": {
+            "receives": [
+                "Accounting",
+                "Cash Flow",
+                "Returns",
+                "Capital Allocation",
+                "Working Capital",
+            ],
+            "concept_ids": [
+                "concept_roic",
+                "concept_earnings_quality",
+                "concept_capital_allocation",
+                "concept_cost_of_capital",
+            ],
+            "framework_ids": [
+                "fw_roic_quality",
+                "fw_earnings_quality",
+                "fw_capital_allocation",
+            ],
+            "mental_model_ids": ["mm_compounding", "mm_mean_reversion"],
+            "checklist_ids": ["cl_financial"],
+            "pattern_ids": ["pat_compounder", "pat_cyclical", "pat_commodity", "pat_turnaround"],
+            "decision_rule_ids": ["dr_roic_quality_up"],
+            "formula_ids": [
+                "formula_roic",
+                "formula_wacc",
+                "formula_cash_conversion",
+                "formula_economic_profit",
+            ],
+            "reasoning_chain_ids": ["rc_earnings_quality"],
+        },
+        "valuation": {
+            "receives": [
+                "DCF",
+                "Reverse DCF",
+                "Multiples",
+                "Intrinsic Value",
+                "Margin of Safety",
+            ],
+            "concept_ids": [
+                "concept_intrinsic_value",
+                "concept_margin_of_safety",
+                "concept_roic",
+                "concept_cost_of_capital",
+            ],
+            "framework_ids": [
+                "fw_margin_of_safety",
+                "fw_reverse_dcf",
+                "fw_relative_valuation",
+                "fw_roic_quality",
+            ],
+            "mental_model_ids": ["mm_margin_of_safety", "mm_optionality", "mm_mean_reversion"],
+            "checklist_ids": ["cl_valuation"],
+            "pattern_ids": ["pat_value_trap", "pat_compounder", "pat_cyclical"],
+            "decision_rule_ids": ["dr_mos_required", "dr_value_trap", "dr_roic_quality_up"],
+            "formula_ids": ["formula_dcf", "formula_roic", "formula_wacc"],
+            "reasoning_chain_ids": ["rc_brand_to_value", "rc_earnings_quality"],
+            "institutional_object_ids": ["iko_roic", "iko_margin_of_safety"],
+        },
+        "risk": {
+            "receives": ["Tail Risk", "Stress Testing", "Failure Cases"],
+            "concept_ids": ["concept_margin_of_safety", "concept_roic"],
+            "framework_ids": ["fw_margin_of_safety", "fw_capital_cycle"],
+            "mental_model_ids": ["mm_margin_of_safety", "mm_reflexivity", "mm_mean_reversion"],
+            "checklist_ids": ["cl_risk"],
+            "pattern_ids": ["pat_value_trap", "pat_turnaround", "pat_cyclical"],
+            "decision_rule_ids": ["dr_mos_required", "dr_value_trap"],
+            "failure_ids": [
+                "fail_peak_roic_extrapolation",
+                "fail_value_trap",
+                "fail_leverage_cycle",
+                "fail_narrative_moat",
+            ],
+        },
+        "management": {
+            "receives": ["Governance", "Capital Allocation", "Letters"],
+            "concept_ids": ["concept_capital_allocation", "concept_moat"],
+            "framework_ids": ["fw_capital_allocation", "fw_moat"],
+            "checklist_ids": ["cl_management"],
+            "pattern_ids": ["pat_capital_allocator"],
+            "decision_rule_ids": [],
+            "failure_ids": ["fail_empire_building"],
+        },
+        "ownership": {
+            "receives": ["Ownership Patterns", "Institutional Behaviour"],
+            "concept_ids": ["concept_capital_allocation"],
+            "framework_ids": ["fw_capital_allocation"],
+            "checklist_ids": ["cl_portfolio"],
+            "pattern_ids": ["pat_capital_allocator"],
+            "mental_model_ids": ["mm_reflexivity"],
+        },
+        "macro": {
+            "receives": ["Economics", "Rates", "Inflation", "Transmission"],
+            "concept_ids": ["concept_cost_of_capital"],
+            "framework_ids": ["fw_capital_cycle", "fw_porter"],
+            "mental_model_ids": [
+                "mm_capital_cycle",
+                "mm_mean_reversion",
+                "mm_reflexivity",
+                "mm_creative_destruction",
+            ],
+            "checklist_ids": ["cl_macro"],
+            "pattern_ids": ["pat_cyclical", "pat_commodity"],
+            "decision_rule_ids": ["dr_capital_cycle_caution"],
+            "chapter_ids": ["ch_mankiw_markets"],
+        },
+        "sector": {
+            "receives": ["Sector KPIs", "Sector frameworks", "Sector risks"],
+            "sector_ids": [
+                "sector_banking",
+                "sector_insurance",
+                "sector_it_services",
+                "sector_fmcg",
+                "sector_industrials",
+                "sector_utilities",
+                "sector_consumer_internet",
+                "sector_energy",
+                "sector_healthcare",
+                "sector_real_estate",
+            ],
+            "framework_ids": ["fw_porter", "fw_capital_cycle", "fw_roic_quality"],
+        },
+    }

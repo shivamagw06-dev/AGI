@@ -1,0 +1,1 @@
+import{j as a}from"./index-58535918.js";function d({className:s="",size:e="sm"}){const i=e==="md"?"live-badge--md":e==="lg"?"live-badge--lg":"live-badge--sm";return a.jsxs("span",{className:`live-badge ${i} ${s}`.trim(),"aria-label":"Live coverage",children:[a.jsx("span",{className:"live-badge-dot","aria-hidden":"true"}),"LIVE"]})}export{d as L};

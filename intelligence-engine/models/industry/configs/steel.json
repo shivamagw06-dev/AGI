@@ -1,0 +1,19 @@
+{
+  "industry_id": "steel",
+  "name": "Steel",
+  "demand_drivers": ["construction", "auto", "capex_cycle", "infrastructure"],
+  "supply_drivers": ["capacity", "iron_ore", "coking_coal"],
+  "capacity": "mtpa_utilisation",
+  "pricing": "commodity_spreads",
+  "margins": {"ebitda": "highly_cyclical"},
+  "competition": "domestic_and_imports",
+  "regulation": ["trade_duties", "environment"],
+  "capital_intensity": "very_high",
+  "typical_risks": ["commodity", "china_exports", "cycle"],
+  "important_kpis": ["realisations", "spreads", "utilisation", "net_debt_ebitda"],
+  "preferred_valuation_models": ["relative_ev_ebitda", "replacement_cost", "dcf_fcff"],
+  "historical_cycles": ["super_cycle", "china_glut"],
+  "industry_structure": "cyclical_commodity",
+  "business_characteristics": ["spread_business", "operating_leverage"],
+  "capital_cycle": "capacity_additions_lag_demand"
+}

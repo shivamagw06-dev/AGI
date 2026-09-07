@@ -1,0 +1,65 @@
+# Render blueprint - 13F collection only.
+#
+# This file deliberately defines ONE service. The API and the intelligence
+# engine were created in the Render dashboard and are managed there; listing
+# them here would mean two sources of truth for services that are already
+# running, and a blueprint sync could then reconcile production against
+# whatever this file happened to say.
+#
+# Why a Render cron job rather than a GitHub Actions schedule: the collector
+# writes to the database with the service-role key. Running it in Actions would
+# mean copying a database-admin credential into a second system that does not
+# otherwise hold one. Here it runs inside the environment that already has the
+# credential, and the key never leaves it.
+#
+# To connect: Render Dashboard -> New -> Blueprint -> select this repository.
+# Attach the same environment group the API service uses, so the cron job reads
+# one copy of the credentials rather than its own duplicate.
+
+services:
+  - type: cron
+    name: institutional-13f-collection
+    runtime: node
+    plan: starter
+    region: oregon
+
+    # 06:20 UTC daily. 13F is a quarterly disclosure with a 45-day deadline, so
+    # filings arrive in waves around 15 Feb, May, Aug and Nov and nothing moves
+    # between them. A daily pass catches a wave within a day, which is well
+    # inside the delay already inherent in the data. It sits before the Indian
+    # market opens and clear of the 12:45 UTC live-data sweep, so a long crawl
+    # contends with neither.
+    schedule: "20 6 * * *"
+
+    buildCommand: npm ci --no-audit --no-fund
+    # 50 minutes, not 20. The first real run made 1,339 SEC requests against
+    # 51 managers and was cut off at the ceiling with roughly half the roster
+    # left. Pacing alone accounts for two of those minutes; parsing and writing
+    # thousands of holdings rows accounts for the rest.
+    startCommand: >-
+      node server/scripts/collectInstitutionalFilings.mjs
+      --trigger schedule
+      --schedule "20 6 * * *"
+      --max-minutes 50
+
+    envVars:
+      # Attach the API service's environment group in the dashboard so these
+      # resolve from one place. Listed with sync:false so the blueprint never
+      # carries secret values in git.
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: SEC_USER_AGENT
+        sync: false
+      # Half of EDGAR's published ten-per-second ceiling. The limit is applied
+      # per source address, and this job shares one with the rest of the
+      # account's egress.
+      - key: SEC_MAX_REQUESTS_PER_SECOND
+        value: "5"
+      # This process is the deliberate collector. The flag stays off so that
+      # importing the service never starts a second crawl inside it.
+      - key: INSTITUTIONAL_AUTO_REFRESH
+        value: "false"
+      - key: COLLECTION_SCHEDULE
+        value: "20 6 * * *"

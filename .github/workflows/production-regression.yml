@@ -1,0 +1,86 @@
+name: Production Release Gate (AGI Core v1.0)
+
+# Eighteen full acceptance suites. Intended as the permanent merge policy, and
+# not yet fit for it: 0 passes in the last 50 runs, at 60-90 minutes each.
+# See docs/AGI_CORE_V1_0.md and docs/CI_ACCEPTANCE_DATA.md
+#
+# Nightly rather than per-push while that is true. On every pull request and
+# every merge it added an hour of CI and a red X that nobody could act on -
+# it is not a required check, so it blocked nothing and only taught people to
+# ignore it. A signal that is always red carries no information, and one that
+# costs an hour to produce is worse than none.
+#
+# Nothing about what it measures has changed. Same suites, same thresholds,
+# same 90-minute ceiling; only when it runs. Put `pull_request` back the day
+# it can pass, and make it required at that point - which was always the plan,
+# and is the opposite of lowering the bar to get there.
+
+on:
+  schedule:
+    # 02:00 UTC daily, well clear of the 12:30 valuation sweep.
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: production-release-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  production-release-gate:
+    name: AGI Core v1.0 Production Regression
+    runs-on: ubuntu-latest
+    # The permanent gate runs 18 full acceptance suites. Recent measured runs
+    # reached the old 45-minute ceiling before completing the suite list; keep
+    # every suite mandatory and allow the full regression to finish.
+    timeout-minutes: 90
+    env:
+      ASK_TEST_MODE: inprocess
+      ASK_TEST_CASE_COOLDOWN_SEC: '0'
+      ASK_SLIM: 'true'
+      FAA_BACKGROUND_COLLECTOR: 'false'
+      CONTINUOUS_GATHER_LEARN: 'false'
+      KIP_DATA_DIR: ${{ github.workspace }}/intelligence-engine/data
+      VALUATION_CONSENSUS_ROOT: ${{ github.workspace }}/intelligence-engine/data/valuation_consensus
+      IKT_STORE_ROOT: ${{ github.workspace }}/intelligence-engine/data/institutional_knowledge_tables
+      KF_STORE_ROOT: ${{ github.workspace }}/intelligence-engine/data/knowledge_factory
+      IERE_STORE_ROOT: ${{ github.workspace }}/intelligence-engine/data/evidence_retrieval
+      ACCEPTANCE_FIXTURES_ROOT: ${{ github.workspace }}/intelligence-engine/acceptance_fixtures
+      ASK_TEST_ARTIFACTS: ${{ github.workspace }}/artifacts
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        working-directory: intelligence-engine
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          pip install pytest pydantic || true
+
+      - name: Prepare artifacts directory
+        run: mkdir -p "$GITHUB_WORKSPACE/artifacts"
+
+      - name: Bootstrap Acceptance Data
+        run: python scripts/ci/bootstrap_acceptance_data.py
+
+      - name: Acceptance Data Health Check
+        run: python scripts/ci/check_acceptance_data.py
+
+      - name: Run Production Release Gate
+        working-directory: intelligence-engine
+        env:
+          PYTHONPATH: .
+          SKIP_ACCEPTANCE_BOOTSTRAP: '1'
+        run: python -m ask_product_test.run_production_regression_v1
+
+      - name: Upload gate artifacts
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: production-regression-artifacts
+          path: artifacts/
+          if-no-files-found: warn

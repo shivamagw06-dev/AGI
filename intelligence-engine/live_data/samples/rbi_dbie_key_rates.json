@@ -1,0 +1,12 @@
+{
+  "effective_date": "2024-07-26",
+  "series": [
+    {"metric": "repo_rate", "value": 6.5, "unit": "percent", "as_of": "2024-07-26"},
+    {"metric": "reverse_repo_rate", "value": 3.35, "unit": "percent", "as_of": "2024-07-26"},
+    {"metric": "crr", "value": 4.5, "unit": "percent", "as_of": "2024-07-26"},
+    {"metric": "slr", "value": 18.0, "unit": "percent", "as_of": "2024-07-26"},
+    {"metric": "bank_credit_growth_yoy", "value": 15.2, "unit": "percent", "as_of": "2024-07-19"},
+    {"metric": "aggregate_deposits_growth_yoy", "value": 11.1, "unit": "percent", "as_of": "2024-07-19"},
+    {"metric": "liquidity_stance", "value": null, "unit": "qualitative", "as_of": "2024-07-26", "note": "UNKNOWN if not published"}
+  ]
+}

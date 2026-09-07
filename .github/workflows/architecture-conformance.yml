@@ -1,0 +1,40 @@
+name: Architecture Conformance (RC-01)
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - 'cursor/**'
+
+jobs:
+  rc01:
+    name: RC-01 AGIB v1.0 Conformance
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: intelligence-engine
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
+      - name: Install test dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest pydantic || true
+
+      - name: Run architecture conformance gate
+        env:
+          AGI_RC_01_ENABLED: 'true'
+          AGI_RC_01_FAIL_ON_VIOLATION: 'true'
+          PYTHONPATH: .
+        run: python -m institutional_architecture --force
+
+      - name: Architectural unit tests
+        env:
+          PYTHONPATH: .
+        run: python -m pytest tests/test_rc_01_architecture_conformance.py -q

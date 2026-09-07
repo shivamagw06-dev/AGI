@@ -1,0 +1,21 @@
+{
+  "as_of": "2024-06-15",
+  "features": {
+    "pmi_us": 54.0,
+    "pmi_in": 56.0,
+    "growth_impulse": 0.9,
+    "infl_momentum_us": -0.6,
+    "liq_trend": 0.4,
+    "vix_pctile_5y": 0.18,
+    "vix_level": 13.0,
+    "risk_appetite": 1.1,
+    "stress_index": 0.22,
+    "yc_slope_us": 0.2,
+    "usd_mom_63d": -0.03,
+    "oil_mom_63d": 0.05,
+    "hy_oas": -0.4,
+    "credit_stress": -0.5,
+    "policy_velocity_us": 0.0,
+    "earn_density": 0.5
+  }
+}

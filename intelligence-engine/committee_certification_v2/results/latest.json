@@ -1,0 +1,1540 @@
+{
+  "found": true,
+  "programme": "AGIB_INSTITUTIONAL_COMMITTEE_CERTIFICATION",
+  "version": "committee-certification-ic10-v2.0.0",
+  "generated_at": "2026-07-29T17:35:35.232815+00:00",
+  "universe": [
+    "HDFCBANK",
+    "RELIANCE",
+    "TCS",
+    "ETERNAL",
+    "TATAMOTORS",
+    "SUNPHARMA",
+    "NTPC",
+    "HAL",
+    "ASIANPAINT",
+    "ULTRACEMCO"
+  ],
+  "companies": [
+    {
+      "display": "HDFCBANK",
+      "resolve": "HDFCBANK",
+      "sector_key": "banks",
+      "tests": {
+        "evidence_completeness": {
+          "test": "evidence_completeness",
+          "pass": true,
+          "score_pct": 100.0,
+          "hits": 8,
+          "n": 8,
+          "flags": {
+            "live_market_context": true,
+            "financial_statements": true,
+            "ownership": true,
+            "valuation": true,
+            "peer_universe": true,
+            "historical_valuation": true,
+            "ttm": true,
+            "cid_attached": true
+          }
+        },
+        "financial_intelligence": {
+          "test": "financial_intelligence",
+          "pass": true,
+          "score_pct": 100.0,
+          "coverage_pct": 100.0,
+          "checks": {
+            "income": true,
+            "balance_sheet": true,
+            "cash_flow": true,
+            "ttm": true,
+            "growth": true,
+            "margins": true,
+            "returns": true,
+            "cash_conversion": true
+          }
+        },
+        "ownership_intelligence": {
+          "test": "ownership_intelligence",
+          "pass": true,
+          "score_pct": 100.0,
+          "fields": {
+            "promoter": 0.0,
+            "fii": 41.83,
+            "dii": 41.92,
+            "mutual_funds": 30.62,
+            "insurance": 7.37,
+            "pledge": 0.0,
+            "qoq": true
+          },
+          "present": {
+            "promoter": true,
+            "fii": true,
+            "dii": true,
+            "mutual_funds": true,
+            "insurance": true,
+            "pledge": true,
+            "qoq": true
+          },
+          "ownership_missing": false
+        },
+        "valuation_intelligence": {
+          "test": "valuation_intelligence",
+          "pass": true,
+          "score_pct": 100.0,
+          "checks": {
+            "peers": true,
+            "pe": true,
+            "pb": true,
+            "ev_ebitda": true,
+            "relative_pe": true,
+            "historical": true,
+            "premium_reason": true,
+            "peg_or_growth": true,
+            "no_placeholder": true
+          },
+          "stance": "historically elevated",
+          "primary_peers": [
+            "ICICIBANK",
+            "AXISBANK",
+            "KOTAKBANK",
+            "INDUSINDBK"
+          ]
+        },
+        "sector_differentiation": {
+          "test": "sector_differentiation",
+          "pass": true,
+          "score_pct": 100.0,
+          "sector_key": "banks",
+          "vocab_hits": [
+            "casa",
+            "nim",
+            "gnpa",
+            "nnpa",
+            "pcr",
+            "cet1",
+            "deposit",
+            "roe"
+          ],
+          "specific_reasoning": true
+        },
+        "decision_quality": {
+          "test": "decision_quality",
+          "pass": true,
+          "score_pct": 87.5,
+          "checks": {
+            "buy_today_addressed": true,
+            "thesis": true,
+            "risks": true,
+            "catalysts": true,
+            "gate_explained": true,
+            "missing_evidence": false,
+            "change_drivers": true,
+            "internally_consistent": true
+          },
+          "gate_band": "Recommendation Withheld"
+        },
+        "narrative_quality": {
+          "test": "narrative_quality",
+          "pass": true,
+          "score_pct": 100.0,
+          "checks": {
+            "why_company": true,
+            "why_now_or_not": true,
+            "relative_to_whom": true,
+            "evidence_backed": true,
+            "not_boilerplate": true
+          }
+        }
+      },
+      "verdict": "Committee Ready",
+      "fingerprint": "ca452d6bdcfea706",
+      "latency_ms": 19107,
+      "errors": []
+    },
+    {
+      "display": "RELIANCE",
+      "resolve": "RELIANCE",
+      "sector_key": "energy_conglomerate",
+      "tests": {
+        "evidence_completeness": {
+          "test": "evidence_completeness",
+          "pass": true,
+          "score_pct": 100.0,
+          "hits": 8,
+          "n": 8,
+          "flags": {
+            "live_market_context": true,
+            "financial_statements": true,
+            "ownership": true,
+            "valuation": true,
+            "peer_universe": true,
+            "historical_valuation": true,
+            "ttm": true,
+            "cid_attached": true
+          }
+        },
+        "financial_intelligence": {
+          "test": "financial_intelligence",
+          "pass": true,
+          "score_pct": 100.0,
+          "coverage_pct": 100.0,
+          "checks": {
+            "income": true,
+            "balance_sheet": true,
+            "cash_flow": true,
+            "ttm": true,
+            "growth": true,
+            "margins": true,
+            "returns": true,
+            "cash_conversion": true
+          }
+        },
+        "ownership_intelligence": {
+          "test": "ownership_intelligence",
+          "pass": true,
+          "score_pct": 100.0,
+          "fields": {
+            "promoter": 50.48,
+            "fii": 17.2,
+            "dii": 21.19,
+            "mutual_funds": 10.11,
+            "insurance": 9.2,
+            "pledge": 0.0,
+            "qoq": true
+          },
+          "present": {
+            "promoter": true,
+            "fii": true,
+            "dii": true,
+            "mutual_funds": true,
+            "insurance": true,
+            "pledge": true,
+            "qoq": true
+          },
+          "ownership_missing": false
+        },
+        "valuation_intelligence": {
+          "test": "valuation_intelligence",
+          "pass": true,
+          "score_pct": 100.0,
+          "checks": {
+            "peers": true,
+            "pe": true,
+            "pb": true,
+            "ev_ebitda": true,
+            "relative_pe": true,
+            "historical": true,
+            "premium_reason": true,
+            "peg_or_growth": true,
+            "no_placeholder": true
+          },
+          "stance": "historically elevated",
+          "primary_peers": [
+            "ONGC",
+            "IOC",
+            "BPCL",
+            "GAIL"
+          ]
+        },
+        "sector_differentiation": {
+          "test": "sector_differentiation",
+          "pass": true,
+          "score_pct": 100.0,
+          "sector_key": "energy_conglomerate",
+          "vocab_hits": [
+            "refining",
+            "petchem",
+            "retail",
+            "jio",
+            "upstream",
+            "segment"
+          ],
+          "specific_reasoning": true
+        },
+        "decision_quality": {
+          "test": "decision_quality",
+          "pass": true,
+          "score_pct": 87.5,
+          "checks": {
+            "buy_today_addressed": true,
+            "thesis": true,
+            "risks": true,
+            "catalysts": true,
+            "gate_explained": true,
+            "missing_evidence": false,
+            "change_drivers": true,
+            "internally_consistent": true
+          },
+          "gate_band": "Eligible"
+        },
+        "narrative_quality": {
+          "test": "narrative_quality",
+          "pass": true,
+          "score_pct": 100.0,
+          "checks": {
+            "why_company": true,
+            "why_now_or_not": true,
+            "relative_to_whom": true,
+            "evidence_backed": true,
+            "not_boilerplate": true
+          }
+        }
+      },
+      "verdict": "Committee Ready",
+      "fingerprint": "c0dddc957838179a",
+      "latency_ms": 24276,
+      "errors": []
+    },
+    {
+      "display": "TCS",
+      "resolve": "TCS",
+      "sector_key": "it_services",
+      "tests": {
+        "evidence_completeness": {
+          "test": "evidence_completeness",
+          "pass": true,
+          "score_pct": 100.0,
+          "hits": 8,
+          "n": 8,
+          "flags": {
+            "live_market_context": true,
+            "financial_statements": true,
+            "ownership": true,
+            "valuation": true,
+            "peer_universe": true,
+            "historical_valuation": true,
+            "ttm": true,
+            "cid_attached": true
+          }
+        },
+        "financial_intelligence": {
+          "test": "financial_intelligence",
+          "pass": true,
+          "score_pct": 100.0,
+          "coverage_pct": 100.0,
+          "checks": {
+            "income": true,
+            "balance_sheet": true,
+            "cash_flow": true,
+            "ttm": true,
+            "growth": true,
+            "margins": true,
+            "returns": true,
+            "cash_conversion": true
+          }
+        },
+        "ownership_intelligence": {
+          "test": "ownership_intelligence",
+          "pass": true,
+          "score_pct": 100.0,
+          "fields": {
+            "promoter": 71.77,
+            "fii": 9.06,
+            "dii": 13.47,
+            "mutual_funds": 5.68,
+            "insurance": 6.71,
+            "pledge": 0.0,
+            "qoq": true
+          },
+          "present": {
+            "promoter": true,
+            "fii": true,
+            "dii": true,
+            "mutual_funds": true,
+            "insurance": true,
+            "pledge": true,
+            "qoq": true
+          },
+          "ownership_missing": false
+        },
+        "valuation_intelligence": {
+          "test": "valuation_intelligence",
+          "pass": true,
+          "score_pct": 100.0,
+          "checks": {
+            "peers": true,
+            "pe": true,
+            "pb": true,
+            "ev_ebitda": true,
+            "relative_pe": true,
+            "historical": true,
+            "premium_reason": true,
+            "peg_or_growth": true,
+            "no_placeholder": true
+          },
+          "stance": "discount versus peers",
+          "primary_peers": [
+            "INFY",
+            "HCLTECH",
+            "WIPRO",
+            "TECHM",
+            "LTIM"
+          ]
+        },
+        "sector_differentiation": {
+          "test": "sector_differentiation",
+          "pass": true,
+          "score_pct": 100.0,
+          "sector_key": "it_services",
+          "vocab_hits": [
+            "utilisation",
+            "deal",
+            "attrition",
+            "margin",
+            "ai",
+            "pricing",
+            "pipeline",
+            "tcv"
+          ],
+          "specific_reasoning": true
+        },
+        "decision_quality": {
+          "test": "decision_quality",
+          "pass": true,
+          "score_pct": 87.5,
+          "checks": {
+            "buy_today_addressed": true,
+            "thesis": true,
+            "risks": true,
+            "catalysts": true,
+            "gate_explained": true,
+            "missing_evidence": false,
+            "change_drivers": true,
+            "internally_consistent": true
+          },
+          "gate_band": "Recommendation Withheld"
+        },
+        "narrative_quality": {
+          "test": "narrative_quality",
+          "pass": true,
+          "score_pct": 100.0,
+          "checks": {
+            "why_company": true,
+            "why_now_or_not": true,
+            "relative_to_whom": true,
+            "evidence_backed": true,
+            "not_boilerplate": true
+          }
+        }
+      },
+      "verdict": "Committee Ready",
+      "fingerprint": "bfbebae7c1bc2e47",
+      "latency_ms": 18571,
+      "errors": []
+    },
+    {
+      "display": "ETERNAL",
+      "resolve": "ETERNAL",
+      "sector_key": "consumer_internet",
+      "tests": {
+        "evidence_completeness": {
+          "test": "evidence_completeness",
+          "pass": false,
+          "score_pct": 87.5,
+          "hits": 7,
+          "n": 8,
+          "flags": {
+            "live_market_context": true,
+            "financial_statements": true,
+            "ownership": true,
+            "valuation": true,
+            "peer_universe": true,
+            "historical_valuation": false,
+            "ttm": true,
+            "cid_attached": true
+          }
+        },
+        "financial_intelligence": {
+          "test": "financial_intelligence",
+          "pass": true,
+          "score_pct": 100.0,
+          "coverage_pct": 100.0,
+          "checks": {
+            "income": true,
+            "balance_sheet": true,
+            "cash_flow": true,
+            "ttm": true,
+            "growth": true,
+            "margins": true,
+            "returns": true,
+            "cash_conversion": true
+          }
+        },
+        "ownership_intelligence": {
+          "test": "ownership_intelligence",
+          "pass": true,
+          "score_pct": 100.0,
+          "fields": {
+            "promoter": 0.0,
+            "fii": 29.08,
+            "dii": 39.32,
+            "mutual_funds": 31.68,
+            "insurance": 4.21,
+            "pledge": 0.0,
+            "qoq": true
+          },
+          "present": {
+            "promoter": true,
+            "fii": true,
+            "dii": true,
+            "mutual_funds": true,
+            "insurance": true,
+            "pledge": true,
+            "qoq": true
+          },
+          "ownership_missing": false
+        },
+        "valuation_intelligence": {
+          "test": "valuation_intelligence",
+          "pass": true,
+          "score_pct": 77.8,
+          "checks": {
+            "peers": true,
+            "pe": true,
+            "pb": true,
+            "ev_ebitda": true,
+            "relative_pe": true,
+            "historical": false,
+            "premium_reason": true,
+            "peg_or_growth": false,
+            "no_placeholder": true
+          },
+          "stance": "discount versus peers",
+          "primary_peers": [
+            "SWIGGY",
+            "NYKAA",
+            "PAYTM"
+          ]
+        },
+        "sector_differentiation": {
+          "test": "sector_differentiation",
+          "pass": true,
+          "score_pct": 98.3,
+          "sector_key": "consumer_internet",
+          "vocab_hits": [
+            "gmv",
+            "contribution",
+            "take rate",
+            "cohort",
+            "order"
+          ],
+          "specific_reasoning": true
+        },
+        "decision_quality": {
+          "test": "decision_quality",
+          "pass": true,
+          "score_pct": 87.5,
+          "checks": {
+            "buy_today_addressed": true,
+            "thesis": true,
+            "risks": true,
+            "catalysts": true,
+            "gate_explained": true,
+            "missing_evidence": false,
+            "change_drivers": true,
+            "internally_consistent": true
+          },
+          "gate_band": "Eligible"
+        },
+        "narrative_quality": {
+          "test": "narrative_quality",
+          "pass": true,
+          "score_pct": 100.0,
+          "checks": {
+            "why_company": true,
+            "why_now_or_not": true,
+            "relative_to_whom": true,
+            "evidence_backed": true,
+            "not_boilerplate": true
+          }
+        }
+      },
+      "verdict": "Committee Ready",
+      "fingerprint": "e077b33646e0d2e4",
+      "latency_ms": 15667,
+      "errors": []
+    },
+    {
+      "display": "TATAMOTORS",
+      "resolve": "TMPV",
+      "sector_key": "auto",
+      "tests": {
+        "evidence_completeness": {
+          "test": "evidence_completeness",
+          "pass": false,
+          "score_pct": 87.5,
+          "hits": 7,
+          "n": 8,
+          "flags": {
+            "live_market_context": true,
+            "financial_statements": true,
+            "ownership": true,
+            "valuation": true,
+            "peer_universe": true,
+            "historical_valuation": false,
+            "ttm": true,
+            "cid_attached": true
+          }
+        },
+        "financial_intelligence": {
+          "test": "financial_intelligence",
+          "pass": true,
+          "score_pct": 100.0,
+          "coverage_pct": 100.0,
+          "checks": {
+            "income": true,
+            "balance_sheet": true,
+            "cash_flow": true,
+            "ttm": true,
+            "growth": true,
+            "margins": true,
+            "returns": true,
+            "cash_conversion": true
+          }
+        },
+        "ownership_intelligence": {
+          "test": "ownership_intelligence",
+          "pass": true,
+          "score_pct": 100.0,
+          "fields": {
+            "promoter": 42.51,
+            "fii": 17.11,
+            "dii": 17.23,
+            "mutual_funds": 10.05,
+            "insurance": 6.47,
+            "pledge": 0.0,
+            "qoq": true
+          },
+          "present": {
+            "promoter": true,
+            "fii": true,
+            "dii": true,
+            "mutual_funds": true,
+            "insurance": true,
+            "pledge": true,
+            "qoq": true
+          },
+          "ownership_missing": false
+        },
+        "valuation_intelligence": {
+          "test": "valuation_intelligence",
+          "pass": true,
+          "score_pct": 77.8,
+          "checks": {
+            "peers": true,
+            "pe": true,
+            "pb": true,
+            "ev_ebitda": true,
+            "relative_pe": true,
+            "historical": false,
+            "premium_reason": true,
+            "peg_or_growth": false,
+            "no_placeholder": true
+          },
+          "stance": "discount versus peers",
+          "primary_peers": [
+            "M&M",
+            "MARUTI",
+            "TATAMOTORS",
+            "BAJAJ-AUTO"
+          ]
+        },
+        "sector_differentiation": {
+          "test": "sector_differentiation",
+          "pass": true,
+          "score_pct": 100.0,
+          "sector_key": "auto",
+          "vocab_hits": [
+            "volume",
+            "ev",
+            "export",
+            "pv ",
+            "mix",
+            "dealer"
+          ],
+          "specific_reasoning": true
+        },
+        "decision_quality": {
+          "test": "decision_quality",
+          "pass": true,
+          "score_pct": 87.5,
+          "checks": {
+            "buy_today_addressed": true,
+            "thesis": true,
+            "risks": true,
+            "catalysts": true,
+            "gate_explained": true,
+            "missing_evidence": false,
+            "change_drivers": true,
+            "internally_consistent": true
+          },
+          "gate_band": "Recommendation Withheld"
+        },
+        "narrative_quality": {
+          "test": "narrative_quality",
+          "pass": true,
+          "score_pct": 100.0,
+          "checks": {
+            "why_company": true,
+            "why_now_or_not": true,
+            "relative_to_whom": true,
+            "evidence_backed": true,
+            "not_boilerplate": true
+          }
+        }
+      },
+      "verdict": "Committee Ready",
+      "fingerprint": "ceb224c79a6075e6",
+      "latency_ms": 30872,
+      "errors": []
+    },
+    {
+      "display": "SUNPHARMA",
+      "resolve": "SUNPHARMA",
+      "sector_key": "pharma",
+      "tests": {
+        "evidence_completeness": {
+          "test": "evidence_completeness",
+          "pass": true,
+          "score_pct": 100.0,
+          "hits": 8,
+          "n": 8,
+          "flags": {
+            "live_market_context": true,
+            "financial_statements": true,
+            "ownership": true,
+            "valuation": true,
+            "peer_universe": true,
+            "historical_valuation": true,
+            "ttm": true,
+            "cid_attached": true
+          }
+        },
+        "financial_intelligence": {
+          "test": "financial_intelligence",
+          "pass": true,
+          "score_pct": 100.0,
+          "coverage_pct": 100.0,
+          "checks": {
+            "income": true,
+            "balance_sheet": true,
+            "cash_flow": true,
+            "ttm": true,
+            "growth": true,
+            "margins": true,
+            "returns": true,
+            "cash_conversion": true
+          }
+        },
+        "ownership_intelligence": {
+          "test": "ownership_intelligence",
+          "pass": true,
+          "score_pct": 100.0,
+          "fields": {
+            "promoter": 54.48,
+            "fii": 14.53,
+            "dii": 22.18,
+            "mutual_funds": 12.84,
+            "insurance": 7.02,
+            "pledge": 1.65,
+            "qoq": true
+          },
+          "present": {
+            "promoter": true,
+            "fii": true,
+            "dii": true,
+            "mutual_funds": true,
+            "insurance": true,
+            "pledge": true,
+            "qoq": true
+          },
+          "ownership_missing": false
+        },
+        "valuation_intelligence": {
+          "test": "valuation_intelligence",
+          "pass": true,
+          "score_pct": 100.0,
+          "checks": {
+            "peers": true,
+            "pe": true,
+            "pb": true,
+            "ev_ebitda": true,
+            "relative_pe": true,
+            "historical": true,
+            "premium_reason": true,
+            "peg_or_growth": true,
+            "no_placeholder": true
+          },
+          "stance": "historically elevated",
+          "primary_peers": [
+            "DRREDDY",
+            "CIPLA",
+            "AUROPHARMA",
+            "LUPIN"
+          ]
+        },
+        "sector_differentiation": {
+          "test": "sector_differentiation",
+          "pass": true,
+          "score_pct": 100.0,
+          "sector_key": "pharma",
+          "vocab_hits": [
+            "anda",
+            "us exposure",
+            "us ",
+            "inspection",
+            "pipeline",
+            "formulation",
+            "api",
+            "specialty"
+          ],
+          "specific_reasoning": true
+        },
+        "decision_quality": {
+          "test": "decision_quality",
+          "pass": true,
+          "score_pct": 87.5,
+          "checks": {
+            "buy_today_addressed": true,
+            "thesis": true,
+            "risks": true,
+            "catalysts": true,
+            "gate_explained": true,
+            "missing_evidence": false,
+            "change_drivers": true,
+            "internally_consistent": true
+          },
+          "gate_band": "Recommendation Withheld"
+        },
+        "narrative_quality": {
+          "test": "narrative_quality",
+          "pass": true,
+          "score_pct": 100.0,
+          "checks": {
+            "why_company": true,
+            "why_now_or_not": true,
+            "relative_to_whom": true,
+            "evidence_backed": true,
+            "not_boilerplate": true
+          }
+        }
+      },
+      "verdict": "Committee Ready",
+      "fingerprint": "e110ea75d4fb81cc",
+      "latency_ms": 17147,
+      "errors": []
+    },
+    {
+      "display": "NTPC",
+      "resolve": "NTPC",
+      "sector_key": "power",
+      "tests": {
+        "evidence_completeness": {
+          "test": "evidence_completeness",
+          "pass": true,
+          "score_pct": 100.0,
+          "hits": 8,
+          "n": 8,
+          "flags": {
+            "live_market_context": true,
+            "financial_statements": true,
+            "ownership": true,
+            "valuation": true,
+            "peer_universe": true,
+            "historical_valuation": true,
+            "ttm": true,
+            "cid_attached": true
+          }
+        },
+        "financial_intelligence": {
+          "test": "financial_intelligence",
+          "pass": true,
+          "score_pct": 100.0,
+          "coverage_pct": 100.0,
+          "checks": {
+            "income": true,
+            "balance_sheet": true,
+            "cash_flow": true,
+            "ttm": true,
+            "growth": true,
+            "margins": true,
+            "returns": true,
+            "cash_conversion": true
+          }
+        },
+        "ownership_intelligence": {
+          "test": "ownership_intelligence",
+          "pass": true,
+          "score_pct": 100.0,
+          "fields": {
+            "promoter": 51.1,
+            "fii": 16.3,
+            "dii": 29.44,
+            "mutual_funds": 17.4,
+            "insurance": 8.78,
+            "pledge": 0.0,
+            "qoq": true
+          },
+          "present": {
+            "promoter": true,
+            "fii": true,
+            "dii": true,
+            "mutual_funds": true,
+            "insurance": true,
+            "pledge": true,
+            "qoq": true
+          },
+          "ownership_missing": false
+        },
+        "valuation_intelligence": {
+          "test": "valuation_intelligence",
+          "pass": true,
+          "score_pct": 100.0,
+          "checks": {
+            "peers": true,
+            "pe": true,
+            "pb": true,
+            "ev_ebitda": true,
+            "relative_pe": true,
+            "historical": true,
+            "premium_reason": true,
+            "peg_or_growth": true,
+            "no_placeholder": true
+          },
+          "stance": "discount versus peers",
+          "primary_peers": [
+            "POWERGRID",
+            "TATAPOWER",
+            "ADANIPOWER",
+            "NHPC"
+          ]
+        },
+        "sector_differentiation": {
+          "test": "sector_differentiation",
+          "pass": true,
+          "score_pct": 100.0,
+          "sector_key": "power",
+          "vocab_hits": [
+            "plf",
+            "generation",
+            "capex",
+            "thermal",
+            "renewable",
+            "regulated"
+          ],
+          "specific_reasoning": true
+        },
+        "decision_quality": {
+          "test": "decision_quality",
+          "pass": true,
+          "score_pct": 87.5,
+          "checks": {
+            "buy_today_addressed": true,
+            "thesis": true,
+            "risks": true,
+            "catalysts": true,
+            "gate_explained": true,
+            "missing_evidence": false,
+            "change_drivers": true,
+            "internally_consistent": true
+          },
+          "gate_band": "Eligible"
+        },
+        "narrative_quality": {
+          "test": "narrative_quality",
+          "pass": true,
+          "score_pct": 100.0,
+          "checks": {
+            "why_company": true,
+            "why_now_or_not": true,
+            "relative_to_whom": true,
+            "evidence_backed": true,
+            "not_boilerplate": true
+          }
+        }
+      },
+      "verdict": "Committee Ready",
+      "fingerprint": "f01c6474486563c4",
+      "latency_ms": 20517,
+      "errors": []
+    },
+    {
+      "display": "HAL",
+      "resolve": "HAL",
+      "sector_key": "defence",
+      "tests": {
+        "evidence_completeness": {
+          "test": "evidence_completeness",
+          "pass": true,
+          "score_pct": 100.0,
+          "hits": 8,
+          "n": 8,
+          "flags": {
+            "live_market_context": true,
+            "financial_statements": true,
+            "ownership": true,
+            "valuation": true,
+            "peer_universe": true,
+            "historical_valuation": true,
+            "ttm": true,
+            "cid_attached": true
+          }
+        },
+        "financial_intelligence": {
+          "test": "financial_intelligence",
+          "pass": true,
+          "score_pct": 100.0,
+          "coverage_pct": 100.0,
+          "checks": {
+            "income": true,
+            "balance_sheet": true,
+            "cash_flow": true,
+            "ttm": true,
+            "growth": true,
+            "margins": true,
+            "returns": true,
+            "cash_conversion": true
+          }
+        },
+        "ownership_intelligence": {
+          "test": "ownership_intelligence",
+          "pass": true,
+          "score_pct": 100.0,
+          "fields": {
+            "promoter": 71.64,
+            "fii": 9.34,
+            "dii": 11.98,
+            "mutual_funds": 6.79,
+            "insurance": 4.4,
+            "pledge": 0.0,
+            "qoq": true
+          },
+          "present": {
+            "promoter": true,
+            "fii": true,
+            "dii": true,
+            "mutual_funds": true,
+            "insurance": true,
+            "pledge": true,
+            "qoq": true
+          },
+          "ownership_missing": false
+        },
+        "valuation_intelligence": {
+          "test": "valuation_intelligence",
+          "pass": true,
+          "score_pct": 100.0,
+          "checks": {
+            "peers": true,
+            "pe": true,
+            "pb": true,
+            "ev_ebitda": true,
+            "relative_pe": true,
+            "historical": true,
+            "premium_reason": true,
+            "peg_or_growth": true,
+            "no_placeholder": true
+          },
+          "stance": "historically elevated",
+          "primary_peers": [
+            "BEL",
+            "BHEL",
+            "MAZDOCK",
+            "GRSE"
+          ]
+        },
+        "sector_differentiation": {
+          "test": "sector_differentiation",
+          "pass": true,
+          "score_pct": 100.0,
+          "sector_key": "defence",
+          "vocab_hits": [
+            "order book",
+            "order",
+            "defence",
+            "indigen",
+            "execution",
+            "government"
+          ],
+          "specific_reasoning": true
+        },
+        "decision_quality": {
+          "test": "decision_quality",
+          "pass": true,
+          "score_pct": 87.5,
+          "checks": {
+            "buy_today_addressed": true,
+            "thesis": true,
+            "risks": true,
+            "catalysts": true,
+            "gate_explained": true,
+            "missing_evidence": false,
+            "change_drivers": true,
+            "internally_consistent": true
+          },
+          "gate_band": "Eligible"
+        },
+        "narrative_quality": {
+          "test": "narrative_quality",
+          "pass": true,
+          "score_pct": 100.0,
+          "checks": {
+            "why_company": true,
+            "why_now_or_not": true,
+            "relative_to_whom": true,
+            "evidence_backed": true,
+            "not_boilerplate": true
+          }
+        }
+      },
+      "verdict": "Committee Ready",
+      "fingerprint": "23bf3ddeae14c696",
+      "latency_ms": 11061,
+      "errors": []
+    },
+    {
+      "display": "ASIANPAINT",
+      "resolve": "ASIANPAINT",
+      "sector_key": "paints",
+      "tests": {
+        "evidence_completeness": {
+          "test": "evidence_completeness",
+          "pass": true,
+          "score_pct": 100.0,
+          "hits": 8,
+          "n": 8,
+          "flags": {
+            "live_market_context": true,
+            "financial_statements": true,
+            "ownership": true,
+            "valuation": true,
+            "peer_universe": true,
+            "historical_valuation": true,
+            "ttm": true,
+            "cid_attached": true
+          }
+        },
+        "financial_intelligence": {
+          "test": "financial_intelligence",
+          "pass": true,
+          "score_pct": 100.0,
+          "coverage_pct": 100.0,
+          "checks": {
+            "income": true,
+            "balance_sheet": true,
+            "cash_flow": true,
+            "ttm": true,
+            "growth": true,
+            "margins": true,
+            "returns": true,
+            "cash_conversion": true
+          }
+        },
+        "ownership_intelligence": {
+          "test": "ownership_intelligence",
+          "pass": true,
+          "score_pct": 100.0,
+          "fields": {
+            "promoter": 52.63,
+            "fii": 13.32,
+            "dii": 20.77,
+            "mutual_funds": 10.09,
+            "insurance": 9.66,
+            "pledge": 9.54,
+            "qoq": true
+          },
+          "present": {
+            "promoter": true,
+            "fii": true,
+            "dii": true,
+            "mutual_funds": true,
+            "insurance": true,
+            "pledge": true,
+            "qoq": true
+          },
+          "ownership_missing": false
+        },
+        "valuation_intelligence": {
+          "test": "valuation_intelligence",
+          "pass": true,
+          "score_pct": 100.0,
+          "checks": {
+            "peers": true,
+            "pe": true,
+            "pb": true,
+            "ev_ebitda": true,
+            "relative_pe": true,
+            "historical": true,
+            "premium_reason": true,
+            "peg_or_growth": true,
+            "no_placeholder": true
+          },
+          "stance": "historically elevated",
+          "primary_peers": [
+            "BERGEPAINT",
+            "INDIGOPNTS",
+            "KANSAINER"
+          ]
+        },
+        "sector_differentiation": {
+          "test": "sector_differentiation",
+          "pass": true,
+          "score_pct": 100.0,
+          "sector_key": "paints",
+          "vocab_hits": [
+            "decorative",
+            "volume",
+            "distributor",
+            "rural",
+            "premium",
+            "gross margin"
+          ],
+          "specific_reasoning": true
+        },
+        "decision_quality": {
+          "test": "decision_quality",
+          "pass": true,
+          "score_pct": 87.5,
+          "checks": {
+            "buy_today_addressed": true,
+            "thesis": true,
+            "risks": true,
+            "catalysts": true,
+            "gate_explained": true,
+            "missing_evidence": false,
+            "change_drivers": true,
+            "internally_consistent": true
+          },
+          "gate_band": "Eligible"
+        },
+        "narrative_quality": {
+          "test": "narrative_quality",
+          "pass": true,
+          "score_pct": 100.0,
+          "checks": {
+            "why_company": true,
+            "why_now_or_not": true,
+            "relative_to_whom": true,
+            "evidence_backed": true,
+            "not_boilerplate": true
+          }
+        }
+      },
+      "verdict": "Committee Ready",
+      "fingerprint": "5820cfd5a5d8b84f",
+      "latency_ms": 13582,
+      "errors": []
+    },
+    {
+      "display": "ULTRACEMCO",
+      "resolve": "ULTRACEMCO",
+      "sector_key": "cement",
+      "tests": {
+        "evidence_completeness": {
+          "test": "evidence_completeness",
+          "pass": true,
+          "score_pct": 100.0,
+          "hits": 8,
+          "n": 8,
+          "flags": {
+            "live_market_context": true,
+            "financial_statements": true,
+            "ownership": true,
+            "valuation": true,
+            "peer_universe": true,
+            "historical_valuation": true,
+            "ttm": true,
+            "cid_attached": true
+          }
+        },
+        "financial_intelligence": {
+          "test": "financial_intelligence",
+          "pass": true,
+          "score_pct": 100.0,
+          "coverage_pct": 100.0,
+          "checks": {
+            "income": true,
+            "balance_sheet": true,
+            "cash_flow": true,
+            "ttm": true,
+            "growth": true,
+            "margins": true,
+            "returns": true,
+            "cash_conversion": true
+          }
+        },
+        "ownership_intelligence": {
+          "test": "ownership_intelligence",
+          "pass": true,
+          "score_pct": 100.0,
+          "fields": {
+            "promoter": 59.33,
+            "fii": 12.86,
+            "dii": 19.69,
+            "mutual_funds": 15.98,
+            "insurance": 3.34,
+            "pledge": 0.0,
+            "qoq": true
+          },
+          "present": {
+            "promoter": true,
+            "fii": true,
+            "dii": true,
+            "mutual_funds": true,
+            "insurance": true,
+            "pledge": true,
+            "qoq": true
+          },
+          "ownership_missing": false
+        },
+        "valuation_intelligence": {
+          "test": "valuation_intelligence",
+          "pass": true,
+          "score_pct": 100.0,
+          "checks": {
+            "peers": true,
+            "pe": true,
+            "pb": true,
+            "ev_ebitda": true,
+            "relative_pe": true,
+            "historical": true,
+            "premium_reason": true,
+            "peg_or_growth": true,
+            "no_placeholder": true
+          },
+          "stance": "in line with peers",
+          "primary_peers": [
+            "SHREECEM",
+            "AMBUJACEM",
+            "ACC",
+            "DALBHARAT",
+            "RAMCOCEM"
+          ]
+        },
+        "sector_differentiation": {
+          "test": "sector_differentiation",
+          "pass": true,
+          "score_pct": 98.3,
+          "sector_key": "cement",
+          "vocab_hits": [
+            "capacity",
+            "utilisation",
+            "fuel",
+            "petcoke",
+            "volume"
+          ],
+          "specific_reasoning": true
+        },
+        "decision_quality": {
+          "test": "decision_quality",
+          "pass": true,
+          "score_pct": 87.5,
+          "checks": {
+            "buy_today_addressed": true,
+            "thesis": true,
+            "risks": true,
+            "catalysts": true,
+            "gate_explained": true,
+            "missing_evidence": false,
+            "change_drivers": true,
+            "internally_consistent": true
+          },
+          "gate_band": "Eligible"
+        },
+        "narrative_quality": {
+          "test": "narrative_quality",
+          "pass": true,
+          "score_pct": 100.0,
+          "checks": {
+            "why_company": true,
+            "why_now_or_not": true,
+            "relative_to_whom": true,
+            "evidence_backed": true,
+            "not_boilerplate": true
+          }
+        }
+      },
+      "verdict": "Committee Ready",
+      "fingerprint": "b14178ecd4d886f6",
+      "latency_ms": 19385,
+      "errors": []
+    }
+  ],
+  "aggregate": {
+    "total_score": 97.53,
+    "grade": "Institutional Ready",
+    "areas": {
+      "evidence_completeness": {
+        "weight": 20.0,
+        "score_pct": 97.5,
+        "points": 19.5
+      },
+      "financial_intelligence": {
+        "weight": 15.0,
+        "score_pct": 100.0,
+        "points": 15.0
+      },
+      "ownership_intelligence": {
+        "weight": 10.0,
+        "score_pct": 100.0,
+        "points": 10.0
+      },
+      "valuation_intelligence": {
+        "weight": 15.0,
+        "score_pct": 95.56,
+        "points": 14.33
+      },
+      "sector_differentiation": {
+        "weight": 15.0,
+        "score_pct": 99.66,
+        "points": 14.95
+      },
+      "decision_quality": {
+        "weight": 10.0,
+        "score_pct": 87.5,
+        "points": 8.75
+      },
+      "governance_integrity": {
+        "weight": 10.0,
+        "score_pct": 100.0,
+        "points": 10.0
+      },
+      "narrative_quality": {
+        "weight": 5.0,
+        "score_pct": 100.0,
+        "points": 5.0
+      }
+    },
+    "area_pct": {
+      "evidence_completeness": 97.5,
+      "financial_intelligence": 100.0,
+      "ownership_intelligence": 100.0,
+      "valuation_intelligence": 95.56,
+      "sector_differentiation": 99.66,
+      "decision_quality": 87.5,
+      "governance_integrity": 100.0,
+      "narrative_quality": 100.0
+    },
+    "verdicts": {
+      "Committee Ready": 10
+    },
+    "governance": {
+      "test": "governance_integrity",
+      "pass": true,
+      "score_pct": 100.0,
+      "checks": {
+        "constitution_frozen": true,
+        "governance_spec_frozen": true,
+        "decision_engine_frozen": true,
+        "gate_methodology_frozen": true,
+        "gate_high_threshold": true,
+        "gate_moderate_threshold": true,
+        "gate_watchlist_threshold": true,
+        "gate_evidence_floor": true,
+        "no_evidence_engine_buy_sell": true
+      },
+      "details": {
+        "frozen_locks": {
+          "constitution": "frozen",
+          "governance_spec": "frozen",
+          "decision_engine_contracts": "frozen",
+          "institutional_gate": "frozen",
+          "recommendation_readiness_methodology": "frozen",
+          "institutional_readiness_methodology": "frozen",
+          "analytical_confidence_methodology": "frozen",
+          "evaluation_lab": "frozen",
+          "drift_engine": "frozen",
+          "institutional_acceptance_test": "frozen",
+          "mission_control_release_dashboard": "frozen"
+        },
+        "gate_thresholds": {
+          "high": 95.0,
+          "moderate": 80.0,
+          "watchlist": 60.0,
+          "evidence_floor": 80.0
+        },
+        "rec_violations": []
+      }
+    },
+    "n_companies": 10
+  },
+  "expectation_check": {
+    "evidence_completeness": "19.5/20.0 (meets_or_exceeds; expected 19.0-20.0)",
+    "financial_intelligence": "15.0/15.0 (meets_or_exceeds; expected 14.0-15.0)",
+    "ownership_intelligence": "10.0/10.0 (meets_or_exceeds; expected 10.0-10.0)",
+    "valuation_intelligence": "14.33/15.0 (meets_or_exceeds; expected 14.0-15.0)",
+    "sector_differentiation": "14.95/15.0 (above_expected; expected 8.0-10.0)",
+    "decision_quality": "8.75/10.0 (near_expected; expected 9.0-10.0)",
+    "governance_integrity": "10.0/10.0 (meets_or_exceeds; expected 10.0-10.0)",
+    "narrative_quality": "5.0/5.0 (meets_or_exceeds; expected 4.0-5.0)",
+    "overall": "97.53/100 (Institutional Ready; expected ~90-95)"
+  },
+  "robustness": {
+    "pass": true,
+    "stable_pct": 100.0,
+    "stable_n": 10,
+    "n": 10,
+    "unstable": [],
+    "runs": 3
+  },
+  "run_meta": [
+    {
+      "run": 1,
+      "order": [
+        "HDFCBANK",
+        "RELIANCE",
+        "TCS",
+        "ETERNAL",
+        "TATAMOTORS",
+        "SUNPHARMA",
+        "NTPC",
+        "HAL",
+        "ASIANPAINT",
+        "ULTRACEMCO"
+      ],
+      "total_score": 97.53,
+      "grade": "Institutional Ready",
+      "cache": "cold"
+    },
+    {
+      "run": 2,
+      "order": [
+        "HDFCBANK",
+        "RELIANCE",
+        "TCS",
+        "ETERNAL",
+        "TATAMOTORS",
+        "SUNPHARMA",
+        "NTPC",
+        "HAL",
+        "ASIANPAINT",
+        "ULTRACEMCO"
+      ],
+      "total_score": 97.53,
+      "grade": "Institutional Ready",
+      "cache": "warm"
+    },
+    {
+      "run": 3,
+      "order": [
+        "HDFCBANK",
+        "RELIANCE",
+        "TCS",
+        "ETERNAL",
+        "TATAMOTORS",
+        "SUNPHARMA",
+        "NTPC",
+        "HAL",
+        "ASIANPAINT",
+        "ULTRACEMCO"
+      ],
+      "total_score": 97.53,
+      "grade": "Institutional Ready",
+      "cache": "warm"
+    }
+  ],
+  "unknown_drift": 0,
+  "unknown_tickers": [],
+  "latency_ms": 579453
+}

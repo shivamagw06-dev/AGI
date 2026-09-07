@@ -1,0 +1,2476 @@
+{
+  "suite": "Tier A founder acceptance (SMOKE-01..08)",
+  "timestamp": "2026-08-01T07:48:18.733242Z",
+  "mode": "live",
+  "base_url": "https://finance-news-backend-19i5.onrender.com",
+  "latency_budget_ms": 120000,
+  "partial": false,
+  "completed": true,
+  "pass_rate": 1.0,
+  "passed": 8,
+  "total": 8,
+  "tier_a_gate": "PASS",
+  "questions": [
+    {
+      "id": "SMOKE-01",
+      "prompt": "What is Reliance's business model?",
+      "pass": true,
+      "live_gate_pass": true,
+      "completed": true,
+      "latency_ms": 37017,
+      "entity": "RELIANCE",
+      "entity_confidence": 0.999,
+      "reasoning_ms": 16810,
+      "assembly_ms": 3120,
+      "retrieved": 81,
+      "ranked": 41,
+      "passed": 20,
+      "referenced": 45,
+      "fallback": false,
+      "timeout": false,
+      "engine_reached": true,
+      "ask_trace_id": "ASK-20260801-96B697",
+      "last_completed_stage": "response_assembly",
+      "short_circuit": null,
+      "failures": [],
+      "live_gate_failures": []
+    },
+    {
+      "id": "SMOKE-02",
+      "prompt": "Compare Infosys vs TCS valuation.",
+      "pass": true,
+      "live_gate_pass": true,
+      "completed": true,
+      "latency_ms": 31596,
+      "entity": "INFY",
+      "entity_confidence": 0.999,
+      "reasoning_ms": 12811,
+      "assembly_ms": 2986,
+      "retrieved": 53,
+      "ranked": 11,
+      "passed": 11,
+      "referenced": 49,
+      "fallback": false,
+      "timeout": false,
+      "engine_reached": true,
+      "ask_trace_id": "ASK-20260801-1F4F61",
+      "last_completed_stage": "response_assembly",
+      "short_circuit": null,
+      "failures": [],
+      "live_gate_failures": []
+    },
+    {
+      "id": "SMOKE-03",
+      "prompt": "Explain price-to-book for banks.",
+      "pass": true,
+      "live_gate_pass": true,
+      "completed": true,
+      "latency_ms": 26217,
+      "entity": "COFORGE",
+      "entity_confidence": 0.99,
+      "reasoning_ms": 18628,
+      "assembly_ms": 2692,
+      "retrieved": 47,
+      "ranked": 9,
+      "passed": 9,
+      "referenced": 43,
+      "fallback": false,
+      "timeout": false,
+      "engine_reached": true,
+      "ask_trace_id": "ASK-20260801-FA5AFE",
+      "last_completed_stage": "response_assembly",
+      "short_circuit": null,
+      "failures": [],
+      "live_gate_failures": []
+    },
+    {
+      "id": "SMOKE-04",
+      "prompt": "What did Meta say in Q2 2026 about AI capex?",
+      "pass": true,
+      "live_gate_pass": true,
+      "completed": true,
+      "latency_ms": 30109,
+      "entity": "META",
+      "entity_confidence": 0.995,
+      "reasoning_ms": 15833,
+      "assembly_ms": 2016,
+      "retrieved": 43,
+      "ranked": 5,
+      "passed": 5,
+      "referenced": 43,
+      "fallback": false,
+      "timeout": false,
+      "engine_reached": true,
+      "ask_trace_id": "ASK-20260801-C181C4",
+      "last_completed_stage": "response_assembly",
+      "short_circuit": null,
+      "failures": [],
+      "live_gate_failures": []
+    },
+    {
+      "id": "SMOKE-05",
+      "prompt": "Private market multiples for healthcare services.",
+      "pass": true,
+      "live_gate_pass": true,
+      "completed": true,
+      "latency_ms": 25840,
+      "entity": "AXISBANK",
+      "entity_confidence": null,
+      "reasoning_ms": 19288,
+      "assembly_ms": 3074,
+      "retrieved": 66,
+      "ranked": 9,
+      "passed": 9,
+      "referenced": 36,
+      "fallback": false,
+      "timeout": false,
+      "engine_reached": true,
+      "ask_trace_id": "ASK-20260801-181A5D",
+      "last_completed_stage": "response_assembly",
+      "short_circuit": null,
+      "failures": [],
+      "live_gate_failures": []
+    },
+    {
+      "id": "SMOKE-06",
+      "prompt": "Should I buy HDFC Bank tomorrow?",
+      "pass": true,
+      "live_gate_pass": true,
+      "completed": true,
+      "latency_ms": 311,
+      "entity": "HDFCBANK",
+      "entity_confidence": 0.999,
+      "reasoning_ms": null,
+      "assembly_ms": null,
+      "retrieved": 0,
+      "ranked": 1,
+      "passed": 1,
+      "referenced": 1,
+      "fallback": false,
+      "timeout": false,
+      "engine_reached": true,
+      "ask_trace_id": "ASK-20260801-064275",
+      "last_completed_stage": "response_assembly",
+      "short_circuit": "recommendation_policy",
+      "failures": [],
+      "live_gate_failures": []
+    },
+    {
+      "id": "SMOKE-07",
+      "prompt": "As of 2020-03-31, where was Nifty valuation?",
+      "pass": true,
+      "live_gate_pass": true,
+      "completed": true,
+      "latency_ms": 14977,
+      "entity": "TCS",
+      "entity_confidence": 0.995,
+      "reasoning_ms": 8452,
+      "assembly_ms": 1874,
+      "retrieved": 58,
+      "ranked": 17,
+      "passed": 16,
+      "referenced": 39,
+      "fallback": false,
+      "timeout": false,
+      "engine_reached": true,
+      "ask_trace_id": "ASK-20260801-51EF7C",
+      "last_completed_stage": "response_assembly",
+      "short_circuit": null,
+      "failures": [],
+      "live_gate_failures": []
+    },
+    {
+      "id": "SMOKE-08",
+      "prompt": "Summarize India's mid-2026 equity outlook.",
+      "pass": true,
+      "live_gate_pass": true,
+      "completed": true,
+      "latency_ms": 14068,
+      "entity": null,
+      "entity_confidence": null,
+      "reasoning_ms": 8208,
+      "assembly_ms": 1524,
+      "retrieved": 67,
+      "ranked": 28,
+      "passed": 16,
+      "referenced": 43,
+      "fallback": false,
+      "timeout": false,
+      "engine_reached": true,
+      "ask_trace_id": "ASK-20260801-740587",
+      "last_completed_stage": "response_assembly",
+      "short_circuit": null,
+      "failures": [],
+      "live_gate_failures": []
+    }
+  ],
+  "full_questions": [
+    {
+      "id": "SMOKE-01",
+      "prompt": "What is Reliance's business model?",
+      "pass": true,
+      "failures": [],
+      "latency_ms": 37017,
+      "http_status": 200,
+      "completed": true,
+      "degraded": true,
+      "intent": "General_Research",
+      "expected_intent_family": "Company",
+      "entities": [
+        "RELIANCE",
+        "TCS"
+      ],
+      "entity": "RELIANCE",
+      "evidence_count": 49,
+      "evidence_sources": [
+        "agi_research",
+        "broker",
+        "news",
+        "filings",
+        "model_evidence",
+        "institutional",
+        "knowledge"
+      ],
+      "grounded_claims": true,
+      "confidence": 0.695,
+      "policy": "ok",
+      "policy_triggered": false,
+      "freshness_timestamp": "2026-07-31T19:02:54.983260Z",
+      "retryable": false,
+      "insufficient_evidence": false,
+      "context_leakage": false,
+      "freshness_failure": false,
+      "hallucination_risk": 0,
+      "transport": "live",
+      "error": null,
+      "ask_trace_id": "ASK-20260801-96B697",
+      "fallback_used": false,
+      "executive_source": "ice",
+      "entity_confidence": 0.999,
+      "funnel": {
+        "retrieved": 81,
+        "ranked": 41,
+        "passed": 20,
+        "passed_to_ice": 20,
+        "referenced": 45,
+        "utilization": 1,
+        "efficiency": 0.556,
+        "precision": 1,
+        "zero_stage": null
+      },
+      "utilization": {},
+      "orchestration_latency": {
+        "entity_ms": 10,
+        "ikl_ms": 11288,
+        "retrieval_ms": 1952,
+        "ranking_ms": 229,
+        "reasoning_ms": 16810,
+        "assembly_ms": 3120,
+        "serialization_ms": 1192,
+        "http_ms": 36028,
+        "http_ingress_ms": 0,
+        "total_ms": 34603,
+        "last_completed_stage": "serialization",
+        "stages": {
+          "http_ingress": 0,
+          "entity_resolution": 10,
+          "ikl": 11288,
+          "retrieval": 1952,
+          "reasoning": 16810,
+          "ranking": 229,
+          "response_assembly": 3120,
+          "serialization": 1192
+        },
+        "warnings": [
+          {
+            "stage": "ikl",
+            "elapsed_ms": 11288,
+            "threshold_ms": 500,
+            "ask_trace_id": "ASK-20260801-96B697",
+            "kind": "stage_threshold_exceeded"
+          },
+          {
+            "stage": "response_assembly",
+            "elapsed_ms": 3120,
+            "threshold_ms": 2000,
+            "ask_trace_id": "ASK-20260801-96B697",
+            "kind": "stage_threshold_exceeded"
+          }
+        ]
+      },
+      "ikl_layers_hit": [],
+      "ikl_meta": null,
+      "trace_summary": "Trace: ASK-20260801-96B697 | Entity: Reliance Industries Limited (0.999) | IKL: 11288ms | Retrieved: 81 \u2192 Ranked: 41 \u2192 Passed: 20 \u2192 Referenced: 45 | Utilization: 1.0 | Efficiency: 0.556 | Precision: 1.0 | Last stage: response_assembly | Executive overwritten: Yes | Fallback: No | Timeout: No | Total: 34.6s",
+      "timeout": false,
+      "last_completed_stage": "response_assembly",
+      "elapsed_ms": 33411,
+      "engine_reached": true,
+      "execution_trace": "Ask Trace ID: ASK-20260801-96B697\nEntity: Reliance Industries Limited (1.00)\nIKL: 11.288s\nRetrieved: 81\nRanked: 41\nPassed: 20\nReferenced: 45\nReasoning: 16.8s\nAssembly: 3120ms\nCompleted: true\nLast completed stage: response_assembly\nElapsed: 33.4s",
+      "stage_warnings": [
+        {
+          "stage": "ikl",
+          "elapsed_ms": 11288,
+          "threshold_ms": 500,
+          "ask_trace_id": "ASK-20260801-96B697",
+          "kind": "stage_threshold_exceeded"
+        },
+        {
+          "stage": "response_assembly",
+          "elapsed_ms": 3120,
+          "threshold_ms": 2000,
+          "ask_trace_id": "ASK-20260801-96B697",
+          "kind": "stage_threshold_exceeded"
+        }
+      ],
+      "degradation": {
+        "faa": "background_only",
+        "market_data": "cached",
+        "news": "cached",
+        "reasoning": "completed",
+        "ask_slim": true,
+        "krig": "empty",
+        "live_evidence": "skipped_slim",
+        "cid": "timeout",
+        "evidence_completion": "skipped_slim",
+        "context_assembly": "skipped_slim",
+        "multi_source": "ok",
+        "intelligence_layer": "skipped_slim",
+        "ask_orchestration": {
+          "ask_trace_id": "ASK-20260801-96B697",
+          "ticker_source": "ere",
+          "ticker_rejects": [],
+          "ere_research_blocked": false,
+          "executive_source": "ice",
+          "rq_stack": "skipped_slim",
+          "ikl": {
+            "layers_hit": [],
+            "confidence": 0,
+            "explainability": {
+              "knowledge_sources": [],
+              "company_memory_used": [],
+              "industry_memory_used": [],
+              "macro_memory_used": [],
+              "documents_referenced": [],
+              "evidence_referenced": [],
+              "reasoning_path": [
+                "consult:raw_documents",
+                "consult:live_search"
+              ],
+              "knowledge_gaps": [
+                "company_memory",
+                "industry_memory",
+                "macro_memory",
+                "knowledge_graph",
+                "structured_kpis",
+                "historical_timeline"
+              ],
+              "confidence": 0
+            },
+            "primary_before_raw_documents": true
+          },
+          "ice_framework_meta_suppressed": false,
+          "version": "ask-orchestration-trace-2",
+          "ts": "2026-08-01T07:44:22.236618Z",
+          "fallback": false,
+          "fallback_used": false,
+          "timeout": false,
+          "completed": true,
+          "partial": false,
+          "last_completed_stage": "response_assembly",
+          "elapsed_ms": 33411,
+          "engine_reached": true,
+          "intent": "general_research",
+          "bound_ticker": "RELIANCE",
+          "entity": {
+            "name": "Reliance Industries Limited",
+            "detected": "RELIANCE",
+            "entity_name": "Reliance Industries Limited",
+            "entity_type": "Company",
+            "aliases_matched": [
+              "RELIANCE",
+              "Reliance Industries Limited"
+            ],
+            "confidence": 0.999,
+            "source": "ere",
+            "resolution_source": "ere",
+            "needs_clarification": false,
+            "low_confidence": false,
+            "silently_bound": false,
+            "question_excerpt": "What is Reliance's business model?",
+            "rejected_candidates": []
+          },
+          "funnel": {
+            "retrieved": 81,
+            "ranked": 41,
+            "passed": 20,
+            "passed_to_ice": 20,
+            "referenced": 45,
+            "utilization": 1,
+            "efficiency": 0.556,
+            "precision": 1,
+            "zero_stage": null
+          },
+          "evidence": {
+            "retrieved": 81,
+            "ranked": 41,
+            "passed": 20,
+            "referenced": 45,
+            "utilization": 1,
+            "efficiency": 0.556,
+            "precision": 1,
+            "zero_stage": null
+          },
+          "latency": {
+            "entity_ms": 10,
+            "ikl_ms": 11288,
+            "retrieval_ms": 1952,
+            "ranking_ms": 229,
+            "reasoning_ms": 16810,
+            "assembly_ms": 3120,
+            "serialization_ms": 1192,
+            "http_ms": 0,
+            "http_ingress_ms": 0,
+            "total_ms": 34603,
+            "last_completed_stage": "serialization",
+            "stages": {
+              "http_ingress": 0,
+              "entity_resolution": 10,
+              "ikl": 11288,
+              "retrieval": 1952,
+              "reasoning": 16810,
+              "ranking": 229,
+              "response_assembly": 3120,
+              "serialization": 1192
+            },
+            "warnings": [
+              {
+                "stage": "ikl",
+                "elapsed_ms": 11288,
+                "threshold_ms": 500,
+                "ask_trace_id": "ASK-20260801-96B697",
+                "kind": "stage_threshold_exceeded"
+              },
+              {
+                "stage": "response_assembly",
+                "elapsed_ms": 3120,
+                "threshold_ms": 2000,
+                "ask_trace_id": "ASK-20260801-96B697",
+                "kind": "stage_threshold_exceeded"
+              }
+            ]
+          },
+          "latency_ms": {
+            "http_ingress": 0,
+            "entity_resolution": 10,
+            "ikl": 11288,
+            "retrieval": 1952,
+            "reasoning": 16810,
+            "ranking": 229,
+            "response_assembly": 3120,
+            "serialization": 1192,
+            "total": 34603
+          },
+          "stage_warnings": [
+            {
+              "stage": "ikl",
+              "elapsed_ms": 11288,
+              "threshold_ms": 500,
+              "ask_trace_id": "ASK-20260801-96B697",
+              "kind": "stage_threshold_exceeded"
+            },
+            {
+              "stage": "response_assembly",
+              "elapsed_ms": 3120,
+              "threshold_ms": 2000,
+              "ask_trace_id": "ASK-20260801-96B697",
+              "kind": "stage_threshold_exceeded"
+            }
+          ],
+          "executive_attribution": [
+            {
+              "paragraph": 1,
+              "text_excerpt": "Analyse via Financial evidence (4 items) Analyse via Industry evidence (1 items) Analyse via Historical evidence (1 items) Evidence: LIDI validated publish",
+              "evidence_title": null,
+              "evidence_source": null,
+              "grounded": false
+            }
+          ],
+          "grounding": 0,
+          "executive_overwritten": true,
+          "diagnostics_visibility": "internal",
+          "trace_summary": "Trace: ASK-20260801-96B697 | Entity: Reliance Industries Limited (0.999) | IKL: 11288ms | Retrieved: 81 \u2192 Ranked: 41 \u2192 Passed: 20 \u2192 Referenced: 45 | Utilization: 1.0 | Efficiency: 0.556 | Precision: 1.0 | Last stage: response_assembly | Executive overwritten: Yes | Fallback: No | Timeout: No | Total: 34.6s",
+          "execution_trace": "Ask Trace ID: ASK-20260801-96B697\nEntity: Reliance Industries Limited (1.00)\nIKL: 11.288s\nRetrieved: 81\nRanked: 41\nPassed: 20\nReferenced: 45\nReasoning: 16.8s\nAssembly: 3120ms\nCompleted: true\nLast completed stage: response_assembly\nElapsed: 33.4s"
+        }
+      },
+      "short_circuit": null,
+      "live_gate_failures": [],
+      "live_gate_pass": true
+    },
+    {
+      "id": "SMOKE-02",
+      "prompt": "Compare Infosys vs TCS valuation.",
+      "pass": true,
+      "failures": [],
+      "latency_ms": 31596,
+      "http_status": 200,
+      "completed": true,
+      "degraded": true,
+      "intent": "Compare",
+      "expected_intent_family": "Compare",
+      "entities": [
+        "INFY",
+        "RELIANCE",
+        "TCS"
+      ],
+      "entity": "INFY",
+      "evidence_count": 35,
+      "evidence_sources": [
+        "agi_research",
+        "broker",
+        "news",
+        "filings",
+        "model_evidence",
+        "general",
+        "institutional",
+        "knowledge"
+      ],
+      "grounded_claims": true,
+      "confidence": 0.55,
+      "policy": "ok",
+      "policy_triggered": false,
+      "freshness_timestamp": null,
+      "retryable": false,
+      "insufficient_evidence": false,
+      "context_leakage": false,
+      "freshness_failure": false,
+      "hallucination_risk": 0,
+      "transport": "live",
+      "error": null,
+      "ask_trace_id": "ASK-20260801-1F4F61",
+      "fallback_used": false,
+      "executive_source": "ice",
+      "entity_confidence": 0.999,
+      "funnel": {
+        "retrieved": 53,
+        "ranked": 11,
+        "passed": 11,
+        "passed_to_ice": 11,
+        "referenced": 49,
+        "utilization": 1,
+        "efficiency": 0.925,
+        "precision": 1,
+        "zero_stage": null
+      },
+      "utilization": {},
+      "orchestration_latency": {
+        "entity_ms": 20,
+        "ikl_ms": 10003,
+        "retrieval_ms": 2661,
+        "ranking_ms": 164,
+        "reasoning_ms": 12811,
+        "assembly_ms": 2986,
+        "serialization_ms": 1048,
+        "http_ms": 31019,
+        "http_ingress_ms": 0,
+        "total_ms": 29696,
+        "last_completed_stage": "serialization",
+        "stages": {
+          "http_ingress": 0,
+          "entity_resolution": 20,
+          "ikl": 10003,
+          "retrieval": 2661,
+          "reasoning": 12811,
+          "ranking": 164,
+          "response_assembly": 2986,
+          "serialization": 1048
+        },
+        "warnings": [
+          {
+            "stage": "ikl",
+            "elapsed_ms": 10003,
+            "threshold_ms": 500,
+            "ask_trace_id": "ASK-20260801-1F4F61",
+            "kind": "stage_threshold_exceeded"
+          },
+          {
+            "stage": "retrieval",
+            "elapsed_ms": 2661,
+            "threshold_ms": 2000,
+            "ask_trace_id": "ASK-20260801-1F4F61",
+            "kind": "stage_threshold_exceeded"
+          },
+          {
+            "stage": "response_assembly",
+            "elapsed_ms": 2986,
+            "threshold_ms": 2000,
+            "ask_trace_id": "ASK-20260801-1F4F61",
+            "kind": "stage_threshold_exceeded"
+          }
+        ]
+      },
+      "ikl_layers_hit": [],
+      "ikl_meta": null,
+      "trace_summary": "Trace: ASK-20260801-1F4F61 | Entity: INFY (0.999) | IKL: 10003ms | Retrieved: 53 \u2192 Ranked: 11 \u2192 Passed: 11 \u2192 Referenced: 49 | Utilization: 1.0 | Efficiency: 0.925 | Precision: 1.0 | Last stage: response_assembly | Executive overwritten: Yes | Fallback: No | Timeout: No | Total: 29.7s",
+      "timeout": false,
+      "last_completed_stage": "response_assembly",
+      "elapsed_ms": 28648,
+      "engine_reached": true,
+      "execution_trace": "Ask Trace ID: ASK-20260801-1F4F61\nEntity: INFY (1.00)\nIKL: 10.003s\nRetrieved: 53\nRanked: 11\nPassed: 11\nReferenced: 49\nReasoning: 12.8s\nAssembly: 2986ms\nCompleted: true\nLast completed stage: response_assembly\nElapsed: 28.6s",
+      "stage_warnings": [
+        {
+          "stage": "ikl",
+          "elapsed_ms": 10003,
+          "threshold_ms": 500,
+          "ask_trace_id": "ASK-20260801-1F4F61",
+          "kind": "stage_threshold_exceeded"
+        },
+        {
+          "stage": "retrieval",
+          "elapsed_ms": 2661,
+          "threshold_ms": 2000,
+          "ask_trace_id": "ASK-20260801-1F4F61",
+          "kind": "stage_threshold_exceeded"
+        },
+        {
+          "stage": "response_assembly",
+          "elapsed_ms": 2986,
+          "threshold_ms": 2000,
+          "ask_trace_id": "ASK-20260801-1F4F61",
+          "kind": "stage_threshold_exceeded"
+        }
+      ],
+      "degradation": {
+        "faa": "background_only",
+        "market_data": "cached",
+        "news": "cached",
+        "reasoning": "completed",
+        "ask_slim": true,
+        "krig": "empty",
+        "live_evidence": "skipped_slim",
+        "cid": "timeout",
+        "evidence_completion": "skipped_slim",
+        "context_assembly": "skipped_slim",
+        "multi_source": "ok",
+        "intelligence_layer": "skipped_slim",
+        "ask_orchestration": {
+          "ask_trace_id": "ASK-20260801-1F4F61",
+          "ticker_source": "alias",
+          "ticker_rejects": [],
+          "ere_research_blocked": true,
+          "executive_source": "ice",
+          "rq_stack": "skipped_slim",
+          "ikl": {
+            "layers_hit": [],
+            "confidence": 0,
+            "explainability": {
+              "knowledge_sources": [],
+              "company_memory_used": [],
+              "industry_memory_used": [],
+              "macro_memory_used": [],
+              "documents_referenced": [],
+              "evidence_referenced": [],
+              "reasoning_path": [
+                "consult:raw_documents",
+                "consult:live_search"
+              ],
+              "knowledge_gaps": [
+                "company_memory",
+                "industry_memory",
+                "macro_memory",
+                "knowledge_graph",
+                "structured_kpis",
+                "historical_timeline"
+              ],
+              "confidence": 0
+            },
+            "primary_before_raw_documents": true
+          },
+          "ice_framework_meta_suppressed": false,
+          "version": "ask-orchestration-trace-2",
+          "ts": "2026-08-01T07:45:07.385214Z",
+          "fallback": false,
+          "fallback_used": false,
+          "timeout": false,
+          "completed": true,
+          "partial": false,
+          "last_completed_stage": "response_assembly",
+          "elapsed_ms": 28648,
+          "engine_reached": true,
+          "intent": "compare_companies",
+          "bound_ticker": "INFY",
+          "entity": {
+            "name": "INFY",
+            "detected": "INFY",
+            "entity_name": "INFY",
+            "entity_type": "Unknown",
+            "aliases_matched": [
+              "INFY"
+            ],
+            "confidence": 0.999,
+            "source": "alias",
+            "resolution_source": "alias",
+            "needs_clarification": true,
+            "low_confidence": false,
+            "silently_bound": false,
+            "question_excerpt": "Compare Infosys vs TCS valuation.",
+            "rejected_candidates": []
+          },
+          "funnel": {
+            "retrieved": 53,
+            "ranked": 11,
+            "passed": 11,
+            "passed_to_ice": 11,
+            "referenced": 49,
+            "utilization": 1,
+            "efficiency": 0.925,
+            "precision": 1,
+            "zero_stage": null
+          },
+          "evidence": {
+            "retrieved": 53,
+            "ranked": 11,
+            "passed": 11,
+            "referenced": 49,
+            "utilization": 1,
+            "efficiency": 0.925,
+            "precision": 1,
+            "zero_stage": null
+          },
+          "latency": {
+            "entity_ms": 20,
+            "ikl_ms": 10003,
+            "retrieval_ms": 2661,
+            "ranking_ms": 164,
+            "reasoning_ms": 12811,
+            "assembly_ms": 2986,
+            "serialization_ms": 1048,
+            "http_ms": 0,
+            "http_ingress_ms": 0,
+            "total_ms": 29696,
+            "last_completed_stage": "serialization",
+            "stages": {
+              "http_ingress": 0,
+              "entity_resolution": 20,
+              "ikl": 10003,
+              "retrieval": 2661,
+              "reasoning": 12811,
+              "ranking": 164,
+              "response_assembly": 2986,
+              "serialization": 1048
+            },
+            "warnings": [
+              {
+                "stage": "ikl",
+                "elapsed_ms": 10003,
+                "threshold_ms": 500,
+                "ask_trace_id": "ASK-20260801-1F4F61",
+                "kind": "stage_threshold_exceeded"
+              },
+              {
+                "stage": "retrieval",
+                "elapsed_ms": 2661,
+                "threshold_ms": 2000,
+                "ask_trace_id": "ASK-20260801-1F4F61",
+                "kind": "stage_threshold_exceeded"
+              },
+              {
+                "stage": "response_assembly",
+                "elapsed_ms": 2986,
+                "threshold_ms": 2000,
+                "ask_trace_id": "ASK-20260801-1F4F61",
+                "kind": "stage_threshold_exceeded"
+              }
+            ]
+          },
+          "latency_ms": {
+            "http_ingress": 0,
+            "entity_resolution": 20,
+            "ikl": 10003,
+            "retrieval": 2661,
+            "reasoning": 12811,
+            "ranking": 164,
+            "response_assembly": 2986,
+            "serialization": 1048,
+            "total": 29696
+          },
+          "stage_warnings": [
+            {
+              "stage": "ikl",
+              "elapsed_ms": 10003,
+              "threshold_ms": 500,
+              "ask_trace_id": "ASK-20260801-1F4F61",
+              "kind": "stage_threshold_exceeded"
+            },
+            {
+              "stage": "retrieval",
+              "elapsed_ms": 2661,
+              "threshold_ms": 2000,
+              "ask_trace_id": "ASK-20260801-1F4F61",
+              "kind": "stage_threshold_exceeded"
+            },
+            {
+              "stage": "response_assembly",
+              "elapsed_ms": 2986,
+              "threshold_ms": 2000,
+              "ask_trace_id": "ASK-20260801-1F4F61",
+              "kind": "stage_threshold_exceeded"
+            }
+          ],
+          "executive_attribution": [
+            {
+              "paragraph": 1,
+              "text_excerpt": "Analyse via Financial evidence (5 items) Analyse via Historical evidence (3 items) Analyse via Industry evidence (2 items) Evidence: LIDI validated publish",
+              "evidence_title": null,
+              "evidence_source": null,
+              "grounded": false
+            }
+          ],
+          "grounding": 0,
+          "executive_overwritten": true,
+          "diagnostics_visibility": "internal",
+          "trace_summary": "Trace: ASK-20260801-1F4F61 | Entity: INFY (0.999) | IKL: 10003ms | Retrieved: 53 \u2192 Ranked: 11 \u2192 Passed: 11 \u2192 Referenced: 49 | Utilization: 1.0 | Efficiency: 0.925 | Precision: 1.0 | Last stage: response_assembly | Executive overwritten: Yes | Fallback: No | Timeout: No | Total: 29.7s",
+          "execution_trace": "Ask Trace ID: ASK-20260801-1F4F61\nEntity: INFY (1.00)\nIKL: 10.003s\nRetrieved: 53\nRanked: 11\nPassed: 11\nReferenced: 49\nReasoning: 12.8s\nAssembly: 2986ms\nCompleted: true\nLast completed stage: response_assembly\nElapsed: 28.6s"
+        }
+      },
+      "short_circuit": null,
+      "live_gate_failures": [],
+      "live_gate_pass": true
+    },
+    {
+      "id": "SMOKE-03",
+      "prompt": "Explain price-to-book for banks.",
+      "pass": true,
+      "failures": [],
+      "latency_ms": 26217,
+      "http_status": 200,
+      "completed": true,
+      "degraded": true,
+      "intent": "General_Research",
+      "expected_intent_family": "Education",
+      "entities": [
+        "COFORGE",
+        "HCLTECH",
+        "MPHASIS",
+        "PERSISTENT",
+        "TCS",
+        "WIPRO"
+      ],
+      "entity": "COFORGE",
+      "evidence_count": 29,
+      "evidence_sources": [
+        "agi_research",
+        "broker",
+        "news",
+        "filings",
+        "model_evidence",
+        "institutional",
+        "knowledge"
+      ],
+      "grounded_claims": true,
+      "confidence": 0.695,
+      "policy": "ok",
+      "policy_triggered": false,
+      "freshness_timestamp": "2026-07-28T04:20:56.192626Z",
+      "retryable": false,
+      "insufficient_evidence": false,
+      "context_leakage": false,
+      "freshness_failure": false,
+      "hallucination_risk": 0,
+      "transport": "live",
+      "error": null,
+      "ask_trace_id": "ASK-20260801-FA5AFE",
+      "fallback_used": false,
+      "executive_source": "ice",
+      "entity_confidence": 0.99,
+      "funnel": {
+        "retrieved": 47,
+        "ranked": 9,
+        "passed": 9,
+        "passed_to_ice": 9,
+        "referenced": 43,
+        "utilization": 1,
+        "efficiency": 0.915,
+        "precision": 1,
+        "zero_stage": null
+      },
+      "utilization": {},
+      "orchestration_latency": {
+        "entity_ms": 22,
+        "ikl_ms": 319,
+        "retrieval_ms": 1680,
+        "ranking_ms": 172,
+        "reasoning_ms": 18628,
+        "assembly_ms": 2692,
+        "serialization_ms": 921,
+        "http_ms": 25569,
+        "http_ingress_ms": 0,
+        "total_ms": 24437,
+        "last_completed_stage": "serialization",
+        "stages": {
+          "http_ingress": 0,
+          "entity_resolution": 22,
+          "ikl": 319,
+          "retrieval": 1680,
+          "reasoning": 18628,
+          "ranking": 172,
+          "response_assembly": 2692,
+          "serialization": 921
+        },
+        "warnings": [
+          {
+            "stage": "response_assembly",
+            "elapsed_ms": 2692,
+            "threshold_ms": 2000,
+            "ask_trace_id": "ASK-20260801-FA5AFE",
+            "kind": "stage_threshold_exceeded"
+          }
+        ]
+      },
+      "ikl_layers_hit": [],
+      "ikl_meta": null,
+      "trace_summary": "Trace: ASK-20260801-FA5AFE | Entity: Banking (0.99) | IKL: 319ms | Retrieved: 47 \u2192 Ranked: 9 \u2192 Passed: 9 \u2192 Referenced: 43 | Utilization: 1.0 | Efficiency: 0.915 | Precision: 1.0 | Last stage: response_assembly | Executive overwritten: Yes | Fallback: No | Timeout: No | Total: 24.4s",
+      "timeout": false,
+      "last_completed_stage": "response_assembly",
+      "elapsed_ms": 23516,
+      "engine_reached": true,
+      "execution_trace": "Ask Trace ID: ASK-20260801-FA5AFE\nEntity: Banking (0.99)\nIKL: 319ms\nRetrieved: 47\nRanked: 9\nPassed: 9\nReferenced: 43\nReasoning: 18.6s\nAssembly: 2692ms\nCompleted: true\nLast completed stage: response_assembly\nElapsed: 23.5s",
+      "stage_warnings": [
+        {
+          "stage": "response_assembly",
+          "elapsed_ms": 2692,
+          "threshold_ms": 2000,
+          "ask_trace_id": "ASK-20260801-FA5AFE",
+          "kind": "stage_threshold_exceeded"
+        }
+      ],
+      "degradation": {
+        "faa": "background_only",
+        "market_data": "cached",
+        "news": "cached",
+        "reasoning": "completed",
+        "ask_slim": true,
+        "krig": "empty",
+        "live_evidence": "skipped_slim",
+        "evidence_completion": "skipped_slim",
+        "context_assembly": "skipped_slim",
+        "multi_source": "ok",
+        "intelligence_layer": "skipped_slim",
+        "ask_orchestration": {
+          "ask_trace_id": "ASK-20260801-FA5AFE",
+          "ticker_source": null,
+          "ticker_rejects": [],
+          "ere_research_blocked": false,
+          "executive_source": "ice",
+          "rq_stack": "skipped_slim",
+          "ikl": {
+            "layers_hit": [],
+            "confidence": 0,
+            "explainability": {
+              "knowledge_sources": [],
+              "company_memory_used": [],
+              "industry_memory_used": [],
+              "macro_memory_used": [],
+              "documents_referenced": [],
+              "evidence_referenced": [],
+              "reasoning_path": [
+                "consult:raw_documents",
+                "consult:live_search"
+              ],
+              "knowledge_gaps": [
+                "company_memory",
+                "industry_memory",
+                "macro_memory",
+                "knowledge_graph",
+                "structured_kpis",
+                "historical_timeline"
+              ],
+              "confidence": 0
+            },
+            "primary_before_raw_documents": true
+          },
+          "ice_framework_meta_suppressed": false,
+          "version": "ask-orchestration-trace-2",
+          "ts": "2026-08-01T07:45:46.499757Z",
+          "fallback": false,
+          "fallback_used": false,
+          "timeout": false,
+          "completed": true,
+          "partial": false,
+          "last_completed_stage": "response_assembly",
+          "elapsed_ms": 23516,
+          "engine_reached": true,
+          "intent": "general_research",
+          "bound_ticker": "COFORGE",
+          "entity": {
+            "name": "Banking",
+            "detected": "COFORGE",
+            "entity_name": "Banking",
+            "entity_type": "Sector",
+            "aliases_matched": [
+              "COFORGE",
+              "Banking"
+            ],
+            "confidence": 0.99,
+            "source": null,
+            "resolution_source": null,
+            "needs_clarification": false,
+            "low_confidence": false,
+            "silently_bound": false,
+            "question_excerpt": "Explain price-to-book for banks.",
+            "rejected_candidates": []
+          },
+          "funnel": {
+            "retrieved": 47,
+            "ranked": 9,
+            "passed": 9,
+            "passed_to_ice": 9,
+            "referenced": 43,
+            "utilization": 1,
+            "efficiency": 0.915,
+            "precision": 1,
+            "zero_stage": null
+          },
+          "evidence": {
+            "retrieved": 47,
+            "ranked": 9,
+            "passed": 9,
+            "referenced": 43,
+            "utilization": 1,
+            "efficiency": 0.915,
+            "precision": 1,
+            "zero_stage": null
+          },
+          "latency": {
+            "entity_ms": 22,
+            "ikl_ms": 319,
+            "retrieval_ms": 1680,
+            "ranking_ms": 172,
+            "reasoning_ms": 18628,
+            "assembly_ms": 2692,
+            "serialization_ms": 921,
+            "http_ms": 0,
+            "http_ingress_ms": 0,
+            "total_ms": 24437,
+            "last_completed_stage": "serialization",
+            "stages": {
+              "http_ingress": 0,
+              "entity_resolution": 22,
+              "ikl": 319,
+              "retrieval": 1680,
+              "reasoning": 18628,
+              "ranking": 172,
+              "response_assembly": 2692,
+              "serialization": 921
+            },
+            "warnings": [
+              {
+                "stage": "response_assembly",
+                "elapsed_ms": 2692,
+                "threshold_ms": 2000,
+                "ask_trace_id": "ASK-20260801-FA5AFE",
+                "kind": "stage_threshold_exceeded"
+              }
+            ]
+          },
+          "latency_ms": {
+            "http_ingress": 0,
+            "entity_resolution": 22,
+            "ikl": 319,
+            "retrieval": 1680,
+            "reasoning": 18628,
+            "ranking": 172,
+            "response_assembly": 2692,
+            "serialization": 921,
+            "total": 24437
+          },
+          "stage_warnings": [
+            {
+              "stage": "response_assembly",
+              "elapsed_ms": 2692,
+              "threshold_ms": 2000,
+              "ask_trace_id": "ASK-20260801-FA5AFE",
+              "kind": "stage_threshold_exceeded"
+            }
+          ],
+          "executive_attribution": [
+            {
+              "paragraph": 1,
+              "text_excerpt": "Analyse via Financial evidence (2 items) Fill from existing reasoning / education path \u2014 no unsupported certainty Required domains present or softened",
+              "evidence_title": null,
+              "evidence_source": null,
+              "grounded": false
+            },
+            {
+              "paragraph": 2,
+              "text_excerpt": "Evidence: INFY company intelligence",
+              "evidence_title": null,
+              "evidence_source": null,
+              "grounded": false
+            }
+          ],
+          "grounding": 0,
+          "executive_overwritten": true,
+          "diagnostics_visibility": "internal",
+          "trace_summary": "Trace: ASK-20260801-FA5AFE | Entity: Banking (0.99) | IKL: 319ms | Retrieved: 47 \u2192 Ranked: 9 \u2192 Passed: 9 \u2192 Referenced: 43 | Utilization: 1.0 | Efficiency: 0.915 | Precision: 1.0 | Last stage: response_assembly | Executive overwritten: Yes | Fallback: No | Timeout: No | Total: 24.4s",
+          "execution_trace": "Ask Trace ID: ASK-20260801-FA5AFE\nEntity: Banking (0.99)\nIKL: 319ms\nRetrieved: 47\nRanked: 9\nPassed: 9\nReferenced: 43\nReasoning: 18.6s\nAssembly: 2692ms\nCompleted: true\nLast completed stage: response_assembly\nElapsed: 23.5s"
+        }
+      },
+      "short_circuit": null,
+      "live_gate_failures": [],
+      "live_gate_pass": true
+    },
+    {
+      "id": "SMOKE-04",
+      "prompt": "What did Meta say in Q2 2026 about AI capex?",
+      "pass": true,
+      "failures": [],
+      "latency_ms": 30109,
+      "http_status": 200,
+      "completed": true,
+      "degraded": true,
+      "intent": "Earnings_Analysis",
+      "expected_intent_family": "Company",
+      "entities": [
+        "META",
+        "TCS"
+      ],
+      "entity": "META",
+      "evidence_count": 17,
+      "evidence_sources": [
+        "agi_research",
+        "broker",
+        "news",
+        "filings",
+        "model_evidence",
+        "knowledge"
+      ],
+      "grounded_claims": true,
+      "confidence": 0.55,
+      "policy": "ok",
+      "policy_triggered": false,
+      "freshness_timestamp": null,
+      "retryable": false,
+      "insufficient_evidence": false,
+      "context_leakage": false,
+      "freshness_failure": false,
+      "hallucination_risk": 0,
+      "transport": "live",
+      "error": null,
+      "ask_trace_id": "ASK-20260801-C181C4",
+      "fallback_used": false,
+      "executive_source": "ice",
+      "entity_confidence": 0.995,
+      "funnel": {
+        "retrieved": 43,
+        "ranked": 5,
+        "passed": 5,
+        "passed_to_ice": 5,
+        "referenced": 43,
+        "utilization": 1,
+        "efficiency": 1,
+        "precision": 1,
+        "zero_stage": null
+      },
+      "utilization": {},
+      "orchestration_latency": {
+        "entity_ms": 15,
+        "ikl_ms": 8172,
+        "retrieval_ms": 1992,
+        "ranking_ms": 192,
+        "reasoning_ms": 15833,
+        "assembly_ms": 2016,
+        "serialization_ms": 62,
+        "http_ms": 29522,
+        "http_ingress_ms": 0,
+        "total_ms": 28286,
+        "last_completed_stage": "serialization",
+        "stages": {
+          "http_ingress": 0,
+          "entity_resolution": 15,
+          "ikl": 8172,
+          "retrieval": 1992,
+          "reasoning": 15833,
+          "ranking": 192,
+          "response_assembly": 2016,
+          "serialization": 62
+        },
+        "warnings": [
+          {
+            "stage": "ikl",
+            "elapsed_ms": 8172,
+            "threshold_ms": 500,
+            "ask_trace_id": "ASK-20260801-C181C4",
+            "kind": "stage_threshold_exceeded"
+          },
+          {
+            "stage": "response_assembly",
+            "elapsed_ms": 2016,
+            "threshold_ms": 2000,
+            "ask_trace_id": "ASK-20260801-C181C4",
+            "kind": "stage_threshold_exceeded"
+          }
+        ]
+      },
+      "ikl_layers_hit": [],
+      "ikl_meta": null,
+      "trace_summary": "Trace: ASK-20260801-C181C4 | Entity: META (0.995) | IKL: 8172ms | Retrieved: 43 \u2192 Ranked: 5 \u2192 Passed: 5 \u2192 Referenced: 43 | Utilization: 1.0 | Efficiency: 1.0 | Precision: 1.0 | Last stage: response_assembly | Executive overwritten: Yes | Fallback: No | Timeout: No | Total: 28.3s",
+      "timeout": false,
+      "last_completed_stage": "response_assembly",
+      "elapsed_ms": 28224,
+      "engine_reached": true,
+      "execution_trace": "Ask Trace ID: ASK-20260801-C181C4\nEntity: META (0.99)\nIKL: 8.172s\nRetrieved: 43\nRanked: 5\nPassed: 5\nReferenced: 43\nReasoning: 15.8s\nAssembly: 2016ms\nCompleted: true\nLast completed stage: response_assembly\nElapsed: 28.2s",
+      "stage_warnings": [
+        {
+          "stage": "ikl",
+          "elapsed_ms": 8172,
+          "threshold_ms": 500,
+          "ask_trace_id": "ASK-20260801-C181C4",
+          "kind": "stage_threshold_exceeded"
+        },
+        {
+          "stage": "response_assembly",
+          "elapsed_ms": 2016,
+          "threshold_ms": 2000,
+          "ask_trace_id": "ASK-20260801-C181C4",
+          "kind": "stage_threshold_exceeded"
+        }
+      ],
+      "degradation": {
+        "faa": "background_only",
+        "market_data": "cached",
+        "news": "cached",
+        "reasoning": "completed",
+        "ask_slim": true,
+        "krig": "empty",
+        "live_evidence": "skipped_slim",
+        "cid": "timeout",
+        "evidence_completion": "skipped_slim",
+        "context_assembly": "skipped_slim",
+        "multi_source": "empty",
+        "intelligence_layer": "skipped_slim",
+        "ask_orchestration": {
+          "ask_trace_id": "ASK-20260801-C181C4",
+          "ticker_source": "alias",
+          "ticker_rejects": [],
+          "ere_research_blocked": true,
+          "executive_source": "ice",
+          "rq_stack": "skipped_slim",
+          "ikl": {
+            "layers_hit": [],
+            "confidence": 0,
+            "explainability": {
+              "knowledge_sources": [],
+              "company_memory_used": [],
+              "industry_memory_used": [],
+              "macro_memory_used": [],
+              "documents_referenced": [],
+              "evidence_referenced": [],
+              "reasoning_path": [
+                "consult:raw_documents",
+                "consult:live_search"
+              ],
+              "knowledge_gaps": [
+                "company_memory",
+                "industry_memory",
+                "macro_memory",
+                "knowledge_graph",
+                "structured_kpis",
+                "historical_timeline"
+              ],
+              "confidence": 0
+            },
+            "primary_before_raw_documents": true
+          },
+          "ice_framework_meta_suppressed": false,
+          "version": "ask-orchestration-trace-2",
+          "ts": "2026-08-01T07:46:29.964286Z",
+          "fallback": false,
+          "fallback_used": false,
+          "timeout": false,
+          "completed": true,
+          "partial": false,
+          "last_completed_stage": "response_assembly",
+          "elapsed_ms": 28224,
+          "engine_reached": true,
+          "intent": "earnings_analysis",
+          "bound_ticker": "META",
+          "entity": {
+            "name": "META",
+            "detected": "META",
+            "entity_name": "META",
+            "entity_type": "Unknown",
+            "aliases_matched": [
+              "META"
+            ],
+            "confidence": 0.995,
+            "source": "alias",
+            "resolution_source": "alias",
+            "needs_clarification": true,
+            "low_confidence": false,
+            "silently_bound": false,
+            "question_excerpt": "What did Meta say in Q2 2026 about AI capex?",
+            "rejected_candidates": []
+          },
+          "funnel": {
+            "retrieved": 43,
+            "ranked": 5,
+            "passed": 5,
+            "passed_to_ice": 5,
+            "referenced": 43,
+            "utilization": 1,
+            "efficiency": 1,
+            "precision": 1,
+            "zero_stage": null
+          },
+          "evidence": {
+            "retrieved": 43,
+            "ranked": 5,
+            "passed": 5,
+            "referenced": 43,
+            "utilization": 1,
+            "efficiency": 1,
+            "precision": 1,
+            "zero_stage": null
+          },
+          "latency": {
+            "entity_ms": 15,
+            "ikl_ms": 8172,
+            "retrieval_ms": 1992,
+            "ranking_ms": 192,
+            "reasoning_ms": 15833,
+            "assembly_ms": 2016,
+            "serialization_ms": 62,
+            "http_ms": 0,
+            "http_ingress_ms": 0,
+            "total_ms": 28286,
+            "last_completed_stage": "serialization",
+            "stages": {
+              "http_ingress": 0,
+              "entity_resolution": 15,
+              "ikl": 8172,
+              "retrieval": 1992,
+              "reasoning": 15833,
+              "ranking": 192,
+              "response_assembly": 2016,
+              "serialization": 62
+            },
+            "warnings": [
+              {
+                "stage": "ikl",
+                "elapsed_ms": 8172,
+                "threshold_ms": 500,
+                "ask_trace_id": "ASK-20260801-C181C4",
+                "kind": "stage_threshold_exceeded"
+              },
+              {
+                "stage": "response_assembly",
+                "elapsed_ms": 2016,
+                "threshold_ms": 2000,
+                "ask_trace_id": "ASK-20260801-C181C4",
+                "kind": "stage_threshold_exceeded"
+              }
+            ]
+          },
+          "latency_ms": {
+            "http_ingress": 0,
+            "entity_resolution": 15,
+            "ikl": 8172,
+            "retrieval": 1992,
+            "reasoning": 15833,
+            "ranking": 192,
+            "response_assembly": 2016,
+            "serialization": 62,
+            "total": 28286
+          },
+          "stage_warnings": [
+            {
+              "stage": "ikl",
+              "elapsed_ms": 8172,
+              "threshold_ms": 500,
+              "ask_trace_id": "ASK-20260801-C181C4",
+              "kind": "stage_threshold_exceeded"
+            },
+            {
+              "stage": "response_assembly",
+              "elapsed_ms": 2016,
+              "threshold_ms": 2000,
+              "ask_trace_id": "ASK-20260801-C181C4",
+              "kind": "stage_threshold_exceeded"
+            }
+          ],
+          "executive_attribution": [
+            {
+              "paragraph": 1,
+              "text_excerpt": "Analyse via Financial evidence (4 items) Analyse via Industry evidence (1 items) Analyse via Historical evidence (1 items) Evidence: META expectations",
+              "evidence_title": null,
+              "evidence_source": null,
+              "grounded": false
+            }
+          ],
+          "grounding": 0,
+          "executive_overwritten": true,
+          "diagnostics_visibility": "internal",
+          "trace_summary": "Trace: ASK-20260801-C181C4 | Entity: META (0.995) | IKL: 8172ms | Retrieved: 43 \u2192 Ranked: 5 \u2192 Passed: 5 \u2192 Referenced: 43 | Utilization: 1.0 | Efficiency: 1.0 | Precision: 1.0 | Last stage: response_assembly | Executive overwritten: Yes | Fallback: No | Timeout: No | Total: 28.3s",
+          "execution_trace": "Ask Trace ID: ASK-20260801-C181C4\nEntity: META (0.99)\nIKL: 8.172s\nRetrieved: 43\nRanked: 5\nPassed: 5\nReferenced: 43\nReasoning: 15.8s\nAssembly: 2016ms\nCompleted: true\nLast completed stage: response_assembly\nElapsed: 28.2s"
+        }
+      },
+      "short_circuit": null,
+      "live_gate_failures": [],
+      "live_gate_pass": true
+    },
+    {
+      "id": "SMOKE-05",
+      "prompt": "Private market multiples for healthcare services.",
+      "pass": true,
+      "failures": [],
+      "latency_ms": 25840,
+      "http_status": 200,
+      "completed": true,
+      "degraded": true,
+      "intent": "Explain",
+      "expected_intent_family": "Private Markets",
+      "entities": [
+        "AXISBANK",
+        "COFORGE",
+        "HCLTECH",
+        "HDFCBANK",
+        "ICICIBANK",
+        "KOTAKBANK",
+        "LT",
+        "LTIM"
+      ],
+      "entity": "AXISBANK",
+      "evidence_count": 29,
+      "evidence_sources": [
+        "agi_research",
+        "broker",
+        "news",
+        "filings",
+        "model_evidence",
+        "institutional",
+        "knowledge"
+      ],
+      "grounded_claims": true,
+      "confidence": 0.695,
+      "policy": "ok",
+      "policy_triggered": false,
+      "freshness_timestamp": "2026-07-28T04:20:56.192626Z",
+      "retryable": false,
+      "insufficient_evidence": false,
+      "context_leakage": false,
+      "freshness_failure": false,
+      "hallucination_risk": 0,
+      "transport": "live",
+      "error": null,
+      "ask_trace_id": "ASK-20260801-181A5D",
+      "fallback_used": false,
+      "executive_source": "ice",
+      "entity_confidence": null,
+      "funnel": {
+        "retrieved": 66,
+        "ranked": 9,
+        "passed": 9,
+        "passed_to_ice": 9,
+        "referenced": 36,
+        "utilization": 1,
+        "efficiency": 0.545,
+        "precision": 1,
+        "zero_stage": null
+      },
+      "utilization": {},
+      "orchestration_latency": {
+        "entity_ms": 18,
+        "ikl_ms": 298,
+        "retrieval_ms": 1257,
+        "ranking_ms": 197,
+        "reasoning_ms": 19288,
+        "assembly_ms": 3074,
+        "serialization_ms": 0,
+        "http_ms": 25123,
+        "http_ingress_ms": 0,
+        "total_ms": 24135,
+        "last_completed_stage": "serialization",
+        "stages": {
+          "http_ingress": 0,
+          "entity_resolution": 18,
+          "ikl": 298,
+          "retrieval": 1257,
+          "reasoning": 19288,
+          "ranking": 197,
+          "response_assembly": 3074,
+          "serialization": 0
+        },
+        "warnings": [
+          {
+            "stage": "response_assembly",
+            "elapsed_ms": 3074,
+            "threshold_ms": 2000,
+            "ask_trace_id": "ASK-20260801-181A5D",
+            "kind": "stage_threshold_exceeded"
+          }
+        ]
+      },
+      "ikl_layers_hit": [],
+      "ikl_meta": null,
+      "trace_summary": "Trace: ASK-20260801-181A5D | Entity: \u2014 (0.0) | IKL: 298ms | Retrieved: 66 \u2192 Ranked: 9 \u2192 Passed: 9 \u2192 Referenced: 36 | Utilization: 1.0 | Efficiency: 0.545 | Precision: 1.0 | Last stage: response_assembly | Executive overwritten: Yes | Fallback: No | Timeout: No | Total: 24.1s",
+      "timeout": false,
+      "last_completed_stage": "response_assembly",
+      "elapsed_ms": 24135,
+      "engine_reached": true,
+      "execution_trace": "Ask Trace ID: ASK-20260801-181A5D\nEntity: \u2014 (0.00)\nIKL: 298ms\nRetrieved: 66\nRanked: 9\nPassed: 9\nReferenced: 36\nReasoning: 19.3s\nAssembly: 3074ms\nCompleted: true\nLast completed stage: response_assembly\nElapsed: 24.1s",
+      "stage_warnings": [
+        {
+          "stage": "response_assembly",
+          "elapsed_ms": 3074,
+          "threshold_ms": 2000,
+          "ask_trace_id": "ASK-20260801-181A5D",
+          "kind": "stage_threshold_exceeded"
+        }
+      ],
+      "degradation": {
+        "faa": "background_only",
+        "market_data": "cached",
+        "news": "cached",
+        "reasoning": "completed",
+        "ask_slim": true,
+        "krig": "empty",
+        "live_evidence": "skipped_slim",
+        "evidence_completion": "skipped_slim",
+        "context_assembly": "skipped_slim",
+        "multi_source": "ok",
+        "intelligence_layer": "skipped_slim",
+        "ask_orchestration": {
+          "ask_trace_id": "ASK-20260801-181A5D",
+          "ticker_source": null,
+          "ticker_rejects": [
+            {
+              "raw": "COFORGE",
+              "source": "final_sanitize"
+            }
+          ],
+          "ere_research_blocked": true,
+          "executive_source": "ice",
+          "rq_stack": "skipped_slim",
+          "ikl": {
+            "layers_hit": [],
+            "confidence": 0,
+            "explainability": {
+              "knowledge_sources": [],
+              "company_memory_used": [],
+              "industry_memory_used": [],
+              "macro_memory_used": [],
+              "documents_referenced": [],
+              "evidence_referenced": [],
+              "reasoning_path": [
+                "consult:raw_documents",
+                "consult:live_search"
+              ],
+              "knowledge_gaps": [
+                "company_memory",
+                "industry_memory",
+                "macro_memory",
+                "knowledge_graph",
+                "structured_kpis",
+                "historical_timeline"
+              ],
+              "confidence": 0
+            },
+            "primary_before_raw_documents": true
+          },
+          "ice_framework_meta_suppressed": false,
+          "version": "ask-orchestration-trace-2",
+          "ts": "2026-08-01T07:47:09.658842Z",
+          "fallback": false,
+          "fallback_used": false,
+          "timeout": false,
+          "completed": true,
+          "partial": false,
+          "last_completed_stage": "response_assembly",
+          "elapsed_ms": 24135,
+          "engine_reached": true,
+          "intent": "valuation",
+          "bound_ticker": null,
+          "entity": {
+            "name": null,
+            "detected": null,
+            "entity_name": null,
+            "entity_type": "Unknown",
+            "aliases_matched": [],
+            "confidence": 0,
+            "source": null,
+            "resolution_source": null,
+            "needs_clarification": true,
+            "low_confidence": false,
+            "silently_bound": false,
+            "question_excerpt": "Private market multiples for healthcare services.",
+            "rejected_candidates": [
+              "COFORGE"
+            ]
+          },
+          "funnel": {
+            "retrieved": 66,
+            "ranked": 9,
+            "passed": 9,
+            "passed_to_ice": 9,
+            "referenced": 36,
+            "utilization": 1,
+            "efficiency": 0.545,
+            "precision": 1,
+            "zero_stage": null
+          },
+          "evidence": {
+            "retrieved": 66,
+            "ranked": 9,
+            "passed": 9,
+            "referenced": 36,
+            "utilization": 1,
+            "efficiency": 0.545,
+            "precision": 1,
+            "zero_stage": null
+          },
+          "latency": {
+            "entity_ms": 18,
+            "ikl_ms": 298,
+            "retrieval_ms": 1257,
+            "ranking_ms": 197,
+            "reasoning_ms": 19288,
+            "assembly_ms": 3074,
+            "serialization_ms": 0,
+            "http_ms": 0,
+            "http_ingress_ms": 0,
+            "total_ms": 24135,
+            "last_completed_stage": "serialization",
+            "stages": {
+              "http_ingress": 0,
+              "entity_resolution": 18,
+              "ikl": 298,
+              "retrieval": 1257,
+              "reasoning": 19288,
+              "ranking": 197,
+              "response_assembly": 3074,
+              "serialization": 0
+            },
+            "warnings": [
+              {
+                "stage": "response_assembly",
+                "elapsed_ms": 3074,
+                "threshold_ms": 2000,
+                "ask_trace_id": "ASK-20260801-181A5D",
+                "kind": "stage_threshold_exceeded"
+              }
+            ]
+          },
+          "latency_ms": {
+            "http_ingress": 0,
+            "entity_resolution": 18,
+            "ikl": 298,
+            "retrieval": 1257,
+            "reasoning": 19288,
+            "ranking": 197,
+            "response_assembly": 3074,
+            "serialization": 0,
+            "total": 24135
+          },
+          "stage_warnings": [
+            {
+              "stage": "response_assembly",
+              "elapsed_ms": 3074,
+              "threshold_ms": 2000,
+              "ask_trace_id": "ASK-20260801-181A5D",
+              "kind": "stage_threshold_exceeded"
+            }
+          ],
+          "executive_attribution": [
+            {
+              "paragraph": 1,
+              "text_excerpt": "Analyse via Financial evidence (2 items) Fill from existing reasoning / education path \u2014 no unsupported certainty Required domains present or softened",
+              "evidence_title": null,
+              "evidence_source": null,
+              "grounded": false
+            },
+            {
+              "paragraph": 2,
+              "text_excerpt": "Evidence: INFY company intelligence",
+              "evidence_title": null,
+              "evidence_source": null,
+              "grounded": false
+            }
+          ],
+          "grounding": 0,
+          "executive_overwritten": true,
+          "diagnostics_visibility": "internal",
+          "trace_summary": "Trace: ASK-20260801-181A5D | Entity: \u2014 (0.0) | IKL: 298ms | Retrieved: 66 \u2192 Ranked: 9 \u2192 Passed: 9 \u2192 Referenced: 36 | Utilization: 1.0 | Efficiency: 0.545 | Precision: 1.0 | Last stage: response_assembly | Executive overwritten: Yes | Fallback: No | Timeout: No | Total: 24.1s",
+          "execution_trace": "Ask Trace ID: ASK-20260801-181A5D\nEntity: \u2014 (0.00)\nIKL: 298ms\nRetrieved: 66\nRanked: 9\nPassed: 9\nReferenced: 36\nReasoning: 19.3s\nAssembly: 3074ms\nCompleted: true\nLast completed stage: response_assembly\nElapsed: 24.1s"
+        }
+      },
+      "short_circuit": null,
+      "live_gate_failures": [],
+      "live_gate_pass": true
+    },
+    {
+      "id": "SMOKE-06",
+      "prompt": "Should I buy HDFC Bank tomorrow?",
+      "pass": true,
+      "failures": [],
+      "latency_ms": 311,
+      "http_status": 200,
+      "completed": true,
+      "degraded": true,
+      "intent": "Company",
+      "expected_intent_family": "Company",
+      "entities": [
+        "HDFCBANK"
+      ],
+      "entity": "HDFCBANK",
+      "evidence_count": 1,
+      "evidence_sources": [
+        "policy"
+      ],
+      "grounded_claims": true,
+      "confidence": 70,
+      "policy": "ok",
+      "policy_triggered": true,
+      "freshness_timestamp": null,
+      "retryable": false,
+      "insufficient_evidence": false,
+      "context_leakage": false,
+      "freshness_failure": false,
+      "hallucination_risk": 0,
+      "transport": "live",
+      "error": null,
+      "ask_trace_id": "ASK-20260801-064275",
+      "fallback_used": false,
+      "executive_source": "recommendation_policy",
+      "entity_confidence": 0.999,
+      "funnel": {
+        "retrieved": 0,
+        "ranked": 1,
+        "passed": 1,
+        "passed_to_ice": 1,
+        "referenced": 1,
+        "utilization": 1,
+        "efficiency": 0,
+        "precision": 1,
+        "zero_stage": "retrieved"
+      },
+      "utilization": {},
+      "orchestration_latency": {
+        "entity_ms": 1,
+        "ikl_ms": 0,
+        "retrieval_ms": 0,
+        "ranking_ms": 0,
+        "reasoning_ms": 0,
+        "assembly_ms": 0,
+        "serialization_ms": 0,
+        "http_ms": 54,
+        "http_ingress_ms": 0,
+        "total_ms": 2,
+        "last_completed_stage": "serialization",
+        "stages": {
+          "http_ingress": 0,
+          "entity_resolution": 1,
+          "ikl": 0,
+          "retrieval": 0,
+          "ranking": 0,
+          "reasoning": 0,
+          "response_assembly": 0,
+          "serialization": 0
+        },
+        "warnings": []
+      },
+      "ikl_layers_hit": [],
+      "ikl_meta": null,
+      "trace_summary": "Trace: ASK-20260801-064275 | Entity: HDFC Bank Limited (0.999) | IKL: 0ms | Retrieved: 0 \u2192 Ranked: 1 \u2192 Passed: 1 \u2192 Referenced: 1 | Utilization: 1.0 | Efficiency: 0.0 | Precision: 1.0 | Last stage: response_assembly | Executive overwritten: No | Fallback: No | Timeout: No | Total: 0.0s",
+      "timeout": false,
+      "last_completed_stage": "response_assembly",
+      "elapsed_ms": 2,
+      "engine_reached": true,
+      "execution_trace": "Ask Trace ID: ASK-20260801-064275\nEntity: HDFC Bank Limited (1.00)\nIKL: 0ms\nRetrieved: 0\nRanked: 1\nPassed: 1\nReferenced: 1\nReasoning: 0.0s\nAssembly: 0ms\nCompleted: true\nLast completed stage: response_assembly\nElapsed: 0.0s",
+      "stage_warnings": [],
+      "degradation": {
+        "ask_slim": true,
+        "short_circuit": "recommendation_policy",
+        "rq_stack": "skipped",
+        "reasoning": "policy_refuse"
+      },
+      "short_circuit": "recommendation_policy",
+      "live_gate_failures": [],
+      "live_gate_pass": true
+    },
+    {
+      "id": "SMOKE-07",
+      "prompt": "As of 2020-03-31, where was Nifty valuation?",
+      "pass": true,
+      "failures": [],
+      "latency_ms": 14977,
+      "http_status": 200,
+      "completed": true,
+      "degraded": true,
+      "intent": "Explain",
+      "expected_intent_family": "Historical",
+      "entities": [
+        "TCS"
+      ],
+      "entity": "TCS",
+      "evidence_count": 49,
+      "evidence_sources": [
+        "agi_research",
+        "broker",
+        "news",
+        "filings",
+        "model_evidence",
+        "institutional",
+        "knowledge"
+      ],
+      "grounded_claims": true,
+      "confidence": 0.6012,
+      "policy": "ok",
+      "policy_triggered": false,
+      "freshness_timestamp": "2026-07-31T19:02:51.850341Z",
+      "retryable": false,
+      "insufficient_evidence": false,
+      "context_leakage": false,
+      "freshness_failure": false,
+      "hallucination_risk": 0,
+      "transport": "live",
+      "error": null,
+      "ask_trace_id": "ASK-20260801-51EF7C",
+      "fallback_used": false,
+      "executive_source": "ice",
+      "entity_confidence": 0.995,
+      "funnel": {
+        "retrieved": 58,
+        "ranked": 17,
+        "passed": 16,
+        "passed_to_ice": 16,
+        "referenced": 39,
+        "utilization": 1,
+        "efficiency": 0.672,
+        "precision": 1,
+        "zero_stage": null
+      },
+      "utilization": {},
+      "orchestration_latency": {
+        "entity_ms": 17,
+        "ikl_ms": 423,
+        "retrieval_ms": 2154,
+        "ranking_ms": 273,
+        "reasoning_ms": 8452,
+        "assembly_ms": 1874,
+        "serialization_ms": 0,
+        "http_ms": 14501,
+        "http_ingress_ms": 0,
+        "total_ms": 13197,
+        "last_completed_stage": "serialization",
+        "stages": {
+          "http_ingress": 0,
+          "entity_resolution": 17,
+          "ikl": 423,
+          "retrieval": 2154,
+          "reasoning": 8452,
+          "ranking": 273,
+          "response_assembly": 1874,
+          "serialization": 0
+        },
+        "warnings": [
+          {
+            "stage": "retrieval",
+            "elapsed_ms": 2154,
+            "threshold_ms": 2000,
+            "ask_trace_id": "ASK-20260801-51EF7C",
+            "kind": "stage_threshold_exceeded"
+          }
+        ]
+      },
+      "ikl_layers_hit": [],
+      "ikl_meta": null,
+      "trace_summary": "Trace: ASK-20260801-51EF7C | Entity: Nifty 50 (0.995) | IKL: 423ms | Retrieved: 58 \u2192 Ranked: 17 \u2192 Passed: 16 \u2192 Referenced: 39 | Utilization: 1.0 | Efficiency: 0.672 | Precision: 1.0 | Last stage: response_assembly | Executive overwritten: Yes | Fallback: No | Timeout: No | Total: 13.2s",
+      "timeout": false,
+      "last_completed_stage": "response_assembly",
+      "elapsed_ms": 13196,
+      "engine_reached": true,
+      "execution_trace": "Ask Trace ID: ASK-20260801-51EF7C\nEntity: Nifty 50 (0.99)\nIKL: 423ms\nRetrieved: 58\nRanked: 17\nPassed: 16\nReferenced: 39\nReasoning: 8.5s\nAssembly: 1874ms\nCompleted: true\nLast completed stage: response_assembly\nElapsed: 13.2s",
+      "stage_warnings": [
+        {
+          "stage": "retrieval",
+          "elapsed_ms": 2154,
+          "threshold_ms": 2000,
+          "ask_trace_id": "ASK-20260801-51EF7C",
+          "kind": "stage_threshold_exceeded"
+        }
+      ],
+      "degradation": {
+        "faa": "background_only",
+        "market_data": "cached",
+        "news": "cached",
+        "reasoning": "completed",
+        "ask_slim": true,
+        "krig": "empty",
+        "live_evidence": "skipped_slim",
+        "evidence_completion": "skipped_slim",
+        "context_assembly": "skipped_slim",
+        "multi_source": "ok",
+        "intelligence_layer": "skipped_slim",
+        "ask_orchestration": {
+          "ask_trace_id": "ASK-20260801-51EF7C",
+          "ticker_source": null,
+          "ticker_rejects": [
+            {
+              "raw": "AS",
+              "source": "final_sanitize"
+            }
+          ],
+          "ere_research_blocked": false,
+          "executive_source": "ice",
+          "rq_stack": "skipped_slim",
+          "ikl": {
+            "layers_hit": [],
+            "confidence": 0,
+            "explainability": {
+              "knowledge_sources": [],
+              "company_memory_used": [],
+              "industry_memory_used": [],
+              "macro_memory_used": [],
+              "documents_referenced": [],
+              "evidence_referenced": [],
+              "reasoning_path": [
+                "consult:raw_documents",
+                "consult:live_search"
+              ],
+              "knowledge_gaps": [
+                "company_memory",
+                "industry_memory",
+                "macro_memory",
+                "knowledge_graph",
+                "structured_kpis",
+                "historical_timeline"
+              ],
+              "confidence": 0
+            },
+            "primary_before_raw_documents": true
+          },
+          "ice_framework_meta_suppressed": false,
+          "version": "ask-orchestration-trace-2",
+          "ts": "2026-08-01T07:47:50.537870Z",
+          "fallback": false,
+          "fallback_used": false,
+          "timeout": false,
+          "completed": true,
+          "partial": false,
+          "last_completed_stage": "response_assembly",
+          "elapsed_ms": 13196,
+          "engine_reached": true,
+          "intent": "valuation",
+          "bound_ticker": null,
+          "entity": {
+            "name": "Nifty 50",
+            "detected": null,
+            "entity_name": "Nifty 50",
+            "entity_type": "Broad Index",
+            "aliases_matched": [
+              "Nifty 50"
+            ],
+            "confidence": 0.995,
+            "source": null,
+            "resolution_source": null,
+            "needs_clarification": false,
+            "low_confidence": false,
+            "silently_bound": false,
+            "question_excerpt": "As of 2020-03-31, where was Nifty valuation?",
+            "rejected_candidates": [
+              "AS"
+            ]
+          },
+          "funnel": {
+            "retrieved": 58,
+            "ranked": 17,
+            "passed": 16,
+            "passed_to_ice": 16,
+            "referenced": 39,
+            "utilization": 1,
+            "efficiency": 0.672,
+            "precision": 1,
+            "zero_stage": null
+          },
+          "evidence": {
+            "retrieved": 58,
+            "ranked": 17,
+            "passed": 16,
+            "referenced": 39,
+            "utilization": 1,
+            "efficiency": 0.672,
+            "precision": 1,
+            "zero_stage": null
+          },
+          "latency": {
+            "entity_ms": 17,
+            "ikl_ms": 423,
+            "retrieval_ms": 2154,
+            "ranking_ms": 273,
+            "reasoning_ms": 8452,
+            "assembly_ms": 1874,
+            "serialization_ms": 0,
+            "http_ms": 0,
+            "http_ingress_ms": 0,
+            "total_ms": 13197,
+            "last_completed_stage": "serialization",
+            "stages": {
+              "http_ingress": 0,
+              "entity_resolution": 17,
+              "ikl": 423,
+              "retrieval": 2154,
+              "reasoning": 8452,
+              "ranking": 273,
+              "response_assembly": 1874,
+              "serialization": 0
+            },
+            "warnings": [
+              {
+                "stage": "retrieval",
+                "elapsed_ms": 2154,
+                "threshold_ms": 2000,
+                "ask_trace_id": "ASK-20260801-51EF7C",
+                "kind": "stage_threshold_exceeded"
+              }
+            ]
+          },
+          "latency_ms": {
+            "http_ingress": 0,
+            "entity_resolution": 17,
+            "ikl": 423,
+            "retrieval": 2154,
+            "reasoning": 8452,
+            "ranking": 273,
+            "response_assembly": 1874,
+            "serialization": 0,
+            "total": 13197
+          },
+          "stage_warnings": [
+            {
+              "stage": "retrieval",
+              "elapsed_ms": 2154,
+              "threshold_ms": 2000,
+              "ask_trace_id": "ASK-20260801-51EF7C",
+              "kind": "stage_threshold_exceeded"
+            }
+          ],
+          "executive_attribution": [
+            {
+              "paragraph": 1,
+              "text_excerpt": "Analyse via Financial evidence (2 items) Fill from existing reasoning / education path \u2014 no unsupported certainty Required domains present or softened",
+              "evidence_title": "1 Valuing Financial Service Firms Aswath Damodaran April 2009",
+              "evidence_source": "agi_research",
+              "grounded": true
+            },
+            {
+              "paragraph": 2,
+              "text_excerpt": "Evidence: company evidence pack",
+              "evidence_title": null,
+              "evidence_source": null,
+              "grounded": false
+            }
+          ],
+          "grounding": 0.5,
+          "executive_overwritten": true,
+          "diagnostics_visibility": "internal",
+          "trace_summary": "Trace: ASK-20260801-51EF7C | Entity: Nifty 50 (0.995) | IKL: 423ms | Retrieved: 58 \u2192 Ranked: 17 \u2192 Passed: 16 \u2192 Referenced: 39 | Utilization: 1.0 | Efficiency: 0.672 | Precision: 1.0 | Last stage: response_assembly | Executive overwritten: Yes | Fallback: No | Timeout: No | Total: 13.2s",
+          "execution_trace": "Ask Trace ID: ASK-20260801-51EF7C\nEntity: Nifty 50 (0.99)\nIKL: 423ms\nRetrieved: 58\nRanked: 17\nPassed: 16\nReferenced: 39\nReasoning: 8.5s\nAssembly: 1874ms\nCompleted: true\nLast completed stage: response_assembly\nElapsed: 13.2s"
+        }
+      },
+      "short_circuit": null,
+      "live_gate_failures": [],
+      "live_gate_pass": true
+    },
+    {
+      "id": "SMOKE-08",
+      "prompt": "Summarize India's mid-2026 equity outlook.",
+      "pass": true,
+      "failures": [],
+      "latency_ms": 14068,
+      "http_status": 200,
+      "completed": true,
+      "degraded": true,
+      "intent": "General_Research",
+      "expected_intent_family": "Macro",
+      "entities": [],
+      "entity": null,
+      "evidence_count": 49,
+      "evidence_sources": [
+        "agi_research",
+        "broker",
+        "news",
+        "filings",
+        "model_evidence",
+        "institutional",
+        "knowledge"
+      ],
+      "grounded_claims": true,
+      "confidence": 0.43,
+      "policy": "ok",
+      "policy_triggered": false,
+      "freshness_timestamp": "2026-07-31T19:02:47.552355Z",
+      "retryable": false,
+      "insufficient_evidence": false,
+      "context_leakage": false,
+      "freshness_failure": false,
+      "hallucination_risk": 0,
+      "transport": "live",
+      "error": null,
+      "ask_trace_id": "ASK-20260801-740587",
+      "fallback_used": false,
+      "executive_source": "ice",
+      "entity_confidence": null,
+      "funnel": {
+        "retrieved": 67,
+        "ranked": 28,
+        "passed": 16,
+        "passed_to_ice": 16,
+        "referenced": 43,
+        "utilization": 1,
+        "efficiency": 0.642,
+        "precision": 1,
+        "zero_stage": null
+      },
+      "utilization": {},
+      "orchestration_latency": {
+        "entity_ms": 15,
+        "ikl_ms": 181,
+        "retrieval_ms": 2072,
+        "ranking_ms": 168,
+        "reasoning_ms": 8208,
+        "assembly_ms": 1524,
+        "serialization_ms": 0,
+        "http_ms": 13320,
+        "http_ingress_ms": 0,
+        "total_ms": 12171,
+        "last_completed_stage": "serialization",
+        "stages": {
+          "http_ingress": 0,
+          "entity_resolution": 15,
+          "ikl": 181,
+          "retrieval": 2072,
+          "reasoning": 8208,
+          "ranking": 168,
+          "response_assembly": 1524,
+          "serialization": 0
+        },
+        "warnings": [
+          {
+            "stage": "retrieval",
+            "elapsed_ms": 2072,
+            "threshold_ms": 2000,
+            "ask_trace_id": "ASK-20260801-740587",
+            "kind": "stage_threshold_exceeded"
+          }
+        ]
+      },
+      "ikl_layers_hit": [],
+      "ikl_meta": null,
+      "trace_summary": "Trace: ASK-20260801-740587 | Entity: \u2014 (0.0) | IKL: 181ms | Retrieved: 67 \u2192 Ranked: 28 \u2192 Passed: 16 \u2192 Referenced: 43 | Utilization: 1.0 | Efficiency: 0.642 | Precision: 1.0 | Last stage: response_assembly | Executive overwritten: Yes | Fallback: No | Timeout: No | Total: 12.2s",
+      "timeout": false,
+      "last_completed_stage": "response_assembly",
+      "elapsed_ms": 12170,
+      "engine_reached": true,
+      "execution_trace": "Ask Trace ID: ASK-20260801-740587\nEntity: \u2014 (0.00)\nIKL: 181ms\nRetrieved: 67\nRanked: 28\nPassed: 16\nReferenced: 43\nReasoning: 8.2s\nAssembly: 1524ms\nCompleted: true\nLast completed stage: response_assembly\nElapsed: 12.2s",
+      "stage_warnings": [
+        {
+          "stage": "retrieval",
+          "elapsed_ms": 2072,
+          "threshold_ms": 2000,
+          "ask_trace_id": "ASK-20260801-740587",
+          "kind": "stage_threshold_exceeded"
+        }
+      ],
+      "degradation": {
+        "faa": "background_only",
+        "market_data": "cached",
+        "news": "cached",
+        "reasoning": "completed",
+        "ask_slim": true,
+        "krig": "empty",
+        "live_evidence": "skipped_slim",
+        "evidence_completion": "skipped_slim",
+        "context_assembly": "skipped_slim",
+        "multi_source": "empty",
+        "intelligence_layer": "skipped_slim",
+        "ask_orchestration": {
+          "ask_trace_id": "ASK-20260801-740587",
+          "ticker_source": null,
+          "ticker_rejects": [
+            {
+              "raw": "SUMMARIZE",
+              "source": "final_sanitize"
+            }
+          ],
+          "ere_research_blocked": true,
+          "executive_source": "ice",
+          "rq_stack": "skipped_slim",
+          "ikl": {
+            "layers_hit": [],
+            "confidence": 0,
+            "explainability": {
+              "knowledge_sources": [],
+              "company_memory_used": [],
+              "industry_memory_used": [],
+              "macro_memory_used": [],
+              "documents_referenced": [],
+              "evidence_referenced": [],
+              "reasoning_path": [
+                "consult:raw_documents",
+                "consult:live_search"
+              ],
+              "knowledge_gaps": [
+                "company_memory",
+                "industry_memory",
+                "macro_memory",
+                "knowledge_graph",
+                "structured_kpis",
+                "historical_timeline"
+              ],
+              "confidence": 0
+            },
+            "primary_before_raw_documents": true
+          },
+          "ice_framework_meta_suppressed": false,
+          "version": "ask-orchestration-trace-2",
+          "ts": "2026-08-01T07:48:16.997044Z",
+          "fallback": false,
+          "fallback_used": false,
+          "timeout": false,
+          "completed": true,
+          "partial": false,
+          "last_completed_stage": "response_assembly",
+          "elapsed_ms": 12170,
+          "engine_reached": true,
+          "intent": "general_research",
+          "bound_ticker": null,
+          "entity": {
+            "name": null,
+            "detected": null,
+            "entity_name": null,
+            "entity_type": "Unknown",
+            "aliases_matched": [],
+            "confidence": 0,
+            "source": null,
+            "resolution_source": null,
+            "needs_clarification": true,
+            "low_confidence": false,
+            "silently_bound": false,
+            "question_excerpt": "Summarize India's mid-2026 equity outlook.",
+            "rejected_candidates": [
+              "SUMMARIZE"
+            ]
+          },
+          "funnel": {
+            "retrieved": 67,
+            "ranked": 28,
+            "passed": 16,
+            "passed_to_ice": 16,
+            "referenced": 43,
+            "utilization": 1,
+            "efficiency": 0.642,
+            "precision": 1,
+            "zero_stage": null
+          },
+          "evidence": {
+            "retrieved": 67,
+            "ranked": 28,
+            "passed": 16,
+            "referenced": 43,
+            "utilization": 1,
+            "efficiency": 0.642,
+            "precision": 1,
+            "zero_stage": null
+          },
+          "latency": {
+            "entity_ms": 15,
+            "ikl_ms": 181,
+            "retrieval_ms": 2072,
+            "ranking_ms": 168,
+            "reasoning_ms": 8208,
+            "assembly_ms": 1524,
+            "serialization_ms": 0,
+            "http_ms": 0,
+            "http_ingress_ms": 0,
+            "total_ms": 12171,
+            "last_completed_stage": "serialization",
+            "stages": {
+              "http_ingress": 0,
+              "entity_resolution": 15,
+              "ikl": 181,
+              "retrieval": 2072,
+              "reasoning": 8208,
+              "ranking": 168,
+              "response_assembly": 1524,
+              "serialization": 0
+            },
+            "warnings": [
+              {
+                "stage": "retrieval",
+                "elapsed_ms": 2072,
+                "threshold_ms": 2000,
+                "ask_trace_id": "ASK-20260801-740587",
+                "kind": "stage_threshold_exceeded"
+              }
+            ]
+          },
+          "latency_ms": {
+            "http_ingress": 0,
+            "entity_resolution": 15,
+            "ikl": 181,
+            "retrieval": 2072,
+            "reasoning": 8208,
+            "ranking": 168,
+            "response_assembly": 1524,
+            "serialization": 0,
+            "total": 12171
+          },
+          "stage_warnings": [
+            {
+              "stage": "retrieval",
+              "elapsed_ms": 2072,
+              "threshold_ms": 2000,
+              "ask_trace_id": "ASK-20260801-740587",
+              "kind": "stage_threshold_exceeded"
+            }
+          ],
+          "executive_attribution": [
+            {
+              "paragraph": 1,
+              "text_excerpt": "Analyse via Financial evidence (4 items) Analyse via Industry evidence (1 items) Analyse via Historical evidence (1 items) Evidence: SUMMARIZE expectations",
+              "evidence_title": null,
+              "evidence_source": null,
+              "grounded": false
+            }
+          ],
+          "grounding": 0,
+          "executive_overwritten": true,
+          "diagnostics_visibility": "internal",
+          "trace_summary": "Trace: ASK-20260801-740587 | Entity: \u2014 (0.0) | IKL: 181ms | Retrieved: 67 \u2192 Ranked: 28 \u2192 Passed: 16 \u2192 Referenced: 43 | Utilization: 1.0 | Efficiency: 0.642 | Precision: 1.0 | Last stage: response_assembly | Executive overwritten: Yes | Fallback: No | Timeout: No | Total: 12.2s",
+          "execution_trace": "Ask Trace ID: ASK-20260801-740587\nEntity: \u2014 (0.00)\nIKL: 181ms\nRetrieved: 67\nRanked: 28\nPassed: 16\nReferenced: 43\nReasoning: 8.2s\nAssembly: 1524ms\nCompleted: true\nLast completed stage: response_assembly\nElapsed: 12.2s"
+        }
+      },
+      "short_circuit": null,
+      "live_gate_failures": [],
+      "live_gate_pass": true
+    }
+  ],
+  "comparison": {
+    "previous_artifact_note": "compared against paused/preserved pre-IKL baseline when available",
+    "tier_a_passed": 8,
+    "tier_a_total": 8,
+    "tier_a_gate": "PASS",
+    "deltas": [
+      {
+        "id": "SMOKE-01",
+        "prev_pass": true,
+        "now_pass": true,
+        "prev_latency_ms": 31469,
+        "now_latency_ms": 37017,
+        "prev_timeout": false,
+        "now_timeout": false,
+        "prev_fallback": null,
+        "now_fallback": false,
+        "prev_reasoning_ms": 19410,
+        "now_reasoning_ms": 16810
+      },
+      {
+        "id": "SMOKE-02",
+        "prev_pass": true,
+        "now_pass": true,
+        "prev_latency_ms": 36085,
+        "now_latency_ms": 31596,
+        "prev_timeout": false,
+        "now_timeout": false,
+        "prev_fallback": null,
+        "now_fallback": false,
+        "prev_reasoning_ms": 23944,
+        "now_reasoning_ms": 12811
+      },
+      {
+        "id": "SMOKE-03",
+        "prev_pass": true,
+        "now_pass": true,
+        "prev_latency_ms": 89163,
+        "now_latency_ms": 26217,
+        "prev_timeout": false,
+        "now_timeout": false,
+        "prev_fallback": null,
+        "now_fallback": false,
+        "prev_reasoning_ms": 81059,
+        "now_reasoning_ms": 18628
+      },
+      {
+        "id": "SMOKE-04",
+        "prev_pass": false,
+        "now_pass": true,
+        "prev_latency_ms": 120113,
+        "now_latency_ms": 30109,
+        "prev_timeout": true,
+        "now_timeout": false,
+        "prev_fallback": true,
+        "now_fallback": false,
+        "prev_reasoning_ms": null,
+        "now_reasoning_ms": 15833
+      },
+      {
+        "id": "SMOKE-05",
+        "prev_pass": true,
+        "now_pass": true,
+        "prev_latency_ms": 87306,
+        "now_latency_ms": 25840,
+        "prev_timeout": false,
+        "now_timeout": false,
+        "prev_fallback": null,
+        "now_fallback": false,
+        "prev_reasoning_ms": 81382,
+        "now_reasoning_ms": 19288
+      },
+      {
+        "id": "SMOKE-06",
+        "prev_pass": false,
+        "now_pass": true,
+        "prev_latency_ms": 120093,
+        "now_latency_ms": 311,
+        "prev_timeout": true,
+        "now_timeout": false,
+        "prev_fallback": true,
+        "now_fallback": false,
+        "prev_reasoning_ms": null,
+        "now_reasoning_ms": null
+      },
+      {
+        "id": "SMOKE-07",
+        "prev_pass": true,
+        "now_pass": true,
+        "prev_latency_ms": 22008,
+        "now_latency_ms": 14977,
+        "prev_timeout": false,
+        "now_timeout": false,
+        "prev_fallback": null,
+        "now_fallback": false,
+        "prev_reasoning_ms": 15772,
+        "now_reasoning_ms": 8452
+      },
+      {
+        "id": "SMOKE-08",
+        "prev_pass": true,
+        "now_pass": true,
+        "prev_latency_ms": 17071,
+        "now_latency_ms": 14068,
+        "prev_timeout": false,
+        "now_timeout": false,
+        "prev_fallback": null,
+        "now_fallback": false,
+        "prev_reasoning_ms": 11409,
+        "now_reasoning_ms": 8208
+      }
+    ],
+    "recommend_full_suite": true,
+    "recommend_ikl_merge": false,
+    "false_green_guard": "live mode rejects gateway_fallback / empty funnel / missing short-circuit"
+  },
+  "artifact": "/workspace/artifacts/tier_a_fix_report.json",
+  "stamped_artifact": "/workspace/artifacts/tier_a_fix_report_20260801T074347Z.json",
+  "note": "Tier A only \u2014 do not run full 42-case suite until live gate 8/8 (no fallback, no timeout, funnel/stage/trace present). Do not treat IKL A/B as valid until then."
+}

@@ -1,0 +1,105 @@
+import { calculateConfluenceOutcome, createConfluenceOutcomeSchedule, summarizeConfluenceOutcomes } from './confluenceOutcomeValidation.js';
+import { settlementWindow, validateConfluenceCandidate, validateSettlementSnapshots } from './researchDataQuality.js';
+
+function config() { const url = String(process.env.SUPABASE_URL || '').trim().replace(/\/$/, ''), key = String(process.env.SUPABASE_SERVICE_ROLE_KEY || '').trim(); if (!url || !key) throw new Error('Confluence validation requires Supabase credentials.'); return { url, key }; }
+async function rest(table, { method = 'GET', query = '', body, prefer } = {}) { const { url, key } = config(); const response = await fetch(`${url}/rest/v1/${table}${query ? `?${query}` : ''}`, { method, headers: { apikey: key, Authorization: `Bearer ${key}`, 'Content-Type': 'application/json', ...(prefer ? { Prefer: prefer } : {}) }, body: body == null ? undefined : JSON.stringify(body) }); if (!response.ok) { const error = new Error(`Confluence validation storage failed (${response.status}): ${(await response.text()).slice(0, 240)}`); error.status = response.status; throw error; } const text = await response.text(); return text ? JSON.parse(text) : []; }
+export async function saveConfluenceEvents(queue, universe, { now = new Date() } = {}) {
+  const memberBySymbol = new Map((universe?.members || []).map((member) => [String(member.symbol || '').trim().toUpperCase(), member]));
+  const rows = [];
+  const rejected = {};
+  for (const item of queue?.items || []) {
+    const anchors = item.anchors, member = memberBySymbol.get(String(item.symbol || '').trim().toUpperCase());
+    const quality = validateConfluenceCandidate(item, member, universe, { now });
+    if (!quality.valid) {
+      for (const reason of quality.reasons) rejected[reason] = (rejected[reason] || 0) + 1;
+      continue;
+    }
+    const live = item.components?.live || {};
+    rows.push({ event_key: `${item.symbol}:${item.confluence_class}:${anchors.captured_at}`, symbol: item.symbol, captured_at: anchors.captured_at, classification: item.confluence_class, fundamental_score: item.scores.fundamental_score, valuation_score: item.scores.valuation_score, eod_confirmation: item.scores.eod_confirmation_score, live_confirmation: item.scores.live_confirmation_score, catalyst_score: item.scores.catalyst_relevance_score, leadership: live.leadership?.effective, activity: live.activity?.effective, breakout: live.breakout?.effective, dislocation: live.dislocation?.effective, positioning: live.positioning?.effective, research_priority: item.research_priority_score, market_regime: anchors.market_regime, sector: item.sector, instrument_key: member.instrumentKey, benchmark_instrument_key: universe.benchmarkKey, sector_instrument_key: member.sectorInstrumentKey, price_at_signal: anchors.price_at_signal, benchmark_at_signal: anchors.benchmark_at_signal, sector_index_at_signal: anchors.sector_index_at_signal, completeness: item.flags, evidence_snapshot: item, research_only: true });
+  }
+  if (!rows.length) return { candidates: queue?.items?.length || 0, eligible: 0, events: 0, outcomes: 0, rejected };
+  const saved = await rest('research_confluence_events', { method: 'POST', query: 'on_conflict=event_key', body: rows, prefer: 'resolution=merge-duplicates,return=representation' });
+  const schedules = saved.flatMap((event) => createConfluenceOutcomeSchedule(event.id, event.captured_at));
+  if (schedules.length) await rest('research_confluence_outcomes', { method: 'POST', query: 'on_conflict=event_id,horizon', body: schedules, prefer: 'resolution=ignore-duplicates,return=minimal' });
+  return { candidates: queue?.items?.length || 0, eligible: rows.length, events: saved.length, outcomes: schedules.length, rejected };
+}
+
+async function firstSnapshot(instrumentKey, dueAt, horizon) {
+  const window = settlementWindow(dueAt, horizon);
+  const query = `select=ltp,observed_at&instrument_key=eq.${encodeURIComponent(instrumentKey)}&observed_at=gte.${encodeURIComponent(window.start)}&observed_at=lte.${encodeURIComponent(window.end)}&order=observed_at.asc&limit=1`;
+  return (await rest('live_market_snapshots', { query }))?.[0] || null;
+}
+
+export async function completeDueConfluenceOutcomes({ now = new Date(), limit = 200 } = {}) {
+  const due = await rest('research_confluence_outcomes', { query: `select=*,event:research_confluence_events(*)&status=eq.pending&due_at=lte.${encodeURIComponent(now.toISOString())}&order=due_at.asc&limit=${Math.min(500, limit)}` });
+  const summary = { due: due.length, completed: 0, deferred: 0, failed: 0, deferred_reasons: {} };
+  for (const row of due) {
+    try {
+      const event = row.event; const snapshots = await Promise.all([firstSnapshot(event.instrument_key, row.due_at, row.horizon), firstSnapshot(event.benchmark_instrument_key, row.due_at, row.horizon), firstSnapshot(event.sector_instrument_key, row.due_at, row.horizon)]);
+      const quality = validateSettlementSnapshots(snapshots);
+      if (!quality.valid) { summary.deferred += 1; summary.deferred_reasons[quality.reason] = (summary.deferred_reasons[quality.reason] || 0) + 1; continue; }
+      const [stock, benchmark, sector] = snapshots;
+      const result = calculateConfluenceOutcome({ priceAtSignal: event.price_at_signal, futurePrice: stock.ltp, benchmarkAtSignal: event.benchmark_at_signal, futureBenchmark: benchmark.ltp, sectorAtSignal: event.sector_index_at_signal, futureSector: sector.ltp });
+      await rest('research_confluence_outcomes', { method: 'PATCH', query: `id=eq.${row.id}`, body: { status: 'completed', observed_at: stock.observed_at, future_price: stock.ltp, future_benchmark: benchmark.ltp, future_sector: sector.ltp, ...result }, prefer: 'return=minimal' }); summary.completed += 1;
+    } catch (error) { summary.failed += 1; await rest('research_confluence_outcomes', { method: 'PATCH', query: `id=eq.${row.id}`, body: { attempt_count: Number(row.attempt_count || 0) + 1, last_error: error.message.slice(0, 500) }, prefer: 'return=minimal' }).catch(() => {}); }
+  }
+  return summary;
+}
+
+export async function getConfluenceLedger({ limit = 100, symbol } = {}) {
+  const filter = symbol ? `&event.symbol=eq.${encodeURIComponent(String(symbol).toUpperCase())}` : '';
+  return rest('research_confluence_outcomes', { query: `select=horizon,due_at,observed_at,status,excess_return_pct,sector_adjusted_alpha_pct,positive_excess,event:research_confluence_events(symbol,captured_at,classification,research_priority,market_regime,sector)&order=due_at.desc&limit=${Math.min(500, limit)}${filter}` });
+}
+
+export async function getConfluenceValidationSummary({ limit = 10000 } = {}) {
+  const rows = await rest('research_confluence_outcomes', { query: `select=horizon,status,excess_return_pct,sector_adjusted_alpha_pct,event:research_confluence_events(classification,market_regime)&status=eq.completed&limit=${Math.min(10000, limit)}` });
+  return summarizeConfluenceOutcomes(rows.map((row) => ({ ...row, classification: row.event?.classification, market_regime: row.event?.market_regime })));
+}
+
+export async function saveEvidenceConvictionRanking(ranking) {
+  const runs = await rest('evidence_conviction_runs', {
+    method: 'POST',
+    body: {
+      strategy: ranking.strategy,
+      universe: ranking.universe,
+      generated_at: ranking.generated_at,
+      universe_size: ranking.universe_size,
+      methodology: ranking.methodology,
+      counts: ranking.counts,
+      research_only: true,
+    },
+    prefer: 'return=representation',
+  });
+  const runId = runs?.[0]?.id;
+  if (!runId) throw new Error('Evidence conviction run insert did not return an id.');
+  const rows = ranking.rows.map((row) => ({
+    run_id: runId,
+    symbol: row.symbol,
+    sector: row.sector,
+    rank: row.rank,
+    conviction_score: row.conviction_score,
+    conviction_label: row.conviction_label,
+    evidence_coverage: row.evidence_coverage,
+    confluence_class: row.confluence_class,
+    market_regime: row.market_regime,
+    eligible_for_research_shortlist: row.eligible_for_research_shortlist,
+    thesis: row.thesis,
+    risk_note: row.risk_note,
+    component_scores: row.component_scores,
+    evidence_snapshot: row.evidence_snapshot,
+    research_only: true,
+  }));
+  if (rows.length) await rest('evidence_conviction_rankings', { method: 'POST', body: rows, prefer: 'return=minimal' });
+  return { run_id: runId, rankings: rows.length, shortlist: rows.filter((row) => row.eligible_for_research_shortlist).length };
+}
+
+export async function getLatestEvidenceConviction({ limit = 25, label } = {}) {
+  const runs = await rest('evidence_conviction_runs', { query: 'select=*&order=generated_at.desc&limit=1' });
+  const run = runs?.[0];
+  if (!run) return { run: null, rows: [], research_only: true, execution_enabled: false };
+  const labelFilter = label ? `&conviction_label=eq.${encodeURIComponent(String(label).toUpperCase())}` : '';
+  const rows = await rest('evidence_conviction_rankings', {
+    query: `select=symbol,sector,rank,conviction_score,conviction_label,evidence_coverage,confluence_class,market_regime,eligible_for_research_shortlist,thesis,risk_note,component_scores&run_id=eq.${run.id}${labelFilter}&order=rank.asc&limit=${Math.max(1, Math.min(500, Number(limit) || 25))}`,
+  });
+  return { run, rows, research_only: true, execution_enabled: false };
+}

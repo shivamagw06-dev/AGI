@@ -1,0 +1,798 @@
+{
+  "tables": {
+    "business_model": {
+      "description": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:22.796692Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Infosys Limited (Infosys) provides consulting, technology, outsourcing and next-generation digital services, enabling clients around the world to create and execute strategies for their digital transformation.\n\nThe company\u2019s primary geographic markets are North America, Europe, Rest of the World, and India.\n\nThe company serves clients in the following industries: financial services and insurance; retail, consumer packaged goods, and logistics; communication; telecom original equipment manufacturer (\u2018OEM\u2019), and media; energy, utilities, resources, and services; manufacturing; hi-tech; life sciences, and health care.\n\nStrategy\n\nThe company\u2019s clients and prospective clients are faced with transformative business opportunities powered by advances in software and computing technology, especially in AI. These organizations are dealing with the challenge of having to reinvent their core offerings, processes, and systems rapidly, and position themselves as \u2018AI enabled\u2019. The company\u2019s strategy is to be a navigator for its clients as they ideate, plan, and execute on their journey to an AI future by building strong data foundations with robust cloud capabilities.\n\nThe company\u2019s go-to-market business units are organized as: Financial Services and Insurance; Retail, Consumer Packaged Goods, and Logistics; Communications, Telecom OEM, and Media; Energy, Utilities, Resources, and Services; Manufacturing; Hi-Tech; Life Sciences and Healthcare; and Others, which includes India, Japan, China, Infosys Public Services, and other enterprises in public services.\n\nThe company\u2019s solutions have been primarily classified as digital and core.\n\nDigital: The company\u2019s digital solutions include Experience, Insight, Innovate, Accelerate, and Assure.\n\nCore: The company\u2019s core solutions include application management services, proprietary application development services, quality engineering services, product engineering and management, infrastructure management services, traditional enterprise application implementation, support, and integration services, and business process management.\n\nThe company\u2019s Products & Platforms include: Infosys Finacle, Edge Platforms, Infosys McCamish, Panaya, Stater Mortgage Services, Wingspan, Infosys Topaz, Infosys Aster, Infosys Meridian, Infosys Helix, Infosys Equinox, Infosys Cyber Next, Infosys Live Enterprise Application Suite, and Infosys Cortex.\n\nSolutions and Capabilities\n\nThe company provides its clients with a full range of business and technology solutions and capabilities, comprising:\n\nConsulting\n\nInfosys Consulting helps organizations address complex challenges and deliver long-term, sustainable value. By combining strategic insight, deep industry knowledge, and advanced technology capabilities, it enables clients to drive innovation, accelerate transformation, and achieve measurable business outcomes.\n\nWith a footprint that spans more than 50 countries across North America, EMEA, and APAC, Infosys Consulting operates on a global scale while delivering tailored solutions that reflect local business needs and market dynamics.\n\nInfosys Consulting embeds itself within clients\u2019 transformation journeys, co-creating, executing, and optimizing solutions that drive true business impact. Whether it is modernizing legacy systems, navigating cloud and data strategies, or embedding generative AI into core operations, the firm provides deep technical expertise coupled with a pragmatic approach to delivery.\n\nBy combining design thinking, data-driven methodologies, and next-generation technologies, including AI, automation, open-source software, and innovation drawn from the start-up ecosystem, Infosys Consulting empowers clients to reimagine their businesses, enhance agility, and compete with confidence in an increasingly digital and disrupted world.\n\nIndustry expertise:\n\nInfosys Consulting serves a broad range of sectors, combining global scale with local insight to help organizations compete and grow in a rapidly evolving landscape. Each industry practice brings hands-on expertise to uncover new opportunities, accelerate digitization, and optimize performance.\n\nConsulting capabilities:\n\nInfosys Consulting integrates business strategy, technology vision, and human-centered change to deliver end-to-end transformation. Its multidisciplinary teams span the full spectrum of consulting services, including:\n\nEnterprise AI solutions: Leveraging next-generation technologies to solve critical business challenges and enable smart automation, efficiency, and growth.\n\nDigital platforms: Transforming enterprise operations through leading platforms, such as SAP, Oracle, and Salesforce, from design to implementation and management.\n\nTechnology transformation: Bridging business and IT through strategic visioning, enterprise architecture, cloud enablement, cybersecurity, M&A integration, and modern operating models.\n\nWorkforce transformation: Addressing the human factors of change to ensure successful adoption and long-term value through learning, communication, and organizational design.\n\nInfosys Knowledge Institute (\u2018IKI\u2019)\n\nIKI harnesses the intellectual capital of Infosys experts and client collaborations to produce novel, distinctive content and insights on the business impact that technology can drive for enterprises. IKI also develops proprietary data and insights through primary research, including large-scale surveys and quantitative analysis. These are published through its flagship Radar maturity reports, the annual Tech Navigator report, and ongoing Tech Compass tech trends series, and industry-focused market outlooks and executive journals. IKI has collaborated with 800 clients and created over 1,500 assets since inception.\n\nEnterprise Solutions\n\nSAP\n\nThe Infosys SAP Practice provides end-to-end consulting, implementation, and support services, utilizing industry expertise and methods to build truly intelligent enterprises. The company\u2019s SAP offerings accelerate the S/4HANA cloud adoption journey, with Infosys' cloud-first, AI-first approach to transformation. The company maximizes the value of SAP transformation by continuously investing in tools, accelerators, and industry solutions that drive sustainable success. It enables clients to achieve process excellence with SAP Signavio and LeanIX.\n\nAs a RISE with SAP Validated Partner, the company simplifies clients\u2019 migration to SAP S/4HANA and unlocks cost optimization with its comprehensive RISE with SAP and GROW with SAP offerings. The company helps clients harness the power of SAP Business Data Cloud for future-ready data architecture and Business AI for smarter decisions. Infosys' customized AI-first solutions built on SAP BTP drive intelligent automation, seamless integration, and clean core to meet the demands of tomorrow's enterprise.\n\nOracle\n\nThe Infosys Oracle Practice, a strategic partner with Oracle for over 28 years, offers comprehensive Oracle services that leverage AI and Oracle\u2019s advanced cloud technologies to drive business success. The company\u2019s Oracle Practice encompasses strategic advisory services, business transformation across ERP, Supply Chain, Customer Experience, and Human Capital Management, as well as industry solutions and infrastructure modernization. The company\u2019s dedication to continuous improvement and intelligent automation is showcased through its innovative AI-first implementation and maintenance services. With recognized expertise in Oracle Cloud Applications and technology services, Infosys is at the forefront of digital innovation and operational excellence.\n\nEnterprise Application Integration (\u2018EAIS\u2019)\n\nThe EAIS Practice helps clients navigate their next in AI, cloud, and digital transformation with service offerings that deliver innovative experiences with Agentic Process Automation, streamlined operations through domain-led process solutions, faster app development using Low Code/No Code, scalable",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:05.253489Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Infosys Limited (Infosys) provides consulting, technology, outsourcing and next-generation digital services, enabling clients around the world to create and execute strategies for their digital transformation.\n\nThe company\u2019s primary geographic markets are North America, Europe, Rest of the World, and India.\n\nThe company serves clients in the following industries: financial services and insurance; retail, consumer packaged goods, and logistics; communication; telecom original equipment manufacturer (\u2018OEM\u2019), and media; energy, utilities, resources, and services; manufacturing; hi-tech; life sciences, and health care.\n\nStrategy\n\nThe company\u2019s clients and prospective clients are faced with transformative business opportunities powered by advances in software and computing technology, especially in AI. These organizations are dealing with the challenge of having to reinvent their core offerings, processes, and systems rapidly, and position themselves as \u2018AI enabled\u2019. The company\u2019s strategy is to be a navigator for its clients as they ideate, plan, and execute on their journey to an AI future by building strong data foundations with robust cloud capabilities.\n\nThe company\u2019s go-to-market business units are organized as: Financial Services and Insurance; Retail, Consumer Packaged Goods, and Logistics; Communications, Telecom OEM, and Media; Energy, Utilities, Resources, and Services; Manufacturing; Hi-Tech; Life Sciences and Healthcare; and Others, which includes India, Japan, China, Infosys Public Services, and other enterprises in public services.\n\nThe company\u2019s solutions have been primarily classified as digital and core.\n\nDigital: The company\u2019s digital solutions include Experience, Insight, Innovate, Accelerate, and Assure.\n\nCore: The company\u2019s core solutions include application management services, proprietary application development services, quality engineering services, product engineering and management, infrastructure management services, traditional enterprise application implementation, support, and integration services, and business process management.\n\nThe company\u2019s Products & Platforms include: Infosys Finacle, Edge Platforms, Infosys McCamish, Panaya, Stater Mortgage Services, Wingspan, Infosys Topaz, Infosys Aster, Infosys Meridian, Infosys Helix, Infosys Equinox, Infosys Cyber Next, Infosys Live Enterprise Application Suite, and Infosys Cortex.\n\nSolutions and Capabilities\n\nThe company provides its clients with a full range of business and technology solutions and capabilities, comprising:\n\nConsulting\n\nInfosys Consulting helps organizations address complex challenges and deliver long-term, sustainable value. By combining strategic insight, deep industry knowledge, and advanced technology capabilities, it enables clients to drive innovation, accelerate transformation, and achieve measurable business outcomes.\n\nWith a footprint that spans more than 50 countries across North America, EMEA, and APAC, Infosys Consulting operates on a global scale while delivering tailored solutions that reflect local business needs and market dynamics.\n\nInfosys Consulting embeds itself within clients\u2019 transformation journeys, co-creating, executing, and optimizing solutions that drive true business impact. Whether it is modernizing legacy systems, navigating cloud and data strategies, or embedding generative AI into core operations, the firm provides deep technical expertise coupled with a pragmatic approach to delivery.\n\nBy combining design thinking, data-driven methodologies, and next-generation technologies, including AI, automation, open-source software, and innovation drawn from the start-up ecosystem, Infosys Consulting empowers clients to reimagine their businesses, enhance agility, and compete with confidence in an increasingly digital and disrupted world.\n\nIndustry expertise:\n\nInfosys Consulting serves a broad range of sectors, combining global scale with local insight to help organizations compete and grow in a rapidly evolving landscape. Each industry practice brings hands-on expertise to uncover new opportunities, accelerate digitization, and optimize performance.\n\nConsulting capabilities:\n\nInfosys Consulting integrates business strategy, technology vision, and human-centered change to deliver end-to-end transformation. Its multidisciplinary teams span the full spectrum of consulting services, including:\n\nEnterprise AI solutions: Leveraging next-generation technologies to solve critical business challenges and enable smart automation, efficiency, and growth.\n\nDigital platforms: Transforming enterprise operations through leading platforms, such as SAP, Oracle, and Salesforce, from design to implementation and management.\n\nTechnology transformation: Bridging business and IT through strategic visioning, enterprise architecture, cloud enablement, cybersecurity, M&A integration, and modern operating models.\n\nWorkforce transformation: Addressing the human factors of change to ensure successful adoption and long-term value through learning, communication, and organizational design.\n\nInfosys Knowledge Institute (\u2018IKI\u2019)\n\nIKI harnesses the intellectual capital of Infosys experts and client collaborations to produce novel, distinctive content and insights on the business impact that technology can drive for enterprises. IKI also develops proprietary data and insights through primary research, including large-scale surveys and quantitative analysis. These are published through its flagship Radar maturity reports, the annual Tech Navigator report, and ongoing Tech Compass tech trends series, and industry-focused market outlooks and executive journals. IKI has collaborated with 800 clients and created over 1,500 assets since inception.\n\nEnterprise Solutions\n\nSAP\n\nThe Infosys SAP Practice provides end-to-end consulting, implementation, and support services, utilizing industry expertise and methods to build truly intelligent enterprises. The company\u2019s SAP offerings accelerate the S/4HANA cloud adoption journey, with Infosys' cloud-first, AI-first approach to transformation. The company maximizes the value of SAP transformation by continuously investing in tools, accelerators, and industry solutions that drive sustainable success. It enables clients to achieve process excellence with SAP Signavio and LeanIX.\n\nAs a RISE with SAP Validated Partner, the company simplifies clients\u2019 migration to SAP S/4HANA and unlocks cost optimization with its comprehensive RISE with SAP and GROW with SAP offerings. The company helps clients harness the power of SAP Business Data Cloud for future-ready data architecture and Business AI for smarter decisions. Infosys' customized AI-first solutions built on SAP BTP drive intelligent automation, seamless integration, and clean core to meet the demands of tomorrow's enterprise.\n\nOracle\n\nThe Infosys Oracle Practice, a strategic partner with Oracle for over 28 years, offers comprehensive Oracle services that leverage AI and Oracle\u2019s advanced cloud technologies to drive business success. The company\u2019s Oracle Practice encompasses strategic advisory services, business transformation across ERP, Supply Chain, Customer Experience, and Human Capital Management, as well as industry solutions and infrastructure modernization. The company\u2019s dedication to continuous improvement and intelligent automation is showcased through its innovative AI-first implementation and maintenance services. With recognized expertise in Oracle Cloud Applications and technology services, Infosys is at the forefront of digital innovation and operational excellence.\n\nEnterprise Application Integration (\u2018EAIS\u2019)\n\nThe EAIS Practice helps clients navigate their next in AI, cloud, and digital transformation with service offerings that deliver innovative experiences with Agentic Process Automation, streamlined operations through domain-led process solutions, faster app development using Low Code/No Code, scalable",
+          "version": 2
+        }
+      ],
+      "description_short": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:22.787208Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Infosys Limited provides consulting, technology, outsourcing, and digital services worldwide. The company offers insight services, such as applied and generative AI, sustainability services, and Infosys Topaz, an AI-first set of services, solutions, and platforms; blockchain, Internet of Things, and engineering services; cybersecurity and quality engineering services; and enterprise agile DevOps, API economy and microservices, application modernization, and digital process automation. It also provides digital supply chain, Microsoft business application services, Microsoft cloud business, Oracle, SAP, service experience transformation, Salesforce, energy transition, network transformation services, infrastructure services, global capability center, and Infosys Cobalt, a suite of services, solutions, and platforms. In addition, the company offers experience services, including digital marketing, digital commerce, digital interactions, digital workplace services, digital experience, metaverse, and Infosys Aster, a marketing suite; and EdgeVerve, Infosys Finacle, Infosys Live Enterprise Suite, Infosys Cortex, Infosys Meridian, Panaya, Infosys Equinox, Infosys Topaz Fabric, Infosys Wingspan, Infosys Helix, and Infosys Polycloud platforms. It serves aerospace and defense, agriculture, automotive, chemical manufacturing, communication services, consumer packaged goods, education, engineering procurement and construction, financial services, oil and gas, private equity, professional services, public sector, healthcare, high technology, industrial manufacturing, information services and publishing, insurance, life sciences, logistics and distribution, media, entertainment, mining, retail, semiconductor, travel and hospitality, utilities, and waste management industries. The company was formerly known as Infosys Technologies Limited and changed its name to Infosys Limited in June 2011. Infosys Limited was incorporated in 1981 and is headquartered in Bengaluru, India.",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:05.240369Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Infosys Limited provides consulting, technology, outsourcing, and digital services worldwide. The company offers insight services, such as applied and generative AI, sustainability services, and Infosys Topaz, an AI-first set of services, solutions, and platforms; blockchain, Internet of Things, and engineering services; cybersecurity and quality engineering services; and enterprise agile DevOps, API economy and microservices, application modernization, and digital process automation. It also provides digital supply chain, Microsoft business application services, Microsoft cloud business, Oracle, SAP, service experience transformation, Salesforce, energy transition, network transformation services, infrastructure services, global capability center, and Infosys Cobalt, a suite of services, solutions, and platforms. In addition, the company offers experience services, including digital marketing, digital commerce, digital interactions, digital workplace services, digital experience, metaverse, and Infosys Aster, a marketing suite; and EdgeVerve, Infosys Finacle, Infosys Live Enterprise Suite, Infosys Cortex, Infosys Meridian, Panaya, Infosys Equinox, Infosys Topaz Fabric, Infosys Wingspan, Infosys Helix, and Infosys Polycloud platforms. It serves aerospace and defense, agriculture, automotive, chemical manufacturing, communication services, consumer packaged goods, education, engineering procurement and construction, financial services, oil and gas, private equity, professional services, public sector, healthcare, high technology, industrial manufacturing, information services and publishing, insurance, life sciences, logistics and distribution, media, entertainment, mining, retail, semiconductor, travel and hospitality, utilities, and waste management industries. The company was formerly known as Infosys Technologies Limited and changed its name to Infosys Limited in June 2011. Infosys Limited was incorporated in 1981 and is headquartered in Bengaluru, India.",
+          "version": 2
+        }
+      ],
+      "index_constituents": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:22.761692Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "MSCI EM 50 Index\n\nS&P BIC 40 Index\n\nS&P India BMI Shariah\n\nS&P Emerging Ex-China A LargeMidCap\n\nS&P Emerging Asia Pacific Plus Index\n\nS&P Pan Asia Ex-AU Ex-NZ BMI Index\n\nDow Jones Islamic Market Global Large Cap Technology Supersector Index\n\nS&P India LargeMidCap Index\n\nS&P Asia Pacific Emerging LargeMidCap Software & Services (Industry Group) Index\n\nS&P Global LargeMidCap PAB ESG Index",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:05.212478Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "MSCI ACWI Ex Mexico Index\n\nMSCI ACWI Ex Egypt Index\n\nMSCI ACWI Ex Controversial Weapons Index\n\nMSCI ACWI Ex EMU Selection Index\n\nMSCI ACWI + Frontier Markets (ACWI Fm) Index\n\nMSCI ACWI Ex Fossil Fuels Index\n\nMSCI ACWI Ex Japan Diversified Factor Mix Index\n\nMSCI ACWI Ex JP/It Svc (Industry) Index\n\nMSCI ACWI Ex UK Index\n\nMSCI ACWI Ex France Index",
+          "version": 2
+        }
+      ],
+      "industry_classifications": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:22.781835Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Information Technology (Primary)",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:05.235820Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Information Technology (Primary)",
+          "version": 2
+        }
+      ],
+      "investors": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:22.783389Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "The Vanguard Group, Inc. (Current Investor); Tata Investment Corporation Limited (BSE:501301) (Current Investor); Abu Dhabi Investment Authority (Current Investor); Nomura Asset Management Co., Ltd. (Current Investor); SBI Life Insurance Co., Ltd. (Current Investor); HDFC Life Insurance Company Limited (NSEI:HDFCLIFE) (Current Investor); UTI Mutual Fund (Current Investor); Bajaj Life Insurance Limited (Current Investor); Keskin\u00e4inen ty\u00f6el\u00e4kevakuutusyhti\u00f6 Varma (Current Investor); ICICI Prudential Life Insurance Company Limited (NSEI:ICICIPRULI) (Current Investor); Norges Bank Investment Management (Current Investor); Aditya Birla Sun Life Mutual Fund (Current Investor); Deutsche Bank AG (London), Asset Management Arm (Current Investor); Singapore (Current Investor); BNP Paribas Financial Markets SNC (Current Investor); Vanguard Group (Ireland) Limited (Current Investor); Life Insurance Corporation of India, Asset Management Arm (Current Investor); State Bank of India,Asset Management Arm (Current Investor); Tata Sons Ltd., Asset Management Arm (Current Investor); Copthall Mauritius Investment Ltd. (Current Investor); ICICI Prudential Mutual Fund (Current Investor); Franklin Templeton Investment Funds (Current Investor); Nps Trust (Current Investor); Nippon Life India Trustee Limited (Current Investor)",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:05.236982Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "The Vanguard Group, Inc. (Current Investor); Tata Investment Corporation Limited (BSE:501301) (Current Investor); Abu Dhabi Investment Authority (Current Investor); Nomura Asset Management Co., Ltd. (Current Investor); SBI Life Insurance Co., Ltd. (Current Investor); HDFC Life Insurance Company Limited (NSEI:HDFCLIFE) (Current Investor); UTI Mutual Fund (Current Investor); Bajaj Life Insurance Limited (Current Investor); Keskin\u00e4inen ty\u00f6el\u00e4kevakuutusyhti\u00f6 Varma (Current Investor); ICICI Prudential Life Insurance Company Limited (NSEI:ICICIPRULI) (Current Investor); Norges Bank Investment Management (Current Investor); Aditya Birla Sun Life Mutual Fund (Current Investor); Deutsche Bank AG (London), Asset Management Arm (Current Investor); Singapore (Current Investor); BNP Paribas Financial Markets SNC (Current Investor); Vanguard Group (Ireland) Limited (Current Investor); Life Insurance Corporation of India, Asset Management Arm (Current Investor); State Bank of India,Asset Management Arm (Current Investor); Tata Sons Ltd., Asset Management Arm (Current Investor); Copthall Mauritius Investment Ltd. (Current Investor); ICICI Prudential Mutual Fund (Current Investor); Franklin Templeton Investment Funds (Current Investor); Nps Trust (Current Investor); Nippon Life India Trustee Limited (Current Investor)",
+          "version": 2
+        }
+      ],
+      "subsidiaries_count": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:22.788191Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 70,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:05.241690Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 70,
+          "version": 2
+        }
+      ]
+    },
+    "company_master": {
+      "company_name": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:22.760219Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Infosys Limited",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:05.211226Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Infosys Limited",
+          "version": 2
+        }
+      ],
+      "company_type": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:22.789050Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Public Company",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:05.242844Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Public Company",
+          "version": 2
+        }
+      ],
+      "country": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:22.786234Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "India",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:05.239213Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "India",
+          "version": 2
+        }
+      ],
+      "currency": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:22.766904Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Indian Rupee",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:05.217156Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Indian Rupee",
+          "version": 2
+        }
+      ],
+      "external_id": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:22.765331Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "IQT20215816",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:05.215758Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "IQT46355767",
+          "version": 2
+        }
+      ],
+      "industry": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:22.781027Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "IT Consulting and Other Services",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:05.234676Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "IT Consulting and Other Services",
+          "version": 2
+        }
+      ],
+      "parent_company": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:22.784661Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Infosys Limited (NSEI:INFY)",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:05.238101Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Infosys Limited (NSEI:INFY)",
+          "version": 2
+        }
+      ],
+      "research_coverage_count": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:22.800290Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 98,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:05.260399Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 98,
+          "version": 2
+        }
+      ],
+      "sector": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:22.780237Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Information Technology",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:05.233030Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Information Technology",
+          "version": 2
+        }
+      ],
+      "status": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:22.763371Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Active",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:05.213957Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Active",
+          "version": 2
+        }
+      ],
+      "ticker": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:22.758074Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "INFY",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:05.210118Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "INFY",
+          "version": 2
+        }
+      ],
+      "website": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:22.804881Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "www.infosys.com",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:05.265640Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "www.infosys.com",
+          "version": 2
+        }
+      ]
+    },
+    "competitors": {
+      "peer": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:22.789934Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Amdocs Limited (NasdaqGS:DOX); PTC Inc. (NasdaqGS:PTC); Diebold Nixdorf, Incorporated (NYSE:DBD); Labcorp Drug Development Inc.; Arcadis NV (ENXTAM:ARCAD); vCustomer Corporation; Valores Corporativos Softtek Sa De C.V.; HCL Technologies Limited (NSEI:HCLTECH); Larsen & Toubro Limited (BSE:500510); Serco Group plc (LSE:SRP); Capita plc (LSE:CPI); Accenture plc (NYSE:ACN); CCK Financial Solutions Ltd.; Bechtle AG (XTRA:BC8); Concentrix Corporation (NasdaqGS:CNXC); Hindustan Aeronautics Limited (NSEI:HAL); MigrationWare; Ipsos Healthcare; Exl Service.com (India) Private Limited; Mindtree Limited; Cognizant India Pvt. Ltd.; Palantir Technologies Inc. (NasdaqGS:PLTR); Grid Dynamics Holdings, Inc. (NasdaqCM:GDYN); Cigniti Technologies Limited (BSE:534758); Qualfon, S.C.; Kratikal Tech Limited (BSE:544811); Rackspace Technology, Inc. (NasdaqGS:RXT); Guavapay Limited; Backbase B.V.; Nationwide Credit, Inc.; NEC Corporation (TSE:6701); PRA Health Sciences, Inc.; Quanta Services, Inc. (NYSE:PWR); CACI International Inc (NYSE:CACI); HP Inc. (NYSE:HPQ); Salesforce, Inc. (NYSE:CRM); Rockwell Automation, Inc. (NYSE:ROK); Edgewater Technology, Inc.; Nielsen Holdings Limited; Computer Services, Inc.; Finastra Group Holdings Limited; NTT DATA Group Corporation; GfK GmbH; Trigent Software, Inc.; AlphaImpactRx, Inc.; EPAM Systems, Inc. (NYSE:EPAM); SAIC Motor Corporation Limited (SHSE:600104); Altran North America; Concentrix CVG Philippines, Inc.; Health Market Science, Inc.; E-Infochips Private Limited; Avaloq Group AG; Veeva Systems Inc. (NYSE:VEEV); Genpact Limited (NYSE:G); Sitel Corporation; Telstra Purple Pty Ltd; Cerner Enviza LLC; AgileThought, Inc. (OTCPK:AGIL.Q); Science Applications International Corporation (NasdaqGS:SAIC); Globant S.A. (NYSE:GLOB); EliteSoft Global Inc.; Sutherland Mortgage Services, Inc.; Startek, Inc.; Kyndryl Inc.; XPON Technologies Group Limited (ASX:XPN); Atmastco Defence Systems Private Limited; Parexel International Corporation; Telstra Group Limited (ASX:TLS); Genpact LLC; AT&T Inc. (NYSE:T); Aon plc (NYSE:AON); VMware LLC; Automatic Data Processing, Inc. (NasdaqGS:ADP); Fiserv, Inc. (NasdaqGS:FISV); Tetra Tech, Inc. (NasdaqGS:TTEK); Jack Henry & Associates, Inc. (NasdaqGS:JKHY); RCM Technologies, Inc. (NasdaqGM:RCMT); TTEC Holdings, Inc. (NasdaqGS:TTEC); StarTek, Inc.; Deutsche Telekom AG (XTRA:DTE); Virtusa Corporation; Aztecsoft Limited; ExlService Holdings, Inc. (NasdaqGS:EXLS); Siemens Limited (NSEI:SIEMENS); CompuGroup Medical SE & Co. KGaA (HMSE:COP); Alten S.A. (ENXTPA:ATE); ZS Associates, Inc.; Hexaware Technologies Limited (NSEI:HEXT); Sutherland Global Services, Inc.; Transcom WorldWide AB; Telecom Service Centres Ltd.; Webhelp SAS; VXI Global Solutions, LLC; Fresche Solutions Inc.; NTT DATA Americas, Inc.; Hyosung TNS Inc.; AVG Technologies UK Limited; RTI Health Solutions; Fractal Analytics Limited (NSEI:FRACTAL); Montrose International Corp.; Movate Inc.; CI&T Inc. (NYSE:CINT); Genpact India Private Limited; Definitive Healthcare, LLC; Leidos, Inc.; Aegis Global Inc.; Symphony Health Solutions Corporation; EVIDERA; L&T Technology Services Limited (NSEI:LTTS); Latent View Analytics Limited (NSEI:LATENTVIEW); We Win Limited (NSEI:WEWIN); IBEX Limited (NasdaqGM:IBEX); Thought Machine Group Limited; Smarttech247 Group plc; Ascendion, Inc.; Testinium Teknoloji Yazilim A.S.; Omega Healthcare Group Limited; StepChange Holdings Limited (ASX:STH); Euronet Worldwide, Inc. (NasdaqGS:EEFT); Outsourcing Solutions Inc.; F5, Inc. (NasdaqGS:FFIV); Northrop Grumman Corporation (NYSE:NOC); Deloitte & Touche LLP; AllianceOne Inc.; Thoughtworks, Inc.; Sify Technologies Limited (NasdaqCM:SIFY); Insight Enterprises, Inc. (NasdaqGS:NSIT); ICON Public Limited Company (NasdaqGS:ICLR); Perficient, Inc.; AECOM (NYSE:ACM); inContact, Inc.; Mahindra & Mahindra Limited (NSEI:M&M); Mott MacDonald Group, Inc.; Symphony Technology Group, LLC; Medidata Solutions, Inc.; OptumInsight, Inc.; NTG Clarity Networks Inc. (TSXV:NCI); Melstar Information Technologies Limited (BSE:532307); KBR, Inc. (NYSE:KBR); Transcomm plc; IBM Global Services U.S.; Deloitte Touche Tohmatsu India, LLP; Fidelity National Information Services, Inc. (NYSE:FIS); Capita Customer Management Limited; DATAGROUP SE (XTRA:D6H0); Cognizant Technology Solutions Ltd.; Alkami Technology, Inc. (NasdaqGS:ALKT); LexisNexis Risk Solutions, Inc.; Press Ganey Holdings, Inc.; nCino, Inc. (NasdaqGS:NCNO); Q2, Inc.; TaskUs, Inc. (NasdaqGS:TASK); Medpace Holdings, Inc. (NasdaqGS:MEDP); Being Technologies Ltd.; Oracle Healthcare Ltd; Foundever Group; Methodhub Software Limited (BSE:544637); Dun & Bradstreet Holdings, Inc.; iQor, Inc.; Atos Group (ENXTPA:ATO); Xoriant Corporation; Hitachi, Ltd. (TSE:6501); Booz Allen Hamilton Holding Corporation (NYSE:BAH); General Electric Company (NYSE:GE); L3Harris Technologies, Inc. (NYSE:LHX); General Dynamics Corporation (NYSE:GD); Innodata Inc. (NasdaqGM:INOD); Syneos Health US, Inc.; q.beyond AG (XTRA:QBY0); Alorica, Inc.; Epicenter, Inc.; Teleperformance SE (ENXTPA:TEP); Tata Motors Passenger Vehicles Limited (BSE:500570); Capgemini SE (ENXTPA:CAP); Capgemini N.V.; Stantec Inc. (TSX:STN); ManTech International Corporation; Anubex NV; Verisk Analytics, Inc. (NasdaqGS:VRSK); Broadridge Financial Solutions, Inc. (NYSE:BR); Arup Group Limited; Vertex Data Science Limited; Datacom Group Limited; Five9, Inc. (NasdaqGM:FIVN); Hitachi Data Systems AG; Quintiles Consulting, Inc.; Bharat Electronics Limited (BSE:500049); Exela Technologies, Inc. (OTCPK:XELA); Visa Inc. (NYSE:V); Kantar Health SAS; Mu Sigma Inc.; Twilio Inc. (NYSE:TWLO); IQVIA Holdings Inc. (NYSE:IQV); QuantumBlack LLP; Wizeline, Inc.; innoWake gmbh; Shearwater Health, Inc.; SharedLabs, Inc.; Converge-One; Gainwell Technologies LLC; Kyndryl Holdings, Inc. (NYSE:KD); Testingxperts Private Limited; Hitachi Energy USA Inc.; LivePerson, Inc. (NasdaqGS:LPSN); Cartesian, Inc.; CGI Inc. (TSX:GIB.A); The Boston Consulting Group, Inc.; 8x8, Inc. (NasdaqGS:EGHT); Cognizant Technology Solutions Corporation (NasdaqGS:CTSH); NTT, Inc. (TSE:9432); Thomson Reuters Corporation (TSX:TRI); Wipro Limited (BSE:507685); Mphasis Corporation; Ashok Leyland Limited (NSEI:ASHOKLEY); Wipro BPO Solutions Limited; Honeywell International Inc. (NasdaqGS:HON); Sonata Software Limited (NSEI:SONATSOFTW); FIS Software Ltd.; T-Systems International GmbH; Alldigi Tech Limited (NSEI:ALLDIGI); Cegedim SA (ENXTPA:ALCGM); Client Services, Inc.; AKKA Technologies SE; Tata Consultancy Services Limited (NSEI:TCS); Mphasis Limited (BSE:526299); WSP Global Inc. (TSX:WSP); AT&T Delaware Intellectual Property, Inc.; Worleyparsons Ltd.; Innominds Software Solutions Pvt. Ltd.; Orient Technologies Limited (NSEI:ORIENTTECH); Black Knight Technologies, LLC; Sopra Banking Software SA; Intellect Design Arena Limited (NSEI:INTELLECT); Ameri Holdings, Inc.; Aetion, Inc.; CLPS Incorporation (NasdaqGM:CLPS); ANDigital Limited; Tiger Analytics, Inc.; Naapbooks Limited (BSE:543351); Reaktor Group Plc (HLSE:REAKTOR); TDCX Inc.; Merative L.P.; SOCO Corporation Ltd (ASX:SOC); Cisco Systems, Inc. (NasdaqGS:CSCO); Datamatix, Inc.; Arise Virtual Solutions Inc.; Pharmaceutical Product Development, LLC; Computer Task Group, Incorporated; RELX PLC (LSE:REL); Verizon Communications Inc. (NYSE:VZ); Bechtel Global Corporation; Schneider Electric S.E. (ENXTPA:SU); BAE Systems plc (LSE:BA.); AtkinsR\u00e9alis Group Inc. (TSX:ATRL); Zensar Technologies Limited (BSE:504067); Conduit Limited; Altair Corp. (OTCPK:ATCD); ICF International; Concentrix Daksh Services India Private Limited; WNS (Holdings) Limited; Firstsource Solutions Limited (NSEI:FSL); Expleo Solutions Limited (NSEI:EXPLEOSOL); LTM Limited (NSEI:LTM); Data#3 Limited (ASX:DTL); TELUS International (Cda) Inc.; Birlasoft Limited (NSEI:BSOFT); Aspire Systems, Inc.; Luxoft Holding, Inc.; ML California Sub, Inc.; Homeloan Management Limited; PricewaterhouseCoopers LLP, UK branch; Cybage Software Private Limited; R S Software (India) Limited (BSE:517447); T-Systems North America, Inc.; Broadcom Inc. (NasdaqGS:AVGO); Infostretch Corporation; Amazon Web Services, Inc.; Q2 Holdings, Inc. (NYSE:QTWO); WITS Corp. (TPEX:4953); Happiest Minds Technologies Limited (NSEI:HAPPSTMNDS); Cord Financial Services, LLC; Synovate Healthcare Ltd; Atturra Limited (ASX:ATA); White Pearl Technology Group AB (OM:WPTG B); Ibm Global Services Limited; Genxai Analytics Limited (NSEI:GENXAI); Intuit Inc. (NasdaqGS:INTU); Computacenter plc (LSE:CCC); ACI Worldwide, Inc. (NasdaqGS:ACIW); KPMG LLP; Mattersight Corporation; Deloitte Touche Tohmatsu LLC; Cerner Corporation; Exponent, Inc. (NasdaqGS:EXPO); Siemens Aktiengesellschaft (XTRA:SIE); Dell Services Corporation; The Brink's Company (NYSE:BCO); Infotel SA (ENXTPA:INF); GlobalLogic Inc.; TELUS Corporation (TSX:T); Fluor Corporation (NYSE:FLR); Oracle Financial Services Software Limited (BSE:532466); Persistent Systems Limited (NSEI:PERSISTENT); Global Payments Inc. (NYSE:GPN); Sopra Steria Group SA (ENXTPA:SOP); Indra Sistemas, S.A. (BME:IDR); Access Health Care Inc.; Polaris Consulting & Services Limited; Huron Inc.; Press Ganey Associates LLC; [24]7.ai, Inc.; Mastercard Incorporated (NYSE:MA); URS Management Services, Inc.; Allgeier SE (XTRA:AEIN); SAPIEN Technologies, Inc.; Tech Mahindra Limited (NSEI:TECHM); Working Solutions, Inc.; Valuemomentum, Inc.; CMC Ltd.; Hinduja Global Solutions Limited (NSEI:HGS); eClerx Services Limited (NSEI:ECLERX); MindTree Technologies Private Limited; R K Swamy Limited (NSEI:RKSWAMY); Mambu GmbH; Deloitte Global Services Limited; Smart Data Solutions, LLC; Endava plc (NYSE:DAVA); nDivision Inc.; EPAM Corporation; Panalgo, LLC; Conduent Incorporated (NasdaqGS:CNDT); Clarivate Plc (NYSE:CLVT); Tempus AI, Inc. (NasdaqGS:TEM); mCloud Technologies Corp. (OTCPK:MCLD.F); Majorel Group Luxembourg S.A.; Sagility Limited (NSEI:SAGILITY); Fortrea Holdings Inc. (NasdaqGS:FTRE); NCR Atleos Corporation (NYSE:NATL)",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:05.244097Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Intuit Inc. (NasdaqGS:INTU); Computacenter plc (LSE:CCC); ACI Worldwide, Inc. (NasdaqGS:ACIW); KPMG LLP; Mattersight Corporation; Deloitte Touche Tohmatsu LLC; Cerner Corporation; Exponent, Inc. (NasdaqGS:EXPO); Siemens Aktiengesellschaft (XTRA:SIE); Dell Services Corporation; The Brink's Company (NYSE:BCO); Infotel SA (ENXTPA:INF); GlobalLogic Inc.; TELUS Corporation (TSX:T); Fluor Corporation (NYSE:FLR); Oracle Financial Services Software Limited (BSE:532466); Persistent Systems Limited (NSEI:PERSISTENT); Global Payments Inc. (NYSE:GPN); Sopra Steria Group SA (ENXTPA:SOP); Indra Sistemas, S.A. (BME:IDR); Access Health Care Inc.; Polaris Consulting & Services Limited; Huron Inc.; Press Ganey Associates LLC; [24]7.ai, Inc.; Mastercard Incorporated (NYSE:MA); URS Management Services, Inc.; Allgeier SE (XTRA:AEIN); SAPIEN Technologies, Inc.; Tech Mahindra Limited (NSEI:TECHM); Working Solutions, Inc.; Valuemomentum, Inc.; CMC Ltd.; Hinduja Global Solutions Limited (NSEI:HGS); eClerx Services Limited (NSEI:ECLERX); MindTree Technologies Private Limited; R K Swamy Limited (NSEI:RKSWAMY); Mambu GmbH; Deloitte Global Services Limited; Smart Data Solutions, LLC; Endava plc (NYSE:DAVA); nDivision Inc.; EPAM Corporation; Panalgo, LLC; Conduent Incorporated (NasdaqGS:CNDT); Clarivate Plc (NYSE:CLVT); Tempus AI, Inc. (NasdaqGS:TEM); mCloud Technologies Corp. (OTCPK:MCLD.F); Majorel Group Luxembourg S.A.; Sagility Limited (NSEI:SAGILITY); Fortrea Holdings Inc. (NasdaqGS:FTRE); NCR Atleos Corporation (NYSE:NATL); Hitachi Energy USA Inc.; LivePerson, Inc. (NasdaqGS:LPSN); Cartesian, Inc.; CGI Inc. (TSX:GIB.A); The Boston Consulting Group, Inc.; 8x8, Inc. (NasdaqGS:EGHT); Cognizant Technology Solutions Corporation (NasdaqGS:CTSH); NTT, Inc. (TSE:9432); Thomson Reuters Corporation (TSX:TRI); Wipro Limited (BSE:507685); Mphasis Corporation; Ashok Leyland Limited (NSEI:ASHOKLEY); Wipro BPO Solutions Limited; Honeywell International Inc. (NasdaqGS:HON); Sonata Software Limited (NSEI:SONATSOFTW); FIS Software Ltd.; T-Systems International GmbH; Alldigi Tech Limited (NSEI:ALLDIGI); Cegedim SA (ENXTPA:ALCGM); Client Services, Inc.; AKKA Technologies SE; Tata Consultancy Services Limited (NSEI:TCS); Mphasis Limited (BSE:526299); WSP Global Inc. (TSX:WSP); AT&T Delaware Intellectual Property, Inc.; Worleyparsons Ltd.; Innominds Software Solutions Pvt. Ltd.; Orient Technologies Limited (NSEI:ORIENTTECH); Black Knight Technologies, LLC; Sopra Banking Software SA; Intellect Design Arena Limited (NSEI:INTELLECT); Ameri Holdings, Inc.; Aetion, Inc.; CLPS Incorporation (NasdaqGM:CLPS); ANDigital Limited; Tiger Analytics, Inc.; Naapbooks Limited (BSE:543351); Reaktor Group Plc (HLSE:REAKTOR); TDCX Inc.; Merative L.P.; SOCO Corporation Ltd (ASX:SOC); Euronet Worldwide, Inc. (NasdaqGS:EEFT); Outsourcing Solutions Inc.; F5, Inc. (NasdaqGS:FFIV); Northrop Grumman Corporation (NYSE:NOC); Deloitte & Touche LLP; AllianceOne Inc.; Thoughtworks, Inc.; Sify Technologies Limited (NasdaqCM:SIFY); Insight Enterprises, Inc. (NasdaqGS:NSIT); ICON Public Limited Company (NasdaqGS:ICLR); Perficient, Inc.; AECOM (NYSE:ACM); inContact, Inc.; Mahindra & Mahindra Limited (NSEI:M&M); Mott MacDonald Group, Inc.; Symphony Technology Group, LLC; Medidata Solutions, Inc.; OptumInsight, Inc.; NTG Clarity Networks Inc. (TSXV:NCI); Melstar Information Technologies Limited (BSE:532307); KBR, Inc. (NYSE:KBR); Transcomm plc; IBM Global Services U.S.; Deloitte Touche Tohmatsu India, LLP; Fidelity National Information Services, Inc. (NYSE:FIS); Capita Customer Management Limited; DATAGROUP SE (XTRA:D6H0); Cognizant Technology Solutions Ltd.; Alkami Technology, Inc. (NasdaqGS:ALKT); LexisNexis Risk Solutions, Inc.; Press Ganey Holdings, Inc.; nCino, Inc. (NasdaqGS:NCNO); Q2, Inc.; TaskUs, Inc. (NasdaqGS:TASK); Medpace Holdings, Inc. (NasdaqGS:MEDP); Being Technologies Ltd.; Oracle Healthcare Ltd; Foundever Group; Methodhub Software Limited (BSE:544637); Amdocs Limited (NasdaqGS:DOX); PTC Inc. (NasdaqGS:PTC); Diebold Nixdorf, Incorporated (NYSE:DBD); Labcorp Drug Development Inc.; Arcadis NV (ENXTAM:ARCAD); vCustomer Corporation; Valores Corporativos Softtek Sa De C.V.; HCL Technologies Limited (NSEI:HCLTECH); Larsen & Toubro Limited (BSE:500510); Serco Group plc (LSE:SRP); Capita plc (LSE:CPI); Accenture plc (NYSE:ACN); CCK Financial Solutions Ltd.; Bechtle AG (XTRA:BC8); Concentrix Corporation (NasdaqGS:CNXC); Hindustan Aeronautics Limited (NSEI:HAL); MigrationWare; Ipsos Healthcare; Exl Service.com (India) Private Limited; Mindtree Limited; Cognizant India Pvt. Ltd.; Palantir Technologies Inc. (NasdaqGS:PLTR); Grid Dynamics Holdings, Inc. (NasdaqCM:GDYN); Cigniti Technologies Limited (BSE:534758); Qualfon, S.C.; Kratikal Tech Limited (BSE:544811); Rackspace Technology, Inc. (NasdaqGS:RXT); Guavapay Limited; Backbase B.V.; Cisco Systems, Inc. (NasdaqGS:CSCO); Datamatix, Inc.; Arise Virtual Solutions Inc.; Pharmaceutical Product Development, LLC; Computer Task Group, Incorporated; RELX PLC (LSE:REL); Verizon Communications Inc. (NYSE:VZ); Bechtel Global Corporation; Schneider Electric S.E. (ENXTPA:SU); BAE Systems plc (LSE:BA.); AtkinsR\u00e9alis Group Inc. (TSX:ATRL); Zensar Technologies Limited (BSE:504067); Conduit Limited; Altair Corp. (OTCPK:ATCD); ICF International; Concentrix Daksh Services India Private Limited; WNS (Holdings) Limited; Firstsource Solutions Limited (NSEI:FSL); Expleo Solutions Limited (NSEI:EXPLEOSOL); LTM Limited (NSEI:LTM); Data#3 Limited (ASX:DTL); TELUS International (Cda) Inc.; Birlasoft Limited (NSEI:BSOFT); Aspire Systems, Inc.; Luxoft Holding, Inc.; ML California Sub, Inc.; Homeloan Management Limited; PricewaterhouseCoopers LLP, UK branch; Cybage Software Private Limited; R S Software (India) Limited (BSE:517447); T-Systems North America, Inc.; Broadcom Inc. (NasdaqGS:AVGO); Infostretch Corporation; Amazon Web Services, Inc.; Q2 Holdings, Inc. (NYSE:QTWO); WITS Corp. (TPEX:4953); Happiest Minds Technologies Limited (NSEI:HAPPSTMNDS); Cord Financial Services, LLC; Synovate Healthcare Ltd; Atturra Limited (ASX:ATA); White Pearl Technology Group AB (OM:WPTG B); Ibm Global Services Limited; Genxai Analytics Limited (NSEI:GENXAI); Parexel International Corporation; Telstra Group Limited (ASX:TLS); Genpact LLC; AT&T Inc. (NYSE:T); Aon plc (NYSE:AON); VMware LLC; Automatic Data Processing, Inc. (NasdaqGS:ADP); Fiserv, Inc. (NasdaqGS:FISV); Tetra Tech, Inc. (NasdaqGS:TTEK); Jack Henry & Associates, Inc. (NasdaqGS:JKHY); RCM Technologies, Inc. (NasdaqGM:RCMT); TTEC Holdings, Inc. (NasdaqGS:TTEC); StarTek, Inc.; Deutsche Telekom AG (XTRA:DTE); Virtusa Corporation; Aztecsoft Limited; ExlService Holdings, Inc. (NasdaqGS:EXLS); Siemens Limited (NSEI:SIEMENS); CompuGroup Medical SE & Co. KGaA (HMSE:COP); Alten S.A. (ENXTPA:ATE); ZS Associates, Inc.; Hexaware Technologies Limited (NSEI:HEXT); Sutherland Global Services, Inc.; Transcom WorldWide AB; Telecom Service Centres Ltd.; Webhelp SAS; VXI Global Solutions, LLC; Fresche Solutions Inc.; NTT DATA Americas, Inc.; Hyosung TNS Inc.; AVG Technologies UK Limited; RTI Health Solutions; Fractal Analytics Limited (NSEI:FRACTAL); Montrose International Corp.; Movate Inc.; CI&T Inc. (NYSE:CINT); Genpact India Private Limited; Definitive Healthcare, LLC; Leidos, Inc.; Aegis Global Inc.; Symphony Health Solutions Corporation; EVIDERA; L&T Technology Services Limited (NSEI:LTTS); Latent View Analytics Limited (NSEI:LATENTVIEW); We Win Limited (NSEI:WEWIN); IBEX Limited (NasdaqGM:IBEX); Thought Machine Group Limited; Smarttech247 Group plc; Ascendion, Inc.; Testinium Teknoloji Yazilim A.S.; Omega Healthcare Group Limited; StepChange Holdings Limited (ASX:STH); Dun & Bradstreet Holdings, Inc.; iQor, Inc.; Atos Group (ENXTPA:ATO); Xoriant Corporation; Hitachi, Ltd. (TSE:6501); Booz Allen Hamilton Holding Corporation (NYSE:BAH); General Electric Company (NYSE:GE); L3Harris Technologies, Inc. (NYSE:LHX); General Dynamics Corporation (NYSE:GD); Innodata Inc. (NasdaqGM:INOD); Syneos Health US, Inc.; q.beyond AG (XTRA:QBY0); Alorica, Inc.; Epicenter, Inc.; Teleperformance SE (ENXTPA:TEP); Tata Motors Passenger Vehicles Limited (BSE:500570); Capgemini SE (ENXTPA:CAP); Capgemini N.V.; Stantec Inc. (TSX:STN); ManTech International Corporation; Anubex NV; Verisk Analytics, Inc. (NasdaqGS:VRSK); Broadridge Financial Solutions, Inc. (NYSE:BR); Arup Group Limited; Vertex Data Science Limited; Datacom Group Limited; Five9, Inc. (NasdaqGM:FIVN); Hitachi Data Systems AG; Quintiles Consulting, Inc.; Bharat Electronics Limited (BSE:500049); Exela Technologies, Inc. (OTCPK:XELA); Visa Inc. (NYSE:V); Kantar Health SAS; Mu Sigma Inc.; Twilio Inc. (NYSE:TWLO); IQVIA Holdings Inc. (NYSE:IQV); QuantumBlack LLP; Wizeline, Inc.; innoWake gmbh; Shearwater Health, Inc.; SharedLabs, Inc.; Converge-One; Gainwell Technologies LLC; Kyndryl Holdings, Inc. (NYSE:KD); Testingxperts Private Limited; Nationwide Credit, Inc.; NEC Corporation (TSE:6701); PRA Health Sciences, Inc.; Quanta Services, Inc. (NYSE:PWR); CACI International Inc (NYSE:CACI); HP Inc. (NYSE:HPQ); Salesforce, Inc. (NYSE:CRM); Rockwell Automation, Inc. (NYSE:ROK); Edgewater Technology, Inc.; Nielsen Holdings Limited; Computer Services, Inc.; Finastra Group Holdings Limited; NTT DATA Group Corporation; GfK GmbH; Trigent Software, Inc.; AlphaImpactRx, Inc.; EPAM Systems, Inc. (NYSE:EPAM); SAIC Motor Corporation Limited (SHSE:600104); Altran North America; Concentrix CVG Philippines, Inc.; Health Market Science, Inc.; E-Infochips Private Limited; Avaloq Group AG; Veeva Systems Inc. (NYSE:VEEV); Genpact Limited (NYSE:G); Sitel Corporation; Telstra Purple Pty Ltd; Cerner Enviza LLC; AgileThought, Inc. (OTCPK:AGIL.Q); Science Applications International Corporation (NasdaqGS:SAIC); Globant S.A. (NYSE:GLOB); EliteSoft Global Inc.; Sutherland Mortgage Services, Inc.; Startek, Inc.; Kyndryl Inc.; XPON Technologies Group Limited (ASX:XPN); Atmastco Defence Systems Private Limited",
+          "version": 2
+        }
+      ]
+    },
+    "financial_statements": {
+      "LTM::ebitda": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:22.790852Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 4482,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:05.245997Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 4482,
+          "version": 2
+        }
+      ],
+      "LTM::revenue": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:22.793531Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 20299,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:05.249765Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 20299,
+          "version": 2
+        }
+      ]
+    },
+    "market_data": {
+      "latest::close": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:22.768209Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 12.1,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:05.218400Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 12.1,
+          "version": 2
+        }
+      ],
+      "latest::enterprise_value": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:22.791804Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 46873.9,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:05.247724Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 46873.9,
+          "version": 2
+        }
+      ],
+      "latest::market_cap": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:22.794974Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 48999.4,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:05.251864Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 48999.4,
+          "version": 2
+        }
+      ],
+      "latest::next_earnings_date_announced": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:22.798163Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "2026-10-23 00:00:00",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:05.255660Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "2026-10-23 00:00:00",
+          "version": 2
+        }
+      ],
+      "latest::next_earnings_date_expected": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:22.799230Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "2026-10-23 00:00:00",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:05.258068Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "2026-10-23 00:00:00",
+          "version": 2
+        }
+      ],
+      "latest::returns_1d": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:22.770049Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 4.5,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:05.220670Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 4.51,
+          "version": 2
+        }
+      ],
+      "latest::returns_1m": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:22.771511Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 11.4,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:05.222715Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 11.5,
+          "version": 2
+        }
+      ],
+      "latest::returns_1w": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:22.770793Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 9.81,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:05.221697Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 9.84,
+          "version": 2
+        }
+      ],
+      "latest::returns_1y": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:22.777095Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": -23.7,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:05.228509Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": -23.7,
+          "version": 2
+        }
+      ],
+      "latest::returns_3m": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:22.773247Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": -1.03,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:05.224576Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": -1.02,
+          "version": 2
+        }
+      ],
+      "latest::returns_3y": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:22.777872Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": -13.8,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:05.229659Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": -13.8,
+          "version": 2
+        }
+      ],
+      "latest::returns_5y": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:22.778657Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": -28.5,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:05.230768Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": -28.5,
+          "version": 2
+        }
+      ],
+      "latest::returns_6m": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:22.774578Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": -30.3,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:05.226294Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": -30.4,
+          "version": 2
+        }
+      ],
+      "latest::returns_9m": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:22.776171Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": -23.5,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:05.227403Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": -23.5,
+          "version": 2
+        }
+      ],
+      "latest::returns_ytd": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:22.769267Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": -29.1,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:05.219542Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": -29.1,
+          "version": 2
+        }
+      ],
+      "latest::volume": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:22.779433Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 0.863,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:05.231883Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 15,
+          "version": 2
+        }
+      ]
+    },
+    "products": {
+      "product": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:22.803216Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Ad Operations & Trafficking Services; Advanced Driver Assistance Systems Connected Car Solutions; AI & Automation CoE - Evangelization, Setup and Implementation Services; AI Based Platform Implementation Services; AI Discovery and Maturity Assessment Consulting Services; AI Led Transformation Services; AI-first Services; Aikido; Ally; API and Microservices; Application Maintenance Services; Application Management Services; Application Modernization Services; Big Data, Architecture and Technology Consulting; Business Intelligence and Analytics Services; Business Intelligence and Reporting Services; Business Process Management Solutions; Business Requirements Definition Services; Business Transformation Solutions; Campaign Management Services; Cognitive Email Workbench; Communications Engineering Services; Complex Program Management Services; Consulting Services; Content Management Services; Creative Services; Cyber Gaze; Data Analysis and Migration Tools; Data and Analytics Consulting Services; Data Center Infrastructure and Application Delivery Solutions; Data Consulting Services; Data Integration and Extract, Transform and Load Solutions; Data Mining and Predictive Analytics Services; Data Modernization Services; Data Monetization Services; Data Operations Services; Digital Commerce Services; Digital Interactions Services; Digital Marketing Services; Digital Smart Home Gateway; Digital Transformation Consulting Services; DNA Strategy Consulting Services; E-Commerce Services; Edge Platforms; Energy-as-a-Service; Enterprise Application Integration Services; Enterprise Applications Consulting Services; Enterprise Cloud Application Solutions; Enterprise Mobility Solutions; Enterprise Performance Management Services",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:05.263320Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Ad Operations & Trafficking Services; Advanced Driver Assistance Systems Connected Car Solutions; AI & Automation CoE - Evangelization, Setup and Implementation Services; AI Based Platform Implementation Services; AI Discovery and Maturity Assessment Consulting Services; AI Led Transformation Services; AI-first Services; Aikido; Ally; API and Microservices; Application Maintenance Services; Application Management Services; Application Modernization Services; Big Data, Architecture and Technology Consulting; Business Intelligence and Analytics Services; Business Intelligence and Reporting Services; Business Process Management Solutions; Business Requirements Definition Services; Business Transformation Solutions; Campaign Management Services; Cognitive Email Workbench; Communications Engineering Services; Complex Program Management Services; Consulting Services; Content Management Services; Creative Services; Cyber Gaze; Data Analysis and Migration Tools; Data and Analytics Consulting Services; Data Center Infrastructure and Application Delivery Solutions; Data Consulting Services; Data Integration and Extract, Transform and Load Solutions; Data Mining and Predictive Analytics Services; Data Modernization Services; Data Monetization Services; Data Operations Services; Digital Commerce Services; Digital Interactions Services; Digital Marketing Services; Digital Smart Home Gateway; Digital Transformation Consulting Services; DNA Strategy Consulting Services; E-Commerce Services; Edge Platforms; Energy-as-a-Service; Enterprise Application Integration Services; Enterprise Applications Consulting Services; Enterprise Cloud Application Solutions; Enterprise Mobility Solutions; Enterprise Performance Management Services",
+          "version": 2
+        }
+      ],
+      "product_description": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:22.801341Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Ad Operations & Trafficking Services:\nAd Operations & Trafficking Services include social media management, promotion management.\n\nAI Led Transformation Services:\nAI Led Transformation Services contextualized for Industry segments.\n\nAI-first Services:\nAI-first Services include Innovate,Assure,Orchestrate,Insight,Transform,Modernize.\n\nAikido:\nAiKiDo aims to help clients address three key aspects of their business: a non-disruptive renewal and simplification of their existing landscapes, introduction of new offerings and models in a dynamic business environment, and creating a culture of innovation in their organizations. Ai refers to platforms and platforms as a service to build intelligent solutions. It helps harmonize and unify the disjointed initiatives in enterprises and build solutions to emerging business problems.Ki refers to knowledge-based management and evolution of landscapes which captures the knowledge within an organization \u2013 people, structures and systems \u2013 over time. It is a modular service that systematically harvests and curates enterprise knowledge to renew existing technology landscapes, optimize business processes and drive rapid innovation. Do refers to service offering on design thinking-led initiatives that will help clients find, understand and define the problems that are most important to their businesses. It also helps in prioritizing problems and solving them effectively and quickly.\n\nAlly:\nAlly, an AI-powered chatbot, to further enhance fan engagement and bring the tennis community closer to the sport.",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:05.261931Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Ad Operations & Trafficking Services:\nAd Operations & Trafficking Services include social media management, promotion management.\n\nAI Led Transformation Services:\nAI Led Transformation Services contextualized for Industry segments.\n\nAI-first Services:\nAI-first Services include Innovate,Assure,Orchestrate,Insight,Transform,Modernize.\n\nAikido:\nAiKiDo aims to help clients address three key aspects of their business: a non-disruptive renewal and simplification of their existing landscapes, introduction of new offerings and models in a dynamic business environment, and creating a culture of innovation in their organizations. Ai refers to platforms and platforms as a service to build intelligent solutions. It helps harmonize and unify the disjointed initiatives in enterprises and build solutions to emerging business problems.Ki refers to knowledge-based management and evolution of landscapes which captures the knowledge within an organization \u2013 people, structures and systems \u2013 over time. It is a modular service that systematically harvests and curates enterprise knowledge to renew existing technology landscapes, optimize business processes and drive rapid innovation. Do refers to service offering on design thinking-led initiatives that will help clients find, understand and define the problems that are most important to their businesses. It also helps in prioritizing problems and solving them effectively and quickly.\n\nAlly:\nAlly, an AI-powered chatbot, to further enhance fan engagement and bring the tennis community closer to the sport.",
+          "version": 2
+        }
+      ]
+    }
+  },
+  "ticker": "INFY",
+  "updated_at": "2026-08-01T19:37:05.265646Z"
+}

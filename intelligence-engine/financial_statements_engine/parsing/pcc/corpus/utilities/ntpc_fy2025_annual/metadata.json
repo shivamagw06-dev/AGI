@@ -1,0 +1,22 @@
+{
+  "case_id": "ntpc_fy2025_annual",
+  "company_id": "nse:NTPC",
+  "company_name": "NTPC Limited",
+  "currency": "INR",
+  "document_hash": "7aeab57b448df91a04ef7fb5f36d5044f84c0a0bd4c67f1279af48de4a975a14",
+  "exchange": "NSE",
+  "filing_type": "json",
+  "financial_year": "FY2025",
+  "immutable": true,
+  "industry": "Power",
+  "manual_verification": true,
+  "period_end": "2025-03-31",
+  "quarter": null,
+  "reporting_standard": "IND_AS",
+  "sector": "utilities",
+  "statement_frequency": "annual",
+  "taxonomy_version": "nse_indas_integrated_filing.2024.1",
+  "ticker": "NTPC",
+  "verified_at": "2026-07-30T00:00:00Z",
+  "verified_by": "agib_pcc_seed"
+}

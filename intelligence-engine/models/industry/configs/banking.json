@@ -1,0 +1,19 @@
+{
+  "industry_id": "banking",
+  "name": "Banking",
+  "demand_drivers": ["credit_growth", "gdp", "rates", "retail_liabilities"],
+  "supply_drivers": ["capital_adequacy", "deposit_franchise", "liquidity"],
+  "capacity": "capital_and_liability_franchise",
+  "pricing": "ni_spreads_and_fees",
+  "margins": {"nim": "2.5-4.0%"},
+  "competition": "psu_private_sfb_nbfc",
+  "regulation": ["rbi", "basel", "pca"],
+  "capital_intensity": "high",
+  "typical_risks": ["asset_quality", "liquidity", "interest_rate", "regulatory"],
+  "important_kpis": ["nim", "gnpa", "nnpa", "casa", "roes", "cet1", "credit_cost"],
+  "preferred_valuation_models": ["relative_pb", "residual_income"],
+  "historical_cycles": ["npa_cycle", "covid_moratorium", "liquidity_tightening"],
+  "industry_structure": "regulated_oligopoly",
+  "business_characteristics": ["balance_sheet_led", "deposit_franchise"],
+  "capital_cycle": "credit_cycle"
+}

@@ -1,0 +1,36 @@
+{
+  "generated_at_utc": "2026-08-21T19:13:06.617590+00:00",
+  "applied": false,
+  "warehouse_writes": 0,
+  "symbols_requested": 100,
+  "symbols_completed": 97,
+  "filings_fetched": 224,
+  "requests_made": 407,
+  "cache_hits": 27,
+  "retries": 7,
+  "min_interval_seconds": 1.6,
+  "concurrency": 1,
+  "duplicates_skipped": {
+    "by_url": 344
+  },
+  "mapped_outcomes": {
+    "declared": 7334,
+    "compound_unit_is_not_an_aggregate": 2046,
+    "error:HTTPError": 3,
+    "pure_is_not_money": 5
+  },
+  "stopped_early": null,
+  "elapsed_seconds": 808.2,
+  "code_commit": "b65ca100d1f15471e25f5e51ccb041e5be8ab746",
+  "companies_with_filings": 77,
+  "unique_content_hashes": 224,
+  "inline_xbrl_filings": 0,
+  "filings_with_no_declared_units": 0,
+  "scale_corroborated_rows": {
+    "financials_annual": 59,
+    "financials_quarterly": 6,
+    "union_with_disk_corpus": 328
+  },
+  "known_limitation": "filing selection sorted filingDate as text, which ranks by day-of-month rather than date, so the three filings taken per company are an arbitrary slice of history rather than the most recent. Unit findings are unaffected; period overlap with the target rows is understated.",
+  "throttling": "none observed; no 401/403/407/429/503 at any point"
+}

@@ -1,0 +1,108 @@
+name: Live data collection
+
+# Downloads the NSE bhavcopy and the other primary sources, then ingests the
+# bars into daily_market_history.
+#
+# Nothing scheduled this. All five collectors last succeeded on 2026-08-07 with
+# zero failures - they were not failing, they had simply stopped being invoked,
+# and no job existed to invoke them. Twenty-six days later the bhavcopy in the
+# live_data store was still dated 6 August.
+#
+# The consequence was not obvious, which is why it survived so long. The
+# bhavcopy covers the whole exchange in one file, so while it runs, every
+# symbol gets a bar. Once it stopped, the only remaining writer was the
+# per-symbol Yahoo sweep, which drops names intermittently - so prices did not
+# fail, they decayed. On 2026-09-02 the desk showed INDIASHLTR at its 28 August
+# close of 648.55 while the stock had closed at 651.20, and eight of the 104
+# ranked names were behind, five of them by twelve or thirteen days.
+#
+# 12:45 UTC = 18:15 IST: after the 15:30 IST close and after NSE publishes the
+# day's bhavcopy, with thirty minutes of margin before the warehouse refresh at
+# 13:15 UTC, so that refresh finds today's file already on disk.
+
+on:
+  schedule:
+    - cron: '45 12 * * 1-5'
+  workflow_dispatch:
+
+concurrency:
+  group: live-data-collection
+  cancel-in-progress: false
+
+jobs:
+  collect:
+    name: Collect and ingest primary sources
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Run the collectors
+        shell: bash
+        run: |
+          set -uo pipefail
+          ENGINE='https://agib-intelligence-engine.onrender.com/v1'
+          curl -sS --max-time 600 -X POST "$ENGINE/live-data/run" \
+            -H 'Content-Type: application/json' -d '{"actor":"live_data_cron"}' \
+            -o run.json -w 'live-data/run HTTP %{http_code}\n' || true
+          head -c 400 run.json || true; echo
+
+      - name: Fail if the collectors did not advance
+        shell: bash
+        run: |
+          set -uo pipefail
+          ENGINE='https://agib-intelligence-engine.onrender.com/v1'
+          curl -sS --max-time 120 "$ENGINE/live-data/collectors" -o collectors.json || true
+          python3 - <<'PY'
+          import json, sys
+          from datetime import datetime, timezone, timedelta
+          try:
+              rows = (json.load(open("collectors.json")) or {}).get("collectors") or []
+          except Exception as exc:
+              print(f"::error::collector status unreadable: {exc}"); sys.exit(1)
+          if not rows:
+              print("::error::no collectors reported"); sys.exit(1)
+          # A collector that has not succeeded for two days is the failure this
+          # workflow exists to prevent, and it is silent: success_count keeps
+          # its old value and failure_count stays at zero, because nothing ran.
+          cutoff = datetime.now(timezone.utc) - timedelta(days=2)
+          stale = []
+          for row in rows:
+              stamp = str(row.get("last_success") or "")
+              try:
+                  when = datetime.fromisoformat(stamp.replace("Z", "+00:00"))
+              except ValueError:
+                  stale.append((row.get("source"), stamp or "never")); continue
+              if when < cutoff:
+                  stale.append((row.get("source"), stamp))
+              else:
+                  print(f"  ok  {row.get('source')}  {stamp}")
+          if stale:
+              for source, stamp in stale:
+                  print(f"::error::{source} last succeeded {stamp}")
+              sys.exit(1)
+          PY
+
+      - name: Ingest the bhavcopy into daily_market_history
+        shell: bash
+        run: |
+          set -uo pipefail
+          ENGINE='https://agib-intelligence-engine.onrender.com/v1'
+          # Only the nse stage. The full refresh is a separate job and a much
+          # longer one; this needs the bars in the table, nothing else.
+          curl -sS --max-time 900 -X POST "$ENGINE/warehouse/refresh" \
+            -H 'Content-Type: application/json' \
+            -d '{"stages":["nse"],"days":30,"actor":"live_data_cron"}' \
+            -o nse.json -w 'warehouse/refresh HTTP %{http_code}\n' || true
+          python3 - <<'PY'
+          import json
+          try:
+              d = json.load(open("nse.json"))
+          except Exception as exc:
+              print(f"::warning::nse stage response unreadable: {exc}"); raise SystemExit(0)
+          st = (d.get("stages") or {}).get("nse") or d
+          if not st.get("ok"):
+              print(f"::warning::nse stage failed: {str(st)[:300]}")
+          else:
+              print(f"  {st.get('trading_days')} trading days "
+                    f"({st.get('first')} .. {st.get('last')}), "
+                    f"inserted {st.get('inserted')}, updated {st.get('updated')}")
+          PY
