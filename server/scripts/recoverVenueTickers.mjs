@@ -24,7 +24,6 @@
  */
 import { createSupabaseAdmin, getSupabaseAdminCredentials } from '../lib/supabaseAdmin.js';
 import { recoverTicker } from '../services/venueTicker.js';
-import { normaliseIssuerName } from '../services/thirteenFList.js';
 
 const APPLY = process.argv.includes('--apply');
 const SEC_UA = (process.env.SEC_USER_AGENT || 'AGI Institutional Research research@agarwalglobalinvestments.com').trim();
@@ -54,7 +53,7 @@ if (!resp.ok) throw new Error(`company_tickers.json: HTTP ${resp.status}`);
 const secByTicker = new Map();
 for (const entry of Object.values(await resp.json())) {
   const ticker = String(entry.ticker || '').toUpperCase();
-  if (ticker) secByTicker.set(ticker, normaliseIssuerName(entry.title || ''));
+  if (ticker) secByTicker.set(ticker, String(entry.title || ''));
 }
 console.log(`[venue] SEC lists ${secByTicker.size.toLocaleString()} tickers`);
 
@@ -87,7 +86,7 @@ console.log(`[venue] ${suspect.size} (cusip, non-US ticker) pairs to examine`);
 const recovered = [];
 const refused = [];
 for (const s of suspect.values()) {
-  const r = recoverTicker(s.ticker, s.issuer_name, secByTicker, { normalise: normaliseIssuerName });
+  const r = recoverTicker(s.ticker, s.issuer_name, secByTicker);
   if (r.ticker) recovered.push({ ...s, to: r.ticker });
   else refused.push({ ...s, reason: r.reason });
 }
