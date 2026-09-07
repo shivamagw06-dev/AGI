@@ -124,8 +124,15 @@ if (plans.length) {
 
 if (!APPLY) {
   console.log('');
-  console.log('[prices] DRY RUN - fetching 3 symbols to show what would be written.');
-  for (const plan of plans.slice(0, 3)) {
+  // Sampled across the run, not from the front. Taking the first three
+  // sorted symbols showed only 07WA, 0C3 and 0VVB - digit-leading codes sort
+  // first, so the sample was made entirely of the least typical names in the
+  // set and said nothing about the health of the other 4,984.
+  const step = Math.max(1, Math.floor(plans.length / 6));
+  const sample = [];
+  for (let i = 0; i < plans.length && sample.length < 6; i += step) sample.push(plans[i]);
+  console.log(`[prices] DRY RUN - fetching ${sample.length} symbols spread across the run.`);
+  for (const plan of sample) {
     const res = await fetchDailyHistory(plan.symbol, { from: plan.from, to: plan.to });
     const bad = res.status === 'ok' ? coverageProblem(plan, res.bars) : null;
     const rows = res.status === 'ok' && !bad
@@ -135,9 +142,17 @@ if (!APPLY) {
     if (rows.length) console.log(`    first: ${JSON.stringify(rows[0])}`);
     await sleep(PAUSE_MS);
   }
-  const perSymbol = 1900;
+  // Estimated from each symbol's own span. A flat bars-per-symbol figure
+  // assumed every name needed the full 2019-2026 history and overstated the
+  // job by roughly double - most positions are only a few years old.
+  const TRADING_DAYS_PER_YEAR = 252;
+  let estimate = 0;
+  for (const plan of plans) {
+    const years = (Date.parse(plan.to) - Date.parse(plan.from)) / 31_557_600_000;
+    estimate += Math.max(1, Math.round(years * TRADING_DAYS_PER_YEAR)) * plan.securityKeys.length;
+  }
   console.log('');
-  console.log(`[prices] estimate: ~${(plans.length * perSymbol).toLocaleString()} rows across ${plans.length.toLocaleString()} requests`);
+  console.log(`[prices] estimate: ~${estimate.toLocaleString()} rows across ${plans.length.toLocaleString()} requests`);
   console.log('[prices] no writes. Re-run with --apply.');
   process.exit(0);
 }
