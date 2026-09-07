@@ -21,6 +21,12 @@
  *
  * An open-ended window (valid_to null) runs to the end of time, which is why
  * a proposal must bound its own window rather than claiming forever.
+ *
+ * valid_to is exclusive - the resolver reads a mapping as applying while
+ * valid_to has not been reached - and the table checks valid_to > valid_from.
+ * Both push the same way: a window that ends on the last date the security
+ * was held is wrong, because it stops one day before that date is covered,
+ * and for a security held in a single quarter it is not a window at all.
  */
 
 const START = '0000-01-01';
@@ -32,7 +38,9 @@ export function windowsOverlap(a, b) {
   const aTo = a?.to || END;
   const bFrom = b?.from || START;
   const bTo = b?.to || END;
-  return aFrom <= bTo && bFrom <= aTo;
+  // Ends are exclusive, so a window ending exactly where another begins is a
+  // handover, not a clash - which is the shape a succession actually takes.
+  return aFrom < bTo && bFrom < aTo;
 }
 
 /**
@@ -59,8 +67,20 @@ export function conflictingOwner(owners, cusip, window) {
  * the successor that took the symbol over.
  */
 export function proposedWindow({ earliest, latest }, latestReportDate) {
+  const stillHeld = latest && latestReportDate && latest >= latestReportDate;
   return {
     from: earliest || null,
-    to: latest && latestReportDate && latest >= latestReportDate ? null : latest || null,
+    // The day after the last report date it was held. An exclusive end set to
+    // that date itself would not cover it, and would equal valid_from for a
+    // security held in one quarter - which the table rejects outright.
+    to: stillHeld ? null : dayAfter(latest),
   };
+}
+
+function dayAfter(date) {
+  if (!date) return null;
+  const d = new Date(`${String(date).slice(0, 10)}T00:00:00Z`);
+  if (Number.isNaN(d.getTime())) return null;
+  d.setUTCDate(d.getUTCDate() + 1);
+  return d.toISOString().slice(0, 10);
 }

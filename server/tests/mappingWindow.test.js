@@ -18,9 +18,13 @@ test('a ticker that moved to a new CUSIP is not a conflict', () => {
   assert.equal(conflictingOwner(owners, '438516106', { from: '2023-09-30', to: '2025-09-30' }), null);
 });
 
-test('windows that touch at the boundary do not overlap', () => {
+test('windows that touch at the boundary are a handover, not a clash', () => {
+  // Ends are exclusive, so a window ending exactly where another begins does
+  // not overlap it - which is the shape a real succession takes.
   assert.equal(windowsOverlap({ from: '2023-01-01', to: '2024-06-30' }, { from: '2024-07-01', to: null }), false);
-  assert.equal(windowsOverlap({ from: '2023-01-01', to: '2024-06-30' }, { from: '2024-06-30', to: null }), true);
+  assert.equal(windowsOverlap({ from: '2023-01-01', to: '2024-06-30' }, { from: '2024-06-30', to: null }), false);
+  // One day of genuine overlap is still a clash.
+  assert.equal(windowsOverlap({ from: '2023-01-01', to: '2024-07-01' }, { from: '2024-06-30', to: null }), true);
 });
 
 test('an open-ended window runs to the end of time', () => {
@@ -38,8 +42,23 @@ test('a position still held claims an open window; one that stopped does not', (
   const current = proposedWindow({ earliest: '2023-09-30', latest: '2026-06-30' }, '2026-06-30');
   assert.deepEqual(current, { from: '2023-09-30', to: null });
 
+  // The day after the last report date held. Ending on that date itself would
+  // stop one day before covering it, because the end is exclusive.
   const ended = proposedWindow({ earliest: '2023-09-30', latest: '2024-09-30' }, '2026-06-30');
-  assert.deepEqual(ended, { from: '2023-09-30', to: '2024-09-30' });
+  assert.deepEqual(ended, { from: '2023-09-30', to: '2024-10-01' });
+});
+
+test('a security held in a single quarter still gets a real window', () => {
+  // This threw: valid_to equal to valid_from violates the table's
+  // security_identifier_validity_ordered check, which requires to > from.
+  const one = proposedWindow({ earliest: '2026-03-31', latest: '2026-03-31' }, '2026-06-30');
+  assert.deepEqual(one, { from: '2026-03-31', to: '2026-04-01' });
+  assert.ok(one.to > one.from, 'the table requires valid_to > valid_from');
+});
+
+test('a month or year boundary does not produce an impossible date', () => {
+  assert.equal(proposedWindow({ earliest: '2024-01-01', latest: '2024-12-31' }, '2026-06-30').to, '2025-01-01');
+  assert.equal(proposedWindow({ earliest: '2024-01-01', latest: '2024-02-29' }, '2026-06-30').to, '2024-03-01');
 });
 
 test('a stopped position does not block its successor', () => {
