@@ -178,4 +178,27 @@ for (let i = 0; i < writes.length; i += 500) {
 }
 console.log('');
 console.log(`[venue] wrote ${written} mappings to security_identifier_history.`);
-console.log('[venue] Holdings pick these up on their next resolve; run the price backfill again to price them.');
+
+// The mapping alone changes nothing that reads holdings. Ingestion attaches
+// tickers from this table when a filing is collected, but the rows already
+// stored keep whatever they were written with - so the screener still shows
+// HONGBP, and the price backfill still skips it as a foreign venue code. The
+// correction has to be applied to the holdings that exist.
+//
+// matchTickerFile and propagateChainTickers do the same update guarded by
+// .is('ticker', null), because they fill blanks. This one replaces a value
+// that is present and wrong, so the guard is the wrong ticker itself: only
+// rows carrying that exact venue code under that exact CUSIP are touched.
+let patched = 0;
+for (const r of recovered) {
+  if (!writes.some((w) => w.cusip === r.cusip && w.ticker === r.to)) continue;
+  const { error, count } = await client
+    .from('institutional_holdings')
+    .update({ ticker: r.to }, { count: 'exact' })
+    .eq('cusip', r.cusip)
+    .eq('ticker', r.ticker);
+  if (error) throw new Error(`holdings update ${r.ticker}: ${error.message}`);
+  patched += count || 0;
+}
+console.log(`[venue] corrected ${patched.toLocaleString()} holding rows.`);
+console.log('[venue] Run the price backfill again to price them.');
