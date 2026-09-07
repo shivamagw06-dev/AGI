@@ -66,6 +66,42 @@ export async function startRun({
   }
 }
 
+/**
+ * Record what a run has done so far, while it is still doing it.
+ *
+ * Progress used to reach the database only at the end, through finishRun. Any
+ * hard stop - the platform's own runtime limit, an out-of-memory kill, a
+ * deploy replacing the container - skipped that write and left the row exactly
+ * as startRun created it: status running, zero managers, no finish time. The
+ * zero is the column default, not a measurement, and it reads as a run that
+ * crawled nothing. Two runs were diagnosed that way and neither could be told
+ * apart from a collector that never started.
+ *
+ * Written as each manager completes, so a killed run leaves an honest partial
+ * record and the next question is "why did it stop at manager 34" rather than
+ * "why did nothing happen".
+ */
+export async function progressRun(id, progress = {}) {
+  if (!id) return false;
+  try {
+    const { error } = await db()
+      .from('institutional_collection_runs')
+      .update({
+        managers_attempted: progress.managersAttempted ?? 0,
+        managers_succeeded: progress.managersSucceeded ?? 0,
+        filings_ingested: progress.filingsIngested ?? 0,
+        holdings_rows: progress.holdingsRows ?? 0,
+      })
+      .eq('id', id);
+    if (error) throw new Error(error.message);
+    return true;
+  } catch (error) {
+    // Progress reporting must never be the reason a crawl stops.
+    console.warn(`[collection-runs] progress update failed: ${error.message}`);
+    return false;
+  }
+}
+
 export async function finishRun(id, summary = {}) {
   if (!id) return false;
   try {
