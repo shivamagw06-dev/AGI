@@ -75,7 +75,9 @@ try {
     console.log(`[identifiers] rows newly mapped: ${gained.toLocaleString()}`);
     console.log(`[identifiers] attempted ${result.attempted}, resolved ${result.mapped},`
       + ` applied to holdings ${result.applied ?? 0}, unresolved ${result.unresolved}`
-      + (result.skipped ? `, skipped ${result.skipped} malformed` : ''));
+      + (result.skipped ? `, skipped ${result.skipped} malformed` : '')
+      + (result.not_equity ? `, ${result.not_equity} not common equity` : '')
+      + (result.inherited ? `, ${result.inherited} inherited via identity chain` : ''));
     if (result.mapped && !result.applied) {
       console.warn('[identifiers] mappings were written but none reached the holdings table,'
         + ' so nothing downstream will change. That is a fault, not a quiet success.');
