@@ -155,6 +155,25 @@ for (const chain of chains) {
   }
 }
 
+// Each identifier must appear in exactly one chain, because cusip is the
+// chain table's primary key. It once did not: identifiers whose issuer name
+// was respelled between quarters landed in one group per spelling, and 1,787
+// of them arrived twice. Postgres caught it - "ON CONFLICT DO UPDATE command
+// cannot affect row a second time" - but only after 42,683 securities had been
+// written, and only because a duplicate happened to fall inside one chunk.
+// Split across chunks it would have written both and left the table wrong.
+const seen = new Set();
+const duplicates = [];
+for (const row of chainRows) {
+  if (seen.has(row.cusip)) duplicates.push(row.cusip);
+  seen.add(row.cusip);
+}
+if (duplicates.length) {
+  console.error(`[identity] ${duplicates.length} identifier(s) appear in more than one chain, e.g. ${duplicates.slice(0, 5).join(', ')}`);
+  console.error('[identity] refusing to write: cusip is the chain table primary key.');
+  process.exit(1);
+}
+
 const byClass = {};
 for (const s of securities) byClass[s.security_class] = (byClass[s.security_class] || 0) + 1;
 console.log(`\n[identity] distinct CUSIPs: ${securities.length.toLocaleString()}`);

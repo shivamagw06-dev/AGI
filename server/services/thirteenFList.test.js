@@ -250,3 +250,32 @@ test('a verified chain keeps its earlier links when a later one is held back', (
   assert.equal(groups[0].changed_identifier, true);
   assert.equal(groups[0].held_at_edge, true);
 });
+
+test('an identifier appears in exactly one chain, however its name is spelled', () => {
+  // Names are restated. Grouping off the records put a CUSIP into as many
+  // groups as it had spellings, producing 16,707 chain rows for 14,920
+  // equities - 1,787 identifiers in two chains at once, which the database
+  // rejected as "ON CONFLICT DO UPDATE command cannot affect row a second
+  // time". The name from the latest quarter decides, matching the securities
+  // table so the two agree.
+  const rows = [
+    { cusip: 'G2717B108', issuer_name: 'CUSHMAN WAKEFIELD PLC', security_class: 'equity', quarter: '2019q1' },
+    { cusip: 'G2717B108', issuer_name: 'CUSHMAN AND WAKEFIELD LTD', security_class: 'equity', quarter: '2025q4' },
+    { cusip: 'G2717C106', issuer_name: 'CUSHMAN AND WAKEFIELD LTD', security_class: 'equity', quarter: '2025q4' },
+    { cusip: 'G2717C106', issuer_name: 'CUSHMAN AND WAKEFIELD LTD', security_class: 'equity', quarter: '2026q2' },
+  ];
+  const groups = chainIdentities(rows, { throughQuarter: '2027q1' });
+  const all = groups.flatMap((g) => g.cusips.map((c) => c.cusip));
+  assert.equal(all.length, new Set(all).size, 'no identifier may appear twice');
+  assert.equal(groups.length, 1);
+  assert.equal(groups[0].changed_identifier, true);
+});
+
+test('every identifier across a realistic mix stays unique', () => {
+  // The guard that was missing. One CUSIP, three names, three quarters.
+  const rows = ['ACME CORP', 'ACME CORPORATION', 'ACME HOLDINGS INC'].map((name, i) => ({
+    cusip: '00000010' + '0', issuer_name: name, security_class: 'equity', quarter: `202${i}q1`,
+  }));
+  const all = chainIdentities(rows, { throughQuarter: '2030q1' }).flatMap((g) => g.cusips.map((c) => c.cusip));
+  assert.deepEqual(all, ['000000100']);
+});
