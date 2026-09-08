@@ -45,7 +45,9 @@ export function yahooSymbol(ticker) {
  * that opens a position on the first report date needs a price on the session
  * before it to measure anything, and a quarter of slack costs one request.
  */
-export function planFetches(holdings, { asOf, bufferDays = 120, freshness = null } = {}) {
+export function planFetches(holdings, {
+  asOf, bufferDays = 120, freshness = null, maxAgeDays = 4, windowDays = null,
+} = {}) {
   const bySymbol = new Map();
   const skipped = { unusableTicker: 0, alreadyFresh: 0, foreignVenue: 0 };
   const foreignVenueSymbols = new Set();
@@ -77,21 +79,30 @@ export function planFetches(holdings, { asOf, bufferDays = 120, freshness = null
 
   const plans = [];
   for (const plan of bySymbol.values()) {
-    // Skip a symbol whose stored history already reaches the run date. A
-    // 3,400-symbol run gets interrupted; without this, resuming refetches
-    // everything and the second attempt is as long as the first.
+    // Skip a symbol fetched recently enough. A backfill wants a wide window so
+    // an interrupted run resumes instead of restarting; a daily refresh wants a
+    // narrow one, or nothing is ever due.
     const have = freshness?.get?.(plan.symbol);
-    if (have && asOf && daysBetween(have, asOf) <= 4) { skipped.alreadyFresh += 1; continue; }
+    if (have && asOf && daysBetween(have, asOf) <= maxAgeDays) { skipped.alreadyFresh += 1; continue; }
 
-    const start = new Date(plan.earliest || asOf);
-    start.setUTCDate(start.getUTCDate() - bufferDays);
+    // A refresh asks only for the sessions since it last looked. Re-fetching
+    // seven years of history to learn yesterday's close is the same answer at
+    // a hundred times the cost, and the upsert would rewrite three million
+    // unchanged rows to do it.
+    const start = windowDays
+      ? new Date(Date.parse(asOf) - windowDays * 86_400_000)
+      : new Date(plan.earliest || asOf);
+    if (!windowDays) start.setUTCDate(start.getUTCDate() - bufferDays);
     plans.push({
       symbol: plan.symbol,
       ticker: plan.ticker,
       securityKeys: [...plan.securityKeys].sort(),
       // The date the security is first held, kept separately from the buffered
       // request start because it is what the returned history has to cover.
-      earliestHeld: plan.earliest || null,
+      // The date held, which is what coverage is checked against. A refresh
+      // window starts long after it, and comparing the two would read every
+      // refreshed symbol as a reassigned ticker.
+      earliestHeld: windowDays ? null : (plan.earliest || null),
       // Still held as at the most recent filings. A symbol in this set should
       // almost always be live, which is what makes it a usable health signal:
       // a delisted name failing is expected, a current holding failing is not.
