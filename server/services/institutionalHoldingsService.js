@@ -6,6 +6,7 @@ import { consensusKey, dedupeSignalRows } from './consensusKey.js';
 import {
   activityCounts, topWeight, turnover, holdingTenure, averageTenure, topKeys, valueFlow,
 } from './filingActivity.js';
+import { revaluePosition, revalueBook } from './valueSinceDisclosure.js';
 
 const SEC_ROOT = 'https://www.sec.gov';
 const SEC_DATA = 'https://data.sec.gov';
@@ -388,6 +389,59 @@ export async function getInstitutionalFund(slug) {
 const TENURE_POSITION_LIMIT = 250;
 
 /**
+ * The two closes each disclosed position is revalued between.
+ *
+ * Fetched as two narrow windows rather than a series. A price table of three
+ * million rows cannot be paged behind a page load, and only two dates matter:
+ * the report date, and the most recent close. The windows are a few sessions
+ * wide because neither date is guaranteed to be a trading day - a quarter can
+ * end on a Saturday, and the last close is whatever the last collection
+ * reached.
+ */
+async function closesAround(client, tickers, reportDate) {
+  if (!tickers.length) return new Map();
+  const windowStart = new Date(`${reportDate}T00:00:00Z`);
+  windowStart.setUTCDate(windowStart.getUTCDate() - 10);
+  const recentFrom = new Date(Date.now() - 12 * 86_400_000).toISOString().slice(0, 10);
+
+  const fetchWindow = async (from, to) => {
+    const rows = [];
+    for (let i = 0; i < tickers.length; i += 200) {
+      const slice = tickers.slice(i, i + 200);
+      const { data, error } = await client
+        .from('institutional_security_prices')
+        .select('ticker,price_date,close')
+        .in('ticker', slice)
+        .gte('price_date', from)
+        .lte('price_date', to)
+        .not('close', 'is', null)
+        .order('price_date');
+      if (error) throw error;
+      rows.push(...(data || []));
+    }
+    return rows;
+  };
+
+  // The close on or before the report date, and the most recent close.
+  const atReport = await fetchWindow(windowStart.toISOString().slice(0, 10), reportDate);
+  const atLatest = await fetchWindow(recentFrom, new Date().toISOString().slice(0, 10));
+
+  const out = new Map();
+  const put = (row, field) => {
+    const key = String(row.ticker).toUpperCase();
+    const entry = out.get(key) || {};
+    // Ordered ascending, so the last row seen in each window is the one wanted:
+    // the latest close at or before the report date, and the latest overall.
+    entry[field] = Number(row.close);
+    entry[`${field}_on`] = row.price_date;
+    out.set(key, entry);
+  };
+  for (const row of atReport) put(row, 'at_report_date');
+  for (const row of atLatest) put(row, 'at_latest_close');
+  return out;
+}
+
+/**
  * The descriptive statistics for a manager's latest filing.
  *
  * Holding period is the expensive one: it needs every period a security has
@@ -435,8 +489,25 @@ async function fundActivity(client, manager, filings, latest, holdings, changes)
     ? averageTenure(tenure, topKeys(priced, count, keyOf), periods.length)
     : { quarters: null, truncated: false, sample: 0, reason: measurable ? 'one filed period' : `${priced.length} positions exceeds the ${TENURE_POSITION_LIMIT} measured` });
 
+  // What the disclosed book would be worth at the latest close. A
+  // counterfactual, not a claim about what is held now - the manager has
+  // traded since and has disclosed none of it.
+  const tickers = [...new Set(priced.map((row) => row.ticker).filter(Boolean).map((t) => String(t).toUpperCase()))];
+  let revaluation = null;
+  try {
+    const closes = await closesAround(client, tickers, latest.report_date);
+    const keyTicker = (row) => (row.ticker ? String(row.ticker).toUpperCase() : null);
+    revaluation = revalueBook(priced, closes, keyTicker);
+    revaluation.as_of = [...closes.values()].map((c) => c.at_latest_close_on).filter(Boolean).sort().at(-1) || null;
+    revaluation.disclosed_on = latest.report_date;
+  } catch (error) {
+    // Revaluation is an addition to the page, not a precondition for it.
+    console.warn(`[institutional-holdings] revaluation for ${manager.slug}: ${error.message}`);
+  }
+
   return {
     as_of: latest.report_date,
+    revaluation,
     market_value: flow.current,
     prior_market_value: flow.prior,
     value_change_pct: flow.changePct,

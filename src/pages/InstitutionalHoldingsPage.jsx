@@ -244,6 +244,52 @@ const asQuarters = (t) => (t?.quarters === null || t?.quarters === undefined
   ? '—'
   : `${Number(t.quarters).toFixed(1)}${t.truncated ? '+' : ''} quarters`);
 
+/**
+ * What the disclosed book would be worth at the latest close.
+ *
+ * The wording carries the whole meaning. A manager trades continuously between
+ * filings and discloses none of it, so "this portfolio is worth X" asserts a
+ * holding nobody has reported. Every label here says "as disclosed on" and
+ * names both dates, because the figure is a counterfactual about a filing, not
+ * a statement about a portfolio.
+ *
+ * The priced share is shown whenever it is not the whole book. A total that
+ * quietly omits what it could not price reads as the entire portfolio.
+ */
+function RevaluationPanel({ revaluation }) {
+  if (!revaluation || revaluation.current_total === null || !revaluation.as_of) return null;
+  const up = revaluation.change_pct >= 0;
+  const partial = revaluation.priced_share_pct < 99.95;
+
+  return (
+    <div className="rounded-[30px] border border-white bg-white/90 p-6 shadow-[0_20px_55px_rgba(12,48,59,.07)] sm:p-8">
+      <p className="text-[10px] font-extrabold uppercase tracking-[.17em] text-[#888888]">Since the filing</p>
+      <p className="mt-4 text-[12px] leading-5 text-[#555555]">
+        The positions disclosed on {shortDate(revaluation.disclosed_on)}, held unchanged, would be worth
+      </p>
+      <p className="mt-2 text-3xl font-bold tabular-nums text-[#222222]">{money(revaluation.current_total)}</p>
+      <p className="mt-1 text-[12px] text-[#666666]">
+        at the {shortDate(revaluation.as_of)} close, against {money(revaluation.priced_disclosed)} as disclosed
+        {' '}(<span className={up ? 'font-bold text-[#1a7f5a]' : 'font-bold text-[#a33]'}>
+          {up ? '+' : ''}{Number(revaluation.change_pct).toFixed(2)}%
+        </span>)
+      </p>
+      <p className="mt-4 text-[10px] leading-4 text-[#888888]">
+        A 13F reports one day and is published forty-five days later. This is what those positions would be
+        worth now if none had been traded since — the manager has traded and disclosed none of it, so it is a
+        measure of how stale the filing is, not of what is held today or of how the manager has performed.
+      </p>
+      {partial ? (
+        <p className="mt-2 text-[10px] leading-4 text-[#888888]">
+          Covers {Number(revaluation.priced_share_pct).toFixed(1)}% of the disclosed book by value;
+          {' '}{revaluation.unpriced_count} position{revaluation.unpriced_count === 1 ? '' : 's'} worth
+          {' '}{money(revaluation.unpriced_value)} could not be priced and are excluded from both figures.
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
 function ActivityRow({ label, value, note }) {
   return (
     <div className="flex items-baseline justify-between gap-4 border-b border-[#f0f0f0] py-2.5 last:border-b-0">
@@ -274,7 +320,8 @@ function ActivityPanel({ activity }) {
         <p className="text-[10px] font-extrabold uppercase tracking-[.18em] text-[#777777]">Filing statistics</p>
         <h2 className="mt-2 text-3xl font-bold">How the book moved</h2>
       </div>
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid gap-4 lg:grid-cols-3">
+        <RevaluationPanel revaluation={activity.revaluation} />
         <div className="rounded-[30px] border border-white bg-white/90 p-6 shadow-[0_20px_55px_rgba(12,48,59,.07)] sm:p-8">
           <p className="mb-4 text-[10px] font-extrabold uppercase tracking-[.17em] text-[#888888]">Quarter activity</p>
           <ActivityRow label="Disclosed value" value={money(activity.market_value)} />
