@@ -10,6 +10,7 @@ import { revaluePosition, revalueBook } from './valueSinceDisclosure.js';
 import { summariseInsiderFilings, insiderHeadline } from './insiderSummary.js';
 import { topTrades } from './topTrades.js';
 import { rowsFromBlock, needsArchive, archiveFiles, selectThirteenF } from './filingHistory.js';
+import { ingestPlan } from './filingBackfillPlan.js';
 
 const SEC_ROOT = 'https://www.sec.gov';
 const SEC_DATA = 'https://data.sec.gov';
@@ -1693,7 +1694,7 @@ async function rebuildSignals(client) {
   return { funds: latest.size, stocks: consensus.length };
 }
 
-async function performInstitutionalRefresh({ managerSlug, quarters = 12, onManagerDone = null, onRoster = null } = {}) {
+async function performInstitutionalRefresh({ managerSlug, quarters = 12, refetch = false, onManagerDone = null, onRoster = null } = {}) {
   const client = db();
   // Strict here, unlike a read. A collection run is about to crawl the roster
   // it just seeded, and crawling a stale one would quietly cover the wrong
@@ -1713,13 +1714,26 @@ async function performInstitutionalRefresh({ managerSlug, quarters = 12, onManag
       const submissions = await secFetch(`${SEC_DATA}/submissions/CIK${cleanCik(manager.cik)}.json`, true);
       const filingRows = await recent13fFilings(submissions, quarters, manager.cik);
       if (!filingRows.length) throw new Error('No Form 13F filings were found for this SEC filer.');
+      // What is already stored, so the run does not re-download tables that
+      // cannot change. At twelve quarters this saves about twelve hundred
+      // EDGAR requests a night; at the depth a historical backfill needs it is
+      // the difference between converging and re-crawling the same
+      // alphabetical head until the ceiling every time.
+      const { data: storedRows, error: storedError } = await client
+        .from('institutional_filings')
+        .select('accession_number,holdings_count')
+        .eq('manager_id', manager.id);
+      // A failed lookup means fetch everything. Skipping on an unknown is how
+      // a transient database error turns into a permanent hole in the history.
+      if (storedError) console.warn(`[institutional-holdings] stored filings for ${manager.slug}: ${storedError.message}`);
+      const plan = ingestPlan({ available: filingRows, stored: storedError ? [] : (storedRows || []), refetch });
       const filings = [];
-      for (const filing of filingRows) filings.push(await ingestFiling(client, manager, filing));
+      for (const filing of plan.fetch) filings.push(await ingestFiling(client, manager, filing));
       const newestReport = filingRows.map((row) => row.report_date).sort().reverse()[0];
       const staleCutoff = new Date(Date.now() - (240 * 24 * 60 * 60 * 1000)).toISOString().slice(0, 10);
       const status = newestReport < staleCutoff ? 'stale' : 'success';
       await client.from('institutional_managers').update({ last_refresh_at: new Date().toISOString(), last_successful_refresh_at: new Date().toISOString(), last_refresh_status: status, last_refresh_error: status === 'stale' ? `Latest available 13F reports ${newestReport}.` : null }).eq('id', manager.id);
-      const done = { manager: manager.display_name, slug: manager.slug, cik: manager.cik, ok: true, status, latest_report_date: newestReport, filings };
+      const done = { manager: manager.display_name, slug: manager.slug, cik: manager.cik, ok: true, status, latest_report_date: newestReport, filings, skipped: plan.skipped, available: plan.total };
       // Announced as it completes rather than only in the final return. A run
       // that hits its ceiling abandons that return, and without this the record
       // reported zero managers for work already committed to the database.
