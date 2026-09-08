@@ -388,15 +388,22 @@ export async function getInstitutionalFund(slug) {
 /** How many currently-held securities are worth measuring a holding period for. */
 const TENURE_POSITION_LIMIT = 250;
 
+/** How many positions are revalued. Beyond this the rest is reported unpriced. */
+const REVALUE_POSITION_LIMIT = 300;
+
 /**
  * The two closes each disclosed position is revalued between.
  *
- * Fetched as two narrow windows rather than a series. A price table of three
- * million rows cannot be paged behind a page load, and only two dates matter:
- * the report date, and the most recent close. The windows are a few sessions
- * wide because neither date is guaranteed to be a trading day - a quarter can
- * end on a Saturday, and the last close is whatever the last collection
- * reached.
+ * Fetched as two narrow windows rather than a series: only two dates matter,
+ * and the windows are a few sessions wide because neither is guaranteed to be
+ * a trading day - a quarter can end on a Saturday, and the last close is
+ * whatever the last collection reached.
+ *
+ * The caller must bound the ticker list. This issues one request per two
+ * hundred tickers, so an index fund's nine thousand positions would be ninety
+ * sequential round trips behind a page load. The limit is applied where the
+ * positions are ranked, so what is dropped is the smallest of the book and the
+ * share that could not be priced is reported rather than hidden.
  */
 async function closesAround(client, tickers, reportDate) {
   if (!tickers.length) return new Map();
@@ -492,7 +499,14 @@ async function fundActivity(client, manager, filings, latest, holdings, changes)
   // What the disclosed book would be worth at the latest close. A
   // counterfactual, not a claim about what is held now - the manager has
   // traded since and has disclosed none of it.
-  const tickers = [...new Set(priced.map((row) => row.ticker).filter(Boolean).map((t) => String(t).toUpperCase()))];
+  //
+  // Bounded to the largest positions. Revaluation costs one request per two
+  // hundred tickers, and an index fund discloses thousands; the smallest of
+  // those move the total by almost nothing while costing almost all of the
+  // time. What is left out is counted as unpriced, which is already reported.
+  const byValue = priced.slice().sort((a, b) => n(b.value_usd) - n(a.value_usd));
+  const revalued = byValue.slice(0, REVALUE_POSITION_LIMIT);
+  const tickers = [...new Set(revalued.map((row) => row.ticker).filter(Boolean).map((t) => String(t).toUpperCase()))];
   let revaluation = null;
   try {
     const closes = await closesAround(client, tickers, latest.report_date);
@@ -500,6 +514,12 @@ async function fundActivity(client, manager, filings, latest, holdings, changes)
     revaluation = revalueBook(priced, closes, keyTicker);
     revaluation.as_of = [...closes.values()].map((c) => c.at_latest_close_on).filter(Boolean).sort().at(-1) || null;
     revaluation.disclosed_on = latest.report_date;
+    // Whether the book was capped, so the page can say "not measured" rather
+    // than "could not be priced" - the second blames the data for a limit the
+    // query chose.
+    revaluation.positions_considered = revalued.length;
+    revaluation.positions_total = priced.length;
+    revaluation.capped = priced.length > revalued.length;
   } catch (error) {
     // Revaluation is an addition to the page, not a precondition for it.
     console.warn(`[institutional-holdings] revaluation for ${manager.slug}: ${error.message}`);
