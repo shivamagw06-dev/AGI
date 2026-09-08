@@ -256,6 +256,89 @@ const asQuarters = (t) => (t?.quarters === null || t?.quarters === undefined
  * The priced share is shown whenever it is not the whole book. A total that
  * quietly omits what it could not price reads as the entire portfolio.
  */
+/**
+ * Insider activity for one security.
+ *
+ * A Form 4 feed is easy to make and easy to make misleading. Most filings
+ * record a vesting calendar - shares withheld for tax, options exercised on a
+ * schedule set years earlier, grants nobody chose to buy - and a panel that
+ * totals them produces alarming "insider selling" from a payroll event.
+ *
+ * So this leads with what somebody decided, keeps the routine activity behind
+ * a plain count, and marks trades made under a Rule 10b5-1 plan, which were
+ * scheduled months before and say nothing about a view today.
+ */
+function InsiderPanel({ insider, ticker }) {
+  if (!insider) return null;
+  const decisions = (insider.events || []).filter((e) => e.discretionary).slice(0, 8);
+
+  return (
+    <section className="mt-8 overflow-hidden rounded-[28px] border border-white bg-white/90 shadow-[0_18px_50px_rgba(12,48,59,.07)]">
+      <div className="border-b border-[#eeeeee] p-6 sm:p-8">
+        <p className="text-[10px] font-extrabold uppercase tracking-[.18em] text-[#777777]">Insider filings · Form 4</p>
+        <h2 className="mt-2 text-3xl font-bold">What the people inside {ticker || 'the issuer'} did</h2>
+        <p className="mt-3 text-[13px] leading-6 text-[#555555]">{insider.headline}</p>
+        <p className="mt-3 text-[10px] leading-4 text-[#888888]">
+          Last {insider.window_days} days, from filings made within two business days of the trade.
+          Grants, option exercises and shares withheld for tax are counted separately from decisions —
+          they follow a vesting schedule rather than a view.
+          {insider.unread ? ` ${insider.unread} filing(s) could not be read and are excluded.` : ''}
+        </p>
+      </div>
+
+      <div className="grid grid-cols-2 gap-px bg-[#eeeeee] sm:grid-cols-4">
+        <div className="bg-white p-5 sm:p-6">
+          <p className="text-[9px] font-extrabold uppercase tracking-[.14em] text-[#999999]">Bought</p>
+          <p className="mt-1 text-3xl font-bold">{insider.buy_count}</p>
+          <p className="mt-1 text-[10px] text-[#999999]">{insider.buy_value ? money(insider.buy_value) : 'discretionary'}</p>
+        </div>
+        <div className="bg-white p-5 sm:p-6">
+          <p className="text-[9px] font-extrabold uppercase tracking-[.14em] text-[#999999]">Sold</p>
+          <p className="mt-1 text-3xl font-bold">{insider.sell_count}</p>
+          <p className="mt-1 text-[10px] text-[#999999]">{insider.sell_value ? money(insider.sell_value) : 'discretionary'}</p>
+        </div>
+        <div className="bg-white p-5 sm:p-6">
+          <p className="text-[9px] font-extrabold uppercase tracking-[.14em] text-[#999999]">Routine</p>
+          <p className="mt-1 text-3xl font-bold">{insider.routine_count}</p>
+          <p className="mt-1 text-[10px] text-[#999999]">grants, exercises, tax</p>
+        </div>
+        <div className="bg-white p-5 sm:p-6">
+          <p className="text-[9px] font-extrabold uppercase tracking-[.14em] text-[#999999]">Insiders</p>
+          <p className="mt-1 text-3xl font-bold">{insider.distinct_insiders}</p>
+          <p className="mt-1 text-[10px] text-[#999999]">people, not filings</p>
+        </div>
+      </div>
+
+      {decisions.length ? (
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[640px] text-left">
+            <thead className="bg-[#fafafa] text-[9px] font-extrabold uppercase tracking-[.14em] text-[#888888]">
+              <tr><th className="px-6 py-3">Date</th><th className="px-4 py-3">Insider</th><th className="px-4 py-3">Action</th><th className="px-4 py-3 text-right">Shares</th><th className="px-6 py-3 text-right">Value</th></tr>
+            </thead>
+            <tbody>
+              {decisions.map((e) => (
+                <tr key={`${e.accession_number}-${e.transaction_date}-${e.code}-${e.shares}`} className="border-t border-[#f0f0f0]">
+                  <td className="px-6 py-3 text-[12px] tabular-nums text-[#555555]">{e.transaction_date || '—'}</td>
+                  <td className="px-4 py-3 text-[12px]">
+                    <span className="font-semibold text-[#222222]">{e.insider || 'Undisclosed'}</span>
+                    {e.insider_title ? <span className="ml-1.5 text-[10px] text-[#999999]">{e.insider_title}</span> : null}
+                  </td>
+                  <td className="px-4 py-3 text-[12px] text-[#555555]">
+                    {e.code_label}
+                    {e.planned ? <span className="ml-1.5 rounded-full bg-[#eeeeee] px-2 py-0.5 text-[9px] font-bold uppercase tracking-[.08em] text-[#777777]">pre-arranged</span> : null}
+                  </td>
+                  <td className="px-4 py-3 text-right text-[12px] tabular-nums">{e.shares === null || e.shares === undefined ? '—' : Number(e.shares).toLocaleString()}</td>
+                  <td className="px-6 py-3 text-right text-[12px] font-semibold tabular-nums">{e.value_usd === null || e.value_usd === undefined ? '—' : money(e.value_usd)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : null}
+    </section>
+  );
+}
+
 function RevaluationPanel({ revaluation }) {
   if (!revaluation || revaluation.current_total === null || !revaluation.as_of) return null;
   const up = revaluation.change_pct >= 0;
@@ -802,6 +885,8 @@ function StockPage({ stockKey }) {
             <div className="bg-white p-7"><Activity className="h-5 w-5 text-[#777777]" /><p className="mt-5 text-[10px] font-extrabold uppercase tracking-[.14em] text-[#888888]">Latest activity</p><p className="mt-2 text-2xl font-bold">{(data.changes || []).filter((row) => ['new', 'increased'].includes(row.change_type)).length} adding</p></div>
           </div>
         </section>
+
+        <InsiderPanel insider={data.insider} ticker={data.ticker} />
 
         <section className="mt-8 grid overflow-hidden rounded-[28px] border border-white bg-white/85 shadow-[0_18px_50px_rgba(12,48,59,.07)] lg:grid-cols-[1fr_1.2fr]">
           <div className="bg-[#333333] p-7 text-white sm:p-8">
