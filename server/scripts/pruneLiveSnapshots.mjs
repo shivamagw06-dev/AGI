@@ -2,7 +2,8 @@
  * Reclaim disk from live_market_snapshots.
  *
  *   node server/scripts/pruneLiveSnapshots.mjs              # dry run, writes nothing
- *   node server/scripts/pruneLiveSnapshots.mjs --apply
+ *   node server/scripts/pruneLiveSnapshots.mjs --apply --only delete
+ *   node server/scripts/pruneLiveSnapshots.mjs --apply --only blank-factors
  *   node server/scripts/pruneLiveSnapshots.mjs --apply --max-minutes 20
  *
  * The table is 4.4 GB and grows about 150 MB a day with nothing pruning it.
@@ -36,6 +37,19 @@ const TABLE = 'live_market_snapshots';
 const APPLY = process.argv.includes('--apply');
 const argOf = (flag) => { const i = process.argv.indexOf(flag); return i >= 0 ? process.argv[i + 1] : null; };
 const MAX_MINUTES = Number(argOf('--max-minutes')) || 30;
+
+/**
+ * Run one step instead of both.
+ *
+ * The blanking step is an update of nearly four million rows. Every one writes
+ * a new tuple and its WAL record onto the same disk this is trying to save,
+ * and none of the old versions become reusable until a vacuum has been past.
+ * The delete frees about four hundred megabytes of reusable space that those
+ * new tuples can then land in - so on a disk that is already tight, running
+ * the delete alone, checking the free space, and only then blanking is the
+ * safer order. Both in one pass is fine once there is room to spare.
+ */
+const ONLY = argOf('--only');
 
 if (!getSupabaseAdminCredentials()) {
   console.error('[prune] SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required.');
@@ -90,10 +104,16 @@ async function main() {
     delete: Number(facts.deletable_rows) || 0,
     'blank-factors': Number(facts.blankable_rows) || 0,
   };
-  const steps = plannedSteps(asOf).map((step) => ({
+  const all = plannedSteps(asOf).map((step) => ({
     ...step,
     cutoffAt: fromDb[step.name] ? new Date(fromDb[step.name]).toISOString() : step.cutoffAt,
   }));
+  if (ONLY && !all.some((step) => step.name === ONLY)) {
+    console.error(`[prune] --only ${ONLY} is not a step. Use one of: ${all.map((s) => s.name).join(', ')}`);
+    process.exitCode = 2;
+    return;
+  }
+  const steps = ONLY ? all.filter((step) => step.name === ONLY) : all;
 
   // Every step is checked before any step writes. A refusal means something
   // upstream miscomputed, and finding that out after the first delete has
@@ -107,7 +127,12 @@ async function main() {
     }
   }
 
-  let floor = oldest;
+  // The floor starts at the delete cutoff whenever the delete step is not the
+  // one running, so blanking never reaches rows that are going to be removed
+  // anyway - rewriting a tuple that is about to be deleted is pure waste, and
+  // waste here is measured in gigabytes of WAL.
+  const deleteStep = all.find((step) => step.name === 'delete');
+  let floor = ONLY === 'blank-factors' ? deleteStep.cutoffAt : oldest;
   for (const step of steps) {
     const windows = dayWindows(floor, step.cutoffAt);
     console.log(
@@ -141,6 +166,10 @@ async function main() {
 
   if (!APPLY) {
     console.log('\n[prune] dry run only. Re-run with --apply to write.');
+    if (!ONLY) {
+      console.log('[prune] on a tight disk, run --apply --only delete first, check free space,');
+      console.log('[prune] then --apply --only blank-factors.');
+    }
   } else {
     const after = await report();
     console.log(`\n[prune] done. ${gb(after.table_bytes)} on disk - unchanged or larger is expected here:`);
