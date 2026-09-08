@@ -15,6 +15,7 @@
  *
  *   node server/scripts/collectInstitutionalFilings.mjs [--manager slug]
  *                                                       [--quarters 12]
+ *                                                       [--refetch]
  *                                                       [--max-minutes 20]
  *
  * Requires SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY. It writes to the
@@ -36,6 +37,11 @@ const flag = (name, fallback) => {
 
 const managerSlug = flag('manager', 'all');
 const quarters = Number(flag('quarters', '12'));
+// A filing already stored with holdings is not downloaded again. --refetch
+// turns that off, for when the stored rows are wrong in a way the database
+// cannot see - a parser fix, a value-scale correction - and the tables have to
+// be read from EDGAR a second time.
+const refetch = args.includes('--refetch');
 const maxMinutes = Number(flag('max-minutes', '50'));
 const trigger = flag('trigger', 'schedule');
 // Passed in rather than hardcoded, so the record reflects the schedule that
@@ -71,7 +77,7 @@ const ceiling = new Promise((_, reject) => {
   timer.unref();
 });
 
-console.log(`[collector] manager=${managerSlug} quarters=${quarters} ceiling=${maxMinutes}m trigger=${trigger}`);
+console.log(`[collector] manager=${managerSlug} quarters=${quarters} ceiling=${maxMinutes}m trigger=${trigger}${refetch ? ' refetch=on' : ''}`);
 
 // Opened before any EDGAR request. A run that dies mid-crawl then leaves a row
 // stuck in 'running', which an operator can see; a record written only at the
@@ -155,6 +161,7 @@ try {
     refreshInstitutionalFilings({
       managerSlug,
       quarters,
+      refetch,
       onManagerDone: (result) => { completed.push(result); void reportProgress(); },
       onRoster: (count) => { roster = count; void reportProgress(true); },
     }),
