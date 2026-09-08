@@ -540,7 +540,7 @@ function OverviewPage() {
                 <div className="overflow-x-auto">
                   <table className="w-full min-w-[780px] text-left">
                     <thead className="bg-[#ffffff] text-[9px] font-extrabold uppercase tracking-[.16em] text-[#6f6f6f]">
-                      <tr><th className="px-8 py-4">Security</th><th className="px-4 py-4">Fund network</th><th className="px-4 py-4">Aggregate weight</th><th className="px-4 py-4">Quarter activity</th><th className="px-8 py-4 text-right">AGI score</th></tr>
+                      <tr><th className="px-8 py-4">Security</th><th className="px-4 py-4">Fund network</th><th className="px-4 py-4" title="The owners' portfolio weights added together. It exceeds 100% when a security is a large position for many managers at once.">Summed weight</th><th className="px-4 py-4">Quarter activity</th><th className="px-8 py-4 text-right">AGI score</th></tr>
                     </thead>
                     <tbody>
                       {(data?.consensus || []).slice(0, 16).map((row, index) => (
@@ -555,7 +555,17 @@ function OverviewPage() {
                             <strong className="text-sm">{row.owners}/{data.consensus_managers}</strong>
                             <div className="mt-2 h-1.5 w-24 overflow-hidden rounded-full bg-[#eeeeee]"><div className="h-full rounded-full bg-[#999999]" style={{ width: `${(row.owners / Math.max(data.consensus_managers, 1)) * 100}%` }} /></div>
                           </td>
-                          <td className="px-4 py-4 text-sm font-semibold">{pct(row.aggregate_weight)}</td>
+                          {/* Summed across owners, so it exceeds 100% for a
+                              security many managers hold heavily - SpaceX
+                              reads 246.8% across twenty-two of them. Shown
+                              with the per-owner average, without which the
+                              figure looks like broken arithmetic. */}
+                          <td className="px-4 py-4 text-sm font-semibold">
+                            {pct(row.aggregate_weight)}
+                            {row.owners > 0
+                              ? <span className="ml-1.5 font-normal text-[11px] text-[#888888]">{pct(Number(row.aggregate_weight || 0) / row.owners)} avg</span>
+                              : null}
+                          </td>
                           <td className="px-4 py-4"><span className="text-xs font-bold text-emerald-700">+{row.new_buyers + row.increasers}</span><span className="mx-2 text-[#bbbbbb]">/</span><span className="text-xs font-bold text-rose-700">-{row.reducers + row.exits}</span></td>
                           <td className="px-8 py-4 text-right"><span className="text-2xl font-bold">{data.consensus_ready ? Math.round(row.consensus_score) : '--'}</span><span className="ml-1 text-[9px] text-[#999999]">{data.consensus_ready ? '/100' : 'gated'}</span></td>
                         </tr>
