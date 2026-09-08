@@ -3,6 +3,9 @@ import { getCollectionHealth, listRuns } from './institutionalCollectionRuns.js'
 import { classifyFiling, applyAmendment, droppedPositions } from './secAmendment.js';
 import { valueScaleFor, detectScaleMismatch, resolveScale } from './valueScale.js';
 import { consensusKey, dedupeSignalRows } from './consensusKey.js';
+import {
+  activityCounts, topWeight, turnover, holdingTenure, averageTenure, topKeys, valueFlow,
+} from './filingActivity.js';
 
 const SEC_ROOT = 'https://www.sec.gov';
 const SEC_DATA = 'https://data.sec.gov';
@@ -377,7 +380,81 @@ export async function getInstitutionalFund(slug) {
     const calculatedAt = row?.calculated_at ? new Date(row.calculated_at).getTime() : 0;
     return calculatedAt >= latestIngestedAt;
   });
-  return { manager, filings: filings || [], latest_filing: latest, holdings, changes, signals: freshSignals };
+  const activity = await fundActivity(client, manager, filings || [], latest, holdings, changes);
+  return { manager, filings: filings || [], latest_filing: latest, holdings, changes, signals: freshSignals, activity };
+}
+
+/** How many currently-held securities are worth measuring a holding period for. */
+const TENURE_POSITION_LIMIT = 250;
+
+/**
+ * The descriptive statistics for a manager's latest filing.
+ *
+ * Holding period is the expensive one: it needs every period a security has
+ * appeared in, and an index fund's 13F runs to thousands of positions, so
+ * asking for all of them across sixteen quarters would put a hundred thousand
+ * rows behind a page load. It is therefore computed for the largest positions
+ * only, which is exactly what the top-ten and top-twenty figures need, and the
+ * portfolio-wide average is reported as not computed - with the count that
+ * made it so - rather than quietly measured over whichever subset was cheap.
+ */
+async function fundActivity(client, manager, filings, latest, holdings, changes) {
+  if (!latest) return null;
+  const priced = (holdings || []).filter((row) => !row.put_call);
+  const keyOf = (row) => consensusKey(row);
+
+  const counts = activityCounts(changes);
+  const flow = valueFlow(latest.total_value_usd, filings?.[1]?.total_value_usd);
+  const churn = turnover(changes, priced);
+
+  // Only the largest positions, and only when the book is small enough that
+  // the query is bounded. Everything below degrades to a stated absence.
+  const measurable = priced.length <= TENURE_POSITION_LIMIT;
+  const periods = (filings || []).map((row) => row.report_date);
+  let tenure = new Map();
+  if (measurable && periods.length > 1) {
+    const keys = priced.map(keyOf).filter(Boolean);
+    const rows = keys.length
+      ? await collect(() => client
+        .from('institutional_holdings')
+        .select('cusip,report_date')
+        .eq('manager_id', manager.id)
+        .in('cusip', keys.slice(0, TENURE_POSITION_LIMIT)))
+      : [];
+    const byPeriod = new Map();
+    for (const row of rows) {
+      const key = consensusKey(row);
+      if (!key) continue;
+      if (!byPeriod.has(row.report_date)) byPeriod.set(row.report_date, new Set());
+      byPeriod.get(row.report_date).add(key);
+    }
+    tenure = holdingTenure(periods, byPeriod, latest.report_date);
+  }
+
+  const tenureFor = (count) => (measurable && tenure.size
+    ? averageTenure(tenure, topKeys(priced, count, keyOf), periods.length)
+    : { quarters: null, truncated: false, sample: 0, reason: measurable ? 'one filed period' : `${priced.length} positions exceeds the ${TENURE_POSITION_LIMIT} measured` });
+
+  return {
+    as_of: latest.report_date,
+    market_value: flow.current,
+    prior_market_value: flow.prior,
+    value_change_pct: flow.changePct,
+    positions: priced.length,
+    new_positions: counts.new,
+    added_to: counts.increased,
+    reduced: counts.reduced,
+    sold_out: counts.exited,
+    top_10_pct: topWeight(priced, 10),
+    top_20_pct: topWeight(priced, 20),
+    turnover_by_count_pct: churn.byCount,
+    turnover_by_value_pct: churn.byValue,
+    tenure_top_10: tenureFor(10),
+    tenure_top_20: tenureFor(20),
+    tenure_all: tenureFor(priced.length),
+    // Stated so a reader can tell a short holding period from a short history.
+    quarters_observed: periods.length,
+  };
 }
 
 export async function getInstitutionalStock(rawKey) {

@@ -231,6 +231,107 @@ function MetricCard({ icon: Icon, label, value, note }) {
   );
 }
 
+/**
+ * A figure, or a stated absence.
+ *
+ * The page's `pct` helper coerces with `Number(value || 0)`, which renders a
+ * missing number as 0.0% - a value the reader has no way to distinguish from a
+ * measured zero. Nothing here computes an absence into a number.
+ */
+const stat = (value, format) => (value === null || value === undefined ? '—' : format(value));
+const asPct = (value, digits = 2) => stat(value, (v) => `${Number(v).toFixed(digits)}%`);
+const asQuarters = (t) => (t?.quarters === null || t?.quarters === undefined
+  ? '—'
+  : `${Number(t.quarters).toFixed(1)}${t.truncated ? '+' : ''} quarters`);
+
+function ActivityRow({ label, value, note }) {
+  return (
+    <div className="flex items-baseline justify-between gap-4 border-b border-[#f0f0f0] py-2.5 last:border-b-0">
+      <div>
+        <p className="text-[12px] text-[#555555]">{label}</p>
+        {note ? <p className="text-[10px] leading-4 text-[#999999]">{note}</p> : null}
+      </div>
+      <p className="shrink-0 text-[13px] font-bold tabular-nums text-[#222222]">{value}</p>
+    </div>
+  );
+}
+
+/**
+ * What the manager did this quarter, and how long it has held what it holds.
+ *
+ * Every figure is arithmetic on the filings themselves - no prices, no vendor -
+ * and each says how it was derived, because a turnover number means nothing
+ * without knowing which of the two usual definitions produced it.
+ */
+function ActivityPanel({ activity }) {
+  if (!activity) return null;
+  const truncated = [activity.tenure_top_10, activity.tenure_top_20, activity.tenure_all]
+    .some((t) => t?.truncated);
+
+  return (
+    <section className="mt-8">
+      <div className="mb-5">
+        <p className="text-[10px] font-extrabold uppercase tracking-[.18em] text-[#777777]">Filing statistics</p>
+        <h2 className="mt-2 text-3xl font-bold">How the book moved</h2>
+      </div>
+      <div className="grid gap-4 lg:grid-cols-2">
+        <div className="rounded-[30px] border border-white bg-white/90 p-6 shadow-[0_20px_55px_rgba(12,48,59,.07)] sm:p-8">
+          <p className="mb-4 text-[10px] font-extrabold uppercase tracking-[.17em] text-[#888888]">Quarter activity</p>
+          <ActivityRow label="Disclosed value" value={money(activity.market_value)} />
+          <ActivityRow label="Prior quarter" value={money(activity.prior_market_value)} />
+          <ActivityRow
+            label="Change in disclosed value"
+            value={asPct(activity.value_change_pct)}
+            note="Includes market movement, not only trading"
+          />
+          <ActivityRow label="New positions" value={activity.new_positions} />
+          <ActivityRow label="Added to" value={activity.added_to} />
+          <ActivityRow label="Reduced" value={activity.reduced} />
+          <ActivityRow label="Sold out of" value={activity.sold_out} />
+        </div>
+
+        <div className="rounded-[30px] border border-white bg-white/90 p-6 shadow-[0_20px_55px_rgba(12,48,59,.07)] sm:p-8">
+          <p className="mb-4 text-[10px] font-extrabold uppercase tracking-[.17em] text-[#888888]">Concentration and holding period</p>
+          <ActivityRow label="Top 10 holdings" value={asPct(activity.top_10_pct)} />
+          <ActivityRow label="Top 20 holdings" value={asPct(activity.top_20_pct)} />
+          <ActivityRow
+            label="Turnover, by position"
+            value={asPct(activity.turnover_by_count_pct)}
+            note="Positions opened plus positions closed, over positions held"
+          />
+          <ActivityRow
+            label="Turnover, by value"
+            value={asPct(activity.turnover_by_value_pct)}
+            note="The smaller of what was bought and what was sold, over the book"
+          />
+          <ActivityRow
+            label="Time held, top 10"
+            value={asQuarters(activity.tenure_top_10)}
+            note={activity.tenure_top_10?.reason || null}
+          />
+          <ActivityRow
+            label="Time held, top 20"
+            value={asQuarters(activity.tenure_top_20)}
+            note={activity.tenure_top_20?.reason || null}
+          />
+          <ActivityRow
+            label="Time held, all positions"
+            value={asQuarters(activity.tenure_all)}
+            note={activity.tenure_all?.reason || null}
+          />
+          {truncated ? (
+            <p className="mt-4 text-[10px] leading-4 text-[#888888]">
+              A “+” means the position has been held for every one of the {activity.quarters_observed} quarters
+              collected, so the real holding period is longer than this figure and cannot be read from
+              what is stored.
+            </p>
+          ) : null}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function MarketIntelligencePanel({ data }) {
   const intelligence = useMemo(() => {
     const rows = [...(data?.consensus || [])];
@@ -501,6 +602,8 @@ function FundPage({ slug }) {
           <MetricCard icon={FileClock} label="Filing version" value={data.latest_filing?.amendment_type || 'Pending'} note={data.latest_filing?.form_type || '13F coverage'} />
           <MetricCard icon={Eye} label="Public since" value={shortDate(data.latest_filing?.filed_at)} note="SEC acceptance timestamp" />
         </section>
+
+        <ActivityPanel activity={data.activity} />
 
         <section className="mt-8">
           <div className="mb-5 flex items-center justify-between"><div><p className="text-[10px] font-extrabold uppercase tracking-[.18em] text-[#777777]">Manager signal profile</p><h2 className="mt-2 text-3xl font-bold">What changed and how much it matters</h2></div></div>
