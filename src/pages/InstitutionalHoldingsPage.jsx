@@ -239,6 +239,21 @@ function MetricCard({ icon: Icon, label, value, note }) {
  * measured zero. Nothing here computes an absence into a number.
  */
 const stat = (value, format) => (value === null || value === undefined ? '—' : format(value));
+
+/**
+ * A summed portfolio weight, at a precision that says something.
+ *
+ * PEB read "0.0%" against nine managers and $736m of disclosed value. The
+ * arithmetic was right - nine small positions in very large books - but a
+ * figure rounded to nothing reads as an absence rather than as a small number,
+ * and a reader cannot tell which.
+ */
+const summedWeight = (value) => {
+  const v = Number(value);
+  if (!Number.isFinite(v) || v === 0) return '0%';
+  if (v > 0 && v < 0.05) return '<0.05%';
+  return `${v.toFixed(v < 1 ? 2 : 1)}%`;
+};
 const asPct = (value, digits = 2) => stat(value, (v) => `${Number(v).toFixed(digits)}%`);
 const asQuarters = (t) => (t?.quarters === null || t?.quarters === undefined
   ? '—'
@@ -968,7 +983,7 @@ function StockPage({ stockKey }) {
           </div>
           <div className="grid gap-px bg-[#eeeeee] sm:grid-cols-2">
             <div className="bg-white p-7"><Users className="h-5 w-5 text-[#777777]" /><p className="mt-5 text-[10px] font-extrabold uppercase tracking-[.14em] text-[#888888]">Manager ownership</p><p className="mt-2 text-4xl font-bold">{data.owner_count}<span className="text-xl text-[#999999]">/{data.manager_count}</span></p></div>
-            <div className="bg-white p-7"><BarChart3 className="h-5 w-5 text-[#777777]" /><p className="mt-5 text-[10px] font-extrabold uppercase tracking-[.14em] text-[#888888]">Aggregate weight</p><p className="mt-2 text-4xl font-bold">{pct(data.aggregate_weight)}</p></div>
+            <div className="bg-white p-7"><BarChart3 className="h-5 w-5 text-[#777777]" /><p className="mt-5 text-[10px] font-extrabold uppercase tracking-[.14em] text-[#888888]">Summed weight</p><p className="mt-2 text-4xl font-bold">{summedWeight(data.aggregate_weight)}</p><p className="mt-1 text-[10px] text-[#999999]">across {data.owner_count || 0} disclosing manager{data.owner_count === 1 ? '' : 's'}</p></div>
             <div className="bg-white p-7"><Building2 className="h-5 w-5 text-[#777777]" /><p className="mt-5 text-[10px] font-extrabold uppercase tracking-[.14em] text-[#888888]">Reported value</p><p className="mt-2 text-4xl font-bold">{money(data.aggregate_value_usd)}</p></div>
             <div className="bg-white p-7"><Activity className="h-5 w-5 text-[#777777]" /><p className="mt-5 text-[10px] font-extrabold uppercase tracking-[.14em] text-[#888888]">Latest activity</p><p className="mt-2 text-2xl font-bold">{(data.changes || []).filter((row) => ['new', 'increased'].includes(row.change_type)).length} adding</p></div>
           </div>
