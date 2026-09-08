@@ -28,7 +28,9 @@
  * exclusive lock - so run it after this, when the survivors are small.
  */
 import { createSupabaseAdmin, getSupabaseAdminCredentials } from '../lib/supabaseAdmin.js';
-import { dayWindows, refuseReason, plannedSteps } from '../services/snapshotRetention.js';
+import {
+  dayWindows, refuseReason, plannedSteps, RAW_FACTORS_KEEP_DAYS, ROW_KEEP_DAYS,
+} from '../services/snapshotRetention.js';
 
 const TABLE = 'live_market_snapshots';
 const APPLY = process.argv.includes('--apply');
@@ -44,40 +46,54 @@ const started = Date.now();
 const elapsed = () => ((Date.now() - started) / 1000).toFixed(1);
 const overCeiling = () => Date.now() - started > MAX_MINUTES * 60_000;
 
-/** The single oldest or newest observed_at, whichever end is asked for. */
-async function edge(ascending) {
-  const { data, error } = await client
-    .from(TABLE)
-    .select('observed_at')
-    .order('observed_at', { ascending })
-    .limit(1);
-  if (error) throw new Error(`reading the ${ascending ? 'oldest' : 'newest'} row: ${error.message}`);
-  return data?.[0]?.observed_at ?? null;
+/**
+ * Bounds and counts, computed in the database.
+ *
+ * These were read through PostgREST first and hit `canceling statement due to
+ * statement timeout`: the REST role's timeout is short, and an exact count
+ * over four million rows does not fit inside it however the query is shaped.
+ * The report function raises the timeout for its own duration and returns the
+ * whole thing in one round trip.
+ */
+async function report() {
+  const { data, error } = await client.rpc('live_snapshot_retention_report', {
+    raw_days: RAW_FACTORS_KEEP_DAYS,
+    row_days: ROW_KEEP_DAYS,
+  });
+  if (error) throw new Error(`reading the retention report: ${error.message}`);
+  if (!data) throw new Error('the retention report returned nothing');
+  return data;
 }
 
-/** Rows in [from, to). Exact, because an estimate cannot justify a delete. */
-async function countBetween(from, to, { inclusive = false } = {}) {
-  let q = client.from(TABLE).select('id', { count: 'exact', head: true });
-  if (from) q = q.gte('observed_at', from);
-  const { count, error } = await (inclusive ? q.lte('observed_at', to) : q.lt('observed_at', to));
-  if (error) throw new Error(`counting ${from ?? 'start'}..${to}: ${error.message}`);
-  return count ?? 0;
-}
+const gb = (bytes) => `${(Number(bytes) / 1024 ** 3).toFixed(2)} GB`;
 
 async function main() {
   const asOf = new Date();
-  const [oldest, newest] = await Promise.all([edge(true), edge(false)]);
+  const facts = await report();
+  const { oldest, newest } = facts;
+
   if (!oldest || !newest) {
     console.log('[prune] the table is empty; nothing to do.');
     return;
   }
 
-  const total = await countBetween(null, newest, { inclusive: true });
-  console.log(`[prune] ${TABLE}: ${total.toLocaleString()} rows`);
+  console.log(`[prune] ${TABLE}: ${gb(facts.table_bytes)} on disk, about ${Number(facts.estimated_rows).toLocaleString()} rows`);
   console.log(`[prune] oldest ${oldest}  newest ${newest}`);
   console.log(`[prune] mode: ${APPLY ? 'APPLY - this writes' : 'dry run - nothing is written'}`);
 
-  const steps = plannedSteps(asOf);
+  // The counts come from the database's own `now()`, so the windows are built
+  // from the database's cutoffs too. Taking one from SQL and the other from
+  // this process would leave the reported count describing a slightly
+  // different set of rows than the one the loop actually walks.
+  const fromDb = { delete: facts.row_cutoff, 'blank-factors': facts.raw_cutoff };
+  const counts = {
+    delete: Number(facts.deletable_rows) || 0,
+    'blank-factors': Number(facts.blankable_rows) || 0,
+  };
+  const steps = plannedSteps(asOf).map((step) => ({
+    ...step,
+    cutoffAt: fromDb[step.name] ? new Date(fromDb[step.name]).toISOString() : step.cutoffAt,
+  }));
 
   // Every step is checked before any step writes. A refusal means something
   // upstream miscomputed, and finding that out after the first delete has
@@ -94,16 +110,15 @@ async function main() {
   let floor = oldest;
   for (const step of steps) {
     const windows = dayWindows(floor, step.cutoffAt);
-    const affected = await countBetween(floor, step.cutoffAt);
     console.log(
       `\n[prune] ${step.name}: ${step.describes}`
       + `\n        cutoff ${step.cutoffAt}`
-      + `\n        ${affected.toLocaleString()} rows in range, ${windows.length} day-sized batches`,
+      + `\n        ${counts[step.name].toLocaleString()} rows to touch, ${windows.length} day-sized batches`,
     );
 
     if (!APPLY) {
-      // The floor still advances so the second step's dry-run range reflects
-      // the rows the first step would already have removed.
+      // The floor still advances so the second step's window list reflects the
+      // rows the first step would already have removed.
       floor = step.cutoffAt;
       continue;
     }
@@ -127,9 +142,11 @@ async function main() {
   if (!APPLY) {
     console.log('\n[prune] dry run only. Re-run with --apply to write.');
   } else {
-    console.log('\n[prune] done. Space is reusable but not yet returned to the OS; run');
+    const after = await report();
+    console.log(`\n[prune] done. ${gb(after.table_bytes)} on disk - unchanged or larger is expected here:`);
+    console.log('[prune] the freed pages are reusable but not returned to the OS. To shrink the file, run');
     console.log('[prune]   vacuum full public.live_market_snapshots;');
-    console.log('[prune] in the SQL editor to shrink the file. It takes an exclusive lock.');
+    console.log('[prune] in the SQL editor. It needs free space equal to the survivors and takes an exclusive lock.');
   }
 }
 
