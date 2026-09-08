@@ -8,6 +8,7 @@
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { backtestBlockers } from './backtestCoverage.js';
 import { readFileSync } from 'node:fs';
 import {
   easternParts, firstTradableSession, sessionsFromPrices, closeOn,
@@ -224,8 +225,24 @@ test('the backtest derives its dates through the point-in-time rules', () => {
 });
 
 test('a run cannot be reported as calculated while its benchmark is missing', () => {
+  // Asserted against the gate itself rather than the shape of the line that
+  // calls it. A missing SPY is not a zero SPY: treating it as one turns the
+  // whole return into alpha.
+  const healthy = { worst: 0.99, average: 0.99, worstPeriod: null, periods: 8 };
+  assert.deepEqual(
+    backtestBlockers(healthy, { periods: 8, benchmarkComplete: true }), [],
+    'a complete run should have nothing blocking it',
+  );
+  const blockers = backtestBlockers(healthy, { periods: 8, benchmarkComplete: false });
+  assert.equal(blockers.length, 1);
+  assert.match(blockers[0], /benchmark is missing/);
+});
+
+test('the calculated gate is the blocker list, with nothing decided beside it', () => {
+  // The line that used to carry every condition inline is now one expression
+  // over backtestBlockers. If a condition is ever added next to it rather than
+  // inside it, the two disagree about what "calculated" means.
   const source = readFileSync(new URL('./institutionalResearchLayerService.js', import.meta.url), 'utf8');
   const gate = /const status = [^;]+;/.exec(source)?.[0] || '';
-  assert.match(gate, /benchmarkComplete/,
-    'the calculated gate does not require a complete benchmark, so a missing SPY becomes 0% and the whole return becomes alpha');
+  assert.match(gate, /blockers\.length/, 'status must be decided by the blocker list');
 });

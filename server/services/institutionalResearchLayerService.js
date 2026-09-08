@@ -6,6 +6,7 @@ import { firstTradableSession, sessionsFromPrices, periodReturn as pitPeriodRetu
 import { fetchDailyHistory } from '../providers/yahooDailyHistory.js';
 import { listingStatus } from './dailyBars.js';
 import { coverageProblem } from './pricePlan.js';
+import { coverageProfile, backtestBlockers } from './backtestCoverage.js';
 
 const SEC_DATA = 'https://data.sec.gov';
 const SEC_ARCHIVES = 'https://www.sec.gov/Archives/edgar/data';
@@ -395,25 +396,30 @@ export async function runInstitutionalBacktest({ managerSlug, topN = 10, transac
     });
   }
 
-  const coverage = periods.length ? periods.reduce((sum, row) => sum + row.price_coverage, 0) / periods.length : 0;
+  // Judged on the worst period, not the mean.
+  //
+  // A compounded return multiplies every period, so a single quarter at half
+  // coverage carries its gap through every period after it. Twenty quarters at
+  // 99% and one at 50% average to 96.7%, which cleared the old floor while
+  // half of one quarter's book was assumed flat.
+  //
+  // The floor now matches the screener's. Both answer whether a manager's
+  // performance can be stated, and two surfaces answering that at different
+  // bars is how one of them ends up wrong.
+  const profile = coverageProfile(periods);
+  const coverage = profile.average;
   const benchmarkComplete = periods.length > 0 && periods.every((row) => row.spy_return != null);
 
-  // Every gate must hold. A run missing its benchmark is not a run with a zero
-  // benchmark, and a run that skipped periods is not a run over the full window.
-  const status = periods.length >= 3 && coverage >= 0.7 && benchmarkComplete && !skipped.length
-    ? 'calculated'
-    : 'not_calculable';
-  const notCalculableReason = status === 'calculated' ? null
-    : !periods.length ? 'No period could be priced.'
-      : periods.length < 3 ? `Only ${periods.length} priced period(s); at least 3 are required.`
-        : coverage < 0.7 ? `Average price coverage ${(coverage * 100).toFixed(1)}% is below the 70% floor.`
-          : !benchmarkComplete ? 'The benchmark is missing prices in at least one period, so excess return cannot be stated.'
-            : `${skipped.length} period(s) could not be evaluated.`;
+  const blockers = backtestBlockers(profile, { periods: periods.length, benchmarkComplete, skipped });
+  const status = blockers.length ? 'not_calculable' : 'calculated';
+  // Every reason, not the first. An operator fixing one only to meet the next
+  // learns the state one round trip at a time.
+  const notCalculableReason = blockers.length ? blockers.join(' ') : null;
 
   const compound = (key) => periods.reduce((value, row) => row[key] == null ? value : value * (1 + row[key]), 1) - 1;
   const metrics = status === 'calculated'
-    ? { total_return: compound('net_return'), spy_return: compound('spy_return'), qqq_return: compound('qqq_return'), excess_vs_spy: compound('net_return') - compound('spy_return'), periods: periods.length, average_coverage: coverage }
-    : { reason: notCalculableReason, periods: periods.length, average_coverage: coverage, skipped };
+    ? { total_return: compound('net_return'), spy_return: compound('spy_return'), qqq_return: compound('qqq_return'), excess_vs_spy: compound('net_return') - compound('spy_return'), periods: periods.length, average_coverage: coverage, worst_period_coverage: profile.worst, worst_coverage_period: profile.worstPeriod }
+    : { reason: notCalculableReason, blockers, periods: periods.length, average_coverage: coverage, worst_period_coverage: profile.worst, worst_coverage_period: profile.worstPeriod, skipped };
 
   const strategyKey = `top_${topN}_${crypto.createHash('sha1').update(String(transactionCostBps)).digest('hex').slice(0, 6)}`;
   const payload = {
