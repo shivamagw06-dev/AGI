@@ -7,6 +7,7 @@ import { fetchDailyHistory } from '../providers/yahooDailyHistory.js';
 import { listingStatus } from './dailyBars.js';
 import { coverageProblem } from './pricePlan.js';
 import { coverageProfile, backtestBlockers } from './backtestCoverage.js';
+import { parseFormFour } from './formFour.js';
 
 const SEC_DATA = 'https://data.sec.gov';
 const SEC_ARCHIVES = 'https://www.sec.gov/Archives/edgar/data';
@@ -30,6 +31,24 @@ async function sourceJson(url) {
   const response = await scheduleSecRequest(() => fetch(url, { headers: { Accept: 'application/json', 'User-Agent': process.env.SEC_USER_AGENT || 'Agarwal Global Investments research@agarwalglobalinvestments.com' }, signal: AbortSignal.timeout(30_000) }));
   if (!response.ok) throw new Error(`Source request failed (${response.status})`);
   return response.json();
+}
+
+/**
+ * A filing document, as text.
+ *
+ * Same limiter and user agent as the JSON path - EDGAR counts every request
+ * against one address whatever it is asking for.
+ */
+async function sourceText(url) {
+  const response = await scheduleSecRequest(() => fetch(url, {
+    headers: {
+      Accept: 'application/xml, text/xml, text/plain, */*',
+      'User-Agent': process.env.SEC_USER_AGENT || 'Agarwal Global Investments research@agarwalglobalinvestments.com',
+    },
+    signal: AbortSignal.timeout(30_000),
+  }));
+  if (!response.ok) throw new Error(`Document request failed (${response.status})`);
+  return response.text();
 }
 
 async function tickerMap() {
@@ -199,7 +218,35 @@ async function collectExternalFilings(client, managers, holdings, companies, lim
     if (!company) continue;
     try {
       const filings = recentFilings(await submission(company.cik)).filter((row) => /^4(\/A)?$/.test(row.form || '')).slice(0, 10);
-      filings.forEach((row) => output.push({ accession_number: row.accession, issuer_cik: company.cik, ticker, form_type: row.form, event_type: 'insider_transaction', filed_at: row.filedAt, report_date: row.reportDate, source_url: archiveUrl(company.cik, row), parsed_data: { primary_document: row.document } }));
+      // Read, not just indexed. Storing the accession number alone records
+      // that a filing happened and nothing about what it said - no shares, no
+      // price, no insider, and no way to tell a discretionary purchase from
+      // shares withheld to pay tax on a vesting grant.
+      for (const row of filings) {
+        const url = archiveUrl(company.cik, row);
+        let parsed = null;
+        try {
+          const xml = await sourceText(url);
+          parsed = parseFormFour(xml);
+        } catch (error) {
+          // A document that will not parse is still a filing that happened.
+          // Recording the index entry without it is better than dropping both.
+          console.warn(`[institutional-v3] Form 4 parse ${ticker} ${row.accession}: ${error.message}`);
+        }
+        output.push({
+          accession_number: row.accession,
+          issuer_cik: company.cik,
+          ticker,
+          form_type: row.form,
+          event_type: 'insider_transaction',
+          filed_at: row.filedAt,
+          report_date: row.reportDate,
+          source_url: url,
+          parsed_data: parsed
+            ? { primary_document: row.document, ...parsed }
+            : { primary_document: row.document, parse_status: 'unread' },
+        });
+      }
     } catch (error) { console.warn(`[institutional-v3] Form 4 scan ${ticker}: ${error.message}`); }
   }
   if (output.length) await batches(client, 'institutional_external_filings', output, 'accession_number');
