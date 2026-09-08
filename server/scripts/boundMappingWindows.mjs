@@ -85,9 +85,15 @@ let written = 0;
 let removed = 0;
 for (let i = 0; i < plan.length; i += 200) {
   const slice = plan.slice(i, i + 200);
-  const rows = slice.map(({ mapping, from }) => ({
-    ...mapping, id: undefined, valid_from: from, updated_at: new Date().toISOString(),
-  }));
+  // The id is destructured out, not set to undefined. A key that is present
+  // with an undefined value still counts as a key, and the client fills the
+  // gaps across a batch with explicit nulls - which defeats the column's
+  // default and fails its not-null constraint. The column has to be absent
+  // from every row for gen_random_uuid() to apply.
+  const rows = slice.map(({ mapping, from }) => {
+    const { id, ...rest } = mapping;
+    return { ...rest, valid_from: from, updated_at: new Date().toISOString() };
+  });
   const { error } = await client
     .from('security_identifier_history')
     .upsert(rows, { onConflict: 'cusip,valid_from' });
