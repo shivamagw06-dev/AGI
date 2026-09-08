@@ -7,6 +7,7 @@ import {
   activityCounts, topWeight, turnover, holdingTenure, averageTenure, topKeys, valueFlow,
 } from './filingActivity.js';
 import { revaluePosition, revalueBook } from './valueSinceDisclosure.js';
+import { summariseInsiderFilings, insiderHeadline } from './insiderSummary.js';
 import { rowsFromBlock, needsArchive, archiveFiles, selectThirteenF } from './filingHistory.js';
 
 const SEC_ROOT = 'https://www.sec.gov';
@@ -628,6 +629,27 @@ export async function getInstitutionalStock(rawKey) {
   const managerMap = new Map(managerRows.map((row) => [row.id, row]));
   const owners = holdings.filter((row) => !row.put_call).map((row) => ({ ...row, manager: managerMap.get(row.manager_id), filing: latest.get(row.manager_id) }));
   const { data: changes } = await client.from('holding_changes').select('*').in('filing_id', ids).eq('cusip', identity.cusip);
+
+  // Insider filings for the issuer, summarised so the page never has to draw
+  // the line between a decision and a vesting event for itself.
+  let insider = null;
+  if (identity.ticker) {
+    const { data: insiderRows, error: insiderError } = await client
+      .from('institutional_external_filings')
+      .select('accession_number,filed_at,report_date,source_url,parsed_data')
+      .eq('ticker', String(identity.ticker).toUpperCase())
+      .eq('event_type', 'insider_transaction')
+      .order('filed_at', { ascending: false })
+      .limit(120);
+    if (insiderError) {
+      // Insider activity is an addition to this page, not a precondition.
+      console.warn(`[institutional-holdings] insider filings for ${identity.ticker}: ${insiderError.message}`);
+    } else {
+      const summary = summariseInsiderFilings(insiderRows || [], { asOf: new Date().toISOString(), sinceDays: 180 });
+      insider = { ...summary, headline: insiderHeadline(summary) };
+    }
+  }
+
   const consensusReady = consensusLatest.size >= CONSENSUS_MIN_MANAGERS;
   const consensusScore = consensusReady ? clamp((owners.length / Math.max(consensusLatest.size, 1)) * 80 + Math.min(owners.reduce((sum, row) => sum + n(row.portfolio_weight), 0) / Math.max(owners.length, 1), 10) * 2) : null;
   return {
@@ -647,6 +669,7 @@ export async function getInstitutionalStock(rawKey) {
     owners: owners.sort((a, b) => n(b.portfolio_weight) - n(a.portfolio_weight)),
     changes: changes || [],
     history: allHistory,
+    insider,
   };
 }
 
