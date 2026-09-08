@@ -240,10 +240,22 @@ function signal(type, score, components, explanation) {
   return { signal_type: type, score: value, label: scoreLabel(type, value), components, explanation };
 }
 
-function aggregateConsensus(latestHoldings, changes, managerCount) {
+// Exported for testing. Quarter activity read +0/-0 on every row for a day
+// because the holdings and the changes were keyed differently, and nothing
+// exercised the two together.
+export function aggregateConsensus(latestHoldings, changes, managerCount) {
+  // Keyed the same way the holdings are.
+  //
+  // Holdings moved to the CUSIP in #996, to stop one security forming two
+  // groups when its ticker had resolved on some rows and not others. The
+  // changes kept the old `ticker || cusip` key, so every lookup below asked a
+  // CUSIP of a ticker-keyed map and missed. Quarter activity read +0/-0 on
+  // every row of the consensus table while the prose above it described
+  // movement, which is worse than showing nothing: the zeros look measured.
   const changeMap = new Map();
   for (const row of changes) {
-    const key = row.ticker || row.cusip;
+    const key = consensusKey(row);
+    if (!key) continue;
     if (!changeMap.has(key)) changeMap.set(key, []);
     changeMap.get(key).push(row);
   }
@@ -266,7 +278,9 @@ function aggregateConsensus(latestHoldings, changes, managerCount) {
     item.aggregate_value_usd += n(row.value_usd);
   }
   return [...map.values()].map((item) => {
-    const related = changeMap.get(item.key) || changeMap.get(item.cusip) || [];
+    // One key now, because both sides derive it the same way. The fallback
+    // that used to be here hid the mismatch rather than resolving it.
+    const related = changeMap.get(item.key) || [];
     const activityByManager = new Map();
     for (const row of related) {
       if (!activityByManager.has(row.manager_id)) activityByManager.set(row.manager_id, []);
