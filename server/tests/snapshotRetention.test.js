@@ -70,3 +70,12 @@ test('the delete step cuts further back than the blanking step', () => {
     'deleting must never reach rows the blanking step still leaves readable',
   );
 });
+
+test('the step names --only accepts are the ones plannedSteps produces', () => {
+  // --only is matched against these by name. A rename here without a rename
+  // there would leave the flag silently selecting nothing, which on a tight
+  // disk reads as "the prune ran and freed nothing" rather than as an error.
+  const names = plannedSteps(new Date('2026-09-09T00:00:00Z')).map((s) => s.name);
+  assert.ok(names.includes('delete'), 'the delete step must be addressable as "delete"');
+  assert.ok(names.includes('blank-factors'), 'the blanking step must be addressable as "blank-factors"');
+});
