@@ -21,7 +21,7 @@
 import { hostname } from 'node:os';
 import { createSupabaseAdmin, getSupabaseAdminCredentials } from '../lib/supabaseAdmin.js';
 import { scheduleSecRequest } from '../services/secRateLimiter.js';
-import { parseFormFour } from '../services/formFour.js';
+import { parseFormFour, rawDocumentPath } from '../services/formFour.js';
 import { planScans, newFilings, abortReason } from '../services/insiderScanPlan.js';
 
 const APPLY = process.argv.includes('--apply');
@@ -112,7 +112,7 @@ if (!APPLY) {
       const fresh = newFilings(rows, new Set(), { limit: PER_ISSUER });
       console.log(`  ${plan.ticker.padEnd(8)} ${String(fresh.length).padStart(3)} Form 4 filing(s) in the recent index`);
       if (fresh[0]) {
-        const url = `${SEC_ROOT}/Archives/edgar/data/${String(plan.cik).replace(/^0+/, '')}/${fresh[0].accession.replaceAll('-', '')}/${fresh[0].document}`;
+        const url = `${SEC_ROOT}/Archives/edgar/data/${String(plan.cik).replace(/^0+/, '')}/${fresh[0].accession.replaceAll('-', '')}/${rawDocumentPath(fresh[0].document)}`;
         const parsed = parseFormFour(await secText(url));
         const t = parsed?.transactions?.[0];
         console.log(`    newest: ${parsed?.owners?.[0]?.name || '(no owner)'} — ${t ? `${t.code_label}, ${t.shares} shares, discretionary=${t.discretionary}` : 'no transactions'}${parsed?.planned ? ', pre-arranged' : ''}`);
@@ -169,7 +169,8 @@ for (const plan of plans) {
   let parsedHere = 0;
   for (const row of fresh) {
     if (overCeiling()) break;
-    const url = `${SEC_ROOT}/Archives/edgar/data/${String(plan.cik).replace(/^0+/, '')}/${row.accession.replaceAll('-', '')}/${row.document}`;
+    // The raw XML, not the XSL-rendered view primaryDocument names.
+    const url = `${SEC_ROOT}/Archives/edgar/data/${String(plan.cik).replace(/^0+/, '')}/${row.accession.replaceAll('-', '')}/${rawDocumentPath(row.document)}`;
     let parsed = null;
     try {
       parsed = parseFormFour(await secText(url));
