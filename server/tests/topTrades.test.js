@@ -95,3 +95,43 @@ test('an empty quarter yields empty lists rather than throwing', () => {
   assert.equal(t.total_buys, 0);
   assert.deepEqual(topTrades(null).sells, []);
 });
+
+test('a move too small to render does not take a row', () => {
+  // Berkshire's list carried LEN-B at +0.00% - a move from 0.01 to 0.01 -
+  // which tells a reader nothing and displaced something that would have.
+  const tiny = [
+    { cusip: 'T', ticker: 'TINY', change_type: 'increased', weight_change: 0.001, previous_weight: 0.01, current_weight: 0.01, previous_shares: 1 },
+    { cusip: 'R', ticker: 'REAL', change_type: 'increased', weight_change: 0.9, previous_weight: 1, current_weight: 1.9, previous_shares: 1 },
+  ];
+  assert.deepEqual(topTrades(tiny).buys.map((b) => b.ticker), ['REAL']);
+});
+
+test('opening a position always ranks, however small', () => {
+  // The quarter Berkshire opened one position, the footnote said so and no
+  // row carried the tag: the opening was smaller than six trivial additions.
+  // Starting a holding is a different kind of act from adding to one.
+  const rows = [
+    { cusip: 'N', ticker: 'NEW', change_type: 'new', weight_change: 0.002, previous_weight: 0, current_weight: 0.002, previous_shares: 0 },
+    ...Array.from({ length: 8 }, (_, i) => ({
+      cusip: `B${i}`, ticker: `B${i}`, change_type: 'increased', weight_change: 1 + i,
+      previous_weight: 1, current_weight: 2 + i, previous_shares: 1,
+    })),
+  ];
+  const { buys } = topTrades(rows);
+  assert.equal(buys[0].ticker, 'NEW', 'the opening leads');
+  assert.equal(buys[0].opened, true);
+  assert.equal(buys.length, 6);
+});
+
+test('closing a position always ranks, however small', () => {
+  const rows = [
+    { cusip: 'X', ticker: 'GONE', change_type: 'exited', weight_change: -0.002, previous_weight: 0.002, current_weight: 0, previous_shares: 5 },
+    ...Array.from({ length: 8 }, (_, i) => ({
+      cusip: `S${i}`, ticker: `S${i}`, change_type: 'reduced', weight_change: -(1 + i),
+      previous_weight: 5, current_weight: 1, previous_shares: 1,
+    })),
+  ];
+  const { sells } = topTrades(rows);
+  assert.equal(sells[0].ticker, 'GONE');
+  assert.equal(sells[0].closed, true);
+});
