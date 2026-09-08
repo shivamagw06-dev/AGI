@@ -37,7 +37,21 @@ export const DEFAULT_MANAGERS = [
   // Quarters before the succession sat under the old CIK and are not
   // collected. At twelve quarters the window starts in 2023, so roughly three
   // of them are lost; current data is worth more than three stale ones.
-  { slug: 'blackrock', display_name: 'BlackRock', legal_name: 'BLACKROCK, INC.', cik: '0002012383', strategy: 'Diversified global asset management', manager_type: 'Asset manager', quality_weight: 0.85, earliest_report_date: '2024-09-30', city: 'New York', state: 'NY', country: 'United States', postal_code: '10001', active: true },
+  // BlackRock's filer changed and correcting the CIK here is not enough.
+  //
+  // 0001364742 is BlackRock Finance, Inc., which stopped filing 13F after
+  // 2024-06-30; BlackRock, Inc. files under 0002012383. Changing the number
+  // took the whole page down. seedManagers upserts on cik, so a new CIK is an
+  // insert, and the slug it carries is already held by the old row under its
+  // own unique constraint. The insert failed, seedManagers threw, and
+  // managers() runs before every read - one changed identifier emptied the
+  // surface with "duplicate key value violates unique constraint
+  // institutional_managers_slug_key".
+  //
+  // The succession needs the existing row updated, not a second row seeded.
+  // Left on the old CIK until that is done: a manager showing a stale book is
+  // better than a page showing nothing.
+  { slug: 'blackrock', display_name: 'BlackRock', legal_name: 'BLACKROCK INC.', cik: '0001364742', strategy: 'Diversified global asset management', manager_type: 'Asset manager', quality_weight: 0.85, earliest_report_date: '2006-03-31', city: 'New York', state: 'NY', country: 'United States', postal_code: '10001', active: true },
   { slug: 'pershing-square', display_name: 'Pershing Square Capital Management', legal_name: 'PERSHING SQUARE CAPITAL MANAGEMENT, L.P.', cik: '0001336528', strategy: 'Concentrated activist', manager_type: 'Investment manager', quality_weight: 1.15, earliest_report_date: '2005-12-31', city: 'New York', state: 'NY', country: 'United States', postal_code: '10019', active: true },
   { slug: 'scion-asset-management', display_name: 'Scion Asset Management', legal_name: 'SCION ASSET MANAGEMENT, LLC', cik: '0001649339', strategy: 'Contrarian and special situations', manager_type: 'Investment manager', quality_weight: 1.05, earliest_report_date: '2015-12-31', city: 'Saratoga', state: 'CA', country: 'United States', postal_code: '95070', active: true },
   { slug: 'tci-fund-management', display_name: 'TCI Fund Management', legal_name: 'TCI FUND MANAGEMENT LTD', cik: '0001647251', strategy: 'Concentrated global activist', manager_type: 'Investment manager', quality_weight: 1.15, earliest_report_date: '2006-03-31', city: 'London', state: '', country: 'United Kingdom', postal_code: 'W1S 2FT', active: true },
