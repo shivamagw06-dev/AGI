@@ -28,7 +28,16 @@ export const DEFAULT_MANAGERS = [
   { slug: 'situational-awareness', display_name: 'Situational Awareness', legal_name: 'SITUATIONAL AWARENESS LP', cik: '0002045724', strategy: 'AI and technology concentration', manager_type: 'Investment manager', quality_weight: 1.10, earliest_report_date: '2024-12-31', city: 'San Francisco', state: 'CA', country: 'United States', postal_code: '94107', active: true },
   { slug: 'berkshire-hathaway', display_name: 'Berkshire Hathaway', legal_name: 'BERKSHIRE HATHAWAY INC', cik: '0001067983', strategy: 'Concentrated quality and value', manager_type: 'Holding company', quality_weight: 1.20, earliest_report_date: '2001-03-31', city: 'Omaha', state: 'NE', country: 'United States', postal_code: '68131', active: true },
   { slug: 'duquesne-family-office', display_name: 'Duquesne Family Office', legal_name: 'DUQUESNE FAMILY OFFICE LLC', cik: '0001536411', strategy: 'Macro and concentrated equities', manager_type: 'Family office', quality_weight: 1.15, earliest_report_date: '2011-12-31', city: 'New York', state: 'NY', country: 'United States', postal_code: '10019', active: true },
-  { slug: 'blackrock', display_name: 'BlackRock', legal_name: 'BLACKROCK INC.', cik: '0001364742', strategy: 'Diversified global asset management', manager_type: 'Asset manager', quality_weight: 0.85, earliest_report_date: '2006-03-31', city: 'New York', state: 'NY', country: 'United States', postal_code: '10001', active: true },
+  // CIK 0001364742 is BlackRock Finance, Inc., which stopped filing 13F after
+  // 2024-06-30. BlackRock, Inc. files under 0002012383 and is current: its
+  // 2026-06-30 table was accepted 2026-08-07. Tracking the old entity showed
+  // the manager as STALE with a two-year-old book, which was an accurate
+  // report of the wrong filer.
+  //
+  // Quarters before the succession sat under the old CIK and are not
+  // collected. At twelve quarters the window starts in 2023, so roughly three
+  // of them are lost; current data is worth more than three stale ones.
+  { slug: 'blackrock', display_name: 'BlackRock', legal_name: 'BLACKROCK, INC.', cik: '0002012383', strategy: 'Diversified global asset management', manager_type: 'Asset manager', quality_weight: 0.85, earliest_report_date: '2024-09-30', city: 'New York', state: 'NY', country: 'United States', postal_code: '10001', active: true },
   { slug: 'pershing-square', display_name: 'Pershing Square Capital Management', legal_name: 'PERSHING SQUARE CAPITAL MANAGEMENT, L.P.', cik: '0001336528', strategy: 'Concentrated activist', manager_type: 'Investment manager', quality_weight: 1.15, earliest_report_date: '2005-12-31', city: 'New York', state: 'NY', country: 'United States', postal_code: '10019', active: true },
   { slug: 'scion-asset-management', display_name: 'Scion Asset Management', legal_name: 'SCION ASSET MANAGEMENT, LLC', cik: '0001649339', strategy: 'Contrarian and special situations', manager_type: 'Investment manager', quality_weight: 1.05, earliest_report_date: '2015-12-31', city: 'Saratoga', state: 'CA', country: 'United States', postal_code: '95070', active: true },
   { slug: 'tci-fund-management', display_name: 'TCI Fund Management', legal_name: 'TCI FUND MANAGEMENT LTD', cik: '0001647251', strategy: 'Concentrated global activist', manager_type: 'Investment manager', quality_weight: 1.15, earliest_report_date: '2006-03-31', city: 'London', state: '', country: 'United Kingdom', postal_code: 'W1S 2FT', active: true },
