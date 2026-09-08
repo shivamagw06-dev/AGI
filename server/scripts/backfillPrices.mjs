@@ -34,6 +34,14 @@ const argOf = (flag) => {
   return i >= 0 ? process.argv[i + 1] : null;
 };
 const LIMIT = Number(argOf('--limit')) || null;
+// A refresh tops up recent sessions for everything held; a backfill builds the
+// history once. Same script because the plan, the guards and the fetch log are
+// the same - only the window and the staleness threshold differ.
+const REFRESH = process.argv.includes('--refresh');
+const WINDOW_DAYS = Number(argOf('--window-days')) || (REFRESH ? 10 : null);
+const MAX_AGE_DAYS = argOf('--max-age-days') !== null
+  ? Number(argOf('--max-age-days'))
+  : (REFRESH ? 0 : 4);
 const ONLY = (argOf('--symbols') || '').split(',').map((s) => s.trim().toUpperCase()).filter(Boolean);
 
 if (!getSupabaseAdminCredentials()) {
@@ -60,6 +68,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 // ---- what we hold ---------------------------------------------------------
 
+console.log(`[prices] mode=${REFRESH ? `refresh (last ${WINDOW_DAYS} days)` : 'backfill (full history)'} max-age=${MAX_AGE_DAYS}d`);
 console.log('[prices] reading holdings...');
 const holdings = await all(() => client
   .from('institutional_holdings')
@@ -118,7 +127,9 @@ console.log(`[prices] ${freshness.size.toLocaleString()} symbols in the fetch lo
 
 // ---- the plan -------------------------------------------------------------
 
-let { plans, skipped, foreignVenueSymbols } = planFetches([...seen.values()], { asOf, freshness });
+let { plans, skipped, foreignVenueSymbols } = planFetches([...seen.values()], {
+  asOf, freshness, windowDays: WINDOW_DAYS, maxAgeDays: MAX_AGE_DAYS,
+});
 if (ONLY.length) plans = plans.filter((p) => ONLY.includes(p.symbol));
 if (LIMIT) {
   // Spread across the run, not taken from the front. Symbols are sorted, and

@@ -63,3 +63,42 @@ services:
         value: "false"
       - key: COLLECTION_SCHEDULE
         value: "20 6 * * *"
+
+  # Daily price refresh for the securities the tracked managers hold.
+  #
+  # Separate from the collection job because the two answer to different
+  # clocks. A 13F arrives four times a year; a closing price arrives every
+  # session, and everything built on prices - the revaluation on a fund page,
+  # the screener's coverage gate, any backtest - is only as current as the last
+  # fetch. Left unscheduled the whole price layer decays from the day it was
+  # built, silently, because a stale price still renders as a number.
+  #
+  # It tops up recent sessions rather than rebuilding history. The fetch log
+  # records what was asked for and when, so a run costs one request per symbol
+  # for a handful of bars instead of seven years of them.
+  - type: cron
+    name: institutional-price-refresh
+    runtime: node
+    plan: starter
+    region: oregon
+
+    # 23:30 UTC, which is 19:30 ET - after the US close and its settlement, and
+    # clear of both the 06:20 collection run and the 12:45 live-data sweep.
+    schedule: "30 23 * * *"
+
+    buildCommand: npm ci --no-audit --no-fund
+    # A ten-day window covers a long weekend plus a missed run or two, so a
+    # night the job does not run leaves no hole. --max-age-days 0 because a
+    # daily job under the backfill's four-day rule would find nothing due,
+    # every day, and report success.
+    startCommand: >-
+      node server/scripts/backfillPrices.mjs
+      --apply
+      --refresh
+      --window-days 10
+
+    envVars:
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false

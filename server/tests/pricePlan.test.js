@@ -202,3 +202,40 @@ test('a short but real series is still refused, with the count shown', () => {
   const bars = Array.from({ length: 12 }, (_, i) => ({ price_date: `2026-07-${String(i + 17).padStart(2, '0')}` }));
   assert.match(coverageProblem(plan, bars), /only 12 bars returned/);
 });
+
+test('a refresh asks only for the sessions since it last looked', () => {
+  // Re-fetching seven years of history to learn yesterday's close is the same
+  // answer at a hundred times the cost, and the upsert would rewrite three
+  // million unchanged rows to do it.
+  const rows = [{ ticker: 'AAPL', security_key: 'A', first_report_date: '2019-06-30', last_report_date: '2026-06-30' }];
+  const { plans } = planFetches(rows, { asOf: '2026-09-08', windowDays: 10, maxAgeDays: 0 });
+  assert.equal(plans[0].from, '2026-08-29');
+  assert.equal(plans[0].to, '2026-09-08');
+});
+
+test('a refresh does not read its own window as a reassigned ticker', () => {
+  // The coverage guard rejects history starting long after the position does.
+  // A refresh window starts years after it by design, so carrying the held
+  // date into refresh mode would reject every symbol as reassigned - and the
+  // whole run would write nothing while looking like it had found a disaster.
+  const rows = [{ ticker: 'AAPL', security_key: 'A', first_report_date: '2019-06-30', last_report_date: '2026-06-30' }];
+  const refresh = planFetches(rows, { asOf: '2026-09-08', windowDays: 10, maxAgeDays: 0 }).plans[0];
+  assert.equal(refresh.earliestHeld, null);
+  assert.equal(coverageProblem(refresh, [{ price_date: '2026-08-31' }]), null);
+
+  // A backfill still checks it.
+  const backfill = planFetches(rows, { asOf: '2026-09-08' }).plans[0];
+  assert.equal(backfill.earliestHeld, '2019-06-30');
+});
+
+test('a daily refresh does not skip everything it fetched yesterday', () => {
+  // The backfill skips anything fetched within four days so an interrupted run
+  // resumes rather than restarting. A daily job under that rule would find
+  // nothing due, every day, and report success.
+  const rows = [{ ticker: 'AAPL', security_key: 'A', first_report_date: '2024-03-31', last_report_date: '2026-06-30' }];
+  const freshness = new Map([['AAPL', '2026-09-07']]);
+
+  assert.equal(planFetches(rows, { asOf: '2026-09-08', freshness }).plans.length, 0, 'a backfill skips it');
+  assert.equal(planFetches(rows, { asOf: '2026-09-08', freshness, maxAgeDays: 0, windowDays: 10 }).plans.length, 1,
+    'a refresh takes it');
+});
