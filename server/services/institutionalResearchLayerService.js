@@ -7,7 +7,7 @@ import { fetchDailyHistory } from '../providers/yahooDailyHistory.js';
 import { listingStatus } from './dailyBars.js';
 import { coverageProblem } from './pricePlan.js';
 import { coverageProfile, backtestBlockers } from './backtestCoverage.js';
-import { parseFormFour } from './formFour.js';
+import { parseFormFour, rawDocumentPath } from './formFour.js';
 
 const SEC_DATA = 'https://data.sec.gov';
 const SEC_ARCHIVES = 'https://www.sec.gov/Archives/edgar/data';
@@ -223,10 +223,13 @@ async function collectExternalFilings(client, managers, holdings, companies, lim
       // price, no insider, and no way to tell a discretionary purchase from
       // shares withheld to pay tax on a vesting grant.
       for (const row of filings) {
+        // The index entry keeps the document EDGAR names; the parser is given
+        // the raw XML, since primaryDocument points at the rendered HTML view.
         const url = archiveUrl(company.cik, row);
+        const xmlUrl = archiveUrl(company.cik, { ...row, document: rawDocumentPath(row.document) });
         let parsed = null;
         try {
-          const xml = await sourceText(url);
+          const xml = await sourceText(xmlUrl);
           parsed = parseFormFour(xml);
         } catch (error) {
           // A document that will not parse is still a filing that happened.

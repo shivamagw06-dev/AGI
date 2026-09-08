@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { parseFormFour, transactions, reportingOwners, TRANSACTION_CODES } from '../services/formFour.js';
+import { parseFormFour, transactions, reportingOwners, rawDocumentPath, TRANSACTION_CODES } from '../services/formFour.js';
 
 const apple = readFileSync(new URL('./fixtures/formFourApple.xml', import.meta.url), 'utf8');
 
@@ -118,4 +118,21 @@ test('an unrecognised code is not silently treated as a decision', () => {
   </nonDerivativeTransaction>`)[0];
   assert.equal(odd.discretionary, false);
   assert.match(odd.code_label, /Unrecognised code Z/);
+});
+
+test('the raw XML path drops the stylesheet directory', () => {
+  // primaryDocument points at the XSL-rendered view, which is HTML for a
+  // browser rather than the filing. Fetching it returns a page the parser
+  // cannot read, and the failure is quiet: no owner, no transactions, a
+  // filing that looks like it contained nothing.
+  assert.equal(rawDocumentPath('xslF345X06/wk-form4_1785873966.xml'), 'wk-form4_1785873966.xml');
+  assert.equal(rawDocumentPath('xslF345X05/form4.xml'), 'form4.xml');
+  assert.equal(rawDocumentPath('form4.xml'), 'form4.xml', 'a plain document is left alone');
+  assert.equal(rawDocumentPath(''), null);
+  assert.equal(rawDocumentPath(null), null);
+});
+
+test('the rendered HTML view does not parse, which is why the path matters', () => {
+  // Proof that fetching the wrong one fails silently rather than loudly.
+  assert.equal(parseFormFour('<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><html><body>Form 4</body></html>'), null);
 });

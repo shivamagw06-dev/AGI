@@ -25,6 +25,23 @@
  * it out.
  */
 
+/**
+ * The raw XML behind a Form 4, given the document EDGAR names.
+ *
+ * `primaryDocument` points at the XSL-rendered view - xslF345X06/form4.xml -
+ * which is HTML for a browser, not the filing. Fetching it returns a page the
+ * parser cannot read, and the failure is quiet: no owner, no transactions, a
+ * filing that looks like it contained nothing.
+ *
+ * The raw document sits at the same path with the stylesheet directory
+ * removed, so that is what is asked for.
+ */
+export function rawDocumentPath(primaryDocument) {
+  const doc = String(primaryDocument || '').trim();
+  if (!doc) return null;
+  return doc.replace(/^xsl[^/]*\//i, '');
+}
+
 const val = (block, tag) => {
   const outer = new RegExp(`<${tag}>([\\s\\S]*?)</${tag}>`).exec(block || '');
   if (!outer) return null;
