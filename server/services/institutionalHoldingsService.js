@@ -7,6 +7,7 @@ import {
   activityCounts, topWeight, turnover, holdingTenure, averageTenure, topKeys, valueFlow,
 } from './filingActivity.js';
 import { revaluePosition, revalueBook } from './valueSinceDisclosure.js';
+import { rowsFromBlock, needsArchive, archiveFiles, selectThirteenF } from './filingHistory.js';
 
 const SEC_ROOT = 'https://www.sec.gov';
 const SEC_DATA = 'https://data.sec.gov';
@@ -37,21 +38,15 @@ export const DEFAULT_MANAGERS = [
   // Quarters before the succession sat under the old CIK and are not
   // collected. At twelve quarters the window starts in 2023, so roughly three
   // of them are lost; current data is worth more than three stale ones.
-  // BlackRock's filer changed and correcting the CIK here is not enough.
+  // BlackRock's 13F filer changed. 0001364742 is BlackRock Finance, Inc.,
+  // whose last 13F covers 2024-06-30; BlackRock, Inc. files under 0002012383
+  // from 2024-09-30 onward, continuously and with no gap between them.
   //
-  // 0001364742 is BlackRock Finance, Inc., which stopped filing 13F after
-  // 2024-06-30; BlackRock, Inc. files under 0002012383. Changing the number
-  // took the whole page down. seedManagers upserts on cik, so a new CIK is an
-  // insert, and the slug it carries is already held by the old row under its
-  // own unique constraint. The insert failed, seedManagers threw, and
-  // managers() runs before every read - one changed identifier emptied the
-  // surface with "duplicate key value violates unique constraint
-  // institutional_managers_slug_key".
-  //
-  // The succession needs the existing row updated, not a second row seeded.
-  // Left on the old CIK until that is done: a manager showing a stale book is
-  // better than a page showing nothing.
-  { slug: 'blackrock', display_name: 'BlackRock', legal_name: 'BLACKROCK INC.', cik: '0001364742', strategy: 'Diversified global asset management', manager_type: 'Asset manager', quality_weight: 0.85, earliest_report_date: '2006-03-31', city: 'New York', state: 'NY', country: 'United States', postal_code: '10001', active: true },
+  // Correcting this once took the page down, because seeding conflicted on the
+  // CIK and a new number became an insert carrying a slug the old row held. It
+  // conflicts on the slug now, so this is the update it always should have
+  // been, and the filings already collected stay attached to the same row.
+  { slug: 'blackrock', display_name: 'BlackRock', legal_name: 'BLACKROCK, INC.', cik: '0002012383', strategy: 'Diversified global asset management', manager_type: 'Asset manager', quality_weight: 0.85, earliest_report_date: '2006-03-31', city: 'New York', state: 'NY', country: 'United States', postal_code: '10001', active: true },
   { slug: 'pershing-square', display_name: 'Pershing Square Capital Management', legal_name: 'PERSHING SQUARE CAPITAL MANAGEMENT, L.P.', cik: '0001336528', strategy: 'Concentrated activist', manager_type: 'Investment manager', quality_weight: 1.15, earliest_report_date: '2005-12-31', city: 'New York', state: 'NY', country: 'United States', postal_code: '10019', active: true },
   { slug: 'scion-asset-management', display_name: 'Scion Asset Management', legal_name: 'SCION ASSET MANAGEMENT, LLC', cik: '0001649339', strategy: 'Contrarian and special situations', manager_type: 'Investment manager', quality_weight: 1.05, earliest_report_date: '2015-12-31', city: 'Saratoga', state: 'CA', country: 'United States', postal_code: '95070', active: true },
   { slug: 'tci-fund-management', display_name: 'TCI Fund Management', legal_name: 'TCI FUND MANAGEMENT LTD', cik: '0001647251', strategy: 'Concentrated global activist', manager_type: 'Investment manager', quality_weight: 1.15, earliest_report_date: '2006-03-31', city: 'London', state: '', country: 'United Kingdom', postal_code: 'W1S 2FT', active: true },
@@ -693,19 +688,35 @@ async function secFetch(url, asJson = false) {
   throw lastError || new Error(`SEC request failed for ${url}`);
 }
 
-function recent13fFilings(submissions, quarters) {
-  const recent = submissions?.filings?.recent || {};
-  const forms = recent.form || [];
-  const rows = forms.map((form, index) => ({
-    form_type: form,
-    accession_number: recent.accessionNumber?.[index],
-    report_date: recent.reportDate?.[index],
-    filing_date: recent.filingDate?.[index],
-    accepted_at: recent.acceptanceDateTime?.[index] || `${recent.filingDate?.[index]}T00:00:00Z`,
-    primary_document: recent.primaryDocument?.[index] || '',
-  })).filter((row) => ['13F-HR', '13F-HR/A'].includes(row.form_type) && row.report_date && row.accession_number);
-  const periods = [...new Set(rows.map((row) => row.report_date))].sort().reverse().slice(0, Math.max(1, Math.min(n(quarters) || 4, 16)));
-  return rows.filter((row) => periods.includes(row.report_date)).sort((a, b) => String(a.accepted_at).localeCompare(String(b.accepted_at)));
+/**
+ * A manager's 13F filings, as deep as asked for.
+ *
+ * EDGAR splits a filer's index: `filings.recent` holds the last thousand
+ * filings of every type, and older ones sit in separate files listed under
+ * `filings.files`. Only the first was read, and the result was then capped at
+ * sixteen quarters. For Berkshire that is twelve periods of an available two
+ * hundred and eleven - forty-four in the recent block back to 2016, and one
+ * hundred and sixty-seven more in the archive, to 1998.
+ *
+ * The archive is fetched only when the recent block cannot cover the request,
+ * so a daily run costs exactly what it did before.
+ */
+async function recent13fFilings(submissions, quarters, cik) {
+  let rows = rowsFromBlock(submissions?.filings?.recent);
+  if (cik && needsArchive(rows, quarters)) {
+    for (const file of archiveFiles(submissions)) {
+      try {
+        const older = await secFetch(`${SEC_DATA}/submissions/${file.name}`, true);
+        rows = rows.concat(rowsFromBlock(older));
+      } catch (error) {
+        // A missing archive file limits how far back this goes; it does not
+        // invalidate the filings already in hand.
+        console.warn(`[institutional-holdings] archive ${file.name}: ${error.message}`);
+      }
+      if (!needsArchive(rows, quarters)) break;
+    }
+  }
+  return selectThirteenF(rows, quarters);
 }
 
 async function filingDocuments(cik, accession) {
@@ -1672,7 +1683,7 @@ async function performInstitutionalRefresh({ managerSlug, quarters = 12, onManag
     await client.from('institutional_managers').update({ last_refresh_at: new Date().toISOString(), last_refresh_status: 'running', last_refresh_error: null }).eq('id', manager.id);
     try {
       const submissions = await secFetch(`${SEC_DATA}/submissions/CIK${cleanCik(manager.cik)}.json`, true);
-      const filingRows = recent13fFilings(submissions, quarters);
+      const filingRows = await recent13fFilings(submissions, quarters, manager.cik);
       if (!filingRows.length) throw new Error('No Form 13F filings were found for this SEC filer.');
       const filings = [];
       for (const filing of filingRows) filings.push(await ingestFiling(client, manager, filing));
