@@ -102,3 +102,48 @@ services:
         sync: false
       - key: SUPABASE_SERVICE_ROLE_KEY
         sync: false
+
+  # Nightly retention for live_market_snapshots.
+  #
+  # Without this, the one-off prune is undone in eleven days. The table takes
+  # about 171 MB a day of new rows, and the pruning left 1,960 MB of reusable
+  # space inside the file - so the room bought back is consumed in under a
+  # fortnight and the file starts growing again. Run daily the arithmetic
+  # closes: 171 MB in, 119 MB freed by blanking rows at three days, 52 MB
+  # freed by deleting them at twenty-five. The table goes flat and stays there.
+  #
+  # That is the point of the job. A one-off prune is a reprieve; the schedule
+  # is the fix. A full disk puts Postgres into read-only, which takes the site
+  # down.
+  #
+  # Same reasoning as the other two jobs for why this is a Render cron and not
+  # a GitHub Actions schedule: it writes with the service-role key, and that
+  # credential should not be copied into a second system.
+  - type: cron
+    name: live-snapshot-retention
+    runtime: node
+    plan: starter
+    region: oregon
+
+    # 20:30 UTC - 02:00 IST. Clear of the Indian session the feed follows, of
+    # the 06:20 collection run, of the 12:45 live-data sweep, and of the 23:30
+    # price refresh. Nothing else is touching the database at that hour.
+    schedule: "30 20 * * *"
+
+    buildCommand: npm ci --no-audit --no-fund
+    # 25 minutes covers a normal night many times over - a day's worth is a
+    # couple of batches and takes seconds. The headroom is for catching up
+    # after a night the job did not run, where the backlog is proportionally
+    # larger. The script stops cleanly at the ceiling and the next run resumes,
+    # because the blanking skips rows already emptied and the delete skips rows
+    # already gone.
+    startCommand: >-
+      node server/scripts/pruneLiveSnapshots.mjs
+      --apply
+      --max-minutes 25
+
+    envVars:
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
