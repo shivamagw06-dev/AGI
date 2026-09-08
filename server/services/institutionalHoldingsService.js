@@ -8,6 +8,7 @@ import {
 } from './filingActivity.js';
 import { revaluePosition, revalueBook } from './valueSinceDisclosure.js';
 import { summariseInsiderFilings, insiderHeadline } from './insiderSummary.js';
+import { topTrades } from './topTrades.js';
 import { rowsFromBlock, needsArchive, archiveFiles, selectThirteenF } from './filingHistory.js';
 
 const SEC_ROOT = 'https://www.sec.gov';
@@ -445,7 +446,11 @@ export async function getInstitutionalFund(slug) {
     return calculatedAt >= latestIngestedAt;
   });
   const activity = await fundActivity(client, manager, filings || [], latest, holdings, changes);
-  return { manager, filings: filings || [], latest_filing: latest, holdings, changes, signals: freshSignals, activity };
+  // The quarter's largest moves, ranked by weight rather than by size, with
+  // the disclosed value joined from the positions already in hand.
+  const valueByCusip = new Map((holdings || []).map((row) => [row.cusip, n(row.value_usd)]));
+  const trades = topTrades(changes || [], { valueByCusip, limit: 6 });
+  return { manager, filings: filings || [], latest_filing: latest, holdings, changes, signals: freshSignals, activity, trades };
 }
 
 /** How many currently-held securities are worth measuring a holding period for. */

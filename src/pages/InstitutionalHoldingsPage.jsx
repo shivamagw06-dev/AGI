@@ -339,6 +339,92 @@ function InsiderPanel({ insider, ticker }) {
   );
 }
 
+/**
+ * The positions a manager moved most this quarter.
+ *
+ * Ranked by change in portfolio weight, not by dollars. Weight is the
+ * manager's own scaling: ten million is a conviction for one filer and a
+ * rounding error for another, and a table sorted on size says more about fund
+ * size than about what anybody decided.
+ *
+ * A new position is marked apart from an addition, and an exit apart from a
+ * trim, because opening a position and adding to one are different acts.
+ */
+function TradeList({ title, rows, tone, total, note }) {
+  if (!rows?.length) {
+    return (
+      <div className="rounded-[26px] border border-white bg-white/90 p-6 shadow-[0_16px_44px_rgba(12,48,59,.06)] sm:p-7">
+        <p className="text-[10px] font-extrabold uppercase tracking-[.17em] text-[#888888]">{title}</p>
+        <p className="mt-4 text-[13px] text-[#666666]">None disclosed this quarter.</p>
+      </div>
+    );
+  }
+  return (
+    <div className="rounded-[26px] border border-white bg-white/90 p-6 shadow-[0_16px_44px_rgba(12,48,59,.06)] sm:p-7">
+      <div className="flex items-baseline justify-between">
+        <p className="text-[10px] font-extrabold uppercase tracking-[.17em] text-[#888888]">{title}</p>
+        <p className="text-[10px] text-[#999999]">{rows.length} of {total}</p>
+      </div>
+      <div className="mt-4">
+        {rows.map((row) => (
+          <div key={row.cusip} className="flex items-baseline justify-between gap-3 border-b border-[#f0f0f0] py-2.5 last:border-b-0">
+            <div className="min-w-0">
+              <p className="truncate text-[13px] font-bold text-[#222222]">
+                {row.ticker || row.cusip}
+                {row.opened ? <span className="ml-2 rounded-full bg-[#eeeeee] px-2 py-0.5 text-[9px] font-bold uppercase tracking-[.08em] text-[#666666]">opened</span> : null}
+                {row.closed ? <span className="ml-2 rounded-full bg-[#eeeeee] px-2 py-0.5 text-[9px] font-bold uppercase tracking-[.08em] text-[#666666]">closed</span> : null}
+              </p>
+              <p className="truncate text-[10px] text-[#999999]">{row.issuer_name || ''}</p>
+            </div>
+            <div className="shrink-0 text-right">
+              <p className={`text-[13px] font-bold tabular-nums ${tone}`}>
+                {row.weight_change > 0 ? '+' : ''}{Number(row.weight_change).toFixed(2)}%
+              </p>
+              <p className="text-[10px] tabular-nums text-[#999999]">
+                {row.closed ? 'position closed'
+                  : `${Number(row.previous_weight).toFixed(2)} → ${Number(row.current_weight).toFixed(2)}%`}
+              </p>
+            </div>
+          </div>
+        ))}
+      </div>
+      {note ? <p className="mt-4 text-[10px] leading-4 text-[#888888]">{note}</p> : null}
+    </div>
+  );
+}
+
+function TopTradesPanel({ trades }) {
+  if (!trades || (!trades.buys?.length && !trades.sells?.length)) return null;
+  return (
+    <section className="mt-8">
+      <div className="mb-5">
+        <p className="text-[10px] font-extrabold uppercase tracking-[.18em] text-[#777777]">Position intelligence</p>
+        <h2 className="mt-2 text-3xl font-bold">Where the weight moved</h2>
+        <p className="mt-2 text-[12px] leading-5 text-[#666666]">
+          Ranked by change in portfolio weight, which is the manager&rsquo;s own scaling — not by size, which
+          would rank funds rather than decisions.
+        </p>
+      </div>
+      <div className="grid gap-4 lg:grid-cols-2">
+        <TradeList
+          title="Added and opened"
+          rows={trades.buys}
+          total={trades.total_buys}
+          tone="text-[#1a7f5a]"
+          note={trades.opened ? `${trades.opened} position${trades.opened === 1 ? '' : 's'} opened this quarter.` : null}
+        />
+        <TradeList
+          title="Trimmed and closed"
+          rows={trades.sells}
+          total={trades.total_sells}
+          tone="text-[#a33]"
+          note={trades.closed ? `${trades.closed} position${trades.closed === 1 ? '' : 's'} closed this quarter.` : null}
+        />
+      </div>
+    </section>
+  );
+}
+
 function RevaluationPanel({ revaluation }) {
   if (!revaluation || revaluation.current_total === null || !revaluation.as_of) return null;
   const up = revaluation.change_pct >= 0;
@@ -746,6 +832,8 @@ function FundPage({ slug }) {
         </section>
 
         <ActivityPanel activity={data.activity} />
+
+        <TopTradesPanel trades={data.trades} />
 
         <section className="mt-8">
           <div className="mb-5 flex items-center justify-between"><div><p className="text-[10px] font-extrabold uppercase tracking-[.18em] text-[#777777]">Manager signal profile</p><h2 className="mt-2 text-3xl font-bold">What changed and how much it matters</h2></div></div>
