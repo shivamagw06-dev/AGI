@@ -281,9 +281,11 @@ function RevaluationPanel({ revaluation }) {
       </p>
       {partial ? (
         <p className="mt-2 text-[10px] leading-4 text-[#888888]">
-          Covers {Number(revaluation.priced_share_pct).toFixed(1)}% of the disclosed book by value;
+          Covers {Number(revaluation.priced_share_pct).toFixed(1)}% of the disclosed book by value.
           {' '}{revaluation.unpriced_count} position{revaluation.unpriced_count === 1 ? '' : 's'} worth
-          {' '}{money(revaluation.unpriced_value)} could not be priced and are excluded from both figures.
+          {' '}{money(revaluation.unpriced_value)} {revaluation.capped
+            ? `are outside the ${revaluation.positions_considered} largest measured`
+            : 'could not be priced'}, and are excluded from both figures.
         </p>
       ) : null}
     </div>
