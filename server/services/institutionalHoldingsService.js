@@ -215,16 +215,46 @@ async function collect(factory, pageSize = PAGE_SIZE, maxRows = 250_000) {
   return rows;
 }
 
-async function seedManagers(client) {
+/**
+ * Keep the tracked-manager table in step with the list in this file.
+ *
+ * Two things here were wrong together, and the pair took the whole
+ * institutional surface down over a one-line edit.
+ *
+ * The conflict target was the CIK. The slug is what identifies a manager to
+ * us - it is in the URL, it is stable, we choose it - while the CIK belongs to
+ * the filer and can change: BlackRock Finance stopped filing and BlackRock,
+ * Inc. took over under a different number. Conflicting on the CIK turns
+ * correcting one into an insert, and that insert carries a slug the old row
+ * still holds under its own unique constraint. Conflicting on the slug makes
+ * the same edit an update, which is what it always was.
+ *
+ * And a failure here threw. Seeding runs before every read of every
+ * institutional surface, so one rejected row emptied all of them and the page
+ * showed a Postgres constraint name to the public. Reads now continue against
+ * whatever the table already holds, which is nearly always right: seeding is
+ * how a new manager arrives, not how the existing ones are served.
+ *
+ * `required` is for callers that genuinely cannot proceed - a collection run
+ * needs the roster it is about to crawl - and for the test that proves a
+ * failure still surfaces somewhere.
+ */
+export async function seedManagers(client, { required = false } = {}) {
   const { error } = await client.from('institutional_managers').upsert(DEFAULT_MANAGERS, {
-    onConflict: 'cik',
+    onConflict: 'slug',
     ignoreDuplicates: false,
   });
-  if (error) throw error;
+  if (!error) return { ok: true };
+  // Wrapped, because the client hands back a plain object: throwing it gives
+  // a rejection with no stack and an "[object Object]" message wherever it is
+  // reported.
+  if (required) throw new Error(`manager seed failed: ${error.message}`);
+  console.error(`[institutional-holdings] manager seed failed, serving the stored roster: ${error.message}`);
+  return { ok: false, error: error.message };
 }
 
-async function managers(client) {
-  await seedManagers(client);
+async function managers(client, { seedRequired = false } = {}) {
+  await seedManagers(client, { required: seedRequired });
   const { data, error } = await client.from('institutional_managers').select('*').eq('active', true).order('display_name');
   if (error) throw error;
   return data || [];
@@ -1626,7 +1656,11 @@ async function rebuildSignals(client) {
 
 async function performInstitutionalRefresh({ managerSlug, quarters = 12, onManagerDone = null, onRoster = null } = {}) {
   const client = db();
-  const managerRows = await managers(client);
+  // Strict here, unlike a read. A collection run is about to crawl the roster
+  // it just seeded, and crawling a stale one would quietly cover the wrong
+  // set of managers and report success for it. A page serving the stored
+  // roster is degraded; a run doing so is wrong.
+  const managerRows = await managers(client, { seedRequired: true });
   const selected = managerSlug && managerSlug !== 'all' ? managerRows.filter((row) => row.slug === managerSlug) : managerRows;
   if (!selected.length) throw new Error('Select a tracked manager.');
   // Announced before any work, so a run that dies partway still knows how many
