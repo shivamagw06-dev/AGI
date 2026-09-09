@@ -374,14 +374,21 @@ export async function getInstitutionalResearchLayer() {
     // always was rather than the hundred and thirty thousand it was computed
     // from.
     const { client, managers, filings } = await core({ withHoldings: false });
-    const [{ data: rotation, error: rError }, { count: classificationCount, error: cError }, { data: events, error: eError }, { data: briefs, error: bError }, { data: backtests, error: tError }] = await Promise.all([
+    const [{ data: rotation, error: rError }, { count: classificationCount, error: cError }, { data: events, error: eError }, { count: externalCount, error: xError }, { data: briefs, error: bError }, { data: backtests, error: tError }] = await Promise.all([
       client.rpc('institutional_sector_rotation'),
       client.from('institutional_security_classifications').select('id', { count: 'exact', head: true }),
-      client.from('institutional_external_filings').select('*').order('filed_at', { ascending: false }).limit(100),
+      // Six columns, not *. The row carries a parsed_data jsonb holding the
+      // whole parsed disclosure, and this page reads none of it - it renders a
+      // form type, a ticker, an event type and a date, and only the newest
+      // twenty of them.
+      client.from('institutional_external_filings')
+        .select('id,source_url,form_type,event_type,ticker,filed_at')
+        .order('filed_at', { ascending: false }).limit(100),
+      client.from('institutional_external_filings').select('id', { count: 'exact', head: true }),
       client.from('institutional_intelligence_briefs').select('*, institutional_managers(display_name,slug)').in('status', ['approved', 'published']).order('generated_at', { ascending: false }).limit(30),
       client.from('institutional_backtest_runs').select('*, institutional_managers(display_name,slug)').order('generated_at', { ascending: false }).limit(30),
     ]);
-    if (cError || eError || bError || tError) throw cError || eError || bError || tError;
+    if (cError || eError || xError || bError || tError) throw cError || eError || xError || bError || tError;
     // A failed rotation is an empty section, not a failed page. Everything
     // else on this surface stands on its own.
     if (rError) console.warn(`[research-layer] sector rotation: ${rError.message}`);
@@ -389,7 +396,7 @@ export async function getInstitutionalResearchLayer() {
     // Sector rotation aggregates disclosed weights across quarters, so it
     // reads the same gate consensus does.
     const dataIntegrity = await getRepairStatus();
-    return { status: 'ready', data_integrity: dataIntegrity, generated_at: new Date().toISOString(), readiness: { managers_tracked: managers.length, managers_with_12_quarters: [...history.values()].filter((rows) => rows.length >= 12).length, classifications: classificationCount || 0, external_filings: events?.length || 0, approved_briefs: briefs?.length || 0, methodology: 'Entry is the first US trading session strictly after SEC acceptance, read in US Eastern. Positions without an adjusted close at both ends of a period are excluded and reported, never re-weighted. A position is priced from its adjusted closes, refreshed daily; a manager whose book cannot be priced in full is reported with its coverage rather than ranked on part of it.' }, sector_rotation: rotation || [], filing_events: events || [], approved_briefs: briefs || [], backtests: backtests || [], managers: managers.map(({ id, slug, display_name }) => ({ id, slug, display_name })) };
+    return { status: 'ready', data_integrity: dataIntegrity, generated_at: new Date().toISOString(), readiness: { managers_tracked: managers.length, managers_with_12_quarters: [...history.values()].filter((rows) => rows.length >= 12).length, classifications: classificationCount || 0, external_filings: externalCount || 0, approved_briefs: briefs?.length || 0, methodology: 'Entry is the first US trading session strictly after SEC acceptance, read in US Eastern. Positions without an adjusted close at both ends of a period are excluded and reported, never re-weighted. A position is priced from its adjusted closes, refreshed daily; a manager whose book cannot be priced in full is reported with its coverage rather than ranked on part of it.' }, sector_rotation: rotation || [], filing_events: events || [], approved_briefs: briefs || [], backtests: backtests || [], managers: managers.map(({ id, slug, display_name }) => ({ id, slug, display_name })) };
   } catch (error) {
     if (/institutional_(security_classifications|external_filings|intelligence_briefs|backtest_runs)/i.test(error.message || '')) return { status: 'setup_required', message: 'Apply the Institutional Intelligence V3 database migration, then run the first research refresh.' };
     throw error;
