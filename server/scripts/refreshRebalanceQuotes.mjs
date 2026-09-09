@@ -21,6 +21,7 @@ import { createSupabaseAdmin, getSupabaseAdminCredentials } from '../lib/supabas
 import { getHistoricalCandles } from '../providers/upstox.js';
 import { quoteFor } from '../services/rebalanceQuoteMath.js';
 import { exchangeSymbol } from '../services/rebalancePaste.js';
+import { resolveInstrument } from '../services/instrumentResolution.js';
 
 const APPLY = process.argv.includes('--apply');
 const argOf = (flag) => { const i = process.argv.indexOf(flag); return i >= 0 ? process.argv[i + 1] : null; };
@@ -73,32 +74,49 @@ async function usdInr() {
 /**
  * Fill in instrument_key for entries that have none.
  *
- * The Bloomberg ticker in a research table is not the exchange symbol, so this
- * is a lookup and not a transform. An entry that cannot be resolved keeps a
- * null key and says so - it stays visible on the page with its entered
- * columns, unpriced, rather than disappearing.
+ * A research table names an Indian stock the way Bloomberg does, and Bloomberg
+ * is not NSE. On a real FTSE review, an exact symbol match resolved 20 of 38
+ * names; the company name in the same row recovers 16 of the other 18, and the
+ * eight-character truncation rule one more.
+ *
+ * The whole cash list is about two thousand six hundred rows, so it is loaded
+ * once and matched in memory. That keeps every rule in one pure, tested place
+ * instead of spread across SQL, and the rules are worth testing: INFO
+ * prefix-matches INFOMEDIA, and a wrong instrument does not error - it returns
+ * perfectly good candles for a different company.
  */
 async function resolveInstruments(entries) {
   const unresolved = entries.filter((row) => !row.instrument_key);
   if (!unresolved.length) return new Map();
 
-  const symbols = [...new Set(unresolved.map((row) => exchangeSymbol(row.source_ticker)).filter(Boolean))];
   const { data, error } = await client
     .from('nse_instruments')
-    .select('instrument_key,trading_symbol')
-    .in('trading_symbol', symbols);
+    .select('instrument_key,trading_symbol,name')
+    .limit(10_000);
   if (error) {
-    console.warn(`[rebalance] instrument lookup: ${error.message}`);
+    console.warn(`[rebalance] instrument master: ${error.message}`);
     return new Map();
   }
+  const master = data || [];
 
-  const bySymbol = new Map((data || []).map((row) => [String(row.trading_symbol).toUpperCase(), row.instrument_key]));
   const resolved = new Map();
+  const tiers = new Map();
   for (const row of unresolved) {
-    const key = bySymbol.get(String(exchangeSymbol(row.source_ticker) || '').toUpperCase());
-    if (key) resolved.set(row.id, key);
+    const result = resolveInstrument(
+      { ticker: exchangeSymbol(row.source_ticker), company: row.company_name },
+      master,
+    );
+    if (result.instrument_key) {
+      resolved.set(row.id, result.instrument_key);
+      tiers.set(result.matched_by, (tiers.get(result.matched_by) || 0) + 1);
+    } else {
+      // Named individually, because an unresolved name is a thing a person
+      // fixes and a count is not.
+      console.log(`[rebalance]   unmapped ${String(row.source_ticker).padEnd(14)} ${result.reason}`);
+    }
   }
-  console.log(`[rebalance] resolved ${resolved.size} of ${unresolved.length} unmapped ticker(s)`);
+  const summary = [...tiers.entries()].map(([tier, count]) => `${count} by ${tier}`).join(', ');
+  console.log(`[rebalance] resolved ${resolved.size} of ${unresolved.length} unmapped ticker(s)${summary ? ` (${summary})` : ''}`);
   return resolved;
 }
 
