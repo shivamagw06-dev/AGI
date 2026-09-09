@@ -23,10 +23,16 @@
  */
 import { createSupabaseAdmin, getSupabaseAdminCredentials } from '../lib/supabaseAdmin.js';
 import { core, collectClassifications, paged } from '../services/institutionalResearchLayerService.js';
+import { secLimiterStats } from '../services/secRateLimiter.js';
 
 const APPLY = process.argv.includes('--apply');
 const argOf = (flag) => { const i = process.argv.indexOf(flag); return i >= 0 ? process.argv[i + 1] : null; };
 const LIMIT = Number(argOf('--limit') || 20_000);
+// Measured, not assumed: the 2026-09-10 backfill classified 4,161 securities
+// in 1,350 seconds. The first version of this estimate divided by the SEC's
+// published ten-per-second cap and promised eight minutes for a run that took
+// twenty-two.
+const OBSERVED_RPS = 3.1;
 
 if (!getSupabaseAdminCredentials()) {
   console.error('[classify] SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required.');
@@ -67,7 +73,16 @@ async function main() {
       securities: [...distinct].map((key) => ({ key })),
       classified, limit: LIMIT,
     });
-    console.log(`[classify] ${queued.length.toLocaleString()} would be classified, at roughly ${(queued.length / 10 / 60).toFixed(1)} minute(s) against the SEC's ten-per-second limit`);
+    // Two rates, because one of them was wrong by a factor of three. The
+    // limiter's configured ceiling gives a floor on the time; the rate a full
+    // run actually achieved gives the number to plan around. The gap is
+    // network latency, which sits on top of the minimum spacing rather than
+    // inside it - the limiter guarantees requests start no closer together
+    // than the interval, not that they complete at that rate.
+    const rps = Number(secLimiterStats()?.max_requests_per_second) || 5;
+    const floor = queued.length / rps / 60;
+    const observed = queued.length / OBSERVED_RPS / 60;
+    console.log(`[classify] ${queued.length.toLocaleString()} would be classified: at least ${floor.toFixed(0)} minute(s) at the limiter's ${rps}/second ceiling, and nearer ${observed.toFixed(0)} at the ${OBSERVED_RPS}/second a full run has actually sustained`);
     console.log('[classify] dry run only. Re-run with --apply to write.');
     return;
   }
