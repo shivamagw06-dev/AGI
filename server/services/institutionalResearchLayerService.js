@@ -8,6 +8,8 @@ import { listingStatus } from './dailyBars.js';
 import { coverageProblem } from './pricePlan.js';
 import { coverageProfile, backtestBlockers } from './backtestCoverage.js';
 import { parseFormFour, rawDocumentPath } from './formFour.js';
+import { classifySic } from './sicSectors.js';
+import { classificationQueue } from './classificationQueue.js';
 
 const SEC_DATA = 'https://data.sec.gov';
 const SEC_ARCHIVES = 'https://www.sec.gov/Archives/edgar/data';
@@ -66,22 +68,6 @@ function recentFilings(payload = {}) {
   }));
 }
 
-function classifySic(code, description) {
-  const sic = number(code);
-  const ranges = [
-    [100, 999, 'Natural Resources', 'Agriculture & Forestry'], [1000, 1499, 'Energy & Materials', 'Mining'],
-    [1500, 1799, 'Industrials', 'Construction'], [2000, 2399, 'Consumer Staples', 'Food, Beverage & Textiles'],
-    [2400, 2799, 'Materials', 'Manufacturing & Paper'], [2800, 2899, 'Health Care', 'Chemicals & Pharmaceuticals'],
-    [2900, 2999, 'Energy', 'Petroleum'], [3000, 3999, 'Industrials', 'Industrial Manufacturing'],
-    [4000, 4799, 'Industrials', 'Transportation'], [4800, 4899, 'Communication Services', 'Telecommunications'],
-    [4900, 4999, 'Utilities', 'Utilities'], [5000, 5199, 'Industrials', 'Wholesale Trade'],
-    [5200, 5999, 'Consumer Discretionary', 'Retail'], [6000, 6499, 'Financials', 'Banking & Credit'],
-    [6500, 6799, 'Real Estate', 'Real Estate & Investment Vehicles'], [7000, 7999, 'Consumer Discretionary', 'Services & Leisure'],
-    [8000, 8099, 'Health Care', 'Health Services'], [8100, 8999, 'Industrials', 'Professional Services'],
-  ];
-  const match = ranges.find(([from, to]) => sic >= from && sic <= to);
-  return { sector: match?.[2] || 'Unclassified', industry: description || match?.[3] || 'Unclassified' };
-}
 
 /**
  * Daily prices for one symbol.
@@ -153,7 +139,7 @@ export async function paged(build, { pageSize = 1000, maxRows = 200_000, label =
  * recent book. Loading all 2.6M rows to use a hundred and thirty thousand of
  * them was not merely wasteful, it is more than this instance has memory for.
  */
-async function core({ quartersPerManager = 2, withHoldings = true } = {}) {
+export async function core({ quartersPerManager = 2, withHoldings = true } = {}) {
   const client = db();
   const [managers, filings] = await Promise.all([
     paged(() => client.from('institutional_managers').select('*').order('display_name'), { label: 'managers' }),
@@ -204,8 +190,22 @@ function filingMap(filings) {
   return result;
 }
 
-async function collectClassifications(client, holdings, companies, limit) {
-  const securities = [...new Map(holdings.filter((row) => tickerOf(row)).map((row) => [keyOf(row), row])).values()].slice(0, limit);
+export async function collectClassifications(client, holdings, companies, limit) {
+  const distinct = [...new Map(holdings.filter((row) => tickerOf(row)).map((row) => [keyOf(row), row])).values()];
+  // What the table already holds, so the queue can skip it. Without this the
+  // slice below took the same sixty securities every night - holdings order
+  // does not change between runs - and the table stopped at seventy rows
+  // however many nights it ran.
+  const classified = await paged(
+    () => client.from('institutional_security_classifications').select('security_key,source_as_of').order('security_key').order('source_as_of'),
+    { label: 'existing classifications' },
+  );
+  const securities = classificationQueue({
+    securities: distinct.map((row) => ({ key: keyOf(row), row })),
+    classified, limit,
+  }).map((entry) => entry.row);
+  console.log(`[institutional-v3] ${distinct.length} distinct securities, ${classified.length} classified, ${securities.length} queued`);
+
   const output = [];
   for (const holding of securities) {
     const ticker = tickerOf(holding);
