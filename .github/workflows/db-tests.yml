@@ -59,9 +59,16 @@ jobs:
           # currently serving a Packages.gz whose hash does not match its own
           # Release file. Under set -e that fails apt-get update outright, so
           # both of these jobs died installing Postgres over a browser neither
-          # of them uses. Dropped rather than tolerated with || true, which
-          # would also swallow a real failure to reach the Postgres archive.
-          sudo rm -f /etc/apt/sources.list.d/google-chrome.list
+          # of them uses. Found by content rather than by filename: the image
+          # carries it as google-chrome.list or as the deb822 .sources, and
+          # removing one name removed nothing. Dropped rather than tolerated
+          # with || true, which would also swallow a real failure to reach the
+          # Postgres archive.
+          { sudo grep -rl 'dl\.google\.com' /etc/apt/sources.list.d/ 2>/dev/null || true; } \
+            | sudo xargs -r rm -f
+          # The main list is edited, not deleted - it holds Ubuntu's own
+          # archives, and the Postgres packages come from there.
+          sudo sed -i '/dl\.google\.com/d' /etc/apt/sources.list 2>/dev/null || true
           sudo apt-get update -qq
           # Extensions the chain actually creates: pgcrypto (in contrib) and
           # vector. pgTAP is for the tests themselves. Installed together so a
@@ -529,9 +536,16 @@ jobs:
           # currently serving a Packages.gz whose hash does not match its own
           # Release file. Under set -e that fails apt-get update outright, so
           # both of these jobs died installing Postgres over a browser neither
-          # of them uses. Dropped rather than tolerated with || true, which
-          # would also swallow a real failure to reach the Postgres archive.
-          sudo rm -f /etc/apt/sources.list.d/google-chrome.list
+          # of them uses. Found by content rather than by filename: the image
+          # carries it as google-chrome.list or as the deb822 .sources, and
+          # removing one name removed nothing. Dropped rather than tolerated
+          # with || true, which would also swallow a real failure to reach the
+          # Postgres archive.
+          { sudo grep -rl 'dl\.google\.com' /etc/apt/sources.list.d/ 2>/dev/null || true; } \
+            | sudo xargs -r rm -f
+          # The main list is edited, not deleted - it holds Ubuntu's own
+          # archives, and the Postgres packages come from there.
+          sudo sed -i '/dl\.google\.com/d' /etc/apt/sources.list 2>/dev/null || true
           sudo apt-get update -qq
           # pgvector as well as pgTAP: supabase_shims.sql creates the vector
           # extension, and it is shared with the job above, so a job that omits
