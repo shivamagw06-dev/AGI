@@ -22,7 +22,7 @@ import { hostname } from 'node:os';
 import { createSupabaseAdmin, getSupabaseAdminCredentials } from '../lib/supabaseAdmin.js';
 import { scheduleSecRequest } from '../services/secRateLimiter.js';
 import { parseFormFour, rawDocumentPath } from '../services/formFour.js';
-import { planScans, newFilings, abortReason } from '../services/insiderScanPlan.js';
+import { planScans, newFilings, abortReason, isoDate } from '../services/insiderScanPlan.js';
 
 const APPLY = process.argv.includes('--apply');
 const argOf = (flag) => { const i = process.argv.indexOf(flag); return i >= 0 ? process.argv[i + 1] : null; };
@@ -106,8 +106,8 @@ if (!APPLY) {
       const subs = await secJson(`${SEC_DATA}/submissions/CIK${plan.cik}.json`);
       const recent = subs?.filings?.recent || {};
       const rows = (recent.form || []).map((form, i) => ({
-        form, accession: recent.accessionNumber?.[i], filedAt: recent.filingDate?.[i],
-        reportDate: recent.reportDate?.[i], document: recent.primaryDocument?.[i] || '',
+        form, accession: recent.accessionNumber?.[i], filedAt: isoDate(recent.filingDate?.[i]),
+        reportDate: isoDate(recent.reportDate?.[i]), document: recent.primaryDocument?.[i] || '',
       }));
       const fresh = newFilings(rows, new Set(), { limit: PER_ISSUER });
       console.log(`  ${plan.ticker.padEnd(8)} ${String(fresh.length).padStart(3)} Form 4 filing(s) in the recent index`);
@@ -134,7 +134,7 @@ console.log(`[insider] filings already stored: ${known.size.toLocaleString()}`);
 console.log('');
 console.log(`[insider] APPLY - scanning ${plans.length.toLocaleString()} issuers`);
 
-const tally = { scanned: 0, noFilings: 0, parsed: 0, unreadable: 0, written: 0, indexFailed: 0 };
+const tally = { scanned: 0, noFilings: 0, parsed: 0, unreadable: 0, written: 0, indexFailed: 0, writeFailed: 0 };
 const problems = [];
 let aborted = null;
 
@@ -148,8 +148,8 @@ for (const plan of plans) {
     const subs = await secJson(`${SEC_DATA}/submissions/CIK${plan.cik}.json`);
     const recent = subs?.filings?.recent || {};
     rows = (recent.form || []).map((form, i) => ({
-      form, accession: recent.accessionNumber?.[i], filedAt: recent.filingDate?.[i],
-      reportDate: recent.reportDate?.[i], document: recent.primaryDocument?.[i] || '',
+      form, accession: recent.accessionNumber?.[i], filedAt: isoDate(recent.filingDate?.[i]),
+      reportDate: isoDate(recent.reportDate?.[i]), document: recent.primaryDocument?.[i] || '',
     }));
   } catch (error) {
     tally.indexFailed += 1;
@@ -195,12 +195,27 @@ for (const plan of plans) {
   }
 
   if (output.length) {
+    let wrote = 0;
     for (let i = 0; i < output.length; i += 200) {
       const { error } = await client.from('institutional_external_filings')
         .upsert(output.slice(i, i + 200), { onConflict: 'accession_number' });
-      if (error) throw new Error(`upsert ${plan.ticker}: ${error.message}`);
+      if (error) {
+        // One issuer's write must not end the sweep. This job exists to
+        // converge across nights over four thousand issuers, and a single
+        // malformed filing killing the run means it never completes - which is
+        // exactly what a blank reportDate did, on the first issuer, every time.
+        tally.writeFailed += 1;
+        problems.push(`${plan.ticker}: upsert ${error.message}`);
+        break;
+      }
+      wrote += Math.min(200, output.length - i);
     }
-    tally.written += output.length;
+    tally.written += wrote;
+    // A systematic write failure is different from an awkward filing, and it
+    // should stop rather than spend forty minutes failing politely.
+    if (tally.writeFailed >= 25) {
+      throw new Error(`${tally.writeFailed} issuers failed to write; stopping rather than continuing blind`);
+    }
   }
   await noteScan(plan, { seen: rows.filter((r) => /^4(\/A)?$/.test(r.form || '')).length, fresh: fresh.length, parsed: parsedHere, status: 'scanned' });
 
@@ -224,6 +239,7 @@ console.log('[insider] ---- result ----');
 console.log(`[insider] issuers scanned   ${tally.scanned}`);
 console.log(`[insider]   with no new     ${tally.noFilings}`);
 console.log(`[insider]   index failed    ${tally.indexFailed}`);
+console.log(`[insider]   write failed    ${tally.writeFailed}`);
 console.log(`[insider] filings written   ${tally.written}`);
 console.log(`[insider]   parsed          ${tally.parsed}`);
 console.log(`[insider]   unreadable      ${tally.unreadable}`);

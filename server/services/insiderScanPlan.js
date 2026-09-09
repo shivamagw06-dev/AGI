@@ -89,3 +89,26 @@ function spread(value) {
   for (let i = 0; i < value.length; i += 1) { h ^= value.charCodeAt(i); h = Math.imul(h, 16777619); }
   return h >>> 0;
 }
+
+/**
+ * An EDGAR date, or null.
+ *
+ * EDGAR leaves reportDate blank on most Form 4 filings - the period is in the
+ * document, not the index - and the empty string goes straight into a date
+ * column, where Postgres rejects it:
+ *
+ *   upsert MGA: invalid input syntax for type date: ""
+ *
+ * That aborted the whole nightly sweep on its first issuer, which is why it
+ * had never completed a run. A missing period is a real and common state for a
+ * Form 4; it is not a reason to drop the filing, and it is not a date.
+ */
+export function isoDate(value) {
+  const text = String(value ?? '').trim().slice(0, 10);
+  // Checked rather than handed to Date, because new Date('') is Invalid Date
+  // but new Date('2026') is a real one - a four-digit stub would pass a
+  // parse-and-check and be stored as the first of January.
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(text)) return null;
+  const parsed = new Date(`${text}T00:00:00Z`);
+  return Number.isNaN(parsed.getTime()) ? null : text;
+}
