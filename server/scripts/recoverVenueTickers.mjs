@@ -24,6 +24,7 @@
  */
 import { createSupabaseAdmin, getSupabaseAdminCredentials } from '../lib/supabaseAdmin.js';
 import { recoverTicker } from '../services/venueTicker.js';
+import { namesByTicker } from '../services/issuerTickerRegistry.js';
 import { conflictingOwner, proposedWindow } from '../services/mappingWindow.js';
 
 const APPLY = process.argv.includes('--apply');
@@ -57,6 +58,26 @@ for (const entry of Object.values(await resp.json())) {
   if (ticker) secByTicker.set(ticker, String(entry.title || ''));
 }
 console.log(`[venue] SEC lists ${secByTicker.size.toLocaleString()} tickers`);
+
+// What tickers meant in the past, from SEC bulk Form 345 submissions. The live
+// register answers for a live holding and cannot answer for a past one, and a
+// decade of 13F holdings is mostly past ones. Consulted only where the live
+// register has nothing.
+const registryRows = [];
+for (let from = 0; ; from += 1000) {
+  const { data, error } = await client
+    .from('sec_issuer_tickers')
+    .select('ticker,issuer_name,first_seen,last_seen')
+    .order('ticker').order('first_seen')
+    .range(from, from + 999);
+  // Absent is a degraded run, not a failed one: without it the behaviour is
+  // exactly what it was before the table existed.
+  if (error) { console.warn(`[venue] historical registry unavailable: ${error.message}`); break; }
+  registryRows.push(...(data || []));
+  if (!data || data.length < 1000) break;
+}
+const registry = namesByTicker(registryRows);
+console.log(`[venue] past filings name ${registry.size.toLocaleString()} ticker(s) across ${registryRows.length.toLocaleString()} issuer/ticker pair(s)`);
 
 // ---- holdings wearing a non-US symbol -------------------------------------
 
@@ -92,8 +113,13 @@ console.log(`[venue] ${suspect.size} (cusip, non-US ticker) pairs to examine`);
 const recovered = [];
 const refused = [];
 for (const s of suspect.values()) {
-  const r = recoverTicker(s.ticker, s.issuer_name, secByTicker);
-  if (r.ticker) recovered.push({ ...s, to: r.ticker });
+  // The window is the holding's own dates, so a ticker that changed hands
+  // resolves to whoever owned it while this position was held.
+  const r = recoverTicker(s.ticker, s.issuer_name, secByTicker, {
+    registry,
+    window: { earliest: s.earliest, latest: s.latest },
+  });
+  if (r.ticker) recovered.push({ ...s, to: r.ticker, via: r.via });
   else refused.push({ ...s, reason: r.reason });
 }
 

@@ -57,12 +57,12 @@ test('a symbol with no currency suffix is left alone', () => {
   }
 });
 
-test('a base the SEC does not list is refused', () => {
+test('a base neither register knows is refused', () => {
   // DWDPEUR trims to DWDP - DowDuPont, which stopped trading in 2019. There
   // is no US listing to recover it to and no prices to be had either.
   const r = recover('DWDPEUR', 'DOWDUPONT INC');
   assert.equal(r.ticker, null);
-  assert.match(r.reason, /none of which the SEC lists/);
+  assert.match(r.reason, /neither the SEC register nor past filings know/);
 });
 
 test('a holding with no issuer name cannot be checked, so it is not recovered', () => {
@@ -142,4 +142,62 @@ test('a share-class word does not make it a different company', () => {
 
 test('dropping the class word does not merge two different companies', () => {
   assert.equal(sameCompany('ACME PREFERRED INC', 'Beta Preferred Inc'), false);
+});
+
+/**
+ * The historical registry, built from SEC bulk Form 345 submissions. It knows
+ * what a ticker meant while it meant it, which the live register cannot.
+ */
+const registry = new Map([
+  ['MASI', [{ issuer_name: 'MASIMO CORP', first_seen: '2024-02-01', last_seen: '2025-11-17' }]],
+  // Also in the live register, so precedence between the two is observable.
+  // Without an overlap nothing can tell whether the historical tier is being
+  // consulted when it should not be.
+  ['LRCX', [{ issuer_name: 'LAM RESEARCH CORP', first_seen: '2016-01-04', last_seen: '2026-08-01' }]],
+  ['PARA', [
+    { issuer_name: 'Banzai International, Inc.', first_seen: '2026-01-05', last_seen: '2026-08-01' },
+    { issuer_name: 'Paramount Global', first_seen: '2020-02-01', last_seen: '2024-06-01' },
+  ]],
+]);
+const held = (earliest, latest) => ({ earliest, latest });
+
+test('a delisted ticker is recovered from past filings when the live register has gone quiet', () => {
+  // Masimo is not in company_tickers.json any more, so the live check refuses
+  // it. Past filings still name MASI as MASIMO CORP, and the company check is
+  // the same one - only the register it runs against has changed.
+  const r = recoverTicker('MASI*', 'MASIMO CORP', sec, { registry, window: held('2023-09-30', '2025-12-31') });
+  assert.equal(r.ticker, 'MASI');
+  assert.match(r.via, /SEC filings/);
+});
+
+test('a reused ticker resolves to the company that held it at the time', () => {
+  // The case the windows exist for. PARA was Paramount Global until 2024 and
+  // is Banzai International now; a 2021 holding must not be attributed to a
+  // company that did not own the symbol until five years later.
+  const r = recoverTicker('PARAEUR', 'PARAMOUNT GLOBAL', sec, { registry, window: held('2021-03-31', '2021-12-31') });
+  assert.equal(r.ticker, 'PARA');
+});
+
+test('a name that matches the wrong era is still refused', () => {
+  // Banzai genuinely owns PARA now. A holding from 2021 does not become
+  // Banzai's because the ticker later became theirs.
+  const r = recoverTicker('PARAEUR', 'Banzai International, Inc.', sec, { registry, window: held('2021-03-31', '2021-12-31') });
+  assert.equal(r.ticker, null);
+});
+
+test('the live register still wins when it has an answer', () => {
+  // A currently-registered ticker must never be overruled by what it used to
+  // be, so the historical tier only runs when the live one found nothing.
+  // LRCX is in both registers, which is what makes the precedence testable:
+  // if the historical tier ran anyway it would claim the answer as its own,
+  // and a clean live match could be turned into an ambiguity by a second base
+  // arriving from the past.
+  const r = recoverTicker('LRCXEUR', 'LAM RESEARCH CORP', sec, { registry, window: held('2020-03-31', '2026-06-30') });
+  assert.equal(r.ticker, 'LRCX');
+  assert.equal(r.via, 'the SEC register');
+});
+
+test('without a registry the behaviour is exactly as before', () => {
+  const r = recoverTicker('MASI*', 'MASIMO CORP', sec);
+  assert.equal(r.ticker, null);
 });
