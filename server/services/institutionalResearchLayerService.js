@@ -355,6 +355,16 @@ export async function getInstitutionalResearchLayer() {
 // left unused, so neither can be called again by accident.
 
 /**
+ * Whether a manager was named by id rather than by slug.
+ *
+ * A slug is the usual case and a uuid is what the admin surfaces pass, so both
+ * have to work - but they cannot be tried together against a uuid column.
+ */
+export function isUuid(value) {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(value || ''));
+}
+
+/**
  * Everything one backtest needs, and nothing else.
  *
  * This used to call core(), which loads every manager's filings and holdings
@@ -373,9 +383,17 @@ export async function getInstitutionalResearchLayer() {
  * gets.
  */
 async function backtestInputs(client, managerSlug, quarters) {
-  const { data: managerRows, error: managerError } = await client
-    .from('institutional_managers').select('*')
-    .or(`slug.eq.${managerSlug},id.eq.${managerSlug}`).limit(1);
+  // Matched on one column or the other, never both in an `or`. id is a uuid,
+  // and Postgres rejects the whole clause when the value is not one:
+  //
+  //   invalid input syntax for type uuid: "berkshire-hathaway"
+  //
+  // The code this replaced compared in JavaScript, so it never met the
+  // question of what the column's type would make of a slug.
+  const lookup = client.from('institutional_managers').select('*');
+  const { data: managerRows, error: managerError } = await (isUuid(managerSlug)
+    ? lookup.eq('id', managerSlug)
+    : lookup.eq('slug', managerSlug)).limit(1);
   if (managerError) throw managerError;
   const manager = managerRows?.[0];
   if (!manager) throw new Error('Tracked manager not found.');
