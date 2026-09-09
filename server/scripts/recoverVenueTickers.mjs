@@ -141,7 +141,22 @@ for (const row of existing) {
   ownersOf.get(t).push(row);
 }
 
-const latestReportDate = holdings.reduce((a, h) => (h.report_date > a ? h.report_date : a), '');
+// The newest report date in the whole table, not the newest among the
+// candidates. It decides whether a mapping stays open-ended, and if no
+// venue-coded holding happens to be current then the newest of those is older
+// than the corpus - so the candidate matching it would be read as still held
+// and written as an open-ended claim on a symbol nobody holds any more,
+// blocking whichever security takes it over next.
+//
+// One row, because that is all the question needs.
+const { data: newestRows, error: newestError } = await client
+  .from('institutional_holdings')
+  .select('report_date')
+  .order('report_date', { ascending: false })
+  .limit(1);
+if (newestError) throw new Error(`reading the newest report date: ${newestError.message}`);
+const latestReportDate = newestRows?.[0]?.report_date || '';
+if (!latestReportDate) throw new Error('no holdings found; refusing to propose windows against an unknown as-of date');
 
 const writes = [];
 const conflicts = [];
