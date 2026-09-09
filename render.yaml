@@ -147,3 +147,54 @@ services:
         sync: false
       - key: SUPABASE_SERVICE_ROLE_KEY
         sync: false
+
+  # Form 4 insider filings for the securities the tracked managers hold.
+  #
+  # The script was written to converge across runs and then only ever run by
+  # hand, so it sits at roughly 441 of 4,328 issuers - about a tenth. That is
+  # not a build problem, it is a scheduling one: nothing was ever going to
+  # finish a 4,328-issuer sweep in single sessions someone remembers to start.
+  #
+  # It is safe to run repeatedly and cheap to run often. An issuer scanned in
+  # the last week is skipped, because a Form 4 is due within two business days
+  # of the trade and re-checking daily wastes most of its requests. A filing
+  # whose accession is already stored is never fetched again, so an issuer that
+  # has filed nothing costs one index request and no documents. Scan order is
+  # hashed rather than alphabetical - the ceiling would otherwise cut the same
+  # tail off every night, and what a symbol is correlates with where it sits in
+  # the alphabet.
+  #
+  # So each night covers what it can and the next continues. It closes the gap
+  # on its own in a few weeks and stays closed afterwards.
+  - type: cron
+    name: insider-form4-sweep
+    runtime: node
+    plan: starter
+    region: oregon
+
+    # 02:10 UTC. Clear of the 20:30 retention run, the 23:30 price refresh and
+    # the 06:20 collection crawl, so the three jobs that talk to SEC or Yahoo
+    # never share a rate budget.
+    schedule: "10 2 * * *"
+
+    buildCommand: npm ci --no-audit --no-fund
+    # 40 minutes, and the ceiling is expected to be reached most nights while
+    # the backlog lasts. The script stops cleanly on it and records what it
+    # covered, so a truncated run is progress rather than a failure.
+    startCommand: >-
+      node server/scripts/collectInsiderFilings.mjs
+      --apply
+      --max-minutes 40
+
+    envVars:
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: SEC_USER_AGENT
+        sync: false
+      # Half of EDGAR's published ten-per-second ceiling, for the same reason
+      # the collection job halves it: the limit is per source address and this
+      # job shares one with the rest of the account's egress.
+      - key: SEC_MAX_REQUESTS_PER_SECOND
+        value: "5"
