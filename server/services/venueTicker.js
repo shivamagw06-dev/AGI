@@ -77,10 +77,40 @@ export function candidateBases(symbol) {
  */
 export function recoverTicker(symbol, issuerName, secByTicker, { registry = null, window = null } = {}) {
   const bases = candidateBases(symbol);
-  if (!bases.length) return { ticker: null, reason: 'no recoverable ticker in this symbol' };
-
   const held = String(issuerName || '').trim();
   if (!held) return { ticker: null, reason: 'holding has no issuer name to check against' };
+
+  // A symbol with nothing to extract is not the end of it. HO1, 8QR, 07WA and
+  // 62C carry no ticker at all - they are venue line numbers - but the holding
+  // still names its issuer, and the registry knows which ticker that issuer
+  // filed under. Hologic is HOLX whether or not the symbol says so.
+  //
+  // Only when the symbol yields nothing, and only on a unique match. A name
+  // that fits two issuers is refused: the point of the register is to stop
+  // guessing, not to move the guess somewhere less visible.
+  if (!bases.length) {
+    if (!registry) return { ticker: null, reason: 'no recoverable ticker in this symbol' };
+    const byName = [];
+    for (const [ticker, entries] of registry) {
+      for (const entry of entries) {
+        if (!sameCompany(entry.issuer_name, held)) continue;
+        if (window && !windowOverlaps(entry, window)) continue;
+        byName.push({ ticker, entry });
+        break;
+      }
+    }
+    const distinct = [...new Set(byName.map((row) => row.ticker))];
+    if (distinct.length === 1) {
+      const { entry } = byName[0];
+      return { ticker: distinct[0], reason: null, via: `the issuer name in SEC filings ${entry.first_seen}..${entry.last_seen}` };
+    }
+    return {
+      ticker: null,
+      reason: distinct.length
+        ? `no ticker in this symbol, and the issuer name fits ${distinct.length} of them: ${distinct.slice(0, 4).join('/')}`
+        : 'no recoverable ticker in this symbol, and no filing names this issuer',
+    };
+  }
 
   const matched = [];
   let via = 'the SEC register';
@@ -144,15 +174,44 @@ export function recoverTicker(symbol, issuerName, secByTicker, { registry = null
 const ABBREVIATIONS = new Map(Object.entries({
   INTL: 'INTERNATIONAL', INTERNATIONALE: 'INTERNATIONAL',
   FINL: 'FINANCIAL', FIN: 'FINANCIAL', SVCS: 'SERVICES', SVC: 'SERVICES',
-  NATL: 'NATIONAL', NAT: 'NATIONAL', RES: 'RESOURCES', RESOURCE: 'RESOURCES',
+  NATL: 'NATIONAL', RES: 'RESOURCES', RESOURCE: 'RESOURCES',
   TECHNOLOGIES: 'TECHNOLOGY', TECH: 'TECHNOLOGY', PHARMACEUTICALS: 'PHARMACEUTICAL',
   PHARM: 'PHARMACEUTICAL', PHARMA: 'PHARMACEUTICAL', THERAPEUTICS: 'THERAPEUTIC',
-  HLDGS: 'HOLDINGS', HLDG: 'HOLDINGS', HOLDING: 'HOLDINGS',
+  HLDGS: 'HOLDINGS', HLDG: 'HOLDINGS', HLDNG: 'HOLDINGS', HLDNGS: 'HOLDINGS', HOLDING: 'HOLDINGS',
   GRP: 'GROUP', INDS: 'INDUSTRIES', IND: 'INDUSTRIES', INDUSTRIE: 'INDUSTRIES',
   COMMUNICATIONS: 'COMMUNICATION', SYS: 'SYSTEMS', SYSTEM: 'SYSTEMS',
   LABS: 'LABORATORIES', LAB: 'LABORATORIES', LABORATORY: 'LABORATORIES',
   MTRS: 'MOTORS', MTR: 'MOTORS', PPTYS: 'PROPERTIES', PPTY: 'PROPERTIES',
   ENTERPRISE: 'ENTERPRISES', BIOSCIENCE: 'BIOSCIENCES', ELECTRIC: 'ELECTRICAL',
+  // Added from refusals that were spelling differences and nothing else:
+  // Shockwave Medical filed as SHOCKWAVE MED, New York Community Bancorp as
+  // NEW YORK CMNTY, Horizon Therapeutics Public as HORIZON THERAPEUTICS PUB.
+  MED: 'MEDICAL', CMNTY: 'COMMUNITY', COMMUNITIES: 'COMMUNITY',
+  PUB: 'PUBLIC', PUBL: 'PUBLIC', CMNCTNS: 'COMMUNICATION',
+  MGMT: 'MANAGEMENT', MGT: 'MANAGEMENT', DEV: 'DEVELOPMENT',
+  MFG: 'MANUFACTURING', SOLUTION: 'SOLUTIONS', PRODUCT: 'PRODUCTS',
+  BANCORPORATION: 'BANCORP', BANCSHARES: 'BANCORP',
+}));
+
+/**
+ * Abbreviations that stand for more than one word.
+ *
+ * A filer writing NAT could mean NATIONAL or NATURAL, and forcing one reading
+ * is worse than admitting both: PIONEER NAT RES became Pioneer *National*
+ * Resources and failed against PIONEER NATURAL RESOURCES, refusing $49bn on a
+ * choice the abbreviation never made.
+ *
+ * A word with alternatives matches if any of them agrees, which is looser than
+ * a single expansion and still far stricter than ignoring the word - the
+ * position in the name must still line up, and every other word must still
+ * match exactly.
+ */
+const AMBIGUOUS = new Map(Object.entries({
+  NAT: ['NATIONAL', 'NATURAL'],
+  AMER: ['AMERICA', 'AMERICAN'],
+  CORPORATE: ['CORPORATE', 'CORPORATION'],
+  GEN: ['GENERAL', 'GENERAL'],
+  INTL: ['INTERNATIONAL'],
 }));
 
 /** Words that identify a filing, not a company. */
@@ -167,13 +226,24 @@ const NOISE = new Set([
   'PREF', 'PREFERRED', 'PFD',
 ]);
 
+/**
+ * A name as a list of words, each with the forms it could stand for.
+ *
+ * A set per word rather than a single string, because an abbreviation can be
+ * honest about being ambiguous. Two words agree when their sets intersect.
+ */
 function tokens(name) {
   return String(name || '')
     .toUpperCase()
     .replace(/[^A-Z0-9 ]+/g, ' ')
     .split(/\s+/)
-    .map((w) => ABBREVIATIONS.get(w) || w)
-    .filter((w) => w && !NOISE.has(w));
+    .filter((w) => w && !NOISE.has(w) && !NOISE.has(ABBREVIATIONS.get(w) || w))
+    .map((w) => new Set(AMBIGUOUS.get(w) || [ABBREVIATIONS.get(w) || w]));
+}
+
+function agrees(a, b) {
+  for (const form of a) if (b.has(form)) return true;
+  return false;
 }
 
 /**
@@ -192,5 +262,5 @@ export function sameCompany(a, b) {
   if (!x.length || !y.length) return false;
   const short = x.length <= y.length ? x : y;
   const long = short === x ? y : x;
-  return short.every((word, i) => word === long[i]);
+  return short.every((word, i) => long[i] && agrees(word, long[i]));
 }

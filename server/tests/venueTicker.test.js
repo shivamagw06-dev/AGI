@@ -201,3 +201,53 @@ test('without a registry the behaviour is exactly as before', () => {
   const r = recoverTicker('MASI*', 'MASIMO CORP', sec);
   assert.equal(r.ticker, null);
 });
+
+const nameRegistry = new Map([
+  ['HOLX', [{ issuer_name: 'HOLOGIC INC', first_seen: '2016-02-01', last_seen: '2026-08-01' }]],
+  ['CFLT', [{ issuer_name: 'Confluent, Inc.', first_seen: '2021-07-01', last_seen: '2026-08-01' }]],
+  ['ACME', [{ issuer_name: 'ACME CORP', first_seen: '2016-01-01', last_seen: '2020-01-01' }]],
+  ['ACMX', [{ issuer_name: 'ACME CORP', first_seen: '2020-02-01', last_seen: '2026-01-01' }]],
+]);
+
+test('a symbol with no ticker in it is recovered from the issuer name', () => {
+  // HO1 is a venue line number and carries nothing to extract. The holding
+  // still names Hologic, and past filings say Hologic filed under HOLX.
+  const r = recoverTicker('HO1', 'HOLOGIC INC', sec, {
+    registry: nameRegistry, window: { earliest: '2019-03-31', latest: '2024-12-31' },
+  });
+  assert.equal(r.ticker, 'HOLX');
+  assert.match(r.via, /issuer name/);
+});
+
+test('a name that fits two tickers is refused, not resolved to the first', () => {
+  // ACME CORP filed under ACME and later ACMX. Over a window covering both,
+  // there is no single right answer and picking one is the guess this whole
+  // module exists to avoid.
+  const r = recoverTicker('8QR', 'ACME CORP', sec, {
+    registry: nameRegistry, window: { earliest: '2016-03-31', latest: '2025-12-31' },
+  });
+  assert.equal(r.ticker, null);
+  assert.match(r.reason, /fits 2 of them/);
+});
+
+test('the window narrows a name that would otherwise be ambiguous', () => {
+  // The same name over a window that only one of the two tickers covers.
+  const r = recoverTicker('8QR', 'ACME CORP', sec, {
+    registry: nameRegistry, window: { earliest: '2016-03-31', latest: '2017-12-31' },
+  });
+  assert.equal(r.ticker, 'ACME');
+});
+
+test('name recovery only runs when the symbol yields nothing', () => {
+  // MASI* has a ticker in it. Falling back to a name search would let an
+  // unrelated issuer with a similar name overrule what the symbol plainly says.
+  const r = recoverTicker('MASI*', 'HOLOGIC INC', sec, { registry: nameRegistry });
+  assert.equal(r.ticker, null);
+  assert.doesNotMatch(String(r.reason), /issuer name fits/);
+});
+
+test('an unrecoverable symbol with no matching issuer says both things', () => {
+  const r = recoverTicker('62C', 'NOBODY AT ALL INC', sec, { registry: nameRegistry });
+  assert.equal(r.ticker, null);
+  assert.match(r.reason, /no filing names this issuer/);
+});
