@@ -60,26 +60,30 @@ console.log(`[venue] SEC lists ${secByTicker.size.toLocaleString()} tickers`);
 
 // ---- holdings wearing a non-US symbol -------------------------------------
 
-const US_SHAPE = /^[A-Z]{1,5}(-[A-Z])?$/;
-const holdings = await all(() => client
-  .from('institutional_holdings')
-  .select('cusip,ticker,issuer_name,report_date,value_usd')
-  .not('ticker', 'is', null)
-  .is('put_call', null)
-  .order('cusip'));
-
+// Found in the database, not by paging the whole table.
+//
+// This read every holdings row - 2.6 million, about two thousand six hundred
+// requests - to keep the two hundred whose ticker is not US-shaped. The same
+// read had already stopped working in the price backfill with `canceling
+// statement due to statement timeout`, and the pattern being matched is one
+// the database can apply while it scans.
 const suspect = new Map();
-for (const h of holdings) {
-  const t = String(h.ticker).toUpperCase();
-  if (US_SHAPE.test(t)) continue;
-  const id = `${h.cusip}|${t}`;
-  const cur = suspect.get(id) || { cusip: h.cusip, ticker: t, issuer_name: h.issuer_name, rows: 0, value: 0, earliest: h.report_date, latest: h.report_date };
-  cur.rows += 1;
-  cur.value += Number(h.value_usd) || 0;
-  if (h.report_date < cur.earliest) cur.earliest = h.report_date;
-  if (h.report_date > cur.latest) cur.latest = h.report_date;
-  if (!cur.issuer_name && h.issuer_name) cur.issuer_name = h.issuer_name;
-  suspect.set(id, cur);
+for (let from = 0; ; from += 1000) {
+  const { data, error } = await client
+    .rpc('institutional_venue_ticker_candidates').range(from, from + 999);
+  if (error) throw new Error(`reading venue candidates: ${error.message}`);
+  for (const row of data || []) {
+    suspect.set(`${row.cusip}|${row.ticker}`, {
+      cusip: row.cusip,
+      ticker: row.ticker,
+      issuer_name: row.issuer_name,
+      rows: Number(row.rows) || 0,
+      value: Number(row.value) || 0,
+      earliest: row.earliest,
+      latest: row.latest,
+    });
+  }
+  if (!data || data.length < 1000) break;
 }
 console.log(`[venue] ${suspect.size} (cusip, non-US ticker) pairs to examine`);
 
