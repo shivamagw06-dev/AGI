@@ -354,19 +354,74 @@ export async function getInstitutionalResearchLayer() {
 // survivors to 100%. Both are replaced by pointInTime.js. Deleted rather than
 // left unused, so neither can be called again by accident.
 
-export async function runInstitutionalBacktest({ managerSlug, topN = 10, transactionCostBps = 10 } = {}) {
-  if (!managerSlug) throw new Error('Choose a manager to run the backtest.');
-  const { client, managers, filings, holdings } = await core();
-  const manager = managers.find((row) => row.slug === managerSlug || row.id === managerSlug);
+/**
+ * Everything one backtest needs, and nothing else.
+ *
+ * This used to call core(), which loads every manager's filings and holdings
+ * and then throws away all but one. That was wasteful at nine hundred thousand
+ * holdings rows and wrong at 2.6 million, because core() truncates twice
+ * without saying so: it caps filings at a thousand when there are now about
+ * eighteen hundred active, and its holdings read is unpaged, so PostgREST's
+ * thousand-row ceiling returns a thousand rows per batch of a hundred filings
+ * instead of the hundred and thirty thousand they hold.
+ *
+ * Neither truncation errors. The backtest would have run on a slice of one
+ * manager's book and reported a return for it.
+ *
+ * Loading per manager is bounded by construction - one fund's filings, and the
+ * holdings that belong to them - so it stays correct however large the table
+ * gets.
+ */
+async function backtestInputs(client, managerSlug, quarters) {
+  const { data: managerRows, error: managerError } = await client
+    .from('institutional_managers').select('*')
+    .or(`slug.eq.${managerSlug},id.eq.${managerSlug}`).limit(1);
+  if (managerError) throw managerError;
+  const manager = managerRows?.[0];
   if (!manager) throw new Error('Tracked manager not found.');
+
+  const { data: filings, error: filingError } = await client
+    .from('institutional_filings').select('*')
+    .eq('manager_id', manager.id).eq('is_active', true)
+    .order('report_date', { ascending: false });
+  if (filingError) throw filingError;
+
   // Ordered by when the market learned of each filing, not by the quarter it
   // covers. A 13F-HR/A for an older quarter is accepted after later quarters'
   // originals, so report_date order produced periods whose exit preceded their
-  // entry - a negative holding period, compounded without complaint. Superseded
-  // versions are already excluded upstream by the is_active filter.
-  const managerFilings = orderByAcceptance(filingMap(filings).get(manager.id) || []).slice(-12);
-  const ids = new Set(managerFilings.map((row) => row.id));
-  const managerHoldings = holdings.filter((row) => ids.has(row.filing_id));
+  // entry - a negative holding period, compounded without complaint.
+  const chosen = orderByAcceptance(filings || []).slice(-quarters);
+
+  const holdings = [];
+  for (const filing of chosen) {
+    // Paged. One filing can hold five thousand positions - BlackRock reports
+    // about 5,700 - and an unpaged read returns the first thousand of them,
+    // which is a different portfolio with a plausible-looking return.
+    for (let from = 0; ; from += 1000) {
+      const { data, error } = await client.from('institutional_holdings')
+        .select('*').eq('filing_id', filing.id).range(from, from + 999);
+      if (error) throw error;
+      holdings.push(...(data || []));
+      if (!data || data.length < 1000) break;
+      if (holdings.length > 500_000) throw new Error('refusing to page past 500k holdings for one backtest');
+    }
+  }
+  return { manager, filings: chosen, holdings };
+}
+
+export async function runInstitutionalBacktest({
+  managerSlug, topN = 10, transactionCostBps = 10, quarters = 12,
+} = {}) {
+  if (!managerSlug) throw new Error('Choose a manager to run the backtest.');
+  // Bounded at both ends. Fewer than two periods cannot produce a holding
+  // period at all, and the ceiling is the depth of the price history rather
+  // than of the filings - a quarter whose positions cannot be priced is
+  // excluded and reported, so asking for more than the prices cover buys a
+  // longer list of exclusions and no more test.
+  const depth = Math.max(2, Math.min(Number(quarters) || 12, 48));
+  const client = db();
+  const { manager, filings: managerFilings, holdings: managerHoldings } =
+    await backtestInputs(client, managerSlug, depth);
   const targets = [...new Set([...managerHoldings.map(tickerOf).filter(Boolean), ...BENCHMARKS])];
   const prices = new Map();
   for (let index = 0; index < targets.length; index += 100) {
