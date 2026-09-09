@@ -76,9 +76,20 @@ console.log(`[prices] mode=${REFRESH ? `refresh (last ${WINDOW_DAYS} days)` : 'b
 // rows. The identity chain is joined in the same pass, so a reassigned CUSIP
 // still resolves to one security_key without a second full table in memory.
 console.log('[prices] reading price targets...');
-const { data: targets, error: targetError } = await client.rpc('institutional_price_targets');
-if (targetError) throw new Error(`reading price targets: ${targetError.message}`);
-if (!targets?.length) throw new Error('no price targets returned; refusing to run against nothing');
+// Paged. PostgREST caps a response at a thousand rows, and a set-returning
+// function is no exception - the first run of this returned exactly 1,000 of
+// 5,136 targets and reported it as the whole universe. Nothing errored: the
+// backfill would have fetched a fifth of the symbols and called itself done.
+const targets = [];
+for (let from = 0; ; from += 1000) {
+  const { data, error } = await client.rpc('institutional_price_targets').range(from, from + 999);
+  if (error) throw new Error(`reading price targets: ${error.message}`);
+  targets.push(...(data || []));
+  if (!data || data.length < 1000) break;
+  if (targets.length > 100_000) throw new Error('refusing to page past 100k price targets');
+}
+if (!targets.length) throw new Error('no price targets returned; refusing to run against nothing');
+console.log(`[prices] ${targets.length.toLocaleString()} price target row(s)`);
 
 const seen = new Map();
 for (const row of targets) {
