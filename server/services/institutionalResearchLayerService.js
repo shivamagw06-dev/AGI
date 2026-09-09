@@ -442,16 +442,38 @@ export async function runInstitutionalBacktest({
     await backtestInputs(client, managerSlug, depth);
   const targets = [...new Set([...managerHoldings.map(tickerOf).filter(Boolean), ...BENCHMARKS])];
   const prices = new Map();
-  for (let index = 0; index < targets.length; index += 100) {
-    // Matched on ticker, not on security_key. This asked for security_key
-    // while passing tickers, which worked only because collectPrices wrote
-    // the ticker into that column. The backfill writes the canonical
-    // CUSIP-derived key there, as every other table means it, so the old
-    // query would have matched none of its rows - the backtester would have
-    // run on the handful of legacy symbols and silently ignored the rest.
-    const { data, error } = await client.from('institutional_security_prices').select('ticker,price_date,adjusted_close').in('ticker', targets.slice(index, index + 100)).order('price_date');
-    if (error) throw error;
-    (data || []).forEach((row) => { const rows = prices.get(row.ticker) || []; rows.push(row); prices.set(row.ticker, rows); });
+  // Paged, and ordered on both columns.
+  //
+  // This read a hundred tickers at a time with no range, so PostgREST's
+  // thousand-row ceiling returned the earliest thousand rows across all of
+  // them - roughly forty sessions each. Because the trading calendar is
+  // derived from the benchmark's own prints, SPY arrived with two months of
+  // history and every period was skipped for having no tradable session after
+  // acceptance. Two identical runs then disagreed by a day, which is what a
+  // cap boundary with no stable order looks like.
+  //
+  // Ordered by ticker and then date because paging needs a total order:
+  // ordering by date alone leaves rows that share a date free to move between
+  // pages, so some are read twice and others not at all.
+  for (let index = 0; index < targets.length; index += 50) {
+    const slice = targets.slice(index, index + 50);
+    for (let from = 0; ; from += 1000) {
+      // Matched on ticker, not on security_key. This asked for security_key
+      // while passing tickers, which worked only because collectPrices wrote
+      // the ticker into that column. The backfill writes the canonical
+      // CUSIP-derived key there, as every other table means it, so the old
+      // query would have matched none of its rows - the backtester would have
+      // run on the handful of legacy symbols and silently ignored the rest.
+      const { data, error } = await client.from('institutional_security_prices')
+        .select('ticker,price_date,adjusted_close')
+        .in('ticker', slice)
+        .order('ticker')
+        .order('price_date')
+        .range(from, from + 999);
+      if (error) throw error;
+      (data || []).forEach((row) => { const rows = prices.get(row.ticker) || []; rows.push(row); prices.set(row.ticker, rows); });
+      if (!data || data.length < 1000) break;
+    }
   }
 
   // The trading calendar, derived from the benchmark's own price history rather
