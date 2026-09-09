@@ -23,6 +23,7 @@ import { createSupabaseAdmin, getSupabaseAdminCredentials } from '../lib/supabas
 import { scheduleSecRequest } from '../services/secRateLimiter.js';
 import { parseFormFour, rawDocumentPath } from '../services/formFour.js';
 import { planScans, newFilings, abortReason, isoDate } from '../services/insiderScanPlan.js';
+import { plausibleFilingDate } from '../services/insiderValuation.js';
 
 const APPLY = process.argv.includes('--apply');
 const argOf = (flag) => { const i = process.argv.indexOf(flag); return i >= 0 ? process.argv[i + 1] : null; };
@@ -106,8 +107,8 @@ if (!APPLY) {
       const subs = await secJson(`${SEC_DATA}/submissions/CIK${plan.cik}.json`);
       const recent = subs?.filings?.recent || {};
       const rows = (recent.form || []).map((form, i) => ({
-        form, accession: recent.accessionNumber?.[i], filedAt: isoDate(recent.filingDate?.[i]),
-        reportDate: isoDate(recent.reportDate?.[i]), document: recent.primaryDocument?.[i] || '',
+        form, accession: recent.accessionNumber?.[i], filedAt: plausibleFilingDate(isoDate(recent.filingDate?.[i])),
+        reportDate: plausibleFilingDate(isoDate(recent.reportDate?.[i])), document: recent.primaryDocument?.[i] || '',
       }));
       const fresh = newFilings(rows, new Set(), { limit: PER_ISSUER });
       console.log(`  ${plan.ticker.padEnd(8)} ${String(fresh.length).padStart(3)} Form 4 filing(s) in the recent index`);
@@ -148,8 +149,8 @@ for (const plan of plans) {
     const subs = await secJson(`${SEC_DATA}/submissions/CIK${plan.cik}.json`);
     const recent = subs?.filings?.recent || {};
     rows = (recent.form || []).map((form, i) => ({
-      form, accession: recent.accessionNumber?.[i], filedAt: isoDate(recent.filingDate?.[i]),
-      reportDate: isoDate(recent.reportDate?.[i]), document: recent.primaryDocument?.[i] || '',
+      form, accession: recent.accessionNumber?.[i], filedAt: plausibleFilingDate(isoDate(recent.filingDate?.[i])),
+      reportDate: plausibleFilingDate(isoDate(recent.reportDate?.[i])), document: recent.primaryDocument?.[i] || '',
     }));
   } catch (error) {
     tally.indexFailed += 1;

@@ -59,6 +59,8 @@ const num = (value) => {
 };
 
 /** What the code means, and whether a decision sits behind it. */
+import { summariseTransactions } from './insiderValuation.js';
+
 export const TRANSACTION_CODES = {
   P: { label: 'Open-market purchase', discretionary: true, direction: 'buy' },
   S: { label: 'Open-market sale', discretionary: true, direction: 'sell' },
@@ -151,8 +153,9 @@ export function parseFormFour(xml) {
     transactions: rows,
     // The summary a reader actually wants, computed once so every caller
     // draws the same line between a decision and a vesting event.
-    discretionary_buy_value: rows.filter((r) => r.discretionary && r.direction === 'acquire').reduce((s, r) => s + (r.value_usd || 0), 0),
-    discretionary_sell_value: rows.filter((r) => r.discretionary && r.direction === 'dispose').reduce((s, r) => s + (r.value_usd || 0), 0),
-    has_discretionary: rows.some((r) => r.discretionary),
+    // Shared with the bulk importer, so both routes report one figure for a
+    // quarter. Derivatives and implausibly priced rows are excluded from the
+    // sums and counted; see insiderValuation.
+    ...summariseTransactions(rows),
   };
 }

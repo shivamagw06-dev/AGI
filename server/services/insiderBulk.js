@@ -19,6 +19,7 @@
  * quarter, so this covers history and EDGAR covers this week.
  */
 import { TRANSACTION_CODES } from './formFour.js';
+import { summariseTransactions, plausibleFilingDate } from './insiderValuation.js';
 
 const MONTHS = {
   JAN: '01', FEB: '02', MAR: '03', APR: '04', MAY: '05', JUN: '06',
@@ -40,7 +41,7 @@ export function bulkDate(value) {
   if (!month) return null;
   const day = Number(match[1]);
   if (day < 1 || day > 31) return null;
-  return `${match[3]}-${month}-${match[1]}`;
+  return plausibleFilingDate(`${match[3]}-${month}-${match[1]}`);
 }
 
 /** A number, where blank and absent are both null rather than zero. */
@@ -185,9 +186,7 @@ export function assembleFilings({ submissions, owners, nonDeriv, deriv, tickers 
         planned: String(submission.AFF10B5ONE || '').trim() === '1',
         owners: people,
         transactions: rows,
-        discretionary_buy_value: rows.filter((r) => r.discretionary && r.direction === 'acquire').reduce((s, r) => s + (r.value_usd || 0), 0),
-        discretionary_sell_value: rows.filter((r) => r.discretionary && r.direction === 'dispose').reduce((s, r) => s + (r.value_usd || 0), 0),
-        has_discretionary: rows.some((r) => r.discretionary),
+        ...summariseTransactions(rows),
         // Recorded so a filing's route is auditable, without the panel needing
         // to care which one it came by.
         source: 'sec_bulk_form345',
