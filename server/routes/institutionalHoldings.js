@@ -19,7 +19,7 @@ import {
 import {
   createInstitutionalGroup, createInstitutionalWatchlist, getInstitutionalResearchAdmin,
   getInstitutionalResearchLayer, getInstitutionalWorkspace, markPersonalizedAlert,
-  refreshInstitutionalResearchLayer, reviewInstitutionalBrief, runInstitutionalBacktest,
+  readOrRunBacktest, refreshInstitutionalResearchLayer, reviewInstitutionalBrief, runInstitutionalBacktest,
 } from '../services/institutionalResearchLayerService.js';
 import {
   clearScreenerCache, evaluateFundPerformance, getAccumulationHeatMap,
@@ -213,6 +213,20 @@ export default function createInstitutionalHoldingsRouter() {
 
   router.get('/research-layer', async (_req, res) => { try { return res.json(await getInstitutionalResearchLayer()); } catch (error) { return sendError(res, error); } });
   router.post('/backtests', requireAdmin, async (req, res) => { try { return res.json(await runInstitutionalBacktest(req.body || {})); } catch (error) { return sendError(res, error, 400); } });
+
+  // Read for signed-in clients. Serves the day's stored run and computes it
+  // only when there is none, because a backtest reads several hundred
+  // thousand price rows - not something to put behind a button that can be
+  // held down. The admin POST above still forces a fresh computation.
+  router.get('/backtests/:managerSlug', requireUser, async (req, res) => {
+    try {
+      return res.json(await readOrRunBacktest({
+        managerSlug: req.params.managerSlug,
+        topN: req.query.topN,
+        quarters: req.query.quarters,
+      }));
+    } catch (error) { return sendError(res, error, 400); }
+  });
   router.get('/workspace', requireUser, async (req, res) => { try { return res.json(await getInstitutionalWorkspace(req.authUser.id)); } catch (error) { return sendError(res, error); } });
   router.post('/workspace/groups', requireUser, async (req, res) => { try { return res.json(await createInstitutionalGroup(req.authUser.id, req.body || {})); } catch (error) { return sendError(res, error, 400); } });
   router.post('/workspace/watchlists', requireUser, async (req, res) => { try { return res.json(await createInstitutionalWatchlist(req.authUser.id, req.body || {})); } catch (error) { return sendError(res, error, 400); } });

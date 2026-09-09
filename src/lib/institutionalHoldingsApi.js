@@ -28,7 +28,12 @@ export const searchInstitutionalSecurities = (q, limit = 8) =>
   request(`/securities/search?q=${encodeURIComponent(q)}&limit=${limit}`);
 export const getInstitutionalDecisionIntelligence = () => request('/decision-intelligence');
 export const getInstitutionalResearchLayer = () => request('/research-layer');
-export const runInstitutionalBacktest = (body) => request('/backtests', { method: 'POST', body, timeoutMs: 600_000 });
+// The POST forces a fresh computation and is admin-only; it was declared here
+// without `admin: true`, so it sent no token and could only ever have returned
+// 401. Client surfaces use the GET, which serves the day's stored run.
+export const runInstitutionalBacktest = (body) => request('/backtests', { method: 'POST', body, admin: true, timeoutMs: 600_000 });
+export const getInstitutionalBacktest = (slug, { quarters = 12, topN = 10 } = {}) =>
+  request(`/backtests/${encodeURIComponent(slug)}?quarters=${quarters}&topN=${topN}`, { auth: true, timeoutMs: 300_000 });
 export const getInstitutionalWorkspace = () => request('/workspace', { auth: true });
 export const createInstitutionalGroup = (body) => request('/workspace/groups', { method: 'POST', body, auth: true });
 export const createInstitutionalWatchlist = (body) => request('/workspace/watchlists', { method: 'POST', body, auth: true });

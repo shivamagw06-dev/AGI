@@ -602,7 +602,10 @@ export async function runInstitutionalBacktest({
     ? { total_return: compound('net_return'), spy_return: compound('spy_return'), qqq_return: compound('qqq_return'), excess_vs_spy: compound('net_return') - compound('spy_return'), periods: periods.length, average_coverage: coverage, worst_period_coverage: profile.worst, worst_coverage_period: profile.worstPeriod }
     : { reason: notCalculableReason, blockers, periods: periods.length, average_coverage: coverage, worst_period_coverage: profile.worst, worst_coverage_period: profile.worstPeriod, skipped };
 
-  const strategyKey = `top_${topN}_${crypto.createHash('sha1').update(String(transactionCostBps)).digest('hex').slice(0, 6)}`;
+  // Depth is part of the strategy, not a detail of how it was run. Without it
+  // a twelve-quarter and a forty-quarter test for one manager on one day share
+  // a key and overwrite each other, and the stored row cannot say which it is.
+  const strategyKey = `top_${topN}_q${depth}_${crypto.createHash('sha1').update(String(transactionCostBps)).digest('hex').slice(0, 6)}`;
   const payload = {
     manager_id: manager.id,
     as_of_date: dateOnly(new Date()),
@@ -686,4 +689,48 @@ export function startInstitutionalResearchLayerAutomation() {
   const initial = setTimeout(execute, Math.max(60_000, number(process.env.INSTITUTIONAL_RESEARCH_INITIAL_DELAY_MS) || 7 * 60_000));
   const recurring = setInterval(execute, Math.max(6 * 60 * 60_000, number(process.env.INSTITUTIONAL_RESEARCH_INTERVAL_MS) || 24 * 60 * 60_000));
   initial.unref?.(); recurring.unref?.();
+}
+
+/**
+ * Today's stored run for these parameters, computing it once if absent.
+ *
+ * A backtest reads several hundred thousand price rows and takes the better
+ * part of a minute on this instance, which is not something to put behind a
+ * button a client can hold down. Runs are already persisted per manager, day
+ * and strategy, so the first request of the day pays for it and the rest read
+ * the row.
+ *
+ * Deliberately not a cache with its own expiry: the key is the date, so a run
+ * is current by construction and yesterday's cannot be served as today's.
+ */
+export async function readOrRunBacktest({ managerSlug, topN = 10, transactionCostBps = 10, quarters = 12 } = {}) {
+  if (!managerSlug) throw new Error('Choose a manager to run the backtest.');
+  const depth = Math.max(2, Math.min(Number(quarters) || 12, 48));
+  const limit = Math.max(1, Math.min(50, Number(topN) || 10));
+  const client = db();
+
+  const lookup = client.from('institutional_managers').select('id,slug,display_name');
+  const { data: managerRows, error: managerError } = await (isUuid(managerSlug)
+    ? lookup.eq('id', managerSlug)
+    : lookup.eq('slug', managerSlug)).limit(1);
+  if (managerError) throw managerError;
+  const manager = managerRows?.[0];
+  if (!manager) throw new Error('Tracked manager not found.');
+
+  const strategyKey = `top_${limit}_q${depth}_${crypto.createHash('sha1').update(String(transactionCostBps)).digest('hex').slice(0, 6)}`;
+  const { data: stored, error: storedError } = await client
+    .from('institutional_backtest_runs').select('*')
+    .eq('manager_id', manager.id)
+    .eq('as_of_date', dateOnly(new Date()))
+    .eq('strategy_key', strategyKey)
+    .limit(1);
+  // A failed lookup recomputes rather than failing. The run is the product;
+  // the cache is an optimisation and must not be able to take it down.
+  if (storedError) console.warn(`[research-layer] stored backtest lookup: ${storedError.message}`);
+  if (stored?.[0]) {
+    return { ...stored[0], manager: { display_name: manager.display_name, slug: manager.slug }, from_cache: true };
+  }
+
+  const run = await runInstitutionalBacktest({ managerSlug, topN: limit, transactionCostBps, quarters: depth });
+  return { ...run, from_cache: false };
 }
