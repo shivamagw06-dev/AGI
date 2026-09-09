@@ -10,6 +10,7 @@ import { coverageProfile, backtestBlockers } from './backtestCoverage.js';
 import { parseFormFour, rawDocumentPath } from './formFour.js';
 import { classifySic } from './sicSectors.js';
 import { classificationQueue } from './classificationQueue.js';
+import { restatements, restated } from './sectorRestatement.js';
 
 const SEC_DATA = 'https://data.sec.gov';
 const SEC_ARCHIVES = 'https://www.sec.gov/Archives/edgar/data';
@@ -190,6 +191,22 @@ function filingMap(filings) {
   return result;
 }
 
+/**
+ * Re-derive stored sectors from stored SIC codes, where they disagree with
+ * the current map. A no-op on a table that already agrees.
+ */
+async function restateStoredSectors(client) {
+  const rows = await paged(
+    () => client.from('institutional_security_classifications').select('*').order('security_key').order('valid_from'),
+    { label: 'classifications to restate' },
+  );
+  const changes = restatements(rows, classifySic);
+  if (!changes.length) return 0;
+  await batches(client, 'institutional_security_classifications', changes.map(restated), 'security_key,valid_from,source');
+  console.log(`[institutional-v3] ${changes.length} stored sector(s) restated against the current map`);
+  return changes.length;
+}
+
 export async function collectClassifications(client, holdings, companies, limit) {
   const distinct = [...new Map(holdings.filter((row) => tickerOf(row)).map((row) => [keyOf(row), row])).values()];
   // What the table already holds, so the queue can skip it. Without this the
@@ -204,6 +221,13 @@ export async function collectClassifications(client, holdings, companies, limit)
     securities: distinct.map((row) => ({ key: keyOf(row), row })),
     classified, limit,
   }).map((entry) => entry.row);
+  // Before anything new is fetched, bring what is already stored into line
+  // with the current map. The queue measures how long ago a row was written,
+  // which cannot notice that the map itself changed - so a sector map fix
+  // would otherwise never reach the rows written before it, and those are the
+  // oldest and largest holdings in the book. Costs one read and no SEC
+  // traffic: sic_code is stored, and the sector is a function of it.
+  await restateStoredSectors(client);
   console.log(`[institutional-v3] ${distinct.length} distinct securities, ${classified.length} classified, ${securities.length} queued`);
 
   const output = [];
