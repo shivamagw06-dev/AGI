@@ -11,6 +11,7 @@ import { summariseInsiderFilings, insiderHeadline } from './insiderSummary.js';
 import { topTrades } from './topTrades.js';
 import { rowsFromBlock, needsArchive, archiveFiles, selectThirteenF } from './filingHistory.js';
 import { ingestPlan } from './filingBackfillPlan.js';
+import { noticesFromBlock, filingPosture, postureMessage } from './filingNotice.js';
 
 const SEC_ROOT = 'https://www.sec.gov';
 const SEC_DATA = 'https://data.sec.gov';
@@ -1731,9 +1732,23 @@ async function performInstitutionalRefresh({ managerSlug, quarters = 12, refetch
       for (const filing of plan.fetch) filings.push(await ingestFiling(client, manager, filing));
       const newestReport = filingRows.map((row) => row.report_date).sort().reverse()[0];
       const staleCutoff = new Date(Date.now() - (240 * 24 * 60 * 60 * 1000)).toISOString().slice(0, 10);
-      const status = newestReport < staleCutoff ? 'stale' : 'success';
-      await client.from('institutional_managers').update({ last_refresh_at: new Date().toISOString(), last_successful_refresh_at: new Date().toISOString(), last_refresh_status: status, last_refresh_error: status === 'stale' ? `Latest available 13F reports ${newestReport}.` : null }).eq('id', manager.id);
-      const done = { manager: manager.display_name, slug: manager.slug, cik: manager.cik, ok: true, status, latest_report_date: newestReport, filings, skipped: plan.skipped, available: plan.total };
+
+      // A notice newer than the newest holdings report means this manager is
+      // not late - it is reporting through a different filer, and no further
+      // 13F-HR is coming under this CIK. Saying 'stale' invites waiting for an
+      // update that will never arrive, while the page shows an old book as if
+      // it were current.
+      const notices = noticesFromBlock(submissions?.filings?.recent);
+      const posture = filingPosture({ newestHoldingsReport: newestReport, notices });
+
+      const status = posture.posture === 'reports_elsewhere'
+        ? 'reports_elsewhere'
+        : (newestReport < staleCutoff ? 'stale' : 'success');
+      const message = postureMessage({ ...posture, newestHoldingsReport: newestReport })
+        || (status === 'stale' ? `Latest available 13F reports ${newestReport}.` : null);
+
+      await client.from('institutional_managers').update({ last_refresh_at: new Date().toISOString(), last_successful_refresh_at: new Date().toISOString(), last_refresh_status: status, last_refresh_error: message }).eq('id', manager.id);
+      const done = { manager: manager.display_name, slug: manager.slug, cik: manager.cik, ok: true, status, latest_report_date: newestReport, filings, skipped: plan.skipped, available: plan.total, notice_period: posture.notice_period };
       // Announced as it completes rather than only in the final return. A run
       // that hits its ceiling abandons that return, and without this the record
       // reported zero managers for work already committed to the database.
