@@ -12,6 +12,7 @@ import { topTrades } from './topTrades.js';
 import { rowsFromBlock, needsArchive, archiveFiles, selectThirteenF } from './filingHistory.js';
 import { ingestPlan } from './filingBackfillPlan.js';
 import { noticesFromBlock, filingPosture, postureMessage } from './filingNotice.js';
+import { scanOrder, mergeByWindow } from './managerCiks.js';
 
 const SEC_ROOT = 'https://www.sec.gov';
 const SEC_DATA = 'https://data.sec.gov';
@@ -1204,7 +1205,11 @@ async function createAlerts(client, manager, filing, changes) {
 }
 
 async function ingestFiling(client, manager, source) {
-  const archive = await filingDocuments(manager.cik, source.accession_number);
+  // EDGAR stores a filing under the directory of the CIK that filed it, which
+  // for a predecessor is not the manager's current CIK. Getting this wrong
+  // returns a 404 for every historical filing, which reads as a filer that
+  // never filed rather than as a wrong URL.
+  const archive = await filingDocuments(source.source_cik || manager.cik, source.accession_number);
   const infoDocument = archive.documents.find((doc) => /<(?:\w+:)?infoTable[\s>]/i.test(doc.text));
   if (!infoDocument) throw new Error(`No 13F information table found in ${source.accession_number}`);
   let rawRows = collapseDuplicateRows(parseInformationTable(infoDocument.text, 1));
@@ -1709,11 +1714,52 @@ async function performInstitutionalRefresh({ managerSlug, quarters = 12, refetch
   // finished is the only number available, and a truncated run reports itself
   // as having covered everything it attempted.
   if (onRoster) { try { onRoster(selected.length); } catch { /* telemetry must never break collection */ } }
+
+  // Read once for the whole roster rather than per manager. A failure here
+  // leaves every manager on its own CIK, which is the behaviour before this
+  // existed - degraded, not broken.
+  const cikRows = new Map();
+  {
+    const { data, error } = await client
+      .from('institutional_manager_ciks')
+      .select('manager_id,cik,role,effective_from,effective_to,label');
+    if (error) console.warn(`[institutional-holdings] manager CIKs: ${error.message}`);
+    for (const row of data || []) {
+      if (!cikRows.has(row.manager_id)) cikRows.set(row.manager_id, []);
+      cikRows.get(row.manager_id).push(row);
+    }
+  }
   const results = await mapWithConcurrency(selected, 3, async (manager) => {
     await client.from('institutional_managers').update({ last_refresh_at: new Date().toISOString(), last_refresh_status: 'running', last_refresh_error: null }).eq('id', manager.id);
     try {
-      const submissions = await secFetch(`${SEC_DATA}/submissions/CIK${cleanCik(manager.cik)}.json`, true);
-      const filingRows = await recent13fFilings(submissions, quarters, manager.cik);
+      // A manager's 13F reporting can move between legal entities. Every CIK
+      // it has filed under is scanned, primary first, and each one's filings
+      // are accepted only for the report dates its declared window covers.
+      const order = scanOrder(manager.cik, cikRows.get(manager.id) || []);
+      const collected = [];
+      let submissions = null;
+      for (const entry of order) {
+        const payload = await secFetch(`${SEC_DATA}/submissions/CIK${cleanCik(entry.cik)}.json`, true);
+        // The notice check reads the manager's own CIK: a predecessor filing
+        // notices says nothing about where the current book is reported.
+        if (entry.role === 'primary' || !submissions) submissions = payload;
+        const rows = await recent13fFilings(payload, quarters, entry.cik);
+        collected.push({ entry, filings: rows.map((row) => ({ ...row, source_cik: entry.cik })) });
+      }
+
+      const merged = mergeByWindow(collected);
+      for (const conflict of merged.conflicts) {
+        // Declared windows should make this impossible, so it means a boundary
+        // is wrong. Reported rather than resolved silently.
+        console.warn(`[institutional-holdings] ${manager.slug} ${conflict.report_date}: claimed by ${conflict.kept} and ${conflict.dropped}; kept ${conflict.kept}`);
+      }
+      if (merged.outside.length) {
+        console.warn(`[institutional-holdings] ${manager.slug}: ${merged.outside.length} filing(s) outside every CIK window, oldest ${merged.outside.map((row) => row.report_date).sort()[0]}`);
+      }
+
+      // Re-selected across the merged set, so the newest N periods are the
+      // newest overall rather than the newest from whichever CIK ran last.
+      const filingRows = selectThirteenF(merged.filings, quarters);
       if (!filingRows.length) throw new Error('No Form 13F filings were found for this SEC filer.');
       // What is already stored, so the run does not re-download tables that
       // cannot change. At twelve quarters this saves about twelve hundred
