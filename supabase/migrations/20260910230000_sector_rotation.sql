@@ -32,7 +32,7 @@ as $$
   -- collapsed defensively and so does this: were an amendment and its original
   -- both left active, that manager's current quarter would be counted twice
   -- and its weights would carry double into everyone else's.
-  one_per_period as (
+  with one_per_period as (
     select distinct on (filings.manager_id, filings.report_date)
       filings.id,
       filings.manager_id,
