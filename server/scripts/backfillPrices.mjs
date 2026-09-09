@@ -69,32 +69,29 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 // ---- what we hold ---------------------------------------------------------
 
 console.log(`[prices] mode=${REFRESH ? `refresh (last ${WINDOW_DAYS} days)` : 'backfill (full history)'} max-age=${MAX_AGE_DAYS}d`);
-console.log('[prices] reading holdings...');
-const holdings = await all(() => client
-  .from('institutional_holdings')
-  .select('cusip,ticker,report_date')
-  .not('ticker', 'is', null)
-  .is('put_call', null)
-  .order('cusip'));
-console.log(`[prices] ${holdings.length.toLocaleString()} priced-instrument holding rows`);
+// One row per security and ticker with the dates held, aggregated in the
+// database. This used to page every holdings row through PostgREST and reduce
+// them here; at 2.62M rows that stopped working - `canceling statement due to
+// statement timeout` - and the answer it wanted was only ever a few thousand
+// rows. The identity chain is joined in the same pass, so a reassigned CUSIP
+// still resolves to one security_key without a second full table in memory.
+console.log('[prices] reading price targets...');
+const { data: targets, error: targetError } = await client.rpc('institutional_price_targets');
+if (targetError) throw new Error(`reading price targets: ${targetError.message}`);
+if (!targets?.length) throw new Error('no price targets returned; refusing to run against nothing');
 
-console.log('[prices] reading identity chain...');
-const chain = await all(() => client.from('sec_13f_identity_chain').select('cusip,security_key').order('cusip'));
-const keyByCusip = new Map(chain.map((r) => [r.cusip, r.security_key]));
-
-// Collapse to one row per (security_key, ticker) with the earliest date held.
 const seen = new Map();
-for (const h of holdings) {
-  const key = keyByCusip.get(h.cusip) || h.cusip;
-  if (!key) continue;
-  const id = `${key}|${h.ticker}`;
-  const prev = seen.get(id);
-  if (!prev) {
-    seen.set(id, { security_key: key, ticker: h.ticker, first_report_date: h.report_date, last_report_date: h.report_date });
-    continue;
-  }
-  if (h.report_date && h.report_date < prev.first_report_date) prev.first_report_date = h.report_date;
-  if (h.report_date && h.report_date > prev.last_report_date) prev.last_report_date = h.report_date;
+for (const row of targets) {
+  const key = String(row.security_key || '').trim();
+  if (!key || !row.ticker) continue;
+  // Still keyed on both. One security can be held under more than one ticker
+  // across a decade of filings, and each needs its own price history.
+  seen.set(`${key}|${row.ticker}`, {
+    security_key: key,
+    ticker: row.ticker,
+    first_report_date: row.first_report_date,
+    last_report_date: row.last_report_date,
+  });
 }
 console.log(`[prices] ${seen.size.toLocaleString()} distinct (security_key, ticker) pairs`);
 
