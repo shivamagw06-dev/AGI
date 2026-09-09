@@ -148,15 +148,26 @@ for (const row of existing) {
 // and written as an open-ended claim on a symbol nobody holds any more,
 // blocking whichever security takes it over next.
 //
-// One row, because that is all the question needs.
+// Asked of institutional_filings, not institutional_holdings. The holdings
+// table has 2.6M rows and no index on report_date alone, so even `order by
+// report_date desc limit 1` exceeds the statement timeout - the third query
+// today that was fine at the old size and is not at this one.
+//
+// Filings carry the same as-of date in about two thousand rows. Where the two
+// differ they differ safely: a filing whose table could not be parsed has a
+// report_date and no holdings, so the filings maximum can only be newer, and a
+// newer as-of date closes windows rather than leaving them open. An
+// over-closed window is a mapping that stops early; an over-open one blocks
+// whichever security takes the symbol over next.
 const { data: newestRows, error: newestError } = await client
-  .from('institutional_holdings')
+  .from('institutional_filings')
   .select('report_date')
+  .eq('is_active', true)
   .order('report_date', { ascending: false })
   .limit(1);
 if (newestError) throw new Error(`reading the newest report date: ${newestError.message}`);
 const latestReportDate = newestRows?.[0]?.report_date || '';
-if (!latestReportDate) throw new Error('no holdings found; refusing to propose windows against an unknown as-of date');
+if (!latestReportDate) throw new Error('no active filings found; refusing to propose windows against an unknown as-of date');
 
 const writes = [];
 const conflicts = [];
