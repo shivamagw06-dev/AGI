@@ -55,6 +55,13 @@ jobs:
           # the server lived in a container left CREATE EXTENSION reporting
           # 'extension "pgtap" is not available'. Co-locating them is simpler
           # than baking a custom image.
+          # The runner image ships Google's Chrome apt repository, and it is
+          # currently serving a Packages.gz whose hash does not match its own
+          # Release file. Under set -e that fails apt-get update outright, so
+          # both of these jobs died installing Postgres over a browser neither
+          # of them uses. Dropped rather than tolerated with || true, which
+          # would also swallow a real failure to reach the Postgres archive.
+          sudo rm -f /etc/apt/sources.list.d/google-chrome.list
           sudo apt-get update -qq
           # Extensions the chain actually creates: pgcrypto (in contrib) and
           # vector. pgTAP is for the tests themselves. Installed together so a
@@ -518,6 +525,13 @@ jobs:
       - name: Start Postgres with pgTAP on the runner
         run: |
           set -euo pipefail
+          # The runner image ships Google's Chrome apt repository, and it is
+          # currently serving a Packages.gz whose hash does not match its own
+          # Release file. Under set -e that fails apt-get update outright, so
+          # both of these jobs died installing Postgres over a browser neither
+          # of them uses. Dropped rather than tolerated with || true, which
+          # would also swallow a real failure to reach the Postgres archive.
+          sudo rm -f /etc/apt/sources.list.d/google-chrome.list
           sudo apt-get update -qq
           # pgvector as well as pgTAP: supabase_shims.sql creates the vector
           # extension, and it is shared with the job above, so a job that omits
