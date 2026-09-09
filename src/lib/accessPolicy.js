@@ -109,6 +109,9 @@ const GATED_PREFIXES = [
   // but not ours to publish openly, and it is written for clients rather than
   // for search engines.
   ['/index-rebalance', 'hedge_fund'],
+  // A backtest reads several hundred thousand price rows to produce one
+  // number. Behind the gate so it is run by clients rather than by crawlers.
+  ['/manager-backtest', 'hedge_fund'],
   ['/live-alpha', 'live_alpha'],
   ['/market-intelligence', 'market_intelligence'],
   ['/market-sector-intelligence', 'market_intelligence'],
