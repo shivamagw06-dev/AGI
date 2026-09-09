@@ -109,10 +109,54 @@ async function batches(client, table, rows, onConflict, size = 500) {
   }
 }
 
-async function core() {
+/**
+ * Page a query past PostgREST's thousand-row ceiling.
+ *
+ * The ceiling is silent: a query that would return five thousand rows returns
+ * a thousand and reports success. Every read in this file that could exceed it
+ * has to page, and every paged read needs a total order or rows move between
+ * pages - some read twice, others not at all.
+ */
+export async function paged(build, { pageSize = 1000, maxRows = 200_000, label = 'query' } = {}) {
+  const rows = [];
+  for (let from = 0; from < maxRows; from += pageSize) {
+    const { data, error } = await build().range(from, from + pageSize - 1);
+    if (error) throw error;
+    rows.push(...(data || []));
+    if (!data || data.length < pageSize) return rows;
+  }
+  // Loudly, because the whole point of this helper is that a short answer must
+  // not be able to pass for a complete one.
+  throw new Error(`${label} exceeded its ${maxRows}-row ceiling; the result would have been incomplete`);
+}
+
+/**
+ * The shared read behind the research layer.
+ *
+ * It used to truncate twice and say nothing. Filings were capped at a thousand
+ * when about eighteen hundred are active, and they are ordered newest first -
+ * so `managers_with_12_quarters` counted against a history missing its oldest
+ * eight hundred filings. The holdings read was unpaged, so PostgREST returned a
+ * thousand rows per batch of a hundred filings instead of the hundred and
+ * thirty thousand they hold, and sector rotation was computed from roughly one
+ * per cent of the book.
+ *
+ * The two are fixed differently, because they are needed differently.
+ *
+ * Filings are paged in full: the readiness count is about how deep each
+ * manager's history is, and it cannot be answered from a truncated list.
+ *
+ * Holdings are loaded only for the filings something actually reads - the
+ * newest few per manager. Sector rotation compares the current quarter with
+ * the previous one and iterates past everything else; the briefs and the
+ * classification, price and external-filing collectors all work from the most
+ * recent book. Loading all 2.6M rows to use a hundred and thirty thousand of
+ * them was not merely wasteful, it is more than this instance has memory for.
+ */
+async function core({ quartersPerManager = 2 } = {}) {
   const client = db();
-  const [{ data: managers, error: managerError }, { data: filings, error: filingError }] = await Promise.all([
-    client.from('institutional_managers').select('*').order('display_name'),
+  const [managers, filings] = await Promise.all([
+    paged(() => client.from('institutional_managers').select('*').order('display_name'), { label: 'managers' }),
     // is_active, deliberately.
     //
     // A superseded filing keeps its row: when an amendment restates a quarter,
@@ -121,19 +165,27 @@ async function core() {
     // loaded both versions of the same quarter and counted the restated
     // positions twice - once from the report the manager withdrew.
     //
-    // Only same-quarter versions are deactivated, so this keeps the full
-    // history across quarters and drops only what has been superseded.
-    client.from('institutional_filings').select('*').eq('is_active', true).order('report_date', { ascending: false }).limit(1000),
+    // Ordered on report_date and then id, because paging needs a total order
+    // and report dates repeat across fifty managers.
+    paged(() => client.from('institutional_filings').select('*').eq('is_active', true)
+      .order('report_date', { ascending: false }).order('id'), { label: 'filings' }),
   ]);
-  if (managerError || filingError) throw managerError || filingError;
+
+  const wanted = [];
+  filingMap(filings).forEach((rows) => { wanted.push(...rows.slice(0, Math.max(1, quartersPerManager))); });
+  const ids = wanted.map((row) => row.id);
+
   const holdings = [];
-  const ids = (filings || []).map((row) => row.id);
-  for (let index = 0; index < ids.length; index += 100) {
-    const { data, error } = await client.from('institutional_holdings').select('*').in('filing_id', ids.slice(index, index + 100));
-    if (error) throw error;
-    holdings.push(...(data || []));
+  for (const id of ids) {
+    // One filing at a time, paged. A single filing can hold five thousand
+    // positions - BlackRock reports about 5,700 - so even one exceeds the
+    // ceiling, and batching a hundred of them into one `in` made that certain.
+    holdings.push(...await paged(
+      () => client.from('institutional_holdings').select('*').eq('filing_id', id).order('id'),
+      { maxRows: 50_000, label: `holdings for filing ${id}` },
+    ));
   }
-  return { client, managers: managers || [], filings: filings || [], holdings };
+  return { client, managers, filings, holdings };
 }
 
 function filingMap(filings) {
