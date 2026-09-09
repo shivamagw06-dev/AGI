@@ -476,7 +476,15 @@ export async function runInstitutionalBacktest({
     const entry = firstTradableSession(filing.accepted_at || filing.filed_at, sessions);
     const exit = firstTradableSession(next.accepted_at || next.filed_at, sessions);
     if (!entry || !exit) {
-      skipped.push({ report_date: filing.report_date, reason: 'no tradable session after acceptance within the price history' });
+      // Named, because the calendar comes from the benchmark rather than from
+      // the positions. The old wording - "within the price history" - was true
+      // of a history it did not identify, and sent a reader looking at the
+      // holdings' prices when the missing series was the ruler measuring them.
+      skipped.push({
+        report_date: filing.report_date,
+        reason: `no tradable session after acceptance in the ${BENCHMARKS[0]} calendar`
+          + `${sessions.length ? `, which runs ${sessions[0]} to ${sessions[sessions.length - 1]}` : ' (the benchmark has no prices at all)'}`,
+      });
       continue;
     }
     if (!(exit > entry)) {
