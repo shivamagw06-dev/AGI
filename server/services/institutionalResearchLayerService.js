@@ -153,7 +153,7 @@ export async function paged(build, { pageSize = 1000, maxRows = 200_000, label =
  * recent book. Loading all 2.6M rows to use a hundred and thirty thousand of
  * them was not merely wasteful, it is more than this instance has memory for.
  */
-async function core({ quartersPerManager = 2 } = {}) {
+async function core({ quartersPerManager = 2, withHoldings = true } = {}) {
   const client = db();
   const [managers, filings] = await Promise.all([
     paged(() => client.from('institutional_managers').select('*').order('display_name'), { label: 'managers' }),
@@ -176,7 +176,11 @@ async function core({ quartersPerManager = 2 } = {}) {
   const ids = wanted.map((row) => row.id);
 
   const holdings = [];
-  for (const id of ids) {
+  // Skipped where the caller does not need them. Reading the newest two
+  // filings of fifty managers is about a hundred and thirty thousand rows and
+  // a hundred and thirty sequential requests - fifty seconds, measured, on a
+  // page load. The refresh job needs them and can wait; the page does not.
+  for (const id of (withHoldings ? ids : [])) {
     // One filing at a time, paged. A single filing can hold five thousand
     // positions - BlackRock reports about 5,700 - so even one exceeds the
     // ceiling, and batching a hundred of them into one `in` made that certain.
@@ -363,37 +367,29 @@ export async function refreshInstitutionalResearchLayer({ classificationLimit = 
   return { status: 'complete', classifications, price_rows: prices, external_filings: external, briefs_created_or_refreshed: briefs, personalized_alerts: alerts, refreshed_at: new Date().toISOString() };
 }
 
-function sectorRotation(holdings, filings, classifications) {
-  const classes = new Map();
-  [...classifications].sort((a, b) => String(b.valid_from).localeCompare(String(a.valid_from))).forEach((row) => { if (!classes.has(row.security_key)) classes.set(row.security_key, row); });
-  const current = new Set(); const previous = new Set();
-  filingMap(filings).forEach((rows) => { if (rows[0]) current.add(rows[0].id); if (rows[1]) previous.add(rows[1].id); });
-  const totals = { current: 0, previous: 0 }; const sectors = new Map();
-  holdings.forEach((row) => {
-    const side = current.has(row.filing_id) ? 'current' : previous.has(row.filing_id) ? 'previous' : null;
-    if (!side) return;
-    const value = valueOf(row); totals[side] += value;
-    const sector = classes.get(keyOf(row))?.sector || 'Unclassified';
-    const bucket = sectors.get(sector) || { sector, current: 0, previous: 0 }; bucket[side] += value; sectors.set(sector, bucket);
-  });
-  return [...sectors.values()].map((row) => ({ sector: row.sector, current_weight: totals.current ? row.current / totals.current : 0, previous_weight: totals.previous ? row.previous / totals.previous : 0, weight_change: (totals.current ? row.current / totals.current : 0) - (totals.previous ? row.previous / totals.previous : 0) })).sort((a, b) => b.weight_change - a.weight_change);
-}
-
 export async function getInstitutionalResearchLayer() {
   try {
-    const { client, managers, filings, holdings } = await core();
-    const [{ data: classifications, error: cError }, { data: events, error: eError }, { data: briefs, error: bError }, { data: backtests, error: tError }] = await Promise.all([
-      client.from('institutional_security_classifications').select('*').order('valid_from', { ascending: false }).limit(5000),
+    // Without holdings. The only thing the page did with them was sector
+    // rotation, and that now comes back from the database as the dozen rows it
+    // always was rather than the hundred and thirty thousand it was computed
+    // from.
+    const { client, managers, filings } = await core({ withHoldings: false });
+    const [{ data: rotation, error: rError }, { count: classificationCount, error: cError }, { data: events, error: eError }, { data: briefs, error: bError }, { data: backtests, error: tError }] = await Promise.all([
+      client.rpc('institutional_sector_rotation'),
+      client.from('institutional_security_classifications').select('id', { count: 'exact', head: true }),
       client.from('institutional_external_filings').select('*').order('filed_at', { ascending: false }).limit(100),
       client.from('institutional_intelligence_briefs').select('*, institutional_managers(display_name,slug)').in('status', ['approved', 'published']).order('generated_at', { ascending: false }).limit(30),
       client.from('institutional_backtest_runs').select('*, institutional_managers(display_name,slug)').order('generated_at', { ascending: false }).limit(30),
     ]);
     if (cError || eError || bError || tError) throw cError || eError || bError || tError;
+    // A failed rotation is an empty section, not a failed page. Everything
+    // else on this surface stands on its own.
+    if (rError) console.warn(`[research-layer] sector rotation: ${rError.message}`);
     const history = filingMap(filings);
     // Sector rotation aggregates disclosed weights across quarters, so it
     // reads the same gate consensus does.
     const dataIntegrity = await getRepairStatus();
-    return { status: 'ready', data_integrity: dataIntegrity, generated_at: new Date().toISOString(), readiness: { managers_tracked: managers.length, managers_with_12_quarters: [...history.values()].filter((rows) => rows.length >= 12).length, classifications: classifications?.length || 0, external_filings: events?.length || 0, approved_briefs: briefs?.length || 0, methodology: 'Entry is the first US trading session strictly after SEC acceptance, read in US Eastern. Positions without an adjusted close at both ends of a period are excluded and reported, never re-weighted. A position is priced from its adjusted closes, refreshed daily; a manager whose book cannot be priced in full is reported with its coverage rather than ranked on part of it.' }, sector_rotation: sectorRotation(holdings, filings, classifications || []), filing_events: events || [], approved_briefs: briefs || [], backtests: backtests || [], managers: managers.map(({ id, slug, display_name }) => ({ id, slug, display_name })) };
+    return { status: 'ready', data_integrity: dataIntegrity, generated_at: new Date().toISOString(), readiness: { managers_tracked: managers.length, managers_with_12_quarters: [...history.values()].filter((rows) => rows.length >= 12).length, classifications: classificationCount || 0, external_filings: events?.length || 0, approved_briefs: briefs?.length || 0, methodology: 'Entry is the first US trading session strictly after SEC acceptance, read in US Eastern. Positions without an adjusted close at both ends of a period are excluded and reported, never re-weighted. A position is priced from its adjusted closes, refreshed daily; a manager whose book cannot be priced in full is reported with its coverage rather than ranked on part of it.' }, sector_rotation: rotation || [], filing_events: events || [], approved_briefs: briefs || [], backtests: backtests || [], managers: managers.map(({ id, slug, display_name }) => ({ id, slug, display_name })) };
   } catch (error) {
     if (/institutional_(security_classifications|external_filings|intelligence_briefs|backtest_runs)/i.test(error.message || '')) return { status: 'setup_required', message: 'Apply the Institutional Intelligence V3 database migration, then run the first research refresh.' };
     throw error;
