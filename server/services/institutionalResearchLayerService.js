@@ -484,12 +484,40 @@ export async function runInstitutionalBacktest({
   const sessions = sessionsFromPrices(prices.get(BENCHMARKS[0]) || []);
 
   const byFiling = new Map(); managerHoldings.forEach((row) => { const rows = byFiling.get(row.filing_id) || []; rows.push(row); byFiling.set(row.filing_id, rows); });
+
+  // Collapse filings the market learned of on the same day.
+  //
+  // A 13F-HR/A restating an older quarter is often accepted alongside a newer
+  // quarter's original, so both resolve to the same first tradable session.
+  // Each then opened its own period, and the earlier one began and ended on
+  // that session - a zero-length holding period, correctly refused, but it
+  // took the whole run with it: four of thirty-nine such periods left a
+  // complete backtest reporting `not_calculable` and no return at all.
+  //
+  // Only one portfolio can be held from a given session. It is the one with
+  // the latest report date, because that is the most current book the market
+  // could act on that morning - an amendment to a quarter eighteen months gone
+  // does not become the portfolio.
+  const chain = [];
+  for (const filing of managerFilings) {
+    const session = firstTradableSession(filing.accepted_at || filing.filed_at, sessions);
+    const previous = chain[chain.length - 1];
+    if (previous && session && previous.session === session) {
+      if (String(filing.report_date) > String(previous.filing.report_date)) {
+        chain[chain.length - 1] = { filing, session };
+      }
+      continue;
+    }
+    chain.push({ filing, session });
+  }
+  const orderedFilings = chain.map((entry) => entry.filing);
+
   const periods = [];
   const skipped = [];
   const limit = Math.max(1, Math.min(50, number(topN) || 10));
 
-  for (let index = 0; index < managerFilings.length - 1; index += 1) {
-    const filing = managerFilings[index]; const next = managerFilings[index + 1];
+  for (let index = 0; index < orderedFilings.length - 1; index += 1) {
+    const filing = orderedFilings[index]; const next = orderedFilings[index + 1];
 
     // Entry is the first session strictly after public acceptance, read in US
     // Eastern. The previous code truncated the acceptance instant in UTC and
