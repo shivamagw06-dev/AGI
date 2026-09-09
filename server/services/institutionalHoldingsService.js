@@ -6,7 +6,7 @@ import { consensusKey, dedupeSignalRows } from './consensusKey.js';
 import {
   activityCounts, topWeight, turnover, holdingTenure, averageTenure, topKeys, valueFlow,
 } from './filingActivity.js';
-import { revaluePosition, revalueBook } from './valueSinceDisclosure.js';
+import { revaluePosition, revalueBook, foldCloseWindows } from './valueSinceDisclosure.js';
 import { summariseInsiderFilings, insiderHeadline } from './insiderSummary.js';
 import { topTrades } from './topTrades.js';
 import { rowsFromBlock, needsArchive, archiveFiles, selectThirteenF } from './filingHistory.js';
@@ -482,20 +482,39 @@ async function closesAround(client, tickers, reportDate) {
   windowStart.setUTCDate(windowStart.getUTCDate() - 10);
   const recentFrom = new Date(Date.now() - 12 * 86_400_000).toISOString().slice(0, 10);
 
+  // Paged, and ordered on ticker before date.
+  //
+  // Two hundred tickers over a ten-session window is about sixteen hundred
+  // rows against PostgREST's thousand-row ceiling, and the old ordering was by
+  // date alone - so the truncation removed the newest sessions first, which
+  // are precisely the ones being asked for. A broad book's revaluation was
+  // computed from a close several sessions old, and the tickers whose only
+  // rows fell in the discarded tail were reported on the page as positions
+  // that could not be priced. The prices were there; the query would not carry
+  // them.
+  //
+  // Ordering by ticker first also gives paging a total order. Dates repeat
+  // across two hundred symbols, so ordering by date alone lets rows sharing a
+  // date move between pages - read twice, or not at all.
   const fetchWindow = async (from, to) => {
     const rows = [];
     for (let i = 0; i < tickers.length; i += 200) {
       const slice = tickers.slice(i, i + 200);
-      const { data, error } = await client
-        .from('institutional_security_prices')
-        .select('ticker,price_date,close')
-        .in('ticker', slice)
-        .gte('price_date', from)
-        .lte('price_date', to)
-        .not('close', 'is', null)
-        .order('price_date');
-      if (error) throw error;
-      rows.push(...(data || []));
+      for (let page = 0; ; page += 1000) {
+        const { data, error } = await client
+          .from('institutional_security_prices')
+          .select('ticker,price_date,close')
+          .in('ticker', slice)
+          .gte('price_date', from)
+          .lte('price_date', to)
+          .not('close', 'is', null)
+          .order('ticker')
+          .order('price_date')
+          .range(page, page + 999);
+        if (error) throw error;
+        rows.push(...(data || []));
+        if (!data || data.length < 1000) break;
+      }
     }
     return rows;
   };
@@ -504,19 +523,7 @@ async function closesAround(client, tickers, reportDate) {
   const atReport = await fetchWindow(windowStart.toISOString().slice(0, 10), reportDate);
   const atLatest = await fetchWindow(recentFrom, new Date().toISOString().slice(0, 10));
 
-  const out = new Map();
-  const put = (row, field) => {
-    const key = String(row.ticker).toUpperCase();
-    const entry = out.get(key) || {};
-    // Ordered ascending, so the last row seen in each window is the one wanted:
-    // the latest close at or before the report date, and the latest overall.
-    entry[field] = Number(row.close);
-    entry[`${field}_on`] = row.price_date;
-    out.set(key, entry);
-  };
-  for (const row of atReport) put(row, 'at_report_date');
-  for (const row of atLatest) put(row, 'at_latest_close');
-  return out;
+  return foldCloseWindows({ atReport, atLatest });
 }
 
 /**

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { revaluePosition, revalueBook } from '../services/valueSinceDisclosure.js';
+import { revaluePosition, revalueBook, foldCloseWindows } from '../services/valueSinceDisclosure.js';
 
 test('a position is revalued by the ratio of two closes, not by share count', () => {
   // Yahoo's close is retroactively split-adjusted, so disclosed shares times
@@ -76,4 +76,56 @@ test('a fall is reported as a fall', () => {
   const r = revalueBook([{ cusip: 'B', value_usd: 30e9 }], prices, keyOf);
   assert.ok(r.change_pct < 0);
   assert.equal(r.current_total, 27e9);
+});
+
+// ---- foldCloseWindows -----------------------------------------------------
+
+const bar = (ticker, price_date, close) => ({ ticker, price_date, close });
+
+test('the last row for a ticker wins, which is what the ordering guarantees', () => {
+  // Rows arrive ordered by ticker then date, so the final row seen for each
+  // ticker is its latest close in that window.
+  const closes = foldCloseWindows({
+    atReport: [bar('AAPL', '2026-06-26', 200), bar('AAPL', '2026-06-30', 210), bar('KO', '2026-06-30', 70)],
+    atLatest: [bar('AAPL', '2026-09-05', 230), bar('AAPL', '2026-09-08', 235)],
+  });
+  assert.equal(closes.get('AAPL').at_report_date, 210);
+  assert.equal(closes.get('AAPL').at_report_date_on, '2026-06-30');
+  assert.equal(closes.get('AAPL').at_latest_close, 235);
+  assert.equal(closes.get('AAPL').at_latest_close_on, '2026-09-08');
+  assert.equal(closes.get('KO').at_report_date, 70);
+});
+
+test('a ticker in one window only keeps what it has', () => {
+  // A position priced at the report date but not since is not the same as one
+  // with no price at all, and revalueBook distinguishes them.
+  const closes = foldCloseWindows({ atReport: [bar('DELISTED', '2026-06-30', 12)], atLatest: [] });
+  assert.equal(closes.get('DELISTED').at_report_date, 12);
+  assert.equal(closes.get('DELISTED').at_latest_close, undefined);
+});
+
+test('an unusable close never overwrites a good one', () => {
+  // The last row wins, so a null or zero close arriving after a real one would
+  // blank it - and a blanked close reads downstream as a position that could
+  // not be priced.
+  const closes = foldCloseWindows({
+    atLatest: [bar('AAPL', '2026-09-05', 230), bar('AAPL', '2026-09-08', null), bar('AAPL', '2026-09-09', 0)],
+  });
+  assert.equal(closes.get('AAPL').at_latest_close, 230);
+  assert.equal(closes.get('AAPL').at_latest_close_on, '2026-09-05');
+});
+
+test('a row with no ticker is ignored rather than keyed on empty', () => {
+  const closes = foldCloseWindows({ atLatest: [bar('', '2026-09-08', 100), bar(null, '2026-09-08', 100)] });
+  assert.equal(closes.size, 0);
+});
+
+test('tickers are matched case-insensitively', () => {
+  const closes = foldCloseWindows({ atReport: [bar('aapl', '2026-06-30', 210)] });
+  assert.equal(closes.get('AAPL').at_report_date, 210);
+});
+
+test('nothing in yields an empty map, not a throw', () => {
+  assert.equal(foldCloseWindows().size, 0);
+  assert.equal(foldCloseWindows({}).size, 0);
 });

@@ -97,3 +97,37 @@ export function revalueBook(holdings, pricesByKey, keyOf) {
     unpriced_value: disclosedTotal - pricedDisclosed,
   };
 }
+
+/**
+ * The closes a book is revalued between, folded out of two windows of rows.
+ *
+ * Each window is a range of sessions rather than a single date, because
+ * neither end is guaranteed to be a trading day - a quarter can end on a
+ * Saturday, and the latest close is whatever the last collection reached. The
+ * row wanted from each window is the last one for that ticker.
+ *
+ * Which makes the ordering of the input load-bearing, and it is the reason
+ * this is a function rather than a loop inside the query. The rows must be
+ * ordered by ticker and then by date: ordering by date alone was fine while
+ * the result fitted in one response, and stopped being fine at a thousand rows
+ * - PostgREST truncated the newest sessions first, so the "latest close" came
+ * from several sessions earlier and some tickers vanished entirely, reported
+ * on the page as positions that could not be priced.
+ */
+export function foldCloseWindows({ atReport = [], atLatest = [] } = {}) {
+  const out = new Map();
+  const put = (row, field) => {
+    const ticker = String(row?.ticker || '').toUpperCase();
+    const close = Number(row?.close);
+    // A row without a usable close is not a price. Writing it would replace a
+    // good earlier close with a blank one, because the last row wins.
+    if (!ticker || !Number.isFinite(close) || close <= 0) return;
+    const entry = out.get(ticker) || {};
+    entry[field] = close;
+    entry[`${field}_on`] = row.price_date;
+    out.set(ticker, entry);
+  };
+  for (const row of atReport) put(row, 'at_report_date');
+  for (const row of atLatest) put(row, 'at_latest_close');
+  return out;
+}
