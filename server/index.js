@@ -19,6 +19,7 @@ import createNewsletterRouter from "./routes/newsletter.js";
 import createArticleShareRouter from "./routes/articleShare.js";
 import createResearchSignalsRouter from "./routes/researchSignals.js";
 import createInstitutionalHoldingsRouter from "./routes/institutionalHoldings.js";
+import createIndexRebalanceRouter from "./routes/indexRebalance.js";
 import { startInstitutionalHoldingsAutomation } from "./services/institutionalHoldingsService.js";
 import { startInstitutionalResearchLayerAutomation } from "./services/institutionalResearchLayerService.js";
 import { getNewsHeadlines } from "./services/newsHeadlinesService.js";
@@ -159,6 +160,7 @@ const researchLimiter = rateLimit({ windowMs: 60_000, max: 30, standardHeaders: 
 app.use('/api', apiLimiter);
 app.use('/research', researchLimiter);
 app.use('/api/institutional-holdings', createInstitutionalHoldingsRouter());
+app.use('/api/index-rebalance', createIndexRebalanceRouter());
 
 // dynamic fetch implementation
 let _fetchImpl = undefined;

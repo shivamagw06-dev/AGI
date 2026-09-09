@@ -105,6 +105,10 @@ const GATED_PREFIXES = [
   ['/valuation-intelligence', 'valuation'],
   ['/valuation-terminal', 'valuation'],
   ['/hedge-fund', 'hedge_fund'],
+  // Index rebalance research carries third-party flow estimates, attributed
+  // but not ours to publish openly, and it is written for clients rather than
+  // for search engines.
+  ['/index-rebalance', 'hedge_fund'],
   ['/live-alpha', 'live_alpha'],
   ['/market-intelligence', 'market_intelligence'],
   ['/market-sector-intelligence', 'market_intelligence'],
