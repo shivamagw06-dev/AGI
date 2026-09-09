@@ -1,3 +1,5 @@
+import { windowOverlaps } from './issuerTickerRegistry.js';
+
 /**
  * Recovering the US ticker from a foreign venue's quote symbol.
  *
@@ -73,7 +75,7 @@ export function candidateBases(symbol) {
  * comparison does its own normalising - so this stays free of network and
  * database.
  */
-export function recoverTicker(symbol, issuerName, secByTicker) {
+export function recoverTicker(symbol, issuerName, secByTicker, { registry = null, window = null } = {}) {
   const bases = candidateBases(symbol);
   if (!bases.length) return { ticker: null, reason: 'no recoverable ticker in this symbol' };
 
@@ -81,6 +83,7 @@ export function recoverTicker(symbol, issuerName, secByTicker) {
   if (!held) return { ticker: null, reason: 'holding has no issuer name to check against' };
 
   const matched = [];
+  let via = 'the SEC register';
   for (const base of bases) {
     const secName = secByTicker.get(base);
     if (!secName) continue;
@@ -89,19 +92,45 @@ export function recoverTicker(symbol, issuerName, secByTicker) {
     if (sameCompany(secName, held)) matched.push(base);
   }
 
+  // The live register answers for a live holding and cannot answer for a past
+  // one. Activision, Pioneer, Seagen, Splunk, WestRock, Marathon Oil, Discover
+  // and Electronic Arts have all left it, and $1.48tn of holdings were refused
+  // for asking a question it is not shaped to answer.
+  //
+  // The historical registry is consulted only when the live one has nothing,
+  // so a currently-registered ticker is never overruled by what it used to be.
+  // The check itself is unchanged: the companies still have to agree.
+  if (!matched.length && registry) {
+    for (const base of bases) {
+      for (const entry of registry.get(base) || []) {
+        // Both must hold. A name match alone would attribute a 2019 Paramount
+        // holding to Banzai International, which took the PARA ticker over in
+        // 2026 - the exact reassignment this is otherwise careful about.
+        if (!sameCompany(entry.issuer_name, held)) continue;
+        if (window && !windowOverlaps(entry, window)) continue;
+        matched.push(base);
+        via = `SEC filings ${entry.first_seen}..${entry.last_seen}`;
+        break;
+      }
+    }
+  }
+
   if (!matched.length) {
     const known = bases.filter((b) => secByTicker.has(b));
+    const seenBefore = registry ? bases.filter((b) => (registry.get(b) || []).length) : [];
     return {
       ticker: null,
       reason: known.length
         ? `resolves to ${known.join('/')} but the issuer is "${held}", not "${known.map((b) => secByTicker.get(b)).join('/')}"`
-        : `resolves to ${bases.join(', ')}, none of which the SEC lists`,
+        : seenBefore.length
+          ? `resolves to ${seenBefore.join('/')}, which SEC filings show as ${seenBefore.flatMap((b) => (registry.get(b) || []).map((e) => `"${e.issuer_name}"`)).slice(0, 2).join('/')}, not "${held}"`
+          : `resolves to ${bases.join(', ')}, which neither the SEC register nor past filings know`,
     };
   }
   // Two bases naming the same company is not a conflict; two different
   // companies would be, and the name check has already excluded that.
   if (new Set(matched).size > 1) return { ticker: null, reason: `ambiguous: ${matched.join('/')}` };
-  return { ticker: matched[0], reason: null };
+  return { ticker: matched[0], reason: null, via };
 }
 
 
