@@ -43,6 +43,10 @@ const MAX_AGE_DAYS = argOf('--max-age-days') !== null
   ? Number(argOf('--max-age-days'))
   : (REFRESH ? 0 : 4);
 const ONLY = (argOf('--symbols') || '').split(',').map((s) => s.trim().toUpperCase()).filter(Boolean);
+// Ask again for symbols a previous run refused as reassigned. They are skipped
+// by default because the answer cannot change, but a ticker can be reassigned
+// back, and a holdings correction can move the date a position is held from.
+const FORCE_REASSIGNED = process.argv.includes('--retry-reassigned');
 
 if (!getSupabaseAdminCredentials()) {
   console.error('[prices] SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required.');
@@ -127,10 +131,17 @@ console.log(`[prices] ${seen.size.toLocaleString()} distinct (security_key, tick
 console.log('[prices] reading the fetch log...');
 const logRows = await all(() => client
   .from('institutional_price_fetch_log')
-  .select('ticker,fetched_at')
+  .select('ticker,fetched_at,status')
   .order('ticker'));
 const freshness = new Map();
-for (const r of logRows) freshness.set(r.ticker, String(r.fetched_at || '').slice(0, 10));
+// Symbols the last fetch refused as reassigned. Asking again cannot help: the
+// ticker belongs to another company now, and its history will not grow
+// backwards into the years the position was held.
+const reassigned = new Set();
+for (const r of logRows) {
+  freshness.set(r.ticker, String(r.fetched_at || '').slice(0, 10));
+  if (r.status === 'rejected') reassigned.add(r.ticker);
+}
 console.log(`[prices] ${freshness.size.toLocaleString()} symbols in the fetch log`);
 
 // Where each symbol's stored history begins, so the plan can tell a symbol
@@ -162,7 +173,8 @@ try {
 // ---- the plan -------------------------------------------------------------
 
 let { plans, skipped, foreignVenueSymbols } = planFetches([...seen.values()], {
-  asOf, freshness, coverage, windowDays: WINDOW_DAYS, maxAgeDays: MAX_AGE_DAYS,
+  asOf, freshness, coverage, reassigned: FORCE_REASSIGNED ? null : reassigned,
+  windowDays: WINDOW_DAYS, maxAgeDays: MAX_AGE_DAYS,
 });
 if (ONLY.length) plans = plans.filter((p) => ONLY.includes(p.symbol));
 if (LIMIT) {
@@ -183,6 +195,9 @@ console.log(`[prices]   skipped: ${skipped.unusableTicker} unusable ticker, ${sk
 // Reported separately from the plan count, because it is the reason a symbol
 // that looks current is being asked for again.
 if (skipped.coverageGap) console.log(`[prices]   ${skipped.coverageGap} due because stored history starts after the security was first held`);
+// Counted, not listed. They are a standing fact about the book rather than
+// news, and repeating ten names every run is what makes a report unread.
+if (skipped.reassigned) console.log(`[prices]   ${skipped.reassigned} not asked for: a previous fetch found the ticker now belongs to another company (--retry-reassigned to ask again)`);
 if (foreignVenueSymbols.length) {
   console.log(`[prices]   foreign venue codes not asked for: ${foreignVenueSymbols.slice(0, 12).join(', ')}${foreignVenueSymbols.length > 12 ? ` (+${foreignVenueSymbols.length - 12} more)` : ''}`);
   console.log('[prices]   run recoverVenueTickers.mjs to map these back to their US tickers');
