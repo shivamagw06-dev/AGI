@@ -275,3 +275,24 @@ test('collection succeeding while post-processing fails is not a failed run', ()
   assert.match(refresh, /try \{\s*scores = await rebuildSignals/,
     'the signal rebuild must not either');
 });
+
+test('a withheld filing is counted as neither ingested nor failed', () => {
+  // Norges Bank contributes one of these most quarters: the filing was fetched
+  // and read correctly and stored no holdings, because the filer withheld its
+  // information table. Counting it as an ingestion inflates the run; counting
+  // it as a failure sends someone looking for a fault that is not there.
+  const summary = summariseRefresh({
+    results: [{
+      ok: true,
+      manager: { slug: 'norges-bank' },
+      filings: [
+        { status: 'ingested', holdings: 1617, form_type: '13F-HR' },
+        { status: 'withheld', holdings: 0, form_type: '13F-HR' },
+      ],
+    }],
+  });
+  assert.equal(summary.filingsIngested, 1);
+  assert.equal(summary.filingsWithheld, 1);
+  assert.equal(summary.holdingsRows, 1617);
+  assert.equal(summary.failures.length, 0);
+});

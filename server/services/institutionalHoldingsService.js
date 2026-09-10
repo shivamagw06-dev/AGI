@@ -2,6 +2,7 @@ import { createSupabaseAdmin } from '../lib/supabaseAdmin.js';
 import { getCollectionHealth, listRuns } from './institutionalCollectionRuns.js';
 import { classifyFiling, applyAmendment, droppedPositions } from './secAmendment.js';
 import { valueScaleFor, detectScaleMismatch, resolveScale } from './valueScale.js';
+import { parseSummaryPage, assessInformationTable, isPlaceholderRow } from './confidentialTreatment.js';
 import { consensusKey, dedupeSignalRows } from './consensusKey.js';
 import {
   activityCounts, topWeight, turnover, holdingTenure, averageTenure, topKeys, valueFlow,
@@ -131,7 +132,7 @@ function xmlValue(block, tag) {
   return decodeXml(match?.[1] || '').replace(/<[^>]+>/g, '').trim();
 }
 
-function parseInformationTable(xml, valueScale = 1) {
+export function parseInformationTable(xml, valueScale = 1) {
   const blocks = [...String(xml).matchAll(/<(?:\w+:)?infoTable(?:\s[^>]*)?>([\s\S]*?)<\/(?:\w+:)?infoTable>/gi)];
   return blocks.map((match) => {
     const block = match[1];
@@ -1211,6 +1212,79 @@ async function createAlerts(client, manager, filing, changes) {
   if (error) throw error;
 }
 
+/**
+ * Record a filing whose information table was withheld, and store no holdings.
+ *
+ * Three things this deliberately does not do.
+ *
+ * It does not deactivate the other versions of the quarter. A withheld
+ * original and the amendment that later discloses it share a report date, and
+ * Norges Bank's amendments arrive a full year after the placeholder - so
+ * re-reading the placeholder must not knock the real filing out from under
+ * the quarter it finally filled in.
+ *
+ * It does not set `needs_review`. Nothing here needs an operator: the filer
+ * exercised a right the SEC granted it, the reason is on the cover page, and
+ * the holdings arrive on their own schedule. Review is for filings we could
+ * not classify, and mixing the two would bury those.
+ *
+ * It does delete whatever was stored against this filing before, which is how
+ * the placeholder rows already in the table are cleared - one row per affected
+ * quarter, carrying issuer "NA" at zero dollars, plus the holding_changes that
+ * were derived from it and are the direct cause of the 100% turnover reading.
+ */
+async function recordWithheldFiling(client, manager, source, archive, infoDocument, table) {
+  const { data: filing, error } = await client.from('institutional_filings').upsert({
+    manager_id: manager.id,
+    accession_number: source.accession_number,
+    form_type: source.form_type,
+    report_date: source.report_date,
+    filed_at: source.accepted_at,
+    primary_document: source.primary_document,
+    amendment_type: source.form_type.endsWith('/A') ? 'unknown' : 'original',
+    is_amendment: source.form_type.endsWith('/A'),
+    // No holdings to serve, so nothing to be authoritative about.
+    //
+    // quarantineAmendment argues the other way for its case - a quarter with
+    // no active filing disappears from history, so it reactivates the version
+    // the bad amendment superseded. That reasoning depends on there being an
+    // earlier version holding real positions. Here there is none: the
+    // positions have not been published. The choice is between a quarter
+    // absent from the series and a quarter asserting a one-name book, and only
+    // the first is true.
+    is_active: false,
+    source_url: `${archive.base}/${source.primary_document || infoDocument.name}`,
+    holdings_count: 0,
+    total_value_usd: 0,
+    confidential_omitted: true,
+    declared_holdings_count: table.declaredEntries,
+    declared_value_usd: table.declaredValueUsd,
+    ingested_at: new Date().toISOString(),
+  }, { onConflict: 'accession_number' }).select().single();
+  if (error) throw error;
+
+  // Anything a previous run stored from the placeholder.
+  const { count: removed } = await client.from('institutional_holdings')
+    .delete({ count: 'exact' }).eq('filing_id', filing.id);
+  await client.from('holding_changes').delete().eq('filing_id', filing.id);
+  if (removed) {
+    console.info(`[institutional-holdings] ${source.accession_number}: removed ${removed} placeholder holding(s) stored by an earlier run`);
+  }
+
+  return {
+    accession_number: filing.accession_number,
+    status: 'withheld',
+    holdings: 0,
+    removed: removed || 0,
+    report_date: filing.report_date,
+    changes: 0,
+    form_type: filing.form_type,
+    declared_holdings_count: table.declaredEntries,
+    declared_value_usd: table.declaredValueUsd,
+    reason: table.reason,
+  };
+}
+
 async function ingestFiling(client, manager, source) {
   // EDGAR stores a filing under the directory of the CIK that filed it, which
   // for a predecessor is not the manager's current CIK. Getting this wrong
@@ -1219,7 +1293,34 @@ async function ingestFiling(client, manager, source) {
   const archive = await filingDocuments(source.source_cik || manager.cik, source.accession_number);
   const infoDocument = archive.documents.find((doc) => /<(?:\w+:)?infoTable[\s>]/i.test(doc.text));
   if (!infoDocument) throw new Error(`No 13F information table found in ${source.accession_number}`);
-  let rawRows = collapseDuplicateRows(parseInformationTable(infoDocument.text, 1));
+  // The filing's own account of itself, read before its rows are trusted.
+  //
+  // `tableEntryTotal` is how many entries the filer says the table holds, and
+  // comparing the parsed count against it is what turns a table that failed to
+  // read into an error instead of a small portfolio. It is a stronger test
+  // than anything keyed to the manager's history: Alphabet genuinely held two
+  // positions in 2016, and no median can tell that apart from a table that
+  // went missing, while the filer's own total can.
+  const summary = parseSummaryPage(archive.coverPage);
+  const parsedRows = parseInformationTable(infoDocument.text, 1);
+  const table = assessInformationTable({ rawRows: parsedRows, summary });
+
+  // A table withheld under confidential treatment. There are no holdings, and
+  // storing the placeholder as one is what made Norges Bank read as a manager
+  // that sold 1,600 names and bought one. Recorded, not applied.
+  if (table.status === 'confidential') {
+    console.info(`[institutional-holdings] ${source.accession_number} withheld: ${table.reason}`);
+    return recordWithheldFiling(client, manager, source, archive, infoDocument, table);
+  }
+
+  // Rows are missing and the filing does not say it withheld them, so the
+  // fault is ours - a partial fetch, an unread continuation, a namespace we do
+  // not match. Nothing is stored on a guess.
+  if (table.status === 'short') {
+    throw new Error(`${source.accession_number}: ${table.reason}`);
+  }
+
+  let rawRows = collapseDuplicateRows(table.realRows);
   if (!rawRows.length) throw new Error(`The SEC information table was empty for ${source.accession_number}`);
   // The per-share sanity check that lived here now runs inside
   // detectScaleMismatch, which reports a disagreement instead of silently
@@ -1341,6 +1442,12 @@ async function ingestFiling(client, manager, source) {
     source_url: `${archive.base}/${source.primary_document || infoDocument.name}`,
     holdings_count: rows.length,
     total_value_usd: totalValue,
+    // Kept on complete filings too. A partial withholding is still a
+    // withholding, and the declared totals are the only record of what the
+    // filer said this quarter was.
+    confidential_omitted: table.confidentialOmitted,
+    declared_holdings_count: table.declaredEntries,
+    declared_value_usd: table.declaredValueUsd,
     ingested_at: new Date().toISOString(),
   };
   const { data: filing, error: filingError } = await client.from('institutional_filings').upsert(filingPayload, { onConflict: 'accession_number' }).select().single();
@@ -1514,6 +1621,17 @@ async function prepareInstitutionalImport(client, payload = {}) {
     // 45-day statutory deadline, which is right for any filing made on time.
     const { scale } = valueScaleFor({ reportDate, override: manager.value_scale_override });
     rows = isXml ? collapseDuplicateRows(parseInformationTable(input, scale)) : parsePasted13fTable(input, scale);
+  }
+  // A withheld filing pasted into the CMS carries the same "NA" placeholder
+  // the fetch path sees. Importing it stores a position that does not exist,
+  // so it is dropped here too and the operator is told why rather than being
+  // shown a one-line portfolio to publish.
+  const placeholders = rows.filter(isPlaceholderRow).length;
+  rows = rows.filter((row) => !isPlaceholderRow(row));
+  if (!rows.length && placeholders) {
+    throw new Error('This filing withholds its information table under a confidential treatment request - '
+      + 'it carries a placeholder entry rather than holdings. The positions are normally filed as a '
+      + '13F-HR/A when the confidentiality lapses; import that amendment instead.');
   }
   if (!rows.length) throw new Error('No valid holdings were detected. Preserve tabs between copied columns, or paste the SEC information-table XML.');
   const mapping = await mappingsFor(client, rows.map((row) => row.cusip), source.report_date);
@@ -2069,7 +2187,36 @@ export async function previewFilingRepair(filingId) {
   const infoDocument = archive.documents.find((doc) => /<(?:\w+:)?infoTable[\s>]/i.test(doc.text));
   if (!infoDocument) throw new Error(`No 13F information table in ${filing.accession_number}`);
 
-  const amendmentRows = collapseDuplicateRows(parseInformationTable(infoDocument.text, 1));
+  // Same assessment ingestion makes, so a dry run reports what a repair would
+  // actually do. Without it the preview reads a withheld table as a one-line
+  // portfolio and offers to store it, which is the outcome being repaired.
+  const table = assessInformationTable({
+    rawRows: parseInformationTable(infoDocument.text, 1),
+    summary: parseSummaryPage(archive.coverPage),
+  });
+  if (table.status !== 'complete') {
+    const currentRows = (await collect(() => client.from('institutional_holdings')
+      .select('*').eq('filing_id', filing.id)))
+      .map(({ id, filing_id, manager_id, report_date, portfolio_weight, created_at, ...row }) => row);
+    return {
+      filing,
+      manager,
+      classification: classifyFiling(filing.form_type, archive.coverPage),
+      strategy: table.status,
+      priorRows: [],
+      currentRows,
+      superseded: [],
+      amendmentRows: [],
+      resultingRows: [],
+      // Everything stored against this filing goes, because none of it came
+      // from a disclosed position.
+      removed: currentRows,
+      applied: false,
+      table,
+    };
+  }
+
+  const amendmentRows = collapseDuplicateRows(table.realRows);
   const classification = classifyFiling(filing.form_type, archive.coverPage);
 
   // The version this amendment amends.
@@ -2145,6 +2292,7 @@ export async function previewFilingRepair(filingId) {
     resultingRows: outcome.rows,
     removed,
     applied: outcome.applied,
+    table,
   };
 }
 
