@@ -87,6 +87,16 @@ test('the summary counts moves, largest first', () => {
   ]);
 });
 
+test('a fund row survives the restatement pass untouched', () => {
+  // Funds are classified from the forms a registrant files, not from a SIC
+  // code, and carry none. The restatement re-derives from sic_code, so
+  // without the Unclassified guard every fund would be wiped back to
+  // Unclassified on the first nightly run after it was classified.
+  const fund = { id: 'f1', security_key: '78462F103', ticker: 'SPY', sic_code: null, sector: 'Funds & ETFs', industry: 'Fund or ETF' };
+  assert.deepEqual(restatements([fund], classifySic), []);
+  assert.deepEqual(restatements([{ ...fund, sic_code: '' }], classifySic), []);
+});
+
 test('nothing in yields nothing out, without throwing', () => {
   assert.deepEqual(restatements(undefined, classifySic), []);
   assert.deepEqual(restatements([], classifySic), []);

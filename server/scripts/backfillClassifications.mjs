@@ -22,8 +22,9 @@
  * on the site asks.
  */
 import { createSupabaseAdmin, getSupabaseAdminCredentials } from '../lib/supabaseAdmin.js';
-import { core, collectClassifications, paged } from '../services/institutionalResearchLayerService.js';
+import { core, collectClassifications, paged, secDirectory } from '../services/institutionalResearchLayerService.js';
 import { secLimiterStats } from '../services/secRateLimiter.js';
+import { securityCandidates } from '../services/securityCandidates.js';
 
 const APPLY = process.argv.includes('--apply');
 const argOf = (flag) => { const i = process.argv.indexOf(flag); return i >= 0 ? process.argv[i + 1] : null; };
@@ -46,13 +47,8 @@ async function main() {
   console.log(`[classify] mode: ${APPLY ? 'APPLY - this writes' : 'dry run - nothing is written'}`);
 
   const { client, holdings } = await core();
-  const distinct = new Set();
-  for (const row of holdings) {
-    const ticker = String(row.ticker || row.mapped_ticker || '').trim().toUpperCase();
-    if (!ticker) continue;
-    distinct.add(String(row.security_key || row.cusip || ticker).trim().toUpperCase());
-  }
-  console.log(`[classify] ${holdings.length.toLocaleString()} holdings, ${distinct.size.toLocaleString()} distinct securities with a ticker  (${elapsed()}s)`);
+  const distinct = securityCandidates(holdings);
+  console.log(`[classify] ${holdings.length.toLocaleString()} holdings, ${distinct.length.toLocaleString()} distinct securities  (${elapsed()}s)`);
 
   const { count: before } = await client.from('institutional_security_classifications')
     .select('id', { count: 'exact', head: true });
@@ -70,7 +66,7 @@ async function main() {
       { label: 'existing classifications' },
     );
     const queued = classificationQueue({
-      securities: [...distinct].map((key) => ({ key })),
+      securities: distinct.map((row) => ({ key: row.key, row })),
       classified, limit: LIMIT,
     });
     // Two rates, because one of them was wrong by a factor of three. The
@@ -87,7 +83,7 @@ async function main() {
     return;
   }
 
-  const written = await collectClassifications(client, holdings, await tickerMapOnce(), LIMIT);
+  const written = await collectClassifications(client, holdings, await secDirectory(), LIMIT);
   const { count: after } = await client.from('institutional_security_classifications')
     .select('id', { count: 'exact', head: true });
   console.log(`[classify] ${written.toLocaleString()} classified this run; table went from ${Number(before || 0).toLocaleString()} to ${Number(after || 0).toLocaleString()} in ${elapsed()}s`);
@@ -96,17 +92,6 @@ async function main() {
   }
 }
 
-// The SEC ticker file, fetched once. collectClassifications takes it as an
-// argument so that the nightly job and this script share one copy rather than
-// each pulling it per security.
-async function tickerMapOnce() {
-  const response = await fetch('https://www.sec.gov/files/company_tickers.json', {
-    headers: { 'User-Agent': process.env.SEC_USER_AGENT || 'AGI Institutional Research research@agarwalglobalinvestments.com' },
-  });
-  if (!response.ok) throw new Error(`company_tickers.json: HTTP ${response.status}`);
-  const payload = await response.json();
-  return new Map(Object.values(payload || {}).map((row) => [String(row.ticker || '').toUpperCase(), { cik: String(row.cik_str || '').padStart(10, '0'), title: row.title }]));
-}
 
 main().catch((error) => {
   console.error(`[classify] ${error.message}`);
