@@ -119,7 +119,7 @@ for (const s of suspect.values()) {
     registry,
     window: { earliest: s.earliest, latest: s.latest },
   });
-  if (r.ticker) recovered.push({ ...s, to: r.ticker, via: r.via });
+  if (r.ticker) recovered.push({ ...s, to: r.ticker, via: r.via, weak: Boolean(r.weak) });
   else refused.push({ ...s, reason: r.reason });
 }
 
