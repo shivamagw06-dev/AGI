@@ -195,15 +195,37 @@ export function traitsFor(metrics) {
     }
   }
 
-  if (known(m.medianQuartersHeld) && m.medianQuartersHeld >= 4) {
-    traits.push({
-      key: 'long_held',
-      label: 'Long-held positions',
-      detail:
-        `The median position has appeared in ${m.medianQuartersHeld} of the `
-        + `${m.quartersObserved || m.medianQuartersHeld} stored quarterly filings. `
-        + 'Appearances, not an unbroken run: a position sold and rebought counts twice.',
-    });
+  // Measured against the manager's own history rather than against a fixed
+  // number of quarters. An absolute threshold of four cleared 41 of the 51
+  // managers, which is decoration, not a distinction. The share of its own
+  // stored history that the median name has survived separates them properly:
+  // Valley Forge holds every name for all 39 of its quarters, Vanguard 31 of
+  // 42, Berkshire 16 of 42, Thiel Macro 1 of 27.
+  //
+  // Eight quarters minimum before either trait is claimed. Greenlight has four
+  // stored, so its median name has survived all of them - which says nothing
+  // about Greenlight and everything about how little history we hold.
+  if (known(m.medianQuartersHeld) && known(m.quartersObserved) && m.quartersObserved >= 8) {
+    const share = m.medianQuartersHeld / m.quartersObserved;
+    const across = `${m.medianQuartersHeld} of the ${m.quartersObserved} stored quarters`;
+    // Appearances, not an unbroken run: a name sold and rebought counts twice.
+    if (share >= 0.6) {
+      traits.push({
+        key: 'long_held',
+        label: 'Positions survive the record',
+        detail:
+          `The median position has appeared in ${across} - ${Math.round(share * 100)}% `
+          + 'of the history held for this manager.',
+      });
+    } else if (m.medianQuartersHeld <= 3) {
+      traits.push({
+        key: 'rapidly_rotated',
+        label: 'Positions are short-lived',
+        detail:
+          `The median position has appeared in ${across}. Quarterly turnover `
+          + 'measures one quarter; this measures whether anything stays.',
+      });
+    }
   }
 
   if (known(m.topSectorPct) && m.topSectorPct >= 50 && m.topSector) {
@@ -236,10 +258,11 @@ export function caveatsFor(metrics) {
       'Only one quarter is stored for this manager, so turnover and holding '
       + 'period cannot be measured yet.',
     );
-  } else if (m.priorPositions > 0 && m.quartersObserved < 4) {
+  } else if (m.priorPositions > 0 && m.quartersObserved < 8) {
     caveats.push(
-      `Measured across ${m.quartersObserved} stored quarters, which is a short `
-      + 'history to draw a pattern from.',
+      `Measured across ${m.quartersObserved} stored quarter`
+      + `${m.quartersObserved === 1 ? '' : 's'}, which is a short history to draw a `
+      + 'pattern from. Most managers here have 42.',
     );
   }
 
@@ -273,8 +296,11 @@ export function confidenceFor(metrics, archetype) {
     || (archetype.key === 'concentrated_held' && Math.abs(m.turnoverPct - 10) < 3)
     || (archetype.key === 'concentrated_rotated' && Math.abs(m.turnoverPct - 30) < 5);
 
+  // A year of filings cannot establish how a manager behaves, whatever the
+  // book looks like this quarter.
+  if (m.quartersObserved < 4) return 'low';
   if (nearBoundary) return 'medium';
-  if (m.quartersObserved < 4) return 'medium';
+  if (m.quartersObserved < 8) return 'medium';
   return 'high';
 }
 
@@ -295,7 +321,16 @@ export function evidenceFor(metrics) {
     rows.push({ key: 'turnover', label: 'Positions new this quarter', value: pct(m.turnoverPct), unit: 'percent' });
   }
   if (known(m.medianQuartersHeld)) {
-    rows.push({ key: 'held', label: 'Median quarters held', value: m.medianQuartersHeld, unit: 'quarters' });
+    rows.push({
+      key: 'held',
+      label: 'Median quarters held',
+      value: m.medianQuartersHeld,
+      unit: 'quarters',
+      // Without this the number is unreadable: 16 quarters is a decade of
+      // conviction or a third of the record, and only the denominator says
+      // which.
+      outOf: known(m.quartersObserved) ? m.quartersObserved : null,
+    });
   }
   if (known(m.optionsPct) && m.optionsPct > 0) {
     rows.push({ key: 'options', label: 'Lines that are options', value: pct(m.optionsPct), unit: 'percent' });

@@ -35,6 +35,11 @@ const REAL = {
   norges: { positions: 1617, top10Pct: 32.4, optionsPct: 0.0, votesPct: 100.0, turnoverPct: null },
 };
 
+// Measured: 42 stored quarters for most of these managers, which is what the
+// caveats and confidence rules are calibrated against.
+for (const key of Object.keys(REAL)) REAL[key].quartersObserved = 42;
+REAL.norges.quartersObserved = 1;
+
 describe('the archetype each real book lands in', () => {
   const expected = [
     ['citadel', 'market_making'],
@@ -115,10 +120,14 @@ describe('confidence', () => {
   });
 
   test('is high only with a real history behind it', () => {
-    assert.equal(confidenceFor({ ...REAL.berkshire, quartersObserved: 8 },
+    assert.equal(confidenceFor({ ...REAL.berkshire, quartersObserved: 42 },
       { key: 'concentrated_held' }), 'high');
-    assert.equal(confidenceFor({ ...REAL.berkshire, quartersObserved: 2 },
+    // Greenlight's four stored quarters. A year of filings cannot establish
+    // how a manager behaves, whatever this quarter's book looks like.
+    assert.equal(confidenceFor({ ...REAL.berkshire, quartersObserved: 4 },
       { key: 'concentrated_held' }), 'medium');
+    assert.equal(confidenceFor({ ...REAL.berkshire, quartersObserved: 3 },
+      { key: 'concentrated_held' }), 'low');
   });
 });
 
@@ -140,10 +149,48 @@ describe('traits hold across archetypes', () => {
     assert.equal(traitsFor(REAL.berkshire).some((t) => t.key === 'votes_own_book'), true);
   });
 
-  test('holding period is a trait only once it is long', () => {
-    assert.equal(traitsFor({ medianQuartersHeld: 11 }).some((t) => t.key === 'long_held'), true);
-    assert.equal(traitsFor({ medianQuartersHeld: 1 }).some((t) => t.key === 'long_held'), false);
-    assert.equal(traitsFor({ medianQuartersHeld: null }).some((t) => t.key === 'long_held'), false);
+  test('holding period is judged against the manager\'s own history', () => {
+    // Measured, all of it. An absolute "four or more quarters" threshold
+    // cleared 41 of the 51 managers - a trait that fires for four fifths of
+    // the set distinguishes nothing. The share of its own record that the
+    // median name survives does.
+    const keys = (m) => traitsFor(m).map((t) => t.key);
+    // Valley Forge: every name, all 39 quarters.
+    assert.ok(keys({ medianQuartersHeld: 39, quartersObserved: 39 }).includes('long_held'));
+    // Vanguard: 31 of 42.
+    assert.ok(keys({ medianQuartersHeld: 31, quartersObserved: 42 }).includes('long_held'));
+    // Berkshire: 16 of 42. Rarely changes quarter to quarter, and still not a
+    // book whose names survive the record - both are true and the profile
+    // should not claim the second.
+    assert.equal(keys({ medianQuartersHeld: 16, quartersObserved: 42 }).includes('long_held'), false);
+    // Thiel Macro: 1 of 27, and Scion 1.5 of 32. Nothing stays.
+    assert.ok(keys({ medianQuartersHeld: 1, quartersObserved: 27 }).includes('rapidly_rotated'));
+    assert.ok(keys({ medianQuartersHeld: 1.5, quartersObserved: 32 }).includes('rapidly_rotated'));
+    // Never both.
+    for (const m of [{ medianQuartersHeld: 39, quartersObserved: 39 },
+      { medianQuartersHeld: 1, quartersObserved: 27 }]) {
+      const found = keys(m).filter((k) => k === 'long_held' || k === 'rapidly_rotated');
+      assert.equal(found.length, 1, JSON.stringify(m));
+    }
+  });
+
+  test('a manager with almost no history gets neither holding-period trait', () => {
+    // Greenlight has four stored quarters, so its median name has survived all
+    // four. That is a fact about how little we hold, not about Greenlight, and
+    // claiming "positions survive the record" from it would be the profile
+    // reporting our own collection gap as the manager's behaviour.
+    const keys = traitsFor({ medianQuartersHeld: 4, quartersObserved: 4 }).map((t) => t.key);
+    assert.equal(keys.includes('long_held'), false);
+    assert.equal(keys.includes('rapidly_rotated'), false);
+  });
+
+  test('the median is published with the record it is measured against', () => {
+    // 16 quarters is a decade of conviction or a third of the history; only
+    // the denominator says which.
+    const row = evidenceFor({ positions: 29, top10Pct: 88.5, medianQuartersHeld: 16, quartersObserved: 42 })
+      .find((entry) => entry.key === 'held');
+    assert.equal(row.value, 16);
+    assert.equal(row.outOf, 42);
   });
 });
 
