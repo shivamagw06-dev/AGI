@@ -84,6 +84,27 @@ async function main() {
       { label: 'issuer registry' },
     ).catch(() => []));
 
+    // The tickerless population, resolved the same two ways the apply will.
+    const { sectorByIssuer, sectorFromIssuer, checkDigitValid } = await import('../services/cusipIssuer.js');
+    const { nameIndex, matchByName } = await import('../services/issuerNameMatch.js');
+    const byIssuer = sectorByIssuer(await paged(
+      () => client.from('institutional_security_classifications').select('security_key,cusip,sector').order('security_key'),
+      { label: 'classifications for issuer inference' },
+    ));
+    const byName = nameIndex(directory);
+    const blindTally = { issuer: 0, name: 0, refused: 0, derivative: 0, value: 0 };
+    for (const security of unidentifiable) {
+      if (!checkDigitValid(security.key)) blindTally.derivative += 1;
+      if (sectorFromIssuer(security.key, byIssuer)) blindTally.issuer += 1;
+      else if (security.issuer_name && matchByName(security.issuer_name, byName)) { blindTally.name += 1; blindTally.value += security.value_usd; }
+      else blindTally.refused += 1;
+    }
+    console.log(`[classify] ${unidentifiable.length.toLocaleString()} tickerless:`);
+    console.log(`[classify]   ${String(blindTally.issuer).padStart(6)} resolved by CUSIP issuer, no SEC request`);
+    console.log(`[classify]   ${String(blindTally.name).padStart(6)} matched by issuer name, one request each`);
+    console.log(`[classify]   ${String(blindTally.refused).padStart(6)} refused by both`);
+    console.log(`[classify]   ${String(blindTally.derivative).padStart(6)} carry an invalid check digit - filers' own option identifiers, not real CUSIPs`);
+
     const tally = { fund: 0, company: 0, registry: 0, unresolved: 0 };
     for (const security of queued) {
       const found = resolveIssuer(security, directory, registry);
@@ -92,7 +113,7 @@ async function main() {
       else if (found.source === 'SEC issuer registry') tally.registry += 1;
       else tally.company += 1;
     }
-    const requests = tally.company + tally.registry;
+    const requests = tally.company + tally.registry + blindTally.name;
     console.log(`[classify] ${queued.length.toLocaleString()} queued:`);
     console.log(`[classify]   ${String(tally.fund).padStart(6)} funds, resolved from the ticker file with no SEC request`);
     console.log(`[classify]   ${String(tally.company).padStart(6)} companies, one submissions request each`);
