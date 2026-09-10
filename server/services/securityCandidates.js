@@ -84,3 +84,30 @@ function rank(counts) {
 function mostCommon(counts) {
   return rank(counts)[0] || null;
 }
+
+/**
+ * Split securities into those something could identify and those nothing can.
+ *
+ * A 13F reports a CUSIP; the ticker is optional and about eight thousand
+ * securities arrive without one. Every lookup available here - the SEC's three
+ * ticker files, the historical issuer registry - is keyed on the symbol, so a
+ * security with no symbol cannot be resolved by any of them.
+ *
+ * Queueing them anyway is not merely wasted work, it is a stall. Securities
+ * are ordered by value, the queue takes the largest unclassified first, and
+ * these never become classified - so with a nightly limit of sixty, sixty
+ * large tickerless securities occupy every slot and the job classifies nothing
+ * for ever. That is the same failure the queue was written to fix, arrived at
+ * from the other direction.
+ *
+ * They are returned rather than dropped, so the caller can report what it
+ * cannot see instead of quietly showing a smaller book.
+ */
+export function partitionByIdentifiability(securities) {
+  const identifiable = [];
+  const unidentifiable = [];
+  for (const security of securities || []) {
+    (security?.tickers?.length ? identifiable : unidentifiable).push(security);
+  }
+  return { identifiable, unidentifiable };
+}

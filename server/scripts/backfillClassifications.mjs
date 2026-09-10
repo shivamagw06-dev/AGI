@@ -22,9 +22,10 @@
  * on the site asks.
  */
 import { createSupabaseAdmin, getSupabaseAdminCredentials } from '../lib/supabaseAdmin.js';
-import { core, collectClassifications, paged, secDirectory } from '../services/institutionalResearchLayerService.js';
+import { core, collectClassifications, paged, secDirectory, resolveIssuer } from '../services/institutionalResearchLayerService.js';
 import { secLimiterStats } from '../services/secRateLimiter.js';
-import { securityCandidates } from '../services/securityCandidates.js';
+import { securityCandidates, partitionByIdentifiability } from '../services/securityCandidates.js';
+import { namesByTicker } from '../services/issuerTickerRegistry.js';
 
 const APPLY = process.argv.includes('--apply');
 const argOf = (flag) => { const i = process.argv.indexOf(flag); return i >= 0 ? process.argv[i + 1] : null; };
@@ -47,8 +48,11 @@ async function main() {
   console.log(`[classify] mode: ${APPLY ? 'APPLY - this writes' : 'dry run - nothing is written'}`);
 
   const { client, holdings } = await core();
-  const distinct = securityCandidates(holdings);
-  console.log(`[classify] ${holdings.length.toLocaleString()} holdings, ${distinct.length.toLocaleString()} distinct securities  (${elapsed()}s)`);
+  const all = securityCandidates(holdings);
+  const { identifiable: distinct, unidentifiable } = partitionByIdentifiability(all);
+  const blind = unidentifiable.reduce((sum, row) => sum + row.value_usd, 0);
+  console.log(`[classify] ${holdings.length.toLocaleString()} holdings, ${all.length.toLocaleString()} securities, ${distinct.length.toLocaleString()} with a ticker  (${elapsed()}s)`);
+  console.log(`[classify] ${unidentifiable.length.toLocaleString()} filed without a ticker ($${(blind / 1e9).toFixed(1)}bn) - no lookup here is keyed on anything else`);
 
   const { count: before } = await client.from('institutional_security_classifications')
     .select('id', { count: 'exact', head: true });
@@ -68,17 +72,33 @@ async function main() {
     const queued = classificationQueue({
       securities: distinct.map((row) => ({ key: row.key, row })),
       classified, limit: LIMIT,
-    });
-    // Two rates, because one of them was wrong by a factor of three. The
-    // limiter's configured ceiling gives a floor on the time; the rate a full
-    // run actually achieved gives the number to plan around. The gap is
-    // network latency, which sits on top of the minimum spacing rather than
-    // inside it - the limiter guarantees requests start no closer together
-    // than the interval, not that they complete at that rate.
-    const rps = Number(secLimiterStats()?.max_requests_per_second) || 5;
-    const floor = queued.length / rps / 60;
-    const observed = queued.length / OBSERVED_RPS / 60;
-    console.log(`[classify] ${queued.length.toLocaleString()} would be classified: at least ${floor.toFixed(0)} minute(s) at the limiter's ${rps}/second ceiling, and nearer ${observed.toFixed(0)} at the ${OBSERVED_RPS}/second a full run has actually sustained`);
+    }).map((entry) => entry.row);
+
+    // Resolved for real, not counted. The first version of this estimate
+    // divided the queue length by a request rate, which was wrong twice over:
+    // a fund resolves from a file with no SEC request at all, and a security
+    // nothing can identify costs nothing either. Only companies cost time.
+    const directory = await secDirectory();
+    const registry = namesByTicker(await paged(
+      () => client.from('sec_issuer_tickers').select('ticker,cik,issuer_name,first_seen,last_seen').order('ticker').order('cik'),
+      { label: 'issuer registry' },
+    ).catch(() => []));
+
+    const tally = { fund: 0, company: 0, registry: 0, unresolved: 0 };
+    for (const security of queued) {
+      const found = resolveIssuer(security, directory, registry);
+      if (!found) tally.unresolved += 1;
+      else if (found.kind === 'fund') tally.fund += 1;
+      else if (found.source === 'SEC issuer registry') tally.registry += 1;
+      else tally.company += 1;
+    }
+    const requests = tally.company + tally.registry;
+    console.log(`[classify] ${queued.length.toLocaleString()} queued:`);
+    console.log(`[classify]   ${String(tally.fund).padStart(6)} funds, resolved from the ticker file with no SEC request`);
+    console.log(`[classify]   ${String(tally.company).padStart(6)} companies, one submissions request each`);
+    console.log(`[classify]   ${String(tally.registry).padStart(6)} recovered through the historical issuer registry, one request each`);
+    console.log(`[classify]   ${String(tally.unresolved).padStart(6)} unresolved by any list, no request and no row written`);
+    console.log(`[classify] ${requests.toLocaleString()} request(s): at least ${(requests / (Number(secLimiterStats()?.max_requests_per_second) || 5) / 60).toFixed(0)} minute(s) at the limiter's ceiling, nearer ${(requests / OBSERVED_RPS / 60).toFixed(0)} at the rate a full run has sustained`);
     console.log('[classify] dry run only. Re-run with --apply to write.');
     return;
   }

@@ -11,7 +11,7 @@ import { parseFormFour, rawDocumentPath } from './formFour.js';
 import { classifySic } from './sicSectors.js';
 import { classificationQueue } from './classificationQueue.js';
 import { restatements, restated } from './sectorRestatement.js';
-import { securityCandidates } from './securityCandidates.js';
+import { securityCandidates, partitionByIdentifiability } from './securityCandidates.js';
 import { issuerDirectory, FUND_SECTOR, FUND_INDUSTRY } from './issuerDirectory.js';
 import { filesAsFund } from './fundEvidence.js';
 import { namesByTicker, windowOverlaps } from './issuerTickerRegistry.js';
@@ -239,7 +239,13 @@ export async function collectClassifications(client, holdings, directory, limit)
   // win, so a single filer's mangled symbol decided the identity of the whole
   // position - EXMOC for CUSIP 30231G102, which is Exxon Mobil, and $144.9bn
   // unclassified because of it.
-  const distinct = securityCandidates(holdings);
+  const all = securityCandidates(holdings);
+  // Only those something could identify. Every lookup here is keyed on the
+  // symbol, and a 13F reports a CUSIP with the ticker optional - about eight
+  // thousand securities arrive without one. Queued anyway they would occupy
+  // the largest-first slots for ever and the nightly job would classify
+  // nothing, which is the stall the queue itself was written to fix.
+  const { identifiable: distinct, unidentifiable } = partitionByIdentifiability(all);
   const classified = await paged(
     () => client.from('institutional_security_classifications').select('security_key,source_as_of').order('security_key').order('source_as_of'),
     { label: 'existing classifications' },
@@ -261,7 +267,14 @@ export async function collectClassifications(client, holdings, directory, limit)
     return [];
   }));
 
-  console.log(`[institutional-v3] ${distinct.length} securities, ${classified.length} classified, ${securities.length} queued`);
+  const blindValue = unidentifiable.reduce((sum, row) => sum + row.value_usd, 0);
+  console.log(`[institutional-v3] ${all.length} securities, ${distinct.length} with a ticker, ${classified.length} classified, ${securities.length} queued`);
+  if (unidentifiable.length) {
+    // Reported, not hidden. Nothing available here can name a security filed
+    // without a symbol, and a chart that silently omits them is worse than one
+    // that says how much it cannot see.
+    console.log(`[institutional-v3] ${unidentifiable.length} securities filed without a ticker, $${(blindValue / 1e9).toFixed(1)}bn, cannot be identified by symbol`);
+  }
 
   const output = [];
   const unresolved = [];
@@ -324,7 +337,7 @@ export async function collectClassifications(client, holdings, directory, limit)
  * companies cannot be resolved by symbol alone, and guessing would attribute
  * one company's position to another.
  */
-function resolveIssuer(security, directory, registry) {
+export function resolveIssuer(security, directory, registry) {
   for (const ticker of security.tickers || []) {
     const live = directory?.get(ticker);
     if (live?.cik) return { ...live, ticker, source: live.kind === 'fund' ? 'SEC fund tickers' : 'SEC submissions' };
