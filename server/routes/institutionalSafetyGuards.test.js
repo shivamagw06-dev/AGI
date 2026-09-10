@@ -83,14 +83,43 @@ for (const [name, source, flag] of AUTOMATIONS) {
   });
 }
 
+/**
+ * Code with its comments removed.
+ *
+ * The guard below searches for a bug pattern, and a comment explaining that
+ * the bug was fixed contains the pattern verbatim. Without this the guard read
+ * its own documentation as the defect and refused to let a corrected lab go
+ * live - which is the failure mode where a guard stops describing the code and
+ * starts describing the prose around it.
+ */
+const withoutComments = (source) => source
+  .replace(/\/\*[\s\S]*?\*\//g, ' ')
+  .split('\n')
+  .filter((line) => !line.trim().startsWith('//'))
+  .join('\n');
+
 test('the backtester is not publishing returns while its entry rule is wrong', () => {
   // The audit found entry on the acceptance date itself: `row.price_date >= date`
   // takes the same session's close, which the manager could not have traded.
   // This test fails the moment someone re-enables the lab without fixing it.
-  const lookAhead = /price_date\s*>=\s*date/.test(layer);
+  const lookAhead = /price_date\s*>=\s*date/.test(withoutComments(layer));
   const ui = readFileSync(
     new URL('../../src/components/Research/InstitutionalResearchLayer.jsx', import.meta.url), 'utf8');
-  const labIsLive = /runInstitutionalBacktest\s*\(/.test(ui);
+  // Either call. The lab is live if it computes a return or reads one that was
+  // computed, and a guard that names only the write endpoint would have let it
+  // go live through the read endpoint with the bug still present.
+  const labIsLive = /(?:run|get)InstitutionalBacktest\s*\(/.test(withoutComments(ui));
   assert.ok(!(lookAhead && labIsLive),
     'the Performance lab is calling the backtester while the acceptance-date entry bug is still present');
+});
+
+test('the guard reads code, not the comments about it', () => {
+  // Both halves, proven rather than assumed: a comment describing the bug must
+  // not trip the guard, and the bug itself must still trip it.
+  assert.equal(/price_date\s*>=\s*date/.test(withoutComments('// prices with `price_date >= date`, which selected')), false);
+  assert.equal(/price_date\s*>=\s*date/.test(withoutComments('/* price_date >= date */')), false);
+  assert.equal(/price_date\s*>=\s*date/.test(withoutComments('rows.find((row) => row.price_date >= date)')), true);
+  // And the live-lab check sees both call sites.
+  assert.equal(/(?:run|get)InstitutionalBacktest\s*\(/.test('await getInstitutionalBacktest(slug)'), true);
+  assert.equal(/(?:run|get)InstitutionalBacktest\s*\(/.test('await runInstitutionalBacktest({})'), true);
 });

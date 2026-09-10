@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Bell, Briefcase, CheckCircle2, FileSearch, Gauge, Layers3, Loader2, Play, Radar, ShieldCheck, Sparkles } from 'lucide-react';
-import { createInstitutionalGroup, createInstitutionalWatchlist, getInstitutionalResearchLayer, getInstitutionalWorkspace, markInstitutionalPersonalizedAlert } from '@/lib/institutionalHoldingsApi';
+import { createInstitutionalGroup, createInstitutionalWatchlist, getInstitutionalBacktest, getInstitutionalResearchLayer, getInstitutionalWorkspace, markInstitutionalPersonalizedAlert } from '@/lib/institutionalHoldingsApi';
 
 const percent = (value, signed = false) => `${signed && Number(value) > 0 ? '+' : ''}${(Number(value || 0) * 100).toFixed(1)}%`;
 const displayDate = (value) => { const date = value ? new Date(value) : null; return date && !Number.isNaN(date.getTime()) ? date.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Timestamp unavailable'; };
@@ -10,6 +10,7 @@ function Empty({ children }) { return <div className="rounded-xl border border-d
 export default function InstitutionalResearchLayer() {
   const [data, setData] = useState(null); const [tab, setTab] = useState('rotation'); const [managerSlug, setManagerSlug] = useState('');
   const [workspace, setWorkspace] = useState(null); const [working, setWorking] = useState(''); const [message, setMessage] = useState('');
+  const [backtest, setBacktest] = useState(null); const [backtestQuarters, setBacktestQuarters] = useState(20);
   const [groupName, setGroupName] = useState('High-conviction managers'); const [watchlistName, setWatchlistName] = useState('Institutional signals'); const [watchTickers, setWatchTickers] = useState('AAPL, MSFT, NVDA');
   const loadResearchLayer = () => {
     setWorking('research'); setMessage('');
@@ -20,6 +21,23 @@ export default function InstitutionalResearchLayer() {
   };
   useEffect(() => { loadResearchLayer(); }, []);
   const movers = useMemo(() => (data?.sector_rotation || []).filter((row) => row.sector !== 'Unclassified'), [data]);
+  /**
+   * Read this manager's run, computing it only if today has none.
+   *
+   * The GET endpoint serves the day's stored run and falls back to computing;
+   * the admin POST forces a fresh one. This uses the read, so a signed-in
+   * client cannot make the server price several hundred thousand rows by
+   * holding down a button.
+   */
+  const runBacktest = async () => {
+    if (!managerSlug) return;
+    setWorking('backtest'); setMessage(''); setBacktest(null);
+    try {
+      setBacktest(await getInstitutionalBacktest(managerSlug, { quarters: backtestQuarters, topN: 10 }));
+    } catch (error) {
+      setMessage(error.message || 'The backtest could not be completed.');
+    } finally { setWorking(''); }
+  };
   const loadWorkspace = async () => { setWorking('workspace'); setMessage(''); try { setWorkspace(await getInstitutionalWorkspace()); } catch (error) { setMessage(error.message); } finally { setWorking(''); } };
   const tabs = [['rotation', 'Sector rotation', Layers3], ['performance', 'Performance lab', Gauge], ['filings', '13D/G + Form 4', FileSearch], ['briefs', 'Analyst briefs', Sparkles], ['workspace', 'My workspace', Briefcase]];
   if (!data) return <section className="mx-auto mt-8 flex max-w-[1760px] flex-col items-center justify-center rounded-2xl border border-neutral-200 bg-[#222222] p-16 text-center text-neutral-600">{working === 'research' ? <><Loader2 className="mb-3 h-5 w-5 animate-spin" /><span>Loading institutional research layer</span></> : <><div className="text-base font-semibold text-white">Institutional research is temporarily unavailable</div><div className="mt-2 max-w-xl text-sm">{message || 'The evidence service did not respond. Your existing holdings data remains available.'}</div><button type="button" onClick={loadResearchLayer} className="mt-5 rounded-xl bg-neutral-900 px-5 py-3 text-sm font-bold text-neutral-600">Retry research layer</button></>}</section>;
@@ -49,15 +67,27 @@ export default function InstitutionalResearchLayer() {
       {tab === 'performance' ? <div className="grid gap-6 lg:grid-cols-[1.15fr_.85fr]">
         <div>
           <div className="mb-4 flex items-center justify-between"><div><div className="text-[10px] font-bold uppercase tracking-[.2em] text-neutral-600">Filing-aware backtest</div><h3 className="mt-1 text-xl font-semibold text-white">What copying the disclosure would have returned</h3></div><span className="text-xs text-neutral-700">Net of costs, versus SPY and QQQ</span></div>
-          <div className="space-y-3">{data.backtests?.length ? data.backtests.map((run) => {
+          <div className="mb-4 rounded-xl border border-white/10 bg-white/[0.035] p-4">
+            <div className="flex flex-wrap items-end gap-3">
+              <label className="flex-1"><span className="block text-[10px] font-bold uppercase tracking-[.16em] text-neutral-700">Manager</span><select value={managerSlug} onChange={(event) => { setManagerSlug(event.target.value); setBacktest(null); }} className="mt-2 w-full rounded-xl border border-white/10 bg-[#222222] px-3 py-2.5 text-sm">{data.managers?.map((manager) => <option key={manager.id} value={manager.slug}>{manager.display_name}</option>)}</select></label>
+              <label><span className="block text-[10px] font-bold uppercase tracking-[.16em] text-neutral-700">Quarters</span><select value={backtestQuarters} onChange={(event) => { setBacktestQuarters(Number(event.target.value)); setBacktest(null); }} className="mt-2 rounded-xl border border-white/10 bg-[#222222] px-3 py-2.5 text-sm">{[8, 12, 20, 28, 40].map((value) => <option key={value} value={value}>{value}</option>)}</select></label>
+              <button type="button" onClick={runBacktest} disabled={working === 'backtest' || !managerSlug} className="inline-flex items-center gap-2 rounded-xl bg-neutral-900 px-5 py-2.5 text-sm font-bold text-neutral-600 disabled:opacity-50">{working === 'backtest' ? <><Loader2 className="h-4 w-4 animate-spin" /> Running</> : <><Play className="h-4 w-4" /> Run backtest</>}</button>
+            </div>
+            <p className="mt-3 text-xs leading-5 text-neutral-700">{working === 'backtest'
+              ? 'Reading every disclosed position and its adjusted closes. A manager not run today can take several minutes; one already run today returns immediately.'
+              : "Top 10 positions by disclosed value, rebalanced each quarter, entered on the first session after the filing became public. Today's run is reused if one exists."}</p>
+          </div>
+          <div className="space-y-3">{[...(backtest ? [backtest] : []), ...(data.backtests || []).filter((run) => !backtest || run.id !== backtest.id)].map((run) => {
             const metrics = run.metrics || {};
-            const name = run.institutional_managers?.display_name || 'Manager';
+            // Two shapes: a stored run arrives with the joined
+            // institutional_managers, a freshly computed one with `manager`.
+            const name = run.institutional_managers?.display_name || run.manager?.display_name || 'Manager';
             if (run.status !== 'calculated') {
               return <div key={run.id} className="rounded-xl border border-white/10 bg-white/[0.025] px-4 py-3 text-sm"><div className="flex items-center justify-between"><span className="font-medium text-white">{name}</span><span className="rounded-full border border-neutral-300/30 px-2 py-[2px] text-[9px] font-bold uppercase tracking-wider text-neutral-600/80">Not calculable</span></div><p className="mt-2 text-xs leading-5 text-neutral-700">{metrics.reason || 'This manager does not meet the evidence bar for a stated return.'}</p></div>;
             }
             const excess = Number(metrics.excess_vs_spy || 0);
             return <div key={run.id} className="rounded-xl border border-white/10 bg-white/[0.025] px-4 py-4">
-              <div className="flex flex-wrap items-baseline justify-between gap-2"><span className="font-medium text-white">{name}</span><span className="text-xs text-neutral-700">{metrics.periods} quarters · {percent(metrics.average_coverage)} priced</span></div>
+              <div className="flex flex-wrap items-baseline justify-between gap-2"><span className="font-medium text-white">{name}</span><span className="text-xs text-neutral-700">{metrics.periods} quarters · {percent(metrics.average_coverage)} priced{run.from_cache === false ? ' · computed just now' : run.from_cache === true ? " · today's stored run" : ''}</span></div>
               <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
                 <div><div className="text-[10px] font-bold uppercase tracking-[.16em] text-neutral-700">Strategy</div><div className="mt-1 text-lg font-semibold text-white">{percent(metrics.total_return)}</div></div>
                 <div><div className="text-[10px] font-bold uppercase tracking-[.16em] text-neutral-700">SPY</div><div className="mt-1 text-lg font-semibold text-neutral-600">{percent(metrics.spy_return)}</div></div>
@@ -66,7 +96,7 @@ export default function InstitutionalResearchLayer() {
               </div>
               {Number(metrics.worst_period_coverage) < 1 ? <div className="mt-3 text-xs text-neutral-700">Thinnest quarter priced at {percent(metrics.worst_period_coverage)}{metrics.worst_coverage_period ? ` (${metrics.worst_coverage_period})` : ''}. Unpriced positions are excluded, never assumed flat.</div> : null}
             </div>;
-          }) : <Empty>Backtests appear once a manager has been run against the filing-aware engine.</Empty>}</div>
+          })}{!backtest && !data.backtests?.length ? <Empty>No backtest has been run yet. Choose a manager above and run one.</Empty> : null}</div>
         </div>
         <div className="rounded-2xl border border-white/10 bg-white/[0.035] p-5">
           <div className="text-[10px] font-bold uppercase tracking-[.2em] text-neutral-600">Interpretation guardrail</div>
