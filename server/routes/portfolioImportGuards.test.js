@@ -1,128 +1,131 @@
-import { describe, it, expect } from 'vitest';
+import test, { describe } from 'node:test';
+import assert from 'node:assert/strict';
 import {
   MAX_PDF_BYTES, checkUpload, cleanSelection, looksLikePdf, redactBody,
   uploadErrorCode,
 } from './portfolioImportGuards.js';
 
 describe('content inspection, not the filename', () => {
-  it('accepts a real PDF header', () => {
-    expect(looksLikePdf(Buffer.from('%PDF-1.7 header'))).toBe(true);
+  test('accepts a real PDF header', () => {
+    assert.equal(looksLikePdf(Buffer.from('%PDF-1.7 header')), true);
   });
 
-  it('rejects a renamed file whatever it claims to be', () => {
+  test('rejects a renamed file whatever it claims to be', () => {
     // statement.pdf containing a zip is still a zip.
-    expect(looksLikePdf(Buffer.from('PK zipped'))).toBe(false);
-    expect(looksLikePdf(Buffer.from('<html>'))).toBe(false);
+    assert.equal(looksLikePdf(Buffer.from('PK zipped')), false);
+    assert.equal(looksLikePdf(Buffer.from('<html>')), false);
   });
 
-  it('rejects an empty or truncated buffer', () => {
-    expect(looksLikePdf(Buffer.alloc(0))).toBe(false);
-    expect(looksLikePdf(Buffer.from('%PD'))).toBe(false);
+  test('rejects an empty or truncated buffer', () => {
+    assert.equal(looksLikePdf(Buffer.alloc(0)), false);
+    assert.equal(looksLikePdf(Buffer.from('%PD')), false);
   });
 
-  it('rejects a non-buffer', () => {
-    expect(looksLikePdf('%PDF-1.7')).toBe(false);
-    expect(looksLikePdf(null)).toBe(false);
+  test('rejects a non-buffer', () => {
+    assert.equal(looksLikePdf('%PDF-1.7'), false);
+    assert.equal(looksLikePdf(null), false);
   });
 });
 
 describe('checking an uploaded file', () => {
-  it('accepts a PDF within the limit', () => {
+  test('accepts a PDF within the limit', () => {
     const out = checkUpload({ buffer: Buffer.from('%PDF-1.7 hello') });
-    expect(out.ok).toBe(true);
+    assert.equal(out.ok, true);
   });
 
-  it('refuses a missing file', () => {
-    expect(checkUpload(undefined).error).toBe('no_file');
-    expect(checkUpload({ buffer: Buffer.alloc(0) }).error).toBe('no_file');
+  test('refuses a missing file', () => {
+    assert.equal(checkUpload(undefined).error, 'no_file');
+    assert.equal(checkUpload({ buffer: Buffer.alloc(0) }).error, 'no_file');
   });
 
-  it('refuses a non-PDF that arrived under a pdf field name', () => {
-    expect(checkUpload({ buffer: Buffer.from('PK zipped') }).error).toBe('not_a_pdf');
+  test('refuses a non-PDF that arrived under a pdf field name', () => {
+    assert.equal(checkUpload({ buffer: Buffer.from('PK zipped') }).error, 'not_a_pdf');
   });
 
-  it('refuses an oversized file even if multer let it through', () => {
+  test('refuses an oversized file even if multer let it through', () => {
     const big = Buffer.concat([Buffer.from('%PDF'), Buffer.alloc(MAX_PDF_BYTES)]);
-    expect(checkUpload({ buffer: big }).error).toBe('file_too_large');
+    assert.equal(checkUpload({ buffer: big }).error, 'file_too_large');
   });
 });
 
 describe('a confirmation carries ids and nothing else', () => {
-  it('keeps well-formed string ids', () => {
-    expect(cleanSelection(['abc', 'def'])).toEqual(['abc', 'def']);
+  test('keeps well-formed string ids', () => {
+    assert.deepEqual(cleanSelection(['abc', 'def']), ['abc', 'def']);
   });
 
-  it('drops anything that is not a string id', () => {
+  test('drops anything that is not a string id', () => {
     // The one place a client could try to smuggle a holding through.
     const out = cleanSelection(['abc', { isin: 'INE002A01018', quantity: 9999 }, 42, null]);
-    expect(out).toEqual(['abc']);
+    assert.deepEqual(out, ['abc']);
   });
 
-  it('de-duplicates', () => {
-    expect(cleanSelection(['abc', 'abc', ' abc '])).toEqual(['abc']);
+  test('de-duplicates', () => {
+    assert.deepEqual(cleanSelection(['abc', 'abc', ' abc ']), ['abc']);
   });
 
-  it('rejects absurdly long ids', () => {
-    expect(cleanSelection(['x'.repeat(65)])).toEqual([]);
+  test('rejects absurdly long ids', () => {
+    assert.deepEqual(cleanSelection(['x'.repeat(65)]), []);
   });
 
-  it('caps the selection size', () => {
+  test('caps the selection size', () => {
     const many = Array.from({ length: 20 }, (_, i) => `id-${i}`);
-    expect(cleanSelection(many, { max: 5 })).toHaveLength(5);
+    assert.equal(cleanSelection(many, { max: 5 }).length, 5);
   });
 
-  it('returns nothing for a non-array', () => {
-    expect(cleanSelection('abc')).toEqual([]);
-    expect(cleanSelection(null)).toEqual([]);
+  test('returns nothing for a non-array', () => {
+    assert.deepEqual(cleanSelection('abc'), []);
+    assert.deepEqual(cleanSelection(null), []);
   });
 });
 
 describe('bodies are redacted before anything logs them', () => {
-  it('masks the password', () => {
+  test('masks the password', () => {
     // Multipart keeps the document out of the JSON body, but the password is
     // still a form field and APM captures bodies by default.
     const out = redactBody({ password: 'PAN-of-the-client', portfolio_id: 'p1' });
-    expect(out.password).toBe('[redacted]');
-    expect(out.portfolio_id).toBe('p1');
+    assert.equal(out.password, '[redacted]');
+    assert.equal(out.portfolio_id, 'p1');
   });
 
-  it('masks a document and a fingerprint wherever they appear', () => {
+  test('masks a document and a fingerprint wherever they appear', () => {
     const out = redactBody({
       pdf_base64: 'JVBERi0xLjc=',
       nested: { statement_fingerprint: 'abc', access_token: 'tok' },
     });
-    expect(out.pdf_base64).toBe('[redacted]');
-    expect(out.nested.statement_fingerprint).toBe('[redacted]');
-    expect(out.nested.access_token).toBe('[redacted]');
+    assert.equal(out.pdf_base64, '[redacted]');
+    assert.equal(out.nested.statement_fingerprint, '[redacted]');
+    assert.equal(out.nested.access_token, '[redacted]');
   });
 
-  it('leaves harmless values alone and tolerates non-objects', () => {
-    expect(redactBody({ selected_row_ids: ['a', 'b'] }).selected_row_ids).toEqual(['a', 'b']);
-    expect(redactBody(null)).toBeNull();
-    expect(redactBody('text')).toBe('text');
+  test('leaves harmless values alone and tolerates non-objects', () => {
+    assert.deepEqual(redactBody({ selected_row_ids: ['a', 'b'] }).selected_row_ids, ['a', 'b']);
+    assert.equal(redactBody(null), null);
+    assert.equal(redactBody('text'), 'text');
   });
 });
 
 describe('multer errors never carry field values outward', () => {
-  it('maps each limit to a fixed client code', () => {
-    expect(uploadErrorCode({ code: 'LIMIT_FILE_SIZE' })).toBe('file_too_large');
-    expect(uploadErrorCode({ code: 'LIMIT_UNEXPECTED_FILE' })).toBe('no_file');
-    expect(uploadErrorCode({ code: 'LIMIT_FIELD_VALUE' })).toBe('field_too_large');
-    expect(uploadErrorCode({ code: 'LIMIT_PART_COUNT' })).toBe('too_many_fields');
-    expect(uploadErrorCode({ code: 'LIMIT_FIELD_COUNT' })).toBe('too_many_fields');
+  test('maps each limit to a fixed client code', () => {
+    assert.equal(uploadErrorCode({ code: 'LIMIT_FILE_SIZE' }), 'file_too_large');
+    assert.equal(uploadErrorCode({ code: 'LIMIT_UNEXPECTED_FILE' }), 'no_file');
+    assert.equal(uploadErrorCode({ code: 'LIMIT_FIELD_VALUE' }), 'field_too_large');
+    assert.equal(uploadErrorCode({ code: 'LIMIT_PART_COUNT' }), 'too_many_fields');
+    assert.equal(uploadErrorCode({ code: 'LIMIT_FIELD_COUNT' }), 'too_many_fields');
   });
 
-  it('falls back to a generic code for anything unrecognised', () => {
-    expect(uploadErrorCode({ code: 'SOMETHING_NEW' })).toBe('upload_failed');
-    expect(uploadErrorCode(undefined)).toBe('upload_failed');
+  test('falls back to a generic code for anything unrecognised', () => {
+    assert.equal(uploadErrorCode({ code: 'SOMETHING_NEW' }), 'upload_failed');
+    assert.equal(uploadErrorCode(undefined), 'upload_failed');
   });
 
-  it('never returns the field or the value that tripped the limit', () => {
+  test('never returns the field or the value that tripped the limit', () => {
     // multer attaches both; returning the error would hand back the input.
     const err = { code: 'LIMIT_FIELD_VALUE', field: 'password', value: 'the-secret' };
     const out = uploadErrorCode(err);
-    expect(out).toBe('field_too_large');
-    expect(JSON.stringify(out)).not.toContain('the-secret');
-    expect(JSON.stringify(out)).not.toContain('password');
+    assert.equal(out, 'field_too_large');
+    // Neither the value nor the field name. multer attaches both to the error,
+    // and returning either would hand the uploaded secret back to the caller.
+    assert.ok(!JSON.stringify(out).includes('the-secret'), 'the field value leaked into the response');
+    assert.ok(!JSON.stringify(out).includes('password'), 'the field name leaked into the response');
   });
 });

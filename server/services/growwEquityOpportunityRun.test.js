@@ -33,15 +33,20 @@ test('analyseEquity returns null for short history', () => {
   assert.equal(analyseEquity('TCS', candles, { return_20d: 0, return_60d: 0 }), null);
 });
 
-test('uses the complete Nifty 200 as the default equity universe', async () => {
+test('uses the complete Nifty 500 as the default equity universe', async () => {
   const priorUniverse = process.env.AGI_UNIVERSE;
   const priorLimit = process.env.AGI_MAX_SYMBOLS;
   delete process.env.AGI_UNIVERSE;
   delete process.env.AGI_MAX_SYMBOLS;
   try {
+    // Five hundred, not two. loadEquityUniverse reads indices/Nifty500.csv,
+    // and the surface it feeds is mounted at /api/research/nifty500. The
+    // figure here was two hundred and was not updated when the universe
+    // widened, so this test had been failing since that change - unnoticed,
+    // because nothing ran it.
     const symbols = await loadEquityUniverse();
-    assert.equal(symbols.length, 200);
-    assert.equal(new Set(symbols).size, 200);
+    assert.equal(symbols.length, 500);
+    assert.equal(new Set(symbols).size, 500, 'the universe must not contain a duplicate symbol');
   } finally {
     if (priorUniverse === undefined) delete process.env.AGI_UNIVERSE; else process.env.AGI_UNIVERSE = priorUniverse;
     if (priorLimit === undefined) delete process.env.AGI_MAX_SYMBOLS; else process.env.AGI_MAX_SYMBOLS = priorLimit;

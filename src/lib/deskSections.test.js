@@ -7,11 +7,14 @@ import {
 } from './deskSections.js';
 
 describe('deskSections', () => {
-  it('exposes five research desks', () => {
-    assert.equal(RESEARCH_DESKS.length, 5);
+  it('exposes six research desks', () => {
+    // Six since the IPO desk was added in 0050a8975. The count and the list are
+    // asserted together on purpose: a count alone would pass if one desk were
+    // renamed, and a list alone would pass if a seventh were quietly added.
+    assert.equal(RESEARCH_DESKS.length, 6);
     assert.deepEqual(
       RESEARCH_DESKS.map((d) => d.id).sort(),
-      ['economics', 'global-markets', 'hedge-funds', 'indian-market', 'private-markets'].sort()
+      ['economics', 'global-markets', 'hedge-funds', 'indian-market', 'ipos', 'private-markets'].sort()
     );
   });
 
