@@ -18,6 +18,7 @@
  * A label that looks wrong on a manager you know is the point of the dry run.
  */
 import { createSupabaseAdmin, getSupabaseAdminCredentials } from '../lib/supabaseAdmin.js';
+import { paged } from '../services/institutionalResearchLayerService.js';
 import { strategyProfile } from '../services/strategyFingerprint.js';
 
 const APPLY = process.argv.includes('--apply');
@@ -50,18 +51,35 @@ function metricsOf(row) {
 }
 
 async function main() {
-  // Fifty-one managers today. Bounded rather than assumed: an rpc() that
-  // outgrows a thousand rows would silently return the first thousand, and
-  // asking for one more than the limit is how that is noticed instead.
-  const LIMIT = 1000;
-  const { data, error } = await client.rpc('institutional_strategy_metrics')
-    .limit(LIMIT + 1);
-  if (error) throw new Error(`measuring: ${error.message}`);
-  const rows = data || [];
-  if (rows.length > LIMIT) {
-    throw new Error(`${rows.length} managers measured, above the ${LIMIT} this script reads in one call`);
+  const managers = await paged(
+    () => client.from('institutional_managers').select('id, display_name')
+      .eq('active', true).order('display_name'),
+    { label: 'managers' },
+  );
+
+  // One call per manager rather than one call for all of them. Measuring
+  // everyone at once has to touch every holding row we store, and Supabase's
+  // HTTP layer gives up long before Postgres does - the first attempt died on
+  // an upstream gateway timeout, which no statement_timeout can lift. Scoped
+  // to a manager, every scan starts from that manager's handful of filings.
+  const rows = [];
+  const failed = [];
+  for (const manager of managers) {
+    const { data, error } = await client
+      .rpc('institutional_strategy_metrics', { p_manager_id: manager.id })
+      .limit(1);
+    if (error) { failed.push(`${manager.display_name}: ${error.message}`); continue; }
+    // No row means no active filing to measure, which is a fact about the
+    // manager rather than a failure of the call.
+    if (data && data.length) rows.push(data[0]);
+    process.stdout.write('.');
   }
-  console.log(`[strategy] measured ${rows.length} manager book(s)`);
+  process.stdout.write('\n');
+  console.log(`[strategy] measured ${rows.length} of ${managers.length} manager book(s)`);
+  if (failed.length) {
+    console.log(`[strategy] ${failed.length} could not be measured:`);
+    for (const line of failed) console.log(`  ${line}`);
+  }
 
   const written = [];
   const skipped = [];
