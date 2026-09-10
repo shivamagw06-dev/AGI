@@ -38,6 +38,29 @@ export default function InstitutionalResearchLayer() {
     return [...seen.values()];
   }, [data, backtest]);
   /**
+   * What the stated runs actually did, counted rather than asserted.
+   *
+   * The panel used to tell the reader that underperformance was the expected
+   * result. Across fifty-one managers it is not: the spread runs from -58% to
+   * +280% against SPY, and a claim contradicted by the numbers beside it
+   * teaches the reader to discount both.
+   */
+  const spread = useMemo(() => {
+    const excess = newestPerManager
+      .filter((run) => run.status === 'calculated')
+      .map((run) => Number(run.metrics?.excess_vs_spy))
+      .filter((value) => Number.isFinite(value))
+      .sort((a, b) => a - b);
+    if (!excess.length) return null;
+    return {
+      count: excess.length,
+      beat: excess.filter((value) => value > 0).length,
+      worst: excess[0],
+      best: excess[excess.length - 1],
+      median: excess[Math.floor(excess.length / 2)],
+    };
+  }, [newestPerManager]);
+  /**
    * Read this manager's run, computing it only if today has none.
    *
    * The GET endpoint serves the day's stored run and falls back to computing;
@@ -116,9 +139,10 @@ export default function InstitutionalResearchLayer() {
         </div>
         <div className="rounded-2xl border border-white/10 bg-white/[0.035] p-5">
           <div className="text-[10px] font-bold uppercase tracking-[.2em] text-neutral-600">Interpretation guardrail</div>
-          <h3 className="mt-2 text-xl font-semibold">Read the negative number first</h3>
+          <h3 className="mt-2 text-xl font-semibold">What the excess column is not</h3>
           <p className="mt-3 text-sm leading-6 text-neutral-600">A strategy that copies a 13F cannot beat the manager. The filing is public six weeks or more after the quarter it describes, and entry here is the first tradable session strictly after that public acceptance - so this measures what a follower could have had, not what the manager had.</p>
-          <p className="mt-3 text-sm leading-6 text-neutral-600">Underperformance against SPY is the expected result and the reassuring one. A copying strategy that beat the market by a wide margin would indicate look-ahead in the test rather than skill in the manager.</p>
+          <p className="mt-3 text-sm leading-6 text-neutral-600">It can, however, beat an index, and often does. Ten positions is concentrated, and ranking them by disclosed value selects whatever has appreciated most - a momentum tilt that belongs to the strategy rather than to the manager. A wide beat is that tilt meeting a strong market, not evidence of skill; a wide miss is a book that sat out the move, not evidence of its absence.</p>
+          {spread ? <p className="mt-3 text-sm leading-6 text-neutral-600">Across the {spread.count} managers stated here, {spread.beat} beat SPY and {spread.count - spread.beat} did not, from {percent(spread.worst, true)} to {percent(spread.best, true)}, with a median of {percent(spread.median, true)}. Read where a manager sits in that spread rather than the sign of its number.</p> : null}
           <div className="mt-5 rounded-xl bg-black/20 p-4 text-xs leading-5 text-neutral-700">{data.readiness?.methodology}</div>
         </div>
       </div> : null}
