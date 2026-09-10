@@ -16,10 +16,13 @@ import { issuerDirectory, FUND_SECTOR, FUND_INDUSTRY } from './issuerDirectory.j
 import { filesAsFund } from './fundEvidence.js';
 import { sectorByIssuer, sectorFromIssuer, checkDigitValid } from './cusipIssuer.js';
 import { nameIndex, matchByName } from './issuerNameMatch.js';
+import { resolveRegistrants } from './registrantNames.js';
 import { namesByTicker, windowOverlaps } from './issuerTickerRegistry.js';
 
 const SEC_DATA = 'https://data.sec.gov';
 const SEC_ARCHIVES = 'https://www.sec.gov/Archives/edgar/data';
+// Every registrant the SEC has assigned a CIK, name and number, one per line.
+const SEC_CIK_LOOKUP = 'https://www.sec.gov/Archives/edgar/cik-lookup-data.txt';
 const BENCHMARKS = ['SPY', 'QQQ'];
 const DAY_MS = 86_400_000;
 let automationStarted = false;
@@ -347,7 +350,8 @@ async function classifyTickerless(client, securities, directory, justWritten = [
   const byName = nameIndex(directory);
 
   const output = [];
-  const tally = { issuer: 0, name: 0, refused: 0, derivative: 0 };
+  const tally = { issuer: 0, name: 0, registrant: 0, refused: 0, derivative: 0 };
+  const refused = [];
   for (const security of securities) {
     if (!checkDigitValid(security.key)) tally.derivative += 1;
     const validFrom = dateOnly(security.latest) || dateOnly(new Date());
@@ -376,12 +380,55 @@ async function classifyTickerless(client, securities, directory, justWritten = [
         continue;
       } catch (error) { console.warn(`[institutional-v3] name match ${security.issuer_name}: ${error.message}`); }
     }
-    tally.refused += 1;
+    refused.push(security);
   }
 
-  console.log(`[institutional-v3] tickerless: ${tally.issuer} by issuer, ${tally.name} by name, ${tally.refused} refused (${tally.derivative} carry an invalid check digit, so are filers' own option identifiers)`);
+  // Last tier, and the only one that costs a forty-megabyte fetch, so it runs
+  // once over everything the cheaper tiers refused rather than per security.
+  // These are mostly fund trusts - TIDAL TRUST II, DIREXION SHARES ETF TRUST -
+  // which have no ticker because the trust issues dozens of ETFs and the trust
+  // is what the filer names.
+  const byRegistrant = await registrantMatches(refused.map((s) => s.issuer_name).filter(Boolean))
+    .catch((error) => { console.warn(`[institutional-v3] registrant list: ${error.message}`); return new Map(); });
+  for (const security of refused) {
+    const match = byRegistrant.get(security.issuer_name);
+    if (!match) { tally.refused += 1; continue; }
+    try {
+      const found = await sectorForCik(match.cik, null);
+      tally.registrant += 1;
+      output.push({
+        security_key: security.key, cusip: security.cusip, ticker: null,
+        issuer_name: security.issuer_name, issuer_cik: match.cik,
+        valid_from: dateOnly(security.latest) || dateOnly(new Date()),
+        source_as_of: new Date().toISOString(), updated_at: new Date().toISOString(),
+        ...found, confidence: Math.min(found.confidence, 0.7), source: 'SEC registrant name',
+      });
+    } catch (error) { console.warn(`[institutional-v3] registrant ${security.issuer_name}: ${error.message}`); tally.refused += 1; }
+  }
+
+  console.log(`[institutional-v3] tickerless: ${tally.issuer} by issuer, ${tally.name} by name, ${tally.registrant} by registrant, ${tally.refused} refused (${tally.derivative} carry an invalid check digit, so are filers' own option identifiers)`);
   if (output.length) await batches(client, 'institutional_security_classifications', output, 'security_key,valid_from,source');
   return output.length;
+}
+
+/**
+ * Resolve issuer names against every registrant the SEC has assigned a CIK.
+ *
+ * Forty megabytes and a million lines, so it is streamed against the names
+ * actually being asked about rather than indexed into memory - and fetched
+ * only when there are names left that nothing cheaper could identify.
+ */
+async function registrantMatches(names) {
+  if (!names.length) return new Map();
+  const response = await scheduleSecRequest(() => fetch(SEC_CIK_LOOKUP, {
+    headers: { 'User-Agent': process.env.SEC_USER_AGENT || 'Agarwal Global Investments research@agarwalglobalinvestments.com' },
+    signal: AbortSignal.timeout(120_000),
+  }));
+  if (!response.ok) throw new Error(`cik-lookup-data.txt: HTTP ${response.status}`);
+  // latin1: the file is not UTF-8 and a mis-decoded byte would corrupt the
+  // name it appears in rather than failing loudly.
+  const text = Buffer.from(await response.arrayBuffer()).toString('latin1');
+  return resolveRegistrants(names, text.split('\n'));
 }
 
 /**
