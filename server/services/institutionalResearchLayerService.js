@@ -14,6 +14,8 @@ import { restatements, restated } from './sectorRestatement.js';
 import { securityCandidates, partitionByIdentifiability } from './securityCandidates.js';
 import { issuerDirectory, FUND_SECTOR, FUND_INDUSTRY } from './issuerDirectory.js';
 import { filesAsFund } from './fundEvidence.js';
+import { sectorByIssuer, sectorFromIssuer, checkDigitValid } from './cusipIssuer.js';
+import { nameIndex, matchByName } from './issuerNameMatch.js';
 import { namesByTicker, windowOverlaps } from './issuerTickerRegistry.js';
 
 const SEC_DATA = 'https://data.sec.gov';
@@ -299,18 +301,7 @@ export async function collectClassifications(client, holdings, directory, limit)
     }
 
     try {
-      const sec = await submission(found.cik);
-      const url = `${SEC_DATA}/submissions/CIK${found.cik}.json`;
-      const sic = String(sec.sic || '').trim();
-      // A trust gets no SIC code from EDGAR - SPY, QQQ and Vanguard Index
-      // Funds all report an empty one - so the map correctly refuses to guess
-      // and returns Unclassified. The forms it files say what the missing code
-      // would have, and they are already in this payload.
-      if (!sic && filesAsFund(sec)) {
-        output.push({ ...base, sic_code: null, sector: FUND_SECTOR, industry: FUND_INDUSTRY, source: found.source, source_url: url, confidence: 0.9 });
-        continue;
-      }
-      output.push({ ...base, sic_code: sic, ...classifySic(sic, sec.sicDescription), source: found.source, source_url: url, confidence: sic ? 0.95 : 0.5 });
+      output.push({ ...base, ...await sectorForCik(found.cik, found.kind), source: found.source });
     } catch (error) { console.warn(`[institutional-v3] classification ${found.ticker}: ${error.message}`); }
   }
 
@@ -321,7 +312,99 @@ export async function collectClassifications(client, holdings, directory, limit)
     console.log(`[institutional-v3] ${unresolved.length} securities unresolved; largest: ${worst}`);
   }
   if (output.length) await batches(client, 'institutional_security_classifications', output, 'security_key,valid_from,source');
+
+  const inferred = await classifyTickerless(client, unidentifiable, directory, output);
+  return output.length + inferred;
+}
+
+/**
+ * Securities filed with a CUSIP and no ticker.
+ *
+ * Two tiers, in order of how much they can be trusted.
+ *
+ * The issuer first. A CUSIP is six characters of issuer and two of issue, so
+ * an option on Apple - which filers write as 037833950 against Apple's real
+ * 037833100, and which fails its own check digit - is still Apple. Where every
+ * classified security of an issuer agrees on a sector, its unclassified issues
+ * take it. Where they disagree, nothing is written.
+ *
+ * Then the name, which is the only tier here that could invent an answer and
+ * is built to refuse: an exact match on every word, against exactly one
+ * company. See issuerNameMatch for why the looser comparison used elsewhere is
+ * unsafe without a symbol to corroborate it.
+ *
+ * Both write a source of their own, so an inferred sector can always be told
+ * from one the SEC stated.
+ */
+async function classifyTickerless(client, securities, directory, justWritten = []) {
+  if (!securities?.length) return 0;
+
+  const stored = await paged(
+    () => client.from('institutional_security_classifications').select('security_key,cusip,sector').order('security_key'),
+    { label: 'classifications for issuer inference' },
+  );
+  const byIssuer = sectorByIssuer([...stored, ...justWritten]);
+  const byName = nameIndex(directory);
+
+  const output = [];
+  const tally = { issuer: 0, name: 0, refused: 0, derivative: 0 };
+  for (const security of securities) {
+    if (!checkDigitValid(security.key)) tally.derivative += 1;
+    const validFrom = dateOnly(security.latest) || dateOnly(new Date());
+    const base = {
+      security_key: security.key, cusip: security.cusip, ticker: null,
+      issuer_name: security.issuer_name, valid_from: validFrom,
+      source_as_of: new Date().toISOString(), updated_at: new Date().toISOString(), sic_code: null,
+    };
+
+    const fromIssuer = sectorFromIssuer(security.key, byIssuer);
+    if (fromIssuer) {
+      tally.issuer += 1;
+      output.push({ ...base, sector: fromIssuer, industry: 'Inferred from issuer', source: 'CUSIP issuer', source_url: null, confidence: 0.8 });
+      continue;
+    }
+
+    const match = security.issuer_name ? matchByName(security.issuer_name, byName) : null;
+    if (match) {
+      try {
+        // A name match yields a CIK, which is the thing that classifies. It
+        // goes through the same lookup the ticker path uses; confidence is
+        // lower because the name, not a symbol, is what identified it.
+        const found = await sectorForCik(match.cik, match.kind);
+        tally.name += 1;
+        output.push({ ...base, ticker: match.ticker, issuer_cik: match.cik, ...found, confidence: Math.min(found.confidence, 0.75), source: 'SEC issuer name' });
+        continue;
+      } catch (error) { console.warn(`[institutional-v3] name match ${security.issuer_name}: ${error.message}`); }
+    }
+    tally.refused += 1;
+  }
+
+  console.log(`[institutional-v3] tickerless: ${tally.issuer} by issuer, ${tally.name} by name, ${tally.refused} refused (${tally.derivative} carry an invalid check digit, so are filers' own option identifiers)`);
+  if (output.length) await batches(client, 'institutional_security_classifications', output, 'security_key,valid_from,source');
   return output.length;
+}
+
+/**
+ * The sector a CIK implies, from the SEC's own record of it.
+ *
+ * One place, so the ticker path and the name-match path cannot drift into
+ * classifying the same registrant differently.
+ *
+ * A trust gets no SIC code from EDGAR - SPY, QQQ and Vanguard Index Funds all
+ * report an empty one - so the map correctly refuses to guess and returns
+ * Unclassified. The forms it files say what the missing code would have, and
+ * they are already in this payload.
+ */
+async function sectorForCik(cik, kind) {
+  const url = `${SEC_DATA}/submissions/CIK${cik}.json`;
+  // Known to be a fund from the SEC's own fund list; nothing a SIC lookup
+  // could add, and one request saved per fund.
+  if (kind === 'fund') return { sic_code: null, sector: FUND_SECTOR, industry: FUND_INDUSTRY, source_url: url, confidence: 0.95 };
+
+  const sec = await submission(cik);
+  const sic = String(sec.sic || '').trim();
+  if (!sic && filesAsFund(sec)) return { sic_code: null, sector: FUND_SECTOR, industry: FUND_INDUSTRY, source_url: url, confidence: 0.9 };
+  return { sic_code: sic, ...classifySic(sic, sec.sicDescription), source_url: url, confidence: sic ? 0.95 : 0.5 };
 }
 
 /**

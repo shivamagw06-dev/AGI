@@ -232,7 +232,7 @@ const NOISE = new Set([
  * A set per word rather than a single string, because an abbreviation can be
  * honest about being ambiguous. Two words agree when their sets intersect.
  */
-function tokens(name) {
+export function tokens(name) {
   return String(name || '')
     .toUpperCase()
     .replace(/[^A-Z0-9 ]+/g, ' ')
