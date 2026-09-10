@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "test": "node --test \"server/**/*.test.js\" \"src/**/*.test.js\"",
+    "test": "node --test --experimental-test-module-mocks \"server/**/*.test.js\" \"src/**/*.test.js\"",
     "test:auth": "node --test src/lib/authValidation.test.js server/routes/auth.test.js",
     "test:share": "node --test src/lib/articleShareMeta.test.js src/lib/liveArticle.test.js",
     "dev": "node scripts/write-build-version.js && cp index.vite.html index.html && vite --host :: --port 3000",

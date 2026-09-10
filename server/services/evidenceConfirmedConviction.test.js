@@ -39,10 +39,14 @@ test('caps an incomplete thesis below confirmed status', () => {
   assert.equal(result.eligible_for_research_shortlist, false);
 });
 
-test('ranks a complete Nifty 200 cross-section deterministically', () => {
+test('ranks a full cross-section deterministically', () => {
+  // Two hundred items, because the point is that ranking is stable at scale -
+  // the count is the test's own fixture and says nothing about the universe.
+  // The universe label is a property of the strategy and is nifty500: the
+  // ranking feeds /api/research/nifty500 and is built with limit 500.
   const items = Array.from({ length: 200 }, (_, index) => item(`S${String(index).padStart(3, '0')}`, { research_priority_score: 100 - index / 3 }));
   const ranking = buildEvidenceConfirmedConvictionRanking({ generated_at: '2026-08-11T09:00:00Z', items });
-  assert.equal(ranking.universe, 'nifty200');
+  assert.equal(ranking.universe, 'nifty500');
   assert.equal(ranking.universe_size, 200);
   assert.equal(ranking.rows.length, 200);
   assert.deepEqual(ranking.rows.map((row) => row.rank), Array.from({ length: 200 }, (_, index) => index + 1));
