@@ -91,6 +91,11 @@ export function summariseRefresh(result, rosterSize = 0) {
     managersAttempted: rows.length,
     managersSucceeded: succeeded.length,
     filingsIngested: allFilings.filter((filing) => filing?.status === 'ingested').length,
+    // Filings that were read successfully and stored no holdings, because the
+    // filer withheld the information table under confidential treatment. They
+    // are not failures and not ingestions, and counting them as either makes a
+    // run look wrong. Norges Bank contributes one most quarters.
+    filingsWithheld: allFilings.filter((filing) => filing?.status === 'withheld').length,
     holdingsRows: allFilings.reduce((total, filing) => total + (Number(filing?.holdings) || 0), 0),
     amendmentsDetected: allFilings.filter(isAmendment).length,
     // Reported separately from manager failures. Collection writing every
