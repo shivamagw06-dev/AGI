@@ -62,6 +62,13 @@ const ABBREVIATIONS = new Map(Object.entries({
 export function canonicalName(name) {
   return String(name ?? '')
     .toUpperCase()
+    // Periods go before anything else, so a dotted abbreviation stays one
+    // word. Turning punctuation into spaces first makes "L.L.C." into L, L, C
+    // - three tokens, none of them recognised as a corporate form - and
+    // COATUE MANAGEMENT, L.L.C. then fails to match COATUE MANAGEMENT. The
+    // same for L.P., which is how most funds are constituted, so the names
+    // this is least able to match were the ones it most needed to.
+    .replace(/\./g, '')
     .replace(/[^A-Z0-9 ]+/g, ' ')
     .split(/\s+/)
     .filter(Boolean)
