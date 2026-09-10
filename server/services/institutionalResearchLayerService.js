@@ -655,7 +655,10 @@ export async function getInstitutionalResearchLayer() {
         .order('filed_at', { ascending: false }).limit(100),
       client.from('institutional_external_filings').select('id', { count: 'exact', head: true }),
       client.from('institutional_intelligence_briefs').select('*, institutional_managers(display_name,slug)').in('status', ['approved', 'published']).order('generated_at', { ascending: false }).limit(30),
-      client.from('institutional_backtest_runs').select('*, institutional_managers(display_name,slug)').order('generated_at', { ascending: false }).limit(30),
+      // Enough for every tracked manager and their history. Thirty showed
+      // roughly half of fifty managers once each had more than one stored run,
+      // and which half depended on when they were last computed.
+      client.from('institutional_backtest_runs').select('*, institutional_managers(display_name,slug)').order('generated_at', { ascending: false }).limit(300),
     ]);
     if (cError || eError || xError || bError || tError) throw cError || eError || xError || bError || tError;
     // A failed rotation is an empty section, not a failed page. Everything

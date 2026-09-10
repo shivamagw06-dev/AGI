@@ -22,6 +22,22 @@ export default function InstitutionalResearchLayer() {
   useEffect(() => { loadResearchLayer(); }, []);
   const movers = useMemo(() => (data?.sector_rotation || []).filter((row) => row.sector !== 'Unclassified'), [data]);
   /**
+   * One row per manager, newest first.
+   *
+   * Stored runs arrive ordered by generated_at, and a manager accumulates one
+   * per day and per strategy - so without this the list showed the same
+   * manager several times and pushed others off the end. A run just computed
+   * on this page takes precedence over anything stored for that manager.
+   */
+  const newestPerManager = useMemo(() => {
+    const seen = new Map();
+    for (const run of [...(backtest ? [backtest] : []), ...(data?.backtests || [])]) {
+      const key = run.manager_id || run.institutional_managers?.slug || run.manager?.slug || run.id;
+      if (!seen.has(key)) seen.set(key, run);
+    }
+    return [...seen.values()];
+  }, [data, backtest]);
+  /**
    * Read this manager's run, computing it only if today has none.
    *
    * The GET endpoint serves the day's stored run and falls back to computing;
@@ -77,7 +93,7 @@ export default function InstitutionalResearchLayer() {
               ? 'Reading every disclosed position and its adjusted closes. A manager not run today can take several minutes; one already run today returns immediately.'
               : "Top 10 positions by disclosed value, rebalanced each quarter, entered on the first session after the filing became public. Today's run is reused if one exists."}</p>
           </div>
-          <div className="space-y-3">{[...(backtest ? [backtest] : []), ...(data.backtests || []).filter((run) => !backtest || run.id !== backtest.id)].map((run) => {
+          <div className="space-y-3">{newestPerManager.map((run) => {
             const metrics = run.metrics || {};
             // Two shapes: a stored run arrives with the joined
             // institutional_managers, a freshly computed one with `manager`.
