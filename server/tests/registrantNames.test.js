@@ -39,6 +39,18 @@ test('TRUST and FUND are identity here, not filler', () => {
   assert.notEqual(canonicalName('TIDAL TRUST II'), canonicalName('TIDAL TRUST III'));
 });
 
+test('a partnership suffix is dropped like every other one', () => {
+  // Measured, not hypothetical: the ADV import matched 33 of 51 managers and
+  // Fundsmith was one of the misses. It registers as "FUNDSMITH LLP" and the
+  // site calls it "Fundsmith"; LLC and LP were both in the suffix list and
+  // LLP was not, so the two names never canonicalised to the same string.
+  assert.equal(canonicalName('FUNDSMITH LLP'), 'FUNDSMITH');
+  assert.equal(canonicalName('Fundsmith'), 'FUNDSMITH');
+  // The suffix is dropped, not the word: a firm actually named after it keeps
+  // whatever else it has.
+  assert.equal(canonicalName('BROWN LLP ADVISORS'), 'BROWN ADVISORS');
+});
+
 test('a roman numeral distinguishes two registrants', () => {
   // Trust II and Trust III file separately and hold different funds.
   const lines = [line('PROSHARES TRUST', '1'), line('PROSHARES TRUST II', '2')];

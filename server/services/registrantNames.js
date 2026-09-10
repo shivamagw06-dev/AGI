@@ -30,7 +30,7 @@
 /** Words that name a company's form rather than the company. */
 const SUFFIX = new Set([
   'INC', 'CORP', 'CORPORATION', 'CO', 'COMPANY', 'LTD', 'LIMITED', 'PLC', 'LLC',
-  'LP', 'THE', 'NEW', 'SA', 'NV', 'AG', 'CL', 'CLASS', 'COM', 'ORD', 'SHS', 'ADR', 'ADS',
+  'LP', 'LLP', 'THE', 'NEW', 'SA', 'NV', 'AG', 'CL', 'CLASS', 'COM', 'ORD', 'SHS', 'ADR', 'ADS',
 ]);
 
 /**
