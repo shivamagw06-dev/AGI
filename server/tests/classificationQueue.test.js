@@ -113,3 +113,45 @@ test('the staleness window is honoured at its edges', () => {
   assert.deepEqual(just(181), [{ key: 'A', ticker: 'A' }]);
   assert.deepEqual(just(179), []);
 });
+
+test('a row saying Unclassified is a failed attempt, not a result', () => {
+  // How SPY sat at $326bn outside every sector. It was classified before
+  // there was any way to recognise a fund; the attempt produced Unclassified;
+  // the row then looked fresh for ever, so the fund logic that arrived later
+  // never saw it.
+  const securities = [sec('SPY')];
+  const failed = [{ security_key: 'SPY', sector: 'Unclassified', source_as_of: daysAgo(1) }];
+  assert.deepEqual(keys(classificationQueue({ securities, classified: failed, limit: 5, asOf })), ['SPY']);
+
+  const succeeded = [{ security_key: 'SPY', sector: 'Funds & ETFs', source_as_of: daysAgo(1) }];
+  assert.deepEqual(classificationQueue({ securities, classified: succeeded, limit: 5, asOf }), []);
+});
+
+test('a real classification outranks an Unclassified one for the same security', () => {
+  // Both rows exist: the failed attempt and the later success. The security
+  // is classified, and retrying it every night would waste the whole limit.
+  const classified = [
+    { security_key: 'SPY', sector: 'Unclassified', source_as_of: daysAgo(400) },
+    { security_key: 'SPY', sector: 'Funds & ETFs', source_as_of: daysAgo(1) },
+  ];
+  assert.deepEqual(classificationQueue({ securities: [sec('SPY')], classified, limit: 5, asOf }), []);
+});
+
+test('a success stands whichever order the rows arrive in', () => {
+  // Rows come back ordered by key then date, but nothing guarantees a failed
+  // attempt precedes the success that replaced it - a later re-attempt can
+  // fail on a network error. Taking whichever row happens to be last would
+  // then retry a security whose sector is perfectly well known.
+  const success = { security_key: 'SPY', sector: 'Funds & ETFs', source_as_of: daysAgo(1) };
+  const failure = { security_key: 'SPY', sector: 'Unclassified', source_as_of: daysAgo(400) };
+  assert.deepEqual(classificationQueue({ securities: [sec('SPY')], classified: [failure, success], limit: 5, asOf }), []);
+  assert.deepEqual(classificationQueue({ securities: [sec('SPY')], classified: [success, failure], limit: 5, asOf }), []);
+});
+
+test('retrying failures never starves work never attempted', () => {
+  // The stall this must not reintroduce. A thousand permanently unresolvable
+  // securities would otherwise fill every slot of a sixty-a-night limit.
+  const securities = [sec('FAILED'), sec('NEW')];
+  const classified = [{ security_key: 'FAILED', sector: 'Unclassified', source_as_of: daysAgo(1) }];
+  assert.deepEqual(keys(classificationQueue({ securities, classified, limit: 1, asOf })), ['NEW']);
+});
