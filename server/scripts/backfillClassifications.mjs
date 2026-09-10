@@ -22,7 +22,7 @@
  * on the site asks.
  */
 import { createSupabaseAdmin, getSupabaseAdminCredentials } from '../lib/supabaseAdmin.js';
-import { core, collectClassifications, paged, secDirectory, resolveIssuer } from '../services/institutionalResearchLayerService.js';
+import { core, collectClassifications, paged, secDirectory, resolveIssuer, registrantMatches } from '../services/institutionalResearchLayerService.js';
 import { secLimiterStats } from '../services/secRateLimiter.js';
 import { securityCandidates, partitionByIdentifiability } from '../services/securityCandidates.js';
 import { namesByTicker } from '../services/issuerTickerRegistry.js';
@@ -92,18 +92,32 @@ async function main() {
       { label: 'classifications for issuer inference' },
     ));
     const byName = nameIndex(directory);
-    const blindTally = { issuer: 0, name: 0, refused: 0, derivative: 0, value: 0 };
+    const blindTally = { issuer: 0, name: 0, registrant: 0, refused: 0 };
+    const stillRefused = [];
     const blind = [...unidentifiable, ...queued.filter((s) => !resolveIssuer(s, directory, registry))];
     for (const security of blind) {
       if (!checkDigitValid(security.key)) blindTally.derivative += 1;
       if (sectorFromIssuer(security.key, byIssuer)) blindTally.issuer += 1;
-      else if (security.issuer_name && matchByName(security.issuer_name, byName)) { blindTally.name += 1; blindTally.value += security.value_usd; }
+      else if (security.issuer_name && matchByName(security.issuer_name, byName)) { blindTally.name += 1; }
+      else stillRefused.push(security);
+    }
+
+    // The registrant tier, modelled the same way the apply runs it. Without
+    // this the dry run reported three and a half thousand securities as
+    // refused that the apply would in fact resolve, and an estimate of fifty
+    // requests for a job that makes thousands - which is the one thing a dry
+    // run exists not to do.
+    const byRegistrant = await registrantMatches(stillRefused.map((s) => s.issuer_name).filter(Boolean))
+      .catch((error) => { console.log(`[classify] registrant list unavailable: ${error.message}`); return new Map(); });
+    for (const security of stillRefused) {
+      if (byRegistrant.get(security.issuer_name)) blindTally.registrant += 1;
       else blindTally.refused += 1;
     }
     console.log(`[classify] ${blind.length.toLocaleString()} without a usable symbol (${unidentifiable.length.toLocaleString()} filed with no ticker, ${(blind.length - unidentifiable.length).toLocaleString()} whose ticker named nothing):`);
     console.log(`[classify]   ${String(blindTally.issuer).padStart(6)} resolved by CUSIP issuer, no SEC request`);
-    console.log(`[classify]   ${String(blindTally.name).padStart(6)} matched by issuer name, one request each`);
-    console.log(`[classify]   ${String(blindTally.refused).padStart(6)} refused by both`);
+    console.log(`[classify]   ${String(blindTally.name).padStart(6)} matched by issuer name in the ticker files, one request each`);
+    console.log(`[classify]   ${String(blindTally.registrant).padStart(6)} matched against the SEC registrant list, one request each`);
+    console.log(`[classify]   ${String(blindTally.refused).padStart(6)} refused by all three`);
     console.log(`[classify]   ${String(blindTally.derivative).padStart(6)} carry an invalid check digit - filers' own option identifiers, not real CUSIPs`);
 
     const tally = { fund: 0, company: 0, registry: 0, unresolved: 0 };
@@ -114,7 +128,7 @@ async function main() {
       else if (found.source === 'SEC issuer registry') tally.registry += 1;
       else tally.company += 1;
     }
-    const requests = tally.company + tally.registry + blindTally.name;
+    const requests = tally.company + tally.registry + blindTally.name + blindTally.registrant;
     console.log(`[classify] ${queued.length.toLocaleString()} queued:`);
     console.log(`[classify]   ${String(tally.fund).padStart(6)} funds, resolved from the ticker file with no SEC request`);
     console.log(`[classify]   ${String(tally.company).padStart(6)} companies, one submissions request each`);

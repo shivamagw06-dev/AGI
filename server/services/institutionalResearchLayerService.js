@@ -423,7 +423,7 @@ async function classifyTickerless(client, securities, directory, justWritten = [
  * actually being asked about rather than indexed into memory - and fetched
  * only when there are names left that nothing cheaper could identify.
  */
-async function registrantMatches(names) {
+export async function registrantMatches(names) {
   if (!names.length) return new Map();
   const response = await scheduleSecRequest(() => fetch(SEC_CIK_LOOKUP, {
     headers: { 'User-Agent': process.env.SEC_USER_AGENT || 'Agarwal Global Investments research@agarwalglobalinvestments.com' },
