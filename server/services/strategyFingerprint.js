@@ -434,6 +434,11 @@ export function strategyProfile(metrics) {
     archetype: archetype.key,
     label: archetype.label,
     characteristicOf: archetype.characteristicOf,
+    // The metrics the profile was actually built from, not the ones handed in.
+    // A caller that keeps its own copy keeps the un-normalised one, and the
+    // refused turnover travels back out through it - which is how Norges Bank
+    // came out of the classifier with no turnover and still printed 100%.
+    metrics: m,
     confidence: confidenceFor(m, archetype),
     evidence: evidenceFor(m),
     traits: traitsFor(m),
