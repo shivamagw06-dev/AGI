@@ -191,6 +191,27 @@ const ABBREVIATIONS = new Map(Object.entries({
   MGMT: 'MANAGEMENT', MGT: 'MANAGEMENT', DEV: 'DEVELOPMENT',
   MFG: 'MANUFACTURING', SOLUTION: 'SOLUTIONS', PRODUCT: 'PRODUCTS',
   BANCORPORATION: 'BANCORP', BANCSHARES: 'BANCORP',
+  // A second batch, taken from the refusal messages of a real run rather than
+  // from imagination. Each of these was a holding and an SEC name that name the
+  // same company in different words, and nothing else:
+  //
+  //   ALTAIR ENGR / Altair Engineering            $7.3bn
+  //   UNITED STATES STL / United States Steel    $17.5bn
+  //   SUMMIT MATLS / Summit Materials             $7.0bn
+  //   AMERICAN EQTY INVT LIFE HLD / American Equity Investment Life Holding
+  //   SITE CTRS / SITE Centers                    $4.9bn
+  //   PATTERSON COS / Patterson Companies         $4.6bn
+  //   RETAIL OPPORTUNITY INVTS / ... Investments  $4.0bn
+  //   SPIRIT RLTY CAP / Spirit Realty Capital     $3.1bn
+  //   EQUITY COMWLTH / Equity Commonwealth        $2.9bn
+  //   SIX FLAGS ENTMT / Six Flags Entertainment   $2.9bn
+  ENGR: 'ENGINEERING', ENG: 'ENGINEERING',
+  EQTY: 'EQUITY', INVT: 'INVESTMENT', INVTS: 'INVESTMENT', INVESTMENTS: 'INVESTMENT',
+  HLD: 'HOLDINGS', CTRS: 'CENTERS', CTR: 'CENTERS', CENTER: 'CENTERS',
+  COS: 'COMPANIES', RLTY: 'REALTY', CAP: 'CAPITAL',
+  ENTMT: 'ENTERTAINMENT', ENTERTAINMENTS: 'ENTERTAINMENT',
+  STL: 'STEEL', MATLS: 'MATERIALS', MATL: 'MATERIALS', MATERIAL: 'MATERIALS',
+  COMWLTH: 'COMMONWEALTH',
 }));
 
 /**
@@ -224,6 +245,16 @@ const NOISE = new Set([
   // BRASILEIRO SA"; the word that differs describes the line, not the issuer,
   // and PBR/A resolves to PBR-A, whose class is in the ticker itself.
   'PREF', 'PREFERRED', 'PFD',
+  // OLD is deliberately absent, though EDGAR marks a renamed registrant's old
+  // record with it. Six Flags Entertainment Corp/OLD already matches SIX FLAGS
+  // ENTMT CORP NEW without it, because a shorter name is allowed to say less
+  // than a longer one - so dropping OLD changes nothing there and only loosens
+  // the case where the holding is the longer name. A word that earns nothing
+  // and costs precision is not worth carrying.
+  //
+  // A truncated CORP. 13F issuer names are cut to a fixed width, and a name
+  // ending "INVTS COR" is one character short of a word already ignored.
+  'COR',
 ]);
 
 /**
