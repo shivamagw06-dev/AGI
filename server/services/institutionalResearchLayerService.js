@@ -11,6 +11,10 @@ import { parseFormFour, rawDocumentPath } from './formFour.js';
 import { classifySic } from './sicSectors.js';
 import { classificationQueue } from './classificationQueue.js';
 import { restatements, restated } from './sectorRestatement.js';
+import { securityCandidates } from './securityCandidates.js';
+import { issuerDirectory, FUND_SECTOR, FUND_INDUSTRY } from './issuerDirectory.js';
+import { filesAsFund } from './fundEvidence.js';
+import { namesByTicker, windowOverlaps } from './issuerTickerRegistry.js';
 
 const SEC_DATA = 'https://data.sec.gov';
 const SEC_ARCHIVES = 'https://www.sec.gov/Archives/edgar/data';
@@ -54,9 +58,31 @@ async function sourceText(url) {
   return response.text();
 }
 
-async function tickerMap() {
-  const payload = await sourceJson('https://www.sec.gov/files/company_tickers.json');
-  return new Map(Object.values(payload || {}).map((row) => [String(row.ticker || '').toUpperCase(), { cik: String(row.cik_str || '').padStart(10, '0'), title: row.title }]));
+
+/**
+ * Every ticker the SEC publishes, across all three of its lists.
+ *
+ * company_tickers.json alone is operating companies, which is why the funds
+ * that make up most of a large book's unclassified value were skipped in
+ * silence. The exchange file is fetched because it is the only one of the
+ * three that carries SPY, and the fund file because it carries the other
+ * twenty-eight thousand.
+ */
+export async function secDirectory() {
+  const [companies, exchange, funds] = await Promise.all([
+    sourceJson('https://www.sec.gov/files/company_tickers.json'),
+    // Neither of these is essential: without them the classifier falls back to
+    // what it could already do, which is worse but not broken.
+    sourceJson('https://www.sec.gov/files/company_tickers_exchange.json').catch((error) => {
+      console.warn(`[institutional-v3] exchange ticker file: ${error.message}`);
+      return null;
+    }),
+    sourceJson('https://www.sec.gov/files/company_tickers_mf.json').catch((error) => {
+      console.warn(`[institutional-v3] fund ticker file: ${error.message}`);
+      return null;
+    }),
+  ]);
+  return issuerDirectory({ companies, exchange, funds });
 }
 const submission = (cik) => sourceJson(`${SEC_DATA}/submissions/CIK${String(cik).padStart(10, '0')}.json`);
 
@@ -207,41 +233,109 @@ async function restateStoredSectors(client) {
   return changes.length;
 }
 
-export async function collectClassifications(client, holdings, companies, limit) {
-  const distinct = [...new Map(holdings.filter((row) => tickerOf(row)).map((row) => [keyOf(row), row])).values()];
-  // What the table already holds, so the queue can skip it. Without this the
-  // slice below took the same sixty securities every night - holdings order
-  // does not change between runs - and the table stopped at seventy rows
-  // however many nights it ran.
+export async function collectClassifications(client, holdings, directory, limit) {
+  // Every ticker each security has been filed under, largest security first.
+  // The code this replaces kept one holding per security and let the last one
+  // win, so a single filer's mangled symbol decided the identity of the whole
+  // position - EXMOC for CUSIP 30231G102, which is Exxon Mobil, and $144.9bn
+  // unclassified because of it.
+  const distinct = securityCandidates(holdings);
   const classified = await paged(
     () => client.from('institutional_security_classifications').select('security_key,source_as_of').order('security_key').order('source_as_of'),
     { label: 'existing classifications' },
   );
   const securities = classificationQueue({
-    securities: distinct.map((row) => ({ key: keyOf(row), row })),
+    securities: distinct.map((row) => ({ key: row.key, row })),
     classified, limit,
   }).map((entry) => entry.row);
-  // Before anything new is fetched, bring what is already stored into line
-  // with the current map. The queue measures how long ago a row was written,
-  // which cannot notice that the map itself changed - so a sector map fix
-  // would otherwise never reach the rows written before it, and those are the
-  // oldest and largest holdings in the book. Costs one read and no SEC
-  // traffic: sic_code is stored, and the sector is a function of it.
   await restateStoredSectors(client);
-  console.log(`[institutional-v3] ${distinct.length} distinct securities, ${classified.length} classified, ${securities.length} queued`);
+
+  // The historical registry, for tickers no current SEC list still carries.
+  // Electronic Arts and the other names that have left company_tickers.json
+  // since they were acquired are here and nowhere else.
+  const registry = namesByTicker(await paged(
+    () => client.from('sec_issuer_tickers').select('ticker,cik,issuer_name,first_seen,last_seen').order('ticker').order('cik'),
+    { label: 'issuer ticker registry' },
+  ).catch((error) => {
+    console.warn(`[institutional-v3] issuer registry unavailable: ${error.message}`);
+    return [];
+  }));
+
+  console.log(`[institutional-v3] ${distinct.length} securities, ${classified.length} classified, ${securities.length} queued`);
 
   const output = [];
-  for (const holding of securities) {
-    const ticker = tickerOf(holding);
-    const company = companies.get(ticker);
-    if (!company) continue;
+  const unresolved = [];
+  for (const security of securities) {
+    const found = resolveIssuer(security, directory, registry);
+    if (!found) { unresolved.push(security); continue; }
+
+    const validFrom = dateOnly(security.latest) || dateOnly(new Date());
+    const base = {
+      security_key: security.key, cusip: security.cusip, ticker: found.ticker,
+      issuer_name: security.issuer_name || found.title, issuer_cik: found.cik,
+      valid_from: validFrom, source_as_of: new Date().toISOString(), updated_at: new Date().toISOString(),
+    };
+
+    // A fund needs no SIC lookup. Its own filings would say 6726, investment
+    // offices, which this map reads as Financials - and calling an S&P 500
+    // index fund a financials position is confidently wrong, which is worse
+    // than leaving it unclassified. It also saves a request per fund.
+    if (found.kind === 'fund') {
+      output.push({ ...base, sic_code: null, sector: FUND_SECTOR, industry: FUND_INDUSTRY, source: 'SEC fund tickers', source_url: 'https://www.sec.gov/files/company_tickers_mf.json', confidence: 0.95 });
+      continue;
+    }
+
     try {
-      const sec = await submission(company.cik);
-      output.push({ security_key: keyOf(holding), cusip: holding.cusip || null, ticker, issuer_name: holding.issuer_name || company.title, issuer_cik: company.cik, sic_code: String(sec.sic || ''), ...classifySic(sec.sic, sec.sicDescription), valid_from: dateOnly(holding.report_date || holding.created_at) || dateOnly(new Date()), source: 'SEC submissions', source_url: `${SEC_DATA}/submissions/CIK${company.cik}.json`, source_as_of: new Date().toISOString(), confidence: sec.sic ? 0.95 : 0.5, updated_at: new Date().toISOString() });
-    } catch (error) { console.warn(`[institutional-v3] classification ${ticker}: ${error.message}`); }
+      const sec = await submission(found.cik);
+      const url = `${SEC_DATA}/submissions/CIK${found.cik}.json`;
+      const sic = String(sec.sic || '').trim();
+      // A trust gets no SIC code from EDGAR - SPY, QQQ and Vanguard Index
+      // Funds all report an empty one - so the map correctly refuses to guess
+      // and returns Unclassified. The forms it files say what the missing code
+      // would have, and they are already in this payload.
+      if (!sic && filesAsFund(sec)) {
+        output.push({ ...base, sic_code: null, sector: FUND_SECTOR, industry: FUND_INDUSTRY, source: found.source, source_url: url, confidence: 0.9 });
+        continue;
+      }
+      output.push({ ...base, sic_code: sic, ...classifySic(sic, sec.sicDescription), source: found.source, source_url: url, confidence: sic ? 0.95 : 0.5 });
+    } catch (error) { console.warn(`[institutional-v3] classification ${found.ticker}: ${error.message}`); }
+  }
+
+  if (unresolved.length) {
+    // Named rather than counted. A security nothing can identify is a gap in
+    // the chart, and the largest of them are worth someone looking at.
+    const worst = unresolved.slice(0, 5).map((s) => `${s.tickers[0] || s.key} (${s.issuer_name || 'unnamed'})`).join(', ');
+    console.log(`[institutional-v3] ${unresolved.length} securities unresolved; largest: ${worst}`);
   }
   if (output.length) await batches(client, 'institutional_security_classifications', output, 'security_key,valid_from,source');
   return output.length;
+}
+
+/**
+ * Who a security belongs to, trying each ticker it has been filed under.
+ *
+ * The SEC's own lists first, in the order they are authoritative, then the
+ * historical registry for names that have left them - acquired companies are
+ * dropped from company_tickers.json but are still held at the quarter end
+ * they were acquired in.
+ *
+ * The registry is only consulted where a ticker matches exactly one issuer
+ * whose window overlaps the holding. A ticker that has belonged to two
+ * companies cannot be resolved by symbol alone, and guessing would attribute
+ * one company's position to another.
+ */
+function resolveIssuer(security, directory, registry) {
+  for (const ticker of security.tickers || []) {
+    const live = directory?.get(ticker);
+    if (live?.cik) return { ...live, ticker, source: live.kind === 'fund' ? 'SEC fund tickers' : 'SEC submissions' };
+  }
+  for (const ticker of security.tickers || []) {
+    const entries = (registry?.get(ticker) || []).filter((entry) => windowOverlaps(entry, { earliest: security.earliest, latest: security.latest }));
+    if (entries.length !== 1) continue;
+    const [entry] = entries;
+    return { cik: String(entry.cik || '').padStart(10, '0'), title: entry.issuer_name, kind: 'company', ticker, source: 'SEC issuer registry' };
+  }
+  return null;
 }
 
 async function collectPrices(client, holdings, limit) {
@@ -285,7 +379,7 @@ function archiveUrl(cik, row) {
   return `${SEC_ARCHIVES}/${String(cik).replace(/^0+/, '')}/${String(row.accession).replaceAll('-', '')}/${row.document}`;
 }
 
-async function collectExternalFilings(client, managers, holdings, companies, limit) {
+async function collectExternalFilings(client, managers, holdings, directory, limit) {
   const output = [];
   for (const manager of managers.filter((row) => row.cik).slice(0, limit)) {
     try {
@@ -294,8 +388,11 @@ async function collectExternalFilings(client, managers, holdings, companies, lim
     } catch (error) { console.warn(`[institutional-v3] ownership scan ${manager.display_name}: ${error.message}`); }
   }
   for (const ticker of [...new Set(holdings.map(tickerOf).filter(Boolean))].slice(0, limit)) {
-    const company = companies.get(ticker);
-    if (!company) continue;
+    const company = directory.get(ticker);
+    // Funds are skipped: this scans for Form 4s, and a trust has no insiders
+    // filing them. Before the directory carried funds at all they were skipped
+    // by accident, through not being found; now it is deliberate.
+    if (!company || company.kind === 'fund') continue;
     try {
       const filings = recentFilings(await submission(company.cik)).filter((row) => /^4(\/A)?$/.test(row.form || '')).slice(0, 10);
       // Read, not just indexed. Storing the accession number alone records
@@ -382,10 +479,10 @@ async function createAlerts(client) {
 
 export async function refreshInstitutionalResearchLayer({ classificationLimit = 60, priceLimit = 60, filingLimit = 50 } = {}) {
   const { client, managers, filings, holdings } = await core();
-  const companies = await tickerMap();
-  const classifications = await collectClassifications(client, holdings, companies, classificationLimit);
+  const directory = await secDirectory();
+  const classifications = await collectClassifications(client, holdings, directory, classificationLimit);
   const prices = await collectPrices(client, holdings, priceLimit);
-  const external = await collectExternalFilings(client, managers, holdings, companies, filingLimit);
+  const external = await collectExternalFilings(client, managers, holdings, directory, filingLimit);
   const briefs = await createBriefs(client, managers, filings, holdings);
   const alerts = await createAlerts(client);
   return { status: 'complete', classifications, price_rows: prices, external_filings: external, briefs_created_or_refreshed: briefs, personalized_alerts: alerts, refreshed_at: new Date().toISOString() };
