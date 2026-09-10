@@ -251,3 +251,62 @@ test('an unrecoverable symbol with no matching issuer says both things', () => {
   assert.equal(r.ticker, null);
   assert.match(r.reason, /no filing names this issuer/);
 });
+
+test('filer abbreviations from a real run reach the SEC spelling', () => {
+  // Every pair here is a refusal from the venue recovery, where the holding
+  // and the SEC name were the same company written differently and nothing
+  // else. $59.2bn of holdings between them.
+  const pairs = [
+    ['ALTAIR   ENGR    INC', 'Altair Engineering Inc.'],
+    ['UNITED  STATES       STL   CORP', 'United States Steel Corp'],
+    ['SUMMIT   MATLS     INC', 'Summit Materials Inc'],
+    ['AMERICAN  EQTY   INVT       LIFE     HLD', 'AMERICAN EQUITY INVESTMENT LIFE HOLDING CO'],
+    ['SITE   CTRS   CORP', 'SITE Centers Corp.'],
+    ['PATTERSON     COS   INC', 'PATTERSON COMPANIES, INC.'],
+    ['RETAIL   OPPORTUNITY      INVTS  COR', 'RETAIL OPPORTUNITY INVESTMENTS CORP'],
+    ['SPIRIT  RLTY    CAP     INC  NEW', 'SPIRIT REALTY CAPITAL, INC.'],
+    ['EQUITY   COMWLTH', 'Equity Commonwealth'],
+    ['SIX   FLAGS     ENTMT  CORP   NEW', 'Six Flags Entertainment Corp/OLD'],
+  ];
+  for (const [held, sec] of pairs) {
+    assert.equal(sameCompany(held, sec), true, `${held.replace(/\s+/g, ' ')} should be ${sec}`);
+  }
+});
+
+test('the wider vocabulary does not make different companies the same', () => {
+  // The failure that matters. A recovery writes to identifier history, so a
+  // false match attributes one company's holdings to another - quietly, and
+  // in a way no price check would catch.
+  const distinct = [
+    ['SPIRIT RLTY CAP INC', 'SPIRIT AEROSYSTEMS HOLDINGS INC'],
+    ['AMERICAN EQTY INVT LIFE HLD', 'AMERICAN INTERNATIONAL GROUP INC'],
+    ['SITE CTRS CORP', 'SITEONE LANDSCAPE SUPPLY INC'],
+    ['PATTERSON COS INC', 'PATTERSON-UTI ENERGY INC'],
+    ['SUMMIT MATLS INC', 'SUMMIT THERAPEUTICS PLC'],
+    ['EQUITY COMWLTH', 'EQUITY RESIDENTIAL'],
+    ['CAPITAL ONE FINL CORP', 'CAPITAL SOUTHWEST CORP'],
+    ['SIX FLAGS ENTMT CORP', 'LIVE NATION ENTERTAINMENT INC'],
+    ['UNITED STATES STL CORP', 'UNITED STATES CELLULAR CORP'],
+    ['ALTAIR ENGR INC', 'ALTAIR NANOTECHNOLOGIES INC'],
+  ];
+  for (const [a, b] of distinct) {
+    assert.equal(sameCompany(a, b), false, `${a} must not match ${b}`);
+  }
+});
+
+test('a truncated CORP is dropped, and OLD needs no rule of its own', () => {
+  // A 13F issuer name cut to a fixed width can end "INVTS COR", one character
+  // short of a word already ignored.
+  assert.equal(sameCompany('ACME INVTS COR', 'ACME INVESTMENTS CORP'), true);
+  // EDGAR marks a renamed registrant's old record with /OLD. It needs no
+  // entry: the shorter name is allowed to say less, so Six Flags matches
+  // across the rename either way, and a rule that earns nothing only loosens
+  // the case where the holding is the longer name.
+  assert.equal(sameCompany('SIX FLAGS ENTMT CORP NEW', 'Six Flags Entertainment Corp/OLD'), true);
+  // COR is dropped; CORE is a word and is not. Compared at a length where the
+  // prefix rule cannot mask the difference - "ACME CORE INC" against "ACME INC"
+  // matches for an unrelated reason, because a shorter name is allowed to say
+  // less than a longer one.
+  assert.equal(sameCompany('ACME COR SYSTEMS', 'ACME SYSTEMS'), true, 'COR is a truncated CORP');
+  assert.equal(sameCompany('ACME CORE SYSTEMS', 'ACME SYSTEMS'), false, 'CORE is part of the name');
+});
