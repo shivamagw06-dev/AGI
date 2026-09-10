@@ -252,7 +252,7 @@ export async function collectClassifications(client, holdings, directory, limit)
   // nothing, which is the stall the queue itself was written to fix.
   const { identifiable: distinct, unidentifiable } = partitionByIdentifiability(all);
   const classified = await paged(
-    () => client.from('institutional_security_classifications').select('security_key,source_as_of').order('security_key').order('source_as_of'),
+    () => client.from('institutional_security_classifications').select('security_key,sector,source_as_of').order('security_key').order('source_as_of'),
     { label: 'existing classifications' },
   );
   const securities = classificationQueue({
@@ -312,11 +312,16 @@ export async function collectClassifications(client, holdings, directory, limit)
     // Named rather than counted. A security nothing can identify is a gap in
     // the chart, and the largest of them are worth someone looking at.
     const worst = unresolved.slice(0, 5).map((s) => `${s.tickers[0] || s.key} (${s.issuer_name || 'unnamed'})`).join(', ');
-    console.log(`[institutional-v3] ${unresolved.length} securities unresolved; largest: ${worst}`);
+    console.log(`[institutional-v3] ${unresolved.length} securities whose ticker named nothing, passed to the issuer and name tiers; largest: ${worst}`);
   }
   if (output.length) await batches(client, 'institutional_security_classifications', output, 'security_key,valid_from,source');
 
-  const inferred = await classifyTickerless(client, unidentifiable, directory, output);
+  // Securities whose ticker named nothing join the tickerless pipeline. EXMOC
+  // is not a symbol any SEC list carries, but the holding says EXXON MOBIL
+  // CORP and the name tier resolves that without difficulty - and $144.9bn was
+  // sitting outside every sector because a failed symbol lookup was the end of
+  // the road rather than the start of the next tier.
+  const inferred = await classifyTickerless(client, [...unidentifiable, ...unresolved], directory, output);
   return output.length + inferred;
 }
 

@@ -66,7 +66,7 @@ async function main() {
     // Paged. A plain select stops at a thousand rows and reports success, and
     // a dry run that under-reports the backlog is worse than no dry run.
     const classified = await paged(
-      () => client.from('institutional_security_classifications').select('security_key,source_as_of').order('security_key').order('source_as_of'),
+      () => client.from('institutional_security_classifications').select('security_key,sector,source_as_of').order('security_key').order('source_as_of'),
       { label: 'existing classifications' },
     );
     const queued = classificationQueue({
@@ -93,13 +93,14 @@ async function main() {
     ));
     const byName = nameIndex(directory);
     const blindTally = { issuer: 0, name: 0, refused: 0, derivative: 0, value: 0 };
-    for (const security of unidentifiable) {
+    const blind = [...unidentifiable, ...queued.filter((s) => !resolveIssuer(s, directory, registry))];
+    for (const security of blind) {
       if (!checkDigitValid(security.key)) blindTally.derivative += 1;
       if (sectorFromIssuer(security.key, byIssuer)) blindTally.issuer += 1;
       else if (security.issuer_name && matchByName(security.issuer_name, byName)) { blindTally.name += 1; blindTally.value += security.value_usd; }
       else blindTally.refused += 1;
     }
-    console.log(`[classify] ${unidentifiable.length.toLocaleString()} tickerless:`);
+    console.log(`[classify] ${blind.length.toLocaleString()} without a usable symbol (${unidentifiable.length.toLocaleString()} filed with no ticker, ${(blind.length - unidentifiable.length).toLocaleString()} whose ticker named nothing):`);
     console.log(`[classify]   ${String(blindTally.issuer).padStart(6)} resolved by CUSIP issuer, no SEC request`);
     console.log(`[classify]   ${String(blindTally.name).padStart(6)} matched by issuer name, one request each`);
     console.log(`[classify]   ${String(blindTally.refused).padStart(6)} refused by both`);
