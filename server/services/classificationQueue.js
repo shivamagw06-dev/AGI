@@ -41,7 +41,16 @@ export function classificationQueue({
     // was classified recently, and a real sentinel keeps the comparisons below
     // from resting on `null < number` coercing null to zero - which is true
     // here only by accident of the epoch.
-    const at = Number.isFinite(parsed) ? parsed : -Infinity;
+    //
+    // An Unclassified row sorts the same way, because it is a failed attempt
+    // and not a result. Counting one as classified is how SPY sat at $326bn
+    // outside every sector: it was classified before there was any way to
+    // recognise a fund, the attempt produced Unclassified, and the row then
+    // looked fresh for ever - so the fund logic that arrived later never saw
+    // it. A security is only classified when something was actually
+    // determined about it.
+    const failed = String(row?.sector || '').trim() === 'Unclassified';
+    const at = failed || !Number.isFinite(parsed) ? -Infinity : parsed;
     const current = seenAt.get(key);
     // The newest observation of each key: a security can carry several rows,
     // one per valid_from, and it is only as stale as its freshest.
