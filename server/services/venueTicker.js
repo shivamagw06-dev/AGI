@@ -75,6 +75,21 @@ export function candidateBases(symbol) {
  * comparison does its own normalising - so this stays free of network and
  * database.
  */
+/**
+ * A recovery target has to be shaped like a US ticker.
+ *
+ * The historical registry is built from what filers typed into a Form 345
+ * symbol field, and some of them typed the exchange too: the entry for
+ * Steelcase is "NYSE: SCS". Proposed unchecked, that string is written into
+ * security_identifier_history as a ticker, where nothing will ever price it
+ * and everything downstream keys on it.
+ *
+ * The same shape the price planner uses, so a recovery cannot propose a symbol
+ * the fetcher would refuse to ask about.
+ */
+const US_TICKER = /^[A-Z]{1,5}(-[A-Z])?$/;
+export const isUsTicker = (value) => US_TICKER.test(String(value || '').trim().toUpperCase());
+
 export function recoverTicker(symbol, issuerName, secByTicker, { registry = null, window = null } = {}) {
   const bases = candidateBases(symbol);
   const held = String(issuerName || '').trim();
@@ -99,10 +114,34 @@ export function recoverTicker(symbol, issuerName, secByTicker, { registry = null
         break;
       }
     }
-    const distinct = [...new Set(byName.map((row) => row.ticker))];
+    // Malformed registry symbols are dropped before they can be proposed or
+    // counted as ambiguity - "NYSE: SCS" is not a second candidate for
+    // Steelcase, it is not a candidate at all.
+    const distinct = [...new Set(byName.map((row) => row.ticker))].filter(isUsTicker);
     if (distinct.length === 1) {
-      const { entry } = byName[0];
-      return { ticker: distinct[0], reason: null, via: `the issuer name in SEC filings ${entry.first_seen}..${entry.last_seen}` };
+      // The surviving ticker's own entry, not byName[0] - a malformed symbol
+      // filtered out above could have been first, and its dates would then
+      // describe a different registration than the one being proposed.
+      const { entry } = byName.find((row) => row.ticker === distinct[0]);
+      // Weak when the whole match rests on one word and the two names are
+      // different lengths. NEW GOLD INC CDA reduces to GOLD/CDA - NEW is
+      // dropped as filer noise - so a registry name reducing to GOLD alone
+      // matches it on that single word, while New Gold trades as NGD and GOLD
+      // is Barrick.
+      //
+      // Not refused, because the same shape is right elsewhere: SKECHERS U S A
+      // INC against Skechers USA Inc rests on SKECHERS alone and is correct.
+      // One word is distinctive and the other generic, and nothing in the
+      // strings knows which - so it is marked for a reader rather than decided
+      // here, where the decision would be wrong half the time in silence.
+      const heldWords = tokens(held).length;
+      const registeredWords = tokens(entry.issuer_name).length;
+      return {
+        ticker: distinct[0],
+        reason: null,
+        via: `the issuer name in SEC filings ${entry.first_seen}..${entry.last_seen}`,
+        weak: Math.min(heldWords, registeredWords) === 1 && heldWords !== registeredWords,
+      };
     }
     return {
       ticker: null,

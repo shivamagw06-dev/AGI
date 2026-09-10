@@ -310,3 +310,57 @@ test('a truncated CORP is dropped, and OLD needs no rule of its own', () => {
   assert.equal(sameCompany('ACME COR SYSTEMS', 'ACME SYSTEMS'), true, 'COR is a truncated CORP');
   assert.equal(sameCompany('ACME CORE SYSTEMS', 'ACME SYSTEMS'), false, 'CORE is part of the name');
 });
+
+test('a registry symbol that is not a ticker is never proposed', () => {
+  // The historical registry is built from what filers typed into a Form 345
+  // symbol field, and some typed the exchange too: Steelcase appears as
+  // "NYSE: SCS". Proposed unchecked, that string is written into identifier
+  // history as a ticker, where nothing can price it and everything downstream
+  // keys on it.
+  const malformed = new Map([['NYSE: SCS', [{ issuer_name: 'Steelcase Inc', first_seen: '2016-01-04', last_seen: '2026-08-01' }]]]);
+  const r = recoverTicker('GJB', 'STEELCASE INC', new Map(), { registry: malformed, window: held('2021-06-30', '2026-06-30') });
+  assert.equal(r.ticker, null);
+});
+
+test('a match resting on one word is flagged, not refused', () => {
+  // NEW GOLD INC CDA reduces to GOLD/CDA - NEW is dropped as filer noise - so
+  // a registry name reducing to GOLD alone matches on that single word, while
+  // New Gold trades as NGD and GOLD is Barrick. The same shape is right for
+  // SKECHERS U S A INC against Skechers USA Inc, and nothing in the strings
+  // tells a distinctive word from a generic one.
+  const registry = new Map([
+    ['GOLD', [{ issuer_name: 'New Gold Inc', first_seen: '2016-01-04', last_seen: '2026-08-01' }]],
+    ['SKX', [{ issuer_name: 'Skechers USA Inc', first_seen: '2016-01-04', last_seen: '2026-08-01' }]],
+    ['XOM', [{ issuer_name: 'Exxon Mobil Corp', first_seen: '2016-01-04', last_seen: '2026-08-01' }]],
+  ]);
+  const window = held('2021-06-30', '2026-06-30');
+  const gold = recoverTicker('NGDN', 'NEW  GOLD   INC   CDA', new Map(), { registry, window });
+  assert.equal(gold.ticker, 'GOLD');
+  assert.equal(gold.weak, true, 'one word carried it');
+
+  const skechers = recoverTicker('SKAA', 'SKECHERS     U  S  A   INC', new Map(), { registry, window });
+  assert.equal(skechers.ticker, 'SKX');
+  assert.equal(skechers.weak, true, 'the same shape, and this one is right');
+
+  // Two words on both sides is not weak.
+  const exxon = recoverTicker('EXMOC', 'EXXON       MOBIL    CORP', new Map(), { registry, window });
+  assert.equal(exxon.ticker, 'XOM');
+  assert.equal(exxon.weak, false);
+});
+
+test('the proposed ticker brings its own dates, not the first match\'s', () => {
+  // A malformed registry symbol can sort ahead of the valid one for the same
+  // company. Filtering it out of the candidates but then reading byName[0] for
+  // the window would cite the dates of a registration that was not proposed -
+  // and `via` is the only record of why a recovery was accepted.
+  // Both windows overlap the holding, so both reach the candidate list and the
+  // malformed one is first. Only the filter decides which is proposed.
+  const registry = new Map([
+    ['NYSE: SCS', [{ issuer_name: 'Steelcase Inc', first_seen: '2016-01-04', last_seen: '2026-08-01' }]],
+    ['SCS', [{ issuer_name: 'Steelcase Inc', first_seen: '2019-05-06', last_seen: '2026-08-01' }]],
+  ]);
+  const r = recoverTicker('GJB', 'STEELCASE INC', new Map(), { registry, window: held('2021-06-30', '2026-06-30') });
+  assert.equal(r.ticker, 'SCS');
+  assert.match(r.via, /2019-05-06/, 'the dates of the ticker actually proposed');
+  assert.doesNotMatch(r.via, /2016-01-04/, 'not the malformed entry that was filtered out');
+});
