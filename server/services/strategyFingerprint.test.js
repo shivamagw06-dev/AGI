@@ -31,6 +31,7 @@ const REAL = {
   scion: { positions: 8, top10Pct: 100.0, optionsPct: 50.0, votesPct: 50.0, turnoverPct: 87.5 },
   // No prior quarter stored. The first sweep measured this book as 100% new,
   // which is not a strategy: it is one filing with nothing to compare to.
+  bridgewater: { positions: 997, top10Pct: 40.0, optionsPct: 0.0, votesPct: 100.0, turnoverPct: 21.5 },
   norges: { positions: 1617, top10Pct: 32.4, optionsPct: 0.0, votesPct: 100.0, turnoverPct: null },
 };
 
@@ -50,12 +51,25 @@ describe('the archetype each real book lands in', () => {
     ['valueAligned', 'derivatives_overlay'],
     ['scion', 'derivatives_overlay'],
     ['maverick', 'focused_rotated'],
+    ['bridgewater', 'selective_diversified'],
   ];
   for (const [name, archetype] of expected) {
     test(`${name} is ${archetype}`, () => {
       assert.equal(strategyProfile(REAL[name]).archetype, archetype);
     });
   }
+
+  test('a book three positions under the broad threshold is not called focused', () => {
+    // Bridgewater reports 997 positions. The breadth threshold is 1000, and
+    // an earlier label called everything below it "Focused but spread" - which
+    // for a thousand-name book is the label arguing with its own evidence.
+    // The archetype is right; the word was not.
+    const profile = strategyProfile(REAL.bridgewater);
+    assert.equal(profile.archetype, 'selective_diversified');
+    assert.doesNotMatch(profile.label, /focused/i);
+    // And a label decided this close to a threshold says so.
+    assert.equal(profile.confidence, 'medium');
+  });
 
   test('a bank is not mistaken for a quant fund', () => {
     // Goldman reports 19.2% in its largest ten, below the 20% band that marks

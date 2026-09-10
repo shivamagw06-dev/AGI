@@ -118,11 +118,15 @@ export const ARCHETYPES = [
     when: (m) => m.positions < 1000 && known(m.turnoverPct) && m.turnoverPct >= 30,
   },
   {
-    key: 'focused_spread',
-    label: 'Focused but spread',
+    key: 'selective_diversified',
+    // Not "focused": this is the bucket a 997-name book lands in, and calling
+    // that focused because it sits three positions under the broad threshold
+    // is the label arguing with its own evidence.
+    label: 'Selective and diversified',
     characteristicOf:
-      'a deliberately short list of names, none of them dominant, which is '
-      + 'characteristic of research-led management that sizes for survivability',
+      'a bounded list of names with no single dominant position, which is '
+      + 'characteristic of research-led management that sizes for survivability '
+      + 'rather than for conviction',
     when: (m) => m.positions < 1000,
   },
 ];
