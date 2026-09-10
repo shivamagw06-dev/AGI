@@ -2,7 +2,7 @@ import test, { describe } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   ARCHETYPES, strategyProfile, traitsFor, caveatsFor, confidenceFor, evidenceFor,
-  normaliseMetrics,
+  normaliseMetrics, quarterIndex,
 } from './strategyFingerprint.js';
 
 /**
@@ -37,6 +37,7 @@ const REAL = {
   norges: {
     positions: 1617, top10Pct: 32.4, optionsPct: 0.0, votesPct: 100.0,
     turnoverPct: 100.0, priorPositions: 1,
+    asOfDate: '2026-06-30', priorReportDate: '2026-03-31',
   },
 };
 
@@ -105,12 +106,14 @@ describe('an unmeasurable metric is absent, not zero', () => {
     // Refused, not silently dropped: the counts that caused it survive.
     const m = normaliseMetrics(REAL.norges);
     assert.equal(m.turnoverPct, null);
-    assert.deepEqual(m.turnoverRefused, { priorPositions: 1, positions: 1617 });
+    assert.equal(m.turnoverRefused.reason, 'prior_book_too_small');
+    assert.equal(m.turnoverRefused.priorPositions, 1);
+    assert.equal(m.turnoverRefused.positions, 1617);
     // And the profile carries the metrics it was built from. Without this a
     // caller keeps its own un-normalised copy, and the refused 100% reaches
     // the database through the back door - which is exactly what happened.
     assert.equal(profile.metrics.turnoverPct, null);
-    assert.deepEqual(profile.metrics.turnoverRefused, { priorPositions: 1, positions: 1617 });
+    assert.equal(profile.metrics.turnoverRefused.reason, 'prior_book_too_small');
     // The input is not mutated on the way through.
     assert.equal(REAL.norges.turnoverPct, 100.0);
   });
@@ -124,6 +127,47 @@ describe('an unmeasurable metric is absent, not zero', () => {
     assert.equal(cut.turnoverRefused, undefined);
     const broken = normaliseMetrics({ positions: 100, priorPositions: 19, turnoverPct: 96 });
     assert.equal(broken.turnoverPct, null);
+  });
+
+  test('a prior filing from the wrong quarter is not a quarterly reading', () => {
+    // Once Norges Bank's Q1 2026 placeholder is stored inactive, the filing
+    // before Q2 2026 is Q4 2025. Six months of change reported as a quarter's
+    // inflates every threshold in the file and can flip a classification.
+    const skipped = normaliseMetrics({
+      positions: 1617, priorPositions: 1577, turnoverPct: 34,
+      asOfDate: '2026-06-30', priorReportDate: '2025-12-31',
+    });
+    assert.equal(skipped.turnoverPct, null);
+    assert.equal(skipped.turnoverRefused.reason, 'quarters_skipped');
+    assert.equal(skipped.turnoverRefused.quarterGap, 2);
+    assert.match(caveatsFor(skipped).join(' '), /2 quarters earlier rather than one/);
+
+    // Consecutive quarters measure normally, including across a year end.
+    for (const [prior, now] of [['2026-03-31', '2026-06-30'], ['2025-12-31', '2026-03-31'],
+      ['2025-09-30', '2025-12-31']]) {
+      const ok = normaliseMetrics({
+        positions: 100, priorPositions: 100, turnoverPct: 12,
+        asOfDate: now, priorReportDate: prior,
+      });
+      assert.equal(ok.turnoverPct, 12, `${prior} -> ${now}`);
+    }
+  });
+
+  test('quarter distance is counted, not measured in days', () => {
+    // Quarter ends sit 90, 91 or 92 days apart depending on the quarter and
+    // the year. A day threshold has edges; counting quarters has none.
+    assert.equal(quarterIndex('2026-06-30') - quarterIndex('2026-03-31'), 1);
+    assert.equal(quarterIndex('2026-03-31') - quarterIndex('2025-12-31'), 1);
+    assert.equal(quarterIndex('2026-06-30') - quarterIndex('2025-06-30'), 4);
+    assert.equal(quarterIndex(null), null);
+    assert.equal(quarterIndex('not a date'), null);
+  });
+
+  test('turnover survives when the dates are simply unknown', () => {
+    // The guard refuses a wrong basis, not an absent one. A caller that does
+    // not supply dates gets the measurement it had before.
+    const m = normaliseMetrics({ positions: 100, priorPositions: 100, turnoverPct: 12 });
+    assert.equal(m.turnoverPct, 12);
   });
 
   test('turnover of zero is a measurement and still classifies', () => {

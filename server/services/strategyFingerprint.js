@@ -153,16 +153,67 @@ function known(value) {
 export const MIN_PRIOR_SHARE = 0.2;
 
 /**
+ * Which quarter a report date belongs to, as a number that can be subtracted.
+ *
+ * Report dates are quarter ends, so the gap in days is 90, 91 or 92 depending
+ * on the quarter and the year - close enough to be tempting and wrong often
+ * enough to matter. Counting quarters directly has no such edges.
+ */
+export function quarterIndex(reportDate) {
+  if (!reportDate) return null;
+  const at = new Date(`${String(reportDate).slice(0, 10)}T00:00:00Z`);
+  if (Number.isNaN(at.getTime())) return null;
+  return at.getUTCFullYear() * 4 + Math.floor(at.getUTCMonth() / 3);
+}
+
+/**
  * Metrics as measured, with the ones that cannot be trusted removed.
  *
  * Separate from the classifier so that what was refused, and why, survives
  * into the caveats instead of disappearing into a null nobody can explain.
+ *
+ * Two ways the previous quarter can fail to be a comparison, and they are
+ * different failures.
+ *
+ * It can be the wrong quarter. "Prior" means the most recent filing before
+ * this one, which is only the previous quarter when every quarter in between
+ * has one. Norges Bank's Q1 2026 filing is a confidential-treatment
+ * placeholder and is stored inactive, so the filing before Q2 2026 is Q4 2025
+ * - and the change measured across six months would have been reported as a
+ * quarter's. Every threshold in this file is calibrated on quarterly turnover,
+ * so that inflates it and can flip a classification outright.
+ *
+ * Or it can be the wrong size. Below a fifth of the current book the previous
+ * filing is not evidence of anything; a manager that genuinely cut three
+ * quarters of its book is still measured, one that appears to have cut 99.9%
+ * of it is not.
  */
 export function normaliseMetrics(metrics) {
   const m = { ...(metrics || {}) };
-  if (known(m.turnoverPct) && known(m.priorPositions) && known(m.positions)
+  if (!known(m.turnoverPct)) return m;
+
+  const now = quarterIndex(m.asOfDate);
+  const before = quarterIndex(m.priorReportDate);
+  const gap = now !== null && before !== null ? now - before : null;
+
+  if (gap !== null && gap !== 1) {
+    m.turnoverRefused = {
+      reason: 'quarters_skipped',
+      quarterGap: gap,
+      asOfDate: m.asOfDate,
+      priorReportDate: m.priorReportDate,
+    };
+    m.turnoverPct = null;
+    return m;
+  }
+
+  if (known(m.priorPositions) && known(m.positions)
       && m.priorPositions < m.positions * MIN_PRIOR_SHARE) {
-    m.turnoverRefused = { priorPositions: m.priorPositions, positions: m.positions };
+    m.turnoverRefused = {
+      reason: 'prior_book_too_small',
+      priorPositions: m.priorPositions,
+      positions: m.positions,
+    };
     m.turnoverPct = null;
   }
   return m;
@@ -305,7 +356,14 @@ export function caveatsFor(metrics) {
     + 'this describes the reported book and not necessarily the whole one.',
   ];
 
-  if (m.turnoverRefused) {
+  if (m.turnoverRefused?.reason === 'quarters_skipped') {
+    const { quarterGap, priorReportDate, asOfDate } = m.turnoverRefused;
+    caveats.push(
+      `The filing before ${asOfDate} is ${priorReportDate}, ${quarterGap} quarters `
+      + 'earlier rather than one. Turnover measured across that span is not a '
+      + 'quarterly figure and is not stated as one.',
+    );
+  } else if (m.turnoverRefused) {
     caveats.push(
       `The previous quarter's filing reports ${m.turnoverRefused.priorPositions} `
       + `position${m.turnoverRefused.priorPositions === 1 ? '' : 's'} against `
