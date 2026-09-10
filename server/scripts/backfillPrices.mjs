@@ -133,10 +133,26 @@ const freshness = new Map();
 for (const r of logRows) freshness.set(r.ticker, String(r.fetched_at || '').slice(0, 10));
 console.log(`[prices] ${freshness.size.toLocaleString()} symbols in the fetch log`);
 
+// Where each symbol's stored history begins, so the plan can tell a symbol
+// that is current from one that is complete. The fetch log records when a
+// symbol was last asked for and nothing about how far back the answer went,
+// which is how twenty-nine symbols came to block forty-four of fifty-one
+// managers while every one of them looked up to date.
+const coverage = new Map();
+const { data: coverageRows, error: coverageError } = await client.rpc('institutional_price_coverage');
+if (coverageError) {
+  // Not fatal. Without it the plan behaves exactly as it did before, which is
+  // worse but not wrong, and a missing migration should not stop a backfill.
+  console.warn(`[prices] coverage unavailable, planning on freshness alone: ${coverageError.message}`);
+} else {
+  for (const row of coverageRows || []) coverage.set(row.ticker, String(row.first_date || '').slice(0, 10));
+  console.log(`[prices] ${coverage.size.toLocaleString()} symbols have stored price history`);
+}
+
 // ---- the plan -------------------------------------------------------------
 
 let { plans, skipped, foreignVenueSymbols } = planFetches([...seen.values()], {
-  asOf, freshness, windowDays: WINDOW_DAYS, maxAgeDays: MAX_AGE_DAYS,
+  asOf, freshness, coverage, windowDays: WINDOW_DAYS, maxAgeDays: MAX_AGE_DAYS,
 });
 if (ONLY.length) plans = plans.filter((p) => ONLY.includes(p.symbol));
 if (LIMIT) {
@@ -154,6 +170,9 @@ if (LIMIT) {
 console.log('');
 console.log(`[prices] ${plans.length.toLocaleString()} symbols to fetch`);
 console.log(`[prices]   skipped: ${skipped.unusableTicker} unusable ticker, ${skipped.foreignVenue} foreign venue code, ${skipped.alreadyFresh} already fetched`);
+// Reported separately from the plan count, because it is the reason a symbol
+// that looks current is being asked for again.
+if (skipped.coverageGap) console.log(`[prices]   ${skipped.coverageGap} due because stored history starts after the security was first held`);
 if (foreignVenueSymbols.length) {
   console.log(`[prices]   foreign venue codes not asked for: ${foreignVenueSymbols.slice(0, 12).join(', ')}${foreignVenueSymbols.length > 12 ? ` (+${foreignVenueSymbols.length - 12} more)` : ''}`);
   console.log('[prices]   run recoverVenueTickers.mjs to map these back to their US tickers');
