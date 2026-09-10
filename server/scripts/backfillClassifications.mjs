@@ -92,7 +92,7 @@ async function main() {
       { label: 'classifications for issuer inference' },
     ));
     const byName = nameIndex(directory);
-    const blindTally = { issuer: 0, name: 0, registrant: 0, refused: 0 };
+    const blindTally = { issuer: 0, name: 0, registrant: 0, refused: 0, derivative: 0 };
     const stillRefused = [];
     const blind = [...unidentifiable, ...queued.filter((s) => !resolveIssuer(s, directory, registry))];
     for (const security of blind) {
