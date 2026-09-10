@@ -127,11 +127,26 @@ const sum = (list) => list.reduce((a, x) => a + x.value, 0);
 console.log('');
 console.log(`[venue] recovered ${recovered.length}  ($${(sum(recovered) / 1e9).toFixed(1)}bn)`);
 console.log(`[venue] refused   ${refused.length}  ($${(sum(refused) / 1e9).toFixed(1)}bn)`);
+const weak = recovered.filter((r) => r.weak);
+if (weak.length) console.log(`[venue] of the recoveries, ${weak.length} rest on a single word  ($${(sum(weak) / 1e9).toFixed(1)}bn)`);
 
 console.log('');
 console.log('[venue] recoveries, largest first:');
 for (const r of recovered.sort((a, b) => b.value - a.value).slice(0, 40)) {
   console.log(`  ${r.ticker.padEnd(12)} -> ${r.to.padEnd(6)}  $${(r.value / 1e9).toFixed(2)}bn  ${r.cusip}  ${String(r.issuer_name || '').slice(0, 40)}`);
+}
+
+if (weak.length) {
+  // Listed apart from the rest because the evidence is thinner, not because
+  // the answer is wrong. One word carried the whole match - distinctive for
+  // SKECHERS, generic for GOLD, and identical in shape either way. NEW GOLD
+  // INC CDA reduces to GOLD/CDA because NEW is dropped as filer noise, and a
+  // registry name reducing to GOLD alone matches it; New Gold trades as NGD.
+  console.log('');
+  console.log('[venue] recoveries resting on one word - read these before applying:');
+  for (const r of [...weak].sort((a, b) => b.value - a.value)) {
+    console.log(`  ${r.ticker.padEnd(12)} -> ${String(r.to).padEnd(6)}  $${(r.value / 1e9).toFixed(2)}bn  ${String(r.issuer_name || '').slice(0, 40)}`);
+  }
 }
 
 console.log('');
