@@ -106,6 +106,13 @@ describe('an unmeasurable metric is absent, not zero', () => {
     const m = normaliseMetrics(REAL.norges);
     assert.equal(m.turnoverPct, null);
     assert.deepEqual(m.turnoverRefused, { priorPositions: 1, positions: 1617 });
+    // And the profile carries the metrics it was built from. Without this a
+    // caller keeps its own un-normalised copy, and the refused 100% reaches
+    // the database through the back door - which is exactly what happened.
+    assert.equal(profile.metrics.turnoverPct, null);
+    assert.deepEqual(profile.metrics.turnoverRefused, { priorPositions: 1, positions: 1617 });
+    // The input is not mutated on the way through.
+    assert.equal(REAL.norges.turnoverPct, 100.0);
   });
 
   test('a real contraction is still measured', () => {
