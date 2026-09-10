@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { securityCandidates } from '../services/securityCandidates.js';
+import { securityCandidates, partitionByIdentifiability } from '../services/securityCandidates.js';
 
 const hold = (over = {}) => ({
   cusip: '30231G102', ticker: 'XOM', issuer_name: 'EXXON MOBIL CORP',
@@ -102,4 +102,34 @@ test('a security with no ticker at all still comes back', () => {
 test('nothing in yields nothing out, without throwing', () => {
   assert.deepEqual(securityCandidates(), []);
   assert.deepEqual(securityCandidates([]), []);
+});
+
+test('a security nothing can identify never reaches the queue', () => {
+  // The stall this prevents: securities are ordered by value and the queue
+  // takes the largest unclassified first. A tickerless security never becomes
+  // classified, so with a nightly limit of sixty, sixty large ones occupy
+  // every slot and the job classifies nothing for ever.
+  const securities = securityCandidates([
+    hold({ cusip: 'BIGNOTICKER', ticker: null, value_usd: 900 }),
+    hold({ cusip: 'SMALLWITH', ticker: 'AAA', value_usd: 5 }),
+  ]);
+  assert.deepEqual(securities.map((s) => s.key), ['BIGNOTICKER', 'SMALLWITH'], 'largest first, as before');
+
+  const { identifiable, unidentifiable } = partitionByIdentifiability(securities);
+  assert.deepEqual(identifiable.map((s) => s.key), ['SMALLWITH']);
+  assert.deepEqual(unidentifiable.map((s) => s.key), ['BIGNOTICKER']);
+});
+
+test('the unidentifiable are returned, not dropped', () => {
+  // So the caller can report what it cannot see, rather than quietly showing
+  // a smaller book than the one that exists.
+  const { unidentifiable } = partitionByIdentifiability(securityCandidates([hold({ ticker: null })]));
+  assert.equal(unidentifiable.length, 1);
+  assert.equal(unidentifiable[0].value_usd, 1_000_000);
+});
+
+test('partitioning nothing yields two empty lists, without throwing', () => {
+  assert.deepEqual(partitionByIdentifiability(), { identifiable: [], unidentifiable: [] });
+  assert.deepEqual(partitionByIdentifiability([]), { identifiable: [], unidentifiable: [] });
+  assert.deepEqual(partitionByIdentifiability([{}, { tickers: [] }]).unidentifiable.length, 2);
 });
