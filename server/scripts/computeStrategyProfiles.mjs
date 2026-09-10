@@ -36,6 +36,11 @@ function metricsOf(row) {
   return {
     positions: num(row.positions),
     priorPositions: num(row.prior_positions),
+    // Which quarter turnover was measured against, and which quarter this is.
+    // Not always one apart: a quarter whose only filing is a confidential
+    // placeholder is stored inactive and leaves a hole.
+    priorReportDate: row.prior_report_date || null,
+    asOfDate: row.as_of_date || null,
     quartersObserved: num(row.quarters_observed),
     top10Pct: num(row.top10_pct),
     optionsPct: num(row.options_pct),
