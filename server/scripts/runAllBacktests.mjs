@@ -22,13 +22,17 @@
  * failure - the panel shows those reasons rather than a number.
  */
 import { createSupabaseAdmin, getSupabaseAdminCredentials } from '../lib/supabaseAdmin.js';
-import { runInstitutionalBacktest, paged } from '../services/institutionalResearchLayerService.js';
+import { runInstitutionalBacktest, backtestStrategyKey, paged } from '../services/institutionalResearchLayerService.js';
 
 const APPLY = process.argv.includes('--apply');
 const argOf = (flag) => { const i = process.argv.indexOf(flag); return i >= 0 ? process.argv[i + 1] : null; };
 const QUARTERS = Number(argOf('--quarters') || 20);
 const TOP_N = Number(argOf('--top') || 10);
 const ONLY = argOf('--manager');
+// Recompute managers already done today. Off by default so an interrupted
+// sweep resumes instead of starting over - fifty managers is long enough that
+// a closed terminal should cost the manager in flight and nothing else.
+const FORCE = process.argv.includes('--force');
 
 if (!getSupabaseAdminCredentials()) {
   console.error('[backtests] SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required.');
@@ -38,6 +42,7 @@ const client = createSupabaseAdmin();
 const started = Date.now();
 const elapsed = () => ((Date.now() - started) / 1000).toFixed(0);
 const pct = (value) => `${(Number(value || 0) * 100).toFixed(1)}%`;
+const today = () => new Date().toISOString().slice(0, 10);
 
 async function main() {
   console.log(`[backtests] mode: ${APPLY ? 'APPLY - this writes' : 'dry run - nothing is written'}`);
@@ -51,7 +56,7 @@ async function main() {
   if (!wanted.length) throw new Error(ONLY ? `No manager matches ${ONLY}.` : 'No managers are tracked.');
 
   const stored = await paged(
-    () => client.from('institutional_backtest_runs').select('manager_id,status,generated_at').order('manager_id').order('generated_at'),
+    () => client.from('institutional_backtest_runs').select('manager_id,status,as_of_date,strategy_key,generated_at').order('manager_id').order('generated_at'),
     { label: 'stored runs' },
   );
   const latest = new Map();
@@ -59,20 +64,36 @@ async function main() {
   const withRun = wanted.filter((m) => latest.has(m.id));
   const calculable = withRun.filter((m) => latest.get(m.id).status === 'calculated');
 
+  // Already done today, at this exact strategy. These are what a resumed sweep
+  // skips: the run is the product, and recomputing one that exists buys
+  // nothing but time.
+  const key = backtestStrategyKey({ topN: TOP_N, quarters: QUARTERS });
+  const doneToday = new Set(stored
+    .filter((row) => row.as_of_date === today() && row.strategy_key === key)
+    .map((row) => row.manager_id));
+  const outstanding = FORCE ? wanted : wanted.filter((m) => !doneToday.has(m.id));
+
   console.log(`[backtests] ${wanted.length} manager(s); ${withRun.length} have a stored run, ${calculable.length} of those calculated`);
+  console.log(`[backtests] ${doneToday.size} already run today at this strategy; ${outstanding.length} outstanding`
+    + (FORCE ? ' (--force: running all of them anyway)' : ''));
 
   if (!APPLY) {
     // Deliberately not an estimate in minutes. The first run of this script is
     // the only thing that can say how long a manager takes, and guessing was
     // wrong by a factor of three the last time this codebase estimated a job.
-    console.log(`[backtests] would run ${wanted.length} manager(s). Each reads its filings, its holdings and their adjusted closes.`);
+    console.log(`[backtests] would run ${outstanding.length} manager(s). Each reads its filings, its holdings and their adjusted closes.`);
     console.log('[backtests] dry run only. Re-run with --apply to compute and write.');
     return;
   }
 
+  if (!outstanding.length) {
+    console.log('[backtests] nothing outstanding. Pass --force to recompute what has already run today.');
+    return;
+  }
+
   const results = { calculated: 0, not_calculable: 0, failed: 0 };
-  for (const [index, manager] of wanted.entries()) {
-    const at = `${index + 1}/${wanted.length}`;
+  for (const [index, manager] of outstanding.entries()) {
+    const at = `${index + 1}/${outstanding.length}`;
     try {
       const run = await runInstitutionalBacktest({ managerSlug: manager.slug, topN: TOP_N, quarters: QUARTERS });
       const metrics = run.metrics || {};

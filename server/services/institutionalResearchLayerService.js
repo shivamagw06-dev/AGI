@@ -932,7 +932,7 @@ export async function runInstitutionalBacktest({
   // Depth is part of the strategy, not a detail of how it was run. Without it
   // a twelve-quarter and a forty-quarter test for one manager on one day share
   // a key and overwrite each other, and the stored row cannot say which it is.
-  const strategyKey = `top_${topN}_q${depth}_${crypto.createHash('sha1').update(String(transactionCostBps)).digest('hex').slice(0, 6)}`;
+  const strategyKey = backtestStrategyKey({ topN, quarters: depth, transactionCostBps });
   const payload = {
     manager_id: manager.id,
     as_of_date: dateOnly(new Date()),
@@ -1030,6 +1030,21 @@ export function startInstitutionalResearchLayerAutomation() {
  * Deliberately not a cache with its own expiry: the key is the date, so a run
  * is current by construction and yesterday's cannot be served as today's.
  */
+/**
+ * The key a backtest run is stored under.
+ *
+ * Depth and breadth are clamped here rather than by the callers, so a request
+ * for sixty quarters and one for forty-eight resolve to the same key and the
+ * same stored row. Three places needed this - the run, the read-or-run, and
+ * the sweep that fills every manager - and three copies of a hash is three
+ * chances for a resumed sweep to look at a key nothing was ever written under.
+ */
+export function backtestStrategyKey({ topN = 10, quarters = 12, transactionCostBps = 10 } = {}) {
+  const depth = Math.max(2, Math.min(Number(quarters) || 12, 48));
+  const limit = Math.max(1, Math.min(50, Number(topN) || 10));
+  return `top_${limit}_q${depth}_${crypto.createHash('sha1').update(String(transactionCostBps)).digest('hex').slice(0, 6)}`;
+}
+
 export async function readOrRunBacktest({ managerSlug, topN = 10, transactionCostBps = 10, quarters = 12 } = {}) {
   if (!managerSlug) throw new Error('Choose a manager to run the backtest.');
   const depth = Math.max(2, Math.min(Number(quarters) || 12, 48));
@@ -1044,7 +1059,7 @@ export async function readOrRunBacktest({ managerSlug, topN = 10, transactionCos
   const manager = managerRows?.[0];
   if (!manager) throw new Error('Tracked manager not found.');
 
-  const strategyKey = `top_${limit}_q${depth}_${crypto.createHash('sha1').update(String(transactionCostBps)).digest('hex').slice(0, 6)}`;
+  const strategyKey = backtestStrategyKey({ topN: limit, quarters: depth, transactionCostBps });
   const { data: stored, error: storedError } = await client
     .from('institutional_backtest_runs').select('*')
     .eq('manager_id', manager.id)
