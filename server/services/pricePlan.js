@@ -47,9 +47,17 @@ export function yahooSymbol(ticker) {
  */
 export function planFetches(holdings, {
   asOf, bufferDays = 120, freshness = null, maxAgeDays = 4, windowDays = null,
+  // Where each symbol's stored history actually begins, from
+  // institutional_price_coverage(). Without it a symbol is judged only on when
+  // it was last asked for.
+  coverage = null,
+  // How far a history may start after the date the security is first held
+  // before the symbol is due again. A few days is a holiday or a late listing;
+  // TSM starts four hundred and twenty-seven days late, which is a gap.
+  coverageGapDays = 30,
 } = {}) {
   const bySymbol = new Map();
-  const skipped = { unusableTicker: 0, alreadyFresh: 0, foreignVenue: 0 };
+  const skipped = { unusableTicker: 0, alreadyFresh: 0, foreignVenue: 0, coverageGap: 0 };
   const foreignVenueSymbols = new Set();
 
   for (const row of holdings || []) {
@@ -83,7 +91,26 @@ export function planFetches(holdings, {
     // an interrupted run resumes instead of restarting; a daily refresh wants a
     // narrow one, or nothing is ever due.
     const have = freshness?.get?.(plan.symbol);
-    if (have && asOf && daysBetween(have, asOf) <= maxAgeDays) { skipped.alreadyFresh += 1; continue; }
+    const fresh = Boolean(have && asOf && daysBetween(have, asOf) <= maxAgeDays);
+    // Fresh is not the same as complete. The log says when the symbol was last
+    // asked for; it says nothing about how far back the answer went, so a
+    // symbol whose history begins long after it was first held stays skipped
+    // for ever - which is how twenty-nine symbols came to block forty-four of
+    // fifty-one managers while every one of them looked up to date.
+    const startsAt = coverage?.get?.(plan.symbol);
+    const gap = !windowDays && startsAt && plan.earliest && startsAt > plan.earliest
+      ? daysBetween(plan.earliest, startsAt) : 0;
+    // Not throttled by when the symbol was last fetched. Every one of the
+    // twenty-nine was fetched recently - that is precisely why they were stuck
+    // - and a throttle keyed on the fetch log cannot tell a symbol never asked
+    // for with a wide enough window from one asked and refused. A gap that no
+    // fetch can close, such as a ticker reassigned to another company, is
+    // re-asked on each full backfill; the nightly refresh passes windowDays,
+    // where this does not apply at all, so the standing cost is a handful of
+    // requests on a job that is run by hand.
+    const dueForGap = gap > coverageGapDays;
+    if (fresh && !dueForGap) { skipped.alreadyFresh += 1; continue; }
+    if (dueForGap) skipped.coverageGap = (skipped.coverageGap || 0) + 1;
 
     // A refresh asks only for the sessions since it last looked. Re-fetching
     // seven years of history to learn yesterday's close is the same answer at
