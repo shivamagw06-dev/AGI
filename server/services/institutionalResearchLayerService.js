@@ -709,7 +709,7 @@ export function isUuid(value) {
  * holdings that belong to them - so it stays correct however large the table
  * gets.
  */
-async function backtestInputs(client, managerSlug, quarters) {
+export async function backtestInputs(client, managerSlug, quarters, { topN = 10 } = {}) {
   // Matched on one column or the other, never both in an `or`. id is a uuid,
   // and Postgres rejects the whole clause when the value is not one:
   //
@@ -737,19 +737,43 @@ async function backtestInputs(client, managerSlug, quarters) {
   // entry - a negative holding period, compounded without complaint.
   const chosen = orderByAcceptance(filings || []).slice(-quarters);
 
+  // Only the positions the strategy can hold.
+  //
+  // This read every position of every filing and then sorted in JavaScript to
+  // keep ten. Citadel discloses about eight thousand a quarter, so twenty
+  // quarters was a hundred and sixty thousand rows in a hundred and sixty
+  // sequential requests - and then a price read for all eight thousand
+  // tickers, because the target list was built from the same rows. Measured at
+  // 547 seconds for one manager, which is also longer than the timeout on the
+  // route that serves this to a browser.
+  //
+  // The database can order. Rows come back largest first and paging stops as
+  // soon as enough have survived the filter, so a filing normally costs one
+  // request instead of eight. Ordering by value_usd is exactly the JavaScript
+  // sort it replaces: the column is not null, and holdings carry no other
+  // value column for valueOf to fall back to.
+  //
+  // The filter stays in JavaScript rather than moving into the query. Its
+  // meaning is "no put or call", and put_call is null for most rows and an
+  // empty string for some; expressing that in PostgREST risks excluding rows
+  // the old code kept, which would change a portfolio rather than speed it up.
   const holdings = [];
   for (const filing of chosen) {
-    // Paged. One filing can hold five thousand positions - BlackRock reports
-    // about 5,700 - and an unpaged read returns the first thousand of them,
-    // which is a different portfolio with a plausible-looking return.
-    for (let from = 0; ; from += 1000) {
+    const kept = [];
+    for (let from = 0; ; from += 200) {
       const { data, error } = await client.from('institutional_holdings')
-        .select('*').eq('filing_id', filing.id).range(from, from + 999);
+        .select('*').eq('filing_id', filing.id)
+        // id as the tie-break: paging needs a total order, and disclosed
+        // values repeat.
+        .order('value_usd', { ascending: false }).order('id')
+        .range(from, from + 199);
       if (error) throw error;
-      holdings.push(...(data || []));
-      if (!data || data.length < 1000) break;
-      if (holdings.length > 500_000) throw new Error('refusing to page past 500k holdings for one backtest');
+      kept.push(...(data || []).filter((row) => tickerOf(row) && !row.put_call));
+      if (kept.length >= topN) break;
+      if (!data || data.length < 200) break;
+      if (from > 500_000) throw new Error('refusing to page past 500k holdings for one filing');
     }
+    holdings.push(...kept.slice(0, topN));
   }
   return { manager, filings: chosen, holdings };
 }
@@ -764,9 +788,13 @@ export async function runInstitutionalBacktest({
   // excluded and reported, so asking for more than the prices cover buys a
   // longer list of exclusions and no more test.
   const depth = Math.max(2, Math.min(Number(quarters) || 12, 48));
+  // Declared here rather than beside the period loop, because the holdings
+  // read now needs it: it asks the database for this many positions per filing
+  // instead of reading every one and sorting.
+  const limit = Math.max(1, Math.min(50, number(topN) || 10));
   const client = db();
   const { manager, filings: managerFilings, holdings: managerHoldings } =
-    await backtestInputs(client, managerSlug, depth);
+    await backtestInputs(client, managerSlug, depth, { topN: limit });
   const targets = [...new Set([...managerHoldings.map(tickerOf).filter(Boolean), ...BENCHMARKS])];
   const prices = new Map();
   // Paged, and ordered on both columns.
@@ -841,7 +869,6 @@ export async function runInstitutionalBacktest({
 
   const periods = [];
   const skipped = [];
-  const limit = Math.max(1, Math.min(50, number(topN) || 10));
 
   for (let index = 0; index < orderedFilings.length - 1; index += 1) {
     const filing = orderedFilings[index]; const next = orderedFilings[index + 1];
