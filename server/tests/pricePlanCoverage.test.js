@@ -86,3 +86,31 @@ test('no coverage map at all behaves as before', () => {
   assert.equal(plan({ freshness: new Map([['TSM', daysBefore(1)]]) }).plans.length, 0);
   assert.equal(plan({ freshness: new Map() }).plans.length, 1);
 });
+
+test('a ticker already found reassigned is not asked for again', () => {
+  // Ten symbols were re-fetched on every full backfill, rejected every time,
+  // and wrote nothing - because a rejection writes no rows, so coverage never
+  // improves, so the gap that made them due is still there next run.
+  const coverage = new Map([['TSM', '2022-12-01']]);
+  const withoutMemory = plan({ freshness: new Map(), coverage });
+  assert.equal(withoutMemory.plans.length, 1);
+
+  const withMemory = plan({ freshness: new Map(), coverage, reassigned: new Set(['TSM']) });
+  assert.equal(withMemory.plans.length, 0);
+  assert.equal(withMemory.skipped.reassigned, 1);
+});
+
+test('the reassigned verdict outranks every other reason to fetch', () => {
+  // Including never having been fetched. The ticker belongs to another company;
+  // there is nothing to ask for.
+  const reassigned = new Set(['TSM']);
+  assert.equal(plan({ freshness: new Map(), reassigned }).plans.length, 0);
+  assert.equal(plan({ freshness: new Map([['TSM', daysBefore(400)]]), reassigned }).plans.length, 0);
+  assert.equal(plan({ freshness: new Map(), coverage: new Map([['TSM', '2022-12-01']]), reassigned }).plans.length, 0);
+});
+
+test('no memory of reassignment behaves exactly as before', () => {
+  assert.equal(plan({ freshness: new Map(), reassigned: null }).plans.length, 1);
+  assert.equal(plan({ freshness: new Map(), reassigned: new Set() }).plans.length, 1);
+  assert.equal(plan({ freshness: new Map() }).plans.length, 1);
+});

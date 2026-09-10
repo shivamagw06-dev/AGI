@@ -55,9 +55,17 @@ export function planFetches(holdings, {
   // before the symbol is due again. A few days is a holiday or a late listing;
   // TSM starts four hundred and twenty-seven days late, which is a gap.
   coverageGapDays = 30,
+  // Symbols whose last fetch was refused because the ticker now belongs to a
+  // different company. That verdict is durable in a way freshness is not: the
+  // history of a reassigned ticker will never extend backwards, so asking
+  // again cannot change the answer. Left in, they were re-fetched on every
+  // full backfill, wrote nothing, and filled the run's "needs a look" list
+  // with ten permanent entries - which is how a report teaches people to stop
+  // reading it.
+  reassigned = null,
 } = {}) {
   const bySymbol = new Map();
-  const skipped = { unusableTicker: 0, alreadyFresh: 0, foreignVenue: 0, coverageGap: 0 };
+  const skipped = { unusableTicker: 0, alreadyFresh: 0, foreignVenue: 0, coverageGap: 0, reassigned: 0 };
   const foreignVenueSymbols = new Set();
 
   for (const row of holdings || []) {
@@ -90,6 +98,8 @@ export function planFetches(holdings, {
     // Skip a symbol fetched recently enough. A backfill wants a wide window so
     // an interrupted run resumes instead of restarting; a daily refresh wants a
     // narrow one, or nothing is ever due.
+    if (reassigned?.has?.(plan.symbol)) { skipped.reassigned = (skipped.reassigned || 0) + 1; continue; }
+
     const have = freshness?.get?.(plan.symbol);
     const fresh = Boolean(have && asOf && daysBetween(have, asOf) <= maxAgeDays);
     // Fresh is not the same as complete. The log says when the symbol was last
