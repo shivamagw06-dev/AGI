@@ -21,3 +21,11 @@ artifacts/*.log
 artifacts/*.md
 .env.production
 og-config.php
+
+# Runtime newsletter store. server/services/publishing/store.js creates the
+# directory and treats a missing file as an empty list, so nothing here needs
+# to exist in the repo - and subscribers.json, imports.json and events.json
+# accumulate subscriber email addresses. Tracked, the next `git add -A` puts
+# personal data into git history, where removing it means rewriting published
+# commits. It was committed once, empty, in #1062 and removed here.
+server/data/newsletter/
