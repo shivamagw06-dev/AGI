@@ -2,6 +2,7 @@ import test, { describe } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   ARCHETYPES, strategyProfile, traitsFor, caveatsFor, confidenceFor, evidenceFor,
+  normaliseMetrics,
 } from './strategyFingerprint.js';
 
 /**
@@ -29,16 +30,19 @@ const REAL = {
   d1: { positions: 55, top10Pct: 76.7, optionsPct: 0.0, votesPct: 100.0, turnoverPct: 38.2 },
   berkshire: { positions: 29, top10Pct: 88.5, optionsPct: 0.0, votesPct: 100.0, turnoverPct: 3.4 },
   scion: { positions: 8, top10Pct: 100.0, optionsPct: 50.0, votesPct: 50.0, turnoverPct: 87.5 },
-  // No prior quarter stored. The first sweep measured this book as 100% new,
-  // which is not a strategy: it is one filing with nothing to compare to.
   bridgewater: { positions: 997, top10Pct: 40.0, optionsPct: 0.0, votesPct: 100.0, turnoverPct: 21.5 },
-  norges: { positions: 1617, top10Pct: 32.4, optionsPct: 0.0, votesPct: 100.0, turnoverPct: null },
+  // Measured, and the reason the guard exists. Norges Bank's previous filing
+  // reports a single holding against 1,617 in this one and 2,108 in its median
+  // quarter. The raw turnover came back as exactly 100%.
+  norges: {
+    positions: 1617, top10Pct: 32.4, optionsPct: 0.0, votesPct: 100.0,
+    turnoverPct: 100.0, priorPositions: 1,
+  },
 };
 
 // Measured: 42 stored quarters for most of these managers, which is what the
 // caveats and confidence rules are calibrated against.
 for (const key of Object.keys(REAL)) REAL[key].quartersObserved = 42;
-REAL.norges.quartersObserved = 1;
 
 describe('the archetype each real book lands in', () => {
   const expected = [
@@ -88,13 +92,31 @@ describe('the archetype each real book lands in', () => {
 });
 
 describe('an unmeasurable metric is absent, not zero', () => {
-  test('a manager with one stored quarter is not called fully rotated', () => {
+  test('a previous filing too small to be a book is not a comparison', () => {
+    // Norges Bank. Its Q1 2026 filing reports one holding; the quarters either
+    // side report 1,577 and 1,617 and its median quarter 2,108. It did not
+    // liquidate a sixteen-hundred-name book and rebuild it. Measured against
+    // that filing every position is new, and the profile said "100% turnover"
+    // on the same line as "the median position has survived 39 of 42 quarters".
     const profile = strategyProfile(REAL.norges);
-    // Turnover is unknown, so no archetype that depends on turnover may fire.
     assert.equal(profile.archetype, 'diversified_broad');
-    assert.equal(profile.confidence, 'low');
     assert.equal(profile.evidence.some((row) => row.key === 'turnover'), false);
-    assert.match(profile.caveats.join(' '), /Only one quarter is stored/);
+    assert.match(profile.caveats.join(' '), /not a book this one can be compared against/);
+    // Refused, not silently dropped: the counts that caused it survive.
+    const m = normaliseMetrics(REAL.norges);
+    assert.equal(m.turnoverPct, null);
+    assert.deepEqual(m.turnoverRefused, { priorPositions: 1, positions: 1617 });
+  });
+
+  test('a real contraction is still measured', () => {
+    // The guard has to refuse a broken filing without refusing a manager that
+    // genuinely cut its book. A quarter of the previous size is a hard year;
+    // a sixteen-hundredth of it is a parsing failure.
+    const cut = normaliseMetrics({ positions: 100, priorPositions: 400, turnoverPct: 62 });
+    assert.equal(cut.turnoverPct, 62);
+    assert.equal(cut.turnoverRefused, undefined);
+    const broken = normaliseMetrics({ positions: 100, priorPositions: 19, turnoverPct: 96 });
+    assert.equal(broken.turnoverPct, null);
   });
 
   test('turnover of zero is a measurement and still classifies', () => {
@@ -132,13 +154,32 @@ describe('confidence', () => {
 });
 
 describe('traits hold across archetypes', () => {
-  test('13D is reported as intent, 13G as its absence', () => {
-    const activist = traitsFor({ activistFilings: 3, passiveFilings: 9 });
-    assert.equal(activist[0].key, 'activist');
-    const passive = traitsFor({ activistFilings: 0, passiveFilings: 9 });
-    assert.equal(passive[0].key, 'passive_stakes');
-    // Neither is claimed when nothing was filed.
+  test('13D is read as a share of what is on record, not as a count', () => {
+    const keys = (d, g) => traitsFor({ activistFilings: d, passiveFilings: g }).map((t) => t.key);
+    // Pershing Square: 18 of 20.
+    assert.ok(keys(18, 2).includes('activist'));
+    // Baker Bros: 10 of 20.
+    assert.ok(keys(10, 10).includes('activist'));
+    // BlackRock: one 13D/A among nineteen 13Gs. A raw count called this an
+    // activist - a firm whose entire position is that it does not seek
+    // control.
+    assert.equal(keys(1, 19).includes('activist'), false);
+    assert.ok(keys(1, 19).includes('passive_stakes'));
+    // Berkshire: 4 of 20. Not an activist either, and not purely passive.
+    assert.deepEqual(keys(4, 16).filter((k) => k === 'activist' || k === 'passive_stakes'), []);
+    // Nothing on record claims nothing.
     assert.deepEqual(traitsFor({ activistFilings: 0, passiveFilings: 0 }), []);
+  });
+
+  test('no stake filings is admitted rather than read as no activism', () => {
+    // Twenty of the fifty managers have no 13D or 13G on record, Third Point
+    // and TCI among them - both activists by reputation. Every manager that
+    // has any has exactly twenty, so the collector caps there. Silence here is
+    // about our collection, not about them.
+    assert.match(caveatsFor({ positions: 40, activistFilings: 0, passiveFilings: 0 }).join(' '),
+      /may mean it has filed none, or that we have not collected them/);
+    assert.doesNotMatch(caveatsFor({ positions: 40, activistFilings: 1, passiveFilings: 19 }).join(' '),
+      /have not collected them/);
   });
 
   test('a manager that holds shares without the vote is flagged', () => {

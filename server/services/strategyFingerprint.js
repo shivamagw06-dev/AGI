@@ -135,6 +135,39 @@ function known(value) {
   return Number.isFinite(value);
 }
 
+/**
+ * The smallest previous book that can still be called a comparison.
+ *
+ * Measured: Norges Bank's filing for Q1 2026 reports one holding. The quarters
+ * either side report 1,577 and 1,617, and its median quarter reports 2,108. It
+ * did not liquidate a sixteen-hundred-name book and rebuild it twice; the
+ * filing is broken. Compared against it, every position in the current book is
+ * new, and the profile said "100% turnover" on the same line as "the median
+ * position has survived 39 of 42 quarters" - two claims that cannot both hold.
+ *
+ * A fifth of the current book is the line. Below it the previous filing is not
+ * evidence of anything, and turnover is left unstated rather than stated
+ * wrongly. A manager that genuinely cut three quarters of its book still gets
+ * measured; one that appears to have cut 99.9% of it does not.
+ */
+export const MIN_PRIOR_SHARE = 0.2;
+
+/**
+ * Metrics as measured, with the ones that cannot be trusted removed.
+ *
+ * Separate from the classifier so that what was refused, and why, survives
+ * into the caveats instead of disappearing into a null nobody can explain.
+ */
+export function normaliseMetrics(metrics) {
+  const m = { ...(metrics || {}) };
+  if (known(m.turnoverPct) && known(m.priorPositions) && known(m.positions)
+      && m.priorPositions < m.positions * MIN_PRIOR_SHARE) {
+    m.turnoverRefused = { priorPositions: m.priorPositions, positions: m.positions };
+    m.turnoverPct = null;
+  }
+  return m;
+}
+
 function pct(value) {
   return known(value) ? Math.round(value * 10) / 10 : null;
 }
@@ -152,25 +185,44 @@ export function traitsFor(metrics) {
   const m = metrics || {};
   const traits = [];
 
-  if (m.activistFilings > 0) {
-    traits.push({
-      key: 'activist',
-      label: 'Files 13D',
-      detail:
-        `${m.activistFilings} Schedule 13D filing${m.activistFilings === 1 ? '' : 's'}. `
-        + '13D is the schedule for a holder who intends to influence the company; '
-        + '13G is for one who does not. The choice is the manager\'s own and is '
-        + 'the plainest statement of intent in the public record.',
-    });
-  } else if (m.passiveFilings > 0) {
-    traits.push({
-      key: 'passive_stakes',
-      label: 'Files 13G only',
-      detail:
-        `${m.passiveFilings} Schedule 13G filing${m.passiveFilings === 1 ? '' : 's'} `
-        + 'and no 13D. Large stakes are declared as held without intent to '
-        + 'influence control.',
-    });
+  // A share of what is on record, never a raw count.
+  //
+  // The count alone called BlackRock an activist. It has one Schedule 13D/A
+  // against nineteen 13Gs - true, and a misrepresentation of a firm whose
+  // whole position is that it does not seek control. Berkshire's four in
+  // twenty is the same shape.
+  //
+  // And the denominator is what we hold, not what exists: every manager with
+  // any stake filings has exactly twenty, so the collector caps there. Twenty
+  // of the fifty managers have none at all, including Third Point and TCI,
+  // which are activists by reputation. Absence here is not evidence of
+  // absence, and the caveats say so.
+  const stakeFilings = (m.activistFilings || 0) + (m.passiveFilings || 0);
+  if (stakeFilings > 0) {
+    const share = m.activistFilings / stakeFilings;
+    const across = `${m.activistFilings} of the ${stakeFilings} most recent stake `
+      + `filing${stakeFilings === 1 ? '' : 's'} on record here`;
+    if (m.activistFilings >= 2 && share >= 0.25) {
+      traits.push({
+        key: 'activist',
+        label: 'Files 13D',
+        detail:
+          `${across}. 13D is the schedule for a holder who intends to influence `
+          + 'the company; 13G is for one who does not. The choice is the '
+          + 'manager\'s own and is the plainest statement of intent in the '
+          + 'public record.',
+      });
+    } else if (share <= 0.1) {
+      traits.push({
+        key: 'passive_stakes',
+        label: 'Stakes declared passive',
+        detail:
+          `${across} were 13D. Large stakes are declared as held without intent `
+          + 'to influence control.',
+      });
+    }
+    // Between the two - a fifth to a quarter 13D - is a manager that does both,
+    // and neither label would be honest about it.
   }
 
   // Voting authority is reported on the filing itself. A manager reporting
@@ -253,7 +305,15 @@ export function caveatsFor(metrics) {
     + 'this describes the reported book and not necessarily the whole one.',
   ];
 
-  if (!known(m.turnoverPct)) {
+  if (m.turnoverRefused) {
+    caveats.push(
+      `The previous quarter's filing reports ${m.turnoverRefused.priorPositions} `
+      + `position${m.turnoverRefused.priorPositions === 1 ? '' : 's'} against `
+      + `${m.turnoverRefused.positions} in this one. That is not a book this one `
+      + 'can be compared against, so turnover is not stated rather than stated '
+      + 'wrongly.',
+    );
+  } else if (!known(m.turnoverPct)) {
     caveats.push(
       'Only one quarter is stored for this manager, so turnover and holding '
       + 'period cannot be measured yet.',
@@ -263,6 +323,14 @@ export function caveatsFor(metrics) {
       `Measured across ${m.quartersObserved} stored quarter`
       + `${m.quartersObserved === 1 ? '' : 's'}, which is a short history to draw a `
       + 'pattern from. Most managers here have 42.',
+    );
+  }
+
+  if (!((m.activistFilings || 0) + (m.passiveFilings || 0))) {
+    caveats.push(
+      'No Schedule 13D or 13G filing is on record here for this manager. That '
+      + 'may mean it has filed none, or that we have not collected them - the '
+      + 'two look identical from this side, so nothing is claimed either way.',
     );
   }
 
@@ -353,7 +421,7 @@ export function evidenceFor(metrics) {
  * to avoid.
  */
 export function strategyProfile(metrics) {
-  const m = metrics || {};
+  const m = normaliseMetrics(metrics);
   if (!Number.isFinite(m.positions) || m.positions <= 0) return null;
 
   const archetype = ARCHETYPES.find((row) => row.when(m));
