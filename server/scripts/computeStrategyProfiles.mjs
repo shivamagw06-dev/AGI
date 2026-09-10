@@ -96,7 +96,9 @@ async function main() {
       evidence: profile.evidence,
       traits: profile.traits,
       caveats: profile.caveats,
-      metrics,
+      // From the profile, not from metricsOf: a measurement the classifier
+      // refused must not reach the database through a second path.
+      metrics: profile.metrics,
       as_of_date: row.as_of_date,
       quarters_observed: metrics.quartersObserved || 0,
       computed_at: new Date().toISOString(),
@@ -105,6 +107,13 @@ async function main() {
   }
 
   const pad = (value, width) => String(value ?? '-').padEnd(width);
+  // Three different reasons a number can be missing, and they are not the same
+  // thing: never measured, no prior quarter, or a prior quarter too broken to
+  // compare against.
+  const turnoverLabel = (m) => {
+    if (m.turnoverRefused) return 'refused';
+    return m.turnoverPct === null || m.turnoverPct === undefined ? 'n/a' : `${m.turnoverPct}%`;
+  };
   console.log('');
   console.log(`${pad('manager', 38)}${pad('archetype', 24)}${pad('conf', 8)}${pad('pos', 7)}${pad('top10', 8)}${pad('turn', 8)}traits`);
   for (const row of written) {
@@ -115,7 +124,7 @@ async function main() {
       + pad(row.confidence, 8)
       + pad(m.positions, 7)
       + pad(m.top10Pct === null ? '-' : `${m.top10Pct}%`, 8)
-      + pad(m.turnoverPct === null ? 'n/a' : `${m.turnoverPct}%`, 8)
+      + pad(turnoverLabel(m), 8)
       + row.traits.map((t) => t.key).join(', '),
     );
   }
