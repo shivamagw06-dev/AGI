@@ -139,14 +139,24 @@ console.log(`[prices] ${freshness.size.toLocaleString()} symbols in the fetch lo
 // which is how twenty-nine symbols came to block forty-four of fifty-one
 // managers while every one of them looked up to date.
 const coverage = new Map();
-const { data: coverageRows, error: coverageError } = await client.rpc('institutional_price_coverage');
-if (coverageError) {
+try {
+  // Paged, and ordered, because an RPC is capped at a thousand rows exactly as
+  // a select is. Unpaged this returned the alphabetically first thousand
+  // tickers and reported them as the whole table - so every symbol past the
+  // letter C had no coverage entry, no gap was detected for it, and the
+  // twenty-nine that prompted this work were all missed. The run then looked
+  // successful: twenty-eight symbols due, none of them the ones asked about.
+  const coverageRows = await all(() => client.rpc('institutional_price_coverage')
+    .select('ticker,first_date')
+    // Ordered, because paging without a total order lets rows move between
+    // pages - some read twice, others not at all.
+    .order('ticker'));
+  for (const row of coverageRows) coverage.set(row.ticker, String(row.first_date || '').slice(0, 10));
+  console.log(`[prices] ${coverage.size.toLocaleString()} symbols have stored price history`);
+} catch (error) {
   // Not fatal. Without it the plan behaves exactly as it did before, which is
   // worse but not wrong, and a missing migration should not stop a backfill.
-  console.warn(`[prices] coverage unavailable, planning on freshness alone: ${coverageError.message}`);
-} else {
-  for (const row of coverageRows || []) coverage.set(row.ticker, String(row.first_date || '').slice(0, 10));
-  console.log(`[prices] ${coverage.size.toLocaleString()} symbols have stored price history`);
+  console.warn(`[prices] coverage unavailable, planning on freshness alone: ${error.message}`);
 }
 
 // ---- the plan -------------------------------------------------------------
