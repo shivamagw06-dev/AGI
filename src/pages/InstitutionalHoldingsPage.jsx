@@ -660,7 +660,7 @@ function OverviewPage() {
   return (
     <ModuleShell
       eyebrow="Public filings transformed into decision context"
-      title="See where conviction is moving."
+      title="Follow top hedge funds."
       subtitle="Search fifty institutional portfolios, expand every latest holding, and understand what changed quarter by quarter."
     >
       <main className="mx-auto max-w-[1760px] px-5 pb-16 sm:px-8 xl:px-12">
