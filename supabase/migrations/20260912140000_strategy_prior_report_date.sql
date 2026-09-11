@@ -17,6 +17,13 @@
 -- This is general. Any manager with a missing quarter anywhere in its history
 -- has the same problem, withheld or not.
 
+-- The output columns are part of the return type, so adding one is a type
+-- change and `create or replace` refuses it - "cannot change return type of
+-- existing function". The argument list is untouched, which is exactly why
+-- this was missed: the drop was remembered when the arguments last changed and
+-- forgotten when only the columns did. Postgres treats both the same.
+drop function if exists public.institutional_strategy_metrics(uuid);
+
 create or replace function public.institutional_strategy_metrics(p_manager_id uuid default null)
 returns table (
   manager_id uuid,
