@@ -23,6 +23,17 @@
  *     The four positions it withheld were disclosed that August as
  *     0000950123-25-008361, "Confidential Treatment Expired".
  *     https://www.sec.gov/Archives/edgar/data/1067983/000095012325005701
+ *
+ *   server/tests/fixtures/sec13f/thiel-macro-nil.infotable.xml
+ *     Thiel Macro, accession 0001315863-26-000423, report 2026-03-31,
+ *     filed 2026-05-15. The information table is 619 bytes and carries the
+ *     same NA / 000000000 / 0 / 0 row Norges Bank uses - but its cover page
+ *     declares one entry worth zero with isConfidentialOmitted false, so the
+ *     table was read in full and nothing was withheld. Its Q2 2020 filing,
+ *     0001315863-20-000698, declares zero entries worth zero on the same
+ *     terms. The cover-page values below were read from those two filings;
+ *     the table here is the real bytes.
+ *     https://www.sec.gov/Archives/edgar/data/1562087/000131586326000423
  */
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -177,4 +188,67 @@ test('the real parser reads the withheld table correctly and the assessment reje
   const result = assessInformationTable({ rawRows: rows, summary: parseSummaryPage(NORGES_COVER) });
   assert.equal(result.status, 'confidential');
   assert.equal(result.realRows.length, 0);
+});
+
+/**
+ * A filing that reports nothing, and says so.
+ *
+ * The same placeholder row means two different things depending on what the
+ * cover page says about it. Norges Bank ships one against a declared 1,507 and
+ * isConfidentialOmitted true: a withheld table. Thiel Macro ships one against
+ * a declared 1 worth $0 with the flag false: a manager saying it held nothing
+ * reportable that quarter, filed as a 13F-HR rather than a 13F-NT.
+ *
+ * Neither of the two existing answers fits. Calling it withheld asserts a
+ * confidential treatment request the filer explicitly did not make; calling it
+ * short blames our own fetch for a document we parsed completely.
+ */
+const THIEL_TABLE = fixture('thiel-macro-nil.infotable.xml');
+
+test('a filing that declares one entry worth nothing is reporting no holdings', async () => {
+  const { parseInformationTable } = await import('./institutionalHoldingsService.js');
+  const assessed = assessInformationTable({
+    rawRows: parseInformationTable(THIEL_TABLE, 1),
+    // Thiel Macro's Q1 2026 cover page, read from the filing itself.
+    summary: { declaredEntries: 1, declaredValueUsd: 0, confidentialOmitted: false },
+  });
+  assert.equal(assessed.status, 'empty');
+  assert.equal(assessed.realRows.length, 0);
+  assert.equal(assessed.placeholderCount, 1);
+  assert.match(assessed.reason, /reports no holdings/);
+  // Not withheld: the filer said so, and recording it as withheld would put a
+  // confidential treatment request on the record that was never made.
+  assert.equal(assessed.confidentialOmitted, false);
+});
+
+test('a filing that declares zero entries is reporting no holdings', () => {
+  // Thiel Macro's Q2 2020: tableEntryTotal 0, tableValueTotal 0, flag false,
+  // and a single placeholder row in the table regardless.
+  const assessed = assessInformationTable({
+    rawRows: [holding({ issuer_name: 'NA', cusip: '000000000', value_usd: 0, shares: 0 })],
+    summary: { declaredEntries: 0, declaredValueUsd: 0, confidentialOmitted: false },
+  });
+  assert.equal(assessed.status, 'empty');
+});
+
+test('a withheld table is still withheld, not read as an empty one', () => {
+  // The separating test is the filer's own arithmetic. Norges Bank declares
+  // 1,507 entries worth $864,690,921,985 against a single row: the table was
+  // not read in full and the value is not zero, so neither condition holds.
+  const assessed = assessInformationTable({
+    rawRows: [holding({ issuer_name: 'NA', cusip: '000000000', value_usd: 0, shares: 0 })],
+    summary: parseSummaryPage(NORGES_COVER),
+  });
+  assert.equal(assessed.status, 'confidential');
+});
+
+test('a table that went missing is still an error, not an empty filing', () => {
+  // Declared 500, shipped one placeholder, nothing withheld. The count does
+  // not match the rows parsed and the declared value is not zero, so this
+  // stays loud - the fault is ours and silence would hide it.
+  const assessed = assessInformationTable({
+    rawRows: [holding({ issuer_name: 'NA', cusip: '000000000', value_usd: 0, shares: 0 })],
+    summary: { declaredEntries: 500, declaredValueUsd: 9_000_000, confidentialOmitted: false },
+  });
+  assert.equal(assessed.status, 'short');
 });
