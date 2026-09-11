@@ -63,7 +63,7 @@ describe('the manager list the page renders', () => {
     // through is how internal columns end up on a public surface.
     const [berkshire] = attachProfiles([MANAGERS[0]], STRATEGIES, ADVISERS);
     assert.deepEqual(Object.keys(berkshire).sort(),
-      ['adviser', 'display_name', 'id', 'slug', 'strategy']);
+      ['adviser', 'adviser_absence', 'display_name', 'id', 'slug', 'strategy']);
   });
 
   test('missing tables make an unenriched list, not an exception', () => {
