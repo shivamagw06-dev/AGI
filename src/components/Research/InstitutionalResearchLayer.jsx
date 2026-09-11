@@ -21,83 +21,84 @@ function evidenceValue(row) {
   return Number(row.value).toLocaleString('en-US');
 }
 
+/**
+ * Light surface, matching the page around it.
+ *
+ * The first version of this card was written in the dark palette the rest of
+ * this component uses - text-white headings, bg-black/20 rows - and the page
+ * renders light. Every evidence row came out as a grey slab and the headings
+ * fought the background. The tokens below are the ones the host page already
+ * uses: #111 for text that carries weight, #767676 for labels, #dddddd for
+ * hairlines, and the Reuters orange only on interaction.
+ */
 const CONFIDENCE_TONE = {
-  high: 'bg-emerald-400/10 text-emerald-300',
-  medium: 'bg-amber-400/10 text-amber-300',
-  low: 'bg-rose-400/10 text-rose-300',
+  high: 'bg-[#edf7f0] text-[#166534]',
+  medium: 'bg-[#fdf4e7] text-[#8a5300]',
+  low: 'bg-[#f2f2f2] text-[#5f5f5f]',
 };
 
 /**
- * What a manager's own filings say about how it runs money.
+ * One manager, under the archetype heading that already explains the pattern.
  *
- * The archetype is an inference and the evidence is not, so they are separated
- * on the card: a reader who disagrees with the label can still use the numbers
- * under it. Nothing here says why a manager chose a strategy - 13F is evidence
- * of what is held, never of why, and the rationale line says only what a book
- * of this shape is characteristic of.
- *
- * The caveats are on the card rather than in a footnote, collapsed but present,
- * because a limitation the reader never sees does not protect anyone.
+ * The rationale is deliberately not here. Every manager in a group shares the
+ * same `characteristic_of` sentence, so printing it on each card repeated one
+ * paragraph sixteen times under "Concentrated" and buried the thing that
+ * differs - which is the evidence.
  */
 function ManagerProfile({ manager }) {
   const strategy = manager.strategy;
   const adviser = manager.adviser;
   return (
-    <article className="rounded-2xl border border-white/10 bg-white/[0.035] p-5">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h3 className="text-lg font-semibold leading-6 text-white">{manager.display_name}</h3>
+    <article className="rounded-2xl border border-[#e6e6e6] bg-white p-5 transition hover:border-[#cfcfcf]">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <h4 className="text-[15px] font-semibold leading-5 text-[#111111]">{manager.display_name}</h4>
           {adviser ? (
-            <p className="mt-1 text-xs leading-5 text-neutral-700">
+            <p className="mt-1 text-[11px] leading-4 text-[#767676]">
               {adviser.legal_name}
               {adviser.city ? ` · ${adviser.city}` : ''}
-              {adviser.registered_since ? ` · SEC-registered since ${displayDate(adviser.registered_since)}` : ''}
+              {adviser.registered_since ? ` · registered ${displayDate(adviser.registered_since)}` : ''}
             </p>
           ) : manager.adviser_absence ? (
-            // An absence explained is information; an absence unexplained
-            // looks like a bug. Berkshire will never have a Form ADV, and
-            // saying so is more useful than a blank that reads identically to
-            // a manager we simply failed to match.
-            <p className="mt-1 max-w-prose text-xs leading-5 text-neutral-700">
-              No Form ADV. {manager.adviser_absence.explanation}
-            </p>
+            <p className="mt-1 text-[11px] leading-4 text-[#767676]">No Form ADV · {manager.adviser_absence.explanation}</p>
           ) : (
-            <p className="mt-1 text-xs leading-5 text-neutral-700">No SEC investment-adviser registration matched</p>
+            <p className="mt-1 text-[11px] leading-4 text-[#767676]">No SEC adviser registration matched</p>
           )}
         </div>
-        {strategy ? <span className={`shrink-0 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-[.14em] ${CONFIDENCE_TONE[strategy.confidence] || CONFIDENCE_TONE.low}`}>{strategy.confidence} confidence</span> : null}
+        {strategy ? <span className={`shrink-0 rounded-full px-2 py-0.5 text-[9px] font-extrabold uppercase tracking-[.14em] ${CONFIDENCE_TONE[strategy.confidence] || CONFIDENCE_TONE.low}`}>{strategy.confidence}</span> : null}
       </div>
 
-      {!strategy ? <p className="mt-4 text-sm text-neutral-700">No measured profile yet for this manager.</p> : (
+      {!strategy ? <p className="mt-4 text-sm text-[#767676]">No measured profile yet.</p> : (
         <>
-          <div className="mt-4 text-xl font-semibold text-white">{strategy.label}</div>
-          <p className="mt-2 text-sm leading-6 text-neutral-600">{strategy.characteristic_of}</p>
-
-          <dl className="mt-5 grid gap-2 sm:grid-cols-2">
+          {/* Hairlines rather than filled rows: the numbers are the content,
+              and a fill on every one of them turns the card into a block. */}
+          <dl className="mt-4 divide-y divide-[#f0f0f0] border-y border-[#f0f0f0]">
             {(strategy.evidence || []).map((row) => (
-              <div key={row.key} className="flex items-baseline justify-between gap-3 rounded-xl bg-black/20 px-3 py-2">
-                <dt className="text-xs text-neutral-700">{row.label}</dt>
-                <dd className="text-sm font-semibold tabular-nums text-neutral-600">{evidenceValue(row)}</dd>
+              <div key={row.key} className="flex items-baseline justify-between gap-4 py-1.5">
+                <dt className="text-[12px] text-[#767676]">{row.label}</dt>
+                <dd className="text-[13px] font-semibold tabular-nums text-[#111111]">{evidenceValue(row)}</dd>
               </div>
             ))}
           </dl>
 
           {strategy.traits?.length ? (
-            <div className="mt-4 flex flex-wrap gap-2">
-              {strategy.traits.map((trait) => <span key={trait.key} title={trait.detail} className="rounded-full border border-white/10 px-2.5 py-1 text-[11px] font-medium text-neutral-600">{trait.label}</span>)}
+            <div className="mt-3 flex flex-wrap gap-1.5">
+              {strategy.traits.map((trait) => <span key={trait.key} title={trait.detail} className="rounded-full border border-[#e0e0e0] px-2 py-0.5 text-[11px] text-[#555555]">{trait.label}</span>)}
             </div>
           ) : null}
 
-          <div className="mt-4 flex flex-wrap items-center gap-3 text-xs text-neutral-700">
-            <span>Measured from the filing dated {displayDate(strategy.as_of_date)}</span>
-            {adviser?.source_url ? <a href={adviser.source_url} target="_blank" rel="noreferrer" className="underline decoration-white/20 underline-offset-2 hover:text-neutral-500">Form ADV</a> : null}
+          <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-[#8a8a8a]">
+            <span>As filed {displayDate(strategy.as_of_date)}</span>
+            {adviser?.source_url ? <a href={adviser.source_url} target="_blank" rel="noreferrer" className="underline decoration-[#d5d5d5] underline-offset-2 hover:text-[#ff8000]">Form ADV</a> : null}
             {manager.adviser_absence ? <span>{manager.adviser_absence.basis}</span> : null}
           </div>
 
           {strategy.caveats?.length ? (
-            <details className="mt-4 rounded-xl bg-black/20 p-3">
-              <summary className="cursor-pointer text-[10px] font-bold uppercase tracking-[.18em] text-neutral-700">What this cannot tell you</summary>
-              <ul className="mt-3 space-y-2 text-xs leading-5 text-neutral-700">
+            <details className="group mt-3">
+              <summary className="cursor-pointer list-none text-[10px] font-extrabold uppercase tracking-[.16em] text-[#6f6f6f] hover:text-[#111111]">
+                What this cannot tell you
+              </summary>
+              <ul className="mt-2 space-y-1.5 text-[11px] leading-[1.6] text-[#767676]">
                 {strategy.caveats.map((caveat) => <li key={caveat}>{caveat}</li>)}
               </ul>
             </details>
@@ -106,6 +107,32 @@ function ManagerProfile({ manager }) {
       )}
     </article>
   );
+}
+
+/**
+ * Managers grouped under the archetype they share, largest group first.
+ *
+ * Fifty cards in one grid is a wall, and the taxonomy that makes them
+ * comparable was invisible - every card repeated the group's own definition
+ * instead. Grouped, the page states each pattern once and then shows who fits
+ * it, which is the shape of the finding rather than a list of rows.
+ */
+function archetypeGroups(managers = []) {
+  const groups = new Map();
+  const unprofiled = [];
+  for (const manager of managers) {
+    if (!manager.strategy) { unprofiled.push(manager); continue; }
+    const key = manager.strategy.archetype;
+    if (!groups.has(key)) {
+      groups.set(key, { key, label: manager.strategy.label, characteristicOf: manager.strategy.characteristic_of, managers: [] });
+    }
+    groups.get(key).managers.push(manager);
+  }
+  const ordered = [...groups.values()].sort((a, b) => b.managers.length - a.managers.length || a.label.localeCompare(b.label));
+  // Managers without a measurement last, named rather than hidden: an absent
+  // profile is a gap worth seeing, not something to tidy away.
+  if (unprofiled.length) ordered.push({ key: 'unmeasured', label: 'Not yet measured', characteristicOf: 'No strategy profile has been computed for these managers.', managers: unprofiled });
+  return ordered;
 }
 
 export default function InstitutionalResearchLayer() {
@@ -210,18 +237,30 @@ export default function InstitutionalResearchLayer() {
           of the gate was never the gate, it was that no figure goes out that would be
           wrong in the direction that flatters the manager. */}
       {tab === 'managers' ? <div>
-        <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
+        <div className="mb-6 flex flex-wrap items-end justify-between gap-4 border-b border-[#ececec] pb-5">
           <div>
-            <div className="text-[10px] font-bold uppercase tracking-[.2em] text-neutral-600">Derived from filings</div>
-            <h3 className="mt-1 text-xl font-semibold text-white">How each manager runs money</h3>
+            <div className="text-[10px] font-extrabold uppercase tracking-[.18em] text-[#777777]">Derived from filings</div>
+            <h3 className="mt-1 text-2xl font-semibold tracking-tight text-[#111111]">How each manager runs money</h3>
           </div>
-          <p className="max-w-xl text-xs leading-5 text-neutral-700">
-            Every label below is measured from the manager&rsquo;s own 13F filings and Form ADV registration &mdash; breadth,
+          <p className="max-w-xl text-[12px] leading-5 text-[#767676]">
+            Every label is measured from the manager&rsquo;s own 13F filings and Form ADV registration &mdash; breadth,
             concentration, turnover, holding period, derivatives, voting authority and the 13D/13G choice. None of it is an
             opinion about why a manager invests as it does, because a filing is evidence of what is held and not of why.
           </p>
         </div>
-        {data.managers?.length ? <div className="grid gap-4 lg:grid-cols-2">{data.managers.map((manager) => <ManagerProfile key={manager.id} manager={manager} />)}</div> : <Empty>Manager profiles appear once the strategy measurement has run.</Empty>}
+        {data.managers?.length ? <div className="space-y-10">{archetypeGroups(data.managers).map((group) => (
+          <section key={group.key}>
+            <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+              <h4 className="text-lg font-semibold tracking-tight text-[#111111]">{group.label}</h4>
+              <span className="text-[11px] font-semibold uppercase tracking-[.14em] text-[#8a8a8a]">{group.managers.length} manager{group.managers.length === 1 ? '' : 's'}</span>
+            </div>
+            {/* Said once for the group rather than repeated on every card. */}
+            <p className="mt-1 max-w-3xl text-[13px] leading-6 text-[#5f5f5f]">{group.characteristicOf}</p>
+            <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+              {group.managers.map((manager) => <ManagerProfile key={manager.id} manager={manager} />)}
+            </div>
+          </section>
+        ))}</div> : <Empty>Manager profiles appear once the strategy measurement has run.</Empty>}
       </div> : null}
 
       {tab === 'performance' ? <div className="grid gap-6 lg:grid-cols-[1.15fr_.85fr]">
