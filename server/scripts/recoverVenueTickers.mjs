@@ -28,6 +28,27 @@ import { namesByTicker } from '../services/issuerTickerRegistry.js';
 import { conflictingOwner, proposedWindow } from '../services/mappingWindow.js';
 
 const APPLY = process.argv.includes('--apply');
+/**
+ * Recoveries resting on a single word are reported and not written.
+ *
+ * The script has always marked them - one word carrying a whole match is
+ * distinctive for SKECHERS and generic for GOLD, and nothing in the strings
+ * knows which. But marking them while writing them anyway left the reader no
+ * way to act on the warning except to apply none of the batch: the run that
+ * produced this flag proposed NGDN -> GOLD at $2.34bn, and New Gold trades as
+ * NGD while GOLD was Barrick's.
+ *
+ * So a flagged mapping now needs naming. --accept-weak NGDN takes that one and
+ * leaves the rest; the five unflagged recoveries beside it apply either way.
+ */
+const ACCEPT_WEAK = new Set(
+  (() => {
+    const i = process.argv.indexOf('--accept-weak');
+    return i >= 0 && process.argv[i + 1] && !process.argv[i + 1].startsWith('--')
+      ? process.argv[i + 1].split(',').map((s) => s.trim().toUpperCase()).filter(Boolean)
+      : [];
+  })(),
+);
 const SEC_UA = (process.env.SEC_USER_AGENT || 'AGI Institutional Research research@agarwalglobalinvestments.com').trim();
 
 if (!getSupabaseAdminCredentials()) {
@@ -149,6 +170,16 @@ if (weak.length) {
   }
 }
 
+// Held back unless named. Counted before the refused list so the totals above
+// keep describing what was found and the totals here describe what is written.
+const heldBack = recovered.filter((r) => r.weak && !ACCEPT_WEAK.has(r.ticker));
+if (heldBack.length) {
+  console.log('');
+  console.log(`[venue] ${heldBack.length} held back until named with --accept-weak  ($${(sum(heldBack) / 1e9).toFixed(2)}bn)`);
+  for (const r of heldBack) console.log(`  ${r.ticker.padEnd(12)} -> ${String(r.to).padEnd(6)}  --accept-weak ${r.ticker}`);
+}
+const accepted = recovered.filter((r) => !r.weak || ACCEPT_WEAK.has(r.ticker));
+
 console.log('');
 console.log('[venue] refused, largest first (these stay unresolved):');
 for (const r of refused.sort((a, b) => b.value - a.value).slice(0, 25)) {
@@ -212,7 +243,7 @@ if (!latestReportDate) throw new Error('no active filings found; refusing to pro
 
 const writes = [];
 const conflicts = [];
-for (const r of recovered) {
+for (const r of accepted) {
   // Bounded to the dates actually held. An open-ended claim would run to the
   // end of time and block whichever security takes the symbol over next.
   const window = proposedWindow(r, latestReportDate);
@@ -261,7 +292,7 @@ console.log(`[venue] wrote ${written} mappings to security_identifier_history.`)
 // that is present and wrong, so the guard is the wrong ticker itself: only
 // rows carrying that exact venue code under that exact CUSIP are touched.
 let patched = 0;
-for (const r of recovered) {
+for (const r of accepted) {
   if (!writes.some((w) => w.cusip === r.cusip && w.ticker === r.to)) continue;
   const { error, count } = await client
     .from('institutional_holdings')
