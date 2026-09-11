@@ -1,11 +1,112 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Bell, Briefcase, CheckCircle2, FileSearch, Gauge, Layers3, Loader2, Play, Radar, ShieldCheck, Sparkles } from 'lucide-react';
+import { Bell, Briefcase, CheckCircle2, FileSearch, Gauge, Layers3, Loader2, Play, Radar, ShieldCheck, Sparkles, Users } from 'lucide-react';
 import { createInstitutionalGroup, createInstitutionalWatchlist, getInstitutionalBacktest, getInstitutionalResearchLayer, getInstitutionalWorkspace, markInstitutionalPersonalizedAlert } from '@/lib/institutionalHoldingsApi';
 
 const percent = (value, signed = false) => `${signed && Number(value) > 0 ? '+' : ''}${(Number(value || 0) * 100).toFixed(1)}%`;
 const displayDate = (value) => { const date = value ? new Date(value) : null; return date && !Number.isNaN(date.getTime()) ? date.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Timestamp unavailable'; };
 function Metric({ label, value, note }) { return <div className="rounded-xl border border-white/10 bg-white/[0.035] p-4"><div className="text-[10px] font-bold uppercase tracking-[.18em] text-neutral-700">{label}</div><div className="mt-2 text-2xl font-semibold text-white">{value}</div>{note ? <div className="mt-1 text-xs text-neutral-700">{note}</div> : null}</div>; }
 function Empty({ children }) { return <div className="rounded-xl border border-dashed border-white/10 p-8 text-center text-sm leading-6 text-neutral-700">{children}</div>; }
+
+/**
+ * One measured number, with the unit that makes it readable.
+ *
+ * "16 quarters" reads as a decade of conviction until you learn the manager
+ * has 42 on file, so the denominator travels with the value rather than being
+ * left for the reader to find.
+ */
+function evidenceValue(row) {
+  if (row?.value === null || row?.value === undefined) return '—';
+  if (row.unit === 'percent') return `${row.value}%`;
+  if (row.unit === 'quarters') return row.outOf ? `${row.value} of ${row.outOf}` : `${row.value}`;
+  return Number(row.value).toLocaleString('en-US');
+}
+
+const CONFIDENCE_TONE = {
+  high: 'bg-emerald-400/10 text-emerald-300',
+  medium: 'bg-amber-400/10 text-amber-300',
+  low: 'bg-rose-400/10 text-rose-300',
+};
+
+/**
+ * What a manager's own filings say about how it runs money.
+ *
+ * The archetype is an inference and the evidence is not, so they are separated
+ * on the card: a reader who disagrees with the label can still use the numbers
+ * under it. Nothing here says why a manager chose a strategy - 13F is evidence
+ * of what is held, never of why, and the rationale line says only what a book
+ * of this shape is characteristic of.
+ *
+ * The caveats are on the card rather than in a footnote, collapsed but present,
+ * because a limitation the reader never sees does not protect anyone.
+ */
+function ManagerProfile({ manager }) {
+  const strategy = manager.strategy;
+  const adviser = manager.adviser;
+  return (
+    <article className="rounded-2xl border border-white/10 bg-white/[0.035] p-5">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h3 className="text-lg font-semibold leading-6 text-white">{manager.display_name}</h3>
+          {adviser ? (
+            <p className="mt-1 text-xs leading-5 text-neutral-700">
+              {adviser.legal_name}
+              {adviser.city ? ` · ${adviser.city}` : ''}
+              {adviser.registered_since ? ` · SEC-registered since ${displayDate(adviser.registered_since)}` : ''}
+            </p>
+          ) : manager.adviser_absence ? (
+            // An absence explained is information; an absence unexplained
+            // looks like a bug. Berkshire will never have a Form ADV, and
+            // saying so is more useful than a blank that reads identically to
+            // a manager we simply failed to match.
+            <p className="mt-1 max-w-prose text-xs leading-5 text-neutral-700">
+              No Form ADV. {manager.adviser_absence.explanation}
+            </p>
+          ) : (
+            <p className="mt-1 text-xs leading-5 text-neutral-700">No SEC investment-adviser registration matched</p>
+          )}
+        </div>
+        {strategy ? <span className={`shrink-0 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-[.14em] ${CONFIDENCE_TONE[strategy.confidence] || CONFIDENCE_TONE.low}`}>{strategy.confidence} confidence</span> : null}
+      </div>
+
+      {!strategy ? <p className="mt-4 text-sm text-neutral-700">No measured profile yet for this manager.</p> : (
+        <>
+          <div className="mt-4 text-xl font-semibold text-white">{strategy.label}</div>
+          <p className="mt-2 text-sm leading-6 text-neutral-600">{strategy.characteristic_of}</p>
+
+          <dl className="mt-5 grid gap-2 sm:grid-cols-2">
+            {(strategy.evidence || []).map((row) => (
+              <div key={row.key} className="flex items-baseline justify-between gap-3 rounded-xl bg-black/20 px-3 py-2">
+                <dt className="text-xs text-neutral-700">{row.label}</dt>
+                <dd className="text-sm font-semibold tabular-nums text-neutral-600">{evidenceValue(row)}</dd>
+              </div>
+            ))}
+          </dl>
+
+          {strategy.traits?.length ? (
+            <div className="mt-4 flex flex-wrap gap-2">
+              {strategy.traits.map((trait) => <span key={trait.key} title={trait.detail} className="rounded-full border border-white/10 px-2.5 py-1 text-[11px] font-medium text-neutral-600">{trait.label}</span>)}
+            </div>
+          ) : null}
+
+          <div className="mt-4 flex flex-wrap items-center gap-3 text-xs text-neutral-700">
+            <span>Measured from the filing dated {displayDate(strategy.as_of_date)}</span>
+            {adviser?.source_url ? <a href={adviser.source_url} target="_blank" rel="noreferrer" className="underline decoration-white/20 underline-offset-2 hover:text-neutral-500">Form ADV</a> : null}
+            {manager.adviser_absence ? <span>{manager.adviser_absence.basis}</span> : null}
+          </div>
+
+          {strategy.caveats?.length ? (
+            <details className="mt-4 rounded-xl bg-black/20 p-3">
+              <summary className="cursor-pointer text-[10px] font-bold uppercase tracking-[.18em] text-neutral-700">What this cannot tell you</summary>
+              <ul className="mt-3 space-y-2 text-xs leading-5 text-neutral-700">
+                {strategy.caveats.map((caveat) => <li key={caveat}>{caveat}</li>)}
+              </ul>
+            </details>
+          ) : null}
+        </>
+      )}
+    </article>
+  );
+}
 
 export default function InstitutionalResearchLayer() {
   const [data, setData] = useState(null); const [tab, setTab] = useState('rotation'); const [managerSlug, setManagerSlug] = useState('');
@@ -78,7 +179,12 @@ export default function InstitutionalResearchLayer() {
     } finally { setWorking(''); }
   };
   const loadWorkspace = async () => { setWorking('workspace'); setMessage(''); try { setWorkspace(await getInstitutionalWorkspace()); } catch (error) { setMessage(error.message); } finally { setWorking(''); } };
-  const tabs = [['rotation', 'Sector rotation', Layers3], ['performance', 'Performance lab', Gauge], ['filings', '13D/G + Form 4', FileSearch], ['briefs', 'Analyst briefs', Sparkles], ['workspace', 'My workspace', Briefcase]];
+  const tabs = [['rotation', 'Sector rotation', Layers3], ['managers', 'Manager profiles', Users], ['performance', 'Performance lab', Gauge], ['filings', '13D/G + Form 4', FileSearch],
+    // Shown only once a brief exists. Every generated brief is pending review
+    // and none has been approved, so this tab was empty for every visitor -
+    // which reads as a broken feature rather than as an editorial standard.
+    ...(data?.approved_briefs?.length ? [['briefs', 'Analyst briefs', Sparkles]] : []),
+    ['workspace', 'My workspace', Briefcase]];
   if (!data) return <section className="mx-auto mt-8 flex max-w-[1760px] flex-col items-center justify-center rounded-2xl border border-neutral-200 bg-[#222222] p-16 text-center text-neutral-600">{working === 'research' ? <><Loader2 className="mb-3 h-5 w-5 animate-spin" /><span>Loading institutional research layer</span></> : <><div className="text-base font-semibold text-white">Institutional research is temporarily unavailable</div><div className="mt-2 max-w-xl text-sm">{message || 'The evidence service did not respond. Your existing holdings data remains available.'}</div><button type="button" onClick={loadResearchLayer} className="mt-5 rounded-xl bg-neutral-900 px-5 py-3 text-sm font-bold text-neutral-600">Retry research layer</button></>}</section>;
   return <section className="mx-auto mt-8 max-w-[1760px] overflow-hidden rounded-2xl border border-neutral-300/15 bg-[#222222] text-neutral-600 shadow-2xl shadow-slate-950/10">
     <div className="relative overflow-hidden border-b border-white/10 px-6 py-7 lg:px-8"><div className="absolute inset-0 opacity-40 [background-image:linear-gradient(rgba(34,211,238,.08)_1px,transparent_1px),linear-gradient(90deg,rgba(34,211,238,.08)_1px,transparent_1px)] [background-size:32px_32px]" /><div className="relative flex flex-col justify-between gap-5 lg:flex-row lg:items-end"><div><div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[.28em] text-neutral-600"><Radar className="h-4 w-4" /> Institutional intelligence V3</div><h2 className="mt-3 text-3xl font-semibold tracking-tight text-white">From disclosure to decision</h2><p className="mt-2 max-w-3xl text-sm leading-6 text-neutral-600">Point-in-time classifications, filing-aware performance, ownership disclosures and analyst-controlled research in one evidence trail.</p></div><div className="flex items-center gap-2 rounded-full border border-emerald-300/20 bg-emerald-300/10 px-4 py-2 text-xs font-semibold text-emerald-300"><ShieldCheck className="h-4 w-4" /> No look-ahead methodology</div></div>
@@ -103,6 +209,21 @@ export default function InstitutionalResearchLayer() {
           not_calculable and is shown as its reasons rather than as a number - the point
           of the gate was never the gate, it was that no figure goes out that would be
           wrong in the direction that flatters the manager. */}
+      {tab === 'managers' ? <div>
+        <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <div className="text-[10px] font-bold uppercase tracking-[.2em] text-neutral-600">Derived from filings</div>
+            <h3 className="mt-1 text-xl font-semibold text-white">How each manager runs money</h3>
+          </div>
+          <p className="max-w-xl text-xs leading-5 text-neutral-700">
+            Every label below is measured from the manager&rsquo;s own 13F filings and Form ADV registration &mdash; breadth,
+            concentration, turnover, holding period, derivatives, voting authority and the 13D/13G choice. None of it is an
+            opinion about why a manager invests as it does, because a filing is evidence of what is held and not of why.
+          </p>
+        </div>
+        {data.managers?.length ? <div className="grid gap-4 lg:grid-cols-2">{data.managers.map((manager) => <ManagerProfile key={manager.id} manager={manager} />)}</div> : <Empty>Manager profiles appear once the strategy measurement has run.</Empty>}
+      </div> : null}
+
       {tab === 'performance' ? <div className="grid gap-6 lg:grid-cols-[1.15fr_.85fr]">
         <div>
           <div className="mb-4 flex items-center justify-between"><div><div className="text-[10px] font-bold uppercase tracking-[.2em] text-neutral-600">Filing-aware backtest</div><h3 className="mt-1 text-xl font-semibold text-white">What copying the disclosure would have returned</h3></div><span className="text-xs text-neutral-700">Net of costs, versus SPY and QQQ</span></div>

@@ -10,6 +10,7 @@ import { coverageProfile, backtestBlockers } from './backtestCoverage.js';
 import { parseFormFour, rawDocumentPath } from './formFour.js';
 import { classifySic } from './sicSectors.js';
 import { classificationQueue } from './classificationQueue.js';
+import { adviserAbsence, unmatchedAbsenceSlugs } from './adviserAbsence.js';
 import { restatements, restated } from './sectorRestatement.js';
 import { securityCandidates, partitionByIdentifiability } from './securityCandidates.js';
 import { issuerDirectory, FUND_SECTOR, FUND_INDUSTRY } from './issuerDirectory.js';
@@ -636,6 +637,43 @@ export async function refreshInstitutionalResearchLayer({ classificationLimit = 
   return { status: 'complete', classifications, price_rows: prices, external_filings: external, briefs_created_or_refreshed: briefs, personalized_alerts: alerts, refreshed_at: new Date().toISOString() };
 }
 
+/**
+ * The manager list the page renders, with the two profiles that describe each.
+ *
+ * Only the three identity columns travel from the manager row. The table also
+ * carries a hand-written `strategy` label from seed time - "Concentrated
+ * activist", "Fundamental growth" - set on ten of the fifty managers and never
+ * checked against a filing. `strategy` on the returned row is the measured
+ * profile instead, so the page cannot render the asserted one by reaching for
+ * the obvious field name.
+ *
+ * A manager with no profile gets null rather than being dropped. Both absences
+ * are ordinary: a strategy profile needs the measurement to have run, and an
+ * adviser registration does not exist at all for an operating company that
+ * files 13F or for a family office exempt since 2011.
+ */
+export function attachProfiles(managers = [], strategies = [], advisers = []) {
+  // Loud, because the alternative is an explanation that quietly never renders.
+  const drifted = unmatchedAbsenceSlugs(managers);
+  if (drifted.length) console.warn(`[research-layer] adviser absence keys match no manager: ${drifted.join(', ')}`);
+  const strategyOf = new Map((strategies || []).map((row) => [row.manager_id, row]));
+  const adviserOf = new Map((advisers || []).map((row) => [row.manager_id, row]));
+  return (managers || []).map(({ id, slug, display_name }) => {
+    const adviser = adviserOf.get(id) || null;
+    return {
+      id,
+      slug,
+      display_name,
+      strategy: strategyOf.get(id) || null,
+      adviser,
+      // Only when there is no registration to show. A manager that has one
+      // needs no explanation for not having one, and carrying both would let
+      // the page render a contradiction.
+      adviser_absence: adviser ? null : adviserAbsence(slug),
+    };
+  });
+}
+
 export async function getInstitutionalResearchLayer() {
   try {
     // Without holdings. The only thing the page did with them was sector
@@ -643,7 +681,7 @@ export async function getInstitutionalResearchLayer() {
     // always was rather than the hundred and thirty thousand it was computed
     // from.
     const { client, managers, filings } = await core({ withHoldings: false });
-    const [{ data: rotation, error: rError }, { count: classificationCount, error: cError }, { data: events, error: eError }, { count: externalCount, error: xError }, { data: briefs, error: bError }, { data: backtests, error: tError }] = await Promise.all([
+    const [{ data: rotation, error: rError }, { count: classificationCount, error: cError }, { data: events, error: eError }, { count: externalCount, error: xError }, { data: briefs, error: bError }, { data: backtests, error: tError }, { data: strategies, error: sError }, { data: advisers, error: aError }] = await Promise.all([
       client.rpc('institutional_sector_rotation'),
       client.from('institutional_security_classifications').select('id', { count: 'exact', head: true }),
       // Six columns, not *. The row carries a parsed_data jsonb holding the
@@ -659,8 +697,23 @@ export async function getInstitutionalResearchLayer() {
       // roughly half of fifty managers once each had more than one stored run,
       // and which half depended on when they were last computed.
       client.from('institutional_backtest_runs').select('*, institutional_managers(display_name,slug)').order('generated_at', { ascending: false }).limit(300),
+      // One row per manager, both of them. Bounded well above fifty so a
+      // sixtieth manager appears rather than being silently dropped at the
+      // PostgREST cap, and small enough that an unbounded read cannot hide
+      // behind it.
+      client.from('institutional_manager_strategy_profiles')
+        .select('manager_id,archetype,label,characteristic_of,confidence,evidence,traits,caveats,as_of_date,quarters_observed')
+        .limit(500),
+      client.from('institutional_adviser_profiles')
+        .select('manager_id,legal_name,crd,sec_number,registration_scope,registered_since,latest_adv_filed,has_disclosure,city,country,source_url')
+        .limit(500),
     ]);
     if (cError || eError || xError || bError || tError) throw cError || eError || xError || bError || tError;
+    // A missing profile table is an unenriched manager list, not a dead page.
+    // These are the newest tables on this surface and the page stood without
+    // them for months.
+    if (sError) console.warn(`[research-layer] strategy profiles: ${sError.message}`);
+    if (aError) console.warn(`[research-layer] adviser profiles: ${aError.message}`);
     // A failed rotation is an empty section, not a failed page. Everything
     // else on this surface stands on its own.
     if (rError) console.warn(`[research-layer] sector rotation: ${rError.message}`);
@@ -668,7 +721,7 @@ export async function getInstitutionalResearchLayer() {
     // Sector rotation aggregates disclosed weights across quarters, so it
     // reads the same gate consensus does.
     const dataIntegrity = await getRepairStatus();
-    return { status: 'ready', data_integrity: dataIntegrity, generated_at: new Date().toISOString(), readiness: { managers_tracked: managers.length, managers_with_12_quarters: [...history.values()].filter((rows) => rows.length >= 12).length, classifications: classificationCount || 0, external_filings: externalCount || 0, approved_briefs: briefs?.length || 0, methodology: 'Entry is the first US trading session strictly after SEC acceptance, read in US Eastern. Positions without an adjusted close at both ends of a period are excluded and reported, never re-weighted. A position is priced from its adjusted closes, refreshed daily; a manager whose book cannot be priced in full is reported with its coverage rather than ranked on part of it.' }, sector_rotation: rotation || [], filing_events: events || [], approved_briefs: briefs || [], backtests: backtests || [], managers: managers.map(({ id, slug, display_name }) => ({ id, slug, display_name })) };
+    return { status: 'ready', data_integrity: dataIntegrity, generated_at: new Date().toISOString(), readiness: { managers_tracked: managers.length, managers_with_12_quarters: [...history.values()].filter((rows) => rows.length >= 12).length, classifications: classificationCount || 0, external_filings: externalCount || 0, approved_briefs: briefs?.length || 0, methodology: 'Entry is the first US trading session strictly after SEC acceptance, read in US Eastern. Positions without an adjusted close at both ends of a period are excluded and reported, never re-weighted. A position is priced from its adjusted closes, refreshed daily; a manager whose book cannot be priced in full is reported with its coverage rather than ranked on part of it.' }, sector_rotation: rotation || [], filing_events: events || [], approved_briefs: briefs || [], backtests: backtests || [], managers: attachProfiles(managers, strategies, advisers) };
   } catch (error) {
     if (/institutional_(security_classifications|external_filings|intelligence_briefs|backtest_runs)/i.test(error.message || '')) return { status: 'setup_required', message: 'Apply the Institutional Intelligence V3 database migration, then run the first research refresh.' };
     throw error;
