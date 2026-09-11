@@ -10,6 +10,7 @@ import { coverageProfile, backtestBlockers } from './backtestCoverage.js';
 import { parseFormFour, rawDocumentPath } from './formFour.js';
 import { classifySic } from './sicSectors.js';
 import { classificationQueue } from './classificationQueue.js';
+import { adviserAbsence, unmatchedAbsenceSlugs } from './adviserAbsence.js';
 import { restatements, restated } from './sectorRestatement.js';
 import { securityCandidates, partitionByIdentifiability } from './securityCandidates.js';
 import { issuerDirectory, FUND_SECTOR, FUND_INDUSTRY } from './issuerDirectory.js';
@@ -652,15 +653,25 @@ export async function refreshInstitutionalResearchLayer({ classificationLimit = 
  * files 13F or for a family office exempt since 2011.
  */
 export function attachProfiles(managers = [], strategies = [], advisers = []) {
+  // Loud, because the alternative is an explanation that quietly never renders.
+  const drifted = unmatchedAbsenceSlugs(managers);
+  if (drifted.length) console.warn(`[research-layer] adviser absence keys match no manager: ${drifted.join(', ')}`);
   const strategyOf = new Map((strategies || []).map((row) => [row.manager_id, row]));
   const adviserOf = new Map((advisers || []).map((row) => [row.manager_id, row]));
-  return (managers || []).map(({ id, slug, display_name }) => ({
-    id,
-    slug,
-    display_name,
-    strategy: strategyOf.get(id) || null,
-    adviser: adviserOf.get(id) || null,
-  }));
+  return (managers || []).map(({ id, slug, display_name }) => {
+    const adviser = adviserOf.get(id) || null;
+    return {
+      id,
+      slug,
+      display_name,
+      strategy: strategyOf.get(id) || null,
+      adviser,
+      // Only when there is no registration to show. A manager that has one
+      // needs no explanation for not having one, and carrying both would let
+      // the page render a contradiction.
+      adviser_absence: adviser ? null : adviserAbsence(slug),
+    };
+  });
 }
 
 export async function getInstitutionalResearchLayer() {

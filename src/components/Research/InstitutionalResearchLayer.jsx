@@ -53,11 +53,16 @@ function ManagerProfile({ manager }) {
               {adviser.city ? ` · ${adviser.city}` : ''}
               {adviser.registered_since ? ` · SEC-registered since ${displayDate(adviser.registered_since)}` : ''}
             </p>
+          ) : manager.adviser_absence ? (
+            // An absence explained is information; an absence unexplained
+            // looks like a bug. Berkshire will never have a Form ADV, and
+            // saying so is more useful than a blank that reads identically to
+            // a manager we simply failed to match.
+            <p className="mt-1 max-w-prose text-xs leading-5 text-neutral-700">
+              No Form ADV. {manager.adviser_absence.explanation}
+            </p>
           ) : (
-            // A manager with no adviser registration is usually a fact about
-            // the manager rather than a gap: an operating company that files
-            // 13F, or a family office exempt since 2011.
-            <p className="mt-1 text-xs leading-5 text-neutral-700">No SEC investment-adviser registration on record</p>
+            <p className="mt-1 text-xs leading-5 text-neutral-700">No SEC investment-adviser registration matched</p>
           )}
         </div>
         {strategy ? <span className={`shrink-0 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-[.14em] ${CONFIDENCE_TONE[strategy.confidence] || CONFIDENCE_TONE.low}`}>{strategy.confidence} confidence</span> : null}
@@ -86,6 +91,7 @@ function ManagerProfile({ manager }) {
           <div className="mt-4 flex flex-wrap items-center gap-3 text-xs text-neutral-700">
             <span>Measured from the filing dated {displayDate(strategy.as_of_date)}</span>
             {adviser?.source_url ? <a href={adviser.source_url} target="_blank" rel="noreferrer" className="underline decoration-white/20 underline-offset-2 hover:text-neutral-500">Form ADV</a> : null}
+            {manager.adviser_absence ? <span>{manager.adviser_absence.basis}</span> : null}
           </div>
 
           {strategy.caveats?.length ? (
