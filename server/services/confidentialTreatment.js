@@ -150,6 +150,36 @@ export function assessInformationTable({ rawRows = [], summary = null } = {}) {
   const declared = Number.isFinite(declaredEntries) && declaredEntries > 0 ? declaredEntries : null;
   const shortfall = declared !== null && realRows.length < declared * MISSING_TABLE_SHARE;
 
+  // The filing reports nothing, and says so itself.
+  //
+  // Thiel Macro files a 13F-HR with a single NA / 000000000 / 0 / 0 row when it
+  // has no reportable holdings, rather than a 13F-NT. Its Q1 2026 cover page
+  // declares one entry worth zero and ships exactly one row; its Q2 2020 cover
+  // page declares zero entries. In both, isConfidentialOmitted is false and
+  // the parser read the table in full - so nothing was withheld and nothing
+  // went missing. The filer is telling us it held nothing.
+  //
+  // Reading that as a withheld table would assert a confidential treatment
+  // request the filer explicitly did not make. Reading it as a short table
+  // blames our own fetch for a document we parsed correctly. It is neither,
+  // and the test for it is the filer's own arithmetic: the table value is
+  // zero, and the entry count either is zero or matches the rows we actually
+  // parsed. Norges Bank fails both - it declares 1,507 entries worth $864bn
+  // against a single row.
+  const readInFull = Number.isFinite(declaredEntries)
+    && (declaredEntries === 0 || declaredEntries === rows.length);
+  const declaresNothing = declaredValueUsd === 0 || declaredEntries === 0;
+  if (!realRows.length && confidentialOmitted !== true && readInFull && declaresNothing) {
+    return {
+      ...base,
+      status: 'empty',
+      reason: 'The filer reports no holdings for this quarter: the cover page declares '
+        + `${declaredEntries} entr${declaredEntries === 1 ? 'y' : 'ies'} worth `
+        + `${declaredValueUsd === null ? 'no stated value' : `$${declaredValueUsd}`}, and the `
+        + 'information table was read in full. Nothing was withheld and nothing is missing.',
+    };
+  }
+
   // No positions survived, or the table is a fraction of what the filing says
   // it holds. Whether that is expected turns entirely on the flag.
   if (!realRows.length || shortfall) {

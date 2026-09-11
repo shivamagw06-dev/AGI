@@ -1233,7 +1233,7 @@ async function createAlerts(client, manager, filing, changes) {
  * quarter, carrying issuer "NA" at zero dollars, plus the holding_changes that
  * were derived from it and are the direct cause of the 100% turnover reading.
  */
-async function recordWithheldFiling(client, manager, source, archive, infoDocument, table) {
+async function recordEmptyFiling(client, manager, source, archive, infoDocument, table) {
   const { data: filing, error } = await client.from('institutional_filings').upsert({
     manager_id: manager.id,
     accession_number: source.accession_number,
@@ -1256,7 +1256,10 @@ async function recordWithheldFiling(client, manager, source, archive, infoDocume
     source_url: `${archive.base}/${source.primary_document || infoDocument.name}`,
     holdings_count: 0,
     total_value_usd: 0,
-    confidential_omitted: true,
+    // What the filer said, not what we inferred. A filing that reports no
+    // holdings has isConfidentialOmitted false, and recording it as withheld
+    // would assert a confidential treatment request that was never made.
+    confidential_omitted: table.status === 'confidential',
     declared_holdings_count: table.declaredEntries,
     declared_value_usd: table.declaredValueUsd,
     ingested_at: new Date().toISOString(),
@@ -1273,7 +1276,7 @@ async function recordWithheldFiling(client, manager, source, archive, infoDocume
 
   return {
     accession_number: filing.accession_number,
-    status: 'withheld',
+    status: table.status === 'confidential' ? 'withheld' : 'reports-nothing',
     holdings: 0,
     removed: removed || 0,
     report_date: filing.report_date,
@@ -1308,9 +1311,10 @@ async function ingestFiling(client, manager, source) {
   // A table withheld under confidential treatment. There are no holdings, and
   // storing the placeholder as one is what made Norges Bank read as a manager
   // that sold 1,600 names and bought one. Recorded, not applied.
-  if (table.status === 'confidential') {
-    console.info(`[institutional-holdings] ${source.accession_number} withheld: ${table.reason}`);
-    return recordWithheldFiling(client, manager, source, archive, infoDocument, table);
+  if (table.status === 'confidential' || table.status === 'empty') {
+    const label = table.status === 'confidential' ? 'withheld' : 'reports nothing';
+    console.info(`[institutional-holdings] ${source.accession_number} ${label}: ${table.reason}`);
+    return recordEmptyFiling(client, manager, source, archive, infoDocument, table);
   }
 
   // Rows are missing and the filing does not say it withheld them, so the
