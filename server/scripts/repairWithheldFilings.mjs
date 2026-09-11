@@ -57,48 +57,62 @@ console.log(`[withheld] mode=${APPLY ? 'APPLY' : 'DRY RUN'}${MANAGER ? `  manage
 if (!APPLY) console.log('[withheld] nothing will be written. Re-run with --apply to make these changes.');
 
 /**
- * Find them by what is stored, not by how small the book is.
+ * Find the filings that stored a placeholder instead of a book.
  *
- * A sweep for filings well below their manager's median is how this was found
- * and is the wrong instrument for fixing it: Alphabet's two-position 2016
- * filings and Durable Capital's three-position first filing trip it and are
- * both genuine. The placeholder has an exact shape, so it is matched exactly.
+ * Candidates come from institutional_filings, which holds a few thousand rows,
+ * rather than from institutional_holdings, which holds millions.
  *
+ * The first version swept the holdings table directly for `cusip like '0000%'`
+ * and for nameless issuers. Neither filter can use an index - a prefix LIKE is
+ * not indexable under the default collation and issuer_name has no index at
+ * all - so each was a sequential scan of every holding we store, and .range()
+ * paging turns that into one such scan per page. It timed out before returning
+ * a single row.
+ *
+ * A withheld filing stores exactly one row, so filings with a handful of
+ * stored holdings are the entire candidate set. That is the "how small is the
+ * book" test, which was rejected as a *decision* rule and rightly so - but it
+ * is not being used as one. isPlaceholderRow still decides, so Alphabet's
+ * genuine two-position 2016 filings and Durable Capital's three-position first
+ * filing are fetched here and correctly rejected below.
  */
+const PLACEHOLDER_MAX_ROWS = 5;
+
 async function placeholderFilings() {
   const seen = new Map();
   const PAGE = 1000;
 
-  // Two narrow server-side filters rather than one clever one. A stored
-  // placeholder always has a CUSIP of zeros, because a row with no CUSIP at
-  // all never gets past the parser's own filter - but the nameless-issuer
-  // sweep is kept as well, in case some filer's placeholder is shaped
-  // differently. isPlaceholderRow makes the actual decision either way, so a
-  // loose filter here cannot produce a false positive.
-  const sweeps = [
-    (q) => q.like('cusip', '0000%'),
-    (q) => q.in('issuer_name', ['NA', 'N/A', 'NONE']),
-  ];
+  const candidates = [];
+  for (let from = 0; ; from += PAGE) {
+    const { data, error } = await db
+      .from('institutional_filings')
+      .select('id')
+      .lte('holdings_count', PLACEHOLDER_MAX_ROWS)
+      .order('id')
+      .range(from, from + PAGE - 1);
+    if (error) throw new Error(error.message);
+    candidates.push(...(data || []).map((row) => row.id));
+    // Paged deliberately, and ordered: an unbounded PostgREST select stops at
+    // 1,000 rows and says nothing about the ones it did not return, and an
+    // unordered one lets rows move between pages.
+    if (!data || data.length < PAGE) break;
+  }
 
-  for (const narrow of sweeps) {
-    for (let from = 0; ; from += PAGE) {
-      const { data, error } = await narrow(db
-        .from('institutional_holdings')
-        .select('id,filing_id,cusip,issuer_name,value_usd,shares'))
-        .range(from, from + PAGE - 1);
-      if (error) throw new Error(error.message);
-      // Keyed on the row id, because the two sweeps overlap on exactly the
-      // rows this is looking for and a count that double-reports them is the
-      // same species of small untruth being repaired.
-      for (const row of data || []) {
-        if (!isPlaceholderRow(row)) continue;
-        if (!seen.has(row.filing_id)) seen.set(row.filing_id, new Set());
-        seen.get(row.filing_id).add(row.id);
-      }
-      // Paged deliberately: an unbounded PostgREST select stops at 1,000 rows
-      // and says nothing about the ones it did not return.
-      if (!data || data.length < PAGE) break;
-    }
+  for (const filingId of candidates) {
+    // Reached through filing_id, which is the indexed path into this table.
+    const { data, error } = await db
+      .from('institutional_holdings')
+      .select('id,filing_id,cusip,issuer_name,value_usd,shares')
+      .eq('filing_id', filingId)
+      .limit(PLACEHOLDER_MAX_ROWS + 1);
+    if (error) throw new Error(error.message);
+    const rows = data || [];
+    if (!rows.length) continue;
+    // Every stored row has to be a placeholder. A filing carrying one
+    // placeholder beside real positions is a different problem, and this
+    // clears the whole filing - which would throw the real ones away.
+    if (!rows.every(isPlaceholderRow)) continue;
+    seen.set(filingId, new Set(rows.map((row) => row.id)));
   }
   return seen;
 }
