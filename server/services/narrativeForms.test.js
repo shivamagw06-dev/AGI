@@ -35,6 +35,48 @@ describe('what a form is worth to a reader', () => {
     assert.equal(baseForm('  sc 13d/a  '), 'SC 13D');
   });
 
+  test('EDGAR labels the same schedule two ways and both count', () => {
+    // Measured against the real submissions of the fifty managers: "SC 13G"
+    // is the older label and "SCHEDULE 13G" is what the current filing system
+    // produces, and both appear in one filer's history. Knowing only the first
+    // left 8,275 filings unclassified - about as many again as were counted -
+    // so every intent number was understated by roughly half. It looked like
+    // an unfamiliar form rather than like a bug, which is the whole reason the
+    // unclassified bucket exists.
+    assert.equal(formKind('SCHEDULE 13D'), 'intent');
+    assert.equal(formKind('SCHEDULE 13G'), 'intent');
+    assert.equal(formKind('SCHEDULE 13G/A'), 'intent');
+    assert.equal(formKind('SC 13G'), 'intent');
+  });
+
+  test('a proxy contest is a manager writing at length about a holding', () => {
+    // The only narrative source that comes from managers rather than from
+    // operating companies. Of the fifty, exactly six file 10-Ks and all six do
+    // so as registrants in their own right - Alphabet, NVIDIA, Berkshire and
+    // three banks. These 282 filings are the exception: an activist
+    // soliciting against a board, publicly, at length.
+    for (const form of ['DFAN14A', 'DEFN14A', 'PREN14A', 'DEFC14A', 'PRRN14A']) {
+      assert.equal(formKind(form), 'narrative', form);
+    }
+  });
+
+  test('how a manager voted is neither prose nor a holdings table', () => {
+    // The strategy fingerprint reports voting authority from the 13F, which
+    // says a manager holds the right. N-PX says what it did with it.
+    assert.equal(formKind('N-PX'), 'votes');
+    const summary = summariseForms(['N-PX', 'N-PX', '13F-HR']);
+    assert.deepEqual(summary.votes, [{ form: 'N-PX', count: 2, kind: 'votes' }]);
+    // And it stays out of the holdings bucket, where the distinction would be
+    // lost.
+    assert.deepEqual(summary.positions.map((row) => row.form), ['13F-HR']);
+  });
+
+  test('a confidential treatment request is filed under positions', () => {
+    // 13FCONP is the paperwork behind a withheld information table - the
+    // Norges Bank placeholders the collector now recognises.
+    assert.equal(formKind('13FCONP'), 'positions');
+  });
+
   test('an unfamiliar form is unclassified, not assumed', () => {
     // Guessing would hide it. Left null, it appears in the report as a
     // question - which is what a form type nobody has looked at should be.
