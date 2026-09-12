@@ -64,7 +64,7 @@ describe('the manager list the page renders', () => {
     const [berkshire] = attachProfiles([MANAGERS[0]], STRATEGIES, ADVISERS);
     assert.deepEqual(Object.keys(berkshire).sort(),
       ['adviser', 'adviser_absence', 'campaigns', 'campaigns_heading',
-        'display_name', 'id', 'slug', 'strategy']);
+        'display_name', 'id', 'said', 'slug', 'strategy']);
   });
 
   test('missing tables make an unenriched list, not an exception', () => {
