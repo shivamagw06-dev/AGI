@@ -255,11 +255,26 @@ async function main() {
     }
   }
 
+  // One row per conflict key. Postgres rejects an INSERT ... ON CONFLICT that
+  // touches the same row twice - "command cannot affect row a second time" -
+  // and it rejects the whole statement, so one repeated sentence loses every
+  // fact in the run. The extractor no longer emits duplicates; this stays as
+  // the guard, because the cost of being wrong here is the entire write.
+  const byKey = new Map();
+  for (const row of rows) {
+    byKey.set(JSON.stringify([row.slot ?? null, row.source_excerpt]), row);
+  }
+  const unique = [...byKey.values()];
+  if (unique.length !== rows.length) {
+    console.log(`[pub] ${rows.length - unique.length} row(s) repeated the same sentence in the`);
+    console.log('[pub] same step and were collapsed. The same words twice are one finding.');
+  }
+
   const { error: fError } = await client.from('manager_publication_facts')
-    .upsert(rows, { onConflict: 'publication_id,slot,source_excerpt' });
+    .upsert(unique, { onConflict: 'publication_id,slot,source_excerpt' });
   if (fError) throw new Error(`storing facts: ${fError.message}`);
 
-  const claims = rows.length - facts.length;
+  const claims = unique.length - facts.length;
   console.log(`\n[pub] ${facts.length} holding(s) and ${claims} chain claim(s) stored as pending`);
   console.log(`[pub] against publication ${publication.id}`);
   if (chain) {

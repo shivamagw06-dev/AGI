@@ -6,6 +6,7 @@ import { dirname, join } from 'node:path';
 import {
   CHAIN, STATED_SLOTS, INFERRED_SLOTS,
   sentences, figuresIn, metricIn, changeIn, slotsFor, intelligenceChain,
+  runningHeaders, isPageMarker,
 } from './publicationIntelligence.js';
 
 /**
@@ -296,5 +297,112 @@ describe('the chain over a real report', () => {
     assert.equal(empty.matched_sentences, 0);
     assert.equal(empty.slots.length, 9);
     assert.equal(empty.slots.every((slot) => slot.claims.length === 0), true);
+  });
+});
+
+describe('page furniture in a pasted report', () => {
+  test('a line repeated across the document is a running header', () => {
+    const text = `${'Notes to Consolidated Financial Statements\nSome body text here for the page.\n'.repeat(5)}`;
+    assert.ok(runningHeaders(text).has('Notes to Consolidated Financial Statements'));
+  });
+
+  test('three repeats is not enough, and a sentence is never furniture', () => {
+    const thrice = 'A heading repeated thrice\nbody\n'.repeat(3);
+    assert.ok(!runningHeaders(thrice).has('A heading repeated thrice'));
+    // Terminal punctuation disqualifies it however often it repeats: a
+    // genuinely repeated sentence is a claim to collapse, not furniture.
+    const sentence = 'We remain disciplined about price.\nbody\n'.repeat(9);
+    assert.ok(!runningHeaders(sentence).has('We remain disciplined about price.'));
+  });
+
+  test('a running header does not become the prefix of the next sentence', () => {
+    // "K-79 Notes to Consolidated Financial Statements (2)Significant business
+    // acquisitions On January 31, 2023, we acquired..." was a real claim. It
+    // quoted the page template instead of the filer.
+    const page = 'Notes to Consolidated Financial Statements\n'
+      + 'In January 2024, we acquired the remaining interests for $2.6 billion.\n';
+    const found = sentences(page.repeat(4));
+    assert.ok(found.length > 0);
+    for (const item of found) {
+      assert.ok(!/Notes to Consolidated/.test(item.text), item.text);
+    }
+  });
+
+  test('a page marker is dropped by its shape, not by repetition', () => {
+    // Each page number is nearly unique - "K-116" repeated eleven times but
+    // "K-38", "K-79" and "K-25" appeared once or twice and all three reached
+    // a claim.
+    for (const marker of ['K-38', 'K-116', 'A-1', '2025', '101', 'F-4']) {
+      assert.equal(isPageMarker(marker), true, marker);
+    }
+    for (const notMarker of ['GEICO', 'BNSF', 'Total 2025', 'We expect less.']) {
+      assert.equal(isPageMarker(notMarker), false, notMarker);
+    }
+    const found = sentences('K-38\nPremiums written increased $694 million in 2024 compared to 2023.');
+    assert.equal(found.length, 1);
+    assert.equal(found[0].text,
+      'Premiums written increased $694 million in 2024 compared to 2023.');
+  });
+
+  test('a repeated segment heading is a heading, not furniture', () => {
+    // The ordering inside sentences() is load-bearing and was asserted only in
+    // a comment: "Manufacturing, Service and Retailing" appears eight times in
+    // the report, so consulting the furniture set before segmentHeading drops
+    // it and every sentence under it loses its attribution. Checking furniture
+    // first passes every other test in this file.
+    const text = 'Manufacturing, Service and Retailing\nRevenues rose in 2025 across the group.\n'
+      .repeat(5);
+    assert.ok(runningHeaders(text).has('Manufacturing, Service and Retailing'),
+      'the heading does repeat often enough to look like furniture');
+    const found = sentences(text);
+    assert.ok(found.length > 0);
+    assert.equal(found[0].heading, 'manufacturing',
+      'a repeated segment heading was discarded as page furniture');
+  });
+
+  test('dropping furniture joins a sentence that wrapped across the page break', () => {
+    // Flushing the buffer at a page header would cut the sentence in half.
+    // Dropping the header and carrying on lets the halves meet.
+    const across = 'The volumes increase was primarily due to higher intermodal\n'
+      + 'K-42\n'
+      + 'shipments resulting from higher West Coast imports in 2025.\n';
+    const found = sentences(across);
+    assert.equal(found.length, 1);
+    assert.match(found[0].text, /higher intermodal shipments resulting from/);
+  });
+});
+
+describe('the same sentence twice is one finding', () => {
+  test('a sentence repeated in the document yields one claim per slot', () => {
+    // The yen borrowing terms appear in both the MD&A and the parent-company
+    // note. Two rows of identical words help no reviewer, they consumed the
+    // per-slot bound, and they made one INSERT touch the same row twice -
+    // which Postgres rejects outright, losing every fact in the run.
+    const line = 'The borrowings have interest rates ranging from 1.35% to 3.12% '
+      + 'and maturity dates ranging from 2028 to 2055.';
+    const chain = intelligenceChain(`${line}\n\nUnrelated filler text sits here.\n\n${line}`,
+      { perSlot: 50 });
+    const changed = chain.slots.find((slot) => slot.slot === 'what_changed');
+    assert.equal(changed.claims.length, 1);
+    assert.equal(changed.found, 1);
+  });
+
+  test('no two claims in one slot share an excerpt', () => {
+    // The uniqueness the database enforces, asserted where it is produced.
+    for (const slot of intelligenceChain(FIXTURE, { perSlot: 500 }).slots) {
+      const excerpts = slot.claims.map((claim) => claim.source_excerpt);
+      assert.equal(new Set(excerpts).size, excerpts.length, `${slot.slot} repeats an excerpt`);
+    }
+  });
+
+  test('the same sentence may still answer two different steps', () => {
+    // Deduplication is per slot, not across the chain. "GEICO's expense ratio
+    // was 9.7% in 2024, unchanged from 2023" is an amount and a change, and
+    // collapsing it to one would drop half of what it says.
+    const line = "GEICO’s expense ratio was 9.7% in 2024, unchanged from 2023.";
+    const filled = intelligenceChain(line).slots
+      .filter((slot) => slot.claims.length)
+      .map((slot) => slot.slot);
+    assert.deepEqual(filled.sort(), ['how_much', 'what_changed']);
   });
 });
