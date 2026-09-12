@@ -1,0 +1,19 @@
+{
+  "industry_id": "healthcare",
+  "name": "Healthcare",
+  "demand_drivers": ["demographics", "insurance", "elective_procedures", "pharma_innovation"],
+  "supply_drivers": ["beds", "doctors", "approvals", "manufacturing"],
+  "capacity": "beds_or_manufacturing",
+  "pricing": "payer_mix_and_therapy",
+  "margins": {"ebit": "segment_dependent"},
+  "competition": "regional_hospitals_global_pharma",
+  "regulation": ["cdsco", "pricing_controls", "quality"],
+  "capital_intensity": "medium_to_high",
+  "typical_risks": ["regulation", "quality", "payer", "litigation"],
+  "important_kpis": ["occupancy", "arpo_b", "us_fda", "gross_margin"],
+  "preferred_valuation_models": ["dcf_fcff", "relative_ev_ebitda", "relative_pe"],
+  "historical_cycles": ["covid", "us_fda_remediation"],
+  "industry_structure": "fragmented_hospitals_global_pharma",
+  "business_characteristics": ["quality_and_trust", "regulation_heavy"],
+  "capital_cycle": "capacity_and_pipeline_investment"
+}

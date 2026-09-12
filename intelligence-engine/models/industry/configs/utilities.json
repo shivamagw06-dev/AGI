@@ -1,0 +1,19 @@
+{
+  "industry_id": "utilities",
+  "name": "Utilities / Power",
+  "demand_drivers": ["power_demand", "industrial_activity", "electrification"],
+  "supply_drivers": ["generation_capacity", "fuel", "grid"],
+  "capacity": "mw_and_plf",
+  "pricing": "regulated_or_merchant",
+  "margins": {"regulated_returns": "cost_plus_or_roce"},
+  "competition": "limited_in_regulated_segments",
+  "regulation": ["cerc", "serc", "ppa"],
+  "capital_intensity": "very_high",
+  "typical_risks": ["regulatory", "fuel", "receivables", "project_execution"],
+  "important_kpis": ["plf", "receivables_days", "roce", "ppa_tenure"],
+  "preferred_valuation_models": ["dcf_fcff", "relative_pb"],
+  "historical_cycles": ["discom_stress", "renewable_capex_wave"],
+  "industry_structure": "regulated_with_merchant_pockets",
+  "business_characteristics": ["asset_heavy", "long_duration_cashflows"],
+  "capital_cycle": "capex_and_regulatory_lag"
+}

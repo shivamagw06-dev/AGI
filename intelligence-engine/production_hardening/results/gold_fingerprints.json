@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "companies": {
+    "TCS": {
+      "fingerprint": "bb0fd457eacf2aa76ebd",
+      "opportunity_score": 64.1,
+      "research_priority": "Medium",
+      "entity": "TCS",
+      "why_now": "Valuation backdrop is constructive (PE historical percentile 0); sector/theme context: Sector key: it_services; near-term catalysts include Guidance update, Quarterly results. Overall research priority is Medium (score 64).",
+      "captured_at": "2026-07-29T19:05:34.328419+00:00"
+    },
+    "HDFCBANK": {
+      "fingerprint": "9c2aaddc0c45c08bec18",
+      "opportunity_score": 48.6,
+      "research_priority": "Low",
+      "entity": "HDFCBANK",
+      "why_now": "Valuation backdrop is constructive (PE historical percentile 0); sector/theme context: Sector key: banks; near-term catalysts include Guidance update, Quarterly results; research blockers to weigh: Elevated leverage, Risk history flag present. Overall research priority is Low (score 49).",
+      "captured_at": "2026-07-29T19:05:34.382290+00:00"
+    },
+    "RELIANCE": {
+      "fingerprint": "6eaf710fb36a80b19bb1",
+      "opportunity_score": 39.1,
+      "research_priority": "Low",
+      "entity": "RELIANCE",
+      "why_now": "Sector/theme context: Sector key: energy_conglomerate; near-term catalysts include Guidance update, Quarterly results; research blockers to weigh: Rich valuation vs peers. Overall research priority is Low (score 39).",
+      "captured_at": "2026-07-29T19:05:34.432186+00:00"
+    },
+    "NTPC": {
+      "fingerprint": "a5ca105812484c81f494",
+      "opportunity_score": 60.3,
+      "research_priority": "Medium",
+      "entity": "NTPC",
+      "why_now": "Valuation backdrop is constructive (PE historical percentile 0); sector/theme context: Sector key: power; near-term catalysts include Guidance update, Quarterly results. Overall research priority is Medium (score 60).",
+      "captured_at": "2026-07-29T19:05:34.451799+00:00"
+    },
+    "TATAMOTORS": {
+      "fingerprint": "42a1faba0bde57179c10",
+      "opportunity_score": 59.1,
+      "research_priority": "Medium",
+      "entity": "TMPV",
+      "why_now": "Valuation backdrop is constructive (Peer discount -24.2%); fundamentals show momentum (Revenue CAGR 13.9%); sector/theme context: Sector key: auto; near-term catalysts include Quarterly results. Overall research priority is Medium (score 59).",
+      "captured_at": "2026-07-29T19:05:34.471545+00:00"
+    }
+  },
+  "updated_at": "2026-07-29T19:05:34.471629+00:00"
+}

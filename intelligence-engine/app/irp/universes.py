@@ -1,0 +1,113 @@
+"""Canonical investment universes for entity resolution (IRP V1).
+
+Deterministic lexicons — no model weight updates, no KIP redesign.
+"""
+
+from __future__ import annotations
+
+SECTOR_UNIVERSES: dict[str, dict] = {
+    "INDIA_IT": {
+        "label": "Indian Information Technology",
+        "sector": "Information Technology",
+        "aliases": (
+            "indian it",
+            "india it",
+            "it services",
+            "it sector",
+            "software services",
+            "indian software",
+            "outsourcing",
+            "global capability centres",
+            "gcc",
+        ),
+        "companies": [
+            {"ticker": "TCS", "name": "Tata Consultancy Services"},
+            {"ticker": "INFY", "name": "Infosys"},
+            {"ticker": "HCLTECH", "name": "HCLTech"},
+            {"ticker": "WIPRO", "name": "Wipro"},
+            {"ticker": "LTIM", "name": "LTIMindtree"},
+            {"ticker": "TECHM", "name": "Tech Mahindra"},
+            {"ticker": "PERSISTENT", "name": "Persistent Systems"},
+            {"ticker": "COFORGE", "name": "Coforge"},
+            {"ticker": "MPHASIS", "name": "Mphasis"},
+            {"ticker": "LTTS", "name": "L&T Technology Services"},
+        ],
+        "themes": [
+            "ai_adoption",
+            "cloud",
+            "digital_transformation",
+            "global_outsourcing",
+            "genai",
+        ],
+        "currencies": ["USDINR"],
+        "countries": ["India", "United States", "Europe"],
+        "macro_drivers": [
+            "US discretionary IT spend",
+            "USD/INR translation",
+            "BFSI / manufacturing vertical demand",
+            "AI-led productivity / pricing pressure",
+        ],
+        "reject_topics": [
+            "paytm",
+            "oil",
+            "crude",
+            "ftse",
+            "dow jones",
+            "realty",
+            "cement",
+            "metals",
+            "pharma",
+        ],
+    },
+    "INDIA_BANKS": {
+        "label": "Indian Banking",
+        "sector": "Financials",
+        "aliases": (
+            "indian bank",
+            "india bank",
+            "banking sector",
+            "private banks",
+            "nbfc",
+        ),
+        "companies": [
+            {"ticker": "ICICIBANK", "name": "ICICI Bank"},
+            {"ticker": "HDFCBANK", "name": "HDFC Bank"},
+            {"ticker": "SBIN", "name": "State Bank of India"},
+            {"ticker": "AXISBANK", "name": "Axis Bank"},
+            {"ticker": "KOTAKBANK", "name": "Kotak Mahindra Bank"},
+        ],
+        "themes": ["credit_growth", "digital_banking", "rate_cut"],
+        "currencies": ["USDINR"],
+        "countries": ["India"],
+        "macro_drivers": ["RBI policy", "credit growth", "asset quality", "NIM trajectory"],
+        "reject_topics": ["oil", "it services", "ftse", "paytm wallet"],
+    },
+}
+
+COMPANY_ALIASES: dict[str, str] = {
+    "infosys": "INFY",
+    "tcs": "TCS",
+    "wipro": "WIPRO",
+    "hcl": "HCLTECH",
+    "hcltech": "HCLTECH",
+    "tech mahindra": "TECHM",
+    "ltimindtree": "LTIM",
+    "lti": "LTIM",
+    "persistent": "PERSISTENT",
+    "coforge": "COFORGE",
+    "mphasis": "MPHASIS",
+    "icici": "ICICIBANK",
+    "icici bank": "ICICIBANK",
+    "hdfc bank": "HDFCBANK",
+    "idbi": "IDBI",
+    "idbi bank": "IDBI",
+    "idbi bank ltd": "IDBI",
+    "idbi bank limited": "IDBI",
+    "reliance": "RELIANCE",
+    "sbi": "SBIN",
+    "meta": "META",
+    "meta platforms": "META",
+    "facebook": "META",
+    "apple": "AAPL",
+    "microsoft": "MSFT",
+}

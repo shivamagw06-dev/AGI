@@ -1,0 +1,84 @@
+{
+  "as_of": "2026-07-24",
+  "universe_id": "NSE_INVESTABLE_L1",
+  "panels": {
+    "TCS": {
+      "sector_id": "IT",
+      "ep_ttm": 0.12,
+      "events": [
+        {
+          "event_id": "TCS_earn_q_2026-07-10",
+          "event_type": "earn_q",
+          "event_time": "2026-07-10",
+          "actual": 0.135,
+          "consensus": 0.12
+        },
+        {
+          "event_id": "TCS_eps_surprise_2026-07-10",
+          "event_type": "eps_surprise",
+          "event_time": "2026-07-10",
+          "actual": 0.135,
+          "consensus": 0.12
+        },
+        {
+          "event_id": "TCS_guidance_2026-07-10",
+          "event_type": "guidance",
+          "event_time": "2026-07-10",
+          "guidance_delta": 0.04
+        },
+        {
+          "event_id": "TCS_dividend_2026-07-20",
+          "event_type": "dividend",
+          "event_time": "2026-07-20"
+        },
+        {
+          "event_id": "TCS_earn_q_2026-08-15",
+          "event_type": "earn_q",
+          "event_time": "2026-08-15",
+          "consensus": 0.13
+        }
+      ]
+    },
+    "INFY": {
+      "sector_id": "IT",
+      "ep_ttm": 0.10,
+      "events": [
+        {
+          "event_id": "INFY_earn_q_2026-07-05",
+          "event_type": "earn_q",
+          "event_time": "2026-07-05",
+          "actual": 0.09,
+          "consensus": 0.10
+        },
+        {
+          "event_id": "INFY_rights_2026-08-01",
+          "event_type": "rights",
+          "event_time": "2026-08-01"
+        },
+        {
+          "event_id": "INFY_split_2026-07-18",
+          "event_type": "split",
+          "event_time": "2026-07-18"
+        }
+      ]
+    },
+    "HDFCBANK": {
+      "sector_id": "BANK",
+      "ep_ttm": 0.08,
+      "events": [
+        {
+          "event_id": "HDFCBANK_earn_q_2026-07-12",
+          "event_type": "earn_q",
+          "event_time": "2026-07-12",
+          "actual": 0.085,
+          "consensus": 0.08
+        },
+        {
+          "event_id": "HDFCBANK_bonus_2026-07-22",
+          "event_type": "bonus",
+          "event_time": "2026-07-22"
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "industry_id": "power",
+  "name": "Power Generation",
+  "demand_drivers": ["electricity_demand", "industrial_load", "renewables_policy"],
+  "supply_drivers": ["fuel", "plant_availability", "renewable_capacity"],
+  "capacity": "mw_plf",
+  "pricing": "ppa_merchant",
+  "margins": {"regulated_or_spread": "fuel_pass_through_matters"},
+  "competition": "central_state_private_renewable",
+  "regulation": ["electricity_act", "ppa", "discom"],
+  "capital_intensity": "very_high",
+  "typical_risks": ["fuel", "discom_receivables", "merchant_price", "policy"],
+  "important_kpis": ["plf", "ppa_mix", "receivables", "leverage"],
+  "preferred_valuation_models": ["dcf_fcff", "relative_pb", "sotp"],
+  "historical_cycles": ["sepa_stress", "renewable_boom"],
+  "industry_structure": "mixed_regulated_merchant",
+  "business_characteristics": ["asset_heavy", "policy_sensitive"],
+  "capital_cycle": "capacity_addition_vs_demand"
+}

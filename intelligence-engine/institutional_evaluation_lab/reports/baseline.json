@@ -1,0 +1,85 @@
+{
+  "run_id": "iel-run-05bcfa0db3",
+  "suite": "institutional_1000",
+  "pass_pct": 92.6,
+  "mean_score": 87.23,
+  "n": 1000,
+  "iel_version": "institutional-evaluation-lab-v1.0.0",
+  "commit": "fe3b3ca6",
+  "aggregate": {
+    "n": 1000,
+    "pass_pct": 92.6,
+    "mean_score": 87.23,
+    "by_category": {
+      "accounting": {
+        "n": 15,
+        "mean_score": 69.7
+      },
+      "company": {
+        "n": 100,
+        "mean_score": 83.06
+      },
+      "cross_domain": {
+        "n": 518,
+        "mean_score": 90.44
+      },
+      "documents": {
+        "n": 120,
+        "mean_score": 92.09
+      },
+      "government": {
+        "n": 15,
+        "mean_score": 94.08
+      },
+      "historical_replay": {
+        "n": 55,
+        "mean_score": 83.63
+      },
+      "industry": {
+        "n": 45,
+        "mean_score": 79.56
+      },
+      "macro": {
+        "n": 15,
+        "mean_score": 91.21
+      },
+      "portfolio": {
+        "n": 56,
+        "mean_score": 69.7
+      },
+      "risk": {
+        "n": 50,
+        "mean_score": 86.48
+      },
+      "valuation": {
+        "n": 11,
+        "mean_score": 72.05
+      }
+    },
+    "by_verdict": {
+      "PASS": 926,
+      "PARTIAL": 73,
+      "FAIL": 1
+    },
+    "top_root_causes": [
+      {
+        "cause": "intent_mismatch",
+        "count": 153
+      },
+      {
+        "cause": "framework_mismatch",
+        "count": 37
+      },
+      {
+        "cause": "future_leakage",
+        "count": 15
+      },
+      {
+        "cause": "memory_miss_on_analog_question",
+        "count": 11
+      }
+    ],
+    "passed": 926,
+    "failed": 74
+  }
+}

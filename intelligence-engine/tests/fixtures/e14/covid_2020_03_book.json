@@ -1,0 +1,40 @@
+{
+  "as_of": "2020-03-16",
+  "e01": {
+    "primary_regime": "crisis",
+    "risk_level": "critical",
+    "size_multiplier": 0.35,
+    "vol_target": 0.06,
+    "macro_score": 22.0,
+    "axes": {
+      "R_STRESS": {"state": "crisis", "confidence": 0.9},
+      "R_VOL": {"state": "crisis_vol", "confidence": 0.88},
+      "R_RISK": {"state": "risk_off", "confidence": 0.85},
+      "R_CYCLE": {"state": "recession", "confidence": 0.8},
+      "R_MARKET": {"state": "bear", "confidence": 0.82},
+      "R_INFL": {"state": "disinflationary", "confidence": 0.5},
+      "R_LIQ": {"state": "liq_contraction", "confidence": 0.8},
+      "R_POLICY": {"state": "easing", "confidence": 0.6},
+      "R_EARN": {"state": "post_earnings", "confidence": 0.5}
+    }
+  },
+  "features": {
+    "vix_pctile_5y": 0.98,
+    "corr_avg_20d": 0.85,
+    "corr_spike": 0.35,
+    "liquidity_index": 25.0,
+    "days_to_exit_stress": 18.0,
+    "crowding_index": 78.0,
+    "fragility_index": 88.0,
+    "tail_risk_score": 92.0,
+    "name_hhi": 0.10,
+    "portfolio_beta": 1.35,
+    "stress_worst_pnl": -28.0,
+    "expected_dd_3m_p95": 0.32,
+    "hy_oas": 2.8,
+    "credit_stress": 2.5,
+    "exec_impact_bps": 60.0,
+    "gross": 1.6,
+    "net": 0.7
+  }
+}

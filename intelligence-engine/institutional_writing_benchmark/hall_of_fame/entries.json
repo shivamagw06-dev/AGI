@@ -1,0 +1,72 @@
+{
+  "version": "1.0",
+  "updated_at": "2026-08-05T17:13:10.620841Z",
+  "entries": {
+    "IWB_001": {
+      "benchmark_id": "IWB_001",
+      "question": "Should I invest in TCS?",
+      "response_text": "TCS \u2014 institutional research summary pending fuller evidence compilation.     ",
+      "editorial_score": 88.1,
+      "forward_rating": "MAJOR_EDITS",
+      "updated_at": "2026-08-05T16:34:53.136159Z",
+      "revision_history": []
+    },
+    "IWB_TEST": {
+      "benchmark_id": "IWB_TEST",
+      "question": "Test question",
+      "response_text": "Improved response with because and depends on clarity.",
+      "editorial_score": 92.0,
+      "forward_rating": "YES",
+      "updated_at": "2026-08-05T16:34:53.136990Z",
+      "revision_history": [
+        {
+          "archived_at": "2026-08-05T16:34:53.136987Z",
+          "editorial_score": 85.0,
+          "forward_rating": "MINOR_EDITS",
+          "response_excerpt": "The central investment debate centers on durability."
+        }
+      ]
+    },
+    "IWB_HOF_TEST": {
+      "benchmark_id": "IWB_HOF_TEST",
+      "question": "Test question",
+      "response_text": "Improved response with because and depends on clarity.",
+      "editorial_score": 92.0,
+      "forward_rating": "YES",
+      "updated_at": "2026-08-05T17:04:01.475941Z",
+      "revision_history": [
+        {
+          "archived_at": "2026-08-05T17:04:01.475936Z",
+          "editorial_score": 85.0,
+          "forward_rating": "MINOR_EDITS",
+          "response_excerpt": "The central investment debate centers on durability."
+        }
+      ]
+    },
+    "IIC_0001": {
+      "benchmark_id": "IIC_0001",
+      "question": "Does TCS deserve research today?",
+      "response_text": "TCS \u2014 institutional research summary pending fuller evidence compilation.  The investment debate has shifted. Few investors question TCS's underlying franchise quality at a headline level. The real debate is whether business quality versus valuation can sustain institutional attention while justifying today's market expectations. Current evidence supports the quality of the franchise. Future returns depend more on earnings execution than on discovering a better business. The investment debate has shifted. Few investors question TCS's underlying franchise quality at a headline level. The real debate is whether business quality versus valuation can sustain institutional attention while justifying today's market expectations. Current evidence supports the quality of the franchise. Future returns depend more on earnings execution than on discovering a better business.    ",
+      "editorial_score": 91.6,
+      "forward_rating": "MAJOR_EDITS",
+      "updated_at": "2026-08-05T17:13:10.619896Z",
+      "revision_history": []
+    },
+    "IIC_HOF_TEST": {
+      "benchmark_id": "IIC_HOF_TEST",
+      "question": "Test question",
+      "response_text": "Improved response with because and depends on clarity.",
+      "editorial_score": 92.0,
+      "forward_rating": "YES",
+      "updated_at": "2026-08-05T17:13:10.620798Z",
+      "revision_history": [
+        {
+          "archived_at": "2026-08-05T17:13:10.620793Z",
+          "editorial_score": 85.0,
+          "forward_rating": "MINOR_EDITS",
+          "response_excerpt": "The central investment debate centers on durability."
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,66 @@
+{
+  "company": "AGI",
+  "sprint": "4.5",
+  "module": "ICC",
+  "icc_version": "institutional-confidence-calibration-v1.0.0",
+  "confidence_version": "icc-confidence-profile-v1.0.0",
+  "cfqs_version": "cfqs-v1.0.0",
+  "date": "2026-07-28",
+  "mode": "soft",
+  "phase4_complete": true,
+  "results": {
+    "institutional_1000": {
+      "n": 1000,
+      "pass_pct": 99.9,
+      "mean_score": 90.05,
+      "mean_hqs": 95.85,
+      "mean_cqs": 95.89,
+      "mean_cfqs": 100.0,
+      "cfqs_pass_pct": 100.0,
+      "latency_ms": 10794,
+      "reasoning_changed": false
+    },
+    "cio_frozen_25": {
+      "n": 25,
+      "pass_pct": 100.0,
+      "mean_score": 87.58,
+      "mean_hqs": 95.2,
+      "mean_cqs": 95.26,
+      "mean_cfqs": 100.0
+    },
+    "smoke_20": {
+      "n": 20,
+      "pass_pct": 100.0,
+      "mean_score": 87.92,
+      "mean_hqs": 97.32,
+      "mean_cqs": 96.4,
+      "mean_cfqs": 100.0
+    }
+  },
+  "cfqs_component_means_1000": {
+    "calibration": 100.0,
+    "penalty_correctness": 100.0,
+    "coverage_influence": 100.0,
+    "committee_influence": 100.0,
+    "historical_influence": 100.0,
+    "conflict_influence": 100.0,
+    "explainability": 100.0,
+    "determinism": 100.0
+  },
+  "exit_gate": {
+    "deterministic": true,
+    "replay_preserved": true,
+    "temporal_preserved": true,
+    "no_reasoning_regression": true,
+    "no_framework_regression": true,
+    "no_communication_regression": true,
+    "langsmith_traces": true,
+    "cfqs_generated": true,
+    "hqs_maintained": true,
+    "cqs_maintained": true,
+    "cio_maintained": true,
+    "explanations_generated": true,
+    "fixtures_never_increase": true
+  },
+  "recommendation": "Certify and freeze Phase 4 stack (IEW→ICC) v1.0.0; begin Phase 5 decision lifecycle"
+}

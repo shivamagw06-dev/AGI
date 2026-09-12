@@ -1,0 +1,2212 @@
+{
+ "9baa9897856567d751f0f92771cf2861": {
+  "row_id": "9baa9897856567d751f0f92771cf2861",
+  "symbol": "ASIANPAINT",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat",
+   "assets"
+  ],
+  "filings": [
+   "e617ab839821c58eccdb12510a91bd0b4b37dd55f1f9f3707334949b9acbe5b7"
+  ],
+  "concepts": [
+   "Assets",
+   "ProfitOrLossAttributableToOwnersOfParent",
+   "RevenueFromOperations"
+  ]
+ },
+ "018c9a7f3c0d4d1b68b5242066518615": {
+  "row_id": "018c9a7f3c0d4d1b68b5242066518615",
+  "symbol": "ASIANPAINT",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "e617ab839821c58eccdb12510a91bd0b4b37dd55f1f9f3707334949b9acbe5b7"
+  ],
+  "concepts": [
+   "ProfitOrLossAttributableToOwnersOfParent",
+   "RevenueFromOperations"
+  ]
+ },
+ "002155c48615317d13b5cbadb73d4ccd": {
+  "row_id": "002155c48615317d13b5cbadb73d4ccd",
+  "symbol": "ASIANPAINT",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat",
+   "assets"
+  ],
+  "filings": [
+   "e3cb64552aeb5077bfaabc060ee98a10e7f5766ef9e457f4a8b0d5cc04fc83fd"
+  ],
+  "concepts": [
+   "Assets",
+   "ProfitOrLossAttributableToOwnersOfParent",
+   "RevenueFromOperations"
+  ]
+ },
+ "f1bf8d5ba5c73b618c7f1cd9dbcd8e81": {
+  "row_id": "f1bf8d5ba5c73b618c7f1cd9dbcd8e81",
+  "symbol": "ASIANPAINT",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "e3cb64552aeb5077bfaabc060ee98a10e7f5766ef9e457f4a8b0d5cc04fc83fd"
+  ],
+  "concepts": [
+   "ProfitOrLossAttributableToOwnersOfParent",
+   "RevenueFromOperations"
+  ]
+ },
+ "2841d6b43bf25448ff8d0382e2a43ced": {
+  "row_id": "2841d6b43bf25448ff8d0382e2a43ced",
+  "symbol": "ASIANPAINT",
+  "source": "formula_engine",
+  "matched_fields": [
+   "revenue",
+   "pat",
+   "cfo"
+  ],
+  "filings": [
+   "1359025561cdf5032444e323db2d50c07f91bf161af493912524ebe42a5d8ae5"
+  ],
+  "concepts": [
+   "CashFlowsFromUsedInOperatingActivities",
+   "ProfitOrLossAttributableToOwnersOfParent",
+   "RevenueFromOperations"
+  ]
+ },
+ "b3f1ce63322266728db55d761db179c5": {
+  "row_id": "b3f1ce63322266728db55d761db179c5",
+  "symbol": "ASIANPAINT",
+  "source": "formula_engine",
+  "matched_fields": [
+   "revenue",
+   "pat",
+   "cfo"
+  ],
+  "filings": [
+   "1359025561cdf5032444e323db2d50c07f91bf161af493912524ebe42a5d8ae5"
+  ],
+  "concepts": [
+   "CashFlowsFromUsedInOperatingActivities",
+   "ProfitOrLossAttributableToOwnersOfParent",
+   "RevenueFromOperations"
+  ]
+ },
+ "83c6efbb60e032fd13ee8cbab0a49609": {
+  "row_id": "83c6efbb60e032fd13ee8cbab0a49609",
+  "symbol": "ASIANPAINT",
+  "source": "formula_engine",
+  "matched_fields": [
+   "revenue",
+   "pat",
+   "cfo"
+  ],
+  "filings": [
+   "16b2f5f7d53e464e70c87890aa396c1eaf76d2c5f7e996cebaa86b200876fd87"
+  ],
+  "concepts": [
+   "CashFlowsFromUsedInOperatingActivities",
+   "ProfitOrLossAttributableToOwnersOfParent",
+   "RevenueFromOperations"
+  ]
+ },
+ "952053d507429133830201b9167d35e9": {
+  "row_id": "952053d507429133830201b9167d35e9",
+  "symbol": "ASIANPAINT",
+  "source": "formula_engine",
+  "matched_fields": [
+   "revenue",
+   "pat",
+   "cfo"
+  ],
+  "filings": [
+   "16b2f5f7d53e464e70c87890aa396c1eaf76d2c5f7e996cebaa86b200876fd87"
+  ],
+  "concepts": [
+   "CashFlowsFromUsedInOperatingActivities",
+   "ProfitOrLossAttributableToOwnersOfParent",
+   "RevenueFromOperations"
+  ]
+ },
+ "d626ba888195df203989ad3d9d165051": {
+  "row_id": "d626ba888195df203989ad3d9d165051",
+  "symbol": "ASIANPAINT",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "e617ab839821c58eccdb12510a91bd0b4b37dd55f1f9f3707334949b9acbe5b7"
+  ],
+  "concepts": [
+   "ProfitOrLossAttributableToOwnersOfParent",
+   "RevenueFromOperations"
+  ]
+ },
+ "995d871dfcaf5baa10aefa2e5f6f7257": {
+  "row_id": "995d871dfcaf5baa10aefa2e5f6f7257",
+  "symbol": "ASIANPAINT",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "e3cb64552aeb5077bfaabc060ee98a10e7f5766ef9e457f4a8b0d5cc04fc83fd"
+  ],
+  "concepts": [
+   "ProfitOrLossAttributableToOwnersOfParent",
+   "RevenueFromOperations"
+  ]
+ },
+ "dcc89cd0663714da1ba8dc2845c61e10": {
+  "row_id": "dcc89cd0663714da1ba8dc2845c61e10",
+  "symbol": "ASIANPAINT",
+  "source": "formula_engine",
+  "matched_fields": [
+   "revenue",
+   "pat",
+   "cfo"
+  ],
+  "filings": [
+   "1359025561cdf5032444e323db2d50c07f91bf161af493912524ebe42a5d8ae5"
+  ],
+  "concepts": [
+   "CashFlowsFromUsedInOperatingActivities",
+   "ProfitOrLossAttributableToOwnersOfParent",
+   "RevenueFromOperations"
+  ]
+ },
+ "3db793ac95fccc6e47a2d0e46e787f46": {
+  "row_id": "3db793ac95fccc6e47a2d0e46e787f46",
+  "symbol": "ASIANPAINT",
+  "source": "formula_engine",
+  "matched_fields": [
+   "revenue",
+   "pat",
+   "cfo"
+  ],
+  "filings": [
+   "16b2f5f7d53e464e70c87890aa396c1eaf76d2c5f7e996cebaa86b200876fd87"
+  ],
+  "concepts": [
+   "CashFlowsFromUsedInOperatingActivities",
+   "ProfitOrLossAttributableToOwnersOfParent",
+   "RevenueFromOperations"
+  ]
+ },
+ "d9537d080f1012643d7d9c89e2924123": {
+  "row_id": "d9537d080f1012643d7d9c89e2924123",
+  "symbol": "ASIANPAINT",
+  "source": "earnings_intelligence_p21",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "09b3c21298232436b2aebb75801a5386dd86a1d57f4cfb5399e285cb01927186"
+  ],
+  "concepts": [
+   "ProfitOrLossAttributableToOwnersOfParent",
+   "RevenueFromOperations"
+  ]
+ },
+ "a783e3a786bfa22afeea5624562ed057": {
+  "row_id": "a783e3a786bfa22afeea5624562ed057",
+  "symbol": "ASIANPAINT",
+  "source": "earnings_intelligence_p21",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "09b3c21298232436b2aebb75801a5386dd86a1d57f4cfb5399e285cb01927186"
+  ],
+  "concepts": [
+   "ProfitOrLossAttributableToOwnersOfParent",
+   "RevenueFromOperations"
+  ]
+ },
+ "abf5079ee119c2d80eef50af31ea20af": {
+  "row_id": "abf5079ee119c2d80eef50af31ea20af",
+  "symbol": "ASIANPAINT",
+  "source": "earnings_intelligence_p21",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "09b3c21298232436b2aebb75801a5386dd86a1d57f4cfb5399e285cb01927186"
+  ],
+  "concepts": [
+   "ProfitOrLossAttributableToOwnersOfParent",
+   "RevenueFromOperations"
+  ]
+ },
+ "ba298f34c303e038cd0f79c35e966d5c": {
+  "row_id": "ba298f34c303e038cd0f79c35e966d5c",
+  "symbol": "BHARTIARTL",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat",
+   "assets"
+  ],
+  "filings": [
+   "5288f2470d760574aa6dded851a4a468fcfecec07c6a34c6859c4fa42939579a"
+  ],
+  "concepts": [
+   "Assets",
+   "ProfitOrLossAttributableToOwnersOfParent",
+   "RevenueFromOperations"
+  ]
+ },
+ "533c2ea485f63df16e972bb3b0afdf6b": {
+  "row_id": "533c2ea485f63df16e972bb3b0afdf6b",
+  "symbol": "BHARTIARTL",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "5288f2470d760574aa6dded851a4a468fcfecec07c6a34c6859c4fa42939579a"
+  ],
+  "concepts": [
+   "ProfitOrLossAttributableToOwnersOfParent",
+   "RevenueFromOperations"
+  ]
+ },
+ "cf6997843fa3ce3d8464cfc1b1962451": {
+  "row_id": "cf6997843fa3ce3d8464cfc1b1962451",
+  "symbol": "BHARTIARTL",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat",
+   "assets"
+  ],
+  "filings": [
+   "dafbaea96c0599c1638a7777a1e91ca7ff0f1ea074d94480c859e7cd95404003"
+  ],
+  "concepts": [
+   "Assets",
+   "ProfitOrLossAttributableToOwnersOfParent",
+   "RevenueFromOperations"
+  ]
+ },
+ "a72a4efd0cf1390531e222319b49d883": {
+  "row_id": "a72a4efd0cf1390531e222319b49d883",
+  "symbol": "BHARTIARTL",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "dafbaea96c0599c1638a7777a1e91ca7ff0f1ea074d94480c859e7cd95404003"
+  ],
+  "concepts": [
+   "ProfitOrLossAttributableToOwnersOfParent",
+   "RevenueFromOperations"
+  ]
+ },
+ "c8fd4622081ef4b81fcadda4285f2e4b": {
+  "row_id": "c8fd4622081ef4b81fcadda4285f2e4b",
+  "symbol": "BHARTIARTL",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "5288f2470d760574aa6dded851a4a468fcfecec07c6a34c6859c4fa42939579a"
+  ],
+  "concepts": [
+   "ProfitOrLossAttributableToOwnersOfParent",
+   "RevenueFromOperations"
+  ]
+ },
+ "031d147f0c61a3904aa846a6b4bdfaba": {
+  "row_id": "031d147f0c61a3904aa846a6b4bdfaba",
+  "symbol": "BHARTIARTL",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "dafbaea96c0599c1638a7777a1e91ca7ff0f1ea074d94480c859e7cd95404003"
+  ],
+  "concepts": [
+   "ProfitOrLossAttributableToOwnersOfParent",
+   "RevenueFromOperations"
+  ]
+ },
+ "7fde9264ebdd67aeb017b9ee96701a6c": {
+  "row_id": "7fde9264ebdd67aeb017b9ee96701a6c",
+  "symbol": "HDFCBANK",
+  "source": "yahoo_finance_statements",
+  "matched_fields": [
+   "ebit"
+  ],
+  "filings": [
+   "4168d3542b232b35100a82faa1aaafd13666bdede2d919f88723ee7f1f90c3a4"
+  ],
+  "concepts": [
+   "OperatingProfitBeforeProvisionAndContingencies"
+  ]
+ },
+ "c9acdfc75d825f0ec440a7d85f17e3bc": {
+  "row_id": "c9acdfc75d825f0ec440a7d85f17e3bc",
+  "symbol": "HDFCBANK",
+  "source": "yahoo_finance_statements",
+  "matched_fields": [
+   "pat",
+   "ebit"
+  ],
+  "filings": [
+   "4168d3542b232b35100a82faa1aaafd13666bdede2d919f88723ee7f1f90c3a4"
+  ],
+  "concepts": [
+   "OperatingProfitBeforeProvisionAndContingencies",
+   "ProfitLossFromOrdinaryActivitiesAfterTax"
+  ]
+ },
+ "8c11a45ed4384fea68212dbe20480014": {
+  "row_id": "8c11a45ed4384fea68212dbe20480014",
+  "symbol": "HDFCBANK",
+  "source": "yahoo_finance_statements",
+  "matched_fields": [
+   "ebit"
+  ],
+  "filings": [
+   "689ca729dc65f8eee31a31455981fb81657b53c4486e7da11a5773117210df04"
+  ],
+  "concepts": [
+   "OperatingProfitBeforeProvisionAndContingencies"
+  ]
+ },
+ "ab34afcfe35dc7ba9cb2bf06882bd5fd": {
+  "row_id": "ab34afcfe35dc7ba9cb2bf06882bd5fd",
+  "symbol": "HDFCBANK",
+  "source": "yahoo_finance_statements",
+  "matched_fields": [
+   "pat",
+   "ebit"
+  ],
+  "filings": [
+   "689ca729dc65f8eee31a31455981fb81657b53c4486e7da11a5773117210df04"
+  ],
+  "concepts": [
+   "OperatingProfitBeforeProvisionAndContingencies",
+   "ProfitLossFromOrdinaryActivitiesAfterTax"
+  ]
+ },
+ "dd1e41a0df3f3e40b1267fd56cab7f22": {
+  "row_id": "dd1e41a0df3f3e40b1267fd56cab7f22",
+  "symbol": "HDFCBANK",
+  "source": "formula_engine",
+  "matched_fields": [
+   "pat",
+   "ebit",
+   "cfo"
+  ],
+  "filings": [
+   "f6ee5ffcab852c46fc22c46fae63475638b4456275531b9f2dfde84481de76a2"
+  ],
+  "concepts": [
+   "CashFlowsFromUsedInOperatingActivities",
+   "OperatingProfitBeforeProvisionAndContingencies",
+   "ProfitLossFromOrdinaryActivitiesAfterTax"
+  ]
+ },
+ "c5add0254a9fe26e45e8978d40d8e756": {
+  "row_id": "c5add0254a9fe26e45e8978d40d8e756",
+  "symbol": "HDFCBANK",
+  "source": "formula_engine",
+  "matched_fields": [
+   "pat",
+   "ebit",
+   "cfo"
+  ],
+  "filings": [
+   "f6ee5ffcab852c46fc22c46fae63475638b4456275531b9f2dfde84481de76a2"
+  ],
+  "concepts": [
+   "CashFlowsFromUsedInOperatingActivities",
+   "OperatingProfitBeforeProvisionAndContingencies",
+   "ProfitLossFromOrdinaryActivitiesAfterTax"
+  ]
+ },
+ "cca19c340a3c234171e908adb675ff68": {
+  "row_id": "cca19c340a3c234171e908adb675ff68",
+  "symbol": "HDFCBANK",
+  "source": "yahoo_finance_statements",
+  "matched_fields": [
+   "pat",
+   "ebit"
+  ],
+  "filings": [
+   "4168d3542b232b35100a82faa1aaafd13666bdede2d919f88723ee7f1f90c3a4"
+  ],
+  "concepts": [
+   "OperatingProfitBeforeProvisionAndContingencies",
+   "ProfitLossFromOrdinaryActivitiesAfterTax"
+  ]
+ },
+ "f2032b8e4c224ac399ca9098b214675a": {
+  "row_id": "f2032b8e4c224ac399ca9098b214675a",
+  "symbol": "HDFCBANK",
+  "source": "yahoo_finance_statements",
+  "matched_fields": [
+   "pat",
+   "ebit"
+  ],
+  "filings": [
+   "689ca729dc65f8eee31a31455981fb81657b53c4486e7da11a5773117210df04"
+  ],
+  "concepts": [
+   "OperatingProfitBeforeProvisionAndContingencies",
+   "ProfitLossFromOrdinaryActivitiesAfterTax"
+  ]
+ },
+ "9b5e98b6cd069c170f9fc4dd7c439530": {
+  "row_id": "9b5e98b6cd069c170f9fc4dd7c439530",
+  "symbol": "HDFCBANK",
+  "source": "formula_engine",
+  "matched_fields": [
+   "pat",
+   "ebit",
+   "cfo"
+  ],
+  "filings": [
+   "f6ee5ffcab852c46fc22c46fae63475638b4456275531b9f2dfde84481de76a2"
+  ],
+  "concepts": [
+   "CashFlowsFromUsedInOperatingActivities",
+   "OperatingProfitBeforeProvisionAndContingencies",
+   "ProfitLossFromOrdinaryActivitiesAfterTax"
+  ]
+ },
+ "5f5c4c0fb7c20167ededce02c2378754": {
+  "row_id": "5f5c4c0fb7c20167ededce02c2378754",
+  "symbol": "HDFCBANK",
+  "source": "earnings_intelligence_p21",
+  "matched_fields": [
+   "pat",
+   "ebit"
+  ],
+  "filings": [
+   "bb3ed630c290e1b3abb8001770f67496a22cde3ee3ccb9fdd1fb0bce4ca84604"
+  ],
+  "concepts": [
+   "OperatingProfitBeforeProvisionAndContingencies",
+   "ProfitLossFromOrdinaryActivitiesAfterTax"
+  ]
+ },
+ "3b18582f88283f7b235a5fe56b065ee2": {
+  "row_id": "3b18582f88283f7b235a5fe56b065ee2",
+  "symbol": "HDFCBANK",
+  "source": "earnings_intelligence_p21",
+  "matched_fields": [
+   "pat",
+   "ebit"
+  ],
+  "filings": [
+   "bb3ed630c290e1b3abb8001770f67496a22cde3ee3ccb9fdd1fb0bce4ca84604"
+  ],
+  "concepts": [
+   "OperatingProfitBeforeProvisionAndContingencies",
+   "ProfitLossFromOrdinaryActivitiesAfterTax"
+  ]
+ },
+ "55f39691b773d79e67faa09d8afcf37d": {
+  "row_id": "55f39691b773d79e67faa09d8afcf37d",
+  "symbol": "HDFCBANK",
+  "source": "earnings_intelligence_p21",
+  "matched_fields": [
+   "pat",
+   "ebit"
+  ],
+  "filings": [
+   "bb3ed630c290e1b3abb8001770f67496a22cde3ee3ccb9fdd1fb0bce4ca84604"
+  ],
+  "concepts": [
+   "OperatingProfitBeforeProvisionAndContingencies",
+   "ProfitLossFromOrdinaryActivitiesAfterTax"
+  ]
+ },
+ "aba001201a002ddc153999755cd77793": {
+  "row_id": "aba001201a002ddc153999755cd77793",
+  "symbol": "ICICIBANK",
+  "source": "yahoo_finance_statements",
+  "matched_fields": [
+   "ebit"
+  ],
+  "filings": [
+   "4c8f465988afa48927b747889c30a3572d6d7ccc9dc302fb25210415593f67a0"
+  ],
+  "concepts": [
+   "OperatingProfitBeforeProvisionAndContingencies"
+  ]
+ },
+ "d58825d54db1d04339a7bfa4ca2d6793": {
+  "row_id": "d58825d54db1d04339a7bfa4ca2d6793",
+  "symbol": "ICICIBANK",
+  "source": "yahoo_finance_statements",
+  "matched_fields": [
+   "pat",
+   "ebit"
+  ],
+  "filings": [
+   "4c8f465988afa48927b747889c30a3572d6d7ccc9dc302fb25210415593f67a0"
+  ],
+  "concepts": [
+   "OperatingProfitBeforeProvisionAndContingencies",
+   "ProfitLossFromOrdinaryActivitiesAfterTax"
+  ]
+ },
+ "691b3d502e27bca316fe1da40c5d79f6": {
+  "row_id": "691b3d502e27bca316fe1da40c5d79f6",
+  "symbol": "ICICIBANK",
+  "source": "yahoo_finance_statements",
+  "matched_fields": [
+   "ebit"
+  ],
+  "filings": [
+   "9acbc915bb0c321bc9738b3e8bf49bde0ddd4a3cca4a2d8803a51b384b70c13f"
+  ],
+  "concepts": [
+   "OperatingProfitBeforeProvisionAndContingencies"
+  ]
+ },
+ "6bdee39daf29ce2ebf3364f0f48dd46e": {
+  "row_id": "6bdee39daf29ce2ebf3364f0f48dd46e",
+  "symbol": "ICICIBANK",
+  "source": "yahoo_finance_statements",
+  "matched_fields": [
+   "pat",
+   "ebit"
+  ],
+  "filings": [
+   "9acbc915bb0c321bc9738b3e8bf49bde0ddd4a3cca4a2d8803a51b384b70c13f"
+  ],
+  "concepts": [
+   "OperatingProfitBeforeProvisionAndContingencies",
+   "ProfitLossFromOrdinaryActivitiesAfterTax"
+  ]
+ },
+ "90774707ae562b6116bb9d7bc707676f": {
+  "row_id": "90774707ae562b6116bb9d7bc707676f",
+  "symbol": "ICICIBANK",
+  "source": "earnings_intelligence_p21",
+  "matched_fields": [
+   "pat",
+   "ebit",
+   "cfo"
+  ],
+  "filings": [
+   "5979a6448584adbf203afce11b75ef9dcc8f88bb08dbdc082bf58ab8cef0d35a"
+  ],
+  "concepts": [
+   "CashFlowsFromUsedInOperatingActivities",
+   "OperatingProfitBeforeProvisionAndContingencies",
+   "ProfitLossFromOrdinaryActivitiesAfterTax"
+  ]
+ },
+ "881135ff82adc48081fd32ef17b03227": {
+  "row_id": "881135ff82adc48081fd32ef17b03227",
+  "symbol": "ICICIBANK",
+  "source": "yahoo_finance_statements",
+  "matched_fields": [
+   "pat",
+   "ebit"
+  ],
+  "filings": [
+   "4c8f465988afa48927b747889c30a3572d6d7ccc9dc302fb25210415593f67a0"
+  ],
+  "concepts": [
+   "OperatingProfitBeforeProvisionAndContingencies",
+   "ProfitLossFromOrdinaryActivitiesAfterTax"
+  ]
+ },
+ "d17d8d19625f3702dc00cfadd311a8c8": {
+  "row_id": "d17d8d19625f3702dc00cfadd311a8c8",
+  "symbol": "ICICIBANK",
+  "source": "yahoo_finance_statements",
+  "matched_fields": [
+   "pat",
+   "ebit"
+  ],
+  "filings": [
+   "9acbc915bb0c321bc9738b3e8bf49bde0ddd4a3cca4a2d8803a51b384b70c13f"
+  ],
+  "concepts": [
+   "OperatingProfitBeforeProvisionAndContingencies",
+   "ProfitLossFromOrdinaryActivitiesAfterTax"
+  ]
+ },
+ "12d83df1ef742535acf5c30ef312b3b1": {
+  "row_id": "12d83df1ef742535acf5c30ef312b3b1",
+  "symbol": "ICICIBANK",
+  "source": "earnings_intelligence_p21",
+  "matched_fields": [
+   "pat",
+   "ebit",
+   "cfo"
+  ],
+  "filings": [
+   "5979a6448584adbf203afce11b75ef9dcc8f88bb08dbdc082bf58ab8cef0d35a"
+  ],
+  "concepts": [
+   "CashFlowsFromUsedInOperatingActivities",
+   "OperatingProfitBeforeProvisionAndContingencies",
+   "ProfitLossFromOrdinaryActivitiesAfterTax"
+  ]
+ },
+ "ed69dd85a0c779235b86419474bdc917": {
+  "row_id": "ed69dd85a0c779235b86419474bdc917",
+  "symbol": "ICICIBANK",
+  "source": "earnings_intelligence_p21",
+  "matched_fields": [
+   "pat",
+   "ebit"
+  ],
+  "filings": [
+   "22f0f6e132296682071b53e561a8e4ad3133fe8de15e0ecddce3e927b2f32158"
+  ],
+  "concepts": [
+   "OperatingProfitBeforeProvisionAndContingencies",
+   "ProfitLossFromOrdinaryActivitiesAfterTax"
+  ]
+ },
+ "3e76a6d4aef2f908dfb3a8c208db9d2c": {
+  "row_id": "3e76a6d4aef2f908dfb3a8c208db9d2c",
+  "symbol": "ICICIBANK",
+  "source": "earnings_intelligence_p21",
+  "matched_fields": [
+   "pat",
+   "ebit"
+  ],
+  "filings": [
+   "95a09e2ade4cb7604b65e048e40d2fe3f1519e0f699b6adabba762272f378dc2"
+  ],
+  "concepts": [
+   "OperatingProfitBeforeProvisionAndContingencies",
+   "ProfitLossFromOrdinaryActivitiesAfterTax"
+  ]
+ },
+ "9373bbc07560ecf79bca9d424a578511": {
+  "row_id": "9373bbc07560ecf79bca9d424a578511",
+  "symbol": "ICICIBANK",
+  "source": "earnings_intelligence_p21",
+  "matched_fields": [
+   "pat",
+   "ebit"
+  ],
+  "filings": [
+   "22f0f6e132296682071b53e561a8e4ad3133fe8de15e0ecddce3e927b2f32158"
+  ],
+  "concepts": [
+   "OperatingProfitBeforeProvisionAndContingencies",
+   "ProfitLossFromOrdinaryActivitiesAfterTax"
+  ]
+ },
+ "a1d7f61f86d1172b3b00a8486cb45aa3": {
+  "row_id": "a1d7f61f86d1172b3b00a8486cb45aa3",
+  "symbol": "ICICIBANK",
+  "source": "earnings_intelligence_p21",
+  "matched_fields": [
+   "pat",
+   "ebit"
+  ],
+  "filings": [
+   "95a09e2ade4cb7604b65e048e40d2fe3f1519e0f699b6adabba762272f378dc2"
+  ],
+  "concepts": [
+   "OperatingProfitBeforeProvisionAndContingencies",
+   "ProfitLossFromOrdinaryActivitiesAfterTax"
+  ]
+ },
+ "77989903ef72f5a40930fc457ca9d643": {
+  "row_id": "77989903ef72f5a40930fc457ca9d643",
+  "symbol": "INFY",
+  "source": "yahoo_finance_statements",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "76b50cfcb43c474f7db3203627fe300165dcc54e7890d71eae416d7b838bb977"
+  ],
+  "concepts": [
+   "ProfitOrLossAttributableToOwnersOfParent",
+   "RevenueFromOperations"
+  ]
+ },
+ "67a6d9b83ad7c6ac77ff331161f6cbe5": {
+  "row_id": "67a6d9b83ad7c6ac77ff331161f6cbe5",
+  "symbol": "INFY",
+  "source": "yahoo_finance_statements",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "13d23ab318af8be5bb76f316306aa6c79bb1014b72e8bef1080a68ac749967ab"
+  ],
+  "concepts": [
+   "ProfitOrLossAttributableToOwnersOfParent",
+   "RevenueFromOperations"
+  ]
+ },
+ "f4d5ca64ef5f6f34aee7dbec0277c6bb": {
+  "row_id": "f4d5ca64ef5f6f34aee7dbec0277c6bb",
+  "symbol": "INFY",
+  "source": "formula_engine",
+  "matched_fields": [
+   "revenue",
+   "pat",
+   "cfo"
+  ],
+  "filings": [
+   "cecc99280ea7092ff00a4f00e8dafc949f892bfc3d72f2733b5750f4571f9b5a"
+  ],
+  "concepts": [
+   "CashFlowsFromUsedInOperatingActivities",
+   "ProfitOrLossAttributableToOwnersOfParent",
+   "RevenueFromOperations"
+  ]
+ },
+ "b7d174ad52ea10b88dabcf96bb7207b4": {
+  "row_id": "b7d174ad52ea10b88dabcf96bb7207b4",
+  "symbol": "INFY",
+  "source": "formula_engine",
+  "matched_fields": [
+   "revenue",
+   "pat",
+   "cfo"
+  ],
+  "filings": [
+   "cecc99280ea7092ff00a4f00e8dafc949f892bfc3d72f2733b5750f4571f9b5a"
+  ],
+  "concepts": [
+   "CashFlowsFromUsedInOperatingActivities",
+   "ProfitOrLossAttributableToOwnersOfParent",
+   "RevenueFromOperations"
+  ]
+ },
+ "38a3243597cd72be796d56ca9fbc7fd8": {
+  "row_id": "38a3243597cd72be796d56ca9fbc7fd8",
+  "symbol": "INFY",
+  "source": "formula_engine",
+  "matched_fields": [
+   "revenue",
+   "pat",
+   "cfo"
+  ],
+  "filings": [
+   "d682e74cb4cba905b547f741d960fcef607e63a06d30b6390fee630330b65a1d"
+  ],
+  "concepts": [
+   "CashFlowsFromUsedInOperatingActivities",
+   "ProfitOrLossAttributableToOwnersOfParent",
+   "RevenueFromOperations"
+  ]
+ },
+ "60ce883559e79d71a9c500a82642a2c0": {
+  "row_id": "60ce883559e79d71a9c500a82642a2c0",
+  "symbol": "INFY",
+  "source": "formula_engine",
+  "matched_fields": [
+   "revenue",
+   "pat",
+   "cfo"
+  ],
+  "filings": [
+   "d682e74cb4cba905b547f741d960fcef607e63a06d30b6390fee630330b65a1d"
+  ],
+  "concepts": [
+   "CashFlowsFromUsedInOperatingActivities",
+   "ProfitOrLossAttributableToOwnersOfParent",
+   "RevenueFromOperations"
+  ]
+ },
+ "ed1e70f360dedd11800f38eb14d55b5a": {
+  "row_id": "ed1e70f360dedd11800f38eb14d55b5a",
+  "symbol": "INFY",
+  "source": "yahoo_finance_statements",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "76b50cfcb43c474f7db3203627fe300165dcc54e7890d71eae416d7b838bb977"
+  ],
+  "concepts": [
+   "ProfitOrLossAttributableToOwnersOfParent",
+   "RevenueFromOperations"
+  ]
+ },
+ "aad874a68219ff922e70f14967e29a95": {
+  "row_id": "aad874a68219ff922e70f14967e29a95",
+  "symbol": "INFY",
+  "source": "yahoo_finance_statements",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "13d23ab318af8be5bb76f316306aa6c79bb1014b72e8bef1080a68ac749967ab"
+  ],
+  "concepts": [
+   "ProfitOrLossAttributableToOwnersOfParent",
+   "RevenueFromOperations"
+  ]
+ },
+ "092acb7862e3d46ad16f9c1383f3b4f5": {
+  "row_id": "092acb7862e3d46ad16f9c1383f3b4f5",
+  "symbol": "INFY",
+  "source": "formula_engine",
+  "matched_fields": [
+   "revenue",
+   "pat",
+   "cfo"
+  ],
+  "filings": [
+   "cecc99280ea7092ff00a4f00e8dafc949f892bfc3d72f2733b5750f4571f9b5a"
+  ],
+  "concepts": [
+   "CashFlowsFromUsedInOperatingActivities",
+   "ProfitOrLossAttributableToOwnersOfParent",
+   "RevenueFromOperations"
+  ]
+ },
+ "a6d25dc0dfd0a0141fda53cf83971a3c": {
+  "row_id": "a6d25dc0dfd0a0141fda53cf83971a3c",
+  "symbol": "INFY",
+  "source": "formula_engine",
+  "matched_fields": [
+   "revenue",
+   "pat",
+   "cfo"
+  ],
+  "filings": [
+   "d682e74cb4cba905b547f741d960fcef607e63a06d30b6390fee630330b65a1d"
+  ],
+  "concepts": [
+   "CashFlowsFromUsedInOperatingActivities",
+   "ProfitOrLossAttributableToOwnersOfParent",
+   "RevenueFromOperations"
+  ]
+ },
+ "5494fcffab834776284502ffe73103f3": {
+  "row_id": "5494fcffab834776284502ffe73103f3",
+  "symbol": "INFY",
+  "source": "earnings_intelligence_p21",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "c3c095dfa4cf798303a1a662c30311350171d6c5ebf115defc14f36208a6dee5"
+  ],
+  "concepts": [
+   "ProfitOrLossAttributableToOwnersOfParent",
+   "RevenueFromOperations"
+  ]
+ },
+ "41aac217037bec8397339e6f89af5d3d": {
+  "row_id": "41aac217037bec8397339e6f89af5d3d",
+  "symbol": "INFY",
+  "source": "earnings_intelligence_p21",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "c3c095dfa4cf798303a1a662c30311350171d6c5ebf115defc14f36208a6dee5"
+  ],
+  "concepts": [
+   "ProfitOrLossAttributableToOwnersOfParent",
+   "RevenueFromOperations"
+  ]
+ },
+ "471489b84d80eb8648f17304e356fd0a": {
+  "row_id": "471489b84d80eb8648f17304e356fd0a",
+  "symbol": "INFY",
+  "source": "earnings_intelligence_p21",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "c3c095dfa4cf798303a1a662c30311350171d6c5ebf115defc14f36208a6dee5"
+  ],
+  "concepts": [
+   "ProfitOrLossAttributableToOwnersOfParent",
+   "RevenueFromOperations"
+  ]
+ },
+ "9b0c74c71d1661a7f6121566e6b9c243": {
+  "row_id": "9b0c74c71d1661a7f6121566e6b9c243",
+  "symbol": "NESTLEIND",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "8af9cc31212a10ed74e40a147297dfd34ecde438fd712fdf705aca4af5a521ed"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "54997bc9fc00c8c22039998c4b80b582": {
+  "row_id": "54997bc9fc00c8c22039998c4b80b582",
+  "symbol": "NESTLEIND",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "8af9cc31212a10ed74e40a147297dfd34ecde438fd712fdf705aca4af5a521ed"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "e503d47c3efaad45ee48822bc3c06065": {
+  "row_id": "e503d47c3efaad45ee48822bc3c06065",
+  "symbol": "NESTLEIND",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "8af9cc31212a10ed74e40a147297dfd34ecde438fd712fdf705aca4af5a521ed"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "edc00034b22159e5ce3b71ed2f499bde": {
+  "row_id": "edc00034b22159e5ce3b71ed2f499bde",
+  "symbol": "POWERGRID",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "63d6bc90eca0867b44cf5ebe727a93420175537212c3ad3d67ad017437d9a4ef"
+  ],
+  "concepts": [
+   "ProfitLossForPeriod",
+   "RevenueFromOperations"
+  ]
+ },
+ "a65171e490dd72d6d6f14f521ade89b0": {
+  "row_id": "a65171e490dd72d6d6f14f521ade89b0",
+  "symbol": "POWERGRID",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "63d6bc90eca0867b44cf5ebe727a93420175537212c3ad3d67ad017437d9a4ef"
+  ],
+  "concepts": [
+   "ProfitLossForPeriod",
+   "RevenueFromOperations"
+  ]
+ },
+ "eaa083d416fe61515714bb4b64838aa8": {
+  "row_id": "eaa083d416fe61515714bb4b64838aa8",
+  "symbol": "POWERGRID",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "be0e2a05c64bae5c852f55ff6465b4256311e8838165c3cc56a87bd0434ff9ff"
+  ],
+  "concepts": [
+   "ProfitLossForPeriod",
+   "RevenueFromOperations"
+  ]
+ },
+ "676a60a6f45207caea086ebc171901cf": {
+  "row_id": "676a60a6f45207caea086ebc171901cf",
+  "symbol": "POWERGRID",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "be0e2a05c64bae5c852f55ff6465b4256311e8838165c3cc56a87bd0434ff9ff"
+  ],
+  "concepts": [
+   "ProfitLossForPeriod",
+   "RevenueFromOperations"
+  ]
+ },
+ "d8c0250da983821f04153ae49fca006e": {
+  "row_id": "d8c0250da983821f04153ae49fca006e",
+  "symbol": "POWERGRID",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "63d6bc90eca0867b44cf5ebe727a93420175537212c3ad3d67ad017437d9a4ef"
+  ],
+  "concepts": [
+   "ProfitLossForPeriod",
+   "RevenueFromOperations"
+  ]
+ },
+ "0fce61e736fa2a1a1c9d22cb079ad2e4": {
+  "row_id": "0fce61e736fa2a1a1c9d22cb079ad2e4",
+  "symbol": "POWERGRID",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "be0e2a05c64bae5c852f55ff6465b4256311e8838165c3cc56a87bd0434ff9ff"
+  ],
+  "concepts": [
+   "ProfitLossForPeriod",
+   "RevenueFromOperations"
+  ]
+ },
+ "d433c02b54977144112b5b0e323bae6c": {
+  "row_id": "d433c02b54977144112b5b0e323bae6c",
+  "symbol": "RELIANCE",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "4b369085ff574580ab4d0364fc1a344125e13cd990efb31e37afba740ecb262d"
+  ],
+  "concepts": [
+   "ProfitOrLossAttributableToOwnersOfParent",
+   "RevenueFromOperations"
+  ]
+ },
+ "71353ba61e6ee723897826c7caaa0a72": {
+  "row_id": "71353ba61e6ee723897826c7caaa0a72",
+  "symbol": "RELIANCE",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "4b369085ff574580ab4d0364fc1a344125e13cd990efb31e37afba740ecb262d"
+  ],
+  "concepts": [
+   "ProfitOrLossAttributableToOwnersOfParent",
+   "RevenueFromOperations"
+  ]
+ },
+ "0c0520f47b17fef481767e9a1dbe9fea": {
+  "row_id": "0c0520f47b17fef481767e9a1dbe9fea",
+  "symbol": "RELIANCE",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "6487f0a71df67921e02b2596f2049c3f870cf63e758c001c767f3e101a3c76ed"
+  ],
+  "concepts": [
+   "ProfitOrLossAttributableToOwnersOfParent",
+   "RevenueFromOperations"
+  ]
+ },
+ "9a7c761c54016e6a91b0ed8f9b893d38": {
+  "row_id": "9a7c761c54016e6a91b0ed8f9b893d38",
+  "symbol": "RELIANCE",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "6487f0a71df67921e02b2596f2049c3f870cf63e758c001c767f3e101a3c76ed"
+  ],
+  "concepts": [
+   "ProfitOrLossAttributableToOwnersOfParent",
+   "RevenueFromOperations"
+  ]
+ },
+ "bec7cd08d50ae7624c213ffb3f77b575": {
+  "row_id": "bec7cd08d50ae7624c213ffb3f77b575",
+  "symbol": "RELIANCE",
+  "source": "formula_engine",
+  "matched_fields": [
+   "revenue",
+   "pat",
+   "cfo"
+  ],
+  "filings": [
+   "34a929cd7b590a6c461ab747947b2dc30c67965cd21279ea823d0ed8f1c73878"
+  ],
+  "concepts": [
+   "CashFlowsFromUsedInOperatingActivities",
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "f4480d8aaf05f884d7c1c3a163ec83dc": {
+  "row_id": "f4480d8aaf05f884d7c1c3a163ec83dc",
+  "symbol": "RELIANCE",
+  "source": "formula_engine",
+  "matched_fields": [
+   "revenue",
+   "pat",
+   "cfo"
+  ],
+  "filings": [
+   "34a929cd7b590a6c461ab747947b2dc30c67965cd21279ea823d0ed8f1c73878"
+  ],
+  "concepts": [
+   "CashFlowsFromUsedInOperatingActivities",
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "3a5bbbd18acf589393c9cb48cd3c1b22": {
+  "row_id": "3a5bbbd18acf589393c9cb48cd3c1b22",
+  "symbol": "RELIANCE",
+  "source": "formula_engine",
+  "matched_fields": [
+   "revenue",
+   "pat",
+   "cfo"
+  ],
+  "filings": [
+   "92f431c3f205dbd1b133a788f87058450adf26e45d6a786d2c346d2191ba9d7b"
+  ],
+  "concepts": [
+   "CashFlowsFromUsedInOperatingActivities",
+   "ProfitOrLossAttributableToOwnersOfParent",
+   "RevenueFromOperations"
+  ]
+ },
+ "c41cd522137d2570cd2939baf0ab6b53": {
+  "row_id": "c41cd522137d2570cd2939baf0ab6b53",
+  "symbol": "RELIANCE",
+  "source": "formula_engine",
+  "matched_fields": [
+   "revenue",
+   "pat",
+   "cfo"
+  ],
+  "filings": [
+   "92f431c3f205dbd1b133a788f87058450adf26e45d6a786d2c346d2191ba9d7b"
+  ],
+  "concepts": [
+   "CashFlowsFromUsedInOperatingActivities",
+   "ProfitOrLossAttributableToOwnersOfParent",
+   "RevenueFromOperations"
+  ]
+ },
+ "bd021b37c6add42a2b723e25e1f67bbb": {
+  "row_id": "bd021b37c6add42a2b723e25e1f67bbb",
+  "symbol": "RELIANCE",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "4b369085ff574580ab4d0364fc1a344125e13cd990efb31e37afba740ecb262d"
+  ],
+  "concepts": [
+   "ProfitOrLossAttributableToOwnersOfParent",
+   "RevenueFromOperations"
+  ]
+ },
+ "f793304556e8fb25216f5a7567fb5c18": {
+  "row_id": "f793304556e8fb25216f5a7567fb5c18",
+  "symbol": "RELIANCE",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "6487f0a71df67921e02b2596f2049c3f870cf63e758c001c767f3e101a3c76ed"
+  ],
+  "concepts": [
+   "ProfitOrLossAttributableToOwnersOfParent",
+   "RevenueFromOperations"
+  ]
+ },
+ "7b26ebbdb3f3d3d90a13c2e606a41909": {
+  "row_id": "7b26ebbdb3f3d3d90a13c2e606a41909",
+  "symbol": "RELIANCE",
+  "source": "formula_engine",
+  "matched_fields": [
+   "revenue",
+   "pat",
+   "cfo"
+  ],
+  "filings": [
+   "34a929cd7b590a6c461ab747947b2dc30c67965cd21279ea823d0ed8f1c73878"
+  ],
+  "concepts": [
+   "CashFlowsFromUsedInOperatingActivities",
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "238f30b83ae7c815aea7b6b61271ba17": {
+  "row_id": "238f30b83ae7c815aea7b6b61271ba17",
+  "symbol": "RELIANCE",
+  "source": "formula_engine",
+  "matched_fields": [
+   "revenue",
+   "pat",
+   "cfo"
+  ],
+  "filings": [
+   "92f431c3f205dbd1b133a788f87058450adf26e45d6a786d2c346d2191ba9d7b"
+  ],
+  "concepts": [
+   "CashFlowsFromUsedInOperatingActivities",
+   "ProfitOrLossAttributableToOwnersOfParent",
+   "RevenueFromOperations"
+  ]
+ },
+ "0156f875beac46a3d2d4a355f475fbe7": {
+  "row_id": "0156f875beac46a3d2d4a355f475fbe7",
+  "symbol": "RELIANCE",
+  "source": "earnings_intelligence_p21",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "7ecbce73e294005029c5d8f9c27ef0945a8b228c597b72e14aa14818ec91b356"
+  ],
+  "concepts": [
+   "ProfitOrLossAttributableToOwnersOfParent",
+   "RevenueFromOperations"
+  ]
+ },
+ "e65bdd10421f18f3e9014a1f2f053584": {
+  "row_id": "e65bdd10421f18f3e9014a1f2f053584",
+  "symbol": "RELIANCE",
+  "source": "earnings_intelligence_p21",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "7ecbce73e294005029c5d8f9c27ef0945a8b228c597b72e14aa14818ec91b356"
+  ],
+  "concepts": [
+   "ProfitOrLossAttributableToOwnersOfParent",
+   "RevenueFromOperations"
+  ]
+ },
+ "51354961cdf82a2abd44762c21a78285": {
+  "row_id": "51354961cdf82a2abd44762c21a78285",
+  "symbol": "RELIANCE",
+  "source": "earnings_intelligence_p21",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "7ecbce73e294005029c5d8f9c27ef0945a8b228c597b72e14aa14818ec91b356"
+  ],
+  "concepts": [
+   "ProfitOrLossAttributableToOwnersOfParent",
+   "RevenueFromOperations"
+  ]
+ },
+ "6bf6a6a6d2d86f0eba5fce1ff70c4edf": {
+  "row_id": "6bf6a6a6d2d86f0eba5fce1ff70c4edf",
+  "symbol": "SUNPHARMA",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "561cde651dcb65138f8547a3008ec928d746dda359359deed13afa208ec6d0ba"
+  ],
+  "concepts": [
+   "ProfitOrLossAttributableToOwnersOfParent",
+   "RevenueFromOperations"
+  ]
+ },
+ "8d387e2f27b40686d40cf3f15402f350": {
+  "row_id": "8d387e2f27b40686d40cf3f15402f350",
+  "symbol": "SUNPHARMA",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "561cde651dcb65138f8547a3008ec928d746dda359359deed13afa208ec6d0ba"
+  ],
+  "concepts": [
+   "ProfitOrLossAttributableToOwnersOfParent",
+   "RevenueFromOperations"
+  ]
+ },
+ "8fae200bea4d0ae2d61a3a21fc29b63d": {
+  "row_id": "8fae200bea4d0ae2d61a3a21fc29b63d",
+  "symbol": "SUNPHARMA",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "aa6c4c4f9d81ea68c83858595a08cb071cc36c3db14a218006ec459e85d913c7"
+  ],
+  "concepts": [
+   "ProfitOrLossAttributableToOwnersOfParent",
+   "RevenueFromOperations"
+  ]
+ },
+ "d9d10489e2313b5c3eaf128cf3bfe94f": {
+  "row_id": "d9d10489e2313b5c3eaf128cf3bfe94f",
+  "symbol": "SUNPHARMA",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "aa6c4c4f9d81ea68c83858595a08cb071cc36c3db14a218006ec459e85d913c7"
+  ],
+  "concepts": [
+   "ProfitOrLossAttributableToOwnersOfParent",
+   "RevenueFromOperations"
+  ]
+ },
+ "e35c92ad394b794c71cd8c2d5405d728": {
+  "row_id": "e35c92ad394b794c71cd8c2d5405d728",
+  "symbol": "SUNPHARMA",
+  "source": "formula_engine",
+  "matched_fields": [
+   "revenue",
+   "pat",
+   "cfo"
+  ],
+  "filings": [
+   "f2e1698f5155fb1ff780f5b44d0b6f6ec1f50662e0305a86322798bcacb07ae1"
+  ],
+  "concepts": [
+   "CashFlowsFromUsedInOperatingActivities",
+   "ProfitOrLossAttributableToOwnersOfParent",
+   "RevenueFromOperations"
+  ]
+ },
+ "6c9a7375980ff57c1a3359f837c2725e": {
+  "row_id": "6c9a7375980ff57c1a3359f837c2725e",
+  "symbol": "SUNPHARMA",
+  "source": "formula_engine",
+  "matched_fields": [
+   "revenue",
+   "pat",
+   "cfo"
+  ],
+  "filings": [
+   "f2e1698f5155fb1ff780f5b44d0b6f6ec1f50662e0305a86322798bcacb07ae1"
+  ],
+  "concepts": [
+   "CashFlowsFromUsedInOperatingActivities",
+   "ProfitOrLossAttributableToOwnersOfParent",
+   "RevenueFromOperations"
+  ]
+ },
+ "a9c8f0fa46560c5dd39b7b082614ed07": {
+  "row_id": "a9c8f0fa46560c5dd39b7b082614ed07",
+  "symbol": "SUNPHARMA",
+  "source": "formula_engine",
+  "matched_fields": [
+   "revenue",
+   "pat",
+   "cfo"
+  ],
+  "filings": [
+   "888e3345d0dbd528ad7ed3f19b2a3d6beff2e2349f93ea1ec27b4bed9feea30b"
+  ],
+  "concepts": [
+   "CashFlowsFromUsedInOperatingActivities",
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "d29349935111faff740d893d0749673d": {
+  "row_id": "d29349935111faff740d893d0749673d",
+  "symbol": "SUNPHARMA",
+  "source": "formula_engine",
+  "matched_fields": [
+   "revenue",
+   "pat",
+   "cfo"
+  ],
+  "filings": [
+   "888e3345d0dbd528ad7ed3f19b2a3d6beff2e2349f93ea1ec27b4bed9feea30b"
+  ],
+  "concepts": [
+   "CashFlowsFromUsedInOperatingActivities",
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "171e945ee3db865073e5161b19e69111": {
+  "row_id": "171e945ee3db865073e5161b19e69111",
+  "symbol": "SUNPHARMA",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "561cde651dcb65138f8547a3008ec928d746dda359359deed13afa208ec6d0ba"
+  ],
+  "concepts": [
+   "ProfitOrLossAttributableToOwnersOfParent",
+   "RevenueFromOperations"
+  ]
+ },
+ "d658c3a5131d59005ffdbdaf2ef1219c": {
+  "row_id": "d658c3a5131d59005ffdbdaf2ef1219c",
+  "symbol": "SUNPHARMA",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "aa6c4c4f9d81ea68c83858595a08cb071cc36c3db14a218006ec459e85d913c7"
+  ],
+  "concepts": [
+   "ProfitOrLossAttributableToOwnersOfParent",
+   "RevenueFromOperations"
+  ]
+ },
+ "f51553a5264e8199719d14c82139b852": {
+  "row_id": "f51553a5264e8199719d14c82139b852",
+  "symbol": "SUNPHARMA",
+  "source": "formula_engine",
+  "matched_fields": [
+   "revenue",
+   "pat",
+   "cfo"
+  ],
+  "filings": [
+   "f2e1698f5155fb1ff780f5b44d0b6f6ec1f50662e0305a86322798bcacb07ae1"
+  ],
+  "concepts": [
+   "CashFlowsFromUsedInOperatingActivities",
+   "ProfitOrLossAttributableToOwnersOfParent",
+   "RevenueFromOperations"
+  ]
+ },
+ "7ba9ffc02c14a6e633d8eddf929b9c1e": {
+  "row_id": "7ba9ffc02c14a6e633d8eddf929b9c1e",
+  "symbol": "SUNPHARMA",
+  "source": "formula_engine",
+  "matched_fields": [
+   "revenue",
+   "pat",
+   "cfo"
+  ],
+  "filings": [
+   "888e3345d0dbd528ad7ed3f19b2a3d6beff2e2349f93ea1ec27b4bed9feea30b"
+  ],
+  "concepts": [
+   "CashFlowsFromUsedInOperatingActivities",
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "b7c2ebbe761ef740681b4091fa90ff5a": {
+  "row_id": "b7c2ebbe761ef740681b4091fa90ff5a",
+  "symbol": "SUNPHARMA",
+  "source": "earnings_intelligence_p21",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "022ae5cee8ae9c79987d871e9e27977e979c63ed7653c9c464b33892eeb3cca1"
+  ],
+  "concepts": [
+   "ProfitOrLossAttributableToOwnersOfParent",
+   "RevenueFromOperations"
+  ]
+ },
+ "e50a5222778b5a0a9e696d4811283066": {
+  "row_id": "e50a5222778b5a0a9e696d4811283066",
+  "symbol": "SUNPHARMA",
+  "source": "earnings_intelligence_p21",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "022ae5cee8ae9c79987d871e9e27977e979c63ed7653c9c464b33892eeb3cca1"
+  ],
+  "concepts": [
+   "ProfitOrLossAttributableToOwnersOfParent",
+   "RevenueFromOperations"
+  ]
+ },
+ "9619db1eaa05def2c8678c4fed75032a": {
+  "row_id": "9619db1eaa05def2c8678c4fed75032a",
+  "symbol": "SUNPHARMA",
+  "source": "earnings_intelligence_p21",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "022ae5cee8ae9c79987d871e9e27977e979c63ed7653c9c464b33892eeb3cca1"
+  ],
+  "concepts": [
+   "ProfitOrLossAttributableToOwnersOfParent",
+   "RevenueFromOperations"
+  ]
+ },
+ "5cab9256213d46797ab5b08aff40653f": {
+  "row_id": "5cab9256213d46797ab5b08aff40653f",
+  "symbol": "TATASTEEL",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "cdd5dc04cb5c549a3f48efd4439c949046290835559108647683671c38983205"
+  ],
+  "concepts": [
+   "ProfitOrLossAttributableToOwnersOfParent",
+   "RevenueFromOperations"
+  ]
+ },
+ "e0abd2a4adcd253eade910f9243e32fe": {
+  "row_id": "e0abd2a4adcd253eade910f9243e32fe",
+  "symbol": "TATASTEEL",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "cdd5dc04cb5c549a3f48efd4439c949046290835559108647683671c38983205"
+  ],
+  "concepts": [
+   "ProfitOrLossAttributableToOwnersOfParent",
+   "RevenueFromOperations"
+  ]
+ },
+ "fe864d19e4fae856b1bdde84bd79ce1f": {
+  "row_id": "fe864d19e4fae856b1bdde84bd79ce1f",
+  "symbol": "TATASTEEL",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "0701f21543f8041e56aad4bb93e8af76c7da2fe220202fd13821cbd107902553"
+  ],
+  "concepts": [
+   "ProfitOrLossAttributableToOwnersOfParent",
+   "RevenueFromOperations"
+  ]
+ },
+ "eded82b576b6be633ef0c8f13c515cf4": {
+  "row_id": "eded82b576b6be633ef0c8f13c515cf4",
+  "symbol": "TATASTEEL",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "0701f21543f8041e56aad4bb93e8af76c7da2fe220202fd13821cbd107902553"
+  ],
+  "concepts": [
+   "ProfitOrLossAttributableToOwnersOfParent",
+   "RevenueFromOperations"
+  ]
+ },
+ "af6c87d0ec0e3ab92f955d0e0dd34f66": {
+  "row_id": "af6c87d0ec0e3ab92f955d0e0dd34f66",
+  "symbol": "TATASTEEL",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "cdd5dc04cb5c549a3f48efd4439c949046290835559108647683671c38983205"
+  ],
+  "concepts": [
+   "ProfitOrLossAttributableToOwnersOfParent",
+   "RevenueFromOperations"
+  ]
+ },
+ "22d39b60175ba10a465c83554e5632cd": {
+  "row_id": "22d39b60175ba10a465c83554e5632cd",
+  "symbol": "TATASTEEL",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "0701f21543f8041e56aad4bb93e8af76c7da2fe220202fd13821cbd107902553"
+  ],
+  "concepts": [
+   "ProfitOrLossAttributableToOwnersOfParent",
+   "RevenueFromOperations"
+  ]
+ },
+ "035244582a9c3164e9deadbf32263c9c": {
+  "row_id": "035244582a9c3164e9deadbf32263c9c",
+  "symbol": "TCS",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "0dcc4c0858a8477511efad7b71d1172a570fb7bf64bd88565317ce80b6e89f23"
+  ],
+  "concepts": [
+   "ProfitOrLossAttributableToOwnersOfParent",
+   "RevenueFromOperations"
+  ]
+ },
+ "a2f4487512c188546569c997f7da335e": {
+  "row_id": "a2f4487512c188546569c997f7da335e",
+  "symbol": "TCS",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "0dcc4c0858a8477511efad7b71d1172a570fb7bf64bd88565317ce80b6e89f23"
+  ],
+  "concepts": [
+   "ProfitOrLossAttributableToOwnersOfParent",
+   "RevenueFromOperations"
+  ]
+ },
+ "0591ec12541544695010508d3eb7330f": {
+  "row_id": "0591ec12541544695010508d3eb7330f",
+  "symbol": "TCS",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "f2fc66575f48f7ef46e804d76925ab614962c84d33b25cba35f99d5521b3c425"
+  ],
+  "concepts": [
+   "ProfitOrLossAttributableToOwnersOfParent",
+   "RevenueFromOperations"
+  ]
+ },
+ "33f1127ae38cbc5c6574dcd53b7b0df7": {
+  "row_id": "33f1127ae38cbc5c6574dcd53b7b0df7",
+  "symbol": "TCS",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "f2fc66575f48f7ef46e804d76925ab614962c84d33b25cba35f99d5521b3c425"
+  ],
+  "concepts": [
+   "ProfitOrLossAttributableToOwnersOfParent",
+   "RevenueFromOperations"
+  ]
+ },
+ "e294faa354e15ec44895acf02623708e": {
+  "row_id": "e294faa354e15ec44895acf02623708e",
+  "symbol": "TCS",
+  "source": "formula_engine",
+  "matched_fields": [
+   "revenue",
+   "pat",
+   "cfo"
+  ],
+  "filings": [
+   "39a29c97908a951624b65024aae5b34cd0b2c51f8643a9fcdccdee6a36708ae6"
+  ],
+  "concepts": [
+   "CashFlowsFromUsedInOperatingActivities",
+   "ProfitOrLossAttributableToOwnersOfParent",
+   "RevenueFromOperations"
+  ]
+ },
+ "4c76b894994a55e0f2eb175f9637e3df": {
+  "row_id": "4c76b894994a55e0f2eb175f9637e3df",
+  "symbol": "TCS",
+  "source": "formula_engine",
+  "matched_fields": [
+   "revenue",
+   "pat",
+   "cfo"
+  ],
+  "filings": [
+   "39a29c97908a951624b65024aae5b34cd0b2c51f8643a9fcdccdee6a36708ae6"
+  ],
+  "concepts": [
+   "CashFlowsFromUsedInOperatingActivities",
+   "ProfitOrLossAttributableToOwnersOfParent",
+   "RevenueFromOperations"
+  ]
+ },
+ "79f184ff8b61717ae22689f8111e6dc4": {
+  "row_id": "79f184ff8b61717ae22689f8111e6dc4",
+  "symbol": "TCS",
+  "source": "formula_engine",
+  "matched_fields": [
+   "revenue",
+   "pat",
+   "cfo"
+  ],
+  "filings": [
+   "b22a17c7083b7633a8f853f20916fce907c6321f9bfbeb80d23778b65bfa9fd1"
+  ],
+  "concepts": [
+   "CashFlowsFromUsedInOperatingActivities",
+   "ProfitOrLossAttributableToOwnersOfParent",
+   "RevenueFromOperations"
+  ]
+ },
+ "ce6a278391a3a1f1e3a11e8ba91a07a7": {
+  "row_id": "ce6a278391a3a1f1e3a11e8ba91a07a7",
+  "symbol": "TCS",
+  "source": "formula_engine",
+  "matched_fields": [
+   "revenue",
+   "pat",
+   "cfo"
+  ],
+  "filings": [
+   "b22a17c7083b7633a8f853f20916fce907c6321f9bfbeb80d23778b65bfa9fd1"
+  ],
+  "concepts": [
+   "CashFlowsFromUsedInOperatingActivities",
+   "ProfitOrLossAttributableToOwnersOfParent",
+   "RevenueFromOperations"
+  ]
+ },
+ "747fdfb39b078fbea0fd3bb1e88153b3": {
+  "row_id": "747fdfb39b078fbea0fd3bb1e88153b3",
+  "symbol": "TCS",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "0dcc4c0858a8477511efad7b71d1172a570fb7bf64bd88565317ce80b6e89f23"
+  ],
+  "concepts": [
+   "ProfitOrLossAttributableToOwnersOfParent",
+   "RevenueFromOperations"
+  ]
+ },
+ "1f9d530c89a9519c5452642d82c768c2": {
+  "row_id": "1f9d530c89a9519c5452642d82c768c2",
+  "symbol": "TCS",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "f2fc66575f48f7ef46e804d76925ab614962c84d33b25cba35f99d5521b3c425"
+  ],
+  "concepts": [
+   "ProfitOrLossAttributableToOwnersOfParent",
+   "RevenueFromOperations"
+  ]
+ },
+ "78f9fab8bcd77dc061cd8da26a03a6f6": {
+  "row_id": "78f9fab8bcd77dc061cd8da26a03a6f6",
+  "symbol": "TCS",
+  "source": "formula_engine",
+  "matched_fields": [
+   "revenue",
+   "pat",
+   "cfo"
+  ],
+  "filings": [
+   "39a29c97908a951624b65024aae5b34cd0b2c51f8643a9fcdccdee6a36708ae6"
+  ],
+  "concepts": [
+   "CashFlowsFromUsedInOperatingActivities",
+   "ProfitOrLossAttributableToOwnersOfParent",
+   "RevenueFromOperations"
+  ]
+ },
+ "2ada639f3bf80336c6c9cb353384d055": {
+  "row_id": "2ada639f3bf80336c6c9cb353384d055",
+  "symbol": "TCS",
+  "source": "formula_engine",
+  "matched_fields": [
+   "revenue",
+   "pat",
+   "cfo"
+  ],
+  "filings": [
+   "b22a17c7083b7633a8f853f20916fce907c6321f9bfbeb80d23778b65bfa9fd1"
+  ],
+  "concepts": [
+   "CashFlowsFromUsedInOperatingActivities",
+   "ProfitOrLossAttributableToOwnersOfParent",
+   "RevenueFromOperations"
+  ]
+ },
+ "7222f565ca54bbcb25f20bda81f5abe1": {
+  "row_id": "7222f565ca54bbcb25f20bda81f5abe1",
+  "symbol": "TCS",
+  "source": "earnings_intelligence_p21",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "81b47beb69abe876925729fcc11dad042eeebe99161ebca5c16a0bad7c35ebf7"
+  ],
+  "concepts": [
+   "ProfitOrLossAttributableToOwnersOfParent",
+   "RevenueFromOperations"
+  ]
+ },
+ "6d01ade7f8105867c8695dd72aab42d7": {
+  "row_id": "6d01ade7f8105867c8695dd72aab42d7",
+  "symbol": "TCS",
+  "source": "earnings_intelligence_p21",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "81b47beb69abe876925729fcc11dad042eeebe99161ebca5c16a0bad7c35ebf7"
+  ],
+  "concepts": [
+   "ProfitOrLossAttributableToOwnersOfParent",
+   "RevenueFromOperations"
+  ]
+ },
+ "4430745d0477b9498548617590781fa2": {
+  "row_id": "4430745d0477b9498548617590781fa2",
+  "symbol": "TCS",
+  "source": "earnings_intelligence_p21",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "81b47beb69abe876925729fcc11dad042eeebe99161ebca5c16a0bad7c35ebf7"
+  ],
+  "concepts": [
+   "ProfitOrLossAttributableToOwnersOfParent",
+   "RevenueFromOperations"
+  ]
+ },
+ "0f5f37dc09948cd138fa3e6a580a4fe4": {
+  "row_id": "0f5f37dc09948cd138fa3e6a580a4fe4",
+  "symbol": "ULTRACEMCO",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "7518feded0189c342e9300b96e763dd748e58b89af95b84362924a474f020245"
+  ],
+  "concepts": [
+   "ProfitOrLossAttributableToOwnersOfParent",
+   "RevenueFromOperations"
+  ]
+ },
+ "d2af591043854dd9215c17d9c254b579": {
+  "row_id": "d2af591043854dd9215c17d9c254b579",
+  "symbol": "ULTRACEMCO",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "7518feded0189c342e9300b96e763dd748e58b89af95b84362924a474f020245"
+  ],
+  "concepts": [
+   "ProfitOrLossAttributableToOwnersOfParent",
+   "RevenueFromOperations"
+  ]
+ },
+ "88801a71516bb55bc8622c650ec8357a": {
+  "row_id": "88801a71516bb55bc8622c650ec8357a",
+  "symbol": "ULTRACEMCO",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "12d09e4f8d2e043c43a9fdbf6aa4928157d298962e3f91964ee8b4e94ad47aef"
+  ],
+  "concepts": [
+   "ProfitLossForPeriod",
+   "RevenueFromOperations"
+  ]
+ },
+ "010f008a98595e5987fa4dc7d21be40e": {
+  "row_id": "010f008a98595e5987fa4dc7d21be40e",
+  "symbol": "ULTRACEMCO",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "12d09e4f8d2e043c43a9fdbf6aa4928157d298962e3f91964ee8b4e94ad47aef"
+  ],
+  "concepts": [
+   "ProfitLossForPeriod",
+   "RevenueFromOperations"
+  ]
+ },
+ "520911b2f867c706fc25def7e3db4921": {
+  "row_id": "520911b2f867c706fc25def7e3db4921",
+  "symbol": "ULTRACEMCO",
+  "source": "formula_engine",
+  "matched_fields": [
+   "revenue",
+   "pat",
+   "cfo"
+  ],
+  "filings": [
+   "d0bed6ccdff6325a90542b1cc1c64fd3057e5e77d2dc13c53ab1a3d39a11a646"
+  ],
+  "concepts": [
+   "CashFlowsFromUsedInOperatingActivities",
+   "ProfitOrLossAttributableToOwnersOfParent",
+   "RevenueFromOperations"
+  ]
+ },
+ "29b17ffb8b1e0f61233e708926d7d8b6": {
+  "row_id": "29b17ffb8b1e0f61233e708926d7d8b6",
+  "symbol": "ULTRACEMCO",
+  "source": "formula_engine",
+  "matched_fields": [
+   "revenue",
+   "pat",
+   "cfo"
+  ],
+  "filings": [
+   "d0bed6ccdff6325a90542b1cc1c64fd3057e5e77d2dc13c53ab1a3d39a11a646"
+  ],
+  "concepts": [
+   "CashFlowsFromUsedInOperatingActivities",
+   "ProfitOrLossAttributableToOwnersOfParent",
+   "RevenueFromOperations"
+  ]
+ },
+ "8f6464215c3bc3679a9031f2e2fe81b2": {
+  "row_id": "8f6464215c3bc3679a9031f2e2fe81b2",
+  "symbol": "ULTRACEMCO",
+  "source": "formula_engine",
+  "matched_fields": [
+   "revenue",
+   "pat",
+   "cfo"
+  ],
+  "filings": [
+   "aac2f125b43bf3c769d25e1d16d4a1424bae78daad6e17417edab184c89e2ed3"
+  ],
+  "concepts": [
+   "CashFlowsFromUsedInOperatingActivities",
+   "ProfitOrLossAttributableToOwnersOfParent",
+   "RevenueFromOperations"
+  ]
+ },
+ "85a3c3b9aa283161372fb4406e681f99": {
+  "row_id": "85a3c3b9aa283161372fb4406e681f99",
+  "symbol": "ULTRACEMCO",
+  "source": "formula_engine",
+  "matched_fields": [
+   "revenue",
+   "pat",
+   "cfo"
+  ],
+  "filings": [
+   "aac2f125b43bf3c769d25e1d16d4a1424bae78daad6e17417edab184c89e2ed3"
+  ],
+  "concepts": [
+   "CashFlowsFromUsedInOperatingActivities",
+   "ProfitOrLossAttributableToOwnersOfParent",
+   "RevenueFromOperations"
+  ]
+ },
+ "e0cf8ddf069c76a27f648a0db4c6e7dd": {
+  "row_id": "e0cf8ddf069c76a27f648a0db4c6e7dd",
+  "symbol": "ULTRACEMCO",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "7518feded0189c342e9300b96e763dd748e58b89af95b84362924a474f020245"
+  ],
+  "concepts": [
+   "ProfitOrLossAttributableToOwnersOfParent",
+   "RevenueFromOperations"
+  ]
+ },
+ "9c7691867eaa1251e5a00c837e2ea663": {
+  "row_id": "9c7691867eaa1251e5a00c837e2ea663",
+  "symbol": "ULTRACEMCO",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "12d09e4f8d2e043c43a9fdbf6aa4928157d298962e3f91964ee8b4e94ad47aef"
+  ],
+  "concepts": [
+   "ProfitLossForPeriod",
+   "RevenueFromOperations"
+  ]
+ },
+ "feac5b93eda40e38311e3aec0c796275": {
+  "row_id": "feac5b93eda40e38311e3aec0c796275",
+  "symbol": "ULTRACEMCO",
+  "source": "formula_engine",
+  "matched_fields": [
+   "revenue",
+   "pat",
+   "cfo"
+  ],
+  "filings": [
+   "d0bed6ccdff6325a90542b1cc1c64fd3057e5e77d2dc13c53ab1a3d39a11a646"
+  ],
+  "concepts": [
+   "CashFlowsFromUsedInOperatingActivities",
+   "ProfitOrLossAttributableToOwnersOfParent",
+   "RevenueFromOperations"
+  ]
+ },
+ "99e81b336eb422342a53d68e460d8cf5": {
+  "row_id": "99e81b336eb422342a53d68e460d8cf5",
+  "symbol": "ULTRACEMCO",
+  "source": "formula_engine",
+  "matched_fields": [
+   "revenue",
+   "pat",
+   "cfo"
+  ],
+  "filings": [
+   "aac2f125b43bf3c769d25e1d16d4a1424bae78daad6e17417edab184c89e2ed3"
+  ],
+  "concepts": [
+   "CashFlowsFromUsedInOperatingActivities",
+   "ProfitOrLossAttributableToOwnersOfParent",
+   "RevenueFromOperations"
+  ]
+ },
+ "2cbfd3ec7fc5989c995370358cf5abed": {
+  "row_id": "2cbfd3ec7fc5989c995370358cf5abed",
+  "symbol": "ULTRACEMCO",
+  "source": "earnings_intelligence_p21",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "ad022789bace7c13156e69e35defbe6163f0fa5bcfe3b12dea7c96ad1bff79c0"
+  ],
+  "concepts": [
+   "ProfitOrLossAttributableToOwnersOfParent",
+   "RevenueFromOperations"
+  ]
+ },
+ "72946db17936559be98fd97db8fd651e": {
+  "row_id": "72946db17936559be98fd97db8fd651e",
+  "symbol": "ULTRACEMCO",
+  "source": "earnings_intelligence_p21",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "ad022789bace7c13156e69e35defbe6163f0fa5bcfe3b12dea7c96ad1bff79c0"
+  ],
+  "concepts": [
+   "ProfitOrLossAttributableToOwnersOfParent",
+   "RevenueFromOperations"
+  ]
+ },
+ "22a42b081d7d89bc2304f6b5db56da70": {
+  "row_id": "22a42b081d7d89bc2304f6b5db56da70",
+  "symbol": "ULTRACEMCO",
+  "source": "earnings_intelligence_p21",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "ad022789bace7c13156e69e35defbe6163f0fa5bcfe3b12dea7c96ad1bff79c0"
+  ],
+  "concepts": [
+   "ProfitOrLossAttributableToOwnersOfParent",
+   "RevenueFromOperations"
+  ]
+ }
+}

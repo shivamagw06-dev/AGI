@@ -1,0 +1,5 @@
+import assert from 'node:assert/strict';
+import test from 'node:test';
+import { normalizeInstitutionalActivity } from '../providers/upstox.js';
+test('normalizes every segment and dated FII observation', () => { const rows = normalizeInstitutionalActivity({ data: { 'NSE_FO|INDEX_FUTURES': [{ time_stamp: Date.parse('2026-08-07T12:00:00Z'), buy_amount: 100, sell_amount: 80, total_long_contracts: 40, total_short_contracts: 30 }], 'NSE_FO|INDEX_OPTIONS': [{ time_stamp: Date.parse('2026-08-07T12:00:00Z'), buy_amount: 200, sell_amount: 210, total_call_long_contracts: 12 }] } }, 'FII', '1D'); assert.equal(rows.length, 2); assert.deepEqual(rows.map((row) => row.segment), ['NSE_FO|INDEX_FUTURES', 'NSE_FO|INDEX_OPTIONS']); assert.equal(rows[0].long_contracts, 40); assert.equal(rows[1].call_long_contracts, 12); });
+test('normalizes DII cash separately', () => { const rows = normalizeInstitutionalActivity({ data: { 'NSE_EQ|CASH': [{ time_stamp: Date.parse('2026-08-07T12:00:00Z'), buy_amount: 120, sell_amount: 90 }] } }, 'DII'); assert.equal(rows[0].participant, 'DII'); assert.equal(rows[0].observation_date, '2026-08-07'); });

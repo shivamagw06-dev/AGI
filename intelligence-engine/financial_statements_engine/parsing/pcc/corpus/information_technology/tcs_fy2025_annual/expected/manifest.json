@@ -1,0 +1,19 @@
+{
+  "metrics_extracted": [
+    "cash",
+    "finance_cost",
+    "net_income",
+    "operating_cash_flow",
+    "other_income",
+    "revenue",
+    "total_assets",
+    "total_equity"
+  ],
+  "required_fields": [
+    "manifest_id",
+    "draft_id",
+    "document_hash",
+    "immutable",
+    "metrics_extracted"
+  ]
+}

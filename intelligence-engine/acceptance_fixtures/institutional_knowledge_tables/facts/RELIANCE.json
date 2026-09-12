@@ -1,0 +1,778 @@
+{
+  "tables": {
+    "business_model": {
+      "description": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:25.964803Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Reliance Industries Limited engages in petrochemicals, refining, oil, telecommunications, and retail. It plays a pivotal role in the Indian economy as it is involved in the production of a wide range of products that contribute to the overall industrial and consumer landscape of the country. Reliance is recognized for its strong commitment to innovation, excellence in operations, and a sustainable future.\n\nBusiness Segments\n\nThe company operates through several key business segments that are integral to its overall operations:\n\nOil to Chemicals (O2C): This segment includes refining, petrochemicals, and associated services including the production of aviation fuel and bulk wholesale marketing. The O2C segment features a broad portfolio, spanning various products such as transportation fuels, polymers, polyesters, and elastomers. The company\u2019s O2C business demonstrates deep integration with world-class assets that consist of Refinery Off-Gas Cracker, Aromatics, Gasification, and multi-feed cracker facilities, alongside extensive downstream manufacturing plants and logistics and supply chain frameworks. The robust infrastructure allows the company to maintain a competitive edge in the market.\n\nOil and Gas: The oil and gas segment covers the exploration, development, and production of crude oil and natural gas. The company has established a portfolio of significant oil fields and is focused on efficient resource extraction and maximizing production output.\n\nRetail: Reliance's retail segment is dedicated to consumer retailing and a wide range of related services, encompassing grocery, fashion, electronics, and more. The company is continuously expanding its presence across urban and rural geographies, offering innovative retail formats that cater to various consumer needs.\n\nDigital Services: The digital services segment involves providing a range of digital solutions including telecommunications through Jio, which has rapidly gained subscriber acceptance and transformed the consumer internet experience in India. The company focuses on advancing connectivity and expanding service offerings in this digital arena.\n\nOthers: All other business segments which are not separately reportable are grouped under the Others segment. This includes various investment and infrastructure activities that further support the company\u2019s business diversity.\n\nBusiness Strategy\n\nThe company focuses on sustaining its competitive advantage through an innovative and adaptive business strategy aimed at expanding its market share across its diverse business segments. The company emphasizes investment in technology and infrastructure to enhance operational efficiency and meet evolving consumer preferences. Through increasing R&D efforts, the company ensures that it stays ahead in product offerings and service delivery.\n\nAdditionally, the company implements strategies to enhance customer engagement and build brand loyalty through personalized service experiences. An important aspect of the company\u2019s strategy is the commitment to sustainability and corporate responsibility, addressing environmental concerns while driving growth. The company\u2019s strategic vision includes expanding its digital services and e-commerce presence, which has been notably accelerated by the pandemic-related shifts in consumer behavior towards online shopping.\n\nProducts and Services**\n\nThe company offers a diverse range of products and services across its segments:\n\nOil to Chemicals: The petrochemical products include a variety of polymers, intermediates, and specialty chemicals utilized in numerous industries such as textiles, automotive, agriculture, and more. The refining operations convert crude oil into essential fuels and chemical products, forming the backbone of the energy sector.\n\nOil and Gas: The company is engaged in the exploration and production of crude oil and natural gas, significantly contributing to energy independence and consumption in India.\n\nRetail: The retail segment encompasses a wide range of consumer goods including food and groceries, electronics, apparel, and household items. Innovative formats like hypermarkets, convenience stores, and an online shopping platform under JioMart are significant offerings in this space.\n\nDigital Services: The telecommunications arm provides comprehensive broadband services, mobile services, and digital content across India, facilitated through a robust network infrastructure. Digital offerings include data services, entertainment platforms, and business communication solutions.\n\nGeographical Markets\n\nThe company operates extensively in the Indian market but has also made inroads into international markets. Strategic acquisitions are part of its growth strategy, allowing the company to enter new geographical areas and enhance its market footprint. The company recently acquired Ravalgaon IP rights, showcasing its focus on expanding its product range and market reach. The partnership with the Sri Lankan beverage maker Elephant House is another example of how the company aims to leverage reciprocal rights to build a stronger presence in regional markets.\n\nSeasonality\n\nThe company experiences seasonality in various segments, especially the retail sector. Different festivals and seasonal buying patterns significantly influence consumer behavior, leading to variations in sales cycles. Certain product categories, particularly food and beverages, see spikes in demand during festive seasons, while other products might experience steady demand throughout the year. This seasonality requires the company to proactively manage inventory and supply chain processes to meet fluctuating demand effectively.\n\nCustomers\n\nThe company serves a vast and diverse customer base across various segments. In the retail space, the customer categories range from individual consumers shopping for everyday essentials to large institutional clients. The digital services segment caters to a wide range of telecommunications users, including urban and rural subscribers, enhancing connectivity across demographic lines. \n\nThe oil and gas segment provides resources to numerous industries, contributing to a significant industrial client base reliant on its products. The diversity of customers ensures a broad market presence, aiding in comprehensive growth across its operational areas.\n\nSales and Marketing\n\nThe company employs multiple sales and marketing strategies tailored to its diverse product categories. The retail segment utilizes direct and digital marketing approaches to enhance consumer engagement and drive sales. E-commerce platforms like JioMart complement traditional retail channels, allowing for broader market penetration.\n\nDistribution channels reflect a sophisticated network designed to reach urban and rural consumers effectively, thereby enhancing supply chain efficiency. Partnering with local businesses and utilizing logistics infrastructure ensures product availability aligns with market demand.\n\nHistory\n\nReliance Industries Limited was founded in 1957. The company was incorporated in 1973.",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:51.595820Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Reliance Industries Limited engages in petrochemicals, refining, oil, telecommunications, and retail. It plays a pivotal role in the Indian economy as it is involved in the production of a wide range of products that contribute to the overall industrial and consumer landscape of the country. Reliance is recognized for its strong commitment to innovation, excellence in operations, and a sustainable future.\n\nBusiness Segments\n\nThe company operates through several key business segments that are integral to its overall operations:\n\nOil to Chemicals (O2C): This segment includes refining, petrochemicals, and associated services including the production of aviation fuel and bulk wholesale marketing. The O2C segment features a broad portfolio, spanning various products such as transportation fuels, polymers, polyesters, and elastomers. The company\u2019s O2C business demonstrates deep integration with world-class assets that consist of Refinery Off-Gas Cracker, Aromatics, Gasification, and multi-feed cracker facilities, alongside extensive downstream manufacturing plants and logistics and supply chain frameworks. The robust infrastructure allows the company to maintain a competitive edge in the market.\n\nOil and Gas: The oil and gas segment covers the exploration, development, and production of crude oil and natural gas. The company has established a portfolio of significant oil fields and is focused on efficient resource extraction and maximizing production output.\n\nRetail: Reliance's retail segment is dedicated to consumer retailing and a wide range of related services, encompassing grocery, fashion, electronics, and more. The company is continuously expanding its presence across urban and rural geographies, offering innovative retail formats that cater to various consumer needs.\n\nDigital Services: The digital services segment involves providing a range of digital solutions including telecommunications through Jio, which has rapidly gained subscriber acceptance and transformed the consumer internet experience in India. The company focuses on advancing connectivity and expanding service offerings in this digital arena.\n\nOthers: All other business segments which are not separately reportable are grouped under the Others segment. This includes various investment and infrastructure activities that further support the company\u2019s business diversity.\n\nBusiness Strategy\n\nThe company focuses on sustaining its competitive advantage through an innovative and adaptive business strategy aimed at expanding its market share across its diverse business segments. The company emphasizes investment in technology and infrastructure to enhance operational efficiency and meet evolving consumer preferences. Through increasing R&D efforts, the company ensures that it stays ahead in product offerings and service delivery.\n\nAdditionally, the company implements strategies to enhance customer engagement and build brand loyalty through personalized service experiences. An important aspect of the company\u2019s strategy is the commitment to sustainability and corporate responsibility, addressing environmental concerns while driving growth. The company\u2019s strategic vision includes expanding its digital services and e-commerce presence, which has been notably accelerated by the pandemic-related shifts in consumer behavior towards online shopping.\n\nProducts and Services**\n\nThe company offers a diverse range of products and services across its segments:\n\nOil to Chemicals: The petrochemical products include a variety of polymers, intermediates, and specialty chemicals utilized in numerous industries such as textiles, automotive, agriculture, and more. The refining operations convert crude oil into essential fuels and chemical products, forming the backbone of the energy sector.\n\nOil and Gas: The company is engaged in the exploration and production of crude oil and natural gas, significantly contributing to energy independence and consumption in India.\n\nRetail: The retail segment encompasses a wide range of consumer goods including food and groceries, electronics, apparel, and household items. Innovative formats like hypermarkets, convenience stores, and an online shopping platform under JioMart are significant offerings in this space.\n\nDigital Services: The telecommunications arm provides comprehensive broadband services, mobile services, and digital content across India, facilitated through a robust network infrastructure. Digital offerings include data services, entertainment platforms, and business communication solutions.\n\nGeographical Markets\n\nThe company operates extensively in the Indian market but has also made inroads into international markets. Strategic acquisitions are part of its growth strategy, allowing the company to enter new geographical areas and enhance its market footprint. The company recently acquired Ravalgaon IP rights, showcasing its focus on expanding its product range and market reach. The partnership with the Sri Lankan beverage maker Elephant House is another example of how the company aims to leverage reciprocal rights to build a stronger presence in regional markets.\n\nSeasonality\n\nThe company experiences seasonality in various segments, especially the retail sector. Different festivals and seasonal buying patterns significantly influence consumer behavior, leading to variations in sales cycles. Certain product categories, particularly food and beverages, see spikes in demand during festive seasons, while other products might experience steady demand throughout the year. This seasonality requires the company to proactively manage inventory and supply chain processes to meet fluctuating demand effectively.\n\nCustomers\n\nThe company serves a vast and diverse customer base across various segments. In the retail space, the customer categories range from individual consumers shopping for everyday essentials to large institutional clients. The digital services segment caters to a wide range of telecommunications users, including urban and rural subscribers, enhancing connectivity across demographic lines. \n\nThe oil and gas segment provides resources to numerous industries, contributing to a significant industrial client base reliant on its products. The diversity of customers ensures a broad market presence, aiding in comprehensive growth across its operational areas.\n\nSales and Marketing\n\nThe company employs multiple sales and marketing strategies tailored to its diverse product categories. The retail segment utilizes direct and digital marketing approaches to enhance consumer engagement and drive sales. E-commerce platforms like JioMart complement traditional retail channels, allowing for broader market penetration.\n\nDistribution channels reflect a sophisticated network designed to reach urban and rural consumers effectively, thereby enhancing supply chain efficiency. Partnering with local businesses and utilizing logistics infrastructure ensures product availability aligns with market demand.\n\nHistory\n\nReliance Industries Limited was founded in 1957. The company was incorporated in 1973.",
+          "version": 2
+        }
+      ],
+      "description_short": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:25.953461Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Reliance Industries Limited engages in hydrocarbon exploration and production, petroleum refining and marketing, petrochemicals, advanced materials and composites, renewable, financial services, retail, and digital services worldwide. It operates through the Oil to Chemicals, Oil and Gas, Retail, Digital Services, and Others segments. The company is involved in refining and marketing products, including liquefied petroleum gas, propylene, naphtha, gasoline, jet/aviation turbine fuel, kerosine oil, diesel, sulfur, and petroleum coke. It also provides polymers comprising high-density and low-density polyethylene (PE), linear low-density PE, homopolymer, random and impact copolymer, and polyvinyl chloride; fiber intermediates that include purified terephthalic acid, and ethylene glycols and oxide; aromatics, such as paraxylene, ortho xylene, benzene, and linear alkyl benzene and paraffin; and textiles that consist of fabrics, apparel, and auto furnishings. In addition, the company offers elastomers, such as polybutadiene rubber, styrene butadiene rubber, and butyl rubber; fiber and yarn polyesters; and bioenergy solutions, including compressed biogas, and pellets and briquettes. Further, it engages in oil and gas exploration and production activities; operation of various stores comprising supermarkets, hypermarket, wholesale cash and carry, specialty, and online stores; operation of media and entertainment platforms, and Network18 and television channels; and publishing of magazines. Additionally, the company provides highway hospitality and fleet management services, as well as digital services, such as connectivity, fiber, mobile devices, apps, business, and other digital solutions. Reliance Industries Limited was founded in 1957 and is based in Mumbai, India.",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:51.581066Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Reliance Industries Limited engages in hydrocarbon exploration and production, petroleum refining and marketing, petrochemicals, advanced materials and composites, renewable, financial services, retail, and digital services worldwide. It operates through the Oil to Chemicals, Oil and Gas, Retail, Digital Services, and Others segments. The company is involved in refining and marketing products, including liquefied petroleum gas, propylene, naphtha, gasoline, jet/aviation turbine fuel, kerosine oil, diesel, sulfur, and petroleum coke. It also provides polymers comprising high-density and low-density polyethylene (PE), linear low-density PE, homopolymer, random and impact copolymer, and polyvinyl chloride; fiber intermediates that include purified terephthalic acid, and ethylene glycols and oxide; aromatics, such as paraxylene, ortho xylene, benzene, and linear alkyl benzene and paraffin; and textiles that consist of fabrics, apparel, and auto furnishings. In addition, the company offers elastomers, such as polybutadiene rubber, styrene butadiene rubber, and butyl rubber; fiber and yarn polyesters; and bioenergy solutions, including compressed biogas, and pellets and briquettes. Further, it engages in oil and gas exploration and production activities; operation of various stores comprising supermarkets, hypermarket, wholesale cash and carry, specialty, and online stores; operation of media and entertainment platforms, and Network18 and television channels; and publishing of magazines. Additionally, the company provides highway hospitality and fleet management services, as well as digital services, such as connectivity, fiber, mobile devices, apps, business, and other digital solutions. Reliance Industries Limited was founded in 1957 and is based in Mumbai, India.",
+          "version": 2
+        }
+      ],
+      "index_constituents": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:25.928463Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "MSCI ACWI Ex Japan Low Carbon Leaders Index\n\nMSCI ACWI Eu Ctb Overlay Index\n\nMSCI AC Asia Ex Japan Value Index\n\nMSCI EM Low Carbon Target Index\n\nMSCI EM Volatility Tilt Index\n\nMSCI ACWI Ex China IMI Index\n\nMSCI EFM Asia IMI/Energy (Sector) Index\n\nMSCI ACWI Minimum Volatility Advanced Index\n\nMSCI ACWI Dividend Tilt Index\n\nFTSE All - World Bric Index",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:51.543035Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "MSCI ACWI Ex EMU Large Cap Index\n\nMSCI ACWI Ex Greece Index\n\nMSCI ACWI Ex Europe/Energy (Industry Group) Index\n\nMSCI ACWI Ex Spain IMI Index\n\nMSCI ACWI Ex JP IMI/Energy (Sector) Index\n\nMSCI ACWI Ex Hungary Index\n\nMSCI ACWI Ex China IMI Index\n\nMSCI ACWI Ex Australia Large Cap Index\n\nMSCI ACWI Ex Austria IMI Index\n\nMSCI ACWI Ex UK Value Index",
+          "version": 2
+        }
+      ],
+      "industry_classifications": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:25.949201Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Energy (Primary)",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:51.573009Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Energy (Primary)",
+          "version": 2
+        }
+      ],
+      "investors": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:25.949997Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Audax Management Company, LLC (Current Investor); California State Teachers' Retirement System (Current Investor); State Board of Administration of Florida (Current Investor); Keskin\u00e4inen ty\u00f6el\u00e4kevakuutusyhti\u00f6 Varma (Current Investor); HB Stockholdings Limited (BSE:532216) (Current Investor); Life Insurance Corporation of India, Asset Management Arm (Current Investor); Shah Investor's Home Limited (Current Investor)",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:51.575673Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Audax Management Company, LLC (Current Investor); California State Teachers' Retirement System (Current Investor); State Board of Administration of Florida (Current Investor); Keskin\u00e4inen ty\u00f6el\u00e4kevakuutusyhti\u00f6 Varma (Current Investor); HB Stockholdings Limited (BSE:532216) (Current Investor); Life Insurance Corporation of India, Asset Management Arm (Current Investor); Shah Investor's Home Limited (Current Investor)",
+          "version": 2
+        }
+      ],
+      "subsidiaries_count": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:25.954925Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 175,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:51.582406Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 175,
+          "version": 2
+        }
+      ]
+    },
+    "company_master": {
+      "company_name": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:25.926717Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Reliance Industries Limited",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:51.541945Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Reliance Industries Limited",
+          "version": 2
+        }
+      ],
+      "company_type": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:25.956648Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Public Company",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:51.583622Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Public Company",
+          "version": 2
+        }
+      ],
+      "country": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:25.951691Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "India",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:51.579438Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "India",
+          "version": 2
+        }
+      ],
+      "currency": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:25.931868Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Indian Rupee",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:51.548482Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Indian Rupee",
+          "version": 2
+        }
+      ],
+      "external_id": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:25.931166Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "IQT20212596",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:51.546631Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "IQT46355581",
+          "version": 2
+        }
+      ],
+      "industry": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:25.948350Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Oil and Gas Refining and Marketing",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:51.571218Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Oil and Gas Refining and Marketing",
+          "version": 2
+        }
+      ],
+      "parent_company": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:25.950834Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Reliance Industries Limited (NSEI:RELIANCE)",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:51.577404Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Reliance Industries Limited (NSEI:RELIANCE)",
+          "version": 2
+        }
+      ],
+      "research_coverage_count": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:25.968309Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 43,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:51.600112Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 43,
+          "version": 2
+        }
+      ],
+      "sector": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:25.947335Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Energy",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:51.569556Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Energy",
+          "version": 2
+        }
+      ],
+      "status": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:25.929900Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Active",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:51.544967Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Active",
+          "version": 2
+        }
+      ],
+      "ticker": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:25.925000Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "RELIANCE",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:51.540670Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "RELIANCE",
+          "version": 2
+        }
+      ],
+      "website": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:25.973728Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "www.ril.com",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:51.605902Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "www.ril.com",
+          "version": 2
+        }
+      ]
+    },
+    "competitors": {
+      "peer": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:25.957984Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Haldia Petrochemicals Limited; TotalEnergies SE (ENXTPA:TTE); BP p.l.c. (LSE:BP.); Clariant AG (SWX:CLN); Glencore plc (LSE:GLEN); Rio Tinto Limited; Toray Industries, Inc. (TSE:3402); Voltas Limited (NSEI:VOLTAS); Garware Technical Fibres Limited (BSE:509557); Century Enka Limited (NSEI:CENTENKA); NOCIL Limited (NSEI:NOCIL); BASF India Limited (NSEI:BASF); Mahindra & Mahindra Limited (NSEI:M&M); National Aluminium Company Limited (NSEI:NATIONALUM); Fortescue Ltd (ASX:FMG); GAIL (India) Limited (NSEI:GAIL); Microsoft Studios; Trent Limited (BSE:500251); Tata Advanced Materials Limited; House of Anita Dongre Private Limited; Meesho Limited (NSEI:MEESHO); Purple Style Labs Limited; Vishal Mega Mart Limited (NSEI:VMM); TreeToTextile AB; Borouge plc (ADX:BOROUGE); LVMH Mo\u00ebt Hennessy - Louis Vuitton, Soci\u00e9t\u00e9 Europ\u00e9enne (ENXTPA:MC); BASF SE (XTRA:BAS); Marks and Spencer Group plc (LSE:MKS); Vedanta Limited (NSEI:VEDL); Hindalco Industries Limited (BSE:500440); Blue Star Limited (BSE:500067); DCM Shriram Limited (NSEI:DCMSHRIRAM); Chennai Petroleum Corporation Limited (BSE:500110); Nirma Limited; China National Petroleum Corporation; Fast Retailing USA, Inc.; Covestro AG (DB:1COV); TGV SRAAC Limited (BSE:507753); Enercare Solutions Inc.; Aditya Birla Retail Limited; Adani Power Limited (NSEI:ADANIPOWER); Ocean Sparkle Limited; PG Electroplast Limited (BSE:533581); SK Geo Centric Co., Ltd.; BIBA Fashion Limited; South32 Limited (ASX:S32); Evrnu, SPC; The Dow Chemical Company; Alcoa Corporation (NYSE:AA); The Adani Harbour Services Private Limited; L.G.Corporation; Aureate Tradde Limited (BSE:544772); EPACK Durable Limited (NSEI:EPACK); 4M Clothing LLP; BHP Group Limited (ASX:BHP); DSM-Firmenich AG (ENXTAM:DSFIR); H & M Hennes & Mauritz AB (publ) (OM:HM B); Grupo M\u00e9xico, S.A.B. de C.V. (BMV:GMEXICO B); Indo Rama Synthetics (India) Limited (BSE:500207); Whirlpool of India Limited (BSE:500238); Tata Incorporated; Abu Dhabi Polymers Co. Ltd (Borouge)- Sole Proprietorship L.L.C; Motus Corporation; ONGC Petro additions Limited; Amari Co., Ltd; Bhilosa Industries Pvt. Ltd.; Wellknown Polyesters Limited; INEOS Limited; Mitsubishi Electric India Pvt. Ltd; Sony Interactive Entertainment Inc.; Sanathan Textiles Limited (NSEI:SANATHAN); Re:NewCell AB (publ); Agraloop; Br Automation; Manas Polymers and Energies Limited (NSEI:MPEL); Shreeji Shipping Global Limited (NSEI:SHREEJISPG); Kering Holland NV; Mitsubishi Corporation (TSE:8058); China Petroleum & Chemical Corporation (SEHK:386); Wipro Limited (BSE:507685); Larsen & Toubro Limited (BSE:500510); Lenzing Aktiengesellschaft (WBAG:LNZ); First Quantum Minerals Ltd. (TSX:FM); Jockey International, Inc.; Bharat Petroleum Corporation Limited (NSEI:BPCL); Boliden AB (publ) (OM:BOL); Giorgio Armani S.p.A.; Jacquet Metals SA (ENXTPA:JCQ); Chemplast Sanmar Limited (NSEI:CHEMPLASTS); Gujarat State Petroleum Corporation Limited; Jiangsu Sanfame Polyester Material Co.,Ltd. (SHSE:600370); Fairdeal Filaments Ltd.; AceVector Limited; Amber Enterprises India Limited (NSEI:AMBER); K Raheja Corp Private Limited; Aditya Birla Fashion and Retail Limited (NSEI:ABFRL); Myntra Designs Private Limited; V-Mart Retail Limited (NSEI:VMART); Credo Brands Marketing Limited (NSEI:MUFTI); Virtuoso Optoelectronics Limited (BSE:543597); Spinnova Oyj (HLSE:SPINN); NTPC Green Energy Limited (NSEI:NTPCGREEN); Samsung Electronics Co., Ltd. (KOSE:A005930); Bayer Aktiengesellschaft (XTRA:BAYN); Panasonic Holdings Corporation (TSE:6752); Daikin Industries,Ltd. (TSE:6367); Grasim Industries Limited (NSEI:GRASIM); The Great Eastern Shipping Company Limited (BSE:500620); DCW Limited (NSEI:DCW); Bharat Forge Limited (BSE:500493); Vardhman Textiles Limited (BSE:502986); SRF Limited (BSE:503806); Saudi Basic Industries Corporation (SASE:2010); Kontron AG (XTRA:KTN); Bangchak Sriracha Public Company Limited; Shoppers Stop Limited (NSEI:SHOPERSTOP); Thai Paraxylene Company Limited; The Andhra Sugars Limited (NSEI:ANDHRSUGAR); OTB S.p.A.; V2 Retail Limited (NSEI:V2RETAIL); Naaptol Online Shopping Private Limited; Focus Energy Limited; Anellotech, Inc.; Grasim Industries Ltd; Bhavik Enterprises Limited (BSE:544551); Cruise Electric Private Limited; Baazar Style Retail Limited (NSEI:STYLEBAAZA); Hitachi, Ltd. (TSE:6501); Ryerson Inc.; Anglo American plc (LSE:AAL); Antofagasta plc (LSE:ANTO); CNOOC Limited (SEHK:883); Garden Silk Mills Private Limited; LG Chem, Ltd. (KOSE:A051910); Industria de Dise\u00f1o Textil, S.A. (BME:ITX); Valentino Fashion Group S.p.A.; Bernecker + Rainer Industrie Elektronik GmbH; Tencent Holdings Limited (SEHK:700); UltraTech Cement Limited (NSEI:ULTRACEMCO); Sumeet Industries Limited (BSE:514211); Shell plc (LSE:SHEL); Kewal Kiran Clothing Limited (NSEI:KKCL); Aemetis, Inc. (NasdaqGM:AMTX); Future Group; Rungta Mines Ltd.; Sinopec Shanghai Gaoqiao Company; Meghna Group of Industries; Play Games24x7 Private Limited; Sporta Technologies Private Limited; Ioniqa Technologies BV; Flipkart India Private Limited; Galactus Funware Technology Private Limited; PVH Corp. (NYSE:PVH); Santos Limited (ASX:STO); Carrier Global Corporation (NYSE:CARR); Godrej Industries Limited (BSE:500164); Sigma Foods, S.A.B. de C.V. (BMV:SIGMAF A); Arvind Limited (BSE:500101); Hindustan Petroleum Corporation Limited (NSEI:HINDPETRO); Finolex Industries Limited (NSEI:FINPIPE); Borealis GmbH; Oil and Natural Gas Corporation Limited (NSEI:ONGC); Aditya Birla Chemicals (India) Limited; Indian Oil Corporation Limited (NSEI:IOC); LMW Limited (BSE:500252); Onida Electronics Limited (NSEI:ONIDA); Vedanta Resources Limited; Dow Inc. (NYSE:DOW); Fabindia Limited; Oil India Limited (NSEI:OIL); Indo Count Industries Limited (BSE:521016); JBF Industries Limited; Taneja Aerospace and Aviation Limited (BSE:522229); Nazara Technologies Limited (NSEI:NAZARA); Reliance Retail Limited; WAL-MART INDIA PRIVATE LIMITED; Baazar Retail Ltd.; Carbios SAS (ENXTPA:ALCRB); Mango Materials, Inc.; Chemplast Cuddalore Vinyls Limited; Infinited Fiber Company Oy; Natural Fiber Welding, Inc.; Hrx S.R.L.; Raymond Lifestyle Limited (NSEI:RAYMONDLSL); Chevron Corporation (NYSE:CVX); Vale S.A. (BOVESPA:VALE3); Tullow Oil plc (LSE:TLW); Dragon Oil plc; Petrofac Limited (OTCPK:POFC.F); Alok Industries Limited (NSEI:ALOKINDS); Carmel Olefins Ltd.; Gujarat Alkalies and Chemicals Limited (NSEI:GUJALKALI); Evonik Industries AG (XTRA:EVK); Coal India Limited (NSEI:COALINDIA); Havells India Limited (NSEI:HAVELLS); British Gas India Pvt. Ltd.; Filatex India Limited (BSE:526227); Infiniti Retail Limited; Haier Group Corporation; Engro Polymer and Chemicals Limited (KASE:EPCL); Niko Resources Ltd.; Birla Cellulose Ltd; JEPLAN, INC.; Nysaa Retail Private Limited; Mayasheel Retail India Limited; Saxcell B.v.",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:51.586035Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Chevron Corporation (NYSE:CVX); Vale S.A. (BOVESPA:VALE3); Tullow Oil plc (LSE:TLW); Dragon Oil plc; Petrofac Limited (OTCPK:POFC.F); Alok Industries Limited (NSEI:ALOKINDS); Carmel Olefins Ltd.; Gujarat Alkalies and Chemicals Limited (NSEI:GUJALKALI); Evonik Industries AG (XTRA:EVK); Coal India Limited (NSEI:COALINDIA); Havells India Limited (NSEI:HAVELLS); British Gas India Pvt. Ltd.; Filatex India Limited (BSE:526227); Infiniti Retail Limited; Haier Group Corporation; Engro Polymer and Chemicals Limited (KASE:EPCL); Niko Resources Ltd.; Birla Cellulose Ltd; JEPLAN, INC.; Nysaa Retail Private Limited; Mayasheel Retail India Limited; Saxcell B.v.; Hitachi, Ltd. (TSE:6501); Ryerson Inc.; Anglo American plc (LSE:AAL); Antofagasta plc (LSE:ANTO); CNOOC Limited (SEHK:883); Garden Silk Mills Private Limited; LG Chem, Ltd. (KOSE:A051910); Industria de Dise\u00f1o Textil, S.A. (BME:ITX); Valentino Fashion Group S.p.A.; Bernecker + Rainer Industrie Elektronik GmbH; Tencent Holdings Limited (SEHK:700); UltraTech Cement Limited (NSEI:ULTRACEMCO); Sumeet Industries Limited (BSE:514211); Shell plc (LSE:SHEL); Kewal Kiran Clothing Limited (NSEI:KKCL); Aemetis, Inc. (NasdaqGM:AMTX); Future Group; Rungta Mines Ltd.; Sinopec Shanghai Gaoqiao Company; Meghna Group of Industries; Play Games24x7 Private Limited; Sporta Technologies Private Limited; Ioniqa Technologies BV; Flipkart India Private Limited; Galactus Funware Technology Private Limited; Samsung Electronics Co., Ltd. (KOSE:A005930); Bayer Aktiengesellschaft (XTRA:BAYN); Panasonic Holdings Corporation (TSE:6752); Daikin Industries,Ltd. (TSE:6367); Grasim Industries Limited (NSEI:GRASIM); The Great Eastern Shipping Company Limited (BSE:500620); DCW Limited (NSEI:DCW); Bharat Forge Limited (BSE:500493); Vardhman Textiles Limited (BSE:502986); SRF Limited (BSE:503806); Saudi Basic Industries Corporation (SASE:2010); Kontron AG (XTRA:KTN); Bangchak Sriracha Public Company Limited; Shoppers Stop Limited (NSEI:SHOPERSTOP); Thai Paraxylene Company Limited; The Andhra Sugars Limited (NSEI:ANDHRSUGAR); OTB S.p.A.; V2 Retail Limited (NSEI:V2RETAIL); Naaptol Online Shopping Private Limited; Focus Energy Limited; Anellotech, Inc.; Grasim Industries Ltd; Bhavik Enterprises Limited (BSE:544551); Cruise Electric Private Limited; Baazar Style Retail Limited (NSEI:STYLEBAAZA); PVH Corp. (NYSE:PVH); Santos Limited (ASX:STO); Carrier Global Corporation (NYSE:CARR); Godrej Industries Limited (BSE:500164); Sigma Foods, S.A.B. de C.V. (BMV:SIGMAF A); Arvind Limited (BSE:500101); Hindustan Petroleum Corporation Limited (NSEI:HINDPETRO); Finolex Industries Limited (NSEI:FINPIPE); Borealis GmbH; Oil and Natural Gas Corporation Limited (NSEI:ONGC); Aditya Birla Chemicals (India) Limited; Indian Oil Corporation Limited (NSEI:IOC); LMW Limited (BSE:500252); Onida Electronics Limited (NSEI:ONIDA); Vedanta Resources Limited; Dow Inc. (NYSE:DOW); Fabindia Limited; Oil India Limited (NSEI:OIL); Indo Count Industries Limited (BSE:521016); JBF Industries Limited; Taneja Aerospace and Aviation Limited (BSE:522229); Nazara Technologies Limited (NSEI:NAZARA); Reliance Retail Limited; WAL-MART INDIA PRIVATE LIMITED; Baazar Retail Ltd.; Carbios SAS (ENXTPA:ALCRB); Mango Materials, Inc.; Chemplast Cuddalore Vinyls Limited; Infinited Fiber Company Oy; Natural Fiber Welding, Inc.; Hrx S.R.L.; Raymond Lifestyle Limited (NSEI:RAYMONDLSL); Kering Holland NV; Mitsubishi Corporation (TSE:8058); China Petroleum & Chemical Corporation (SEHK:386); Wipro Limited (BSE:507685); Larsen & Toubro Limited (BSE:500510); Lenzing Aktiengesellschaft (WBAG:LNZ); First Quantum Minerals Ltd. (TSX:FM); Jockey International, Inc.; Bharat Petroleum Corporation Limited (NSEI:BPCL); Boliden AB (publ) (OM:BOL); Giorgio Armani S.p.A.; Jacquet Metals SA (ENXTPA:JCQ); Chemplast Sanmar Limited (NSEI:CHEMPLASTS); Gujarat State Petroleum Corporation Limited; Jiangsu Sanfame Polyester Material Co.,Ltd. (SHSE:600370); Fairdeal Filaments Ltd.; AceVector Limited; Amber Enterprises India Limited (NSEI:AMBER); K Raheja Corp Private Limited; Aditya Birla Fashion and Retail Limited (NSEI:ABFRL); Myntra Designs Private Limited; V-Mart Retail Limited (NSEI:VMART); Credo Brands Marketing Limited (NSEI:MUFTI); Virtuoso Optoelectronics Limited (BSE:543597); Spinnova Oyj (HLSE:SPINN); NTPC Green Energy Limited (NSEI:NTPCGREEN); LVMH Mo\u00ebt Hennessy - Louis Vuitton, Soci\u00e9t\u00e9 Europ\u00e9enne (ENXTPA:MC); BASF SE (XTRA:BAS); Marks and Spencer Group plc (LSE:MKS); Vedanta Limited (NSEI:VEDL); Hindalco Industries Limited (BSE:500440); Blue Star Limited (BSE:500067); DCM Shriram Limited (NSEI:DCMSHRIRAM); Chennai Petroleum Corporation Limited (BSE:500110); Nirma Limited; China National Petroleum Corporation; Fast Retailing USA, Inc.; Covestro AG (DB:1COV); TGV SRAAC Limited (BSE:507753); Enercare Solutions Inc.; Aditya Birla Retail Limited; Adani Power Limited (NSEI:ADANIPOWER); Ocean Sparkle Limited; PG Electroplast Limited (BSE:533581); SK Geo Centric Co., Ltd.; BIBA Fashion Limited; South32 Limited (ASX:S32); Evrnu, SPC; The Dow Chemical Company; Alcoa Corporation (NYSE:AA); The Adani Harbour Services Private Limited; L.G.Corporation; Aureate Tradde Limited (BSE:544772); EPACK Durable Limited (NSEI:EPACK); 4M Clothing LLP; Haldia Petrochemicals Limited; TotalEnergies SE (ENXTPA:TTE); BP p.l.c. (LSE:BP.); Clariant AG (SWX:CLN); Glencore plc (LSE:GLEN); Rio Tinto Limited; Toray Industries, Inc. (TSE:3402); Voltas Limited (NSEI:VOLTAS); Garware Technical Fibres Limited (BSE:509557); Century Enka Limited (NSEI:CENTENKA); NOCIL Limited (NSEI:NOCIL); BASF India Limited (NSEI:BASF); Mahindra & Mahindra Limited (NSEI:M&M); National Aluminium Company Limited (NSEI:NATIONALUM); Fortescue Ltd (ASX:FMG); GAIL (India) Limited (NSEI:GAIL); Microsoft Studios; Trent Limited (BSE:500251); Tata Advanced Materials Limited; House of Anita Dongre Private Limited; Meesho Limited (NSEI:MEESHO); Purple Style Labs Limited; Vishal Mega Mart Limited (NSEI:VMM); TreeToTextile AB; Borouge plc (ADX:BOROUGE); BHP Group Limited (ASX:BHP); DSM-Firmenich AG (ENXTAM:DSFIR); H & M Hennes & Mauritz AB (publ) (OM:HM B); Grupo M\u00e9xico, S.A.B. de C.V. (BMV:GMEXICO B); Indo Rama Synthetics (India) Limited (BSE:500207); Whirlpool of India Limited (BSE:500238); Tata Incorporated; Abu Dhabi Polymers Co. Ltd (Borouge)- Sole Proprietorship L.L.C; Motus Corporation; ONGC Petro additions Limited; Amari Co., Ltd; Bhilosa Industries Pvt. Ltd.; Wellknown Polyesters Limited; INEOS Limited; Mitsubishi Electric India Pvt. Ltd; Sony Interactive Entertainment Inc.; Sanathan Textiles Limited (NSEI:SANATHAN); Re:NewCell AB (publ); Agraloop; Br Automation; Manas Polymers and Energies Limited (NSEI:MPEL); Shreeji Shipping Global Limited (NSEI:SHREEJISPG)",
+          "version": 2
+        }
+      ]
+    },
+    "financial_statements": {
+      "LTM::ebitda": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:25.958916Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 19104.5,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:51.588113Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 19104.5,
+          "version": 2
+        }
+      ],
+      "LTM::revenue": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:25.961430Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 119469.7,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:51.592065Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 119469.7,
+          "version": 2
+        }
+      ]
+    },
+    "market_data": {
+      "latest::close": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:25.933561Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 13.3,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:51.549877Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 13.3,
+          "version": 2
+        }
+      ],
+      "latest::enterprise_value": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:25.960083Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 216969.8,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:51.590077Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 216969.8,
+          "version": 2
+        }
+      ],
+      "latest::market_cap": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:25.963189Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 183272.9,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:51.593545Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 183272.9,
+          "version": 2
+        }
+      ],
+      "latest::next_earnings_date_expected": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:25.966625Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "2026-10-23 00:00:00",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:51.597942Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "2026-10-23 00:00:00",
+          "version": 2
+        }
+      ],
+      "latest::returns_1d": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:25.936927Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 0.639,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:51.552121Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 0.647,
+          "version": 2
+        }
+      ],
+      "latest::returns_1m": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:25.938684Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": -1.91,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:51.555184Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": -1.93,
+          "version": 2
+        }
+      ],
+      "latest::returns_1w": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:25.937975Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": -0.997,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:51.553226Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": -0.986,
+          "version": 2
+        }
+      ],
+      "latest::returns_1y": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:25.941643Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": -10,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:51.562286Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": -9.96,
+          "version": 2
+        }
+      ],
+      "latest::returns_3m": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:25.939421Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": -10.5,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:51.557260Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": -10.5,
+          "version": 2
+        }
+      ],
+      "latest::returns_3y": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:25.943237Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 0.965,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:51.563584Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 0.947,
+          "version": 2
+        }
+      ],
+      "latest::returns_5y": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:25.944717Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 24.2,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:51.565751Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 24.3,
+          "version": 2
+        }
+      ],
+      "latest::returns_6m": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:25.940191Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": -8.33,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:51.559267Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": -8.27,
+          "version": 2
+        }
+      ],
+      "latest::returns_9m": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:25.940922Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": -15.2,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:51.560990Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": -15.2,
+          "version": 2
+        }
+      ],
+      "latest::returns_ytd": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:25.935109Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": -19,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:51.550992Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": -19,
+          "version": 2
+        }
+      ],
+      "latest::volume": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:25.946281Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 1.32,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:51.567499Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 15.5,
+          "version": 2
+        }
+      ]
+    },
+    "products": {
+      "product": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:25.971620Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "3D Printing Products; 5G Radios; Acrylonitrile; Alkylate; Anti Microbial Fibres & Yarns; Aromatics; Aviation Turbine Fuel; Bangla Cinema; Beds and Mattresses; Benzene and Derivatives; Better Interiors; Better Photography; Bi-component Filament Yarns; Bi-shrinkage Yarns; Blood Bags; BookmyShow; Bottled Water Packaging Services; Broadband Services; Burrp; Butadiene; Butane; Butene-1; Butyl Rubber; Cables; Carbon and Glass Fiber Reinforced Polymer System; Carbon Black Feedstock; Carbon Fibre Composites; Carrier Bags; Caustic; Cloud Storage Service; CNBC Awaaz; CNBC Bajar; CNBC TV18; CNN IBN; CNN News18; Coal Bed Methane; Colors Bangla; Colors Cineplex; Colors Cineplex Bollywood; Colors Gujarati; Colors Infinity; Colors Kannada; Colors Kannada Cinema; Colors Marathi; Colors Oriya; Colors Rishtey; Colors Super; Colors Tamil; Colors TV; Comedy Central",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:51.603589Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "3D Printing Products; 5G Radios; Acrylonitrile; Alkylate; Anti Microbial Fibres & Yarns; Aromatics; Aviation Turbine Fuel; Bangla Cinema; Beds and Mattresses; Benzene and Derivatives; Better Interiors; Better Photography; Bi-component Filament Yarns; Bi-shrinkage Yarns; Blood Bags; BookmyShow; Bottled Water Packaging Services; Broadband Services; Burrp; Butadiene; Butane; Butene-1; Butyl Rubber; Cables; Carbon and Glass Fiber Reinforced Polymer System; Carbon Black Feedstock; Carbon Fibre Composites; Carrier Bags; Caustic; Cloud Storage Service; CNBC Awaaz; CNBC Bajar; CNBC TV18; CNN IBN; CNN News18; Coal Bed Methane; Colors Bangla; Colors Cineplex; Colors Cineplex Bollywood; Colors Gujarati; Colors Infinity; Colors Kannada; Colors Kannada Cinema; Colors Marathi; Colors Oriya; Colors Rishtey; Colors Super; Colors Tamil; Colors TV; Comedy Central",
+          "version": 2
+        }
+      ],
+      "product_description": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:32:25.969970Z",
+          "source": "capital_iq_exports/capiq_export_460.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Alkylate:\nAlkylate is a High Octane blend stock for gasoline.\n\nAnti Microbial Fibres & Yarns:\nAnti Microbial fibres & yarns are sold under Recron\u00ae Feel Fresh Brand is used in Active sportswear, Intimate apparel, socks, home furnishings & garments used in healthcare industry.\n\nAromatics:\nAromatics for detergents and soaps.\n\nBeds and Mattresses:\nBeds and Mattresses offers under the name of Recron.\n\nBetter Interiors:\nBetter Interiors is a interiors magazine.",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:51.602242Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Alkylate:\nAlkylate is a High Octane blend stock for gasoline.\n\nAnti Microbial Fibres & Yarns:\nAnti Microbial fibres & yarns are sold under Recron\u00ae Feel Fresh Brand is used in Active sportswear, Intimate apparel, socks, home furnishings & garments used in healthcare industry.\n\nAromatics:\nAromatics for detergents and soaps.\n\nBeds and Mattresses:\nBeds and Mattresses offers under the name of Recron.\n\nBetter Interiors:\nBetter Interiors is a interiors magazine.",
+          "version": 2
+        }
+      ]
+    }
+  },
+  "ticker": "RELIANCE",
+  "updated_at": "2026-08-01T19:37:51.605907Z"
+}

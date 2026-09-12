@@ -1,0 +1,299 @@
+{
+  "run_id": "iel-run-589d8a6eef",
+  "module": "IEL",
+  "iel_version": "institutional-evaluation-lab-v1.0.0",
+  "suite": "institutional_1000",
+  "mode": "soft",
+  "commit": "a8474b03",
+  "n_questions": 1000,
+  "aggregate": {
+    "n": 1000,
+    "pass_pct": 88.2,
+    "mean_score": 83.23,
+    "by_category": {
+      "accounting": {
+        "n": 15,
+        "mean_score": 68.2
+      },
+      "company": {
+        "n": 100,
+        "mean_score": 76.48
+      },
+      "cross_domain": {
+        "n": 518,
+        "mean_score": 89.27
+      },
+      "documents": {
+        "n": 120,
+        "mean_score": 76.78
+      },
+      "government": {
+        "n": 15,
+        "mean_score": 94.08
+      },
+      "historical_replay": {
+        "n": 55,
+        "mean_score": 79.94
+      },
+      "industry": {
+        "n": 45,
+        "mean_score": 78.69
+      },
+      "macro": {
+        "n": 15,
+        "mean_score": 90.36
+      },
+      "portfolio": {
+        "n": 56,
+        "mean_score": 68.14
+      },
+      "risk": {
+        "n": 50,
+        "mean_score": 75.81
+      },
+      "valuation": {
+        "n": 11,
+        "mean_score": 72.05
+      }
+    },
+    "by_verdict": {
+      "PARTIAL": 117,
+      "PASS": 882,
+      "FAIL": 1
+    },
+    "top_root_causes": [
+      {
+        "cause": "framework_mismatch",
+        "count": 247
+      },
+      {
+        "cause": "intent_mismatch",
+        "count": 153
+      },
+      {
+        "cause": "future_leakage",
+        "count": 15
+      },
+      {
+        "cause": "memory_miss_on_analog_question",
+        "count": 11
+      }
+    ],
+    "passed": 882,
+    "failed": 118
+  },
+  "failure_clusters": {
+    "n_failures": 118,
+    "n_clusters": 2,
+    "top_20": [
+      {
+        "root_cause": "intent_mismatch",
+        "count": 103,
+        "severity": "medium",
+        "question_ids": [
+          "GEN-ACC-01-01",
+          "GEN-ACC-01-02",
+          "GEN-ACC-01-03",
+          "GEN-ACC-02-01",
+          "GEN-ACC-03-01",
+          "GEN-ACC-05-01",
+          "GEN-ACC-05-02",
+          "GEN-ACC-05-03",
+          "GEN-ACC-06-01",
+          "GEN-ACC-07-01",
+          "GEN-ACC-08-01",
+          "GEN-ACC-08-02",
+          "GEN-ACC-08-03",
+          "GEN-ACC-08-04",
+          "GEN-ACC-08-05",
+          "GEN-CO-ASIANPAINT-02",
+          "GEN-CO-ASIANPAINT-04",
+          "GEN-CO-BAJFINANCE-02",
+          "GEN-CO-BAJFINANCE-04",
+          "GEN-CO-BHARTIARTL-02",
+          "GEN-CO-BHARTIARTL-04",
+          "GEN-CO-HDFCBANK-02",
+          "GEN-CO-HDFCBANK-04",
+          "GEN-CO-HINDUNILVR-02",
+          "GEN-CO-HINDUNILVR-04"
+        ],
+        "categories": {
+          "accounting": 15,
+          "company": 36,
+          "industry": 11,
+          "historical_replay": 10,
+          "portfolio": 28,
+          "valuation": 3
+        },
+        "status": "open",
+        "owner": "quality_programme"
+      },
+      {
+        "root_cause": "future_leakage",
+        "count": 15,
+        "severity": "high",
+        "question_ids": [
+          "GEN-REP-01-01",
+          "GEN-REP-01-02",
+          "GEN-REP-01-03",
+          "GEN-REP-01-04",
+          "GEN-REP-01-05",
+          "GEN-REP-04-01",
+          "GEN-REP-04-02",
+          "GEN-REP-04-03",
+          "GEN-REP-04-04",
+          "GEN-REP-04-05",
+          "GEN-REP-05-01",
+          "GEN-REP-05-02",
+          "GEN-REP-05-03",
+          "GEN-REP-05-04",
+          "GEN-REP-05-05"
+        ],
+        "categories": {
+          "historical_replay": 15
+        },
+        "status": "open",
+        "owner": "quality_programme"
+      }
+    ],
+    "note": "Sprint 3.2 expands this into persistent failure intelligence store."
+  },
+  "regression": {
+    "status": "ok",
+    "regression": false,
+    "deltas": {
+      "pass_pct": 38.2,
+      "mean_score": 6.72
+    },
+    "baseline": {
+      "pass_pct": 50.0,
+      "mean_score": 76.51,
+      "n": 10,
+      "run_id": "iel-run-fb9575a6fb"
+    },
+    "current": {
+      "pass_pct": 88.2,
+      "mean_score": 83.23,
+      "n": 1000
+    }
+  },
+  "targets": {
+    "benchmark_1000_pass_pct": {
+      "target": 90.0,
+      "observed": 88.2,
+      "gap": 1.8
+    },
+    "framework_selection_proxy": {
+      "target": 98.0,
+      "note": "Proxy = share of questions with framework dimension passed",
+      "observed": 75.3
+    }
+  },
+  "latency_ms": 7038,
+  "reasoning_changed": false,
+  "fabricated": false,
+  "baseline_saved": true,
+  "cio_frozen_25": {
+    "run_id": "iel-run-0160d47266",
+    "module": "IEL",
+    "iel_version": "institutional-evaluation-lab-v1.0.0",
+    "suite": "cio_frozen_25",
+    "mode": "soft",
+    "commit": "a8474b03",
+    "n_questions": 25,
+    "aggregate": {
+      "n": 25,
+      "pass_pct": 100.0,
+      "mean_score": 88.65,
+      "by_category": {
+        "accounting": {
+          "n": 1,
+          "mean_score": 75.47
+        },
+        "company": {
+          "n": 3,
+          "mean_score": 86.43
+        },
+        "cross_domain": {
+          "n": 3,
+          "mean_score": 92.64
+        },
+        "documents": {
+          "n": 4,
+          "mean_score": 87.57
+        },
+        "government": {
+          "n": 2,
+          "mean_score": 92.84
+        },
+        "historical_replay": {
+          "n": 1,
+          "mean_score": 95.2
+        },
+        "industry": {
+          "n": 4,
+          "mean_score": 89.67
+        },
+        "macro": {
+          "n": 3,
+          "mean_score": 90.05
+        },
+        "valuation": {
+          "n": 4,
+          "mean_score": 85.86
+        }
+      },
+      "by_verdict": {
+        "PASS": 25
+      },
+      "top_root_causes": [
+        {
+          "cause": "playbook_mismatch",
+          "count": 4
+        }
+      ],
+      "passed": 25,
+      "failed": 0
+    },
+    "failure_clusters": {
+      "n_failures": 0,
+      "n_clusters": 0,
+      "top_20": [],
+      "note": "Sprint 3.2 expands this into persistent failure intelligence store."
+    },
+    "regression": {
+      "status": "ok",
+      "regression": false,
+      "deltas": {
+        "pass_pct": 11.8,
+        "mean_score": 5.42
+      },
+      "baseline": {
+        "pass_pct": 88.2,
+        "mean_score": 83.23,
+        "n": 1000,
+        "run_id": "iel-run-589d8a6eef"
+      },
+      "current": {
+        "pass_pct": 100.0,
+        "mean_score": 88.65,
+        "n": 25
+      }
+    },
+    "targets": {
+      "benchmark_1000_pass_pct": {
+        "target": 90.0,
+        "observed": null,
+        "gap": null
+      },
+      "framework_selection_proxy": {
+        "target": 98.0,
+        "note": "Proxy = share of questions with framework dimension passed",
+        "observed": 100.0
+      }
+    },
+    "latency_ms": 248,
+    "reasoning_changed": false,
+    "fabricated": false
+  }
+}

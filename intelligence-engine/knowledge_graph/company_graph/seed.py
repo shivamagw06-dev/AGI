@@ -1,0 +1,62 @@
+"""Company graph seeds — Indian institutional universe + ecosystem links."""
+
+from __future__ import annotations
+
+from knowledge_graph.graph._edge import e, n
+
+COMPANY_NODES = [
+    n("HDFCBANK", "HDFC Bank", "company", ticker="HDFCBANK",
+      aliases=["HDFC Bank", "HDFC Bank Ltd.", "HDFC Bank Limited", "NSE:HDFCBANK", "BSE:500180", "HDFC"],
+      sector="banks", exchange_codes={"NSE": "HDFCBANK", "BSE": "500180"}),
+    n("KOTAKBANK", "Kotak Mahindra Bank", "company", ticker="KOTAKBANK",
+      aliases=["Kotak Bank", "Kotak Mahindra Bank Ltd", "NSE:KOTAKBANK"], sector="banks"),
+    n("SBIN", "State Bank of India", "company", ticker="SBIN",
+      aliases=["SBI", "State Bank of India", "NSE:SBIN"], sector="banks"),
+    n("TCS", "Tata Consultancy Services", "company", ticker="TCS",
+      aliases=["TCS", "Tata Consultancy Services Ltd", "NSE:TCS"], sector="it_services"),
+    n("INFY", "Infosys", "company", ticker="INFY",
+      aliases=["Infosys Ltd", "Infosys Limited", "NSE:INFY"], sector="it_services"),
+    n("NESTLEIND", "Nestlé India", "company", ticker="NESTLEIND",
+      aliases=["Nestle India", "Nestlé India Ltd", "NSE:NESTLEIND", "NESTLE"], sector="fmcg"),
+    n("HINDUNILVR", "Hindustan Unilever", "company", ticker="HINDUNILVR",
+      aliases=["HUL", "Hindustan Unilever Ltd", "NSE:HINDUNILVR"], sector="fmcg"),
+    n("TATASTEEL", "Tata Steel", "company", ticker="TATASTEEL",
+      aliases=["Tata Steel Ltd", "NSE:TATASTEEL"], sector="metals"),
+    n("TATAMOTORS", "Tata Motors", "company", ticker="TATAMOTORS",
+      aliases=["Tata Motors Ltd", "NSE:TATAMOTORS"], sector="auto"),
+    n("RELIANCE", "Reliance Industries", "company", ticker="RELIANCE",
+      aliases=["RIL", "Reliance Industries Ltd", "NSE:RELIANCE"], sector="energy"),
+    n("sector_banks", "Banks", "sector"),
+    n("sector_it", "IT Services", "sector"),
+    n("sector_fmcg", "FMCG", "sector"),
+    n("sector_metals", "Metals", "sector"),
+    n("sector_auto", "Automobiles", "sector"),
+    n("industry_private_banks", "Private Banks", "industry"),
+    n("industry_it_services", "IT Services Industry", "industry"),
+    n("nifty50", "Nifty 50", "index"),
+    n("banknifty", "Bank Nifty", "index"),
+]
+
+COMPANY_EDGES = [
+    e("HDFCBANK", "sector_banks", "member_of", strength=0.95, confidence=0.98, note="HDFC Bank is a banking sector constituent"),
+    e("KOTAKBANK", "sector_banks", "member_of", strength=0.92, confidence=0.96),
+    e("SBIN", "sector_banks", "member_of", strength=0.93, confidence=0.96),
+    e("TCS", "sector_it", "member_of", strength=0.95, confidence=0.98),
+    e("INFY", "sector_it", "member_of", strength=0.94, confidence=0.97),
+    e("NESTLEIND", "sector_fmcg", "member_of", strength=0.94, confidence=0.97),
+    e("HINDUNILVR", "sector_fmcg", "member_of", strength=0.95, confidence=0.98),
+    e("TATASTEEL", "sector_metals", "member_of", strength=0.93, confidence=0.96),
+    e("TATAMOTORS", "sector_auto", "member_of", strength=0.93, confidence=0.96),
+    e("HDFCBANK", "KOTAKBANK", "competes_with", strength=0.78, confidence=0.9, note="Private bank competitive set"),
+    e("HDFCBANK", "SBIN", "competes_with", strength=0.7, confidence=0.88),
+    e("TCS", "INFY", "competes_with", strength=0.85, confidence=0.93, note="IT services peer competition"),
+    e("NESTLEIND", "HINDUNILVR", "competes_with", strength=0.72, confidence=0.88, note="FMCG competitive overlap"),
+    e("HDFCBANK", "industry_private_banks", "member_of", strength=0.9, confidence=0.95),
+    e("TCS", "industry_it_services", "member_of", strength=0.92, confidence=0.96),
+    e("HDFCBANK", "nifty50", "member_of", strength=0.99, confidence=0.99),
+    e("TCS", "nifty50", "member_of", strength=0.99, confidence=0.99),
+    e("NESTLEIND", "nifty50", "member_of", strength=0.95, confidence=0.97),
+    e("HDFCBANK", "banknifty", "member_of", strength=0.99, confidence=0.99),
+    e("TATASTEEL", "TATAMOTORS", "shares_supplier", strength=0.55, confidence=0.8, note="Shared industrial metal / auto ecosystem exposure"),
+    e("RELIANCE", "NESTLEIND", "shares_supplier", strength=0.4, confidence=0.72, note="Petrochemical / packaging adjacency"),
+]

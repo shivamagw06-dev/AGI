@@ -1,0 +1,35 @@
+{
+  "company": "AGI",
+  "module": "institutional_learning_office",
+  "ilo_version": "institutional-learning-office-v1.0.0",
+  "lqs_version": "lqs-v1.0.0",
+  "date": "2026-07-28",
+  "release_status": "AGI_v4.0_Investment_Office_COMPLETE",
+  "no_sprint_5_6": true,
+  "suites": {
+    "smoke": {"n": 20, "pass_pct": 100.0, "mean_score": 87.92, "mean_lqs": 97.29},
+    "cio_frozen_25": {"n": 25, "pass_pct": 100.0, "mean_score": 87.58, "mean_lqs": 96.94},
+    "institutional_1000": {
+      "n": 1000,
+      "pass_pct": 99.9,
+      "mean_score": 90.05,
+      "mean_lqs": 97.11,
+      "lqs_pass_pct": 100.0,
+      "mean_mqs": 99.5,
+      "mean_pqs": 94.3,
+      "mean_dqs": 99.44
+    }
+  },
+  "guarantees": {
+    "knowledge_factory_updated": false,
+    "mutates_thesis": false,
+    "mutates_decision": false,
+    "mutates_portfolio": false,
+    "positions_emitted": false,
+    "orders_emitted": false,
+    "reasoning_changed": false,
+    "fabricated": false,
+    "lqs_independent_of_cio": true,
+    "final_office_module": true
+  }
+}

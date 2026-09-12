@@ -1,0 +1,104 @@
+{
+  "artifact": "AGI_IHG_EVALUATION",
+  "company": "AGI",
+  "sprint": "Phase 4 Sprint 4.2 IHG",
+  "ihg_version": "institutional-hypothesis-generation-v1.0.0",
+  "hypothesis_version": "ihg-hypothesis-catalog-v1.0.0",
+  "iew_version": "institutional-evidence-weighting-v1.0.0",
+  "evaluated_at": "2026-07-28T18:17:02Z",
+  "institutional_1000": {
+    "suite": "institutional_1000",
+    "mode": "soft",
+    "n_questions": 1000,
+    "pass_pct": 99.9,
+    "mean_score": 90.05,
+    "passed": 999,
+    "failed": 1,
+    "regression": {
+      "status": "ok",
+      "regression": false,
+      "deltas": {
+        "pass_pct": 7.3,
+        "mean_score": 2.82
+      },
+      "baseline": {
+        "pass_pct": 92.6,
+        "mean_score": 87.23,
+        "n": 1000,
+        "run_id": "iel-run-05bcfa0db3"
+      },
+      "current": {
+        "pass_pct": 99.9,
+        "mean_score": 90.05,
+        "n": 1000
+      }
+    },
+    "rci": {
+      "n_failures": 23,
+      "n_clusters": 19
+    },
+    "latency_ms": 9765,
+    "run_id": "iel-run-1dad38ebe8",
+    "reasoning_changed": false
+  },
+  "cio_frozen_25": {
+    "suite": "cio_frozen_25",
+    "mode": "soft",
+    "n_questions": 25,
+    "pass_pct": 100.0,
+    "mean_score": 87.58,
+    "passed": 25,
+    "failed": 0,
+    "regression": {
+      "status": "ok",
+      "regression": false,
+      "deltas": {
+        "pass_pct": 7.4,
+        "mean_score": 0.35
+      },
+      "baseline": {
+        "pass_pct": 92.6,
+        "mean_score": 87.23,
+        "n": 1000,
+        "run_id": "iel-run-05bcfa0db3"
+      },
+      "current": {
+        "pass_pct": 100.0,
+        "mean_score": 87.58,
+        "n": 25
+      }
+    },
+    "rci": {
+      "n_failures": 6,
+      "n_clusters": 6
+    },
+    "latency_ms": 331,
+    "run_id": "iel-run-cde6d21092",
+    "reasoning_changed": false
+  },
+  "hypothesis_soft_probe_sample": {
+    "n_rows_scanned": 1000,
+    "n_with_ihg_field": 0,
+    "n_insufficient": 0,
+    "n_plural": 0,
+    "n_preferred": 0,
+    "note": "Soft probe includes hypothesis_generation; IEL row shape may nest differently"
+  },
+  "frozen_baseline": {
+    "iel_pass_pct": 99.9,
+    "iel_mean": 90.24,
+    "cio_pass_pct": 100.0
+  },
+  "iew_baseline_soft": {
+    "iel_pass_pct": 99.9,
+    "iel_mean": 90.05,
+    "cio_pass_pct": 100.0
+  },
+  "exit_gate": {
+    "iel_stable_or_improved": true,
+    "cio_held": true,
+    "reasoning_unchanged": true,
+    "forced_single_winner": false
+  },
+  "fabricated": false
+}

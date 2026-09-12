@@ -1,0 +1,5 @@
+import test from 'node:test';import assert from 'node:assert/strict';import {derivePipelineStatus} from './researchPipelineHealth.js';
+test('reports standby before the first eligible live event',()=>{assert.equal(derivePipelineStatus({scheduler:{enabled:true,status:'idle'},counts:{events:0},upstoxHealthy:5,growwHealthy:2}),'STANDBY');});
+test('reports healthy only when memory and all three forecasts cover every event',()=>{assert.equal(derivePipelineStatus({scheduler:{enabled:true,status:'idle'},counts:{events:10,memory:10,feature_snapshots:10,forecasts:30},upstoxHealthy:5,growwHealthy:2}),'HEALTHY');});
+test('reports processing when downstream records lag events',()=>{assert.equal(derivePipelineStatus({scheduler:{enabled:true,status:'idle'},counts:{events:10,memory:8,feature_snapshots:9,forecasts:20},upstoxHealthy:5,growwHealthy:2}),'PROCESSING');});
+test('does not hide scheduler failures',()=>{assert.equal(derivePipelineStatus({scheduler:{enabled:true,status:'degraded',last_error:'boom'},counts:{events:10,memory:10,feature_snapshots:10,forecasts:30}}),'DEGRADED');});

@@ -1,0 +1,1 @@
+from knowledge_graph.history.temporal import with_temporal

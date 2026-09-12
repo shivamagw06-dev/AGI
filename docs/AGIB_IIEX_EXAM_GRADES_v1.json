@@ -1,0 +1,548 @@
+{
+  "run_id": "iiex_d53537cf747a",
+  "version": "1.0.0",
+  "generated_at": "2026-07-29T05:12:02.865408+00:00",
+  "marks_available": 600,
+  "marks_awarded": 551.54,
+  "pct": 91.92,
+  "normalized_500": 459.62,
+  "passed": true,
+  "certification": "INSTITUTIONAL READY",
+  "dimension_scores": {
+    "accuracy": {
+      "weight": 100,
+      "avg_pct": 92.81,
+      "marks": 92.81
+    },
+    "reasoning": {
+      "weight": 100,
+      "avg_pct": 91.18,
+      "marks": 91.18
+    },
+    "evidence": {
+      "weight": 50,
+      "avg_pct": 91.88,
+      "marks": 45.94
+    },
+    "historical_context": {
+      "weight": 50,
+      "avg_pct": 91.0,
+      "marks": 45.5
+    },
+    "relationships": {
+      "weight": 50,
+      "avg_pct": 90.89,
+      "marks": 45.44
+    },
+    "forecasting": {
+      "weight": 50,
+      "avg_pct": 93.62,
+      "marks": 46.81
+    },
+    "research_quality": {
+      "weight": 50,
+      "avg_pct": 92.23,
+      "marks": 46.11
+    },
+    "portfolio_thinking": {
+      "weight": 50,
+      "avg_pct": 88.53,
+      "marks": 44.27
+    },
+    "communication": {
+      "weight": 50,
+      "avg_pct": 93.61,
+      "marks": 46.81
+    }
+  },
+  "by_section": {
+    "A_Company": {
+      "available": 100.0,
+      "awarded": 95.35999999999999,
+      "n": 5,
+      "pct": 95.36
+    },
+    "B_Market": {
+      "available": 75.0,
+      "awarded": 66.2,
+      "n": 4,
+      "pct": 88.27
+    },
+    "C_Macro": {
+      "available": 75.0,
+      "awarded": 68.33,
+      "n": 4,
+      "pct": 91.11
+    },
+    "D_Sector": {
+      "available": 75.0,
+      "awarded": 68.50999999999999,
+      "n": 5,
+      "pct": 91.35
+    },
+    "E_IPO": {
+      "available": 40.0,
+      "awarded": 37.32,
+      "n": 2,
+      "pct": 93.3
+    },
+    "F_Relationship": {
+      "available": 40.0,
+      "awarded": 35.51,
+      "n": 2,
+      "pct": 88.78
+    },
+    "G_Historical": {
+      "available": 30.0,
+      "awarded": 26.9,
+      "n": 2,
+      "pct": 89.67
+    },
+    "H_Forecast": {
+      "available": 40.0,
+      "awarded": 38.239999999999995,
+      "n": 2,
+      "pct": 95.6
+    },
+    "I_Research": {
+      "available": 60.0,
+      "awarded": 56.18,
+      "n": 3,
+      "pct": 93.63
+    },
+    "J_CIO_Committee": {
+      "available": 65.0,
+      "awarded": 58.99,
+      "n": 2,
+      "pct": 90.75
+    }
+  },
+  "per_question": [
+    {
+      "id": "Q1",
+      "section": "A_Company",
+      "title": "Full Company Initiation Report \u2014 Reliance Industries",
+      "marks_available": 30,
+      "marks_awarded": 30.0,
+      "pct": 100.0,
+      "sources": [
+        "Company_catalog",
+        "MKFI",
+        "HMKAI",
+        "SFI",
+        "RIH",
+        "IFI"
+      ]
+    },
+    {
+      "id": "Q2",
+      "section": "A_Company",
+      "title": "Earnings Intelligence \u2014 Infosys",
+      "marks_available": 20,
+      "marks_awarded": 19.08,
+      "pct": 95.4,
+      "sources": [
+        "Company_catalog",
+        "MKFI",
+        "HMKAI",
+        "SFI",
+        "IFI"
+      ]
+    },
+    {
+      "id": "Q3",
+      "section": "A_Company",
+      "title": "Company Comparison \u2014 HDFC Bank vs ICICI Bank",
+      "marks_available": 20,
+      "marks_awarded": 18.08,
+      "pct": 90.4,
+      "sources": [
+        "Company_catalog",
+        "SFI",
+        "IFI"
+      ]
+    },
+    {
+      "id": "Q4",
+      "section": "A_Company",
+      "title": "Event Analysis \u2014 \u20b925,000 crore Acquisition",
+      "marks_available": 15,
+      "marks_awarded": 14.16,
+      "pct": 94.4,
+      "sources": [
+        "Company_catalog",
+        "MKFI",
+        "HMKAI",
+        "IFI"
+      ]
+    },
+    {
+      "id": "Q5",
+      "section": "A_Company",
+      "title": "Risk Assessment \u2014 Tata Motors Top 10",
+      "marks_available": 15,
+      "marks_awarded": 14.04,
+      "pct": 93.6,
+      "sources": [
+        "Company_catalog",
+        "MKFI",
+        "HMKAI",
+        "MFI",
+        "SFI"
+      ]
+    },
+    {
+      "id": "Q6",
+      "section": "B_Market",
+      "title": "Market Open Analysis \u2014 Pre-Market 08:30",
+      "marks_available": 20,
+      "marks_awarded": 17.78,
+      "pct": 88.9,
+      "sources": [
+        "MKFI",
+        "HMKAI",
+        "SFI"
+      ]
+    },
+    {
+      "id": "Q7",
+      "section": "B_Market",
+      "title": "Institutional Flow Analysis",
+      "marks_available": 15,
+      "marks_awarded": 13.15,
+      "pct": 87.67,
+      "sources": [
+        "MKFI",
+        "HMKAI"
+      ]
+    },
+    {
+      "id": "Q8",
+      "section": "B_Market",
+      "title": "Market Health Assessment",
+      "marks_available": 20,
+      "marks_awarded": 17.19,
+      "pct": 85.95,
+      "sources": [
+        "MKFI",
+        "HMKAI"
+      ]
+    },
+    {
+      "id": "Q9",
+      "section": "B_Market",
+      "title": "Correction Analysis \u2014 NIFTY -10%",
+      "marks_available": 20,
+      "marks_awarded": 18.08,
+      "pct": 90.4,
+      "sources": [
+        "MKFI",
+        "HMKAI"
+      ]
+    },
+    {
+      "id": "Q10",
+      "section": "C_Macro",
+      "title": "RBI Policy Analysis \u2014 50 bps Cut",
+      "marks_available": 25,
+      "marks_awarded": 22.78,
+      "pct": 91.12,
+      "sources": [
+        "MKFI",
+        "HMKAI",
+        "MFI",
+        "SFI"
+      ]
+    },
+    {
+      "id": "Q11",
+      "section": "C_Macro",
+      "title": "Inflation Shock \u2014 Oil +25%",
+      "marks_available": 20,
+      "marks_awarded": 18.28,
+      "pct": 91.4,
+      "sources": [
+        "MKFI",
+        "HMKAI",
+        "MFI",
+        "SFI"
+      ]
+    },
+    {
+      "id": "Q12",
+      "section": "C_Macro",
+      "title": "Budget Analysis \u2014 Infra Package",
+      "marks_available": 15,
+      "marks_awarded": 13.71,
+      "pct": 91.4,
+      "sources": [
+        "MKFI",
+        "HMKAI",
+        "MFI",
+        "SFI"
+      ]
+    },
+    {
+      "id": "Q13",
+      "section": "C_Macro",
+      "title": "Global Macro \u2014 US Recession",
+      "marks_available": 15,
+      "marks_awarded": 13.56,
+      "pct": 90.4,
+      "sources": [
+        "MKFI",
+        "HMKAI",
+        "MFI"
+      ]
+    },
+    {
+      "id": "Q14",
+      "section": "D_Sector",
+      "title": "Banking Sector \u2014 Six-Month Outlook",
+      "marks_available": 20,
+      "marks_awarded": 18.64,
+      "pct": 93.2,
+      "sources": [
+        "MKFI",
+        "HMKAI",
+        "MFI",
+        "SFI"
+      ]
+    },
+    {
+      "id": "Q15",
+      "section": "D_Sector",
+      "title": "IT Sector \u2014 USD +8%",
+      "marks_available": 15,
+      "marks_awarded": 13.71,
+      "pct": 91.4,
+      "sources": [
+        "MKFI",
+        "HMKAI",
+        "MFI",
+        "SFI"
+      ]
+    },
+    {
+      "id": "Q16",
+      "section": "D_Sector",
+      "title": "Defence Sector \u2014 Spend +20%",
+      "marks_available": 15,
+      "marks_awarded": 13.47,
+      "pct": 89.8,
+      "sources": [
+        "MKFI",
+        "HMKAI",
+        "SFI"
+      ]
+    },
+    {
+      "id": "Q17",
+      "section": "D_Sector",
+      "title": "Auto Sector \u2014 EV Adoption Doubles",
+      "marks_available": 10,
+      "marks_awarded": 8.98,
+      "pct": 89.8,
+      "sources": [
+        "MKFI",
+        "HMKAI",
+        "SFI"
+      ]
+    },
+    {
+      "id": "Q18",
+      "section": "D_Sector",
+      "title": "Capital Goods \u2014 Capex Surge",
+      "marks_available": 15,
+      "marks_awarded": 13.71,
+      "pct": 91.4,
+      "sources": [
+        "MKFI",
+        "HMKAI",
+        "MFI",
+        "SFI"
+      ]
+    },
+    {
+      "id": "Q19",
+      "section": "E_IPO",
+      "title": "IPO Analysis \u2014 Manufacturing at 48x",
+      "marks_available": 20,
+      "marks_awarded": 18.92,
+      "pct": 94.6,
+      "sources": [
+        "Company_catalog",
+        "MKFI",
+        "HMKAI",
+        "SFI",
+        "RIH",
+        "IFI"
+      ]
+    },
+    {
+      "id": "Q20",
+      "section": "E_IPO",
+      "title": "IPO Comparison \u2014 Two Recent Listings",
+      "marks_available": 20,
+      "marks_awarded": 18.4,
+      "pct": 92.0,
+      "sources": [
+        "Company_catalog",
+        "SFI",
+        "RIH",
+        "IFI"
+      ]
+    },
+    {
+      "id": "Q21",
+      "section": "F_Relationship",
+      "title": "Relationship Mapping",
+      "marks_available": 20,
+      "marks_awarded": 17.43,
+      "pct": 87.15,
+      "sources": [
+        "MKFI",
+        "HMKAI"
+      ]
+    },
+    {
+      "id": "Q22",
+      "section": "F_Relationship",
+      "title": "Causal Analysis \u2014 Fed +75 bps",
+      "marks_available": 20,
+      "marks_awarded": 18.08,
+      "pct": 90.4,
+      "sources": [
+        "MKFI",
+        "HMKAI",
+        "MFI"
+      ]
+    },
+    {
+      "id": "Q23",
+      "section": "G_Historical",
+      "title": "Historical Context \u2014 Inflation vs 2022",
+      "marks_available": 15,
+      "marks_awarded": 13.65,
+      "pct": 91.0,
+      "sources": [
+        "MKFI",
+        "HMKAI",
+        "MFI"
+      ]
+    },
+    {
+      "id": "Q24",
+      "section": "G_Historical",
+      "title": "Historical Analogues \u2014 Top 3 Environments",
+      "marks_available": 15,
+      "marks_awarded": 13.25,
+      "pct": 88.33,
+      "sources": [
+        "MKFI",
+        "HMKAI"
+      ]
+    },
+    {
+      "id": "Q25",
+      "section": "H_Forecast",
+      "title": "Market Forecast \u2014 Next Six Months",
+      "marks_available": 20,
+      "marks_awarded": 19.04,
+      "pct": 95.2,
+      "sources": [
+        "MKFI",
+        "HMKAI",
+        "MFI"
+      ]
+    },
+    {
+      "id": "Q26",
+      "section": "H_Forecast",
+      "title": "Company Forecast \u2014 Reliance 12 Months",
+      "marks_available": 20,
+      "marks_awarded": 19.2,
+      "pct": 96.0,
+      "sources": [
+        "Company_catalog",
+        "MKFI",
+        "HMKAI",
+        "SFI",
+        "IFI"
+      ]
+    },
+    {
+      "id": "Q27",
+      "section": "I_Research",
+      "title": "Research Synthesis \u2014 Multi-Source Note",
+      "marks_available": 30,
+      "marks_awarded": 30.0,
+      "pct": 100.0,
+      "sources": [
+        "Company_catalog",
+        "MKFI",
+        "HMKAI",
+        "MFI",
+        "SFI",
+        "RIH",
+        "IFI"
+      ]
+    },
+    {
+      "id": "Q28",
+      "section": "I_Research",
+      "title": "Research Prioritisation",
+      "marks_available": 15,
+      "marks_awarded": 12.11,
+      "pct": 80.73,
+      "sources": [
+        "RIH"
+      ]
+    },
+    {
+      "id": "Q29",
+      "section": "I_Research",
+      "title": "Contradictory Research",
+      "marks_available": 15,
+      "marks_awarded": 14.07,
+      "pct": 93.8,
+      "sources": [
+        "Company_catalog",
+        "SFI",
+        "RIH",
+        "IFI"
+      ]
+    },
+    {
+      "id": "Q30",
+      "section": "J_CIO_Committee",
+      "title": "Morning Investment Committee Brief \u2014 08:15 IST",
+      "marks_available": 35,
+      "marks_awarded": 32.02,
+      "pct": 91.49,
+      "sources": [
+        "MKFI",
+        "HMKAI",
+        "MFI",
+        "SFI",
+        "RIH"
+      ]
+    },
+    {
+      "id": "Q31",
+      "section": "J_CIO_Committee",
+      "title": "Portfolio Strategy \u2014 \u20b9500 crore India Equity Fund",
+      "marks_available": 30,
+      "marks_awarded": 26.97,
+      "pct": 89.9,
+      "sources": [
+        "MKFI",
+        "HMKAI",
+        "MFI",
+        "SFI"
+      ]
+    }
+  ],
+  "providers_queried": [],
+  "internet_used": false
+}

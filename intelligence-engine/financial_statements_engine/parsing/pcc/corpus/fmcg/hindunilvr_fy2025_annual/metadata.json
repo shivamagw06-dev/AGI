@@ -1,0 +1,22 @@
+{
+  "case_id": "hindunilvr_fy2025_annual",
+  "company_id": "nse:HINDUNILVR",
+  "company_name": "Hindustan Unilever",
+  "currency": "INR",
+  "document_hash": "493251ab2210b4d5cce7daf2928daf2dfe9a5b28beb5da70b663bf34f5e943fc",
+  "exchange": "NSE",
+  "filing_type": "json",
+  "financial_year": "FY2025",
+  "immutable": true,
+  "industry": "FMCG",
+  "manual_verification": true,
+  "period_end": "2025-03-31",
+  "quarter": null,
+  "reporting_standard": "IND_AS",
+  "sector": "fmcg",
+  "statement_frequency": "annual",
+  "taxonomy_version": "nse_indas_integrated_filing.2024.1",
+  "ticker": "HINDUNILVR",
+  "verified_at": "2026-07-30T00:00:00Z",
+  "verified_by": "agib_pcc_seed"
+}

@@ -1,0 +1,80 @@
+{
+  "entity": "TCS",
+  "hd_version": "historical-depth-v1.0.0",
+  "kind": "valuation",
+  "n": 3,
+  "records": [
+    {
+      "available_from": "2026-07-31",
+      "confidence": 0.95,
+      "entity": "TCS",
+      "hd_schema_version": "hd-schema-v1.0.0",
+      "immutable": true,
+      "kind": "valuation",
+      "payload": {
+        "enterprise_value": 8563472000000.0,
+        "ev_ebitda": 12.2987,
+        "forward_pe": null,
+        "market_cap": 8563472000000.0,
+        "pb": 9.3775,
+        "pe": 17.0543,
+        "pe_premium_pct": -28.9,
+        "peer_median_pe": 24.0,
+        "peg": 1.5173,
+        "source": "valuation_intelligence_p22",
+        "stance": "discount versus peers"
+      },
+      "period": "2026-07-31",
+      "period_end": "2026-07-31",
+      "source": "valuation_intelligence_p22"
+    },
+    {
+      "available_from": "2026-08-04",
+      "confidence": 0.95,
+      "entity": "TCS",
+      "hd_schema_version": "hd-schema-v1.0.0",
+      "immutable": true,
+      "kind": "valuation",
+      "payload": {
+        "enterprise_value": 8905200000000.0,
+        "ev_ebitda": 12.7895,
+        "forward_pe": null,
+        "market_cap": 8905200000000.0,
+        "pb": 9.7517,
+        "pe": 17.7348,
+        "pe_premium_pct": -27.3,
+        "peer_median_pe": 24.39,
+        "peg": 1.5778,
+        "source": "valuation_intelligence_p22",
+        "stance": "discount versus peers"
+      },
+      "period": "2026-08-04",
+      "period_end": "2026-08-04",
+      "source": "valuation_intelligence_p22"
+    },
+    {
+      "available_from": "2026-08-05",
+      "confidence": 0.95,
+      "entity": "TCS",
+      "hd_schema_version": "hd-schema-v1.0.0",
+      "immutable": true,
+      "kind": "valuation",
+      "payload": {
+        "enterprise_value": 8835696000000.0,
+        "ev_ebitda": 12.6897,
+        "forward_pe": null,
+        "market_cap": 8835696000000.0,
+        "pb": 9.6756,
+        "pe": 17.5964,
+        "pe_premium_pct": -27.7,
+        "peer_median_pe": 24.35,
+        "peg": 1.5655,
+        "source": "valuation_intelligence_p22",
+        "stance": "discount versus peers"
+      },
+      "period": "2026-08-05",
+      "period_end": "2026-08-05",
+      "source": "valuation_intelligence_p22"
+    }
+  ]
+}

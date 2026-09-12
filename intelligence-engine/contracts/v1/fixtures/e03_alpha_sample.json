@@ -1,0 +1,62 @@
+{
+  "engine": "E03",
+  "version": "1.0.0",
+  "model_version": "e03-sm-agi-tech-dualwrite-0.1.0",
+  "as_of": "2026-07-24",
+  "universe_id": "NIFTY500",
+  "symbol": "RELIANCE",
+  "score": {
+    "raw": 67.0,
+    "normalized_0_100": 67.0,
+    "normalized_signed": 0.34,
+    "unit": "score"
+  },
+  "confidence": {
+    "value": 0.68,
+    "components": {
+      "C_coverage": 0.9,
+      "C_freshness": 0.85,
+      "C_model": 0.6
+    },
+    "method_version": "conf-1.0"
+  },
+  "reliability": {
+    "sample_size": 500,
+    "historical_accuracy": null,
+    "stability": 0.55
+  },
+  "metadata": {
+    "agi_tech_score": 67.0,
+    "composite_alpha_score": 67.0,
+    "label": "Constructive",
+    "dual_write": true
+  },
+  "evidence": {
+    "positive": [
+      {
+        "id": "e03_pos_trend",
+        "claim": "Technical composite above constructive threshold"
+      }
+    ],
+    "negative": [
+      {
+        "id": "e03_neg_volume",
+        "claim": "Volume confirmation weak"
+      }
+    ],
+    "contradictions": [],
+    "unknowns": [],
+    "risks": [],
+    "missing_data": []
+  },
+  "explanation": {
+    "summary": "Cross-sectional technical composite is constructive for RELIANCE.",
+    "top_drivers": ["SM_AGI_TECH"],
+    "falsifiers": ["breakdown_below_key_level"]
+  },
+  "warnings": [],
+  "stale_inputs": [],
+  "input_hash": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+  "hash": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+  "timestamp_generated": "2026-07-24T18:20:00+05:30"
+}

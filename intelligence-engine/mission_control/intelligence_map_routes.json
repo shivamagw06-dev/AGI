@@ -1,0 +1,321 @@
+{
+  "version": 1,
+  "layers": [
+    {
+      "id": "FIL",
+      "route": "/filing-intelligence/health"
+    },
+    {
+      "id": "FDI",
+      "route": "/filing-diff/health"
+    },
+    {
+      "id": "MII",
+      "route": "/management-intelligence/health"
+    },
+    {
+      "id": "ACI",
+      "route": "/accounting-intelligence/health"
+    },
+    {
+      "id": "EIL",
+      "route": "/academy/evidence/health"
+    },
+    {
+      "id": "PIL",
+      "route": "/peer-intelligence/health"
+    },
+    {
+      "id": "FAA",
+      "route": "/faa/health"
+    },
+    {
+      "id": "FRE",
+      "route": "/fre/health"
+    },
+    {
+      "id": "IERE",
+      "route": "/evidence/health"
+    },
+    {
+      "id": "CIG",
+      "route": "/causal-intelligence/health"
+    },
+    {
+      "id": "IKG",
+      "route": "/knowledge-graph/health"
+    },
+    {
+      "id": "FIE",
+      "route": "/forecast/health"
+    },
+    {
+      "id": "ILM",
+      "route": "/ilm/health"
+    },
+    {
+      "id": "SSL",
+      "route": "/simulation/health"
+    },
+    {
+      "id": "AIL",
+      "route": "/ail/health"
+    },
+    {
+      "id": "IAF",
+      "route": "/institutional-analysts/health"
+    },
+    {
+      "id": "IC",
+      "route": "/investment-committee/health"
+    },
+    {
+      "id": "PIO",
+      "route": "/portfolio-intelligence/health"
+    },
+    {
+      "id": "IDE_V2",
+      "route": "/decision-engine-v2/health"
+    },
+    {
+      "id": "CompanyAnalysis",
+      "route": "/company-analysis/health"
+    },
+    {
+      "id": "CIO",
+      "route": "/investment-office/health"
+    },
+    {
+      "id": "IRW",
+      "route": "/research-writer/health"
+    },
+    {
+      "id": "IIS",
+      "route": "/institutional-stack/health"
+    },
+    {
+      "id": "IRSP",
+      "route": "/institutional-reasoning/health"
+    },
+    {
+      "id": "AC",
+      "route": "/answer-construction/health"
+    },
+    {
+      "id": "EDITORIAL",
+      "route": "/editorial/health"
+    },
+    {
+      "id": "CXR",
+      "route": "/contradiction-reasoning/health"
+    },
+    {
+      "id": "ECR",
+      "route": "/red-team/ecr/health"
+    },
+    {
+      "id": "BOOKS",
+      "route": "/academy/books/health"
+    },
+    {
+      "id": "ACS",
+      "route": "/academy/certification/health"
+    },
+    {
+      "id": "IRS",
+      "route": "/academy/regression/health"
+    },
+    {
+      "id": "IDE_V1",
+      "route": "/decision-engine/health"
+    },
+    {
+      "id": "LEO",
+      "route": "/leo/health"
+    },
+    {
+      "id": "CID",
+      "route": "/company-dossier/health"
+    },
+    {
+      "id": "DVC",
+      "route": "/dvc/health"
+    },
+    {
+      "id": "FSE",
+      "route": "/financial-statements/health"
+    },
+    {
+      "id": "FKB",
+      "route": "/financial-knowledge/health"
+    },
+    {
+      "id": "FIRE01",
+      "route": "/financial-intelligence/health"
+    },
+    {
+      "id": "FIRE02",
+      "route": "/financial-intelligence/drivers/health"
+    },
+    {
+      "id": "FIRE03",
+      "route": "/business-intelligence/health"
+    },
+    {
+      "id": "FIRE04",
+      "route": "/evidence-fusion/health"
+    },
+    {
+      "id": "FIRE05",
+      "route": "/management-execution/health"
+    },
+    {
+      "id": "FIRE06",
+      "route": "/business-quality/health"
+    },
+    {
+      "id": "OfficeSDK",
+      "route": "/office-sdk/health"
+    },
+    {
+      "id": "PEB01",
+      "route": "/platform-event-bus/health"
+    },
+    {
+      "id": "IO01",
+      "route": "/investment-office/health"
+    },
+    {
+      "id": "CIO01",
+      "route": "/comparative-intelligence/health"
+    },
+    {
+      "id": "PO01",
+      "route": "/portfolio-office/health"
+    },
+    {
+      "id": "WO01",
+      "route": "/watchlist-office/health"
+    },
+    {
+      "id": "CW01",
+      "route": "/company-workspace/health"
+    },
+    {
+      "id": "E2E01",
+      "route": "/product-experience/health"
+    },
+    {
+      "id": "RH01",
+      "route": "/release-health/health"
+    },
+    {
+      "id": "IRE01",
+      "route": "/report/health"
+    },
+    {
+      "id": "IRE02",
+      "route": "/report/health"
+    },
+    {
+      "id": "IDS01",
+      "route": "/decision/health"
+    },
+    {
+      "id": "IDS02",
+      "route": "/calibration/health"
+    },
+    {
+      "id": "KG01",
+      "route": "/graph/health"
+    },
+    {
+      "id": "FG01",
+      "route": "/scenario/health"
+    },
+    {
+      "id": "IO01OBS",
+      "route": "/observation/health"
+    },
+    {
+      "id": "PKG01",
+      "route": "/portfolio-graph/health"
+    },
+    {
+      "id": "PRE01",
+      "route": "/portfolio-risk/health"
+    },
+    {
+      "id": "PCE01",
+      "route": "/policy/health"
+    },
+    {
+      "id": "CIO01",
+      "route": "/portfolio-decision/health"
+    },
+    {
+      "id": "ICE01",
+      "route": "/committee-engine/health"
+    },
+    {
+      "id": "UAG01",
+      "route": "/orchestrator/health"
+    },
+    {
+      "id": "RW01",
+      "route": "/workspace/health"
+    },
+    {
+      "id": "CCI01",
+      "route": "/relationships/health"
+    },
+    {
+      "id": "PUB01",
+      "route": "/publications/health"
+    },
+    {
+      "id": "MPC01",
+      "route": "/platform/health"
+    },
+    {
+      "id": "PRP01",
+      "route": "/performance/health"
+    },
+    {
+      "id": "PRP02",
+      "route": "/security/health"
+    },
+    {
+      "id": "PRP03",
+      "route": "/ops/health"
+    },
+    {
+      "id": "RC01",
+      "route": "/architecture/health"
+    },
+    {
+      "id": "L01",
+      "route": "/launch/health"
+    },
+    {
+      "id": "PAT01",
+      "route": "/acceptance/health"
+    },
+    {
+      "id": "IEP01",
+      "route": "/iep/health"
+    },
+    {
+      "id": "KIL01",
+      "route": "/iep/kil/health"
+    },
+    {
+      "id": "ICF01",
+      "route": "/icf/health"
+    },
+    {
+      "id": "KOC01",
+      "route": "/koc/health"
+    }
+  ]
+}

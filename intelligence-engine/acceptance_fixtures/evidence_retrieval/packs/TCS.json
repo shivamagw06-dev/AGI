@@ -1,0 +1,438 @@
+{
+  "as_of": null,
+  "assembled_at": "2026-07-28T16:17:08Z",
+  "avg_confidence": 0.7167,
+  "citations": [
+    {
+      "available_from": "2026-07-28",
+      "checksum": null,
+      "collector": "market_expectations_intelligence",
+      "confidence": 0.65,
+      "document": null,
+      "document_id": null,
+      "evidence_id": "exp_TCS",
+      "fabricated": false,
+      "knowledge_object": "ExpectationObject",
+      "page": null,
+      "paragraph": null,
+      "section": null,
+      "source": "knowledge_factory",
+      "timestamp": "2026-07-28T16:17:08Z",
+      "version": "1"
+    },
+    {
+      "available_from": "2026-07-28",
+      "checksum": null,
+      "collector": "company_intelligence",
+      "confidence": 0.8,
+      "document": null,
+      "document_id": null,
+      "evidence_id": "ici_TCS",
+      "fabricated": false,
+      "knowledge_object": "CompanyIntelligenceObject",
+      "page": null,
+      "paragraph": null,
+      "section": null,
+      "source": "knowledge_factory",
+      "timestamp": "2026-07-28T16:17:08Z",
+      "version": "1"
+    },
+    {
+      "available_from": "2026-07-28",
+      "checksum": null,
+      "collector": "historical_depth",
+      "confidence": 0.7,
+      "document": null,
+      "document_id": null,
+      "evidence_id": "hist_TCS",
+      "fabricated": false,
+      "knowledge_object": "HistoricalCompanyObject",
+      "page": null,
+      "paragraph": null,
+      "section": null,
+      "source": "knowledge_factory",
+      "timestamp": "2026-07-28T16:17:08Z",
+      "version": "1"
+    }
+  ],
+  "companies": [
+    "TCS"
+  ],
+  "conclusions": null,
+  "fabricated": false,
+  "item_count": 3,
+  "items": [
+    {
+      "available_from": "2026-07-28",
+      "citation": {
+        "available_from": "2026-07-28",
+        "checksum": null,
+        "collector": "market_expectations_intelligence",
+        "confidence": 0.65,
+        "document": null,
+        "document_id": null,
+        "evidence_id": "exp_TCS",
+        "fabricated": false,
+        "knowledge_object": "ExpectationObject",
+        "page": null,
+        "paragraph": null,
+        "section": null,
+        "source": "knowledge_factory",
+        "timestamp": "2026-07-28T16:17:08Z",
+        "version": "1"
+      },
+      "evidence_id": "exp_TCS",
+      "evidence_type": "FINANCIAL_METRICS",
+      "payload": {
+        "as_of": null,
+        "expectations": [
+          {
+            "announcement_date": "2024-04-12",
+            "available_from": "2024-04-12",
+            "collector": "imei.fixtures.guidance",
+            "confidence": 0.88,
+            "consensus": {
+              "basis": "phase_1_single_source_proxy",
+              "high": "UNKNOWN",
+              "licensed_consensus": false,
+              "low": "UNKNOWN",
+              "mean": 2.0,
+              "median": 2.0,
+              "n_estimates": "UNKNOWN",
+              "std_dev": "UNKNOWN"
+            },
+            "entity": "TCS",
+            "evidence": [
+              "TCS-FY25-outlook-commentary"
+            ],
+            "expectation_id": "EXP-7C3F0C55640FCAA2",
+            "fabricated": false,
+            "forecast_range": {
+              "high": "UNKNOWN",
+              "low": "UNKNOWN"
+            },
+            "forecast_value": 2.0,
+            "historical_consensus": [],
+            "immutable": true,
+            "kind": "guidance",
+            "licensed_consensus": false,
+            "metric": "growth",
+            "notes": "Directional company outlook seed (not a formal band).",
+            "period": "FY25",
+            "provenance": {
+              "collector": "imei.fixtures.guidance",
+              "confidence": 0.88,
+              "derived_from": [
+                "TCS-FY25-outlook-commentary"
+              ],
+              "fabricated": false,
+              "retrieved_at": "2026-07-28T16:14:34Z",
+              "source": "company_guidance",
+              "validated_at": "2026-07-28T16:14:34Z",
+              "version": "institutional-market-expectations-intelligence-v2.0.0"
+            },
+            "revision_history": [],
+            "revision_of": null,
+            "revision_sequence": 0,
+            "source": "company_guidance",
+            "unit": "percent",
+            "validation": {
+              "failures": [],
+              "gates": {
+                "available_from": "PASS",
+                "future_leakage": "PASS",
+                "provenance": "PASS",
+                "revision_consistency": "PASS",
+                "source": "PASS",
+                "validation": "PASS"
+              },
+              "status": "pass"
+            },
+            "version": "institutional-market-expectations-intelligence-v2.0.0"
+          },
+          {
+            "announcement_date": "2024-06-15",
+            "available_from": "2024-06-15",
+            "collector": "imei.fixtures.agib_forecast",
+            "confidence": 0.75,
+            "consensus": {
+              "basis": "phase_1_single_source_proxy",
+              "high": "UNKNOWN",
+              "licensed_consensus": false,
+              "low": "UNKNOWN",
+              "mean": 33.0,
+              "median": 33.0,
+              "n_estimates": "UNKNOWN",
+              "std_dev": "UNKNOWN"
+            },
+            "entity": "TCS",
+            "evidence": [
+              "AGIB-forecast-TCS-FY25Q1-EPS"
+            ],
+            "expectation_id": "EXP-7F5947A7D622DF76",
+            "fabricated": false,
+            "forecast_range": {
+              "high": "UNKNOWN",
+              "low": "UNKNOWN"
+            },
+            "forecast_value": 33.0,
+            "historical_consensus": [],
+            "immutable": true,
+            "kind": "internal_forecast",
+            "licensed_consensus": false,
+            "metric": "eps",
+            "notes": null,
+            "period": "FY25Q1",
+            "provenance": {
+              "collector": "imei.fixtures.agib_forecast",
+              "confidence": 0.75,
+              "derived_from": [
+                "AGIB-forecast-TCS-FY25Q1-EPS"
+              ],
+              "fabricated": false,
+              "retrieved_at": "2026-07-28T16:14:34Z",
+              "source": "agib_internal_forecast",
+              "validated_at": "2026-07-28T16:14:34Z",
+              "version": "institutional-market-expectations-intelligence-v2.0.0"
+            },
+            "revision_history": [],
+            "revision_of": null,
+            "revision_sequence": 0,
+            "source": "agib_internal_forecast",
+            "unit": "inr",
+            "validation": {
+              "failures": [],
+              "gates": {
+                "available_from": "PASS",
+                "future_leakage": "PASS",
+                "provenance": "PASS",
+                "revision_consistency": "PASS",
+                "source": "PASS",
+                "validation": "PASS"
+              },
+              "status": "pass"
+            },
+            "version": "institutional-market-expectations-intelligence-v2.0.0"
+          },
+          {
+            "announcement_date": "2024-07-11",
+            "available_from": "2024-07-11",
+            "collector": "imei.fixtures.actuals",
+            "confidence": 0.95,
+            "consensus": null,
+            "entity": "TCS",
+            "evidence": [
+              "TCS-Q1FY25-reported-EPS"
+            ],
+            "expectation_id": "EXP-38C1AAB8BADBB87E",
+            "fabricated": false,
+            "forecast_range": {
+              "high": "UNKNOWN",
+              "low": "UNKNOWN"
+            },
+            "forecast_value": 34.1,
+            "historical_consensus": [],
+            "immutable": true,
+            "kind": "actual",
+            "licensed_consensus": false,
+            "metric": "eps",
+            "notes": null,
+            "period": "FY25Q1",
+            "provenance": {
+              "collector": "imei.fixtures.actuals",
+              "confidence": 0.95,
+              "derived_from": [
+                "TCS-Q1FY25-reported-EPS"
+              ],
+              "fabricated": false,
+              "retrieved_at": "2026-07-28T16:14:34Z",
+              "source": "company_earnings_release",
+              "validated_at": "2026-07-28T16:14:34Z",
+              "version": "institutional-market-expectations-intelligence-v2.0.0"
+            },
+            "revision_history": [],
+            "revision_of": null,
+            "revision_sequence": 0,
+            "source": "company_earnings_release",
+            "unit": "inr",
+            "validation": {
+              "failures": [],
+              "gates": {
+                "available_from": "PASS",
+                "future_leakage": "PASS",
+                "provenance": "PASS",
+                "revision_consistency": "PASS",
+                "source": "PASS",
+                "validation": "PASS"
+              },
+              "status": "pass"
+            },
+            "version": "institutional-market-expectations-intelligence-v2.0.0"
+          }
+        ],
+        "fabricated": false,
+        "licensed_consensus_assumed": false,
+        "links": {
+          "alternative_data": {
+            "datasets": [],
+            "fabricated": false,
+            "n": 0,
+            "note": "Links from Phase-1 registry only \u2014 no invented company mapping.",
+            "ticker": "TCS",
+            "version": "institutional-alternative-data-intelligence-v2.0.0"
+          },
+          "government_policy_ids": [
+            "SEBI-LODR"
+          ],
+          "industry_id": "it_services"
+        },
+        "n_expectations": 3,
+        "narratives": [
+          {
+            "name": "AI Spending",
+            "narrative_id": "ai_spending"
+          }
+        ],
+        "revisions": [],
+        "surprises": [
+          {
+            "actual_expectation_id": "EXP-38C1AAB8BADBB87E",
+            "actual_source": "company_earnings_release",
+            "actual_value": 34.1,
+            "available_from": "2024-07-11",
+            "beat_miss": "beat",
+            "beat_miss_history": [
+              "beat"
+            ],
+            "difference": 1.1,
+            "entity": "TCS",
+            "expectation_id": "EXP-7F5947A7D622DF76",
+            "expectation_source": "agib_internal_forecast",
+            "expected_value": 33.0,
+            "fabricated": false,
+            "historical_percentile": 50.0,
+            "magnitude": 0.033333,
+            "metric": "eps",
+            "note": "Observed comparison against stored Phase-1 expectation only.",
+            "period": "FY25Q1",
+            "persistence": 1,
+            "prediction": false,
+            "surprise_id": "SUR-ED63E0C158FE2B",
+            "surprise_pct": 0.033333,
+            "version": "institutional-market-expectations-intelligence-v2.0.0"
+          }
+        ],
+        "ticker": "TCS",
+        "version": "institutional-market-expectations-intelligence-v2.0.0"
+      },
+      "rank": 4,
+      "rank_score": 0.761,
+      "title": "TCS expectations"
+    },
+    {
+      "available_from": "2026-07-28",
+      "citation": {
+        "available_from": "2026-07-28",
+        "checksum": null,
+        "collector": "company_intelligence",
+        "confidence": 0.8,
+        "document": null,
+        "document_id": null,
+        "evidence_id": "ici_TCS",
+        "fabricated": false,
+        "knowledge_object": "CompanyIntelligenceObject",
+        "page": null,
+        "paragraph": null,
+        "section": null,
+        "source": "knowledge_factory",
+        "timestamp": "2026-07-28T16:17:08Z",
+        "version": "1"
+      },
+      "evidence_id": "ici_TCS",
+      "evidence_type": "OWNERSHIP",
+      "payload": {
+        "coverage_level": 7,
+        "summary_keys": [
+          "kind",
+          "ici_version",
+          "ici_schema_version",
+          "programme",
+          "layer",
+          "ticker",
+          "sector",
+          "modules",
+          "coverage_level",
+          "coverage_level_name",
+          "complete",
+          "intelligence_score",
+          "quality",
+          "institutional_ready",
+          "unknown_fields",
+          "has_institutional_seed",
+          "sprint",
+          "freeze_locks",
+          "architecture_status",
+          "not_a_reasoning_engine"
+        ]
+      },
+      "rank": 5,
+      "rank_score": 0.752,
+      "title": "TCS company intelligence"
+    },
+    {
+      "available_from": "2026-07-28",
+      "citation": {
+        "available_from": "2026-07-28",
+        "checksum": null,
+        "collector": "historical_depth",
+        "confidence": 0.7,
+        "document": null,
+        "document_id": null,
+        "evidence_id": "hist_TCS",
+        "fabricated": false,
+        "knowledge_object": "HistoricalCompanyObject",
+        "page": null,
+        "paragraph": null,
+        "section": null,
+        "source": "knowledge_factory",
+        "timestamp": "2026-07-28T16:17:08Z",
+        "version": "1"
+      },
+      "evidence_id": "hist_TCS",
+      "evidence_type": "FINANCIAL_METRICS",
+      "payload": {
+        "keys": [
+          "accounting",
+          "business_quality",
+          "company_profile",
+          "corporate_actions",
+          "coverage",
+          "entity",
+          "evidence_packs",
+          "historical_financials",
+          "historical_valuation",
+          "kind",
+          "last_updated",
+          "macro_sensitivity",
+          "management",
+          "missing_fields",
+          "object_version",
+          "peer_group",
+          "provider",
+          "quality_score",
+          "risk",
+          "sector",
+          "timeline"
+        ]
+      },
+      "rank": 6,
+      "rank_score": 0.737,
+      "title": "TCS historical object"
+    }
+  ],
+  "kind": "COMPANY_EVIDENCE_PACK",
+  "pack_id": "iere_company_evidence_pack_iere_013a15d756f3",
+  "reasoning": false,
+  "recommendation": null,
+  "retrieval_id": "iere_013a15d756f3"
+}

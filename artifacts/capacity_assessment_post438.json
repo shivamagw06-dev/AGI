@@ -1,0 +1,65 @@
+{
+  "suite": "Post-#438 capacity check (Render Pro 2CPU/4GB) \u2014 hold Pro Plus",
+  "timestamp": "2026-08-01T08:31:15.227437Z",
+  "instance_assumption": "Render Pro (2 CPU / 4 GB) \u2014 memory not bottleneck per founder metrics",
+  "base_url": "https://finance-news-backend-19i5.onrender.com",
+  "artifact": "artifacts/ask_test_report_pre_ikl_20260801T081625Z.json",
+  "results": {
+    "passed": 20,
+    "total": 22,
+    "pass_rate": 0.9090909090909091,
+    "fallback_rate": 0.0,
+    "timeouts": 0,
+    "engine_reached_false": 0,
+    "average_latency_ms": 23107,
+    "latency_ms": {
+      "min": 337,
+      "p50": 22248,
+      "p90": 32844,
+      "max": 38759
+    },
+    "avg_reasoning_ms": 13105,
+    "smoke06_ms": 337,
+    "failures": [
+      {
+        "id": "REG-UNKNOWN",
+        "failures": [
+          "expected honest insufficient-evidence stance for unknown company",
+          "unknown company returned rich evidence \u2014 hallucination risk"
+        ],
+        "fallback_used": false
+      },
+      {
+        "id": "IKL-05",
+        "failures": [
+          "expected honest insufficient-evidence stance for unknown company",
+          "unknown company returned rich evidence \u2014 hallucination risk"
+        ],
+        "fallback_used": false
+      }
+    ]
+  },
+  "vs_prior_post_438_live": {
+    "prior_artifact": "artifacts/ask_test_report_post_438_live.json",
+    "prior_pass": "20/22",
+    "prior_fallback_rate": 0.364,
+    "prior_avg_latency_ms": 17897,
+    "delta_fallback_rate": -0.364
+  },
+  "decision": {
+    "upgrade_to_pro_plus_now": false,
+    "rationale": [
+      "fallback_rate dropped from 36.4% to 0% on full founder suite with 12s case cooldown",
+      "zero timeouts; engine_reached on every case",
+      "remaining fails are unknown-company honesty (product), not capacity/502",
+      "SMOKE-06 recommendation short-circuit healthy (337ms)",
+      "avg latency ~23s under sequential load \u2014 no evidence of compute-bound failure mode",
+      "memory had headroom on prior Pro metrics; CPU saturation alone did not produce fallbacks after #438"
+    ],
+    "upgrade_if": [
+      "CPU pinned near 2.0 for most of a sustained run",
+      "queue wait increasing under sequential founder suite",
+      "fallback/502 returns despite Ask fixes and cooldown"
+    ]
+  }
+}

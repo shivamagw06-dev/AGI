@@ -1,0 +1,314 @@
+name: Deploy to Hostinger
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-hostinger
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    # Hostinger Horizons serves the Git document root (index.html + /assets).
+    # Skipping CI on the sync commit prevents a deploy loop.
+    if: ${{ !contains(github.event.head_commit.message || '', '[skip ci]') }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Prepare production env / decide rebuild
+        id: prep
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_API_URL: ${{ secrets.VITE_API_URL }}
+          VITE_ADMIN_ID: ${{ secrets.VITE_ADMIN_ID }}
+          VITE_ADMIN_EMAILS: ${{ secrets.VITE_ADMIN_EMAILS }}
+        run: |
+          python3 <<'PY'
+          import os
+          from pathlib import Path
+          anon = (os.environ.get("VITE_SUPABASE_ANON_KEY") or "").strip()
+          url = (os.environ.get("VITE_SUPABASE_URL") or "").strip()
+          api = (os.environ.get("VITE_API_URL") or "").strip()
+          api_ok = "onrender.com" in api and "agarwalglobalinvestments.com" not in api
+          rebuild = bool(url and len(anon) >= 100 and anon.count(".") == 2 and api_ok)
+          Path(os.environ["GITHUB_OUTPUT"]).write_text(f"rebuild={'true' if rebuild else 'false'}\n")
+          if not api_ok:
+              raise SystemExit(
+                  "VITE_API_URL must be the Render backend "
+                  "(https://finance-news-backend-19i5.onrender.com), not the website."
+              )
+          if not (url and len(anon) >= 100 and anon.count(".") == 2):
+              print(
+                  f"::warning::VITE_SUPABASE_ANON_KEY invalid/truncated (len={len(anon)}). "
+                  "Skipping rebuild; deploying committed Hostinger root artifacts. "
+                  "Re-paste the full anon JWT in GitHub Actions secrets."
+              )
+          if not rebuild:
+              raise SystemExit(0)
+          keys = [
+              "VITE_SUPABASE_URL",
+              "VITE_SUPABASE_ANON_KEY",
+              "VITE_API_URL",
+              "VITE_ADMIN_ID",
+              "VITE_ADMIN_EMAILS",
+          ]
+          lines = []
+          for key in keys:
+              val = (os.environ.get(key) or "").strip()
+              if not val:
+                  continue
+              safe = val.replace("\\", "\\\\").replace('"', '\\"')
+              lines.append(f'{key}="{safe}"')
+          Path(".env.production.local").write_text("\n".join(lines) + "\n")
+          print("Wrote .env.production.local; anon key length:", len(anon))
+          PY
+
+      - name: Build production site for Hostinger root
+        if: steps.prep.outputs.rebuild == 'true'
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_API_URL: ${{ secrets.VITE_API_URL }}
+        run: npm run build:hostinger
+
+      - name: Verify baked Supabase anon key in bundle
+        run: |
+          python3 <<'PY'
+          from pathlib import Path
+          import re
+          files = sorted(Path("assets").glob("index-*.js"))
+          if not files:
+              raise SystemExit("No assets/index-*.js present")
+          text = files[-1].read_text(errors="ignore")
+          if "zrvdtpxfmuijhionbaxr.supabase.co" not in text:
+              raise SystemExit("Bundle missing production Supabase URL")
+          matches = re.findall(r'"(eyJhbGciOiJIUzI1NiIs[^"]+)"', text)
+          if not matches:
+              raise SystemExit("No JWT anon key found in bundle")
+          key = max(matches, key=len)
+          if len(key) < 100 or key.count(".") != 2:
+              raise SystemExit(f"Baked anon key is truncated/invalid (len={len(key)})")
+          print("Bundle anon key OK, length", len(key), "file", files[-1].name)
+          # Guard against VITE_API_URL accidentally set to the static site.
+          if 'function pwe(){try{return"https://agarwalglobalinvestments.com"}' in text.replace(' ', ''):
+              raise SystemExit(
+                  "Bundle bakes VITE_API_URL as the website host. "
+                  "Set GitHub secret VITE_API_URL=https://finance-news-backend-19i5.onrender.com"
+              )
+          if "finance-news-backend-19i5.onrender.com" not in text:
+              raise SystemExit("Bundle missing Render API origin")
+          print("Bundle API origin OK")
+          PY
+
+      # Best effort, and deliberately not fatal.
+      #
+      # This pushes straight to main, and main now requires the short gate. A
+      # direct push carries no pull request, so the check can never report on
+      # it and the push is rejected every time:
+      #
+      #   GH006: Protected branch update failed for refs/heads/main
+      #   - Required status check "Required short gate" is expected
+      #
+      # The step used to fail on that, which skipped every FTP step below it,
+      # so nothing reached Hostinger between 21 and 23 August while the builds
+      # themselves were fine. FTP is the delivery path and must not depend on
+      # a push that protection is designed to refuse.
+      - name: Commit Hostinger root artifacts for Git sync
+        if: steps.prep.outputs.rebuild == 'true'
+        continue-on-error: true
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html .htaccess version.json og-article.php robots.txt agi-og-cover.png || true
+          git add -A assets || true
+          if [ -d article ]; then git add -A article || true; fi
+          if git diff --cached --quiet; then
+            echo "No Hostinger root artifact changes to commit."
+          elif git commit -m "chore: sync Hostinger production build [skip ci]" \
+               && git push origin HEAD:main; then
+            echo "Committed and pushed Hostinger root build for Horizons Git sync."
+          else
+            echo "::warning::Could not push build artifacts to main; branch protection "
+            echo "::warning::requires the short gate on every push and a direct push has "
+            echo "::warning::no pull request to run it. FTP below still publishes this "
+            echo "::warning::build. To restore the Git-sync path, allow this actor to "
+            echo "::warning::bypass protection. The committed artifacts are stale until then."
+          fi
+          # No reset: the checkout is ephemeral, and FTP ships the files on
+          # disk rather than anything from git history.
+
+      # Always publish the Hostinger Git root (index.html + /assets). Never FTP an empty
+      # dist/assets tree — that deletes the live /assets folder and leaves the old site stuck.
+      - name: Sync dist/ from Hostinger root artifacts for FTP
+        run: |
+          set -euo pipefail
+          if [ ! -f index.html ] || [ ! -d assets ] || ! ls assets/index-*.js >/dev/null 2>&1; then
+            echo "::error::Hostinger root artifacts missing (index.html / assets/index-*.js)"
+            exit 1
+          fi
+          mkdir -p dist
+          cp index.html dist/index.html
+          rm -rf dist/assets
+          cp -R assets dist/assets
+          cp .htaccess dist/.htaccess 2>/dev/null || true
+          cp version.json dist/version.json
+          cp og-article.php dist/og-article.php 2>/dev/null || true
+          cp robots.txt dist/robots.txt 2>/dev/null || true
+          cp agi-og-cover.png dist/agi-og-cover.png 2>/dev/null || true
+          cp og-config.php dist/og-config.php 2>/dev/null || true
+          if [ -d article ]; then
+            rm -rf dist/article
+            cp -R article dist/article
+          fi
+          # Drop accidental Hostinger dashboard captures from FTP payload
+          rm -rf "dist/Dashboard _ Hostinger.html" "dist/Dashboard _ Hostinger_files" || true
+          echo "FTP payload ready:"
+          ls -la dist | head
+          # The build stamp has to match the id baked into the bundle. It was
+          # neither committed nor copied here, so /version.json served a local
+          # build from 6 August while the bundle carried the real commit. The
+          # client compares the two and forces a reload when they differ, so
+          # every visitor took one pointless reload per session and the check
+          # could never do its actual job of catching a stale cached bundle.
+          # Only when this run actually rebuilt. .build-id is not tracked, so on a
+          # run that republishes the committed artifacts unchanged there is
+          # nothing new to compare against.
+          if [ -f .build-id ]; then
+            baked="$(cat .build-id)"
+            shipped="$(python3 -c 'import json;print(json.load(open("dist/version.json"))["buildId"])' 2>/dev/null || echo missing)"
+            if [ "$baked" != "$shipped" ]; then
+              echo "::error::version.json says $shipped but the bundle was built as $baked — every visitor would reload once per session forever"
+              exit 1
+            fi
+            echo "build stamp OK: $shipped"
+          else
+            echo "no rebuild this run; leaving the committed build stamp alone"
+          fi
+          asset_count="$(find dist/assets -type f | wc -l | tr -d ' ')"
+          echo "asset count: ${asset_count}"
+          if [ "${asset_count}" -lt 5 ] || ! ls dist/assets/index-*.js >/dev/null 2>&1; then
+            echo "::error::FTP payload missing built assets — refusing to deploy (prevents wiping live /assets)"
+            exit 1
+          fi
+
+      # FTP is a secondary publish path (Hostinger Horizons Git sync is primary).
+      # Hostinger FTPS from GitHub runners intermittently times out on the control
+      # socket (~30s). Retry with a longer timeout; soft-fail so Git sync still greens CI.
+      - name: Deploy dist/ to Hostinger via FTP (attempt 1)
+        id: ftp1
+        continue-on-error: true
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          protocol: ftps
+          port: 21
+          local-dir: ./dist/
+          server-dir: ./
+          dangerous-clean-slate: false
+          security: loose
+          timeout: 120000
+          exclude: |
+            **/.DS_Store
+            **/.git*
+            **/Dashboard _ Hostinger.html
+            **/Dashboard _ Hostinger_files/**
+
+      - name: Wait before FTP retry
+        if: steps.ftp1.outcome == 'failure'
+        run: sleep 20
+
+      - name: Deploy dist/ to Hostinger via FTP (attempt 2)
+        id: ftp2
+        if: steps.ftp1.outcome == 'failure'
+        continue-on-error: true
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          protocol: ftps
+          port: 21
+          local-dir: ./dist/
+          server-dir: ./
+          dangerous-clean-slate: false
+          security: loose
+          timeout: 120000
+          exclude: |
+            **/.DS_Store
+            **/.git*
+            **/Dashboard _ Hostinger.html
+            **/Dashboard _ Hostinger_files/**
+
+      - name: Wait before FTP final retry
+        if: steps.ftp1.outcome == 'failure' && steps.ftp2.outcome == 'failure'
+        run: sleep 30
+
+      - name: Deploy dist/ to Hostinger via FTP (attempt 3)
+        id: ftp3
+        if: steps.ftp1.outcome == 'failure' && steps.ftp2.outcome == 'failure'
+        continue-on-error: true
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          protocol: ftps
+          port: 21
+          local-dir: ./dist/
+          server-dir: ./
+          dangerous-clean-slate: false
+          security: loose
+          timeout: 120000
+          exclude: |
+            **/.DS_Store
+            **/.git*
+            **/Dashboard _ Hostinger.html
+            **/Dashboard _ Hostinger_files/**
+
+      - name: FTP secondary path status
+        if: always()
+        run: |
+          if [ "${{ steps.ftp1.outcome }}" = "success" ] || [ "${{ steps.ftp2.outcome }}" = "success" ] || [ "${{ steps.ftp3.outcome }}" = "success" ]; then
+            echo "FTP secondary publish succeeded."
+            exit 0
+          fi
+          echo "::warning::FTP secondary publish failed after 3 retries (Hostinger control-socket timeout). Primary Hostinger publish is Git sync of index.html + /assets (already committed above when rebuild ran). Re-run this workflow if FTP root must also be refreshed."
+          # Do not fail the job: Horizons Git sync is the production document root.
+
+      - name: Verify public website is reachable
+        run: |
+          set -euo pipefail
+          for attempt in 1 2 3 4 5; do
+            code="$(curl -L --connect-timeout 10 --max-time 25 -sS -o /tmp/agi-home.html -w '%{http_code}' https://agarwalglobalinvestments.com/ || true)"
+            if [ "${code}" = "200" ] && grep -q '<div id="root"' /tmp/agi-home.html; then
+              echo "Public website verified on attempt ${attempt}."
+              exit 0
+            fi
+            echo "Website check ${attempt}/5 failed (HTTP ${code:-unreachable}); retrying."
+            sleep 20
+          done
+          echo "::error::Deployment uploaded, but agarwalglobalinvestments.com is not reachable. Check Hostinger server status, SSL and domain routing."
+          exit 1

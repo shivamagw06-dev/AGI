@@ -1,0 +1,778 @@
+{
+  "tables": {
+    "business_model": {
+      "description_short": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:17.391096Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Bharti Airtel Limited operates as a telecommunications company in India and internationally. It operates through the Mobile Services India, Mobile Services Africa, Mobile Services South Asia, Airtel Business, Passive Tower Infrastructure Services, Homes Services, Digital TV Services, and Others segments. The company provides voice and data telecom services through wireless technology including 2G/3G/4G/5G services; passive infrastructure service, including the setup, operation, and maintenance of wireless communication towers; mobile money services; home services covering voice and data communications through fixed-line network, wireless network, and broadband technology for homes; and digital TV services comprising digital broadcasting services under the DTH platform and IPTV services. It also engages in the airtel business that includes MPLS, VoIP, SIP trunking, fixed line voice solutions, communications platform as a service (CPaaS), internet of things (IoT), managed services, enterprise mobility applications, cloud, and cybersecurity, data and voice, network integration, managed services, security, and platform services. In addition, the company offers post-paid, prepaid, roaming, data services, OTT content, and various value-added services, as well as mobile TV, video calls, live-streaming videos, gaming, and high-definition (HD) and 4K content services. The company was formerly known as Bharti Tele-Ventures Limited and changed its name to Bharti Airtel Limited in April 2006. Bharti Airtel Limited was incorporated in 1995 and is headquartered in Gurugram, India.",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:24.113780Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Bharti Airtel Limited operates as a telecommunications company in India and internationally. It operates through the Mobile Services India, Mobile Services Africa, Mobile Services South Asia, Airtel Business, Passive Tower Infrastructure Services, Homes Services, Digital TV Services, and Others segments. The company provides voice and data telecom services through wireless technology including 2G/3G/4G/5G services; passive infrastructure service, including the setup, operation, and maintenance of wireless communication towers; mobile money services; home services covering voice and data communications through fixed-line network, wireless network, and broadband technology for homes; and digital TV services comprising digital broadcasting services under the DTH platform and IPTV services. It also engages in the airtel business that includes MPLS, VoIP, SIP trunking, fixed line voice solutions, communications platform as a service (CPaaS), internet of things (IoT), managed services, enterprise mobility applications, cloud, and cybersecurity, data and voice, network integration, managed services, security, and platform services. In addition, the company offers post-paid, prepaid, roaming, data services, OTT content, and various value-added services, as well as mobile TV, video calls, live-streaming videos, gaming, and high-definition (HD) and 4K content services. The company was formerly known as Bharti Tele-Ventures Limited and changed its name to Bharti Airtel Limited in April 2006. Bharti Airtel Limited was incorporated in 1995 and is headquartered in Gurugram, India.",
+          "version": 2
+        }
+      ],
+      "index_constituents": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:17.371445Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "S&P Emerging Ex-China A LargeMidCap\n\nDow Jones Islamic Market Global ex-Americas Large Cap Index\n\nDow Jones Islamic Market Global ex-Americas Index\n\nDow Jones Islamic Market Global ex-Japan Index\n\nS&P/IFCI Composite Communication Services (Sector)\n\nS&P Emerging Ex-Africa BMI\n\nS&P/IFCI Composite\n\nS&P/IFCI Asia LargeCap\n\nS&P Global Ex-U.S. BMI Index\n\nS&P Global Ex-Japan BMI Index",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:24.080684Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "MSCI EFM Asia IMI Index\n\nMSCI EM Asia Large/Comm Svc (Sector) Index\n\nMSCI EFM Asia/Comm Svc (Sector) Index\n\nMSCI EM Asia Large/Telecom Svc (Industry Group) Index\n\nMSCI EAFE + EM Growth Index\n\nMSCI EM (Emerging Markets) IMI Index\n\nMSCI EM Asia Large Growth Index\n\nMSCI EM Cyclical Sectors Capped Index\n\nMSCI EM Asia IMI/Wirel Telecom Svc (Sub-Industry) Index\n\nMSCI EM IMI Minimum Volatility (USD) Index",
+          "version": 2
+        }
+      ],
+      "industry_classifications": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:17.387615Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Communication Services (Primary)",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:24.108963Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Communication Services (Primary)",
+          "version": 2
+        }
+      ],
+      "investors": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:17.388542Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Capital International, Inc. (Current Investor); TPG Capital, L.P. (Current Investor); Temasek Holdings (Private) Limited (Current Investor); California Public Employees' Retirement System (Current Investor); Fidelity Investments (Current Investor); International Finance Corporation (Current Investor); Pinebridge Investments Asia Limited (Current Investor); New York Life Investment Management LLC (Current Investor); Keskin\u00e4inen ty\u00f6el\u00e4kevakuutusyhti\u00f6 Varma (Current Investor); HB Stockholdings Limited (BSE:532216) (Current Investor); Pastel Limited (Current Investor); Bharti Telecom Limited (Current Investor); Brand Capital (Current Investor); Jacob Ballas Capital India Private Limited, Investment Arm (Current Investor); Qatar Foundation Endowment LLC, Endowment Arm (Current Investor); Integrated Core Strategies (Asia) Pte. Ltd. (Current Investor); SingTel International Investments Private Limited (Current Investor); Google International LLC (Current Investor); Indian Continent Investment Limited (Current Investor); Viridian Limited (Current Investor); Nepean Capital LLP (Current Investor)",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:24.110099Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Capital International, Inc. (Current Investor); TPG Capital, L.P. (Current Investor); Temasek Holdings (Private) Limited (Current Investor); California Public Employees' Retirement System (Current Investor); Fidelity Investments (Current Investor); International Finance Corporation (Current Investor); Pinebridge Investments Asia Limited (Current Investor); New York Life Investment Management LLC (Current Investor); Keskin\u00e4inen ty\u00f6el\u00e4kevakuutusyhti\u00f6 Varma (Current Investor); HB Stockholdings Limited (BSE:532216) (Current Investor); Pastel Limited (Current Investor); Bharti Telecom Limited (Current Investor); Brand Capital (Current Investor); Jacob Ballas Capital India Private Limited, Investment Arm (Current Investor); Qatar Foundation Endowment LLC, Endowment Arm (Current Investor); Integrated Core Strategies (Asia) Pte. Ltd. (Current Investor); SingTel International Investments Private Limited (Current Investor); Google International LLC (Current Investor); Indian Continent Investment Limited (Current Investor); Viridian Limited (Current Investor); Nepean Capital LLP (Current Investor)",
+          "version": 2
+        }
+      ],
+      "subsidiaries_count": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:17.391975Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 181,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:24.115010Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 181,
+          "version": 2
+        }
+      ]
+    },
+    "company_master": {
+      "company_name": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:17.370116Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Bharti Airtel Limited",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:24.079737Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Bharti Airtel Limited",
+          "version": 2
+        }
+      ],
+      "company_type": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:17.392857Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Public Company",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:24.116453Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Public Company",
+          "version": 2
+        }
+      ],
+      "country": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:17.390246Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "India",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:24.112506Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "India",
+          "version": 2
+        }
+      ],
+      "currency": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:17.375398Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Indian Rupee",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:24.084438Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Indian Rupee",
+          "version": 2
+        }
+      ],
+      "external_id": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:17.373935Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "IQT20218797",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:24.082537Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "IQT46355979",
+          "version": 2
+        }
+      ],
+      "industry": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:17.386802Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Wireless Telecommunication Services",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:24.107770Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Wireless Telecommunication Services",
+          "version": 2
+        }
+      ],
+      "parent_company": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:17.389406Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Bharti Airtel Limited (BSE:532454)",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:24.111243Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Bharti Airtel Limited (BSE:532454)",
+          "version": 2
+        }
+      ],
+      "research_coverage_count": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:17.400729Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 32,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:24.129915Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 32,
+          "version": 2
+        }
+      ],
+      "sector": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:17.385452Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Communication Services",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:24.106537Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Communication Services",
+          "version": 2
+        }
+      ],
+      "status": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:17.372301Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Active",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:24.081617Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Active",
+          "version": 2
+        }
+      ],
+      "ticker": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:17.368240Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "BHARTIARTL",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:24.078482Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "BHARTIARTL",
+          "version": 2
+        }
+      ],
+      "website": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:17.403987Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "www.airtel.in",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:24.134952Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "www.airtel.in",
+          "version": 2
+        }
+      ]
+    },
+    "competitors": {
+      "peer": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:17.393761Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Amazon.com, Inc. (NasdaqGS:AMZN); Sify Technologies Limited (NasdaqCM:SIFY); Allied Technologies Limited; Liberty Global Ltd. (NasdaqGS:LBTY.A); Catvision Limited (BSE:531158); CtrlS Datacenters Ltd.; Blue Line A/S; Koninklijke KPN N.V. (ENXTAM:KPN); Tata Teleservices Limited; Vodacom Group Limited (JSE:VOD); Reliance Infocomm Limited; ITI Limited (BSE:523610); Dialog Axiata PLC (COSE:DIAL.N0000); Hughes Communications India Limited; Vodacom Congo (RDC) s.p.r.l; Safaricom PLC (NASE:SCOM); Elevar Digitel Infrastructure Private Limited; Videocon d2h Limited; BT Group plc (LSE:BT.A); Orange S.A. (ENXTPA:ORA); Deutsche Telekom AG (XTRA:DTE); NTT, Inc. (TSE:9432); Am\u00e9rica M\u00f3vil, S.A.B. de C.V. (BMV:AMX B); Tata Sons Private Limited; Tata Internet Services Pvt. Ltd.; Aircel Cellular Limited; JioStar India Private Limited; Telma Mobile; Tigo Rwanda Limited; Airtel-Vodafone; Finablr PLC; American Tower Corporation (NYSE:AMT); Telecom Italia S.p.A. (BIT:TIT); Tikona Infinet Private Limited; Bharti Hexacom Limited (NSEI:BHARTIHEXA); Aircel Limited; Reliance Jio Infocomm Limited; Atria Convergence Technologies Limited; Tata Communications Limited (NSEI:TATACOMM); Itissalat Al-Maghrib (IAM) S.A. (CBSE:IAM); Vodafone Idea Limited (NSEI:IDEA); Doordarshan; Telekom Networks Malawi plc (MAL:TNM); Mobitel (Pvt) Ltd.; Indus Towers Limited (NSEI:INDUSTOWER); Mahanagar Telephone Nigam Limited (BSE:500108); MTN Group Limited (JSE:MTN); Bharat Sanchar Nigam Limited; OASIS SPRL; At&T Global Network Services India Private Limited; Reliance Infratel Limited; Africell Holding; STT Global Data Centres India Private Limited; Telef\u00f3nica, S.A. (BME:TEF); Tata Teleservices (Maharashtra) Limited (BSE:532371); RailTel Corporation of India Limited (NSEI:RAILTEL); Hutchison Telecommunications Lanka (Private) Limited; Africell Sierra Leone Ltd.; Sprint Telecom India Private Limited; GTPL Hathway Limited (NSEI:GTPL); Systematic Industries Limited (BSE:544541); Summit Digitel Infrastructure Limited; Access Communications Ltd.",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:24.118159Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Amazon.com, Inc. (NasdaqGS:AMZN); Sify Technologies Limited (NasdaqCM:SIFY); Allied Technologies Limited; Liberty Global Ltd. (NasdaqGS:LBTY.A); Catvision Limited (BSE:531158); CtrlS Datacenters Ltd.; Blue Line A/S; BT Group plc (LSE:BT.A); Orange S.A. (ENXTPA:ORA); Deutsche Telekom AG (XTRA:DTE); NTT, Inc. (TSE:9432); Am\u00e9rica M\u00f3vil, S.A.B. de C.V. (BMV:AMX B); Tata Sons Private Limited; Tata Internet Services Pvt. Ltd.; Aircel Cellular Limited; JioStar India Private Limited; Telma Mobile; Tigo Rwanda Limited; Airtel-Vodafone; Finablr PLC; Koninklijke KPN N.V. (ENXTAM:KPN); Tata Teleservices Limited; Vodacom Group Limited (JSE:VOD); Reliance Infocomm Limited; ITI Limited (BSE:523610); Dialog Axiata PLC (COSE:DIAL.N0000); Hughes Communications India Limited; Vodacom Congo (RDC) s.p.r.l; Tata Communications Limited (NSEI:TATACOMM); Itissalat Al-Maghrib (IAM) S.A. (CBSE:IAM); Vodafone Idea Limited (NSEI:IDEA); Doordarshan; Telekom Networks Malawi plc (MAL:TNM); Mobitel (Pvt) Ltd.; Indus Towers Limited (NSEI:INDUSTOWER); Mahanagar Telephone Nigam Limited (BSE:500108); MTN Group Limited (JSE:MTN); Bharat Sanchar Nigam Limited; OASIS SPRL; At&T Global Network Services India Private Limited; Reliance Infratel Limited; Africell Holding; STT Global Data Centres India Private Limited; American Tower Corporation (NYSE:AMT); Telecom Italia S.p.A. (BIT:TIT); Tikona Infinet Private Limited; Bharti Hexacom Limited (NSEI:BHARTIHEXA); Aircel Limited; Reliance Jio Infocomm Limited; Atria Convergence Technologies Limited; Safaricom PLC (NASE:SCOM); Elevar Digitel Infrastructure Private Limited; Videocon d2h Limited; Telef\u00f3nica, S.A. (BME:TEF); Tata Teleservices (Maharashtra) Limited (BSE:532371); RailTel Corporation of India Limited (NSEI:RAILTEL); Hutchison Telecommunications Lanka (Private) Limited; Africell Sierra Leone Ltd.; Sprint Telecom India Private Limited; GTPL Hathway Limited (NSEI:GTPL); Systematic Industries Limited (BSE:544541); Summit Digitel Infrastructure Limited; Access Communications Ltd.",
+          "version": 2
+        }
+      ]
+    },
+    "financial_statements": {
+      "LTM::ebitda": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:17.394693Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 11652.6,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:24.119319Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 11652.6,
+          "version": 2
+        }
+      ],
+      "LTM::revenue": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:17.396745Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 22499.8,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:24.121951Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 22499.8,
+          "version": 2
+        }
+      ]
+    },
+    "market_data": {
+      "latest::close": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:17.376300Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 20.4,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:24.086946Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 20.4,
+          "version": 2
+        }
+      ],
+      "latest::enterprise_value": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:17.395749Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 146937.9,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:24.120471Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 146937.9,
+          "version": 2
+        }
+      ],
+      "latest::market_cap": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:17.397701Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 124773.1,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:24.123375Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 124773.1,
+          "version": 2
+        }
+      ],
+      "latest::next_earnings_date_announced": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:17.398657Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "2026-08-04 00:00:00",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:24.125885Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "2026-08-04 00:00:00",
+          "version": 2
+        }
+      ],
+      "latest::next_earnings_date_expected": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:17.399658Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "2026-08-04 00:00:00",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:24.127742Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "2026-08-04 00:00:00",
+          "version": 2
+        }
+      ],
+      "latest::returns_1d": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:17.377711Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 2.52,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:24.090954Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 2.54,
+          "version": 2
+        }
+      ],
+      "latest::returns_1m": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:17.379122Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 5.87,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:24.094634Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 5.93,
+          "version": 2
+        }
+      ],
+      "latest::returns_1w": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:17.378412Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 0.013,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:24.092683Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 0.062,
+          "version": 2
+        }
+      ],
+      "latest::returns_1y": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:17.382131Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 1.68,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:24.101431Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 1.66,
+          "version": 2
+        }
+      ],
+      "latest::returns_3m": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:17.379886Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 3.3,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:24.096369Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 3.29,
+          "version": 2
+        }
+      ],
+      "latest::returns_3y": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:17.382938Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 118,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:24.102770Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 117.9,
+          "version": 2
+        }
+      ],
+      "latest::returns_5y": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:17.383750Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 244,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:24.104204Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 243.9,
+          "version": 2
+        }
+      ],
+      "latest::returns_6m": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:17.380654Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": -0.907,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:24.098228Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": -0.899,
+          "version": 2
+        }
+      ],
+      "latest::returns_9m": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:17.381374Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": -7.15,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:24.099537Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": -7.16,
+          "version": 2
+        }
+      ],
+      "latest::returns_ytd": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:17.376997Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": -7.57,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:24.089221Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": -7.59,
+          "version": 2
+        }
+      ],
+      "latest::volume": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:17.384520Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 0.476,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:24.105383Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 8.29,
+          "version": 2
+        }
+      ]
+    },
+    "products": {
+      "product": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:17.402875Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Administrative and Support Services; Airtel Advantage; Airtel IQ Reach; Airtel IQ Video; Airtel Money; Airtel Pocket TV; Business Name Display; CCaaS (Contact Center as a Service); Cloud Services; Cybersecurity Services; Data Center Services; Data Services; Direct-To-Home Digital TV Services; Enterprise Mobility Applications Services; Internet Leased Line Services; Internet of Things Services; Internet Protocol Television (IPTV) Services; Long Distance Services; Managed Services; Network Integration Services; O-RAN Intelligent Controller; Platform-as-a-Services; Sales of Handsets; Sales of Internet Equipment; Tower Infrastructure Services; Unified Communications Service; Value-added Communication Services; Virtual Calling Card Services; Voice and Bandwidth Services; VSAT Services; Xstream Stick",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:24.132673Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Administrative and Support Services; Airtel Advantage; Airtel IQ Reach; Airtel IQ Video; Airtel Money; Airtel Pocket TV; Business Name Display; CCaaS (Contact Center as a Service); Cloud Services; Cybersecurity Services; Data Center Services; Data Services; Direct-To-Home Digital TV Services; Enterprise Mobility Applications Services; Internet Leased Line Services; Internet of Things Services; Internet Protocol Television (IPTV) Services; Long Distance Services; Managed Services; Network Integration Services; O-RAN Intelligent Controller; Platform-as-a-Services; Sales of Handsets; Sales of Internet Equipment; Tower Infrastructure Services; Unified Communications Service; Value-added Communication Services; Virtual Calling Card Services; Voice and Bandwidth Services; VSAT Services; Xstream Stick",
+          "version": 2
+        }
+      ],
+      "product_description": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:17.401733Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Airtel Advantage:\nAirtel Advantage, a first-of-its-kind unified platform offering global interconnect solutions.\n\nAirtel IQ Reach:\nAirtel IQ Reach, a first-of-its-kind self-serve marketing communications platform, which will enable brands/companies to drive targeted customer engagements through personalised communications.\n\nAirtel IQ Video:\nAirtel IQ Video is an end-to-end managed solution that brings convenience along with cost benefits. It encompasses a variety of features ranging from app development, content hosting, curation and lifecycle management to search and discovery, analytics and monetisation models (advertising, subscriptions, transactions).\n\nAirtel Money:\nAirtel Money (also known as Airtel Payments Bank in India) launched \u2018Airtel Safe Pay\u2019 \u2013 India.\n\nAirtel Pocket TV:\nAirtel Pocket TV, a mobile application which enables customers to watch TV programs while on the move.",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:36:24.131441Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Airtel Advantage:\nAirtel Advantage, a first-of-its-kind unified platform offering global interconnect solutions.\n\nAirtel IQ Reach:\nAirtel IQ Reach, a first-of-its-kind self-serve marketing communications platform, which will enable brands/companies to drive targeted customer engagements through personalised communications.\n\nAirtel IQ Video:\nAirtel IQ Video is an end-to-end managed solution that brings convenience along with cost benefits. It encompasses a variety of features ranging from app development, content hosting, curation and lifecycle management to search and discovery, analytics and monetisation models (advertising, subscriptions, transactions).\n\nAirtel Money:\nAirtel Money (also known as Airtel Payments Bank in India) launched \u2018Airtel Safe Pay\u2019 \u2013 India.\n\nAirtel Pocket TV:\nAirtel Pocket TV, a mobile application which enables customers to watch TV programs while on the move.",
+          "version": 2
+        }
+      ]
+    }
+  },
+  "ticker": "BHARTIARTL",
+  "updated_at": "2026-08-01T19:36:24.134957Z"
+}

@@ -1,0 +1,5364 @@
+[
+ {
+  "symbol": "SUNPHARMA",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_86715_669391_31052022011550_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T18:59:42.122668+00:00",
+  "content_sha256": "f2e1698f5155fb1ff780f5b44d0b6f6ec1f50662e0305a86322798bcacb07ae1",
+  "bytes": 39987,
+  "period": "01-Jan-2022..31-Mar-2022",
+  "financial_year": "01-Apr-2021 To 31-Mar-2022",
+  "filing_date": "31-May-2022 13:15",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 49,
+  "outcomes": {
+   "declared": 39,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "SUNPHARMA",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_86696_669327_31052022125508_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T18:59:43.945319+00:00",
+  "content_sha256": "9898a380ac5f80ba03d2a80de3e13dac63242f129d1dd13c1462e4f265a489e5",
+  "bytes": 42776,
+  "period": "01-Jan-2022..31-Mar-2022",
+  "financial_year": "01-Apr-2021 To 31-Mar-2022",
+  "filing_date": "31-May-2022 12:55",
+  "filing_type": "New",
+  "consolidated": "Non-Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 47,
+  "outcomes": {
+   "declared": 37,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "BANKBARODA",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/BANKING_70742_453539_31052021105718_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:00:03.853285+00:00",
+  "content_sha256": "706f2aed85773ac3e61275c2f6d6d5265be7343ce9545922d65fdbfdf91b98a2",
+  "bytes": 53815,
+  "period": "01-Jan-2021..31-Mar-2021",
+  "financial_year": "01-Apr-2020 To 31-Mar-2021",
+  "filing_date": "31-May-2021 10:57",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 35,
+  "outcomes": {
+   "declared": 24,
+   "compound_unit_is_not_an_aggregate": 10,
+   "pure_is_not_money": 1
+  }
+ },
+ {
+  "symbol": "BANKBARODA",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/BANKING_70741_453536_31052021105613_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:00:05.881358+00:00",
+  "content_sha256": "8c878c97b4bd1d636e76942c0494268b19561fdf1d821a42cc0604eee3b8c8c8",
+  "bytes": 53272,
+  "period": "01-Jan-2021..31-Mar-2021",
+  "financial_year": "01-Apr-2020 To 31-Mar-2021",
+  "filing_date": "31-May-2021 10:56",
+  "filing_type": "New",
+  "consolidated": "Non-Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 35,
+  "outcomes": {
+   "declared": 24,
+   "compound_unit_is_not_an_aggregate": 10,
+   "pure_is_not_money": 1
+  }
+ },
+ {
+  "symbol": "BANKBARODA",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/BANKING_109960_1208071_31072024054633.xml",
+  "retrieved_at_utc": "2026-08-21T19:00:07.892957+00:00",
+  "content_sha256": "f9ce7fcde9966fdac9c5014e2b3a986db41c16c019f25f34d7fb977741126ecf",
+  "bytes": 41574,
+  "period": "01-Apr-2024..30-Jun-2024",
+  "financial_year": "01-Apr-2024 To 31-Mar-2025",
+  "filing_date": "31-Jul-2024 17:46",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 14,
+  "outcomes": {
+   "declared": 9,
+   "compound_unit_is_not_an_aggregate": 5
+  }
+ },
+ {
+  "symbol": "ASIANPAINT",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_97985_968429_26102023083837.xml",
+  "retrieved_at_utc": "2026-08-21T19:00:13.552890+00:00",
+  "content_sha256": "b7594b4152a81625eedb2e3f0bab3c68b44de8a86cce5f81bc05ba59f4ba0610",
+  "bytes": 50214,
+  "period": "01-Jul-2023..30-Sep-2023",
+  "financial_year": "01-Apr-2023 To 31-Mar-2024",
+  "filing_date": "26-Oct-2023 20:38",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 58,
+  "outcomes": {
+   "declared": 48,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "ASIANPAINT",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_97984_968426_26102023083156.xml",
+  "retrieved_at_utc": "2026-08-21T19:00:15.509907+00:00",
+  "content_sha256": "5277c84458534c14dfe766d956e54803af9420d6ea243402dc08e086a91a9546",
+  "bytes": 50373,
+  "period": "01-Jul-2023..30-Sep-2023",
+  "financial_year": "01-Apr-2023 To 31-Mar-2024",
+  "filing_date": "26-Oct-2023 20:31",
+  "filing_type": "New",
+  "consolidated": "Non-Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 56,
+  "outcomes": {
+   "declared": 46,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "ASIANPAINT",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_605907_2364_26072022184407_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:00:17.300561+00:00",
+  "content_sha256": "7b3375fb2b35ee4efb30e20a6f27c64e3f6cf86a262f65d910db1bc4fb3e79a4",
+  "bytes": 14960,
+  "period": "01-Apr-2022..30-Jun-2022",
+  "financial_year": "01-Apr-2022 To 31-Mar-2023",
+  "filing_date": "26-Jul-2022 18:44",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency"
+  ],
+  "mapped_facts": 21,
+  "outcomes": {
+   "declared": 16,
+   "compound_unit_is_not_an_aggregate": 5
+  }
+ },
+ {
+  "symbol": "NTPC",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_73885_498570_31072021040452_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:00:22.855267+00:00",
+  "content_sha256": "80c00ea27c02ae74bbe337eb139c13b61a14b9d1d5077984c905e7af6f039ccd",
+  "bytes": 29206,
+  "period": "01-Apr-2021..30-Jun-2021",
+  "financial_year": "01-Apr-2021 To 31-Mar-2022",
+  "filing_date": "31-Jul-2021 16:04",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 21,
+  "outcomes": {
+   "declared": 16,
+   "compound_unit_is_not_an_aggregate": 5
+  }
+ },
+ {
+  "symbol": "NTPC",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_73884_498567_31072021040226_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:00:24.769710+00:00",
+  "content_sha256": "0f9f4a1c009f6090a3658073a7406a10abef7228c7e88e98cfce62dcec168e7d",
+  "bytes": 27498,
+  "period": "01-Apr-2021..30-Jun-2021",
+  "financial_year": "01-Apr-2021 To 31-Mar-2022",
+  "filing_date": "31-Jul-2021 16:02",
+  "filing_type": "New",
+  "consolidated": "Non-Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 20,
+  "outcomes": {
+   "declared": 15,
+   "compound_unit_is_not_an_aggregate": 5
+  }
+ },
+ {
+  "symbol": "NTPC",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_811606_5252_29102022154625_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:00:26.626810+00:00",
+  "content_sha256": "e408566ec09c7b65cede0d2a595049f44342c000d263f734f47de1eae9528416",
+  "bytes": 85948,
+  "period": "01-Jul-2022..30-Sep-2022",
+  "financial_year": "01-Apr-2022 To 31-Mar-2023",
+  "filing_date": "29-Oct-2022 15:46",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure"
+  ],
+  "mapped_facts": 58,
+  "outcomes": {
+   "declared": 48,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "RELIANCE",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_62734_353038_30102020090502_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:00:30.435487+00:00",
+  "content_sha256": "1cb1c210a526581c3c5a0fb5a62c6e13468ba3f3b81e0029f3a0ad4ddf944dcf",
+  "bytes": 79842,
+  "period": "01-Jul-2020..30-Sep-2020",
+  "financial_year": "01-Apr-2020 To 31-Mar-2021",
+  "filing_date": "30-Oct-2020 21:05",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 48,
+  "outcomes": {
+   "declared": 38,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "RELIANCE",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_62733_353035_30102020090324_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:00:32.279718+00:00",
+  "content_sha256": "69d4060914d7a383e96073e844c13f0151c42c15a829bdcb0a663a42f51e096b",
+  "bytes": 78837,
+  "period": "01-Jul-2020..30-Sep-2020",
+  "financial_year": "01-Apr-2020 To 31-Mar-2021",
+  "filing_date": "30-Oct-2020 21:03",
+  "filing_type": "New",
+  "consolidated": "Non-Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 46,
+  "outcomes": {
+   "declared": 36,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "RELIANCE",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_58734_300010_30072020101141_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:00:34.049660+00:00",
+  "content_sha256": "5df1931e41f7b0f60072afc8c808e9ac5bafc5917081a6e98d339faac096dd4e",
+  "bytes": 39012,
+  "period": "01-Apr-2020..30-Jun-2020",
+  "financial_year": "01-Apr-2020 To 31-Mar-2021",
+  "filing_date": "30-Jul-2020 22:11",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 21,
+  "outcomes": {
+   "declared": 16,
+   "compound_unit_is_not_an_aggregate": 5
+  }
+ },
+ {
+  "symbol": "ULTRACEMCO",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_104953_1111327_29042024082510.xml",
+  "retrieved_at_utc": "2026-08-21T19:00:39.172333+00:00",
+  "content_sha256": "7518feded0189c342e9300b96e763dd748e58b89af95b84362924a474f020245",
+  "bytes": 54828,
+  "period": "01-Jan-2024..31-Mar-2024",
+  "financial_year": "01-Apr-2023 To 31-Mar-2024",
+  "filing_date": "29-Apr-2024 20:25",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 59,
+  "outcomes": {
+   "declared": 49,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "ULTRACEMCO",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_104952_1111321_29042024082157.xml",
+  "retrieved_at_utc": "2026-08-21T19:00:41.123007+00:00",
+  "content_sha256": "6c13e87e38bce6fc956e17ded7662eee1d27a159541114e6fd6c95ad7cf0b451",
+  "bytes": 52980,
+  "period": "01-Apr-2023..31-Mar-2024",
+  "financial_year": "01-Apr-2023 To 31-Mar-2024",
+  "filing_date": "29-Apr-2024 20:22",
+  "filing_type": "New",
+  "consolidated": "Non-Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 57,
+  "outcomes": {
+   "declared": 47,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "ULTRACEMCO",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_83783_649799_29042022084825_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:00:42.940711+00:00",
+  "content_sha256": "d0bed6ccdff6325a90542b1cc1c64fd3057e5e77d2dc13c53ab1a3d39a11a646",
+  "bytes": 41684,
+  "period": "01-Jan-2022..31-Mar-2022",
+  "financial_year": "01-Apr-2021 To 31-Mar-2022",
+  "filing_date": "29-Apr-2022 20:48",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 49,
+  "outcomes": {
+   "declared": 39,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "TCS",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_54905_240070_16042020082728_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:00:48.406325+00:00",
+  "content_sha256": "81b47beb69abe876925729fcc11dad042eeebe99161ebca5c16a0bad7c35ebf7",
+  "bytes": 56448,
+  "period": "01-Jan-2020..31-Mar-2020",
+  "financial_year": "01-Apr-2019 To 31-Mar-2020",
+  "filing_date": "30-Apr-2020 17:49",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 43,
+  "outcomes": {
+   "declared": 33,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "TCS",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_43559_92843_12042019085018_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:00:49.992312+00:00",
+  "content_sha256": "22c3f9f0cc4733eaece3327b18e84d21fbfd3321d92ce7be5e7839e132171075",
+  "bytes": 25019,
+  "period": "01-Jan-2019..31-Mar-2019",
+  "financial_year": "01-Apr-2018 To 31-Mar-2019",
+  "filing_date": "23-Apr-2019 18:26",
+  "filing_type": "New",
+  "consolidated": "Non-Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 41,
+  "outcomes": {
+   "declared": 31,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "TCS",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_43557_92829_12042019082945_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:00:51.894720+00:00",
+  "content_sha256": "a028e656b2b2ca1500e1ccdbc480a0dfe7d3646a4d4a162650d686adda23a692",
+  "bytes": 55302,
+  "period": "01-Jan-2019..31-Mar-2019",
+  "financial_year": "01-Apr-2018 To 31-Mar-2019",
+  "filing_date": "23-Apr-2019 18:26",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 43,
+  "outcomes": {
+   "declared": 33,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "AXISBANK",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/BANKING_41887_78577_30012019030705_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:00:57.296085+00:00",
+  "content_sha256": "4be728ff8a37a22ba5e9cac460114ccdb0e7f7fef1cb234344904a285834617e",
+  "bytes": 53158,
+  "period": "01-Oct-2018..31-Dec-2018",
+  "financial_year": "01-Apr-2018 To 31-Mar-2019",
+  "filing_date": "31-Jan-2019 17:33",
+  "filing_type": "New",
+  "consolidated": "Non-Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 28,
+  "outcomes": {
+   "declared": 18,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "HDFCBANK",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/BANKING_57945_291264_19072020084008_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:01:16.779260+00:00",
+  "content_sha256": "0018489aba9f7e9f17a6bc666144d98f44a472e91d427418bf8f514f4ff84bc2",
+  "bytes": 39432,
+  "period": "01-Apr-2020..30-Jun-2020",
+  "financial_year": "01-Apr-2020 To 31-Mar-2021",
+  "filing_date": "29-Jul-2020 02:14",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 14,
+  "outcomes": {
+   "declared": 9,
+   "compound_unit_is_not_an_aggregate": 5
+  }
+ },
+ {
+  "symbol": "HDFCBANK",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/BANKING_57946_291697_20072020012909_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:01:18.745299+00:00",
+  "content_sha256": "1acd5c0b036e8924d145936b53e3597dd8b2ede55785c90a1c1b83ff35ac7b25",
+  "bytes": 39174,
+  "period": "01-Apr-2020..30-Jun-2020",
+  "financial_year": "01-Apr-2020 To 31-Mar-2021",
+  "filing_date": "29-Jul-2020 02:14",
+  "filing_type": "New",
+  "consolidated": "Non-Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 14,
+  "outcomes": {
+   "declared": 9,
+   "compound_unit_is_not_an_aggregate": 5
+  }
+ },
+ {
+  "symbol": "HDFCBANK",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/BANKING_69364_440079_19042021064746_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:01:20.648524+00:00",
+  "content_sha256": "bb2dfa553d0dd2e2052367e5cf1f2f17fe5be438d99dbe8e04432239ea6387b8",
+  "bytes": 58990,
+  "period": "01-Jan-2021..31-Mar-2021",
+  "financial_year": "01-Apr-2020 To 31-Mar-2021",
+  "filing_date": "26-Apr-2022 16:33",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 35,
+  "outcomes": {
+   "declared": 24,
+   "compound_unit_is_not_an_aggregate": 10,
+   "pure_is_not_money": 1
+  }
+ },
+ {
+  "symbol": "ICICIBANK",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/BANKING_41935_78804_30012019075459_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:01:26.318283+00:00",
+  "content_sha256": "d18686311e84d86b9051d4811fea7543cb39e9d109ff3f9ce8f7cde50cd6dfcc",
+  "bytes": 38265,
+  "period": "01-Oct-2018..31-Dec-2018",
+  "financial_year": "01-Apr-2018 To 31-Mar-2019",
+  "filing_date": "31-Jan-2019 17:31",
+  "filing_type": "New",
+  "consolidated": "Non-Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 28,
+  "outcomes": {
+   "declared": 18,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "ICICIBANK",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/BANKING_66753_400664_30012021063252_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:01:28.034800+00:00",
+  "content_sha256": "822e88bc1709d38efbe29c6945999da4dcc490c2317df9a3676bdd309f49e800",
+  "bytes": 60723,
+  "period": "01-Oct-2020..31-Dec-2020",
+  "financial_year": "01-Apr-2020 To 31-Mar-2021",
+  "filing_date": "30-Jan-2021 18:32",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 28,
+  "outcomes": {
+   "declared": 18,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "ICICIBANK",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/BANKING_66742_400597_30012021043528_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:01:29.936419+00:00",
+  "content_sha256": "5f5c6d682a62bbc322411628e6dbb6f0614b22487e04400db059f48dddad5d6f",
+  "bytes": 37991,
+  "period": "01-Oct-2020..31-Dec-2020",
+  "financial_year": "01-Apr-2020 To 31-Mar-2021",
+  "filing_date": "30-Jan-2021 16:35",
+  "filing_type": "New",
+  "consolidated": "Non-Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 28,
+  "outcomes": {
+   "declared": 18,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "INDIGO",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_62567_352074_29102020065451_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:01:35.249030+00:00",
+  "content_sha256": "7295601ebca75b58f6487711c12abd57a588c161110bc5d3de91a55292101a04",
+  "bytes": 24302,
+  "period": "01-Jul-2020..30-Sep-2020",
+  "financial_year": "01-Apr-2020 To 31-Mar-2021",
+  "filing_date": "29-Oct-2020 18:54",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 40,
+  "outcomes": {
+   "declared": 30,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "INDIGO",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_62566_352071_29102020065328_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:01:36.959318+00:00",
+  "content_sha256": "46b88720979acd5e26834f8e616d053584d6b16995a1ecdc7ff0ac2ee5932a9e",
+  "bytes": 24258,
+  "period": "01-Jul-2020..30-Sep-2020",
+  "financial_year": "01-Apr-2020 To 31-Mar-2021",
+  "filing_date": "29-Oct-2020 18:53",
+  "filing_type": "New",
+  "consolidated": "Non-Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 40,
+  "outcomes": {
+   "declared": 30,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "INDIGO",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_45107_105667_29052019013524_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:01:38.548599+00:00",
+  "content_sha256": "0d3df5f9a61fe45773e74147d622bd3f74076850f5f2c10b24496b615b37da11",
+  "bytes": 21658,
+  "period": "01-Jan-2019..31-Mar-2019",
+  "financial_year": "01-Apr-2018 To 31-Mar-2019",
+  "filing_date": "29-May-2019 13:35",
+  "filing_type": "New",
+  "consolidated": "Non-Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 41,
+  "outcomes": {
+   "declared": 31,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "INDUSINDBK",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/BANKING_118334_1367599_31012025060027.xml",
+  "retrieved_at_utc": "2026-08-21T19:01:43.966918+00:00",
+  "content_sha256": "4cea8beec2096dff26fcf49a262ad660893f6e48190aef5c6f2c0df292366bfa",
+  "bytes": 42916,
+  "period": "01-Oct-2024..31-Dec-2024",
+  "financial_year": "01-Apr-2024 To 31-Mar-2025",
+  "filing_date": "31-Jan-2025 18:00",
+  "filing_type": "New",
+  "consolidated": "Non-Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 28,
+  "outcomes": {
+   "declared": 18,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "INDUSINDBK",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/BANKING_118322_1367519_31012025053735.xml",
+  "retrieved_at_utc": "2026-08-21T19:01:45.660732+00:00",
+  "content_sha256": "009e87ce3d77accc7165d66897ece8481fa0ec312c1e8c610681167aaf35171d",
+  "bytes": 43673,
+  "period": "01-Oct-2024..31-Dec-2024",
+  "financial_year": "01-Apr-2024 To 31-Mar-2025",
+  "filing_date": "31-Jan-2025 17:37",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 28,
+  "outcomes": {
+   "declared": 18,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "INDUSINDBK",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/BANKING_83789_649859_30042022121044_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:01:47.532909+00:00",
+  "content_sha256": "4f46815fdbf99728002f3da9c51fff5ede5d07361398f91985e737b06f63a08b",
+  "bytes": 55053,
+  "period": "01-Jan-2022..31-Mar-2022",
+  "financial_year": "01-Apr-2021 To 31-Mar-2022",
+  "filing_date": "30-Apr-2022 00:10",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 35,
+  "outcomes": {
+   "declared": 24,
+   "compound_unit_is_not_an_aggregate": 10,
+   "pure_is_not_money": 1
+  }
+ },
+ {
+  "symbol": "HAL",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_45056_105450_29052019084642_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:01:53.036420+00:00",
+  "content_sha256": "35f46b57cb0f25c27c6ff0641bdf84318a3b529f6e6112703d66293a9d398b50",
+  "bytes": 23544,
+  "period": "01-Jan-2019..31-Mar-2019",
+  "financial_year": "01-Apr-2018 To 31-Mar-2019",
+  "filing_date": "29-May-2019 08:46",
+  "filing_type": "New",
+  "consolidated": "Non-Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 41,
+  "outcomes": {
+   "declared": 31,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "HAL",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_36315_13260_30052018054445_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:01:54.833777+00:00",
+  "content_sha256": "a0c8b5c15107ea7e342a6d8cbf1016a2a678cc6b7c97554a99af495352e8821c",
+  "bytes": 31037,
+  "period": "01-Apr-2017..31-Mar-2018",
+  "financial_year": "01-Apr-2017 To 31-Mar-2018",
+  "filing_date": "29-Jun-2018 15:39",
+  "filing_type": "New",
+  "consolidated": "Non-Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 41,
+  "outcomes": {
+   "declared": 31,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "HAL",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_36432_13572_31052018114138_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:01:56.454281+00:00",
+  "content_sha256": "1bae1b4cc18e3c4cb9ead17c490330d1e73c97a57229f37f58995ab6a89781ba",
+  "bytes": 30066,
+  "period": "01-Apr-2017..31-Mar-2018",
+  "financial_year": "01-Apr-2017 To 31-Mar-2018",
+  "filing_date": "29-Jun-2018 15:37",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 41,
+  "outcomes": {
+   "declared": 31,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "INFY",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_600781_2315_24072022182125_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:02:02.028307+00:00",
+  "content_sha256": "202c145a371e2ab4659c01068078a0efc2dbcd96071de454e0fa692ee736c60f",
+  "bytes": 52468,
+  "period": "01-Apr-2022..30-Jun-2022",
+  "financial_year": "01-Apr-2022 To 31-Mar-2023",
+  "filing_date": "24-Jul-2022 18:21",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency"
+  ],
+  "mapped_facts": 21,
+  "outcomes": {
+   "declared": 16,
+   "compound_unit_is_not_an_aggregate": 5
+  }
+ },
+ {
+  "symbol": "INFY",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_600774_2315_24072022182100_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:02:03.996540+00:00",
+  "content_sha256": "acb1d151de35bf104d43bfaec470a8655dd8eed4c1e667508cca3ab356204040",
+  "bytes": 19252,
+  "period": "01-Apr-2022..30-Jun-2022",
+  "financial_year": "01-Apr-2022 To 31-Mar-2023",
+  "filing_date": "24-Jul-2022 18:21",
+  "filing_type": "New",
+  "consolidated": "Non-Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency"
+  ],
+  "mapped_facts": 20,
+  "outcomes": {
+   "declared": 15,
+   "compound_unit_is_not_an_aggregate": 5
+  }
+ },
+ {
+  "symbol": "INFY",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_41603_76392_21012019062158_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:02:05.970546+00:00",
+  "content_sha256": "0f3d9e25bec68c1cc53eb894c5e17550955e283619ded8b35083c69a47b8c04e",
+  "bytes": 25764,
+  "period": "01-Oct-2018..31-Dec-2018",
+  "financial_year": "01-Apr-2018 To 31-Mar-2019",
+  "filing_date": "21-Jan-2019 18:51",
+  "filing_type": "New",
+  "consolidated": "Non-Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 40,
+  "outcomes": {
+   "declared": 30,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "COFORGE",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_51864_212213_29012020033754_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:02:11.238510+00:00",
+  "content_sha256": "de2512846759a1daf17d69bc788e987dcf08ec3fab25a14435bac19ceb8f302d",
+  "bytes": 19835,
+  "period": "01-Oct-2019..31-Dec-2019",
+  "financial_year": "01-Apr-2019 To 31-Mar-2020",
+  "filing_date": "29-Jan-2020 15:37",
+  "filing_type": "New",
+  "consolidated": "Non-Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 40,
+  "outcomes": {
+   "declared": 30,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "COFORGE",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_51863_212209_29012020033301_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:02:13.215176+00:00",
+  "content_sha256": "1f1a6deb62ca5752e042142c0a2dd7e96bcc0295c5279befe6a9b455d35ccbe9",
+  "bytes": 42801,
+  "period": "01-Oct-2019..31-Dec-2019",
+  "financial_year": "01-Apr-2019 To 31-Mar-2020",
+  "filing_date": "29-Jan-2020 15:33",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 40,
+  "outcomes": {
+   "declared": 30,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "COFORGE",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_73553_496751_28072021064029_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:02:15.224943+00:00",
+  "content_sha256": "e516665aef2e9125ee208a34437334ad6faf60238f8b5dad284c8684b43f0880",
+  "bytes": 26528,
+  "period": "01-Apr-2021..30-Jun-2021",
+  "financial_year": "01-Apr-2021 To 31-Mar-2022",
+  "filing_date": "28-Jul-2021 18:40",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 21,
+  "outcomes": {
+   "declared": 16,
+   "compound_unit_is_not_an_aggregate": 5
+  }
+ },
+ {
+  "symbol": "AWL",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_109749_1205906_30072024083319.xml",
+  "retrieved_at_utc": "2026-08-21T19:02:20.658004+00:00",
+  "content_sha256": "8350e2f620f19b6f900a3c314d927695b190badea127094657a88315fb3b1cd2",
+  "bytes": 33512,
+  "period": "01-Apr-2024..30-Jun-2024",
+  "financial_year": "01-Apr-2024 To 31-Mar-2025",
+  "filing_date": "30-Jul-2024 08:33",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 21,
+  "outcomes": {
+   "declared": 16,
+   "compound_unit_is_not_an_aggregate": 5
+  }
+ },
+ {
+  "symbol": "AWL",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_109748_1205903_30072024083057.xml",
+  "retrieved_at_utc": "2026-08-21T19:02:22.442771+00:00",
+  "content_sha256": "56e157aa5de8ce16a80ad7563d206b436643b735ba05806d3b040c67546a1c97",
+  "bytes": 19531,
+  "period": "01-Apr-2024..30-Jun-2024",
+  "financial_year": "01-Apr-2024 To 31-Mar-2025",
+  "filing_date": "30-Jul-2024 08:30",
+  "filing_type": "New",
+  "consolidated": "Non-Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 20,
+  "outcomes": {
+   "declared": 15,
+   "compound_unit_is_not_an_aggregate": 5
+  }
+ },
+ {
+  "symbol": "AWL",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_117773_1362110_27012025053120.xml",
+  "retrieved_at_utc": "2026-08-21T19:02:24.233525+00:00",
+  "content_sha256": "4edf02c8ea82a8b279973a391fa5749e235289a00dc8421aa166ff7de236e5c5",
+  "bytes": 56589,
+  "period": "01-Oct-2024..31-Dec-2024",
+  "financial_year": "01-Apr-2024 To 31-Mar-2025",
+  "filing_date": "27-Jan-2025 17:31",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 42,
+  "outcomes": {
+   "declared": 32,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "MARUTI",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_94970_904670_31072023065608.xml",
+  "retrieved_at_utc": "2026-08-21T19:02:29.982431+00:00",
+  "content_sha256": "43f9de8e58047d33a55e0e2b71b63b7f2729997aa42e79c266454cc58cb5218a",
+  "bytes": 16665,
+  "period": "01-Apr-2023..30-Jun-2023",
+  "financial_year": "01-Apr-2023 To 31-Mar-2024",
+  "filing_date": "31-Jul-2023 18:56",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 21,
+  "outcomes": {
+   "declared": 16,
+   "compound_unit_is_not_an_aggregate": 5
+  }
+ },
+ {
+  "symbol": "MARUTI",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_94969_904657_31072023065416.xml",
+  "retrieved_at_utc": "2026-08-21T19:02:31.712384+00:00",
+  "content_sha256": "ea205a9de57e712a8f9410daab945d5585b29f28ce573223da2cbd38eb9eef9d",
+  "bytes": 15140,
+  "period": "01-Apr-2023..30-Jun-2023",
+  "financial_year": "01-Apr-2023 To 31-Mar-2024",
+  "filing_date": "31-Jul-2023 18:54",
+  "filing_type": "New",
+  "consolidated": "Non-Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 20,
+  "outcomes": {
+   "declared": 15,
+   "compound_unit_is_not_an_aggregate": 5
+  }
+ },
+ {
+  "symbol": "MARUTI",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_101927_1040809_31012024071512.xml",
+  "retrieved_at_utc": "2026-08-21T19:02:33.384365+00:00",
+  "content_sha256": "95182f3fdbd83e3ac12a0ead36509fe78df9b4eb36185a864055459cb32eb82d",
+  "bytes": 25949,
+  "period": "01-Oct-2023..31-Dec-2023",
+  "financial_year": "01-Apr-2023 To 31-Mar-2024",
+  "filing_date": "31-Jan-2024 19:15",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 42,
+  "outcomes": {
+   "declared": 32,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "MAZDOCK",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_93645_858667_30052023064714.xml",
+  "retrieved_at_utc": "2026-08-21T19:02:38.581391+00:00",
+  "content_sha256": "e48456eac9f5f42aa3b5a470a98db31d1288a4ad0bf7f868ee03ee86eb8954e4",
+  "bytes": 59888,
+  "period": "01-Jan-2023..31-Mar-2023",
+  "financial_year": "01-Apr-2022 To 31-Mar-2023",
+  "filing_date": "30-May-2023 18:47",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 59,
+  "outcomes": {
+   "declared": 49,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "MAZDOCK",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_93641_858646_30052023064412.xml",
+  "retrieved_at_utc": "2026-08-21T19:02:40.475362+00:00",
+  "content_sha256": "99adb52d565dce9a69d1dc991e41e96a8c3d88b5406a0da0c1f3433779d00033",
+  "bytes": 59083,
+  "period": "01-Jan-2023..31-Mar-2023",
+  "financial_year": "01-Apr-2022 To 31-Mar-2023",
+  "filing_date": "30-May-2023 18:44",
+  "filing_type": "New",
+  "consolidated": "Non-Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 57,
+  "outcomes": {
+   "declared": 47,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "MAZDOCK",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_86409_666939_30052022030015_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:02:42.193012+00:00",
+  "content_sha256": "14233ac89ff8bc3461d2b21625f4f43c0bc47afe688ce5842283889fda79bda8",
+  "bytes": 48134,
+  "period": "01-Jan-2022..31-Mar-2022",
+  "financial_year": "01-Apr-2021 To 31-Mar-2022",
+  "filing_date": "30-May-2022 15:00",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 47,
+  "outcomes": {
+   "declared": 37,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "VEDL",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_118337_1367620_31012025060335.xml",
+  "retrieved_at_utc": "2026-08-21T19:02:47.828558+00:00",
+  "content_sha256": "647bf7326330a6e158f556a65b84e0521123e5b0a324ee10788b7ef3fe2d613e",
+  "bytes": 70400,
+  "period": "01-Oct-2024..31-Dec-2024",
+  "financial_year": "01-Apr-2024 To 31-Mar-2025",
+  "filing_date": "31-Jan-2025 18:03",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 40,
+  "outcomes": {
+   "declared": 30,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "VEDL",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_118335_1367604_31012025060102.xml",
+  "retrieved_at_utc": "2026-08-21T19:02:49.493151+00:00",
+  "content_sha256": "37b26c12564bd22dec5a056010bd4093cfc738ef348a9b8f9cffb28f08322176",
+  "bytes": 55626,
+  "period": "01-Oct-2024..31-Dec-2024",
+  "financial_year": "01-Apr-2024 To 31-Mar-2025",
+  "filing_date": "31-Jan-2025 18:01",
+  "filing_type": "New",
+  "consolidated": "Non-Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 40,
+  "outcomes": {
+   "declared": 30,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "VEDL",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_77307_549144_30102021123019_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:02:51.090601+00:00",
+  "content_sha256": "06590013716dfc6ca1b36c87543888cbed26ab28e1514b500cb5e92d1d8b9778",
+  "bytes": 84012,
+  "period": "01-Jul-2021..30-Sep-2021",
+  "financial_year": "01-Apr-2021 To 31-Mar-2022",
+  "filing_date": "30-Oct-2021 12:30",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 48,
+  "outcomes": {
+   "declared": 38,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "BAJAJFINSV",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/NBFC_INDAS_118212_1366575_30012025073535.xml",
+  "retrieved_at_utc": "2026-08-21T19:02:56.280517+00:00",
+  "content_sha256": "5c2b3bf748d5d85e0ea4c9e0dd031a35c419c10e0847f8d6adfad6f497d61c80",
+  "bytes": 60332,
+  "period": "01-Oct-2024..31-Dec-2024",
+  "financial_year": "01-Apr-2024 To 31-Mar-2025",
+  "filing_date": "30-Jan-2025 19:35",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 43,
+  "outcomes": {
+   "declared": 33,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "BAJAJFINSV",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/NBFC_INDAS_118210_1366557_30012025073240.xml",
+  "retrieved_at_utc": "2026-08-21T19:02:58.091097+00:00",
+  "content_sha256": "0ffc4db75e60752f3a68db4da455573ccfba6ad67f634e66a30295acd354bfad",
+  "bytes": 25870,
+  "period": "01-Oct-2024..31-Dec-2024",
+  "financial_year": "01-Apr-2024 To 31-Mar-2025",
+  "filing_date": "30-Jan-2025 19:32",
+  "filing_type": "New",
+  "consolidated": "Non-Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 41,
+  "outcomes": {
+   "declared": 31,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "BAJAJFINSV",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/NBFC_INDAS_101792_1039530_30012024073006.xml",
+  "retrieved_at_utc": "2026-08-21T19:03:00.030606+00:00",
+  "content_sha256": "d4450f9ba85ae12ea8c91fb74527b5c02ac2b589e291c2e210eb4281bafd3234",
+  "bytes": 61238,
+  "period": "01-Oct-2023..31-Dec-2023",
+  "financial_year": "01-Apr-2023 To 31-Mar-2024",
+  "filing_date": "30-Jan-2024 19:30",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 42,
+  "outcomes": {
+   "declared": 32,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "BAJFINANCE",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_41835_78261_29012019042329_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:03:05.224557+00:00",
+  "content_sha256": "1d0557c9f0beaab27129f8bf5ad3831eaa3f779c61d8a51fef8faa9495bae568",
+  "bytes": 19776,
+  "period": "01-Oct-2018..31-Dec-2018",
+  "financial_year": "01-Apr-2018 To 31-Mar-2019",
+  "filing_date": "31-Jan-2019 19:52",
+  "filing_type": "New",
+  "consolidated": "Non-Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 40,
+  "outcomes": {
+   "declared": 30,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "BAJFINANCE",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_41837_78268_29012019042733_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:03:07.113510+00:00",
+  "content_sha256": "b6bd48e5963fd8d07a0666783ec0f3e34a0e57deff38b2daa73d31d14b6ed151",
+  "bytes": 20452,
+  "period": "01-Oct-2018..31-Dec-2018",
+  "financial_year": "01-Apr-2018 To 31-Mar-2019",
+  "filing_date": "31-Jan-2019 19:51",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 42,
+  "outcomes": {
+   "declared": 32,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "BAJFINANCE",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/NBFC_INDAS_55199_259629_19052020074116_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:03:08.730973+00:00",
+  "content_sha256": "85fd18d66ab0a3ce5ffbcbf20521481eed03f1f7aebbed5afac029eb3e370b46",
+  "bytes": 28397,
+  "period": "01-Jan-2020..31-Mar-2020",
+  "financial_year": "01-Apr-2019 To 31-Mar-2020",
+  "filing_date": "29-May-2020 19:09",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 45,
+  "outcomes": {
+   "declared": 35,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "MEDANTA",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_93183_855414_27052023075532.xml",
+  "retrieved_at_utc": "2026-08-21T19:03:13.882973+00:00",
+  "content_sha256": "667673a88c5ffc41f109d19ec2aedcad4553f8bf1e48d28d0feef3e765033163",
+  "bytes": 47390,
+  "period": "01-Jan-2023..31-Mar-2023",
+  "financial_year": "01-Apr-2022 To 31-Mar-2023",
+  "filing_date": "27-May-2023 19:55",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 57,
+  "outcomes": {
+   "declared": 47,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "MEDANTA",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_93182_855410_27052023075327.xml",
+  "retrieved_at_utc": "2026-08-21T19:03:15.624921+00:00",
+  "content_sha256": "017b1c0370ac3b4ff33a0a65e15cc4715a78f539bed3b0cb59de4187940ab388",
+  "bytes": 47727,
+  "period": "01-Jan-2023..31-Mar-2023",
+  "financial_year": "01-Apr-2022 To 31-Mar-2023",
+  "filing_date": "27-May-2023 19:53",
+  "filing_type": "New",
+  "consolidated": "Non-Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 57,
+  "outcomes": {
+   "declared": 47,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "MEDANTA",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_106263_1128690_17052024064334.xml",
+  "retrieved_at_utc": "2026-08-21T19:03:17.539275+00:00",
+  "content_sha256": "3b9cc5e2b3c9701f808aad878265c3874ab52ece26a1c49dfbe8688845995f63",
+  "bytes": 48720,
+  "period": "01-Jan-2024..31-Mar-2024",
+  "financial_year": "01-Apr-2023 To 31-Mar-2024",
+  "filing_date": "17-May-2024 18:43",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 59,
+  "outcomes": {
+   "declared": 49,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "POWERGRID",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_52137_213583_31012020063747_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:04:10.305160+00:00",
+  "content_sha256": "9b90ec8bd27051dc827b8a9916136cd3a97ca3cb919af7a727f36d769c577b22",
+  "bytes": 38456,
+  "period": "01-Oct-2019..31-Dec-2019",
+  "financial_year": "01-Apr-2019 To 31-Mar-2020",
+  "filing_date": "31-Jan-2020 18:37",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 42,
+  "outcomes": {
+   "declared": 32,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "POWERGRID",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_52136_213579_31012020063512_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:04:10.307949+00:00",
+  "content_sha256": "8f3005f487cf9d4c008c79f15cf77dce7d5d8db8a6aabfb5c5dbefebc132895a",
+  "bytes": 37745,
+  "period": "01-Oct-2019..31-Dec-2019",
+  "financial_year": "01-Apr-2019 To 31-Mar-2020",
+  "filing_date": "31-Jan-2020 18:35",
+  "filing_type": "New",
+  "consolidated": "Non-Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 40,
+  "outcomes": {
+   "declared": 30,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "POWERGRID",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_45368_106485_30052019011613_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:04:10.309616+00:00",
+  "content_sha256": "dac60427c8a151f69c4109bb45bf8ad8886f17b02543cc976b3c097bed595372",
+  "bytes": 36092,
+  "period": "01-Jan-2019..31-Mar-2019",
+  "financial_year": "01-Apr-2018 To 31-Mar-2019",
+  "filing_date": "30-May-2019 13:16",
+  "filing_type": "New",
+  "consolidated": "Non-Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 41,
+  "outcomes": {
+   "declared": 31,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "RAINBOW",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_98272_971922_31102023014735.xml",
+  "retrieved_at_utc": "2026-08-21T19:04:10.313525+00:00",
+  "content_sha256": "c8f5d055694d0dd10ad2f7c9f3f437fdd6d6a8ee5a5fe9937c8d3515a8eb0dfd",
+  "bytes": 60155,
+  "period": "01-Jul-2023..30-Sep-2023",
+  "financial_year": "01-Apr-2023 To 31-Mar-2024",
+  "filing_date": "31-Oct-2023 13:47",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 58,
+  "outcomes": {
+   "declared": 48,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "RAINBOW",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_98271_971917_31102023014539.xml",
+  "retrieved_at_utc": "2026-08-21T19:04:10.315414+00:00",
+  "content_sha256": "c326c62dc54bbae6b583e28008b7b8881cef96f52277c8b91fc5720878014348",
+  "bytes": 59015,
+  "period": "01-Jul-2023..30-Sep-2023",
+  "financial_year": "01-Apr-2023 To 31-Mar-2024",
+  "filing_date": "31-Oct-2023 13:45",
+  "filing_type": "New",
+  "consolidated": "Non-Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 56,
+  "outcomes": {
+   "declared": 46,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "RAINBOW",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_86393_666840_30052022022124_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:04:10.317261+00:00",
+  "content_sha256": "27018ae0ec93f68c39e1ea5f84c0553f0650c6a21f622d62ba0ebf2d3defc469",
+  "bytes": 52486,
+  "period": "01-Jan-2022..31-Mar-2022",
+  "financial_year": "01-Apr-2021 To 31-Mar-2022",
+  "filing_date": "30-May-2022 14:21",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 49,
+  "outcomes": {
+   "declared": 39,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "TATASTEEL",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_822176_4682_31102022174841_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:04:10.320964+00:00",
+  "content_sha256": "f8c31434ca70a6be9a0ed163889e5fd04f82e321233476c3177afeb58c3c3bce",
+  "bytes": 95654,
+  "period": "01-Jul-2022..30-Sep-2022",
+  "financial_year": "01-Apr-2022 To 31-Mar-2023",
+  "filing_date": "31-Oct-2022 17:48",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure"
+  ],
+  "mapped_facts": 58,
+  "outcomes": {
+   "declared": 48,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "TATASTEEL",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_822147_4682_31102022174841_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:04:10.323351+00:00",
+  "content_sha256": "4108a24099619c762b0fbc4c9d73ebd83dc62929d66e134462868d61c9e13b97",
+  "bytes": 49441,
+  "period": "01-Jul-2022..30-Sep-2022",
+  "financial_year": "01-Apr-2022 To 31-Mar-2023",
+  "filing_date": "31-Oct-2022 17:48",
+  "filing_type": "New",
+  "consolidated": "Non-Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure"
+  ],
+  "mapped_facts": 56,
+  "outcomes": {
+   "declared": 46,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "TATASTEEL",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_110001_1208485_31072024081041.xml",
+  "retrieved_at_utc": "2026-08-21T19:04:10.324572+00:00",
+  "content_sha256": "7fe279922f58f3913e51976fa5c92c4f8bc1dfa9980675c192c4a73e1d197cea",
+  "bytes": 45526,
+  "period": "01-Apr-2024..30-Jun-2024",
+  "financial_year": "01-Apr-2024 To 31-Mar-2025",
+  "filing_date": "31-Jul-2024 20:10",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 21,
+  "outcomes": {
+   "declared": 16,
+   "compound_unit_is_not_an_aggregate": 5
+  }
+ },
+ {
+  "symbol": "TORNTPHARM",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_41923_78753_30012019062752_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:04:10.326524+00:00",
+  "content_sha256": "41067e73e1abe98b0b03a639f0e7b58af14a3ab631d3bd61cfe288378bdcc236",
+  "bytes": 19657,
+  "period": "01-Oct-2018..31-Dec-2018",
+  "financial_year": "01-Apr-2018 To 31-Mar-2019",
+  "filing_date": "31-Jan-2019 18:23",
+  "filing_type": "New",
+  "consolidated": "Non-Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 40,
+  "outcomes": {
+   "declared": 30,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "TORNTPHARM",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_41924_78756_30012019063011_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:04:10.327362+00:00",
+  "content_sha256": "9b4861b89f3ad26b7667933dd54286c96b8019fc1628d0fe3c4a11bb32c3e43e",
+  "bytes": 19666,
+  "period": "01-Oct-2018..31-Dec-2018",
+  "financial_year": "01-Apr-2018 To 31-Mar-2019",
+  "filing_date": "31-Jan-2019 17:56",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 40,
+  "outcomes": {
+   "declared": 30,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "TORNTPHARM",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_93674_858897_30052023073710.xml",
+  "retrieved_at_utc": "2026-08-21T19:04:10.328864+00:00",
+  "content_sha256": "6c050868e71cf78a9a344adcd83da252375d22b08b39ff29b4475785d3147c46",
+  "bytes": 50909,
+  "period": "01-Jan-2023..31-Mar-2023",
+  "financial_year": "01-Apr-2022 To 31-Mar-2023",
+  "filing_date": "30-May-2023 19:37",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 59,
+  "outcomes": {
+   "declared": 49,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "ANURAS",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_804374_6483_28102022151422_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:04:10.331136+00:00",
+  "content_sha256": "43eeac035ed423e36f739e7769fe4305413780f3b2f88d3874d607b5fc7015a5",
+  "bytes": 55453,
+  "period": "01-Jul-2022..30-Sep-2022",
+  "financial_year": "01-Apr-2022 To 31-Mar-2023",
+  "filing_date": "28-Oct-2022 15:14",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency"
+  ],
+  "mapped_facts": 58,
+  "outcomes": {
+   "declared": 48,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "ANURAS",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_804373_6483_28102022151422_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:04:10.332673+00:00",
+  "content_sha256": "a6e0644bfe7aec08e6e833818d50b5c6cff742dd0c6c796b3ed8475dd1ce23ab",
+  "bytes": 56258,
+  "period": "01-Jul-2022..30-Sep-2022",
+  "financial_year": "01-Apr-2022 To 31-Mar-2023",
+  "filing_date": "28-Oct-2022 15:14",
+  "filing_type": "New",
+  "consolidated": "Non-Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency"
+  ],
+  "mapped_facts": 56,
+  "outcomes": {
+   "declared": 46,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "ANURAS",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_87951_779401_27012023012821_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:04:10.333409+00:00",
+  "content_sha256": "5e7bf754645dcb30f00d730afa5ee8be32592aa77042e72981552f777c43f83a",
+  "bytes": 24767,
+  "period": "01-Oct-2022..31-Dec-2022",
+  "financial_year": "01-Apr-2022 To 31-Mar-2023",
+  "filing_date": "27-Jan-2023 13:28",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 42,
+  "outcomes": {
+   "declared": 32,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "BHARTIARTL",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_98372_972858_31102023104654.xml",
+  "retrieved_at_utc": "2026-08-21T19:04:11.895762+00:00",
+  "content_sha256": "fbc34d99dc00fbc5eea9f6d12f1fc32fc43318c29ea8ee7f7e591e58664f716f",
+  "bytes": 116934,
+  "period": "01-Jul-2023..30-Sep-2023",
+  "financial_year": "01-Apr-2023 To 31-Mar-2024",
+  "filing_date": "31-Oct-2023 22:46",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 58,
+  "outcomes": {
+   "declared": 48,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "BHARTIARTL",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_98371_972855_31102023104246.xml",
+  "retrieved_at_utc": "2026-08-21T19:04:13.739263+00:00",
+  "content_sha256": "ffe285daea80b68cc721174e7aca8a0cbc41d3f130dc81d705f6359a20726e9c",
+  "bytes": 51394,
+  "period": "01-Jul-2023..30-Sep-2023",
+  "financial_year": "01-Apr-2023 To 31-Mar-2024",
+  "filing_date": "31-Oct-2023 22:42",
+  "filing_type": "New",
+  "consolidated": "Non-Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 56,
+  "outcomes": {
+   "declared": 46,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "BHARTIARTL",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_62815_353401_31102020084103_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:04:15.570880+00:00",
+  "content_sha256": "82453380ae9c1e688f9567357276d5df79315ce0b52bde943b74c9bdb10d1cdc",
+  "bytes": 102619,
+  "period": "01-Jul-2020..30-Sep-2020",
+  "financial_year": "01-Apr-2020 To 31-Mar-2021",
+  "filing_date": "31-Oct-2020 20:41",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 48,
+  "outcomes": {
+   "declared": 38,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "GSPL",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_35440_10413_22052018010030_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:04:21.297046+00:00",
+  "content_sha256": "dd9e0c2d3cb3c1c53fae80f30d60a9c636996acc72889cf172a581a5d0511df1",
+  "bytes": 28701,
+  "period": "01-Jan-2018..31-Mar-2018",
+  "financial_year": "01-Apr-2017 To 31-Mar-2018",
+  "filing_date": "26-May-2018 11:33",
+  "filing_type": "New",
+  "consolidated": "Non-Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 43,
+  "outcomes": {
+   "declared": 33,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "GSPL",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_43970_101153_10052019123420_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:04:22.852732+00:00",
+  "content_sha256": "a5c0e430448806a7901498e0d7acac2a69a8c8a537207e3db4c0df5a59bf335e",
+  "bytes": 32191,
+  "period": "01-Apr-2018..31-Mar-2019",
+  "financial_year": "01-Apr-2018 To 31-Mar-2019",
+  "filing_date": "26-Jun-2019 12:31",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 43,
+  "outcomes": {
+   "declared": 33,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "GSPL",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_40255_57850_03112018075831_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:04:24.752824+00:00",
+  "content_sha256": "12261e54d423186992073fc617f0cb4406d3d2f84097c0f1429ef10c37f3c572",
+  "bytes": 29990,
+  "period": "01-Jul-2018..30-Sep-2018",
+  "financial_year": "01-Apr-2018 To 31-Mar-2019",
+  "filing_date": "19-Nov-2018 17:05",
+  "filing_type": "New",
+  "consolidated": "Non-Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 42,
+  "outcomes": {
+   "declared": 32,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "JBCHEPHARM",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_85725_662823_27052022022540_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:04:30.182324+00:00",
+  "content_sha256": "e23b1e83753e46a2117c293378eefda8a643b4bf48804aa57dd32a8ea66f1691",
+  "bytes": 37745,
+  "period": "01-Jan-2022..31-Mar-2022",
+  "financial_year": "01-Apr-2021 To 31-Mar-2022",
+  "filing_date": "27-May-2022 14:25",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 49,
+  "outcomes": {
+   "declared": 39,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "JBCHEPHARM",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_85724_662818_27052022022331_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:04:32.036465+00:00",
+  "content_sha256": "02eb66ae22965a135342b8d3e0960cbe3851bf5745697551b89567263f2defbe",
+  "bytes": 37008,
+  "period": "01-Jan-2022..31-Mar-2022",
+  "financial_year": "01-Apr-2021 To 31-Mar-2022",
+  "filing_date": "27-May-2022 14:23",
+  "filing_type": "New",
+  "consolidated": "Non-Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 47,
+  "outcomes": {
+   "declared": 37,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "JBCHEPHARM",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_38412_33620_10082018054034_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:04:33.955547+00:00",
+  "content_sha256": "b63847c1189df8f85b8a67d86fea17b1afaab9081e5484c630c5ffb2c87216d8",
+  "bytes": 10105,
+  "period": "01-Apr-2018..30-Jun-2018",
+  "financial_year": "01-Apr-2018 To 31-Mar-2019",
+  "filing_date": "27-Aug-2018 11:09",
+  "filing_type": "New",
+  "consolidated": "Non-Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 20,
+  "outcomes": {
+   "declared": 15,
+   "compound_unit_is_not_an_aggregate": 5
+  }
+ },
+ {
+  "symbol": "ONGC",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_45818_107691_31052019054239_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:04:39.199784+00:00",
+  "content_sha256": "c7f5150a176bd03342325a581fd959ad45738cb47c192652ed02db3576ad4484",
+  "bytes": 34417,
+  "period": "01-Jan-2019..31-Mar-2019",
+  "financial_year": "01-Apr-2018 To 31-Mar-2019",
+  "filing_date": "31-May-2019 17:42",
+  "filing_type": "New",
+  "consolidated": "Non-Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 41,
+  "outcomes": {
+   "declared": 31,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "ONGC",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_118395_1368047_31012025084518.xml",
+  "retrieved_at_utc": "2026-08-21T19:04:40.841764+00:00",
+  "content_sha256": "3af6cd633ad8e43f7095a07d02ccd26517cbf24a59b2cdc569f975ba046dc7e2",
+  "bytes": 83663,
+  "period": "01-Oct-2024..31-Dec-2024",
+  "financial_year": "01-Apr-2024 To 31-Mar-2025",
+  "filing_date": "31-Jan-2025 20:45",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 42,
+  "outcomes": {
+   "declared": 32,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "ONGC",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_118394_1368042_31012025084227.xml",
+  "retrieved_at_utc": "2026-08-21T19:04:42.750630+00:00",
+  "content_sha256": "2f55dc6dc63c2e4db1e200d7b6b6407d72498c9ce7ff7d472159809568061867",
+  "bytes": 37211,
+  "period": "01-Oct-2024..31-Dec-2024",
+  "financial_year": "01-Apr-2024 To 31-Mar-2025",
+  "filing_date": "31-Jan-2025 20:42",
+  "filing_type": "New",
+  "consolidated": "Non-Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 40,
+  "outcomes": {
+   "declared": 30,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "PNBGILTS",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/NBFC_INDAS_117926_1363809_28012025091550.xml",
+  "retrieved_at_utc": "2026-08-21T19:04:47.826267+00:00",
+  "content_sha256": "10d6f98223c7971d4fe0c885a2e1f0716d2afe06560a83aedabfe3f54be97025",
+  "bytes": 25547,
+  "period": "01-Oct-2024..31-Dec-2024",
+  "financial_year": "01-Apr-2024 To 31-Mar-2025",
+  "filing_date": "28-Jan-2025 21:16",
+  "filing_type": "New",
+  "consolidated": "Non-Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 40,
+  "outcomes": {
+   "declared": 30,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "PNBGILTS",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_43181_82638_14022019031850_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:04:49.844579+00:00",
+  "content_sha256": "3faff7cacdd08e544a610a53d6e6f49e5544ebac283a3239389782f0e018b396",
+  "bytes": 19543,
+  "period": "01-Oct-2018..31-Dec-2018",
+  "financial_year": "01-Apr-2018 To 31-Mar-2019",
+  "filing_date": "27-Feb-2019 12:30",
+  "filing_type": "New",
+  "consolidated": "Non-Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 40,
+  "outcomes": {
+   "declared": 30,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "PNBGILTS",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/NONINDAS_35394_10656_23052018025638_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:04:51.719492+00:00",
+  "content_sha256": "32cc13a5c3b431932e3409b4eccf75532bcc10a94254854b8be8166d0a29c27c",
+  "bytes": 63028,
+  "period": "01-Apr-2017..31-Mar-2018",
+  "financial_year": "01-Apr-2017 To 31-Mar-2018",
+  "filing_date": "25-May-2018 11:35",
+  "filing_type": "New",
+  "consolidated": "Non-Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 29,
+  "outcomes": {
+   "declared": 23,
+   "compound_unit_is_not_an_aggregate": 6
+  }
+ },
+ {
+  "symbol": "RHFL",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_108654_1151232_31052024071419.xml",
+  "retrieved_at_utc": "2026-08-21T19:04:57.151903+00:00",
+  "content_sha256": "16824c41c907d1626fe6365113dcf8ff9ee300817b8201d0e7ca43fef4015dda",
+  "bytes": 45025,
+  "period": "01-Jan-2024..31-Mar-2024",
+  "financial_year": "01-Apr-2023 To 31-Mar-2024",
+  "filing_date": "31-May-2024 19:14",
+  "filing_type": "New",
+  "consolidated": "Non-Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 57,
+  "outcomes": {
+   "declared": 47,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "RHFL",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/NBFC_INDAS_73913_498702_31072021101742_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:04:59.062129+00:00",
+  "content_sha256": "24624f0babf8afc4b295a820dfbe61f04959282b2361707ce3730d2cdb3e940f",
+  "bytes": 13168,
+  "period": "01-Apr-2021..30-Jun-2021",
+  "financial_year": "01-Apr-2021 To 31-Mar-2022",
+  "filing_date": "31-Jul-2021 22:17",
+  "filing_type": "New",
+  "consolidated": "Non-Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 20,
+  "outcomes": {
+   "declared": 15,
+   "compound_unit_is_not_an_aggregate": 5
+  }
+ },
+ {
+  "symbol": "RHFL",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/NBFC_INDAS_94858_903164_28072023075332.xml",
+  "retrieved_at_utc": "2026-08-21T19:05:00.988506+00:00",
+  "content_sha256": "5ef398923472c5bc7e0101fd378b26bda6065b8257178aad039a576bc0f9a483",
+  "bytes": 15820,
+  "period": "01-Apr-2023..30-Jun-2023",
+  "financial_year": "01-Apr-2023 To 31-Mar-2024",
+  "filing_date": "28-Jul-2023 19:53",
+  "filing_type": "New",
+  "consolidated": "Non-Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 20,
+  "outcomes": {
+   "declared": 15,
+   "compound_unit_is_not_an_aggregate": 5
+  }
+ },
+ {
+  "symbol": "TATACOFFEE",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_41890_78601_30012019033929_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:05:06.152449+00:00",
+  "content_sha256": "aeb3b300ce421fa1cee5783dc9400dc5abe35a1e16ad2677a3425a37eeead1ba",
+  "bytes": 44437,
+  "period": "01-Oct-2018..31-Dec-2018",
+  "financial_year": "01-Apr-2018 To 31-Mar-2019",
+  "filing_date": "31-Jan-2019 11:26",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 42,
+  "outcomes": {
+   "declared": 32,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "TATACOFFEE",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_41892_78606_30012019034538_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:05:07.801935+00:00",
+  "content_sha256": "986cb5e2f62250b68ad28aa4e5c2302b8cddaa4218635ffabda144ec6c75c1f5",
+  "bytes": 24226,
+  "period": "01-Oct-2018..31-Dec-2018",
+  "financial_year": "01-Apr-2018 To 31-Mar-2019",
+  "filing_date": "31-Jan-2019 11:23",
+  "filing_type": "New",
+  "consolidated": "Non-Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 40,
+  "outcomes": {
+   "declared": 30,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "TATACOFFEE",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_39557_55341_26102018050055_WEB_2.xml",
+  "retrieved_at_utc": "2026-08-21T19:05:09.548987+00:00",
+  "content_sha256": "541f9a5a884ab08c5efd8136b8f27442d19a6ef7d3053d4ae8fc6df17e43c665",
+  "bytes": 40721,
+  "period": "01-Jul-2018..30-Sep-2018",
+  "financial_year": "01-Apr-2018 To 31-Mar-2019",
+  "filing_date": "30-Oct-2018 17:53",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 42,
+  "outcomes": {
+   "declared": 32,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "TATAMTRDVR",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_52041_213199_31012020115728_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:05:15.253710+00:00",
+  "content_sha256": "dba13e41ff6ec55fa91b7f59a5056639f6a37dcb57c18da1e71d99550463e4c5",
+  "bytes": 90260,
+  "period": "01-Oct-2019..31-Dec-2019",
+  "financial_year": "01-Apr-2019 To 31-Mar-2020",
+  "filing_date": "31-Jan-2020 11:57",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 40,
+  "outcomes": {
+   "declared": 30,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "TATAMTRDVR",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_52040_213194_31012020115356_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:05:16.897148+00:00",
+  "content_sha256": "340e8f9545dd5267d76b4633a7bd35755802b5c8c975bc22f8274add87f04f43",
+  "bytes": 42764,
+  "period": "01-Oct-2019..31-Dec-2019",
+  "financial_year": "01-Apr-2019 To 31-Mar-2020",
+  "filing_date": "31-Jan-2020 11:53",
+  "filing_type": "New",
+  "consolidated": "Non-Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 40,
+  "outcomes": {
+   "declared": 30,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "TATAMTRDVR",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_66679_400273_29012021095545_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:05:18.636010+00:00",
+  "content_sha256": "10f798a864ceab7de57a29d530359d480b73d34a8031b5e145423971baef6632",
+  "bytes": 79752,
+  "period": "01-Oct-2020..31-Dec-2020",
+  "financial_year": "01-Apr-2020 To 31-Mar-2021",
+  "filing_date": "29-Jan-2021 21:55",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 42,
+  "outcomes": {
+   "declared": 32,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "ZENTEC",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_617336_3564_31072022131737_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:05:23.980358+00:00",
+  "content_sha256": "2046795a2b2a94f878ce80995c9f361ba2026c2f881c5d03b3ab21db4ce47a77",
+  "bytes": 13263,
+  "period": "01-Apr-2022..30-Jun-2022",
+  "financial_year": "01-Apr-2022 To 31-Mar-2023",
+  "filing_date": "31-Jul-2022 13:17",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency"
+  ],
+  "mapped_facts": 21,
+  "outcomes": {
+   "declared": 16,
+   "compound_unit_is_not_an_aggregate": 5
+  }
+ },
+ {
+  "symbol": "ZENTEC",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_66765_400733_31012021122706_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:05:25.840450+00:00",
+  "content_sha256": "a6e565bdc26991f4dc9f6d2e349bff1d777582915e3541476df2afa2679a7ecf",
+  "bytes": 17894,
+  "period": "01-Oct-2020..31-Dec-2020",
+  "financial_year": "01-Apr-2020 To 31-Mar-2021",
+  "filing_date": "31-Jan-2021 12:27",
+  "filing_type": "New",
+  "consolidated": "Non-Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 40,
+  "outcomes": {
+   "declared": 30,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "ZENTEC",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_66764_400730_31012021122513_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:05:27.640663+00:00",
+  "content_sha256": "89219d869d6d612428a47378a500d8471e79b59f4e36c1f6a65016505f660d94",
+  "bytes": 18635,
+  "period": "01-Oct-2020..31-Dec-2020",
+  "financial_year": "01-Apr-2020 To 31-Mar-2021",
+  "filing_date": "31-Jan-2021 12:25",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 42,
+  "outcomes": {
+   "declared": 32,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "360ONE",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/NBFC_INDAS_109902_1207587_31072024022530.xml",
+  "retrieved_at_utc": "2026-08-21T19:05:33.001845+00:00",
+  "content_sha256": "b05dc1ed1c911a6d9101a24a2d680fb23264e85196b82db5514efd76b271a380",
+  "bytes": 30763,
+  "period": "01-Apr-2024..30-Jun-2024",
+  "financial_year": "01-Apr-2024 To 31-Mar-2025",
+  "filing_date": "31-Jul-2024 14:25",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 21,
+  "outcomes": {
+   "declared": 16,
+   "compound_unit_is_not_an_aggregate": 5
+  }
+ },
+ {
+  "symbol": "360ONE",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/NBFC_INDAS_109901_1207581_31072024022301.xml",
+  "retrieved_at_utc": "2026-08-21T19:05:34.973819+00:00",
+  "content_sha256": "64b5c4d5db2d148038f715d406d494bd7b5d34cc6ce191f352ff5c545599b3db",
+  "bytes": 15736,
+  "period": "01-Apr-2024..30-Jun-2024",
+  "financial_year": "01-Apr-2024 To 31-Mar-2025",
+  "filing_date": "31-Jul-2024 14:23",
+  "filing_type": "New",
+  "consolidated": "Non-Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 20,
+  "outcomes": {
+   "declared": 15,
+   "compound_unit_is_not_an_aggregate": 5
+  }
+ },
+ {
+  "symbol": "360ONE",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_77032_547792_28102021060115_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:05:36.621380+00:00",
+  "content_sha256": "44c269a2180f13928fa5e288d980cb1b7cb09209bd567d971f54429f97609f77",
+  "bytes": 55230,
+  "period": "01-Jul-2021..30-Sep-2021",
+  "financial_year": "01-Apr-2021 To 31-Mar-2022",
+  "filing_date": "28-Oct-2021 18:01",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 48,
+  "outcomes": {
+   "declared": 38,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "AARTIIND",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_77454_549829_31102021120213_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:05:42.413732+00:00",
+  "content_sha256": "1b95d35b2d2dc037ffa2f23c5ff8af14a8fedec05c1253dd9d84ea66fe0d1931",
+  "bytes": 53042,
+  "period": "01-Jul-2021..30-Sep-2021",
+  "financial_year": "01-Apr-2021 To 31-Mar-2022",
+  "filing_date": "31-Oct-2021 12:02",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 48,
+  "outcomes": {
+   "declared": 38,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "AARTIIND",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_77452_549823_31102021115948_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:05:44.144716+00:00",
+  "content_sha256": "7c27b72106442b849a5edd94a5c45d768f64823ffb98a50260c070ee57f969cd",
+  "bytes": 52558,
+  "period": "01-Jul-2021..30-Sep-2021",
+  "financial_year": "01-Apr-2021 To 31-Mar-2022",
+  "filing_date": "31-Oct-2021 11:59",
+  "filing_type": "New",
+  "consolidated": "Non-Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 46,
+  "outcomes": {
+   "declared": 36,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "AARTIIND",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_66580_399760_29012021032347_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:05:45.984843+00:00",
+  "content_sha256": "a467cc9861af392cdf11ab9d9f93320b1d3bde9bd4d9dc25725d5655b8861a14",
+  "bytes": 32841,
+  "period": "01-Oct-2020..31-Dec-2020",
+  "financial_year": "01-Apr-2020 To 31-Mar-2021",
+  "filing_date": "29-Jan-2021 15:23",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 42,
+  "outcomes": {
+   "declared": 32,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "ABCAPITAL",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/NBFC_INDAS_114067_1295042_31102024112609.xml",
+  "retrieved_at_utc": "2026-08-21T19:05:51.599116+00:00",
+  "content_sha256": "f4aaef3e1a4a2cbcba572019b845ad1854e402ad83b9d2660cdb7ee7d892a7ac",
+  "bytes": 111180,
+  "period": "01-Jul-2024..30-Sep-2024",
+  "financial_year": "01-Apr-2024 To 31-Mar-2025",
+  "filing_date": "31-Oct-2024 11:26",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 56,
+  "outcomes": {
+   "declared": 46,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "ABCAPITAL",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/NBFC_INDAS_114066_1295040_31102024112506.xml",
+  "retrieved_at_utc": "2026-08-21T19:05:53.347530+00:00",
+  "content_sha256": "6f9b70590908ec56c15d77c9b062a1e0b4357a2a9660f6390fb29e5181cb6aab",
+  "bytes": 49175,
+  "period": "01-Jul-2024..30-Sep-2024",
+  "financial_year": "01-Apr-2024 To 31-Mar-2025",
+  "filing_date": "31-Oct-2024 11:25",
+  "filing_type": "New",
+  "consolidated": "Non-Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 54,
+  "outcomes": {
+   "declared": 44,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "ABCAPITAL",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_40409_61232_19112018064532_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:05:55.260636+00:00",
+  "content_sha256": "20426ec09884c29f1dbe54e154b5e4e195ac9c3331e583f63bf277e5ae5e9e7f",
+  "bytes": 74578,
+  "period": "01-Jul-2018..30-Sep-2018",
+  "financial_year": "01-Apr-2018 To 31-Mar-2019",
+  "filing_date": "28-Nov-2018 14:50",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 42,
+  "outcomes": {
+   "declared": 32,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "ABFRL",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_73773_498003_30072021050804_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:06:00.898000+00:00",
+  "content_sha256": "d5dcd1e43e1455fe8ed75d33f64109d4e6d5bbde76fad9393ba3002ed64723b7",
+  "bytes": 31810,
+  "period": "01-Apr-2021..30-Jun-2021",
+  "financial_year": "01-Apr-2021 To 31-Mar-2022",
+  "filing_date": "30-Jul-2021 17:08",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 21,
+  "outcomes": {
+   "declared": 16,
+   "compound_unit_is_not_an_aggregate": 5
+  }
+ },
+ {
+  "symbol": "ABFRL",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_73771_497997_30072021050412_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:06:02.855325+00:00",
+  "content_sha256": "63d6cf011aa854a80497f08eb315d1fbd111426c23af221b44607041083f814e",
+  "bytes": 10958,
+  "period": "01-Apr-2021..30-Jun-2021",
+  "financial_year": "01-Apr-2021 To 31-Mar-2022",
+  "filing_date": "30-Jul-2021 17:04",
+  "filing_type": "New",
+  "consolidated": "Non-Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 20,
+  "outcomes": {
+   "declared": 15,
+   "compound_unit_is_not_an_aggregate": 5
+  }
+ },
+ {
+  "symbol": "ABFRL",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_70691_453315_29052021103203_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:06:04.718038+00:00",
+  "content_sha256": "4f881c4792b2cc0330ab545edd22edc712530ec509a321738b0e5550b83cfbf8",
+  "bytes": 36866,
+  "period": "01-Jan-2021..31-Mar-2021",
+  "financial_year": "01-Apr-2020 To 31-Mar-2021",
+  "filing_date": "29-May-2021 22:32",
+  "filing_type": "New",
+  "consolidated": "Non-Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 47,
+  "outcomes": {
+   "declared": 37,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "ACC",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_118350_1367750_31012025064516.xml",
+  "retrieved_at_utc": "2026-08-21T19:06:10.211605+00:00",
+  "content_sha256": "20cba40d284ce1dbe524ccb40c5a0c112589acbb415ea0c8eed5e1c4299b8308",
+  "bytes": 35780,
+  "period": "01-Oct-2024..31-Dec-2024",
+  "financial_year": "01-Apr-2024 To 31-Mar-2025",
+  "filing_date": "31-Jan-2025 18:45",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 42,
+  "outcomes": {
+   "declared": 32,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "ACC",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_118349_1367742_31012025064331.xml",
+  "retrieved_at_utc": "2026-08-21T19:06:12.165122+00:00",
+  "content_sha256": "037f671c48ed847bdedeb410546b2c5c5a91d635426f687155f5c9d846938a68",
+  "bytes": 29628,
+  "period": "01-Oct-2024..31-Dec-2024",
+  "financial_year": "01-Apr-2024 To 31-Mar-2025",
+  "filing_date": "31-Jan-2025 18:43",
+  "filing_type": "New",
+  "consolidated": "Non-Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 40,
+  "outcomes": {
+   "declared": 30,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "ACC",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_98196_970551_30102023113322.xml",
+  "retrieved_at_utc": "2026-08-21T19:06:12.170529+00:00",
+  "content_sha256": "bfd170ea0bfafb6e355bf33488b7d99bbef3dcfc566f9aeb05a4cedaf2104000",
+  "bytes": 59637,
+  "period": "01-Jul-2023..30-Sep-2023",
+  "financial_year": "01-Apr-2023 To 31-Mar-2024",
+  "filing_date": "30-Oct-2023 11:33",
+  "filing_type": "New",
+  "consolidated": "Non-Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 56,
+  "outcomes": {
+   "declared": 46,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "ADANIENSOL",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_77349_549355_30102021030940_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:06:17.570217+00:00",
+  "content_sha256": "116da16e0e995a914491fac47d94fd141105e4462aedf5d6a4721e9f483c79aa",
+  "bytes": 61750,
+  "period": "01-Jul-2021..30-Sep-2021",
+  "financial_year": "01-Apr-2021 To 31-Mar-2022",
+  "filing_date": "30-Oct-2021 15:09",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 48,
+  "outcomes": {
+   "declared": 38,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "ADANIENSOL",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_77348_549352_30102021030819_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:06:19.276465+00:00",
+  "content_sha256": "e984adc67bec92c73eff08034b85eedef0997bb7dbf1e97fccfb4c795f028bc3",
+  "bytes": 37509,
+  "period": "01-Jul-2021..30-Sep-2021",
+  "financial_year": "01-Apr-2021 To 31-Mar-2022",
+  "filing_date": "30-Oct-2021 15:08",
+  "filing_type": "New",
+  "consolidated": "Non-Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 46,
+  "outcomes": {
+   "declared": 36,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "ADANIENSOL",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_93604_858407_30052023055420.xml",
+  "retrieved_at_utc": "2026-08-21T19:06:20.907835+00:00",
+  "content_sha256": "a51120cbdbd3aca75e79a88191063e59132e5aa05cc9b4e8fd46034324014bd1",
+  "bytes": 75966,
+  "period": "01-Jan-2023..31-Mar-2023",
+  "financial_year": "01-Apr-2022 To 31-Mar-2023",
+  "filing_date": "30-May-2023 17:54",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 59,
+  "outcomes": {
+   "declared": 49,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "ADANIPORTS",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_93867_860115_31052023032630.xml",
+  "retrieved_at_utc": "2026-08-21T19:06:26.159933+00:00",
+  "content_sha256": "4198d95ad57802c0973e06f6c86d84414b8b72876936aefd64f98b55a1879d0e",
+  "bytes": 79992,
+  "period": "01-Jan-2023..31-Mar-2023",
+  "financial_year": "01-Apr-2022 To 31-Mar-2023",
+  "filing_date": "31-May-2023 15:26",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 59,
+  "outcomes": {
+   "declared": 49,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "ADANIPORTS",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_93865_860104_31052023032411.xml",
+  "retrieved_at_utc": "2026-08-21T19:06:27.951299+00:00",
+  "content_sha256": "ee3464087138a9eff3c1a8f7de0ec7873683007cf3738593a8b0809fef5e3980",
+  "bytes": 49000,
+  "period": "01-Jan-2023..31-Mar-2023",
+  "financial_year": "01-Apr-2022 To 31-Mar-2023",
+  "filing_date": "31-May-2023 15:24",
+  "filing_type": "New",
+  "consolidated": "Non-Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 57,
+  "outcomes": {
+   "declared": 47,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "ADANIPORTS",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_118144_1365888_30012025041037.xml",
+  "retrieved_at_utc": "2026-08-21T19:06:29.616499+00:00",
+  "content_sha256": "4261d4b903521b9bbfdb3c60e2c700f50e1730589e76df93a73cf73ecf85b55d",
+  "bytes": 52612,
+  "period": "01-Oct-2024..31-Dec-2024",
+  "financial_year": "01-Apr-2024 To 31-Mar-2025",
+  "filing_date": "30-Jan-2025 16:10",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 42,
+  "outcomes": {
+   "declared": 32,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "ADANIPOWER",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_109938_1207859_31072024042934.xml",
+  "retrieved_at_utc": "2026-08-21T19:06:35.030391+00:00",
+  "content_sha256": "7ba0ca3337c868354a1133328657d4f5724180ffed7481ce659432bce63c32a2",
+  "bytes": 24171,
+  "period": "01-Apr-2024..30-Jun-2024",
+  "financial_year": "01-Apr-2024 To 31-Mar-2025",
+  "filing_date": "31-Jul-2024 16:29",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 21,
+  "outcomes": {
+   "declared": 16,
+   "compound_unit_is_not_an_aggregate": 5
+  }
+ },
+ {
+  "symbol": "ADANIPOWER",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_109936_1207845_31072024042737.xml",
+  "retrieved_at_utc": "2026-08-21T19:06:36.755485+00:00",
+  "content_sha256": "eabffcb7c882fe4e42be18b17ab5b102eaa470d2ad8b1a0ff968c90a9145d19b",
+  "bytes": 13533,
+  "period": "01-Apr-2024..30-Jun-2024",
+  "financial_year": "01-Apr-2024 To 31-Mar-2025",
+  "filing_date": "31-Jul-2024 16:27",
+  "filing_type": "New",
+  "consolidated": "Non-Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 20,
+  "outcomes": {
+   "declared": 15,
+   "compound_unit_is_not_an_aggregate": 5
+  }
+ },
+ {
+  "symbol": "ADANIPOWER",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_77285_549058_30102021105313_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:06:38.689300+00:00",
+  "content_sha256": "984f63021702dfa29b1e7a1ebf10500c45f3749218e0631f1ed0dc6dd54c7fb1",
+  "bytes": 52270,
+  "period": "01-Jul-2021..30-Sep-2021",
+  "financial_year": "01-Apr-2021 To 31-Mar-2022",
+  "filing_date": "30-Oct-2021 10:53",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 48,
+  "outcomes": {
+   "declared": 38,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "AFFLE",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_70744_453551_31052021111211_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:06:44.262161+00:00",
+  "content_sha256": "84aa2668ed1b0e8558fad34faf59960d3f7c018b7aad57dc3ed87a98435222ff",
+  "bytes": 57672,
+  "period": "01-Jan-2021..31-Mar-2021",
+  "financial_year": "01-Apr-2020 To 31-Mar-2021",
+  "filing_date": "31-May-2021 11:12",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 49,
+  "outcomes": {
+   "declared": 39,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "AFFLE",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_70743_453548_31052021111041_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:06:46.118324+00:00",
+  "content_sha256": "3e664a43d61865a1a3f5c83e31d455813c49aede60f11fe2b0192b8dee27ccad",
+  "bytes": 49343,
+  "period": "01-Jan-2021..31-Mar-2021",
+  "financial_year": "01-Apr-2020 To 31-Mar-2021",
+  "filing_date": "31-May-2021 11:10",
+  "filing_type": "New",
+  "consolidated": "Non-Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 47,
+  "outcomes": {
+   "declared": 37,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "AFFLE",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_55526_262648_30052020063527_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:06:48.134070+00:00",
+  "content_sha256": "9370385902f9d5cd7f6e731ce9bd22ac611827fb773e2977d7a92cd60817a6c7",
+  "bytes": 31725,
+  "period": "01-Jan-2020..31-Mar-2020",
+  "financial_year": "01-Apr-2019 To 31-Mar-2020",
+  "filing_date": "30-May-2020 18:35",
+  "filing_type": "New",
+  "consolidated": "Non-Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 41,
+  "outcomes": {
+   "declared": 31,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "AJANTPHARM",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_98320_972364_31102023053643.xml",
+  "retrieved_at_utc": "2026-08-21T19:06:53.491110+00:00",
+  "content_sha256": "fefe3be657360e5f66f2de9999a6fd632f96c61160f6f58018945f91eba99975",
+  "bytes": 52622,
+  "period": "01-Jul-2023..30-Sep-2023",
+  "financial_year": "01-Apr-2023 To 31-Mar-2024",
+  "filing_date": "31-Oct-2023 17:36",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 58,
+  "outcomes": {
+   "declared": 48,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "AJANTPHARM",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_98318_972344_31102023052756.xml",
+  "retrieved_at_utc": "2026-08-21T19:06:55.555083+00:00",
+  "content_sha256": "6f7b686862b81b8b148662e9704851608533e8a29e9c18e7e0d972e4bdb0522e",
+  "bytes": 47030,
+  "period": "01-Jul-2023..30-Sep-2023",
+  "financial_year": "01-Apr-2023 To 31-Mar-2024",
+  "filing_date": "31-Oct-2023 17:27",
+  "filing_type": "New",
+  "consolidated": "Non-Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 56,
+  "outcomes": {
+   "declared": 46,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "AJANTPHARM",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_58751_300088_31072020103817_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:06:57.165597+00:00",
+  "content_sha256": "74d9134162de2392b1d662c761bbf5bfe3458f8f074daec9a515a7f5b969d9ad",
+  "bytes": 13362,
+  "period": "01-Apr-2020..30-Jun-2020",
+  "financial_year": "01-Apr-2020 To 31-Mar-2021",
+  "filing_date": "31-Jul-2020 10:38",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 20,
+  "outcomes": {
+   "declared": 15,
+   "compound_unit_is_not_an_aggregate": 5
+  }
+ },
+ {
+  "symbol": "ALKYLAMINE",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_70545_452336_28052021122035_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:07:02.329045+00:00",
+  "content_sha256": "151b9c25eb40548cf9be058bced30233594c04f54c042fa8fa51cc03ab3003f7",
+  "bytes": 39218,
+  "period": "01-Jan-2021..31-Mar-2021",
+  "financial_year": "01-Apr-2020 To 31-Mar-2021",
+  "filing_date": "28-May-2021 12:20",
+  "filing_type": "New",
+  "consolidated": "Non-Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 47,
+  "outcomes": {
+   "declared": 37,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "ALKYLAMINE",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_35410_10282_21052018112908_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:07:04.319002+00:00",
+  "content_sha256": "638531cb46617a2b6fa5eed554bd2d3a854a70b4f70574bb0e75f5db180cc64a",
+  "bytes": 22189,
+  "period": "01-Jan-2018..31-Mar-2018",
+  "financial_year": "01-Apr-2017 To 31-Mar-2018",
+  "filing_date": "26-May-2018 14:13",
+  "filing_type": "New",
+  "consolidated": "Non-Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 41,
+  "outcomes": {
+   "declared": 31,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "ALKYLAMINE",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_35412_10292_21052018025424_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:07:05.795740+00:00",
+  "content_sha256": "ec7dadc7d7163e71a38b47458e65ada2b7cceaf14954efeeaf891d0177bc42c8",
+  "bytes": 22040,
+  "period": "01-Apr-2017..31-Mar-2018",
+  "financial_year": "01-Apr-2017 To 31-Mar-2018",
+  "filing_date": "26-May-2018 14:12",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 41,
+  "outcomes": {
+   "declared": 31,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "ALOKINDS",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_611357_3960_28072022181612_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:07:11.012546+00:00",
+  "content_sha256": "33a207d6dbb979dc8e4b581c154dd46794d8144b5697e989fa613494ecfbe107",
+  "bytes": 16835,
+  "period": "01-Apr-2022..30-Jun-2022",
+  "financial_year": "01-Apr-2022 To 31-Mar-2023",
+  "filing_date": "28-Jul-2022 18:16",
+  "filing_type": "New",
+  "consolidated": "Non-Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency"
+  ],
+  "mapped_facts": 20,
+  "outcomes": {
+   "declared": 15,
+   "compound_unit_is_not_an_aggregate": 5
+  }
+ },
+ {
+  "symbol": "ALOKINDS",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_54845_225688_27022020031807_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:07:12.780996+00:00",
+  "content_sha256": "be777a6c8206472ef188d567e8a3c2c4552cc5fed2d2eab83762f6d58a8c0b35",
+  "bytes": 16092,
+  "period": "01-Oct-2019..31-Dec-2019",
+  "financial_year": "01-Apr-2019 To 31-Mar-2020",
+  "filing_date": "27-Feb-2020 15:18",
+  "filing_type": "New",
+  "consolidated": "Non-Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 42,
+  "outcomes": {
+   "declared": 32,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "ALOKINDS",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_69468_444138_27042021102758_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:07:14.594173+00:00",
+  "content_sha256": "ed3ebb521ab2d1741ee24c956d2ededfe9f1737edc969530dbc1c5855f75ebaf",
+  "bytes": 39126,
+  "period": "01-Apr-2020..31-Mar-2021",
+  "financial_year": "01-Apr-2020 To 31-Mar-2021",
+  "filing_date": "27-Apr-2021 22:28",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 47,
+  "outcomes": {
+   "declared": 37,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "AMBER",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_55537_262777_31052020094532_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:07:20.017135+00:00",
+  "content_sha256": "b12999264c3d1b1569d9001316f550bd21beb9f875ec2ca0408d6850f60d114a",
+  "bytes": 20896,
+  "period": "01-Jan-2020..31-Mar-2020",
+  "financial_year": "01-Apr-2019 To 31-Mar-2020",
+  "filing_date": "31-May-2020 09:45",
+  "filing_type": "New",
+  "consolidated": "Non-Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 41,
+  "outcomes": {
+   "declared": 31,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "AMBER",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_52066_213281_31012020025225_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:07:21.827096+00:00",
+  "content_sha256": "90b9b60101f1dd9a14917f19ca096bc9e503152e18676664953872f174a83757",
+  "bytes": 18533,
+  "period": "01-Oct-2019..31-Dec-2019",
+  "financial_year": "01-Apr-2019 To 31-Mar-2020",
+  "filing_date": "31-Jan-2020 14:52",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 42,
+  "outcomes": {
+   "declared": 32,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "AMBER",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_52063_213274_31012020025021_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:07:23.711600+00:00",
+  "content_sha256": "48fd568707a03aabc82e5a5f6ed57a9d81579d96e7229394cfa95c9174f23a90",
+  "bytes": 18801,
+  "period": "01-Oct-2019..31-Dec-2019",
+  "financial_year": "01-Apr-2019 To 31-Mar-2020",
+  "filing_date": "31-Jan-2020 14:50",
+  "filing_type": "New",
+  "consolidated": "Non-Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 40,
+  "outcomes": {
+   "declared": 30,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "AMBUJACEM",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_109937_1207858_31072024042929.xml",
+  "retrieved_at_utc": "2026-08-21T19:07:28.783552+00:00",
+  "content_sha256": "71c552a3af86aad7d5e21d020ae518052960689731c709b85ee5de9bab135976",
+  "bytes": 23819,
+  "period": "01-Apr-2024..30-Jun-2024",
+  "financial_year": "01-Apr-2024 To 31-Mar-2025",
+  "filing_date": "31-Jul-2024 16:29",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 21,
+  "outcomes": {
+   "declared": 16,
+   "compound_unit_is_not_an_aggregate": 5
+  }
+ },
+ {
+  "symbol": "AMBUJACEM",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_109935_1207842_31072024042707.xml",
+  "retrieved_at_utc": "2026-08-21T19:07:30.789849+00:00",
+  "content_sha256": "935b4a51883210f71a2df4cdce72047166198f45a8239203e5c25f54429e841e",
+  "bytes": 23237,
+  "period": "01-Apr-2024..30-Jun-2024",
+  "financial_year": "01-Apr-2024 To 31-Mar-2025",
+  "filing_date": "31-Jul-2024 16:27",
+  "filing_type": "New",
+  "consolidated": "Non-Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 20,
+  "outcomes": {
+   "declared": 15,
+   "compound_unit_is_not_an_aggregate": 5
+  }
+ },
+ {
+  "symbol": "AMBUJACEM",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_101893_1040562_31012024060355.xml",
+  "retrieved_at_utc": "2026-08-21T19:07:32.773483+00:00",
+  "content_sha256": "5459dbccfa68ce0d10cf98922d50e7c158be87553ad0a10fe6caff0d729e7058",
+  "bytes": 22257,
+  "period": "01-Oct-2023..31-Dec-2023",
+  "financial_year": "01-Apr-2023 To 31-Mar-2024",
+  "filing_date": "31-Jan-2024 18:03",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 40,
+  "outcomes": {
+   "declared": 30,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "ANGELONE",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/NBFC_INDAS_66524_399477_29012021111703_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:07:37.763719+00:00",
+  "content_sha256": "762a63b01bf3d04fe0f29a022f598fc29ecddaa0cdfa0915daa727a330106b31",
+  "bytes": 42746,
+  "period": "01-Oct-2020..31-Dec-2020",
+  "financial_year": "01-Apr-2020 To 31-Mar-2021",
+  "filing_date": "29-Jan-2021 11:17",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 43,
+  "outcomes": {
+   "declared": 33,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "ANGELONE",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/NBFC_INDAS_66522_399471_29012021111441_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:07:39.712061+00:00",
+  "content_sha256": "3f9e74d89ab77402a4b22ac17ae41bad6c13254a33178839ae0cccb80b31f4e1",
+  "bytes": 23589,
+  "period": "01-Oct-2020..31-Dec-2020",
+  "financial_year": "01-Apr-2020 To 31-Mar-2021",
+  "filing_date": "29-Jan-2021 11:14",
+  "filing_type": "New",
+  "consolidated": "Non-Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 41,
+  "outcomes": {
+   "declared": 31,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "ANGELONE",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/NBFC_INDAS_76513_541979_20102021085546_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:07:41.556974+00:00",
+  "content_sha256": "a087abde878946d3c7a10411aa8074b82e71d79caa08a8e2bfa69f9bb090de92",
+  "bytes": 63240,
+  "period": "01-Jul-2021..30-Sep-2021",
+  "financial_year": "01-Apr-2021 To 31-Mar-2022",
+  "filing_date": "20-Oct-2021 20:55",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 51,
+  "outcomes": {
+   "declared": 41,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "APLAPOLLO",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_98268_971898_31102023012338.xml",
+  "retrieved_at_utc": "2026-08-21T19:07:47.169803+00:00",
+  "content_sha256": "7463b93012881a82c1bf8ff5ef508778957557b5c77fa683b92849dbe1c6d9cf",
+  "bytes": 44857,
+  "period": "01-Jul-2023..30-Sep-2023",
+  "financial_year": "01-Apr-2023 To 31-Mar-2024",
+  "filing_date": "31-Oct-2023 13:23",
+  "filing_type": "New",
+  "consolidated": "Non-Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 56,
+  "outcomes": {
+   "declared": 46,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "APLAPOLLO",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_98267_971895_31102023012207.xml",
+  "retrieved_at_utc": "2026-08-21T19:07:49.004128+00:00",
+  "content_sha256": "8e0803770e006342d760a123dbfe8425d0a912d3d398539098f8f7add84c868f",
+  "bytes": 45798,
+  "period": "01-Jul-2023..30-Sep-2023",
+  "financial_year": "01-Apr-2023 To 31-Mar-2024",
+  "filing_date": "31-Oct-2023 13:22",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 58,
+  "outcomes": {
+   "declared": 48,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "APLAPOLLO",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_113939_1293647_30102024122037.xml",
+  "retrieved_at_utc": "2026-08-21T19:07:50.894647+00:00",
+  "content_sha256": "0bb05a800f63766948403425bc0a738c7618def19639a395e35f2e14bf286d32",
+  "bytes": 43806,
+  "period": "01-Jul-2024..30-Sep-2024",
+  "financial_year": "01-Apr-2024 To 31-Mar-2025",
+  "filing_date": "30-Oct-2024 12:20",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 58,
+  "outcomes": {
+   "declared": 48,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "APLLTD",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_46377_126270_29072019085640_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:07:56.250708+00:00",
+  "content_sha256": "502b146faf0cbcd41c74df5dadbfeea5453e491bb5922fff851f73a0850e6bd2",
+  "bytes": 9849,
+  "period": "01-Apr-2019..30-Jun-2019",
+  "financial_year": "01-Apr-2019 To 31-Mar-2020",
+  "filing_date": "29-Jul-2019 20:56",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 21,
+  "outcomes": {
+   "declared": 16,
+   "compound_unit_is_not_an_aggregate": 5
+  }
+ },
+ {
+  "symbol": "APLLTD",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_46376_126265_29072019085030_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:07:58.400195+00:00",
+  "content_sha256": "2666180f18002ed42c728047f3d3412813b510970dd5fb1c0bbb57669b216efa",
+  "bytes": 9465,
+  "period": "01-Apr-2019..30-Jun-2019",
+  "financial_year": "01-Apr-2019 To 31-Mar-2020",
+  "filing_date": "29-Jul-2019 20:50",
+  "filing_type": "New",
+  "consolidated": "Non-Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 20,
+  "outcomes": {
+   "declared": 15,
+   "compound_unit_is_not_an_aggregate": 5
+  }
+ },
+ {
+  "symbol": "APLLTD",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_73361_495482_26072021033701_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:08:00.017048+00:00",
+  "content_sha256": "4e3b49d9e853162967a1109477c0fe1123b5db64095cd8d46cf4a719a13cd50a",
+  "bytes": 11110,
+  "period": "01-Apr-2021..30-Jun-2021",
+  "financial_year": "01-Apr-2021 To 31-Mar-2022",
+  "filing_date": "26-Jul-2021 15:37",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 21,
+  "outcomes": {
+   "declared": 16,
+   "compound_unit_is_not_an_aggregate": 5
+  }
+ },
+ {
+  "symbol": "APOLLOHOSP",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_108616_1150927_31052024060453.xml",
+  "retrieved_at_utc": "2026-08-21T19:08:05.378401+00:00",
+  "content_sha256": "f0f48d52cf126895794463d8a3fefa893ca840e2c6c488c0414c90c13fbcb29d",
+  "bytes": 73179,
+  "period": "01-Jan-2024..31-Mar-2024",
+  "financial_year": "01-Apr-2023 To 31-Mar-2024",
+  "filing_date": "31-May-2024 18:04",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 59,
+  "outcomes": {
+   "declared": 49,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "APOLLOHOSP",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_108612_1150901_31052024060102.xml",
+  "retrieved_at_utc": "2026-08-21T19:08:07.213013+00:00",
+  "content_sha256": "3058629031791e65ae9c3ed1ad9af640d498c26ceda1510e1fa69029fb134eb6",
+  "bytes": 44670,
+  "period": "01-Jan-2024..31-Mar-2024",
+  "financial_year": "01-Apr-2023 To 31-Mar-2024",
+  "filing_date": "31-May-2024 18:01",
+  "filing_type": "New",
+  "consolidated": "Non-Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 57,
+  "outcomes": {
+   "declared": 47,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "APOLLOHOSP",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_93944_860486_31052023045133.xml",
+  "retrieved_at_utc": "2026-08-21T19:08:09.216554+00:00",
+  "content_sha256": "a7ad046585638bd7d2d9ac01487234f2982d5956f96f822563ce14941d4a6e09",
+  "bytes": 73129,
+  "period": "01-Jan-2023..31-Mar-2023",
+  "financial_year": "01-Apr-2022 To 31-Mar-2023",
+  "filing_date": "31-May-2023 16:51",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 59,
+  "outcomes": {
+   "declared": 49,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "APTUS",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/NBFC_INDAS_118353_1367786_31012025065836.xml",
+  "retrieved_at_utc": "2026-08-21T19:08:14.923259+00:00",
+  "content_sha256": "7b7524c54009b0e8ba2d08345a0b8a1b6b82820d85a5bb39e1855d8134012016",
+  "bytes": 28503,
+  "period": "01-Oct-2024..31-Dec-2024",
+  "financial_year": "01-Apr-2024 To 31-Mar-2025",
+  "filing_date": "31-Jan-2025 18:58",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 43,
+  "outcomes": {
+   "declared": 33,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "APTUS",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/NBFC_INDAS_118352_1367769_31012025065237.xml",
+  "retrieved_at_utc": "2026-08-21T19:08:16.827817+00:00",
+  "content_sha256": "203e81a66a4a977925c9938de7612fcd4b1afb912be0ec19dbbf5adebeefcade",
+  "bytes": 28177,
+  "period": "01-Oct-2024..31-Dec-2024",
+  "financial_year": "01-Apr-2024 To 31-Mar-2025",
+  "filing_date": "31-Jan-2025 18:52",
+  "filing_type": "New",
+  "consolidated": "Non-Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 41,
+  "outcomes": {
+   "declared": 31,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "APTUS",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/NBFC_INDAS_77331_549279_30102021021503_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:08:18.547902+00:00",
+  "content_sha256": "03023dd73b8fc69437ab346fc038be5a6e3df2b7283c5e105dbcc34fa43b64ce",
+  "bytes": 44936,
+  "period": "01-Jul-2021..30-Sep-2021",
+  "financial_year": "01-Apr-2021 To 31-Mar-2022",
+  "filing_date": "30-Oct-2021 14:15",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 48,
+  "outcomes": {
+   "declared": 38,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "ASTERDM",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_118374_1367900_31012025073435.xml",
+  "retrieved_at_utc": "2026-08-21T19:08:24.048022+00:00",
+  "content_sha256": "773b663a8c558fef944c9ef55c2cd7ab481269cd57dae68433beb9c42447ca90",
+  "bytes": 49278,
+  "period": "01-Oct-2024..31-Dec-2024",
+  "financial_year": "01-Apr-2024 To 31-Mar-2025",
+  "filing_date": "31-Jan-2025 19:34",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 42,
+  "outcomes": {
+   "declared": 32,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "ASTERDM",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_118367_1367877_31012025073052.xml",
+  "retrieved_at_utc": "2026-08-21T19:08:25.712230+00:00",
+  "content_sha256": "11a71966ad1152b5522d02ef1adf9a7993291bb2afff91a6d22854dbae429233",
+  "bytes": 22186,
+  "period": "01-Oct-2024..31-Dec-2024",
+  "financial_year": "01-Apr-2024 To 31-Mar-2025",
+  "filing_date": "31-Jan-2025 19:30",
+  "filing_type": "New",
+  "consolidated": "Non-Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 40,
+  "outcomes": {
+   "declared": 30,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "ASTERDM",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_107712_1143623_29052024013956.xml",
+  "retrieved_at_utc": "2026-08-21T19:08:27.490806+00:00",
+  "content_sha256": "48945a41ebccf214f9a441280f1f42014bb2b09c7bb7247ec8ea40434ac31326",
+  "bytes": 77979,
+  "period": "01-Jan-2024..31-Mar-2024",
+  "financial_year": "01-Apr-2023 To 31-Mar-2024",
+  "filing_date": "29-May-2024 13:39",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 59,
+  "outcomes": {
+   "declared": 49,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "ASTRAL",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_101846_1040056_31012024030950.xml",
+  "retrieved_at_utc": "2026-08-21T19:08:33.227016+00:00",
+  "content_sha256": "be2e96b2bf33f8c4c01b419121d2f36523239ef2c211cf122a69301097324929",
+  "bytes": 35202,
+  "period": "01-Oct-2023..31-Dec-2023",
+  "financial_year": "01-Apr-2023 To 31-Mar-2024",
+  "filing_date": "31-Jan-2024 15:09",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 42,
+  "outcomes": {
+   "declared": 32,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "ASTRAL",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_101845_1040048_31012024030402.xml",
+  "retrieved_at_utc": "2026-08-21T19:08:34.798442+00:00",
+  "content_sha256": "24f3af68bd9e35692076ac48fd01fa0c1a808dd1e8898a6aba5b346bd78c12d6",
+  "bytes": 19164,
+  "period": "01-Oct-2023..31-Dec-2023",
+  "financial_year": "01-Apr-2023 To 31-Mar-2024",
+  "filing_date": "31-Jan-2024 15:04",
+  "filing_type": "New",
+  "consolidated": "Non-Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 40,
+  "outcomes": {
+   "declared": 30,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "ASTRAL",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_49034_158666_30102019035843_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:08:36.964674+00:00",
+  "content_sha256": "3dc926b0c5981bcef3d7721bd547502319a947bee8a18f440589eca9ebe717d1",
+  "bytes": 30010,
+  "period": "01-Jul-2019..30-Sep-2019",
+  "financial_year": "01-Apr-2019 To 31-Mar-2020",
+  "filing_date": "30-Oct-2019 15:58",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 42,
+  "outcomes": {
+   "declared": 32,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "ATGL",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_98370_972840_31102023100743.xml",
+  "retrieved_at_utc": "2026-08-21T19:08:42.460314+00:00",
+  "content_sha256": "bbc82695291e99b1f47618e2cfb592523ec12dd523ae6d57146bbcb30e8fb7a8",
+  "bytes": 46744,
+  "period": "01-Jul-2023..30-Sep-2023",
+  "financial_year": "01-Apr-2023 To 31-Mar-2024",
+  "filing_date": "31-Oct-2023 22:07",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 58,
+  "outcomes": {
+   "declared": 48,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "ATGL",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_98369_972837_31102023100610.xml",
+  "retrieved_at_utc": "2026-08-21T19:08:44.262604+00:00",
+  "content_sha256": "c3c93a3b340578cf3def5cc806ebe9539e1322d3faa59861981bf69aaa5b4fdb",
+  "bytes": 46323,
+  "period": "01-Jul-2023..30-Sep-2023",
+  "financial_year": "01-Apr-2023 To 31-Mar-2024",
+  "filing_date": "31-Oct-2023 22:06",
+  "filing_type": "New",
+  "consolidated": "Non-Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 56,
+  "outcomes": {
+   "declared": 46,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "ATGL",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_101796_1039594_30012024081615.xml",
+  "retrieved_at_utc": "2026-08-21T19:08:45.977112+00:00",
+  "content_sha256": "488cdf73ad05709a9980528ee48d88c034bea30dc93406e7ec6c98d6593499b9",
+  "bytes": 20935,
+  "period": "01-Oct-2023..31-Dec-2023",
+  "financial_year": "01-Apr-2023 To 31-Mar-2024",
+  "filing_date": "30-Jan-2024 20:16",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 42,
+  "outcomes": {
+   "declared": 32,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "ATUL",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_66699_400368_30012021113344_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:08:51.534108+00:00",
+  "content_sha256": "c1621ff1d25a78394ceb37243a9a5a844739f7d48193e63cffa527a5aaa73159",
+  "bytes": 51356,
+  "period": "01-Oct-2020..31-Dec-2020",
+  "financial_year": "01-Apr-2020 To 31-Mar-2021",
+  "filing_date": "30-Jan-2021 11:33",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 42,
+  "outcomes": {
+   "declared": 32,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "ATUL",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_66698_400365_30012021113150_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:08:53.577065+00:00",
+  "content_sha256": "0cd53e71782edf867fd036be1887dd3587c2dc8f5c52f3611b70c001ba215624",
+  "bytes": 44521,
+  "period": "01-Oct-2020..31-Dec-2020",
+  "financial_year": "01-Apr-2020 To 31-Mar-2021",
+  "filing_date": "30-Jan-2021 11:31",
+  "filing_type": "New",
+  "consolidated": "Non-Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 42,
+  "outcomes": {
+   "declared": 32,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "ATUL",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_69583_445242_30042021065437_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:08:55.074829+00:00",
+  "content_sha256": "46f6077646a641ef5adb829514e91af5de272a9944dea499e39e60a49cbd725f",
+  "bytes": 62785,
+  "period": "01-Jan-2021..31-Mar-2021",
+  "financial_year": "01-Apr-2020 To 31-Mar-2021",
+  "filing_date": "30-Apr-2021 18:54",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 49,
+  "outcomes": {
+   "declared": 39,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "AUBANK",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/BANKING_69558_445061_30042021021223_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:09:00.490781+00:00",
+  "content_sha256": "c2d263026a57fdfacea6999bc7f8d0beca6b36666d079c7610032f9637bb82bf",
+  "bytes": 64280,
+  "period": "01-Jan-2021..31-Mar-2021",
+  "financial_year": "01-Apr-2020 To 31-Mar-2021",
+  "filing_date": "30-Apr-2021 14:12",
+  "filing_type": "New",
+  "consolidated": "Non-Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 35,
+  "outcomes": {
+   "declared": 24,
+   "compound_unit_is_not_an_aggregate": 10,
+   "pure_is_not_money": 1
+  }
+ },
+ {
+  "symbol": "AUROPHARMA",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_87002_670551_31052022053711_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:09:20.312008+00:00",
+  "content_sha256": "4e0281684f0d84b837d3a4d6a2dc4c71c8980c4615d2a8ff3f25697920f3a4fe",
+  "bytes": 41429,
+  "period": "01-Jan-2022..31-Mar-2022",
+  "financial_year": "01-Apr-2021 To 31-Mar-2022",
+  "filing_date": "31-May-2022 17:37",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 49,
+  "outcomes": {
+   "declared": 39,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "AUROPHARMA",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_86999_670532_31052022053520_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:09:21.834787+00:00",
+  "content_sha256": "e6f10e172d63613a47d3edc1f9b0420db61e3a30d82adab044d45dd8edf3621f",
+  "bytes": 37616,
+  "period": "01-Jan-2022..31-Mar-2022",
+  "financial_year": "01-Apr-2021 To 31-Mar-2022",
+  "filing_date": "31-May-2022 17:35",
+  "filing_type": "New",
+  "consolidated": "Non-Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 47,
+  "outcomes": {
+   "declared": 37,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "AUROPHARMA",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_70772_453845_31052021061054_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:09:23.901078+00:00",
+  "content_sha256": "088c985a841837f569ed7fb10d065667e6836cf636893bb92d0b04d16ccbfcff",
+  "bytes": 38325,
+  "period": "01-Jan-2021..31-Mar-2021",
+  "financial_year": "01-Apr-2020 To 31-Mar-2021",
+  "filing_date": "31-May-2021 18:10",
+  "filing_type": "New",
+  "consolidated": "Non-Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 47,
+  "outcomes": {
+   "declared": 37,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "COROMANDEL",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_118237_1366830_31012025113809.xml",
+  "retrieved_at_utc": "2026-08-21T19:09:28.927351+00:00",
+  "content_sha256": "e8cea48349893f63f5260b00d1731963a4096e85dad3bd8fc535a04ca22d7938",
+  "bytes": 44462,
+  "period": "01-Oct-2024..31-Dec-2024",
+  "financial_year": "01-Apr-2024 To 31-Mar-2025",
+  "filing_date": "31-Jan-2025 11:38",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 42,
+  "outcomes": {
+   "declared": 32,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "COROMANDEL",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_118235_1366820_31012025113235.xml",
+  "retrieved_at_utc": "2026-08-21T19:09:30.548301+00:00",
+  "content_sha256": "45737749d7cb8d58dc851feee1ede679311e7c6910ac206e91f55ba2b331c606",
+  "bytes": 41496,
+  "period": "01-Oct-2024..31-Dec-2024",
+  "financial_year": "01-Apr-2024 To 31-Mar-2025",
+  "filing_date": "31-Jan-2025 11:32",
+  "filing_type": "New",
+  "consolidated": "Non-Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 40,
+  "outcomes": {
+   "declared": 30,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "COROMANDEL",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_52148_213624_31012020074623_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:09:32.211425+00:00",
+  "content_sha256": "0ab769eafc51723a0cb46369cc4c716ab282504ea4a140c48dee0b9797a379d4",
+  "bytes": 37001,
+  "period": "01-Oct-2019..31-Dec-2019",
+  "financial_year": "01-Apr-2019 To 31-Mar-2020",
+  "filing_date": "31-Jan-2020 19:46",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 42,
+  "outcomes": {
+   "declared": 32,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "LICHSGFIN",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/NBFC_INDAS_118364_1367860_31012025072652.xml",
+  "retrieved_at_utc": "2026-08-21T19:09:37.872209+00:00",
+  "content_sha256": "4bf3c96257c00ce86f989fbfbe57c92840fa99ef52978befac5e0d5f2fcac248",
+  "bytes": 46342,
+  "period": "01-Oct-2024..31-Dec-2024",
+  "financial_year": "01-Apr-2024 To 31-Mar-2025",
+  "filing_date": "31-Jan-2025 19:27",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 42,
+  "outcomes": {
+   "declared": 32,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "LICHSGFIN",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/NBFC_INDAS_118363_1367852_31012025072515.xml",
+  "retrieved_at_utc": "2026-08-21T19:09:39.713009+00:00",
+  "content_sha256": "f6fe92228b89917fea276542f135aca79ca5d9d474ec811dde74b36a4d4f649f",
+  "bytes": 31756,
+  "period": "01-Oct-2024..31-Dec-2024",
+  "financial_year": "01-Apr-2024 To 31-Mar-2025",
+  "filing_date": "31-Jan-2025 19:25",
+  "filing_type": "New",
+  "consolidated": "Non-Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 40,
+  "outcomes": {
+   "declared": 30,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "LICHSGFIN",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/NBFC_INDAS_73655_497396_29072021055328_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:09:41.412320+00:00",
+  "content_sha256": "197215a319d88efb7db9517aec7f6584522e2e6f6c9fb1f231833f0a1785687f",
+  "bytes": 17320,
+  "period": "01-Apr-2021..30-Jun-2021",
+  "financial_year": "01-Apr-2021 To 31-Mar-2022",
+  "filing_date": "29-Jul-2021 17:53",
+  "filing_type": "New",
+  "consolidated": "Non-Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 20,
+  "outcomes": {
+   "declared": 15,
+   "compound_unit_is_not_an_aggregate": 5
+  }
+ },
+ {
+  "symbol": "NMDC",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_45222_106080_29052019052356_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:09:46.806779+00:00",
+  "content_sha256": "7855d8f349e6e8da7c470bc15b097122b38bd293745d7cff1e6667ab9de0cb14",
+  "bytes": 32932,
+  "period": "01-Jan-2019..31-Mar-2019",
+  "financial_year": "01-Apr-2018 To 31-Mar-2019",
+  "filing_date": "29-May-2019 17:23",
+  "filing_type": "New",
+  "consolidated": "Non-Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 41,
+  "outcomes": {
+   "declared": 31,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "NMDC",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_107490_1141653_28052024032803.xml",
+  "retrieved_at_utc": "2026-08-21T19:09:48.534132+00:00",
+  "content_sha256": "d392128f1dda6930534c4746d45e7309e492cf26717b43772ccf2bdcb58d6ab5",
+  "bytes": 68827,
+  "period": "01-Jan-2024..31-Mar-2024",
+  "financial_year": "01-Apr-2023 To 31-Mar-2024",
+  "filing_date": "28-May-2024 15:28",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 57,
+  "outcomes": {
+   "declared": 47,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "NMDC",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_107488_1141644_28052024032630.xml",
+  "retrieved_at_utc": "2026-08-21T19:09:50.240400+00:00",
+  "content_sha256": "cc5efbe5cf0c4d775e652d57f24c530d9bd369ca88a2a2399a747ea66a2ae14b",
+  "bytes": 68139,
+  "period": "01-Jan-2024..31-Mar-2024",
+  "financial_year": "01-Apr-2023 To 31-Mar-2024",
+  "filing_date": "28-May-2024 15:26",
+  "filing_type": "New",
+  "consolidated": "Non-Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 57,
+  "outcomes": {
+   "declared": 47,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "SHRIRAMFIN",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/NBFC_INDAS_88208_782344_31012023113021_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:09:56.195202+00:00",
+  "content_sha256": "19fe3686e429e5c69559cbe32995bc83285eda4114279d30188659b18c2d3e69",
+  "bytes": 28348,
+  "period": "01-Oct-2022..31-Dec-2022",
+  "financial_year": "01-Apr-2022 To 31-Mar-2023",
+  "filing_date": "31-Jan-2023 23:30",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 42,
+  "outcomes": {
+   "declared": 32,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "SHRIRAMFIN",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/NBFC_INDAS_88207_782342_31012023112819_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:09:57.448491+00:00",
+  "content_sha256": "6558105a73859e2709365085e7fd9d2ed17bdeffa6a45e42a950daf1fe641c5d",
+  "bytes": 26285,
+  "period": "01-Oct-2022..31-Dec-2022",
+  "financial_year": "01-Apr-2022 To 31-Mar-2023",
+  "filing_date": "31-Jan-2023 23:28",
+  "filing_type": "New",
+  "consolidated": "Non-Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 40,
+  "outcomes": {
+   "declared": 30,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "SHRIRAMFIN",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_62736_353049_30102020092047_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:09:59.411320+00:00",
+  "content_sha256": "5d61e9e02da7c047f8a63e77077d9519d0acbbcf1fde36d123e97dc8257eb94b",
+  "bytes": 37007,
+  "period": "01-Jul-2020..30-Sep-2020",
+  "financial_year": "01-Apr-2020 To 31-Mar-2021",
+  "filing_date": "30-Oct-2020 21:20",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 48,
+  "outcomes": {
+   "declared": 38,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "ARVIND",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_98295_972126_31102023041211.xml",
+  "retrieved_at_utc": "2026-08-21T19:10:05.050583+00:00",
+  "content_sha256": "b560de14a58a6bc441457b54b16073cc10c941260bec341f16949cfe4d49b2d5",
+  "bytes": 73218,
+  "period": "01-Jul-2023..30-Sep-2023",
+  "financial_year": "01-Apr-2023 To 31-Mar-2024",
+  "filing_date": "31-Oct-2023 16:12",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 58,
+  "outcomes": {
+   "declared": 48,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "ARVIND",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_98294_972115_31102023040307.xml",
+  "retrieved_at_utc": "2026-08-21T19:10:06.783939+00:00",
+  "content_sha256": "4271d7d3b0546ba5b7d2e821974b58cd2130c81b58daf95619170117bed7f9d4",
+  "bytes": 70054,
+  "period": "01-Jul-2023..30-Sep-2023",
+  "financial_year": "01-Apr-2023 To 31-Mar-2024",
+  "filing_date": "31-Oct-2023 16:03",
+  "filing_type": "New",
+  "consolidated": "Non-Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 56,
+  "outcomes": {
+   "declared": 46,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "ARVIND",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_52087_213365_31012020035746_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:10:08.618304+00:00",
+  "content_sha256": "e25db519bfa00e204470e791d860ef4cdacbad76a28d170543437b5b864d0f6b",
+  "bytes": 41318,
+  "period": "01-Oct-2019..31-Dec-2019",
+  "financial_year": "01-Apr-2019 To 31-Mar-2020",
+  "filing_date": "31-Jan-2020 15:57",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 42,
+  "outcomes": {
+   "declared": 32,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "ENGINERSIN",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_113880_1293037_29102024065145.xml",
+  "retrieved_at_utc": "2026-08-21T19:10:13.846899+00:00",
+  "content_sha256": "cb9546fc6b79270e2bdd0c7f216f2de1556f583cc330a16df215848fb91914f5",
+  "bytes": 71214,
+  "period": "01-Jul-2024..30-Sep-2024",
+  "financial_year": "01-Apr-2024 To 31-Mar-2025",
+  "filing_date": "29-Oct-2024 18:51",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 58,
+  "outcomes": {
+   "declared": 48,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "ENGINERSIN",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_113879_1293031_29102024064944.xml",
+  "retrieved_at_utc": "2026-08-21T19:10:15.742126+00:00",
+  "content_sha256": "513988898a28900edf3852583e1bf5b0077a0654aa9bddb4099b1130678ff4c8",
+  "bytes": 69907,
+  "period": "01-Jul-2024..30-Sep-2024",
+  "financial_year": "01-Apr-2024 To 31-Mar-2025",
+  "filing_date": "29-Oct-2024 18:49",
+  "filing_type": "New",
+  "consolidated": "Non-Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 56,
+  "outcomes": {
+   "declared": 46,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "ENGINERSIN",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_107669_1143277_29052024111236.xml",
+  "retrieved_at_utc": "2026-08-21T19:10:17.570328+00:00",
+  "content_sha256": "adf9029a37790fd852d7870b6277fc65dcd7bffb48a288f66a8538c339a52b60",
+  "bytes": 71385,
+  "period": "01-Jan-2024..31-Mar-2024",
+  "financial_year": "01-Apr-2023 To 31-Mar-2024",
+  "filing_date": "29-May-2024 11:12",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 59,
+  "outcomes": {
+   "declared": 49,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "NH",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_114087_1295373_31102024083600.xml",
+  "retrieved_at_utc": "2026-08-21T19:10:22.848489+00:00",
+  "content_sha256": "c777ee3d467d56bfe9771dc8a61ba06da7fe702bdb3b9b2aadcba21420faf7db",
+  "bytes": 52201,
+  "period": "01-Jul-2024..30-Sep-2024",
+  "financial_year": "01-Apr-2024 To 31-Mar-2025",
+  "filing_date": "31-Oct-2024 20:36",
+  "filing_type": "New",
+  "consolidated": "Non-Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 56,
+  "outcomes": {
+   "declared": 46,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "NH",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_114086_1295368_31102024081101.xml",
+  "retrieved_at_utc": "2026-08-21T19:10:24.673072+00:00",
+  "content_sha256": "b502e01f739e5b5da2152d6fcf3fd522295934b54bdddf9e331b804713093a9b",
+  "bytes": 79432,
+  "period": "01-Jul-2024..30-Sep-2024",
+  "financial_year": "01-Apr-2024 To 31-Mar-2025",
+  "filing_date": "31-Oct-2024 20:11",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 58,
+  "outcomes": {
+   "declared": 48,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "NH",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_70781_453928_31052021075315_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:10:26.604737+00:00",
+  "content_sha256": "3c864db2e686c33f99b25c7b5d1167e52935bdfa93c33da014f91525b7625af0",
+  "bytes": 42583,
+  "period": "01-Jan-2021..31-Mar-2021",
+  "financial_year": "01-Apr-2020 To 31-Mar-2021",
+  "filing_date": "31-May-2021 19:53",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 49,
+  "outcomes": {
+   "declared": 39,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "SOLARA",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_62697_352832_30102020055604_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:10:32.120823+00:00",
+  "content_sha256": "90fe6c0612c076c0babcb8c9255038c3b05d915f9e84551d68b9ba3b549c9bd2",
+  "bytes": 35616,
+  "period": "01-Jul-2020..30-Sep-2020",
+  "financial_year": "01-Apr-2020 To 31-Mar-2021",
+  "filing_date": "30-Oct-2020 17:56",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 48,
+  "outcomes": {
+   "declared": 38,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "SOLARA",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_62695_352826_30102020055348_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:10:33.785817+00:00",
+  "content_sha256": "c228514695c9710efff4466631b41eda1961abad8628d0d9c61fc2d5985a013b",
+  "bytes": 34910,
+  "period": "01-Jul-2020..30-Sep-2020",
+  "financial_year": "01-Apr-2020 To 31-Mar-2021",
+  "filing_date": "30-Oct-2020 17:53",
+  "filing_type": "New",
+  "consolidated": "Non-Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 46,
+  "outcomes": {
+   "declared": 36,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "SOLARA",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_108020_1146039_29052024091452.xml",
+  "retrieved_at_utc": "2026-08-21T19:10:35.393980+00:00",
+  "content_sha256": "658784c980ad9497532c00a02ee4ca68ac83170aae5bae75c45c5b02d11a771b",
+  "bytes": 50819,
+  "period": "01-Jan-2024..31-Mar-2024",
+  "financial_year": "01-Apr-2023 To 31-Mar-2024",
+  "filing_date": "29-May-2024 21:14",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 59,
+  "outcomes": {
+   "declared": 49,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "DRREDDY",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_101774_1039352_30012024060943.xml",
+  "retrieved_at_utc": "2026-08-21T19:10:40.886147+00:00",
+  "content_sha256": "b2cf115e4b86ab826d23010a8acd424c6f5c7237305607a5f23e9c5a702f9d68",
+  "bytes": 45285,
+  "period": "01-Oct-2023..31-Dec-2023",
+  "financial_year": "01-Apr-2023 To 31-Mar-2024",
+  "filing_date": "30-Jan-2024 18:09",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 42,
+  "outcomes": {
+   "declared": 32,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "DRREDDY",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_101773_1039344_30012024060653.xml",
+  "retrieved_at_utc": "2026-08-21T19:10:42.516488+00:00",
+  "content_sha256": "74d441919e53cd095032892467a7bda2fbe3ec0781b461a492036001e11a4556",
+  "bytes": 43106,
+  "period": "01-Oct-2023..31-Dec-2023",
+  "financial_year": "01-Apr-2023 To 31-Mar-2024",
+  "filing_date": "30-Jan-2024 18:06",
+  "filing_type": "New",
+  "consolidated": "Non-Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 40,
+  "outcomes": {
+   "declared": 30,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "DRREDDY",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_810261_4691_29102022133306_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:10:44.419832+00:00",
+  "content_sha256": "0a543c22f52190173d96129d9b29ecc8eaeb1bfe2ca697c7f94fafea8cde1568",
+  "bytes": 68758,
+  "period": "01-Jul-2022..30-Sep-2022",
+  "financial_year": "01-Apr-2022 To 31-Mar-2023",
+  "filing_date": "29-Oct-2022 13:33",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency"
+  ],
+  "mapped_facts": 56,
+  "outcomes": {
+   "declared": 46,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "GLAXO",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_62755_353163_31102020125841_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:10:49.675247+00:00",
+  "content_sha256": "2cd7339f44e604c05fe67e5c811388a74b3faf996c0b53836efe572365bd730d",
+  "bytes": 35817,
+  "period": "01-Jul-2020..30-Sep-2020",
+  "financial_year": "01-Apr-2020 To 31-Mar-2021",
+  "filing_date": "31-Oct-2020 12:58",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 46,
+  "outcomes": {
+   "declared": 36,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "GLAXO",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_62754_353158_31102020125628_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:10:51.704232+00:00",
+  "content_sha256": "1f55d4f9753feb71be7aff1d22d7c57fc7346e8cc427a57200b5cb3283e6058b",
+  "bytes": 35810,
+  "period": "01-Jul-2020..30-Sep-2020",
+  "financial_year": "01-Apr-2020 To 31-Mar-2021",
+  "filing_date": "31-Oct-2020 12:56",
+  "filing_type": "New",
+  "consolidated": "Non-Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 46,
+  "outcomes": {
+   "declared": 36,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "GLAXO",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_113959_1293877_30102024015746.xml",
+  "retrieved_at_utc": "2026-08-21T19:10:53.334731+00:00",
+  "content_sha256": "0168447fefddc729c0ff6fbd58ce93d2962d925135a21e0b54078ec1104c854e",
+  "bytes": 45310,
+  "period": "01-Jul-2024..30-Sep-2024",
+  "financial_year": "01-Apr-2024 To 31-Mar-2025",
+  "filing_date": "30-Oct-2024 13:57",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 56,
+  "outcomes": {
+   "declared": 46,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "FORCEMOT",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_109845_1206993_30072024064848.xml",
+  "retrieved_at_utc": "2026-08-21T19:10:58.596467+00:00",
+  "content_sha256": "c6a2c454ac7c841d9df7f3b56fd353f6fa41dc55ea55e0b14da67240ac9e3929",
+  "bytes": 16775,
+  "period": "01-Apr-2024..30-Jun-2024",
+  "financial_year": "01-Apr-2024 To 31-Mar-2025",
+  "filing_date": "30-Jul-2024 18:48",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 21,
+  "outcomes": {
+   "declared": 16,
+   "compound_unit_is_not_an_aggregate": 5
+  }
+ },
+ {
+  "symbol": "FORCEMOT",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_109844_1206986_30072024064641.xml",
+  "retrieved_at_utc": "2026-08-21T19:11:00.613084+00:00",
+  "content_sha256": "e70bf4a716d10ee4ba3c1b1f12556af66157ad9779c01e7e056c650638fea0b5",
+  "bytes": 15270,
+  "period": "01-Apr-2024..30-Jun-2024",
+  "financial_year": "01-Apr-2024 To 31-Mar-2025",
+  "filing_date": "30-Jul-2024 18:46",
+  "filing_type": "New",
+  "consolidated": "Non-Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 20,
+  "outcomes": {
+   "declared": 15,
+   "compound_unit_is_not_an_aggregate": 5
+  }
+ },
+ {
+  "symbol": "FORCEMOT",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_113873_1292989_29102024064015.xml",
+  "retrieved_at_utc": "2026-08-21T19:11:02.503417+00:00",
+  "content_sha256": "c5547fbb6d4b6a6e30be8f9dc54d4b6f83cdc043d06ae59e1b4250bd47a71210",
+  "bytes": 47869,
+  "period": "01-Jul-2024..30-Sep-2024",
+  "financial_year": "01-Apr-2024 To 31-Mar-2025",
+  "filing_date": "29-Oct-2024 18:40",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 58,
+  "outcomes": {
+   "declared": 48,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "HAPPSTMNDS",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_76949_547425_28102021024852_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:11:07.736347+00:00",
+  "content_sha256": "6eb38892460778451cdc8a309133edce2903fc4434b5a95f56b8912cceaf273c",
+  "bytes": 68757,
+  "period": "01-Jul-2021..30-Sep-2021",
+  "financial_year": "01-Apr-2021 To 31-Mar-2022",
+  "filing_date": "28-Oct-2021 14:48",
+  "filing_type": "New",
+  "consolidated": "Non-Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 46,
+  "outcomes": {
+   "declared": 36,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "HAPPSTMNDS",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_76948_547422_28102021024431_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:11:09.416892+00:00",
+  "content_sha256": "6288755089ca163b8da6b848db5fa887432f7a13c278d47d7853eabddd2f8ce1",
+  "bytes": 70720,
+  "period": "01-Jul-2021..30-Sep-2021",
+  "financial_year": "01-Apr-2021 To 31-Mar-2022",
+  "filing_date": "28-Oct-2021 14:44",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 48,
+  "outcomes": {
+   "declared": 38,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "HAPPSTMNDS",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_73578_496931_28072021113009_WEB.xml",
+  "retrieved_at_utc": "2026-08-21T19:11:11.276796+00:00",
+  "content_sha256": "678f552db01519a84eb4ce1887a6053636856550c0fe0b43e047762fa576176d",
+  "bytes": 28265,
+  "period": "01-Apr-2021..30-Jun-2021",
+  "financial_year": "01-Apr-2021 To 31-Mar-2022",
+  "filing_date": "28-Jul-2021 23:30",
+  "filing_type": "New",
+  "consolidated": "Non-Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 20,
+  "outcomes": {
+   "declared": 15,
+   "compound_unit_is_not_an_aggregate": 5
+  }
+ },
+ {
+  "symbol": "BAJAJHFL",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/NBFC_INDAS_117798_1362436_27012025085856.xml",
+  "retrieved_at_utc": "2026-08-21T19:11:16.418546+00:00",
+  "content_sha256": "99743e665647d78dff69cec374989717797882e646fde97b5a270873a24a9970",
+  "bytes": 34809,
+  "period": "01-Oct-2024..31-Dec-2024",
+  "financial_year": "01-Apr-2024 To 31-Mar-2025",
+  "filing_date": "27-Jan-2025 20:58",
+  "filing_type": "New",
+  "consolidated": "Non-Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 40,
+  "outcomes": {
+   "declared": 30,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "BAJAJHFL",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/NBFC_INDAS_112963_1283730_21102024070343.xml",
+  "retrieved_at_utc": "2026-08-21T19:11:18.143567+00:00",
+  "content_sha256": "23526fa258b7ee829a885609599b789f0383cbf03d720d74b29864fe3fc11f6b",
+  "bytes": 57304,
+  "period": "01-Jul-2024..30-Sep-2024",
+  "financial_year": "01-Apr-2024 To 31-Mar-2025",
+  "filing_date": "21-Oct-2024 19:03",
+  "filing_type": "New",
+  "consolidated": "Non-Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 54,
+  "outcomes": {
+   "declared": 44,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "DENTA",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_120905_1386254_15022025035751.xml",
+  "retrieved_at_utc": "2026-08-21T19:11:23.824365+00:00",
+  "content_sha256": "f220f6d696c24db1490c445e40979dcd065bcce20fe4bd0f2388db60edb6effa",
+  "bytes": 18319,
+  "period": "01-Oct-2024..31-Dec-2024",
+  "financial_year": "01-Apr-2024 To 31-Mar-2025",
+  "filing_date": "15-Feb-2025 15:57",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 40,
+  "outcomes": {
+   "declared": 30,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "DENTA",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_120900_1386230_15022025034559.xml",
+  "retrieved_at_utc": "2026-08-21T19:11:25.408158+00:00",
+  "content_sha256": "cadaf14759e49b830a389809a53a0244410b7c1a89819a3d2b5a79b9ccd9771d",
+  "bytes": 18313,
+  "period": "01-Oct-2024..31-Dec-2024",
+  "financial_year": "01-Apr-2024 To 31-Mar-2025",
+  "filing_date": "15-Feb-2025 15:46",
+  "filing_type": "New",
+  "consolidated": "Non-Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 40,
+  "outcomes": {
+   "declared": 30,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "SANSTAR",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_116307_1312753_14112024071842.xml",
+  "retrieved_at_utc": "2026-08-21T19:11:45.429900+00:00",
+  "content_sha256": "b4e432963bccd3a130bcb939a08454b7fbf1faddd8f194a8ab641d2907c58524",
+  "bytes": 46223,
+  "period": "01-Jul-2024..30-Sep-2024",
+  "financial_year": "01-Apr-2024 To 31-Mar-2025",
+  "filing_date": "14-Nov-2024 19:18",
+  "filing_type": "New",
+  "consolidated": "Non-Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 56,
+  "outcomes": {
+   "declared": 46,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "SANSTAR",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_112335_1226719_14082024065133.xml",
+  "retrieved_at_utc": "2026-08-21T19:11:47.133808+00:00",
+  "content_sha256": "486608ffad818bce0d056fb69dc4d408fd718925c93c548da7fd422027ea6fa9",
+  "bytes": 13095,
+  "period": "01-Apr-2024..30-Jun-2024",
+  "financial_year": "01-Apr-2024 To 31-Mar-2025",
+  "filing_date": "14-Aug-2024 18:51",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 20,
+  "outcomes": {
+   "declared": 15,
+   "compound_unit_is_not_an_aggregate": 5
+  }
+ },
+ {
+  "symbol": "SANSTAR",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_112325_1226680_14082024064713.xml",
+  "retrieved_at_utc": "2026-08-21T19:11:48.885153+00:00",
+  "content_sha256": "9efc4574d71c7ffec67a8a47bdf881d0b5e6f49888dffadf3216844e02289599",
+  "bytes": 12874,
+  "period": "01-Apr-2024..30-Jun-2024",
+  "financial_year": "01-Apr-2024 To 31-Mar-2025",
+  "filing_date": "14-Aug-2024 18:47",
+  "filing_type": "New",
+  "consolidated": "Non-Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 20,
+  "outcomes": {
+   "declared": 15,
+   "compound_unit_is_not_an_aggregate": 5
+  }
+ },
+ {
+  "symbol": "SUNCLAY",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_118300_1367361_31012025044957.xml",
+  "retrieved_at_utc": "2026-08-21T19:11:54.465513+00:00",
+  "content_sha256": "e685b52a0552ed99f837a2e6664039c60cb92f45964d6489b103a0272e5a56de",
+  "bytes": 27448,
+  "period": "01-Oct-2024..31-Dec-2024",
+  "financial_year": "01-Apr-2024 To 31-Mar-2025",
+  "filing_date": "31-Jan-2025 16:49",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 42,
+  "outcomes": {
+   "declared": 32,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "SUNCLAY",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_118296_1367345_31012025044818.xml",
+  "retrieved_at_utc": "2026-08-21T19:11:56.129107+00:00",
+  "content_sha256": "8e4259d3525a15c759dec60eab851bae6a64b869998df5263ab608f3aa30819e",
+  "bytes": 22563,
+  "period": "01-Oct-2024..31-Dec-2024",
+  "financial_year": "01-Apr-2024 To 31-Mar-2025",
+  "filing_date": "31-Jan-2025 16:48",
+  "filing_type": "New",
+  "consolidated": "Non-Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 40,
+  "outcomes": {
+   "declared": 30,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ },
+ {
+  "symbol": "SUNCLAY",
+  "filing_url": "https://nsearchives.nseindia.com/corporate/xbrl/INDAS_115353_1307104_12112024074914.xml",
+  "retrieved_at_utc": "2026-08-21T19:11:58.105769+00:00",
+  "content_sha256": "a6657db15c10f3dda89323da9a6fe8931f1b623b03d925670d8e2dfed7138bd5",
+  "bytes": 52698,
+  "period": "01-Jul-2024..30-Sep-2024",
+  "financial_year": "01-Apr-2024 To 31-Mar-2025",
+  "filing_date": "12-Nov-2024 19:49",
+  "filing_type": "New",
+  "consolidated": "Consolidated",
+  "inline_xbrl": false,
+  "declared_units": [
+   "compound",
+   "currency",
+   "pure",
+   "shares"
+  ],
+  "mapped_facts": 58,
+  "outcomes": {
+   "declared": 48,
+   "compound_unit_is_not_an_aggregate": 10
+  }
+ }
+]

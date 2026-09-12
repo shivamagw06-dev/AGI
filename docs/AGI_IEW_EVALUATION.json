@@ -1,0 +1,42 @@
+{
+  "artifact": "AGI_IEW_EVALUATION",
+  "company": "AGI",
+  "iew_version": "institutional-evidence-weighting-v1.0.0",
+  "weight_version": "iew-weight-profile-v1.0.0",
+  "evaluated_at": "2026-07-28T18:11:20Z",
+  "institutional_1000": {
+    "suite": "institutional_1000",
+    "mode": "soft",
+    "n_questions": 1000,
+    "pass_pct": 99.9,
+    "mean_score": 90.05,
+    "passed": 999,
+    "failed": 1,
+    "latency_ms": 8549,
+    "run_id": "iel-run-475e652e0c",
+    "reasoning_changed": false
+  },
+  "cio_frozen_25": {
+    "suite": "cio_frozen_25",
+    "mode": "soft",
+    "n_questions": 25,
+    "pass_pct": 100.0,
+    "mean_score": 87.58,
+    "passed": 25,
+    "failed": 0,
+    "latency_ms": 296,
+    "run_id": "iel-run-622f7ff63d",
+    "reasoning_changed": false
+  },
+  "frozen_baseline": {
+    "iel_pass_pct": 99.9,
+    "iel_mean": 90.24,
+    "cio_pass_pct": 100.0
+  },
+  "exit_gate": {
+    "iel_stable": true,
+    "cio_held": true,
+    "reasoning_unchanged": true
+  },
+  "fabricated": false
+}

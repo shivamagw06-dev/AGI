@@ -1,0 +1,107 @@
+{
+  "artifact": "AGI_IHE_EVALUATION",
+  "company": "AGI",
+  "sprint": "Phase 4 Sprint 4.3 IHE",
+  "ihe_version": "institutional-hypothesis-evaluation-v1.0.0",
+  "evaluation_version": "ihe-evaluation-profile-v1.0.0",
+  "hqs_version": "hqs-v1.1.0",
+  "iew_version": "institutional-evidence-weighting-v1.0.0",
+  "ihg_version": "institutional-hypothesis-generation-v1.0.0",
+  "evaluated_at": "2026-07-28T18:32:33Z",
+  "institutional_1000": {
+    "suite": "institutional_1000",
+    "mode": "soft",
+    "n_questions": 1000,
+    "pass_pct": 99.9,
+    "mean_score": 90.05,
+    "passed": 999,
+    "failed": 1,
+    "hqs_mean": 95.85,
+    "hqs_pass_pct": 100.0,
+    "hqs_version": "hqs-v1.1.0",
+    "hqs_components": {
+      "plausibility": 100.0,
+      "coverage_quality": 94.39,
+      "support_quality": 97.13,
+      "conflict_handling": 99.1,
+      "ranking_quality": 97.11,
+      "rejection_quality": 90.0,
+      "evaluation_quality": 99.55,
+      "confidence_quality": 89.93
+    },
+    "hqs_outcomes": {
+      "preferred": 782,
+      "insufficient_evidence": 90,
+      "plausible_set": 22,
+      "indeterminate": 106
+    },
+    "rci_n_clusters": 19,
+    "rci_n_failures": 23,
+    "latency_ms": 10581,
+    "run_id": "iel-run-22d61ddbbb",
+    "reasoning_changed": false
+  },
+  "cio_frozen_25": {
+    "suite": "cio_frozen_25",
+    "mode": "soft",
+    "n_questions": 25,
+    "pass_pct": 100.0,
+    "mean_score": 87.58,
+    "passed": 25,
+    "failed": 0,
+    "hqs_mean": 95.2,
+    "hqs_pass_pct": 100.0,
+    "hqs_version": "hqs-v1.1.0",
+    "hqs_components": {
+      "plausibility": 100.0,
+      "coverage_quality": 95.85,
+      "support_quality": 96.8,
+      "conflict_handling": 98.0,
+      "ranking_quality": 94.2,
+      "rejection_quality": 90.0,
+      "evaluation_quality": 99.0,
+      "confidence_quality": 88.6
+    },
+    "hqs_outcomes": {
+      "indeterminate": 2,
+      "preferred": 16,
+      "plausible_set": 2,
+      "insufficient_evidence": 5
+    },
+    "rci_n_clusters": 6,
+    "rci_n_failures": 6,
+    "latency_ms": 342,
+    "run_id": "iel-run-eabd3dba01",
+    "reasoning_changed": false
+  },
+  "baselines": {
+    "frozen_v35": {
+      "iel_pass_pct": 99.9,
+      "iel_mean": 90.24,
+      "cio_pass_pct": 100.0
+    },
+    "iew_soft": {
+      "iel_pass_pct": 99.9,
+      "iel_mean": 90.05,
+      "cio_pass_pct": 100.0
+    },
+    "ihg_soft_hqs_v1_0": {
+      "iel_pass_pct": 99.9,
+      "iel_mean": 90.05,
+      "cio_pass_pct": 100.0,
+      "hqs_mean": 96.75,
+      "hqs_version": "hqs-v1.0.0"
+    }
+  },
+  "note": "HQS v1.1 adds IHE evaluation dimensions; not directly comparable to v1.0 component mix. IEL/CIO held.",
+  "exit_gate": {
+    "iel_stable": true,
+    "cio_held": true,
+    "hqs_v11_pass_pct": 100.0,
+    "hqs_v11_mean": 95.85,
+    "reasoning_unchanged": true,
+    "forced_single_winner": false,
+    "evaluation_quality_mean": 99.55
+  },
+  "fabricated": false
+}
