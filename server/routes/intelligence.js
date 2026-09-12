@@ -78,6 +78,28 @@ function recordEngineFailure(error) {
   }
 }
 
+/**
+ * Say the engine is down, rather than quoting the abort that noticed.
+ *
+ * "The operation was aborted due to timeout" is the fetch API describing its
+ * own behaviour. It tells an operator nothing about what to do, and it reads
+ * like the paste was at fault when the paste was fine. These endpoints only
+ * fail this way when the intelligence engine is not answering.
+ */
+function engineDownPayload(error) {
+  const timedOut = error?.name === 'TimeoutError'
+    || /abort|timeout/i.test(String(error?.message || ''));
+  if (error?.code === 'ENGINE_CIRCUIT_OPEN') {
+    return { error: 'engine_recovering', hint: error.message };
+  }
+  return {
+    error: 'engine_unavailable',
+    hint: timedOut
+      ? 'The intelligence engine did not respond. Nothing was imported and your paste is unchanged. It is usually a restart - try again in a minute, and if it persists the engine service needs attention.'
+      : `The intelligence engine could not be reached: ${error?.message || 'unknown error'}. Nothing was imported.`,
+  };
+}
+
 function circuitIsOpen(path) {
   // Let explicit health probes through so the circuit can recover naturally.
   return path !== '/v1/health' && Date.now() < engineCircuit.openUntil;
@@ -2355,11 +2377,16 @@ export default function createIntelligenceRouter() {
       const result = await engineFetch('/v1/warehouse/import/insider-trades/preview', {
         method: 'POST',
         body: { text: String(req.body?.text || '') },
+        // Preview only parses text - no database, no network - so it answers in
+        // milliseconds when the engine is up. Waiting two minutes for it proves
+        // only that the engine is not answering at all, and makes the operator
+        // watch a spinner to learn it. Long enough for a cold start, short
+        // enough to say so.
+        timeoutMs: 45_000,
       });
       return res.status(result.status).json(result.data);
     } catch (error) {
-      return res.status(503).json({ ok: false, error: 'engine_unavailable',
-                                    detail: error.message });
+      return res.status(503).json({ ok: false, ...engineDownPayload(error) });
     }
   });
 
@@ -2373,8 +2400,7 @@ export default function createIntelligenceRouter() {
       });
       return res.status(result.status).json(result.data);
     } catch (error) {
-      return res.status(503).json({ ok: false, error: 'engine_unavailable',
-                                    detail: error.message });
+      return res.status(503).json({ ok: false, ...engineDownPayload(error) });
     }
   });
 
