@@ -244,6 +244,9 @@ const CHANGES = [
     id: 'from_to',
     re: /\bfrom\s+\$?\s?([\d,]+(?:\.\d+)?)\s*(%|percent|trillion|billion|million|thousand)?\s*(?:in\s+(\d{4})\s*)?\s*to\s+\$?\s?([\d,]+(?:\.\d+)?)\s*(%|percent|trillion|billion|million|thousand)?\s*(?:in\s+(\d{4}))?/i,
     read: (m) => {
+      // A range is not a change. Checked before the endpoints are read at
+      // all, because both readings produce two perfectly plausible figures.
+      if (isRange(m)) return null;
       const from = num(m[1]);
       const to = num(m[4]);
       // A bare endpoint takes the scale its partner states: "from 27% to 35%"
@@ -414,6 +417,25 @@ const isYear = (value) => Number.isInteger(value) && value >= 1800 && value <= 2
  * with no unit of its own is a date.
  */
 const yearNotValue = (value, unit) => isYear(value) && !unit;
+
+/**
+ * Whether the "from X to Y" a pattern just matched is a range rather than a
+ * move.
+ *
+ * "borrowings have interest rates ranging from 1.35% to 3.12%" is a spread
+ * across different borrowings and "expect to pay interest on our debt ranging
+ * from $4.9 billion in 2026 to $4.3 billion in 2030" is a payment schedule.
+ * In both, nothing changed, and subtracting the endpoints invents a movement
+ * the filer never claimed - the first was published as a 1.77 point rise in
+ * Berkshire's interest rates, which the document does not say anywhere.
+ *
+ * Decided by the words immediately before the "from", because the endpoints
+ * are the same shape in both readings and nothing about 1.35 and 3.12 says
+ * which one it is. "rose from 27% in 2022 to 35% in 2025" and "increased our
+ * economic interest from 25% to 75%" are moves and keep their delta.
+ */
+const RANGE_LEAD = /\b(?:rang(?:e|es|ed|ing)|spread|spreads|vary|varying|varies|varied|anywhere)\s*$/i;
+const isRange = (match) => RANGE_LEAD.test(String(match.input).slice(0, match.index));
 
 
 const kindOf = (token) => {
