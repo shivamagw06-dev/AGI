@@ -276,21 +276,45 @@ const kindOf = (token) => {
  * "freight cars" is in the row. A sentence quotes a filer; this quotes a
  * spreadsheet, and a reviewer shown it as evidence learns nothing.
  *
- * The test is the share of tokens that are bare numbers. Prose carries figures
- * and stays mostly words; a table row is mostly numbers however it is wrapped.
+ * Two tests, because one was not enough.
  *
- * A four-digit year is not counted. Years are prose - "GEICO's loss ratio was
- * 71.8% in 2024 and 81.0% in 2023" is eleven tokens of which four are numeric
- * only if 2024 and 2023 count, and it was rejected as a table until they
- * stopped counting. Dense year-on-year comparisons are exactly the sentences
- * this layer exists to find.
+ * The share of tokens that are bare numbers. Prose carries figures and stays
+ * mostly words; a table row is mostly numbers however it is wrapped. A
+ * four-digit year is not counted: years are prose, and "GEICO's loss ratio was
+ * 71.8% in 2024 and 81.0% in 2023" was rejected as a table until they stopped
+ * counting.
+ *
+ * Trailing punctuation is stripped before either test, which the first version
+ * did not do. "2026," is not "2026", so a year inside a list kept its comma
+ * and counted as a column: "Estimated future payments were $10 billion in
+ * 2026, $6 billion in 2027, $4 billion in 2028, $3 billion in 2029" scored
+ * 0.400 and was thrown away as a table. It is a commitments schedule written
+ * as a sentence, and the years are the reason it is worth having.
+ *
+ * And adjacent bare numbers, which is the sharper signal. A balance-sheet row
+ * with long labels between its columns dilutes the ratio below any threshold
+ * that leaves dense prose alone - this one reached 0.229 against a 0.25 bar,
+ * was filed as an amount with the metric "treasury bills", and was published
+ * by the auto-approval rule:
+ *
+ *   Treasury Bills 112,811 89,705 Investments in and advances to consolidated
+ *   subsidiaries 604,100 568,987 Investment in Kraft Heinz and other assets
+ *   8,871 13,417 $ 740,409 $ 678,446 Liabilities and Shareholders' equity:
+ *
+ * Two numbers side by side is what a column pair looks like and what a
+ * sentence almost never contains. Prose separates its figures with words:
+ * "$46 billion of net cash flows, compared to a five-year average of more than
+ * $40 billion" has none. Two such pairs is a table.
  */
 export function looksTabular(sentence) {
   const tokens = String(sentence || '').trim().split(/\s+/).filter(Boolean);
   if (tokens.length < 6) return false;
-  const numeric = tokens.filter((token) => /^[$(]?[\d,]+(?:\.\d+)?\)?%?$/.test(token)
+  const bare = tokens.map((token) => token.replace(/[.,;:]+$/, ''));
+  const numeric = bare.filter((token) => /^[$(]?[\d,]+(?:\.\d+)?\)?%?$/.test(token)
     && !/^(?:19|20)\d{2}$/.test(token)).length;
-  return numeric / tokens.length >= 0.25;
+  if (numeric / bare.length >= 0.25) return true;
+  const pairs = String(sentence).match(/(?<![\d,.])[\d,]+(?:\.\d+)?\s+[\d,]+(?:\.\d+)?(?![\d,.])/g);
+  return (pairs || []).length >= 2;
 }
 
 /**
