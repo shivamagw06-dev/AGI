@@ -122,6 +122,95 @@ describe('reading a change the document states', () => {
     assert.equal(changeIn('moved from 27 to 35').kind, null);
   });
 
+  test('the way a filer usually states a change is a change', () => {
+    // 74 sentences in one annual report are shaped like this and none were
+    // read as changes, which is why what_changed came back at 22 out of 641.
+    // It is now 131.
+    const found = changeIn('Underwriting expenses increased 34.2% in 2025 compared to 2024.');
+    assert.equal(found.pattern, 'stated_move');
+    assert.equal(found.delta, 34.2);
+    assert.equal(found.kind, 'percent');
+    assert.equal(found.to_period, '2025');
+    assert.equal(found.from_period, '2024');
+    // The move is stated, the endpoints are not, and are not solved.
+    assert.equal(found.from, null);
+    assert.equal(found.to, null);
+    assert.equal(found.delta_stated, true);
+  });
+
+  test('a quarterly filer compares against a quarter, not a year', () => {
+    // Every one of BlackRock's nine stated changes was missed because the
+    // pattern only knew the annual form. They landed in what_happened - the
+    // information kept, filed under the wrong question.
+    const found = changeIn('Performance fees increased $211 million from the second quarter of 2025.');
+    assert.equal(found.pattern, 'stated_move');
+    assert.equal(found.delta, 211);
+    assert.equal(found.kind, 'money_million');
+    assert.equal(found.from_period, '2025');
+  });
+
+  test('a fall is a negative move whatever verb says it', () => {
+    for (const verb of ['decreased', 'declined', 'fell']) {
+      const found = changeIn(`Revenues ${verb} 4.4% in 2025 compared to 2024.`);
+      assert.equal(found.delta, -4.4, verb);
+      assert.equal(found.direction, 'down', verb);
+    }
+    for (const verb of ['increased', 'rose', 'grew']) {
+      assert.equal(changeIn(`Revenues ${verb} 4.4% in 2025 compared to 2024.`).direction, 'up', verb);
+    }
+  });
+
+  test('a level against an average is not a move between periods', () => {
+    // "compared to" must be followed by a period. Reading a comparison
+    // against a five-year average as a year-on-year change would invent a
+    // comparison the filer did not make.
+    assert.equal(changeIn('In 2025, Berkshire produced $46 billion of net cash flows from '
+      + 'operating activities, compared to a five-year average of more than $40 billion.'), null);
+    assert.equal(changeIn('We produced a combined ratio of 87.1% in 2025, comparing favorably '
+      + 'with our five-year average of 90.7%.'), null);
+  });
+
+  test('a currency amount is never mistaken for a period', () => {
+    // "from $420 million" is an endpoint, not a year. Refusing it loses the
+    // claim, which is better than recording 420 as the prior period.
+    assert.equal(changeIn('Revenue increased $510 million from $420 million.'), null);
+  });
+
+  test('improved and deteriorated are not used, because they say nothing about the number', () => {
+    // An operating ratio improves by falling. A direction taken from the verb
+    // would be wrong half the time, so a stated move with one of those verbs
+    // is refused and left to the patterns that read actual endpoints.
+    assert.equal(changeIn('The operating ratio improved 2.5 percentage points in 2025 compared to 2024.'), null);
+  });
+
+  test('the endpoints are read in either order', () => {
+    // "improved to 34.5% from 32.0%" is how a filer often writes it, and the
+    // from/to pattern cannot see it because it expects "from" first. That
+    // sentence - one of the headline figures in the report - sat in
+    // what_happened for the whole of its life here.
+    const found = changeIn('In 2025, BNSF’s operating margin improved to 34.5% from 32.0% in 2024.');
+    assert.equal(found.pattern, 'to_from');
+    assert.equal(found.to, 34.5);
+    assert.equal(found.from, 32.0);
+    assert.equal(found.delta, 2.5);
+    assert.equal(found.from_period, '2024');
+    // Reading actual endpoints settles the direction that the verb cannot.
+    assert.equal(changeIn('the operating ratio improved to 65.5% from 68.0%').delta, -2.5);
+    // And the year-span refusal still applies in this order.
+    assert.equal(changeIn('maturity dates ranging from 2035 to 2056'), null);
+  });
+
+  test('trillion is a scale', () => {
+    // It was missing from kindOf and from every change pattern's unit list
+    // while figuresIn already had it, so "AUM rose to $15.3 trillion from
+    // $12.5 trillion" read as no change at all. A scale this codebase only
+    // met when a document measured in trillions arrived.
+    const found = changeIn('AUM rose to $15.3 trillion from $12.5 trillion in 2025.');
+    assert.equal(found.kind, 'money_trillion');
+    assert.equal(found.delta, 2.8);
+    assert.equal(figuresIn('AUM of $15.3 trillion')[0].scale, 'trillion');
+  });
+
   test('a span of years is not a change', () => {
     // Norges Bank's annual report is full of these, and three of the four
     // changes found in it were date ranges - each given a delta, each with no

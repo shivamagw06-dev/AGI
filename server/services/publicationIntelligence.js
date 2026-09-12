@@ -203,6 +203,28 @@ const CUES = {
 const NEEDS_QUANTITY = new Set(['what_happened', 'why', 'how_much', 'what_changed']);
 
 /**
+ * How a filer names the period it is comparing against.
+ *
+ * An annual report says "compared to 2024". A quarterly release says "from
+ * the second quarter of 2025", and every one of BlackRock's nine stated
+ * changes was missed because the pattern only knew the annual form:
+ *
+ *   "Performance fees increased $211 million from the second quarter of 2025"
+ *   "General and administration expense increased $107 million from the
+ *    second quarter of 2025"
+ *
+ * Those landed in what_happened instead - the information was kept, filed
+ * under the wrong question.
+ *
+ * A bare "from <year>" is accepted, but only where the number is not preceded
+ * by a currency sign, so "increased $510 million from $420 million" is left
+ * to the pattern that reads two endpoints rather than being mistaken for a
+ * period.
+ */
+const AGAINST_PERIOD = '(?:compared to|versus|vs\\.?|from)\\s+'
+  + '(?:the\\s+(?:first|second|third|fourth)\\s+quarter\\s+of\\s+)?(?<!\\$)(\\d{4})';
+
+/**
  * Changes the document states, as patterns.
  *
  * Order matters: `unchanged from` is tried before the general year-comparison
@@ -220,7 +242,7 @@ const CHANGES = [
   },
   {
     id: 'from_to',
-    re: /\bfrom\s+\$?\s?([\d,]+(?:\.\d+)?)\s*(%|percent|billion|million|thousand)?\s*(?:in\s+(\d{4})\s*)?\s*to\s+\$?\s?([\d,]+(?:\.\d+)?)\s*(%|percent|billion|million|thousand)?\s*(?:in\s+(\d{4}))?/i,
+    re: /\bfrom\s+\$?\s?([\d,]+(?:\.\d+)?)\s*(%|percent|trillion|billion|million|thousand)?\s*(?:in\s+(\d{4})\s*)?\s*to\s+\$?\s?([\d,]+(?:\.\d+)?)\s*(%|percent|trillion|billion|million|thousand)?\s*(?:in\s+(\d{4}))?/i,
     read: (m) => {
       const from = num(m[1]);
       const to = num(m[4]);
@@ -247,11 +269,91 @@ const CHANGES = [
     },
   },
   {
+    id: 'to_from',
+    // The endpoints in the order a filer often writes them, which the
+    // from/to pattern cannot read because it expects "from" first:
+    //
+    //   "BNSF's operating margin improved to 34.5% from 32.0% in 2024"
+    //
+    // That sentence sat in what_happened for the whole of its life here, and
+    // it is one of the headline figures in the report. Reading actual
+    // endpoints also handles the verbs stated_move refuses - "improved" says
+    // nothing about which way the number went, but 34.5 and 32.0 do.
+    re: /\bto\s+\$?\s?([\d,]+(?:\.\d+)?)\s*(%|percent|trillion|billion|million|thousand)?\s*(?:in\s+(\d{4}))?\s+from\s+\$?\s?([\d,]+(?:\.\d+)?)\s*(%|percent|trillion|billion|million|thousand)?\s*(?:in\s+(\d{4}))?/i,
+    read: (m) => {
+      const to = num(m[1]);
+      const from = num(m[4]);
+      const kind = kindOf(m[2] || m[5]);
+      // Same refusal as the from/to pattern: two year-like numbers with no
+      // unit is a span, not a move.
+      if (kind === null && isYear(from) && isYear(to)) return null;
+      return { from, to, from_period: m[6] || null, to_period: m[3] || null, kind };
+    },
+  },
+  {
     id: 'value_vs_year',
     re: /([\d,]+(?:\.\d+)?)\s*(%|percent)\s+in\s+(\d{4})\s+and\s+([\d,]+(?:\.\d+)?)\s*(?:%|percent)\s+in\s+(\d{4})/i,
     read: (m) => ({
       to: num(m[1]), to_period: m[3], from: num(m[4]), from_period: m[5], kind: 'percent',
     }),
+  },
+  {
+    id: 'stated_move',
+    // The way a filer usually states a change, and the way this missed for a
+    // long time: 74 sentences in one report are shaped like this and none of
+    // them were read as changes, which is why what_changed came back at 22
+    // out of 641.
+    //
+    //   "Underwriting expenses increased 34.2% in 2025 compared to 2024"
+    //   "Insurance investment income increased $4.1 billion in 2024 compared
+    //    to 2023"
+    //   "The expense ratio increased 1.1 percentage points in 2025 compared
+    //    to 2024"
+    //
+    // The magnitude and both periods are stated; the endpoints are not, and
+    // are left null rather than solved, the same as a stated delta.
+    //
+    // "compared to" must be followed by a year. "compared to a five-year
+    // average of more than $40 billion" is a level against an average, not a
+    // move between two periods, and reading it as a change would invent a
+    // year-on-year comparison the filer did not make.
+    //
+    // The verbs are only the ones whose direction is unambiguous about the
+    // NUMBER. "improved" and "deteriorated" describe the metric's fortunes -
+    // an operating ratio improves by falling - so a direction taken from them
+    // would be wrong half the time.
+    // The gap classes are [^\n] rather than [^.], which is what they were
+    // first written as. A decimal point is a period, so [^.] could not reach
+    // past "1.2" - and in "declined $147 million (1.2%) in 2025 compared to
+    // 2024" it skipped the $147 million and took the parenthetical 1.2%
+    // instead. Not a choice, an accident of the character class. Crossing a
+    // sentence is not a risk here because changeIn is handed one sentence at
+    // a time, already split.
+    //
+    // The first stated magnitude wins, which is the absolute move where a
+    // filer gives both. That is the figure the sentence leads with; the
+    // percentage in brackets is its restatement.
+    re: new RegExp('\\b(increased|rose|grew|decreased|declined|fell)\\b[^\\n]{0,50}?'
+      + '\\$?\\s?([\\d,]+(?:\\.\\d+)?)\\s*(%|percentage points?|trillion|billion|million|thousand)?'
+      + '[^\\n]{0,40}?(?:in\\s+(\\d{4})\\s*)?' + AGAINST_PERIOD, 'i'),
+    read: (m) => {
+      const magnitude = num(m[2]);
+      if (magnitude === null) return null;
+      const word = String(m[3] || '').toLowerCase();
+      const kind = /percentage points?/.test(word) ? 'percentage_points' : kindOf(word);
+      // A bare number with no unit at all could be anything. The filer always
+      // gives a unit for a move worth stating.
+      if (!kind) return null;
+      const down = /^(decreased|declined|fell)$/i.test(m[1]);
+      return {
+        delta: down ? -magnitude : magnitude,
+        direction: down ? 'down' : 'up',
+        from: null, to: null,
+        from_period: m[5] || null, to_period: m[4] || null,
+        kind,
+        delta_stated: true,
+      };
+    },
   },
   {
     id: 'stated_delta',
@@ -285,10 +387,15 @@ const num = (value) => {
  */
 const isYear = (value) => Number.isInteger(value) && value >= 1800 && value <= 2200;
 
+
 const kindOf = (token) => {
   const word = String(token || '').toLowerCase();
   if (word === '%' || word === 'percent') return 'percent';
-  if (word === 'billion' || word === 'million' || word === 'thousand') return `money_${word}`;
+  // Trillion was missing from here and from every change pattern's unit list,
+  // while figuresIn already had it. "AUM rose to $15.3 trillion from $12.5
+  // trillion" read as no change at all - a scale this codebase only met when
+  // a document measured in trillions arrived.
+  if (['trillion', 'billion', 'million', 'thousand'].includes(word)) return `money_${word}`;
   return null;
 };
 
@@ -525,7 +632,7 @@ export function sentences(text) {
 export function figuresIn(sentence) {
   const text = String(sentence || '');
   const found = [];
-  const money = /\$\s?([\d,]+(?:\.\d+)?)\s*(trillion|billion|million|thousand)?/gi;
+  const money = /\$\s?([\d,]+(?:\.\d+)?)\s*(trillion|trillion|billion|million|thousand)?/gi;
   for (const match of text.matchAll(money)) {
     found.push({
       raw: match[0].trim(),
