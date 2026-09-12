@@ -122,6 +122,42 @@ describe('reading a change the document states', () => {
     assert.equal(changeIn('moved from 27 to 35').kind, null);
   });
 
+  test('a span of years is not a change', () => {
+    // Norges Bank's annual report is full of these, and three of the four
+    // changes found in it were date ranges - each given a delta, each with no
+    // unit, each published by the auto-approval rule:
+    //
+    //   "Measured over the entire period from 1998 to 2025, the realised
+    //    tracking error has been 0.62 percentage point"   -> up 27
+    //
+    // Berkshire's report had two of its own that had been live all along:
+    // "maturity dates ranging from 2035 to 2056" -> up 21.
+    for (const span of [
+      'Measured over the entire period from 1998 to 2025, the tracking error has been 0.62 points.',
+      'In the period from 2013 to 2025, annual management costs have been 0.05 percent.',
+      'In 2025, BHE subsidiaries issued $4.3 billion of term debt with maturity dates ranging '
+        + 'from 2035 to 2056.',
+    ]) {
+      const change = changeIn(span);
+      assert.ok(!change || change.delta === null, `read a span as a change: ${span}`);
+    }
+  });
+
+  test('a stated unit makes two year-like numbers a change again', () => {
+    // The years are only decisive when nothing says what is being measured.
+    const change = changeIn('the ratio moved from 2,013% to 2,025%');
+    assert.equal(change.delta, 12);
+  });
+
+  test('a refused reading does not stop another pattern matching', () => {
+    // A sentence can carry both a date range and a real change, and the date
+    // range must not consume it.
+    const change = changeIn('Over the period from 2013 to 2025 the loss ratio was 71.8% in 2024 '
+      + 'and 81.0% in 2023.');
+    assert.equal(change.from, 81.0);
+    assert.equal(change.to, 71.8);
+  });
+
   test('a sentence with no change returns null rather than an empty change', () => {
     assert.equal(changeIn('We have always prioritized underwriting discipline over volume.'), null);
     assert.equal(changeIn(''), null);

@@ -221,14 +221,30 @@ const CHANGES = [
   {
     id: 'from_to',
     re: /\bfrom\s+\$?\s?([\d,]+(?:\.\d+)?)\s*(%|percent|billion|million|thousand)?\s*(?:in\s+(\d{4})\s*)?\s*to\s+\$?\s?([\d,]+(?:\.\d+)?)\s*(%|percent|billion|million|thousand)?\s*(?:in\s+(\d{4}))?/i,
-    read: (m) => ({
-      from: num(m[1]), to: num(m[4]),
-      from_period: m[3] || null, to_period: m[6] || null,
+    read: (m) => {
+      const from = num(m[1]);
+      const to = num(m[4]);
       // A bare endpoint takes the scale its partner states: "from 27% to 35%"
-      // writes the unit once. Where neither states one, the kind is unknown
-      // and no delta is computed from it.
-      kind: kindOf(m[2] || m[5]),
-    }),
+      // writes the unit once.
+      const kind = kindOf(m[2] || m[5]);
+      // Two year-like numbers with no unit is a span, not a move. Nothing
+      // distinguishes "from 1998 to 2025" from "from 27 to 35" by shape, so
+      // the years settle it.
+      //
+      // This also refused two claims in Berkshire's report that had been
+      // published all along - "maturity dates ranging from 2035 to 2056",
+      // read as a rise of 21 - so the rule removes four known-bad claims
+      // across two documents and no good ones.
+      //
+      // The cost, stated because it is real: a genuine change measured in a
+      // unit `kindOf` does not know is refused too. "capacity grew from 2,013
+      // to 2,025 megawatts" is a change and this treats it as a date range,
+      // because megawatts is not one of percent, thousand, million or
+      // billion. Adding a unit to `kindOf` is what fixes that case, not
+      // loosening this.
+      if (kind === null && isYear(from) && isYear(to)) return null;
+      return { from, to, from_period: m[3] || null, to_period: m[6] || null, kind };
+    },
   },
   {
     id: 'value_vs_year',
@@ -256,6 +272,18 @@ const num = (value) => {
   const parsed = Number(String(value ?? '').replace(/,/g, ''));
   return Number.isFinite(parsed) ? parsed : null;
 };
+
+/**
+ * A number that can only be a calendar year.
+ *
+ * Used to refuse a date range that is shaped exactly like a change. Norges
+ * Bank's report is full of them - "Measured over the entire period from 1998
+ * to 2025, the realised tracking error has been 0.62 percentage point" - and
+ * the from/to pattern read that as a rise of 27, with no unit, and the
+ * auto-approval rule published it. Three of the four changes found in that
+ * document were date ranges.
+ */
+const isYear = (value) => Number.isInteger(value) && value >= 1800 && value <= 2200;
 
 const kindOf = (token) => {
   const word = String(token || '').toLowerCase();
@@ -508,6 +536,10 @@ export function changeIn(sentence) {
     const match = pattern.re.exec(text);
     if (!match) continue;
     const read = pattern.read(match);
+    // A pattern may match the shape and then refuse the reading. The next
+    // pattern still gets its turn: a sentence carrying a date range may also
+    // carry a real change.
+    if (!read) continue;
     const change = { pattern: pattern.id, delta: null, direction: null, ...read };
     if (change.delta === null && change.from !== null && change.to !== null) {
       change.delta = Number((change.to - change.from).toFixed(6));
