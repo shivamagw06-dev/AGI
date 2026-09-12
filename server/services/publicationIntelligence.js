@@ -38,6 +38,8 @@
  * publishable: a reviewer approves a claim against the words that produced it.
  */
 
+import { attributeSegment, segmentHeading, themesIn } from './publicationSegments.js';
+
 /**
  * The chain, in order, with what each slot can be filled from.
  *
@@ -166,9 +168,15 @@ const CUES = {
     /\bwe (?:reduced|increased|lowered|raised) (?:volume|exposure|limits|capacity|premium)/i,
   ],
   expectations: [
+    // First person only. Passive "is expected to" and "are expected to" read
+    // as forecasts and in an insurer's report are mostly definitions of how a
+    // contract works - "expected ultimate losses payable under these policies
+    // are expected to exceed premiums" - plus organisational boilerplate:
+    // "its CEO, who is expected to pursue operational excellence". Management
+    // saying what it expects is the thing this slot is for.
     /\bwe expect\b/i, /\bwe anticipate\b/i, /\bwe intend to\b/i, /\bwe plan to\b/i,
-    /\bwill likely\b/i, /\bis expected to\b/i, /\bare expected to\b/i,
-    /\bwe (?:do not|don't) expect\b/i,
+    /\bwe (?:do not|don't) expect\b/i, /\bwe (?:believe|foresee) .{0,40}will\b/i,
+    /\bwill likely\b/i,
   ],
   risks: [
     /\bcould (?:adversely|materially|be material|result in|have a)\b/i,
@@ -256,21 +264,86 @@ const kindOf = (token) => {
 };
 
 /**
- * A pasted document as sentences.
+ * A run of table cells that got joined into something sentence-shaped.
  *
- * Text out of a PDF wraps mid-sentence, so single newlines inside a paragraph
- * are joined before splitting. Blank lines stay as paragraph boundaries, which
- * keeps a heading from being glued onto the sentence under it.
+ * The length cap alone let this through and it reached a claim:
  *
- * Each sentence carries the paragraph it came from so a reviewer can find it,
- * and nothing carries a byte offset into the original: the paste is not stored,
- * so an offset into it would point at nothing.
+ *   Land, track structure and other roadway $ 76,764 $ 74,093 Locomotives,
+ *   freight cars and other equipment 15,772 15,766 Construction in progress
+ *
+ * 384 characters, no verb, and it answered a question about freight because
+ * "freight cars" is in the row. A sentence quotes a filer; this quotes a
+ * spreadsheet, and a reviewer shown it as evidence learns nothing.
+ *
+ * The test is the share of tokens that are bare numbers. Prose carries figures
+ * and stays mostly words; a table row is mostly numbers however it is wrapped.
+ *
+ * A four-digit year is not counted. Years are prose - "GEICO's loss ratio was
+ * 71.8% in 2024 and 81.0% in 2023" is eleven tokens of which four are numeric
+ * only if 2024 and 2023 count, and it was rejected as a table until they
+ * stopped counting. Dense year-on-year comparisons are exactly the sentences
+ * this layer exists to find.
+ */
+export function looksTabular(sentence) {
+  const tokens = String(sentence || '').trim().split(/\s+/).filter(Boolean);
+  if (tokens.length < 6) return false;
+  const numeric = tokens.filter((token) => /^[$(]?[\d,]+(?:\.\d+)?\)?%?$/.test(token)
+    && !/^(?:19|20)\d{2}$/.test(token)).length;
+  return numeric / tokens.length >= 0.25;
+}
+
+/**
+ * How many sentences a section heading carries for.
+ *
+ * Counted in sentences, not passages, because a pasted report has almost no
+ * blank lines - this one had two in 7,194 - so a passage counter advances only
+ * at the next heading and a bound written against it can never fire. The first
+ * version of this bound was exactly that: inert, and it changed the segment
+ * counts by nothing.
+ *
+ * Twenty-five covers an MD&A segment discussion. Past that the sentence is
+ * usually in the notes or the risk factors, which carry no segment headings at
+ * all, and the nearest heading above is not evidence about them.
+ */
+const HEADING_SPAN = 25;
+
+/**
+ * A pasted document as sentences, under the section each one sits in.
+ *
+ * Text out of a PDF wraps mid-sentence, so lines inside a passage are joined
+ * before splitting on terminal punctuation.
+ *
+ * A section heading is a line of its own and has to be taken out before that
+ * join, not after. An annual report's MD&A puts "Reinsurance Group" on its own
+ * line with no blank line around it, and joining first produced the sentence
+ * "Reinsurance Group Our reinsurance operations face similar dynamics" - a
+ * claim whose excerpt carried a word the sentence does not contain. Pulling
+ * the heading out fixes that and yields the thing that makes a claim findable:
+ * the business the passage beneath it is about.
+ *
+ * A heading expires. It applies to the passages beneath it until the next
+ * heading OR until HEADING_SPAN passages have gone by, whichever comes first.
+ * Without the bound, the first draft attributed 661 of 665 claims to a segment
+ * across a 557,000-character report - "Pilot" collected 88 claims because the
+ * heading was set once in the letter and never cleared, and the notes to the
+ * financial statements and the risk factors, which carry no segment headings
+ * at all, inherited whatever section happened to precede them. A heading 200
+ * passages above a sentence is not evidence about that sentence.
+ *
+ * Each sentence carries its section and the passage it came from. Nothing
+ * carries a byte offset into the original, because the paste is not stored and
+ * an offset into it would point at nothing.
  */
 export function sentences(text) {
   const out = [];
-  const paragraphs = String(text || '').split(/\n\s*\n/);
-  paragraphs.forEach((paragraph, index) => {
-    const joined = paragraph.replace(/\s*\n\s*/g, ' ').replace(/\s+/g, ' ').trim();
+  let heading = null;
+  let sinceHeading = 0;
+  let paragraph = 0;
+  let buffer = [];
+
+  const flush = () => {
+    const joined = buffer.join(' ').replace(/\s+/g, ' ').trim();
+    buffer = [];
     if (!joined) return;
     for (const raw of joined.split(/(?<=[.!?])\s+(?=[A-Z$“"(])/)) {
       const sentence = raw.trim();
@@ -278,9 +351,31 @@ export function sentences(text) {
       // A very long "sentence" is a table that lost its line breaks, not
       // prose. It is also more of the document than a citation should carry.
       if (sentence.length > 400) continue;
-      out.push({ text: sentence, paragraph: index });
+      if (looksTabular(sentence)) continue;
+      sinceHeading += 1;
+      const live = heading !== null && sinceHeading <= HEADING_SPAN;
+      out.push({ text: sentence, paragraph, heading: live ? heading : null });
     }
-  });
+  };
+
+  for (const line of String(text || '').split('\n')) {
+    if (!line.trim()) {
+      flush();
+      paragraph += 1;
+      continue;
+    }
+    const section = segmentHeading(line);
+    if (section) {
+      // A heading closes the passage above it and names the one below.
+      flush();
+      paragraph += 1;
+      heading = section;
+      sinceHeading = 0;
+      continue;
+    }
+    buffer.push(line.trim());
+  }
+  flush();
   return out;
 }
 
@@ -365,6 +460,13 @@ export function slotsFor(sentence) {
   // A year counts as a quantity. "We expect these businesses to face continued
   // headwinds in 2026" is anchored in time even though it states no figure.
   const quantified = figures.length > 0 || /\b(?:19|20)\d{2}\b/.test(text);
+  // A cause about an identified market condition counts even with no figure
+  // in it. "the industry enters a significant investment cycle, driven by
+  // rising electricity demand from artificial intelligence computing" states
+  // no number and is the answer to what Berkshire sees in AI power demand;
+  // the quantity rule alone discarded it. Rhetoric still fails both tests:
+  // "reflected their beliefs about business and life" names no market.
+  const themed = themesIn(text).length > 0;
   const slots = [];
   if (change) slots.push('what_changed');
   for (const slot of ['why', 'how', 'expectations', 'risks']) {
@@ -375,7 +477,11 @@ export function slotsFor(sentence) {
   if (figures.length) {
     slots.push(metricIn(text) ? 'how_much' : 'what_happened');
   }
-  return slots.filter((slot) => !NEEDS_QUANTITY.has(slot) || quantified);
+  return slots.filter((slot) => {
+    if (!NEEDS_QUANTITY.has(slot)) return true;
+    if (quantified) return true;
+    return slot === 'why' && themed;
+  });
 }
 
 /**
@@ -409,6 +515,10 @@ export function intelligenceChain(text, options = {}) {
         metric: metricIn(sentence.text),
         figures: figuresIn(sentence.text),
         change: slot === 'what_changed' ? changeIn(sentence.text) : null,
+        // Which business, and whether the sentence said so or the section did.
+        ...attributeSegment(sentence.text, sentence.heading),
+        // Which market questions it speaks to. Several is normal.
+        themes: themesIn(sentence.text),
         paragraph: sentence.paragraph,
         // The claim is the filer's sentence. Not a summary of it.
         source_excerpt: sentence.text,
@@ -437,4 +547,36 @@ export function intelligenceChain(text, options = {}) {
     matched_sentences: matched,
     slots,
   };
+}
+
+/**
+ * Claims from a chain, narrowed to a question.
+ *
+ * "What does Berkshire expect from the insurance market?" is a slot and a set
+ * of segments. "What demand trends does it see in AI power?" is a theme. This
+ * is a filter and is named like one: it selects claims the filer wrote, and
+ * does not compose an answer out of them. Composing the answer is the
+ * so_what step, which is still declared unreachable.
+ */
+export function selectClaims(chain, filter = {}) {
+  const wanted = (value) => (value === undefined || value === null
+    ? null
+    : new Set(Array.isArray(value) ? value : [value]));
+  const slots = wanted(filter.slots ?? filter.slot);
+  const segments = wanted(filter.segments ?? filter.segment);
+  const themes = wanted(filter.themes ?? filter.theme);
+
+  const out = [];
+  for (const slot of chain?.slots || []) {
+    if (slots && !slots.has(slot.slot)) continue;
+    for (const claim of slot.claims) {
+      if (segments && !segments.has(claim.segment)) continue;
+      // A claim carries several themes; matching any of the asked-for ones is
+      // a match, because a sentence about capital entering the market and
+      // pricing falling answers a question about either.
+      if (themes && !(claim.themes || []).some((theme) => themes.has(theme))) continue;
+      out.push(claim);
+    }
+  }
+  return out;
 }
