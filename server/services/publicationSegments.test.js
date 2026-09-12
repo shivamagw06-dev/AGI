@@ -180,6 +180,44 @@ describe('a table that survived the length cap', () => {
     assert.equal(looksTabular("GEICO’s loss ratio was 71.8% in 2024 and 81.0% in 2023."), false);
   });
 
+  test('a balance-sheet row with long labels is still a table', () => {
+    // The ratio rule alone let this through at 0.229 against a 0.25 bar: the
+    // labels between the column pairs dilute it below any threshold that
+    // leaves dense prose alone. It was filed as an amount with the metric
+    // "treasury bills" and published by the auto-approval rule, so it reached
+    // a page as a quotation from Berkshire.
+    const row = 'Treasury Bills 112,811 89,705 Investments in and advances to consolidated '
+      + 'subsidiaries 604,100 568,987 Investment in Kraft Heinz and other assets 8,871 13,417 '
+      + '$ 740,409 $ 678,446 Liabilities and Shareholders\u2019 equity: Payable for purchase of U.S.';
+    assert.equal(looksTabular(row), true);
+    // Asserted through the pipeline, not through slotsFor: that classifies
+    // whatever string it is handed, and the rejection happens earlier, when
+    // sentences() decides what counts as prose. The first version of this
+    // assertion tested the wrong function and failed against working code.
+    assert.deepEqual(selectClaims(intelligenceChain(row)), [],
+      'a spreadsheet row became a claim');
+  });
+
+  test('two bare numbers side by side is a column pair, and prose has none', () => {
+    // The sharper of the two tests. Prose separates its figures with words.
+    assert.equal(looksTabular('Revenues 12,345 11,900 Earnings 2,200 2,100 and other items'), true);
+    assert.equal(looksTabular('In 2025, Berkshire produced $46 billion of net cash flows from '
+      + 'operating activities, compared to a five-year average of more than $40 billion.'), false);
+  });
+
+  test('a year keeps its meaning when it keeps its comma', () => {
+    // "2026," is not "2026", so the year exclusion missed it and a list of
+    // years counted as a row of columns. This commitments schedule scored
+    // 0.400 and was discarded as a table - and the years are the reason it is
+    // worth having.
+    const schedule = 'Estimated future payments were $10 billion in 2026, $6 billion in 2027, '
+      + '$4 billion in 2028, $3 billion in 2029.';
+    assert.equal(looksTabular(schedule), false);
+    assert.equal(sentences(schedule).length, 1, 'the schedule should survive as a sentence');
+    assert.equal(looksTabular('Wildfire loss accrual estimates recorded were $100 million in '
+      + '2025, $346 million in 2024 and $1.9 billion in 2023.'), false);
+  });
+
   test('a short line is left alone', () => {
     assert.equal(looksTabular('$ 76,764 $ 74,093'), false);
   });
