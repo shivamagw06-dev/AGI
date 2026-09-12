@@ -6,7 +6,7 @@ import { dirname, join } from 'node:path';
 import {
   CHAIN, STATED_SLOTS, INFERRED_SLOTS,
   sentences, figuresIn, metricIn, changeIn, slotsFor, intelligenceChain,
-  runningHeaders, isPageMarker,
+  runningHeaders, isPageMarker, autoApproved,
 } from './publicationIntelligence.js';
 
 /**
@@ -280,10 +280,14 @@ describe('the chain over a real report', () => {
     assert.match(excerpts('how'), /always prioritized underwriting discipline/);
   });
 
-  test('a change claim carries the arithmetic and a stated claim does not', () => {
+  test('a change claim says whose arithmetic it is', () => {
+    // This test previously asserted every change claim was `derived`, which
+    // was wrong and understated the rows. "an increase of 2.7 percentage
+    // points compared to 2024" is the filer's own subtraction; calling it
+    // derived claimed credit for arithmetic this code never performed.
     for (const claim of bySlot.what_changed.claims) {
-      assert.equal(claim.basis, 'derived');
       assert.ok(claim.change, 'a change claim without a change');
+      assert.equal(claim.basis, claim.change.delta_stated ? 'stated' : 'derived');
     }
     for (const claim of bySlot.how_much.claims) {
       assert.equal(claim.basis, 'stated');
@@ -404,5 +408,118 @@ describe('the same sentence twice is one finding', () => {
       .filter((slot) => slot.claims.length)
       .map((slot) => slot.slot);
     assert.deepEqual(filled.sort(), ['how_much', 'what_changed']);
+  });
+});
+
+describe('nothing is dropped at ingest', () => {
+  test('every claim found comes back by default', () => {
+    // The bound used to default to 25 and was applied where claims are made,
+    // so storage inherited it: 509 of the 654 claims in a 557,000-character
+    // report were discarded, keeping whichever 25 appeared first in document
+    // order. Asking that store about BNSF's freight then searched 25 of 142.
+    //
+    // The input has to exceed the old default or the test proves nothing. Run
+    // against the fixture alone this passed with the cap restored, because no
+    // slot in it holds 25 claims - the same inert-guard mistake as the
+    // heading bound that counted paragraphs in a document with no blank
+    // lines.
+    const many = Array.from({ length: 40 },
+      (unused, index) => `Our insurance float stood at $${120 + index} billion in ${1980 + index}.`)
+      .join('\n\n');
+    const chain = intelligenceChain(many);
+    const amounts = chain.slots.find((slot) => slot.slot === 'how_much');
+    assert.equal(amounts.found, 40, 'the input should yield 40 distinct amounts');
+    assert.equal(amounts.claims.length, 40, 'claims were dropped at ingest');
+    assert.equal(amounts.truncated, false);
+
+    for (const slot of intelligenceChain(FIXTURE).slots) {
+      assert.equal(slot.claims.length, slot.found, `${slot.slot} came back short`);
+    }
+  });
+
+  test('a caller that wants a sample asks for one, and is told it got one', () => {
+    const sample = intelligenceChain(FIXTURE, { perSlot: 1 });
+    const changed = sample.slots.find((slot) => slot.slot === 'what_changed');
+    assert.equal(changed.claims.length, 1);
+    assert.equal(changed.truncated, true);
+    assert.ok(changed.found > 1);
+  });
+});
+
+describe('what may be published without a person reading it', () => {
+  const claims = (text) => intelligenceChain(text).slots.flatMap((slot) => slot.claims);
+
+  test('a change stating both endpoints needs no reviewer', () => {
+    // The delta is a subtraction anyone can check against the sentence.
+    const [claim] = claims("GEICO’s loss ratio was 71.8% in 2024 and 81.0% in 2023.")
+      .filter((item) => item.slot === 'what_changed');
+    assert.equal(claim.basis, 'derived');
+    assert.equal(autoApproved(claim), true);
+  });
+
+  test('a change the filer computed itself needs no reviewer either', () => {
+    // No arithmetic to check: the move is in the sentence. `from` is null and
+    // the row says so, which is different from the row being wrong.
+    const [claim] = claims("GEICO’sexpense ratio was 12.4% in 2025, an increase of "
+      + '2.7 percentage points compared to 2024.')
+      .filter((item) => item.slot === 'what_changed');
+    assert.equal(claim.change.delta_stated, true);
+    assert.equal(claim.change.from, null);
+    assert.equal(claim.basis, 'stated');
+    assert.equal(autoApproved(claim), true);
+  });
+
+  test('a change with no usable move is held back', () => {
+    // Constructed, because no pattern currently produces one. The rule must
+    // refuse it anyway: a change row whose delta is unknown is the one case
+    // where a reader would supply the missing number themselves.
+    assert.equal(autoApproved({ slot: 'what_changed', change: { delta: null } }), false);
+    assert.equal(autoApproved({ slot: 'what_changed', change: null }), false);
+    assert.equal(autoApproved(null), false);
+  });
+
+  test('an amount naming a metric the filer used needs no reviewer', () => {
+    const [claim] = claims('our insurance float stood at $176 billion at year-end.')
+      .filter((item) => item.slot === 'how_much');
+    assert.equal(claim.metric, 'float');
+    assert.equal(autoApproved(claim), true);
+  });
+
+  test('a figure with no named metric is not an amount and is not approved', () => {
+    const [claim] = claims('The insurance businesses returned $29 billion to Berkshire.')
+      .filter((item) => item.slot === 'what_happened');
+    assert.equal(claim.metric, null);
+    assert.equal(autoApproved(claim), false);
+  });
+
+  test('every cue-matched slot waits for a person, without exception', () => {
+    // `why`, `risks`, `how` and `expectations` are a regular expression's
+    // guess at what a sentence is doing. The expectations slot runs at about
+    // half precision - "we expect the resolution periods will be very long"
+    // is contract mechanics sitting beside "we expect to write less
+    // reinsurance premium" - and no rule separates them.
+    const cueMatched = ['why', 'risks', 'how', 'expectations'];
+    const chain = intelligenceChain(FIXTURE);
+    let checked = 0;
+    for (const slot of chain.slots) {
+      if (!cueMatched.includes(slot.slot)) continue;
+      for (const claim of slot.claims) {
+        assert.equal(autoApproved(claim), false, `${slot.slot}: ${claim.source_excerpt}`);
+        checked += 1;
+      }
+    }
+    assert.ok(checked > 5, `only ${checked} cue-matched claims to check`);
+  });
+
+  test('an approved claim still carries the sentence it came from', () => {
+    // Auto-approval is what makes provenance load-bearing rather than
+    // decorative: these rows reach a page with nobody having read them.
+    const flat = FIXTURE.replace(/\s+/g, ' ');
+    let checked = 0;
+    for (const claim of claims(FIXTURE).filter(autoApproved)) {
+      assert.ok(flat.includes(claim.source_excerpt), claim.source_excerpt);
+      checked += 1;
+    }
+    assert.ok(checked > 3, `only ${checked} approved claims to check`);
   });
 });

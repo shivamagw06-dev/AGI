@@ -29,7 +29,7 @@ import { readFileSync } from 'node:fs';
 import { createSupabaseAdmin, getSupabaseAdminCredentials } from '../lib/supabaseAdmin.js';
 import { paged } from '../services/institutionalResearchLayerService.js';
 import { extractDisclosedHoldings, documentDigest } from '../services/publicationFacts.js';
-import { intelligenceChain, selectClaims } from '../services/publicationIntelligence.js';
+import { intelligenceChain, selectClaims, autoApproved } from '../services/publicationIntelligence.js';
 import { SEGMENT_LABELS, THEME_LABELS } from '../services/publicationSegments.js';
 
 const APPLY = process.argv.includes('--apply');
@@ -39,12 +39,14 @@ const TITLE = argOf('--title');
 const AS_OF = argOf('--as-of');
 const SOURCE_URL = argOf('--source-url');
 const FILE = argOf('--file');
-const PER_SLOT = Number(argOf('--per-slot')) || 25;
+const PER_SLOT = Number(argOf('--per-slot')) || 5;
 // Tables only, for checking a holdings parse without the chain's output.
 const TABLES_ONLY = process.argv.includes('--tables-only');
 // Narrow the printed chain to a question: --slot expectations --segment bnsf
 // --theme freight_volumes. A filter changes what is shown, never what is
 // stored: the whole chain is written so a later question can be asked of it.
+//
+// Same for --per-slot. It bounds the sample printed below and nothing else.
 const ASK_SLOT = argOf('--slot');
 const ASK_SEGMENT = argOf('--segment');
 const ASK_THEME = argOf('--theme');
@@ -129,7 +131,8 @@ async function main() {
     console.log('[pub] "(Dollars in millions)" line above the table before approving those.');
   }
 
-  const chain = TABLES_ONLY ? null : intelligenceChain(text, { perSlot: PER_SLOT });
+  // No bound. Every claim is stored; PER_SLOT only trims the printout.
+  const chain = TABLES_ONLY ? null : intelligenceChain(text);
   if (chain) {
     console.log(`\n[pub] ${chain.sentences.toLocaleString()} sentences, `
       + `${chain.matched_sentences.toLocaleString()} carrying a claim`);
@@ -143,8 +146,9 @@ async function main() {
         console.log(`  ${' '.repeat(34)}${slot.reason.replace(/\s+/g, ' ')}`);
         continue;
       }
-      const shown = slot.truncated ? `${slot.returned} of ${slot.found}` : String(slot.found);
-      console.log(`  ${pad(slot.question, 34)}${pad(shown, 12)}${slot.basis}`);
+      const auto = slot.claims.filter(autoApproved).length;
+      const note = auto ? `${auto} auto-approved` : 'all pending';
+      console.log(`  ${pad(slot.question, 34)}${pad(slot.found, 8)}${pad(slot.basis, 10)}${note}`);
     }
     if (ASKED) {
       const hits = selectClaims(chain, {
@@ -174,7 +178,7 @@ async function main() {
       for (const slot of chain.slots) {
         if (!slot.claims.length) continue;
         console.log(`\n--- ${slot.question}  [${slot.basis}]`);
-        for (const claim of slot.claims.slice(0, 5)) {
+        for (const claim of slot.claims.slice(0, PER_SLOT)) {
           const label = claim.metric ? `(${claim.metric}) ` : '';
           const where = claim.segment ? `[${SEGMENT_LABELS[claim.segment] || claim.segment}] ` : '';
           const move = claim.change && claim.change.delta !== null
@@ -183,7 +187,9 @@ async function main() {
             : '';
           console.log(`  ${where}${label}${claim.source_excerpt.slice(0, 150)}${move}`);
         }
-        if (slot.claims.length > 5) console.log(`  ... and ${slot.claims.length - 5} more`);
+        if (slot.claims.length > PER_SLOT) {
+          console.log(`  ... and ${slot.claims.length - PER_SLOT} more, all stored`);
+        }
       }
       const themes = new Map();
       for (const claim of selectClaims(chain)) {
@@ -251,6 +257,14 @@ async function main() {
         change: claim.change,
         paragraph: claim.paragraph,
         source_excerpt: claim.source_excerpt,
+        // A change with both endpoints stated, or an amount with a metric the
+        // filer named, is quotation plus arithmetic and goes live. Everything
+        // a cue matched waits for a person. `reviewed_by` records which of
+        // those happened, so a page never presents a rule's approval as a
+        // person's.
+        ...(autoApproved(claim)
+          ? { status: 'approved', reviewed_by: 'rule', reviewed_at: new Date().toISOString() }
+          : { status: 'pending', reviewed_by: null }),
       });
     }
   }
@@ -270,13 +284,26 @@ async function main() {
     console.log('[pub] same step and were collapsed. The same words twice are one finding.');
   }
 
-  const { error: fError } = await client.from('manager_publication_facts')
-    .upsert(unique, { onConflict: 'publication_id,slot,source_excerpt' });
-  if (fError) throw new Error(`storing facts: ${fError.message}`);
+  // Chunked. A whole report is ~650 claims and one request carrying all of
+  // them is a single point of failure for the entire run; a chunk that fails
+  // names itself.
+  for (let at = 0; at < unique.length; at += 250) {
+    const chunk = unique.slice(at, at + 250);
+    const { error: fError } = await client.from('manager_publication_facts')
+      .upsert(chunk, { onConflict: 'publication_id,slot,source_excerpt' });
+    if (fError) {
+      throw new Error(`storing facts ${at + 1}-${at + chunk.length}: ${fError.message}`);
+    }
+  }
 
   const claims = unique.length - facts.length;
-  console.log(`\n[pub] ${facts.length} holding(s) and ${claims} chain claim(s) stored as pending`);
+  const approved = unique.filter((row) => row.status === 'approved').length;
+  console.log(`\n[pub] ${facts.length} holding(s) and ${claims} chain claim(s) stored`);
   console.log(`[pub] against publication ${publication.id}`);
+  console.log(`[pub] ${approved} approved by rule, ${unique.length - approved} pending a person.`);
+  console.log('[pub] The rule covers a change stating both endpoints and an amount naming a');
+  console.log('[pub] metric - quotation and arithmetic. It certifies the row quotes the');
+  console.log('[pub] document accurately, not that the fact is worth reading.');
   if (chain) {
     const gaps = chain.slots.filter((slot) => !slot.extractable).map((slot) => slot.slot);
     console.log(`[pub] ${gaps.join(' and ')} are not stored: no sentence states either, and`);

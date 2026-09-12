@@ -79,7 +79,8 @@ export const CHAIN = [
     question: 'What changed vs last year?',
     basis: 'derived',
     extractable: true,
-    note: 'Both endpoints must be stated. A stated delta with one endpoint is returned as that, not solved.',
+    note: 'Both endpoints must be stated, or the filer states the move itself - in which '
+      + 'case the claim is stated, not derived, and each claim carries its own basis.',
   },
   {
     slot: 'expectations',
@@ -541,13 +542,17 @@ export function slotsFor(sentence) {
  * carrying the reason. A caller rendering this shows the gap instead of
  * presenting seven slots as if they were the whole chain.
  *
- * `perSlot` bounds what comes back. A 555,000-character report has thousands
- * of qualifying sentences and a reviewer cannot approve thousands; the count
- * of what was found is reported alongside what is returned, so the bound is
- * visible rather than silent.
+ * Everything found comes back. `perSlot` exists for a caller that wants to
+ * print a sample and is not a storage bound - it was one, and that was a
+ * defect: the default of 25 silently discarded 509 of the 654 claims in a
+ * 557,000-character report, keeping whichever 25 appeared first in document
+ * order. Asking that store for BNSF's freight causes then searched 25 of 142,
+ * which defeats the point of storing claims at all. Review load is a
+ * different problem from ingest and is solved by prioritising the queue, not
+ * by throwing data away without saying so.
  */
 export function intelligenceChain(text, options = {}) {
-  const perSlot = Number.isFinite(options.perSlot) ? options.perSlot : 25;
+  const perSlot = Number.isFinite(options.perSlot) ? options.perSlot : Infinity;
   const all = sentences(text);
   const buckets = new Map(STATED_SLOTS.map((slot) => [slot, []]));
   // One sentence, one claim per slot. A document repeats sentences - the yen
@@ -569,12 +574,19 @@ export function intelligenceChain(text, options = {}) {
       const already = seen.get(slot);
       if (already.has(sentence.text)) continue;
       already.add(sentence.text);
+      const change = slot === 'what_changed' ? changeIn(sentence.text) : null;
       bucket.push({
         slot,
-        basis: slot === 'what_changed' ? 'derived' : 'stated',
+        // Per claim, not per slot. "an increase of 2.7 percentage points
+        // compared to 2024" is the filer's own arithmetic and this codebase
+        // did none: labelling it `derived` claimed credit for a subtraction
+        // nobody performed, and understated how well supported the row is.
+        // Only a delta this code computed from two stated endpoints is derived.
+        basis: change && change.delta_stated ? 'stated'
+          : slot === 'what_changed' ? 'derived' : 'stated',
         metric: metricIn(sentence.text),
         figures: figuresIn(sentence.text),
-        change: slot === 'what_changed' ? changeIn(sentence.text) : null,
+        change,
         // Which business, and whether the sentence said so or the section did.
         ...attributeSegment(sentence.text, sentence.heading),
         // Which market questions it speaks to. Several is normal.
@@ -607,6 +619,52 @@ export function intelligenceChain(text, options = {}) {
     matched_sentences: matched,
     slots,
   };
+}
+
+/**
+ * Whether a claim can be published without a person reading it.
+ *
+ * Two cases, and both are narrow on purpose.
+ *
+ * A change whose move the document supports. Either it states both endpoints,
+ * and the delta is a subtraction anyone can check against the sentence, or it
+ * states the move itself - "an increase of 2.7 percentage points compared to
+ * 2024" - in which case there is no arithmetic to check at all and the row is
+ * pure quotation. The first draft of this rule held the second case back on
+ * the grounds that its starting value is missing, which confused a value the
+ * row does not claim with a value the row gets wrong: `from` is null and the
+ * row says so.
+ *
+ * An amount whose metric is on the closed list. The sentence names the metric
+ * and carries the figure, so the row is quotation with a label the filer
+ * wrote.
+ *
+ * Everything cue-matched stays pending: `why`, `risks`, `how` and
+ * `expectations` are a regular expression's guess at what a sentence is doing,
+ * and the expectations slot runs at roughly half precision - "we expect the
+ * resolution periods will be very long" is contract mechanics sitting beside
+ * "we expect to write less reinsurance premium".
+ *
+ * What this certifies is that the row quotes the document accurately. It does
+ * not certify that the fact is worth reading: "our insurance businesses'
+ * ability to declare ordinary dividends ... permitting up to $31 billion" is
+ * an accurate amount with a named metric and is also dull. Accuracy is a
+ * property of the extraction and can be decided by rule; interest is
+ * editorial and cannot.
+ */
+export function autoApproved(claim) {
+  if (!claim) return false;
+  if (claim.slot === 'what_changed') {
+    const change = claim.change;
+    if (!change || change.delta === null || change.delta === undefined) return false;
+    if (change.delta_stated) return true;
+    return change.from !== null && change.from !== undefined
+      && change.to !== null && change.to !== undefined;
+  }
+  if (claim.slot === 'how_much') {
+    return Boolean(claim.metric && claim.figures && claim.figures.length);
+  }
+  return false;
 }
 
 /**
