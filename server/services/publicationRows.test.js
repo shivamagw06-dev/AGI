@@ -68,6 +68,76 @@ describe('every row has every column', () => {
   });
 });
 
+describe('a person\'s decision survives a re-import', () => {
+  const claimFor = (rows, text) => rows.find((row) => row.source_excerpt === text);
+  const CAUSE = 'Insurance investment income increased $4.1 billion in 2024 compared to 2023, '
+    + 'driven by higher interest income from short-term investments.';
+
+  test('an approved claim stays approved when the document is extracted again', () => {
+    // The upsert updates every column it is given, so a second run of the same
+    // document rewrote status to 'pending' and discarded 142 claims someone
+    // had read and approved. Re-extracting is routine - every tightening of
+    // the extractor calls for it - and it must not throw away the one part of
+    // this pipeline that cost a person their attention.
+    const chain = intelligenceChain(CAUSE);
+    const fresh = factRows({ ...IDS, chain });
+    assert.equal(claimFor(fresh.rows, CAUSE).status, 'pending');
+
+    const kept = factRows({ ...IDS, chain,
+      reviewed: [{ slot: 'why', source_excerpt: CAUSE, status: 'approved',
+        reviewed_by: 'person', reviewed_at: '2026-09-13T00:00:00.000Z' }] });
+    const row = kept.rows.find((item) => item.slot === 'why');
+    assert.equal(row.status, 'approved');
+    assert.equal(row.reviewed_by, 'person');
+    assert.equal(row.reviewed_at, '2026-09-13T00:00:00.000Z');
+  });
+
+  test('a rejected claim is not quietly re-approved by a rule', () => {
+    // The rule runs again on every import. Without carrying the rejection
+    // forward, a claim a person threw out comes back approved.
+    const amount = 'our insurance float stood at $176 billion.';
+    const kept = factRows({ ...IDS, chain: intelligenceChain(amount),
+      reviewed: [{ slot: 'how_much', source_excerpt: amount, status: 'rejected',
+        reviewed_by: 'person', reviewed_at: '2026-09-13T00:00:00.000Z' }] });
+    const row = kept.rows.find((item) => item.slot === 'how_much');
+    assert.equal(row.status, 'rejected');
+    assert.equal(row.reviewed_by, 'person');
+  });
+
+  test('a rule\'s approval is recomputed, not carried', () => {
+    // Which is what lets a tightened rule take back a claim it should not have
+    // published. Only a person's decision is sticky.
+    const amount = 'our insurance float stood at $176 billion.';
+    const kept = factRows({ ...IDS, chain: intelligenceChain(amount),
+      reviewed: [{ slot: 'how_much', source_excerpt: amount, status: 'rejected',
+        reviewed_by: 'rule', reviewed_at: '2026-09-13T00:00:00.000Z' }] });
+    assert.equal(kept.rows.find((item) => item.slot === 'how_much').status, 'approved');
+  });
+
+  test('a row the extractor no longer produces is reported, not deleted', () => {
+    // An upsert only writes, so a claim the extractor has stopped believing
+    // keeps whatever status it had - which is how a balance-sheet row stayed
+    // approved on the page after the rule that admitted it was fixed.
+    const gone = 'Treasury Bills 112,811 89,705 Investments in and advances to consolidated '
+      + 'subsidiaries 604,100 568,987 and other assets 8,871 13,417';
+    const built = factRows({ ...IDS, chain: intelligenceChain(CAUSE),
+      reviewed: [{ slot: 'how_much', source_excerpt: gone, status: 'approved',
+        reviewed_by: 'rule', reviewed_at: null }] });
+    assert.equal(built.stale.length, 1);
+    assert.equal(built.stale[0].source_excerpt, gone);
+    // And it is not in the write, so nothing revives it.
+    assert.ok(!built.rows.some((row) => row.source_excerpt === gone));
+  });
+
+  test('nothing stale when the extraction still produces everything', () => {
+    const chain = intelligenceChain(CAUSE);
+    const built = factRows({ ...IDS, chain,
+      reviewed: [{ slot: 'why', source_excerpt: CAUSE, status: 'approved',
+        reviewed_by: 'person', reviewed_at: null }] });
+    assert.deepEqual(built.stale, []);
+  });
+});
+
 describe('what the rows say', () => {
   test('holdings always wait for a person', () => {
     // The figures carry a scale read off a header line elsewhere on the page,
