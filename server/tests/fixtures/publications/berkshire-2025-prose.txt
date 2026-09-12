@@ -1,4 +1,4 @@
-[Chairman's letter - insurance cycle and forward statements]
+Primary Group
 Across our other primary property and casualty businesses, demand entering 2025 was solid, and
 pricing in most commercial insurance business segments was adequate or improving. As the year
 progressed, additional capital entered the market, resulting in lower pricing or decelerating rate
@@ -13,14 +13,14 @@ significant price declines in property reinsurance. In most casualty reinsurance
 inflation continued to outpace pricing. As long as these phases of the cycle endure, we expect to
 write less reinsurance premium.
 
-[Chairman's letter - float]
 At year-end, our insurance float – the capital we hold to pay future losses and, in the meantime,
 invest for Berkshire’s benefit – stood at $176 billion. That amount increased from $171 billion at
 the end of 2024 and from $88 billion at the end of 2015.
 Our insurance businesses’ ability to declare ordinary dividends to Berkshire is restricted by
 insurance statutes and regulations, permitting up to $31 billion during 2025 without prior
 
-[Chairman's letter - Pilot]
+travelers, investing in store upgrades, food offerings, and customer loyalty. Since 2023, Pilot has
+increased capital spending to modernize facilities and expand its electric vehicle charging network.
 These efforts are reflected in Pilot’s Pro Preference score – a third-party study of how often
 professional drivers choose Pilot over travel center competitors – which rose from 27% in 2022 to
 35% in 2025, placing the business second in the industry. We should be #1 and we will not be
@@ -31,13 +31,12 @@ delivered $1.7 billion of net cash flow from operating activities, an improvemen
 operations continue to strengthen and capital needs normalize, we expect more cash to be returned
 to Berkshire.
 
-[Chairman's letter - culture (no quantity; must not match)]
 acquired by Berkshire. I admired how they worked together to build an enterprise that reflected
 their beliefs about business and life. Those beliefs fostered Berkshire’s culture and values that
 continue to guide the company today, enabling it to endure through market cycles, disruptions, and
 change. Our durability comes from knowing who we are and how we operate.
 
-[BHE - wildfire mitigation (a response, not a hazard)]
+centers must be paid for by those customers and reflect the risks tied to step-changes in long-term
 demand. BHE will pursue this incremental growth and invest our shareholders’ capital only when
 those risks and rewards are appropriately balanced.
 On wildfire risk, BHE has taken a leadership role, working with regulators, public officials, and
@@ -46,13 +45,11 @@ industry. When a BHE utility is responsible for a wildfire, it has acknowledged 
 including PacifiCorp’s settlements related primarily to the 2020 Labor Day fires. At the same time,
 PacifiCorp is not an insurer of last resort and should not be treated as a deep pocket. Where
 
-[Risk factors - raw materials]
 alloys used in manufactured products. The availability and costs of these metals may be influenced by private or
 governmental cartels, changes in world politics, labor relations between the metal producers and their workforces and
 inflation. Future shortages or price fluctuations in raw materials could have a material adverse effect on results.
 PCC is subject to various federal, state and foreign environmental laws concerning, among other things, water
 
-[MD&A - insurance investment income]
 2023.
 After-tax earnings from insurance investment income declined $1.2 billion (8.5%) in 2025 versus 2024, reflecting
 lower interest income, attributable to lower interest rates, and dividend income. Insurance investment income increased $4.1
@@ -61,7 +58,7 @@ income in 2025 was impacted by the effects of large capital distributions to Ber
 on investments (primarily U.S. Treasury Bills) held by Berkshire is included in “other”earnings in the preceding table.
 After-tax earnings of BNSF increased 8.8% in 2025 and declined 1.1% in 2024, compared to the corresponding prior
 
-[MD&A - GEICO 2025 versus 2024]
+2025 versus 2024
 Premiums written increased $2.3 billion (5.3%) in 2025 compared to 2024, primarily attributable to an increase in
 policies-in-force over the past year. Premiums earned in 2025 increased $2.2 billion (5.3%) compared to 2024.
 Losses and LAE increased $1.8 billion (6.0%) in 2025 compared to 2024. GEICO’s loss ratio (losses and LAE to
@@ -81,7 +78,7 @@ higher advertising and other policy acquisition expenses. The earnings fromGEICO
 commissions, net of operating expenses) are included as a reduction of underwriting expenses.
 2024 versus 2023
 
-[MD&A - GEICO 2024 versus 2023]
+property damage and collision (two to five percent range) and bodily injury (eight to ten percent range) coverages compared
 to 2023. Reductions in the ultimate loss estimates for prior accident years’ claims were $550 million in 2024 compared to
 $1.5 billion in 2023.
 Underwriting expenses increased 7.7% in 2024 compared to 2023. GEICO’sexpense ratio was 9.7% in 2024,

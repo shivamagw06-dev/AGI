@@ -29,7 +29,8 @@ import { readFileSync } from 'node:fs';
 import { createSupabaseAdmin, getSupabaseAdminCredentials } from '../lib/supabaseAdmin.js';
 import { paged } from '../services/institutionalResearchLayerService.js';
 import { extractDisclosedHoldings, documentDigest } from '../services/publicationFacts.js';
-import { intelligenceChain } from '../services/publicationIntelligence.js';
+import { intelligenceChain, selectClaims } from '../services/publicationIntelligence.js';
+import { SEGMENT_LABELS, THEME_LABELS } from '../services/publicationSegments.js';
 
 const APPLY = process.argv.includes('--apply');
 const argOf = (flag) => { const i = process.argv.indexOf(flag); return i >= 0 ? process.argv[i + 1] : null; };
@@ -41,6 +42,13 @@ const FILE = argOf('--file');
 const PER_SLOT = Number(argOf('--per-slot')) || 25;
 // Tables only, for checking a holdings parse without the chain's output.
 const TABLES_ONLY = process.argv.includes('--tables-only');
+// Narrow the printed chain to a question: --slot expectations --segment bnsf
+// --theme freight_volumes. A filter changes what is shown, never what is
+// stored: the whole chain is written so a later question can be asked of it.
+const ASK_SLOT = argOf('--slot');
+const ASK_SEGMENT = argOf('--segment');
+const ASK_THEME = argOf('--theme');
+const ASKED = Boolean(ASK_SLOT || ASK_SEGMENT || ASK_THEME);
 
 if (!getSupabaseAdminCredentials()) {
   console.error('[pub] SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required.');
@@ -138,19 +146,54 @@ async function main() {
       const shown = slot.truncated ? `${slot.returned} of ${slot.found}` : String(slot.found);
       console.log(`  ${pad(slot.question, 34)}${pad(shown, 12)}${slot.basis}`);
     }
-    for (const slot of chain.slots) {
-      if (!slot.claims.length) continue;
-      console.log(`\n--- ${slot.question}  [${slot.basis}]`);
-      for (const claim of slot.claims.slice(0, 5)) {
-        const label = claim.metric ? `(${claim.metric}) ` : '';
-        const move = claim.change && claim.change.delta !== null
-          ? `  [${claim.change.direction} ${claim.change.delta}`
-            + `${claim.change.kind === 'percentage_points' ? 'pp' : ''}]`
-          : '';
-        console.log(`  ${label}${claim.source_excerpt.slice(0, 160)}${move}`);
+    if (ASKED) {
+      const hits = selectClaims(chain, {
+        slot: ASK_SLOT || undefined,
+        segment: ASK_SEGMENT || undefined,
+        theme: ASK_THEME || undefined,
+      });
+      const asked = [ASK_SLOT && `slot=${ASK_SLOT}`, ASK_SEGMENT && `segment=${ASK_SEGMENT}`,
+        ASK_THEME && `theme=${ASK_THEME}`].filter(Boolean).join(' ');
+      console.log(`\n--- ${asked}  (${hits.length} claim(s))`);
+      if (!hits.length) {
+        // Worth saying out loud rather than printing nothing. The report
+        // states aerospace recovery as something that happened, not as a
+        // forecast, so asking for expectations about it correctly returns
+        // none - the claims are there under what_happened.
+        console.log('  Nothing in the document answers that. Try the same segment or theme');
+        console.log('  without --slot: a report often states a trend as an outcome rather');
+        console.log('  than as something management expects.');
       }
-      if (slot.claims.length > 5) {
-        console.log(`  ... and ${slot.claims.length - 5} more`);
+      for (const claim of hits) {
+        const where = claim.segment
+          ? `${SEGMENT_LABELS[claim.segment] || claim.segment}/${claim.segment_source}`
+          : 'unattributed';
+        console.log(`  [${claim.slot} | ${where}] ${claim.source_excerpt.slice(0, 200)}`);
+      }
+    } else {
+      for (const slot of chain.slots) {
+        if (!slot.claims.length) continue;
+        console.log(`\n--- ${slot.question}  [${slot.basis}]`);
+        for (const claim of slot.claims.slice(0, 5)) {
+          const label = claim.metric ? `(${claim.metric}) ` : '';
+          const where = claim.segment ? `[${SEGMENT_LABELS[claim.segment] || claim.segment}] ` : '';
+          const move = claim.change && claim.change.delta !== null
+            ? `  [${claim.change.direction} ${claim.change.delta}`
+              + `${claim.change.kind === 'percentage_points' ? 'pp' : ''}]`
+            : '';
+          console.log(`  ${where}${label}${claim.source_excerpt.slice(0, 150)}${move}`);
+        }
+        if (slot.claims.length > 5) console.log(`  ... and ${slot.claims.length - 5} more`);
+      }
+      const themes = new Map();
+      for (const claim of selectClaims(chain)) {
+        for (const theme of claim.themes || []) themes.set(theme, (themes.get(theme) || 0) + 1);
+      }
+      if (themes.size) {
+        console.log('\n[pub] market themes found (ask with --theme):');
+        for (const [theme, count] of [...themes].sort((a, b) => b[1] - a[1])) {
+          console.log(`  ${pad(theme, 24)}${pad(count, 6)}${THEME_LABELS[theme] || ''}`);
+        }
       }
     }
   }
@@ -201,6 +244,9 @@ async function main() {
         slot: claim.slot,
         basis: claim.basis,
         metric: claim.metric,
+        segment: claim.segment,
+        segment_source: claim.segment_source,
+        themes: claim.themes && claim.themes.length ? claim.themes : null,
         figures: claim.figures.length ? claim.figures : null,
         change: claim.change,
         paragraph: claim.paragraph,
