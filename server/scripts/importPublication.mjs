@@ -29,6 +29,7 @@ import { readFileSync } from 'node:fs';
 import { createSupabaseAdmin, getSupabaseAdminCredentials } from '../lib/supabaseAdmin.js';
 import { paged } from '../services/institutionalResearchLayerService.js';
 import { extractDisclosedHoldings, documentDigest } from '../services/publicationFacts.js';
+import { intelligenceChain } from '../services/publicationIntelligence.js';
 
 const APPLY = process.argv.includes('--apply');
 const argOf = (flag) => { const i = process.argv.indexOf(flag); return i >= 0 ? process.argv[i + 1] : null; };
@@ -37,6 +38,9 @@ const TITLE = argOf('--title');
 const AS_OF = argOf('--as-of');
 const SOURCE_URL = argOf('--source-url');
 const FILE = argOf('--file');
+const PER_SLOT = Number(argOf('--per-slot')) || 25;
+// Tables only, for checking a holdings parse without the chain's output.
+const TABLES_ONLY = process.argv.includes('--tables-only');
 
 if (!getSupabaseAdminCredentials()) {
   console.error('[pub] SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required.');
@@ -58,6 +62,8 @@ async function readInput() {
   for await (const chunk of process.stdin) chunks.push(chunk);
   return Buffer.concat(chunks).toString('utf8');
 }
+
+const pad = (value, width) => String(value ?? '-').padEnd(width);
 
 const money = (value, unit) => {
   if (value === null || value === undefined) return '-';
@@ -89,16 +95,17 @@ async function main() {
   console.log(`[pub] ${facts.length} disclosed holding(s) found\n`);
 
   if (!facts.length) {
-    // The honest limit, stated rather than left as an empty result to puzzle
-    // over. This reads tables; a letter written in sentences yields nothing.
-    console.log('[pub] No holdings table matched. This extractor reads tables of the shape');
+    // No longer the end of the run. A letter written entirely in sentences has
+    // no holdings table and still answers seven steps of the chain, so this
+    // states what the table reader did not find and carries on.
+    console.log('[pub] No holdings table matched. That reader takes tables of the shape');
     console.log('[pub]   <issuer> <percent>% <cost> <market value> <dividends>');
-    console.log('[pub] and returns nothing for prose, rather than returning something wrong.');
-    return;
+    console.log('[pub] and returns nothing for prose rather than returning something wrong.');
   }
 
-  const pad = (value, width) => String(value ?? '-').padEnd(width);
-  console.log(`${pad('issuer', 34)}${pad('owned', 8)}${pad('cost', 22)}${pad('market value', 22)}dividends`);
+  if (facts.length) {
+    console.log(`${pad('issuer', 34)}${pad('owned', 8)}${pad('cost', 22)}${pad('market value', 22)}dividends`);
+  }
   for (const fact of facts) {
     console.log(pad(fact.issuer.slice(0, 32), 34)
       + pad(`${fact.percent_owned}%`, 8)
@@ -112,6 +119,40 @@ async function main() {
     console.log(`\n[pub] ${unstated.length} row(s) have no declared unit. The figures are stored as`);
     console.log('[pub] written and nothing downstream will scale them. Check the document for a');
     console.log('[pub] "(Dollars in millions)" line above the table before approving those.');
+  }
+
+  const chain = TABLES_ONLY ? null : intelligenceChain(text, { perSlot: PER_SLOT });
+  if (chain) {
+    console.log(`\n[pub] ${chain.sentences.toLocaleString()} sentences, `
+      + `${chain.matched_sentences.toLocaleString()} carrying a claim`);
+    console.log('[pub] (a sentence can answer more than one step; the count above is sentences,');
+    console.log('[pub]  not the sum of the steps below)\n');
+    for (const slot of chain.slots) {
+      if (!slot.extractable) {
+        // Printed, not omitted. Seven steps shown as the whole chain is the
+        // thing this line exists to prevent.
+        console.log(`  ${pad(slot.question, 34)}not extractable`);
+        console.log(`  ${' '.repeat(34)}${slot.reason.replace(/\s+/g, ' ')}`);
+        continue;
+      }
+      const shown = slot.truncated ? `${slot.returned} of ${slot.found}` : String(slot.found);
+      console.log(`  ${pad(slot.question, 34)}${pad(shown, 12)}${slot.basis}`);
+    }
+    for (const slot of chain.slots) {
+      if (!slot.claims.length) continue;
+      console.log(`\n--- ${slot.question}  [${slot.basis}]`);
+      for (const claim of slot.claims.slice(0, 5)) {
+        const label = claim.metric ? `(${claim.metric}) ` : '';
+        const move = claim.change && claim.change.delta !== null
+          ? `  [${claim.change.direction} ${claim.change.delta}`
+            + `${claim.change.kind === 'percentage_points' ? 'pp' : ''}]`
+          : '';
+        console.log(`  ${label}${claim.source_excerpt.slice(0, 160)}${move}`);
+      }
+      if (slot.claims.length > 5) {
+        console.log(`  ... and ${slot.claims.length - 5} more`);
+      }
+    }
   }
 
   if (!APPLY) {
@@ -141,13 +182,45 @@ async function main() {
     market_value: fact.market_value,
     dividends: fact.dividends,
     unit: fact.unit,
+    // No slot: a holdings-table row is a table fact, not a step in the chain.
+    slot: null,
+    basis: 'stated',
     source_excerpt: fact.source_excerpt,
   }));
+
+  // A claim per slot per sentence. A sentence answering three steps is three
+  // rows, because a reviewer approves it as an answer to one question at a
+  // time and may accept it as a change while rejecting it as a cause.
+  for (const slot of chain ? chain.slots : []) {
+    for (const claim of slot.claims) {
+      rows.push({
+        publication_id: publication.id,
+        manager_id: manager.id,
+        kind: 'chain_claim',
+        issuer: null,
+        slot: claim.slot,
+        basis: claim.basis,
+        metric: claim.metric,
+        figures: claim.figures.length ? claim.figures : null,
+        change: claim.change,
+        paragraph: claim.paragraph,
+        source_excerpt: claim.source_excerpt,
+      });
+    }
+  }
+
   const { error: fError } = await client.from('manager_publication_facts')
-    .upsert(rows, { onConflict: 'publication_id,source_excerpt' });
+    .upsert(rows, { onConflict: 'publication_id,slot,source_excerpt' });
   if (fError) throw new Error(`storing facts: ${fError.message}`);
 
-  console.log(`\n[pub] ${rows.length} fact(s) stored as pending against publication ${publication.id}`);
+  const claims = rows.length - facts.length;
+  console.log(`\n[pub] ${facts.length} holding(s) and ${claims} chain claim(s) stored as pending`);
+  console.log(`[pub] against publication ${publication.id}`);
+  if (chain) {
+    const gaps = chain.slots.filter((slot) => !slot.extractable).map((slot) => slot.slot);
+    console.log(`[pub] ${gaps.join(' and ')} are not stored: no sentence states either, and`);
+    console.log('[pub] filling them needs a model reading the document, not a pattern.');
+  }
   console.log('[pub] Nothing reaches the page until a person approves them.');
 }
 
