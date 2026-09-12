@@ -20,6 +20,13 @@
  * have taken the NULL and nobody would have known. The fix is that every row
  * from here carries every column, and a test asserts it, because the next
  * column added will otherwise reintroduce exactly this.
+ *
+ * A person's decision survives a re-import. The upsert updates every column it
+ * is given, so a second run of the same document rewrote `status` to 'pending'
+ * and wiped 142 claims someone had read and approved. Re-extracting a document
+ * is a routine thing to do - every tightening of the extractor calls for it -
+ * and it must not discard the one part of this pipeline that cost a human
+ * being their attention.
  */
 import { autoApproved } from './publicationIntelligence.js';
 
@@ -39,8 +46,17 @@ export const FACT_COLUMNS = [
 
 const blank = () => Object.fromEntries(FACT_COLUMNS.map((column) => [column, null]));
 
+/**
+ * A decision a person already made about this claim, or null.
+ *
+ * Keyed the way the database's uniqueness is keyed, so a row that survives
+ * re-extraction is recognised as the same claim.
+ */
+const decisionFor = (decisions, slot, excerpt) =>
+  decisions?.get(JSON.stringify([slot ?? null, excerpt])) || null;
+
 /** A disclosed-holdings row. No slot: it is a table fact, not a chain step. */
-function holdingRow(fact, ids) {
+function holdingRow(fact, ids, decisions) {
   return {
     ...blank(),
     publication_id: ids.publicationId,
@@ -58,11 +74,19 @@ function holdingRow(fact, ids) {
     // off a header line elsewhere on the page, and a thousand-fold error has
     // shipped from this codebase once already.
     status: 'pending',
+    ...(decisionFor(decisions, null, fact.source_excerpt) || {}),
   };
 }
 
-/** One chain claim. Approved by rule where the claim is quotation. */
-function claimRow(claim, ids, now) {
+/**
+ * One chain claim. Approved by rule where the claim is quotation.
+ *
+ * A decision a person already recorded wins over the rule, in both directions:
+ * a claim they approved stays approved, and one they rejected is not quietly
+ * re-approved by a rule on the next run.
+ */
+function claimRow(claim, ids, now, decisions) {
+  const decided = decisionFor(decisions, claim.slot, claim.source_excerpt);
   const approved = autoApproved(claim);
   return {
     ...blank(),
@@ -84,6 +108,7 @@ function claimRow(claim, ids, now) {
     // holds: a reviewed row always records who reviewed it.
     reviewed_by: approved ? 'rule' : null,
     reviewed_at: approved ? now : null,
+    ...(decided || {}),
   };
 }
 
@@ -96,17 +121,36 @@ function claimRow(claim, ids, now) {
  * twice in one slot is one finding, and sending it twice makes a single INSERT
  * touch the same row twice, which Postgres refuses outright, losing the run.
  */
-export function factRows({ publicationId, managerId, holdings = [], chain = null, now }) {
+export function factRows({ publicationId, managerId, holdings = [], chain = null, now,
+  reviewed = [] }) {
   const ids = { publicationId, managerId };
   const at = now || new Date().toISOString();
+  // Only a person's decisions are carried forward. A rule's approval is
+  // recomputed every run, which is what lets a tightened rule take back a
+  // claim it should not have published.
+  const decisions = new Map((reviewed || [])
+    .filter((row) => row.reviewed_by === 'person')
+    .map((row) => [JSON.stringify([row.slot ?? null, row.source_excerpt]),
+      { status: row.status, reviewed_by: 'person', reviewed_at: row.reviewed_at }]));
   const rows = [
-    ...holdings.map((fact) => holdingRow(fact, ids)),
-    ...(chain?.slots || []).flatMap((slot) => slot.claims.map((claim) => claimRow(claim, ids, at))),
+    ...holdings.map((fact) => holdingRow(fact, ids, decisions)),
+    ...(chain?.slots || []).flatMap((slot) => slot.claims
+      .map((claim) => claimRow(claim, ids, at, decisions))),
   ];
 
   const byKey = new Map();
   for (const row of rows) {
     byKey.set(JSON.stringify([row.slot, row.source_excerpt]), row);
   }
-  return { rows: [...byKey.values()], collapsed: rows.length - byKey.size };
+  // Claims the database holds that this extraction no longer produces. An
+  // upsert only writes, so a row the extractor has stopped believing stays
+  // live with whatever status it had - which is how a balance-sheet row
+  // remained approved on the page after the rule that admitted it was fixed.
+  // Reported, never deleted here: removing rows is the caller's decision.
+  const stale = (reviewed || [])
+    .filter((row) => !byKey.has(JSON.stringify([row.slot ?? null, row.source_excerpt])))
+    .map(({ slot, status, reviewed_by, source_excerpt }) =>
+      ({ slot, status, reviewed_by, source_excerpt }));
+
+  return { rows: [...byKey.values()], collapsed: rows.length - byKey.size, stale };
 }

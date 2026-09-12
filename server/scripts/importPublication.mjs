@@ -43,6 +43,10 @@ const FILE = argOf('--file');
 const PER_SLOT = Number(argOf('--per-slot')) || 5;
 // Tables only, for checking a holdings parse without the chain's output.
 const TABLES_ONLY = process.argv.includes('--tables-only');
+// Delete rows this extraction no longer produces. Off by default: an upsert
+// that silently removed rows would take a person's approved claim with it the
+// first time a rule was tightened by mistake.
+const PRUNE = process.argv.includes('--prune');
 // Narrow the printed chain to a question: --slot expectations --segment bnsf
 // --theme freight_volumes. A filter changes what is shown, never what is
 // stored: the whole chain is written so a later question can be asked of it.
@@ -227,11 +231,28 @@ async function main() {
   // a row omitting one gets NULL rather than the column default - which is how
   // nine holdings rows came to be sent with a null status the moment claims
   // started carrying one.
-  const { rows: unique, collapsed } = factRows({
+  // What a person already decided about this document, read before anything is
+  // written. The upsert updates every column it is given, so without this a
+  // re-run rewrites `status` to 'pending' and discards every claim someone had
+  // read and approved - which it did once, to 142 of them.
+  const reviewed = await paged(
+    () => client.from('manager_publication_facts')
+      .select('slot,source_excerpt,status,reviewed_by,reviewed_at')
+      .eq('publication_id', publication.id)
+      .order('id'),
+    { label: 'prior-review' },
+  );
+  const byPerson = reviewed.filter((row) => row.reviewed_by === 'person').length;
+  if (byPerson) {
+    console.log(`[pub] ${byPerson} claim(s) already decided by a person; those decisions are kept.`);
+  }
+
+  const { rows: unique, collapsed, stale } = factRows({
     publicationId: publication.id,
     managerId: manager.id,
     holdings: facts,
     chain,
+    reviewed,
   });
   if (collapsed) {
     console.log(`[pub] ${collapsed} row(s) repeated the same sentence in the same step and`);
@@ -264,6 +285,32 @@ async function main() {
     console.log('[pub] filling them needs a model reading the document, not a pattern.');
   }
   console.log('[pub] Nothing reaches the page until a person approves them.');
+
+  // An upsert only writes. A claim this extraction no longer produces keeps
+  // whatever status it had, so a row the extractor has stopped believing can
+  // stay approved on the page - which happened to a balance-sheet row after
+  // the rule that admitted it was fixed. Named, not deleted: removing rows is
+  // a decision to be made deliberately.
+  if (stale.length) {
+    console.log(`\n[pub] ${stale.length} row(s) in the database are no longer produced by this`);
+    console.log('[pub] extraction. An upsert does not remove them, so they are still live:');
+    for (const row of stale.slice(0, 10)) {
+      console.log(`  [${row.slot || 'holding'} / ${row.status}] ${row.source_excerpt.slice(0, 120)}`);
+    }
+    if (stale.length > 10) console.log(`  ... and ${stale.length - 10} more`);
+    console.log('[pub] Re-run with --prune to delete them.');
+  }
+
+  if (PRUNE && stale.length) {
+    for (const row of stale) {
+      const query = client.from('manager_publication_facts').delete()
+        .eq('publication_id', publication.id).eq('source_excerpt', row.source_excerpt);
+      const { error } = await (row.slot === null
+        ? query.is('slot', null) : query.eq('slot', row.slot));
+      if (error) throw new Error(`pruning a stale row: ${error.message}`);
+    }
+    console.log(`[pub] ${stale.length} stale row(s) deleted.`);
+  }
 }
 
 main().catch((error) => {
