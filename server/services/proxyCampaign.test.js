@@ -3,7 +3,10 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
-import { isProxyContestForm, parseFilingHeader, campaignsFrom, campaignDirection } from './proxyCampaign.js';
+import {
+  isProxyContestForm, parseFilingHeader, campaignsFrom, campaignDirection,
+  campaignKind, campaignHeading,
+} from './proxyCampaign.js';
 
 /**
  * The fixture is a real EDGAR header, fetched from the filing it describes.
@@ -110,6 +113,19 @@ describe('filings grouped into campaigns', () => {
     assert.deepEqual(biggest.forms, ['DFAN14A', 'PRRN14A']);
   });
 
+  test('the link points at the newest filing, not the first', () => {
+    // A reader following a campaign wants its latest word. Keyed on the date
+    // rather than on arrival order, because the collector reads EDGAR newest
+    // first and a naive "first seen" would be right by accident there and
+    // wrong on a re-run that fills in older filings.
+    const withUrls = [
+      { manager_id: 'm1', subject_cik: '1', form_type: 'DFAN14A', filed_at: '2017-10-25', source_url: 'https://sec.gov/first/' },
+      { manager_id: 'm1', subject_cik: '1', form_type: 'DFAN14A', filed_at: '2017-11-06', source_url: 'https://sec.gov/last/' },
+      { manager_id: 'm1', subject_cik: '1', form_type: 'DFAN14A', filed_at: '2017-11-01', source_url: 'https://sec.gov/middle/' },
+    ];
+    assert.equal(campaignsFrom(withUrls)[0].source_url, 'https://sec.gov/last/');
+  });
+
   test('two managers against the same company are two campaigns', () => {
     // They are not co-ordinated and must not be merged; each manager's record
     // is its own.
@@ -122,6 +138,9 @@ describe('filings grouped into campaigns', () => {
     assert.deepEqual(campaignsFrom([{ subject_cik: '0000008670' }]), []);
     assert.deepEqual(campaignsFrom([]), []);
     assert.deepEqual(campaignsFrom(), []);
+    // null is not undefined and a default parameter does not catch it. The
+    // research layer passes null when the table has not been created yet.
+    assert.deepEqual(campaignsFrom(null), []);
   });
 });
 
@@ -156,5 +175,31 @@ describe('who is campaigning against whom', () => {
     // its own board.
     const self = { filedBy: { cik: '0001336528' }, subject: { cik: '0001336528' } };
     assert.equal(campaignDirection(self, '0001336528'), 'unknown');
+  });
+});
+
+describe('a fight and a proposal are not the same thing', () => {
+  test('a contested solicitation runs its own proxy card', () => {
+    // Pershing Square against Automatic Data Processing: 110 filings in
+    // fourteen weeks, with contest forms throughout.
+    assert.equal(campaignKind(['DFAN14A', 'DEFC14A', 'PRRN14A']), 'contest');
+    assert.equal(campaignKind(['DFAN14A']), 'contest');
+  });
+
+  test('an exempt solicitation is a proposal on someone else\'s card', () => {
+    // Norges Bank filed one each at Wells Fargo, CME and Staples on a single
+    // day in April 2012. Ten targets, one filing apiece, no proxy card.
+    assert.equal(campaignKind(['PX14A6G']), 'proposal');
+    assert.equal(campaignKind([]), null);
+  });
+
+  test('the heading says which the manager actually did', () => {
+    // Calling ten single-filing proposals "board campaigns" overstates them
+    // as badly as calling a thousand-name book focused.
+    assert.equal(campaignHeading([{ forms: ['DFAN14A'] }, { forms: ['DEFC14A'] }]), 'Board campaigns');
+    assert.equal(campaignHeading([{ forms: ['PX14A6G'] }, { forms: ['PX14A6G'] }]), 'Shareholder proposals');
+    assert.equal(campaignHeading([{ forms: ['DFAN14A'] }, { forms: ['PX14A6G'] }]), 'Board campaigns and proposals');
+    assert.equal(campaignHeading([]), null);
+    assert.equal(campaignHeading(), null);
   });
 });

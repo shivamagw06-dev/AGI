@@ -63,7 +63,8 @@ describe('the manager list the page renders', () => {
     // through is how internal columns end up on a public surface.
     const [berkshire] = attachProfiles([MANAGERS[0]], STRATEGIES, ADVISERS);
     assert.deepEqual(Object.keys(berkshire).sort(),
-      ['adviser', 'adviser_absence', 'display_name', 'id', 'slug', 'strategy']);
+      ['adviser', 'adviser_absence', 'campaigns', 'campaigns_heading',
+        'display_name', 'id', 'slug', 'strategy']);
   });
 
   test('missing tables make an unenriched list, not an exception', () => {
@@ -71,5 +72,53 @@ describe('the manager list the page renders', () => {
     assert.equal(rows.length, 3);
     assert.equal(rows[0].strategy, null);
     assert.deepEqual(attachProfiles(), []);
+  });
+});
+
+describe('board campaigns on the manager row', () => {
+  const PROXY = [
+    { manager_id: 'm-pershing', subject_cik: '0000008670', subject_name: 'AUTOMATIC DATA PROCESSING INC', form_type: 'DFAN14A', filed_at: '2017-11-06', source_url: 'https://sec.gov/adp-last/' },
+    { manager_id: 'm-pershing', subject_cik: '0000008670', subject_name: 'AUTOMATIC DATA PROCESSING INC', form_type: 'PRRN14A', filed_at: '2017-08-04', source_url: 'https://sec.gov/adp-first/' },
+    { manager_id: 'm-pershing', subject_cik: '0000850693', subject_name: 'ALLERGAN INC', form_type: 'DFAN14A', filed_at: '2014-11-14', source_url: 'https://sec.gov/agn/' },
+  ];
+  const MANAGERS = [
+    { id: 'm-pershing', slug: 'pershing-square', display_name: 'Pershing Square' },
+    { id: 'm-vanguard', slug: 'vanguard', display_name: 'The Vanguard Group' },
+  ];
+
+  test('campaigns land on the manager that ran them, hardest first', () => {
+    const [pershing] = attachProfiles(MANAGERS, [], [], PROXY);
+    assert.equal(pershing.campaigns.length, 2);
+    assert.equal(pershing.campaigns[0].subject_name, 'AUTOMATIC DATA PROCESSING INC');
+    assert.equal(pershing.campaigns[0].filings, 2);
+    assert.equal(pershing.campaigns[0].first_filed, '2017-08-04');
+    assert.equal(pershing.campaigns[0].last_filed, '2017-11-06');
+  });
+
+  test('the heading names what the manager actually did', () => {
+    // Pershing Square ran contested fights; a sovereign fund filing one
+    // exempt solicitation per company did not.
+    const [pershing] = attachProfiles(MANAGERS, [], [], PROXY);
+    assert.equal(pershing.campaigns_heading, 'Board campaigns');
+    const proposals = attachProfiles(
+      [{ id: 'm-norges', slug: 'norges-bank', display_name: 'Norges Bank' }], [], [],
+      [{ manager_id: 'm-norges', subject_cik: '1', subject_name: 'WELLS FARGO & CO/MN', form_type: 'PX14A6G', filed_at: '2012-04-02' }],
+    );
+    assert.equal(proposals[0].campaigns_heading, 'Shareholder proposals');
+  });
+
+  test('a manager that has never fought a board gets an empty list', () => {
+    // Six of the fifty have campaigns at all. An empty array renders as
+    // nothing; a null would have the page testing for it in two ways.
+    const vanguard = attachProfiles(MANAGERS, [], [], PROXY)[1];
+    assert.deepEqual(vanguard.campaigns, []);
+  });
+
+  test('no proxy table is an unenriched list, not an exception', () => {
+    for (const absent of [undefined, null, []]) {
+      const rows = attachProfiles(MANAGERS, [], [], absent);
+      assert.equal(rows.length, 2);
+      assert.deepEqual(rows[0].campaigns, []);
+    }
   });
 });
