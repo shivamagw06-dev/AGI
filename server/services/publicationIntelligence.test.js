@@ -232,6 +232,39 @@ describe('reading a change the document states', () => {
     }
   });
 
+  test('one year-like endpoint is a date, not a value', () => {
+    // Found by sorting the published changes by the size of their delta,
+    // which put the fabrications at the top. Both were auto-approved and live
+    // on the page; the two-years refusal missed them because only one
+    // endpoint was a year and the other was a real figure, so the pair looked
+    // like a move rather than a span.
+    //
+    // The first is now read correctly by the stated-move pattern - "declined
+    // 1.2% in 2024 ... from 2023" is a real move of -1.2% - rather than as a
+    // fall of 2,017.9 billion from the year 2023.
+    const industrial = changeIn('Operating revenues from industrial products declined 1.2% in '
+      + '2024 to $5.1 billion from 2023, reflecting a decline of 1.6% in volume.');
+    assert.equal(industrial.pattern, 'stated_move');
+    assert.equal(industrial.delta, -1.2);
+    assert.equal(industrial.kind, 'percent');
+
+    // And the endpoint pair on its own is refused in both orders.
+    assert.equal(changeIn('the ratio improved to 65.5% from 2024'), null);
+    assert.equal(changeIn('the ratio moved from 2024 to 65.5%'), null);
+  });
+
+  test('a figure inside the year range keeps its change when it states a unit', () => {
+    // "$2,023 million" is a value; "2023" is a date. The unit is what
+    // separates them, checked against each endpoint's own unit rather than
+    // the pair's.
+    assert.equal(changeIn('costs rose from $2,023 million to $2,400 million').delta, 377);
+    // The cost, stated because it is real and now bites with one year as well
+    // as two: a unit kindOf does not know is refused. "capacity grew from
+    // 2,013 megawatts to 2,025 megawatts" is a change and this discards it.
+    // Adding the unit to kindOf is the fix, not loosening the rule.
+    assert.equal(changeIn('capacity grew from 2,013 megawatts to 2,025 megawatts'), null);
+  });
+
   test('a stated unit makes two year-like numbers a change again', () => {
     // The years are only decisive when nothing says what is being measured.
     const change = changeIn('the ratio moved from 2,013% to 2,025%');
