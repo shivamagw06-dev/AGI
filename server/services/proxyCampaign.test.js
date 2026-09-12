@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
-import { isProxyContestForm, parseFilingHeader, campaignsFrom } from './proxyCampaign.js';
+import { isProxyContestForm, parseFilingHeader, campaignsFrom, campaignDirection } from './proxyCampaign.js';
 
 /**
  * The fixture is a real EDGAR header, fetched from the filing it describes.
@@ -122,5 +122,39 @@ describe('filings grouped into campaigns', () => {
     assert.deepEqual(campaignsFrom([{ subject_cik: '0000008670' }]), []);
     assert.deepEqual(campaignsFrom([]), []);
     assert.deepEqual(campaignsFrom(), []);
+  });
+});
+
+describe('who is campaigning against whom', () => {
+  const header = parseFilingHeader(FIXTURE);
+
+  test('the manager is campaigning when it is the one that filed', () => {
+    assert.equal(campaignDirection(header, '0001336528'), 'by_manager');
+    // Unpadded is the same CIK.
+    assert.equal(campaignDirection(header, '1336528'), 'by_manager');
+  });
+
+  test('a filing naming the manager as the target is not its campaign', () => {
+    // The bug the first run produced. EDGAR's submissions list for a CIK
+    // includes every filing that names it, filer or subject, and for an
+    // operating company that is mostly the latter - Berkshire's twenty-three
+    // PX14A6G filings are shareholders soliciting against Berkshire. All
+    // twenty-three were recorded as Berkshire campaigning against itself,
+    // and Alphabet and NVIDIA did the same.
+    assert.equal(campaignDirection(header, '0000008670'), 'against_manager');
+  });
+
+  test('a manager on neither side is on neither side', () => {
+    assert.equal(campaignDirection(header, '0000320193'), 'unknown');
+    assert.equal(campaignDirection(header, null), 'unknown');
+    assert.equal(campaignDirection(null, '0001336528'), 'unknown');
+  });
+
+  test('a filer campaigning against itself is refused rather than recorded', () => {
+    // Not a campaign in any useful sense, and the shape a self-referential
+    // row would take. Better to drop it than to publish a manager fighting
+    // its own board.
+    const self = { filedBy: { cik: '0001336528' }, subject: { cik: '0001336528' } };
+    assert.equal(campaignDirection(self, '0001336528'), 'unknown');
   });
 });

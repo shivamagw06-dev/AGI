@@ -23,7 +23,7 @@
 import { createSupabaseAdmin, getSupabaseAdminCredentials } from '../lib/supabaseAdmin.js';
 import { scheduleSecRequest } from '../services/secRateLimiter.js';
 import { paged } from '../services/institutionalResearchLayerService.js';
-import { isProxyContestForm, parseFilingHeader, campaignsFrom } from '../services/proxyCampaign.js';
+import { isProxyContestForm, parseFilingHeader, campaignsFrom, campaignDirection } from '../services/proxyCampaign.js';
 
 const APPLY = process.argv.includes('--apply');
 const argOf = (flag) => { const i = process.argv.indexOf(flag); return i >= 0 ? process.argv[i + 1] : null; };
@@ -44,6 +44,40 @@ async function secGet(url, accept) {
   }));
   if (!response.ok) throw new Error(`HTTP ${response.status} for ${url}`);
   return accept === 'application/json' ? response.json() : response.text();
+}
+
+/**
+ * The header for one filing, wherever EDGAR keeps it.
+ *
+ * The archive directory is created under the CIK that filed of record, which
+ * for a solicitation is often the target rather than the activist - 90 of 258
+ * headers returned 404 under the manager's own CIK. Full-text search names
+ * every party on a filing, so a 404 is answered by asking who else is on it
+ * and looking there.
+ */
+async function filingHeader(accession, managerCik) {
+  const bare = accession.replace(/-/g, '');
+  const at = (cik) => `https://www.sec.gov/Archives/edgar/data/${digits(cik).replace(/^0+/, '')}/${bare}/${accession}-index-headers.html`;
+  try {
+    return { text: await secGet(at(managerCik), 'text/html'), url: at(managerCik) };
+  } catch (first) {
+    if (!/HTTP 404/.test(first.message)) throw first;
+  }
+  const search = await secGet(
+    `https://efts.sec.gov/LATEST/search-index?q=%22%22&ciks=${digits(managerCik).padStart(10, '0')}`
+    + `&forms=&dateRange=&hits=1&accession_number=${accession}`,
+    'application/json',
+  ).catch(() => null);
+  const parties = search?.hits?.hits?.[0]?._source?.ciks || [];
+  for (const cik of parties) {
+    if (digits(cik) === digits(managerCik)) continue;
+    try {
+      return { text: await secGet(at(cik), 'text/html'), url: at(cik) };
+    } catch (error) {
+      if (!/HTTP 404/.test(error.message)) throw error;
+    }
+  }
+  throw new Error('no archive directory found under any party CIK');
 }
 
 /** Campaign filings in a manager's EDGAR history, newest first. */
@@ -75,6 +109,9 @@ async function main() {
 
   const rows = [];
   const skipped = [];
+  // Filings that name the manager as the target rather than the filer. Not a
+  // campaign it ran, and worth seeing separately rather than dropped silently.
+  const against = [];
   for (const manager of wanted) {
     let filings = [];
     try {
@@ -92,14 +129,15 @@ async function main() {
     console.log(`[proxy] ${manager.display_name.padEnd(32)} ${filings.length} campaign filing(s), ${fresh.length} new`);
 
     for (const filing of fresh) {
-      const bare = filing.accession_number.replace(/-/g, '');
-      const url = `https://www.sec.gov/Archives/edgar/data/${digits(manager.cik)}/${bare}/${filing.accession_number}-index-headers.html`;
       try {
-        const header = parseFilingHeader(await secGet(url, 'text/html'));
-        // A solicitation names its target. Without one there is no campaign to
-        // record, and guessing which company was meant would invent a fight.
-        if (!header.subject?.cik) {
-          skipped.push(`${filing.accession_number}: no SUBJECT COMPANY in header`);
+        const found = await filingHeader(filing.accession_number, manager.cik);
+        const header = parseFilingHeader(found.text);
+        // EDGAR lists every filing that names a CIK, as filer or as subject,
+        // and for an operating company that is mostly the latter. Recording
+        // those would have Berkshire campaigning against its own board.
+        const direction = campaignDirection(header, manager.cik);
+        if (direction !== 'by_manager') {
+          against.push(`${manager.display_name} <- ${header.filedBy?.name || 'unknown filer'} (${filing.form_type}, ${filing.filed_at})`);
           continue;
         }
         rows.push({
@@ -109,7 +147,7 @@ async function main() {
           filed_at: header.filedAt || filing.filed_at,
           subject_cik: header.subject.cik,
           subject_name: header.subject.name,
-          source_url: `https://www.sec.gov/Archives/edgar/data/${digits(manager.cik)}/${bare}/`,
+          source_url: found.url.replace(/[^/]+$/, ''),
         });
       } catch (error) {
         skipped.push(`${filing.accession_number}: ${error.message}`);
@@ -129,6 +167,12 @@ async function main() {
         + `${campaign.first_filed} .. ${campaign.last_filed}  ${campaign.forms.join(' ')}`);
     }
     if (campaigns.length > 40) console.log(`  ... and ${campaigns.length - 40} more`);
+  }
+
+  if (against.length) {
+    console.log(`\n[proxy] ${against.length} filing(s) name a manager as the target, not the filer:\n`);
+    for (const line of against.slice(0, 15)) console.log(`  ${line}`);
+    if (against.length > 15) console.log(`  ... and ${against.length - 15} more`);
   }
 
   if (skipped.length) {

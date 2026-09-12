@@ -129,3 +129,27 @@ export function campaignsFrom(filings = []) {
       || String(b.last_filed).localeCompare(String(a.last_filed))
       || String(a.subject_name).localeCompare(String(b.subject_name)));
 }
+
+/**
+ * Whether this filing is the manager campaigning, or being campaigned against.
+ *
+ * EDGAR's submissions list for a CIK includes every filing that names it, as
+ * the filer or as the subject. For an operating company that is mostly the
+ * latter: Berkshire's twenty-three PX14A6G filings are shareholders soliciting
+ * against Berkshire, and the first run recorded all of them as Berkshire
+ * campaigning against itself. Alphabet and NVIDIA did the same.
+ *
+ * The header settles it. A solicitation names the activist under FILED BY and
+ * the target under SUBJECT COMPANY, so a manager is campaigning only when its
+ * own CIK is the one that filed. Anything else is a campaign against it, which
+ * is worth knowing and is not the same fact.
+ */
+export function campaignDirection(header, managerCik) {
+  const mine = String(managerCik || '').replace(/\D/g, '').padStart(10, '0');
+  if (!mine || mine === '0000000000') return 'unknown';
+  const filedBy = header?.filedBy?.cik || null;
+  const subject = header?.subject?.cik || null;
+  if (filedBy && filedBy === mine) return subject && subject !== mine ? 'by_manager' : 'unknown';
+  if (subject && subject === mine) return 'against_manager';
+  return 'unknown';
+}
