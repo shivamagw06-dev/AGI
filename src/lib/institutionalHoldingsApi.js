@@ -48,5 +48,17 @@ export const markInstitutionalAlert = (id, is_read = true) => request(`/admin/al
 export const previewInstitutionalImport = (body) => request('/admin/imports/preview', { method: 'POST', body, admin: true, timeoutMs: 240_000 });
 export const publishInstitutionalImport = (body) => request('/admin/imports/publish', { method: 'POST', body, admin: true, timeoutMs: 600_000 });
 export const getInstitutionalResearchAdmin = () => request('/admin/research-layer', { admin: true });
+
+// The review queue for pasted publications. Admin only: these rows include
+// claims nobody has read yet, unlike the public research-layer payload.
+export const getPublicationClaims = ({ status = 'pending', slot = '', manager = '', limit = 50, offset = 0 } = {}) =>
+  request(`/admin/publication-claims?status=${encodeURIComponent(status)}`
+    + `&slot=${encodeURIComponent(slot)}&manager=${encodeURIComponent(manager)}`
+    + `&limit=${limit}&offset=${offset}`, { admin: true });
+
+// Decisions are sent as the ids the reviewer was shown. There is no
+// "apply to everything matching this filter" on purpose.
+export const reviewPublicationClaims = (ids, status) =>
+  request('/admin/publication-claims', { method: 'PATCH', body: { ids, status }, admin: true });
 export const refreshInstitutionalResearchLayer = (body = {}) => request('/admin/research-layer/refresh', { method: 'POST', body, admin: true, timeoutMs: 900_000 });
 export const reviewInstitutionalBrief = (id, body) => request(`/admin/research-layer/briefs/${encodeURIComponent(id)}`, { method: 'PATCH', body, admin: true });
