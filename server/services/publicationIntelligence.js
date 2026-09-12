@@ -293,6 +293,51 @@ export function looksTabular(sentence) {
 }
 
 /**
+ * Lines that repeat across a document because they are page furniture.
+ *
+ * A pasted report carries its running headers inline: this one had "Notes to
+ * Consolidated Financial Statements" 45 times, "Management's Discussion and
+ * Analysis" 29, "2025 versus 2024" 12, and bare page markers like "K-116".
+ * They reached claims - one answer about Pilot began "K-79 Notes to
+ * Consolidated Financial Statements (2)Significant business acquisitions On
+ * January 31, 2023, we acquired..." - which quotes the page template rather
+ * than the filer.
+ *
+ * Found by repetition rather than from a list of Berkshire's headers, so it
+ * works on any filer's document. A line qualifies by repeating at least four
+ * times, being short, and carrying no terminal punctuation - text that
+ * repetitive is a template, not a sentence.
+ *
+ * A real section heading also repeats ("Manufacturing, Service and Retailing"
+ * appears eight times), so segment headings are matched BEFORE this set is
+ * consulted. Getting that order wrong discards the attribution.
+ */
+/**
+ * A standalone page marker, by shape rather than by repetition.
+ *
+ * Repetition misses these: "K-116" appears eleven times but "K-38", "K-79"
+ * and "K-25" appear once or twice each, and all three reached a claim as a
+ * prefix - "K-79 (2)Significant business acquisitions On January 31, 2023, we
+ * acquired..." The shape is what gives them away: a few optional letters, an
+ * optional dash, and digits, alone on a line. No sentence looks like that, and
+ * a bare number on its own line is a table cell either way.
+ */
+export function isPageMarker(line) {
+  return /^[A-Za-z]{0,3}[-\u2013\u2014]?\d{1,4}$/.test(String(line || '').trim());
+}
+
+export function runningHeaders(text) {
+  const counts = new Map();
+  for (const raw of String(text || '').split('\n')) {
+    const line = raw.trim();
+    if (!line || line.length > 80) continue;
+    if (/[.!?]$/.test(line)) continue;
+    counts.set(line, (counts.get(line) || 0) + 1);
+  }
+  return new Set([...counts].filter(([, count]) => count >= 4).map(([line]) => line));
+}
+
+/**
  * How many sentences a section heading carries for.
  *
  * Counted in sentences, not passages, because a pasted report has almost no
@@ -336,6 +381,7 @@ const HEADING_SPAN = 25;
  */
 export function sentences(text) {
   const out = [];
+  const furniture = runningHeaders(text);
   let heading = null;
   let sinceHeading = 0;
   let paragraph = 0;
@@ -365,6 +411,10 @@ export function sentences(text) {
       continue;
     }
     const section = segmentHeading(line);
+    // A repeated line is dropped without flushing the buffer. A sentence can
+    // wrap across a page break, and flushing at the page header would cut it
+    // in half; dropping the header lets the halves join.
+    if (!section && (furniture.has(line.trim()) || isPageMarker(line))) continue;
     if (section) {
       // A heading closes the passage above it and names the one below.
       flush();
@@ -500,6 +550,13 @@ export function intelligenceChain(text, options = {}) {
   const perSlot = Number.isFinite(options.perSlot) ? options.perSlot : 25;
   const all = sentences(text);
   const buckets = new Map(STATED_SLOTS.map((slot) => [slot, []]));
+  // One sentence, one claim per slot. A document repeats sentences - the yen
+  // borrowing terms appear in both the MD&A and the parent-company note - and
+  // the same words twice are not two findings. Left in, they consumed the
+  // per-slot bound and made one INSERT touch the same row twice, which
+  // Postgres refuses outright: "ON CONFLICT DO UPDATE command cannot affect
+  // row a second time".
+  const seen = new Map(STATED_SLOTS.map((slot) => [slot, new Set()]));
   let matched = 0;
 
   for (const sentence of all) {
@@ -509,6 +566,9 @@ export function intelligenceChain(text, options = {}) {
     for (const slot of slots) {
       const bucket = buckets.get(slot);
       if (!bucket) continue;
+      const already = seen.get(slot);
+      if (already.has(sentence.text)) continue;
+      already.add(sentence.text);
       bucket.push({
         slot,
         basis: slot === 'what_changed' ? 'derived' : 'stated',
