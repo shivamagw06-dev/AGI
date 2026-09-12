@@ -554,7 +554,14 @@ export function isStrayGlyph(line) {
  */
 export function stripSentenceDebris(text) {
   return String(text || '')
-    .replace(/([.!?])\s+(?:[a-z]{1,2}\s+){1,4}(?=[A-Z])/g, '$1 ');
+    // The lookahead is the same set of sentence openers the splitter below
+    // recognises, and deliberately so: this function exists to let that split
+    // happen, so a start it cannot see is debris it cannot remove. They were
+    // out of sync, and "$95 million to the pension plans in 2026. j g (24)
+    // Pension plans Fair value measurements..." is what that cost - the stray
+    // "j g" stopped the split, welding a pension contribution to the caption
+    // of a different disclosure's table, and it reached the live page.
+    .replace(/([.!?])\s+(?:[a-z]{1,2}\s+){1,4}(?=[A-Z$“"(])/g, '$1 ');
 }
 
 /**
