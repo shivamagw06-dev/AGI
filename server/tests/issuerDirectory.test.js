@@ -78,3 +78,25 @@ test('the fund labels are stable', () => {
   assert.equal(FUND_SECTOR, 'Funds & ETFs');
   assert.equal(FUND_INDUSTRY, 'Fund or ETF');
 });
+
+test('a foreign private issuer is in the directory, because registration is not Section 16', () => {
+  // The gap this matters for. sec_issuer_tickers is built from Form 3/4/5
+  // submissions, and Section 16 does not apply to a foreign private issuer -
+  // CyberArk files 20-F and no Form 4 exists for it, so the insider registry
+  // cannot hold CYBR at all. Being absent from it is what marks a shape-valid
+  // symbol as a venue code, and being marked is what makes the price backfill
+  // skip it, so nothing prices it and the absence never resolves. $26.7bn of
+  // CyberArk sat in that loop.
+  //
+  // The SEC's own register does list it, because listing is not Section 16.
+  const fpi = {
+    fields: ['cik', 'name', 'ticker', 'exchange'],
+    data: [[1598110, 'CyberArk Software Ltd.', 'CYBR', 'Nasdaq']],
+  };
+  const directory = issuerDirectory({ companies, exchange: fpi });
+  assert.equal(directory.get('CYBR').cik, '0001598110');
+  assert.equal(directory.get('CYBR').title, 'CyberArk Software Ltd.');
+  // A company, not a fund: the exchange file mixes both and only the fund file
+  // settles it.
+  assert.equal(directory.get('CYBR').kind, 'company');
+});
