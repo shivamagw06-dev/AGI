@@ -56,28 +56,34 @@ async function secGet(url, accept) {
  * and looking there.
  */
 async function filingHeader(accession, managerCik) {
+  const cik = digits(managerCik).replace(/^0+/, '');
   const bare = accession.replace(/-/g, '');
-  const at = (cik) => `https://www.sec.gov/Archives/edgar/data/${digits(cik).replace(/^0+/, '')}/${bare}/${accession}-index-headers.html`;
-  try {
-    return { text: await secGet(at(managerCik), 'text/html'), url: at(managerCik) };
-  } catch (first) {
-    if (!/HTTP 404/.test(first.message)) throw first;
-  }
-  const search = await secGet(
-    `https://efts.sec.gov/LATEST/search-index?q=%22%22&ciks=${digits(managerCik).padStart(10, '0')}`
-    + `&forms=&dateRange=&hits=1&accession_number=${accession}`,
-    'application/json',
-  ).catch(() => null);
-  const parties = search?.hits?.hits?.[0]?._source?.ciks || [];
-  for (const cik of parties) {
-    if (digits(cik) === digits(managerCik)) continue;
+  // Two layouts, tried newest first.
+  //
+  // The subdirectory layout - /data/{cik}/{accession-no-dashes}/ - holds the
+  // index-headers page and is what a filing from recent years has. Ninety of
+  // 258 filings 404 there and every one of them is older: Pershing Square's
+  // 2014 Allergan campaign and Norges Bank's 2009-2012 solicitations. Those
+  // live at the flat path instead, one .txt per accession, which is the
+  // complete submission with the same SEC-HEADER at the top of it.
+  //
+  // The flat file is the whole filing rather than just its header, so it is
+  // asked for second and only the header is read from it - the document body
+  // is the manager's own words and is not ours to keep.
+  const candidates = [
+    `https://www.sec.gov/Archives/edgar/data/${cik}/${bare}/${accession}-index-headers.html`,
+    `https://www.sec.gov/Archives/edgar/data/${cik}/${accession}.txt`,
+  ];
+  let last = null;
+  for (const url of candidates) {
     try {
-      return { text: await secGet(at(cik), 'text/html'), url: at(cik) };
+      return { text: await secGet(url, 'text/html'), url };
     } catch (error) {
-      if (!/HTTP 404/.test(error.message)) throw error;
+      last = error;
+      if (!/HTTP 40[34]/.test(error.message)) throw error;
     }
   }
-  throw new Error('no archive directory found under any party CIK');
+  throw new Error(`no archive entry found (${last?.message || 'unknown'})`);
 }
 
 /** Campaign filings in a manager's EDGAR history, newest first. */
@@ -147,7 +153,10 @@ async function main() {
           filed_at: header.filedAt || filing.filed_at,
           subject_cik: header.subject.cik,
           subject_name: header.subject.name,
-          source_url: found.url.replace(/[^/]+$/, ''),
+          // The filing's own page on EDGAR, not whichever file the header
+          // happened to come from. A reader following this gets the index and
+          // can open the document there.
+          source_url: `https://www.sec.gov/Archives/edgar/data/${digits(manager.cik).replace(/^0+/, '')}/${filing.accession_number.replace(/-/g, '')}/`,
         });
       } catch (error) {
         skipped.push(`${filing.accession_number}: ${error.message}`);
