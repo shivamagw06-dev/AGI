@@ -265,6 +265,10 @@ const CHANGES = [
       // billion. Adding a unit to `kindOf` is what fixes that case, not
       // loosening this.
       if (kind === null && isYear(from) && isYear(to)) return null;
+      // One year-like endpoint with no unit of its own is a date this pattern
+      // has mistaken for a figure - worse than a span, because it produces a
+      // delta against a real number.
+      if (yearNotValue(from, m[2]) || yearNotValue(to, m[5])) return null;
       return { from, to, from_period: m[3] || null, to_period: m[6] || null, kind };
     },
   },
@@ -287,6 +291,9 @@ const CHANGES = [
       // Same refusal as the from/to pattern: two year-like numbers with no
       // unit is a span, not a move.
       if (kind === null && isYear(from) && isYear(to)) return null;
+      // Same per-endpoint check, endpoints the other way round. This is the
+      // order that produced both live fabrications.
+      if (yearNotValue(to, m[2]) || yearNotValue(from, m[5])) return null;
       return { from, to, from_period: m[6] || null, to_period: m[3] || null, kind };
     },
   },
@@ -386,6 +393,27 @@ const num = (value) => {
  * document were date ranges.
  */
 const isYear = (value) => Number.isInteger(value) && value >= 1800 && value <= 2200;
+
+/**
+ * An endpoint that is a year wearing a value's clothes.
+ *
+ * Found by sorting the published changes by the size of their delta, which
+ * put the fabrications at the top of the list:
+ *
+ *   "Operating revenues from industrial products declined 1.2% in 2024 to
+ *    $5.1 billion from 2023"     -> to 5.1, from 2023, delta -2017.9
+ *   "...the ratio of railroad operating expenses to railroad operating
+ *    revenues was 65.5%..."      -> to 65.5, from 2024, delta -1958.5
+ *
+ * Both were auto-approved and live on the page. The two-years refusal missed
+ * them because only one endpoint was a year - the other was a real figure, so
+ * the pair looked like a move from 2023 to 5.1 rather than a span.
+ *
+ * A real figure that happens to fall in the year range states its own unit:
+ * "$2,023 million", "2,025 megawatts". A bare four-digit number in that range
+ * with no unit of its own is a date.
+ */
+const yearNotValue = (value, unit) => isYear(value) && !unit;
 
 
 const kindOf = (token) => {
