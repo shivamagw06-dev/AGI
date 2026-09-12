@@ -36,6 +36,26 @@ const SLOT_LABEL = {
   holding: 'Disclosed holding',
 };
 
+/**
+ * Short names for the filter tiles.
+ *
+ * The tiles used the full question and "WHAT DOES MANAGEMENT EXPECT NEXT?"
+ * made one tile three times the width of its neighbours, which wrapped the
+ * row and left a single tile alone underneath. The full question still
+ * appears on every claim, where there is room for it and where it is the
+ * thing being answered.
+ */
+const SLOT_SHORT = {
+  what_happened: 'Happened',
+  why: 'Why',
+  how: 'Response',
+  how_much: 'How much',
+  what_changed: 'Changed',
+  expectations: 'Expects',
+  risks: 'Risks',
+  holding: 'Holdings',
+};
+
 const BASIS_TONE = {
   stated: 'bg-sky-400/10 text-sky-300',
   derived: 'bg-violet-400/10 text-violet-300',
@@ -145,6 +165,9 @@ export default function PublicationReview() {
   const pendingTotal = useMemo(
     () => counts.reduce((total, entry) => total + entry.pending, 0), [counts],
   );
+  const approvedTotal = useMemo(
+    () => counts.reduce((total, entry) => total + entry.approved, 0), [counts],
+  );
 
   const toggle = (id) => setSelected((current) => {
     const next = new Set(current);
@@ -200,22 +223,25 @@ export default function PublicationReview() {
             <button
               type="button"
               onClick={() => { setSlot(''); setOffset(0); }}
-              className={`rounded-xl border px-3 py-2 text-left transition ${slot === ''
+              className={`min-w-[8.5rem] rounded-xl border px-3 py-2 text-left transition ${slot === ''
                 ? 'border-cyan-400/40 bg-cyan-400/[0.08]' : 'border-white/10 bg-white/[0.03] hover:border-white/20'}`}
             >
               <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400">All steps</div>
               <div className="mt-0.5 text-lg font-semibold tabular-nums text-white">{pendingTotal}</div>
+              {/* A third line so this tile is the same height as the others.
+                  Without it, it sat visibly short at the start of the row. */}
+              <div className="text-[10px] text-slate-500">{approvedTotal} approved</div>
             </button>
             {counts.filter((entry) => entry.pending > 0).map((entry) => (
               <button
                 key={entry.slot}
                 type="button"
                 onClick={() => { setSlot(entry.slot); setOffset(0); }}
-                className={`rounded-xl border px-3 py-2 text-left transition ${slot === entry.slot
+                className={`min-w-[8.5rem] rounded-xl border px-3 py-2 text-left transition ${slot === entry.slot
                   ? 'border-cyan-400/40 bg-cyan-400/[0.08]' : 'border-white/10 bg-white/[0.03] hover:border-white/20'}`}
               >
                 <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400">
-                  {SLOT_LABEL[entry.slot] || entry.slot}
+                  {SLOT_SHORT[entry.slot] || entry.slot}
                 </div>
                 <div className="mt-0.5 text-lg font-semibold tabular-nums text-white">{entry.pending}</div>
                 <div className="text-[10px] text-slate-500">
