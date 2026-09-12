@@ -290,10 +290,22 @@ async function main() {
   }
 
   const claims = unique.length - facts.length;
-  const approved = unique.filter((row) => row.status === 'approved').length;
+  // Counted by who decided, not lumped together. The first version summed
+  // every approved row and called the total "approved by rule", which is the
+  // exact conflation the reviewed_by column exists to prevent - it reported
+  // 306 approved by rule when 166 were the rule's and 140 were a person's.
+  const byRule = unique.filter((row) => row.reviewed_by === 'rule').length;
+  // Approved and rejected counted apart. A person's decision can go either
+  // way, so reviewed_by === 'person' is not the same as approved, and
+  // subtracting it from the total to get "pending" would hide every rejection
+  // as though it were still in the queue.
+  const okByPerson = unique.filter((row) => row.reviewed_by === 'person' && row.status === 'approved').length;
+  const noByPerson = unique.filter((row) => row.reviewed_by === 'person' && row.status === 'rejected').length;
+  const stillPending = unique.filter((row) => row.status === 'pending').length;
   console.log(`\n[pub] ${facts.length} holding(s) and ${claims} chain claim(s) stored`);
   console.log(`[pub] against publication ${publication.id}`);
-  console.log(`[pub] ${approved} approved by rule, ${unique.length - approved} pending a person.`);
+  console.log(`[pub] ${byRule} approved by rule, ${okByPerson} approved by a person`
+    + `${noByPerson ? `, ${noByPerson} rejected` : ''}, ${stillPending} still pending.`);
   console.log('[pub] The rule covers a change stating both endpoints and an amount naming a');
   console.log('[pub] metric - quotation and arithmetic. It certifies the row quotes the');
   console.log('[pub] document accurately, not that the fact is worth reading.');
