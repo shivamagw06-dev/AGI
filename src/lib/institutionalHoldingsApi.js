@@ -60,5 +60,10 @@ export const getPublicationClaims = ({ status = 'pending', slot = '', manager = 
 // "apply to everything matching this filter" on purpose.
 export const reviewPublicationClaims = (ids, status) =>
   request('/admin/publication-claims', { method: 'PATCH', body: { ids, status }, admin: true });
+
+// Paste a publication and extract it. Without `apply` nothing is written, so
+// a reviewer can see what a document yields before committing 650 rows.
+export const uploadPublication = (body) =>
+  request('/admin/publications', { method: 'POST', body, admin: true, timeoutMs: 300_000 });
 export const refreshInstitutionalResearchLayer = (body = {}) => request('/admin/research-layer/refresh', { method: 'POST', body, admin: true, timeoutMs: 900_000 });
 export const reviewInstitutionalBrief = (id, body) => request(`/admin/research-layer/briefs/${encodeURIComponent(id)}`, { method: 'PATCH', body, admin: true });
