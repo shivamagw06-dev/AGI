@@ -31,6 +31,7 @@ import { paged } from '../services/institutionalResearchLayerService.js';
 import { extractDisclosedHoldings, documentDigest } from '../services/publicationFacts.js';
 import { intelligenceChain, selectClaims, autoApproved } from '../services/publicationIntelligence.js';
 import { factRows } from '../services/publicationRows.js';
+import { managerMentions } from '../services/publicationSaid.js';
 import { SEGMENT_LABELS, THEME_LABELS } from '../services/publicationSegments.js';
 
 const APPLY = process.argv.includes('--apply');
@@ -47,6 +48,9 @@ const TABLES_ONLY = process.argv.includes('--tables-only');
 // that silently removed rows would take a person's approved claim with it the
 // first time a rule was tightened by mistake.
 const PRUNE = process.argv.includes('--prune');
+// Store a document that never names the manager it is filed under. Needed
+// only for a publication whose author genuinely does not name itself.
+const FORCE_MANAGER = process.argv.includes('--force-manager');
 // Narrow the printed chain to a question: --slot expectations --segment bnsf
 // --theme freight_volumes. A filter changes what is shown, never what is
 // stored: the whole chain is written so a later question can be asked of it.
@@ -102,6 +106,20 @@ async function main() {
     console.error('[pub] nothing was pasted.');
     process.exit(65);
   }
+  // Does this document belong to this manager at all? The manager is given on
+  // the command line and the document is pasted, and nothing connected the
+  // two until Norges Bank's annual report was stored as 177 things Berkshire
+  // said. A filer names itself; that is the whole check.
+  const named = managerMentions(text, manager.display_name);
+  if (named.checked && named.mentions === 0 && !FORCE_MANAGER) {
+    console.error(`\n[pub] This document never mentions "${named.token}".`);
+    console.error(`[pub] You asked to file it under ${manager.display_name}, and a report almost`);
+    console.error('[pub] always names its own author. This is most likely the wrong document or');
+    console.error('[pub] the wrong --manager.');
+    console.error('[pub] If the author genuinely does not name itself, re-run with --force-manager.');
+    process.exit(65);
+  }
+
   const digest = documentDigest(text, (value) => createHash('sha256').update(value).digest('hex'));
   const facts = extractDisclosedHoldings(text);
 

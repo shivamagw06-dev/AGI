@@ -211,3 +211,33 @@ export function claimsByStep(claims, order) {
     .map(([slot, rows]) => ({ slot, claims: rows }))
     .sort((a, b) => (position.get(a.slot) ?? 99) - (position.get(b.slot) ?? 99));
 }
+
+/**
+ * Whether a pasted document ever names the manager it is being filed under.
+ *
+ * The manager is given on the command line and the document is pasted, and
+ * nothing connected the two. Norges Bank's annual report was pasted into a
+ * command that said `--manager berkshire-hathaway`, and 177 of Norges Bank's
+ * sentences were stored as things Berkshire said - under a new publication,
+ * because the digest differed, so the mistake was additive and silent rather
+ * than destructive.
+ *
+ * A filer names itself. Berkshire's report says "Berkshire" on almost every
+ * page; Norges Bank's says it never. That is a weak signal by design: it
+ * cannot tell a Berkshire annual report from a Berkshire quarterly, and it is
+ * not trying to. It catches the whole document being the wrong document.
+ *
+ * Returns the count rather than a verdict, so a caller decides what to do
+ * with zero. A letter that genuinely never names its author exists, which is
+ * why this refuses rather than being impossible to override.
+ */
+export function managerMentions(text, managerName) {
+  const tokens = identityTokens(managerName);
+  if (!tokens.length) return { checked: false, mentions: 0, token: null };
+  // The most distinctive word, which for "Berkshire Hathaway Inc" is
+  // "berkshire" and for "Norges Bank Investment Management" is "norges" -
+  // "bank", "investment" and "management" being words any fund's report uses.
+  const token = tokens.find((word) => !GENERIC.has(word)) || tokens[0];
+  const matches = normalise(text).match(new RegExp(`\\b${token}\\b`, 'g'));
+  return { checked: true, mentions: matches ? matches.length : 0, token };
+}

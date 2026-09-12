@@ -2,7 +2,7 @@ import test, { describe } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   identityTokens, heldIssuerVocabulary, heldIssuerIn, heldIssuersIn,
-  claimsByHolding, claimsByStep,
+  claimsByHolding, claimsByStep, managerMentions,
 } from './publicationSaid.js';
 
 /** Names as a 13F files them, which is not how a letter writes them. */
@@ -151,5 +151,57 @@ describe('grouping what the fund said', () => {
   test('nothing in, nothing out', () => {
     assert.deepEqual(claimsByHolding(null, VOCAB), []);
     assert.deepEqual(claimsByStep(null, ['why']), []);
+  });
+});
+
+describe('does this document belong to this manager', () => {
+  const BERKSHIRE = 'BERKSHIRE HATHAWAY INC. At year-end, our insurance float stood at '
+    + '$176 billion. Berkshire acquired BNSF in 2010.';
+  const NORGES = 'Government Pension Fund Global Annual report 2025. The fund returned 15.1 '
+    + 'percent in 2025. Norges Bank Investment Management manages the fund.';
+
+  test('a filer names itself', () => {
+    const found = managerMentions(BERKSHIRE, 'Berkshire Hathaway Inc');
+    assert.equal(found.checked, true);
+    assert.equal(found.token, 'berkshire');
+    assert.ok(found.mentions >= 2);
+  });
+
+  test('the wrong document names it never', () => {
+    // Norges Bank's annual report was pasted into a command that said
+    // --manager berkshire-hathaway, and 177 of Norges Bank's sentences were
+    // stored as things Berkshire said. Nothing connected the manager on the
+    // command line to the document on stdin.
+    assert.equal(managerMentions(NORGES, 'Berkshire Hathaway Inc').mentions, 0);
+    assert.equal(managerMentions(BERKSHIRE, 'Norges Bank Investment Management').mentions, 0);
+  });
+
+  test('the distinctive word is chosen, not the first', () => {
+    // "Norges Bank Investment Management" happens to lead on its distinctive
+    // word, so it does not test this at all - the first draft used it and the
+    // mutation survived. "National Pension Service" is the case that bites:
+    // it leads on "national", which appears in any number of documents having
+    // nothing to do with the manager.
+    assert.equal(managerMentions(NORGES, 'Norges Bank Investment Management').token, 'norges');
+    const nps = managerMentions('The national economy grew strongly in 2025.',
+      'National Pension Service');
+    assert.equal(nps.token, 'pension', 'picked a word every report uses');
+    assert.equal(nps.mentions, 0);
+    assert.equal(managerMentions('The National Pension Service raised its allocation.',
+      'National Pension Service').mentions, 1);
+  });
+
+  test('a whole word, not a fragment', () => {
+    // "Berk" or "shire" appearing inside another word is not a mention.
+    assert.equal(managerMentions('The Berkshires are a mountain range.', 'Berkshire Hathaway').mentions, 0);
+  });
+
+  test('no manager name means nothing was checked', () => {
+    // Distinct from zero mentions: the caller must not refuse a document
+    // because a manager record has no usable name.
+    const found = managerMentions(BERKSHIRE, '');
+    assert.equal(found.checked, false);
+    assert.equal(found.mentions, 0);
+    assert.equal(managerMentions('', 'Berkshire Hathaway').mentions, 0);
   });
 });
