@@ -99,7 +99,10 @@ export function parseFilingHeader(text) {
  */
 export function campaignsFrom(filings = []) {
   const byTarget = new Map();
-  for (const filing of filings) {
+  // Coerced rather than defaulted: a default parameter covers undefined and
+  // not null, and a caller reading a table that does not exist yet passes
+  // null. The page it feeds should render an empty list, not fail.
+  for (const filing of filings || []) {
     const managerId = filing?.manager_id;
     const subjectCik = filing?.subject_cik;
     if (!managerId || !subjectCik) continue;
@@ -113,6 +116,9 @@ export function campaignsFrom(filings = []) {
         forms: new Set(),
         first_filed: filing.filed_at || null,
         last_filed: filing.filed_at || null,
+        // The newest filing's own page, so a reader lands on the latest word
+        // in the campaign rather than its opening shot.
+        source_url: filing.source_url || null,
       });
     }
     const campaign = byTarget.get(key);
@@ -120,7 +126,10 @@ export function campaignsFrom(filings = []) {
     if (filing.form_type) campaign.forms.add(filing.form_type);
     if (filing.filed_at) {
       if (!campaign.first_filed || filing.filed_at < campaign.first_filed) campaign.first_filed = filing.filed_at;
-      if (!campaign.last_filed || filing.filed_at > campaign.last_filed) campaign.last_filed = filing.filed_at;
+      if (!campaign.last_filed || filing.filed_at > campaign.last_filed) {
+        campaign.last_filed = filing.filed_at;
+        if (filing.source_url) campaign.source_url = filing.source_url;
+      }
     }
   }
   return [...byTarget.values()]
@@ -152,4 +161,38 @@ export function campaignDirection(header, managerCik) {
   if (filedBy && filedBy === mine) return subject && subject !== mine ? 'by_manager' : 'unknown';
   if (subject && subject === mine) return 'against_manager';
   return 'unknown';
+}
+
+/**
+ * A contested fight, or a proposal put to a vote.
+ *
+ * Both arrive as the same family of forms and the difference is not a matter
+ * of degree. A contested solicitation runs its own proxy card - DEFC14A,
+ * PRRN14A, DEFN14A and their relatives - and Pershing Square filed 110 of
+ * them against Automatic Data Processing in fourteen weeks. An exempt
+ * solicitation under PX14A6G is a holder urging a vote on someone else's
+ * card, and Norges Bank filed one each at Wells Fargo, CME and Staples on a
+ * single day in April 2012.
+ *
+ * Calling both "board campaigns" overstates the second and flattens the
+ * first, which is the same mistake as calling a thousand-name book focused.
+ * The forms say which it was, so nothing has to be inferred from the count.
+ */
+const CONTESTED = new Set([
+  'DFAN14A', 'DEFN14A', 'PREN14A', 'DEFC14A', 'PREC14A', 'PRRN14A', 'DFRN14A',
+]);
+
+export function campaignKind(forms = []) {
+  const used = (forms || []).map((form) => String(form || '').toUpperCase().replace(/\/A$/, ''));
+  if (used.some((form) => CONTESTED.has(form))) return 'contest';
+  if (used.length) return 'proposal';
+  return null;
+}
+
+/** What to call a manager's set of campaigns, given the forms in them. */
+export function campaignHeading(campaigns = []) {
+  const kinds = new Set((campaigns || []).map((row) => campaignKind(row?.forms)).filter(Boolean));
+  if (!kinds.size) return null;
+  if (kinds.has('contest')) return kinds.size > 1 ? 'Board campaigns and proposals' : 'Board campaigns';
+  return 'Shareholder proposals';
 }

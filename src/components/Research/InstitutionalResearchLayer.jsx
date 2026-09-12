@@ -31,6 +31,28 @@ function evidenceValue(row) {
  * uses: #111 for text that carries weight, #767676 for labels, #dddddd for
  * hairlines, and the Reuters orange only on interaction.
  */
+/**
+ * A campaign's span, in the units a campaign is fought in.
+ *
+ * Pershing Square filed 110 documents against ADP between August and November
+ * 2017. Rendering that as two full dates reads like a coincidence of two days;
+ * month and year reads as a season, which is what it was. A fight that started
+ * and ended in one month says so once.
+ */
+function campaignSpan(from, to) {
+  const month = (value) => {
+    const at = value ? new Date(`${String(value).slice(0, 10)}T00:00:00Z`) : null;
+    return at && !Number.isNaN(at.getTime())
+      ? at.toLocaleDateString('en-US', { month: 'short', year: 'numeric', timeZone: 'UTC' })
+      : null;
+  };
+  const start = month(from);
+  const end = month(to);
+  if (!start && !end) return null;
+  if (!start || !end || start === end) return start || end;
+  return `${start} – ${end}`;
+}
+
 const CONFIDENCE_TONE = {
   high: 'bg-[#edf7f0] text-[#166534]',
   medium: 'bg-[#fdf4e7] text-[#8a5300]',
@@ -92,6 +114,44 @@ function ManagerProfile({ manager }) {
             {adviser?.source_url ? <a href={adviser.source_url} target="_blank" rel="noreferrer" className="underline decoration-[#d5d5d5] underline-offset-2 hover:text-[#ff8000]">Form ADV</a> : null}
             {manager.adviser_absence ? <span>{manager.adviser_absence.basis}</span> : null}
           </div>
+
+          {/* Only for the six managers that have ever run one. An empty
+              heading would imply the other forty-four were checked and found
+              wanting, when most simply do not do this. */}
+          {manager.campaigns?.length ? (
+            <div className="mt-4 border-t border-[#f0f0f0] pt-3">
+              {/* Named by what the manager actually did. Ten single-filing
+                  proposals are not ten board campaigns, and the forms say
+                  which it was so the card does not have to guess. */}
+              <div className="text-[10px] font-extrabold uppercase tracking-[.16em] text-[#6f6f6f]">
+                {manager.campaigns_heading || 'Board campaigns'}
+              </div>
+              <ul className="mt-2 space-y-1.5">
+                {manager.campaigns.slice(0, 4).map((campaign) => (
+                  <li key={campaign.subject_cik} className="flex items-baseline justify-between gap-3">
+                    <span className="min-w-0 truncate text-[12px] text-[#333333]" title={campaign.subject_name}>
+                      {campaign.source_url ? (
+                        <a href={campaign.source_url} target="_blank" rel="noreferrer" className="underline decoration-[#d5d5d5] underline-offset-2 hover:text-[#ff8000]">
+                          {campaign.subject_name}
+                        </a>
+                      ) : campaign.subject_name}
+                    </span>
+                    {/* The count is the point. One exempt solicitation and a
+                        hundred-and-ten contested filings are both "proxy
+                        activity" and only the number separates them. */}
+                    <span className="shrink-0 text-[11px] tabular-nums text-[#767676]">
+                      {campaign.filings} · {campaignSpan(campaign.first_filed, campaign.last_filed)}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+              {manager.campaigns.length > 4 ? (
+                <div className="mt-1.5 text-[11px] text-[#8a8a8a]">
+                  and {manager.campaigns.length - 4} more
+                </div>
+              ) : null}
+            </div>
+          ) : null}
 
           {strategy.caveats?.length ? (
             <details className="group mt-3">
