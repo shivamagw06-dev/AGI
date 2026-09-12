@@ -366,6 +366,41 @@ export function looksTabular(sentence) {
  * consulted. Getting that order wrong discards the attribution.
  */
 /**
+ * A line that is nothing but a stray glyph or two.
+ *
+ * A PDF paste carries loose characters where the converter lost a bullet, a
+ * rule or a logo: this report has bare "g" lines between several sections.
+ * They are not furniture by repetition or by page-marker shape, and left in
+ * they weld two sentences together, because a full stop followed by a
+ * lowercase word is not a sentence boundary:
+ *
+ *   "BNSF can be exposed to significant litigation costs ... and from
+ *    ongoing business operations. q g BNSF derives significant revenues from
+ *    the transportation of energy-related commodities, including coal."
+ *
+ * That is two disclosures presented as one claim, and the second one's
+ * subject reads as a continuation of the first.
+ */
+export function isStrayGlyph(line) {
+  const text = String(line || '').trim();
+  return text.length > 0 && text.length <= 2 && !/[A-Za-z0-9]{2}/.test(text);
+}
+
+/**
+ * Debris between two sentences, removed so the split can happen.
+ *
+ * Only after terminal punctuation and only before a capital, which is the one
+ * position where a run of one- and two-letter lowercase tokens cannot be
+ * prose. Nothing legitimate reads ". q g BNSF"; plenty reads "... of a
+ * Berkshire subsidiary", which this leaves alone because there is no full
+ * stop in front of it.
+ */
+export function stripSentenceDebris(text) {
+  return String(text || '')
+    .replace(/([.!?])\s+(?:[a-z]{1,2}\s+){1,4}(?=[A-Z])/g, '$1 ');
+}
+
+/**
  * A standalone page marker, by shape rather than by repetition.
  *
  * Repetition misses these: "K-116" appears eleven times but "K-38", "K-79"
@@ -441,7 +476,10 @@ export function sentences(text) {
   let buffer = [];
 
   const flush = () => {
-    const joined = buffer.join(' ').replace(/\s+/g, ' ').trim();
+    // Debris is removed from the joined passage rather than line by line,
+    // because a stray glyph that shared a line with real text survives the
+    // line-level check and only shows up once the lines are together.
+    const joined = stripSentenceDebris(buffer.join(' ').replace(/\s+/g, ' ').trim());
     buffer = [];
     if (!joined) return;
     for (const raw of joined.split(/(?<=[.!?])\s+(?=[A-Z$“"(])/)) {
@@ -467,7 +505,8 @@ export function sentences(text) {
     // A repeated line is dropped without flushing the buffer. A sentence can
     // wrap across a page break, and flushing at the page header would cut it
     // in half; dropping the header lets the halves join.
-    if (!section && (furniture.has(line.trim()) || isPageMarker(line))) continue;
+    if (!section && (furniture.has(line.trim()) || isPageMarker(line)
+      || isStrayGlyph(line))) continue;
     if (section) {
       // A heading closes the passage above it and names the one below.
       flush();

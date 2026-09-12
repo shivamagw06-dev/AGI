@@ -19,12 +19,16 @@ import {
 import {
   createInstitutionalGroup, createInstitutionalWatchlist, getInstitutionalResearchAdmin,
   getInstitutionalResearchLayer, getInstitutionalWorkspace, markPersonalizedAlert,
-  readOrRunBacktest, refreshInstitutionalResearchLayer, reviewInstitutionalBrief, runInstitutionalBacktest,
+  paged, readOrRunBacktest, refreshInstitutionalResearchLayer, reviewInstitutionalBrief,
+  runInstitutionalBacktest,
 } from '../services/institutionalResearchLayerService.js';
 import {
   publicationQueue, publicationQueueCounts, reviewPublicationClaims,
 } from '../services/publicationReviewService.js';
 import { createSupabaseAdmin } from '../lib/supabaseAdmin.js';
+import {
+  managerCheck, readPublication, storePublication,
+} from '../services/publicationImportService.js';
 import {
   clearScreenerCache, evaluateFundPerformance, getAccumulationHeatMap,
   getCombinedHoldings, screenStocks,
@@ -244,13 +248,71 @@ export default function createInstitutionalHoldingsRouter() {
   router.post('/admin/security-mappings', requireAdmin, async (req, res) => { try { const data = await saveSecurityMapping({ ...req.body, actor: req.adminUser?.email || 'admin' }); rebuildOverviewCache(); clearScreenerCache(); clearSecuritySearchCache(); return res.json(data); } catch (error) { return sendError(res, error, 400); } });
   router.patch('/admin/managers/:id', requireAdmin, async (req, res) => { try { const data = await updateInstitutionalManager(req.params.id, req.body || {}, req.adminUser?.email || 'admin'); rebuildOverviewCache(); clearScreenerCache(); clearSecuritySearchCache(); return res.json(data); } catch (error) { return sendError(res, error, 400); } });
   router.patch('/admin/alerts/:id', requireAdmin, async (req, res) => { try { return res.json(await markInstitutionalAlert(req.params.id, req.body?.is_read !== false)); } catch (error) { return sendError(res, error, 400); } });
+  // Paste a manager's own publication and extract it. Same service the CLI
+  // script uses: two implementations of "what gets stored" is how one of them
+  // silently stops matching the other.
+  router.post('/admin/publications', requireAdmin, async (req, res) => {
+    try {
+      const body = req.body || {};
+      const text = String(body.text || '');
+      if (!text.trim()) return sendError(res, new Error('nothing was pasted'), 400);
+      if (!String(body.title || '').trim()) return sendError(res, new Error('a title is required'), 400);
+
+      const client = createSupabaseAdmin();
+      const [manager] = await paged(
+        () => client.from('institutional_managers').select('id,slug,display_name')
+          .eq('slug', String(body.manager_slug || '')),
+        { label: 'manager' },
+      );
+      if (!manager) return sendError(res, new Error(`no manager with slug "${body.manager_slug}"`), 400);
+
+      // A filer names itself. Norges Bank's annual report was once stored as
+      // 177 things Berkshire said because nothing connected the manager named
+      // by the caller to the document in front of it.
+      const named = managerCheck(text, manager.display_name);
+      if (!named.ok && !body.force_manager) {
+        return res.status(409).json({
+          error: named.message, mismatch: true, token: named.token, manager: manager.display_name,
+        });
+      }
+
+      // A dry run writes nothing, so a reviewer can see what a document
+      // yields before committing 650 rows to the queue.
+      if (!body.apply) {
+        const read = readPublication(text);
+        return res.json({
+          applied: false,
+          manager: manager.display_name,
+          characters: read.characters,
+          digest: read.digest,
+          holdings: read.holdings.length,
+          claims: read.claims,
+          steps: read.steps,
+          themes: read.themes,
+        });
+      }
+
+      const stored = await storePublication({
+        client,
+        paged,
+        manager,
+        text,
+        title: body.title,
+        asOfDate: body.as_of_date || null,
+        sourceUrl: body.source_url || null,
+        prune: Boolean(body.prune),
+      });
+      return res.json({ applied: true, manager: manager.display_name, ...stored });
+    } catch (error) { return sendError(res, error, 400); }
+  });
+
   // The queue a person works to decide what a document said. Admin only: the
   // rows include claims nobody has read, which is the opposite of what the
   // public research-layer endpoint returns.
   router.get('/admin/publication-claims', requireAdmin, async (req, res) => {
     try {
       const client = createSupabaseAdmin();
-      const [queue, counts] = await Promise.all([
+      const [queue, counts, managers] = await Promise.all([
         publicationQueue(client, {
           status: req.query.status || 'pending',
           slot: req.query.slot || null,
@@ -259,8 +321,12 @@ export default function createInstitutionalHoldingsRouter() {
           offset: req.query.offset,
         }),
         publicationQueueCounts(client),
+        // For the upload form's manager list. A slug typed by hand is a
+        // mismatch waiting to happen, and one already happened.
+        paged(() => client.from('institutional_managers').select('slug,display_name')
+          .order('display_name'), { label: 'managers' }),
       ]);
-      return res.json({ ...queue, counts });
+      return res.json({ ...queue, counts, managers });
     } catch (error) { return sendError(res, error); }
   });
 

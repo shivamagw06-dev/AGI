@@ -89,18 +89,34 @@ describe('what a reviewer is shown', () => {
     // not for display, and a select('*') passed straight through is how
     // internal columns end up on a surface.
     assert.deepEqual(Object.keys(reviewRow(ROW)).sort(), [
-      'as_of_date', 'basis', 'change', 'figures', 'id', 'issuer', 'kind', 'manager',
-      'manager_slug', 'metric', 'publication', 'reviewed_by', 'segment', 'segment_source',
-      'slot', 'source_excerpt', 'status', 'themes', 'unit',
+      'as_of_date', 'basis', 'change', 'cost_basis', 'dividends', 'figures', 'id', 'issuer',
+      'kind', 'manager', 'manager_slug', 'market_value', 'metric', 'percent_owned',
+      'publication', 'reviewed_by', 'segment', 'segment_source', 'slot', 'source_excerpt',
+      'status', 'themes', 'unit',
     ]);
   });
 
-  test('a holdings row survives having no slot and no segment', () => {
+  test('a holdings row carries its figures and the unit they are in', () => {
+    // The review screen shows these as columns. Without them on the row it
+    // rendered four dashes, which looks like a document that disclosed
+    // nothing rather than a payload missing four fields.
     const shown = reviewRow({ ...ROW, slot: null, segment: null, segment_source: null,
-      themes: null, kind: 'disclosed_holding', issuer: 'Apple Inc.', unit: 'millions' });
+      themes: null, kind: 'disclosed_holding', issuer: 'Apple Inc.', unit: 'millions',
+      percent_owned: 1.6, cost_basis: 6255, market_value: 61962, dividends: 280 });
     assert.equal(shown.slot, null);
     assert.deepEqual(shown.themes, []);
     assert.equal(shown.issuer, 'Apple Inc.');
+    assert.equal(shown.percent_owned, 1.6);
+    assert.equal(shown.market_value, 61962);
+    assert.equal(shown.unit, 'millions');
+  });
+
+  test('a figure the document did not state is null, not zero', () => {
+    // Zero is a disclosure. Absent is not, and a card showing "0" for a
+    // dividend the filer never reported states something the filer did not.
+    const shown = reviewRow({ ...ROW, kind: 'disclosed_holding', issuer: 'X' });
+    assert.equal(shown.dividends, null);
+    assert.equal(shown.percent_owned, null);
   });
 
   test('a row with no manager joined does not throw', () => {

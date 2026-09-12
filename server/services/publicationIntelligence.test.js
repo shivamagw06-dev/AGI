@@ -6,7 +6,7 @@ import { dirname, join } from 'node:path';
 import {
   CHAIN, STATED_SLOTS, INFERRED_SLOTS,
   sentences, figuresIn, metricIn, changeIn, slotsFor, intelligenceChain,
-  runningHeaders, isPageMarker, autoApproved,
+  runningHeaders, isPageMarker, autoApproved, isStrayGlyph, stripSentenceDebris,
 } from './publicationIntelligence.js';
 
 /**
@@ -409,6 +409,49 @@ describe('page furniture in a pasted report', () => {
     const found = sentences(across);
     assert.equal(found.length, 1);
     assert.match(found[0].text, /higher intermodal shipments resulting from/);
+  });
+});
+
+describe('stray glyphs from a PDF', () => {
+  test('two disclosures welded by debris become two claims', () => {
+    // Found on the review screen rather than in a test: a full stop followed
+    // by a lowercase word is not a sentence boundary, so "q g" between two
+    // risk factors presented them as one claim whose second subject read as a
+    // continuation of the first.
+    const welded = 'BNSF can be exposed to significant litigation costs and losses arising '
+      + 'from these matters and from ongoing business operations. q g BNSF derives significant '
+      + 'revenues from the transportation of energy-related commodities, including coal.';
+    const found = sentences(welded).map((item) => item.text);
+    assert.equal(found.length, 2);
+    assert.ok(found[0].endsWith('ongoing business operations.'));
+    assert.ok(found[1].startsWith('BNSF derives significant revenues'));
+  });
+
+  test('a line that is only a stray glyph is dropped', () => {
+    // This report has bare "g" lines between sections, which are neither
+    // furniture by repetition nor page markers by shape.
+    for (const glyph of ['g', 'q', ',', '•', '–']) {
+      assert.equal(isStrayGlyph(glyph), true, glyph);
+    }
+    for (const real of ['K-79', 'We', 'BNSF', '2025', 'GEICO']) {
+      assert.equal(isStrayGlyph(real), false, real);
+    }
+    // Asserted on the text, not the count. With the glyph line kept, the
+    // buffer joins to "g Revenues rose..." and still emits exactly one
+    // sentence - so counting it proved nothing and survived mutation.
+    const [only] = sentences('g\nRevenues rose by $4.1 billion in 2025 compared to 2024.');
+    assert.equal(only.text, 'Revenues rose by $4.1 billion in 2025 compared to 2024.');
+  });
+
+  test('debris is only removed where it cannot be prose', () => {
+    // After terminal punctuation and before a capital is the one position a
+    // run of one- and two-letter lowercase words cannot be a sentence. In any
+    // other position it is ordinary English and stays.
+    assert.equal(stripSentenceDebris('It was the work of a Berkshire subsidiary. We agreed.'),
+      'It was the work of a Berkshire subsidiary. We agreed.');
+    assert.equal(stripSentenceDebris('Revenues rose. In 2025 we grew.'),
+      'Revenues rose. In 2025 we grew.');
+    assert.equal(stripSentenceDebris('Costs fell. g h Earnings rose.'), 'Costs fell. Earnings rose.');
   });
 });
 

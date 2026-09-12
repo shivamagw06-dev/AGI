@@ -92,6 +92,13 @@ export function reviewRow(row) {
     change: row.change,
     figures: row.figures,
     issuer: row.issuer,
+    // The four figures a disclosed holding carries, so the review screen can
+    // show it as the table row it came from rather than as a sentence that
+    // reads "ITOCHU Corporation 10.1% 4,165 8,886 181".
+    percent_owned: row.percent_owned ?? null,
+    cost_basis: row.cost_basis ?? null,
+    market_value: row.market_value ?? null,
+    dividends: row.dividends ?? null,
     unit: row.unit,
     status: row.status,
     reviewed_by: row.reviewed_by,
@@ -100,7 +107,8 @@ export function reviewRow(row) {
 }
 
 const SELECT = 'id,kind,slot,basis,metric,segment,segment_source,themes,change,figures,'
-  + 'issuer,unit,source_excerpt,status,reviewed_by,created_at,'
+  + 'issuer,percent_owned,cost_basis,market_value,dividends,unit,'
+  + 'source_excerpt,status,reviewed_by,created_at,'
   + 'institutional_managers(display_name,slug),manager_publications(title,as_of_date)';
 
 /**
