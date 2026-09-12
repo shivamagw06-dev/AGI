@@ -94,8 +94,14 @@ async function main() {
     console.log(`${label(row)}${list(row.summary.intent)}`);
   }
 
+  console.log('\n=== How they voted: N-PX ===\n');
+  const voters = results.filter((r) => r.summary?.votes.length);
+  for (const row of voters) console.log(`${label(row)}${list(row.summary.votes)}`);
+  if (!voters.length) console.log('  none');
+
   console.log('\n=== Positions only, nothing to read ===\n');
-  const silent = results.filter((r) => r.summary && !r.summary.narrative.length && !r.summary.intent.length);
+  const silent = results.filter((r) => r.summary
+    && !r.summary.narrative.length && !r.summary.intent.length && !r.summary.votes.length);
   for (const row of silent) {
     console.log(`${label(row)}${list(row.summary.positions)}   [${row.entityType || 'unknown type'}]`);
   }
