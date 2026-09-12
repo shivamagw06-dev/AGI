@@ -60,6 +60,40 @@ describe('the shape of the chain', () => {
   });
 });
 
+describe('debris between two sentences', () => {
+  // The stray "j g" is what stopped the split, so a pension contribution was
+  // welded to the caption of a different disclosure's table and shipped that
+  // way. The debris stripper could not see "(24)" as a sentence opener even
+  // though the splitter could.
+  test('debris is removed before every opener the splitter recognises', () => {
+    for (const opener of ['(24) Pension plans follow.', '“Quoted text opens.',
+      '$95 million was paid.', 'Ordinary text opens.']) {
+      assert.equal(stripSentenceDebris(`Revenues grew. j g ${opener}`),
+        `Revenues grew. ${opener}`, opener);
+    }
+  });
+
+  test('ordinary lowercase prose is not debris', () => {
+    // Every token here is one or two letters, which is the shape the rule
+    // looks for - what saves it is that no sentence opener follows.
+    assert.equal(stripSentenceDebris('Revenues grew. it is an ordinary sentence.'),
+      'Revenues grew. it is an ordinary sentence.');
+  });
+
+  test('the pension contribution is not welded to a table caption', () => {
+    const chain = intelligenceChain('Our subsidiaries expect to make contributions of '
+      + '$95 million to the pension plans in 2026. j g (24) Pension plans Fair value '
+      + 'measurements of plan assets as of December 31, 2025 and 2024 follow (in millions).');
+    const found = chain.slots.flatMap((slot) => slot.claims)
+      .filter((claim) => /pension plans in 2026/.test(claim.source_excerpt));
+    assert.ok(found.length > 0, 'the contribution sentence was lost entirely');
+    for (const claim of found) {
+      assert.equal(claim.source_excerpt,
+        'Our subsidiaries expect to make contributions of $95 million to the pension plans in 2026.');
+    }
+  });
+});
+
 describe('a range is not a change', () => {
   // "interest rates ranging from 1.35% to 3.12%" was published as a 1.77
   // point rise in Berkshire's interest rates. The document says its
