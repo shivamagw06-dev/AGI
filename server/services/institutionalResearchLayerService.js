@@ -11,6 +11,7 @@ import { parseFormFour, rawDocumentPath } from './formFour.js';
 import { classifySic } from './sicSectors.js';
 import { classificationQueue } from './classificationQueue.js';
 import { adviserAbsence, unmatchedAbsenceSlugs } from './adviserAbsence.js';
+import { saidByManager } from './managerSaidService.js';
 import { campaignsFrom, campaignHeading } from './proxyCampaign.js';
 import { restatements, restated } from './sectorRestatement.js';
 import { securityCandidates, partitionByIdentifiability } from './securityCandidates.js';
@@ -653,7 +654,7 @@ export async function refreshInstitutionalResearchLayer({ classificationLimit = 
  * adviser registration does not exist at all for an operating company that
  * files 13F or for a family office exempt since 2011.
  */
-export function attachProfiles(managers = [], strategies = [], advisers = [], proxyFilings = []) {
+export function attachProfiles(managers = [], strategies = [], advisers = [], proxyFilings = [], said = null) {
   // Loud, because the alternative is an explanation that quietly never renders.
   const drifted = unmatchedAbsenceSlugs(managers);
   if (drifted.length) console.warn(`[research-layer] adviser absence keys match no manager: ${drifted.join(', ')}`);
@@ -686,6 +687,10 @@ export function attachProfiles(managers = [], strategies = [], advisers = [], pr
       // depends on the forms and the page should not have to know that a
       // PX14A6G is a proposal while a DEFC14A is a fight.
       campaigns_heading: campaignHeading(campaignsOf.get(id) || []),
+      // What the manager wrote about itself, from a document someone pasted
+      // in. Null for the forty-nine that have none, which the page renders as
+      // nothing rather than as an empty section.
+      said: said?.get(id) || null,
     };
   });
 }
@@ -745,7 +750,18 @@ export async function getInstitutionalResearchLayer() {
     // Sector rotation aggregates disclosed weights across quarters, so it
     // reads the same gate consensus does.
     const dataIntegrity = await getRepairStatus();
-    return { status: 'ready', data_integrity: dataIntegrity, generated_at: new Date().toISOString(), readiness: { managers_tracked: managers.length, managers_with_12_quarters: [...history.values()].filter((rows) => rows.length >= 12).length, classifications: classificationCount || 0, external_filings: externalCount || 0, approved_briefs: briefs?.length || 0, methodology: 'Entry is the first US trading session strictly after SEC acceptance, read in US Eastern. Positions without an adjusted close at both ends of a period are excluded and reported, never re-weighted. A position is priced from its adjusted closes, refreshed daily; a manager whose book cannot be priced in full is reported with its coverage rather than ranked on part of it.' }, sector_rotation: rotation || [], filing_events: events || [], approved_briefs: briefs || [], backtests: backtests || [], managers: attachProfiles(managers, strategies, advisers, proxyFilings) };
+    // Publications are read after the rest rather than inside the Promise.all
+    // above, because this one needs the manager list to exclude a manager's
+    // own name from its holdings vocabulary. A failure warns and leaves the
+    // page without the section, the same as every other optional read here.
+    let said = null;
+    try {
+      said = await saidByManager(client, managers, { paged });
+    } catch (error) {
+      console.warn(`[research-layer] publications unavailable: ${error.message}`);
+    }
+
+    return { status: 'ready', data_integrity: dataIntegrity, generated_at: new Date().toISOString(), readiness: { managers_tracked: managers.length, managers_with_12_quarters: [...history.values()].filter((rows) => rows.length >= 12).length, classifications: classificationCount || 0, external_filings: externalCount || 0, approved_briefs: briefs?.length || 0, methodology: 'Entry is the first US trading session strictly after SEC acceptance, read in US Eastern. Positions without an adjusted close at both ends of a period are excluded and reported, never re-weighted. A position is priced from its adjusted closes, refreshed daily; a manager whose book cannot be priced in full is reported with its coverage rather than ranked on part of it.' }, sector_rotation: rotation || [], filing_events: events || [], approved_briefs: briefs || [], backtests: backtests || [], managers: attachProfiles(managers, strategies, advisers, proxyFilings, said) };
   } catch (error) {
     if (/institutional_(security_classifications|external_filings|intelligence_briefs|backtest_runs)/i.test(error.message || '')) return { status: 'setup_required', message: 'Apply the Institutional Intelligence V3 database migration, then run the first research refresh.' };
     throw error;
