@@ -60,6 +60,46 @@ describe('the shape of the chain', () => {
   });
 });
 
+describe('a range is not a change', () => {
+  // "interest rates ranging from 1.35% to 3.12%" was published as a 1.77
+  // point rise in Berkshire's interest rates. The document says its
+  // borrowings carry rates between those two figures; it does not say any
+  // rate moved. Both endpoints are real, which is why sorting by the size of
+  // the delta never surfaced it - the invention is the subtraction.
+  test('a spread across different borrowings states no change', () => {
+    assert.equal(changeIn('The borrowings have interest rates ranging from 1.35% to 3.12% '
+      + 'and maturity dates ranging from 2028 to 2055.'), null);
+  });
+
+  test('a payment schedule states no change', () => {
+    assert.equal(changeIn('We also currently expect to pay interest on our debt ranging '
+      + 'from $4.9 billion in 2026 to $4.3 billion in 2030 based on borrowings outstanding '
+      + 'at December 31, 2025.'), null);
+  });
+
+
+  for (const lead of ['ranging', 'range', 'ranges', 'ranged', 'varying', 'varies', 'varied']) {
+    test(`"${lead} from" is a range`, () => {
+      assert.equal(changeIn(`the rates ${lead} from 1.35% to 3.12%`), null);
+    });
+  }
+
+  // The same endpoints, led by a verb of movement, are still a change. This
+  // is the half of the rule that can be broken by widening it too far.
+  test('a verb of movement keeps its delta', () => {
+    assert.equal(changeIn('the score rose from 27% in 2022 to 35% in 2025').delta, 8);
+    assert.equal(changeIn('which increased our economic interest from 25% to 75%').delta, 50);
+    assert.equal(changeIn('Revenues grew from $1.2 billion to $1.5 billion.').delta, 0.3);
+  });
+
+  test('the word only counts immediately before the from', () => {
+    // "ranging" earlier in the sentence, about something else entirely.
+    const change = changeIn('Maturities ranging across decades did not stop revenues '
+      + 'growing from $1.2 billion to $1.5 billion.');
+    assert.equal(change.delta, 0.3);
+  });
+});
+
 describe('reading a change the document states', () => {
   test('a stated delta is not solved for its missing endpoint', () => {
     // "an increase of 2.7 percentage points compared to 2024" gives the 2025
@@ -583,8 +623,11 @@ describe('the same sentence twice is one finding', () => {
     // note. Two rows of identical words help no reviewer, they consumed the
     // per-slot bound, and they made one INSERT touch the same row twice -
     // which Postgres rejects outright, losing every fact in the run.
-    const line = 'The borrowings have interest rates ranging from 1.35% to 3.12% '
-      + 'and maturity dates ranging from 2028 to 2055.';
+    //
+    // Those borrowing terms were this fixture until "ranging from" stopped
+    // being read as a change. The sentence needs to state a change for there
+    // to be anything to deduplicate, so it is a repeated move now.
+    const line = 'Underwriting expenses decreased $615 million (9.9%) in 2025 compared to 2024.';
     const chain = intelligenceChain(`${line}\n\nUnrelated filler text sits here.\n\n${line}`,
       { perSlot: 50 });
     const changed = chain.slots.find((slot) => slot.slot === 'what_changed');
