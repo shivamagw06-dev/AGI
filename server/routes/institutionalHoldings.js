@@ -22,6 +22,10 @@ import {
   readOrRunBacktest, refreshInstitutionalResearchLayer, reviewInstitutionalBrief, runInstitutionalBacktest,
 } from '../services/institutionalResearchLayerService.js';
 import {
+  publicationQueue, publicationQueueCounts, reviewPublicationClaims,
+} from '../services/publicationReviewService.js';
+import { createSupabaseAdmin } from '../lib/supabaseAdmin.js';
+import {
   clearScreenerCache, evaluateFundPerformance, getAccumulationHeatMap,
   getCombinedHoldings, screenStocks,
 } from '../services/institutionalScreenerService.js';
@@ -240,6 +244,39 @@ export default function createInstitutionalHoldingsRouter() {
   router.post('/admin/security-mappings', requireAdmin, async (req, res) => { try { const data = await saveSecurityMapping({ ...req.body, actor: req.adminUser?.email || 'admin' }); rebuildOverviewCache(); clearScreenerCache(); clearSecuritySearchCache(); return res.json(data); } catch (error) { return sendError(res, error, 400); } });
   router.patch('/admin/managers/:id', requireAdmin, async (req, res) => { try { const data = await updateInstitutionalManager(req.params.id, req.body || {}, req.adminUser?.email || 'admin'); rebuildOverviewCache(); clearScreenerCache(); clearSecuritySearchCache(); return res.json(data); } catch (error) { return sendError(res, error, 400); } });
   router.patch('/admin/alerts/:id', requireAdmin, async (req, res) => { try { return res.json(await markInstitutionalAlert(req.params.id, req.body?.is_read !== false)); } catch (error) { return sendError(res, error, 400); } });
+  // The queue a person works to decide what a document said. Admin only: the
+  // rows include claims nobody has read, which is the opposite of what the
+  // public research-layer endpoint returns.
+  router.get('/admin/publication-claims', requireAdmin, async (req, res) => {
+    try {
+      const client = createSupabaseAdmin();
+      const [queue, counts] = await Promise.all([
+        publicationQueue(client, {
+          status: req.query.status || 'pending',
+          slot: req.query.slot || null,
+          managerSlug: req.query.manager || null,
+          limit: req.query.limit,
+          offset: req.query.offset,
+        }),
+        publicationQueueCounts(client),
+      ]);
+      return res.json({ ...queue, counts });
+    } catch (error) { return sendError(res, error); }
+  });
+
+  // Decisions are sent as the ids the reviewer was shown. There is
+  // deliberately no "apply to everything matching this filter": that is one
+  // keystroke from publishing a hundred sentences nobody read.
+  router.patch('/admin/publication-claims', requireAdmin, async (req, res) => {
+    try {
+      const client = createSupabaseAdmin();
+      const body = req.body || {};
+      return res.json(await reviewPublicationClaims(client, {
+        ids: body.ids, status: body.status,
+      }));
+    } catch (error) { return sendError(res, error, 400); }
+  });
+
   router.get('/admin/research-layer', requireAdmin, async (_req, res) => { try { return res.json(await getInstitutionalResearchAdmin()); } catch (error) { return sendError(res, error); } });
   router.post('/admin/research-layer/refresh', requireAdmin, async (req, res) => { try { return res.json(await refreshInstitutionalResearchLayer(req.body || {})); } catch (error) { return sendError(res, error, 400); } });
   router.patch('/admin/research-layer/briefs/:id', requireAdmin, async (req, res) => { try { return res.json(await reviewInstitutionalBrief(req.params.id, { ...(req.body || {}), reviewer: req.adminUser?.email || 'admin' })); } catch (error) { return sendError(res, error, 400); } });
