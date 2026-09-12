@@ -30,6 +30,7 @@ import { createSupabaseAdmin, getSupabaseAdminCredentials } from '../lib/supabas
 import { paged } from '../services/institutionalResearchLayerService.js';
 import { extractDisclosedHoldings, documentDigest } from '../services/publicationFacts.js';
 import { intelligenceChain, selectClaims, autoApproved } from '../services/publicationIntelligence.js';
+import { factRows } from '../services/publicationRows.js';
 import { SEGMENT_LABELS, THEME_LABELS } from '../services/publicationSegments.js';
 
 const APPLY = process.argv.includes('--apply');
@@ -221,67 +222,20 @@ async function main() {
     .single();
   if (pError) throw new Error(`recording the publication: ${pError.message}`);
 
-  const rows = facts.map((fact) => ({
-    publication_id: publication.id,
-    manager_id: manager.id,
-    kind: fact.kind,
-    issuer: fact.issuer,
-    percent_owned: fact.percent_owned,
-    cost_basis: fact.cost_basis,
-    market_value: fact.market_value,
-    dividends: fact.dividends,
-    unit: fact.unit,
-    // No slot: a holdings-table row is a table fact, not a step in the chain.
-    slot: null,
-    basis: 'stated',
-    source_excerpt: fact.source_excerpt,
-  }));
-
-  // A claim per slot per sentence. A sentence answering three steps is three
-  // rows, because a reviewer approves it as an answer to one question at a
-  // time and may accept it as a change while rejecting it as a cause.
-  for (const slot of chain ? chain.slots : []) {
-    for (const claim of slot.claims) {
-      rows.push({
-        publication_id: publication.id,
-        manager_id: manager.id,
-        kind: 'chain_claim',
-        issuer: null,
-        slot: claim.slot,
-        basis: claim.basis,
-        metric: claim.metric,
-        segment: claim.segment,
-        segment_source: claim.segment_source,
-        themes: claim.themes && claim.themes.length ? claim.themes : null,
-        figures: claim.figures.length ? claim.figures : null,
-        change: claim.change,
-        paragraph: claim.paragraph,
-        source_excerpt: claim.source_excerpt,
-        // A change with both endpoints stated, or an amount with a metric the
-        // filer named, is quotation plus arithmetic and goes live. Everything
-        // a cue matched waits for a person. `reviewed_by` records which of
-        // those happened, so a page never presents a rule's approval as a
-        // person's.
-        ...(autoApproved(claim)
-          ? { status: 'approved', reviewed_by: 'rule', reviewed_at: new Date().toISOString() }
-          : { status: 'pending', reviewed_by: null }),
-      });
-    }
-  }
-
-  // One row per conflict key. Postgres rejects an INSERT ... ON CONFLICT that
-  // touches the same row twice - "command cannot affect row a second time" -
-  // and it rejects the whole statement, so one repeated sentence loses every
-  // fact in the run. The extractor no longer emits duplicates; this stays as
-  // the guard, because the cost of being wrong here is the entire write.
-  const byKey = new Map();
-  for (const row of rows) {
-    byKey.set(JSON.stringify([row.slot ?? null, row.source_excerpt]), row);
-  }
-  const unique = [...byKey.values()];
-  if (unique.length !== rows.length) {
-    console.log(`[pub] ${rows.length - unique.length} row(s) repeated the same sentence in the`);
-    console.log('[pub] same step and were collapsed. The same words twice are one finding.');
+  // Rows are built in one place with one shape. PostgREST sends the array as
+  // a single INSERT whose column list is the union of every key present, and
+  // a row omitting one gets NULL rather than the column default - which is how
+  // nine holdings rows came to be sent with a null status the moment claims
+  // started carrying one.
+  const { rows: unique, collapsed } = factRows({
+    publicationId: publication.id,
+    managerId: manager.id,
+    holdings: facts,
+    chain,
+  });
+  if (collapsed) {
+    console.log(`[pub] ${collapsed} row(s) repeated the same sentence in the same step and`);
+    console.log('[pub] were collapsed. The same words twice are one finding.');
   }
 
   // Chunked. A whole report is ~650 claims and one request carrying all of
