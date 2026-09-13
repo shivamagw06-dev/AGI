@@ -1,7 +1,7 @@
 import test, { describe } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  REVIEW_STATUSES, REVIEW_BATCH_LIMIT, reviewPatch, reviewRow,
+  REVIEW_STATUSES, REVIEW_BATCH_LIMIT, reviewPatch, reviewRow, selectFor, publicationQueue,
 } from './publicationReviewService.js';
 
 const ID = (n) => `0000000${n}-1111-2222-3333-444444444444`;
@@ -123,5 +123,58 @@ describe('what a reviewer is shown', () => {
     const shown = reviewRow({ id: ID(2), source_excerpt: 'x' });
     assert.equal(shown.manager, null);
     assert.equal(shown.publication, null);
+  });
+});
+
+describe('filtering the queue to one manager', () => {
+  test('the manager is an inner join only when it is filtered', () => {
+    // PostgREST applies a filter on an embedded resource to the embedded rows
+    // and not to the parent. Without !inner every fact comes back and only the
+    // nested manager is nulled - selecting NVIDIA returned all 1,695
+    // sentences, most of them Norges Bank's.
+    assert.match(selectFor('nvidia-corp'), /institutional_managers!inner\(/);
+    // Unfiltered, the plain embed is kept: a fact whose manager row is somehow
+    // missing should still reach a reviewer rather than vanish.
+    assert.match(selectFor(null), /institutional_managers\(/);
+    assert.equal(selectFor(null).includes('!inner'), false);
+  });
+
+  test('the filter reaches the query, and the publication embed is untouched', () => {
+    const calls = [];
+    const chain = {
+      select(columns, options) { calls.push(['select', columns, options]); return this; },
+      eq(column, value) { calls.push(['eq', column, value]); return this; },
+      is(column, value) { calls.push(['is', column, value]); return this; },
+      order() { return this; },
+      range() { return Promise.resolve({ data: [], error: null, count: 0 }); },
+    };
+    const client = { from: (table) => { calls.push(['from', table]); return chain; } };
+
+    return publicationQueue(client, { status: 'all', managerSlug: 'nvidia-corp' }).then(() => {
+      const select = calls.find(([kind]) => kind === 'select');
+      assert.match(select[1], /institutional_managers!inner\(display_name,slug\)/);
+      // The publication is embedded without !inner, so a claim is not dropped
+      // for want of one.
+      assert.match(select[1], /manager_publications\(title,as_of_date\)/);
+      assert.ok(calls.some(([kind, column, value]) =>
+        kind === 'eq' && column === 'institutional_managers.slug' && value === 'nvidia-corp'));
+      // status 'all' means no status filter at all.
+      assert.equal(calls.some(([kind, column]) => kind === 'eq' && column === 'status'), false);
+    });
+  });
+
+  test('no manager means no manager filter', () => {
+    const calls = [];
+    const chain = {
+      select() { return this; },
+      eq(column, value) { calls.push([column, value]); return this; },
+      is() { return this; },
+      order() { return this; },
+      range() { return Promise.resolve({ data: [], error: null, count: 0 }); },
+    };
+    return publicationQueue({ from: () => chain }, { status: 'pending' }).then(() => {
+      assert.equal(calls.some(([column]) => column === 'institutional_managers.slug'), false);
+      assert.ok(calls.some(([column, value]) => column === 'status' && value === 'pending'));
+    });
   });
 });

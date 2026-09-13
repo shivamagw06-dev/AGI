@@ -106,10 +106,27 @@ export function reviewRow(row) {
   };
 }
 
-const SELECT = 'id,kind,slot,basis,metric,segment,segment_source,themes,change,figures,'
+const FACT_FIELDS = 'id,kind,slot,basis,metric,segment,segment_source,themes,change,figures,'
   + 'issuer,percent_owned,cost_basis,market_value,dividends,unit,'
-  + 'source_excerpt,status,reviewed_by,created_at,'
-  + 'institutional_managers(display_name,slug),manager_publications(title,as_of_date)';
+  + 'source_excerpt,status,reviewed_by,created_at,';
+
+/**
+ * The select, with the manager embedded as an inner join when it is filtered.
+ *
+ * PostgREST applies `.eq('institutional_managers.slug', ...)` to the embedded
+ * rows and not to the parent: every fact still comes back and only the nested
+ * manager is nulled. Selecting NVIDIA returned all 1,695 sentences, most of
+ * them Norges Bank's.
+ *
+ * `!inner` is what makes the filter reach the parent. It is applied only when
+ * a manager is asked for, so an unfiltered queue keeps returning a row whose
+ * manager row is somehow missing rather than silently dropping it.
+ */
+function selectFor(managerSlug) {
+  return FACT_FIELDS
+    + `institutional_managers${managerSlug ? '!inner' : ''}(display_name,slug),`
+    + 'manager_publications(title,as_of_date)';
+}
 
 /**
  * A page of the review queue.
@@ -119,12 +136,15 @@ const SELECT = 'id,kind,slot,basis,metric,segment,segment_source,themes,change,f
  * than once, so the limit is explicit and `more` says whether the filter
  * matched beyond it.
  */
+export { selectFor };
+
 export async function publicationQueue(client, {
   status = 'pending', slot = null, managerSlug = null, limit = 50, offset = 0,
 } = {}) {
   const size = Math.min(Math.max(Number(limit) || 50, 1), 200);
   const from = Math.max(Number(offset) || 0, 0);
-  let query = client.from('manager_publication_facts').select(SELECT, { count: 'exact' });
+  let query = client.from('manager_publication_facts')
+    .select(selectFor(managerSlug), { count: 'exact' });
   if (status !== 'all') query = query.eq('status', status);
   if (slot === 'holding') query = query.is('slot', null);
   else if (slot) query = query.eq('slot', slot);
