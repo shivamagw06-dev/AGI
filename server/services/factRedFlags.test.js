@@ -354,3 +354,31 @@ test('rank puts a withheld magnitude behind a measured zero', () => {
   const of = (magnitude) => ({ rule: 'definition_spread', magnitude, observation: '', evidence: [], basis: 'facts', judgement: null });
   assert.deepEqual(rank([of(null), of(0), of(0.5)]).map((row) => row.magnitude), [0.5, 0, null]);
 });
+
+test('management EBIT and statutory operating profit are not a spread', () => {
+  // Q39 asks whether adjusted EBITDA is materially higher than statutory
+  // operating profit. The question only means something if the two are
+  // different quantities; collapsing them would make every issuer that
+  // presents both raise a spread for presenting both.
+  const ebit = [
+    fact({ concept: 'ebit', definition_id: 'EBIT.SEGMENT_RESULT', measurement_basis: 'segment_reporting',
+      period_end: NOW, value: 139828,
+      source_sentence: '2   Segment Result before  Interest   and   Taxes  50,758   13,464   20,817   48,211   3,448   3,130   1,39,828' }),
+    // CONSTRUCTED: the statutory operating profit beside it.
+    fact({ concept: 'ebit', definition_id: 'EBIT.STATUTORY_OPERATING_PROFIT', measurement_basis: 'statutory',
+      period_end: NOW, value: 112000, source_sentence: 'Operating profit was 1,12,000 crore.' }),
+  ];
+  assert.deepEqual(definitionSpreads({ facts: ebit, period_end: NOW }), []);
+});
+
+test('two presentations of EBIT itself are a spread', () => {
+  // CONSTRUCTED: the segment note and management's own EBIT, which do compete.
+  const ebit = [
+    fact({ concept: 'ebit', definition_id: 'EBIT.SEGMENT_RESULT', measurement_basis: 'segment_reporting',
+      period_end: NOW, value: 139828, source_sentence: '1,39,828' }),
+    fact({ concept: 'ebit', definition_id: 'EBIT.REPORTED', measurement_basis: 'management_adjusted',
+      period_end: NOW, value: 125000, source_sentence: '1,25,000' }),
+  ];
+  const [spread] = definitionSpreads({ facts: ebit, period_end: NOW });
+  assert.match(spread.observation, /ebit is disclosed from 125000 to 139828/);
+});

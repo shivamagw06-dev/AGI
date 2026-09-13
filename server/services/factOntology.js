@@ -28,7 +28,20 @@ export const MEASUREMENT = Object.freeze({
   // EBITDA margin "accrual" would claim something about it that is not true of
   // a quotient, and would let it be compared with figures it cannot be.
   DERIVED_RATIO: 'derived_ratio',
+  // A share count is not an amount of money and not a quotient. It is measured
+  // by counting, and the distinction matters because a count has no currency.
+  COUNT: 'count',
 });
+
+/**
+ * Bases whose figures carry no currency.
+ *
+ * A quotient and a count are both numbers without money attached, and storing
+ * a currency against either would let it be summed or converted with figures
+ * that are amounts. Everything else must say which money it is in, because
+ * there a missing currency is a bug rather than a property of the figure.
+ */
+export const DIMENSIONLESS = Object.freeze(new Set([MEASUREMENT.DERIVED_RATIO, MEASUREMENT.COUNT]));
 
 /**
  * How long a period runs.
@@ -94,6 +107,49 @@ export const DEFINITIONS = new Map([
   ['CFO.STATEMENT', { concept: 'cfo', measurement: MEASUREMENT.CASH, measures: 'operating_cash_flow', label: 'Net cash flow from operating activities' }],
   ['FCF.CFO_MINUS_MANAGEMENT_CAPEX', { concept: 'fcf', measurement: MEASUREMENT.CASH, measures: 'free_cash_flow', label: 'Operating cash flow less management capex' }],
   ['FCF.CFO_MINUS_CASH_CAPEX', { concept: 'fcf', measurement: MEASUREMENT.CASH, measures: 'free_cash_flow', label: 'Operating cash flow less cash capex' }],
+
+  // ── the income statement ──────────────────────────────────────────
+  // Q39 asks whether adjusted EBITDA is materially higher than statutory
+  // operating profit, so those are two quantities and not two names.
+  ['EBIT.SEGMENT_RESULT', { concept: 'ebit', measurement: MEASUREMENT.SEGMENT_REPORTING, measures: 'ebit', label: 'Segment result before interest and taxes' }],
+  ['EBIT.REPORTED', { concept: 'ebit', measurement: MEASUREMENT.MANAGEMENT_ADJUSTED, measures: 'ebit', label: 'EBIT as management reports it' }],
+  ['EBIT.STATUTORY_OPERATING_PROFIT', { concept: 'ebit', measurement: MEASUREMENT.STATUTORY, measures: 'statutory_operating_profit', label: 'Operating profit as the statutory accounts present it' }],
+  ['COST_OF_SALES.STATEMENT', { concept: 'cost_of_sales', measurement: MEASUREMENT.STATUTORY, measures: 'cost_of_sales', label: 'Cost of materials and goods sold' }],
+  ['DEPRECIATION.AMORTISATION_AND_DEPLETION', { concept: 'depreciation', measurement: MEASUREMENT.ACCRUAL, measures: 'depreciation_and_amortisation', label: 'Depreciation, amortisation and depletion expense' }],
+  ['INTEREST_EXPENSE.FINANCE_COST', { concept: 'interest_expense', measurement: MEASUREMENT.ACCRUAL, measures: 'finance_cost', label: 'Finance cost' }],
+  ['SHARE_BASED_COMP.EXPENSE', { concept: 'share_based_comp', measurement: MEASUREMENT.ACCRUAL, measures: 'share_based_compensation', label: 'Share-based compensation expense' }],
+  ['PRE_TAX_INCOME.STATEMENT', { concept: 'pre_tax_income', measurement: MEASUREMENT.STATUTORY, measures: 'profit_before_tax', label: 'Profit before tax' }],
+  // Current and deferred are components, not competing readings of the total.
+  ['TAX_EXPENSE.TOTAL', { concept: 'tax_expense', measurement: MEASUREMENT.ACCRUAL, measures: 'tax_expense', label: 'Total tax expense' }],
+  ['TAX_EXPENSE.CURRENT', { concept: 'tax_expense', measurement: MEASUREMENT.ACCRUAL, measures: 'current_tax', label: 'Current tax' }],
+  ['TAX_EXPENSE.DEFERRED', { concept: 'tax_expense', measurement: MEASUREMENT.ACCRUAL, measures: 'deferred_tax', label: 'Deferred tax' }],
+  // Before and after non-controlling interests are different quantities, and
+  // Reliance discloses both: 95,610 before, 80,775 after.
+  ['NET_INCOME.BEFORE_NCI', { concept: 'net_income', measurement: MEASUREMENT.STATUTORY, measures: 'net_income_before_nci', label: 'Profit after tax, before adjustment for non-controlling interests' }],
+  ['NET_INCOME.ATTRIBUTABLE_TO_OWNERS', { concept: 'net_income', measurement: MEASUREMENT.STATUTORY, measures: 'net_income_attributable', label: 'Profit after tax attributable to owners of the company' }],
+
+  // ── the balance sheet ─────────────────────────────────────────────
+  ['RECEIVABLES.TRADE', { concept: 'receivables', measurement: MEASUREMENT.STATUTORY, measures: 'trade_receivables', label: 'Trade receivables' }],
+  ['INVENTORIES.TOTAL', { concept: 'inventories', measurement: MEASUREMENT.STATUTORY, measures: 'inventories', label: 'Inventories' }],
+  ['PAYABLES.TRADE', { concept: 'payables', measurement: MEASUREMENT.STATUTORY, measures: 'trade_payables', label: 'Trade payables' }],
+  // Which cash an issuer nets against debt is the whole of the disagreement
+  // about net debt, so the two are never one definition.
+  ['CASH.AND_EQUIVALENTS', { concept: 'cash', measurement: MEASUREMENT.STATUTORY, measures: 'cash_and_equivalents', label: 'Cash and cash equivalents' }],
+  ['CASH.AND_INVESTMENTS', { concept: 'cash', measurement: MEASUREMENT.STATUTORY, measures: 'cash_and_investments', label: 'Cash, equivalents and current investments' }],
+  ['EQUITY.TOTAL', { concept: 'equity', measurement: MEASUREMENT.STATUTORY, measures: 'total_equity', label: 'Total equity' }],
+
+  // ── what went back to shareholders ────────────────────────────────
+  // Declared for the year and paid in the year are different quantities; the
+  // gap is timing, and a question about capital returned means the cash.
+  ['DIVIDENDS.DECLARED', { concept: 'dividends', measurement: MEASUREMENT.ACCRUAL, measures: 'dividends_declared', label: 'Dividends declared for the year' }],
+  ['DIVIDENDS.PAID_CASH', { concept: 'dividends', measurement: MEASUREMENT.CASH, measures: 'dividends_paid', label: 'Dividends paid, per the cash flow statement' }],
+  ['BUYBACKS.CASH_PAID', { concept: 'buybacks', measurement: MEASUREMENT.CASH, measures: 'buybacks', label: 'Cash paid to repurchase shares' }],
+
+  // ── counts, which carry no currency ───────────────────────────────
+  ['SHARE_COUNT.OUTSTANDING', { concept: 'share_count', measurement: MEASUREMENT.COUNT, measures: 'shares_outstanding', label: 'Shares outstanding at the period end' }],
+  ['SHARE_COUNT.WEIGHTED_AVERAGE_BASIC', { concept: 'share_count', measurement: MEASUREMENT.COUNT, measures: 'weighted_average_basic_shares', label: 'Weighted average shares, basic' }],
+  ['SHARE_COUNT.WEIGHTED_AVERAGE_DILUTED', { concept: 'share_count', measurement: MEASUREMENT.COUNT, measures: 'weighted_average_diluted_shares', label: 'Weighted average shares, diluted' }],
+  ['SHARES_ISSUED.DURING_PERIOD', { concept: 'shares_issued', measurement: MEASUREMENT.COUNT, measures: 'shares_issued', label: 'Shares issued during the period' }],
   // Ratios name their denominator, because that is the whole disagreement.
   // Reliance's Retail business states an 8.2% EBITDA margin and a footnote
   // saying it is calculated on Revenue from Operations - the same EBITDA over

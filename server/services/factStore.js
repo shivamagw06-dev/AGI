@@ -14,7 +14,7 @@
  * has to be over plain columns to be inferable. Neither side should have to
  * know the other's convention, so this is the only place that does.
  */
-import { ENTITY_SCOPE, MEASUREMENT, PERIOD_TYPE } from './factOntology.js';
+import { DIMENSIONLESS, ENTITY_SCOPE, MEASUREMENT, PERIOD_TYPE } from './factOntology.js';
 
 export const TABLE = 'company_facts';
 
@@ -102,8 +102,17 @@ export function unwritable(fact) {
   const row = toRow(fact);
   const problems = [];
   for (const column of ['company', 'period_end', 'concept', 'definition_id',
-    'reported_in_document', 'measurement_basis', 'currency', 'unit']) {
+    'reported_in_document', 'measurement_basis', 'unit']) {
     if (row[column] === null || row[column] === '') problems.push(`${column} is missing`);
+  }
+  // A quotient and a count have no currency, and requiring one would refuse
+  // every ratio the calculator produces and every share count there is. For
+  // anything that is an amount of money the requirement stands, because a
+  // missing currency there is a bug and not a property of the figure.
+  const dimensionless = DIMENSIONLESS.has(row.measurement_basis);
+  if (!dimensionless && !row.currency) problems.push('currency is missing');
+  if (dimensionless && row.currency) {
+    problems.push(`currency ${row.currency} on a ${row.measurement_basis} figure`);
   }
   if (!Object.values(PERIOD_TYPE).includes(row.period_type)) problems.push(`period_type ${row.period_type}`);
   if (!Object.values(ENTITY_SCOPE).includes(row.entity_scope)) problems.push(`entity_scope ${row.entity_scope}`);
