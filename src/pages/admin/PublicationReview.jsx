@@ -165,12 +165,11 @@ function Row({ claim, checked, onToggle }) {
             {claim.themes?.length ? <span className="text-slate-500">{claim.themes.join(' · ')}</span> : null}
           </div>
 
-          <div className="mt-1.5 text-[10.5px] text-slate-500">
-            {claim.manager}{claim.publication ? ` · ${claim.publication}` : ''}
-            {claim.status !== 'pending'
-              ? ` · ${claim.status}${claim.reviewed_by ? ` by ${claim.reviewed_by}` : ''}`
-              : ''}
-          </div>
+          {claim.status !== 'pending' ? (
+            <div className="mt-1.5 text-[10.5px] text-slate-500">
+              {`${claim.status}${claim.reviewed_by ? ` by ${claim.reviewed_by}` : ''}`}
+            </div>
+          ) : null}
         </div>
       </div>
     </li>
@@ -239,103 +238,6 @@ function PublicationMatch({ match, title }) {
   return (
     <div className="mt-2 text-[10.5px] leading-5 text-slate-400">
       New publication{title.trim() ? ` — nothing titled “${title.trim()}” is stored yet` : ''}.
-    </div>
-  );
-}
-
-/**
- * The hundred underwriting questions, against the document in the box.
- *
- * Collapsed by default and honest when open. Ninety-three of the hundred are
- * not answered from an annual report's prose, and each says which of three
- * reasons applies rather than showing a blank: the document is silent on the
- * subject, no rule has been written to look for it, the answer is arithmetic
- * over financial statements, or it is a judgement no rule can reach.
- *
- * Those four are deliberately not merged. "This document does not say" and
- * "nothing looks for this" are different claims, and reporting the second as
- * the first tells a reader something about the document that nobody checked.
- */
-function UnderwritingCoverage({ underwriting }) {
-  const [open, setOpen] = useState(false);
-  if (!underwriting) return null;
-  const { counts, questions } = underwriting;
-  const LABEL = {
-    answered: 'answered from the document',
-    silent: 'the document is silent',
-    no_rule: 'no rule written yet',
-    computed: 'needs financial statements',
-    judgment: 'needs a reviewer',
-  };
-  const TONE = {
-    answered: 'text-emerald-300',
-    silent: 'text-slate-400',
-    no_rule: 'text-slate-500',
-    computed: 'text-amber-300/80',
-    judgment: 'text-cyan-300/80',
-  };
-  const order = ['answered', 'silent', 'no_rule', 'computed', 'judgment'];
-
-  return (
-    <div className="mt-3 rounded-lg border border-white/10 bg-white/[0.02] p-3">
-      <button
-        type="button"
-        onClick={() => setOpen(!open)}
-        className="flex w-full items-baseline justify-between gap-3 text-left"
-      >
-        <span className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400">
-          The hundred questions
-        </span>
-        <span className="shrink-0 text-[11px] tabular-nums text-slate-300">
-          <span className="font-semibold text-emerald-300">{counts.answered}</span>
-          <span className="text-slate-500"> answered · {open ? 'hide' : 'show all 100'}</span>
-        </span>
-      </button>
-
-      <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[10.5px]">
-        {order.map((status) => (
-          <span key={status} className={TONE[status]}>
-            <span className="tabular-nums font-semibold">{counts[status]}</span>{' '}
-            <span className="text-slate-500">{LABEL[status]}</span>
-          </span>
-        ))}
-      </div>
-
-      {open ? (
-        <ol className="mt-3 space-y-2 border-t border-white/10 pt-3">
-          {questions.map((question) => (
-            <li key={question.n} className="grid grid-cols-[1.75rem_1fr] gap-2">
-              <span className="pt-0.5 text-[10.5px] tabular-nums text-slate-600">{question.n}</span>
-              <div className="min-w-0">
-                <div className="flex items-baseline justify-between gap-3">
-                  <span className="text-[11.5px] text-slate-200">{question.ask}</span>
-                  <span className={`shrink-0 text-[10px] ${TONE[question.status]}`}>
-                    {LABEL[question.status]}
-                  </span>
-                </div>
-                {question.answer ? (
-                  <p className="mt-0.5 text-[11px] leading-[1.55] text-slate-400">
-                    {question.answer}
-                    {question.more ? (
-                      <span className="text-slate-600">{` · ${question.more} more`}</span>
-                    ) : null}
-                  </p>
-                ) : null}
-                {/* What it would take, rather than a blank. The line items a
-                    computation needs are the specification for loading them. */}
-                {!question.answer && question.needs ? (
-                  <p className="mt-0.5 text-[10.5px] text-slate-600">
-                    {`needs ${question.needs.join(', ')}`}
-                  </p>
-                ) : null}
-                {!question.answer && question.note ? (
-                  <p className="mt-0.5 text-[10.5px] text-slate-600">{question.note}</p>
-                ) : null}
-              </div>
-            </li>
-          ))}
-        </ol>
-      ) : null}
     </div>
   );
 }
@@ -495,7 +397,6 @@ function UploadPanel({ managers, onStored }) {
               stays with the first. Saying so before Store is the only place
               that is cheap to notice. */}
           <PublicationMatch match={preview.match} title={draft.title} />
-          <UnderwritingCoverage underwriting={preview.underwriting} />
           {/* Nothing is stored yet. The counts above are what Store would put
               into the queue. */}
           <div className="mt-2 text-[10.5px] text-slate-500">Nothing has been written yet.</div>
@@ -528,9 +429,46 @@ function UploadPanel({ managers, onStored }) {
   );
 }
 
+/**
+ * The rows of one document, under the document.
+ *
+ * The queue is every sentence anyone has ever pasted, and a reviewer reads one
+ * company's report in one sitting. Naming the document once at the top beats
+ * repeating it under all fifty rows, and the date is what tells a reader
+ * whether they are looking at this quarter or last year's annual report.
+ */
+function byPublication(rows) {
+  const groups = [];
+  const at = new Map();
+  for (const claim of rows) {
+    const key = `${claim.manager || ''}|${claim.publication || ''}`;
+    if (!at.has(key)) {
+      at.set(key, groups.length);
+      groups.push({
+        key,
+        manager: claim.manager,
+        publication: claim.publication,
+        as_of_date: claim.as_of_date,
+        claims: [],
+      });
+    }
+    groups[at.get(key)].claims.push(claim);
+  }
+  return groups;
+}
+
+/** A date as a reader writes it, or nothing. */
+function period(value) {
+  if (!value) return null;
+  const when = new Date(value);
+  if (Number.isNaN(when.getTime())) return null;
+  return when.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
 export default function PublicationReview() {
   const [status, setStatus] = useState('pending');
   const [slot, setSlot] = useState('');
+  const [manager, setManager] = useState('');
   const [offset, setOffset] = useState(0);
   const [data, setData] = useState(null);
   const [selected, setSelected] = useState(() => new Set());
@@ -543,7 +481,7 @@ export default function PublicationReview() {
     setLoading(true);
     setError('');
     try {
-      const payload = await getPublicationClaims({ status, slot, limit: 50, offset: nextOffset });
+      const payload = await getPublicationClaims({ status, slot, manager, limit: 50, offset: nextOffset });
       setData(payload);
       // Cleared on every load: a selection that outlives the rows it referred
       // to is how someone approves a claim they are no longer looking at.
@@ -553,7 +491,7 @@ export default function PublicationReview() {
     } finally {
       setLoading(false);
     }
-  }, [status, slot, offset]);
+  }, [status, slot, manager, offset]);
 
   useEffect(() => { load(offset); }, [load, offset]);
 
@@ -670,6 +608,18 @@ export default function PublicationReview() {
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 bg-white/[0.02] px-6 py-3">
         <div className="flex items-center gap-2 text-xs">
           <span className="text-slate-500">Showing</span>
+          {/* One manager at a time. The queue mixes every document anyone has
+              pasted, and a reviewer reads one company's report in one sitting. */}
+          <select
+            value={manager}
+            onChange={(event) => { setManager(event.target.value); setOffset(0); }}
+            className="rounded-lg border border-white/10 bg-[#0d222d] px-2 py-1.5 text-xs text-white outline-none focus:border-cyan-400"
+          >
+            <option value="">Every manager</option>
+            {(data?.managers || []).map((entry) => (
+              <option key={entry.slug} value={entry.slug}>{entry.display_name}</option>
+            ))}
+          </select>
           <select
             value={status}
             onChange={(event) => { setStatus(event.target.value); setOffset(0); }}
@@ -738,11 +688,33 @@ export default function PublicationReview() {
           </div>
         ) : rows.length ? (
           <>
-            <ul className="space-y-2.5">
-              {rows.map((claim) => (
-                <Row key={claim.id} claim={claim} checked={selected.has(claim.id)} onToggle={toggle} />
+            <div className="space-y-7">
+              {byPublication(rows).map((group) => (
+                <section key={group.key}>
+                  <div className="flex flex-wrap items-baseline justify-between gap-3 border-b border-white/10 pb-2">
+                    <div className="min-w-0">
+                      <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-cyan-300">
+                        {group.manager}
+                      </div>
+                      <div className="mt-0.5 text-sm font-semibold text-white">
+                        {group.publication || 'Untitled document'}
+                      </div>
+                    </div>
+                    <div className="shrink-0 text-[11px] text-slate-400">
+                      {period(group.as_of_date) || 'no period given'}
+                      <span className="text-slate-600">
+                        {` · ${group.claims.length} sentence${group.claims.length === 1 ? '' : 's'} here`}
+                      </span>
+                    </div>
+                  </div>
+                  <ul className="mt-3 space-y-2.5">
+                    {group.claims.map((claim) => (
+                      <Row key={claim.id} claim={claim} checked={selected.has(claim.id)} onToggle={toggle} />
+                    ))}
+                  </ul>
+                </section>
               ))}
-            </ul>
+            </div>
             {data?.more ? (
               <div className="mt-5 flex items-center justify-between text-xs text-slate-400">
                 <button
