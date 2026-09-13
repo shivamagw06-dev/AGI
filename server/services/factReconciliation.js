@@ -22,7 +22,7 @@
  * because choosing cash capex and then pairing it with an accrual cash flow
  * is the same category error arrived at in two steps.
  */
-import { DEFINITIONS, MEASUREMENT, VERDICT } from './factOntology.js';
+import { DEFINITIONS, MEASUREMENT, VERDICT, isUnrecorded } from './factOntology.js';
 import { isStale } from './factCalculation.js';
 
 const round = (value, places = 6) => Number(value.toFixed(places));
@@ -153,11 +153,11 @@ export function reconcileFamily({
         forgone: differencesFrom(observations[0], observations.slice(1)),
         reason: `${named} is not among the disclosed observations` };
     }
-    return {
+    return answered({
       ...base, status: 'selected', chosen, rule: 'named by the caller', chosen_at_rank: null,
       forgone: differencesFrom(chosen, observations.filter((fact) => fact !== chosen)),
       spread: widest, caveats,
-    };
+    });
   }
 
   if (!purpose) {
@@ -178,8 +178,8 @@ export function reconcileFamily({
         forgone: [], reason: `the only observation is measured ${measurementOf(only)}, which ${wanted.label} does not admit` };
     }
     if (rank > 0) caveats.push(substitution(wanted, only));
-    return { ...base, status: 'only_one_observation', chosen: only, rule: wanted.rule,
-      chosen_at_rank: rank, forgone: [], spread: null, caveats };
+    return answered({ ...base, status: 'only_one_observation', chosen: only, rule: wanted.rule,
+      chosen_at_rank: rank, forgone: [], spread: null, caveats });
   }
 
   for (const [rank, bases] of wanted.prefer.entries()) {
@@ -201,15 +201,33 @@ export function reconcileFamily({
     }
     const chosen = front[0];
     if (rank > 0) caveats.push(substitution(wanted, chosen));
-    return {
+    return answered({
       ...base, status: 'selected', chosen, rule: wanted.rule, chosen_at_rank: rank,
       forgone: differencesFrom(chosen, observations.filter((fact) => fact !== chosen)),
       spread: widest, caveats,
-    };
+    });
   }
   return { ...base, status: 'no_fit', chosen: null, spread: widest, caveats,
     forgone: differencesFrom(observations[0], observations.slice(1)),
     reason: `nothing disclosed is measured on a basis ${wanted.label} admits` };
+}
+
+/**
+ * A selection, with a caveat if the figure's definition was never recorded.
+ *
+ * Applied at every point a figure is chosen rather than at one of them,
+ * because the quiet case is the dangerous one: a company with a single
+ * unrecorded revenue would otherwise come back as a clean answer with nothing
+ * saying the definition is unknown.
+ */
+function answered(result) {
+  if (!result.chosen || !isUnrecorded(result.chosen.definition_id)) return result;
+  return {
+    ...result,
+    unrecorded: true,
+    caveats: [...(result.caveats || []),
+      `${result.chosen.definition_id}: the source recorded a figure but not which definition it is`],
+  };
 }
 
 function substitution(wanted, fact) {
@@ -233,10 +251,16 @@ export function coherenceOf(selections, purpose) {
       measurement: measurementOf(row.chosen) }));
   const unresolved = selections.filter((row) => !row.chosen)
     .map((row) => ({ concept: row.concept, status: row.status, reason: row.reason || null }));
+  // A figure whose definition nobody wrote down is not a basis for work that
+  // depends on the definition, so a set containing one is not coherent however
+  // cleanly the rest of it resolved.
+  const unrecorded = made.filter((row) => row.unrecorded)
+    .map((row) => ({ concept: row.concept, definition_id: row.chosen.definition_id }));
   return {
-    coherent: substituted.length === 0 && unresolved.length === 0,
+    coherent: substituted.length === 0 && unresolved.length === 0 && unrecorded.length === 0,
     bases: [...new Set(made.map((row) => measurementOf(row.chosen)))].sort(),
     substituted,
+    unrecorded,
     unresolved,
   };
 }
