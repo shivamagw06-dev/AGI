@@ -170,6 +170,22 @@ export const METRICS = [
  * topic word alone was a cue. A cue that matches rhetoric matches most of a
  * shareholder letter.
  */
+/**
+ * "Attributable to" that allocates rather than explains.
+ *
+ * NVIDIA's filing says "Depreciation and amortization expense attributable to
+ * our Compute & Networking segment was $642 million" and Berkshire's says
+ * "revenues attributable to the United States were 87%". Both were filed as
+ * causes. Neither explains anything: they say which part of the business or
+ * which country a figure belongs to.
+ *
+ * A change word before the segment or the place is what separates them, and
+ * the distinction is narrow on purpose. "attributable to lower organic sales
+ * across all major regions" mentions regions and is a cause, and dropping it
+ * for the word "regions" was the first version of this rule.
+ */
+const ALLOCATION_NOT_CAUSE = /\battributable to\s+(?:our|the|its)?\s*(?![^.]{0,45}\b(?:higher|lower|increas|decreas|declin|growth|impact|chang|favorable|unfavorable|strong|weak|rise|fall)\w*\b)[^.]{0,45}?\b(?:segments?|United States|Europe|Asia|region|geograph)/i;
+
 const CUES = {
   why: [
     /\bbecause\b/i, /\bdue to\b/i, /\battributable to\b/i, /\bdriven by\b/i,
@@ -600,6 +616,12 @@ export function stripSentenceDebris(text) {
     // A cover page's checkbox ballot, before anything else: the first real
     // fact in NVIDIA's 10-Q arrived welded to one.
     .replace(COVER_BALLOT, '')
+    // A table's footnote marker, which belongs to the table: "(2) Included
+    // $13.0 billion and $7.5 billion related to customer advances". Only a
+    // marker followed by a space and a capital - "(2)Significant business
+    // acquisitions" is a note heading welded on, which is a different problem
+    // and not one a prefix strip can fix.
+    .replace(/^\(\d{1,2}\)\s+(?=[A-Z])/, '')
     // The lookahead is the same set of sentence openers the splitter below
     // recognises, and deliberately so: this function exists to let that split
     // happen, so a start it cannot see is debris it cannot remove. They were
@@ -913,9 +935,12 @@ export function slotsFor(sentence) {
   const boilerplate = boilerplateIn(text);
   const slots = [];
   if (change) slots.push('what_changed');
+  const allocates = ALLOCATION_NOT_CAUSE.test(text);
   for (const slot of ['why', 'how', 'expectations', 'risks']) {
     if (!fires(text, slot)) continue;
     if (boilerplate && BOILERPLATE_SLOTS.has(slot)) continue;
+    // Saying which segment or country a figure belongs to is not saying why.
+    if (slot === 'why' && allocates) continue;
     slots.push(slot);
   }
   // A figure with a named metric is an amount; a figure without one still
