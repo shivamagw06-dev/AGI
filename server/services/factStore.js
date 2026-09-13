@@ -102,8 +102,18 @@ export function unwritable(fact) {
   const row = toRow(fact);
   const problems = [];
   for (const column of ['company', 'period_end', 'concept', 'definition_id',
-    'reported_in_document', 'measurement_basis', 'currency', 'unit']) {
+    'reported_in_document', 'measurement_basis', 'unit']) {
     if (row[column] === null || row[column] === '') problems.push(`${column} is missing`);
+  }
+  // A quotient has no currency, and requiring one would refuse every ratio the
+  // calculator produces. For anything that is an amount of money the
+  // requirement stands, because a missing currency there is a bug and not a
+  // ratio.
+  if (row.measurement_basis !== MEASUREMENT.DERIVED_RATIO && !row.currency) {
+    problems.push('currency is missing');
+  }
+  if (row.measurement_basis === MEASUREMENT.DERIVED_RATIO && row.currency) {
+    problems.push(`currency ${row.currency} on a ratio`);
   }
   if (!Object.values(PERIOD_TYPE).includes(row.period_type)) problems.push(`period_type ${row.period_type}`);
   if (!Object.values(ENTITY_SCOPE).includes(row.entity_scope)) problems.push(`entity_scope ${row.entity_scope}`);

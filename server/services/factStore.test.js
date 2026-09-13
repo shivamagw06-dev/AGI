@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { calculate } from './factCalculation.js';
 import {
   COLUMNS, IDENTITY, PAGE, TABLE, documentsFor, fromRow, loadFacts, saveFacts, toRow, unwritable,
 } from './factStore.js';
@@ -89,11 +90,35 @@ test('what the table would reject is named before the table sees it', () => {
   assert.match(unwritable({ ...capex, company: null })[0], /company is missing/);
 });
 
-test('derived_ratio is writable, because the calculator produces it', () => {
+test('what the calculator produces is what the store is asked to accept', () => {
+  // Driven by the calculator rather than by a fixture. The hand-written
+  // version of this test passed while the store refused every ratio the
+  // calculator actually made, because the fixture carried a currency the
+  // calculator never sets.
+  const inputs = [
+    { ...capex, concept: 'ebitda', definition_id: 'EBITDA.REPORTED',
+      measurement_basis: 'management_adjusted', value: 207911 },
+    { ...capex, concept: 'revenue', definition_id: 'REVENUE.OPERATIONS_NET',
+      measurement_basis: 'statutory', value: 1075675 },
+  ];
+  const ratio = calculate(inputs, {
+    definition_id: 'EBITDA_MARGIN.ON_REVENUE_OPERATIONS_NET', period_end: '2026-03-31',
+  });
+  assert.equal(ratio.currency, null);
+  assert.deepEqual(unwritable({ ...ratio, company: 'RELIANCE', reported_in_document: RELIANCE }), []);
+});
+
+test('a quotient with a currency on it is refused', () => {
+  // 8.237% is not 8.237% of rupees. A currency here would let it be summed or
+  // converted with figures that are amounts of money.
   assert.deepEqual(unwritable({
     ...capex, concept: 'ebitda_margin', definition_id: 'EBITDA_MARGIN.ON_REVENUE_OPERATIONS_NET',
     measurement_basis: 'derived_ratio', verdict: 'derived', value: 0.08237, currency: 'INR', unit: 1,
-  }), []);
+  }), ['currency INR on a ratio']);
+});
+
+test('an amount of money still has to say which money', () => {
+  assert.deepEqual(unwritable({ ...capex, currency: null }), ['currency is missing']);
 });
 
 test('one unwritable fact does not cost the others', async () => {
