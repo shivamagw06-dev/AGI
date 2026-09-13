@@ -305,11 +305,6 @@ export default function createInstitutionalHoldingsRouter() {
           claims: read.claims,
           steps: read.steps,
           themes: read.themes,
-          // The hundred underwriting questions, answered where the document
-          // states an answer and marked with a reason where it does not. A
-          // reader deciding whether to store a report wants to see what it
-          // does not cover as much as what it does.
-          underwriting: coverageSummary(text, { questions: QUESTIONS }),
           // The matched publication's own digest is dropped: it is a hash of
           // the manager's copyrighted text and no caller needs it.
           match: {
