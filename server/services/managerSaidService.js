@@ -17,6 +17,14 @@
 import { CHAIN } from './publicationIntelligence.js';
 import { claimsByHolding, claimsByStep, heldIssuerVocabulary } from './publicationSaid.js';
 
+// What a page needs of a fact. Named once because two readers want the same
+// columns and a select that drifts between them is a field that renders on one
+// page and is undefined on the other. `digest` is deliberately absent: it is a
+// hash of the manager's own copyrighted text.
+const FACT_COLUMNS = 'manager_id,publication_id,kind,slot,basis,metric,segment,'
+  + 'segment_source,themes,figures,change,issuer,percent_owned,cost_basis,'
+  + 'market_value,unit,source_excerpt,status';
+
 const STEP_ORDER = CHAIN.map((step) => step.slot);
 const QUESTION = Object.fromEntries(CHAIN.map((step) => [step.slot, step.question]));
 
@@ -157,7 +165,7 @@ export async function saidByManager(client, managers = [], { paged }) {
 
   const facts = await paged(
     () => client.from('manager_publication_facts')
-      .select('manager_id,publication_id,kind,slot,basis,metric,segment,segment_source,themes,figures,change,issuer,percent_owned,cost_basis,market_value,unit,source_excerpt,status')
+      .select(FACT_COLUMNS)
       .in('manager_id', [...byManager.keys()])
       .order('id'),
     { label: 'publication-facts' },
@@ -180,4 +188,35 @@ export async function saidByManager(client, managers = [], { paged }) {
     if (built) said.set(managerId, built);
   }
   return said;
+}
+
+/**
+ * What one manager said, for that manager's own page.
+ *
+ * Scoped to the manager rather than reusing `saidByManager`, which reads every
+ * publication in the table because it is building a card for fifty managers at
+ * once. A fund page wants one.
+ *
+ * Returns null when the manager has pasted nothing, which is 44 of 50 today,
+ * so a caller can attach it unconditionally.
+ */
+export async function saidForManager(client, manager, { paged }) {
+  if (!manager?.id) return null;
+  const publications = await paged(
+    () => client.from('manager_publications').select('*')
+      .eq('manager_id', manager.id).order('pasted_at', { ascending: false }),
+    { label: 'manager-publications' },
+  );
+  if (!publications.length) return null;
+  const facts = await paged(
+    () => client.from('manager_publication_facts').select(FACT_COLUMNS)
+      .eq('manager_id', manager.id).order('id'),
+    { label: 'manager-publication-facts' },
+  );
+  return buildSaid({
+    publications,
+    facts,
+    holdingNames: await holdingNamesFor(client, manager.id, paged),
+    managerName: manager.display_name || '',
+  });
 }

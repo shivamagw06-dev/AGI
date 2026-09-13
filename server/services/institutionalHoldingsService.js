@@ -10,6 +10,7 @@ import {
 import { revaluePosition, revalueBook, foldCloseWindows } from './valueSinceDisclosure.js';
 import { summariseInsiderFilings, insiderHeadline } from './insiderSummary.js';
 import { topTrades } from './topTrades.js';
+import { saidForManager } from './managerSaidService.js';
 import { rowsFromBlock, needsArchive, archiveFiles, selectThirteenF } from './filingHistory.js';
 import { ingestPlan } from './filingBackfillPlan.js';
 import { noticesFromBlock, filingPosture, postureMessage } from './filingNotice.js';
@@ -454,7 +455,12 @@ export async function getInstitutionalFund(slug) {
   // the disclosed value joined from the positions already in hand.
   const valueByCusip = new Map((holdings || []).map((row) => [row.cusip, n(row.value_usd)]));
   const trades = topTrades(changes || [], { valueByCusip, limit: 6 });
-  return { manager, filings: filings || [], latest_filing: latest, holdings, changes, signals: freshSignals, activity, trades };
+  // What the manager wrote about its own business, for the page a reader
+  // reaches having already chosen this manager. Null for the 44 of 50 that
+  // have pasted nothing. `collect` is wrapped because it takes a page size
+  // where the pager this expects takes a label.
+  const said = await saidForManager(client, manager, { paged: (factory) => collect(factory) });
+  return { manager, filings: filings || [], latest_filing: latest, holdings, changes, signals: freshSignals, activity, trades, said };
 }
 
 /** How many currently-held securities are worth measuring a holding period for. */
