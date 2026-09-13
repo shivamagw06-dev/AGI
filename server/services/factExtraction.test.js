@@ -1,5 +1,6 @@
 import test, { describe } from 'node:test';
 import assert from 'node:assert/strict';
+import { PERIOD_TYPE } from './factOntology.js';
 import { CONTRACT, extractionPrompt, sentenceStates, readFacts } from './factExtraction.js';
 
 // Verbatim from Reliance Industries' Integrated Annual Report 2025-26.
@@ -182,4 +183,27 @@ test('a figure and its prior-year comparative both survive', () => {
   assert.deepEqual(rejected, []);
   assert.deepEqual(facts.map((fact) => [fact.period_end, fact.value]),
     [['2026-03-31', 144271], ['2025-03-31', 131107]]);
+});
+
+test('a period type outside the register is refused', () => {
+  // Four spellings of three periods - annual, quarter, quarterly, yearly -
+  // accumulated across this codebase in a week. A reader that invents a fifth
+  // is stopped here rather than at the database, where a failed insert would
+  // surface long after the reader that caused it.
+  const sentence = 'Capital expenditure for the quarter was 1,44,271 crore.';
+  const { facts, rejected } = readFacts({
+    payload: { facts: [{
+      concept: 'capex', definition_id: 'CAPEX.MANAGEMENT', measurement_basis: 'accrual',
+      value: 144271, period_end: '2026-03-31', period_type: 'quarterly',
+      currency: 'INR', unit: 10000000, as_reported_label: 'capital expenditure',
+      source_sentence: sentence,
+    }] },
+    document: sentence, company: 'RELIANCE', reportedInDocument: 'RIL FY2025-26',
+  });
+  assert.deepEqual(facts, []);
+  assert.equal(rejected[0].reason, 'unknown period type quarterly');
+});
+
+test('the register the store enforces is the register extraction accepts', () => {
+  assert.deepEqual(Object.values(PERIOD_TYPE).sort(), ['annual', 'half', 'quarter']);
 });

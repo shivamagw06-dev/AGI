@@ -22,13 +22,23 @@
  * publication date is unknown is excluded rather than assumed - defaulting the
  * unknown case to "include" is exactly how look-ahead gets in.
  */
+import { PERIOD_TYPE } from './factOntology.js';
 import { statedPrecision } from './factVerification.js';
 
 const round = (value, places = 6) => Number(value.toFixed(places));
 const DAY = 86400000;
 
-/** How long each kind of period runs, in months. */
-export const MONTHS_IN = Object.freeze({ annual: 12, half_year: 6, quarterly: 3, monthly: 1 });
+/**
+ * How long each kind of period runs, in months.
+ *
+ * Keyed on the register in factOntology rather than on names chosen here, so
+ * a period type the store cannot hold cannot be measured either.
+ */
+export const MONTHS_IN = Object.freeze({
+  [PERIOD_TYPE.ANNUAL]: 12,
+  [PERIOD_TYPE.HALF]: 6,
+  [PERIOD_TYPE.QUARTER]: 3,
+});
 
 const asDate = (text) => {
   const parts = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(text ?? ''));

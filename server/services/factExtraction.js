@@ -12,7 +12,7 @@
  * which is checkable without knowing anything about finance. A model that
  * invents ₹1,50,000 crore of capex cannot produce a sentence containing it.
  */
-import { DEFINITIONS, ENTITY_SCOPE, MEASUREMENT, factKey } from './factOntology.js';
+import { DEFINITIONS, ENTITY_SCOPE, MEASUREMENT, PERIOD_TYPE, factKey } from './factOntology.js';
 
 export const CONTRACT = [
   'You are reading one company filing and recording what it discloses.',
@@ -124,6 +124,12 @@ export function readFacts({ payload, document, company, reportedInDocument }) {
     }
     if (raw.entity_scope && !Object.values(ENTITY_SCOPE).includes(raw.entity_scope)) {
       rejected.push({ where, reason: `unknown entity scope ${raw.entity_scope}`, fact: raw }); continue;
+    }
+    // A period type outside the register is refused here rather than at the
+    // database, where it would surface as a failed insert long after the
+    // reader that produced it has gone.
+    if (raw.period_type && !Object.values(PERIOD_TYPE).includes(raw.period_type)) {
+      rejected.push({ where, reason: `unknown period type ${raw.period_type}`, fact: raw }); continue;
     }
     if (!sentenceStates(raw.source_sentence, raw.value)) {
       rejected.push({ where, reason: `the cited sentence does not state ${raw.value}`, fact: raw }); continue;

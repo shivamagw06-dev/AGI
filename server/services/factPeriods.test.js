@@ -49,7 +49,7 @@ test('a fact that states its own start is believed over the arithmetic', () => {
   assert.equal(span.stated_start, true);
   // 364 days, not 365. A 52-week year is a week, not a twelfth, short.
   assert.equal(span.days, 364);
-  assert.equal(MONTHS_IN.quarterly, 3);
+  assert.equal(MONTHS_IN.quarter, 3);
 });
 
 test('two year-ends nine months apart are offset, not comparable or incomparable', () => {
@@ -71,9 +71,9 @@ test('two March year-ends are aligned', () => {
 
 test('periods of different length are never put side by side', () => {
   const check = comparable(fact({ period_end: '2026-03-31' }),
-    fact({ period_end: '2026-03-31', period_type: 'quarterly' }));
+    fact({ period_end: '2026-03-31', period_type: 'quarter' }));
   assert.equal(check.status, 'different_length');
-  assert.equal(check.reason, 'annual against quarterly');
+  assert.equal(check.reason, 'annual against quarter');
 });
 
 test('periods that barely meet are not comparable', () => {
@@ -166,7 +166,7 @@ test('overlapping periods are not a year-on-year change', () => {
 
 test('a quarter is not compared with a year', () => {
   // CONSTRUCTED.
-  const mixed = [FACTS[0], { ...FACTS[1], period_type: 'quarterly' }];
+  const mixed = [FACTS[0], { ...FACTS[1], period_type: 'quarter' }];
   const change = changeIn({ facts: mixed, definition_id: 'CAPEX.MANAGEMENT', ...YEAR });
   assert.equal(change.status, 'different_length');
 });
