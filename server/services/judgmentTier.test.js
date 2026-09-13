@@ -2,7 +2,7 @@ import test, { describe } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   evidenceFor, figuresAsserted, unsupportedFigures, unknownCitations,
-  judgementPrompt, judge,
+  judgementPrompt, judge, assembleEvidence, DEPENDS_ON, FROM_ALL,
 } from './judgmentTier.js';
 import { QUESTIONS } from './annualReportQuestions.js';
 
@@ -162,6 +162,69 @@ describe('what the model is shown', () => {
     for (const q of QUESTIONS.filter((entry) => entry.kind === 'judgment')) {
       const { user } = judgementPrompt(q, EVIDENCE);
       assert.ok(user.startsWith(`Question ${q.n}: `), `${q.n}`);
+    }
+  });
+});
+
+describe('what each judgement may reason from', () => {
+  const STATED = [
+    { n: 35, status: 'answered', matches: [{ text: 'Restructuring charges of $120 million were recorded.' }] },
+    { n: 37, status: 'answered', matches: [{ text: 'We recorded an impairment of $5.0 billion on Kraft Heinz.' }] },
+    { n: 89, status: 'answered', matches: [{ text: 'Our decentralized approach is a competitive advantage.' }] },
+    { n: 96, status: 'silent', matches: [] },
+  ];
+  const COMPUTED = new Map([
+    [42, { value: 25042, formula: 'operating_cash_flow - |capex|', inputs: { capex: 20927 }, reason: null }],
+    [53, { value: 0.0563, formula: 'capex / revenue', inputs: { capex: 20927 }, reason: null }],
+    [64, { value: null, formula: null, inputs: null, reason: 'ebitda not reported' }],
+  ]);
+
+  test('a judgement sees only the questions it declares', () => {
+    // Question 33 asks which exceptional costs recur, and is given the
+    // charges management called exceptional - not the whole document.
+    const evidence = assembleEvidence(33, { stated: STATED, computed: COMPUTED });
+    const texts = evidence.map((entry) => entry.text).join(' ');
+    assert.match(texts, /Restructuring charges/);
+    assert.match(texts, /impairment of \$5\.0 billion/);
+    assert.equal(/competitive advantage/.test(texts), false, 'unrelated evidence leaked in');
+  });
+
+  test('a question that was not answered contributes nothing', () => {
+    // Silence is not evidence. A refused computation is not evidence either -
+    // "ebitda not reported" says nothing about the business.
+    const evidence = assembleEvidence(60, { stated: STATED, computed: COMPUTED });
+    assert.equal(evidence.some((entry) => /ebitda not reported/.test(entry.text)), false);
+    assert.ok(evidence.some((entry) => /25042/.test(entry.text)), 'free cash flow was not supplied');
+  });
+
+  test('question 100 reasons over everything answered, and nothing else', () => {
+    const evidence = assembleEvidence(100, { stated: STATED, computed: COMPUTED });
+    const texts = evidence.map((entry) => entry.text).join(' ');
+    assert.match(texts, /competitive advantage/);
+    assert.match(texts, /Restructuring charges/);
+    assert.match(texts, /25042/);
+    // Still not the refusals, and still not the silences.
+    assert.equal(/ebitda not reported/.test(texts), false);
+  });
+
+  test('every judgement question has a declared source', () => {
+    // A judgement with no rule would silently receive no evidence and refuse
+    // forever, which reads as the model being unable rather than us.
+    for (const q of QUESTIONS.filter((entry) => entry.kind === 'judgment')) {
+      assert.ok(DEPENDS_ON.has(q.n) || q.n === FROM_ALL, `question ${q.n} has no evidence rule`);
+    }
+  });
+
+  test('a judgement never depends on itself or on another judgement', () => {
+    // The tier reasons over answers this pipeline produced and verified. One
+    // conclusion feeding another compounds an unreviewed inference.
+    const judgments = new Set(QUESTIONS.filter((q) => q.kind === 'judgment').map((q) => q.n));
+    for (const [n, sources] of DEPENDS_ON) {
+      for (const source of sources) {
+        assert.equal(judgments.has(source), false,
+          `question ${n} depends on judgement ${source}, whose answer assembleEvidence `
+          + 'cannot supply - the declaration would read as evidence that is never given');
+      }
     }
   });
 });

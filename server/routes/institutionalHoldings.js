@@ -29,9 +29,11 @@ import { createSupabaseAdmin } from '../lib/supabaseAdmin.js';
 import {
   managerCheck, readPublication, storePublication, managerPublications, publicationMatch,
 } from '../services/publicationImportService.js';
-import { coverageSummary } from '../services/annualReportAnswers.js';
+import { coverage, coverageSummary } from '../services/annualReportAnswers.js';
 import { QUESTIONS } from '../services/annualReportQuestions.js';
 import { computedAnswers, periodsRead } from '../services/annualReportComputed.js';
+import { assembleEvidence, judge, FROM_ALL } from '../services/judgmentTier.js';
+import { completeJson, llmProviderStatus } from '../services/llmClient.js';
 import {
   clearScreenerCache, evaluateFundPerformance, getAccumulationHeatMap,
   getCombinedHoldings, screenStocks,
@@ -371,6 +373,63 @@ export default function createInstitutionalHoldingsRouter() {
       }
 
       return res.json({ characters: text.length, ...stated, computed });
+    } catch (error) { return sendError(res, error, 400); }
+  });
+
+  // The nine questions no sentence states and no formula yields.
+  //
+  // A separate call from reading the report, because it costs nine model
+  // requests and the other ninety-one answers are worth having in front of a
+  // reader before any of them are spent.
+  router.post('/admin/annual-report/judgements', requireAdmin, async (req, res) => {
+    try {
+      const body = req.body || {};
+      const text = String(body.text || '');
+      if (!text.trim()) return sendError(res, new Error('nothing was pasted'), 400);
+      const provider = llmProviderStatus();
+      if (!provider.preferred) {
+        return sendError(res, new Error('no model provider is configured on this server'), 503);
+      }
+      const ticker = String(body.ticker || '').trim().toUpperCase();
+
+      const stated = coverage(text, { questions: QUESTIONS });
+      let computed = new Map();
+      if (ticker) {
+        const client = createSupabaseAdmin();
+        const periods = await paged(
+          () => client.from('company_financials').select('*')
+            .eq('ticker', ticker).order('period_end', { ascending: false }),
+          { label: 'company-financials' },
+        );
+        computed = computedAnswers(periods);
+      }
+
+      // Ninety-nine before a hundred. Question 100 reasons over the answers to
+      // the others, so it is asked last and its evidence includes them.
+      const order = QUESTIONS.filter((question) => question.kind === 'judgment')
+        .sort((a, b) => (a.n === FROM_ALL ? 1 : 0) - (b.n === FROM_ALL ? 1 : 0));
+
+      const judgements = [];
+      for (const question of order) {
+        const evidence = assembleEvidence(question.n, { stated, computed });
+        const result = await judge({
+          question,
+          evidence,
+          complete: ({ system, user }) => completeJson({ system, user, temperature: 0.1 }),
+        });
+        judgements.push({
+          n: question.n,
+          ask: question.ask,
+          evidence_count: evidence.length,
+          // The evidence is returned with the judgement. A conclusion a
+          // reviewer cannot check against what produced it is not reviewable.
+          evidence,
+          ...(result.ok ? { judgement: result.judgement, refused: null }
+            : { judgement: null, refused: result.reason }),
+        });
+      }
+
+      return res.json({ provider: provider.preferred, ticker: ticker || null, judgements });
     } catch (error) { return sendError(res, error, 400); }
   });
 

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { FileSearch, Loader2 } from 'lucide-react';
-import { readAnnualReport } from '@/lib/institutionalHoldingsApi';
+import { judgeAnnualReport, readAnnualReport } from '@/lib/institutionalHoldingsApi';
 
 /**
  * An annual report, read against the hundred questions an underwriter asks.
@@ -43,11 +43,14 @@ export default function AnnualReportIntelligence() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [result, setResult] = useState(null);
+  const [judging, setJudging] = useState(false);
+  const [judgements, setJudgements] = useState(null);
 
   const read = async () => {
     setBusy(true);
     setError('');
     try {
+      setJudgements(null);
       setResult(await readAnnualReport({ text, ticker }));
     } catch (err) {
       setError(err.message);
@@ -56,16 +59,30 @@ export default function AnnualReportIntelligence() {
     }
   };
 
+  const runJudgements = async () => {
+    setJudging(true);
+    setError('');
+    try {
+      setJudgements(await judgeAnnualReport({ text, ticker }));
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setJudging(false);
+    }
+  };
+
   // A computed question is answered when the arithmetic ran, and otherwise
   // carries the reason - which names the line item that was missing, and is
   // therefore the specification for what to load next.
   const rows = (result?.questions || []).map((question) => {
     const computed = result?.computed?.answers?.[question.n];
-    if (question.kind !== 'computed') return { ...question, computed: null };
+    const judged = (judgements?.judgements || []).find((entry) => entry.n === question.n) || null;
+    if (question.kind === 'judgment') return { ...question, computed: null, judged };
+    if (question.kind !== 'computed') return { ...question, computed: null, judged: null };
     if (computed && computed.reason === null) {
-      return { ...question, status: 'computed', computed };
+      return { ...question, status: 'computed', computed, judged: null };
     }
-    return { ...question, status: 'needs_data', computed: computed || null };
+    return { ...question, status: 'needs_data', computed: computed || null, judged: null };
   });
   const counts = rows.reduce((tally, row) => (
     { ...tally, [row.status]: (tally[row.status] || 0) + 1 }), {});
@@ -133,6 +150,22 @@ export default function AnnualReportIntelligence() {
               </span>
             ))}
           </div>
+          <div className="mt-3 flex flex-wrap items-center gap-3">
+            <button
+              type="button"
+              onClick={runJudgements}
+              disabled={judging}
+              className="inline-flex items-center gap-2 rounded-lg border border-cyan-400/30 bg-cyan-400/10 px-3 py-1.5 text-xs font-semibold text-cyan-200 hover:border-cyan-400/60 disabled:opacity-40"
+            >
+              {judging ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : null}
+              {judgements ? 'Run the nine again' : 'Answer the nine judgement questions'}
+            </button>
+            <span className="text-[10.5px] leading-4 text-slate-500">
+              Nine model requests, reasoning only over the answers above. Every figure in a
+              conclusion is checked against them; nothing is published without a reviewer.
+            </span>
+          </div>
+
           {result.computed?.reason ? (
             <div className="mt-2 text-[10.5px] text-amber-300/80">{result.computed.reason}</div>
           ) : null}
@@ -174,8 +207,25 @@ export default function AnnualReportIntelligence() {
                   {!row.computed && !row.answer && row.needs ? (
                     <p className="mt-0.5 text-[10.5px] text-slate-600">{`needs ${row.needs.join(', ')}`}</p>
                   ) : null}
-                  {!row.answer && row.note ? (
+                  {!row.answer && row.note && !row.judged ? (
                     <p className="mt-0.5 text-[10.5px] text-slate-600">{row.note}</p>
+                  ) : null}
+                  {/* A conclusion, with the count of evidence behind it. The
+                      evidence itself is returned too: a judgement a reader
+                      cannot check against what produced it is not reviewable. */}
+                  {row.judged?.judgement ? (
+                    <p className="mt-0.5 text-[11px] leading-[1.55] text-cyan-100/90">
+                      {row.judged.judgement.conclusion}
+                      <span className="text-slate-500">
+                        {` — from ${row.judged.judgement.evidence_ids.length} of `
+                          + `${row.judged.evidence_count} evidence items, awaiting review`}
+                      </span>
+                    </p>
+                  ) : null}
+                  {row.judged?.refused ? (
+                    <p className="mt-0.5 text-[10.5px] text-amber-300/80">
+                      {`refused: ${row.judged.refused}`}
+                    </p>
                   ) : null}
                 </div>
               </li>
