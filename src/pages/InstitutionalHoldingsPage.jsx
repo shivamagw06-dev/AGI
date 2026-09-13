@@ -37,6 +37,7 @@ import {
 import InstitutionalManagerExplorer from '@/components/Research/InstitutionalManagerExplorer';
 import InstitutionalIntelligenceWorkbench from '@/components/Research/InstitutionalIntelligenceWorkbench';
 import InstitutionalResearchLayer from '@/components/Research/InstitutionalResearchLayer';
+import ManagerSaid from '@/components/Research/ManagerSaid';
 import './institutionalHoldingsTheme.css';
 
 const FUND_BRANDS = {
@@ -845,6 +846,24 @@ function FundPage({ slug }) {
           <MetricCard icon={FileClock} label="Filing version" value={data.latest_filing?.amendment_type || 'Pending'} note={data.latest_filing?.form_type || '13F coverage'} />
           <MetricCard icon={Eye} label="Public since" value={shortDate(data.latest_filing?.filed_at)} note="SEC acceptance timestamp" />
         </section>
+
+        {/* The manager's own words come before the filing mechanics. A reader
+            who opened this page already chose the manager; what the filing
+            holds is on every card, and why it holds it is only here. */}
+        {data.said ? (
+          <section className="mt-8">
+            <div className="mb-5">
+              <p className="text-[10px] font-extrabold uppercase tracking-[.18em] text-[#777777]">Document intelligence</p>
+              <h2 className="mt-2 text-3xl font-bold">In its own words</h2>
+              <p className="mt-2 text-sm text-[#777777]">
+                Sentences from what {fund.display_name} wrote, not a summary of them.
+              </p>
+            </div>
+            <div className="rounded-[30px] border border-white bg-white/90 p-6 shadow-[0_20px_55px_rgba(12,48,59,.07)] sm:p-8">
+              <ManagerSaid said={data.said} />
+            </div>
+          </section>
+        ) : null}
 
         <ActivityPanel activity={data.activity} />
 
