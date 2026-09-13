@@ -6,7 +6,7 @@ import { dirname, join } from 'node:path';
 import {
   CHAIN, STATED_SLOTS, INFERRED_SLOTS,
   sentences, figuresIn, metricIn, changeIn, slotsFor, intelligenceChain, METRICS,
-  runningHeaders, isPageMarker, autoApproved, isStrayGlyph, stripSentenceDebris, isFilingFurniture,
+  runningHeaders, isPageMarker, autoApproved, isStrayGlyph, stripSentenceDebris, isFilingFurniture, stripSentencePrefix,
 } from './publicationIntelligence.js';
 import { themesIn } from './publicationSegments.js';
 
@@ -956,11 +956,25 @@ describe('a figure that does not measure money', () => {
 
 describe('a filing’s cover page and its index', () => {
   test('a checkbox ballot is stripped from the fact welded to it', () => {
-    // NVIDIA's 10-Q opens with "Yes [ ] No [X]" ballots, and the first real
-    // fact on the page arrived attached to one.
-    const cover = 'Yes ☐ No ☒ The number of shares of common stock, $0.001 par value, '
-      + 'outstanding as of August 21, 2026, was 24.1 billion.';
-    assert.match(stripSentenceDebris(cover), /^The number of shares of common stock/);
+    // Read through sentences(), not by calling the strip on a string that
+    // begins with the ballot. The first version of this test did the latter,
+    // passed, and the rule never fired in the reader: it was anchored to the
+    // start of the joined paragraph, and a cover page's ballot sits in the
+    // middle of one.
+    const paragraph = 'The following information is furnished. Yes ☐ No ☒ The number of '
+      + 'shares of common stock, $0.001 par value, outstanding as of August 21, 2026, '
+      + 'was 24.1 billion.';
+    const found = sentences(paragraph).map((entry) => entry.text);
+    assert.ok(found.some((text) => /^The number of shares of common stock/.test(text)),
+      found.join(' | '));
+  });
+
+  test('a footnote marker is stripped mid-paragraph', () => {
+    const paragraph = 'The following table summarises our obligations. (2) Included $13.0 '
+      + 'billion and $7.5 billion related to customer advances for the first half of '
+      + 'fiscal years 2027 and 2026, respectively.';
+    const found = sentences(paragraph).map((entry) => entry.text);
+    assert.ok(found.some((text) => /^Included \$13\.0 billion/.test(text)), found.join(' | '));
   });
 
   test('a cross-reference reports nothing and is dropped', () => {
@@ -1025,23 +1039,17 @@ describe('allocation is not causation', () => {
 });
 
 describe('a table’s footnote marker', () => {
-  test('a marker followed by a sentence is stripped', () => {
-    assert.match(stripSentenceDebris('(2) Included $13.0 billion and $7.5 billion related to '
-      + 'customer advances for the first half of fiscal years 2027 and 2026, respectively.'),
-    /^Included \$13\.0 billion/);
-  });
-
   test('a note heading welded on is left alone', () => {
     // "(2)Significant business acquisitions On January 31, 2023, we acquired..."
     // has no space, and the heading that follows is not a prefix a strip can
     // find the end of. Refused at review instead.
-    assert.match(stripSentenceDebris('(2)Significant business acquisitions On January 31, 2023, '
+    assert.match(stripSentencePrefix('(2)Significant business acquisitions On January 31, 2023, '
       + 'we acquired a 41.4% interest in Pilot.'), /^\(2\)Significant/);
   });
 
   test('a sentence that opens with a figure in brackets is not a marker', () => {
     // "(1,234) Revenue fell" would be an accounting negative, not a footnote.
-    assert.match(stripSentenceDebris('(1,234) Revenue fell in the period under review.'),
+    assert.match(stripSentencePrefix('(1,234) Revenue fell in the period under review.'),
       /^\(1,234\)/);
   });
 });

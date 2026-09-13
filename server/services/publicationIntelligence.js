@@ -606,6 +606,30 @@ export function isStrayGlyph(line) {
 const COVER_BALLOT = /^(?:yes|no)\s*[\u2610\u2611\u2612\u2713\u2714]\s*(?:(?:yes|no)\s*[\u2610\u2611\u2612\u2713\u2714]\s*)?/i;
 const ITEM_CROSS_REFERENCE = /\bitem\s+\d+[a-z]?\.?\s*$/i;
 
+/**
+ * A prefix that belongs to the page rather than to the sentence.
+ *
+ * Applied per sentence and not to the paragraph, because that is where these
+ * sit. Both rules were written anchored to the start of the joined block
+ * first, which fires only when the marker opens a paragraph - and the tests
+ * passed because they called the strip directly on a string beginning with the
+ * marker, a configuration the real reader never produces.
+ *
+ *   "Yes (box) No (box) The number of shares of common stock ... was 24.1
+ *    billion."                     a cover page's ballot, welded to a fact
+ *   "(2) Included $13.0 billion and $7.5 billion related to customer
+ *    advances"                     a table's footnote marker
+ *
+ * A parenthesised figure is an accounting negative and is left alone, and
+ * "(2)Significant business acquisitions" has no space, which is a note heading
+ * welded on rather than a prefix - a different problem, refused at review.
+ */
+export function stripSentencePrefix(text) {
+  return String(text || '').replace(COVER_BALLOT, '').replace(FOOTNOTE_MARKER, '').trim();
+}
+
+const FOOTNOTE_MARKER = /^\(\d{1,2}\)\s+(?=[A-Z])/;
+
 /** Whether a sentence is a filing's furniture rather than its content. */
 export function isFilingFurniture(text) {
   return ITEM_CROSS_REFERENCE.test(String(text || '').trim());
@@ -613,15 +637,6 @@ export function isFilingFurniture(text) {
 
 export function stripSentenceDebris(text) {
   return String(text || '')
-    // A cover page's checkbox ballot, before anything else: the first real
-    // fact in NVIDIA's 10-Q arrived welded to one.
-    .replace(COVER_BALLOT, '')
-    // A table's footnote marker, which belongs to the table: "(2) Included
-    // $13.0 billion and $7.5 billion related to customer advances". Only a
-    // marker followed by a space and a capital - "(2)Significant business
-    // acquisitions" is a note heading welded on, which is a different problem
-    // and not one a prefix strip can fix.
-    .replace(/^\(\d{1,2}\)\s+(?=[A-Z])/, '')
     // The lookahead is the same set of sentence openers the splitter below
     // recognises, and deliberately so: this function exists to let that split
     // happen, so a start it cannot see is debris it cannot remove. They were
@@ -734,7 +749,7 @@ export function sentences(text) {
     buffer = [];
     if (!joined) return;
     for (const raw of joined.split(SENTENCE_BREAK)) {
-      const sentence = raw.trim();
+      const sentence = stripSentencePrefix(raw);
       if (sentence.length < 20) continue;
       // A cross-reference names a section and reports nothing. NVIDIA's
       // arrived with a lease table flattened in front of it.
