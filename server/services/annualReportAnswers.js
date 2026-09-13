@@ -98,6 +98,33 @@ export const FINDS = new Map([
  */
 const CROSS_REFERENCE = /\bitem\s+\d+[a-z]?\.?\s*$/i;
 
+/**
+ * An accounting policy, which defines a word rather than reporting a fact.
+ *
+ * A filing prepared under Ind AS carries pages of these, and a keyword inside
+ * a definition is not an answer. Tata Sons' report returned four of them at
+ * once:
+ *
+ *   "Termination benefits are expensed at the earlier of ... any related
+ *    restructuring costs"        answered what restructuring charges occurred
+ *   "Amendments to Ind AS 1 ... classification of liabilities with covenants"
+ *                               answered what covenants apply to the debt
+ *   "Acquisition costs are defined as costs that vary with ... renewal
+ *    insurance contracts"       answered which contracts are up for renewal
+ *   "the retention moneys held by customer"
+ *                               answered customer retention
+ *
+ * Question 99 is exempt, because the accounting policy is what it asks about.
+ */
+const POLICY_PROSE = /\b(?:are|is) (?:defined as|expensed|measured at|recognised|recognized|classified|amortised|amortized|carried at|stated at)\b|\bInd AS\b|\bpursuant to para\b|\bthe amendments relate to\b|\bin accordance with (?:Ind AS|IFRS|the accounting)\b|\baccounting polic/i;
+
+/** Questions whose subject is the accounting policy itself. */
+const ABOUT_POLICY = new Set([99]);
+
+export function policyProse(text) {
+  return POLICY_PROSE.test(String(text || ''));
+}
+
 /** Whether a sentence is capable of answering anything. */
 export function answerable(text) {
   const sentence = String(text || '').trim();
@@ -118,6 +145,8 @@ export function answersFor(text, { perQuestion = 6 } = {}) {
     const matches = [];
     for (const entry of found) {
       if (!pattern.test(entry.text)) continue;
+      // A definition is not a disclosure, unless the definition is the answer.
+      if (!ABOUT_POLICY.has(n) && policyProse(entry.text)) continue;
       matches.push({ text: entry.text, paragraph: entry.paragraph, heading: entry.heading });
       if (matches.length >= perQuestion) break;
     }
