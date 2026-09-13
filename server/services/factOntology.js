@@ -30,6 +30,22 @@ export const MEASUREMENT = Object.freeze({
   DERIVED_RATIO: 'derived_ratio',
 });
 
+/**
+ * How long a period runs.
+ *
+ * This register is the one the company_facts check constraint enforces, and
+ * company_financials already holds data under 'annual' and 'quarter'. It is
+ * written down here because the alternative happened: four spellings of the
+ * same three periods - annual, quarter, quarterly, yearly - accumulated across
+ * this codebase in a week, which is the failure the definition register exists
+ * to prevent, in the field that says when.
+ */
+export const PERIOD_TYPE = Object.freeze({
+  ANNUAL: 'annual',
+  HALF: 'half',
+  QUARTER: 'quarter',
+});
+
 /** Whose figures these are. Consolidated against standalone is not enough. */
 export const ENTITY_SCOPE = Object.freeze({
   GROUP: 'group',
