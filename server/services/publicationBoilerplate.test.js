@@ -20,6 +20,15 @@ const REJECTED = [
     + 'contractual obligations as of June 30, 2026 were, in the aggregate, not materially different from those disclosed.'],
   ['securities_value_circularity', 'Any adverse effect on our business, financial condition or '
     + 'operating results could result in a decline in the value of our securities and the loss of all or part of your investment.'],
+  // The last two are from NVIDIA's Q2 FY2027 10-Q, and are weaker evidence
+  // than the rest: they were judged wrong on review rather than rejected by
+  // the person working the queue. They are here because the rule above them
+  // requires every rule to name a sentence, and a rule with no sentence at all
+  // is the thing that requirement exists to stop.
+  ['generic_risk_summary', 'Any of these risks may adversely affect our business, financial '
+    + 'condition, results of operations or cash flows.'],
+  ['read_the_report', 'You should read this Quarterly Report on Form 10-Q completely and '
+    + 'understand that our actual future results may be materially different from what we expect.'],
 ];
 
 // Verbatim from the same two documents, each one approved by a person.
@@ -32,6 +41,13 @@ const APPROVED = [
   'We expect these primary insurance businesses to face continued headwinds in 2026, and potentially beyond.',
   'Retroactive reinsurance contracts indemnify ceding companies for adverse development of claims '
     + 'arising from loss events that have already occurred.',
+  // Two real risks from the same NVIDIA filing, in the same register as the
+  // boilerplate above. Both name something specific and both must survive.
+  'Any regulatory control or other restriction that limits our ability to provide products and '
+    + 'services that support third-party applications and models could have a material impact on '
+    + 'our business, operating results, and financial condition.',
+  'The replacement rule may impose new restrictions on our products or operations and/or add '
+    + 'license requirements that could have a material impact on our business.',
 ];
 
 describe('boilerplate is not a risk and not an expectation', () => {

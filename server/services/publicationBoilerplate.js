@@ -76,6 +76,22 @@ export const BOILERPLATE = [
     re: /\bdecline in the value of (?:our|the) securities\b/i,
     why: 'the generic risk-factor sentence, true of every issuer',
   },
+  {
+    id: 'generic_risk_summary',
+    // "Any of these risks may adversely affect our business, financial
+    // condition, results of operations or cash flows." A sentence that refers
+    // back to the risks above and names none of them.
+    re: /\bany of these risks\b/i,
+    why: 'a summary of the risks above, naming none of them',
+  },
+  {
+    id: 'read_the_report',
+    // "You should read this Quarterly Report on Form 10-Q completely and
+    // understand that our actual future results may be materially different
+    // from what we expect."
+    re: /\byou should read this (?:quarterly |annual )?report\b|\bactual (?:future )?results may be materially different\b/i,
+    why: 'an instruction to the reader, not a statement about the business',
+  },
 ];
 
 /**
