@@ -19,7 +19,7 @@
  * what ought to move together, the assumption is written out and travels with
  * the flag.
  */
-import { DEFINITIONS } from './factOntology.js';
+import { DEFINITIONS, measuredQuantity } from './factOntology.js';
 import { verify, FREE_CASH_FLOW } from './factVerification.js';
 import { isStale, RECIPES } from './factCalculation.js';
 import { changeIn } from './factPeriods.js';
@@ -112,12 +112,24 @@ export function signSplits({ facts, from, to, accounting_scope = 'consolidated',
   return flags;
 }
 
-/** Two definitions of one concept far apart in a single period. */
+/**
+ * Two definitions of one quantity far apart in a single period.
+ *
+ * Of one quantity, not of one concept. Gross debt and net debt share the
+ * concept "debt" and are not two readings of one number - the 200% between
+ * them is the cash balance, and flagging it would fire on every filing that
+ * discloses both, which is all of them. All three capital expenditure
+ * definitions do compete to be capital expenditure, and the 17.4% between them
+ * is about accruals and timing. The ontology says which is which.
+ */
 export function definitionSpreads({ facts, period_end, accounting_scope = 'consolidated', segment = null, threshold = CONVENTIONS.definition_spread }) {
   const flags = [];
   const current = groupFacts(facts, { period_end, accounting_scope, segment });
-  for (const concept of conceptsIn(current)) {
-    const rows = current.filter((fact) => fact.concept === concept);
+  const quantities = [...new Set(current.map((fact) => measuredQuantity(fact.definition_id))
+    .filter(Boolean))].sort();
+  for (const quantity of quantities) {
+    const rows = current.filter((fact) => measuredQuantity(fact.definition_id) === quantity);
+    const concept = rows[0].concept;
     const units = new Set(rows.map((fact) => `${fact.currency ?? ''}|${fact.unit ?? ''}`));
     if (rows.length < 2 || units.size > 1) continue;
     const values = rows.map((fact) => Number(fact.value));

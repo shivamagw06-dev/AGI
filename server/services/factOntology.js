@@ -65,31 +65,51 @@ export const ENTITY_SCOPE = Object.freeze({
  * Services" is how Reliance says revenue, and that matters when a reader asks
  * where a number came from.
  */
+/**
+ * What a definition is a definition *of*.
+ *
+ * Two definitions under one concept are not always two attempts at one number.
+ * All three capital expenditure definitions compete to be "capital
+ * expenditure", and their disagreement says something about accruals and
+ * timing. Gross debt and net debt do not compete: the issuer names them as two
+ * quantities and the 200% between them is the cash balance, which is arithmetic
+ * rather than a finding.
+ *
+ * `measures` is the test - do these compete to be the same named quantity, or
+ * does the issuer present them as different ones. Anything comparing figures
+ * for disagreement has to compare within it, or it reports every filing that
+ * discloses both gross and net anything.
+ */
 export const DEFINITIONS = new Map([
-  ['CAPEX.MANAGEMENT', { concept: 'capex', measurement: MEASUREMENT.ACCRUAL, label: 'Capital expenditure as management reports it' }],
-  ['CAPEX.SEGMENT', { concept: 'capex', measurement: MEASUREMENT.SEGMENT_REPORTING, label: 'Capital expenditure from the segment note' }],
-  ['CAPEX.CASH_PPE_INTANGIBLES', { concept: 'capex', measurement: MEASUREMENT.CASH, label: 'Cash paid for PPE, spectrum and intangibles' }],
-  ['REVENUE.VALUE_OF_SALES_AND_SERVICES', { concept: 'revenue', measurement: MEASUREMENT.STATUTORY, label: 'Value of sales and services, gross' }],
-  ['REVENUE.OPERATIONS_NET', { concept: 'revenue', measurement: MEASUREMENT.STATUTORY, label: 'Revenue from operations, net of indirect taxes' }],
-  ['REVENUE.TOTAL_INCOME', { concept: 'revenue', measurement: MEASUREMENT.STATUTORY, label: 'Total income' }],
-  ['EBITDA.REPORTED', { concept: 'ebitda', measurement: MEASUREMENT.MANAGEMENT_ADJUSTED, label: 'EBITDA as management reports it' }],
-  ['EBITDA.BEFORE_EXCEPTIONAL', { concept: 'ebitda', measurement: MEASUREMENT.MANAGEMENT_ADJUSTED, label: 'EBITDA before exceptional items' }],
-  ['DEBT.GROSS', { concept: 'debt', measurement: MEASUREMENT.STATUTORY, label: 'Gross debt' }],
-  ['DEBT.NET', { concept: 'debt', measurement: MEASUREMENT.STATUTORY, label: 'Net debt, as the issuer defines it' }],
-  ['CFO.STATEMENT', { concept: 'cfo', measurement: MEASUREMENT.CASH, label: 'Net cash flow from operating activities' }],
-  ['FCF.CFO_MINUS_MANAGEMENT_CAPEX', { concept: 'fcf', measurement: MEASUREMENT.CASH, label: 'Operating cash flow less management capex' }],
-  ['FCF.CFO_MINUS_CASH_CAPEX', { concept: 'fcf', measurement: MEASUREMENT.CASH, label: 'Operating cash flow less cash capex' }],
+  ['CAPEX.MANAGEMENT', { concept: 'capex', measurement: MEASUREMENT.ACCRUAL, measures: 'capital_expenditure', label: 'Capital expenditure as management reports it' }],
+  ['CAPEX.SEGMENT', { concept: 'capex', measurement: MEASUREMENT.SEGMENT_REPORTING, measures: 'capital_expenditure', label: 'Capital expenditure from the segment note' }],
+  ['CAPEX.CASH_PPE_INTANGIBLES', { concept: 'capex', measurement: MEASUREMENT.CASH, measures: 'capital_expenditure', label: 'Cash paid for PPE, spectrum and intangibles' }],
+  ['REVENUE.VALUE_OF_SALES_AND_SERVICES', { concept: 'revenue', measurement: MEASUREMENT.STATUTORY, measures: 'gross_sales', label: 'Value of sales and services, gross' }],
+  ['REVENUE.OPERATIONS_NET', { concept: 'revenue', measurement: MEASUREMENT.STATUTORY, measures: 'net_sales', label: 'Revenue from operations, net of indirect taxes' }],
+  ['REVENUE.TOTAL_INCOME', { concept: 'revenue', measurement: MEASUREMENT.STATUTORY, measures: 'total_income', label: 'Total income' }],
+  ['EBITDA.REPORTED', { concept: 'ebitda', measurement: MEASUREMENT.MANAGEMENT_ADJUSTED, measures: 'ebitda', label: 'EBITDA as management reports it' }],
+  ['EBITDA.BEFORE_EXCEPTIONAL', { concept: 'ebitda', measurement: MEASUREMENT.MANAGEMENT_ADJUSTED, measures: 'ebitda_before_exceptional', label: 'EBITDA before exceptional items' }],
+  ['DEBT.GROSS', { concept: 'debt', measurement: MEASUREMENT.STATUTORY, measures: 'gross_debt', label: 'Gross debt' }],
+  ['DEBT.NET', { concept: 'debt', measurement: MEASUREMENT.STATUTORY, measures: 'net_debt', label: 'Net debt, as the issuer defines it' }],
+  ['CFO.STATEMENT', { concept: 'cfo', measurement: MEASUREMENT.CASH, measures: 'operating_cash_flow', label: 'Net cash flow from operating activities' }],
+  ['FCF.CFO_MINUS_MANAGEMENT_CAPEX', { concept: 'fcf', measurement: MEASUREMENT.CASH, measures: 'free_cash_flow', label: 'Operating cash flow less management capex' }],
+  ['FCF.CFO_MINUS_CASH_CAPEX', { concept: 'fcf', measurement: MEASUREMENT.CASH, measures: 'free_cash_flow', label: 'Operating cash flow less cash capex' }],
   // Ratios name their denominator, because that is the whole disagreement.
   // Reliance's Retail business states an 8.2% EBITDA margin and a footnote
   // saying it is calculated on Revenue from Operations - the same EBITDA over
   // Value of Sales and Services is a different number and an equally real one.
-  ['EBITDA_MARGIN.ON_REVENUE_OPERATIONS_NET', { concept: 'ebitda_margin', measurement: MEASUREMENT.DERIVED_RATIO, label: 'EBITDA over revenue from operations, net of indirect taxes' }],
-  ['EBITDA_MARGIN.ON_VALUE_OF_SALES_AND_SERVICES', { concept: 'ebitda_margin', measurement: MEASUREMENT.DERIVED_RATIO, label: 'EBITDA over value of sales and services, gross' }],
-  ['LEVERAGE.NET_DEBT_TO_EBITDA', { concept: 'leverage', measurement: MEASUREMENT.DERIVED_RATIO, label: 'Net debt over EBITDA' }],
-  ['LEVERAGE.GROSS_DEBT_TO_EBITDA', { concept: 'leverage', measurement: MEASUREMENT.DERIVED_RATIO, label: 'Gross debt over EBITDA' }],
-  ['FCF_MARGIN.CASH_CAPEX_ON_REVENUE_OPERATIONS_NET', { concept: 'fcf_margin', measurement: MEASUREMENT.DERIVED_RATIO, label: 'Free cash flow after cash capex, over revenue from operations' }],
-  ['FCF_MARGIN.MANAGEMENT_CAPEX_ON_REVENUE_OPERATIONS_NET', { concept: 'fcf_margin', measurement: MEASUREMENT.DERIVED_RATIO, label: 'Free cash flow after management capex, over revenue from operations' }],
+  ['EBITDA_MARGIN.ON_REVENUE_OPERATIONS_NET', { concept: 'ebitda_margin', measurement: MEASUREMENT.DERIVED_RATIO, measures: 'ebitda_margin', label: 'EBITDA over revenue from operations, net of indirect taxes' }],
+  ['EBITDA_MARGIN.ON_VALUE_OF_SALES_AND_SERVICES', { concept: 'ebitda_margin', measurement: MEASUREMENT.DERIVED_RATIO, measures: 'ebitda_margin', label: 'EBITDA over value of sales and services, gross' }],
+  ['LEVERAGE.NET_DEBT_TO_EBITDA', { concept: 'leverage', measurement: MEASUREMENT.DERIVED_RATIO, measures: 'net_debt_to_ebitda', label: 'Net debt over EBITDA' }],
+  ['LEVERAGE.GROSS_DEBT_TO_EBITDA', { concept: 'leverage', measurement: MEASUREMENT.DERIVED_RATIO, measures: 'gross_debt_to_ebitda', label: 'Gross debt over EBITDA' }],
+  ['FCF_MARGIN.CASH_CAPEX_ON_REVENUE_OPERATIONS_NET', { concept: 'fcf_margin', measurement: MEASUREMENT.DERIVED_RATIO, measures: 'free_cash_flow_margin', label: 'Free cash flow after cash capex, over revenue from operations' }],
+  ['FCF_MARGIN.MANAGEMENT_CAPEX_ON_REVENUE_OPERATIONS_NET', { concept: 'fcf_margin', measurement: MEASUREMENT.DERIVED_RATIO, measures: 'free_cash_flow_margin', label: 'Free cash flow after management capex, over revenue from operations' }],
 ]);
+
+/** What a definition claims to measure, or null if the definition is unknown. */
+export function measuredQuantity(definition_id) {
+  return DEFINITIONS.get(definition_id)?.measures ?? null;
+}
 
 /** How strongly a figure is supported. */
 export const VERDICT = Object.freeze({

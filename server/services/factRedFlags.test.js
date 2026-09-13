@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { calculate } from './factCalculation.js';
+import { DEFINITIONS, measuredQuantity } from './factOntology.js';
 import { checkRestatements } from './factVerification.js';
 import {
   CONVENTIONS, RULE_ORDER, WATCHED_PAIRS, definitionSpreads, droppedDisclosures,
@@ -81,17 +82,58 @@ test('a flag never reaches a conclusion about the company', () => {
 });
 
 test('the spread between definitions is reported against the smaller figure', () => {
-  const spreads = definitionSpreads({ facts: FACTS, period_end: NOW });
-  const capex = spreads.find((row) => row.observation.startsWith('capex'));
+  const [capex] = definitionSpreads({ facts: FACTS, period_end: NOW });
   assert.equal(capex.magnitude, 0.173737);
-  assert.match(capex.observation, /from 122916 to 144271/);
-  const revenue = spreads.find((row) => row.observation.startsWith('revenue'));
-  assert.equal(revenue.magnitude, 0.06453);
+  assert.match(capex.observation, /capex is disclosed from 122916 to 144271/);
+});
+
+test('definitions the issuer names as different quantities are not a spread', () => {
+  // Reliance's three revenues are gross of GST, net of GST, and inclusive of
+  // other income. They are three quantities that share the word revenue, and
+  // the gaps between them are the tax and the other income. Reporting that as
+  // a disagreement would fire on every filing that discloses more than one
+  // revenue line, which is all of them.
+  const revenues = definitionSpreads({ facts: FACTS, period_end: NOW })
+    .filter((row) => row.observation.startsWith('revenue'));
+  assert.deepEqual(revenues, []);
+});
+
+test('gross and net debt are not two readings of one number', () => {
+  // 3,74,421 against 1,24,717 is 200%, and the 200% is the cash balance.
+  const debt = [
+    fact({ concept: 'debt', definition_id: 'DEBT.GROSS', period_end: NOW, value: 374421,
+      source_sentence: 'Gross debt as on March 31, 2026 was  H   3,74,421 crore (US$ 39.5 billion) and Net debt stood at   H   1,24,717 crore (US$ 13.2 billion).' }),
+    fact({ concept: 'debt', definition_id: 'DEBT.NET', period_end: NOW, value: 124717,
+      source_sentence: 'Gross debt as on March 31, 2026 was  H   3,74,421 crore (US$ 39.5 billion) and Net debt stood at   H   1,24,717 crore (US$ 13.2 billion).' }),
+  ];
+  assert.deepEqual(definitionSpreads({ facts: debt, period_end: NOW }), []);
+});
+
+test('two definitions competing to be one figure are a spread, however far apart', () => {
+  // CONSTRUCTED: both free cash flows, which do compete - only one of them is
+  // what a reader means by free cash flow, and they are 44.6% apart.
+  const fcf = [
+    fact({ concept: 'fcf', definition_id: 'FCF.CFO_MINUS_CASH_CAPEX', period_end: NOW,
+      value: 69197, source_sentence: 'Free cash flow of 69,197 crore.' }),
+    fact({ concept: 'fcf', definition_id: 'FCF.CFO_MINUS_MANAGEMENT_CAPEX', period_end: NOW,
+      value: 47842, source_sentence: 'Free cash flow of 47,842 crore.' }),
+  ];
+  const [spread] = definitionSpreads({ facts: fcf, period_end: NOW });
+  assert.equal(spread.magnitude, 0.446365);
+});
+
+test('every definition says what it measures', () => {
+  // A definition added without it stops being compared to anything, silently.
+  for (const [id, definition] of DEFINITIONS) {
+    assert.equal(typeof definition.measures, 'string', `${id} declares no measured quantity`);
+    assert.equal(measuredQuantity(id), definition.measures);
+  }
+  assert.equal(measuredQuantity('NOT.A.DEFINITION'), null);
 });
 
 test('a threshold is a convention and can be moved', () => {
   assert.equal(definitionSpreads({ facts: FACTS, period_end: NOW, threshold: 0.2 }).length, 0);
-  assert.equal(definitionSpreads({ facts: FACTS, period_end: NOW, threshold: 0.01 }).length, 2);
+  assert.equal(definitionSpreads({ facts: FACTS, period_end: NOW, threshold: 0.01 }).length, 1);
   assert.equal(CONVENTIONS.definition_spread, 0.05);
 });
 
@@ -199,15 +241,14 @@ test('flags are ordered by a stated convention, never by a score', () => {
   // Magnitudes from different rules measure different things and are never
   // compared: the sign split leads on rule order, not because 0.22 beats 0.17.
   assert.equal(flags[0].rule, 'definition_sign_split');
-  const spreads = only(flags, 'definition_spread');
-  assert.ok(spreads[0].magnitude > spreads[1].magnitude);
+  assert.equal(only(flags, 'definition_spread').length, 1);
 });
 
 test('without a prior period, only the single-period rules run', () => {
   const flags = review({ facts: FACTS, period_end: NOW }).flags;
   assert.equal(only(flags, 'definition_sign_split').length, 0);
   assert.equal(only(flags, 'growth_gap').length, 0);
-  assert.equal(only(flags, 'definition_spread').length, 2);
+  assert.equal(only(flags, 'definition_spread').length, 1);
 });
 
 test('a clean filing raises nothing', () => {
@@ -262,10 +303,10 @@ test('a divergence from a base of zero is reported without a proportion', () => 
   // CONSTRUCTED: a concept disclosed as nil on one definition and not on
   // another. Dividing by zero would drop the flag; the divergence is real.
   const nil = [
-    fact({ concept: 'ebitda', definition_id: 'EBITDA.REPORTED', period_end: NOW, value: 0,
-      source_sentence: 'EBITDA of 0 crore.' }),
-    fact({ concept: 'ebitda', definition_id: 'EBITDA.BEFORE_EXCEPTIONAL', period_end: NOW, value: 5000,
-      source_sentence: 'EBITDA before exceptional items of 5,000 crore.' }),
+    fact({ concept: 'fcf', definition_id: 'FCF.CFO_MINUS_CASH_CAPEX', period_end: NOW, value: 0,
+      source_sentence: 'Free cash flow of nil.' }),
+    fact({ concept: 'fcf', definition_id: 'FCF.CFO_MINUS_MANAGEMENT_CAPEX', period_end: NOW, value: 5000,
+      source_sentence: 'Free cash flow of 5,000 crore.' }),
   ];
   const [found] = definitionSpreads({ facts: nil, period_end: NOW });
   assert.match(found.observation, /from 0 to 5000, which is not expressible as a proportion of 0/);
@@ -274,8 +315,8 @@ test('a divergence from a base of zero is reported without a proportion', () => 
 
 test('a withheld magnitude sorts last within its rule, not first', () => {
   const nil = [
-    fact({ concept: 'ebitda', definition_id: 'EBITDA.REPORTED', period_end: NOW, value: 0, source_sentence: '0' }),
-    fact({ concept: 'ebitda', definition_id: 'EBITDA.BEFORE_EXCEPTIONAL', period_end: NOW, value: 5000, source_sentence: '5,000' }),
+    fact({ concept: 'fcf', definition_id: 'FCF.CFO_MINUS_CASH_CAPEX', period_end: NOW, value: 0, source_sentence: '0' }),
+    fact({ concept: 'fcf', definition_id: 'FCF.CFO_MINUS_MANAGEMENT_CAPEX', period_end: NOW, value: 5000, source_sentence: '5,000' }),
   ];
   const ordered = rank([...definitionSpreads({ facts: [...FACTS, ...nil], period_end: NOW })]);
   assert.equal(ordered[ordered.length - 1].magnitude, null);
