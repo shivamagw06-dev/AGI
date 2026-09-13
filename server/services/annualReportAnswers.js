@@ -31,8 +31,11 @@ export const FINDS = new Map([
   // segment" - an accounting policy - because `reports?` carries no word
   // boundary and so fires on "reported", the same defect as `float` inside
   // "floating". Digits are excluded: "Note 37 - Segment Information" read a
-  // note reference as a count of segments.
-  [3, /\b(?:two|three|four|five|six|seven|eight|nine|ten)\b[^.]{0,45}\bsegments?\b|\bsegments?\b\s*(?::|\u2013|-|viz\.?)\s*[A-Z]/i],
+  // note reference as a count of segments. And the capital-letter test that
+  // followed a separator was meaningless under /i - [A-Z] matched the "w" in
+  // "Segment-wise", so the right answer came back for the wrong reason and
+  // any hyphenated "segment-" would have matched.
+  [3, /\b(?:two|three|four|five|six|seven|eight|nine|ten)\b[^.]{0,45}\bsegments?\b|\b(?:main|principal|business|operating|reportable) segments?\b[^.]{0,25}\b(?:are|comprise|include)\b|\bsegments?\s*:\s*\w|\bsegments?;?\s*viz\.?\s*\w/i],
   // Revenue concentration, not concentration of credit risk. The loose form
   // returned "accounted for approximately 80% of greenhouse gas emissions".
   [10, /\bno single (?:customer|client)\b|\b(?:revenue|sales|customer)\s+concentration\b|\bconcentration of (?:revenue|sales|customers)\b/i],
@@ -116,7 +119,7 @@ const CROSS_REFERENCE = /\bitem\s+\d+[a-z]?\.?\s*$/i;
  *
  * Question 99 is exempt, because the accounting policy is what it asks about.
  */
-const POLICY_PROSE = /\b(?:are|is) (?:defined as|expensed|measured at|recognised|recognized|classified|amortised|amortized|carried at|stated at)\b|\bInd AS\b|\bpursuant to para\b|\bthe amendments relate to\b|\bin accordance with (?:Ind AS|IFRS|the accounting)\b|\baccounting polic/i;
+const POLICY_PROSE = /\b(?:are|is) (?:defined as|expensed|measured at|recognised|recognized|reported|classified|amortised|amortized|carried at|stated at)\b|\bInd AS\b|\bpursuant to para\b|\bthe amendments relate to\b|\bin accordance with (?:Ind AS|IFRS|the accounting)\b|\baccounting polic/i;
 
 /** Questions whose subject is the accounting policy itself. */
 const ABOUT_POLICY = new Set([99]);
