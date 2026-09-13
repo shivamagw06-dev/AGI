@@ -883,3 +883,72 @@ describe('the metric vocabulary', () => {
     }
   });
 });
+
+describe('a figure that does not measure money', () => {
+  // Norges Bank's report published three of these as amounts, each carrying a
+  // metric name taken from elsewhere in the sentence, each auto-approved.
+  const EMISSIONS = [
+    ['benchmark index', 'The GPFG’s financed emissions for scopes 1 and 2 were 51 million tonnes of '
+      + 'CO2 equivalent in 2025, which is 4% lower than the corresponding figure for the benchmark index.'],
+    ['benchmark index', 'This is referred to as the equity portfolio’s carbon intensity, which was '
+      + '7% lower than that of the benchmark index in 2025, but 8% higher than in 2024.'],
+    ['revenue', 'For corporate bonds, the portfolio’s emissions intensity was 92 tonnes of CO2 '
+      + 'equivalent per million USD in revenue, which is 15% higher than the emissions intensity '
+      + 'of the benchmark index and 3% higher than in 2024.'],
+  ];
+
+  // From the same document and the same slot, all correct.
+  const AMOUNTS = [
+    'Measured over the entire period between 1998 and 2025, the realised tracking error has been 0.62 percentage point.',
+    'Management costs including performancebased fees to external managers corresponded to '
+      + '3.9 basis points of assets under management.',
+    'The return was 0.28 percentage point below the GPFG’s benchmark index.',
+    'The strategic benchmark index set by the Ministry of Finance is divided into two asset '
+      + 'classes, equities and bonds, with an allocation of 70 percent to equities and 30 percent to bonds.',
+  ];
+
+  test('an emissions figure is not an amount, whatever name sits beside it', () => {
+    for (const [wrongly, sentence] of EMISSIONS) {
+      const slots = slotsFor(sentence);
+      assert.equal(slots.includes('how_much'), false,
+        `published as an amount under "${wrongly}": ${sentence.slice(0, 60)}`);
+      assert.ok(slots.includes('what_happened'), 'the sentence was lost entirely');
+    }
+  });
+
+  test('the sentence is kept for a reader, not discarded', () => {
+    // It still says something true. What changes is that nobody publishes it
+    // as an amount under a metric it does not measure.
+    for (const [, sentence] of EMISSIONS) {
+      assert.ok(slotsFor(sentence).length > 0, sentence.slice(0, 60));
+    }
+  });
+
+  test('a real fund amount in the same document is untouched', () => {
+    for (const sentence of AMOUNTS) {
+      assert.ok(slotsFor(sentence).includes('how_much'), sentence.slice(0, 60));
+    }
+  });
+
+  test('proximity was measured and rejected before this rule was written', () => {
+    // The distance from metric to figure ran 11 to 45 characters for the three
+    // wrong labels and 4 to 109 for the sixteen correct ones in the same
+    // document: the ranges overlap completely, and the closest pairing of all
+    // is a correct one. This asserts the overlap so that anyone reaching for a
+    // proximity window later finds out here rather than in production.
+    const gap = (text, name) => {
+      const at = text.toLowerCase().indexOf(name);
+      let best = Infinity;
+      for (const figure of figuresIn(text)) {
+        const fAt = text.indexOf(figure.raw);
+        if (fAt < 0) continue;
+        best = Math.min(best, Math.max(fAt > at ? fAt - (at + name.length) : at - (fAt + figure.raw.length), 0));
+      }
+      return best;
+    };
+    const closestCorrect = gap(AMOUNTS[1], 'assets under management');
+    const closestWrong = gap(EMISSIONS[2][1], 'revenue');
+    assert.ok(closestCorrect < closestWrong,
+      `a proximity rule would drop a correct label (${closestCorrect}) before a wrong one (${closestWrong})`);
+  });
+});

@@ -744,6 +744,36 @@ export function figuresIn(sentence) {
 }
 
 /**
+ * A sentence measuring something that is not money.
+ *
+ * Norges Bank's report published three of these as amounts, each with a metric
+ * name taken from elsewhere in the sentence:
+ *
+ *   "financed emissions ... were 51 million tonnes of CO2 equivalent ... which
+ *    is 4% lower than the corresponding figure for the benchmark index"
+ *        -> labelled `benchmark index`
+ *   "the equity portfolio's carbon intensity, which was 7% lower than that of
+ *    the benchmark index"        -> labelled `benchmark index`
+ *   "the portfolio's emissions intensity was 92 tonnes of CO2 equivalent per
+ *    million USD in revenue"     -> labelled `revenue`
+ *
+ * In each, the figure measures emissions and the metric is a comparator or a
+ * denominator. They were auto-approved, because a named metric beside figures
+ * needs no reviewer.
+ *
+ * Proximity was tried first and measured: the distance from metric to figure
+ * ran 11 to 45 characters for these three and 4 to 109 for the sixteen correct
+ * labels in the same document. The ranges overlap completely - the closest
+ * pairing of all is a correct one - so distance cannot separate them and the
+ * subject has to.
+ *
+ * The sentence is still kept, as a what_happened claim awaiting a reader. What
+ * changes is that it is no longer published as an amount under a metric it
+ * does not measure.
+ */
+const NOT_MONEY = /\b(?:emissions?|carbon|CO2|greenhouse|tonnes?|megawatts?|gigawatts?|kilowatts?)\b/i;
+
+/**
  * The metric a sentence names, from the closed list, or null.
  *
  * Earliest mention wins, and the longest name at that position breaks a tie.
@@ -845,9 +875,12 @@ export function slotsFor(sentence) {
     slots.push(slot);
   }
   // A figure with a named metric is an amount; a figure without one still
-  // reports an event.
+  // reports an event. A figure measuring something that is not money is
+  // neither, however familiar the words around it: the metric is claimed by a
+  // name appearing elsewhere in the sentence, and an amount is published with
+  // no reviewer.
   if (figures.length) {
-    slots.push(metricIn(text) ? 'how_much' : 'what_happened');
+    slots.push(metricIn(text) && !NOT_MONEY.test(text) ? 'how_much' : 'what_happened');
   }
   return slots.filter((slot) => {
     if (!NEEDS_QUANTITY.has(slot)) return true;
