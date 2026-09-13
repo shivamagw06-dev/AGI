@@ -45,6 +45,7 @@ export default function AnnualReportIntelligence() {
   const [result, setResult] = useState(null);
   const [judging, setJudging] = useState(false);
   const [judgements, setJudgements] = useState(null);
+  const [auto, setAuto] = useState(false);
 
   const read = async () => {
     setBusy(true);
@@ -63,7 +64,7 @@ export default function AnnualReportIntelligence() {
     setJudging(true);
     setError('');
     try {
-      setJudgements(await judgeAnnualReport({ text, ticker }));
+      setJudgements(await judgeAnnualReport({ text, ticker, auto }));
     } catch (err) {
       setError(err.message);
     } finally {
@@ -158,11 +159,24 @@ export default function AnnualReportIntelligence() {
               className="inline-flex items-center gap-2 rounded-lg border border-cyan-400/30 bg-cyan-400/10 px-3 py-1.5 text-xs font-semibold text-cyan-200 hover:border-cyan-400/60 disabled:opacity-40"
             >
               {judging ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : null}
-              {judgements ? 'Run the nine again' : 'Answer the nine judgement questions'}
+              {judgements ? 'Run again' : auto ? 'Try every unanswered question' : 'Answer the nine judgement questions'}
             </button>
-            <span className="text-[10.5px] leading-4 text-slate-500">
-              Nine model requests, reasoning only over the answers above. Every figure in a
-              conclusion is checked against them; nothing is published without a reviewer.
+            <label className="inline-flex items-center gap-1.5 text-[11px] text-slate-300">
+              <input
+                type="checkbox"
+                checked={auto}
+                onChange={(event) => setAuto(event.target.checked)}
+                className="h-3.5 w-3.5 accent-cyan-400"
+              />
+              Try every unanswered question
+            </label>
+            <span className="max-w-xl text-[10.5px] leading-4 text-slate-500">
+              {auto
+                ? 'One model request per unanswered question, reasoning only over sentences '
+                  + 'retrieved from this report. A question the report is silent on comes back '
+                  + 'refused — that is the correct answer, not a failure to reach a hundred.'
+                : 'Nine model requests, reasoning only over the answers above. Every figure in a '
+                  + 'conclusion is checked against them; nothing is published without a reviewer.'}
             </span>
           </div>
 

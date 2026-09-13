@@ -29,10 +29,12 @@ import { createSupabaseAdmin } from '../lib/supabaseAdmin.js';
 import {
   managerCheck, readPublication, storePublication, managerPublications, publicationMatch,
 } from '../services/publicationImportService.js';
-import { coverage, coverageSummary } from '../services/annualReportAnswers.js';
+import { coverage, coverageSummary, answerable, FINDS } from '../services/annualReportAnswers.js';
 import { QUESTIONS } from '../services/annualReportQuestions.js';
 import { computedAnswers, periodsRead } from '../services/annualReportComputed.js';
-import { assembleEvidence, judge, FROM_ALL } from '../services/judgmentTier.js';
+import { assembleEvidence, evidenceFor, judge, FROM_ALL } from '../services/judgmentTier.js';
+import { evidenceSentencesFor } from '../services/questionRetrieval.js';
+import { sentences } from '../services/publicationIntelligence.js';
 import { completeJson, llmProviderStatus } from '../services/llmClient.js';
 import {
   clearScreenerCache, evaluateFundPerformance, getAccumulationHeatMap,
@@ -406,12 +408,38 @@ export default function createInstitutionalHoldingsRouter() {
 
       // Ninety-nine before a hundred. Question 100 reasons over the answers to
       // the others, so it is asked last and its evidence includes them.
-      const order = QUESTIONS.filter((question) => question.kind === 'judgment')
+      //
+      // `auto` widens this from the nine judgement questions to every question
+      // still unanswered - the ones no pattern reaches and the ones whose line
+      // items are not loaded. It cannot make a document say what it does not
+      // say: a question the report is silent on comes back refused, which is
+      // the correct answer and not a failure to reach a hundred.
+      const unanswered = (question) => {
+        if (question.kind === 'judgment') return true;
+        if (question.kind === 'computed') {
+          const found = computed.get(question.n);
+          return !found || found.reason !== null;
+        }
+        const row = stated.find((entry) => entry.n === question.n);
+        return !row || row.status !== 'answered';
+      };
+      const order = QUESTIONS.filter((question) => (body.auto ? unanswered(question)
+        : question.kind === 'judgment'))
         .sort((a, b) => (a.n === FROM_ALL ? 1 : 0) - (b.n === FROM_ALL ? 1 : 0));
+
+      // Sentences are read once and reused, rather than per question.
+      const pool = body.auto ? sentences(text).filter((entry) => answerable(entry.text)) : [];
 
       const judgements = [];
       for (const question of order) {
-        const evidence = assembleEvidence(question.n, { stated, computed });
+        // A judgement question reasons over answers. Any other question in
+        // auto mode has no answers to reason over, so it is given the
+        // sentences its subject retrieves - and the tier still checks every
+        // figure and may refuse.
+        const evidence = question.kind === 'judgment'
+          ? assembleEvidence(question.n, { stated, computed })
+          : evidenceFor({ claims: evidenceSentencesFor(question, pool, { finds: FINDS })
+            .map((entry) => ({ slot: `Q${question.n}`, source_excerpt: entry.text })) });
         const result = await judge({
           question,
           evidence,
