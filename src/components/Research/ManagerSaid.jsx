@@ -28,7 +28,12 @@
  */
 export default function ManagerSaid({ said }) {
   if (!said) return null;
-  const [document] = said.publications || [];
+  const documents = said.publications || [];
+  const [document] = documents;
+  // With one document the heading names it and repeating it on every sentence
+  // is noise. With several, the heading cannot name them and a sentence with
+  // no label is a sentence attributed to whichever is newest.
+  const many = documents.length > 1;
   const holdings = (said.by_holding || []).filter((entry) => entry.commentary > 0);
 
   return (
@@ -37,7 +42,11 @@ export default function ManagerSaid({ said }) {
         <div className="text-[10px] font-extrabold uppercase tracking-[.16em] text-[#6f6f6f]">
           In its own words
         </div>
-        {document ? (
+        {many ? (
+          <span className="shrink-0 text-[11px] text-[#8a8a8a]" title={documents.map((entry) => entry.title).join(' · ')}>
+            {documents.length} documents
+          </span>
+        ) : document ? (
           <span className="shrink-0 text-[11px] text-[#8a8a8a]" title={document.title}>
             {document.source_url ? (
               <a href={document.source_url} target="_blank" rel="noreferrer" className="underline decoration-[#d5d5d5] underline-offset-2 hover:text-[#ff8000]">{document.title}</a>
@@ -60,6 +69,14 @@ export default function ManagerSaid({ said }) {
               <p className="mt-0.5 text-[12px] leading-[1.55] text-[#333333]">
                 {group.claims[0].source_excerpt}
               </p>
+              {/* Which document this sentence is from. Shown only when the
+                  manager has more than one, because that is when an unlabelled
+                  sentence is a wrong attribution rather than a redundant one. */}
+              {many && group.claims[0].document ? (
+                <p className="mt-0.5 text-[10.5px] text-[#8a8a8a]">
+                  {group.claims[0].document.title}
+                </p>
+              ) : null}
             </li>
           ))}
         </ul>

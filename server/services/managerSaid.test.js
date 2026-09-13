@@ -211,3 +211,65 @@ describe('the same sentence stored twice is shown once', () => {
     assert.equal(built.by_step.flatMap((group) => group.claims || []).length, 2);
   });
 });
+
+describe('a manager with more than one document', () => {
+  // Berkshire's 2026 second-quarter report was pasted alongside the 2025
+  // annual report. Both are Berkshire's own words and both belong on the card
+  // - but the heading named only the newest, the claims were merged, and the
+  // sentence shown under each question came out in whatever order the rows
+  // arrived. A 2025 sentence read as this quarter's.
+  const ANNUAL = { id: 'annual', title: '2025 Annual Report', as_of_date: '2025-12-31',
+    source_url: null, pasted_at: '2026-09-13T05:47:28Z', manager_id: 'm1' };
+  const QUARTER = { id: 'quarter', title: '2026 Q2', as_of_date: '2026-06-30',
+    source_url: null, pasted_at: '2026-09-13T11:00:00Z', manager_id: 'm1' };
+
+  const claim = (publication_id, source_excerpt) => ({
+    kind: 'chain_claim', status: 'approved', slot: 'what_changed', basis: 'stated',
+    publication_id, source_excerpt,
+  });
+
+  // Deliberately listed with the older document's claim first, which is the
+  // order that produced the wrong sentence on the live page.
+  const built = () => buildSaid({
+    publications: [ANNUAL, QUARTER],
+    facts: [
+      claim('annual', 'Underwriting expenses increased $429 million (7.4%) in 2024.'),
+      claim('quarter', 'Premiums written rose $1.2 billion in the second quarter of 2026.'),
+    ],
+    holdingNames: [], managerName: 'Berkshire Hathaway Inc',
+  });
+
+  test('the newest document’s sentence is the one shown', () => {
+    const [group] = built().by_step;
+    assert.equal(group.claims[0].source_excerpt,
+      'Premiums written rose $1.2 billion in the second quarter of 2026.');
+  });
+
+  test('every claim names the document it came from', () => {
+    const rows = built().by_step.flatMap((group) => group.claims);
+    assert.deepEqual(rows.map((row) => row.document.title), ['2026 Q2', '2025 Annual Report']);
+  });
+
+  test('the older document is kept, not replaced', () => {
+    // A newer report does not make last year's words untrue, and the chain is
+    // the manager's own writing across everything it has published.
+    const rows = built().by_step.flatMap((group) => group.claims);
+    assert.equal(rows.length, 2);
+    assert.equal(built().approved_count, 2);
+  });
+
+  test('a document carries what identifies it and not its digest', () => {
+    const [group] = built().by_step;
+    assert.deepEqual(Object.keys(group.claims[0].document).sort(),
+      ['as_of_date', 'id', 'source_url', 'title']);
+  });
+
+  test('one document still labels each claim, for a caller that wants it', () => {
+    const one = buildSaid({
+      publications: [ANNUAL],
+      facts: [claim('annual', 'Underwriting expenses increased $429 million (7.4%) in 2024.')],
+      holdingNames: [], managerName: 'Berkshire Hathaway Inc',
+    });
+    assert.equal(one.by_step[0].claims[0].document.title, '2025 Annual Report');
+  });
+});
