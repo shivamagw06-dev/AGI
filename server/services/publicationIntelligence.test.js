@@ -993,3 +993,55 @@ describe('a theme belongs to the business that has it', () => {
       + 'exports and petroleum fuel shipments.'), ['freight_volumes']);
   });
 });
+
+describe('allocation is not causation', () => {
+  // Both filed as causes. Neither explains anything: they say which part of
+  // the business, or which country, a figure belongs to.
+  test('a figure allocated to a segment is not a cause', () => {
+    const slots = slotsFor('Depreciation and amortization expense attributable to our '
+      + 'Compute & Networking segment was $642 million and $383 million for the second quarter.');
+    assert.equal(slots.includes('why'), false);
+    // It is still an event, so the sentence is not lost.
+    assert.ok(slots.includes('what_happened'));
+  });
+
+  test('a figure allocated to a country is not a cause', () => {
+    assert.equal(slotsFor('Sales, service and leasing revenues attributable to the United '
+      + 'States were 87% in 2025, 86% in 2024 and 87% in 2023.').includes('why'), false);
+  });
+
+  test('a cause that mentions regions is still a cause', () => {
+    // The first version of this rule dropped it for the word "regions". A
+    // change word before the place is what separates the two.
+    assert.ok(slotsFor('IMC’srevenues were approximately $3.9 billion in 2024, a decrease of '
+      + '2.2% compared to 2023, attributable to lower organic sales across all major regions '
+      + 'and unfavorable foreign currency translation.').includes('why'));
+  });
+
+  test('a cause that names the businesses responsible is still a cause', () => {
+    assert.ok(slotsFor('Service group pre-tax earnings declined 23.0% in 2024 compared to 2023, '
+      + 'primarily attributable to TTI, aviation services and XTRA.').includes('why'));
+  });
+});
+
+describe('a table’s footnote marker', () => {
+  test('a marker followed by a sentence is stripped', () => {
+    assert.match(stripSentenceDebris('(2) Included $13.0 billion and $7.5 billion related to '
+      + 'customer advances for the first half of fiscal years 2027 and 2026, respectively.'),
+    /^Included \$13\.0 billion/);
+  });
+
+  test('a note heading welded on is left alone', () => {
+    // "(2)Significant business acquisitions On January 31, 2023, we acquired..."
+    // has no space, and the heading that follows is not a prefix a strip can
+    // find the end of. Refused at review instead.
+    assert.match(stripSentenceDebris('(2)Significant business acquisitions On January 31, 2023, '
+      + 'we acquired a 41.4% interest in Pilot.'), /^\(2\)Significant/);
+  });
+
+  test('a sentence that opens with a figure in brackets is not a marker', () => {
+    // "(1,234) Revenue fell" would be an accounting negative, not a footnote.
+    assert.match(stripSentenceDebris('(1,234) Revenue fell in the period under review.'),
+      /^\(1,234\)/);
+  });
+});
