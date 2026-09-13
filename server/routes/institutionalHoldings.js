@@ -31,6 +31,7 @@ import {
 } from '../services/publicationImportService.js';
 import { coverageSummary } from '../services/annualReportAnswers.js';
 import { QUESTIONS } from '../services/annualReportQuestions.js';
+import { computedAnswers, periodsRead } from '../services/annualReportComputed.js';
 import {
   clearScreenerCache, evaluateFundPerformance, getAccumulationHeatMap,
   getCombinedHoldings, screenStocks,
@@ -327,6 +328,49 @@ export default function createInstitutionalHoldingsRouter() {
         prune: Boolean(body.prune),
       });
       return res.json({ applied: true, manager: manager.display_name, ...stored });
+    } catch (error) { return sendError(res, error, 400); }
+  });
+
+  // An annual report read against the hundred underwriting questions.
+  //
+  // Deliberately not tied to a manager. The publication pipeline answers "what
+  // did this fund say" and is keyed on institutional_managers, which is fifty
+  // 13F filers; these questions are about what an operating company is worth,
+  // and any company has an annual report. Nothing is stored - a reader pastes
+  // a report and reads the answers.
+  router.post('/admin/annual-report', requireAdmin, async (req, res) => {
+    try {
+      const body = req.body || {};
+      const text = String(body.text || '');
+      if (!text.trim()) return sendError(res, new Error('nothing was pasted'), 400);
+      const ticker = String(body.ticker || '').trim().toUpperCase();
+
+      // What the document itself states, with the sentence that says it.
+      const stated = coverageSummary(text, { questions: QUESTIONS });
+
+      // What the filed statements compute, when a company is named and its
+      // statements have been imported. Without a ticker the computed half
+      // stays as it is: fifty-one questions naming the line items they need.
+      let computed = { periods: null, answers: {}, ticker: ticker || null, reason: null };
+      if (ticker) {
+        const client = createSupabaseAdmin();
+        const periods = await paged(
+          () => client.from('company_financials').select('*')
+            .eq('ticker', ticker).order('period_end', { ascending: false }),
+          { label: 'company-financials' },
+        );
+        const read = periodsRead(periods);
+        computed = read
+          ? {
+            ticker,
+            periods: read,
+            answers: Object.fromEntries(computedAnswers(periods)),
+            reason: null,
+          }
+          : { ticker, periods: null, answers: {}, reason: `no annual statements stored for ${ticker}` };
+      }
+
+      return res.json({ characters: text.length, ...stated, computed });
     } catch (error) { return sendError(res, error, 400); }
   });
 
