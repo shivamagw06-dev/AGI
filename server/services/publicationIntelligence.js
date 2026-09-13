@@ -655,6 +655,25 @@ const HEADING_SPAN = 25;
  * carries a byte offset into the original, because the paste is not stored and
  * an offset into it would point at nothing.
  */
+/**
+ * Where one sentence ends and the next begins.
+ *
+ * A full stop after certain abbreviations is not a sentence ending, and
+ * splitting there throws away the half that answers the question. Reliance's
+ * report says "The Group has four principal operating and reporting segments;
+ * viz. Oil To Chemicals (O2C), Oil and Gas, Retail and Digital Services" - and
+ * the segments, which are the answer, were being discarded.
+ *
+ * The list is deliberately short. `Inc.`, `Ltd.` and `etc.` genuinely do end
+ * sentences, and refusing to split after them welds two sentences together,
+ * which is the same defect in the other direction and harder to notice. Only
+ * abbreviations that are almost never sentence-final are here.
+ */
+const NEVER_ENDS_A_SENTENCE = 'viz|e\\.g|i\\.e|vs|approx|cf|Mr|Mrs|Ms|Dr|Prof|St|No|Nos|Fig|Vol|Ch';
+const SENTENCE_BREAK = new RegExp(
+  `(?<!\\b(?:${NEVER_ENDS_A_SENTENCE})\\.)(?<=[.!?])\\s+(?=[A-Z$“"(])`,
+);
+
 export function sentences(text) {
   const out = [];
   const furniture = runningHeaders(text);
@@ -670,7 +689,7 @@ export function sentences(text) {
     const joined = stripSentenceDebris(buffer.join(' ').replace(/\s+/g, ' ').trim());
     buffer = [];
     if (!joined) return;
-    for (const raw of joined.split(/(?<=[.!?])\s+(?=[A-Z$“"(])/)) {
+    for (const raw of joined.split(SENTENCE_BREAK)) {
       const sentence = raw.trim();
       if (sentence.length < 20) continue;
       // A very long "sentence" is a table that lost its line breaks, not

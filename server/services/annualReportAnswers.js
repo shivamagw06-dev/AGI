@@ -36,11 +36,15 @@ export const FINDS = new Map([
   [10, /\bno single (?:customer|client)\b|\b(?:revenue|sales|customer)\s+concentration\b|\bconcentration of (?:revenue|sales|customers)\b/i],
   [20, /\bseasonal/i],
   [35, /\brestructuring\b/i],
-  [37, /\bimpairment\b/i],
+  // An impairment that happened, not an accounting policy that mentions the
+  // word. The bare form answered with "Property, Plant and Equipment are
+  // stated at cost ... less accumulated depreciation and impairment losses,
+  // if any", which is how every filing describes the policy.
+  [37, /\b(?:recognised|recognized|recorded|booked)\b[^.]{0,40}\bimpairment\b|\bimpairment (?:loss(?:es)?|charge(?:s)?)\b[^.]{0,25}\b(?:of|totall?ing)\s*[\u20b9$H]?\s?[\d,]/i],
   [54, /\bcapital expenditures?\b/i],
   // Capacity being added, never a bare mention: "combining domestic compute
   // capacity with localised, multilingual, voice-first platforms" is prose.
-  [55, /^(?![^]*\bglobal\b)[^]*(?:\bcapacity (?:expansion|addition|augmentation)\b|\bexpand(?:ed|ing)? (?:its |our )?capacity\b|\bnew capacity\b|\badditional capacity\b|\bcapacity (?:of|to) \d)/i],
+  [55, /\b(?:we|our|its|the Company|the Group)\b[^.]{0,70}\b(?:capacity (?:expansion|addition|augmentation)|expand(?:ed|ing)? (?:its |our )?capacity|new capacity|additional capacity|capacity (?:of|to) \d)/i],
   // This company's utilisation. A bare mention returned an industry figure:
   // "refinery capacity rationalisation of around 1.2 mb/d, majorly in Europe".
   [57, /\b(?:our|its|the (?:company|plant|refinery|group)['’]?s?)\s+[^.]{0,30}utili[sz]ation\b|\butili[sz]ation (?:rate|level|was|of \d)/i],

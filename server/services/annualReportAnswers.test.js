@@ -220,3 +220,45 @@ describe('a filing that is not a 10-K', () => {
     assert.match(found.get(66)[0].text, /weighted average interest rate/);
   });
 });
+
+describe('an abbreviation is not the end of a sentence', () => {
+  test('the segments named after "viz." survive', () => {
+    // Reliance's report answers question 3 in full and the splitter threw the
+    // answer away: "four principal operating and reporting segments; viz." was
+    // all that reached the page.
+    const text = 'Segment Information The Group has four principal operating and reporting '
+      + 'segments; viz. Oil To Chemicals (O2C), Oil and Gas, Retail and Digital Services. '
+      + 'The accounting policies adopted for segment reporting are in line with the policy of the Company.';
+    assert.match(answersFor(text).get(3)[0].text, /Oil To Chemicals \(O2C\), Oil and Gas, Retail and Digital Services/);
+  });
+
+  test('a company suffix still ends one', () => {
+    // The list is short on purpose. Refusing to split after "Inc." welds two
+    // sentences together, which is the same defect facing the other way.
+    const text = 'We acquired Pilot Travel Centers LLC and Alleghany Inc. The transaction '
+      + 'closed in January and added materially to the insurance segment.';
+    const claims = answersFor(text);
+    assert.equal([...claims.values()].flat().some((m) => /Inc\. The transaction/.test(m.text)), false);
+  });
+});
+
+describe('a policy that mentions a thing is not the thing', () => {
+  test('an accounting policy is not an impairment', () => {
+    // Every filing describes this policy, so the bare word answered question
+    // 37 for every company that has ever published a balance sheet.
+    const policy = 'Property, Plant and Equipment are stated at cost, net of recoverable taxes, '
+      + 'trade discount and rebates less accumulated depreciation and impairment losses, if any.';
+    assert.deepEqual(answersFor(policy).get(37), []);
+  });
+
+  test('an impairment that was recorded is', () => {
+    const real = 'We recorded other-than-temporary impairment losses in 2025 on our investments '
+      + 'in The Kraft Heinz Company.';
+    assert.match(answersFor(real).get(37)[0].text, /recorded other-than-temporary impairment/);
+  });
+
+  test('another company’s capacity is not this company’s', () => {
+    const china = 'PTA-PX delta decreased by 9.8% due to significant capacity expansion of PTA in China.';
+    assert.deepEqual(answersFor(china).get(55), []);
+  });
+});
