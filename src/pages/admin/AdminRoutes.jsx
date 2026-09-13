@@ -73,6 +73,7 @@ const InsiderTradesPaste = lazy(() => import('@/pages/admin/InsiderTradesPaste')
 const IpoIntelligenceImport = lazy(() => import('@/pages/admin/IpoIntelligenceImport'));
 const InstitutionalHoldingsAdmin = lazy(() => import('@/pages/admin/InstitutionalHoldingsAdmin'));
 const PublicationReview = lazy(() => import('@/pages/admin/PublicationReview'));
+const AnnualReportIntelligence = lazy(() => import('@/pages/admin/AnnualReportIntelligence'));
 const HistoricalValuation = lazy(() => import('@/pages/admin/HistoricalValuation'));
 const HvieRuntime = lazy(() => import('@/pages/admin/HvieRuntime'));
 const FinancialWarehouse = lazy(() => import('@/pages/admin/FinancialWarehouse'));
@@ -150,6 +151,7 @@ export default function AdminRoutes() {
             <Route path="company-financials" element={<CompanyFinancials />} />
             <Route path="institutional-holdings" element={<InstitutionalHoldingsAdmin />} />
             <Route path="publication-review" element={<PublicationReview />} />
+            <Route path="annual-report" element={<AnnualReportIntelligence />} />
             <Route path="articles" element={<AdminDashboard />} />
             <Route path="articles/new" element={<ArticleEditor />} />
             <Route path="articles/edit/:slug" element={<ArticleEditor />} />

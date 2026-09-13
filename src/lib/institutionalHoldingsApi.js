@@ -65,5 +65,9 @@ export const reviewPublicationClaims = (ids, status) =>
 // a reviewer can see what a document yields before committing 650 rows.
 export const uploadPublication = (body) =>
   request('/admin/publications', { method: 'POST', body, admin: true, timeoutMs: 300_000 });
+// An annual report read against the hundred underwriting questions. Not tied
+// to a manager: those are fifty 13F filers, and any company has a report.
+export const readAnnualReport = (body) =>
+  request('/admin/annual-report', { method: 'POST', body, admin: true, timeoutMs: 300_000 });
 export const refreshInstitutionalResearchLayer = (body = {}) => request('/admin/research-layer/refresh', { method: 'POST', body, admin: true, timeoutMs: 900_000 });
 export const reviewInstitutionalBrief = (id, body) => request(`/admin/research-layer/briefs/${encodeURIComponent(id)}`, { method: 'PATCH', body, admin: true });
