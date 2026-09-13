@@ -183,3 +183,75 @@ export async function judge({ question, evidence, complete }) {
     },
   };
 }
+
+/**
+ * What each judgement is allowed to reason from, by question number.
+ *
+ * Declared rather than inferred, because "what counts as relevant" is the
+ * decision that decides whether a conclusion is grounded, and it should be
+ * readable and arguable rather than buried in a prompt.
+ *
+ * Each entry lists the questions whose answers become the evidence. A
+ * judgement therefore reasons over answers this pipeline produced and
+ * verified - sentences with their source, figures with their formula - and
+ * never over the document.
+ *
+ * Question 100 depends on every question that was answered. That is the whole
+ * ordering: it is a function of the other ninety-nine, so it is asked last and
+ * from their answers. Asking it first is guessing in a confident voice.
+ */
+export const DEPENDS_ON = new Map([
+  // Normalising earnings needs the charges management called exceptional.
+  // Question 33 asks which of them recur and is the same reasoning, so 32
+  // reads the same charges rather than 33's answer: a judgement built on a
+  // judgement compounds an inference nobody has reviewed yet.
+  [32, [31, 35, 36, 37, 38, 39]],
+  [33, [35, 36, 37, 38]],
+  // Whether adjusted figures flatter: the gap, and what was excluded.
+  [40, [31, 34, 39]],
+  // Underinvestment: what is spent, against what wears out, against the cash
+  // it appears to release.
+  [60, [42, 51, 52, 53, 54, 59, 72]],
+  // What acquisitions cost, and what the segments did afterwards.
+  [78, [13, 36, 73]],
+  // A claimed advantage weighed against the numbers elsewhere.
+  [90, [85, 88, 89, 23, 24, 25]],
+  // Both need last year's document, and say so when it is absent.
+  [92, [91]],
+  [93, [91, 11, 23, 42]],
+]);
+
+/** The question whose evidence is everything else that was answered. */
+export const FROM_ALL = 100;
+
+/**
+ * The evidence for one judgement, drawn from answers already produced.
+ *
+ * `stated` are coverage rows carrying their matched sentences; `computed` is a
+ * Map of question number to a figure with its formula. Neither is the
+ * document.
+ */
+export function assembleEvidence(n, { stated = [], computed = new Map() } = {}) {
+  const wanted = n === FROM_ALL
+    ? [...new Set([...stated.map((row) => row.n), ...computed.keys()])]
+    : (DEPENDS_ON.get(n) || []);
+  const from = new Set(wanted);
+  const claims = [];
+  const figures = [];
+  for (const row of stated) {
+    if (!from.has(row.n) || row.status !== 'answered') continue;
+    for (const match of row.matches || []) {
+      claims.push({ slot: `Q${row.n}`, source_excerpt: match.text });
+    }
+  }
+  for (const [question, result] of computed) {
+    if (!from.has(question) || !result || result.reason !== null) continue;
+    figures.push({
+      label: `Q${question} ${result.formula}`,
+      value: result.value,
+      formula: result.formula,
+      inputs: result.inputs,
+    });
+  }
+  return evidenceFor({ claims, figures });
+}

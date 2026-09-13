@@ -69,5 +69,10 @@ export const uploadPublication = (body) =>
 // to a manager: those are fifty 13F filers, and any company has a report.
 export const readAnnualReport = (body) =>
   request('/admin/annual-report', { method: 'POST', body, admin: true, timeoutMs: 300_000 });
+// The nine judgement questions. Separate from reading the report because it
+// costs nine model requests, and the other ninety-one answers are worth having
+// in front of a reader before any are spent.
+export const judgeAnnualReport = (body) =>
+  request('/admin/annual-report/judgements', { method: 'POST', body, admin: true, timeoutMs: 900_000 });
 export const refreshInstitutionalResearchLayer = (body = {}) => request('/admin/research-layer/refresh', { method: 'POST', body, admin: true, timeoutMs: 900_000 });
 export const reviewInstitutionalBrief = (id, body) => request(`/admin/research-layer/briefs/${encodeURIComponent(id)}`, { method: 'PATCH', body, admin: true });
