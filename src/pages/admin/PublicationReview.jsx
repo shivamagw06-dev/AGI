@@ -195,6 +195,54 @@ function Row({ claim, checked, onToggle }) {
  * Committing 650 rows to a review queue sight-unseen is how the queue becomes
  * something nobody works.
  */
+/**
+ * Whether the pasted document is one the manager already has.
+ *
+ * The middle case is why this exists. Berkshire's annual report was pasted a
+ * second time, differed somewhere in its characters, and became a second
+ * publication of 758 rows holding none of the 199 decisions made against the
+ * first - while the dry run reported a perfectly ordinary extraction, because
+ * it only ever said what a document yields.
+ */
+function PublicationMatch({ match, title }) {
+  if (!match) return null;
+  const when = (publication) => (publication.pasted_at
+    ? new Date(publication.pasted_at).toLocaleDateString(undefined,
+      { day: 'numeric', month: 'short', year: 'numeric' })
+    : 'an earlier date');
+  const held = (publication) => `${publication.rows} row${publication.rows === 1 ? '' : 's'}`
+    + `, ${publication.decisions} reviewed by a person`;
+
+  if (match.kind === 'same_text') {
+    return (
+      <div className="mt-2 rounded-lg border border-cyan-400/20 bg-cyan-400/5 px-2.5 py-2 text-[10.5px] leading-5 text-cyan-100/90">
+        Already stored, pasted {when(match.publication)} — {held(match.publication)}.
+        Store updates it in place and keeps every decision already made.
+      </div>
+    );
+  }
+  if (match.kind === 'same_title') {
+    return (
+      <div className="mt-2 rounded-lg border border-amber-400/30 bg-amber-500/10 px-2.5 py-2 text-[10.5px] leading-5 text-amber-200">
+        <span className="font-semibold">This text does not match anything stored.</span>{' '}
+        A publication titled “{match.publication.title}” already exists, pasted{' '}
+        {when(match.publication)} — {held(match.publication)}. Storing creates a
+        <span className="font-semibold"> second </span>
+        publication, and those decisions stay with the first.
+        <div className="mt-1 text-amber-200/70">
+          If you meant to update it, the text differs somewhere — re-copy it from
+          the same source rather than storing this.
+        </div>
+      </div>
+    );
+  }
+  return (
+    <div className="mt-2 text-[10.5px] leading-5 text-slate-400">
+      New publication{title.trim() ? ` — nothing titled “${title.trim()}” is stored yet` : ''}.
+    </div>
+  );
+}
+
 function UploadPanel({ managers, onStored }) {
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState({ manager_slug: '', title: '', as_of_date: '', source_url: '' });
@@ -344,6 +392,12 @@ function UploadPanel({ managers, onStored }) {
               </span>
             ))}
           </div>
+          {/* Whether this document is already stored. Storing is keyed on a
+              hash of the text, so a paste differing by one character is a
+              second publication - and every decision made against the first
+              stays with the first. Saying so before Store is the only place
+              that is cheap to notice. */}
+          <PublicationMatch match={preview.match} title={draft.title} />
           {/* Nothing is stored yet. The counts above are what Store would put
               into the queue. */}
           <div className="mt-2 text-[10.5px] text-slate-500">Nothing has been written yet.</div>
