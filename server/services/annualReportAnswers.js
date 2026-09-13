@@ -26,7 +26,11 @@ import { sentences } from './publicationIntelligence.js';
  * cut down by reading what it caught, the same way the chain's cues were.
  */
 export const FINDS = new Map([
-  [3, /\b(?:business|reportable|operating) segments?\b/i],
+  // A sentence that defines the segments, not one that mentions the word.
+  // "pricing in most commercial insurance segments was firm" matched the bare
+  // form and was the first thing a reader would have seen under "what are the
+  // major business segments".
+  [3, /\b(?:operates?|reports?|manages?|comprises?)[^.]{0,45}\bsegments?\b|\b(?:business|reportable|operating) segments?\b[^.]{0,25}(?:are|include|consist|comprise)/i],
   [10, /\bno single (?:customer|client)\b|\bconcentration of\b|\baccounted for approximately \d/i],
   [20, /\bseasonal/i],
   [35, /\brestructuring\b/i],
@@ -120,4 +124,37 @@ export function coverage(text, { questions, perQuestion = 6 } = {}) {
     const matches = answers.get(question.n) || [];
     return { ...question, status: matches.length ? 'answered' : 'silent', matches };
   });
+}
+
+/**
+ * The hundred questions, shaped for a preview.
+ *
+ * One row per question carrying its status and, where the document answers it,
+ * the first sentence and how many more there are. The whole set is returned
+ * rather than only the answers: a reader deciding whether to store a document
+ * needs to see what it does not cover, and ninety-three rows of "not from
+ * this" is the honest shape of an annual report read this way.
+ */
+export function coverageSummary(text, { questions, perQuestion = 6 } = {}) {
+  const rows = coverage(text, { questions, perQuestion });
+  const counts = { answered: 0, silent: 0, no_rule: 0, computed: 0, judgment: 0 };
+  const summary = rows.map((row) => {
+    counts[row.status] += 1;
+    const [first] = row.matches;
+    return {
+      n: row.n,
+      ask: row.ask,
+      kind: row.kind,
+      status: row.status,
+      // Trimmed for a preview. The claim rows keep the sentence in full.
+      answer: first ? first.text.slice(0, 400) : null,
+      more: Math.max(row.matches.length - 1, 0),
+      // Why a question cannot be answered, where there is a reason worth
+      // reading: the line items a computation needs, or the note on a
+      // judgement. A blank with no reason is the thing this avoids.
+      needs: row.needs || null,
+      note: row.note || null,
+    };
+  });
+  return { counts, questions: summary };
 }

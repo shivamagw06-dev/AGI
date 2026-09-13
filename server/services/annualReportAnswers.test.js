@@ -1,6 +1,6 @@
 import test, { describe } from 'node:test';
 import assert from 'node:assert/strict';
-import { answersFor, coverage, answerable, FINDS } from './annualReportAnswers.js';
+import { answersFor, coverage, answerable, coverageSummary, FINDS } from './annualReportAnswers.js';
 import { QUESTIONS } from './annualReportQuestions.js';
 
 // Verbatim from Berkshire's 2025 annual report.
@@ -103,5 +103,56 @@ describe('what a document answers and what it is silent on', () => {
       `The group recorded an impairment of $${at + 1} million during the year under review.`).join('\n\n');
     assert.equal(answersFor(many, { perQuestion: 3 }).get(37).length, 3);
     assert.equal(answersFor(many, { perQuestion: 20 }).get(37).length, 12);
+  });
+});
+
+describe('the shape a preview reads', () => {
+  const REPORT_TEXT = 'Lubrizol operates two business segments: Lubrizol Additives, which '
+    + 'produces engine lubricant additives, and Lubrizol Advanced Materials.\n\n'
+    + 'Seasonal variations in GEICO’s insurance business are not significant.\n\n'
+    + 'Executive Compensation Item 12.';
+  const summary = () => coverageSummary(REPORT_TEXT, { questions: QUESTIONS });
+
+  test('all hundred are returned, answered or not', () => {
+    // A reader deciding whether to store a document needs to see what it does
+    // not cover. Returning only the answers would show a short, flattering
+    // list and hide the shape of the thing.
+    const { questions } = summary();
+    assert.equal(questions.length, 100);
+    assert.deepEqual(questions.map((q) => q.n), QUESTIONS.map((q) => q.n));
+  });
+
+  test('the counts add up to a hundred', () => {
+    const { counts } = summary();
+    assert.equal(Object.values(counts).reduce((a, b) => a + b, 0), 100);
+  });
+
+  test('a computed question carries the line items it needs, not a blank', () => {
+    // The list is the specification for loading them.
+    const leverage = summary().questions.find((q) => q.n === 64);
+    assert.equal(leverage.status, 'computed');
+    assert.equal(leverage.answer, null);
+    assert.deepEqual(leverage.needs, ['gross_debt', 'cash', 'ebitda']);
+  });
+
+  test('a judgment question carries its reason', () => {
+    const worth = summary().questions.find((q) => q.n === 100);
+    assert.equal(worth.status, 'judgment');
+    assert.match(worth.note, /ninety-nine/);
+  });
+
+  test('a defining sentence is the answer, not a passing mention', () => {
+    // "pricing in most commercial insurance segments was firm" matched the
+    // bare form and was the first thing a reader saw under this question.
+    const segments = summary().questions.find((q) => q.n === 3);
+    assert.equal(segments.status, 'answered');
+    assert.match(segments.answer, /Lubrizol operates two business segments/);
+  });
+
+  test('an answer is trimmed for a preview but not truncated mid-count', () => {
+    for (const question of summary().questions) {
+      if (question.answer) assert.ok(question.answer.length <= 400, `${question.n}`);
+      assert.ok(Number.isInteger(question.more) && question.more >= 0, `${question.n}`);
+    }
   });
 });
