@@ -127,14 +127,37 @@ export const INFERRED_SLOTS = CHAIN.filter((step) => !step.extractable).map((ste
  * the words before a number and calling them its label - produces labels like
  * "compared to" and "the increases were driven by higher".
  */
-const METRICS = [
+export const METRICS = [
   'combined ratio', 'expense ratio', 'loss ratio', 'operating ratio',
-  'premiums written', 'premiums earned', 'underwriting expenses',
-  'policies-in-force', 'claims frequenc', 'claims severit',
+  'premiums written', 'premiums earned', 'underwriting expense*',
+  'policies-in-force', 'claims frequenc*', 'claims severit*',
   'float', 'book value', 'capital expenditures', 'capex',
-  'net cash flow', 'operating earnings', 'net earnings', 'revenues',
+  'net cash flow', 'operating earnings', 'net earnings', 'revenue*',
   'cash and cash equivalents', 'treasury bills', 'cost of borrowing',
-  'dividend', 'share repurchase', 'buyback', 'impairment',
+  'dividend*', 'share repurchase*', 'buyback*', 'impairment*',
+  // An operating company's margin, which the ratio above does not cover: an
+  // operating ratio falls when a railroad improves and a margin rises, and
+  // "BNSF's operating margin improved to 34.5% from 32.0%" was filed as an
+  // unnamed event for want of this one name.
+  'operating margin*', 'operating income', 'net interest income',
+  // A fund reports on itself in a vocabulary none of the above contains.
+  // Norges Bank's annual report produced 177 claims and zero amounts, because
+  // every figure in it is a return, a flow or a fee.
+  //
+  // Every name here is a phrase or a long word, never an abbreviation. The
+  // match is a substring on the lowercased sentence, so "nav" is inside
+  // "naval", "aum" inside "trauma" and "eps" inside "steps" - and a named
+  // metric with figures beside it is published without a reviewer, so a name
+  // that matches an ordinary word publishes ordinary prose as an amount.
+  'assets under management', 'net asset value', 'fund value',
+  'total return', 'excess return', 'relative return', 'annualised return',
+  'annualized return', 'return on equity', 'return on investment',
+  'return on capital', 'benchmark return', 'benchmark index',
+  'tracking error', 'information ratio', 'sharpe ratio', 'standard deviation',
+  'management fee*', 'performance fee*', 'effective fee rate', 'fee rate',
+  'net inflows', 'net outflows', 'net flows', 'gross flows',
+  'net subscriptions', 'net redemptions',
+  'earnings per share', 'operating expense*', 'assets under advisement',
 ];
 
 /**
@@ -708,6 +731,15 @@ export function figuresIn(sentence) {
       kind: /percentage points?/i.test(match[0]) ? 'percentage_points' : 'percent',
     });
   }
+  // A fund quotes a fee in basis points and nothing else does. Without this,
+  // "the management fee was 4.2 basis points of assets" states no figure, so a
+  // named metric has nothing to report and the sentence is filed as an event.
+  const basisPoints = /([\d,]+(?:\.\d+)?)\s*basis points?\b/gi;
+  for (const match of text.matchAll(basisPoints)) {
+    found.push({
+      raw: match[0].trim(), value: num(match[1]), scale: null, kind: 'basis_points',
+    });
+  }
   return found;
 }
 
@@ -723,8 +755,28 @@ export function figuresIn(sentence) {
 export function metricIn(sentence) {
   const text = String(sentence || '').toLowerCase();
   let best = null;
-  for (const name of METRICS) {
-    const at = text.indexOf(name);
+  for (const entry of METRICS) {
+    // A trailing * is a stem: `dividend*` is meant to reach "dividends" and
+    // `claims frequenc*` to reach "frequency" and "frequencies". Everything
+    // else is a whole word, because `float` was reaching "floating rate" -
+    // and a metric named wrongly beside a figure is published with no
+    // reviewer, under a label the sentence never used.
+    const stem = entry.endsWith('*');
+    const name = stem ? entry.slice(0, -1) : entry;
+    let at = -1;
+    for (let from = 0; from <= text.length;) {
+      const found = text.indexOf(name, from);
+      if (found < 0) break;
+      // Only the end is checked. The hazard is a name reaching further than it
+      // should - `float` into "floating", `nav` into "naval", `eps` into
+      // "steps" - and a trailing letter refuses all of them. A leading letter
+      // does not: this document says "GEICO'sexpense ratio", welded by
+      // whatever produced the text, and a start boundary loses the metric in
+      // the sentence that taught us earliest-mention-wins.
+      const after = text[found + name.length] || '';
+      if (stem || !LETTER.test(after)) { at = found; break; }
+      from = found + 1;
+    }
     if (at < 0) continue;
     if (!best || at < best.at || (at === best.at && name.length > best.name.length)) {
       best = { at, name };
@@ -732,6 +784,8 @@ export function metricIn(sentence) {
   }
   return best ? best.name : null;
 }
+
+const LETTER = /[a-z]/;
 
 /** The change a sentence states, or null. */
 export function changeIn(sentence) {

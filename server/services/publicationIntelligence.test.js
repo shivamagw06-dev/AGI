@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import {
   CHAIN, STATED_SLOTS, INFERRED_SLOTS,
-  sentences, figuresIn, metricIn, changeIn, slotsFor, intelligenceChain,
+  sentences, figuresIn, metricIn, changeIn, slotsFor, intelligenceChain, METRICS,
   runningHeaders, isPageMarker, autoApproved, isStrayGlyph, stripSentenceDebris,
 } from './publicationIntelligence.js';
 
@@ -799,5 +799,87 @@ describe('what may be published without a person reading it', () => {
       checked += 1;
     }
     assert.ok(checked > 3, `only ${checked} approved claims to check`);
+  });
+});
+
+describe('the metric vocabulary', () => {
+  // metricIn matches a plain substring of the lowercased sentence, and a
+  // how_much claim with a named metric and figures beside it is published
+  // without a reviewer. A name that appears inside an ordinary English word
+  // therefore publishes ordinary prose as an amount.
+  test('no metric name hides inside an ordinary word', () => {
+    const decoys = [
+      'The naval architecture business grew 4% in 2026.',
+      'Trauma claims rose $12 million in 2026.',
+      'Two steps were taken in 2026 costing $4 million.',
+      'The company kept 12% of the proceeds in 2026.',
+      'Sales of $3 billion were recorded in the shepherd segment in 2026.',
+    ];
+    for (const sentence of decoys) {
+      assert.equal(metricIn(sentence), null, sentence);
+    }
+  });
+
+  test('a name is a whole word unless it is marked a stem', () => {
+    // `float` was reaching "floating rate" - Berkshire's own report happens to
+    // contain no such phrase, but a filing that mentions floating-rate debt
+    // would have had a borrowing labelled as insurance float, with figures
+    // beside it and no reviewer in the way.
+    assert.equal(metricIn('Our float was $176 billion at year-end.'), 'float');
+    assert.equal(metricIn('Borrowings at floating rates were $2 billion in 2026.'), null);
+    // A stem still reaches its inflections, which is the whole reason the
+    // marker exists rather than a blanket whole-word rule.
+    assert.equal(metricIn('Dividends received were $1.7 billion in 2025.'), 'dividend');
+    assert.equal(metricIn('Claims frequencies rose 4% in 2025.'), 'claims frequenc');
+  });
+
+  test('a stem marker never reaches a caller', () => {
+    // The * is list syntax. A claim labelled `dividend*` would put it on a page.
+    for (const name of METRICS) {
+      if (!name.endsWith('*')) continue;
+      const sentence = `The ${name.slice(0, -1)}s were $4 billion in 2026.`;
+      assert.equal(String(metricIn(sentence) || '').includes('*'), false, name);
+    }
+  });
+
+  test('a railroad margin is a metric, not an unnamed event', () => {
+    // Filed as what_happened for want of one name, while the operating ratio
+    // beside it was already known. A ratio falls when a railroad improves and
+    // a margin rises; they are not the same measure.
+    assert.equal(metricIn('In 2025, BNSF’s operating margin improved to 34.5% from 32.0% in 2024.'),
+      'operating margin');
+    assert.ok(slotsFor('In 2025, BNSF’s operating margin improved to 34.5% from 32.0% in 2024.')
+      .includes('how_much'));
+  });
+
+  test('the earliest name still wins after the vocabulary grew', () => {
+    // "Railroad operating expenses were $15.3 billion ... revenues ..." was
+    // labelled `revenues`, from a word later in the sentence, because the
+    // earlier name was not in the list. Adding a name must not disturb the
+    // rule that picks between them.
+    assert.equal(metricIn('Railroad operating expenses were $15.3 billion in 2025, a decline of '
+      + '$591 million (3.7%) compared to 2024, and revenues were $23.4 billion.'), 'operating expense');
+    assert.equal(metricIn('GEICO’s expense ratio (underwriting expense to premiums earned) was 12.4%.'),
+      'expense ratio');
+  });
+
+  test('a fund reports in a vocabulary an insurer does not use', () => {
+    // Norges Bank's annual report produced 177 claims and zero amounts: every
+    // figure in it is a return, a flow or a fee. These names are standard
+    // fund-reporting terms rather than sentences from a reviewed document -
+    // the first fund re-import is where they get checked against real prose.
+    const named = [
+      ['assets under management', 'Assets under management were $11.5 trillion at 31 December 2025.'],
+      ['net inflows', 'Net inflows of $152 billion were recorded in the fourth quarter of 2025.'],
+      ['tracking error', 'The expected relative tracking error was 0.4 percentage points in 2025.'],
+      ['excess return', 'The excess return was 0.8 percentage points in 2025.'],
+      ['management fee', 'The management fee was 4.2 basis points of assets in 2025.'],
+      ['performance fee', 'Performance fees increased $211 million from the second quarter of 2025.'],
+      ['net asset value', 'The net asset value of the fund rose 12.4% during 2025.'],
+    ];
+    for (const [metric, sentence] of named) {
+      assert.equal(metricIn(sentence), metric, sentence);
+      assert.ok(slotsFor(sentence).includes('how_much'), sentence);
+    }
   });
 });
