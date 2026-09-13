@@ -38,6 +38,7 @@
  * publishable: a reviewer approves a claim against the words that produced it.
  */
 
+import { boilerplateIn, BOILERPLATE_SLOTS } from './publicationBoilerplate.js';
 import { attributeSegment, segmentHeading, themesIn } from './publicationSegments.js';
 
 /**
@@ -777,10 +778,17 @@ export function slotsFor(sentence) {
   // the quantity rule alone discarded it. Rhetoric still fails both tests:
   // "reflected their beliefs about business and life" names no market.
   const themed = themesIn(text).length > 0;
+  // A filing states its risks in the same grammar it states its disclaimers,
+  // so the cues that find a real disclosure also find the safe-harbour
+  // paragraph beside it. Reviewing Berkshire's two documents rejected 28 of
+  // the 56 claims in these two slots, every one of them boilerplate.
+  const boilerplate = boilerplateIn(text);
   const slots = [];
   if (change) slots.push('what_changed');
   for (const slot of ['why', 'how', 'expectations', 'risks']) {
-    if (fires(text, slot)) slots.push(slot);
+    if (!fires(text, slot)) continue;
+    if (boilerplate && BOILERPLATE_SLOTS.has(slot)) continue;
+    slots.push(slot);
   }
   // A figure with a named metric is an amount; a figure without one still
   // reports an event.
