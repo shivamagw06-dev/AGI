@@ -171,3 +171,37 @@ export function cashConversion(period) {
   return figure(fcf.value / ebitda, '(operating_cash_flow - |capex|) / ebitda',
     { free_cash_flow: fcf.value, ebitda });
 }
+
+/**
+ * Share count in actual shares, whatever unit the filing used.
+ *
+ * The only place a stored figure is converted rather than read back as
+ * reported, because a count compared across periods must be in one unit and
+ * "shares in millions" one year against actual shares the next is a
+ * million-fold error that looks like a buyback.
+ */
+export function sharesOf(period) {
+  if (!has(period, 'share_count')) return refused('share_count not reported');
+  const scale = Number(period.share_scale);
+  if (!Number.isFinite(scale) || scale <= 0) return refused('share_scale not reported');
+  return figure(Number(period.share_count) * scale, 'share_count * share_scale',
+    { share_count: Number(period.share_count), share_scale: scale });
+}
+
+/**
+ * Whether the share count rose or fell - questions 76 and 77.
+ *
+ * Compared in actual shares, so a filing that changes how it reports the count
+ * cannot produce a change that never happened.
+ */
+export function shareCountChange(now, before) {
+  const why = comparable(now, before);
+  if (why) return refused(why);
+  const a = sharesOf(now);
+  if (a.reason) return refused(`later period: ${a.reason}`);
+  const b = sharesOf(before);
+  if (b.reason) return refused(`earlier period: ${b.reason}`);
+  if (b.value === 0) return refused('the earlier share count is zero');
+  return figure(a.value / b.value - 1, 'shares now / shares before - 1',
+    { now: a.value, before: b.value });
+}
