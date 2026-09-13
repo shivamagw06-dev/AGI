@@ -24,6 +24,10 @@ export const MEASUREMENT = Object.freeze({
   SEGMENT_REPORTING: 'segment_reporting',
   MANAGEMENT_ADJUSTED: 'management_adjusted',
   STATUTORY: 'statutory',
+  // A ratio is not measured the way its inputs are. Calling Retail's 8.2%
+  // EBITDA margin "accrual" would claim something about it that is not true of
+  // a quotient, and would let it be compared with figures it cannot be.
+  DERIVED_RATIO: 'derived_ratio',
 });
 
 /** Whose figures these are. Consolidated against standalone is not enough. */
@@ -59,6 +63,16 @@ export const DEFINITIONS = new Map([
   ['CFO.STATEMENT', { concept: 'cfo', measurement: MEASUREMENT.CASH, label: 'Net cash flow from operating activities' }],
   ['FCF.CFO_MINUS_MANAGEMENT_CAPEX', { concept: 'fcf', measurement: MEASUREMENT.CASH, label: 'Operating cash flow less management capex' }],
   ['FCF.CFO_MINUS_CASH_CAPEX', { concept: 'fcf', measurement: MEASUREMENT.CASH, label: 'Operating cash flow less cash capex' }],
+  // Ratios name their denominator, because that is the whole disagreement.
+  // Reliance's Retail business states an 8.2% EBITDA margin and a footnote
+  // saying it is calculated on Revenue from Operations - the same EBITDA over
+  // Value of Sales and Services is a different number and an equally real one.
+  ['EBITDA_MARGIN.ON_REVENUE_OPERATIONS_NET', { concept: 'ebitda_margin', measurement: MEASUREMENT.DERIVED_RATIO, label: 'EBITDA over revenue from operations, net of indirect taxes' }],
+  ['EBITDA_MARGIN.ON_VALUE_OF_SALES_AND_SERVICES', { concept: 'ebitda_margin', measurement: MEASUREMENT.DERIVED_RATIO, label: 'EBITDA over value of sales and services, gross' }],
+  ['LEVERAGE.NET_DEBT_TO_EBITDA', { concept: 'leverage', measurement: MEASUREMENT.DERIVED_RATIO, label: 'Net debt over EBITDA' }],
+  ['LEVERAGE.GROSS_DEBT_TO_EBITDA', { concept: 'leverage', measurement: MEASUREMENT.DERIVED_RATIO, label: 'Gross debt over EBITDA' }],
+  ['FCF_MARGIN.CASH_CAPEX_ON_REVENUE_OPERATIONS_NET', { concept: 'fcf_margin', measurement: MEASUREMENT.DERIVED_RATIO, label: 'Free cash flow after cash capex, over revenue from operations' }],
+  ['FCF_MARGIN.MANAGEMENT_CAPEX_ON_REVENUE_OPERATIONS_NET', { concept: 'fcf_margin', measurement: MEASUREMENT.DERIVED_RATIO, label: 'Free cash flow after management capex, over revenue from operations' }],
 ]);
 
 /** How strongly a figure is supported. */
@@ -90,7 +104,11 @@ export function factKey(fact) {
     .map(([name, value]) => `${name}=${value}`)
     .join(',');
   return [
-    fact?.company, fact?.period, fact?.period_type || 'annual',
+    // `period_end` is what a stored fact carries; `period` is what the first
+    // callers here used. Reading only one of them silently collapsed FY26 and
+    // FY25 into one key, and a filing that states a figure beside its
+    // prior-year comparative - which is most of them - lost the comparative.
+    fact?.company, fact?.period_end ?? fact?.period, fact?.period_type || 'annual',
     fact?.accounting_scope || 'consolidated', fact?.entity_scope || ENTITY_SCOPE.GROUP,
     fact?.concept, fact?.definition_id, fact?.segment || '', fact?.geography || '',
     dimensions, fact?.reported_in_document || '',
@@ -98,10 +116,11 @@ export function factKey(fact) {
 }
 
 /** Every observation of one concept, for one period and scope. */
-export function familyOf(facts, { concept, period, accounting_scope = 'consolidated' } = {}) {
+export function familyOf(facts, { concept, period, period_end, accounting_scope = 'consolidated' } = {}) {
+  const wanted = period_end ?? period;
   return (facts || []).filter((fact) => fact
     && fact.concept === concept
-    && fact.period === period
+    && (fact.period_end ?? fact.period) === wanted
     && (fact.accounting_scope || 'consolidated') === accounting_scope
     && !fact.segment);
 }

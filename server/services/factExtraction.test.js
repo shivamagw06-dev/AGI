@@ -160,3 +160,26 @@ describe('reading a figure as a filing writes it', () => {
     assert.equal(sentenceStates('no figures here', null), false);
   });
 });
+
+test('a figure and its prior-year comparative both survive', () => {
+  // Reliance states both in one sentence. They are one definition, one scope
+  // and two periods, and a key that ignored the period rejected the second as
+  // a duplicate of the first - losing the comparative in most filings there
+  // are.
+  const sentence = 'RIL’s capital expenditure for FY 2025-26 stood at H 1,44,271 crore (US$ 15.2 billion) as compared to H 1,31,107 crore in the previous financial year.';
+  const common = {
+    concept: 'capex', definition_id: 'CAPEX.MANAGEMENT', measurement_basis: 'accrual',
+    currency: 'INR', unit: 10000000, as_reported_label: 'capital expenditure',
+    source_sentence: sentence,
+  };
+  const { facts, rejected } = readFacts({
+    payload: { facts: [
+      { ...common, value: 144271, period_end: '2026-03-31' },
+      { ...common, value: 131107, period_end: '2025-03-31' },
+    ] },
+    document: sentence, company: 'RELIANCE', reportedInDocument: 'RIL FY2025-26',
+  });
+  assert.deepEqual(rejected, []);
+  assert.deepEqual(facts.map((fact) => [fact.period_end, fact.value]),
+    [['2026-03-31', 144271], ['2025-03-31', 131107]]);
+});
