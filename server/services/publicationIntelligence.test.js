@@ -6,8 +6,9 @@ import { dirname, join } from 'node:path';
 import {
   CHAIN, STATED_SLOTS, INFERRED_SLOTS,
   sentences, figuresIn, metricIn, changeIn, slotsFor, intelligenceChain, METRICS,
-  runningHeaders, isPageMarker, autoApproved, isStrayGlyph, stripSentenceDebris,
+  runningHeaders, isPageMarker, autoApproved, isStrayGlyph, stripSentenceDebris, isFilingFurniture,
 } from './publicationIntelligence.js';
+import { themesIn } from './publicationSegments.js';
 
 /**
  * The fixture is real prose from Berkshire's 2025 annual report, pasted the
@@ -950,5 +951,45 @@ describe('a figure that does not measure money', () => {
     const closestWrong = gap(EMISSIONS[2][1], 'revenue');
     assert.ok(closestCorrect < closestWrong,
       `a proximity rule would drop a correct label (${closestCorrect}) before a wrong one (${closestWrong})`);
+  });
+});
+
+describe('a filing’s cover page and its index', () => {
+  test('a checkbox ballot is stripped from the fact welded to it', () => {
+    // NVIDIA's 10-Q opens with "Yes [ ] No [X]" ballots, and the first real
+    // fact on the page arrived attached to one.
+    const cover = 'Yes ☐ No ☒ The number of shares of common stock, $0.001 par value, '
+      + 'outstanding as of August 21, 2026, was 24.1 billion.';
+    assert.match(stripSentenceDebris(cover), /^The number of shares of common stock/);
+  });
+
+  test('a cross-reference reports nothing and is dropped', () => {
+    // This one arrived with a whole lease table flattened in front of it.
+    const table = 'Other information related to leases was as follows: Supplemental cash flows '
+      + 'information Operating cash flow used for operating leases $ 353 $ 200 Operating lease '
+      + 'assets obtained in exchange for lease obligations $ 2,792 $ 458 Item 2.';
+    assert.equal(isFilingFurniture(table), true);
+    assert.equal(sentences(table).length, 0);
+  });
+
+  test('a sentence that merely contains a number and a word is not furniture', () => {
+    const real = 'We have significantly increased our supply and capacity commitments from '
+      + '$119 billion last quarter to $279 billion as of July 26, 2026 to meet future demand.';
+    assert.equal(isFilingFurniture(real), false);
+    assert.equal(sentences(real).length, 1);
+  });
+});
+
+describe('a theme belongs to the business that has it', () => {
+  test('semiconductor export controls are not freight', () => {
+    // "export" matched the freight theme, so NVIDIA's export controls were
+    // tagged as railroad volumes.
+    assert.deepEqual(themesIn('Reduced demand due to export controls has and could in the '
+      + 'future lead to excess inventory or cause us to incur related supply charges.'), []);
+  });
+
+  test('grain exports still are', () => {
+    assert.deepEqual(themesIn('The increase in volumes was primarily due to higher grain '
+      + 'exports and petroleum fuel shipments.'), ['freight_volumes']);
   });
 });

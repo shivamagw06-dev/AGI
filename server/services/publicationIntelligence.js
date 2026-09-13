@@ -576,8 +576,30 @@ export function isStrayGlyph(line) {
  * Berkshire subsidiary", which this leaves alone because there is no full
  * stop in front of it.
  */
+/**
+ * A filing's cover page, and its cross-reference index.
+ *
+ * NVIDIA's 10-Q opens with checkbox ballots - "Yes [ ] No [X]" - and the first
+ * real fact on the page was welded to one: "Yes (box) No (box) The number of
+ * shares of common stock, $0.001 par value, outstanding as of August 21, 2026,
+ * was 24.1 billion."
+ *
+ * And a sentence ending in "Item 2." is a cross-reference, which in that
+ * document arrived with a whole lease table flattened in front of it.
+ */
+const COVER_BALLOT = /^(?:yes|no)\s*[\u2610\u2611\u2612\u2713\u2714]\s*(?:(?:yes|no)\s*[\u2610\u2611\u2612\u2713\u2714]\s*)?/i;
+const ITEM_CROSS_REFERENCE = /\bitem\s+\d+[a-z]?\.?\s*$/i;
+
+/** Whether a sentence is a filing's furniture rather than its content. */
+export function isFilingFurniture(text) {
+  return ITEM_CROSS_REFERENCE.test(String(text || '').trim());
+}
+
 export function stripSentenceDebris(text) {
   return String(text || '')
+    // A cover page's checkbox ballot, before anything else: the first real
+    // fact in NVIDIA's 10-Q arrived welded to one.
+    .replace(COVER_BALLOT, '')
     // The lookahead is the same set of sentence openers the splitter below
     // recognises, and deliberately so: this function exists to let that split
     // happen, so a start it cannot see is debris it cannot remove. They were
@@ -692,6 +714,9 @@ export function sentences(text) {
     for (const raw of joined.split(SENTENCE_BREAK)) {
       const sentence = raw.trim();
       if (sentence.length < 20) continue;
+      // A cross-reference names a section and reports nothing. NVIDIA's
+      // arrived with a lease table flattened in front of it.
+      if (isFilingFurniture(sentence)) continue;
       // A very long "sentence" is a table that lost its line breaks, not
       // prose. It is also more of the document than a citation should carry.
       if (sentence.length > 400) continue;

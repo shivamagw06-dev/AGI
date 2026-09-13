@@ -184,7 +184,9 @@ export const THEMES = [
   {
     theme: 'freight_volumes',
     label: 'Freight and trade volumes',
-    phrases: ['freight', 'carloads', 'intermodal', 'imports', 'export',
+    // "exports" as cargo. The singular caught NVIDIA's semiconductor export
+    // controls, and four Berkshire sentences about pipelines and tariffs.
+    phrases: ['freight', 'carloads', 'intermodal', 'imports', 'exports',
       'grain', 'coal', 'petroleum', 'consumer products volumes'],
   },
   {
