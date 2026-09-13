@@ -31,14 +31,23 @@ export const FINDS = new Map([
   // form and was the first thing a reader would have seen under "what are the
   // major business segments".
   [3, /\b(?:operates?|reports?|manages?|comprises?)[^.]{0,45}\bsegments?\b|\b(?:business|reportable|operating) segments?\b[^.]{0,25}(?:are|include|consist|comprise)/i],
-  [10, /\bno single (?:customer|client)\b|\bconcentration of\b|\baccounted for approximately \d/i],
+  // Revenue concentration, not concentration of credit risk. The loose form
+  // returned "accounted for approximately 80% of greenhouse gas emissions".
+  [10, /\bno single (?:customer|client)\b|\b(?:revenue|sales|customer)\s+concentration\b|\bconcentration of (?:revenue|sales|customers)\b/i],
   [20, /\bseasonal/i],
   [35, /\brestructuring\b/i],
   [37, /\bimpairment\b/i],
   [54, /\bcapital expenditures?\b/i],
-  [55, /\bcapacity\b/i],
-  [57, /\butili[sz]ation\b/i],
-  [66, /\bweighted[- ]average interest rate\b|\baverage (?:cost|rate) of (?:borrowing|debt)\b/i],
+  // Capacity being added, never a bare mention: "combining domestic compute
+  // capacity with localised, multilingual, voice-first platforms" is prose.
+  [55, /^(?![^]*\bglobal\b)[^]*(?:\bcapacity (?:expansion|addition|augmentation)\b|\bexpand(?:ed|ing)? (?:its |our )?capacity\b|\bnew capacity\b|\badditional capacity\b|\bcapacity (?:of|to) \d)/i],
+  // This company's utilisation. A bare mention returned an industry figure:
+  // "refinery capacity rationalisation of around 1.2 mb/d, majorly in Europe".
+  [57, /\b(?:our|its|the (?:company|plant|refinery|group)['’]?s?)\s+[^.]{0,30}utili[sz]ation\b|\butili[sz]ation (?:rate|level|was|of \d)/i],
+  // A stated rate, or a stated range of them - which is how an Indian filing
+  // puts it: "Interest rates on unsecured term loans are in range of 1.02% to
+  // 6.99% per annum".
+  [66, /\bweighted[- ]average interest rate\b|\baverage (?:cost|rate) of (?:borrowing|debt)\b|\binterest rates?\b[^.]{0,60}\b(?:per annum|in (?:the )?range)\b/i],
   [67, /\bfloating[- ]rate\b|\bvariable[- ]rate\b/i],
   [68, /\bmaturit(?:y|ies)\b|\bmature in\b|\bdue in \d{4}\b/i],
   [70, /\bcovenants?\b/i],
@@ -48,7 +57,10 @@ export const FINDS = new Map([
   [82, /\bcustomers?\b[^.]{0,90}\b\d{1,2}(?:\.\d)?% of (?:revenues|sales|total)/i],
   [83, /\b(?:five|ten|5|10) largest customers\b|\btop (?:five|ten|5|10) customers\b/i],
   [84, /\bcontracts?\b[^.]{0,60}\b(?:expire|renew|renewal|terminate)\b/i],
-  [85, /\bretention\b|\brenewal rate\b|\bchurn\b|\bpolicies-in-force\b/i],
+  // Customer retention. A bare match returned "Talent Attraction and
+  // Retention" and an audit-trail retention period, so the wrong subject
+  // anywhere in the sentence disqualifies it.
+  [85, /^(?![^]*\b(?:talent|employee|staff|workforce|audit|data)\b)[^]*\b(?:retention|renewal rate|churn|policies-in-force)\b/i],
   // The company's own suppliers. A bare "suppliers" caught sentences about
   // customers choosing between energy suppliers, and about an aerospace
   // manufacturer's customers who also happen to be its suppliers.
@@ -59,7 +71,10 @@ export const FINDS = new Map([
   [91, /\bstrategic priorit|\bour strategy\b|\blong-term (?:goal|objective)/i],
   [95, /\blitigation\b|\blegal proceedings\b|\bcontingenc/i],
   [96, /\brelated part(?:y|ies)\b/i],
-  [97, /\bexecutive compensation\b|\bcompensation committee\b|\bincentive compensation\b/i],
+  // An Indian filing says remuneration where a 10-K says compensation, and
+  // the word appears nine times in Reliance's report while the US form
+  // appears never.
+  [97, /\bexecutive compensation\b|\bcompensation committee\b|\bincentive compensation\b|\bmanagerial remuneration\b|\bremuneration (?:paid|payable|policy)\b|\bremuneration (?:to|of) (?:the )?(?:directors|managing|key managerial|whole-time)\b/i],
   [98, /\bbeneficial(?:ly)? own|\bshares owned by\b/i],
   [99, /\bcritical accounting\b|\bsignificant (?:accounting )?estimates\b|\buse of estimates\b/i],
 ]);
