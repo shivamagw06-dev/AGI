@@ -165,12 +165,11 @@ function Row({ claim, checked, onToggle }) {
             {claim.themes?.length ? <span className="text-slate-500">{claim.themes.join(' · ')}</span> : null}
           </div>
 
-          <div className="mt-1.5 text-[10.5px] text-slate-500">
-            {claim.manager}{claim.publication ? ` · ${claim.publication}` : ''}
-            {claim.status !== 'pending'
-              ? ` · ${claim.status}${claim.reviewed_by ? ` by ${claim.reviewed_by}` : ''}`
-              : ''}
-          </div>
+          {claim.status !== 'pending' ? (
+            <div className="mt-1.5 text-[10.5px] text-slate-500">
+              {`${claim.status}${claim.reviewed_by ? ` by ${claim.reviewed_by}` : ''}`}
+            </div>
+          ) : null}
         </div>
       </div>
     </li>
@@ -430,9 +429,46 @@ function UploadPanel({ managers, onStored }) {
   );
 }
 
+/**
+ * The rows of one document, under the document.
+ *
+ * The queue is every sentence anyone has ever pasted, and a reviewer reads one
+ * company's report in one sitting. Naming the document once at the top beats
+ * repeating it under all fifty rows, and the date is what tells a reader
+ * whether they are looking at this quarter or last year's annual report.
+ */
+function byPublication(rows) {
+  const groups = [];
+  const at = new Map();
+  for (const claim of rows) {
+    const key = `${claim.manager || ''}|${claim.publication || ''}`;
+    if (!at.has(key)) {
+      at.set(key, groups.length);
+      groups.push({
+        key,
+        manager: claim.manager,
+        publication: claim.publication,
+        as_of_date: claim.as_of_date,
+        claims: [],
+      });
+    }
+    groups[at.get(key)].claims.push(claim);
+  }
+  return groups;
+}
+
+/** A date as a reader writes it, or nothing. */
+function period(value) {
+  if (!value) return null;
+  const when = new Date(value);
+  if (Number.isNaN(when.getTime())) return null;
+  return when.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
 export default function PublicationReview() {
   const [status, setStatus] = useState('pending');
   const [slot, setSlot] = useState('');
+  const [manager, setManager] = useState('');
   const [offset, setOffset] = useState(0);
   const [data, setData] = useState(null);
   const [selected, setSelected] = useState(() => new Set());
@@ -445,7 +481,7 @@ export default function PublicationReview() {
     setLoading(true);
     setError('');
     try {
-      const payload = await getPublicationClaims({ status, slot, limit: 50, offset: nextOffset });
+      const payload = await getPublicationClaims({ status, slot, manager, limit: 50, offset: nextOffset });
       setData(payload);
       // Cleared on every load: a selection that outlives the rows it referred
       // to is how someone approves a claim they are no longer looking at.
@@ -455,7 +491,7 @@ export default function PublicationReview() {
     } finally {
       setLoading(false);
     }
-  }, [status, slot, offset]);
+  }, [status, slot, manager, offset]);
 
   useEffect(() => { load(offset); }, [load, offset]);
 
@@ -572,6 +608,18 @@ export default function PublicationReview() {
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 bg-white/[0.02] px-6 py-3">
         <div className="flex items-center gap-2 text-xs">
           <span className="text-slate-500">Showing</span>
+          {/* One manager at a time. The queue mixes every document anyone has
+              pasted, and a reviewer reads one company's report in one sitting. */}
+          <select
+            value={manager}
+            onChange={(event) => { setManager(event.target.value); setOffset(0); }}
+            className="rounded-lg border border-white/10 bg-[#0d222d] px-2 py-1.5 text-xs text-white outline-none focus:border-cyan-400"
+          >
+            <option value="">Every manager</option>
+            {(data?.managers || []).map((entry) => (
+              <option key={entry.slug} value={entry.slug}>{entry.display_name}</option>
+            ))}
+          </select>
           <select
             value={status}
             onChange={(event) => { setStatus(event.target.value); setOffset(0); }}
@@ -640,11 +688,33 @@ export default function PublicationReview() {
           </div>
         ) : rows.length ? (
           <>
-            <ul className="space-y-2.5">
-              {rows.map((claim) => (
-                <Row key={claim.id} claim={claim} checked={selected.has(claim.id)} onToggle={toggle} />
+            <div className="space-y-7">
+              {byPublication(rows).map((group) => (
+                <section key={group.key}>
+                  <div className="flex flex-wrap items-baseline justify-between gap-3 border-b border-white/10 pb-2">
+                    <div className="min-w-0">
+                      <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-cyan-300">
+                        {group.manager}
+                      </div>
+                      <div className="mt-0.5 text-sm font-semibold text-white">
+                        {group.publication || 'Untitled document'}
+                      </div>
+                    </div>
+                    <div className="shrink-0 text-[11px] text-slate-400">
+                      {period(group.as_of_date) || 'no period given'}
+                      <span className="text-slate-600">
+                        {` · ${group.claims.length} sentence${group.claims.length === 1 ? '' : 's'} here`}
+                      </span>
+                    </div>
+                  </div>
+                  <ul className="mt-3 space-y-2.5">
+                    {group.claims.map((claim) => (
+                      <Row key={claim.id} claim={claim} checked={selected.has(claim.id)} onToggle={toggle} />
+                    ))}
+                  </ul>
+                </section>
               ))}
-            </ul>
+            </div>
             {data?.more ? (
               <div className="mt-5 flex items-center justify-between text-xs text-slate-400">
                 <button
