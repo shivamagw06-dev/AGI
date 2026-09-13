@@ -51,6 +51,8 @@ function figureOf(value) {
   return negative ? -asNumber : asNumber;
 }
 
+const OUTFLOWS = new Set(['capex', 'dividends', 'buybacks']);
+
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 
 /**
@@ -95,7 +97,14 @@ export function readPeriod(input, { at = 0 } = {}) {
   const figures = {};
   let reported = 0;
   for (const name of LINE_ITEMS) {
-    const value = figureOf(raw[name]);
+    let value = figureOf(raw[name]);
+    // Capex, dividends and buybacks are outflows by definition, and a cash
+    // flow statement writes them in parentheses while a summary table writes
+    // them plain. Stored as magnitudes so the two files agree: a file with
+    // "(20,927)" produced capex/revenue of -5.6%, which reads as money coming
+    // in. Acquisitions are left as reported, because that line can genuinely
+    // be negative when disposals exceed purchases in a year.
+    if (value !== null && OUTFLOWS.has(name)) value = Math.abs(value);
     figures[name] = value;
     if (value !== null) reported += 1;
   }
