@@ -72,6 +72,9 @@ export const readAnnualReport = (body) =>
 // The nine judgement questions. Separate from reading the report because it
 // costs nine model requests, and the other ninety-one answers are worth having
 // in front of a reader before any are spent.
+// `auto: true` widens this from the nine judgement questions to every
+// question still unanswered. It cannot make a document say what it does not
+// say - a question the report is silent on comes back refused.
 export const judgeAnnualReport = (body) =>
   request('/admin/annual-report/judgements', { method: 'POST', body, admin: true, timeoutMs: 900_000 });
 export const refreshInstitutionalResearchLayer = (body = {}) => request('/admin/research-layer/refresh', { method: 'POST', body, admin: true, timeoutMs: 900_000 });
