@@ -26,11 +26,13 @@ import { sentences } from './publicationIntelligence.js';
  * cut down by reading what it caught, the same way the chain's cues were.
  */
 export const FINDS = new Map([
-  // A sentence that defines the segments, not one that mentions the word.
-  // "pricing in most commercial insurance segments was firm" matched the bare
-  // form and was the first thing a reader would have seen under "what are the
-  // major business segments".
-  [3, /\b(?:operates?|reports?|manages?|comprises?)[^.]{0,45}\bsegments?\b|\b(?:business|reportable|operating) segments?\b[^.]{0,25}(?:are|include|consist|comprise)/i],
+  // A sentence that defines the segments says how many there are, or lists
+  // them. The verb form matched "segments are reported under each reportable
+  // segment" - an accounting policy - because `reports?` carries no word
+  // boundary and so fires on "reported", the same defect as `float` inside
+  // "floating". Digits are excluded: "Note 37 - Segment Information" read a
+  // note reference as a count of segments.
+  [3, /\b(?:two|three|four|five|six|seven|eight|nine|ten)\b[^.]{0,45}\bsegments?\b|\bsegments?\b\s*(?::|\u2013|-|viz\.?)\s*[A-Z]/i],
   // Revenue concentration, not concentration of credit risk. The loose form
   // returned "accounted for approximately 80% of greenhouse gas emissions".
   [10, /\bno single (?:customer|client)\b|\b(?:revenue|sales|customer)\s+concentration\b|\bconcentration of (?:revenue|sales|customers)\b/i],

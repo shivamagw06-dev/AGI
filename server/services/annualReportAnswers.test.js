@@ -262,3 +262,32 @@ describe('a policy that mentions a thing is not the thing', () => {
     assert.deepEqual(answersFor(china).get(55), []);
   });
 });
+
+describe('a third filing, and what it broke', () => {
+  // Tata Sons' 108th Annual Report 2025-26. Two filings were not enough: this
+  // one phrases its segment note in a third way again.
+  test('an accounting policy is not a list of segments', () => {
+    // "reports?" carried no word boundary, so it fired on "reported" - the
+    // same defect as `float` matching "floating rate".
+    const policy = 'Revenue and expenses directly attributable to segments are reported '
+      + 'under each reportable segment.';
+    assert.deepEqual(answersFor(policy).get(3), []);
+  });
+
+  test('a note reference is not a count of segments', () => {
+    // Requiring a number before "segments" read "Note 37 - Segment Information"
+    // as a company with 37 segments, and it sorted ahead of the real answer.
+    const crossRef = 'Further details about the business operations of the Group are provided '
+      + 'in Note 37 – Segment Information.';
+    assert.deepEqual(answersFor(crossRef).get(3), []);
+  });
+
+  test('both earlier filings still answer, and with the segments named', () => {
+    const ril = 'Segment Information The Group has four principal operating and reporting '
+      + 'segments; viz. Oil To Chemicals (O2C), Oil and Gas, Retail and Digital Services.';
+    const brk = 'Lubrizol operates two business segments: Lubrizol Additives, which produces '
+      + 'engine lubricant additives, and Lubrizol Advanced Materials.';
+    assert.match(answersFor(ril).get(3)[0].text, /Oil To Chemicals \(O2C\), Oil and Gas, Retail and Digital Services/);
+    assert.match(answersFor(brk).get(3)[0].text, /Lubrizol Additives/);
+  });
+});
