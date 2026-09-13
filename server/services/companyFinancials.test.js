@@ -2,7 +2,7 @@ import test, { describe } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   comparable, ratio, growth, cagr, freeCashFlow, netDebt, netDebtToEbitda,
-  interestCover, outgrowingSales, cashConversion,
+  interestCover, outgrowingSales, cashConversion, sharesOf, shareCountChange,
 } from './companyFinancials.js';
 
 const period = (over) => ({
@@ -134,5 +134,51 @@ describe('what it refuses to compute', () => {
   test('a negative starting value has no compound rate', () => {
     const loss = period({ period_end: '2021-03-31', revenue: -100 });
     assert.match(cagr(FY26, loss, 'revenue').reason, /not positive/);
+  });
+});
+
+describe('a share count is not money', () => {
+  // Berkshire reports money in millions and 1,438,223 Class A shares in
+  // shares. Under one scale that is 1.4 trillion shares, which is why the
+  // count was left out of the first load entirely.
+  const y25 = period({ period_end: '2025-12-31', share_count: 1438223, share_scale: 1 });
+  const y24 = period({ period_end: '2024-12-31', share_count: 1437720, share_scale: 1 });
+
+  test('the count is read in actual shares', () => {
+    const found = sharesOf(y25);
+    assert.equal(found.value, 1438223);
+    assert.deepEqual(found.inputs, { share_count: 1438223, share_scale: 1 });
+  });
+
+  test('a filing that reports shares in millions reads the same way', () => {
+    const inMillions = period({ share_count: 1.438223, share_scale: 1000000 });
+    assert.equal(Math.round(sharesOf(inMillions).value), 1438223);
+  });
+
+  test('a change in unit cannot become a change in count', () => {
+    // The failure this exists to prevent: the same 1.44m shares reported two
+    // ways, which without conversion reads as the count collapsing by 99.9999%.
+    const millions = period({ period_end: '2024-12-31', share_count: 1.437720, share_scale: 1000000 });
+    const found = shareCountChange(y25, millions);
+    assert.equal(found.reason, null);
+    assert.ok(Math.abs(found.value - (1438223 / 1437720 - 1)) < 1e-9,
+      `unit change leaked into the result: ${found.value}`);
+  });
+
+  test('Berkshire bought back almost nothing in 2025', () => {
+    // 1,438,223 against 1,437,720 average Class A equivalents: up 0.03%.
+    const found = shareCountChange(y25, y24);
+    assert.ok(Math.abs(found.value) < 0.001, String(found.value));
+  });
+
+  test('a count without its scale is refused, not assumed', () => {
+    const noScale = period({ share_count: 1438223 });
+    assert.match(sharesOf(noScale).reason, /share_scale not reported/);
+    assert.match(shareCountChange(noScale, y24).reason, /later period/);
+    assert.match(shareCountChange(y25, noScale).reason, /earlier period/);
+  });
+
+  test('a missing count is refused rather than treated as zero', () => {
+    assert.match(sharesOf(period({})).reason, /share_count not reported/);
   });
 });

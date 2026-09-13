@@ -94,6 +94,18 @@ export function readPeriod(input, { at = 0 } = {}) {
   const scale = scaleOf(raw.scale);
   if (scale === null) errors.push(`scale is missing or unreadable ("${raw.scale ?? ''}")`);
 
+  // A share count is not money and is rarely reported in the same unit.
+  // Berkshire states money in millions and 1,438,223 Class A shares in shares;
+  // under one scale that is 1.4 trillion shares. Required only when a share
+  // count is given, and never assumed when it is - a filing that reports
+  // "shares in millions" and one that reports actual shares look identical in
+  // a column of numbers.
+  const shareCount = figureOf(raw.share_count);
+  const shareScale = scaleOf(raw.share_scale);
+  if (shareCount !== null && shareScale === null) {
+    errors.push(`share_count is given but share_scale is missing ("${raw.share_scale ?? ''}")`);
+  }
+
   const figures = {};
   let reported = 0;
   for (const name of LINE_ITEMS) {
@@ -121,6 +133,7 @@ export function readPeriod(input, { at = 0 } = {}) {
       scale,
       restated: raw.restated === true || String(raw.restated).toLowerCase() === 'true',
       ...figures,
+      share_scale: shareScale,
       source_file: raw.source_file ? String(raw.source_file) : null,
     },
   };
