@@ -27,7 +27,7 @@ import {
 } from '../services/publicationReviewService.js';
 import { createSupabaseAdmin } from '../lib/supabaseAdmin.js';
 import {
-  managerCheck, readPublication, storePublication,
+  managerCheck, readPublication, storePublication, managerPublications, publicationMatch,
 } from '../services/publicationImportService.js';
 import {
   clearScreenerCache, evaluateFundPerformance, getAccumulationHeatMap,
@@ -280,6 +280,15 @@ export default function createInstitutionalHoldingsRouter() {
       // yields before committing 650 rows to the queue.
       if (!body.apply) {
         const read = readPublication(text);
+        // Is this document already stored? A dry run said what a document
+        // yields and never whether it was new, so re-pasting a report looked
+        // exactly like pasting one for the first time - and Berkshire's
+        // annual report became two publications, the second holding none of
+        // the 199 decisions made against the first.
+        const match = publicationMatch(
+          await managerPublications({ client, paged, managerId: manager.id }),
+          { digest: read.digest, title: body.title },
+        );
         return res.json({
           applied: false,
           manager: manager.display_name,
@@ -289,6 +298,14 @@ export default function createInstitutionalHoldingsRouter() {
           claims: read.claims,
           steps: read.steps,
           themes: read.themes,
+          // The matched publication's own digest is dropped: it is a hash of
+          // the manager's copyrighted text and no caller needs it.
+          match: {
+            kind: match.kind,
+            publication: match.publication
+              ? (({ digest, ...rest }) => rest)(match.publication)
+              : null,
+          },
         });
       }
 

@@ -151,3 +151,74 @@ export async function storePublication({
     pruned,
   };
 }
+
+/**
+ * The manager's publications, with how much work each one holds.
+ *
+ * Fetched so a dry run can say whether the document in front of it is already
+ * stored. Storing is keyed on a hash of the text, so a paste that differs by a
+ * single character is a different publication - which is not a hypothetical:
+ * Berkshire's annual report was pasted twice and became two publications of
+ * 758 rows each, the second holding none of the 199 decisions a person had
+ * made against the first.
+ *
+ * The digest is carried for matching and never returned to a caller. It is a
+ * hash of the manager's own copyrighted text and nothing outside this module
+ * has a use for it.
+ */
+export async function managerPublications({ client, paged, managerId }) {
+  if (!client || !paged) throw new Error('a supabase client and a pager are required');
+  const publications = await paged(
+    () => client.from('manager_publications')
+      .select('id,title,as_of_date,pasted_at,digest')
+      .eq('manager_id', managerId).order('pasted_at', { ascending: false }),
+    { label: 'manager-publications' },
+  );
+  if (!publications.length) return [];
+  const facts = await paged(
+    () => client.from('manager_publication_facts')
+      .select('publication_id,reviewed_by').eq('manager_id', managerId).order('id'),
+    { label: 'manager-publication-rows' },
+  );
+  const tally = new Map();
+  for (const fact of facts) {
+    const seen = tally.get(fact.publication_id) || { rows: 0, decisions: 0 };
+    seen.rows += 1;
+    if (fact.reviewed_by === 'person') seen.decisions += 1;
+    tally.set(fact.publication_id, seen);
+  }
+  return publications.map((publication) => ({
+    ...publication,
+    rows: tally.get(publication.id)?.rows || 0,
+    decisions: tally.get(publication.id)?.decisions || 0,
+  }));
+}
+
+/**
+ * Whether this document is one the manager already has.
+ *
+ * Three answers, and the middle one is the whole point:
+ *
+ *   same_text  - the same document. Storing updates it in place, and a
+ *                person's decisions on it survive.
+ *   same_title - a document by the same name whose text differs. Storing
+ *                creates a SECOND publication, and every decision made
+ *                against the first stays with the first. This is the case
+ *                that cost 199 decisions and went unnoticed because a dry run
+ *                reports what a document yields, never whether it is new.
+ *   new        - nothing like it is stored.
+ *
+ * A title is compared loosely because a person types it; the text is compared
+ * exactly because a hash is all there is.
+ */
+export function publicationMatch(publications, { digest, title }) {
+  const list = publications || [];
+  const sameText = list.find((publication) => publication.digest === digest);
+  if (sameText) return { kind: 'same_text', publication: sameText };
+  const wanted = String(title || '').trim().toLowerCase();
+  const sameTitle = wanted
+    ? list.find((publication) => String(publication.title || '').trim().toLowerCase() === wanted)
+    : undefined;
+  if (sameTitle) return { kind: 'same_title', publication: sameTitle };
+  return { kind: 'new', publication: null };
+}
