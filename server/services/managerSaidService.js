@@ -21,6 +21,47 @@ const STEP_ORDER = CHAIN.map((step) => step.slot);
 const QUESTION = Object.fromEntries(CHAIN.map((step) => [step.slot, step.question]));
 
 /**
+ * How recent each publication is, by id. Index 0 is the most recent.
+ */
+function freshness(publications) {
+  const order = [...publications].sort((a, b) =>
+    String(b.pasted_at || '').localeCompare(String(a.pasted_at || '')));
+  return new Map(order.map((publication, at) => [publication.id, at]));
+}
+
+/**
+ * One row per sentence, taken from the manager's most recent publication.
+ *
+ * A manager may hold several publications and that is the normal case - an
+ * annual report and a quarterly release are two documents, and the card should
+ * show both. What it must not show is the same sentence twice.
+ *
+ * That is not hypothetical. Berkshire's annual report was pasted a second
+ * time, differed by a character somewhere, and stored as a second publication:
+ * the facts are read by manager and not by publication, so all 452 approved
+ * claims rendered twice on the live page until one publication was deleted.
+ * Pasting warns about this now, but a warning depends on being read, and the
+ * page is where it costs something.
+ *
+ * Within one publication the database already enforces uniqueness on
+ * (publication_id, slot, source_excerpt), so every collision here is between
+ * publications. The newest wins, because a re-paste is how a document gets
+ * corrected and the corrected reading is the one to show.
+ */
+function newestOf(rows, newestFirst) {
+  const best = new Map();
+  for (const row of rows) {
+    const key = JSON.stringify([row.kind, row.slot ?? null, row.source_excerpt]);
+    const held = best.get(key);
+    if (!held) { best.set(key, row); continue; }
+    const rank = (entry) => (newestFirst.has(entry.publication_id)
+      ? newestFirst.get(entry.publication_id) : Number.MAX_SAFE_INTEGER);
+    if (rank(row) < rank(held)) best.set(key, row);
+  }
+  return [...best.values()];
+}
+
+/**
  * One manager's publications, claims and holdings, shaped for a card.
  *
  * Pure, so the grouping rules are testable without a database. `facts` is
@@ -29,7 +70,8 @@ const QUESTION = Object.fromEntries(CHAIN.map((step) => [step.slot, step.questio
  */
 export function buildSaid({ publications = [], facts = [], holdingNames = [], managerName = '' }) {
   if (!publications.length) return null;
-  const claims = facts.filter((row) => row.kind === 'chain_claim');
+  const newestFirst = freshness(publications);
+  const claims = newestOf(facts.filter((row) => row.kind === 'chain_claim'), newestFirst);
   const approved = claims.filter((row) => row.status === 'approved');
   const vocabulary = heldIssuerVocabulary(holdingNames, { exclude: [managerName] });
 
@@ -45,8 +87,7 @@ export function buildSaid({ publications = [], facts = [], holdingNames = [], ma
     })),
     // The disclosed-holdings rows, which are table facts rather than chain
     // steps and carry a scale nobody has checked yet.
-    disclosed: facts
-      .filter((row) => row.kind === 'disclosed_holding')
+    disclosed: newestOf(facts.filter((row) => row.kind === 'disclosed_holding'), newestFirst)
       .map(({ issuer, percent_owned, market_value, cost_basis, unit, status }) => ({
         issuer, percent_owned, market_value, cost_basis, unit, status,
       })),
@@ -116,7 +157,7 @@ export async function saidByManager(client, managers = [], { paged }) {
 
   const facts = await paged(
     () => client.from('manager_publication_facts')
-      .select('manager_id,kind,slot,basis,metric,segment,segment_source,themes,figures,change,issuer,percent_owned,cost_basis,market_value,unit,source_excerpt,status')
+      .select('manager_id,publication_id,kind,slot,basis,metric,segment,segment_source,themes,figures,change,issuer,percent_owned,cost_basis,market_value,unit,source_excerpt,status')
       .in('manager_id', [...byManager.keys()])
       .order('id'),
     { label: 'publication-facts' },
