@@ -16,8 +16,29 @@ describe('reading a row of statements', () => {
     assert.equal(row.currency, 'INR');
     assert.equal(row.scale, 1e7);
     assert.equal(row.revenue, 11400);
-    // Accounting parentheses are a minus sign, not decoration.
-    assert.equal(row.capex, -780);
+    // Accounting parentheses are a minus sign, not decoration - and capex is
+    // then stored as a magnitude, because it is an outflow whichever way the
+    // file wrote it.
+    assert.equal(row.capex, 780);
+  });
+
+
+  test('an outflow is stored as a magnitude, however the file wrote it', () => {
+    // Berkshire's cash flow statement writes "(20,927)" and a summary table
+    // writes "20,927". Both are money leaving. Stored as reported, the first
+    // produced a capex-to-revenue ratio of -5.6%, which reads as money
+    // coming in.
+    for (const written of ['(20,927)', '20,927', '-20927']) {
+      const { row } = readPeriod({ ...good, capex: written, dividends: written, buybacks: written });
+      assert.equal(row.capex, 20927, written);
+      assert.equal(row.dividends, 20927, written);
+      assert.equal(row.buybacks, 20927, written);
+    }
+  });
+
+  test('acquisitions keep their sign, because disposals can exceed purchases', () => {
+    const { row } = readPeriod({ ...good, acquisitions: '(1,200)' });
+    assert.equal(row.acquisitions, -1200);
   });
 
   test('a blank is not reported, which is not the same as zero', () => {
