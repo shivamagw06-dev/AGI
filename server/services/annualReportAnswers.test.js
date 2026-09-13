@@ -156,3 +156,67 @@ describe('the shape a preview reads', () => {
     }
   });
 });
+
+describe('a filing that is not a 10-K', () => {
+  // Verbatim from Reliance Industries' Integrated Annual Report 2025-26. The
+  // patterns were cut against Berkshire, and an Indian filing uses different
+  // words for the same disclosures - and the same words for different ones.
+  const RIL = {
+    remuneration: 'Board Compensation The Company’s Remuneration Policy for Directors, Key Managerial '
+      + 'Personnel and other employees is available on the website.',
+    rates: 'Interest rates on unsecured term loans are in range of 1.02% to 6.99% per annum.',
+    talent: 'Talent Attraction and Retention Reliance’s talent strategy continues to evolve in line '
+      + 'with its expanding portfolio of businesses.',
+    creditRisk: 'Credit risk is actively managed through Letters of Credit, Bank Guarantees, Parent '
+      + 'Company Guarantees, advance payments and factoring without recourse to the company to avoid '
+      + 'concentration of risk.',
+    industry: 'FY 2025-26 also saw refinery capacity rationalisation of around 1.2 mb/d, majorly in '
+      + 'Europe and North America, as older and less competitive sites closed.',
+    compute: 'By combining domestic compute capacity with localised, multilingual, voice-first '
+      + 'platforms, Reliance will empower millions of users across India.',
+  };
+  const answers = (text) => answersFor(text);
+
+  test('remuneration is what a filing outside the US calls executive pay', () => {
+    // "Remuneration Committee" appears nine times in that report and
+    // "compensation committee" never.
+    assert.match(answers(RIL.remuneration).get(97)[0].text, /Remuneration Policy for Directors/);
+  });
+
+  test('a stated range of interest rates answers the rate question', () => {
+    assert.match(answers(RIL.rates).get(66)[0].text, /1\.02% to 6\.99% per annum/);
+  });
+
+  test('talent retention is not customer retention', () => {
+    assert.deepEqual(answers(RIL.talent).get(85), []);
+  });
+
+  test('concentration of credit risk is not revenue concentration', () => {
+    // Answered "how concentrated is the revenue base?" with a sentence about
+    // letters of credit, because the word appears in both.
+    assert.deepEqual(answers(RIL.creditRisk).get(10), []);
+  });
+
+  test('an industry’s capacity is not this company’s utilisation', () => {
+    assert.deepEqual(answers(RIL.industry).get(57), []);
+  });
+
+  test('a bare mention of capacity is not capacity being added', () => {
+    assert.deepEqual(answers(RIL.compute).get(55), []);
+  });
+
+  test('the Berkshire answers these rules were cut from still hold', () => {
+    // The rules were tightened against a second filing, and the first must not
+    // regress: 22 answered before and after.
+    const brk = 'Some of Lubrizol’s largest customers also may be suppliers, although no single '
+      + 'customer represented more than 10% of Lubrizol’s consolidated revenues.\n\n'
+      + 'GEICO’s broad rate increases in recent years have restored margins but come at the cost '
+      + 'of lower retention.\n\n'
+      + 'In 2025, BNSF issued $1.85 billion of debentures due in 2056 with a weighted average '
+      + 'interest rate of 5.6%.';
+    const found = answers(brk);
+    assert.match(found.get(10)[0].text, /no single customer represented more than 10%/);
+    assert.match(found.get(85)[0].text, /cost of lower retention/);
+    assert.match(found.get(66)[0].text, /weighted average interest rate/);
+  });
+});
