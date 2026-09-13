@@ -120,3 +120,94 @@ describe('a manager with nothing pasted', () => {
     assert.equal(built.awaiting_review[0].pending, 1);
   });
 });
+
+describe('the same sentence stored twice is shown once', () => {
+  // Berkshire's annual report was pasted a second time, differed by a
+  // character, and stored as a second publication. Facts are read by manager
+  // rather than by publication, so all 452 approved claims rendered twice on
+  // the live page. Pasting warns about this now; the page should not depend
+  // on the warning being read.
+  const OLD = { id: 'old', title: '2025 Annual Report', as_of_date: '2025-12-31',
+    source_url: null, pasted_at: '2026-09-12T12:26:12Z', manager_id: 'm1' };
+  const NEW = { id: 'new', title: '2025 Annual Report', as_of_date: '2025-12-31',
+    source_url: null, pasted_at: '2026-09-13T05:47:28Z', manager_id: 'm1' };
+  const SENTENCE = 'In 2025, BNSF’s operating margin improved to 34.5% from 32.0% in 2024.';
+
+  const twice = (over = {}) => buildSaid({
+    publications: [OLD, NEW],
+    facts: [
+      { kind: 'chain_claim', status: 'approved', slot: 'what_changed', basis: 'derived',
+        publication_id: 'old', segment: 'from-the-old-one', source_excerpt: SENTENCE },
+      { kind: 'chain_claim', status: 'approved', slot: 'what_changed', basis: 'derived',
+        publication_id: 'new', segment: 'from-the-new-one', source_excerpt: SENTENCE },
+      ...(over.facts || []),
+    ],
+    holdingNames: [],
+    managerName: 'Berkshire Hathaway Inc',
+  });
+
+  test('one claim reaches the page, not two', () => {
+    const built = twice();
+    const rows = built.by_step.flatMap((group) => group.claims || []);
+    assert.equal(rows.length, 1);
+    assert.equal(built.approved_count, 1);
+  });
+
+  test('the surviving claim is the one from the newer publication', () => {
+    // Asserting the count alone would pass just as happily on the stale row,
+    // and a re-paste is how a document gets corrected.
+    const rows = twice().by_step.flatMap((group) => group.claims || []);
+    assert.equal(rows[0].segment, 'from-the-new-one');
+  });
+
+  test('a duplicated holding is shown once, from the newer publication', () => {
+    const built = buildSaid({
+      publications: [OLD, NEW],
+      facts: [
+        { kind: 'disclosed_holding', status: 'approved', issuer: 'Apple Inc.', percent_owned: 1.6,
+          market_value: 61962, cost_basis: 6255, unit: 'millions',
+          publication_id: 'old', source_excerpt: 'Apple row' },
+        { kind: 'disclosed_holding', status: 'approved', issuer: 'Apple Inc.', percent_owned: 9.9,
+          market_value: 61962, cost_basis: 6255, unit: 'millions',
+          publication_id: 'new', source_excerpt: 'Apple row' },
+      ],
+      holdingNames: [], managerName: 'Berkshire Hathaway Inc',
+    });
+    assert.equal(built.disclosed.length, 1);
+    assert.equal(built.disclosed[0].percent_owned, 9.9);
+  });
+
+  test('a pending duplicate is counted once, not twice', () => {
+    const built = twice({ facts: [
+      { kind: 'chain_claim', status: 'pending', slot: 'risks', publication_id: 'old',
+        source_excerpt: 'A risk sentence nobody has read.' },
+      { kind: 'chain_claim', status: 'pending', slot: 'risks', publication_id: 'new',
+        source_excerpt: 'A risk sentence nobody has read.' },
+    ] });
+    const risks = built.awaiting_review.find((step) => step.slot === 'risks');
+    assert.equal(risks.pending, 1);
+  });
+
+  test('two different sentences are both kept', () => {
+    // The rule removes repeats, never content. A manager with an annual report
+    // and a quarterly release has two documents, and both belong on the card.
+    const built = twice({ facts: [
+      { kind: 'chain_claim', status: 'approved', slot: 'what_changed', basis: 'derived',
+        publication_id: 'new', source_excerpt: 'Premiums written increased $694 million.' },
+    ] });
+    const rows = built.by_step.flatMap((group) => group.claims || []);
+    assert.equal(rows.length, 2);
+    assert.deepEqual(new Set(rows.map((row) => row.source_excerpt)),
+      new Set([SENTENCE, 'Premiums written increased $694 million.']));
+  });
+
+  test('the same sentence under different steps is not a duplicate', () => {
+    // One sentence can answer two questions, which the database allows on
+    // purpose - uniqueness there is (publication, slot, excerpt).
+    const built = twice({ facts: [
+      { kind: 'chain_claim', status: 'approved', slot: 'how_much', publication_id: 'new',
+        metric: 'operating margin', source_excerpt: SENTENCE },
+    ] });
+    assert.equal(built.by_step.flatMap((group) => group.claims || []).length, 2);
+  });
+});
