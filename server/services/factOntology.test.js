@@ -1,7 +1,7 @@
 import test, { describe } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  DEFINITIONS, MEASUREMENT, ENTITY_SCOPE, VERDICT,
+  DEFINITIONS, DIMENSIONLESS, MEASUREMENT, ENTITY_SCOPE, VERDICT,
   factKey, familyOf, reconcile, derive,
 } from './factOntology.js';
 
@@ -187,4 +187,41 @@ describe('four verdicts, not two', () => {
     assert.notEqual(VERDICT.INFERRED, VERDICT.DERIVED);
     assert.equal(new Set(Object.values(VERDICT)).size, 4);
   });
+});
+
+test('a definition is complete or it is not a definition', () => {
+  // A definition missing `measures` stops being compared to anything and one
+  // missing `measurement` cannot be stored, both silently.
+  for (const [id, definition] of DEFINITIONS) {
+    for (const field of ['concept', 'measurement', 'measures', 'label']) {
+      assert.ok(definition[field], `${id} has no ${field}`);
+    }
+    assert.ok(Object.values(MEASUREMENT).includes(definition.measurement), `${id} has an unknown basis`);
+  }
+});
+
+test('a quantity is competed for within one concept, never across two', () => {
+  // Two definitions claiming the same quantity are compared against each
+  // other. If they sat under different concepts the comparison would cross a
+  // boundary the rest of the system is built to respect.
+  const byQuantity = new Map();
+  for (const [id, definition] of DEFINITIONS) {
+    if (!byQuantity.has(definition.measures)) byQuantity.set(definition.measures, new Set());
+    byQuantity.get(definition.measures).add(definition.concept);
+  }
+  for (const [quantity, concepts] of byQuantity) {
+    assert.equal(concepts.size, 1, `${quantity} is claimed under ${[...concepts].join(' and ')}`);
+  }
+});
+
+test('a count and a ratio are dimensionless; everything else is money', () => {
+  assert.ok(DIMENSIONLESS.has(MEASUREMENT.COUNT));
+  assert.ok(DIMENSIONLESS.has(MEASUREMENT.DERIVED_RATIO));
+  for (const basis of [MEASUREMENT.CASH, MEASUREMENT.ACCRUAL, MEASUREMENT.STATUTORY,
+    MEASUREMENT.SEGMENT_REPORTING, MEASUREMENT.MANAGEMENT_ADJUSTED]) {
+    assert.equal(DIMENSIONLESS.has(basis), false, `${basis} should require a currency`);
+  }
+  // Share counts are the reason COUNT exists: Q77 asks whether the share count
+  // moved, and 1,353 crore shares are not an amount of rupees.
+  assert.equal(DEFINITIONS.get('SHARE_COUNT.OUTSTANDING').measurement, MEASUREMENT.COUNT);
 });

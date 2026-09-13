@@ -108,13 +108,24 @@ test('what the calculator produces is what the store is asked to accept', () => 
   assert.deepEqual(unwritable({ ...ratio, company: 'RELIANCE', reported_in_document: RELIANCE }), []);
 });
 
-test('a quotient with a currency on it is refused', () => {
-  // 8.237% is not 8.237% of rupees. A currency here would let it be summed or
-  // converted with figures that are amounts of money.
+test('a dimensionless figure with a currency on it is refused', () => {
+  // 8.237% is not 8.237% of rupees, and 1,353 crore shares are not rupees
+  // either. A currency on either would let it be summed with amounts of money.
   assert.deepEqual(unwritable({
     ...capex, concept: 'ebitda_margin', definition_id: 'EBITDA_MARGIN.ON_REVENUE_OPERATIONS_NET',
     measurement_basis: 'derived_ratio', verdict: 'derived', value: 0.08237, currency: 'INR', unit: 1,
-  }), ['currency INR on a ratio']);
+  }), ['currency INR on a derived_ratio figure']);
+  assert.deepEqual(unwritable({
+    ...capex, concept: 'share_count', definition_id: 'SHARE_COUNT.OUTSTANDING',
+    measurement_basis: 'count', value: 13532000000, currency: 'INR', unit: 1,
+  }), ['currency INR on a count figure']);
+});
+
+test('a share count is writable without a currency', () => {
+  assert.deepEqual(unwritable({
+    ...capex, concept: 'share_count', definition_id: 'SHARE_COUNT.OUTSTANDING',
+    measurement_basis: 'count', value: 13532000000, currency: null, unit: 1,
+  }), []);
 });
 
 test('an amount of money still has to say which money', () => {
