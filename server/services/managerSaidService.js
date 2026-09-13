@@ -56,15 +56,32 @@ function freshness(publications) {
  * publications. The newest wins, because a re-paste is how a document gets
  * corrected and the corrected reading is the one to show.
  */
+/** Where a row's publication sits in the newest-first order. */
+function rankOf(newestFirst, row) {
+  return newestFirst.has(row.publication_id)
+    ? newestFirst.get(row.publication_id) : Number.MAX_SAFE_INTEGER;
+}
+
+/**
+ * The document a claim came from, as a page needs to name it.
+ *
+ * Only what identifies it. The digest stays behind: it is a hash of the
+ * manager's own copyrighted text.
+ */
+function documentOf(publications, publicationId) {
+  const found = (publications || []).find((publication) => publication.id === publicationId);
+  if (!found) return null;
+  const { id, title, as_of_date, source_url } = found;
+  return { id, title, as_of_date, source_url };
+}
+
 function newestOf(rows, newestFirst) {
   const best = new Map();
   for (const row of rows) {
     const key = JSON.stringify([row.kind, row.slot ?? null, row.source_excerpt]);
     const held = best.get(key);
     if (!held) { best.set(key, row); continue; }
-    const rank = (entry) => (newestFirst.has(entry.publication_id)
-      ? newestFirst.get(entry.publication_id) : Number.MAX_SAFE_INTEGER);
-    if (rank(row) < rank(held)) best.set(key, row);
+    if (rankOf(newestFirst, row) < rankOf(newestFirst, held)) best.set(key, row);
   }
   return [...best.values()];
 }
@@ -80,7 +97,15 @@ export function buildSaid({ publications = [], facts = [], holdingNames = [], ma
   if (!publications.length) return null;
   const newestFirst = freshness(publications);
   const claims = newestOf(facts.filter((row) => row.kind === 'chain_claim'), newestFirst);
-  const approved = claims.filter((row) => row.status === 'approved');
+  // Newest document first, and each claim carrying the document it came from.
+  // A manager accumulates publications - the 2025 annual report and the 2026
+  // second-quarter report are both Berkshire's own words - and the card merged
+  // them under a single heading naming only the most recent, so a sentence
+  // from last year's report read as this quarter's. The order decides which
+  // sentence is shown; the label makes the rest honest.
+  const approved = claims.filter((row) => row.status === 'approved')
+    .map((row) => ({ ...row, document: documentOf(publications, row.publication_id) }))
+    .sort((a, b) => rankOf(newestFirst, a) - rankOf(newestFirst, b));
   const vocabulary = heldIssuerVocabulary(holdingNames, { exclude: [managerName] });
 
   const pendingByStep = new Map();
