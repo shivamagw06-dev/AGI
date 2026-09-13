@@ -31,6 +31,13 @@ export const MEASUREMENT = Object.freeze({
   // A share count is not an amount of money and not a quotient. It is measured
   // by counting, and the distinction matters because a count has no currency.
   COUNT: 'count',
+  // The source did not say. Used only where a figure arrived from somewhere
+  // that held one column for several definitions measured differently: capital
+  // expenditure, EBIT and dividends each span cash and accrual, so for those
+  // the basis is genuinely unknown rather than merely unstated. No purpose
+  // admits it, which is the point - such a figure stays visible and cannot be
+  // selected for work that depends on knowing how it was measured.
+  UNRECORDED: 'unrecorded',
 });
 
 /**
@@ -129,6 +136,9 @@ export const DEFINITIONS = new Map([
   ['NET_INCOME.ATTRIBUTABLE_TO_OWNERS', { concept: 'net_income', measurement: MEASUREMENT.STATUTORY, measures: 'net_income_attributable', label: 'Profit after tax attributable to owners of the company' }],
 
   // ── the balance sheet ─────────────────────────────────────────────
+  ['GROSS_PROFIT.STATEMENT', { concept: 'gross_profit', measurement: MEASUREMENT.STATUTORY, measures: 'gross_profit', label: 'Gross profit' }],
+  ['OPERATING_EXPENSE.STATEMENT', { concept: 'operating_expense', measurement: MEASUREMENT.STATUTORY, measures: 'operating_expense', label: 'Operating expenses' }],
+  ['ACQUISITIONS.CASH_PAID', { concept: 'acquisitions', measurement: MEASUREMENT.CASH, measures: 'acquisitions', label: 'Cash paid to acquire businesses' }],
   ['RECEIVABLES.TRADE', { concept: 'receivables', measurement: MEASUREMENT.STATUTORY, measures: 'trade_receivables', label: 'Trade receivables' }],
   ['INVENTORIES.TOTAL', { concept: 'inventories', measurement: MEASUREMENT.STATUTORY, measures: 'inventories', label: 'Inventories' }],
   ['PAYABLES.TRADE', { concept: 'payables', measurement: MEASUREMENT.STATUTORY, measures: 'trade_payables', label: 'Trade payables' }],
@@ -160,7 +170,48 @@ export const DEFINITIONS = new Map([
   ['LEVERAGE.GROSS_DEBT_TO_EBITDA', { concept: 'leverage', measurement: MEASUREMENT.DERIVED_RATIO, measures: 'gross_debt_to_ebitda', label: 'Gross debt over EBITDA' }],
   ['FCF_MARGIN.CASH_CAPEX_ON_REVENUE_OPERATIONS_NET', { concept: 'fcf_margin', measurement: MEASUREMENT.DERIVED_RATIO, measures: 'free_cash_flow_margin', label: 'Free cash flow after cash capex, over revenue from operations' }],
   ['FCF_MARGIN.MANAGEMENT_CAPEX_ON_REVENUE_OPERATIONS_NET', { concept: 'fcf_margin', measurement: MEASUREMENT.DERIVED_RATIO, measures: 'free_cash_flow_margin', label: 'Free cash flow after management capex, over revenue from operations' }],
+  // ── figures whose definition the source never recorded ────────────
+  //
+  // company_financials held one column per line item, so a capex of 1,44,271
+  // could be management's, the segment note's or the cash flow statement's,
+  // and nothing recorded which. Dropping those rows loses real data; importing
+  // them as though the definition were known is worse, because then the
+  // uncertainty is invisible. They come in under these instead.
+  //
+  // Where every definition of a concept shares a basis, the basis is kept: an
+  // unrecorded revenue is still a statutory figure, and only which statutory
+  // figure is missing. Where the definitions are measured differently, the
+  // basis is unrecorded too.
+  //
+  // Each has its own `measures`, so an unrecorded figure never produces a
+  // spread against a known one. Two numbers cannot be said to disagree when
+  // one of them might be the other under a different label.
+  ['CAPEX.UNRECORDED', { concept: 'capex', measurement: MEASUREMENT.UNRECORDED, measures: 'capital_expenditure_unrecorded', unrecorded: true, label: 'Capital expenditure, definition not recorded' }],
+  ['EBIT.UNRECORDED', { concept: 'ebit', measurement: MEASUREMENT.UNRECORDED, measures: 'ebit_unrecorded', unrecorded: true, label: 'EBIT, definition not recorded' }],
+  ['DIVIDENDS.UNRECORDED', { concept: 'dividends', measurement: MEASUREMENT.UNRECORDED, measures: 'dividends_unrecorded', unrecorded: true, label: 'Dividends, declared or paid not recorded' }],
+  ['REVENUE.UNRECORDED', { concept: 'revenue', measurement: MEASUREMENT.STATUTORY, measures: 'revenue_unrecorded', unrecorded: true, label: 'Revenue, definition not recorded' }],
+  ['EBITDA.UNRECORDED', { concept: 'ebitda', measurement: MEASUREMENT.MANAGEMENT_ADJUSTED, measures: 'ebitda_unrecorded', unrecorded: true, label: 'EBITDA, definition not recorded' }],
+  ['DEBT.UNRECORDED', { concept: 'debt', measurement: MEASUREMENT.STATUTORY, measures: 'debt_unrecorded', unrecorded: true, label: 'Debt, gross or net not recorded' }],
+  ['CASH.UNRECORDED', { concept: 'cash', measurement: MEASUREMENT.STATUTORY, measures: 'cash_unrecorded', unrecorded: true, label: 'Cash, definition not recorded' }],
+  ['NET_INCOME.UNRECORDED', { concept: 'net_income', measurement: MEASUREMENT.STATUTORY, measures: 'net_income_unrecorded', unrecorded: true, label: 'Profit after tax, before or after non-controlling interests not recorded' }],
+  ['TAX_EXPENSE.UNRECORDED', { concept: 'tax_expense', measurement: MEASUREMENT.ACCRUAL, measures: 'tax_expense_unrecorded', unrecorded: true, label: 'Tax expense, definition not recorded' }],
+  // Invested capital is computed, never disclosed, and company_financials
+  // recorded the answer without the formula. There is no non-unrecorded
+  // version of it to hold until something computes it with its inputs.
+  ['INVESTED_CAPITAL.UNRECORDED', { concept: 'invested_capital', measurement: MEASUREMENT.UNRECORDED, measures: 'invested_capital_unrecorded', unrecorded: true, label: 'Invested capital, formula not recorded' }],
+  ['SHARE_COUNT.UNRECORDED', { concept: 'share_count', measurement: MEASUREMENT.COUNT, measures: 'share_count_unrecorded', unrecorded: true, label: 'Share count, definition not recorded' }],
 ]);
+
+/**
+ * Whether the source that supplied a figure recorded which definition it is.
+ *
+ * Asked wherever a figure is about to be presented as an answer, because a
+ * number whose definition nobody wrote down looks exactly like one whose
+ * definition is known.
+ */
+export function isUnrecorded(definition_id) {
+  return DEFINITIONS.get(definition_id)?.unrecorded === true;
+}
 
 /** What a definition claims to measure, or null if the definition is unknown. */
 export function measuredQuantity(definition_id) {
