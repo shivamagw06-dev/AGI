@@ -1,6 +1,6 @@
 import test, { describe } from 'node:test';
 import assert from 'node:assert/strict';
-import { answersFor, coverage, answerable, coverageSummary, FINDS } from './annualReportAnswers.js';
+import { answersFor, coverage, answerable, coverageSummary, policyProse, FINDS } from './annualReportAnswers.js';
 import { QUESTIONS } from './annualReportQuestions.js';
 
 // Verbatim from Berkshire's 2025 annual report.
@@ -260,5 +260,86 @@ describe('a policy that mentions a thing is not the thing', () => {
   test('another company’s capacity is not this company’s', () => {
     const china = 'PTA-PX delta decreased by 9.8% due to significant capacity expansion of PTA in China.';
     assert.deepEqual(answersFor(china).get(55), []);
+  });
+});
+
+describe('a third filing, and what it broke', () => {
+  // Tata Sons' 108th Annual Report 2025-26. Two filings were not enough: this
+  // one phrases its segment note in a third way again.
+  test('an accounting policy is not a list of segments', () => {
+    // "reports?" carried no word boundary, so it fired on "reported" - the
+    // same defect as `float` matching "floating rate".
+    const policy = 'Revenue and expenses directly attributable to segments are reported '
+      + 'under each reportable segment.';
+    assert.deepEqual(answersFor(policy).get(3), []);
+  });
+
+  test('a note reference is not a count of segments', () => {
+    // Requiring a number before "segments" read "Note 37 - Segment Information"
+    // as a company with 37 segments, and it sorted ahead of the real answer.
+    const crossRef = 'Further details about the business operations of the Group are provided '
+      + 'in Note 37 – Segment Information.';
+    assert.deepEqual(answersFor(crossRef).get(3), []);
+  });
+
+  test('both earlier filings still answer, and with the segments named', () => {
+    const ril = 'Segment Information The Group has four principal operating and reporting '
+      + 'segments; viz. Oil To Chemicals (O2C), Oil and Gas, Retail and Digital Services.';
+    const brk = 'Lubrizol operates two business segments: Lubrizol Additives, which produces '
+      + 'engine lubricant additives, and Lubrizol Advanced Materials.';
+    assert.match(answersFor(ril).get(3)[0].text, /Oil To Chemicals \(O2C\), Oil and Gas, Retail and Digital Services/);
+    assert.match(answersFor(brk).get(3)[0].text, /Lubrizol Additives/);
+  });
+});
+
+describe('a definition is not a disclosure', () => {
+  // All four verbatim from Tata Sons' report, all returned as answers.
+  const POLICY = [
+    [35, 'Termination benefits Termination benefits are expensed at the earlier of when the '
+      + 'Group can no longer withdraw the offer of those benefits and when the Group recognises '
+      + 'any related restructuring costs.'],
+    [70, 'Amendments to Ind AS 1 - ‘Presentation of Financial Statements’ - The amendments relate '
+      + 'to guidance on classification of liabilities as current or non-current and classification '
+      + 'of liabilities with covenants.'],
+    [84, 'General Insurance business Acquisition costs Acquisition costs are defined as costs that '
+      + 'vary with and are primarily related to the acquisition of new insurance contracts and '
+      + 'renewal insurance contracts e.g. commission, distribution fee and rewards.'],
+    [85, 'The Group considers the retention moneys held by customer to be protection money in the '
+      + 'hands of the customers and hence are not subjected to discounting pursuant to para 61 '
+      + 'and 62(c) of Ind AS 115.'],
+  ];
+
+  for (const [n, sentence] of POLICY) {
+    test(`question ${n} is not answered by an accounting policy`, () => {
+      assert.deepEqual(answersFor(sentence).get(n), []);
+      assert.equal(policyProse(sentence), true);
+    });
+  }
+
+  test('the disclosures those questions exist for still answer', () => {
+    // Same questions, real sentences, across three filings.
+    const real = [
+      [70, 'The Company has satisfied all the covenants prescribed in terms of borrowings.'],
+      [85, 'GEICO’s broad rate increases in recent years have restored margins but come at the '
+        + 'cost of lower retention.'],
+      [37, 'We recorded other-than-temporary impairment losses in 2025 on our investments in '
+        + 'The Kraft Heinz Company.'],
+      [86, 'Reliance continues to strengthen relationships with key suppliers while actively '
+        + 'diversifying its supplier base to reduce concentration risk.'],
+    ];
+    for (const [n, sentence] of real) {
+      assert.ok(answersFor(sentence).get(n).length, `question ${n} lost its answer`);
+    }
+  });
+
+  test('the question about accounting policy is exempt', () => {
+    // Question 99 asks what assumptions in the accounting policies could change
+    // earnings. Excluding policy prose there would silence the one question it
+    // is the answer to.
+    const estimates = 'Critical Accounting Judgements and Key Sources of Estimation Uncertainty '
+      + 'The preparation of the Company’s Financial Statements requires management to make '
+      + 'judgement, estimates and assumptions in accordance with the accounting standards.';
+    assert.equal(policyProse(estimates), true);
+    assert.ok(answersFor(estimates).get(99).length, 'question 99 was silenced by the guard');
   });
 });
