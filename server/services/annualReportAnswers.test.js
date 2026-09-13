@@ -343,3 +343,40 @@ describe('a definition is not a disclosure', () => {
     assert.ok(answersFor(estimates).get(99).length, 'question 99 was silenced by the guard');
   });
 });
+
+describe('a holding company names its segments differently again', () => {
+  // Tata Sons, after the policy guard: "Segment-wise Performance The main
+  // segments for the Company are Investment holdings and Others."
+  const TATA = 'Segment-wise Performance The main segments for the Company are Investment '
+    + 'holdings and Others.';
+
+  test('"the main segments are X and Y" is a definition', () => {
+    assert.match(answersFor(TATA).get(3)[0].text, /Investment holdings and Others/);
+  });
+
+  test('it matched for the right reason, not because of a hyphen', () => {
+    // The separator alternative ended in [A-Z], which under /i matches any
+    // letter - so it fired on the "w" of "Segment-wise" and would have fired
+    // on any hyphenated "segment-" word in any document.
+    assert.equal(/[A-Z]/i.test('w'), true, 'the premise of the bug');
+    assert.deepEqual(answersFor('Segment-wise performance is discussed in the review that follows.').get(3), []);
+  });
+
+  test('a qualifier is required, so a policy sentence does not qualify', () => {
+    // "in respect of certain segments are provided using written down value"
+    // matched when any "segments ... are" counted.
+    const depreciation = 'Depreciation on Property, Plant and Equipment in respect of certain '
+      + 'segments are provided using written down value method over their useful lives.';
+    assert.deepEqual(answersFor(depreciation).get(3), []);
+  });
+
+  test('all three filings still name their segments', () => {
+    const ril = 'Segment Information The Group has four principal operating and reporting '
+      + 'segments; viz. Oil To Chemicals (O2C), Oil and Gas, Retail and Digital Services.';
+    const brk = 'Lubrizol operates two business segments: Lubrizol Additives and Lubrizol '
+      + 'Advanced Materials.';
+    assert.match(answersFor(ril).get(3)[0].text, /Oil To Chemicals/);
+    assert.match(answersFor(brk).get(3)[0].text, /Lubrizol Additives/);
+    assert.match(answersFor(TATA).get(3)[0].text, /Investment holdings/);
+  });
+});
