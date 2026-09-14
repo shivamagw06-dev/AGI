@@ -57,6 +57,20 @@ export const PURPOSES = new Map([
     rule: 'the statutory accounts take the statutory measurement and nothing else',
     prefer: [[MEASUREMENT.STATUTORY]],
   }],
+  // Reading a filing rather than building one calculation. Fifty-one questions
+  // want different bases - a margin wants a statutory revenue and a free cash
+  // flow wants cash capex - and forcing one basis across them blocks whichever
+  // half it does not suit. This admits every basis at first preference, so a
+  // single disclosed figure is taken as it is and a concept disclosed several
+  // ways comes back needing a definition, which is the reader's choice to make
+  // rather than a rule's.
+  ['any_disclosed', {
+    label: 'reading what the filing discloses',
+    rule: 'any disclosed basis is taken; where a concept is disclosed several ways the definition must be named',
+    prefer: [[MEASUREMENT.CASH, MEASUREMENT.ACCRUAL, MEASUREMENT.STATUTORY,
+      MEASUREMENT.MANAGEMENT_ADJUSTED, MEASUREMENT.SEGMENT_REPORTING, MEASUREMENT.DERIVED_RATIO,
+      MEASUREMENT.COUNT]],
+  }],
   ['segment_basis', {
     label: 'segment analysis',
     rule: 'segment analysis takes the segment note, which is the only basis segments are disclosed on',
