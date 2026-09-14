@@ -145,7 +145,20 @@ for (const year of years) {
   for (const fact of mine) console.log(`   ${String(fact.value).padStart(10)}  ${fact.definition_id}`);
 }
 
-if (!apply) { console.log('\nDry run. Nothing written. Re-run with --apply to write.'); process.exit(0); }
+const out = flag('--out');
+if (out) {
+  // The facts, with the row each was read from, for a machine that cannot see
+  // this PDF. Every one has already passed readFacts here; the file carries
+  // the citations so a reader can check any figure against the report.
+  fs.writeFileSync(out, `${JSON.stringify({
+    source: { pdf: pdfPath.split('/').pop(), page: sourcePage, company,
+      reported_in_document: flag('--document', 'RIL FY2025-26'), extracted_at: new Date().toISOString() },
+    facts,
+  }, null, 2)}\n`);
+  console.log(`\nwrote ${facts.length} facts to ${out}`);
+}
+
+if (!apply) { console.log('\nDry run. Nothing written to the database. Re-run with --apply to write.'); process.exit(0); }
 
 const client = createSupabaseAdmin();
 if (!client) { console.error('SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required.'); process.exit(1); }
