@@ -109,6 +109,26 @@ export function blockedBy(question, provenance) {
 }
 
 /**
+ * Which periods to resolve, given what is already stored and what was asked
+ * for.
+ *
+ * Newest first and bounded. A filing carries ten years in its highlights table
+ * and resolving all of them costs a search of the document per year for
+ * nothing a reader asked about, so the list is capped - and the cap takes the
+ * newest, because a question about growth wants this year and last, not the
+ * two furthest back.
+ */
+export function periodEndsFor({ held = [], requested = [], limit = 6 } = {}) {
+  const ends = new Set();
+  for (const fact of held) if (fact?.period_end) ends.add(fact.period_end);
+  for (const end of requested) {
+    const trimmed = String(end ?? '').trim();
+    if (trimmed) ends.add(trimmed);
+  }
+  return [...ends].sort((a, b) => String(b).localeCompare(String(a))).slice(0, limit);
+}
+
+/**
  * Every computed question, answered from the store and the document together.
  *
  * `periods` are resolved newest first, because the formulas compare the first

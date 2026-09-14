@@ -25,6 +25,7 @@ import {
 import {
   publicationQueue, publicationQueueCounts, reviewPublicationClaims,
 } from '../services/publicationReviewService.js';
+import multer from 'multer';
 import { createSupabaseAdmin } from '../lib/supabaseAdmin.js';
 import {
   managerCheck, readPublication, storePublication, managerPublications, publicationMatch,
@@ -32,6 +33,10 @@ import {
 import { coverage, coverageSummary, answerable, FINDS } from '../services/annualReportAnswers.js';
 import { QUESTIONS } from '../services/annualReportQuestions.js';
 import { computedAnswers, periodsRead } from '../services/annualReportComputed.js';
+import { answersFromFacts, periodEndsFor } from '../services/annualReportFromFacts.js';
+import { joinPages, pagesFromPdf } from '../services/documentText.js';
+import { loadFacts, saveFacts } from '../services/factStore.js';
+import { MAX_PDF_BYTES } from './portfolioImportGuards.js';
 import { assembleEvidence, evidenceFor, judge, FROM_ALL } from '../services/judgmentTier.js';
 import { evidenceSentencesFor } from '../services/questionRetrieval.js';
 import { sentences } from '../services/publicationIntelligence.js';
@@ -378,6 +383,109 @@ export default function createInstitutionalHoldingsRouter() {
   // A separate call from reading the report, because it costs nine model
   // requests and the other ninety-one answers are worth having in front of a
   // reader before any of them are spent.
+  /**
+   * The same hundred questions, read from the document itself.
+   *
+   * A paste and a PDF are not equivalent inputs, which is why this is a second
+   * endpoint rather than a flag on the first. Reliance states operating cash
+   * flow twice under the same words - 79,059 crore standalone and 1,92,113
+   * consolidated - and the only thing separating them is the header on the
+   * page each sits on. Flattened into a paste that distinction is gone, along
+   * with the page number a reader needs to check a figure. So the file is
+   * read as pages and kept that way.
+   *
+   * Nothing is written unless asked. A reader clicking to read a report is not
+   * asking for a database write, and the figures recovered are returned either
+   * way so the decision can be made after seeing them.
+   */
+  const readReport = multer({
+    storage: multer.memoryStorage(),
+    limits: {
+      fileSize: MAX_PDF_BYTES,
+      files: 1,
+      parts: 6,
+      fields: 5,
+      fieldSize: 256,
+      fieldNameSize: 64,
+      headerPairs: 32,
+    },
+  }).single('report');
+
+  router.post('/admin/annual-report/document', requireAdmin, (req, res) => {
+    readReport(req, res, async (uploadError) => {
+      try {
+        if (uploadError) {
+          return sendError(res, new Error(uploadError.code === 'LIMIT_FILE_SIZE'
+            ? `the file is larger than ${Math.round(MAX_PDF_BYTES / 1024 / 1024)}MB`
+            : 'the upload could not be read'), 400);
+        }
+        if (!req.file?.buffer?.length) return sendError(res, new Error('no file was uploaded'), 400);
+
+        const pages = await pagesFromPdf(req.file.buffer);
+        if (!pages.length) return sendError(res, new Error('no text could be read from this file'), 400);
+        const text = joinPages(pages);
+
+        const ticker = String(req.body?.ticker || '').trim().toUpperCase();
+        const company = String(req.body?.company || ticker || '').trim();
+        const document = String(req.body?.document || req.file.originalname || 'uploaded document').trim();
+        const store = String(req.body?.store || '') === 'true';
+        const prefer = req.body?.revenue_definition
+          ? { revenue: String(req.body.revenue_definition) } : {};
+
+        // What the document states in its own sentences, unchanged.
+        const stated = coverageSummary(text, { questions: QUESTIONS });
+
+        let computed = { answers: {}, periods: [], recovered: 0, written: null, reason: null };
+        if (company) {
+          const client = createSupabaseAdmin();
+          // Held facts first: a figure already extracted is not searched for
+          // again, however many questions want it.
+          const held = client
+            ? (await loadFacts(client, { company, accounting_scope: 'consolidated' })).facts
+            : [];
+          const periodEnds = periodEndsFor({
+            held,
+            requested: [
+              ...String(req.body?.periods || '').split(',').map((one) => one.trim()),
+              String(req.body?.period_end || '').trim(),
+            ],
+          });
+
+          const read = answersFromFacts({
+            periodEnds,
+            facts: held, pages, document: text, company, reportedInDocument: document,
+            purpose: 'any_disclosed', prefer,
+            currency: String(req.body?.currency || 'INR'),
+            unit: Number(req.body?.unit) || 10000000,
+          });
+
+          let written = null;
+          if (store && client && read.recovered.length) {
+            const result = await saveFacts(client, read.recovered);
+            written = { written: result.written, refused: result.refused.length,
+              error: result.error ? result.error.message : null };
+          }
+          computed = {
+            company,
+            answers: Object.fromEntries(read.answers),
+            periods: read.periods.map((period) => period.period_end),
+            recovered: read.recovered.length,
+            written,
+            reason: periodEnds.length ? null : 'no period was given and none is stored, so nothing could be resolved',
+          };
+        }
+
+        return res.json({
+          pages: pages.length,
+          characters: text.length,
+          filename: req.file.originalname || null,
+          ...stated,
+          computed,
+        });
+      } catch (error) { return sendError(res, error, 400); }
+    });
+  });
+
   router.post('/admin/annual-report/judgements', requireAdmin, async (req, res) => {
     try {
       const body = req.body || {};
