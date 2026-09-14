@@ -58,6 +58,9 @@ export const TARGETS = new Map([
   // Receivables" on the balance sheet is a balance; in the cash flow statement
   // it is the change in that balance, and Reliance's are 58,491 and (28,196).
   // Naming the statement is what keeps them apart.
+  ['REVENUE.OPERATIONS_NET', { kind: 'statements', statement: /Statement of Profit and Loss/i, patterns: [/\bRevenue [Ff]rom Operations\b/] }],
+  ['REVENUE.TOTAL_INCOME', { kind: 'statements', statement: /Statement of Profit and Loss/i, patterns: [/\bTotal Income\b/] }],
+  ['CASH.AND_EQUIVALENTS', { kind: 'statements', statement: /Balance Sheet/i, patterns: [/\bCash and Cash Equivalents\b/] }],
   ['INVENTORIES.TOTAL', { kind: 'statements', statement: /Balance Sheet/i, patterns: [/\bInventories\b/] }],
   ['RECEIVABLES.TRADE', { kind: 'statements', statement: /Balance Sheet/i, patterns: [/\bTrade Receivables\b/] }],
   ['PAYABLES.TRADE', { kind: 'statements', statement: /Balance Sheet/i, patterns: [/\bTrade Payables\b/] }],
