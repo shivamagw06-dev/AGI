@@ -158,6 +158,9 @@ export function readFacts({ payload, document, company, reportedInDocument }) {
       verdict: 'stated',
       as_reported_label: raw.as_reported_label,
       source_section: raw.source_section || null,
+      // The page is on the fact in the table and was being dropped here, so
+      // every stored fact cited a sentence without saying where to find it.
+      source_page: raw.source_page ?? null,
       source_sentence: raw.source_sentence,
     };
 

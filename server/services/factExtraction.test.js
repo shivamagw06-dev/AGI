@@ -207,3 +207,19 @@ test('a period type outside the register is refused', () => {
 test('the register the store enforces is the register extraction accepts', () => {
   assert.deepEqual(Object.values(PERIOD_TYPE).sort(), ['annual', 'half', 'quarter']);
 });
+
+test('a fact keeps the page it was read from', () => {
+  // company_facts has a source_page column and nothing filled it: every stored
+  // fact cited a sentence without saying where in the filing to find it.
+  const sentence = 'Net   Cash   Flow   from   Operating   Activities   *   1,92,113   1,78,703';
+  const { facts } = readFacts({
+    payload: { facts: [{
+      concept: 'cfo', definition_id: 'CFO.STATEMENT', measurement_basis: 'cash',
+      value: 192113, period_end: '2026-03-31', currency: 'INR', unit: 10000000,
+      as_reported_label: 'Net Cash Flow from Operating Activities',
+      source_section: 'consolidated statements', source_page: 103, source_sentence: sentence,
+    }] },
+    document: sentence, company: 'RELIANCE', reportedInDocument: 'RIL FY2025-26',
+  });
+  assert.equal(facts[0].source_page, 103);
+});
