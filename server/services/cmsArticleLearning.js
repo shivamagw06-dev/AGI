@@ -39,10 +39,39 @@ const KNOWN_TICKERS = new Set([
   'NVDA',
 ]);
 
-function extractTickers(...parts) {
+function normalizedCompanyName(value = '') {
+  return String(value).toUpperCase().replace(/\b(LIMITED|LTD|INDIA|THE)\b/g, ' ').replace(/[^A-Z0-9]/g, '');
+}
+
+function extractTickers(parts, universe = []) {
   const text = parts.filter(Boolean).join(' ').toUpperCase();
   const matches = text.match(/\b[A-Z]{2,12}\b/g) || [];
-  return [...new Set(matches.filter((t) => KNOWN_TICKERS.has(t) || t.endsWith('BANK')))].slice(0, 12);
+  const known = new Set([...KNOWN_TICKERS, ...universe.map((row) => row.symbol)]);
+  const found = matches.filter((t) => known.has(t) || t.endsWith('BANK'));
+  const compactText = normalizedCompanyName(text);
+  for (const row of universe) {
+    const company = normalizedCompanyName(row.company_name);
+    if (company.length >= 5 && compactText.includes(company)) found.push(row.symbol);
+  }
+  return [...new Set(found)].slice(0, 12);
+}
+
+async function loadCompanyUniverse(engineFetch) {
+  try {
+    const result = await engineFetch('/v1/warehouse/tab/company_master?limit=10000', {
+      timeoutMs: 30_000,
+    });
+    if (!result.ok) return [];
+    return (result.data?.rows || [])
+      .map((row) => ({
+        symbol: String(row.symbol || row.nse_symbol || row.company_id || '').toUpperCase().trim(),
+        company_name: row.company_name || row.legal_name || '',
+      }))
+      .filter((row) => /^[A-Z0-9]{2,12}$/.test(row.symbol));
+  } catch {
+    // Article ingestion must remain available if the warehouse is temporarily busy.
+    return [];
+  }
 }
 
 function learningDateIST(d = new Date()) {
@@ -144,6 +173,37 @@ export async function learnCmsArticles({
   const dailyMode = mode === 'daily' || Boolean(sinceDate === 'today');
   const effectiveOnlyUnlearned = onlyUnlearned && !dailyMode;
 
+  // Publishing is reversible. Tombstone previously learned drafts before
+  // ingesting active articles so Ask AGI cannot quote unpublished research.
+  const { data: unpublished } = await admin
+    .from('articles')
+    .select('id,title,intelligence_document_id,status')
+    .eq('status', 'draft')
+    .not('intelligence_document_id', 'is', null)
+    .limit(200);
+  let retired = 0;
+  for (const article of unpublished || []) {
+    try {
+      const result = await engineFetch(
+        `/v1/kip/article/${encodeURIComponent(article.id)}/retire`,
+        { method: 'POST', body: {}, timeoutMs: 30_000 }
+      );
+      if (!result.ok) continue;
+      retired += result.data?.retired ? 1 : 0;
+      await admin
+        .from('articles')
+        .update({
+          intelligence_document_id: null,
+          intelligence_ingested_at: null,
+          learn_status: 'unpublished',
+          last_learn_error: null,
+        })
+        .eq('id', article.id);
+    } catch {
+      // Leave metadata intact so the next scheduler pass retries safely.
+    }
+  }
+
   let query = admin
     .from('articles')
     .select(
@@ -163,6 +223,7 @@ export async function learnCmsArticles({
   }
 
   let rows = Array.isArray(articles) ? articles : [];
+  const companyUniverse = await loadCompanyUniverse(engineFetch);
   if (dailyMode) {
     // Daily knowledge update: skip articles already learned on today's IST date
     rows = rows.filter((a) => !learnedOnISTDate(a.last_learned_at, learningDate));
@@ -201,7 +262,10 @@ export async function learnCmsArticles({
       source: 'agi',
       document_type: destination === 'website' ? 'agi_research' : 'agi_note',
       language: 'en',
-      tickers: extractTickers(title, ...(article.tags || []), content.slice(0, 1200)),
+      tickers: extractTickers(
+        [title, ...(article.tags || []), content.slice(0, 1200)],
+        companyUniverse
+      ),
       themes: Array.isArray(article.tags) ? article.tags.slice(0, 8) : [],
       sectors: [],
       article_id: article.id || article.slug,
@@ -386,6 +450,7 @@ export async function learnCmsArticles({
     learned,
     failed,
     skipped,
+    retired,
     compound: compoundResult,
     research_hub: researchHubResult,
     results,
