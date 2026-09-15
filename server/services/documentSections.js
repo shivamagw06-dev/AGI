@@ -100,6 +100,100 @@ export function columnYears(page, options) {
   return columnPlan(page, options).years;
 }
 
+const MONTHS = {
+  january: 1, february: 2, march: 3, april: 4, may: 5, june: 6, july: 7,
+  august: 8, september: 9, october: 10, november: 11, december: 12,
+};
+const pad = (value) => String(value).padStart(2, '0');
+
+/**
+ * The balance sheet dates a page's header states, as ISO dates.
+ *
+ * Both orders, because both are common: "As at 31st March, 2026" and "As of
+ * December 31, 2025". A header that states a year without a day and month -
+ * "2025-26" - gives no date here, and is not given one by assumption.
+ */
+export function statedDates(page, { header = HEADER * 2 } = {}) {
+  const top = String(page ?? '').replace(/\s+/g, ' ').slice(0, header);
+  const dates = [];
+  const dayFirst = /As\s+(?:at|of)\s+(\d{1,2})\s*(?:st|nd|rd|th)?\s+([A-Za-z]+),?\s+(\d{4})/gi;
+  const monthFirst = /As\s+(?:at|of)\s+([A-Za-z]+)\s+(\d{1,2}),?\s+(\d{4})/gi;
+  for (const found of top.matchAll(dayFirst)) {
+    const month = MONTHS[found[2].toLowerCase()];
+    if (month) dates.push(`${found[3]}-${pad(month)}-${pad(found[1])}`);
+  }
+  for (const found of top.matchAll(monthFirst)) {
+    const month = MONTHS[found[1].toLowerCase()];
+    if (month) dates.push(`${found[3]}-${pad(month)}-${pad(found[2])}`);
+  }
+  return [...new Set(dates)];
+}
+
+/**
+ * The periods a filing reports, read from its own statements.
+ *
+ * A reader uploading an annual report should not have to say which year it
+ * covers - the document says, on every statement page. Without this a first
+ * upload, with nothing yet stored, resolved no periods at all and answered
+ * nothing, while reporting every figure as something nobody knew how to find.
+ *
+ * The year comes from the column headers and the day and month from a balance
+ * sheet date. A filing whose statements state years but no date gives years
+ * and no periods, with the reason: a fiscal year of 2025-26 ends on 31 March
+ * in India and on other dates elsewhere, and choosing one would put every
+ * figure under a period the filing never named.
+ */
+export function documentPeriods(pages, { accounting_scope = 'consolidated' } = {}) {
+  const sections = mapSections(pages);
+  const statements = sections.filter((entry) => entry.kind === 'statements'
+    && (!accounting_scope || entry.scope === accounting_scope));
+  const years = new Set();
+  const dates = new Set();
+  for (const entry of statements) {
+    for (const year of entry.years) years.add(year);
+    for (const date of statedDates(pages[entry.page - 1])) dates.add(date);
+  }
+  // An opening balance is the day after the previous year-end. Reliance's
+  // statement of changes in equity opens "Balance as at 1st April, 2024" and
+  // closes "Balance as at 31st March, 2025", and reading the first as a period
+  // end gives the filing two year-ends and an extra year it does not report.
+  // So a month-day falling exactly one day after another candidate is dropped.
+  const dayAfter = (monthDay) => {
+    const [month, day] = monthDay.split('-').map(Number);
+    const next = new Date(Date.UTC(2001, month - 1, day + 1));
+    return `${pad(next.getUTCMonth() + 1)}-${pad(next.getUTCDate())}`;
+  };
+  const candidates = [...new Set([...dates].map((date) => date.slice(5)))];
+  const openings = new Set(candidates.map(dayAfter).filter((next) => candidates.includes(next)));
+  const closing = candidates.filter((monthDay) => !openings.has(monthDay));
+
+  if (!dates.size) {
+    return {
+      period_ends: [], month_end: null, years: [...years].sort((a, b) => b - a),
+      reason: years.size
+        ? 'the statements state years but no balance sheet date, so the period ends are not known'
+        : 'no statement page states which years it covers',
+    };
+  }
+  if (closing.length !== 1) {
+    return {
+      period_ends: [], month_end: null, years: [...years].sort((a, b) => b - a),
+      reason: `the statements give more than one year-end date (${closing.join(', ')})`,
+    };
+  }
+  const [monthEnd] = closing;
+  // The dates the filing states, not every year paired with the month: a year
+  // that appears only as an opening balance is not a period it reports.
+  const periodEnds = [...dates].filter((date) => date.slice(5) === monthEnd)
+    .sort((a, b) => b.localeCompare(a));
+  return {
+    period_ends: periodEnds,
+    month_end: monthEnd,
+    years: periodEnds.map((date) => Number(date.slice(0, 4))),
+    reason: null,
+  };
+}
+
 /** Every page of a filing, with the section it belongs to. */
 export function mapSections(pages) {
   return (pages || []).map((page, at) => ({

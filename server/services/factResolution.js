@@ -60,7 +60,7 @@ export function searchableDefinitions(concept) {
 export function resolveConcept({
   facts = [], pages = [], concept, period_end, purpose, prefer = {},
   accounting_scope = 'consolidated', segment = null,
-  company, reportedInDocument, document, currency, unit,
+  company, reportedInDocument, document, currency, unit, month_end = '03-31',
 }) {
   const at = { concept, period_end, accounting_scope, segment };
   const held = observationsFor(facts, at);
@@ -83,7 +83,9 @@ export function resolveConcept({
 
   const candidates = [];
   for (const definition_id of searchable) {
-    const found = findCandidates({ pages, definition_id, accounting_scope, currency, unit });
+    // The year-end the document states, so a December filer's figures land on
+    // 31 December rather than on the 31 March a default would give them.
+    const found = findCandidates({ pages, definition_id, accounting_scope, currency, unit, month_end });
     candidates.push(...found.candidates);
   }
   // Retrieval proposes; the citation check decides, exactly as it does for a

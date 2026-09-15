@@ -18,6 +18,8 @@ const TONE = {
   computed: 'text-sky-300',
   choose: 'text-violet-300',
   not_looked_for: 'text-amber-300/80',
+  not_resolved: 'text-rose-300/80',
+  cannot_compute: 'text-slate-400',
   not_disclosed: 'text-slate-400',
   silent: 'text-slate-400',
   no_rule: 'text-slate-500',
@@ -114,8 +116,8 @@ export default function AnnualReportIntelligence() {
             className="mt-1.5 w-full rounded-lg border border-white/10 bg-[#0d222d] px-2.5 py-2 text-xs text-white outline-none placeholder:text-slate-600 focus:border-cyan-400"
           />
           <span className="mt-1 block text-[10px] leading-4 text-slate-600">
-            Joins the imported financial statements. Without it the computed questions
-            name the line items they need instead.
+            Names whose figures these are. With a PDF, the years come from the
+            statements themselves.
           </span>
         </label>
       </div>

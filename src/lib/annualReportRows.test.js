@@ -105,3 +105,49 @@ test('a row with no figure is not answered, even without a reason', () => {
   });
   assert.notEqual(row.status, 'computed');
 });
+
+test('an input that was never resolved is not reported as unlooked-for', () => {
+  // The first live upload resolved no periods, so no input was resolved at
+  // all - and every row said "nothing looks for cfo in a filing yet". The
+  // search for cfo works. What was missing was a period to run it against.
+  const blocker = { need: 'operating_cash_flow', concept: 'cfo', state: 'not_asked_for' };
+  assert.equal(statusOfBlocked([blocker]).status, 'not_resolved');
+  assert.equal(explain(blocker), 'cfo was not resolved for this period');
+  assert.doesNotMatch(explain(blocker), /nothing looks for/);
+});
+
+test('a reason that stopped the whole reading is what every computed row says', () => {
+  // Deriving a cause per row from an empty resolution invents fifty-one
+  // explanations for one fact.
+  const rows = rowsFor({
+    questions: [question(41), question(62), question(5, 'stated')],
+    computed: {
+      reason: 'no period could be resolved: the statements state years but no balance sheet date',
+      answers: {
+        41: { value: null, reason: 'no rule computes this yet', blocked_by: [{ concept: 'cfo', state: 'not_asked_for' }] },
+        62: { value: null, reason: 'no rule computes this yet', blocked_by: [{ concept: 'cash', state: 'not_asked_for' }] },
+      },
+    },
+  });
+  assert.deepEqual(rows.slice(0, 2).map((row) => row.status), ['not_resolved', 'not_resolved']);
+  assert.match(rows[0].explanation, /no balance sheet date/);
+  assert.equal(rows[2].computed, null);
+});
+
+test('every input resolved and no formula is a missing rule, not a missing statement', () => {
+  const [row] = rowsFor({
+    questions: [question(46)],
+    computed: { answers: { 46: { value: null, reason: 'no rule computes this yet', no_rule: true, blocked_by: null } } },
+  });
+  assert.equal(row.status, 'no_rule');
+});
+
+test('every input resolved and too few years is a refusal, not a missing statement', () => {
+  // Reliance's report covers two years. A three-year rate needs four.
+  const [row] = rowsFor({
+    questions: [question(12)],
+    computed: { answers: { 12: { value: null, reason: 'four annual periods are needed for a three-year rate', blocked_by: null } } },
+  });
+  assert.equal(row.status, 'cannot_compute');
+  assert.match(row.explanation, /four annual periods/);
+});

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { columnPlan, columnYears, mapSections, pagesFor, sectionOf } from './documentSections.js';
+import { columnPlan, columnYears, documentPeriods, mapSections, pagesFor, sectionOf, statedDates } from './documentSections.js';
 
 /**
  * Page headers verbatim from Reliance Industries' Integrated Annual Report
@@ -73,4 +73,55 @@ test('a title year the columns do not share is still not a column', () => {
   const plan = columnPlan(header);
   assert.deepEqual(plan.years, [2026, 2025]);
   assert.equal(plan.cells, 2);
+});
+
+test('a balance sheet date is read in either order', () => {
+  assert.deepEqual(statedDates('Balance Sheet As at 31 st March, 2026 As at 31 st March, 2025'),
+    ['2026-03-31', '2025-03-31']);
+  // CONSTRUCTED: a US-style header.
+  assert.deepEqual(statedDates('Consolidated Balance Sheets As of December 31, 2025 As of December 31, 2024'),
+    ['2025-12-31', '2024-12-31']);
+});
+
+test('a filing says which periods it reports, so nobody has to', () => {
+  // The first live upload named no period, had nothing stored, and resolved
+  // nothing. The statements state their own years on every page.
+  const pages = [
+    'Consolidated Financial Statements Reliance Industries Limited 196 197 ( I in crore) Notes As at 31 st March, 2026 As at 31 st March, 2025 Balance Sheet Assets',
+    'Consolidated Financial Statements Reliance Industries Limited 202 203 ( I in crore) 2025-26 2024-25 A. Cash Flow from Operating Activities',
+  ];
+  assert.deepEqual(documentPeriods(pages),
+    { period_ends: ['2026-03-31', '2025-03-31'], month_end: '03-31', years: [2026, 2025], reason: null });
+});
+
+test('an opening balance is not a period end', () => {
+  // Reliance's statement of changes in equity opens "Balance as at 1st April,
+  // 2024". Reading that as a year-end gives the filing two year-ends and a
+  // year it does not report.
+  const pages = [
+    'Consolidated Financial Statements Reliance Industries Limited 196 197 ( I in crore) Notes As at 31 st March, 2026 As at 31 st March, 2025 Balance Sheet',
+    'Consolidated Financial Statements Reliance Industries Limited 200 201 A. Equity Share Capital ( I in crore) Balance as at 1 st April, 2024 Change during the year 2024-25 Balance as at 31 st March, 2025',
+  ];
+  const periods = documentPeriods(pages);
+  assert.equal(periods.reason, null);
+  assert.deepEqual(periods.period_ends, ['2026-03-31', '2025-03-31']);
+  assert.ok(!periods.period_ends.includes('2024-04-01'));
+});
+
+test('years without a date are not given one', () => {
+  // A fiscal year of 2025-26 ends on 31 March in India and elsewhere on other
+  // dates. Choosing one would put every figure under a period the filing
+  // never named.
+  const pages = ['Consolidated Financial Statements Company 1 2 ( in crore) 2025-26 2024-25 A. Cash Flow from Operating Activities'];
+  const periods = documentPeriods(pages);
+  assert.deepEqual(periods.period_ends, []);
+  assert.match(periods.reason, /no balance sheet date/);
+});
+
+test('two genuine year-ends are refused, not picked between', () => {
+  // CONSTRUCTED: a filing that changed its year-end.
+  const pages = ['Consolidated Financial Statements Company 1 2 Notes As at 31 st March, 2026 As at 31 st December, 2025 Balance Sheet'];
+  const periods = documentPeriods(pages);
+  assert.deepEqual(periods.period_ends, []);
+  assert.match(periods.reason, /more than one year-end date/);
 });

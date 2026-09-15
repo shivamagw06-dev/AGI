@@ -35,6 +35,7 @@ import { QUESTIONS } from '../services/annualReportQuestions.js';
 import { computedAnswers, periodsRead } from '../services/annualReportComputed.js';
 import { answersFromFacts, periodEndsFor } from '../services/annualReportFromFacts.js';
 import { joinPages, pagesFromPdf } from '../services/documentText.js';
+import { documentPeriods } from '../services/documentSections.js';
 import { loadFacts, saveFacts } from '../services/factStore.js';
 import { MAX_PDF_BYTES } from './portfolioImportGuards.js';
 import { assembleEvidence, evidenceFor, judge, FROM_ALL } from '../services/judgmentTier.js';
@@ -443,11 +444,16 @@ export default function createInstitutionalHoldingsRouter() {
           const held = client
             ? (await loadFacts(client, { company, accounting_scope: 'consolidated' })).facts
             : [];
+          // The document states which years it reports. A first upload has
+          // nothing stored and nobody asked for a period, and without this it
+          // resolved nothing at all.
+          const reported = documentPeriods(pages);
           const periodEnds = periodEndsFor({
             held,
             requested: [
               ...String(req.body?.periods || '').split(',').map((one) => one.trim()),
               String(req.body?.period_end || '').trim(),
+              ...reported.period_ends,
             ],
           });
 
@@ -457,6 +463,7 @@ export default function createInstitutionalHoldingsRouter() {
             purpose: 'any_disclosed', prefer,
             currency: String(req.body?.currency || 'INR'),
             unit: Number(req.body?.unit) || 10000000,
+            month_end: reported.month_end || undefined,
           });
 
           let written = null;
@@ -471,7 +478,8 @@ export default function createInstitutionalHoldingsRouter() {
             periods: read.periods.map((period) => period.period_end),
             recovered: read.recovered.length,
             written,
-            reason: periodEnds.length ? null : 'no period was given and none is stored, so nothing could be resolved',
+            reason: periodEnds.length ? null
+              : `no period could be resolved: ${reported.reason || 'none was given and none is stored'}`,
           };
         }
 
