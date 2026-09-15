@@ -1,0 +1,24 @@
+{
+  "benchmarkKey": "NSE_INDEX|Nifty 50",
+  "members": [
+    { "symbol": "HDFCBANK", "sector": "FINANCIALS", "instrumentKey": "NSE_EQ|INE040A01034", "sectorInstrumentKey": "NSE_INDEX|Nifty Financial Services" },
+    { "symbol": "ICICIBANK", "sector": "FINANCIALS", "instrumentKey": "NSE_EQ|INE090A01021", "sectorInstrumentKey": "NSE_INDEX|Nifty Financial Services" },
+    { "symbol": "SBIN", "sector": "BANK", "instrumentKey": "NSE_EQ|INE062A01020", "sectorInstrumentKey": "NSE_INDEX|Nifty Bank" },
+    { "symbol": "AXISBANK", "sector": "BANK", "instrumentKey": "NSE_EQ|INE238A01034", "sectorInstrumentKey": "NSE_INDEX|Nifty Bank" },
+    { "symbol": "KOTAKBANK", "sector": "BANK", "instrumentKey": "NSE_EQ|INE237A01036", "sectorInstrumentKey": "NSE_INDEX|Nifty Bank" },
+    { "symbol": "INFY", "sector": "IT", "instrumentKey": "NSE_EQ|INE009A01021", "sectorInstrumentKey": "NSE_INDEX|Nifty IT" },
+    { "symbol": "TCS", "sector": "IT", "instrumentKey": "NSE_EQ|INE467B01029", "sectorInstrumentKey": "NSE_INDEX|Nifty IT" },
+    { "symbol": "HCLTECH", "sector": "IT", "instrumentKey": "NSE_EQ|INE860A01027", "sectorInstrumentKey": "NSE_INDEX|Nifty IT" },
+    { "symbol": "WIPRO", "sector": "IT", "instrumentKey": "NSE_EQ|INE075A01022", "sectorInstrumentKey": "NSE_INDEX|Nifty IT" },
+    { "symbol": "RELIANCE", "sector": "ENERGY", "instrumentKey": "NSE_EQ|INE002A01018", "sectorInstrumentKey": "NSE_INDEX|Nifty Energy" },
+    { "symbol": "MARUTI", "sector": "AUTO", "instrumentKey": "NSE_EQ|INE585B01010", "sectorInstrumentKey": "NSE_INDEX|Nifty Auto" },
+    { "symbol": "SUNPHARMA", "sector": "PHARMA", "instrumentKey": "NSE_EQ|INE044A01036", "sectorInstrumentKey": "NSE_INDEX|Nifty Pharma" },
+    { "symbol": "DRREDDY", "sector": "PHARMA", "instrumentKey": "NSE_EQ|INE089A01031", "sectorInstrumentKey": "NSE_INDEX|Nifty Pharma" },
+    { "symbol": "ITC", "sector": "FMCG", "instrumentKey": "NSE_EQ|INE154A01025", "sectorInstrumentKey": "NSE_INDEX|Nifty FMCG" },
+    { "symbol": "HINDUNILVR", "sector": "FMCG", "instrumentKey": "NSE_EQ|INE030A01027", "sectorInstrumentKey": "NSE_INDEX|Nifty FMCG" },
+    { "symbol": "TATASTEEL", "sector": "METAL", "instrumentKey": "NSE_EQ|INE081A01020", "sectorInstrumentKey": "NSE_INDEX|Nifty Metal" },
+    { "symbol": "JSWSTEEL", "sector": "METAL", "instrumentKey": "NSE_EQ|INE019A01038", "sectorInstrumentKey": "NSE_INDEX|Nifty Metal" },
+    { "symbol": "BHARTIARTL", "sector": "TELECOM", "instrumentKey": "NSE_EQ|INE397D01024", "sectorInstrumentKey": "NSE_INDEX|Nifty India Digital" },
+    { "symbol": "LT", "sector": "INFRA", "instrumentKey": "NSE_EQ|INE018A01030", "sectorInstrumentKey": "NSE_INDEX|Nifty Infrastructure" }
+  ]
+}

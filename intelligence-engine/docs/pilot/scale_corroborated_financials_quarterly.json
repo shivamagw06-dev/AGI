@@ -1,0 +1,96 @@
+{
+ "10c79456179205fcdb5fe1020dd4ae62": {
+  "row_id": "10c79456179205fcdb5fe1020dd4ae62",
+  "symbol": "APTUS",
+  "source": "yahoo_finance_statements",
+  "matched_fields": [
+   "pat",
+   "pbt"
+  ],
+  "filings": [
+   "7b7524c54009b0e8ba2d08345a0b8a1b6b82820d85a5bb39e1855d8134012016"
+  ],
+  "concepts": [
+   "ProfitBeforeExceptionalItemsAndTax",
+   "ProfitLossForPeriodFromContinuingOperations"
+  ]
+ },
+ "03737718128bf61bd3759d32c8cc3c5f": {
+  "row_id": "03737718128bf61bd3759d32c8cc3c5f",
+  "symbol": "ASTERDM",
+  "source": "yahoo_finance_statements",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "773b663a8c558fef944c9ef55c2cd7ab481269cd57dae68433beb9c42447ca90"
+  ],
+  "concepts": [
+   "ProfitOrLossAttributableToOwnersOfParent",
+   "RevenueFromOperations"
+  ]
+ },
+ "cb91f82a01f7c6517501bc48c6e12b23": {
+  "row_id": "cb91f82a01f7c6517501bc48c6e12b23",
+  "symbol": "ASTRAL",
+  "source": "yahoo_finance_statements",
+  "matched_fields": [
+   "pat"
+  ],
+  "filings": [
+   "be2e96b2bf33f8c4c01b419121d2f36523239ef2c211cf122a69301097324929"
+  ],
+  "concepts": [
+   "EmployeeBenefitExpense"
+  ]
+ },
+ "83ab4872f10dc7a88e2d675ac37d163d": {
+  "row_id": "83ab4872f10dc7a88e2d675ac37d163d",
+  "symbol": "COROMANDEL",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "e8cea48349893f63f5260b00d1731963a4096e85dad3bd8fc535a04ca22d7938"
+  ],
+  "concepts": [
+   "ProfitOrLossAttributableToOwnersOfParent",
+   "RevenueFromOperations"
+  ]
+ },
+ "8fdb3a6022b92a6b7b5ea62c23d74e78": {
+  "row_id": "8fdb3a6022b92a6b7b5ea62c23d74e78",
+  "symbol": "COROMANDEL",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "e8cea48349893f63f5260b00d1731963a4096e85dad3bd8fc535a04ca22d7938"
+  ],
+  "concepts": [
+   "ProfitOrLossAttributableToOwnersOfParent",
+   "RevenueFromOperations"
+  ]
+ },
+ "df7fb81053bbdec2c60186ba1ffb42c9": {
+  "row_id": "df7fb81053bbdec2c60186ba1ffb42c9",
+  "symbol": "COROMANDEL",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "e8cea48349893f63f5260b00d1731963a4096e85dad3bd8fc535a04ca22d7938"
+  ],
+  "concepts": [
+   "ProfitOrLossAttributableToOwnersOfParent",
+   "RevenueFromOperations"
+  ]
+ }
+}

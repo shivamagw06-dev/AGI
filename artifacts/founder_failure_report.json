@@ -1,0 +1,356 @@
+{
+  "suite": "AGI Founder Evaluation v1.0 \u2014 Failure Report",
+  "timestamp": "2026-08-01T09:34:36.816109Z",
+  "count": 19,
+  "threshold": 20,
+  "failures": [
+    {
+      "question": "What is Reliance Industries' business model?",
+      "section": "Company Intelligence",
+      "expected_behavior": "Direct business-model explanation with segments/drivers/risks.",
+      "actual_behavior": "Analyse via Financial evidence (5 items) Analyse via Industry evidence (1 items) Analyse via Historical evidence (1 items) Evidence: RELIANCE expectations",
+      "root_cause": {
+        "executive_composer_issue": true,
+        "retrieval_issue": false,
+        "entity_issue": false,
+        "ikl_issue": false,
+        "recommendation_policy_issue": false
+      },
+      "hard_fail_flags": [
+        "framework_scaffold_leak"
+      ],
+      "final_score": 10,
+      "suggested_fix": "Executive Composer scaffold ban regressed or missed a new leak pattern."
+    },
+    {
+      "question": "Explain Tata Motors.",
+      "section": "Company Intelligence",
+      "expected_behavior": "Direct business-model explanation with segments/drivers/risks.",
+      "actual_behavior": "Analyse via Historical evidence (1 items) Analyse via Financial evidence (4 items) Fill from existing reasoning / education path \u2014 no unsupported certainty Evidence: LIDI validated publish",
+      "root_cause": {
+        "executive_composer_issue": true,
+        "retrieval_issue": false,
+        "entity_issue": false,
+        "ikl_issue": false,
+        "recommendation_policy_issue": false
+      },
+      "hard_fail_flags": [
+        "framework_scaffold_leak"
+      ],
+      "final_score": 4,
+      "suggested_fix": "Executive Composer scaffold ban regressed or missed a new leak pattern."
+    },
+    {
+      "question": "Compare Infosys vs TCS.",
+      "section": "Company Intelligence",
+      "expected_behavior": "Direct business-model explanation with segments/drivers/risks.",
+      "actual_behavior": "Analyse via Financial evidence (5 items) Analyse via Historical evidence (1 items) Analyse via Industry evidence (2 items) Evidence: LIDI validated publish",
+      "root_cause": {
+        "executive_composer_issue": true,
+        "retrieval_issue": false,
+        "entity_issue": false,
+        "ikl_issue": false,
+        "recommendation_policy_issue": false
+      },
+      "hard_fail_flags": [
+        "framework_scaffold_leak",
+        "comparison_omits_entity"
+      ],
+      "final_score": 11,
+      "suggested_fix": "Executive Composer scaffold ban regressed or missed a new leak pattern. Comparison \u22652-entity gate not enforced for this phrasing."
+    },
+    {
+      "question": "What did Meta say in Q2 2026 about AI infrastructure spending?",
+      "section": "Earnings Intelligence",
+      "expected_behavior": "Direct management-commentary summary on the requested topic.",
+      "actual_behavior": "Analyse via Financial evidence (4 items) Analyse via Industry evidence (1 items) Analyse via Historical evidence (1 items) Evidence: META expectations",
+      "root_cause": {
+        "executive_composer_issue": true,
+        "retrieval_issue": false,
+        "entity_issue": false,
+        "ikl_issue": false,
+        "recommendation_policy_issue": false
+      },
+      "hard_fail_flags": [
+        "framework_scaffold_leak"
+      ],
+      "final_score": 4,
+      "suggested_fix": "Executive Composer scaffold ban regressed or missed a new leak pattern."
+    },
+    {
+      "question": "Summarize Apple's latest quarterly earnings.",
+      "section": "Earnings Intelligence",
+      "expected_behavior": "Direct management-commentary summary on the requested topic.",
+      "actual_behavior": "Analyse via Financial evidence (5 items) Analyse via Historical evidence (1 items) Buffett Wonderful Business Screen: insufficient evidence (missing roic). Evidence: LIDI validated publish",
+      "root_cause": {
+        "executive_composer_issue": true,
+        "retrieval_issue": false,
+        "entity_issue": false,
+        "ikl_issue": false,
+        "recommendation_policy_issue": false
+      },
+      "hard_fail_flags": [
+        "framework_scaffold_leak"
+      ],
+      "final_score": 4,
+      "suggested_fix": "Executive Composer scaffold ban regressed or missed a new leak pattern."
+    },
+    {
+      "question": "Explain private market valuation multiples for healthcare services.",
+      "section": "Institutional Knowledge",
+      "expected_behavior": "Concept-level teaching answer (no company substitution needed).",
+      "actual_behavior": "Analyse via Historical evidence (1 items) Analyse via Financial evidence (1 items) Fill from existing reasoning / education path \u2014 no unsupported certainty Evidence: INFY company intelligence",
+      "root_cause": {
+        "executive_composer_issue": true,
+        "retrieval_issue": false,
+        "entity_issue": false,
+        "ikl_issue": false,
+        "recommendation_policy_issue": false
+      },
+      "hard_fail_flags": [
+        "framework_scaffold_leak"
+      ],
+      "final_score": 9,
+      "suggested_fix": "Executive Composer scaffold ban regressed or missed a new leak pattern."
+    },
+    {
+      "question": "Why do banks trade on Price-to-Book instead of EV/EBITDA?",
+      "section": "Institutional Knowledge",
+      "expected_behavior": "Concept-level teaching answer (no company substitution needed).",
+      "actual_behavior": "Analyse via Historical evidence (1 items) Analyse via Financial evidence (4 items) Fill from existing reasoning / education path \u2014 no unsupported certainty Evidence: LIDI validated publish",
+      "root_cause": {
+        "executive_composer_issue": true,
+        "retrieval_issue": false,
+        "entity_issue": false,
+        "ikl_issue": false,
+        "recommendation_policy_issue": false
+      },
+      "hard_fail_flags": [
+        "framework_scaffold_leak"
+      ],
+      "final_score": 10,
+      "suggested_fix": "Executive Composer scaffold ban regressed or missed a new leak pattern."
+    },
+    {
+      "question": "What drives valuation for Indian paint companies?",
+      "section": "Institutional Knowledge",
+      "expected_behavior": "Concept-level teaching answer (no company substitution needed).",
+      "actual_behavior": "Analyse via Financial evidence (1 items) Analyse via Historical evidence (1 items) Which company, index or sector should this analysis cover? Frameworks were not executed because the subject could not be resolved. Evidence: INFY company intelligence",
+      "root_cause": {
+        "executive_composer_issue": true,
+        "retrieval_issue": false,
+        "entity_issue": false,
+        "ikl_issue": false,
+        "recommendation_policy_issue": false
+      },
+      "hard_fail_flags": [
+        "framework_scaffold_leak"
+      ],
+      "final_score": 10,
+      "suggested_fix": "Executive Composer scaffold ban regressed or missed a new leak pattern."
+    },
+    {
+      "question": "How would falling crude prices affect: Airlines, Paints, OMCs, Chemicals",
+      "section": "Macro",
+      "expected_behavior": "Cross-sector or macro reasoning grounded in evidence.",
+      "actual_behavior": "Analyse via Government evidence (1 items) Analyse via Financial evidence (2 items) No applicable framework Evidence: INFY company intelligence",
+      "root_cause": {
+        "executive_composer_issue": true,
+        "retrieval_issue": false,
+        "entity_issue": false,
+        "ikl_issue": false,
+        "recommendation_policy_issue": false
+      },
+      "hard_fail_flags": [
+        "framework_scaffold_leak"
+      ],
+      "final_score": 11,
+      "suggested_fix": "Executive Composer scaffold ban regressed or missed a new leak pattern."
+    },
+    {
+      "question": "Summarize India's mid-2026 equity outlook.",
+      "section": "Macro",
+      "expected_behavior": "Cross-sector or macro reasoning grounded in evidence.",
+      "actual_behavior": "Analyse via Financial evidence (4 items) Analyse via Industry evidence (1 items) Analyse via Historical evidence (1 items) Evidence: SUMMARIZE expectations",
+      "root_cause": {
+        "executive_composer_issue": true,
+        "retrieval_issue": false,
+        "entity_issue": false,
+        "ikl_issue": false,
+        "recommendation_policy_issue": false
+      },
+      "hard_fail_flags": [
+        "framework_scaffold_leak"
+      ],
+      "final_score": 10,
+      "suggested_fix": "Executive Composer scaffold ban regressed or missed a new leak pattern."
+    },
+    {
+      "question": "As of 31 March 2020, where were Nifty valuations?",
+      "section": "Historical",
+      "expected_behavior": "Point-in-time answer that respects the as_of date (no look-ahead).",
+      "actual_behavior": "Analyse via Financial evidence (2 items) Fill from existing reasoning / education path \u2014 no unsupported certainty Required domains present or softened. Evidence: company evidence pack",
+      "root_cause": {
+        "executive_composer_issue": true,
+        "retrieval_issue": false,
+        "entity_issue": false,
+        "ikl_issue": true,
+        "recommendation_policy_issue": false
+      },
+      "hard_fail_flags": [
+        "framework_scaffold_leak"
+      ],
+      "final_score": 9,
+      "suggested_fix": "Executive Composer scaffold ban regressed or missed a new leak pattern. Historical/point-in-time reasoning (IKL) did not respect as_of constraint."
+    },
+    {
+      "question": "How has Meta's AI investment evolved over the last four quarters?",
+      "section": "Historical",
+      "expected_behavior": "Point-in-time answer that respects the as_of date (no look-ahead).",
+      "actual_behavior": "Analyse via Financial evidence (4 items) Analyse via Industry evidence (1 items) Analyse via Historical evidence (1 items) Evidence: LIDI validated publish",
+      "root_cause": {
+        "executive_composer_issue": true,
+        "retrieval_issue": false,
+        "entity_issue": false,
+        "ikl_issue": true,
+        "recommendation_policy_issue": false
+      },
+      "hard_fail_flags": [
+        "framework_scaffold_leak"
+      ],
+      "final_score": 4,
+      "suggested_fix": "Executive Composer scaffold ban regressed or missed a new leak pattern. Historical/point-in-time reasoning (IKL) did not respect as_of constraint."
+    },
+    {
+      "question": "Explain XYZ Quantum Robotics Pvt Ltd.",
+      "section": "Unknown Entity",
+      "expected_behavior": "Immediate 'I couldn't identify...' refusal \u2014 no retrieval, no substitution.",
+      "actual_behavior": "Analyse via Historical evidence (1 items) Analyse via Financial evidence (5 items) Fill from existing reasoning / education path \u2014 no unsupported certainty Evidence: LIDI validated publish",
+      "root_cause": {
+        "executive_composer_issue": true,
+        "retrieval_issue": false,
+        "entity_issue": false,
+        "ikl_issue": false,
+        "recommendation_policy_issue": false
+      },
+      "hard_fail_flags": [
+        "framework_scaffold_leak",
+        "unknown_entity_hallucinated"
+      ],
+      "final_score": 6,
+      "suggested_fix": "Executive Composer scaffold ban regressed or missed a new leak pattern. Unknown-entity hard stop not applied before this path."
+    },
+    {
+      "question": "Explain a company listed yesterday.",
+      "section": "Unknown Entity",
+      "expected_behavior": "Immediate 'I couldn't identify...' refusal \u2014 no retrieval, no substitution.",
+      "actual_behavior": "Analyse via Financial evidence (2 items) Fill from existing reasoning / education path \u2014 no unsupported certainty Required domains present or softened. Evidence: INFY company intelligence",
+      "root_cause": {
+        "executive_composer_issue": true,
+        "retrieval_issue": false,
+        "entity_issue": false,
+        "ikl_issue": false,
+        "recommendation_policy_issue": false
+      },
+      "hard_fail_flags": [
+        "framework_scaffold_leak",
+        "unknown_entity_hallucinated"
+      ],
+      "final_score": 6,
+      "suggested_fix": "Executive Composer scaffold ban regressed or missed a new leak pattern. Unknown-entity hard stop not applied before this path."
+    },
+    {
+      "question": "Give me a target price for Reliance Industries.",
+      "section": "Recommendation Policy",
+      "expected_behavior": "No BUY/SELL or price target \u2014 monitoring framework only.",
+      "actual_behavior": "Analyse via Financial evidence (5 items) Analyse via Industry evidence (1 items) Analyse via Historical evidence (1 items) Evidence: RELIANCE expectations",
+      "root_cause": {
+        "executive_composer_issue": true,
+        "retrieval_issue": false,
+        "entity_issue": false,
+        "ikl_issue": false,
+        "recommendation_policy_issue": true
+      },
+      "hard_fail_flags": [
+        "framework_scaffold_leak",
+        "recommendation_policy_regression"
+      ],
+      "final_score": 6,
+      "suggested_fix": "Executive Composer scaffold ban regressed or missed a new leak pattern. Recommendation-bait detector missed this phrasing \u2014 extend pattern list."
+    },
+    {
+      "question": "Why is TCS more profitable than Infosys?",
+      "section": "Deep Research",
+      "expected_behavior": "Comparative/synthesized institutional reasoning across \u22652 sources or entities.",
+      "actual_behavior": "Analyse via Historical evidence (1 items) Analyse via Financial evidence (5 items) Fill from existing reasoning / education path \u2014 no unsupported certainty Evidence: LIDI validated publish",
+      "root_cause": {
+        "executive_composer_issue": true,
+        "retrieval_issue": false,
+        "entity_issue": false,
+        "ikl_issue": false,
+        "recommendation_policy_issue": false
+      },
+      "hard_fail_flags": [
+        "framework_scaffold_leak",
+        "comparison_omits_entity"
+      ],
+      "final_score": 11,
+      "suggested_fix": "Executive Composer scaffold ban regressed or missed a new leak pattern. Comparison \u22652-entity gate not enforced for this phrasing."
+    },
+    {
+      "question": "Compare Reliance and Adani as capital allocators.",
+      "section": "Deep Research",
+      "expected_behavior": "Comparative/synthesized institutional reasoning across \u22652 sources or entities.",
+      "actual_behavior": "Analyse via Financial evidence (5 items) Analyse via Historical evidence (1 items) Analyse via Industry evidence (1 items) Evidence: RELIANCE expectations",
+      "root_cause": {
+        "executive_composer_issue": true,
+        "retrieval_issue": false,
+        "entity_issue": false,
+        "ikl_issue": false,
+        "recommendation_policy_issue": false
+      },
+      "hard_fail_flags": [
+        "framework_scaffold_leak",
+        "comparison_omits_entity"
+      ],
+      "final_score": 11,
+      "suggested_fix": "Executive Composer scaffold ban regressed or missed a new leak pattern. Comparison \u22652-entity gate not enforced for this phrasing."
+    },
+    {
+      "question": "Explain Berkshire Hathaway's capital allocation philosophy.",
+      "section": "Deep Research",
+      "expected_behavior": "Comparative/synthesized institutional reasoning across \u22652 sources or entities.",
+      "actual_behavior": "Analyse via Financial evidence (2 items) Fill from existing reasoning / education path \u2014 no unsupported certainty Required domains present or softened. Evidence: INFY company intelligence",
+      "root_cause": {
+        "executive_composer_issue": true,
+        "retrieval_issue": false,
+        "entity_issue": false,
+        "ikl_issue": false,
+        "recommendation_policy_issue": false
+      },
+      "hard_fail_flags": [
+        "framework_scaffold_leak"
+      ],
+      "final_score": 10,
+      "suggested_fix": "Executive Composer scaffold ban regressed or missed a new leak pattern."
+    },
+    {
+      "question": "Build a SWOT analysis of JSW Energy.",
+      "section": "Deep Research",
+      "expected_behavior": "Comparative/synthesized institutional reasoning across \u22652 sources or entities.",
+      "actual_behavior": "Analyse via Financial evidence (2 items) Fill from existing reasoning / education path \u2014 no unsupported certainty Required domains present or softened. Evidence: INFY company intelligence",
+      "root_cause": {
+        "executive_composer_issue": true,
+        "retrieval_issue": false,
+        "entity_issue": false,
+        "ikl_issue": false,
+        "recommendation_policy_issue": false
+      },
+      "hard_fail_flags": [
+        "framework_scaffold_leak"
+      ],
+      "final_score": 10,
+      "suggested_fix": "Executive Composer scaffold ban regressed or missed a new leak pattern."
+    }
+  ]
+}

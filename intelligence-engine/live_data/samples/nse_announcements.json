@@ -1,0 +1,30 @@
+{
+  "effective_date": "2024-07-26",
+  "events": [
+    {
+      "symbol": "INFY",
+      "headline": "Infosys Limited - Financial Results",
+      "category": "Results",
+      "subcategory": "Financial Results",
+      "an_dt": "2024-07-26T09:30:00",
+      "attchmntFile": null,
+      "desc": "Unaudited financial results for the quarter"
+    },
+    {
+      "symbol": "TCS",
+      "headline": "Tata Consultancy Services - Board Meeting",
+      "category": "Board Meeting",
+      "subcategory": "Board Meeting",
+      "an_dt": "2024-07-26T10:15:00",
+      "desc": "Board meeting to consider dividend"
+    },
+    {
+      "symbol": "RELIANCE",
+      "headline": "Reliance Industries - Investor Presentation",
+      "category": "Company Update",
+      "subcategory": "Investor Presentation",
+      "an_dt": "2024-07-26T11:00:00",
+      "desc": "Investor presentation uploaded"
+    }
+  ]
+}

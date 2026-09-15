@@ -1,0 +1,473 @@
+{
+  "accounting": {
+    "cash_conversion": 1.0893,
+    "derived_not_stored": true,
+    "entity": "ASIANPAINT",
+    "found": true,
+    "leverage": 0.012,
+    "provider": "kf_accounting_producer",
+    "revenue_cagr": 0.120566
+  },
+  "business_quality": {
+    "entity": "ASIANPAINT",
+    "found": true,
+    "insufficient": false,
+    "provider": "kf_bq_producer",
+    "quality_score": 80.0,
+    "roic": 40.524667
+  },
+  "company_profile": {
+    "entity": "ASIANPAINT",
+    "market_cap": 14216.32,
+    "sector": "fmcg"
+  },
+  "corporate_actions": [
+    {
+      "date": "2025-05-10",
+      "filing_id": "ASIANPAINT-DIV-2025",
+      "title": "Dividend Declaration",
+      "type": "dividend"
+    }
+  ],
+  "coverage": 1.0,
+  "entity": "ASIANPAINT",
+  "evidence_packs": {
+    "coverage": 0.75,
+    "current_pe": 61.458333,
+    "downside_case": -0.048438,
+    "entity": "ASIANPAINT",
+    "entity_confidence": 0.95,
+    "freshness": "2026-08-01T13:04:24Z",
+    "historical_pe": 69.1397,
+    "missing_fields": [],
+    "provenance": "knowledge_factory",
+    "quality": 90.0,
+    "risk_drivers": "market_beta,volatility",
+    "version": "kf-pipeline-v1.0.0"
+  },
+  "historical_financials": {
+    "bvps": {
+      "FY17": 70.0,
+      "FY18": 80.0,
+      "FY19": 90.0,
+      "FY20": 100.0,
+      "FY21": 120.0,
+      "FY22": 140.0,
+      "FY23": 155.0,
+      "FY24": 170.0,
+      "FY25": 185.0,
+      "FY26": 200.0
+    },
+    "capex": {
+      "FY17": 600.0,
+      "FY18": 700.0,
+      "FY19": 800.0,
+      "FY20": 900.0,
+      "FY21": 1000.0,
+      "FY22": 1200.0,
+      "FY23": 1400.0,
+      "FY24": 1500.0,
+      "FY25": 1600.0,
+      "FY26": 1700.0
+    },
+    "cash": {
+      "FY17": 2500.0,
+      "FY18": 2800.0,
+      "FY19": 3000.0,
+      "FY20": 3500.0,
+      "FY21": 4000.0,
+      "FY22": 4500.0,
+      "FY23": 5000.0,
+      "FY24": 5500.0,
+      "FY25": 6000.0,
+      "FY26": 6500.0
+    },
+    "ebit": {
+      "FY17": 2400.0,
+      "FY18": 2700.0,
+      "FY19": 3000.0,
+      "FY20": 3500.0,
+      "FY21": 4000.0,
+      "FY22": 4600.0,
+      "FY23": 5400.0,
+      "FY24": 5900.0,
+      "FY25": 6400.0,
+      "FY26": 6900.0
+    },
+    "ebitda": {
+      "FY17": 2800.0,
+      "FY18": 3100.0,
+      "FY19": 3400.0,
+      "FY20": 4000.0,
+      "FY21": 4500.0,
+      "FY22": 5200.0,
+      "FY23": 6000.0,
+      "FY24": 6500.0,
+      "FY25": 7000.0,
+      "FY26": 7500.0
+    },
+    "eps": {
+      "FY17": 18.0,
+      "FY18": 20.0,
+      "FY19": 22.0,
+      "FY20": 24.0,
+      "FY21": 30.0,
+      "FY22": 35.0,
+      "FY23": 38.0,
+      "FY24": 42.0,
+      "FY25": 45.0,
+      "FY26": 48.0
+    },
+    "equity": {
+      "FY17": 6710.0,
+      "FY18": 7670.0,
+      "FY19": 8630.0,
+      "FY20": 9590.0,
+      "FY21": 11510.0,
+      "FY22": 13430.0,
+      "FY23": 14860.0,
+      "FY24": 16300.0,
+      "FY25": 17740.0,
+      "FY26": 19180.0
+    },
+    "net_income": {
+      "FY17": 1720.0,
+      "FY18": 1910.0,
+      "FY19": 2100.0,
+      "FY20": 2290.0,
+      "FY21": 2870.0,
+      "FY22": 3350.0,
+      "FY23": 3630.0,
+      "FY24": 4010.0,
+      "FY25": 4300.0,
+      "FY26": 4590.0
+    },
+    "ocf": {
+      "FY17": 1900.0,
+      "FY18": 2100.0,
+      "FY19": 2300.0,
+      "FY20": 2500.0,
+      "FY21": 3100.0,
+      "FY22": 3600.0,
+      "FY23": 4000.0,
+      "FY24": 4400.0,
+      "FY25": 4700.0,
+      "FY26": 5000.0
+    },
+    "price": {
+      "FY17": 1070.0,
+      "FY18": 1120.0,
+      "FY19": 1490.0,
+      "FY20": 1660.0,
+      "FY21": 2540.0,
+      "FY22": 3080.0,
+      "FY23": 2760.0,
+      "FY24": 2850.0,
+      "FY25": 2900.0,
+      "FY26": 2950.0
+    },
+    "revenue": {
+      "FY17": 14000.0,
+      "FY18": 15500.0,
+      "FY19": 17100.0,
+      "FY20": 20200.0,
+      "FY21": 21700.0,
+      "FY22": 29100.0,
+      "FY23": 34500.0,
+      "FY24": 35500.0,
+      "FY25": 37000.0,
+      "FY26": 39000.0
+    },
+    "shares": {
+      "FY17": 95.9,
+      "FY18": 95.9,
+      "FY19": 95.9,
+      "FY20": 95.9,
+      "FY21": 95.9,
+      "FY22": 95.9,
+      "FY23": 95.9,
+      "FY24": 95.9,
+      "FY25": 95.9,
+      "FY26": 95.9
+    },
+    "total_debt": {
+      "FY17": 400.0,
+      "FY18": 350.0,
+      "FY19": 300.0,
+      "FY20": 250.0,
+      "FY21": 200.0,
+      "FY22": 180.0,
+      "FY23": 150.0,
+      "FY24": 120.0,
+      "FY25": 100.0,
+      "FY26": 90.0
+    }
+  },
+  "historical_valuation": {
+    "derived_not_stored": true,
+    "entity": "ASIANPAINT",
+    "found": true,
+    "insufficient": [],
+    "metrics": {
+      "Cash_Conversion": {
+        "derived_from": [
+          "ocf",
+          "capex",
+          "net_income"
+        ],
+        "formula": "(ocf - capex) / net_income * 100",
+        "points": {
+          "FY17": 75.581395,
+          "FY18": 73.298429,
+          "FY19": 71.428571,
+          "FY20": 69.868996,
+          "FY21": 73.170732,
+          "FY22": 71.641791,
+          "FY23": 71.625344,
+          "FY24": 72.319202,
+          "FY25": 72.093023,
+          "FY26": 71.895425
+        },
+        "provider": "kf_derived_producer",
+        "rejected_periods": {}
+      },
+      "EV_EBITDA": {
+        "derived_from": [
+          "price",
+          "shares",
+          "total_debt",
+          "cash",
+          "ebitda"
+        ],
+        "formula": "(price * shares + total_debt - cash) / ebitda",
+        "points": {
+          "FY17": 35.8975,
+          "FY18": 33.857419,
+          "FY19": 41.232647,
+          "FY20": 38.986,
+          "FY21": 53.285778,
+          "FY22": 55.971538,
+          "FY23": 43.305667,
+          "FY24": 41.220769,
+          "FY25": 38.887143,
+          "FY26": 36.866
+        },
+        "provider": "kf_derived_producer",
+        "rejected_periods": {}
+      },
+      "Net_Margin": {
+        "derived_from": [
+          "net_income",
+          "revenue"
+        ],
+        "formula": "net_income / revenue * 100",
+        "points": {
+          "FY17": 12.285714,
+          "FY18": 12.322581,
+          "FY19": 12.280702,
+          "FY20": 11.336634,
+          "FY21": 13.225806,
+          "FY22": 11.512027,
+          "FY23": 10.521739,
+          "FY24": 11.295775,
+          "FY25": 11.621622,
+          "FY26": 11.769231
+        },
+        "provider": "kf_derived_producer",
+        "rejected_periods": {}
+      },
+      "PB": {
+        "derived_from": [
+          "price",
+          "bvps"
+        ],
+        "formula": "price / book_value_per_share",
+        "points": {
+          "FY17": 15.285714,
+          "FY18": 14.0,
+          "FY19": 16.555556,
+          "FY20": 16.6,
+          "FY21": 21.166667,
+          "FY22": 22.0,
+          "FY23": 17.806452,
+          "FY24": 16.764706,
+          "FY25": 15.675676,
+          "FY26": 14.75
+        },
+        "provider": "kf_derived_producer",
+        "rejected_periods": {}
+      },
+      "PE": {
+        "derived_from": [
+          "price",
+          "eps"
+        ],
+        "formula": "price / eps",
+        "points": {
+          "FY17": 59.444444,
+          "FY18": 56.0,
+          "FY19": 67.727273,
+          "FY20": 69.166667,
+          "FY21": 84.666667,
+          "FY22": 88.0,
+          "FY23": 72.631579,
+          "FY24": 67.857143,
+          "FY25": 64.444444,
+          "FY26": 61.458333
+        },
+        "provider": "kf_derived_producer",
+        "rejected_periods": {}
+      },
+      "ROE": {
+        "derived_from": [
+          "net_income",
+          "equity"
+        ],
+        "formula": "net_income / equity * 100",
+        "points": {
+          "FY17": 25.633383,
+          "FY18": 24.902216,
+          "FY19": 24.33372,
+          "FY20": 23.879041,
+          "FY21": 24.934839,
+          "FY22": 24.944155,
+          "FY23": 24.427995,
+          "FY24": 24.601227,
+          "FY25": 24.239008,
+          "FY26": 23.931178
+        },
+        "provider": "kf_derived_producer",
+        "rejected_periods": {}
+      },
+      "ROIC": {
+        "derived_from": [
+          "ebit",
+          "total_debt",
+          "equity",
+          "cash"
+        ],
+        "formula": "ebit * (1 - tax) / (total_debt + equity - cash) * 100",
+        "points": {
+          "FY17": 39.045553,
+          "FY18": 38.793103,
+          "FY19": 37.942664,
+          "FY20": 41.403785,
+          "FY21": 38.910506,
+          "FY22": 37.870472,
+          "FY23": 40.45954,
+          "FY24": 40.521978,
+          "FY25": 40.540541,
+          "FY26": 40.524667
+        },
+        "provider": "kf_derived_producer",
+        "rejected_periods": {}
+      }
+    },
+    "provider": "kf_derived_producer"
+  },
+  "kind": "company_knowledge_object",
+  "last_updated": "2026-08-01T13:04:24Z",
+  "macro_sensitivity": {
+    "beta": 0.7881,
+    "sector": "fmcg"
+  },
+  "management": {
+    "events": []
+  },
+  "missing_fields": [],
+  "object_version": "kf-objects-v1.0.0",
+  "peer_group": {
+    "entity": "ASIANPAINT",
+    "fabricated": false,
+    "found": true,
+    "insufficient": false,
+    "peers": [
+      "BERGEPAINT",
+      "BRITANNIA",
+      "COLPAL",
+      "DABUR",
+      "GODREJCP",
+      "HINDUNILVR",
+      "ITC",
+      "MARICO",
+      "NESTLEIND",
+      "TATACONSUM",
+      "VBL",
+      "UNITDSPR",
+      "UBL",
+      "RADICO",
+      "EMAMILTD",
+      "GILLETTE",
+      "PGHH",
+      "JYOTHYLAB",
+      "VSTIND",
+      "GODREJAGRO",
+      "KRBL",
+      "LTFOODS",
+      "PATANJALI",
+      "CCL",
+      "TRIVENI",
+      "BALRAMCHIN",
+      "EIDPARRY",
+      "DHAMPURSUG",
+      "RENUKA",
+      "GODFRYPHLP",
+      "VST",
+      "AWL",
+      "BAJAJCON"
+    ],
+    "provider": "kf_peer_producer"
+  },
+  "provider": "knowledge_factory",
+  "quality_score": 88.0,
+  "risk": {
+    "beta": 0.7881,
+    "correlation": 0.9971,
+    "derived_not_stored": true,
+    "entity": "ASIANPAINT",
+    "expected_shortfall_95_pct": 5.0,
+    "factor_exposure": {
+      "market_beta": 0.7881,
+      "residual_vol_pct": 0.043
+    },
+    "formulas": {
+      "beta": "cov(asset, benchmark) / var(benchmark)",
+      "downside_deviation": "stdev(negative_returns) * sqrt(12)",
+      "expected_shortfall_95": "mean(losses >= VaR95)",
+      "var_95": "historical_simulation_percentile(losses, 95)",
+      "volatility_ann": "stdev(monthly_returns) * sqrt(12)"
+    },
+    "found": true,
+    "liquidity_score": 0.8118,
+    "max_drawdown_pct": 5.1,
+    "provider": "kf_risk_producer",
+    "var_95_monthly_pct": 4.8438,
+    "volatility_ann_pct": 15.0543
+  },
+  "sector": "fmcg",
+  "timeline": {
+    "entity": "ASIANPAINT",
+    "events": [
+      {
+        "date": "2025-04-20",
+        "filing_id": "ASIANPAINT-Q4-2025",
+        "title": "Q4 Results",
+        "type": "earnings"
+      },
+      {
+        "date": "2025-05-10",
+        "filing_id": "ASIANPAINT-DIV-2025",
+        "title": "Dividend Declaration",
+        "type": "dividend"
+      },
+      {
+        "date": "2025-06-15",
+        "filing_id": "ASIANPAINT-AR-2025",
+        "title": "Annual Report FY25",
+        "type": "annual_report"
+      }
+    ],
+    "n": 3,
+    "provider": "kf_timeline_producer"
+  }
+}

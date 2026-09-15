@@ -1,0 +1,206 @@
+"""Sizing arithmetic for the intraday-native strategies.
+
+These pin the formulas the desk prints beside the table, so the page and the
+engine cannot drift apart silently. Every constant is deliberately checked
+against a hand-computed value rather than a snapshot of the implementation.
+"""
+
+from __future__ import annotations
+
+import math
+
+import pytest
+
+from hedge_fund_lab import live_strategies as ls
+
+
+@pytest.fixture(autouse=True)
+def _clear_cache():
+    ls.reset_cache()
+    yield
+    ls.reset_cache()
+
+
+class TestAnnualisedVol:
+    def test_matches_hand_calculation(self):
+        # ATR 20 on a price of 1000 is 2% daily; annualised = 0.02 * sqrt(252)
+        got = ls.annualised_vol(20.0, 1000.0)
+        assert got == pytest.approx(0.02 * math.sqrt(252), rel=1e-9)
+
+    def test_missing_inputs_return_none(self):
+        assert ls.annualised_vol(None, 1000.0) is None
+        assert ls.annualised_vol(20.0, None) is None
+        assert ls.annualised_vol(20.0, 0.0) is None
+
+
+class TestVolTargetWeight:
+    def test_matches_hand_calculation(self):
+        # w = sigma_target / (sigma * sqrt(N))
+        got = ls.vol_target_weight(0.30, n=25)
+        assert got == pytest.approx(ls.VOL_TARGET / (0.30 * 5.0), rel=1e-9)
+
+    def test_higher_volatility_gets_less_weight(self):
+        assert ls.vol_target_weight(0.20) > ls.vol_target_weight(0.60)
+
+    def test_degenerate_inputs(self):
+        assert ls.vol_target_weight(0.0) is None
+        assert ls.vol_target_weight(0.2, n=0) is None
+
+
+class TestAdvCap:
+    def test_converts_millions_of_shares_to_value(self):
+        # Capital IQ reports ADV in millions of shares. 10mn shares at Rs 500
+        # is Rs 5,000,000,000 of daily value; 10% of that over Rs 1bn capital.
+        got = ls.adv_cap(10.0, 500.0, capital=1_000_000_000)
+        assert got == pytest.approx((0.10 * 10.0 * 1e6 * 500.0) / 1_000_000_000, rel=1e-9)
+
+    def test_illiquid_name_is_capped_hard(self):
+        thin = ls.adv_cap(0.01, 50.0, capital=1_000_000_000)
+        deep = ls.adv_cap(20.0, 2000.0, capital=1_000_000_000)
+        assert thin < deep
+        assert thin < 0.001
+
+    def test_missing_inputs_return_none(self):
+        assert ls.adv_cap(None, 100.0) is None
+        assert ls.adv_cap(5.0, None) is None
+
+
+class TestSizePosition:
+    def test_takes_the_minimum_of_all_limits(self):
+        out = ls.size_position(price=1000.0, atr=20.0, adv_shares_mn=50.0)
+        limits = [out["vol_target_weight"], out["liquidity_cap_weight"], out["max_weight"]]
+        assert out["target_weight"] == pytest.approx(min(limits), rel=1e-9)
+
+    def test_illiquidity_binds_for_a_thin_name(self):
+        out = ls.size_position(price=50.0, atr=1.0, adv_shares_mn=0.005)
+        assert out["binding_constraint"] == "liquidity"
+
+    def test_max_weight_binds_for_a_calm_liquid_name(self):
+        out = ls.size_position(price=1000.0, atr=1.0, adv_shares_mn=500.0)
+        assert out["binding_constraint"] == "max_weight"
+        assert out["target_weight"] == ls.MAX_WEIGHT
+
+    def test_unsizeable_without_atr(self):
+        out = ls.size_position(price=1000.0, atr=None, adv_shares_mn=50.0)
+        assert out["vol_target_weight"] is None
+        assert out["target_weight"] is not None  # liquidity + max still bound
+
+    def test_notional_follows_the_weight(self):
+        out = ls.size_position(price=1000.0, atr=20.0, adv_shares_mn=50.0)
+        assert out["notional_inr"] == round(out["target_weight"] * ls.PORTFOLIO_CAPITAL)
+
+
+class TestCoverage:
+    def test_reports_what_is_missing_rather_than_defaulting(self):
+        cov = ls._coverage({"atr": 5.0}, None)
+        assert cov["complete"] is False
+        assert "adv" in cov["missing"] and "beta" in cov["missing"]
+        assert cov["sizeable"] is False
+
+    def test_complete_when_all_present(self):
+        cov = ls._coverage({"atr": 5.0, "beta_1y": 1.1}, {"adv_3m": 3.0})
+        assert cov["complete"] is True and cov["sizeable"] is True
+
+    def test_sizeable_without_beta(self):
+        """Beta is needed to hedge, not to size — the two must not be conflated."""
+        cov = ls._coverage({"atr": 5.0}, {"adv_3m": 3.0})
+        assert cov["sizeable"] is True
+        assert "beta" in cov["missing"]
+
+
+class TestCaching:
+    def test_shared_inputs_are_resolved_once_per_board(self, monkeypatch):
+        """board() used to resolve signals and both vendor tables once per
+        strategy - three Supabase round trips and six table scans - which made
+        the endpoint take 80 seconds."""
+        calls = {"signals": 0, "vendor": 0}
+
+        def _signals(**_):
+            calls["signals"] += 1
+            return {"ok": True, "rows": []}
+
+        def _vendor():
+            calls["vendor"] += 1
+            return ({}, {})
+
+        monkeypatch.setattr(ls, "fetch_live_alpha_rows", _signals)
+        monkeypatch.setattr(ls, "_risk_and_liquidity", _vendor)
+        ls.board(limit=5)
+        assert calls["signals"] == 1, f"signals fetched {calls['signals']}x for 3 strategies"
+
+    def test_reset_clears_the_cache(self, monkeypatch):
+        calls = {"n": 0}
+
+        def _signals(**_):
+            calls["n"] += 1
+            return {"ok": True, "rows": []}
+
+        monkeypatch.setattr(ls, "fetch_live_alpha_rows", _signals)
+        monkeypatch.setattr(ls, "_risk_and_liquidity", lambda: ({}, {}))
+        ls.board(limit=1)
+        ls.reset_cache()
+        ls.board(limit=1)
+        assert calls["n"] == 2
+
+
+class TestBoardContract:
+    def test_declares_its_own_validation_state(self):
+        board = ls.board(limit=1)
+        v = board["validation"]
+        assert v["alpha_claims_permitted"] is False
+        assert v["backtest"] == "NOT RUN"
+        assert "FAILING" in v["point_in_time"]
+        assert "FAILING" in v["survivorship"]
+
+    def test_exposes_every_sizing_constant(self):
+        c = ls.board(limit=1)["sizing_constants"]
+        for key in ("vol_target", "max_weight", "adv_participation",
+                    "portfolio_capital_inr", "holdings", "atr_stop_multiple"):
+            assert key in c
+
+    def test_one_card_per_strategy_even_on_failure(self):
+        board = ls.board(limit=1)
+        assert len(board["cards"]) == len(ls.LIVE_STRATEGIES)
+        assert {c["strategy"] for c in board["cards"]} == set(ls.LIVE_STRATEGIES)
+
+
+class TestEmptyCardsExplainThemselves:
+    """A card showing zero is indistinguishable from a broken one. The engines
+    publish their whole 500-name universe each run and grade most of it noise -
+    1,401 of 2,198 stored signals were classified neutral on 2026-08-20 - so an
+    empty strategy is usually correct and must say so."""
+
+    def test_every_strategy_maps_to_an_engine(self):
+        assert set(ls._STRATEGY_ENGINE) == set(ls.LIVE_STRATEGIES)
+
+    def test_an_empty_card_carries_a_funnel(self, monkeypatch):
+        monkeypatch.setattr(ls, "fetch_live_alpha_rows",
+                            lambda **_: {"ok": True, "rows": [], "meta": {"funnel": {"kept": 0}}})
+        monkeypatch.setattr(ls, "_risk_and_liquidity", lambda: ({}, {}))
+        board = ls.board(limit=5)
+        for card in board["cards"]:
+            assert card["why_empty"]["carrying_this_engine"] == 0
+            assert "quality" in card["why_empty"]["reading"]
+
+    def test_the_funnel_states_the_gates_that_rejected_the_signals(self, monkeypatch):
+        monkeypatch.setattr(ls, "fetch_live_alpha_rows",
+                            lambda **_: {"ok": True, "rows": [], "meta": {}})
+        monkeypatch.setattr(ls, "_risk_and_liquidity", lambda: ({}, {}))
+        funnel = ls.engine_funnel("opening_range_expansion_v1")
+        gates = funnel["bridge_filters"]
+        assert "neutral" in gates["rejected_classifications"]
+        assert "ignore" in gates["rejected_quality_labels"]
+        assert gates["minimum_quality_score"] > 0
+
+    def test_a_populated_card_needs_no_explanation(self, monkeypatch):
+        row = {"ticker": "AAA", "symbol": "AAA", "sector": "IT",
+               "engines": {"opening_range_expansion_v1": {
+                   "symbol": "AAA", "direction": "positive", "signal_quality_score": 80,
+                   "alpha_z": 1.5, "factor_values": {"breakout_pct": 2.0}}}}
+        monkeypatch.setattr(ls, "fetch_live_alpha_rows",
+                            lambda **_: {"ok": True, "rows": [row], "meta": {}})
+        monkeypatch.setattr(ls, "_risk_and_liquidity",
+                            lambda: ({"AAA": {"atr": 5.0}}, {"AAA": {"adv_3m": 3.0}}))
+        board = ls.board(limit=5)
+        breakout = next(c for c in board["cards"] if c["strategy"] == "opening_range_breakout")
+        assert "why_empty" not in breakout

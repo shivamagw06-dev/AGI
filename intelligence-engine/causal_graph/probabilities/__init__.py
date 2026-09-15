@@ -1,0 +1,1 @@
+from causal_graph.probabilities.model import edge_probability

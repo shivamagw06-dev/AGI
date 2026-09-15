@@ -1,0 +1,12 @@
+{
+  "architecture": "v1.0.1",
+  "document_refs": ["E00 §5", "E00 §9", "E00 §10", "STAB-1.0.1 B2", "WBS CON-001"],
+  "canonical_schema_path": "intelligence-engine/contracts/v1/engine_state.schema.json",
+  "fixture_glob": "intelligence-engine/contracts/v1/fixtures/*.json",
+  "method_version_confidence": "conf-1.0",
+  "notes": [
+    "This is the single EngineState SSOT for Architecture v1.0.1.",
+    "Per-engine payloads may extend the envelope; they must not replace confidence, evidence, version, or hash fields.",
+    "Existing research-desk models in app/schemas/models.py remain for L6 agent runs and are not a competing EngineState SSOT."
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "case_id": "infy_fy2025_annual",
+  "company_id": "nse:INFY",
+  "company_name": "Infosys Limited",
+  "currency": "INR",
+  "document_hash": "7c70d9388f7ef922c62ae33f1646f111038e9318f70baa6d092910a64028d75d",
+  "exchange": "NSE",
+  "filing_type": "json",
+  "financial_year": "FY2025",
+  "immutable": true,
+  "industry": "IT Services",
+  "manual_verification": true,
+  "period_end": "2025-03-31",
+  "quarter": null,
+  "reporting_standard": "IND_AS",
+  "sector": "information_technology",
+  "statement_frequency": "annual",
+  "taxonomy_version": "nse_indas_integrated_filing.2024.1",
+  "ticker": "INFY",
+  "verified_at": "2026-07-30T00:00:00Z",
+  "verified_by": "agib_pcc_seed"
+}

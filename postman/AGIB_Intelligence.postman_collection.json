@@ -1,0 +1,114 @@
+{
+  "info": {
+    "name": "AGIB Intelligence APIs",
+    "description": "Smoke + ops collection for AGIB Node BFF and Intelligence Engine. Architecture v1.0.1 LOCKED.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "API", "value": "https://finance-news-backend-19i5.onrender.com" },
+    { "key": "IE", "value": "https://agib-intelligence-engine.onrender.com" }
+  ],
+  "item": [
+    {
+      "name": "Core health",
+      "item": [
+        {
+          "name": "Node /api/health",
+          "request": { "method": "GET", "url": "{{API}}/api/health" }
+        },
+        {
+          "name": "Node /api/ui/health",
+          "request": { "method": "GET", "url": "{{API}}/api/ui/health" }
+        },
+        {
+          "name": "IE /v1/health",
+          "request": { "method": "GET", "url": "{{IE}}/v1/health" }
+        },
+        {
+          "name": "Intelligence gateway health",
+          "request": { "method": "GET", "url": "{{API}}/api/intelligence/health" }
+        }
+      ]
+    },
+    {
+      "name": "Mission Control",
+      "item": [
+        {
+          "name": "MC health (BFF)",
+          "request": { "method": "GET", "url": "{{API}}/api/intelligence/mission-control/health" }
+        },
+        {
+          "name": "MC dashboard (BFF)",
+          "request": { "method": "GET", "url": "{{API}}/api/intelligence/mission-control/dashboard" }
+        },
+        {
+          "name": "MC quality gates",
+          "request": { "method": "GET", "url": "{{API}}/api/intelligence/mission-control/quality-gates" }
+        }
+      ]
+    },
+    {
+      "name": "Ask AGI",
+      "item": [
+        {
+          "name": "UI search (short)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"question\": \"HDFC Bank overview\",\n  \"ticker\": \"HDFCBANK\"\n}"
+            },
+            "url": "{{API}}/api/ui/search"
+          }
+        }
+      ]
+    },
+    {
+      "name": "CMS → Intelligence ingest",
+      "item": [
+        {
+          "name": "KIP ingest AGI note",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Postman AGIB ingest probe\",\n  \"content\": \"Cash conversion, interest coverage and the maturity ladder remain the credit committee gates for this institutional note.\",\n  \"destination\": \"intelligence\",\n  \"cms_status\": \"intelligence\",\n  \"tickers\": [\"HDFCBANK\"]\n}"
+            },
+            "url": "{{API}}/api/intelligence/kip/ingest/agi"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Soft-layer health",
+      "item": [
+        {
+          "name": "Institutional reasoning",
+          "request": { "method": "GET", "url": "{{IE}}/v1/institutional-reasoning/health" }
+        },
+        {
+          "name": "Answer construction",
+          "request": { "method": "GET", "url": "{{IE}}/v1/answer-construction/health" }
+        },
+        {
+          "name": "Editorial",
+          "request": { "method": "GET", "url": "{{IE}}/v1/editorial/health" }
+        },
+        {
+          "name": "Academy books",
+          "request": { "method": "GET", "url": "{{IE}}/v1/academy/books/health" }
+        },
+        {
+          "name": "Research writer",
+          "request": { "method": "GET", "url": "{{IE}}/v1/research-writer/health" }
+        },
+        {
+          "name": "FAA health",
+          "request": { "method": "GET", "url": "{{API}}/api/intelligence/faa/health" }
+        }
+      ]
+    }
+  ]
+}

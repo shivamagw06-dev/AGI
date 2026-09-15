@@ -1,0 +1,115 @@
+{
+  "suite": "AGI Founder Acceptance \u2014 Golden 5 (scored)",
+  "version": "v1.0",
+  "timestamp": "2026-08-01T08:45:23.417319Z",
+  "base_url": "https://finance-news-backend-19i5.onrender.com",
+  "lens": "founder/CIO user \u2014 not regression harness",
+  "source_capture": "artifacts/founder_acceptance_golden5_latest.json",
+  "scores": [
+    {
+      "id": "G1",
+      "prompt": "What is Reliance Industries' business model?",
+      "scores": {
+        "answered_question": 1,
+        "evidence": 2,
+        "grounding": 1,
+        "reasoning": 1,
+        "no_hallucination": 3,
+        "readability": 1
+      },
+      "total": 9,
+      "band": "<20 Needs investigation",
+      "verdict": "FAIL \u2014 executive is framework scaffolding ('Analyse via Financial evidence\u2026'), not a business-model answer. No segments/O2C/Jio/Retail/risks. House view Bearish without explanation. Retrieval happened (82 docs) but user-facing answer does not use it.",
+      "latency_ms": 21943,
+      "fallback_used": false
+    },
+    {
+      "id": "G2",
+      "prompt": "Compare Infosys vs TCS.",
+      "scores": {
+        "answered_question": 1,
+        "evidence": 2,
+        "grounding": 1,
+        "reasoning": 1,
+        "no_hallucination": 3,
+        "readability": 1
+      },
+      "total": 9,
+      "band": "<20 Needs investigation",
+      "verdict": "FAIL \u2014 not a comparison. No scale/margins/growth/AI/valuation contrast. Same framework-meta executive pattern. Entity bound only INFY; TCS not treated as peer in the answer.",
+      "latency_ms": 25830,
+      "fallback_used": false
+    },
+    {
+      "id": "G3",
+      "prompt": "What did Meta say in Q2 2026 about AI infrastructure spending?",
+      "scores": {
+        "answered_question": 0,
+        "evidence": 1,
+        "grounding": 0,
+        "reasoning": 1,
+        "no_hallucination": 2,
+        "readability": 1
+      },
+      "total": 5,
+      "band": "<20 Needs investigation",
+      "verdict": "FAIL \u2014 does not answer the earnings question. No AI capex figure, no management commentary, no CMS citation. Why-line even drifts to EPC/annuity (wrong industry). Framework meta executive again.",
+      "latency_ms": 30438,
+      "fallback_used": false
+    },
+    {
+      "id": "G4",
+      "prompt": "Should I buy HDFC Bank tomorrow?",
+      "scores": {
+        "answered_question": 5,
+        "evidence": 3,
+        "grounding": 5,
+        "reasoning": 4,
+        "no_hallucination": 5,
+        "readability": 5
+      },
+      "total": 27,
+      "band": "27\u201330 Institutional quality",
+      "verdict": "PASS \u2014 clear no-BUY policy, monitoring framework, no price target, ~400ms short-circuit. Strong recommendation-policy product behavior.",
+      "latency_ms": 396,
+      "fallback_used": false
+    },
+    {
+      "id": "G5",
+      "prompt": "Explain XYZ Quantum Robotics Pvt Ltd.",
+      "scores": {
+        "answered_question": 0,
+        "evidence": 0,
+        "grounding": 0,
+        "reasoning": 0,
+        "no_hallucination": 0,
+        "readability": 1
+      },
+      "total": 1,
+      "band": "<20 Needs investigation",
+      "verdict": "FAIL CRITICAL \u2014 must say cannot identify company. Instead runs research on rejected candidate LT (Larsen & Toubro) and speaks as if about LT. Entity resolution correctly had needs_clarification + rejected LT, but answer still hallucinated institutional prose about LT.",
+      "latency_ms": 21289,
+      "fallback_used": false
+    }
+  ],
+  "aggregate": {
+    "average_score": 10.2,
+    "max_per_question": 30,
+    "institutional_count": 1,
+    "strong_count": 0,
+    "good_count": 0,
+    "investigate_count": 4,
+    "pass_as_founder_core": false
+  },
+  "root_cause_hypothesis": [
+    "User-facing executive/summary is ICE framework scaffolding ('Analyse via Financial evidence\u2026') \u2014 looks_like_framework_meta_executive does not detect this pattern.",
+    "Retrieval funnel is healthy (dozens of docs) but does not reach the answer the founder reads.",
+    "Unknown-company path: ERE rejects LT but answer still narrates LT \u2014 clarification/block not enforced on executive assembly.",
+    "Recommendation policy path (#438 short-circuit) is the only golden question at institutional quality."
+  ],
+  "recommendation": {
+    "expand_to_full_20": false,
+    "next_fix_first": "Repair executive assembly so the answer answers the question (kill framework-meta executives; enforce unknown-entity refuse).",
+    "do_not": "Do not expand founder suite or upgrade infrastructure until G1/G2/G3/G5 read as institutional answers."
+  }
+}

@@ -1,0 +1,228 @@
+name: Required Short Gate
+
+# Required zero-defect release check. It blocks integration when coverage is
+# incomplete, infrastructure fails, or any release-critical defect is present.
+# Evidence is uploaded with `if: always()` even when the gate fails.
+
+on:
+  pull_request: {}
+  workflow_dispatch:
+
+concurrency:
+  group: short-gate-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  short-gate:
+    name: Zero-defect extraction shard ${{ matrix.shard }} (required)
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+    # Generous against the 900s budget in the code, so the job does not kill the
+    # very measurement it exists to take.
+    timeout-minutes: 45
+    env:
+      ASK_TEST_MODE: inprocess
+      # Required checks must not call the live grounded-synthesis model. The
+      # in-process routing/retrieval/identity pipeline and editorial stub still
+      # run; this only removes an external, retry-prone final prose request.
+      ASK_LLM_ENABLED: 'false'
+      YAHOO_PROVIDER: 'false'
+      YAHOO_YFINANCE_FALLBACK: 'false'
+      ASK_TEST_CASE_COOLDOWN_SEC: '0'
+      ASK_SLIM: 'true'
+      FAA_BACKGROUND_COLLECTOR: 'false'
+      CONTINUOUS_GATHER_LEARN: 'false'
+      KIP_DATA_DIR: ${{ github.workspace }}/intelligence-engine/data
+      VALUATION_CONSENSUS_ROOT: ${{ github.workspace }}/intelligence-engine/data/valuation_consensus
+      IKT_STORE_ROOT: ${{ github.workspace }}/intelligence-engine/data/institutional_knowledge_tables
+      KF_STORE_ROOT: ${{ github.workspace }}/intelligence-engine/data/knowledge_factory
+      IERE_STORE_ROOT: ${{ github.workspace }}/intelligence-engine/data/evidence_retrieval
+      ACCEPTANCE_FIXTURES_ROOT: ${{ github.workspace }}/intelligence-engine/acceptance_fixtures
+      ASK_TEST_ARTIFACTS: ${{ github.workspace }}/intelligence-engine/artifacts
+      SHORT_GATE_SHARD_COUNT: '16'
+      SHORT_GATE_SHARD_INDEX: ${{ matrix.shard }}
+
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        working-directory: intelligence-engine
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Prepare artifacts directory
+        run: mkdir -p intelligence-engine/artifacts
+
+      - name: Bootstrap acceptance data
+        run: python scripts/ci/bootstrap_acceptance_data.py
+
+      - name: Acceptance data health check
+        run: python scripts/ci/check_acceptance_data.py
+
+      - name: Run the short gate
+        id: gate
+        working-directory: intelligence-engine
+        env:
+          PYTHONPATH: .
+        run: |
+          set +e
+          start=$(date +%s)
+          # The Python report records the 900-second budget but cannot interrupt
+          # a blocked provider/pipeline call. Enforce the same ceiling here so a
+          # hung shard fails as infrastructure instead of occupying the required
+          # production check until the 45-minute job timeout.
+          timeout --signal=TERM --kill-after=30s 900s python -m ask_product_test.run_short_gate
+          rc=$?
+          if [ "$rc" = "124" ] || [ "$rc" = "137" ]; then
+            echo "::error::short gate exceeded its enforced 900-second budget"
+            rc=2
+          fi
+          echo "duration_seconds=$(( $(date +%s) - start ))" >> "$GITHUB_OUTPUT"
+          echo "exit_code=$rc" >> "$GITHUB_OUTPUT"
+          # 2 is infrastructure — the stub failed to install, or the harness was
+          # not in inprocess mode. Preserve the real conclusion; later evidence
+          # steps use `if: always()` and still run.
+          if [ "$rc" = "2" ]; then echo "::error::short gate infrastructure failure"; fi
+          exit "$rc"
+
+      - name: Run critical ingestion and UI regressions
+        if: matrix.shard == 0
+        working-directory: intelligence-engine
+        env:
+          PYTHONPATH: .
+        run: |
+          pytest -q \
+            tests/test_ui_home_cache.py \
+            tests/test_earnings_intelligence_p21.py \
+            institutional_data/tests/test_institutional_data_production.py::test_yahoo_financial_records_keep_provider_and_rupee_unit \
+            institutional_warehouse/tests/test_xbrl_units.py \
+            institutional_warehouse/tests/test_statement_unit_provenance.py
+
+      - name: Summarise the measurement
+        if: always()
+        working-directory: intelligence-engine
+        run: |
+          python - <<'PY'
+          import glob, json, os
+          hits = sorted(glob.glob("artifacts/_runs/*/short_gate/short_gate_zero_defect.json"))
+          summary = os.environ.get("GITHUB_STEP_SUMMARY")
+          if not hits:
+              line = "No short-gate artifact produced — see the job log."
+          else:
+              d = json.load(open(hits[-1]))
+              line = "\n".join([
+                  "## Required short gate shard", "",
+                  f"- decision: **{d['decision']}**",
+                  f"- cases planned / evaluated: {d['cases_planned']} / {d['cases_evaluated']}",
+                  f"- duration: **{d['elapsed_seconds']}s** of {d['budget_seconds']}s "
+                  f"(within budget: {d['within_budget']})",
+                  f"- defects: `{d['defects']}`",
+                  f"- unique failing cases: {d['unique_failing_cases']} "
+                  f"(P0: {d['unique_p0_cases']}, labels: {d['label_occurrences']})",
+                  f"- non-P0 tracked: `{d['non_p0_categories']}`",
+                  f"- section mapping: {d['section_mapping']}", "",
+                  "Report-only: blocks no merge and no deployment.",
+              ])
+          print(line)
+          if summary:
+              open(summary, "a").write(line + "\n")
+          PY
+
+      - name: Upload the measurement
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: short-gate-measurement-${{ matrix.shard }}
+          path: intelligence-engine/artifacts/_runs/**/short_gate/*.json
+          if-no-files-found: warn
+
+  combine:
+    name: Required short gate
+    needs: short-gate
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/download-artifact@v6
+        with:
+          pattern: short-gate-measurement-*
+          path: intelligence-engine/combined-short-gate
+          merge-multiple: true
+      - name: Verify coverage and combine results
+        working-directory: intelligence-engine
+        env:
+          PYTHONPATH: .
+        run: |
+          if [ "${{ needs.short-gate.result }}" != "success" ]; then
+            echo "::error::one or more required shard jobs failed"
+            exit 2
+          fi
+          python - <<'PY'
+          import glob, json, os, sys
+          from ask_product_test.run_short_gate import combine_reports, merge_case_seconds
+
+          files = sorted(
+              glob.glob(
+                  "combined-short-gate/**/short_gate_zero_defect_shard_*.json",
+                  recursive=True,
+              )
+          )
+          try:
+              reports = [json.load(open(path)) for path in files]
+              combined = combine_reports(reports)
+          except Exception as exc:
+              print(f"::error::short-gate shard coverage failure: {exc}")
+              raise SystemExit(2)
+
+          out = "combined-short-gate/short_gate_zero_defect_combined.json"
+          with open(out, "w") as handle:
+              json.dump(combined, handle, indent=2)
+
+          # Per-case timings for the next run to shard on. Uploaded rather than
+          # committed from CI: a workflow that pushes to its own repository
+          # retriggers itself, and the file only needs refreshing when the case
+          # costs actually move.
+          seconds = merge_case_seconds(reports)
+          with open("combined-short-gate/case_timings.json", "w") as handle:
+              json.dump({"case_seconds": seconds,
+                         "cases": len(seconds),
+                         "source_run": os.environ.get("GITHUB_RUN_ID")},
+                        handle, indent=2, sort_keys=True)
+          spread = [r.get("elapsed_seconds") or 0 for r in reports]
+          print(f"- shard spread: {min(spread)}s .. {max(spread)}s "
+                f"({len(seconds)} cases timed)")
+          line = "\n".join([
+              "## Required short gate", "",
+              f"- decision: **{combined['decision']}**",
+              f"- coverage: {combined['cases_evaluated']} / {combined['cases_planned']} cases",
+              f"- shards: {combined['shard_count']}",
+              f"- slowest shard: **{combined['elapsed_seconds']}s** of {combined['budget_seconds']}s",
+              f"- defects: `{combined['defects']}`",
+              f"- unique failing cases: {combined['unique_failing_cases']} "
+              f"(P0: {combined['unique_p0_cases']})",
+              "", "Required: blocks merge and deployment when coverage is incomplete or any P0 defect is present.",
+          ])
+          print(line)
+          if os.environ.get("GITHUB_STEP_SUMMARY"):
+              open(os.environ["GITHUB_STEP_SUMMARY"], "a").write(line + "\n")
+          raise SystemExit(0 if combined["decision"] == "PASS" else 1)
+          PY
+      - name: Upload combined measurement
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: short-gate-measurement-combined
+          path: |
+            intelligence-engine/combined-short-gate/short_gate_zero_defect_combined.json
+            intelligence-engine/combined-short-gate/case_timings.json
+          if-no-files-found: warn

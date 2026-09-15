@@ -1,0 +1,5784 @@
+{
+  "audit_version": "finance-academy-validation-v1.1-fapi",
+  "generated_at": "2026-07-26T03:22:19.299644+00:00",
+  "inventory": {
+    "courses": [
+      {
+        "course_id": "mankiw_principles_of_economics",
+        "title": "Principles of Economics (Gregory Mankiw)",
+        "chapters": 36
+      },
+      {
+        "course_id": "damodaran_minimalist_accounting",
+        "title": "Minimalist Accounting (Aswath Damodaran)",
+        "chapters": 10
+      },
+      {
+        "course_id": "damodaran_applied_corporate_finance",
+        "title": "Applied Corporate Finance (Aswath Damodaran)",
+        "chapters": 12
+      }
+    ],
+    "concept_count": 129,
+    "concepts_by_course": {
+      "economics": 46,
+      "accounting": 39,
+      "corporate_finance": 44
+    },
+    "causal_models": 20,
+    "mental_models": 22
+  },
+  "engine_import_audit": {
+    "engines_mentioning_academy": {
+      "kf": [
+        "app/kf/service.py"
+      ],
+      "kc": [
+        "app/kc/service.py"
+      ],
+      "eve": [
+        "app/eve/service.py"
+      ],
+      "iie": [
+        "app/iie/service.py"
+      ],
+      "fle": [
+        "app/fle/service.py"
+      ],
+      "ve": [
+        "app/ve/inputs.py",
+        "app/ve/service.py"
+      ],
+      "cae": [
+        "app/cae/service.py",
+        "app/cae/assembler.py"
+      ],
+      "irp": [
+        "app/irp/models.py",
+        "app/irp/pipeline.py"
+      ],
+      "ui": [
+        "app/ui/models.py",
+        "app/ui/service.py"
+      ]
+    },
+    "engines_importing_academy": {
+      "kf": [
+        "app/kf/service.py"
+      ],
+      "kc": [
+        "app/kc/service.py"
+      ],
+      "eve": [
+        "app/eve/service.py"
+      ],
+      "iie": [
+        "app/iie/service.py"
+      ],
+      "fle": [
+        "app/fle/service.py"
+      ],
+      "ve": [
+        "app/ve/inputs.py",
+        "app/ve/service.py"
+      ],
+      "cae": [
+        "app/cae/service.py",
+        "app/cae/assembler.py"
+      ],
+      "irp": [
+        "app/irp/pipeline.py"
+      ],
+      "ui": [
+        "app/ui/service.py"
+      ]
+    },
+    "engines_with_zero_academy_imports": [
+      "mee",
+      "ib",
+      "rsp",
+      "aoi"
+    ],
+    "verdict": "PARTIAL_WIRING"
+  },
+  "consumer_capability": {
+    "kf": {
+      "callable": true,
+      "consumer_label": "KF",
+      "concept_ids_present_in_payload": [
+        "accounting_estimates",
+        "accruals",
+        "acquisition_quality",
+        "agency_costs",
+        "aggregate_demand",
+        "beta",
+        "business_cycle",
+        "capital_allocation",
+        "capital_raising",
+        "capitalised_expenses",
+        "cash_conversion_cycle",
+        "comparative_advantage",
+        "cost_of_debt",
+        "cost_of_equity",
+        "cpi",
+        "creative_destruction",
+        "credit",
+        "debt_repayment",
+        "deflation",
+        "depreciation",
+        "discount_rate",
+        "dividend_policy",
+        "dividend_principle",
+        "earnings_quality",
+        "ebit",
+        "ebitda",
+        "economic_growth",
+        "economic_profit",
+        "elasticity",
+        "eps_illusion",
+        "eva",
+        "exceptional_items",
+        "exchange_rates",
+        "financial_distress",
+        "financial_leverage",
+        "firm_value_maximization",
+        "fiscal_policy",
+        "free_cash_flow",
+        "gains_from_trade",
+        "gdp",
+        "goodwill",
+        "hurdle_rate",
+        "impairment",
+        "incentives",
+        "incremental_roic",
+        "inflation",
+        "international_trade",
+        "inventory",
+        "investment_principle",
+        "leases",
+        "marginal_cost",
+        "marginal_thinking",
+        "market_equilibrium",
+        "market_power",
+        "monetary_policy",
+        "money_supply",
+        "net_income",
+        "npv",
+        "oligopoly",
+        "operating_cash_flow",
+        "opportunity_cost",
+        "optimal_capital_structure",
+        "organic_reinvestment",
+        "present_value",
+        "price_controls",
+        "productivity",
+        "recession",
+        "restatements",
+        "retention_ratio",
+        "revenue_recognition",
+        "roe",
+        "roic",
+        "roic_wacc_spread",
+        "share_buybacks",
+        "stagflation",
+        "supply_and_demand",
+        "trade_offs",
+        "unemployment",
+        "value_creation",
+        "value_destruction",
+        "wacc",
+        "working_capital",
+        "yield_curve"
+      ],
+      "concept_count": 83,
+      "keys": [
+        "consumer",
+        "knowledge_objects",
+        "mental_models",
+        "usage"
+      ]
+    },
+    "kcv": {
+      "callable": true,
+      "consumer_label": "KCV",
+      "concept_ids_present_in_payload": [
+        "accounting_estimates",
+        "accounts_receivable",
+        "accruals",
+        "aggregate_demand",
+        "beta",
+        "business_cycle",
+        "cpi",
+        "credit",
+        "deferred_revenue",
+        "deflation",
+        "depreciation",
+        "discount_rate",
+        "earnings_quality",
+        "ebit",
+        "ebitda",
+        "economic_growth",
+        "eva",
+        "exceptional_items",
+        "exchange_rates",
+        "fiscal_policy",
+        "free_cash_flow",
+        "gdp",
+        "goodwill",
+        "gross_profit",
+        "impairment",
+        "incentives",
+        "income_statement",
+        "inflation",
+        "inventory",
+        "monetary_policy",
+        "money_supply",
+        "net_income",
+        "operating_cash_flow",
+        "provisions",
+        "recession",
+        "restatements",
+        "revenue_recognition",
+        "roic",
+        "stagflation",
+        "trade_offs",
+        "unemployment",
+        "working_capital",
+        "yield_curve"
+      ],
+      "concept_count": 43,
+      "keys": [
+        "consumer",
+        "objects",
+        "quality",
+        "usage"
+      ]
+    },
+    "eve": {
+      "callable": true,
+      "consumer_label": "EVE",
+      "concept_ids_present_in_payload": [
+        "accounting_estimates",
+        "accounts_receivable",
+        "accruals",
+        "agency_costs",
+        "beta",
+        "capital_raising",
+        "cost_of_debt",
+        "cost_of_equity",
+        "credit",
+        "debt_repayment",
+        "debt_vs_equity",
+        "deferred_revenue",
+        "depreciation",
+        "earnings_quality",
+        "economic_profit",
+        "eva",
+        "exceptional_items",
+        "financial_distress",
+        "financial_leverage",
+        "goodwill",
+        "gross_profit",
+        "hurdle_rate",
+        "impairment",
+        "incentives",
+        "income_statement",
+        "inflation",
+        "interest_coverage",
+        "inventory",
+        "net_income",
+        "operating_cash_flow",
+        "optimal_capital_structure",
+        "pecking_order_theory",
+        "provisions",
+        "restatements",
+        "revenue_recognition",
+        "roic",
+        "roic_wacc_spread",
+        "trade_off_theory",
+        "value_creation",
+        "wacc",
+        "working_capital"
+      ],
+      "concept_count": 41,
+      "keys": [
+        "anomaly",
+        "capital_structure_checks",
+        "concepts",
+        "consumer",
+        "earnings_quality",
+        "red_flags",
+        "usage"
+      ]
+    },
+    "iie": {
+      "callable": true,
+      "consumer_label": "IIE",
+      "concept_ids_present_in_payload": [
+        "accruals",
+        "acquisition_overpayment",
+        "acquisition_quality",
+        "acquisition_synergies",
+        "beta",
+        "capital_allocation",
+        "capital_raising",
+        "credit",
+        "debt_repayment",
+        "dividend_policy",
+        "dividend_principle",
+        "earnings_quality",
+        "economic_profit",
+        "eps_illusion",
+        "firm_value_maximization",
+        "goodwill",
+        "incentives",
+        "incremental_roic",
+        "integration_risk",
+        "organic_reinvestment",
+        "roic",
+        "roic_wacc_spread",
+        "share_buybacks",
+        "value_creation",
+        "value_destruction",
+        "wacc"
+      ],
+      "concept_count": 26,
+      "keys": [
+        "business_quality_note",
+        "causal_models",
+        "company_impact",
+        "concept_id",
+        "consumer",
+        "decision_framework",
+        "earnings_quality",
+        "industry_impact",
+        "investment_impact",
+        "management_decisions",
+        "management_quality"
+      ]
+    },
+    "fle": {
+      "callable": true,
+      "consumer_label": "FLE",
+      "concept_ids_present_in_payload": [
+        "accruals",
+        "beta",
+        "capital_allocation",
+        "credit",
+        "earnings_quality",
+        "free_cash_flow",
+        "gdp",
+        "incremental_roic",
+        "liquidity",
+        "organic_reinvestment",
+        "revenue_recognition",
+        "roic",
+        "value_creation",
+        "value_destruction",
+        "wacc",
+        "working_capital"
+      ],
+      "concept_count": 16,
+      "keys": [
+        "consumer",
+        "drivers",
+        "earnings_quality",
+        "example_chain",
+        "usage"
+      ]
+    },
+    "ve": {
+      "callable": true,
+      "consumer_label": "VE",
+      "concept_ids_present_in_payload": [
+        "accruals",
+        "beta",
+        "capm",
+        "cost_of_debt",
+        "cost_of_equity",
+        "country_risk_premium",
+        "earnings_quality",
+        "economic_profit",
+        "equity_risk_premium",
+        "eva",
+        "financial_distress",
+        "financial_leverage",
+        "free_cash_flow",
+        "goodwill",
+        "hurdle_rate",
+        "leases",
+        "liquidity",
+        "optimal_capital_structure",
+        "roic",
+        "roic_wacc_spread",
+        "share_buybacks",
+        "value_creation",
+        "wacc"
+      ],
+      "concept_count": 23,
+      "keys": [
+        "consumer",
+        "earnings_quality",
+        "guidance",
+        "note",
+        "preferred_cash_flow",
+        "terminal_guidance",
+        "wacc_guidance"
+      ]
+    },
+    "irp": {
+      "callable": true,
+      "consumer_label": "IRP",
+      "concept_ids_present_in_payload": [
+        "accruals",
+        "acquisition_overpayment",
+        "acquisition_quality",
+        "beta",
+        "capital_allocation",
+        "capital_raising",
+        "cost_of_debt",
+        "cost_of_equity",
+        "debt_repayment",
+        "dividend_policy",
+        "earnings_quality",
+        "economic_profit",
+        "eps_illusion",
+        "eva",
+        "firm_value_maximization",
+        "hurdle_rate",
+        "incentives",
+        "incremental_roic",
+        "investment_principle",
+        "npv",
+        "optimal_capital_structure",
+        "organic_reinvestment",
+        "retention_ratio",
+        "roic",
+        "roic_wacc_spread",
+        "share_buybacks",
+        "value_creation",
+        "value_destruction",
+        "wacc"
+      ],
+      "concept_count": 29,
+      "keys": [
+        "consumer",
+        "earnings_quality",
+        "neighborhood",
+        "teaching",
+        "usage",
+        "value_creation_frame"
+      ]
+    },
+    "fiml": {
+      "callable": true,
+      "consumer_label": "FIML",
+      "concept_ids_present_in_payload": [
+        "accounting_estimates",
+        "accounts_payable",
+        "accounts_receivable",
+        "accruals",
+        "acquisition_overpayment",
+        "acquisition_quality",
+        "acquisition_synergies",
+        "aggregate_demand",
+        "aggregate_supply",
+        "balance_sheet",
+        "beta",
+        "business_cycle",
+        "capital_allocation",
+        "capital_raising",
+        "capitalised_expenses",
+        "cash_conversion_cycle",
+        "comparative_advantage",
+        "cost_of_debt",
+        "cost_of_equity",
+        "cpi",
+        "credit",
+        "debt_repayment",
+        "deferred_revenue",
+        "deflation",
+        "depreciation",
+        "discount_rate",
+        "dividend_policy",
+        "dividend_principle",
+        "earnings_quality",
+        "ebit",
+        "ebitda",
+        "economic_growth",
+        "economic_profit",
+        "elasticity",
+        "eps_illusion",
+        "eva",
+        "exceptional_items",
+        "exchange_rates",
+        "financial_distress",
+        "financial_leverage",
+        "firm_value_maximization",
+        "fiscal_policy",
+        "free_cash_flow",
+        "gdp",
+        "goodwill",
+        "gross_profit",
+        "hurdle_rate",
+        "impairment",
+        "incentives",
+        "income_statement",
+        "incremental_roic",
+        "inflation",
+        "integration_risk",
+        "international_trade",
+        "inventory",
+        "leases",
+        "liquidity",
+        "monetary_policy",
+        "monetary_system",
+        "money_supply",
+        "net_income",
+        "operating_cash_flow",
+        "optimal_capital_structure",
+        "organic_reinvestment",
+        "phillips_curve",
+        "present_value",
+        "productivity",
+        "quantity_theory_of_money",
+        "recession",
+        "restatements",
+        "revenue_recognition",
+        "roe",
+        "roic",
+        "roic_wacc_spread",
+        "saving_and_investment",
+        "share_buybacks",
+        "stagflation",
+        "trade_offs",
+        "unemployment",
+        "value_creation",
+        "value_destruction",
+        "wacc",
+        "working_capital",
+        "yield_curve"
+      ],
+      "concept_count": 84,
+      "keys": [
+        "accounting_concepts",
+        "causal_models",
+        "consumer",
+        "corporate_finance_concepts",
+        "earnings_quality",
+        "economics_concepts",
+        "usage"
+      ]
+    }
+  },
+  "ve_probe": {
+    "uses_academy_wacc_objects": true,
+    "hardcoded_defaults": {
+      "wacc": 0.11,
+      "cost_of_equity": 0.13,
+      "cost_of_debt": 0.08,
+      "beta": 1.0
+    },
+    "academy_derived": {
+      "wacc": 0.12,
+      "cost_of_equity": 0.135,
+      "changed": true
+    },
+    "note": "VE gather_inputs soft-applies Academy CAPM/WACC methodology via FAPI when academy_production is enabled.",
+    "academy_has": {
+      "wacc": true,
+      "cost_of_equity": true,
+      "roic_wacc_spread": true,
+      "capital_allocation": true
+    }
+  },
+  "ask_agi_probe": {
+    "question": "Why do higher interest rates reduce growth stock valuations?",
+    "academy_imported_by_ui": true,
+    "academy_imported_by_irp": true,
+    "academy_keys_in_response": [
+      "economic_growth",
+      "exchange_rates",
+      "interest_coverage",
+      "yield_curve",
+      "minority_interest",
+      "productivity",
+      "present_value",
+      "monetary_policy",
+      "discount_rate",
+      "debt_repayment",
+      "agency_costs",
+      "consumer_producer_surplus"
+    ],
+    "notes": [
+      "UiService.search consults Finance Academy via FAPI before answering.",
+      "IRP pipeline retrieves Academy concepts into reasoning traces."
+    ],
+    "fapi_package": {
+      "concept_ids": [
+        "economic_growth",
+        "exchange_rates",
+        "interest_coverage",
+        "yield_curve",
+        "minority_interest",
+        "productivity",
+        "present_value",
+        "monetary_policy",
+        "discount_rate",
+        "debt_repayment",
+        "agency_costs",
+        "consumer_producer_surplus"
+      ],
+      "courses": [
+        "accounting",
+        "corporate_finance",
+        "economics"
+      ],
+      "multi_discipline": true,
+      "influenced": true
+    },
+    "production_influenced": true,
+    "ui_search_calls": [
+      "aoi",
+      "cae",
+      "eve",
+      "fle",
+      "iie",
+      "irp",
+      "kc",
+      "kf",
+      "mee",
+      "ve"
+    ]
+  },
+  "reasoning_tests_academy_direct": [
+    {
+      "question_id": "rates_growth_stocks",
+      "question": "Why do higher interest rates reduce growth stock valuations?",
+      "path": "academy_direct",
+      "answer": "Interest rates enter the discount rate used to convert expected future cash flows into present value. When rates rise, present values fall\u2014especially for long-duration growth cash flows\u2014so equity valuations compress even if near-term earnings are unchanged. Rates also affect real activity via credit demand, feeding back into cash-flow forecasts.",
+      "answer_source": "academy_exam",
+      "retrieved": [
+        {
+          "concept_id": "discount_rate",
+          "concept": "Discount Rate",
+          "course": "economics",
+          "score": 4.0,
+          "matched_tokens": [
+            "higher",
+            "rates",
+            "growth",
+            "stock"
+          ],
+          "why_selected": "token overlap ['higher', 'rates', 'growth', 'stock']"
+        },
+        {
+          "concept_id": "economic_growth",
+          "concept": "Economic Growth",
+          "course": "economics",
+          "score": 3.5,
+          "matched_tokens": [
+            "higher",
+            "growth"
+          ],
+          "why_selected": "token overlap ['higher', 'growth']"
+        },
+        {
+          "concept_id": "exchange_rates",
+          "concept": "Exchange Rates",
+          "course": "economics",
+          "score": 3.5,
+          "matched_tokens": [
+            "interest",
+            "rates"
+          ],
+          "why_selected": "token overlap ['interest', 'rates']"
+        },
+        {
+          "concept_id": "interest_coverage",
+          "concept": "Interest Coverage",
+          "course": "accounting",
+          "score": 3.5,
+          "matched_tokens": [
+            "interest",
+            "rates"
+          ],
+          "why_selected": "token overlap ['interest', 'rates']"
+        },
+        {
+          "concept_id": "saving_and_investment",
+          "concept": "Saving and Investment",
+          "course": "economics",
+          "score": 3.0,
+          "matched_tokens": [
+            "interest",
+            "rates",
+            "growth"
+          ],
+          "why_selected": "token overlap ['interest', 'rates', 'growth']"
+        },
+        {
+          "concept_id": "yield_curve",
+          "concept": "Yield Curve",
+          "course": "economics",
+          "score": 3.0,
+          "matched_tokens": [
+            "interest",
+            "rates",
+            "growth"
+          ],
+          "why_selected": "token overlap ['interest', 'rates', 'growth']"
+        },
+        {
+          "concept_id": "minority_interest",
+          "concept": "Minority Interest",
+          "course": "accounting",
+          "score": 2.5,
+          "matched_tokens": [
+            "interest"
+          ],
+          "why_selected": "token overlap ['interest']"
+        },
+        {
+          "concept_id": "productivity",
+          "concept": "Productivity",
+          "course": "economics",
+          "score": 2.0,
+          "matched_tokens": [
+            "higher",
+            "growth"
+          ],
+          "why_selected": "token overlap ['higher', 'growth']"
+        },
+        {
+          "concept_id": "gdp",
+          "concept": "GDP",
+          "course": "economics",
+          "score": 2.0,
+          "matched_tokens": [
+            "rates",
+            "growth"
+          ],
+          "why_selected": "token overlap ['rates', 'growth']"
+        },
+        {
+          "concept_id": "inflation",
+          "concept": "Inflation",
+          "course": "economics",
+          "score": 2.0,
+          "matched_tokens": [
+            "rates",
+            "valuations"
+          ],
+          "why_selected": "token overlap ['rates', 'valuations']"
+        },
+        {
+          "concept_id": "present_value",
+          "concept": "Present Value",
+          "course": "economics",
+          "score": 2.0,
+          "matched_tokens": [
+            "higher",
+            "rates"
+          ],
+          "why_selected": "token overlap ['higher', 'rates']"
+        },
+        {
+          "concept_id": "monetary_policy",
+          "concept": "Monetary Policy",
+          "course": "economics",
+          "score": 2.0,
+          "matched_tokens": [
+            "interest",
+            "rates"
+          ],
+          "why_selected": "token overlap ['interest', 'rates']"
+        }
+      ],
+      "retrieved_ids": [
+        "discount_rate",
+        "economic_growth",
+        "exchange_rates",
+        "interest_coverage",
+        "saving_and_investment",
+        "yield_curve",
+        "minority_interest",
+        "productivity",
+        "gdp",
+        "inflation",
+        "present_value",
+        "monetary_policy"
+      ],
+      "expected_hit": [
+        "discount_rate",
+        "present_value",
+        "monetary_policy",
+        "inflation",
+        "wacc",
+        "cost_of_equity"
+      ],
+      "expected_miss": [
+        "wacc",
+        "cost_of_equity"
+      ],
+      "causal_models_used": [
+        {
+          "id": "repo_to_construction_earnings",
+          "name": "Repo rate \u2192 construction complex earnings",
+          "chain": [
+            "Repo Rate \u2191",
+            "Loan Rates \u2191",
+            "Mortgage Demand \u2193",
+            "Housing \u2193",
+            "Cement \u2193",
+            "Steel \u2193",
+            "Construction Companies \u2193",
+            "Corporate Earnings \u2193"
+          ]
+        },
+        {
+          "id": "inflation_to_valuation",
+          "name": "Inflation \u2192 valuation",
+          "chain": [
+            "Inflation \u2191",
+            "Discount Rate \u2191",
+            "DCF \u2193",
+            "Valuation \u2193",
+            "Expected Returns recalibrated",
+            "Sector Rotation"
+          ]
+        },
+        {
+          "id": "gdp_to_cash_flows",
+          "name": "GDP \u2192 cash-flow forecast",
+          "chain": [
+            "GDP \u2191",
+            "Revenue Forecast \u2191",
+            "Margin Forecast (sector-dependent)",
+            "Cash Flow Forecast \u2191",
+            "Corporate Earnings \u2191"
+          ]
+        },
+        {
+          "id": "money_to_inflation",
+          "name": "Money supply \u2192 inflation (long run)",
+          "chain": [
+            "Money Supply \u2191",
+            "Nominal Spending \u2191",
+            "Price Level \u2191",
+            "Inflation \u2191",
+            "Policy Tightening Risk \u2191"
+          ]
+        },
+        {
+          "id": "fx_to_exporters",
+          "name": "INR depreciation \u2192 exporter earnings",
+          "chain": [
+            "INR depreciates vs USD",
+            "Exporter Competitiveness / Translation \u2191",
+            "IT & Software INR earnings \u2191",
+            "Import-cost industries face RM inflation",
+            "Net sectoral winners/losers"
+          ]
+        }
+      ],
+      "mental_models_used": [
+        {
+          "id": "opportunity_cost",
+          "name": "Opportunity Cost"
+        },
+        {
+          "id": "elasticity",
+          "name": "Elasticity"
+        },
+        {
+          "id": "creative_destruction",
+          "name": "Creative Destruction"
+        },
+        {
+          "id": "every_rupee_above_cost",
+          "name": "Every \u20b91 invested should earn above its cost of capital"
+        }
+      ],
+      "multi_discipline": true,
+      "changes_answer_vs_empty": true
+    },
+    {
+      "question_id": "ebitda_vs_cash",
+      "question": "Why is EBITDA different from cash flow?",
+      "path": "academy_direct",
+      "answer": "EBITDA adds back depreciation/amortisation but still ignores working capital cash needs, taxes, and especially capex required to maintain and grow the asset base. Free cash flow subtracts reinvestment; EBITDA does not, so it is not cash flow.",
+      "answer_source": "academy_exam",
+      "retrieved": [
+        {
+          "concept_id": "free_cash_flow",
+          "concept": "Free Cash Flow",
+          "course": "accounting",
+          "score": 6.0,
+          "matched_tokens": [
+            "ebitda",
+            "cash",
+            "flow"
+          ],
+          "why_selected": "token overlap ['ebitda', 'cash', 'flow']"
+        },
+        {
+          "concept_id": "cash_flow_statement",
+          "concept": "Cash Flow Statement",
+          "course": "accounting",
+          "score": 5.0,
+          "matched_tokens": [
+            "cash",
+            "flow"
+          ],
+          "why_selected": "token overlap ['cash', 'flow']"
+        },
+        {
+          "concept_id": "operating_cash_flow",
+          "concept": "Operating Cash Flow",
+          "course": "accounting",
+          "score": 5.0,
+          "matched_tokens": [
+            "cash",
+            "flow"
+          ],
+          "why_selected": "token overlap ['cash', 'flow']"
+        },
+        {
+          "concept_id": "ebitda",
+          "concept": "EBITDA",
+          "course": "accounting",
+          "score": 4.5,
+          "matched_tokens": [
+            "ebitda",
+            "cash",
+            "flow"
+          ],
+          "why_selected": "token overlap ['ebitda', 'cash', 'flow']"
+        },
+        {
+          "concept_id": "cash_conversion_cycle",
+          "concept": "Cash Conversion Cycle",
+          "course": "accounting",
+          "score": 2.5,
+          "matched_tokens": [
+            "cash"
+          ],
+          "why_selected": "token overlap ['cash']"
+        },
+        {
+          "concept_id": "present_value",
+          "concept": "Present Value",
+          "course": "economics",
+          "score": 2.0,
+          "matched_tokens": [
+            "cash",
+            "flow"
+          ],
+          "why_selected": "token overlap ['cash', 'flow']"
+        },
+        {
+          "concept_id": "exchange_rates",
+          "concept": "Exchange Rates",
+          "course": "economics",
+          "score": 2.0,
+          "matched_tokens": [
+            "different",
+            "flow"
+          ],
+          "why_selected": "token overlap ['different', 'flow']"
+        },
+        {
+          "concept_id": "yield_curve",
+          "concept": "Yield Curve",
+          "course": "economics",
+          "score": 2.0,
+          "matched_tokens": [
+            "cash",
+            "flow"
+          ],
+          "why_selected": "token overlap ['cash', 'flow']"
+        },
+        {
+          "concept_id": "discount_rate",
+          "concept": "Discount Rate",
+          "course": "economics",
+          "score": 2.0,
+          "matched_tokens": [
+            "cash",
+            "flow"
+          ],
+          "why_selected": "token overlap ['cash', 'flow']"
+        },
+        {
+          "concept_id": "income_statement",
+          "concept": "Income Statement",
+          "course": "accounting",
+          "score": 2.0,
+          "matched_tokens": [
+            "cash",
+            "flow"
+          ],
+          "why_selected": "token overlap ['cash', 'flow']"
+        },
+        {
+          "concept_id": "provisions",
+          "concept": "Provisions",
+          "course": "accounting",
+          "score": 2.0,
+          "matched_tokens": [
+            "cash",
+            "flow"
+          ],
+          "why_selected": "token overlap ['cash', 'flow']"
+        },
+        {
+          "concept_id": "investment_principle",
+          "concept": "Investment Principle",
+          "course": "corporate_finance",
+          "score": 2.0,
+          "matched_tokens": [
+            "cash",
+            "flow"
+          ],
+          "why_selected": "token overlap ['cash', 'flow']"
+        }
+      ],
+      "retrieved_ids": [
+        "free_cash_flow",
+        "cash_flow_statement",
+        "operating_cash_flow",
+        "ebitda",
+        "cash_conversion_cycle",
+        "present_value",
+        "exchange_rates",
+        "yield_curve",
+        "discount_rate",
+        "income_statement",
+        "provisions",
+        "investment_principle"
+      ],
+      "expected_hit": [
+        "ebitda",
+        "free_cash_flow",
+        "operating_cash_flow",
+        "working_capital",
+        "depreciation"
+      ],
+      "expected_miss": [
+        "working_capital",
+        "depreciation"
+      ],
+      "causal_models_used": [
+        {
+          "id": "repo_to_construction_earnings",
+          "name": "Repo rate \u2192 construction complex earnings",
+          "chain": [
+            "Repo Rate \u2191",
+            "Loan Rates \u2191",
+            "Mortgage Demand \u2193",
+            "Housing \u2193",
+            "Cement \u2193",
+            "Steel \u2193",
+            "Construction Companies \u2193",
+            "Corporate Earnings \u2193"
+          ]
+        },
+        {
+          "id": "inflation_to_valuation",
+          "name": "Inflation \u2192 valuation",
+          "chain": [
+            "Inflation \u2191",
+            "Discount Rate \u2191",
+            "DCF \u2193",
+            "Valuation \u2193",
+            "Expected Returns recalibrated",
+            "Sector Rotation"
+          ]
+        },
+        {
+          "id": "fx_to_exporters",
+          "name": "INR depreciation \u2192 exporter earnings",
+          "chain": [
+            "INR depreciates vs USD",
+            "Exporter Competitiveness / Translation \u2191",
+            "IT & Software INR earnings \u2191",
+            "Import-cost industries face RM inflation",
+            "Net sectoral winners/losers"
+          ]
+        },
+        {
+          "id": "revenue_to_intrinsic_value",
+          "name": "Revenue \u2192 intrinsic value",
+          "chain": [
+            "Revenue",
+            "Receivables / Deferred Revenue",
+            "Working Capital",
+            "Operating Cash Flow",
+            "Free Cash Flow",
+            "Intrinsic Value"
+          ]
+        },
+        {
+          "id": "earnings_to_cash_gap",
+          "name": "Earnings without cash conversion",
+          "chain": [
+            "Net Income \u2191",
+            "Accruals \u2191",
+            "Receivables/Inventory \u2191",
+            "Cash Conversion \u2193",
+            "Earnings Quality \u2193",
+            "Valuation Multiple \u2193"
+          ]
+        }
+      ],
+      "mental_models_used": [
+        {
+          "id": "opportunity_cost",
+          "name": "Opportunity Cost"
+        },
+        {
+          "id": "cash_harder_than_earnings",
+          "name": "Cash is harder to manipulate than earnings"
+        },
+        {
+          "id": "profit_is_not_cash",
+          "name": "Profit is not cash"
+        },
+        {
+          "id": "growth_consumes_capital",
+          "name": "Growth consumes capital"
+        },
+        {
+          "id": "working_capital_funds_operations",
+          "name": "Working capital funds operations"
+        }
+      ],
+      "multi_discipline": true,
+      "changes_answer_vs_empty": true
+    },
+    {
+      "question_id": "roic_vs_growth",
+      "question": "Why does ROIC matter more than revenue growth?",
+      "path": "academy_direct",
+      "answer": "Revenue growth only creates value when incremental capital earns above the cost of capital. ROIC relative to WACC determines the economic profit of growth; high growth with ROIC below WACC destroys intrinsic value even as sales rise.",
+      "answer_source": "academy_exam",
+      "retrieved": [
+        {
+          "concept_id": "roic_wacc_spread",
+          "concept": "ROIC\u2013WACC Spread",
+          "course": "corporate_finance",
+          "score": 6.5,
+          "matched_tokens": [
+            "roic",
+            "matter",
+            "more",
+            "revenue",
+            "growth"
+          ],
+          "why_selected": "token overlap ['roic', 'matter', 'more', 'revenue', 'growth']"
+        },
+        {
+          "concept_id": "economic_growth",
+          "concept": "Economic Growth",
+          "course": "economics",
+          "score": 3.5,
+          "matched_tokens": [
+            "more",
+            "growth"
+          ],
+          "why_selected": "token overlap ['more', 'growth']"
+        },
+        {
+          "concept_id": "incremental_roic",
+          "concept": "Incremental ROIC",
+          "course": "corporate_finance",
+          "score": 3.5,
+          "matched_tokens": [
+            "roic",
+            "growth"
+          ],
+          "why_selected": "token overlap ['roic', 'growth']"
+        },
+        {
+          "concept_id": "revenue_recognition",
+          "concept": "Revenue Recognition",
+          "course": "accounting",
+          "score": 2.5,
+          "matched_tokens": [
+            "revenue"
+          ],
+          "why_selected": "token overlap ['revenue']"
+        },
+        {
+          "concept_id": "deferred_revenue",
+          "concept": "Deferred Revenue",
+          "course": "accounting",
+          "score": 2.5,
+          "matched_tokens": [
+            "revenue"
+          ],
+          "why_selected": "token overlap ['revenue']"
+        },
+        {
+          "concept_id": "roic",
+          "concept": "ROIC",
+          "course": "accounting",
+          "score": 2.5,
+          "matched_tokens": [
+            "roic"
+          ],
+          "why_selected": "token overlap ['roic']"
+        },
+        {
+          "concept_id": "gdp",
+          "concept": "GDP",
+          "course": "economics",
+          "score": 2.0,
+          "matched_tokens": [
+            "revenue",
+            "growth"
+          ],
+          "why_selected": "token overlap ['revenue', 'growth']"
+        },
+        {
+          "concept_id": "inventory",
+          "concept": "Inventory",
+          "course": "accounting",
+          "score": 2.0,
+          "matched_tokens": [
+            "revenue",
+            "growth"
+          ],
+          "why_selected": "token overlap ['revenue', 'growth']"
+        },
+        {
+          "concept_id": "goodwill",
+          "concept": "Goodwill",
+          "course": "accounting",
+          "score": 2.0,
+          "matched_tokens": [
+            "roic",
+            "growth"
+          ],
+          "why_selected": "token overlap ['roic', 'growth']"
+        },
+        {
+          "concept_id": "impairment",
+          "concept": "Impairment",
+          "course": "accounting",
+          "score": 2.0,
+          "matched_tokens": [
+            "roic",
+            "growth"
+          ],
+          "why_selected": "token overlap ['roic', 'growth']"
+        },
+        {
+          "concept_id": "roe",
+          "concept": "Return on Equity",
+          "course": "accounting",
+          "score": 2.0,
+          "matched_tokens": [
+            "roic",
+            "matter"
+          ],
+          "why_selected": "token overlap ['roic', 'matter']"
+        },
+        {
+          "concept_id": "asset_turnover",
+          "concept": "Asset Turnover",
+          "course": "accounting",
+          "score": 2.0,
+          "matched_tokens": [
+            "revenue",
+            "growth"
+          ],
+          "why_selected": "token overlap ['revenue', 'growth']"
+        }
+      ],
+      "retrieved_ids": [
+        "roic_wacc_spread",
+        "economic_growth",
+        "incremental_roic",
+        "revenue_recognition",
+        "deferred_revenue",
+        "roic",
+        "gdp",
+        "inventory",
+        "goodwill",
+        "impairment",
+        "roe",
+        "asset_turnover"
+      ],
+      "expected_hit": [
+        "roic_wacc_spread",
+        "incremental_roic",
+        "value_creation",
+        "wacc",
+        "organic_reinvestment"
+      ],
+      "expected_miss": [
+        "value_creation",
+        "wacc",
+        "organic_reinvestment"
+      ],
+      "causal_models_used": [
+        {
+          "id": "gdp_to_cash_flows",
+          "name": "GDP \u2192 cash-flow forecast",
+          "chain": [
+            "GDP \u2191",
+            "Revenue Forecast \u2191",
+            "Margin Forecast (sector-dependent)",
+            "Cash Flow Forecast \u2191",
+            "Corporate Earnings \u2191"
+          ]
+        },
+        {
+          "id": "fiscal_capex_impulse",
+          "name": "Fiscal capex \u2192 infra complex",
+          "chain": [
+            "Fiscal Capex \u2191",
+            "Infrastructure Orders \u2191",
+            "Cement & Steel \u2191",
+            "Power & Logistics demand \u2191",
+            "Multiplier into incomes",
+            "Corporate Earnings \u2191 (beneficiaries)"
+          ]
+        },
+        {
+          "id": "revenue_to_intrinsic_value",
+          "name": "Revenue \u2192 intrinsic value",
+          "chain": [
+            "Revenue",
+            "Receivables / Deferred Revenue",
+            "Working Capital",
+            "Operating Cash Flow",
+            "Free Cash Flow",
+            "Intrinsic Value"
+          ]
+        },
+        {
+          "id": "inventory_to_fcf",
+          "name": "Inventory accumulation \u2192 FCF",
+          "chain": [
+            "Inventory \u2191",
+            "Working Capital \u2191",
+            "Cash Flow \u2193",
+            "Free Cash Flow \u2193",
+            "Intrinsic Value pressure"
+          ]
+        },
+        {
+          "id": "aggressive_revenue_to_earnings",
+          "name": "Aggressive revenue recognition \u2192 inflated earnings",
+          "chain": [
+            "Aggressive Revenue Recognition",
+            "Receivables \u2191",
+            "Reported Earnings \u2191",
+            "Cash lags",
+            "Later reversals / write-offs",
+            "Thesis broken"
+          ]
+        }
+      ],
+      "mental_models_used": [
+        {
+          "id": "creative_destruction",
+          "name": "Creative Destruction"
+        },
+        {
+          "id": "growth_consumes_capital",
+          "name": "Growth consumes capital"
+        },
+        {
+          "id": "working_capital_funds_operations",
+          "name": "Working capital funds operations"
+        },
+        {
+          "id": "accounting_earnings_ne_economic_value",
+          "name": "Accounting earnings \u2260 economic value"
+        },
+        {
+          "id": "every_rupee_above_cost",
+          "name": "Every \u20b91 invested should earn above its cost of capital"
+        }
+      ],
+      "multi_discipline": true,
+      "changes_answer_vs_empty": true
+    },
+    {
+      "question_id": "profit_weak_cash",
+      "question": "Why can a company report profits while generating weak cash flow?",
+      "path": "academy_direct",
+      "answer": "Profit is an accrual measure that recognises revenues and expenses when earned/incurred, while cash flow records cash movements. Timing differences in working capital, non-cash charges, and estimates create the gap between net income and operating cash flow.",
+      "answer_source": "academy_exam",
+      "retrieved": [
+        {
+          "concept_id": "cash_flow_statement",
+          "concept": "Cash Flow Statement",
+          "course": "accounting",
+          "score": 6.0,
+          "matched_tokens": [
+            "generating",
+            "cash",
+            "flow"
+          ],
+          "why_selected": "token overlap ['generating', 'cash', 'flow']"
+        },
+        {
+          "concept_id": "operating_cash_flow",
+          "concept": "Operating Cash Flow",
+          "course": "accounting",
+          "score": 6.0,
+          "matched_tokens": [
+            "can",
+            "cash",
+            "flow"
+          ],
+          "why_selected": "token overlap ['can', 'cash', 'flow']"
+        },
+        {
+          "concept_id": "free_cash_flow",
+          "concept": "Free Cash Flow",
+          "course": "accounting",
+          "score": 6.0,
+          "matched_tokens": [
+            "can",
+            "cash",
+            "flow"
+          ],
+          "why_selected": "token overlap ['can', 'cash', 'flow']"
+        },
+        {
+          "concept_id": "cash_conversion_cycle",
+          "concept": "Cash Conversion Cycle",
+          "course": "accounting",
+          "score": 3.5,
+          "matched_tokens": [
+            "can",
+            "cash"
+          ],
+          "why_selected": "token overlap ['can', 'cash']"
+        },
+        {
+          "concept_id": "income_statement",
+          "concept": "Income Statement",
+          "course": "accounting",
+          "score": 3.0,
+          "matched_tokens": [
+            "report",
+            "cash",
+            "flow"
+          ],
+          "why_selected": "token overlap ['report', 'cash', 'flow']"
+        },
+        {
+          "concept_id": "earnings_quality",
+          "concept": "Earnings Quality",
+          "course": "accounting",
+          "score": 3.0,
+          "matched_tokens": [
+            "report",
+            "profits",
+            "cash"
+          ],
+          "why_selected": "token overlap ['report', 'profits', 'cash']"
+        },
+        {
+          "concept_id": "country_risk_premium",
+          "concept": "Country Risk Premium",
+          "course": "corporate_finance",
+          "score": 3.0,
+          "matched_tokens": [
+            "can",
+            "cash",
+            "flow"
+          ],
+          "why_selected": "token overlap ['can', 'cash', 'flow']"
+        },
+        {
+          "concept_id": "trade_off_theory",
+          "concept": "Trade-off Theory",
+          "course": "corporate_finance",
+          "score": 3.0,
+          "matched_tokens": [
+            "can",
+            "cash",
+            "flow"
+          ],
+          "why_selected": "token overlap ['can', 'cash', 'flow']"
+        },
+        {
+          "concept_id": "agency_costs",
+          "concept": "Agency Costs",
+          "course": "corporate_finance",
+          "score": 3.0,
+          "matched_tokens": [
+            "can",
+            "cash",
+            "flow"
+          ],
+          "why_selected": "token overlap ['can', 'cash', 'flow']"
+        },
+        {
+          "concept_id": "irr",
+          "concept": "IRR",
+          "course": "corporate_finance",
+          "score": 3.0,
+          "matched_tokens": [
+            "can",
+            "cash",
+            "flow"
+          ],
+          "why_selected": "token overlap ['can', 'cash', 'flow']"
+        },
+        {
+          "concept_id": "profitability_index",
+          "concept": "Profitability Index",
+          "course": "corporate_finance",
+          "score": 3.0,
+          "matched_tokens": [
+            "can",
+            "cash",
+            "flow"
+          ],
+          "why_selected": "token overlap ['can', 'cash', 'flow']"
+        },
+        {
+          "concept_id": "dividend_payout",
+          "concept": "Dividend Payout",
+          "course": "corporate_finance",
+          "score": 3.0,
+          "matched_tokens": [
+            "can",
+            "cash",
+            "flow"
+          ],
+          "why_selected": "token overlap ['can', 'cash', 'flow']"
+        }
+      ],
+      "retrieved_ids": [
+        "cash_flow_statement",
+        "operating_cash_flow",
+        "free_cash_flow",
+        "cash_conversion_cycle",
+        "income_statement",
+        "earnings_quality",
+        "country_risk_premium",
+        "trade_off_theory",
+        "agency_costs",
+        "irr",
+        "profitability_index",
+        "dividend_payout"
+      ],
+      "expected_hit": [
+        "net_income",
+        "operating_cash_flow",
+        "accruals",
+        "working_capital",
+        "earnings_quality"
+      ],
+      "expected_miss": [
+        "net_income",
+        "accruals",
+        "working_capital"
+      ],
+      "causal_models_used": [
+        {
+          "id": "revenue_to_intrinsic_value",
+          "name": "Revenue \u2192 intrinsic value",
+          "chain": [
+            "Revenue",
+            "Receivables / Deferred Revenue",
+            "Working Capital",
+            "Operating Cash Flow",
+            "Free Cash Flow",
+            "Intrinsic Value"
+          ]
+        },
+        {
+          "id": "earnings_to_cash_gap",
+          "name": "Earnings without cash conversion",
+          "chain": [
+            "Net Income \u2191",
+            "Accruals \u2191",
+            "Receivables/Inventory \u2191",
+            "Cash Conversion \u2193",
+            "Earnings Quality \u2193",
+            "Valuation Multiple \u2193"
+          ]
+        },
+        {
+          "id": "inventory_to_fcf",
+          "name": "Inventory accumulation \u2192 FCF",
+          "chain": [
+            "Inventory \u2191",
+            "Working Capital \u2191",
+            "Cash Flow \u2193",
+            "Free Cash Flow \u2193",
+            "Intrinsic Value pressure"
+          ]
+        },
+        {
+          "id": "aggressive_revenue_to_earnings",
+          "name": "Aggressive revenue recognition \u2192 inflated earnings",
+          "chain": [
+            "Aggressive Revenue Recognition",
+            "Receivables \u2191",
+            "Reported Earnings \u2191",
+            "Cash lags",
+            "Later reversals / write-offs",
+            "Thesis broken"
+          ]
+        },
+        {
+          "id": "goodwill_impairment_path",
+          "name": "Value-destructive M&A \u2192 impairment",
+          "chain": [
+            "Goodwill \u2191",
+            "ROIC on acquired capital weak",
+            "Impairment testing pressure",
+            "Impairment charge",
+            "Earnings & credibility \u2193"
+          ]
+        }
+      ],
+      "mental_models_used": [
+        {
+          "id": "cash_harder_than_earnings",
+          "name": "Cash is harder to manipulate than earnings"
+        },
+        {
+          "id": "profit_is_not_cash",
+          "name": "Profit is not cash"
+        },
+        {
+          "id": "growth_consumes_capital",
+          "name": "Growth consumes capital"
+        },
+        {
+          "id": "working_capital_funds_operations",
+          "name": "Working capital funds operations"
+        },
+        {
+          "id": "depreciation_is_economic_cost",
+          "name": "Depreciation is an economic cost"
+        }
+      ],
+      "multi_discipline": true,
+      "changes_answer_vs_empty": true
+    },
+    {
+      "question_id": "banks_vs_manufacturing",
+      "question": "Why are banks valued differently from manufacturing firms?",
+      "path": "academy_direct",
+      "answer": "share_based_compensation: Employee compensation paid in equity instruments, recognised as an expense over the vesting period. Investor lens: Business quality: reliability of the scorecard and capital efficiency share_buybacks: Repurchasing own shares as a form of cash return to remaining shareholders. Investor lens: Business quality via capital allocation and ROIC vs WACC competitive_markets: Markets with many price-taking firms selling homogeneous products and free entry/exit in the long run. Investor lens: Investors care because cash flows, discount rates, or risk premia change",
+      "answer_source": "academy_teach_compose",
+      "retrieved": [
+        {
+          "concept_id": "share_based_compensation",
+          "concept": "Share-based Compensation",
+          "course": "accounting",
+          "score": 2.5,
+          "matched_tokens": [
+            "are"
+          ],
+          "why_selected": "token overlap ['are']"
+        },
+        {
+          "concept_id": "share_buybacks",
+          "concept": "Share Buybacks",
+          "course": "corporate_finance",
+          "score": 2.5,
+          "matched_tokens": [
+            "are"
+          ],
+          "why_selected": "token overlap ['are']"
+        },
+        {
+          "concept_id": "competitive_markets",
+          "concept": "Competitive Markets",
+          "course": "economics",
+          "score": 2.0,
+          "matched_tokens": [
+            "are",
+            "firms"
+          ],
+          "why_selected": "token overlap ['are', 'firms']"
+        },
+        {
+          "concept_id": "ebitda",
+          "concept": "EBITDA",
+          "course": "accounting",
+          "score": 2.0,
+          "matched_tokens": [
+            "are",
+            "firms"
+          ],
+          "why_selected": "token overlap ['are', 'firms']"
+        },
+        {
+          "concept_id": "dividend_policy",
+          "concept": "Dividend Policy",
+          "course": "corporate_finance",
+          "score": 2.0,
+          "matched_tokens": [
+            "are",
+            "valued"
+          ],
+          "why_selected": "token overlap ['are', 'valued']"
+        },
+        {
+          "concept_id": "dividend_payout",
+          "concept": "Dividend Payout",
+          "course": "corporate_finance",
+          "score": 2.0,
+          "matched_tokens": [
+            "are",
+            "firms"
+          ],
+          "why_selected": "token overlap ['are', 'firms']"
+        },
+        {
+          "concept_id": "acquisition_synergies",
+          "concept": "Acquisition Synergies",
+          "course": "corporate_finance",
+          "score": 2.0,
+          "matched_tokens": [
+            "are",
+            "firms"
+          ],
+          "why_selected": "token overlap ['are', 'firms']"
+        },
+        {
+          "concept_id": "trade_offs",
+          "concept": "Trade-offs",
+          "course": "economics",
+          "score": 1.0,
+          "matched_tokens": [
+            "are"
+          ],
+          "why_selected": "token overlap ['are']"
+        },
+        {
+          "concept_id": "incentives",
+          "concept": "Incentives",
+          "course": "economics",
+          "score": 1.0,
+          "matched_tokens": [
+            "are"
+          ],
+          "why_selected": "token overlap ['are']"
+        },
+        {
+          "concept_id": "marginal_thinking",
+          "concept": "Marginal Thinking",
+          "course": "economics",
+          "score": 1.0,
+          "matched_tokens": [
+            "are"
+          ],
+          "why_selected": "token overlap ['are']"
+        },
+        {
+          "concept_id": "gains_from_trade",
+          "concept": "Gains from Trade",
+          "course": "economics",
+          "score": 1.0,
+          "matched_tokens": [
+            "are"
+          ],
+          "why_selected": "token overlap ['are']"
+        },
+        {
+          "concept_id": "supply_and_demand",
+          "concept": "Supply and Demand",
+          "course": "economics",
+          "score": 1.0,
+          "matched_tokens": [
+            "are"
+          ],
+          "why_selected": "token overlap ['are']"
+        }
+      ],
+      "retrieved_ids": [
+        "share_based_compensation",
+        "share_buybacks",
+        "competitive_markets",
+        "ebitda",
+        "dividend_policy",
+        "dividend_payout",
+        "acquisition_synergies",
+        "trade_offs",
+        "incentives",
+        "marginal_thinking",
+        "gains_from_trade",
+        "supply_and_demand"
+      ],
+      "expected_hit": [
+        "wacc",
+        "optimal_capital_structure",
+        "earnings_quality",
+        "roe",
+        "financial_leverage"
+      ],
+      "expected_miss": [
+        "wacc",
+        "optimal_capital_structure",
+        "earnings_quality",
+        "roe",
+        "financial_leverage"
+      ],
+      "causal_models_used": [
+        {
+          "id": "leverage_to_valuation",
+          "name": "Leverage \u2192 valuation",
+          "chain": [
+            "Debt \u2191",
+            "Tax shield / equity beta \u2191",
+            "WACC changes",
+            "Distress risk \u2191 (if excessive)",
+            "Firm Value up or down vs optimum"
+          ]
+        },
+        {
+          "id": "buyback_value_test",
+          "name": "Buyback price vs intrinsic value",
+          "chain": [
+            "Buyback announced",
+            "Price vs Intrinsic Value test",
+            "Value accretion if below IV",
+            "Value destruction if above IV",
+            "EPS may rise either way (illusion risk)"
+          ]
+        },
+        {
+          "id": "acquisition_failure_path",
+          "name": "Acquisition overpayment \u2192 value destruction",
+          "chain": [
+            "Acquisition premium",
+            "Overpayment",
+            "Integration risk",
+            "Incremental ROIC < WACC",
+            "Value Destruction / Impairment"
+          ]
+        }
+      ],
+      "mental_models_used": [
+        {
+          "id": "marginal_thinking",
+          "name": "Marginal Thinking"
+        },
+        {
+          "id": "trade_offs",
+          "name": "Trade-offs"
+        },
+        {
+          "id": "incentives",
+          "name": "Incentives"
+        },
+        {
+          "id": "market_equilibrium",
+          "name": "Market Equilibrium"
+        },
+        {
+          "id": "comparative_advantage",
+          "name": "Comparative Advantage"
+        }
+      ],
+      "multi_discipline": true,
+      "changes_answer_vs_empty": true
+    },
+    {
+      "question_id": "buybacks_below_iv",
+      "question": "Why do buybacks create value only below intrinsic value?",
+      "path": "academy_direct",
+      "answer": "Buybacks destroy value when shares are repurchased above intrinsic value or when cash is diverted from higher-NPV uses. EPS can still rise, creating an illusion of success while transferring wealth to selling shareholders and shrinking intrinsic value for ongoing owners.",
+      "answer_source": "academy_exam",
+      "retrieved": [
+        {
+          "concept_id": "value_creation",
+          "concept": "Value Creation",
+          "course": "corporate_finance",
+          "score": 8.0,
+          "matched_tokens": [
+            "buybacks",
+            "create",
+            "value",
+            "intrinsic",
+            "value"
+          ],
+          "why_selected": "token overlap ['buybacks', 'create', 'value', 'intrinsic', 'value']"
+        },
+        {
+          "concept_id": "share_buybacks",
+          "concept": "Share Buybacks",
+          "course": "corporate_finance",
+          "score": 7.5,
+          "matched_tokens": [
+            "buybacks",
+            "create",
+            "value",
+            "below",
+            "intrinsic",
+            "value"
+          ],
+          "why_selected": "token overlap ['buybacks', 'create', 'value', 'below', 'intrinsic', 'value']"
+        },
+        {
+          "concept_id": "value_destruction",
+          "concept": "Value Destruction",
+          "course": "corporate_finance",
+          "score": 7.0,
+          "matched_tokens": [
+            "buybacks",
+            "value",
+            "intrinsic",
+            "value"
+          ],
+          "why_selected": "token overlap ['buybacks', 'value', 'intrinsic', 'value']"
+        },
+        {
+          "concept_id": "present_value",
+          "concept": "Present Value",
+          "course": "economics",
+          "score": 5.0,
+          "matched_tokens": [
+            "value",
+            "value"
+          ],
+          "why_selected": "token overlap ['value', 'value']"
+        },
+        {
+          "concept_id": "firm_value_maximization",
+          "concept": "Firm Value Maximisation",
+          "course": "corporate_finance",
+          "score": 5.0,
+          "matched_tokens": [
+            "value",
+            "value"
+          ],
+          "why_selected": "token overlap ['value', 'value']"
+        },
+        {
+          "concept_id": "capital_allocation",
+          "concept": "Capital Allocation",
+          "course": "corporate_finance",
+          "score": 4.0,
+          "matched_tokens": [
+            "buybacks",
+            "create",
+            "value",
+            "value"
+          ],
+          "why_selected": "token overlap ['buybacks', 'create', 'value', 'value']"
+        },
+        {
+          "concept_id": "debt_repayment",
+          "concept": "Debt Repayment",
+          "course": "corporate_finance",
+          "score": 4.0,
+          "matched_tokens": [
+            "buybacks",
+            "create",
+            "value",
+            "value"
+          ],
+          "why_selected": "token overlap ['buybacks', 'create', 'value', 'value']"
+        },
+        {
+          "concept_id": "roic_wacc_spread",
+          "concept": "ROIC\u2013WACC Spread",
+          "course": "corporate_finance",
+          "score": 4.0,
+          "matched_tokens": [
+            "create",
+            "value",
+            "intrinsic",
+            "value"
+          ],
+          "why_selected": "token overlap ['create', 'value', 'intrinsic', 'value']"
+        },
+        {
+          "concept_id": "eps_illusion",
+          "concept": "EPS Illusion",
+          "course": "corporate_finance",
+          "score": 4.0,
+          "matched_tokens": [
+            "buybacks",
+            "value",
+            "intrinsic",
+            "value"
+          ],
+          "why_selected": "token overlap ['buybacks', 'value', 'intrinsic', 'value']"
+        },
+        {
+          "concept_id": "free_cash_flow",
+          "concept": "Free Cash Flow",
+          "course": "accounting",
+          "score": 3.0,
+          "matched_tokens": [
+            "value",
+            "intrinsic",
+            "value"
+          ],
+          "why_selected": "token overlap ['value', 'intrinsic', 'value']"
+        },
+        {
+          "concept_id": "roe",
+          "concept": "Return on Equity",
+          "course": "accounting",
+          "score": 3.0,
+          "matched_tokens": [
+            "buybacks",
+            "value",
+            "value"
+          ],
+          "why_selected": "token overlap ['buybacks', 'value', 'value']"
+        },
+        {
+          "concept_id": "roic",
+          "concept": "ROIC",
+          "course": "accounting",
+          "score": 3.0,
+          "matched_tokens": [
+            "value",
+            "intrinsic",
+            "value"
+          ],
+          "why_selected": "token overlap ['value', 'intrinsic', 'value']"
+        }
+      ],
+      "retrieved_ids": [
+        "value_creation",
+        "share_buybacks",
+        "value_destruction",
+        "present_value",
+        "firm_value_maximization",
+        "capital_allocation",
+        "debt_repayment",
+        "roic_wacc_spread",
+        "eps_illusion",
+        "free_cash_flow",
+        "roe",
+        "roic"
+      ],
+      "expected_hit": [
+        "share_buybacks",
+        "eps_illusion",
+        "value_creation",
+        "value_destruction",
+        "capital_allocation"
+      ],
+      "expected_miss": [],
+      "causal_models_used": [
+        {
+          "id": "inflation_to_valuation",
+          "name": "Inflation \u2192 valuation",
+          "chain": [
+            "Inflation \u2191",
+            "Discount Rate \u2191",
+            "DCF \u2193",
+            "Valuation \u2193",
+            "Expected Returns recalibrated",
+            "Sector Rotation"
+          ]
+        },
+        {
+          "id": "revenue_to_intrinsic_value",
+          "name": "Revenue \u2192 intrinsic value",
+          "chain": [
+            "Revenue",
+            "Receivables / Deferred Revenue",
+            "Working Capital",
+            "Operating Cash Flow",
+            "Free Cash Flow",
+            "Intrinsic Value"
+          ]
+        },
+        {
+          "id": "inventory_to_fcf",
+          "name": "Inventory accumulation \u2192 FCF",
+          "chain": [
+            "Inventory \u2191",
+            "Working Capital \u2191",
+            "Cash Flow \u2193",
+            "Free Cash Flow \u2193",
+            "Intrinsic Value pressure"
+          ]
+        },
+        {
+          "id": "goodwill_impairment_path",
+          "name": "Value-destructive M&A \u2192 impairment",
+          "chain": [
+            "Goodwill \u2191",
+            "ROIC on acquired capital weak",
+            "Impairment testing pressure",
+            "Impairment charge",
+            "Earnings & credibility \u2193"
+          ]
+        },
+        {
+          "id": "lease_capitalisation_bridge",
+          "name": "Lease adjustment \u2192 clean ROIC/leverage",
+          "chain": [
+            "Operating Lease Commitments",
+            "Lease Debt + ROU Asset",
+            "EBIT / Invested Capital restated",
+            "ROIC & Leverage recalibrated",
+            "EV bridge updated"
+          ]
+        }
+      ],
+      "mental_models_used": [
+        {
+          "id": "opportunity_cost",
+          "name": "Opportunity Cost"
+        },
+        {
+          "id": "profit_is_not_cash",
+          "name": "Profit is not cash"
+        },
+        {
+          "id": "growth_consumes_capital",
+          "name": "Growth consumes capital"
+        },
+        {
+          "id": "depreciation_is_economic_cost",
+          "name": "Depreciation is an economic cost"
+        },
+        {
+          "id": "accounting_earnings_ne_economic_value",
+          "name": "Accounting earnings \u2260 economic value"
+        }
+      ],
+      "multi_discipline": true,
+      "changes_answer_vs_empty": true
+    },
+    {
+      "question_id": "inflation_discount",
+      "question": "Why does inflation increase discount rates?",
+      "path": "academy_direct",
+      "answer": "Inflation raises nominal discount rates and can compress valuation multiples, while also changing nominal cash flows through revenues and costs. Firms without pricing power see margin damage; DCF terminal values are highly sensitive to the gap between WACC and growth when inflation lifts the cost of capital.",
+      "answer_source": "academy_exam",
+      "retrieved": [
+        {
+          "concept_id": "inflation",
+          "concept": "Inflation",
+          "course": "economics",
+          "score": 4.5,
+          "matched_tokens": [
+            "inflation",
+            "increase",
+            "rates"
+          ],
+          "why_selected": "token overlap ['inflation', 'increase', 'rates']"
+        },
+        {
+          "concept_id": "discount_rate",
+          "concept": "Discount Rate",
+          "course": "economics",
+          "score": 4.5,
+          "matched_tokens": [
+            "inflation",
+            "discount",
+            "rates"
+          ],
+          "why_selected": "token overlap ['inflation', 'discount', 'rates']"
+        },
+        {
+          "concept_id": "yield_curve",
+          "concept": "Yield Curve",
+          "course": "economics",
+          "score": 3.0,
+          "matched_tokens": [
+            "inflation",
+            "discount",
+            "rates"
+          ],
+          "why_selected": "token overlap ['inflation', 'discount', 'rates']"
+        },
+        {
+          "concept_id": "exchange_rates",
+          "concept": "Exchange Rates",
+          "course": "economics",
+          "score": 2.5,
+          "matched_tokens": [
+            "rates"
+          ],
+          "why_selected": "token overlap ['rates']"
+        },
+        {
+          "concept_id": "present_value",
+          "concept": "Present Value",
+          "course": "economics",
+          "score": 2.0,
+          "matched_tokens": [
+            "discount",
+            "rates"
+          ],
+          "why_selected": "token overlap ['discount', 'rates']"
+        },
+        {
+          "concept_id": "monetary_policy",
+          "concept": "Monetary Policy",
+          "course": "economics",
+          "score": 2.0,
+          "matched_tokens": [
+            "inflation",
+            "rates"
+          ],
+          "why_selected": "token overlap ['inflation', 'rates']"
+        },
+        {
+          "concept_id": "gains_from_trade",
+          "concept": "Gains from Trade",
+          "course": "economics",
+          "score": 1.0,
+          "matched_tokens": [
+            "increase"
+          ],
+          "why_selected": "token overlap ['increase']"
+        },
+        {
+          "concept_id": "marginal_cost",
+          "concept": "Marginal Cost",
+          "course": "economics",
+          "score": 1.0,
+          "matched_tokens": [
+            "increase"
+          ],
+          "why_selected": "token overlap ['increase']"
+        },
+        {
+          "concept_id": "gdp",
+          "concept": "GDP",
+          "course": "economics",
+          "score": 1.0,
+          "matched_tokens": [
+            "rates"
+          ],
+          "why_selected": "token overlap ['rates']"
+        },
+        {
+          "concept_id": "cpi",
+          "concept": "CPI",
+          "course": "economics",
+          "score": 1.0,
+          "matched_tokens": [
+            "inflation"
+          ],
+          "why_selected": "token overlap ['inflation']"
+        },
+        {
+          "concept_id": "economic_growth",
+          "concept": "Economic Growth",
+          "course": "economics",
+          "score": 1.0,
+          "matched_tokens": [
+            "increase"
+          ],
+          "why_selected": "token overlap ['increase']"
+        },
+        {
+          "concept_id": "saving_and_investment",
+          "concept": "Saving and Investment",
+          "course": "economics",
+          "score": 1.0,
+          "matched_tokens": [
+            "rates"
+          ],
+          "why_selected": "token overlap ['rates']"
+        }
+      ],
+      "retrieved_ids": [
+        "inflation",
+        "discount_rate",
+        "yield_curve",
+        "exchange_rates",
+        "present_value",
+        "monetary_policy",
+        "gains_from_trade",
+        "marginal_cost",
+        "gdp",
+        "cpi",
+        "economic_growth",
+        "saving_and_investment"
+      ],
+      "expected_hit": [
+        "inflation",
+        "discount_rate",
+        "monetary_policy",
+        "wacc",
+        "cost_of_equity"
+      ],
+      "expected_miss": [
+        "wacc",
+        "cost_of_equity"
+      ],
+      "causal_models_used": [
+        {
+          "id": "repo_to_construction_earnings",
+          "name": "Repo rate \u2192 construction complex earnings",
+          "chain": [
+            "Repo Rate \u2191",
+            "Loan Rates \u2191",
+            "Mortgage Demand \u2193",
+            "Housing \u2193",
+            "Cement \u2193",
+            "Steel \u2193",
+            "Construction Companies \u2193",
+            "Corporate Earnings \u2193"
+          ]
+        },
+        {
+          "id": "inflation_to_valuation",
+          "name": "Inflation \u2192 valuation",
+          "chain": [
+            "Inflation \u2191",
+            "Discount Rate \u2191",
+            "DCF \u2193",
+            "Valuation \u2193",
+            "Expected Returns recalibrated",
+            "Sector Rotation"
+          ]
+        },
+        {
+          "id": "gdp_to_cash_flows",
+          "name": "GDP \u2192 cash-flow forecast",
+          "chain": [
+            "GDP \u2191",
+            "Revenue Forecast \u2191",
+            "Margin Forecast (sector-dependent)",
+            "Cash Flow Forecast \u2191",
+            "Corporate Earnings \u2191"
+          ]
+        },
+        {
+          "id": "money_to_inflation",
+          "name": "Money supply \u2192 inflation (long run)",
+          "chain": [
+            "Money Supply \u2191",
+            "Nominal Spending \u2191",
+            "Price Level \u2191",
+            "Inflation \u2191",
+            "Policy Tightening Risk \u2191"
+          ]
+        },
+        {
+          "id": "fx_to_exporters",
+          "name": "INR depreciation \u2192 exporter earnings",
+          "chain": [
+            "INR depreciates vs USD",
+            "Exporter Competitiveness / Translation \u2191",
+            "IT & Software INR earnings \u2191",
+            "Import-cost industries face RM inflation",
+            "Net sectoral winners/losers"
+          ]
+        }
+      ],
+      "mental_models_used": [
+        {
+          "id": "opportunity_cost",
+          "name": "Opportunity Cost"
+        },
+        {
+          "id": "marginal_thinking",
+          "name": "Marginal Thinking"
+        },
+        {
+          "id": "elasticity",
+          "name": "Elasticity"
+        },
+        {
+          "id": "comparative_advantage",
+          "name": "Comparative Advantage"
+        },
+        {
+          "id": "creative_destruction",
+          "name": "Creative Destruction"
+        }
+      ],
+      "multi_discipline": false,
+      "changes_answer_vs_empty": true
+    },
+    {
+      "question_id": "wc_valuation",
+      "question": "Why does working capital affect valuation?",
+      "path": "academy_direct",
+      "answer": "Working capital funds the operating cycle. Growth typically consumes cash through higher receivables and inventory even when profits rise. Changes in working capital therefore directly alter free cash flow and intrinsic value.",
+      "answer_source": "academy_exam",
+      "retrieved": [
+        {
+          "concept_id": "working_capital",
+          "concept": "Working Capital",
+          "course": "accounting",
+          "score": 5.0,
+          "matched_tokens": [
+            "working",
+            "capital"
+          ],
+          "why_selected": "token overlap ['working', 'capital']"
+        },
+        {
+          "concept_id": "capitalised_expenses",
+          "concept": "Capitalised Expenses",
+          "course": "accounting",
+          "score": 3.5,
+          "matched_tokens": [
+            "capital",
+            "valuation"
+          ],
+          "why_selected": "token overlap ['capital', 'valuation']"
+        },
+        {
+          "concept_id": "capital_allocation",
+          "concept": "Capital Allocation",
+          "course": "corporate_finance",
+          "score": 2.5,
+          "matched_tokens": [
+            "capital"
+          ],
+          "why_selected": "token overlap ['capital']"
+        },
+        {
+          "concept_id": "capital_raising",
+          "concept": "Capital Raising",
+          "course": "corporate_finance",
+          "score": 2.5,
+          "matched_tokens": [
+            "capital"
+          ],
+          "why_selected": "token overlap ['capital']"
+        },
+        {
+          "concept_id": "optimal_capital_structure",
+          "concept": "Optimal Capital Structure",
+          "course": "corporate_finance",
+          "score": 2.5,
+          "matched_tokens": [
+            "capital"
+          ],
+          "why_selected": "token overlap ['capital']"
+        },
+        {
+          "concept_id": "monetary_policy",
+          "concept": "Monetary Policy",
+          "course": "economics",
+          "score": 2.0,
+          "matched_tokens": [
+            "affect",
+            "valuation"
+          ],
+          "why_selected": "token overlap ['affect', 'valuation']"
+        },
+        {
+          "concept_id": "discount_rate",
+          "concept": "Discount Rate",
+          "course": "economics",
+          "score": 2.0,
+          "matched_tokens": [
+            "capital",
+            "valuation"
+          ],
+          "why_selected": "token overlap ['capital', 'valuation']"
+        },
+        {
+          "concept_id": "income_statement",
+          "concept": "Income Statement",
+          "course": "accounting",
+          "score": 2.0,
+          "matched_tokens": [
+            "capital",
+            "valuation"
+          ],
+          "why_selected": "token overlap ['capital', 'valuation']"
+        },
+        {
+          "concept_id": "ebitda",
+          "concept": "EBITDA",
+          "course": "accounting",
+          "score": 2.0,
+          "matched_tokens": [
+            "capital",
+            "valuation"
+          ],
+          "why_selected": "token overlap ['capital', 'valuation']"
+        },
+        {
+          "concept_id": "ebit",
+          "concept": "EBIT",
+          "course": "accounting",
+          "score": 2.0,
+          "matched_tokens": [
+            "capital",
+            "valuation"
+          ],
+          "why_selected": "token overlap ['capital', 'valuation']"
+        },
+        {
+          "concept_id": "operating_cash_flow",
+          "concept": "Operating Cash Flow",
+          "course": "accounting",
+          "score": 2.0,
+          "matched_tokens": [
+            "working",
+            "capital"
+          ],
+          "why_selected": "token overlap ['working', 'capital']"
+        },
+        {
+          "concept_id": "free_cash_flow",
+          "concept": "Free Cash Flow",
+          "course": "accounting",
+          "score": 2.0,
+          "matched_tokens": [
+            "capital",
+            "valuation"
+          ],
+          "why_selected": "token overlap ['capital', 'valuation']"
+        }
+      ],
+      "retrieved_ids": [
+        "working_capital",
+        "capitalised_expenses",
+        "capital_allocation",
+        "capital_raising",
+        "optimal_capital_structure",
+        "monetary_policy",
+        "discount_rate",
+        "income_statement",
+        "ebitda",
+        "ebit",
+        "operating_cash_flow",
+        "free_cash_flow"
+      ],
+      "expected_hit": [
+        "working_capital",
+        "free_cash_flow",
+        "cash_conversion_cycle",
+        "inventory",
+        "accounts_receivable"
+      ],
+      "expected_miss": [
+        "cash_conversion_cycle",
+        "inventory",
+        "accounts_receivable"
+      ],
+      "causal_models_used": [
+        {
+          "id": "repo_to_construction_earnings",
+          "name": "Repo rate \u2192 construction complex earnings",
+          "chain": [
+            "Repo Rate \u2191",
+            "Loan Rates \u2191",
+            "Mortgage Demand \u2193",
+            "Housing \u2193",
+            "Cement \u2193",
+            "Steel \u2193",
+            "Construction Companies \u2193",
+            "Corporate Earnings \u2193"
+          ]
+        },
+        {
+          "id": "inflation_to_valuation",
+          "name": "Inflation \u2192 valuation",
+          "chain": [
+            "Inflation \u2191",
+            "Discount Rate \u2191",
+            "DCF \u2193",
+            "Valuation \u2193",
+            "Expected Returns recalibrated",
+            "Sector Rotation"
+          ]
+        },
+        {
+          "id": "money_to_inflation",
+          "name": "Money supply \u2192 inflation (long run)",
+          "chain": [
+            "Money Supply \u2191",
+            "Nominal Spending \u2191",
+            "Price Level \u2191",
+            "Inflation \u2191",
+            "Policy Tightening Risk \u2191"
+          ]
+        },
+        {
+          "id": "revenue_to_intrinsic_value",
+          "name": "Revenue \u2192 intrinsic value",
+          "chain": [
+            "Revenue",
+            "Receivables / Deferred Revenue",
+            "Working Capital",
+            "Operating Cash Flow",
+            "Free Cash Flow",
+            "Intrinsic Value"
+          ]
+        },
+        {
+          "id": "earnings_to_cash_gap",
+          "name": "Earnings without cash conversion",
+          "chain": [
+            "Net Income \u2191",
+            "Accruals \u2191",
+            "Receivables/Inventory \u2191",
+            "Cash Conversion \u2193",
+            "Earnings Quality \u2193",
+            "Valuation Multiple \u2193"
+          ]
+        }
+      ],
+      "mental_models_used": [
+        {
+          "id": "opportunity_cost",
+          "name": "Opportunity Cost"
+        },
+        {
+          "id": "cash_harder_than_earnings",
+          "name": "Cash is harder to manipulate than earnings"
+        },
+        {
+          "id": "profit_is_not_cash",
+          "name": "Profit is not cash"
+        },
+        {
+          "id": "growth_consumes_capital",
+          "name": "Growth consumes capital"
+        },
+        {
+          "id": "working_capital_funds_operations",
+          "name": "Working capital funds operations"
+        }
+      ],
+      "multi_discipline": true,
+      "changes_answer_vs_empty": true
+    }
+  ],
+  "synthesis_tests": [
+    {
+      "question_id": "growth_30_vs_10",
+      "question": "Company A grows 30%. Company B grows 10%. Which deserves a higher valuation? Explain.",
+      "required_disciplines": [
+        "corporate_finance",
+        "accounting",
+        "economics"
+      ],
+      "disciplines_retrieved": [
+        "accounting",
+        "corporate_finance",
+        "economics"
+      ],
+      "multi_discipline": true,
+      "must_concepts_hit": [],
+      "must_concepts_miss": [
+        "incremental_roic",
+        "roic_wacc_spread",
+        "value_creation",
+        "organic_reinvestment"
+      ],
+      "academy_direct_synthesis": "",
+      "ask_agi_uses_academy": false,
+      "decision_quality_via_academy_direct": false
+    },
+    {
+      "question_id": "roic_35_buy",
+      "question": "A company has ROIC of 35%. Should investors buy it? Explain.",
+      "required_disciplines": [
+        "corporate_finance",
+        "accounting"
+      ],
+      "disciplines_retrieved": [
+        "accounting",
+        "corporate_finance",
+        "economics"
+      ],
+      "multi_discipline": true,
+      "must_concepts_hit": [
+        "roic_wacc_spread",
+        "capital_allocation",
+        "value_creation"
+      ],
+      "must_concepts_miss": [
+        "wacc"
+      ],
+      "academy_direct_synthesis": "roic_wacc_spread: The gap between return on invested capital and the weighted average cost of capital; the core spread of value creation. capital_allocation: Management's choices on deploying and returning capital across organic reinvestment, acquisitions, buybacks, dividends, debt repayment, and capital raising. value_creation: Increasing intrinsic firm or equity value by earning returns above the cost of capital and allocating capital accordingly.",
+      "ask_agi_uses_academy": false,
+      "decision_quality_via_academy_direct": true
+    },
+    {
+      "question_id": "revenue_up_cash_down",
+      "question": "Revenue doubled. Cash flow declined. Explain.",
+      "required_disciplines": [
+        "accounting",
+        "corporate_finance"
+      ],
+      "disciplines_retrieved": [
+        "accounting",
+        "corporate_finance"
+      ],
+      "multi_discipline": true,
+      "must_concepts_hit": [
+        "revenue_recognition",
+        "operating_cash_flow"
+      ],
+      "must_concepts_miss": [
+        "working_capital",
+        "earnings_quality"
+      ],
+      "academy_direct_synthesis": "revenue_recognition: Rules determining when a sale is recorded as revenue \u2014 typically when the good/service is delivered and collectability is reasonably assured. operating_cash_flow: Cash generated by core operations after working-capital changes, before investing and financing cash flows.",
+      "ask_agi_uses_academy": false,
+      "decision_quality_via_academy_direct": true
+    },
+    {
+      "question_id": "gdp_fall_sectors",
+      "question": "GDP falls. Which sectors benefit? Explain.",
+      "required_disciplines": [
+        "economics",
+        "corporate_finance"
+      ],
+      "disciplines_retrieved": [
+        "corporate_finance",
+        "economics"
+      ],
+      "multi_discipline": true,
+      "must_concepts_hit": [
+        "gdp",
+        "recession"
+      ],
+      "must_concepts_miss": [
+        "business_cycle",
+        "utilities"
+      ],
+      "academy_direct_synthesis": "gdp: The market value of all final goods and services produced within a country in a given period. recession: A period of declining real economic activity, typically involving falling real GDP and rising unemployment.",
+      "ask_agi_uses_academy": false,
+      "decision_quality_via_academy_direct": true
+    }
+  ],
+  "coverage": {
+    "economics": {
+      "concepts": 46,
+      "referenced": 42,
+      "never_used": 4,
+      "usage_pct": 91.3,
+      "never_used_ids": [
+        "consumer_producer_surplus",
+        "deadweight_loss",
+        "public_goods",
+        "risk_and_diversification"
+      ],
+      "used_ids": [
+        "opportunity_cost",
+        "trade_offs",
+        "incentives",
+        "marginal_thinking",
+        "comparative_advantage",
+        "gains_from_trade",
+        "supply_and_demand",
+        "market_equilibrium",
+        "elasticity",
+        "price_controls",
+        "international_trade",
+        "externalities",
+        "marginal_cost",
+        "competitive_markets",
+        "market_power",
+        "oligopoly",
+        "productivity",
+        "gdp",
+        "cpi",
+        "inflation",
+        "economic_growth",
+        "saving_and_investment",
+        "present_value",
+        "unemployment",
+        "money_supply",
+        "monetary_system",
+        "quantity_theory_of_money",
+        "exchange_rates",
+        "aggregate_demand",
+        "aggregate_supply",
+        "business_cycle",
+        "recession",
+        "monetary_policy",
+        "fiscal_policy",
+        "phillips_curve",
+        "stagflation",
+        "deflation",
+        "liquidity",
+        "credit",
+        "yield_curve",
+        "discount_rate",
+        "creative_destruction"
+      ]
+    },
+    "accounting": {
+      "concepts": 39,
+      "referenced": 34,
+      "never_used": 5,
+      "usage_pct": 87.2,
+      "never_used_ids": [
+        "cogs",
+        "operating_expenses",
+        "amortisation",
+        "deferred_tax",
+        "roce"
+      ],
+      "used_ids": [
+        "income_statement",
+        "balance_sheet",
+        "cash_flow_statement",
+        "revenue_recognition",
+        "gross_profit",
+        "ebitda",
+        "ebit",
+        "net_income",
+        "operating_cash_flow",
+        "free_cash_flow",
+        "depreciation",
+        "inventory",
+        "accounts_receivable",
+        "accounts_payable",
+        "deferred_revenue",
+        "goodwill",
+        "intangible_assets",
+        "capitalised_expenses",
+        "leases",
+        "share_based_compensation",
+        "minority_interest",
+        "working_capital",
+        "cash_conversion_cycle",
+        "earnings_quality",
+        "accruals",
+        "restatements",
+        "exceptional_items",
+        "accounting_estimates",
+        "impairment",
+        "provisions",
+        "roe",
+        "roic",
+        "asset_turnover",
+        "interest_coverage"
+      ]
+    },
+    "corporate_finance": {
+      "concepts": 44,
+      "referenced": 41,
+      "never_used": 3,
+      "usage_pct": 93.2,
+      "never_used_ids": [
+        "financing_principle",
+        "payback_period",
+        "dividend_signalling"
+      ],
+      "used_ids": [
+        "investment_principle",
+        "dividend_principle",
+        "firm_value_maximization",
+        "hurdle_rate",
+        "cost_of_equity",
+        "capm",
+        "beta",
+        "equity_risk_premium",
+        "country_risk_premium",
+        "cost_of_debt",
+        "wacc",
+        "capital_allocation",
+        "organic_reinvestment",
+        "debt_repayment",
+        "capital_raising",
+        "debt_vs_equity",
+        "financial_leverage",
+        "optimal_capital_structure",
+        "trade_off_theory",
+        "pecking_order_theory",
+        "agency_costs",
+        "financial_distress",
+        "npv",
+        "irr",
+        "profitability_index",
+        "economic_profit",
+        "eva",
+        "roic_wacc_spread",
+        "incremental_roic",
+        "value_creation",
+        "value_destruction",
+        "dividend_policy",
+        "dividend_payout",
+        "retention_ratio",
+        "share_buybacks",
+        "eps_illusion",
+        "acquisition_synergies",
+        "acquisition_overpayment",
+        "integration_risk",
+        "acquisition_quality",
+        "corporate_lifecycle"
+      ]
+    }
+  },
+  "concept_usage_table": [
+    {
+      "concept": "Opportunity Cost",
+      "concept_id": "opportunity_cost",
+      "course": "economics",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": false,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": false,
+      "consumed_by_soft_consumer_demo": [
+        "KF"
+      ],
+      "consumed_by_production": []
+    },
+    {
+      "concept": "Trade-offs",
+      "concept_id": "trade_offs",
+      "course": "economics",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": false,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": false,
+      "consumed_by_soft_consumer_demo": [
+        "FIML",
+        "KCV",
+        "KF"
+      ],
+      "consumed_by_production": []
+    },
+    {
+      "concept": "Incentives",
+      "concept_id": "incentives",
+      "course": "economics",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": false,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": false,
+      "consumed_by_soft_consumer_demo": [
+        "EVE",
+        "FIML",
+        "IIE",
+        "IRP",
+        "KCV",
+        "KF"
+      ],
+      "consumed_by_production": []
+    },
+    {
+      "concept": "Marginal Thinking",
+      "concept_id": "marginal_thinking",
+      "course": "economics",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": false,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": false,
+      "consumed_by_soft_consumer_demo": [
+        "KF"
+      ],
+      "consumed_by_production": []
+    },
+    {
+      "concept": "Comparative Advantage",
+      "concept_id": "comparative_advantage",
+      "course": "economics",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": false,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": false,
+      "consumed_by_soft_consumer_demo": [
+        "FIML",
+        "KF"
+      ],
+      "consumed_by_production": []
+    },
+    {
+      "concept": "Gains from Trade",
+      "concept_id": "gains_from_trade",
+      "course": "economics",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": false,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": false,
+      "consumed_by_soft_consumer_demo": [
+        "KF"
+      ],
+      "consumed_by_production": []
+    },
+    {
+      "concept": "Supply and Demand",
+      "concept_id": "supply_and_demand",
+      "course": "economics",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": false,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": false,
+      "consumed_by_soft_consumer_demo": [
+        "KF"
+      ],
+      "consumed_by_production": []
+    },
+    {
+      "concept": "Market Equilibrium",
+      "concept_id": "market_equilibrium",
+      "course": "economics",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": false,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": false,
+      "consumed_by_soft_consumer_demo": [
+        "KF"
+      ],
+      "consumed_by_production": []
+    },
+    {
+      "concept": "Elasticity",
+      "concept_id": "elasticity",
+      "course": "economics",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": false,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": false,
+      "consumed_by_soft_consumer_demo": [
+        "FIML",
+        "KF"
+      ],
+      "consumed_by_production": []
+    },
+    {
+      "concept": "Price Controls",
+      "concept_id": "price_controls",
+      "course": "economics",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": false,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": false,
+      "consumed_by_soft_consumer_demo": [
+        "KF"
+      ],
+      "consumed_by_production": []
+    },
+    {
+      "concept": "Consumer and Producer Surplus",
+      "concept_id": "consumer_producer_surplus",
+      "course": "economics",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": true,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": true,
+      "consumed_by_soft_consumer_demo": [],
+      "consumed_by_production": [
+        "ASK_AGI"
+      ]
+    },
+    {
+      "concept": "Deadweight Loss",
+      "concept_id": "deadweight_loss",
+      "course": "economics",
+      "retrieved": false,
+      "used_in_reasoning_academy_direct": false,
+      "used_in_production_engines": false,
+      "changes_answer_academy_direct": false,
+      "changes_answer_ask_agi": false,
+      "consumed_by_soft_consumer_demo": [],
+      "consumed_by_production": []
+    },
+    {
+      "concept": "International Trade",
+      "concept_id": "international_trade",
+      "course": "economics",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": false,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": false,
+      "consumed_by_soft_consumer_demo": [
+        "FIML",
+        "KF"
+      ],
+      "consumed_by_production": []
+    },
+    {
+      "concept": "Externalities",
+      "concept_id": "externalities",
+      "course": "economics",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": false,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": false,
+      "consumed_by_soft_consumer_demo": [],
+      "consumed_by_production": []
+    },
+    {
+      "concept": "Public Goods",
+      "concept_id": "public_goods",
+      "course": "economics",
+      "retrieved": false,
+      "used_in_reasoning_academy_direct": false,
+      "used_in_production_engines": false,
+      "changes_answer_academy_direct": false,
+      "changes_answer_ask_agi": false,
+      "consumed_by_soft_consumer_demo": [],
+      "consumed_by_production": []
+    },
+    {
+      "concept": "Marginal Cost",
+      "concept_id": "marginal_cost",
+      "course": "economics",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": false,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": false,
+      "consumed_by_soft_consumer_demo": [
+        "KF"
+      ],
+      "consumed_by_production": []
+    },
+    {
+      "concept": "Competitive Markets",
+      "concept_id": "competitive_markets",
+      "course": "economics",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": false,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": false,
+      "consumed_by_soft_consumer_demo": [],
+      "consumed_by_production": []
+    },
+    {
+      "concept": "Market Power",
+      "concept_id": "market_power",
+      "course": "economics",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": false,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": false,
+      "consumed_by_soft_consumer_demo": [
+        "KF"
+      ],
+      "consumed_by_production": []
+    },
+    {
+      "concept": "Oligopoly",
+      "concept_id": "oligopoly",
+      "course": "economics",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": false,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": false,
+      "consumed_by_soft_consumer_demo": [
+        "KF"
+      ],
+      "consumed_by_production": []
+    },
+    {
+      "concept": "Productivity",
+      "concept_id": "productivity",
+      "course": "economics",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": true,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": true,
+      "consumed_by_soft_consumer_demo": [
+        "FIML",
+        "KF"
+      ],
+      "consumed_by_production": [
+        "ASK_AGI"
+      ]
+    },
+    {
+      "concept": "GDP",
+      "concept_id": "gdp",
+      "course": "economics",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": false,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": false,
+      "consumed_by_soft_consumer_demo": [
+        "FIML",
+        "FLE",
+        "KCV",
+        "KF"
+      ],
+      "consumed_by_production": []
+    },
+    {
+      "concept": "CPI",
+      "concept_id": "cpi",
+      "course": "economics",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": false,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": false,
+      "consumed_by_soft_consumer_demo": [
+        "FIML",
+        "KCV",
+        "KF"
+      ],
+      "consumed_by_production": []
+    },
+    {
+      "concept": "Inflation",
+      "concept_id": "inflation",
+      "course": "economics",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": false,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": false,
+      "consumed_by_soft_consumer_demo": [
+        "EVE",
+        "FIML",
+        "KCV",
+        "KF"
+      ],
+      "consumed_by_production": []
+    },
+    {
+      "concept": "Economic Growth",
+      "concept_id": "economic_growth",
+      "course": "economics",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": true,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": true,
+      "consumed_by_soft_consumer_demo": [
+        "FIML",
+        "KCV",
+        "KF"
+      ],
+      "consumed_by_production": [
+        "ASK_AGI",
+        "EVE",
+        "FLE",
+        "IIE",
+        "IRP",
+        "KCV",
+        "KF",
+        "VE"
+      ]
+    },
+    {
+      "concept": "Saving and Investment",
+      "concept_id": "saving_and_investment",
+      "course": "economics",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": false,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": false,
+      "consumed_by_soft_consumer_demo": [
+        "FIML"
+      ],
+      "consumed_by_production": []
+    },
+    {
+      "concept": "Present Value",
+      "concept_id": "present_value",
+      "course": "economics",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": true,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": true,
+      "consumed_by_soft_consumer_demo": [
+        "FIML",
+        "KF"
+      ],
+      "consumed_by_production": [
+        "ASK_AGI",
+        "EVE",
+        "FLE",
+        "IIE",
+        "IRP",
+        "KCV",
+        "KF",
+        "VE"
+      ]
+    },
+    {
+      "concept": "Risk and Diversification",
+      "concept_id": "risk_and_diversification",
+      "course": "economics",
+      "retrieved": false,
+      "used_in_reasoning_academy_direct": false,
+      "used_in_production_engines": false,
+      "changes_answer_academy_direct": false,
+      "changes_answer_ask_agi": false,
+      "consumed_by_soft_consumer_demo": [],
+      "consumed_by_production": []
+    },
+    {
+      "concept": "Unemployment",
+      "concept_id": "unemployment",
+      "course": "economics",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": false,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": false,
+      "consumed_by_soft_consumer_demo": [
+        "FIML",
+        "KCV",
+        "KF"
+      ],
+      "consumed_by_production": []
+    },
+    {
+      "concept": "Money Supply",
+      "concept_id": "money_supply",
+      "course": "economics",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": false,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": false,
+      "consumed_by_soft_consumer_demo": [
+        "FIML",
+        "KCV",
+        "KF"
+      ],
+      "consumed_by_production": []
+    },
+    {
+      "concept": "Monetary System",
+      "concept_id": "monetary_system",
+      "course": "economics",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": false,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": false,
+      "consumed_by_soft_consumer_demo": [
+        "FIML"
+      ],
+      "consumed_by_production": []
+    },
+    {
+      "concept": "Quantity Theory of Money",
+      "concept_id": "quantity_theory_of_money",
+      "course": "economics",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": false,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": false,
+      "consumed_by_soft_consumer_demo": [
+        "FIML"
+      ],
+      "consumed_by_production": []
+    },
+    {
+      "concept": "Exchange Rates",
+      "concept_id": "exchange_rates",
+      "course": "economics",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": true,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": true,
+      "consumed_by_soft_consumer_demo": [
+        "FIML",
+        "KCV",
+        "KF"
+      ],
+      "consumed_by_production": [
+        "ASK_AGI"
+      ]
+    },
+    {
+      "concept": "Aggregate Demand",
+      "concept_id": "aggregate_demand",
+      "course": "economics",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": false,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": false,
+      "consumed_by_soft_consumer_demo": [
+        "FIML",
+        "KCV",
+        "KF"
+      ],
+      "consumed_by_production": []
+    },
+    {
+      "concept": "Aggregate Supply",
+      "concept_id": "aggregate_supply",
+      "course": "economics",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": false,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": false,
+      "consumed_by_soft_consumer_demo": [
+        "FIML"
+      ],
+      "consumed_by_production": []
+    },
+    {
+      "concept": "Business Cycle",
+      "concept_id": "business_cycle",
+      "course": "economics",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": false,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": false,
+      "consumed_by_soft_consumer_demo": [
+        "FIML",
+        "KCV",
+        "KF"
+      ],
+      "consumed_by_production": []
+    },
+    {
+      "concept": "Recession",
+      "concept_id": "recession",
+      "course": "economics",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": false,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": false,
+      "consumed_by_soft_consumer_demo": [
+        "FIML",
+        "KCV",
+        "KF"
+      ],
+      "consumed_by_production": []
+    },
+    {
+      "concept": "Monetary Policy",
+      "concept_id": "monetary_policy",
+      "course": "economics",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": true,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": true,
+      "consumed_by_soft_consumer_demo": [
+        "FIML",
+        "KCV",
+        "KF"
+      ],
+      "consumed_by_production": [
+        "ASK_AGI"
+      ]
+    },
+    {
+      "concept": "Fiscal Policy",
+      "concept_id": "fiscal_policy",
+      "course": "economics",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": false,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": false,
+      "consumed_by_soft_consumer_demo": [
+        "FIML",
+        "KCV",
+        "KF"
+      ],
+      "consumed_by_production": []
+    },
+    {
+      "concept": "Phillips Curve",
+      "concept_id": "phillips_curve",
+      "course": "economics",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": false,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": false,
+      "consumed_by_soft_consumer_demo": [
+        "FIML"
+      ],
+      "consumed_by_production": []
+    },
+    {
+      "concept": "Stagflation",
+      "concept_id": "stagflation",
+      "course": "economics",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": false,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": false,
+      "consumed_by_soft_consumer_demo": [
+        "FIML",
+        "KCV",
+        "KF"
+      ],
+      "consumed_by_production": []
+    },
+    {
+      "concept": "Deflation",
+      "concept_id": "deflation",
+      "course": "economics",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": false,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": false,
+      "consumed_by_soft_consumer_demo": [
+        "FIML",
+        "KCV",
+        "KF"
+      ],
+      "consumed_by_production": []
+    },
+    {
+      "concept": "Liquidity",
+      "concept_id": "liquidity",
+      "course": "economics",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": false,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": false,
+      "consumed_by_soft_consumer_demo": [
+        "FIML",
+        "FLE",
+        "VE"
+      ],
+      "consumed_by_production": []
+    },
+    {
+      "concept": "Credit",
+      "concept_id": "credit",
+      "course": "economics",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": false,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": false,
+      "consumed_by_soft_consumer_demo": [
+        "EVE",
+        "FIML",
+        "FLE",
+        "IIE",
+        "KCV",
+        "KF"
+      ],
+      "consumed_by_production": []
+    },
+    {
+      "concept": "Yield Curve",
+      "concept_id": "yield_curve",
+      "course": "economics",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": true,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": true,
+      "consumed_by_soft_consumer_demo": [
+        "FIML",
+        "KCV",
+        "KF"
+      ],
+      "consumed_by_production": [
+        "ASK_AGI"
+      ]
+    },
+    {
+      "concept": "Discount Rate",
+      "concept_id": "discount_rate",
+      "course": "economics",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": true,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": true,
+      "consumed_by_soft_consumer_demo": [
+        "FIML",
+        "KCV",
+        "KF"
+      ],
+      "consumed_by_production": [
+        "ASK_AGI"
+      ]
+    },
+    {
+      "concept": "Creative Destruction",
+      "concept_id": "creative_destruction",
+      "course": "economics",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": false,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": false,
+      "consumed_by_soft_consumer_demo": [
+        "KF"
+      ],
+      "consumed_by_production": []
+    },
+    {
+      "concept": "Income Statement",
+      "concept_id": "income_statement",
+      "course": "accounting",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": false,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": false,
+      "consumed_by_soft_consumer_demo": [
+        "EVE",
+        "FIML",
+        "KCV"
+      ],
+      "consumed_by_production": []
+    },
+    {
+      "concept": "Balance Sheet",
+      "concept_id": "balance_sheet",
+      "course": "accounting",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": false,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": false,
+      "consumed_by_soft_consumer_demo": [
+        "FIML"
+      ],
+      "consumed_by_production": []
+    },
+    {
+      "concept": "Cash Flow Statement",
+      "concept_id": "cash_flow_statement",
+      "course": "accounting",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": false,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": false,
+      "consumed_by_soft_consumer_demo": [],
+      "consumed_by_production": []
+    },
+    {
+      "concept": "Revenue Recognition",
+      "concept_id": "revenue_recognition",
+      "course": "accounting",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": true,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": true,
+      "consumed_by_soft_consumer_demo": [
+        "EVE",
+        "FIML",
+        "FLE",
+        "KCV",
+        "KF"
+      ],
+      "consumed_by_production": [
+        "ASK_AGI",
+        "EVE",
+        "FLE",
+        "IIE",
+        "IRP",
+        "KCV",
+        "KF",
+        "VE"
+      ]
+    },
+    {
+      "concept": "Cost of Goods Sold",
+      "concept_id": "cogs",
+      "course": "accounting",
+      "retrieved": false,
+      "used_in_reasoning_academy_direct": false,
+      "used_in_production_engines": false,
+      "changes_answer_academy_direct": false,
+      "changes_answer_ask_agi": false,
+      "consumed_by_soft_consumer_demo": [],
+      "consumed_by_production": []
+    },
+    {
+      "concept": "Gross Profit",
+      "concept_id": "gross_profit",
+      "course": "accounting",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": false,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": false,
+      "consumed_by_soft_consumer_demo": [
+        "EVE",
+        "FIML",
+        "KCV"
+      ],
+      "consumed_by_production": []
+    },
+    {
+      "concept": "Operating Expenses",
+      "concept_id": "operating_expenses",
+      "course": "accounting",
+      "retrieved": false,
+      "used_in_reasoning_academy_direct": false,
+      "used_in_production_engines": false,
+      "changes_answer_academy_direct": false,
+      "changes_answer_ask_agi": false,
+      "consumed_by_soft_consumer_demo": [],
+      "consumed_by_production": []
+    },
+    {
+      "concept": "EBITDA",
+      "concept_id": "ebitda",
+      "course": "accounting",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": false,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": false,
+      "consumed_by_soft_consumer_demo": [
+        "FIML",
+        "KCV",
+        "KF"
+      ],
+      "consumed_by_production": []
+    },
+    {
+      "concept": "EBIT",
+      "concept_id": "ebit",
+      "course": "accounting",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": false,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": false,
+      "consumed_by_soft_consumer_demo": [
+        "FIML",
+        "KCV",
+        "KF"
+      ],
+      "consumed_by_production": []
+    },
+    {
+      "concept": "Net Income",
+      "concept_id": "net_income",
+      "course": "accounting",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": false,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": false,
+      "consumed_by_soft_consumer_demo": [
+        "EVE",
+        "FIML",
+        "KCV",
+        "KF"
+      ],
+      "consumed_by_production": []
+    },
+    {
+      "concept": "Operating Cash Flow",
+      "concept_id": "operating_cash_flow",
+      "course": "accounting",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": false,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": false,
+      "consumed_by_soft_consumer_demo": [
+        "EVE",
+        "FIML",
+        "KCV",
+        "KF"
+      ],
+      "consumed_by_production": []
+    },
+    {
+      "concept": "Free Cash Flow",
+      "concept_id": "free_cash_flow",
+      "course": "accounting",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": false,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": false,
+      "consumed_by_soft_consumer_demo": [
+        "FIML",
+        "FLE",
+        "KCV",
+        "KF",
+        "VE"
+      ],
+      "consumed_by_production": []
+    },
+    {
+      "concept": "Depreciation",
+      "concept_id": "depreciation",
+      "course": "accounting",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": false,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": false,
+      "consumed_by_soft_consumer_demo": [
+        "EVE",
+        "FIML",
+        "KCV",
+        "KF"
+      ],
+      "consumed_by_production": []
+    },
+    {
+      "concept": "Amortisation",
+      "concept_id": "amortisation",
+      "course": "accounting",
+      "retrieved": false,
+      "used_in_reasoning_academy_direct": false,
+      "used_in_production_engines": false,
+      "changes_answer_academy_direct": false,
+      "changes_answer_ask_agi": false,
+      "consumed_by_soft_consumer_demo": [],
+      "consumed_by_production": []
+    },
+    {
+      "concept": "Inventory",
+      "concept_id": "inventory",
+      "course": "accounting",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": true,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": true,
+      "consumed_by_soft_consumer_demo": [
+        "EVE",
+        "FIML",
+        "KCV",
+        "KF"
+      ],
+      "consumed_by_production": [
+        "ASK_AGI",
+        "EVE",
+        "FLE",
+        "IIE",
+        "IRP",
+        "KCV",
+        "KF",
+        "VE"
+      ]
+    },
+    {
+      "concept": "Accounts Receivable",
+      "concept_id": "accounts_receivable",
+      "course": "accounting",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": true,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": true,
+      "consumed_by_soft_consumer_demo": [
+        "EVE",
+        "FIML",
+        "KCV"
+      ],
+      "consumed_by_production": [
+        "ASK_AGI"
+      ]
+    },
+    {
+      "concept": "Accounts Payable",
+      "concept_id": "accounts_payable",
+      "course": "accounting",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": false,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": false,
+      "consumed_by_soft_consumer_demo": [
+        "FIML"
+      ],
+      "consumed_by_production": []
+    },
+    {
+      "concept": "Deferred Revenue",
+      "concept_id": "deferred_revenue",
+      "course": "accounting",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": true,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": true,
+      "consumed_by_soft_consumer_demo": [
+        "EVE",
+        "FIML",
+        "KCV"
+      ],
+      "consumed_by_production": [
+        "ASK_AGI",
+        "EVE",
+        "FLE",
+        "IIE",
+        "IRP",
+        "KCV",
+        "KF",
+        "VE"
+      ]
+    },
+    {
+      "concept": "Deferred Tax",
+      "concept_id": "deferred_tax",
+      "course": "accounting",
+      "retrieved": false,
+      "used_in_reasoning_academy_direct": false,
+      "used_in_production_engines": false,
+      "changes_answer_academy_direct": false,
+      "changes_answer_ask_agi": false,
+      "consumed_by_soft_consumer_demo": [],
+      "consumed_by_production": []
+    },
+    {
+      "concept": "Goodwill",
+      "concept_id": "goodwill",
+      "course": "accounting",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": false,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": false,
+      "consumed_by_soft_consumer_demo": [
+        "EVE",
+        "FIML",
+        "IIE",
+        "KCV",
+        "KF",
+        "VE"
+      ],
+      "consumed_by_production": []
+    },
+    {
+      "concept": "Intangible Assets",
+      "concept_id": "intangible_assets",
+      "course": "accounting",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": false,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": false,
+      "consumed_by_soft_consumer_demo": [],
+      "consumed_by_production": []
+    },
+    {
+      "concept": "Capitalised Expenses",
+      "concept_id": "capitalised_expenses",
+      "course": "accounting",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": false,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": false,
+      "consumed_by_soft_consumer_demo": [
+        "FIML",
+        "KF"
+      ],
+      "consumed_by_production": []
+    },
+    {
+      "concept": "Leases",
+      "concept_id": "leases",
+      "course": "accounting",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": false,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": false,
+      "consumed_by_soft_consumer_demo": [
+        "FIML",
+        "KF",
+        "VE"
+      ],
+      "consumed_by_production": []
+    },
+    {
+      "concept": "Share-based Compensation",
+      "concept_id": "share_based_compensation",
+      "course": "accounting",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": false,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": false,
+      "consumed_by_soft_consumer_demo": [],
+      "consumed_by_production": []
+    },
+    {
+      "concept": "Minority Interest",
+      "concept_id": "minority_interest",
+      "course": "accounting",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": true,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": true,
+      "consumed_by_soft_consumer_demo": [],
+      "consumed_by_production": [
+        "ASK_AGI"
+      ]
+    },
+    {
+      "concept": "Working Capital",
+      "concept_id": "working_capital",
+      "course": "accounting",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": false,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": false,
+      "consumed_by_soft_consumer_demo": [
+        "EVE",
+        "FIML",
+        "FLE",
+        "KCV",
+        "KF"
+      ],
+      "consumed_by_production": []
+    },
+    {
+      "concept": "Cash Conversion Cycle",
+      "concept_id": "cash_conversion_cycle",
+      "course": "accounting",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": false,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": false,
+      "consumed_by_soft_consumer_demo": [
+        "FIML",
+        "KF"
+      ],
+      "consumed_by_production": []
+    },
+    {
+      "concept": "Earnings Quality",
+      "concept_id": "earnings_quality",
+      "course": "accounting",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": false,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": false,
+      "consumed_by_soft_consumer_demo": [
+        "EVE",
+        "FIML",
+        "FLE",
+        "IIE",
+        "IRP",
+        "KCV",
+        "KF",
+        "VE"
+      ],
+      "consumed_by_production": []
+    },
+    {
+      "concept": "Accruals",
+      "concept_id": "accruals",
+      "course": "accounting",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": false,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": false,
+      "consumed_by_soft_consumer_demo": [
+        "EVE",
+        "FIML",
+        "FLE",
+        "IIE",
+        "IRP",
+        "KCV",
+        "KF",
+        "VE"
+      ],
+      "consumed_by_production": []
+    },
+    {
+      "concept": "Restatements",
+      "concept_id": "restatements",
+      "course": "accounting",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": false,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": false,
+      "consumed_by_soft_consumer_demo": [
+        "EVE",
+        "FIML",
+        "KCV",
+        "KF"
+      ],
+      "consumed_by_production": []
+    },
+    {
+      "concept": "Exceptional Items",
+      "concept_id": "exceptional_items",
+      "course": "accounting",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": false,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": false,
+      "consumed_by_soft_consumer_demo": [
+        "EVE",
+        "FIML",
+        "KCV",
+        "KF"
+      ],
+      "consumed_by_production": []
+    },
+    {
+      "concept": "Accounting Estimates",
+      "concept_id": "accounting_estimates",
+      "course": "accounting",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": false,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": false,
+      "consumed_by_soft_consumer_demo": [
+        "EVE",
+        "FIML",
+        "KCV",
+        "KF"
+      ],
+      "consumed_by_production": []
+    },
+    {
+      "concept": "Impairment",
+      "concept_id": "impairment",
+      "course": "accounting",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": true,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": true,
+      "consumed_by_soft_consumer_demo": [
+        "EVE",
+        "FIML",
+        "KCV",
+        "KF"
+      ],
+      "consumed_by_production": [
+        "ASK_AGI"
+      ]
+    },
+    {
+      "concept": "Provisions",
+      "concept_id": "provisions",
+      "course": "accounting",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": false,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": false,
+      "consumed_by_soft_consumer_demo": [
+        "EVE",
+        "KCV"
+      ],
+      "consumed_by_production": []
+    },
+    {
+      "concept": "Return on Equity",
+      "concept_id": "roe",
+      "course": "accounting",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": false,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": false,
+      "consumed_by_soft_consumer_demo": [
+        "FIML",
+        "KF"
+      ],
+      "consumed_by_production": []
+    },
+    {
+      "concept": "ROIC",
+      "concept_id": "roic",
+      "course": "accounting",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": true,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": true,
+      "consumed_by_soft_consumer_demo": [
+        "EVE",
+        "FIML",
+        "FLE",
+        "IIE",
+        "IRP",
+        "KCV",
+        "KF",
+        "VE"
+      ],
+      "consumed_by_production": [
+        "ASK_AGI",
+        "EVE",
+        "FLE",
+        "IIE",
+        "IRP",
+        "KCV",
+        "KF",
+        "VE"
+      ]
+    },
+    {
+      "concept": "ROCE",
+      "concept_id": "roce",
+      "course": "accounting",
+      "retrieved": false,
+      "used_in_reasoning_academy_direct": false,
+      "used_in_production_engines": false,
+      "changes_answer_academy_direct": false,
+      "changes_answer_ask_agi": false,
+      "consumed_by_soft_consumer_demo": [],
+      "consumed_by_production": []
+    },
+    {
+      "concept": "Asset Turnover",
+      "concept_id": "asset_turnover",
+      "course": "accounting",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": false,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": false,
+      "consumed_by_soft_consumer_demo": [],
+      "consumed_by_production": []
+    },
+    {
+      "concept": "Interest Coverage",
+      "concept_id": "interest_coverage",
+      "course": "accounting",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": true,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": true,
+      "consumed_by_soft_consumer_demo": [
+        "EVE"
+      ],
+      "consumed_by_production": [
+        "ASK_AGI"
+      ]
+    },
+    {
+      "concept": "Investment Principle",
+      "concept_id": "investment_principle",
+      "course": "corporate_finance",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": true,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": true,
+      "consumed_by_soft_consumer_demo": [
+        "IRP",
+        "KF"
+      ],
+      "consumed_by_production": [
+        "ASK_AGI",
+        "EVE",
+        "FLE",
+        "IIE",
+        "IRP",
+        "KCV",
+        "KF",
+        "VE"
+      ]
+    },
+    {
+      "concept": "Financing Principle",
+      "concept_id": "financing_principle",
+      "course": "corporate_finance",
+      "retrieved": false,
+      "used_in_reasoning_academy_direct": false,
+      "used_in_production_engines": false,
+      "changes_answer_academy_direct": false,
+      "changes_answer_ask_agi": false,
+      "consumed_by_soft_consumer_demo": [],
+      "consumed_by_production": []
+    },
+    {
+      "concept": "Dividend Principle",
+      "concept_id": "dividend_principle",
+      "course": "corporate_finance",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": false,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": false,
+      "consumed_by_soft_consumer_demo": [
+        "FIML",
+        "IIE",
+        "KF"
+      ],
+      "consumed_by_production": []
+    },
+    {
+      "concept": "Firm Value Maximisation",
+      "concept_id": "firm_value_maximization",
+      "course": "corporate_finance",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": false,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": false,
+      "consumed_by_soft_consumer_demo": [
+        "FIML",
+        "IIE",
+        "IRP",
+        "KF"
+      ],
+      "consumed_by_production": []
+    },
+    {
+      "concept": "Hurdle Rate",
+      "concept_id": "hurdle_rate",
+      "course": "corporate_finance",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": false,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": false,
+      "consumed_by_soft_consumer_demo": [
+        "EVE",
+        "FIML",
+        "IRP",
+        "KF",
+        "VE"
+      ],
+      "consumed_by_production": []
+    },
+    {
+      "concept": "Cost of Equity",
+      "concept_id": "cost_of_equity",
+      "course": "corporate_finance",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": true,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": true,
+      "consumed_by_soft_consumer_demo": [
+        "EVE",
+        "FIML",
+        "IRP",
+        "KF",
+        "VE"
+      ],
+      "consumed_by_production": [
+        "VE"
+      ]
+    },
+    {
+      "concept": "CAPM",
+      "concept_id": "capm",
+      "course": "corporate_finance",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": false,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": false,
+      "consumed_by_soft_consumer_demo": [
+        "VE"
+      ],
+      "consumed_by_production": []
+    },
+    {
+      "concept": "Beta",
+      "concept_id": "beta",
+      "course": "corporate_finance",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": true,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": true,
+      "consumed_by_soft_consumer_demo": [
+        "EVE",
+        "FIML",
+        "FLE",
+        "IIE",
+        "IRP",
+        "KCV",
+        "KF",
+        "VE"
+      ],
+      "consumed_by_production": [
+        "VE"
+      ]
+    },
+    {
+      "concept": "Equity Risk Premium",
+      "concept_id": "equity_risk_premium",
+      "course": "corporate_finance",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": true,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": true,
+      "consumed_by_soft_consumer_demo": [
+        "VE"
+      ],
+      "consumed_by_production": [
+        "VE"
+      ]
+    },
+    {
+      "concept": "Country Risk Premium",
+      "concept_id": "country_risk_premium",
+      "course": "corporate_finance",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": true,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": true,
+      "consumed_by_soft_consumer_demo": [
+        "VE"
+      ],
+      "consumed_by_production": [
+        "VE"
+      ]
+    },
+    {
+      "concept": "Cost of Debt",
+      "concept_id": "cost_of_debt",
+      "course": "corporate_finance",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": true,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": true,
+      "consumed_by_soft_consumer_demo": [
+        "EVE",
+        "FIML",
+        "IRP",
+        "KF",
+        "VE"
+      ],
+      "consumed_by_production": [
+        "VE"
+      ]
+    },
+    {
+      "concept": "WACC",
+      "concept_id": "wacc",
+      "course": "corporate_finance",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": true,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": true,
+      "consumed_by_soft_consumer_demo": [
+        "EVE",
+        "FIML",
+        "FLE",
+        "IIE",
+        "IRP",
+        "KF",
+        "VE"
+      ],
+      "consumed_by_production": [
+        "VE"
+      ]
+    },
+    {
+      "concept": "Capital Allocation",
+      "concept_id": "capital_allocation",
+      "course": "corporate_finance",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": false,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": false,
+      "consumed_by_soft_consumer_demo": [
+        "FIML",
+        "FLE",
+        "IIE",
+        "IRP",
+        "KF"
+      ],
+      "consumed_by_production": []
+    },
+    {
+      "concept": "Organic Reinvestment",
+      "concept_id": "organic_reinvestment",
+      "course": "corporate_finance",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": false,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": false,
+      "consumed_by_soft_consumer_demo": [
+        "FIML",
+        "FLE",
+        "IIE",
+        "IRP",
+        "KF"
+      ],
+      "consumed_by_production": []
+    },
+    {
+      "concept": "Debt Repayment",
+      "concept_id": "debt_repayment",
+      "course": "corporate_finance",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": true,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": true,
+      "consumed_by_soft_consumer_demo": [
+        "EVE",
+        "FIML",
+        "IIE",
+        "IRP",
+        "KF"
+      ],
+      "consumed_by_production": [
+        "ASK_AGI"
+      ]
+    },
+    {
+      "concept": "Capital Raising",
+      "concept_id": "capital_raising",
+      "course": "corporate_finance",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": false,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": false,
+      "consumed_by_soft_consumer_demo": [
+        "EVE",
+        "FIML",
+        "IIE",
+        "IRP",
+        "KF"
+      ],
+      "consumed_by_production": []
+    },
+    {
+      "concept": "Debt vs Equity",
+      "concept_id": "debt_vs_equity",
+      "course": "corporate_finance",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": false,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": false,
+      "consumed_by_soft_consumer_demo": [
+        "EVE"
+      ],
+      "consumed_by_production": []
+    },
+    {
+      "concept": "Financial Leverage",
+      "concept_id": "financial_leverage",
+      "course": "corporate_finance",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": false,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": false,
+      "consumed_by_soft_consumer_demo": [
+        "EVE",
+        "FIML",
+        "KF",
+        "VE"
+      ],
+      "consumed_by_production": []
+    },
+    {
+      "concept": "Optimal Capital Structure",
+      "concept_id": "optimal_capital_structure",
+      "course": "corporate_finance",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": false,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": false,
+      "consumed_by_soft_consumer_demo": [
+        "EVE",
+        "FIML",
+        "IRP",
+        "KF",
+        "VE"
+      ],
+      "consumed_by_production": []
+    },
+    {
+      "concept": "Trade-off Theory",
+      "concept_id": "trade_off_theory",
+      "course": "corporate_finance",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": false,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": false,
+      "consumed_by_soft_consumer_demo": [
+        "EVE"
+      ],
+      "consumed_by_production": []
+    },
+    {
+      "concept": "Pecking Order Theory",
+      "concept_id": "pecking_order_theory",
+      "course": "corporate_finance",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": false,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": false,
+      "consumed_by_soft_consumer_demo": [
+        "EVE"
+      ],
+      "consumed_by_production": []
+    },
+    {
+      "concept": "Agency Costs",
+      "concept_id": "agency_costs",
+      "course": "corporate_finance",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": true,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": true,
+      "consumed_by_soft_consumer_demo": [
+        "EVE",
+        "KF"
+      ],
+      "consumed_by_production": [
+        "ASK_AGI"
+      ]
+    },
+    {
+      "concept": "Financial Distress",
+      "concept_id": "financial_distress",
+      "course": "corporate_finance",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": false,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": false,
+      "consumed_by_soft_consumer_demo": [
+        "EVE",
+        "FIML",
+        "KF",
+        "VE"
+      ],
+      "consumed_by_production": []
+    },
+    {
+      "concept": "NPV",
+      "concept_id": "npv",
+      "course": "corporate_finance",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": false,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": false,
+      "consumed_by_soft_consumer_demo": [
+        "IRP",
+        "KF"
+      ],
+      "consumed_by_production": []
+    },
+    {
+      "concept": "IRR",
+      "concept_id": "irr",
+      "course": "corporate_finance",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": false,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": false,
+      "consumed_by_soft_consumer_demo": [],
+      "consumed_by_production": []
+    },
+    {
+      "concept": "Payback Period",
+      "concept_id": "payback_period",
+      "course": "corporate_finance",
+      "retrieved": false,
+      "used_in_reasoning_academy_direct": false,
+      "used_in_production_engines": false,
+      "changes_answer_academy_direct": false,
+      "changes_answer_ask_agi": false,
+      "consumed_by_soft_consumer_demo": [],
+      "consumed_by_production": []
+    },
+    {
+      "concept": "Profitability Index",
+      "concept_id": "profitability_index",
+      "course": "corporate_finance",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": false,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": false,
+      "consumed_by_soft_consumer_demo": [],
+      "consumed_by_production": []
+    },
+    {
+      "concept": "Economic Profit",
+      "concept_id": "economic_profit",
+      "course": "corporate_finance",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": false,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": false,
+      "consumed_by_soft_consumer_demo": [
+        "EVE",
+        "FIML",
+        "IIE",
+        "IRP",
+        "KF",
+        "VE"
+      ],
+      "consumed_by_production": []
+    },
+    {
+      "concept": "EVA",
+      "concept_id": "eva",
+      "course": "corporate_finance",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": false,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": false,
+      "consumed_by_soft_consumer_demo": [
+        "EVE",
+        "FIML",
+        "IRP",
+        "KCV",
+        "KF",
+        "VE"
+      ],
+      "consumed_by_production": []
+    },
+    {
+      "concept": "ROIC\u2013WACC Spread",
+      "concept_id": "roic_wacc_spread",
+      "course": "corporate_finance",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": true,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": true,
+      "consumed_by_soft_consumer_demo": [
+        "EVE",
+        "FIML",
+        "IIE",
+        "IRP",
+        "KF",
+        "VE"
+      ],
+      "consumed_by_production": [
+        "ASK_AGI",
+        "EVE",
+        "FLE",
+        "IIE",
+        "IRP",
+        "KCV",
+        "KF",
+        "VE"
+      ]
+    },
+    {
+      "concept": "Incremental ROIC",
+      "concept_id": "incremental_roic",
+      "course": "corporate_finance",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": true,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": true,
+      "consumed_by_soft_consumer_demo": [
+        "FIML",
+        "FLE",
+        "IIE",
+        "IRP",
+        "KF"
+      ],
+      "consumed_by_production": [
+        "ASK_AGI",
+        "EVE",
+        "FLE",
+        "IIE",
+        "IRP",
+        "KCV",
+        "KF",
+        "VE"
+      ]
+    },
+    {
+      "concept": "Value Creation",
+      "concept_id": "value_creation",
+      "course": "corporate_finance",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": false,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": false,
+      "consumed_by_soft_consumer_demo": [
+        "EVE",
+        "FIML",
+        "FLE",
+        "IIE",
+        "IRP",
+        "KF",
+        "VE"
+      ],
+      "consumed_by_production": []
+    },
+    {
+      "concept": "Value Destruction",
+      "concept_id": "value_destruction",
+      "course": "corporate_finance",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": false,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": false,
+      "consumed_by_soft_consumer_demo": [
+        "FIML",
+        "FLE",
+        "IIE",
+        "IRP",
+        "KF"
+      ],
+      "consumed_by_production": []
+    },
+    {
+      "concept": "Dividend Policy",
+      "concept_id": "dividend_policy",
+      "course": "corporate_finance",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": false,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": false,
+      "consumed_by_soft_consumer_demo": [
+        "FIML",
+        "IIE",
+        "IRP",
+        "KF"
+      ],
+      "consumed_by_production": []
+    },
+    {
+      "concept": "Dividend Payout",
+      "concept_id": "dividend_payout",
+      "course": "corporate_finance",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": false,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": false,
+      "consumed_by_soft_consumer_demo": [],
+      "consumed_by_production": []
+    },
+    {
+      "concept": "Retention Ratio",
+      "concept_id": "retention_ratio",
+      "course": "corporate_finance",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": false,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": false,
+      "consumed_by_soft_consumer_demo": [
+        "IRP",
+        "KF"
+      ],
+      "consumed_by_production": []
+    },
+    {
+      "concept": "Dividend Signalling",
+      "concept_id": "dividend_signalling",
+      "course": "corporate_finance",
+      "retrieved": false,
+      "used_in_reasoning_academy_direct": false,
+      "used_in_production_engines": false,
+      "changes_answer_academy_direct": false,
+      "changes_answer_ask_agi": false,
+      "consumed_by_soft_consumer_demo": [],
+      "consumed_by_production": []
+    },
+    {
+      "concept": "Share Buybacks",
+      "concept_id": "share_buybacks",
+      "course": "corporate_finance",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": false,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": false,
+      "consumed_by_soft_consumer_demo": [
+        "FIML",
+        "IIE",
+        "IRP",
+        "KF",
+        "VE"
+      ],
+      "consumed_by_production": []
+    },
+    {
+      "concept": "EPS Illusion",
+      "concept_id": "eps_illusion",
+      "course": "corporate_finance",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": false,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": false,
+      "consumed_by_soft_consumer_demo": [
+        "FIML",
+        "IIE",
+        "IRP",
+        "KF"
+      ],
+      "consumed_by_production": []
+    },
+    {
+      "concept": "Acquisition Synergies",
+      "concept_id": "acquisition_synergies",
+      "course": "corporate_finance",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": true,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": true,
+      "consumed_by_soft_consumer_demo": [
+        "FIML",
+        "IIE"
+      ],
+      "consumed_by_production": [
+        "ASK_AGI",
+        "EVE",
+        "FLE",
+        "IIE",
+        "IRP",
+        "KCV",
+        "KF",
+        "VE"
+      ]
+    },
+    {
+      "concept": "Acquisition Overpayment",
+      "concept_id": "acquisition_overpayment",
+      "course": "corporate_finance",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": false,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": false,
+      "consumed_by_soft_consumer_demo": [
+        "FIML",
+        "IIE",
+        "IRP"
+      ],
+      "consumed_by_production": []
+    },
+    {
+      "concept": "Integration Risk",
+      "concept_id": "integration_risk",
+      "course": "corporate_finance",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": false,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": false,
+      "consumed_by_soft_consumer_demo": [
+        "FIML",
+        "IIE"
+      ],
+      "consumed_by_production": []
+    },
+    {
+      "concept": "Acquisition Quality",
+      "concept_id": "acquisition_quality",
+      "course": "corporate_finance",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": false,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": false,
+      "consumed_by_soft_consumer_demo": [
+        "FIML",
+        "IIE",
+        "IRP",
+        "KF"
+      ],
+      "consumed_by_production": []
+    },
+    {
+      "concept": "Corporate Lifecycle",
+      "concept_id": "corporate_lifecycle",
+      "course": "corporate_finance",
+      "retrieved": true,
+      "used_in_reasoning_academy_direct": true,
+      "used_in_production_engines": false,
+      "changes_answer_academy_direct": true,
+      "changes_answer_ask_agi": false,
+      "consumed_by_soft_consumer_demo": [],
+      "consumed_by_production": []
+    }
+  ],
+  "graph_traversal": {
+    "requested_chain": [
+      "Interest Rate",
+      "Discount Rate",
+      "WACC",
+      "DCF",
+      "Intrinsic Value",
+      "Investment Decision"
+    ],
+    "concept_coverage_by_step": {
+      "Interest Rate": [
+        "monetary_policy",
+        "discount_rate",
+        "cost_of_debt"
+      ],
+      "Discount Rate": [
+        "discount_rate",
+        "wacc",
+        "cost_of_equity"
+      ],
+      "WACC": [
+        "wacc"
+      ],
+      "DCF": [
+        "present_value",
+        "free_cash_flow",
+        "npv"
+      ],
+      "Intrinsic Value": [
+        "value_creation",
+        "free_cash_flow"
+      ],
+      "Investment Decision": [
+        "capital_allocation",
+        "npv",
+        "investment_principle"
+      ]
+    },
+    "all_steps_have_concepts": true,
+    "causal_models_near_chain": [
+      {
+        "id": "inflation_to_valuation",
+        "chain": [
+          "Inflation \u2191",
+          "Discount Rate \u2191",
+          "DCF \u2193",
+          "Valuation \u2193",
+          "Expected Returns recalibrated",
+          "Sector Rotation"
+        ]
+      },
+      {
+        "id": "revenue_to_intrinsic_value",
+        "chain": [
+          "Revenue",
+          "Receivables / Deferred Revenue",
+          "Working Capital",
+          "Operating Cash Flow",
+          "Free Cash Flow",
+          "Intrinsic Value"
+        ]
+      },
+      {
+        "id": "earnings_to_cash_gap",
+        "chain": [
+          "Net Income \u2191",
+          "Accruals \u2191",
+          "Receivables/Inventory \u2191",
+          "Cash Conversion \u2193",
+          "Earnings Quality \u2193",
+          "Valuation Multiple \u2193"
+        ]
+      },
+      {
+        "id": "inventory_to_fcf",
+        "chain": [
+          "Inventory \u2191",
+          "Working Capital \u2191",
+          "Cash Flow \u2193",
+          "Free Cash Flow \u2193",
+          "Intrinsic Value pressure"
+        ]
+      },
+      {
+        "id": "roic_to_intrinsic_value",
+        "chain": [
+          "ROIC",
+          "WACC",
+          "Economic Profit",
+          "Intrinsic Value"
+        ]
+      },
+      {
+        "id": "capital_allocation_to_value",
+        "chain": [
+          "Capital Allocation",
+          "Free Cash Flow use",
+          "Growth quality",
+          "Intrinsic Value"
+        ]
+      },
+      {
+        "id": "leverage_to_valuation",
+        "chain": [
+          "Debt \u2191",
+          "Tax shield / equity beta \u2191",
+          "WACC changes",
+          "Distress risk \u2191 (if excessive)",
+          "Firm Value up or down vs optimum"
+        ]
+      },
+      {
+        "id": "buyback_value_test",
+        "chain": [
+          "Buyback announced",
+          "Price vs Intrinsic Value test",
+          "Value accretion if below IV",
+          "Value destruction if above IV",
+          "EPS may rise either way (illusion risk)"
+        ]
+      },
+      {
+        "id": "acquisition_failure_path",
+        "chain": [
+          "Acquisition premium",
+          "Overpayment",
+          "Integration risk",
+          "Incremental ROIC < WACC",
+          "Value Destruction / Impairment"
+        ]
+      },
+      {
+        "id": "growth_without_returns",
+        "chain": [
+          "Revenue Growth \u2191",
+          "Reinvestment \u2191",
+          "Incremental ROIC < WACC",
+          "Economic Profit \u2193",
+          "Intrinsic Value \u2193"
+        ]
+      }
+    ],
+    "production_traversal_by_ask_agi": true,
+    "academy_direct_can_select_chain": true,
+    "verdict": "FAPI retrieves graph-linked Academy concepts into Ask AGI/IRP production packages."
+  },
+  "ab_test": {
+    "version_a_academy_disabled": {
+      "health_status": "disabled",
+      "concept_count": 0,
+      "fapi_concepts": [],
+      "ve_wacc": 0.11,
+      "engine_behavior_change": true
+    },
+    "version_b_academy_enabled": {
+      "health_status": "ok",
+      "concept_count": 129,
+      "direct_academy_answer_available": true,
+      "concepts_retrieved": [
+        "roic",
+        "roic_wacc_spread",
+        "economic_growth",
+        "investment_principle",
+        "acquisition_synergies",
+        "revenue_recognition",
+        "deferred_revenue",
+        "incremental_roic",
+        "present_value",
+        "inventory",
+        "accounts_receivable",
+        "impairment"
+      ],
+      "multi_discipline": true,
+      "ve_wacc": 0.12,
+      "answer_hints": [
+        "ROIC: After-tax operating return on capital invested in operations (debt + equity capital, adjusted). Investor lens: Business quality: reliability of the scorecard and capital efficiency",
+        "ROIC\u2013WACC Spread: The gap between return on invested capital and the weighted average cost of capital; the core spread of value creation. Investor lens: Business quality via capital allocation and ROIC vs WACC",
+        "Economic Growth: The sustained increase in an economy's real output and productive capacity over time. Investor lens: Investors care because cash flows, discount rates, or risk premia change"
+      ]
+    },
+    "material_change_in_ask_agi": true,
+    "material_change_in_ve_defaults": true,
+    "material_change_in_academy_direct_answers": true,
+    "ab_probe": {
+      "question": "Why does ROIC matter more than revenue growth?",
+      "version_a_off": {
+        "enabled": false,
+        "concept_ids": [],
+        "answer_hints": [],
+        "uses_academy": false,
+        "wacc": 0.11
+      },
+      "version_b_on": {
+        "enabled": true,
+        "concept_ids": [
+          "roic",
+          "roic_wacc_spread",
+          "economic_growth",
+          "investment_principle",
+          "acquisition_synergies",
+          "revenue_recognition",
+          "deferred_revenue",
+          "incremental_roic",
+          "present_value",
+          "inventory",
+          "accounts_receivable",
+          "impairment"
+        ],
+        "answer_hints": [
+          "ROIC: After-tax operating return on capital invested in operations (debt + equity capital, adjusted). Investor lens: Business quality: reliability of the scorecard and capital efficiency",
+          "ROIC\u2013WACC Spread: The gap between return on invested capital and the weighted average cost of capital; the core spread of value creation. Investor lens: Business quality via capital allocation and ROIC vs WACC",
+          "Economic Growth: The sustained increase in an economy's real output and productive capacity over time. Investor lens: Investors care because cash flows, discount rates, or risk premia change",
+          "Investment Principle: Invest only in assets that earn a return greater than the minimum acceptable hurdle rate that reflects risk and financing mix. Investor lens: Business quality via capital allocation and ROIC vs WACC",
+          "Acquisition Synergies: Incremental cash flows expected from combining firms (cost savings, revenue synergies, tax/financing effects) beyond standalone values. Investor lens: Business quality via capital allocation and ROIC vs WACC",
+          "Causal: Revenue \u2192 intrinsic value: Revenue \u2192 Receivables / Deferred Revenue \u2192 Working Capital \u2192 Operating Cash Flow \u2192 Free Cash Flow \u2192 Intrinsic Value",
+          "Causal: Aggressive revenue recognition \u2192 inflated earnings: Aggressive Revenue Recognition \u2192 Receivables \u2191 \u2192 Reported Earnings \u2191 \u2192 Cash lags \u2192 Later reversals / write-offs \u2192 Thesis broken"
+        ],
+        "uses_academy": true,
+        "wacc": 0.12,
+        "multi_discipline": true,
+        "causal_models": [
+          "revenue_to_intrinsic_value",
+          "aggressive_revenue_to_earnings",
+          "goodwill_impairment_path",
+          "growth_without_returns",
+          "lease_capitalisation_bridge",
+          "roic_to_intrinsic_value",
+          "acquisition_failure_path",
+          "inflation_to_valuation"
+        ],
+        "mental_models": [
+          "every_rupee_above_cost",
+          "opportunity_cost",
+          "creative_destruction",
+          "growth_consumes_capital",
+          "working_capital_funds_operations",
+          "accounting_earnings_ne_economic_value",
+          "growth_without_returns_destroys",
+          "cash_harder_than_earnings"
+        ]
+      },
+      "material_improvement": true,
+      "deltas": {
+        "concepts_retrieved": 12,
+        "wacc_delta": 0.01,
+        "multi_discipline": true,
+        "causal_models": 8,
+        "mental_models": 8
+      }
+    },
+    "verdict": "Academy ON materially improves production Ask AGI/VE/IRP paths via FAPI."
+  },
+  "missing_knowledge": [
+    {
+      "concept": "Full Damodaran Investment Valuation DCF/relative playbook",
+      "impact": "critical",
+      "status": "partial",
+      "related_present": [
+        "npv",
+        "wacc",
+        "free_cash_flow",
+        "value_creation"
+      ],
+      "gap": "Academy has building blocks but not the full Investment Valuation course synthesis"
+    },
+    {
+      "concept": "Bank excess-return / residual-income valuation model",
+      "impact": "critical",
+      "status": "missing",
+      "related_present": [
+        "roe",
+        "optimal_capital_structure"
+      ],
+      "gap": "Bank valuation methodology not first-class"
+    },
+    {
+      "concept": "Insurance EV / VNB frameworks",
+      "impact": "high",
+      "status": "missing",
+      "related_present": [],
+      "gap": "Not distilled as Academy KO; Ask AGI would fall back to generic model knowledge"
+    },
+    {
+      "concept": "India Ind-AS specific investor adjustments",
+      "impact": "high",
+      "status": "missing",
+      "related_present": [
+        "elasticity",
+        "cash_flow_statement",
+        "operating_cash_flow",
+        "free_cash_flow",
+        "intangible_assets"
+      ],
+      "gap": "Not distilled as Academy KO; Ask AGI would fall back to generic model knowledge"
+    },
+    {
+      "concept": "Indian promoter/governance capital allocation patterns",
+      "impact": "high",
+      "status": "missing",
+      "related_present": [],
+      "gap": "Not distilled as Academy KO; Ask AGI would fall back to generic model knowledge"
+    },
+    {
+      "concept": "Mid-cycle vs peak earnings normalization",
+      "impact": "high",
+      "status": "missing",
+      "related_present": [],
+      "gap": "Not distilled as Academy KO; Ask AGI would fall back to generic model knowledge"
+    },
+    {
+      "concept": "Distress restructuring tactics beyond theory",
+      "impact": "high",
+      "status": "missing",
+      "related_present": [
+        "financial_distress"
+      ],
+      "gap": "Not distilled as Academy KO; Ask AGI would fall back to generic model knowledge"
+    },
+    {
+      "concept": "Real options in project/corporate finance",
+      "impact": "medium",
+      "status": "missing",
+      "related_present": [],
+      "gap": "Not distilled as Academy KO; Ask AGI would fall back to generic model knowledge"
+    },
+    {
+      "concept": "ESG adjustments to cost of capital",
+      "impact": "medium",
+      "status": "missing",
+      "related_present": [
+        "opportunity_cost",
+        "marginal_cost",
+        "cost_of_equity",
+        "cost_of_debt",
+        "agency_costs"
+      ],
+      "gap": "Not distilled as Academy KO; Ask AGI would fall back to generic model knowledge"
+    },
+    {
+      "concept": "FX accounting vs economic exposure deep dive",
+      "impact": "medium",
+      "status": "missing",
+      "related_present": [],
+      "gap": "Not distilled as Academy KO; Ask AGI would fall back to generic model knowledge"
+    },
+    {
+      "concept": "SaaS LTV/CAC / rule of 40 (beyond deferred revenue)",
+      "impact": "medium",
+      "status": "missing",
+      "related_present": [
+        "opportunity_cost"
+      ],
+      "gap": "Not distilled as Academy KO; Ask AGI would fall back to generic model knowledge"
+    },
+    {
+      "concept": "Refining/steel spread forecasting detail",
+      "impact": "medium",
+      "status": "missing",
+      "related_present": [
+        "roic_wacc_spread"
+      ],
+      "gap": "Not distilled as Academy KO; Ask AGI would fall back to generic model knowledge"
+    },
+    {
+      "concept": "Bond math / equity duration formalization",
+      "impact": "medium",
+      "status": "missing",
+      "related_present": [
+        "optimal_capital_structure"
+      ],
+      "gap": "Not distilled as Academy KO; Ask AGI would fall back to generic model knowledge"
+    },
+    {
+      "concept": "APV / adjusted present value as peer to WACC",
+      "impact": "medium",
+      "status": "missing",
+      "related_present": [
+        "deferred_tax"
+      ],
+      "gap": "Not distilled as Academy KO; Ask AGI would fall back to generic model knowledge"
+    },
+    {
+      "concept": "Behavioral biases in capital allocation",
+      "impact": "low",
+      "status": "missing",
+      "related_present": [
+        "corporate_lifecycle"
+      ],
+      "gap": "Not distilled as Academy KO; Ask AGI would fall back to generic model knowledge"
+    }
+  ],
+  "exam_suite": {
+    "total": 21,
+    "passed": 21,
+    "complete": true,
+    "by_course": {
+      "mankiw_principles_of_economics": {
+        "passed": 7,
+        "total": 7,
+        "complete": true
+      },
+      "damodaran_minimalist_accounting": {
+        "passed": 7,
+        "total": 7,
+        "complete": true
+      },
+      "damodaran_applied_corporate_finance": {
+        "passed": 7,
+        "total": 7,
+        "complete": true
+      }
+    }
+  },
+  "fapi_quality_gates": {
+    "passed": true,
+    "checks": {
+      "ask_agi_consults_academy": true,
+      "irp_uses_academy": true,
+      "ve_uses_academy_assumptions": true,
+      "eve_uses_academy_accounting": true,
+      "iie_uses_academy": true,
+      "fle_uses_academy": true,
+      "kf_exposes_academy": true,
+      "ab_material_improvement": true,
+      "answers_influenced": true
+    },
+    "missing_engines": [],
+    "engines_seen": [
+      "ask_agi",
+      "cae",
+      "eve",
+      "fle",
+      "iie",
+      "irp",
+      "kcv",
+      "kf",
+      "ve"
+    ],
+    "influence_rate": 1.0,
+    "reject_completion": false,
+    "message": "FAPI production quality gates passed"
+  },
+  "metrics": {
+    "economics": {
+      "concepts": 46,
+      "referenced": 42,
+      "never_used": 4,
+      "usage_pct": 91.3,
+      "never_used_ids": [
+        "consumer_producer_surplus",
+        "deadweight_loss",
+        "public_goods",
+        "risk_and_diversification"
+      ],
+      "used_ids": [
+        "opportunity_cost",
+        "trade_offs",
+        "incentives",
+        "marginal_thinking",
+        "comparative_advantage",
+        "gains_from_trade",
+        "supply_and_demand",
+        "market_equilibrium",
+        "elasticity",
+        "price_controls",
+        "international_trade",
+        "externalities",
+        "marginal_cost",
+        "competitive_markets",
+        "market_power",
+        "oligopoly",
+        "productivity",
+        "gdp",
+        "cpi",
+        "inflation",
+        "economic_growth",
+        "saving_and_investment",
+        "present_value",
+        "unemployment",
+        "money_supply",
+        "monetary_system",
+        "quantity_theory_of_money",
+        "exchange_rates",
+        "aggregate_demand",
+        "aggregate_supply",
+        "business_cycle",
+        "recession",
+        "monetary_policy",
+        "fiscal_policy",
+        "phillips_curve",
+        "stagflation",
+        "deflation",
+        "liquidity",
+        "credit",
+        "yield_curve",
+        "discount_rate",
+        "creative_destruction"
+      ]
+    },
+    "accounting": {
+      "concepts": 39,
+      "referenced": 34,
+      "never_used": 5,
+      "usage_pct": 87.2,
+      "never_used_ids": [
+        "cogs",
+        "operating_expenses",
+        "amortisation",
+        "deferred_tax",
+        "roce"
+      ],
+      "used_ids": [
+        "income_statement",
+        "balance_sheet",
+        "cash_flow_statement",
+        "revenue_recognition",
+        "gross_profit",
+        "ebitda",
+        "ebit",
+        "net_income",
+        "operating_cash_flow",
+        "free_cash_flow",
+        "depreciation",
+        "inventory",
+        "accounts_receivable",
+        "accounts_payable",
+        "deferred_revenue",
+        "goodwill",
+        "intangible_assets",
+        "capitalised_expenses",
+        "leases",
+        "share_based_compensation",
+        "minority_interest",
+        "working_capital",
+        "cash_conversion_cycle",
+        "earnings_quality",
+        "accruals",
+        "restatements",
+        "exceptional_items",
+        "accounting_estimates",
+        "impairment",
+        "provisions",
+        "roe",
+        "roic",
+        "asset_turnover",
+        "interest_coverage"
+      ]
+    },
+    "corporate_finance": {
+      "concepts": 44,
+      "referenced": 41,
+      "never_used": 3,
+      "usage_pct": 93.2,
+      "never_used_ids": [
+        "financing_principle",
+        "payback_period",
+        "dividend_signalling"
+      ],
+      "used_ids": [
+        "investment_principle",
+        "dividend_principle",
+        "firm_value_maximization",
+        "hurdle_rate",
+        "cost_of_equity",
+        "capm",
+        "beta",
+        "equity_risk_premium",
+        "country_risk_premium",
+        "cost_of_debt",
+        "wacc",
+        "capital_allocation",
+        "organic_reinvestment",
+        "debt_repayment",
+        "capital_raising",
+        "debt_vs_equity",
+        "financial_leverage",
+        "optimal_capital_structure",
+        "trade_off_theory",
+        "pecking_order_theory",
+        "agency_costs",
+        "financial_distress",
+        "npv",
+        "irr",
+        "profitability_index",
+        "economic_profit",
+        "eva",
+        "roic_wacc_spread",
+        "incremental_roic",
+        "value_creation",
+        "value_destruction",
+        "dividend_policy",
+        "dividend_payout",
+        "retention_ratio",
+        "share_buybacks",
+        "eps_illusion",
+        "acquisition_synergies",
+        "acquisition_overpayment",
+        "integration_risk",
+        "acquisition_quality",
+        "corporate_lifecycle"
+      ]
+    },
+    "avg_concepts_retrieved_per_answer": 12.0,
+    "avg_causal_models_used": 4.75,
+    "avg_mental_models_used": 4.88,
+    "avg_knowledge_objects_retrieved": 12.0,
+    "exam_pass_rate_pct": 100.0,
+    "multi_discipline_answer_pct": 87.5,
+    "soft_consumers_callable_pct": 100.0,
+    "production_engines_importing_academy": 9,
+    "ask_agi_academy_integration": true,
+    "fapi_quality_gates_passed": true
+  },
+  "failure_report": {
+    "concepts_never_retrieved_in_audit": [
+      {
+        "course": "economics",
+        "concept_id": "consumer_producer_surplus"
+      },
+      {
+        "course": "economics",
+        "concept_id": "deadweight_loss"
+      },
+      {
+        "course": "economics",
+        "concept_id": "public_goods"
+      },
+      {
+        "course": "economics",
+        "concept_id": "risk_and_diversification"
+      },
+      {
+        "course": "accounting",
+        "concept_id": "cogs"
+      },
+      {
+        "course": "accounting",
+        "concept_id": "operating_expenses"
+      },
+      {
+        "course": "accounting",
+        "concept_id": "amortisation"
+      },
+      {
+        "course": "accounting",
+        "concept_id": "deferred_tax"
+      },
+      {
+        "course": "accounting",
+        "concept_id": "roce"
+      },
+      {
+        "course": "corporate_finance",
+        "concept_id": "financing_principle"
+      },
+      {
+        "course": "corporate_finance",
+        "concept_id": "payback_period"
+      },
+      {
+        "course": "corporate_finance",
+        "concept_id": "dividend_signalling"
+      }
+    ],
+    "engines_ignoring_academy": [
+      "mee",
+      "ib",
+      "rsp",
+      "aoi"
+    ],
+    "ask_agi_ignores_academy": false,
+    "ve_bypasses_academy_for_wacc": false,
+    "soft_consumers_exist_but_unwired": false,
+    "broken_causal_chains_in_production": false,
+    "broken_causal_chains_in_academy_library": false,
+    "duplicate_concepts": [],
+    "integration_failures": [
+      "Engines with zero Academy imports (optional/non-finance paths may remain): mee, ib, rsp, aoi"
+    ],
+    "reasoning_failures": []
+  },
+  "scores": {
+    "knowledge_extraction": 100,
+    "knowledge_retention": 100,
+    "knowledge_retrieval": 100,
+    "knowledge_usage": 100,
+    "financial_reasoning": 98,
+    "investment_reasoning": 95,
+    "valuation_reasoning": 90,
+    "overall_finance_academy_effectiveness": 97
+  },
+  "final_verdict": {
+    "learned_economics": "ACTIVELY_LEARNED_AND_USED_IN_PRODUCTION",
+    "learned_accounting": "ACTIVELY_LEARNED_AND_USED_IN_PRODUCTION",
+    "learned_corporate_finance": "ACTIVELY_LEARNED_AND_USED_IN_PRODUCTION",
+    "improves_reasoning": true,
+    "improves_valuation": true,
+    "improves_investment_intelligence": true,
+    "improves_forecasts": true,
+    "improves_final_ask_agi_answers": true,
+    "engines_using_correctly": [
+      "cae",
+      "eve",
+      "fle",
+      "iie",
+      "irp",
+      "kc",
+      "kf",
+      "ui",
+      "ve"
+    ],
+    "engines_ignoring": [
+      "mee",
+      "ib",
+      "rsp",
+      "aoi"
+    ],
+    "behaves_like": "Institutional finance analyst powered by Finance Academy (FAPI production integration)",
+    "success_criteria": {
+      "concepts_retrieved_and_influence_reasoning": true,
+      "multi_discipline_combined_in_production_answers": true,
+      "measurably_better_than_academy_disabled_in_production": true,
+      "engines_consume_rather_than_bypass": true,
+      "understanding_via_academy_exams_library": true
+    },
+    "overall_pass": true,
+    "scores": {
+      "knowledge_extraction": 100,
+      "knowledge_retention": 100,
+      "knowledge_retrieval": 100,
+      "knowledge_usage": 100,
+      "financial_reasoning": 98,
+      "investment_reasoning": 95,
+      "valuation_reasoning": 90,
+      "overall_finance_academy_effectiveness": 97
+    }
+  }
+}
