@@ -4,7 +4,11 @@ import { supabase } from '@/lib/supabaseClient';
 const BASE = `${API_ORIGIN || ''}/api/institutional-holdings`;
 
 async function request(path, { method = 'GET', body, admin = false, auth = false, timeoutMs = 180_000 } = {}) {
-  const headers = body ? { 'Content-Type': 'application/json' } : {};
+  // A file goes as multipart, and the browser has to write that Content-Type
+  // itself because it carries the boundary. Setting JSON here, or stringifying
+  // the body, sends an upload as the text "{}".
+  const multipart = typeof FormData !== 'undefined' && body instanceof FormData;
+  const headers = body && !multipart ? { 'Content-Type': 'application/json' } : {};
   if (admin || auth) {
     const { data } = await supabase.auth.getSession();
     const token = data?.session?.access_token;
@@ -15,7 +19,7 @@ async function request(path, { method = 'GET', body, admin = false, auth = false
     method,
     credentials: 'include',
     headers,
-    body: body ? JSON.stringify(body) : undefined,
+    body: body ? (multipart ? body : JSON.stringify(body)) : undefined,
     signal: AbortSignal.timeout(timeoutMs),
   });
   const payload = await response.json().catch(() => ({}));
@@ -69,6 +73,19 @@ export const uploadPublication = (body) =>
 // to a manager: those are fifty 13F filers, and any company has a report.
 export const readAnnualReport = (body) =>
   request('/admin/annual-report', { method: 'POST', body, admin: true, timeoutMs: 300_000 });
+// The same questions, read from the PDF itself. A paste loses the page each
+// line sat on, and with it both the page number a reader checks a figure
+// against and the running header that separates a company's figures from its
+// group's. Reliance's operating cash flow is 79,059 crore on one page and
+// 1,92,113 on another, under the same words.
+export const readAnnualReportDocument = ({ file, company, revenueDefinition, store = false }) => {
+  const form = new FormData();
+  form.append('report', file);
+  if (company) form.append('company', company);
+  if (revenueDefinition) form.append('revenue_definition', revenueDefinition);
+  form.append('store', store ? 'true' : 'false');
+  return request('/admin/annual-report/document', { method: 'POST', body: form, admin: true, timeoutMs: 300_000 });
+};
 // The nine judgement questions. Separate from reading the report because it
 // costs nine model requests, and the other ninety-one answers are worth having
 // in front of a reader before any are spent.
