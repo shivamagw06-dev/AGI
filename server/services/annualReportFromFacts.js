@@ -138,7 +138,7 @@ export function periodEndsFor({ held = [], requested = [], limit = 6 } = {}) {
 export function answersFromFacts({
   periodEnds = [], facts = [], pages = [], document,
   company, reportedInDocument, purpose = 'as_management_reports', prefer = {},
-  accounting_scope = 'consolidated', currency, unit, questions = QUESTIONS,
+  accounting_scope = 'consolidated', currency, unit, month_end, questions = QUESTIONS,
 }) {
   const concepts = neededConcepts(questions);
   const ordered = [...periodEnds].sort((a, b) => String(b).localeCompare(String(a)));
@@ -151,6 +151,7 @@ export function answersFromFacts({
     const result = resolveConcepts({
       concepts, facts: known, pages, document, company, reportedInDocument,
       period_end, purpose, prefer, accounting_scope, currency, unit,
+      month_end: month_end || String(period_end).slice(5),
     });
     for (const fact of result.recovered) { known.push(fact); recovered.push(fact); }
     const built = periodFromResolutions(result.resolutions, { period_end, currency, unit });
@@ -166,7 +167,10 @@ export function answersFromFacts({
     const answer = answers.get(question.n) || null;
     const blocking = blockedBy(question, now);
     decorated.set(question.n, {
-      ...(answer || { value: null, formula: null, inputs: null, reason: 'no rule computes this yet' }),
+      // A missing formula is flagged rather than left to be read out of the
+      // reason's wording, because a question with every input resolved and no
+      // formula is a different gap from one whose inputs were never found.
+      ...(answer || { value: null, formula: null, inputs: null, reason: 'no rule computes this yet', no_rule: true }),
       // What each input was, where it came from, and what it cost to choose
       // it. A margin is worth little without knowing which revenue is under it.
       used: Object.fromEntries((question.needs || [])

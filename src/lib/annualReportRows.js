@@ -20,6 +20,8 @@ export const LABEL = {
   computed: 'computed',
   choose: 'choose a definition',
   not_looked_for: 'not looked for yet',
+  not_resolved: 'not resolved',
+  cannot_compute: 'cannot be computed',
   not_disclosed: 'searched, not disclosed',
   silent: 'the report is silent',
   no_rule: 'no rule written yet',
@@ -27,8 +29,8 @@ export const LABEL = {
   needs_data: 'needs statements',
 };
 
-export const ORDER = ['answered', 'computed', 'choose', 'not_looked_for', 'not_disclosed',
-  'needs_data', 'silent', 'no_rule', 'judgment'];
+export const ORDER = ['answered', 'computed', 'choose', 'not_looked_for', 'not_resolved',
+  'cannot_compute', 'not_disclosed', 'needs_data', 'silent', 'no_rule', 'judgment'];
 
 /**
  * Which blocker a row reports when several stopped it.
@@ -42,7 +44,11 @@ const PRECEDENCE = [
   (one) => one.status === 'needs_a_definition' && 'choose',
   (one) => one.status === 'no_fit' && 'choose',
   (one) => one.state === 'no_way_to_look' && 'not_looked_for',
-  (one) => one.state === 'not_asked_for' && 'not_looked_for',
+  // An input that was never resolved says nothing about whether anything knows
+  // where to find it. Reporting it as "nothing looks for cfo" was false on the
+  // first live upload: the search for cfo works, and no period had been
+  // resolved to run it against.
+  (one) => one.state === 'not_asked_for' && 'not_resolved',
   (one) => one.state === 'not_disclosed' && 'not_disclosed',
 ];
 
@@ -63,9 +69,8 @@ export function explain(blocker) {
     return `${name} is disclosed more than one way${choices ? ` (${choices})` : ''} - choose which`;
   }
   if (blocker.status === 'no_fit') return `${name} was found, but not on a basis this question can use`;
-  if (blocker.state === 'no_way_to_look' || blocker.state === 'not_asked_for') {
-    return `nothing looks for ${name} in a filing yet`;
-  }
+  if (blocker.state === 'no_way_to_look') return `nothing looks for ${name} in a filing yet`;
+  if (blocker.state === 'not_asked_for') return `${name} was not resolved for this period`;
   if (blocker.state === 'not_disclosed') return `searched for ${name}; the report does not disclose it`;
   return blocker.reason || null;
 }
@@ -87,11 +92,18 @@ export function citedPages(used) {
  * a figure is on.
  */
 export function rowsFor(result, judgements = null) {
+  // A reason that stopped the whole reading - no period could be resolved -
+  // is what every computed row reports. Deriving a separate cause per row
+  // from an empty resolution invents fifty-one explanations for one fact.
+  const wholesale = result?.computed?.reason || null;
   return (result?.questions || []).map((question) => {
     const computed = result?.computed?.answers?.[question.n] || null;
     const judged = (judgements?.judgements || []).find((entry) => entry.n === question.n) || null;
     if (question.kind === 'judgment') return { ...question, computed: null, judged };
     if (question.kind !== 'computed') return { ...question, computed: null, judged: null };
+    if (wholesale) {
+      return { ...question, status: 'not_resolved', computed, judged: null, explanation: wholesale };
+    }
     if (computed && computed.reason === null && computed.value !== null && computed.value !== undefined) {
       return { ...question, status: 'computed', computed, judged: null, pages: citedPages(computed.used) };
     }
@@ -99,6 +111,17 @@ export function rowsFor(result, judgements = null) {
       const { status, blocker } = statusOfBlocked(computed.blocked_by);
       return { ...question, status, computed, judged: null, explanation: explain(blocker) };
     }
+    // A reading from a document always says what blocked it, even when the
+    // answer is nothing. With every input resolved, what is left is the
+    // arithmetic: a formula nobody has written, or one that needs more years
+    // than the filing reports. Neither is a missing statement.
+    if (computed && 'blocked_by' in computed) {
+      return {
+        ...question, status: computed.no_rule ? 'no_rule' : 'cannot_compute',
+        computed, judged: null, explanation: computed.reason || null,
+      };
+    }
+    // Pasted text, which carries no provenance: the old reason, unchanged.
     return { ...question, status: 'needs_data', computed, judged: null, explanation: computed?.reason || null };
   });
 }

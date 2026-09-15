@@ -129,3 +129,15 @@ test('a year already held is not handed back as newly recovered', () => {
   }));
   assert.deepEqual(recovered.map((fact) => [fact.period_end, fact.value]), [['2025-03-31', 178703]]);
 });
+
+test('a figure lands on the year-end the document states', () => {
+  // CONSTRUCTED: a December filer. A search that assumed 31 March would put
+  // its operating cash flow under a period it does not report.
+  const december = 'Consolidated Financial Statements Company 1 2 ( in millions) 2025-26 2024-25 A. Cash Flow from Operating Activities Net Cash Flow from Operating Activities 5,000 4,000 B. Cash Flow';
+  const result = resolveConcept(ask({
+    concept: 'cfo', purpose: 'cash_basis', pages: [december], document: december,
+    period_end: '2026-12-31', month_end: '12-31',
+  }));
+  assert.equal(result.state, STATE.RECOVERED_FROM_DOCUMENT);
+  assert.equal(result.selection.chosen.period_end, '2026-12-31');
+});
