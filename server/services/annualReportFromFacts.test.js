@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { STATE } from './factResolution.js';
 import {
-  NEED_CONCEPTS, answersFromFacts, blockedBy, neededConcepts, periodFromResolutions,
+  NEED_CONCEPTS, answersFromFacts, blockedBy, neededConcepts, periodEndsFor, periodFromResolutions,
 } from './annualReportFromFacts.js';
 
 /** Pages verbatim from Reliance Industries' Integrated Annual Report 2025-26. */
@@ -115,4 +115,25 @@ test('the provenance on an answer is the current yearâ€™s, not the comparativeâ€
   assert.equal(answers.get(41).value, 192113);
   assert.equal(answers.get(41).used.operating_cash_flow.state, STATE.RECOVERED_FROM_DOCUMENT);
   assert.equal(answers.get(41).used.operating_cash_flow.source_page, 1);
+});
+
+test('periods are chosen newest first and bounded', () => {
+  // A filing carries ten years in its highlights table. Resolving all of them
+  // costs a search of the document per year for nothing a reader asked about,
+  // and a question about growth wants this year and last.
+  const held = ['2019-03-31', '2020-03-31', '2021-03-31', '2022-03-31',
+    '2023-03-31', '2024-03-31', '2025-03-31'].map((period_end) => ({ period_end }));
+  assert.deepEqual(periodEndsFor({ held, requested: ['2026-03-31'], limit: 3 }),
+    ['2026-03-31', '2025-03-31', '2024-03-31']);
+});
+
+test('a period asked for is kept even when nothing is stored', () => {
+  assert.deepEqual(periodEndsFor({ held: [], requested: ['2026-03-31'] }), ['2026-03-31']);
+  assert.deepEqual(periodEndsFor({ held: [], requested: ['', '  '] }), []);
+  assert.deepEqual(periodEndsFor(), []);
+});
+
+test('a period stored and asked for is not resolved twice', () => {
+  const held = [{ period_end: '2026-03-31' }, { period_end: '2026-03-31' }];
+  assert.deepEqual(periodEndsFor({ held, requested: ['2026-03-31'] }), ['2026-03-31']);
 });
