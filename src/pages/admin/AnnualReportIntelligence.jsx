@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { FileSearch, Loader2 } from 'lucide-react';
-import { judgeAnnualReport, readAnnualReport } from '@/lib/institutionalHoldingsApi';
+import { FileSearch, FileUp, Loader2 } from 'lucide-react';
+import { judgeAnnualReport, readAnnualReport, readAnnualReportDocument } from '@/lib/institutionalHoldingsApi';
+import { LABEL, ORDER, countRows, periodsLine, rowsFor } from '@/lib/annualReportRows';
 
 /**
  * An annual report, read against the hundred questions an underwriter asks.
@@ -12,22 +13,26 @@ import { judgeAnnualReport, readAnnualReport } from '@/lib/institutionalHoldings
  * Every row says how it was answered or why it was not, because most of them
  * are not answered from any one document and a blank row claims otherwise.
  */
-const LABEL = {
-  answered: 'from the report',
-  computed: 'from the statements',
-  silent: 'the report is silent',
-  no_rule: 'no rule written yet',
-  judgment: 'needs a reviewer',
-  needs_data: 'needs statements',
-};
 const TONE = {
   answered: 'text-emerald-300',
   computed: 'text-sky-300',
+  choose: 'text-violet-300',
+  not_looked_for: 'text-amber-300/80',
+  not_disclosed: 'text-slate-400',
   silent: 'text-slate-400',
   no_rule: 'text-slate-500',
   judgment: 'text-cyan-300/80',
   needs_data: 'text-amber-300/80',
 };
+
+// Reliance discloses revenue three ways and a margin cannot be computed until
+// one is named. The choice is the reader's; the page only says it is needed.
+const REVENUE_DEFINITIONS = [
+  ['', 'Revenue: ask me when it matters'],
+  ['REVENUE.OPERATIONS_NET', 'Revenue from operations, net of indirect taxes'],
+  ['REVENUE.TOTAL_INCOME', 'Total income'],
+  ['REVENUE.VALUE_OF_SALES_AND_SERVICES', 'Value of sales and services, gross'],
+];
 
 /** A computed figure, in the units the statements were reported in. */
 function figure(value) {
@@ -46,13 +51,20 @@ export default function AnnualReportIntelligence() {
   const [judging, setJudging] = useState(false);
   const [judgements, setJudgements] = useState(null);
   const [auto, setAuto] = useState(false);
+  const [file, setFile] = useState(null);
+  const [revenueDefinition, setRevenueDefinition] = useState('');
+  const [store, setStore] = useState(false);
 
   const read = async () => {
     setBusy(true);
     setError('');
     try {
       setJudgements(null);
-      setResult(await readAnnualReport({ text, ticker }));
+      // A file is read as pages, which is what keeps the page number on every
+      // figure and the company's figures apart from the group's.
+      setResult(file
+        ? { ...(await readAnnualReportDocument({ file, company: ticker, revenueDefinition, store })), fromFile: true }
+        : await readAnnualReport({ text, ticker }));
     } catch (err) {
       setError(err.message);
     } finally {
@@ -72,21 +84,12 @@ export default function AnnualReportIntelligence() {
     }
   };
 
-  // A computed question is answered when the arithmetic ran, and otherwise
-  // carries the reason - which names the line item that was missing, and is
-  // therefore the specification for what to load next.
-  const rows = (result?.questions || []).map((question) => {
-    const computed = result?.computed?.answers?.[question.n];
-    const judged = (judgements?.judgements || []).find((entry) => entry.n === question.n) || null;
-    if (question.kind === 'judgment') return { ...question, computed: null, judged };
-    if (question.kind !== 'computed') return { ...question, computed: null, judged: null };
-    if (computed && computed.reason === null) {
-      return { ...question, status: 'computed', computed, judged: null };
-    }
-    return { ...question, status: 'needs_data', computed: computed || null, judged: null };
-  });
-  const counts = rows.reduce((tally, row) => (
-    { ...tally, [row.status]: (tally[row.status] || 0) + 1 }), {});
+  // A computed question is answered when the arithmetic ran. Otherwise it
+  // carries what stopped it - a definition to choose, a figure nothing looks
+  // for yet, or a search that found nothing - rather than one word for all
+  // three.
+  const rows = rowsFor(result, judgements);
+  const counts = countRows(rows);
 
   return (
     <section className="rounded-2xl border border-cyan-400/20 bg-[#07151d] p-6 text-slate-100 shadow-xl">
@@ -95,14 +98,15 @@ export default function AnnualReportIntelligence() {
       </div>
       <h2 className="mt-2 text-2xl font-semibold">A hundred questions, against one report</h2>
       <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-400">
-        Paste an annual report. Every question is answered from a sentence in the document,
-        computed from statements already imported for the ticker, or marked with the reason it
-        cannot be answered. The text is read and discarded — nothing is stored.
+        Upload an annual report, or paste one. Every question is answered from a sentence in the
+        document, computed from figures read out of its statements, or marked with what stopped
+        it. A PDF keeps the page each figure came from; pasted text cannot. Nothing is stored
+        unless you ask.
       </p>
 
       <div className="mt-5 grid gap-3 sm:grid-cols-4">
         <label className="block">
-          <span className="text-[10px] font-bold uppercase tracking-[.16em] text-slate-400">Ticker (optional)</span>
+          <span className="text-[10px] font-bold uppercase tracking-[.16em] text-slate-400">Company or ticker</span>
           <input
             value={ticker}
             onChange={(event) => setTicker(event.target.value)}
@@ -116,15 +120,50 @@ export default function AnnualReportIntelligence() {
         </label>
       </div>
 
+      <div className="mt-4 flex flex-wrap items-end gap-3">
+        <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-cyan-400/30 bg-cyan-400/10 px-3 py-2 text-xs font-semibold text-cyan-200 hover:border-cyan-400/60">
+          <FileUp className="h-3.5 w-3.5" />
+          {file ? 'Choose a different PDF' : 'Upload the PDF'}
+          <input
+            type="file"
+            accept="application/pdf,.pdf"
+            className="sr-only"
+            onChange={(event) => { setFile(event.target.files?.[0] || null); setResult(null); }}
+          />
+        </label>
+        {file ? (
+          <span className="text-[11px] text-slate-300">
+            {`${file.name} · ${(file.size / 1024 / 1024).toFixed(1)} MB`}
+            <button type="button" onClick={() => { setFile(null); setResult(null); }} className="ml-2 text-slate-500 hover:text-slate-300">remove</button>
+          </span>
+        ) : null}
+        <label className="block">
+          <span className="sr-only">Which revenue</span>
+          <select
+            value={revenueDefinition}
+            onChange={(event) => setRevenueDefinition(event.target.value)}
+            className="rounded-lg border border-white/10 bg-[#0d222d] px-2.5 py-2 text-xs text-white outline-none focus:border-cyan-400"
+          >
+            {REVENUE_DEFINITIONS.map(([value, label]) => <option key={value || 'none'} value={value}>{label}</option>)}
+          </select>
+        </label>
+        <label className="inline-flex items-center gap-1.5 text-[11px] text-slate-300">
+          <input type="checkbox" checked={store} onChange={(event) => setStore(event.target.checked)} disabled={!file} className="h-3.5 w-3.5 accent-cyan-400" />
+          Save the figures read from the PDF
+        </label>
+      </div>
+
       <textarea
         value={text}
         onChange={(event) => { setText(event.target.value); setResult(null); }}
         rows={8}
-        placeholder="Paste the annual report here…"
+        disabled={Boolean(file)}
+        placeholder={file ? 'Reading the uploaded PDF instead of pasted text' : 'Or paste the annual report here…'}
         className="mt-3 w-full rounded-lg border border-white/10 bg-[#0d222d] p-3 font-mono text-[11px] leading-5 text-slate-200 outline-none placeholder:text-slate-600 focus:border-cyan-400"
       />
       <div className="mt-1.5 text-[10.5px] text-slate-500">
-        {text.length ? `${text.length.toLocaleString()} characters` : 'Nothing pasted yet'}
+        {file ? 'The PDF is used; pasted text is ignored while a file is chosen'
+          : text.length ? `${text.length.toLocaleString()} characters` : 'Nothing uploaded or pasted yet'}
       </div>
 
       {error ? (
@@ -134,7 +173,7 @@ export default function AnnualReportIntelligence() {
       <button
         type="button"
         onClick={read}
-        disabled={!text.trim() || busy}
+        disabled={(!file && !text.trim()) || busy}
         className="mt-3 inline-flex items-center gap-2 rounded-xl bg-cyan-300 px-5 py-2.5 text-sm font-bold text-slate-950 disabled:opacity-40"
       >
         {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileSearch className="h-4 w-4" />}
@@ -144,14 +183,20 @@ export default function AnnualReportIntelligence() {
       {result ? (
         <div className="mt-6">
           <div className="flex flex-wrap gap-x-5 gap-y-1 text-[11px]">
-            {['answered', 'computed', 'needs_data', 'silent', 'no_rule', 'judgment'].map((status) => (
+            {ORDER.filter((status) => counts[status]).map((status) => (
               <span key={status} className={TONE[status]}>
                 <span className="tabular-nums font-semibold">{counts[status] || 0}</span>{' '}
                 <span className="text-slate-500">{LABEL[status]}</span>
               </span>
             ))}
           </div>
-          <div className="mt-3 flex flex-wrap items-center gap-3">
+          {result.fromFile ? (
+            <div className="mt-3 text-[10.5px] text-slate-500">
+              {`Read from ${result.pages} pages. The judgement questions reason over pasted text and are not run for an uploaded file yet.`}
+              {result.computed?.written ? ` Saved ${result.computed.written.written} figures${result.computed.written.refused ? `, ${result.computed.written.refused} refused` : ''}.` : ''}
+            </div>
+          ) : null}
+          <div className={`mt-3 flex flex-wrap items-center gap-3 ${result.fromFile ? 'hidden' : ''}`}>
             <button
               type="button"
               onClick={runJudgements}
@@ -183,12 +228,8 @@ export default function AnnualReportIntelligence() {
           {result.computed?.reason ? (
             <div className="mt-2 text-[10.5px] text-amber-300/80">{result.computed.reason}</div>
           ) : null}
-          {result.computed?.periods ? (
-            <div className="mt-2 text-[10.5px] text-slate-500">
-              {`${result.computed.ticker}: ${result.computed.periods.periods} annual periods, `
-                + `${result.computed.periods.from} to ${result.computed.periods.to}, `
-                + result.computed.periods.units.join(', ')}
-            </div>
+          {periodsLine(result.computed) ? (
+            <div className="mt-2 text-[10.5px] text-slate-500">{periodsLine(result.computed)}</div>
           ) : null}
 
           <ol className="mt-4 space-y-2.5 border-t border-white/10 pt-4">
@@ -206,17 +247,21 @@ export default function AnnualReportIntelligence() {
                       {row.more ? <span className="text-slate-600">{` · ${row.more} more`}</span> : null}
                     </p>
                   ) : null}
-                  {row.computed && row.computed.reason === null ? (
+                  {row.status === 'computed' ? (
                     <p className="mt-0.5 text-[11px] leading-[1.55] text-sky-200/90">
                       <span className="font-semibold tabular-nums">{figure(row.computed.value)}</span>
                       {/* The formula is shown beside the figure so a reader can
                           check it rather than take it. */}
                       <span className="text-slate-500">{` — ${row.computed.formula}`}</span>
+                      {row.pages?.length ? (
+                        <span className="text-slate-600">{` · p${row.pages.join(', p')}`}</span>
+                      ) : null}
                     </p>
                   ) : null}
-                  {/* What it would take, never a blank. */}
-                  {row.computed && row.computed.reason ? (
-                    <p className="mt-0.5 text-[10.5px] text-slate-600">{row.computed.reason}</p>
+                  {/* What stopped it, never a blank - and never "not reported"
+                      about a figure nothing has looked for. */}
+                  {row.status !== 'computed' && row.explanation ? (
+                    <p className="mt-0.5 text-[10.5px] text-slate-600">{row.explanation}</p>
                   ) : null}
                   {!row.computed && !row.answer && row.needs ? (
                     <p className="mt-0.5 text-[10.5px] text-slate-600">{`needs ${row.needs.join(', ')}`}</p>
