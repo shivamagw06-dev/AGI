@@ -260,6 +260,9 @@ export default function AnnualReportIntelligence() {
                       ) : null}
                     </p>
                   ) : null}
+                  {row.status === 'computed' && row.definitions?.length ? (
+                    <p className="mt-0.5 text-[10px] leading-4 text-slate-600">{`using ${row.definitions.join('; ')}`}</p>
+                  ) : null}
                   {/* What stopped it, never a blank - and never "not reported"
                       about a figure nothing has looked for. */}
                   {row.status !== 'computed' && row.explanation ? (

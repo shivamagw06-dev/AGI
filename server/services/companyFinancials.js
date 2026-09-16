@@ -115,6 +115,15 @@ export function freeCashFlow(period) {
 
 /** Net debt, and the leverage an underwriter reads first. */
 export function netDebt(period) {
+  // A net debt the filing states is the filing's own netting, and it is taken
+  // over a reconstruction. Reliance nets cash and marketable securities of
+  // 2,49,704 crore against 3,74,421 of gross debt and states 1,24,717;
+  // subtracting cash and equivalents alone gives 2,28,444, which is a
+  // different definition wearing the same name. `stated` names the input that
+  // was read rather than computed, so what is cited is what was used.
+  if (has(period, 'net_debt')) {
+    return { ...figure(Number(period.net_debt), 'net_debt (as stated)', { net_debt: Number(period.net_debt) }), stated: ['net_debt'] };
+  }
   const absent = missing(period, ['gross_debt', 'cash']);
   if (absent.length) return refused(`${absent.join(' and ')} not reported`);
   const value = Number(period.gross_debt) - Number(period.cash);
@@ -129,8 +138,10 @@ export function netDebtToEbitda(period) {
   const ebitda = Number(period.ebitda);
   if (ebitda === 0) return refused('ebitda is zero');
   if (ebitda < 0) return refused('ebitda is negative, so leverage is not a multiple');
-  return figure(debt.value / ebitda, '(gross_debt - cash) / ebitda',
+  const result = figure(debt.value / ebitda,
+    debt.stated ? 'net_debt (as stated) / ebitda' : '(gross_debt - cash) / ebitda',
     { net_debt: debt.value, ebitda });
+  return debt.stated ? { ...result, stated: debt.stated } : result;
 }
 
 export function interestCover(period) {

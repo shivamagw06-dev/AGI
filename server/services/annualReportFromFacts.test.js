@@ -67,13 +67,13 @@ test('growth reads the periods newest first', () => {
 
 test('a blocked question says which input stopped it and what happened to it', () => {
   // "not reported", said about a filing that reports it, was the whole
-  // complaint. EBITDA is disclosed by Reliance and nothing knows where to look.
+  // complaint. EBIT is disclosed by Reliance and nothing knows where to look.
   const { answers } = answersFromFacts(ask({}));
-  const margin = answers.get(23);
+  const margin = answers.get(24);
   assert.equal(margin.value, null);
-  const [blocked] = margin.blocked_by.filter((one) => one.concept === 'ebitda');
+  const [blocked] = margin.blocked_by.filter((one) => one.concept === 'ebit');
   assert.equal(blocked.state, STATE.NO_WAY_TO_LOOK);
-  assert.match(blocked.reason, /nothing knows where ebitda is found/);
+  assert.match(blocked.reason, /nothing knows where ebit is found/);
 });
 
 test('a concept disclosed two ways blocks until the definition is named', () => {
@@ -136,4 +136,69 @@ test('a period asked for is kept even when nothing is stored', () => {
 test('a period stored and asked for is not resolved twice', () => {
   const held = [{ period_end: '2026-03-31' }, { period_end: '2026-03-31' }];
   assert.deepEqual(periodEndsFor({ held, requested: ['2026-03-31'] }), ['2026-03-31']);
+});
+
+// Page 125 of the same report: the capital management note.
+const GEARING = 'Consolidated Financial Statements Consolidated Financial Statements Reliance Industries Limited Integrated Annual Report 2025-26 246 247 Notes To the Consolidated Financial Statements The Net Gearing Ratio at the end of the reporting period was as follows: ( I in crore) As at 31 st March, 2026 As at 31 st March, 2025 Gross Debt 3,74,421 3,47,530 Cash and Marketable Securities * 2,49,704 2,30,447 Net Debt (A) 1,24,717 1,17,083 Equity attributable to Owners of the Company (B) 9,04,030 8,43,200';
+const BALANCE = 'Consolidated Financial Statements Reliance Industries Limited Integrated Annual Report 2025-26 196 197 ( I in crore) Notes As at 31 st March, 2026 As at 31 st March, 2025 Balance Sheet Assets Cash and Cash Equivalents 10 1,45,977 1,06,502';
+const withDebt = (over = {}) => ask({
+  pages: [...PAGES, GEARING, BALANCE], document: [...PAGES, GEARING, BALANCE].join('\n'), ...over,
+});
+
+test('gross debt is answered without asking which debt was meant', () => {
+  // Reliance discloses gross and net debt. Resolved by concept, that is two
+  // definitions and a question nobody asking for gross debt needs answered.
+  const { answers } = answersFromFacts(withDebt());
+  assert.equal(answers.get(61).value, 374421);
+  assert.equal(answers.get(61).used.gross_debt.definition_id, 'DEBT.GROSS');
+  assert.equal(answers.get(61).used.gross_debt.source_page, 3);
+});
+
+test('net debt is the filing’s, not a rebuild from the cash line', () => {
+  const { answers } = answersFromFacts(withDebt());
+  const net = answers.get(63);
+  assert.equal(net.value, 124717);
+  assert.equal(net.formula, 'net_debt (as stated)');
+  // What the answer used is what it cites. The cash line was never used.
+  assert.deepEqual(Object.keys(net.used), ['net_debt']);
+  assert.equal(net.used.net_debt.definition_id, 'DEBT.NET');
+});
+
+test('an answered question carries nothing blocking it', () => {
+  const { answers } = answersFromFacts(withDebt());
+  assert.equal(answers.get(63).blocked_by, null);
+});
+
+test('net debt is never written under the gross debt name', () => {
+  // CONSTRUCTED: a filing stating only net debt. By concept alone, the only
+  // debt figure would have been taken as gross debt.
+  const netOnly = GEARING.replace('Gross Debt 3,74,421 3,47,530 ', '');
+  const { answers, periods } = answersFromFacts(ask({ pages: [...PAGES, netOnly], document: [...PAGES, netOnly].join('\n') }));
+  assert.equal(periods[0].gross_debt, null);
+  assert.equal(periods[0].net_debt, 124717);
+  assert.equal(answers.get(61).value, null);
+  const [blocked] = answers.get(61).blocked_by;
+  assert.equal(blocked.state, STATE.NOT_DISCLOSED);
+  assert.match(blocked.reason, /DEBT\.GROSS was not found, though debt was/);
+});
+
+test('a question answered without a need does not report it as blocking', () => {
+  // Net debt is stated, so the answer never reaches for the cash line. With
+  // no balance sheet page here, cash is undisclosed - and saying so on an
+  // answered question describes a problem the answer does not have.
+  const pages = [...PAGES, GEARING];
+  const { answers } = answersFromFacts(ask({ pages, document: pages.join('\n') }));
+  assert.equal(answers.get(63).value, 124717);
+  assert.equal(answers.get(63).blocked_by, null);
+});
+
+test('a need that resolved is not listed among what blocked a question', () => {
+  // Leverage needs debt and EBITDA. These pages hold the debt and no ten-year
+  // table, so only EBITDA is missing - and a reader told gross debt was also
+  // missing would go looking for a figure that is on page 3.
+  const pages = [...PAGES, GEARING, BALANCE];
+  const { answers } = answersFromFacts(ask({ pages, document: pages.join('\n') }));
+  const leverage = answers.get(64);
+  assert.equal(leverage.value, null);
+  assert.deepEqual(leverage.blocked_by.map((one) => one.concept), ['ebitda']);
 });

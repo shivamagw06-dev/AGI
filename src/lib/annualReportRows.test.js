@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  LABEL, ORDER, citedPages, countRows, explain, periodsLine, rowsFor, statusOfBlocked,
+  LABEL, ORDER, citedPages, countRows, explain, periodsLine, rowsFor, statusOfBlocked, usedDefinitions,
 } from './annualReportRows.js';
 
 const question = (n, kind = 'computed') => ({ n, ask: `question ${n}`, kind, needs: [] });
@@ -150,4 +150,17 @@ test('every input resolved and too few years is a refusal, not a missing stateme
   });
   assert.equal(row.status, 'cannot_compute');
   assert.match(row.explanation, /four annual periods/);
+});
+
+test('an answer says which definitions it was taken under', () => {
+  // Q31 asks for reported EBITDA and is answered from a table footnoted
+  // "before exceptional items". The same figure this year, not in a year with
+  // an exceptional charge - so the answer says which it is.
+  const [row] = rowsFor({
+    questions: [question(31)],
+    computed: { answers: { 31: { value: 207911, formula: 'ebitda', reason: null, blocked_by: null,
+      used: { ebitda: { definition_id: 'EBITDA.BEFORE_EXCEPTIONAL', label: 'EBITDA before exceptional items', source_page: 5 } } } } },
+  });
+  assert.deepEqual(row.definitions, ['EBITDA before exceptional items']);
+  assert.deepEqual(usedDefinitions({ a: { label: 'x' }, b: { label: 'x' }, c: null }), ['x']);
 });

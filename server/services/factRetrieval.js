@@ -24,8 +24,8 @@
  * and the line must appear in the document.
  */
 import { DEFINITIONS } from './factOntology.js';
-import { mapSections } from './documentSections.js';
-import { splitRows } from './tableColumns.js';
+import { columnPlan, mapSections } from './documentSections.js';
+import { alignRow, splitRows } from './tableColumns.js';
 
 /**
  * Where each definition is found and what it is called.
@@ -61,6 +61,22 @@ export const TARGETS = new Map([
   ['REVENUE.OPERATIONS_NET', { kind: 'statements', statement: /Statement of Profit and Loss/i, patterns: [/\bRevenue [Ff]rom Operations\b/] }],
   ['REVENUE.TOTAL_INCOME', { kind: 'statements', statement: /Statement of Profit and Loss/i, patterns: [/\bTotal Income\b/] }],
   ['CASH.AND_EQUIVALENTS', { kind: 'statements', statement: /Balance Sheet/i, patterns: [/\bCash and Cash Equivalents\b/] }],
+  // Debt is not a line on Reliance's balance sheet - borrowings are split into
+  // current and non-current. It is stated whole in the capital management
+  // note, "Gross Debt 3,74,421 / Net Debt 1,24,717", in a table with its own
+  // column header rather than one at the top of the page. The standalone
+  // company's version of the same table sits on another page with 2,31,381.
+  ['DEBT.GROSS', { kind: 'statements', patterns: [/\bGross\s+Debt\b/gi] }],
+  ['DEBT.NET', { kind: 'statements', patterns: [/\bNet\s+Debt\b/gi] }],
+  // EBITDA is not a statutory line at all, so no statement page carries it.
+  // The group figure in a table is the ten-year highlights, whose title says
+  // "(Consolidated)" - scope read from the table, because the page it sits on
+  // is management discussion and declares none. The row is footnoted "before
+  // exceptional items", which is the definition it is taken under.
+  ['EBITDA.BEFORE_EXCEPTIONAL', {
+    table: /10-Year\s+Financial\s+Highlights\s*\(\s*(Consolidated|Standalone)\s*\)/i,
+    patterns: [/Earnings\s+Before\s+Depreciation,?\s+Finance\s+Costs?\s+and\s+Tax\s+Expenses\s*\(EBITDA\)/i],
+  }],
   ['INVENTORIES.TOTAL', { kind: 'statements', statement: /Balance Sheet/i, patterns: [/\bInventories\b/] }],
   ['RECEIVABLES.TRADE', { kind: 'statements', statement: /Balance Sheet/i, patterns: [/\bTrade Receivables\b/] }],
   ['PAYABLES.TRADE', { kind: 'statements', statement: /Balance Sheet/i, patterns: [/\bTrade Payables\b/] }],
@@ -108,6 +124,87 @@ export function figuresOf(row, years) {
  * rather than guessed at, and every candidate says which page and which line
  * it came from so the reading can be checked by hand.
  */
+const collapse = (text) => String(text ?? '').replace(/\s+/g, ' ');
+const everywhere = (pattern) => new RegExp(pattern.source, pattern.flags.includes('g') ? pattern.flags : `${pattern.flags}g`);
+
+/** How far back from a row its own table's column header can be. */
+const LOOKBACK = 700;
+
+/**
+ * The column header of the table a row sits in, when the page has none.
+ *
+ * A notes page is headed with the note's title, not with years, and each table
+ * on it brings its own - "( ₹ in crore) As at 31st March, 2026 As at 31st
+ * March, 2025" - immediately above its rows. The nearest such header before a
+ * row is that row's, provided nothing between them reads as prose: a sentence
+ * ending and another beginning means the header belongs to something else.
+ */
+export function localPlan(page, rowAt) {
+  const from = Math.max(0, rowAt - LOOKBACK);
+  const window = page.slice(from, rowAt);
+  const marks = [...window.matchAll(/As\s+(?:at|of)\b[^,]{0,30},?\s*\d{4}|\b\d{4}\s*-\s*\d{2}(?!\d)/gi)];
+  if (!marks.length) return { years: [], notes: false, cells: 0 };
+  // The header is the last run of year marks, each close to the next.
+  let first = marks.length - 1;
+  while (first > 0 && marks[first].index - (marks[first - 1].index + marks[first - 1][0].length) < 40) first -= 1;
+  const header = window.slice(Math.max(0, marks[first].index - 40), marks[marks.length - 1].index + marks[marks.length - 1][0].length);
+  const between = window.slice(marks[marks.length - 1].index + marks[marks.length - 1][0].length);
+  if (/[a-z]{3,}\.\s+[A-Z][a-z]/.test(between)) return { years: [], notes: false, cells: 0 };
+  return columnPlan(header, { header: Infinity });
+}
+
+/**
+ * A table that names its own scope in its title.
+ *
+ * Reliance's ten-year highlights sit on a management discussion page, which
+ * declares no scope, under the title "10-Year Financial Highlights
+ * (Consolidated)". The title is the only place the scope is said, so it is
+ * where it is read from - and a table titled for the other scope is skipped
+ * rather than taken for want of anything better.
+ */
+function fromTitledTable({ pages, target, definition, definition_id, accounting_scope, currency, unit, period_type, month_end }) {
+  const candidates = [];
+  const lookedAt = [];
+  for (const [at, raw] of pages.entries()) {
+    const page = collapse(raw);
+    const title = page.match(target.table);
+    if (!title || title[1].toLowerCase() !== accounting_scope) continue;
+    const region = page.slice(title.index + title[0].length);
+    const years = [...region.matchAll(/FY\s*\d{4}\s*-\s*\d{2}(?!\d)/g)];
+    if (!years.length) continue;
+    let last = 0;
+    while (last + 1 < years.length && years[last + 1].index - (years[last].index + years[last][0].length) < 20) last += 1;
+    const headerEnd = years[last].index + years[last][0].length;
+    const header = region.slice(0, headerEnd);
+    const row = splitRows(region.slice(headerEnd)).find((one) => target.patterns.some((pattern) => pattern.test(one.label)));
+    lookedAt.push({ page: at + 1, matched: row ? row.label : null });
+    if (!row) continue;
+    const aligned = alignRow(header, row.text);
+    if (aligned.problem) continue;
+    for (const cell of aligned.cells) {
+      if (cell.ends_in === null || cell.value === null) continue;
+      candidates.push({
+        concept: definition.concept, definition_id, measurement_basis: definition.measurement,
+        value: Math.abs(cell.value), period_end: `${cell.ends_in}-${month_end}`, period_type,
+        accounting_scope, entity_scope: 'group', currency, unit,
+        as_reported_label: aligned.label, source_section: title[0], source_page: at + 1,
+        source_sentence: row.text,
+      });
+    }
+    break;
+  }
+  return { candidates, looked_at: lookedAt, reason: candidates.length ? null : 'no titled table held the line' };
+}
+
+/**
+ * Candidate facts for one definition, from the pages that can hold it.
+ *
+ * Every occurrence of a label on a page is tried until one reads as a row,
+ * not only the first: a notes page can say "gross debt" in a sentence before
+ * it tabulates it, and stopping at the sentence missed the table. A row whose
+ * cell count does not match its columns is skipped rather than guessed at, and
+ * every candidate says which page and line it came from.
+ */
 export function findCandidates({
   pages, definition_id, accounting_scope = 'consolidated',
   currency, unit, period_type = 'annual', month_end = '03-31',
@@ -115,47 +212,57 @@ export function findCandidates({
   const target = TARGETS.get(definition_id);
   const definition = DEFINITIONS.get(definition_id);
   if (!target || !definition) return { candidates: [], looked_at: [], reason: `no retrieval target for ${definition_id}` };
+  if (target.table) {
+    return fromTitledTable({ pages, target, definition, definition_id, accounting_scope, currency, unit, period_type, month_end });
+  }
 
   const sections = mapSections(pages);
   const eligible = sections.filter((entry) => entry.scope === accounting_scope
-    && entry.kind === target.kind && entry.years.length
-    && (!target.statement || target.statement.test(String(pages[entry.page - 1] ?? '').replace(/\s+/g, ' '))));
+    && entry.kind === target.kind
+    && (!target.statement || target.statement.test(collapse(pages[entry.page - 1]))));
 
   const candidates = [];
   const lookedAt = [];
   for (const entry of eligible) {
-    const page = String(pages[entry.page - 1] ?? '').replace(/\s+/g, ' ');
+    const page = collapse(pages[entry.page - 1]);
+    let taken = false;
     for (const pattern of target.patterns) {
-      const found = page.match(pattern);
-      if (!found) continue;
-      lookedAt.push({ page: entry.page, matched: found[0].trim() });
-      const [row] = splitRows(page.slice(found.index, found.index + ROW));
-      const figures = figuresOf(row, entry.years.length);
-      if (!figures) continue;
-      for (const [at, year] of entry.years.entries()) {
-        const value = figures[at];
-        if (value === null || value === undefined) continue;
-        candidates.push({
-          concept: definition.concept,
-          definition_id,
-          measurement_basis: definition.measurement,
-          // A statement writes an outflow in brackets. The store holds the
-          // magnitude, as the importer does, so a capex of 1,22,916 is 1,22,916
-          // whichever side of the cash flow statement it sits on.
-          value: Math.abs(value),
-          period_end: `${year}-${month_end}`,
-          period_type,
-          accounting_scope,
-          entity_scope: 'group',
-          currency,
-          unit,
-          as_reported_label: row.label,
-          source_section: `${accounting_scope} ${target.kind}`,
-          source_page: entry.page,
-          source_sentence: row.text,
-        });
+      for (const found of page.matchAll(everywhere(pattern))) {
+        // The page's own column header if it has one; otherwise the header of
+        // the table this row sits in.
+        const plan = entry.years.length ? entry : localPlan(page, found.index);
+        lookedAt.push({ page: entry.page, matched: found[0].trim() });
+        if (!plan.years.length) continue;
+        const [row] = splitRows(page.slice(found.index, found.index + ROW));
+        const figures = figuresOf(row, plan.years.length);
+        if (!figures) continue;
+        for (const [at, year] of plan.years.entries()) {
+          const value = figures[at];
+          if (value === null || value === undefined) continue;
+          candidates.push({
+            concept: definition.concept,
+            definition_id,
+            measurement_basis: definition.measurement,
+            // A statement writes an outflow in brackets. The store holds the
+            // magnitude, as the importer does, so a capex of 1,22,916 is 1,22,916
+            // whichever side of the cash flow statement it sits on.
+            value: Math.abs(value),
+            period_end: `${year}-${month_end}`,
+            period_type,
+            accounting_scope,
+            entity_scope: 'group',
+            currency,
+            unit,
+            as_reported_label: row.label,
+            source_section: `${accounting_scope} ${target.kind}`,
+            source_page: entry.page,
+            source_sentence: row.text,
+          });
+        }
+        taken = true;
+        break;
       }
-      break;
+      if (taken) break;
     }
   }
   return { candidates, looked_at: lookedAt, reason: candidates.length ? null : 'no line matched in the pages searched' };
