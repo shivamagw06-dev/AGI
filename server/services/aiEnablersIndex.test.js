@@ -248,3 +248,40 @@ test('equal weighting is unaffected by missing float', () => {
   assert.equal(index.status, 'ok');
   assert.equal(index.return_pp, 20);
 });
+
+test('a member trading ex-bonus is excluded, not counted as a 50% loss', () => {
+  // The failure this guards: a one-for-one bonus halves the quote, and
+  // against an unadjusted previous close the member reports -50%. The
+  // residual check does not catch it, because the wrong return flows into the
+  // contribution and the index return identically and they still reconcile.
+  const members = [
+    { symbol: 'AAA', layer: 'power', subLayers: ['equipment'] },
+    { symbol: 'BBB', layer: 'power', subLayers: ['equipment'] },
+  ];
+  const quotes = {
+    AAA: { ltp: 110, previousClose: 100, at: NOW },
+    BBB: { ltp: 50, previousClose: 100, at: NOW, priceBreak: true, priceBreakReason: 'DILUTIVE_ACTION_ON_OR_NEAR_EX_DATE' },
+  };
+  const result = priced(members, quotes, { now: NOW, staleMs: 60_000 });
+  assert.equal(result.live.length, 1);
+  assert.deepEqual(result.priceBreak, [{ symbol: 'BBB', reason: 'DILUTIVE_ACTION_ON_OR_NEAR_EX_DATE' }]);
+  assert.equal(result.coverage, 0.5);
+});
+
+test('the residual would not have caught it, which is why the flag exists', () => {
+  // Demonstrated rather than asserted in prose: with the flag absent, the
+  // fabricated -50% is included and everything still reconciles perfectly.
+  const universe = { members: [
+    { symbol: 'AAA', layer: 'power', subLayers: ['equipment'] },
+    { symbol: 'BBB', layer: 'power', subLayers: ['equipment'] },
+  ] };
+  const quotes = {
+    AAA: { ltp: 110, previousClose: 100, at: NOW },
+    BBB: { ltp: 50, previousClose: 100, at: NOW },   // no flag
+  };
+  const index = computeIndex(universe, quotes, { now: NOW, construction: 'equal' });
+  assert.equal(index.status, 'ok');
+  assert.equal(index.return_pp, -20);        // (+10 - 50) / 2, a fiction
+  assert.equal(index.residual_ok, true);     // and it reconciles
+  assert.equal(index.subLayerResidual_ok, true);
+});
