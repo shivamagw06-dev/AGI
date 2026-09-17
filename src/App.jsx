@@ -64,6 +64,7 @@ const EquityResearchPage = React.lazy(() => import('@/pages/EquityResearchPage')
 const IndiaStockIntelligencePage = React.lazy(() => import('@/pages/IndiaStockIntelligencePage'));
 const InstitutionalHoldingsPage = React.lazy(() => import('@/pages/InstitutionalHoldingsPage'));
 const IndexRebalancePage = React.lazy(() => import('@/pages/IndexRebalancePage'));
+const IndiaAiIntelligencePage = React.lazy(() => import('@/pages/IndiaAiIntelligencePage'));
 const BacktestPage = React.lazy(() => import('@/pages/BacktestPage'));
 const HedgeFundDesk = React.lazy(() => import('@/pages/HedgeFundDesk'));
 const HedgeFundPage = React.lazy(() => import('@/pages/HedgeFundPage'));
@@ -203,6 +204,7 @@ function PublicRoutes() {
       <Route path="/equity-research" element={<EquityResearchPage />} />
       <Route path="/india-stock-intelligence" element={<IndiaStockIntelligencePage />} />
       <Route path="/index-rebalance" element={<IndexRebalancePage />} />
+      <Route path="/india-ai" element={<IndiaAiIntelligencePage />} />
       <Route path="/manager-backtest" element={<BacktestPage />} />
       <Route path="/institutional-holdings" element={<InstitutionalHoldingsPage />} />
       <Route path="/institutional-holdings/funds/:fundSlug" element={<InstitutionalHoldingsPage />} />
