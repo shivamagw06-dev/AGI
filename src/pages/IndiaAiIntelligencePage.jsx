@@ -65,15 +65,88 @@ function useIstClock() {
   return { date, time };
 }
 
-function Panel({ title, note, action, children, className = '' }) {
+/**
+ * The state of the product in one line.
+ *
+ * Everything above this was prose. A visitor needs to know what the basket
+ * is, what it refused, and whether it is priced, before deciding whether to
+ * read further.
+ */
+function StatusStrip({ universe, live }) {
+  const members = universe?.members || [];
+  const filings = members.reduce((sum, one) => sum + (one.admittedOn?.length || 0), 0);
+  const filled = new Set(members.flatMap((m) => (m.subLayers || []).map((sl) => `${m.layer}/${sl}`)));
+  const priced = live?.index?.status === 'ok';
+  const items = [
+    [String(members.length), 'admitted'],
+    [String(universe?.candidates?.length || 0), 'refused'],
+    [String(ALL_SUBS.length - filled.size), 'empty layers'],
+    [String(filings), 'supporting filings'],
+  ];
   return (
-    <section className={`rounded-md border border-[#1e2634] bg-[#0c1017] ${className}`}>
-      <header className="flex items-baseline gap-2 border-b border-[#1a2230] px-3 py-2">
-        <h3 className="text-[12px] font-semibold text-[#e3e8ef]">{title}</h3>
-        {note ? <span className="text-[10px] text-[#68727f]">{note}</span> : null}
-        {action ? <span className="ml-auto text-[10px] text-[#5aa2e0]">{action}</span> : null}
+    <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 rounded-md border border-[#1e2634] bg-[#0c1017] px-3.5 py-2.5">
+      {items.map(([value, label], i) => (
+        <React.Fragment key={label}>
+          {i > 0 ? <span className="text-[#2c3542]" aria-hidden>·</span> : null}
+          <span className="text-[13px] text-[#8b95a3]">
+            <span className="font-semibold tabular-nums text-[#e3e8ef]">{value}</span> {label}
+          </span>
+        </React.Fragment>
+      ))}
+      <span className="text-[#2c3542]" aria-hidden>·</span>
+      <span className="flex items-center gap-1.5 text-[13px]">
+        <span className={`h-1.5 w-1.5 rounded-full ${priced ? 'bg-[#4ade80]' : 'bg-[#4b5563]'}`} />
+        <span className={priced ? 'text-[#4ade80]' : 'text-[#8b95a3]'}>
+          {priced ? 'Live pricing active' : 'Live pricing pending'}
+        </span>
+      </span>
+    </div>
+  );
+}
+
+/**
+ * Jump links, for sections that exist.
+ *
+ * No "Risks" entry: there is no risk register on this page, and a selector
+ * that scrolls nowhere is the same defect as a nav link that goes nowhere.
+ */
+const SECTIONS = [
+  ['overview', 'Overview'],
+  ['universe', 'Universe'],
+  ['orders', 'Orders'],
+  ['capacity', 'Capacity'],
+  ['layers', 'Empty layers'],
+  ['refused', 'Refused'],
+];
+
+function SectionNav() {
+  return (
+    <nav aria-label="Sections" className="sticky top-[46px] z-20 -mx-4 mb-3 border-b border-[#1a2230] bg-[#080b11]/95 px-4 py-2 backdrop-blur">
+      <ul className="flex flex-wrap gap-x-4 gap-y-1">
+        {SECTIONS.map(([id, label]) => (
+          <li key={id}>
+            <a
+              href={`#${id}`}
+              className="rounded text-[12px] text-[#8b95a3] hover:text-[#e3e8ef] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e8833a]"
+            >
+              {label}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  );
+}
+
+function Panel({ id, title, note, action, children, className = '' }) {
+  return (
+    <section id={id} className={`rounded-md border border-[#1e2634] bg-[#0c1017] ${className}`}>
+      <header className="flex items-baseline gap-2 border-b border-[#1a2230] px-3.5 py-2.5">
+        <h3 className="text-[13px] font-semibold tracking-tight text-[#f1f5f9]">{title}</h3>
+        {note ? <span className="text-[11px] text-[#7d8894]">{note}</span> : null}
+        {action ? <span className="ml-auto text-[11px] text-[#8fb4d8]">{action}</span> : null}
       </header>
-      <div className="p-3">{children}</div>
+      <div className="p-3.5">{children}</div>
     </section>
   );
 }
@@ -89,7 +162,7 @@ function Needed({ what, source }) {
     <div className="flex min-h-[86px] flex-col justify-center gap-1.5 rounded border border-dashed border-[#26303f] px-3 py-3">
       <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#b38b4d]">Source not connected</p>
       <p className="text-[11px] leading-relaxed text-[#8b95a3]">{what}</p>
-      <p className="text-[10px] text-[#68727f]">Needs: {source}</p>
+      <p className="text-[11px] text-[#7d8894]">Needs: {source}</p>
     </div>
   );
 }
@@ -136,7 +209,7 @@ function IndexedChart({ snapshots }) {
   if (points.length < 2) {
     return (
       <div className="flex min-h-[210px] flex-col items-start justify-center gap-2 px-4">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#b38b4d]">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#7d8894]">
           Index history starts here
         </p>
         <p className="max-w-lg text-[12px] leading-relaxed text-[#8b95a3]">
@@ -214,7 +287,7 @@ function ExecutiveSummary({ universe }) {
       <p className="mb-3 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#68727f]">Executive summary</p>
       <div className="grid gap-x-6 gap-y-3 sm:grid-cols-2 lg:grid-cols-3">
         {items.map((one) => (
-          <div key={one.k} className="border-l border-[#e8833a]/40 pl-3">
+          <div key={one.k} className="border-l-2 border-[#2c3542] pl-3">
             <p className="text-[11px] font-semibold text-[#e3e8ef]">{one.k}</p>
             <p className="mt-1 text-[11px] leading-relaxed text-[#8b95a3]">{one.v}</p>
           </div>
@@ -242,10 +315,10 @@ function KeyTakeaways({ universe, live }) {
       <div className="space-y-3">
         {rows.map((one) => (
           <div key={one.k} className="flex items-baseline gap-3">
-            <span className="w-20 shrink-0 text-[20px] font-semibold tabular-nums text-[#e8833a]">{one.v}</span>
+            <span className="w-20 shrink-0 text-[22px] font-semibold tabular-nums text-[#f1f5f9]">{one.v}</span>
             <span>
               <span className="block text-[11px] font-semibold text-[#e3e8ef]">{one.k}</span>
-              <span className="block text-[10px] text-[#68727f]">{one.s}</span>
+              <span className="block text-[11px] text-[#7d8894]">{one.s}</span>
             </span>
           </div>
         ))}
@@ -272,7 +345,7 @@ function LayerCards({ universe }) {
         return (
           <div key={layer.id} className="rounded-md border border-[#1e2634] bg-[#0c1017] p-4">
             <h4 className="text-[13px] font-semibold text-[#e3e8ef]">{LAYER_LABEL[layer.id]}</h4>
-            <p className="mt-1 text-[10px] text-[#68727f]">
+            <p className="mt-1 text-[11px] text-[#7d8894]">
               {inLayer.length} admitted · {[...new Set(inLayer.flatMap((one) => one.subLayers || []))].map((s) => SUB_LABEL[s] || s).join(', ') || 'none'}
             </p>
             <p className="mt-2 text-[11px] leading-relaxed text-[#8b95a3]">{layer.thesis}</p>
@@ -303,7 +376,7 @@ function BasketPanel({ live }) {
           {index?.reason || 'The basket has not been computed yet.'}
         </p>
         {index?.missing?.length ? (
-          <p className="mt-1.5 font-mono text-[10px] text-[#68727f]">{index.missing.join(' · ')}</p>
+          <p className="mt-1.5 font-mono text-[11px] text-[#7d8894]">{index.missing.join(' · ')}</p>
         ) : null}
       </Panel>
     );
@@ -322,8 +395,8 @@ function BasketPanel({ live }) {
           ['Live', `${q?.live ?? 0}/${index.total}`, q?.live === index.total ? 'text-[#4ade80]' : 'text-[#d9a94a]'],
         ].map(([label, value, cls]) => (
           <div key={label}>
-            <p className="text-[9px] uppercase tracking-wider text-[#68727f]">{label}</p>
-            <p className={`mt-0.5 text-[15px] font-semibold tabular-nums ${cls}`}>{value}</p>
+            <p className="text-[10px] uppercase tracking-wider text-[#7d8894]">{label}</p>
+            <p className={`mt-0.5 text-[17px] font-semibold tabular-nums ${cls}`}>{value}</p>
           </div>
         ))}
       </div>
@@ -352,7 +425,7 @@ function LayerAttribution({ live }) {
         {rows.map((row) => (
           <div key={row.layer}>
             <div className="flex items-baseline justify-between">
-              <span className="text-[11px] text-[#c7cfda]">{LAYER_LABEL[row.layer] || row.layer}</span>
+              <span className="text-[12px] text-[#d3dae3]">{LAYER_LABEL[row.layer] || row.layer}</span>
               <span className={`font-mono text-[11px] tabular-nums ${upDown(row.contribution_pp)}`}>{pp(row.contribution_pp)}</span>
             </div>
             <div className="mt-1 h-[3px] rounded bg-[#1a2230]">
@@ -363,7 +436,7 @@ function LayerAttribution({ live }) {
             </div>
             <div className="mt-1 flex flex-wrap gap-x-3">
               {subs.filter((one) => one.subLayer.startsWith(`${row.layer}/`)).map((one) => (
-                <span key={one.subLayer} className="text-[9px] text-[#68727f]">
+                <span key={one.subLayer} className="text-[10px] text-[#7d8894]">
                   {SUB_LABEL[one.subLayer.split('/')[1]] || one.subLayer}
                   <span className={`ml-1 font-mono ${upDown(one.contribution_pp)}`}>{pp(one.contribution_pp)}</span>
                 </span>
@@ -396,7 +469,7 @@ function OrderFeed({ universe }) {
     .sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')));
   const [open, setOpen] = React.useState(null);
   return (
-    <Panel title="Order announcements" note={`${rows.length} cited filings · newest first`}>
+    <Panel id="orders" title="Order announcements" note={`${rows.length} cited filings · newest first`}>
       <div className="max-h-[260px] space-y-0.5 overflow-y-auto">
         {rows.map((row, i) => (
           <div key={i}>
@@ -405,15 +478,17 @@ function OrderFeed({ universe }) {
               onClick={() => setOpen(open === i ? null : i)}
               className="flex w-full items-start gap-2 rounded px-1 py-1.5 text-left hover:bg-[#141b26]"
             >
-              <span className="w-[62px] shrink-0 font-mono text-[10px] text-[#68727f]">{row.date || '—'}</span>
-              <span className="w-[74px] shrink-0 font-mono text-[10px] text-[#c7cfda]">{row.symbol}</span>
-              <span className="min-w-0 flex-1 truncate text-[10px] text-[#8b95a3]">{row.document}</span>
-              <Badge tone={row.kind === 'order' ? 'green' : row.kind === 'capex' ? 'blue' : 'neutral'}>
-                {KIND_LABEL[row.kind] || row.kind}
-              </Badge>
+              <span className="w-[68px] shrink-0 whitespace-nowrap font-mono text-[11px] text-[#7d8894]">{row.date || '—'}</span>
+              <span className="w-[86px] shrink-0 truncate font-mono text-[12px] text-[#d3dae3]">{row.symbol}</span>
+              <span className="hidden min-w-0 flex-1 truncate text-[11px] text-[#9aa5b3] sm:block">{row.document}</span>
+              <span className="ml-auto shrink-0 sm:ml-0">
+                <Badge tone={row.kind === 'order' ? 'green' : row.kind === 'capex' ? 'blue' : 'neutral'}>
+                  {KIND_LABEL[row.kind] || row.kind}
+                </Badge>
+              </span>
             </button>
             {open === i ? (
-              <p className="mx-1 mb-1.5 border-l-2 border-[#e8833a]/50 bg-[#0a0e14] px-3 py-2 text-[11px] leading-relaxed text-[#c7cfda]">
+              <p className="mx-1 mb-1.5 border-l-2 border-[#2f5d3f] bg-[#0a0e14] px-3 py-2 text-[11px] leading-relaxed text-[#c7cfda]">
                 &ldquo;{row.excerpt}&rdquo;
               </p>
             ) : null}
@@ -450,23 +525,130 @@ function CapacityDisclosed({ universe }) {
     );
   }
   return (
-    <Panel title="Capacity disclosed" note="megawatts, as filed">
+    <Panel id="capacity" title="Capacity disclosed" note="megawatts, as filed">
       <div className="space-y-2">
         {rows.map((row, i) => (
           <div key={i} className="border-b border-[#1a2230] pb-2 last:border-0 last:pb-0">
             <p className="flex items-baseline gap-2">
-              <span className="font-mono text-[10px] text-[#c7cfda]">{row.symbol}</span>
-              <span className="text-[9px] text-[#68727f]">{row.date} · {row.document}</span>
+              <span className="font-mono text-[12px] text-[#d3dae3]">{row.symbol}</span>
+              <span className="text-[10px] text-[#7d8894]">{row.date} · {row.document}</span>
             </p>
-            <p className="mt-0.5 text-[10px] leading-relaxed text-[#8b95a3]">&ldquo;{row.excerpt}&rdquo;</p>
+            <p className="mt-0.5 text-[11px] leading-relaxed text-[#9aa5b3]">&ldquo;{row.excerpt}&rdquo;</p>
           </div>
         ))}
       </div>
-      <p className="mt-2 border-t border-[#1a2230] pt-2 text-[9px] leading-relaxed text-[#68727f]">
+      <p className="mt-2 border-t border-[#1a2230] pt-2 text-[10px] leading-relaxed text-[#7d8894]">
         Only what members disclosed. Not a project register — AGI does not maintain one, and
         rows it had not sourced would be the easiest thing here to believe.
       </p>
     </Panel>
+  );
+}
+
+/**
+ * Why this company is here.
+ *
+ * The terminal rewrite of this page lost the per-company evidence expansion
+ * the earlier version had: evidence survived only aggregated in the order
+ * feed, never attributable to a company a reader clicks. That is the single
+ * thing this basket has that a thematic list does not, so it is restored here
+ * and stated in full - the evidence class, whether the source is the company
+ * itself, the exact document and page, the excerpt, and why it is sufficient.
+ *
+ * "Why this is enough" is written from the classification rather than typed
+ * per company, so it cannot drift from the rule that actually admitted them.
+ */
+const HARD_KINDS = new Set(['order', 'capex', 'operating']);
+
+const SUFFICIENCY = {
+  order: 'A signed order is a commitment by a counterparty, disclosed by the company, for work it has won.',
+  capex: 'Committed or incurred capex is money the company reports having spent or contracted to spend.',
+  operating: 'An operating disclosure is a figure from a completed period: revenue, capacity or an order book.',
+};
+
+function MemberEvidence({ member }) {
+  const [open, setOpen] = React.useState(false);
+  const evidence = member.admittedOn || [];
+  const hard = evidence.filter((one) => HARD_KINDS.has(one.kind));
+  const panelId = `evidence-${member.symbol}`;
+  return (
+    <div className="border-b border-[#1a2230] last:border-0">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+        aria-controls={panelId}
+        className="flex w-full items-center gap-3 px-1 py-2.5 text-left hover:bg-[#141b26] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#e8833a]"
+      >
+        <span className="w-4 shrink-0 text-center text-[12px] text-[#5b6675]" aria-hidden>{open ? '\u2212' : '+'}</span>
+        <span className="w-[96px] shrink-0 font-mono text-[12px] text-[#e3e8ef]">{member.symbol}</span>
+        <span className="min-w-0 flex-1 truncate text-[12px] text-[#8b95a3]">{member.name}</span>
+        <span className="hidden shrink-0 text-[11px] text-[#7d8894] sm:block">
+          {LAYER_LABEL[member.layer]} &middot; {(member.subLayers || []).map((sl) => SUB_LABEL[sl] || sl).join(' + ')}
+        </span>
+        <Badge tone={hard.length ? 'green' : 'neutral'}>{hard.length ? 'Hard' : 'Soft'}</Badge>
+      </button>
+
+      {open ? (
+        <div id={panelId} className="space-y-3 bg-[#0a0e14] px-8 pb-4 pt-2">
+          <dl className="grid grid-cols-2 gap-x-6 gap-y-1.5 sm:grid-cols-4">
+            {[
+              ['Evidence class', hard.length ? 'Hard' : 'Soft'],
+              ['First-party source', hard.length ? 'Yes' : 'Not established'],
+              ['Layer', `${LAYER_LABEL[member.layer]} \u2192 ${(member.subLayers || []).map((sl) => SUB_LABEL[sl] || sl).join(' + ')}`],
+              ['Reviewed by analyst', member.reviewedBy || 'Not yet'],
+            ].map(([label, value]) => (
+              <div key={label}>
+                <dt className="text-[10px] uppercase tracking-[0.12em] text-[#68727f]">{label}</dt>
+                <dd className="mt-0.5 text-[12px] text-[#e3e8ef]">{value}</dd>
+              </div>
+            ))}
+          </dl>
+
+          <div>
+            <p className="text-[10px] uppercase tracking-[0.12em] text-[#68727f]">Evidence</p>
+            <ul className="mt-1.5 space-y-2.5">
+              {evidence.map((one, i) => (
+                <li key={i} className="border-l-2 border-[#2f5d3f] pl-3">
+                  <p className="text-[11px] text-[#7d8894]">
+                    <span className="font-semibold text-[#8fcfa4]">{KIND_LABEL[one.kind] || one.kind}</span>
+                    {' \u00b7 '}{one.document}{one.date ? ` \u00b7 ${one.date}` : ''}
+                    {one.source ? ` \u00b7 ${one.source}` : ''}
+                  </p>
+                  <p className="mt-1 text-[12px] leading-relaxed text-[#c7cfda]">&ldquo;{one.excerpt}&rdquo;</p>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="rounded border border-[#22303c] bg-[#0c1319] px-3 py-2">
+            <p className="text-[10px] uppercase tracking-[0.12em] text-[#68727f]">Why this is enough</p>
+            <p className="mt-1 text-[12px] leading-relaxed text-[#c7cfda]">
+              {hard.length
+                ? `${SUFFICIENCY[hard[0].kind]} It is disclosed by the company itself and names AI infrastructure, so it is attributable and dated rather than inferred.`
+                : 'It is not. This member is held on soft evidence and should not be in the basket \u2014 partnerships, memoranda and sector commentary describe intent, not activity.'}
+            </p>
+          </div>
+
+          <p className="text-[10px] text-[#5b6675]">ISIN {member.isin} &middot; instrument {member.instrumentKey}</p>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function AdmittedUniverse({ universe }) {
+  const members = universe?.members || [];
+  return (
+    <section id="universe" className="rounded-md border border-[#1e2634] bg-[#0c1017]">
+      <header className="flex items-baseline gap-2 border-b border-[#1a2230] px-3.5 py-2.5">
+        <h2 className="text-[14px] font-semibold text-[#e3e8ef]">Why these companies are here</h2>
+        <span className="text-[11px] text-[#7d8894]">{members.length} admitted &middot; expand for the filing</span>
+      </header>
+      <div className="px-2 py-1">
+        {members.map((member) => <MemberEvidence key={member.symbol} member={member} />)}
+      </div>
+    </section>
   );
 }
 
@@ -478,7 +660,7 @@ function Watchlist({ universe, live }) {
     <Panel title="Company watchlist" note={`${members.length} admitted`}>
       <table className="w-full">
         <thead>
-          <tr className="text-[9px] uppercase tracking-wider text-[#68727f]">
+          <tr className="text-[10px] uppercase tracking-wider text-[#7d8894]">
             <th className="pb-1 text-left font-medium">Company</th>
             <th className="pb-1 text-left font-medium">Layer</th>
             <th className="pb-1 text-right font-medium">Day</th>
@@ -493,24 +675,24 @@ function Watchlist({ universe, live }) {
             const volume = live?.volumes?.[member.symbol];
             return (
               <tr key={member.symbol} className="border-t border-[#1a2230]">
-                <td className="py-1.5 font-mono text-[10px] text-[#c7cfda]">{member.symbol}</td>
-                <td className="py-1.5 text-[10px] text-[#8b95a3]">{LAYER_LABEL[member.layer]}</td>
-                <td className={`py-1.5 text-right font-mono text-[10px] tabular-nums ${row ? upDown(row.return_pct) : 'text-[#4b5563]'}`}>
+                <td className="py-1.5 font-mono text-[12px] text-[#d3dae3]">{member.symbol}</td>
+                <td className="py-1.5 text-[11px] text-[#9aa5b3]">{LAYER_LABEL[member.layer]}</td>
+                <td className={`py-1.5 text-right font-mono text-[11px] tabular-nums ${row ? upDown(row.return_pct) : 'text-[#4b5563]'}`}>
                   {row ? pctOf(row.return_pct) : '—'}
                 </td>
-                <td className={`py-1.5 text-right font-mono text-[10px] tabular-nums ${row ? upDown(row.contribution_pp) : 'text-[#4b5563]'}`}>
+                <td className={`py-1.5 text-right font-mono text-[11px] tabular-nums ${row ? upDown(row.contribution_pp) : 'text-[#4b5563]'}`}>
                   {row ? pp(row.contribution_pp) : '—'}
                 </td>
-                <td className="py-1.5 text-right font-mono text-[10px] tabular-nums text-[#8b95a3]">
+                <td className="py-1.5 text-right font-mono text-[11px] tabular-nums text-[#8b95a3]">
                   {volume?.ratio != null ? `${volume.ratio.toFixed(1)}×` : '—'}
                 </td>
-                <td className="py-1.5 text-right font-mono text-[10px] text-[#4b5563]">n/a</td>
+                <td className="py-1.5 text-right font-mono text-[11px] text-[#5b6675]">n/a</td>
               </tr>
             );
           })}
         </tbody>
       </table>
-      <p className="mt-2 border-t border-[#1a2230] pt-2 text-[9px] leading-relaxed text-[#68727f]">
+      <p className="mt-2 border-t border-[#1a2230] pt-2 text-[10px] leading-relaxed text-[#7d8894]">
         No EPS revision column: Upstox serves trailing ratios only and no consensus feed is
         connected, so there is nothing to revise against. No signal badges yet either.
       </p>
@@ -522,20 +704,20 @@ function EmptyLayersPanel({ universe }) {
   const filled = new Set((universe?.members || []).flatMap((m) => (m.subLayers || []).map((s) => `${m.layer}/${s}`)));
   const empty = ALL_SUBS.filter(([l, s]) => !filled.has(`${l}/${s}`));
   return (
-    <Panel title="Empty layers" note={`${empty.length} of ${ALL_SUBS.length}`}>
+    <Panel id="layers" title="Empty layers" note={`${empty.length} of ${ALL_SUBS.length}`}>
       {empty.length === 0 ? (
-        <p className="text-[11px] text-[#8b95a3]">Every sub-layer has an admitted company.</p>
+        <p className="text-[12px] text-[#9aa5b3]">Every sub-layer has an admitted company.</p>
       ) : (
         <>
           <div className="space-y-1">
             {empty.map(([l, s]) => (
               <div key={`${l}/${s}`} className="flex items-center gap-2 rounded border border-dashed border-[#26303f] px-2 py-1.5">
-                <span className="text-[10px] text-[#c7cfda]">{LAYER_LABEL[l]} <span className="text-[#4b5563]">→</span> {SUB_LABEL[s] || s}</span>
+                <span className="text-[12px] text-[#d3dae3]">{LAYER_LABEL[l]} <span className="text-[#4b5563]">→</span> {SUB_LABEL[s] || s}</span>
                 <Badge tone="amber">pre-revenue</Badge>
               </div>
             ))}
           </div>
-          <p className="mt-2 text-[9px] leading-relaxed text-[#68727f]">
+          <p className="mt-2 text-[10px] leading-relaxed text-[#7d8894]">
             Empty because nothing was disclosed beyond intent, not because the screen has not
             looked. Admitting one would mean admitting on intent.
           </p>
@@ -549,7 +731,7 @@ function Candidates({ universe }) {
   const rows = universe?.candidates || [];
   const [open, setOpen] = React.useState(null);
   return (
-    <Panel title="Candidates refused" note={`${rows.length}`}>
+    <Panel id="refused" title="Candidates refused" note={`${rows.length}`}>
       <div className="max-h-[200px] space-y-0.5 overflow-y-auto">
         {rows.map((c) => (
           <div key={c.symbol}>
@@ -558,12 +740,14 @@ function Candidates({ universe }) {
               onClick={() => setOpen(open === c.symbol ? null : c.symbol)}
               className="flex w-full items-center gap-2 rounded px-1 py-1.5 text-left hover:bg-[#141b26]"
             >
-              <span className="w-[80px] shrink-0 font-mono text-[10px] text-[#c7cfda]">{c.symbol}</span>
-              <span className="min-w-0 flex-1 truncate text-[10px] text-[#68727f]">{c.name}</span>
-              <Badge>{c.suggestedSubLayers?.length ? SUB_LABEL[c.suggestedSubLayers[0]] || c.suggestedSubLayers[0] : 'unplaced'}</Badge>
+              <span className="w-[86px] shrink-0 truncate font-mono text-[12px] text-[#d3dae3]">{c.symbol}</span>
+              <span className="hidden min-w-0 flex-1 truncate text-[11px] text-[#7d8894] sm:block">{c.name}</span>
+              <span className="ml-auto shrink-0 sm:ml-0">
+                <Badge>{c.suggestedSubLayers?.length ? SUB_LABEL[c.suggestedSubLayers[0]] || c.suggestedSubLayers[0] : 'unplaced'}</Badge>
+              </span>
             </button>
             {open === c.symbol ? (
-              <p className="mx-1 mb-1.5 border-l-2 border-[#26303f] bg-[#0a0e14] px-3 py-2 text-[10px] leading-relaxed text-[#8b95a3]">
+              <p className="mx-1 mb-1.5 border-l-2 border-[#26303f] bg-[#0a0e14] px-3 py-2 text-[11px] leading-relaxed text-[#9aa5b3]">
                 {c.note}
               </p>
             ) : null}
@@ -665,7 +849,7 @@ export default function IndiaAiIntelligencePage() {
         </p>
       ) : (
         <div className="mx-auto max-w-[1680px] px-4 py-4">
-          <nav className="mb-3 text-[10px] text-[#68727f]" aria-label="Breadcrumb">
+          <nav className="mb-3 text-[11px] text-[#7d8894]" aria-label="Breadcrumb">
             <a href="/research" className="rounded hover:text-[#e3e8ef] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e8833a]">Research</a>
             <span className="px-1 text-[#3a4453]">›</span>
             <a href="/themes" className="rounded hover:text-[#e3e8ef] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e8833a]">Themes</a>
@@ -673,10 +857,12 @@ export default function IndiaAiIntelligencePage() {
             <span aria-current="page">India AI Infrastructure</span>
           </nav>
 
-          <div className="grid gap-4 xl:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
+          <SectionNav />
+
+          <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
             {/* ── research ── */}
-            <div className="space-y-4">
-              <div>
+            <div className="min-w-0 space-y-4">
+              <div id="overview">
                 <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#e8833a]">Strategic research</p>
                 <h1 className="mt-2 text-[28px] font-semibold leading-tight tracking-tight sm:text-[40px]">
                   India&rsquo;s Hidden AI Infrastructure Trade
@@ -690,11 +876,13 @@ export default function IndiaAiIntelligencePage() {
                   <span className="text-[11px] text-[#68727f]">
                     Screen run {universe?.version || '—'}
                   </span>
-                  <span className="rounded-full border border-[#b38b4d]/40 bg-[#b38b4d]/10 px-2.5 py-0.5 text-[10px] font-semibold text-[#d9a94a]">
+                  <span className="rounded-full border border-[#b38b4d]/40 bg-[#b38b4d]/10 px-2.5 py-0.5 text-[11px] font-semibold text-[#d9a94a]">
                     Universe: {universe?.status === 'partial' ? 'Partial' : universe?.status || '—'} · Evidence-qualified
                   </span>
                 </div>
               </div>
+
+              <StatusStrip universe={universe} live={live} />
 
               <ExecutiveSummary universe={universe} />
 
@@ -702,10 +890,10 @@ export default function IndiaAiIntelligencePage() {
                 <Panel title="AI Enablers vs. Nifty 50" note="from the first snapshot — no back-history">
                   <IndexedChart snapshots={snapshots} />
                   <div className="mt-1 flex gap-4 px-1">
-                    <span className="flex items-center gap-1.5 text-[10px] text-[#8b95a3]">
+                    <span className="flex items-center gap-1.5 text-[11px] text-[#9aa5b3]">
                       <span className="h-[2px] w-4 bg-[#e8833a]" /> AI Enablers (AGI basket)
                     </span>
-                    <span className="flex items-center gap-1.5 text-[10px] text-[#8b95a3]">
+                    <span className="flex items-center gap-1.5 text-[11px] text-[#9aa5b3]">
                       <span className="h-[2px] w-4 bg-[#5aa2e0]" /> Nifty 50
                     </span>
                   </div>
@@ -713,54 +901,67 @@ export default function IndiaAiIntelligencePage() {
                 <KeyTakeaways universe={universe} live={live} />
               </div>
 
-              <div>
+              <div id="method">
                 <h2 className="text-[20px] font-semibold tracking-tight">Executive Intelligence</h2>
-                <p className="mt-2 max-w-3xl text-[12px] leading-relaxed text-[#8b95a3]">
-                  India&rsquo;s AI opportunity is physical before it is digital, and the companies
-                  carrying it are not the ones the index is named after. This basket was built by
-                  screening public filings and admitting a company only where it disclosed
-                  something it had actually done — an order signed, capex committed, capacity
-                  operating. Partnerships, memoranda and sector forecasts were refused, which is
-                  why {universe?.candidates?.length || 0} companies found by the screen are listed
-                  as candidates rather than members.
+                <p className="mt-1.5 text-[12px] text-[#8b95a3]">
+                  The method is the product. Each statement below is a count this page can show you the
+                  workings for.
                 </p>
-                <p className="mt-2 max-w-3xl text-[12px] leading-relaxed text-[#8b95a3]">
-                  Two of the nine sub-layers are empty. That is the finding, not a gap: India&rsquo;s
-                  semiconductor materials and fab-equipment names talk about the opportunity and
-                  disclose nothing done. The page shows them empty rather than filling them.
-                </p>
-                <blockquote className="mt-3 max-w-2xl border-l-2 border-[#e8833a]/50 pl-4">
-                  <p className="text-[13px] italic leading-relaxed text-[#c7cfda]">
-                    A basket you cannot audit is a list. Every member here opens into the filing
-                    that admitted it.
+                <div className="mt-3 grid gap-3 sm:grid-cols-3">
+                  {[
+                    {
+                      head: 'What we found',
+                      body: `${(universe?.members || []).length} companies currently meet the evidence threshold \u2014 each disclosed something it had done, not something it intends.`,
+                    },
+                    {
+                      head: 'What we refused',
+                      body: `${universe?.candidates?.length || 0} candidates were excluded because the evidence was limited to intent, commentary, projections or capability claims.`,
+                    },
+                    {
+                      head: 'What remains empty',
+                      body: 'Two sub-layers have no qualifying listed company with evidence of operational activity. They are shown empty rather than filled.',
+                    },
+                  ].map((one) => (
+                    <div key={one.head} className="rounded-md border border-[#1e2634] bg-[#0c1017] p-3.5">
+                      <h3 className="text-[13px] font-semibold text-[#e3e8ef]">{one.head}</h3>
+                      <p className="mt-1.5 text-[12px] leading-relaxed text-[#8b95a3]">{one.body}</p>
+                    </div>
+                  ))}
+                </div>
+                <blockquote className="mt-4 max-w-2xl border-l-2 border-[#e8833a] pl-4">
+                  <p className="text-[14px] italic leading-relaxed text-[#c7cfda]">
+                    A basket you cannot audit is a list. Every member here opens into the filing that
+                    admitted it.
                   </p>
-                  <cite className="mt-1 block text-[9px] uppercase tracking-[0.16em] not-italic text-[#68727f]">
+                  <cite className="mt-1 block text-[10px] uppercase tracking-[0.16em] not-italic text-[#68727f]">
                     AGI Investment Intelligence
                   </cite>
                 </blockquote>
               </div>
 
+              <AdmittedUniverse universe={universe} />
+
               <LayerCards universe={universe} />
             </div>
 
             {/* ── monitor ── */}
-            <div className="space-y-3 xl:sticky xl:top-[60px] xl:self-start">
+            <div className="min-w-0 space-y-3 xl:sticky xl:top-[60px] xl:self-start">
               <div className="rounded-md border border-[#1e2634] bg-[#0c1017] px-3 py-2.5">
                 <div className="flex items-start justify-between gap-2">
                   <div>
                     <h2 className="text-[16px] font-semibold tracking-tight">India AI Intelligence Monitor</h2>
-                    <p className="mt-0.5 text-[10px] text-[#68727f]">
+                    <p className="mt-0.5 text-[11px] text-[#7d8894]">
                       Live where a source exists. Named where one does not.
                     </p>
                   </div>
                   <div className="shrink-0 text-right">
                     <span className="flex items-center justify-end gap-1.5">
                       <span className={`h-1.5 w-1.5 rounded-full ${live?.quality?.live ? 'bg-[#4ade80]' : 'bg-[#4b5563]'}`} />
-                      <span className={`text-[9px] font-bold uppercase tracking-wider ${live?.quality?.live ? 'text-[#4ade80]' : 'text-[#68727f]'}`}>
+                      <span className={`text-[10px] font-bold uppercase tracking-wider ${live?.quality?.live ? 'text-[#4ade80]' : 'text-[#68727f]'}`}>
                         {live?.quality?.live ? 'Live' : open ? 'No ticks' : 'NSE closed'}
                       </span>
                     </span>
-                    <p className="mt-0.5 font-mono text-[9px] tabular-nums text-[#68727f]">
+                    <p className="mt-0.5 font-mono text-[10px] tabular-nums text-[#7d8894]">
                       {clock.date} · {clock.time} IST
                     </p>
                   </div>
