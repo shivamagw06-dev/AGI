@@ -93,6 +93,9 @@ function AppShell() {
   const isAskWorkspace = location.pathname === '/ask';
   const isValuationIntelligence =
     location.pathname === '/valuation-intelligence' || location.pathname === '/valuation-terminal';
+  // The India AI monitor carries its own dark chrome, like the other
+  // terminals: the public light shell would fight it.
+  const isIndiaAiTerminal = location.pathname === '/india-ai';
   const isAgiProduct = location.pathname === '/agi' || location.pathname.startsWith('/agi/');
 
   useEffect(() => {
@@ -148,6 +151,23 @@ function AppShell() {
   }
 
   // Valuation Intelligence — full-bleed institutional consensus (read for users; admin import on /admin).
+  // Public, and deliberately ungated: this page is AGI's own screen over
+  // public filings and the evidence is the product. No PinGate - that gate
+  // renders a blank white shell, which is exactly what happened when this
+  // block was first copied from the gated product wrappers.
+  if (isIndiaAiTerminal) {
+    return (
+      <>
+        <Suspense fallback={<div className="min-h-screen bg-[#080b11] p-8 text-center text-[#68727f]">Loading India AI Intelligence…</div>}>
+          <Routes>
+            <Route path="/india-ai" element={<IndiaAiIntelligencePage />} />
+          </Routes>
+        </Suspense>
+        <Toaster />
+      </>
+    );
+  }
+
   if (isValuationIntelligence) {
     return (
       <MarketDataProvider>
@@ -204,7 +224,6 @@ function PublicRoutes() {
       <Route path="/equity-research" element={<EquityResearchPage />} />
       <Route path="/india-stock-intelligence" element={<IndiaStockIntelligencePage />} />
       <Route path="/index-rebalance" element={<IndexRebalancePage />} />
-      <Route path="/india-ai" element={<IndiaAiIntelligencePage />} />
       <Route path="/manager-backtest" element={<BacktestPage />} />
       <Route path="/institutional-holdings" element={<InstitutionalHoldingsPage />} />
       <Route path="/institutional-holdings/funds/:fundSlug" element={<InstitutionalHoldingsPage />} />
