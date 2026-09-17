@@ -103,7 +103,12 @@ export class LastGoodPrices {
   }
 }
 
+// Number(null) is 0 and Number('') is 0, so a plain Number() here would read
+// "we have no figure" as "the figure is zero" - the exact collapse this code
+// exists to prevent. An absent key gives NaN and behaves; an explicit null,
+// which is what JSON from a database actually carries, does not.
 const numeric = (value) => {
+  if (value === null || value === undefined || value === '') return null;
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : null;
 };
