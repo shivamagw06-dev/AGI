@@ -39,6 +39,7 @@ export function priced(members, quotes, { now = Date.now(), staleMs = STALE_MS }
   const missing = [];
   const stale = [];
   const fallback = [];
+  const priceBreak = [];
   for (const member of members || []) {
     const quote = quotes?.[member.symbol];
     if (!quote || !Number.isFinite(Number(quote.ltp)) || !Number.isFinite(Number(quote.previousClose))) {
@@ -60,11 +61,19 @@ export function priced(members, quotes, { now = Date.now(), staleMs = STALE_MS }
       stale.push({ symbol: member.symbol, ageMs: now - Number(quote.at) });
       continue;
     }
+    // A member trading ex-bonus or ex-split against an unadjusted previous
+    // close has a return that is an artefact of the share count changing.
+    // Excluding it costs coverage for a day; including it puts a fabricated
+    // move into the basket and into its layer.
+    if (quote.priceBreak) {
+      priceBreak.push({ symbol: member.symbol, reason: quote.priceBreakReason || 'CORPORATE_ACTION' });
+      continue;
+    }
     live.push({ member, quote });
   }
   const total = (members || []).length;
   return {
-    live, missing, stale, fallback,
+    live, missing, stale, fallback, priceBreak,
     coverage: total === 0 ? 0 : round(live.length / total, 4),
     total,
   };
@@ -178,6 +187,7 @@ export function computeIndex(universe, quotes, options = {}) {
       missing: coverage.missing,
       stale: coverage.stale,
       fallback: coverage.fallback,
+      priceBreak: coverage.priceBreak,
       reason: `${coverage.live.length} of ${coverage.total} members priced; an index of the rest is not the index`,
     };
   }
@@ -263,8 +273,15 @@ export function computeIndex(universe, quotes, options = {}) {
   }
 
   // Contributions sum to the index return by construction. When they do not,
-  // something changed that the weights do not know about - a split, a bonus,
-  // a rights issue - and the difference is shown rather than absorbed.
+  // the weights and the arithmetic disagree, and the difference is shown
+  // rather than absorbed.
+  //
+  // This does NOT detect corporate actions, and an earlier version of this
+  // comment claimed it did. A bonus or a split against an unadjusted previous
+  // close makes one member's return wrong, and that wrong return flows into
+  // the contribution and into the index return identically - so the residual
+  // stays at zero and the check passes. Catching it needs the ex-date, which
+  // is what the priceBreak flag carries.
   const summed = byName.reduce((sum, row) => sum + row.contribution_pp, 0);
   const residual_pp = round(indexReturn * 100 - summed, 6);
 

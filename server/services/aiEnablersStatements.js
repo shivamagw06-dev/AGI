@@ -106,3 +106,101 @@ export function cagr(history, { years = 3 } = {}) {
     from: base.period, to: latest.period, reason: null,
   };
 }
+
+/* ── cash flow ──────────────────────────────────────────────────────── */
+
+/**
+ * What the cash-flow statement does and does not carry.
+ *
+ * Operating cash flow is served, both as a category and as a line. Capital
+ * expenditure is not, on either. The categories are operating, investing and
+ * financing, and the line items run from profit before tax to cash at the end
+ * of the year with nothing for purchases of property, plant or equipment.
+ *
+ * Investing cash flow is not a substitute. It nets acquisitions, purchases
+ * and sales of investments and proceeds from asset disposals against capital
+ * spending, and for a holding company it is mostly stake buying. Reading it
+ * as capex would be most wrong for exactly the companies where capex matters
+ * most to this screen.
+ */
+export const CAPEX_AVAILABLE_FROM_CASH_FLOW = false;
+
+export function operatingCashFlow(picked) {
+  const fromCategory = categoryHistory(picked?.rows, 'operating');
+  if (fromCategory.length) return { history: fromCategory, from: 'category', reason: null };
+  const fromLine = lineHistory(picked?.full, 'Cash flow from Operations');
+  if (fromLine.length) return { history: fromLine, from: 'full_statement', reason: null };
+  return { history: [], from: null, reason: 'NO_OPERATING_CASH_FLOW' };
+}
+
+/**
+ * Capex, which this source does not have.
+ *
+ * Returned as a refusal rather than omitted, so a caller asking for it gets
+ * the reason instead of an empty array it might read as zero spending.
+ */
+export function capexFrom() {
+  return {
+    history: [], value: null,
+    reason: 'CAPEX_NOT_IN_CASH_FLOW_STATEMENT',
+    detail: 'Upstox cash-flow serves operating, investing and financing only. Investing nets '
+      + 'acquisitions and disposals against capital spending and is not a capex proxy.',
+  };
+}
+
+/* ── corporate actions ──────────────────────────────────────────────── */
+
+const MONTHS = { jan: 0, feb: 1, mar: 2, apr: 3, may: 4, jun: 5, jul: 6, aug: 7, sep: 8, oct: 9, nov: 10, dec: 11 };
+
+/** "14 Aug 2025" to a UTC date, or null. */
+export function parseActionDate(value) {
+  const match = /^(\d{1,2})\s+([A-Za-z]{3})[a-z]*\s+(\d{4})$/.exec(String(value || '').trim());
+  if (!match) return null;
+  const month = MONTHS[match[2].toLowerCase()];
+  if (month === undefined) return null;
+  return Date.UTC(Number(match[3]), month, Number(match[1]));
+}
+
+/** Actions that change the share count, and so the price, on their ex-date. */
+const DILUTIVE = /^(bonus|split|rights)/i;
+
+/**
+ * Corporate actions that would make a price move look like a return.
+ *
+ * A one-for-one bonus halves the quoted price overnight. If the previous
+ * close a feed reports is not adjusted for it, the basket reads a 50% loss
+ * that did not happen - and nothing downstream catches it, because the
+ * residual check compares contributions against the index return and a wrong
+ * member return flows consistently into both.
+ *
+ * So the ex-dates are read ahead and the member is flagged. A flag is not a
+ * correction: it says this member's return cannot be trusted today, which is
+ * the honest state when the adjustment cannot be verified.
+ */
+export function actionsNear(payload, { now = Date.now(), windowDays = 1 } = {}) {
+  const rows = Array.isArray(payload?.data) ? payload.data : [];
+  const window = windowDays * 86_400_000;
+  const today = Math.floor(now / 86_400_000) * 86_400_000;
+  const near = [];
+  for (const row of rows) {
+    const name = String(row?.name || '').trim();
+    const exDate = parseActionDate(row?.expiry_date);
+    if (exDate === null) continue;
+    if (Math.abs(exDate - today) > window) continue;
+    near.push({
+      name,
+      exDate: new Date(exDate).toISOString().slice(0, 10),
+      ratio: row?.ratio ?? null,
+      amount: row?.amount ?? null,
+      // A dividend moves the price by the dividend, which is a real return to
+      // a holder and needs no flag. A bonus, split or rights issue changes
+      // the share count and does not.
+      dilutive: DILUTIVE.test(name),
+    });
+  }
+  return {
+    actions: near,
+    priceBreak: near.some((one) => one.dilutive),
+    reason: near.some((one) => one.dilutive) ? 'DILUTIVE_ACTION_ON_OR_NEAR_EX_DATE' : null,
+  };
+}
