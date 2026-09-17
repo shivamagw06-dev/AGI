@@ -154,30 +154,101 @@
       ],
       "reviewedBy": null,
       "reviewedAt": null
-    }
-  ],
-  "candidates": [
+    },
     {
       "symbol": "NETWEB",
       "name": "Netweb Technologies India Ltd.",
+      "instrumentKey": "NSE_EQ|INE0NT901020",
       "isin": "INE0NT901020",
-      "suggestedLayer": "data_centre",
-      "suggestedSubLayers": [
+      "layer": "data_centre",
+      "subLayers": [
         "hardware"
       ],
-      "admitted": false,
+      "weightSplit": {
+        "data_centre_hardware": 1.0
+      },
+      "admitted": true,
       "basis": "hard",
-      "note": "Admits on the Q1 FY27 investor presentation - AI Systems at 62.29% of revenue, an operating disclosure. Held as a candidate only because the disclosure has not been re-read from the source PDF; the excerpt below came through semantic search.",
-      "evidence": [
+      "admittedOn": [
         {
           "kind": "operating",
           "document": "Q1 FY27 investor presentation",
           "date": "2026-07-28",
           "source": "Trendlyne document search",
-          "excerpt": "AI Systems 62.29% of Revenue from Operations, growing 484.20% YoY; order book Rs 25,069.35 million"
+          "excerpt": "Our AI segment continues to be a key growth driver, contributing Rs 5,105.70 million, being 62.29% of Revenue from Operations, growing 484.20% YoY, while HPC and Private Cloud maintained robust traction at Rs 1,252.94 million and Rs 1,353.46 million respectively. Our order book stood at Rs 25,069.35 million as of 30th June 2026."
+        },
+        {
+          "kind": "operating",
+          "document": "Q1 FY27 earnings call",
+          "date": "2026-08-01",
+          "source": "Trendlyne document search",
+          "excerpt": "Our revenue from operations for Q1 financial year 27 stood at INR8,197 million, a growth of 172.1% on a year-on-year basis. Our order book stood at INR25,069.35 million as of 30th June 2026 with an L1 position of INR8,480.47 million."
         }
-      ]
+      ],
+      "reviewedBy": null,
+      "reviewedAt": null
     },
+    {
+      "symbol": "CGPOWER",
+      "name": "CG Power and Industrial Solutions Ltd.",
+      "instrumentKey": "NSE_EQ|INE067A01029",
+      "isin": "INE067A01029",
+      "layer": "semiconductor",
+      "subLayers": [
+        "osat"
+      ],
+      "weightSplit": {
+        "semiconductor_osat": 1.0
+      },
+      "admitted": true,
+      "basis": "hard",
+      "admittedOn": [
+        {
+          "kind": "capex",
+          "document": "Annual Report FY2025-26",
+          "date": "2026-05-05",
+          "source": "Trendlyne document search",
+          "excerpt": "CG Semi reached a defining milestone in FY26 with the inauguration of India’s first end-to-end OSAT facility at Sanand, Gujarat in August 2025. The G1 facility is now operational at a peak capacity of 0.5 million units per day, with plans to further scale up to 14.5 million chips per day with the upcoming commissioning of our G2 facility. Together, the two facilities represent an estimated project investment of approximately Rs 7,600 Cr."
+        }
+      ],
+      "reviewedBy": null,
+      "reviewedAt": null
+    },
+    {
+      "symbol": "KAYNES",
+      "name": "Kaynes Technology India Ltd.",
+      "instrumentKey": "NSE_EQ|INE918Z01012",
+      "isin": "INE918Z01012",
+      "layer": "semiconductor",
+      "subLayers": [
+        "osat"
+      ],
+      "weightSplit": {
+        "semiconductor_osat": 1.0
+      },
+      "admitted": true,
+      "basis": "hard",
+      "admittedOn": [
+        {
+          "kind": "capex",
+          "document": "Q1 FY27 earnings call",
+          "date": "2026-08-12",
+          "source": "Trendlyne document search",
+          "excerpt": "Let me turn to the newer business, OSAT and PCB. The capex done in FY26 was INR473 crores for OSAT and INR324 crores for PCB."
+        },
+        {
+          "kind": "capex",
+          "document": "Annual Report FY2025-26",
+          "date": "2026-05-12",
+          "source": "Trendlyne document search",
+          "excerpt": "Developing our advanced OSAT complex in Sanand through a Rs 33,070 Mn capital investment, backed by a ~30% direct equity contribution from Kaynes. Facility Name: Sanand OSAT plant. Daily Throughput Capacity: 6.3 Mn chips."
+        }
+      ],
+      "reviewedBy": null,
+      "reviewedAt": null
+    }
+  ],
+  "candidates": [
     {
       "symbol": "KEI",
       "name": "KEI Industries Ltd.",
@@ -237,6 +308,109 @@
       "admitted": false,
       "basis": "soft",
       "note": "A data centre operator, but the material retrieved is IPO offer-document market sizing rather than its own operating disclosure."
+    },
+    {
+      "symbol": "AETHER",
+      "name": "Aether Industries Ltd.",
+      "isin": "INE0BWX01014",
+      "suggestedLayer": "semiconductor",
+      "suggestedSubLayers": [
+        "materials"
+      ],
+      "admitted": false,
+      "basis": "soft",
+      "note": "Refused: the low-dielectric monomers for AI-server boards are being developed, not sold. The Magnum site capex is real and first-party but is not AI capex - it is the Baker Hughes and oil-and-gas site. Admit only on a disclosed supply agreement or segment revenue for the electronic-materials line.",
+      "evidence": [
+        {
+          "kind": "language",
+          "document": "Q1 FY27 earnings call",
+          "date": "2026-08-07",
+          "source": "Trendlyne document search",
+          "excerpt": "Few of them are the specialty monomers that Aether is actively developing. These molecules that Aether will be manufacturing in its brand new site, Magnum, are an upstream input to the board inside 5G and AI hardware."
+        }
+      ]
+    },
+    {
+      "symbol": "CENTUM",
+      "name": "Centum Electronics Ltd.",
+      "isin": "INE320B01020",
+      "suggestedLayer": "semiconductor",
+      "suggestedSubLayers": [
+        "hardware"
+      ],
+      "admitted": false,
+      "basis": "soft",
+      "note": "Refused: \"specialised capabilities for complex semiconductor equipment\" is a capability claim. The EMS order book of Rs 8,718 Mn is first-party and hard but is the whole EMS business, with no semiconductor-equipment split disclosed. Admit on a segment split or a named order.",
+      "evidence": [
+        {
+          "kind": "partnership",
+          "document": "Q1 FY27 investor presentation",
+          "date": "2026-09-01",
+          "source": "Trendlyne document search",
+          "excerpt": "Semiconductor Expertise: Specialized capabilities for complex semiconductor equipment, supporting customer qualification, ramp-up and scalable production."
+        }
+      ]
+    },
+    {
+      "symbol": "KEC",
+      "name": "KEC International Ltd.",
+      "isin": "INE389H01022",
+      "suggestedLayer": "data_centre",
+      "suggestedSubLayers": [],
+      "admitted": false,
+      "basis": "soft",
+      "note": "Admits on the evidence and has no sub-layer to go in. KEC builds the data centre and the semiconductor fab; \"developer\" in this taxonomy means the owner of the campus, not the contractor who pours it. Held until the taxonomy has a contractor sub-layer, or the analyst rules that the builder is out of scope. Its AI-linked work is also a small share of a large diversified EPC book, which the screen does not currently measure.",
+      "evidence": [
+        {
+          "kind": "capex",
+          "document": "Annual Report FY2025-26",
+          "date": "2026-05-15",
+          "source": "Trendlyne document search",
+          "excerpt": "DATA CENTRE PROJECT, KOLKATA: construction of a mission critical facility. Project physically completed in Q1 FY27. SEMICONDUCTOR MANUFACTURING PLANT, SANAND, GUJARAT: construction of a semiconductor manufacturing facility including specialised cleanroom construction. Main plant commissioned in Q4 FY26."
+        }
+      ]
+    },
+    {
+      "symbol": "TANFACIND",
+      "name": "Tanfac Industries Ltd.",
+      "isin": "INE639A01017",
+      "suggestedLayer": "semiconductor",
+      "suggestedSubLayers": [
+        "materials"
+      ],
+      "admitted": false,
+      "basis": "soft",
+      "note": "Refused: \"we are just evaluating various technologies\" and an approval cycle of 1 to 1.5 years before any semiconductor revenue. An intention, on the company’s own account.",
+      "evidence": [
+        {
+          "kind": "language",
+          "document": "Q1 FY27 earnings call",
+          "date": "2026-08-03",
+          "source": "Trendlyne document search",
+          "excerpt": "We are just evaluating various technologies, nothing else. It is more of an approval cycle which takes about 1 to 1.5 years in semicon for approval."
+        }
+      ]
+    },
+    {
+      "symbol": "CYIENT",
+      "name": "Cyient Ltd.",
+      "isin": "INE136B01020",
+      "suggestedLayer": "semiconductor",
+      "suggestedSubLayers": [
+        "hardware"
+      ],
+      "admitted": false,
+      "basis": "soft",
+      "note": "Refused: an ASIC application table listing \"Data Centers, Industrial\" is a product-positioning slide. No order, no capex, no segment disclosure tied to AI infrastructure.",
+      "evidence": [
+        {
+          "kind": "news",
+          "document": "Investor presentation",
+          "date": "2026-08-25",
+          "source": "Trendlyne document search",
+          "excerpt": "Application-Specific Integrated Circuits Deep Dive. Cyient Semiconductors: Data Centers, Industrial. Kinetic Technologies: Edge AI, Automotive."
+        }
+      ]
     }
   ],
   "excluded": []

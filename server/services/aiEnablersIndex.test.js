@@ -129,3 +129,47 @@ test('the coverage floor is a stated number, not a hidden one', () => {
   const index = computeIndex(UNIVERSE, ALL, { now: NOW, coverageFloor: 1.01 });
   assert.equal(index.status, 'insufficient_coverage');
 });
+
+/**
+ * KEC International builds the data centre and the semiconductor fab. The
+ * evidence is first-party, hard and names AI infrastructure, so the screen
+ * admits it - but "developer" means the owner of the campus, not the
+ * contractor who pours it, and the taxonomy has no sub-layer for the builder.
+ * The index must not quietly drop such a member from the breakdown.
+ */
+const UNPLACED = {
+  members: [
+    { symbol: 'AAA', layer: 'power', subLayers: ['equipment'], freeFloatShares: 100 },
+    { symbol: 'BBB', layer: 'data_centre', subLayers: [], freeFloatShares: 100 },
+  ],
+};
+const UNPLACED_QUOTES = { AAA: quote(110), BBB: quote(120) };
+
+test('a member with no sub-layer still counts in the index and in its layer', () => {
+  const index = computeIndex(UNPLACED, UNPLACED_QUOTES, { now: NOW, construction: 'equal' });
+  assert.equal(index.status, 'ok');
+  assert.equal(index.return_pp, 15);
+  const dc = index.contributions.byLayer.find((one) => one.layer === 'data_centre');
+  assert.equal(dc.contribution_pp, 10);
+});
+
+test('a member with no sub-layer is named, not left as a hole to find', () => {
+  const index = computeIndex(UNPLACED, UNPLACED_QUOTES, { now: NOW, construction: 'equal' });
+  assert.deepEqual(index.unclassified, ['BBB']);
+});
+
+test('the sub-layer breakdown is reconciled separately from byName', () => {
+  const index = computeIndex(UNPLACED, UNPLACED_QUOTES, { now: NOW, construction: 'equal' });
+  // byName reconciles perfectly - that is exactly the trap. Only the
+  // sub-layer reconciliation shows that a whole member is missing from it.
+  assert.equal(index.residual_ok, true);
+  assert.equal(index.subLayerResidual_pp, 10);
+  assert.equal(index.subLayerResidual_ok, false);
+});
+
+test('a universe where every member has a sub-layer reconciles at both levels', () => {
+  const index = computeIndex(UNIVERSE, ALL, { now: NOW, construction: 'equal' });
+  assert.deepEqual(index.unclassified, []);
+  assert.equal(index.residual_ok, true);
+  assert.equal(index.subLayerResidual_ok, true);
+});

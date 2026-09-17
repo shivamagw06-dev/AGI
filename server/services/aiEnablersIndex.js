@@ -187,9 +187,18 @@ export function computeIndex(universe, quotes, options = {}) {
 
   const byLayer = new Map();
   const bySubLayer = new Map();
+  // A member the screen admitted but could not place in a sub-layer - the EPC
+  // contractor who builds the data centre, say - contributes to the index and
+  // to its layer, but there is no sub-layer to charge it to. Naming those
+  // members keeps the sub-layer breakdown honest instead of quietly short.
+  const unclassified = [];
   for (const row of byName) {
     byLayer.set(row.layer, round((byLayer.get(row.layer) || 0) + row.contribution_pp, 4));
-    const split = row.subLayers.length ? 1 / row.subLayers.length : 0;
+    if (!row.subLayers.length) {
+      unclassified.push(row.symbol);
+      continue;
+    }
+    const split = 1 / row.subLayers.length;
     for (const subLayer of row.subLayers) {
       const key = `${row.layer}/${subLayer}`;
       bySubLayer.set(key, round((bySubLayer.get(key) || 0) + row.contribution_pp * split, 4));
@@ -201,6 +210,12 @@ export function computeIndex(universe, quotes, options = {}) {
   // a rights issue - and the difference is shown rather than absorbed.
   const summed = byName.reduce((sum, row) => sum + row.contribution_pp, 0);
   const residual_pp = round(indexReturn * 100 - summed, 6);
+
+  // The same reconciliation, one level down. byName can tie out perfectly
+  // while the sub-layer breakdown is short by a whole member, so it is
+  // checked separately rather than assumed to follow.
+  const summedSubLayers = [...bySubLayer.values()].reduce((sum, pp) => sum + pp, 0);
+  const subLayerResidual_pp = round(indexReturn * 100 - summedSubLayers, 6);
 
   return {
     status: 'ok',
@@ -221,8 +236,11 @@ export function computeIndex(universe, quotes, options = {}) {
       bySubLayer: [...bySubLayer].map(([key, pp]) => ({ subLayer: key, contribution_pp: pp }))
         .sort((a, b) => b.contribution_pp - a.contribution_pp),
     },
+    unclassified,
     residual_pp,
     residual_ok: Math.abs(residual_pp) < 0.005,
+    subLayerResidual_pp,
+    subLayerResidual_ok: Math.abs(subLayerResidual_pp) < 0.005,
   };
 }
 

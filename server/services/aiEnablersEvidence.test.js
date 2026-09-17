@@ -214,3 +214,78 @@ test('a company forecasting its own capacity is not forecasting the market', () 
   const market = { title: "India's data centre capacity is expected to reach 2,500 MW by FY28E" };
   assert.equal(classifyEvidence(market).kind, 'market_commentary');
 });
+
+test('an OSAT plant that has been built admits; the revenue it is meant to earn does not', () => {
+  // Kaynes, verbatim from two documents. The capex is money already spent and
+  // a plant already standing. The roadmap in the same annual report is a
+  // target four to five years out, and the screen must separate them - a
+  // company can have both, and most do.
+  const capex = { description: 'Let me turn to the newer business, OSAT and PCB. The capex done in FY26 was INR473 crores for OSAT and INR324 crores for PCB.' };
+  assert.equal(classifyEvidence(capex).hard, true);
+  assert.equal(admits([capex]).admitted, true);
+  assert.deepEqual(subLayersFrom([capex]).map((one) => one.subLayer), ['osat']);
+
+  const roadmap = { description: 'Targeted strategic roadmap expects the OSAT vertical to drive 30% of total Kaynes Group revenues within the next 4 to 5 years. Commercial manufacturing operations are scheduled to commence in FY 2026-27.' };
+  assert.equal(classifyEvidence(roadmap).hard, false);
+  assert.equal(admits([roadmap]).admitted, false);
+});
+
+test('a plant that is operational is an operating fact, not a plan', () => {
+  // CG Power, verbatim. "is now operational at a peak capacity of" is the
+  // disclosure; the G2 line right after it is a plan, and the two sit in one
+  // paragraph. The paragraph admits on the first half.
+  const cg = { description: 'CG Semi reached a defining milestone in FY26 with the inauguration of India’s first end-to-end OSAT facility at Sanand, Gujarat in August 2025. The G1 facility is now operational at a peak capacity of 0.5 million units per day, with plans to further scale up to 14.5 million chips per day with the upcoming commissioning of our G2 facility.' };
+  assert.equal(admits([cg]).admitted, true);
+  assert.deepEqual(subLayersFrom([cg]).map((one) => one.subLayer), ['osat']);
+});
+
+test('a segment revenue line admits where a product slide does not', () => {
+  // Netweb discloses what the AI segment earned. Cyient shows which markets
+  // its ASICs address. Only one of these is a fact about a completed period.
+  const netweb = { description: 'Our AI segment continues to be a key growth driver, contributing Rs 5,105.70 million, being 62.29% of Revenue from Operations, growing 484.20% YoY, while HPC and Private Cloud maintained robust traction at Rs 1,252.94 million and Rs 1,353.46 million respectively. Our order book stood at Rs 25,069.35 million as of 30th June 2026.' };
+  assert.equal(admits([netweb]).admitted, true);
+  assert.deepEqual(subLayersFrom([netweb]).map((one) => one.subLayer), ['hardware']);
+
+  const cyient = { description: 'Application-Specific Integrated Circuits Deep Dive. Cyient Semiconductors: Data Centers, Industrial. Kinetic Technologies: Edge AI, Automotive.' };
+  assert.equal(admits([cyient]).admitted, false);
+});
+
+test('"AI segment" says a company has an AI business, not which one', () => {
+  // The distinction the sub-layer patterns have to hold. An AI segment could
+  // be a software house; Netweb is hardware because it says AI Systems, HPC
+  // and high-end computing. So the phrase admits and places nowhere, and the
+  // member is only classified from evidence that names the product.
+  const vague = { description: 'Our AI segment contributed Rs 5,105.70 million of Revenue from Operations.' };
+  assert.equal(classifyEvidence(vague).aiRelevant, true);
+  assert.equal(admits([vague]).admitted, true);
+  assert.deepEqual(subLayersFrom([vague]), []);
+});
+
+test('plurals do not hide a sub-layer, in AI systems as in transformers', () => {
+  // "AI Systems" is how Netweb's own presentation writes it. /\bai system\b/
+  // missed it, the same way /\btransformer\b/ once missed "Transformers".
+  const plural = { description: 'Revenue from AI Systems grew 484.20% YoY; order book of Rs 25,069.35 million.' };
+  assert.deepEqual(subLayersFrom([plural]).map((one) => one.subLayer), ['hardware']);
+});
+
+test('a molecule under development is not a molecule being sold', () => {
+  // Aether. The AI vocabulary is all there - AI hardware, high-speed boards,
+  // semiconductors - and there is real capex in the same call. But the capex
+  // is for the oil-and-gas site, and the electronic materials are in R&D.
+  // This is the case the screen exists to refuse.
+  const aether = { description: 'Few of them are the specialty monomers that Aether is actively developing. These molecules that Aether will be manufacturing in its brand new site, Magnum, are an upstream input to the board inside 5G and AI hardware.' };
+  const verdict = classifyEvidence(aether);
+  assert.equal(verdict.aiRelevant, true);
+  assert.equal(verdict.hard, false);
+  assert.equal(admits([aether]).admitted, false);
+  assert.equal(admits([aether]).basis, 'soft');
+});
+
+test('a company that admits can still have no sub-layer to go in', () => {
+  // KEC builds the data centre and the fab. Hard, first-party, AI-relevant -
+  // and the taxonomy has no slot for the contractor, only for the owner. The
+  // screen must not invent one, and must not silently place it either.
+  const kec = { description: 'DATA CENTRE PROJECT, KOLKATA: construction of a mission critical facility. Project physically completed in Q1 FY27. SEMICONDUCTOR MANUFACTURING PLANT, SANAND, GUJARAT: construction of a semiconductor manufacturing facility including specialised cleanroom construction. Main plant commissioned in Q4 FY26.' };
+  assert.equal(admits([kec]).admitted, true);
+  assert.deepEqual(subLayersFrom([kec]), []);
+});

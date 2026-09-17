@@ -151,6 +151,40 @@ hardware on the data centre side; assembly, materials and hardware on the silico
 A company may sit in two sub-layers. It is admitted to each on its own evidence, and its
 index weight is split, not doubled.
 
+A company may also be admitted and sit in **no** sub-layer. KEC International builds the
+data centre and the semiconductor fab; the evidence is first-party and hard, and
+"Developer" here means the owner of the campus, not the contractor who pours it. The
+taxonomy has no slot for the builder. Such a member is held as a candidate rather than
+forced into the nearest box, and the index reconciles its sub-layer breakdown separately
+from its name breakdown so that a member with nowhere to go shows up as a shortfall
+instead of disappearing.
+
+### Coverage, as of 2026-09-17
+
+Seven admitted, eleven candidates. Two sub-layers are empty and that is the finding, not a
+gap to fill: India's semiconductor materials and fab-equipment layers are pre-revenue.
+Every company found in them — Aether Industries developing low-dielectric monomers, Tanfac
+"just evaluating various technologies", Centum claiming semiconductor-equipment capability
+with no segment split — talks about the opportunity and discloses nothing done. Admitting
+any of them would mean admitting on intent, which is the one thing this screen refuses.
+
+| sub-layer | admitted |
+|---|---|
+| Power → Generation | CLEANMAX |
+| Power → Transmission | POWERINDIA |
+| Power → Equipment | POWERINDIA |
+| Data Centre → Developer | ADANIENT, ANANTRAJ |
+| Data Centre → Operator | ADANIENT, ANANTRAJ |
+| Data Centre → Hardware | NETWEB |
+| Semiconductor → OSAT | CGPOWER, KAYNES |
+| Semiconductor → Materials | *(empty — nothing disclosed beyond intent)* |
+| Semiconductor → Hardware | *(empty — nothing disclosed beyond intent)* |
+
+This is a partial universe from a partial pass: discovery ran over filing *content* via
+semantic search, not over all ~2,300 NSE equities. Stages 2 and 3 have not run at all,
+because their thresholds need the Upstox pass. The file says `status: "partial"` and the
+page must say so too.
+
 ### The screen
 
 Run monthly, and on demand. Every stage is reproducible from public data.

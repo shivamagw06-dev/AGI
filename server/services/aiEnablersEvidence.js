@@ -126,7 +126,13 @@ const SOFT_KINDS = [
  */
 export const INFRASTRUCTURE_TERMS = Object.freeze([
   /\bdata ?cent(?:er|re)\b/i, /\bhyperscal\w+/i, /\bcolocation\b|\bco-?lo\b/i,
-  /\bgpu\b/i, /\bai server\b|\bai system\b/i, /\baccelerator\b/i, /\bhpc\b|high[- ]end computing/i,
+  /\bgpu\b/i, /\baccelerator\b/i, /\bhpc\b|high[- ]end computing/i,
+  // "AI" as a qualifier of a business noun. A bare /\bai\b/ would match every
+  // deck in the market; this matches a company talking about an AI line of
+  // business. Netweb discloses "AI Systems 62.29% of revenue" - the plainest
+  // evidence there is - and without this it was only caught because the word
+  // HPC happened to appear later in the same paragraph.
+  /\bai (?:segment\w*|revenue\w*|server\w*|system\w*|infrastructure|hardware|compute|cluster\w*|workload\w*|accelerator\w*|factor(?:y|ies)|data ?cent(?:er|re)\w*)/i,
   /\bliquid cooling\b|\bchiller\b/i, /\brack\b/i,
   /\bsubstation\b/i, /\btransformer\b/i, /\bswitchgear\b/i, /\bhvdc\b/i, /\btransmission line\b/i,
   /\bpower purchase agreement\b|\bppa\b/i, /\bcaptive power\b/i, /\bmegawatt\b|\bmw\b/i,
