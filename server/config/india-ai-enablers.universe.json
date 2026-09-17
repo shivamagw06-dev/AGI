@@ -7,7 +7,7 @@
   "thresholds": {
     "minListedMarketCapUsd": null,
     "minSixMonthAdvtUsd": null,
-    "note": "AGI's own cut-offs, set in config and printed on the page. Not yet set: they require the Upstox pass over the full universe."
+    "note": "Not yet set, and deliberately not set from these seven. Every admitted member clears Rs 10 crore of median daily turnover; a floor chosen to sit just above the lowest of them would be fitted to the sample rather than justified, and the stage exists to exclude illiquid names when the screen runs the full NSE universe, not to cull this basket. Setting it needs an exitability rule - a position size and an acceptable share of daily turnover - which is a decision, not a measurement. The observed distribution is recorded under measuredLiquidity so that conversation starts from real numbers."
   },
   "members": [
     {
@@ -413,5 +413,37 @@
       ]
     }
   ],
-  "excluded": []
+  "excluded": [],
+  "measuredLiquidity": {
+    "measuredOn": "2026-09-17",
+    "sessions": 120,
+    "source": "Upstox daily candles via scripts/aiEnablersScreenReport.mjs",
+    "note": "Median daily turnover in rupees. Median, not mean: one block trade in a thin name moves a mean enough to carry it through a floor it does not clear.",
+    "medianDailyTurnoverInr": {
+      "NETWEB": 5930400000,
+      "ADANIENT": 4794700000,
+      "POWERINDIA": 4029500000,
+      "KAYNES": 3964700000,
+      "CGPOWER": 2647900000,
+      "ANANTRAJ": 1030900000,
+      "CLEANMAX": 233800000
+    },
+    "averageDailyVolume": {
+      "CGPOWER": 3811497,
+      "ANANTRAJ": 2840750,
+      "ADANIENT": 2253753,
+      "NETWEB": 1714222,
+      "KAYNES": 1428899,
+      "CLEANMAX": 289937,
+      "POWERINDIA": 149771
+    }
+  },
+  "dataAvailability": {
+    "measuredOn": "2026-09-17",
+    "note": "What the connected sources actually serve for these members, probed rather than assumed.",
+    "freeFloatMarketCap": "BLOCKED. Upstox profile carries sector market cap only, with no company figure and no share count; balance-sheet returned no rows. share-holdings gives the promoter/FII/DII/public split, which is the free-float ratio, so the missing input is shares outstanding. factOntology already defines SHARE_COUNT.OUTSTANDING, so an ingested annual report supplies it.",
+    "stage3Inputs": "PARTIAL. income-statement and cash-flow return 3 yearly periods each. A three-year revenue CAGR needs four points, so it is not computable from Upstox alone; capex-to-sales and capex growth are.",
+    "consensusEstimates": "ABSENT. No forward estimates on any connected source, so earnings revisions and forward EPS have nothing to compute from.",
+    "unblockedBy": "Ingesting annual reports for the seven members. That single action supplies shares outstanding for Stage 2, capex and revenue with lineage for Stage 3, and the citations the dashboard claims resolve to."
+  }
 }
