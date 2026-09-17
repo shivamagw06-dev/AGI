@@ -497,8 +497,15 @@ funding_cover   = operating_cash_flow / capex        ← < 1 means it is being f
 
 **Valuation**
 
+Upstox key-ratios supplies the reported half - P/E, P/B, EV/EBITDA, ROE, ROCE, ROA -
+each with a sector value beside it, through the `upstoxValuationRatiosRefresh` path that
+already exists. Those are *trailing*. Forward P/E, expected growth and therefore PEG need
+consensus estimates, which Upstox does not carry, so the valuation panel ships half-lit and
+says which half:
+
 ```
-peg = forward_pe / expected_eps_growth_pct
+peg = forward_pe / expected_eps_growth_pct     ← both inputs NEEDED
+premium_to_sector = company_value / sector_value − 1     ← available now
 ```
 
 PEG is reported with both inputs beside it, because a PEG of 1.3 built on 60% growth and
@@ -525,7 +532,8 @@ moved.
 | need | blocks | candidate source | note |
 |---|---|---|---|
 | Corporate announcements | order feed, catalysts, alerts | **Trendlyne** (connected) | Reg 30 filings with PDFs; server-side API access still needed |
-| Consensus estimates | revisions, gap, PEG, valuation map | Refinitiv / FactSet / Capital IQ | the largest cost item; nothing else substitutes |
+| Consensus estimates | revisions, gap, PEG, forward P/E | Refinitiv / FactSet / Capital IQ | the largest cost item; nothing else substitutes |
+| Trailing valuation | the valuation panel's reported half | **Upstox key-ratios** (connected) | P/E, P/B, EV/EBITDA, ROE, ROCE, ROA, each with a sector value; already flows through `upstoxValuationRatiosRefresh` |
 | Transcripts | language detector, mention momentum | **Trendlyne** (connected) | full transcripts and investor presentations, semantic search |
 | Data centre projects | project tracker, MW pipeline | company IR, state industrial filings, press | no single source; manual + verification |
 | Grid and transmission | the bottleneck panel | CEA, POSOCO, state discoms | public but poorly structured |
