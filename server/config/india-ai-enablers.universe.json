@@ -1,0 +1,102 @@
+{
+  "version": "2026-09-17",
+  "status": "partial",
+  "note": "Populated by running the screen. Every member carries the filing that admitted it. This file is not complete and is not an index until the screen has run over the full NSE universe; see docs/india-ai-intelligence.md PART 9.",
+  "benchmarkKey": "NSE_INDEX|Nifty 50",
+  "construction": "equal_weighted",
+  "thresholds": {
+    "minListedMarketCapUsd": null,
+    "minSixMonthAdvtUsd": null,
+    "note": "AGI's own cut-offs, set in config and printed on the page. Not yet set: they require the Upstox pass over the full universe."
+  },
+  "members": [
+    {
+      "symbol": "POWERINDIA",
+      "name": "Hitachi Energy India Ltd.",
+      "instrumentKey": "NSE_EQ|INE07Y701011",
+      "isin": "INE07Y701011",
+      "layer": "power",
+      "subLayers": ["equipment", "transmission"],
+      "weightSplit": { "power_equipment": 0.5, "power_transmission": 0.5 },
+      "admitted": true,
+      "basis": "hard",
+      "admittedOn": [
+        {
+          "kind": "order",
+          "document": "Q1 FY27 earnings call",
+          "date": "2026-08-14",
+          "source": "Trendlyne document search",
+          "excerpt": "a significant data center-related order for a Load Pooling Station and Main Pooling Station, comprising 56 of 400 kV Gas-Insulated Switchgear (GIS) and 12.8 km of 400 kV Gas-Insulated Busbar"
+        },
+        {
+          "kind": "order",
+          "document": "Annual Report FY2025-26",
+          "date": "2026-05-24",
+          "source": "Trendlyne document search",
+          "excerpt": "Data Centers: Received an order for 3X 220kV AIS Transformers extension for a leading data center in Hyderabad"
+        },
+        {
+          "kind": "order",
+          "document": "Q1 FY27 earnings call",
+          "date": "2026-08-14",
+          "source": "Trendlyne document search",
+          "excerpt": "a 40 2500 kVA data center project in Hyderabad, awarded by [an] Indian multinational conglomerate"
+        }
+      ],
+      "reviewedBy": null,
+      "reviewedAt": null
+    }
+  ],
+  "candidates": [
+    {
+      "symbol": "NETWEB",
+      "name": "Netweb Technologies India Ltd.",
+      "isin": "INE0NT901020",
+      "suggestedLayer": "data_centre",
+      "suggestedSubLayers": ["hardware"],
+      "admitted": false,
+      "basis": "hard",
+      "note": "Admits on the Q1 FY27 investor presentation - AI Systems at 62.29% of revenue, an operating disclosure. Held as a candidate only because the disclosure has not been re-read from the source PDF; the excerpt below came through semantic search.",
+      "evidence": [
+        {
+          "kind": "operating",
+          "document": "Q1 FY27 investor presentation",
+          "date": "2026-07-28",
+          "source": "Trendlyne document search",
+          "excerpt": "AI Systems 62.29% of Revenue from Operations, growing 484.20% YoY; order book Rs 25,069.35 million"
+        }
+      ]
+    },
+    {
+      "symbol": "KEI",
+      "name": "KEI Industries Ltd.",
+      "isin": null,
+      "suggestedLayer": "power",
+      "suggestedSubLayers": ["equipment"],
+      "admitted": false,
+      "basis": "soft",
+      "note": "Its investor presentation carries a page on India's data centre capacity reaching 14GW by 2035. That is a claim about the market and appears in the decks of companies with data centre orders and companies with none. Not evidence."
+    },
+    {
+      "symbol": "INDOTECH",
+      "name": "Indo Tech Transformers Ltd.",
+      "isin": null,
+      "suggestedLayer": "power",
+      "suggestedSubLayers": ["equipment"],
+      "admitted": false,
+      "basis": "soft",
+      "note": "Rs 495 Cr capex to 50,000 MVA is a hard commitment, but the data centre reference is sector demand commentary, not a data centre order. Needs a first-party item."
+    },
+    {
+      "symbol": "SUPREMEPWR",
+      "name": "Supreme Power Equipment Ltd.",
+      "isin": null,
+      "suggestedLayer": "power",
+      "suggestedSubLayers": ["equipment"],
+      "admitted": false,
+      "basis": "soft",
+      "note": "Annual report cites CBRE on national data centre stock. Market commentary."
+    }
+  ],
+  "excluded": []
+}

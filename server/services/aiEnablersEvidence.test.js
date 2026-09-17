@@ -113,3 +113,61 @@ test('empty evidence is not soft evidence', () => {
   assert.equal(admits([]).basis, 'none');
   assert.equal(admits([]).admitted, false);
 });
+
+/**
+ * Verbatim from filings retrieved via Trendlyne while building the first
+ * universe. The market-commentary rule exists because of these three.
+ */
+const CBRE = { title: 'As per CBRE Group India data centre report for 2026, the country data centre stock crossed approximately 1.7 GW in 2025 and total capacity is expected to rise by about 30% during 2026' };
+const INDOTECH = { title: 'Capacity expansion in steel, cement, textiles, and data centres contributes to sustained industrial transformer demand' };
+const KEI = { title: 'India Data Centre Capacity set to touch 14GW by 2035 with 20% CAGR, driven by AI, Cloud and 5G demand' };
+const HITACHI_CALL = { title: 'The third project is a significant data center-related order for a Load Pooling Station and Main Pooling Station, comprising 56 of 400 kV Gas-Insulated Switchgear (GIS) and 12.8 km of 400 kV Gas-Insulated Busbar' };
+const HITACHI_REPORT = { title: 'Data Centers: Received an order for 3X 220kV AIS Transformers extension for a leading data center in Hyderabad' };
+
+test('a forecast about the market is not evidence about the company printing it', () => {
+  // Every transformer maker's deck carries a page on India reaching 8-10 GW of
+  // data centre capacity, sourced to CRISIL or CBRE. It appears in the
+  // documents of companies with data centre orders and companies with none,
+  // identically. Counting it admits the sector on the strength of its slides.
+  for (const deck of [CBRE, INDOTECH, KEI]) {
+    assert.equal(classifyEvidence(deck).hard, false, deck.title.slice(0, 40));
+  }
+  assert.equal(admits([CBRE, INDOTECH, KEI]).admitted, false);
+});
+
+test('the company describing its own forecast is not market commentary', () => {
+  // CONSTRUCTED: first-person language over a forward-looking sentence. The
+  // rule must not silence a company saying what it is building.
+  const ours = { title: 'We expect to commission our new transformer facility serving data centre customers in FY28' };
+  assert.equal(classifyEvidence(ours).hard, true);
+});
+
+test('an order described rather than announced is still an order', () => {
+  // How a company's own earnings call talks about the orders it just won.
+  // Requiring an acquisition verb missed this entirely.
+  const verdict = classifyEvidence(HITACHI_CALL);
+  assert.equal(verdict.kind, 'order');
+  assert.equal(verdict.hard, true);
+  assert.equal(verdict.aiRelevant, true);
+});
+
+test('Hitachi Energy India admits on its own filings', () => {
+  const decision = admits([CBRE, KEI, HITACHI_CALL, HITACHI_REPORT]);
+  assert.equal(decision.admitted, true);
+  assert.equal(decision.hard.length, 2);
+  // Transformers and gas-insulated switchgear are equipment; a pooling
+  // station and a gas-insulated busbar are the grid they connect to. The
+  // company sits in both, and each on its own line.
+  const subLayers = subLayersFrom([HITACHI_CALL, HITACHI_REPORT]).map((one) => one.subLayer).sort();
+  assert.deepEqual(subLayers, ['equipment', 'transmission']);
+});
+
+test('a sub-layer is claimed only where the evidence actually says so', () => {
+  // The first version of the test above asserted transmission from two
+  // excerpts that name only transformers and switchgear. The code was right
+  // and the expectation was wrong - which is the failure mode this whole
+  // screen exists to avoid, committed while writing its tests.
+  assert.deepEqual(subLayersFrom([HITACHI_REPORT]).map((one) => one.subLayer), ['equipment']);
+  const hvdc = { title: '1,000 MW Kudus-Aarey HVDC transmission project in Mumbai, Maharashtra' };
+  assert.deepEqual(subLayersFrom([hvdc]).map((one) => one.subLayer), ['transmission']);
+});

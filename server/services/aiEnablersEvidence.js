@@ -49,10 +49,43 @@ const ROUTINE = [
  */
 const FUNDRAISE = /qualified institution(?:s|al)? placement|\bqip\b|preferential (?:issue|allotment)|rights issue|fund ?rais/i;
 
+/**
+ * Market commentary, which is not evidence about the company saying it.
+ *
+ * Found by running the screen against real filings. Every transformer maker's
+ * investor presentation contains a page on how India's data centre capacity
+ * will reach 8-10 GW by 2031, sourced to CRISIL or CareEdge. That is a claim
+ * about the market, and it appears in the documents of companies with data
+ * centre orders and companies with none, identically. Counting it admits the
+ * entire sector on the strength of its slide decks.
+ *
+ * A hard item has to describe something the company did.
+ */
+const MARKET_COMMENTARY = [
+  /\b(?:is|are) (?:expected|projected|estimated|likely|forecast) to\b/i,
+  /\bmarket (?:is|size|opportunity|outlook)\b/i,
+  /\bindustry (?:is|demand|outlook)\b/i,
+  /\bcagr\b/i,
+  /source:\s*(?:crisil|careedge|mordor|wood ?mackenzie|cbre|frost)/i,
+  /\bby (?:fiscal|fy)\s?20\d\d\b.*\b(?:gw|twh|billion|trillion)\b/i,
+];
+
+/** What the company itself did, said in the first person or about its own book. */
+const FIRST_PARTY = [
+  /\b(?:we|our|the company|the group)\b/i,
+  /\breceived an order\b|\bsecured\b|\bwon\b|\bbagged\b|\bawarded\b/i,
+  /\border (?:book|backlog|intake)\b/i,
+  /\bcommissioned\b|\bexecuted\b|\bdispatched\b/i,
+];
+
 const HARD_KINDS = [
   {
     kind: 'order',
-    test: /\b(?:receiv|secur|bagg?|win|won|award|letter of (?:intent|award)|\bloa\b|work order|purchase order|contract)\w*\b/i,
+    // Both halves matter. A filing may say "received an order" or it may
+    // describe one: "a significant data center-related order for a Load
+    // Pooling Station". Requiring the verb missed the second, which is how a
+    // company's own earnings call describes the orders it just won.
+    test: /\b(?:receiv|secur|bagg?|win|won|award|letter of (?:intent|award)|\bloa\b|work order|purchase order|contract)\w*\b|\border (?:for|from|worth|valued)\b/i,
   },
   {
     kind: 'capex',
@@ -109,6 +142,14 @@ export function classifyEvidence({ title = '', description = '', source = '', ki
   const aiRelevant = matches(text, INFRASTRUCTURE_TERMS);
   const hard = HARD_KINDS.find((one) => one.test.test(text));
   if (hard) {
+    // A forecast about the sector, in a deck, is not something the company
+    // did - and it appears in the decks of companies with orders and
+    // companies with none, identically.
+    const commentary = matches(text, MARKET_COMMENTARY) && !matches(text, FIRST_PARTY);
+    if (commentary) {
+      return { kind: 'market_commentary', hard: false, aiRelevant, source,
+        why: 'a claim about the market, not about this company' };
+    }
     return {
       kind: hard.kind, hard: true, aiRelevant, source,
       why: aiRelevant ? `${hard.kind} naming AI infrastructure` : `${hard.kind}, but nothing ties it to AI infrastructure`,
@@ -160,16 +201,20 @@ export function admits(evidence = []) {
  * Returns every sub-layer the evidence supports - a company that makes both
  * transformers and switchgear for data centres genuinely sits in two.
  */
+// Every noun here ends in \w* rather than \b. A filing writes "3X 220kV AIS
+// Transformers", and \btransformer\b does not match "Transformers" - which
+// silently gave that order no sub-layer at all. Only the start of these terms
+// can be bounded safely.
 const SUB_LAYERS = [
-  ['power', 'generation', /\b(?:power purchase agreement|\bppa\b|captive power|solar|wind|renewable capacity|generation capacity)\b/i],
-  ['power', 'transmission', /\b(?:transmission line|substation|hvdc|grid connect\w*|evacuation)\b/i],
-  ['power', 'equipment', /\b(?:transformer|switchgear|circuit breaker|cable|genset|drive|rectifier)\b/i],
-  ['data_centre', 'developer', /\b(?:data ?cent(?:er|re) (?:park|campus|shell|epc)|build\w* a data ?cent(?:er|re))\b/i],
-  ['data_centre', 'operator', /\b(?:colocation|co-?lo|data ?cent(?:er|re) (?:capacity|operations)|hyperscal\w+ (?:customer|tenant))\b/i],
-  ['data_centre', 'hardware', /\b(?:ai server|ai system|gpu|rack|liquid cooling|chiller|accelerator|hpc|high[- ]end computing)\b/i],
-  ['semiconductor', 'osat', /\b(?:osat|assembly and test|advanced packaging|outsourced semiconductor)\b/i],
-  ['semiconductor', 'materials', /\b(?:wafer|substrate|specialty gas|photoresist|electronic chemical)\b/i],
-  ['semiconductor', 'hardware', /\b(?:fab equipment|test equipment|lithograph\w+|deposition|etch(?:ing)? (?:tool|system))\b/i],
+  ['power', 'generation', /\b(?:power purchase agreement\w*|ppa\b|captive power|solar\w*|wind farm\w*|renewable capacity|generation capacity)/i],
+  ['power', 'transmission', /\b(?:transmission line\w*|substation\w*|pooling station\w*|hvdc|gas-?insulated busbar\w*|grid connect\w*|evacuation)/i],
+  ['power', 'equipment', /\b(?:transformer\w*|switchgear\w*|circuit breaker\w*|cable\w*|genset\w*|rectifier\w*|gas-?insulated switchgear\w*)/i],
+  ['data_centre', 'developer', /\b(?:data ?cent(?:er|re)s? (?:park|campus|shell|epc)\w*|build\w* a data ?cent(?:er|re))/i],
+  ['data_centre', 'operator', /\b(?:colocation|co-?lo\b|data ?cent(?:er|re)s? (?:capacity|operations)|hyperscal\w+ (?:customer|tenant)\w*)/i],
+  ['data_centre', 'hardware', /\b(?:ai server\w*|ai system\w*|gpu\w*|rack\w*|liquid cooling|chiller\w*|accelerator\w*|hpc\b|high[- ]end computing)/i],
+  ['semiconductor', 'osat', /\b(?:osat\w*|assembly and test\w*|advanced packaging|outsourced semiconductor)/i],
+  ['semiconductor', 'materials', /\b(?:wafer\w*|substrate\w*|specialty gas\w*|photoresist\w*|electronic chemical\w*)/i],
+  ['semiconductor', 'hardware', /\b(?:fab equipment|test equipment|lithograph\w+|deposition|etch(?:ing)? (?:tool|system)\w*)/i],
 ];
 
 export function subLayersFrom(evidence = []) {
