@@ -769,6 +769,46 @@ A signal with no attached evidence rows is a bug, and the writer rejects it.
 
 ---
 
+## PART 12b — The fact store behind the dashboard
+
+Product B does not parse filings. It asks Product A, which has already made every
+figure cite itself, and carries the citation through to the page. The alternative — a
+second parser, tuned for AI names — would drift from the first within a quarter and
+there would be no way to tell which was right.
+
+`aiEnablersFundamentals.js` is the join. It reads the store once per company and answers
+the dashboard's concepts (capex, debt, EBITDA, revenue, CFO) with provenance attached:
+a stated figure carries `source_page` and `source_sentence`; a derived one carries the
+`lineage()` tree, so "Kaynes capex intensity increased" opens into `capex@FY26 = 473`
+from page 142 of the annual report, `revenue@FY26 = 3,000`, and the division between
+them.
+
+**The state the fact store did not have.** Product A's five resolution states describe a
+filing that has been read. Ask `resolveConcept()` about a company with no ingested
+document and it answers `NOT_DISCLOSED` — *"places in the filing were searched and none
+disclosed it"* — which is a false statement about a filing nobody opened, and on a
+dashboard reads as "this company discloses no capex". So this module checks ingestion
+first and `NOT_INGESTED` is its own answer. The pair has to stay apart: one is a gap in
+our reading, the other is a fact about the company.
+
+**Two namespaces, joined once and visibly.** A universe member is an NSE symbol and an
+ISIN. A fact belongs to a `company` key in the store. `factStoreKeyFor` reads only a
+declared `factStoreKey` and never falls back to the symbol, because a fallback silently
+attaches one company's filings to whatever happens to match. A member without a declared
+mapping reads as unmapped, which is visible, rather than as a company with no
+disclosures, which is not.
+
+**What this unblocks.** Stage 3 of the screen took investment-intensity figures as
+inputs and had nowhere to get them. `intensityForUniverse` now produces them —
+capex/sales, capex growth, three-year revenue CAGR — from cited filing rows, in the
+shape `stageThree` reads. A ratio missing an input is null and named; a three-year CAGR
+is never computed from two disclosed years.
+
+Endpoints: `/api/india-ai/fundamentals?period_end=YYYY-MM-DD` and
+`/api/india-ai/screen/intensity`.
+
+---
+
 ## PART 13 — Worked example
 
 The five companies named in the brief are real listed entities and their business lines are
