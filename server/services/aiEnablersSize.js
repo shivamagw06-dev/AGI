@@ -54,6 +54,47 @@ export function bookEquityFrom(row, { basis = 'standalone' } = {}) {
   return { equity, basis, period: row?.period ?? null, reason: null };
 }
 
+/**
+ * The balance sheet on the basis that actually carries data.
+ *
+ * Upstox defaults to consolidated and returns it empty for a company that has
+ * no consolidated statements to report - which is not a fault but a fact
+ * about the company: a business with no subsidiaries has only a standalone
+ * book, and for it standalone *is* the whole company. The basis question that
+ * makes this derivation risky therefore does not arise for those names at
+ * all. It arises for holding companies, which do have both - so consolidated
+ * is preferred wherever it exists, and the basis actually used is recorded
+ * rather than assumed.
+ *
+ * `units_in` is read rather than trusted. Upstox documents crore, and the
+ * whole derivation is denominated in it.
+ */
+export function balanceSheetRowFrom(payloads) {
+  for (const [basis, payload] of payloads) {
+    const body = payload?.data;
+    const history = Array.isArray(body?.history) ? body.history : [];
+    if (!history.length) continue;
+    const units = String(body?.units_in || '').trim().toLowerCase();
+    if (units && units !== 'crore') {
+      return { row: null, basis, units, reason: 'UNEXPECTED_UNITS' };
+    }
+    // Upstox's own "Equity Capital" line, when the detailed breakdown was
+    // asked for. It equals total assets less total liabilities in their
+    // documented example, so where both are present they must agree - and a
+    // disagreement means the row is not what it is taken to be.
+    const stated = (Array.isArray(body?.full_statement) ? body.full_statement : [])
+      .find((one) => /^equity capital$/i.test(String(one?.particular || '').trim()));
+    const statedValue = numeric(Array.isArray(stated?.history)
+      ? stated.history.find((one) => one?.period === history[0]?.period)?.value
+      : null);
+    return {
+      row: history[0], basis, units: units || 'crore', statedEquity: statedValue, reason: null,
+      periods: history.length,
+    };
+  }
+  return { row: null, basis: null, units: null, reason: 'NO_BALANCE_SHEET_ON_ANY_BASIS' };
+}
+
 /** The free-float share, from the shareholding categories. */
 export function freeFloatRatioFrom(shareHoldings) {
   const rows = Array.isArray(shareHoldings) ? shareHoldings : [];
@@ -194,7 +235,9 @@ export function freeFloatMarketCap({
  */
 export async function sizeForUniverse(universe, {
   fetchFundamentals, fetchMarketCaps = null, tolerance = CROSS_CHECK_TOLERANCE,
-  balanceSheetParams = { type: 'standalone', time_period: 'yearly', fs: true },
+  // Consolidated first, standalone second. time_period is not a parameter
+  // this endpoint takes - only type and fs - so it is not sent.
+  balanceSheetBases = ['consolidated', 'standalone'],
   crossCheckSource = fetchMarketCaps ? 'external' : 'earnings',
   netIncomeFor = null,
 } = {}) {
@@ -212,14 +255,12 @@ export async function sizeForUniverse(universe, {
   for (const member of members) {
     const independent = caps?.[member.symbol] || null;
     try {
-      const [keyRatios, balanceSheet, shareHoldings] = await Promise.all([
+      const [keyRatios, shareHoldings, ...sheets] = await Promise.all([
         fetchFundamentals(member.isin, 'key-ratios', {}),
-        fetchFundamentals(member.isin, 'balance-sheet', balanceSheetParams),
         fetchFundamentals(member.isin, 'share-holdings', {}),
+        ...balanceSheetBases.map((type) => fetchFundamentals(member.isin, 'balance-sheet', { type, fs: true })),
       ]);
-      // Standalone is the variant that returns rows; consolidated comes back
-      // empty, which is why the basis caveat exists at all.
-      const history = balanceSheet?.data?.history || balanceSheet?.data?.full_statement || [];
+      const chosen = balanceSheetRowFrom(balanceSheetBases.map((type, i) => [type, sheets[i]]));
       // Prefer an external figure; fall back to the earnings route when
       // there is none, so a dead third party does not make every size
       // unverifiable.
@@ -231,15 +272,37 @@ export async function sizeForUniverse(universe, {
 
       const size = freeFloatMarketCap({
         keyRatios: keyRatios?.data,
-        balanceSheetRow: Array.isArray(history) ? history[0] : null,
+        balanceSheetRow: chosen.row,
         shareHoldings: shareHoldings?.data,
         independentMarketCap: checkAgainst,
         tolerance,
-        basis: balanceSheetParams.type || 'standalone',
+        basis: chosen.basis || 'unknown',
       });
       if (size.crossCheck) size.crossCheck.checkedBy = checkedBy;
+
+      // Upstox's own Equity Capital line against the subtraction. They are
+      // the same quantity, so a gap means the row is not what it is taken
+      // to be and the derivation should not proceed on it.
+      if (chosen.statedEquity != null && size.lineage?.inputs?.book_equity?.value != null) {
+        const computed = size.lineage.inputs.book_equity.value;
+        const drift = Math.abs(chosen.statedEquity / computed - 1);
+        size.lineage.inputs.book_equity.statedEquityCapital = chosen.statedEquity;
+        size.lineage.inputs.book_equity.agreesWithStated = drift < 0.005;
+        if (drift >= 0.005) {
+          size.usable = false;
+          size.value = null;
+          size.reason = `total assets less total liabilities (${computed.toFixed(2)}) disagrees with the Equity Capital line (${chosen.statedEquity.toFixed(2)})`;
+        }
+      }
+      if (chosen.reason === 'UNEXPECTED_UNITS') {
+        size.usable = false;
+        size.value = null;
+        size.reason = `balance sheet reported in ${chosen.units}, not crore`;
+      }
       rows[member.symbol] = {
         ...size,
+        basisUsed: chosen.basis,
+        basisPeriods: chosen.periods ?? 0,
         independent: {
           crore: checkAgainst,
           source: checkedBy,

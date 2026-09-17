@@ -183,7 +183,7 @@ export default function createIndiaAiIntelligenceRouter() {
       const from = new Date(Date.now() - 200 * 24 * 3600 * 1000).toISOString().slice(0, 10);
 
       const [sizes, liquidity] = await Promise.all([
-        sizeForUniverse(universe, { fetchFundamentals: getFundamentals, fetchMarketCaps }),
+        sizeForUniverse(universe, { fetchFundamentals: getFundamentals, fetchMarketCaps, crossCheckSource: 'yahoo' }),
         liquidityForUniverse(universe, { fetchCandles: getHistoricalCandles, to: today, from, sessions: 120 }),
       ]);
 

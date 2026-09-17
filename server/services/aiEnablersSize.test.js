@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  bookEquityFrom, freeFloatMarketCap, freeFloatRatioFrom, marketCapFromEarnings,
+  balanceSheetRowFrom, bookEquityFrom, freeFloatMarketCap, freeFloatRatioFrom, marketCapFromEarnings,
   sizeForUniverse, sizeRows,
 } from './aiEnablersSize.js';
 
@@ -144,10 +144,29 @@ test('the P/B rounding cannot move the answer materially', () => {
 /* ── the universe pass, Upstox derived and Yahoo checked ───────────── */
 
 /** Payload shapes verbatim from the probe run. */
-const fundamentalsFor = (overrides = {}) => async (isin, endpoint) => {
+const fundamentalsFor = (overrides = {}) => async (isin, endpoint, params = {}) => {
+  if (endpoint === 'balance-sheet') {
+    if (overrides['balance-sheet']) return overrides['balance-sheet'];
+    // Hitachi Energy India reports no consolidated statements, which is a
+    // fact about the company rather than a fault - so consolidated comes
+    // back empty and standalone carries the rows.
+    if (params.type === 'consolidated') {
+      return { status: 'success', data: { type: 'consolidated', units_in: 'crore', history: [], full_statement: [] } };
+    }
+    return {
+      status: 'success',
+      data: {
+        type: 'standalone', units_in: 'crore',
+        history: [POWERINDIA.balanceSheetRow],
+        full_statement: [{
+          particular: 'Equity Capital',
+          history: [{ period: 'Mar 2026', value: 5175.96 }],
+        }],
+      },
+    };
+  }
   const map = {
     'key-ratios': { status: 'success', data: POWERINDIA.keyRatios },
-    'balance-sheet': { status: 'success', data: { type: 'standalone', history: [POWERINDIA.balanceSheetRow] } },
     'share-holdings': { status: 'success', data: POWERINDIA.shareHoldings },
     ...overrides,
   };
@@ -175,7 +194,7 @@ test('the balance sheet is read from the standalone variant that returns rows', 
   // only tried consolidated would find no equity for anyone.
   const sizes = await sizeForUniverse(UNIVERSE, {
     fetchFundamentals: fundamentalsFor({
-      'balance-sheet': { status: 'success', data: { type: 'consolidated', history: [] } },
+      'balance-sheet': { status: 'success', data: { type: 'consolidated', units_in: 'crore', history: [] } },
     }),
     fetchMarketCaps: async () => ({ bySymbol: { POWERINDIA: { crore: 134_900, reason: null } }, error: null }),
   });
@@ -206,7 +225,7 @@ test('a disagreeing Yahoo cap refuses the member and names the gap', async () =>
   assert.equal(row.usable, false);
   assert.equal(row.value, null);
   assert.equal(row.crossCheck.within, false);
-  assert.match(row.reason, /standalone book is probably the wrong basis/);
+  assert.match(row.reason, /wrong basis for this P\/B/);
   assert.deepEqual(sizes.refused.map((one) => one.symbol), ['POWERINDIA']);
 });
 
@@ -303,4 +322,106 @@ test('no third party and no earnings source still refuses rather than passing', 
   });
   assert.deepEqual(sizes.usable, []);
   assert.match(sizes.bySymbol.POWERINDIA.reason, /arithmetic, not a market cap/);
+});
+
+/* ── which basis, and does Upstox's own equity line agree ───────────── */
+
+test('consolidated is preferred where it exists', () => {
+  const chosen = balanceSheetRowFrom([
+    ['consolidated', { data: { units_in: 'crore', history: [{ total_asset: 100, total_liability: 40, period: 'Mar 2026' }] } }],
+    ['standalone', { data: { units_in: 'crore', history: [{ total_asset: 20, total_liability: 8, period: 'Mar 2026' }] } }],
+  ]);
+  assert.equal(chosen.basis, 'consolidated');
+  assert.equal(chosen.row.total_asset, 100);
+});
+
+test('an empty consolidated sheet is a fact about the company, not a failure', () => {
+  // Upstox defaults to consolidated and returns nothing for a company with
+  // no subsidiaries to consolidate. For that company standalone is the whole
+  // company, and the basis question this derivation worries about does not
+  // arise at all.
+  const chosen = balanceSheetRowFrom([
+    ['consolidated', { data: { units_in: 'crore', history: [] } }],
+    ['standalone', { data: { units_in: 'crore', history: [{ total_asset: 12043.72, total_liability: 6867.76, period: 'Mar 2026' }] } }],
+  ]);
+  assert.equal(chosen.basis, 'standalone');
+  assert.equal(chosen.reason, null);
+});
+
+test('no rows on any basis is named, not treated as zero equity', () => {
+  const chosen = balanceSheetRowFrom([
+    ['consolidated', { data: { history: [] } }],
+    ['standalone', { data: { history: [] } }],
+  ]);
+  assert.equal(chosen.row, null);
+  assert.equal(chosen.reason, 'NO_BALANCE_SHEET_ON_ANY_BASIS');
+});
+
+test('units are read, not assumed', () => {
+  // The whole derivation is denominated in crore; a sheet in anything else
+  // would be out by orders of magnitude and still look like a number.
+  const chosen = balanceSheetRowFrom([
+    ['consolidated', { data: { units_in: 'million', history: [{ total_asset: 100, total_liability: 40, period: 'Mar 2026' }] } }],
+  ]);
+  assert.equal(chosen.reason, 'UNEXPECTED_UNITS');
+  assert.equal(chosen.units, 'million');
+});
+
+test('the Equity Capital line is picked up and matched to the same period', () => {
+  const chosen = balanceSheetRowFrom([
+    ['standalone', { data: {
+      units_in: 'crore',
+      history: [{ total_asset: 12043.72, total_liability: 6867.76, period: 'Mar 2026' }],
+      full_statement: [{ particular: 'Equity Capital', history: [
+        { period: 'Mar 2025', value: 4000 },
+        { period: 'Mar 2026', value: 5175.96 },
+      ] }],
+    } }],
+  ]);
+  assert.equal(chosen.statedEquity, 5175.96);
+});
+
+test('the derivation records that the subtraction agrees with Equity Capital', async () => {
+  const sizes = await sizeForUniverse(UNIVERSE, {
+    fetchFundamentals: fundamentalsFor(),
+    fetchMarketCaps: async () => ({ bySymbol: { POWERINDIA: { crore: 134_900, reason: null } }, error: null }),
+  });
+  const row = sizes.bySymbol.POWERINDIA;
+  assert.equal(row.basisUsed, 'standalone');
+  assert.equal(row.lineage.inputs.book_equity.agreesWithStated, true);
+  assert.equal(row.lineage.inputs.book_equity.statedEquityCapital, 5175.96);
+  assert.equal(row.usable, true);
+});
+
+test('a row whose Equity Capital disagrees is refused', async () => {
+  // Same quantity by two names. If they differ, the row is not what it is
+  // being taken for and nothing downstream should proceed on it.
+  const sizes = await sizeForUniverse(UNIVERSE, {
+    fetchFundamentals: fundamentalsFor({
+      'balance-sheet': { status: 'success', data: {
+        type: 'standalone', units_in: 'crore',
+        history: [{ total_asset: 12043.72, total_liability: 6867.76, period: 'Mar 2026' }],
+        full_statement: [{ particular: 'Equity Capital', history: [{ period: 'Mar 2026', value: 9000 }] }],
+      } },
+    }),
+    fetchMarketCaps: async () => ({ bySymbol: { POWERINDIA: { crore: 134_900, reason: null } }, error: null }),
+  });
+  const row = sizes.bySymbol.POWERINDIA;
+  assert.equal(row.usable, false);
+  assert.match(row.reason, /disagrees with the Equity Capital line/);
+});
+
+test('time_period is never sent to balance-sheet, which does not take it', async () => {
+  const seen = [];
+  await sizeForUniverse(UNIVERSE, {
+    fetchFundamentals: async (isin, endpoint, params) => {
+      if (endpoint === 'balance-sheet') seen.push(params);
+      return fundamentalsFor()(isin, endpoint, params);
+    },
+    fetchMarketCaps: async () => ({ bySymbol: { POWERINDIA: { crore: 134_900, reason: null } }, error: null }),
+  });
+  assert.equal(seen.length, 2);
+  assert.deepEqual(seen.map((one) => one.type), ['consolidated', 'standalone']);
+  assert.equal(seen.every((one) => one.time_period === undefined), true);
+  assert.equal(seen.every((one) => one.fs === true), true);
 });
