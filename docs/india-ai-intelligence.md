@@ -177,9 +177,30 @@ one hard item**, corroborated:
 |---|---|---|
 | signed order naming a data centre, hyperscaler, or semiconductor project | hard | contractual |
 | disclosed capex for an AI-relevant facility | hard | capital committed |
-| operating disclosure: MW energised, racks shipped, wafers packaged | hard | physical |
+| operating disclosure: segment revenue, MW energised, racks shipped, wafers packaged | hard | physical |
 | partnership or MoU with a named counterparty | soft | intent |
 | transcript vocabulary appearing for the first time | soft | earliest, weakest |
+
+Both halves have a source: Trendlyne, already connected to this workspace. Its news
+endpoint returns Reg 30 (LODR) exchange filings, and its document search covers earnings
+call transcripts and investor presentations. `aiEnablersEvidence.js` implements the
+classification; see below for what it does to a real feed.
+
+Two rules the classifier enforces that a keyword count cannot:
+
+- **A capital raise is not evidence.** It is the most common false positive — exciting,
+  price-moving, often reported beside AI commentary, and silent about what the company
+  builds. It is classified explicitly so the reason is visible.
+- **"AI" alone does not make a filing relevant.** Every company says it. The terms that
+  carry information describe plant: racks, substations, packaging lines, megawatts. An
+  order that "will use AI to improve efficiency" is not AI-infrastructure evidence.
+
+Run against Netweb Technologies' real announcement feed, the last fortnight classifies as
+four routine filings and one fundraise — **no evidence at all**, for a company that is
+unambiguously an AI infrastructure business. Its investor presentation is what admits it:
+AI Systems at 62.29% of revenue is an operating disclosure, and places it in data centre
+hardware. That gap between a company's obvious identity and its recent filings is the
+reason admission runs on a body of evidence over time rather than on a rolling window.
 
 **Soft evidence alone never admits a company.** It raises a candidate to a watchlist that a
 human reviews. This is the single most important rule in the screen: the cheapest way to
@@ -503,13 +524,19 @@ moved.
 
 | need | blocks | candidate source | note |
 |---|---|---|---|
-| Corporate announcements | order feed, catalysts, alerts | NSE/BSE announcement feeds | scrape or licensed feed; NSE has no clean public API |
+| Corporate announcements | order feed, catalysts, alerts | **Trendlyne** (connected) | Reg 30 filings with PDFs; server-side API access still needed |
 | Consensus estimates | revisions, gap, PEG, valuation map | Refinitiv / FactSet / Capital IQ | the largest cost item; nothing else substitutes |
-| Transcripts | language detector, mention momentum | IR sites, AlphaSense, Trendlyne | IR scraping is feasible; coverage will be uneven |
+| Transcripts | language detector, mention momentum | **Trendlyne** (connected) | full transcripts and investor presentations, semantic search |
 | Data centre projects | project tracker, MW pipeline | company IR, state industrial filings, press | no single source; manual + verification |
 | Grid and transmission | the bottleneck panel | CEA, POSOCO, state discoms | public but poorly structured |
 | Order books | order significance denominator | filings, already in `company_facts` | partially available now |
 | Free float | cap-weighted construction | NSE shareholding filings | quarterly |
+
+Two rows moved from `NEEDED` to available while this was being written: Trendlyne is
+already connected to the workspace and covers both announcements and transcripts. It is an
+MCP connection today, not a server integration, so the product still needs API credentials
+of its own — but the data exists and has been tested against real filings, which is a
+different problem from not having a source.
 
 The honest reading of this table: **Phase 1 can ship on Upstox alone.** The index,
 attribution, breadth, relative strength, the decomposition's price half, and the whole
