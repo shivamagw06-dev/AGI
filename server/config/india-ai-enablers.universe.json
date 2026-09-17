@@ -439,11 +439,12 @@
     }
   },
   "dataAvailability": {
-    "measuredOn": "2026-09-17",
+    "measuredOn": "2026-09-18",
     "note": "What the connected sources actually serve for these members, probed rather than assumed.",
-    "freeFloatMarketCap": "BLOCKED. Upstox profile carries sector market cap only, with no company figure and no share count; balance-sheet returned no rows. share-holdings gives the promoter/FII/DII/public split, which is the free-float ratio, so the missing input is shares outstanding. factOntology already defines SHARE_COUNT.OUTSTANDING, so an ingested annual report supplies it.",
-    "stage3Inputs": "PARTIAL. income-statement and cash-flow return 3 yearly periods each. A three-year revenue CAGR needs four points, so it is not computable from Upstox alone; capex-to-sales and capex growth are.",
+    "freeFloatMarketCap": "DERIVABLE, not blocked - my earlier note was wrong. P/B is price over book value per share, so market cap is P/B x book equity and no share count is needed. key-ratios serves P/B, balance-sheet serves total assets and liabilities on a standalone basis, and share-holdings serves the promoter share. The exposed assumption is the basis: consolidated statements come back empty, so the equity is standalone while the P/B's basis is unstated. For a holding company those books differ by a multiple, so every derivation is marked DERIVED, carries its lineage, and must clear an independent cross-check before a screen may use it.",
+    "stage3Inputs": "BLOCKED on Upstox. income-statement and cash-flow return their categories with history: [] under consolidated - structure and no values. balance-sheet under standalone does return four periods, so standalone is worth trying for the statements too, but as served there is no capex and no revenue to screen on.",
     "consensusEstimates": "ABSENT. No forward estimates on any connected source, so earnings revisions and forward EPS have nothing to compute from.",
-    "unblockedBy": "Ingesting annual reports for the seven members. That single action supplies shares outstanding for Stage 2, capex and revenue with lineage for Stage 3, and the citations the dashboard claims resolve to."
+    "unblockedBy": "Ingesting annual reports for the seven members. That single action supplies shares outstanding for Stage 2, capex and revenue with lineage for Stage 3, and the citations the dashboard claims resolve to.",
+    "balanceSheet": "Only standalone returns rows, and only total_asset and total_liability. Consolidated yearly, consolidated quarterly and the default parameters all return zero rows."
   }
 }
