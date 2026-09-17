@@ -173,3 +173,28 @@ test('a universe where every member has a sub-layer reconciles at both levels', 
   assert.equal(index.residual_ok, true);
   assert.equal(index.subLayerResidual_ok, true);
 });
+
+test('a fallback quote is priced, and counted as a fallback', () => {
+  // The bug this pins: the quote layer serves a last-good price precisely
+  // because the tick is older than the live staleness window, and priced()
+  // then re-applied that same window and threw it away. The fallback looked
+  // implemented and could never fire.
+  const members = [{ symbol: 'AAA', layer: 'power', subLayers: ['equipment'] }];
+  const quotes = { AAA: { ltp: 110, previousClose: 100, at: NOW - 200_000, source: 'last_good' } };
+  const result = priced(members, quotes, { now: NOW, staleMs: 60_000 });
+  assert.equal(result.coverage, 1);
+  assert.equal(result.stale.length, 0);
+  assert.equal(result.fallback.length, 1);
+  assert.equal(result.fallback[0].symbol, 'AAA');
+});
+
+test('an equally old quote with no source is still stale', () => {
+  // Only a quote that declares itself adjudicated skips the check. Anything
+  // else keeps the original behaviour, so a raw feed cannot sneak past.
+  const members = [{ symbol: 'AAA', layer: 'power', subLayers: ['equipment'] }];
+  const quotes = { AAA: { ltp: 110, previousClose: 100, at: NOW - 200_000 } };
+  const result = priced(members, quotes, { now: NOW, staleMs: 60_000 });
+  assert.equal(result.coverage, 0);
+  assert.equal(result.stale.length, 1);
+  assert.equal(result.fallback.length, 0);
+});

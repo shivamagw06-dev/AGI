@@ -38,10 +38,22 @@ export function priced(members, quotes, { now = Date.now(), staleMs = STALE_MS }
   const live = [];
   const missing = [];
   const stale = [];
+  const fallback = [];
   for (const member of members || []) {
     const quote = quotes?.[member.symbol];
     if (!quote || !Number.isFinite(Number(quote.ltp)) || !Number.isFinite(Number(quote.previousClose))) {
       missing.push(member.symbol);
+      continue;
+    }
+    // A quote that declares itself a fallback has already been aged by the
+    // layer that produced it, against its own bound. Re-applying the live
+    // staleness window here would reject every fallback by construction -
+    // the fallback exists precisely because the tick is older than that
+    // window - and the feature would look implemented while never working.
+    // Freshness has one authority; this function reports what it was given.
+    if (quote.source === 'last_good') {
+      fallback.push({ symbol: member.symbol, ageMs: now - Number(quote.at) });
+      live.push({ member, quote });
       continue;
     }
     if (quote.at !== undefined && now - Number(quote.at) > staleMs) {
@@ -52,7 +64,7 @@ export function priced(members, quotes, { now = Date.now(), staleMs = STALE_MS }
   }
   const total = (members || []).length;
   return {
-    live, missing, stale,
+    live, missing, stale, fallback,
     coverage: total === 0 ? 0 : round(live.length / total, 4),
     total,
   };
@@ -165,6 +177,7 @@ export function computeIndex(universe, quotes, options = {}) {
       total: coverage.total,
       missing: coverage.missing,
       stale: coverage.stale,
+      fallback: coverage.fallback,
       reason: `${coverage.live.length} of ${coverage.total} members priced; an index of the rest is not the index`,
     };
   }
@@ -217,6 +230,35 @@ export function computeIndex(universe, quotes, options = {}) {
   const summedSubLayers = [...bySubLayer.values()].reduce((sum, pp) => sum + pp, 0);
   const subLayerResidual_pp = round(indexReturn * 100 - summedSubLayers, 6);
 
+  // Breadth: how many members are carrying the move, not how far it went. A
+  // basket up 2% on one name of seven is a different fact from a basket up 2%
+  // on six of seven, and the level alone cannot tell them apart.
+  const advancing = byName.filter((row) => row.return_pct > 0).length;
+  const declining = byName.filter((row) => row.return_pct < 0).length;
+  const breadth = {
+    advancing,
+    declining,
+    unchanged: byName.length - advancing - declining,
+    advancing_pct: byName.length ? round(advancing / byName.length, 4) : null,
+  };
+
+  // Relative return against the benchmark. Reported as a difference in
+  // percentage points, not a ratio, and null when the benchmark is not priced
+  // - an unbenchmarked relative return is just the absolute one wearing a
+  // different label.
+  const benchmarkQuote = options.benchmark || null;
+  const benchmarkReturn = benchmarkQuote
+    && Number.isFinite(Number(benchmarkQuote.ltp))
+    && Number.isFinite(Number(benchmarkQuote.previousClose))
+    && Number(benchmarkQuote.previousClose) !== 0
+    ? returnOf(benchmarkQuote)
+    : null;
+  const relative = benchmarkReturn === null ? null : {
+    benchmark_return_pp: round(benchmarkReturn * 100, 4),
+    excess_pp: round((indexReturn - benchmarkReturn) * 100, 4),
+    benchmark_source: benchmarkQuote.source || null,
+  };
+
   return {
     status: 'ok',
     asOf,
@@ -236,6 +278,8 @@ export function computeIndex(universe, quotes, options = {}) {
       bySubLayer: [...bySubLayer].map(([key, pp]) => ({ subLayer: key, contribution_pp: pp }))
         .sort((a, b) => b.contribution_pp - a.contribution_pp),
     },
+    breadth,
+    relative,
     unclassified,
     residual_pp,
     residual_ok: Math.abs(residual_pp) < 0.005,
