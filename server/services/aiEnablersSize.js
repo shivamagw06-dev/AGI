@@ -155,3 +155,72 @@ export function freeFloatMarketCap({
     freeFloatReason: float.reason,
   };
 }
+
+/**
+ * Size for every admitted member, Upstox derived and Yahoo checked.
+ *
+ * Fetchers are injected so this is testable without a network and without
+ * credentials. Yahoo is a cross-check and never a source: where it is
+ * unreachable, every member comes back unusable with that reason, because a
+ * derivation nothing corroborates must not quietly become a screen input.
+ */
+export async function sizeForUniverse(universe, {
+  fetchFundamentals, fetchMarketCaps, tolerance = CROSS_CHECK_TOLERANCE,
+  balanceSheetParams = { type: 'standalone', time_period: 'yearly', fs: true },
+} = {}) {
+  const members = (universe?.members || []).filter((one) => one.admitted !== false);
+  const { bySymbol: caps, error: capsError } = await fetchMarketCaps(members.map((one) => one.symbol));
+
+  const rows = {};
+  for (const member of members) {
+    const independent = caps?.[member.symbol] || null;
+    try {
+      const [keyRatios, balanceSheet, shareHoldings] = await Promise.all([
+        fetchFundamentals(member.isin, 'key-ratios', {}),
+        fetchFundamentals(member.isin, 'balance-sheet', balanceSheetParams),
+        fetchFundamentals(member.isin, 'share-holdings', {}),
+      ]);
+      // Standalone is the variant that returns rows; consolidated comes back
+      // empty, which is why the basis caveat exists at all.
+      const history = balanceSheet?.data?.history || balanceSheet?.data?.full_statement || [];
+      const size = freeFloatMarketCap({
+        keyRatios: keyRatios?.data,
+        balanceSheetRow: Array.isArray(history) ? history[0] : null,
+        shareHoldings: shareHoldings?.data,
+        independentMarketCap: independent?.crore ?? null,
+        tolerance,
+        basis: balanceSheetParams.type || 'standalone',
+      });
+      rows[member.symbol] = {
+        ...size,
+        independent: independent
+          ? { crore: independent.crore, source: 'yahoo', unit: 'inr_crore', reason: independent.reason }
+          : { crore: null, source: 'yahoo', unit: 'inr_crore', reason: capsError || 'NOT_RETURNED' },
+      };
+    } catch (error) {
+      rows[member.symbol] = {
+        value: null, marketCap: null, provenance: 'DERIVED', usable: false,
+        reason: String(error?.message || error), lineage: null, crossCheck: null,
+        independent: { crore: independent?.crore ?? null, source: 'yahoo', unit: 'inr_crore', reason: independent?.reason ?? null },
+      };
+    }
+  }
+
+  const usable = Object.entries(rows).filter(([, one]) => one.usable).map(([symbol]) => symbol);
+  return {
+    bySymbol: rows,
+    usable,
+    refused: Object.entries(rows).filter(([, one]) => !one.usable).map(([symbol, one]) => ({ symbol, reason: one.reason })),
+    crossCheckSource: 'yahoo',
+    crossCheckError: capsError,
+  };
+}
+
+/** Just the sizes a screen may use, in the shape stageTwo reads. */
+export function sizeRows(sizes, liquidity = {}) {
+  return Object.entries(sizes?.bySymbol || {}).map(([symbol, one]) => ({
+    symbol,
+    freeFloatMarketCap: one.usable ? one.value : null,
+    medianDailyTurnover: liquidity?.[symbol] ?? null,
+  }));
+}
