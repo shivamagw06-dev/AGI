@@ -75,6 +75,19 @@ export function explain(blocker) {
   return blocker.reason || null;
 }
 
+/**
+ * The definitions an answer's inputs were taken under, in words.
+ *
+ * Q31 asks for reported EBITDA and is answered from a table footnoted "before
+ * exceptional items". The figure is the same this year and would not be in a
+ * year with an exceptional charge, so the answer says which it is rather than
+ * leaving the question's wording to imply the other.
+ */
+export function usedDefinitions(used) {
+  const labels = Object.values(used || {}).map((input) => input?.label).filter(Boolean);
+  return [...new Set(labels)];
+}
+
 /** The pages an answer's inputs were read from, in order, without repeats. */
 export function citedPages(used) {
   const pages = Object.values(used || {})
@@ -105,7 +118,10 @@ export function rowsFor(result, judgements = null) {
       return { ...question, status: 'not_resolved', computed, judged: null, explanation: wholesale };
     }
     if (computed && computed.reason === null && computed.value !== null && computed.value !== undefined) {
-      return { ...question, status: 'computed', computed, judged: null, pages: citedPages(computed.used) };
+      return {
+        ...question, status: 'computed', computed, judged: null,
+        pages: citedPages(computed.used), definitions: usedDefinitions(computed.used),
+      };
     }
     if (computed?.blocked_by?.length) {
       const { status, blocker } = statusOfBlocked(computed.blocked_by);

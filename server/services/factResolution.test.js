@@ -40,12 +40,22 @@ test('what is already held is not searched for again', () => {
 });
 
 test('nothing known to look for is not the same as nothing disclosed', () => {
-  // Reliance states EBITDA of 2,07,911 crore. Saying the report is silent
-  // about it would be the old error wearing a better word.
-  const result = resolveConcept(ask({ concept: 'ebitda', purpose: 'as_management_reports' }));
+  // Reliance reports a segment result before interest and taxes of 1,39,828
+  // crore. Saying the report is silent about EBIT because nothing searches for
+  // it would be the old error wearing a better word.
+  const result = resolveConcept(ask({ concept: 'ebit', purpose: 'as_management_reports' }));
   assert.equal(result.state, STATE.NO_WAY_TO_LOOK);
-  assert.match(result.reason, /nothing knows where ebitda is found/);
-  assert.deepEqual(searchableDefinitions('ebitda'), []);
+  assert.match(result.reason, /nothing knows where ebit is found/);
+  assert.deepEqual(searchableDefinitions('ebit'), []);
+});
+
+test('a concept searched for and absent from these pages is not disclosed in them', () => {
+  // EBITDA is looked for in a ten-year highlights table. These pages have
+  // none, so the answer is that it was searched for and not found - not that
+  // nothing knows where to look.
+  const result = resolveConcept(ask({ concept: 'ebitda', purpose: 'as_management_reports' }));
+  assert.equal(result.state, STATE.NOT_DISCLOSED);
+  assert.deepEqual(result.searched, ['EBITDA.BEFORE_EXCEPTIONAL']);
 });
 
 test('a search that ran and found nothing is what licenses "not disclosed"', () => {
@@ -105,7 +115,7 @@ test('resolving writes nothing; the facts it found are handed back', () => {
 });
 
 test('a tally counts every state, including the ones at zero', () => {
-  const { resolutions } = resolveConcepts(ask({ concepts: ['cfo', 'ebitda'], purpose: 'cash_basis' }));
+  const { resolutions } = resolveConcepts(ask({ concepts: ['cfo', 'ebit'], purpose: 'cash_basis' }));
   const counted = tally(resolutions);
   assert.equal(counted[STATE.RECOVERED_FROM_DOCUMENT], 1);
   assert.equal(counted[STATE.NO_WAY_TO_LOOK], 1);

@@ -16,6 +16,7 @@
  * value of sales and services rather than on revenue from operations, and the
  * old shape had no room to say.
  */
+import { DEFINITIONS } from './factOntology.js';
 import { QUESTIONS } from './annualReportQuestions.js';
 import { computedAnswers } from './annualReportComputed.js';
 import { STATE, resolveConcepts } from './factResolution.js';
@@ -35,6 +36,21 @@ export const NEED_CONCEPTS = new Map([
   ['operating_profit', 'ebit'],
   ['adjusted_ebitda', 'ebitda'],
 ]);
+
+/**
+ * Names that mean one definition, not a concept.
+ *
+ * "gross_debt" is not whichever debt a filing happens to state - it is gross
+ * debt. Resolved by concept alone, a filing disclosing both gross and net debt
+ * came back needing a definition, and one disclosing only net debt would have
+ * put net debt under the gross name. Pinned names are written from their own
+ * definition, whatever the concept's selection chose.
+ */
+export const DEFINITION_FIELDS = new Map([
+  ['DEBT.GROSS', 'gross_debt'],
+  ['DEBT.NET', 'net_debt'],
+]);
+const FIELD_DEFINITIONS = new Map([...DEFINITION_FIELDS].map(([id, field]) => [field, id]));
 
 /** Every line item the computed questions ask for, as concepts. */
 export function neededConcepts(questions = QUESTIONS) {
@@ -67,19 +83,55 @@ export function periodFromResolutions(resolutions, { period_end, currency, unit,
   const provenance = {};
   for (const [concept, result] of resolutions) {
     const chosen = result.selection?.chosen;
+    // Every observation of this concept for this period, by definition, so a
+    // pinned name can be written from its own definition and cited to its own
+    // page rather than borrowing whatever the selection chose.
+    const observed = {};
+    const note = (definition_id, value, source_page) => {
+      if (!definition_id || observed[definition_id] || value === null || value === undefined) return;
+      observed[definition_id] = {
+        state: result.state, definition_id, value: Number(value),
+        label: DEFINITIONS.get(definition_id)?.label ?? null, source_page: source_page ?? null,
+      };
+    };
+    for (const fact of [chosen, ...(result.recovered || [])]) {
+      if (fact && fact.period_end === period_end && !fact.segment) note(fact.definition_id, fact.value, fact.source_page);
+    }
+    for (const one of [...(result.selection?.candidates || []), ...(result.selection?.forgone || [])]) {
+      note(one.definition_id, one.value, null);
+    }
+
     const names = [concept, ...(NEED_FOR_CONCEPT.get(concept) || [])];
     for (const name of names) period[name] = chosen ? Number(chosen.value) : null;
+    // Written after the names above, so a pinned field is its own definition's
+    // figure whatever the concept's selection was - or nothing, if the filing
+    // did not disclose that definition.
+    for (const [definition_id, field] of DEFINITION_FIELDS) {
+      if (DEFINITIONS.get(definition_id)?.concept !== concept) continue;
+      period[field] = observed[definition_id] ? observed[definition_id].value : null;
+    }
     provenance[concept] = {
       state: result.state,
       status: result.selection?.status ?? null,
       definition_id: chosen?.definition_id ?? null,
+      label: chosen ? DEFINITIONS.get(chosen.definition_id)?.label ?? null : null,
       source_page: chosen?.source_page ?? null,
       caveats: result.selection?.caveats || [],
       candidates: result.selection?.candidates?.map((one) => one.definition_id) || null,
       reason: result.reason || result.selection?.reason || null,
+      observed,
     };
   }
   return { period, provenance };
+}
+
+/** What produced a named input: its pinned definition if it has one, else its concept. */
+function provenanceOf(name, provenance) {
+  const pinned = FIELD_DEFINITIONS.get(name);
+  const concept = pinned ? DEFINITIONS.get(pinned).concept : (NEED_CONCEPTS.get(name) ?? name);
+  const entry = provenance[concept];
+  if (!entry) return null;
+  return pinned ? entry.observed?.[pinned] ?? null : entry;
 }
 
 /**
@@ -96,6 +148,19 @@ export function blockedBy(question, provenance) {
     const concept = NEED_CONCEPTS.get(need) ?? need;
     const found = provenance[concept];
     if (!found) { blocking.push({ need, concept, state: 'not_asked_for' }); continue; }
+    const pinned = FIELD_DEFINITIONS.get(need);
+    if (pinned) {
+      // A pinned name is satisfied by its own definition, not by the concept's
+      // selection - which, with gross and net debt both disclosed, is a choice
+      // nobody asking for gross debt needs to make.
+      if (found.observed?.[pinned]) continue;
+      if (found.state === STATE.FOUND_IN_STORE || found.state === STATE.RECOVERED_FROM_DOCUMENT) {
+        blocking.push({ need, concept: need, state: STATE.NOT_DISCLOSED, reason: `${pinned} was not found, though ${concept} was` });
+      } else {
+        blocking.push({ need, concept, state: found.state, reason: found.reason });
+      }
+      continue;
+    }
     if (found.state === STATE.FOUND_IN_STORE || found.state === STATE.RECOVERED_FROM_DOCUMENT) {
       if (found.status === 'needs_a_definition' || found.status === 'no_fit') {
         blocking.push({ need, concept, state: found.state, status: found.status,
@@ -166,16 +231,27 @@ export function answersFromFacts({
     if (question.kind !== 'computed') continue;
     const answer = answers.get(question.n) || null;
     const blocking = blockedBy(question, now);
+    // What each input was, where it came from, and what it cost to choose it.
+    // A margin is worth little without knowing which revenue is under it.
+    let used = Object.fromEntries((question.needs || []).map((need) => [need, provenanceOf(need, now)]));
+    // An answer that read a stated figure in place of computing it cites what
+    // it read. Net debt taken as stated is not built from cash, and citing the
+    // cash line would send a reader to a figure the answer never used.
+    if (answer?.stated?.length) {
+      const inputs = new Set(Object.keys(answer.inputs || {}));
+      used = Object.fromEntries(Object.entries(used).filter(([name]) => inputs.has(name)));
+      for (const field of answer.stated) used[field] = provenanceOf(field, now);
+    }
+    const hasValue = answer && answer.value !== null && answer.value !== undefined;
     decorated.set(question.n, {
       // A missing formula is flagged rather than left to be read out of the
       // reason's wording, because a question with every input resolved and no
       // formula is a different gap from one whose inputs were never found.
       ...(answer || { value: null, formula: null, inputs: null, reason: 'no rule computes this yet', no_rule: true }),
-      // What each input was, where it came from, and what it cost to choose
-      // it. A margin is worth little without knowing which revenue is under it.
-      used: Object.fromEntries((question.needs || [])
-        .map((need) => [need, now[NEED_CONCEPTS.get(need) ?? need] ?? null])),
-      blocked_by: blocking.length ? blocking : null,
+      used,
+      // An answered question has nothing blocking it, whatever an unused need
+      // would have reported.
+      blocked_by: !hasValue && blocking.length ? blocking : null,
     });
   }
   return { answers: decorated, periods, provenance, recovered, facts: known };

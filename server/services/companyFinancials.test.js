@@ -182,3 +182,34 @@ describe('a share count is not money', () => {
     assert.match(sharesOf(period({})).reason, /share_count not reported/);
   });
 });
+
+test('a net debt the filing states is taken over one rebuilt from cash', () => {
+  // Reliance nets cash and marketable securities of 2,49,704 crore against
+  // 3,74,421 of gross debt and states 1,24,717. Subtracting cash and
+  // equivalents alone gives 2,28,444 - a different definition under the same
+  // name, and 1.10x of leverage where the filing says 0.60x.
+  const period = { period_end: '2026-03-31', period_type: 'annual', gross_debt: 374421, cash: 145977, net_debt: 124717, ebitda: 207911 };
+  const debt = netDebt(period);
+  assert.equal(debt.value, 124717);
+  assert.equal(debt.formula, 'net_debt (as stated)');
+  assert.deepEqual(debt.stated, ['net_debt']);
+  assert.deepEqual(debt.inputs, { net_debt: 124717 });
+});
+
+test('leverage on a stated net debt says it was stated', () => {
+  const period = { period_end: '2026-03-31', period_type: 'annual', gross_debt: 374421, cash: 145977, net_debt: 124717, ebitda: 207911 };
+  const leverage = netDebtToEbitda(period);
+  assert.equal(Number(leverage.value.toFixed(2)), 0.6);
+  assert.equal(leverage.formula, 'net_debt (as stated) / ebitda');
+  assert.deepEqual(leverage.stated, ['net_debt']);
+});
+
+test('without a stated net debt the old arithmetic is unchanged', () => {
+  // company_financials has no net_debt column, so the paste path must behave
+  // exactly as before.
+  const period = { period_end: '2026-03-31', period_type: 'annual', gross_debt: 374421, cash: 145977, ebitda: 207911 };
+  assert.equal(netDebt(period).value, 228444);
+  assert.equal(netDebt(period).formula, 'gross_debt - cash');
+  assert.equal(netDebt(period).stated, undefined);
+  assert.equal(netDebtToEbitda(period).formula, '(gross_debt - cash) / ebitda');
+});
