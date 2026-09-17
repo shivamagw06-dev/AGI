@@ -1,6 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { bookEquityFrom, freeFloatMarketCap, freeFloatRatioFrom } from './aiEnablersSize.js';
+import {
+  bookEquityFrom, freeFloatMarketCap, freeFloatRatioFrom, sizeForUniverse, sizeRows,
+} from './aiEnablersSize.js';
 
 /** Verbatim from the probe run against POWERINDIA on 2026-09-17. */
 const POWERINDIA = {
@@ -136,4 +138,106 @@ test('the P/B rounding cannot move the answer materially', () => {
   }).marketCap;
   const spread = Math.abs(at(26.075) / at(26.065) - 1);
   assert.ok(spread < 0.001, `P/B rounding moved market cap by ${(spread * 100).toFixed(3)}%`);
+});
+
+/* ── the universe pass, Upstox derived and Yahoo checked ───────────── */
+
+/** Payload shapes verbatim from the probe run. */
+const fundamentalsFor = (overrides = {}) => async (isin, endpoint) => {
+  const map = {
+    'key-ratios': { status: 'success', data: POWERINDIA.keyRatios },
+    'balance-sheet': { status: 'success', data: { type: 'standalone', history: [POWERINDIA.balanceSheetRow] } },
+    'share-holdings': { status: 'success', data: POWERINDIA.shareHoldings },
+    ...overrides,
+  };
+  return map[endpoint];
+};
+
+const UNIVERSE = { members: [{ symbol: 'POWERINDIA', isin: 'INE07Y701011' }] };
+
+test('a member whose Yahoo cap agrees is usable, with both figures kept', async () => {
+  const sizes = await sizeForUniverse(UNIVERSE, {
+    fetchFundamentals: fundamentalsFor(),
+    fetchMarketCaps: async () => ({ bySymbol: { POWERINDIA: { crore: 134_900, reason: null } }, error: null }),
+  });
+  const row = sizes.bySymbol.POWERINDIA;
+  assert.equal(row.usable, true);
+  assert.equal(Math.round(row.marketCap), 134_937);
+  assert.equal(row.independent.crore, 134_900);
+  assert.equal(row.independent.source, 'yahoo');
+  assert.equal(Math.abs(row.crossCheck.gap) < 0.001, true);
+  assert.deepEqual(sizes.usable, ['POWERINDIA']);
+});
+
+test('the balance sheet is read from the standalone variant that returns rows', async () => {
+  // Consolidated comes back with history: [] from Upstox, so a pass that
+  // only tried consolidated would find no equity for anyone.
+  const sizes = await sizeForUniverse(UNIVERSE, {
+    fetchFundamentals: fundamentalsFor({
+      'balance-sheet': { status: 'success', data: { type: 'consolidated', history: [] } },
+    }),
+    fetchMarketCaps: async () => ({ bySymbol: { POWERINDIA: { crore: 134_900, reason: null } }, error: null }),
+  });
+  assert.equal(sizes.bySymbol.POWERINDIA.usable, false);
+  assert.match(sizes.bySymbol.POWERINDIA.reason, /missing book_equity/);
+});
+
+test('Yahoo being unreachable refuses every member rather than passing them', async () => {
+  // The whole point of the cross-check: no second source means no verified
+  // size, so nothing may reach the screen.
+  const sizes = await sizeForUniverse(UNIVERSE, {
+    fetchFundamentals: fundamentalsFor(),
+    fetchMarketCaps: async () => ({ bySymbol: { POWERINDIA: { crore: null, reason: 'NOT_RETURNED' } }, error: 'yahoo quote request failed (429)' }),
+  });
+  assert.deepEqual(sizes.usable, []);
+  assert.equal(sizes.crossCheckError, 'yahoo quote request failed (429)');
+  assert.match(sizes.bySymbol.POWERINDIA.reason, /arithmetic, not a market cap/);
+  // The derivation is still reported, so a reviewer sees what was refused.
+  assert.equal(Math.round(sizes.bySymbol.POWERINDIA.marketCap), 134_937);
+});
+
+test('a disagreeing Yahoo cap refuses the member and names the gap', async () => {
+  const sizes = await sizeForUniverse(UNIVERSE, {
+    fetchFundamentals: fundamentalsFor(),
+    fetchMarketCaps: async () => ({ bySymbol: { POWERINDIA: { crore: 337_000, reason: null } }, error: null }),
+  });
+  const row = sizes.bySymbol.POWERINDIA;
+  assert.equal(row.usable, false);
+  assert.equal(row.value, null);
+  assert.equal(row.crossCheck.within, false);
+  assert.match(row.reason, /standalone book is probably the wrong basis/);
+  assert.deepEqual(sizes.refused.map((one) => one.symbol), ['POWERINDIA']);
+});
+
+test('a fundamentals fetch that throws does not fail the whole pass', async () => {
+  const sizes = await sizeForUniverse(
+    { members: [{ symbol: 'POWERINDIA', isin: 'INE07Y701011' }, { symbol: 'BROKEN', isin: 'INE000A01001' }] },
+    {
+      fetchFundamentals: async (isin, endpoint) => {
+        if (isin === 'INE000A01001') throw new Error('Upstox HTTP 500');
+        return fundamentalsFor()(isin, endpoint);
+      },
+      fetchMarketCaps: async () => ({
+        bySymbol: { POWERINDIA: { crore: 134_900, reason: null }, BROKEN: { crore: 1_000, reason: null } },
+        error: null,
+      }),
+    },
+  );
+  assert.deepEqual(sizes.usable, ['POWERINDIA']);
+  assert.match(sizes.bySymbol.BROKEN.reason, /Upstox HTTP 500/);
+});
+
+test('sizeRows carries only verified sizes into the screen shape', async () => {
+  const sizes = await sizeForUniverse(
+    { members: [{ symbol: 'POWERINDIA', isin: 'INE07Y701011' }] },
+    {
+      fetchFundamentals: fundamentalsFor(),
+      fetchMarketCaps: async () => ({ bySymbol: { POWERINDIA: { crore: 337_000, reason: null } }, error: null }),
+    },
+  );
+  // Refused, so the screen sees null and reports it unscreened rather than
+  // failing it on a size nobody verified.
+  assert.deepEqual(sizeRows(sizes, { POWERINDIA: 4_029_500_000 }), [
+    { symbol: 'POWERINDIA', freeFloatMarketCap: null, medianDailyTurnover: 4_029_500_000 },
+  ]);
 });

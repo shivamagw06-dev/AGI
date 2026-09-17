@@ -3,11 +3,12 @@ import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { AiEnablersLiveRuntime } from '../services/aiEnablersLiveRuntime.js';
 import { liquidityForUniverse, volumeBaselines } from '../services/aiEnablersLiquidity.js';
-import { getHistoricalCandles } from '../providers/upstox.js';
+import { getFundamentals, getHistoricalCandles, isUpstoxConfigured } from '../providers/upstox.js';
+import { fetchMarketCaps } from '../providers/yahooMarketCap.js';
+import { sizeForUniverse, sizeRows } from '../services/aiEnablersSize.js';
 import { createSupabaseAdmin } from '../lib/supabaseAdmin.js';
 import { fundamentalsForUniverse, intensityForUniverse } from '../services/aiEnablersFundamentals.js';
-import { stageThree } from '../services/aiEnablersScreen.js';
-import { isUpstoxConfigured } from '../providers/upstox.js';
+import { stageThree, stageTwo } from '../services/aiEnablersScreen.js';
 
 const UNIVERSE_PATH = fileURLToPath(new URL('../config/india-ai-enablers.universe.json', import.meta.url));
 
@@ -154,6 +155,49 @@ export default function createIndiaAiIntelligenceRouter() {
       const universe = await loadUniverse();
       const { rows, detail } = await intensityForUniverse(client, universe);
       res.json({ ok: true, screen: stageThree(rows), detail });
+    } catch (error) {
+      res.status(500).json({ ok: false, error: String(error?.message || error) });
+    }
+  });
+
+  /**
+   * Stage 2 of the screen: size and tradability.
+   *
+   * Free-float market cap is derived from Upstox P/B and book equity and
+   * cross-checked against Yahoo. A member whose two figures disagree is
+   * reported unscreened rather than screened on a number nobody verified -
+   * which is what happens to a holding company, whose standalone book is the
+   * wrong basis for a consolidated P/B.
+   *
+   * No thresholds are applied unless they are passed in. The distribution is
+   * always returned, because a floor chosen without seeing the spread is a
+   * floor nobody can defend.
+   */
+  router.get('/screen/size', async (req, res) => {
+    try {
+      if (!isUpstoxConfigured()) {
+        return res.status(503).json({ ok: false, error: 'Upstox is not configured; set UPSTOX_ACCESS_TOKEN server-side.', code: 'UPSTOX_NOT_CONFIGURED' });
+      }
+      const universe = await loadUniverse();
+      const today = new Date().toISOString().slice(0, 10);
+      const from = new Date(Date.now() - 200 * 24 * 3600 * 1000).toISOString().slice(0, 10);
+
+      const [sizes, liquidity] = await Promise.all([
+        sizeForUniverse(universe, { fetchFundamentals: getFundamentals, fetchMarketCaps }),
+        liquidityForUniverse(universe, { fetchCandles: getHistoricalCandles, to: today, from, sessions: 120 }),
+      ]);
+
+      const turnover = Object.fromEntries(Object.entries(liquidity.bySymbol)
+        .map(([symbol, one]) => [symbol, one.medianDailyTurnover]));
+      const minFreeFloatMarketCap = Number(req.query.minFreeFloatMarketCap) || null;
+      const minMedianDailyTurnover = Number(req.query.minMedianDailyTurnover) || null;
+
+      res.json({
+        ok: true,
+        screen: stageTwo(sizeRows(sizes, turnover), { minFreeFloatMarketCap, minMedianDailyTurnover }),
+        sizes,
+        liquidityFailures: liquidity.failures,
+      });
     } catch (error) {
       res.status(500).json({ ok: false, error: String(error?.message || error) });
     }
