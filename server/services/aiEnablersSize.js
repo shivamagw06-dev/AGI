@@ -78,6 +78,34 @@ export function freeFloatRatioFrom(shareHoldings) {
   };
 }
 
+/**
+ * Market cap the other way round: P/E times net income.
+ *
+ * An independent path to the same quantity, and the point of having it is the
+ * disagreement. Both ratios come from key-ratios and both are price-relative,
+ * but this one runs through the income statement while the P/B route runs
+ * through the balance sheet. For a single-operating-entity company they land
+ * in the same place. For a holding company priced on consolidated ratios but
+ * measured on standalone statements they do not, because net income and book
+ * equity do not scale between the two books by the same factor - which is
+ * exactly the error that would otherwise pass unseen.
+ *
+ * Weaker than a third party, and it is not presented as one: this checks
+ * internal consistency, not external truth. Two figures agreeing here means
+ * the basis is coherent, not that the market agrees with either.
+ */
+export function marketCapFromEarnings({ keyRatios, netIncome }) {
+  const pe = ratioNamed(keyRatios, 'p/e');
+  const income = numeric(netIncome);
+  if (pe === null || pe <= 0) return { value: null, reason: 'NO_PE' };
+  if (income === null) return { value: null, reason: 'NO_NET_INCOME' };
+  // A loss-making company has no meaningful P/E-implied market cap; the ratio
+  // is either negative or omitted, and multiplying by a negative income
+  // would produce a positive number for the wrong reason.
+  if (income <= 0) return { value: null, reason: 'NON_POSITIVE_NET_INCOME' };
+  return { value: pe * income, reason: null };
+}
+
 const ratioNamed = (keyRatios, name) => {
   const rows = Array.isArray(keyRatios) ? keyRatios : [];
   const row = rows.find((one) => String(one?.name || '').trim().toLowerCase() === name);
@@ -165,11 +193,20 @@ export function freeFloatMarketCap({
  * derivation nothing corroborates must not quietly become a screen input.
  */
 export async function sizeForUniverse(universe, {
-  fetchFundamentals, fetchMarketCaps, tolerance = CROSS_CHECK_TOLERANCE,
+  fetchFundamentals, fetchMarketCaps = null, tolerance = CROSS_CHECK_TOLERANCE,
   balanceSheetParams = { type: 'standalone', time_period: 'yearly', fs: true },
+  crossCheckSource = fetchMarketCaps ? 'external' : 'earnings',
+  netIncomeFor = null,
 } = {}) {
   const members = (universe?.members || []).filter((one) => one.admitted !== false);
-  const { bySymbol: caps, error: capsError } = await fetchMarketCaps(members.map((one) => one.symbol));
+  // An external cross-check is used when one is supplied and reachable.
+  // Yahoo's quote endpoint began returning 401, so the fallback is the
+  // earnings route: P/E times net income, independent of the balance sheet.
+  const external = fetchMarketCaps
+    ? await fetchMarketCaps(members.map((one) => one.symbol))
+    : { bySymbol: {}, error: null };
+  const caps = external.bySymbol;
+  const capsError = external.error;
 
   const rows = {};
   for (const member of members) {
@@ -183,19 +220,35 @@ export async function sizeForUniverse(universe, {
       // Standalone is the variant that returns rows; consolidated comes back
       // empty, which is why the basis caveat exists at all.
       const history = balanceSheet?.data?.history || balanceSheet?.data?.full_statement || [];
+      // Prefer an external figure; fall back to the earnings route when
+      // there is none, so a dead third party does not make every size
+      // unverifiable.
+      const earnings = netIncomeFor
+        ? marketCapFromEarnings({ keyRatios: keyRatios?.data, netIncome: await netIncomeFor(member) })
+        : { value: null, reason: 'NO_EARNINGS_SOURCE' };
+      const checkAgainst = independent?.crore ?? earnings.value ?? null;
+      const checkedBy = independent?.crore != null ? crossCheckSource : (earnings.value != null ? 'earnings' : null);
+
       const size = freeFloatMarketCap({
         keyRatios: keyRatios?.data,
         balanceSheetRow: Array.isArray(history) ? history[0] : null,
         shareHoldings: shareHoldings?.data,
-        independentMarketCap: independent?.crore ?? null,
+        independentMarketCap: checkAgainst,
         tolerance,
         basis: balanceSheetParams.type || 'standalone',
       });
+      if (size.crossCheck) size.crossCheck.checkedBy = checkedBy;
       rows[member.symbol] = {
         ...size,
-        independent: independent
-          ? { crore: independent.crore, source: 'yahoo', unit: 'inr_crore', reason: independent.reason }
-          : { crore: null, source: 'yahoo', unit: 'inr_crore', reason: capsError || 'NOT_RETURNED' },
+        independent: {
+          crore: checkAgainst,
+          source: checkedBy,
+          unit: 'inr_crore',
+          reason: checkAgainst === null
+            ? (capsError || independent?.reason || earnings.reason || 'NOT_RETURNED')
+            : null,
+        },
+        earningsRoute: earnings,
       };
     } catch (error) {
       rows[member.symbol] = {
@@ -211,7 +264,7 @@ export async function sizeForUniverse(universe, {
     bySymbol: rows,
     usable,
     refused: Object.entries(rows).filter(([, one]) => !one.usable).map(([symbol, one]) => ({ symbol, reason: one.reason })),
-    crossCheckSource: 'yahoo',
+    crossCheckSource,
     crossCheckError: capsError,
   };
 }

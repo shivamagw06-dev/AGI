@@ -139,8 +139,48 @@ async function main() {
   // the first run. That may be the wrong parameter set rather than absent
   // data, and shares outstanding would live there, so the variants are tried
   // before concluding anything.
+  // Yahoo's quote endpoint now returns 401, so the independent market cap it
+  // was providing is gone. The remaining route to a second opinion is inside
+  // Upstox but along a different path: market cap is P/E times net income as
+  // well as P/B times book equity, and those use different ratios and
+  // different statements. They agree for a single-entity company and diverge
+  // for a holding company whose ratios and statements are on different bases,
+  // which is exactly the error worth catching.
+  //
+  // That needs net income, and income-statement came back with history: []
+  // under consolidated - the same way balance-sheet did before standalone was
+  // tried. So the variants are swept for all three statements, not one.
   console.log('='.repeat(72));
-  console.log('balance-sheet parameter variants');
+  console.log('statement parameter variants');
+  console.log('='.repeat(72));
+  for (const endpoint of ['balance-sheet', 'income-statement', 'cash-flow']) {
+    console.log(`\n  ${endpoint}`);
+    for (const params of [
+      { type: 'standalone', time_period: 'yearly', fs: true },
+      { type: 'standalone', time_period: 'yearly' },
+      { type: 'standalone', time_period: 'quarterly', fs: true },
+      { type: 'consolidated', time_period: 'yearly', fs: true },
+    ]) {
+      try {
+        const payload = await getFundamentals(sample.isin, endpoint, params);
+        const body = payload?.data || {};
+        const rows = body.history || body.income_statement || body.cash_flow || body.full_statement || [];
+        const withValues = Array.isArray(rows)
+          ? rows.filter((one) => (Array.isArray(one?.history) ? one.history.length : 1) > 0)
+          : [];
+        console.log(`    ${JSON.stringify(params).padEnd(56)} -> ${Array.isArray(rows) ? rows.length : 0} rows, ${withValues.length} carrying values`);
+        if (withValues.length) {
+          console.log(`      ${JSON.stringify(withValues[0]).slice(0, 700)}`);
+        }
+      } catch (error) {
+        console.log(`    ${JSON.stringify(params).padEnd(56)} -> ${error?.status || ''} ${String(error?.message || error).slice(0, 50)}`);
+      }
+    }
+  }
+  console.log();
+
+  console.log('='.repeat(72));
+  console.log('legacy: balance-sheet parameter variants');
   console.log('='.repeat(72));
   for (const params of [
     { type: 'consolidated', time_period: 'yearly', fs: true },

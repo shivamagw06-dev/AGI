@@ -1,7 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  bookEquityFrom, freeFloatMarketCap, freeFloatRatioFrom, sizeForUniverse, sizeRows,
+  bookEquityFrom, freeFloatMarketCap, freeFloatRatioFrom, marketCapFromEarnings,
+  sizeForUniverse, sizeRows,
 } from './aiEnablersSize.js';
 
 /** Verbatim from the probe run against POWERINDIA on 2026-09-17. */
@@ -164,7 +165,7 @@ test('a member whose Yahoo cap agrees is usable, with both figures kept', async 
   assert.equal(row.usable, true);
   assert.equal(Math.round(row.marketCap), 134_937);
   assert.equal(row.independent.crore, 134_900);
-  assert.equal(row.independent.source, 'yahoo');
+  assert.equal(row.independent.source, 'external');
   assert.equal(Math.abs(row.crossCheck.gap) < 0.001, true);
   assert.deepEqual(sizes.usable, ['POWERINDIA']);
 });
@@ -240,4 +241,66 @@ test('sizeRows carries only verified sizes into the screen shape', async () => {
   assert.deepEqual(sizeRows(sizes, { POWERINDIA: 4_029_500_000 }), [
     { symbol: 'POWERINDIA', freeFloatMarketCap: null, medianDailyTurnover: 4_029_500_000 },
   ]);
+});
+
+
+/* ── the earnings route, for when no third party is reachable ───────── */
+
+test('market cap the other way round is P/E times net income', () => {
+  // POWERINDIA: P/E 117.3. If net income is such that the two routes land in
+  // the same place, the basis is coherent.
+  const out = marketCapFromEarnings({ keyRatios: POWERINDIA.keyRatios, netIncome: 1_150.0 });
+  assert.equal(Math.round(out.value), 134_895);
+  assert.equal(out.reason, null);
+});
+
+test('a loss-making company has no P/E-implied market cap', () => {
+  // Multiplying a negative P/E by a negative income yields a positive number
+  // for entirely the wrong reason.
+  assert.equal(marketCapFromEarnings({ keyRatios: POWERINDIA.keyRatios, netIncome: -400 }).reason,
+    'NON_POSITIVE_NET_INCOME');
+  assert.equal(marketCapFromEarnings({ keyRatios: [{ name: 'P/B', company_value: '3' }], netIncome: 100 }).reason,
+    'NO_PE');
+  assert.equal(marketCapFromEarnings({ keyRatios: POWERINDIA.keyRatios, netIncome: null }).reason,
+    'NO_NET_INCOME');
+});
+
+test('the earnings route checks the balance-sheet route when no third party answers', async () => {
+  const sizes = await sizeForUniverse(UNIVERSE, {
+    fetchFundamentals: fundamentalsFor(),
+    fetchMarketCaps: null,
+    netIncomeFor: async () => 1_150.0,
+  });
+  const row = sizes.bySymbol.POWERINDIA;
+  assert.equal(row.usable, true);
+  assert.equal(row.crossCheck.checkedBy, 'earnings');
+  assert.equal(sizes.crossCheckSource, 'earnings');
+  // Both routes are kept, so a reviewer can see what agreed with what.
+  assert.equal(Math.round(row.marketCap), 134_937);
+  assert.equal(Math.round(row.earningsRoute.value), 134_895);
+});
+
+test('the two routes diverging refuses the member, which is the holding-company case', async () => {
+  // A consolidated ratio against a standalone statement breaks both routes,
+  // but by different factors, because net income and book equity do not
+  // scale between the two books the same way. The disagreement is the signal.
+  const sizes = await sizeForUniverse(UNIVERSE, {
+    fetchFundamentals: fundamentalsFor(),
+    fetchMarketCaps: null,
+    netIncomeFor: async () => 3_000.0,        // implies 352,000 via P/E
+  });
+  const row = sizes.bySymbol.POWERINDIA;
+  assert.equal(row.usable, false);
+  assert.equal(row.value, null);
+  assert.equal(row.crossCheck.within, false);
+});
+
+test('no third party and no earnings source still refuses rather than passing', async () => {
+  const sizes = await sizeForUniverse(UNIVERSE, {
+    fetchFundamentals: fundamentalsFor(),
+    fetchMarketCaps: null,
+    netIncomeFor: null,
+  });
+  assert.deepEqual(sizes.usable, []);
+  assert.match(sizes.bySymbol.POWERINDIA.reason, /arithmetic, not a market cap/);
 });
