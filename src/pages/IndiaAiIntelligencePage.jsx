@@ -1,5 +1,6 @@
 import React from 'react';
 import { fetchLive, fetchSnapshots, fetchUniverse } from '@/lib/indiaAiApi';
+import { nseOpen } from '@/lib/nseSession';
 
 /**
  * India AI Intelligence — research on the left, the monitor on the right.
@@ -62,19 +63,6 @@ function useIstClock() {
   });
   const time = now.toLocaleTimeString('en-GB', { hour12: false, timeZone: 'Asia/Kolkata' });
   return { date, time };
-}
-
-/** Whether NSE is open, from the clock alone — the feed confirms it separately. */
-function nseOpen(date = new Date()) {
-  const ist = new Date(date.getTime() + (330 - -date.getTimezoneOffset()) * 0);
-  const parts = new Intl.DateTimeFormat('en-GB', {
-    timeZone: 'Asia/Kolkata', weekday: 'short', hour: '2-digit', minute: '2-digit', hour12: false,
-  }).formatToParts(ist);
-  const get = (type) => parts.find((one) => one.type === type)?.value;
-  const day = get('weekday');
-  if (day === 'Sat' || day === 'Sun') return false;
-  const minutes = Number(get('hour')) * 60 + Number(get('minute'));
-  return minutes >= 555 && minutes <= 930;
 }
 
 function Panel({ title, note, action, children, className = '' }) {
@@ -588,7 +576,23 @@ function Candidates({ universe }) {
 
 /* ── the page ─────────────────────────────────────────────────────────── */
 
-const NAV = ['Research', 'Markets', 'Intelligence', 'Portfolio', 'About'];
+/**
+ * Only routes that exist.
+ *
+ * The design this page was built from showed Research, Markets, Intelligence,
+ * Portfolio and About. There is no /intelligence route and no /portfolio
+ * route in this app, so those two are not here: a nav label that goes nowhere
+ * is worse than an absent one, and pointing them at a plausible neighbour
+ * would be inventing a destination.
+ *
+ * There is also no search route and no search handler anywhere in the app, so
+ * the design's search field is not reproduced either.
+ */
+const NAV = [
+  { label: 'Research', href: '/research' },
+  { label: 'Markets', href: '/markets' },
+  { label: 'About', href: '/about' },
+];
 
 export default function IndiaAiIntelligencePage() {
   const [universe, setUniverse] = React.useState(null);
@@ -634,16 +638,19 @@ export default function IndiaAiIntelligencePage() {
               <span className="block text-[8px] tracking-[0.2em] text-[#68727f]">GLOBAL INVESTMENTS</span>
             </span>
           </a>
-          <nav className="hidden items-center gap-5 md:flex">
+          <nav className="hidden items-center gap-5 md:flex" aria-label="Main">
             {NAV.map((item) => (
-              <span
-                key={item}
-                className={`text-[12px] ${item === 'Research'
-                  ? 'border-b-2 border-[#e8833a] pb-[2px] font-semibold text-[#e3e8ef]'
-                  : 'text-[#8b95a3]'}`}
+              <a
+                key={item.href}
+                href={item.href}
+                aria-current={item.label === 'Research' ? 'page' : undefined}
+                className={`rounded text-[12px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e8833a] ${
+                  item.label === 'Research'
+                    ? 'border-b-2 border-[#e8833a] pb-[2px] font-semibold text-[#e3e8ef]'
+                    : 'text-[#8b95a3] hover:text-[#e3e8ef]'}`}
               >
-                {item}
-              </span>
+                {item.label}
+              </a>
             ))}
           </nav>
           <p className="ml-auto hidden text-right text-[10px] leading-tight text-[#68727f] lg:block">
@@ -658,9 +665,13 @@ export default function IndiaAiIntelligencePage() {
         </p>
       ) : (
         <div className="mx-auto max-w-[1680px] px-4 py-4">
-          <p className="mb-3 text-[10px] text-[#68727f]">
-            Research <span className="text-[#3a4453]">›</span> Themes <span className="text-[#3a4453]">›</span> India AI Infrastructure
-          </p>
+          <nav className="mb-3 text-[10px] text-[#68727f]" aria-label="Breadcrumb">
+            <a href="/research" className="rounded hover:text-[#e3e8ef] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e8833a]">Research</a>
+            <span className="px-1 text-[#3a4453]">›</span>
+            <a href="/themes" className="rounded hover:text-[#e3e8ef] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e8833a]">Themes</a>
+            <span className="px-1 text-[#3a4453]">›</span>
+            <span aria-current="page">India AI Infrastructure</span>
+          </nav>
 
           <div className="grid gap-4 xl:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
             {/* ── research ── */}
