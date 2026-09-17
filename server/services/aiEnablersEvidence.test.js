@@ -171,3 +171,46 @@ test('a sub-layer is claimed only where the evidence actually says so', () => {
   const hvdc = { title: '1,000 MW Kudus-Aarey HVDC transmission project in Mumbai, Maharashtra' };
   assert.deepEqual(subLayersFrom([hvdc]).map((one) => one.subLayer), ['transmission']);
 });
+
+test('a bare projection table is not an operating disclosure', () => {
+  // Diamond Power's deck, verbatim. No verb in it at all - it matched on the
+  // word MW and came back as an operating disclosure. The P is the whole
+  // signal, and the same table appears in decks across the sector.
+  const table = { title: 'Data-centre capacity (MW) FY19 350 FY25 1,300 FY30P 5,000' };
+  const verdict = classifyEvidence(table);
+  assert.equal(verdict.kind, 'market_commentary');
+  assert.equal(verdict.hard, false);
+});
+
+test('a company saying what it commissioned is not a projection', () => {
+  // Clean Max, verbatim. Forward-looking words appear beside first-party ones
+  // constantly, and silencing the second would refuse every company that
+  // describes its own pipeline.
+  const cleanmax = { title: "we've commissioned about 400 megawatt in the RE power sales segment and 100 megawatt in the RE services segment" };
+  assert.equal(classifyEvidence(cleanmax).hard, true);
+  assert.deepEqual(subLayersFrom([cleanmax]).map((one) => one.subLayer), ['generation']);
+});
+
+test('an order signed is an order, however the filing phrases it', () => {
+  // Adani, verbatim. No acquisition verb and no "order for" either - the
+  // event is carried by "signed" and by the megawatts.
+  const adani = { title: 'During the quarter, 400 MW order signed with hyperscale customer for Vizag; Tied up capacity 960+ MW' };
+  const verdict = classifyEvidence(adani);
+  assert.equal(verdict.hard, true);
+  assert.equal(verdict.aiRelevant, true);
+  assert.deepEqual(subLayersFrom([adani]).map((one) => one.subLayer), ['operator']);
+});
+
+test('a company forecasting its own capacity is not forecasting the market', () => {
+  // CONSTRUCTED to hold both at once, which is how filings actually read:
+  // forward-looking language, a projection marker, and the company's own book
+  // in the same sentence. Silencing it would refuse every company that
+  // describes its own pipeline, which is most of the useful evidence there is.
+  const ours = { title: 'Our contracted data centre capacity is expected to reach 2,500 MW by FY28E' };
+  const verdict = classifyEvidence(ours);
+  assert.equal(verdict.hard, true);
+  assert.notEqual(verdict.kind, 'market_commentary');
+  // The same sentence about the country instead of the company is commentary.
+  const market = { title: "India's data centre capacity is expected to reach 2,500 MW by FY28E" };
+  assert.equal(classifyEvidence(market).kind, 'market_commentary');
+});

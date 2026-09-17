@@ -70,12 +70,27 @@ const MARKET_COMMENTARY = [
   /\bby (?:fiscal|fy)\s?20\d\d\b.*\b(?:gw|twh|billion|trillion)\b/i,
 ];
 
+/**
+ * A projection, however it is dressed.
+ *
+ * Diamond Power's deck carries "Data-centre capacity (MW) FY19 350 FY25 1,300
+ * FY30P 5,000" - a bare table with no verb in it at all, which matched on the
+ * word MW and was classified as an operating disclosure. The P is the whole
+ * signal.
+ */
+const PROJECTION = [
+  /\bfy ?\d{2}\s?[pe]\b/i,
+  /\b20\d\d\s?[pe]\b/,
+  /\bprojected\b|\bforecast\w*\b|\bestimated\b/i,
+];
+
 /** What the company itself did, said in the first person or about its own book. */
 const FIRST_PARTY = [
   /\b(?:we|our|the company|the group)\b/i,
   /\breceived an order\b|\bsecured\b|\bwon\b|\bbagged\b|\bawarded\b/i,
-  /\border (?:book|backlog|intake)\b/i,
-  /\bcommissioned\b|\bexecuted\b|\bdispatched\b/i,
+  /\border (?:book|backlog|intake|signed)\b/i,
+  /\bcommissioned\b|\bexecuted\b|\bdispatched\b|\bhanded over\b|\bcompleted\b/i,
+  /\bcod\b|\boperational capacity\b|\bcontracted capacity\b|\btied up\b/i,
 ];
 
 const HARD_KINDS = [
@@ -145,7 +160,10 @@ export function classifyEvidence({ title = '', description = '', source = '', ki
     // A forecast about the sector, in a deck, is not something the company
     // did - and it appears in the decks of companies with orders and
     // companies with none, identically.
-    const commentary = matches(text, MARKET_COMMENTARY) && !matches(text, FIRST_PARTY);
+    // Forward-looking language, a projection marker, or a research house in
+    // the source line - any of them, with nothing the company itself did.
+    const commentary = (matches(text, MARKET_COMMENTARY) || matches(text, PROJECTION))
+      && !matches(text, FIRST_PARTY);
     if (commentary) {
       return { kind: 'market_commentary', hard: false, aiRelevant, source,
         why: 'a claim about the market, not about this company' };
@@ -206,7 +224,7 @@ export function admits(evidence = []) {
 // silently gave that order no sub-layer at all. Only the start of these terms
 // can be bounded safely.
 const SUB_LAYERS = [
-  ['power', 'generation', /\b(?:power purchase agreement\w*|ppa\b|captive power|solar\w*|wind farm\w*|renewable capacity|generation capacity)/i],
+  ['power', 'generation', /\b(?:power purchase agreement\w*|ppa\b|captive power|solar\w*|wind farm\w*|renewable (?:energy|capacity)|re power|power sales|generation capacity|independent power producer)/i],
   ['power', 'transmission', /\b(?:transmission line\w*|substation\w*|pooling station\w*|hvdc|gas-?insulated busbar\w*|grid connect\w*|evacuation)/i],
   ['power', 'equipment', /\b(?:transformer\w*|switchgear\w*|circuit breaker\w*|cable\w*|genset\w*|rectifier\w*|gas-?insulated switchgear\w*)/i],
   ['data_centre', 'developer', /\b(?:data ?cent(?:er|re)s? (?:park|campus|shell|epc)\w*|build\w* a data ?cent(?:er|re))/i],

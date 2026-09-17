@@ -16,8 +16,14 @@
       "instrumentKey": "NSE_EQ|INE07Y701011",
       "isin": "INE07Y701011",
       "layer": "power",
-      "subLayers": ["equipment", "transmission"],
-      "weightSplit": { "power_equipment": 0.5, "power_transmission": 0.5 },
+      "subLayers": [
+        "equipment",
+        "transmission"
+      ],
+      "weightSplit": {
+        "power_equipment": 0.5,
+        "power_transmission": 0.5
+      },
       "admitted": true,
       "basis": "hard",
       "admittedOn": [
@@ -45,6 +51,109 @@
       ],
       "reviewedBy": null,
       "reviewedAt": null
+    },
+    {
+      "symbol": "ADANIENT",
+      "name": "Adani Enterprises Ltd.",
+      "instrumentKey": "NSE_EQ|INE423A01024",
+      "isin": "INE423A01024",
+      "layer": "data_centre",
+      "subLayers": [
+        "operator",
+        "developer"
+      ],
+      "weightSplit": {
+        "data_centre_operator": 0.5,
+        "data_centre_developer": 0.5
+      },
+      "admitted": true,
+      "basis": "hard",
+      "admittedOn": [
+        {
+          "kind": "order",
+          "document": "Q1 FY27 investor presentation",
+          "date": "2026-07-29",
+          "source": "Trendlyne document search",
+          "excerpt": "During the quarter, 400 MW order signed with hyperscale customer for Vizag"
+        },
+        {
+          "kind": "operating",
+          "document": "Q1 FY27 investor presentation",
+          "date": "2026-07-29",
+          "source": "Trendlyne document search",
+          "excerpt": "Tied up capacity 960+ MW; operational capacity Chennai 17 MW, Noida 10 MW, Hyderabad 19.2 MW, Pune 19.2 MW"
+        }
+      ],
+      "reviewedBy": null,
+      "reviewedAt": null
+    },
+    {
+      "symbol": "CLEANMAX",
+      "name": "Clean Max Enviro Energy Solutions Ltd.",
+      "instrumentKey": "NSE_EQ|INE647U01026",
+      "isin": "INE647U01026",
+      "layer": "power",
+      "subLayers": [
+        "generation"
+      ],
+      "weightSplit": {
+        "power_generation": 1.0
+      },
+      "admitted": true,
+      "basis": "hard",
+      "admittedOn": [
+        {
+          "kind": "operating",
+          "document": "Q1 FY27 investor presentation",
+          "date": "2026-07-31",
+          "source": "Trendlyne document search",
+          "excerpt": "3.2x growth in contracted capacity; 42% capacity from Data & AI (June 30, 2026); on-books capacity 6,003 MW"
+        },
+        {
+          "kind": "capex",
+          "document": "Q1 FY27 earnings call",
+          "date": "2026-08-07",
+          "source": "Trendlyne document search",
+          "excerpt": "we've commissioned about 400 [MW] in the RE power sales segment and 100 megawatt in the RE services segment"
+        },
+        {
+          "kind": "operating",
+          "document": "Q1 FY27 investor presentation",
+          "date": "2026-07-31",
+          "source": "Trendlyne document search",
+          "excerpt": "Data & AI customers named: Amazon, Google, Meta, STT Global Data Center, NTT Data Group, Equinix, Princeton Digital Group, L&T Data Center"
+        }
+      ],
+      "reviewedBy": null,
+      "reviewedAt": null
+    },
+    {
+      "symbol": "ANANTRAJ",
+      "name": "Anant Raj Ltd.",
+      "instrumentKey": "NSE_EQ|INE242C01024",
+      "isin": "INE242C01024",
+      "layer": "data_centre",
+      "subLayers": [
+        "developer",
+        "operator"
+      ],
+      "weightSplit": {
+        "data_centre_developer": 0.5,
+        "data_centre_operator": 0.5
+      },
+      "admitted": true,
+      "basis": "hard",
+      "admittedOn": [
+        {
+          "kind": "operating",
+          "document": "Q1 FY27 investor presentation",
+          "date": "2026-08-11",
+          "source": "Trendlyne document search",
+          "excerpt": "Scaling Up Our Data Center Capacity; roadmap to 357 MW: Phase 1 21 MW at Manesar, Phase 2 50 MW at Panchkula, another 200 MW at Rai and 50 MW in Andhra Pradesh"
+        }
+      ],
+      "reviewedBy": null,
+      "reviewedAt": null
     }
   ],
   "candidates": [
@@ -53,7 +162,9 @@
       "name": "Netweb Technologies India Ltd.",
       "isin": "INE0NT901020",
       "suggestedLayer": "data_centre",
-      "suggestedSubLayers": ["hardware"],
+      "suggestedSubLayers": [
+        "hardware"
+      ],
       "admitted": false,
       "basis": "hard",
       "note": "Admits on the Q1 FY27 investor presentation - AI Systems at 62.29% of revenue, an operating disclosure. Held as a candidate only because the disclosure has not been re-read from the source PDF; the excerpt below came through semantic search.",
@@ -72,7 +183,9 @@
       "name": "KEI Industries Ltd.",
       "isin": null,
       "suggestedLayer": "power",
-      "suggestedSubLayers": ["equipment"],
+      "suggestedSubLayers": [
+        "equipment"
+      ],
       "admitted": false,
       "basis": "soft",
       "note": "Its investor presentation carries a page on India's data centre capacity reaching 14GW by 2035. That is a claim about the market and appears in the decks of companies with data centre orders and companies with none. Not evidence."
@@ -82,7 +195,9 @@
       "name": "Indo Tech Transformers Ltd.",
       "isin": null,
       "suggestedLayer": "power",
-      "suggestedSubLayers": ["equipment"],
+      "suggestedSubLayers": [
+        "equipment"
+      ],
       "admitted": false,
       "basis": "soft",
       "note": "Rs 495 Cr capex to 50,000 MVA is a hard commitment, but the data centre reference is sector demand commentary, not a data centre order. Needs a first-party item."
@@ -92,10 +207,36 @@
       "name": "Supreme Power Equipment Ltd.",
       "isin": null,
       "suggestedLayer": "power",
-      "suggestedSubLayers": ["equipment"],
+      "suggestedSubLayers": [
+        "equipment"
+      ],
       "admitted": false,
       "basis": "soft",
       "note": "Annual report cites CBRE on national data centre stock. Market commentary."
+    },
+    {
+      "symbol": "DIACABS",
+      "name": "Diamond Power Infrastructure Ltd.",
+      "isin": null,
+      "admitted": false,
+      "basis": "soft",
+      "note": "Its deck carries a bare projection table - Data-centre capacity FY19 350, FY25 1,300, FY30P 5,000. The P is the whole signal. No first-party item found."
+    },
+    {
+      "symbol": "PREMIERENE",
+      "name": "Premier Energies Ltd.",
+      "isin": null,
+      "admitted": false,
+      "basis": "soft",
+      "note": "10 GVA HV and EHV transformer capacity with COD expected September 2026 is a real commitment, but the AI link in the same deck is sector demand commentary. Needs a first-party data centre item."
+    },
+    {
+      "symbol": "ESDS",
+      "name": "ESDS Software Solution Ltd.",
+      "isin": null,
+      "admitted": false,
+      "basis": "soft",
+      "note": "A data centre operator, but the material retrieved is IPO offer-document market sizing rather than its own operating disclosure."
     }
   ],
   "excluded": []
