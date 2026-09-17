@@ -141,3 +141,9 @@ test('the volume ratio refuses when the comparison would be noise', () => {
   assert.equal(young.ratio, null);
   assert.equal(young.reason, 'SESSION_TOO_YOUNG');
 });
+
+test('a null cumulative volume does not become a volume of zero', () => {
+  const lastGood = new LastGoodPrices();
+  const store = storeOf({ K: row(110, 100, NOW - 1_000, { cumulative_volume: null }) });
+  assert.equal(quoteFor('K', { store, lastGood, now: NOW, staleMs: 60_000 }).cumulativeVolume, null);
+});

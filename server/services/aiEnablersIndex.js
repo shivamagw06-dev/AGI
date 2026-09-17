@@ -183,6 +183,50 @@ export function computeIndex(universe, quotes, options = {}) {
   }
 
   const construction = options.construction || 'equal';
+
+  // Cap weighting needs free float, and a basket with none of it does not
+  // produce a bad number - it produces zero weights, a 0.00% return, and a
+  // residual check that passes because zero reconciles with zero. That is a
+  // flat line sitting next to a moving one on the page, labelled as though
+  // both were computed. It has to refuse instead.
+  if (construction !== 'equal') {
+    const floats = coverage.live.map(({ member }) => Number(member.freeFloatShares));
+    const usable = floats.filter((value) => Number.isFinite(value) && value > 0);
+    if (!usable.length) {
+      return {
+        status: 'missing_float_data',
+        level: null, return_pct: null, return_pp: null, asOf,
+        construction,
+        coverage: coverage.coverage,
+        priced: coverage.live.length,
+        total: coverage.total,
+        missing: coverage.missing,
+        stale: coverage.stale,
+        fallback: coverage.fallback,
+        reason: 'cap weighting needs free-float shares and the universe carries none',
+        without_float: coverage.live.map(({ member }) => member.symbol),
+      };
+    }
+    if (usable.length < floats.length) {
+      const without = coverage.live
+        .filter(({ member }) => !(Number(member.freeFloatShares) > 0))
+        .map(({ member }) => member.symbol);
+      return {
+        status: 'missing_float_data',
+        level: null, return_pct: null, return_pp: null, asOf,
+        construction,
+        coverage: coverage.coverage,
+        priced: coverage.live.length,
+        total: coverage.total,
+        missing: coverage.missing,
+        stale: coverage.stale,
+        fallback: coverage.fallback,
+        reason: `${without.length} of ${floats.length} members have no free-float shares; a cap weighting that silently drops them is not a cap weighting`,
+        without_float: without,
+      };
+    }
+  }
+
   const weights = weightsFor(coverage.live, { ...options, construction });
   let indexReturn = 0;
   const byName = [];

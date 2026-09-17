@@ -198,3 +198,53 @@ test('an equally old quote with no source is still stale', () => {
   assert.equal(result.stale.length, 1);
   assert.equal(result.fallback.length, 0);
 });
+
+test('cap weighting refuses without free float rather than returning zeros', () => {
+  // The bug this pins: with no freeFloatShares every weight came out 0, the
+  // return came out 0.00%, and residual_ok came out true because zero
+  // reconciles with zero. A flat line beside a moving one, both labelled as
+  // though computed. The real universe carries no float, so this was live.
+  const universe = { members: [
+    { symbol: 'AAA', layer: 'power', subLayers: ['equipment'] },
+    { symbol: 'BBB', layer: 'data_centre', subLayers: ['hardware'] },
+  ] };
+  const quotes = {
+    AAA: { ltp: 110, previousClose: 100, at: NOW },
+    BBB: { ltp: 130, previousClose: 100, at: NOW },
+  };
+  const index = computeIndex(universe, quotes, { now: NOW, construction: 'cap' });
+  assert.equal(index.status, 'missing_float_data');
+  assert.equal(index.return_pct, null);
+  assert.equal(index.level, null);
+  assert.deepEqual(index.without_float, ['AAA', 'BBB']);
+});
+
+test('cap weighting refuses when only some members have float', () => {
+  // Partial float is worse than none: the basket would quietly become a
+  // basket of whichever members happened to carry the field.
+  const universe = { members: [
+    { symbol: 'AAA', layer: 'power', subLayers: ['equipment'], freeFloatShares: 1_000 },
+    { symbol: 'BBB', layer: 'data_centre', subLayers: ['hardware'] },
+  ] };
+  const quotes = {
+    AAA: { ltp: 110, previousClose: 100, at: NOW },
+    BBB: { ltp: 130, previousClose: 100, at: NOW },
+  };
+  const index = computeIndex(universe, quotes, { now: NOW, construction: 'cap' });
+  assert.equal(index.status, 'missing_float_data');
+  assert.deepEqual(index.without_float, ['BBB']);
+});
+
+test('equal weighting is unaffected by missing float', () => {
+  const universe = { members: [
+    { symbol: 'AAA', layer: 'power', subLayers: ['equipment'] },
+    { symbol: 'BBB', layer: 'data_centre', subLayers: ['hardware'] },
+  ] };
+  const quotes = {
+    AAA: { ltp: 110, previousClose: 100, at: NOW },
+    BBB: { ltp: 130, previousClose: 100, at: NOW },
+  };
+  const index = computeIndex(universe, quotes, { now: NOW, construction: 'equal' });
+  assert.equal(index.status, 'ok');
+  assert.equal(index.return_pp, 20);
+});

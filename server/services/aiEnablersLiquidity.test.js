@@ -90,3 +90,15 @@ test('baselines carry only members with a real average', async () => {
   });
   assert.deepEqual(volumeBaselines(liquidity), { AAA: 1_000 });
 });
+
+test('a null volume is missing history, not a zero-volume day', () => {
+  // Number(null) === 0 would drag the average down with days that never
+  // reported, making a liquid name look thin enough to fail a turnover floor.
+  const rows = [
+    ...Array.from({ length: 19 }, (unused, i) => day(i, 100, 1_000)),
+    ['2026-02-01T00:00:00+05:30', 100, 100, 100, 100, null, 0],
+  ];
+  const liquidity = liquidityFrom(candles(rows));
+  assert.equal(liquidity.sessions, 19);
+  assert.equal(liquidity.averageDailyVolume, 1_000);
+});
