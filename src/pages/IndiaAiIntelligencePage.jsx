@@ -1,11 +1,15 @@
 import React from 'react';
 import {
-  fetchFiledFacts, fetchIndexHistory, fetchLive, fetchMarketValue, fetchSnapshots, fetchStage3, fetchUniverse,
+  fetchExitability, fetchFiledFacts, fetchIndexHistory, fetchLive, fetchMarketValue, fetchSnapshots, fetchStage3,
+  fetchUniverse,
 } from '@/lib/indiaAiApi';
 import {
   BuildFunding, CapexChanges, CapexConcentration, EvidenceComposition, ExposureAttribution,
 } from '@/components/indiaAi/FiledEvidenceCharts';
 import { nseOpen } from '@/lib/nseSession';
+import {
+  ALL_SUBS, LAYER_LABEL, SUB_LABEL, summariseIntelligence, summaryText,
+} from '@/lib/indiaAiSummary';
 
 /**
  * India AI Intelligence — research on the left, the monitor on the right.
@@ -32,24 +36,10 @@ import { nseOpen } from '@/lib/nseSession';
  * the order feed (every line a cited filing), the watchlist prices.
  */
 
-const LAYER_LABEL = {
-  power: 'Power', data_centre: 'Data Centers', semiconductor: 'Semiconductors', infrastructure: 'EPC & Project Delivery',
-};
-const SUB_LABEL = {
-  generation: 'Generation', transmission: 'Transmission', equipment: 'Equipment',
-  developer: 'Developer', operator: 'Operator', hardware: 'Hardware',
-  osat: 'OSAT', materials: 'Materials', epc: 'EPC',
-};
 const KIND_LABEL = {
   order: 'Signed order', capex: 'Committed capex', operating: 'Operating disclosure',
   partnership: 'Partnership', language: 'Transcript language', news: 'Press item',
 };
-const ALL_SUBS = [
-  ['power', 'generation'], ['power', 'transmission'], ['power', 'equipment'],
-  ['data_centre', 'developer'], ['data_centre', 'operator'], ['data_centre', 'hardware'],
-  ['semiconductor', 'osat'], ['semiconductor', 'materials'], ['semiconductor', 'hardware'],
-  ['infrastructure', 'epc'],
-];
 
 const pp = (v) => (Number.isFinite(Number(v)) ? `${Number(v) >= 0 ? '+' : ''}${Number(v).toFixed(2)}pp` : '—');
 const pctOf = (v) => (Number.isFinite(Number(v)) ? `${Number(v) * 100 >= 0 ? '+' : ''}${(Number(v) * 100).toFixed(2)}%` : '—');
@@ -404,6 +394,98 @@ function SessionLine({ points }) {
 
 /* ── left column: the research ────────────────────────────────────────── */
 
+/**
+ * "Summarise the data": every panel's figures in a few sentences, by fixed
+ * rules (lib/indiaAiSummary). No model writes it; each line links to the
+ * panel it came from, and a section whose data has not arrived says so.
+ * The liquidity screen is not otherwise on the page, so it is fetched on
+ * the first open rather than on every load.
+ */
+function DataSummary({ universe, live, history, marketValue, stage3 }) {
+  const [open, setOpen] = React.useState(false);
+  const [exitability, setExitability] = React.useState(null);
+  const [copied, setCopied] = React.useState(false);
+  React.useEffect(() => {
+    if (!open || exitability) return;
+    fetchExitability()
+      .then(setExitability)
+      .catch((err) => setExitability({ ok: false, error: String(err?.message || err) }));
+  }, [open, exitability]);
+  const sections = open
+    ? summariseIntelligence({ universe, live, history, marketValue, stage3, exitability })
+    : [];
+  const copy = () => {
+    try {
+      navigator.clipboard.writeText(summaryText(sections)).then(() => {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      });
+    } catch {
+      // Clipboard blocked; the text is on screen to select.
+    }
+  };
+  return (
+    <div className="space-y-3">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+        aria-controls="data-summary"
+        className="rounded-md border border-[#e8833a]/60 bg-[#e8833a]/10 px-3.5 py-2 text-[13px] font-semibold text-[#f0a060] hover:bg-[#e8833a]/20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e8833a]"
+      >
+        {open ? 'Hide the summary' : 'Summarise the data'}
+      </button>
+      {open ? (
+        <section id="data-summary" aria-label="Summary of the data" className="rounded-md border border-[#1e2634] bg-[#0c1017]">
+          <header className="flex flex-wrap items-baseline gap-2 border-b border-[#1a2230] px-3.5 py-2.5">
+            <h3 className="text-[15px] font-semibold tracking-tight text-[#f1f5f9]">What the data shows</h3>
+            <span className="text-[12px] text-[#7d8894]">
+              written by fixed rules from the panels below, not by a model · {istTime(new Date().toISOString())} IST
+            </span>
+            <button
+              type="button"
+              onClick={copy}
+              className="ml-auto rounded text-[12px] text-[#8fb4d8] hover:text-[#e3e8ef] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e8833a]"
+            >
+              {copied ? 'Copied' : 'Copy as text'}
+            </button>
+          </header>
+          <div className="grid gap-x-6 gap-y-4 p-3.5 lg:grid-cols-2">
+            {sections.map((section) => (
+              <div key={section.id} className="min-w-0">
+                <h4 className="text-[12px] font-semibold uppercase tracking-[0.14em] text-[#e8833a]">{section.title}</h4>
+                {section.pending ? (
+                  <p className="mt-1.5 text-[13px] text-[#68727f]">Waiting for {section.pending}.</p>
+                ) : (
+                  <ul className="mt-1.5 space-y-1.5">
+                    {section.lines.map((one) => (
+                      <li key={one.text} className="text-[13px] leading-relaxed text-[#c7cfda]">
+                        {one.text}
+                        {one.href ? (
+                          <a
+                            href={one.href}
+                            className="ml-1.5 rounded text-[12px] text-[#8fb4d8] hover:text-[#e3e8ef] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e8833a]"
+                            aria-label={`Source panel for: ${one.text.slice(0, 40)}`}
+                          >
+                            source
+                          </a>
+                        ) : null}
+                      </li>
+                    ))}
+                    {section.caveats.map((one) => (
+                      <li key={one} className="text-[12px] leading-relaxed text-[#d9a94a]">{one}</li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            ))}
+          </div>
+        </section>
+      ) : null}
+    </div>
+  );
+}
+
 function ExecutiveSummary({ universe }) {
   const members = universe?.members || [];
   const filings = members.reduce((sum, one) => sum + (one.admittedOn?.length || 0), 0);
@@ -739,7 +821,7 @@ function BasketPanel({ live }) {
   const lastTrade = atLastTrade(live);
   if (index?.status !== 'ok') {
     return (
-      <Panel title="AGI AI Enablers" note="equal-weighted">
+      <Panel id="basket" title="AGI AI Enablers" note="equal-weighted">
         <p className="font-mono text-[12px] uppercase tracking-wider text-[#d9a94a]">{index?.status || 'no data'}</p>
         <p className="mt-1.5 text-[13px] leading-relaxed text-[#8b95a3]">
           {index?.reason || 'The basket has not been computed yet.'}
@@ -752,6 +834,7 @@ function BasketPanel({ live }) {
   }
   return (
     <Panel
+      id="basket"
       title="AGI AI Enablers"
       note="equal-weighted"
       action={`${Math.round(index.coverage * 100)}% priced`}
@@ -1289,6 +1372,10 @@ export default function IndiaAiIntelligencePage() {
               </div>
 
               <StatusStrip universe={universe} live={live} />
+
+              <DataSummary
+                universe={universe} live={live} history={history} marketValue={marketValue} stage3={stage3}
+              />
 
               <ExecutiveSummary universe={universe} />
 
