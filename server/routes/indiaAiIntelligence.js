@@ -11,6 +11,7 @@ import { fundamentalsForUniverse, intensityForUniverse } from '../services/aiEna
 import { stageThree, stageTwo } from '../services/aiEnablersScreen.js';
 
 const UNIVERSE_PATH = fileURLToPath(new URL('../config/india-ai-enablers.universe.json', import.meta.url));
+const FACTS_PATH = fileURLToPath(new URL('../config/india-ai-enablers.disclosed-facts.json', import.meta.url));
 
 let universeCache = null;
 export async function loadUniverse({ path = UNIVERSE_PATH, refresh = false } = {}) {
@@ -117,6 +118,23 @@ export default function createIndiaAiIntelligenceRouter() {
         candidates: universe.candidates,
         excluded: universe.excluded || [],
       });
+    } catch (error) {
+      res.status(500).json({ ok: false, error: String(error?.message || error) });
+    }
+  });
+
+  /**
+   * The facts read out of filings, and what they were read from.
+   *
+   * Served separately from the universe because provenance differs per
+   * company: some entries were read from the primary document by this system
+   * and carry page numbers, others were relayed and carry only a source. The
+   * page has to be able to tell those apart, so the distinction travels.
+   */
+  router.get('/filed-facts', async (req, res) => {
+    try {
+      const facts = JSON.parse(await readFile(FACTS_PATH, 'utf8'));
+      res.json({ ok: true, ...facts });
     } catch (error) {
       res.status(500).json({ ok: false, error: String(error?.message || error) });
     }

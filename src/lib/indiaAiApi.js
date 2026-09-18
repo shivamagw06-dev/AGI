@@ -27,3 +27,4 @@ async function request(path, { timeoutMs = 30_000 } = {}) {
 export const fetchUniverse = () => request('/universe');
 export const fetchLive = () => request('/live');
 export const fetchSnapshots = () => request('/snapshots');
+export const fetchFiledFacts = () => request('/filed-facts');
