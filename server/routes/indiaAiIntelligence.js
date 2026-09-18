@@ -27,6 +27,7 @@ const INTENSITY_PATH = fileURLToPath(new URL('../config/india-ai-enablers.intens
 const SHARES_PATH = fileURLToPath(new URL('../config/india-ai-enablers.shares.json', import.meta.url));
 const OPERATING_PATH = fileURLToPath(new URL('../config/india-ai-enablers.operating-data.json', import.meta.url));
 const ESTIMATES_PATH = fileURLToPath(new URL('../config/india-ai-enablers.estimates.json', import.meta.url));
+const SCORING_PATH = fileURLToPath(new URL('../config/india-ai-enablers.scoring.json', import.meta.url));
 
 let universeCache = null;
 export async function loadUniverse({ path = UNIVERSE_PATH, refresh = false } = {}) {
@@ -198,6 +199,15 @@ export default function createIndiaAiIntelligenceRouter() {
   router.get('/estimates', async (req, res) => {
     try {
       res.json({ ok: true, ...JSON.parse(await readFile(ESTIMATES_PATH, 'utf8')) });
+    } catch (error) {
+      res.status(500).json({ ok: false, error: String(error?.message || error) });
+    }
+  });
+
+  /** Filed cash-flow, capital and quarter figures behind the five factors. */
+  router.get('/scoring', async (req, res) => {
+    try {
+      res.json({ ok: true, ...JSON.parse(await readFile(SCORING_PATH, 'utf8')) });
     } catch (error) {
       res.status(500).json({ ok: false, error: String(error?.message || error) });
     }
@@ -553,15 +563,21 @@ export default function createIndiaAiIntelligenceRouter() {
    * traded value, from Upstox daily candles. A member below the target stays
    * a member; it is listed in belowTarget with its maximum executable size.
    */
+  let exitabilityCache = null;
   router.get('/screen/exitability', async (req, res) => {
     try {
+      // Cached for ten minutes: the monitor view opens with this column, and
+      // each run reads a candle series per member.
+      if (exitabilityCache && Date.now() - exitabilityCache.at < 10 * 60_000) return res.json(exitabilityCache.body);
       if (!isUpstoxConfigured()) {
         return res.status(503).json({ ok: false, error: 'Upstox is not configured; set UPSTOX_ACCESS_TOKEN server-side.', code: 'UPSTOX_NOT_CONFIGURED' });
       }
       const universe = await loadUniverse();
       const to = new Date().toISOString().slice(0, 10);
       const from = new Date(Date.now() - 120 * 24 * 3600 * 1000).toISOString().slice(0, 10);
-      res.json({ ok: true, ...(await exitabilityForUniverse(universe, { fetchCandles: getHistoricalCandles, to, from })) });
+      const body = { ok: true, ...(await exitabilityForUniverse(universe, { fetchCandles: getHistoricalCandles, to, from })) };
+      exitabilityCache = { at: Date.now(), body };
+      res.json(body);
     } catch (error) {
       res.status(500).json({ ok: false, error: String(error?.message || error) });
     }
