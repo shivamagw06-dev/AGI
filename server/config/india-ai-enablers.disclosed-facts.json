@@ -10,31 +10,77 @@
       "isin": "INE918Z01012",
       "facts": [
         {
+          "concept": "revenue",
+          "definition_id": "REVENUE.OPERATIONS_NET",
+          "scope": "consolidated",
+          "period_end": "2026-03-31",
+          "value": 36263.54,
+          "prior": 27217.52,
+          "unit": "inr_million",
+          "as_reported_label": "Revenue from operations",
+          "source_document_id": "kaynes-consol-fy2026",
+          "source_page": 30
+        },
+        {
+          "concept": "net_profit",
+          "definition_id": "PAT.REPORTED",
+          "scope": "consolidated",
+          "period_end": "2026-03-31",
+          "value": 3638.9,
+          "prior": 2934.33,
+          "unit": "inr_million",
+          "as_reported_label": "Profit / (Loss) for the year",
+          "source_document_id": "kaynes-consol-fy2026",
+          "source_page": 30
+        },
+        {
+          "concept": "eps",
+          "definition_id": "EPS.BASIC",
+          "scope": "consolidated",
+          "period_end": "2026-03-31",
+          "value": 54.85,
+          "prior": 45.82,
+          "unit": "inr_per_share",
+          "as_reported_label": "Basic, under Earnings per share (nominal value of Rs. 10 each)",
+          "source_document_id": "kaynes-consol-fy2026",
+          "source_page": 30
+        },
+        {
+          "concept": "eps",
+          "definition_id": "EPS.DILUTED",
+          "scope": "consolidated",
+          "period_end": "2026-03-31",
+          "value": 54.45,
+          "prior": 45.4,
+          "unit": "inr_per_share",
+          "as_reported_label": "Diluted, under Earnings per share (nominal value of Rs. 10 each)",
+          "source_document_id": "kaynes-consol-fy2026",
+          "source_page": 30
+        },
+        {
           "concept": "capex",
           "definition_id": "CAPEX.CASH_PPE_INTANGIBLES",
           "scope": "consolidated",
           "period_end": "2026-03-31",
           "value": 12403.01,
+          "prior": 9487.47,
           "unit": "inr_million",
-          "as_reported_label": "purchase of fixed assets"
+          "as_reported_label": "Purchase of fixed assets",
+          "note": "Not decomposed. The cash-flow statement gives one investing line and does not split property, plant and equipment, capital work in progress, capital advances or intangible assets. Recorded as served rather than reconstructed from balance-sheet movements.",
+          "source_document_id": "kaynes-consol-fy2026",
+          "source_page": 31
         },
         {
-          "concept": "capex",
-          "definition_id": "CAPEX.CASH_PPE_INTANGIBLES",
-          "scope": "standalone",
-          "period_end": "2026-03-31",
-          "value": 773.81,
-          "unit": "inr_million",
-          "as_reported_label": "purchase of fixed assets, including capital advances"
-        },
-        {
-          "concept": "rnd",
-          "definition_id": "RND.GROSS",
+          "concept": "cfo",
+          "definition_id": "CFO.STATEMENT",
           "scope": "consolidated",
           "period_end": "2026-03-31",
-          "value": 138.6,
+          "value": -6004.04,
           "unit": "inr_million",
-          "note": "129.24 mn capitalised, 9.36 mn expensed"
+          "as_reported_label": "Net Cash from Operating Activities",
+          "note": "Negative. Operating activities consumed 6,004.04 million while 12,403.01 million was spent on fixed assets, so the FY26 build was funded externally rather than from operations - which the QIP allotment in the same year is consistent with.",
+          "source_document_id": "kaynes-consol-fy2026",
+          "source_page": 31
         },
         {
           "concept": "share_count",
@@ -42,13 +88,33 @@
           "scope": "entity",
           "period_end": "2026-03-31",
           "value": 67034654,
+          "prior": 64084305,
           "unit": "shares",
-          "as_reported_label": "issued, subscribed and fully paid"
+          "as_reported_label": "Shares issued, subscribed and fully paid-up",
+          "note": "One class, par value Rs 10. The movement is 2,872,788 allotted on the QIP and 77,561 on ESOP exercise. No split, bonus or face-value change in FY26.",
+          "source_document_id": "kaynes-consol-fy2026",
+          "source_page": 55
+        },
+        {
+          "concept": "rnd",
+          "definition_id": "RND.GROSS",
+          "scope": "consolidated",
+          "period_end": "2026-03-31",
+          "value": null,
+          "unit": null,
+          "state": "NOT_DISCLOSED",
+          "note": "Two independent relayed readings of this report disagreed - one gave 138.60 million gross with 129.24 capitalised, the other could not verify any monetary figure in the Board’s Report technology-absorption annexure. Unresolved against the primary document, so it stays NOT_DISCLOSED. A disagreement between sources is a finding, not something to pick a side on. The BRSR percentage and capitalised technical know-how are not substitutes."
         }
       ],
       "segmentRevenue": null,
       "segmentNote": "Single EMS reporting segment. No OSAT revenue row exists and none is manufactured: the OSAT and PCB disclosures are operational, not segmental.",
-      "doNotConflate": "The ~12,423 mn of QIP proceeds deployed toward OSAT and PCB by 31 Mar 2026 is cumulative project deployment, a different concept from FY26 cash capex, and must not be summed with or substituted for it."
+      "doNotConflate": "The cumulative QIP deployment toward the Sanand OSAT and PCB projects is not FY26 cash capex. Different concepts, never summed.",
+      "provenance": "PRIMARY_FILING_READ",
+      "document": "Consolidated Financial Statements FY2025-26, Kaynes Technology India Limited",
+      "documentNote": "Pages are PDF page numbers in the consolidated statements file. That scan carries no printed page footer, and a printed annual-report page number is not invented where it cannot be verified.",
+      "segmentReporting": "Single operating segment under Ind AS 108: Electronics Manufacturing Services. There is no OSAT segment, no segment revenue table and no segment capex. Management discusses OSAT as a business vertical, and that is not the same thing.",
+      "exposureAttributable": false,
+      "exposureFinding": "Admitted on committed OSAT capex, and the exposure cannot be sized from the accounts. Kaynes reports one segment, so no share of its revenue, assets or capital expenditure is attributable to semiconductors from the filing. The 12,403.01 million of fixed-asset purchases is group-wide and covers OSAT, the PCB facility and the existing EMS business together, with no split served. This is the ADANIENT problem in a different shape: sound first-party evidence, unsizeable exposure. It is the opposite of CGPOWER, which reports Semiconductors as a segment and can be sized at 4.0% of revenue and 42.5% of group capex."
     },
     "CGPOWER": {
       "isin": "INE067A01029",
