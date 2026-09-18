@@ -16,6 +16,22 @@
  *   - a volume ratio that is not misleading before the close.
  */
 
+import { readFileSync } from 'node:fs';
+
+/**
+ * Exchange trading holidays (equity segment), YYYY-MM-DD, from the checked-in
+ * calendar. A missing or unreadable file means none are known, which is the
+ * clock-only behaviour this replaced, not an error.
+ */
+export const NSE_HOLIDAYS = (() => {
+  try {
+    const file = JSON.parse(readFileSync(new URL('../config/nse-holidays.json', import.meta.url), 'utf8'));
+    return new Set((file.holidays || []).map((one) => one.date));
+  } catch {
+    return new Set();
+  }
+})();
+
 /** NSE continuous session, in IST minutes from midnight. */
 const SESSION_OPEN_MIN = 9 * 60 + 15;
 const SESSION_CLOSE_MIN = 15 * 60 + 30;
@@ -222,14 +238,17 @@ export function quoteBook(universe, {
 }
 
 /**
- * Whether the continuous session is shut, by the clock: a weekend, or outside
- * 09:15-15:30 IST. Holidays are not known here; on one, ticks simply stop and
- * members go stale, which is the existing, visible behaviour.
+ * Whether the continuous session is shut: a weekend, an exchange holiday in
+ * the checked-in calendar, or outside 09:15-15:30 IST. On a holiday the last
+ * session's trades are the latest prices, exactly as on a weekend.
  */
-export function sessionClosed(now, { openMin = SESSION_OPEN_MIN, closeMin = SESSION_CLOSE_MIN } = {}) {
+export function sessionClosed(now, {
+  openMin = SESSION_OPEN_MIN, closeMin = SESSION_CLOSE_MIN, holidays = NSE_HOLIDAYS,
+} = {}) {
   const ist = new Date(now + IST_OFFSET_MIN * 60_000);
   const day = ist.getUTCDay();
   if (day === 0 || day === 6) return true;
+  if (holidays.has(ist.toISOString().slice(0, 10))) return true;
   const minutes = ist.getUTCHours() * 60 + ist.getUTCMinutes();
   return minutes < openMin || minutes >= closeMin;
 }

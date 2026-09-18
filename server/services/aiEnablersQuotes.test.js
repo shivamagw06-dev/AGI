@@ -176,3 +176,19 @@ test('the quote book counts last trades apart from live and fallback prices', ()
   assert.deepEqual(book.sources.live, []);
   assert.equal(book.closed, true);
 });
+
+test('an exchange holiday is closed all day, like a weekend', () => {
+  const holidays = new Set(['2026-10-02']);
+  assert.equal(sessionClosed(Date.parse('2026-10-02T06:00:00Z'), { holidays }), true);   // Fri 11:30 IST
+  assert.equal(sessionClosed(Date.parse('2026-10-01T06:00:00Z'), { holidays }), false);  // Thu 11:30 IST
+});
+
+test('the checked-in calendar is read, and a holiday there closes the default clock', async () => {
+  const { NSE_HOLIDAYS } = await import('./aiEnablersQuotes.js');
+  assert.ok(NSE_HOLIDAYS.has('2026-10-02'));
+  for (const date of NSE_HOLIDAYS) {
+    const day = new Date(`${date}T00:00:00Z`).getUTCDay();
+    assert.ok(day >= 1 && day <= 5, `${date} is a weekday`);
+  }
+  assert.equal(sessionClosed(Date.parse('2026-10-02T06:00:00Z')), true);
+});

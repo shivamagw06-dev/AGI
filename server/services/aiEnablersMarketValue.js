@@ -49,8 +49,10 @@ export const canonicalSector = (label) => (label ? SECTOR_ALIASES[label] || labe
  * Replaces P/B x book as the size basis: measured against the filed counts
  * that route missed by more than five times (GE Vernova T&D) and in both
  * directions, so a floor applied to it would have screened on the error.
- * The promoter share is Upstox's shareholding figure, dated. A member with
- * no market value or no float is unscreened with the reason, not sized.
+ * The promoter share is the member's own BSE shareholding pattern where it
+ * has been read (the filing its share count came from), and Upstox's
+ * shareholding figure otherwise; each row says which. A member with no
+ * market value or no float is unscreened with the reason, not sized.
  *
  * `floats`: { [symbol]: { ratio, asOf, reason } }
  * `turnover`: { [symbol]: INR }
@@ -67,6 +69,7 @@ export function filedSizeRows(rows, { floats = {}, turnover = {} } = {}) {
       marketValueCr: row.marketValueCr,
       freeFloatRatio: ratio,
       floatAsOf: float.asOf ?? null,
+      floatSource: float.source ?? null,
       floatNote: float.reason ?? null,
       freeFloatMarketCap: reason ? null : Number((row.marketValueCr * ratio).toFixed(2)),
       medianDailyTurnover: turnover[row.symbol] ?? null,

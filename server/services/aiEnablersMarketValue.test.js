@@ -104,5 +104,16 @@ test('every admitted member has a filed share count with its source', async () =
     assert.ok(Number.isInteger(one.shares) && one.shares > 0, `${member.symbol} share count`);
     assert.match(one.asOf, /^\d{4}-\d{2}-\d{2}$/);
     assert.ok(one.source && one.excerpt, `${member.symbol} needs a source and an excerpt`);
+    assert.ok(Number.isFinite(one.promoterPct) && one.promoterPct >= 0 && one.promoterPct <= 75,
+      `${member.symbol} promoter share (listed companies cap it at 75%)`);
+    assert.ok(one.promoterSource?.startsWith('https://www.bseindia.com/'), `${member.symbol} promoter source`);
+    assert.ok(Math.abs(one.promoterPct - one.promoterFiledPct) < 1, `${member.symbol} promoter share near the filed column`);
   }
+});
+
+test('each stage 2 row says where its float came from', () => {
+  const rows = marketValueRows({ members: [members[0]], shares, closes: { A: { date: '2026-09-18', close: 1000 } } });
+  const [out] = filedSizeRows(rows, { floats: { A: { ratio: 0.3, asOf: '2026-06-30', source: 'BSE shareholding pattern' } } });
+  assert.equal(out.floatSource, 'BSE shareholding pattern');
+  assert.equal(out.freeFloatMarketCap, 300);
 });

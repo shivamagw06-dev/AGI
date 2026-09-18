@@ -186,7 +186,30 @@
       ],
       "reviewedBy": null,
       "reviewedAt": null,
-      "membershipStart": "2026-09-17"
+      "membershipStart": "2026-09-17",
+      "attribution": "MANAGEMENT_DISCLOSED",
+      "exposureAttributable": false,
+      "exposureNote": "Data centres are not a reported segment (one segment, real estate development). The company states FY26 turnover of Rs 145.90 crore for the data-centre undertaking being demerged into Ashok Cloud, 8.96% of the combined turnover of the parent and its cloud subsidiary (Rs 1,627.72 crore). Its wider 'Data Center, Infrastructure and Allied services' line (Rs 176.49 crore FY26; Rs 90 crore Q1 FY27) also includes infrastructure and rental income. No data-centre EBITDA, assets or capex is disclosed.",
+      "exposureEvidence": [
+        {
+          "document": "Composite Scheme of Arrangement (demerger of data centre undertaking into Ashok Cloud Pvt Ltd)",
+          "date": "2026-07-21",
+          "page": "PDF p.7",
+          "excerpt": "Turnover of the demerged division ... Demerged Undertaking 145.90 / Total 1627.72 / Percentage 8.96% (Rs crore, as on March 31, 2026)"
+        },
+        {
+          "document": "Annual Report FY2025-26, consolidated Note 41 Segment Information",
+          "date": "2026-07-14",
+          "page": "printed p.303",
+          "excerpt": "The Company's business activities which are primarily real estate development and related activities fall within a single reportable segment"
+        },
+        {
+          "document": "Q1 FY27 Investor Presentation",
+          "date": "2026-08-11",
+          "page": "slide 32",
+          "excerpt": "Revenue from Data Center, Infrastructure and Allied services stood at Rs 90 Cr."
+        }
+      ]
     },
     {
       "symbol": "NETWEB",

@@ -1262,7 +1262,9 @@ export default function IndiaAiIntelligencePage() {
   const [liveError, setLiveError] = React.useState(null);
   const [error, setError] = React.useState(null);
   const clock = useIstClock();
-  const open = nseOpen();
+  // The server knows the holiday calendar; the clock is the fallback before
+  // the first /live response.
+  const open = live?.quality ? !live.quality.closed : nseOpen();
 
   React.useEffect(() => {
     let cancelled = false;

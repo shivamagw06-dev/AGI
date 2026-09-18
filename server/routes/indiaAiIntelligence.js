@@ -377,6 +377,18 @@ export default function createIndiaAiIntelligenceRouter() {
         ratio: one?.freeFloatRatio ?? null,
         asOf: one?.lineage?.inputs?.promoter_share?.asOf ?? null,
         reason: one?.freeFloatReason ?? null,
+        source: 'Upstox share-holdings',
+      };
+    }
+    // The member's own shareholding pattern, where read, replaces it: the
+    // same filing and date as the share count.
+    for (const [symbol, one] of Object.entries(file.shares || {})) {
+      if (!Number.isFinite(one.promoterPct)) continue;
+      floats[symbol] = {
+        ratio: Number((1 - one.promoterPct / 100).toFixed(6)),
+        asOf: one.promoterAsOf || one.asOf,
+        reason: null,
+        source: 'BSE shareholding pattern',
       };
     }
 
