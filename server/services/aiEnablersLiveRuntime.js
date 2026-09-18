@@ -17,6 +17,7 @@ import { SynchronizedSnapshotStore, UpstoxMarketFeedV3 } from './upstoxMarketFee
 import { LastGoodPrices, quoteBook, universeInstrumentKeys, volumeRatio } from './aiEnablersQuotes.js';
 import { COVERAGE_FLOOR, computeIndex, STALE_MS } from './aiEnablersIndex.js';
 import { actionsNear } from './aiEnablersStatements.js';
+import { parseCandles, previousCloseBefore, replaySession, sessionDateOf } from './aiEnablersCandleReplay.js';
 
 /** The IST calendar date of an instant, so a refresh follows the exchange day. */
 const istDate = (ms) => new Date(ms + 330 * 60_000).toISOString().slice(0, 10);
@@ -103,6 +104,8 @@ export class AiEnablersLiveRuntime {
     volumeBaselines = {},
     feedFactory = (options) => new UpstoxMarketFeedV3(options),
     fetchCorporateActions = null,
+    fetchIntradayCandles = null,
+    fetchDailyCandles = null,
     now = () => Date.now(),
   } = {}) {
     this.universe = universe;
@@ -115,6 +118,9 @@ export class AiEnablersLiveRuntime {
     this.volumeBaselines = volumeBaselines;
     this.feedFactory = feedFactory;
     this.fetchCorporateActions = fetchCorporateActions;
+    this.fetchIntradayCandles = fetchIntradayCandles;
+    this.fetchDailyCandles = fetchDailyCandles;
+    this.historyRebuild = { status: 'not_run' };
     this.now = now;
     // Per-symbol corporate-action state, and the exchange day it was read for.
     this.priceBreaks = {};
@@ -199,6 +205,7 @@ export class AiEnablersLiveRuntime {
     // Fire-and-forget: a slow corporate-actions read must not delay a tick.
     this.#refreshIfNewDay();
     const snapshot = this.current();
+    snapshot.origin = 'feed';
     this.snapshots.push(snapshot);
     if (this.snapshots.length > this.retention) {
       this.snapshots.splice(0, this.snapshots.length - this.retention);
@@ -208,6 +215,112 @@ export class AiEnablersLiveRuntime {
 
   history() {
     return [...this.snapshots];
+  }
+
+  /**
+   * Refill today's history from Upstox 1-minute candles.
+   *
+   * Runs after a restart, when memory holds nothing before the first tick.
+   * Rebuilt minutes are inserted only before the first snapshot the feed
+   * took, so an observed minute is never overwritten by a reconstructed one.
+   *
+   * The base each return is measured from is, per instrument, the feed's own
+   * previous close when the feed has reported one for the same session, and
+   * the prior day's daily candle otherwise. Preferring the feed keeps the
+   * rebuilt line and the live line on one base, so the join has no step in it.
+   * Which base was used is recorded, and a disagreement between the two is
+   * reported rather than averaged away.
+   */
+  async rebuildHistory() {
+    if (!this.fetchIntradayCandles) {
+      this.historyRebuild = { status: 'not_configured' };
+      return this.historyRebuild;
+    }
+    const startedAt = this.now();
+    const errors = [];
+    const candlesByKey = {};
+    for (const key of this.resolved.keys) {
+      try {
+        candlesByKey[key] = parseCandles(await this.fetchIntradayCandles(key));
+      } catch (error) {
+        errors.push({ key, stage: 'intraday', error: String(error?.message || error) });
+      }
+    }
+    const sessionDate = sessionDateOf(candlesByKey);
+    if (!sessionDate) {
+      this.historyRebuild = { status: 'no_candles', errors, at: new Date(startedAt).toISOString() };
+      return this.historyRebuild;
+    }
+
+    const previousCloseByKey = {};
+    const basis = {};
+    const disagreements = [];
+    for (const key of this.resolved.keys) {
+      if (!candlesByKey[key]?.length) continue;
+      const row = this.store.get?.(key);
+      const rowAt = Date.parse(row?.effective_timestamp || row?.received_at || '');
+      const fromFeed = Number(row?.previous_close);
+      const feedUsable = Number.isFinite(fromFeed) && fromFeed > 0
+        && Number.isFinite(rowAt) && istDate(rowAt) === sessionDate;
+
+      let fromDaily = null;
+      if (this.fetchDailyCandles) {
+        try {
+          fromDaily = previousCloseBefore(await this.fetchDailyCandles(key, { sessionDate }), sessionDate);
+        } catch (error) {
+          errors.push({ key, stage: 'daily', error: String(error?.message || error) });
+        }
+      }
+
+      if (feedUsable) {
+        previousCloseByKey[key] = fromFeed;
+        basis[key] = 'feed';
+        if (fromDaily && Math.abs(fromDaily.close / fromFeed - 1) > 0.001) {
+          disagreements.push({ key, feed: fromFeed, daily: fromDaily.close, dailyDate: fromDaily.date });
+        }
+      } else if (fromDaily) {
+        previousCloseByKey[key] = fromDaily.close;
+        basis[key] = `daily:${fromDaily.date}`;
+      } else {
+        basis[key] = 'none';
+      }
+    }
+
+    const firstObserved = this.snapshots.find((one) => one.origin !== 'candles');
+    const until = firstObserved ? Date.parse(firstObserved.at) : this.now();
+    const rebuilt = replaySession(this.universe, {
+      candlesByKey,
+      previousCloseByKey,
+      sessionDate,
+      until,
+      staleMs: this.staleMs,
+      coverageFloor: this.coverageFloor,
+      volumeBaselines: this.volumeBaselines,
+      priceBreaks: this.priceBreaks,
+    });
+
+    // replaySession stops short of `until`, the first observed minute, so the
+    // rebuild goes in front of it; any earlier rebuild is dropped, not doubled.
+    const observed = this.snapshots.filter((one) => one.origin !== 'candles');
+    const kept = rebuilt;
+    this.snapshots = [...kept, ...observed];
+    if (this.snapshots.length > this.retention) {
+      this.snapshots.splice(0, this.snapshots.length - this.retention);
+    }
+
+    this.historyRebuild = {
+      status: kept.length ? 'rebuilt' : 'nothing_to_rebuild',
+      sessionDate,
+      snapshots: kept.length,
+      priced: kept.filter((one) => one.status === 'ok').length,
+      from: kept[0]?.at || null,
+      to: kept[kept.length - 1]?.at || null,
+      basis,
+      disagreements,
+      errors,
+      at: new Date(startedAt).toISOString(),
+    };
+    return this.historyRebuild;
   }
 
   async start() {
@@ -224,6 +337,12 @@ export class AiEnablersLiveRuntime {
     await this.#refreshIfNewDay();
     this.timer = setInterval(() => this.tick(), this.snapshotIntervalMs);
     if (this.timer.unref) this.timer.unref();
+    // Not awaited: sixteen HTTP calls must not hold up the first /live
+    // response. The rebuild inserts behind whatever the feed has observed.
+    this.rebuilding = this.rebuildHistory().catch((error) => {
+      this.historyRebuild = { status: 'failed', error: String(error?.message || error) };
+      return this.historyRebuild;
+    });
     return this.status();
   }
 
@@ -241,6 +360,7 @@ export class AiEnablersLiveRuntime {
       benchmarkKey: this.resolved.benchmarkKey,
       feed: this.feed?.status?.() || { status: 'idle' },
       snapshots: this.snapshots.length,
+      history_rebuild: this.historyRebuild,
       store: this.store.stats?.() || null,
     };
   }
