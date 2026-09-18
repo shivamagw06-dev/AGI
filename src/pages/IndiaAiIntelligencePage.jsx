@@ -1,5 +1,8 @@
 import React from 'react';
-import { fetchLive, fetchSnapshots, fetchUniverse } from '@/lib/indiaAiApi';
+import { fetchFiledFacts, fetchLive, fetchSnapshots, fetchUniverse } from '@/lib/indiaAiApi';
+import {
+  BuildFunding, CapexConcentration, EvidenceComposition, ExposureAttribution,
+} from '@/components/indiaAi/FiledEvidenceCharts';
 import { nseOpen } from '@/lib/nseSession';
 
 /**
@@ -112,6 +115,7 @@ function StatusStrip({ universe, live }) {
  */
 const SECTIONS = [
   ['overview', 'Overview'],
+  ['filed', 'From the filings'],
   ['universe', 'Universe'],
   ['orders', 'Orders'],
   ['capacity', 'Capacity'],
@@ -782,6 +786,7 @@ export default function IndiaAiIntelligencePage() {
   const [universe, setUniverse] = React.useState(null);
   const [live, setLive] = React.useState(null);
   const [snapshots, setSnapshots] = React.useState([]);
+  const [filed, setFiled] = React.useState(null);
   const [liveError, setLiveError] = React.useState(null);
   const [error, setError] = React.useState(null);
   const clock = useIstClock();
@@ -792,6 +797,9 @@ export default function IndiaAiIntelligencePage() {
     fetchUniverse()
       .then((payload) => { if (!cancelled) setUniverse(payload); })
       .catch((err) => { if (!cancelled) setError(String(err?.message || err)); });
+    fetchFiledFacts()
+      .then((payload) => { if (!cancelled) setFiled(payload); })
+      .catch(() => {});
     return () => { cancelled = true; };
   }, []);
 
@@ -938,6 +946,25 @@ export default function IndiaAiIntelligencePage() {
                   </cite>
                 </blockquote>
               </div>
+
+              <section id="filed" className="space-y-3">
+                <div>
+                  <h2 className="text-[20px] font-semibold tracking-tight">From the filings</h2>
+                  <p className="mt-1.5 max-w-3xl text-[12px] leading-relaxed text-[#8b95a3]">
+                    Everything below is read from an annual report this system opened, and every
+                    figure carries a company, a document and a page. There is no consensus, no
+                    forecast and no third-party estimate here, which is why there are four charts
+                    rather than forty &mdash; and why two of them are about what could not be
+                    established.
+                  </p>
+                </div>
+                <div className="grid gap-3 lg:grid-cols-2">
+                  <ExposureAttribution companies={filed?.companies} />
+                  <CapexConcentration company={filed?.companies?.CGPOWER} />
+                  <BuildFunding companies={filed?.companies} />
+                  <EvidenceComposition universe={universe} />
+                </div>
+              </section>
 
               <AdmittedUniverse universe={universe} />
 
