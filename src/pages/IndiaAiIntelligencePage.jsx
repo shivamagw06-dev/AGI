@@ -1,7 +1,7 @@
 import React from 'react';
 import { fetchFiledFacts, fetchLive, fetchSnapshots, fetchUniverse } from '@/lib/indiaAiApi';
 import {
-  BuildFunding, CapexConcentration, EvidenceComposition, ExposureAttribution,
+  BuildFunding, CapexChanges, CapexConcentration, EvidenceComposition, ExposureAttribution,
 } from '@/components/indiaAi/FiledEvidenceCharts';
 import { nseOpen } from '@/lib/nseSession';
 
@@ -223,7 +223,9 @@ function IndexedChart({ snapshots }) {
         </p>
         <p className="text-[11px] text-[#68727f]">
           {points.length === 0
-            ? 'No priced snapshots yet — the series begins at the next open session.'
+            ? (nseOpen()
+              ? 'No priced snapshots in memory. The market is open, so the history was cleared by a restart of the service - it rebuilds a minute at a time from here.'
+              : 'No priced snapshots yet — the series begins at the next open session.')
             : 'One snapshot so far; a line needs two.'}
         </p>
       </div>
@@ -858,9 +860,9 @@ export default function IndiaAiIntelligencePage() {
       ) : (
         <div className="mx-auto max-w-[1680px] px-4 py-4">
           <nav className="mb-3 text-[11px] text-[#7d8894]" aria-label="Breadcrumb">
-            <a href="/research" className="rounded hover:text-[#e3e8ef] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e8833a]">Research</a>
+            <a href="/research" className="rounded text-[#9aa5b3] hover:text-[#e3e8ef] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e8833a]">Research</a>
             <span className="px-1 text-[#3a4453]">›</span>
-            <a href="/themes" className="rounded hover:text-[#e3e8ef] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e8833a]">Themes</a>
+            <a href="/themes" className="rounded text-[#9aa5b3] hover:text-[#e3e8ef] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e8833a]">Themes</a>
             <span className="px-1 text-[#3a4453]">›</span>
             <span aria-current="page">India AI Infrastructure</span>
           </nav>
@@ -1008,11 +1010,8 @@ export default function IndiaAiIntelligencePage() {
                 />
               </Panel>
 
-              <Panel title="Capex changes" note="indexed">
-                <Needed
-                  what="Capex comes from the fact store, which has no annual report ingested for any admitted member yet. The bridge is built; nothing has been loaded through it."
-                  source="annual reports ingested for these 7 companies"
-                />
+              <Panel title="Capex changes" note="year on year, from filings">
+                <CapexChanges companies={filed?.companies} />
               </Panel>
 
               <OrderFeed universe={universe} />

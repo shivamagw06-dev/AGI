@@ -243,3 +243,49 @@ export function EvidenceComposition({ universe }) {
     </Panel>
   );
 }
+
+/**
+ * Capex growth, year on year, where a filing discloses both years.
+ *
+ * Growth only, never absolute values. The members report in different units -
+ * crore for some, million for others - and a bar chart of the raw figures
+ * would put a crore beside a million as though they were the same size. A
+ * ratio of a company's own two years is unit-free, so it can be compared.
+ *
+ * Only primary reads with a page number appear. A relayed figure, or a year
+ * with no comparative, is left out rather than guessed at.
+ */
+export function CapexChanges({ companies }) {
+  const rows = Object.entries(companies || {}).map(([symbol, one]) => {
+    if (one.provenance !== 'PRIMARY_FILING_READ') return null;
+    const f = (one.facts || []).find((x) => x.concept === 'capex' && x.value != null && x.prior);
+    if (!f || !(f.prior > 0)) return null;
+    return { symbol, growth: f.value / f.prior - 1, page: f.source_page, label: f.as_reported_label };
+  }).filter(Boolean).sort((a, b) => b.growth - a.growth);
+  if (!rows.length) return null;
+  const widest = Math.max(...rows.map((r) => Math.abs(r.growth))) || 1;
+
+  return (
+    <div className="space-y-2.5">
+      {rows.map((row) => (
+        <div key={row.symbol}>
+          <div className="flex items-baseline justify-between">
+            <span className="font-mono text-[11px] text-[#d3dae3]">{row.symbol}</span>
+            <span className={`font-mono text-[12px] font-semibold tabular-nums ${row.growth >= 0 ? 'text-[#e8833a]' : 'text-[#5aa2e0]'}`}>
+              {row.growth >= 0 ? '+' : ''}{(row.growth * 100).toFixed(1)}%
+            </span>
+          </div>
+          <div className="mt-1 h-[3px] rounded bg-[#1a2230]">
+            <div className="h-[3px] rounded bg-[#e8833a]" style={{ width: `${Math.max(2, (Math.abs(row.growth) / widest) * 100)}%` }} />
+          </div>
+          <p className="mt-0.5 text-[10px] text-[#68727f]">FY26 against FY25 &middot; cash flow, page {row.page}</p>
+        </div>
+      ))}
+      <p className="border-t border-[#1a2230] pt-2 text-[10px] leading-relaxed text-[#68727f]">
+        Growth only: members report in different units, so absolute figures are not comparable
+        across them. Members without a disclosed prior year, or not yet read from the filing,
+        are left out rather than estimated.
+      </p>
+    </div>
+  );
+}
