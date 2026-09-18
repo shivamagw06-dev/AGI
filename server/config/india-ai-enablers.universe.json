@@ -556,8 +556,8 @@
     {
       "symbol": "TDPOWERSYS",
       "name": "TD Power Systems Ltd.",
-      "instrumentKey": "NSE_EQ|INE419M01027",
-      "isin": "INE419M01027",
+      "instrumentKey": "NSE_EQ|INE419M01035",
+      "isin": "INE419M01035",
       "layer": "power",
       "subLayers": [
         "equipment"
@@ -590,7 +590,8 @@
       "note": "Generators for US data centres, supplied through gas-turbine and engine OEMs. The OEMs are not named.",
       "attribution": "NOT_ATTRIBUTABLE",
       "discoveredVia": "EXTERNAL_LEAD_2026_09_18",
-      "evidenceReadOn": "2026-09-18"
+      "evidenceReadOn": "2026-09-18",
+      "isinNote": "INE419M01027, from the NSE equity list in the repo, is rejected by Upstox as an invalid instrument key; INE419M01035 is the current ISIN (Trendlyne) and returns prices. Found 2026-09-18 when the member never priced."
     },
     {
       "symbol": "SANSERA",
