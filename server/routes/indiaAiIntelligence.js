@@ -3,7 +3,9 @@ import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { AiEnablersLiveRuntime } from '../services/aiEnablersLiveRuntime.js';
 import { liquidityForUniverse, volumeBaselines } from '../services/aiEnablersLiquidity.js';
-import { getFundamentals, getHistoricalCandles, isUpstoxConfigured } from '../providers/upstox.js';
+import {
+  getFundamentals, getHistoricalCandles, getIntradayCandles, isUpstoxConfigured,
+} from '../providers/upstox.js';
 import { fetchMarketCaps } from '../providers/yahooMarketCap.js';
 import { sizeForUniverse, sizeRows } from '../services/aiEnablersSize.js';
 import { createSupabaseAdmin } from '../lib/supabaseAdmin.js';
@@ -94,6 +96,15 @@ export async function ensureRuntime({ universe, start = true } = {}) {
       // Read at start and again whenever the exchange day rolls, so a bonus
       // or split is excluded on its ex-date rather than printed as a loss.
       fetchCorporateActions: (isin) => getFundamentals(isin, 'corporate-actions', {}),
+      // The session so far, so a restart does not wipe the chart to one point.
+      fetchIntradayCandles: (key) => getIntradayCandles(key, { unit: 'minutes', interval: 1 }),
+      // A fortnight back covers a long holiday; the replay takes the last
+      // close strictly before the session.
+      fetchDailyCandles: (key, { sessionDate }) => {
+        const day = (offset) => new Date(Date.parse(`${sessionDate}T00:00:00Z`) + offset * 86_400_000)
+          .toISOString().slice(0, 10);
+        return getHistoricalCandles(key, { unit: 'days', interval: 1, to: day(-1), from: day(-14) });
+      },
     });
     if (start) await built.start();
     runtime = built;
@@ -193,7 +204,7 @@ export default function createIndiaAiIntelligenceRouter() {
   router.get('/snapshots', async (req, res) => {
     try {
       const live = await ensureRuntime();
-      res.json({ ok: true, snapshots: live.history() });
+      res.json({ ok: true, snapshots: live.history(), history_rebuild: live.historyRebuild });
     } catch (error) {
       const code = error?.code === 'UPSTOX_NOT_CONFIGURED' ? 503 : 500;
       res.status(code).json({ ok: false, error: String(error?.message || error), code: error?.code || null });

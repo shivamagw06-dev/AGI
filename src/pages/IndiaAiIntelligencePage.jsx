@@ -205,6 +205,7 @@ function IndexedChart({ snapshots }) {
     .filter((one) => one.status === 'ok' && Number.isFinite(Number(one.index?.return_pct)))
     .map((one) => ({
       at: Date.parse(one.at),
+      rebuilt: one.origin === 'candles',
       basket: Number(one.index.return_pct) * 100,
       benchmark: Number.isFinite(Number(one.index.relative?.benchmark_return_pp))
         ? Number(one.index.relative.benchmark_return_pp) : null,
@@ -224,7 +225,7 @@ function IndexedChart({ snapshots }) {
         <p className="text-[11px] text-[#68727f]">
           {points.length === 0
             ? (nseOpen()
-              ? 'No priced snapshots in memory. The market is open, so the history was cleared by a restart of the service - it rebuilds a minute at a time from here.'
+              ? 'No priced snapshots yet. The service has just restarted; it is rebuilding the session from 1-minute candles.'
               : 'No priced snapshots yet — the series begins at the next open session.')
             : 'One snapshot so far; a line needs two.'}
         </p>
@@ -246,10 +247,37 @@ function IndexedChart({ snapshots }) {
     .filter(Boolean).join(' ');
 
   const last = points[points.length - 1];
+  // Where the replayed candles hand over to the live feed. Rebuilt minutes
+  // are the same arithmetic on closed 1-minute candles, but they were not
+  // observed, and the chart says so rather than drawing one seamless line.
+  const handover = points.findIndex((one) => !one.rebuilt);
+  const rebuiltCount = handover === -1 ? points.length : handover;
+  const clock = (ms) => new Date(ms).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata' });
   return (
+    <>
     <svg viewBox={`0 0 ${W} ${H}`} className="w-full" role="img" aria-label="AI Enablers against Nifty 50, indexed from the first snapshot">
       <line x1={pad.l} x2={W - pad.r} y1={y(0)} y2={y(0)} stroke="#1e2634" strokeWidth="1" />
       <text x={pad.l - 6} y={y(0) + 3} textAnchor="end" fill="#68727f" fontSize="8">0%</text>
+      {rebuiltCount > 0 ? (
+        <rect
+          x={pad.l}
+          y={pad.t}
+          width={Math.max(0, x(Math.min(rebuiltCount, points.length - 1)) - pad.l)}
+          height={H - pad.t - pad.b}
+          fill="#ffffff"
+          opacity="0.025"
+        />
+      ) : null}
+      {rebuiltCount > 0 && rebuiltCount < points.length ? (
+        <line
+          x1={x(rebuiltCount)}
+          x2={x(rebuiltCount)}
+          y1={pad.t}
+          y2={H - pad.b}
+          stroke="#3a4453"
+          strokeDasharray="2 3"
+        />
+      ) : null}
       <path d={path('basket')} fill="none" stroke="#e8833a" strokeWidth="1.8" />
       <path d={path('benchmark')} fill="none" stroke="#5aa2e0" strokeWidth="1.4" />
       <text x={W - pad.r + 4} y={y(last.basket) + 3} fill="#e8833a" fontSize="9" fontWeight="600">
@@ -267,6 +295,14 @@ function IndexedChart({ snapshots }) {
         {new Date(last.at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata' })}
       </text>
     </svg>
+    {rebuiltCount > 0 ? (
+      <p className="mt-1 px-1 text-[10px] text-[#68727f]">
+        {rebuiltCount === points.length
+          ? `Whole line rebuilt from Upstox 1-minute candles after a restart, to ${clock(last.at)} IST.`
+          : `Shaded part (to ${clock(points[rebuiltCount - 1].at)} IST) rebuilt from Upstox 1-minute candles after a restart; live feed from ${clock(points[rebuiltCount].at)}.`}
+      </p>
+    ) : null}
+    </>
   );
 }
 
@@ -411,7 +447,8 @@ function BasketPanel({ live }) {
       ) : null}
       {index.priceBreak?.length ? (
         <p className="mt-2 text-[10px] text-[#d9a94a]">
-          Excluded today for a corporate action (bonus, split or rights): {index.priceBreak.join(', ')}. Its price
+          Excluded today for a corporate action (bonus, split or rights):{' '}
+          {index.priceBreak.map((one) => one.symbol).join(', ')}. Its price
           change would be the share count changing, not the market.
         </p>
       ) : null}
