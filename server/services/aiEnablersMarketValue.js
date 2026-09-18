@@ -29,6 +29,52 @@
 export const CRORE = 1e7;
 export const MARKET_VALUE_TOLERANCE = 0.25;
 
+/**
+ * Upstox spells some sectors two ways. Only those spellings are merged, so
+ * one industry is one bar; every other label is Upstox's as given, and the
+ * original label travels with each row.
+ */
+export const SECTOR_ALIASES = Object.freeze({
+  Cables: 'Cable',
+  'Capital Goods - Electrical Equipment': 'Electric Equipment',
+});
+
+export const canonicalSector = (label) => (label ? SECTOR_ALIASES[label] || label : null);
+
+/**
+ * Stage 2 rows on filed shares.
+ *
+ *   free-float market value = close x filed shares x (1 - promoter share)
+ *
+ * Replaces P/B x book as the size basis: measured against the filed counts
+ * that route missed by more than five times (GE Vernova T&D) and in both
+ * directions, so a floor applied to it would have screened on the error.
+ * The promoter share is Upstox's shareholding figure, dated. A member with
+ * no market value or no float is unscreened with the reason, not sized.
+ *
+ * `floats`: { [symbol]: { ratio, asOf, reason } }
+ * `turnover`: { [symbol]: INR }
+ */
+export function filedSizeRows(rows, { floats = {}, turnover = {} } = {}) {
+  return rows.map((row) => {
+    const float = floats[row.symbol] || {};
+    const ratio = Number.isFinite(float.ratio) && float.ratio > 0 && float.ratio <= 1 ? float.ratio : null;
+    let reason = null;
+    if (row.marketValueCr == null) reason = row.status;
+    else if (ratio === null) reason = 'NO_FREE_FLOAT_RATIO';
+    return {
+      symbol: row.symbol,
+      marketValueCr: row.marketValueCr,
+      freeFloatRatio: ratio,
+      floatAsOf: float.asOf ?? null,
+      floatNote: float.reason ?? null,
+      freeFloatMarketCap: reason ? null : Number((row.marketValueCr * ratio).toFixed(2)),
+      medianDailyTurnover: turnover[row.symbol] ?? null,
+      reason,
+    };
+  });
+}
+
 /** The last close on or before `through`, from a Map(date -> close). */
 export function lastCloseThrough(closes, through) {
   let found = null;

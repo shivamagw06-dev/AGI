@@ -255,6 +255,14 @@ turnover above a floor, both measured over six months from Upstox history. Thres
 AGI's, stored in config, and printed on the page. A screen whose cut-offs are hidden is a
 screen nobody can argue with, which makes it useless.
 
+Free-float market cap is last close x the equity shares each company filed with the
+exchange (`config/india-ai-enablers.shares.json`, each count with its filing and line)
+x (1 - promoter share). It was first derived as Upstox P/B x book equity, which needs no
+share count; measured against the filed counts on 18 Sep 2026 that route was off by more
+than 25% for six of 27 members, in both directions, and by more than five times for
+GE Vernova T&D. It is still returned beside each figure for reference and is never
+screened on.
+
 **Stage 3 — investment intensity.** Any one of: three-year revenue CAGR above the universe
 median; capex growth above median; capex/sales above median; R&D/sales above median. This
 stage is a filter for companies that are *building*, which is what an infrastructure theme

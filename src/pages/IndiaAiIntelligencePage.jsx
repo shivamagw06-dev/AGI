@@ -706,9 +706,9 @@ function MarketValue({ data }) {
         with the exchange; partly-paid shares are left out. It is the value of the whole company: most members
         do not report what share of their business serves data centres, so a layer&rsquo;s bar measures listed
         value with a filed link to AI infrastructure, not the value of that link. P/B × book is an independent
-        route to the same figure; {flagged.length ? `${flagged.map((row) => row.symbol).join(', ')} ${flagged.length === 1 ? 'differs' : 'differ'} by more than 25%, usually because the book is a different entity from the one the P/B prices.` : 'every member agrees within 25%.'}
+        route to the same figure; {flagged.length ? `${flagged.map((row) => row.symbol).join(', ')} ${flagged.length === 1 ? 'differs' : 'differ'} by more than 25%. Where that has been checked against filed share counts, the P/B route is the one that is off, so it is shown for reference and neither these figures nor the size screen use it.` : 'every member agrees within 25%.'}
         {leftOut.length ? ` Left out: ${leftOut.map((one) => `${one.symbol} (${LEFT_OUT[one.status] || one.status})`).join('; ')}.` : ''}
-        {' '}Sector is Upstox&rsquo;s classification. A size mix (large, mid, small) needs AMFI&rsquo;s list and is not shown.
+        {' '}Sector is Upstox&rsquo;s classification{data.sectorAliases && Object.keys(data.sectorAliases).length ? `, with two labels it spells two ways merged (${Object.entries(data.sectorAliases).map(([from, to]) => `${from} → ${to}`).join('; ')})` : ''}. A size mix (large, mid, small) needs AMFI&rsquo;s list and is not shown.
       </p>
     </Panel>
   );
