@@ -1,6 +1,6 @@
 import React from 'react';
 import {
-  fetchFiledFacts, fetchIndexHistory, fetchLive, fetchSnapshots, fetchStage3, fetchUniverse,
+  fetchFiledFacts, fetchIndexHistory, fetchLive, fetchMarketValue, fetchSnapshots, fetchStage3, fetchUniverse,
 } from '@/lib/indiaAiApi';
 import {
   BuildFunding, CapexChanges, CapexConcentration, EvidenceComposition, ExposureAttribution,
@@ -123,6 +123,7 @@ const SECTIONS = [
   ['filed', 'From the filings'],
   ['universe', 'Universe'],
   ['intensity', 'Intensity'],
+  ['value', 'Market value'],
   ['orders', 'Orders'],
   ['capacity', 'Capacity'],
   ['layers', 'Empty layers'],
@@ -408,7 +409,7 @@ function ExecutiveSummary({ universe }) {
     { k: `${emptyCount === 1 ? 'One layer' : `${emptyCount} layers`} empty`,
       v: `${emptyCount} of ${ALL_SUBS.length} sub-layers have nothing disclosed beyond intent, and ${emptyCount === 1 ? 'is' : 'are'} shown empty.` },
     { k: 'Not yet an index',
-      v: 'Filings have been read for the members and candidates only, and the investment-intensity stage is unrun for want of capex data. Positions are sized for liquidity at a Rs 100 crore target.' },
+      v: 'Filings have been read for the members and candidates only, and investment intensity sits beside each member as context, not as a gate. Positions are sized for liquidity at a Rs 100 crore target.' },
   ];
   return (
     <div className="rounded-md border border-[#1e2634] bg-[#0c1017] p-4">
@@ -589,6 +590,125 @@ function InvestmentIntensity({ data }) {
         A dash is a figure not read, never a zero. Revenue growth compares total revenue with total revenue;
         capex is the cash-flow purchase of property, plant and equipment; R&amp;D is usually a company-level figure.
         Figures as of {data.asOf}.
+      </p>
+    </Panel>
+  );
+}
+
+/**
+ * Market value by layer and by sector.
+ *
+ * Close times the share count each company filed, so every bar is a sum of
+ * figures a reader can check. It is whole-company value: most members do not
+ * attribute revenue to data centres, so a layer's bar says how much listed
+ * value has a filed AI-infrastructure link, not how much the link is worth.
+ * A member without a current share count is named under the bars rather than
+ * dropped from them.
+ */
+const fmtCr = (v) => {
+  if (v === null || v === undefined) return '—';
+  if (v >= 100_000) return `₹${(v / 100_000).toFixed(2)} lakh cr`;
+  return `₹${Math.round(v).toLocaleString('en-IN')} cr`;
+};
+
+function ValueBars({ title, totals, label }) {
+  const top = totals?.groups?.[0]?.marketValueCr || 1;
+  return (
+    <div className="min-w-0">
+      <p className="text-[10px] uppercase tracking-wider text-[#7d8894]">{title}</p>
+      <ul className="mt-2 space-y-2">
+        {(totals?.groups || []).map((group) => (
+          <li key={group.key}>
+            <div className="flex items-baseline justify-between gap-2 text-[11px]">
+              <span className="truncate text-[#d3dae3]" title={group.members.join(', ')}>{label(group.key)}</span>
+              <span className="shrink-0 font-mono tabular-nums text-[#9aa5b3]">
+                {fmtCr(group.marketValueCr)} · {(group.share * 100).toFixed(1)}%
+              </span>
+            </div>
+            <div className="mt-1 h-[6px] rounded-sm bg-[#141b26]">
+              <div className="h-full rounded-sm bg-[#e8833a]" style={{ width: `${(group.marketValueCr / top) * 100}%` }} />
+            </div>
+            <p className="mt-0.5 text-[10px] text-[#68727f]">{group.members.length} {group.members.length === 1 ? 'member' : 'members'}</p>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+const LEFT_OUT = {
+  NO_SHARE_COUNT: 'no filed share count yet',
+  NO_CLOSE: 'no close',
+  SHARE_COUNT_PREDATES_CORPORATE_ACTION: 'share count predates a bonus, split or rights issue',
+};
+
+function MarketValue({ data }) {
+  if (!data) {
+    return (
+      <Panel id="value" title="Market value" note="by layer and sector">
+        <p className="text-[11px] text-[#68727f]">Loading closes and share counts.</p>
+      </Panel>
+    );
+  }
+  if (!data.ok) {
+    return (
+      <Panel id="value" title="Market value" note="by layer and sector">
+        <p className="text-[11px] text-[#f87171]">Could not compute market value: {data.error}</p>
+      </Panel>
+    );
+  }
+  const flagged = data.rows.filter((row) => row.crossCheck?.within === false);
+  const leftOut = data.byLayer.leftOut || [];
+  return (
+    <Panel
+      id="value"
+      title="Market value"
+      note="close × filed shares · whole company, not AI exposure"
+      action={`${fmtCr(data.byLayer.totalCr)} across ${data.rows.length - leftOut.length} members`}
+    >
+      <div className="grid gap-5 sm:grid-cols-2">
+        <ValueBars title="By layer" totals={data.byLayer} label={(key) => LAYER_LABEL[key] || key} />
+        <ValueBars title="By sector (Upstox profile)" totals={data.bySector} label={(key) => key} />
+      </div>
+      <details className="mt-3">
+        <summary className="cursor-pointer rounded text-[11px] text-[#8fb4d8] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e8833a]">
+          Every member&rsquo;s figure
+        </summary>
+        <div className="mt-2 overflow-x-auto">
+          <table className="w-full min-w-[560px] text-[11px]">
+            <thead>
+              <tr className="text-left text-[10px] uppercase tracking-wider text-[#68727f]">
+                <th className="py-1.5 pr-2 font-medium">Member</th>
+                <th className="py-1.5 pr-2 text-right font-medium">Close</th>
+                <th className="py-1.5 pr-2 text-right font-medium">Shares</th>
+                <th className="py-1.5 pr-2 text-right font-medium">Market value</th>
+                <th className="py-1.5 text-right font-medium">vs P/B × book</th>
+              </tr>
+            </thead>
+            <tbody>
+              {[...data.rows].sort((a, b) => (b.marketValueCr ?? -1) - (a.marketValueCr ?? -1)).map((row) => (
+                <tr key={row.symbol} className="border-t border-[#1a2230]">
+                  <td className="py-1.5 pr-2 font-mono text-[#d3dae3]" title={row.sharesSource ? `${row.sharesSource}, as of ${row.sharesAsOf}` : ''}>{row.symbol}</td>
+                  <td className="py-1.5 pr-2 text-right font-mono tabular-nums text-[#9aa5b3]">{row.close ? row.close.toLocaleString('en-IN', { maximumFractionDigits: 2 }) : '—'}</td>
+                  <td className="py-1.5 pr-2 text-right font-mono tabular-nums text-[#9aa5b3]">{row.shares ? `${(row.shares / 1e7).toFixed(2)} cr` : '—'}</td>
+                  <td className="py-1.5 pr-2 text-right font-mono tabular-nums text-[#e3e8ef]">{row.marketValueCr != null ? fmtCr(row.marketValueCr) : LEFT_OUT[row.status] || row.status}</td>
+                  <td className={`py-1.5 text-right font-mono tabular-nums ${row.crossCheck?.within === false ? 'text-[#d9a94a]' : 'text-[#68727f]'}`}>
+                    {row.crossCheck?.gap != null ? pctOf(row.crossCheck.gap) : '—'}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </details>
+      <p className="mt-3 text-[10px] leading-relaxed text-[#68727f]">
+        Market value is the close on {data.closedThrough} times the equity shares each company last filed
+        with the exchange; partly-paid shares are left out. It is the value of the whole company: most members
+        do not report what share of their business serves data centres, so a layer&rsquo;s bar measures listed
+        value with a filed link to AI infrastructure, not the value of that link. P/B × book is an independent
+        route to the same figure; {flagged.length ? `${flagged.map((row) => row.symbol).join(', ')} ${flagged.length === 1 ? 'differs' : 'differ'} by more than 25%, usually because the book is a different entity from the one the P/B prices.` : 'every member agrees within 25%.'}
+        {leftOut.length ? ` Left out: ${leftOut.map((one) => `${one.symbol} (${LEFT_OUT[one.status] || one.status})`).join('; ')}.` : ''}
+        {' '}Sector is Upstox&rsquo;s classification. A size mix (large, mid, small) needs AMFI&rsquo;s list and is not shown.
       </p>
     </Panel>
   );
@@ -1028,6 +1148,7 @@ export default function IndiaAiIntelligencePage() {
   const [filed, setFiled] = React.useState(null);
   const [stage3, setStage3] = React.useState(null);
   const [history, setHistory] = React.useState(null);
+  const [marketValue, setMarketValue] = React.useState(null);
   const [liveError, setLiveError] = React.useState(null);
   const [error, setError] = React.useState(null);
   const clock = useIstClock();
@@ -1047,6 +1168,9 @@ export default function IndiaAiIntelligencePage() {
     fetchIndexHistory()
       .then((payload) => { if (!cancelled) setHistory(payload); })
       .catch(() => {});
+    fetchMarketValue()
+      .then((payload) => { if (!cancelled) setMarketValue(payload); })
+      .catch((err) => { if (!cancelled) setMarketValue({ ok: false, error: String(err?.message || err) }); });
     return () => { cancelled = true; };
   }, []);
 
@@ -1220,6 +1344,8 @@ export default function IndiaAiIntelligencePage() {
               <InvestmentIntensity data={stage3} />
 
               <LayerCards universe={universe} />
+
+              <MarketValue data={marketValue} />
             </div>
 
             {/* ── monitor ── */}
