@@ -60,3 +60,13 @@ test('each member weight split sums to one and matches its sub-layers', () => {
     assert.deepEqual(Object.keys(m.weightSplit).sort(), m.subLayers.map((s) => `${m.layer}_${s}`).sort(), `${m.symbol} weightSplit keys`);
   }
 });
+
+test('every dated evidence item carries a short headline for the evidence feed', () => {
+  for (const m of members) {
+    for (const e of [...(m.admittedOn || []), ...(m.supportingEvidence || [])]) {
+      if (!e.date || e.undated) continue;
+      assert.ok(e.headline, `${m.symbol} ${e.date} has no headline`);
+      assert.ok(e.headline.length <= 90, `${m.symbol} ${e.date} headline is ${e.headline.length} characters`);
+    }
+  }
+});

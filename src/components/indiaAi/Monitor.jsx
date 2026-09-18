@@ -15,34 +15,65 @@ import {
  * A an AGI estimate - so fact and analysis cannot be confused. There is no
  * consensus tag because AGI has no consensus source, and no broker figure
  * appears anywhere in this view.
+ *
+ * Colour carries one meaning each: blue is disclosed, green is strong,
+ * amber is an AGI estimate, grey is low confidence. The brand orange is for
+ * focus and the active control only.
  */
 
 const TAGS = {
-  D: ['Disclosed', 'Stated by the company in its own filing, release, presentation or call.', 'text-[#4ade80] border-[#2f5d3f]'],
-  I: ['AGI arithmetic', 'Calculated by AGI from disclosed figures (for example close x filed shares, or order book / quarterly revenue). No assumption involved.', 'text-[#8fb4d8] border-[#2a4a66]'],
-  A: ['AGI estimate', 'Depends on AGI assumptions (growth, margin, exit multiple). See the AGI estimates section for every input.', 'text-[#f0a060] border-[#7a5a2e]'],
+  D: ['Disclosed', 'Stated by the company in its own filing, release, presentation or call.', 'text-[#6cb2f0] border-[#2a4a66]'],
+  I: ['AGI arithmetic', 'Calculated by AGI from disclosed figures (for example close x filed shares, or order book / quarterly revenue). No assumption involved.', 'text-[#b6c2d1] border-[#3a4453]'],
+  A: ['AGI estimate', 'Depends on AGI assumptions (growth, margin, exit multiple). See the Estimates tab for every input.', 'text-[#f0a060] border-[#7a5a2e]'],
 };
 function Tag({ t }) {
   const [label, why, tone] = TAGS[t];
   return (
-    <abbr title={`${label}: ${why}`} className={`ml-1 inline-block rounded border px-[3px] text-[9px] font-semibold leading-[13px] no-underline ${tone}`}>
+    <abbr title={`${label}: ${why}`} className={`ml-1.5 inline-block rounded border px-1 align-middle text-[10px] font-semibold leading-[15px] no-underline ${tone}`}>
       {t}
     </abbr>
   );
 }
 
-const BAND_TONE = {
-  high: 'bg-[#10261a] text-[#4ade80]', strong: 'bg-[#10261a] text-[#4ade80]',
-  medium: 'bg-[#1a2230] text-[#8fb4d8]', moderate: 'bg-[#1a2230] text-[#8fb4d8]',
-  low: 'bg-[#2a2110] text-[#d9a94a]', weak: 'bg-[#2b1414] text-[#f87171]', 'capital-hungry': 'bg-[#2a2110] text-[#d9a94a]',
-  'very high': 'bg-[#2b1414] text-[#f87171]', 'stated only': 'bg-[#1a2230] text-[#9aa5b3]', 'not measurable': 'bg-[#161c26] text-[#68727f]',
+// Bands read differently by factor: a high materiality is strong (green),
+// a high expectation load is a caution (amber), never a green light.
+const TONE = {
+  strong: 'bg-[#0f2419] text-[#4ade80]',
+  neutral: 'bg-[#18202c] text-[#c7cfda]',
+  disclosed: 'bg-[#0f1b2a] text-[#6cb2f0]',
+  caution: 'bg-[#261c0e] text-[#f0a060]',
+  weak: 'bg-[#2a1515] text-[#f28b8b]',
+  low: 'bg-[#141a23] text-[#8b95a3]',
+  none: 'bg-transparent text-[#5b6675]',
 };
-const Band = ({ b }) => <span className={`whitespace-nowrap rounded px-1.5 py-[1px] text-[11px] ${BAND_TONE[b] || 'bg-[#161c26] text-[#9aa5b3]'}`}>{b}</span>;
+const BAND_TONE = {
+  default: { high: 'strong', strong: 'strong', medium: 'neutral', moderate: 'neutral', low: 'low', weak: 'weak', 'capital-hungry': 'caution', 'stated only': 'disclosed', 'not measurable': 'none' },
+  expectation: { low: 'neutral', moderate: 'neutral', high: 'caution', 'very high': 'weak', 'not measurable': 'none' },
+};
+function Band({ b, scale = 'default' }) {
+  const tone = TONE[BAND_TONE[scale][b] || BAND_TONE.default[b] || 'neutral'];
+  return <span className={`inline-block whitespace-nowrap rounded-full px-2 py-[1px] text-[12px] ${tone}`}>{b}</span>;
+}
 
-const TIER_LABEL = { SEGMENT_REPORTED: 'Audited segment', MANAGEMENT_DISCLOSED: 'Company-stated', NOT_ATTRIBUTABLE: 'Linked, not sized' };
-const TIER_TONE = { SEGMENT_REPORTED: 'text-[#4ade80]', MANAGEMENT_DISCLOSED: 'text-[#8fb4d8]', NOT_ATTRIBUTABLE: 'text-[#d9a94a]' };
+const TIER = {
+  SEGMENT_REPORTED: ['Audited segment', '#4ade80'],
+  MANAGEMENT_DISCLOSED: ['Company-stated', '#6cb2f0'],
+  NOT_ATTRIBUTABLE: ['Linked, not sized', '#7d8894'],
+};
+function TierMark({ tier }) {
+  const [label, color] = TIER[tier] || ['Not recorded', '#5b6675'];
+  return (
+    <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
+      <span aria-hidden="true" className="inline-block h-2 w-2 rounded-full" style={{ background: color }} />
+      <span style={{ color }}>{label}</span>
+    </span>
+  );
+}
+
 const HARD = new Set(['order', 'capex', 'operating']);
-const KIND = { order: 'Order', capex: 'Committed capex', operating: 'Operating disclosure' };
+const IMPACT = { order: 'Orders', capex: 'Capacity', operating: 'AI exposure' };
+const EV_COLOR = { high: '#4ade80', medium: '#6cb2f0', low: '#7d8894' };
+const FOCUS = 'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e8833a]';
 
 const median = (xs) => {
   const v = xs.filter((x) => Number.isFinite(x)).sort((a, b) => a - b);
@@ -53,6 +84,11 @@ const median = (xs) => {
 const pct = (v, d = 0) => (Number.isFinite(v) ? `${v >= 0 ? '' : '−'}${Math.abs(v * 100).toFixed(d)}%` : '—');
 const signedPct = (v, d = 0) => (Number.isFinite(v) ? `${v >= 0 ? '+' : '−'}${Math.abs(v * 100).toFixed(d)}%` : '—');
 const cr = (v) => (Number.isFinite(v) ? rupeesCr(v) : '—');
+const dateLabel = (d) => {
+  if (!d) return '';
+  const t = new Date(`${d}T00:00:00Z`);
+  return Number.isNaN(t.getTime()) ? d : t.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
+};
 
 /** Everything AGI holds about one member, in one record. */
 function buildRecords({ universe, operating, estimates, marketValue, stage3, scoring, exit }) {
@@ -78,9 +114,12 @@ function buildRecords({ universe, operating, estimates, marketValue, stage3, sco
     const book = books[m.symbol];
     const evidence = [...(m.admittedOn || []), ...(m.supportingEvidence || [])].filter((e) => HARD.has(e.kind));
     const q1 = row.revenueQ1FY27 && row.revenueQ1FY26 ? row.revenueQ1FY27 / row.revenueQ1FY26 - 1 : null;
+    const fcf = row.revenueFY26 && Number.isFinite(row.cfoFY26) && Number.isFinite(row.capexFY26)
+      ? (row.cfoFY26 - row.capexFY26 - (row.capexIntangiblesFY26 || 0)) / row.revenueFY26 : null;
+    const roce = row.statedRoceFY26 ?? (row.ebitFY26 && row.capitalEmployedFY26 ? row.ebitFY26 / row.capitalEmployedFY26 : null);
     return {
       m, model, runs, row, pat, ebitda, book, cap: caps[m.symbol], liq: liq[m.symbol],
-      shares: shares[m.symbol] || [], targets: targets[m.symbol] || [], evidence,
+      shares: shares[m.symbol] || [], targets: targets[m.symbol] || [], evidence, fcf, roce,
       latest: evidence.map((e) => e.date).filter(Boolean).sort().at(-1) || null,
       mv: mv[m.symbol] ?? null, stage3: s3[m.symbol] || null, q1,
       cover: book?.backlogCr && book?.quarterRevenueCr ? book.backlogCr / book.quarterRevenueCr : null,
@@ -96,40 +135,338 @@ function buildRecords({ universe, operating, estimates, marketValue, stage3, sco
   });
 }
 
-function Kpi({ label, value, sub, tag }) {
+/** Every dated evidence item, newest first. Undated sources carry a read date, not a change date. */
+function evidenceFeed(records) {
+  const items = [];
+  for (const r of records) {
+    for (const e of r.m.admittedOn || []) if (e.date) items.push({ r, e, since: false });
+    for (const e of r.m.supportingEvidence || []) if (e.date && !e.undated) items.push({ r, e, since: true });
+  }
+  return items.sort((a, b) => (a.e.date < b.e.date ? 1 : a.e.date > b.e.date ? -1 : 0));
+}
+
+function Panel({ id, title, sub, action, children, className = '' }) {
   return (
-    <div className="rounded-md border border-[#1e2634] bg-[#0c1017] px-3 py-2.5">
-      <p className="text-[11px] uppercase tracking-wider text-[#7d8894]">{label}</p>
-      <p className="mt-0.5 font-mono text-[20px] font-semibold tabular-nums text-[#f1f5f9]">{value}{tag ? <Tag t={tag} /> : null}</p>
-      <p className="text-[11px] leading-snug text-[#68727f]">{sub}</p>
+    <section aria-labelledby={id} className={`min-w-0 rounded-xl bg-[#0e131b] p-5 sm:p-6 ${className}`}>
+      <div className="flex flex-wrap items-start gap-x-4 gap-y-2">
+        <div className="min-w-0">
+          <h2 id={id} className="text-[20px] font-semibold tracking-tight text-[#f1f5f9]">{title}</h2>
+          {sub ? <p className="mt-1 max-w-[70ch] text-[14px] leading-relaxed text-[#8b95a3]">{sub}</p> : null}
+        </div>
+        {action ? <div className="ml-auto">{action}</div> : null}
+      </div>
+      <div className="mt-5">{children}</div>
+    </section>
+  );
+}
+
+function Segmented({ label, options, value, onChange }) {
+  return (
+    <div role="group" aria-label={label} className="inline-flex flex-wrap rounded-lg bg-[#151c27] p-1">
+      {options.map(([k, text]) => (
+        <button
+          key={k}
+          type="button"
+          onClick={() => onChange(k)}
+          aria-pressed={value === k}
+          className={`rounded-md px-3 py-1.5 text-[13px] ${FOCUS} ${value === k ? 'bg-[#26303f] font-medium text-[#f1f5f9]' : 'text-[#8b95a3] hover:text-[#e3e8ef]'}`}
+        >
+          {text}
+        </button>
+      ))}
     </div>
   );
 }
 
-function StackMap({ records, filter, setFilter }) {
+/* ── header and KPIs ─────────────────────────────────────────────────── */
+
+/** The monitor's title block; the page renders it above its tab bar. */
+export function MonitorHeader({ universe, marketValue }) {
+  const n = universe?.members?.length || 0;
+  const read = n + (universe?.candidates?.length || 0) + (universe?.excluded?.length || 0);
+  return (
+    <header className="pb-5 pt-2">
+      <p className="text-[12px] font-semibold uppercase tracking-[0.22em] text-[#e8833a]">AGI Investment Intelligence</p>
+      <h1 className="mt-2 text-[32px] font-semibold leading-[1.1] tracking-tight text-[#f5f7fa] sm:text-[40px]">India AI Infrastructure Monitor</h1>
+      <p className="mt-2 max-w-[70ch] text-[17px] leading-relaxed text-[#9aa5b3]">
+        The listed Indian companies whose own filings tie them to AI data-centre build-out, from power to packaging.
+      </p>
+      <p className="mt-3 flex flex-wrap gap-2 text-[13px] text-[#8b95a3]">
+        {n ? <span className="rounded-full bg-[#121823] px-3 py-1">{n} admitted of {read} read</span> : null}
+        {marketValue?.closeDate ? <span className="rounded-full bg-[#121823] px-3 py-1">Prices to {dateLabel(marketValue.closeDate)}</span> : null}
+        {universe?.version ? <span className="rounded-full bg-[#121823] px-3 py-1">Evidence read {universe.version}</span> : null}
+        <span className="rounded-full bg-[#121823] px-3 py-1">No broker or consensus figures</span>
+      </p>
+    </header>
+  );
+}
+
+function Kpi({ label, value, sub, tag }) {
+  return (
+    <div className="min-w-0 rounded-xl bg-[#0e131b] px-5 py-4">
+      <p className="text-[13px] text-[#8b95a3]">{label}{tag ? <Tag t={tag} /> : null}</p>
+      <p className="mt-1.5 text-[30px] font-semibold leading-none tracking-tight tabular-nums text-[#f5f7fa]">{value}</p>
+      <p className="mt-2 text-[13px] leading-snug text-[#6b7684]">{sub}</p>
+    </div>
+  );
+}
+
+function KpiRow({ records, others, marketValue, live }) {
+  const read = records.length + others.held.length + others.excluded.length;
+  const sized = records.filter((r) => r.m.attribution && r.m.attribution !== 'NOT_ATTRIBUTABLE').length;
+  const segment = records.filter((r) => r.m.attribution === 'SEGMENT_REPORTED').length;
+  const growth = median(records.map((r) => r.q1));
+  const withGrowth = records.filter((r) => r.q1 !== null).length;
+  const index = live?.index;
+  const lastTrade = live?.quality?.closed && live?.quality?.session_last;
+  return (
+    <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
+      <Kpi label="Companies admitted" value={records.length} sub={`of ${read} read, each on its own filings`} />
+      <Kpi label="Combined market value" value={marketValue?.byLayer ? rupeesCr(marketValue.byLayer.totalCr) : '—'} sub="last close × filed shares, whole companies" tag="I" />
+      <Kpi label="AI business sized" value={`${sized} / ${records.length}`} sub={`${segment} audited segment · ${sized - segment} company-stated`} tag="D" />
+      <Kpi
+        label={lastTrade ? 'Basket, last session' : 'Basket today'}
+        value={index?.status === 'ok' ? signedPct(index.return_pp / 100, 2) : '—'}
+        sub={index?.relative ? `${signedPct(index.relative.excess_pp / 100, 2)} against the Nifty 50 · equal weight` : 'waiting for prices'}
+        tag="I"
+      />
+      <Kpi label="Revenue growth, median" value={growth !== null ? signedPct(growth) : '—'} sub={`latest quarter y/y · ${withGrowth} companies`} tag="I" />
+    </div>
+  );
+}
+
+/* ── the chart ───────────────────────────────────────────────────────── */
+
+/**
+ * AI materiality (AGI base case) against expectation load (profit growth the
+ * price needs). Both axes are AGI figures; bubble size is market value and
+ * colour is evidence confidence. Only the ten largest are labelled; the rest
+ * name themselves on hover. Quadrant names describe position, not advice.
+ */
+function MaterialityScatter({ records, open }) {
+  const [hover, setHover] = React.useState(null);
+  const W = 760; const H = 440; const pad = { l: 56, r: 20, t: 20, b: 52 };
+  const pts = records.map((r) => ({ r, x: r.implied?.cagr ?? null, y: r.runs?.base.ok ? r.runs.base.materiality : null }));
+  const plotted = pts.filter((p) => p.x !== null && p.y !== null);
+  const notPlotted = pts.filter((p) => !(p.x !== null && p.y !== null)).map((p) => p.r.m.symbol);
+  // Points clamp at yMax; the axis runs to yTop so the top quadrant names sit in clear space.
+  const xMin = -0.2; const xMax = 0.9; const yMax = 1.2; const yTop = 1.34;
+  const sx = (v) => pad.l + ((Math.max(xMin, Math.min(xMax, v)) - xMin) / (xMax - xMin)) * (W - pad.l - pad.r);
+  const sy = (v) => H - pad.b - (Math.max(0, Math.min(yMax, v)) / yTop) * (H - pad.t - pad.b);
+  // Log scale: market values run from about Rs 7,000 cr to Rs 11 lakh cr.
+  const rad = (mv) => (mv > 0 ? Math.max(6, 6 + 7.5 * (Math.log10(mv) - 3.8)) : 6);
+  const x25 = sx(0.25); const y25 = sy(0.25);
+  const bySize = [...plotted].sort((a, b) => (b.r.mv || 0) - (a.r.mv || 0));
+  const labelled = new Set(bySize.slice(0, 10).map((p) => p.r.m.symbol));
+  const placed = [];
+  const fits = (b) => placed.every((q) => b.x2 < q.x1 || b.x1 > q.x2 || b.y2 < q.y1 || b.y1 > q.y2);
+  const bubbles = bySize.map((p) => {
+    const cx = sx(p.x); const cy = sy(p.y); const rr = rad(p.r.mv);
+    placed.push({ x1: cx - rr, x2: cx + rr, y1: cy - rr, y2: cy + rr });
+    return { p, cx, cy, rr };
+  });
+  // Each quadrant name takes the first of its candidate spots that no bubble covers.
+  const L = pad.l + 10; const R = W - pad.r - 10; const T = pad.t + 16; const B = H - pad.b - 10;
+  const quad = [
+    ['High AI impact · lower hurdle', [[L, T, 'start'], [L, y25 - 10, 'start']]],
+    ['High AI impact · high hurdle', [[R, T, 'end'], [x25 + 10, T, 'start'], [R, y25 - 10, 'end']]],
+    ['Early · lower hurdle', [[L, B, 'start'], [L, y25 + 20, 'start'], [x25 - 10, y25 + 20, 'end']]],
+    ['Early · high hurdle', [[R, B, 'end'], [R, y25 + 20, 'end'], [x25 + 10, B, 'start']]],
+  ].map(([text, spots]) => {
+    const w = text.length * 6.6;
+    for (const [x, y, anchor] of spots) {
+      const x1 = anchor === 'start' ? x : x - w;
+      const box = { x1, x2: x1 + w, y1: y - 12, y2: y + 3 };
+      if (fits(box)) { placed.push(box); return { text, x, y, anchor }; }
+    }
+    return null;
+  }).filter(Boolean);
+  const marks = bubbles.map((mk) => {
+    if (!labelled.has(mk.p.r.m.symbol)) return { ...mk, ly: null };
+    const text = `${mk.p.r.m.symbol}${mk.p.y > yMax ? ' ↑' : ''}${mk.p.x > xMax ? ' →' : ''}`;
+    const w = text.length * 7;
+    for (const y of [mk.cy - mk.rr - 5, mk.cy + mk.rr + 14]) {
+      const box = { x1: mk.cx - w / 2, x2: mk.cx + w / 2, y1: y - 11, y2: y + 2 };
+      if (box.y1 > pad.t && box.y2 < H - pad.b && fits(box)) { placed.push(box); return { ...mk, text, ly: y }; }
+    }
+    return { ...mk, ly: null };
+  });
+  const hp = hover ? marks.find((mk) => mk.p.r.m.symbol === hover) : null;
+  return (
+    <Panel
+      id="scatter-h"
+      title="AI Materiality vs Expectation Load"
+      sub="How much AI could add to each company's earnings (AGI base case), against how much profit growth today's price already needs."
+      action={(
+        <p className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[13px] text-[#8b95a3]">
+          {['high', 'medium', 'low'].map((b) => (
+            <span key={b} className="inline-flex items-center gap-1.5">
+              <span aria-hidden="true" className="inline-block h-2.5 w-2.5 rounded-full" style={{ background: EV_COLOR[b] }} />{b} evidence
+            </span>
+          ))}
+          <span>size = market value</span>
+        </p>
+      )}
+    >
+      <div className="relative overflow-x-auto">
+        <svg viewBox={`0 0 ${W} ${H}`} className="w-full min-w-[600px]" role="img" aria-label="Scatter of AI materiality against expectation load">
+          {[0, 0.25, 0.5, 0.75, 1].map((v) => (
+            <g key={`y${v}`}>
+              <line x1={pad.l} x2={W - pad.r} y1={sy(v)} y2={sy(v)} stroke="#18202b" />
+              <text x={pad.l - 10} y={sy(v) + 4} textAnchor="end" fontSize="12" fill="#6b7684">{Math.round(v * 100)}%</text>
+            </g>
+          ))}
+          {[-0.2, 0, 0.25, 0.5, 0.75].map((v) => (
+            <text key={`x${v}`} x={sx(v)} y={H - pad.b + 20} textAnchor="middle" fontSize="12" fill="#6b7684">{v < 0 ? 'none' : `${Math.round(v * 100)}%`}</text>
+          ))}
+          <line x1={x25} x2={x25} y1={pad.t} y2={H - pad.b} stroke="#3a4453" strokeDasharray="3 5" />
+          <line x1={pad.l} x2={W - pad.r} y1={y25} y2={y25} stroke="#3a4453" strokeDasharray="3 5" />
+          {quad.map(({ x, y, anchor, text }) => (
+            <text key={text} x={x} y={y} textAnchor={anchor} fontSize="12" fill="#56616f" letterSpacing="0.02em">{text}</text>
+          ))}
+          <text x={(W + pad.l) / 2} y={H - 8} textAnchor="middle" fontSize="13" fill="#9aa5b3">Expectation load: profit growth a year the price needs →</text>
+          <text x={16} y={(H - pad.b + pad.t) / 2} textAnchor="middle" fontSize="13" fill="#9aa5b3" transform={`rotate(-90 16 ${(H - pad.b + pad.t) / 2})`}>AI materiality →</text>
+          {marks.map(({ p, cx, cy, rr, text, ly }) => {
+            const color = EV_COLOR[p.r.factors.evidence.band] || '#7d8894';
+            const active = hover === p.r.m.symbol;
+            return (
+              <g
+                key={p.r.m.symbol}
+                role="button"
+                tabIndex={0}
+                aria-label={`${p.r.m.symbol}: AI materiality ${Math.round(p.y * 100)}%, price needs ${p.x <= 0 ? 'no growth' : `${Math.round(p.x * 100)}% a year`}`}
+                onClick={() => open(p.r.m.symbol)}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(p.r.m.symbol); } }}
+                onMouseEnter={() => setHover(p.r.m.symbol)}
+                onMouseLeave={() => setHover(null)}
+                onFocus={() => setHover(p.r.m.symbol)}
+                onBlur={() => setHover(null)}
+                className="cursor-pointer focus-visible:outline-none"
+              >
+                <circle cx={cx} cy={cy} r={rr} fill={color} fillOpacity={active ? 0.55 : 0.28} stroke={color} strokeWidth={active ? 2.5 : 1.5} />
+                {ly !== null ? <text x={cx} y={ly} textAnchor="middle" fontSize="12" fontWeight="600" fill="#dbe2ea">{text}</text> : null}
+              </g>
+            );
+          })}
+        </svg>
+        {hp ? (
+          <div
+            className="pointer-events-none absolute z-10 w-[240px] rounded-lg bg-[#1a2230] px-3.5 py-3 text-[13px] shadow-xl"
+            style={{
+              left: `${Math.min(88, Math.max(0, (hp.cx / W) * 100 - (hp.cx / W > 0.6 ? 32 : 0)))}%`,
+              top: `${Math.min(70, (hp.cy / H) * 100 + 4)}%`,
+            }}
+          >
+            <p className="font-semibold text-[#f1f5f9]">{hp.p.r.m.symbol} <span className="font-normal text-[#8b95a3]">{hp.p.r.m.name}</span></p>
+            <dl className="mt-1.5 grid grid-cols-[auto_1fr] gap-x-3 gap-y-0.5 text-[#c7cfda]">
+              <dt className="text-[#8b95a3]">AI materiality</dt><dd className="tabular-nums">{Math.round(hp.p.y * 100)}%</dd>
+              <dt className="text-[#8b95a3]">Price needs</dt><dd className="tabular-nums">{hp.p.x <= 0 ? 'no growth' : `${Math.round(hp.p.x * 100)}% a year`}</dd>
+              <dt className="text-[#8b95a3]">Market value</dt><dd className="tabular-nums">{cr(hp.p.r.mv)}</dd>
+              <dt className="text-[#8b95a3]">Evidence</dt><dd>{hp.p.r.factors.evidence.band}</dd>
+            </dl>
+          </div>
+        ) : null}
+      </div>
+      <p className="mt-3 text-[13px] leading-relaxed text-[#6b7684]">
+        AI materiality is AGI&rsquo;s FY29 AI/data-centre EBITDA as a share of FY26 filed EBITDA. Expectation load is the profit growth that takes today&rsquo;s market value to 30x earnings by FY29. Dashed lines sit at 25%. A position describes AGI&rsquo;s base case against the price; it is not a recommendation.
+        {notPlotted.length ? ` Not plotted, as no base case runs yet: ${notPlotted.join(', ')}.` : ''}
+      </p>
+    </Panel>
+  );
+}
+
+/* ── evidence ─────────────────────────────────────────────────────────── */
+
+const FEED_TABS = [['all', 'Latest'], ['order', 'Orders'], ['capex', 'Capacity'], ['operating', 'AI exposure']];
+
+function EvidenceCard({ item, open, full = false }) {
+  const { r, e, since } = item;
+  return (
+    <li className="rounded-lg bg-[#131a24] px-4 py-3.5">
+      <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px]">
+        <button type="button" onClick={() => open(r.m.symbol)} className={`rounded font-mono font-semibold text-[#f1f5f9] hover:text-[#f0a060] ${FOCUS}`}>{r.m.symbol}</button>
+        <span className="rounded-full bg-[#1c2533] px-2 py-[1px] text-[12px] text-[#b6c2d1]">{IMPACT[e.kind] || e.kind}</span>
+        <span className="ml-auto whitespace-nowrap tabular-nums text-[#6b7684]">{dateLabel(e.date)}</span>
+      </p>
+      <p className="mt-1.5 text-[15px] leading-snug text-[#e3e8ef]">{e.headline || e.excerpt}</p>
+      {full ? (
+        <details className="mt-2 text-[13px]">
+          <summary className={`cursor-pointer rounded text-[#6cb2f0] ${FOCUS}`}>In the company&rsquo;s words</summary>
+          <blockquote className="mt-1.5 leading-relaxed text-[#b6c2d1]">&ldquo;{e.excerpt}&rdquo;</blockquote>
+          <p className="mt-1 text-[#6b7684]">{e.document}{e.page ? `, p. ${e.page}` : ''}{since ? ' · found after admission' : ''}</p>
+        </details>
+      ) : <p className="mt-1 truncate text-[12px] text-[#5b6675]">{e.document}</p>}
+    </li>
+  );
+}
+
+function LatestEvidence({ records, open, onAll }) {
+  const [kind, setKind] = React.useState('all');
+  const feed = evidenceFeed(records).filter((x) => kind === 'all' || x.e.kind === kind).slice(0, 6);
+  return (
+    <Panel id="latest-h" title="Latest evidence" sub="From each company's own filings and calls.">
+      <Segmented label="Evidence type" options={FEED_TABS} value={kind} onChange={setKind} />
+      <ul className="mt-4 space-y-2.5">
+        {feed.map((item) => <EvidenceCard key={`${item.r.m.symbol}-${item.e.date}-${item.e.excerpt.slice(0, 20)}`} item={item} open={open} />)}
+      </ul>
+      <button type="button" onClick={onAll} className={`mt-4 rounded text-[14px] text-[#6cb2f0] hover:text-[#e3e8ef] ${FOCUS}`}>All evidence, with the company&rsquo;s words &rarr;</button>
+    </Panel>
+  );
+}
+
+function EvidenceTab({ records, open }) {
+  const [kind, setKind] = React.useState('all');
+  const [q, setQ] = React.useState('');
+  const all = evidenceFeed(records);
+  const needle = q.trim().toLowerCase();
+  const feed = all.filter((x) => (kind === 'all' || x.e.kind === kind)
+    && (!needle || `${x.r.m.symbol} ${x.r.m.name} ${x.e.headline || ''} ${x.e.excerpt}`.toLowerCase().includes(needle)));
+  const undated = records.reduce((n, r) => n + (r.m.supportingEvidence || []).filter((e) => e.undated).length, 0);
+  return (
+    <Panel
+      id="evidence-h"
+      title="Evidence"
+      sub={`${all.length} dated items: orders, committed capacity and operating disclosures. Headlines are AGI's summary; open one for the company's own words and the document.`}
+      action={<input type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search company or text" aria-label="Search evidence" className={`w-[240px] rounded-lg bg-[#151c27] px-3 py-2 text-[14px] text-[#e3e8ef] placeholder:text-[#5b6675] ${FOCUS}`} />}
+    >
+      <Segmented label="Evidence type" options={FEED_TABS.map(([k, l]) => [k, k === 'all' ? 'All' : l])} value={kind} onChange={setKind} />
+      <ul className="mt-4 grid gap-3 md:grid-cols-2 2xl:grid-cols-3">
+        {feed.map((item) => <EvidenceCard key={`${item.r.m.symbol}-${item.e.date}-${item.e.excerpt.slice(0, 20)}`} item={item} open={open} full />)}
+      </ul>
+      {!feed.length ? <p className="mt-4 text-[14px] text-[#8b95a3]">Nothing matches.</p> : null}
+      {undated ? <p className="mt-4 text-[13px] text-[#6b7684]">{undated} undated item{undated === 1 ? '' : 's'} (a website table, for example) are in the company records but not in this feed, as they carry no change date.</p> : null}
+    </Panel>
+  );
+}
+
+/* ── the stack ────────────────────────────────────────────────────────── */
+
+function Stack({ records, filter, setFilter }) {
   const layers = ['power', 'data_centre', 'semiconductor', 'infrastructure'];
   return (
-    <section aria-labelledby="stack-h" className="rounded-md border border-[#1e2634] bg-[#0c1017] p-3.5">
-      <div className="flex flex-wrap items-baseline gap-2">
-        <h3 id="stack-h" className="text-[15px] font-semibold text-[#f1f5f9]">AI infrastructure stack</h3>
-        <span className="text-[12px] text-[#7d8894]">click a sub-layer to filter the matrix · medians over members with the figure</span>
-        {filter ? <button type="button" onClick={() => setFilter(null)} className="ml-auto rounded text-[12px] text-[#8fb4d8] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#e8833a]">Clear filter</button> : null}
-      </div>
-      <div className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+    <Panel
+      id="stack-h"
+      title="AI infrastructure stack"
+      sub="Four layers, from the grid to the chip. Choose a sub-layer to filter the matrix."
+      action={filter ? <button type="button" onClick={() => setFilter(null)} className={`rounded text-[14px] text-[#6cb2f0] ${FOCUS}`}>Clear filter</button> : null}
+    >
+      <div className="grid gap-x-8 gap-y-6 md:grid-cols-2 xl:grid-cols-4">
         {layers.map((layer) => {
           const inLayer = records.filter((r) => r.m.layer === layer);
           return (
-            <div key={layer} className="rounded border border-[#1a2230] p-2.5">
-              <button
-                type="button"
-                onClick={() => setFilter({ layer })}
-                aria-pressed={filter?.layer === layer && !filter?.sub}
-                className="flex w-full items-baseline justify-between rounded text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#e8833a]"
-              >
-                <span className="text-[14px] font-semibold text-[#e3e8ef]">{LAYER_LABEL[layer]}</span>
-                <span className="font-mono text-[12px] text-[#7d8894]">{inLayer.length}</span>
-              </button>
-              <ul className="mt-2 space-y-1.5">
+            <div key={layer} className="min-w-0">
+              <div className="border-b border-[#1c2430] pb-2">
+                <button
+                  type="button"
+                  onClick={() => setFilter({ layer })}
+                  aria-pressed={filter?.layer === layer && !filter?.sub}
+                  className={`flex w-full items-baseline justify-between rounded text-left ${FOCUS}`}
+                >
+                  <span className="text-[17px] font-semibold text-[#f1f5f9]">{LAYER_LABEL[layer]}</span>
+                  <span className="text-[14px] tabular-nums text-[#8b95a3]">{inLayer.length}</span>
+                </button>
+              </div>
+              <ul className="mt-2 space-y-1">
                 {ALL_SUBS.filter(([l]) => l === layer).map(([, sub]) => {
                   const rs = inLayer.filter((r) => (r.m.subLayers || []).includes(sub));
                   const g = median(rs.map((r) => r.q1));
@@ -142,17 +479,19 @@ function StackMap({ records, filter, setFilter }) {
                         type="button"
                         onClick={() => setFilter({ layer, sub })}
                         aria-pressed={active}
-                        className={`w-full rounded px-1.5 py-1 text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#e8833a] ${active ? 'bg-[#1c2534]' : 'hover:bg-[#141b26]'}`}
+                        disabled={!rs.length}
+                        title={rs.length ? `${rs.map((r) => r.m.symbol).join(', ')} · median price needs ${x === null ? '—' : x <= 0 ? 'no growth' : `${pct(x)} a year`}` : 'No company discloses more than intent here yet'}
+                        className={`w-full rounded-lg px-2.5 py-2 text-left ${FOCUS} ${active ? 'bg-[#1c2534]' : 'hover:bg-[#141b26]'} disabled:cursor-default disabled:hover:bg-transparent`}
                       >
-                        <span className="flex items-baseline justify-between text-[13px]">
-                          <span className="text-[#c7cfda]">{SUB_LABEL[sub]}</span>
-                          <span className="font-mono text-[12px] text-[#7d8894]">{rs.length || 'empty'}</span>
+                        <span className="flex items-baseline justify-between gap-2">
+                          <span className={`text-[15px] ${rs.length ? 'text-[#e3e8ef]' : 'text-[#5b6675]'}`}>{SUB_LABEL[sub]}</span>
+                          <span className="text-[14px] tabular-nums text-[#8b95a3]">{rs.length || '—'}</span>
                         </span>
                         {rs.length ? (
-                          <span className="mt-0.5 block text-[11px] leading-snug text-[#68727f]">
-                            revenue {signedPct(g)}<Tag t="I" /> · price needs {x === null ? '—' : x <= 0 ? 'none' : `${pct(x)}/yr`}<Tag t="A" /> · {sized}/{rs.length} sized<Tag t="D" />
+                          <span className="mt-0.5 block text-[13px] text-[#6b7684]">
+                            revenue {signedPct(g)} y/y · {sized} of {rs.length} sized
                           </span>
-                        ) : <span className="mt-0.5 block text-[11px] text-[#4b5563]">nothing disclosed beyond intent</span>}
+                        ) : null}
                       </button>
                     </li>
                   );
@@ -162,327 +501,187 @@ function StackMap({ records, filter, setFilter }) {
           );
         })}
       </div>
-    </section>
+    </Panel>
   );
 }
 
-const VIEWS = [['investment', 'Investment'], ['evidence', 'Evidence'], ['financials', 'Financials'], ['estimates', 'Estimates']];
+/* ── the matrix ───────────────────────────────────────────────────────── */
 
-function Matrix({ records, others, filter, view, setView, status, setStatus, open }) {
+const VIEWS = [['overview', 'Overview'], ['evidence', 'Evidence'], ['financials', 'Financials'], ['estimates', 'AGI estimates']];
+
+/** Column definitions per view: header, provenance tag, cell, sort key. */
+function columns(view) {
+  const est = (r, s, f) => (r.runs?.[s]?.ok ? f(r.runs[s]) : null);
+  const views = {
+    overview: [
+      ['Evidence', 'D', (r) => <TierMark tier={r.m.attribution} />, (r) => ({ SEGMENT_REPORTED: 3, MANAGEMENT_DISCLOSED: 2, NOT_ATTRIBUTABLE: 1 }[r.m.attribution] || 0)],
+      ['AI materiality', null, (r) => <span className="inline-flex items-center gap-2"><Band b={r.factors.materiality.band} />{r.factors.materiality.value ? <span className="text-[#9aa5b3]">{r.factors.materiality.value}</span> : null}</span>, (r) => (r.runs?.base.ok ? r.runs.base.materiality : null)],
+      ['Revenue y/y', 'I', (r) => signedPct(r.q1), (r) => r.q1],
+      ['Market value', 'I', (r) => cr(r.mv), (r) => r.mv],
+      ['Expectation load', 'A', (r) => (r.implied ? <span className="inline-flex items-center gap-2"><Band b={r.factors.expectation.band} scale="expectation" /><span className="text-[#9aa5b3]">{r.implied.cagr <= 0 ? 'none' : `${pct(r.implied.cagr)}/yr`}</span></span> : '—'), (r) => r.implied?.cagr ?? null],
+      ['Capital quality', 'I', (r) => <Band b={r.factors.capital.band} />, (r) => r.roce],
+      ['₹100 cr position', 'I', (r) => (r.liq ? (r.liq.meetsTarget ? 'fits' : `up to ${cr(r.liq.maxExecutablePosition / 1e7)}`) : '…'), (r) => (r.liq ? r.liq.maxExecutablePosition : null)],
+    ],
+    evidence: [
+      ['Evidence', 'D', (r) => <TierMark tier={r.m.attribution} />, (r) => ({ SEGMENT_REPORTED: 3, MANAGEMENT_DISCLOSED: 2, NOT_ATTRIBUTABLE: 1 }[r.m.attribution] || 0)],
+      ['Hard items', 'D', (r) => r.evidence.length, (r) => r.evidence.length],
+      ['Latest', 'D', (r) => dateLabel(r.latest) || '—', (r) => r.latest],
+      ['Stated AI/DC figure', 'D', (r) => (r.shares[0] ? <span title={r.shares[0].quote}>{r.shares[0].value}</span> : <span className="text-[#5b6675]">not stated</span>), null],
+      ['Watch', 'D', (r) => (r.targets[0] ? <span className="text-[#9aa5b3]">{r.targets[0].target}</span> : <span className="text-[#5b6675]">next results</span>), null],
+    ],
+    financials: [
+      ['FY26 revenue', 'D', (r) => cr(r.row.revenueFY26), (r) => r.row.revenueFY26],
+      ['FY26 EBITDA', 'D', (r) => cr(r.ebitda), (r) => r.ebitda],
+      ['FY26 profit', 'D', (r) => cr(r.pat), (r) => r.pat],
+      ['FCF / revenue', 'I', (r) => signedPct(r.fcf), (r) => r.fcf],
+      ['ROCE', 'I', (r) => (r.roce !== null ? <>{pct(r.roce)}{r.row.statedRoceFY26 ? <span className="ml-1 text-[12px] text-[#6cb2f0]">stated</span> : null}</> : '—'), (r) => r.roce],
+      ['Order book', 'D', (r) => cr(r.book?.backlogCr), (r) => r.book?.backlogCr ?? null],
+      ['Order cover', 'I', (r) => (r.cover !== null ? `${r.cover.toFixed(1)} qtrs` : '—'), (r) => r.cover],
+    ],
+    estimates: [
+      ['Model', null, (r) => (r.model ? <span className="text-[#c9b699]">{r.model.title}</span> : <span className="text-[#5b6675]">not modelled</span>), null],
+      ['FY29 AI/DC revenue', 'A', (r) => (r.runs?.base.ok ? <span className="text-[#f5d9b0]">{cr(r.runs.base.aiRevenueCr)}<span className="block text-[12px] text-[#8a7658]">{est(r, 'low', (x) => cr(x.aiRevenueCr)) || '—'} to {est(r, 'high', (x) => cr(x.aiRevenueCr)) || '—'}</span></span> : '—'), (r) => est(r, 'base', (x) => x.aiRevenueCr)],
+      ['FY29 AI/DC EBITDA', 'A', (r) => <span className="text-[#f5d9b0]">{est(r, 'base', (x) => cr(x.aiEbitdaCr)) || '—'}</span>, (r) => est(r, 'base', (x) => x.aiEbitdaCr)],
+      ['vs FY26 EBITDA', 'A', (r) => <span className="text-[#f5d9b0]">{est(r, 'base', (x) => (x.materiality != null ? pct(x.materiality) : null)) || '—'}</span>, (r) => est(r, 'base', (x) => x.materiality)],
+      ['Waits for', null, (r) => (r.runs && !r.runs.base.ok ? r.runs.base.missing.map((k) => r.model.params?.[k]?.label || k).join(', ') : '—'), null],
+    ],
+  };
+  return views[view];
+}
+
+/** Summary line that changes with the selected layer. */
+function FilterSummary({ rs }) {
+  const sum = (xs) => xs.filter(Number.isFinite).reduce((a, b) => a + b, 0);
+  const mv = sum(rs.map((r) => r.mv));
+  const book = sum(rs.map((r) => r.book?.backlogCr));
+  const growth = median(rs.map((r) => r.q1));
+  const cover = median(rs.map((r) => r.cover));
+  const op = rs.filter((r) => Number.isFinite(r.cap?.operationalMW) && r.cap.operationalMW > 0).map((r) => `${r.m.symbol} ${r.cap.operationalMW} MW`);
+  const stats = [
+    ['Companies', rs.length],
+    ['Market value', rupeesCr(mv)],
+    ['Revenue growth, median', growth !== null ? signedPct(growth) : '—'],
+    book ? ['Order book', rupeesCr(book)] : null,
+    cover !== null ? ['Order cover, median', `${cover.toFixed(1)} qtrs`] : null,
+    // Not summed: some companies state IT load and others power capacity.
+    op.length ? ['Operating capacity, as stated', op.join(' · ')] : null,
+  ].filter(Boolean);
+  return (
+    <dl className="mb-4 flex flex-wrap gap-x-8 gap-y-3 rounded-lg bg-[#131a24] px-4 py-3">
+      {stats.map(([k, v]) => (
+        <div key={k}>
+          <dt className="text-[12px] text-[#8b95a3]">{k}</dt>
+          <dd className="mt-0.5 text-[16px] font-semibold tabular-nums text-[#f1f5f9]">{v}</dd>
+        </div>
+      ))}
+    </dl>
+  );
+}
+
+function Matrix({ records, others, filter, setFilter, open, matrixRef }) {
+  const [view, setView] = React.useState('overview');
+  const [status, setStatus] = React.useState('members');
+  const [q, setQ] = React.useState('');
+  const [sort, setSort] = React.useState({ col: 'Market value', dir: -1 });
+  const cols = columns(view);
+  const fixed = [['Company', null, null, (r) => r.m.symbol], ['Layer', null, null, (r) => r.m.layer]];
+  const needle = q.trim().toLowerCase();
   const matches = (r) => (filter?.symbols ? filter.symbols.includes(r.m.symbol)
     : r.m.layer === filter.layer && (!filter.sub || (r.m.subLayers || []).includes(filter.sub)));
-  const shown = records.filter((r) => !filter || matches(r))
-    .sort((a, b) => (b.mv || 0) - (a.mv || 0));
-  const cols = {
-    investment: ['Evidence', 'AI materiality', 'Revenue y/y', 'Market value', 'Price needs', 'Capital quality', '₹100 cr fits'],
-    evidence: ['Exposure tier', 'Hard items', 'Latest', 'Stated AI/DC figure', 'Last verified'],
-    financials: ['FY26 revenue', 'FY26 EBITDA', 'FY26 profit', 'FCF / revenue', 'ROCE', 'Order book', 'Cover'],
-    estimates: ['Model', 'FY29 AI/DC revenue (low · base · high)', 'FY29 AI/DC EBITDA', 'vs FY26 EBITDA', 'Waits for'],
-  }[view];
-  const cell = (r) => {
-    const f = r.factors;
-    if (view === 'investment') {
-      return [
-        <span className={TIER_TONE[r.m.attribution]}>{TIER_LABEL[r.m.attribution] || '—'}<Tag t="D" /></span>,
-        <><Band b={f.materiality.band} />{f.materiality.value ? <span className="ml-1 text-[#9aa5b3]">{f.materiality.value}</span> : null}</>,
-        r.q1 !== null ? <>{signedPct(r.q1)}<Tag t="I" /></> : '—',
-        r.mv !== null ? <>{cr(r.mv)}<Tag t="I" /></> : '—',
-        r.implied ? (r.implied.cagr <= 0 ? <>none: under 30x<Tag t="A" /></> : <>{pct(r.implied.cagr)}/yr<Tag t="A" /></>) : '—',
-        <Band b={f.capital.band} />,
-        r.liq ? (r.liq.meetsTarget ? 'yes' : `up to ${cr(r.liq.maxExecutablePosition / 1e7)}`) : '…',
-      ];
-    }
-    if (view === 'evidence') {
-      return [
-        <span className={TIER_TONE[r.m.attribution]}>{TIER_LABEL[r.m.attribution] || '—'}</span>,
-        String(r.evidence.length),
-        r.latest || '—',
-        r.shares[0] ? <span title={r.shares[0].quote}>{r.shares[0].value}<Tag t="D" /></span> : <span className="text-[#4b5563]">not stated</span>,
-        r.m.evidenceReadOn || r.m.admittedOn?.[0]?.date || '—',
-      ];
-    }
-    if (view === 'financials') {
-      const fcf = r.row.revenueFY26 && Number.isFinite(r.row.cfoFY26) && Number.isFinite(r.row.capexFY26)
-        ? (r.row.cfoFY26 - r.row.capexFY26 - (r.row.capexIntangiblesFY26 || 0)) / r.row.revenueFY26 : null;
-      const roce = r.row.statedRoceFY26 ?? (r.row.ebitFY26 && r.row.capitalEmployedFY26 ? r.row.ebitFY26 / r.row.capitalEmployedFY26 : null);
-      return [
-        r.row.revenueFY26 ? <>{cr(r.row.revenueFY26)}<Tag t="D" /></> : '—',
-        r.ebitda ? <>{cr(r.ebitda)}<Tag t="D" /></> : '—',
-        r.pat ? <>{cr(r.pat)}<Tag t="D" /></> : '—',
-        fcf !== null ? <>{signedPct(fcf)}<Tag t="I" /></> : '—',
-        roce !== null ? <>{pct(roce)}<Tag t={r.row.statedRoceFY26 ? 'D' : 'I'} /></> : '—',
-        r.book?.backlogCr ? <>{cr(r.book.backlogCr)}<Tag t="D" /></> : '—',
-        r.cover !== null ? <>{r.cover.toFixed(1)} q<Tag t="I" /></> : '—',
-      ];
-    }
-    const run = r.runs;
-    return [
-      r.model ? r.model.title : <span className="text-[#4b5563]">not modelled</span>,
-      run?.base.ok ? <>{[run.low, run.base, run.high].map((x) => (x.ok ? cr(x.aiRevenueCr) : '—')).join(' · ')}<Tag t="A" /></> : '—',
-      run?.base.ok ? <>{cr(run.base.aiEbitdaCr)}<Tag t="A" /></> : '—',
-      run?.base.ok && run.base.materiality != null ? <>{pct(run.base.materiality)}<Tag t="A" /></> : '—',
-      run && !run.base.ok ? run.base.missing.map((k) => r.model.params?.[k]?.label || k).join(', ') : '—',
-    ];
-  };
+  const filtered = records.filter((r) => (!filter || matches(r)) && (!needle || `${r.m.symbol} ${r.m.name}`.toLowerCase().includes(needle)));
+  const sortCol = [...fixed, ...cols].find(([h]) => h === sort.col) || ['Market value', null, null, (r) => r.mv];
+  const key = sortCol[3] || ((r) => r.mv);
+  const shown = [...filtered].sort((a, b) => {
+    const x = key(a); const y = key(b);
+    if (x === null || x === undefined) return 1;
+    if (y === null || y === undefined) return -1;
+    return (x < y ? -1 : x > y ? 1 : 0) * sort.dir;
+  });
+  const filterLabel = filter ? filter.label || `${LAYER_LABEL[filter.layer]}${filter.sub ? ` · ${SUB_LABEL[filter.sub]}` : ''}` : null;
   return (
-    <section aria-labelledby="matrix-h" className="rounded-md border border-[#1e2634] bg-[#0c1017]">
-      <header className="flex flex-wrap items-center gap-2 border-b border-[#1a2230] px-3.5 py-2.5">
-        <h3 id="matrix-h" className="text-[15px] font-semibold text-[#f1f5f9]">Intelligence matrix</h3>
-        {filter ? <span className="text-[12px] text-[#f0a060]">{filter.label || `${LAYER_LABEL[filter.layer]}${filter.sub ? ` · ${SUB_LABEL[filter.sub]}` : ''}`}</span> : null}
-        <span className="ml-auto flex flex-wrap gap-1" role="group" aria-label="View">
-          {VIEWS.map(([k, label]) => (
-            <button key={k} type="button" onClick={() => setView(k)} aria-pressed={view === k}
-              className={`rounded px-2 py-0.5 text-[12px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#e8833a] ${view === k ? 'bg-[#e8833a] text-[#0a0e14]' : 'border border-[#2a3444] text-[#9aa5b3]'}`}>{label}</button>
-          ))}
-        </span>
-      </header>
-      <div className="flex flex-wrap gap-1 px-3.5 pt-2" role="group" aria-label="Status">
-        {[['members', `Members (${records.length})`], ['held', `Held (${others.held.length})`], ['excluded', `Excluded (${others.excluded.length})`]].map(([k, label]) => (
-          <button key={k} type="button" onClick={() => setStatus(k)} aria-pressed={status === k}
-            className={`rounded px-2 py-0.5 text-[12px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#e8833a] ${status === k ? 'bg-[#1c2534] text-[#e3e8ef]' : 'text-[#7d8894]'}`}>{label}</button>
-        ))}
-      </div>
-      <div className="overflow-x-auto p-3.5 pt-2">
+    <div ref={matrixRef} className="scroll-mt-4">
+      <Panel
+        id="matrix-h"
+        title="Company matrix"
+        sub="Every admitted company on one screen. Select a row for its full record: reported facts, AGI's estimate, and what to watch."
+        action={<input type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search company" aria-label="Search companies" className={`w-[220px] rounded-lg bg-[#151c27] px-3 py-2 text-[14px] text-[#e3e8ef] placeholder:text-[#5b6675] ${FOCUS}`} />}
+      >
+        <div className="mb-4 flex flex-wrap items-center gap-3">
+          <Segmented label="Columns" options={VIEWS} value={view} onChange={setView} />
+          <Segmented
+            label="Status"
+            options={[['members', `Admitted ${records.length}`], ['held', `Held ${others.held.length}`], ['excluded', `Excluded ${others.excluded.length}`]]}
+            value={status}
+            onChange={setStatus}
+          />
+          {filterLabel ? (
+            <button type="button" onClick={() => setFilter(null)} className={`inline-flex items-center gap-2 rounded-full bg-[#2a1d10] px-3 py-1.5 text-[13px] text-[#f0a060] ${FOCUS}`}>
+              {filterLabel}<span aria-hidden="true">×</span><span className="sr-only">Clear filter</span>
+            </button>
+          ) : null}
+        </div>
+        {filter && status === 'members' ? <FilterSummary rs={filtered} /> : null}
         {status === 'members' ? (
-          <table className="w-full min-w-[980px] text-[12px]">
-            <thead className="sticky top-0 bg-[#0c1017]">
-              <tr className="text-left text-[11px] uppercase tracking-wider text-[#68727f]">
-                <th className="py-1.5 pr-2 font-medium">Company</th>
-                <th className="py-1.5 pr-2 font-medium">Layer</th>
-                {cols.map((c) => <th key={c} className="py-1.5 pr-2 font-medium">{c}</th>)}
-              </tr>
-            </thead>
-            <tbody>
-              {shown.map((r) => (
-                <tr
-                  key={r.m.symbol}
-                  onClick={() => open(r.m.symbol)}
-                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(r.m.symbol); } }}
-                  tabIndex={0}
-                  role="button"
-                  aria-label={`Open ${r.m.symbol} research drawer`}
-                  className="cursor-pointer border-t border-[#1a2230] align-top hover:bg-[#121925] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#e8833a]"
-                >
-                  <td className="py-1.5 pr-2"><span className="font-mono text-[#e3e8ef]">{r.m.symbol}</span><span className="block text-[11px] text-[#68727f]">{r.m.name}</span></td>
-                  <td className="py-1.5 pr-2 text-[#9aa5b3]">{LAYER_LABEL[r.m.layer]}<span className="block text-[11px] text-[#68727f]">{(r.m.subLayers || []).map((s) => SUB_LABEL[s] || s).join(' + ')}</span></td>
-                  {cell(r).map((c, i) => <td key={i} className="py-1.5 pr-2 text-[#c7cfda]">{c}</td>)}
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[1000px] text-[14px]">
+              <thead>
+                <tr className="text-left text-[12px] text-[#8b95a3]">
+                  {[...fixed, ...cols].map(([h, tag, , sortKey]) => (
+                    <th key={h} scope="col" className="whitespace-nowrap border-b border-[#1c2430] py-2.5 pr-4 font-medium" aria-sort={sort.col === h ? (sort.dir > 0 ? 'ascending' : 'descending') : undefined}>
+                      {sortKey ? (
+                        <button type="button" onClick={() => setSort((s) => ({ col: h, dir: s.col === h ? -s.dir : (h === 'Company' || h === 'Layer' ? 1 : -1) }))} className={`rounded hover:text-[#e3e8ef] ${FOCUS} ${sort.col === h ? 'text-[#e3e8ef]' : ''}`}>
+                          {h}{sort.col === h ? (sort.dir > 0 ? ' ↑' : ' ↓') : ''}
+                        </button>
+                      ) : h}
+                      {tag ? <Tag t={tag} /> : null}
+                    </th>
+                  ))}
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {shown.map((r) => (
+                  <tr
+                    key={r.m.symbol}
+                    onClick={() => open(r.m.symbol)}
+                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(r.m.symbol); } }}
+                    tabIndex={0}
+                    aria-label={`Open ${r.m.symbol}`}
+                    className="cursor-pointer border-b border-[#151c26] align-middle hover:bg-[#131a24] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#e8833a]"
+                  >
+                    <td className="py-3 pr-4">
+                      <span className="font-mono font-semibold text-[#f1f5f9]">{r.m.symbol}</span>
+                      <span className="block max-w-[220px] truncate text-[13px] text-[#6b7684]">{r.m.name}</span>
+                    </td>
+                    <td className="py-3 pr-4 text-[#b6c2d1]">
+                      {LAYER_LABEL[r.m.layer]}
+                      <span className="block text-[13px] text-[#6b7684]">{(r.m.subLayers || []).map((s) => SUB_LABEL[s] || s).join(' + ')}</span>
+                    </td>
+                    {cols.map(([h, , cell]) => <td key={h} className="py-3 pr-4 tabular-nums text-[#dbe2ea]">{cell(r)}</td>)}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {!shown.length ? <p className="py-6 text-[14px] text-[#8b95a3]">No company matches.</p> : null}
+          </div>
         ) : (
-          <ul className="space-y-2">
+          <ul className="grid gap-3 md:grid-cols-2">
             {others[status].map((c) => (
-              <li key={c.symbol} className="border-t border-[#1a2230] pt-2 text-[13px]">
-                <span className="font-mono text-[#e3e8ef]">{c.symbol}</span> <span className="text-[#7d8894]">{c.name}</span>
-                <p className="mt-0.5 text-[12px] leading-relaxed text-[#9aa5b3]">{c.note || c.reason}</p>
+              <li key={c.symbol} className="rounded-lg bg-[#131a24] px-4 py-3">
+                <p><span className="font-mono font-semibold text-[#f1f5f9]">{c.symbol}</span> <span className="text-[14px] text-[#8b95a3]">{c.name}</span></p>
+                <p className="mt-1 text-[14px] leading-relaxed text-[#9aa5b3]">{c.note || c.reason}</p>
               </li>
             ))}
           </ul>
         )}
-        <p className="mt-2 text-[11px] leading-relaxed text-[#68727f]">
-          <Tag t="D" /> disclosed · <Tag t="I" /> AGI arithmetic on disclosed figures · <Tag t="A" /> AGI estimate (assumptions in AGI estimates). Hover a tag for its meaning. No consensus or broker figures are used. Click a row for the research drawer.
+        <p className="mt-4 text-[13px] leading-relaxed text-[#6b7684]">
+          Column tags: <Tag t="D" /> disclosed by the company · <Tag t="I" /> AGI arithmetic on disclosed figures · <Tag t="A" /> AGI estimate. Headers sort. No consensus or broker figures are used.
         </p>
-      </div>
-    </section>
-  );
-}
-
-function Drawer({ r, onClose, onResearch }) {
-  const closeRef = React.useRef(null);
-  React.useEffect(() => {
-    closeRef.current?.focus();
-    const onKey = (e) => { if (e.key === 'Escape') onClose(); };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [onClose]);
-  if (!r) return null;
-  const m = r.m;
-  const f = r.factors;
-  const params = r.model ? Object.entries(r.model.params || {}).filter(([, p]) => p.kind === 'assumption') : [];
-  return (
-    <div className="fixed inset-0 z-50 flex justify-end" role="dialog" aria-modal="true" aria-labelledby="drawer-h">
-      <button type="button" aria-label="Close" onClick={onClose} className="flex-1 bg-black/50" />
-      <div className="h-full w-full max-w-[560px] overflow-y-auto border-l border-[#1e2634] bg-[#0a0e14] p-4">
-        <div className="flex items-start justify-between gap-2">
-          <div>
-            <h3 id="drawer-h" className="font-mono text-[18px] font-semibold text-[#f1f5f9]">{m.symbol}</h3>
-            <p className="text-[13px] text-[#9aa5b3]">{m.name} · {LAYER_LABEL[m.layer]} · {(m.subLayers || []).map((s) => SUB_LABEL[s] || s).join(' + ')}</p>
-            <p className={`mt-0.5 text-[12px] ${TIER_TONE[m.attribution]}`}>{TIER_LABEL[m.attribution]} · member since {m.membershipStart}</p>
-          </div>
-          <button ref={closeRef} type="button" onClick={onClose} className="rounded border border-[#2a3444] px-2 py-0.5 text-[12px] text-[#9aa5b3] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#e8833a]">Close</button>
-        </div>
-
-        <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
-          {[
-            ['Stated AI/DC figure', r.shares[0]?.value, 'D'],
-            ['Market value', r.mv !== null ? cr(r.mv) : null, 'I'],
-            ['Order book', r.book?.backlogCr ? cr(r.book.backlogCr) : null, 'D'],
-            ['Order cover', r.cover !== null ? `${r.cover.toFixed(1)} quarters` : null, 'I'],
-            ['FY26 EBITDA', r.ebitda ? cr(r.ebitda) : null, 'D'],
-            ['FY26 profit', r.pat ? cr(r.pat) : null, 'D'],
-          ].map(([k, v, t]) => (
-            <div key={k} className="rounded border border-[#1a2230] px-2 py-1.5">
-              <p className="text-[10px] uppercase tracking-wider text-[#68727f]">{k}</p>
-              <p className="text-[13px] text-[#e3e8ef]">{v || '—'}{v ? <Tag t={t} /> : null}</p>
-            </div>
-          ))}
-        </div>
-
-        <h4 className="mt-4 text-[12px] uppercase tracking-[0.12em] text-[#7d8894]">Five factors</h4>
-        <dl className="mt-1.5 space-y-1">
-          {[['AI materiality', f.materiality], ['Evidence', f.evidence], ['Momentum', f.momentum], ['Capital quality', f.capital], ['Expectation load', f.expectation]].map(([k, x]) => (
-            <div key={k} className="grid grid-cols-[120px_1fr] gap-2 text-[12px]">
-              <dt className="text-[#9aa5b3]">{k}</dt>
-              <dd><Band b={x.band} />{x.value ? <span className="ml-1.5 text-[#c7cfda]">{x.value}</span> : null}</dd>
-            </div>
-          ))}
-        </dl>
-
-        <h4 className="mt-4 text-[12px] uppercase tracking-[0.12em] text-[#7d8894]">Evidence</h4>
-        <ul className="mt-1.5 space-y-2">
-          {[...(m.admittedOn || []), ...(m.supportingEvidence || [])].map((e, i) => (
-            <li key={i} className="border-l-2 border-[#2f5d3f] pl-2.5">
-              <p className="text-[11px] text-[#7d8894]">{KIND[e.kind] || e.kind} · {e.document} · {e.date}{e.page ? ` · p. ${e.page}` : ''}</p>
-              <p className="text-[13px] leading-relaxed text-[#c7cfda]">&ldquo;{e.excerpt}&rdquo;</p>
-            </li>
-          ))}
-        </ul>
-        {m.exposureNote ? <p className="mt-2 text-[12px] leading-relaxed text-[#9aa5b3]">{m.exposureNote}</p> : null}
-        {m.parentGroupNote ? <p className="mt-2 rounded border border-[#3a3222] bg-[#12100c] px-2 py-1.5 text-[12px] leading-relaxed text-[#c9b699]"><span className="font-semibold">Parent group, not this company: </span>{m.parentGroupNote}</p> : null}
-
-        <h4 className="mt-4 text-[12px] uppercase tracking-[0.12em] text-[#f0a060]">AGI estimate</h4>
-        {r.model ? (
-          <div className="mt-1.5 rounded border border-dashed border-[#7a5a2e] bg-[#0f0d0a] p-2.5 text-[12px] text-[#c9b699]">
-            <p className="text-[#f5d9b0]">{r.model.title}</p>
-            {r.runs.base.ok ? (
-              <table className="mt-1.5 w-full">
-                <thead><tr className="text-left text-[10px] uppercase text-[#8a7658]"><th className="font-medium">FY29</th><th className="text-right font-medium">Low</th><th className="text-right font-medium">Base</th><th className="text-right font-medium">High</th></tr></thead>
-                <tbody>
-                  <tr><td>AI/DC revenue</td>{['low', 'base', 'high'].map((s) => <td key={s} className="text-right font-mono">{r.runs[s].ok ? cr(r.runs[s].aiRevenueCr) : '—'}</td>)}</tr>
-                  <tr><td>AI/DC EBITDA</td>{['low', 'base', 'high'].map((s) => <td key={s} className="text-right font-mono">{r.runs[s].ok ? cr(r.runs[s].aiEbitdaCr) : '—'}</td>)}</tr>
-                  <tr><td>vs FY26 EBITDA</td>{['low', 'base', 'high'].map((s) => <td key={s} className="text-right font-mono">{r.runs[s].ok && r.runs[s].materiality != null ? pct(r.runs[s].materiality) : '—'}</td>)}</tr>
-                </tbody>
-              </table>
-            ) : <p className="mt-1 text-[#d9a94a]">Waits for: {r.runs.base.missing.map((k) => r.model.params?.[k]?.label || k).join(', ')}.</p>}
-            <p className="mt-2 text-[10px] uppercase tracking-wider text-[#8a7658]">Assumptions (base; range)</p>
-            <ul className="mt-0.5 space-y-0.5">
-              {params.map(([k, p]) => (
-                <li key={k}>{p.label}: {p.value === null ? 'not set' : p.unit === 'pct' ? pct(p.value, 1) : p.value}{p.low != null ? ` (${p.unit === 'pct' ? `${pct(p.low, 1)}–${pct(p.high, 1)}` : `${p.low}–${p.high}`})` : ''}</li>
-              ))}
-            </ul>
-          </div>
-        ) : <p className="mt-1.5 text-[12px] text-[#68727f]">Not modelled: AGI has no defensible anchor for this company&rsquo;s AI economics yet.</p>}
-
-        <h4 className="mt-4 text-[12px] uppercase tracking-[0.12em] text-[#7d8894]">Watch</h4>
-        <ul className="mt-1.5 list-disc space-y-1 pl-4 text-[12px] leading-relaxed text-[#9aa5b3]">
-          {r.targets.map((t) => <li key={t.target}>{t.target} <span className="text-[#68727f]">({t.source}; a company target)</span></li>)}
-          {r.runs && !r.runs.base.ok ? <li>A disclosed {r.runs.base.missing.map((k) => (r.model.params?.[k]?.label || k).toLowerCase()).join(' and ')} would let the estimate run.</li> : null}
-          {m.note ? <li>{m.note}</li> : null}
-          {!r.targets.length && !m.note && !(r.runs && !r.runs.base.ok) ? <li>Next quarter&rsquo;s results: order book, stated AI/DC figures.</li> : null}
-        </ul>
-
-        <button type="button" onClick={onResearch} className="mt-4 rounded text-[13px] text-[#8fb4d8] hover:text-[#e3e8ef] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#e8833a]">
-          Open the full research page &rarr;
-        </button>
-      </div>
+      </Panel>
     </div>
   );
 }
 
-
-/* ── phase 2: scatter, supply chain, what changed, layer KPIs ─────────── */
-
-const EV_STROKE = { high: '#4ade80', medium: '#5aa2e0', low: '#d9a94a' };
-
-/**
- * AI materiality (AGI base case) against expectation load (profit growth the
- * price needs). Both axes are AGI figures; bubble size is market value and
- * the outline is evidence confidence. Members without a running model are
- * listed, not plotted. Quadrant captions describe position, not advice.
- */
-function MaterialityScatter({ records, open }) {
-  const W = 760; const H = 380; const pad = { l: 52, r: 16, t: 16, b: 40 };
-  const pts = records.map((r) => ({
-    r, x: r.implied?.cagr ?? null, y: r.runs?.base.ok ? r.runs.base.materiality : null,
-  }));
-  const plotted = pts.filter((p) => p.x !== null && p.y !== null);
-  const notPlotted = pts.filter((p) => !(p.x !== null && p.y !== null));
-  const xMin = -0.2; const xMax = 0.9; const yMax = 1.2;
-  const sx = (v) => pad.l + ((Math.max(xMin, Math.min(xMax, v)) - xMin) / (xMax - xMin)) * (W - pad.l - pad.r);
-  const sy = (v) => H - pad.b - (Math.max(0, Math.min(yMax, v)) / yMax) * (H - pad.t - pad.b);
-  // Log scale: market values run from about Rs 7,000 cr to Rs 11 lakh cr, and a
-  // linear or square-root scale shrinks all but the largest to specks.
-  const rad = (mv) => (mv > 0 ? Math.max(5, 5 + 7 * (Math.log10(mv) - 3.8)) : 5);
-  const x25 = sx(0.25); const y25 = sy(0.25);
-  return (
-    <section aria-labelledby="scatter-h" className="rounded-md border border-[#1e2634] bg-[#0c1017] p-3.5">
-      <div className="flex flex-wrap items-baseline gap-2">
-        <h3 id="scatter-h" className="text-[15px] font-semibold text-[#f1f5f9]">AI materiality against what the price needs</h3>
-        <span className="text-[12px] text-[#7d8894]">both axes are AGI figures<Tag t="A" /> · bubble = market value · outline = evidence confidence · click a bubble</span>
-      </div>
-      <div className="mt-2 overflow-x-auto">
-        <svg viewBox={`0 0 ${W} ${H}`} className="w-full min-w-[620px]" role="img" aria-label="Scatter of AI materiality against the profit growth each price needs">
-          <rect x={pad.l} y={pad.t} width={W - pad.l - pad.r} height={H - pad.t - pad.b} fill="#0a0e14" />
-          {[0, 0.25, 0.5, 0.75, 1].map((v) => (
-            <g key={`y${v}`}>
-              <line x1={pad.l} x2={W - pad.r} y1={sy(v)} y2={sy(v)} stroke="#1a2230" />
-              <text x={pad.l - 6} y={sy(v) + 4} textAnchor="end" fontSize="11" fill="#7d8894">{Math.round(v * 100)}%</text>
-            </g>
-          ))}
-          {[-0.2, 0, 0.25, 0.5, 0.75].map((v) => (
-            <g key={`x${v}`}>
-              <line x1={sx(v)} x2={sx(v)} y1={pad.t} y2={H - pad.b} stroke="#1a2230" />
-              <text x={sx(v)} y={H - pad.b + 14} textAnchor="middle" fontSize="11" fill="#7d8894">{v <= 0 ? (v === 0 ? '0' : 'none') : `${Math.round(v * 100)}%`}</text>
-            </g>
-          ))}
-          <line x1={x25} x2={x25} y1={pad.t} y2={H - pad.b} stroke="#3a4453" strokeDasharray="4 4" />
-          <line x1={pad.l} x2={W - pad.r} y1={y25} y2={y25} stroke="#3a4453" strokeDasharray="4 4" />
-          <text x={(W + pad.l) / 2} y={H - 6} textAnchor="middle" fontSize="11" fill="#9aa5b3">Profit growth a year the price needs to reach 30x by FY29 (expectation load)</text>
-          <text x={14} y={(H - pad.b) / 2} textAnchor="middle" fontSize="11" fill="#9aa5b3" transform={`rotate(-90 14 ${(H - pad.b) / 2})`}>FY29 AI/DC EBITDA ÷ FY26 EBITDA</text>
-          {(() => {
-            // Greedy label placement, largest company first: above the bubble,
-            // else below, else no label (the tooltip still names it).
-            const placed = [];
-            const fits = (b) => placed.every((q) => b.x2 < q.x1 || b.x1 > q.x2 || b.y2 < q.y1 || b.y1 > q.y2);
-            return [...plotted].sort((a, b) => (b.r.mv || 0) - (a.r.mv || 0)).map((p) => {
-              const cx = sx(p.x); const cy = sy(p.y); const rr = rad(p.r.mv);
-              const text = `${p.r.m.symbol}${p.y > yMax ? ' ↑' : ''}${p.x > xMax ? ' →' : ''}`;
-              const w = text.length * 6.2;
-              let ly = null;
-              for (const y of [cy - rr - 3, cy + rr + 11]) {
-                const box = { x1: cx - w / 2, x2: cx + w / 2, y1: y - 10, y2: y + 2 };
-                if (fits(box)) { placed.push(box); ly = y; break; }
-              }
-              return { p, cx, cy, rr, text, ly };
-            });
-          })().map(({ p, cx, cy, rr, text, ly }) => {
-            return (
-              <g
-                key={p.r.m.symbol}
-                role="button"
-                tabIndex={0}
-                aria-label={`${p.r.m.symbol}: materiality ${Math.round(p.y * 100)}%, price needs ${p.x <= 0 ? 'no growth' : `${Math.round(p.x * 100)}% a year`}`}
-                onClick={() => open(p.r.m.symbol)}
-                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(p.r.m.symbol); } }}
-                className="cursor-pointer focus-visible:outline-none"
-              >
-                <title>{`${p.r.m.symbol} (${p.r.m.name}): FY29 AI/DC EBITDA ${Math.round(p.y * 100)}% of FY26 EBITDA; price needs ${p.x <= 0 ? 'no growth' : `${Math.round(p.x * 100)}% a year`}; evidence ${p.r.factors.evidence.band}`}</title>
-                <circle cx={cx} cy={cy} r={rr} fill="#e8833a" fillOpacity="0.18" stroke={EV_STROKE[p.r.factors.evidence.band] || '#7d8894'} strokeWidth="2" />
-                {ly !== null ? <text x={cx} y={ly} textAnchor="middle" fontSize="10" fill="#c7cfda">{text}</text> : null}
-              </g>
-            );
-          })}
-        </svg>
-      </div>
-      <p className="mt-1 text-[11px] leading-relaxed text-[#68727f]">
-        Outline: <span style={{ color: EV_STROKE.high }}>high</span>, <span style={{ color: EV_STROKE.medium }}>medium</span>, <span style={{ color: EV_STROKE.low }}>low</span> evidence confidence.
-        Dashed lines at 25% on each axis divide it into: top left, material with a lower price hurdle; top right, material with a high hurdle; bottom left, small so far with a lower hurdle; bottom right, small so far with a high hurdle. Bubble area is on a log scale of market value. ↑ or → marks a value beyond the axis. Position is a description of AGI&rsquo;s base case against today&rsquo;s price, not a recommendation.
-        Not plotted (no running base-case model): {notPlotted.map((p) => p.r.m.symbol).join(', ') || 'none'}.
-      </p>
-    </section>
-  );
-}
+/* ── the chain ────────────────────────────────────────────────────────── */
 
 /** AGI's grouping of members (and held candidates) along the physical chain. */
 const CHAIN = [
@@ -503,183 +702,283 @@ function SupplyChain({ records, held, setFilter, open }) {
   const bySym = Object.fromEntries(records.map((r) => [r.m.symbol, r]));
   const heldBy = Object.fromEntries(held.map((c) => [c.symbol, c]));
   return (
-    <section aria-labelledby="chain-h" className="rounded-md border border-[#1e2634] bg-[#0c1017] p-3.5">
-      <div className="flex flex-wrap items-baseline gap-2">
-        <h3 id="chain-h" className="text-[15px] font-semibold text-[#f1f5f9]">The chain, from compute to the grid</h3>
-        <span className="text-[12px] text-[#7d8894]">AGI&rsquo;s grouping · click a stage to filter the matrix, a symbol for its drawer · grey = held, not admitted</span>
-      </div>
-      <ol className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
-        {CHAIN.map(([stage, syms, heldSyms], i) => {
+    <Panel id="chain-h" title="The chain, from compute to the grid" sub="The order power and equipment flow into an AI data centre, read from the rack outward. Choose a stage to filter the matrix. Dashed names are held, not admitted.">
+      <ol className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        {CHAIN.map(([stage, syms, heldSyms]) => {
           const rs = syms.map((s) => bySym[s]).filter(Boolean);
           const mv = rs.reduce((n, r) => n + (r.mv || 0), 0);
-          const sized = rs.filter((r) => r.m.attribution && r.m.attribution !== 'NOT_ATTRIBUTABLE').length;
           return (
-            <li key={stage} className="rounded border border-[#1a2230] p-2.5">
-              <button
-                type="button"
-                onClick={() => setFilter({ symbols: syms, label: stage })}
-                className="flex w-full items-baseline justify-between rounded text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#e8833a]"
-              >
-                <span className="text-[13px] font-semibold text-[#e3e8ef]"><span className="mr-1.5 font-mono text-[11px] text-[#68727f]">{String(i + 1).padStart(2, '0')}</span>{stage}</span>
-                <span className="text-[11px] text-[#7d8894]">{rupeesCr(mv)}<Tag t="I" /> · {sized}/{rs.length} sized</span>
+            <li key={stage} className="rounded-lg bg-[#131a24] px-4 py-3">
+              <button type="button" onClick={() => setFilter({ symbols: syms, label: stage })} className={`flex w-full items-baseline justify-between gap-2 rounded text-left ${FOCUS}`}>
+                <span className="text-[15px] font-semibold text-[#f1f5f9]">{stage}</span>
+                <span className="whitespace-nowrap text-[13px] tabular-nums text-[#8b95a3]">{rupeesCr(mv)}</span>
               </button>
-              <p className="mt-1.5 flex flex-wrap gap-1">
+              <p className="mt-2 flex flex-wrap gap-1.5">
                 {rs.map((r) => (
-                  <button key={r.m.symbol} type="button" onClick={() => open(r.m.symbol)}
-                    className="rounded bg-[#1c2534] px-1.5 py-[1px] font-mono text-[11px] text-[#c7cfda] hover:bg-[#26324a] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#e8833a]">
+                  <button key={r.m.symbol} type="button" onClick={() => open(r.m.symbol)} className={`rounded-md bg-[#1c2533] px-2 py-0.5 font-mono text-[12px] text-[#dbe2ea] hover:bg-[#26324a] ${FOCUS}`}>
                     {r.m.symbol}
                   </button>
                 ))}
                 {heldSyms.filter((s) => heldBy[s]).map((s) => (
-                  <span key={s} title={`Held: ${heldBy[s].note || ''}`} className="rounded border border-dashed border-[#2a3444] px-1.5 py-[1px] font-mono text-[11px] text-[#5b6675]">{s}</span>
+                  <span key={s} title={`Held: ${heldBy[s].note || ''}`} className="rounded-md border border-dashed border-[#2a3444] px-2 py-0.5 font-mono text-[12px] text-[#5b6675]">{s}</span>
                 ))}
               </p>
             </li>
           );
         })}
       </ol>
-      <p className="mt-2 text-[11px] text-[#68727f]">The numbering is the order power and equipment flow into an AI data centre, read from the rack outward. Each member appears once, at the stage its admitting evidence sits.</p>
-    </section>
+    </Panel>
   );
 }
 
-const IMPACT = { order: 'Orders', capex: 'Capacity', operating: 'AI exposure' };
+/* ── estimates ────────────────────────────────────────────────────────── */
 
-/** The latest dated evidence across members, newest first: research consequences, not calls. */
-function WhatChanged({ records, open }) {
-  const items = [];
-  for (const r of records) {
-    for (const e of r.m.admittedOn || []) items.push({ r, e, when: e.date, what: 'admitting evidence' });
-    // An undated source (a website table) carries the date AGI read it, which is not a change date.
-    for (const e of r.m.supportingEvidence || []) if (!e.undated) items.push({ r, e, when: e.date, what: 'since admission' });
-  }
-  const latest = items.filter((x) => x.when).sort((a, b) => (a.when < b.when ? 1 : -1)).slice(0, 14);
+function EstimatesTab({ records, estimates, open, onResearch }) {
+  const modelled = records.filter((r) => r.model);
+  const running = modelled.filter((r) => r.runs.base.ok).sort((a, b) => (b.runs.base.materiality || 0) - (a.runs.base.materiality || 0));
+  const waiting = modelled.filter((r) => !r.runs.base.ok);
+  const exit = estimates?.exitMultiple ? valueOf(estimates.exitMultiple, 'base') : 30;
+  const maxM = Math.max(1, ...running.map((r) => r.runs.base.materiality || 0));
   return (
-    <section aria-labelledby="changed-h" className="rounded-md border border-[#1e2634] bg-[#0c1017] p-3.5">
-      <h3 id="changed-h" className="text-[15px] font-semibold text-[#f1f5f9]">What changed</h3>
-      <p className="text-[12px] text-[#7d8894]">latest dated evidence, from each company&rsquo;s own text</p>
-      <ul className="mt-2 space-y-2.5">
-        {latest.map(({ r, e, what }, i) => (
-          <li key={i} className="border-l-2 border-[#2a3444] pl-2.5">
-            <p className="flex flex-wrap items-baseline gap-x-2 text-[11px] text-[#7d8894]">
-              <span className="font-mono text-[#9aa5b3]">{e.date}</span>
-              <button type="button" onClick={() => open(r.m.symbol)} className="rounded font-mono text-[12px] text-[#e3e8ef] hover:text-[#f0a060] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#e8833a]">{r.m.symbol}</button>
-              <span className="rounded bg-[#1a2230] px-1 text-[10px] uppercase tracking-wider text-[#8fb4d8]">{IMPACT[e.kind] || e.kind}</span>
-              <span className="text-[10px] uppercase tracking-wider text-[#4ade80]">confirmed · {what}</span>
-            </p>
-            <p className="mt-0.5 text-[12px] leading-relaxed text-[#c7cfda]">{String(e.excerpt).length > 170 ? `${String(e.excerpt).slice(0, 167)}…` : e.excerpt}</p>
-            <p className="text-[10px] text-[#5b6675]">{e.document}</p>
-          </li>
-        ))}
+    <div className="space-y-4">
+      <section aria-labelledby="est-h" className="rounded-xl border border-dashed border-[#7a5a2e] bg-[#110e0a] p-5 sm:p-6">
+        <h2 id="est-h" className="text-[20px] font-semibold tracking-tight text-[#f5d9b0]">AGI estimates<Tag t="A" /></h2>
+        <p className="mt-1 max-w-[75ch] text-[14px] leading-relaxed text-[#c9b699]">
+          Scenario arithmetic on disclosed figures, to FY29. Every input is either a company figure with its source or an AGI assumption with a range and a reason. These are not company guidance and not consensus. {modelled.length} of {records.length} companies are modelled; {waiting.length} wait for a figure no company discloses. Expectation load uses a {exit}x exit multiple.
+        </p>
+        <button type="button" onClick={() => onResearch('estimates')} className={`mt-3 rounded text-[14px] text-[#f0a060] hover:text-[#f5d9b0] ${FOCUS}`}>Change the assumptions in Research &rarr;</button>
+      </section>
+      <ul className="grid gap-3 md:grid-cols-2 2xl:grid-cols-3">
+        {running.map((r) => {
+          const b = r.runs.base;
+          return (
+            <li key={r.m.symbol}>
+              <button type="button" onClick={() => open(r.m.symbol)} className={`block w-full rounded-xl bg-[#0e131b] px-5 py-4 text-left hover:bg-[#121925] ${FOCUS}`}>
+                <p className="flex items-baseline justify-between gap-2">
+                  <span className="font-mono text-[15px] font-semibold text-[#f1f5f9]">{r.m.symbol}</span>
+                  <TierMark tier={r.m.attribution} />
+                </p>
+                <p className="mt-0.5 text-[13px] text-[#8a7658]">{r.model.title}</p>
+                <div className="mt-3 grid grid-cols-3 gap-2 text-[13px]">
+                  {['low', 'base', 'high'].map((s) => (
+                    <div key={s}>
+                      <p className="text-[12px] capitalize text-[#8a7658]">{s}</p>
+                      <p className={`tabular-nums ${s === 'base' ? 'text-[16px] font-semibold text-[#f5d9b0]' : 'text-[#c9b699]'}`}>{r.runs[s].ok ? cr(r.runs[s].aiRevenueCr) : '—'}</p>
+                    </div>
+                  ))}
+                </div>
+                <p className="mt-1 text-[12px] text-[#6b7684]">FY29 AI/data-centre revenue</p>
+                <div className="mt-3">
+                  <p className="flex justify-between text-[13px]"><span className="text-[#9aa5b3]">vs FY26 EBITDA, base</span><span className="tabular-nums text-[#f5d9b0]">{b.materiality != null ? pct(b.materiality) : '—'}</span></p>
+                  <div className="mt-1 h-1.5 rounded-full bg-[#1c1812]" aria-hidden="true">
+                    <div className="h-1.5 rounded-full bg-[#f0a060]" style={{ width: `${Math.min(100, ((b.materiality || 0) / maxM) * 100)}%` }} />
+                  </div>
+                </div>
+              </button>
+            </li>
+          );
+        })}
       </ul>
-      <p className="mt-2 text-[11px] text-[#68727f]">Impact names what the evidence bears on: orders, capacity, or how much of the business AI is. No entry is a recommendation.</p>
+      {waiting.length ? (
+        <Panel id="waiting-h" title="Waiting for a disclosure" sub="These models do not run on a guess. Each names the figure it needs.">
+          <ul className="grid gap-3 md:grid-cols-2">
+            {waiting.map((r) => (
+              <li key={r.m.symbol} className="rounded-lg bg-[#131a24] px-4 py-3 text-[14px]">
+                <button type="button" onClick={() => open(r.m.symbol)} className={`rounded font-mono font-semibold text-[#f1f5f9] hover:text-[#f0a060] ${FOCUS}`}>{r.m.symbol}</button>
+                <span className="text-[#8b95a3]"> needs {r.runs.base.missing.map((k) => (r.model.params?.[k]?.label || k).toLowerCase()).join(' and ')}</span>
+              </li>
+            ))}
+          </ul>
+        </Panel>
+      ) : null}
+    </div>
+  );
+}
+
+/* ── the company drawer ───────────────────────────────────────────────── */
+
+function DrawerSection({ title, tone = 'text-[#8b95a3]', children }) {
+  return (
+    <section className="mt-6">
+      <h4 className={`text-[13px] font-semibold uppercase tracking-[0.12em] ${tone}`}>{title}</h4>
+      <div className="mt-2.5">{children}</div>
     </section>
   );
 }
 
-/** Summary cards that change with the selected layer. */
-function LayerKpis({ records, filter, estimates }) {
-  if (!filter?.layer) return null;
-  const rs = records.filter((r) => r.m.layer === filter.layer && (!filter.sub || (r.m.subLayers || []).includes(filter.sub)));
-  const sum = (xs) => xs.filter(Number.isFinite).reduce((a, b) => a + b, 0);
-  const mv = sum(rs.map((r) => r.mv));
-  const book = sum(rs.map((r) => r.book?.backlogCr));
-  const cover = median(rs.map((r) => r.cover));
-  const growth = median(rs.map((r) => r.q1));
-  const cards = [
-    ['Members', rs.length, `${rs.filter((r) => r.m.attribution !== 'NOT_ATTRIBUTABLE').length} with the AI/DC business sized`, 'D'],
-    ['Market value', rupeesCr(mv), 'whole companies', 'I'],
-    ['Revenue growth, median', growth !== null ? signedPct(growth) : '—', 'latest quarter y/y', 'I'],
-  ];
-  if (filter.layer === 'data_centre') {
-    // Not summed: some companies state IT load and others power capacity.
-    const op = rs.filter((r) => Number.isFinite(r.cap?.operationalMW) && r.cap.operationalMW > 0)
-      .sort((a, b) => b.cap.operationalMW - a.cap.operationalMW).map((r) => `${r.m.symbol} ${r.cap.operationalMW}`);
-    const tied = rs.filter((r) => Number.isFinite(r.cap?.tiedUpMW)).map((r) => `${r.m.symbol} ${r.cap.tiedUpMW}`);
-    cards.push(['Operating MW', op.join(' · ') || '—', 'as each company states it; IT load and power differ, so not added', 'D']);
-    cards.push(['Tied-up MW', tied.join(' · ') || '—', 'contracted or tied up, where the company gives it', 'D']);
-    cards.push(['Nxtra revenue / MW', '₹9.7 cr', 'FY26 revenue ÷ ~250 MW; EBITDA margin 40.3%', 'I']);
-  } else if (filter.layer === 'semiconductor') {
-    const units = (estimates?.models || []).filter((m) => rs.some((r) => r.m.symbol === m.symbol) && m.params?.unitsPerDay)
-      .map((m) => `${m.symbol} ${(valueOf(m.params.unitsPerDay, 'base') / 1e6).toFixed(1)}m/day`);
-    cards.push(['Packaging capacity', units.join(' · ') || '—', 'units a day as stated; utilisation not disclosed', 'D']);
-    cards.push(['Order book', book ? rupeesCr(book) : '—', 'members that report one', 'D']);
-    cards.push(['Order cover, median', cover !== null ? `${cover.toFixed(1)} qtrs` : '—', 'order book ÷ quarter revenue', 'I']);
-  } else {
-    cards.push(['Order book', book ? rupeesCr(book) : '—', 'members that report one', 'D']);
-    cards.push(['Order cover, median', cover !== null ? `${cover.toFixed(1)} qtrs` : '—', 'order book ÷ quarter revenue', 'I']);
-    const stated = rs.filter((r) => r.shares.length).length;
-    cards.push(['Stated AI/DC figure', `${stated} / ${rs.length}`, 'members stating a share or value', 'D']);
-  }
+function Drawer({ r, onClose, onResearch }) {
+  const closeRef = React.useRef(null);
+  React.useEffect(() => {
+    closeRef.current?.focus();
+    const onKey = (e) => { if (e.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [onClose]);
+  if (!r) return null;
+  const m = r.m;
+  const f = r.factors;
+  const params = r.model ? Object.entries(r.model.params || {}).filter(([, p]) => p.kind === 'assumption') : [];
+  const evidence = [...(m.admittedOn || []), ...(m.supportingEvidence || [])].sort((a, b) => ((a.date || '') < (b.date || '') ? 1 : -1));
+  const facts = [
+    ['Stated AI/DC figure', r.shares[0]?.value, 'D'],
+    ['FY26 revenue', r.row.revenueFY26 ? cr(r.row.revenueFY26) : null, 'D'],
+    ['FY26 EBITDA', r.ebitda ? cr(r.ebitda) : null, 'D'],
+    ['FY26 profit', r.pat ? cr(r.pat) : null, 'D'],
+    ['Order book', r.book?.backlogCr ? cr(r.book.backlogCr) : null, 'D'],
+    ['Order cover', r.cover !== null ? `${r.cover.toFixed(1)} quarters` : null, 'I'],
+    ['Market value', r.mv !== null ? cr(r.mv) : null, 'I'],
+    ['Revenue, latest quarter y/y', r.q1 !== null ? signedPct(r.q1) : null, 'I'],
+  ].filter(([, v]) => v);
   return (
-    <div>
-      <p className="mb-1.5 text-[11px] uppercase tracking-wider text-[#f0a060]">{LAYER_LABEL[filter.layer]}{filter.sub ? ` · ${SUB_LABEL[filter.sub]}` : ''}</p>
-      <div className="grid grid-cols-2 gap-2 md:grid-cols-3 xl:grid-cols-6">
-        {cards.map(([label, value, sub, tag]) => <Kpi key={label} label={label} value={value} sub={sub} tag={tag} />)}
+    <div className="fixed inset-0 z-50 flex justify-end" role="dialog" aria-modal="true" aria-labelledby="drawer-h">
+      <button type="button" aria-label="Close" onClick={onClose} className="flex-1 bg-black/55" />
+      <div className="h-full w-full max-w-[600px] overflow-y-auto bg-[#0b1016] px-6 py-6 shadow-2xl">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <h3 id="drawer-h" className="font-mono text-[24px] font-semibold text-[#f5f7fa]">{m.symbol}</h3>
+            <p className="mt-0.5 text-[15px] text-[#b6c2d1]">{m.name}</p>
+            <p className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[13px] text-[#8b95a3]">
+              <span>{LAYER_LABEL[m.layer]} · {(m.subLayers || []).map((s) => SUB_LABEL[s] || s).join(' + ')}</span>
+              <TierMark tier={m.attribution} />
+              <span>member since {dateLabel(m.membershipStart)}</span>
+            </p>
+          </div>
+          <button ref={closeRef} type="button" onClick={onClose} className={`rounded-lg bg-[#151c27] px-3 py-1.5 text-[13px] text-[#b6c2d1] hover:text-[#f1f5f9] ${FOCUS}`}>Close</button>
+        </div>
+
+        <DrawerSection title="Reported facts" tone="text-[#6cb2f0]">
+          <dl className="grid grid-cols-2 gap-x-4 gap-y-3">
+            {facts.map(([k, v, t]) => (
+              <div key={k}>
+                <dt className="text-[12px] text-[#8b95a3]">{k}<Tag t={t} /></dt>
+                <dd className="mt-0.5 text-[16px] tabular-nums text-[#f1f5f9]">{v}</dd>
+              </div>
+            ))}
+          </dl>
+          {m.parentGroupNote ? <p className="mt-3 rounded-lg bg-[#15120c] px-3 py-2 text-[13px] leading-relaxed text-[#c9b699]"><span className="font-semibold">Parent group, not this company: </span>{m.parentGroupNote}</p> : null}
+        </DrawerSection>
+
+        <DrawerSection title="AGI assessment">
+          <dl className="space-y-2">
+            {[['AI materiality', f.materiality], ['Evidence', f.evidence], ['Momentum', f.momentum], ['Capital quality', f.capital], ['Expectation load', f.expectation, 'expectation']].map(([k, x, scale]) => (
+              <div key={k} className="grid grid-cols-[130px_1fr] items-baseline gap-3 text-[14px]">
+                <dt className="text-[#9aa5b3]">{k}</dt>
+                <dd><Band b={x.band} scale={scale} />{x.value ? <span className="ml-2 text-[#c7cfda]">{x.value}</span> : null}</dd>
+              </div>
+            ))}
+          </dl>
+        </DrawerSection>
+
+        <DrawerSection title="AGI estimate" tone="text-[#f0a060]">
+          {r.model ? (
+            <div className="rounded-lg border border-dashed border-[#7a5a2e] bg-[#110e0a] p-4 text-[14px] text-[#c9b699]">
+              <p className="text-[#f5d9b0]">{r.model.title}</p>
+              {r.runs.base.ok ? (
+                <table className="mt-2 w-full tabular-nums">
+                  <thead><tr className="text-left text-[12px] text-[#8a7658]"><th className="font-medium">FY29</th><th className="text-right font-medium">Low</th><th className="text-right font-medium">Base</th><th className="text-right font-medium">High</th></tr></thead>
+                  <tbody>
+                    <tr><td className="py-0.5">AI/DC revenue</td>{['low', 'base', 'high'].map((s) => <td key={s} className="text-right">{r.runs[s].ok ? cr(r.runs[s].aiRevenueCr) : '—'}</td>)}</tr>
+                    <tr><td className="py-0.5">AI/DC EBITDA</td>{['low', 'base', 'high'].map((s) => <td key={s} className="text-right">{r.runs[s].ok ? cr(r.runs[s].aiEbitdaCr) : '—'}</td>)}</tr>
+                    <tr><td className="py-0.5">vs FY26 EBITDA</td>{['low', 'base', 'high'].map((s) => <td key={s} className="text-right">{r.runs[s].ok && r.runs[s].materiality != null ? pct(r.runs[s].materiality) : '—'}</td>)}</tr>
+                  </tbody>
+                </table>
+              ) : <p className="mt-1.5 text-[#f0a060]">Waits for: {r.runs.base.missing.map((k) => r.model.params?.[k]?.label || k).join(', ')}.</p>}
+              {params.length ? (
+                <details className="mt-3">
+                  <summary className={`cursor-pointer rounded text-[13px] text-[#f0a060] ${FOCUS}`}>Assumptions ({params.length})</summary>
+                  <ul className="mt-1.5 space-y-1 text-[13px]">
+                    {params.map(([k, p]) => (
+                      <li key={k}>{p.label}: {p.value === null ? 'not set' : p.unit === 'pct' ? pct(p.value, 1) : p.value}{p.low != null ? ` (range ${p.unit === 'pct' ? `${pct(p.low, 1)} to ${pct(p.high, 1)}` : `${p.low} to ${p.high}`})` : ''}</li>
+                    ))}
+                  </ul>
+                </details>
+              ) : null}
+            </div>
+          ) : <p className="text-[14px] text-[#8b95a3]">Not modelled: AGI has no defensible anchor for this company&rsquo;s AI economics yet.</p>}
+        </DrawerSection>
+
+        <DrawerSection title="What to watch">
+          <ul className="list-disc space-y-1.5 pl-5 text-[14px] leading-relaxed text-[#b6c2d1]">
+            {r.targets.map((t) => <li key={t.target}>{t.target} <span className="text-[#6b7684]">(company target; {t.source})</span></li>)}
+            {r.runs && !r.runs.base.ok ? <li>A disclosed {r.runs.base.missing.map((k) => (r.model.params?.[k]?.label || k).toLowerCase()).join(' and ')} would let the estimate run.</li> : null}
+            {m.note ? <li>{m.note}</li> : null}
+            {!r.targets.length && !m.note && !(r.runs && !r.runs.base.ok) ? <li>Next quarter&rsquo;s results: order book and any stated AI/DC figure.</li> : null}
+          </ul>
+        </DrawerSection>
+
+        <DrawerSection title={`Evidence (${evidence.length})`}>
+          <ul className="space-y-3">
+            {evidence.map((e, i) => (
+              <li key={i} className="rounded-lg bg-[#121822] px-4 py-3">
+                <p className="flex flex-wrap items-center gap-x-2 text-[12px] text-[#8b95a3]">
+                  <span className="rounded-full bg-[#1c2533] px-2 py-[1px] text-[#b6c2d1]">{IMPACT[e.kind] || e.kind}</span>
+                  <span className="tabular-nums">{e.undated ? 'undated' : dateLabel(e.date)}</span>
+                </p>
+                {e.headline ? <p className="mt-1.5 text-[15px] leading-snug text-[#e3e8ef]">{e.headline}</p> : null}
+                <blockquote className="mt-1.5 text-[13px] leading-relaxed text-[#9aa5b3]">&ldquo;{e.excerpt}&rdquo;</blockquote>
+                <p className="mt-1 text-[12px] text-[#5b6675]">{e.document}{e.page ? `, p. ${e.page}` : ''}</p>
+              </li>
+            ))}
+          </ul>
+          {m.exposureNote ? <p className="mt-3 text-[13px] leading-relaxed text-[#8b95a3]">{m.exposureNote}</p> : null}
+        </DrawerSection>
+
+        <button type="button" onClick={onResearch} className={`mt-6 rounded text-[14px] text-[#6cb2f0] hover:text-[#e3e8ef] ${FOCUS}`}>
+          Open the full research page &rarr;
+        </button>
       </div>
     </div>
   );
 }
 
+/* ── the dashboard ────────────────────────────────────────────────────── */
+
+export const MONITOR_SECTIONS = [['overview', 'Overview'], ['matrix', 'Matrix'], ['evidence', 'Evidence'], ['estimates', 'Estimates']];
+
 export default function MonitorDashboard({
-  universe, live, history, marketValue, stage3, estimates, operating, scoring, onResearch,
+  section = 'overview', onSection, universe, live, marketValue, stage3, estimates, operating, scoring, onResearch,
 }) {
   const [exit, setExit] = React.useState(null);
-  const [filter, setFilter] = React.useState(null);
-  const [view, setView] = React.useState('investment');
-  const [status, setStatus] = React.useState('members');
+  const [filter, setFilterState] = React.useState(null);
   const [drawer, setDrawer] = React.useState(null);
+  const matrixRef = React.useRef(null);
   React.useEffect(() => {
     let cancelled = false;
     fetchExitability().then((p) => { if (!cancelled) setExit(p); }).catch(() => {});
     return () => { cancelled = true; };
   }, []);
-  if (!universe?.members) return <p className="py-10 text-[13px] text-[#68727f]">Loading the universe.</p>;
+  // Choosing a layer or stage filters the matrix and brings it into view.
+  const setFilter = React.useCallback((f) => {
+    setFilterState(f);
+    if (f) requestAnimationFrame(() => matrixRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+  }, []);
+  if (!universe?.members) return <p className="py-10 text-[15px] text-[#8b95a3]">Loading the universe.</p>;
   const records = buildRecords({ universe, operating, estimates, marketValue, stage3, scoring, exit });
   const others = { held: universe.candidates || [], excluded: universe.excluded || [] };
-  const read = records.length + others.held.length + others.excluded.length;
-  const sized = records.filter((r) => r.m.attribution && r.m.attribution !== 'NOT_ATTRIBUTABLE').length;
-  const segment = records.filter((r) => r.m.attribution === 'SEGMENT_REPORTED').length;
-  const growth = median(records.map((r) => r.q1));
-  const withGrowth = records.filter((r) => r.q1 !== null).length;
-  const hardItems = records.reduce((n, r) => n + r.evidence.length, 0);
-  const index = live?.index;
-  const lastTrade = live?.quality?.closed && live?.quality?.session_last;
   const current = drawer ? records.find((r) => r.m.symbol === drawer) : null;
+  const matrix = <Matrix records={records} others={others} filter={filter} setFilter={setFilter} open={setDrawer} matrixRef={matrixRef} />;
   return (
-    <div className="space-y-4">
-      <header>
-        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#e8833a]">AGI Investment Intelligence</p>
-        <h1 className="mt-1 text-[28px] font-semibold leading-tight tracking-tight sm:text-[34px]">India AI Infrastructure Monitor</h1>
-        <p className="text-[14px] text-[#8b95a3]">
-          {records.length} listed companies admitted on their own filings, from {read} read, across power, data centres, semiconductors and EPC
-          {marketValue?.closeDate ? ` · prices to ${marketValue.closeDate}` : ''} · evidence read {universe.version || ''}
-        </p>
-      </header>
-
-      <div className="grid grid-cols-2 gap-2 md:grid-cols-3 xl:grid-cols-6">
-        <Kpi label="Admitted" value={records.length} sub={`of ${read} read; ${(universe.reportedList || []).length} on the reported list`} />
-        <Kpi label="Market value" value={marketValue?.byLayer ? rupeesCr(marketValue.byLayer.totalCr) : '—'} sub="close x filed shares; whole companies" tag="I" />
-        <Kpi label="AI/DC business sized" value={`${sized} / ${records.length}`} sub={`${segment} audited segment, ${sized - segment} company-stated`} tag="D" />
-        <Kpi label={lastTrade ? 'Basket, last session' : 'Basket today'} value={index?.status === 'ok' ? signedPct(index.return_pp / 100, 2) : '—'} sub={index?.relative ? `vs Nifty 50 ${signedPct(index.relative.excess_pp / 100, 2)} · equal weight` : 'not priced'} tag="D" />
-        <Kpi label="Revenue growth, median" value={growth !== null ? signedPct(growth) : '—'} sub={`latest quarter y/y · ${withGrowth} members with filed figures`} tag="I" />
-        <Kpi label="Hard evidence" value={hardItems} sub="filed orders, capex and operating disclosures" tag="D" />
-      </div>
-
-      <StackMap records={records} filter={filter} setFilter={setFilter} />
-
-      <LayerKpis records={records} filter={filter} estimates={estimates} />
-
-      <div className="grid gap-4 xl:grid-cols-[minmax(0,2.2fr)_minmax(0,1fr)]">
-        <div className="min-w-0 space-y-4">
-          <MaterialityScatter records={records} open={setDrawer} />
+    // The site stylesheet borders every button and input; the monitor draws its own.
+    <div className="space-y-4 text-[15px] [&_button]:border-0 [&_input]:border-0">
+      {section === 'overview' ? (
+        <>
+          <KpiRow records={records} others={others} marketValue={marketValue} live={live} />
+          <div className="grid gap-4 xl:grid-cols-[minmax(0,7fr)_minmax(340px,3fr)]">
+            <MaterialityScatter records={records} open={setDrawer} />
+            <LatestEvidence records={records} open={setDrawer} onAll={() => onSection?.('evidence')} />
+          </div>
+          <Stack records={records} filter={filter} setFilter={setFilter} />
+          {matrix}
+        </>
+      ) : null}
+      {section === 'matrix' ? (
+        <>
+          {matrix}
           <SupplyChain records={records} held={others.held} setFilter={setFilter} open={setDrawer} />
-        </div>
-        <WhatChanged records={records} open={setDrawer} />
-      </div>
-
-      <Matrix records={records} others={others} filter={filter} view={view} setView={setView} status={status} setStatus={setStatus} open={setDrawer} />
-
+        </>
+      ) : null}
+      {section === 'evidence' ? <EvidenceTab records={records} open={setDrawer} /> : null}
+      {section === 'estimates' ? <EstimatesTab records={records} estimates={estimates} open={setDrawer} onResearch={onResearch} /> : null}
       {current ? <Drawer r={current} onClose={() => setDrawer(null)} onResearch={() => { setDrawer(null); onResearch(); }} /> : null}
     </div>
   );

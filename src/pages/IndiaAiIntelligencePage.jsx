@@ -7,7 +7,7 @@ import {
   BuildFunding, CapexChanges, CapexConcentration, EvidenceComposition, ExposureAttribution,
 } from '@/components/indiaAi/FiledEvidenceCharts';
 import { nseOpen } from '@/lib/nseSession';
-import MonitorDashboard from '@/components/indiaAi/Monitor';
+import MonitorDashboard, { MONITOR_SECTIONS, MonitorHeader } from '@/components/indiaAi/Monitor';
 import {
   aiMateriality, capitalQuality, earningsMomentum, evidenceConfidence, expectationLoad,
 } from '@/lib/indiaAiFactors';
@@ -1893,14 +1893,29 @@ export default function IndiaAiIntelligencePage() {
   const [operating, setOperating] = React.useState(null);
   const [estimates, setEstimates] = React.useState(null);
   const [scoring, setScoring] = React.useState(null);
-  // Monitor (dashboard) or Research (the full evidence page). A hash link to
-  // a research section opens Research, so existing anchors keep working.
+  // The monitor's four views, or Research (the full evidence page). Monitor
+  // views use #monitor and #monitor-<view>; any other hash is a research
+  // section, so existing anchors keep working.
   const [tab, setTab] = React.useState(() => {
     try {
       const h = window.location.hash.replace('#', '');
-      return h && h !== 'monitor' ? 'research' : 'monitor';
-    } catch { return 'monitor'; }
+      if (!h || h === 'monitor') return 'overview';
+      const view = h.startsWith('monitor-') ? h.slice('monitor-'.length) : null;
+      return MONITOR_SECTIONS.some(([k]) => k === view) ? view : 'research';
+    } catch { return 'overview'; }
   });
+  const goTab = React.useCallback((k, anchor) => {
+    setTab(k);
+    try {
+      const hash = k === 'research' ? (anchor ? `#${anchor}` : '') : k === 'overview' ? '#monitor' : `#monitor-${k}`;
+      window.history.replaceState(null, '', `${window.location.pathname}${hash}`);
+    } catch { /* ignore */ }
+    requestAnimationFrame(() => {
+      const el = anchor ? document.getElementById(anchor) : null;
+      if (el) el.scrollIntoView({ block: 'start' });
+      else window.scrollTo({ top: 0 });
+    });
+  }, []);
   const [liveError, setLiveError] = React.useState(null);
   const [error, setError] = React.useState(null);
   const clock = useIstClock();
@@ -1999,26 +2014,29 @@ export default function IndiaAiIntelligencePage() {
             <span aria-current="page">India AI Infrastructure</span>
           </nav>
 
-          <div className="mb-3 flex items-center gap-1 border-b border-[#1a2230]" role="tablist" aria-label="Page view">
-            {[['monitor', 'Monitor'], ['research', 'Research']].map(([k, label]) => (
+          {tab !== 'research' ? <MonitorHeader universe={universe} marketValue={marketValue} /> : null}
+
+          <div className="mb-5 flex items-center gap-1 overflow-x-auto border-b border-[#1a2230]" role="tablist" aria-label="Page view">
+            {[...MONITOR_SECTIONS, ['research', 'Research']].map(([k, label]) => (
               <button
                 key={k}
                 type="button"
                 role="tab"
                 aria-selected={tab === k}
-                onClick={() => { setTab(k); try { window.history.replaceState(null, '', k === 'monitor' ? '#monitor' : window.location.pathname); } catch { /* ignore */ } }}
-                className={`-mb-px border-b-2 px-3 py-2 text-[14px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#e8833a] ${tab === k ? 'border-[#e8833a] font-semibold text-[#e3e8ef]' : 'border-transparent text-[#8b95a3] hover:text-[#e3e8ef]'}`}
+                onClick={() => goTab(k)}
+                className={`-mb-px whitespace-nowrap border-x-0 border-b-2 border-t-0 px-4 py-2.5 text-[15px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#e8833a] ${k === 'research' ? 'ml-auto' : ''} ${tab === k ? 'border-[#e8833a] font-semibold text-[#f1f5f9]' : 'border-transparent text-[#8b95a3] hover:text-[#e3e8ef]'}`}
               >
                 {label}
               </button>
             ))}
           </div>
 
-          {tab === 'monitor' ? (
+          {tab !== 'research' ? (
             <MonitorDashboard
-              universe={universe} live={live} history={history} marketValue={marketValue} stage3={stage3}
+              section={tab} onSection={(k) => goTab(k)}
+              universe={universe} live={live} marketValue={marketValue} stage3={stage3}
               estimates={estimates} operating={operating} scoring={scoring}
-              onResearch={() => { setTab('research'); window.scrollTo({ top: 0 }); }}
+              onResearch={(anchor) => goTab('research', typeof anchor === 'string' ? anchor : undefined)}
             />
           ) : (
             <>
