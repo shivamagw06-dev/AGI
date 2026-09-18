@@ -292,7 +292,8 @@
     "RELIANCE": "Under construction = 120 MW Reliance Intelligence capacity (target: commissioned by end-2026) plus the 168 MW Meta build (within two years); tied up = the 168 MW leased to Meta.",
     "LT": "Under construction = remaining 6 MW at Chennai plus about 40 MW at Mahape (the annual report says 36 MW).",
     "BHARTIARTL": "Power capacity per the annual report; on the Q1 FY27 call management gave a lower base of 120-130 MW.",
-    "ADANIENT": "Tied up includes the 400 MW Vizag order, a shell-only scope shown as turnkey-equivalent; 769 MW is shown strictly as contracted."
+    "ADANIENT": "Tied up includes the 400 MW Vizag order, a shell-only scope shown as turnkey-equivalent; 769 MW is shown strictly as contracted.",
+    "ANANTRAJ": "Operating is capacity delivered; in Nov 2025 only 8 MW of colocation and 0.5 MW of cloud had been handed over and billed (MD, Q2 FY26 call). No later billed-MW figure is disclosed."
   },
   "statedShares": [
     {
@@ -322,7 +323,7 @@
     {
       "symbol": "CUMMINSIND",
       "metric": "Data-centre share of power-generation revenue",
-      "value": "40% in Q1 FY27; 30-35% in FY26; 23% in Q1 FY26",
+      "value": "40% in Q1 FY27; about 35% in Q4 FY26; 30-35% in FY26; 23% in Q1 FY26",
       "base": "Domestic power-generation revenue, not company revenue",
       "source": "Q1 FY27 call; FY26 annual report",
       "quote": "data centers out of this, in this particular quarter, was 40% of overall power generation revenue"
@@ -366,6 +367,38 @@
       "base": "Contracted RE power sales capacity, about 6.0 GW",
       "source": "Q1 FY27 release; Aug 2026 corporate presentation",
       "quote": "0.63 GW STU connected for India data center demand"
+    },
+    {
+      "symbol": "BLUESTARCO",
+      "metric": "Share of the data-centre MEP market",
+      "value": "about 29% (Rs 1,000 cr of a Rs 3,500 cr market; AGI arithmetic)",
+      "base": "Management's market estimate (also given as Rs 3,000-4,000 cr)",
+      "source": "Q4 FY26 call",
+      "quote": "market size to be somewhere around RS.3,500 Crore and we do a business of around RS.1,000 Crore there"
+    },
+    {
+      "symbol": "BHARTIARTL",
+      "metric": "Data-centre subsidiary revenue and EBITDA",
+      "value": "Nxtra FY26 revenue Rs 2,434 cr; EBITDA Rs 981.6 cr (40.3%)",
+      "base": "Nxtra standalone, audited; Airtel FY26 revenue Rs 2.11 lakh cr",
+      "source": "Nxtra FY26 results (NSE filing, listed debt)",
+      "quote": "Revenue from operations 24,341 ... Total expenses 14,525 (Rs mn)"
+    },
+    {
+      "symbol": "ANANTRAJ",
+      "metric": "Data-centre business turnover",
+      "value": "Rs 145.90 cr in FY26, 8.96% of combined turnover",
+      "base": "Combined standalone turnover of Anant Raj and its data-centre subsidiary (Rs 1,627.72 cr), not the consolidated figure",
+      "source": "Composite scheme filing, 21 Jul 2026",
+      "quote": "Demerged Undertaking 145.90 / Total 1627.72 / Percentage 8.96%"
+    },
+    {
+      "symbol": "LT",
+      "metric": "Data-centre business revenue",
+      "value": "Rs 36.6 cr in FY26 (about 0.02% of standalone revenue)",
+      "base": "L&T standalone revenue",
+      "source": "Business-transfer filing, 11 Aug 2026",
+      "quote": "FY26 revenue of the data-centre business Rs 36.6 crore"
     }
   ],
   "targets": [

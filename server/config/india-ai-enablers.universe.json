@@ -240,6 +240,16 @@
           "page": "slide 32",
           "excerpt": "Revenue from Data Center, Infrastructure and Allied services stood at Rs 90 Cr."
         }
+      ],
+      "supportingEvidence": [
+        {
+          "kind": "operating",
+          "document": "Anant Raj Q2 FY26 earnings call transcript",
+          "date": "2025-11-12",
+          "page": "7-8, 14",
+          "excerpt": "it is close to about 90 lakhs per month per megawatt for Colocation ... So, EBITDA for H1 is 75%",
+          "source": "Verification ledger, 2026-09-18 (read from the company document)"
+        }
       ]
     },
     {
@@ -461,12 +471,22 @@
       "reviewedBy": null,
       "reviewedAt": null,
       "exposureAttributable": false,
-      "exposureNote": "Nxtra: 14 hyperscale and 120+ edge data centres with about 250 MW of power capacity (FY26 annual report), targeting 1 GW; data centres are not a reportable segment and revenue is not separated.",
+      "exposureNote": "Data centres are not a reportable segment, but the data-centre subsidiary Nxtra's own filings state its figures: FY26 revenue Rs 2,434 cr and EBITDA (excluding other income) Rs 981.6 cr, 40.3% (audited results filed for its listed debt; turnover also in Airtel's AOC-1). Airtel gives about 250 MW (annual report), ~300 MW (Mar 2026 release) and 120-130 MW (Q1 FY27 call) without reconciling them; target 1 GW. Nxtra raised US$1 bn at about US$3.1 bn post-closing (Mar 2026).",
       "note": "Admitted through its data-centre subsidiary Nxtra, which its own annual report describes. The Google gigawatt campus is a partnership and is not counted.",
-      "attribution": "NOT_ATTRIBUTABLE",
+      "attribution": "MANAGEMENT_DISCLOSED",
       "discoveredVia": "EXTERNAL_LEAD_2026_09_18",
       "evidenceReadOn": "2026-09-18",
-      "membershipStart": "2026-09-18"
+      "membershipStart": "2026-09-18",
+      "supportingEvidence": [
+        {
+          "kind": "operating",
+          "document": "Nxtra Data Ltd audited standalone results FY26 (NSE filing, listed debt)",
+          "date": "2026-05-11",
+          "page": "5",
+          "excerpt": "Revenue Rs 24,341 mn; profit before depreciation, amortisation, finance costs and tax Rs 10,076 mn (EBITDA excluding other income Rs 9,816 mn, 40.3%)",
+          "source": "Verification ledger, 2026-09-18 (read from the company document)"
+        }
+      ]
     },
     {
       "symbol": "LT",
@@ -494,7 +514,7 @@
       "reviewedBy": null,
       "reviewedAt": null,
       "exposureAttributable": false,
-      "exposureNote": "L&T's subsidiary LTN Compute (Vyoma.AI) secured a 'Mega' order, which L&T defines as Rs 10,000-15,000 crore, to host a 10,000-GPU NVIDIA B300 AI factory for Together AI at its own Chennai campus (13 Aug 2026): a value band for an owner-operator contract, not an EPC job. Vyoma had 26 MW operational at FY26 (Chennai 24, Panvel 2). Data-centre revenue is not separated.",
+      "exposureNote": "L&T's subsidiary LTN Compute (Vyoma.AI) secured a 'Mega' order, which L&T defines as Rs 10,000-15,000 crore, to host a 10,000-GPU NVIDIA B300 AI factory for Together AI at its own Chennai campus (13 Aug 2026): a value band for an owner-operator contract, not an EPC job. Vyoma had 26 MW operational at FY26 (Chennai 24, Panvel 2). Data-centre revenue is not separated. The data-centre business earned Rs 36.6 crore in FY26 (business-transfer filing, 11 Aug 2026).",
       "note": "Admitted as an operator through L&T Vyoma. Its EPC work for data centres and fabs has no named order with a value, so under the contractor rule it does not add an EPC admission.",
       "attribution": "MANAGEMENT_DISCLOSED",
       "discoveredVia": "EXTERNAL_LEAD_2026_09_18",
@@ -516,6 +536,14 @@
           "page": "128",
           "source": "Verification ledger, 2026-09-18 (read from the company document)",
           "excerpt": "As of FY 2025-26, Larsen & Toubro Vyoma's operational capacity stood at 26 MW across Chennai and Panvel."
+        },
+        {
+          "kind": "operating",
+          "document": "L&T business-transfer filing (data-centre business to Vyoma.AI)",
+          "date": "2026-08-11",
+          "page": "1",
+          "excerpt": "FY26 revenue of the data-centre business Rs 36.6 crore; net worth Rs 1,142 crore; consideration about Rs 1,400 crore",
+          "source": "Verification ledger, 2026-09-18 (read from the company document)"
         }
       ]
     },
@@ -597,7 +625,17 @@
       "attribution": "MANAGEMENT_DISCLOSED",
       "discoveredVia": "EXTERNAL_LEAD_2026_09_18",
       "evidenceReadOn": "2026-09-18",
-      "membershipStart": "2026-09-18"
+      "membershipStart": "2026-09-18",
+      "supportingEvidence": [
+        {
+          "kind": "order",
+          "document": "Blue Star website, data-centre credentials",
+          "date": "2026-09-18",
+          "page": "web page (undated table)",
+          "excerpt": "AWS HYD 121: Rs 207 cr; ST Telemedia: five contracts totalling Rs 734 cr; CapitaLand 'Veritas' Mumbai: Rs 162 cr; CapitaLand 'Pearl' Hyderabad: Rs 116 cr; Nxtra Mahape: Rs 100 cr",
+          "source": "Verification ledger, 2026-09-18 (read from the company document)"
+        }
+      ]
     },
     {
       "symbol": "SCHNEIDER",
@@ -800,7 +838,17 @@
       "attribution": "MANAGEMENT_DISCLOSED",
       "discoveredVia": "EXTERNAL_LEAD_2026_09_18",
       "evidenceReadOn": "2026-09-18",
-      "membershipStart": "2026-09-18"
+      "membershipStart": "2026-09-18",
+      "supportingEvidence": [
+        {
+          "kind": "order",
+          "document": "HFCL exchange disclosure",
+          "date": "2026-07-10",
+          "page": "1",
+          "excerpt": "export order worth ~USD 51.98 million (equivalent to ~INR 495.80 crore), for the supply of optical fiber cable based data centre connectivity solutions",
+          "source": "Verification ledger, 2026-09-18 (read from the company document)"
+        }
+      ]
     },
     {
       "symbol": "MTARTECH",
@@ -1099,7 +1147,7 @@
       "reviewedAt": null,
       "exposureAttributable": false,
       "exposureNote": "A 168 MW built-to-suit agreement is disclosed; no revenue, capex or share of the group is attributed to it.",
-      "note": "Admitted on a signed built-to-suit agreement with a named hyperscaler: RIL designs, builds and runs the facility and Meta leases the capacity. The 18 Sep document search had found only the compute plan and the Google Cloud partnership; this release was found by the exchange-announcement sweep.",
+      "note": "Admitted on a signed built-to-suit agreement with a named hyperscaler: RIL designs, builds and runs the facility and Meta leases the capacity. The 18 Sep document search had found only the compute plan and the Google Cloud partnership; this release was found by the exchange-announcement sweep. RIL discloses no lease rate, revenue or tenure for the 168 MW Meta facility and calls the commissioning timeline 'commercially sensitive'; it is funded on RIL's own balance sheet (Q1 FY27 call).",
       "attribution": "NOT_ATTRIBUTABLE",
       "discoveredVia": "EXTERNAL_LEAD_2026_09_18",
       "evidenceReadOn": "2026-09-18",
