@@ -1,6 +1,6 @@
 import React from 'react';
 import {
-  fetchFiledFacts, fetchLive, fetchSnapshots, fetchStage3, fetchUniverse,
+  fetchFiledFacts, fetchIndexHistory, fetchLive, fetchSnapshots, fetchStage3, fetchUniverse,
 } from '@/lib/indiaAiApi';
 import {
   BuildFunding, CapexChanges, CapexConcentration, EvidenceComposition, ExposureAttribution,
@@ -309,6 +309,80 @@ function IndexedChart({ snapshots }) {
       </p>
     ) : null}
     </>
+  );
+}
+
+/**
+ * The basket against Nifty 50 since admission, one point per closed session.
+ *
+ * Daily equal weight, like the live basket, and point-in-time: each member
+ * counts from the close of the day it was admitted. The line is short because
+ * the basket is new, and it says so rather than reaching back.
+ */
+function SinceAdmission({ history }) {
+  const points = history?.points || [];
+  const fmtDate = (iso) => new Date(`${iso}T00:00:00Z`).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
+  const last = points[points.length - 1];
+  const change = (v) => (v === undefined ? '—' : `${v - 100 >= 0 ? '+' : ''}${(v - 100).toFixed(2)}%`);
+  return (
+    <Panel
+      id="history"
+      title="Since admission"
+      note="daily equal weight · closed sessions · vs Nifty 50"
+      action={points.length > 1 ? `${points.length - 1} session${points.length === 2 ? '' : 's'}` : null}
+    >
+      {points.length < 2 ? (
+        <p className="text-[11px] leading-relaxed text-[#8b95a3]">
+          {history?.base
+            ? `The series starts at the close on ${fmtDate(history.base)}, the first admission date, and gains one point each trading day after that. `
+            : 'Loading the series. '}
+          Each member counts only from the close of the day it was admitted; nothing is priced before a decision was made.
+        </p>
+      ) : (
+        <>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <p className="text-[10px] uppercase tracking-wider text-[#7d8894]">AI Enablers</p>
+              <p className="mt-0.5 font-mono text-[17px] font-semibold tabular-nums text-[#e8833a]">{change(last.basket)}</p>
+            </div>
+            <div>
+              <p className="text-[10px] uppercase tracking-wider text-[#7d8894]">Nifty 50</p>
+              <p className="mt-0.5 font-mono text-[17px] font-semibold tabular-nums text-[#5aa2e0]">{change(last.benchmark)}</p>
+            </div>
+          </div>
+          <SessionLine points={points} />
+          <p className="mt-1 text-[10px] text-[#68727f]">
+            From the close on {fmtDate(history.base)} to {fmtDate(last.date)}. {last.members} members in the last session
+            {last.missing?.length ? `; no close for ${last.missing.join(', ')}` : ''}
+            {last.excluded?.length ? `; ${last.excluded.join(', ')} left out on a corporate-action ex-date` : ''}.
+          </p>
+        </>
+      )}
+    </Panel>
+  );
+}
+
+function SessionLine({ points }) {
+  const W = 640;
+  const H = 150;
+  const pad = { l: 34, r: 12, t: 10, b: 20 };
+  const values = points.flatMap((one) => [one.basket, one.benchmark]);
+  const lo = Math.min(...values, 100);
+  const hi = Math.max(...values, 100);
+  const span = hi - lo || 1;
+  const x = (i) => pad.l + (i / (points.length - 1)) * (W - pad.l - pad.r);
+  const y = (v) => pad.t + (1 - (v - lo) / span) * (H - pad.t - pad.b);
+  const path = (key) => points.map((one, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)},${y(one[key]).toFixed(1)}`).join(' ');
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} className="mt-2 w-full" role="img" aria-label="AI Enablers basket against Nifty 50 since admission, indexed to 100">
+      <line x1={pad.l} x2={W - pad.r} y1={y(100)} y2={y(100)} stroke="#1e2634" />
+      <text x={pad.l - 6} y={y(100) + 3} textAnchor="end" fill="#68727f" fontSize="9">100</text>
+      <path d={path('benchmark')} fill="none" stroke="#5aa2e0" strokeWidth="1.4" />
+      <path d={path('basket')} fill="none" stroke="#e8833a" strokeWidth="1.8" />
+      {points.map((one, i) => (
+        <circle key={one.date} cx={x(i)} cy={y(one.basket)} r="2" fill="#e8833a" />
+      ))}
+    </svg>
   );
 }
 
@@ -953,6 +1027,7 @@ export default function IndiaAiIntelligencePage() {
   const [snapshots, setSnapshots] = React.useState([]);
   const [filed, setFiled] = React.useState(null);
   const [stage3, setStage3] = React.useState(null);
+  const [history, setHistory] = React.useState(null);
   const [liveError, setLiveError] = React.useState(null);
   const [error, setError] = React.useState(null);
   const clock = useIstClock();
@@ -968,6 +1043,9 @@ export default function IndiaAiIntelligencePage() {
       .catch(() => {});
     fetchStage3()
       .then((payload) => { if (!cancelled) setStage3(payload); })
+      .catch(() => {});
+    fetchIndexHistory()
+      .then((payload) => { if (!cancelled) setHistory(payload); })
       .catch(() => {});
     return () => { cancelled = true; };
   }, []);
@@ -1077,6 +1155,8 @@ export default function IndiaAiIntelligencePage() {
                 </Panel>
                 <KeyTakeaways universe={universe} live={live} />
               </div>
+
+              <SinceAdmission history={history} />
 
               <div id="method">
                 <h2 className="text-[20px] font-semibold tracking-tight">Executive Intelligence</h2>

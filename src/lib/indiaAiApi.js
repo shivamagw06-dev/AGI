@@ -29,3 +29,4 @@ export const fetchLive = () => request('/live');
 export const fetchSnapshots = () => request('/snapshots');
 export const fetchFiledFacts = () => request('/filed-facts');
 export const fetchStage3 = () => request('/screen/stage3');
+export const fetchIndexHistory = () => request('/index/history', { timeoutMs: 90_000 });

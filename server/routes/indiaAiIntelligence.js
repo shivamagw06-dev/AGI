@@ -17,6 +17,7 @@ import {
   latestUniversePassRun, publicRow, readUniversePass, referenceQualifiers, summariseUniversePass,
 } from '../services/aiEnablersUniversePass.js';
 import { exitabilityForUniverse } from '../services/aiEnablersExitability.js';
+import { closesFrom, dailyIndex, dilutiveExDates } from '../services/aiEnablersHistory.js';
 
 const UNIVERSE_PATH = fileURLToPath(new URL('../config/india-ai-enablers.universe.json', import.meta.url));
 const FACTS_PATH = fileURLToPath(new URL('../config/india-ai-enablers.disclosed-facts.json', import.meta.url));
@@ -252,6 +253,64 @@ export default function createIndiaAiIntelligenceRouter() {
       const universe = await loadUniverse();
       const { rows, detail } = await intensityForUniverse(client, universe);
       res.json({ ok: true, screen: stageThree(rows), detail });
+    } catch (error) {
+      res.status(500).json({ ok: false, error: String(error?.message || error) });
+    }
+  });
+
+  /**
+   * The basket against Nifty 50 since admission: daily equal weight, one
+   * point per finished session, each member from the close of its decision
+   * day. Cached for ten minutes: every page view would otherwise cost one
+   * candle request and one corporate-actions request per member.
+   */
+  let historyCache = null;
+  router.get('/index/history', async (req, res) => {
+    try {
+      if (historyCache && Date.now() - historyCache.at < 10 * 60_000) return res.json(historyCache.body);
+      if (!isUpstoxConfigured()) {
+        return res.status(503).json({ ok: false, error: 'Upstox is not configured; set UPSTOX_ACCESS_TOKEN server-side.', code: 'UPSTOX_NOT_CONFIGURED' });
+      }
+      const universe = await loadUniverse();
+      const members = (universe.members || []).filter((one) => one.admitted !== false);
+      const starts = members.map((one) => one.membershipStart).filter(Boolean).sort();
+      if (!starts.length) return res.json({ ok: true, base: null, points: [], reason: 'NO_MEMBERSHIP_DATES' });
+      const day = (iso, offset) => new Date(Date.parse(`${iso}T00:00:00Z`) + offset * 86_400_000).toISOString().slice(0, 10);
+      const nowIst = new Date(Date.now() + 330 * 60_000);
+      const todayIst = nowIst.toISOString().slice(0, 10);
+      // A session counts once it has closed (15:30 IST); before that the
+      // intraday chart covers today.
+      const closedThrough = nowIst.getUTCHours() * 60 + nowIst.getUTCMinutes() >= 15 * 60 + 30 ? todayIst : day(todayIst, -1);
+      const from = day(starts[0], -7);
+      const candles = (key) => getHistoricalCandles(key, { unit: 'days', interval: 1, to: closedThrough, from });
+      const trim = (map) => new Map([...map].filter(([date]) => date <= closedThrough));
+      const closes = {};
+      const exDates = {};
+      const failures = [];
+      for (const member of members) {
+        try {
+          closes[member.symbol] = trim(closesFrom(await candles(member.instrumentKey)));
+        } catch (error) {
+          failures.push({ symbol: member.symbol, error: String(error?.message || error) });
+        }
+        try {
+          exDates[member.symbol] = dilutiveExDates(await getFundamentals(member.isin, 'corporate-actions', {}));
+        } catch {
+          exDates[member.symbol] = new Set();
+        }
+      }
+      const benchmark = trim(closesFrom(await candles(universe.benchmarkKey)));
+      const series = dailyIndex({ members, closes, benchmark, exDates });
+      const body = {
+        ok: true,
+        construction: 'daily equal weight; each member from the close of its membershipStart day; bonus, split and rights ex-dates excluded',
+        benchmark: 'Nifty 50 (price index)',
+        closedThrough,
+        ...series,
+        failures,
+      };
+      historyCache = { at: Date.now(), body };
+      res.json(body);
     } catch (error) {
       res.status(500).json({ ok: false, error: String(error?.message || error) });
     }
