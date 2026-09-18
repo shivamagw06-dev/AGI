@@ -188,7 +188,7 @@
           "excerpt": "deals with many global hyperscalers ... such as Meta, Apple, Google, and Amazon"
         }
       ],
-      "exposureNote": "42% of contracted capacity is for Data & AI customers (30 Jun 2026) on on-books capacity of 6,003 MW; the Data & AI key-customer slide names Amazon, Google, Meta, Cisco, STT, NTT, Equinix, Iron Mountain, Princeton Digital Group and L&T Data Center, and the call adds Apple among hyperscaler deals."
+      "exposureNote": "42% of contracted capacity (over 2.5 GW) is for Data & AI customers (30 Jun 2026), but the August 2026 corporate presentation splits it: 1.87 GW are emission-offset deals with Big Tech (Meta buys the environmental attributes of 837 MW CleanMax is building) and 0.63 GW serves Indian data-centre load. Named Data & AI customers include Amazon, Google, Meta, Cisco, STT, NTT, Equinix, Iron Mountain, Princeton Digital Group and L&T Data Center; the call adds Apple."
     },
     {
       "symbol": "ANANTRAJ",
@@ -637,7 +637,8 @@
       "attribution": "MANAGEMENT_DISCLOSED",
       "discoveredVia": "EXTERNAL_LEAD_2026_09_18",
       "evidenceReadOn": "2026-09-18",
-      "membershipStart": "2026-09-18"
+      "membershipStart": "2026-09-18",
+      "parentGroupNote": "Schneider Electric's India business is reported to earn 15-20% of revenue from data centres, and the parent names data centres as leading demand (H1 2026 release). The listed company makes distribution transformers, MV switchgear up to 36 kV, relays and automation; UPS, secure power and cooling are not in its described business and sit with other Schneider entities. None of the group figure is counted for this company."
     },
     {
       "symbol": "TDPOWERSYS",
@@ -758,7 +759,8 @@
       "attribution": "NOT_ATTRIBUTABLE",
       "discoveredVia": "EXTERNAL_LEAD_2026_09_18",
       "evidenceReadOn": "2026-09-18",
-      "membershipStart": "2026-09-18"
+      "membershipStart": "2026-09-18",
+      "parentGroupNote": "GE Vernova Inc. (US parent) booked $2.4 billion of equipment orders to support data centres in Q1 2026, more than all of the previous year (release, 22 Apr 2026). That is the parent's business; the Indian company's MD called its own Q1 FY27 data-centre ordering 'not significant', and a related-party US data-centre order of up to Rs 1,300 crore is not yet booked."
     },
     {
       "symbol": "HFCL",
@@ -1057,6 +1059,14 @@
           "page": "PDF 10",
           "source": "Verification ledger, 2026-09-18 (read from the company document)",
           "excerpt": "Data Centers orders in this quarter has been almost 15% to 17% of our orders"
+        },
+        {
+          "kind": "order",
+          "document": "ABB India Q1 CY2026 analyst call transcript",
+          "date": "2026-05-08",
+          "page": "6",
+          "source": "Verification ledger, 2026-09-18 (read from the company document)",
+          "excerpt": "last year, we had a very big data center order, which we got executed in Q1"
         }
       ]
     },

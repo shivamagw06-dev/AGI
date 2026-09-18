@@ -26,6 +26,7 @@ const FACTS_PATH = fileURLToPath(new URL('../config/india-ai-enablers.disclosed-
 const INTENSITY_PATH = fileURLToPath(new URL('../config/india-ai-enablers.intensity-inputs.json', import.meta.url));
 const SHARES_PATH = fileURLToPath(new URL('../config/india-ai-enablers.shares.json', import.meta.url));
 const OPERATING_PATH = fileURLToPath(new URL('../config/india-ai-enablers.operating-data.json', import.meta.url));
+const ESTIMATES_PATH = fileURLToPath(new URL('../config/india-ai-enablers.estimates.json', import.meta.url));
 
 let universeCache = null;
 export async function loadUniverse({ path = UNIVERSE_PATH, refresh = false } = {}) {
@@ -188,6 +189,18 @@ export default function createIndiaAiIntelligenceRouter() {
    * Order books and data-centre capacity, each figure quoted from the
    * company's own document (config/india-ai-enablers.operating-data.json).
    */
+  /**
+   * AGI's estimates: model definitions, each input marked disclosed (with its
+   * document) or assumption (with its range and reason). Computed on the page.
+   */
+  router.get('/estimates', async (req, res) => {
+    try {
+      res.json({ ok: true, ...JSON.parse(await readFile(ESTIMATES_PATH, 'utf8')) });
+    } catch (error) {
+      res.status(500).json({ ok: false, error: String(error?.message || error) });
+    }
+  });
+
   router.get('/operating-data', async (req, res) => {
     try {
       res.json({ ok: true, ...JSON.parse(await readFile(OPERATING_PATH, 'utf8')) });

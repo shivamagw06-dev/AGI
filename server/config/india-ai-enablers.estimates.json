@@ -1,0 +1,1297 @@
+{
+  "asOf": "2026-09-18",
+  "horizonYears": 3,
+  "horizonLabel": "FY29",
+  "purpose": "These are AGI's own scenarios, not company disclosures. Each model starts from figures the company has filed (marked disclosed, with the document) and adds assumptions (marked, with a range and a reason) that you can change. Where no defensible anchor exists, the model waits for you rather than guessing. Materiality is measured against the company's filed FY26 EBITDA, so no forecast of total earnings is needed.",
+  "exitMultiple": {
+    "kind": "assumption",
+    "value": 30,
+    "low": 20,
+    "high": 40,
+    "label": "Exit multiple",
+    "unit": "x",
+    "rationale": "AGI assumption for a mature earnings multiple; not a broker estimate."
+  },
+  "limits": "Scenarios, not forecasts or recommendations. No broker estimates are used. Contract models spread value evenly over the stated period; project revenue is lumpier. Where a company reports EBIT, EBITA or PBT instead of EBITDA, the model says which. Your changes stay in this browser.",
+  "marketSize": {
+    "defaultAddedMW": 4400,
+    "addedMWSource": "JLL forecast (31 Aug 2026): 1.6 GW in mid-2026 to 6 GW by 2029; JLL does not say IT load.",
+    "note": "Per-MW figures are for each MW of IT load. The electrical and mechanical ranges come from a third-party blog's model, labelled by its authors as an assumption; AGI has not verified them. Replace any figure with your own.",
+    "layers": [
+      {
+        "key": "electrical",
+        "label": "Electrical: switchgear, transformers, UPS, batteries, generators, busway",
+        "lowCrPerMW": 20,
+        "highCrPerMW": 28,
+        "members": "ABB, Hitachi Energy, GE Vernova, Schneider, Cummins, Kirloskar",
+        "source": "energymap.in blog (4 Aug 2026), 'model assumption - not a sourced market figure'; unverified"
+      },
+      {
+        "key": "mechanical",
+        "label": "Mechanical: cooling",
+        "lowCrPerMW": 12,
+        "highCrPerMW": 17,
+        "members": "Blue Star",
+        "source": "Same blog; unverified"
+      },
+      {
+        "key": "cables",
+        "label": "Cables, conventional and optical",
+        "lowCrPerMW": 3.5,
+        "highCrPerMW": 3.5,
+        "members": "Polycab, APAR, Diamond Power, HFCL, STL",
+        "source": "Polycab, Q1 FY27 call (company-stated)"
+      }
+    ]
+  },
+  "models": [
+    {
+      "symbol": "NETWEB",
+      "title": "AI systems revenue, grown",
+      "type": "growBase",
+      "basis": "Netweb reports AI Systems revenue directly, so the base is disclosed; growth and margin are AGI assumptions.",
+      "params": {
+        "aiRevenueBaseCr": {
+          "kind": "disclosed",
+          "value": 947.79,
+          "label": "FY26 AI Systems revenue",
+          "unit": "cr",
+          "source": "Annual report FY26 (Rs 9,477.9 mn)"
+        },
+        "years": {
+          "kind": "assumption",
+          "value": 3,
+          "low": 3,
+          "high": 3,
+          "label": "Years to FY29",
+          "unit": "years",
+          "rationale": "FY26 to FY29; the horizon of every model here."
+        },
+        "growth": {
+          "kind": "assumption",
+          "value": 0.35,
+          "low": 0.15,
+          "high": 0.6,
+          "label": "AI revenue growth a year",
+          "unit": "pct",
+          "rationale": "Q1 FY27 AI revenue of Rs 510.6 cr annualises to about Rs 2,040 cr, 2.2x FY26; the base case assumes roughly that run-rate is held to FY29."
+        },
+        "margin": {
+          "kind": "assumption",
+          "value": 0.13,
+          "low": 0.1,
+          "high": 0.15,
+          "label": "EBITDA margin on AI revenue",
+          "unit": "pct",
+          "rationale": "No AI-specific margin is disclosed; company operating EBITDA margin was 13.04% in FY26 and management guides 13-14%."
+        },
+        "totalEbitdaFY26Cr": {
+          "kind": "disclosed",
+          "value": 284.84,
+          "label": "FY26 filed EBITDA",
+          "unit": "cr",
+          "source": "Annual report FY26 (operating EBITDA; standalone)"
+        },
+        "patFY26Cr": {
+          "kind": "disclosed",
+          "value": 205.82,
+          "label": "FY26 profit after tax",
+          "unit": "cr",
+          "source": "Annual report FY26 (operating EBITDA; standalone)"
+        }
+      }
+    },
+    {
+      "symbol": "STLTECH",
+      "title": "Hyperscaler award, recognised over its period",
+      "type": "contract",
+      "basis": "STL's award has a stated value and period; how evenly it is recognised and at what margin are AGI assumptions.",
+      "params": {
+        "contractValueCr": {
+          "kind": "disclosed",
+          "value": 10000,
+          "label": "Hyperscaler AI data-centre award",
+          "unit": "cr",
+          "source": "Q1 FY27 presentation: US$1.11 bn, stated as Rs 10,000+ cr, FY27-FY29"
+        },
+        "years": {
+          "kind": "disclosed",
+          "value": 3,
+          "label": "Award period",
+          "unit": "years",
+          "source": "Product quantities allocated in each year FY27-FY29 ('upto March 2029')"
+        },
+        "otherAiRevenueCr": {
+          "kind": "assumption",
+          "value": 0,
+          "low": 0,
+          "high": 1000,
+          "label": "Other data-centre revenue a year",
+          "unit": "cr",
+          "rationale": "Other hyperscaler orders (US$100 mn+, US$288 mn) exist; left at zero by default so they are not double counted with the award's deliveries."
+        },
+        "margin": {
+          "kind": "assumption",
+          "value": 0.21,
+          "low": 0.15,
+          "high": 0.27,
+          "label": "EBITDA margin on data-centre revenue",
+          "unit": "pct",
+          "rationale": "Company EBITDA margin was 20.8% in Q1 FY27; FY27 guidance 23% and FY29 target over 27% are targets. No data-centre margin is disclosed."
+        },
+        "totalEbitdaFY26Cr": {
+          "kind": "disclosed",
+          "value": 628,
+          "label": "FY26 filed EBITDA",
+          "unit": "cr",
+          "source": "FY26 results, continuing operations"
+        },
+        "patFY26Cr": {
+          "kind": "disclosed",
+          "value": 56,
+          "label": "FY26 profit after tax",
+          "unit": "cr",
+          "source": "FY26 results, continuing operations"
+        }
+      }
+    },
+    {
+      "symbol": "LT",
+      "title": "Together AI 'Mega' order, recognised over an assumed tenure",
+      "type": "contract",
+      "basis": "Only L&T's 'Mega' band (Rs 10,000-15,000 cr) is disclosed; value, tenure and margin are AGI assumptions. Hardware pass-through and GPU-cloud service revenue carry very different margins.",
+      "params": {
+        "contractValueCr": {
+          "kind": "assumption",
+          "value": 12500,
+          "low": 10000,
+          "high": 15000,
+          "label": "Order value",
+          "unit": "cr",
+          "rationale": "Within L&T's own 'Mega' band of Rs 10,000-15,000 cr; the exact value is not disclosed."
+        },
+        "years": {
+          "kind": "assumption",
+          "value": 5,
+          "low": 3,
+          "high": 7,
+          "label": "Contract tenure",
+          "unit": "years",
+          "rationale": "Not disclosed; AGI assumption for a multi-year GPU-cloud contract."
+        },
+        "margin": {
+          "kind": "assumption",
+          "value": 0.15,
+          "low": 0.08,
+          "high": 0.3,
+          "label": "EBITDA margin",
+          "unit": "pct",
+          "rationale": "Not disclosed. Low end treats it as hardware pass-through; high end as recurring GPU-cloud service."
+        },
+        "totalEbitdaFY26Cr": {
+          "kind": "disclosed",
+          "value": 29151,
+          "label": "FY26 filed PBDIT",
+          "unit": "cr",
+          "source": "FY26 results (PBDIT; profit attributable to owners)"
+        },
+        "patFY26Cr": {
+          "kind": "disclosed",
+          "value": 16084,
+          "label": "FY26 profit after tax",
+          "unit": "cr",
+          "source": "FY26 results (PBDIT; profit attributable to owners)"
+        }
+      }
+    },
+    {
+      "symbol": "BLUESTARCO",
+      "title": "Data-centre MEP revenue against management's target",
+      "type": "target",
+      "basis": "Blue Star states a data-centre MEP target; AGI applies an achievement rate and a margin.",
+      "params": {
+        "targetRevenueCr": {
+          "kind": "disclosed",
+          "value": 4000,
+          "label": "Management target, data-centre MEP revenue by FY29",
+          "unit": "cr",
+          "source": "Q1 FY27 call (CFO): 'close to 20% of our revenue at around RS.4,000 Crore' by FY29 - a target, not a result"
+        },
+        "achievement": {
+          "kind": "assumption",
+          "value": 0.75,
+          "low": 0.5,
+          "high": 1.0,
+          "label": "Share of target achieved",
+          "unit": "pct",
+          "rationale": "AGI assumption. FY26 base was about Rs 1,000 cr; FY27 guidance Rs 1,350-1,400 cr."
+        },
+        "margin": {
+          "kind": "assumption",
+          "value": 0.08,
+          "low": 0.06,
+          "high": 0.1,
+          "label": "EBITDA margin",
+          "unit": "pct",
+          "rationale": "Projects and commercial AC segment EBIT margin was 7.4% in FY26; no data-centre margin is disclosed."
+        },
+        "totalEbitdaFY26Cr": {
+          "kind": "disclosed",
+          "value": 930.41,
+          "label": "FY26 filed EBITDA",
+          "unit": "cr",
+          "source": "FY26 results (EBITDA excludes other income)"
+        },
+        "patFY26Cr": {
+          "kind": "disclosed",
+          "value": 527.33,
+          "label": "FY26 profit after tax",
+          "unit": "cr",
+          "source": "FY26 results (EBITDA excludes other income)"
+        }
+      }
+    },
+    {
+      "symbol": "POWERINDIA",
+      "title": "Data-centre revenue at a share you set",
+      "type": "growBase",
+      "basis": "Hitachi Energy calls data centres a 'major contributor' to orders but gives no share. This model waits for one.",
+      "params": {
+        "revenueBaseCr": {
+          "kind": "disclosed",
+          "value": 8147.7,
+          "label": "FY26 revenue",
+          "unit": "cr",
+          "source": "FY26 results"
+        },
+        "dcShare": {
+          "kind": "assumption",
+          "value": null,
+          "low": null,
+          "high": null,
+          "label": "Data-centre share of revenue",
+          "unit": "pct",
+          "rationale": "Not disclosed; set it to run the model."
+        },
+        "years": {
+          "kind": "assumption",
+          "value": 3,
+          "low": 3,
+          "high": 3,
+          "label": "Years to FY29",
+          "unit": "years",
+          "rationale": "FY26 to FY29; the horizon of every model here."
+        },
+        "growth": {
+          "kind": "assumption",
+          "value": 0.25,
+          "low": 0.15,
+          "high": 0.35,
+          "label": "Growth a year",
+          "unit": "pct",
+          "rationale": "Order backlog of Rs 32,222 cr is about 4x FY26 revenue."
+        },
+        "margin": {
+          "kind": "assumption",
+          "value": 0.154,
+          "low": 0.12,
+          "high": 0.18,
+          "label": "EBITDA margin",
+          "unit": "pct",
+          "rationale": "Operational EBITDA margin 15.4% in FY26."
+        },
+        "totalEbitdaFY26Cr": {
+          "kind": "disclosed",
+          "value": 1252.5,
+          "label": "FY26 filed EBITDA",
+          "unit": "cr",
+          "source": "FY26 results (operational EBITDA)"
+        },
+        "patFY26Cr": {
+          "kind": "disclosed",
+          "value": 987.8,
+          "label": "FY26 profit after tax",
+          "unit": "cr",
+          "source": "FY26 results (operational EBITDA)"
+        }
+      }
+    },
+    {
+      "symbol": "ABB",
+      "title": "Data-centre revenue at the stated order share",
+      "type": "growBase",
+      "basis": "ABB states data centres were about 15-17% of Q2 CY26 orders; the model uses that as a stand-in for revenue share. Calendar-year reporter: CY2025 base, CY2028 horizon.",
+      "params": {
+        "revenueBaseCr": {
+          "kind": "disclosed",
+          "value": 12504,
+          "label": "CY2025 revenue (restated, excluding Robotics)",
+          "unit": "cr",
+          "source": "CY2025 annual report, restated"
+        },
+        "dcShare": {
+          "kind": "assumption",
+          "value": 0.16,
+          "low": 0.1,
+          "high": 0.17,
+          "label": "Data-centre share of revenue",
+          "unit": "pct",
+          "rationale": "Anchored to management's 15-17% of Q2 CY26 orders; the revenue share is not disclosed."
+        },
+        "years": {
+          "kind": "assumption",
+          "value": 3,
+          "low": 3,
+          "high": 3,
+          "label": "Years to FY29",
+          "unit": "years",
+          "rationale": "FY26 to FY29; the horizon of every model here."
+        },
+        "growth": {
+          "kind": "assumption",
+          "value": 0.2,
+          "low": 0.1,
+          "high": 0.3,
+          "label": "Growth a year",
+          "unit": "pct",
+          "rationale": "AGI assumption; Q2 CY26 orders rose 50% and revenue 21%."
+        },
+        "margin": {
+          "kind": "assumption",
+          "value": 0.139,
+          "low": 0.12,
+          "high": 0.15,
+          "label": "EBITA margin",
+          "unit": "pct",
+          "rationale": "Operational EBITA margin 13.9% (CY2025 restated); 13.0% in Q2 CY26."
+        },
+        "totalEbitdaFY26Cr": {
+          "kind": "disclosed",
+          "value": 1735,
+          "label": "CY2025 filed operational EBITA",
+          "unit": "cr",
+          "source": "CY2025 restated (operational EBITA, not EBITDA)"
+        },
+        "patFY26Cr": {
+          "kind": "disclosed",
+          "value": 1618,
+          "label": "FY26 profit after tax",
+          "unit": "cr",
+          "source": "CY2025 restated (operational EBITA, not EBITDA)"
+        }
+      }
+    },
+    {
+      "symbol": "GVT&D",
+      "title": "Data-centre revenue at a share you set",
+      "type": "growBase",
+      "basis": "GE Vernova T&D's MD called Q1 data-centre ordering 'not significant'; no share is disclosed. A related-party US data-centre order of up to Rs 1,300 cr is not yet booked.",
+      "params": {
+        "revenueBaseCr": {
+          "kind": "disclosed",
+          "value": 6206.3,
+          "label": "FY26 revenue",
+          "unit": "cr",
+          "source": "FY26 results"
+        },
+        "dcShare": {
+          "kind": "assumption",
+          "value": null,
+          "low": null,
+          "high": null,
+          "label": "Data-centre share of revenue",
+          "unit": "pct",
+          "rationale": "Not disclosed; set it to run the model."
+        },
+        "years": {
+          "kind": "assumption",
+          "value": 3,
+          "low": 3,
+          "high": 3,
+          "label": "Years to FY29",
+          "unit": "years",
+          "rationale": "FY26 to FY29; the horizon of every model here."
+        },
+        "growth": {
+          "kind": "assumption",
+          "value": 0.25,
+          "low": 0.15,
+          "high": 0.35,
+          "label": "Growth a year",
+          "unit": "pct",
+          "rationale": "Backlog Rs 20,930 cr is about 3.4x FY26 revenue."
+        },
+        "margin": {
+          "kind": "assumption",
+          "value": 0.271,
+          "low": 0.22,
+          "high": 0.3,
+          "label": "EBITDA margin",
+          "unit": "pct",
+          "rationale": "EBITDA margin 27.1% in FY26; 25.1% in Q1 FY27."
+        },
+        "totalEbitdaFY26Cr": {
+          "kind": "disclosed",
+          "value": 1683.6,
+          "label": "FY26 filed EBITDA",
+          "unit": "cr",
+          "source": "FY26 results"
+        },
+        "patFY26Cr": {
+          "kind": "disclosed",
+          "value": 1233.25,
+          "label": "FY26 profit after tax",
+          "unit": "cr",
+          "source": "FY26 results"
+        }
+      }
+    },
+    {
+      "symbol": "CUMMINSIND",
+      "title": "Data-centre share of domestic power generation",
+      "type": "growBase",
+      "basis": "Cummins states the data-centre share of power-generation revenue; margin is an assumption, and Cummins reports profit before tax, not EBITDA.",
+      "params": {
+        "revenueBaseCr": {
+          "kind": "disclosed",
+          "value": 4758,
+          "label": "FY26 domestic power-generation revenue",
+          "unit": "cr",
+          "source": "FY26 annual report"
+        },
+        "dcShare": {
+          "kind": "assumption",
+          "value": 0.325,
+          "low": 0.3,
+          "high": 0.4,
+          "label": "Data-centre share of power-gen revenue",
+          "unit": "pct",
+          "rationale": "Stated 30-35% for FY26 and 40% in Q1 FY27 (23% in Q1 FY26)."
+        },
+        "years": {
+          "kind": "assumption",
+          "value": 3,
+          "low": 3,
+          "high": 3,
+          "label": "Years to FY29",
+          "unit": "years",
+          "rationale": "FY26 to FY29; the horizon of every model here."
+        },
+        "growth": {
+          "kind": "assumption",
+          "value": 0.2,
+          "low": 0.1,
+          "high": 0.3,
+          "label": "Growth a year",
+          "unit": "pct",
+          "rationale": "AGI assumption; management calls the business lumpy."
+        },
+        "margin": {
+          "kind": "assumption",
+          "value": 0.2,
+          "low": 0.15,
+          "high": 0.24,
+          "label": "Margin",
+          "unit": "pct",
+          "rationale": "No segment margin; company PBT margin was about 24% in FY26."
+        },
+        "totalEbitdaFY26Cr": {
+          "kind": "disclosed",
+          "value": 2901.28,
+          "label": "FY26 filed PBT (no EBITDA reported)",
+          "unit": "cr",
+          "source": "FY26 results (PBT before exceptional items, incl. other income)"
+        },
+        "patFY26Cr": {
+          "kind": "disclosed",
+          "value": 2361.75,
+          "label": "FY26 profit after tax",
+          "unit": "cr",
+          "source": "FY26 results (PBT before exceptional items, incl. other income)"
+        }
+      }
+    },
+    {
+      "symbol": "ADANIENT",
+      "title": "AdaniConneX capacity, at Adani's 50% share",
+      "type": "capacity",
+      "basis": "AdaniConneX is a 50:50 joint venture reported only as a share of profit; its revenue and EBITDA are not disclosed. Revenue per MW is anchored to Nxtra's filed figures.",
+      "params": {
+        "operatingMW": {
+          "kind": "disclosed",
+          "value": 65.4,
+          "label": "Operating MW",
+          "unit": "mw",
+          "source": "Q1 FY27 release and Aug 2026 deck"
+        },
+        "addedMW": {
+          "kind": "assumption",
+          "value": 400,
+          "low": 200,
+          "high": 600,
+          "label": "MW added by FY29",
+          "unit": "mw",
+          "rationale": "Tied up 960+ MW; the company targets about 470 MW operational in 2-3 years."
+        },
+        "utilisation": {
+          "kind": "assumption",
+          "value": 0.8,
+          "low": 0.7,
+          "high": 0.9,
+          "label": "Utilisation",
+          "unit": "pct",
+          "rationale": "AGI assumption."
+        },
+        "revenuePerMWCr": {
+          "kind": "assumption",
+          "value": 9,
+          "low": 7,
+          "high": 11,
+          "label": "Revenue per MW a year",
+          "unit": "crPerMw",
+          "rationale": "Nxtra's FY26 turnover of Rs 2,434 cr on about 250 MW is about Rs 9.7 cr per MW (AGI arithmetic on Airtel's filings)."
+        },
+        "margin": {
+          "kind": "assumption",
+          "value": 0.5,
+          "low": 0.4,
+          "high": 0.6,
+          "label": "EBITDA margin",
+          "unit": "pct",
+          "rationale": "Not disclosed; AGI assumption for colocation. The CFO cites about a 12% US-dollar return on Rs 70-75 cr per MW of construction."
+        },
+        "ownershipShare": {
+          "kind": "disclosed",
+          "value": 0.5,
+          "label": "Adani's share of the joint venture",
+          "unit": "pct",
+          "source": "AdaniConneX is a 50:50 joint venture"
+        },
+        "totalEbitdaFY26Cr": {
+          "kind": "disclosed",
+          "value": 16464,
+          "label": "FY26 filed EBITDA",
+          "unit": "cr",
+          "source": "FY26 results (profit attributable to owners)"
+        },
+        "patFY26Cr": {
+          "kind": "disclosed",
+          "value": 9339.47,
+          "label": "FY26 profit after tax",
+          "unit": "cr",
+          "source": "FY26 results (profit attributable to owners)"
+        }
+      }
+    },
+    {
+      "symbol": "BHARTIARTL",
+      "title": "Nxtra capacity",
+      "type": "capacity",
+      "basis": "Nxtra is a consolidated subsidiary; its filed turnover gives the revenue-per-MW anchor. EBITDA is not disclosed.",
+      "params": {
+        "operatingMW": {
+          "kind": "disclosed",
+          "value": 250,
+          "label": "Operating MW (power capacity)",
+          "unit": "mw",
+          "source": "FY26 annual report; the Mar 2026 release says ~300 MW, the Q1 call 120-130 MW, unreconciled"
+        },
+        "addedMW": {
+          "kind": "assumption",
+          "value": 350,
+          "low": 150,
+          "high": 750,
+          "label": "MW added by FY29",
+          "unit": "mw",
+          "rationale": "Target 1 GW 'over the next few years'."
+        },
+        "utilisation": {
+          "kind": "assumption",
+          "value": 0.8,
+          "low": 0.7,
+          "high": 0.9,
+          "label": "Utilisation",
+          "unit": "pct",
+          "rationale": "AGI assumption."
+        },
+        "revenuePerMWCr": {
+          "kind": "assumption",
+          "value": 9.7,
+          "low": 8,
+          "high": 11,
+          "label": "Revenue per MW a year",
+          "unit": "crPerMw",
+          "rationale": "Nxtra FY26 turnover Rs 2,434.1 cr / ~250 MW (AGI arithmetic on the AOC-1 filing)."
+        },
+        "margin": {
+          "kind": "assumption",
+          "value": 0.5,
+          "low": 0.4,
+          "high": 0.6,
+          "label": "EBITDA margin",
+          "unit": "pct",
+          "rationale": "Not disclosed; Nxtra's FY26 profit after tax was Rs 241 cr."
+        },
+        "totalEbitdaFY26Cr": {
+          "kind": "disclosed",
+          "value": 107946,
+          "label": "FY26 filed EBITDAaL",
+          "unit": "cr",
+          "source": "FY26 results (EBITDAaL; profit attributable to owners)"
+        },
+        "patFY26Cr": {
+          "kind": "disclosed",
+          "value": 26695.2,
+          "label": "FY26 profit after tax",
+          "unit": "cr",
+          "source": "FY26 results (EBITDAaL; profit attributable to owners)"
+        }
+      }
+    },
+    {
+      "symbol": "ANANTRAJ",
+      "title": "Data-centre capacity",
+      "type": "capacity",
+      "basis": "Operating MW and targets are disclosed; revenue per MW is not, and is anchored to Anant Raj's own FY26 data-centre turnover.",
+      "params": {
+        "operatingMW": {
+          "kind": "disclosed",
+          "value": 28,
+          "label": "Operating MW (IT load)",
+          "unit": "mw",
+          "source": "Investor presentation, 11 Aug 2026"
+        },
+        "addedMW": {
+          "kind": "assumption",
+          "value": 60,
+          "low": 35,
+          "high": 89,
+          "label": "MW added by FY29",
+          "unit": "mw",
+          "rationale": "Targets: 63 MW by end-FY27 and 117 MW to commence by FY28."
+        },
+        "utilisation": {
+          "kind": "assumption",
+          "value": 0.75,
+          "low": 0.6,
+          "high": 0.9,
+          "label": "Utilisation",
+          "unit": "pct",
+          "rationale": "AGI assumption."
+        },
+        "revenuePerMWCr": {
+          "kind": "assumption",
+          "value": 6,
+          "low": 4,
+          "high": 9.7,
+          "label": "Revenue per MW a year",
+          "unit": "crPerMw",
+          "rationale": "FY26 data-centre turnover Rs 145.90 cr on capacity ramping to 28 MW (about Rs 5.2 cr per year-end MW); Nxtra about Rs 9.7 cr."
+        },
+        "margin": {
+          "kind": "assumption",
+          "value": 0.55,
+          "low": 0.4,
+          "high": 0.6,
+          "label": "EBITDA margin",
+          "unit": "pct",
+          "rationale": "The data-centre subsidiary's FY26 PBT was Rs 87.6 cr on Rs 151.3 cr turnover (58%)."
+        },
+        "totalEbitdaFY26Cr": {
+          "kind": "disclosed",
+          "value": 723.15,
+          "label": "FY26 filed EBITDA",
+          "unit": "cr",
+          "source": "FY26 results (EBITDA incl. other income)"
+        },
+        "patFY26Cr": {
+          "kind": "disclosed",
+          "value": 557.02,
+          "label": "FY26 profit after tax",
+          "unit": "cr",
+          "source": "FY26 results (EBITDA incl. other income)"
+        }
+      }
+    },
+    {
+      "symbol": "POLYCAB",
+      "title": "Data-centre cable demand x share",
+      "type": "marketShare",
+      "basis": "Polycab states cable content per MW; industry MW and its share are assumptions.",
+      "params": {
+        "mwPerYear": {
+          "kind": "assumption",
+          "value": 1250,
+          "low": 800,
+          "high": 1800,
+          "label": "India data-centre MW added a year",
+          "unit": "mw",
+          "rationale": "JLL forecast: 1.6 GW in mid-2026 to 6 GW by 2029, about 1.25 GW a year (not labelled IT load)."
+        },
+        "contentPerMWCr": {
+          "kind": "disclosed",
+          "value": 3.5,
+          "label": "Cable per MW",
+          "unit": "crPerMw",
+          "source": "Q1 FY27 call: about Rs 3.5 cr per MW, 50-60% conventional, the rest optical fibre"
+        },
+        "share": {
+          "kind": "assumption",
+          "value": 0.25,
+          "low": 0.15,
+          "high": 0.4,
+          "label": "Polycab's share",
+          "unit": "pct",
+          "rationale": "Not disclosed; management says it supplied a majority of the conventional cable in existing installations."
+        },
+        "margin": {
+          "kind": "assumption",
+          "value": 0.138,
+          "low": 0.12,
+          "high": 0.15,
+          "label": "EBIT margin",
+          "unit": "pct",
+          "rationale": "Wires & cables segment EBIT margin 13.8% in FY26."
+        },
+        "totalEbitdaFY26Cr": {
+          "kind": "disclosed",
+          "value": 4005.7,
+          "label": "FY26 filed EBITDA",
+          "unit": "cr",
+          "source": "FY26 results (EBITDA excludes other income)"
+        },
+        "patFY26Cr": {
+          "kind": "disclosed",
+          "value": 2708.4,
+          "label": "FY26 profit after tax",
+          "unit": "cr",
+          "source": "FY26 results (EBITDA excludes other income)"
+        }
+      }
+    },
+    {
+      "symbol": "HFCL",
+      "title": "Data-centre connectivity revenue",
+      "type": "growBase",
+      "basis": "HFCL's data-centre business began in FY27; the base is its own statements, growth and margin are assumptions. Horizon FY27 to FY29.",
+      "params": {
+        "aiRevenueBaseCr": {
+          "kind": "assumption",
+          "value": 700,
+          "low": 400,
+          "high": 800,
+          "label": "FY27 data-centre revenue",
+          "unit": "cr",
+          "rationale": "Q1 FY27 was 'about INR100 crores' (annualises to 400); management targets about Rs 800 cr for FY27 with Rs 850 cr+ of orders in hand."
+        },
+        "years": {
+          "kind": "assumption",
+          "value": 2,
+          "low": 2,
+          "high": 2,
+          "label": "Years to FY29",
+          "unit": "years",
+          "rationale": "FY27 to FY29."
+        },
+        "growth": {
+          "kind": "assumption",
+          "value": 0.25,
+          "low": 0.1,
+          "high": 0.4,
+          "label": "Growth a year",
+          "unit": "pct",
+          "rationale": "AGI assumption."
+        },
+        "margin": {
+          "kind": "assumption",
+          "value": 0.2,
+          "low": 0.15,
+          "high": 0.25,
+          "label": "EBITDA margin",
+          "unit": "pct",
+          "rationale": "Company EBITDA margin 23.25% in Q1 FY27; no data-centre margin disclosed."
+        },
+        "totalEbitdaFY26Cr": {
+          "kind": "disclosed",
+          "value": 826.75,
+          "label": "FY26 filed EBITDA",
+          "unit": "cr",
+          "source": "FY26 results (EBITDA incl. other income)"
+        },
+        "patFY26Cr": {
+          "kind": "disclosed",
+          "value": 329.44,
+          "label": "FY26 profit after tax",
+          "unit": "cr",
+          "source": "FY26 results (EBITDA incl. other income)"
+        }
+      }
+    },
+    {
+      "symbol": "MTARTECH",
+      "title": "Data-centre assemblies against management's potential",
+      "type": "target",
+      "basis": "MTAR states a Rs 400-500 cr potential 'over the next couple of years' (unclear whether annual or cumulative); qualification decides it.",
+      "params": {
+        "targetRevenueCr": {
+          "kind": "disclosed",
+          "value": 450,
+          "label": "Management potential",
+          "unit": "cr",
+          "source": "Q4 FY26 call: 'a potential of reaching INR400 crores to INR500 crores over the next couple of years' - a target"
+        },
+        "achievement": {
+          "kind": "assumption",
+          "value": 0.5,
+          "low": 0.2,
+          "high": 1.0,
+          "label": "Share achieved by FY29",
+          "unit": "pct",
+          "rationale": "AGI assumption; order in hand Rs 45 cr, 'a potential requirement of 8 times' if qualified."
+        },
+        "margin": {
+          "kind": "assumption",
+          "value": 0.195,
+          "low": 0.15,
+          "high": 0.25,
+          "label": "EBITDA margin",
+          "unit": "pct",
+          "rationale": "Company EBITDA margin 19.5% in FY26; no segment margin disclosed."
+        },
+        "totalEbitdaFY26Cr": {
+          "kind": "disclosed",
+          "value": 171.2,
+          "label": "FY26 filed EBITDA",
+          "unit": "cr",
+          "source": "FY26 results (EBITDA excludes other income)"
+        },
+        "patFY26Cr": {
+          "kind": "disclosed",
+          "value": 94.0,
+          "label": "FY26 profit after tax",
+          "unit": "cr",
+          "source": "FY26 results (EBITDA excludes other income)"
+        }
+      }
+    },
+    {
+      "symbol": "CLEANMAX",
+      "title": "Data & AI share of RE power sales",
+      "type": "growBase",
+      "basis": "CleanMax states 42% of contracted capacity is Data & AI, but only 0.63 GW of the 2.5 GW serves Indian data-centre load; 1.87 GW is emission-offset deals. Low case uses the physical-load share.",
+      "params": {
+        "revenueBaseCr": {
+          "kind": "disclosed",
+          "value": 1399.45,
+          "label": "FY26 RE power sales revenue",
+          "unit": "cr",
+          "source": "FY26 annual report, segment note"
+        },
+        "dcShare": {
+          "kind": "assumption",
+          "value": 0.42,
+          "low": 0.105,
+          "high": 0.42,
+          "label": "Data & AI share",
+          "unit": "pct",
+          "rationale": "42% including offset deals; 10.5% counting only the 0.63 GW that serves Indian data-centre load."
+        },
+        "years": {
+          "kind": "assumption",
+          "value": 3,
+          "low": 3,
+          "high": 3,
+          "label": "Years to FY29",
+          "unit": "years",
+          "rationale": "FY26 to FY29; the horizon of every model here."
+        },
+        "growth": {
+          "kind": "assumption",
+          "value": 0.2,
+          "low": 0.1,
+          "high": 0.25,
+          "label": "Growth a year",
+          "unit": "pct",
+          "rationale": "Commissioning the 2.5 GW under execution would lift operating capacity about 1.7x."
+        },
+        "margin": {
+          "kind": "assumption",
+          "value": 0.88,
+          "low": 0.8,
+          "high": 0.88,
+          "label": "EBITDA margin",
+          "unit": "pct",
+          "rationale": "RE power sales segment EBITDA margin 88% in FY26 (83.7% in Q1 FY27)."
+        },
+        "totalEbitdaFY26Cr": {
+          "kind": "disclosed",
+          "value": 1294.56,
+          "label": "FY26 filed EBITDA",
+          "unit": "cr",
+          "source": "FY26 annual report (reported EBITDA)"
+        },
+        "patFY26Cr": {
+          "kind": "disclosed",
+          "value": 85.58,
+          "label": "FY26 profit after tax",
+          "unit": "cr",
+          "source": "FY26 annual report (reported EBITDA)"
+        }
+      }
+    },
+    {
+      "symbol": "TATAPOWER",
+      "title": "Data-centre revenue at a share you set",
+      "type": "growBase",
+      "basis": "Tata Power has one data-centre power agreement (Princeton Digital) and an NCR substation for data-centre demand, but no data-centre share. This model waits for one.",
+      "params": {
+        "revenueBaseCr": {
+          "kind": "disclosed",
+          "value": 63681,
+          "label": "FY26 revenue (incl. regulatory income)",
+          "unit": "cr",
+          "source": "FY26 annual report"
+        },
+        "dcShare": {
+          "kind": "assumption",
+          "value": null,
+          "low": null,
+          "high": null,
+          "label": "Data-centre share of revenue",
+          "unit": "pct",
+          "rationale": "Not disclosed; set it to run the model."
+        },
+        "years": {
+          "kind": "assumption",
+          "value": 3,
+          "low": 3,
+          "high": 3,
+          "label": "Years to FY29",
+          "unit": "years",
+          "rationale": "FY26 to FY29; the horizon of every model here."
+        },
+        "growth": {
+          "kind": "assumption",
+          "value": 0.08,
+          "low": 0.05,
+          "high": 0.12,
+          "label": "Growth a year",
+          "unit": "pct",
+          "rationale": "AGI assumption."
+        },
+        "margin": {
+          "kind": "assumption",
+          "value": 0.25,
+          "low": 0.2,
+          "high": 0.3,
+          "label": "EBITDA margin",
+          "unit": "pct",
+          "rationale": "Company EBITDA margin about 25% in FY26."
+        },
+        "totalEbitdaFY26Cr": {
+          "kind": "disclosed",
+          "value": 16090,
+          "label": "FY26 filed EBITDA",
+          "unit": "cr",
+          "source": "FY26 annual report"
+        },
+        "patFY26Cr": {
+          "kind": "disclosed",
+          "value": 5118,
+          "label": "FY26 profit after tax",
+          "unit": "cr",
+          "source": "FY26 annual report"
+        }
+      }
+    },
+    {
+      "symbol": "ADANIENSOL",
+      "title": "Data-centre revenue at a share you set",
+      "type": "growBase",
+      "basis": "AESL positions data centres as a growth frontier; its CEO calls current data-centre volume 'very negligible' (one ~20-25 MW contract). This model waits for a share.",
+      "params": {
+        "revenueBaseCr": {
+          "kind": "disclosed",
+          "value": 27588.03,
+          "label": "FY26 revenue",
+          "unit": "cr",
+          "source": "FY26 annual report"
+        },
+        "dcShare": {
+          "kind": "assumption",
+          "value": null,
+          "low": null,
+          "high": null,
+          "label": "Data-centre share of revenue",
+          "unit": "pct",
+          "rationale": "Not disclosed; set it to run the model."
+        },
+        "years": {
+          "kind": "assumption",
+          "value": 3,
+          "low": 3,
+          "high": 3,
+          "label": "Years to FY29",
+          "unit": "years",
+          "rationale": "FY26 to FY29; the horizon of every model here."
+        },
+        "growth": {
+          "kind": "assumption",
+          "value": 0.15,
+          "low": 0.1,
+          "high": 0.2,
+          "label": "Growth a year",
+          "unit": "pct",
+          "rationale": "AGI assumption; Rs 71,779 cr of transmission projects under construction."
+        },
+        "margin": {
+          "kind": "assumption",
+          "value": 0.316,
+          "low": 0.25,
+          "high": 0.35,
+          "label": "EBITDA margin",
+          "unit": "pct",
+          "rationale": "Adjusted EBITDA Rs 8,726 cr on Rs 27,588 cr revenue (31.6%)."
+        },
+        "totalEbitdaFY26Cr": {
+          "kind": "disclosed",
+          "value": 8726,
+          "label": "FY26 filed EBITDA",
+          "unit": "cr",
+          "source": "FY26 annual report (adjusted EBITDA)"
+        },
+        "patFY26Cr": {
+          "kind": "disclosed",
+          "value": 2392.75,
+          "label": "FY26 profit after tax",
+          "unit": "cr",
+          "source": "FY26 annual report (adjusted EBITDA)"
+        }
+      }
+    },
+    {
+      "symbol": "KAYNES",
+      "title": "OSAT capacity x price per package",
+      "type": "osat",
+      "basis": "Kaynes states 6.3 million chips a day of capacity; utilisation and price per package are not disclosed, so this model waits for both. Billing starts Q3-Q4 FY27.",
+      "params": {
+        "unitsPerDay": {
+          "kind": "disclosed",
+          "value": 6300000.0,
+          "label": "OSAT capacity",
+          "unit": "unitsDay",
+          "source": "FY26 annual report"
+        },
+        "utilisation": {
+          "kind": "assumption",
+          "value": null,
+          "low": null,
+          "high": null,
+          "label": "Utilisation",
+          "unit": "pct",
+          "rationale": "Not disclosed; set it to run the model."
+        },
+        "pricePerUnitRs": {
+          "kind": "assumption",
+          "value": null,
+          "low": null,
+          "high": null,
+          "label": "Price per package",
+          "unit": "rs",
+          "rationale": "Not disclosed; varies widely by package type."
+        },
+        "margin": {
+          "kind": "assumption",
+          "value": 0.18,
+          "low": 0.12,
+          "high": 0.25,
+          "label": "EBITDA margin",
+          "unit": "pct",
+          "rationale": "Company operational EBITDA margin 15.8% in FY26."
+        },
+        "totalEbitdaFY26Cr": {
+          "kind": "disclosed",
+          "value": 574.1,
+          "label": "FY26 filed EBITDA",
+          "unit": "cr",
+          "source": "FY26 annual report (operational EBITDA)"
+        },
+        "patFY26Cr": {
+          "kind": "disclosed",
+          "value": 363.89,
+          "label": "FY26 profit after tax",
+          "unit": "cr",
+          "source": "FY26 annual report (operational EBITDA)"
+        }
+      }
+    },
+    {
+      "symbol": "CGPOWER",
+      "title": "OSAT capacity x price per package",
+      "type": "osat",
+      "basis": "CG Semi's G1 began commercial production in July 2026 (Renesas to take close to half); utilisation and price are not disclosed, so this model waits for both.",
+      "params": {
+        "unitsPerDay": {
+          "kind": "assumption",
+          "value": 500000.0,
+          "low": 500000.0,
+          "high": 15000000.0,
+          "label": "OSAT capacity",
+          "unit": "unitsDay",
+          "rationale": "G1: 'half a million units per day' (Q4 FY26 call); the release says 300 million a year (~0.82m a day). High case adds G2's 14.5m a day, a target for end-2026."
+        },
+        "utilisation": {
+          "kind": "assumption",
+          "value": null,
+          "low": null,
+          "high": null,
+          "label": "Utilisation",
+          "unit": "pct",
+          "rationale": "Not disclosed; set it to run the model."
+        },
+        "pricePerUnitRs": {
+          "kind": "assumption",
+          "value": null,
+          "low": null,
+          "high": null,
+          "label": "Price per package",
+          "unit": "rs",
+          "rationale": "Not disclosed."
+        },
+        "margin": {
+          "kind": "assumption",
+          "value": 0.15,
+          "low": 0.1,
+          "high": 0.25,
+          "label": "EBITDA margin",
+          "unit": "pct",
+          "rationale": "AGI assumption; company EBITDA margin about 15% in FY26."
+        },
+        "totalEbitdaFY26Cr": {
+          "kind": "disclosed",
+          "value": 1870,
+          "label": "FY26 filed EBITDA",
+          "unit": "cr",
+          "source": "FY26 annual report (EBITDA incl. other income)"
+        },
+        "patFY26Cr": {
+          "kind": "disclosed",
+          "value": 1198.68,
+          "label": "FY26 profit after tax",
+          "unit": "cr",
+          "source": "FY26 annual report (EBITDA incl. other income)"
+        }
+      }
+    },
+    {
+      "symbol": "SANSERA",
+      "title": "Semiconductor-equipment order, recognised over its period",
+      "type": "contract",
+      "basis": "Sansera states an order worth about Rs 1,250 cr 'on a five-year basis' from an existing semiconductor-equipment customer; revenue starts in 2027 and peaks in 2029, so even spreading understates the peak.",
+      "params": {
+        "contractValueCr": {
+          "kind": "disclosed",
+          "value": 1250,
+          "label": "Order value",
+          "unit": "cr",
+          "source": "Q1 FY27 call, 13 Aug 2026"
+        },
+        "years": {
+          "kind": "disclosed",
+          "value": 5,
+          "label": "Order period",
+          "unit": "years",
+          "source": "'on a five-year basis'"
+        },
+        "margin": {
+          "kind": "assumption",
+          "value": 0.275,
+          "low": 0.25,
+          "high": 0.3,
+          "label": "EBITDA margin",
+          "unit": "pct",
+          "rationale": "Management states 25-30% EBITDA for exports and aerospace-defence-semiconductor together."
+        },
+        "totalEbitdaFY26Cr": {
+          "kind": "disclosed",
+          "value": 632.1,
+          "label": "FY26 filed EBITDA",
+          "unit": "cr",
+          "source": "FY26 audited results"
+        },
+        "patFY26Cr": {
+          "kind": "disclosed",
+          "value": 326.86,
+          "label": "FY26 profit after tax",
+          "unit": "cr",
+          "source": "FY26 audited results"
+        }
+      }
+    },
+    {
+      "symbol": "SCHNEIDER",
+      "title": "Data-centre revenue at a share you set",
+      "type": "growBase",
+      "basis": "The listed company states no data-centre share; 'more than 1/5' of its order bank is data centres, semiconductors and solar together. The parent's India figure covers UPS and cooling sold by other Schneider entities.",
+      "params": {
+        "revenueBaseCr": {
+          "kind": "disclosed",
+          "value": 2890.63,
+          "label": "FY26 revenue (standalone)",
+          "unit": "cr",
+          "source": "FY26 annual report"
+        },
+        "dcShare": {
+          "kind": "assumption",
+          "value": null,
+          "low": null,
+          "high": null,
+          "label": "Data-centre share of revenue",
+          "unit": "pct",
+          "rationale": "Not disclosed for the listed company; set it to run the model."
+        },
+        "years": {
+          "kind": "assumption",
+          "value": 3,
+          "low": 3,
+          "high": 3,
+          "label": "Years to FY29",
+          "unit": "years",
+          "rationale": "FY26 to FY29; the horizon of every model here."
+        },
+        "growth": {
+          "kind": "assumption",
+          "value": 0.2,
+          "low": 0.1,
+          "high": 0.3,
+          "label": "Growth a year",
+          "unit": "pct",
+          "rationale": "AGI assumption; Q1 FY27 order intake was a record Rs 915 cr."
+        },
+        "margin": {
+          "kind": "assumption",
+          "value": 0.134,
+          "low": 0.11,
+          "high": 0.15,
+          "label": "EBITDA margin",
+          "unit": "pct",
+          "rationale": "EBITDA margin 13.4% in FY26."
+        },
+        "totalEbitdaFY26Cr": {
+          "kind": "disclosed",
+          "value": 388.77,
+          "label": "FY26 filed EBITDA",
+          "unit": "cr",
+          "source": "FY26 annual report"
+        },
+        "patFY26Cr": {
+          "kind": "disclosed",
+          "value": 212.56,
+          "label": "FY26 profit after tax",
+          "unit": "cr",
+          "source": "FY26 annual report"
+        }
+      }
+    }
+  ]
+}
