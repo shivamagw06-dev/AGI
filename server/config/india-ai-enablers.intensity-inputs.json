@@ -44,12 +44,12 @@
         "source": "Trendlyne structured data: Operating Rev. Ann. (FY26), Total Rev. Ann. (FY26), Rev. Ann. 3Y ago (FY23, total revenue)"
       },
       "capex": {
-        "FY26": null,
-        "FY25": null,
-        "basis": null,
-        "source": null,
-        "excerpt": null,
-        "note": null
+        "FY26": 33369.12,
+        "FY25": 29879.14,
+        "basis": "consolidated",
+        "source": "Annual Report 2025-26",
+        "excerpt": "Capital Expenditure on Property, Plant & Equipment; Intangible Assets ... Capital Work-in-Progress, Capital Advances, Capital Creditors and Intangible assets under development) | (33,369.12) | (29,879.14)",
+        "note": "Line includes intangibles, CWIP, capital advances and creditors. R&D stated Not Applicable (standalone): recorded as not disclosed."
       },
       "rnd": {
         "FY26": null,
@@ -418,12 +418,12 @@
         "source": "Trendlyne structured data: Operating Rev. Ann. (FY26), Total Rev. Ann. (FY26), Rev. Ann. 3Y ago (FY23, total revenue)"
       },
       "capex": {
-        "FY26": null,
-        "FY25": null,
-        "basis": null,
-        "source": null,
-        "excerpt": null,
-        "note": null
+        "FY26": 133.6,
+        "FY25": 100.31,
+        "basis": "consolidated",
+        "source": "Audited FY26 results filing (annual report not indexed)",
+        "excerpt": "Purchase of property, plant and equipment; including intangible assets, capital work in progress, capital creditors and capital advances | ... | (1,336.03) | (1,003.12)",
+        "note": "Rs million; consolidated columns. Line includes intangibles, CWIP, creditors and advances."
       },
       "rnd": {
         "FY26": null,
@@ -528,12 +528,12 @@
         "source": "Trendlyne structured data: Operating Rev. Ann. (FY26), Total Rev. Ann. (FY26), Rev. Ann. 3Y ago (FY23, total revenue)"
       },
       "capex": {
-        "FY26": null,
-        "FY25": null,
-        "basis": null,
-        "source": null,
-        "excerpt": null,
-        "note": null
+        "FY26": 1131.84,
+        "FY25": 691.22,
+        "basis": "consolidated",
+        "source": "Audited FY26 results filing (annual report not indexed)",
+        "excerpt": "Purchase of Property, Plant and Equipment (including Capital Work-In-Progress and Capital Advances) | (11,318.42) | (6,912.16)",
+        "note": "Rs million. Leasehold land and buildings (121.37 cr FY26) and intangibles are on separate lines, excluded."
       },
       "rnd": {
         "FY26": null,
