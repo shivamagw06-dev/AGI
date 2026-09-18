@@ -28,6 +28,7 @@ const SHARES_PATH = fileURLToPath(new URL('../config/india-ai-enablers.shares.js
 const OPERATING_PATH = fileURLToPath(new URL('../config/india-ai-enablers.operating-data.json', import.meta.url));
 const ESTIMATES_PATH = fileURLToPath(new URL('../config/india-ai-enablers.estimates.json', import.meta.url));
 const SCORING_PATH = fileURLToPath(new URL('../config/india-ai-enablers.scoring.json', import.meta.url));
+const MATERIALITY_PATH = fileURLToPath(new URL('../config/india-ai-enablers.materiality.json', import.meta.url));
 
 let universeCache = null;
 export async function loadUniverse({ path = UNIVERSE_PATH, refresh = false } = {}) {
@@ -208,6 +209,15 @@ export default function createIndiaAiIntelligenceRouter() {
   router.get('/scoring', async (req, res) => {
     try {
       res.json({ ok: true, ...JSON.parse(await readFile(SCORING_PATH, 'utf8')) });
+    } catch (error) {
+      res.status(500).json({ ok: false, error: String(error?.message || error) });
+    }
+  });
+
+  /** Economic materiality: the portfolio owner's rules and each member's qualifying figures. */
+  router.get('/materiality', async (req, res) => {
+    try {
+      res.json({ ok: true, ...JSON.parse(await readFile(MATERIALITY_PATH, 'utf8')) });
     } catch (error) {
       res.status(500).json({ ok: false, error: String(error?.message || error) });
     }

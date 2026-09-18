@@ -35,3 +35,4 @@ export const fetchExitability = () => request('/screen/exitability', { timeoutMs
 export const fetchOperatingData = () => request('/operating-data');
 export const fetchEstimates = () => request('/estimates');
 export const fetchScoring = () => request('/scoring');
+export const fetchMateriality = () => request('/materiality');
