@@ -822,6 +822,50 @@
         "FY26": 0,
         "FY25": null
       }
+    },
+    {
+      "symbol": "TATAPOWER",
+      "kind": "member",
+      "revenue": {
+        "FY26": 62428.59,
+        "FY26_total": 64171.66,
+        "FY23_total": 56547.1,
+        "source": "Integrated Annual Report 2025-26, consolidated P&L (printed p.483); FY23 from the 2022-23 annual report, consolidated P&L (printed p.395), as originally reported"
+      },
+      "capex": {
+        "FY26": 13694.83,
+        "FY25": 17272.84,
+        "basis": "consolidated",
+        "source": "Integrated Annual Report 2025-26, consolidated cash flow",
+        "excerpt": "Purchase of Capital Assets* | (13,694.83) | (17,272.84)",
+        "note": "The line's footnote: includes PP&E, other intangible assets, CWIP, capital advances and payables for capital. R&D from the Board's Report annexure: capital 61.21 + revenue 12.40."
+      },
+      "rnd": {
+        "FY26": 73.61,
+        "FY25": null
+      }
+    },
+    {
+      "symbol": "CRAFTSMAN",
+      "kind": "member",
+      "revenue": {
+        "FY26": 8069.27,
+        "FY26_total": 8130.63,
+        "FY23_total": 3195.14,
+        "source": "Annual Report 2025-26, consolidated P&L (Rs lakh in source); FY23 from the 2022-23 annual report, consolidated P&L"
+      },
+      "capex": {
+        "FY26": 1181.01,
+        "FY25": 988.78,
+        "basis": "consolidated",
+        "source": "Annual Report 2025-26, consolidated cash flow (Rs lakh in source)",
+        "excerpt": "Purchase of property, plant and equipment | (1,18,101) | (98,878)",
+        "note": "Rs lakh in source. Intangibles are a separate line (735 / 282 lakh), not added; business-combination consideration (14,585 / 43,624 lakh) is not capex. The Board's Report states no expenditure on R&D: recorded as 0."
+      },
+      "rnd": {
+        "FY26": 0,
+        "FY25": null
+      }
     }
   ]
 }
