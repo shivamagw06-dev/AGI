@@ -889,6 +889,45 @@
       "note": "Held as a candidate on 17 Sep on a market-projection slide. That read missed the order, and it was not re-read on 18 Sep with the other leads. Re-read on 18 Sep after an external fact-check flagged it; admitted on the filings above.",
       "attribution": "MANAGEMENT_DISCLOSED",
       "evidenceReadOn": "2026-09-18"
+    },
+    {
+      "symbol": "ABB",
+      "name": "ABB India Ltd.",
+      "instrumentKey": "NSE_EQ|INE117A01022",
+      "isin": "INE117A01022",
+      "layer": "power",
+      "subLayers": [
+        "equipment"
+      ],
+      "weightSplit": {
+        "power_equipment": 1.0
+      },
+      "admitted": true,
+      "basis": "hard",
+      "admittedOn": [
+        {
+          "kind": "order",
+          "document": "Q1 CY2026 analyst presentation, Electrification",
+          "date": "2026-05-08",
+          "source": "ABB India Q1 CY2026 analyst presentation, filed with BSE/NSE under Reg 30 (primary read)",
+          "excerpt": "Order growth in Data Center, Energy, Metals, and Building sectors"
+        },
+        {
+          "kind": "order",
+          "document": "Q1 CY2026 analyst presentation, \"Proven capabilities leading to significant wins\"",
+          "date": "2026-05-08",
+          "source": "ABB India Q1 CY2026 analyst presentation, filed with BSE/NSE under Reg 30 (primary read)",
+          "excerpt": "Data Centers — Demand for a host of offerings: Low Tension panels; Packaging and e-house including UPS and auxiliary power equipment; Site supervision involving Erection Testing and Commissioning"
+        }
+      ],
+      "reviewedBy": null,
+      "reviewedAt": null,
+      "exposureAttributable": false,
+      "exposureNote": "Data-centre orders are stated as a source of order growth; no customer, order value or data-centre share of orders or revenue is disclosed.",
+      "note": "Admitted on the same basis as Kirloskar, TD Power and Cummins: orders stated for data centres, customer and value undisclosed. Moved from excluded to candidate on 18 Sep after an external fact-check; confirmed on 18 Sep from ABB's own filed presentation, read directly. A relayed \"data center major\" wording and a Q2 CY2026 release were not seen and are not relied on. ABB reports on a calendar year.",
+      "attribution": "NOT_ATTRIBUTABLE",
+      "discoveredVia": "EXTERNAL_LEAD_2026_09_18",
+      "evidenceReadOn": "2026-09-18"
     }
   ],
   "candidates": [
@@ -1288,22 +1327,6 @@
       ],
       "discoveredVia": "EXTERNAL_LEAD_2026_09_18",
       "evidenceReadOn": "2026-09-18"
-    },
-    {
-      "symbol": "ABB",
-      "name": "ABB India Ltd.",
-      "isin": "INE117A01022",
-      "suggestedLayer": "power",
-      "suggestedSubLayers": [
-        "equipment"
-      ],
-      "admitted": false,
-      "basis": "unverified",
-      "note": "An external fact-check cites ABB India's Q1 CY2026 release as reporting a data-centre order (LT panels, packaging and e-house including UPS and auxiliary power equipment for a data-centre major). ABB's own releases are not in the document index AGI searched, and its site and the BSE copy could not be fetched, so the quote is unconfirmed. If the release reads as quoted, ABB is admitted on the same basis as Kirloskar and TD Power: an order stated for data centres, customer and value undisclosed.",
-      "evidence": [],
-      "discoveredVia": "EXTERNAL_LEAD_2026_09_18",
-      "evidenceReadOn": "2026-09-18",
-      "pendingVerification": true
     }
   ],
   "excluded": [
