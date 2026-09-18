@@ -126,9 +126,12 @@ export function executableFor({ advt, exitDays = 3, maxParticipation = 0.2, targ
  * somebody made explicitly.
  */
 export function sizePositions(members, {
-  targetPosition = null, exitDays = 3, maxParticipation = 0.2, excludeBelow = null,
+  targetPosition = null, exitDays = 3, maxParticipation = 0.2, excludeBelow = null, exceptions = [],
 } = {}) {
   const policy = { targetPosition, exitDays, maxParticipation, excludeBelow };
+  // Exceptions are decisions, recorded with a date. They move a member out of
+  // belowTarget and into excepted; its size and shortfall are unchanged.
+  const exceptionFor = new Map((exceptions || []).map((one) => [one.symbol, one]));
   const required = minimumAdvt({ targetPosition, exitDays, maxParticipation });
 
   const sized = [];
@@ -147,6 +150,7 @@ export function sizePositions(members, {
       maxExecutablePosition: executable.maxExecutablePosition,
       meetsTarget: executable.meetsTarget,
       shortfall: executable.shortfall,
+      exception: exceptionFor.get(member.symbol) || null,
     };
     const floor = numeric(excludeBelow);
     if (floor !== null && executable.maxExecutablePosition < floor) {
@@ -165,7 +169,9 @@ export function sizePositions(members, {
     unscreened,
     excluded,
     // Members that stay in the universe but cannot carry the target size.
-    belowTarget: sized.filter((one) => one.meetsTarget === false).map((one) => one.symbol),
+    belowTarget: sized.filter((one) => one.meetsTarget === false && !one.exception).map((one) => one.symbol),
+    // Below target by the numbers, held anyway by a recorded decision.
+    excepted: sized.filter((one) => one.meetsTarget === false && one.exception).map((one) => one.symbol),
   };
 }
 
@@ -208,6 +214,7 @@ export async function exitabilityForUniverse(universe, { fetchCandles, to, from 
     targetPosition: policy.targetPosition ?? null,
     exitDays: policy.exitDays ?? 3,
     maxParticipation: policy.maxParticipation ?? 0.2,
+    exceptions: policy.sizingExceptions || [],
   });
   return { ...sized, windows, failures, measuredTo: to || null };
 }

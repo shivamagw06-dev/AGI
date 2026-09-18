@@ -172,3 +172,26 @@ test('with no target set, nothing is called below target', async () => {
   assert.deepEqual(result.belowTarget, []);
   assert.ok(result.sized.every((one) => one.meetsTarget === null));
 });
+
+test('an exception moves a member out of belowTarget without changing what it can carry', async () => {
+  const policy = {
+    sizingExceptions: [{ symbol: 'THIN', decided: '2026-09-18', by: 'portfolio owner' }],
+  };
+  const candles = {
+    'NSE_EQ|INE000A01001': daily(Array(60).fill(1), Array(60).fill(400 * CR)),
+    'NSE_EQ|INE000A01002': daily(Array(60).fill(1), Array(60).fill(100 * CR)),
+  };
+  const result = await exitabilityForUniverse(universe(policy), { fetchCandles: async (key) => candles[key] });
+  assert.deepEqual(result.belowTarget, []);
+  assert.deepEqual(result.excepted, ['THIN']);
+  const thin = result.sized.find((one) => one.symbol === 'THIN');
+  assert.equal(thin.meetsTarget, false);
+  assert.equal(thin.maxExecutablePosition / CR, 60);
+  assert.equal(thin.shortfall / CR, 40);
+  assert.equal(thin.exception.decided, '2026-09-18');
+  // An exception for a member that meets the target is recorded but excepts nothing.
+  const deep = await exitabilityForUniverse(
+    universe({ sizingExceptions: [{ symbol: 'DEEP' }] }), { fetchCandles: async (key) => candles[key] },
+  );
+  assert.deepEqual(deep.excepted, []);
+});

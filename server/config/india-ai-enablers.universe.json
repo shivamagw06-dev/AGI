@@ -13,7 +13,22 @@
     "normalAdvt": "lower of the 20-day and 60-day median daily traded value",
     "note": "Eligibility by thematic evidence; sizing by liquidity. There is no turnover floor, because every floor available was fitted to the seven companies in front of it. A company does not stop being an AI enabler because a given position is too large for it - it stops being able to carry that position, so the screen reports a maximum executable position instead of a pass or a fail. Target position set 2026-09-18 at Rs 100 crore, so a member needs Rs 166.67 crore of normal daily turnover (100 / (3 x 0.2)) to carry a full position. A member below that is still a member; it carries a smaller maximum position, reported beside it.",
     "targetPositionUnit": "INR",
-    "targetPositionDecided": "2026-09-18"
+    "targetPositionDecided": "2026-09-18",
+    "sizingExceptions": [
+      {
+        "symbol": "CLEANMAX",
+        "decided": "2026-09-18",
+        "by": "portfolio owner",
+        "context": "Listed on NSE 2026-03-02, so its turnover history is about six months long."
+      },
+      {
+        "symbol": "ANANTRAJ",
+        "decided": "2026-09-18",
+        "by": "portfolio owner",
+        "context": null
+      }
+    ],
+    "sizingExceptionsNote": "An exception removes a member from belowTarget; it does not change what the member can carry. Its maximum executable position and shortfall are still computed and reported beside it."
   },
   "members": [
     {
