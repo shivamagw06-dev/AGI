@@ -76,6 +76,29 @@ export function resetRuntimeForTests() {
   universeCache = null;
 }
 
+/**
+ * Close the market-data socket on shutdown.
+ *
+ * Nothing used to call this. The process handled SIGTERM by closing the HTTP
+ * server and exiting, which abandoned the WebSocket without a close frame -
+ * so every redeploy left a connection that the provider still considered
+ * open. Upstox caps concurrent market-data connections per application, and
+ * after enough deploys in a day the cap is reached and every new handshake is
+ * refused with a 403 while REST keeps working on the same token. That is
+ * exactly the state this service reached after nineteen deploys.
+ */
+export async function shutdownRuntime() {
+  if (!runtime) return { stopped: false, reason: 'no runtime started' };
+  try {
+    await runtime.stop();
+    runtime = null;
+    return { stopped: true };
+  } catch (error) {
+    runtime = null;
+    return { stopped: false, reason: String(error?.message || error) };
+  }
+}
+
 export default function createIndiaAiIntelligenceRouter() {
   const router = Router();
 
