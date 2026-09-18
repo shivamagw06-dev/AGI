@@ -222,6 +222,25 @@ those. Companies with no ISIN, no profile, or a failed call are recorded as
 such and are never counted as "not nominated". A run below 95% of addressable
 companies is DEGRADED.
 
+**First full run, 2026-09-18 (main board only).** 2,390 companies; 97.2% examined, no
+failed calls, 67 without an Upstox profile; 495 nominated. Of the 18 known qualifiers,
+13 were nominated. The five misses had three causes, and only one was the nomination
+rules: CLEANMAX has no Upstox profile; AETHER's description says "specialty chemicals",
+which no semiconductor-materials term matches; ESDS, Supreme Power and Tanfac were not
+on the main-board list at all. Supreme Power is on NSE Emerge, so the SME list
+(`SME_EQUITY_L.csv`, 572 companies) is now read too. ESDS and Tanfac appear on neither
+NSE list, and a universe defined as NSE equities cannot contain them.
+
+A check against obvious names found two kinds of miss. Wording the terms lacked - NTPC's
+"generation and sale of bulk power", Blue Star's "air conditioning", Amara Raja's
+"lead-acid batteries" - is now covered and pinned by tests. A business run through a
+subsidiary the description does not name - Bharti Airtel's data centres in Nxtra - cannot
+be found from descriptions at all, and needs another route.
+
+Nominations are read in the order `readingPriority` gives: strong (the sector makes the
+plant named), contractor (EPC only), incidental (a textile mill's captive windmill).
+The order decides what is read first. Nothing is dropped from the list.
+
 **Stage 2 — size and tradability.** Free-float market cap above a floor, and median daily
 turnover above a floor, both measured over six months from Upstox history. Thresholds are
 AGI's, stored in config, and printed on the page. A screen whose cut-offs are hidden is a

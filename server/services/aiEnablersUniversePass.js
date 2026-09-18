@@ -27,7 +27,7 @@
  *     same way, and 2,390 identical errors are one error.
  */
 
-import { nominate } from './aiEnablersNomination.js';
+import { nominate, readingPriority } from './aiEnablersNomination.js';
 
 export const COVERAGE_OK = 0.95;
 export const UNIVERSE_PASS_TABLE = 'ai_enabler_universe_pass';
@@ -73,15 +73,17 @@ function splitCsvLine(line) {
 }
 
 /**
- * The NSE equity list (EQUITY_L.csv), as companies.
+ * An NSE equity list, as companies: EQUITY_L.csv (main board) or
+ * SME_EQUITY_L.csv (Emerge).
  *
- * Headers in the published file carry leading spaces (" SERIES",
- * " ISIN NUMBER"); they are trimmed rather than matched literally.
+ * Headers in the main-board file carry leading spaces (" SERIES",
+ * " ISIN NUMBER") and the SME file may use underscores ("ISIN_NUMBER"); both
+ * are normalised rather than matched literally.
  */
-export function parseEquityList(csvText) {
+export function parseEquityList(csvText, { board = 'main' } = {}) {
   const lines = String(csvText || '').split(/\r?\n/).filter((one) => one.trim());
   if (!lines.length) return [];
-  const header = splitCsvLine(lines[0]).map((one) => one.trim().toUpperCase());
+  const header = splitCsvLine(lines[0]).map((one) => one.trim().toUpperCase().replace(/_/g, ' ').replace(/\s+/g, ' '));
   const col = (name) => header.indexOf(name);
   const at = { symbol: col('SYMBOL'), name: col('NAME OF COMPANY'), series: col('SERIES'), isin: col('ISIN NUMBER') };
   if (Object.values(at).some((one) => one < 0)) {
@@ -100,6 +102,7 @@ export function parseEquityList(csvText) {
       name: cells[at.name] || null,
       series: cells[at.series] || null,
       isin: /^IN[A-Z0-9]{10}$/.test(isin) ? isin : null,
+      board,
     });
   }
   return out;
@@ -142,17 +145,21 @@ export class PacedLimiter {
 const statusOf = (error) => error?.status ?? (/\b429\b|too many request/i.test(String(error?.message)) ? 429 : null);
 
 /** One company's recorded outcome. Every row has every key. */
-function rowFor(company, runId, { disposition, sector = null, nomination = null, descriptionChars = null, error = null, at }) {
+function rowFor(company, runId, { disposition, sector = null, nomination = null, description = null, error = null, at }) {
   return {
     run_id: runId,
     symbol: company.symbol,
     isin: company.isin,
     name: company.name,
     series: company.series,
+    board: company.board || 'main',
     disposition,
     sector,
     nomination,
-    description_chars: descriptionChars,
+    // Stored so a rule change can be re-scored without refetching 2,390
+    // profiles. Upstox's text: kept server-side, never served (publicRow).
+    description: description || null,
+    description_chars: description ? description.length : null,
     error,
     fetched_at: new Date(at).toISOString(),
   };
@@ -207,7 +214,7 @@ export async function runUniversePass({
               disposition: nomination.nominated ? 'NOMINATED' : (description ? 'NOT_NOMINATED' : 'NO_PROFILE'),
               sector,
               nomination: nomination.nominated ? nomination.subLayers : null,
-              descriptionChars: description.length,
+              description,
               at: now(),
             });
           }
@@ -247,6 +254,37 @@ export async function runUniversePass({
 }
 
 /**
+ * Re-score stored descriptions under the current rules, without fetching.
+ *
+ * Only rows whose outcome came from a description change. A row that was
+ * never examined - no profile, a failed call, no ISIN - stays exactly as it
+ * was: re-scoring cannot examine what was never read.
+ */
+export function renominate(rows) {
+  const changed = [];
+  for (const row of rows) {
+    if (row.disposition !== 'NOMINATED' && row.disposition !== 'NOT_NOMINATED') continue;
+    if (!row.description) continue;
+    const result = nominate({ description: row.description });
+    const disposition = result.nominated ? 'NOMINATED' : 'NOT_NOMINATED';
+    const nomination = result.nominated ? result.subLayers : null;
+    if (disposition !== row.disposition || JSON.stringify(nomination) !== JSON.stringify(row.nomination)) {
+      changed.push({ ...row, disposition, nomination });
+    }
+  }
+  return changed;
+}
+
+/**
+ * A row as the API serves it: without the provider's description text, and
+ * with the reading priority the nomination implies.
+ */
+export function publicRow(row) {
+  const { description, ...rest } = row;
+  return { ...rest, priority: readingPriority(row) };
+}
+
+/**
  * What the run found, and how much of it can be trusted.
  *
  * `reference` is the set of companies already known to qualify - admitted
@@ -279,6 +317,16 @@ export function summariseUniversePass(rows, { reference = [], listed = null } = 
   });
   const missed = recall.filter((one) => one.disposition !== 'NOMINATED');
 
+  const byTier = { 1: 0, 2: 0, 3: 0 };
+  const byBoard = {};
+  for (const row of rows) {
+    const priority = readingPriority(row);
+    if (priority) byTier[priority.tier] += 1;
+    const b = (byBoard[row.board || 'main'] ||= { listed: 0, nominated: 0 });
+    b.listed += 1;
+    if (row.disposition === 'NOMINATED') b.nominated += 1;
+  }
+
   const sectors = {};
   for (const row of rows) {
     if (!row.sector) continue;
@@ -303,6 +351,8 @@ export function summariseUniversePass(rows, { reference = [], listed = null } = 
     coverage,
     status: coverage >= COVERAGE_OK ? 'OK' : 'DEGRADED',
     bySubLayer,
+    byTier,
+    byBoard,
     recall: {
       reference: reference.length,
       nominated: reference.length - missed.length,
