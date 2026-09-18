@@ -221,7 +221,8 @@
       "reviewedBy": null,
       "reviewedAt": null,
       "exposureAttributable": true,
-      "exposureNote": "Semiconductors is a reported segment in consolidated accounts. FY26 revenue 502.77 cr (4.0% of group), assets 1,421.39 cr (11.2%), capex 330.33 cr (42.5% of group capex), segment result -107.86 cr. First year of external sales; FY25 was nil."
+      "exposureNote": "Semiconductors is a reported segment in consolidated accounts. FY26 revenue 502.77 cr (4.0% of group), assets 1,421.39 cr (11.2%), capex 330.33 cr (42.5% of group capex), segment result -107.86 cr. First year of external sales; FY25 was nil.",
+      "note": ""
     },
     {
       "symbol": "KAYNES",
@@ -254,7 +255,8 @@
         }
       ],
       "reviewedBy": null,
-      "reviewedAt": null
+      "reviewedAt": null,
+      "note": ""
     }
   ],
   "candidates": [
@@ -461,6 +463,8 @@
     "parameters": "balance-sheet and cash-flow take type and fs only. income-statement additionally takes time_period. share-holdings, key-ratios and corporate-actions take none.",
     "disclosedFacts": "Held in india-ai-enablers.disclosed-facts.json, provenance class THIRD_PARTY_RELAYED. Supplied in conversation citing aggregators rather than read from a primary filing by this system, so they carry a source but no document id, page or sentence. They are not served as FILED and are not in company_facts. Ingesting the annual reports either confirms or contradicts each one.",
     "exposureAttribution": "A third dimension beside evidence and liquidity, and the two filings read so far sit at opposite ends of it. CGPOWER reports Semiconductors as an operating segment under Ind AS 108, so its theme exposure is measurable from its own accounts: 4.0% of revenue, 11.2% of assets and 42.5% of group capital expenditure. ADANIENT reports no data centre segment at all, because AdaniConneX is an equity-accounted joint venture, so no share of that company is attributable to the theme from its filing at any size. Both were admitted on sound first-party evidence. Only one can be sized. Recorded per member as exposureAttributable, and never used to drop a company automatically - that is a reviewer's call.",
-    "unreadable": "Form MGT-7 for 2024-25 was supplied and could not be read: it is an image-scanned PDF with no extractable text layer, and no OCR is available in this environment. It is also the prior year. Nothing from it has been recorded."
+    "unreadable": "Form MGT-7 for 2024-25 was supplied and could not be read: it is an image-scanned PDF with no extractable text layer, and no OCR is available in this environment. It is also the prior year. Nothing from it has been recorded.",
+    "emptyLayersAreAStandard": "Checked against an independent screen of the same question, and the check is worth recording even though its figures are not. That screen used a materially lower bar for AI exposure - company mentions in news flow and management discussion, with partnerships counting as qualifying - and on that basis it placed companies in both of the sub-layers AGI reports empty. AGI had already examined those layers and refused what it found there: monomers being developed, technologies being evaluated, a capability claim with no segment split, a product-positioning slide. The same companies, judged against a different standard. So the two empty sub-layers are a finding about what Indian semiconductor materials and equipment companies currently disclose, not a gap in AGI's coverage - and that is now checked rather than assumed.",
+    "taxonomyProvenance": "The three layers and nine sub-layers were derived from published third-party research at the start of this build rather than arrived at independently. Recorded because an independent screen using the same decomposition is not corroboration of it, and nobody should later read the match that way."
   }
 }
