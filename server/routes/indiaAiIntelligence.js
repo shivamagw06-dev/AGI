@@ -88,7 +88,13 @@ export async function ensureRuntime({ universe, start = true } = {}) {
       // still computes, and volumeRatio reports NO_BASELINE rather than zero.
       baselines = {};
     }
-    const built = new AiEnablersLiveRuntime({ universe: loaded, volumeBaselines: baselines });
+    const built = new AiEnablersLiveRuntime({
+      universe: loaded,
+      volumeBaselines: baselines,
+      // Read at start and again whenever the exchange day rolls, so a bonus
+      // or split is excluded on its ex-date rather than printed as a loss.
+      fetchCorporateActions: (isin) => getFundamentals(isin, 'corporate-actions', {}),
+    });
     if (start) await built.start();
     runtime = built;
     return built;

@@ -409,6 +409,17 @@ function BasketPanel({ live }) {
       {q?.last_good ? (
         <p className="mt-2 text-[10px] text-[#d9a94a]">{q.last_good} member{q.last_good === 1 ? '' : 's'} on last-good price, not live</p>
       ) : null}
+      {index.priceBreak?.length ? (
+        <p className="mt-2 text-[10px] text-[#d9a94a]">
+          Excluded today for a corporate action (bonus, split or rights): {index.priceBreak.join(', ')}. Its price
+          change would be the share count changing, not the market.
+        </p>
+      ) : null}
+      {live?.corporateActions?.unread?.length ? (
+        <p className="mt-2 text-[10px] text-[#7d8894]">
+          Corporate actions not checked for {live.corporateActions.unread.map((one) => one.symbol).join(', ')}
+        </p>
+      ) : null}
     </Panel>
   );
 }
