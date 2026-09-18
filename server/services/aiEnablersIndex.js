@@ -52,12 +52,11 @@ export function priced(members, quotes, { now = Date.now(), staleMs = STALE_MS }
     // the fallback exists precisely because the tick is older than that
     // window - and the feature would look implemented while never working.
     // Freshness has one authority; this function reports what it was given.
-    if (quote.source === 'last_good') {
-      fallback.push({ symbol: member.symbol, ageMs: now - Number(quote.at) });
-      live.push({ member, quote });
-      continue;
-    }
-    if (quote.at !== undefined && now - Number(quote.at) > staleMs) {
+    // A last trade after the close is aged the same way: nothing newer can
+    // exist. Both still pass the corporate-action guard below, which the
+    // fallback path used to skip by continuing early.
+    const aged = quote.source === 'last_good' || quote.source === 'session_last';
+    if (!aged && quote.at !== undefined && now - Number(quote.at) > staleMs) {
       stale.push({ symbol: member.symbol, ageMs: now - Number(quote.at) });
       continue;
     }
@@ -69,6 +68,7 @@ export function priced(members, quotes, { now = Date.now(), staleMs = STALE_MS }
       priceBreak.push({ symbol: member.symbol, reason: quote.priceBreakReason || 'CORPORATE_ACTION' });
       continue;
     }
+    if (quote.source === 'last_good') fallback.push({ symbol: member.symbol, ageMs: now - Number(quote.at) });
     live.push({ member, quote });
   }
   const total = (members || []).length;

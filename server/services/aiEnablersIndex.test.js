@@ -285,3 +285,29 @@ test('the residual would not have caught it, which is why the flag exists', () =
   assert.equal(index.residual_ok, true);     // and it reconciles
   assert.equal(index.subLayerResidual_ok, true);
 });
+
+test('a fallback or last-trade price still meets the corporate-action guard', () => {
+  // Both used to leave priced() before the guard: a member on its ex-date
+  // priced from last-good entered the basket with the share-count move.
+  const members = [
+    { symbol: 'AAA', layer: 'power', subLayers: ['equipment'] },
+    { symbol: 'BBB', layer: 'power', subLayers: ['equipment'] },
+  ];
+  const quotes = {
+    AAA: { ltp: 50, previousClose: 100, at: NOW - 120_000, source: 'last_good', priceBreak: true },
+    BBB: { ltp: 50, previousClose: 100, at: NOW - 7_200_000, source: 'session_last', priceBreak: true },
+  };
+  const result = priced(members, quotes, { now: NOW, staleMs: 60_000 });
+  assert.equal(result.live.length, 0);
+  assert.deepEqual(result.priceBreak.map((one) => one.symbol), ['AAA', 'BBB']);
+  assert.deepEqual(result.fallback, []);
+});
+
+test('a last trade after the close is priced but is not a fallback', () => {
+  const members = [{ symbol: 'AAA', layer: 'power', subLayers: ['equipment'] }];
+  const quotes = { AAA: { ltp: 110, previousClose: 100, at: NOW - 7_200_000, source: 'session_last' } };
+  const result = priced(members, quotes, { now: NOW, staleMs: 60_000 });
+  assert.equal(result.live.length, 1);
+  assert.deepEqual(result.stale, []);
+  assert.deepEqual(result.fallback, []);
+});

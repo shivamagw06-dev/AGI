@@ -120,7 +120,7 @@ const numeric = (value) => {
  * `source` is always reported. A caller that treats a last-good quote as live
  * is making a choice; it should have to make it knowingly.
  */
-export function quoteFor(instrumentKey, { store, lastGood, now, staleMs }) {
+export function quoteFor(instrumentKey, { store, lastGood, now, staleMs, closed = false }) {
   const row = store?.get?.(instrumentKey) || null;
   if (row) {
     const at = Date.parse(row.effective_timestamp || row.received_at || '');
@@ -133,6 +133,16 @@ export function quoteFor(instrumentKey, { store, lastGood, now, staleMs }) {
       if (now - at <= staleMs) {
         return {
           ltp, previousClose, at, source: 'live', ageMs: Math.max(0, now - at),
+          cumulativeVolume: numeric(row.cumulative_volume),
+        };
+      }
+      // With the exchange shut, nothing newer can exist: the last trade is
+      // the latest price there is, not a stale one. Its own source, because
+      // it is neither a live tick nor a fallback, and it is the last trade,
+      // not NSE's official close (a weighted average of the final half hour).
+      if (closed) {
+        return {
+          ltp, previousClose, at, source: 'session_last', ageMs: Math.max(0, now - at),
           cumulativeVolume: numeric(row.cumulative_volume),
         };
       }
@@ -157,13 +167,13 @@ export function quoteFor(instrumentKey, { store, lastGood, now, staleMs }) {
  * real, which the page has to show and the index has to be able to refuse on.
  */
 export function quoteBook(universe, {
-  store, lastGood, now = Date.now(), staleMs = 60_000, priceBreaks = {},
+  store, lastGood, now = Date.now(), staleMs = 60_000, priceBreaks = {}, closed = false,
 } = {}) {
   const { bySymbol, benchmarkKey, unresolved } = universeInstrumentKeys(universe);
   const quotes = {};
-  const sources = { live: [], last_good: [], missing: [] };
+  const sources = { live: [], last_good: [], session_last: [], missing: [] };
   for (const [symbol, key] of bySymbol) {
-    const quote = quoteFor(key, { store, lastGood, now, staleMs });
+    const quote = quoteFor(key, { store, lastGood, now, staleMs, closed });
     if (!quote) {
       sources.missing.push(symbol);
       continue;
@@ -185,7 +195,7 @@ export function quoteBook(universe, {
     sources[quote.source].push(symbol);
   }
   const benchmark = benchmarkKey
-    ? quoteFor(benchmarkKey, { store, lastGood, now, staleMs })
+    ? quoteFor(benchmarkKey, { store, lastGood, now, staleMs, closed })
     : null;
   return {
     quotes,
@@ -194,7 +204,21 @@ export function quoteBook(universe, {
     sources,
     unresolved,
     asOf: now,
+    closed,
   };
+}
+
+/**
+ * Whether the continuous session is shut, by the clock: a weekend, or outside
+ * 09:15-15:30 IST. Holidays are not known here; on one, ticks simply stop and
+ * members go stale, which is the existing, visible behaviour.
+ */
+export function sessionClosed(now, { openMin = SESSION_OPEN_MIN, closeMin = SESSION_CLOSE_MIN } = {}) {
+  const ist = new Date(now + IST_OFFSET_MIN * 60_000);
+  const day = ist.getUTCDay();
+  if (day === 0 || day === 6) return true;
+  const minutes = ist.getUTCHours() * 60 + ist.getUTCMinutes();
+  return minutes < openMin || minutes >= closeMin;
 }
 
 /**

@@ -14,7 +14,9 @@
  */
 
 import { SynchronizedSnapshotStore, UpstoxMarketFeedV3 } from './upstoxMarketFeedV3.js';
-import { LastGoodPrices, quoteBook, universeInstrumentKeys, volumeRatio } from './aiEnablersQuotes.js';
+import {
+  LastGoodPrices, quoteBook, sessionClosed, universeInstrumentKeys, volumeRatio,
+} from './aiEnablersQuotes.js';
 import { COVERAGE_FLOOR, computeIndex, STALE_MS } from './aiEnablersIndex.js';
 import { actionsNear } from './aiEnablersStatements.js';
 import { parseCandles, previousCloseBefore, replaySession, sessionDateOf } from './aiEnablersCandleReplay.js';
@@ -60,6 +62,15 @@ export function snapshotFrom(universe, book, { now = Date.now(), volumeBaselines
     quality: {
       live: book.sources.live.length,
       last_good: book.sources.last_good.length,
+      // Priced from the last trade because the exchange is shut, and when
+      // the latest of those trades was.
+      // A book built without session state (a recompute from an older
+      // shape) has no session_last list, and that means none.
+      session_last: (book.sources.session_last || []).length,
+      closed: Boolean(book.closed),
+      last_trade_at: (book.sources.session_last || []).length
+        ? new Date(Math.max(...Object.values(book.quotes).map((one) => Number(one.at) || 0))).toISOString()
+        : null,
       missing: book.sources.missing.length,
       unresolved: book.unresolved,
       // A basket priced largely from last-good is not a live basket, and the
@@ -107,6 +118,7 @@ export class AiEnablersLiveRuntime {
     fetchIntradayCandles = null,
     fetchDailyCandles = null,
     now = () => Date.now(),
+    isSessionClosed = sessionClosed,
   } = {}) {
     this.universe = universe;
     this.store = store;
@@ -122,6 +134,7 @@ export class AiEnablersLiveRuntime {
     this.fetchDailyCandles = fetchDailyCandles;
     this.historyRebuild = { status: 'not_run' };
     this.now = now;
+    this.sessionClosed = isSessionClosed;
     // Per-symbol corporate-action state, and the exchange day it was read for.
     this.priceBreaks = {};
     this.corporateActionsDate = null;
@@ -187,7 +200,7 @@ export class AiEnablersLiveRuntime {
     const now = this.now();
     const book = quoteBook(this.universe, {
       store: this.store, lastGood: this.lastGood, now, staleMs: this.staleMs,
-      priceBreaks: this.priceBreaks,
+      priceBreaks: this.priceBreaks, closed: this.sessionClosed(now),
     });
     book.volumes = Object.fromEntries(
       this.resolved.keys.map((key) => [key, this.store.get(key)?.cumulative_volume ?? null]),
@@ -206,6 +219,9 @@ export class AiEnablersLiveRuntime {
     this.#refreshIfNewDay();
     const snapshot = this.current();
     snapshot.origin = 'feed';
+    // Outside the session the basket is its last trades and does not move;
+    // retaining a minute of it would draw a flat line past 15:30.
+    if (this.sessionClosed(this.now())) return snapshot;
     this.snapshots.push(snapshot);
     if (this.snapshots.length > this.retention) {
       this.snapshots.splice(0, this.snapshots.length - this.retention);

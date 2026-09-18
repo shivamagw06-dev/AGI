@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   LAST_GOOD_MAX_AGE_MS, LastGoodPrices, instrumentKeyFor, quoteBook, quoteFor,
-  sessionElapsedFraction, universeInstrumentKeys, volumeRatio,
+  sessionClosed, sessionElapsedFraction, universeInstrumentKeys, volumeRatio,
 } from './aiEnablersQuotes.js';
 
 /** A stand-in for SynchronizedSnapshotStore: the same get(), nothing else. */
@@ -146,4 +146,33 @@ test('a null cumulative volume does not become a volume of zero', () => {
   const lastGood = new LastGoodPrices();
   const store = storeOf({ K: row(110, 100, NOW - 1_000, { cumulative_volume: null }) });
   assert.equal(quoteFor('K', { store, lastGood, now: NOW, staleMs: 60_000 }).cumulativeVolume, null);
+});
+
+test('the session is shut outside 09:15-15:30 IST and at weekends', () => {
+  assert.equal(sessionClosed(Date.parse('2026-09-18T03:44:00Z')), true);   // 09:14 IST
+  assert.equal(sessionClosed(Date.parse('2026-09-18T03:45:00Z')), false);  // 09:15 IST
+  assert.equal(sessionClosed(Date.parse('2026-09-18T09:59:00Z')), false);  // 15:29 IST
+  assert.equal(sessionClosed(Date.parse('2026-09-18T10:00:00Z')), true);   // 15:30 IST
+  assert.equal(sessionClosed(Date.parse('2026-09-19T06:00:00Z')), true);   // Saturday
+});
+
+test('after the close the last trade is the price, labelled as the last trade', () => {
+  const lastTrade = Date.parse('2026-09-18T09:59:58Z');   // 15:29:58 IST
+  const evening = Date.parse('2026-09-18T11:47:00Z');     // 17:17 IST
+  const store = storeOf({ K: row(1250, 1240, lastTrade) });
+  const shut = quoteFor('K', { store, lastGood: new LastGoodPrices(), now: evening, staleMs: 60_000, closed: true });
+  assert.equal(shut.source, 'session_last');
+  assert.equal(shut.ltp, 1250);
+  // The same quote while the session is open is stale, and nothing covers it.
+  assert.equal(quoteFor('K', { store, lastGood: new LastGoodPrices(), now: evening, staleMs: 60_000 }), null);
+});
+
+test('the quote book counts last trades apart from live and fallback prices', () => {
+  const book = quoteBook({ members: [{ symbol: 'A', instrumentKey: 'NSE_EQ|A' }] }, {
+    store: storeOf({ 'NSE_EQ|A': row(110, 100, NOW - 3_600_000) }),
+    lastGood: new LastGoodPrices(), now: NOW, closed: true,
+  });
+  assert.deepEqual(book.sources.session_last, ['A']);
+  assert.deepEqual(book.sources.live, []);
+  assert.equal(book.closed, true);
 });
