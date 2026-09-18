@@ -26,6 +26,9 @@ const numeric = (value) => {
 };
 
 /** The policy the whole calculation hangs on, stated once and printed. */
+
+import { candleRows } from './aiEnablersLiquidity.js';
+
 export const DEFAULT_POLICY = Object.freeze({
   targetPosition: null,      // set by the portfolio, not by this module
   exitDays: 3,
@@ -123,9 +126,12 @@ export function executableFor({ advt, exitDays = 3, maxParticipation = 0.2, targ
  * somebody made explicitly.
  */
 export function sizePositions(members, {
-  targetPosition = null, exitDays = 3, maxParticipation = 0.2, excludeBelow = null,
+  targetPosition = null, exitDays = 3, maxParticipation = 0.2, excludeBelow = null, exceptions = [],
 } = {}) {
   const policy = { targetPosition, exitDays, maxParticipation, excludeBelow };
+  // Exceptions are decisions, recorded with a date. They move a member out of
+  // belowTarget and into excepted; its size and shortfall are unchanged.
+  const exceptionFor = new Map((exceptions || []).map((one) => [one.symbol, one]));
   const required = minimumAdvt({ targetPosition, exitDays, maxParticipation });
 
   const sized = [];
@@ -144,6 +150,7 @@ export function sizePositions(members, {
       maxExecutablePosition: executable.maxExecutablePosition,
       meetsTarget: executable.meetsTarget,
       shortfall: executable.shortfall,
+      exception: exceptionFor.get(member.symbol) || null,
     };
     const floor = numeric(excludeBelow);
     if (floor !== null && executable.maxExecutablePosition < floor) {
@@ -162,6 +169,52 @@ export function sizePositions(members, {
     unscreened,
     excluded,
     // Members that stay in the universe but cannot carry the target size.
-    belowTarget: sized.filter((one) => one.meetsTarget === false).map((one) => one.symbol),
+    belowTarget: sized.filter((one) => one.meetsTarget === false && !one.exception).map((one) => one.symbol),
+    // Below target by the numbers, held anyway by a recorded decision.
+    excepted: sized.filter((one) => one.meetsTarget === false && one.exception).map((one) => one.symbol),
   };
+}
+
+/**
+ * Size every admitted member against the universe's own policy, from daily
+ * candles.
+ *
+ * The policy lives in the universe file (thresholds: targetPosition,
+ * exitDays, maxParticipation), so the page, the API and any script size the
+ * same way, and changing the target is one edit someone can see in review.
+ *
+ * `normalAdvt` reads its series newest first ("the last twenty sessions" is
+ * the first twenty entries). Candles arrive oldest first, so the series is
+ * reversed here - and a test holds that, because the wrong order would size
+ * every member on its oldest sessions and nothing would look wrong.
+ */
+export async function exitabilityForUniverse(universe, { fetchCandles, to, from } = {}) {
+  const policy = universe?.thresholds || {};
+  const members = (universe?.members || []).filter((one) => one.admitted !== false);
+  const rows = [];
+  const failures = [];
+  const windows = {};
+  for (const member of members) {
+    const key = String(member.instrumentKey || '').trim();
+    if (!key.includes('|')) {
+      failures.push({ symbol: member.symbol, error: 'MALFORMED_INSTRUMENT_KEY' });
+      continue;
+    }
+    try {
+      const payload = await fetchCandles(key, { unit: 'days', interval: 1, to, from });
+      const newestFirst = candleRows(payload).map((one) => one.turnover).reverse();
+      const advt = normalAdvt({ turnoverSeries: newestFirst });
+      windows[member.symbol] = advt;
+      rows.push({ symbol: member.symbol, normalAdvt: advt.value });
+    } catch (error) {
+      failures.push({ symbol: member.symbol, error: String(error?.message || error) });
+    }
+  }
+  const sized = sizePositions(rows, {
+    targetPosition: policy.targetPosition ?? null,
+    exitDays: policy.exitDays ?? 3,
+    maxParticipation: policy.maxParticipation ?? 0.2,
+    exceptions: policy.sizingExceptions || [],
+  });
+  return { ...sized, windows, failures, measuredTo: to || null };
 }

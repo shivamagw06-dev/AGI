@@ -12,8 +12,9 @@ import { createSupabaseAdmin } from '../lib/supabaseAdmin.js';
 import { fundamentalsForUniverse, intensityForUniverse } from '../services/aiEnablersFundamentals.js';
 import { stageThree, stageTwo } from '../services/aiEnablersScreen.js';
 import {
-  latestUniversePassRun, publicRow, readUniversePass, summariseUniversePass,
+  latestUniversePassRun, publicRow, readUniversePass, referenceQualifiers, summariseUniversePass,
 } from '../services/aiEnablersUniversePass.js';
+import { exitabilityForUniverse } from '../services/aiEnablersExitability.js';
 
 const UNIVERSE_PATH = fileURLToPath(new URL('../config/india-ai-enablers.universe.json', import.meta.url));
 const FACTS_PATH = fileURLToPath(new URL('../config/india-ai-enablers.disclosed-facts.json', import.meta.url));
@@ -297,6 +298,27 @@ export default function createIndiaAiIntelligenceRouter() {
   });
 
   /**
+   * How large a position each member can carry, against the universe policy.
+   *
+   * Normal turnover is the lower of the 20- and 60-session medians of daily
+   * traded value, from Upstox daily candles. A member below the target stays
+   * a member; it is listed in belowTarget with its maximum executable size.
+   */
+  router.get('/screen/exitability', async (req, res) => {
+    try {
+      if (!isUpstoxConfigured()) {
+        return res.status(503).json({ ok: false, error: 'Upstox is not configured; set UPSTOX_ACCESS_TOKEN server-side.', code: 'UPSTOX_NOT_CONFIGURED' });
+      }
+      const universe = await loadUniverse();
+      const to = new Date().toISOString().slice(0, 10);
+      const from = new Date(Date.now() - 120 * 24 * 3600 * 1000).toISOString().slice(0, 10);
+      res.json({ ok: true, ...(await exitabilityForUniverse(universe, { fetchCandles: getHistoricalCandles, to, from })) });
+    } catch (error) {
+      res.status(500).json({ ok: false, error: String(error?.message || error) });
+    }
+  });
+
+  /**
    * Stage 1 over the whole exchange, as the last run stored it.
    *
    * Written by scripts/aiEnablersUniversePass.mjs from the Render shell.
@@ -313,10 +335,7 @@ export default function createIndiaAiIntelligenceRouter() {
       if (!runId) return res.json({ ok: true, run: null, summary: null, rows: [] });
       const rows = await readUniversePass(db, runId);
       const universe = await loadUniverse();
-      const reference = [
-        ...(universe.members || []).map((one) => ({ symbol: one.symbol, kind: 'member' })),
-        ...(universe.candidates || []).map((one) => ({ symbol: one.symbol, kind: 'candidate' })),
-      ];
+      const reference = referenceQualifiers(universe);
       res.json({
         ok: true,
         run: runId,

@@ -9,9 +9,26 @@
     "formula": "minimum_advt = target_position / (exit_days * max_participation)",
     "exitDays": 3,
     "maxParticipation": 0.2,
-    "targetPosition": null,
+    "targetPosition": 1000000000,
     "normalAdvt": "lower of the 20-day and 60-day median daily traded value",
-    "note": "Eligibility by thematic evidence; sizing by liquidity. There is no turnover floor, because every floor available was fitted to the seven companies in front of it. A company does not stop being an AI enabler because a given position is too large for it - it stops being able to carry that position, so the screen reports a maximum executable position instead of a pass or a fail. At the stated policy a Rs 50 crore position needs Rs 83.33 crore of daily turnover; set targetPosition from the portfolio and the requirement follows from it rather than from this basket."
+    "note": "Eligibility by thematic evidence; sizing by liquidity. There is no turnover floor, because every floor available was fitted to the seven companies in front of it. A company does not stop being an AI enabler because a given position is too large for it - it stops being able to carry that position, so the screen reports a maximum executable position instead of a pass or a fail. Target position set 2026-09-18 at Rs 100 crore, so a member needs Rs 166.67 crore of normal daily turnover (100 / (3 x 0.2)) to carry a full position. A member below that is still a member; it carries a smaller maximum position, reported beside it.",
+    "targetPositionUnit": "INR",
+    "targetPositionDecided": "2026-09-18",
+    "sizingExceptions": [
+      {
+        "symbol": "CLEANMAX",
+        "decided": "2026-09-18",
+        "by": "portfolio owner",
+        "context": "Listed on NSE 2026-03-02, so its turnover history is about six months long."
+      },
+      {
+        "symbol": "ANANTRAJ",
+        "decided": "2026-09-18",
+        "by": "portfolio owner",
+        "context": null
+      }
+    ],
+    "sizingExceptionsNote": "An exception removes a member from belowTarget; it does not change what the member can carry. Its maximum executable position and shortfall are still computed and reported beside it."
   },
   "members": [
     {
@@ -330,7 +347,9 @@
       "isin": null,
       "admitted": false,
       "basis": "soft",
-      "note": "A data centre operator, but the material retrieved is IPO offer-document market sizing rather than its own operating disclosure."
+      "note": "A data centre operator, but the material retrieved is IPO offer-document market sizing rather than its own operating disclosure.",
+      "outOfUniverse": "NOT_ON_NSE_LISTS",
+      "outOfUniverseNote": "On neither NSE equity list on 2026-09-18. Its filings in Trendlyne include an IPO red herring prospectus dated 2026-08-27; if it lists on NSE it re-enters."
     },
     {
       "symbol": "AETHER",
@@ -412,7 +431,9 @@
           "source": "Trendlyne document search",
           "excerpt": "We are just evaluating various technologies, nothing else. It is more of an approval cycle which takes about 1 to 1.5 years in semicon for approval."
         }
-      ]
+      ],
+      "outOfUniverse": "NOT_ON_NSE_LISTS",
+      "outOfUniverseNote": "On neither NSE equity list on 2026-09-18."
     },
     {
       "symbol": "CYIENT",
@@ -478,5 +499,18 @@
     "unreadable": "Form MGT-7 for 2024-25 was supplied and could not be read: it is an image-scanned PDF with no extractable text layer, and no OCR is available in this environment. It is also the prior year. Nothing from it has been recorded.",
     "emptyLayersAreAStandard": "Checked against an independent screen of the same question, and the check is worth recording even though its figures are not. That screen used a materially lower bar for AI exposure - company mentions in news flow and management discussion, with partnerships counting as qualifying - and on that basis it placed companies in both of the sub-layers AGI reports empty. AGI had already examined those layers and refused what it found there: monomers being developed, technologies being evaluated, a capability claim with no segment split, a product-positioning slide. The same companies, judged against a different standard. So the two empty sub-layers are a finding about what Indian semiconductor materials and equipment companies currently disclose, not a gap in AGI's coverage - and that is now checked rather than assumed.",
     "taxonomyProvenance": "The three layers and nine sub-layers were derived from published third-party research at the start of this build rather than arrived at independently. Recorded because an independent screen using the same decomposition is not corroboration of it, and nobody should later read the match that way."
+  },
+  "universeScope": {
+    "exchange": "NSE",
+    "boards": [
+      "main",
+      "sme"
+    ],
+    "decided": "2026-09-18",
+    "lists": [
+      "EQUITY_L.csv",
+      "SME_EQUITY_L.csv"
+    ],
+    "note": "Companies on neither NSE equity list are outside the universe, whatever their evidence. They are kept in candidates with outOfUniverse set, so the reason they are absent stays visible."
   }
 }

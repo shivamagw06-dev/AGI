@@ -285,6 +285,22 @@ export function publicRow(row) {
 }
 
 /**
+ * The companies already known to qualify, for the recall check.
+ *
+ * Admitted members and held candidates, minus any candidate outside the
+ * universe by decision (on neither NSE list). Counting those as misses would
+ * blame the nomination step for a scope choice.
+ */
+export function referenceQualifiers(universe) {
+  return [
+    ...(universe?.members || []).map((one) => ({ symbol: one.symbol, kind: 'member' })),
+    ...(universe?.candidates || [])
+      .filter((one) => !one.outOfUniverse)
+      .map((one) => ({ symbol: one.symbol, kind: 'candidate' })),
+  ];
+}
+
+/**
  * What the run found, and how much of it can be trusted.
  *
  * `reference` is the set of companies already known to qualify - admitted
