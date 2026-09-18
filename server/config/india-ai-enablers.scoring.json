@@ -1,0 +1,1706 @@
+{
+  "asOf": "2026-09-19",
+  "purpose": "Filed FY26 cash-flow and capital figures and Q1 revenue behind the five factors. Rs crore; consolidated unless basis says otherwise.",
+  "rows": [
+    {
+      "symbol": "POWERINDIA",
+      "basis": "standalone (company has no subsidiary/associate/JV as on 31 Mar 2026 - note 7 of FY26 results); FY Apr-Mar",
+      "revenueFY26": 8147.71,
+      "patFY26": 987.84,
+      "cfoFY26": 1244.83,
+      "capexFY26": 509.2,
+      "capexIntangiblesFY26": 0.63,
+      "ebitFY26": 1333.7,
+      "ebitDefinition": "PBT 1,320.92 + finance costs 12.78 (PBT is after exceptional item 'Impact of Labour Codes' 54.24; before exceptional EBIT would be 1,387.94)",
+      "capitalEmployedFY26": 5175.96,
+      "statedRoceFY26": 0.259,
+      "roceDefinition": "Annual report: ROCE = Earnings before interest and taxes / Capital Employed, where Capital Employed = Tangible Net Worth + Total Debt - Deferred Tax Asset (ratio 0.26; KPI chart 25.90%)",
+      "revenueQ1FY27": 2493.69,
+      "revenueQ1FY26": 1478.9,
+      "intakeQ1FY27": 5096.5,
+      "sources": {
+        "cfoFY26": {
+          "document": "Hitachi Energy India audited financial results FY26, BSE AttachHis/5585ffbb-ce71-40a2-abf5-ca9f46572e7e.pdf (Rs crore)",
+          "page": 9
+        },
+        "capexFY26": {
+          "document": "Hitachi Energy India audited financial results FY26, BSE AttachHis/5585ffbb-ce71-40a2-abf5-ca9f46572e7e.pdf",
+          "page": 9
+        },
+        "capexIntangiblesFY26": {
+          "document": "Hitachi Energy India audited financial results FY26, BSE AttachHis/5585ffbb-ce71-40a2-abf5-ca9f46572e7e.pdf",
+          "page": 9
+        },
+        "ebitFY26": {
+          "document": "Hitachi Energy India audited financial results FY26, BSE AttachHis/5585ffbb-ce71-40a2-abf5-ca9f46572e7e.pdf",
+          "page": 6
+        },
+        "capitalEmployedFY26": {
+          "document": "Hitachi Energy India audited financial results FY26, BSE AttachHis/5585ffbb-ce71-40a2-abf5-ca9f46572e7e.pdf",
+          "page": 8
+        },
+        "statedRoceFY26": {
+          "document": "Hitachi Energy India Integrated Annual Report 2025-26, BSE AttachHis/ec6df9db-e4ba-445b-8043-5b5914dab8be.pdf (KPI chart p.51 printed p.48 shows ROCE FY26 25.90%)",
+          "page": 294
+        },
+        "revenueFY26": {
+          "document": "Hitachi Energy India audited financial results FY26, BSE AttachHis/5585ffbb-ce71-40a2-abf5-ca9f46572e7e.pdf",
+          "page": 6
+        },
+        "patFY26": {
+          "document": "Hitachi Energy India audited financial results FY26, BSE AttachHis/5585ffbb-ce71-40a2-abf5-ca9f46572e7e.pdf",
+          "page": 6
+        },
+        "revenueQ1FY27": {
+          "document": "Hitachi Energy India unaudited results Q1 FY27 (quarter ended 30/06/2026), BSE AttachHis/c8f8b3cc-75da-437a-b6f8-a0f1d6863844.pdf",
+          "page": 4
+        },
+        "revenueQ1FY26": {
+          "document": "Hitachi Energy India unaudited results Q1 FY27, BSE AttachHis/c8f8b3cc-75da-437a-b6f8-a0f1d6863844.pdf",
+          "page": 4
+        },
+        "intakeQ1FY27": {
+          "document": "Hitachi Energy India Q1 FY27 press release enclosed in results filing, BSE AttachHis/c8f8b3cc-75da-437a-b6f8-a0f1d6863844.pdf",
+          "page": 7
+        }
+      },
+      "notes": "Source unit Rs crore throughout. POWERINDIA is Hitachi Energy India (FY Apr-Mar, not ABB India's CY). Q1 FY27 orders 5,096.5 cr vs 11,339.2 cr in Q1 FY26 (which included a large HVDC order); +26.1% YoY only ex-HVDC. Lease liabilities (86.10 cr) not included in capital employed; zero borrowings at 31 Mar 2026. Order backlog 32,222.1 cr at 30 Jun 2026."
+    },
+    {
+      "symbol": "ADANIENT",
+      "basis": "consolidated",
+      "revenueFY26": 100468.61,
+      "patFY26": 9950.69,
+      "cfoFY26": 2356.91,
+      "capexFY26": 33369.12,
+      "capexIntangiblesFY26": null,
+      "ebitFY26": 10328.41,
+      "ebitDefinition": "Company PBIT 19,543.78 less 9,215 of exceptional gains",
+      "capitalEmployedFY26": 175880.46,
+      "statedRoceFY26": null,
+      "roceDefinition": "Not stated in the FY26 results; capital employed computed as Total Equity 89,178.25 (incl. NCI 8,252.30) + non-current borrowings 76,166.15 + current borrowings 10,536.06. Excludes lease liabilities (19,919.58) and trade credits & acceptances (7,080.06).",
+      "revenueQ1FY27": 32923.98,
+      "revenueQ1FY26": 21961.2,
+      "intakeQ1FY27": null,
+      "sources": {
+        "cfoFY26": {
+          "document": "Adani Enterprises audited results FY26 (Statement of Audited Consolidated Cash Flows), BSE AttachHis/c7b754e2-2e5e-4fa7-b718-fc3e0d1494e1.pdf (Rs crore)",
+          "page": 15
+        },
+        "capexFY26": {
+          "document": "Adani Enterprises audited results FY26, BSE AttachHis/c7b754e2-2e5e-4fa7-b718-fc3e0d1494e1.pdf",
+          "page": 15
+        },
+        "ebitFY26": {
+          "document": "Adani Enterprises audited results FY26, consolidated segment information, BSE AttachHis/c7b754e2-2e5e-4fa7-b718-fc3e0d1494e1.pdf",
+          "page": 17
+        },
+        "capitalEmployedFY26": {
+          "document": "Adani Enterprises audited consolidated balance sheet 31 Mar 2026, BSE AttachHis/c7b754e2-2e5e-4fa7-b718-fc3e0d1494e1.pdf",
+          "page": 12
+        },
+        "revenueFY26": {
+          "document": "Adani Enterprises audited consolidated results FY26, BSE AttachHis/c7b754e2-2e5e-4fa7-b718-fc3e0d1494e1.pdf",
+          "page": 11
+        },
+        "patFY26": {
+          "document": "Adani Enterprises audited consolidated results FY26, BSE AttachHis/c7b754e2-2e5e-4fa7-b718-fc3e0d1494e1.pdf",
+          "page": 11
+        },
+        "revenueQ1FY27": {
+          "document": "Adani Enterprises unaudited consolidated results, quarter ended 30 Jun 2026, BSE AttachLive/d99c9703-23ac-4f2e-8773-52123672f8d0.pdf",
+          "page": 11
+        },
+        "revenueQ1FY26": {
+          "document": "Adani Enterprises unaudited consolidated results, quarter ended 30 Jun 2026, BSE AttachLive/d99c9703-23ac-4f2e-8773-52123672f8d0.pdf",
+          "page": 11
+        }
+      },
+      "notes": "Source unit Rs crore. PAT 9,950.69 is total (continuing ops; owners' share 9,339.47) and is inflated by exceptional gains 9,215.37; PBT before exceptional items 4,309.29. Some OCR digits in the balance sheet read 'B9,178,25' - equity attributable to owners 80,925.95 + NCI 8,252.30 = 89,178.25 confirms. Capex line combines PPE, intangibles and investment properties; no separate intangibles line. No order-intake metric reported (diversified incubator). Q1 FY27 filing BSE d99c9703 and 3374931b are identical files."
+    },
+    {
+      "symbol": "CLEANMAX",
+      "basis": "consolidated",
+      "revenueFY26": 1912.87,
+      "patFY26": 85.58,
+      "cfoFY26": 1731.24,
+      "capexFY26": 5687.19,
+      "capexIntangiblesFY26": 67.13,
+      "ebitFY26": 920.9,
+      "ebitDefinition": "PBT 1,349.81 mn + finance costs 7,859.22 mn = 9,209.03 mn (includes other income 1,623.41 mn and share of JV/associate profit 62.52 mn)",
+      "capitalEmployedFY26": 17934.3,
+      "statedRoceFY26": null,
+      "roceDefinition": "No ROCE stated in FY26 results/Q1 deck; capital employed = Total Equity 55,235.35 mn (incl. NCI 8,852.69) + non-current borrowings 1,13,124.22 mn + current borrowings 10,983.42 mn = 1,79,342.99 mn. Excludes acceptances against capital creditors (17,309.19 mn) and lease liabilities.",
+      "revenueQ1FY27": 832.16,
+      "revenueQ1FY26": 402.34,
+      "intakeQ1FY27": null,
+      "sources": {
+        "cfoFY26": {
+          "document": "CleanMax audited results FY26 (consolidated), BSE AttachHis/47e096d5-15b8-4f10-8373-8ed10a4de9d2.pdf; source unit Rs million",
+          "page": 17
+        },
+        "capexFY26": {
+          "document": "CleanMax audited results FY26 (consolidated), BSE AttachHis/47e096d5-15b8-4f10-8373-8ed10a4de9d2.pdf; source unit Rs million",
+          "page": 17
+        },
+        "capexIntangiblesFY26": {
+          "document": "CleanMax audited results FY26 (consolidated), BSE AttachHis/47e096d5-15b8-4f10-8373-8ed10a4de9d2.pdf; source unit Rs million",
+          "page": 17
+        },
+        "ebitFY26": {
+          "document": "CleanMax audited results FY26 (consolidated), BSE AttachHis/47e096d5-15b8-4f10-8373-8ed10a4de9d2.pdf; source unit Rs million",
+          "page": 15
+        },
+        "capitalEmployedFY26": {
+          "document": "CleanMax audited results FY26 (consolidated), BSE AttachHis/47e096d5-15b8-4f10-8373-8ed10a4de9d2.pdf; source unit Rs million",
+          "page": 16
+        },
+        "revenueFY26": {
+          "document": "CleanMax audited results FY26 (consolidated), BSE AttachHis/47e096d5-15b8-4f10-8373-8ed10a4de9d2.pdf; source unit Rs million",
+          "page": 15
+        },
+        "patFY26": {
+          "document": "CleanMax audited results FY26 (consolidated), BSE AttachHis/47e096d5-15b8-4f10-8373-8ed10a4de9d2.pdf; source unit Rs million",
+          "page": 15
+        },
+        "revenueQ1FY27": {
+          "document": "CleanMax unaudited results Q1 FY27 (consolidated), BSE AttachHis/666b6d73-407a-49cf-b2f1-36cb7a4c4661.pdf; source unit Rs million",
+          "page": 22
+        },
+        "revenueQ1FY26": {
+          "document": "CleanMax unaudited results Q1 FY27 (consolidated), BSE AttachHis/666b6d73-407a-49cf-b2f1-36cb7a4c4661.pdf; source unit Rs million",
+          "page": 22
+        },
+        "intakeQ1FY27": {
+          "document": "CleanMax Q1 FY27 investor presentation (ledger/docs/cleanmax_q1fy27_pres.pdf, BSE 12de4ba6-573e-4382-bbff-686ab3d63249.pdf)",
+          "page": 8
+        }
+      },
+      "notes": "All source figures Rs million, converted to Rs crore (/10). PAT 855.77 mn is total; owners' share 941.32 mn (NCI loss 85.55 mn). No Rs order-intake metric; company reports contracted capacity (MW): total portfolio rose from 6,455 MW (31 Mar 2026) to 6,831 MW (30 Jun 2026), i.e. ~376 MW net addition in Q1 FY27 - intakeQ1FY27 left null. IPO in FY26 (fresh issue net 11,492.46 mn). Stated ROCE exists only on a STANDALONE basis: AR 2025-26 standalone note (PDF p.578): ROCE = EBIT (PBT + finance costs) / Capital Employed (tangible net worth + total debt) = 19.27% for FY26 (standalone EBIT 14,083.11 mn; CE 73,067.70 mn) - not comparable to consolidated, so statedRoceFY26 left null."
+    },
+    {
+      "symbol": "ANANTRAJ",
+      "basis": "consolidated",
+      "revenueFY26": 2511.6,
+      "patFY26": 557.02,
+      "cfoFY26": -434.77,
+      "capexFY26": 141.92,
+      "capexIntangiblesFY26": null,
+      "ebitFY26": 674.29,
+      "ebitDefinition": "PBT (before share of associates/JVs) 661.94 + finance costs 12.35 (low finance cost as interest is largely capitalised/inventorised; includes other income 67.48)",
+      "capitalEmployedFY26": 6425.01,
+      "statedRoceFY26": 0.1043,
+      "roceDefinition": "Annual report consolidated note 51: ROCE = Earnings before interest and tax / Capital employed, where Capital employed = Equity + Non current liabilities. Computed CE (Total Equity 5,818.78 + non-current borrowings 521.40 + current borrowings 84.83) = 6,425.01.",
+      "revenueQ1FY27": 631.4,
+      "revenueQ1FY26": 592.41,
+      "intakeQ1FY27": null,
+      "sources": {
+        "cfoFY26": {
+          "document": "Anant Raj audited results FY26 (consolidated), BSE AttachHis/cf2492b8-6344-45be-b9f7-5d2bb44aaec0.pdf (Rs crore)",
+          "page": 7
+        },
+        "capexFY26": {
+          "document": "Anant Raj audited results FY26 (consolidated), BSE AttachHis/cf2492b8-6344-45be-b9f7-5d2bb44aaec0.pdf (Rs crore)",
+          "page": 7
+        },
+        "ebitFY26": {
+          "document": "Anant Raj audited results FY26 (consolidated), BSE AttachHis/cf2492b8-6344-45be-b9f7-5d2bb44aaec0.pdf (Rs crore)",
+          "page": 5
+        },
+        "capitalEmployedFY26": {
+          "document": "Anant Raj audited results FY26 (consolidated), BSE AttachHis/cf2492b8-6344-45be-b9f7-5d2bb44aaec0.pdf (Rs crore)",
+          "page": 6
+        },
+        "statedRoceFY26": {
+          "document": "Anant Raj Annual Report FY2025-26 (Reg 34 filing dated 14 Jul 2026, BSE 443e6268-09d2-4ba3-a3a9-4c478098b164.pdf; local copy scratchpad/ar/ar.pdf), consolidated FS note 51",
+          "page": 316
+        },
+        "revenueFY26": {
+          "document": "Anant Raj audited results FY26 (consolidated), BSE AttachHis/cf2492b8-6344-45be-b9f7-5d2bb44aaec0.pdf (Rs crore)",
+          "page": 5
+        },
+        "patFY26": {
+          "document": "Anant Raj audited results FY26 (consolidated), BSE AttachHis/cf2492b8-6344-45be-b9f7-5d2bb44aaec0.pdf (Rs crore)",
+          "page": 5
+        },
+        "revenueQ1FY27": {
+          "document": "Anant Raj unaudited results Q1 FY27 (consolidated), BSE AttachHis/3d60445e-acea-4519-b24a-c354a14eead3.pdf (Rs crore)",
+          "page": 2
+        },
+        "revenueQ1FY26": {
+          "document": "Anant Raj unaudited results Q1 FY27 (consolidated), BSE AttachHis/3d60445e-acea-4519-b24a-c354a14eead3.pdf (Rs crore)",
+          "page": 2
+        }
+      },
+      "notes": "Source unit Rs crore. Other investing outflows not included in capexFY26: acquisition of investment property (116.41), increase in CWIP (3.04), right-of-use assets (57.75), goodwill on consolidation (158.61). No intangibles line. Standalone ROCE in the same AR is 6.94% (p.251). Real estate/data-centre developer: no order-intake metric (null)."
+    },
+    {
+      "symbol": "NETWEB",
+      "basis": "standalone (only subsidiary is Netweb Foundation, a Section 8 company; consolidation not required per AR Board's report)",
+      "revenueFY26": 2183.56,
+      "patFY26": 205.82,
+      "cfoFY26": 171.49,
+      "capexFY26": 11.98,
+      "capexIntangiblesFY26": null,
+      "ebitFY26": 289.47,
+      "ebitDefinition": "PBT 2,765.20 mn + finance cost 129.53 mn = 2,894.73 mn (company defines EBIT as EBITDA less depreciation; the AR's 37.53% ROCE on average CE reconciles to this figure)",
+      "capitalEmployedFY26": 1005.52,
+      "statedRoceFY26": 0.3753,
+      "roceDefinition": "AR KPI footnote 5: ROCE = EBIT / average capital employed; EBIT = EBITDA less depreciation; capital employed = equity + total borrowings + deferred tax liabilities, where total borrowings include current and non-current lease liabilities (footnote 6). Year-end CE stated as Rs 10,055.2 mn (= equity 7,232.98 + borrowings 9.00 + 2,707.71 + lease liabilities 71.58 + 33.94).",
+      "revenueQ1FY27": 819.69,
+      "revenueQ1FY26": 301.21,
+      "intakeQ1FY27": null,
+      "sources": {
+        "cfoFY26": {
+          "document": "Netweb Technologies Annual Report FY2025-26 (Reg 34 filing 28 Aug 2026, BSE 87148e7d-f96d-40e5-9d8a-06d0ec00daa3.pdf; local copy scratchpad/netweb26.pdf); source unit Rs million",
+          "page": 101
+        },
+        "capexFY26": {
+          "document": "Netweb Technologies Annual Report FY2025-26 (Reg 34 filing 28 Aug 2026, BSE 87148e7d-f96d-40e5-9d8a-06d0ec00daa3.pdf; local copy scratchpad/netweb26.pdf); source unit Rs million",
+          "page": 101
+        },
+        "ebitFY26": {
+          "document": "Netweb Technologies Annual Report FY2025-26 (Reg 34 filing 28 Aug 2026, BSE 87148e7d-f96d-40e5-9d8a-06d0ec00daa3.pdf; local copy scratchpad/netweb26.pdf); source unit Rs million",
+          "page": 100
+        },
+        "capitalEmployedFY26": {
+          "document": "Netweb Technologies Annual Report FY2025-26 (Reg 34 filing 28 Aug 2026, BSE 87148e7d-f96d-40e5-9d8a-06d0ec00daa3.pdf; local copy scratchpad/netweb26.pdf); source unit Rs million",
+          "page": 13
+        },
+        "statedRoceFY26": {
+          "document": "Netweb Technologies Annual Report FY2025-26 (Reg 34 filing 28 Aug 2026, BSE 87148e7d-f96d-40e5-9d8a-06d0ec00daa3.pdf; local copy scratchpad/netweb26.pdf); source unit Rs million",
+          "page": 36
+        },
+        "roceDefinition": {
+          "document": "Netweb Technologies Annual Report FY2025-26 (Reg 34 filing 28 Aug 2026, BSE 87148e7d-f96d-40e5-9d8a-06d0ec00daa3.pdf; local copy scratchpad/netweb26.pdf); source unit Rs million",
+          "page": 37
+        },
+        "revenueFY26": {
+          "document": "Netweb Technologies Annual Report FY2025-26 (Reg 34 filing 28 Aug 2026, BSE 87148e7d-f96d-40e5-9d8a-06d0ec00daa3.pdf; local copy scratchpad/netweb26.pdf); source unit Rs million",
+          "page": 100
+        },
+        "patFY26": {
+          "document": "Netweb Technologies Annual Report FY2025-26 (Reg 34 filing 28 Aug 2026, BSE 87148e7d-f96d-40e5-9d8a-06d0ec00daa3.pdf; local copy scratchpad/netweb26.pdf); source unit Rs million",
+          "page": 100
+        },
+        "revenueQ1FY27": {
+          "document": "Netweb Q1 FY27 board outcome with results (quarter ended 30 Jun 2026), BSE AttachLive/af2f57e3-7d79-4f0a-91ea-e3152d5ff6fe.pdf; Rs million (scanned, OCR)",
+          "page": 4
+        },
+        "revenueQ1FY26": {
+          "document": "Netweb Q1 FY27 press release, BSE AttachHis/7f66f0cc-a45d-426f-8a04-895da0668d9d.pdf; Rs million",
+          "page": 2
+        }
+      },
+      "notes": "Source unit Rs million, converted to Rs crore (/10). Capex line combines PPE and intangibles (no separate intangibles line). No order-intake figure disclosed; order book Rs 25,069.35 mn at 30 Jun 2026 (press release p.2). Exchange-filed FY26 results PDF (BSE 46c5027d) is a poor scan, so annual report figures used (identical: revenue 21,835.63, PBT 2,765.20)."
+    },
+    {
+      "symbol": "CGPOWER",
+      "basis": "consolidated",
+      "revenueFY26": 12417.95,
+      "patFY26": 1198.68,
+      "cfoFY26": 702.45,
+      "capexFY26": 777.76,
+      "capexIntangiblesFY26": null,
+      "ebitFY26": 1638.4,
+      "ebitDefinition": "PBT 1,626.23 + finance costs 12.17 (after exceptional item -35.57 labour-code charge; ex-exceptional 1,673.97). Company's segment table total 'Profit/(loss) before tax and finance costs from each segment' = 1,646.41 before unallocable items.",
+      "capitalEmployedFY26": 8198.51,
+      "statedRoceFY26": 0.2208,
+      "roceDefinition": "STANDALONE only: AR key ratios 'ROCE (excluding exceptional item) (terminal) on continuing operations' 22.08% (FY25 33.34%); capital employed includes QIP proceeds (AR letter: 'Return on Capital Employed, including QIP proceeds, stood at 22%'). No consolidated FY26 ROCE stated. Computed consolidated CE = Total Equity 8,198.25 (incl. NCI 227.77) + borrowings 0.17 + 0.09.",
+      "revenueQ1FY27": 3280.81,
+      "revenueQ1FY26": 2878.05,
+      "intakeQ1FY27": 5211,
+      "sources": {
+        "cfoFY26": {
+          "document": "CG Power audited results FY26 (consolidated section), BSE AttachHis/da4f80fe-bb34-4705-96c7-5387efcd7f96.pdf (Rs crore)",
+          "page": 20
+        },
+        "capexFY26": {
+          "document": "CG Power audited results FY26 (consolidated section), BSE AttachHis/da4f80fe-bb34-4705-96c7-5387efcd7f96.pdf (Rs crore)",
+          "page": 20
+        },
+        "ebitFY26": {
+          "document": "CG Power audited results FY26 (consolidated section), BSE AttachHis/da4f80fe-bb34-4705-96c7-5387efcd7f96.pdf (Rs crore)",
+          "page": 17
+        },
+        "capitalEmployedFY26": {
+          "document": "CG Power audited results FY26 (consolidated section), BSE AttachHis/da4f80fe-bb34-4705-96c7-5387efcd7f96.pdf (Rs crore)",
+          "page": 19
+        },
+        "statedRoceFY26": {
+          "document": "CG Power Annual Report FY2025-26 (MD&A key ratios; local scratchpad/ledger6/b5_cg_ar_fy26.pdf, BSE Reg 34 filing 4cdafd20-7174-41ed-b761-3178f60a1fec.pdf) - STANDALONE",
+          "page": 47
+        },
+        "revenueFY26": {
+          "document": "CG Power audited results FY26 (consolidated section), BSE AttachHis/da4f80fe-bb34-4705-96c7-5387efcd7f96.pdf (Rs crore)",
+          "page": 17
+        },
+        "patFY26": {
+          "document": "CG Power audited results FY26 (consolidated section), BSE AttachHis/da4f80fe-bb34-4705-96c7-5387efcd7f96.pdf (Rs crore)",
+          "page": 17
+        },
+        "revenueQ1FY27": {
+          "document": "CG Power unaudited results Q1 FY27 (consolidated), BSE AttachHis/e3da703c-2552-4ce0-a37d-44e1f8e602cd.pdf (Rs crore)",
+          "page": 11
+        },
+        "revenueQ1FY26": {
+          "document": "CG Power unaudited results Q1 FY27 (consolidated), BSE AttachHis/e3da703c-2552-4ce0-a37d-44e1f8e602cd.pdf (Rs crore)",
+          "page": 11
+        },
+        "intakeQ1FY27": {
+          "document": "CG Power Q1 FY27 press release (revised, 24 Jul 2026), BSE AttachLive/8e22d81d-4215-47d0-abcf-cfa068f08641.pdf - consolidated section",
+          "page": 4
+        }
+      },
+      "notes": "Source unit Rs crore. Capex line combines PPE and intangibles (net of government grant); no separate intangibles line. Also paid 284.13 for acquisition of fabless semiconductor design business (not in capex). PAT 1,198.68 is total consolidated (includes NCI). Standalone FY26: revenue 11,330.62, PAT 1,316.78. Q1 FY27 standalone order intake was 4,692 Cr; consolidated 5,211 Cr used."
+    },
+    {
+      "symbol": "KAYNES",
+      "basis": "consolidated",
+      "revenueFY26": 3626.35,
+      "patFY26": 363.89,
+      "cfoFY26": -600.4,
+      "capexFY26": 1240.3,
+      "capexIntangiblesFY26": null,
+      "ebitFY26": 621.24,
+      "ebitDefinition": "PBT 5,043.14 mn + finance cost 1,169.27 mn = 6,212.41 mn (after exceptional loss 25.76 mn; includes other income 1,568.30 mn)",
+      "capitalEmployedFY26": 5637.43,
+      "statedRoceFY26": 0.1225,
+      "roceDefinition": "AR consolidated ratio note: ROCE (%) = Profit Before Tax and Interest / Capital employed, where Capital employed = Net Worth + Lease liabilities + Deferred Tax Liabilities (as printed; FY25 14.21%). Computed CE here = Total Equity 47,624.88 mn + long-term borrowings 3,369.98 mn + short-term borrowings 5,379.41 mn = 56,374.27 mn.",
+      "revenueQ1FY27": 946.02,
+      "revenueQ1FY26": 673.47,
+      "intakeQ1FY27": null,
+      "sources": {
+        "cfoFY26": {
+          "document": "Kaynes Technology audited results FY26 (consolidated section), BSE AttachHis/b8e0deee-8563-422a-b66b-9c4ac3d970bd.pdf (duplicate filing 6cf3c1b9); source unit Rs million",
+          "page": 16
+        },
+        "capexFY26": {
+          "document": "Kaynes Technology audited results FY26 (consolidated section), BSE AttachHis/b8e0deee-8563-422a-b66b-9c4ac3d970bd.pdf (duplicate filing 6cf3c1b9); source unit Rs million",
+          "page": 16
+        },
+        "ebitFY26": {
+          "document": "Kaynes Technology audited results FY26 (consolidated section), BSE AttachHis/b8e0deee-8563-422a-b66b-9c4ac3d970bd.pdf (duplicate filing 6cf3c1b9); source unit Rs million",
+          "page": 14
+        },
+        "capitalEmployedFY26": {
+          "document": "Kaynes Technology audited results FY26 (consolidated section), BSE AttachHis/b8e0deee-8563-422a-b66b-9c4ac3d970bd.pdf (duplicate filing 6cf3c1b9); source unit Rs million",
+          "page": 15
+        },
+        "statedRoceFY26": {
+          "document": "Kaynes Annual Report FY2025-26 (Reg 34 filing 20 Aug 2026, BSE 7b3ec474-8dc9-46bc-bf3b-64d55d3b6c30.pdf; local copy scratchpad/ledger/docs/hw/kaynes/kaynes_ar_fy26.pdf), consolidated financial ratios note",
+          "page": 298
+        },
+        "revenueFY26": {
+          "document": "Kaynes Technology audited results FY26 (consolidated section), BSE AttachHis/b8e0deee-8563-422a-b66b-9c4ac3d970bd.pdf (duplicate filing 6cf3c1b9); source unit Rs million",
+          "page": 14
+        },
+        "patFY26": {
+          "document": "Kaynes Technology audited results FY26 (consolidated section), BSE AttachHis/b8e0deee-8563-422a-b66b-9c4ac3d970bd.pdf (duplicate filing 6cf3c1b9); source unit Rs million",
+          "page": 14
+        },
+        "revenueQ1FY27": {
+          "document": "Kaynes unaudited results Q1 FY27 (consolidated), BSE AttachHis/2c047b7c-eb5e-41bf-80e2-31034481273e.pdf; Rs million",
+          "page": 10
+        },
+        "revenueQ1FY26": {
+          "document": "Kaynes unaudited results Q1 FY27 (consolidated), BSE AttachHis/2c047b7c-eb5e-41bf-80e2-31034481273e.pdf; Rs million",
+          "page": 10
+        }
+      },
+      "notes": "Source unit Rs million, converted to Rs crore (/10). Capex is the single net line '(Purchase)/Sale of fixed assets' (the AR cash flow labels it 'Purchase of fixed assets' (12,403.01)); no separate intangibles line. Corrigendum filed 7 Aug 2026 (BSE 4341be39) only reclassified provisions (long/short-term) and OCI lines - no change to revenue, PBT, PAT, equity or cash flow. Standalone ROCE in AR 9.02%. No Q1 order-intake figure disclosed (Q1 deck shows order book only). FY26 includes QIP proceeds (Rs 16,000 mn QIP) in equity."
+    },
+    {
+      "symbol": "STLTECH",
+      "basis": "consolidated",
+      "revenueFY26": 4745,
+      "patFY26": 56,
+      "cfoFY26": 520,
+      "capexFY26": 193,
+      "capexIntangiblesFY26": 0,
+      "ebitFY26": 315,
+      "ebitDefinition": "Company-stated EBIT (AR Financial Highlights) = EBITDA 628 - depreciation & amortisation 313 = 315, before exceptional items. PBT (continuing) 107 + finance costs 224 = 331 including net exceptional gain of 16 (labour codes -15, impairment reversal +31).",
+      "capitalEmployedFY26": 4095,
+      "statedRoceFY26": 0.094,
+      "roceDefinition": "AR Financial Highlights: ROCE 9.4% = EBIT 315 / Average Capital Employed 3,368 (FY25 3.3%). Computed year-end CE here = Total Equity 2,268 + non-current borrowings 1,155 + current borrowings 672 = 4,095 (excludes lease liabilities 115 and acceptances 271).",
+      "revenueQ1FY27": 1910,
+      "revenueQ1FY26": 1019,
+      "intakeQ1FY27": 13100,
+      "sources": {
+        "cfoFY26": {
+          "document": "Sterlite Technologies Annual Report 2025-26, consolidated financial statements (BSE AttachHis/dd5015f0-cbf9-4237-b96c-b72ded707e24.pdf); Rs crore; statement labels are vector-drawn so page text was read from the rendered page image",
+          "page": 249
+        },
+        "capexFY26": {
+          "document": "Sterlite Technologies Annual Report 2025-26, consolidated financial statements (BSE AttachHis/dd5015f0-cbf9-4237-b96c-b72ded707e24.pdf); Rs crore; statement labels are vector-drawn so page text was read from the rendered page image",
+          "page": 249
+        },
+        "capexIntangiblesFY26": {
+          "document": "Sterlite Technologies Annual Report 2025-26, consolidated financial statements (BSE AttachHis/dd5015f0-cbf9-4237-b96c-b72ded707e24.pdf); Rs crore; statement labels are vector-drawn so page text was read from the rendered page image",
+          "page": 249
+        },
+        "ebitFY26": {
+          "document": "Sterlite Technologies Annual Report 2025-26, consolidated financial statements (BSE AttachHis/dd5015f0-cbf9-4237-b96c-b72ded707e24.pdf); Rs crore; statement labels are vector-drawn so page text was read from the rendered page image (Financial Highlights)",
+          "page": 21
+        },
+        "capitalEmployedFY26": {
+          "document": "Sterlite Technologies Annual Report 2025-26, consolidated financial statements (BSE AttachHis/dd5015f0-cbf9-4237-b96c-b72ded707e24.pdf); Rs crore; statement labels are vector-drawn so page text was read from the rendered page image (Consolidated Balance Sheet)",
+          "page": 245
+        },
+        "statedRoceFY26": {
+          "document": "Sterlite Technologies Annual Report 2025-26, consolidated financial statements (BSE AttachHis/dd5015f0-cbf9-4237-b96c-b72ded707e24.pdf); Rs crore; statement labels are vector-drawn so page text was read from the rendered page image (Financial Highlights)",
+          "page": 21
+        },
+        "revenueFY26": {
+          "document": "Sterlite Technologies Annual Report 2025-26, consolidated financial statements (BSE AttachHis/dd5015f0-cbf9-4237-b96c-b72ded707e24.pdf); Rs crore; statement labels are vector-drawn so page text was read from the rendered page image (Consolidated Statement of Profit and Loss)",
+          "page": 247
+        },
+        "patFY26": {
+          "document": "Sterlite Technologies Annual Report 2025-26, consolidated financial statements (BSE AttachHis/dd5015f0-cbf9-4237-b96c-b72ded707e24.pdf); Rs crore; statement labels are vector-drawn so page text was read from the rendered page image (Consolidated Statement of Profit and Loss)",
+          "page": 247
+        },
+        "revenueQ1FY27": {
+          "document": "STL Q1 FY27 results filing incl. investor presentation (BSE AttachHis/ffa18a79-e103-49db-ba78-2e6d478a9a9a.pdf); Rs crore - Consolidated financial results for the quarter ended June 30, 2026",
+          "page": 36
+        },
+        "revenueQ1FY26": {
+          "document": "STL Q1 FY27 results filing incl. investor presentation (BSE AttachHis/ffa18a79-e103-49db-ba78-2e6d478a9a9a.pdf); Rs crore",
+          "page": 36
+        },
+        "intakeQ1FY27": {
+          "document": "STL Q1 FY27 results filing incl. investor presentation (BSE AttachHis/ffa18a79-e103-49db-ba78-2e6d478a9a9a.pdf); Rs crore (investor presentation slide 15)",
+          "page": 18
+        }
+      },
+      "notes": "Source unit Rs crore (whole crores). Q1 FY27 order intake 13,100 cr is dominated by a >Rs 10,000 cr hyperscaler Product Award Letter covering FY27-FY29 supply; open order book 18,618 cr at 30 Jun 2026. The FY26 bar on the same slide (7,687) equals the FY26 closing order book, so treat the slide's FY26 comparison with care. FY26 PAT 56 is from continuing ops (no discontinued in FY26), all attributable to owners. Exchange-filed FY26 results PDF (BSE c81e8412) is a poor scan; AR figures used and agree (revenue 4,745; finance costs 224)."
+    },
+    {
+      "symbol": "CUMMINSIND",
+      "basis": "consolidated (subsidiary sold 1 Apr 2025; consolidates JV and associate by equity method)",
+      "revenueFY26": 12143.19,
+      "patFY26": 2361.75,
+      "cfoFY26": 1734.26,
+      "capexFY26": 251.71,
+      "capexIntangiblesFY26": 0,
+      "ebitFY26": 3098.36,
+      "ebitDefinition": "PBT 3,085.95 + finance cost 12.41 (includes share of JV/associate profit 266.28, other income 517.34, and net exceptional expense 81.61). Ex-exceptional: 3,179.97.",
+      "capitalEmployedFY26": 8475.16,
+      "statedRoceFY26": 0.4,
+      "roceDefinition": "STANDALONE only (AR standalone ratios note): ROCE = Earning before interest and taxes / (Total tangible assets - (Current liabilities + Non-current liabilities)); exceptional items excluded; FY26 40% vs FY25 37%. No consolidated ROCE stated. Computed consolidated CE = total equity 8,475.16 (equity share capital 55.44 + other equity) + borrowings nil.",
+      "revenueQ1FY27": 3426.01,
+      "revenueQ1FY26": 2906.82,
+      "intakeQ1FY27": null,
+      "sources": {
+        "cfoFY26": {
+          "document": "Cummins India audited results FY26 (consolidated), BSE AttachHis/5d9f5a09-e74b-447c-9c88-d87f23aeec6e.pdf (Rs crore)",
+          "page": 10
+        },
+        "capexFY26": {
+          "document": "Cummins India audited results FY26 (consolidated), BSE AttachHis/5d9f5a09-e74b-447c-9c88-d87f23aeec6e.pdf (Rs crore)",
+          "page": 10
+        },
+        "capexIntangiblesFY26": {
+          "document": "Cummins India audited results FY26 (consolidated), BSE AttachHis/5d9f5a09-e74b-447c-9c88-d87f23aeec6e.pdf (Rs crore)",
+          "page": 10
+        },
+        "ebitFY26": {
+          "document": "Cummins India audited results FY26 (consolidated), BSE AttachHis/5d9f5a09-e74b-447c-9c88-d87f23aeec6e.pdf (Rs crore)",
+          "page": 7
+        },
+        "capitalEmployedFY26": {
+          "document": "Cummins India audited results FY26 (consolidated), BSE AttachHis/5d9f5a09-e74b-447c-9c88-d87f23aeec6e.pdf (Rs crore)",
+          "page": 9
+        },
+        "statedRoceFY26": {
+          "document": "Cummins India Annual Report 2025-26 (cummins.com/sites/default/files/india/Legal/cummins-india_annual-report_2025_26.pdf; local scratchpad/ledger/docs/cummins_ar_fy26.pdf), STANDALONE financial ratios note",
+          "page": 259
+        },
+        "revenueFY26": {
+          "document": "Cummins India audited results FY26 (consolidated), BSE AttachHis/5d9f5a09-e74b-447c-9c88-d87f23aeec6e.pdf (Rs crore)",
+          "page": 7
+        },
+        "patFY26": {
+          "document": "Cummins India audited results FY26 (consolidated), BSE AttachHis/5d9f5a09-e74b-447c-9c88-d87f23aeec6e.pdf (Rs crore)",
+          "page": 7
+        },
+        "revenueQ1FY27": {
+          "document": "Cummins India unaudited consolidated results Q1 FY27, BSE AttachHis/83c92aa1-daeb-451c-a99c-356d8c168e91.pdf (Rs crore)",
+          "page": 3
+        },
+        "revenueQ1FY26": {
+          "document": "Cummins India unaudited consolidated results Q1 FY27, BSE AttachHis/83c92aa1-daeb-451c-a99c-356d8c168e91.pdf (Rs crore)",
+          "page": 3
+        }
+      },
+      "notes": "Source unit Rs crore. Revenue from operations = Sales/Income from operations + Other operating income (the statement shows the two components under '(a) Revenue from operations' without a printed subtotal); Q1 FY27 3,426.01 and Q1 FY26 2,906.82 are sums. Capex line combines PPE, intangibles and investment property. Cummins India does not report an order-intake figure (null). Zero borrowings at 31 Mar 2026."
+    },
+    {
+      "symbol": "BHARTIARTL",
+      "basis": "consolidated",
+      "revenueFY26": 210972.8,
+      "patFY26": 33822.8,
+      "cfoFY26": 122229.6,
+      "capexFY26": 45175.6,
+      "capexIntangiblesFY26": 1538.6,
+      "ebitFY26": 68099.6,
+      "ebitDefinition": "Company-stated EBIT (IR pack, 'EBITDA adjusted for depreciation and amortization') 680,996 mn, before exceptional items. Cross-check from statutory results: PBT 451,727 + finance costs 215,553 = 667,280 mn (after exceptional charge 34,175 and incl. share of JV/associate profit 3,645 and other income 28,173).",
+      "capitalEmployedFY26": 360752.2,
+      "statedRoceFY26": 0.19,
+      "roceDefinition": "IR pack glossary: for the full year, ROCE = EBIT / average (of opening & closing) Capital employed; Capital Employed = equity attributable to parent & non-controlling interest + net debt (net debt includes lease liabilities). Year-end CE stated as 3,607,522 mn (equity 1,959,634 + net debt 1,647,888). Alternative gross basis from balance sheet: total equity 1,959,634 + borrowings 1,000,849 + 215,865 = 3,176,348 mn (Rs 317,634.8 cr).",
+      "revenueQ1FY27": 58539.1,
+      "revenueQ1FY26": 49462.6,
+      "intakeQ1FY27": null,
+      "sources": {
+        "cfoFY26": {
+          "document": "Bharti Airtel audited consolidated results FY26, BSE AttachHis/100a1e9f-cb30-4bad-94e9-8efc4d95aa50.pdf; source unit Rs million (scanned; values checked against rendered page image)",
+          "page": 5
+        },
+        "capexFY26": {
+          "document": "Bharti Airtel audited consolidated results FY26, BSE AttachHis/100a1e9f-cb30-4bad-94e9-8efc4d95aa50.pdf; source unit Rs million (scanned; values checked against rendered page image)",
+          "page": 5
+        },
+        "capexIntangiblesFY26": {
+          "document": "Bharti Airtel audited consolidated results FY26, BSE AttachHis/100a1e9f-cb30-4bad-94e9-8efc4d95aa50.pdf; source unit Rs million (scanned; values checked against rendered page image)",
+          "page": 5
+        },
+        "ebitFY26": {
+          "document": "Bharti Airtel Quarterly Report (IR pack) Q4 FY26, consolidated (local scratchpad/ledger10/docs/b9_airtel_q4fy26_irpack.pdf, from airtel.in investor relations); Rs million",
+          "page": 4
+        },
+        "capitalEmployedFY26": {
+          "document": "Bharti Airtel Quarterly Report (IR pack) Q4 FY26, consolidated (local scratchpad/ledger10/docs/b9_airtel_q4fy26_irpack.pdf, from airtel.in investor relations); Rs million",
+          "page": 47
+        },
+        "statedRoceFY26": {
+          "document": "Bharti Airtel Quarterly Report (IR pack) Q4 FY26, consolidated (local scratchpad/ledger10/docs/b9_airtel_q4fy26_irpack.pdf, from airtel.in investor relations); Rs million",
+          "page": 4
+        },
+        "roceDefinition": {
+          "document": "Bharti Airtel Quarterly Report (IR pack) Q4 FY26, consolidated (local scratchpad/ledger10/docs/b9_airtel_q4fy26_irpack.pdf, from airtel.in investor relations); Rs million",
+          "page": 58
+        },
+        "revenueFY26": {
+          "document": "Bharti Airtel audited consolidated results FY26, BSE AttachHis/100a1e9f-cb30-4bad-94e9-8efc4d95aa50.pdf; source unit Rs million (scanned; values checked against rendered page image)",
+          "page": 2
+        },
+        "patFY26": {
+          "document": "Bharti Airtel audited consolidated results FY26, BSE AttachHis/100a1e9f-cb30-4bad-94e9-8efc4d95aa50.pdf; source unit Rs million (scanned; values checked against rendered page image)",
+          "page": 2
+        },
+        "revenueQ1FY27": {
+          "document": "Bharti Airtel audited consolidated results Q1 FY27, BSE AttachHis/540b3db6-4429-493b-bcb9-1cc6b861af1f.pdf; Rs million",
+          "page": 2
+        },
+        "revenueQ1FY26": {
+          "document": "Bharti Airtel audited consolidated results Q1 FY27, BSE AttachHis/540b3db6-4429-493b-bcb9-1cc6b861af1f.pdf; Rs million",
+          "page": 2
+        }
+      },
+      "notes": "Source unit Rs million, converted to Rs crore (/10). capitalEmployedFY26 uses the company's own stated CE (equity incl. NCI + net debt incl. leases) = 3,607,522 mn; gross equity+borrowings alternative is Rs 317,634.8 cr. Spectrum payments (8,546 mn in FY26) are a separate investing line, not in capex. PAT 338,228 mn is total (incl. NCI); exceptional charge 34,175 mn in FY26. Telecom operator: no order-intake metric (null)."
+    },
+    {
+      "symbol": "LT",
+      "basis": "consolidated",
+      "revenueFY26": 285874.36,
+      "patFY26": 18953.88,
+      "cfoFY26": 16740.97,
+      "capexFY26": 4809.19,
+      "capexIntangiblesFY26": null,
+      "ebitFY26": 30547.07,
+      "ebitDefinition": "Profit before exceptional items and tax 27,698.25 + Finance costs 2,848.82 (FY26 consolidated P&L). Excludes 'Finance cost of financial services business and finance lease activity' (6,995.34), which L&T books within operating expenses.",
+      "capitalEmployedFY26": 250213,
+      "statedRoceFY26": null,
+      "roceDefinition": "No consolidated ROCE stated. Company's own stated consolidated 'Capital employed' = Net worth attributable to owners 109,290 + Non-controlling interest 19,241 + Borrowings 121,683 (10-year highlights). Implied EBIT/CE = 12.2% (computed, not stated). Standalone AR ratio table shows ROCE 8.17% (standalone, after exceptional items) - not used.",
+      "revenueQ1FY27": 67941.74,
+      "revenueQ1FY26": 63678.92,
+      "intakeQ1FY27": 108014,
+      "sources": {
+        "cfoFY26": {
+          "document": "L&T Integrated Annual Report 2025-26, Consolidated Statement of Cash Flows (Rs crore)",
+          "page": "622"
+        },
+        "capexFY26": {
+          "document": "L&T Integrated Annual Report 2025-26, Consolidated Statement of Cash Flows (Rs crore)",
+          "page": "622"
+        },
+        "ebitFY26": {
+          "document": "L&T Integrated Annual Report 2025-26, Consolidated Statement of Profit and Loss (Rs crore)",
+          "page": "618"
+        },
+        "capitalEmployedFY26": {
+          "document": "L&T Integrated Annual Report 2025-26, Consolidated Financials - 10 Year Highlights (Rs crore)",
+          "page": "25"
+        },
+        "revenueFY26": {
+          "document": "L&T Integrated Annual Report 2025-26, Consolidated Statement of Profit and Loss (Rs crore)",
+          "page": "618"
+        },
+        "patFY26": {
+          "document": "L&T Integrated Annual Report 2025-26, Consolidated Statement of Profit and Loss (Rs crore); attributable to owners 16,083.99",
+          "page": "618"
+        },
+        "revenueQ1FY27": {
+          "document": "L&T Statement of Unaudited Consolidated Financial Results for quarter ended June 30, 2026 (BSE filing 28 Jul 2026; text via Trendlyne document search). Corroborated: Q1 FY27 Analyst Presentation p11 'Revenue 636.8 ... 679.4 7%' (Rs bn)",
+          "page": "results p1 (page n/a in extract); presentation PDF p11"
+        },
+        "revenueQ1FY26": {
+          "document": "L&T Q1 FY27 consolidated results statement (as above)",
+          "page": "results p1"
+        },
+        "intakeQ1FY27": {
+          "document": "L&T press release 'Financial Results for the quarter ended June 30, 2026' (28 Jul 2026, filed with results). Corroborated: Analyst Presentation p8 'Order Inflow 945 1080 14%' (Rs bn)",
+          "page": "press release p1; presentation PDF p8"
+        }
+      },
+      "notes": "Source units Rs crore (AR, results); presentation in Rs bn. Presentation file: scratchpad/ledger/docs/lt_bse_a4d1.txt (Q1 FY27 analyst presentation). Q1 FY27 results PDF itself not saved locally (BSE API blocked); figures taken from the company's results filing text via Trendlyne and cross-checked with the presentation (679.4/636.8 bn). Consolidated CFO is after (25,233.30) increase in loans towards financing activities (L&T Finance); standalone CFO FY26 = 21,927.95 (AR p502). PAT attributable to owners FY26 = 16,083.99; FY26 exceptional loss (1,722.44)."
+    },
+    {
+      "symbol": "POWERGRID",
+      "basis": "consolidated",
+      "revenueFY26": 46732.87,
+      "patFY26": 15927.95,
+      "cfoFY26": 40935.36,
+      "capexFY26": 37279.14,
+      "capexIntangiblesFY26": null,
+      "ebitFY26": 25900.95,
+      "ebitDefinition": "Profit before share of JV profit, exceptional items, tax and regulatory deferral account balances 17,453.37 + Finance costs 8,447.58 (FY26 consolidated P&L). Excludes net movement in regulatory deferral account balances (-2,774.39 net of tax) and JV share (-132.34). Company's consolidated segment 'Total Profit before Interest and Tax' FY26 = 27,322.50 (segment basis, excludes unallocated other income 478.49 and unallocated expenses 390.00).",
+      "capitalEmployedFY26": 248503.04,
+      "statedRoceFY26": null,
+      "roceDefinition": "No ROCE stated. capitalEmployedFY26 = total equity 1,00,494.03 (no NCI) + total borrowings 1,48,009.01 (company's stated 'Total Borrowings', results disclosure). Company's own 'CAPITAL EMPLOYED (Net Fixed Assets+Net Current Assets)' = 1,56,346.43 (excludes CWIP 43,654.29) and its stated 'Net Profit to Capital Employed' = 10.19% (PAT basis, not EBIT). Implied EBIT/(equity+borrowings) = 10.4% (computed).",
+      "revenueQ1FY27": 11496.72,
+      "revenueQ1FY26": 11196.22,
+      "intakeQ1FY27": null,
+      "sources": {
+        "cfoFY26": {
+          "document": "POWERGRID Integrated Annual Report 2025-26, Consolidated Statement of Cash Flows (Rs crore)",
+          "page": "PDF p266 (printed 529)"
+        },
+        "capexFY26": {
+          "document": "POWERGRID Integrated Annual Report 2025-26, Consolidated Statement of Cash Flows (Rs crore)",
+          "page": "PDF p266 (printed 529)"
+        },
+        "ebitFY26": {
+          "document": "POWERGRID Integrated Annual Report 2025-26, Historical Financial Summary (Consolidated) (Rs crore); same figures in Consolidated P&L PDF p265 (printed 526)",
+          "page": "PDF p74 (printed 144)"
+        },
+        "capitalEmployedFY26": {
+          "document": "POWERGRID Integrated Annual Report 2025-26, Historical Financial Summary (Consolidated)",
+          "page": "PDF p75 (printed 146)"
+        },
+        "totalBorrowingsFY26": {
+          "document": "POWERGRID Q1 FY27 results, Additional Information on Consolidated basis (BSE filing 5 Aug 2026; text via Trendlyne document search). Matches AR balance sheet: non-current 1,21,071.80 + current 26,937.21 (AR PDF p264, printed 524)",
+          "page": "results (page n/a in extract)"
+        },
+        "revenueFY26": {
+          "document": "POWERGRID Integrated Annual Report 2025-26, Consolidated Statement of Profit and Loss (Rs crore)",
+          "page": "PDF p265 (printed 526)"
+        },
+        "patFY26": {
+          "document": "POWERGRID Integrated Annual Report 2025-26, Historical Financial Summary (Consolidated) (Rs crore)",
+          "page": "PDF p74 (printed 144)"
+        },
+        "revenueQ1FY27": {
+          "document": "POWERGRID Statement of Unaudited Consolidated Financial Results for the quarter ended 30 June 2026 (BSE filing 5 Aug 2026; text via Trendlyne document search)",
+          "page": "results consolidated statement p1 (page n/a in extract)"
+        },
+        "revenueQ1FY26": {
+          "document": "POWERGRID Q1 FY27 consolidated results statement (as above)",
+          "page": "as above"
+        }
+      },
+      "notes": "Units Rs crore throughout. AR file: scratchpad/ledger/docs/pg_ar_fy26.txt (two printed pages per PDF page). Q1 FY27 results PDF not saved locally (BSE announcements API returns Access Denied to plain curl); figures from the company's filed results text via Trendlyne; cross-check: FY26 column in that statement = total income 47,684.43, matches AR. Q1 FY27 consolidated PAT 3,598.42 vs 3,630.58. Intake: POWERGRID does not report an order-intake figure (regulated/TBCB transmission). FY26 PAT boosted by deferred-tax remeasurement (Finance Act 2026) offset in regulatory deferral balances. Company's cash-basis capex (incl. TBCB) FY26 = 33,305 (AR PDF p75)."
+    },
+    {
+      "symbol": "BLUESTARCO",
+      "basis": "consolidated",
+      "revenueFY26": 12401.99,
+      "patFY26": 527.33,
+      "cfoFY26": 153.81,
+      "capexFY26": 329.03,
+      "capexIntangiblesFY26": null,
+      "ebitFY26": 814.08,
+      "ebitDefinition": "Profit before exceptional items and tax 741.94 + Finance cost 72.14 (FY26 consolidated results). Including exceptional loss (38.83, Labour Codes) EBIT would be 775.25 (PBT 703.11 + 72.14). Company's 'Total segment result' (PBIT) FY26 = 971.62 before unallocable expenses.",
+      "capitalEmployedFY26": 4060.66,
+      "statedRoceFY26": 0.286,
+      "roceDefinition": "Company-stated consolidated ROCE 28.6% = PBIT / average capital employed, where 'Net Capital Employed' = shareholders' funds + net borrowings (3,258.41 at FY26). capitalEmployedFY26 here = total equity 3,433.86 + total borrowings 626.80 (all current; no non-current borrowings).",
+      "revenueQ1FY27": 3377.92,
+      "revenueQ1FY26": 2982.25,
+      "intakeQ1FY27": null,
+      "sources": {
+        "cfoFY26": {
+          "document": "Blue Star Annual Report FY2025-26 (filed 5 May 2026), Consolidated Statement of Cash Flows; same in audited results 6 May 2026 (Rs crore); text via Trendlyne document search",
+          "page": "page n/a (Trendlyne extract)"
+        },
+        "capexFY26": {
+          "document": "Blue Star Annual Report FY2025-26, Consolidated Statement of Cash Flows (Rs crore); via Trendlyne",
+          "page": "page n/a"
+        },
+        "ebitFY26": {
+          "document": "Blue Star Q1 FY27 unaudited consolidated results (6 Aug 2026), year-ended 31.03.2026 audited column; finance cost from AR MD&A 'Finance costs for FY26 were Rs 72.14 crores'; via Trendlyne",
+          "page": "page n/a"
+        },
+        "statedRoceFY26": {
+          "document": "Blue Star Annual Report FY2025-26, 5 Year Consolidated Financial Highlights; via Trendlyne",
+          "page": "page n/a"
+        },
+        "capitalEmployedFY26": {
+          "document": "Blue Star Annual Report FY2025-26, Note 45 Capital Management (consolidated); via Trendlyne",
+          "page": "page n/a"
+        },
+        "revenueFY26": {
+          "document": "Blue Star Annual Report FY2025-26 (consolidated financial performance); also results year column 12,401.99; via Trendlyne",
+          "page": "page n/a"
+        },
+        "patFY26": {
+          "document": "Blue Star Annual Report FY2025-26; 5-yr highlights 'Profit for the year after tax 527.33'; via Trendlyne",
+          "page": "page n/a"
+        },
+        "revenueQ1FY27": {
+          "document": "Blue Star Unaudited Consolidated Financial Results for quarter ended June 30, 2026 (BSE filing 6 Aug 2026); via Trendlyne. Presentation Q1FY27: 'Q1FY26 2982 / Q1FY27 3378'",
+          "page": "page n/a"
+        },
+        "revenueQ1FY26": {
+          "document": "as above",
+          "page": "page n/a"
+        },
+        "intakeQ1FY27": {
+          "document": "Blue Star Q1 FY27 earnings call transcript (7 Aug 2026, filed 13 Aug 2026); via Trendlyne",
+          "page": "page n/a"
+        }
+      },
+      "notes": "All Blue Star figures from company filings (AR FY26, audited FY26 results, Q1 FY27 results/presentation/transcript) read as text via Trendlyne document search; PDFs not saved locally (company site 406 bot-block, BSE API blocked; the saved ledger/docs/bluestar_pr_q4fy26.pdf is an HTML error page). Page numbers unavailable. Units Rs crore. Q1 FY27 total order inflow not disclosed as a single figure; only closing order book Rs 7,764 cr (30 Jun 2026) and management comment of roughly Rs 1,500 cr data-centre MEP inflow (garbled transcript text) - intake left null. FY26 PAT attributable to owners 527.68 (NCI -0.35). Capex split between PPE and intangibles not given on face of cash flow (single combined line)."
+    },
+    {
+      "symbol": "SCHNEIDER",
+      "basis": "standalone (company has no subsidiary, associate or JV - AR p124/p256)",
+      "revenueFY26": 2890.63,
+      "patFY26": 212.56,
+      "cfoFY26": 224.5,
+      "capexFY26": 104.3,
+      "capexIntangiblesFY26": null,
+      "ebitFY26": 356.5,
+      "ebitDefinition": "Profit before exceptional items and tax 30,575 lakh + Finance costs 5,075 lakh = 35,650 lakh (FY26 P&L). Company's own ROCE EBIT excludes interest income. Including exceptional charge (1,417 lakh) EBIT = 342.33 cr.",
+      "capitalEmployedFY26": 1218.18,
+      "statedRoceFY26": 0.2554,
+      "roceDefinition": "Company-stated ROCE 25.54% (AR ratio note; 25.5% in MD&A) = EBIT (profit before interest and taxes minus interest income) / Capital Employed, where Capital Employed = Tangible Net Worth + Total Borrowings + Deferred Tax Liability. capitalEmployedFY26 here = total equity 77,442 lakh + borrowings 44,376 lakh (non-current only; no current borrowings) = 1,21,818 lakh.",
+      "revenueQ1FY27": 651.36,
+      "revenueQ1FY26": 621.63,
+      "intakeQ1FY27": 915,
+      "sources": {
+        "cfoFY26": {
+          "document": "SEIL Annual Report 2025-26, Statement of cash flows (Rs in Lakh)",
+          "page": "PDF p261 (printed 236)"
+        },
+        "capexFY26": {
+          "document": "SEIL Annual Report 2025-26, Statement of cash flows (Rs in Lakh)",
+          "page": "PDF p261 (printed 236)"
+        },
+        "ebitFY26": {
+          "document": "SEIL Annual Report 2025-26, Statement of Profit and Loss (Rs in Lakh)",
+          "page": "PDF p260 (printed 235)"
+        },
+        "capitalEmployedFY26": {
+          "document": "SEIL Annual Report 2025-26, Balance Sheet (Rs in Lakh)",
+          "page": "PDF p259 (printed 234)"
+        },
+        "statedRoceFY26": {
+          "document": "SEIL Annual Report 2025-26, notes - financial ratios",
+          "page": "PDF p315 (printed 290)"
+        },
+        "revenueFY26": {
+          "document": "SEIL Annual Report 2025-26, Statement of Profit and Loss (Rs in Lakh)",
+          "page": "PDF p260 (printed 235)"
+        },
+        "patFY26": {
+          "document": "SEIL Annual Report 2025-26, Statement of Profit and Loss (Rs in Lakh)",
+          "page": "PDF p260 (printed 235)"
+        },
+        "revenueQ1FY27": {
+          "document": "SEIL Statement of Financial Results for quarter ended June 30, 2026 (14 Aug 2026) and Q1 FY27 investor presentation P&L (17 Aug 2026), via Trendlyne",
+          "page": "page n/a; presentation 'Page 13' (images in local PDF)"
+        },
+        "revenueQ1FY26": {
+          "document": "SEIL Q1 FY27 results statement (14 Aug 2026), via Trendlyne",
+          "page": "page n/a"
+        },
+        "intakeQ1FY27": {
+          "document": "SEIL Press Release Q1 FY27 (14 Aug 2026), scratchpad/ledger/docs/seil_pr_q1fy27.txt",
+          "page": "PDF p2"
+        }
+      },
+      "notes": "Source unit Rs lakh (converted /100 to Rs crore) except press release/presentation (Rs crore). revenueQ1FY27 derived as total income less other income from the results statement because the revenue cell did not extract; matches presentation 'Sales 651.4'. Presentation says Q1 orders +0.5% YoY. Order backlog 30 Jun 2026 Rs 2,169 cr. FY26 exceptional items 1,417 lakh charge. AR file: scratchpad/ledger/docs/seil_ar_fy26.txt."
+    },
+    {
+      "symbol": "TDPOWERSYS",
+      "basis": "consolidated",
+      "revenueFY26": 1856.23,
+      "patFY26": 238.77,
+      "cfoFY26": 129.07,
+      "capexFY26": 104.18,
+      "capexIntangiblesFY26": 4.34,
+      "ebitFY26": 328.02,
+      "ebitDefinition": "Profit before tax 32,611.71 lakh (no exceptional items at consolidated level) + Finance costs 190.32 lakh = 32,802.03 lakh (FY26 consolidated P&L). Company presentation shows its own 'EBIT' FY26 = Rs 3,199.48 mn (before other income interest 80.74 mn).",
+      "capitalEmployedFY26": 1089.86,
+      "statedRoceFY26": null,
+      "roceDefinition": "No ROCE stated in documents found. capitalEmployedFY26 = total equity 1,07,176.43 lakh + borrowings 1,809.62 lakh (current working-capital borrowings only; no non-current borrowings) = 1,08,986.05 lakh. Implied EBIT/CE = 30.1% (computed).",
+      "revenueQ1FY27": 640.05,
+      "revenueQ1FY26": 371.9,
+      "intakeQ1FY27": 734,
+      "sources": {
+        "cfoFY26": {
+          "document": "TD Power Systems Annual Report FY2025-26 (filed 13 May 2026), Consolidated Statement of Cashflow (Rs in lakhs); via Trendlyne",
+          "page": "page n/a (Trendlyne extract)"
+        },
+        "capexFY26": {
+          "document": "TDPS AR FY2025-26, Consolidated Statement of Cashflow (Rs lakhs); via Trendlyne",
+          "page": "page n/a"
+        },
+        "capexIntangiblesFY26": {
+          "document": "TDPS AR FY2025-26, Consolidated Statement of Cashflow (Rs lakhs); via Trendlyne (row labels offset in extract; assignment matches standalone statement: intangibles 433.77, leasehold land 214.85)",
+          "page": "page n/a"
+        },
+        "ebitFY26": {
+          "document": "TDPS AR FY2025-26, Consolidated Statement of Profit & Loss (Rs lakhs); via Trendlyne",
+          "page": "page n/a"
+        },
+        "capitalEmployedFY26": {
+          "document": "TDPS AR FY2025-26, Consolidated Balance Sheet as at March 31, 2026 (Rs lakhs); via Trendlyne",
+          "page": "page n/a"
+        },
+        "revenueFY26": {
+          "document": "TDPS AR FY2025-26, Consolidated Statement of Profit & Loss (Rs lakhs); via Trendlyne",
+          "page": "page n/a"
+        },
+        "patFY26": {
+          "document": "TDPS AR FY2025-26, Consolidated Statement of Profit & Loss (Rs lakhs); MD&A: 'Profit after tax ... to Rs 23,877.49 lakhs'; via Trendlyne",
+          "page": "page n/a"
+        },
+        "revenueQ1FY27": {
+          "document": "TDPS Statement of Standalone/Consolidated Unaudited Financial Results for period ended June 30, 2026 (11 Aug 2026), consolidated columns (Rs lakhs); via Trendlyne. Presentation: 'Revenue from Operations | 6,400.54 | 3,718.99' (Rs mn)",
+          "page": "page n/a"
+        },
+        "revenueQ1FY26": {
+          "document": "as above",
+          "page": "page n/a"
+        },
+        "intakeQ1FY27": {
+          "document": "TD Power Systems Q1 FY27 earnings call transcript, scratchpad/ledger/docs/tdps_transcript_q1fy27.txt",
+          "page": "PDF p3"
+        }
+      },
+      "notes": "Source unit Rs lakhs (AR, results) converted /100 to Rs crore; presentation in Rs mn; transcript in INR bn. AR and results PDFs not saved locally; text from company filings via Trendlyne document search (page numbers unavailable). Order book (manufacturing) 30 Jun 2026 INR 22.08 bn per transcript p3. FY26 order inflow Rs 2,23,848.20 lakh (AR MD&A). Leasehold land payment 2.15 cr not included in capex or intangibles. Standalone FY26: revenue 1,716.66 cr, PAT 216.44 cr, exceptional (3.00 cr) impairment of DF Power investment."
+    },
+    {
+      "symbol": "SANSERA",
+      "basis": "consolidated",
+      "revenueFY26": 3497.92,
+      "patFY26": 326.86,
+      "cfoFY26": 387.07,
+      "capexFY26": 511.32,
+      "capexIntangiblesFY26": 1.25,
+      "ebitFY26": 486.09,
+      "ebitDefinition": "Profit before exceptional items and tax (incl. share of associate) Rs 4,483.54 mn + Finance costs Rs 377.37 mn = Rs 4,860.91 mn (FY26 consolidated audited results). After exceptional items (162.36 mn) EBIT = 469.86 cr.",
+      "capitalEmployedFY26": 3565.07,
+      "statedRoceFY26": null,
+      "roceDefinition": "No ROCE stated in the results/presentations found. capitalEmployedFY26 = total equity Rs 31,074.94 mn (incl. NCI; owners 30,873.71) + non-current borrowings 956.26 mn + current borrowings 3,619.47 mn = Rs 35,650.67 mn. Implied EBIT/CE = 13.6% (computed).",
+      "revenueQ1FY27": 1021.3,
+      "revenueQ1FY26": 766.3,
+      "intakeQ1FY27": null,
+      "sources": {
+        "cfoFY26": {
+          "document": "Sansera Engineering outcome of board meeting - Annexure B Consolidated Statement of Cash Flows for year ended 31 March 2026 (Rs in Millions), /private/tmp/claude-501/-Users-shivamagarwal-Downloads/d4a03688-adff-4a39-8739-e2cc2b3ec70b/scratchpad/ledger6/b5_sansera_outcome_q4fy26.txt",
+          "page": "PDF p22"
+        },
+        "capexFY26": {
+          "document": "as above (Rs mn)",
+          "page": "PDF p22"
+        },
+        "capexIntangiblesFY26": {
+          "document": "as above (Rs mn)",
+          "page": "PDF p22"
+        },
+        "ebitFY26": {
+          "document": "Statement of Consolidated Financial Results for quarter and year ended 31 March 2026 (Rs mn), b5_sansera_outcome_q4fy26",
+          "page": "PDF p20"
+        },
+        "capitalEmployedFY26": {
+          "document": "Consolidated statement of assets and liabilities as at 31 March 2026 (Rs mn), b5_sansera_outcome_q4fy26",
+          "page": "PDF p21"
+        },
+        "revenueFY26": {
+          "document": "Statement of Consolidated Financial Results FY26 (Rs mn), b5_sansera_outcome_q4fy26",
+          "page": "PDF p20"
+        },
+        "patFY26": {
+          "document": "Statement of Consolidated Financial Results FY26 (Rs mn), b5_sansera_outcome_q4fy26",
+          "page": "PDF p20"
+        },
+        "revenueQ1FY27": {
+          "document": "Sansera Earnings Release Q1FY27 Consolidated Results (12 Aug 2026), /private/tmp/claude-501/-Users-shivamagarwal-Downloads/d4a03688-adff-4a39-8739-e2cc2b3ec70b/scratchpad/ledger/docs/hw/sansera/Earnings-release-Q1FY27.txt (INR Mn)",
+          "page": "PDF p2"
+        },
+        "revenueQ1FY26": {
+          "document": "as above (Q1FY26 column)",
+          "page": "PDF p2"
+        }
+      },
+      "notes": "Source unit Rs million (converted /10 to Rs crore). Q1 revenues from the earnings release are rounded to INR mn (results statement not saved locally). Sansera does not report order intake; it reports order book as peak annual revenue of new business (Rs 18,493 mn at 30 Jun 2026, excl. ADS) and ADS unexecuted backlog Rs 44,368 mn - intake null. Q1 FY27 exceptional cost Rs 169 mn (US litigation settlement). Results PDF is OCR text (some commas/periods garbled, e.g. '34,979 17'); figures cross-checked with presentation (FY26 revenue INR 34,979 mn, PAT 3,269)."
+    },
+    {
+      "symbol": "GVT&D",
+      "basis": "standalone (company prepares only standalone statements; no subsidiaries)",
+      "revenueFY26": 6206.31,
+      "patFY26": 1233.25,
+      "cfoFY26": 1709.88,
+      "capexFY26": 188.42,
+      "capexIntangiblesFY26": null,
+      "ebitFY26": 1728.07,
+      "ebitDefinition": "Profit before tax 16,497.2 mn + exceptional items (labour codes) 636 mn + finance cost 147.5 mn = 17,280.7 mn (Rs mn). PBT and finance cost from AR cash flow statement; exceptional from Q1 FY27 analyst presentation (rounded; presentation shows 'Profit Before Tax & Exceptional Items 17,133' and 'Finance Cost 148' for 12M FY25-26). After exceptional items EBIT = 1,664.47 cr.",
+      "capitalEmployedFY26": 2690.29,
+      "statedRoceFY26": null,
+      "roceDefinition": "Debt-free: total equity 26,902.9 mn + borrowings nil (lease liabilities 240.0 mn excluded). The AR ratio note defines ROCE as 'Earning before depreciation, finance cost and taxes' / Capital Employed (Tangible Net Worth + Total Debt) - an EBITDA-based ratio; the FY26 value did not extract legibly (row shows '50%' and '32.7%' change), so not reported.",
+      "revenueQ1FY27": 1836.1,
+      "revenueQ1FY26": 1330.1,
+      "intakeQ1FY27": 1137.0,
+      "sources": {
+        "cfoFY26": {
+          "document": "GE Vernova T&D India Annual Report 2025-26 (filed 17 May 2026), Statement of Cash Flows (Rs million); via Trendlyne",
+          "page": "page n/a (Trendlyne extract)"
+        },
+        "capexFY26": {
+          "document": "GVT&D AR 2025-26, Statement of Cash Flows (Rs mn); via Trendlyne",
+          "page": "page n/a"
+        },
+        "ebitFY26": {
+          "document": "GVT&D Analyst Presentation Q1 FY2026-27, 'Financial Performance' 12M FY25-26 column (Rs mn), scratchpad/ledger/docs/gvtd_pres_q1fy27.txt; AR cash flow: 'Profit before tax 16,497.2' and 'Finance cost 147.5'",
+          "page": "presentation PDF p7"
+        },
+        "capitalEmployedFY26": {
+          "document": "GVT&D AR 2025-26, Balance Sheet as at 31 March 2026 (Rs mn); no borrowings line; ratio note 'No net debt at the end of year'; via Trendlyne",
+          "page": "page n/a"
+        },
+        "revenueFY26": {
+          "document": "GVT&D AR 2025-26, Note 22 Revenue from operations (Rs mn); via Trendlyne",
+          "page": "page n/a"
+        },
+        "patFY26": {
+          "document": "GVT&D AR 2025-26, Statement of Changes in Equity (Rs mn); via Trendlyne",
+          "page": "page n/a"
+        },
+        "revenueQ1FY27": {
+          "document": "GVT&D Analyst Presentation Q1 FY2026-27, Financial Performance (Rs in millions), scratchpad/ledger/docs/gvtd_pres_q1fy27.txt",
+          "page": "PDF p7"
+        },
+        "revenueQ1FY26": {
+          "document": "as above",
+          "page": "PDF p7"
+        },
+        "intakeQ1FY27": {
+          "document": "GVT&D Analyst Presentation Q1 FY2026-27, scratchpad/ledger/docs/gvtd_pres_q1fy27.txt; press release: 'Order bookings were INR 11.4 billion, against INR 16.2 billion'",
+          "page": "PDF p8"
+        }
+      },
+      "notes": "Source unit Rs million (converted /10 to Rs crore). Q1 revenue from the analyst presentation is rounded to Rs mn (results statement not saved locally). Company is debt-free; cash & equivalents 15,252.6 mn plus ICD to related party (loans 9,710.4 mn) at FY26. FY26 order bookings Rs 147.8 bn (AR). Q1 FY27 order backlog Rs 209,295 mn."
+    },
+    {
+      "symbol": "HFCL",
+      "basis": "consolidated",
+      "revenueFY26": 4949.27,
+      "patFY26": 329.44,
+      "cfoFY26": -378.13,
+      "capexFY26": 230.18,
+      "capexIntangiblesFY26": 115.13,
+      "ebitFY26": 669.74,
+      "ebitDefinition": "Profit before exceptional items and income tax 427.68 (no exceptional items) + Finance costs 242.06 (FY26 consolidated P&L, Rs crore).",
+      "capitalEmployedFY26": 6661.96,
+      "statedRoceFY26": 0.1104,
+      "roceDefinition": "Company KPI page shows 'Return on Capital Employed (%)' FY26 11.04 (FY25 7.69; '+43.64% RoCE' on highlights page); formula not stated in the AR text found. KPI page is on consolidated figures (its 'Debt' FY26 = 1,713.37 = consolidated borrowings). capitalEmployedFY26 = total equity 4,948.59 (owners 4,890.75 + NCI 57.84) + borrowings non-current 389.88 + current 1,323.49 = 6,661.96. Operational buyers' credit 151.95 (other financial liabilities) excluded.",
+      "revenueQ1FY27": 1914.98,
+      "revenueQ1FY26": 871.02,
+      "intakeQ1FY27": null,
+      "sources": {
+        "cfoFY26": {
+          "document": "HFCL Annual Report 2025-26, Consolidated Statement of Cash Flow (Rs Crore), /private/tmp/claude-501/-Users-shivamagarwal-Downloads/d4a03688-adff-4a39-8739-e2cc2b3ec70b/scratchpad/hfcl26.txt",
+          "page": "PDF p302 (printed 298)"
+        },
+        "capexFY26": {
+          "document": "HFCL AR 2025-26, Consolidated Statement of Cash Flow (Rs Crore)",
+          "page": "PDF p302 (printed 298)"
+        },
+        "capexIntangiblesFY26": {
+          "document": "HFCL AR 2025-26, Consolidated Statement of Cash Flow (Rs Crore)",
+          "page": "PDF p302 (printed 298)"
+        },
+        "ebitFY26": {
+          "document": "HFCL AR 2025-26, Consolidated Statement of Profit and Loss (Rs Crore)",
+          "page": "PDF p301 (printed 297)"
+        },
+        "capitalEmployedFY26": {
+          "document": "HFCL AR 2025-26, Consolidated Balance Sheet (Rs Crore)",
+          "page": "PDF p300 (printed 296)"
+        },
+        "statedRoceFY26": {
+          "document": "HFCL AR 2025-26, Key Performance Indicators",
+          "page": "PDF p33 (printed 29)"
+        },
+        "revenueFY26": {
+          "document": "HFCL AR 2025-26, Consolidated Statement of Profit and Loss (Rs Crore)",
+          "page": "PDF p301 (printed 297)"
+        },
+        "patFY26": {
+          "document": "HFCL AR 2025-26, Consolidated Statement of Profit and Loss (Rs Crore)",
+          "page": "PDF p301 (printed 297)"
+        },
+        "revenueQ1FY27": {
+          "document": "HFCL Investor Presentation Q1FY27 (22 Jul 2026), Income Statement - Q1FY27 (Rs Crore), /private/tmp/claude-501/-Users-shivamagarwal-Downloads/d4a03688-adff-4a39-8739-e2cc2b3ec70b/scratchpad/ledger/docs/hw/hfcl/HFCL_STX_IP_22072026.txt; press release 'Consolidated Financial Highlights - Q1FY27 Revenue 1914.98 871.02'",
+          "page": "PDF p8 (slide 7)"
+        },
+        "revenueQ1FY26": {
+          "document": "as above (Q1FY26 column)",
+          "page": "PDF p8"
+        }
+      },
+      "notes": "Units Rs crore throughout. Consolidated CFO FY26 negative (working-capital build of 1,183.10). Q1 FY27 order intake not disclosed as a figure; total order book Rs 26,665 cr at Q1FY27 (presentation p9) vs 21,206 at Q4FY26 - intake left null (would be implied, not stated). Results PDF text (b8_hfcl_HFCL_STX_Outcome_BM_22072026) lacks the results table; figures taken from presentation and press release (consolidated)."
+    },
+    {
+      "symbol": "MTARTECH",
+      "basis": "consolidated",
+      "revenueFY26": 876.2,
+      "patFY26": 94.0,
+      "cfoFY26": 196.9,
+      "capexFY26": 133.6,
+      "capexIntangiblesFY26": null,
+      "ebitFY26": 159.3,
+      "ebitDefinition": "Company-stated consolidated EBIT FY26 Rs 159.3 cr (= EBITDA 171.2 + other income 23.1 - D&A 35.0; before exceptional labour-code charge 3.8). Cross-check: PBT 126.1 + finance costs 29.4 + exceptional 3.8 = 159.3. Audited results: PBT Rs 1,261.46 mn + finance costs 293.58 mn = 155.50 cr after exceptional.",
+      "capitalEmployedFY26": 1191.9,
+      "statedRoceFY26": 0.172,
+      "roceDefinition": "Company-stated RoCE FY26 (Mar-26) 17.2%, '*RoCE = EBIT/Avg. Capital Employed' (capital employed composition not specified). capitalEmployedFY26 here = total equity 822.6 + non-current borrowings 147.7 + current borrowings 221.6 = 1,191.9 (lease liabilities 7.3 excluded).",
+      "revenueQ1FY27": 360.7,
+      "revenueQ1FY26": 156.6,
+      "intakeQ1FY27": 2895.1,
+      "sources": {
+        "cfoFY26": {
+          "document": "MTAR Investor Presentation May 2026, Consolidated Cash Flow Statement (Rs Cr), /private/tmp/claude-501/-Users-shivamagarwal-Downloads/d4a03688-adff-4a39-8739-e2cc2b3ec70b/scratchpad/ledger/docs/hw/mtar/Investors-Presentation.txt; audited results (12 May 2026) consolidated: cash generated 2,217.43 less tax 248.40 = 1,969.03 (INR mn)",
+          "page": "PDF p15"
+        },
+        "capexFY26": {
+          "document": "MTAR Statement of Cash Flows (Standalone and Consolidated) for year ended March 31, 2026, Annexure 2 to audited results (12 May 2026); via Trendlyne",
+          "page": "page n/a (Trendlyne extract)"
+        },
+        "ebitFY26": {
+          "document": "MTAR Investor Presentation May 2026, Historical Consolidated P&L (Rs Cr), /private/tmp/claude-501/-Users-shivamagarwal-Downloads/d4a03688-adff-4a39-8739-e2cc2b3ec70b/scratchpad/ledger/docs/hw/mtar/Investors-Presentation.txt",
+          "page": "PDF p19"
+        },
+        "capitalEmployedFY26": {
+          "document": "MTAR Investor Presentation May 2026, Consolidated Balance Sheet (Rs Crs)",
+          "page": "PDF p14"
+        },
+        "statedRoceFY26": {
+          "document": "MTAR Investor Presentation July 2026 (Q1 FY27), 'Capital Disciplined Growth', /private/tmp/claude-501/-Users-shivamagarwal-Downloads/d4a03688-adff-4a39-8739-e2cc2b3ec70b/scratchpad/ledger/docs/hw/mtar/Investors-Presentation-Q1-FY-2026-27.txt",
+          "page": "PDF p30"
+        },
+        "revenueFY26": {
+          "document": "MTAR Investor Presentation May 2026, Q4/FY26 Consolidated P&L (Rs Crs)",
+          "page": "PDF p13"
+        },
+        "patFY26": {
+          "document": "MTAR Investor Presentation May 2026, Q4/FY26 Consolidated P&L (Rs Crs)",
+          "page": "PDF p13"
+        },
+        "revenueQ1FY27": {
+          "document": "MTAR Press Release Q1 FY27 (29 Jul 2026, unaudited consolidated), /private/tmp/claude-501/-Users-shivamagarwal-Downloads/d4a03688-adff-4a39-8739-e2cc2b3ec70b/scratchpad/ledger/docs/hw/mtar/Press-release_Q1-FY-27.txt",
+          "page": "PDF p2"
+        },
+        "revenueQ1FY26": {
+          "document": "as above",
+          "page": "PDF p2"
+        },
+        "intakeQ1FY27": {
+          "document": "MTAR Investor Presentation July 2026 (Q1 FY27), /private/tmp/claude-501/-Users-shivamagarwal-Downloads/d4a03688-adff-4a39-8739-e2cc2b3ec70b/scratchpad/ledger/docs/hw/mtar/Investors-Presentation-Q1-FY-2026-27.txt",
+          "page": "PDF p13"
+        }
+      },
+      "notes": "Units Rs crore (presentations/press release, 1 decimal); audited results in INR million. AR FY26 not located locally; FY26 figures from company presentation and audited results (via Trendlyne for capex). May-2026 presentation shows FY25 PAT 53.4 while July presentation shows 52.9 (restatement). Order book Rs 5,143.3 cr at 30 Jun 2026."
+    },
+    {
+      "symbol": "POLYCAB",
+      "basis": "consolidated",
+      "revenueFY26": 28883.79,
+      "patFY26": 2708.43,
+      "cfoFY26": 3810.67,
+      "capexFY26": 1480.33,
+      "capexIntangiblesFY26": 0.19,
+      "ebitFY26": 3856.11,
+      "ebitDefinition": "Profit before tax 36,130.75 mn (no exceptional items) + Finance costs 2,430.36 mn = 38,561.11 mn (FY26 consolidated P&L). Company's own 'EBIT' in Key Ratios = 36,199 mn, defined as PBT + Finance Cost - Other Income.",
+      "capitalEmployedFY26": 12259.26,
+      "statedRoceFY26": 0.313,
+      "roceDefinition": "Company-stated consolidated ROCE FY26 31.3% (Key Ratios), defined in Glossary as '(PBT+Finance Cost)/Capital Employed'; the MD&A/letter says 'RoCE stood at 31.5%'. capitalEmployedFY26 here = total equity 121,267.69 mn (owners 120,085.76 + NCI 1,181.93) + borrowings non-current 392.67 + current 932.23 = 122,592.59 mn (lease liabilities excluded).",
+      "revenueQ1FY27": 8209.73,
+      "revenueQ1FY26": 5905.98,
+      "intakeQ1FY27": null,
+      "sources": {
+        "cfoFY26": {
+          "document": "Polycab Integrated Annual Report 2025-26, Consolidated Statement of Cash flows (Rs million), /private/tmp/claude-501/-Users-shivamagarwal-Downloads/d4a03688-adff-4a39-8739-e2cc2b3ec70b/scratchpad/ledger/docs/hw/polycab/polycab_iar_fy26.txt",
+          "page": "PDF p319 (printed 316)"
+        },
+        "capexFY26": {
+          "document": "Polycab IAR 2025-26, Consolidated Statement of Cash flows (Rs million)",
+          "page": "PDF p319 (printed 316)"
+        },
+        "capexIntangiblesFY26": {
+          "document": "Polycab IAR 2025-26, Consolidated Statement of Cash flows (Rs million)",
+          "page": "PDF p319 (printed 316)"
+        },
+        "ebitFY26": {
+          "document": "Polycab IAR 2025-26, Consolidated Statement of Profit & Loss (Rs million)",
+          "page": "PDF p318 (printed 315)"
+        },
+        "capitalEmployedFY26": {
+          "document": "Polycab IAR 2025-26, Consolidated Balance Sheet (Rs million)",
+          "page": "PDF p317 (printed 314)"
+        },
+        "statedRoceFY26": {
+          "document": "Polycab IAR 2025-26, Key Ratios (Consolidated) and Glossary",
+          "page": "PDF p523 (printed 520); glossary PDF p522 (printed 519)"
+        },
+        "revenueFY26": {
+          "document": "Polycab IAR 2025-26, Consolidated Statement of Profit & Loss (Rs million)",
+          "page": "PDF p318 (printed 315)"
+        },
+        "patFY26": {
+          "document": "Polycab IAR 2025-26, Consolidated Statement of Profit & Loss (Rs million); attributable to parent 26,720.33",
+          "page": "PDF p318 (printed 315)"
+        },
+        "revenueQ1FY27": {
+          "document": "Polycab Unaudited Interim Condensed Consolidated Statement of Profit & Loss for three months ended 30 June 2026 (Rs million), /private/tmp/claude-501/-Users-shivamagarwal-Downloads/d4a03688-adff-4a39-8739-e2cc2b3ec70b/scratchpad/ledger/docs/hw/polycab/condense-financial-statement-q1-2027.txt; same in consolidated results (outcome 16 Jul 2026) p4",
+          "page": "PDF p6"
+        },
+        "revenueQ1FY26": {
+          "document": "as above",
+          "page": "PDF p6"
+        }
+      },
+      "notes": "Source unit Rs million (converted /10 to Rs crore). capitalEmployedFY26 = 12,259.26 cr. Polycab is a products company and reports no order intake - intake null. Company's Key Ratios table shows Debt 1,325 mn and Shareholders Networth 120,086 mn. MD&A text quotes RoCE 31.5% vs Key Ratios 31.3% (inconsistency within the AR)."
+    },
+    {
+      "symbol": "APARINDS",
+      "basis": "consolidated",
+      "revenueFY26": 22902.12,
+      "patFY26": 976.93,
+      "cfoFY26": 967.58,
+      "capexFY26": 736.66,
+      "capexIntangiblesFY26": null,
+      "ebitFY26": 1747.11,
+      "ebitDefinition": "Consolidated PBT 1,310.00 + finance costs 437.11 (includes other income 64.77 and exceptional items -32.53)",
+      "capitalEmployedFY26": 6234.0,
+      "statedRoceFY26": 0.2192,
+      "roceDefinition": "Company ratio note (consolidated): Profit before interest on borrowings and tax x100 / (Total tangible net worth + long-term borrowings + short-term borrowings + deferred tax liability). Capital employed 6,234 is company's own 10-year table figure = total equity 5,393.38 + borrowings 432.78 (non-current) + 407.73 (current) = 6,233.89.",
+      "revenueQ1FY27": 6591,
+      "revenueQ1FY26": 5104,
+      "intakeQ1FY27": null,
+      "sources": {
+        "cfoFY26": {
+          "document": "APAR Integrated Annual Report 2025-26, Consolidated Statement of Cash Flows",
+          "page": "PDF p186 (printed 368)"
+        },
+        "capexFY26": {
+          "document": "APAR Integrated Annual Report 2025-26, Consolidated Statement of Cash Flows",
+          "page": "PDF p186 (printed 368)"
+        },
+        "ebitFY26": {
+          "document": "APAR Integrated Annual Report 2025-26, Consolidated Statement of Profit and Loss",
+          "page": "PDF p185 (printed 367)"
+        },
+        "capitalEmployedFY26": {
+          "document": "APAR Integrated Annual Report 2025-26, financial highlights table (Owned Funds 5,393; Loan Funds 841)",
+          "page": "PDF p78"
+        },
+        "statedRoceFY26": {
+          "document": "APAR Integrated Annual Report 2025-26, consolidated notes (ratios)",
+          "page": "PDF p202 (printed 400)"
+        },
+        "revenueFY26": {
+          "document": "APAR Integrated Annual Report 2025-26, Consolidated Statement of Profit and Loss",
+          "page": "PDF p185 (printed 367)"
+        },
+        "patFY26": {
+          "document": "APAR Integrated Annual Report 2025-26, Consolidated Statement of Profit and Loss",
+          "page": "PDF p185 (printed 367)"
+        },
+        "revenueQ1FY27": {
+          "document": "APAR Q1 FY27 Earnings Call Update (24 Jul 2026), Consolidated Profit and Loss",
+          "page": "p7"
+        },
+        "revenueQ1FY26": {
+          "document": "APAR Q1 FY27 Earnings Call Update, Consolidated financial highlights",
+          "page": "p2"
+        },
+        "intakeQ1FY27": {
+          "document": "APAR Q1 FY27 Earnings Call Update (Conductors segment)",
+          "page": "p3"
+        }
+      },
+      "notes": "Q1 revenues are rounded crore from the earnings update (Q1 FY26 column 5,104). No company-wide order intake disclosed: only Conductors new orders Rs 5,245 cr (Q1 FY27) with pending order book Rs 10,190 cr; Cables pending order book Rs 1,925 cr (p5). Capex: single line incl. intangibles/interest capitalised; no separate intangibles line. Standalone ROCE 22.07% (PDF p169) for reference."
+    },
+    {
+      "symbol": "KIRLOSENG",
+      "basis": "consolidated (includes Arka Fincap NBFC financial-services business); standalone ROCE given as the only stated ROCE",
+      "revenueFY26": 7701.01,
+      "patFY26": 562.46,
+      "cfoFY26": 932.21,
+      "capexFY26": 339.82,
+      "capexIntangiblesFY26": null,
+      "ebitFY26": 1279.08,
+      "ebitDefinition": "Consolidated PBT from continuing operations 756.27 + finance costs 522.81. Caution: finance costs are mostly the NBFC (Arka) business; cash-flow add-back shows 'Finance costs (excluding financial services business) 24.20', so PBT + non-NBFC finance cost = 780.47.",
+      "capitalEmployedFY26": 8888.91,
+      "statedRoceFY26": 0.1824,
+      "roceDefinition": "Stated ROCE is STANDALONE (no consolidated ratio disclosed): Earning before Interest & Tax (PBIT)/Capital Employed. Standalone 'Total capital employed' 3,459 (shareholders' funds 3,354 + loan funds 104, continuing ops). Consolidated capital employed computed = total equity 3,575.13 + non-current borrowings 3,123.78 + current borrowings 2,190.00 = 8,888.91 (dominated by NBFC borrowings).",
+      "revenueQ1FY27": 1999.5,
+      "revenueQ1FY26": 1761.8,
+      "intakeQ1FY27": null,
+      "sources": {
+        "cfoFY26": {
+          "document": "KOEL Annual Report 2025-26, Consolidated Statement of Cash Flow",
+          "page": "PDF p188 (printed 372)"
+        },
+        "capexFY26": {
+          "document": "KOEL Annual Report 2025-26, Consolidated Statement of Cash Flow",
+          "page": "PDF p188 (printed 373)"
+        },
+        "ebitFY26": {
+          "document": "KOEL Annual Report 2025-26, Consolidated Statement of Profit and Loss",
+          "page": "PDF p187 (printed 371)"
+        },
+        "capitalEmployedFY26": {
+          "document": "KOEL Annual Report 2025-26, Consolidated Balance Sheet",
+          "page": "PDF p187 (printed 370)"
+        },
+        "statedRoceFY26": {
+          "document": "KOEL Annual Report 2025-26, Notes forming part of the Standalone Financial Statements (ratios)",
+          "page": "PDF p181 (printed 359)"
+        },
+        "revenueFY26": {
+          "document": "KOEL Annual Report 2025-26, Consolidated Statement of Profit and Loss",
+          "page": "PDF p187 (printed 371)"
+        },
+        "patFY26": {
+          "document": "KOEL Annual Report 2025-26, Consolidated Statement of Profit and Loss",
+          "page": "PDF p187 (printed 371)"
+        },
+        "revenueQ1FY27": {
+          "document": "KOEL Earnings Call Presentation Q1 FY27, Consolidated Profit and Loss Statement (columns Q1FY27, Q4FY26, QoQ, Q1FY26, YoY)",
+          "page": "p15"
+        },
+        "revenueQ1FY26": {
+          "document": "KOEL Q1 FY27 press release",
+          "page": "p3"
+        }
+      },
+      "notes": "PAT 562.46 includes discontinued ops PAT 4.74; continuing PAT 557.72; attributable to owners 574.32. Consolidated CFO is flattered by a 431.68 decrease in NBFC loans & receivables (standalone CFO 511.13, standalone capex 317.37, AR PDF p138). Capex line combines PPE and intangibles (no separate intangibles line). Q1 revenue is continuing ops, includes financial-services revenue; Q1 FY26 regrouped. No order intake disclosed (no order book/inflow in Q1 FY27 presentation or transcript)."
+    },
+    {
+      "symbol": "DIACABS",
+      "basis": "consolidated (Diamond Power Infrastructure Ltd + WOS DICABS Nextgen Special Alloys)",
+      "revenueFY26": 1910.1,
+      "patFY26": 158.17,
+      "cfoFY26": -80.43,
+      "capexFY26": 81.22,
+      "capexIntangiblesFY26": null,
+      "ebitFY26": 200.91,
+      "ebitDefinition": "Consolidated PBT 16,193.74 lakh + finance costs 3,897.16 lakh = 20,090.90 lakh (includes other income 799.61 lakh; no exceptional items)",
+      "capitalEmployedFY26": null,
+      "statedRoceFY26": null,
+      "roceDefinition": "No company-stated FY26 ROCE found in AR. Capital employed computed = total equity (5,269.71 share capital + (65,690.08) other equity = -60,420.37 lakh, NEGATIVE) + long-term borrowings 248,765.22 + short-term borrowings 4,234.23 = 192,579.08 lakh. Implied EBIT/CE ~10.4%.",
+      "revenueQ1FY27": 689.9,
+      "revenueQ1FY26": 301.8,
+      "intakeQ1FY27": null,
+      "sources": {
+        "cfoFY26": {
+          "document": "Diamond Power Infrastructure Annual Report 2025-26, Consolidated Cash Flow Statement (Rs in lakhs)",
+          "page": "PDF p203 (printed 220)"
+        },
+        "capexFY26": {
+          "document": "Diamond Power Infrastructure Annual Report 2025-26, Consolidated Cash Flow Statement (Rs in lakhs)",
+          "page": "PDF p203 (printed 220)"
+        },
+        "ebitFY26": {
+          "document": "Diamond Power Infrastructure Annual Report 2025-26, Consolidated Statement of Profit and Loss (Rs in lakhs)",
+          "page": "PDF p202 (printed 219)"
+        },
+        "capitalEmployedFY26": {
+          "document": "Diamond Power Infrastructure Annual Report 2025-26, Consolidated Balance Sheet (Rs in lakhs); share capital 5,269.71",
+          "page": "PDF p201 (printed 218)"
+        },
+        "revenueFY26": {
+          "document": "Diamond Power Infrastructure Annual Report 2025-26, Consolidated Statement of Profit and Loss (Rs in lakhs)",
+          "page": "PDF p202 (printed 219)"
+        },
+        "patFY26": {
+          "document": "Diamond Power Infrastructure Annual Report 2025-26, Consolidated Statement of Profit and Loss (Rs in lakhs)",
+          "page": "PDF p202 (printed 219)"
+        },
+        "revenueQ1FY27": {
+          "document": "Diamond Power Investor Presentation Q1 FY2027 (Consolidated, Rs mn)",
+          "page": "p8"
+        },
+        "revenueQ1FY26": {
+          "document": "Diamond Power Investor Presentation Q1 FY2027 (Consolidated, Rs mn)",
+          "page": "p8"
+        },
+        "intakeQ1FY27": {
+          "document": "Diamond Power Investor Presentation Q1 FY2027",
+          "page": "p6"
+        }
+      },
+      "notes": "Negative consolidated net worth (legacy of NCLT resolution; long-term borrowings include promoter-group unsecured inter-company deposits), so equity+debt capital employed is small and ROCE flattering. Tax charge is low (376.81 lakh) because of carried-forward losses. No quarterly order intake disclosed; only order book (Rs 3,687.55 cr at 11-Aug-26 vs Rs 3,240.4 cr at Mar-26 — date is after quarter-end, so not a Q1 intake). No separate intangibles capex line. Q1 figures are rounded Rs mn from the presentation. Negative equity from the insolvency resolution makes any ROCE meaningless, so none is used."
+    },
+    {
+      "symbol": "ABB",
+      "basis": "consolidated (ABB India + ABB Robotics India Pvt Ltd, incorporated Sep 2025, transferred Mar 2026). Period: FY = CY2025 (Jan-Dec 2025); quarters = Q2 CY2026 vs Q2 CY2025",
+      "revenueFY26": 13202.73,
+      "patFY26": 1668.26,
+      "cfoFY26": 1219.51,
+      "capexFY26": 239.95,
+      "capexIntangiblesFY26": null,
+      "ebitFY26": 2249.83,
+      "ebitDefinition": "CY2025 consolidated profit from continuing operations before tax 2,229.94 + finance costs 19.89 (includes other income 352.36, mostly interest on 5,800+ cr of cash/deposits). As reported in AR, i.e. Robotics still inside continuing ops.",
+      "capitalEmployedFY26": 7835.99,
+      "statedRoceFY26": 0.2859,
+      "roceDefinition": "Consolidated ratio note: Profit before tax and finance costs / Capital employed, where Capital employed = Net worth + Lease liabilities - Deferred tax assets (CY2025 28.59% vs CY2024 35.93%). Separately, AR Financial Highlights and MD&A state 'ROCE 21%' without a formula. Computed CE here = total equity 7,835.99 + borrowings nil (only lease liabilities 55.24 + 29.58).",
+      "revenueQ1FY27": 3558.87,
+      "revenueQ1FY26": 2940.47,
+      "intakeQ1FY27": 4363,
+      "sources": {
+        "cfoFY26": {
+          "document": "ABB India Integrated Annual Report 2025, Consolidated Statement of Cash Flows (year ended 31 Dec 2025)",
+          "page": "PDF p289 (printed 286)"
+        },
+        "capexFY26": {
+          "document": "ABB India Integrated Annual Report 2025, Consolidated Statement of Cash Flows",
+          "page": "PDF p289 (printed 286)"
+        },
+        "ebitFY26": {
+          "document": "ABB India Integrated Annual Report 2025, Consolidated Statement of Profit and Loss",
+          "page": "PDF p288 (printed 285)"
+        },
+        "capitalEmployedFY26": {
+          "document": "ABB India Integrated Annual Report 2025, Consolidated Balance Sheet (no borrowings line)",
+          "page": "PDF p287 (printed 284)"
+        },
+        "statedRoceFY26": {
+          "document": "ABB India Integrated Annual Report 2025, consolidated notes (ratios)",
+          "page": "PDF p277 (printed 274)"
+        },
+        "revenueFY26": {
+          "document": "ABB India Integrated Annual Report 2025, Consolidated Statement of Profit and Loss",
+          "page": "PDF p288 (printed 285)"
+        },
+        "patFY26": {
+          "document": "ABB India Integrated Annual Report 2025, Consolidated Statement of Profit and Loss",
+          "page": "PDF p288 (printed 285)"
+        },
+        "revenueQ1FY27": {
+          "document": "ABB India Statement of consolidated financial results for quarter ended June 30, 2026 (cols: Q2CY26, Q1CY26, Q2CY25, H1CY26, H1CY25, CY25)",
+          "page": "p4"
+        },
+        "revenueQ1FY26": {
+          "document": "ABB India consolidated financial results, quarter ended June 30, 2026 (corresponding quarter June 30, 2025, continuing ops)",
+          "page": "p4"
+        },
+        "intakeQ1FY27": {
+          "document": "ABB India press release Q2 CY2026 (31 Jul 2026)",
+          "page": "p4"
+        }
+      },
+      "notes": "ABB's year is calendar: 'FY26' fields = CY2025; 'Q1FY27/Q1FY26' fields = Q2 CY2026 / Q2 CY2025 (Apr-Jun). Quarterly revenues are continuing business (Robotics divested 1 Mar 2026, now discontinued), so CY2025 restated continuing revenue is 12,503.81 vs 13,202.73 in the AR. Q2 CY2025 orders 2,917 (continuing). Orders backlog 11,898 at Jun-26. No separate intangibles capex line. Special dividend Rs 90/share from Robotics proceeds (profit on sale 1,658.48 cr recorded in Q1 CY26)."
+    },
+    {
+      "symbol": "RELIANCE",
+      "basis": "consolidated",
+      "revenueFY26": 1075675,
+      "patFY26": 95754,
+      "cfoFY26": 192113,
+      "capexFY26": 122916,
+      "capexIntangiblesFY26": null,
+      "ebitFY26": 150223,
+      "ebitDefinition": "Consolidated PBT 123,162 + finance costs 27,061 (includes other income 28,962, which includes Rs 8,924 cr profit on sale of listed investments in Q1 FY26)",
+      "capitalEmployedFY26": 1460287,
+      "statedRoceFY26": null,
+      "roceDefinition": "No company-stated ROCE in the FY26 results/media release. Computed CE = total equity 1,085,866 (incl. NCI 181,836) + non-current borrowings 270,751 + current borrowings 103,670 = 1,460,287. Implied EBIT/CE ~10.3%. (Company's own 'Outstanding Debt' 374,421 = same borrowings total.)",
+      "revenueQ1FY27": 311850,
+      "revenueQ1FY26": 248660,
+      "intakeQ1FY27": null,
+      "sources": {
+        "cfoFY26": {
+          "document": "RIL Media Release Q4 FY2025-26 (24 Apr 2026), Audited Consolidated Cash Flow Statement for year ended 31 Mar 2026",
+          "page": "PDF p26 (annexure Page 4 of 20)"
+        },
+        "capexFY26": {
+          "document": "RIL Media Release Q4 FY2025-26, Audited Consolidated Cash Flow Statement",
+          "page": "PDF p26"
+        },
+        "ebitFY26": {
+          "document": "RIL Media Release Q4 FY2025-26, Audited Consolidated Financial Results (year ended 31 Mar 2026 column)",
+          "page": "PDF p23"
+        },
+        "capitalEmployedFY26": {
+          "document": "RIL Media Release Q4 FY2025-26, Audited Consolidated Balance Sheet as at 31 Mar 2026",
+          "page": "PDF p25 (annexure Page 3 of 20)"
+        },
+        "revenueFY26": {
+          "document": "RIL Media Release Q4 FY2025-26, Audited Consolidated Financial Results",
+          "page": "PDF p23"
+        },
+        "patFY26": {
+          "document": "RIL Media Release Q4 FY2025-26, Audited Consolidated Financial Results",
+          "page": "PDF p23"
+        },
+        "ebitdaFY26": {
+          "document": "RIL Media Release Q4 FY2025-26, Consolidated Financial Highlights",
+          "page": "PDF p1"
+        },
+        "revenueQ1FY27": {
+          "document": "RIL Media Release Q1 FY2026-27 (17 Jul 2026), Unaudited Consolidated Financial Results for quarter ended 30 Jun 2026 (cols Jun'26, Mar'26, Jun'25, FY26)",
+          "page": "PDF p21"
+        },
+        "revenueQ1FY26": {
+          "document": "RIL Media Release Q1 FY2026-27, Unaudited Consolidated Financial Results (quarter ended 30 Jun 2025 column)",
+          "page": "PDF p21"
+        },
+        "patOwnersFY26": {
+          "document": "RIL Media Release Q1 FY2026-27, Unaudited Consolidated Financial Results (FY26 audited column)",
+          "page": "PDF p21"
+        }
+      },
+      "notes": "Estimates-module figures: FY26 consolidated EBITDA 207,911 (= PBT+finance costs+D&A; includes other income and the one-off Rs 8,924 cr gain on sale of listed investments, so recurring EBITDA ~198,987); FY26 PAT 95,754 after share of associates/JVs (PAT before associates 95,610; attributable to owners 80,775). Capex line combines PPE, spectrum and other intangibles (no separate intangibles line); company's own 'Capital Expenditure' (excl. spectrum, accrual basis) is 144,271. Gross revenue incl. GST: FY26 1,175,919; Q1 FY27 340,257; Q1 FY26 273,252. No order intake (not applicable). Q4 FY26 media release downloaded from ril.com to scoring/sC_ril_q4fy26_mr.pdf."
+    },
+    {
+      "symbol": "ADANIENSOL",
+      "basis": "consolidated",
+      "revenueFY26": 27588.03,
+      "patFY26": 2392.75,
+      "cfoFY26": 10996.68,
+      "capexFY26": 14431.8,
+      "capexIntangiblesFY26": null,
+      "ebitFY26": 6747.74,
+      "ebitDefinition": "Consolidated profit before tax (and deferred assets recoverable) 3,114.84 + finance costs 3,632.90; after net regulatory deferral movement of -1,095.56; includes other income 737.13",
+      "capitalEmployedFY26": 75424.09,
+      "statedRoceFY26": 0.0872,
+      "roceDefinition": "Company AR key-metrics page: 'ROCE: Total EBIT/Capital Employed' (FY26 8.72%, FY25 9.12%); components not disclosed. Computed CE = total equity 26,525.64 (incl. NCI 1,098.10) + non-current borrowings 45,367.32 + current borrowings 3,531.13 = 75,424.09.",
+      "revenueQ1FY27": 9711.08,
+      "revenueQ1FY26": 6819.28,
+      "intakeQ1FY27": null,
+      "sources": {
+        "cfoFY26": {
+          "document": "AESL Integrated Annual Report 2025-26, Statement of Consolidated Cash Flows",
+          "page": "PDF p612 (printed 610)"
+        },
+        "capexFY26": {
+          "document": "AESL Integrated Annual Report 2025-26, Statement of Consolidated Cash Flows",
+          "page": "PDF p612 (printed 610)"
+        },
+        "ebitFY26": {
+          "document": "AESL Integrated Annual Report 2025-26, Consolidated Statement of Profit and Loss",
+          "page": "PDF p611 (printed 609)"
+        },
+        "capitalEmployedFY26": {
+          "document": "AESL Integrated Annual Report 2025-26, Consolidated Balance Sheet",
+          "page": "PDF p610 (printed 608)"
+        },
+        "statedRoceFY26": {
+          "document": "AESL Integrated Annual Report 2025-26, financial performance key metrics",
+          "page": "PDF p106-107 (printed 104-105)"
+        },
+        "revenueFY26": {
+          "document": "AESL Integrated Annual Report 2025-26, Consolidated Statement of Profit and Loss",
+          "page": "PDF p611 (printed 609)"
+        },
+        "patFY26": {
+          "document": "AESL Integrated Annual Report 2025-26, Consolidated Statement of Profit and Loss",
+          "page": "PDF p611 (printed 609)"
+        },
+        "revenueQ1FY27": {
+          "document": "AESL Statement of Consolidated Unaudited Financial Results for quarter ended 30 Jun 2026 (cols 30-Jun-26, 31-Mar-26, 30-Jun-25, FY26)",
+          "page": "PDF p12"
+        },
+        "revenueQ1FY26": {
+          "document": "AESL Statement of Consolidated Unaudited Financial Results, quarter ended 30 Jun 2026 (30-Jun-25 column)",
+          "page": "PDF p12"
+        }
+      },
+      "notes": "Revenue includes Service Concession Arrangement construction revenue (Q1 FY27 SCA revenue: transmission 1,740 + smart metering 632); company's 'Operational Revenue' Q1 FY27 7,117 vs 4,617. PAT 2,392.75 is after deferred assets recoverable; attributable to owners 2,282.54. Capex line includes capital advances and SCA contract assets; no separate intangibles line. No quarterly order intake disclosed: transmission under-construction pipeline Rs 71,779 cr and smart-meter order book 24.6 mn meters (revenue potential Rs 29,519 cr) per Q1 FY27 press release p1. Q1 FY27 results PDF downloaded from adanienergysolutions.com to scoring/sC_aesl_q1fy27_fs.pdf."
+    },
+    {
+      "symbol": "ADANIGREEN",
+      "basis": "consolidated (audited Q4 FY26 results statement; the saved FY26 AR contains only standalone financial statements, so the only stated ROCE is standalone)",
+      "revenueFY26": 12928,
+      "patFY26": 1987,
+      "cfoFY26": 10135,
+      "capexFY26": 26097,
+      "capexIntangiblesFY26": null,
+      "ebitFY26": 8068,
+      "ebitDefinition": "Consolidated profit before share of associate/JV profit and tax (after exceptional items -219) 1,584 + finance costs (net, incl. derivative cost) 6,484 = 8,068. Including share of associate/JV profit 417 it would be 8,485. Includes other income 891.",
+      "capitalEmployedFY26": 128252,
+      "statedRoceFY26": 0.0789,
+      "roceDefinition": "STANDALONE only (AR ratio note): EBIT 1,958 / Capital Employed 24,811; numerator = Profit before tax + Interest expense; denominator = Tangible net worth + Long term debt (incl. current maturities) - Deferred tax assets. No consolidated ROCE disclosed. Consolidated CE computed = total equity 29,879 (incl. NCI 9,914) + non-current borrowings 87,897 + current borrowings 10,476 = 128,252; implied EBIT/CE ~6.3%.",
+      "revenueQ1FY27": 4431,
+      "revenueQ1FY26": 3800,
+      "intakeQ1FY27": null,
+      "sources": {
+        "cfoFY26": {
+          "document": "AGEL Audited Consolidated Financial Results for quarter and year ended 31 Mar 2026, Consolidated Statement of Cash Flows (verified against page image)",
+          "page": "PDF p38"
+        },
+        "capexFY26": {
+          "document": "AGEL Audited Consolidated Financial Results FY26, Consolidated Statement of Cash Flows (read from page image; OCR text garbled)",
+          "page": "PDF p38"
+        },
+        "ebitFY26": {
+          "document": "AGEL Audited Consolidated Financial Results for quarter and year ended 31 Mar 2026",
+          "page": "PDF p36"
+        },
+        "capitalEmployedFY26": {
+          "document": "AGEL Audited Consolidated Financial Results FY26, Consolidated Balance Sheet",
+          "page": "PDF p37"
+        },
+        "statedRoceFY26": {
+          "document": "AGEL Integrated Annual Report 2025-26, Notes to Standalone Financial Statements (ratios)",
+          "page": "PDF p243 (printed 482-483)"
+        },
+        "revenueFY26": {
+          "document": "AGEL Audited Consolidated Financial Results FY26 (year ended 31.03.2026 column)",
+          "page": "PDF p36"
+        },
+        "patFY26": {
+          "document": "AGEL Audited Consolidated Financial Results FY26",
+          "page": "PDF p36"
+        },
+        "revenueQ1FY27": {
+          "document": "AGEL Unaudited Consolidated Financial Results for quarter ended 30 Jun 2026 (cols 30.06.2026, 31.03.2026, 30.06.2025, FY26)",
+          "page": "PDF p19"
+        },
+        "revenueQ1FY26": {
+          "document": "AGEL Unaudited Consolidated Financial Results, quarter ended 30 Jun 2026",
+          "page": "PDF p19"
+        }
+      },
+      "notes": "Revenue from operations has no subtotal line in the results statement: FY26 = 11,602+724+602 = 12,928 (= total income 13,819 - other income 891); Q1 FY27 = 4,280+43+108 = 4,431 (= 4,663-232); Q1 FY26 = 3,312+429+59 = 3,800 (= 4,006-206). Consolidated results pages are scanned (OCR text); figures cross-checked arithmetically and capex/CFO read from rendered page image. PAT 1,987 includes share of associate/JV profit 417; attributable to equity holders of parent 1,652. Capex line includes intangibles, capital advances, CWIP and capital creditors (no separate intangibles line). No order intake (IPP; not applicable). Documents downloaded from adanigreenenergy.com to scoring/sC_agel_q4fy26_fs.pdf and sC_agel_q1fy27_fs.pdf."
+    },
+    {
+      "symbol": "TATAPOWER",
+      "basis": "consolidated",
+      "revenueFY26": 62428.59,
+      "patFY26": 5117.56,
+      "cfoFY26": 5993.33,
+      "capexFY26": 13694.83,
+      "capexIntangiblesFY26": null,
+      "ebitFY26": 11892.78,
+      "ebitDefinition": "Consolidated profit before tax 6,635.99 + finance costs 5,256.79. Includes net regulatory deferral movement +1,252.04, share of associates/JVs 707.87, other income 1,743.07 and exceptional item -94.17.",
+      "capitalEmployedFY26": 118660.46,
+      "statedRoceFY26": 0.1,
+      "roceDefinition": "Consolidated ratio note: Profit before tax and exceptional item + interest expense excluding interest on consumer security deposit / Average capital employed (shareholders' equity + total debt + deferred tax liability); FY26 10% vs FY25 11% (rounded). AR highlights page separately shows 'RoCE 7.8% (FY25 8.8%)' without definition. Computed year-end CE = total equity 47,538.07 (incl. NCI 8,070.86) + non-current borrowings 61,608.57 + current borrowings 9,513.82 = 118,660.46.",
+      "revenueQ1FY27": 18898,
+      "revenueQ1FY26": 17464,
+      "intakeQ1FY27": null,
+      "sources": {
+        "cfoFY26": {
+          "document": "Tata Power Integrated Annual Report 2025-26, Consolidated Cash Flow Statement",
+          "page": "PDF p247 (printed 487)"
+        },
+        "capexFY26": {
+          "document": "Tata Power Integrated Annual Report 2025-26, Consolidated Cash Flow Statement",
+          "page": "PDF p248 (printed 488)"
+        },
+        "ebitFY26": {
+          "document": "Tata Power Integrated Annual Report 2025-26, Consolidated Statement of Profit and Loss",
+          "page": "PDF p246 (printed 485)"
+        },
+        "capitalEmployedFY26": {
+          "document": "Tata Power Integrated Annual Report 2025-26, Consolidated Balance Sheet",
+          "page": "PDF p245-246 (printed 483-484)"
+        },
+        "statedRoceFY26": {
+          "document": "Tata Power Integrated Annual Report 2025-26, Notes to Consolidated Financial Statements (ratios)",
+          "page": "PDF p320 (printed 632-633)"
+        },
+        "revenueFY26": {
+          "document": "Tata Power Integrated Annual Report 2025-26, Consolidated Statement of Profit and Loss",
+          "page": "PDF p246 (printed 485)"
+        },
+        "patFY26": {
+          "document": "Tata Power Integrated Annual Report 2025-26, Consolidated Statement of Profit and Loss",
+          "page": "PDF p246-247 (printed 485-486)"
+        },
+        "revenueQ1FY27": {
+          "document": "Tata Power press release Q1 FY27 (27 Jul 2026)",
+          "page": "p4"
+        },
+        "revenueQ1FY26": {
+          "document": "Tata Power Q1 FY27 analyst presentation, Tata Power (Consolidated) Financial Performance",
+          "page": "presentation slide (txt line ~1379)"
+        }
+      },
+      "notes": "BASIS CAVEAT for Q1: the press-release/presentation 'Revenue'/'Operating Income' (18,898 / 17,464) equals revenue from operations PLUS net movement in regulatory deferral balances; it is not the statutory 'Revenue from Operations' line used for FY26 (62,428.59). Trendlyne document search (used only to locate) shows the Q1 FY27 consolidated results statement with Revenue from Operations 19,051.26 (Q1 FY27) and 18,035.07 (Q1 FY26) and regulatory movement (153.09)/(570.76), which reconcile exactly to 18,898/17,464; I could not retrieve that statement itself (tatapower.com returns 406 bot-block, BSE API 403), so those two figures are UNVERIFIED against the source PDF. FY26 CFO fell to 5,993.33 from 12,680.19. PAT 5,117.56 incl. NCI; owners 3,747.19. Capex line bundles PPE, intangibles, CWIP, capital advances and capital payables (no separate intangibles line). No company-level order intake; only rooftop solar order book Rs 639 cr (PR p5). Quarter revenue is the press-release figure, including regulatory deferral movements."
+    },
+    {
+      "symbol": "CRAFTSMAN",
+      "basis": "consolidated",
+      "revenueFY26": 8069.27,
+      "patFY26": 383.99,
+      "cfoFY26": 521.68,
+      "capexFY26": 1181.01,
+      "capexIntangiblesFY26": 7.35,
+      "ebitFY26": 843.27,
+      "ebitDefinition": "Consolidated PBT 53,430 lakh + finance costs 30,897 lakh = 84,327 lakh (after exceptional items -1,295 lakh; includes other income 6,136 lakh and JV share 112 lakh)",
+      "capitalEmployedFY26": 6604.69,
+      "statedRoceFY26": 0.16,
+      "roceDefinition": "Consolidated ratio note: Return on Avg Capital employed = Earning before interest and taxes / Avg. Capital Employed, where Avg. Capital employed = Avg. Total Assets - Avg. Current Liabilities (FY26 16%, FY25 12%). Computed year-end CE = equity (share capital 1,193 + other equity 3,25,213; NCI nil) + non-current borrowings 2,41,098 + current borrowings 92,965 = 6,60,469 lakh. Q4 FY26 slide shows Average Capital Employed Rs 5,321 cr.",
+      "revenueQ1FY27": 2431.58,
+      "revenueQ1FY26": 1784.0,
+      "intakeQ1FY27": null,
+      "sources": {
+        "cfoFY26": {
+          "document": "Craftsman Automation Annual Report 2025-26, Consolidated Cash Flow Statement (Rs in lakhs)",
+          "page": "PDF p178"
+        },
+        "capexFY26": {
+          "document": "Craftsman Automation Annual Report 2025-26, Consolidated Cash Flow Statement (Rs in lakhs)",
+          "page": "PDF p178"
+        },
+        "capexIntangiblesFY26": {
+          "document": "Craftsman Automation Annual Report 2025-26, Consolidated Cash Flow Statement (Rs in lakhs)",
+          "page": "PDF p178"
+        },
+        "ebitFY26": {
+          "document": "Craftsman Automation Annual Report 2025-26, Consolidated Statement of Profit and Loss (Rs in lakhs)",
+          "page": "PDF p177"
+        },
+        "capitalEmployedFY26": {
+          "document": "Craftsman Automation Annual Report 2025-26, Consolidated Balance Sheet (Rs in lakhs)",
+          "page": "PDF p176"
+        },
+        "statedRoceFY26": {
+          "document": "Craftsman Automation Annual Report 2025-26, Notes to consolidated financial statements, 3.13 Ratio Analysis",
+          "page": "PDF p226-227"
+        },
+        "revenueFY26": {
+          "document": "Craftsman Automation Annual Report 2025-26, Consolidated Statement of Profit and Loss (Rs in lakhs)",
+          "page": "PDF p177"
+        },
+        "patFY26": {
+          "document": "Craftsman Automation Annual Report 2025-26, Consolidated Statement of Profit and Loss (Rs in lakhs)",
+          "page": "PDF p177"
+        },
+        "revenueQ1FY27": {
+          "document": "Craftsman Automation Outcome of Board Meeting 29 Jul 2026, Statement of Consolidated Financial Results (Rs in lakhs; cols 30/06/2026, 31/03/2026, 30/06/2025, FY26) - scanned, verified against page image",
+          "page": "PDF p2"
+        },
+        "revenueQ1FY26": {
+          "document": "Craftsman Automation Outcome of Board Meeting 29 Jul 2026, consolidated results (30/06/2025 column)",
+          "page": "PDF p2"
+        }
+      },
+      "notes": "Q1 FY27 not comparable with Q1 FY26 because of FY26 acquisitions (results note). FY26 PAT 38,399 lakh attributable wholly to owners (NCI nil). QIP of Rs 2,000 cr in Q1 FY27 (after year-end) will enlarge equity. No order intake disclosed. Capex: PPE and intangibles are separate lines (1,181.01 + 7.35 cr). AR downloaded from craftsmanautomation.com to scoring/sC_craft_ar26.pdf."
+    }
+  ]
+}

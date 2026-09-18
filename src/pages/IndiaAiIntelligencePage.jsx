@@ -1,12 +1,16 @@
 import React from 'react';
 import {
-  fetchEstimates, fetchExitability, fetchFiledFacts, fetchIndexHistory, fetchLive, fetchMarketValue, fetchOperatingData,
+  fetchEstimates, fetchExitability, fetchScoring, fetchFiledFacts, fetchIndexHistory, fetchLive, fetchMarketValue, fetchOperatingData,
   fetchSnapshots, fetchStage3, fetchUniverse,
 } from '@/lib/indiaAiApi';
 import {
   BuildFunding, CapexChanges, CapexConcentration, EvidenceComposition, ExposureAttribution,
 } from '@/components/indiaAi/FiledEvidenceCharts';
 import { nseOpen } from '@/lib/nseSession';
+import MonitorDashboard from '@/components/indiaAi/Monitor';
+import {
+  aiMateriality, capitalQuality, earningsMomentum, evidenceConfidence, expectationLoad,
+} from '@/lib/indiaAiFactors';
 import {
   dcElectricityGWh, impliedGrowth, marketSize, runModel, valueOf,
 } from '@/lib/indiaAiEstimates';
@@ -135,6 +139,7 @@ const SECTIONS = [
   ['operating', 'Order books'],
   ['estimates', 'AGI estimates'],
   ['matrix', 'Master matrix'],
+  ['factors', 'Five factors'],
   ['orders', 'Orders'],
   ['capacity', 'Capacity'],
   ['layers', 'Empty layers'],
@@ -1332,6 +1337,82 @@ function MasterMatrix({ universe, operating, estimates, marketValue, stage3 }) {
   );
 }
 
+/**
+ * Five factors per member, side by side and never combined.
+ *
+ * Materiality, evidence, momentum, capital quality and expectation load each
+ * answer a different question, and a stock can be strong on one and weak on
+ * another; a single score would hide exactly that. Every factor is built from
+ * filings, AGI's evidence record, AGI's market value or AGI's estimate
+ * models (lib/indiaAiFactors). No broker figure; no consensus revisions.
+ */
+const FACTOR_TONE = {
+  high: 'bg-[#10261a] text-[#4ade80]', strong: 'bg-[#10261a] text-[#4ade80]',
+  medium: 'bg-[#1a2230] text-[#8fb4d8]', moderate: 'bg-[#1a2230] text-[#8fb4d8]',
+  low: 'bg-[#2a2110] text-[#d9a94a]', weak: 'bg-[#2b1414] text-[#f87171]', 'capital-hungry': 'bg-[#2a2110] text-[#d9a94a]',
+  'very high': 'bg-[#2b1414] text-[#f87171]', 'stated only': 'bg-[#1a2230] text-[#9aa5b3]', 'not measurable': 'bg-[#161c26] text-[#68727f]',
+};
+function FactorCell({ f }) {
+  return (
+    <td className="py-1.5 pr-2 align-top">
+      <span className={`rounded px-1.5 py-[1px] text-[11px] ${FACTOR_TONE[f.band] || 'bg-[#161c26] text-[#9aa5b3]'}`}>{f.band}</span>
+      {f.value ? <span className="mt-0.5 block text-[11px] leading-snug text-[#9aa5b3]">{f.value}</span> : null}
+    </td>
+  );
+}
+function FiveFactors({ universe, operating, estimates, marketValue, scoring }) {
+  if (!universe?.members || !scoring?.rows) return null;
+  const mv = Object.fromEntries((marketValue?.rows || []).map((r) => [r.symbol, r.marketValueCr]));
+  const models = Object.fromEntries((estimates?.models || []).map((m) => [m.symbol, m]));
+  const rows = Object.fromEntries(scoring.rows.map((r) => [r.symbol, r]));
+  const shares = {};
+  for (const r of operating?.statedShares || []) if (!shares[r.symbol]) shares[r.symbol] = r.value;
+  const exitMultiple = estimates?.exitMultiple ? valueOf(estimates.exitMultiple, 'base') : null;
+  const years = estimates?.horizonYears || 3;
+  const heads = [
+    ['AI materiality', 'AGI base case: FY29 AI/DC EBITDA / FY26 filed EBITDA; else the stated share. High 25%+, medium 5-25%.'],
+    ['Evidence confidence', 'Exposure tier plus the count and date of hard evidence. High = audited segment, or a company-stated figure with 3+ hard items.'],
+    ['Earnings momentum', 'Latest quarter revenue vs a year earlier; book-to-bill where intake is reported. High 25%+, medium 10-25%. No consensus revisions.'],
+    ['Capital quality', 'FY26 FCF (operating cash flow less capex) / revenue and ROCE. Strong = ROCE 20%+ with positive FCF; capital-hungry = FCF below -25% of revenue.'],
+    ['Expectation load', `Profit growth a year the price needs to reach ${exitMultiple}x profit by FY29. Very high 40%+, high 25-40%, moderate 10-25%.`],
+  ];
+  const members = [...universe.members].sort((a, b) => (mv[b.symbol] || 0) - (mv[a.symbol] || 0));
+  return (
+    <Panel id="factors" title="Five factors" note="kept apart, never summed into one score · AGI data only">
+      <div className="overflow-x-auto">
+        <table className="w-full min-w-[1100px] text-[12px]">
+          <thead>
+            <tr className="text-left text-[11px] uppercase tracking-wider text-[#68727f]">
+              <th className="py-1.5 pr-2 font-medium">Member</th>
+              {heads.map(([h, t]) => <th key={h} className="py-1.5 pr-2 font-medium" title={t}>{h}</th>)}
+            </tr>
+          </thead>
+          <tbody>
+            {members.map((m) => {
+              const r = rows[m.symbol] || {};
+              const pat = models[m.symbol] ? valueOf(models[m.symbol].params?.patFY26Cr, 'base') : r.patFY26 ?? null;
+              return (
+                <tr key={m.symbol} className="border-t border-[#1a2230]">
+                  <td className="py-1.5 pr-2 align-top font-mono text-[#e3e8ef]">{m.symbol}</td>
+                  <FactorCell f={aiMateriality({ model: models[m.symbol], statedShare: shares[m.symbol] })} />
+                  <FactorCell f={evidenceConfidence(m)} />
+                  <FactorCell f={earningsMomentum(r)} />
+                  <FactorCell f={capitalQuality(r)} />
+                  <FactorCell f={expectationLoad({ marketValueCr: mv[m.symbol], patCr: pat, exitMultiple, years })} />
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+      <ul className="mt-3 space-y-1 text-[12px] leading-relaxed text-[#68727f]">
+        {heads.map(([h, t]) => <li key={h}><span className="text-[#9aa5b3]">{h}:</span> {t}</li>)}
+        <li>A band is a fixed threshold, not a ranking. The factors answer different questions and are not added together; a stock can be high on evidence and very high on expectation load at once. Figures from FY26 annual reports and Q1 FY27 results; not investment advice.</li>
+      </ul>
+    </Panel>
+  );
+}
+
 /* ── right column: the monitor ────────────────────────────────────────── */
 
 function BasketPanel({ live }) {
@@ -1811,6 +1892,15 @@ export default function IndiaAiIntelligencePage() {
   const [marketValue, setMarketValue] = React.useState(null);
   const [operating, setOperating] = React.useState(null);
   const [estimates, setEstimates] = React.useState(null);
+  const [scoring, setScoring] = React.useState(null);
+  // Monitor (dashboard) or Research (the full evidence page). A hash link to
+  // a research section opens Research, so existing anchors keep working.
+  const [tab, setTab] = React.useState(() => {
+    try {
+      const h = window.location.hash.replace('#', '');
+      return h && h !== 'monitor' ? 'research' : 'monitor';
+    } catch { return 'monitor'; }
+  });
   const [liveError, setLiveError] = React.useState(null);
   const [error, setError] = React.useState(null);
   const clock = useIstClock();
@@ -1837,6 +1927,9 @@ export default function IndiaAiIntelligencePage() {
       .catch(() => {});
     fetchEstimates()
       .then((payload) => { if (!cancelled) setEstimates(payload); })
+      .catch(() => {});
+    fetchScoring()
+      .then((payload) => { if (!cancelled) setScoring(payload); })
       .catch(() => {});
     fetchMarketValue()
       .then((payload) => { if (!cancelled) setMarketValue(payload); })
@@ -1906,184 +1999,211 @@ export default function IndiaAiIntelligencePage() {
             <span aria-current="page">India AI Infrastructure</span>
           </nav>
 
-          <SectionNav />
-
-          <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
-            {/* ── research ── */}
-            <div className="min-w-0 space-y-4">
-              <div id="overview">
-                <p className="text-[12px] font-semibold uppercase tracking-[0.2em] text-[#e8833a]">Strategic research</p>
-                <h1 className="mt-2 text-[32px] font-semibold leading-tight tracking-tight sm:text-[46px]">
-                  India&rsquo;s Hidden AI Infrastructure Trade
-                </h1>
-                <p className="mt-1.5 text-[17px] text-[#8b95a3] sm:text-[20px]">
-                  The companies building it, admitted only on what they disclosed
-                </p>
-                <div className="mt-3 flex flex-wrap items-center gap-3">
-                  <span className="text-[13px] text-[#68727f]">AGI Investment Intelligence</span>
-                  <span className="text-[#3a4453]">|</span>
-                  <span className="text-[13px] text-[#68727f]">
-                    Screen run {universe?.version || '—'}
-                  </span>
-                  <span className="rounded-full border border-[#b38b4d]/40 bg-[#b38b4d]/10 px-2.5 py-0.5 text-[13px] font-semibold text-[#d9a94a]">
-                    Universe: {universe?.status === 'partial' ? 'Partial' : universe?.status || '—'} · Evidence-qualified
-                  </span>
-                </div>
-              </div>
-
-              <StatusStrip universe={universe} live={live} />
-
-              <DataSummary
-                universe={universe} live={live} history={history} marketValue={marketValue} stage3={stage3}
-              />
-
-              <ExecutiveSummary universe={universe} />
-
-              <div className="grid gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
-                <Panel title="AI Enablers vs. Nifty 50" note="from the first snapshot — no back-history">
-                  <IndexedChart snapshots={snapshots} />
-                  <div className="mt-1 flex gap-4 px-1">
-                    <span className="flex items-center gap-1.5 text-[13px] text-[#9aa5b3]">
-                      <span className="h-[2px] w-4 bg-[#e8833a]" /> AI Enablers (AGI basket)
-                    </span>
-                    <span className="flex items-center gap-1.5 text-[13px] text-[#9aa5b3]">
-                      <span className="h-[2px] w-4 bg-[#5aa2e0]" /> Nifty 50
-                    </span>
-                  </div>
-                </Panel>
-                <KeyTakeaways universe={universe} live={live} />
-              </div>
-
-              <SinceAdmission history={history} />
-
-              <div id="method">
-                <h2 className="text-[22px] font-semibold tracking-tight">Executive Intelligence</h2>
-                <p className="mt-1.5 text-[14px] text-[#8b95a3]">
-                  The method is the product. Each statement below is a count this page can show you the
-                  workings for.
-                </p>
-                <div className="mt-3 grid gap-3 sm:grid-cols-3">
-                  {[
-                    {
-                      head: 'What we found',
-                      body: `${(universe?.members || []).length} companies currently meet the evidence threshold \u2014 each disclosed something it had done, not something it intends.`,
-                    },
-                    {
-                      head: 'What we refused',
-                      body: `${universe?.candidates?.length || 0} candidates were excluded because the evidence was limited to intent, commentary, projections or capability claims.`,
-                    },
-                    {
-                      head: 'What remains empty',
-                      body: 'Two sub-layers have no qualifying listed company with evidence of operational activity. They are shown empty rather than filled.',
-                    },
-                  ].map((one) => (
-                    <div key={one.head} className="rounded-md border border-[#1e2634] bg-[#0c1017] p-3.5">
-                      <h3 className="text-[15px] font-semibold text-[#e3e8ef]">{one.head}</h3>
-                      <p className="mt-1.5 text-[14px] leading-relaxed text-[#8b95a3]">{one.body}</p>
-                    </div>
-                  ))}
-                </div>
-                <blockquote className="mt-4 max-w-2xl border-l-2 border-[#e8833a] pl-4">
-                  <p className="text-[16px] italic leading-relaxed text-[#c7cfda]">
-                    A basket you cannot audit is a list. Every member here opens into the filing that
-                    admitted it.
-                  </p>
-                  <cite className="mt-1 block text-[12px] uppercase tracking-[0.16em] not-italic text-[#68727f]">
-                    AGI Investment Intelligence
-                  </cite>
-                </blockquote>
-              </div>
-
-              <section id="filed" className="space-y-3">
-                <div>
-                  <h2 className="text-[22px] font-semibold tracking-tight">From the filings</h2>
-                  <p className="mt-1.5 max-w-3xl text-[14px] leading-relaxed text-[#8b95a3]">
-                    Everything below is read from an annual report this system opened, and every
-                    figure carries a company, a document and a page. There is no consensus, no
-                    forecast and no third-party estimate here, which is why there are four charts
-                    rather than forty &mdash; and why two of them are about what could not be
-                    established.
-                  </p>
-                </div>
-                <div className="grid gap-3 lg:grid-cols-2">
-                  <ExposureAttribution companies={filed?.companies} universe={universe} />
-                  <CapexConcentration company={filed?.companies?.CGPOWER} />
-                  <BuildFunding companies={filed?.companies} />
-                  <EvidenceComposition universe={universe} />
-                </div>
-              </section>
-
-              <AdmittedUniverse universe={universe} />
-
-              <InvestmentIntensity data={stage3} />
-
-              <LayerCards universe={universe} />
-
-              <MarketValue data={marketValue} />
-
-              <OperatingData data={operating} />
-
-              <Estimates data={estimates} marketValue={marketValue} />
-
-              <MasterMatrix universe={universe} operating={operating} estimates={estimates} marketValue={marketValue} stage3={stage3} />
-            </div>
-
-            {/* ── monitor ── */}
-            <div className="min-w-0 space-y-3 xl:sticky xl:top-[100px] xl:self-start">
-              <div className="rounded-md border border-[#1e2634] bg-[#0c1017] px-3 py-2.5">
-                <div className="flex items-start justify-between gap-2">
-                  <div>
-                    <h2 className="text-[18px] font-semibold tracking-tight">India AI Intelligence Monitor</h2>
-                    <p className="mt-0.5 text-[13px] text-[#7d8894]">
-                      Live where a source exists. Named where one does not.
-                    </p>
-                  </div>
-                  <div className="shrink-0 text-right">
-                    <span className="flex items-center justify-end gap-1.5">
-                      <span className={`h-1.5 w-1.5 rounded-full ${live?.quality?.live ? 'bg-[#4ade80]' : 'bg-[#4b5563]'}`} />
-                      <span className={`text-[12px] font-bold uppercase tracking-wider ${live?.quality?.live ? 'text-[#4ade80]' : 'text-[#68727f]'}`}>
-                        {live?.quality?.live ? 'Live' : open ? 'No ticks' : 'NSE closed'}
-                      </span>
-                    </span>
-                    <p className="mt-0.5 font-mono text-[12px] tabular-nums text-[#7d8894]">
-                      {clock.date} · {clock.time} IST
-                    </p>
-                  </div>
-                </div>
-                {liveError ? (
-                  <p className="mt-2 border-t border-[#1a2230] pt-2 text-[12px] text-[#d9a94a]">{liveError}</p>
-                ) : null}
-              </div>
-
-              <BasketPanel live={live} />
-              <LayerAttribution live={live} />
-
-              <Panel title="Earnings revisions" note="last 90 days">
-                <Needed
-                  what="Upstox serves trailing ratios only — P/E, P/B, ROE, EV/EBITDA — with no forward estimates, so there is no consensus to revise against."
-                  source="a consensus estimates feed"
-                />
-              </Panel>
-
-              <Panel title="Capex changes" note="year on year, from filings">
-                <CapexChanges companies={filed?.companies} stage3={stage3} />
-              </Panel>
-
-              <OrderFeed universe={universe} />
-              <CapacityDisclosed universe={universe} />
-
-              <Panel title="AI layer heatmap" note="12-month view">
-                <Needed
-                  what={`A twelve-month heatmap needs twelve months of daily closes. The record began at the close on ${history?.base ? new Date(`${history.base}T00:00:00Z`).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' }) : 'the first admission date'}, so the first full view is a year after that.`}
-                  source="time"
-                />
-              </Panel>
-
-              <Watchlist universe={universe} live={live} />
-              <EmptyLayersPanel universe={universe} />
-              <Candidates universe={universe} />
-            </div>
+          <div className="mb-3 flex items-center gap-1 border-b border-[#1a2230]" role="tablist" aria-label="Page view">
+            {[['monitor', 'Monitor'], ['research', 'Research']].map(([k, label]) => (
+              <button
+                key={k}
+                type="button"
+                role="tab"
+                aria-selected={tab === k}
+                onClick={() => { setTab(k); try { window.history.replaceState(null, '', k === 'monitor' ? '#monitor' : window.location.pathname); } catch { /* ignore */ } }}
+                className={`-mb-px border-b-2 px-3 py-2 text-[14px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#e8833a] ${tab === k ? 'border-[#e8833a] font-semibold text-[#e3e8ef]' : 'border-transparent text-[#8b95a3] hover:text-[#e3e8ef]'}`}
+              >
+                {label}
+              </button>
+            ))}
           </div>
+
+          {tab === 'monitor' ? (
+            <MonitorDashboard
+              universe={universe} live={live} history={history} marketValue={marketValue} stage3={stage3}
+              estimates={estimates} operating={operating} scoring={scoring}
+              onResearch={() => { setTab('research'); window.scrollTo({ top: 0 }); }}
+            />
+          ) : (
+            <>
+            <SectionNav />
+
+            <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
+              {/* ── research ── */}
+              <div className="min-w-0 space-y-4">
+                <div id="overview">
+                  <p className="text-[12px] font-semibold uppercase tracking-[0.2em] text-[#e8833a]">Strategic research</p>
+                  <h1 className="mt-2 text-[32px] font-semibold leading-tight tracking-tight sm:text-[46px]">
+                    India&rsquo;s Hidden AI Infrastructure Trade
+                  </h1>
+                  <p className="mt-1.5 text-[17px] text-[#8b95a3] sm:text-[20px]">
+                    The companies building it, admitted only on what they disclosed
+                  </p>
+                  <div className="mt-3 flex flex-wrap items-center gap-3">
+                    <span className="text-[13px] text-[#68727f]">AGI Investment Intelligence</span>
+                    <span className="text-[#3a4453]">|</span>
+                    <span className="text-[13px] text-[#68727f]">
+                      Screen run {universe?.version || '—'}
+                    </span>
+                    <span className="rounded-full border border-[#b38b4d]/40 bg-[#b38b4d]/10 px-2.5 py-0.5 text-[13px] font-semibold text-[#d9a94a]">
+                      Universe: {universe?.status === 'partial' ? 'Partial' : universe?.status || '—'} · Evidence-qualified
+                    </span>
+                  </div>
+                </div>
+
+                <StatusStrip universe={universe} live={live} />
+
+                <DataSummary
+                  universe={universe} live={live} history={history} marketValue={marketValue} stage3={stage3}
+                />
+
+                <ExecutiveSummary universe={universe} />
+
+                <div className="grid gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+                  <Panel title="AI Enablers vs. Nifty 50" note="from the first snapshot — no back-history">
+                    <IndexedChart snapshots={snapshots} />
+                    <div className="mt-1 flex gap-4 px-1">
+                      <span className="flex items-center gap-1.5 text-[13px] text-[#9aa5b3]">
+                        <span className="h-[2px] w-4 bg-[#e8833a]" /> AI Enablers (AGI basket)
+                      </span>
+                      <span className="flex items-center gap-1.5 text-[13px] text-[#9aa5b3]">
+                        <span className="h-[2px] w-4 bg-[#5aa2e0]" /> Nifty 50
+                      </span>
+                    </div>
+                  </Panel>
+                  <KeyTakeaways universe={universe} live={live} />
+                </div>
+
+                <SinceAdmission history={history} />
+
+                <div id="method">
+                  <h2 className="text-[22px] font-semibold tracking-tight">Executive Intelligence</h2>
+                  <p className="mt-1.5 text-[14px] text-[#8b95a3]">
+                    The method is the product. Each statement below is a count this page can show you the
+                    workings for.
+                  </p>
+                  <div className="mt-3 grid gap-3 sm:grid-cols-3">
+                    {[
+                      {
+                        head: 'What we found',
+                        body: `${(universe?.members || []).length} companies currently meet the evidence threshold \u2014 each disclosed something it had done, not something it intends.`,
+                      },
+                      {
+                        head: 'What we refused',
+                        body: `${universe?.candidates?.length || 0} candidates were excluded because the evidence was limited to intent, commentary, projections or capability claims.`,
+                      },
+                      {
+                        head: 'What remains empty',
+                        body: 'Two sub-layers have no qualifying listed company with evidence of operational activity. They are shown empty rather than filled.',
+                      },
+                    ].map((one) => (
+                      <div key={one.head} className="rounded-md border border-[#1e2634] bg-[#0c1017] p-3.5">
+                        <h3 className="text-[15px] font-semibold text-[#e3e8ef]">{one.head}</h3>
+                        <p className="mt-1.5 text-[14px] leading-relaxed text-[#8b95a3]">{one.body}</p>
+                      </div>
+                    ))}
+                  </div>
+                  <blockquote className="mt-4 max-w-2xl border-l-2 border-[#e8833a] pl-4">
+                    <p className="text-[16px] italic leading-relaxed text-[#c7cfda]">
+                      A basket you cannot audit is a list. Every member here opens into the filing that
+                      admitted it.
+                    </p>
+                    <cite className="mt-1 block text-[12px] uppercase tracking-[0.16em] not-italic text-[#68727f]">
+                      AGI Investment Intelligence
+                    </cite>
+                  </blockquote>
+                </div>
+
+                <section id="filed" className="space-y-3">
+                  <div>
+                    <h2 className="text-[22px] font-semibold tracking-tight">From the filings</h2>
+                    <p className="mt-1.5 max-w-3xl text-[14px] leading-relaxed text-[#8b95a3]">
+                      Everything below is read from an annual report this system opened, and every
+                      figure carries a company, a document and a page. There is no consensus, no
+                      forecast and no third-party estimate here, which is why there are four charts
+                      rather than forty &mdash; and why two of them are about what could not be
+                      established.
+                    </p>
+                  </div>
+                  <div className="grid gap-3 lg:grid-cols-2">
+                    <ExposureAttribution companies={filed?.companies} universe={universe} />
+                    <CapexConcentration company={filed?.companies?.CGPOWER} />
+                    <BuildFunding companies={filed?.companies} />
+                    <EvidenceComposition universe={universe} />
+                  </div>
+                </section>
+
+                <AdmittedUniverse universe={universe} />
+
+                <InvestmentIntensity data={stage3} />
+
+                <LayerCards universe={universe} />
+
+                <MarketValue data={marketValue} />
+
+                <OperatingData data={operating} />
+
+                <Estimates data={estimates} marketValue={marketValue} />
+
+                <MasterMatrix universe={universe} operating={operating} estimates={estimates} marketValue={marketValue} stage3={stage3} />
+
+                <FiveFactors universe={universe} operating={operating} estimates={estimates} marketValue={marketValue} scoring={scoring} />
+              </div>
+
+              {/* ── monitor ── */}
+              <div className="min-w-0 space-y-3 xl:sticky xl:top-[100px] xl:self-start">
+                <div className="rounded-md border border-[#1e2634] bg-[#0c1017] px-3 py-2.5">
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <h2 className="text-[18px] font-semibold tracking-tight">India AI Intelligence Monitor</h2>
+                      <p className="mt-0.5 text-[13px] text-[#7d8894]">
+                        Live where a source exists. Named where one does not.
+                      </p>
+                    </div>
+                    <div className="shrink-0 text-right">
+                      <span className="flex items-center justify-end gap-1.5">
+                        <span className={`h-1.5 w-1.5 rounded-full ${live?.quality?.live ? 'bg-[#4ade80]' : 'bg-[#4b5563]'}`} />
+                        <span className={`text-[12px] font-bold uppercase tracking-wider ${live?.quality?.live ? 'text-[#4ade80]' : 'text-[#68727f]'}`}>
+                          {live?.quality?.live ? 'Live' : open ? 'No ticks' : 'NSE closed'}
+                        </span>
+                      </span>
+                      <p className="mt-0.5 font-mono text-[12px] tabular-nums text-[#7d8894]">
+                        {clock.date} · {clock.time} IST
+                      </p>
+                    </div>
+                  </div>
+                  {liveError ? (
+                    <p className="mt-2 border-t border-[#1a2230] pt-2 text-[12px] text-[#d9a94a]">{liveError}</p>
+                  ) : null}
+                </div>
+
+                <BasketPanel live={live} />
+                <LayerAttribution live={live} />
+
+                <Panel title="Earnings revisions" note="last 90 days">
+                  <Needed
+                    what="Upstox serves trailing ratios only — P/E, P/B, ROE, EV/EBITDA — with no forward estimates, so there is no consensus to revise against."
+                    source="a consensus estimates feed"
+                  />
+                </Panel>
+
+                <Panel title="Capex changes" note="year on year, from filings">
+                  <CapexChanges companies={filed?.companies} stage3={stage3} />
+                </Panel>
+
+                <OrderFeed universe={universe} />
+                <CapacityDisclosed universe={universe} />
+
+                <Panel title="AI layer heatmap" note="12-month view">
+                  <Needed
+                    what={`A twelve-month heatmap needs twelve months of daily closes. The record began at the close on ${history?.base ? new Date(`${history.base}T00:00:00Z`).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' }) : 'the first admission date'}, so the first full view is a year after that.`}
+                    source="time"
+                  />
+                </Panel>
+
+                <Watchlist universe={universe} live={live} />
+                <EmptyLayersPanel universe={universe} />
+                <Candidates universe={universe} />
+              </div>
+            </div>
+            </>
+          )}
 
           <footer className="mt-6 border-t border-[#1a2230] pt-4 pb-8">
             <p className="max-w-4xl text-[12px] leading-relaxed text-[#68727f]">

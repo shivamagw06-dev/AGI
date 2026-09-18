@@ -34,3 +34,4 @@ export const fetchMarketValue = () => request('/screen/market-value', { timeoutM
 export const fetchExitability = () => request('/screen/exitability', { timeoutMs: 120_000 });
 export const fetchOperatingData = () => request('/operating-data');
 export const fetchEstimates = () => request('/estimates');
+export const fetchScoring = () => request('/scoring');
