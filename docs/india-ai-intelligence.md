@@ -180,6 +180,18 @@ any of them would mean admitting on intent, which is the one thing this screen r
 | Semiconductor → Materials | *(empty — nothing disclosed beyond intent)* |
 | Semiconductor → Hardware | *(empty — nothing disclosed beyond intent)* |
 
+**The two empty sub-layers have been checked against an independent screen.** That screen
+asked the same question with a materially lower bar for AI exposure — company mentions in news
+flow and management discussion, with partnerships counting as qualifying — and on that basis it
+placed companies in both layers AGI reports empty. AGI had already examined those layers and
+refused what it found: monomers being developed, technologies being evaluated, a capability claim
+with no segment split, a product-positioning slide. The same companies, a different standard. The
+empty layers are therefore a finding about what these companies disclose, not a gap in coverage.
+
+A note on where the taxonomy came from: the three layers and nine sub-layers were derived from
+published third-party research at the start of this build, not arrived at independently. An
+independent screen using the same decomposition is not corroboration of it.
+
 This is a partial universe from a partial pass: discovery ran over filing *content* via
 semantic search, not over all ~2,300 NSE equities. Stages 2 and 3 have not run at all,
 because their thresholds need the Upstox pass. The file says `status: "partial"` and the
