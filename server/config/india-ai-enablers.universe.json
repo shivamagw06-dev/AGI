@@ -633,7 +633,8 @@
           "date": "2026-09-18",
           "page": "web page (undated table)",
           "excerpt": "AWS HYD 121: Rs 207 cr; ST Telemedia: five contracts totalling Rs 734 cr; CapitaLand 'Veritas' Mumbai: Rs 162 cr; CapitaLand 'Pearl' Hyderabad: Rs 116 cr; Nxtra Mahape: Rs 100 cr",
-          "source": "Verification ledger, 2026-09-18 (read from the company document)"
+          "source": "Verification ledger, 2026-09-18 (read from the company document)",
+          "undated": true
         }
       ]
     },
