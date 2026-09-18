@@ -1086,6 +1086,81 @@
       "evidenceReadOn": "2026-09-18",
       "membershipStart": "2026-09-18",
       "priorStatus": "excluded"
+    },
+    {
+      "symbol": "TATAPOWER",
+      "name": "Tata Power Company Ltd.",
+      "instrumentKey": "NSE_EQ|INE245A01021",
+      "isin": "INE245A01021",
+      "layer": "power",
+      "subLayers": [
+        "generation"
+      ],
+      "weightSplit": {
+        "power_generation": 1.0
+      },
+      "admitted": true,
+      "basis": "hard",
+      "admittedOn": [
+        {
+          "kind": "order",
+          "document": "Group captive case study, 'United for sustainability' (tatapower.com)",
+          "date": "2024-03-14",
+          "source": "Tata Power website, read directly 2026-09-18",
+          "excerpt": "Tata Power Renewables joins forces with Princeton Digital Group (PDG) to power their Mumbai data facility ... a co-developed 25-year renewable Power Consumption Agreement (PCA) and a dedicated solar plant"
+        },
+        {
+          "kind": "operating",
+          "document": "Group captive case study, 'United for sustainability' (tatapower.com)",
+          "date": "2024-03-14",
+          "source": "Tata Power website, read directly 2026-09-18",
+          "excerpt": "the solar plant supplies clean energy to PDG's MU 1 data center at Airoli, Mumbai. Since the launch of its operation in June 2023"
+        }
+      ],
+      "reviewedBy": "portfolio owner",
+      "reviewedAt": "2026-09-18",
+      "exposureAttributable": false,
+      "exposureNote": "One signed 25-year renewable power agreement supplying Princeton Digital Group's MU1 data centre in Mumbai, operating since June 2023, stated on Tata Power's website; no capacity, value or revenue is given, and no exchange filing, annual report or call mentions it. Other data-centre mentions are discussions, not agreements.",
+      "note": "Admitted on the company's own website text, not an exchange filing; recorded as such.",
+      "attribution": "NOT_ATTRIBUTABLE",
+      "discoveredVia": "EXTERNAL_LEAD_2026_09_18",
+      "evidenceReadOn": "2026-09-18",
+      "priorStatus": "candidate (pendingVerification)",
+      "membershipStart": "2026-09-18"
+    },
+    {
+      "symbol": "CRAFTSMAN",
+      "name": "Craftsman Automation Ltd.",
+      "instrumentKey": "NSE_EQ|INE00LO01017",
+      "isin": "INE00LO01017",
+      "layer": "power",
+      "subLayers": [
+        "equipment"
+      ],
+      "weightSplit": {
+        "power_equipment": 1.0
+      },
+      "admitted": true,
+      "basis": "hard",
+      "admittedOn": [
+        {
+          "kind": "operating",
+          "document": "Q2 FY26 earnings call transcript (BSE, filed 2025-11-12)",
+          "date": "2025-11-10",
+          "source": "BSE filing, read directly (pdftotext) 2026-09-18",
+          "excerpt": "The German subsidiary is catering 90% of the revenue towards large engines for the power generation which is again predominantly getting into the data center business. Predominantly means majority."
+        }
+      ],
+      "reviewedBy": "portfolio owner",
+      "reviewedAt": "2026-09-18",
+      "exposureAttributable": false,
+      "exposureNote": "Management states its German foundry (Craftsman Fronberg Guss; H1 FY26 revenue about Rs 158 crore) earns 90% of revenue from large power-generation engine parts, a majority of which go into data centres. Not quantified further. The $100 million stationary-engine order book is with engine makers and is not tied to data-centre use; customers do not say whether engines are for prime or backup power.",
+      "note": "Admitted on the German unit's operating disclosure only; the order book is not counted.",
+      "attribution": "MANAGEMENT_DISCLOSED",
+      "discoveredVia": "EXTERNAL_LEAD_2026_09_18",
+      "evidenceReadOn": "2026-09-18",
+      "priorStatus": "candidate (pendingVerification)",
+      "membershipStart": "2026-09-18"
     }
   ],
   "candidates": [
@@ -1414,38 +1489,6 @@
           "excerpt": "Capex of Rs. 120 Crs, with 35 % funded by customer; balance through internal accruals Targeted commissioning by Q2 FY27"
         }
       ],
-      "discoveredVia": "EXTERNAL_LEAD_2026_09_18",
-      "evidenceReadOn": "2026-09-18"
-    },
-    {
-      "symbol": "TATAPOWER",
-      "name": "Tata Power Company Ltd.",
-      "isin": "INE245A01021",
-      "suggestedLayer": "power",
-      "suggestedSubLayers": [
-        "generation"
-      ],
-      "admitted": false,
-      "basis": "unverified",
-      "pendingVerification": true,
-      "note": "An external sweep found a Tata Power website case study of a 25-year renewable power consumption agreement by Tata Power Renewables powering Princeton Digital Group's MU1 data centre in Mumbai since June 2023. The page refused AGI's direct request and the company's indexed filings do not mention it, so it is not yet confirmed from Tata Power's own text. If confirmed, it admits on a signed data-centre power agreement.",
-      "evidence": [],
-      "discoveredVia": "EXTERNAL_LEAD_2026_09_18",
-      "evidenceReadOn": "2026-09-18"
-    },
-    {
-      "symbol": "CRAFTSMAN",
-      "name": "Craftsman Automation Ltd.",
-      "isin": "INE00LO01017",
-      "suggestedLayer": "power",
-      "suggestedSubLayers": [
-        "equipment"
-      ],
-      "admitted": false,
-      "basis": "unverified",
-      "pendingVerification": true,
-      "note": "Its Q4 FY26 call (read directly, BSE PDF) says the stationary-engine order book for the first $100 million is finalised, discussed alongside the data-centre boom. The explicit link, that its German unit's large engines go predominantly into data-centre power generation, is in the Q2 FY26 transcript, which AGI could not open. Admits if that transcript confirms the data-centre end use.",
-      "evidence": [],
       "discoveredVia": "EXTERNAL_LEAD_2026_09_18",
       "evidenceReadOn": "2026-09-18"
     },

@@ -338,6 +338,31 @@
       "promoterFiledPct": 62.43,
       "promoterAsOf": "2026-06-30",
       "promoterSource": "https://www.bseindia.com/XBRLFILES/SHPXBRLDataXML/541450_872026152540_SP.html"
+    },
+    "TATAPOWER": {
+      "shares": 3195339547,
+      "faceValue": 1,
+      "asOf": "2026-06-30",
+      "source": "BSE SHP Q1 FY27 (500400_2172026155256_SP); latest pattern listed on BSE as of 18 Sep 2026",
+      "excerpt": "Total (A+B+C ) | 3996318 | 3195339547 | 0 | 3195339547 | 100.00%",
+      "promoterShares": 1497257565,
+      "promoterPct": 46.8575,
+      "promoterFiledPct": 46.86,
+      "promoterAsOf": "2026-06-30",
+      "promoterSource": "https://www.bseindia.com/XBRLFILES/SHPXBRLDataXML/500400_2172026155256_SP.html"
+    },
+    "CRAFTSMAN": {
+      "shares": 26154433,
+      "faceValue": 5,
+      "asOf": "2026-06-30",
+      "source": "BSE SHP Q1 FY27 (543276_1172026111829_SP); follows the 18 Jun 2026 capital restructuring pattern, same total",
+      "excerpt": "Total (A+B+C ) | 64028 | 26154433 | 26154433 | 100.00%",
+      "promoterShares": 11093013,
+      "promoterPct": 42.4135,
+      "promoterFiledPct": 42.41,
+      "promoterAsOf": "2026-06-30",
+      "promoterSource": "https://www.bseindia.com/XBRLFILES/SHPXBRLDataXML/543276_1172026111829_SP.html",
+      "promoterNote": "Promoter share fell from 44.42% on the 18 Jun 2026 pattern to 42.41% at 30 Jun 2026."
     }
   },
   "promoterMethod": "Promoter & Promoter Group shares from Table I of the same BSE shareholding pattern as the share count, divided by the share count the market value uses; promoterFiledPct is the filing's own column (VIII)."
