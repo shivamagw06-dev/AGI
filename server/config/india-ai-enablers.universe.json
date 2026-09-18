@@ -89,7 +89,9 @@
         }
       ],
       "reviewedBy": null,
-      "reviewedAt": null
+      "reviewedAt": null,
+      "exposureAttributable": false,
+      "exposureNote": "Admitted on a 400 MW hyperscale order and 960+ MW tied up, which is real and dated. But the FY26 annual report carries no data centre segment, and AdaniConneX is a joint venture with EdgeConneX that is equity-accounted rather than consolidated - so none of this member's reported revenue is data centre revenue, and its JV earnings are not broken out. The exposure cannot be sized from the filing. Needs an analyst decision."
     },
     {
       "symbol": "CLEANMAX",
@@ -129,7 +131,8 @@
         }
       ],
       "reviewedBy": null,
-      "reviewedAt": null
+      "reviewedAt": null,
+      "corporateActionFY26": "Equity share sub-divided from Rs 10 to Rs 1 during FY26."
     },
     {
       "symbol": "ANANTRAJ",
@@ -454,6 +457,7 @@
     "ratioBasis": "Resolved by measurement rather than assumed. P/E is price over earnings per share and income-statement's full_statement carries EPS - Basic on the requested basis, so dividing the live price by each basis's EPS and comparing against the stated P/E identifies which basis the key-ratios figures are quoted on. A P/E matching neither is reported as such rather than forced onto the nearer one, because it means the ratio is computed on something this code does not hold. That settles the assumption the size derivation previously carried unexamined.",
     "corporateActions": "Available, and needed. A bonus or split halves or divides the quoted price on its ex-date, and against an unadjusted previous close the basket reads a loss that did not happen. The residual check does not catch this - the wrong member return flows into the contribution and the index return identically and they still reconcile - so the ex-dates are read ahead and the member is excluded for the day. A dividend is not flagged: the price falls by it and the holder received it, which is a real return.",
     "parameters": "balance-sheet and cash-flow take type and fs only. income-statement additionally takes time_period. share-holdings, key-ratios and corporate-actions take none.",
-    "disclosedFacts": "Held in india-ai-enablers.disclosed-facts.json, provenance class THIRD_PARTY_RELAYED. Supplied in conversation citing aggregators rather than read from a primary filing by this system, so they carry a source but no document id, page or sentence. They are not served as FILED and are not in company_facts. Ingesting the annual reports either confirms or contradicts each one."
+    "disclosedFacts": "Held in india-ai-enablers.disclosed-facts.json, provenance class THIRD_PARTY_RELAYED. Supplied in conversation citing aggregators rather than read from a primary filing by this system, so they carry a source but no document id, page or sentence. They are not served as FILED and are not in company_facts. Ingesting the annual reports either confirms or contradicts each one.",
+    "exposureAttribution": "New, and it is a third dimension beside evidence and liquidity. A member can be admitted on sound first-party evidence and still be impossible to size: ADANIENT's data centre business is an equity-accounted joint venture that appears in no segment, so no share of that company is attributable to the theme from its own accounts. Recorded on the member as exposureAttributable: false rather than resolved, because dropping a company for it is a reviewer's call."
   }
 }
