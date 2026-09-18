@@ -1,14 +1,14 @@
 import React from 'react';
 import {
-  fetchExitability, fetchFiledFacts, fetchIndexHistory, fetchLive, fetchMarketValue, fetchSnapshots, fetchStage3,
-  fetchUniverse,
+  fetchExitability, fetchFiledFacts, fetchIndexHistory, fetchLive, fetchMarketValue, fetchOperatingData, fetchSnapshots,
+  fetchStage3, fetchUniverse,
 } from '@/lib/indiaAiApi';
 import {
   BuildFunding, CapexChanges, CapexConcentration, EvidenceComposition, ExposureAttribution,
 } from '@/components/indiaAi/FiledEvidenceCharts';
 import { nseOpen } from '@/lib/nseSession';
 import {
-  ALL_SUBS, LAYER_LABEL, SUB_LABEL, summariseIntelligence, summaryText,
+  ALL_SUBS, LAYER_LABEL, SUB_LABEL, rupeesCr, summariseIntelligence, summaryText,
 } from '@/lib/indiaAiSummary';
 
 /**
@@ -129,6 +129,7 @@ const SECTIONS = [
   ['universe', 'Universe'],
   ['intensity', 'Intensity'],
   ['value', 'Market value'],
+  ['operating', 'Order books'],
   ['orders', 'Orders'],
   ['capacity', 'Capacity'],
   ['layers', 'Empty layers'],
@@ -813,6 +814,87 @@ function MarketValue({ data }) {
   );
 }
 
+/**
+ * Order books and data-centre capacity, as each company states them.
+ *
+ * Every figure is quoted from the company's own document in the operating
+ * data file; the page shows it with its date and source and adds nothing.
+ * The one derived number is capacity conversion, operational MW over tied-up
+ * MW, shown only where the company gives both on one basis.
+ */
+function OperatingData({ data }) {
+  if (!data?.orderBooks) return null;
+  const mw = (v) => (v === null || v === undefined ? '—' : `${v.toLocaleString('en-IN')} MW`);
+  const cr = (v) => (v === null || v === undefined ? '—' : rupeesCr(v));
+  const books = [...data.orderBooks].sort((a, b) => (b.backlogCr ?? -1) - (a.backlogCr ?? -1));
+  return (
+    <Panel id="operating" title="Order books and capacity" note="as each company states them · quoted, not estimated">
+      <p className="text-[12px] uppercase tracking-wider text-[#7d8894]">Order books</p>
+      <div className="mt-2 overflow-x-auto">
+        <table className="w-full min-w-[640px] text-[13px]">
+          <thead>
+            <tr className="text-left text-[12px] uppercase tracking-wider text-[#68727f]">
+              <th className="py-1.5 pr-2 font-medium">Member</th>
+              <th className="py-1.5 pr-2 font-medium">As of</th>
+              <th className="py-1.5 pr-2 text-right font-medium">Order book</th>
+              <th className="py-1.5 pr-2 text-right font-medium">Quarter intake</th>
+              <th className="py-1.5 font-medium">Data-centre orders, as stated</th>
+            </tr>
+          </thead>
+          <tbody>
+            {books.map((row) => (
+              <tr key={row.symbol} className="border-t border-[#1a2230] align-top">
+                <td className="py-1.5 pr-2 font-mono text-[#d3dae3]" title={`${row.document}, p. ${row.page}: "${row.quote}"`}>{row.symbol}</td>
+                <td className="py-1.5 pr-2 font-mono tabular-nums text-[#7d8894]">{row.asOf}</td>
+                <td className="py-1.5 pr-2 text-right font-mono tabular-nums text-[#e3e8ef]">{row.backlogCr != null ? cr(row.backlogCr) : <span className="text-[#7d8894]">{row.basisNote}</span>}</td>
+                <td className="py-1.5 pr-2 text-right font-mono tabular-nums text-[#9aa5b3]">{cr(row.intakeCr)}</td>
+                <td className="py-1.5 text-[#9aa5b3]">{row.dataCentreOrders}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p className="mt-5 text-[12px] uppercase tracking-wider text-[#7d8894]">Data-centre capacity</p>
+      <div className="mt-2 overflow-x-auto">
+        <table className="w-full min-w-[640px] text-[13px]">
+          <thead>
+            <tr className="text-left text-[12px] uppercase tracking-wider text-[#68727f]">
+              <th className="py-1.5 pr-2 font-medium">Platform</th>
+              <th className="py-1.5 pr-2 text-right font-medium">Operating</th>
+              <th className="py-1.5 pr-2 text-right font-medium">Being built</th>
+              <th className="py-1.5 pr-2 text-right font-medium">Tied up</th>
+              <th className="py-1.5 pr-2 text-right font-medium">Operating / tied up</th>
+              <th className="py-1.5 font-medium">Stated target</th>
+            </tr>
+          </thead>
+          <tbody>
+            {data.dataCentreCapacity.map((row) => (
+              <tr key={row.symbol} className="border-t border-[#1a2230] align-top">
+                <td className="py-1.5 pr-2 text-[#d3dae3]" title={`${row.document}, p. ${row.page}: "${row.quote}"${data.notes?.[row.symbol] ? ` — ${data.notes[row.symbol]}` : ''}`}>
+                  <span className="font-mono">{row.symbol}</span> <span className="text-[#7d8894]">{row.platform} · {row.asOf}</span>
+                </td>
+                <td className="py-1.5 pr-2 text-right font-mono tabular-nums text-[#e3e8ef]">{mw(row.operationalMW)}</td>
+                <td className="py-1.5 pr-2 text-right font-mono tabular-nums text-[#9aa5b3]">{mw(row.underConstructionMW)}</td>
+                <td className="py-1.5 pr-2 text-right font-mono tabular-nums text-[#9aa5b3]">{mw(row.tiedUpMW)}</td>
+                <td className="py-1.5 pr-2 text-right font-mono tabular-nums text-[#f0a060]">
+                  {row.operationalMW != null && row.tiedUpMW ? `${((row.operationalMW / row.tiedUpMW) * 100).toFixed(1)}%` : '—'}
+                </td>
+                <td className="py-1.5 text-[#9aa5b3]">{row.target}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p className="mt-3 text-[12px] leading-relaxed text-[#68727f]">
+        Figures as of each company&rsquo;s latest filing, read on {data.asOf}; hover a symbol for the document, page and quote.
+        Order books are in each company&rsquo;s own basis and are not comparable in size across sectors. A dash is a figure the
+        company does not state. Capacity is as stated: some companies give IT load and others power capacity, which differ.
+        Targets are the companies&rsquo; own and are not AGI estimates. Members not listed disclose neither an order book nor capacity.
+      </p>
+    </Panel>
+  );
+}
+
 /* ── right column: the monitor ────────────────────────────────────────── */
 
 function BasketPanel({ live }) {
@@ -1094,6 +1176,30 @@ function MemberEvidence({ member }) {
             </ul>
           </div>
 
+          {(member.supportingEvidence || []).length ? (
+            <div>
+              <p className="text-[12px] uppercase tracking-[0.12em] text-[#68727f]">Since admission</p>
+              <ul className="mt-1.5 space-y-2.5">
+                {member.supportingEvidence.map((one, i) => (
+                  <li key={i} className="border-l-2 border-[#2a4a66] pl-3">
+                    <p className="text-[13px] text-[#7d8894]">
+                      <span className="font-semibold text-[#8fb4d8]">{KIND_LABEL[one.kind] || one.kind}</span>
+                      {' \u00b7 '}{one.document}{one.date ? ` \u00b7 ${one.date}` : ''}{one.page ? ` \u00b7 p. ${one.page}` : ''}
+                    </p>
+                    <p className="mt-1 text-[14px] leading-relaxed text-[#c7cfda]">&ldquo;{one.excerpt}&rdquo;</p>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+
+          {member.exposureNote ? (
+            <div>
+              <p className="text-[12px] uppercase tracking-[0.12em] text-[#68727f]">How much can be sized</p>
+              <p className="mt-1 text-[14px] leading-relaxed text-[#c7cfda]">{member.exposureNote}</p>
+            </div>
+          ) : null}
+
           <div className="rounded border border-[#22303c] bg-[#0c1319] px-3 py-2">
             <p className="text-[12px] uppercase tracking-[0.12em] text-[#68727f]">Why this is enough</p>
             <p className="mt-1 text-[14px] leading-relaxed text-[#c7cfda]">
@@ -1259,6 +1365,7 @@ export default function IndiaAiIntelligencePage() {
   const [stage3, setStage3] = React.useState(null);
   const [history, setHistory] = React.useState(null);
   const [marketValue, setMarketValue] = React.useState(null);
+  const [operating, setOperating] = React.useState(null);
   const [liveError, setLiveError] = React.useState(null);
   const [error, setError] = React.useState(null);
   const clock = useIstClock();
@@ -1279,6 +1386,9 @@ export default function IndiaAiIntelligencePage() {
       .catch(() => {});
     fetchIndexHistory()
       .then((payload) => { if (!cancelled) setHistory(payload); })
+      .catch(() => {});
+    fetchOperatingData()
+      .then((payload) => { if (!cancelled) setOperating(payload); })
       .catch(() => {});
     fetchMarketValue()
       .then((payload) => { if (!cancelled) setMarketValue(payload); })
@@ -1462,6 +1572,8 @@ export default function IndiaAiIntelligencePage() {
               <LayerCards universe={universe} />
 
               <MarketValue data={marketValue} />
+
+              <OperatingData data={operating} />
             </div>
 
             {/* ── monitor ── */}
