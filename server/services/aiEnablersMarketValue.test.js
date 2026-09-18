@@ -1,7 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
-import { lastCloseThrough, marketValueRows, totalsBy } from './aiEnablersMarketValue.js';
+import {
+  canonicalSector, filedSizeRows, lastCloseThrough, marketValueRows, totalsBy,
+} from './aiEnablersMarketValue.js';
 
 const members = [
   { symbol: 'A', layer: 'power' },
@@ -61,6 +63,29 @@ test('totals name what they leave out', () => {
   assert.equal(out.totalCr, 4000);
   assert.deepEqual(out.groups.map((g) => [g.key, g.marketValueCr, g.share]), [['data_centre', 3000, 0.75], ['power', 1000, 0.25]]);
   assert.deepEqual(out.leftOut, [{ symbol: 'B', status: 'NO_CLOSE' }]);
+});
+
+test('only the duplicate spellings are merged', () => {
+  assert.equal(canonicalSector('Cables'), 'Cable');
+  assert.equal(canonicalSector('Capital Goods - Electrical Equipment'), 'Electric Equipment');
+  assert.equal(canonicalSector('Auto Ancillary'), 'Auto Ancillary');
+  assert.equal(canonicalSector(null), null);
+});
+
+test('stage 2 sizes free float on filed shares and says why a row is unsized', () => {
+  const rows = marketValueRows({
+    members, shares,
+    closes: { A: { date: '2026-09-18', close: 1000 }, C: { date: '2026-09-18', close: 6000 } },
+  });
+  const out = filedSizeRows(rows, {
+    floats: { A: { ratio: 0.25, asOf: 'Jun 2026' }, C: { ratio: null } },
+    turnover: { A: 5e8 },
+  });
+  assert.equal(out[0].freeFloatMarketCap, 250);
+  assert.equal(out[0].medianDailyTurnover, 5e8);
+  assert.equal(out[1].reason, 'NO_CLOSE');
+  assert.equal(out[1].freeFloatMarketCap, null);
+  assert.equal(out[2].reason, 'NO_FREE_FLOAT_RATIO');
 });
 
 test('the last close is the latest on or before the cut-off', () => {

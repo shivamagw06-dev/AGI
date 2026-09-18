@@ -6,8 +6,7 @@ import { liquidityForUniverse, volumeBaselines } from '../services/aiEnablersLiq
 import {
   getFundamentals, getHistoricalCandles, getIntradayCandles, isUpstoxConfigured,
 } from '../providers/upstox.js';
-import { fetchMarketCaps } from '../providers/yahooMarketCap.js';
-import { sizeForUniverse, sizeRows } from '../services/aiEnablersSize.js';
+import { sizeForUniverse } from '../services/aiEnablersSize.js';
 import { createSupabaseAdmin } from '../lib/supabaseAdmin.js';
 import {
   fundamentalsForUniverse, intensityForUniverse, stageThreeFromInputs,
@@ -18,7 +17,9 @@ import {
 } from '../services/aiEnablersUniversePass.js';
 import { exitabilityForUniverse } from '../services/aiEnablersExitability.js';
 import { closesFrom, dailyIndex, dilutiveExDates } from '../services/aiEnablersHistory.js';
-import { lastCloseThrough, marketValueRows, totalsBy } from '../services/aiEnablersMarketValue.js';
+import {
+  canonicalSector, filedSizeRows, lastCloseThrough, marketValueRows, SECTOR_ALIASES, totalsBy,
+} from '../services/aiEnablersMarketValue.js';
 
 const UNIVERSE_PATH = fileURLToPath(new URL('../config/india-ai-enablers.universe.json', import.meta.url));
 const FACTS_PATH = fileURLToPath(new URL('../config/india-ai-enablers.disclosed-facts.json', import.meta.url));
@@ -324,89 +325,122 @@ export default function createIndiaAiIntelligenceRouter() {
    * Upstox's profile sector as the universe pass stored it. Whole-company
    * value, not AI exposure. Cached for ten minutes, as the history is.
    */
+  // One computation serves the market-value panel and Stage 2, so both see
+  // the same closes, counts and floats. The promise is cached, not the
+  // result, so two requests at a cold start share one round of fetches.
   let marketValueCache = null;
+  const marketValue = () => {
+    if (marketValueCache && Date.now() - marketValueCache.at < 10 * 60_000) return marketValueCache.promise;
+    const promise = computeMarketValue();
+    marketValueCache = { at: Date.now(), promise };
+    promise.catch(() => { if (marketValueCache?.promise === promise) marketValueCache = null; });
+    return promise;
+  };
+
+  async function computeMarketValue() {
+    const universe = await loadUniverse();
+    const members = (universe.members || []).filter((one) => one.admitted !== false);
+    const file = JSON.parse(await readFile(SHARES_PATH, 'utf8'));
+    const nowIst = new Date(Date.now() + 330 * 60_000);
+    const todayIst = nowIst.toISOString().slice(0, 10);
+    const yesterday = new Date(Date.parse(`${todayIst}T00:00:00Z`) - 86_400_000).toISOString().slice(0, 10);
+    const closedThrough = nowIst.getUTCHours() * 60 + nowIst.getUTCMinutes() >= 15 * 60 + 30 ? todayIst : yesterday;
+    const from = new Date(Date.parse(`${closedThrough}T00:00:00Z`) - 14 * 86_400_000).toISOString().slice(0, 10);
+
+    const closes = {};
+    const exDates = {};
+    const failures = [];
+    for (const member of members) {
+      try {
+        const found = lastCloseThrough(closesFrom(await getHistoricalCandles(member.instrumentKey, {
+          unit: 'days', interval: 1, to: closedThrough, from,
+        })), closedThrough);
+        if (found) closes[member.symbol] = found;
+      } catch (error) {
+        failures.push({ symbol: member.symbol, error: String(error?.message || error) });
+      }
+      try {
+        exDates[member.symbol] = dilutiveExDates(await getFundamentals(member.isin, 'corporate-actions', {}));
+      } catch {
+        exDates[member.symbol] = new Set();
+      }
+    }
+    // P/B x book, and the promoter share. No independent cap is passed, so
+    // sizeForUniverse marks every row unusable as a size, but it still
+    // returns the P/B x book product (the check figure here) and the float.
+    const sizes = await sizeForUniverse({ members }, { fetchFundamentals: getFundamentals }).catch(() => ({}));
+    const pbMarketCaps = {};
+    const floats = {};
+    for (const [symbol, one] of Object.entries(sizes?.bySymbol || {})) {
+      pbMarketCaps[symbol] = one?.marketCap ?? null;
+      floats[symbol] = {
+        ratio: one?.freeFloatRatio ?? null,
+        asOf: one?.lineage?.inputs?.promoter_share?.asOf ?? null,
+        reason: one?.freeFloatReason ?? null,
+      };
+    }
+
+    let sectors = {};
+    const db = supabaseClient();
+    const runId = db ? await latestUniversePassRun(db).catch(() => null) : null;
+    if (runId) {
+      const { data } = await db.from('ai_enabler_universe_pass').select('symbol, sector')
+        .eq('run_id', runId).in('symbol', members.map((one) => one.symbol));
+      sectors = Object.fromEntries((data || []).map((row) => [row.symbol, row.sector]));
+    }
+    // A member the stored pass has no sector for (its profile failed that
+    // run, or it was read under a retired ISIN) is asked for directly.
+    const sectorFrom = {};
+    for (const member of members) {
+      if (sectors[member.symbol]) { sectorFrom[member.symbol] = 'universe pass'; continue; }
+      try {
+        const profile = await getFundamentals(member.isin, 'profile', {});
+        const sector = String(profile?.data?.sector || '').trim();
+        if (sector) { sectors[member.symbol] = sector; sectorFrom[member.symbol] = 'Upstox profile, live'; }
+      } catch {
+        // Stays unstated, and the page says so.
+      }
+    }
+
+    const rows = marketValueRows({ members, shares: file.shares, closes, exDates, pbMarketCaps })
+      .map((row) => ({
+        ...row,
+        sector: canonicalSector(sectors[row.symbol]),
+        sectorUpstox: sectors[row.symbol] || null,
+        sectorFrom: sectorFrom[row.symbol] || null,
+      }));
+    // The session the figures are priced at. Before the day's candle is
+    // published this is the previous session, not closedThrough.
+    const closeDates = [...new Set(rows.map((row) => row.closeDate).filter(Boolean))].sort();
+    const body = {
+      ok: true,
+      formula: 'market value = last close x equity shares outstanding (filed)',
+      scope: 'whole-company market value; not the value of any AI business',
+      closedThrough,
+      closeDate: closeDates.at(-1) || null,
+      closeDates,
+      sectorSource: runId ? `Upstox profile sector, universe pass ${runId}` : null,
+      sectorAliases: SECTOR_ALIASES,
+      byLayer: totalsBy(rows, (row) => row.layer),
+      bySector: totalsBy(rows, (row) => row.sector),
+      rows,
+      failures,
+    };
+    return { body, floats };
+  }
+
+  /**
+   * Market value of the members, by layer and by sector, at the last closed
+   * session: close x filed shares, P/B x book beside it as a check. Sector is
+   * Upstox's profile sector, with its duplicate spellings merged. Whole-company
+   * value, not AI exposure. Cached for ten minutes, as the history is.
+   */
   router.get('/screen/market-value', async (req, res) => {
     try {
-      if (marketValueCache && Date.now() - marketValueCache.at < 10 * 60_000) return res.json(marketValueCache.body);
       if (!isUpstoxConfigured()) {
         return res.status(503).json({ ok: false, error: 'Upstox is not configured; set UPSTOX_ACCESS_TOKEN server-side.', code: 'UPSTOX_NOT_CONFIGURED' });
       }
-      const universe = await loadUniverse();
-      const members = (universe.members || []).filter((one) => one.admitted !== false);
-      const file = JSON.parse(await readFile(SHARES_PATH, 'utf8'));
-      const nowIst = new Date(Date.now() + 330 * 60_000);
-      const todayIst = nowIst.toISOString().slice(0, 10);
-      const yesterday = new Date(Date.parse(`${todayIst}T00:00:00Z`) - 86_400_000).toISOString().slice(0, 10);
-      const closedThrough = nowIst.getUTCHours() * 60 + nowIst.getUTCMinutes() >= 15 * 60 + 30 ? todayIst : yesterday;
-      const from = new Date(Date.parse(`${closedThrough}T00:00:00Z`) - 14 * 86_400_000).toISOString().slice(0, 10);
-
-      const closes = {};
-      const exDates = {};
-      const failures = [];
-      for (const member of members) {
-        try {
-          const found = lastCloseThrough(closesFrom(await getHistoricalCandles(member.instrumentKey, {
-            unit: 'days', interval: 1, to: closedThrough, from,
-          })), closedThrough);
-          if (found) closes[member.symbol] = found;
-        } catch (error) {
-          failures.push({ symbol: member.symbol, error: String(error?.message || error) });
-        }
-        try {
-          exDates[member.symbol] = dilutiveExDates(await getFundamentals(member.isin, 'corporate-actions', {}));
-        } catch {
-          exDates[member.symbol] = new Set();
-        }
-      }
-      // The check figure. No independent cap is passed, so sizeForUniverse
-      // marks every row unusable for Stage 2, but it still returns the
-      // P/B x book product, which is all this needs.
-      const sizes = await sizeForUniverse({ members }, { fetchFundamentals: getFundamentals }).catch(() => ({}));
-      const pbMarketCaps = Object.fromEntries(Object.entries(sizes?.bySymbol || {})
-        .map(([symbol, one]) => [symbol, one?.marketCap ?? null]));
-
-      let sectors = {};
-      const db = supabaseClient();
-      const runId = db ? await latestUniversePassRun(db).catch(() => null) : null;
-      if (runId) {
-        const { data } = await db.from('ai_enabler_universe_pass').select('symbol, sector')
-          .eq('run_id', runId).in('symbol', members.map((one) => one.symbol));
-        sectors = Object.fromEntries((data || []).map((row) => [row.symbol, row.sector]));
-      }
-      // A member the stored pass has no sector for (its profile failed that
-      // run, or it was read under a retired ISIN) is asked for directly.
-      const sectorFrom = {};
-      for (const member of members) {
-        if (sectors[member.symbol]) { sectorFrom[member.symbol] = 'universe pass'; continue; }
-        try {
-          const profile = await getFundamentals(member.isin, 'profile', {});
-          const sector = String(profile?.data?.sector || '').trim();
-          if (sector) { sectors[member.symbol] = sector; sectorFrom[member.symbol] = 'Upstox profile, live'; }
-        } catch {
-          // Stays unstated, and the page says so.
-        }
-      }
-
-      const rows = marketValueRows({ members, shares: file.shares, closes, exDates, pbMarketCaps })
-        .map((row) => ({ ...row, sector: sectors[row.symbol] || null, sectorFrom: sectorFrom[row.symbol] || null }));
-      // The session the figures are priced at. Before the day's candle is
-      // published this is the previous session, not closedThrough.
-      const closeDates = [...new Set(rows.map((row) => row.closeDate).filter(Boolean))].sort();
-      const body = {
-        ok: true,
-        formula: 'market value = last close x equity shares outstanding (filed)',
-        scope: 'whole-company market value; not the value of any AI business',
-        closedThrough,
-        closeDate: closeDates.at(-1) || null,
-        closeDates,
-        sectorSource: runId ? `Upstox profile sector, universe pass ${runId}` : null,
-        byLayer: totalsBy(rows, (row) => row.layer),
-        bySector: totalsBy(rows, (row) => row.sector),
-        rows,
-        failures,
-      };
-      marketValueCache = { at: Date.now(), body };
-      res.json(body);
+      res.json((await marketValue()).body);
     } catch (error) {
       res.status(500).json({ ok: false, error: String(error?.message || error) });
     }
@@ -428,15 +462,15 @@ export default function createIndiaAiIntelligenceRouter() {
   /**
    * Stage 2 of the screen: size and tradability.
    *
-   * Free-float market cap is derived from Upstox P/B and book equity and
-   * cross-checked against Yahoo. A member whose two figures disagree is
-   * reported unscreened rather than screened on a number nobody verified -
-   * which is what happens to a holding company, whose standalone book is the
-   * wrong basis for a consolidated P/B.
+   * Free-float size is close x filed shares x (1 - promoter share), from the
+   * same computation as the market-value panel. It replaced P/B x book,
+   * which missed the filed-share figure by more than five times for one
+   * member and in both directions across six; that route is still returned,
+   * under pbBook, for reference and never screened on.
    *
-   * No thresholds are applied unless they are passed in. The distribution is
-   * always returned, because a floor chosen without seeing the spread is a
-   * floor nobody can defend.
+   * No thresholds are applied unless they are passed in (size in crore,
+   * turnover in rupees). The distribution is always returned, because a
+   * floor chosen without seeing the spread is a floor nobody can defend.
    */
   router.get('/screen/size', async (req, res) => {
     try {
@@ -447,8 +481,8 @@ export default function createIndiaAiIntelligenceRouter() {
       const today = new Date().toISOString().slice(0, 10);
       const from = new Date(Date.now() - 200 * 24 * 3600 * 1000).toISOString().slice(0, 10);
 
-      const [sizes, liquidity] = await Promise.all([
-        sizeForUniverse(universe, { fetchFundamentals: getFundamentals, fetchMarketCaps, crossCheckSource: 'yahoo' }),
+      const [{ body, floats }, liquidity] = await Promise.all([
+        marketValue(),
         liquidityForUniverse(universe, { fetchCandles: getHistoricalCandles, to: today, from, sessions: 120 }),
       ]);
 
@@ -456,11 +490,15 @@ export default function createIndiaAiIntelligenceRouter() {
         .map(([symbol, one]) => [symbol, one.medianDailyTurnover]));
       const minFreeFloatMarketCap = Number(req.query.minFreeFloatMarketCap) || null;
       const minMedianDailyTurnover = Number(req.query.minMedianDailyTurnover) || null;
+      const rows = filedSizeRows(body.rows, { floats, turnover });
 
       res.json({
         ok: true,
-        screen: stageTwo(sizeRows(sizes, turnover), { minFreeFloatMarketCap, minMedianDailyTurnover }),
-        sizes,
+        sizeBasis: 'free-float market value = last close x filed equity shares x (1 - promoter share); crore',
+        closeDate: body.closeDate,
+        screen: stageTwo(rows, { minFreeFloatMarketCap, minMedianDailyTurnover }),
+        rows,
+        pbBook: Object.fromEntries(body.rows.map((row) => [row.symbol, row.crossCheck || null])),
         liquidityFailures: liquidity.failures,
       });
     } catch (error) {

@@ -223,6 +223,9 @@ export function freeFloatMarketCap({
       value: null, marketCap, provenance: 'DERIVED', lineage,
       reason: 'no independent market cap to check against; a derived figure nothing corroborates is arithmetic, not a market cap',
       crossCheck: { independent: null, gap: null, within: null }, usable: false,
+      // Still returned: Stage 2 sizes on filed shares and needs only the float.
+      freeFloatRatio: float.ratio,
+      freeFloatReason: float.reason,
     };
   }
 
