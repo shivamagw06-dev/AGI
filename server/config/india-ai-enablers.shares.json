@@ -1,0 +1,195 @@
+{
+  "purpose": "Equity shares outstanding per member, from its own exchange filings, for market value = live price x shares. Fully paid shares only; partly-paid rights shares (call money unpaid) are excluded and noted.",
+  "anchors": "POWERINDIA 44,572,363 and KAYNES 67,034,654 match AGI primary reads of 31 Mar 2026; CLEANMAX rose from 117,079,174 by Q1 ESOP allotments.",
+  "shares": {
+    "POWERINDIA": {
+      "shares": 44572363,
+      "faceValue": 2,
+      "asOf": "2026-06-30",
+      "source": "BSE SHP Q1 FY27",
+      "excerpt": "Grand Total | 4,45,72,363"
+    },
+    "ADANIENT": {
+      "shares": 1352949234,
+      "faceValue": 1,
+      "asOf": "2026-07-07",
+      "source": "BSE SHP (capital restructuring) 07 Jul 2026",
+      "excerpt": "Grand Total | 1,35,29,49,234 | 7,73,366 partly paid"
+    },
+    "CLEANMAX": {
+      "shares": 117217410,
+      "faceValue": 1,
+      "asOf": "2026-06-30",
+      "source": "BSE SHP Q1 FY27",
+      "excerpt": "Grand Total | 11,72,17,410"
+    },
+    "ANANTRAJ": {
+      "shares": 359876930,
+      "faceValue": 2,
+      "asOf": "2026-06-30",
+      "source": "BSE SHP Q1 FY27",
+      "excerpt": "Grand Total | 35,98,76,930"
+    },
+    "NETWEB": {
+      "shares": 56940687,
+      "faceValue": 2,
+      "asOf": "2026-06-30",
+      "source": "BSE SHP Q1 FY27",
+      "excerpt": "Grand Total | 5,69,40,687"
+    },
+    "CGPOWER": {
+      "shares": 1574979249,
+      "faceValue": 2,
+      "asOf": "2026-06-30",
+      "source": "BSE SHP Q1 FY27",
+      "excerpt": "Grand Total | 1,57,49,79,249"
+    },
+    "KAYNES": {
+      "shares": 67034654,
+      "faceValue": 10,
+      "asOf": "2026-06-30",
+      "source": "BSE SHP Q1 FY27 (revised)",
+      "excerpt": "Grand Total | 6,70,34,654"
+    },
+    "STLTECH": {
+      "shares": 513896135,
+      "faceValue": 2,
+      "asOf": "2026-07-16",
+      "source": "BSE SHP (capital restructuring, post-QIP)",
+      "excerpt": "Grand Total | 51,38,96,135"
+    },
+    "CUMMINSIND": {
+      "shares": 277200000,
+      "faceValue": 2,
+      "asOf": "2026-06-30",
+      "source": "BSE SHP Q1 FY27",
+      "excerpt": "Grand Total | 27,72,00,000"
+    },
+    "BHARTIARTL": {
+      "shares": 6240040719,
+      "faceValue": 5,
+      "asOf": "2026-06-30",
+      "source": "BSE SHP Q1 FY27 (revised)",
+      "excerpt": "Grand Total | 6,24,00,40,719 fully paid | 11,13,597 partly paid"
+    },
+    "LT": {
+      "shares": 1375729178,
+      "faceValue": 2,
+      "asOf": "2026-06-30",
+      "source": "BSE SHP Q1 FY27",
+      "excerpt": "Grand Total | 1,37,57,29,178 (incl. 1,23,17,685 underlying GDRs)"
+    },
+    "POWERGRID": {
+      "shares": 9300603819,
+      "faceValue": 10,
+      "asOf": "2026-06-30",
+      "source": "BSE SHP Q1 FY27",
+      "excerpt": "Grand Total | 9,30,06,03,819"
+    },
+    "BLUESTARCO": {
+      "shares": 205614788,
+      "faceValue": 2,
+      "asOf": "2026-06-30",
+      "source": "BSE SHP Q1 FY27",
+      "excerpt": "Grand Total | 20,56,14,788"
+    },
+    "SCHNEIDER": {
+      "shares": 239104035,
+      "faceValue": 2,
+      "asOf": "2026-06-30",
+      "source": "BSE SHP Q1 FY27",
+      "excerpt": "Grand Total | 23,91,04,035"
+    },
+    "TDPOWERSYS": {
+      "shares": 312456860,
+      "faceValue": 1,
+      "asOf": "2026-08-24",
+      "source": "FY26 Annual Report / AGM notice, post sub-division capital table",
+      "excerpt": "Issued, Subscribed and Paid-up | 15,62,28,430 | 31,24,56,860"
+    },
+    "SANSERA": {
+      "shares": 62403568,
+      "faceValue": 2,
+      "asOf": "2026-06-30",
+      "source": "BSE SHP Q1 FY27",
+      "excerpt": "Grand Total | 6,24,03,568"
+    },
+    "GVT&D": {
+      "shares": 256046535,
+      "faceValue": 2,
+      "asOf": "2026-06-30",
+      "source": "BSE SHP Q1 FY27",
+      "excerpt": "Grand Total | 25,60,46,535"
+    },
+    "HFCL": {
+      "shares": 1530602463,
+      "faceValue": 1,
+      "asOf": "2026-06-30",
+      "source": "BSE SHP Q1 FY27",
+      "excerpt": "Grand Total | 1,53,06,02,463"
+    },
+    "MTARTECH": {
+      "shares": 30759591,
+      "faceValue": 10,
+      "asOf": "2026-06-30",
+      "source": "BSE SHP Q1 FY27",
+      "excerpt": "Grand Total | 3,07,59,591"
+    },
+    "POLYCAB": {
+      "shares": 150635053,
+      "faceValue": 10,
+      "asOf": "2026-06-30",
+      "source": "BSE SHP Q1 FY27",
+      "excerpt": "Grand Total | 15,06,35,053"
+    },
+    "APARINDS": {
+      "shares": 41872337,
+      "faceValue": 10,
+      "asOf": "2026-08-13",
+      "source": "BSE SHP (capital restructuring) 13 Aug 2026",
+      "excerpt": "Grand Total | 4,18,72,337"
+    },
+    "KIRLOSENG": {
+      "shares": 145379944,
+      "faceValue": 2,
+      "asOf": "2026-06-30",
+      "source": "BSE SHP Q1 FY27",
+      "excerpt": "Grand Total | 14,53,79,944"
+    },
+    "DIACABS": {
+      "shares": 598071060,
+      "faceValue": 1,
+      "asOf": "2026-08-21",
+      "source": "BSE SHP (capital restructuring, post-QIP) 21 Aug 2026",
+      "excerpt": "Grand Total | 59,80,71,060"
+    },
+    "ABB": {
+      "shares": 211908375,
+      "faceValue": 2,
+      "asOf": "2026-06-30",
+      "source": "BSE SHP Q1 CY2026 quarter ended 30 Jun 2026",
+      "excerpt": "Grand Total | 21,19,08,375"
+    },
+    "RELIANCE": {
+      "shares": 13532538722,
+      "faceValue": 10,
+      "asOf": "2026-06-30",
+      "source": "BSE SHP Q1 FY27 (500325_1672026192434_SP); matches standalone paid-up capital Rs 13,532 cr at FV 10 in Q1 FY27 results",
+      "excerpt": "Total (A+B+C ) | 4651863 | 13303071854 | | 229466868 | 13532538722 | 100.00% (incl. 229,466,868 underlying GDRs)"
+    },
+    "ADANIENSOL": {
+      "shares": 1222954468,
+      "faceValue": 10,
+      "asOf": "2026-07-30",
+      "source": "BSE SHP (capital restructuring, post-QIP) 30 Jul 2026 (539254_48202618118_SP); 30 Jun count 1,201,282,642 + QIP 21,671,826",
+      "excerpt": "Total (A+B+C ) | | | | 376377 | 1222954468 | | | 1222954468 | 100.00%"
+    },
+    "ADANIGREEN": {
+      "shares": 1647176155,
+      "faceValue": 10,
+      "asOf": "2026-06-30",
+      "source": "BSE SHP Q1 FY27 (541450_872026152540_SP); Q1 FY27 results note: 1,64,71,76,155 shares",
+      "excerpt": "Total (A+B+C ) | | | | 799143 | 1647176155 | | | 1647176155 | 100.00%"
+    }
+  }
+}
