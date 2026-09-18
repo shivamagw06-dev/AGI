@@ -1035,13 +1035,36 @@ app.use((req, res) => res.status(404).json({ error: 'Not found', path: req.path 
 
 }); // setImmediate — defer heavy route registration until after listen()
 
-process.on('SIGTERM', () => {
-  console.info('SIGTERM received — closing HTTP server');
+// Sockets first, then the HTTP server. A WebSocket abandoned by process.exit
+// stays open as far as the provider is concerned, and Upstox caps concurrent
+// market-data connections per application - so leaking one per deploy
+// eventually refuses every new handshake with a 403 while REST still works.
+async function closeLongLivedSockets() {
+  try {
+    const { shutdownRuntime } = await import('./routes/indiaAiIntelligence.js');
+    const result = await shutdownRuntime();
+    console.info('india-ai feed shutdown:', JSON.stringify(result));
+  } catch (error) {
+    console.warn('india-ai feed shutdown failed:', error?.message || error);
+  }
+}
+
+let shuttingDown = false;
+async function gracefulExit(signal) {
+  if (shuttingDown) return;
+  shuttingDown = true;
+  console.info(`${signal} received — closing sockets then HTTP server`);
+  await closeLongLivedSockets();
   server.close(() => {
     console.info('HTTP server closed');
     process.exit(0);
   });
-});
+  // Do not hang forever if a keep-alive connection refuses to drain.
+  setTimeout(() => process.exit(0), 8_000).unref();
+}
+
+process.on('SIGTERM', () => { gracefulExit('SIGTERM'); });
+process.on('SIGINT', () => { gracefulExit('SIGINT'); });
 
 export default app;
 

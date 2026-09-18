@@ -185,3 +185,71 @@ test('on 403, switches from redirect to authorize and retries with a fresh URL',
   assert.equal(feed.status().last_error, null);
   feed.stop();
 });
+
+test('the reconnect loop gives up instead of retrying a refusal forever', async () => {
+  // The state this feed actually reached in production: a 403 on the socket
+  // handshake, retried indefinitely, status stuck on "reconnecting". Upstox
+  // allows two market-data connections per user, so an unbounded loop keeps
+  // consuming the very attempts that cause the refusal, and never reaches a
+  // state anything can escalate. A 403 from the authorize REST call was
+  // already terminal; a 403 from the socket was not.
+  const previous = process.env.UPSTOX_ACCESS_TOKEN;
+  process.env.UPSTOX_ACCESS_TOKEN = 'test-token-long-enough-to-not-look-like-a-client-id';
+  try {
+    let opened = 0;
+    const feed = new UpstoxMarketFeedV3({
+      instrumentKeys: ['NSE_EQ|INE07Y701011'],
+      // The production path: authorize succeeds and returns a URL, then the
+      // socket itself is refused. The catch block treats a handshake auth
+      // error as terminal, but socket.on('close') schedules a reconnect with
+      // no auth check at all - so a socket-level 403 loops indefinitely while
+      // a handshake-level one stops. That asymmetry is what left this feed
+      // reconnecting for hours against a two-connection cap.
+      connectMode: 'authorize',
+      authorize: async () => 'wss://feed.example/authorized',
+      reconnectBaseMs: 1,
+      maxReconnectAttempts: 3,
+      random: () => 0,
+      websocketFactory: () => {
+        opened += 1;
+        return {
+          // A real socket emits 'error' and then 'close'; the reconnect is
+          // scheduled from 'close', so a mock that omits it never retries and
+          // the test would pass for the wrong reason.
+          on: (event, fn) => {
+            if (event === 'error') setImmediate(() => fn(new Error('Unexpected server response: 403')));
+            if (event === 'close') setImmediate(() => fn(1006, 'abnormal closure'));
+          },
+          close: () => {},
+        };
+      },
+    });
+    await feed.start();
+    await new Promise((resolve) => setTimeout(resolve, 200));
+    const state = feed.status();
+    assert.equal(state.status, 'exhausted');
+    assert.equal(state.next_retry_at, null);
+    assert.match(state.give_up_reason, /consecutive failures/);
+    assert.match(state.give_up_reason, /403/);
+    assert.ok(opened <= 5, `expected the loop to stop; it opened ${opened} sockets`);
+    feed.stop();
+  } finally {
+    if (previous === undefined) delete process.env.UPSTOX_ACCESS_TOKEN;
+    else process.env.UPSTOX_ACCESS_TOKEN = previous;
+  }
+});
+
+test('stop closes the socket, which is what a redeploy must do', () => {
+  // process.exit() abandons a WebSocket without a close frame, and the
+  // provider goes on counting it against the connection cap.
+  let closed = 0;
+  const feed = new UpstoxMarketFeedV3({
+    instrumentKeys: ['NSE_EQ|INE07Y701011'],
+    websocketFactory: () => ({ on: () => {}, close: () => { closed += 1; } }),
+  });
+  feed.socket = { on: () => {}, close: () => { closed += 1; } };
+  const state = feed.stop();
+  assert.equal(closed, 1);
+  assert.equal(state.status, 'stopped');
+  assert.equal(feed.socket, null);
+});
