@@ -197,6 +197,45 @@ export function classifyEvidence({ title = '', description = '', source = '', ki
  * is - raises a candidate for a named reviewer, and the count of soft items is
  * reported so a reviewer can see how loud the talk is relative to the silence.
  */
+/**
+ * The bar an EPC contractor has to clear, which is higher.
+ *
+ * A contractor's exposure is to projects, not to a product line, so the
+ * ordinary test would admit any builder whose brochure mentions data centres.
+ * Three things are required together: a named project in one of these layers,
+ * a contracted role in delivering it, and a figure that makes the exposure
+ * identifiable. Generic "we serve data centres" marketing admits nobody.
+ */
+const NAMED_PROJECT = /\b(?:data ?cent(?:er|re)|semiconductor|fab\b|osat)\b/i;
+const CONTRACTED_ROLE = /\b(?:scope (?:includes|of work)|awarded|order (?:received|booked)|contract(?:ed)?\b|executing|commissioned|construction of|handed over|completed)\b/i;
+const IDENTIFIABLE_EXPOSURE = /(?:\u20b9|rs\.?|inr)\s?\d|\b\d[\d,.]*\s?(?:cr|crore|mn|million|bn|billion|mw|megawatt|sq\.? ?(?:m|ft))\b|\bQ[1-4] ?FY ?\d{2}\b|\bphysically completed\b|\bmain plant commissioned\b/i;
+
+export function admitsContractor(evidence = []) {
+  const classified = evidence.map((one) => ({ ...one, verdict: classifyEvidence(one) }));
+  const qualifying = classified.filter((one) => {
+    if (!one.verdict.hard) return false;
+    const text = `${one.title || ''} ${one.description || ''}`;
+    return NAMED_PROJECT.test(text) && CONTRACTED_ROLE.test(text) && IDENTIFIABLE_EXPOSURE.test(text);
+  });
+  if (qualifying.length) {
+    return {
+      admitted: true, basis: 'hard_contractor', hard: qualifying,
+      reason: `${qualifying.length} project item${qualifying.length === 1 ? '' : 's'} naming the project, the contracted role and an identifiable exposure`,
+    };
+  }
+  const missing = [];
+  const anyText = classified.map((one) => `${one.title || ''} ${one.description || ''}`).join(' ');
+  if (!NAMED_PROJECT.test(anyText)) missing.push('a named data centre, fab or OSAT project');
+  if (!CONTRACTED_ROLE.test(anyText)) missing.push('a contracted delivery role');
+  if (!IDENTIFIABLE_EXPOSURE.test(anyText)) missing.push('an identifiable economic exposure');
+  return {
+    admitted: false, basis: 'insufficient_contractor', hard: [],
+    reason: missing.length
+      ? `a contractor needs all three; missing ${missing.join(', ')}`
+      : 'no single item carries the project, the role and the exposure together',
+  };
+}
+
 export function admits(evidence = []) {
   const classified = evidence.map((one) => ({ ...one, verdict: classifyEvidence(one) }));
   const hard = classified.filter((one) => one.verdict.hard && one.verdict.aiRelevant);
@@ -239,6 +278,11 @@ const SUB_LAYERS = [
   ['semiconductor', 'osat', /\b(?:osat\w*|assembly and test\w*|advanced packaging|outsourced semiconductor)/i],
   ['semiconductor', 'materials', /\b(?:wafer\w*|substrate\w*|specialty gas\w*|photoresist\w*|electronic chemical\w*)/i],
   ['semiconductor', 'hardware', /\b(?:fab equipment|test equipment|lithograph\w+|deposition|etch(?:ing)? (?:tool|system)\w*)/i],
+  // The contractor who builds the thing, distinct from the owner who holds
+  // it. KEC International builds the data centre and the Sanand fab; calling
+  // that "developer" would say it owns a campus it does not own, and leaving
+  // it out would drop a company with signed, dated, named project evidence.
+  ['infrastructure', 'epc', /\b(?:epc\b|turnkey|civil (?:and|&) structural|cleanroom construction|construction of (?:a )?(?:data ?cent(?:er|re)|semiconductor)|balance of plant)/i],
 ];
 
 export function subLayersFrom(evidence = []) {

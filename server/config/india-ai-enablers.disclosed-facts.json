@@ -1,0 +1,198 @@
+{
+  "version": "2026-09-18",
+  "provenance": {
+    "class": "THIRD_PARTY_RELAYED",
+    "note": "Figures supplied in conversation, citing aggregators - FinancialFilings, Economic Times, Perivis, BazaarWatch, company investor pages - rather than read from a primary filing by this system. They carry a source but no document id, page or sentence, which is what the fact store requires before a figure may be quoted as disclosed. They are held here, outside company_facts, until the annual reports are ingested. At that point each one is either confirmed or contradicted, and a contradiction is a finding rather than an error to paper over.",
+    "doNotServeAs": "FILED"
+  },
+  "companies": {
+    "KAYNES": {
+      "isin": "INE918Z01012",
+      "facts": [
+        {
+          "concept": "capex",
+          "definition_id": "CAPEX.CASH_PPE_INTANGIBLES",
+          "scope": "consolidated",
+          "period_end": "2026-03-31",
+          "value": 12403.01,
+          "unit": "inr_million",
+          "as_reported_label": "purchase of fixed assets"
+        },
+        {
+          "concept": "capex",
+          "definition_id": "CAPEX.CASH_PPE_INTANGIBLES",
+          "scope": "standalone",
+          "period_end": "2026-03-31",
+          "value": 773.81,
+          "unit": "inr_million",
+          "as_reported_label": "purchase of fixed assets, including capital advances"
+        },
+        {
+          "concept": "rnd",
+          "definition_id": "RND.GROSS",
+          "scope": "consolidated",
+          "period_end": "2026-03-31",
+          "value": 138.6,
+          "unit": "inr_million",
+          "note": "129.24 mn capitalised, 9.36 mn expensed"
+        },
+        {
+          "concept": "share_count",
+          "definition_id": "SHARE_COUNT.OUTSTANDING",
+          "scope": "entity",
+          "period_end": "2026-03-31",
+          "value": 67034654,
+          "unit": "shares",
+          "as_reported_label": "issued, subscribed and fully paid"
+        }
+      ],
+      "segmentRevenue": null,
+      "segmentNote": "Single EMS reporting segment. No OSAT revenue row exists and none is manufactured: the OSAT and PCB disclosures are operational, not segmental.",
+      "doNotConflate": "The ~12,423 mn of QIP proceeds deployed toward OSAT and PCB by 31 Mar 2026 is cumulative project deployment, a different concept from FY26 cash capex, and must not be summed with or substituted for it."
+    },
+    "CGPOWER": {
+      "isin": "INE067A01029",
+      "facts": [
+        {
+          "concept": "capex",
+          "definition_id": "CAPEX.COMMITTED_PROJECT",
+          "scope": "project",
+          "period_end": "2026-03-31",
+          "value": 1062.85,
+          "unit": "inr_crore",
+          "as_reported_label": "QIP proceeds allocated to CG Semi capex"
+        },
+        {
+          "concept": "share_count",
+          "definition_id": "SHARE_COUNT.OUTSTANDING",
+          "scope": "entity",
+          "period_end": "2026-03-31",
+          "value": 1574921249,
+          "unit": "shares",
+          "as_reported_label": "subscribed and paid up"
+        },
+        {
+          "concept": "rnd",
+          "definition_id": "RND.GROSS",
+          "scope": "consolidated",
+          "period_end": "2026-03-31",
+          "value": null,
+          "unit": null,
+          "state": "NOT_DISCLOSED",
+          "note": "No clean company-disclosed FY26 R&D figure located. Not zero."
+        }
+      ],
+      "segmentNote": "Semiconductors appears as a segment in consolidated reporting and not in standalone, so consolidated is the correct scope for semiconductor attribution.",
+      "documentProvenance": "The FY26 annual report must be read with the company's subsequent corrigendum, which the company itself states. Both belong to the document provenance."
+    },
+    "NETWEB": {
+      "isin": "INE0NT901020",
+      "facts": [
+        {
+          "concept": "capex",
+          "definition_id": "CAPEX.CASH_PPE_INTANGIBLES",
+          "scope": "consolidated",
+          "period_end": "2026-03-31",
+          "value": 119.79,
+          "unit": "inr_million",
+          "as_reported_label": "purchase of property, plant and equipment and intangible assets",
+          "note": "CWIP additions of 68.37 mn disclosed separately and not included"
+        },
+        {
+          "concept": "rnd",
+          "definition_id": "RND.INCLUDING_CAPEX",
+          "scope": "consolidated",
+          "period_end": "2026-03-31",
+          "value": 13.14,
+          "unit": "inr_crore",
+          "as_reported_label": "R&D expenditure including capex"
+        },
+        {
+          "concept": "share_count",
+          "definition_id": "SHARE_COUNT.OUTSTANDING",
+          "scope": "entity",
+          "period_end": "2026-03-31",
+          "value": 56940687,
+          "unit": "shares",
+          "as_reported_label": "issued, subscribed and fully paid"
+        }
+      ],
+      "segmentRevenue": [
+        {
+          "segment": "AI Systems",
+          "value": 9477.9,
+          "unit": "inr_million",
+          "share_of_revenue": 0.434,
+          "yoy": 4.596
+        },
+        {
+          "segment": "HPC",
+          "value": 5307.5,
+          "unit": "inr_million"
+        },
+        {
+          "segment": "Private Cloud and HCI",
+          "value": 5169.7,
+          "unit": "inr_million"
+        }
+      ],
+      "segmentNote": "The cited layer-attribution row for data_centre/hardware."
+    },
+    "ADANIENT": {
+      "isin": "INE423A01024",
+      "segmentRevenue": [
+        {
+          "segment": "New Energy Ecosystem",
+          "value": 15399.0,
+          "unit": "inr_crore",
+          "scope": "consolidated"
+        },
+        {
+          "segment": "Copper",
+          "value": 15284.34,
+          "unit": "inr_crore",
+          "scope": "consolidated"
+        },
+        {
+          "segment": "Airports",
+          "value": 13215.43,
+          "unit": "inr_crore",
+          "scope": "consolidated"
+        },
+        {
+          "segment": "Roads",
+          "value": 6347.18,
+          "unit": "inr_crore",
+          "scope": "consolidated"
+        }
+      ],
+      "scopeRule": "Consolidated is the economic basis for the layer screen. Standalone facts are retained separately and never mixed into a numerator or denominator with consolidated ones.",
+      "openQuestion": "No data centre segment appears in this consolidated table, yet this member was admitted on data centre evidence - a 400 MW hyperscale order and 960+ MW tied up. If AdaniConneX is a joint venture carried at equity rather than consolidated, its revenue is not in the segment table at all, and the layer attribution for this member cannot be evidenced from it. That has to be settled from the annual report before ADANIENT's data_centre attribution is treated as measured rather than asserted."
+    },
+    "CLEANMAX": {
+      "isin": "INE647U01026",
+      "facts": [
+        {
+          "concept": "rnd",
+          "definition_id": "RND.GROSS",
+          "scope": "entity",
+          "period_end": "2026-03-31",
+          "value": 0,
+          "unit": "inr_crore",
+          "state": "DISCLOSED_NIL",
+          "as_reported_label": "R&D expenditure: Nil",
+          "note": "Disclosed as nil, which is a fact with a value. Distinct from NOT_DISCLOSED."
+        },
+        {
+          "concept": "share_count",
+          "definition_id": "SHARE_COUNT.OUTSTANDING",
+          "scope": "entity",
+          "period_end": "2026-03-31",
+          "value": 117079174,
+          "unit": "shares",
+          "as_reported_label": "equity shares of Rs 1 each, paid up"
+        }
+      ]
+    }
+  }
+}

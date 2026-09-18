@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { admits, classifyEvidence, subLayersFrom } from './aiEnablersEvidence.js';
+import { admits, admitsContractor, classifyEvidence, subLayersFrom } from './aiEnablersEvidence.js';
 
 /**
  * Titles and descriptions are verbatim from Netweb Technologies' exchange
@@ -281,11 +281,48 @@ test('a molecule under development is not a molecule being sold', () => {
   assert.equal(admits([aether]).basis, 'soft');
 });
 
-test('a company that admits can still have no sub-layer to go in', () => {
-  // KEC builds the data centre and the fab. Hard, first-party, AI-relevant -
-  // and the taxonomy has no slot for the contractor, only for the owner. The
-  // screen must not invent one, and must not silently place it either.
+test('the contractor who builds the campus now has a sub-layer of its own', () => {
+  // KEC International builds the data centre and the Sanand fab. Calling that
+  // "developer" would say it owns a campus it does not own; leaving it out
+  // would drop a company with signed, dated, named project evidence. It is
+  // the builder, and the taxonomy now says so.
   const kec = { description: 'DATA CENTRE PROJECT, KOLKATA: construction of a mission critical facility. Project physically completed in Q1 FY27. SEMICONDUCTOR MANUFACTURING PLANT, SANAND, GUJARAT: construction of a semiconductor manufacturing facility including specialised cleanroom construction. Main plant commissioned in Q4 FY26.' };
   assert.equal(admits([kec]).admitted, true);
-  assert.deepEqual(subLayersFrom([kec]), []);
+  assert.deepEqual(subLayersFrom([kec]).map((one) => `${one.layer}/${one.subLayer}`), ['infrastructure/epc']);
+});
+
+test('a contractor needs the project, the role and the exposure together', () => {
+  // Its exposure is to projects rather than to a product line, so the
+  // ordinary test would admit any builder whose brochure mentions data
+  // centres. All three, or nothing.
+  // The full excerpt from KEC's annual report, as the universe holds it. The
+  // Kolkata line alone is not enough - "physically completed" is not one of
+  // the hard-evidence patterns, and that refusal is correct rather than a
+  // gap: it is the Sanand commissioning that carries this.
+  const kec = { description: 'DATA CENTRE PROJECT, KOLKATA: construction of a mission critical facility. Project physically completed in Q1 FY27. SEMICONDUCTOR MANUFACTURING PLANT, SANAND, GUJARAT: construction of a semiconductor manufacturing facility including specialised cleanroom construction. Main plant commissioned in Q4 FY26.' };
+  const verdict = admitsContractor([kec]);
+  assert.equal(verdict.admitted, true);
+  assert.equal(verdict.basis, 'hard_contractor');
+});
+
+test('a brochure mentioning data centres admits no contractor', () => {
+  const marketing = { description: 'We serve data centres, semiconductor plants and other mission critical infrastructure across India, and are a trusted partner to leading developers.' };
+  const verdict = admitsContractor([marketing]);
+  assert.equal(verdict.admitted, false);
+  assert.match(verdict.reason, /contracted delivery role|project, the role and the exposure/);
+});
+
+test('a named project with a role but no size does not admit a contractor', () => {
+  // Without a figure there is nothing to attribute, and a contractor with
+  // unquantified exposure is a company that mentioned a sector.
+  const vague = { description: 'We were awarded construction of a data centre for a leading operator.' };
+  assert.equal(admitsContractor([vague]).admitted, false);
+});
+
+test('a member the taxonomy still cannot place is reported, not forced', () => {
+  // The EPC sub-layer closes the case that prompted it, and the index guard
+  // for an unplaceable member stays, because the next one will not be a
+  // builder.
+  const unplaceable = { description: 'We commissioned a new logistics corridor serving several industrial customers during the year.' };
+  assert.deepEqual(subLayersFrom([unplaceable]), []);
 });
