@@ -9,7 +9,9 @@ import {
 import { fetchMarketCaps } from '../providers/yahooMarketCap.js';
 import { sizeForUniverse, sizeRows } from '../services/aiEnablersSize.js';
 import { createSupabaseAdmin } from '../lib/supabaseAdmin.js';
-import { fundamentalsForUniverse, intensityForUniverse } from '../services/aiEnablersFundamentals.js';
+import {
+  fundamentalsForUniverse, intensityForUniverse, stageThreeFromInputs,
+} from '../services/aiEnablersFundamentals.js';
 import { stageThree, stageTwo } from '../services/aiEnablersScreen.js';
 import {
   latestUniversePassRun, publicRow, readUniversePass, referenceQualifiers, summariseUniversePass,
@@ -18,6 +20,7 @@ import { exitabilityForUniverse } from '../services/aiEnablersExitability.js';
 
 const UNIVERSE_PATH = fileURLToPath(new URL('../config/india-ai-enablers.universe.json', import.meta.url));
 const FACTS_PATH = fileURLToPath(new URL('../config/india-ai-enablers.disclosed-facts.json', import.meta.url));
+const INTENSITY_PATH = fileURLToPath(new URL('../config/india-ai-enablers.intensity-inputs.json', import.meta.url));
 
 let universeCache = null;
 export async function loadUniverse({ path = UNIVERSE_PATH, refresh = false } = {}) {
@@ -249,6 +252,19 @@ export default function createIndiaAiIntelligenceRouter() {
       const universe = await loadUniverse();
       const { rows, detail } = await intensityForUniverse(client, universe);
       res.json({ ok: true, screen: stageThree(rows), detail });
+    } catch (error) {
+      res.status(500).json({ ok: false, error: String(error?.message || error) });
+    }
+  });
+
+  /**
+   * Stage 3 from the checked-in inputs file: every figure carries its source
+   * there. Context beside each company; membership is decided by evidence.
+   */
+  router.get('/screen/stage3', async (req, res) => {
+    try {
+      const file = JSON.parse(await readFile(INTENSITY_PATH, 'utf8'));
+      res.json({ ok: true, ...stageThreeFromInputs(file, { stageThree }) });
     } catch (error) {
       res.status(500).json({ ok: false, error: String(error?.message || error) });
     }

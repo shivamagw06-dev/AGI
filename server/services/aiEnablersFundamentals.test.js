@@ -227,3 +227,69 @@ test('mappings are declared onto the universe, not inferred inside it', () => {
   // suddenly find keys on it.
   assert.equal(universe.members[0].factStoreKey, undefined);
 });
+
+/* ── stage 3 from a file of cited inputs ──────────────────────────────── */
+
+import { intensityFromInputs, stageThreeFromInputs } from './aiEnablersFundamentals.js';
+
+test('filed inputs give the same four ratios as the fact store path', () => {
+  const out = intensityFromInputs({
+    symbol: 'POWERINDIA',
+    revenue: { FY26: 8147.71, FY23: 4483.65 },
+    capex: { FY26: 509.83, FY25: 129.09 },
+    rnd: { FY26: null },
+  });
+  assert.equal(Number(out.capexToSales.toFixed(4)), Number((509.83 / 8147.71).toFixed(4)));
+  assert.equal(Number(out.capexGrowth.toFixed(4)), Number((509.83 / 129.09 - 1).toFixed(4)));
+  assert.equal(Number(out.revenueCagr3y.toFixed(4)), Number(((8147.71 / 4483.65) ** (1 / 3) - 1).toFixed(4)));
+  assert.equal(out.rndToSales, null);
+  assert.deepEqual(out.unavailable, ['rndToSales']);
+});
+
+test('a disclosed nil R&D is a real zero; a missing figure is not a zero', () => {
+  assert.equal(intensityFromInputs({ revenue: { FY26: 100 }, rnd: { FY26: 0 } }).rndToSales, 0);
+  const none = intensityFromInputs({ revenue: { FY26: 100 }, capex: { FY26: null, FY25: 10 } });
+  assert.equal(none.capexToSales, null);
+  assert.equal(none.capexGrowth, null);
+  assert.equal(none.revenueCagr3y, null);
+});
+
+test('a zero base yields no growth figure rather than infinity', () => {
+  const out = intensityFromInputs({ revenue: { FY26: 100, FY23: 0 }, capex: { FY26: 10, FY25: 0 } });
+  assert.equal(out.capexGrowth, null);
+  assert.equal(out.revenueCagr3y, null);
+});
+
+test('growth compares total with total when the base is total revenue', () => {
+  const out = intensityFromInputs({
+    revenue: { FY26: 8147.71, FY26_total: 8387.63, FY23_total: 4483.65 },
+    capex: { FY26: 509.83, FY25: 129.09 },
+  });
+  assert.equal(Number(out.revenueCagr3y.toFixed(6)), Number(((8387.63 / 4483.65) ** (1 / 3) - 1).toFixed(6)));
+  // Capex intensity stays on revenue from operations.
+  assert.equal(Number(out.capexToSales.toFixed(6)), Number((509.83 / 8147.71).toFixed(6)));
+  // A missing total is not replaced by the operating figure.
+  assert.equal(intensityFromInputs({ revenue: { FY26: 100, FY26_total: null, FY23_total: 80 } }).revenueCagr3y, null);
+});
+
+test('stage 3 from the inputs file: a pass, a below, and an unscreened company', async () => {
+  const { stageThree } = await import('./aiEnablersScreen.js');
+  const file = {
+    asOf: '2026-09-18',
+    rows: [
+      { symbol: 'HIGH', kind: 'member', revenue: { FY26: 200, FY26_total: 210, FY23_total: 100 }, capex: { FY26: 40, FY25: 10 } },
+      { symbol: 'LOW', kind: 'member', revenue: { FY26: 100, FY26_total: 105, FY23_total: 100 }, capex: { FY26: 1, FY25: 1 } },
+      { symbol: 'MID', kind: 'candidate', revenue: { FY26: 150, FY26_total: 150, FY23_total: 100 } },
+      { symbol: 'NONE', kind: 'candidate', revenue: {}, capex: {}, excluded: 'not comparable' },
+    ],
+  };
+  const out = stageThreeFromInputs(file, { stageThree });
+  const by = Object.fromEntries(out.rows.map((one) => [one.symbol, one]));
+  assert.equal(by.HIGH.verdict, 'PASS');
+  assert.equal(by.LOW.verdict, 'BELOW');
+  assert.deepEqual(by.LOW.tested, ['revenueCagr3y', 'capexGrowth', 'capexToSales']);
+  assert.deepEqual(by.MID.tested, ['revenueCagr3y']);
+  assert.equal(by.NONE.verdict, 'NOT_SCREENED');
+  assert.equal(by.NONE.excluded, 'not comparable');
+  assert.equal(out.asOf, '2026-09-18');
+});

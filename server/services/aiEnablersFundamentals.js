@@ -328,3 +328,94 @@ export async function intensityForUniverse(client, universe, { accounting_scope 
   }
   return { rows, detail };
 }
+
+/**
+ * Stage 3 inputs from a checked-in file of cited figures, for companies the
+ * fact store has not ingested.
+ *
+ * Same formulas as `intensityFrom`: capex to sales and capex growth on the
+ * latest two years, revenue CAGR on the latest year against three years
+ * back. R&D to sales is computed only when R&D is disclosed; a disclosed nil
+ * is a real 0, an undisclosed figure is null and the test is not taken.
+ *
+ * Every input is expected to carry its own source in the file. This function
+ * reads numbers only, so a figure without a source is a data-entry problem to
+ * catch in review, not something to paper over here.
+ */
+export function intensityFromInputs(row = {}) {
+  const num = (value) => (value === null || value === undefined || value === '' ? null : (Number.isFinite(Number(value)) ? Number(value) : null));
+  const rev = row.revenue || {};
+  const cap = row.capex || {};
+  const rnd = row.rnd || {};
+  const revNow = num(rev.FY26);
+  // Growth compares like with like. When the three-years-back figure is
+  // total revenue (it includes other income), it is compared with this
+  // year's total revenue, never with revenue from operations.
+  const hasTotals = rev.FY26_total !== undefined || rev.FY23_total !== undefined;
+  const growthNow = hasTotals ? num(rev.FY26_total) : revNow;
+  const revThreeBack = hasTotals ? num(rev.FY23_total) : num(rev.FY23);
+  const capNow = num(cap.FY26);
+  const capPrior = num(cap.FY25);
+  const rndNow = num(rnd.FY26);
+
+  const capexToSales = capNow !== null && revNow ? capNow / revNow : null;
+  const capexGrowth = capNow !== null && capPrior ? capNow / capPrior - 1 : null;
+  const revenueCagr3y = growthNow !== null && revThreeBack > 0 ? (growthNow / revThreeBack) ** (1 / 3) - 1 : null;
+  const rndToSales = rndNow !== null && revNow ? rndNow / revNow : null;
+
+  return {
+    symbol: row.symbol,
+    capexToSales,
+    capexGrowth,
+    revenueCagr3y,
+    rndToSales,
+    unavailable: [
+      ...(capexToSales === null ? ['capexToSales'] : []),
+      ...(capexGrowth === null ? ['capexGrowth'] : []),
+      ...(revenueCagr3y === null ? ['revenueCagr3y'] : []),
+      ...(rndToSales === null ? ['rndToSales'] : []),
+    ],
+  };
+}
+
+/**
+ * Stage 3 for everyone in the inputs file, in the shape the page draws.
+ *
+ * `verdict` is PASS (at or above the median on at least one test taken),
+ * BELOW (below the median on every test taken), or NOT_SCREENED (no test
+ * could be taken). `tested` says how many of the four a verdict rests on, so
+ * a BELOW on one test is visibly weaker than a BELOW on four.
+ */
+export function stageThreeFromInputs(file, { stageThree }) {
+  const rows = file?.rows || [];
+  const inputs = rows.map(intensityFromInputs);
+  const screen = stageThree(inputs);
+  const passed = new Map(screen.passed.map((one) => [one.symbol, one]));
+  const failed = new Map(screen.failed.map((one) => [one.symbol, one]));
+  const TESTS = ['revenueCagr3y', 'capexGrowth', 'capexToSales', 'rndToSales'];
+  return {
+    asOf: file?.asOf || null,
+    method: file?.method || null,
+    thresholds: screen.thresholds,
+    distributions: screen.distributions,
+    rows: rows.map((row, i) => {
+      const ratios = inputs[i];
+      const tested = TESTS.filter((key) => ratios[key] !== null);
+      const verdict = passed.has(row.symbol) ? 'PASS' : failed.has(row.symbol) ? 'BELOW' : 'NOT_SCREENED';
+      return {
+        symbol: row.symbol,
+        kind: row.kind,
+        verdict,
+        met: passed.get(row.symbol)?.met || [],
+        tested,
+        revenueCagr3y: ratios.revenueCagr3y,
+        capexGrowth: ratios.capexGrowth,
+        capexToSales: ratios.capexToSales,
+        rndToSales: ratios.rndToSales,
+        excluded: row.excluded || null,
+        capexNote: row.capex?.note || null,
+        capexSource: row.capex?.source || null,
+      };
+    }),
+  };
+}
