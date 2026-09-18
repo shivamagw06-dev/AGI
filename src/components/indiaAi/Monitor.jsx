@@ -6,6 +6,9 @@ import {
   aiMateriality, capitalQuality, earningsMomentum, evidenceConfidence, expectationLoad,
 } from '@/lib/indiaAiFactors';
 import { MATERIALITY_TIER, TEST_LABEL, classifyMateriality } from '@/lib/indiaAiMateriality';
+import {
+  FIVE_METRICS, NON_MEMBER_FILED, OUTSIDE, STRATEGY_ASOF, STRATEGY_FACTORS, STRATEGY_ROWS, STRUCTURES,
+} from './strategyContent';
 
 /**
  * India AI Infrastructure Monitor: the dashboard view of the page.
@@ -842,6 +845,156 @@ function EstimatesTab({ records, estimates, open, onResearch }) {
   );
 }
 
+
+/* ── strategy ─────────────────────────────────────────────────────────── */
+
+const RATING_TONE = {
+  'Very High': 'bg-[#0f2419] text-[#4ade80]',
+  High: 'bg-[#0f2419] text-[#86d9a4]',
+  'Medium-High': 'bg-[#18202c] text-[#c7cfda]',
+  Medium: 'bg-[#141a23] text-[#8b95a3]',
+};
+const statusTone = (st) => (/Exception/.test(st) ? 'border border-dashed border-[#7a5a2e] text-[#f0a060]'
+  : /High Risk/.test(st) ? 'bg-[#2a1515] text-[#f28b8b]'
+    : /Emerging|Optionality|Execution/.test(st) ? 'bg-[#0f1b2a] text-[#6cb2f0]'
+      : 'bg-[#1c2533] text-[#f1f5f9]');
+
+/** Filed-figure ratios for one strategy row, from member data or the non-member filings. */
+function strategyFigures(row, rec) {
+  const f = rec ? rec.row : NON_MEMBER_FILED[row.symbol] || {};
+  const num = (v) => (Number.isFinite(v) ? v : null);
+  const rev = num(f.revenueFY26);
+  const capex = num(f.capexFY26) !== null ? f.capexFY26 + (num(f.capexIntangiblesFY26) || 0) : null;
+  const q1 = num(f.revenueQ1FY27) && num(f.revenueQ1FY26) ? f.revenueQ1FY27 / f.revenueQ1FY26 - 1 : null;
+  const pat = rec ? rec.pat : num(f.patFY26);
+  return {
+    q1,
+    capexSales: rev && capex !== null ? capex / rev : null,
+    fcfSales: rev && num(f.cfoFY26) !== null && capex !== null ? (f.cfoFY26 - capex) / rev : null,
+    pe: rec && rec.mv && pat > 0 ? rec.mv / pat : null,
+    capital: rec ? rec.factors.capital : capitalQuality(f),
+    expectation: rec ? rec.factors.expectation : null,
+  };
+}
+
+function StrategyTab({ records, open }) {
+  const bySym = Object.fromEntries(records.map((r) => [r.m.symbol, r]));
+  const rows = STRATEGY_ROWS.map((row) => ({ row, rec: bySym[row.symbol] || null }));
+  const netweb = bySym.NETWEB;
+  const cols = [
+    ['Stock'], ['AI layer'], ['AI materiality'], ['Hard evidence / key KPI'],
+    ['Revenue growth, latest qtr', 'I'], ['Capex / sales, FY26', 'I'], ['FCF / sales, FY26', 'I'], ['P/E, FY26 profit', 'I'],
+    ['Capital quality', 'I'], ['Expectation load', 'A'], ['AGI status'],
+  ];
+  const symButton = (sym, label) => (bySym[sym]
+    ? <button type="button" onClick={() => open(sym)} className={`rounded-md bg-[#1c2533] px-2 py-0.5 font-mono text-[12px] text-[#dbe2ea] hover:bg-[#26324a] ${FOCUS}`}>{label || sym}</button>
+    : <span className="rounded-md border border-dashed border-[#2a3444] px-2 py-0.5 font-mono text-[12px] text-[#8b95a3]" title="Not an index member">{label || sym}</span>);
+  return (
+    <div className="space-y-4">
+      <Panel
+        id="strategy-h"
+        title="Final AGI basket"
+        sub={`Selected on ${STRATEGY_FACTORS.join(', ')}. Layer, AI materiality rating, evidence and status are AGI's judgments; every evidence line is checked against the company's own documents.`}
+      >
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[1380px] text-[14px]">
+            <thead>
+              <tr className="text-left text-[12px] text-[#8b95a3]">
+                {cols.map(([h, tag]) => (
+                  <th key={h} scope="col" className="border-b border-[#1c2430] py-2.5 pr-4 align-bottom font-medium">{h}{tag ? <Tag t={tag} /> : null}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map(({ row, rec }) => {
+                const x = strategyFigures(row, rec);
+                return (
+                  <tr key={row.symbol} className="border-b border-[#151c26] align-top">
+                    <td className="py-3 pr-4">
+                      {rec ? (
+                        <button type="button" onClick={() => open(row.symbol)} className={`rounded text-left font-semibold text-[#f1f5f9] hover:text-[#f0a060] ${FOCUS}`}>{row.name}</button>
+                      ) : <span className="font-semibold text-[#f1f5f9]">{row.name}</span>}
+                      <span className="block font-mono text-[12px] text-[#6b7684]">{row.symbol}{row.member === false ? ' · not an index member' : ''}</span>
+                    </td>
+                    <td className="py-3 pr-4 text-[#b6c2d1]">{row.layer}</td>
+                    <td className="py-3 pr-4"><span className={`inline-block whitespace-nowrap rounded-full px-2 py-[1px] text-[12px] ${RATING_TONE[row.rating] || RATING_TONE.Medium}`}>{row.rating}</span></td>
+                    <td className="max-w-[300px] py-3 pr-4 leading-snug text-[#dbe2ea]">{row.evidence}</td>
+                    <td className="py-3 pr-4 tabular-nums text-[#dbe2ea]">{signedPct(x.q1)}</td>
+                    <td className="py-3 pr-4 tabular-nums text-[#dbe2ea]">{pct(x.capexSales)}</td>
+                    <td className="py-3 pr-4 tabular-nums text-[#dbe2ea]">{signedPct(x.fcfSales)}</td>
+                    <td className="py-3 pr-4 tabular-nums text-[#dbe2ea]">{x.pe !== null ? `${x.pe.toFixed(0)}x` : <span className="text-[#5b6675]">{rec ? '—' : 'not priced'}</span>}</td>
+                    <td className="py-3 pr-4"><Band b={x.capital.band} /></td>
+                    <td className="py-3 pr-4">
+                      {x.expectation ? (
+                        <span className="inline-flex flex-col gap-0.5">
+                          <Band b={x.expectation.band} scale="expectation" />
+                          {rec.implied ? <span className="text-[12px] text-[#8b95a3]">{rec.implied.cagr <= 0 ? 'no growth needed' : `needs ${pct(rec.implied.cagr)}/yr`}</span> : null}
+                        </span>
+                      ) : <span className="text-[#5b6675]">not priced</span>}
+                    </td>
+                    <td className="py-3 pr-4">
+                      <span className={`inline-block whitespace-nowrap rounded-full px-2 py-[1px] text-[12px] font-medium ${statusTone(row.status)}`}>{row.status}</span>
+                      <span className="mt-1 block text-[12px] text-[#6b7684]">AGI test: {rec?.mat ? MATERIALITY_TIER[rec.mat.tier].label.toLowerCase() : 'not a member'}</span>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+        <p className="mt-4 max-w-[110ch] text-[13px] leading-relaxed text-[#6b7684]">
+          Financial columns are AGI arithmetic on each company&rsquo;s filed FY26 and June-quarter results: revenue growth is the June 2026 quarter against June 2025; capex includes intangibles; FCF is operating cash flow less capex; P/E is AGI&rsquo;s market value at the last close over FY26 profit. Capital quality and expectation load are AGI&rsquo;s factor bands; expectation load is the profit growth that takes today&rsquo;s market value to 30x earnings by FY29. No broker or consensus figures are used. KEC and NTPC Green are held candidates, not index members, so AGI does not price them. The &lsquo;AGI test&rsquo; line is the rule-based materiality tier, shown beside the basket status. A research classification, not a recommendation to buy or sell.
+        </p>
+      </Panel>
+
+      <Panel id="structures-h" title="How to interpret this list" sub="There are really four different investment structures inside it.">
+        <div className="grid gap-3 md:grid-cols-2">
+          {STRUCTURES.map((st) => (
+            <section key={st.title} className="rounded-lg bg-[#131a24] px-5 py-4">
+              <h3 className="text-[16px] font-semibold text-[#f1f5f9]">{st.title}</h3>
+              <p className="mt-2 flex flex-wrap gap-1.5">{st.names.map((sym) => <React.Fragment key={sym}>{symButton(sym)}</React.Fragment>)}</p>
+              <p className="mt-2.5 text-[14px] leading-relaxed text-[#b6c2d1]">{st.text}</p>
+            </section>
+          ))}
+        </div>
+        {netweb ? (
+          <p className="mt-4 max-w-[100ch] text-[14px] leading-relaxed text-[#9aa5b3]">
+            Netweb, for example, reported AI systems at about 62% of June-quarter revenue and an order book of about ₹2,507 crore, which is why direct economic exposure matters more than simply mentioning AI.
+          </p>
+        ) : null}
+      </Panel>
+
+      <Panel id="outside-h" title="Kept outside the basket for now" sub="Valuable monitor names, not yet in the main basket.">
+        <ul className="grid gap-3 md:grid-cols-2">
+          {OUTSIDE.map((o) => (
+            <li key={o.name} className="rounded-lg bg-[#131a24] px-4 py-3">
+              <p className="font-semibold text-[#f1f5f9]">{o.name}</p>
+              <p className="mt-1 text-[14px] leading-relaxed text-[#9aa5b3]">{o.text}</p>
+            </li>
+          ))}
+        </ul>
+      </Panel>
+
+      <Panel id="metrics-h" title="The five metrics beside every company" sub="Not one aggregate score: five measures, side by side.">
+        <dl className="grid gap-3 md:grid-cols-5">
+          {FIVE_METRICS.map(([k, v]) => (
+            <div key={k} className="rounded-lg bg-[#131a24] px-4 py-3">
+              <dt className="font-semibold text-[#f1f5f9]">{k}</dt>
+              <dd className="mt-1 text-[14px] leading-relaxed text-[#9aa5b3]">{v}</dd>
+            </div>
+          ))}
+        </dl>
+        <p className="mt-4 max-w-[100ch] text-[14px] leading-relaxed text-[#b6c2d1]">
+          That makes the difference between something like Netweb and KEC immediately obvious: Netweb has much higher current AI materiality
+          {netweb?.implied ? `, but also a far heavier valuation burden (its price needs profit growth of ${pct(netweb.implied.cagr)} a year to reach 30x by FY29)` : ', but also a far heavier valuation burden'};
+          KEC has much less AI materiality today. The dashboard exposes that trade-off rather than hiding it inside a single score.
+        </p>
+      </Panel>
+      <p className="text-[12px] text-[#5b6675]">Strategy as of {dateLabel(STRATEGY_ASOF)}.</p>
+    </div>
+  );
+}
+
 /* ── the company drawer ───────────────────────────────────────────────── */
 
 function DrawerSection({ title, tone = 'text-[#8b95a3]', children }) {
@@ -1028,7 +1181,7 @@ function Drawer({ r, onClose, onResearch }) {
 
 /* ── the dashboard ────────────────────────────────────────────────────── */
 
-export const MONITOR_SECTIONS = [['overview', 'Overview'], ['matrix', 'Matrix'], ['evidence', 'Evidence'], ['estimates', 'Estimates']];
+export const MONITOR_SECTIONS = [['overview', 'Overview'], ['strategy', 'Strategy'], ['matrix', 'Matrix'], ['evidence', 'Evidence'], ['estimates', 'Estimates']];
 
 export default function MonitorDashboard({
   section = 'overview', onSection, universe, live, marketValue, stage3, estimates, operating, scoring, materiality, onResearch,
@@ -1072,6 +1225,7 @@ export default function MonitorDashboard({
           <SupplyChain records={records} held={others.held} setFilter={setFilter} open={setDrawer} />
         </>
       ) : null}
+      {section === 'strategy' ? <StrategyTab records={records} open={setDrawer} /> : null}
       {section === 'evidence' ? <EvidenceTab records={records} open={setDrawer} /> : null}
       {section === 'estimates' ? <EstimatesTab records={records} estimates={estimates} open={setDrawer} onResearch={onResearch} /> : null}
       {current ? <Drawer r={current} onClose={() => setDrawer(null)} onResearch={() => { setDrawer(null); onResearch(); }} /> : null}
