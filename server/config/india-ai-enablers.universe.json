@@ -73,7 +73,8 @@
       "reviewedBy": null,
       "reviewedAt": null,
       "attribution": "NOT_ATTRIBUTABLE",
-      "exposureAttributable": false
+      "exposureAttributable": false,
+      "membershipStart": "2026-09-17"
     },
     {
       "symbol": "ADANIENT",
@@ -111,7 +112,8 @@
       "reviewedAt": null,
       "exposureAttributable": false,
       "exposureNote": "Admitted on a 400 MW hyperscale order and 960+ MW tied up, which is real and dated. But the FY26 annual report carries no data centre segment, and AdaniConneX is a joint venture with EdgeConneX that is equity-accounted rather than consolidated - so none of this member's reported revenue is data centre revenue, and its JV earnings are not broken out. The exposure cannot be sized from the filing. Needs an analyst decision.",
-      "attribution": "NOT_ATTRIBUTABLE"
+      "attribution": "NOT_ATTRIBUTABLE",
+      "membershipStart": "2026-09-17"
     },
     {
       "symbol": "CLEANMAX",
@@ -154,7 +156,8 @@
       "reviewedAt": null,
       "corporateActionFY26": "Equity share sub-divided from Rs 10 to Rs 1 during FY26.",
       "attribution": "MANAGEMENT_DISCLOSED",
-      "exposureAttributable": false
+      "exposureAttributable": false,
+      "membershipStart": "2026-09-17"
     },
     {
       "symbol": "ANANTRAJ",
@@ -182,7 +185,8 @@
         }
       ],
       "reviewedBy": null,
-      "reviewedAt": null
+      "reviewedAt": null,
+      "membershipStart": "2026-09-17"
     },
     {
       "symbol": "NETWEB",
@@ -218,7 +222,8 @@
       "reviewedAt": null,
       "attribution": "MANAGEMENT_DISCLOSED",
       "exposureAttributable": false,
-      "exposureNote": "Single Ind AS 108 segment, Computer Servers. Management discloses AI Systems revenue of 9,477.9 mn, 43.4% of operating revenue, in a \"Revenue by Business Segment\" table outside the audited segment note - company-disclosed and specific, not audited as a segment."
+      "exposureNote": "Single Ind AS 108 segment, Computer Servers. Management discloses AI Systems revenue of 9,477.9 mn, 43.4% of operating revenue, in a \"Revenue by Business Segment\" table outside the audited segment note - company-disclosed and specific, not audited as a segment.",
+      "membershipStart": "2026-09-17"
     },
     {
       "symbol": "CGPOWER",
@@ -248,7 +253,8 @@
       "exposureAttributable": true,
       "exposureNote": "Semiconductors is a reported segment in consolidated accounts. FY26 revenue 502.77 cr (4.0% of group), assets 1,421.39 cr (11.2%), capex 330.33 cr (42.5% of group capex), segment result -107.86 cr. First year of external sales; FY25 was nil.",
       "note": "",
-      "attribution": "SEGMENT_REPORTED"
+      "attribution": "SEGMENT_REPORTED",
+      "membershipStart": "2026-09-17"
     },
     {
       "symbol": "KAYNES",
@@ -285,7 +291,8 @@
       "note": "",
       "exposureAttributable": false,
       "exposureNote": "Admitted on committed OSAT capex, and unsizeable from the accounts. Kaynes reports a single Ind AS 108 segment, Electronics Manufacturing Services, so no share of revenue, assets or capex is attributable to semiconductors. FY26 fixed-asset purchases of 12,403.01 mn are group-wide across OSAT, PCB and the existing EMS business with no split served. Needs an analyst decision.",
-      "attribution": "NOT_ATTRIBUTABLE"
+      "attribution": "NOT_ATTRIBUTABLE",
+      "membershipStart": "2026-09-17"
     },
     {
       "symbol": "STLTECH",
@@ -324,7 +331,8 @@
       "note": "The hyperscaler is not named. The award is a Product Award Letter covering FY27-FY29 supply, not a single purchase order.",
       "attribution": "MANAGEMENT_DISCLOSED",
       "discoveredVia": "EXTERNAL_LEAD_2026_09_18",
-      "evidenceReadOn": "2026-09-18"
+      "evidenceReadOn": "2026-09-18",
+      "membershipStart": "2026-09-18"
     },
     {
       "symbol": "CUMMINSIND",
@@ -363,7 +371,8 @@
       "note": "Customers are not named.",
       "attribution": "MANAGEMENT_DISCLOSED",
       "discoveredVia": "EXTERNAL_LEAD_2026_09_18",
-      "evidenceReadOn": "2026-09-18"
+      "evidenceReadOn": "2026-09-18",
+      "membershipStart": "2026-09-18"
     },
     {
       "symbol": "BHARTIARTL",
@@ -402,7 +411,8 @@
       "note": "Admitted through its data-centre subsidiary Nxtra, which its own annual report describes. The Google gigawatt campus is a partnership and is not counted.",
       "attribution": "NOT_ATTRIBUTABLE",
       "discoveredVia": "EXTERNAL_LEAD_2026_09_18",
-      "evidenceReadOn": "2026-09-18"
+      "evidenceReadOn": "2026-09-18",
+      "membershipStart": "2026-09-18"
     },
     {
       "symbol": "LT",
@@ -434,7 +444,8 @@
       "note": "Admitted as an operator through L&T Vyoma. Its EPC work for data centres and fabs has no named order with a value, so under the contractor rule it does not add an EPC admission.",
       "attribution": "NOT_ATTRIBUTABLE",
       "discoveredVia": "EXTERNAL_LEAD_2026_09_18",
-      "evidenceReadOn": "2026-09-18"
+      "evidenceReadOn": "2026-09-18",
+      "membershipStart": "2026-09-18"
     },
     {
       "symbol": "POWERGRID",
@@ -473,7 +484,8 @@
       "note": "Admitted on a data centre under construction on its own substation land, not on its transmission business.",
       "attribution": "NOT_ATTRIBUTABLE",
       "discoveredVia": "EXTERNAL_LEAD_2026_09_18",
-      "evidenceReadOn": "2026-09-18"
+      "evidenceReadOn": "2026-09-18",
+      "membershipStart": "2026-09-18"
     },
     {
       "symbol": "BLUESTARCO",
@@ -512,7 +524,8 @@
       "note": "Admitted under the contractor rule: named projects (ST Telemedia; Tata Semiconductor and CG Semicon), a contracted role (electro-mechanical projects), and an identified exposure.",
       "attribution": "MANAGEMENT_DISCLOSED",
       "discoveredVia": "EXTERNAL_LEAD_2026_09_18",
-      "evidenceReadOn": "2026-09-18"
+      "evidenceReadOn": "2026-09-18",
+      "membershipStart": "2026-09-18"
     },
     {
       "symbol": "SCHNEIDER",
@@ -551,7 +564,8 @@
       "note": "Customers are not named; values are not disclosed.",
       "attribution": "MANAGEMENT_DISCLOSED",
       "discoveredVia": "EXTERNAL_LEAD_2026_09_18",
-      "evidenceReadOn": "2026-09-18"
+      "evidenceReadOn": "2026-09-18",
+      "membershipStart": "2026-09-18"
     },
     {
       "symbol": "TDPOWERSYS",
@@ -591,7 +605,8 @@
       "attribution": "NOT_ATTRIBUTABLE",
       "discoveredVia": "EXTERNAL_LEAD_2026_09_18",
       "evidenceReadOn": "2026-09-18",
-      "isinNote": "INE419M01027, from the NSE equity list in the repo, is rejected by Upstox as an invalid instrument key; INE419M01035 is the current ISIN (Trendlyne) and returns prices. Found 2026-09-18 when the member never priced."
+      "isinNote": "INE419M01027, from the NSE equity list in the repo, is rejected by Upstox as an invalid instrument key; INE419M01035 is the current ISIN (Trendlyne) and returns prices. Found 2026-09-18 when the member never priced.",
+      "membershipStart": "2026-09-18"
     },
     {
       "symbol": "SANSERA",
@@ -637,7 +652,8 @@
       "note": "First member of the semiconductor hardware sub-layer. The equipment maker, an existing customer, is not named; the order was won in Q2 FY27 and revenue is expected to ramp from CY2027.",
       "attribution": "MANAGEMENT_DISCLOSED",
       "discoveredVia": "EXTERNAL_LEAD_2026_09_18",
-      "evidenceReadOn": "2026-09-18"
+      "evidenceReadOn": "2026-09-18",
+      "membershipStart": "2026-09-18"
     },
     {
       "symbol": "GVT&D",
@@ -669,7 +685,8 @@
       "note": "Admitted on commissioned GIS bays for a named data-centre operator.",
       "attribution": "NOT_ATTRIBUTABLE",
       "discoveredVia": "EXTERNAL_LEAD_2026_09_18",
-      "evidenceReadOn": "2026-09-18"
+      "evidenceReadOn": "2026-09-18",
+      "membershipStart": "2026-09-18"
     },
     {
       "symbol": "HFCL",
@@ -708,7 +725,8 @@
       "note": "Also has Rs 215 crore of board-approved capex for a data-centre connectivity plant, due by September 2027. The Rs 800 crore expected for FY27 is guidance and is not counted.",
       "attribution": "MANAGEMENT_DISCLOSED",
       "discoveredVia": "EXTERNAL_LEAD_2026_09_18",
-      "evidenceReadOn": "2026-09-18"
+      "evidenceReadOn": "2026-09-18",
+      "membershipStart": "2026-09-18"
     },
     {
       "symbol": "MTARTECH",
@@ -740,7 +758,8 @@
       "note": "The customer is SLB, a supplier, and the order is explicitly for data-centre infrastructure. First articles are still being qualified.",
       "attribution": "MANAGEMENT_DISCLOSED",
       "discoveredVia": "EXTERNAL_LEAD_2026_09_18",
-      "evidenceReadOn": "2026-09-18"
+      "evidenceReadOn": "2026-09-18",
+      "membershipStart": "2026-09-18"
     },
     {
       "symbol": "POLYCAB",
@@ -772,7 +791,8 @@
       "note": "A thin admission: conventional cables supplied through distribution into a telecom operator's existing data centres, restated on the call rather than newly won.",
       "attribution": "NOT_ATTRIBUTABLE",
       "discoveredVia": "EXTERNAL_LEAD_2026_09_18",
-      "evidenceReadOn": "2026-09-18"
+      "evidenceReadOn": "2026-09-18",
+      "membershipStart": "2026-09-18"
     },
     {
       "symbol": "APARINDS",
@@ -804,7 +824,8 @@
       "note": "A thin admission.",
       "attribution": "NOT_ATTRIBUTABLE",
       "discoveredVia": "EXTERNAL_LEAD_2026_09_18",
-      "evidenceReadOn": "2026-09-18"
+      "evidenceReadOn": "2026-09-18",
+      "membershipStart": "2026-09-18"
     },
     {
       "symbol": "KIRLOSENG",
@@ -836,7 +857,8 @@
       "note": "A thin admission.",
       "attribution": "NOT_ATTRIBUTABLE",
       "discoveredVia": "EXTERNAL_LEAD_2026_09_18",
-      "evidenceReadOn": "2026-09-18"
+      "evidenceReadOn": "2026-09-18",
+      "membershipStart": "2026-09-18"
     },
     {
       "symbol": "DIACABS",
@@ -888,7 +910,8 @@
       "exposureNote": "A Rs 435 crore data-centre cable order; data centres are 11.8% of the Rs 3,688 crore order book (11 Aug 2026). Management-disclosed order values, not revenue.",
       "note": "Held as a candidate on 17 Sep on a market-projection slide. That read missed the order, and it was not re-read on 18 Sep with the other leads. Re-read on 18 Sep after an external fact-check flagged it; admitted on the filings above.",
       "attribution": "MANAGEMENT_DISCLOSED",
-      "evidenceReadOn": "2026-09-18"
+      "evidenceReadOn": "2026-09-18",
+      "membershipStart": "2026-09-18"
     },
     {
       "symbol": "ABB",
@@ -927,7 +950,8 @@
       "note": "Admitted on the same basis as Kirloskar, TD Power and Cummins: orders stated for data centres, customer and value undisclosed. Moved from excluded to candidate on 18 Sep after an external fact-check; confirmed on 18 Sep from ABB's own filed presentation, read directly. A relayed \"data center major\" wording and a Q2 CY2026 release were not seen and are not relied on. ABB reports on a calendar year.",
       "attribution": "NOT_ATTRIBUTABLE",
       "discoveredVia": "EXTERNAL_LEAD_2026_09_18",
-      "evidenceReadOn": "2026-09-18"
+      "evidenceReadOn": "2026-09-18",
+      "membershipStart": "2026-09-18"
     }
   ],
   "candidates": [
@@ -1492,5 +1516,6 @@
         "BRIGADE"
       ]
     }
-  ]
+  ],
+  "membershipNote": "membershipStart is the date AGI decided the admission. It is not the date of the evidence, and discovering older evidence never creates earlier membership. Any performance series starts a member no earlier than this date."
 }

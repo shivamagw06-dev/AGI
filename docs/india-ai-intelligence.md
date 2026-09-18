@@ -11,21 +11,30 @@ This product was commissioned after reading a Goldman Sachs India strategy note 
 Indian AI-infrastructure equities. That note is licensed per-seat and its terms say, in
 the document itself, that the information may not be reverse engineered to develop any
 index for disclosure or marketing, nor used to create derivative works or commercial
-products. Every page is watermarked to a single named recipient at a different firm.
+products. Nothing from the licensed note is used as data: not its figures, exhibits,
+consensus tables, weights, returns, company-to-layer classifications or prose. Its
+nine-sub-layer taxonomy was the starting point for AGI's own, and that is recorded
+below as a weakness, not a strength.
 
-So the report is treated here the way a good analyst treats any broker note: as evidence
-that a theme is real and a guide to how institutions frame it. It is **not** treated as a
-data source. Specifically, this product does not ship:
+**Third-party lists are leads, never membership.** On 18 September 2026 a list of 42
+companies, reported by The Economic Times as named in that screen and relayed to the
+analyst in a ChatGPT summary, was used as a reading queue. AGI could not open the
+article, so the list is stored as relayed and unverified, in `externalLeads` in the
+universe config. What that means in practice:
 
-- the note's screened universe or its membership,
-- the note's company-to-layer classifications,
-- the note's consensus estimate table, or
-- any chart reconstructed from its exhibits.
+- Being on the list admits no one and decides no layer, sector, weight or date. Each of
+  the 42 was read in its own filings against AGI's evidence standard: 24 admitted, 12
+  held, 6 with nothing qualifying.
+- The list itself is not returned by the public API. Each company read because of it
+  carries `discoveredVia: EXTERNAL_LEAD_2026_09_18`, which *is* returned, so the
+  provenance of every such decision is visible rather than hidden.
+- Public availability of a document is not a licence to redistribute it. Third-party
+  industry estimates quoted inside company filings are not, by that fact, permitted
+  chart inputs.
 
-What AGI ships instead is its own screen over the public NSE universe, its own taxonomy,
-and its own index. That is a better product outcome and not only a safer one: a universe
-AGI can explain, rerun, and defend is a universe AGI can publish, sell, and correct. A
-borrowed one is none of those things.
+**Every decision keeps four dates apart:** the disclosure date of the evidence, the date
+AGI read it (`evidenceReadOn`), the date AGI decided (`membershipStart`), and, when it
+happens, the exit date. Finding older evidence never creates earlier membership.
 
 Every figure on the page must therefore carry a provenance tag, and the page must be able
 to say it has nothing rather than show a number it cannot source:
