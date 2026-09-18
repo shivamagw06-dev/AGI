@@ -33,3 +33,4 @@ export const fetchIndexHistory = () => request('/index/history', { timeoutMs: 90
 export const fetchMarketValue = () => request('/screen/market-value', { timeoutMs: 120_000 });
 export const fetchExitability = () => request('/screen/exitability', { timeoutMs: 120_000 });
 export const fetchOperatingData = () => request('/operating-data');
+export const fetchEstimates = () => request('/estimates');

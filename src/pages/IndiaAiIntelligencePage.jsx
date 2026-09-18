@@ -1,12 +1,15 @@
 import React from 'react';
 import {
-  fetchExitability, fetchFiledFacts, fetchIndexHistory, fetchLive, fetchMarketValue, fetchOperatingData, fetchSnapshots,
-  fetchStage3, fetchUniverse,
+  fetchEstimates, fetchExitability, fetchFiledFacts, fetchIndexHistory, fetchLive, fetchMarketValue, fetchOperatingData,
+  fetchSnapshots, fetchStage3, fetchUniverse,
 } from '@/lib/indiaAiApi';
 import {
   BuildFunding, CapexChanges, CapexConcentration, EvidenceComposition, ExposureAttribution,
 } from '@/components/indiaAi/FiledEvidenceCharts';
 import { nseOpen } from '@/lib/nseSession';
+import {
+  dcElectricityGWh, impliedGrowth, marketSize, runModel, valueOf,
+} from '@/lib/indiaAiEstimates';
 import {
   ALL_SUBS, LAYER_LABEL, SUB_LABEL, rupeesCr, summariseIntelligence, summaryText,
 } from '@/lib/indiaAiSummary';
@@ -130,6 +133,7 @@ const SECTIONS = [
   ['intensity', 'Intensity'],
   ['value', 'Market value'],
   ['operating', 'Order books'],
+  ['estimates', 'AGI estimates'],
   ['orders', 'Orders'],
   ['capacity', 'Capacity'],
   ['layers', 'Empty layers'],
@@ -838,6 +842,7 @@ function OperatingData({ data }) {
               <th className="py-1.5 pr-2 font-medium">As of</th>
               <th className="py-1.5 pr-2 text-right font-medium">Order book</th>
               <th className="py-1.5 pr-2 text-right font-medium">Quarter intake</th>
+              <th className="py-1.5 pr-2 text-right font-medium" title="Order book divided by the latest quarter's revenue">Cover</th>
               <th className="py-1.5 font-medium">Data-centre orders, as stated</th>
             </tr>
           </thead>
@@ -848,12 +853,42 @@ function OperatingData({ data }) {
                 <td className="py-1.5 pr-2 font-mono tabular-nums text-[#7d8894]">{row.asOf}</td>
                 <td className="py-1.5 pr-2 text-right font-mono tabular-nums text-[#e3e8ef]">{row.backlogCr != null ? cr(row.backlogCr) : <span className="text-[#7d8894]">{row.basisNote}</span>}</td>
                 <td className="py-1.5 pr-2 text-right font-mono tabular-nums text-[#9aa5b3]">{cr(row.intakeCr)}</td>
+                <td className="py-1.5 pr-2 text-right font-mono tabular-nums text-[#f0a060]" title={row.quarterRevenueSource ? `Quarter revenue ${cr(row.quarterRevenueCr)} (${row.quarterRevenueSource})` : ''}>
+                  {row.backlogCr && row.quarterRevenueCr ? `${(row.backlogCr / row.quarterRevenueCr).toFixed(1)} qtrs` : '—'}
+                </td>
                 <td className="py-1.5 text-[#9aa5b3]">{row.dataCentreOrders}</td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
+      {data.statedShares?.length ? (
+        <>
+          <p className="mt-5 text-[12px] uppercase tracking-wider text-[#7d8894]">AI and data-centre shares the companies state</p>
+          <div className="mt-2 overflow-x-auto">
+            <table className="w-full min-w-[640px] text-[13px]">
+              <thead>
+                <tr className="text-left text-[12px] uppercase tracking-wider text-[#68727f]">
+                  <th className="py-1.5 pr-2 font-medium">Member</th>
+                  <th className="py-1.5 pr-2 font-medium">What is stated</th>
+                  <th className="py-1.5 pr-2 font-medium">Figure</th>
+                  <th className="py-1.5 font-medium">Of what</th>
+                </tr>
+              </thead>
+              <tbody>
+                {data.statedShares.map((row) => (
+                  <tr key={`${row.symbol}-${row.metric}`} className="border-t border-[#1a2230] align-top">
+                    <td className="py-1.5 pr-2 font-mono text-[#d3dae3]" title={`${row.source}: "${row.quote}"`}>{row.symbol}</td>
+                    <td className="py-1.5 pr-2 text-[#9aa5b3]">{row.metric}</td>
+                    <td className="py-1.5 pr-2 text-[#e3e8ef]">{row.value}</td>
+                    <td className="py-1.5 text-[#7d8894]">{row.base}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
+      ) : null}
       <p className="mt-5 text-[12px] uppercase tracking-wider text-[#7d8894]">Data-centre capacity</p>
       <div className="mt-2 overflow-x-auto">
         <table className="w-full min-w-[640px] text-[13px]">
@@ -885,13 +920,295 @@ function OperatingData({ data }) {
           </tbody>
         </table>
       </div>
+      {data.targets?.length ? (
+        <>
+          <p className="mt-5 text-[12px] uppercase tracking-wider text-[#7d8894]">Management targets, as the companies state them</p>
+          <ul className="mt-2 space-y-1.5">
+            {data.targets.map((row) => (
+              <li key={row.symbol} className="text-[13px] leading-relaxed text-[#9aa5b3]">
+                <span className="font-mono text-[#d3dae3]">{row.symbol}</span> {row.target}
+                <span className="text-[#68727f]"> · {row.source}</span>
+                {row.impliedGrowth ? <span className="text-[#f0a060]"> · {row.impliedGrowth}</span> : null}
+              </li>
+            ))}
+          </ul>
+        </>
+      ) : null}
       <p className="mt-3 text-[12px] leading-relaxed text-[#68727f]">
+        Cover is the order book divided by the latest quarter&rsquo;s revenue: how many quarters of current sales it holds.
+        Targets are the companies&rsquo; own words; any growth rate beside one is AGI arithmetic on the company&rsquo;s base and target.
         Figures as of each company&rsquo;s latest filing, read on {data.asOf}; hover a symbol for the document, page and quote.
         Order books are in each company&rsquo;s own basis and are not comparable in size across sectors. A dash is a figure the
         company does not state. Capacity is as stated: some companies give IT load and others power capacity, which differ.
         Targets are the companies&rsquo; own and are not AGI estimates. Members not listed disclose neither an order book nor capacity.
       </p>
     </Panel>
+  );
+}
+
+/**
+ * AGI estimates: the one section of this page that is not a disclosure.
+ *
+ * Each model is scenario arithmetic on disclosed figures. Inputs are marked
+ * disclosed (with the document) or assumption (with a range and a reason),
+ * the reader can change any assumption, and a model with no defensible
+ * anchor waits for the reader rather than guessing. Nothing here feeds any
+ * other panel. Overrides stay in this browser only.
+ */
+const EST_STORE = 'agi-india-ai-estimates-v1';
+const PCT_UNITS = new Set(['pct']);
+const fmtParam = (v, unit) => {
+  if (v === null || v === undefined) return '—';
+  if (PCT_UNITS.has(unit)) return `${(v * 100).toFixed(1)}%`;
+  if (unit === 'cr') return rupeesCr(v);
+  if (unit === 'mw') return `${v.toLocaleString('en-IN')} MW`;
+  if (unit === 'crPerMw') return `₹${v} cr / MW`;
+  if (unit === 'x') return `${v}x`;
+  if (unit === 'unitsDay') return `${(v / 1e6).toLocaleString('en-IN')} m units/day`;
+  if (unit === 'rs') return `₹${v}`;
+  return String(v);
+};
+
+/** MW added x Rs crore per MW, by equipment layer. An industry total; assigns nothing to a company. */
+function MarketSizeCalculator({ config }) {
+  const [addedMW, setAddedMW] = React.useState(config.defaultAddedMW);
+  const [edits, setEdits] = React.useState({});
+  const layers = config.layers.map((layer) => ({
+    ...layer,
+    lowCrPerMW: edits[`${layer.key}.low`] !== undefined ? Number(edits[`${layer.key}.low`]) : layer.lowCrPerMW,
+    highCrPerMW: edits[`${layer.key}.high`] !== undefined ? Number(edits[`${layer.key}.high`]) : layer.highCrPerMW,
+  }));
+  const out = marketSize({ addedMW: Number(addedMW), layers });
+  const num = (key, value) => (
+    <input
+      type="number" step="any" value={value ?? ''} aria-label={key}
+      onChange={(e) => setEdits((prev) => ({ ...prev, [key]: e.target.value }))}
+      className="w-16 rounded border border-[#2a3444] bg-[#0a0e14] px-1 py-0.5 text-right font-mono text-[12px] text-[#e3e8ef] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#e8833a]"
+    />
+  );
+  return (
+    <div className="rounded border border-[#3a2e1c] bg-[#14110c] p-3 text-[13px] text-[#c9b699]">
+      <p className="font-semibold text-[#f5d9b0]">What a build-out buys, by layer</p>
+      <p className="mt-1 text-[12px] text-[#8a7658]">{config.note}</p>
+      <label className="mt-2 flex items-center gap-2">
+        <span>Data-centre MW added</span>
+        <input
+          type="number" step="any" value={addedMW} onChange={(e) => setAddedMW(e.target.value)}
+          className="w-24 rounded border border-[#2a3444] bg-[#0a0e14] px-1.5 py-0.5 text-right font-mono text-[13px] text-[#e3e8ef] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#e8833a]"
+        />
+        <span className="text-[12px] text-[#8a7658]">{config.addedMWSource}</span>
+      </label>
+      <div className="mt-2 overflow-x-auto">
+        <table className="w-full min-w-[560px] text-[12px]">
+          <thead>
+            <tr className="text-left text-[11px] uppercase tracking-wider text-[#8a7658]">
+              <th className="py-1 pr-2 font-medium">Layer</th>
+              <th className="py-1 pr-2 text-right font-medium">₹ cr / MW (low–high)</th>
+              <th className="py-1 pr-2 text-right font-medium">Industry spend</th>
+              <th className="py-1 font-medium">Where the per-MW figure comes from</th>
+            </tr>
+          </thead>
+          <tbody>
+            {layers.map((layer) => {
+              const row = out?.rows.find((r) => r.key === layer.key);
+              return (
+                <tr key={layer.key} className="border-t border-[#2a2216] align-top">
+                  <td className="py-1 pr-2 text-[#e3e8ef]">{layer.label}<span className="block text-[11px] text-[#8a7658]">{layer.members}</span></td>
+                  <td className="py-1 pr-2 text-right whitespace-nowrap">{num(`${layer.key}.low`, layer.lowCrPerMW)} – {num(`${layer.key}.high`, layer.highCrPerMW)}</td>
+                  <td className="py-1 pr-2 text-right font-mono tabular-nums text-[#f5d9b0]">
+                    {row?.lowCr != null ? `${rupeesCr(row.lowCr)}${row.highCr !== row.lowCr ? ` – ${rupeesCr(row.highCr)}` : ''}` : 'not priced'}
+                  </td>
+                  <td className="py-1 text-[11px] leading-snug text-[#8a7658]">{layer.source}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+      {out ? (
+        <p className="mt-2 font-mono text-[14px] font-semibold text-[#f5d9b0]">
+          Priced layers: {rupeesCr(out.totalLowCr)} – {rupeesCr(out.totalHighCr)}
+          {out.unpriced.length ? <span className="ml-2 font-sans text-[12px] font-normal text-[#d9a94a]">not priced: {out.unpriced.join(', ')}</span> : null}
+        </p>
+      ) : null}
+      <p className="mt-1 text-[12px] text-[#8a7658]">An industry total, spread over the build-out years. It is not revenue for any company; no share is assigned.</p>
+    </div>
+  );
+}
+
+/** IT MW -> annual electricity, under a PUE the reader sets. An AGI calculation. */
+function ElectricityCalculator() {
+  const [itMW, setItMW] = React.useState(250);
+  const [pue, setPue] = React.useState(1.3);
+  const gwh = dcElectricityGWh({ itMW: Number(itMW), pue: Number(pue) });
+  const field = (label, value, set, step) => (
+    <label className="flex items-center gap-1.5">
+      <span>{label}</span>
+      <input
+        type="number" step={step} value={value} onChange={(e) => set(e.target.value)}
+        className="w-20 rounded border border-[#2a3444] bg-[#0a0e14] px-1.5 py-0.5 text-right font-mono text-[13px] text-[#e3e8ef] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#e8833a]"
+      />
+    </label>
+  );
+  return (
+    <div className="rounded border border-[#3a2e1c] bg-[#14110c] p-3 text-[13px] text-[#c9b699]">
+      <p className="font-semibold text-[#f5d9b0]">Power a data centre needs</p>
+      <div className="mt-2 flex flex-wrap items-center gap-4">
+        {field('IT load, MW', itMW, setItMW, 'any')}
+        {field('PUE', pue, setPue, '0.05')}
+        <span className="font-mono text-[15px] font-semibold tabular-nums text-[#f5d9b0]">
+          {gwh === null ? 'PUE must be at least 1' : `${gwh.toLocaleString('en-IN')} GWh a year (${(gwh / 1000).toFixed(2)} TWh)`}
+        </span>
+      </div>
+      <p className="mt-1.5 text-[12px] text-[#8a7658]">
+        IT load x PUE x 8,760 hours. PUE, the ratio of total facility power to IT power, is an assumption: 1.3 is a common design target for new
+        Indian facilities, older ones run higher. Company capacity figures are sometimes IT load and sometimes power capacity, which differ.
+      </p>
+    </div>
+  );
+}
+
+function Estimates({ data, marketValue }) {
+  const [scenario, setScenario] = React.useState('base');
+  const [overrides, setOverrides] = React.useState(() => {
+    try { return JSON.parse(window.localStorage.getItem(EST_STORE) || '{}'); } catch { return {}; }
+  });
+  React.useEffect(() => {
+    try { window.localStorage.setItem(EST_STORE, JSON.stringify(overrides)); } catch { /* storage blocked */ }
+  }, [overrides]);
+  if (!data?.models?.length) return null;
+  const mv = Object.fromEntries((marketValue?.rows || []).map((r) => [r.symbol, r.marketValueCr]));
+  const exitKey = 'exitMultiple';
+  const exitMultiple = valueOf(data.exitMultiple, scenario, overrides, exitKey);
+  const setOverride = (key, raw, unit) => {
+    setOverrides((prev) => {
+      const next = { ...prev };
+      if (raw === '') delete next[key];
+      else next[key] = PCT_UNITS.has(unit) ? Number(raw) / 100 : Number(raw);
+      return next;
+    });
+  };
+  const inputFor = (key, param) => {
+    const current = valueOf(param, scenario, overrides, key);
+    const shown = current === null ? '' : PCT_UNITS.has(param.unit) ? Number((current * 100).toFixed(2)) : current;
+    return (
+      <input
+        type="number"
+        step="any"
+        aria-label={param.label}
+        value={overrides[key] !== undefined ? (PCT_UNITS.has(param.unit) ? Number((overrides[key] * 100).toFixed(4)) : overrides[key]) : shown}
+        onChange={(e) => setOverride(key, e.target.value, param.unit)}
+        className={`w-24 rounded border bg-[#0a0e14] px-1.5 py-0.5 text-right font-mono text-[13px] tabular-nums text-[#e3e8ef] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#e8833a] ${overrides[key] !== undefined ? 'border-[#e8833a]' : 'border-[#2a3444]'}`}
+      />
+    );
+  };
+  return (
+    <section id="estimates" className="rounded-md border-2 border-dashed border-[#7a5a2e] bg-[#0f0d0a]">
+      <header className="flex flex-wrap items-baseline gap-2 border-b border-[#3a2e1c] px-3.5 py-2.5">
+        <h3 className="text-[15px] font-semibold tracking-tight text-[#f5d9b0]">AGI estimates</h3>
+        <span className="text-[12px] text-[#b89a70]">scenarios on disclosed figures · not disclosures, not forecasts of share prices, not recommendations</span>
+        <span className="ml-auto flex gap-1" role="group" aria-label="Scenario">
+          {['low', 'base', 'high'].map((one) => (
+            <button
+              key={one}
+              type="button"
+              onClick={() => setScenario(one)}
+              aria-pressed={scenario === one}
+              className={`rounded px-2 py-0.5 text-[12px] capitalize focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#e8833a] ${scenario === one ? 'bg-[#e8833a] text-[#0a0e14]' : 'border border-[#3a2e1c] text-[#d9b98a]'}`}
+            >
+              {one}
+            </button>
+          ))}
+          <button
+            type="button"
+            onClick={() => setOverrides({})}
+            className="ml-2 rounded border border-[#3a2e1c] px-2 py-0.5 text-[12px] text-[#d9b98a] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#e8833a]"
+          >
+            Reset my changes
+          </button>
+        </span>
+      </header>
+      <div className="space-y-3 p-3.5">
+        <p className="max-w-3xl text-[13px] leading-relaxed text-[#c9b699]">{data.purpose}</p>
+        <p className="max-w-3xl text-[12px] leading-relaxed text-[#8a7658]">
+          The third figure in each model compares estimated AI/data-centre EBITDA in {data.horizonLabel} with the company&rsquo;s whole
+          EBITDA in FY26. It can exceed 100% for a fast-growing business: it measures scale against today&rsquo;s earnings, not a share of future profit.
+        </p>
+        <p className="text-[13px] text-[#c9b699]">
+          Exit multiple for implied growth: {inputFor(exitKey, data.exitMultiple)} <span className="text-[#8a7658]">{data.exitMultiple.rationale}</span>
+        </p>
+        <div className="grid gap-3 xl:grid-cols-2">
+          {data.models.map((model) => {
+            const out = runModel(model, { scenario, overrides });
+            const pat = valueOf(model.params?.patFY26Cr, scenario, overrides);
+            const implied = impliedGrowth({ marketValueCr: mv[model.symbol], patCr: pat, exitMultiple, years: data.horizonYears });
+            return (
+              <article key={model.symbol} className="rounded border border-[#3a2e1c] bg-[#14110c] p-3">
+                <h4 className="flex flex-wrap items-baseline gap-2">
+                  <span className="font-mono text-[14px] text-[#f5d9b0]">{model.symbol}</span>
+                  <span className="text-[13px] text-[#b89a70]">{model.title}</span>
+                </h4>
+                <p className="mt-1 text-[12px] leading-relaxed text-[#8a7658]">{model.basis}</p>
+                <table className="mt-2 w-full text-[12px]">
+                  <tbody>
+                    {Object.entries(model.params || {}).map(([name, param]) => (
+                      <tr key={name} className="border-t border-[#2a2216] align-top">
+                        <td className="py-1 pr-2 text-[#c9b699]">
+                          {param.label}
+                          <span className={`ml-1.5 rounded px-1 text-[10px] uppercase tracking-wider ${param.kind === 'disclosed' ? 'bg-[#10261a] text-[#4ade80]' : 'bg-[#2a2110] text-[#d9a94a]'}`}>{param.kind}</span>
+                        </td>
+                        <td className="py-1 pr-2 text-right font-mono tabular-nums text-[#e3e8ef]">
+                          {param.kind === 'disclosed' ? fmtParam(param.value, param.unit) : inputFor(`${model.symbol}.${name}`, param)}
+                        </td>
+                        <td className="py-1 text-[11px] leading-snug text-[#8a7658]">
+                          {param.kind === 'disclosed'
+                            ? param.source
+                            : `${param.low != null ? `range ${fmtParam(param.low, param.unit)}–${fmtParam(param.high, param.unit)}. ` : ''}${param.rationale || ''}`}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                {out.ok ? (
+                  <div className="mt-2 grid grid-cols-3 gap-2 border-t border-[#3a2e1c] pt-2">
+                    {[
+                      [`AI/DC revenue, ${data.horizonLabel}`, rupeesCr(out.aiRevenueCr)],
+                      [`AI/DC EBITDA, ${data.horizonLabel}`, rupeesCr(out.aiEbitdaCr)],
+                      [`vs ${model.params?.totalEbitdaFY26Cr?.label || 'FY26 filed EBITDA'}`, out.materiality != null ? `${(out.materiality * 100).toFixed(1)}%` : '—'],
+                    ].map(([k, v]) => (
+                      <div key={k}>
+                        <p className="text-[11px] uppercase tracking-wider text-[#8a7658]">{k}</p>
+                        <p className="font-mono text-[15px] font-semibold tabular-nums text-[#f5d9b0]">{v}</p>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="mt-2 border-t border-[#3a2e1c] pt-2 text-[12px] text-[#d9a94a]">
+                    Waiting for: {out.missing.map((m) => model.params?.[m]?.label || m).join(', ')}. Set it above to run this model; AGI has no disclosed figure to anchor it.
+                  </p>
+                )}
+                {out.steps?.length ? (
+                  <details className="mt-2">
+                    <summary className="cursor-pointer rounded text-[12px] text-[#d9b98a] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#e8833a]">The arithmetic</summary>
+                    <ol className="mt-1 list-decimal space-y-0.5 pl-5 text-[12px] text-[#c9b699]">
+                      {out.steps.map((one) => <li key={one}>{one}</li>)}
+                    </ol>
+                  </details>
+                ) : null}
+                <p className="mt-2 text-[12px] text-[#8a7658]">
+                  {implied
+                    ? `Price check: market value ${rupeesCr(mv[model.symbol])} is ${implied.trailingMultiple}x FY26 profit (${rupeesCr(pat)}); reaching ${exitMultiple}x by ${data.horizonLabel} needs profit of ${rupeesCr(implied.requiredPatCr)}, ${(implied.cagr * 100).toFixed(1)}% a year.`
+                    : 'Price check unavailable until market value and FY26 profit are both known.'}
+                </p>
+              </article>
+            );
+          })}
+        </div>
+        <ElectricityCalculator />
+        {data.marketSize ? <MarketSizeCalculator config={data.marketSize} /> : null}
+        <p className="text-[12px] leading-relaxed text-[#8a7658]">{data.limits}</p>
+      </div>
+    </section>
   );
 }
 
@@ -1193,6 +1510,13 @@ function MemberEvidence({ member }) {
             </div>
           ) : null}
 
+          {member.parentGroupNote ? (
+            <div className="rounded border border-[#3a3222] bg-[#12100c] px-3 py-2">
+              <p className="text-[12px] uppercase tracking-[0.12em] text-[#b89a70]">Parent group, not this company</p>
+              <p className="mt-1 text-[14px] leading-relaxed text-[#c9b699]">{member.parentGroupNote}</p>
+            </div>
+          ) : null}
+
           {member.exposureNote ? (
             <div>
               <p className="text-[12px] uppercase tracking-[0.12em] text-[#68727f]">How much can be sized</p>
@@ -1366,6 +1690,7 @@ export default function IndiaAiIntelligencePage() {
   const [history, setHistory] = React.useState(null);
   const [marketValue, setMarketValue] = React.useState(null);
   const [operating, setOperating] = React.useState(null);
+  const [estimates, setEstimates] = React.useState(null);
   const [liveError, setLiveError] = React.useState(null);
   const [error, setError] = React.useState(null);
   const clock = useIstClock();
@@ -1389,6 +1714,9 @@ export default function IndiaAiIntelligencePage() {
       .catch(() => {});
     fetchOperatingData()
       .then((payload) => { if (!cancelled) setOperating(payload); })
+      .catch(() => {});
+    fetchEstimates()
+      .then((payload) => { if (!cancelled) setEstimates(payload); })
       .catch(() => {});
     fetchMarketValue()
       .then((payload) => { if (!cancelled) setMarketValue(payload); })
@@ -1574,6 +1902,8 @@ export default function IndiaAiIntelligencePage() {
               <MarketValue data={marketValue} />
 
               <OperatingData data={operating} />
+
+              <Estimates data={estimates} marketValue={marketValue} />
             </div>
 
             {/* ── monitor ── */}
