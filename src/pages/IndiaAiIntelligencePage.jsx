@@ -1,6 +1,6 @@
 import React from 'react';
 import {
-  fetchEstimates, fetchExitability, fetchScoring, fetchFiledFacts, fetchIndexHistory, fetchLive, fetchMarketValue, fetchOperatingData,
+  fetchEstimates, fetchExitability, fetchMateriality, fetchScoring, fetchFiledFacts, fetchIndexHistory, fetchLive, fetchMarketValue, fetchOperatingData,
   fetchSnapshots, fetchStage3, fetchUniverse,
 } from '@/lib/indiaAiApi';
 import {
@@ -1893,6 +1893,7 @@ export default function IndiaAiIntelligencePage() {
   const [operating, setOperating] = React.useState(null);
   const [estimates, setEstimates] = React.useState(null);
   const [scoring, setScoring] = React.useState(null);
+  const [materiality, setMateriality] = React.useState(null);
   // The monitor's four views, or Research (the full evidence page). Monitor
   // views use #monitor and #monitor-<view>; any other hash is a research
   // section, so existing anchors keep working.
@@ -1945,6 +1946,9 @@ export default function IndiaAiIntelligencePage() {
       .catch(() => {});
     fetchScoring()
       .then((payload) => { if (!cancelled) setScoring(payload); })
+      .catch(() => {});
+    fetchMateriality()
+      .then((payload) => { if (!cancelled) setMateriality(payload); })
       .catch(() => {});
     fetchMarketValue()
       .then((payload) => { if (!cancelled) setMarketValue(payload); })
@@ -2035,7 +2039,7 @@ export default function IndiaAiIntelligencePage() {
             <MonitorDashboard
               section={tab} onSection={(k) => goTab(k)}
               universe={universe} live={live} marketValue={marketValue} stage3={stage3}
-              estimates={estimates} operating={operating} scoring={scoring}
+              estimates={estimates} operating={operating} scoring={scoring} materiality={materiality}
               onResearch={(anchor) => goTab('research', typeof anchor === 'string' ? anchor : undefined)}
             />
           ) : (

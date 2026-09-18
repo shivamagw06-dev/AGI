@@ -26,6 +26,12 @@
         "decided": "2026-09-18",
         "by": "portfolio owner",
         "context": null
+      },
+      {
+        "symbol": "TATAPOWER",
+        "decided": "2026-09-19",
+        "by": "portfolio owner",
+        "context": "Maximum executable position about Rs 84 cr against the Rs 100 cr target, 16% short; a full position means an exit of about 3.6 days at 20% of normal turnover rather than 3. The exception is about size only: on the materiality test Tata Power is not yet material, and is shown that way."
       }
     ],
     "sizingExceptionsNote": "An exception removes a member from belowTarget; it does not change what the member can carry. Its maximum executable position and shortfall are still computed and reported beside it."

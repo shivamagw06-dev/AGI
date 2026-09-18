@@ -5,6 +5,7 @@ import { impliedGrowth, runModel, valueOf } from '@/lib/indiaAiEstimates';
 import {
   aiMateriality, capitalQuality, earningsMomentum, evidenceConfidence, expectationLoad,
 } from '@/lib/indiaAiFactors';
+import { MATERIALITY_TIER, TEST_LABEL, classifyMateriality } from '@/lib/indiaAiMateriality';
 
 /**
  * India AI Infrastructure Monitor: the dashboard view of the page.
@@ -70,6 +71,19 @@ function TierMark({ tier }) {
   );
 }
 
+const TIER_CHIP = {
+  material: 'bg-[#0f2419] text-[#4ade80]',
+  'material-estimate': 'bg-[#261c0e] text-[#f0a060]',
+  exception: 'border border-dashed border-[#7a5a2e] text-[#f0a060]',
+  'not-yet': 'bg-[#141a23] text-[#8b95a3]',
+};
+const TIER_RANK = { material: 4, 'material-estimate': 3, exception: 2, 'not-yet': 1 };
+function MaterialityChip({ mat, long = false }) {
+  if (!mat) return <span className="text-[#5b6675]">—</span>;
+  const t = MATERIALITY_TIER[mat.tier];
+  return <span className={`inline-block whitespace-nowrap rounded-full px-2 py-[1px] text-[12px] ${TIER_CHIP[mat.tier]}`}>{long ? t.label : t.short}</span>;
+}
+
 const HARD = new Set(['order', 'capex', 'operating']);
 const IMPACT = { order: 'Orders', capex: 'Capacity', operating: 'AI exposure' };
 const EV_COLOR = { high: '#4ade80', medium: '#6cb2f0', low: '#7d8894' };
@@ -91,7 +105,7 @@ const dateLabel = (d) => {
 };
 
 /** Everything AGI holds about one member, in one record. */
-function buildRecords({ universe, operating, estimates, marketValue, stage3, scoring, exit }) {
+function buildRecords({ universe, operating, estimates, marketValue, stage3, scoring, exit, materiality }) {
   const mv = Object.fromEntries((marketValue?.rows || []).map((r) => [r.symbol, r.marketValueCr]));
   const s3 = Object.fromEntries((stage3?.rows || []).map((r) => [r.symbol, r.verdict]));
   const models = Object.fromEntries((estimates?.models || []).map((m) => [m.symbol, m]));
@@ -105,6 +119,7 @@ function buildRecords({ universe, operating, estimates, marketValue, stage3, sco
   for (const r of operating?.targets || []) (targets[r.symbol] ||= []).push(r);
   const exitMultiple = estimates?.exitMultiple ? valueOf(estimates.exitMultiple, 'base') : null;
   const years = estimates?.horizonYears || 3;
+  const matExceptions = Object.fromEntries((materiality?.exceptions || []).map((e) => [e.symbol, e]));
   return (universe?.members || []).map((m) => {
     const model = models[m.symbol];
     const runs = model ? Object.fromEntries(['low', 'base', 'high'].map((s) => [s, runModel(model, { scenario: s })])) : null;
@@ -117,16 +132,28 @@ function buildRecords({ universe, operating, estimates, marketValue, stage3, sco
     const fcf = row.revenueFY26 && Number.isFinite(row.cfoFY26) && Number.isFinite(row.capexFY26)
       ? (row.cfoFY26 - row.capexFY26 - (row.capexIntangiblesFY26 || 0)) / row.revenueFY26 : null;
     const roce = row.statedRoceFY26 ?? (row.ebitFY26 && row.capitalEmployedFY26 ? row.ebitFY26 / row.capitalEmployedFY26 : null);
+    const cover = book?.backlogCr && book?.quarterRevenueCr ? book.backlogCr / book.quarterRevenueCr : null;
+    const evidenceF = evidenceConfidence(m);
+    const mat = materiality?.members && materiality.rules ? classifyMateriality({
+      entry: materiality.members[m.symbol] || {},
+      rules: materiality.rules,
+      evidenceBand: evidenceF.band,
+      hardItems: evidence.length,
+      fy29Materiality: runs?.base.ok ? runs.base.materiality : null,
+      orderCover: cover,
+      exception: matExceptions[m.symbol] || null,
+    }) : null;
     return {
+      mat, vehicle: materiality?.vehicles?.[m.symbol] || null,
       m, model, runs, row, pat, ebitda, book, cap: caps[m.symbol], liq: liq[m.symbol],
       shares: shares[m.symbol] || [], targets: targets[m.symbol] || [], evidence, fcf, roce,
       latest: evidence.map((e) => e.date).filter(Boolean).sort().at(-1) || null,
       mv: mv[m.symbol] ?? null, stage3: s3[m.symbol] || null, q1,
-      cover: book?.backlogCr && book?.quarterRevenueCr ? book.backlogCr / book.quarterRevenueCr : null,
+      cover,
       implied: impliedGrowth({ marketValueCr: mv[m.symbol], patCr: pat, exitMultiple, years }),
       factors: {
         materiality: aiMateriality({ model, statedShare: shares[m.symbol]?.[0]?.value }),
-        evidence: evidenceConfidence(m),
+        evidence: evidenceF,
         momentum: earningsMomentum(row),
         capital: capitalQuality(row),
         expectation: expectationLoad({ marketValueCr: mv[m.symbol], patCr: pat, exitMultiple, years }),
@@ -215,6 +242,8 @@ function KpiRow({ records, others, marketValue, live }) {
   const read = records.length + others.held.length + others.excluded.length;
   const sized = records.filter((r) => r.m.attribution && r.m.attribution !== 'NOT_ATTRIBUTABLE').length;
   const segment = records.filter((r) => r.m.attribution === 'SEGMENT_REPORTED').length;
+  const material = records.filter((r) => r.mat && (r.mat.tier === 'material' || r.mat.tier === 'material-estimate'));
+  const onEstimate = material.filter((r) => r.mat.tier === 'material-estimate').length;
   const growth = median(records.map((r) => r.q1));
   const withGrowth = records.filter((r) => r.q1 !== null).length;
   const index = live?.index;
@@ -223,7 +252,13 @@ function KpiRow({ records, others, marketValue, live }) {
     <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
       <Kpi label="Companies admitted" value={records.length} sub={`of ${read} read, each on its own filings`} />
       <Kpi label="Combined market value" value={marketValue?.byLayer ? rupeesCr(marketValue.byLayer.totalCr) : '—'} sub="last close × filed shares, whole companies" tag="I" />
-      <Kpi label="AI business sized" value={`${sized} / ${records.length}`} sub={`${segment} audited segment · ${sized - segment} company-stated`} tag="D" />
+      {records.some((r) => r.mat) ? (
+        <Kpi
+          label="Economically material"
+          value={`${material.length} / ${records.length}`}
+          sub={`${material.length - onEstimate} on filed figures · ${onEstimate} on AGI estimate · ${sized} with the AI business sized`}
+        />
+      ) : <Kpi label="AI business sized" value={`${sized} / ${records.length}`} sub={`${segment} audited segment · ${sized - segment} company-stated`} tag="D" />}
       <Kpi
         label={lastTrade ? 'Basket, last session' : 'Basket today'}
         value={index?.status === 'ok' ? signedPct(index.return_pp / 100, 2) : '—'}
@@ -515,12 +550,15 @@ function columns(view) {
   const views = {
     overview: [
       ['Evidence', 'D', (r) => <TierMark tier={r.m.attribution} />, (r) => ({ SEGMENT_REPORTED: 3, MANAGEMENT_DISCLOSED: 2, NOT_ATTRIBUTABLE: 1 }[r.m.attribution] || 0)],
+      ['Materiality test', null, (r) => <MaterialityChip mat={r.mat} />, (r) => (r.mat ? TIER_RANK[r.mat.tier] : null)],
       ['AI materiality', null, (r) => <span className="inline-flex items-center gap-2"><Band b={r.factors.materiality.band} />{r.factors.materiality.value ? <span className="text-[#9aa5b3]">{r.factors.materiality.value}</span> : null}</span>, (r) => (r.runs?.base.ok ? r.runs.base.materiality : null)],
       ['Revenue y/y', 'I', (r) => signedPct(r.q1), (r) => r.q1],
       ['Market value', 'I', (r) => cr(r.mv), (r) => r.mv],
       ['Expectation load', 'A', (r) => (r.implied ? <span className="inline-flex items-center gap-2"><Band b={r.factors.expectation.band} scale="expectation" /><span className="text-[#9aa5b3]">{r.implied.cagr <= 0 ? 'none' : `${pct(r.implied.cagr)}/yr`}</span></span> : '—'), (r) => r.implied?.cagr ?? null],
       ['Capital quality', 'I', (r) => <Band b={r.factors.capital.band} />, (r) => r.roce],
-      ['₹100 cr position', 'I', (r) => (r.liq ? (r.liq.meetsTarget ? 'fits' : `up to ${cr(r.liq.maxExecutablePosition / 1e7)}`) : '…'), (r) => (r.liq ? r.liq.maxExecutablePosition : null)],
+      ['₹100 cr position', 'I', (r) => (r.liq ? (r.liq.meetsTarget ? 'fits' : r.liq.exception
+        ? <span title={r.liq.exception.context || 'Recorded sizing exception'}>{cr(r.liq.maxExecutablePosition / 1e7)}<span className="ml-1.5 text-[12px] text-[#f0a060]">exception</span></span>
+        : `up to ${cr(r.liq.maxExecutablePosition / 1e7)}`) : '…'), (r) => (r.liq ? r.liq.maxExecutablePosition : null)],
     ],
     evidence: [
       ['Evidence', 'D', (r) => <TierMark tier={r.m.attribution} />, (r) => ({ SEGMENT_REPORTED: 3, MANAGEMENT_DISCLOSED: 2, NOT_ATTRIBUTABLE: 1 }[r.m.attribution] || 0)],
@@ -578,7 +616,7 @@ function FilterSummary({ rs }) {
   );
 }
 
-function Matrix({ records, others, filter, setFilter, open, matrixRef }) {
+function Matrix({ records, others, filter, setFilter, open, matrixRef, rules }) {
   const [view, setView] = React.useState('overview');
   const [status, setStatus] = React.useState('members');
   const [q, setQ] = React.useState('');
@@ -623,7 +661,7 @@ function Matrix({ records, others, filter, setFilter, open, matrixRef }) {
         {filter && status === 'members' ? <FilterSummary rs={filtered} /> : null}
         {status === 'members' ? (
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[1000px] text-[14px]">
+            <table className="w-full min-w-[1120px] text-[14px]">
               <thead>
                 <tr className="text-left text-[12px] text-[#8b95a3]">
                   {[...fixed, ...cols].map(([h, tag, , sortKey]) => (
@@ -676,6 +714,15 @@ function Matrix({ records, others, filter, setFilter, open, matrixRef }) {
         <p className="mt-4 text-[13px] leading-relaxed text-[#6b7684]">
           Column tags: <Tag t="D" /> disclosed by the company · <Tag t="I" /> AGI arithmetic on disclosed figures · <Tag t="A" /> AGI estimate. Headers sort. No consensus or broker figures are used.
         </p>
+        {rules?.text ? (
+          <details className="mt-3 text-[13px]">
+            <summary className={`cursor-pointer rounded text-[#6cb2f0] ${FOCUS}`}>How the materiality test works</summary>
+            <ul className="mt-2 max-w-[90ch] list-disc space-y-1.5 pl-5 leading-relaxed text-[#9aa5b3]">
+              {rules.text.map((t) => <li key={t}>{t}</li>)}
+              <li>Separate from sizing: the &lsquo;₹100 cr position&rsquo; column is how large a position the stock&rsquo;s turnover can carry, not how large its AI business is.</li>
+            </ul>
+          </details>
+        ) : null}
       </Panel>
     </div>
   );
@@ -846,6 +893,20 @@ function Drawer({ r, onClose, onResearch }) {
           <button ref={closeRef} type="button" onClick={onClose} className={`rounded-lg bg-[#151c27] px-3 py-1.5 text-[13px] text-[#b6c2d1] hover:text-[#f1f5f9] ${FOCUS}`}>Close</button>
         </div>
 
+        {r.vehicle ? (
+          <section className="mt-5 rounded-lg bg-[#121822] px-4 py-3.5">
+            <dl className="grid grid-cols-[120px_1fr] gap-x-3 gap-y-1.5 text-[14px]">
+              <dt className="text-[#8b95a3]">AI vehicle</dt>
+              <dd className="text-[#f1f5f9]">{r.vehicle.vehicle} <span className="text-[#8b95a3]">({r.vehicle.relation})</span></dd>
+              <dt className="text-[#8b95a3]">Key figure<Tag t="D" /></dt>
+              <dd className="text-[#dbe2ea]">{r.vehicle.kpi}</dd>
+              <dt className="text-[#8b95a3]">Parent exposure</dt>
+              <dd className="leading-relaxed text-[#b6c2d1]">{r.vehicle.exposure}</dd>
+            </dl>
+            <p className="mt-2 text-[12px] text-[#5b6675]">{r.vehicle.kpiSource}</p>
+          </section>
+        ) : null}
+
         <DrawerSection title="Reported facts" tone="text-[#6cb2f0]">
           <dl className="grid grid-cols-2 gap-x-4 gap-y-3">
             {facts.map(([k, v, t]) => (
@@ -857,6 +918,40 @@ function Drawer({ r, onClose, onResearch }) {
           </dl>
           {m.parentGroupNote ? <p className="mt-3 rounded-lg bg-[#15120c] px-3 py-2 text-[13px] leading-relaxed text-[#c9b699]"><span className="font-semibold">Parent group, not this company: </span>{m.parentGroupNote}</p> : null}
         </DrawerSection>
+
+        {r.mat ? (
+          <DrawerSection title="Economic materiality">
+            <p className="flex flex-wrap items-center gap-2 text-[14px]">
+              <MaterialityChip mat={r.mat} long />
+              {r.mat.tier === 'material-estimate' ? <span className="text-[#c9b699]">passes only on AGI&rsquo;s FY29 estimate<Tag t="A" /></span> : null}
+            </p>
+            {r.mat.passes.length ? (
+              <ul className="mt-2.5 space-y-1.5 text-[14px]">
+                {r.mat.passes.map((x, i) => (
+                  <li key={i} className="flex gap-2">
+                    <span aria-hidden="true" className="text-[#4ade80]">✓</span>
+                    <span className="text-[#dbe2ea]">
+                      <span className="text-[#8b95a3]">{TEST_LABEL[x.test]}: </span>{x.text}<Tag t={x.tag} />
+                      {x.fact?.steps ? <span className="block text-[12px] text-[#6b7684]">{x.fact.steps}</span> : null}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+            {r.mat.misses.length ? (
+              <ul className="mt-2 space-y-1 text-[13px] text-[#8b95a3]">
+                {r.mat.misses.map((x, i) => <li key={i} className="flex gap-2"><span aria-hidden="true">–</span><span>{x}</span></li>)}
+              </ul>
+            ) : null}
+            <dl className="mt-3 grid grid-cols-[150px_1fr] gap-x-3 gap-y-1 text-[13px]">
+              <dt className="text-[#8b95a3]">Evidence confidence</dt>
+              <dd className={r.mat.evidenceOk ? 'text-[#dbe2ea]' : 'text-[#f0a060]'}>{r.factors.evidence.band}{r.mat.evidenceOk ? '' : ' (medium or high required)'}</dd>
+              <dt className="text-[#8b95a3]">Path within 36 months</dt>
+              <dd className={r.mat.path ? 'text-[#dbe2ea]' : 'text-[#f0a060]'}>{r.mat.path ? <>{r.mat.path.note}<Tag t={r.mat.path.tag} /></> : 'not disclosed'}</dd>
+            </dl>
+            {r.mat.exception ? <p className="mt-2 text-[13px] text-[#f0a060]">Threshold exception, recorded {r.mat.exception.decided}: {r.mat.exception.reason}</p> : null}
+          </DrawerSection>
+        ) : null}
 
         <DrawerSection title="AGI assessment">
           <dl className="space-y-2">
@@ -936,7 +1031,7 @@ function Drawer({ r, onClose, onResearch }) {
 export const MONITOR_SECTIONS = [['overview', 'Overview'], ['matrix', 'Matrix'], ['evidence', 'Evidence'], ['estimates', 'Estimates']];
 
 export default function MonitorDashboard({
-  section = 'overview', onSection, universe, live, marketValue, stage3, estimates, operating, scoring, onResearch,
+  section = 'overview', onSection, universe, live, marketValue, stage3, estimates, operating, scoring, materiality, onResearch,
 }) {
   const [exit, setExit] = React.useState(null);
   const [filter, setFilterState] = React.useState(null);
@@ -953,10 +1048,10 @@ export default function MonitorDashboard({
     if (f) requestAnimationFrame(() => matrixRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
   }, []);
   if (!universe?.members) return <p className="py-10 text-[15px] text-[#8b95a3]">Loading the universe.</p>;
-  const records = buildRecords({ universe, operating, estimates, marketValue, stage3, scoring, exit });
+  const records = buildRecords({ universe, operating, estimates, marketValue, stage3, scoring, exit, materiality });
   const others = { held: universe.candidates || [], excluded: universe.excluded || [] };
   const current = drawer ? records.find((r) => r.m.symbol === drawer) : null;
-  const matrix = <Matrix records={records} others={others} filter={filter} setFilter={setFilter} open={setDrawer} matrixRef={matrixRef} />;
+  const matrix = <Matrix records={records} others={others} filter={filter} setFilter={setFilter} open={setDrawer} matrixRef={matrixRef} rules={materiality?.rules} />;
   return (
     // The site stylesheet borders every button and input; the monitor draws its own.
     <div className="space-y-4 text-[15px] [&_button]:border-0 [&_input]:border-0">
