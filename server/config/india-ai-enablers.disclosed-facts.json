@@ -193,6 +193,122 @@
           "as_reported_label": "equity shares of Rs 1 each, paid up"
         }
       ]
+    },
+    "POWERINDIA": {
+      "isin": "INE07Y701011",
+      "provenance": "PRIMARY_FILING_READ",
+      "note": "Read from the PDF by this system, so every figure carries a page. Unlike the other entries in this file, these are eligible to be served as FILED.",
+      "facts": [
+        {
+          "concept": "revenue",
+          "definition_id": "REVENUE.OPERATIONS_NET",
+          "scope": "standalone",
+          "period_end": "2026-03-31",
+          "value": 8147.71,
+          "prior": 6384.93,
+          "unit": "inr_crore",
+          "as_reported_label": "Revenue from operations",
+          "source_document_id": "powerindia-iar-fy2026",
+          "document": "Integrated Annual Report 2025-26, Hitachi Energy India Limited",
+          "source_page": 239
+        },
+        {
+          "concept": "net_profit",
+          "definition_id": "PAT.REPORTED",
+          "scope": "standalone",
+          "period_end": "2026-03-31",
+          "value": 987.84,
+          "prior": 383.98,
+          "unit": "inr_crore",
+          "as_reported_label": "Profit for the year",
+          "source_document_id": "powerindia-iar-fy2026",
+          "document": "Integrated Annual Report 2025-26, Hitachi Energy India Limited",
+          "source_page": 239
+        },
+        {
+          "concept": "eps",
+          "definition_id": "EPS.BASIC_AND_DILUTED",
+          "scope": "standalone",
+          "period_end": "2026-03-31",
+          "value": 221.63,
+          "prior": 90.36,
+          "unit": "inr_per_share",
+          "as_reported_label": "Earnings per equity share of face value of Rs 2 each, basic and diluted",
+          "source_document_id": "powerindia-iar-fy2026",
+          "document": "Integrated Annual Report 2025-26, Hitachi Energy India Limited",
+          "source_page": 239
+        },
+        {
+          "concept": "share_count",
+          "definition_id": "SHARE_COUNT.OUTSTANDING",
+          "scope": "entity",
+          "period_end": "2026-03-31",
+          "value": 44572363,
+          "unit": "shares",
+          "as_reported_label": "Equity shares of Rs 2 each issued, subscribed and fully paid",
+          "note": "Unchanged during FY26; 42,381,675 at 01-Apr-2024 plus 2,190,688 issued in FY25.",
+          "source_document_id": "powerindia-iar-fy2026",
+          "document": "Integrated Annual Report 2025-26, Hitachi Energy India Limited",
+          "source_page": 241
+        },
+        {
+          "concept": "capex",
+          "definition_id": "CAPEX.CASH_PPE_INTANGIBLES",
+          "scope": "standalone",
+          "period_end": "2026-03-31",
+          "value": 509.83,
+          "prior": 129.09,
+          "unit": "inr_crore",
+          "as_reported_label": "Purchase of property, plant and equipment, capital work in progress including capital advances (509.20) plus purchase of intangible assets (0.63)",
+          "components": {
+            "ppe_cwip_advances": 509.2,
+            "intangibles": 0.63
+          },
+          "source_document_id": "powerindia-iar-fy2026",
+          "document": "Integrated Annual Report 2025-26, Hitachi Energy India Limited",
+          "source_page": 240
+        },
+        {
+          "concept": "order_backlog",
+          "definition_id": "ORDER_BACKLOG.REPORTED",
+          "scope": "entity",
+          "period_end": "2026-03-31",
+          "value": 29555.3,
+          "unit": "inr_crore",
+          "as_reported_label": "Highest-ever order backlog",
+          "source_document_id": "powerindia-iar-fy2026",
+          "document": "Integrated Annual Report 2025-26, Hitachi Energy India Limited",
+          "source_page": 53
+        },
+        {
+          "concept": "rnd",
+          "definition_id": "RND.GROSS",
+          "scope": "standalone",
+          "period_end": "2026-03-31",
+          "value": null,
+          "unit": null,
+          "state": "NOT_DISCLOSED",
+          "note": "No discrete R&D figure. The company states R&D is pooled centrally at group level and the expenditure is mainly licence fees reported as royalty and technology fees within other expenses. The Rs 241.85 crore of royalty and technology fees paid to Hitachi Energy Ltd, Switzerland is a related-party licence payment and must not be recorded or substituted as R&D spend.",
+          "source_document_id": "powerindia-iar-fy2026",
+          "document": "Integrated Annual Report 2025-26, Hitachi Energy India Limited",
+          "source_page": 225
+        }
+      ],
+      "softEvidenceNote": "Page 53 says the company \"remains focused on high-growth segments such as energy storage, data centers, e-mobility and renewable energy\". That is positioning, not activity, and does not admit anything. This member was admitted on the specific transformer, GIS and pooling-station orders in its Q1 FY27 call and FY26 report, and it still is.",
+      "measuredAgainstDerivation": {
+        "sharesFiled": 44572363,
+        "sharesDerivedFromPB": 43207582,
+        "sharesError": "-3.06%",
+        "marketCapFiledBasis": "Rs 139,199 crore at a close of 31,230",
+        "marketCapDerived": "Rs 134,937 crore",
+        "marketCapError": "-3.06%",
+        "peStatedByUpstox": 117.3,
+        "peFromFiledEps": 140.91,
+        "peGap": "+20.1%",
+        "impliedEpsBehindUpstoxPe": 266.24,
+        "filedEps": 221.63,
+        "finding": "Upstox ratios are not on the annual statements. The P/E implies earnings per share of 266.24 against a filed FY26 figure of 221.63, which is a trailing twelve months that already includes the much stronger Q1 FY27. The P/B is 3.2% from the March 2026 book for the same reason - a more recent equity. So the basis mismatch is an as-of date, not consolidated versus standalone, and it matters far more for earnings than for book: equity compounds slowly, earnings jumped 157% year on year."
+      }
     }
   }
 }

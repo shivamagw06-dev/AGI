@@ -1,7 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  balanceSheetRowFrom, bookEquityFrom, freeFloatMarketCap, freeFloatRatioFrom, marketCapFromEarnings,
+  CROSS_CHECK_TOLERANCE, balanceSheetRowFrom, bookEquityFrom, freeFloatMarketCap, freeFloatRatioFrom,
+  marketCapFromEarnings,
   sizeForUniverse, sizeRows,
 } from './aiEnablersSize.js';
 
@@ -424,4 +425,52 @@ test('time_period is never sent to balance-sheet, which does not take it', async
   assert.deepEqual(seen.map((one) => one.type), ['consolidated', 'standalone']);
   assert.equal(seen.every((one) => one.time_period === undefined), true);
   assert.equal(seen.every((one) => one.fs === true), true);
+});
+
+test('the earnings route refuses when the P/E is on a different period', () => {
+  // Measured against Hitachi Energy India's FY26 filing. Upstox quotes a P/E
+  // of 117.3; the filed EPS is 221.63 and the close was 31,230, so price over
+  // filed EPS is 140.91. The stated P/E implies 266.24 - a trailing twelve
+  // months containing a far stronger Q1 FY27. Multiplying it by annual net
+  // profit understates market cap by roughly what earnings grew.
+  const out = marketCapFromEarnings({
+    keyRatios: [{ name: 'P/E', company_value: '117.3' }],
+    netIncome: 987.84,
+    filedEps: 221.63,
+    price: 31230,
+  });
+  assert.equal(out.value, null);
+  assert.equal(out.reason, 'PE_PERIOD_DOES_NOT_MATCH_EARNINGS');
+  assert.equal(out.impliedEps, 266.24);
+  assert.equal(Number((out.gap * 100).toFixed(1)), 20.1);
+});
+
+test('and it proceeds when the periods do agree', () => {
+  const out = marketCapFromEarnings({
+    keyRatios: [{ name: 'P/E', company_value: '140.91' }],
+    netIncome: 987.84,
+    filedEps: 221.63,
+    price: 31230,
+  });
+  assert.equal(Math.round(out.value), 139_197);
+  assert.equal(out.reason, null);
+});
+
+test('without a filed EPS the period cannot be checked, and is not assumed to match', () => {
+  // The check is skipped rather than passed, and the caller still has the
+  // cross-check tolerance behind it.
+  const out = marketCapFromEarnings({
+    keyRatios: [{ name: 'P/E', company_value: '117.3' }], netIncome: 987.84,
+  });
+  assert.equal(Math.round(out.value), 115_874);
+  assert.equal(out.reason, null);
+});
+
+test('the 25% cross-check tolerance would not have caught the period mismatch', () => {
+  // Demonstrated, not asserted: 20.1% is inside 25%, so the earnings route
+  // would have corroborated a market cap it had no business corroborating.
+  const wrong = 117.3 * 987.84;          // P/E on TTM, profit on FY26
+  const right = 140.91 * 987.84;
+  const gap = Math.abs(wrong / right - 1);
+  assert.ok(gap < CROSS_CHECK_TOLERANCE, `${(gap * 100).toFixed(1)}% is inside the tolerance`);
 });
