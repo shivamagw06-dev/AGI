@@ -54,7 +54,9 @@
         }
       ],
       "reviewedBy": null,
-      "reviewedAt": null
+      "reviewedAt": null,
+      "attribution": "NOT_ATTRIBUTABLE",
+      "exposureAttributable": false
     },
     {
       "symbol": "ADANIENT",
@@ -91,7 +93,8 @@
       "reviewedBy": null,
       "reviewedAt": null,
       "exposureAttributable": false,
-      "exposureNote": "Admitted on a 400 MW hyperscale order and 960+ MW tied up, which is real and dated. But the FY26 annual report carries no data centre segment, and AdaniConneX is a joint venture with EdgeConneX that is equity-accounted rather than consolidated - so none of this member's reported revenue is data centre revenue, and its JV earnings are not broken out. The exposure cannot be sized from the filing. Needs an analyst decision."
+      "exposureNote": "Admitted on a 400 MW hyperscale order and 960+ MW tied up, which is real and dated. But the FY26 annual report carries no data centre segment, and AdaniConneX is a joint venture with EdgeConneX that is equity-accounted rather than consolidated - so none of this member's reported revenue is data centre revenue, and its JV earnings are not broken out. The exposure cannot be sized from the filing. Needs an analyst decision.",
+      "attribution": "NOT_ATTRIBUTABLE"
     },
     {
       "symbol": "CLEANMAX",
@@ -132,7 +135,9 @@
       ],
       "reviewedBy": null,
       "reviewedAt": null,
-      "corporateActionFY26": "Equity share sub-divided from Rs 10 to Rs 1 during FY26."
+      "corporateActionFY26": "Equity share sub-divided from Rs 10 to Rs 1 during FY26.",
+      "attribution": "MANAGEMENT_DISCLOSED",
+      "exposureAttributable": false
     },
     {
       "symbol": "ANANTRAJ",
@@ -193,7 +198,10 @@
         }
       ],
       "reviewedBy": null,
-      "reviewedAt": null
+      "reviewedAt": null,
+      "attribution": "MANAGEMENT_DISCLOSED",
+      "exposureAttributable": false,
+      "exposureNote": "Single Ind AS 108 segment, Computer Servers. Management discloses AI Systems revenue of 9,477.9 mn, 43.4% of operating revenue, in a \"Revenue by Business Segment\" table outside the audited segment note - company-disclosed and specific, not audited as a segment."
     },
     {
       "symbol": "CGPOWER",
@@ -222,7 +230,8 @@
       "reviewedAt": null,
       "exposureAttributable": true,
       "exposureNote": "Semiconductors is a reported segment in consolidated accounts. FY26 revenue 502.77 cr (4.0% of group), assets 1,421.39 cr (11.2%), capex 330.33 cr (42.5% of group capex), segment result -107.86 cr. First year of external sales; FY25 was nil.",
-      "note": ""
+      "note": "",
+      "attribution": "SEGMENT_REPORTED"
     },
     {
       "symbol": "KAYNES",
@@ -258,7 +267,8 @@
       "reviewedAt": null,
       "note": "",
       "exposureAttributable": false,
-      "exposureNote": "Admitted on committed OSAT capex, and unsizeable from the accounts. Kaynes reports a single Ind AS 108 segment, Electronics Manufacturing Services, so no share of revenue, assets or capex is attributable to semiconductors. FY26 fixed-asset purchases of 12,403.01 mn are group-wide across OSAT, PCB and the existing EMS business with no split served. Needs an analyst decision."
+      "exposureNote": "Admitted on committed OSAT capex, and unsizeable from the accounts. Kaynes reports a single Ind AS 108 segment, Electronics Manufacturing Services, so no share of revenue, assets or capex is attributable to semiconductors. FY26 fixed-asset purchases of 12,403.01 mn are group-wide across OSAT, PCB and the existing EMS business with no split served. Needs an analyst decision.",
+      "attribution": "NOT_ATTRIBUTABLE"
     }
   ],
   "candidates": [
@@ -464,7 +474,7 @@
     "corporateActions": "Available, and needed. A bonus or split halves or divides the quoted price on its ex-date, and against an unadjusted previous close the basket reads a loss that did not happen. The residual check does not catch this - the wrong member return flows into the contribution and the index return identically and they still reconcile - so the ex-dates are read ahead and the member is excluded for the day. A dividend is not flagged: the price falls by it and the holder received it, which is a real return.",
     "parameters": "balance-sheet and cash-flow take type and fs only. income-statement additionally takes time_period. share-holdings, key-ratios and corporate-actions take none.",
     "disclosedFacts": "Held in india-ai-enablers.disclosed-facts.json, provenance class THIRD_PARTY_RELAYED. Supplied in conversation citing aggregators rather than read from a primary filing by this system, so they carry a source but no document id, page or sentence. They are not served as FILED and are not in company_facts. Ingesting the annual reports either confirms or contradicts each one.",
-    "exposureAttribution": "A third dimension beside evidence and liquidity, and now measured on four members from primary filings. CGPOWER can be sized: Semiconductors is a reported Ind AS 108 segment at 4.0% of revenue, 11.2% of assets and 42.5% of group capex. ADANIENT cannot: AdaniConneX is an equity-accounted joint venture appearing in no segment. KAYNES cannot: it reports one segment, Electronics Manufacturing Services, so its OSAT capex is not separable from group capex. POWERINDIA has no AI segment either, though its admitting orders are individually sized. All were admitted on sound first-party evidence; only one of them can be attributed. Recorded per member as exposureAttributable and never used to drop a company automatically.",
+    "exposureAttribution": "A third dimension beside evidence and liquidity, in three tiers rather than two. SEGMENT_REPORTED: the theme is an audited Ind AS 108 segment, separable into revenue, result, assets and capex - CGPOWER only. MANAGEMENT_DISCLOSED: the company states a figure for the theme outside segment reporting - NETWEB's AI Systems at 43.4% of revenue, CLEANMAX's 42% of contracted capacity - specific and first-party, but unaudited as a segment and not tied to assets or capex. NOT_ATTRIBUTABLE: nothing separable - KAYNES reports one segment, ADANIENT's data centres sit in an equity-accounted joint venture, POWERINDIA has no AI line though its orders are individually sized. A binary verdict had put NETWEB beside KAYNES, which disclose very different amounts. Never used to drop a company automatically.",
     "unreadable": "Form MGT-7 for 2024-25 was supplied and could not be read: it is an image-scanned PDF with no extractable text layer, and no OCR is available in this environment. It is also the prior year. Nothing from it has been recorded.",
     "emptyLayersAreAStandard": "Checked against an independent screen of the same question, and the check is worth recording even though its figures are not. That screen used a materially lower bar for AI exposure - company mentions in news flow and management discussion, with partnerships counting as qualifying - and on that basis it placed companies in both of the sub-layers AGI reports empty. AGI had already examined those layers and refused what it found there: monomers being developed, technologies being evaluated, a capability claim with no segment split, a product-positioning slide. The same companies, judged against a different standard. So the two empty sub-layers are a finding about what Indian semiconductor materials and equipment companies currently disclose, not a gap in AGI's coverage - and that is now checked rather than assumed.",
     "taxonomyProvenance": "The three layers and nine sub-layers were derived from published third-party research at the start of this build rather than arrived at independently. Recorded because an independent screen using the same decomposition is not corroboration of it, and nobody should later read the match that way."
