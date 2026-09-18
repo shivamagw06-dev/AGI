@@ -332,6 +332,13 @@ export function computeIndex(universe, quotes, options = {}) {
     total: coverage.total,
     missing: coverage.missing,
     stale: coverage.stale,
+    // Both were meant to be on this success path and were not: the edits that
+    // added them used an unasserted string replace whose pattern did not
+    // match, so they silently changed nothing. The refusal path had them; the
+    // path that actually prices the basket did not, so a member excluded for
+    // a corporate action, or priced from last-good, went unnamed.
+    fallback: coverage.fallback,
+    priceBreak: coverage.priceBreak,
     contributions: {
       byName: byName.sort((a, b) => b.contribution_pp - a.contribution_pp),
       byLayer: [...byLayer].map(([layer, pp]) => ({ layer, contribution_pp: pp }))

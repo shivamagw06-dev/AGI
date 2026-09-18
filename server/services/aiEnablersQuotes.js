@@ -156,7 +156,9 @@ export function quoteFor(instrumentKey, { store, lastGood, now, staleMs }) {
  * expects. Everything else in the return value is about how much of it is
  * real, which the page has to show and the index has to be able to refuse on.
  */
-export function quoteBook(universe, { store, lastGood, now = Date.now(), staleMs = 60_000 } = {}) {
+export function quoteBook(universe, {
+  store, lastGood, now = Date.now(), staleMs = 60_000, priceBreaks = {},
+} = {}) {
   const { bySymbol, benchmarkKey, unresolved } = universeInstrumentKeys(universe);
   const quotes = {};
   const sources = { live: [], last_good: [], missing: [] };
@@ -171,6 +173,15 @@ export function quoteBook(universe, { store, lastGood, now = Date.now(), staleMs
     quotes[symbol] = {
       ltp: quote.ltp, previousClose: quote.previousClose, at: quote.at, source: quote.source,
     };
+    // A member trading ex-bonus, ex-split or ex-rights has a price that moved
+    // because its share count changed. The index excludes a quote carrying
+    // this flag rather than counting the move as a return; until now nothing
+    // set it, so the guard in priced() could never fire.
+    const brk = priceBreaks[symbol];
+    if (brk?.priceBreak) {
+      quotes[symbol].priceBreak = true;
+      quotes[symbol].priceBreakReason = brk.reason || 'CORPORATE_ACTION';
+    }
     sources[quote.source].push(symbol);
   }
   const benchmark = benchmarkKey

@@ -16,6 +16,10 @@
 import { SynchronizedSnapshotStore, UpstoxMarketFeedV3 } from './upstoxMarketFeedV3.js';
 import { LastGoodPrices, quoteBook, universeInstrumentKeys, volumeRatio } from './aiEnablersQuotes.js';
 import { COVERAGE_FLOOR, computeIndex, STALE_MS } from './aiEnablersIndex.js';
+import { actionsNear } from './aiEnablersStatements.js';
+
+/** The IST calendar date of an instant, so a refresh follows the exchange day. */
+const istDate = (ms) => new Date(ms + 330 * 60_000).toISOString().slice(0, 10);
 
 /** One snapshot a minute, kept for a trading day. */
 export const SNAPSHOT_INTERVAL_MS = 60_000;
@@ -68,6 +72,25 @@ export function snapshotFrom(universe, book, { now = Date.now(), volumeBaselines
   };
 }
 
+/**
+ * Which members the corporate-action guard is and is not covering.
+ *
+ * Attached by the runtime, which is where that state lives. Kept out of
+ * snapshotFrom's signature so a caller recomputing from a bare book does not
+ * have to invent it.
+ */
+function withCorporateActions(snapshot, runtime) {
+  const flagged = Object.entries(runtime.priceBreaks || {})
+    .filter(([, one]) => one?.priceBreak)
+    .map(([symbol, one]) => ({ symbol, reason: one.reason, actions: one.actions }));
+  snapshot.corporateActions = {
+    readFor: runtime.corporateActionsDate,
+    excluded: flagged,
+    unread: runtime.corporateActionsErrors || [],
+  };
+  return snapshot;
+}
+
 export class AiEnablersLiveRuntime {
   constructor({
     universe,
@@ -79,6 +102,7 @@ export class AiEnablersLiveRuntime {
     retention = SNAPSHOT_RETENTION,
     volumeBaselines = {},
     feedFactory = (options) => new UpstoxMarketFeedV3(options),
+    fetchCorporateActions = null,
     now = () => Date.now(),
   } = {}) {
     this.universe = universe;
@@ -90,11 +114,66 @@ export class AiEnablersLiveRuntime {
     this.retention = retention;
     this.volumeBaselines = volumeBaselines;
     this.feedFactory = feedFactory;
+    this.fetchCorporateActions = fetchCorporateActions;
     this.now = now;
+    // Per-symbol corporate-action state, and the exchange day it was read for.
+    this.priceBreaks = {};
+    this.corporateActionsDate = null;
+    this.corporateActionsErrors = [];
     this.feed = null;
     this.timer = null;
     this.snapshots = [];
     this.resolved = universeInstrumentKeys(universe);
+  }
+
+  /**
+   * Read each member's corporate actions and flag any near its ex-date.
+   *
+   * The index has excluded a quote marked priceBreak since the guard was
+   * written, and until now nothing marked one: a one-for-one bonus against an
+   * unadjusted previous close would have printed a fifty per cent loss and
+   * reconciled at every level. This is what sets the flag.
+   *
+   * A member whose actions cannot be read is recorded as such rather than
+   * treated as clear. Silence about a corporate action is not evidence that
+   * there is none, and the page should be able to say which members the
+   * guard is not covering.
+   */
+  async refreshCorporateActions() {
+    if (!this.fetchCorporateActions) return { refreshed: false, reason: 'no corporate-actions source' };
+    const now = this.now();
+    const members = (this.universe?.members || []).filter((one) => one.admitted !== false);
+    const next = {};
+    const errors = [];
+    for (const member of members) {
+      if (!member.isin) {
+        errors.push({ symbol: member.symbol, error: 'NO_ISIN' });
+        continue;
+      }
+      try {
+        const payload = await this.fetchCorporateActions(member.isin);
+        const near = actionsNear(payload, { now });
+        next[member.symbol] = near;
+      } catch (error) {
+        errors.push({ symbol: member.symbol, error: String(error?.message || error) });
+      }
+    }
+    this.priceBreaks = next;
+    this.corporateActionsErrors = errors;
+    this.corporateActionsDate = istDate(now);
+    return { refreshed: true, date: this.corporateActionsDate, errors };
+  }
+
+  /** Re-read corporate actions once per exchange day, not once per process. */
+  async #refreshIfNewDay() {
+    if (!this.fetchCorporateActions) return;
+    if (this.corporateActionsDate === istDate(this.now())) return;
+    try {
+      await this.refreshCorporateActions();
+    } catch {
+      // Recorded per member inside refreshCorporateActions; a whole-refresh
+      // failure leaves the previous day's state rather than clearing it.
+    }
   }
 
   /** The current basket, computed fresh. Safe to call at any cadence. */
@@ -102,20 +181,23 @@ export class AiEnablersLiveRuntime {
     const now = this.now();
     const book = quoteBook(this.universe, {
       store: this.store, lastGood: this.lastGood, now, staleMs: this.staleMs,
+      priceBreaks: this.priceBreaks,
     });
     book.volumes = Object.fromEntries(
       this.resolved.keys.map((key) => [key, this.store.get(key)?.cumulative_volume ?? null]),
     );
-    return snapshotFrom(this.universe, book, {
+    return withCorporateActions(snapshotFrom(this.universe, book, {
       now,
       coverageFloor: this.coverageFloor,
       staleMs: this.staleMs,
       volumeBaselines: this.volumeBaselines,
-    });
+    }), this);
   }
 
   /** Take one snapshot and retain it. Returns the snapshot. */
   tick() {
+    // Fire-and-forget: a slow corporate-actions read must not delay a tick.
+    this.#refreshIfNewDay();
     const snapshot = this.current();
     this.snapshots.push(snapshot);
     if (this.snapshots.length > this.retention) {
@@ -139,6 +221,7 @@ export class AiEnablersLiveRuntime {
       snapshotStore: this.store,
     });
     await this.feed.start();
+    await this.#refreshIfNewDay();
     this.timer = setInterval(() => this.tick(), this.snapshotIntervalMs);
     if (this.timer.unref) this.timer.unref();
     return this.status();

@@ -165,3 +165,106 @@ test('snapshotFrom needs no runtime, so the page can recompute from a book', () 
   assert.equal(snapshot.index.return_pp, 0);
   assert.equal(snapshot.index.relative.excess_pp, -1);
 });
+
+/* ── the corporate-action guard, wired end to end ───────────────────── */
+
+/** Upstox corporate-actions payload, in the documented shape. */
+const actions = (name, expiryDate, extra = {}) => ({
+  status: 'success',
+  data: [{ name, expiry_date: expiryDate, amount: null, ratio: null, event_details: [], ...extra }],
+});
+
+const TODAY = '18 Sep 2026';
+const NOW_EX = Date.parse('2026-09-18T06:52:30Z');
+
+const CA_UNIVERSE = {
+  benchmarkKey: 'NSE_INDEX|Nifty 50',
+  members: [
+    { symbol: 'AAA', isin: 'INE000A01001', instrumentKey: 'NSE_EQ|INE000A01001', layer: 'power', subLayers: ['equipment'] },
+    { symbol: 'BBB', isin: 'INE000A01002', instrumentKey: 'NSE_EQ|INE000A01002', layer: 'data_centre', subLayers: ['hardware'] },
+  ],
+};
+
+// BBB halves on a one-for-one bonus: 100 -> 50 against an unadjusted close.
+const exStore = storeOf({
+  'NSE_EQ|INE000A01001': tick(110, 100, NOW_EX - 1_000),
+  'NSE_EQ|INE000A01002': tick(50, 100, NOW_EX - 1_000),
+  'NSE_INDEX|Nifty 50': tick(25_250, 25_000, NOW_EX - 1_000),
+});
+
+test('a member on its bonus ex-date is excluded, not counted as a 50% loss', async () => {
+  // The whole reason this exists. Before it was wired the index held a guard
+  // for priceBreak that nothing ever set, so this basket would have printed
+  // -20pp - (+10 - 50) / 2 - and reconciled perfectly at every level.
+  const runtime = new AiEnablersLiveRuntime({
+    universe: CA_UNIVERSE, store: exStore, lastGood: new LastGoodPrices(), now: () => NOW_EX,
+    coverageFloor: 0.5,
+    fetchCorporateActions: async (isin) => (isin === 'INE000A01002'
+      ? actions('Bonus', TODAY, { ratio: '1:1' })
+      : actions('Dividend', '01 Jan 2020')),
+  });
+  await runtime.refreshCorporateActions();
+  const snapshot = runtime.current();
+
+  assert.equal(snapshot.status, 'ok');
+  assert.equal(snapshot.index.return_pp, 10, 'only the clean member should count');
+  assert.deepEqual(snapshot.index.priceBreak.map((one) => one.symbol), ['BBB']);
+  assert.deepEqual(snapshot.corporateActions.excluded.map((one) => one.symbol), ['BBB']);
+});
+
+test('without the guard wired, the same basket prints the fabricated loss', async () => {
+  // Demonstrated, not asserted in prose: no corporate-actions source means no
+  // flag, and the bonus reads as a real -50% that drags the basket to -20pp.
+  const runtime = new AiEnablersLiveRuntime({
+    universe: CA_UNIVERSE, store: exStore, lastGood: new LastGoodPrices(), now: () => NOW_EX,
+  });
+  const snapshot = runtime.current();
+  assert.equal(snapshot.index.return_pp, -20);
+  assert.equal(snapshot.index.residual_ok, true, 'and it reconciles, which is why it is dangerous');
+});
+
+test('a dividend on its ex-date does not exclude the member', async () => {
+  // The price falls by the dividend and the holder received it. That is a
+  // real return, and excluding it would drop a member for nothing.
+  const runtime = new AiEnablersLiveRuntime({
+    universe: CA_UNIVERSE, store: exStore, lastGood: new LastGoodPrices(), now: () => NOW_EX,
+    fetchCorporateActions: async () => actions('Dividend', TODAY, { amount: 5.5 }),
+  });
+  await runtime.refreshCorporateActions();
+  assert.deepEqual(runtime.current().corporateActions.excluded, []);
+});
+
+test('a member whose actions cannot be read is named, not assumed clear', async () => {
+  // Silence about a corporate action is not evidence there is none.
+  const runtime = new AiEnablersLiveRuntime({
+    universe: CA_UNIVERSE, store: exStore, lastGood: new LastGoodPrices(), now: () => NOW_EX,
+    fetchCorporateActions: async (isin) => {
+      if (isin === 'INE000A01002') throw new Error('Upstox HTTP 429');
+      return actions('Dividend', '01 Jan 2020');
+    },
+  });
+  const result = await runtime.refreshCorporateActions();
+  assert.deepEqual(result.errors, [{ symbol: 'BBB', error: 'Upstox HTTP 429' }]);
+  assert.deepEqual(runtime.current().corporateActions.unread.map((one) => one.symbol), ['BBB']);
+});
+
+test('corporate actions are read once per exchange day, not on every tick', async () => {
+  let reads = 0;
+  let clock = NOW_EX;
+  const runtime = new AiEnablersLiveRuntime({
+    universe: CA_UNIVERSE, store: exStore, lastGood: new LastGoodPrices(), now: () => clock,
+    fetchCorporateActions: async () => { reads += 1; return actions('Dividend', '01 Jan 2020'); },
+  });
+  await runtime.refreshCorporateActions();
+  const afterFirst = reads;
+  runtime.tick(); runtime.tick(); runtime.tick();
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.equal(reads, afterFirst, 'same exchange day, no re-read');
+
+  // The next exchange day re-reads - an ex-date tomorrow matters to a
+  // process that is still running tomorrow.
+  clock = Date.parse('2026-09-19T06:00:00Z');
+  runtime.tick();
+  await new Promise((resolve) => setTimeout(resolve, 10));
+  assert.ok(reads > afterFirst, 'a new exchange day must re-read');
+});
