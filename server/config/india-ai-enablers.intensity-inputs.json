@@ -110,16 +110,16 @@
         "source": "Trendlyne structured data: Operating Rev. Ann. (FY26), Total Rev. Ann. (FY26), Rev. Ann. 3Y ago (FY23, total revenue)"
       },
       "capex": {
-        "FY26": null,
-        "FY25": null,
-        "basis": null,
-        "source": null,
-        "excerpt": null,
-        "note": "FY26 annual report not in the index."
+        "FY26": 11.98,
+        "FY25": 25.48,
+        "basis": "standalone",
+        "source": "Annual Report 2025-26, Statement of Cash Flows (p.196; Rs million in source)",
+        "excerpt": "Purchase of property, plant and equipments and intangible assets | (119.79) | (254.75)",
+        "note": "Rs million in source. PP&E and intangibles in one line. R&D is one stated total 'including capex' (Directors' Report, p.99), so it overlaps the capex line."
       },
       "rnd": {
-        "FY26": null,
-        "FY25": null
+        "FY26": 13.14,
+        "FY25": 10.02
       }
     },
     {
@@ -396,16 +396,16 @@
         "source": "Trendlyne structured data: Operating Rev. Ann. (FY26), Total Rev. Ann. (FY26), Rev. Ann. 3Y ago (FY23, total revenue)"
       },
       "capex": {
-        "FY26": null,
-        "FY25": null,
-        "basis": null,
-        "source": null,
-        "excerpt": null,
-        "note": "FY26 annual report not in the index; results-filing cash flow columns too garbled to use."
+        "FY26": 230.18,
+        "FY25": 230.17,
+        "basis": "consolidated",
+        "source": "Annual Report 2025-26, Consolidated Statement of Cash Flow (p.298)",
+        "excerpt": "Payments for property, plant and equipment including CWIP & capital advances | (230.18) | (230.17)",
+        "note": "PP&E only; intangibles are a separate line (115.13 / 179.03), not added. R&D is standalone (Directors' Report p.113: capital 80.63 + recurring 1.71)."
       },
       "rnd": {
-        "FY26": null,
-        "FY25": null
+        "FY26": 82.34,
+        "FY25": 177.44
       }
     },
     {
@@ -503,15 +503,17 @@
         "FY26": 1910.1,
         "FY26_total": 1918.1,
         "FY23_total": null,
-        "source": "Trendlyne structured data: Operating Rev. Ann. (FY26), Total Rev. Ann. (FY26), Rev. Ann. 3Y ago (FY23, total revenue)"
+        "FY23_total_filed": 15.72,
+        "FY23_excluded": "FY23 total income was Rs 15.72 crore because operations had just restarted after the NCLT resolution; a three-year growth rate from that base measures the restart, not growth, so the test is not run.",
+        "source": "Annual Report 2025-26, consolidated P&L (p.219; Rs lakh in source); FY23 from the FY2023-24 annual report, standalone P&L (p.111), confirmed by the FY2022-23 report"
       },
       "capex": {
-        "FY26": null,
-        "FY25": null,
-        "basis": null,
-        "source": null,
-        "excerpt": null,
-        "note": "Investing section of the cash flow never retrieved."
+        "FY26": 81.22,
+        "FY25": 67.67,
+        "basis": "consolidated",
+        "source": "Annual Report 2025-26, Consolidated Cash Flow Statement (p.220; Rs lakh in source)",
+        "excerpt": "Purchase of Fixed Assets | (8,122.20) | (6,767.36)",
+        "note": "Rs lakh in source. R&D: an NABL-approved high-voltage lab is described but no amount is disclosed."
       },
       "rnd": {
         "FY26": null,
@@ -779,35 +781,47 @@
     {
       "symbol": "ABB",
       "kind": "member",
+      "periodNote": "Calendar-year reporter: CY2025 in the FY26 slots, CY2024 in FY25, CY2022 in FY23.",
       "revenue": {
-        "FY26": null,
-        "FY23": null
+        "FY26": 13202.73,
+        "FY26_total": 13555.09,
+        "FY23_total": 8747.0,
+        "source": "Integrated Annual Report 2025, consolidated P&L (PDF p.288); CY2022 from the 2022 annual report, standalone P&L, continuing operations (PDF p.182; no subsidiary then)"
       },
       "capex": {
-        "FY26": null,
-        "FY25": null
+        "FY26": 239.95,
+        "FY25": 213.95,
+        "basis": "consolidated",
+        "source": "Integrated Annual Report 2025, consolidated cash flow (PDF p.289)",
+        "excerpt": "Purchase of property, plant and equipment | (239.95) | (213.95)",
+        "note": "R&D is pooled at ABB Group level and no amount is disclosed; royalty and technology fees (430.92 cr) are a licence payment, not R&D, and are not used."
       },
       "rnd": {
-        "FY26": null
-      },
-      "excluded": "Calendar-year reporter; no FY23-equivalent revenue or annual capex retrieved."
+        "FY26": null,
+        "FY25": null
+      }
     },
     {
       "symbol": "ADANIGREEN",
       "kind": "member",
       "revenue": {
-        "FY26": null,
-        "FY26_total": null,
-        "FY23_total": null
+        "FY26": 12928,
+        "FY26_total": 13819,
+        "FY23_total": 8633,
+        "source": "Integrated Annual Report FY2025-26, consolidated P&L (PDF p.253); FY23 from the FY2022-23 annual report as originally reported (restated to 8,617 in FY24)"
       },
       "capex": {
-        "FY26": null,
-        "FY25": null
+        "FY26": 26097,
+        "FY25": 24776,
+        "basis": "consolidated",
+        "source": "Integrated Annual Report FY2025-26, consolidated cash flow (PDF p.255)",
+        "excerpt": "Payment made for acquisition of Property, Plant and Equipment and Intangible assets (including for capital advances, capital work in progress and capital creditors) | (26,097) | (24,776)",
+        "note": "Line includes intangibles, capital advances, CWIP and capital creditors. R&D stated 'Not applicable': recorded as 0."
       },
       "rnd": {
-        "FY26": null
-      },
-      "excluded": "Admitted after the stage 3 inputs were collected; figures not yet read."
+        "FY26": 0,
+        "FY25": null
+      }
     }
   ]
 }
