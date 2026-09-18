@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  PacedLimiter, parseEquityList, publicRow, renominate, runUniversePass, summariseUniversePass,
+  PacedLimiter, parseEquityList, publicRow, referenceQualifiers, renominate, runUniversePass, summariseUniversePass,
 } from './aiEnablersUniversePass.js';
 
 const CSV = [
@@ -229,4 +229,12 @@ test('the summary counts reading tiers and boards', async () => {
   const summary = summariseUniversePass([...rows, { ...rows[1], symbol: 'SMEX', board: 'sme' }]);
   assert.deepEqual(summary.byTier, { 1: 1, 2: 0, 3: 0 });
   assert.deepEqual(summary.byBoard, { main: { listed: 5, nominated: 1 }, sme: { listed: 1, nominated: 0 } });
+});
+
+test('a candidate outside the universe by decision is not a recall miss', () => {
+  const reference = referenceQualifiers({
+    members: [{ symbol: 'AAA' }],
+    candidates: [{ symbol: 'BBB' }, { symbol: 'ESDS', outOfUniverse: 'NOT_ON_NSE_LISTS' }],
+  });
+  assert.deepEqual(reference, [{ symbol: 'AAA', kind: 'member' }, { symbol: 'BBB', kind: 'candidate' }]);
 });

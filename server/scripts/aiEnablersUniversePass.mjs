@@ -29,8 +29,8 @@ import { fileURLToPath } from 'node:url';
 import { getFundamentals, isUpstoxConfigured } from '../providers/upstox.js';
 import { createSupabaseAdmin } from '../lib/supabaseAdmin.js';
 import {
-  PacedLimiter, parseEquityList, readUniversePass, renominate, runUniversePass, summariseUniversePass,
-  UNIVERSE_PASS_TABLE,
+  PacedLimiter, parseEquityList, readUniversePass, referenceQualifiers, renominate, runUniversePass,
+  summariseUniversePass, UNIVERSE_PASS_TABLE,
 } from '../services/aiEnablersUniversePass.js';
 
 const EQUITY_LIST = fileURLToPath(new URL('../../EQUITY_L.csv', import.meta.url));
@@ -71,10 +71,7 @@ async function main() {
   const companies = [...main, ...sme.filter((one) => !onMain.has(one.symbol))];
   console.log(`lists: ${main.length} main board, ${sme.length} SME${existsSync(SME_LIST) ? '' : ' (SME_EQUITY_L.csv not found)'}`);
   const universe = JSON.parse(await readFile(UNIVERSE, 'utf8'));
-  const reference = [
-    ...(universe.members || []).map((one) => ({ symbol: one.symbol, kind: 'member' })),
-    ...(universe.candidates || []).map((one) => ({ symbol: one.symbol, kind: 'candidate' })),
-  ];
+  const reference = referenceQualifiers(universe);
 
   if (process.argv.includes('--renominate')) {
     const changed = renominate(await readUniversePass(db, runId));

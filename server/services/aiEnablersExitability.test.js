@@ -113,3 +113,62 @@ test('the policy travels with the result, so the number can be argued with', () 
     targetPosition: 50 * CR, exitDays: 3, maxParticipation: 0.2, excludeBelow: null,
   });
 });
+
+/* ── sizing the universe from candles ─────────────────────────────────── */
+
+import { exitabilityForUniverse } from './aiEnablersExitability.js';
+
+// Upstox daily candles, newest first as served: [ts, o, h, l, close, volume, oi].
+const daily = (closes, volumes) => ({
+  data: {
+    candles: closes.map((close, i) => [
+      new Date(Date.UTC(2026, 8, 17) - i * 86_400_000).toISOString(), close, close, close, close, volumes[i], 0,
+    ]),
+  },
+});
+
+const universe = (policy) => ({
+  thresholds: { targetPosition: 100 * CR, exitDays: 3, maxParticipation: 0.2, ...policy },
+  members: [
+    { symbol: 'DEEP', instrumentKey: 'NSE_EQ|INE000A01001' },
+    { symbol: 'THIN', instrumentKey: 'NSE_EQ|INE000A01002' },
+    { symbol: 'NOKEY', instrumentKey: '' },
+  ],
+});
+
+test('members are sized against the universe policy, and a thin one stays in with a smaller size', async () => {
+  const candles = {
+    // Rs 1 per share x 400 crore shares = Rs 400 crore a day.
+    'NSE_EQ|INE000A01001': daily(Array(60).fill(1), Array(60).fill(400 * CR)),
+    // Rs 100 crore a day: carries Rs 60 crore at 3 days x 20%.
+    'NSE_EQ|INE000A01002': daily(Array(60).fill(1), Array(60).fill(100 * CR)),
+  };
+  const result = await exitabilityForUniverse(universe(), { fetchCandles: async (key) => candles[key] });
+  assert.equal(Number((result.minimumAdvtForTarget / CR).toFixed(2)), 166.67);
+  const bySymbol = Object.fromEntries(result.sized.map((one) => [one.symbol, one]));
+  assert.equal(bySymbol.DEEP.meetsTarget, true);
+  assert.equal(bySymbol.THIN.meetsTarget, false);
+  assert.equal(bySymbol.THIN.maxExecutablePosition / CR, 60);
+  assert.deepEqual(result.belowTarget, ['THIN']);
+  assert.deepEqual(result.failures, [{ symbol: 'NOKEY', error: 'MALFORMED_INSTRUMENT_KEY' }]);
+});
+
+test('the twenty-day window is the latest twenty sessions, not the oldest', async () => {
+  // Newest 20 sessions quiet (Rs 10 crore), older 40 busy (Rs 500 crore).
+  // Read the wrong way round, the short window would be the busy sessions.
+  const volumes = [...Array(20).fill(10 * CR), ...Array(40).fill(500 * CR)];
+  const result = await exitabilityForUniverse(
+    { ...universe(), members: [universe().members[0]] },
+    { fetchCandles: async () => daily(Array(60).fill(1), volumes) },
+  );
+  assert.equal(result.windows.DEEP.short / CR, 10);
+  assert.equal(result.sized[0].normalAdvt / CR, 10);
+});
+
+test('with no target set, nothing is called below target', async () => {
+  const result = await exitabilityForUniverse(universe({ targetPosition: null }), {
+    fetchCandles: async () => daily(Array(60).fill(1), Array(60).fill(10 * CR)),
+  });
+  assert.deepEqual(result.belowTarget, []);
+  assert.ok(result.sized.every((one) => one.meetsTarget === null));
+});
