@@ -59,6 +59,18 @@ const upDown = (v) => {
   return n > 0 ? 'text-[#4ade80]' : 'text-[#f87171]';
 };
 
+/** HH:MM IST from an ISO instant. */
+const istTime = (iso) => (iso
+  ? new Date(iso).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Asia/Kolkata' })
+  : '—');
+
+/**
+ * The basket after the close is priced at each member's last trade, which is
+ * the latest price there is but is not NSE's official close. Every panel that
+ * says "today" or "live" says this instead when it applies.
+ */
+const atLastTrade = (live) => Boolean(live?.quality?.closed && live?.quality?.session_last);
+
 /** IST, because the exchange this page is about runs on it. */
 function useIstClock() {
   const [now, setNow] = React.useState(() => new Date());
@@ -85,6 +97,7 @@ function StatusStrip({ universe, live }) {
   const filings = members.reduce((sum, one) => sum + (one.admittedOn?.length || 0), 0);
   const filled = new Set(members.flatMap((m) => (m.subLayers || []).map((sl) => `${m.layer}/${sl}`)));
   const priced = live?.index?.status === 'ok';
+  const lastTrade = priced && atLastTrade(live);
   const items = [
     [String(members.length), 'admitted'],
     [String(universe?.candidates?.length || 0), 'refused'],
@@ -96,16 +109,18 @@ function StatusStrip({ universe, live }) {
       {items.map(([value, label], i) => (
         <React.Fragment key={label}>
           {i > 0 ? <span className="text-[#2c3542]" aria-hidden>·</span> : null}
-          <span className="text-[13px] text-[#8b95a3]">
+          <span className="text-[15px] text-[#8b95a3]">
             <span className="font-semibold tabular-nums text-[#e3e8ef]">{value}</span> {label}
           </span>
         </React.Fragment>
       ))}
       <span className="text-[#2c3542]" aria-hidden>·</span>
-      <span className="flex items-center gap-1.5 text-[13px]">
-        <span className={`h-1.5 w-1.5 rounded-full ${priced ? 'bg-[#4ade80]' : 'bg-[#4b5563]'}`} />
-        <span className={priced ? 'text-[#4ade80]' : 'text-[#8b95a3]'}>
-          {priced ? 'Live pricing active' : 'Live pricing pending'}
+      <span className="flex items-center gap-1.5 text-[15px]">
+        <span className={`h-1.5 w-1.5 rounded-full ${lastTrade ? 'bg-[#8fb4d8]' : priced ? 'bg-[#4ade80]' : 'bg-[#4b5563]'}`} />
+        <span className={lastTrade ? 'text-[#8fb4d8]' : priced ? 'text-[#4ade80]' : 'text-[#8b95a3]'}>
+          {lastTrade
+            ? `NSE closed · last trade prices, ${istTime(live.quality.last_trade_at)} IST`
+            : priced ? 'Live pricing active' : 'Live pricing pending'}
         </span>
       </span>
     </div>
@@ -132,13 +147,13 @@ const SECTIONS = [
 
 function SectionNav() {
   return (
-    <nav aria-label="Sections" className="sticky top-[46px] z-20 -mx-4 mb-3 border-b border-[#1a2230] bg-[#080b11]/95 px-4 py-2 backdrop-blur">
+    <nav aria-label="Sections" className="sticky top-[51px] z-20 -mx-4 mb-3 border-b border-[#1a2230] bg-[#080b11]/95 px-4 py-2 sm:-mx-6 sm:px-6 backdrop-blur">
       <ul className="flex flex-wrap gap-x-4 gap-y-1">
         {SECTIONS.map(([id, label]) => (
           <li key={id}>
             <a
               href={`#${id}`}
-              className="rounded text-[12px] text-[#8b95a3] hover:text-[#e3e8ef] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e8833a]"
+              className="rounded text-[14px] text-[#8b95a3] hover:text-[#e3e8ef] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e8833a]"
             >
               {label}
             </a>
@@ -153,9 +168,9 @@ function Panel({ id, title, note, action, children, className = '' }) {
   return (
     <section id={id} className={`rounded-md border border-[#1e2634] bg-[#0c1017] ${className}`}>
       <header className="flex items-baseline gap-2 border-b border-[#1a2230] px-3.5 py-2.5">
-        <h3 className="text-[13px] font-semibold tracking-tight text-[#f1f5f9]">{title}</h3>
-        {note ? <span className="text-[11px] text-[#7d8894]">{note}</span> : null}
-        {action ? <span className="ml-auto text-[11px] text-[#8fb4d8]">{action}</span> : null}
+        <h3 className="text-[15px] font-semibold tracking-tight text-[#f1f5f9]">{title}</h3>
+        {note ? <span className="text-[13px] text-[#7d8894]">{note}</span> : null}
+        {action ? <span className="ml-auto text-[13px] text-[#8fb4d8]">{action}</span> : null}
       </header>
       <div className="p-3.5">{children}</div>
     </section>
@@ -171,9 +186,9 @@ function Panel({ id, title, note, action, children, className = '' }) {
 function Needed({ what, source }) {
   return (
     <div className="flex min-h-[86px] flex-col justify-center gap-1.5 rounded border border-dashed border-[#26303f] px-3 py-3">
-      <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#b38b4d]">Source not connected</p>
-      <p className="text-[11px] leading-relaxed text-[#8b95a3]">{what}</p>
-      <p className="text-[11px] text-[#7d8894]">Needs: {source}</p>
+      <p className="text-[12px] font-semibold uppercase tracking-[0.14em] text-[#b38b4d]">Source not connected</p>
+      <p className="text-[13px] leading-relaxed text-[#8b95a3]">{what}</p>
+      <p className="text-[13px] text-[#7d8894]">Needs: {source}</p>
     </div>
   );
 }
@@ -187,7 +202,7 @@ const Badge = ({ children, tone = 'neutral' }) => {
     red: 'bg-[#3a1a1a] text-[#f87171]',
   };
   return (
-    <span className={`rounded px-1.5 py-[2px] text-[9px] font-semibold uppercase tracking-wide ${tones[tone]}`}>
+    <span className={`rounded px-1.5 py-[2px] text-[11px] font-semibold uppercase tracking-wide ${tones[tone]}`}>
       {children}
     </span>
   );
@@ -221,15 +236,15 @@ function IndexedChart({ snapshots }) {
   if (points.length < 2) {
     return (
       <div className="flex min-h-[210px] flex-col items-start justify-center gap-2 px-4">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#7d8894]">
+        <p className="text-[13px] font-semibold uppercase tracking-[0.14em] text-[#7d8894]">
           Index history starts here
         </p>
-        <p className="max-w-lg text-[12px] leading-relaxed text-[#8b95a3]">
+        <p className="max-w-lg text-[14px] leading-relaxed text-[#8b95a3]">
           This basket was admitted on filings published in September 2026. Running the line
           back through 2023 would price it on evidence that did not exist at the time, so
           there is no history before the first snapshot and none will be manufactured.
         </p>
-        <p className="text-[11px] text-[#68727f]">
+        <p className="text-[13px] text-[#68727f]">
           {points.length === 0
             ? (nseOpen()
               ? 'No priced snapshots yet. The service has just restarted; it is rebuilding the session from 1-minute candles.'
@@ -242,7 +257,7 @@ function IndexedChart({ snapshots }) {
 
   const W = 640;
   const H = 210;
-  const pad = { l: 34, r: 46, t: 12, b: 22 };
+  const pad = { l: 38, r: 56, t: 12, b: 24 };
   const values = points.flatMap((one) => [one.basket, one.benchmark]).filter((one) => one !== null);
   const lo = Math.min(...values, 0);
   const hi = Math.max(...values, 0);
@@ -264,7 +279,7 @@ function IndexedChart({ snapshots }) {
     <>
     <svg viewBox={`0 0 ${W} ${H}`} className="w-full" role="img" aria-label="AI Enablers against Nifty 50, indexed from the first snapshot">
       <line x1={pad.l} x2={W - pad.r} y1={y(0)} y2={y(0)} stroke="#1e2634" strokeWidth="1" />
-      <text x={pad.l - 6} y={y(0) + 3} textAnchor="end" fill="#68727f" fontSize="8">0%</text>
+      <text x={pad.l - 6} y={y(0) + 3} textAnchor="end" fill="#68727f" fontSize="10">0%</text>
       {rebuiltCount > 0 ? (
         <rect
           x={pad.l}
@@ -287,23 +302,23 @@ function IndexedChart({ snapshots }) {
       ) : null}
       <path d={path('basket')} fill="none" stroke="#e8833a" strokeWidth="1.8" />
       <path d={path('benchmark')} fill="none" stroke="#5aa2e0" strokeWidth="1.4" />
-      <text x={W - pad.r + 4} y={y(last.basket) + 3} fill="#e8833a" fontSize="9" fontWeight="600">
+      <text x={W - pad.r + 4} y={y(last.basket) + 3} fill="#e8833a" fontSize="11" fontWeight="600">
         {pp(last.basket)}
       </text>
       {last.benchmark !== null ? (
-        <text x={W - pad.r + 4} y={y(last.benchmark) + 3} fill="#5aa2e0" fontSize="9" fontWeight="600">
+        <text x={W - pad.r + 4} y={y(last.benchmark) + 3} fill="#5aa2e0" fontSize="11" fontWeight="600">
           {pp(last.benchmark)}
         </text>
       ) : null}
-      <text x={pad.l} y={H - 6} fill="#68727f" fontSize="8">
+      <text x={pad.l} y={H - 6} fill="#68727f" fontSize="10">
         {new Date(points[0].at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata' })}
       </text>
-      <text x={W - pad.r} y={H - 6} textAnchor="end" fill="#68727f" fontSize="8">
+      <text x={W - pad.r} y={H - 6} textAnchor="end" fill="#68727f" fontSize="10">
         {new Date(last.at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata' })}
       </text>
     </svg>
     {rebuiltCount > 0 ? (
-      <p className="mt-1 px-1 text-[10px] text-[#68727f]">
+      <p className="mt-1 px-1 text-[12px] text-[#68727f]">
         {rebuiltCount === points.length
           ? `Whole line rebuilt from Upstox 1-minute candles after a restart, to ${clock(last.at)} IST.`
           : `Shaded part (to ${clock(points[rebuiltCount - 1].at)} IST) rebuilt from Upstox 1-minute candles after a restart; live feed from ${clock(points[rebuiltCount].at)}.`}
@@ -333,7 +348,7 @@ function SinceAdmission({ history }) {
       action={points.length > 1 ? `${points.length - 1} session${points.length === 2 ? '' : 's'}` : null}
     >
       {points.length < 2 ? (
-        <p className="text-[11px] leading-relaxed text-[#8b95a3]">
+        <p className="text-[13px] leading-relaxed text-[#8b95a3]">
           {history?.base
             ? `The series starts at the close on ${fmtDate(history.base)}, the first admission date, and gains one point each trading day after that. `
             : 'Loading the series. '}
@@ -343,16 +358,16 @@ function SinceAdmission({ history }) {
         <>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <p className="text-[10px] uppercase tracking-wider text-[#7d8894]">AI Enablers</p>
-              <p className="mt-0.5 font-mono text-[17px] font-semibold tabular-nums text-[#e8833a]">{change(last.basket)}</p>
+              <p className="text-[12px] uppercase tracking-wider text-[#7d8894]">AI Enablers</p>
+              <p className="mt-0.5 font-mono text-[19px] font-semibold tabular-nums text-[#e8833a]">{change(last.basket)}</p>
             </div>
             <div>
-              <p className="text-[10px] uppercase tracking-wider text-[#7d8894]">Nifty 50</p>
-              <p className="mt-0.5 font-mono text-[17px] font-semibold tabular-nums text-[#5aa2e0]">{change(last.benchmark)}</p>
+              <p className="text-[12px] uppercase tracking-wider text-[#7d8894]">Nifty 50</p>
+              <p className="mt-0.5 font-mono text-[19px] font-semibold tabular-nums text-[#5aa2e0]">{change(last.benchmark)}</p>
             </div>
           </div>
           <SessionLine points={points} />
-          <p className="mt-1 text-[10px] text-[#68727f]">
+          <p className="mt-1 text-[12px] text-[#68727f]">
             From the close on {fmtDate(history.base)} to {fmtDate(last.date)}. {last.members} members in the last session
             {last.missing?.length ? `; no close for ${last.missing.join(', ')}` : ''}
             {last.excluded?.length ? `; ${last.excluded.join(', ')} left out on a corporate-action ex-date` : ''}.
@@ -366,7 +381,7 @@ function SinceAdmission({ history }) {
 function SessionLine({ points }) {
   const W = 640;
   const H = 150;
-  const pad = { l: 34, r: 12, t: 10, b: 20 };
+  const pad = { l: 38, r: 12, t: 10, b: 22 };
   const values = points.flatMap((one) => [one.basket, one.benchmark]);
   const lo = Math.min(...values, 100);
   const hi = Math.max(...values, 100);
@@ -377,7 +392,7 @@ function SessionLine({ points }) {
   return (
     <svg viewBox={`0 0 ${W} ${H}`} className="mt-2 w-full" role="img" aria-label="AI Enablers basket against Nifty 50 since admission, indexed to 100">
       <line x1={pad.l} x2={W - pad.r} y1={y(100)} y2={y(100)} stroke="#1e2634" />
-      <text x={pad.l - 6} y={y(100) + 3} textAnchor="end" fill="#68727f" fontSize="9">100</text>
+      <text x={pad.l - 6} y={y(100) + 3} textAnchor="end" fill="#68727f" fontSize="11">100</text>
       <path d={path('benchmark')} fill="none" stroke="#5aa2e0" strokeWidth="1.4" />
       <path d={path('basket')} fill="none" stroke="#e8833a" strokeWidth="1.8" />
       {points.map((one, i) => (
@@ -413,12 +428,12 @@ function ExecutiveSummary({ universe }) {
   ];
   return (
     <div className="rounded-md border border-[#1e2634] bg-[#0c1017] p-4">
-      <p className="mb-3 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#68727f]">Executive summary</p>
+      <p className="mb-3 text-[12px] font-semibold uppercase tracking-[0.18em] text-[#68727f]">Executive summary</p>
       <div className="grid gap-x-6 gap-y-3 sm:grid-cols-2 lg:grid-cols-3">
         {items.map((one) => (
           <div key={one.k} className="border-l-2 border-[#2c3542] pl-3">
-            <p className="text-[11px] font-semibold text-[#e3e8ef]">{one.k}</p>
-            <p className="mt-1 text-[11px] leading-relaxed text-[#8b95a3]">{one.v}</p>
+            <p className="text-[13px] font-semibold text-[#e3e8ef]">{one.k}</p>
+            <p className="mt-1 text-[13px] leading-relaxed text-[#8b95a3]">{one.v}</p>
           </div>
         ))}
       </div>
@@ -430,31 +445,33 @@ function KeyTakeaways({ universe, live }) {
   const members = universe?.members || [];
   const filings = members.reduce((sum, one) => sum + (one.admittedOn?.length || 0), 0);
   const index = live?.index;
+  const lastTrade = atLastTrade(live);
   const rows = [
     { v: String(members.length), k: 'Companies admitted', s: 'on hard, first-party evidence' },
     { v: String(filings), k: 'Filings cited', s: 'every one openable on this page' },
-    { v: index?.status === 'ok' ? pp(index.return_pp) : '—', k: 'Basket today',
-      s: index?.status === 'ok' ? 'equal-weighted' : 'not priced right now' },
+    { v: index?.status === 'ok' ? pp(index.return_pp) : '—', k: lastTrade ? 'Basket, last session' : 'Basket today',
+      s: index?.status !== 'ok' ? 'not priced right now'
+        : lastTrade ? `equal-weighted, at last trades to ${istTime(live.quality.last_trade_at)} IST` : 'equal-weighted' },
     { v: index?.relative ? pp(index.relative.excess_pp) : '—', k: 'vs Nifty 50',
-      s: index?.relative ? 'today only' : 'benchmark not priced' },
+      s: index?.relative ? (lastTrade ? 'that session only' : 'today only') : 'benchmark not priced' },
   ];
   return (
     <div className="rounded-md border border-[#1e2634] bg-[#0c1017] p-4">
-      <p className="mb-3 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#68727f]">Key takeaways</p>
+      <p className="mb-3 text-[12px] font-semibold uppercase tracking-[0.18em] text-[#68727f]">Key takeaways</p>
       <div className="space-y-3">
         {rows.map((one) => (
           <div key={one.k} className="flex items-baseline gap-3">
-            <span className="w-20 shrink-0 text-[22px] font-semibold tabular-nums text-[#f1f5f9]">{one.v}</span>
+            <span className="w-20 shrink-0 text-[24px] font-semibold tabular-nums text-[#f1f5f9]">{one.v}</span>
             <span>
-              <span className="block text-[11px] font-semibold text-[#e3e8ef]">{one.k}</span>
-              <span className="block text-[11px] text-[#7d8894]">{one.s}</span>
+              <span className="block text-[13px] font-semibold text-[#e3e8ef]">{one.k}</span>
+              <span className="block text-[13px] text-[#7d8894]">{one.s}</span>
             </span>
           </div>
         ))}
       </div>
-      <p className="mt-4 border-t border-[#1a2230] pt-3 text-[10px] leading-relaxed text-[#68727f]">
-        No cumulative return and no market-size estimate. Both would need history this basket
-        does not have, or a forecast AGI has not made.
+      <p className="mt-4 border-t border-[#1a2230] pt-3 text-[12px] leading-relaxed text-[#68727f]">
+        One session at a time here; the return since admission is its own panel. No market-size
+        estimate: that would need a forecast AGI has not made.
       </p>
     </div>
   );
@@ -474,14 +491,14 @@ function LayerCards({ universe }) {
         const inLayer = members.filter((one) => one.layer === layer.id);
         return (
           <div key={layer.id} className="rounded-md border border-[#1e2634] bg-[#0c1017] p-4">
-            <h4 className="text-[13px] font-semibold text-[#e3e8ef]">{LAYER_LABEL[layer.id]}</h4>
-            <p className="mt-1 text-[11px] text-[#7d8894]">
+            <h4 className="text-[15px] font-semibold text-[#e3e8ef]">{LAYER_LABEL[layer.id]}</h4>
+            <p className="mt-1 text-[13px] text-[#7d8894]">
               {inLayer.length} admitted · {[...new Set(inLayer.flatMap((one) => one.subLayers || []))].map((s) => SUB_LABEL[s] || s).join(', ') || 'none'}
             </p>
-            <p className="mt-2 text-[11px] leading-relaxed text-[#8b95a3]">{layer.thesis}</p>
+            <p className="mt-2 text-[13px] leading-relaxed text-[#8b95a3]">{layer.thesis}</p>
             <p className="mt-3 flex flex-wrap gap-1">
               {inLayer.map((one) => (
-                <span key={one.symbol} className="rounded bg-[#1c2534] px-1.5 py-[2px] font-mono text-[9px] text-[#98a3b2]">
+                <span key={one.symbol} className="rounded bg-[#1c2534] px-1.5 py-[2px] font-mono text-[11px] text-[#98a3b2]">
                   {one.symbol}
                 </span>
               ))}
@@ -514,7 +531,7 @@ function InvestmentIntensity({ data }) {
   if (!data?.rows?.length) {
     return (
       <Panel id="intensity" title="Investment intensity" note="stage 3">
-        <p className="text-[11px] text-[#68727f]">Loading the stage 3 inputs.</p>
+        <p className="text-[13px] text-[#68727f]">Loading the stage 3 inputs.</p>
       </Panel>
     );
   }
@@ -525,12 +542,12 @@ function InvestmentIntensity({ data }) {
   const passCount = members.filter((one) => one.verdict === 'PASS').length;
   const verdictChip = (row) => {
     if (row.verdict === 'PASS') {
-      return <span className="rounded bg-[#10261a] px-1.5 py-[2px] text-[10px] text-[#4ade80]">Above on {row.met.length}</span>;
+      return <span className="rounded bg-[#10261a] px-1.5 py-[2px] text-[12px] text-[#4ade80]">Above on {row.met.length}</span>;
     }
     if (row.verdict === 'BELOW') {
-      return <span className="rounded bg-[#2a2110] px-1.5 py-[2px] text-[10px] text-[#d9a94a]">Below · {row.tested.length} of 4 tested</span>;
+      return <span className="rounded bg-[#2a2110] px-1.5 py-[2px] text-[12px] text-[#d9a94a]">Below · {row.tested.length} of 4 tested</span>;
     }
-    return <span className="rounded bg-[#161c26] px-1.5 py-[2px] text-[10px] text-[#7d8894]">Not screened</span>;
+    return <span className="rounded bg-[#161c26] px-1.5 py-[2px] text-[12px] text-[#7d8894]">Not screened</span>;
   };
   return (
     <Panel
@@ -542,16 +559,16 @@ function InvestmentIntensity({ data }) {
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
         {INTENSITY_TESTS.map(([key, label, period]) => (
           <div key={key} className="rounded border border-[#1a2230] px-2.5 py-2">
-            <p className="text-[10px] uppercase tracking-wider text-[#7d8894]">{label}</p>
-            <p className="mt-0.5 font-mono text-[15px] font-semibold tabular-nums text-[#e3e8ef]">{fmt(t[key])}</p>
-            <p className="text-[10px] text-[#68727f]">median · {period} · {data.distributions?.[key]?.count ?? 0} with data</p>
+            <p className="text-[12px] uppercase tracking-wider text-[#7d8894]">{label}</p>
+            <p className="mt-0.5 font-mono text-[17px] font-semibold tabular-nums text-[#e3e8ef]">{fmt(t[key])}</p>
+            <p className="text-[12px] text-[#68727f]">median · {period} · {data.distributions?.[key]?.count ?? 0} with data</p>
           </div>
         ))}
       </div>
       <div className="mt-3 overflow-x-auto">
-        <table className="w-full min-w-[560px] text-[11px]">
+        <table className="w-full min-w-[560px] text-[13px]">
           <thead>
-            <tr className="text-left text-[10px] uppercase tracking-wider text-[#68727f]">
+            <tr className="text-left text-[12px] uppercase tracking-wider text-[#68727f]">
               <th className="py-1.5 pr-2 font-medium">Member</th>
               {INTENSITY_TESTS.map(([key, label]) => (
                 <th key={key} className="py-1.5 pr-2 text-right font-medium">{label}</th>
@@ -581,7 +598,7 @@ function InvestmentIntensity({ data }) {
           </tbody>
         </table>
       </div>
-      <p className="mt-3 text-[10px] leading-relaxed text-[#68727f]">
+      <p className="mt-3 text-[12px] leading-relaxed text-[#68727f]">
         A member passes on any one test at or above the median. The medians are of the
         {` ${data.rows.length} `}members and candidates screened here, a group already chosen for
         AI-infrastructure exposure, so below means less intensive than these peers, not idle.
@@ -615,11 +632,11 @@ function ValueBars({ title, totals, label }) {
   const top = totals?.groups?.[0]?.marketValueCr || 1;
   return (
     <div className="min-w-0">
-      <p className="text-[10px] uppercase tracking-wider text-[#7d8894]">{title}</p>
+      <p className="text-[12px] uppercase tracking-wider text-[#7d8894]">{title}</p>
       <ul className="mt-2 space-y-2">
         {(totals?.groups || []).map((group) => (
           <li key={group.key}>
-            <div className="flex items-baseline justify-between gap-2 text-[11px]">
+            <div className="flex items-baseline justify-between gap-2 text-[13px]">
               <span className="truncate text-[#d3dae3]" title={group.members.join(', ')}>{label(group.key)}</span>
               <span className="shrink-0 font-mono tabular-nums text-[#9aa5b3]">
                 {fmtCr(group.marketValueCr)} · {(group.share * 100).toFixed(1)}%
@@ -628,7 +645,7 @@ function ValueBars({ title, totals, label }) {
             <div className="mt-1 h-[6px] rounded-sm bg-[#141b26]">
               <div className="h-full rounded-sm bg-[#e8833a]" style={{ width: `${(group.marketValueCr / top) * 100}%` }} />
             </div>
-            <p className="mt-0.5 text-[10px] text-[#68727f]">{group.members.length} {group.members.length === 1 ? 'member' : 'members'}</p>
+            <p className="mt-0.5 text-[12px] text-[#68727f]">{group.members.length} {group.members.length === 1 ? 'member' : 'members'}</p>
           </li>
         ))}
       </ul>
@@ -646,14 +663,14 @@ function MarketValue({ data }) {
   if (!data) {
     return (
       <Panel id="value" title="Market value" note="by layer and sector">
-        <p className="text-[11px] text-[#68727f]">Loading closes and share counts.</p>
+        <p className="text-[13px] text-[#68727f]">Loading closes and share counts.</p>
       </Panel>
     );
   }
   if (!data.ok) {
     return (
       <Panel id="value" title="Market value" note="by layer and sector">
-        <p className="text-[11px] text-[#f87171]">Could not compute market value: {data.error}</p>
+        <p className="text-[13px] text-[#f87171]">Could not compute market value: {data.error}</p>
       </Panel>
     );
   }
@@ -671,13 +688,13 @@ function MarketValue({ data }) {
         <ValueBars title="By sector (Upstox profile)" totals={data.bySector} label={(key) => key} />
       </div>
       <details className="mt-3">
-        <summary className="cursor-pointer rounded text-[11px] text-[#8fb4d8] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e8833a]">
+        <summary className="cursor-pointer rounded text-[13px] text-[#8fb4d8] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e8833a]">
           Every member&rsquo;s figure
         </summary>
         <div className="mt-2 overflow-x-auto">
-          <table className="w-full min-w-[560px] text-[11px]">
+          <table className="w-full min-w-[560px] text-[13px]">
             <thead>
-              <tr className="text-left text-[10px] uppercase tracking-wider text-[#68727f]">
+              <tr className="text-left text-[12px] uppercase tracking-wider text-[#68727f]">
                 <th className="py-1.5 pr-2 font-medium">Member</th>
                 <th className="py-1.5 pr-2 text-right font-medium">Close</th>
                 <th className="py-1.5 pr-2 text-right font-medium">Shares</th>
@@ -701,7 +718,7 @@ function MarketValue({ data }) {
           </table>
         </div>
       </details>
-      <p className="mt-3 text-[10px] leading-relaxed text-[#68727f]">
+      <p className="mt-3 text-[12px] leading-relaxed text-[#68727f]">
         Market value is the close on {data.closeDate || '—'}{data.closeDates?.length > 1 ? ` (some members earlier: ${data.closeDates.slice(0, -1).join(', ')})` : ''} times the equity shares each company last filed
         with the exchange; partly-paid shares are left out. It is the value of the whole company: most members
         do not report what share of their business serves data centres, so a layer&rsquo;s bar measures listed
@@ -719,15 +736,16 @@ function MarketValue({ data }) {
 function BasketPanel({ live }) {
   const index = live?.index;
   const q = live?.quality;
+  const lastTrade = atLastTrade(live);
   if (index?.status !== 'ok') {
     return (
       <Panel title="AGI AI Enablers" note="equal-weighted">
-        <p className="font-mono text-[10px] uppercase tracking-wider text-[#d9a94a]">{index?.status || 'no data'}</p>
-        <p className="mt-1.5 text-[11px] leading-relaxed text-[#8b95a3]">
+        <p className="font-mono text-[12px] uppercase tracking-wider text-[#d9a94a]">{index?.status || 'no data'}</p>
+        <p className="mt-1.5 text-[13px] leading-relaxed text-[#8b95a3]">
           {index?.reason || 'The basket has not been computed yet.'}
         </p>
         {index?.missing?.length ? (
-          <p className="mt-1.5 font-mono text-[11px] text-[#7d8894]">{index.missing.join(' · ')}</p>
+          <p className="mt-1.5 font-mono text-[13px] text-[#7d8894]">{index.missing.join(' · ')}</p>
         ) : null}
       </Panel>
     );
@@ -743,26 +761,34 @@ function BasketPanel({ live }) {
           ['Today', pp(index.return_pp), upDown(index.return_pp)],
           ['vs Nifty', index.relative ? pp(index.relative.excess_pp) : '—', upDown(index.relative?.excess_pp)],
           ['Breadth', `${index.breadth.advancing}/${index.priced}`, 'text-[#e3e8ef]'],
-          ['Live', `${q?.live ?? 0}/${index.total}`, q?.live === index.total ? 'text-[#4ade80]' : 'text-[#d9a94a]'],
+          lastTrade
+            ? ['Last trade', `${q.session_last}/${index.total}`, 'text-[#8fb4d8]']
+            : ['Live', `${q?.live ?? 0}/${index.total}`, q?.live === index.total ? 'text-[#4ade80]' : 'text-[#d9a94a]'],
         ].map(([label, value, cls]) => (
           <div key={label}>
-            <p className="text-[10px] uppercase tracking-wider text-[#7d8894]">{label}</p>
-            <p className={`mt-0.5 text-[17px] font-semibold tabular-nums ${cls}`}>{value}</p>
+            <p className="text-[12px] uppercase tracking-wider text-[#7d8894]">{label}</p>
+            <p className={`mt-0.5 text-[19px] font-semibold tabular-nums ${cls}`}>{value}</p>
           </div>
         ))}
       </div>
+      {lastTrade ? (
+        <p className="mt-2 text-[13px] leading-relaxed text-[#8fb4d8]">
+          NSE is closed. Priced at each member&rsquo;s last trade (latest {istTime(q.last_trade_at)} IST) against the
+          previous close; NSE&rsquo;s official close, a weighted average of the final half hour, can differ slightly.
+        </p>
+      ) : null}
       {q?.last_good ? (
-        <p className="mt-2 text-[10px] text-[#d9a94a]">{q.last_good} member{q.last_good === 1 ? '' : 's'} on last-good price, not live</p>
+        <p className="mt-2 text-[12px] text-[#d9a94a]">{q.last_good} member{q.last_good === 1 ? '' : 's'} on last-good price, not live</p>
       ) : null}
       {index.priceBreak?.length ? (
-        <p className="mt-2 text-[10px] text-[#d9a94a]">
+        <p className="mt-2 text-[12px] text-[#d9a94a]">
           Excluded today for a corporate action (bonus, split or rights):{' '}
           {index.priceBreak.map((one) => one.symbol).join(', ')}. Its price
           change would be the share count changing, not the market.
         </p>
       ) : null}
       {live?.corporateActions?.unread?.length ? (
-        <p className="mt-2 text-[10px] text-[#7d8894]">
+        <p className="mt-2 text-[12px] text-[#7d8894]">
           Corporate actions not checked for {live.corporateActions.unread.map((one) => one.symbol).join(', ')}
         </p>
       ) : null}
@@ -776,7 +802,7 @@ function LayerAttribution({ live }) {
   if (index?.status !== 'ok' || !rows.length) {
     return (
       <Panel title="Today's move" note="attribution">
-        <p className="text-[11px] text-[#68727f]">Available when the basket is priced.</p>
+        <p className="text-[13px] text-[#68727f]">Available when the basket is priced.</p>
       </Panel>
     );
   }
@@ -788,8 +814,8 @@ function LayerAttribution({ live }) {
         {rows.map((row) => (
           <div key={row.layer}>
             <div className="flex items-baseline justify-between">
-              <span className="text-[12px] text-[#d3dae3]">{LAYER_LABEL[row.layer] || row.layer}</span>
-              <span className={`font-mono text-[11px] tabular-nums ${upDown(row.contribution_pp)}`}>{pp(row.contribution_pp)}</span>
+              <span className="text-[14px] text-[#d3dae3]">{LAYER_LABEL[row.layer] || row.layer}</span>
+              <span className={`font-mono text-[13px] tabular-nums ${upDown(row.contribution_pp)}`}>{pp(row.contribution_pp)}</span>
             </div>
             <div className="mt-1 h-[3px] rounded bg-[#1a2230]">
               <div
@@ -799,7 +825,7 @@ function LayerAttribution({ live }) {
             </div>
             <div className="mt-1 flex flex-wrap gap-x-3">
               {subs.filter((one) => one.subLayer.startsWith(`${row.layer}/`)).map((one) => (
-                <span key={one.subLayer} className="text-[10px] text-[#7d8894]">
+                <span key={one.subLayer} className="text-[12px] text-[#7d8894]">
                   {SUB_LABEL[one.subLayer.split('/')[1]] || one.subLayer}
                   <span className={`ml-1 font-mono ${upDown(one.contribution_pp)}`}>{pp(one.contribution_pp)}</span>
                 </span>
@@ -809,7 +835,7 @@ function LayerAttribution({ live }) {
         ))}
       </div>
       {index.subLayerResidual_ok === false ? (
-        <p className="mt-2 border-t border-[#1a2230] pt-2 text-[10px] text-[#d9a94a]">
+        <p className="mt-2 border-t border-[#1a2230] pt-2 text-[12px] text-[#d9a94a]">
           Sub-layers short by {pp(index.subLayerResidual_pp)}
           {index.unclassified?.length ? ` — ${index.unclassified.join(', ')} sits in no sub-layer` : ''}
         </p>
@@ -841,9 +867,9 @@ function OrderFeed({ universe }) {
               onClick={() => setOpen(open === i ? null : i)}
               className="flex w-full items-start gap-2 rounded px-1 py-1.5 text-left hover:bg-[#141b26]"
             >
-              <span className="w-[68px] shrink-0 whitespace-nowrap font-mono text-[11px] text-[#7d8894]">{row.date || '—'}</span>
-              <span className="w-[86px] shrink-0 truncate font-mono text-[12px] text-[#d3dae3]">{row.symbol}</span>
-              <span className="hidden min-w-0 flex-1 truncate text-[11px] text-[#9aa5b3] sm:block">{row.document}</span>
+              <span className="w-[68px] shrink-0 whitespace-nowrap font-mono text-[13px] text-[#7d8894]">{row.date || '—'}</span>
+              <span className="w-[86px] shrink-0 truncate font-mono text-[14px] text-[#d3dae3]">{row.symbol}</span>
+              <span className="hidden min-w-0 flex-1 truncate text-[13px] text-[#9aa5b3] sm:block">{row.document}</span>
               <span className="ml-auto shrink-0 sm:ml-0">
                 <Badge tone={row.kind === 'order' ? 'green' : row.kind === 'capex' ? 'blue' : 'neutral'}>
                   {KIND_LABEL[row.kind] || row.kind}
@@ -851,7 +877,7 @@ function OrderFeed({ universe }) {
               </span>
             </button>
             {open === i ? (
-              <p className="mx-1 mb-1.5 border-l-2 border-[#2f5d3f] bg-[#0a0e14] px-3 py-2 text-[11px] leading-relaxed text-[#c7cfda]">
+              <p className="mx-1 mb-1.5 border-l-2 border-[#2f5d3f] bg-[#0a0e14] px-3 py-2 text-[13px] leading-relaxed text-[#c7cfda]">
                 &ldquo;{row.excerpt}&rdquo;
               </p>
             ) : null}
@@ -893,14 +919,14 @@ function CapacityDisclosed({ universe }) {
         {rows.map((row, i) => (
           <div key={i} className="border-b border-[#1a2230] pb-2 last:border-0 last:pb-0">
             <p className="flex items-baseline gap-2">
-              <span className="font-mono text-[12px] text-[#d3dae3]">{row.symbol}</span>
-              <span className="text-[10px] text-[#7d8894]">{row.date} · {row.document}</span>
+              <span className="font-mono text-[14px] text-[#d3dae3]">{row.symbol}</span>
+              <span className="text-[12px] text-[#7d8894]">{row.date} · {row.document}</span>
             </p>
-            <p className="mt-0.5 text-[11px] leading-relaxed text-[#9aa5b3]">&ldquo;{row.excerpt}&rdquo;</p>
+            <p className="mt-0.5 text-[13px] leading-relaxed text-[#9aa5b3]">&ldquo;{row.excerpt}&rdquo;</p>
           </div>
         ))}
       </div>
-      <p className="mt-2 border-t border-[#1a2230] pt-2 text-[10px] leading-relaxed text-[#7d8894]">
+      <p className="mt-2 border-t border-[#1a2230] pt-2 text-[12px] leading-relaxed text-[#7d8894]">
         Only what members disclosed. Not a project register — AGI does not maintain one, and
         rows it had not sourced would be the easiest thing here to believe.
       </p>
@@ -943,10 +969,10 @@ function MemberEvidence({ member }) {
         aria-controls={panelId}
         className="flex w-full items-center gap-3 px-1 py-2.5 text-left hover:bg-[#141b26] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#e8833a]"
       >
-        <span className="w-4 shrink-0 text-center text-[12px] text-[#5b6675]" aria-hidden>{open ? '\u2212' : '+'}</span>
-        <span className="w-[96px] shrink-0 font-mono text-[12px] text-[#e3e8ef]">{member.symbol}</span>
-        <span className="min-w-0 flex-1 truncate text-[12px] text-[#8b95a3]">{member.name}</span>
-        <span className="hidden shrink-0 text-[11px] text-[#7d8894] sm:block">
+        <span className="w-4 shrink-0 text-center text-[14px] text-[#5b6675]" aria-hidden>{open ? '\u2212' : '+'}</span>
+        <span className="w-[96px] shrink-0 font-mono text-[14px] text-[#e3e8ef]">{member.symbol}</span>
+        <span className="min-w-0 flex-1 truncate text-[14px] text-[#8b95a3]">{member.name}</span>
+        <span className="hidden shrink-0 text-[13px] text-[#7d8894] sm:block">
           {LAYER_LABEL[member.layer]} &middot; {(member.subLayers || []).map((sl) => SUB_LABEL[sl] || sl).join(' + ')}
         </span>
         <Badge tone={hard.length ? 'green' : 'neutral'}>{hard.length ? 'Hard' : 'Soft'}</Badge>
@@ -962,38 +988,38 @@ function MemberEvidence({ member }) {
               ['Reviewed by analyst', member.reviewedBy || 'Not yet'],
             ].map(([label, value]) => (
               <div key={label}>
-                <dt className="text-[10px] uppercase tracking-[0.12em] text-[#68727f]">{label}</dt>
-                <dd className="mt-0.5 text-[12px] text-[#e3e8ef]">{value}</dd>
+                <dt className="text-[12px] uppercase tracking-[0.12em] text-[#68727f]">{label}</dt>
+                <dd className="mt-0.5 text-[14px] text-[#e3e8ef]">{value}</dd>
               </div>
             ))}
           </dl>
 
           <div>
-            <p className="text-[10px] uppercase tracking-[0.12em] text-[#68727f]">Evidence</p>
+            <p className="text-[12px] uppercase tracking-[0.12em] text-[#68727f]">Evidence</p>
             <ul className="mt-1.5 space-y-2.5">
               {evidence.map((one, i) => (
                 <li key={i} className="border-l-2 border-[#2f5d3f] pl-3">
-                  <p className="text-[11px] text-[#7d8894]">
+                  <p className="text-[13px] text-[#7d8894]">
                     <span className="font-semibold text-[#8fcfa4]">{KIND_LABEL[one.kind] || one.kind}</span>
                     {' \u00b7 '}{one.document}{one.date ? ` \u00b7 ${one.date}` : ''}
                     {one.source ? ` \u00b7 ${one.source}` : ''}
                   </p>
-                  <p className="mt-1 text-[12px] leading-relaxed text-[#c7cfda]">&ldquo;{one.excerpt}&rdquo;</p>
+                  <p className="mt-1 text-[14px] leading-relaxed text-[#c7cfda]">&ldquo;{one.excerpt}&rdquo;</p>
                 </li>
               ))}
             </ul>
           </div>
 
           <div className="rounded border border-[#22303c] bg-[#0c1319] px-3 py-2">
-            <p className="text-[10px] uppercase tracking-[0.12em] text-[#68727f]">Why this is enough</p>
-            <p className="mt-1 text-[12px] leading-relaxed text-[#c7cfda]">
+            <p className="text-[12px] uppercase tracking-[0.12em] text-[#68727f]">Why this is enough</p>
+            <p className="mt-1 text-[14px] leading-relaxed text-[#c7cfda]">
               {hard.length
                 ? `${SUFFICIENCY[hard[0].kind]} It is disclosed by the company itself and names AI infrastructure, so it is attributable and dated rather than inferred.`
                 : 'It is not. This member is held on soft evidence and should not be in the basket \u2014 partnerships, memoranda and sector commentary describe intent, not activity.'}
             </p>
           </div>
 
-          <p className="text-[10px] text-[#5b6675]">ISIN {member.isin} &middot; instrument {member.instrumentKey}</p>
+          <p className="text-[12px] text-[#5b6675]">ISIN {member.isin} &middot; instrument {member.instrumentKey}</p>
         </div>
       ) : null}
     </div>
@@ -1005,8 +1031,8 @@ function AdmittedUniverse({ universe }) {
   return (
     <section id="universe" className="rounded-md border border-[#1e2634] bg-[#0c1017]">
       <header className="flex items-baseline gap-2 border-b border-[#1a2230] px-3.5 py-2.5">
-        <h2 className="text-[14px] font-semibold text-[#e3e8ef]">Why these companies are here</h2>
-        <span className="text-[11px] text-[#7d8894]">{members.length} admitted &middot; expand for the filing</span>
+        <h2 className="text-[16px] font-semibold text-[#e3e8ef]">Why these companies are here</h2>
+        <span className="text-[13px] text-[#7d8894]">{members.length} admitted &middot; expand for the filing</span>
       </header>
       <div className="px-2 py-1">
         {members.map((member) => <MemberEvidence key={member.symbol} member={member} />)}
@@ -1023,7 +1049,7 @@ function Watchlist({ universe, live }) {
     <Panel title="Company watchlist" note={`${members.length} admitted`}>
       <table className="w-full">
         <thead>
-          <tr className="text-[10px] uppercase tracking-wider text-[#7d8894]">
+          <tr className="text-[12px] uppercase tracking-wider text-[#7d8894]">
             <th className="pb-1 text-left font-medium">Company</th>
             <th className="pb-1 text-left font-medium">Layer</th>
             <th className="pb-1 text-right font-medium">Day</th>
@@ -1038,24 +1064,24 @@ function Watchlist({ universe, live }) {
             const volume = live?.volumes?.[member.symbol];
             return (
               <tr key={member.symbol} className="border-t border-[#1a2230]">
-                <td className="py-1.5 font-mono text-[12px] text-[#d3dae3]">{member.symbol}</td>
-                <td className="py-1.5 text-[11px] text-[#9aa5b3]">{LAYER_LABEL[member.layer]}</td>
-                <td className={`py-1.5 text-right font-mono text-[11px] tabular-nums ${row ? upDown(row.return_pct) : 'text-[#4b5563]'}`}>
+                <td className="py-1.5 font-mono text-[14px] text-[#d3dae3]">{member.symbol}</td>
+                <td className="py-1.5 text-[13px] text-[#9aa5b3]">{LAYER_LABEL[member.layer]}</td>
+                <td className={`py-1.5 text-right font-mono text-[13px] tabular-nums ${row ? upDown(row.return_pct) : 'text-[#4b5563]'}`}>
                   {row ? pctOf(row.return_pct) : '—'}
                 </td>
-                <td className={`py-1.5 text-right font-mono text-[11px] tabular-nums ${row ? upDown(row.contribution_pp) : 'text-[#4b5563]'}`}>
+                <td className={`py-1.5 text-right font-mono text-[13px] tabular-nums ${row ? upDown(row.contribution_pp) : 'text-[#4b5563]'}`}>
                   {row ? pp(row.contribution_pp) : '—'}
                 </td>
-                <td className="py-1.5 text-right font-mono text-[11px] tabular-nums text-[#8b95a3]">
+                <td className="py-1.5 text-right font-mono text-[13px] tabular-nums text-[#8b95a3]">
                   {volume?.ratio != null ? `${volume.ratio.toFixed(1)}×` : '—'}
                 </td>
-                <td className="py-1.5 text-right font-mono text-[11px] text-[#5b6675]">n/a</td>
+                <td className="py-1.5 text-right font-mono text-[13px] text-[#5b6675]">n/a</td>
               </tr>
             );
           })}
         </tbody>
       </table>
-      <p className="mt-2 border-t border-[#1a2230] pt-2 text-[10px] leading-relaxed text-[#7d8894]">
+      <p className="mt-2 border-t border-[#1a2230] pt-2 text-[12px] leading-relaxed text-[#7d8894]">
         No EPS revision column: Upstox serves trailing ratios only and no consensus feed is
         connected, so there is nothing to revise against. No signal badges yet either.
       </p>
@@ -1069,18 +1095,18 @@ function EmptyLayersPanel({ universe }) {
   return (
     <Panel id="layers" title="Empty layers" note={`${empty.length} of ${ALL_SUBS.length}`}>
       {empty.length === 0 ? (
-        <p className="text-[12px] text-[#9aa5b3]">Every sub-layer has an admitted company.</p>
+        <p className="text-[14px] text-[#9aa5b3]">Every sub-layer has an admitted company.</p>
       ) : (
         <>
           <div className="space-y-1">
             {empty.map(([l, s]) => (
               <div key={`${l}/${s}`} className="flex items-center gap-2 rounded border border-dashed border-[#26303f] px-2 py-1.5">
-                <span className="text-[12px] text-[#d3dae3]">{LAYER_LABEL[l]} <span className="text-[#4b5563]">→</span> {SUB_LABEL[s] || s}</span>
+                <span className="text-[14px] text-[#d3dae3]">{LAYER_LABEL[l]} <span className="text-[#4b5563]">→</span> {SUB_LABEL[s] || s}</span>
                 <Badge tone="amber">pre-revenue</Badge>
               </div>
             ))}
           </div>
-          <p className="mt-2 text-[10px] leading-relaxed text-[#7d8894]">
+          <p className="mt-2 text-[12px] leading-relaxed text-[#7d8894]">
             Empty because nothing was disclosed beyond intent, not because the screen has not
             looked. Admitting one would mean admitting on intent.
           </p>
@@ -1103,14 +1129,14 @@ function Candidates({ universe }) {
               onClick={() => setOpen(open === c.symbol ? null : c.symbol)}
               className="flex w-full items-center gap-2 rounded px-1 py-1.5 text-left hover:bg-[#141b26]"
             >
-              <span className="w-[86px] shrink-0 truncate font-mono text-[12px] text-[#d3dae3]">{c.symbol}</span>
-              <span className="hidden min-w-0 flex-1 truncate text-[11px] text-[#7d8894] sm:block">{c.name}</span>
+              <span className="w-[86px] shrink-0 truncate font-mono text-[14px] text-[#d3dae3]">{c.symbol}</span>
+              <span className="hidden min-w-0 flex-1 truncate text-[13px] text-[#7d8894] sm:block">{c.name}</span>
               <span className="ml-auto shrink-0 sm:ml-0">
                 <Badge>{c.suggestedSubLayers?.length ? SUB_LABEL[c.suggestedSubLayers[0]] || c.suggestedSubLayers[0] : 'unplaced'}</Badge>
               </span>
             </button>
             {open === c.symbol ? (
-              <p className="mx-1 mb-1.5 border-l-2 border-[#26303f] bg-[#0a0e14] px-3 py-2 text-[11px] leading-relaxed text-[#9aa5b3]">
+              <p className="mx-1 mb-1.5 border-l-2 border-[#26303f] bg-[#0a0e14] px-3 py-2 text-[13px] leading-relaxed text-[#9aa5b3]">
                 {c.note}
               </p>
             ) : null}
@@ -1193,12 +1219,12 @@ export default function IndiaAiIntelligencePage() {
     <div className="min-h-screen bg-[#080b11] text-[#e3e8ef]">
       {/* chrome */}
       <header className="sticky top-0 z-30 border-b border-[#1a2230] bg-[#0a0e14]/95 backdrop-blur">
-        <div className="mx-auto flex max-w-[1680px] items-center gap-6 px-4 py-2.5">
+        <div className="flex w-full items-center gap-6 px-4 py-2.5 sm:px-6">
           <a href="/" className="flex items-center gap-2 shrink-0">
-            <span className="grid h-7 w-7 place-items-center rounded bg-[#e8833a] text-[13px] font-bold text-[#0a0e14]">A</span>
+            <span className="grid h-7 w-7 place-items-center rounded bg-[#e8833a] text-[15px] font-bold text-[#0a0e14]">A</span>
             <span className="hidden sm:block leading-tight">
-              <span className="block text-[11px] font-bold tracking-wide">AGARWAL</span>
-              <span className="block text-[8px] tracking-[0.2em] text-[#68727f]">GLOBAL INVESTMENTS</span>
+              <span className="block text-[13px] font-bold tracking-wide">AGARWAL</span>
+              <span className="block text-[10px] tracking-[0.2em] text-[#68727f]">GLOBAL INVESTMENTS</span>
             </span>
           </a>
           <nav className="hidden items-center gap-5 md:flex" aria-label="Main">
@@ -1207,7 +1233,7 @@ export default function IndiaAiIntelligencePage() {
                 key={item.href}
                 href={item.href}
                 aria-current={item.label === 'Research' ? 'page' : undefined}
-                className={`rounded text-[12px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e8833a] ${
+                className={`rounded text-[14px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e8833a] ${
                   item.label === 'Research'
                     ? 'border-b-2 border-[#e8833a] pb-[2px] font-semibold text-[#e3e8ef]'
                     : 'text-[#8b95a3] hover:text-[#e3e8ef]'}`}
@@ -1216,19 +1242,19 @@ export default function IndiaAiIntelligencePage() {
               </a>
             ))}
           </nav>
-          <p className="ml-auto hidden text-right text-[10px] leading-tight text-[#68727f] lg:block">
+          <p className="ml-auto hidden text-right text-[12px] leading-tight text-[#68727f] lg:block">
             Ideas for<br />a more prosperous tomorrow.
           </p>
         </div>
       </header>
 
       {error ? (
-        <p className="mx-auto max-w-[1680px] px-4 py-16 text-[12px] text-[#f87171]">
+        <p className="w-full px-4 py-16 sm:px-6 text-[14px] text-[#f87171]">
           Could not load the universe: {error}
         </p>
       ) : (
-        <div className="mx-auto max-w-[1680px] px-4 py-4">
-          <nav className="mb-3 text-[11px] text-[#7d8894]" aria-label="Breadcrumb">
+        <div className="w-full px-4 py-4 sm:px-6">
+          <nav className="mb-3 text-[13px] text-[#7d8894]" aria-label="Breadcrumb">
             <a href="/research" className="rounded text-[#9aa5b3] hover:text-[#e3e8ef] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e8833a]">Research</a>
             <span className="px-1 text-[#3a4453]">›</span>
             <a href="/themes" className="rounded text-[#9aa5b3] hover:text-[#e3e8ef] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e8833a]">Themes</a>
@@ -1242,20 +1268,20 @@ export default function IndiaAiIntelligencePage() {
             {/* ── research ── */}
             <div className="min-w-0 space-y-4">
               <div id="overview">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#e8833a]">Strategic research</p>
-                <h1 className="mt-2 text-[28px] font-semibold leading-tight tracking-tight sm:text-[40px]">
+                <p className="text-[12px] font-semibold uppercase tracking-[0.2em] text-[#e8833a]">Strategic research</p>
+                <h1 className="mt-2 text-[32px] font-semibold leading-tight tracking-tight sm:text-[46px]">
                   India&rsquo;s Hidden AI Infrastructure Trade
                 </h1>
-                <p className="mt-1.5 text-[15px] text-[#8b95a3] sm:text-[18px]">
+                <p className="mt-1.5 text-[17px] text-[#8b95a3] sm:text-[20px]">
                   The companies building it, admitted only on what they disclosed
                 </p>
                 <div className="mt-3 flex flex-wrap items-center gap-3">
-                  <span className="text-[11px] text-[#68727f]">AGI Investment Intelligence</span>
+                  <span className="text-[13px] text-[#68727f]">AGI Investment Intelligence</span>
                   <span className="text-[#3a4453]">|</span>
-                  <span className="text-[11px] text-[#68727f]">
+                  <span className="text-[13px] text-[#68727f]">
                     Screen run {universe?.version || '—'}
                   </span>
-                  <span className="rounded-full border border-[#b38b4d]/40 bg-[#b38b4d]/10 px-2.5 py-0.5 text-[11px] font-semibold text-[#d9a94a]">
+                  <span className="rounded-full border border-[#b38b4d]/40 bg-[#b38b4d]/10 px-2.5 py-0.5 text-[13px] font-semibold text-[#d9a94a]">
                     Universe: {universe?.status === 'partial' ? 'Partial' : universe?.status || '—'} · Evidence-qualified
                   </span>
                 </div>
@@ -1269,10 +1295,10 @@ export default function IndiaAiIntelligencePage() {
                 <Panel title="AI Enablers vs. Nifty 50" note="from the first snapshot — no back-history">
                   <IndexedChart snapshots={snapshots} />
                   <div className="mt-1 flex gap-4 px-1">
-                    <span className="flex items-center gap-1.5 text-[11px] text-[#9aa5b3]">
+                    <span className="flex items-center gap-1.5 text-[13px] text-[#9aa5b3]">
                       <span className="h-[2px] w-4 bg-[#e8833a]" /> AI Enablers (AGI basket)
                     </span>
-                    <span className="flex items-center gap-1.5 text-[11px] text-[#9aa5b3]">
+                    <span className="flex items-center gap-1.5 text-[13px] text-[#9aa5b3]">
                       <span className="h-[2px] w-4 bg-[#5aa2e0]" /> Nifty 50
                     </span>
                   </div>
@@ -1283,8 +1309,8 @@ export default function IndiaAiIntelligencePage() {
               <SinceAdmission history={history} />
 
               <div id="method">
-                <h2 className="text-[20px] font-semibold tracking-tight">Executive Intelligence</h2>
-                <p className="mt-1.5 text-[12px] text-[#8b95a3]">
+                <h2 className="text-[22px] font-semibold tracking-tight">Executive Intelligence</h2>
+                <p className="mt-1.5 text-[14px] text-[#8b95a3]">
                   The method is the product. Each statement below is a count this page can show you the
                   workings for.
                 </p>
@@ -1304,17 +1330,17 @@ export default function IndiaAiIntelligencePage() {
                     },
                   ].map((one) => (
                     <div key={one.head} className="rounded-md border border-[#1e2634] bg-[#0c1017] p-3.5">
-                      <h3 className="text-[13px] font-semibold text-[#e3e8ef]">{one.head}</h3>
-                      <p className="mt-1.5 text-[12px] leading-relaxed text-[#8b95a3]">{one.body}</p>
+                      <h3 className="text-[15px] font-semibold text-[#e3e8ef]">{one.head}</h3>
+                      <p className="mt-1.5 text-[14px] leading-relaxed text-[#8b95a3]">{one.body}</p>
                     </div>
                   ))}
                 </div>
                 <blockquote className="mt-4 max-w-2xl border-l-2 border-[#e8833a] pl-4">
-                  <p className="text-[14px] italic leading-relaxed text-[#c7cfda]">
+                  <p className="text-[16px] italic leading-relaxed text-[#c7cfda]">
                     A basket you cannot audit is a list. Every member here opens into the filing that
                     admitted it.
                   </p>
-                  <cite className="mt-1 block text-[10px] uppercase tracking-[0.16em] not-italic text-[#68727f]">
+                  <cite className="mt-1 block text-[12px] uppercase tracking-[0.16em] not-italic text-[#68727f]">
                     AGI Investment Intelligence
                   </cite>
                 </blockquote>
@@ -1322,8 +1348,8 @@ export default function IndiaAiIntelligencePage() {
 
               <section id="filed" className="space-y-3">
                 <div>
-                  <h2 className="text-[20px] font-semibold tracking-tight">From the filings</h2>
-                  <p className="mt-1.5 max-w-3xl text-[12px] leading-relaxed text-[#8b95a3]">
+                  <h2 className="text-[22px] font-semibold tracking-tight">From the filings</h2>
+                  <p className="mt-1.5 max-w-3xl text-[14px] leading-relaxed text-[#8b95a3]">
                     Everything below is read from an annual report this system opened, and every
                     figure carries a company, a document and a page. There is no consensus, no
                     forecast and no third-party estimate here, which is why there are four charts
@@ -1349,29 +1375,29 @@ export default function IndiaAiIntelligencePage() {
             </div>
 
             {/* ── monitor ── */}
-            <div className="min-w-0 space-y-3 xl:sticky xl:top-[60px] xl:self-start">
+            <div className="min-w-0 space-y-3 xl:sticky xl:top-[100px] xl:self-start">
               <div className="rounded-md border border-[#1e2634] bg-[#0c1017] px-3 py-2.5">
                 <div className="flex items-start justify-between gap-2">
                   <div>
-                    <h2 className="text-[16px] font-semibold tracking-tight">India AI Intelligence Monitor</h2>
-                    <p className="mt-0.5 text-[11px] text-[#7d8894]">
+                    <h2 className="text-[18px] font-semibold tracking-tight">India AI Intelligence Monitor</h2>
+                    <p className="mt-0.5 text-[13px] text-[#7d8894]">
                       Live where a source exists. Named where one does not.
                     </p>
                   </div>
                   <div className="shrink-0 text-right">
                     <span className="flex items-center justify-end gap-1.5">
                       <span className={`h-1.5 w-1.5 rounded-full ${live?.quality?.live ? 'bg-[#4ade80]' : 'bg-[#4b5563]'}`} />
-                      <span className={`text-[10px] font-bold uppercase tracking-wider ${live?.quality?.live ? 'text-[#4ade80]' : 'text-[#68727f]'}`}>
+                      <span className={`text-[12px] font-bold uppercase tracking-wider ${live?.quality?.live ? 'text-[#4ade80]' : 'text-[#68727f]'}`}>
                         {live?.quality?.live ? 'Live' : open ? 'No ticks' : 'NSE closed'}
                       </span>
                     </span>
-                    <p className="mt-0.5 font-mono text-[10px] tabular-nums text-[#7d8894]">
+                    <p className="mt-0.5 font-mono text-[12px] tabular-nums text-[#7d8894]">
                       {clock.date} · {clock.time} IST
                     </p>
                   </div>
                 </div>
                 {liveError ? (
-                  <p className="mt-2 border-t border-[#1a2230] pt-2 text-[10px] text-[#d9a94a]">{liveError}</p>
+                  <p className="mt-2 border-t border-[#1a2230] pt-2 text-[12px] text-[#d9a94a]">{liveError}</p>
                 ) : null}
               </div>
 
@@ -1406,7 +1432,7 @@ export default function IndiaAiIntelligencePage() {
           </div>
 
           <footer className="mt-6 border-t border-[#1a2230] pt-4 pb-8">
-            <p className="max-w-4xl text-[10px] leading-relaxed text-[#68727f]">
+            <p className="max-w-4xl text-[12px] leading-relaxed text-[#68727f]">
               AGI&rsquo;s own screen over public filings. Admission requires at least one hard,
               first-party disclosure — a signed order, committed capex, or an operating figure.
               Partnerships, memoranda and sector forecasts do not admit a company. Prices from
@@ -1414,7 +1440,7 @@ export default function IndiaAiIntelligencePage() {
               cumulative return is shown for periods before this basket existed, and no panel on
               this page displays a figure AGI has not sourced.
             </p>
-            <p className="mt-2 text-[9px] text-[#4b5563]">© 2026 AGI. Not investment advice.</p>
+            <p className="mt-2 text-[11px] text-[#4b5563]">© 2026 AGI. Not investment advice.</p>
           </footer>
         </div>
       )}

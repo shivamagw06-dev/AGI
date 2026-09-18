@@ -268,3 +268,37 @@ test('corporate actions are read once per exchange day, not on every tick', asyn
   await new Promise((resolve) => setTimeout(resolve, 10));
   assert.ok(reads > afterFirst, 'a new exchange day must re-read');
 });
+
+/* ── after the close ──────────────────────────────────────────────── */
+
+test('after the close the basket is priced from last trades and no minute is retained', () => {
+  const lastTrade = Date.parse('2026-09-18T09:59:58Z');   // 15:29:58 IST
+  const evening = Date.parse('2026-09-18T11:47:00Z');     // 17:17 IST
+  const store = storeOf({
+    'NSE_EQ|INE000A01001': tick(110, 100, lastTrade),
+    'NSE_EQ|INE000A01002': tick(90, 100, lastTrade),
+    'NSE_INDEX|Nifty 50': tick(25_250, 25_000, lastTrade),
+  });
+  const runtime = runtimeWith(store, { now: () => evening });
+  const snapshot = runtime.tick();
+  assert.equal(snapshot.status, 'ok');
+  assert.equal(snapshot.index.priced, 2);
+  assert.equal(snapshot.index.relative.excess_pp, -1);
+  assert.deepEqual(snapshot.index.fallback, []);
+  assert.equal(snapshot.quality.session_last, 2);
+  assert.equal(snapshot.quality.closed, true);
+  assert.equal(snapshot.quality.last_trade_at, new Date(lastTrade).toISOString());
+  assert.equal(runtime.history().length, 0);
+});
+
+test('the same quotes mid-session are stale, not priced', () => {
+  const lastTrade = Date.parse('2026-09-18T05:00:00Z');   // 10:30 IST
+  const later = Date.parse('2026-09-18T07:00:00Z');       // 12:30 IST
+  const store = storeOf({
+    'NSE_EQ|INE000A01001': tick(110, 100, lastTrade),
+    'NSE_EQ|INE000A01002': tick(90, 100, lastTrade),
+  });
+  const snapshot = runtimeWith(store, { now: () => later }).current();
+  assert.notEqual(snapshot.status, 'ok');
+  assert.equal(snapshot.quality.session_last, 0);
+});

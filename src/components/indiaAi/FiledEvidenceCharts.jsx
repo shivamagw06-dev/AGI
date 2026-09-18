@@ -15,12 +15,12 @@ const GOOD = '#4ade80';
 const Panel = ({ title, note, children, source }) => (
   <section className="rounded-md border border-[#1e2634] bg-[#0c1017]">
     <header className="flex items-baseline gap-2 border-b border-[#1a2230] px-3.5 py-2.5">
-      <h3 className="text-[13px] font-semibold tracking-tight text-[#f1f5f9]">{title}</h3>
-      {note ? <span className="text-[11px] text-[#7d8894]">{note}</span> : null}
+      <h3 className="text-[15px] font-semibold tracking-tight text-[#f1f5f9]">{title}</h3>
+      {note ? <span className="text-[13px] text-[#7d8894]">{note}</span> : null}
     </header>
     <div className="p-3.5">{children}</div>
     {source ? (
-      <p className="border-t border-[#1a2230] px-3.5 py-2 text-[10px] leading-relaxed text-[#68727f]">{source}</p>
+      <p className="border-t border-[#1a2230] px-3.5 py-2 text-[12px] leading-relaxed text-[#68727f]">{source}</p>
     ) : null}
   </section>
 );
@@ -78,11 +78,11 @@ export function ExposureAttribution({ companies }) {
             <li key={row.symbol} className="flex items-start gap-2.5">
               <span className={`mt-[6px] h-1.5 w-1.5 shrink-0 rounded-full ${t ? t.dot : 'bg-[#d9a94a]'}`} aria-hidden />
               <span className="min-w-0">
-                <span className="font-mono text-[11px] text-[#d3dae3]">{row.symbol}</span>
-                <span className="ml-2 text-[10px] uppercase tracking-wider text-[#68727f]">
+                <span className="font-mono text-[13px] text-[#d3dae3]">{row.symbol}</span>
+                <span className="ml-2 text-[12px] uppercase tracking-wider text-[#68727f]">
                   {t ? t.label : 'unresolved'}
                 </span>
-                <span className="mt-0.5 block text-[11px] leading-relaxed text-[#8b95a3]">{row.verdict}</span>
+                <span className="mt-0.5 block text-[13px] leading-relaxed text-[#8b95a3]">{row.verdict}</span>
               </span>
             </li>
           );
@@ -111,15 +111,15 @@ export function CapexConcentration({ company }) {
   const Bar = ({ label, share, value, total, tone }) => (
     <div className="mb-3 last:mb-0">
       <div className="flex items-baseline justify-between">
-        <span className="text-[11px] text-[#c7cfda]">{label}</span>
-        <span className="font-mono text-[13px] font-semibold tabular-nums" style={{ color: tone }}>
+        <span className="text-[13px] text-[#c7cfda]">{label}</span>
+        <span className="font-mono text-[15px] font-semibold tabular-nums" style={{ color: tone }}>
           {(share * 100).toFixed(1)}%
         </span>
       </div>
       <div className="mt-1 h-2.5 rounded bg-[#141b26]">
         <div className="h-2.5 rounded" style={{ width: `${Math.max(1.5, share * 100)}%`, background: tone }} />
       </div>
-      <p className="mt-1 text-[10px] tabular-nums text-[#68727f]">
+      <p className="mt-1 text-[12px] tabular-nums text-[#68727f]">
         &#8377;{value.toLocaleString('en-IN')} cr of &#8377;{total.toLocaleString('en-IN')} cr
       </p>
     </div>
@@ -133,7 +133,7 @@ export function CapexConcentration({ company }) {
     >
       <Bar label="Share of group capex" share={capShare} value={semiCap} total={capTotal} tone={ACCENT} />
       <Bar label="Share of group revenue" share={revShare} value={semiRev} total={revTotal} tone="#5aa2e0" />
-      <p className="mt-3 border-t border-[#1a2230] pt-2.5 text-[11px] leading-relaxed text-[#8b95a3]">
+      <p className="mt-3 border-t border-[#1a2230] pt-2.5 text-[13px] leading-relaxed text-[#8b95a3]">
         The segment takes {(capShare / revShare).toFixed(0)}&times; the share of capital that it earns
         of revenue. External sales were nil a year earlier and the segment result is a loss, which is
         what building ahead of revenue looks like in the accounts.
@@ -172,30 +172,30 @@ export function BuildFunding({ companies }) {
           const scale = Math.max(Math.abs(row.capex), Math.abs(row.cfo)) || 1;
           return (
             <div key={row.symbol}>
-              <p className="font-mono text-[11px] text-[#d3dae3]">{row.symbol}</p>
+              <p className="font-mono text-[13px] text-[#d3dae3]">{row.symbol}</p>
               <div className="mt-1.5 space-y-1.5">
                 <div className="flex items-center gap-2">
-                  <span className="w-[78px] shrink-0 text-[10px] text-[#68727f]">capex out</span>
+                  <span className="w-[78px] shrink-0 text-[12px] text-[#68727f]">capex out</span>
                   <div className="h-2.5 flex-1 rounded bg-[#141b26]">
                     <div className="h-2.5 rounded bg-[#e8833a]" style={{ width: `${(Math.abs(row.capex) / scale) * 100}%` }} />
                   </div>
-                  <span className="w-[96px] shrink-0 text-right font-mono text-[10px] tabular-nums text-[#c7cfda]">{fmt(row.capex)}</span>
+                  <span className="w-[96px] shrink-0 text-right font-mono text-[12px] tabular-nums text-[#c7cfda]">{fmt(row.capex)}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="w-[78px] shrink-0 text-[10px] text-[#68727f]">cash from ops</span>
+                  <span className="w-[78px] shrink-0 text-[12px] text-[#68727f]">cash from ops</span>
                   <div className="h-2.5 flex-1 rounded bg-[#141b26]">
                     <div
                       className={`h-2.5 rounded ${row.cfo < 0 ? 'bg-[#a13a2b]' : 'bg-[#4ade80]'}`}
                       style={{ width: `${(Math.abs(row.cfo) / scale) * 100}%` }}
                     />
                   </div>
-                  <span className={`w-[96px] shrink-0 text-right font-mono text-[10px] tabular-nums ${row.cfo < 0 ? 'text-[#f87171]' : 'text-[#4ade80]'}`}>
+                  <span className={`w-[96px] shrink-0 text-right font-mono text-[12px] tabular-nums ${row.cfo < 0 ? 'text-[#f87171]' : 'text-[#4ade80]'}`}>
                     {fmt(row.cfo)}
                   </span>
                 </div>
               </div>
               {row.cfo < 0 ? (
-                <p className="mt-1.5 text-[10px] leading-relaxed text-[#8b95a3]">
+                <p className="mt-1.5 text-[12px] leading-relaxed text-[#8b95a3]">
                   Operations consumed cash while the build continued, so the year was funded
                   externally rather than from trading.
                 </p>
@@ -233,7 +233,7 @@ export function EvidenceComposition({ universe }) {
       </div>
       <ul className="space-y-1.5">
         {rows.map(([kind, n]) => (
-          <li key={kind} className="flex items-center gap-2 text-[11px]">
+          <li key={kind} className="flex items-center gap-2 text-[13px]">
             <span className="h-1.5 w-1.5 rounded-full" style={{ background: TONE[kind] || '#2c3542' }} aria-hidden />
             <span className="text-[#c7cfda]">{LABEL[kind] || kind}</span>
             <span className="ml-auto font-mono tabular-nums text-[#8b95a3]">{n}</span>
@@ -270,18 +270,18 @@ export function CapexChanges({ companies }) {
       {rows.map((row) => (
         <div key={row.symbol}>
           <div className="flex items-baseline justify-between">
-            <span className="font-mono text-[11px] text-[#d3dae3]">{row.symbol}</span>
-            <span className={`font-mono text-[12px] font-semibold tabular-nums ${row.growth >= 0 ? 'text-[#e8833a]' : 'text-[#5aa2e0]'}`}>
+            <span className="font-mono text-[13px] text-[#d3dae3]">{row.symbol}</span>
+            <span className={`font-mono text-[14px] font-semibold tabular-nums ${row.growth >= 0 ? 'text-[#e8833a]' : 'text-[#5aa2e0]'}`}>
               {row.growth >= 0 ? '+' : ''}{(row.growth * 100).toFixed(1)}%
             </span>
           </div>
           <div className="mt-1 h-[3px] rounded bg-[#1a2230]">
             <div className="h-[3px] rounded bg-[#e8833a]" style={{ width: `${Math.max(2, (Math.abs(row.growth) / widest) * 100)}%` }} />
           </div>
-          <p className="mt-0.5 text-[10px] text-[#68727f]">FY26 against FY25 &middot; cash flow, page {row.page}</p>
+          <p className="mt-0.5 text-[12px] text-[#68727f]">FY26 against FY25 &middot; cash flow, page {row.page}</p>
         </div>
       ))}
-      <p className="border-t border-[#1a2230] pt-2 text-[10px] leading-relaxed text-[#68727f]">
+      <p className="border-t border-[#1a2230] pt-2 text-[12px] leading-relaxed text-[#68727f]">
         Growth only: members report in different units, so absolute figures are not comparable
         across them. Members without a disclosed prior year, or not yet read from the filing,
         are left out rather than estimated.
