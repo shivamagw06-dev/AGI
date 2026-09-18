@@ -26,60 +26,67 @@ const Panel = ({ title, note, children, source }) => (
 );
 
 /**
- * Whether each member's theme exposure can be sized from its own accounts.
+ * How far each member's theme exposure can be sized from what it discloses.
  *
- * The most consequential thing five filings produced, and it is a negative
- * result: one member reports the theme as a segment. The others are admitted
- * on sound, dated, first-party evidence and still cannot be attributed,
- * because a joint venture sits outside consolidation, or a single reporting
- * segment absorbs the line, or no segment exists at all.
+ * Three tiers, not a yes or no. Treating it as binary put NETWEB - which
+ * states AI Systems revenue at 43.4% of the total - in the same bucket as
+ * KAYNES, which states nothing separable at all. Those are very different
+ * amounts of disclosure. What separates the top tier from the middle one is
+ * audit: a reported Ind AS 108 segment ties the theme to revenue, result,
+ * assets and capex, while a management table gives a figure that cannot be
+ * tied to anything else in the accounts.
  */
+const TIERS = [
+  { key: 'SEGMENT_REPORTED', label: 'segment reported', tone: '#4ade80', dot: 'bg-[#4ade80]' },
+  { key: 'MANAGEMENT_DISCLOSED', label: 'management disclosed', tone: '#5aa2e0', dot: 'bg-[#5aa2e0]' },
+  { key: 'NOT_ATTRIBUTABLE', label: 'not attributable', tone: '#3a4453', dot: 'bg-[#3a4453]' },
+];
+const tierOf = (one) => one.attribution
+  || (one.exposureAttributable === true ? 'SEGMENT_REPORTED'
+    : one.exposureAttributable === false ? 'NOT_ATTRIBUTABLE' : null);
+
 export function ExposureAttribution({ companies }) {
   const rows = Object.entries(companies || {}).map(([symbol, one]) => ({
     symbol,
-    attributable: one.exposureAttributable ?? null,
+    tier: tierOf(one),
     // A line written to stand alone here, rather than the first sentence of a
     // longer note cut mid-argument.
     verdict: one.exposureVerdict || String(one.exposureFinding || '').split('. ')[0],
   }));
   if (!rows.length) return null;
-  const yes = rows.filter((r) => r.attributable === true).length;
-  const no = rows.filter((r) => r.attributable === false).length;
-  const open = rows.length - yes - no;
-  const sorted = [...rows].sort((a, b) => Number(b.attributable === true) - Number(a.attributable === true));
+  const order = (t) => { const i = TIERS.findIndex((x) => x.key === t); return i < 0 ? TIERS.length : i; };
+  const sorted = [...rows].sort((a, b) => order(a.tier) - order(b.tier));
+  const counts = TIERS.map((t) => ({ ...t, n: rows.filter((r) => r.tier === t.key).length }));
+  const unresolved = rows.filter((r) => !TIERS.some((t) => t.key === r.tier)).length;
 
   return (
     <Panel
       title="Can the exposure be sized?"
-      note={`${yes} of ${rows.length} from the accounts`}
-      source="Read from each company's FY2025-26 filing. A member counts as attributable only where the theme is a reported operating segment under Ind AS 108."
+      note={`${counts[0].n} segment-reported, ${counts[1].n} management-disclosed, ${counts[2].n} not attributable`}
+      source="From each company's FY2025-26 filing. Segment-reported means the theme is an audited Ind AS 108 operating segment. Management-disclosed means the company states a figure for it outside segment reporting, which cannot be tied to assets or capex."
     >
       <div className="mb-3 flex h-2 overflow-hidden rounded-full bg-[#141b26]">
-        <div className="bg-[#4ade80]" style={{ width: `${(yes / rows.length) * 100}%` }} />
-        <div className="bg-[#3a4453]" style={{ width: `${(no / rows.length) * 100}%` }} />
-        <div className="bg-[#d9a94a]/50" style={{ width: `${(open / rows.length) * 100}%` }} />
+        {counts.map((t) => (
+          <div key={t.key} style={{ width: `${(t.n / rows.length) * 100}%`, background: t.tone }} />
+        ))}
+        {unresolved ? <div className="bg-[#d9a94a]/50" style={{ width: `${(unresolved / rows.length) * 100}%` }} /> : null}
       </div>
       <ul className="space-y-2">
-        {sorted.map((row) => (
-          <li key={row.symbol} className="flex items-start gap-2.5">
-            <span
-              className={`mt-[6px] h-1.5 w-1.5 shrink-0 rounded-full ${
-                row.attributable === true ? 'bg-[#4ade80]'
-                  : row.attributable === false ? 'bg-[#3a4453]' : 'bg-[#d9a94a]'}`}
-              aria-hidden
-            />
-            <span className="min-w-0">
-              <span className="font-mono text-[11px] text-[#d3dae3]">{row.symbol}</span>
-              <span className="ml-2 text-[10px] uppercase tracking-wider text-[#68727f]">
-                {row.attributable === true ? 'segment reported'
-                  : row.attributable === false ? 'not attributable' : 'unresolved'}
+        {sorted.map((row) => {
+          const t = TIERS.find((x) => x.key === row.tier);
+          return (
+            <li key={row.symbol} className="flex items-start gap-2.5">
+              <span className={`mt-[6px] h-1.5 w-1.5 shrink-0 rounded-full ${t ? t.dot : 'bg-[#d9a94a]'}`} aria-hidden />
+              <span className="min-w-0">
+                <span className="font-mono text-[11px] text-[#d3dae3]">{row.symbol}</span>
+                <span className="ml-2 text-[10px] uppercase tracking-wider text-[#68727f]">
+                  {t ? t.label : 'unresolved'}
+                </span>
+                <span className="mt-0.5 block text-[11px] leading-relaxed text-[#8b95a3]">{row.verdict}</span>
               </span>
-              <span className="mt-0.5 block text-[11px] leading-relaxed text-[#8b95a3]">
-                {row.verdict}
-              </span>
-            </span>
-          </li>
-        ))}
+            </li>
+          );
+        })}
       </ul>
     </Panel>
   );
