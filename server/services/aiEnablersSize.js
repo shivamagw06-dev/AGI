@@ -135,11 +135,36 @@ export function freeFloatRatioFrom(shareHoldings) {
  * internal consistency, not external truth. Two figures agreeing here means
  * the basis is coherent, not that the market agrees with either.
  */
-export function marketCapFromEarnings({ keyRatios, netIncome }) {
+export function marketCapFromEarnings({ keyRatios, netIncome, filedEps = null, price = null, epsTolerance = 0.05 }) {
   const pe = ratioNamed(keyRatios, 'p/e');
   const income = numeric(netIncome);
   if (pe === null || pe <= 0) return { value: null, reason: 'NO_PE' };
   if (income === null) return { value: null, reason: 'NO_NET_INCOME' };
+
+  // The P/E has to be on the same period as the earnings it multiplies, and
+  // measured against Hitachi Energy India's FY26 filing it is not: the stated
+  // P/E of 117.3 implies earnings per share of 266.24 against a filed 221.63,
+  // a trailing twelve months that already contains a much stronger Q1 FY27.
+  // Multiplying that P/E by annual net profit understates market cap by the
+  // amount earnings grew - 20% for that name, which slips through a 25%
+  // tolerance and returns a pass. Book equity compounds slowly enough that
+  // the same mismatch costs the P/B route only 3%, which is why this went
+  // unnoticed until a filing was read.
+  const eps = numeric(filedEps);
+  const last = numeric(price);
+  if (eps !== null && eps > 0 && last !== null && last > 0) {
+    const impliedEps = last / pe;
+    const gap = Math.abs(impliedEps / eps - 1);
+    if (gap > epsTolerance) {
+      return {
+        value: null, reason: 'PE_PERIOD_DOES_NOT_MATCH_EARNINGS',
+        impliedEps: Number(impliedEps.toFixed(2)), filedEps: eps,
+        gap: Number(gap.toFixed(4)),
+        detail: 'the P/E is quoted on a different period from the net profit it would multiply, '
+          + 'so their product is not this company\u2019s market capitalisation',
+      };
+    }
+  }
   // A loss-making company has no meaningful P/E-implied market cap; the ratio
   // is either negative or omitted, and multiplying by a negative income
   // would produce a positive number for the wrong reason.
