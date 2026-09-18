@@ -16,7 +16,7 @@
   "marketSize": {
     "defaultAddedMW": 4400,
     "addedMWSource": "JLL forecast (31 Aug 2026): 1.6 GW in mid-2026 to 6 GW by 2029; JLL does not say IT load.",
-    "note": "Per-MW figures are for each MW of IT load. The electrical and mechanical ranges come from a third-party blog's model, labelled by its authors as an assumption; AGI has not verified them. Replace any figure with your own.",
+    "note": "Per-MW figures are for each MW of IT load. The electrical and mechanical ranges come from a third-party blog's model, labelled by its authors as an assumption; AGI has not verified them. Replace any figure with your own. Layers are built not to overlap; an EPC or MEP contract figure (which bundles cables, panels and cooling) is not a layer, because adding it would count those twice.",
     "layers": [
       {
         "key": "electrical",
@@ -24,7 +24,8 @@
         "lowCrPerMW": 20,
         "highCrPerMW": 28,
         "members": "ABB, Hitachi Energy, GE Vernova, Schneider, Cummins, Kirloskar",
-        "source": "energymap.in blog (4 Aug 2026), 'model assumption - not a sourced market figure'; unverified"
+        "source": "energymap.in blog (4 Aug 2026), 'model assumption - not a sourced market figure'; unverified",
+        "scope": "Switchgear, transformers, UPS, batteries, generators, busway. Excludes cables and cooling."
       },
       {
         "key": "mechanical",
@@ -32,7 +33,8 @@
         "lowCrPerMW": 12,
         "highCrPerMW": 17,
         "members": "Blue Star",
-        "source": "Same blog; unverified"
+        "source": "Same blog; unverified",
+        "scope": "Cooling plant and distribution. Excludes electrical and cables."
       },
       {
         "key": "cables",
@@ -40,7 +42,8 @@
         "lowCrPerMW": 3.5,
         "highCrPerMW": 3.5,
         "members": "Polycab, APAR, Diamond Power, HFCL, STL",
-        "source": "Polycab, Q1 FY27 call (company-stated)"
+        "source": "Polycab, Q1 FY27 call (company-stated)",
+        "scope": "Conventional power cable (50-60%) and optical fibre. Excludes switchgear and panels."
       }
     ]
   },
@@ -74,7 +77,7 @@
           "high": 0.6,
           "label": "AI revenue growth a year",
           "unit": "pct",
-          "rationale": "Q1 FY27 AI revenue of Rs 510.6 cr annualises to about Rs 2,040 cr, 2.2x FY26; the base case assumes roughly that run-rate is held to FY29."
+          "rationale": "Q1 FY27 AI revenue of Rs 510.6 cr annualises to about Rs 2,040 cr, 2.2x FY26; the base case assumes roughly that run-rate is held to FY29. Management puts the pipeline at Rs 10,410 cr (excluding the order book and L1) with 'around 60%' conversion over 18-24 months, but would not say how much of it is AI."
         },
         "margin": {
           "kind": "assumption",
@@ -105,7 +108,7 @@
       "symbol": "STLTECH",
       "title": "Hyperscaler award, recognised over its period",
       "type": "contract",
-      "basis": "STL's award has a stated value and period; how evenly it is recognised and at what margin are AGI assumptions.",
+      "basis": "STL's award has a stated value and period (FY27-FY29). It is a framework award ('total potential value', purchase orders released periodically), counted in Q1 order intake; STL does not say whether all of it sits in the order book. Recognition pattern and margin are AGI assumptions.",
       "params": {
         "contractValueCr": {
           "kind": "disclosed",
@@ -208,7 +211,7 @@
       "symbol": "BLUESTARCO",
       "title": "Data-centre MEP revenue against management's target",
       "type": "target",
-      "basis": "Blue Star states a data-centre MEP target; AGI applies an achievement rate and a margin.",
+      "basis": "Blue Star states a data-centre MEP target; AGI applies an achievement rate and a margin. For scale: Blue Star's own contract list implies about Rs 12.7-15.3 cr of MEP work per MW on three projects (CapitaLand Mumbai and Hyderabad, Nxtra Mahape), with scope varying by project.",
       "params": {
         "targetRevenueCr": {
           "kind": "disclosed",
@@ -553,12 +556,12 @@
         },
         "margin": {
           "kind": "assumption",
-          "value": 0.5,
-          "low": 0.4,
-          "high": 0.6,
+          "value": 0.4,
+          "low": 0.35,
+          "high": 0.5,
           "label": "EBITDA margin",
           "unit": "pct",
-          "rationale": "Not disclosed; AGI assumption for colocation. The CFO cites about a 12% US-dollar return on Rs 70-75 cr per MW of construction."
+          "rationale": "Not disclosed for AdaniConneX; anchored to Nxtra's filed 40.3% FY26 EBITDA margin. The CFO cites about a 12% US-dollar return on Rs 70-75 cr per MW of construction."
         },
         "ownershipShare": {
           "kind": "disclosed",
@@ -587,7 +590,7 @@
       "symbol": "BHARTIARTL",
       "title": "Nxtra capacity",
       "type": "capacity",
-      "basis": "Nxtra is a consolidated subsidiary; its filed turnover gives the revenue-per-MW anchor. EBITDA is not disclosed.",
+      "basis": "Nxtra is a consolidated subsidiary with its own audited results (filed for its listed debt), which give revenue and EBITDA; revenue per MW depends on which of Airtel's MW figures is used.",
       "params": {
         "operatingMW": {
           "kind": "disclosed",
@@ -621,16 +624,16 @@
           "high": 11,
           "label": "Revenue per MW a year",
           "unit": "crPerMw",
-          "rationale": "Nxtra FY26 turnover Rs 2,434.1 cr / ~250 MW (AGI arithmetic on the AOC-1 filing)."
+          "rationale": "Nxtra FY26 revenue Rs 2,434 cr / ~250 MW (annual report) = Rs 9.7 cr. Airtel's MW figures disagree (300, 250, 120-130 MW), so this ranges from about Rs 8 to 19 cr depending on the denominator."
         },
         "margin": {
           "kind": "assumption",
-          "value": 0.5,
-          "low": 0.4,
-          "high": 0.6,
+          "value": 0.403,
+          "low": 0.35,
+          "high": 0.45,
           "label": "EBITDA margin",
           "unit": "pct",
-          "rationale": "Not disclosed; Nxtra's FY26 profit after tax was Rs 241 cr."
+          "rationale": "Nxtra's own audited FY26 results (filed with NSE for its listed debt): EBITDA excluding other income Rs 981.6 cr on Rs 2,434 cr, 40.3%; 40.7% in Q1 FY27."
         },
         "totalEbitdaFY26Cr": {
           "kind": "disclosed",
@@ -681,21 +684,21 @@
         },
         "revenuePerMWCr": {
           "kind": "assumption",
-          "value": 6,
-          "low": 4,
-          "high": 9.7,
+          "value": 8,
+          "low": 5,
+          "high": 10.8,
           "label": "Revenue per MW a year",
           "unit": "crPerMw",
-          "rationale": "FY26 data-centre turnover Rs 145.90 cr on capacity ramping to 28 MW (about Rs 5.2 cr per year-end MW); Nxtra about Rs 9.7 cr."
+          "rationale": "Colocation rent 'close to about 90 lakhs per month per megawatt' (MD, Nov 2025 call) = Rs 10.8 cr a year per fully billed MW; FY26 realised about Rs 5.2 cr because only part of the capacity was billed (8 of 28 MW colocation handed over in Nov 2025)."
         },
         "margin": {
           "kind": "assumption",
-          "value": 0.55,
+          "value": 0.6,
           "low": 0.4,
-          "high": 0.6,
+          "high": 0.75,
           "label": "EBITDA margin",
           "unit": "pct",
-          "rationale": "The data-centre subsidiary's FY26 PBT was Rs 87.6 cr on Rs 151.3 cr turnover (58%)."
+          "rationale": "CFO: 'EBITDA for H1 is 75%' for data centres (Nov 2025 call); the data-centre subsidiary's FY26 PBT margin was 58%."
         },
         "totalEbitdaFY26Cr": {
           "kind": "disclosed",
@@ -773,7 +776,7 @@
       "symbol": "HFCL",
       "title": "Data-centre connectivity revenue",
       "type": "growBase",
-      "basis": "HFCL's data-centre business began in FY27; the base is its own statements, growth and margin are assumptions. Horizon FY27 to FY29.",
+      "basis": "HFCL's data-centre business began in FY27; the base is its own statements, growth and margin are assumptions. Horizon FY27 to FY29. Firm evidence: a Rs 495.8 cr export order for data-centre connectivity (10 Jul 2026, delivery by Dec 2026).",
       "params": {
         "aiRevenueBaseCr": {
           "kind": "assumption",
@@ -1290,6 +1293,120 @@
           "label": "FY26 profit after tax",
           "unit": "cr",
           "source": "FY26 annual report"
+        }
+      }
+    },
+    {
+      "symbol": "APARINDS",
+      "title": "Data-centre share of cables revenue",
+      "type": "growBase",
+      "basis": "APAR supplies cables to US data-centre projects (about $15 mn across three, per the Q4 FY26 call) but states no data-centre revenue. This model waits for a share.",
+      "params": {
+        "revenueBaseCr": {
+          "kind": "disclosed",
+          "value": 6220,
+          "label": "FY26 cables revenue",
+          "unit": "cr",
+          "source": "Annual report FY26 (+25.8%)"
+        },
+        "dcShare": {
+          "kind": "assumption",
+          "value": null,
+          "low": null,
+          "high": null,
+          "label": "Data-centre share of cables revenue",
+          "unit": "pct",
+          "rationale": "Not disclosed; set it to run the model."
+        },
+        "years": {
+          "kind": "assumption",
+          "value": 3,
+          "low": 3,
+          "high": 3,
+          "label": "Years to FY29",
+          "unit": "years",
+          "rationale": "FY26 to FY29; the horizon of every model here."
+        },
+        "growth": {
+          "kind": "assumption",
+          "value": 0.2,
+          "low": 0.1,
+          "high": 0.3,
+          "label": "Growth a year",
+          "unit": "pct",
+          "rationale": "AGI assumption; cables grew 25.8% in FY26."
+        },
+        "margin": {
+          "kind": "assumption",
+          "value": 0.09,
+          "low": 0.07,
+          "high": 0.11,
+          "label": "EBITDA margin",
+          "unit": "pct",
+          "rationale": "Company EBITDA margin about 9.0% in FY26; no cables margin used."
+        },
+        "totalEbitdaFY26Cr": {
+          "kind": "disclosed",
+          "value": 2067,
+          "label": "FY26 filed EBITDA",
+          "unit": "cr",
+          "source": "FY26 results (post open-period forex, before unallocable expenses)"
+        },
+        "patFY26Cr": {
+          "kind": "disclosed",
+          "value": 976.93,
+          "label": "FY26 profit after tax",
+          "unit": "cr",
+          "source": "FY26 results"
+        }
+      }
+    },
+    {
+      "symbol": "CRAFTSMAN",
+      "title": "Stationary-engine revenue against management's target",
+      "type": "target",
+      "basis": "Craftsman targets about $100 mn of stationary-engine revenue in FY29-FY30, much of it data-centre related; the rupee value depends on the exchange rate, an assumption here.",
+      "params": {
+        "targetRevenueCr": {
+          "kind": "assumption",
+          "value": 850,
+          "low": 800,
+          "high": 900,
+          "label": "Management target in rupees",
+          "unit": "cr",
+          "rationale": "$100 mn (Q4 FY26 and Q1 FY27 calls; FY29-FY30) at Rs 80-90 per dollar, an AGI assumption."
+        },
+        "achievement": {
+          "kind": "assumption",
+          "value": 0.6,
+          "low": 0.3,
+          "high": 1.0,
+          "label": "Share achieved by FY29",
+          "unit": "pct",
+          "rationale": "AGI assumption; six customers engaged, five with orders; about 18-24 months of development plus a year of validation."
+        },
+        "margin": {
+          "kind": "assumption",
+          "value": 0.16,
+          "low": 0.12,
+          "high": 0.2,
+          "label": "EBITDA margin",
+          "unit": "pct",
+          "rationale": "Company EBITDA margin 16.1% in FY26."
+        },
+        "totalEbitdaFY26Cr": {
+          "kind": "disclosed",
+          "value": 1299,
+          "label": "FY26 filed EBITDA",
+          "unit": "cr",
+          "source": "FY26 results slides (incl. other income)"
+        },
+        "patFY26Cr": {
+          "kind": "disclosed",
+          "value": 383.99,
+          "label": "FY26 profit after tax",
+          "unit": "cr",
+          "source": "FY26 results"
         }
       }
     }

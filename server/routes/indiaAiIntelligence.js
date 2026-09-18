@@ -179,6 +179,8 @@ export default function createIndiaAiIntelligenceRouter() {
         members: universe.members,
         candidates: universe.candidates,
         excluded: universe.excluded || [],
+        // Symbols only: the list was a reading queue, and its other content is not used.
+        reportedList: (universe.externalLeads || []).flatMap((one) => one.symbols || []),
       });
     } catch (error) {
       res.status(500).json({ ok: false, error: String(error?.message || error) });

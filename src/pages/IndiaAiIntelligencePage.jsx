@@ -134,6 +134,7 @@ const SECTIONS = [
   ['value', 'Market value'],
   ['operating', 'Order books'],
   ['estimates', 'AGI estimates'],
+  ['matrix', 'Master matrix'],
   ['orders', 'Orders'],
   ['capacity', 'Capacity'],
   ['layers', 'Empty layers'],
@@ -1013,7 +1014,7 @@ function MarketSizeCalculator({ config }) {
               const row = out?.rows.find((r) => r.key === layer.key);
               return (
                 <tr key={layer.key} className="border-t border-[#2a2216] align-top">
-                  <td className="py-1 pr-2 text-[#e3e8ef]">{layer.label}<span className="block text-[11px] text-[#8a7658]">{layer.members}</span></td>
+                  <td className="py-1 pr-2 text-[#e3e8ef]">{layer.label}<span className="block text-[11px] text-[#8a7658]">{layer.members}</span>{layer.scope ? <span className="block text-[11px] italic text-[#8a7658]">Covers: {layer.scope}</span> : null}</td>
                   <td className="py-1 pr-2 text-right whitespace-nowrap">{num(`${layer.key}.low`, layer.lowCrPerMW)} – {num(`${layer.key}.high`, layer.highCrPerMW)}</td>
                   <td className="py-1 pr-2 text-right font-mono tabular-nums text-[#f5d9b0]">
                     {row?.lowCr != null ? `${rupeesCr(row.lowCr)}${row.highCr !== row.lowCr ? ` – ${rupeesCr(row.highCr)}` : ''}` : 'not priced'}
@@ -1209,6 +1210,125 @@ function Estimates({ data, marketValue }) {
         <p className="text-[12px] leading-relaxed text-[#8a7658]">{data.limits}</p>
       </div>
     </section>
+  );
+}
+
+/**
+ * Every company AGI has read, in one table, from AGI's own data only.
+ *
+ * Status and reason from the universe; stated shares, order-book cover and
+ * capacity from the operating data; stage 3; market value; the base-case
+ * estimate and its price check; liquidity on demand. No broker figure is
+ * shown. Collapsed until opened, because the liquidity screen is fetched
+ * then rather than on every page load.
+ */
+function MasterMatrix({ universe, operating, estimates, marketValue, stage3 }) {
+  const [open, setOpen] = React.useState(false);
+  const [filter, setFilter] = React.useState('all');
+  const [exit, setExit] = React.useState(null);
+  React.useEffect(() => {
+    if (!open || exit) return;
+    fetchExitability().then(setExit).catch((err) => setExit({ ok: false, error: String(err?.message || err) }));
+  }, [open, exit]);
+  if (!universe?.members) return null;
+  const reported = new Set(universe.reportedList || []);
+  const mv = Object.fromEntries((marketValue?.rows || []).map((r) => [r.symbol, r.marketValueCr]));
+  const s3 = Object.fromEntries((stage3?.rows || []).map((r) => [r.symbol, r.verdict]));
+  const shares = {};
+  for (const r of operating?.statedShares || []) shares[r.symbol] = shares[r.symbol] ? `${shares[r.symbol]}; ${r.value}` : r.value;
+  const cover = Object.fromEntries((operating?.orderBooks || []).filter((r) => r.backlogCr && r.quarterRevenueCr).map((r) => [r.symbol, r.backlogCr / r.quarterRevenueCr]));
+  const cap = Object.fromEntries((operating?.dataCentreCapacity || []).map((r) => [r.symbol, r]));
+  const models = Object.fromEntries((estimates?.models || []).map((m) => [m.symbol, m]));
+  const exitMultiple = estimates?.exitMultiple ? valueOf(estimates.exitMultiple, 'base') : null;
+  const liq = Object.fromEntries((exit?.sized || []).map((r) => [r.symbol, r]));
+  const firstSentence = (t) => String(t || '').split('. ')[0];
+  const rows = [
+    ...universe.members.map((m) => ({ kind: 'Member', symbol: m.symbol, name: m.name, layer: LAYER_LABEL[m.layer] || m.layer, why: m.attribution ? m.attribution.replace(/_/g, ' ').toLowerCase() : 'not recorded' })),
+    ...(universe.candidates || []).map((c) => ({ kind: 'Held', symbol: c.symbol, name: c.name, layer: LAYER_LABEL[c.suggestedLayer] || c.suggestedLayer || '—', why: firstSentence(c.note) })),
+    ...(universe.excluded || []).map((x) => ({ kind: 'Excluded', symbol: x.symbol, name: x.name, layer: '—', why: firstSentence(x.reason || x.note) })),
+  ].filter((r) => filter === 'all' || (filter === 'reported' ? reported.has(r.symbol) : r.kind === filter))
+    .sort((a, b) => ['Member', 'Held', 'Excluded'].indexOf(a.kind) - ['Member', 'Held', 'Excluded'].indexOf(b.kind) || (mv[b.symbol] || 0) - (mv[a.symbol] || 0));
+  const chipFor = (kind) => (kind === 'Member' ? 'bg-[#10261a] text-[#4ade80]' : kind === 'Held' ? 'bg-[#2a2110] text-[#d9a94a]' : 'bg-[#161c26] text-[#7d8894]');
+  return (
+    <Panel id="matrix" title="Master matrix" note="every company AGI has read · AGI data only, no broker figures">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+        className="rounded-md border border-[#2a3444] px-3 py-1.5 text-[13px] text-[#8fb4d8] hover:text-[#e3e8ef] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#e8833a]"
+      >
+        {open ? 'Hide the matrix' : `Show all ${universe.members.length + (universe.candidates || []).length + (universe.excluded || []).length} companies`}
+      </button>
+      {open ? (
+        <div className="mt-3">
+          <div className="mb-2 flex flex-wrap gap-1.5" role="group" aria-label="Filter">
+            {[['all', 'All'], ['Member', 'Members'], ['Held', 'Held'], ['Excluded', 'Excluded'], ['reported', 'On the reported list']].map(([key, label]) => (
+              <button
+                key={key} type="button" onClick={() => setFilter(key)} aria-pressed={filter === key}
+                className={`rounded px-2 py-0.5 text-[12px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#e8833a] ${filter === key ? 'bg-[#e8833a] text-[#0a0e14]' : 'border border-[#2a3444] text-[#9aa5b3]'}`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[1100px] text-[12px]">
+              <thead>
+                <tr className="text-left text-[11px] uppercase tracking-wider text-[#68727f]">
+                  <th className="py-1.5 pr-2 font-medium">Company</th>
+                  <th className="py-1.5 pr-2 font-medium">Status · exposure / reason</th>
+                  <th className="py-1.5 pr-2 font-medium">Layer</th>
+                  <th className="py-1.5 pr-2 font-medium">Stated AI/DC share</th>
+                  <th className="py-1.5 pr-2 text-right font-medium">Order cover</th>
+                  <th className="py-1.5 pr-2 text-right font-medium">DC MW live / tied up</th>
+                  <th className="py-1.5 pr-2 font-medium">Stage 3</th>
+                  <th className="py-1.5 pr-2 text-right font-medium">Market value</th>
+                  <th className="py-1.5 pr-2 text-right font-medium">Est. FY29 AI EBITDA / FY26 EBITDA</th>
+                  <th className="py-1.5 pr-2 text-right font-medium">Profit growth price needs</th>
+                  <th className="py-1.5 font-medium">₹100 cr position</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((r) => {
+                  const model = models[r.symbol];
+                  const out = model ? runModel(model, { scenario: 'base' }) : null;
+                  const pat = model ? valueOf(model.params?.patFY26Cr, 'base') : null;
+                  const implied = model ? impliedGrowth({ marketValueCr: mv[r.symbol], patCr: pat, exitMultiple, years: estimates.horizonYears }) : null;
+                  const c = cap[r.symbol];
+                  const l = liq[r.symbol];
+                  return (
+                    <tr key={r.symbol} className="border-t border-[#1a2230] align-top">
+                      <td className="py-1.5 pr-2">
+                        <span className="font-mono text-[#e3e8ef]">{r.symbol}</span>
+                        {reported.has(r.symbol) ? <span className="ml-1 text-[10px] text-[#8fb4d8]" title="On the reported list of 42">●</span> : null}
+                        <span className="block text-[11px] text-[#68727f]">{r.name}</span>
+                      </td>
+                      <td className="py-1.5 pr-2 text-[#9aa5b3]"><span className={`mr-1 rounded px-1 text-[10px] uppercase ${chipFor(r.kind)}`}>{r.kind}</span>{r.why}</td>
+                      <td className="py-1.5 pr-2 text-[#9aa5b3]">{r.layer}</td>
+                      <td className="py-1.5 pr-2 text-[#c7cfda]">{shares[r.symbol] || <span className="text-[#4b5563]">not stated</span>}</td>
+                      <td className="py-1.5 pr-2 text-right font-mono tabular-nums text-[#9aa5b3]">{cover[r.symbol] ? `${cover[r.symbol].toFixed(1)} q` : '—'}</td>
+                      <td className="py-1.5 pr-2 text-right font-mono tabular-nums text-[#9aa5b3]">{c ? `${c.operationalMW ?? '—'} / ${c.tiedUpMW ?? '—'}` : '—'}</td>
+                      <td className="py-1.5 pr-2 text-[#9aa5b3]">{s3[r.symbol] ? s3[r.symbol].toLowerCase().replace('_', ' ') : '—'}</td>
+                      <td className="py-1.5 pr-2 text-right font-mono tabular-nums text-[#c7cfda]">{mv[r.symbol] ? rupeesCr(mv[r.symbol]) : '—'}</td>
+                      <td className="py-1.5 pr-2 text-right font-mono tabular-nums text-[#f0a060]">
+                        {out?.ok && out.materiality != null ? `${(out.materiality * 100).toFixed(0)}%` : model ? <span className="text-[#7d8894]">waits</span> : '—'}
+                      </td>
+                      <td className="py-1.5 pr-2 text-right font-mono tabular-nums text-[#9aa5b3]">{implied ? `${(implied.cagr * 100).toFixed(0)}%/yr` : '—'}</td>
+                      <td className="py-1.5 text-[#9aa5b3]">{l ? (l.meetsTarget ? 'yes' : `up to ${rupeesCr(l.maxExecutablePosition / 1e7)}`) : exit ? '—' : '…'}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+          <p className="mt-2 text-[12px] leading-relaxed text-[#68727f]">
+            ● = on the reported list of 42. Estimate columns are AGI&rsquo;s base case (see AGI estimates), not forecasts or recommendations;
+            &ldquo;waits&rdquo; means the model needs a figure no company discloses. Profit growth the price needs assumes the market value
+            equals {exitMultiple}x profit by FY29. A dash is a figure AGI does not have. Held and excluded companies are not modelled.
+          </p>
+        </div>
+      ) : null}
+    </Panel>
   );
 }
 
@@ -1904,6 +2024,8 @@ export default function IndiaAiIntelligencePage() {
               <OperatingData data={operating} />
 
               <Estimates data={estimates} marketValue={marketValue} />
+
+              <MasterMatrix universe={universe} operating={operating} estimates={estimates} marketValue={marketValue} stage3={stage3} />
             </div>
 
             {/* ── monitor ── */}
