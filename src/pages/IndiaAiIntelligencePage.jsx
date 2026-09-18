@@ -1,5 +1,7 @@
 import React from 'react';
-import { fetchFiledFacts, fetchLive, fetchSnapshots, fetchUniverse } from '@/lib/indiaAiApi';
+import {
+  fetchFiledFacts, fetchLive, fetchSnapshots, fetchStage3, fetchUniverse,
+} from '@/lib/indiaAiApi';
 import {
   BuildFunding, CapexChanges, CapexConcentration, EvidenceComposition, ExposureAttribution,
 } from '@/components/indiaAi/FiledEvidenceCharts';
@@ -120,6 +122,7 @@ const SECTIONS = [
   ['overview', 'Overview'],
   ['filed', 'From the filings'],
   ['universe', 'Universe'],
+  ['intensity', 'Intensity'],
   ['orders', 'Orders'],
   ['capacity', 'Capacity'],
   ['layers', 'Empty layers'],
@@ -412,6 +415,108 @@ function LayerCards({ universe }) {
         );
       })}
     </div>
+  );
+}
+
+/**
+ * Stage 3: investment intensity, beside each member.
+ *
+ * Context, not a gate. Membership is decided by filed evidence; this says
+ * whether a member is building harder or softer than its peers here. The
+ * medians are of this group, which was already selected for exposure, so the
+ * bar is high and "below" means below these peers, not "not investing". A
+ * verdict says how many of the four tests it rests on, and a figure that
+ * could not be read shows as a dash, never as a zero.
+ */
+const INTENSITY_TESTS = [
+  ['revenueCagr3y', 'Revenue CAGR', '3 years'],
+  ['capexGrowth', 'Capex growth', 'FY26 vs FY25'],
+  ['capexToSales', 'Capex / sales', 'FY26'],
+  ['rndToSales', 'R&D / sales', 'FY26'],
+];
+
+function InvestmentIntensity({ data }) {
+  if (!data?.rows?.length) {
+    return (
+      <Panel id="intensity" title="Investment intensity" note="stage 3">
+        <p className="text-[11px] text-[#68727f]">Loading the stage 3 inputs.</p>
+      </Panel>
+    );
+  }
+  const members = data.rows.filter((one) => one.kind === 'member');
+  const candidates = data.rows.filter((one) => one.kind === 'candidate');
+  const t = data.thresholds || {};
+  const fmt = (v) => (v === null || v === undefined ? '—' : `${(v * 100).toFixed(1)}%`);
+  const passCount = members.filter((one) => one.verdict === 'PASS').length;
+  const verdictChip = (row) => {
+    if (row.verdict === 'PASS') {
+      return <span className="rounded bg-[#10261a] px-1.5 py-[2px] text-[10px] text-[#4ade80]">Above on {row.met.length}</span>;
+    }
+    if (row.verdict === 'BELOW') {
+      return <span className="rounded bg-[#2a2110] px-1.5 py-[2px] text-[10px] text-[#d9a94a]">Below · {row.tested.length} of 4 tested</span>;
+    }
+    return <span className="rounded bg-[#161c26] px-1.5 py-[2px] text-[10px] text-[#7d8894]">Not screened</span>;
+  };
+  return (
+    <Panel
+      id="intensity"
+      title="Investment intensity"
+      note="stage 3 · context, not a gate"
+      action={`${passCount} of ${members.length} members above a median`}
+    >
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+        {INTENSITY_TESTS.map(([key, label, period]) => (
+          <div key={key} className="rounded border border-[#1a2230] px-2.5 py-2">
+            <p className="text-[10px] uppercase tracking-wider text-[#7d8894]">{label}</p>
+            <p className="mt-0.5 font-mono text-[15px] font-semibold tabular-nums text-[#e3e8ef]">{fmt(t[key])}</p>
+            <p className="text-[10px] text-[#68727f]">median · {period} · {data.distributions?.[key]?.count ?? 0} with data</p>
+          </div>
+        ))}
+      </div>
+      <div className="mt-3 overflow-x-auto">
+        <table className="w-full min-w-[560px] text-[11px]">
+          <thead>
+            <tr className="text-left text-[10px] uppercase tracking-wider text-[#68727f]">
+              <th className="py-1.5 pr-2 font-medium">Member</th>
+              {INTENSITY_TESTS.map(([key, label]) => (
+                <th key={key} className="py-1.5 pr-2 text-right font-medium">{label}</th>
+              ))}
+              <th className="py-1.5 font-medium">Verdict</th>
+            </tr>
+          </thead>
+          <tbody>
+            {members.map((row) => (
+              <tr key={row.symbol} className="border-t border-[#1a2230]">
+                <td className="py-1.5 pr-2 font-mono text-[#d3dae3]" title={row.excluded || row.capexNote || ''}>{row.symbol}</td>
+                {INTENSITY_TESTS.map(([key]) => {
+                  const v = row[key];
+                  const above = v !== null && t[key] !== null && v >= t[key];
+                  return (
+                    <td
+                      key={key}
+                      className={`py-1.5 pr-2 text-right font-mono tabular-nums ${v === null ? 'text-[#4b5563]' : above ? 'text-[#4ade80]' : 'text-[#9aa5b3]'}`}
+                    >
+                      {fmt(v)}
+                    </td>
+                  );
+                })}
+                <td className="py-1.5">{verdictChip(row)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p className="mt-3 text-[10px] leading-relaxed text-[#68727f]">
+        A member passes on any one test at or above the median. The medians are of the
+        {` ${data.rows.length} `}members and candidates screened here, a group already chosen for
+        AI-infrastructure exposure, so below means less intensive than these peers, not idle.
+        Stage 3 does not remove anyone; membership rests on filed evidence.
+        Candidates: {candidates.filter((one) => one.verdict === 'PASS').length} of {candidates.length} above a median.
+        A dash is a figure not read, never a zero. Revenue growth compares total revenue with total revenue;
+        capex is the cash-flow purchase of property, plant and equipment; R&amp;D is usually a company-level figure.
+        Figures as of {data.asOf}.
+      </p>
+    </Panel>
   );
 }
 
@@ -847,6 +952,7 @@ export default function IndiaAiIntelligencePage() {
   const [live, setLive] = React.useState(null);
   const [snapshots, setSnapshots] = React.useState([]);
   const [filed, setFiled] = React.useState(null);
+  const [stage3, setStage3] = React.useState(null);
   const [liveError, setLiveError] = React.useState(null);
   const [error, setError] = React.useState(null);
   const clock = useIstClock();
@@ -859,6 +965,9 @@ export default function IndiaAiIntelligencePage() {
       .catch((err) => { if (!cancelled) setError(String(err?.message || err)); });
     fetchFiledFacts()
       .then((payload) => { if (!cancelled) setFiled(payload); })
+      .catch(() => {});
+    fetchStage3()
+      .then((payload) => { if (!cancelled) setStage3(payload); })
       .catch(() => {});
     return () => { cancelled = true; };
   }, []);
@@ -1027,6 +1136,8 @@ export default function IndiaAiIntelligencePage() {
               </section>
 
               <AdmittedUniverse universe={universe} />
+
+              <InvestmentIntensity data={stage3} />
 
               <LayerCards universe={universe} />
             </div>
