@@ -54,36 +54,127 @@
       "isin": "INE067A01029",
       "facts": [
         {
-          "concept": "capex",
-          "definition_id": "CAPEX.COMMITTED_PROJECT",
-          "scope": "project",
-          "period_end": "2026-03-31",
-          "value": 1062.85,
-          "unit": "inr_crore",
-          "as_reported_label": "QIP proceeds allocated to CG Semi capex"
-        },
-        {
-          "concept": "share_count",
-          "definition_id": "SHARE_COUNT.OUTSTANDING",
-          "scope": "entity",
-          "period_end": "2026-03-31",
-          "value": 1574921249,
-          "unit": "shares",
-          "as_reported_label": "subscribed and paid up"
-        },
-        {
-          "concept": "rnd",
-          "definition_id": "RND.GROSS",
+          "concept": "revenue",
+          "definition_id": "REVENUE.OPERATIONS_NET",
           "scope": "consolidated",
           "period_end": "2026-03-31",
-          "value": null,
-          "unit": null,
-          "state": "NOT_DISCLOSED",
-          "note": "No clean company-disclosed FY26 R&D figure located. Not zero."
+          "value": 12417.95,
+          "prior": 9908.66,
+          "unit": "inr_crore",
+          "as_reported_label": "Total revenue, all segments",
+          "source_page": 176
+        },
+        {
+          "concept": "net_profit",
+          "definition_id": "PAT.REPORTED",
+          "scope": "consolidated",
+          "period_end": "2026-03-31",
+          "value": 1198.68,
+          "prior": 972.98,
+          "unit": "inr_crore",
+          "as_reported_label": "Profit for the year",
+          "source_page": 176
+        },
+        {
+          "concept": "capex",
+          "definition_id": "CAPEX.SEGMENT",
+          "scope": "consolidated",
+          "period_end": "2026-03-31",
+          "value": 777.76,
+          "unit": "inr_crore",
+          "as_reported_label": "Capital expenditure (net of government grant), all segments",
+          "note": "Net of government grant. The India Semiconductor Mission support reduces the reported figure, so this is not gross capital spend and must not be compared with a gross capex from another company.",
+          "source_page": 176
         }
       ],
       "segmentNote": "Semiconductors appears as a segment in consolidated reporting and not in standalone, so consolidated is the correct scope for semiconductor attribution.",
-      "documentProvenance": "The FY26 annual report must be read with the company's subsequent corrigendum, which the company itself states. Both belong to the document provenance."
+      "documentProvenance": "The FY26 annual report must be read with the company's subsequent corrigendum, which the company itself states. Both belong to the document provenance.",
+      "provenance": "PRIMARY_FILING_READ",
+      "document": "Annual Report 2025-2026 (89th), CG Power and Industrial Solutions Limited",
+      "segmentRevenue": [
+        {
+          "segment": "Industrial Systems",
+          "value": 6745.43,
+          "unit": "inr_crore",
+          "scope": "consolidated",
+          "source_page": 176
+        },
+        {
+          "segment": "Power Systems",
+          "value": 5135.51,
+          "unit": "inr_crore",
+          "scope": "consolidated",
+          "source_page": 176
+        },
+        {
+          "segment": "Semiconductors",
+          "value": 502.77,
+          "prior": 0,
+          "unit": "inr_crore",
+          "scope": "consolidated",
+          "source_page": 176
+        },
+        {
+          "segment": "Others",
+          "value": 34.24,
+          "unit": "inr_crore",
+          "scope": "consolidated",
+          "source_page": 176
+        }
+      ],
+      "segmentCapex": [
+        {
+          "segment": "Semiconductors",
+          "value": 330.33,
+          "unit": "inr_crore",
+          "source_page": 176
+        },
+        {
+          "segment": "Power Systems",
+          "value": 320.71,
+          "unit": "inr_crore",
+          "source_page": 176
+        },
+        {
+          "segment": "Industrial Systems",
+          "value": 115.92,
+          "unit": "inr_crore",
+          "source_page": 176
+        },
+        {
+          "segment": "Others",
+          "value": 0.35,
+          "unit": "inr_crore",
+          "source_page": 176
+        },
+        {
+          "segment": "Unallocable",
+          "value": 10.45,
+          "unit": "inr_crore",
+          "source_page": 176
+        }
+      ],
+      "segmentResult": [
+        {
+          "segment": "Semiconductors",
+          "value": -107.86,
+          "prior": -22.39,
+          "unit": "inr_crore",
+          "source_page": 176
+        }
+      ],
+      "segmentAssets": [
+        {
+          "segment": "Semiconductors",
+          "value": 1421.39,
+          "prior": 773.5,
+          "unit": "inr_crore",
+          "source_page": 176
+        }
+      ],
+      "exposureAttributable": true,
+      "exposureFinding": "The opposite of ADANIENT, and measurable. Semiconductors is a reported operating segment in consolidated accounts - OSAT and fabless design, identified separately under Ind AS 108 (page 176) - so the theme can be sized from the filing rather than asserted. FY26 semiconductor revenue of 502.77 crore is 4.0% of group revenue, its assets of 1,421.39 crore are 11.2% of group assets, and its capital expenditure of 330.33 crore is 42.5% of all group capex. A segment taking two fifths of the capital while earning four per cent of the revenue is the AI infrastructure thesis stated in the company's own numbers. External sales were nil in FY25, so this is the first year the segment earned anything, and it is loss-making at -107.86 crore against -22.39 the year before.",
+      "rndNote": "Still no discrete FY26 R&D figure. The report describes R&D direction qualitatively at page 66 and gives no amount, so this stays NOT_DISCLOSED rather than zero."
     },
     "NETWEB": {
       "isin": "INE0NT901020",
