@@ -1446,7 +1446,7 @@ export default function IndiaAiIntelligencePage() {
                   </p>
                 </div>
                 <div className="grid gap-3 lg:grid-cols-2">
-                  <ExposureAttribution companies={filed?.companies} />
+                  <ExposureAttribution companies={filed?.companies} universe={universe} />
                   <CapexConcentration company={filed?.companies?.CGPOWER} />
                   <BuildFunding companies={filed?.companies} />
                   <EvidenceComposition universe={universe} />
@@ -1500,7 +1500,7 @@ export default function IndiaAiIntelligencePage() {
               </Panel>
 
               <Panel title="Capex changes" note="year on year, from filings">
-                <CapexChanges companies={filed?.companies} />
+                <CapexChanges companies={filed?.companies} stage3={stage3} />
               </Panel>
 
               <OrderFeed universe={universe} />
@@ -1508,7 +1508,7 @@ export default function IndiaAiIntelligencePage() {
 
               <Panel title="AI layer heatmap" note="12-month view">
                 <Needed
-                  what="A twelve-month heatmap needs twelve months of snapshots. The first was taken today."
+                  what={`A twelve-month heatmap needs twelve months of daily closes. The record began at the close on ${history?.base ? new Date(`${history.base}T00:00:00Z`).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' }) : 'the first admission date'}, so the first full view is a year after that.`}
                   source="time"
                 />
               </Panel>

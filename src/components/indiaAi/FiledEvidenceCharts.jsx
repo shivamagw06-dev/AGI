@@ -45,49 +45,87 @@ const tierOf = (one) => one.attribution
   || (one.exposureAttributable === true ? 'SEGMENT_REPORTED'
     : one.exposureAttributable === false ? 'NOT_ATTRIBUTABLE' : null);
 
-export function ExposureAttribution({ companies }) {
-  const rows = Object.entries(companies || {}).map(([symbol, one]) => ({
-    symbol,
-    tier: tierOf(one),
-    // A line written to stand alone here, rather than the first sentence of a
-    // longer note cut mid-argument.
-    verdict: one.exposureVerdict || String(one.exposureFinding || '').split('. ')[0],
-  }));
+const firstSentence = (text) => String(text || '').split('. ')[0].replace(/\.$/, '');
+
+export function ExposureAttribution({ companies, universe }) {
+  const filed = companies || {};
+  const members = universe?.members || [];
+  // Every admitted member, from the universe, which records a tier for each.
+  // The companies read in depth carry a verdict written for this chart and
+  // agree with the universe on the tier; everyone else's line is the first
+  // sentence of the exposure note recorded when they were admitted. Before
+  // the universe arrives, the in-depth set is shown and says it is partial.
+  const rows = members.length
+    ? members.map((member) => {
+      const one = filed[member.symbol];
+      return {
+        symbol: member.symbol,
+        tier: member.attribution || (one ? tierOf(one) : null),
+        verdict: one?.exposureVerdict || firstSentence(one?.exposureFinding) || firstSentence(member.exposureNote),
+      };
+    })
+    : Object.entries(filed).map(([symbol, one]) => ({
+      symbol,
+      tier: tierOf(one),
+      verdict: one.exposureVerdict || firstSentence(one.exposureFinding),
+    }));
   if (!rows.length) return null;
   const order = (t) => { const i = TIERS.findIndex((x) => x.key === t); return i < 0 ? TIERS.length : i; };
-  const sorted = [...rows].sort((a, b) => order(a.tier) - order(b.tier));
+  const sorted = [...rows].sort((a, b) => order(a.tier) - order(b.tier) || a.symbol.localeCompare(b.symbol));
   const counts = TIERS.map((t) => ({ ...t, n: rows.filter((r) => r.tier === t.key).length }));
-  const unresolved = rows.filter((r) => !TIERS.some((t) => t.key === r.tier)).length;
+  const unresolved = rows.filter((r) => !TIERS.some((t) => t.key === r.tier));
 
   return (
     <Panel
       title="Can the exposure be sized?"
-      note={`${counts[0].n} segment-reported, ${counts[1].n} management-disclosed, ${counts[2].n} not attributable`}
-      source="From each company's FY2025-26 filing. Segment-reported means the theme is an audited Ind AS 108 operating segment. Management-disclosed means the company states a figure for it outside segment reporting, which cannot be tied to assets or capex."
+      note={`${members.length ? `all ${rows.length} members` : `${rows.length} read in depth`} · ${counts[0].n} segment-reported, ${counts[1].n} management-disclosed, ${counts[2].n} not attributable${unresolved.length ? `, ${unresolved.length} unresolved` : ''}`}
+      source="From each member's own disclosures, as recorded when it was admitted. Segment-reported means the theme is an audited Ind AS 108 operating segment. Management-disclosed means the company states a figure for it outside segment reporting (in a filing, presentation or call), which cannot be tied to assets or capex. Unresolved means no tier has been recorded yet; it is not a guess at either."
     >
       <div className="mb-3 flex h-2 overflow-hidden rounded-full bg-[#141b26]">
         {counts.map((t) => (
           <div key={t.key} style={{ width: `${(t.n / rows.length) * 100}%`, background: t.tone }} />
         ))}
-        {unresolved ? <div className="bg-[#d9a94a]/50" style={{ width: `${(unresolved / rows.length) * 100}%` }} /> : null}
+        {unresolved.length ? <div className="bg-[#d9a94a]/50" style={{ width: `${(unresolved.length / rows.length) * 100}%` }} /> : null}
       </div>
-      <ul className="space-y-2">
-        {sorted.map((row) => {
-          const t = TIERS.find((x) => x.key === row.tier);
-          return (
-            <li key={row.symbol} className="flex items-start gap-2.5">
-              <span className={`mt-[6px] h-1.5 w-1.5 shrink-0 rounded-full ${t ? t.dot : 'bg-[#d9a94a]'}`} aria-hidden />
-              <span className="min-w-0">
-                <span className="font-mono text-[13px] text-[#d3dae3]">{row.symbol}</span>
-                <span className="ml-2 text-[12px] uppercase tracking-wider text-[#68727f]">
-                  {t ? t.label : 'unresolved'}
+      <div className="space-y-2">
+        {[...counts, { key: 'unresolved', label: 'unresolved', dot: 'bg-[#d9a94a]', n: unresolved.length }]
+          .filter((t) => t.n)
+          .map((t) => (
+            <div key={t.key}>
+              <p className="flex items-center gap-2 text-[12px] uppercase tracking-wider text-[#7d8894]">
+                <span className={`h-1.5 w-1.5 rounded-full ${t.dot}`} aria-hidden />
+                {t.label} · {t.n}
+              </p>
+              <p className="mt-1 flex flex-wrap gap-1">
+                {sorted.filter((r) => (t.key === 'unresolved' ? !TIERS.some((x) => x.key === r.tier) : r.tier === t.key)).map((r) => (
+                  <span key={r.symbol} className="rounded bg-[#1c2534] px-1.5 py-[2px] font-mono text-[11px] text-[#98a3b2]">{r.symbol}</span>
+                ))}
+              </p>
+            </div>
+          ))}
+      </div>
+      <details className="mt-3">
+        <summary className="cursor-pointer rounded text-[13px] text-[#8fb4d8] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e8833a]">
+          Why, company by company
+        </summary>
+        <ul className="mt-2 space-y-2">
+          {sorted.map((row) => {
+            const t = TIERS.find((x) => x.key === row.tier);
+            return (
+              <li key={row.symbol} className="flex items-start gap-2.5">
+                <span className={`mt-[6px] h-1.5 w-1.5 shrink-0 rounded-full ${t ? t.dot : 'bg-[#d9a94a]'}`} aria-hidden />
+                <span className="min-w-0">
+                  <span className="font-mono text-[13px] text-[#d3dae3]">{row.symbol}</span>
+                  <span className="ml-2 text-[12px] uppercase tracking-wider text-[#68727f]">
+                    {t ? t.label : 'unresolved'}
+                  </span>
+                  {row.verdict ? <span className="mt-0.5 block text-[13px] leading-relaxed text-[#8b95a3]">{row.verdict}.</span> : null}
                 </span>
-                <span className="mt-0.5 block text-[13px] leading-relaxed text-[#8b95a3]">{row.verdict}</span>
-              </span>
-            </li>
-          );
-        })}
-      </ul>
+              </li>
+            );
+          })}
+        </ul>
+      </details>
     </Panel>
   );
 }
@@ -255,13 +293,24 @@ export function EvidenceComposition({ universe }) {
  * Only primary reads with a page number appear. A relayed figure, or a year
  * with no comparative, is left out rather than guessed at.
  */
-export function CapexChanges({ companies }) {
-  const rows = Object.entries(companies || {}).map(([symbol, one]) => {
-    if (one.provenance !== 'PRIMARY_FILING_READ') return null;
+export function CapexChanges({ companies, stage3 }) {
+  // A primary read with a page number first; otherwise the stage 3 input,
+  // which is the same cash-flow line taken from the annual report and cites
+  // its document. Both are FY26 against FY25.
+  const primary = {};
+  for (const [symbol, one] of Object.entries(companies || {})) {
+    if (one.provenance !== 'PRIMARY_FILING_READ') continue;
     const f = (one.facts || []).find((x) => x.concept === 'capex' && x.value != null && x.prior);
-    if (!f || !(f.prior > 0)) return null;
-    return { symbol, growth: f.value / f.prior - 1, page: f.source_page, label: f.as_reported_label };
-  }).filter(Boolean).sort((a, b) => b.growth - a.growth);
+    if (!f || !(f.prior > 0)) continue;
+    primary[symbol] = { symbol, growth: f.value / f.prior - 1, source: `cash flow, page ${f.source_page}` };
+  }
+  const members = (stage3?.rows || []).filter((one) => one.kind === 'member');
+  const fromStage3 = members
+    .filter((one) => !primary[one.symbol] && Number.isFinite(one.capexGrowth))
+    .map((one) => ({ symbol: one.symbol, growth: one.capexGrowth, source: one.capexSource || 'annual report' }));
+  const rows = [...Object.values(primary), ...fromStage3].sort((a, b) => b.growth - a.growth);
+  const shown = new Set(rows.map((one) => one.symbol));
+  const leftOut = members.filter((one) => !shown.has(one.symbol)).map((one) => one.symbol);
   if (!rows.length) return null;
   const widest = Math.max(...rows.map((r) => Math.abs(r.growth))) || 1;
 
@@ -276,15 +325,15 @@ export function CapexChanges({ companies }) {
             </span>
           </div>
           <div className="mt-1 h-[3px] rounded bg-[#1a2230]">
-            <div className="h-[3px] rounded bg-[#e8833a]" style={{ width: `${Math.max(2, (Math.abs(row.growth) / widest) * 100)}%` }} />
+            <div className={`h-[3px] rounded ${row.growth >= 0 ? 'bg-[#e8833a]' : 'bg-[#5aa2e0]'}`} style={{ width: `${Math.max(2, (Math.abs(row.growth) / widest) * 100)}%` }} />
           </div>
-          <p className="mt-0.5 text-[12px] text-[#68727f]">FY26 against FY25 &middot; cash flow, page {row.page}</p>
+          <p className="mt-0.5 text-[12px] text-[#68727f]">FY26 against FY25 &middot; {row.source}</p>
         </div>
       ))}
       <p className="border-t border-[#1a2230] pt-2 text-[12px] leading-relaxed text-[#68727f]">
         Growth only: members report in different units, so absolute figures are not comparable
-        across them. Members without a disclosed prior year, or not yet read from the filing,
-        are left out rather than estimated.
+        across them. {rows.length} of {members.length || rows.length} members.
+        {leftOut.length ? ` Left out rather than estimated, for want of a comparable disclosed year: ${leftOut.join(', ')}.` : ''}
       </p>
     </div>
   );
