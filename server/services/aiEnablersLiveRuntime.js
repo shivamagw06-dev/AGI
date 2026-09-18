@@ -71,6 +71,9 @@ export function snapshotFrom(universe, book, { now = Date.now(), volumeBaselines
       last_trade_at: (book.sources.session_last || []).length
         ? new Date(Math.max(...Object.values(book.quotes).map((one) => Number(one.at) || 0))).toISOString()
         : null,
+      // Of those, how many came from the session's minute candles because
+      // the feed had not delivered them.
+      from_candles: Object.values(book.quotes || {}).filter((one) => one.origin === 'candles').length,
       missing: book.sources.missing.length,
       unresolved: book.unresolved,
       // A basket priced largely from last-good is not a live basket, and the
@@ -133,6 +136,8 @@ export class AiEnablersLiveRuntime {
     this.fetchIntradayCandles = fetchIntradayCandles;
     this.fetchDailyCandles = fetchDailyCandles;
     this.historyRebuild = { status: 'not_run' };
+    // Each instrument's final minute of the rebuilt session, by key.
+    this.sessionCloses = {};
     this.now = now;
     this.sessionClosed = isSessionClosed;
     // Per-symbol corporate-action state, and the exchange day it was read for.
@@ -200,7 +205,7 @@ export class AiEnablersLiveRuntime {
     const now = this.now();
     const book = quoteBook(this.universe, {
       store: this.store, lastGood: this.lastGood, now, staleMs: this.staleMs,
-      priceBreaks: this.priceBreaks, closed: this.sessionClosed(now),
+      priceBreaks: this.priceBreaks, closed: this.sessionClosed(now), sessionCloses: this.sessionCloses,
     });
     book.volumes = Object.fromEntries(
       this.resolved.keys.map((key) => [key, this.store.get(key)?.cumulative_volume ?? null]),
@@ -302,6 +307,21 @@ export class AiEnablersLiveRuntime {
       }
     }
 
+    // The session's final prices, for pricing after the close while the feed
+    // has delivered nothing (it reconnects for minutes after a deploy, when
+    // the old process still holds Upstox's two connections). Only an
+    // instrument whose candles reach 15:30 IST: a partial day is not the
+    // session's last trade.
+    const closeAt = Date.parse(`${sessionDate}T10:00:00Z`);
+    const sessionCloses = {};
+    for (const key of this.resolved.keys) {
+      const last = candlesByKey[key]?.at(-1);
+      if (last && last.end >= closeAt && previousCloseByKey[key]) {
+        sessionCloses[key] = { ltp: last.close, previousClose: previousCloseByKey[key], at: last.end, sessionDate };
+      }
+    }
+    this.sessionCloses = sessionCloses;
+
     const firstObserved = this.snapshots.find((one) => one.origin !== 'candles');
     const until = firstObserved ? Date.parse(firstObserved.at) : this.now();
     const rebuilt = replaySession(this.universe, {
@@ -334,6 +354,7 @@ export class AiEnablersLiveRuntime {
       basis,
       disagreements,
       errors,
+      sessionCloses: Object.keys(sessionCloses).length,
       at: new Date(startedAt).toISOString(),
     };
     return this.historyRebuild;

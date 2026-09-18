@@ -120,7 +120,9 @@ const numeric = (value) => {
  * `source` is always reported. A caller that treats a last-good quote as live
  * is making a choice; it should have to make it knowingly.
  */
-export function quoteFor(instrumentKey, { store, lastGood, now, staleMs, closed = false }) {
+export function quoteFor(instrumentKey, {
+  store, lastGood, now, staleMs, closed = false, sessionCloses = null,
+}) {
   const row = store?.get?.(instrumentKey) || null;
   if (row) {
     const at = Date.parse(row.effective_timestamp || row.received_at || '');
@@ -148,6 +150,16 @@ export function quoteFor(instrumentKey, { store, lastGood, now, staleMs, closed 
       }
     }
   }
+  // Shut, and the feed has delivered nothing usable (it is reconnecting
+  // after a restart): the session's final minute candle is the last trade
+  // there is. Only candles that ran to the close are offered here.
+  const final = closed ? sessionCloses?.[instrumentKey] : null;
+  if (final && Number.isFinite(final.ltp) && Number.isFinite(final.previousClose) && final.previousClose !== 0) {
+    return {
+      ltp: final.ltp, previousClose: final.previousClose, at: final.at, source: 'session_last', origin: 'candles',
+      ageMs: Math.max(0, now - final.at), cumulativeVolume: null,
+    };
+  }
   const fallback = lastGood?.get(instrumentKey, { now });
   if (fallback) {
     return {
@@ -167,13 +179,13 @@ export function quoteFor(instrumentKey, { store, lastGood, now, staleMs, closed 
  * real, which the page has to show and the index has to be able to refuse on.
  */
 export function quoteBook(universe, {
-  store, lastGood, now = Date.now(), staleMs = 60_000, priceBreaks = {}, closed = false,
+  store, lastGood, now = Date.now(), staleMs = 60_000, priceBreaks = {}, closed = false, sessionCloses = null,
 } = {}) {
   const { bySymbol, benchmarkKey, unresolved } = universeInstrumentKeys(universe);
   const quotes = {};
   const sources = { live: [], last_good: [], session_last: [], missing: [] };
   for (const [symbol, key] of bySymbol) {
-    const quote = quoteFor(key, { store, lastGood, now, staleMs, closed });
+    const quote = quoteFor(key, { store, lastGood, now, staleMs, closed, sessionCloses });
     if (!quote) {
       sources.missing.push(symbol);
       continue;
@@ -182,6 +194,7 @@ export function quoteBook(universe, {
     // one's age has already been adjudicated here.
     quotes[symbol] = {
       ltp: quote.ltp, previousClose: quote.previousClose, at: quote.at, source: quote.source,
+      ...(quote.origin ? { origin: quote.origin } : {}),
     };
     // A member trading ex-bonus, ex-split or ex-rights has a price that moved
     // because its share count changed. The index excludes a quote carrying
@@ -195,7 +208,7 @@ export function quoteBook(universe, {
     sources[quote.source].push(symbol);
   }
   const benchmark = benchmarkKey
-    ? quoteFor(benchmarkKey, { store, lastGood, now, staleMs, closed })
+    ? quoteFor(benchmarkKey, { store, lastGood, now, staleMs, closed, sessionCloses })
     : null;
   return {
     quotes,

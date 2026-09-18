@@ -239,3 +239,51 @@ test("the runtime's corporate-action exclusions reach the rebuilt minutes", asyn
   assert.deepEqual(last.index.priceBreak.map((one) => one.symbol), ['BBB']);
   assert.equal(last.index.return_pp, 10);
 });
+
+/* ── after the close, before the feed delivers ─────────────────────── */
+
+const fullDay = {
+  [A]: payload(...minutes('09:15', 375, (i) => (i === 374 ? 112 : 110))),
+  [B]: payload(...minutes('09:15', 375, 90)),
+  [NIFTY]: payload(...minutes('09:15', 375, 25_250)),
+};
+
+test('after the close with no feed, the basket is priced from the final minute candles', async () => {
+  const runtime = runtimeAt(ist('17:17'), { fetchIntradayCandles: async (key) => fullDay[key] });
+  await runtime.rebuildHistory();
+  const snapshot = runtime.current();
+  assert.equal(snapshot.status, 'ok');
+  assert.equal(snapshot.quality.session_last, 2);
+  assert.equal(snapshot.quality.from_candles, 2);
+  assert.equal(snapshot.quality.last_trade_at, new Date(ist('15:30')).toISOString());
+  // AAA's final minute closed at 112: +12% and -10%, equal weighted.
+  assert.equal(snapshot.index.return_pp, 1);
+  assert.equal(snapshot.index.relative.benchmark_return_pp, 1);
+});
+
+test('a feed quote, when there is one, is preferred over the candles', async () => {
+  const late = new Date(ist('15:59')).toISOString();
+  const runtime = runtimeAt(ist('17:17'), {
+    fetchIntradayCandles: async (key) => fullDay[key],
+    store: { get: (key) => ({ [A]: { ltp: 120, previous_close: 100, effective_timestamp: late } })[key] || null, stats: () => ({}) },
+  });
+  await runtime.rebuildHistory();
+  const snapshot = runtime.current();
+  assert.equal(snapshot.quality.from_candles, 1);   // BBB; members only, not the benchmark
+  const aaa = snapshot.index.contributions.byName.find((one) => one.symbol === 'AAA');
+  assert.equal(aaa.contribution_pp, 10);            // (120/100 - 1) / 2
+});
+
+test('candles that stop before 15:30 do not stand in for the session close', async () => {
+  const runtime = runtimeAt(ist('17:17'));          // candles run 09:15-09:44 only
+  await runtime.rebuildHistory();
+  assert.deepEqual(runtime.sessionCloses, {});
+  assert.notEqual(runtime.current().status, 'ok');
+});
+
+test('mid-session, the candles are never used as prices', async () => {
+  const runtime = runtimeAt(ist('15:30', '2026-09-18'), { fetchIntradayCandles: async (key) => fullDay[key] });
+  await runtime.rebuildHistory();
+  runtime.now = () => ist('12:00', '2026-09-18');
+  assert.notEqual(runtime.current().status, 'ok');
+});
