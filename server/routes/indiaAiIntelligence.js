@@ -47,33 +47,65 @@ function supabaseClient() {
  * silently produces an empty basket is indistinguishable on the page from a
  * market where nothing traded.
  */
+/**
+ * The live runtime, started exactly once.
+ *
+ * Memoises the start-up promise, not the finished runtime. The earlier version
+ * checked `if (runtime)` and only assigned it after awaiting the universe load
+ * and seven sequential candle fetches - a window of seconds. Two requests
+ * arriving at cold start both saw null, both built a runtime, and both opened
+ * a WebSocket. Upstox allows two market-data connections per user, so that is
+ * the entire allowance spent on one process. And because the second assignment
+ * overwrote the first, the first feed was orphaned: nothing held a reference
+ * to it, so shutdownRuntime() could not close it on SIGTERM either. The page
+ * polls every thirty seconds, so any two open tabs across a deploy hit this.
+ *
+ * Refuses rather than starting a feed with no credentials: a runtime that
+ * silently produces an empty basket is indistinguishable on the page from a
+ * market where nothing traded.
+ */
+let starting = null;
+
 export async function ensureRuntime({ universe, start = true } = {}) {
   if (runtime) return runtime;
-  const loaded = universe || await loadUniverse();
-  if (!isUpstoxConfigured()) {
-    const error = new Error('Upstox is not configured; set UPSTOX_ACCESS_TOKEN server-side.');
-    error.code = 'UPSTOX_NOT_CONFIGURED';
-    throw error;
-  }
-  let baselines = {};
+  if (starting) return starting;
+  starting = (async () => {
+    const loaded = universe || await loadUniverse();
+    if (!isUpstoxConfigured()) {
+      const error = new Error('Upstox is not configured; set UPSTOX_ACCESS_TOKEN server-side.');
+      error.code = 'UPSTOX_NOT_CONFIGURED';
+      throw error;
+    }
+    let baselines = {};
+    try {
+      const today = new Date().toISOString().slice(0, 10);
+      const liquidity = await liquidityForUniverse(loaded, {
+        fetchCandles: getHistoricalCandles, to: today,
+      });
+      baselines = volumeBaselines(liquidity);
+    } catch {
+      // A missing baseline costs the volume ratio and nothing else; the basket
+      // still computes, and volumeRatio reports NO_BASELINE rather than zero.
+      baselines = {};
+    }
+    const built = new AiEnablersLiveRuntime({ universe: loaded, volumeBaselines: baselines });
+    if (start) await built.start();
+    runtime = built;
+    return built;
+  })();
   try {
-    const today = new Date().toISOString().slice(0, 10);
-    const liquidity = await liquidityForUniverse(loaded, {
-      fetchCandles: getHistoricalCandles, to: today,
-    });
-    baselines = volumeBaselines(liquidity);
-  } catch {
-    // A missing baseline costs the volume ratio and nothing else; the basket
-    // still computes, and volumeRatio reports NO_BASELINE rather than zero.
-    baselines = {};
+    return await starting;
+  } finally {
+    // Cleared on success and failure alike. On success `runtime` now answers
+    // every later call; on failure the next request may try again rather than
+    // being handed the same rejected promise forever.
+    starting = null;
   }
-  runtime = new AiEnablersLiveRuntime({ universe: loaded, volumeBaselines: baselines });
-  if (start) await runtime.start();
-  return runtime;
 }
 
 export function resetRuntimeForTests() {
   runtime = null;
+  starting = null;
   universeCache = null;
 }
 
