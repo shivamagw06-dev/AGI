@@ -702,7 +702,7 @@ function MarketValue({ data }) {
         </div>
       </details>
       <p className="mt-3 text-[10px] leading-relaxed text-[#68727f]">
-        Market value is the close on {data.closedThrough} times the equity shares each company last filed
+        Market value is the close on {data.closeDate || '—'}{data.closeDates?.length > 1 ? ` (some members earlier: ${data.closeDates.slice(0, -1).join(', ')})` : ''} times the equity shares each company last filed
         with the exchange; partly-paid shares are left out. It is the value of the whole company: most members
         do not report what share of their business serves data centres, so a layer&rsquo;s bar measures listed
         value with a filed link to AI infrastructure, not the value of that link. P/B × book is an independent
