@@ -204,6 +204,24 @@ Run monthly, and on demand. Every stage is reproducible from public data.
 **Stage 1 — universe.** All NSE-listed equities. The repo already carries
 `NIFTYstocks.csv` (~2,300 EQ/BE/SM), `Nifty500.csv` and `EQUITY_L.csv`.
 
+Stage 1 now runs over all of `EQUITY_L.csv` (2,390 companies) and records one
+outcome per company in `ai_enabler_universe_pass`:
+`scripts/aiEnablersUniversePass.mjs` fetches each company's Upstox profile and
+nominates it if its own business description names the plant a sub-layer is
+about (`aiEnablersNomination.js`: transformers, switchgear, data centres,
+servers, semiconductor packaging, and so on). **Nomination decides what is
+read for Stage 4 evidence; it never admits.** The terms are broad on purpose,
+since a false nomination costs one reading and a miss costs a member.
+
+The pass measures its own blind spot. Every admitted member and held candidate
+is a known qualifier, and any the pass fails to nominate is printed as a miss.
+A company whose description omits the business that qualifies it will be
+missed by this step; the miss rate on known qualifiers is the estimate of how
+often, and a discovery route other than descriptions is still needed for
+those. Companies with no ISIN, no profile, or a failed call are recorded as
+such and are never counted as "not nominated". A run below 95% of addressable
+companies is DEGRADED.
+
 **Stage 2 — size and tradability.** Free-float market cap above a floor, and median daily
 turnover above a floor, both measured over six months from Upstox history. Thresholds are
 AGI's, stored in config, and printed on the page. A screen whose cut-offs are hidden is a

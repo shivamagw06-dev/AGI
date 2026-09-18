@@ -11,6 +11,9 @@ import { sizeForUniverse, sizeRows } from '../services/aiEnablersSize.js';
 import { createSupabaseAdmin } from '../lib/supabaseAdmin.js';
 import { fundamentalsForUniverse, intensityForUniverse } from '../services/aiEnablersFundamentals.js';
 import { stageThree, stageTwo } from '../services/aiEnablersScreen.js';
+import {
+  latestUniversePassRun, readUniversePass, summariseUniversePass,
+} from '../services/aiEnablersUniversePass.js';
 
 const UNIVERSE_PATH = fileURLToPath(new URL('../config/india-ai-enablers.universe.json', import.meta.url));
 const FACTS_PATH = fileURLToPath(new URL('../config/india-ai-enablers.disclosed-facts.json', import.meta.url));
@@ -287,6 +290,37 @@ export default function createIndiaAiIntelligenceRouter() {
         screen: stageTwo(sizeRows(sizes, turnover), { minFreeFloatMarketCap, minMedianDailyTurnover }),
         sizes,
         liquidityFailures: liquidity.failures,
+      });
+    } catch (error) {
+      res.status(500).json({ ok: false, error: String(error?.message || error) });
+    }
+  });
+
+  /**
+   * Stage 1 over the whole exchange, as the last run stored it.
+   *
+   * Written by scripts/aiEnablersUniversePass.mjs from the Render shell.
+   * Returns the summary and the nominated companies with the words that
+   * nominated them; ?all=1 returns every company's row. No description text
+   * is stored, so none can be served.
+   */
+  router.get('/screen/universe-pass', async (req, res) => {
+    try {
+      const db = supabaseClient();
+      if (!db) return res.status(503).json({ ok: false, error: 'Supabase is not configured on this service.' });
+      const runId = String(req.query.run || '') || await latestUniversePassRun(db);
+      if (!runId) return res.json({ ok: true, run: null, summary: null, rows: [] });
+      const rows = await readUniversePass(db, runId);
+      const universe = await loadUniverse();
+      const reference = [
+        ...(universe.members || []).map((one) => ({ symbol: one.symbol, kind: 'member' })),
+        ...(universe.candidates || []).map((one) => ({ symbol: one.symbol, kind: 'candidate' })),
+      ];
+      res.json({
+        ok: true,
+        run: runId,
+        summary: summariseUniversePass(rows, { reference }),
+        rows: req.query.all ? rows : rows.filter((one) => one.disposition === 'NOMINATED'),
       });
     } catch (error) {
       res.status(500).json({ ok: false, error: String(error?.message || error) });
