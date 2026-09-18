@@ -50,6 +50,7 @@
       "admittedOn": [
         {
           "kind": "order",
+          "headline": "Data-centre pooling-station order: 400 kV GIS and 12.8 km of busbar",
           "document": "Q1 FY27 earnings call",
           "date": "2026-08-14",
           "source": "Trendlyne document search",
@@ -57,6 +58,7 @@
         },
         {
           "kind": "order",
+          "headline": "220 kV transformer order for a Hyderabad data centre",
           "document": "Annual Report FY2025-26",
           "date": "2026-05-24",
           "source": "Trendlyne document search",
@@ -64,6 +66,7 @@
         },
         {
           "kind": "order",
+          "headline": "Hyderabad data-centre order from an Indian conglomerate",
           "document": "Q1 FY27 earnings call",
           "date": "2026-08-14",
           "source": "Trendlyne document search",
@@ -78,6 +81,7 @@
       "supportingEvidence": [
         {
           "kind": "operating",
+          "headline": "Data centres named the major segment contributor",
           "document": "Hitachi Energy India Q4 FY26 results release",
           "date": "2026-05-25",
           "page": "1",
@@ -105,6 +109,7 @@
       "admittedOn": [
         {
           "kind": "order",
+          "headline": "400 MW hyperscale order signed for Vizag",
           "document": "Q1 FY27 investor presentation",
           "date": "2026-07-29",
           "source": "Trendlyne document search",
@@ -112,6 +117,7 @@
         },
         {
           "kind": "operating",
+          "headline": "960+ MW tied up; about 65 MW operating",
           "document": "Q1 FY27 investor presentation",
           "date": "2026-07-29",
           "source": "Trendlyne document search",
@@ -127,6 +133,7 @@
       "supportingEvidence": [
         {
           "kind": "order",
+          "headline": "358 MW hyperscale order in Hyderabad; 560+ MW tied up",
           "document": "Adani Enterprises Q4 FY26 press release",
           "date": "2026-04-30",
           "page": "3",
@@ -152,6 +159,7 @@
       "admittedOn": [
         {
           "kind": "operating",
+          "headline": "42% of contracted capacity is for data and AI customers",
           "document": "Q1 FY27 investor presentation",
           "date": "2026-07-31",
           "source": "Trendlyne document search",
@@ -159,6 +167,7 @@
         },
         {
           "kind": "capex",
+          "headline": "About 500 MW commissioned across power sales and services",
           "document": "Q1 FY27 earnings call",
           "date": "2026-08-07",
           "source": "Trendlyne document search",
@@ -166,6 +175,7 @@
         },
         {
           "kind": "operating",
+          "headline": "Names Amazon, Google, Meta and five data-centre operators as customers",
           "document": "Q1 FY27 investor presentation",
           "date": "2026-07-31",
           "source": "Trendlyne document search",
@@ -181,6 +191,7 @@
       "supportingEvidence": [
         {
           "kind": "operating",
+          "headline": "Deals with hyperscalers including Meta, Apple, Google and Amazon",
           "document": "CleanMax Q1 FY27 earnings call transcript",
           "date": "2026-08-03",
           "page": "PDF 4",
@@ -209,6 +220,7 @@
       "admittedOn": [
         {
           "kind": "operating",
+          "headline": "Data-centre roadmap to 357 MW across four sites",
           "document": "Q1 FY27 investor presentation",
           "date": "2026-08-11",
           "source": "Trendlyne document search",
@@ -244,6 +256,7 @@
       "supportingEvidence": [
         {
           "kind": "operating",
+          "headline": "Colocation rent about ₹90 lakh per MW a month; H1 EBITDA margin 75%",
           "document": "Anant Raj Q2 FY26 earnings call transcript",
           "date": "2025-11-12",
           "page": "7-8, 14",
@@ -269,6 +282,7 @@
       "admittedOn": [
         {
           "kind": "operating",
+          "headline": "AI segment is 62% of revenue, up 484%",
           "document": "Q1 FY27 investor presentation",
           "date": "2026-07-28",
           "source": "Trendlyne document search",
@@ -276,6 +290,7 @@
         },
         {
           "kind": "operating",
+          "headline": "Q1 revenue up 172%; order book ₹2,507 cr",
           "document": "Q1 FY27 earnings call",
           "date": "2026-08-01",
           "source": "Trendlyne document search",
@@ -306,6 +321,7 @@
       "admittedOn": [
         {
           "kind": "capex",
+          "headline": "First OSAT plant live at 0.5 m units a day; G2 to take it to 14.5 m",
           "document": "Annual Report FY2025-26",
           "date": "2026-05-05",
           "source": "Trendlyne document search",
@@ -337,6 +353,7 @@
       "admittedOn": [
         {
           "kind": "capex",
+          "headline": "FY26 capex: ₹473 cr on OSAT, ₹324 cr on PCB",
           "document": "Q1 FY27 earnings call",
           "date": "2026-08-12",
           "source": "Trendlyne document search",
@@ -344,6 +361,7 @@
         },
         {
           "kind": "capex",
+          "headline": "₹3,307 cr Sanand OSAT plant, 6.3 m chips a day",
           "document": "Annual Report FY2025-26",
           "date": "2026-05-12",
           "source": "Trendlyne document search",
@@ -375,6 +393,7 @@
       "admittedOn": [
         {
           "kind": "order",
+          "headline": "$1.11 bn hyperscaler award for connectivity supply, FY27–FY29",
           "document": "Q1 FY27 results presentation",
           "date": "2026-07-24",
           "source": "Trendlyne document search",
@@ -382,6 +401,7 @@
         },
         {
           "kind": "operating",
+          "headline": "Data centre and cloud: 21% of the mix, from 1%",
           "document": "Q1 FY27 results presentation",
           "date": "2026-07-24",
           "source": "Trendlyne document search",
@@ -415,6 +435,7 @@
       "admittedOn": [
         {
           "kind": "order",
+          "headline": "Executing large orders for multiple hyperscale data centres",
           "document": "Annual Report FY2025-26",
           "date": "2026-05-26",
           "source": "Trendlyne document search",
@@ -422,6 +443,7 @@
         },
         {
           "kind": "operating",
+          "headline": "Data centres were 40% of power-generation revenue in the quarter",
           "document": "Q1 FY27 earnings call",
           "date": "2026-08-11",
           "source": "Trendlyne document search",
@@ -455,6 +477,7 @@
       "admittedOn": [
         {
           "kind": "operating",
+          "headline": "14 hyperscale and 120+ edge data centres, about 250 MW",
           "document": "Annual Report FY2025-26",
           "date": "2026-05-12",
           "source": "Trendlyne document search",
@@ -462,6 +485,7 @@
         },
         {
           "kind": "operating",
+          "headline": "Data-centre revenue up 17.2%",
           "document": "Annual Report FY2025-26",
           "date": "2026-05-12",
           "source": "Trendlyne document search",
@@ -480,6 +504,7 @@
       "supportingEvidence": [
         {
           "kind": "operating",
+          "headline": "Nxtra FY26: revenue ₹2,434 cr, EBITDA margin 40.3%",
           "document": "Nxtra Data Ltd audited standalone results FY26 (NSE filing, listed debt)",
           "date": "2026-05-11",
           "page": "5",
@@ -505,6 +530,7 @@
       "admittedOn": [
         {
           "kind": "operating",
+          "headline": "Vyoma: 26 MW operating, 36 MW Mahape site under development",
           "document": "Annual Report FY2025-26",
           "date": "2026-05-04",
           "source": "Trendlyne document search",
@@ -523,6 +549,7 @@
       "supportingEvidence": [
         {
           "kind": "order",
+          "headline": "Vyoma.AI wins a \"mega\" AI-cluster order (₹10,000–15,000 cr band)",
           "document": "L&T press release: Mega order with Together AI",
           "date": "2026-08-13",
           "page": "1-2",
@@ -531,6 +558,7 @@
         },
         {
           "kind": "operating",
+          "headline": "Vyoma operating capacity 26 MW at year-end",
           "document": "L&T Integrated Annual Report FY2025-26 (figures as of 31 Mar 2026)",
           "date": "2026-03-31",
           "page": "128",
@@ -539,6 +567,7 @@
         },
         {
           "kind": "operating",
+          "headline": "Data-centre business moves to Vyoma for about ₹1,400 cr",
           "document": "L&T business-transfer filing (data-centre business to Vyoma.AI)",
           "date": "2026-08-11",
           "page": "1",
@@ -564,6 +593,7 @@
       "admittedOn": [
         {
           "kind": "capex",
+          "headline": "Commercial data centre under way at Manesar substation",
           "document": "Annual Report FY2025-26",
           "date": "2026-05-14",
           "source": "Trendlyne document search",
@@ -571,6 +601,7 @@
         },
         {
           "kind": "capex",
+          "headline": "Pilot 1,000-rack data centre under PowerTel",
           "document": "Annual Report FY2025-26",
           "date": "2026-05-14",
           "source": "Trendlyne document search",
@@ -604,6 +635,7 @@
       "admittedOn": [
         {
           "kind": "operating",
+          "headline": "About ₹1,000 cr of data-centre MEP business in a ₹3,500 cr market",
           "document": "Q4 FY26 earnings call",
           "date": "2026-05-12",
           "source": "Trendlyne document search",
@@ -611,6 +643,7 @@
         },
         {
           "kind": "order",
+          "headline": "Projects won from ST Telemedia and semiconductor clients",
           "document": "Annual Report FY2025-26",
           "date": "2026-05-05",
           "source": "Trendlyne document search",
@@ -655,6 +688,7 @@
       "admittedOn": [
         {
           "kind": "order",
+          "headline": "Significant order from a semiconductor manufacturer",
           "document": "Annual Report FY2025-26",
           "date": "2026-05-27",
           "source": "Trendlyne document search",
@@ -662,6 +696,7 @@
         },
         {
           "kind": "operating",
+          "headline": "More than a fifth of the order bank is the new emerging segment",
           "document": "Q1 FY27 earnings call",
           "date": "2026-08-17",
           "source": "Trendlyne document search",
@@ -696,6 +731,7 @@
       "admittedOn": [
         {
           "kind": "order",
+          "headline": "Repeat orders from global OEMs for US data centres",
           "document": "Q1 FY27 investor presentation",
           "date": "2026-08-11",
           "source": "Trendlyne document search",
@@ -703,6 +739,7 @@
         },
         {
           "kind": "operating",
+          "headline": "Shipments going to multiple data centres and customers",
           "document": "Q1 FY27 earnings call",
           "date": "2026-08-18",
           "source": "Trendlyne document search",
@@ -737,6 +774,7 @@
       "admittedOn": [
         {
           "kind": "order",
+          "headline": "One large order from a semiconductor-equipment maker",
           "document": "Q1 FY27 earnings call",
           "date": "2026-08-20",
           "source": "Trendlyne document search",
@@ -744,6 +782,7 @@
         },
         {
           "kind": "order",
+          "headline": "Semiconductor-equipment order worth about ₹1,250 cr over five years",
           "document": "Q1 FY27 earnings call",
           "date": "2026-08-20",
           "source": "Trendlyne document search",
@@ -751,6 +790,7 @@
         },
         {
           "kind": "operating",
+          "headline": "Regular production of semiconductor components begins",
           "document": "Annual Report FY2025-26",
           "date": "2026-05-20",
           "source": "Trendlyne document search",
@@ -784,6 +824,7 @@
       "admittedOn": [
         {
           "kind": "operating",
+          "headline": "220 kV GIS bays commissioned for NTT Data Center, among others",
           "document": "Annual Report FY2025-26",
           "date": "2026-05-17",
           "source": "Trendlyne document search",
@@ -818,6 +859,7 @@
       "admittedOn": [
         {
           "kind": "operating",
+          "headline": "About ₹100 cr of Q1 revenue as MPO cable deliveries begin",
           "document": "Q1 FY27 earnings call",
           "date": "2026-07-29",
           "source": "Trendlyne document search",
@@ -825,6 +867,7 @@
         },
         {
           "kind": "capex",
+          "headline": "Board approves ₹215 cr data-centre connectivity plant",
           "document": "Board outcome, Q1 FY27 results",
           "date": "2026-07-22",
           "source": "Trendlyne document search",
@@ -843,6 +886,7 @@
       "supportingEvidence": [
         {
           "kind": "order",
+          "headline": "Export order of about ₹496 cr for data-centre connectivity",
           "document": "HFCL exchange disclosure",
           "date": "2026-07-10",
           "page": "1",
@@ -868,6 +912,7 @@
       "admittedOn": [
         {
           "kind": "order",
+          "headline": "₹45 cr of data-centre orders from SLB",
           "document": "Q1 FY27 investor presentation",
           "date": "2026-07-29",
           "source": "Trendlyne document search",
@@ -875,6 +920,7 @@
         },
         {
           "kind": "order",
+          "headline": "₹35.6 cr of data-centre infrastructure orders",
           "document": "Reg 30 disclosure: receipt of purchase orders worth Rs 35.56 crores",
           "date": "2026-04-01",
           "source": "Letter to BSE/NSE hosted on mtar.in, read directly (PDF text)",
@@ -908,6 +954,7 @@
       "admittedOn": [
         {
           "kind": "operating",
+          "headline": "Cables supplied to Vodafone Idea data centres",
           "document": "Q1 FY27 earnings call",
           "date": "2026-07-20",
           "source": "Trendlyne document search",
@@ -941,6 +988,7 @@
       "admittedOn": [
         {
           "kind": "operating",
+          "headline": "Now supplying cables to US data-centre projects",
           "document": "Annual Report FY2025-26",
           "date": "2026-05-27",
           "source": "Trendlyne document search",
@@ -974,6 +1022,7 @@
       "admittedOn": [
         {
           "kind": "order",
+          "headline": "Large-value data-centre orders secured in FY26",
           "document": "Annual Report FY2025-26",
           "date": "2026-05-13",
           "source": "Trendlyne document search",
@@ -992,6 +1041,7 @@
       "supportingEvidence": [
         {
           "kind": "order",
+          "headline": "First hyperscale data-centre order, about 192 MW",
           "document": "Kirloskar Oil Engines Q1 FY27 earnings call transcript",
           "date": "2026-08-07",
           "page": "PDF 7",
@@ -1017,6 +1067,7 @@
       "admittedOn": [
         {
           "kind": "order",
+          "headline": "₹435 cr data-centre cable order book in hand",
           "document": "Q1 FY27 investor presentation",
           "date": "2026-08-13",
           "source": "Trendlyne document search",
@@ -1024,6 +1075,7 @@
         },
         {
           "kind": "operating",
+          "headline": "Order book ₹3,688 cr, 11.8% of it data centre",
           "document": "Q1 FY27 investor presentation",
           "date": "2026-08-13",
           "source": "Trendlyne document search",
@@ -1031,6 +1083,7 @@
         },
         {
           "kind": "order",
+          "headline": "₹435 cr data-centre order confirmed on the Q1 call",
           "document": "Q1 FY27 earnings call",
           "date": "2026-08-21",
           "source": "Trendlyne document search",
@@ -1038,6 +1091,7 @@
         },
         {
           "kind": "order",
+          "headline": "Letter of intent from Aurionpro for cables to a Hyderabad data-centre campus",
           "document": "Reg 30 announcement",
           "date": "2026-08-22",
           "source": "Trendlyne news feed (BSE filing)",
@@ -1070,6 +1124,7 @@
       "admittedOn": [
         {
           "kind": "order",
+          "headline": "Order growth in data centres, one of four sectors named",
           "document": "Q1 CY2026 analyst presentation, Electrification",
           "date": "2026-05-08",
           "source": "ABB India Q1 CY2026 analyst presentation, filed with BSE/NSE under Reg 30 (primary read)",
@@ -1077,6 +1132,7 @@
         },
         {
           "kind": "order",
+          "headline": "Data-centre demand for LT panels, e-houses and UPS",
           "document": "Q1 CY2026 analyst presentation, \"Proven capabilities leading to significant wins\"",
           "date": "2026-05-08",
           "source": "ABB India Q1 CY2026 analyst presentation, filed with BSE/NSE under Reg 30 (primary read)",
@@ -1095,6 +1151,7 @@
       "supportingEvidence": [
         {
           "kind": "order",
+          "headline": "Switchgear and ring-main-unit orders for data centres",
           "document": "ABB India Q2 CY2026 press release",
           "date": "2026-07-31",
           "page": "PDF 4",
@@ -1103,6 +1160,7 @@
         },
         {
           "kind": "operating",
+          "headline": "Data centres were about 15–17% of the quarter's orders",
           "document": "ABB India Q2 CY2026 earnings call transcript",
           "date": "2026-07-31",
           "page": "PDF 10",
@@ -1111,6 +1169,7 @@
         },
         {
           "kind": "order",
+          "headline": "Last year's large data-centre order executed in Q1",
           "document": "ABB India Q1 CY2026 analyst call transcript",
           "date": "2026-05-08",
           "page": "6",
@@ -1138,6 +1197,7 @@
       "admittedOn": [
         {
           "kind": "order",
+          "headline": "168 MW data centre with Meta leasing capacity, due within two years",
           "document": "Media release: Reliance and Meta to Develop AI-Enabled Data Centre in Jamnagar, Gujarat",
           "date": "2026-06-10",
           "source": "ril.com media release, read directly (PDF text)",
@@ -1172,6 +1232,7 @@
       "admittedOn": [
         {
           "kind": "operating",
+          "headline": "Data-centre volume \"very negligible\": one contract, about 20–25 MW",
           "document": "Q1 FY27 earnings call transcript (Reg 30 filing)",
           "date": "2026-07-28",
           "source": "Trendlyne document search (filed transcript)",
@@ -1206,6 +1267,7 @@
       "admittedOn": [
         {
           "kind": "order",
+          "headline": "61.4 MW renewable supply deal for a data centre",
           "document": "Media release: H1 FY25 results",
           "date": "2024-10-22",
           "source": "adanigreenenergy.com media release, read directly (page text)",
@@ -1240,6 +1302,7 @@
       "admittedOn": [
         {
           "kind": "order",
+          "headline": "25-year renewable power agreement with Princeton Digital Group",
           "document": "Group captive case study, 'United for sustainability' (tatapower.com)",
           "date": "2024-03-14",
           "source": "Tata Power website, read directly 2026-09-18",
@@ -1247,6 +1310,7 @@
         },
         {
           "kind": "operating",
+          "headline": "Solar plant powering PDG's Airoli data centre since June 2023",
           "document": "Group captive case study, 'United for sustainability' (tatapower.com)",
           "date": "2024-03-14",
           "source": "Tata Power website, read directly 2026-09-18",
@@ -1281,6 +1345,7 @@
       "admittedOn": [
         {
           "kind": "operating",
+          "headline": "German unit: 90% of revenue from power-generation engines, mostly for data centres",
           "document": "Q2 FY26 earnings call transcript (BSE, filed 2025-11-12)",
           "date": "2025-11-10",
           "source": "BSE filing, read directly (pdftotext) 2026-09-18",
