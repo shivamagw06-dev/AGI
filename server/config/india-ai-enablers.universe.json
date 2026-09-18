@@ -321,7 +321,7 @@
       "reviewedAt": null,
       "exposureAttributable": true,
       "exposureNote": "DC & Cloud was 21% of Q1 FY27 revenue against 1% of full-year FY26 revenue (a quarter against a year, as the presentation tabulates it). Management-disclosed, not a reported segment.",
-      "note": "The hyperscaler is not named.",
+      "note": "The hyperscaler is not named. The award is a Product Award Letter covering FY27-FY29 supply, not a single purchase order.",
       "attribution": "MANAGEMENT_DISCLOSED",
       "discoveredVia": "EXTERNAL_LEAD_2026_09_18",
       "evidenceReadOn": "2026-09-18"
@@ -837,6 +837,58 @@
       "attribution": "NOT_ATTRIBUTABLE",
       "discoveredVia": "EXTERNAL_LEAD_2026_09_18",
       "evidenceReadOn": "2026-09-18"
+    },
+    {
+      "symbol": "DIACABS",
+      "name": "Diamond Power Infrastructure Ltd.",
+      "instrumentKey": "NSE_EQ|INE989C01038",
+      "isin": "INE989C01038",
+      "layer": "power",
+      "subLayers": [
+        "equipment"
+      ],
+      "weightSplit": {
+        "power_equipment": 1.0
+      },
+      "admitted": true,
+      "basis": "hard",
+      "admittedOn": [
+        {
+          "kind": "order",
+          "document": "Q1 FY27 investor presentation",
+          "date": "2026-08-13",
+          "source": "Trendlyne document search",
+          "excerpt": "EHV HV LV cables plus HTLS conductor for the data-centre segment ₹435 Cr MVCC order book already in hand"
+        },
+        {
+          "kind": "operating",
+          "document": "Q1 FY27 investor presentation",
+          "date": "2026-08-13",
+          "source": "Trendlyne document search",
+          "excerpt": "Order book as on 11-Aug-2026 ₹3,687.55 Cr across cables, conductors & data-centre products ... Data Centre | 11.8%"
+        },
+        {
+          "kind": "order",
+          "document": "Q1 FY27 earnings call",
+          "date": "2026-08-21",
+          "source": "Trendlyne document search",
+          "excerpt": "Our INR435 crores data center order sits within it"
+        },
+        {
+          "kind": "order",
+          "document": "Reg 30 announcement",
+          "date": "2026-08-22",
+          "source": "Trendlyne news feed (BSE filing)",
+          "excerpt": "Letter of Intent received from Aurionpro Solutions Limited for the cable supply to Hyderabad data centre campus"
+        }
+      ],
+      "reviewedBy": null,
+      "reviewedAt": null,
+      "exposureAttributable": true,
+      "exposureNote": "A Rs 435 crore data-centre cable order; data centres are 11.8% of the Rs 3,688 crore order book (11 Aug 2026). Management-disclosed order values, not revenue.",
+      "note": "Held as a candidate on 17 Sep on a market-projection slide. That read missed the order, and it was not re-read on 18 Sep with the other leads. Re-read on 18 Sep after an external fact-check flagged it; admitted on the filings above.",
+      "attribution": "MANAGEMENT_DISCLOSED",
+      "evidenceReadOn": "2026-09-18"
     }
   ],
   "candidates": [
@@ -875,14 +927,6 @@
       "admitted": false,
       "basis": "soft",
       "note": "Annual report cites CBRE on national data centre stock. Market commentary."
-    },
-    {
-      "symbol": "DIACABS",
-      "name": "Diamond Power Infrastructure Ltd.",
-      "isin": null,
-      "admitted": false,
-      "basis": "soft",
-      "note": "Its deck carries a bare projection table - Data-centre capacity FY19 350, FY25 1,300, FY30P 5,000. The P is the whole signal. No first-party item found."
     },
     {
       "symbol": "PREMIERENE",
@@ -952,8 +996,15 @@
       "suggestedSubLayers": [],
       "admitted": false,
       "basis": "soft",
-      "note": "Admits on the evidence and has no sub-layer to go in. KEC builds the data centre and the semiconductor fab; \"developer\" in this taxonomy means the owner of the campus, not the contractor who pours it. Held until the taxonomy has a contractor sub-layer, or the analyst rules that the builder is out of scope. Its AI-linked work is also a small share of a large diversified EPC book, which the screen does not currently measure.",
+      "note": "Builds data-centre and semiconductor facilities (Kolkata data centre completed Q1 FY27; semiconductor plant at Sanand) and, in Q1 FY27, won its first transmission line order to evacuate power to a data centre. All of it is construction, so the contractor rule applies: a named project, a contracted role and an identifiable value. No value is disclosed for any of these, so it is held. Re-read 2026-09-18.",
       "evidence": [
+        {
+          "kind": "order",
+          "document": "Q1 FY27 investor presentation",
+          "date": "2026-08-10",
+          "source": "Trendlyne document search",
+          "excerpt": "Secured first transmission line order for evacuation of power to a Data Centre from a private developer"
+        },
         {
           "kind": "capex",
           "document": "Annual Report FY2025-26",
@@ -961,7 +1012,8 @@
           "source": "Trendlyne document search",
           "excerpt": "DATA CENTRE PROJECT, KOLKATA: construction of a mission critical facility. Project physically completed in Q1 FY27. SEMICONDUCTOR MANUFACTURING PLANT, SANAND, GUJARAT: construction of a semiconductor manufacturing facility including specialised cleanroom construction. Main plant commissioned in Q4 FY26."
         }
-      ]
+      ],
+      "evidenceReadOn": "2026-09-18"
     },
     {
       "symbol": "TANFACIND",
@@ -1236,6 +1288,22 @@
       ],
       "discoveredVia": "EXTERNAL_LEAD_2026_09_18",
       "evidenceReadOn": "2026-09-18"
+    },
+    {
+      "symbol": "ABB",
+      "name": "ABB India Ltd.",
+      "isin": "INE117A01022",
+      "suggestedLayer": "power",
+      "suggestedSubLayers": [
+        "equipment"
+      ],
+      "admitted": false,
+      "basis": "unverified",
+      "note": "An external fact-check cites ABB India's Q1 CY2026 release as reporting a data-centre order (LT panels, packaging and e-house including UPS and auxiliary power equipment for a data-centre major). ABB's own releases are not in the document index AGI searched, and its site and the BSE copy could not be fetched, so the quote is unconfirmed. If the release reads as quoted, ABB is admitted on the same basis as Kirloskar and TD Power: an order stated for data centres, customer and value undisclosed.",
+      "evidence": [],
+      "discoveredVia": "EXTERNAL_LEAD_2026_09_18",
+      "evidenceReadOn": "2026-09-18",
+      "pendingVerification": true
     }
   ],
   "excluded": [
@@ -1254,15 +1322,6 @@
       "isin": "INE245A01021",
       "basis": "none",
       "reason": "No qualifying evidence found in its own filings (read 2026-09-18). No data-centre customer, PPA or order found; disclosed PPAs are with utilities and Tata Steel.",
-      "discoveredVia": "EXTERNAL_LEAD_2026_09_18",
-      "evidenceReadOn": "2026-09-18"
-    },
-    {
-      "symbol": "ABB",
-      "name": "ABB India Ltd.",
-      "isin": "INE117A01022",
-      "basis": "none",
-      "reason": "No qualifying evidence found in its own filings (read 2026-09-18). Searches returned only financial statements; no data-centre or semiconductor order, customer or segment figure found. Worth a second read.",
       "discoveredVia": "EXTERNAL_LEAD_2026_09_18",
       "evidenceReadOn": "2026-09-18"
     },
