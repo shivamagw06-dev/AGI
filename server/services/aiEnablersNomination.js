@@ -45,6 +45,9 @@ export const NOMINATION_TERMS = Object.freeze({
     /\bhydro ?(?:electric|power)\b/,
     /\bthermal power\b/,
     /\bcaptive power\b/,
+    // NTPC: "generation and sale of bulk power". Missed by the first run.
+    /\bgeneration (?:and|&) (?:sale|supply|distribution) of (?:bulk )?(?:power|electricity)\b/,
+    /\bpower (?:plants?|stations?|producers?)\b/,
   ],
   'power/transmission': [
     /\bpower transmission\b/,
@@ -70,6 +73,9 @@ export const NOMINATION_TERMS = Object.freeze({
     /\bbattery energy storage\b/,
     /\blithium[- ]ion batter(?:y|ies)\b/,
     /\bsmart meter(?:s|ing)?\b/,
+    // Amara Raja, HBL: data centre UPS runs on these. Missed by the first run.
+    /\blead[- ]acid batter(?:y|ies)\b/,
+    /\b(?:industrial|storage|stationary) batter(?:y|ies)\b/,
   ],
   'data_centre/developer_operator': [
     /\bdata ?cent(?:er|re)s?\b/,
@@ -88,6 +94,10 @@ export const NOMINATION_TERMS = Object.freeze({
     /\bliquid cooling\b/,
     /\bchillers?\b/,
     /\bhvac\b/,
+    // Blue Star says "air conditioning", not HVAC. Missed by the first run.
+    // "air-conditioned" (a hotel room) does not match; "air conditioning" does.
+    /\bair[- ]conditioning\b/,
+    /\bcooling (?:solutions|systems|equipment)\b/,
     /\btelecom(?:munications?)? equipment\b/,
   ],
   'semiconductor/osat': [
@@ -170,4 +180,61 @@ export function nominate({ description = '' } = {}) {
   return subLayers.length
     ? { nominated: true, reason: null, subLayers }
     : { nominated: false, reason: 'NO_TERM_MATCHED', subLayers: [] };
+}
+
+/**
+ * The order to read nominations in. Not a score, and never a filter.
+ *
+ * 495 companies were nominated by the first full run, and they are read one
+ * at a time. This decides which come first:
+ *
+ *   1 - strong: the company's own sector makes the plant it names its
+ *       business. An electrical-equipment maker naming transformers; a
+ *       power utility naming generation. Data-centre terms are specific
+ *       enough to be strong in any sector.
+ *   2 - contractor: nominated only as EPC, and in a construction sector.
+ *       The contractor rule is stricter (a named project, a contracted role,
+ *       identifiable exposure), so these read after the strong tier.
+ *   3 - incidental: the term is real but probably not the business - a
+ *       textile mill's captive windmill, a sugar mill's co-generation plant.
+ *       Still read, last.
+ *
+ * Sector names are Upstox's. A sector missing from a set sends a company to
+ * tier 3, never out of the list, so the cost of an incomplete set is a late
+ * reading, not a lost member.
+ */
+const ELECTRICAL = ['Electric Equipment', 'Capital Goods - Electrical Equipment', 'Capital Goods', 'Engineering'];
+const POWER = ['Power', 'Power Generation & Distribution', 'Power Infrastructure'];
+const CONSTRUCTION = ['Engineering', 'Construction', 'Infrastructure Developers & Operators', 'Power Infrastructure', 'Transmission Towers'];
+
+export const SECTOR_AFFINITY = Object.freeze({
+  // Generation equipment makers (turbines, modules) sit in electrical
+  // sectors, not in Power. The first run ranked Suzlon, Inox Wind and Waaree
+  // incidental because this set held only utilities.
+  'power/generation': new Set([...POWER, ...ELECTRICAL]),
+  'power/transmission': new Set([...ELECTRICAL, ...POWER, 'Transmission Towers', 'Cable', 'Cables', 'Infrastructure Developers & Operators']),
+  'power/equipment': new Set([...ELECTRICAL, 'Cable', 'Cables', 'Diesel Engines', 'Batteries', 'Electronics', 'Compressors', 'Power Infrastructure']),
+  'data_centre/developer_operator': null,
+  'data_centre/hardware': new Set([
+    'IT - Hardware', 'IT - Networking', 'Electronics', 'Cable', 'Cables', 'Telecom Equipment & Infra Services',
+    'Telecommunication', 'Air Conditioners', 'Consumer Durables', 'Compressors', ...ELECTRICAL,
+  ]),
+  // Dixon is filed under Consumer Durables. Missed by the first run.
+  'semiconductor/osat': new Set([
+    'Electronics', 'IT - Hardware', 'IT - Networking', 'Aerospace & Defence', 'Defence', 'Consumer Durables', ...ELECTRICAL,
+  ]),
+  'semiconductor/materials': new Set(['Chemicals', 'Gases & Fuels', 'Petrochemicals', 'Non Ferrous Metals', 'Metals', 'Minerals', 'Dyes & Pigments']),
+  'semiconductor/hardware': new Set(['Capital Goods-Non Electrical Equipment', 'Electronics', 'Compressors', ...ELECTRICAL]),
+});
+
+export function readingPriority({ sector = null, nomination = [] } = {}) {
+  const subLayers = (nomination || []).map((one) => one.subLayer);
+  if (!subLayers.length) return null;
+  const strong = subLayers.filter((sub) => sub !== 'infrastructure/epc'
+    && (SECTOR_AFFINITY[sub] === null || SECTOR_AFFINITY[sub]?.has(sector)));
+  if (strong.length) return { tier: 1, subLayers: strong };
+  if (subLayers.includes('infrastructure/epc') && CONSTRUCTION.includes(sector)) {
+    return { tier: 2, subLayers: ['infrastructure/epc'] };
+  }
+  return { tier: 3, subLayers };
 }

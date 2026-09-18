@@ -12,7 +12,7 @@ import { createSupabaseAdmin } from '../lib/supabaseAdmin.js';
 import { fundamentalsForUniverse, intensityForUniverse } from '../services/aiEnablersFundamentals.js';
 import { stageThree, stageTwo } from '../services/aiEnablersScreen.js';
 import {
-  latestUniversePassRun, readUniversePass, summariseUniversePass,
+  latestUniversePassRun, publicRow, readUniversePass, summariseUniversePass,
 } from '../services/aiEnablersUniversePass.js';
 
 const UNIVERSE_PATH = fileURLToPath(new URL('../config/india-ai-enablers.universe.json', import.meta.url));
@@ -301,8 +301,9 @@ export default function createIndiaAiIntelligenceRouter() {
    *
    * Written by scripts/aiEnablersUniversePass.mjs from the Render shell.
    * Returns the summary and the nominated companies with the words that
-   * nominated them; ?all=1 returns every company's row. No description text
-   * is stored, so none can be served.
+   * nominated them and their reading priority; ?all=1 returns every row.
+   * The stored description is Upstox's text and is stripped from every row.
+   * ?tier=1 narrows the list to one reading tier.
    */
   router.get('/screen/universe-pass', async (req, res) => {
     try {
@@ -320,7 +321,10 @@ export default function createIndiaAiIntelligenceRouter() {
         ok: true,
         run: runId,
         summary: summariseUniversePass(rows, { reference }),
-        rows: req.query.all ? rows : rows.filter((one) => one.disposition === 'NOMINATED'),
+        rows: rows
+          .filter((one) => req.query.all || one.disposition === 'NOMINATED')
+          .map(publicRow)
+          .filter((one) => !req.query.tier || String(one.priority?.tier) === String(req.query.tier)),
       });
     } catch (error) {
       res.status(500).json({ ok: false, error: String(error?.message || error) });

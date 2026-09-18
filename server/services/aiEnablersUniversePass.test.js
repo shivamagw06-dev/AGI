@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  PacedLimiter, parseEquityList, runUniversePass, summariseUniversePass,
+  PacedLimiter, parseEquityList, publicRow, renominate, runUniversePass, summariseUniversePass,
 } from './aiEnablersUniversePass.js';
 
 const CSV = [
@@ -190,4 +190,43 @@ test('a known qualifier the pass did not nominate is reported as a miss', async 
     ['SOAP', 'NOT_NOMINATED'],
     ['ELSEWHERE', 'NOT_IN_LIST'],
   ]);
+});
+
+/* ── the SME board, stored descriptions, re-scoring ───────────────────── */
+
+test('the SME list is read with underscore headers and tagged by board', () => {
+  const sme = parseEquityList([
+    'SYMBOL,NAME_OF_COMPANY,SERIES,DATE_OF_LISTING,PAID_UP_VALUE,MARKET_LOT,ISIN_NUMBER,FACE_VALUE',
+    'ESDS,ESDS Software Solution Limited,SM,01-JAN-2024,10,1000,INE08YJ01011,10',
+  ].join('\n'), { board: 'sme' });
+  assert.deepEqual(sme, [{ symbol: 'ESDS', name: 'ESDS Software Solution Limited', series: 'SM', isin: 'INE08YJ01011', board: 'sme' }]);
+  assert.equal(parseEquityList(CSV)[0].board, 'main');
+});
+
+test('the description is stored with the row but never served', async () => {
+  const { saved } = await run();
+  const grid = saved.find((one) => one.symbol === 'GRID');
+  assert.equal(grid.description, 'Makes switchgear and power transformers.');
+  assert.equal(grid.description_chars, grid.description.length);
+  const served = publicRow(grid);
+  assert.ok(!('description' in served));
+  assert.deepEqual(served.priority, { tier: 1, subLayers: ['power/equipment'] });
+  assert.equal(publicRow(saved.find((one) => one.symbol === 'SOAP')).priority, null);
+});
+
+test('re-scoring changes only examined rows whose outcome moved', async () => {
+  const { saved } = await run();
+  const stale = saved.map((one) => (one.symbol === 'GRID' ? { ...one, disposition: 'NOT_NOMINATED', nomination: null } : one));
+  const changed = renominate(stale);
+  assert.deepEqual(changed.map((one) => [one.symbol, one.disposition]), [['GRID', 'NOMINATED']]);
+  // Unexamined rows are never touched, even with a description present.
+  assert.deepEqual(renominate([{ ...saved[0], disposition: 'PROFILE_ERROR' }]), []);
+});
+
+test('the summary counts reading tiers and boards', async () => {
+  const { saved } = await run();
+  const rows = saved.map((one) => (one.symbol === 'GRID' ? { ...one, sector: 'Electric Equipment' } : one));
+  const summary = summariseUniversePass([...rows, { ...rows[1], symbol: 'SMEX', board: 'sme' }]);
+  assert.deepEqual(summary.byTier, { 1: 1, 2: 0, 3: 0 });
+  assert.deepEqual(summary.byBoard, { main: { listed: 5, nominated: 1 }, sme: { listed: 1, nominated: 0 } });
 });

@@ -17,16 +17,24 @@
  *
  * A deploy restarts the instance and kills it; re-run the same command after
  * and it resumes. --summary prints the stored run without fetching anything.
+ * --renominate re-scores a stored run's descriptions under the current rules,
+ * without fetching, and writes only the rows whose outcome moved.
+ *
+ * Reads EQUITY_L.csv (main board) and, when present, SME_EQUITY_L.csv (NSE
+ * Emerge) from the repo root.
  */
+import { existsSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { getFundamentals, isUpstoxConfigured } from '../providers/upstox.js';
 import { createSupabaseAdmin } from '../lib/supabaseAdmin.js';
 import {
-  PacedLimiter, parseEquityList, readUniversePass, runUniversePass, summariseUniversePass, UNIVERSE_PASS_TABLE,
+  PacedLimiter, parseEquityList, readUniversePass, renominate, runUniversePass, summariseUniversePass,
+  UNIVERSE_PASS_TABLE,
 } from '../services/aiEnablersUniversePass.js';
 
 const EQUITY_LIST = fileURLToPath(new URL('../../EQUITY_L.csv', import.meta.url));
+const SME_LIST = fileURLToPath(new URL('../../SME_EQUITY_L.csv', import.meta.url));
 const UNIVERSE = fileURLToPath(new URL('../config/india-ai-enablers.universe.json', import.meta.url));
 
 const arg = (name) => {
@@ -40,6 +48,8 @@ function print(summary, runId) {
     + `${summary.complete ? '' : ' (INCOMPLETE - re-run to resume)'}`);
   console.log(`coverage ${(summary.coverage * 100).toFixed(1)}% of ${summary.addressable} addressable -> ${summary.status}`);
   console.log('dispositions', summary.dispositions);
+  console.log('boards', summary.byBoard);
+  console.log('reading tiers (1 strong, 2 contractor, 3 incidental)', summary.byTier);
   console.log('\nnominated per sub-layer (a company can sit in more than one):');
   for (const [sub, n] of Object.entries(summary.bySubLayer).sort((a, b) => b[1] - a[1])) {
     console.log(`  ${sub.padEnd(34)} ${String(n).padStart(4)}`);
@@ -54,14 +64,26 @@ async function main() {
   const db = createSupabaseAdmin();
   if (!db) throw new Error('Supabase service role is not configured on this instance.');
   const runId = arg('run') || istToday();
-  const companies = parseEquityList(await readFile(EQUITY_LIST, 'utf8'));
+  const main = parseEquityList(await readFile(EQUITY_LIST, 'utf8'), { board: 'main' });
+  const sme = existsSync(SME_LIST) ? parseEquityList(await readFile(SME_LIST, 'utf8'), { board: 'sme' }) : [];
+  // A symbol on both lists (a migration from Emerge) is read once, as main board.
+  const onMain = new Set(main.map((one) => one.symbol));
+  const companies = [...main, ...sme.filter((one) => !onMain.has(one.symbol))];
+  console.log(`lists: ${main.length} main board, ${sme.length} SME${existsSync(SME_LIST) ? '' : ' (SME_EQUITY_L.csv not found)'}`);
   const universe = JSON.parse(await readFile(UNIVERSE, 'utf8'));
   const reference = [
     ...(universe.members || []).map((one) => ({ symbol: one.symbol, kind: 'member' })),
     ...(universe.candidates || []).map((one) => ({ symbol: one.symbol, kind: 'candidate' })),
   ];
 
-  if (!process.argv.includes('--summary')) {
+  if (process.argv.includes('--renominate')) {
+    const changed = renominate(await readUniversePass(db, runId));
+    for (let i = 0; i < changed.length; i += 200) {
+      const { error } = await db.from(UNIVERSE_PASS_TABLE).upsert(changed.slice(i, i + 200), { onConflict: 'run_id,symbol' });
+      if (error) throw new Error(`writing ${UNIVERSE_PASS_TABLE}: ${error.message}`);
+    }
+    console.log(`re-scored run ${runId}: ${changed.length} outcomes changed`);
+  } else if (!process.argv.includes('--summary')) {
     if (!isUpstoxConfigured()) throw new Error('Upstox is not configured; set UPSTOX_ACCESS_TOKEN.');
     const done = new Set((await readUniversePass(db, runId)).map((one) => one.symbol));
     console.log(`run ${runId}: ${companies.length} listed, ${done.size} already stored, `
