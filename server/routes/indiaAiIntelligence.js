@@ -373,14 +373,32 @@ export default function createIndiaAiIntelligenceRouter() {
           .eq('run_id', runId).in('symbol', members.map((one) => one.symbol));
         sectors = Object.fromEntries((data || []).map((row) => [row.symbol, row.sector]));
       }
+      // A member the stored pass has no sector for (its profile failed that
+      // run, or it was read under a retired ISIN) is asked for directly.
+      const sectorFrom = {};
+      for (const member of members) {
+        if (sectors[member.symbol]) { sectorFrom[member.symbol] = 'universe pass'; continue; }
+        try {
+          const profile = await getFundamentals(member.isin, 'profile', {});
+          const sector = String(profile?.data?.sector || '').trim();
+          if (sector) { sectors[member.symbol] = sector; sectorFrom[member.symbol] = 'Upstox profile, live'; }
+        } catch {
+          // Stays unstated, and the page says so.
+        }
+      }
 
       const rows = marketValueRows({ members, shares: file.shares, closes, exDates, pbMarketCaps })
-        .map((row) => ({ ...row, sector: sectors[row.symbol] || null }));
+        .map((row) => ({ ...row, sector: sectors[row.symbol] || null, sectorFrom: sectorFrom[row.symbol] || null }));
+      // The session the figures are priced at. Before the day's candle is
+      // published this is the previous session, not closedThrough.
+      const closeDates = [...new Set(rows.map((row) => row.closeDate).filter(Boolean))].sort();
       const body = {
         ok: true,
         formula: 'market value = last close x equity shares outstanding (filed)',
         scope: 'whole-company market value; not the value of any AI business',
         closedThrough,
+        closeDate: closeDates.at(-1) || null,
+        closeDates,
         sectorSource: runId ? `Upstox profile sector, universe pass ${runId}` : null,
         byLayer: totalsBy(rows, (row) => row.layer),
         bySector: totalsBy(rows, (row) => row.sector),
