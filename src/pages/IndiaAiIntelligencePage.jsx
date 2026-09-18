@@ -30,11 +30,13 @@ import { nseOpen } from '@/lib/nseSession';
  * the order feed (every line a cited filing), the watchlist prices.
  */
 
-const LAYER_LABEL = { power: 'Power', data_centre: 'Data Centers', semiconductor: 'Semiconductors' };
+const LAYER_LABEL = {
+  power: 'Power', data_centre: 'Data Centers', semiconductor: 'Semiconductors', infrastructure: 'EPC & Project Delivery',
+};
 const SUB_LABEL = {
   generation: 'Generation', transmission: 'Transmission', equipment: 'Equipment',
   developer: 'Developer', operator: 'Operator', hardware: 'Hardware',
-  osat: 'OSAT', materials: 'Materials',
+  osat: 'OSAT', materials: 'Materials', epc: 'EPC',
 };
 const KIND_LABEL = {
   order: 'Signed order', capex: 'Committed capex', operating: 'Operating disclosure',
@@ -44,6 +46,7 @@ const ALL_SUBS = [
   ['power', 'generation'], ['power', 'transmission'], ['power', 'equipment'],
   ['data_centre', 'developer'], ['data_centre', 'operator'], ['data_centre', 'hardware'],
   ['semiconductor', 'osat'], ['semiconductor', 'materials'], ['semiconductor', 'hardware'],
+  ['infrastructure', 'epc'],
 ];
 
 const pp = (v) => (Number.isFinite(Number(v)) ? `${Number(v) >= 0 ? '+' : ''}${Number(v).toFixed(2)}pp` : '—');
@@ -312,17 +315,23 @@ function ExecutiveSummary({ universe }) {
   const members = universe?.members || [];
   const filings = members.reduce((sum, one) => sum + (one.admittedOn?.length || 0), 0);
   const filled = new Set(members.flatMap((m) => (m.subLayers || []).map((s) => `${m.layer}/${s}`)));
+  // Where each member was first found, said plainly: a lead from a reported
+  // broker list is still a lead, and admission was on the company's filings.
+  const fromLeads = members.filter((one) => String(one.discoveredVia || '').startsWith('EXTERNAL_LEAD')).length;
+  const emptyCount = ALL_SUBS.length - filled.size;
   const items = [
-    { k: 'Screened, not selected',
-      v: `${members.length} companies admitted from AGI's own screen over public filings — none on a broker's list.` },
+    { k: 'Admitted on filings',
+      v: fromLeads
+        ? `${members.length} companies, each on its own disclosures. ${members.length - fromLeads} came from AGI's screen; ${fromLeads} were first read as leads from a reported broker list and passed the same standard.`
+        : `${members.length} companies admitted from AGI's own screen over public filings — none on a broker's list.` },
     { k: 'Every member cited',
       v: `${filings} first-party disclosures admit the basket: signed orders, committed capex, operating figures.` },
     { k: 'Refused on principle',
       v: `${universe?.candidates?.length || 0} candidates found and held back — partnerships and forecasts do not admit a company.` },
-    { k: 'Two layers empty',
-      v: `${ALL_SUBS.length - filled.size} of ${ALL_SUBS.length} sub-layers have nothing disclosed beyond intent, and are shown empty.` },
+    { k: `${emptyCount === 1 ? 'One layer' : `${emptyCount} layers`} empty`,
+      v: `${emptyCount} of ${ALL_SUBS.length} sub-layers have nothing disclosed beyond intent, and ${emptyCount === 1 ? 'is' : 'are'} shown empty.` },
     { k: 'Not yet an index',
-      v: 'The screen has not run the full NSE universe, and the size and intensity stages are unrun.' },
+      v: 'Filings have been read for the members and candidates only, and the investment-intensity stage is unrun for want of capex data. Positions are sized for liquidity at a Rs 100 crore target.' },
   ];
   return (
     <div className="rounded-md border border-[#1e2634] bg-[#0c1017] p-4">
@@ -378,10 +387,11 @@ function LayerCards({ universe }) {
   const layers = [
     { id: 'power', thesis: 'A data centre is a power problem before it is a computing one. Generation, evacuation and the transformers in between are all disclosed, orderable and dated.' },
     { id: 'data_centre', thesis: 'Capacity is the unit. The developers hold the land and the shells, the operators sell the megawatts, and the hardware makers ship what fills them.' },
-    { id: 'semiconductor', thesis: 'India’s silicon layer is mostly back-end. Assembly and test is where money has actually been committed; materials and equipment remain pre-revenue.' },
+    { id: 'semiconductor', thesis: 'India’s silicon layer is mostly back-end. Assembly and test is where money has been committed; equipment has its first order-backed supplier, and materials remain pre-revenue.' },
+    { id: 'infrastructure', thesis: 'The contractors who build the halls and fit them out. Admitted only on a named project, a contracted role and an identified exposure — a builder is not an owner.' },
   ];
   return (
-    <div className="grid gap-3 md:grid-cols-3">
+    <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
       {layers.map((layer) => {
         const inLayer = members.filter((one) => one.layer === layer.id);
         return (
