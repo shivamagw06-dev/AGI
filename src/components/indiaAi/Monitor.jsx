@@ -169,7 +169,9 @@ function StackMap({ records, filter, setFilter }) {
 const VIEWS = [['investment', 'Investment'], ['evidence', 'Evidence'], ['financials', 'Financials'], ['estimates', 'Estimates']];
 
 function Matrix({ records, others, filter, view, setView, status, setStatus, open }) {
-  const shown = records.filter((r) => !filter || (r.m.layer === filter.layer && (!filter.sub || (r.m.subLayers || []).includes(filter.sub))))
+  const matches = (r) => (filter?.symbols ? filter.symbols.includes(r.m.symbol)
+    : r.m.layer === filter.layer && (!filter.sub || (r.m.subLayers || []).includes(filter.sub)));
+  const shown = records.filter((r) => !filter || matches(r))
     .sort((a, b) => (b.mv || 0) - (a.mv || 0));
   const cols = {
     investment: ['Evidence', 'AI materiality', 'Revenue y/y', 'Market value', 'Price needs', 'Capital quality', '₹100 cr fits'],
@@ -226,7 +228,7 @@ function Matrix({ records, others, filter, view, setView, status, setStatus, ope
     <section aria-labelledby="matrix-h" className="rounded-md border border-[#1e2634] bg-[#0c1017]">
       <header className="flex flex-wrap items-center gap-2 border-b border-[#1a2230] px-3.5 py-2.5">
         <h3 id="matrix-h" className="text-[15px] font-semibold text-[#f1f5f9]">Intelligence matrix</h3>
-        {filter ? <span className="text-[12px] text-[#f0a060]">{LAYER_LABEL[filter.layer]}{filter.sub ? ` · ${SUB_LABEL[filter.sub]}` : ''}</span> : null}
+        {filter ? <span className="text-[12px] text-[#f0a060]">{filter.label || `${LAYER_LABEL[filter.layer]}${filter.sub ? ` · ${SUB_LABEL[filter.sub]}` : ''}`}</span> : null}
         <span className="ml-auto flex flex-wrap gap-1" role="group" aria-label="View">
           {VIEWS.map(([k, label]) => (
             <button key={k} type="button" onClick={() => setView(k)} aria-pressed={view === k}
@@ -388,6 +390,237 @@ function Drawer({ r, onClose, onResearch }) {
   );
 }
 
+
+/* ── phase 2: scatter, supply chain, what changed, layer KPIs ─────────── */
+
+const EV_STROKE = { high: '#4ade80', medium: '#5aa2e0', low: '#d9a94a' };
+
+/**
+ * AI materiality (AGI base case) against expectation load (profit growth the
+ * price needs). Both axes are AGI figures; bubble size is market value and
+ * the outline is evidence confidence. Members without a running model are
+ * listed, not plotted. Quadrant captions describe position, not advice.
+ */
+function MaterialityScatter({ records, open }) {
+  const W = 760; const H = 380; const pad = { l: 52, r: 16, t: 16, b: 40 };
+  const pts = records.map((r) => ({
+    r, x: r.implied?.cagr ?? null, y: r.runs?.base.ok ? r.runs.base.materiality : null,
+  }));
+  const plotted = pts.filter((p) => p.x !== null && p.y !== null);
+  const notPlotted = pts.filter((p) => !(p.x !== null && p.y !== null));
+  const xMin = -0.2; const xMax = 0.9; const yMax = 1.2;
+  const sx = (v) => pad.l + ((Math.max(xMin, Math.min(xMax, v)) - xMin) / (xMax - xMin)) * (W - pad.l - pad.r);
+  const sy = (v) => H - pad.b - (Math.max(0, Math.min(yMax, v)) / yMax) * (H - pad.t - pad.b);
+  // Log scale: market values run from about Rs 7,000 cr to Rs 11 lakh cr, and a
+  // linear or square-root scale shrinks all but the largest to specks.
+  const rad = (mv) => (mv > 0 ? Math.max(5, 5 + 7 * (Math.log10(mv) - 3.8)) : 5);
+  const x25 = sx(0.25); const y25 = sy(0.25);
+  return (
+    <section aria-labelledby="scatter-h" className="rounded-md border border-[#1e2634] bg-[#0c1017] p-3.5">
+      <div className="flex flex-wrap items-baseline gap-2">
+        <h3 id="scatter-h" className="text-[15px] font-semibold text-[#f1f5f9]">AI materiality against what the price needs</h3>
+        <span className="text-[12px] text-[#7d8894]">both axes are AGI figures<Tag t="A" /> · bubble = market value · outline = evidence confidence · click a bubble</span>
+      </div>
+      <div className="mt-2 overflow-x-auto">
+        <svg viewBox={`0 0 ${W} ${H}`} className="w-full min-w-[620px]" role="img" aria-label="Scatter of AI materiality against the profit growth each price needs">
+          <rect x={pad.l} y={pad.t} width={W - pad.l - pad.r} height={H - pad.t - pad.b} fill="#0a0e14" />
+          {[0, 0.25, 0.5, 0.75, 1].map((v) => (
+            <g key={`y${v}`}>
+              <line x1={pad.l} x2={W - pad.r} y1={sy(v)} y2={sy(v)} stroke="#1a2230" />
+              <text x={pad.l - 6} y={sy(v) + 4} textAnchor="end" fontSize="11" fill="#7d8894">{Math.round(v * 100)}%</text>
+            </g>
+          ))}
+          {[-0.2, 0, 0.25, 0.5, 0.75].map((v) => (
+            <g key={`x${v}`}>
+              <line x1={sx(v)} x2={sx(v)} y1={pad.t} y2={H - pad.b} stroke="#1a2230" />
+              <text x={sx(v)} y={H - pad.b + 14} textAnchor="middle" fontSize="11" fill="#7d8894">{v <= 0 ? (v === 0 ? '0' : 'none') : `${Math.round(v * 100)}%`}</text>
+            </g>
+          ))}
+          <line x1={x25} x2={x25} y1={pad.t} y2={H - pad.b} stroke="#3a4453" strokeDasharray="4 4" />
+          <line x1={pad.l} x2={W - pad.r} y1={y25} y2={y25} stroke="#3a4453" strokeDasharray="4 4" />
+          <text x={(W + pad.l) / 2} y={H - 6} textAnchor="middle" fontSize="11" fill="#9aa5b3">Profit growth a year the price needs to reach 30x by FY29 (expectation load)</text>
+          <text x={14} y={(H - pad.b) / 2} textAnchor="middle" fontSize="11" fill="#9aa5b3" transform={`rotate(-90 14 ${(H - pad.b) / 2})`}>FY29 AI/DC EBITDA ÷ FY26 EBITDA</text>
+          {(() => {
+            // Greedy label placement, largest company first: above the bubble,
+            // else below, else no label (the tooltip still names it).
+            const placed = [];
+            const fits = (b) => placed.every((q) => b.x2 < q.x1 || b.x1 > q.x2 || b.y2 < q.y1 || b.y1 > q.y2);
+            return [...plotted].sort((a, b) => (b.r.mv || 0) - (a.r.mv || 0)).map((p) => {
+              const cx = sx(p.x); const cy = sy(p.y); const rr = rad(p.r.mv);
+              const text = `${p.r.m.symbol}${p.y > yMax ? ' ↑' : ''}${p.x > xMax ? ' →' : ''}`;
+              const w = text.length * 6.2;
+              let ly = null;
+              for (const y of [cy - rr - 3, cy + rr + 11]) {
+                const box = { x1: cx - w / 2, x2: cx + w / 2, y1: y - 10, y2: y + 2 };
+                if (fits(box)) { placed.push(box); ly = y; break; }
+              }
+              return { p, cx, cy, rr, text, ly };
+            });
+          })().map(({ p, cx, cy, rr, text, ly }) => {
+            return (
+              <g
+                key={p.r.m.symbol}
+                role="button"
+                tabIndex={0}
+                aria-label={`${p.r.m.symbol}: materiality ${Math.round(p.y * 100)}%, price needs ${p.x <= 0 ? 'no growth' : `${Math.round(p.x * 100)}% a year`}`}
+                onClick={() => open(p.r.m.symbol)}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(p.r.m.symbol); } }}
+                className="cursor-pointer focus-visible:outline-none"
+              >
+                <title>{`${p.r.m.symbol} (${p.r.m.name}): FY29 AI/DC EBITDA ${Math.round(p.y * 100)}% of FY26 EBITDA; price needs ${p.x <= 0 ? 'no growth' : `${Math.round(p.x * 100)}% a year`}; evidence ${p.r.factors.evidence.band}`}</title>
+                <circle cx={cx} cy={cy} r={rr} fill="#e8833a" fillOpacity="0.18" stroke={EV_STROKE[p.r.factors.evidence.band] || '#7d8894'} strokeWidth="2" />
+                {ly !== null ? <text x={cx} y={ly} textAnchor="middle" fontSize="10" fill="#c7cfda">{text}</text> : null}
+              </g>
+            );
+          })}
+        </svg>
+      </div>
+      <p className="mt-1 text-[11px] leading-relaxed text-[#68727f]">
+        Outline: <span style={{ color: EV_STROKE.high }}>high</span>, <span style={{ color: EV_STROKE.medium }}>medium</span>, <span style={{ color: EV_STROKE.low }}>low</span> evidence confidence.
+        Dashed lines at 25% on each axis divide it into: top left, material with a lower price hurdle; top right, material with a high hurdle; bottom left, small so far with a lower hurdle; bottom right, small so far with a high hurdle. Bubble area is on a log scale of market value. ↑ or → marks a value beyond the axis. Position is a description of AGI&rsquo;s base case against today&rsquo;s price, not a recommendation.
+        Not plotted (no running base-case model): {notPlotted.map((p) => p.r.m.symbol).join(', ') || 'none'}.
+      </p>
+    </section>
+  );
+}
+
+/** AGI's grouping of members (and held candidates) along the physical chain. */
+const CHAIN = [
+  ['Compute', ['NETWEB'], []],
+  ['Connectivity', ['STLTECH', 'HFCL'], []],
+  ['Data centres', ['ADANIENT', 'BHARTIARTL', 'RELIANCE', 'LT', 'ANANTRAJ'], ['ESDS']],
+  ['Cooling and MEP', ['BLUESTARCO'], []],
+  ['Electrical equipment', ['POWERINDIA', 'ABB', 'GVT&D', 'SCHNEIDER'], ['SIEMENS', 'INDOTECH']],
+  ['Backup and prime power', ['CUMMINSIND', 'KIRLOSENG', 'TDPOWERSYS', 'CRAFTSMAN'], []],
+  ['Components', ['MTARTECH'], []],
+  ['Cables', ['POLYCAB', 'APARINDS', 'DIACABS'], ['KEI']],
+  ['Power supply and storage', ['CLEANMAX', 'TATAPOWER', 'ADANIGREEN'], ['NTPCGREEN', 'ACMESOLAR', 'WAAREEENER', 'PREMIERENE']],
+  ['Grid and transmission', ['ADANIENSOL', 'POWERGRID'], ['KEC']],
+  ['Semiconductors', ['KAYNES', 'CGPOWER', 'SANSERA'], ['FLUOROCHEM', 'NAVINFLUOR', 'SYRMA', 'PARAS']],
+];
+
+function SupplyChain({ records, held, setFilter, open }) {
+  const bySym = Object.fromEntries(records.map((r) => [r.m.symbol, r]));
+  const heldBy = Object.fromEntries(held.map((c) => [c.symbol, c]));
+  return (
+    <section aria-labelledby="chain-h" className="rounded-md border border-[#1e2634] bg-[#0c1017] p-3.5">
+      <div className="flex flex-wrap items-baseline gap-2">
+        <h3 id="chain-h" className="text-[15px] font-semibold text-[#f1f5f9]">The chain, from compute to the grid</h3>
+        <span className="text-[12px] text-[#7d8894]">AGI&rsquo;s grouping · click a stage to filter the matrix, a symbol for its drawer · grey = held, not admitted</span>
+      </div>
+      <ol className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+        {CHAIN.map(([stage, syms, heldSyms], i) => {
+          const rs = syms.map((s) => bySym[s]).filter(Boolean);
+          const mv = rs.reduce((n, r) => n + (r.mv || 0), 0);
+          const sized = rs.filter((r) => r.m.attribution && r.m.attribution !== 'NOT_ATTRIBUTABLE').length;
+          return (
+            <li key={stage} className="rounded border border-[#1a2230] p-2.5">
+              <button
+                type="button"
+                onClick={() => setFilter({ symbols: syms, label: stage })}
+                className="flex w-full items-baseline justify-between rounded text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#e8833a]"
+              >
+                <span className="text-[13px] font-semibold text-[#e3e8ef]"><span className="mr-1.5 font-mono text-[11px] text-[#68727f]">{String(i + 1).padStart(2, '0')}</span>{stage}</span>
+                <span className="text-[11px] text-[#7d8894]">{rupeesCr(mv)}<Tag t="I" /> · {sized}/{rs.length} sized</span>
+              </button>
+              <p className="mt-1.5 flex flex-wrap gap-1">
+                {rs.map((r) => (
+                  <button key={r.m.symbol} type="button" onClick={() => open(r.m.symbol)}
+                    className="rounded bg-[#1c2534] px-1.5 py-[1px] font-mono text-[11px] text-[#c7cfda] hover:bg-[#26324a] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#e8833a]">
+                    {r.m.symbol}
+                  </button>
+                ))}
+                {heldSyms.filter((s) => heldBy[s]).map((s) => (
+                  <span key={s} title={`Held: ${heldBy[s].note || ''}`} className="rounded border border-dashed border-[#2a3444] px-1.5 py-[1px] font-mono text-[11px] text-[#5b6675]">{s}</span>
+                ))}
+              </p>
+            </li>
+          );
+        })}
+      </ol>
+      <p className="mt-2 text-[11px] text-[#68727f]">The numbering is the order power and equipment flow into an AI data centre, read from the rack outward. Each member appears once, at the stage its admitting evidence sits.</p>
+    </section>
+  );
+}
+
+const IMPACT = { order: 'Orders', capex: 'Capacity', operating: 'AI exposure' };
+
+/** The latest dated evidence across members, newest first: research consequences, not calls. */
+function WhatChanged({ records, open }) {
+  const items = [];
+  for (const r of records) {
+    for (const e of r.m.admittedOn || []) items.push({ r, e, when: e.date, what: 'admitting evidence' });
+    // An undated source (a website table) carries the date AGI read it, which is not a change date.
+    for (const e of r.m.supportingEvidence || []) if (!e.undated) items.push({ r, e, when: e.date, what: 'since admission' });
+  }
+  const latest = items.filter((x) => x.when).sort((a, b) => (a.when < b.when ? 1 : -1)).slice(0, 14);
+  return (
+    <section aria-labelledby="changed-h" className="rounded-md border border-[#1e2634] bg-[#0c1017] p-3.5">
+      <h3 id="changed-h" className="text-[15px] font-semibold text-[#f1f5f9]">What changed</h3>
+      <p className="text-[12px] text-[#7d8894]">latest dated evidence, from each company&rsquo;s own text</p>
+      <ul className="mt-2 space-y-2.5">
+        {latest.map(({ r, e, what }, i) => (
+          <li key={i} className="border-l-2 border-[#2a3444] pl-2.5">
+            <p className="flex flex-wrap items-baseline gap-x-2 text-[11px] text-[#7d8894]">
+              <span className="font-mono text-[#9aa5b3]">{e.date}</span>
+              <button type="button" onClick={() => open(r.m.symbol)} className="rounded font-mono text-[12px] text-[#e3e8ef] hover:text-[#f0a060] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#e8833a]">{r.m.symbol}</button>
+              <span className="rounded bg-[#1a2230] px-1 text-[10px] uppercase tracking-wider text-[#8fb4d8]">{IMPACT[e.kind] || e.kind}</span>
+              <span className="text-[10px] uppercase tracking-wider text-[#4ade80]">confirmed · {what}</span>
+            </p>
+            <p className="mt-0.5 text-[12px] leading-relaxed text-[#c7cfda]">{String(e.excerpt).length > 170 ? `${String(e.excerpt).slice(0, 167)}…` : e.excerpt}</p>
+            <p className="text-[10px] text-[#5b6675]">{e.document}</p>
+          </li>
+        ))}
+      </ul>
+      <p className="mt-2 text-[11px] text-[#68727f]">Impact names what the evidence bears on: orders, capacity, or how much of the business AI is. No entry is a recommendation.</p>
+    </section>
+  );
+}
+
+/** Summary cards that change with the selected layer. */
+function LayerKpis({ records, filter, estimates }) {
+  if (!filter?.layer) return null;
+  const rs = records.filter((r) => r.m.layer === filter.layer && (!filter.sub || (r.m.subLayers || []).includes(filter.sub)));
+  const sum = (xs) => xs.filter(Number.isFinite).reduce((a, b) => a + b, 0);
+  const mv = sum(rs.map((r) => r.mv));
+  const book = sum(rs.map((r) => r.book?.backlogCr));
+  const cover = median(rs.map((r) => r.cover));
+  const growth = median(rs.map((r) => r.q1));
+  const cards = [
+    ['Members', rs.length, `${rs.filter((r) => r.m.attribution !== 'NOT_ATTRIBUTABLE').length} with the AI/DC business sized`, 'D'],
+    ['Market value', rupeesCr(mv), 'whole companies', 'I'],
+    ['Revenue growth, median', growth !== null ? signedPct(growth) : '—', 'latest quarter y/y', 'I'],
+  ];
+  if (filter.layer === 'data_centre') {
+    // Not summed: some companies state IT load and others power capacity.
+    const op = rs.filter((r) => Number.isFinite(r.cap?.operationalMW) && r.cap.operationalMW > 0)
+      .sort((a, b) => b.cap.operationalMW - a.cap.operationalMW).map((r) => `${r.m.symbol} ${r.cap.operationalMW}`);
+    const tied = rs.filter((r) => Number.isFinite(r.cap?.tiedUpMW)).map((r) => `${r.m.symbol} ${r.cap.tiedUpMW}`);
+    cards.push(['Operating MW', op.join(' · ') || '—', 'as each company states it; IT load and power differ, so not added', 'D']);
+    cards.push(['Tied-up MW', tied.join(' · ') || '—', 'contracted or tied up, where the company gives it', 'D']);
+    cards.push(['Nxtra revenue / MW', '₹9.7 cr', 'FY26 revenue ÷ ~250 MW; EBITDA margin 40.3%', 'I']);
+  } else if (filter.layer === 'semiconductor') {
+    const units = (estimates?.models || []).filter((m) => rs.some((r) => r.m.symbol === m.symbol) && m.params?.unitsPerDay)
+      .map((m) => `${m.symbol} ${(valueOf(m.params.unitsPerDay, 'base') / 1e6).toFixed(1)}m/day`);
+    cards.push(['Packaging capacity', units.join(' · ') || '—', 'units a day as stated; utilisation not disclosed', 'D']);
+    cards.push(['Order book', book ? rupeesCr(book) : '—', 'members that report one', 'D']);
+    cards.push(['Order cover, median', cover !== null ? `${cover.toFixed(1)} qtrs` : '—', 'order book ÷ quarter revenue', 'I']);
+  } else {
+    cards.push(['Order book', book ? rupeesCr(book) : '—', 'members that report one', 'D']);
+    cards.push(['Order cover, median', cover !== null ? `${cover.toFixed(1)} qtrs` : '—', 'order book ÷ quarter revenue', 'I']);
+    const stated = rs.filter((r) => r.shares.length).length;
+    cards.push(['Stated AI/DC figure', `${stated} / ${rs.length}`, 'members stating a share or value', 'D']);
+  }
+  return (
+    <div>
+      <p className="mb-1.5 text-[11px] uppercase tracking-wider text-[#f0a060]">{LAYER_LABEL[filter.layer]}{filter.sub ? ` · ${SUB_LABEL[filter.sub]}` : ''}</p>
+      <div className="grid grid-cols-2 gap-2 md:grid-cols-3 xl:grid-cols-6">
+        {cards.map(([label, value, sub, tag]) => <Kpi key={label} label={label} value={value} sub={sub} tag={tag} />)}
+      </div>
+    </div>
+  );
+}
+
 export default function MonitorDashboard({
   universe, live, history, marketValue, stage3, estimates, operating, scoring, onResearch,
 }) {
@@ -434,6 +667,16 @@ export default function MonitorDashboard({
       </div>
 
       <StackMap records={records} filter={filter} setFilter={setFilter} />
+
+      <LayerKpis records={records} filter={filter} estimates={estimates} />
+
+      <div className="grid gap-4 xl:grid-cols-[minmax(0,2.2fr)_minmax(0,1fr)]">
+        <div className="min-w-0 space-y-4">
+          <MaterialityScatter records={records} open={setDrawer} />
+          <SupplyChain records={records} held={others.held} setFilter={setFilter} open={setDrawer} />
+        </div>
+        <WhatChanged records={records} open={setDrawer} />
+      </div>
 
       <Matrix records={records} others={others} filter={filter} view={view} setView={setView} status={status} setStatus={setStatus} open={setDrawer} />
 
