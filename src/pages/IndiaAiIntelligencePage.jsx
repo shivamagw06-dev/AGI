@@ -758,7 +758,7 @@ function BasketPanel({ live }) {
     >
       <div className="grid grid-cols-4 gap-2">
         {[
-          ['Today', pp(index.return_pp), upDown(index.return_pp)],
+          [lastTrade ? 'Last session' : 'Today', pp(index.return_pp), upDown(index.return_pp)],
           ['vs Nifty', index.relative ? pp(index.relative.excess_pp) : '—', upDown(index.relative?.excess_pp)],
           ['Breadth', `${index.breadth.advancing}/${index.priced}`, 'text-[#e3e8ef]'],
           lastTrade
@@ -775,6 +775,7 @@ function BasketPanel({ live }) {
         <p className="mt-2 text-[13px] leading-relaxed text-[#8fb4d8]">
           NSE is closed. Priced at each member&rsquo;s last trade (latest {istTime(q.last_trade_at)} IST) against the
           previous close; NSE&rsquo;s official close, a weighted average of the final half hour, can differ slightly.
+          {q.from_candles ? ` ${q.from_candles} of these are from the session’s final one-minute candle, because the live feed is reconnecting.` : ''}
         </p>
       ) : null}
       {q?.last_good ? (
