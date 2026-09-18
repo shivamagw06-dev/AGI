@@ -25,6 +25,7 @@ const UNIVERSE_PATH = fileURLToPath(new URL('../config/india-ai-enablers.univers
 const FACTS_PATH = fileURLToPath(new URL('../config/india-ai-enablers.disclosed-facts.json', import.meta.url));
 const INTENSITY_PATH = fileURLToPath(new URL('../config/india-ai-enablers.intensity-inputs.json', import.meta.url));
 const SHARES_PATH = fileURLToPath(new URL('../config/india-ai-enablers.shares.json', import.meta.url));
+const OPERATING_PATH = fileURLToPath(new URL('../config/india-ai-enablers.operating-data.json', import.meta.url));
 
 let universeCache = null;
 export async function loadUniverse({ path = UNIVERSE_PATH, refresh = false } = {}) {
@@ -178,6 +179,18 @@ export default function createIndiaAiIntelligenceRouter() {
         candidates: universe.candidates,
         excluded: universe.excluded || [],
       });
+    } catch (error) {
+      res.status(500).json({ ok: false, error: String(error?.message || error) });
+    }
+  });
+
+  /**
+   * Order books and data-centre capacity, each figure quoted from the
+   * company's own document (config/india-ai-enablers.operating-data.json).
+   */
+  router.get('/operating-data', async (req, res) => {
+    try {
+      res.json({ ok: true, ...JSON.parse(await readFile(OPERATING_PATH, 'utf8')) });
     } catch (error) {
       res.status(500).json({ ok: false, error: String(error?.message || error) });
     }

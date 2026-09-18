@@ -32,3 +32,4 @@ export const fetchStage3 = () => request('/screen/stage3');
 export const fetchIndexHistory = () => request('/index/history', { timeoutMs: 90_000 });
 export const fetchMarketValue = () => request('/screen/market-value', { timeoutMs: 120_000 });
 export const fetchExitability = () => request('/screen/exitability', { timeoutMs: 120_000 });
+export const fetchOperatingData = () => request('/operating-data');
