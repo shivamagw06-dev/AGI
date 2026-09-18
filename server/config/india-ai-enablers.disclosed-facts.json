@@ -54,36 +54,127 @@
       "isin": "INE067A01029",
       "facts": [
         {
-          "concept": "capex",
-          "definition_id": "CAPEX.COMMITTED_PROJECT",
-          "scope": "project",
-          "period_end": "2026-03-31",
-          "value": 1062.85,
-          "unit": "inr_crore",
-          "as_reported_label": "QIP proceeds allocated to CG Semi capex"
-        },
-        {
-          "concept": "share_count",
-          "definition_id": "SHARE_COUNT.OUTSTANDING",
-          "scope": "entity",
-          "period_end": "2026-03-31",
-          "value": 1574921249,
-          "unit": "shares",
-          "as_reported_label": "subscribed and paid up"
-        },
-        {
-          "concept": "rnd",
-          "definition_id": "RND.GROSS",
+          "concept": "revenue",
+          "definition_id": "REVENUE.OPERATIONS_NET",
           "scope": "consolidated",
           "period_end": "2026-03-31",
-          "value": null,
-          "unit": null,
-          "state": "NOT_DISCLOSED",
-          "note": "No clean company-disclosed FY26 R&D figure located. Not zero."
+          "value": 12417.95,
+          "prior": 9908.66,
+          "unit": "inr_crore",
+          "as_reported_label": "Total revenue, all segments",
+          "source_page": 176
+        },
+        {
+          "concept": "net_profit",
+          "definition_id": "PAT.REPORTED",
+          "scope": "consolidated",
+          "period_end": "2026-03-31",
+          "value": 1198.68,
+          "prior": 972.98,
+          "unit": "inr_crore",
+          "as_reported_label": "Profit for the year",
+          "source_page": 176
+        },
+        {
+          "concept": "capex",
+          "definition_id": "CAPEX.SEGMENT",
+          "scope": "consolidated",
+          "period_end": "2026-03-31",
+          "value": 777.76,
+          "unit": "inr_crore",
+          "as_reported_label": "Capital expenditure (net of government grant), all segments",
+          "note": "Net of government grant. The India Semiconductor Mission support reduces the reported figure, so this is not gross capital spend and must not be compared with a gross capex from another company.",
+          "source_page": 176
         }
       ],
       "segmentNote": "Semiconductors appears as a segment in consolidated reporting and not in standalone, so consolidated is the correct scope for semiconductor attribution.",
-      "documentProvenance": "The FY26 annual report must be read with the company's subsequent corrigendum, which the company itself states. Both belong to the document provenance."
+      "documentProvenance": "The FY26 annual report must be read with the company's subsequent corrigendum, which the company itself states. Both belong to the document provenance.",
+      "provenance": "PRIMARY_FILING_READ",
+      "document": "Annual Report 2025-2026 (89th), CG Power and Industrial Solutions Limited",
+      "segmentRevenue": [
+        {
+          "segment": "Industrial Systems",
+          "value": 6745.43,
+          "unit": "inr_crore",
+          "scope": "consolidated",
+          "source_page": 176
+        },
+        {
+          "segment": "Power Systems",
+          "value": 5135.51,
+          "unit": "inr_crore",
+          "scope": "consolidated",
+          "source_page": 176
+        },
+        {
+          "segment": "Semiconductors",
+          "value": 502.77,
+          "prior": 0,
+          "unit": "inr_crore",
+          "scope": "consolidated",
+          "source_page": 176
+        },
+        {
+          "segment": "Others",
+          "value": 34.24,
+          "unit": "inr_crore",
+          "scope": "consolidated",
+          "source_page": 176
+        }
+      ],
+      "segmentCapex": [
+        {
+          "segment": "Semiconductors",
+          "value": 330.33,
+          "unit": "inr_crore",
+          "source_page": 176
+        },
+        {
+          "segment": "Power Systems",
+          "value": 320.71,
+          "unit": "inr_crore",
+          "source_page": 176
+        },
+        {
+          "segment": "Industrial Systems",
+          "value": 115.92,
+          "unit": "inr_crore",
+          "source_page": 176
+        },
+        {
+          "segment": "Others",
+          "value": 0.35,
+          "unit": "inr_crore",
+          "source_page": 176
+        },
+        {
+          "segment": "Unallocable",
+          "value": 10.45,
+          "unit": "inr_crore",
+          "source_page": 176
+        }
+      ],
+      "segmentResult": [
+        {
+          "segment": "Semiconductors",
+          "value": -107.86,
+          "prior": -22.39,
+          "unit": "inr_crore",
+          "source_page": 176
+        }
+      ],
+      "segmentAssets": [
+        {
+          "segment": "Semiconductors",
+          "value": 1421.39,
+          "prior": 773.5,
+          "unit": "inr_crore",
+          "source_page": 176
+        }
+      ],
+      "exposureAttributable": true,
+      "exposureFinding": "The opposite of ADANIENT, and measurable. Semiconductors is a reported operating segment in consolidated accounts - OSAT and fabless design, identified separately under Ind AS 108 (page 176) - so the theme can be sized from the filing rather than asserted. FY26 semiconductor revenue of 502.77 crore is 4.0% of group revenue, its assets of 1,421.39 crore are 11.2% of group assets, and its capital expenditure of 330.33 crore is 42.5% of all group capex. A segment taking two fifths of the capital while earning four per cent of the revenue is the AI infrastructure thesis stated in the company's own numbers. External sales were nil in FY25, so this is the first year the segment earned anything, and it is loss-making at -107.86 crore against -22.39 the year before.",
+      "rndNote": "Still no discrete FY26 R&D figure. The report describes R&D direction qualitatively at page 66 and gives no amount, so this stays NOT_DISCLOSED rather than zero."
     },
     "NETWEB": {
       "isin": "INE0NT901020",
@@ -140,34 +231,85 @@
     },
     "ADANIENT": {
       "isin": "INE423A01024",
+      "provenance": "PRIMARY_FILING_READ",
+      "document": "Annual Report 2025-26, Adani Enterprises Limited",
+      "facts": [
+        {
+          "concept": "revenue",
+          "definition_id": "REVENUE.OPERATIONS_NET",
+          "scope": "consolidated",
+          "period_end": "2026-03-31",
+          "value": 100468.61,
+          "prior": 109215.38,
+          "unit": "inr_crore",
+          "as_reported_label": "Revenue from Operations, total of all segments net of inter-segment elimination",
+          "source_page": 339
+        },
+        {
+          "concept": "net_profit",
+          "definition_id": "PAT.REPORTED",
+          "scope": "consolidated",
+          "period_end": "2026-03-31",
+          "value": 9950.69,
+          "prior": 8004.98,
+          "unit": "inr_crore",
+          "as_reported_label": "Net Profit for the Year",
+          "source_page": 339
+        }
+      ],
       "segmentRevenue": [
+        {
+          "segment": "Integrated Resources Management",
+          "value": 28362.46,
+          "unit": "inr_crore",
+          "source_page": 339
+        },
         {
           "segment": "New Energy Ecosystem",
           "value": 15399.0,
           "unit": "inr_crore",
-          "scope": "consolidated"
+          "source_page": 339
         },
         {
           "segment": "Copper",
           "value": 15284.34,
           "unit": "inr_crore",
-          "scope": "consolidated"
+          "source_page": 339
         },
         {
-          "segment": "Airports",
+          "segment": "Others",
+          "value": 14289.6,
+          "unit": "inr_crore",
+          "source_page": 339
+        },
+        {
+          "segment": "Airport",
           "value": 13215.43,
           "unit": "inr_crore",
-          "scope": "consolidated"
+          "source_page": 339
         },
         {
-          "segment": "Roads",
+          "segment": "Road",
           "value": 6347.18,
           "unit": "inr_crore",
-          "scope": "consolidated"
+          "source_page": 339
+        },
+        {
+          "segment": "Commercial Mining",
+          "value": 5642.3,
+          "unit": "inr_crore",
+          "source_page": 339
+        },
+        {
+          "segment": "Mining Services",
+          "value": 4445.86,
+          "unit": "inr_crore",
+          "source_page": 339
         }
       ],
-      "scopeRule": "Consolidated is the economic basis for the layer screen. Standalone facts are retained separately and never mixed into a numerator or denominator with consolidated ones.",
-      "openQuestion": "No data centre segment appears in this consolidated table, yet this member was admitted on data centre evidence - a 400 MW hyperscale order and 960+ MW tied up. If AdaniConneX is a joint venture carried at equity rather than consolidated, its revenue is not in the segment table at all, and the layer attribution for this member cannot be evidenced from it. That has to be settled from the annual report before ADANIENT's data_centre attribution is treated as measured rather than asserted."
+      "exposureAttributable": false,
+      "exposureFinding": "The open question is now answered, and the answer is no. There is no data centre segment in the consolidated segment table at page 339 - the segments are Integrated Resources Management, Mining Services, Commercial Mining, New Energy Ecosystem, Airport, Road, Copper and Others. AdaniConneX is a joint venture between AEL and EdgeConneX founded in 2021 (page 55) and is described as 'a joint venture of your Company' at page 155, so it is equity-accounted rather than consolidated: its revenue is in none of the 1,00,468.61 crore above, and its earnings appear only inside 'Share of Profit from Jointly Controlled Entities & Associates' of 257.18 crore, which covers every joint venture and associate together and is not broken out. So the data centre exposure of this member cannot be located in its financial statements at any size, and the 400 MW hyperscale order that admitted it sits in a vehicle whose results are not consolidated here.",
+      "implication": "The evidence that admitted ADANIENT is real, first-party and dated, and the admission is not withdrawn on this basis alone. What cannot be claimed is attribution: a reader cannot be shown what share of this company is the theme, because the filing does not say. Holding it for AI infrastructure means holding a diversified conglomerate whose reported revenue is mining, copper, airports and roads, for a stake in a joint venture. That is a decision for a reviewer, and it is recorded here rather than settled quietly."
     },
     "CLEANMAX": {
       "isin": "INE647U01026",
@@ -178,10 +320,11 @@
           "scope": "entity",
           "period_end": "2026-03-31",
           "value": 0,
-          "unit": "inr_crore",
+          "unit": "inr_million",
           "state": "DISCLOSED_NIL",
-          "as_reported_label": "R&D expenditure: Nil",
-          "note": "Disclosed as nil, which is a fact with a value. Distinct from NOT_DISCLOSED."
+          "as_reported_label": "the expenditure incurred on Research and Development - Nil",
+          "note": "Disclosed as nil, which is a fact with a value, not an absence.",
+          "source_page": 40
         },
         {
           "concept": "share_count",
@@ -190,9 +333,29 @@
           "period_end": "2026-03-31",
           "value": 117079174,
           "unit": "shares",
-          "as_reported_label": "equity shares of Rs 1 each, paid up"
+          "as_reported_label": "Equity shares of Rs 1 each, issued, subscribed and fully paid-up",
+          "note": "Prior year 5,072,091 shares of Rs 10 each. The face value changed from Rs 10 to Rs 1 during FY26, so the share count is not comparable across the two years without adjusting for the sub-division.",
+          "source_page": 500
+        },
+        {
+          "concept": "capex",
+          "definition_id": "CAPEX.CASH_PPE_INTANGIBLES",
+          "scope": "consolidated",
+          "period_end": "2026-03-31",
+          "value": 57543.18,
+          "prior": 29106.17,
+          "unit": "inr_million",
+          "as_reported_label": "Capital expenditure on property, plant and equipment, capital work in progress and capital advances (56,871.87) plus capital expenditure on other intangible assets (671.31)",
+          "components": {
+            "ppe_cwip_advances": 56871.87,
+            "intangibles": 671.31
+          },
+          "source_page": 140
         }
-      ]
+      ],
+      "provenance": "PRIMARY_FILING_READ",
+      "document": "Annual Report 2025-26, Clean Max Enviro Energy Solutions Limited",
+      "corporateAction": "A sub-division of the equity share from Rs 10 to Rs 1 took effect during FY26. That is exactly the class of action that breaks a price series against an unadjusted previous close, and it is the reason the index now reads ex-dates ahead and excludes the member for the day."
     },
     "POWERINDIA": {
       "isin": "INE07Y701011",
