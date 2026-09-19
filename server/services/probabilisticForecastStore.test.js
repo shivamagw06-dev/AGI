@@ -32,7 +32,8 @@ test('scores due forecasts from price history, without waiting on the confluence
     return /offset=0$/.test(options.query) ? forecasts[horizon] || [] : [];
   };
   // Due 17 Sep close: stock +2%, sector +1%, so 1% ahead of its sector.
-  const book = { async priceAt(key) { return { price: { 'NSE_EQ|A': 102, 'NSE_INDEX|Nifty IT': 1010, 'NSE_INDEX|Nifty 50': 20100 }[key], candle_end: '2026-09-17T10:00:00.000Z' }; } };
+  const closes = [];
+  const book = { async closeOn(key, day) { closes.push(day); return { price: { 'NSE_EQ|A': 102, 'NSE_INDEX|Nifty IT': 1010, 'NSE_INDEX|Nifty 50': 20100 }[key], candle_end: '2026-09-17T10:00:00.000Z' }; } };
   const summary = await settleDueForecasts({ now: new Date('2026-09-19T06:00:00Z'), book, request, force: true });
   assert.equal(summary.completed, 1);
   assert.equal(summary.skipped.event_outside_session, 1);
@@ -45,4 +46,5 @@ test('scores due forecasts from price history, without waiting on the confluence
   assert.equal(write.body[0].forecast_id, 'due');
   assert.equal(write.body[0].actual_alpha_pct, 1);
   assert.equal(write.body[0].direction_correct, true);
+  assert.deepEqual([...new Set(closes)], ['2026-09-17']);
 });

@@ -76,3 +76,18 @@ test('a refused key is that row\'s problem; throttling still stops the caller', 
   const throttled = book({ fetchCandles: refuse(429, 'Too many requests') }).instance;
   await assert.rejects(throttled.priceAt('NSE_EQ|A', '2026-08-10T10:00:00+05:30'), /Too many/);
 });
+
+test('closes come from one daily request per instrument and month', async () => {
+  const requests = [];
+  const { instance } = book({
+    fetchDailyCandles: async (key, from, to) => {
+      requests.push([key, from, to]);
+      return { data: { candles: [['2026-09-17T00:00:00+05:30', 1, 1, 1, 1243.9, 0, 0], ['2026-09-16T00:00:00+05:30', 1, 1, 1, 1250, 0, 0]] } };
+    },
+  });
+  assert.deepEqual(await instance.closeOn('NSE_EQ|A', '2026-09-17'), { price: 1243.9, candle_end: '2026-09-17T10:00:00.000Z' });
+  assert.equal((await instance.closeOn('NSE_EQ|A', '2026-09-16')).price, 1250);
+  assert.equal((await instance.closeOn('NSE_EQ|A', '2026-09-15')).reason, 'no_close_that_day');
+  assert.equal((await instance.closeOn('NSE_EQ|A', '2026-09-19')).reason, 'session_not_published');
+  assert.deepEqual(requests, [['NSE_EQ|A', '2026-09-01', '2026-09-30']]);
+});

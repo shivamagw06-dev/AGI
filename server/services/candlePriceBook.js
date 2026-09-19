@@ -63,12 +63,14 @@ export function todayIst(now = Date.now()) {
 export class CandlePriceBook {
   constructor({
     fetchCandles = (key, date) => getHistoricalCandles(key, { unit: 'minutes', interval: 1, from: date, to: date }),
+    fetchDailyCandles = (key, from, to) => getHistoricalCandles(key, { unit: 'days', interval: 1, from, to }),
     requestsPerSecond = Number(process.env.LIVE_ALPHA_OUTCOME_CANDLE_RPS || 0.5),
     maxEntries = 3000,
     sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
     clock = () => Date.now(),
   } = {}) {
     this.fetchCandles = fetchCandles;
+    this.fetchDailyCandles = fetchDailyCandles;
     // The account's history quota is shared with the other candle jobs; the
     // default of one request every two seconds uses under half of it.
     this.minGapMs = 1000 / Math.max(0.01, Number(requestsPerSecond) || 0.5);
@@ -123,6 +125,51 @@ export class CandlePriceBook {
     this.cache.set(cacheKey, rows);
     while (this.cache.size > this.maxEntries) this.cache.delete(this.cache.keys().next().value);
     return rows;
+  }
+
+  /**
+   * Official close of `instrumentKey` on an IST date, or a reason it has none.
+   *
+   * A horizon that ends at the session close needs one number per day, and a
+   * month of daily candles is one request where minute candles are one per
+   * day. The current month is refetched hourly as sessions are published.
+   */
+  async closeOn(instrumentKey, date) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(String(date))) return { price: null, reason: 'invalid_time' };
+    if (date >= todayIst(this.clock())) return { price: null, reason: 'session_not_published' };
+    const key = candleKey(instrumentKey);
+    const month = date.slice(0, 7);
+    const cacheKey = `${key}|month|${month}`;
+    let entry = this.cache.get(cacheKey);
+    const current = month >= todayIst(this.clock()).slice(0, 7);
+    if (!entry || (current && this.clock() - entry.fetched_at > 60 * 60_000)) {
+      await this.#slot();
+      this.stats.requests += 1;
+      const [year, monthNumber] = month.split('-').map(Number);
+      const last = new Date(Date.UTC(year, monthNumber, 0)).toISOString().slice(0, 10);
+      let closes;
+      try {
+        const payload = await this.fetchDailyCandles(key, `${month}-01`, last);
+        closes = new Map((payload?.data?.candles || [])
+          .map((row) => [String(row?.[0] || '').slice(0, 10), Number(row?.[4])])
+          .filter(([day, close]) => day && Number.isFinite(close) && close > 0));
+      } catch (error) {
+        this.stats.errors += 1;
+        const status = Number(error?.status);
+        if (!(status >= 400 && status < 500 && status !== 429)) throw error;
+        closes = new Map();
+        closes.refused = /invalid instrument/i.test(error.message) ? 'invalid_instrument_key' : `upstox_${status}`;
+      }
+      entry = { closes, fetched_at: this.clock() };
+      this.cache.set(cacheKey, entry);
+      while (this.cache.size > this.maxEntries) this.cache.delete(this.cache.keys().next().value);
+    } else {
+      this.stats.cache_hits += 1;
+    }
+    if (entry.closes.refused) return { price: null, reason: entry.closes.refused };
+    const price = entry.closes.get(date);
+    if (price == null) return { price: null, reason: entry.closes.size ? 'no_close_that_day' : 'no_candles' };
+    return { price, candle_end: new Date(`${date}T15:30:00+05:30`).toISOString() };
   }
 
   /**

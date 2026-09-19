@@ -45,7 +45,8 @@ export async function syncProbabilisticForecasts({limit=2000}={}){
  * 200 per cycle, so after five weeks 120 of 18,588 forecasts were scored.
  * A forecast needs only its own event's anchors and two prices at the due
  * close, so it is priced directly: the stock's and its sector's returns from
- * the event to the horizon's close, from the shared candle book.
+ * the event to the horizon's official close, one daily-candle request per
+ * instrument and month from the shared candle book.
  *
  * Each cycle reads the unscored forecasts that are due and works until a
  * time budget runs out; the next cycle carries on. A forecast whose event was
@@ -74,7 +75,9 @@ export async function settleDueForecasts({now=new Date(),book=sharedCandleBook()
       if(!sessionState(event.captured_at).open){skip('event_outside_session');continue;}
       const dueAt=confluenceHorizonDueAt(event.captured_at,horizon);
       if(Date.parse(dueAt)>=published){summary.not_due+=1;continue;}
-      const [stock,sector,benchmark]=await Promise.all([book.priceAt(event.instrument_key,dueAt),book.priceAt(event.sector_instrument_key,dueAt),book.priceAt(event.benchmark_instrument_key,dueAt)]);
+      // Every forecast horizon ends at a session close: price it at the official close.
+      const dueDay=new Date(Date.parse(dueAt)+5.5*60*60_000).toISOString().slice(0,10);
+      const [stock,sector,benchmark]=await Promise.all([book.closeOn(event.instrument_key,dueDay),book.closeOn(event.sector_instrument_key,dueDay),book.closeOn(event.benchmark_instrument_key,dueDay)]);
       const gap=[['stock',stock],['sector',sector],['benchmark',benchmark]].find(([,quote])=>quote.price==null);
       if(gap){skip(`${gap[0]}_${gap[1].reason}`);continue;}
       let outcome;
