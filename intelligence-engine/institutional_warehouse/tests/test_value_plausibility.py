@@ -96,7 +96,10 @@ def test_a_bounded_symbol_census_does_not_enumerate_the_whole_tab(monkeypatch):
     monkeypatch.setattr(db, "query", capture)
     out = vp.census(TAB, symbols=["ACME"])
 
-    assert out["total_rows"] == 1
+    # The census reports the row count as "rows"; asserting "total_rows" raised
+    # KeyError before either following assertion ran, so the bounded-enumeration
+    # guarantee this test exists for was never actually checked.
+    assert out["rows"] == 1
     assert not any("SELECT DISTINCT symbol" in sql for sql, _ in queries)
     assert all(params == ("ACME",) for sql, params in queries if "SELECT *" in sql)
 
