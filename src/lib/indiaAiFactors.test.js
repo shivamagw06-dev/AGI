@@ -1,6 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { aiMateriality, capitalQuality, earningsMomentum, evidenceConfidence, expectationLoad } from './indiaAiFactors.js';
+import {
+  aiMateriality, capitalQuality, earningsMomentum, evidenceConfidence, expectationLoad, materialityConfidence,
+} from './indiaAiFactors.js';
 
 const d = (value) => ({ kind: 'disclosed', value });
 const a = (value, low, high) => ({ kind: 'assumption', value, low, high });
@@ -13,14 +15,19 @@ test('materiality comes from the base case, else a stated share, else says why n
   assert.equal(aiMateriality({ model: waiting }).band, 'not measurable');
 });
 
-test('evidence confidence reads tier and hard-evidence depth', () => {
+test('evidence confidence is whether exposure is real; materiality confidence is how well it is sized', () => {
   const ev = (n) => Array.from({ length: n }, (_, i) => ({ kind: 'order', date: `2026-0${i + 1}-01` }));
-  assert.equal(evidenceConfidence({ attribution: 'SEGMENT_REPORTED', admittedOn: ev(1) }).band, 'high');
-  assert.equal(evidenceConfidence({ attribution: 'MANAGEMENT_DISCLOSED', admittedOn: ev(2), supportingEvidence: ev(1) }).band, 'high');
-  assert.equal(evidenceConfidence({ attribution: 'MANAGEMENT_DISCLOSED', admittedOn: ev(1) }).band, 'medium');
-  const low = evidenceConfidence({ attribution: 'NOT_ATTRIBUTABLE', admittedOn: [...ev(2), { kind: 'partnership', date: '2026-09-01' }] });
-  assert.equal(low.band, 'low');
-  assert.match(low.value, /2 hard items, latest 2026-02-01/);
+  // Evidence is about whether the exposure is real, whatever its size.
+  assert.equal(evidenceConfidence({ attribution: 'NOT_ATTRIBUTABLE', admittedOn: ev(2) }).band, 'high');
+  assert.equal(evidenceConfidence({ admittedOn: [{ kind: 'order', date: '2026-06-10' }] }).band, 'high');
+  assert.equal(evidenceConfidence({ admittedOn: [{ kind: 'operating', date: '2026-06-10' }] }).band, 'medium');
+  const none = evidenceConfidence({ admittedOn: [{ kind: 'partnership', date: '2026-09-01' }] });
+  assert.equal(none.band, 'low');
+  assert.match(evidenceConfidence({ admittedOn: [...ev(2), { kind: 'partnership', date: '2026-09-01' }] }).value, /2 hard items \(2 orders\), latest 2026-02-01/);
+  // Materiality confidence is about how well its size is known.
+  assert.equal(materialityConfidence({ attribution: 'SEGMENT_REPORTED' }).band, 'high');
+  assert.equal(materialityConfidence({ attribution: 'MANAGEMENT_DISCLOSED' }).band, 'medium');
+  assert.equal(materialityConfidence({ attribution: 'NOT_ATTRIBUTABLE' }).band, 'low');
 });
 
 test('momentum is quarter growth and book-to-bill; missing data is not a zero', () => {

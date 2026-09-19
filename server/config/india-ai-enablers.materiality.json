@@ -10,7 +10,10 @@
     "capacityShare": 0.05,
     "orderCoverQuarters": 12,
     "pathMonths": 36,
-    "evidenceBands": ["medium", "high"],
+    "evidenceBands": [
+      "medium",
+      "high"
+    ],
     "text": [
       "Evidence test: at least one filed order, committed capex or operating disclosure on the company's own paper. Aspiration alone does not count.",
       "Materiality test, any one of: Rs 100 cr or more of AI/data-centre revenue or executable orders; 5% or more of company revenue from AI/data centres; 5% or more of FY26 EBITDA from AI/data centres by FY29 in AGI's base case; a contracted position (MW or GW) with a named customer that is 5% or more of the company's own capacity.",
@@ -23,128 +26,390 @@
   "members": {
     "NETWEB": {
       "facts": [
-        { "test": "amount", "valueCr": 947.79, "basis": "D", "label": "FY26 AI Systems revenue", "source": "Annual report FY26 (Rs 9,477.9 mn)" },
-        { "test": "share", "share": 0.6229, "basis": "D", "label": "AI Systems share of Q1 FY27 revenue", "source": "Q1 FY27 presentation", "quote": "contributing ₹5,105.70 million, being 62.29% of Revenue from Operations" }
+        {
+          "test": "amount",
+          "valueCr": 947.79,
+          "basis": "D",
+          "label": "FY26 AI Systems revenue",
+          "source": "Annual report FY26 (Rs 9,477.9 mn)"
+        },
+        {
+          "test": "share",
+          "share": 0.6229,
+          "basis": "D",
+          "label": "AI Systems share of Q1 FY27 revenue",
+          "source": "Q1 FY27 presentation",
+          "quote": "contributing ₹5,105.70 million, being 62.29% of Revenue from Operations"
+        }
       ],
-      "path": { "kind": "revenue", "note": "Already booked as revenue." }
+      "path": {
+        "kind": "revenue",
+        "note": "Already booked as revenue."
+      }
     },
     "STLTECH": {
       "facts": [
-        { "test": "amount", "valueCr": 10000, "basis": "D", "label": "Hyperscaler award for AI data-centre connectivity, FY27 to FY29", "source": "Q1 FY27 results presentation", "quote": "Landmark $1.11 Billion Product Award Letter (PAL) Secured (10,000+ Cr) from a hyperscaler to supply connectivity products from FY27 to FY29 for next-gen AI data centers" },
-        { "test": "share", "share": 0.21, "basis": "D", "label": "Data-centre share of Q1 FY27 revenue", "source": "Q1 FY27 call (CFO)", "quote": "our Data Center segment saw a strong growth, contributing 21% this quarter, up from 1% in FY26" }
+        {
+          "test": "amount",
+          "valueCr": 10000,
+          "basis": "D",
+          "label": "Hyperscaler award for AI data-centre connectivity, FY27 to FY29",
+          "source": "Q1 FY27 results presentation",
+          "quote": "Landmark $1.11 Billion Product Award Letter (PAL) Secured (10,000+ Cr) from a hyperscaler to supply connectivity products from FY27 to FY29 for next-gen AI data centers"
+        },
+        {
+          "test": "share",
+          "share": 0.21,
+          "basis": "D",
+          "label": "Data-centre share of Q1 FY27 revenue",
+          "source": "Q1 FY27 call (CFO)",
+          "quote": "our Data Center segment saw a strong growth, contributing 21% this quarter, up from 1% in FY26"
+        }
       ],
-      "path": { "kind": "stated", "note": "Supply runs FY27 to FY29, up to March 2029." }
+      "path": {
+        "kind": "stated",
+        "note": "Supply runs FY27 to FY29, up to March 2029."
+      }
     },
     "BLUESTARCO": {
       "facts": [
-        { "test": "amount", "valueCr": 1000, "basis": "D", "label": "Data-centre MEP revenue, FY26 (about)", "source": "Q4 FY26 call (MD)", "quote": "we do a business of around RS.1,000 Crore there" },
-        { "test": "share", "share": 0.0806, "basis": "I", "label": "Share of FY26 revenue", "steps": "Rs 1,000 cr / Rs 12,402 cr FY26 revenue" }
+        {
+          "test": "amount",
+          "valueCr": 1000,
+          "basis": "D",
+          "label": "Data-centre MEP revenue, FY26 (about)",
+          "source": "Q4 FY26 call (MD)",
+          "quote": "we do a business of around RS.1,000 Crore there"
+        },
+        {
+          "test": "share",
+          "share": 0.0806,
+          "basis": "I",
+          "label": "Share of FY26 revenue",
+          "steps": "Rs 1,000 cr / Rs 12,402 cr FY26 revenue"
+        }
       ],
-      "path": { "kind": "revenue", "note": "Already booked as revenue." }
+      "path": {
+        "kind": "revenue",
+        "note": "Already booked as revenue."
+      }
     },
     "CUMMINSIND": {
       "facts": [
-        { "test": "amount", "valueCr": 1427, "basis": "I", "label": "Data-centre power-generation revenue, FY26 (lower bound)", "steps": "30% (low end of the stated 30-35%) x Rs 4,758 cr FY26 domestic power-generation revenue", "source": "FY26 annual report; Q1 FY27 call", "quote": "data centers out of this, in this particular quarter, was 40% of overall power generation revenue" },
-        { "test": "share", "share": 0.1175, "basis": "I", "label": "Share of FY26 revenue (lower bound)", "steps": "Rs 1,427 cr / Rs 12,143 cr FY26 revenue" }
+        {
+          "test": "amount",
+          "valueCr": 1427,
+          "basis": "I",
+          "label": "Data-centre power-generation revenue, FY26 (lower bound)",
+          "steps": "30% (low end of the stated 30-35%) x Rs 4,758 cr FY26 domestic power-generation revenue",
+          "source": "FY26 annual report; Q1 FY27 call",
+          "quote": "data centers out of this, in this particular quarter, was 40% of overall power generation revenue"
+        },
+        {
+          "test": "share",
+          "share": 0.1175,
+          "basis": "I",
+          "label": "Share of FY26 revenue (lower bound)",
+          "steps": "Rs 1,427 cr / Rs 12,143 cr FY26 revenue"
+        }
       ],
-      "path": { "kind": "revenue", "note": "Already booked as revenue." }
+      "path": {
+        "kind": "revenue",
+        "note": "Already booked as revenue."
+      }
     },
     "BHARTIARTL": {
       "facts": [
-        { "test": "amount", "valueCr": 2434, "basis": "D", "label": "Nxtra (data-centre subsidiary) FY26 revenue", "source": "Nxtra FY26 results (NSE filing, listed debt)", "quote": "Revenue from operations 24,341 ... Total expenses 14,525 (Rs mn)" }
+        {
+          "test": "amount",
+          "valueCr": 2434,
+          "basis": "D",
+          "label": "Nxtra (data-centre subsidiary) FY26 revenue",
+          "source": "Nxtra FY26 results (NSE filing, listed debt)",
+          "quote": "Revenue from operations 24,341 ... Total expenses 14,525 (Rs mn)"
+        }
       ],
-      "path": { "kind": "revenue", "note": "Already booked as revenue." }
+      "path": {
+        "kind": "revenue",
+        "note": "Already booked as revenue."
+      }
     },
     "ANANTRAJ": {
       "facts": [
-        { "test": "amount", "valueCr": 145.9, "basis": "D", "label": "Data-centre business turnover, FY26", "source": "Composite scheme filing, 21 Jul 2026", "quote": "Demerged Undertaking 145.90 / Total 1627.72 / Percentage 8.96%" },
-        { "test": "share", "share": 0.0896, "basis": "D", "label": "Share of combined turnover, FY26", "source": "Composite scheme filing, 21 Jul 2026", "quote": "Demerged Undertaking 145.90 / Total 1627.72 / Percentage 8.96%" }
+        {
+          "test": "amount",
+          "valueCr": 145.9,
+          "basis": "D",
+          "label": "Data-centre business turnover, FY26",
+          "source": "Composite scheme filing, 21 Jul 2026",
+          "quote": "Demerged Undertaking 145.90 / Total 1627.72 / Percentage 8.96%"
+        },
+        {
+          "test": "share",
+          "share": 0.0896,
+          "basis": "D",
+          "label": "Share of combined turnover, FY26",
+          "source": "Composite scheme filing, 21 Jul 2026",
+          "quote": "Demerged Undertaking 145.90 / Total 1627.72 / Percentage 8.96%"
+        }
       ],
-      "path": { "kind": "revenue", "note": "Already booked as revenue." }
+      "path": {
+        "kind": "revenue",
+        "note": "Already booked as revenue."
+      }
     },
     "CLEANMAX": {
       "facts": [
-        { "test": "contracted", "mw": 630, "customerNamed": true, "capacityShare": 0.105, "basis": "I", "label": "Capacity connected for Indian data-centre demand", "steps": "630 MW / 6,003 MW on-books capacity", "customers": "Amazon, Google, Meta, STT, NTT, Equinix, Princeton Digital Group, L&T Data Center", "source": "Aug 2026 corporate presentation; Q1 FY27 presentation", "quote": "0.63 GW STU connected for India data center demand" }
+        {
+          "test": "contracted",
+          "mw": 630,
+          "customerNamed": true,
+          "capacityShare": 0.105,
+          "basis": "I",
+          "label": "Capacity connected for Indian data-centre demand",
+          "steps": "630 MW / 6,003 MW on-books capacity",
+          "customers": "Amazon, Google, Meta, STT, NTT, Equinix, Princeton Digital Group, L&T Data Center",
+          "source": "Aug 2026 corporate presentation; Q1 FY27 presentation",
+          "quote": "0.63 GW STU connected for India data center demand"
+        }
       ],
-      "path": { "kind": "stated", "note": "The 0.63 GW is stated as connected to the state grid for data-centre demand." }
+      "path": {
+        "kind": "stated",
+        "note": "The 0.63 GW is stated as connected to the state grid for data-centre demand."
+      }
     },
     "HFCL": {
       "facts": [
-        { "test": "amount", "valueCr": 495.8, "basis": "D", "label": "Export order for data-centre connectivity", "source": "HFCL exchange disclosure, 10 Jul 2026", "quote": "export order worth ~USD 51.98 million (equivalent to ~INR 495.80 crore), for the supply of optical fiber cable based data centre connectivity solutions" },
-        { "test": "amount", "valueCr": 100, "basis": "D", "label": "Data-centre revenue, Q1 FY27 (about)", "source": "Q1 FY27 call (MD)", "quote": "Q1 would have been about INR100 crores or so" }
+        {
+          "test": "amount",
+          "valueCr": 495.8,
+          "basis": "D",
+          "label": "Export order for data-centre connectivity",
+          "source": "HFCL exchange disclosure, 10 Jul 2026",
+          "quote": "export order worth ~USD 51.98 million (equivalent to ~INR 495.80 crore), for the supply of optical fiber cable based data centre connectivity solutions"
+        },
+        {
+          "test": "amount",
+          "valueCr": 100,
+          "basis": "D",
+          "label": "Data-centre revenue, Q1 FY27 (about)",
+          "source": "Q1 FY27 call (MD)",
+          "quote": "Q1 would have been about INR100 crores or so"
+        }
       ],
-      "path": { "kind": "revenue", "note": "Deliveries under way: about Rs 100 cr of data-centre revenue in Q1 FY27." }
+      "path": {
+        "kind": "revenue",
+        "note": "Deliveries under way: about Rs 100 cr of data-centre revenue in Q1 FY27."
+      }
     },
     "DIACABS": {
       "facts": [
-        { "test": "amount", "valueCr": 435, "basis": "D", "label": "Data-centre order book", "source": "Q1 FY27 investor presentation", "quote": "EHV HV LV cables plus HTLS conductor for the data-centre segment ₹435 Cr MVCC order book already in hand" }
+        {
+          "test": "amount",
+          "valueCr": 435,
+          "basis": "D",
+          "label": "Data-centre order book",
+          "source": "Q1 FY27 investor presentation",
+          "quote": "EHV HV LV cables plus HTLS conductor for the data-centre segment ₹435 Cr MVCC order book already in hand"
+        }
       ]
     },
     "SANSERA": {
       "facts": [
-        { "test": "amount", "valueCr": 1250, "basis": "D", "label": "Semiconductor-equipment order, over five years", "source": "Q1 FY27 call", "quote": "So on five-year basis, this would approximately translate to about INR 1,250 crores" }
+        {
+          "test": "amount",
+          "valueCr": 1250,
+          "basis": "D",
+          "label": "Semiconductor-equipment order, over five years",
+          "source": "Q1 FY27 call",
+          "quote": "So on five-year basis, this would approximately translate to about INR 1,250 crores"
+        }
       ],
-      "path": { "kind": "stated", "note": "Regular production of semiconductor components has begun; the order runs over five years (about Rs 250 cr a year)." }
+      "path": {
+        "kind": "stated",
+        "note": "Regular production of semiconductor components has begun; the order runs over five years (about Rs 250 cr a year)."
+      }
     },
     "CGPOWER": {
       "facts": [
-        { "test": "amount", "valueCr": 502.77, "basis": "D", "label": "Semiconductors segment revenue, FY26 (audited segment)", "source": "Annual Report FY2025-26, segment note" }
+        {
+          "test": "amount",
+          "valueCr": 502.77,
+          "basis": "D",
+          "label": "Semiconductors segment revenue, FY26 (audited segment)",
+          "source": "Annual Report FY2025-26, segment note"
+        }
       ],
-      "path": { "kind": "revenue", "note": "Already booked as revenue (first year of external sales)." }
+      "path": {
+        "kind": "revenue",
+        "note": "Already booked as revenue (first year of external sales)."
+      }
     },
     "ABB": {
       "facts": [
-        { "test": "amount", "valueCr": 654, "basis": "I", "label": "Data-centre orders in the quarter (lower bound)", "steps": "15% (low end of the stated 15-17%) x Rs 4,363 cr order intake, Apr-Jun 2026", "source": "Q2 CY2026 call (CFO); Q2 CY2026 results", "quote": "Data Centers orders in this quarter has been almost 15% to 17% of our orders" }
+        {
+          "test": "amount",
+          "valueCr": 654,
+          "basis": "I",
+          "label": "Data-centre orders in the quarter (lower bound)",
+          "steps": "15% (low end of the stated 15-17%) x Rs 4,363 cr order intake, Apr-Jun 2026",
+          "source": "Q2 CY2026 call (CFO); Q2 CY2026 results",
+          "quote": "Data Centers orders in this quarter has been almost 15% to 17% of our orders"
+        }
       ]
     },
     "SCHNEIDER": {
       "facts": [
-        { "test": "amount", "valueCr": 434, "basis": "I", "label": "Data-centre and semiconductor orders in the order bank (lower bound)", "steps": "more than one fifth x Rs 2,169 cr order book; the fifth covers data centres and semiconductors together", "source": "Q1 FY27 call", "quote": "more than 1/5 of what is coming is on this new emerging segment is what we hold in our order bank" }
+        {
+          "test": "amount",
+          "valueCr": 434,
+          "basis": "I",
+          "label": "Data-centre and semiconductor orders in the order bank (lower bound)",
+          "steps": "more than one fifth x Rs 2,169 cr order book; the fifth covers data centres and semiconductors together",
+          "source": "Q1 FY27 call",
+          "quote": "more than 1/5 of what is coming is on this new emerging segment is what we hold in our order bank"
+        }
       ]
     },
     "LT": {
       "facts": [
-        { "test": "amount", "valueCr": 10000, "basis": "D", "label": "Vyoma 'Mega' order to host an NVIDIA B300 AI factory for Together AI (L&T's band: Rs 10,000-15,000 cr)", "source": "L&T press release, 13 Aug 2026", "quote": "Vyoma.AI an L&T company, through its AI infrastructure subsidiary LTN Compute, has secured India's largest single-cluster AI infrastructure ... Mega: Value in Rs Cr 10,000 to 15,000" },
-        { "test": "amount", "valueCr": 36.6, "basis": "D", "label": "Data-centre business revenue, FY26", "source": "Business-transfer filing, 11 Aug 2026", "quote": "FY26 revenue of the data-centre business Rs 36.6 crore" }
+        {
+          "test": "amount",
+          "valueCr": 10000,
+          "basis": "D",
+          "label": "Vyoma 'Mega' order to host an NVIDIA B300 AI factory for Together AI (L&T's band: Rs 10,000-15,000 cr)",
+          "source": "L&T press release, 13 Aug 2026",
+          "quote": "Vyoma.AI an L&T company, through its AI infrastructure subsidiary LTN Compute, has secured India's largest single-cluster AI infrastructure ... Mega: Value in Rs Cr 10,000 to 15,000"
+        },
+        {
+          "test": "amount",
+          "valueCr": 36.6,
+          "basis": "D",
+          "label": "Data-centre business revenue, FY26",
+          "source": "Business-transfer filing, 11 Aug 2026",
+          "quote": "FY26 revenue of the data-centre business Rs 36.6 crore"
+        }
       ],
-      "path": { "kind": "judged", "note": "No start date or tenure is disclosed. AGI judges the path credible: the release says L&T 'will deploy' current-generation B300 systems at an existing campus, hardware that would not be deployed years out." }
+      "path": {
+        "kind": "judged",
+        "note": "No start date or tenure is disclosed. AGI judges the path credible: the release says L&T 'will deploy' current-generation B300 systems at an existing campus, hardware that would not be deployed years out."
+      }
     },
     "MTARTECH": {
       "facts": [
-        { "test": "amount", "valueCr": 80.56, "basis": "I", "label": "Data-centre orders disclosed", "steps": "Rs 45 cr (SLB) + Rs 35.56 cr (Reg 30, 1 Apr 2026)", "source": "Q1 FY27 presentation; Reg 30 disclosure", "quote": "The company has received Rs. 45 Cr of orders from SLB to supply components and assemblies for data center infrastructure solutions" }
+        {
+          "test": "amount",
+          "valueCr": 80.56,
+          "basis": "I",
+          "label": "Data-centre orders disclosed",
+          "steps": "Rs 45 cr (SLB) + Rs 35.56 cr (Reg 30, 1 Apr 2026)",
+          "source": "Q1 FY27 presentation; Reg 30 disclosure",
+          "quote": "The company has received Rs. 45 Cr of orders from SLB to supply components and assemblies for data center infrastructure solutions"
+        }
       ]
     },
     "CRAFTSMAN": {
       "facts": [
-        { "test": "amount", "valueCr": 71, "basis": "I", "label": "Data-centre engine-part revenue, H1 FY26 only (lower bound)", "steps": "Rs 158 cr German foundry H1 FY26 revenue x 90% power-generation x more than 50% data centres; a half year, not annualised", "source": "Q2 FY26 earnings call", "quote": "The German subsidiary is catering 90% of the revenue towards large engines for the power generation which is again predominantly getting into the data center business. Predominantly means majority." }
+        {
+          "test": "amount",
+          "valueCr": 71,
+          "basis": "I",
+          "label": "Data-centre engine-part revenue, H1 FY26 only (lower bound)",
+          "steps": "Rs 158 cr German foundry H1 FY26 revenue x 90% power-generation x more than 50% data centres; a half year, not annualised",
+          "source": "Q2 FY26 earnings call",
+          "quote": "The German subsidiary is catering 90% of the revenue towards large engines for the power generation which is again predominantly getting into the data center business. Predominantly means majority."
+        }
       ],
-      "path": { "kind": "revenue", "note": "Already booked as revenue at the German foundry." }
+      "path": {
+        "kind": "revenue",
+        "note": "Already booked as revenue at the German foundry."
+      }
     },
     "ADANIENT": {
       "facts": [
-        { "test": "contracted", "mw": 758, "customerNamed": false, "basis": "I", "label": "Hyperscale orders at AdaniConneX (400 MW Vizag + 358 MW Hyderabad)", "steps": "400 MW + 358 MW", "source": "Q1 FY27 investor presentation; Q4 FY26 press release", "quote": "During the quarter, 400 MW order signed with hyperscale customer for Vizag" }
+        {
+          "test": "contracted",
+          "mw": 758,
+          "customerNamed": false,
+          "basis": "I",
+          "label": "hyperscale orders disclosed in Q4 FY26 and Q1 FY27 (358 MW Hyderabad + 400 MW Vizag), part of 960+ MW tied up",
+          "steps": "358 MW (Q4 FY26 release) + 400 MW (Q1 FY27 release) = 758 MW; AGI sum of two separately disclosed orders",
+          "source": "Q1 FY27 investor presentation; Q4 FY26 press release",
+          "quote": "During the quarter, 400 MW order signed with hyperscale customer for Vizag"
+        }
       ]
     },
     "RELIANCE": {
       "facts": [
-        { "test": "contracted", "mw": 168, "customerNamed": true, "basis": "D", "label": "Data centre for Meta, within two years", "customers": "Meta", "sizeNote": "No capacity or revenue base against which 168 MW can be measured for Reliance.", "source": "Reliance and Meta media release", "quote": "RIL will develop a data center with 168 MW capacity to be delivered within two years, with an option to scale. ... Meta will lease capacity from the facility" }
+        {
+          "test": "contracted",
+          "mw": 168,
+          "customerNamed": true,
+          "basis": "D",
+          "label": "Data centre for Meta, within two years",
+          "customers": "Meta",
+          "sizeNote": "No capacity or revenue base against which 168 MW can be measured for Reliance.",
+          "source": "Reliance and Meta media release",
+          "quote": "RIL will develop a data center with 168 MW capacity to be delivered within two years, with an option to scale. ... Meta will lease capacity from the facility"
+        }
       ]
     },
     "ADANIGREEN": {
       "facts": [
-        { "test": "contracted", "mw": 61.4, "customerNamed": true, "capacityShare": 0.0056, "basis": "I", "label": "Renewable supply for a data centre (Google's carbon-free goal)", "customers": "Google", "steps": "61.4 MW / more than 11,000 MW operating at the time", "source": "Media release: H1 FY25 results", "quote": "AGEL has entered the C&I segment by signing a power consumption agreement to supply 61.4 MW of renewable energy that will power a datacenter" }
+        {
+          "test": "contracted",
+          "mw": 61.4,
+          "customerNamed": true,
+          "capacityShare": 0.0056,
+          "basis": "I",
+          "label": "Renewable supply for a data centre (Google's carbon-free goal)",
+          "customers": "Google",
+          "steps": "61.4 MW / more than 11,000 MW operating at the time",
+          "source": "Media release: H1 FY25 results",
+          "quote": "AGEL has entered the C&I segment by signing a power consumption agreement to supply 61.4 MW of renewable energy that will power a datacenter"
+        }
       ]
     },
-    "ADANIENSOL": { "facts": [], "note": "Management calls data-centre volume 'very negligible': one contract of about 20-25 MW." },
-    "TATAPOWER": { "facts": [], "note": "One 25-year renewable power agreement with Princeton Digital Group; no capacity, value or revenue disclosed." },
-    "KIRLOSENG": { "facts": [], "note": "A first hyperscale order of about 192 MW, with no value or customer named." },
-    "POWERINDIA": { "facts": [], "note": "Data centres named the major segment contributor; no order values or share disclosed." },
-    "GVT&D": { "facts": [], "note": "Data-centre GIS bays commissioned; no value or share disclosed." },
-    "TDPOWERSYS": { "facts": [], "note": "Repeat data-centre orders from global OEMs; no value or share disclosed." },
-    "POLYCAB": { "facts": [], "note": "Cables supplied to named data centres; no value or share disclosed." },
-    "APARINDS": { "facts": [], "note": "Supplying cables to US data-centre projects; no value or share disclosed." },
-    "KAYNES": { "facts": [], "note": "OSAT capex committed (Rs 473 cr in FY26); capex is not revenue, and no OSAT revenue is disclosed." },
-    "POWERGRID": { "facts": [], "note": "A pilot 1,000-rack data centre and a commercial one under way; no revenue disclosed." }
+    "ADANIENSOL": {
+      "facts": [],
+      "note": "Management calls data-centre volume 'very negligible': one contract of about 20-25 MW."
+    },
+    "TATAPOWER": {
+      "facts": [],
+      "note": "The Princeton Digital Group renewable-power agreement is confirmed; its capacity, value and revenue are not disclosed"
+    },
+    "KIRLOSENG": {
+      "facts": [],
+      "note": "A first hyperscale order of about 192 MW, with no value or customer named."
+    },
+    "POWERINDIA": {
+      "facts": [],
+      "note": "Data-centre order exposure confirmed (the major segment contributor to Q4 FY26 orders); value and share not disclosed"
+    },
+    "GVT&D": {
+      "facts": [],
+      "note": "Direct data-centre equipment exposure confirmed (220 kV GIS commissioned for NTT Data Center); value and share not disclosed"
+    },
+    "TDPOWERSYS": {
+      "facts": [],
+      "note": "Repeat data-centre orders from global OEMs; no value or share disclosed."
+    },
+    "POLYCAB": {
+      "facts": [],
+      "note": "Data-centre end-market exposure confirmed; company-specific value or share not disclosed (Rs 3.5 cr per MW is industry cable content, not Polycab revenue)"
+    },
+    "APARINDS": {
+      "facts": [],
+      "note": "Supplying cables to US data-centre projects; no value or share disclosed."
+    },
+    "KAYNES": {
+      "facts": [],
+      "note": "OSAT capex committed (Rs 473 cr in FY26); capex is not revenue, and no OSAT revenue is disclosed."
+    },
+    "POWERGRID": {
+      "facts": [],
+      "note": "A pilot 1,000-rack data centre and a commercial one under way; no revenue disclosed."
+    }
   },
   "vehicles": {
     "ADANIENT": {

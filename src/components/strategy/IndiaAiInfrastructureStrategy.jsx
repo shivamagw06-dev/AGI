@@ -45,7 +45,7 @@ function useIndiaAiData() {
 }
 
 const COLS = [
-  ['Stock'], ['AI layer'], ['AI materiality'], ['Hard evidence / key KPI'],
+  ['Stock'], ['AI layer'], ['AI/DC economic materiality'], ['Hard evidence / key KPI'], ['Evidence confidence', 'D'], ['Materiality confidence', 'D'],
   ['Revenue growth, latest qtr', 'I'], ['Capex / sales, FY26', 'I'], ['FCF / sales, FY26', 'I'], ['P/E, FY26 profit', 'I'],
   ['Capital quality', 'I'], ['Expectation load', 'A'],
 ];
@@ -65,7 +65,7 @@ function StrategyTable({ rows, bySym, loading, priced, watch = false }) {
   const wait = <span className="text-[#a0a8b3]">…</span>;
   return (
     <div className="overflow-x-auto rounded-xl border border-[#e5e8ec]">
-      <table className="w-full min-w-[1380px] text-[14px]">
+      <table className="w-full min-w-[1600px] text-[14px]">
         <thead className="bg-[#f7f8fa]">
           <tr className="text-left text-[12px] font-semibold text-[#5b6573]">
             {[...COLS, [watch ? 'Why not yet in the basket' : 'AGI status']].map(([h, tag]) => (
@@ -78,6 +78,11 @@ function StrategyTable({ rows, bySym, loading, priced, watch = false }) {
             const rec = bySym[row.symbol] || null;
             const x = filedRatios(rec, NON_MEMBER_FILED[row.symbol]);
             const member = row.member !== false;
+            // Confidence is assessed on members' filed evidence items; a held
+            // candidate's evidence is a note, so it is not scored.
+            const ev = rec ? rec.factors.evidence : null;
+            const mc = rec ? rec.factors.materialityConf : null;
+            const na = <span className="text-[#a0a8b3]" title="Held candidate: evidence is recorded as a note, not scored">not scored</span>;
             return (
               <tr key={row.symbol} className="border-b border-[#eef0f3] align-top last:border-b-0 hover:bg-[#fafbfc]">
                 <td className="px-4 py-3.5">
@@ -87,6 +92,8 @@ function StrategyTable({ rows, bySym, loading, priced, watch = false }) {
                 <td className="px-4 py-3.5 text-[#34404f]">{row.layer}</td>
                 <td className="px-4 py-3.5"><span className={`inline-block whitespace-nowrap rounded-full px-2.5 py-0.5 text-[12px] font-medium ${RATING_TONE[row.rating] || RATING_TONE.Medium}`}>{row.rating}</span></td>
                 <td className="min-w-[280px] max-w-[420px] px-4 py-3.5 leading-snug text-[#1f2a37]">{row.evidence}</td>
+                <td className="px-4 py-3.5">{ev ? <span title={ev.value}><Band b={ev.band} /></span> : member ? wait : na}</td>
+                <td className="px-4 py-3.5">{mc ? <span className="inline-flex flex-col gap-1"><Band b={mc.band} /><span className="whitespace-nowrap text-[12px] text-[#6b7480]">{mc.value}</span></span> : member ? wait : na}</td>
                 <td className="px-4 py-3.5 tabular-nums text-[#1f2a37]">{loading && member ? wait : signedPct(x.q1)}</td>
                 <td className="px-4 py-3.5 tabular-nums text-[#1f2a37]">{loading && member ? wait : pct(x.capexSales)}</td>
                 <td className="px-4 py-3.5 tabular-nums text-[#1f2a37]">{loading && member ? wait : signedPct(x.fcfSales)}</td>
@@ -163,7 +170,7 @@ export default function IndiaAiInfrastructureStrategy({ monitor }) {
       </div>
       <p className="mt-3 max-w-[110ch] text-[13px] leading-relaxed text-[#6b7480]">
         Selected on {STRATEGY_FACTORS.join(', ')}. Layer, AI materiality rating, evidence and status are AGI&rsquo;s judgments, and every evidence line is checked against the company&rsquo;s own documents.
-        Financial columns are AGI arithmetic on filed FY26 and June-quarter results: revenue growth is the June 2026 quarter on June 2025; capex includes intangibles; FCF is operating cash flow less capex; P/E is AGI&rsquo;s market value at the last close over FY26 profit. Expectation load is the profit growth that takes today&rsquo;s market value to 30x earnings by FY29.
+        Financial columns are AGI arithmetic on filed FY26 and June-quarter results: revenue growth is the June 2026 quarter on June 2025; capex includes intangibles; FCF is operating cash flow less capex; P/E is AGI&rsquo;s market value at the last close over FY26 profit. Expectation load is the profit growth that takes today&rsquo;s market value to 30x earnings by FY29; profit is FY26 profit attributable to owners (for Adani Enterprises, excluding the one-off gains on the Adani Wilmar stake sale and the Adani Cementation merger). Evidence confidence is whether the AI/DC exposure is real (two or more filed orders, capex or operating disclosures, or any order, is high); materiality confidence is how well its size is known (audited segment high, company-stated figure medium, not sized low).
         No broker or consensus figures are used. The basket is exactly the names that pass the monitor&rsquo;s materiality test; a name moves between the basket and the watch list when its figures do. Status is Core for a pass on filed figures and Emerging Core for a pass on AGI&rsquo;s estimate.
         A research classification, not a recommendation to buy or sell.
       </p>
@@ -177,7 +184,7 @@ export default function IndiaAiInfrastructureStrategy({ monitor }) {
       ) : null}
 
       <h3 className="mt-10 text-[20px] font-semibold tracking-tight text-[#0f1720]">How to interpret this list</h3>
-      <p className="mt-1 text-[15px] text-[#5b6573]">There are really four different investment structures inside it.</p>
+      <p className="mt-1 text-[15px] text-[#5b6573]">There are really six different investment structures inside it.</p>
       <div className="mt-4 grid gap-4 md:grid-cols-2">
         {STRUCTURES.map((st) => (
           <section key={st.title} className="rounded-xl bg-[#f7f8fa] px-5 py-4">

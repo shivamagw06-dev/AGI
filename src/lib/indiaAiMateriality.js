@@ -53,9 +53,9 @@ export function classifyMateriality({
       if (f.customerNamed && sized && f.capacityShare >= rules.capacityShare) {
         passes.push({ test: 'contracted', tag: f.basis, text: `${f.mw} MW, ${fmtPct(f.capacityShare)} of capacity: ${f.label}`, fact: f });
       } else if (!f.customerNamed) {
-        misses.push(`${f.mw} MW contracted, but no customer is named`);
+        misses.push(`${f.mw} MW of ${f.label || 'contracted capacity'}, but no customer is named`);
       } else if (!sized) {
-        misses.push(`${f.mw} MW contracted with ${f.customers || 'a named customer'}, but nothing to measure it against`);
+        misses.push(`Exposure confirmed: ${f.mw} MW contracted with ${f.customers || 'a named customer'}; its revenue or EBITDA contribution is not disclosed`);
       } else {
         misses.push(`${f.mw} MW is ${fmtPct(f.capacityShare)} of capacity, under ${fmtPct(rules.capacityShare)}`);
       }

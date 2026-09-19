@@ -6,7 +6,7 @@
  */
 import { impliedGrowth, runModel, valueOf } from './indiaAiEstimates.js';
 import {
-  aiMateriality, capitalQuality, earningsMomentum, evidenceConfidence, expectationLoad,
+  aiMateriality, capitalQuality, earningsMomentum, evidenceConfidence, expectationLoad, materialityConfidence,
 } from './indiaAiFactors.js';
 import { classifyMateriality } from './indiaAiMateriality.js';
 
@@ -62,6 +62,7 @@ export function buildRecords({ universe, operating, estimates, marketValue, stag
       factors: {
         materiality: aiMateriality({ model, statedShare: shares[m.symbol]?.[0]?.value }),
         evidence: evidenceF,
+        materialityConf: materialityConfidence(m),
         momentum: earningsMomentum(row),
         capital: capitalQuality(row),
         expectation: expectationLoad({ marketValueCr: mv[m.symbol], patCr: pat, exitMultiple, years }),

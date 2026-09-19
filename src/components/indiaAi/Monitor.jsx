@@ -215,7 +215,7 @@ function KpiRow({ records, others, marketValue, live }) {
 /**
  * AI materiality (AGI base case) against expectation load (profit growth the
  * price needs). Both axes are AGI figures; bubble size is market value and
- * colour is evidence confidence. Only the ten largest are labelled; the rest
+ * colour is materiality confidence. Only the ten largest are labelled; the rest
  * name themselves on hover. Quadrant names describe position, not advice.
  */
 function MaterialityScatter({ records, open }) {
@@ -276,10 +276,10 @@ function MaterialityScatter({ records, open }) {
         <p className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[13px] text-[#8b95a3]">
           {['high', 'medium', 'low'].map((b) => (
             <span key={b} className="inline-flex items-center gap-1.5">
-              <span aria-hidden="true" className="inline-block h-2.5 w-2.5 rounded-full" style={{ background: EV_COLOR[b] }} />{b} evidence
+              <span aria-hidden="true" className="inline-block h-2.5 w-2.5 rounded-full" style={{ background: EV_COLOR[b] }} />{b}
             </span>
           ))}
-          <span>size = market value</span>
+          <span>colour = materiality confidence · size = market value</span>
         </p>
       )}
     >
@@ -302,7 +302,7 @@ function MaterialityScatter({ records, open }) {
           <text x={(W + pad.l) / 2} y={H - 8} textAnchor="middle" fontSize="13" fill="#9aa5b3">Expectation load: profit growth a year the price needs →</text>
           <text x={16} y={(H - pad.b + pad.t) / 2} textAnchor="middle" fontSize="13" fill="#9aa5b3" transform={`rotate(-90 16 ${(H - pad.b + pad.t) / 2})`}>AI materiality →</text>
           {marks.map(({ p, cx, cy, rr, text, ly }) => {
-            const color = EV_COLOR[p.r.factors.evidence.band] || '#7d8894';
+            const color = EV_COLOR[p.r.factors.materialityConf.band] || '#7d8894';
             const active = hover === p.r.m.symbol;
             return (
               <g
@@ -338,6 +338,7 @@ function MaterialityScatter({ records, open }) {
               <dt className="text-[#8b95a3]">Price needs</dt><dd className="tabular-nums">{hp.p.x <= 0 ? 'no growth' : `${Math.round(hp.p.x * 100)}% a year`}</dd>
               <dt className="text-[#8b95a3]">Market value</dt><dd className="tabular-nums">{cr(hp.p.r.mv)}</dd>
               <dt className="text-[#8b95a3]">Evidence</dt><dd>{hp.p.r.factors.evidence.band}</dd>
+              <dt className="text-[#8b95a3]">Materiality conf.</dt><dd>{hp.p.r.factors.materialityConf.band}</dd>
             </dl>
           </div>
         ) : null}
@@ -489,7 +490,8 @@ function columns(view) {
   const est = (r, s, f) => (r.runs?.[s]?.ok ? f(r.runs[s]) : null);
   const views = {
     overview: [
-      ['Evidence', 'D', (r) => <TierMark tier={r.m.attribution} />, (r) => ({ SEGMENT_REPORTED: 3, MANAGEMENT_DISCLOSED: 2, NOT_ATTRIBUTABLE: 1 }[r.m.attribution] || 0)],
+      ['Evidence confidence', 'D', (r) => <Band b={r.factors.evidence.band} />, (r) => ({ high: 3, medium: 2, low: 1 }[r.factors.evidence.band] || 0)],
+      ['Materiality confidence', 'D', (r) => <TierMark tier={r.m.attribution} />, (r) => ({ SEGMENT_REPORTED: 3, MANAGEMENT_DISCLOSED: 2, NOT_ATTRIBUTABLE: 1 }[r.m.attribution] || 0)],
       ['Materiality test', null, (r) => <MaterialityChip mat={r.mat} />, (r) => (r.mat ? TIER_RANK[r.mat.tier] : null)],
       ['AI materiality', null, (r) => <span className="inline-flex items-center gap-2"><Band b={r.factors.materiality.band} />{r.factors.materiality.value ? <span className="text-[#9aa5b3]">{r.factors.materiality.value}</span> : null}</span>, (r) => (r.runs?.base.ok ? r.runs.base.materiality : null)],
       ['Revenue y/y', 'I', (r) => signedPct(r.q1), (r) => r.q1],
@@ -501,7 +503,7 @@ function columns(view) {
         : `up to ${cr(r.liq.maxExecutablePosition / 1e7)}`) : '…'), (r) => (r.liq ? r.liq.maxExecutablePosition : null)],
     ],
     evidence: [
-      ['Evidence', 'D', (r) => <TierMark tier={r.m.attribution} />, (r) => ({ SEGMENT_REPORTED: 3, MANAGEMENT_DISCLOSED: 2, NOT_ATTRIBUTABLE: 1 }[r.m.attribution] || 0)],
+      ['Materiality confidence', 'D', (r) => <TierMark tier={r.m.attribution} />, (r) => ({ SEGMENT_REPORTED: 3, MANAGEMENT_DISCLOSED: 2, NOT_ATTRIBUTABLE: 1 }[r.m.attribution] || 0)],
       ['Hard items', 'D', (r) => r.evidence.length, (r) => r.evidence.length],
       ['Latest', 'D', (r) => dateLabel(r.latest) || '—', (r) => r.latest],
       ['Stated AI/DC figure', 'D', (r) => (r.shares[0] ? <span title={r.shares[0].quote}>{r.shares[0].value}</span> : <span className="text-[#5b6675]">not stated</span>), null],
@@ -601,7 +603,7 @@ function Matrix({ records, others, filter, setFilter, open, matrixRef, rules }) 
         {filter && status === 'members' ? <FilterSummary rs={filtered} /> : null}
         {status === 'members' ? (
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[1120px] text-[14px]">
+            <table className="w-full min-w-[1260px] text-[14px]">
               <thead>
                 <tr className="text-left text-[12px] text-[#8b95a3]">
                   {[...fixed, ...cols].map(([h, tag, , sortKey]) => (
@@ -896,8 +898,8 @@ function Drawer({ r, onClose, onResearch }) {
 
         <DrawerSection title="AGI assessment">
           <dl className="space-y-2">
-            {[['AI materiality', f.materiality], ['Evidence', f.evidence], ['Momentum', f.momentum], ['Capital quality', f.capital], ['Expectation load', f.expectation, 'expectation']].map(([k, x, scale]) => (
-              <div key={k} className="grid grid-cols-[130px_1fr] items-baseline gap-3 text-[14px]">
+            {[['AI materiality', f.materiality], ['Evidence confidence', f.evidence], ['Materiality confidence', f.materialityConf], ['Momentum', f.momentum], ['Capital quality', f.capital], ['Expectation load', f.expectation, 'expectation']].map(([k, x, scale]) => (
+              <div key={k} className="grid grid-cols-[170px_1fr] items-baseline gap-3 text-[14px]">
                 <dt className="text-[#9aa5b3]">{k}</dt>
                 <dd><Band b={x.band} scale={scale} />{x.value ? <span className="ml-2 text-[#c7cfda]">{x.value}</span> : null}</dd>
               </div>
