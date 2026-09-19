@@ -46,7 +46,8 @@ const MAX_SETTLEMENT_ATTEMPTS = 3;
  * ("missing_settlement_snapshot"). Now an earlier-day row always leaves the
  * head for long: it completes, counts an attempt, or after three is marked missed.
  */
-export async function completeDueConfluenceOutcomes({ now = new Date(), limit = 200, book } = {}) {
+export async function completeDueConfluenceOutcomes({ now = new Date(), limit = 200, book, budgetMs = 60_000 } = {}) {
+  const started = Date.now();
   // Ordered by due time alone so the pending partial index serves it; sorting
   // by attempt count as well sorted the whole pending table and timed out.
   // Earlier-day rows are always written back, so none holds the head for
@@ -65,6 +66,9 @@ export async function completeDueConfluenceOutcomes({ now = new Date(), limit = 
     await patch(row, { attempt_count: attempts, last_error: reason });
   };
   for (const row of due) {
+    // This queue holds millions of rows; it must not use a whole cycle and the
+    // shared candle rate the forecast scoring after it needs.
+    if (Date.now() - started > budgetMs) { summary.budget_exhausted = true; break; }
     try {
       const event = row.event;
       const earlierDay = Date.parse(row.due_at) < Date.parse(published);

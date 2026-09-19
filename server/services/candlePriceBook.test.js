@@ -91,3 +91,20 @@ test('closes come from one daily request per instrument and month', async () => 
   assert.equal((await instance.closeOn('NSE_EQ|A', '2026-09-19')).reason, 'session_not_published');
   assert.deepEqual(requests, [['NSE_EQ|A', '2026-09-01', '2026-09-30']]);
 });
+
+test('a daily close goes ahead of queued minute requests', async () => {
+  const order = [];
+  let clock = Date.parse('2026-09-19T06:00:00Z');
+  const instance = new CandlePriceBook({
+    fetchCandles: async (key) => { order.push(key); return payload; },
+    fetchDailyCandles: async (key) => { order.push(`daily:${key}`); return { data: { candles: [['2026-09-17T00:00:00+05:30', 1, 1, 1, 10, 0, 0]] } }; },
+    requestsPerSecond: 1,
+    sleep: async (ms) => { clock += ms; await new Promise((resolve) => setImmediate(resolve)); },
+    clock: () => clock,
+  });
+  const minute = ['A', 'B', 'C'].map((name) => instance.priceAt(`NSE_EQ|${name}`, '2026-09-17T10:00:00+05:30'));
+  const daily = instance.closeOn('NSE_EQ|D', '2026-09-17');
+  await Promise.all([...minute, daily]);
+  assert.equal(order[0], 'NSE_EQ|A');
+  assert.equal(order[1], 'daily:NSE_EQ|D');
+});
