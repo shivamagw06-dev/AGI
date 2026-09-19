@@ -6,6 +6,7 @@ import {
   Briefcase,
   Globe2,
   Landmark,
+  Layers,
   Library,
   LineChart,
 } from 'lucide-react';
@@ -30,6 +31,13 @@ const DESK_BUTTONS = [
     icon: Library,
     hint: 'India & US',
     href: '/equity-research',
+  },
+  {
+    id: 'strategies',
+    label: 'Strategies',
+    icon: Layers,
+    hint: 'Sector & thematic',
+    href: '/strategy',
   },
   ...RESEARCH_DESKS.filter((desk) =>
     ['indian-market', 'global-markets', 'private-markets', 'economics'].includes(desk.id)
@@ -354,10 +362,10 @@ export default function ResearchTerminalHome() {
         />
       </Helmet>
 
-      {/* Desk navigation — six equal professional buttons */}
+      {/* Desk navigation — seven equal professional buttons */}
       <section className="border-b border-[#e8eaee] bg-white" aria-label="Research desks">
         <div className="mx-auto max-w-[1680px] px-4 sm:px-6 lg:px-8 py-5">
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-6">
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 xl:grid-cols-7">
             {DESK_BUTTONS.map((desk) => {
               const Icon = desk.icon;
               const isActive = activeDesk === desk.id;
