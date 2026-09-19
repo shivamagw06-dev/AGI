@@ -118,3 +118,18 @@ test('an old signal is benchmarked by its own sector label, not the symbol\'s cu
   assert.equal(result, 'completed');
   assert.equal(written.future_sector, 57700);
 });
+
+test('a derivatives signal is priced from the stock, whose price is its anchor', async () => {
+  const row = outcome({ signal: { ...outcome().signal, instrument_key: 'NSE_FO|54321' } });
+  const members = new Map([['ABC', { symbol: 'ABC', instrumentKey: 'NSE_EQ|ABC', sectorInstrumentKey: 'NSE_INDEX|Nifty IT' }]]);
+  assert.equal((await settleOutcome(row, { book: market, universeBySymbol: members })).outcome, 'completed');
+  const unmapped = await settleOutcome(row, { book: market, universeBySymbol: new Map() });
+  assert.equal(unmapped.row.last_error, 'instrument_not_mapped');
+});
+
+test('an unknown key is missed at once rather than retried', async () => {
+  const refused = { async priceAt() { return { price: null, reason: 'invalid_instrument_key' }; } };
+  const { outcome: result, row } = await settleOutcome(outcome(), { book: refused, universeBySymbol });
+  assert.equal(result, 'missed');
+  assert.equal(row.last_error, 'stock_invalid_instrument_key');
+});

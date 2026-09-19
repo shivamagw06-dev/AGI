@@ -68,3 +68,11 @@ test('an empty history reads as no candles, and old sector keys map to Upstox ke
   assert.equal(candleKey('NSE_INDEX|Nifty Financial Services'), 'NSE_INDEX|Nifty Fin Service');
   assert.equal(candleKey('NSE_INDEX|Nifty 50'), 'NSE_INDEX|Nifty 50');
 });
+
+test('a refused key is that row\'s problem; throttling still stops the caller', async () => {
+  const refuse = (status, message) => async () => { const error = new Error(message); error.status = status; throw error; };
+  const { instance } = book({ fetchCandles: refuse(400, 'Invalid Instrument key') });
+  assert.equal((await instance.priceAt('NSE_FO|12345', '2026-08-10T10:00:00+05:30')).reason, 'invalid_instrument_key');
+  const throttled = book({ fetchCandles: refuse(429, 'Too many requests') }).instance;
+  await assert.rejects(throttled.priceAt('NSE_EQ|A', '2026-08-10T10:00:00+05:30'), /Too many/);
+});

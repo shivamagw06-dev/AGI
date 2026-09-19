@@ -19,6 +19,8 @@ import { sectorKeyForLabel } from './liveAlphaRuntime.js';
  */
 
 const MAX_ATTEMPTS = 3;
+// Reasons another attempt cannot change.
+const FINAL_REASONS = new Set(['before_first_candle', 'invalid_instrument_key']);
 // A live quote and the minute candle it falls in can differ by a tick for an
 // index and by a fast move for a stock; beyond this the anchor is not the
 // price the market showed, and the return would be measured from nowhere.
@@ -84,7 +86,9 @@ export async function settleOutcome(row, { book, universeBySymbol }) {
   if (!signal.direction) return missed('signal_without_direction');
   const member = universeBySymbol.get(signal.symbol);
   const keys = {
-    stock: signal.instrument_key || member?.instrumentKey,
+    // The derivatives engine stores the futures contract, but its anchor is the
+    // stock's price, and an expired contract has no history under its key.
+    stock: String(signal.instrument_key || '').startsWith('NSE_EQ|') ? signal.instrument_key : member?.instrumentKey,
     nifty: 'NSE_INDEX|Nifty 50',
     // The key recorded with the signal, else the index for the sector label
     // stored with it. The symbol's current sector is the last resort: it
@@ -102,10 +106,10 @@ export async function settleOutcome(row, { book, universeBySymbol }) {
   const future = {};
   for (const leg of ['stock', 'nifty', 'sector']) {
     const atSignal = await book.priceAt(keys[leg], asOf);
-    if (atSignal.price == null) return atSignal.reason === 'before_first_candle' ? missed(`${leg}_before_first_candle`) : retry(`${leg}_${atSignal.reason}`);
+    if (atSignal.price == null) return FINAL_REASONS.has(atSignal.reason) ? missed(`${leg}_${atSignal.reason}`) : retry(`${leg}_${atSignal.reason}`);
     if (mismatch(anchors[leg], atSignal.price, ANCHOR_TOLERANCE[leg])) return missed(`${leg}_anchor_mismatch`);
     const atDue = await book.priceAt(keys[leg], row.due_at);
-    if (atDue.price == null) return retry(`${leg}_${atDue.reason}`);
+    if (atDue.price == null) return FINAL_REASONS.has(atDue.reason) ? missed(`${leg}_${atDue.reason}`) : retry(`${leg}_${atDue.reason}`);
     future[leg] = atDue;
   }
   const result = calculateSignalOutcome({
