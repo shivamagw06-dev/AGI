@@ -1,5 +1,8 @@
 import { calculateConfluenceOutcome, createConfluenceOutcomeSchedule, summarizeConfluenceOutcomes } from './confluenceOutcomeValidation.js';
 import { settlementWindow, validateConfluenceCandidate, validateSettlementSnapshots } from './researchDataQuality.js';
+import { CandlePriceBook } from './candlePriceBook.js';
+import { sessionState } from './liveAlphaSession.js';
+import { publishedBefore } from './liveAlphaOutcomeSettlement.js';
 
 function config() { const url = String(process.env.SUPABASE_URL || '').trim().replace(/\/$/, ''), key = String(process.env.SUPABASE_SERVICE_ROLE_KEY || '').trim(); if (!url || !key) throw new Error('Confluence validation requires Supabase credentials.'); return { url, key }; }
 async function rest(table, { method = 'GET', query = '', body, prefer } = {}) { const { url, key } = config(); const response = await fetch(`${url}/rest/v1/${table}${query ? `?${query}` : ''}`, { method, headers: { apikey: key, Authorization: `Bearer ${key}`, 'Content-Type': 'application/json', ...(prefer ? { Prefer: prefer } : {}) }, body: body == null ? undefined : JSON.stringify(body) }); if (!response.ok) { const error = new Error(`Confluence validation storage failed (${response.status}): ${(await response.text()).slice(0, 240)}`); error.status = response.status; throw error; } const text = await response.text(); return text ? JSON.parse(text) : []; }
@@ -30,18 +33,62 @@ async function firstSnapshot(instrumentKey, dueAt, horizon) {
   return (await rest('live_market_snapshots', { query }))?.[0] || null;
 }
 
-export async function completeDueConfluenceOutcomes({ now = new Date(), limit = 200 } = {}) {
-  const due = await rest('research_confluence_outcomes', { query: `select=*,event:research_confluence_events(*)&status=eq.pending&due_at=lte.${encodeURIComponent(now.toISOString())}&order=due_at.asc&limit=${Math.min(500, limit)}` });
-  const summary = { due: due.length, completed: 0, deferred: 0, failed: 0, deferred_reasons: {} };
+const MAX_SETTLEMENT_ATTEMPTS = 3;
+let candleBook = null;
+
+/**
+ * Settle due confluence outcomes.
+ *
+ * Same-day rows settle from live snapshots when the feed recorded them. Rows
+ * due on an earlier day settle from Upstox one-minute history, which has every
+ * session whether or not the feed was up. Before 20 Sep 2026 a row with no
+ * snapshot stayed pending forever and kept its place at the head of the queue,
+ * so every cycle re-read the same 200 dead rows and deferred them all
+ * ("missing_settlement_snapshot"). Now an earlier-day row always leaves the
+ * head: it completes, counts an attempt, or after three is marked missed.
+ */
+export async function completeDueConfluenceOutcomes({ now = new Date(), limit = 200, book } = {}) {
+  const due = await rest('research_confluence_outcomes', { query: `select=*,event:research_confluence_events(*)&status=eq.pending&due_at=lte.${encodeURIComponent(now.toISOString())}&order=attempt_count.asc,due_at.asc&limit=${Math.min(500, limit)}` });
+  const summary = { due: due.length, completed: 0, deferred: 0, missed: 0, failed: 0, deferred_reasons: {} };
+  const published = publishedBefore(now);
+  const prices = book || (candleBook ||= new CandlePriceBook());
+  const patch = (row, body) => rest('research_confluence_outcomes', { method: 'PATCH', query: `id=eq.${row.id}`, body, prefer: 'return=minimal' });
+  const defer = async (row, reason, { count }) => {
+    summary.deferred_reasons[reason] = (summary.deferred_reasons[reason] || 0) + 1;
+    if (!count) { summary.deferred += 1; return; }
+    const attempts = Number(row.attempt_count || 0) + 1;
+    if (attempts >= MAX_SETTLEMENT_ATTEMPTS) { summary.missed += 1; await patch(row, { status: 'missed', attempt_count: attempts, last_error: reason }); return; }
+    summary.deferred += 1;
+    await patch(row, { attempt_count: attempts, last_error: reason });
+  };
   for (const row of due) {
     try {
-      const event = row.event; const snapshots = await Promise.all([firstSnapshot(event.instrument_key, row.due_at, row.horizon), firstSnapshot(event.benchmark_instrument_key, row.due_at, row.horizon), firstSnapshot(event.sector_instrument_key, row.due_at, row.horizon)]);
-      const quality = validateSettlementSnapshots(snapshots);
-      if (!quality.valid) { summary.deferred += 1; summary.deferred_reasons[quality.reason] = (summary.deferred_reasons[quality.reason] || 0) + 1; continue; }
-      const [stock, benchmark, sector] = snapshots;
+      const event = row.event;
+      const earlierDay = Date.parse(row.due_at) < Date.parse(published);
+      if (!sessionState(event.captured_at).open) { summary.missed += 1; await patch(row, { status: 'missed', last_error: 'signal_outside_session' }); continue; }
+      const keys = [event.instrument_key, event.benchmark_instrument_key, event.sector_instrument_key];
+      let settlement;
+      if (earlierDay) {
+        const quotes = await Promise.all(keys.map((key) => prices.priceAt(key, row.due_at)));
+        const gap = quotes.findIndex((quote) => quote.price == null);
+        if (gap >= 0) { await defer(row, `${['stock', 'benchmark', 'sector'][gap]}_${quotes[gap].reason}`, { count: true }); continue; }
+        settlement = quotes.map((quote) => ({ ltp: quote.price, observed_at: quote.candle_end }));
+      } else {
+        const snapshots = await Promise.all(keys.map((key) => firstSnapshot(key, row.due_at, row.horizon)));
+        const quality = validateSettlementSnapshots(snapshots);
+        // History for today is published tomorrow; leave the row for that.
+        if (!quality.valid) { await defer(row, quality.reason, { count: false }); continue; }
+        settlement = snapshots;
+      }
+      const [stock, benchmark, sector] = settlement;
       const result = calculateConfluenceOutcome({ priceAtSignal: event.price_at_signal, futurePrice: stock.ltp, benchmarkAtSignal: event.benchmark_at_signal, futureBenchmark: benchmark.ltp, sectorAtSignal: event.sector_index_at_signal, futureSector: sector.ltp });
-      await rest('research_confluence_outcomes', { method: 'PATCH', query: `id=eq.${row.id}`, body: { status: 'completed', observed_at: stock.observed_at, future_price: stock.ltp, future_benchmark: benchmark.ltp, future_sector: sector.ltp, ...result }, prefer: 'return=minimal' }); summary.completed += 1;
-    } catch (error) { summary.failed += 1; await rest('research_confluence_outcomes', { method: 'PATCH', query: `id=eq.${row.id}`, body: { attempt_count: Number(row.attempt_count || 0) + 1, last_error: error.message.slice(0, 500) }, prefer: 'return=minimal' }).catch(() => {}); }
+      await patch(row, { status: 'completed', observed_at: stock.observed_at, future_price: stock.ltp, future_benchmark: benchmark.ltp, future_sector: sector.ltp, ...result }); summary.completed += 1;
+    } catch (error) {
+      summary.failed += 1;
+      await patch(row, { attempt_count: Number(row.attempt_count || 0) + 1, last_error: error.message.slice(0, 500) }).catch(() => {});
+      // A throttled history call will fail for the rest of the batch too.
+      if (error.status === 429) break;
+    }
   }
   return summary;
 }
@@ -89,7 +136,13 @@ export async function saveEvidenceConvictionRanking(ranking) {
     evidence_snapshot: row.evidence_snapshot,
     research_only: true,
   }));
-  if (rows.length) await rest('evidence_conviction_rankings', { method: 'POST', body: rows, prefer: 'return=minimal' });
+  try {
+    if (rows.length) await rest('evidence_conviction_rankings', { method: 'POST', body: rows, prefer: 'return=minimal' });
+  } catch (error) {
+    // Do not leave a run with no rankings for readers to pick up as latest.
+    await rest('evidence_conviction_runs', { method: 'DELETE', query: `id=eq.${runId}`, prefer: 'return=minimal' }).catch(() => {});
+    throw error;
+  }
   return { run_id: runId, rankings: rows.length, shortlist: rows.filter((row) => row.eligible_for_research_shortlist).length };
 }
 

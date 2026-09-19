@@ -420,6 +420,39 @@ export class UpstoxMarketFeedV3 {
     }, delay);
   }
 
+  /**
+   * Start a fresh round of reconnect attempts after the feed gave up.
+   *
+   * Giving up stops the feed hammering a two-connection cap, but it is also
+   * permanent: on 18 Sep 2026 a run of mid-session redeploys exhausted the
+   * retries and no strategy ran for the rest of the day. A supervisor calls
+   * this on a cool-down during market hours. With `force`, it also recycles a
+   * socket that claims to be connected but has gone silent.
+   *
+   * An auth failure is not re-armed: the token has to be replaced first.
+   */
+  rearm({ force = false } = {}) {
+    if (this.stopped || this.timer) return false;
+    const status = this.state.status;
+    if (status === 'exhausted') {
+      this.attempt = 0;
+      this.state.gave_up_at = null;
+      this.state.give_up_reason = null;
+      this.state.rearms = (this.state.rearms || 0) + 1;
+      this.state.last_rearm_at = new Date().toISOString();
+      this.#connect();
+      return true;
+    }
+    if (force && status === 'connected' && this.socket) {
+      // 'close' schedules the reconnect; open resets the attempt count.
+      this.state.rearms = (this.state.rearms || 0) + 1;
+      this.state.last_rearm_at = new Date().toISOString();
+      this.socket.close();
+      return true;
+    }
+    return false;
+  }
+
   stop() {
     this.stopped = true;
     if (this.timer) clearTimeout(this.timer);

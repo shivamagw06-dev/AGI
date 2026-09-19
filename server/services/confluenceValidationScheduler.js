@@ -9,7 +9,9 @@ import { syncForecastCrossSections } from './forecastV2Store.js';
 import { scopeQueueToLiveUniverse } from './confluenceCandidateScope.js';
 import { buildEvidenceConfirmedConvictionRanking } from './evidenceConfirmedConviction.js';
 import { indiaTradingDayAfterClose } from './dailyForecastSchedule.js';
+import { sessionState } from './liveAlphaSession.js';
 
+const CONVICTION_INTERVAL_MS = 30 * 60_000;
 let timer = null;
 let state = { enabled: false, status: 'disabled', last_run: null, last_capture: null, last_completion: null, last_error: null };
 
@@ -24,15 +26,28 @@ export async function runConfluenceValidationCycle() {
       universe,
     );
     const conviction = buildEvidenceConfirmedConvictionRanking(queue, { limit: 500 });
+    const market = sessionState(new Date());
+    // A ranking is 500 rows. Saving one every five minutes, weekends included,
+    // would add about 144,000 rows a day that differ little; every 30 minutes
+    // of the session keeps the intraday history at about 6,500.
+    const convictionDue = market.open && (!state.last_conviction_saved_at
+      || Date.now() - Date.parse(state.last_conviction_saved_at) >= CONVICTION_INTERVAL_MS);
     // A newly deployed app may briefly run before its database migration is
     // applied. Keep validation, memory and forecast maintenance alive while
     // surfacing the conviction persistence error in scheduler health.
-    const convictionSave = await saveEvidenceConvictionRanking(conviction).catch((error) => ({
-      status: error.status === 404 ? 'database_setup_required' : 'degraded',
-      error: error.message,
-      rankings: 0,
-    }));
-    const capture = await saveConfluenceEvents(queue, universe);
+    const convictionSave = !convictionDue
+      ? { status: 'skipped', reason: market.open ? 'saved_within_30_minutes' : market.reason, rankings: 0 }
+      : await saveEvidenceConvictionRanking(conviction).catch((error) => ({
+        status: error.status === 404 ? 'database_setup_required' : 'degraded',
+        error: error.message,
+        rankings: 0,
+      }));
+    if (convictionDue && convictionSave.run_id) state.last_conviction_saved_at = new Date().toISOString();
+    // Outside the session the live anchors are the last session's prices, and
+    // an event captured from them measures nothing.
+    const capture = market.open
+      ? await saveConfluenceEvents(queue, universe)
+      : { skipped: true, reason: market.reason, events: 0, outcomes: 0 };
     const completion = await completeDueConfluenceOutcomes();
     const memory = await syncResearchMemory();
     const forecastDate = indiaTradingDayAfterClose();

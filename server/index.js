@@ -40,7 +40,8 @@ import { startGrowwEquityOpportunityScheduler } from "./services/growwEquityOppo
 import { startGrowwSectorRotationScheduler } from "./services/growwSectorRotationScheduler.js";
 import { startEngineKeepWarm } from "./services/engineKeepWarm.js";
 import { startUpstoxStatementScheduler } from "./services/upstoxStatementScheduler.js";
-import { getLiveAlphaRuntimeStatus, startLiveAlphaRuntime } from "./services/liveAlphaRuntime.js";
+import { getLiveAlphaRuntimeStatus, loadLiveAlphaUniverse, startLiveAlphaRuntime, stopLiveAlphaRuntime } from "./services/liveAlphaRuntime.js";
+import { getLiveAlphaOutcomeStatus, startLiveAlphaOutcomeScheduler } from "./services/liveAlphaOutcomeSettlement.js";
 import { getLiveAlphaWorkspace } from "./services/liveAlphaWorkspace.js";
 import { buildConfluenceQueue } from "./services/researchConfluence.js";
 import { getResearchEvidence } from "./services/researchEvidenceCollector.js";
@@ -338,7 +339,7 @@ function reg(path, handler) {
 
 // --- Health + debug endpoints
 reg('/', (req, res) => res.json({ service: 'finance-news-backend', status: 'running' }));
-reg('/api/market/live-alpha/status', (_req, res) => res.json(getLiveAlphaRuntimeStatus()));
+reg('/api/market/live-alpha/status', (_req, res) => res.json({ ...getLiveAlphaRuntimeStatus(), outcome_settlement: getLiveAlphaOutcomeStatus() }));
 reg('/api/market/trading-calendar/status', (_req, res) => res.json(tradingCalendar.health()));
 reg('/api/market/live-alpha/workspace', async (_req, res) => {
   try {
@@ -459,6 +460,7 @@ startHedgeFundLiveQuoteScheduler();
 startHedgeFundUpstoxCandleScheduler();
 startUpstoxStatementScheduler();
 startLiveAlphaRuntime().catch((error) => console.error('[live-alpha] startup failed:', error?.message || error));
+startLiveAlphaOutcomeScheduler({ loadUniverse: loadLiveAlphaUniverse });
 startConfluenceValidationScheduler();
 startEngineKeepWarm();
 startIntelligenceLearningWorker();
@@ -1040,6 +1042,13 @@ app.use((req, res) => res.status(404).json({ error: 'Not found', path: req.path 
 // market-data connections per application - so leaking one per deploy
 // eventually refuses every new handshake with a 403 while REST still works.
 async function closeLongLivedSockets() {
+  // Upstox allows two market-data sockets per user. A redeploy briefly runs
+  // two instances, so the old one must release its Live Alpha socket too.
+  try {
+    stopLiveAlphaRuntime();
+  } catch (error) {
+    console.warn('live-alpha feed shutdown failed:', error?.message || error);
+  }
   try {
     const { shutdownRuntime } = await import('./routes/indiaAiIntelligence.js');
     const result = await shutdownRuntime();
