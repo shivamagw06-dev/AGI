@@ -77,7 +77,23 @@ export class CandlePriceBook {
     this.clock = clock;
     this.cache = new Map();
     this.lastRequestMs = 0;
+    this.queue = Promise.resolve();
     this.stats = { requests: 0, cache_hits: 0, errors: 0, empty: 0 };
+  }
+
+  /**
+   * Wait for this request's turn. Several jobs share one book, so the spacing
+   * is a queue: two callers never read the same last-request time and fire
+   * together.
+   */
+  #slot() {
+    const turn = this.queue.then(async () => {
+      const wait = this.lastRequestMs + this.minGapMs - this.clock();
+      if (wait > 0) await this.sleep(wait);
+      this.lastRequestMs = this.clock();
+    });
+    this.queue = turn.catch(() => {});
+    return turn;
   }
 
   async #rows(key, date) {
@@ -89,9 +105,7 @@ export class CandlePriceBook {
       this.stats.cache_hits += 1;
       return rows;
     }
-    const wait = this.lastRequestMs + this.minGapMs - this.clock();
-    if (wait > 0) await this.sleep(wait);
-    this.lastRequestMs = this.clock();
+    await this.#slot();
     this.stats.requests += 1;
     let rows;
     try {
@@ -125,4 +139,15 @@ export class CandlePriceBook {
     if (!rows.ends.length) return { price: null, reason: 'no_candles' };
     return priceFromCandles(rows, atMs) || { price: null, reason: 'before_first_candle' };
   }
+}
+
+let shared = null;
+
+/**
+ * The one book the settlement jobs share, so together they stay inside the
+ * request rate and reuse each other's candles.
+ */
+export function sharedCandleBook() {
+  shared ||= new CandlePriceBook();
+  return shared;
 }

@@ -1,6 +1,6 @@
 import { calculateConfluenceOutcome, createConfluenceOutcomeSchedule, summarizeConfluenceOutcomes } from './confluenceOutcomeValidation.js';
 import { settlementWindow, validateConfluenceCandidate, validateSettlementSnapshots } from './researchDataQuality.js';
-import { CandlePriceBook } from './candlePriceBook.js';
+import { sharedCandleBook } from './candlePriceBook.js';
 import { sessionState } from './liveAlphaSession.js';
 import { publishedBefore } from './liveAlphaOutcomeSettlement.js';
 
@@ -34,7 +34,6 @@ async function firstSnapshot(instrumentKey, dueAt, horizon) {
 }
 
 const MAX_SETTLEMENT_ATTEMPTS = 3;
-let candleBook = null;
 
 /**
  * Settle due confluence outcomes.
@@ -45,13 +44,17 @@ let candleBook = null;
  * snapshot stayed pending forever and kept its place at the head of the queue,
  * so every cycle re-read the same 200 dead rows and deferred them all
  * ("missing_settlement_snapshot"). Now an earlier-day row always leaves the
- * head: it completes, counts an attempt, or after three is marked missed.
+ * head for long: it completes, counts an attempt, or after three is marked missed.
  */
 export async function completeDueConfluenceOutcomes({ now = new Date(), limit = 200, book } = {}) {
-  const due = await rest('research_confluence_outcomes', { query: `select=*,event:research_confluence_events(*)&status=eq.pending&due_at=lte.${encodeURIComponent(now.toISOString())}&order=attempt_count.asc,due_at.asc&limit=${Math.min(500, limit)}` });
+  // Ordered by due time alone so the pending partial index serves it; sorting
+  // by attempt count as well sorted the whole pending table and timed out.
+  // Earlier-day rows are always written back, so none holds the head for
+  // more than three cycles. Only the event columns settlement reads.
+  const due = await rest('research_confluence_outcomes', { query: `select=id,horizon,due_at,attempt_count,event:research_confluence_events(captured_at,instrument_key,benchmark_instrument_key,sector_instrument_key,price_at_signal,benchmark_at_signal,sector_index_at_signal)&status=eq.pending&due_at=lte.${encodeURIComponent(now.toISOString())}&order=due_at.asc&limit=${Math.min(500, limit)}` });
   const summary = { due: due.length, completed: 0, deferred: 0, missed: 0, failed: 0, deferred_reasons: {} };
   const published = publishedBefore(now);
-  const prices = book || (candleBook ||= new CandlePriceBook());
+  const prices = book || sharedCandleBook();
   const patch = (row, body) => rest('research_confluence_outcomes', { method: 'PATCH', query: `id=eq.${row.id}`, body, prefer: 'return=minimal' });
   const defer = async (row, reason, { count }) => {
     summary.deferred_reasons[reason] = (summary.deferred_reasons[reason] || 0) + 1;
