@@ -15,8 +15,8 @@
       "high"
     ],
     "text": [
-      "Evidence test: at least one filed order, committed capex or operating disclosure on the company's own paper. Aspiration alone does not count.",
-      "Materiality test, any one of: Rs 100 cr or more of AI/data-centre revenue or executable orders; 5% or more of company revenue from AI/data centres; 5% or more of FY26 EBITDA from AI/data centres by FY29 in AGI's base case; a contracted position (MW or GW) with a named customer that is 5% or more of the company's own capacity.",
+      "Evidence test: at least one filed order, committed capex or operating disclosure on the company's own paper. Aspiration, MoUs and addressable-market presentations do not count. For contractors, an order must name the project, the role and a value.",
+      "Materiality test, any one of: Rs 100 cr or more of AI/data-centre revenue or executable orders; 5% or more of company revenue from AI/data centres; AI/data-centre EBITDA by FY29 equal to 5% or more of FY26 EBITDA in AGI's base case; contracted capacity with a named customer equal to at least 5% of the company's total disclosed capacity (operating plus contracted where the company reports them together, otherwise operating).",
       "Safeguards, both required: evidence confidence medium or high; a path from order or capacity to revenue within about 36 months (revenue already booked, a timeline the company states, order cover of 12 quarters or less, or AGI's FY29 horizon for an estimate-only pass).",
       "Strict on amounts: an order with no disclosed value, share or named-customer MW does not count, however strong the evidence that it exists.",
       "A pass that rests only on AGI's estimate counts, and is labelled as an estimate."

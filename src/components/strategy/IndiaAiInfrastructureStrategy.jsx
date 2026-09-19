@@ -61,14 +61,14 @@ function watchReason(row, rec) {
   return m.evidenceOk ? first : `${first}; evidence confidence ${rec.factors.evidence.band}`;
 }
 
-function StrategyTable({ rows, bySym, loading, priced, watch = false }) {
+function StrategyTable({ rows, bySym, loading, priced, watch = false, label = 'Watch', reasonHead = 'Why not yet in the basket' }) {
   const wait = <span className="text-[#a0a8b3]">…</span>;
   return (
     <div className="overflow-x-auto rounded-xl border border-[#e5e8ec]">
       <table className="w-full min-w-[1600px] text-[14px]">
         <thead className="bg-[#f7f8fa]">
           <tr className="text-left text-[12px] font-semibold text-[#5b6573]">
-            {[...COLS, [watch ? 'Why not yet in the basket' : 'AGI status']].map(([h, tag]) => (
+            {[...COLS, [watch ? reasonHead : 'AGI status']].map(([h, tag]) => (
               <th key={h} scope="col" className="border-b border-[#e5e8ec] px-4 py-3 align-bottom">{h}{tag ? <Tag t={tag} /> : null}</th>
             ))}
           </tr>
@@ -112,7 +112,7 @@ function StrategyTable({ rows, bySym, loading, priced, watch = false }) {
                 <td className="max-w-[300px] px-4 py-3.5">
                   {watch ? (
                     <>
-                      <span className="inline-block whitespace-nowrap rounded-full bg-[#f3f4f6] px-2.5 py-0.5 text-[12px] font-semibold text-[#5b6573]">Watch</span>
+                      <span className="inline-block whitespace-nowrap rounded-full bg-[#f3f4f6] px-2.5 py-0.5 text-[12px] font-semibold text-[#5b6573]">{label}</span>
                       <span className="mt-1.5 block text-[12px] leading-snug text-[#6b7480]">{watchReason(row, rec)}</span>
                     </>
                   ) : (
@@ -146,12 +146,16 @@ export default function IndiaAiInfrastructureStrategy({ monitor }) {
   const netweb = bySym.NETWEB;
   // The basket is exactly the rows that pass the materiality test today.
   const basket = STRATEGY_ROWS.filter((row) => isMaterial(bySym[row.symbol]));
-  const watch = STRATEGY_ROWS.filter((row) => !isMaterial(bySym[row.symbol]));
+  // Members that fail the test are the watch list; held candidates (not yet
+  // admitted, so not priced) are listed apart, because their evidence does
+  // not yet pass the evidence test itself.
+  const watch = STRATEGY_ROWS.filter((row) => row.member !== false && !isMaterial(bySym[row.symbol]));
+  const held = STRATEGY_ROWS.filter((row) => row.member === false);
   return (
     <>
       <div className="flex flex-wrap items-end justify-between gap-4">
         <p className="text-[14px] text-[#5b6573]">
-          {tested ? `${basket.length} names in the basket · ${watch.length} on the watch list` : 'Running the materiality test…'}
+          {tested ? `${basket.length} names in the basket · ${watch.length} on the watch list · ${held.length} held candidates` : 'Running the materiality test…'}
           {` · strategy as of ${dateLabel(STRATEGY_ASOF)}`}
           {d.marketValue?.closeDate ? ` · prices to ${dateLabel(d.marketValue.closeDate)}` : ''}
         </p>
@@ -178,8 +182,16 @@ export default function IndiaAiInfrastructureStrategy({ monitor }) {
       {tested && watch.length ? (
         <>
           <h3 className="mt-10 text-[20px] font-semibold tracking-tight text-[#0f1720]">Watch list: evidenced, not yet material</h3>
-          <p className="mt-1 max-w-[90ch] text-[15px] text-[#5b6573]">Real AI/data-centre evidence on the company&rsquo;s own paper, but not yet enough disclosed to pass the materiality test. Each joins the basket when it does. KEC and NTPC Green are held candidates in the monitor, so AGI does not price them.</p>
+          <p className="mt-1 max-w-[90ch] text-[15px] text-[#5b6573]">Members with filed AI/data-centre evidence on the company&rsquo;s own paper, but not yet enough disclosed to pass the materiality test. Each joins the basket when it does.</p>
           <div className="mt-4"><StrategyTable rows={watch} bySym={bySym} loading={loading} priced={priced} watch /></div>
+        </>
+      ) : null}
+
+      {held.length ? (
+        <>
+          <h3 className="mt-10 text-[20px] font-semibold tracking-tight text-[#0f1720]">Held candidates: not yet admitted</h3>
+          <p className="mt-1 max-w-[90ch] text-[15px] text-[#5b6573]">Their evidence does not yet pass the evidence test itself: KEC&rsquo;s data-centre order has no disclosed value, which contractors need, and NTPC Green has MoUs, not power purchase agreements. AGI does not price held candidates.</p>
+          <div className="mt-4"><StrategyTable rows={held} bySym={bySym} loading={loading} priced={priced} watch label="Held" reasonHead="What admission needs" /></div>
         </>
       ) : null}
 
