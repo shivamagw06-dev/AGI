@@ -45,10 +45,10 @@ export const STRATEGY_ROWS = [
 
   // Watch list today: each fails the materiality test, for the reason shown on the page.
   { symbol: 'RELIANCE', name: 'Reliance Industries', layer: 'AI DC / power / network', rating: 'Medium-High', evidence: '168 MW AI data centre for Meta, due within two years', status: 'Core' },
-  { symbol: 'ADANIENT', name: 'Adani Enterprises', layer: 'AdaniConneX', rating: 'High', evidence: '65.4 MW operating against 960+ MW tied up', status: 'Core / Execution' },
-  { symbol: 'POWERINDIA', name: 'Hitachi Energy India', layer: 'Transformers / grid', rating: 'High', evidence: '₹32,222 cr backlog; data centres named the major segment contributor', status: 'Core' },
-  { symbol: 'GVT&D', name: 'GE Vernova T&D India', layer: 'Transformers / grid', rating: 'Medium-High', evidence: '₹20,930 cr backlog; 220 kV GIS bays commissioned for NTT Data Center', status: 'Core' },
-  { symbol: 'POLYCAB', name: 'Polycab India', layer: 'DC cabling', rating: 'Medium-High', evidence: 'Management estimates about ₹3.5 cr of cable content per MW', status: 'Core' },
+  { symbol: 'ADANIENT', name: 'Adani Enterprises', layer: 'AdaniConneX', rating: 'High', evidence: '65.4 MW operating against 960+ MW tied up (including 358 MW Hyderabad and 400 MW Vizag hyperscale orders)', status: 'Core / Execution' },
+  { symbol: 'POWERINDIA', name: 'Hitachi Energy India', layer: 'Transformers / grid', rating: 'High', evidence: '₹32,222 cr backlog; data centres the major segment contributor to Q4 FY26 orders (value and share not disclosed)', status: 'Core' },
+  { symbol: 'GVT&D', name: 'GE Vernova T&D India', layer: 'Transformers / grid', rating: 'Medium-High', evidence: '₹20,930 cr backlog; direct DC equipment exposure: 220 kV GIS commissioned for NTT Data Center (value and share not disclosed)', status: 'Core' },
+  { symbol: 'POLYCAB', name: 'Polycab India', layer: 'DC cabling', rating: 'Medium-High', evidence: 'Data centres a strategic end market; management puts industry cable content at about ₹3.5 cr per MW (not Polycab revenue)', status: 'Core' },
   { symbol: 'TATAPOWER', name: 'Tata Power', layer: 'Power / grid / storage', rating: 'Medium', evidence: 'One 25-year renewable power agreement for Princeton Digital Group\'s Mumbai DC; grid, FDRE and storage are not DC evidence', status: 'Threshold Exception' },
   { symbol: 'KEC', name: 'KEC International', layer: 'Transmission', rating: 'Medium', evidence: 'First transmission-line order to evacuate power to a data centre; value not split out of a ₹1,180 cr batch', status: 'Core / Optionality', member: false, watchReason: 'Held candidate: no value disclosed for any data-centre order' },
   { symbol: 'NTPCGREEN', name: 'NTPC Green Energy', layer: 'RTC DC power', rating: 'Medium-High', evidence: 'MoUs with Nxtra (up to 500 MW) and CtrlS (up to 2 GW); not yet power purchase agreements', status: 'Emerging Core', member: false, watchReason: 'Held candidate: memoranda of understanding, not contracted capacity' },
@@ -78,9 +78,14 @@ export const STRUCTURES = [
     text: 'Netweb, STL, Blue Star, HFCL and Cummins already have measurable AI/data-centre revenue or orders. These deserve the highest AI-evidence confidence.',
   },
   {
+    title: 'AI factory and compute platform',
+    names: ['LT'],
+    text: 'L&T, through Vyoma: an AI factory (the 10,000-GPU NVIDIA B300 cluster it will deploy for Together AI), hyperscale colocation, GPU-as-a-Service and sovereign cloud. Broader than a data-centre landlord: the variables are GPU deployment, utilisation of the compute it sells, and how much of the ₹10,000-15,000 cr order band turns into revenue, against L&T\'s engineering and construction base.',
+  },
+  {
     title: 'Data-centre asset owners',
-    names: ['BHARTIARTL', 'ANANTRAJ', 'LT'],
-    text: 'Bharti/Nxtra, Anant Raj and L&T. For these, the most important variables are commissioned MW, contracted MW, billed MW, utilisation and revenue/EBITDA per MW. Nxtra\'s March 2026 funding round valued the business at around US$3.1 billion post-closing (Airtel release, 30 March 2026). Adani Enterprises (AdaniConneX) and Reliance belong here too, and sit on the watch list until they pass the materiality test.',
+    names: ['BHARTIARTL', 'ANANTRAJ'],
+    text: 'Bharti/Nxtra and Anant Raj. For these, the most important variables are commissioned MW, contracted MW, billed MW, utilisation and revenue/EBITDA per MW. Nxtra\'s March 2026 funding round valued the business at around US$3.1 billion post-closing (Airtel release, 30 March 2026). Adani Enterprises (AdaniConneX) and Reliance belong here too, and sit on the watch list until they pass the materiality test.',
   },
   {
     title: 'Electrical picks-and-shovels',

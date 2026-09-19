@@ -247,10 +247,10 @@
         },
         "patFY26Cr": {
           "kind": "disclosed",
-          "value": 527.33,
+          "value": 527.68,
           "label": "FY26 profit after tax",
           "unit": "cr",
-          "source": "FY26 results (EBITDA excludes other income)"
+          "source": "Profit attributable to owners, FY26 consolidated results (6 May 2026); excludes minority interests"
         }
       }
     },
@@ -377,10 +377,10 @@
         },
         "patFY26Cr": {
           "kind": "disclosed",
-          "value": 1618,
+          "value": 1618.3,
           "label": "FY26 profit after tax",
           "unit": "cr",
-          "source": "CY2025 restated (operational EBITA, not EBITDA)"
+          "source": "CY2025 profit from continuing operations, restated in the Jan-Mar 2026 results after the Robotics sale"
         }
       }
     },
@@ -510,7 +510,7 @@
           "value": 2361.75,
           "label": "FY26 profit after tax",
           "unit": "cr",
-          "source": "FY26 results (PBT before exceptional items, incl. other income)"
+          "source": "FY26 consolidated results (profit attributable to owners)"
         }
       }
     },
@@ -579,10 +579,10 @@
         },
         "patFY26Cr": {
           "kind": "disclosed",
-          "value": 9339.47,
-          "label": "FY26 profit after tax",
+          "value": 1608.23,
+          "label": "FY26 profit after tax, excluding exceptional items",
           "unit": "cr",
-          "source": "FY26 results (profit attributable to owners)"
+          "source": "Owners' FY26 profit excluding exceptional items: Rs 9,339.47 cr reported, less Rs 7,116.68 cr after-tax gain on the AWL stake sale and Rs 614.56 cr gain on the Adani Cementation-Ambuja merger (no tax effect disclosed, so taken untaxed); both gains taken as wholly owners'. AGI arithmetic on the FY26 consolidated results"
         }
       }
     },
@@ -709,10 +709,10 @@
         },
         "patFY26Cr": {
           "kind": "disclosed",
-          "value": 557.02,
+          "value": 554.85,
           "label": "FY26 profit after tax",
           "unit": "cr",
-          "source": "FY26 results (EBITDA incl. other income)"
+          "source": "Profit attributable to owners, FY26 consolidated results; excludes minority interests"
         }
       }
     },
@@ -765,10 +765,10 @@
         },
         "patFY26Cr": {
           "kind": "disclosed",
-          "value": 2708.4,
+          "value": 2672.03,
           "label": "FY26 profit after tax",
           "unit": "cr",
-          "source": "FY26 results (EBITDA excludes other income)"
+          "source": "Profit attributable to owners, FY26 consolidated results p8 (Rs 26,720.33 mn); excludes minority interests"
         }
       }
     },
@@ -823,10 +823,10 @@
         },
         "patFY26Cr": {
           "kind": "disclosed",
-          "value": 329.44,
+          "value": 311.74,
           "label": "FY26 profit after tax",
           "unit": "cr",
-          "source": "FY26 results (EBITDA incl. other income)"
+          "source": "Profit attributable to owners of the parent, FY26 (Annual Report FY26 p299); excludes minority interests of Rs 17.70 cr"
         }
       }
     },
@@ -935,10 +935,10 @@
         },
         "patFY26Cr": {
           "kind": "disclosed",
-          "value": 85.58,
+          "value": 94.13,
           "label": "FY26 profit after tax",
           "unit": "cr",
-          "source": "FY26 annual report (reported EBITDA)"
+          "source": "Profit attributable to owners, FY26 consolidated results (board outcome 12 May 2026, p15; Rs 941.3 mn); the minority share was a loss"
         }
       }
     },
@@ -1000,10 +1000,10 @@
         },
         "patFY26Cr": {
           "kind": "disclosed",
-          "value": 5118,
+          "value": 3747.19,
           "label": "FY26 profit after tax",
           "unit": "cr",
-          "source": "FY26 annual report"
+          "source": "Profit attributable to owners, FY26 consolidated results p10"
         }
       }
     },
@@ -1179,10 +1179,10 @@
         },
         "patFY26Cr": {
           "kind": "disclosed",
-          "value": 1198.68,
+          "value": 1206.27,
           "label": "FY26 profit after tax",
           "unit": "cr",
-          "source": "FY26 annual report (EBITDA incl. other income)"
+          "source": "Profit attributable to owners, FY26 consolidated; includes a Rs -35.57 cr exceptional item and Rs 1.95 cr from discontinued operations, both under 10% of profit"
         }
       }
     },
@@ -1224,10 +1224,10 @@
         },
         "patFY26Cr": {
           "kind": "disclosed",
-          "value": 326.86,
+          "value": 324.09,
           "label": "FY26 profit after tax",
           "unit": "cr",
-          "source": "FY26 audited results"
+          "source": "Profit attributable to owners, FY26 consolidated results (Rs 3,240.88 mn); excludes minority interests"
         }
       }
     },

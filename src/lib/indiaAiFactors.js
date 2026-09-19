@@ -35,18 +35,40 @@ const TIER = {
   NOT_ATTRIBUTABLE: 'linked, not sized',
 };
 
-/** How good the evidence is: the exposure tier, and how much dated hard evidence stands behind it. */
+/**
+ * Evidence confidence: how certain is it that the AI/data-centre exposure is
+ * real? Counts the company's own filed orders, committed capex and operating
+ * disclosures. High: two or more such items, or an order or contract (a
+ * signed commitment is proof on its own). Medium: one operating or capex
+ * disclosure. Low: none. Says nothing about how large the exposure is; that
+ * is materiality confidence.
+ */
 export function evidenceConfidence(member) {
   const items = [...(member.admittedOn || []), ...(member.supportingEvidence || [])]
     .filter((e) => ['order', 'capex', 'operating'].includes(e.kind));
   const latest = items.map((e) => e.date).filter(Boolean).sort().at(-1) || null;
-  const tier = member.attribution;
-  const band = tier === 'SEGMENT_REPORTED' || (tier === 'MANAGEMENT_DISCLOSED' && items.length >= 3) ? 'high'
-    : tier === 'MANAGEMENT_DISCLOSED' ? 'medium' : 'low';
+  const orders = items.filter((e) => e.kind === 'order').length;
+  const band = items.length >= 2 || orders >= 1 ? 'high' : items.length === 1 ? 'medium' : 'low';
   return {
     band,
-    value: `${TIER[tier] || 'not recorded'} · ${items.length} hard item${items.length === 1 ? '' : 's'}${latest ? `, latest ${latest}` : ''}`,
-    basis: 'exposure tier, plus the count and date of filed orders, capex and operating disclosures',
+    value: `${items.length} hard item${items.length === 1 ? '' : 's'}${orders ? ` (${orders} order${orders === 1 ? '' : 's'})` : ''}${latest ? `, latest ${latest}` : ''}`,
+    basis: 'count and kind of filed orders, committed capex and operating disclosures on the company\'s own paper',
+  };
+}
+
+/**
+ * Materiality confidence: how certain is it how much the exposure adds to
+ * revenue or EBITDA? Set by how the company sizes it: an audited segment is
+ * high, a company-stated figure medium, and exposure with no disclosed size
+ * low, however real the exposure is.
+ */
+export function materialityConfidence(member) {
+  const tier = member.attribution;
+  const band = tier === 'SEGMENT_REPORTED' ? 'high' : tier === 'MANAGEMENT_DISCLOSED' ? 'medium' : 'low';
+  return {
+    band,
+    value: TIER[tier] || 'not recorded',
+    basis: 'how the AI/data-centre business is sized: audited segment, company-stated figure, or not sized',
   };
 }
 

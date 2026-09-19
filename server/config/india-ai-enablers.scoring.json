@@ -70,7 +70,7 @@
       "symbol": "ADANIENT",
       "basis": "consolidated",
       "revenueFY26": 100468.61,
-      "patFY26": 9950.69,
+      "patFY26": 1608.23,
       "cfoFY26": 2356.91,
       "capexFY26": 33369.12,
       "capexIntangiblesFY26": null,
@@ -116,13 +116,13 @@
           "page": 11
         }
       },
-      "notes": "Source unit Rs crore. PAT 9,950.69 is total (continuing ops; owners' share 9,339.47) and is inflated by exceptional gains 9,215.37; PBT before exceptional items 4,309.29. Some OCR digits in the balance sheet read 'B9,178,25' - equity attributable to owners 80,925.95 + NCI 8,252.30 = 89,178.25 confirms. Capex line combines PPE, intangibles and investment properties; no separate intangibles line. No order-intake metric reported (diversified incubator). Q1 FY27 filing BSE d99c9703 and 3374931b are identical files."
+      "notes": "Source unit Rs crore. PAT 9,950.69 is total (continuing ops; owners' share 9,339.47) and is inflated by exceptional gains 9,215.37; PBT before exceptional items 4,309.29. Some OCR digits in the balance sheet read 'B9,178,25' - equity attributable to owners 80,925.95 + NCI 8,252.30 = 89,178.25 confirms. Capex line combines PPE, intangibles and investment properties; no separate intangibles line. No order-intake metric reported (diversified incubator). Q1 FY27 filing BSE d99c9703 and 3374931b are identical files. | patFY26 corrected 2026-09-19 (numeric audit): Owners' FY26 profit excluding exceptional items: Rs 9,339.47 cr reported, less Rs 7,116.68 cr after-tax gain on the AWL stake sale and Rs 614.56 cr gain on the Adani Cementation-Ambuja merger (no tax effect disclosed, so taken untaxed); both gains taken as wholly owners'. AGI arithmetic on the FY26 consolidated results."
     },
     {
       "symbol": "CLEANMAX",
       "basis": "consolidated",
       "revenueFY26": 1912.87,
-      "patFY26": 85.58,
+      "patFY26": 94.13,
       "cfoFY26": 1731.24,
       "capexFY26": 5687.19,
       "capexIntangiblesFY26": 67.13,
@@ -176,15 +176,15 @@
           "page": 8
         }
       },
-      "notes": "All source figures Rs million, converted to Rs crore (/10). PAT 855.77 mn is total; owners' share 941.32 mn (NCI loss 85.55 mn). No Rs order-intake metric; company reports contracted capacity (MW): total portfolio rose from 6,455 MW (31 Mar 2026) to 6,831 MW (30 Jun 2026), i.e. ~376 MW net addition in Q1 FY27 - intakeQ1FY27 left null. IPO in FY26 (fresh issue net 11,492.46 mn). Stated ROCE exists only on a STANDALONE basis: AR 2025-26 standalone note (PDF p.578): ROCE = EBIT (PBT + finance costs) / Capital Employed (tangible net worth + total debt) = 19.27% for FY26 (standalone EBIT 14,083.11 mn; CE 73,067.70 mn) - not comparable to consolidated, so statedRoceFY26 left null."
+      "notes": "All source figures Rs million, converted to Rs crore (/10). PAT 855.77 mn is total; owners' share 941.32 mn (NCI loss 85.55 mn). No Rs order-intake metric; company reports contracted capacity (MW): total portfolio rose from 6,455 MW (31 Mar 2026) to 6,831 MW (30 Jun 2026), i.e. ~376 MW net addition in Q1 FY27 - intakeQ1FY27 left null. IPO in FY26 (fresh issue net 11,492.46 mn). Stated ROCE exists only on a STANDALONE basis: AR 2025-26 standalone note (PDF p.578): ROCE = EBIT (PBT + finance costs) / Capital Employed (tangible net worth + total debt) = 19.27% for FY26 (standalone EBIT 14,083.11 mn; CE 73,067.70 mn) - not comparable to consolidated, so statedRoceFY26 left null. | patFY26 corrected 2026-09-19 (numeric audit): Profit attributable to owners, FY26 consolidated results (board outcome 12 May 2026, p15; Rs 941.3 mn); the minority share was a loss."
     },
     {
       "symbol": "ANANTRAJ",
       "basis": "consolidated",
       "revenueFY26": 2511.6,
-      "patFY26": 557.02,
+      "patFY26": 554.85,
       "cfoFY26": -434.77,
-      "capexFY26": 141.92,
+      "capexFY26": 144.96,
       "capexIntangiblesFY26": null,
       "ebitFY26": 674.29,
       "ebitDefinition": "PBT (before share of associates/JVs) 661.94 + finance costs 12.35 (low finance cost as interest is largely capitalised/inventorised; includes other income 67.48)",
@@ -232,7 +232,7 @@
           "page": 2
         }
       },
-      "notes": "Source unit Rs crore. Other investing outflows not included in capexFY26: acquisition of investment property (116.41), increase in CWIP (3.04), right-of-use assets (57.75), goodwill on consolidation (158.61). No intangibles line. Standalone ROCE in the same AR is 6.94% (p.251). Real estate/data-centre developer: no order-intake metric (null)."
+      "notes": "Source unit Rs crore. Other investing outflows not included in capexFY26: acquisition of investment property (116.41), increase in CWIP (3.04), right-of-use assets (57.75), goodwill on consolidation (158.61). No intangibles line. Standalone ROCE in the same AR is 6.94% (p.251). Real estate/data-centre developer: no order-intake metric (null). | patFY26 corrected 2026-09-19 (numeric audit): Profit attributable to owners, FY26 consolidated results; excludes minority interests. | capexFY26 corrected 2026-09-19: PPE 141.92 plus capital work-in-progress 3.04 (separate cash-flow line); investment-property purchases (116.41) excluded."
     },
     {
       "symbol": "NETWEB",
@@ -298,7 +298,7 @@
       "symbol": "CGPOWER",
       "basis": "consolidated",
       "revenueFY26": 12417.95,
-      "patFY26": 1198.68,
+      "patFY26": 1206.27,
       "cfoFY26": 702.45,
       "capexFY26": 777.76,
       "capexIntangiblesFY26": null,
@@ -352,7 +352,7 @@
           "page": 4
         }
       },
-      "notes": "Source unit Rs crore. Capex line combines PPE and intangibles (net of government grant); no separate intangibles line. Also paid 284.13 for acquisition of fabless semiconductor design business (not in capex). PAT 1,198.68 is total consolidated (includes NCI). Standalone FY26: revenue 11,330.62, PAT 1,316.78. Q1 FY27 standalone order intake was 4,692 Cr; consolidated 5,211 Cr used."
+      "notes": "Source unit Rs crore. Capex line combines PPE and intangibles (net of government grant); no separate intangibles line. Also paid 284.13 for acquisition of fabless semiconductor design business (not in capex). PAT 1,198.68 is total consolidated (includes NCI). Standalone FY26: revenue 11,330.62, PAT 1,316.78. Q1 FY27 standalone order intake was 4,692 Cr; consolidated 5,211 Cr used. | patFY26 corrected 2026-09-19 (numeric audit): Profit attributable to owners, FY26 consolidated; includes a Rs -35.57 cr exceptional item and Rs 1.95 cr from discontinued operations, both under 10% of profit."
     },
     {
       "symbol": "KAYNES",
@@ -714,7 +714,7 @@
       "symbol": "BLUESTARCO",
       "basis": "consolidated",
       "revenueFY26": 12401.99,
-      "patFY26": 527.33,
+      "patFY26": 527.68,
       "cfoFY26": 153.81,
       "capexFY26": 329.03,
       "capexIntangiblesFY26": null,
@@ -768,7 +768,7 @@
           "page": "page n/a"
         }
       },
-      "notes": "All Blue Star figures from company filings (AR FY26, audited FY26 results, Q1 FY27 results/presentation/transcript) read as text via Trendlyne document search; PDFs not saved locally (company site 406 bot-block, BSE API blocked; the saved ledger/docs/bluestar_pr_q4fy26.pdf is an HTML error page). Page numbers unavailable. Units Rs crore. Q1 FY27 total order inflow not disclosed as a single figure; only closing order book Rs 7,764 cr (30 Jun 2026) and management comment of roughly Rs 1,500 cr data-centre MEP inflow (garbled transcript text) - intake left null. FY26 PAT attributable to owners 527.68 (NCI -0.35). Capex split between PPE and intangibles not given on face of cash flow (single combined line)."
+      "notes": "All Blue Star figures from company filings (AR FY26, audited FY26 results, Q1 FY27 results/presentation/transcript) read as text via Trendlyne document search; PDFs not saved locally (company site 406 bot-block, BSE API blocked; the saved ledger/docs/bluestar_pr_q4fy26.pdf is an HTML error page). Page numbers unavailable. Units Rs crore. Q1 FY27 total order inflow not disclosed as a single figure; only closing order book Rs 7,764 cr (30 Jun 2026) and management comment of roughly Rs 1,500 cr data-centre MEP inflow (garbled transcript text) - intake left null. FY26 PAT attributable to owners 527.68 (NCI -0.35). Capex split between PPE and intangibles not given on face of cash flow (single combined line). | patFY26 corrected 2026-09-19 (numeric audit): Profit attributable to owners, FY26 consolidated results (6 May 2026); excludes minority interests."
     },
     {
       "symbol": "SCHNEIDER",
@@ -894,7 +894,7 @@
       "symbol": "SANSERA",
       "basis": "consolidated",
       "revenueFY26": 3497.92,
-      "patFY26": 326.86,
+      "patFY26": 324.09,
       "cfoFY26": 387.07,
       "capexFY26": 511.32,
       "capexIntangiblesFY26": 1.25,
@@ -944,7 +944,7 @@
           "page": "PDF p2"
         }
       },
-      "notes": "Source unit Rs million (converted /10 to Rs crore). Q1 revenues from the earnings release are rounded to INR mn (results statement not saved locally). Sansera does not report order intake; it reports order book as peak annual revenue of new business (Rs 18,493 mn at 30 Jun 2026, excl. ADS) and ADS unexecuted backlog Rs 44,368 mn - intake null. Q1 FY27 exceptional cost Rs 169 mn (US litigation settlement). Results PDF is OCR text (some commas/periods garbled, e.g. '34,979 17'); figures cross-checked with presentation (FY26 revenue INR 34,979 mn, PAT 3,269)."
+      "notes": "Source unit Rs million (converted /10 to Rs crore). Q1 revenues from the earnings release are rounded to INR mn (results statement not saved locally). Sansera does not report order intake; it reports order book as peak annual revenue of new business (Rs 18,493 mn at 30 Jun 2026, excl. ADS) and ADS unexecuted backlog Rs 44,368 mn - intake null. Q1 FY27 exceptional cost Rs 169 mn (US litigation settlement). Results PDF is OCR text (some commas/periods garbled, e.g. '34,979 17'); figures cross-checked with presentation (FY26 revenue INR 34,979 mn, PAT 3,269). | patFY26 corrected 2026-09-19 (numeric audit): Profit attributable to owners, FY26 consolidated results (Rs 3,240.88 mn); excludes minority interests."
     },
     {
       "symbol": "GVT&D",
@@ -1006,7 +1006,7 @@
       "symbol": "HFCL",
       "basis": "consolidated",
       "revenueFY26": 4949.27,
-      "patFY26": 329.44,
+      "patFY26": 311.74,
       "cfoFY26": -378.13,
       "capexFY26": 230.18,
       "capexIntangiblesFY26": 115.13,
@@ -1060,7 +1060,7 @@
           "page": "PDF p8"
         }
       },
-      "notes": "Units Rs crore throughout. Consolidated CFO FY26 negative (working-capital build of 1,183.10). Q1 FY27 order intake not disclosed as a figure; total order book Rs 26,665 cr at Q1FY27 (presentation p9) vs 21,206 at Q4FY26 - intake left null (would be implied, not stated). Results PDF text (b8_hfcl_HFCL_STX_Outcome_BM_22072026) lacks the results table; figures taken from presentation and press release (consolidated)."
+      "notes": "Units Rs crore throughout. Consolidated CFO FY26 negative (working-capital build of 1,183.10). Q1 FY27 order intake not disclosed as a figure; total order book Rs 26,665 cr at Q1FY27 (presentation p9) vs 21,206 at Q4FY26 - intake left null (would be implied, not stated). Results PDF text (b8_hfcl_HFCL_STX_Outcome_BM_22072026) lacks the results table; figures taken from presentation and press release (consolidated). | patFY26 corrected 2026-09-19 (numeric audit): Profit attributable to owners of the parent, FY26 (Annual Report FY26 p299); excludes minority interests of Rs 17.70 cr."
     },
     {
       "symbol": "MTARTECH",
@@ -1126,7 +1126,7 @@
       "symbol": "POLYCAB",
       "basis": "consolidated",
       "revenueFY26": 28883.79,
-      "patFY26": 2708.43,
+      "patFY26": 2672.03,
       "cfoFY26": 3810.67,
       "capexFY26": 1480.33,
       "capexIntangiblesFY26": 0.19,
@@ -1180,7 +1180,7 @@
           "page": "PDF p6"
         }
       },
-      "notes": "Source unit Rs million (converted /10 to Rs crore). capitalEmployedFY26 = 12,259.26 cr. Polycab is a products company and reports no order intake - intake null. Company's Key Ratios table shows Debt 1,325 mn and Shareholders Networth 120,086 mn. MD&A text quotes RoCE 31.5% vs Key Ratios 31.3% (inconsistency within the AR)."
+      "notes": "Source unit Rs million (converted /10 to Rs crore). capitalEmployedFY26 = 12,259.26 cr. Polycab is a products company and reports no order intake - intake null. Company's Key Ratios table shows Debt 1,325 mn and Shareholders Networth 120,086 mn. MD&A text quotes RoCE 31.5% vs Key Ratios 31.3% (inconsistency within the AR). | patFY26 corrected 2026-09-19 (numeric audit): Profit attributable to owners, FY26 consolidated results p8 (Rs 26,720.33 mn); excludes minority interests."
     },
     {
       "symbol": "APARINDS",
@@ -1358,7 +1358,7 @@
       "symbol": "ABB",
       "basis": "consolidated (ABB India + ABB Robotics India Pvt Ltd, incorporated Sep 2025, transferred Mar 2026). Period: FY = CY2025 (Jan-Dec 2025); quarters = Q2 CY2026 vs Q2 CY2025",
       "revenueFY26": 13202.73,
-      "patFY26": 1668.26,
+      "patFY26": 1618.3,
       "cfoFY26": 1219.51,
       "capexFY26": 239.95,
       "capexIntangiblesFY26": null,
@@ -1412,13 +1412,13 @@
           "page": "p4"
         }
       },
-      "notes": "ABB's year is calendar: 'FY26' fields = CY2025; 'Q1FY27/Q1FY26' fields = Q2 CY2026 / Q2 CY2025 (Apr-Jun). Quarterly revenues are continuing business (Robotics divested 1 Mar 2026, now discontinued), so CY2025 restated continuing revenue is 12,503.81 vs 13,202.73 in the AR. Q2 CY2025 orders 2,917 (continuing). Orders backlog 11,898 at Jun-26. No separate intangibles capex line. Special dividend Rs 90/share from Robotics proceeds (profit on sale 1,658.48 cr recorded in Q1 CY26)."
+      "notes": "ABB's year is calendar: 'FY26' fields = CY2025; 'Q1FY27/Q1FY26' fields = Q2 CY2026 / Q2 CY2025 (Apr-Jun). Quarterly revenues are continuing business (Robotics divested 1 Mar 2026, now discontinued), so CY2025 restated continuing revenue is 12,503.81 vs 13,202.73 in the AR. Q2 CY2025 orders 2,917 (continuing). Orders backlog 11,898 at Jun-26. No separate intangibles capex line. Special dividend Rs 90/share from Robotics proceeds (profit on sale 1,658.48 cr recorded in Q1 CY26). | Bases, noted 2026-09-19 (numeric audit): profit (1,618.30) is CY2025 continuing operations as restated after the Robotics sale, the right base for P/E; revenue, cash flow and capex are the original CY2025 totals including Robotics, because the cash-flow statement is not restated."
     },
     {
       "symbol": "RELIANCE",
       "basis": "consolidated",
       "revenueFY26": 1075675,
-      "patFY26": 95754,
+      "patFY26": 80775,
       "cfoFY26": 192113,
       "capexFY26": 122916,
       "capexIntangiblesFY26": null,
@@ -1472,7 +1472,7 @@
           "page": "PDF p21"
         }
       },
-      "notes": "Estimates-module figures: FY26 consolidated EBITDA 207,911 (= PBT+finance costs+D&A; includes other income and the one-off Rs 8,924 cr gain on sale of listed investments, so recurring EBITDA ~198,987); FY26 PAT 95,754 after share of associates/JVs (PAT before associates 95,610; attributable to owners 80,775). Capex line combines PPE, spectrum and other intangibles (no separate intangibles line); company's own 'Capital Expenditure' (excl. spectrum, accrual basis) is 144,271. Gross revenue incl. GST: FY26 1,175,919; Q1 FY27 340,257; Q1 FY26 273,252. No order intake (not applicable). Q4 FY26 media release downloaded from ril.com to scoring/sC_ril_q4fy26_mr.pdf."
+      "notes": "Estimates-module figures: FY26 consolidated EBITDA 207,911 (= PBT+finance costs+D&A; includes other income and the one-off Rs 8,924 cr gain on sale of listed investments, so recurring EBITDA ~198,987); FY26 PAT 95,754 after share of associates/JVs (PAT before associates 95,610; attributable to owners 80,775). Capex line combines PPE, spectrum and other intangibles (no separate intangibles line); company's own 'Capital Expenditure' (excl. spectrum, accrual basis) is 144,271. Gross revenue incl. GST: FY26 1,175,919; Q1 FY27 340,257; Q1 FY26 273,252. No order intake (not applicable). Q4 FY26 media release downloaded from ril.com to scoring/sC_ril_q4fy26_mr.pdf. | patFY26 corrected 2026-09-19 (numeric audit): Profit attributable to owners, FY26 consolidated (Q4 FY26 media release); excludes minority interests of Rs 14,979 cr."
     },
     {
       "symbol": "ADANIENSOL",
@@ -1590,7 +1590,7 @@
       "symbol": "TATAPOWER",
       "basis": "consolidated",
       "revenueFY26": 62428.59,
-      "patFY26": 5117.56,
+      "patFY26": 3747.19,
       "cfoFY26": 5993.33,
       "capexFY26": 13694.83,
       "capexIntangiblesFY26": null,
@@ -1599,8 +1599,8 @@
       "capitalEmployedFY26": 118660.46,
       "statedRoceFY26": 0.1,
       "roceDefinition": "Consolidated ratio note: Profit before tax and exceptional item + interest expense excluding interest on consumer security deposit / Average capital employed (shareholders' equity + total debt + deferred tax liability); FY26 10% vs FY25 11% (rounded). AR highlights page separately shows 'RoCE 7.8% (FY25 8.8%)' without definition. Computed year-end CE = total equity 47,538.07 (incl. NCI 8,070.86) + non-current borrowings 61,608.57 + current borrowings 9,513.82 = 118,660.46.",
-      "revenueQ1FY27": 18898,
-      "revenueQ1FY26": 17464,
+      "revenueQ1FY27": 19051.26,
+      "revenueQ1FY26": 18035.07,
       "intakeQ1FY27": null,
       "sources": {
         "cfoFY26": {
@@ -1640,7 +1640,7 @@
           "page": "presentation slide (txt line ~1379)"
         }
       },
-      "notes": "BASIS CAVEAT for Q1: the press-release/presentation 'Revenue'/'Operating Income' (18,898 / 17,464) equals revenue from operations PLUS net movement in regulatory deferral balances; it is not the statutory 'Revenue from Operations' line used for FY26 (62,428.59). Trendlyne document search (used only to locate) shows the Q1 FY27 consolidated results statement with Revenue from Operations 19,051.26 (Q1 FY27) and 18,035.07 (Q1 FY26) and regulatory movement (153.09)/(570.76), which reconcile exactly to 18,898/17,464; I could not retrieve that statement itself (tatapower.com returns 406 bot-block, BSE API 403), so those two figures are UNVERIFIED against the source PDF. FY26 CFO fell to 5,993.33 from 12,680.19. PAT 5,117.56 incl. NCI; owners 3,747.19. Capex line bundles PPE, intangibles, CWIP, capital advances and capital payables (no separate intangibles line). No company-level order intake; only rooftop solar order book Rs 639 cr (PR p5). Quarter revenue is the press-release figure, including regulatory deferral movements."
+      "notes": "BASIS CAVEAT for Q1: the press-release/presentation 'Revenue'/'Operating Income' (18,898 / 17,464) equals revenue from operations PLUS net movement in regulatory deferral balances; it is not the statutory 'Revenue from Operations' line used for FY26 (62,428.59). Trendlyne document search (used only to locate) shows the Q1 FY27 consolidated results statement with Revenue from Operations 19,051.26 (Q1 FY27) and 18,035.07 (Q1 FY26) and regulatory movement (153.09)/(570.76), which reconcile exactly to 18,898/17,464; I could not retrieve that statement itself (tatapower.com returns 406 bot-block, BSE API 403), so those two figures are UNVERIFIED against the source PDF. FY26 CFO fell to 5,993.33 from 12,680.19. PAT 5,117.56 incl. NCI; owners 3,747.19. Capex line bundles PPE, intangibles, CWIP, capital advances and capital payables (no separate intangibles line). No company-level order intake; only rooftop solar order book Rs 639 cr (PR p5). Quarter revenue is the press-release figure, including regulatory deferral movements. | Corrected 2026-09-19 (numeric audit, read from tatapower.com in a browser; the site blocks plain downloads): patFY26 is profit attributable to owners, 3,747.19 (FY26 consolidated results p10; 5,117.56 on p15 includes minority interests); Q1 revenue is 'Revenue from Operations' in the Q1 FY27 consolidated statement p8 (19,051.26 against 18,035.07), replacing rounded figures 18,898 / 17,464 of unclear basis. revenueFY26 62,428.59, cfoFY26 5,993.33 and capexFY26 13,694.83 (includes intangibles) confirmed."
     },
     {
       "symbol": "CRAFTSMAN",
