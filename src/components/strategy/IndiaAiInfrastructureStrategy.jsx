@@ -94,7 +94,7 @@ export default function IndiaAiInfrastructureStrategy({ monitor }) {
                   </td>
                   <td className="px-4 py-3.5 text-[#34404f]">{row.layer}</td>
                   <td className="px-4 py-3.5"><span className={`inline-block whitespace-nowrap rounded-full px-2.5 py-0.5 text-[12px] font-medium ${RATING_TONE[row.rating] || RATING_TONE.Medium}`}>{row.rating}</span></td>
-                  <td className="max-w-[300px] px-4 py-3.5 leading-snug text-[#1f2a37]">{row.evidence}</td>
+                  <td className="min-w-[280px] max-w-[420px] px-4 py-3.5 leading-snug text-[#1f2a37]">{row.evidence}</td>
                   <td className="px-4 py-3.5 tabular-nums text-[#1f2a37]">{loading && member ? wait : signedPct(x.q1)}</td>
                   <td className="px-4 py-3.5 tabular-nums text-[#1f2a37]">{loading && member ? wait : pct(x.capexSales)}</td>
                   <td className="px-4 py-3.5 tabular-nums text-[#1f2a37]">{loading && member ? wait : signedPct(x.fcfSales)}</td>
