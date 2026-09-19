@@ -98,9 +98,14 @@ export class CandlePriceBook {
       rows = packCandles(parseMinuteCandles(await this.fetchCandles(key, date)));
     } catch (error) {
       this.stats.errors += 1;
-      throw error;
+      // A refusal of this key (an expired contract, a retired ISIN) is about
+      // the key, not the service: remember it and let the caller move on.
+      // Throttling, server errors and network failures still propagate.
+      const status = Number(error?.status);
+      if (!(status >= 400 && status < 500 && status !== 429)) throw error;
+      rows = { ends: new Float64Array(0), closes: new Float64Array(0), refused: /invalid instrument/i.test(error.message) ? 'invalid_instrument_key' : `upstox_${status}` };
     }
-    if (!rows.ends.length) this.stats.empty += 1;
+    if (!rows.ends.length && !rows.refused) this.stats.empty += 1;
     this.cache.set(cacheKey, rows);
     while (this.cache.size > this.maxEntries) this.cache.delete(this.cache.keys().next().value);
     return rows;
@@ -116,6 +121,7 @@ export class CandlePriceBook {
     const date = istDateKey(atMs);
     if (date >= todayIst(this.clock())) return { price: null, reason: 'session_not_published' };
     const rows = await this.#rows(candleKey(instrumentKey), date);
+    if (rows.refused) return { price: null, reason: rows.refused };
     if (!rows.ends.length) return { price: null, reason: 'no_candles' };
     return priceFromCandles(rows, atMs) || { price: null, reason: 'before_first_candle' };
   }
