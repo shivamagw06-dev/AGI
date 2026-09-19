@@ -136,7 +136,7 @@ function StrategyTable({ rows, bySym, loading, priced, watch = false, label = 'W
   );
 }
 
-export default function IndiaAiInfrastructureStrategy({ monitor }) {
+export default function IndiaAiInfrastructureStrategy({ monitor, report }) {
   const d = useIndiaAiData();
   const records = d.universe?.members ? buildRecords(d) : [];
   const bySym = Object.fromEntries(records.map((r) => [r.m.symbol, r]));
@@ -159,12 +159,24 @@ export default function IndiaAiInfrastructureStrategy({ monitor }) {
           {` · strategy as of ${dateLabel(STRATEGY_ASOF)}`}
           {d.marketValue?.closeDate ? ` · prices to ${dateLabel(d.marketValue.closeDate)}` : ''}
         </p>
-        <Link
-          to={monitor.to}
-          className={`inline-flex items-center gap-2 rounded-lg bg-[#0f1720] px-5 py-2.5 text-[15px] font-semibold text-white shadow-sm hover:bg-[#26303d] ${FOCUS}`}
-        >
-          {monitor.label}<span aria-hidden="true">&rarr;</span>
-        </Link>
+        <span className="flex flex-wrap items-center gap-2">
+          <Link
+            to={monitor.to}
+            className={`inline-flex items-center gap-2 rounded-lg bg-[#0f1720] px-5 py-2.5 text-[15px] font-semibold text-white shadow-sm hover:bg-[#26303d] ${FOCUS}`}
+          >
+            {monitor.label}<span aria-hidden="true">&rarr;</span>
+          </Link>
+          {report ? (
+            <a
+              href={report.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`inline-flex items-center gap-2 rounded-lg border border-[#0f1720] bg-white px-5 py-2.5 text-[15px] font-semibold text-[#0f1720] hover:bg-[#f3f4f6] ${FOCUS}`}
+            >
+              {report.label}<span aria-hidden="true">↗</span><span className="sr-only"> (PDF, opens in a new tab)</span>
+            </a>
+          ) : null}
+        </span>
       </div>
 
       <div className="mt-4">
