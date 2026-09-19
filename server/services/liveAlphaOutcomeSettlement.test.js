@@ -90,12 +90,12 @@ test('a batch writes full-shape rows and stops at a failing history call', async
   assert.equal(new Set(saved.map((row) => Object.keys(row).join())).size, 1);
 });
 
-test('lists only rows due before today, retried rows last', async () => {
+test('lists only rows due before today, oldest first', async () => {
   let query = '';
   const repository = createOutcomeRepository({ request: async (_table, options) => { query = decodeURIComponent(options.query); return []; } });
   await repository.listDue(publishedBefore(new Date('2026-09-19T06:00:00Z')), 500);
   assert.match(query, /due_at=lt\.2026-09-18T18:30:00\.000Z/);
-  assert.match(query, /order=attempt_count\.asc,due_at\.asc/);
+  assert.match(query, /order=due_at\.asc/);
   assert.match(query, /status=eq\.pending/);
 });
 

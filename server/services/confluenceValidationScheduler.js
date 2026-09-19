@@ -48,15 +48,25 @@ export async function runConfluenceValidationCycle() {
     const capture = market.open
       ? await saveConfluenceEvents(queue, universe)
       : { skipped: true, reason: market.reason, events: 0, outcomes: 0 };
-    const completion = await completeDueConfluenceOutcomes();
-    const memory = await syncResearchMemory();
+    // Each maintenance step fails on its own. A statement timeout in outcome
+    // completion (19 Sep 2026) used to abort the cycle, so forecasts were
+    // never generated or scored behind it.
+    const stepErrors = {};
+    const step = async (name, run) => {
+      try { return await run(); }
+      catch (error) { stepErrors[name] = String(error?.message || error).slice(0, 300); return { status: 'failed', error: stepErrors[name] }; }
+    };
+    const completion = await step('completion', () => completeDueConfluenceOutcomes());
+    const memory = await step('memory', () => syncResearchMemory());
     const forecastDate = indiaTradingDayAfterClose();
     const forecasts = forecastDate && state.last_daily_forecast_date !== forecastDate
-      ? await syncProbabilisticForecasts()
+      ? await step('forecast_sync', () => syncProbabilisticForecasts())
       : { status: forecastDate ? 'already_completed_today' : 'waiting_for_15_40_ist', forecast_date: forecastDate || null, snapshots_created: 0, forecasts_created: 0 };
-    const forecastOutcomes = await settleDueForecasts();
-    const crossSections = await syncForecastCrossSections();
-    state = { ...state, status: 'idle', last_run: new Date().toISOString(), last_conviction: convictionSave, last_capture: capture, last_completion: completion, last_memory_sync: memory, last_forecast_sync: forecasts, last_daily_forecast_date: forecastDate && forecasts.status !== 'waiting_for_15_40_ist' ? forecastDate : state.last_daily_forecast_date, last_forecast_completion: forecastOutcomes, last_cross_section_sync: crossSections };
+    const forecastOutcomes = await step('forecast_settlement', () => settleDueForecasts());
+    const crossSections = await step('cross_sections', () => syncForecastCrossSections());
+    const forecastsDone = forecastDate && !['waiting_for_15_40_ist', 'failed'].includes(forecasts.status);
+    const failed = Object.keys(stepErrors);
+    state = { ...state, status: failed.length ? 'degraded' : 'idle', last_run: new Date().toISOString(), last_error: failed.length ? `${failed.join(', ')} failed` : null, step_errors: stepErrors, last_conviction: convictionSave, last_capture: capture, last_completion: completion, last_memory_sync: memory, last_forecast_sync: forecasts, last_daily_forecast_date: forecastsDone ? forecastDate : state.last_daily_forecast_date, last_forecast_completion: forecastOutcomes, last_cross_section_sync: crossSections };
   } catch (error) {
     state = { ...state, status: error.status === 404 ? 'database_setup_required' : 'degraded', last_run: new Date().toISOString(), last_error: error.message };
   }

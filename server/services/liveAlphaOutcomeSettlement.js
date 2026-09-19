@@ -45,9 +45,10 @@ export function createOutcomeRepository({ request = rest } = {}) {
         select: 'id,signal_id,horizon,due_at,attempt_count,price_at_signal,nifty_at_signal,sector_at_signal,estimated_cost_bps,signal:live_alpha_signals(symbol,instrument_key,sector,direction,beta,factor_values,run:live_alpha_runs(as_of))',
         status: 'eq.pending',
         due_at: `lt.${beforeIso}`,
-        // Rows that could not be priced move behind fresh ones, so a few dead
-        // instruments cannot hold the head of the queue.
-        order: 'attempt_count.asc,due_at.asc',
+        // Due time alone, so the pending partial index serves the sort. Every
+        // row read is written back, and a third failed attempt marks it
+        // missed, so a dead instrument leaves the head within three cycles.
+        order: 'due_at.asc',
         limit: String(limit),
       });
       return (await request('live_alpha_signal_outcomes', { method: 'GET', query: params.toString(), body: undefined, prefer: undefined })) || [];
