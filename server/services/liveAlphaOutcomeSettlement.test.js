@@ -98,3 +98,23 @@ test('lists only rows due before today, retried rows last', async () => {
   assert.match(query, /order=attempt_count\.asc,due_at\.asc/);
   assert.match(query, /status=eq\.pending/);
 });
+
+test('an old signal is benchmarked by its own sector label, not the symbol\'s current sector', async () => {
+  // 10 Aug 2026: KOTAKBANK was BANK in the 20-stock universe. Its current
+  // Nifty 500 sector is Financial Services, a different index.
+  const asOf = '2026-08-10T04:59:04.339Z';
+  const due = '2026-08-10T05:04:04.339Z';
+  const row = outcome({
+    due_at: due, price_at_signal: 2000, nifty_at_signal: 24590.65, sector_at_signal: 57697.7,
+    signal: { symbol: 'KOTAKBANK', instrument_key: 'NSE_EQ|KOTAK', sector: 'BANK', direction: 'positive', beta: 1, factor_values: {}, run: { as_of: asOf } },
+  });
+  const book = bookOf({
+    [`NSE_EQ|KOTAK@${asOf}`]: 2000, [`NSE_EQ|KOTAK@${due}`]: 2010,
+    [`NSE_INDEX|Nifty 50@${asOf}`]: 24590, [`NSE_INDEX|Nifty 50@${due}`]: 24600,
+    [`NSE_INDEX|Nifty Bank@${asOf}`]: 57695.35, [`NSE_INDEX|Nifty Bank@${due}`]: 57700,
+  });
+  const current = new Map([['KOTAKBANK', { symbol: 'KOTAKBANK', sectorInstrumentKey: 'NSE_INDEX|Nifty Fin Service' }]]);
+  const { outcome: result, row: written } = await settleOutcome(row, { book, universeBySymbol: current });
+  assert.equal(result, 'completed');
+  assert.equal(written.future_sector, 57700);
+});
