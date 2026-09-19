@@ -49,3 +49,12 @@ test('a member with nothing quantified is not yet material, and a recorded excep
   assert.equal(classifyMateriality({ ...base, entry }).tier, 'not-yet');
   assert.equal(classifyMateriality({ ...base, entry, exception: { symbol: 'X', reason: 'r' } }).tier, 'exception');
 });
+
+test('capacity inside a diversified parent does not pass on its own, and share is ownership-adjusted', () => {
+  const jv = classifyMateriality({ ...base, evidenceBand: 'high', entry: { facts: [{ test: 'contracted', mw: 400, customerNamed: true, customers: 'Google', ownership: 0.5, representative: false, capacityShare: 0.417, basis: 'I', label: 'hyperscale order' }] }, fy29Materiality: 0.041 });
+  assert.equal(jv.tier, 'not-yet');
+  assert.match(jv.misses[0], /not a representative measure/);
+  const half = classifyMateriality({ ...base, entry: { facts: [{ test: 'contracted', mw: 100, customerNamed: true, ownership: 0.5, representative: true, capacityShare: 0.08, basis: 'I', label: 'x' }], path: { kind: 'stated' } } });
+  assert.equal(half.tier, 'not-yet');
+  assert.match(half.misses[0], /4% of capacity/);
+});

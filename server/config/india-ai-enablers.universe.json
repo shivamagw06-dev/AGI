@@ -337,9 +337,9 @@
       "reviewedBy": null,
       "reviewedAt": null,
       "exposureAttributable": true,
-      "exposureNote": "Semiconductors is a reported segment in consolidated accounts. FY26 revenue 502.77 cr (4.0% of group), assets 1,421.39 cr (11.2%), capex 330.33 cr (42.5% of group capex), segment result -107.86 cr. First year of external sales; FY25 was nil.",
+      "exposureNote": "Semiconductors is a reported segment (FY26 revenue 502.77 cr, 4.0% of group; segment result -107.86 cr), but that revenue is largely Axiro, the radio-frequency components business acquired from Renesas (RF and SATCOM chip design), not AI or data-centre revenue. The Sanand OSAT plant began commercial production in July 2026 (Q1 FY27 call, 24 Jul 2026: 'Axiro is already revenue generating'); OSAT capacity is disclosed, AI/data-centre revenue and customers are not. Tier changed 2026-09-19 from audited segment to not sized: the audited segment is not an AI/data-centre measure.",
       "note": "",
-      "attribution": "SEGMENT_REPORTED",
+      "attribution": "NOT_ATTRIBUTABLE",
       "membershipStart": "2026-09-17"
     },
     {

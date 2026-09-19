@@ -24,7 +24,10 @@ test('every qualifying figure names its basis and source, and arithmetic shows i
       if (f.basis === 'I') assert.ok(f.steps, `${symbol} ${f.label}: arithmetic without steps`);
       if (f.test === 'amount') assert.ok(Number.isFinite(f.valueCr) && f.valueCr > 0, `${symbol} amount`);
       if (f.test === 'share') assert.ok(f.share > 0 && f.share <= 1, `${symbol} share`);
-      if (f.test === 'contracted') assert.ok(Number.isFinite(f.mw) && typeof f.customerNamed === 'boolean', `${symbol} contracted`);
+      if (f.test === 'contracted') {
+        assert.ok(Number.isFinite(f.mw) && typeof f.customerNamed === 'boolean', `${symbol} contracted`);
+        assert.equal(typeof f.representative, 'boolean', `${symbol}: say whether capacity is a representative denominator for this company`);
+      }
     }
     if (entry.path) assert.ok(['revenue', 'stated', 'judged'].includes(entry.path.kind) && entry.path.note, `${symbol} path`);
   }

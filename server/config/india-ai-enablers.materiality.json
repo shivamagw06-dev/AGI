@@ -16,11 +16,13 @@
     ],
     "text": [
       "Evidence test: at least one filed order, committed capex or operating disclosure on the company's own paper. Aspiration, MoUs and addressable-market presentations do not count. For contractors, an order must name the project, the role and a value.",
-      "Materiality test, any one of: Rs 100 cr or more of AI/data-centre revenue or executable orders; 5% or more of company revenue from AI/data centres; AI/data-centre EBITDA by FY29 equal to 5% or more of FY26 EBITDA in AGI's base case; contracted capacity with a named customer equal to at least 5% of the company's total disclosed capacity (operating plus contracted where the company reports them together, otherwise operating).",
+      "Materiality test, any one of: Rs 100 cr or more of AI/data-centre revenue or executable orders; 5% or more of company revenue from AI/data centres; AI/data-centre EBITDA by FY29 equal to 5% or more of FY26 EBITDA in AGI's base case; or contracted capacity with a named customer equal to at least 5% of the company's total disclosed capacity, adjusted for the listed company's economic ownership.",
+      "The capacity route applies only where capacity is an economically representative denominator for the listed company or its relevant consolidated business. For subsidiaries and joint ventures inside diversified parents, named-customer capacity alone does not establish parent-level materiality: the parent must also pass on Rs 100 cr of attributable revenue or orders, 5% of consolidated revenue, or FY29 attributable AI/DC EBITDA of at least 5% of FY26 EBITDA.",
       "Safeguards, both required: evidence confidence medium or high; a path from order or capacity to revenue within about 36 months (revenue already booked, a timeline the company states, order cover of 12 quarters or less, or AGI's FY29 horizon for an estimate-only pass).",
       "Strict on amounts: an order with no disclosed value, share or named-customer MW does not count, however strong the evidence that it exists.",
       "A pass that rests only on AGI's estimate counts, and is labelled as an estimate."
-    ]
+    ],
+    "capacityRepresentativeRequired": true
   },
   "exceptions": [],
   "members": {
@@ -170,7 +172,9 @@
           "steps": "630 MW / 6,003 MW on-books capacity",
           "customers": "Amazon, Google, Meta, STT, NTT, Equinix, Princeton Digital Group, L&T Data Center",
           "source": "Aug 2026 corporate presentation; Q1 FY27 presentation",
-          "quote": "0.63 GW STU connected for India data center demand"
+          "quote": "0.63 GW STU connected for India data center demand",
+          "representative": true,
+          "ownership": 1
         }
       ],
       "path": {
@@ -231,19 +235,8 @@
       }
     },
     "CGPOWER": {
-      "facts": [
-        {
-          "test": "amount",
-          "valueCr": 502.77,
-          "basis": "D",
-          "label": "Semiconductors segment revenue, FY26 (audited segment)",
-          "source": "Annual Report FY2025-26, segment note"
-        }
-      ],
-      "path": {
-        "kind": "revenue",
-        "note": "Already booked as revenue (first year of external sales)."
-      }
+      "facts": [],
+      "note": "The audited Rs 502.8 cr FY26 semiconductor segment is largely Axiro RF (radio-frequency and SATCOM chip design), not AI/data-centre revenue; OSAT commercial production began only in July 2026, and AI/data-centre revenue or customers are not disclosed"
     },
     "ABB": {
       "facts": [
@@ -329,13 +322,28 @@
       "facts": [
         {
           "test": "contracted",
-          "mw": 758,
-          "customerNamed": false,
+          "mw": 400,
+          "customerNamed": true,
+          "customers": "Google",
+          "ownership": 0.5,
+          "representative": false,
+          "capacityShare": 0.417,
           "basis": "I",
-          "label": "hyperscale orders disclosed in Q4 FY26 and Q1 FY27 (358 MW Hyderabad + 400 MW Vizag), part of 960+ MW tied up",
-          "steps": "358 MW (Q4 FY26 release) + 400 MW (Q1 FY27 release) = 758 MW; AGI sum of two separately disclosed orders",
-          "source": "Q1 FY27 investor presentation; Q4 FY26 press release",
-          "quote": "During the quarter, 400 MW order signed with hyperscale customer for Vizag"
+          "label": "the Vizag hyperscale order",
+          "steps": "400 MW / 960+ MW tied up; AdaniConneX is a 50:50 JV",
+          "source": "Q1 FY27 investor presentation; Q1 FY27 earnings call (29 Jul 2026, CFO)",
+          "quote": "this is part of the Google contract at Vizag"
+        },
+        {
+          "test": "contracted",
+          "mw": 358,
+          "customerNamed": false,
+          "ownership": 0.5,
+          "representative": false,
+          "basis": "D",
+          "label": "hyperscale order in Hyderabad (Q4 FY26), customer not named",
+          "source": "Adani Enterprises Q4 FY26 press release",
+          "quote": "Received new hyperscale order for 358 MW in Hyderabad, taking cumulative tied-up capacity to 560+ MW"
         }
       ]
     },
@@ -350,7 +358,8 @@
           "customers": "Meta",
           "sizeNote": "No capacity or revenue base against which 168 MW can be measured for Reliance.",
           "source": "Reliance and Meta media release",
-          "quote": "RIL will develop a data center with 168 MW capacity to be delivered within two years, with an option to scale. ... Meta will lease capacity from the facility"
+          "quote": "RIL will develop a data center with 168 MW capacity to be delivered within two years, with an option to scale. ... Meta will lease capacity from the facility",
+          "representative": false
         }
       ]
     },
@@ -366,7 +375,8 @@
           "customers": "Google",
           "steps": "61.4 MW / more than 11,000 MW operating at the time",
           "source": "Media release: H1 FY25 results",
-          "quote": "AGEL has entered the C&I segment by signing a power consumption agreement to supply 61.4 MW of renewable energy that will power a datacenter"
+          "quote": "AGEL has entered the C&I segment by signing a power consumption agreement to supply 61.4 MW of renewable energy that will power a datacenter",
+          "representative": true
         }
       ]
     },
