@@ -1901,6 +1901,8 @@ export default function IndiaAiIntelligencePage() {
     try {
       const h = window.location.hash.replace('#', '');
       if (!h || h === 'monitor') return 'overview';
+      // The strategy moved to its own page.
+      if (h === 'monitor-strategy') { window.location.replace('/strategy#india-ai-infrastructure'); return 'overview'; }
       const view = h.startsWith('monitor-') ? h.slice('monitor-'.length) : null;
       return MONITOR_SECTIONS.some(([k]) => k === view) ? view : 'research';
     } catch { return 'overview'; }
