@@ -1,0 +1,305 @@
+{
+  "as_of": null,
+  "assembled_at": "2026-08-01T18:13:21Z",
+  "avg_confidence": 0.75,
+  "citations": [
+    {
+      "available_from": "2026-08-01",
+      "checksum": null,
+      "collector": "market_expectations_intelligence",
+      "confidence": 0.65,
+      "document": null,
+      "document_id": null,
+      "evidence_id": "exp_ICICIBANK",
+      "fabricated": false,
+      "knowledge_object": "ExpectationObject",
+      "page": null,
+      "paragraph": null,
+      "section": null,
+      "source": "knowledge_factory",
+      "timestamp": "2026-08-01T18:13:21Z",
+      "version": "1"
+    },
+    {
+      "available_from": "2026-08-01",
+      "checksum": null,
+      "collector": "company_intelligence",
+      "confidence": 0.8,
+      "document": null,
+      "document_id": null,
+      "evidence_id": "ici_ICICIBANK",
+      "fabricated": false,
+      "knowledge_object": "CompanyIntelligenceObject",
+      "page": null,
+      "paragraph": null,
+      "section": null,
+      "source": "knowledge_factory",
+      "timestamp": "2026-08-01T18:13:21Z",
+      "version": "1"
+    },
+    {
+      "available_from": "2026-07-31",
+      "checksum": null,
+      "collector": "lidi",
+      "confidence": 0.85,
+      "document": null,
+      "document_id": null,
+      "evidence_id": "lidi_ICICIBANK",
+      "fabricated": false,
+      "knowledge_object": "LiveMarketObject",
+      "page": null,
+      "paragraph": null,
+      "section": null,
+      "source": "live_data",
+      "timestamp": "2026-08-01T18:13:21Z",
+      "version": "1"
+    },
+    {
+      "available_from": "2026-08-01",
+      "checksum": null,
+      "collector": "historical_depth",
+      "confidence": 0.7,
+      "document": null,
+      "document_id": null,
+      "evidence_id": "hist_ICICIBANK",
+      "fabricated": false,
+      "knowledge_object": "HistoricalCompanyObject",
+      "page": null,
+      "paragraph": null,
+      "section": null,
+      "source": "knowledge_factory",
+      "timestamp": "2026-08-01T18:13:21Z",
+      "version": "1"
+    }
+  ],
+  "companies": [
+    "ICICIBANK"
+  ],
+  "conclusions": null,
+  "fabricated": false,
+  "item_count": 4,
+  "items": [
+    {
+      "available_from": "2026-08-01",
+      "citation": {
+        "available_from": "2026-08-01",
+        "checksum": null,
+        "collector": "market_expectations_intelligence",
+        "confidence": 0.65,
+        "document": null,
+        "document_id": null,
+        "evidence_id": "exp_ICICIBANK",
+        "fabricated": false,
+        "knowledge_object": "ExpectationObject",
+        "page": null,
+        "paragraph": null,
+        "section": null,
+        "source": "knowledge_factory",
+        "timestamp": "2026-08-01T18:13:21Z",
+        "version": "1"
+      },
+      "evidence_id": "exp_ICICIBANK",
+      "evidence_type": "FINANCIAL_METRICS",
+      "payload": {
+        "as_of": null,
+        "expectations": [],
+        "fabricated": false,
+        "licensed_consensus_assumed": false,
+        "links": {
+          "alternative_data": {
+            "datasets": [
+              {
+                "confidence": 0.92,
+                "dataset_id": "upi_transactions",
+                "domain": "payments",
+                "latest_available": null,
+                "link_basis": "registry_supported_company_link",
+                "name": "UPI Transaction Volumes",
+                "provider": "NPCI",
+                "trends": {}
+              },
+              {
+                "confidence": 0.92,
+                "dataset_id": "bank_credit_growth",
+                "domain": "banking",
+                "latest_available": null,
+                "link_basis": "registry_supported_company_link",
+                "name": "Scheduled Bank Credit Growth",
+                "provider": "RBI",
+                "trends": {}
+              }
+            ],
+            "fabricated": false,
+            "n": 2,
+            "note": "Links from Phase-1 registry only \u2014 no invented company mapping.",
+            "ticker": "ICICIBANK",
+            "version": "institutional-alternative-data-intelligence-v2.0.0"
+          },
+          "government_policy_ids": [],
+          "industry_id": "private_banks"
+        },
+        "n_expectations": 0,
+        "narratives": [
+          {
+            "name": "Banking Credit Cycle",
+            "narrative_id": "banking_credit_cycle"
+          }
+        ],
+        "revisions": [],
+        "surprises": [],
+        "ticker": "ICICIBANK",
+        "version": "institutional-market-expectations-intelligence-v2.0.0"
+      },
+      "rank": 1,
+      "rank_score": 0.849,
+      "title": "ICICIBANK expectations"
+    },
+    {
+      "available_from": "2026-08-01",
+      "citation": {
+        "available_from": "2026-08-01",
+        "checksum": null,
+        "collector": "company_intelligence",
+        "confidence": 0.8,
+        "document": null,
+        "document_id": null,
+        "evidence_id": "ici_ICICIBANK",
+        "fabricated": false,
+        "knowledge_object": "CompanyIntelligenceObject",
+        "page": null,
+        "paragraph": null,
+        "section": null,
+        "source": "knowledge_factory",
+        "timestamp": "2026-08-01T18:13:21Z",
+        "version": "1"
+      },
+      "evidence_id": "ici_ICICIBANK",
+      "evidence_type": "FINANCIAL_METRICS",
+      "payload": {
+        "coverage_level": 7,
+        "summary_keys": [
+          "kind",
+          "ici_version",
+          "ici_schema_version",
+          "programme",
+          "layer",
+          "ticker",
+          "sector",
+          "modules",
+          "coverage_level",
+          "coverage_level_name",
+          "complete",
+          "intelligence_score",
+          "quality",
+          "institutional_ready",
+          "unknown_fields",
+          "has_institutional_seed",
+          "sprint",
+          "freeze_locks",
+          "architecture_status",
+          "not_a_reasoning_engine"
+        ]
+      },
+      "rank": 2,
+      "rank_score": 0.84,
+      "title": "ICICIBANK company intelligence"
+    },
+    {
+      "available_from": "2026-07-31",
+      "citation": {
+        "available_from": "2026-07-31",
+        "checksum": null,
+        "collector": "lidi",
+        "confidence": 0.85,
+        "document": null,
+        "document_id": null,
+        "evidence_id": "lidi_ICICIBANK",
+        "fabricated": false,
+        "knowledge_object": "LiveMarketObject",
+        "page": null,
+        "paragraph": null,
+        "section": null,
+        "source": "live_data",
+        "timestamp": "2026-08-01T18:13:21Z",
+        "version": "1"
+      },
+      "evidence_id": "lidi_ICICIBANK",
+      "evidence_type": "FINANCIAL_METRICS",
+      "payload": {
+        "object_counts": {
+          "ALTERNATIVE_DATA": 0,
+          "COMPANY": 252,
+          "CORPORATE_EVENT": 20,
+          "EXPECTATION": 0,
+          "HISTORICAL": 1,
+          "MACRO": 4,
+          "TIMELINE": 1
+        },
+        "pack_ids": [
+          "lidi-bhavcopy-2026-07-31",
+          "lidi-announcements-2026-07-31",
+          "lidi-rbi-macro-2026-07-31",
+          "lidi-company-ir-2026-07-31"
+        ]
+      },
+      "rank": 3,
+      "rank_score": 0.84,
+      "title": "LIDI validated publish"
+    },
+    {
+      "available_from": "2026-08-01",
+      "citation": {
+        "available_from": "2026-08-01",
+        "checksum": null,
+        "collector": "historical_depth",
+        "confidence": 0.7,
+        "document": null,
+        "document_id": null,
+        "evidence_id": "hist_ICICIBANK",
+        "fabricated": false,
+        "knowledge_object": "HistoricalCompanyObject",
+        "page": null,
+        "paragraph": null,
+        "section": null,
+        "source": "knowledge_factory",
+        "timestamp": "2026-08-01T18:13:21Z",
+        "version": "1"
+      },
+      "evidence_id": "hist_ICICIBANK",
+      "evidence_type": "FINANCIAL_METRICS",
+      "payload": {
+        "keys": [
+          "accounting",
+          "business_quality",
+          "company_profile",
+          "corporate_actions",
+          "coverage",
+          "entity",
+          "evidence_packs",
+          "historical_financials",
+          "historical_valuation",
+          "kind",
+          "last_updated",
+          "macro_sensitivity",
+          "management",
+          "missing_fields",
+          "object_version",
+          "peer_group",
+          "provider",
+          "quality_score",
+          "risk",
+          "sector",
+          "timeline"
+        ]
+      },
+      "rank": 4,
+      "rank_score": 0.825,
+      "title": "ICICIBANK historical object"
+    }
+  ],
+  "kind": "COMPANY_EVIDENCE_PACK",
+  "pack_id": "iere_company_evidence_pack_iere_0187b17768fb",
+  "reasoning": false,
+  "recommendation": null,
+  "retrieval_id": "iere_0187b17768fb"
+}

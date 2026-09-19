@@ -1,0 +1,441 @@
+{
+  "accounting": {
+    "cash_conversion": 1.6645,
+    "derived_not_stored": true,
+    "entity": "RELIANCE",
+    "found": true,
+    "leverage": 2.0351,
+    "provider": "kf_accounting_producer",
+    "revenue_cagr": 0.140626
+  },
+  "business_quality": {
+    "entity": "RELIANCE",
+    "found": true,
+    "insufficient": false,
+    "provider": "kf_bq_producer",
+    "quality_score": 55.0,
+    "roic": 10.641892
+  },
+  "company_profile": {
+    "entity": "RELIANCE",
+    "market_cap": 118625.5,
+    "sector": "energy_conglomerate"
+  },
+  "corporate_actions": [
+    {
+      "date": "2025-05-10",
+      "filing_id": "RELIANCE-DIV-2025",
+      "title": "Dividend Declaration",
+      "type": "dividend"
+    }
+  ],
+  "coverage": 0.88,
+  "entity": "RELIANCE",
+  "evidence_packs": {
+    "coverage": 0.75,
+    "current_pe": 26.026201,
+    "downside_case": -0.07099,
+    "entity": "RELIANCE",
+    "entity_confidence": 0.95,
+    "freshness": "2026-08-01T13:04:23Z",
+    "historical_pe": 21.421,
+    "missing_fields": [],
+    "provenance": "knowledge_factory",
+    "quality": 90.0,
+    "risk_drivers": "market_beta,volatility",
+    "version": "kf-pipeline-v1.0.0"
+  },
+  "historical_financials": {
+    "bvps": {
+      "FY17": 900.0,
+      "FY18": 470.0,
+      "FY19": 500.0,
+      "FY20": 590.0,
+      "FY21": 745.0,
+      "FY22": 830.0,
+      "FY23": 900.0,
+      "FY24": 975.0,
+      "FY25": 1050.0,
+      "FY26": 1120.0
+    },
+    "capex": {
+      "FY17": 95000.0,
+      "FY18": 88000.0,
+      "FY19": 72000.0,
+      "FY20": 78000.0,
+      "FY21": 60000.0,
+      "FY22": 89000.0,
+      "FY23": 121000.0,
+      "FY24": 130000.0,
+      "FY25": 132000.0,
+      "FY26": 128000.0
+    },
+    "cash": {
+      "FY17": 77226.0,
+      "FY18": 78063.0,
+      "FY19": 133027.0,
+      "FY20": 175259.0,
+      "FY21": 220524.0,
+      "FY22": 205563.0,
+      "FY23": 191822.0,
+      "FY24": 200000.0,
+      "FY25": 210000.0,
+      "FY26": 218000.0
+    },
+    "ebit": {
+      "FY17": 33000.0,
+      "FY18": 45000.0,
+      "FY19": 62000.0,
+      "FY20": 63000.0,
+      "FY21": 53000.0,
+      "FY22": 78000.0,
+      "FY23": 103000.0,
+      "FY24": 112000.0,
+      "FY25": 120000.0,
+      "FY26": 126000.0
+    },
+    "ebitda": {
+      "FY17": 46000.0,
+      "FY18": 62000.0,
+      "FY19": 84000.0,
+      "FY20": 88000.0,
+      "FY21": 80000.0,
+      "FY22": 110000.0,
+      "FY23": 141000.0,
+      "FY24": 153000.0,
+      "FY25": 163000.0,
+      "FY26": 171000.0
+    },
+    "eps": {
+      "FY17": 95.1,
+      "FY18": 59.6,
+      "FY19": 65.2,
+      "FY20": 62.3,
+      "FY21": 78.2,
+      "FY22": 100.6,
+      "FY23": 98.5,
+      "FY24": 102.9,
+      "FY25": 110.0,
+      "FY26": 114.5
+    },
+    "equity": {
+      "FY17": 271808.0,
+      "FY18": 293506.0,
+      "FY19": 331585.0,
+      "FY20": 381186.0,
+      "FY21": 475406.0,
+      "FY22": 566001.0,
+      "FY23": 610000.0,
+      "FY24": 660000.0,
+      "FY25": 711000.0,
+      "FY26": 758000.0
+    },
+    "net_income": {
+      "FY17": 29901.0,
+      "FY18": 36075.0,
+      "FY19": 39588.0,
+      "FY20": 39880.0,
+      "FY21": 49128.0,
+      "FY22": 67845.0,
+      "FY23": 66702.0,
+      "FY24": 69621.0,
+      "FY25": 74500.0,
+      "FY26": 77500.0
+    },
+    "ocf": {
+      "FY17": 37000.0,
+      "FY18": 45000.0,
+      "FY19": 55000.0,
+      "FY20": 60000.0,
+      "FY21": 62000.0,
+      "FY22": 84000.0,
+      "FY23": 106000.0,
+      "FY24": 115000.0,
+      "FY25": 122000.0,
+      "FY26": 129000.0
+    },
+    "price": {
+      "FY17": 659.0,
+      "FY18": 883.0,
+      "FY19": 1120.0,
+      "FY20": 1114.0,
+      "FY21": 1994.0,
+      "FY22": 2629.0,
+      "FY23": 2348.0,
+      "FY24": 2900.0,
+      "FY25": 3050.0,
+      "FY26": 2980.0
+    },
+    "revenue": {
+      "FY17": 305380.0,
+      "FY18": 390823.0,
+      "FY19": 568337.0,
+      "FY20": 596743.0,
+      "FY21": 466307.0,
+      "FY22": 721634.0,
+      "FY23": 876396.0,
+      "FY24": 916384.0,
+      "FY25": 964000.0,
+      "FY26": 998000.0
+    },
+    "shares": {
+      "FY17": 325.0,
+      "FY18": 634.0,
+      "FY19": 634.0,
+      "FY20": 634.0,
+      "FY21": 642.0,
+      "FY22": 676.0,
+      "FY23": 677.0,
+      "FY24": 677.0,
+      "FY25": 677.0,
+      "FY26": 677.0
+    },
+    "total_debt": {
+      "FY17": 219763.0,
+      "FY18": 218763.0,
+      "FY19": 287505.0,
+      "FY20": 336294.0,
+      "FY21": 251811.0,
+      "FY22": 266305.0,
+      "FY23": 314783.0,
+      "FY24": 328000.0,
+      "FY25": 340000.0,
+      "FY26": 348000.0
+    }
+  },
+  "historical_valuation": {
+    "derived_not_stored": true,
+    "entity": "RELIANCE",
+    "found": true,
+    "insufficient": [],
+    "metrics": {
+      "Cash_Conversion": {
+        "derived_from": [
+          "ocf",
+          "capex",
+          "net_income"
+        ],
+        "formula": "(ocf - capex) / net_income * 100",
+        "points": {
+          "FY17": -193.973446,
+          "FY18": -119.196119,
+          "FY19": -42.942306,
+          "FY20": -45.135406,
+          "FY21": 4.070998,
+          "FY22": -7.36974,
+          "FY23": -22.488081,
+          "FY24": -21.545223,
+          "FY25": -13.422819,
+          "FY26": 1.290323
+        },
+        "provider": "kf_derived_producer",
+        "rejected_periods": {}
+      },
+      "EV_EBITDA": {
+        "derived_from": [
+          "price",
+          "shares",
+          "total_debt",
+          "cash",
+          "ebitda"
+        ],
+        "formula": "(price * shares + total_debt - cash) / ebitda",
+        "points": {
+          "FY17": 7.754609,
+          "FY18": 11.298742,
+          "FY19": 10.292357,
+          "FY20": 9.855807,
+          "FY21": 16.392937,
+          "FY22": 16.7086,
+          "FY23": 12.145794,
+          "FY24": 13.668627,
+          "FY25": 13.465337,
+          "FY26": 12.558246
+        },
+        "provider": "kf_derived_producer",
+        "rejected_periods": {}
+      },
+      "Net_Margin": {
+        "derived_from": [
+          "net_income",
+          "revenue"
+        ],
+        "formula": "net_income / revenue * 100",
+        "points": {
+          "FY17": 9.791407,
+          "FY18": 9.230521,
+          "FY19": 6.965586,
+          "FY20": 6.682944,
+          "FY21": 10.535548,
+          "FY22": 9.40158,
+          "FY23": 7.610943,
+          "FY24": 7.597361,
+          "FY25": 7.728216,
+          "FY26": 7.765531
+        },
+        "provider": "kf_derived_producer",
+        "rejected_periods": {}
+      },
+      "PB": {
+        "derived_from": [
+          "price",
+          "bvps"
+        ],
+        "formula": "price / book_value_per_share",
+        "points": {
+          "FY17": 0.732222,
+          "FY18": 1.878723,
+          "FY19": 2.24,
+          "FY20": 1.888136,
+          "FY21": 2.67651,
+          "FY22": 3.16747,
+          "FY23": 2.608889,
+          "FY24": 2.974359,
+          "FY25": 2.904762,
+          "FY26": 2.660714
+        },
+        "provider": "kf_derived_producer",
+        "rejected_periods": {}
+      },
+      "PE": {
+        "derived_from": [
+          "price",
+          "eps"
+        ],
+        "formula": "price / eps",
+        "points": {
+          "FY17": 6.929548,
+          "FY18": 14.815436,
+          "FY19": 17.177914,
+          "FY20": 17.88122,
+          "FY21": 25.498721,
+          "FY22": 26.133201,
+          "FY23": 23.837563,
+          "FY24": 28.182702,
+          "FY25": 27.727273,
+          "FY26": 26.026201
+        },
+        "provider": "kf_derived_producer",
+        "rejected_periods": {}
+      },
+      "ROE": {
+        "derived_from": [
+          "net_income",
+          "equity"
+        ],
+        "formula": "net_income / equity * 100",
+        "points": {
+          "FY17": 11.00078,
+          "FY18": 12.29106,
+          "FY19": 11.93902,
+          "FY20": 10.462084,
+          "FY21": 10.333904,
+          "FY22": 11.986728,
+          "FY23": 10.934754,
+          "FY24": 10.548636,
+          "FY25": 10.4782,
+          "FY26": 10.224274
+        },
+        "provider": "kf_derived_producer",
+        "rejected_periods": {}
+      },
+      "ROIC": {
+        "derived_from": [
+          "ebit",
+          "total_debt",
+          "equity",
+          "cash"
+        ],
+        "formula": "ebit * (1 - tax) / (total_debt + equity - cash) * 100",
+        "points": {
+          "FY17": 5.973283,
+          "FY18": 7.772808,
+          "FY19": 9.566661,
+          "FY20": 8.714159,
+          "FY21": 7.844987,
+          "FY22": 9.333969,
+          "FY23": 10.539442,
+          "FY24": 10.659898,
+          "FY25": 10.701546,
+          "FY26": 10.641892
+        },
+        "provider": "kf_derived_producer",
+        "rejected_periods": {}
+      }
+    },
+    "provider": "kf_derived_producer"
+  },
+  "kind": "company_knowledge_object",
+  "last_updated": "2026-08-01T13:04:23Z",
+  "macro_sensitivity": {
+    "beta": 1.1978,
+    "sector": "energy_conglomerate"
+  },
+  "management": {
+    "events": []
+  },
+  "missing_fields": [
+    "peers"
+  ],
+  "object_version": "kf-objects-v1.0.0",
+  "peer_group": {
+    "entity": "RELIANCE",
+    "fabricated": false,
+    "found": false,
+    "insufficient": true,
+    "peers": [],
+    "reason": "no_peer_data"
+  },
+  "provider": "knowledge_factory",
+  "quality_score": 88.0,
+  "risk": {
+    "beta": 1.1978,
+    "correlation": 0.9902,
+    "derived_not_stored": true,
+    "entity": "RELIANCE",
+    "expected_shortfall_95_pct": 7.235,
+    "factor_exposure": {
+      "market_beta": 1.1978,
+      "residual_vol_pct": 0.2252
+    },
+    "formulas": {
+      "beta": "cov(asset, benchmark) / var(benchmark)",
+      "downside_deviation": "stdev(negative_returns) * sqrt(12)",
+      "expected_shortfall_95": "mean(losses >= VaR95)",
+      "var_95": "historical_simulation_percentile(losses, 95)",
+      "volatility_ann": "stdev(monthly_returns) * sqrt(12)"
+    },
+    "found": true,
+    "liquidity_score": 0.712,
+    "max_drawdown_pct": 7.35,
+    "provider": "kf_risk_producer",
+    "var_95_monthly_pct": 7.099,
+    "volatility_ann_pct": 23.04
+  },
+  "sector": "energy_conglomerate",
+  "timeline": {
+    "entity": "RELIANCE",
+    "events": [
+      {
+        "date": "2025-04-20",
+        "filing_id": "RELIANCE-Q4-2025",
+        "title": "Q4 Results",
+        "type": "earnings"
+      },
+      {
+        "date": "2025-05-10",
+        "filing_id": "RELIANCE-DIV-2025",
+        "title": "Dividend Declaration",
+        "type": "dividend"
+      },
+      {
+        "date": "2025-06-15",
+        "filing_id": "RELIANCE-AR-2025",
+        "title": "Annual Report FY25",
+        "type": "annual_report"
+      }
+    ],
+    "n": 3,
+    "provider": "kf_timeline_producer"
+  }
+}

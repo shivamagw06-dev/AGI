@@ -1,0 +1,19 @@
+{
+  "industry_id": "telecom",
+  "name": "Telecom",
+  "demand_drivers": ["data_usage", "subscribers", "arpu", "enterprise"],
+  "supply_drivers": ["spectrum", "network_capex", "towers"],
+  "capacity": "spectrum_and_network",
+  "pricing": "arpu_and_plans",
+  "margins": {"ebitda": "scale_driven"},
+  "competition": "concentrated",
+  "regulation": ["trai", "dot", "spectrum_auctions"],
+  "capital_intensity": "very_high",
+  "typical_risks": ["regulatory", "capex", "competition", "leverage"],
+  "important_kpis": ["arpu", "subscribers", "mo_u", "capex_intensity", "net_debt"],
+  "preferred_valuation_models": ["relative_ev_ebitda", "dcf_fcff"],
+  "historical_cycles": ["price_wars", "consolidation"],
+  "industry_structure": "oligopoly",
+  "business_characteristics": ["network_effects", "high_fixed_cost"],
+  "capital_cycle": "spectrum_and_5g_capex"
+}

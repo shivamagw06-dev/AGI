@@ -1,0 +1,19 @@
+{
+  "as_of": "2020-03-16",
+  "features": {
+    "pmi_us": 42.0,
+    "pmi_in": 45.0,
+    "growth_impulse": -1.8,
+    "infl_momentum_us": -0.2,
+    "liq_trend": -1.2,
+    "vix_pctile_5y": 0.98,
+    "vix_level": 75.0,
+    "risk_appetite": -2.2,
+    "stress_index": 0.92,
+    "yc_slope_us": 0.3,
+    "usd_mom_63d": 0.08,
+    "oil_mom_63d": -0.35,
+    "hy_oas": 2.5,
+    "credit_stress": 2.0
+  }
+}

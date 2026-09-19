@@ -1,0 +1,29 @@
+{
+ "missing_from_run_1": [
+  "GCSL",
+  "KDL",
+  "NATCAPSUQ",
+  "PWL",
+  "VIKRAMSOLR",
+  "AGNI",
+  "AVPINFRA",
+  "CLASSICEIL",
+  "DYNAMIC",
+  "GGBL",
+  "IPHL",
+  "LAMOSAIC",
+  "MONEYBOXX",
+  "PASHUPATI",
+  "RADIOWALLA",
+  "SATKARTAR",
+  "SPRL",
+  "UNIHEALTH",
+  "WTICAB",
+  "CSSL",
+  "MAYASHEEL",
+  "SAVY",
+  "VOGL"
+ ],
+ "reason": "discovery returned zero rows; index=equities does not cover SME/Emerge listings",
+ "target_rows_affected": 140
+}

@@ -1,0 +1,259 @@
+import { useEffect, useMemo, useState } from 'react';
+import { AlertTriangle, CheckCircle2, Database, ExternalLink, FileClock, Landmark, Loader2, RefreshCw, Save, Search, ShieldCheck } from 'lucide-react';
+import { getInstitutionalAdmin, markInstitutionalAlert, previewInstitutionalImport, publishInstitutionalImport, refreshInstitutionalFilings, saveInstitutionalSecurityMapping, updateInstitutionalManager } from '@/lib/institutionalHoldingsApi';
+import InstitutionalResearchLayerAdmin from '@/components/admin/InstitutionalResearchLayerAdmin';
+
+function Pill({ children, tone = 'slate' }) {
+  const styles = { slate: 'bg-slate-100 text-slate-600', green: 'bg-emerald-50 text-emerald-700', amber: 'bg-amber-50 text-amber-700', red: 'bg-rose-50 text-rose-700' };
+  return <span className={`rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-[.1em] ${styles[tone]}`}>{children}</span>;
+}
+
+function FilingImportDesk({ managers = [], onPublished }) {
+  const [draft, setDraft] = useState({ managerId: '', input: '', reportDate: '', formType: '13F-HR', amendmentType: 'restatement' });
+  const [preview, setPreview] = useState(null);
+  const [working, setWorking] = useState('');
+  const [error, setError] = useState('');
+  const [message, setMessage] = useState('');
+
+  useEffect(() => {
+    if (!draft.managerId && managers[0]?.id) setDraft((current) => ({ ...current, managerId: managers[0].id }));
+  }, [draft.managerId, managers]);
+
+  const update = (key, value) => {
+    setDraft((current) => ({ ...current, [key]: value }));
+    setPreview(null);
+    setError('');
+    setMessage('');
+  };
+
+  const analyse = async () => {
+    setWorking('preview'); setError(''); setMessage('');
+    try { setPreview(await previewInstitutionalImport(draft)); }
+    catch (requestError) { setError(requestError.message); }
+    finally { setWorking(''); }
+  };
+
+  const publish = async () => {
+    setWorking('publish'); setError(''); setMessage('');
+    try {
+      const result = await publishInstitutionalImport(draft);
+      setMessage(`${result.manager?.display_name || 'Manager'} intelligence is now published.`);
+      setPreview(null);
+      setDraft((current) => ({ ...current, input: '' }));
+      await onPublished?.();
+    } catch (requestError) { setError(requestError.message); }
+    finally { setWorking(''); }
+  };
+
+  const money = (value) => `$${(Number(value || 0) / 1e9).toFixed(2)}bn`;
+  const activity = preview?.activity?.counts || {};
+  return (
+    <section className="overflow-hidden rounded-2xl border border-cyan-400/20 bg-[#07151d] text-slate-100 shadow-2xl shadow-slate-950/10">
+      <div className="border-b border-white/10 bg-[radial-gradient(circle_at_top_right,rgba(34,211,238,.14),transparent_38%)] px-6 py-6">
+        <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-end">
+          <div>
+            <div className="mb-2 text-[11px] font-bold uppercase tracking-[0.28em] text-cyan-300">Controlled ingestion</div>
+            <h2 className="text-2xl font-semibold tracking-tight text-white">13F intelligence import</h2>
+            <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-400">Paste a SEC filing link, accession number, raw information-table XML, or a tab-separated holdings table. Analyse first; nothing becomes public until you approve it.</p>
+          </div>
+          <div className="rounded-full border border-emerald-400/20 bg-emerald-400/10 px-4 py-2 text-xs font-semibold text-emerald-300">Evidence before narrative</div>
+        </div>
+      </div>
+
+      <div className="grid gap-5 p-6 lg:grid-cols-[minmax(0,1.1fr)_minmax(360px,.9fr)]">
+        <div className="space-y-4">
+          <div className="grid gap-3 md:grid-cols-2">
+            <label className="text-xs font-semibold text-slate-300">Manager
+              <select value={draft.managerId} onChange={(event) => update('managerId', event.target.value)} className="mt-2 w-full rounded-xl border border-white/10 bg-[#0d222d] px-3 py-3 text-sm text-white outline-none focus:border-cyan-400">
+                {managers.map((manager) => <option key={manager.id} value={manager.id}>{manager.display_name}</option>)}
+              </select>
+            </label>
+            <label className="text-xs font-semibold text-slate-300">Report date
+              <input type="date" value={draft.reportDate} onChange={(event) => update('reportDate', event.target.value)} className="mt-2 w-full rounded-xl border border-white/10 bg-[#0d222d] px-3 py-3 text-sm text-white outline-none focus:border-cyan-400" />
+            </label>
+            <label className="text-xs font-semibold text-slate-300">Filing type
+              <select value={draft.formType} onChange={(event) => update('formType', event.target.value)} className="mt-2 w-full rounded-xl border border-white/10 bg-[#0d222d] px-3 py-3 text-sm text-white outline-none focus:border-cyan-400">
+                <option value="13F-HR">13F-HR original</option><option value="13F-HR/A">13F-HR/A amendment</option>
+              </select>
+            </label>
+            {draft.formType === '13F-HR/A' ? <label className="text-xs font-semibold text-slate-300">Amendment treatment
+              <select value={draft.amendmentType} onChange={(event) => update('amendmentType', event.target.value)} className="mt-2 w-full rounded-xl border border-white/10 bg-[#0d222d] px-3 py-3 text-sm text-white outline-none focus:border-cyan-400">
+                <option value="restatement">Restates the full filing</option><option value="additional_holdings">Adds holdings only</option>
+              </select>
+            </label> : <div className="rounded-xl border border-dashed border-white/10 p-3 text-xs leading-5 text-slate-500">SEC links and accession numbers fill the date and filing type automatically.</div>}
+          </div>
+          <label className="block text-xs font-semibold text-slate-300">Filing input
+            <textarea value={draft.input} onChange={(event) => update('input', event.target.value)} rows={11} placeholder={'Paste SEC URL or accession number\n\nOR raw information-table XML\n\nOR tab-separated 13F holdings rows'} className="mt-2 w-full resize-y rounded-xl border border-white/10 bg-black/30 px-4 py-3 font-mono text-xs leading-5 text-slate-200 outline-none placeholder:text-slate-600 focus:border-cyan-400" />
+          </label>
+          {error ? <div className="rounded-xl border border-red-400/20 bg-red-400/10 px-4 py-3 text-sm text-red-200">{error}</div> : null}
+          {message ? <div className="rounded-xl border border-emerald-400/20 bg-emerald-400/10 px-4 py-3 text-sm text-emerald-200">{message}</div> : null}
+          <button type="button" onClick={analyse} disabled={Boolean(working) || !draft.managerId || !draft.input.trim()} className="inline-flex items-center gap-2 rounded-xl bg-cyan-300 px-5 py-3 text-sm font-bold text-slate-950 transition hover:bg-cyan-200 disabled:cursor-not-allowed disabled:opacity-40">
+            {working === 'preview' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />} Analyse filing
+          </button>
+        </div>
+
+        <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-5">
+          {!preview ? <div className="flex min-h-[380px] flex-col items-center justify-center text-center">
+            <Database className="mb-4 h-10 w-10 text-cyan-300/70" /><h3 className="font-semibold text-white">Preview appears here</h3>
+            <p className="mt-2 max-w-xs text-sm leading-6 text-slate-500">We validate the filer, preserve options, compare the prior quarter, and show warnings before publishing.</p>
+          </div> : <div className="space-y-5">
+            <div className="flex items-start justify-between gap-4"><div><div className="text-[10px] font-bold uppercase tracking-[0.22em] text-cyan-300">{preview.source?.kind} source</div><h3 className="mt-1 text-xl font-semibold text-white">{preview.manager?.display_name}</h3><div className="mt-1 text-xs text-slate-500">{preview.source?.form_type} · {preview.source?.report_date || 'No holdings period'}</div></div><span className={`rounded-full px-3 py-1 text-xs font-bold ${preview.publishable ? 'bg-emerald-400/10 text-emerald-300' : 'bg-amber-400/10 text-amber-300'}`}>{preview.publishable ? 'Ready for review' : 'Not publishable'}</span></div>
+            {preview.metrics ? <div className="grid grid-cols-2 gap-2"><div className="rounded-xl bg-black/20 p-3"><div className="text-[10px] uppercase tracking-wider text-slate-500">Holdings</div><div className="mt-1 font-semibold">{preview.metrics.holdings_count}</div></div><div className="rounded-xl bg-black/20 p-3"><div className="text-[10px] uppercase tracking-wider text-slate-500">13F value</div><div className="mt-1 font-semibold">{money(preview.metrics.total_value_usd)}</div></div><div className="rounded-xl bg-black/20 p-3"><div className="text-[10px] uppercase tracking-wider text-slate-500">Mapped</div><div className="mt-1 font-semibold">{preview.metrics.mapping_coverage}%</div></div><div className="rounded-xl bg-black/20 p-3"><div className="text-[10px] uppercase tracking-wider text-slate-500">Options</div><div className="mt-1 font-semibold">{preview.metrics.option_positions}</div></div></div> : null}
+            {preview.scores ? <div><div className="mb-2 text-xs font-bold uppercase tracking-wider text-slate-500">Deterministic intelligence</div><div className="rounded-xl border border-cyan-300/15 bg-cyan-300/[0.05] p-4"><div className="text-base font-semibold text-cyan-100">{preview.scores.stance}</div><div className="mt-3 grid grid-cols-3 gap-2 text-center"><div><b>{preview.scores.conviction}</b><span className="block text-[10px] text-slate-500">Conviction</span></div><div><b>{preview.scores.accumulation}</b><span className="block text-[10px] text-slate-500">Accumulation</span></div><div><b>{preview.scores.exit_pressure}</b><span className="block text-[10px] text-slate-500">Exit pressure</span></div></div><div className="mt-3 text-xs text-slate-400">New {activity.new || 0} · Increased {activity.increased || 0} · Reduced {activity.reduced || 0} · Exited {activity.exited || 0}</div></div></div> : null}
+            {preview.warnings?.length ? <div className="space-y-2">{preview.warnings.map((warning) => <div key={warning} className="flex gap-2 rounded-lg bg-amber-300/[0.07] px-3 py-2 text-xs leading-5 text-amber-100"><AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />{warning}</div>)}</div> : null}
+            {preview.brief ? <div><div className="text-sm font-semibold text-white">{preview.brief.headline}</div><p className="mt-2 text-xs leading-5 text-slate-400">{preview.brief.summary}</p>{preview.brief.bullets?.map((bullet) => <div key={bullet} className="mt-2 text-xs leading-5 text-slate-300">• {bullet}</div>)}</div> : null}
+            {preview.publishable ? <button type="button" onClick={publish} disabled={Boolean(working)} className="flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-400 px-5 py-3 text-sm font-bold text-slate-950 transition hover:bg-emerald-300 disabled:opacity-50">{working === 'publish' ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />} Approve and publish intelligence</button> : null}
+          </div>}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+export default function InstitutionalHoldingsAdmin() {
+  const [data, setData] = useState(null);
+  const [selectedId, setSelectedId] = useState('');
+  const [managerDraft, setManagerDraft] = useState({});
+  const [refreshTarget, setRefreshTarget] = useState('all');
+  const [quarters, setQuarters] = useState(12);
+  const [mapping, setMapping] = useState({ cusip: '', ticker: '', issuer_name: '', reason: '' });
+  const [query, setQuery] = useState('');
+  const [working, setWorking] = useState('');
+  const [error, setError] = useState('');
+  const [message, setMessage] = useState('');
+
+  const load = async () => {
+    setError('');
+    try {
+      const result = await getInstitutionalAdmin();
+      setData(result);
+      const first = selectedId || result.managers?.[0]?.id || '';
+      setSelectedId(first);
+      setRefreshTarget((value) => value || 'all');
+    } catch (err) { setError(err.message); }
+  };
+  useEffect(() => { void load(); }, []);
+  const selected = useMemo(() => data?.managers?.find((row) => row.id === selectedId), [data, selectedId]);
+  useEffect(() => { if (selected) setManagerDraft({ display_name: selected.display_name, legal_name: selected.legal_name, cik: selected.cik, strategy: selected.strategy || '', quality_weight: selected.quality_weight, active: selected.active, reason: '' }); }, [selected]);
+  const unresolved = useMemo(() => (data?.unresolved || []).filter((row) => `${row.issuer_name} ${row.cusip}`.toLowerCase().includes(query.toLowerCase())), [data, query]);
+
+  const run = async (key, operation, success) => {
+    setWorking(key); setError(''); setMessage('');
+    try { const result = await operation(); setMessage(typeof success === 'function' ? success(result) : success); await load(); }
+    catch (err) { setError(err.message); }
+    finally { setWorking(''); }
+  };
+
+  if (!data && !error) return <div className="flex min-h-[70vh] items-center justify-center bg-slate-50"><Loader2 className="h-8 w-8 animate-spin text-slate-400" /></div>;
+  return <div className="min-h-full bg-[#f5f6f7] p-5 text-slate-900 sm:p-8"><div className="mx-auto max-w-[1500px]"><header className="flex flex-col gap-5 border-b border-slate-200 pb-7 lg:flex-row lg:items-end lg:justify-between"><div><p className="text-[10px] font-bold uppercase tracking-[.2em] text-amber-700">SEC disclosure operations</p><h1 className="mt-2 font-serif text-4xl font-bold text-[#102b3a]">Institutional Holdings CMS</h1><p className="mt-2 max-w-3xl text-sm leading-6 text-slate-500">Refresh 13F filings, verify legal filer identities, resolve CUSIPs and review every generated client alert.</p></div><a href="/institutional-holdings" target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-lg bg-[#123b4b] px-4 py-3 text-xs font-bold text-white">Open client page <ExternalLink className="h-4 w-4" /></a></header>{error ? <div className="mt-5 flex items-center gap-3 rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700"><AlertTriangle className="h-5 w-5" />{error}</div> : null}{message ? <div className="mt-5 flex items-center gap-3 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-700"><CheckCircle2 className="h-5 w-5" />{message}</div> : null}
+
+      {/* Collection health.
+          Placed above the counters deliberately: every number below is only as
+          current as the last successful run, and a reader who does not know the
+          collector stopped six days ago will read those counters as today's. */}
+      {(() => {
+        const health = data?.collection?.health;
+        const runs = data?.collection?.runs || [];
+        if (data?.collection?.unavailable) {
+          return (
+            <section className="mt-7 rounded-xl border border-amber-300 bg-amber-50 p-5">
+              <div className="text-[10px] font-extrabold uppercase tracking-[.18em] text-amber-700">Collection health</div>
+              <p className="mt-2 text-sm text-amber-900">
+                Run records are unavailable: {data.collection.unavailable}. Collection may still be
+                running; this panel cannot confirm it either way.
+              </p>
+            </section>
+          );
+        }
+        const hours = Number(health?.hours_since_success);
+        const never = !health?.last_success_at;
+        // Daily schedule, so a day and a half without a success means a run was
+        // missed, not that we are between runs.
+        const stale = never || !Number.isFinite(hours) || hours > 36;
+        const tone = stale
+          ? { border: 'border-rose-300', bg: 'bg-rose-50', label: 'text-rose-700', body: 'text-rose-900' }
+          : { border: 'border-emerald-300', bg: 'bg-emerald-50', label: 'text-emerald-700', body: 'text-emerald-900' };
+        const when = (value) => (value ? new Date(value).toLocaleString() : 'never');
+        return (
+          <section className={`mt-7 rounded-xl border ${tone.border} ${tone.bg} p-5`}>
+            <div className="flex flex-wrap items-baseline justify-between gap-2">
+              <div className={`text-[10px] font-extrabold uppercase tracking-[.18em] ${tone.label}`}>
+                Collection health
+              </div>
+              <div className={`text-xs font-semibold ${tone.body}`}>
+                {never
+                  ? 'No successful collection on record'
+                  : `Last success ${hours < 1 ? 'under an hour' : `${Math.round(hours)}h`} ago`}
+              </div>
+            </div>
+            <div className="mt-3 grid gap-3 text-sm sm:grid-cols-2 lg:grid-cols-4">
+              {[
+                ['Last run', `${when(health?.last_run_started_at)}${health?.last_status ? ` (${health.last_status})` : ''}`],
+                ['Last success', when(health?.last_success_at)],
+                ['Next scheduled', when(health?.next_scheduled_at)],
+                ['Latest filing accepted', when(health?.latest_accepted_at)],
+              ].map(([label, value]) => (
+                <div key={label} className="rounded-lg bg-white/70 px-3 py-2">
+                  <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500">{label}</div>
+                  <div className="mt-1 font-medium text-slate-800">{value}</div>
+                </div>
+              ))}
+            </div>
+            {Number(health?.stalled_runs) > 0 ? (
+              <p className="mt-3 text-xs font-semibold text-rose-800">
+                {health.stalled_runs} run(s) started over two hours ago and never finished. The
+                collector was most likely killed mid-crawl.
+              </p>
+            ) : null}
+            {runs.length ? (
+              <div className="mt-4 overflow-x-auto">
+                <table className="w-full min-w-[720px] text-left text-xs">
+                  <thead className="text-[9px] font-extrabold uppercase tracking-[.14em] text-slate-500">
+                    <tr>
+                      {['Started', 'Status', 'Managers', 'Filings', 'Amendments', 'SEC reqs', 'Throttled', 'Failures'].map((h) => (
+                        <th key={h} className="px-2 py-2">{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody className="text-slate-700">
+                    {runs.map((run) => (
+                      <tr key={run.id} className="border-t border-slate-200/70">
+                        <td className="px-2 py-2 tabular-nums">{when(run.started_at)}</td>
+                        <td className="px-2 py-2 font-semibold">{run.status}</td>
+                        <td className="px-2 py-2 tabular-nums">{run.managers_succeeded}/{run.managers_attempted}</td>
+                        <td className="px-2 py-2 tabular-nums">{run.filings_ingested}</td>
+                        <td className="px-2 py-2 tabular-nums">{run.amendments_detected}</td>
+                        <td className="px-2 py-2 tabular-nums">{run.sec_requests}</td>
+                        <td className="px-2 py-2 tabular-nums">
+                          {run.sec_throttled}
+                          {run.sec_throttle_pause_ms > 0
+                            ? ` (${(run.sec_throttle_pause_ms / 1000).toFixed(0)}s paused)`
+                            : ''}
+                        </td>
+                        <td className="px-2 py-2">{(run.failures || []).length}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <p className="mt-3 text-xs text-slate-600">No collection run has been recorded yet.</p>
+            )}
+          </section>
+        );
+      })()}
+
+      <section className="mt-7 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">{[['Managers', data?.managers?.length || 0, Landmark], ['Filing versions', data?.filings?.length || 0, FileClock], ['Unresolved CUSIPs', data?.unresolved?.length || 0, Database], ['Unread alerts', data?.alerts?.filter((row) => !row.is_read).length || 0, ShieldCheck]].map(([label, value, Icon]) => <div key={label} className="rounded-xl border border-slate-200 bg-white p-5"><Icon className="h-5 w-5 text-amber-700" /><p className="mt-4 text-[10px] font-bold uppercase tracking-[.14em] text-slate-400">{label}</p><p className="mt-2 font-serif text-3xl font-bold text-[#102b3a]">{value}</p></div>)}</section>
+
+      <InstitutionalResearchLayerAdmin />
+      <FilingImportDesk managers={data?.managers || []} onPublished={load} />
+
+      <section className="mt-7 rounded-xl border border-slate-200 bg-white p-6"><div className="grid gap-5 lg:grid-cols-[1fr_180px_160px_auto] lg:items-end"><label className="text-xs font-bold text-slate-600">SEC manager<select value={refreshTarget} onChange={(event) => setRefreshTarget(event.target.value)} className="mt-2 w-full rounded-lg border border-slate-200 bg-white px-3 py-3 text-sm"><option value="all">All tracked managers</option>{data?.managers?.map((row) => <option key={row.id} value={row.slug}>{row.display_name}</option>)}</select></label><label className="text-xs font-bold text-slate-600">Historical quarters<input type="number" min="1" max="16" value={quarters} onChange={(event) => setQuarters(event.target.value)} className="mt-2 w-full rounded-lg border border-slate-200 px-3 py-3 text-sm" /></label><div><p className="text-xs font-bold text-slate-600">SEC identity header</p><Pill tone={data?.sec_user_agent_configured ? 'green' : 'amber'}>{data?.sec_user_agent_configured ? 'Configured' : 'Using default'}</Pill></div><button disabled={Boolean(working)} onClick={() => run('refresh', () => refreshInstitutionalFilings({ managerSlug: refreshTarget, quarters: Number(quarters) }), (result) => `${result.results?.filter((row) => row.ok).length || 0}/${result.results?.length || 0} managers refreshed and ${result.enrichment?.mapped || 0} identifiers mapped.`)} className="inline-flex items-center justify-center gap-2 rounded-lg bg-amber-700 px-5 py-3 text-sm font-bold text-white disabled:opacity-50">{working === 'refresh' ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />} Refresh and auto-map</button></div><p className="mt-4 text-xs leading-5 text-slate-500">All managers refresh automatically every 24 hours. The same workflow handles amendments, retries temporary SEC failures, maps CUSIPs to tickers and rebuilds client scores.</p></section>
+
+      <section className="mt-7 grid gap-7 xl:grid-cols-[.8fr_1.2fr]"><div className="overflow-hidden rounded-xl border border-slate-200 bg-white"><div className="border-b border-slate-200 p-5"><h2 className="font-serif text-2xl font-bold text-[#102b3a]">Tracked managers</h2><p className="mt-1 text-xs text-slate-500">Each manager shows the latest automatic ingestion health.</p></div><div className="max-h-[620px] overflow-y-auto">{data?.managers?.map((row) => { const statusTone = row.last_refresh_status === 'success' ? 'green' : row.last_refresh_status === 'error' ? 'red' : 'amber'; return <button key={row.id} onClick={() => setSelectedId(row.id)} className={`block w-full border-b border-slate-100 p-4 text-left ${selectedId === row.id ? 'bg-amber-50' : 'hover:bg-slate-50'}`}><div className="flex items-center justify-between gap-3"><strong className="text-sm">{row.display_name}</strong><Pill tone={statusTone}>{row.last_refresh_status || 'Pending'}</Pill></div><p className="mt-1 truncate text-xs text-slate-500">{row.legal_name}</p><p className="mt-1 font-mono text-[10px] text-slate-400">CIK {row.cik}</p>{row.last_refresh_error ? <p className="mt-2 text-[10px] leading-4 text-rose-600">{row.last_refresh_error}</p> : null}</button>; })}</div></div><div className="rounded-xl border border-slate-200 bg-white p-6"><h2 className="font-serif text-2xl font-bold text-[#102b3a]">Manager identity</h2>{selected ? <div className="mt-6 grid gap-4 md:grid-cols-2">{[['Display name', 'display_name'], ['Legal filer name', 'legal_name'], ['SEC CIK', 'cik'], ['Strategy label', 'strategy'], ['Quality weight', 'quality_weight']].map(([label, key]) => <label key={key} className={`text-xs font-bold text-slate-600 ${key === 'legal_name' || key === 'strategy' ? 'md:col-span-2' : ''}`}>{label}<input value={managerDraft[key] ?? ''} onChange={(event) => setManagerDraft((value) => ({ ...value, [key]: event.target.value }))} className="mt-2 w-full rounded-lg border border-slate-200 px-3 py-3 text-sm" /></label>)}<label className="md:col-span-2 text-xs font-bold text-slate-600">Reason for correction<input value={managerDraft.reason || ''} onChange={(event) => setManagerDraft((value) => ({ ...value, reason: event.target.value }))} placeholder="Required context for the audit trail" className="mt-2 w-full rounded-lg border border-slate-200 px-3 py-3 text-sm" /></label><label className="flex items-center gap-3 text-sm"><input type="checkbox" checked={Boolean(managerDraft.active)} onChange={(event) => setManagerDraft((value) => ({ ...value, active: event.target.checked }))} /> Track this manager</label><div className="flex justify-end"><button disabled={Boolean(working)} onClick={() => run('manager', () => updateInstitutionalManager(selected.id, managerDraft), 'Manager identity saved and audited.')} className="inline-flex items-center gap-2 rounded-lg bg-[#123b4b] px-4 py-2.5 text-xs font-bold text-white"><Save className="h-4 w-4" /> Save manager</button></div></div> : null}</div></section>
+
+      <section className="mt-7 overflow-hidden rounded-xl border border-slate-200 bg-white"><div className="flex flex-col gap-4 border-b border-slate-200 p-5 sm:flex-row sm:items-end sm:justify-between"><div><h2 className="font-serif text-2xl font-bold text-[#102b3a]">Unresolved security identifiers</h2><p className="mt-1 text-xs text-slate-500">Assign only verified tickers. Existing holdings and change records update together.</p></div><label className="flex items-center gap-2 rounded-lg border border-slate-200 px-3"><Search className="h-4 w-4 text-slate-400" /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search issuer or CUSIP" className="py-2.5 text-sm outline-none" /></label></div><div className="grid gap-px bg-slate-200 lg:grid-cols-[1fr_1fr]"><div className="max-h-[420px] overflow-y-auto bg-white">{unresolved.map((row) => <button key={row.cusip} onClick={() => setMapping({ cusip: row.cusip, ticker: '', issuer_name: row.issuer_name, reason: '' })} className={`block w-full border-b border-slate-100 p-4 text-left hover:bg-slate-50 ${mapping.cusip === row.cusip ? 'bg-amber-50' : ''}`}><div className="flex justify-between gap-3"><strong className="text-sm">{row.issuer_name}</strong><span className="text-xs text-slate-400">{row.observations} rows</span></div><p className="mt-1 font-mono text-xs text-slate-500">{row.cusip}</p></button>)}{!unresolved.length ? <p className="p-8 text-center text-sm text-slate-500">No unresolved identifiers match the search.</p> : null}</div><div className="bg-white p-6"><h3 className="font-serif text-xl font-bold">Map CUSIP to ticker</h3><div className="mt-5 space-y-4">{[['CUSIP', 'cusip'], ['Issuer', 'issuer_name'], ['Verified ticker', 'ticker'], ['Reason or source', 'reason']].map(([label, key]) => <label key={key} className="block text-xs font-bold text-slate-600">{label}<input value={mapping[key]} readOnly={key === 'cusip' || key === 'issuer_name'} onChange={(event) => setMapping((value) => ({ ...value, [key]: event.target.value }))} className={`mt-2 w-full rounded-lg border border-slate-200 px-3 py-3 text-sm ${key === 'cusip' || key === 'issuer_name' ? 'bg-slate-50' : ''}`} /></label>)}<button disabled={!mapping.cusip || !mapping.ticker || Boolean(working)} onClick={() => run('mapping', () => saveInstitutionalSecurityMapping(mapping), `Mapped ${mapping.cusip} to ${mapping.ticker.toUpperCase()}.`)} className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-amber-700 px-4 py-3 text-sm font-bold text-white disabled:opacity-40"><Save className="h-4 w-4" /> Save verified mapping</button></div></div></div></section>
+
+      <section className="mt-7 grid gap-7 xl:grid-cols-2"><div className="rounded-xl border border-slate-200 bg-white p-5"><h2 className="font-serif text-2xl font-bold text-[#102b3a]">Filing alerts</h2><div className="mt-5 space-y-3">{data?.alerts?.slice(0, 15).map((alert) => <div key={alert.id} className={`rounded-lg border p-4 ${alert.is_read ? 'border-slate-100 bg-slate-50' : 'border-amber-200 bg-amber-50'}`}><div className="flex items-start justify-between gap-4"><div><p className="text-[10px] font-bold uppercase tracking-[.12em] text-amber-700">{alert.severity} · {alert.institutional_managers?.display_name}</p><p className="mt-2 text-sm font-bold">{alert.title}</p><p className="mt-1 text-xs leading-5 text-slate-500">{alert.body}</p></div>{!alert.is_read ? <button onClick={() => run(`alert-${alert.id}`, () => markInstitutionalAlert(alert.id), 'Alert marked as reviewed.')} className="shrink-0 text-xs font-bold text-[#123b4b]">Mark read</button> : null}</div></div>)}</div></div><div className="rounded-xl border border-slate-200 bg-white p-5"><h2 className="font-serif text-2xl font-bold text-[#102b3a]">Correction audit</h2><div className="mt-5 space-y-3">{data?.corrections?.slice(0, 15).map((row) => <div key={row.id} className="border-b border-slate-100 pb-3"><div className="flex justify-between gap-3"><strong className="text-xs">{row.entity_type}: {row.entity_key}</strong><span className="text-[10px] text-slate-400">{new Date(row.created_at).toLocaleString()}</span></div><p className="mt-1 text-xs text-slate-500">{row.field_name}: <span className="line-through">{row.old_value || 'blank'}</span> → <strong>{row.new_value}</strong></p><p className="mt-1 text-[10px] text-slate-400">{row.actor}{row.reason ? ` · ${row.reason}` : ''}</p></div>)}</div></div></section>
+    </div></div>;
+}

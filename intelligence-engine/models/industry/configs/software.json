@@ -1,0 +1,19 @@
+{
+  "industry_id": "software",
+  "name": "Software / SaaS",
+  "demand_drivers": ["digitisation", "subscription_adoption", "ai_features"],
+  "supply_drivers": ["rd_talent", "cloud_infra_cost"],
+  "capacity": "product_and_go_to_market",
+  "pricing": "seat_usage_tiered",
+  "margins": {"gross": "70-85%", "ebit": "variable"},
+  "competition": "global_product_peers",
+  "regulation": ["data_privacy", "security"],
+  "capital_intensity": "low_to_medium",
+  "typical_risks": ["churn", "competition", "multiple_compression"],
+  "important_kpis": ["arr", "nrr", "cac_payback", "rule_of_40", "gross_retention"],
+  "preferred_valuation_models": ["relative_ev_sales", "dcf_fcff", "relative_pe"],
+  "historical_cycles": ["saas_rerating", "2022_multiple_compression"],
+  "industry_structure": "winner_take_most_in_niches",
+  "business_characteristics": ["recurring_revenue", "high_gross_margin"],
+  "capital_cycle": "growth_investment_vs_profitability"
+}

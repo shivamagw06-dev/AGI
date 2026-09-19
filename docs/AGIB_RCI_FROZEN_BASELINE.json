@@ -1,0 +1,22 @@
+{
+  "artifact": "AGIB_RCI_FROZEN_BASELINE",
+  "company": "AGI",
+  "status": "CERTIFIED",
+  "engineering_baseline_frozen": true,
+  "date": "2026-07-28",
+  "commit": "3766ae12",
+  "resolved_by_tirc": [
+    "future_leakage|historical_replay"
+  ],
+  "remaining_non_blocking": [
+    "intent_mismatch on CIO-Q11/Q16 (ignored for freeze)"
+  ],
+  "kpi_proxies": {
+    "future_leakage_count": 0,
+    "replay_accuracy_historical_pct": 100.0,
+    "iel_pass_pct": 99.9,
+    "framework_accuracy_pct": 97.76,
+    "intent_accuracy_pct": 99.8
+  },
+  "fabricated": false
+}

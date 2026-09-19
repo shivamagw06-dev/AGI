@@ -1,0 +1,463 @@
+{
+  "accounting": {
+    "cash_conversion": 0.9781,
+    "derived_not_stored": true,
+    "entity": "TCS",
+    "found": true,
+    "leverage": 0.1219,
+    "provider": "kf_accounting_producer",
+    "revenue_cagr": 0.095508
+  },
+  "business_quality": {
+    "entity": "TCS",
+    "found": true,
+    "insufficient": false,
+    "provider": "kf_bq_producer",
+    "quality_score": 80.0,
+    "roic": 80.550775
+  },
+  "company_profile": {
+    "entity": "TCS",
+    "market_cap": 56296.54,
+    "sector": "it_services"
+  },
+  "corporate_actions": [
+    {
+      "date": "2025-05-10",
+      "filing_id": "TCS-DIV-2025",
+      "title": "Dividend Declaration",
+      "type": "dividend"
+    }
+  ],
+  "coverage": 1.0,
+  "entity": "TCS",
+  "evidence_packs": {
+    "coverage": 0.75,
+    "current_pe": 28.999065,
+    "downside_case": -0.055774,
+    "entity": "TCS",
+    "entity_confidence": 0.95,
+    "freshness": "2026-08-01T13:04:22Z",
+    "historical_pe": 27.4631,
+    "missing_fields": [],
+    "provenance": "knowledge_factory",
+    "quality": 90.0,
+    "risk_drivers": "market_beta,volatility",
+    "version": "kf-pipeline-v1.0.0"
+  },
+  "historical_financials": {
+    "bvps": {
+      "FY17": 447.0,
+      "FY18": 458.0,
+      "FY19": 240.0,
+      "FY20": 216.0,
+      "FY21": 231.0,
+      "FY22": 240.0,
+      "FY23": 250.0,
+      "FY24": 260.0,
+      "FY25": 272.0,
+      "FY26": 285.0
+    },
+    "capex": {
+      "FY17": 2300.0,
+      "FY18": 2000.0,
+      "FY19": 2500.0,
+      "FY20": 3000.0,
+      "FY21": 2200.0,
+      "FY22": 3100.0,
+      "FY23": 3400.0,
+      "FY24": 3600.0,
+      "FY25": 3800.0,
+      "FY26": 3950.0
+    },
+    "cash": {
+      "FY17": 43000.0,
+      "FY18": 41000.0,
+      "FY19": 39000.0,
+      "FY20": 42000.0,
+      "FY21": 45000.0,
+      "FY22": 44000.0,
+      "FY23": 43000.0,
+      "FY24": 45000.0,
+      "FY25": 47000.0,
+      "FY26": 48500.0
+    },
+    "ebit": {
+      "FY17": 29000.0,
+      "FY18": 29563.0,
+      "FY19": 35864.0,
+      "FY20": 36700.0,
+      "FY21": 40800.0,
+      "FY22": 46600.0,
+      "FY23": 50600.0,
+      "FY24": 55400.0,
+      "FY25": 59400.0,
+      "FY26": 62400.0
+    },
+    "ebitda": {
+      "FY17": 32000.0,
+      "FY18": 32700.0,
+      "FY19": 39506.0,
+      "FY20": 40700.0,
+      "FY21": 44900.0,
+      "FY22": 51100.0,
+      "FY23": 56200.0,
+      "FY24": 61300.0,
+      "FY25": 65600.0,
+      "FY26": 68900.0
+    },
+    "eps": {
+      "FY17": 66.75,
+      "FY18": 74.44,
+      "FY19": 83.05,
+      "FY20": 86.19,
+      "FY21": 94.62,
+      "FY22": 103.62,
+      "FY23": 115.19,
+      "FY24": 126.88,
+      "FY25": 134.19,
+      "FY26": 138.97
+    },
+    "equity": {
+      "FY17": 86524.0,
+      "FY18": 85128.0,
+      "FY19": 89446.0,
+      "FY20": 84126.0,
+      "FY21": 86433.0,
+      "FY22": 89139.0,
+      "FY23": 90127.0,
+      "FY24": 92000.0,
+      "FY25": 95000.0,
+      "FY26": 98200.0
+    },
+    "net_income": {
+      "FY17": 26289.0,
+      "FY18": 25826.0,
+      "FY19": 31472.0,
+      "FY20": 32340.0,
+      "FY21": 32430.0,
+      "FY22": 38327.0,
+      "FY23": 42147.0,
+      "FY24": 45908.0,
+      "FY25": 48550.0,
+      "FY26": 50300.0
+    },
+    "ocf": {
+      "FY17": 25223.0,
+      "FY18": 25067.0,
+      "FY19": 28593.0,
+      "FY20": 32369.0,
+      "FY21": 38802.0,
+      "FY22": 39949.0,
+      "FY23": 41965.0,
+      "FY24": 44338.0,
+      "FY25": 47100.0,
+      "FY26": 49200.0
+    },
+    "price": {
+      "FY17": 1215.0,
+      "FY18": 1815.0,
+      "FY19": 2000.0,
+      "FY20": 1798.0,
+      "FY21": 3170.0,
+      "FY22": 3735.0,
+      "FY23": 3220.0,
+      "FY24": 3860.0,
+      "FY25": 4050.0,
+      "FY26": 4030.0
+    },
+    "revenue": {
+      "FY17": 117966.0,
+      "FY18": 123104.0,
+      "FY19": 146463.0,
+      "FY20": 156949.0,
+      "FY21": 164177.0,
+      "FY22": 191754.0,
+      "FY23": 225458.0,
+      "FY24": 240893.0,
+      "FY25": 255320.0,
+      "FY26": 268100.0
+    },
+    "shares": {
+      "FY17": 394.0,
+      "FY18": 383.0,
+      "FY19": 375.0,
+      "FY20": 375.0,
+      "FY21": 370.0,
+      "FY22": 366.0,
+      "FY23": 366.0,
+      "FY24": 362.0,
+      "FY25": 362.0,
+      "FY26": 362.0
+    },
+    "total_debt": {
+      "FY17": 0.0,
+      "FY18": 0.0,
+      "FY19": 0.0,
+      "FY20": 6000.0,
+      "FY21": 7000.0,
+      "FY22": 7700.0,
+      "FY23": 7900.0,
+      "FY24": 8100.0,
+      "FY25": 8300.0,
+      "FY26": 8400.0
+    }
+  },
+  "historical_valuation": {
+    "derived_not_stored": true,
+    "entity": "TCS",
+    "found": true,
+    "insufficient": [],
+    "metrics": {
+      "Cash_Conversion": {
+        "derived_from": [
+          "ocf",
+          "capex",
+          "net_income"
+        ],
+        "formula": "(ocf - capex) / net_income * 100",
+        "points": {
+          "FY17": 87.196166,
+          "FY18": 89.316967,
+          "FY19": 82.908617,
+          "FY20": 90.813234,
+          "FY21": 112.864632,
+          "FY22": 96.143711,
+          "FY23": 91.501174,
+          "FY24": 88.738346,
+          "FY25": 89.186406,
+          "FY26": 89.960239
+        },
+        "provider": "kf_derived_producer",
+        "rejected_periods": {}
+      },
+      "EV_EBITDA": {
+        "derived_from": [
+          "price",
+          "shares",
+          "total_debt",
+          "cash",
+          "ebitda"
+        ],
+        "formula": "(price * shares + total_debt - cash) / ebitda",
+        "points": {
+          "FY17": 13.615937,
+          "FY18": 20.004434,
+          "FY19": 17.997266,
+          "FY20": 15.681818,
+          "FY21": 25.276169,
+          "FY22": 26.041292,
+          "FY23": 20.345552,
+          "FY24": 22.192822,
+          "FY25": 21.759146,
+          "FY26": 20.591582
+        },
+        "provider": "kf_derived_producer",
+        "rejected_periods": {}
+      },
+      "Net_Margin": {
+        "derived_from": [
+          "net_income",
+          "revenue"
+        ],
+        "formula": "net_income / revenue * 100",
+        "points": {
+          "FY17": 22.285235,
+          "FY18": 20.97901,
+          "FY19": 21.488021,
+          "FY20": 20.60542,
+          "FY21": 19.753071,
+          "FY22": 19.987588,
+          "FY23": 18.693947,
+          "FY24": 19.057424,
+          "FY25": 19.015353,
+          "FY26": 18.761656
+        },
+        "provider": "kf_derived_producer",
+        "rejected_periods": {}
+      },
+      "PB": {
+        "derived_from": [
+          "price",
+          "bvps"
+        ],
+        "formula": "price / book_value_per_share",
+        "points": {
+          "FY17": 2.718121,
+          "FY18": 3.962882,
+          "FY19": 8.333333,
+          "FY20": 8.324074,
+          "FY21": 13.722944,
+          "FY22": 15.5625,
+          "FY23": 12.88,
+          "FY24": 14.846154,
+          "FY25": 14.889706,
+          "FY26": 14.140351
+        },
+        "provider": "kf_derived_producer",
+        "rejected_periods": {}
+      },
+      "PE": {
+        "derived_from": [
+          "price",
+          "eps"
+        ],
+        "formula": "price / eps",
+        "points": {
+          "FY17": 18.202247,
+          "FY18": 24.382053,
+          "FY19": 24.081878,
+          "FY20": 20.860889,
+          "FY21": 33.502431,
+          "FY22": 36.045165,
+          "FY23": 27.953815,
+          "FY24": 30.422446,
+          "FY25": 30.181087,
+          "FY26": 28.999065
+        },
+        "provider": "kf_derived_producer",
+        "rejected_periods": {}
+      },
+      "ROE": {
+        "derived_from": [
+          "net_income",
+          "equity"
+        ],
+        "formula": "net_income / equity * 100",
+        "points": {
+          "FY17": 30.383477,
+          "FY18": 30.337844,
+          "FY19": 35.185475,
+          "FY20": 38.442336,
+          "FY21": 37.520392,
+          "FY22": 42.996892,
+          "FY23": 46.764011,
+          "FY24": 49.9,
+          "FY25": 51.105263,
+          "FY26": 51.221996
+        },
+        "provider": "kf_derived_producer",
+        "rejected_periods": {}
+      },
+      "ROIC": {
+        "derived_from": [
+          "ebit",
+          "total_debt",
+          "equity",
+          "cash"
+        ],
+        "formula": "ebit * (1 - tax) / (total_debt + equity - cash) * 100",
+        "points": {
+          "FY17": 49.972429,
+          "FY18": 50.245309,
+          "FY19": 53.320382,
+          "FY20": 57.193617,
+          "FY21": 63.180063,
+          "FY22": 66.144325,
+          "FY23": 68.966144,
+          "FY24": 75.408348,
+          "FY25": 79.129663,
+          "FY26": 80.550775
+        },
+        "provider": "kf_derived_producer",
+        "rejected_periods": {}
+      }
+    },
+    "provider": "kf_derived_producer"
+  },
+  "kind": "company_knowledge_object",
+  "last_updated": "2026-08-01T13:04:22Z",
+  "macro_sensitivity": {
+    "beta": 0.9216,
+    "sector": "it_services"
+  },
+  "management": {
+    "events": []
+  },
+  "missing_fields": [],
+  "object_version": "kf-objects-v1.0.0",
+  "peer_group": {
+    "entity": "TCS",
+    "fabricated": false,
+    "found": true,
+    "insufficient": false,
+    "peers": [
+      "HCLTECH",
+      "INFY",
+      "LTIM",
+      "OFSS",
+      "PERSISTENT",
+      "TECHM",
+      "WIPRO",
+      "COFORGE",
+      "MPHASIS",
+      "LTTS",
+      "TATAELXSI",
+      "KPITTECH",
+      "SONATSOFTW",
+      "CYIENT",
+      "ZENSAR",
+      "BIRLASOFT",
+      "NEWGEN",
+      "TANLA",
+      "ROUTE",
+      "HAPPSTMNDS",
+      "LATENTVIEW",
+      "RATEGAIN",
+      "MAPMYINDIA"
+    ],
+    "provider": "kf_peer_producer"
+  },
+  "provider": "knowledge_factory",
+  "quality_score": 88.0,
+  "risk": {
+    "beta": 0.9216,
+    "correlation": 0.9956,
+    "derived_not_stored": true,
+    "entity": "TCS",
+    "expected_shortfall_95_pct": 5.76,
+    "factor_exposure": {
+      "market_beta": 0.9216,
+      "residual_vol_pct": 0.0779
+    },
+    "formulas": {
+      "beta": "cov(asset, benchmark) / var(benchmark)",
+      "downside_deviation": "stdev(negative_returns) * sqrt(12)",
+      "expected_shortfall_95": "mean(losses >= VaR95)",
+      "var_95": "historical_simulation_percentile(losses, 95)",
+      "volatility_ann": "stdev(monthly_returns) * sqrt(12)"
+    },
+    "found": true,
+    "liquidity_score": 0.7796,
+    "max_drawdown_pct": 5.936,
+    "provider": "kf_risk_producer",
+    "var_95_monthly_pct": 5.5774,
+    "volatility_ann_pct": 17.6328
+  },
+  "sector": "it_services",
+  "timeline": {
+    "entity": "TCS",
+    "events": [
+      {
+        "date": "2025-04-20",
+        "filing_id": "TCS-Q4-2025",
+        "title": "Q4 Results",
+        "type": "earnings"
+      },
+      {
+        "date": "2025-05-10",
+        "filing_id": "TCS-DIV-2025",
+        "title": "Dividend Declaration",
+        "type": "dividend"
+      },
+      {
+        "date": "2025-06-15",
+        "filing_id": "TCS-AR-2025",
+        "title": "Annual Report FY25",
+        "type": "annual_report"
+      }
+    ],
+    "n": 3,
+    "provider": "kf_timeline_producer"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "industry_id": "infrastructure",
+  "name": "Infrastructure",
+  "demand_drivers": ["public_capex", "urbanisation", "logistics"],
+  "supply_drivers": ["order_book", "execution", "funding"],
+  "capacity": "execution_bandwidth",
+  "pricing": "contracts_and_escalation",
+  "margins": {"ebit": "project_mix"},
+  "competition": "epc_and_developers",
+  "regulation": ["contracts", "land", "environment"],
+  "capital_intensity": "high",
+  "typical_risks": ["execution", "receivables", "funding", "political"],
+  "important_kpis": ["order_book", "book_to_bill", "working_capital", "leverage"],
+  "preferred_valuation_models": ["dcf_fcff", "sotp", "relative_pe"],
+  "historical_cycles": ["infra_boom", "npa_era"],
+  "industry_structure": "project_based",
+  "business_characteristics": ["long_cycle", "working_capital_heavy"],
+  "capital_cycle": "award_and_execution_wave"
+}

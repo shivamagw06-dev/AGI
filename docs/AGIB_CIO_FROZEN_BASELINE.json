@@ -1,0 +1,21 @@
+{
+  "artifact": "AGIB_CIO_FROZEN_BASELINE",
+  "company": "AGI",
+  "programme": "AGI v3.5 Release Certification (post-TIRC)",
+  "status": "CERTIFIED",
+  "engineering_baseline_frozen": true,
+  "date": "2026-07-28",
+  "commit": "3766ae12",
+  "iel_full_pass_pct": 100.0,
+  "iel_full_mean_score": 87.58,
+  "intent_accuracy_pct": 92.0,
+  "trajectory_examiner_historical": {
+    "baseline": 3.66,
+    "abcd": 6.26,
+    "iap": 7.54,
+    "ieg": 7.82,
+    "imai": 8.12
+  },
+  "note": "Intent 92% soft-dimension on CIO-Q11/Q16 ignored for TIRC freeze per sprint brief; overall CIO IEL pass 100%.",
+  "fabricated": false
+}

@@ -1,0 +1,125 @@
+name: Institutional Safety Guards
+
+# Four protections stand between the Institutional Holdings product and its
+# clients: five admin-only routes, a crawler that does not start on its own, a
+# withheld backtester, and a real 404 on unmatched paths. Each one is a single
+# line that a future edit could quietly undo.
+#
+# The suite runs in well under a second and needs no credentials, no database
+# and no network, so it can run on every push instead of nightly. That is the
+# whole design: a guard nobody waits for is a guard that stays green.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  guards:
+    name: Route auth, crawler default, withheld backtester
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Assert the safety guards hold
+        run: node --test server/routes/institutionalSafetyGuards.test.js
+
+      # The limiter is the only thing between this product and an EDGAR IP
+      # block, and its tests measure elapsed time rather than shape.
+      - name: Assert the SEC limiter paces, pauses and breaks the circuit
+        run: node --test server/services/secRateLimiter.test.js
+
+      # A run that half-worked must never be recorded as a success: the whole
+      # point of the record is that an operator can trust what it says.
+      - name: Assert the collection run record tells the truth
+        run: node --test server/services/collectionRunSummary.test.js
+
+      # Runs against cover pages captured from real SEC filings. The previous
+      # implementation passed review and was inert against every filing SEC has
+      # ever published, which only real fixtures expose.
+      - name: Assert amendments supersede or add, and are never guessed
+        run: node --test server/services/secAmendment.test.js
+
+      # A CUSIP is reassigned after corporate actions. Resolving a filing with
+      # today's mapping relabels old holdings as whatever the identifier means
+      # now, and that propagates into consensus, sector weights and prices.
+      - name: Assert identifiers resolve as at the filing date
+        run: node --test server/services/securityIdentity.test.js
+
+      # The repair job rewrites holdings for every quarter carrying an
+      # amendment, so what it refuses to do matters more than what it computes:
+      # no writing unless asked, no overwrite before the archive, and no filing
+      # left out of the reconciliation report.
+      - name: Assert the repair job cannot write without being asked
+        run: node --test server/scripts/repairAmendments.test.js
+
+      # Repair runs quarter by quarter, so there is a window where some history
+      # is corrected and some is not. The gate must fail closed, and the
+      # aggregate surfaces must say so rather than publishing a mixed figure.
+      - name: Assert the data-integrity gate fails closed
+        run: node --test server/services/repairGate.test.js
+
+      # A 1000x error in stored holdings values. Two of three ingest paths keyed
+      # the dollars-vs-thousands rule to the quarter instead of the filing date.
+      - name: Assert one value-scale rule, keyed to the filing date
+        run: node --test server/services/valueScale.test.js
+
+      # The search route is public and unauthenticated, so its bounds matter:
+      # a cached index rather than a substring match over 72,401 rows per
+      # keystroke, and a clamped term and limit.
+      - name: Assert the security search is bounded and ranks sensibly
+        run: node --test server/services/securityRanking.test.js
+
+      # This job installs nothing on purpose. Twice a test has been added that
+      # reaches the Supabase client through an import chain and failed here
+      # only, having passed on a machine with the packages present. This walks
+      # the graph statically so the third time is caught before the push.
+      - name: Assert the guard suite needs no installed packages
+        run: node --test server/tests/noRuntimeDeps.test.js
+
+      # Entry timing, time zone, survivorship and the benchmark gate. Each case
+      # is one an adversarial audit confirmed produced a flattering number.
+      - name: Assert the backtest cannot look ahead
+        run: node --test server/services/pointInTime.test.js
+
+      # A test that cannot fail proves nothing. Remove one guard and the suite
+      # must go red; if it stays green the assertions have drifted away from
+      # what they claim to check, and this job fails on that instead.
+      - name: Prove the guards actually catch a regression
+        run: |
+          set -euo pipefail
+          cp server/routes/institutionalHoldings.js /tmp/routes.bak
+          sed -i "s|router.post('/backtests', requireAdmin,|router.post('/backtests',|" \
+            server/routes/institutionalHoldings.js
+          if node --test server/routes/institutionalSafetyGuards.test.js >/dev/null 2>&1; then
+            cp /tmp/routes.bak server/routes/institutionalHoldings.js
+            echo "::error::Removing admin auth from POST /backtests did not fail the suite."
+            exit 1
+          fi
+          cp /tmp/routes.bak server/routes/institutionalHoldings.js
+          echo "Guards confirmed live: dropping auth on POST /backtests fails the suite."
+
+  undefined-identifiers:
+    name: No module uses an identifier it never imported
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      # This job installs, unlike the guard suite above, because no-undef needs
+      # a real parser. It exists because the failure it catches is invisible to
+      # everything else: the syntax is valid, the module imports cleanly, and it
+      # throws at call time on whichever path nobody exercised before a deploy.
+      - run: npm ci --no-audit --no-fund
+
+      - name: Assert no institutional module uses an undefined identifier
+        run: node --test server/tests/noUndefinedIdentifiers.test.js

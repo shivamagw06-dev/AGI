@@ -1,0 +1,46 @@
+{
+  "as_of": "2026-07-24",
+  "universe_id": "NSE_INVESTABLE_L1",
+  "panels": {
+    "TCS": {
+      "sector_id": "IT",
+      "ret_3_0": 0.04,
+      "ret_6_1": 0.08,
+      "ret_12_1": 0.18,
+      "sigma_60": 0.18,
+      "roc_10": 4.0,
+      "adx_14": 28.0,
+      "rsi_14": 58.0
+    },
+    "RELIANCE": {
+      "sector_id": "ENERGY",
+      "ret_3_0": -0.01,
+      "ret_6_1": 0.01,
+      "ret_12_1": 0.03,
+      "sigma_60": 0.28,
+      "roc_10": -1.0,
+      "adx_14": 18.0,
+      "rsi_14": 48.0
+    },
+    "TRENDLONG": {
+      "sector_id": "IT",
+      "ret_3_0": 0.10,
+      "ret_6_1": 0.20,
+      "ret_12_1": 0.40,
+      "sigma_60": 0.22,
+      "roc_10": 12.0,
+      "adx_14": 40.0,
+      "rsi_14": 62.0
+    },
+    "TRENDSHORT": {
+      "sector_id": "ENERGY",
+      "ret_3_0": -0.08,
+      "ret_6_1": -0.15,
+      "ret_12_1": -0.30,
+      "sigma_60": 0.30,
+      "roc_10": -10.0,
+      "adx_14": 35.0,
+      "rsi_14": 32.0
+    }
+  }
+}

@@ -1,0 +1,24 @@
+-- report_date on its own.
+--
+-- institutional_holdings already carries (cusip, report_date desc) and
+-- (ticker, report_date desc), but neither answers a question about report_date
+-- alone: Postgres will not skip the leading column, so `max(report_date)` and
+-- any range over it are full scans. At 924,000 rows that was slow and worked.
+-- At 2.6 million, after today's 13F import, three separate queries crossed the
+-- statement timeout in one afternoon:
+--
+--   the price backfill's holdings read
+--   the venue recovery's candidate scan
+--   the venue recovery's as-of date, which is a single `order by ... limit 1`
+--
+-- Two were fixed by moving the work into the database and one by asking a
+-- smaller table. This is the index they should not have needed to work around,
+-- and the fourth query would have found the same wall.
+--
+-- Written with `if not exists` because the useful way to create it on a live
+-- table is `create index concurrently`, which cannot run inside a transaction
+-- and therefore cannot run inside a migration. Run that by hand first and this
+-- becomes a no-op that records the index in schema history; run only this and
+-- it builds with a brief lock on writes instead.
+create index if not exists institutional_holdings_report_date_idx
+  on public.institutional_holdings (report_date);

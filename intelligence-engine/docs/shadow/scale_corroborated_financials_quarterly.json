@@ -1,0 +1,2325 @@
+{
+ "35fbc67d328a9b08a467dc8bf38facd3": {
+  "row_id": "35fbc67d328a9b08a467dc8bf38facd3",
+  "symbol": "ASIANPAINT",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "4dd8ce24e692a6bc79d9e4dcf47bdf72b188e1c59bd75885970efd5e3b140764"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "3093d5d5890b6acd2b6fecef0ba361f5": {
+  "row_id": "3093d5d5890b6acd2b6fecef0ba361f5",
+  "symbol": "ASIANPAINT",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "4dd8ce24e692a6bc79d9e4dcf47bdf72b188e1c59bd75885970efd5e3b140764"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "12496fba0fd8c0fb2421081acf0e86b5": {
+  "row_id": "12496fba0fd8c0fb2421081acf0e86b5",
+  "symbol": "ASIANPAINT",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "5d030c5fc165119e54fd4f2e54ed66a8c0485e2f36a250c8bc3334ea77c381ca"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "945cb2a125075ccb094ea9dd79a7dfba": {
+  "row_id": "945cb2a125075ccb094ea9dd79a7dfba",
+  "symbol": "ASIANPAINT",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "5d030c5fc165119e54fd4f2e54ed66a8c0485e2f36a250c8bc3334ea77c381ca"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "c1dd97804711344e9adf9a4961b73d87": {
+  "row_id": "c1dd97804711344e9adf9a4961b73d87",
+  "symbol": "ASIANPAINT",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "4cb3de8253ec027e0cbf7806e0d281e08a91294af7de1032b0e4440c76088670"
+  ],
+  "concepts": [
+   "ProfitOrLossAttributableToOwnersOfParent",
+   "RevenueFromOperations"
+  ]
+ },
+ "69c218c8be7a484d93c653d89ef0d84c": {
+  "row_id": "69c218c8be7a484d93c653d89ef0d84c",
+  "symbol": "ASIANPAINT",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "4cb3de8253ec027e0cbf7806e0d281e08a91294af7de1032b0e4440c76088670"
+  ],
+  "concepts": [
+   "ProfitOrLossAttributableToOwnersOfParent",
+   "RevenueFromOperations"
+  ]
+ },
+ "189e224590cc3c557e56bbde99befe46": {
+  "row_id": "189e224590cc3c557e56bbde99befe46",
+  "symbol": "ASIANPAINT",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "ec75b1e09bab793ec1b222059b7db5ee30cb27d34ad21bd2d35818433399378f"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "603883079561081a248dd6990b7f278f": {
+  "row_id": "603883079561081a248dd6990b7f278f",
+  "symbol": "ASIANPAINT",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "ec75b1e09bab793ec1b222059b7db5ee30cb27d34ad21bd2d35818433399378f"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "2bb904e5e602f78e8ff326d900703019": {
+  "row_id": "2bb904e5e602f78e8ff326d900703019",
+  "symbol": "ASIANPAINT",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "5d030c5fc165119e54fd4f2e54ed66a8c0485e2f36a250c8bc3334ea77c381ca"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "b326a2a22ef19eaf3bbc82dda6db76fb": {
+  "row_id": "b326a2a22ef19eaf3bbc82dda6db76fb",
+  "symbol": "ASIANPAINT",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "ec75b1e09bab793ec1b222059b7db5ee30cb27d34ad21bd2d35818433399378f"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "4f6684850237064c8a9b385e76b8ecd9": {
+  "row_id": "4f6684850237064c8a9b385e76b8ecd9",
+  "symbol": "ASIANPAINT",
+  "source": "formula_engine",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "4dd8ce24e692a6bc79d9e4dcf47bdf72b188e1c59bd75885970efd5e3b140764"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "a233d5a802fac617f73a01c469f6db63": {
+  "row_id": "a233d5a802fac617f73a01c469f6db63",
+  "symbol": "ASIANPAINT",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "4cb3de8253ec027e0cbf7806e0d281e08a91294af7de1032b0e4440c76088670"
+  ],
+  "concepts": [
+   "ProfitOrLossAttributableToOwnersOfParent",
+   "RevenueFromOperations"
+  ]
+ },
+ "eb73b91a499d748170ece05093911796": {
+  "row_id": "eb73b91a499d748170ece05093911796",
+  "symbol": "BHARTIARTL",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "19503fdebdf9d3c4e6972c3ccbe16eb08c6bc523de8bf9ba269c8f2b20897365"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "f286deb3f9b59e6d118362052b1cdfc0": {
+  "row_id": "f286deb3f9b59e6d118362052b1cdfc0",
+  "symbol": "BHARTIARTL",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "19503fdebdf9d3c4e6972c3ccbe16eb08c6bc523de8bf9ba269c8f2b20897365"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "962a7019d8295071ffa7e94e9c135701": {
+  "row_id": "962a7019d8295071ffa7e94e9c135701",
+  "symbol": "BHARTIARTL",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "8f7e429dfe0c3b6d8160c83cd392d3f020f30a654d3c079492e5739f50a67314"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "68bb4f99936d6ce2ed7e97fc22464bdb": {
+  "row_id": "68bb4f99936d6ce2ed7e97fc22464bdb",
+  "symbol": "BHARTIARTL",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "8f7e429dfe0c3b6d8160c83cd392d3f020f30a654d3c079492e5739f50a67314"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "de94817fd1d99c927feafc6c3366bffd": {
+  "row_id": "de94817fd1d99c927feafc6c3366bffd",
+  "symbol": "BHARTIARTL",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "9a494edc5218c467e76e960e2c83657725fca75f0a005b685a1381ba1fad5010"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "a4dc01d3e677483f15196dd69b9b2bb9": {
+  "row_id": "a4dc01d3e677483f15196dd69b9b2bb9",
+  "symbol": "BHARTIARTL",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "9a494edc5218c467e76e960e2c83657725fca75f0a005b685a1381ba1fad5010"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "80ecbdca610293fdb5bfd8db5cee116f": {
+  "row_id": "80ecbdca610293fdb5bfd8db5cee116f",
+  "symbol": "BHARTIARTL",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "9e3f1bee56e0040a96eda1692f1b84a42616d91696fbf9b8c6fd5572d581bfbb"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "43fe8f5cdaf186684356dbf3727e3b2a": {
+  "row_id": "43fe8f5cdaf186684356dbf3727e3b2a",
+  "symbol": "BHARTIARTL",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "8f7e429dfe0c3b6d8160c83cd392d3f020f30a654d3c079492e5739f50a67314"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "3d46e2aed44e5d72534c61c098abe83e": {
+  "row_id": "3d46e2aed44e5d72534c61c098abe83e",
+  "symbol": "BHARTIARTL",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "9e3f1bee56e0040a96eda1692f1b84a42616d91696fbf9b8c6fd5572d581bfbb"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "b76b3ad17620af0f971724bdbfec29ba": {
+  "row_id": "b76b3ad17620af0f971724bdbfec29ba",
+  "symbol": "BHARTIARTL",
+  "source": "formula_engine",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "19503fdebdf9d3c4e6972c3ccbe16eb08c6bc523de8bf9ba269c8f2b20897365"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "d3ac4afa1297c12b827ab3686cd5a5f7": {
+  "row_id": "d3ac4afa1297c12b827ab3686cd5a5f7",
+  "symbol": "BHARTIARTL",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "9a494edc5218c467e76e960e2c83657725fca75f0a005b685a1381ba1fad5010"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "6e1ee29c1302cf23a6ee7442ea06bd29": {
+  "row_id": "6e1ee29c1302cf23a6ee7442ea06bd29",
+  "symbol": "HDFCBANK",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat",
+   "ebit"
+  ],
+  "filings": [
+   "331643482a313b5746e9f509ecbaaf1615e9edd07fea609752f197d3e6e14106"
+  ],
+  "concepts": [
+   "Income",
+   "OperatingProfitBeforeProvisionAndContingencies",
+   "ProfitLossFromOrdinaryActivitiesAfterTax"
+  ]
+ },
+ "695f8ed8125dbd77a7ba085f29be13a3": {
+  "row_id": "695f8ed8125dbd77a7ba085f29be13a3",
+  "symbol": "HDFCBANK",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat",
+   "ebit"
+  ],
+  "filings": [
+   "331643482a313b5746e9f509ecbaaf1615e9edd07fea609752f197d3e6e14106"
+  ],
+  "concepts": [
+   "Income",
+   "OperatingProfitBeforeProvisionAndContingencies",
+   "ProfitLossFromOrdinaryActivitiesAfterTax"
+  ]
+ },
+ "82272551aa668043164e51ae9e9420fa": {
+  "row_id": "82272551aa668043164e51ae9e9420fa",
+  "symbol": "HDFCBANK",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat",
+   "ebit"
+  ],
+  "filings": [
+   "3d98f9f68292d430ac1dedc628ffa84d7fa43e713363470f6818ef9952e9153c"
+  ],
+  "concepts": [
+   "Income",
+   "OperatingProfitBeforeProvisionAndContingencies",
+   "ProfitLossFromOrdinaryActivitiesAfterTax"
+  ]
+ },
+ "b766856c6cf801b72dd484692ba4dcaa": {
+  "row_id": "b766856c6cf801b72dd484692ba4dcaa",
+  "symbol": "HDFCBANK",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat",
+   "ebit"
+  ],
+  "filings": [
+   "3d98f9f68292d430ac1dedc628ffa84d7fa43e713363470f6818ef9952e9153c"
+  ],
+  "concepts": [
+   "Income",
+   "OperatingProfitBeforeProvisionAndContingencies",
+   "ProfitLossFromOrdinaryActivitiesAfterTax"
+  ]
+ },
+ "27cb5dbd3516cef3604f208215d12f58": {
+  "row_id": "27cb5dbd3516cef3604f208215d12f58",
+  "symbol": "HDFCBANK",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat",
+   "ebit"
+  ],
+  "filings": [
+   "2a2c8f2c888b7be911486ab7290f340c076a03055b06a8472ab484ee86fcde99"
+  ],
+  "concepts": [
+   "Income",
+   "OperatingProfitBeforeProvisionAndContingencies",
+   "ProfitLossFromOrdinaryActivitiesAfterTax"
+  ]
+ },
+ "55dd347cf08cf684fa17e325ddaa9c92": {
+  "row_id": "55dd347cf08cf684fa17e325ddaa9c92",
+  "symbol": "HDFCBANK",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat",
+   "ebit"
+  ],
+  "filings": [
+   "2a2c8f2c888b7be911486ab7290f340c076a03055b06a8472ab484ee86fcde99"
+  ],
+  "concepts": [
+   "Income",
+   "OperatingProfitBeforeProvisionAndContingencies",
+   "ProfitLossFromOrdinaryActivitiesAfterTax"
+  ]
+ },
+ "92f6fe3ad06c23237dd8a8b0b1800e73": {
+  "row_id": "92f6fe3ad06c23237dd8a8b0b1800e73",
+  "symbol": "HDFCBANK",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat",
+   "ebit"
+  ],
+  "filings": [
+   "d98e8af7eb7eaf6b0184f795f28a0511c36a5dc533f1150d131d4a4fa956f30f"
+  ],
+  "concepts": [
+   "Income",
+   "OperatingProfitBeforeProvisionAndContingencies",
+   "ProfitLossFromOrdinaryActivitiesAfterTax"
+  ]
+ },
+ "aeb17552bb3615dff9b93db063321d3c": {
+  "row_id": "aeb17552bb3615dff9b93db063321d3c",
+  "symbol": "HDFCBANK",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat",
+   "ebit"
+  ],
+  "filings": [
+   "d98e8af7eb7eaf6b0184f795f28a0511c36a5dc533f1150d131d4a4fa956f30f"
+  ],
+  "concepts": [
+   "Income",
+   "OperatingProfitBeforeProvisionAndContingencies",
+   "ProfitLossFromOrdinaryActivitiesAfterTax"
+  ]
+ },
+ "51e02ab0c61c150c34aa69bf236167d0": {
+  "row_id": "51e02ab0c61c150c34aa69bf236167d0",
+  "symbol": "HDFCBANK",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat",
+   "ebit"
+  ],
+  "filings": [
+   "3d98f9f68292d430ac1dedc628ffa84d7fa43e713363470f6818ef9952e9153c"
+  ],
+  "concepts": [
+   "Income",
+   "OperatingProfitBeforeProvisionAndContingencies",
+   "ProfitLossFromOrdinaryActivitiesAfterTax"
+  ]
+ },
+ "137984376b2192712459cdb1e4936fee": {
+  "row_id": "137984376b2192712459cdb1e4936fee",
+  "symbol": "HDFCBANK",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat",
+   "ebit"
+  ],
+  "filings": [
+   "d98e8af7eb7eaf6b0184f795f28a0511c36a5dc533f1150d131d4a4fa956f30f"
+  ],
+  "concepts": [
+   "Income",
+   "OperatingProfitBeforeProvisionAndContingencies",
+   "ProfitLossFromOrdinaryActivitiesAfterTax"
+  ]
+ },
+ "b11ae5b063cbdac0c28c855c03dbce71": {
+  "row_id": "b11ae5b063cbdac0c28c855c03dbce71",
+  "symbol": "HDFCBANK",
+  "source": "yahoo_finance_statements",
+  "matched_fields": [
+   "revenue",
+   "pat",
+   "ebit"
+  ],
+  "filings": [
+   "331643482a313b5746e9f509ecbaaf1615e9edd07fea609752f197d3e6e14106"
+  ],
+  "concepts": [
+   "Income",
+   "OperatingProfitBeforeProvisionAndContingencies",
+   "ProfitLossFromOrdinaryActivitiesAfterTax"
+  ]
+ },
+ "b86918fcc9aff577ac3e6c0b707344ce": {
+  "row_id": "b86918fcc9aff577ac3e6c0b707344ce",
+  "symbol": "HDFCBANK",
+  "source": "yahoo_finance_statements",
+  "matched_fields": [
+   "revenue",
+   "pat",
+   "ebit"
+  ],
+  "filings": [
+   "2a2c8f2c888b7be911486ab7290f340c076a03055b06a8472ab484ee86fcde99"
+  ],
+  "concepts": [
+   "Income",
+   "OperatingProfitBeforeProvisionAndContingencies",
+   "ProfitLossFromOrdinaryActivitiesAfterTax"
+  ]
+ },
+ "9035ea5f725a41e086c5ea0b353cf649": {
+  "row_id": "9035ea5f725a41e086c5ea0b353cf649",
+  "symbol": "ICICIBANK",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat",
+   "ebit"
+  ],
+  "filings": [
+   "31b20628273706b9bad2c101cade66d6e47dc8c2212b310ef6d521342c3027b8"
+  ],
+  "concepts": [
+   "Income",
+   "OperatingProfitBeforeProvisionAndContingencies",
+   "ProfitLossFromOrdinaryActivitiesAfterTax"
+  ]
+ },
+ "6cf1e84d56e7c7b31d2aaf8aaad41568": {
+  "row_id": "6cf1e84d56e7c7b31d2aaf8aaad41568",
+  "symbol": "ICICIBANK",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat",
+   "ebit"
+  ],
+  "filings": [
+   "31b20628273706b9bad2c101cade66d6e47dc8c2212b310ef6d521342c3027b8"
+  ],
+  "concepts": [
+   "Income",
+   "OperatingProfitBeforeProvisionAndContingencies",
+   "ProfitLossFromOrdinaryActivitiesAfterTax"
+  ]
+ },
+ "4eacad37ac5e7e285ba9c95610e97395": {
+  "row_id": "4eacad37ac5e7e285ba9c95610e97395",
+  "symbol": "ICICIBANK",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat",
+   "ebit"
+  ],
+  "filings": [
+   "9d838c94b09d323f5d5f0ad84a92aacff6adb416aee7bbdc315f9a652160618a"
+  ],
+  "concepts": [
+   "Income",
+   "OperatingProfitBeforeProvisionAndContingencies",
+   "ProfitLossFromOrdinaryActivitiesAfterTax"
+  ]
+ },
+ "53d9cc329a81896ba9c0e9b85d7dec10": {
+  "row_id": "53d9cc329a81896ba9c0e9b85d7dec10",
+  "symbol": "ICICIBANK",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat",
+   "ebit"
+  ],
+  "filings": [
+   "9d838c94b09d323f5d5f0ad84a92aacff6adb416aee7bbdc315f9a652160618a"
+  ],
+  "concepts": [
+   "Income",
+   "OperatingProfitBeforeProvisionAndContingencies",
+   "ProfitLossFromOrdinaryActivitiesAfterTax"
+  ]
+ },
+ "7f9655d15d776852175a42137e92e5b6": {
+  "row_id": "7f9655d15d776852175a42137e92e5b6",
+  "symbol": "ICICIBANK",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat",
+   "ebit"
+  ],
+  "filings": [
+   "e96d04e75c85a39fd26914ed19bfa3b420deff217d4e1d4bdc3f8fb3018926e3"
+  ],
+  "concepts": [
+   "Income",
+   "OperatingProfitBeforeProvisionAndContingencies",
+   "ProfitLossFromOrdinaryActivitiesAfterTax"
+  ]
+ },
+ "ff5b447eff1b01e7c00ab9cabde8bfe5": {
+  "row_id": "ff5b447eff1b01e7c00ab9cabde8bfe5",
+  "symbol": "ICICIBANK",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat",
+   "ebit"
+  ],
+  "filings": [
+   "e96d04e75c85a39fd26914ed19bfa3b420deff217d4e1d4bdc3f8fb3018926e3"
+  ],
+  "concepts": [
+   "Income",
+   "OperatingProfitBeforeProvisionAndContingencies",
+   "ProfitLossFromOrdinaryActivitiesAfterTax"
+  ]
+ },
+ "0b04cd2756037626cfc93983691b5b5f": {
+  "row_id": "0b04cd2756037626cfc93983691b5b5f",
+  "symbol": "ICICIBANK",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat",
+   "ebit"
+  ],
+  "filings": [
+   "39677b484f433a34be77c8a1bd241a0d9b66bf17cfd4eedc54ce0dfbaefc62d5"
+  ],
+  "concepts": [
+   "Income",
+   "OperatingProfitBeforeProvisionAndContingencies",
+   "ProfitLossFromOrdinaryActivitiesAfterTax"
+  ]
+ },
+ "eba6cfd62f279ffc93b46c6ba1f1ef3c": {
+  "row_id": "eba6cfd62f279ffc93b46c6ba1f1ef3c",
+  "symbol": "ICICIBANK",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat",
+   "ebit"
+  ],
+  "filings": [
+   "39677b484f433a34be77c8a1bd241a0d9b66bf17cfd4eedc54ce0dfbaefc62d5"
+  ],
+  "concepts": [
+   "Income",
+   "OperatingProfitBeforeProvisionAndContingencies",
+   "ProfitLossFromOrdinaryActivitiesAfterTax"
+  ]
+ },
+ "41e5b7c61d1ffffac1b89b78ef0c1994": {
+  "row_id": "41e5b7c61d1ffffac1b89b78ef0c1994",
+  "symbol": "ICICIBANK",
+  "source": "yahoo_finance_statements",
+  "matched_fields": [
+   "revenue",
+   "pat",
+   "ebit"
+  ],
+  "filings": [
+   "9d838c94b09d323f5d5f0ad84a92aacff6adb416aee7bbdc315f9a652160618a"
+  ],
+  "concepts": [
+   "Income",
+   "OperatingProfitBeforeProvisionAndContingencies",
+   "ProfitLossFromOrdinaryActivitiesAfterTax"
+  ]
+ },
+ "a37e69399955778aefc2571b074ac607": {
+  "row_id": "a37e69399955778aefc2571b074ac607",
+  "symbol": "ICICIBANK",
+  "source": "yahoo_finance_statements",
+  "matched_fields": [
+   "revenue",
+   "pat",
+   "ebit"
+  ],
+  "filings": [
+   "39677b484f433a34be77c8a1bd241a0d9b66bf17cfd4eedc54ce0dfbaefc62d5"
+  ],
+  "concepts": [
+   "Income",
+   "OperatingProfitBeforeProvisionAndContingencies",
+   "ProfitLossFromOrdinaryActivitiesAfterTax"
+  ]
+ },
+ "4d12f7385489b430242f8ac9e8dced42": {
+  "row_id": "4d12f7385489b430242f8ac9e8dced42",
+  "symbol": "ICICIBANK",
+  "source": "yahoo_finance_statements",
+  "matched_fields": [
+   "revenue",
+   "pat",
+   "ebit"
+  ],
+  "filings": [
+   "31b20628273706b9bad2c101cade66d6e47dc8c2212b310ef6d521342c3027b8"
+  ],
+  "concepts": [
+   "Income",
+   "OperatingProfitBeforeProvisionAndContingencies",
+   "ProfitLossFromOrdinaryActivitiesAfterTax"
+  ]
+ },
+ "54aa44aa383ba0437659931530dc5aa3": {
+  "row_id": "54aa44aa383ba0437659931530dc5aa3",
+  "symbol": "ICICIBANK",
+  "source": "yahoo_finance_statements",
+  "matched_fields": [
+   "revenue",
+   "pat",
+   "ebit"
+  ],
+  "filings": [
+   "e96d04e75c85a39fd26914ed19bfa3b420deff217d4e1d4bdc3f8fb3018926e3"
+  ],
+  "concepts": [
+   "Income",
+   "OperatingProfitBeforeProvisionAndContingencies",
+   "ProfitLossFromOrdinaryActivitiesAfterTax"
+  ]
+ },
+ "32618297f4255b08f0e60d47230613bc": {
+  "row_id": "32618297f4255b08f0e60d47230613bc",
+  "symbol": "INFY",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "76b50cfcb43c474f7db3203627fe300165dcc54e7890d71eae416d7b838bb977",
+   "969f1c76789da1772effc8d93af369d4e16f295ef133ba50a9eed4f826d9b446"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "7f7ab61a544de9259f6470ac9f8fd532": {
+  "row_id": "7f7ab61a544de9259f6470ac9f8fd532",
+  "symbol": "INFY",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "76b50cfcb43c474f7db3203627fe300165dcc54e7890d71eae416d7b838bb977",
+   "969f1c76789da1772effc8d93af369d4e16f295ef133ba50a9eed4f826d9b446"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "b3a8098ffbdc974224f07a03c971979c": {
+  "row_id": "b3a8098ffbdc974224f07a03c971979c",
+  "symbol": "INFY",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "45cd03b0b975718090c60b6aa2aaa9287e02a65d803c130d9cea478bd9f5d26b"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "0893cc96e2dffdbf9595cc2a048bd068": {
+  "row_id": "0893cc96e2dffdbf9595cc2a048bd068",
+  "symbol": "INFY",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "45cd03b0b975718090c60b6aa2aaa9287e02a65d803c130d9cea478bd9f5d26b"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "68d7616a2eee22f2672884e46aa7e3f5": {
+  "row_id": "68d7616a2eee22f2672884e46aa7e3f5",
+  "symbol": "INFY",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "bb3dba24c0cc33f318141cf9733b3b3d02c1b883de36ba57541b825d9c6510b6"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "3201db1aa34f66a50dd74e45a2c1d30d": {
+  "row_id": "3201db1aa34f66a50dd74e45a2c1d30d",
+  "symbol": "INFY",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "bb3dba24c0cc33f318141cf9733b3b3d02c1b883de36ba57541b825d9c6510b6"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "7938febf614ac128eede0b1fb665e4c3": {
+  "row_id": "7938febf614ac128eede0b1fb665e4c3",
+  "symbol": "INFY",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "6116b0db3b0f42654892d531a415a423e0ebc32bafdfd62ab70ec303f19cc7b8"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "aba660f1e3797a91091e6afa4ee58df3": {
+  "row_id": "aba660f1e3797a91091e6afa4ee58df3",
+  "symbol": "INFY",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "6116b0db3b0f42654892d531a415a423e0ebc32bafdfd62ab70ec303f19cc7b8"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "3457eaf7ebf6e402861661a5356678ea": {
+  "row_id": "3457eaf7ebf6e402861661a5356678ea",
+  "symbol": "INFY",
+  "source": "yahoo_finance_statements",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "45cd03b0b975718090c60b6aa2aaa9287e02a65d803c130d9cea478bd9f5d26b"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "a269e3ebc58abad797500a326005b329": {
+  "row_id": "a269e3ebc58abad797500a326005b329",
+  "symbol": "INFY",
+  "source": "yahoo_finance_statements",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "6116b0db3b0f42654892d531a415a423e0ebc32bafdfd62ab70ec303f19cc7b8"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "6e2db5ad2adac0d2e16f74ee566ef5d3": {
+  "row_id": "6e2db5ad2adac0d2e16f74ee566ef5d3",
+  "symbol": "INFY",
+  "source": "yahoo_finance_statements",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "76b50cfcb43c474f7db3203627fe300165dcc54e7890d71eae416d7b838bb977",
+   "969f1c76789da1772effc8d93af369d4e16f295ef133ba50a9eed4f826d9b446"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "a675171e338ced5bcdc1123db200a364": {
+  "row_id": "a675171e338ced5bcdc1123db200a364",
+  "symbol": "INFY",
+  "source": "yahoo_finance_statements",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "bb3dba24c0cc33f318141cf9733b3b3d02c1b883de36ba57541b825d9c6510b6"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "26e8dc58d8d529af75cbded6b1b4c2c5": {
+  "row_id": "26e8dc58d8d529af75cbded6b1b4c2c5",
+  "symbol": "NESTLEIND",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "3fa6047e3dc92d5586a091521cdbbf353f4cb7778603e6fdc920c403b6b8d18f"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "0fd15cb6bf5486bf72d0fc715db88706": {
+  "row_id": "0fd15cb6bf5486bf72d0fc715db88706",
+  "symbol": "NESTLEIND",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "3fa6047e3dc92d5586a091521cdbbf353f4cb7778603e6fdc920c403b6b8d18f"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "d17ffbf7e47ac044495f3465664d4364": {
+  "row_id": "d17ffbf7e47ac044495f3465664d4364",
+  "symbol": "NESTLEIND",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "3dfea492dd8a641125c6ec9a1fae0d59e0e324e7cb3495712feb0f66a5eaceab"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "4968684e302406b59fd1ca408013a4c7": {
+  "row_id": "4968684e302406b59fd1ca408013a4c7",
+  "symbol": "NESTLEIND",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "3dfea492dd8a641125c6ec9a1fae0d59e0e324e7cb3495712feb0f66a5eaceab"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "3d0fe91aa3e6ec638b16de7e6e17def9": {
+  "row_id": "3d0fe91aa3e6ec638b16de7e6e17def9",
+  "symbol": "NESTLEIND",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "d3ab34bedf09ccb7e48ed0fb1d4c91438a44724c5f008460e0064cd1faf4fd46"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "19d543b9a5faef24d3a39a65378434af": {
+  "row_id": "19d543b9a5faef24d3a39a65378434af",
+  "symbol": "NESTLEIND",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "d3ab34bedf09ccb7e48ed0fb1d4c91438a44724c5f008460e0064cd1faf4fd46"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "66104f0a89d82fb8693cc55221f195b9": {
+  "row_id": "66104f0a89d82fb8693cc55221f195b9",
+  "symbol": "NESTLEIND",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "27711166343c5da0b27ecc699429c6171b5d0874a2976d87d6f69781b3119d7e"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "2e43f08ed0ed5cb3609209e1513d954e": {
+  "row_id": "2e43f08ed0ed5cb3609209e1513d954e",
+  "symbol": "NESTLEIND",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "27711166343c5da0b27ecc699429c6171b5d0874a2976d87d6f69781b3119d7e"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "c3fd35193f82b741b3203ca24d29bbc9": {
+  "row_id": "c3fd35193f82b741b3203ca24d29bbc9",
+  "symbol": "NESTLEIND",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "3dfea492dd8a641125c6ec9a1fae0d59e0e324e7cb3495712feb0f66a5eaceab"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "aeb632dc5a478332b7daa3b17e0a1887": {
+  "row_id": "aeb632dc5a478332b7daa3b17e0a1887",
+  "symbol": "NESTLEIND",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "27711166343c5da0b27ecc699429c6171b5d0874a2976d87d6f69781b3119d7e"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "1b136c3b15da1d23da72d80a445f3f22": {
+  "row_id": "1b136c3b15da1d23da72d80a445f3f22",
+  "symbol": "NESTLEIND",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "3fa6047e3dc92d5586a091521cdbbf353f4cb7778603e6fdc920c403b6b8d18f"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "944a65f8c71d4dca5c431d5f269105c3": {
+  "row_id": "944a65f8c71d4dca5c431d5f269105c3",
+  "symbol": "NESTLEIND",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "d3ab34bedf09ccb7e48ed0fb1d4c91438a44724c5f008460e0064cd1faf4fd46"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "de977b66a938ba73c1ca800345d0809b": {
+  "row_id": "de977b66a938ba73c1ca800345d0809b",
+  "symbol": "POWERGRID",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "a9851a546050aeb5001dfe677951efcbd6e1030708856b9a7b122626c9ae51b5"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "67df35e844093097263fb9dee3e174bc": {
+  "row_id": "67df35e844093097263fb9dee3e174bc",
+  "symbol": "POWERGRID",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "a9851a546050aeb5001dfe677951efcbd6e1030708856b9a7b122626c9ae51b5"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "3af9cc32612d59405c8c68b2b19e5516": {
+  "row_id": "3af9cc32612d59405c8c68b2b19e5516",
+  "symbol": "POWERGRID",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "0d1a9b7544a34fd4755943d57492fb1e300ad757e6afe54f9d49993115d53bf9"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "024d9c7c85e51f53db9b36b2ffc0bbde": {
+  "row_id": "024d9c7c85e51f53db9b36b2ffc0bbde",
+  "symbol": "POWERGRID",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "0d1a9b7544a34fd4755943d57492fb1e300ad757e6afe54f9d49993115d53bf9"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "c2486b9cd3d1d5ab312d65cbb7c9bae6": {
+  "row_id": "c2486b9cd3d1d5ab312d65cbb7c9bae6",
+  "symbol": "POWERGRID",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "ab7a032ebd4f66b6062808c5d8bfd8992d2ad430994d4e8c895ee0880848485c"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "d1b53048604024a4d9cd280a05601ba8": {
+  "row_id": "d1b53048604024a4d9cd280a05601ba8",
+  "symbol": "POWERGRID",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "ab7a032ebd4f66b6062808c5d8bfd8992d2ad430994d4e8c895ee0880848485c"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "6a280690ef37a6a95ad4448e9909b852": {
+  "row_id": "6a280690ef37a6a95ad4448e9909b852",
+  "symbol": "POWERGRID",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "8e1b3b2e37f134ed1f507dd9530fd3ea7fec0903e00df4d7f907bf2c62d8b747"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "f2b921b0489bc46aca0787067dec7a1a": {
+  "row_id": "f2b921b0489bc46aca0787067dec7a1a",
+  "symbol": "POWERGRID",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "0d1a9b7544a34fd4755943d57492fb1e300ad757e6afe54f9d49993115d53bf9"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "fb5b9a5591c52c226286e5c1378f209e": {
+  "row_id": "fb5b9a5591c52c226286e5c1378f209e",
+  "symbol": "POWERGRID",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "8e1b3b2e37f134ed1f507dd9530fd3ea7fec0903e00df4d7f907bf2c62d8b747"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "ae19b71a3533ba759bd1f960126aa3fe": {
+  "row_id": "ae19b71a3533ba759bd1f960126aa3fe",
+  "symbol": "POWERGRID",
+  "source": "formula_engine",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "a9851a546050aeb5001dfe677951efcbd6e1030708856b9a7b122626c9ae51b5"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "eb17716115e740fdb8edbb5d87d14e69": {
+  "row_id": "eb17716115e740fdb8edbb5d87d14e69",
+  "symbol": "POWERGRID",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "ab7a032ebd4f66b6062808c5d8bfd8992d2ad430994d4e8c895ee0880848485c"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "ec3a68048db2586701b411ba0c05e3cf": {
+  "row_id": "ec3a68048db2586701b411ba0c05e3cf",
+  "symbol": "RELIANCE",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "812fca7036082fc251ea526eb800a2121e020a157f07a9edf97d0528bee90ac4"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "85f659d83eeab5762625338769e2f847": {
+  "row_id": "85f659d83eeab5762625338769e2f847",
+  "symbol": "RELIANCE",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "812fca7036082fc251ea526eb800a2121e020a157f07a9edf97d0528bee90ac4"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "365d28c5622277b2feaafd123590946e": {
+  "row_id": "365d28c5622277b2feaafd123590946e",
+  "symbol": "RELIANCE",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "12aa3502d0028155331144f98f89c91b387eb2ac6a59167069e696d9cd180e52"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "9ae76ee8fdd8ccec79d35afeefe47bd5": {
+  "row_id": "9ae76ee8fdd8ccec79d35afeefe47bd5",
+  "symbol": "RELIANCE",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "12aa3502d0028155331144f98f89c91b387eb2ac6a59167069e696d9cd180e52"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "deb85d7b381bf697a7043c16caf2a936": {
+  "row_id": "deb85d7b381bf697a7043c16caf2a936",
+  "symbol": "RELIANCE",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "c8340978e7f1ae69e7ce3f78f128eb58cee2941fcd2f62c69f650dcb2f738af1"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "1aa1316b84664391a67914cafab615b4": {
+  "row_id": "1aa1316b84664391a67914cafab615b4",
+  "symbol": "RELIANCE",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "c8340978e7f1ae69e7ce3f78f128eb58cee2941fcd2f62c69f650dcb2f738af1"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "03b54d32f84c627c8a36fd98641a4f45": {
+  "row_id": "03b54d32f84c627c8a36fd98641a4f45",
+  "symbol": "RELIANCE",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "2f0165ca4d8ddb8f4eb89ee226f5418bd32a81dc3c22b3d26737a06769fd299b"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "dfe5c3186ed8725ed56e46f93d66e0cb": {
+  "row_id": "dfe5c3186ed8725ed56e46f93d66e0cb",
+  "symbol": "RELIANCE",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "2f0165ca4d8ddb8f4eb89ee226f5418bd32a81dc3c22b3d26737a06769fd299b"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "f4be8f027f19dc7524841ca27e432a23": {
+  "row_id": "f4be8f027f19dc7524841ca27e432a23",
+  "symbol": "RELIANCE",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "12aa3502d0028155331144f98f89c91b387eb2ac6a59167069e696d9cd180e52"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "0d9d4b49819a8350dd472065356c6f24": {
+  "row_id": "0d9d4b49819a8350dd472065356c6f24",
+  "symbol": "RELIANCE",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "2f0165ca4d8ddb8f4eb89ee226f5418bd32a81dc3c22b3d26737a06769fd299b"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "b5ce3250bf46784b3addc4038dd161a7": {
+  "row_id": "b5ce3250bf46784b3addc4038dd161a7",
+  "symbol": "RELIANCE",
+  "source": "yahoo_finance_statements",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "812fca7036082fc251ea526eb800a2121e020a157f07a9edf97d0528bee90ac4"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "3336e2d960f0ece99d7519d1de2daec9": {
+  "row_id": "3336e2d960f0ece99d7519d1de2daec9",
+  "symbol": "RELIANCE",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "c8340978e7f1ae69e7ce3f78f128eb58cee2941fcd2f62c69f650dcb2f738af1"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "d3c0154a1a53a72ded0f67f44db309ee": {
+  "row_id": "d3c0154a1a53a72ded0f67f44db309ee",
+  "symbol": "SUNPHARMA",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "d26ab6f366a4749fb6d52a975c36f544b2b83d99d2174eb613ddd487e1c5613d"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "fe6895677282ff00315a05dac344d1a8": {
+  "row_id": "fe6895677282ff00315a05dac344d1a8",
+  "symbol": "SUNPHARMA",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "d26ab6f366a4749fb6d52a975c36f544b2b83d99d2174eb613ddd487e1c5613d"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "d2a3769a04a4e06b007a0c664f257e43": {
+  "row_id": "d2a3769a04a4e06b007a0c664f257e43",
+  "symbol": "SUNPHARMA",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "acff2cfd32daed151e8cf0fbfba8a57db229d44d41967274e6880e270c2c4882"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "6699768d98becf8bcd19acfb6d961153": {
+  "row_id": "6699768d98becf8bcd19acfb6d961153",
+  "symbol": "SUNPHARMA",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "acff2cfd32daed151e8cf0fbfba8a57db229d44d41967274e6880e270c2c4882"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "0ec9224771a66454fea96bb04e58ba84": {
+  "row_id": "0ec9224771a66454fea96bb04e58ba84",
+  "symbol": "SUNPHARMA",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "e6391a1671fbb0c3d74c6281f57c14bd3f616a112d365253c087a0a37de1776c"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "53c6cacc04159ebd8b085fb7f5652ca2": {
+  "row_id": "53c6cacc04159ebd8b085fb7f5652ca2",
+  "symbol": "SUNPHARMA",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "e6391a1671fbb0c3d74c6281f57c14bd3f616a112d365253c087a0a37de1776c"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "62bc2de4eaa4edd6cb4c6d62180f9509": {
+  "row_id": "62bc2de4eaa4edd6cb4c6d62180f9509",
+  "symbol": "SUNPHARMA",
+  "source": "earnings_intelligence_p21",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "fac6084949fb0e9d4a42350ae9fbd47cc5cdaef99bdee218a52172e81ce5d503"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "bb026aeb15768366c7881cba6e7f841a": {
+  "row_id": "bb026aeb15768366c7881cba6e7f841a",
+  "symbol": "SUNPHARMA",
+  "source": "earnings_intelligence_p21",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "fac6084949fb0e9d4a42350ae9fbd47cc5cdaef99bdee218a52172e81ce5d503"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "044ced6afbfba280fd46a4afe01de4ed": {
+  "row_id": "044ced6afbfba280fd46a4afe01de4ed",
+  "symbol": "SUNPHARMA",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "acff2cfd32daed151e8cf0fbfba8a57db229d44d41967274e6880e270c2c4882"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "990d86d6bbebee48f6b36b3e44a08e97": {
+  "row_id": "990d86d6bbebee48f6b36b3e44a08e97",
+  "symbol": "SUNPHARMA",
+  "source": "earnings_intelligence_p21",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "fac6084949fb0e9d4a42350ae9fbd47cc5cdaef99bdee218a52172e81ce5d503"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "504151634361ac53c8ef71cefe33a070": {
+  "row_id": "504151634361ac53c8ef71cefe33a070",
+  "symbol": "SUNPHARMA",
+  "source": "formula_engine",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "d26ab6f366a4749fb6d52a975c36f544b2b83d99d2174eb613ddd487e1c5613d"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "e1eb3ae17d851646e861f6061c334d80": {
+  "row_id": "e1eb3ae17d851646e861f6061c334d80",
+  "symbol": "SUNPHARMA",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "e6391a1671fbb0c3d74c6281f57c14bd3f616a112d365253c087a0a37de1776c"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "f1119774f231c7789d2498dbd147d9df": {
+  "row_id": "f1119774f231c7789d2498dbd147d9df",
+  "symbol": "TATASTEEL",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "75354cca612969cbddb9745989ad4413f3220b17483db35481630876e93c3bd1"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "537bb67189a040ba7e896a675a92e227": {
+  "row_id": "537bb67189a040ba7e896a675a92e227",
+  "symbol": "TATASTEEL",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "75354cca612969cbddb9745989ad4413f3220b17483db35481630876e93c3bd1"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "75be60eeae323ce77449427707a13122": {
+  "row_id": "75be60eeae323ce77449427707a13122",
+  "symbol": "TATASTEEL",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "13f38892130df15194d874f4ce1fab2415dd33ebccf5da79d02e82d0a3aeeccd"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "ce6d14c86fb02f3ac8caecb3bbc19e2b": {
+  "row_id": "ce6d14c86fb02f3ac8caecb3bbc19e2b",
+  "symbol": "TATASTEEL",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "13f38892130df15194d874f4ce1fab2415dd33ebccf5da79d02e82d0a3aeeccd"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "f7cc79d51208b83c307549d275b8054a": {
+  "row_id": "f7cc79d51208b83c307549d275b8054a",
+  "symbol": "TATASTEEL",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "58f46a8dbdc2396fdb6bdcfe87dbd7a13872c1c1b518758cafc16a386fffe1e9"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "fd87cc178ed2ff6cd3d31d0883efc1f2": {
+  "row_id": "fd87cc178ed2ff6cd3d31d0883efc1f2",
+  "symbol": "TATASTEEL",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "58f46a8dbdc2396fdb6bdcfe87dbd7a13872c1c1b518758cafc16a386fffe1e9"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "a6f41c6833bfaacc33f3ebc0be7a5e37": {
+  "row_id": "a6f41c6833bfaacc33f3ebc0be7a5e37",
+  "symbol": "TATASTEEL",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "980d073661a1fa6b0cf5664883ceb557bd237d380b5a1594952b94be4e8170b4"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "02a6de8c3f8821507ed97a05790036b3": {
+  "row_id": "02a6de8c3f8821507ed97a05790036b3",
+  "symbol": "TATASTEEL",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "980d073661a1fa6b0cf5664883ceb557bd237d380b5a1594952b94be4e8170b4"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "32b71ce768eb4d2d7ab079f014da2536": {
+  "row_id": "32b71ce768eb4d2d7ab079f014da2536",
+  "symbol": "TATASTEEL",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "13f38892130df15194d874f4ce1fab2415dd33ebccf5da79d02e82d0a3aeeccd"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "1bc404e510cc9915ac67e5d2add14966": {
+  "row_id": "1bc404e510cc9915ac67e5d2add14966",
+  "symbol": "TATASTEEL",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "980d073661a1fa6b0cf5664883ceb557bd237d380b5a1594952b94be4e8170b4"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "42c740bc84c9abc17226efdfdd1fd7b8": {
+  "row_id": "42c740bc84c9abc17226efdfdd1fd7b8",
+  "symbol": "TATASTEEL",
+  "source": "formula_engine",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "75354cca612969cbddb9745989ad4413f3220b17483db35481630876e93c3bd1"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "358837dff8fbc55bbefabcb0a24d9ce9": {
+  "row_id": "358837dff8fbc55bbefabcb0a24d9ce9",
+  "symbol": "TATASTEEL",
+  "source": "formula_engine",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "58f46a8dbdc2396fdb6bdcfe87dbd7a13872c1c1b518758cafc16a386fffe1e9"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "a48fed325f9d582c9e7aad0f70563c8e": {
+  "row_id": "a48fed325f9d582c9e7aad0f70563c8e",
+  "symbol": "TCS",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "020d774fd698205d555d40f5ab54f77ea13b5eb2ababd245a7e2226b8018cc85"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "0b4882b978c71f0171b1758cf34c7e3a": {
+  "row_id": "0b4882b978c71f0171b1758cf34c7e3a",
+  "symbol": "TCS",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "020d774fd698205d555d40f5ab54f77ea13b5eb2ababd245a7e2226b8018cc85"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "3fdffed344315b2987bf4f4935f98022": {
+  "row_id": "3fdffed344315b2987bf4f4935f98022",
+  "symbol": "TCS",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "471cbd0ecdaee6e8c8c06a2b76bf77712fbf1004071776d980dfc7363f33ea31"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "5754b6a405873ab2d18e41a073157205": {
+  "row_id": "5754b6a405873ab2d18e41a073157205",
+  "symbol": "TCS",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "471cbd0ecdaee6e8c8c06a2b76bf77712fbf1004071776d980dfc7363f33ea31"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "d218331f0a03c45dbb031ccb640afc58": {
+  "row_id": "d218331f0a03c45dbb031ccb640afc58",
+  "symbol": "TCS",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "9a2426dfb4b93a18509ea3197fcd96acbcc77b30ca93bd194fe1815806dd65f3"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "09a5f8423d6a3b79c970715e104587bc": {
+  "row_id": "09a5f8423d6a3b79c970715e104587bc",
+  "symbol": "TCS",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "9a2426dfb4b93a18509ea3197fcd96acbcc77b30ca93bd194fe1815806dd65f3"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "db9053422167c34e24284b0cbb7fd6cc": {
+  "row_id": "db9053422167c34e24284b0cbb7fd6cc",
+  "symbol": "TCS",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "ad52c02ef6a447df4d0b247f46197cc2a3f07659988c622133774794756741a3"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "7119ae382798b5510ccda4374246df74": {
+  "row_id": "7119ae382798b5510ccda4374246df74",
+  "symbol": "TCS",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "ad52c02ef6a447df4d0b247f46197cc2a3f07659988c622133774794756741a3"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "f9940ed76df1477a10d087c59daf5a0f": {
+  "row_id": "f9940ed76df1477a10d087c59daf5a0f",
+  "symbol": "TCS",
+  "source": "yahoo_finance_statements",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "471cbd0ecdaee6e8c8c06a2b76bf77712fbf1004071776d980dfc7363f33ea31"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "ab4c89f56fdeaaa8722fd1edd0fd6706": {
+  "row_id": "ab4c89f56fdeaaa8722fd1edd0fd6706",
+  "symbol": "TCS",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "ad52c02ef6a447df4d0b247f46197cc2a3f07659988c622133774794756741a3"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "73ef59920ff7c614b1fd23bb758861d6": {
+  "row_id": "73ef59920ff7c614b1fd23bb758861d6",
+  "symbol": "TCS",
+  "source": "yahoo_finance_statements",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "020d774fd698205d555d40f5ab54f77ea13b5eb2ababd245a7e2226b8018cc85"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "2d219702ded89981a8306aa0b60629c0": {
+  "row_id": "2d219702ded89981a8306aa0b60629c0",
+  "symbol": "TCS",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "9a2426dfb4b93a18509ea3197fcd96acbcc77b30ca93bd194fe1815806dd65f3"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "9750449648e214fbc9d861c5cc4b4fcf": {
+  "row_id": "9750449648e214fbc9d861c5cc4b4fcf",
+  "symbol": "ULTRACEMCO",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "a21f6074fc30f110ee3d68fd2bc7ffa14331ae7b04231b36370d1a40189067d2"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "72888acf70283bb60f1e105a2bc7ffc8": {
+  "row_id": "72888acf70283bb60f1e105a2bc7ffc8",
+  "symbol": "ULTRACEMCO",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "a21f6074fc30f110ee3d68fd2bc7ffa14331ae7b04231b36370d1a40189067d2"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "39879fe8177b2971bbe98532b4eda980": {
+  "row_id": "39879fe8177b2971bbe98532b4eda980",
+  "symbol": "ULTRACEMCO",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "ac101c54e7958dd3e4e11743db9693eadbbab92bc49b0a4d8a4970053d853950"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "08d2088800bb935d9cb3e31b7df9a36a": {
+  "row_id": "08d2088800bb935d9cb3e31b7df9a36a",
+  "symbol": "ULTRACEMCO",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "ac101c54e7958dd3e4e11743db9693eadbbab92bc49b0a4d8a4970053d853950"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "d16e15e920fda540a46f1caabfd98bf4": {
+  "row_id": "d16e15e920fda540a46f1caabfd98bf4",
+  "symbol": "ULTRACEMCO",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "f5afe64969beaa0d8b2c11e1aa33a77468b01626e9b83916543b2ed088bb8623"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "d90e0937b9de2e0502558f608faa545e": {
+  "row_id": "d90e0937b9de2e0502558f608faa545e",
+  "symbol": "ULTRACEMCO",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "f5afe64969beaa0d8b2c11e1aa33a77468b01626e9b83916543b2ed088bb8623"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "87519ecbc8a265ef731c6a06f4268b55": {
+  "row_id": "87519ecbc8a265ef731c6a06f4268b55",
+  "symbol": "ULTRACEMCO",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "77039c227cc8d0fd39ca4f9a147d42c66e33d808a18f28ac6fa312be0ae60892"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "65846b926d7b9c9be086000d9d2e8012": {
+  "row_id": "65846b926d7b9c9be086000d9d2e8012",
+  "symbol": "ULTRACEMCO",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "77039c227cc8d0fd39ca4f9a147d42c66e33d808a18f28ac6fa312be0ae60892"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "02e7bf2340dc46667c44c836cd9ea6b4": {
+  "row_id": "02e7bf2340dc46667c44c836cd9ea6b4",
+  "symbol": "ULTRACEMCO",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "ac101c54e7958dd3e4e11743db9693eadbbab92bc49b0a4d8a4970053d853950"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "b3964f15aaf103a7bc4e022308f0bb49": {
+  "row_id": "b3964f15aaf103a7bc4e022308f0bb49",
+  "symbol": "ULTRACEMCO",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "77039c227cc8d0fd39ca4f9a147d42c66e33d808a18f28ac6fa312be0ae60892"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "f6f50a08235f42f7e4b2e6ed08191bce": {
+  "row_id": "f6f50a08235f42f7e4b2e6ed08191bce",
+  "symbol": "ULTRACEMCO",
+  "source": "formula_engine",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "a21f6074fc30f110ee3d68fd2bc7ffa14331ae7b04231b36370d1a40189067d2"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ },
+ "df24b1b195a66dc9651baae5ce46df89": {
+  "row_id": "df24b1b195a66dc9651baae5ce46df89",
+  "symbol": "ULTRACEMCO",
+  "source": "financial_connector",
+  "matched_fields": [
+   "revenue",
+   "pat"
+  ],
+  "filings": [
+   "f5afe64969beaa0d8b2c11e1aa33a77468b01626e9b83916543b2ed088bb8623"
+  ],
+  "concepts": [
+   "ProfitLossForPeriodFromContinuingOperations",
+   "RevenueFromOperations"
+  ]
+ }
+}

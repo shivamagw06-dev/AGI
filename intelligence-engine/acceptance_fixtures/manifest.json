@@ -1,0 +1,30 @@
+{
+  "version": "1.0.0",
+  "updated_at": "2026-08-05T16:06:33.918956Z",
+  "purpose": "Deterministic CI acceptance corpus \u2014 10 representative NIFTY companies",
+  "tickers": [
+    "TCS",
+    "INFY",
+    "HDFCBANK",
+    "RELIANCE",
+    "ICICIBANK",
+    "ASIANPAINT",
+    "TITAN",
+    "LT",
+    "MARUTI",
+    "BHARTIARTL"
+  ],
+  "counts": {
+    "valuation_consensus_rows": 10,
+    "ikt_companies": 10,
+    "kf_objects": 10,
+    "kf_packs": 10,
+    "evidence_packs": 10,
+    "decision_samples": 2
+  },
+  "minimum_required": {
+    "valuation_consensus_rows": 10,
+    "ikt_companies": 10,
+    "kf_objects": 1
+  }
+}

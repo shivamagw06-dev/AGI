@@ -1,0 +1,1864 @@
+{
+  "version": "2026-09-18",
+  "status": "partial",
+  "note": "Populated by running the screen. Every member carries the filing that admitted it. This file is not complete and is not an index until the screen has run over the full NSE universe; see docs/india-ai-intelligence.md PART 9.",
+  "benchmarkKey": "NSE_INDEX|Nifty 50",
+  "construction": "equal_weighted",
+  "thresholds": {
+    "model": "exitability",
+    "formula": "minimum_advt = target_position / (exit_days * max_participation)",
+    "exitDays": 3,
+    "maxParticipation": 0.2,
+    "targetPosition": 1000000000,
+    "normalAdvt": "lower of the 20-day and 60-day median daily traded value",
+    "note": "Eligibility by thematic evidence; sizing by liquidity. There is no turnover floor, because every floor available was fitted to the seven companies in front of it. A company does not stop being an AI enabler because a given position is too large for it - it stops being able to carry that position, so the screen reports a maximum executable position instead of a pass or a fail. Target position set 2026-09-18 at Rs 100 crore, so a member needs Rs 166.67 crore of normal daily turnover (100 / (3 x 0.2)) to carry a full position. A member below that is still a member; it carries a smaller maximum position, reported beside it.",
+    "targetPositionUnit": "INR",
+    "targetPositionDecided": "2026-09-18",
+    "sizingExceptions": [
+      {
+        "symbol": "CLEANMAX",
+        "decided": "2026-09-18",
+        "by": "portfolio owner",
+        "context": "Listed on NSE 2026-03-02, so its turnover history is about six months long."
+      },
+      {
+        "symbol": "ANANTRAJ",
+        "decided": "2026-09-18",
+        "by": "portfolio owner",
+        "context": null
+      },
+      {
+        "symbol": "TATAPOWER",
+        "decided": "2026-09-19",
+        "by": "portfolio owner",
+        "context": "Maximum executable position about Rs 84 cr against the Rs 100 cr target, 16% short; a full position means an exit of about 3.6 days at 20% of normal turnover rather than 3. The exception is about size only: on the materiality test Tata Power is not yet material, and is shown that way."
+      }
+    ],
+    "sizingExceptionsNote": "An exception removes a member from belowTarget; it does not change what the member can carry. Its maximum executable position and shortfall are still computed and reported beside it."
+  },
+  "members": [
+    {
+      "symbol": "POWERINDIA",
+      "name": "Hitachi Energy India Ltd.",
+      "instrumentKey": "NSE_EQ|INE07Y701011",
+      "isin": "INE07Y701011",
+      "layer": "power",
+      "subLayers": [
+        "equipment",
+        "transmission"
+      ],
+      "weightSplit": {
+        "power_equipment": 0.5,
+        "power_transmission": 0.5
+      },
+      "admitted": true,
+      "basis": "hard",
+      "admittedOn": [
+        {
+          "kind": "order",
+          "headline": "Data-centre pooling-station order: 400 kV GIS and 12.8 km of busbar",
+          "document": "Q1 FY27 earnings call",
+          "date": "2026-08-14",
+          "source": "Trendlyne document search",
+          "excerpt": "a significant data center-related order for a Load Pooling Station and Main Pooling Station, comprising 56 of 400 kV Gas-Insulated Switchgear (GIS) and 12.8 km of 400 kV Gas-Insulated Busbar"
+        },
+        {
+          "kind": "order",
+          "headline": "220 kV transformer order for a Hyderabad data centre",
+          "document": "Annual Report FY2025-26",
+          "date": "2026-05-24",
+          "source": "Trendlyne document search",
+          "excerpt": "Data Centers: Received an order for 3X 220kV AIS Transformers extension for a leading data center in Hyderabad"
+        },
+        {
+          "kind": "order",
+          "headline": "Hyderabad data-centre order from an Indian conglomerate",
+          "document": "Q1 FY27 earnings call",
+          "date": "2026-08-14",
+          "source": "Trendlyne document search",
+          "excerpt": "a 40 2500 kVA data center project in Hyderabad, awarded by [an] Indian multinational conglomerate"
+        }
+      ],
+      "reviewedBy": null,
+      "reviewedAt": null,
+      "attribution": "NOT_ATTRIBUTABLE",
+      "exposureAttributable": false,
+      "membershipStart": "2026-09-17",
+      "supportingEvidence": [
+        {
+          "kind": "operating",
+          "headline": "Data centres named the major segment contributor",
+          "document": "Hitachi Energy India Q4 FY26 results release",
+          "date": "2026-05-25",
+          "page": "1",
+          "source": "Verification ledger, 2026-09-18 (read from the company document)",
+          "excerpt": "In terms of segment, the major contributor is the data center, followed by rail and metro."
+        }
+      ]
+    },
+    {
+      "symbol": "ADANIENT",
+      "name": "Adani Enterprises Ltd.",
+      "instrumentKey": "NSE_EQ|INE423A01024",
+      "isin": "INE423A01024",
+      "layer": "data_centre",
+      "subLayers": [
+        "operator",
+        "developer"
+      ],
+      "weightSplit": {
+        "data_centre_operator": 0.5,
+        "data_centre_developer": 0.5
+      },
+      "admitted": true,
+      "basis": "hard",
+      "admittedOn": [
+        {
+          "kind": "order",
+          "headline": "400 MW hyperscale order signed for Vizag",
+          "document": "Q1 FY27 investor presentation",
+          "date": "2026-07-29",
+          "source": "Trendlyne document search",
+          "excerpt": "During the quarter, 400 MW order signed with hyperscale customer for Vizag"
+        },
+        {
+          "kind": "operating",
+          "headline": "960+ MW tied up; about 65 MW operating",
+          "document": "Q1 FY27 investor presentation",
+          "date": "2026-07-29",
+          "source": "Trendlyne document search",
+          "excerpt": "Tied up capacity 960+ MW; operational capacity Chennai 17 MW, Noida 10 MW, Hyderabad 19.2 MW, Pune 19.2 MW"
+        }
+      ],
+      "reviewedBy": null,
+      "reviewedAt": null,
+      "exposureAttributable": false,
+      "exposureNote": "Admitted on a 400 MW hyperscale order and 960+ MW tied up, which is real and dated. But the FY26 annual report carries no data centre segment, and AdaniConneX is a joint venture with EdgeConneX that is equity-accounted rather than consolidated - so none of this member's reported revenue is data centre revenue, and its JV earnings are not broken out. The exposure cannot be sized from the filing. Needs an analyst decision.",
+      "attribution": "NOT_ATTRIBUTABLE",
+      "membershipStart": "2026-09-17",
+      "supportingEvidence": [
+        {
+          "kind": "order",
+          "headline": "358 MW hyperscale order in Hyderabad; 560+ MW tied up",
+          "document": "Adani Enterprises Q4 FY26 press release",
+          "date": "2026-04-30",
+          "page": "3",
+          "source": "Verification ledger, 2026-09-18 (read from the company document)",
+          "excerpt": "Received new hyperscale order for 358 MW in Hyderabad, taking cumulative tied-up capacity to 560+ MW"
+        }
+      ]
+    },
+    {
+      "symbol": "CLEANMAX",
+      "name": "Clean Max Enviro Energy Solutions Ltd.",
+      "instrumentKey": "NSE_EQ|INE647U01026",
+      "isin": "INE647U01026",
+      "layer": "power",
+      "subLayers": [
+        "generation"
+      ],
+      "weightSplit": {
+        "power_generation": 1.0
+      },
+      "admitted": true,
+      "basis": "hard",
+      "admittedOn": [
+        {
+          "kind": "operating",
+          "headline": "42% of contracted capacity is for data and AI customers",
+          "document": "Q1 FY27 investor presentation",
+          "date": "2026-07-31",
+          "source": "Trendlyne document search",
+          "excerpt": "3.2x growth in contracted capacity; 42% capacity from Data & AI (June 30, 2026); on-books capacity 6,003 MW"
+        },
+        {
+          "kind": "capex",
+          "headline": "About 500 MW commissioned across power sales and services",
+          "document": "Q1 FY27 earnings call",
+          "date": "2026-08-07",
+          "source": "Trendlyne document search",
+          "excerpt": "we've commissioned about 400 [MW] in the RE power sales segment and 100 megawatt in the RE services segment"
+        },
+        {
+          "kind": "operating",
+          "headline": "Names Amazon, Google, Meta and five data-centre operators as customers",
+          "document": "Q1 FY27 investor presentation",
+          "date": "2026-07-31",
+          "source": "Trendlyne document search",
+          "excerpt": "Data & AI customers named: Amazon, Google, Meta, STT Global Data Center, NTT Data Group, Equinix, Princeton Digital Group, L&T Data Center"
+        }
+      ],
+      "reviewedBy": null,
+      "reviewedAt": null,
+      "corporateActionFY26": "Equity share sub-divided from Rs 10 to Rs 1 during FY26.",
+      "attribution": "MANAGEMENT_DISCLOSED",
+      "exposureAttributable": false,
+      "membershipStart": "2026-09-17",
+      "supportingEvidence": [
+        {
+          "kind": "operating",
+          "headline": "Deals with hyperscalers including Meta, Apple, Google and Amazon",
+          "document": "CleanMax Q1 FY27 earnings call transcript",
+          "date": "2026-08-03",
+          "page": "PDF 4",
+          "source": "Verification ledger, 2026-09-18 (read from the company document)",
+          "excerpt": "deals with many global hyperscalers ... such as Meta, Apple, Google, and Amazon"
+        }
+      ],
+      "exposureNote": "42% of contracted capacity (over 2.5 GW) is for Data & AI customers (30 Jun 2026), but the August 2026 corporate presentation splits it: 1.87 GW are emission-offset deals with Big Tech (Meta buys the environmental attributes of 837 MW CleanMax is building) and 0.63 GW serves Indian data-centre load. Named Data & AI customers include Amazon, Google, Meta, Cisco, STT, NTT, Equinix, Iron Mountain, Princeton Digital Group and L&T Data Center; the call adds Apple."
+    },
+    {
+      "symbol": "ANANTRAJ",
+      "name": "Anant Raj Ltd.",
+      "instrumentKey": "NSE_EQ|INE242C01024",
+      "isin": "INE242C01024",
+      "layer": "data_centre",
+      "subLayers": [
+        "developer",
+        "operator"
+      ],
+      "weightSplit": {
+        "data_centre_developer": 0.5,
+        "data_centre_operator": 0.5
+      },
+      "admitted": true,
+      "basis": "hard",
+      "admittedOn": [
+        {
+          "kind": "operating",
+          "headline": "Data-centre roadmap to 357 MW across four sites",
+          "document": "Q1 FY27 investor presentation",
+          "date": "2026-08-11",
+          "source": "Trendlyne document search",
+          "excerpt": "Scaling Up Our Data Center Capacity; roadmap to 357 MW: Phase 1 21 MW at Manesar, Phase 2 50 MW at Panchkula, another 200 MW at Rai and 50 MW in Andhra Pradesh"
+        }
+      ],
+      "reviewedBy": null,
+      "reviewedAt": null,
+      "membershipStart": "2026-09-17",
+      "attribution": "MANAGEMENT_DISCLOSED",
+      "exposureAttributable": false,
+      "exposureNote": "Data centres are not a reported segment (one segment, real estate development). The company states FY26 turnover of Rs 145.90 crore for the data-centre undertaking being demerged into Ashok Cloud, 8.96% of the combined turnover of the parent and its cloud subsidiary (Rs 1,627.72 crore). Its wider 'Data Center, Infrastructure and Allied services' line (Rs 176.49 crore FY26; Rs 90 crore Q1 FY27) also includes infrastructure and rental income. No data-centre EBITDA, assets or capex is disclosed.",
+      "exposureEvidence": [
+        {
+          "document": "Composite Scheme of Arrangement (demerger of data centre undertaking into Ashok Cloud Pvt Ltd)",
+          "date": "2026-07-21",
+          "page": "PDF p.7",
+          "excerpt": "Turnover of the demerged division ... Demerged Undertaking 145.90 / Total 1627.72 / Percentage 8.96% (Rs crore, as on March 31, 2026)"
+        },
+        {
+          "document": "Annual Report FY2025-26, consolidated Note 41 Segment Information",
+          "date": "2026-07-14",
+          "page": "printed p.303",
+          "excerpt": "The Company's business activities which are primarily real estate development and related activities fall within a single reportable segment"
+        },
+        {
+          "document": "Q1 FY27 Investor Presentation",
+          "date": "2026-08-11",
+          "page": "slide 32",
+          "excerpt": "Revenue from Data Center, Infrastructure and Allied services stood at Rs 90 Cr."
+        }
+      ],
+      "supportingEvidence": [
+        {
+          "kind": "operating",
+          "headline": "Colocation rent about ₹90 lakh per MW a month; H1 EBITDA margin 75%",
+          "document": "Anant Raj Q2 FY26 earnings call transcript",
+          "date": "2025-11-12",
+          "page": "7-8, 14",
+          "excerpt": "it is close to about 90 lakhs per month per megawatt for Colocation ... So, EBITDA for H1 is 75%",
+          "source": "Verification ledger, 2026-09-18 (read from the company document)"
+        }
+      ]
+    },
+    {
+      "symbol": "NETWEB",
+      "name": "Netweb Technologies India Ltd.",
+      "instrumentKey": "NSE_EQ|INE0NT901020",
+      "isin": "INE0NT901020",
+      "layer": "data_centre",
+      "subLayers": [
+        "hardware"
+      ],
+      "weightSplit": {
+        "data_centre_hardware": 1.0
+      },
+      "admitted": true,
+      "basis": "hard",
+      "admittedOn": [
+        {
+          "kind": "operating",
+          "headline": "AI segment is 62% of revenue, up 484%",
+          "document": "Q1 FY27 investor presentation",
+          "date": "2026-07-28",
+          "source": "Trendlyne document search",
+          "excerpt": "Our AI segment continues to be a key growth driver, contributing Rs 5,105.70 million, being 62.29% of Revenue from Operations, growing 484.20% YoY, while HPC and Private Cloud maintained robust traction at Rs 1,252.94 million and Rs 1,353.46 million respectively. Our order book stood at Rs 25,069.35 million as of 30th June 2026."
+        },
+        {
+          "kind": "operating",
+          "headline": "Q1 revenue up 172%; order book ₹2,507 cr",
+          "document": "Q1 FY27 earnings call",
+          "date": "2026-08-01",
+          "source": "Trendlyne document search",
+          "excerpt": "Our revenue from operations for Q1 financial year 27 stood at INR8,197 million, a growth of 172.1% on a year-on-year basis. Our order book stood at INR25,069.35 million as of 30th June 2026 with an L1 position of INR8,480.47 million."
+        }
+      ],
+      "reviewedBy": null,
+      "reviewedAt": null,
+      "attribution": "MANAGEMENT_DISCLOSED",
+      "exposureAttributable": false,
+      "exposureNote": "Single Ind AS 108 segment, Computer Servers. Management discloses AI Systems revenue of 9,477.9 mn, 43.4% of operating revenue, in a \"Revenue by Business Segment\" table outside the audited segment note - company-disclosed and specific, not audited as a segment.",
+      "membershipStart": "2026-09-17"
+    },
+    {
+      "symbol": "CGPOWER",
+      "name": "CG Power and Industrial Solutions Ltd.",
+      "instrumentKey": "NSE_EQ|INE067A01029",
+      "isin": "INE067A01029",
+      "layer": "semiconductor",
+      "subLayers": [
+        "osat"
+      ],
+      "weightSplit": {
+        "semiconductor_osat": 1.0
+      },
+      "admitted": true,
+      "basis": "hard",
+      "admittedOn": [
+        {
+          "kind": "capex",
+          "headline": "First OSAT plant live at 0.5 m units a day; G2 to take it to 14.5 m",
+          "document": "Annual Report FY2025-26",
+          "date": "2026-05-05",
+          "source": "Trendlyne document search",
+          "excerpt": "CG Semi reached a defining milestone in FY26 with the inauguration of India’s first end-to-end OSAT facility at Sanand, Gujarat in August 2025. The G1 facility is now operational at a peak capacity of 0.5 million units per day, with plans to further scale up to 14.5 million chips per day with the upcoming commissioning of our G2 facility. Together, the two facilities represent an estimated project investment of approximately Rs 7,600 Cr."
+        }
+      ],
+      "reviewedBy": null,
+      "reviewedAt": null,
+      "exposureAttributable": true,
+      "exposureNote": "Semiconductors is a reported segment (FY26 revenue 502.77 cr, 4.0% of group; segment result -107.86 cr), but that revenue is largely Axiro, the radio-frequency components business acquired from Renesas (RF and SATCOM chip design), not AI or data-centre revenue. The Sanand OSAT plant began commercial production in July 2026 (Q1 FY27 call, 24 Jul 2026: 'Axiro is already revenue generating'); OSAT capacity is disclosed, AI/data-centre revenue and customers are not. Tier changed 2026-09-19 from audited segment to not sized: the audited segment is not an AI/data-centre measure.",
+      "note": "",
+      "attribution": "NOT_ATTRIBUTABLE",
+      "membershipStart": "2026-09-17"
+    },
+    {
+      "symbol": "KAYNES",
+      "name": "Kaynes Technology India Ltd.",
+      "instrumentKey": "NSE_EQ|INE918Z01012",
+      "isin": "INE918Z01012",
+      "layer": "semiconductor",
+      "subLayers": [
+        "osat"
+      ],
+      "weightSplit": {
+        "semiconductor_osat": 1.0
+      },
+      "admitted": true,
+      "basis": "hard",
+      "admittedOn": [
+        {
+          "kind": "capex",
+          "headline": "FY26 capex: ₹473 cr on OSAT, ₹324 cr on PCB",
+          "document": "Q1 FY27 earnings call",
+          "date": "2026-08-12",
+          "source": "Trendlyne document search",
+          "excerpt": "Let me turn to the newer business, OSAT and PCB. The capex done in FY26 was INR473 crores for OSAT and INR324 crores for PCB."
+        },
+        {
+          "kind": "capex",
+          "headline": "₹3,307 cr Sanand OSAT plant, 6.3 m chips a day",
+          "document": "Annual Report FY2025-26",
+          "date": "2026-05-12",
+          "source": "Trendlyne document search",
+          "excerpt": "Developing our advanced OSAT complex in Sanand through a Rs 33,070 Mn capital investment, backed by a ~30% direct equity contribution from Kaynes. Facility Name: Sanand OSAT plant. Daily Throughput Capacity: 6.3 Mn chips."
+        }
+      ],
+      "reviewedBy": null,
+      "reviewedAt": null,
+      "note": "",
+      "exposureAttributable": false,
+      "exposureNote": "Admitted on committed OSAT capex, and unsizeable from the accounts. Kaynes reports a single Ind AS 108 segment, Electronics Manufacturing Services, so no share of revenue, assets or capex is attributable to semiconductors. FY26 fixed-asset purchases of 12,403.01 mn are group-wide across OSAT, PCB and the existing EMS business with no split served. Needs an analyst decision.",
+      "attribution": "NOT_ATTRIBUTABLE",
+      "membershipStart": "2026-09-17"
+    },
+    {
+      "symbol": "STLTECH",
+      "name": "Sterlite Technologies Ltd.",
+      "instrumentKey": "NSE_EQ|INE089C01029",
+      "isin": "INE089C01029",
+      "layer": "data_centre",
+      "subLayers": [
+        "hardware"
+      ],
+      "weightSplit": {
+        "data_centre_hardware": 1.0
+      },
+      "admitted": true,
+      "basis": "hard",
+      "admittedOn": [
+        {
+          "kind": "order",
+          "headline": "$1.11 bn hyperscaler award for connectivity supply, FY27–FY29",
+          "document": "Q1 FY27 results presentation",
+          "date": "2026-07-24",
+          "source": "Trendlyne document search",
+          "excerpt": "Landmark $1.11 Billion Product Award Letter (PAL) Secured (10,000+ Cr) from a hyperscaler to supply connectivity products from FY27 to FY29 for next-gen AI data centers"
+        },
+        {
+          "kind": "operating",
+          "headline": "Data centre and cloud: 21% of the mix, from 1%",
+          "document": "Q1 FY27 results presentation",
+          "date": "2026-07-24",
+          "source": "Trendlyne document search",
+          "excerpt": "DC & Cloud | 1% | 21%"
+        }
+      ],
+      "reviewedBy": null,
+      "reviewedAt": null,
+      "exposureAttributable": true,
+      "exposureNote": "DC & Cloud was 21% of Q1 FY27 revenue against 1% of full-year FY26 revenue (a quarter against a year, as the presentation tabulates it). Management-disclosed, not a reported segment.",
+      "note": "The hyperscaler is not named. The award is a Product Award Letter covering FY27-FY29 supply, not a single purchase order.",
+      "attribution": "MANAGEMENT_DISCLOSED",
+      "discoveredVia": "EXTERNAL_LEAD_2026_09_18",
+      "evidenceReadOn": "2026-09-18",
+      "membershipStart": "2026-09-18"
+    },
+    {
+      "symbol": "CUMMINSIND",
+      "name": "Cummins India Ltd.",
+      "instrumentKey": "NSE_EQ|INE298A01020",
+      "isin": "INE298A01020",
+      "layer": "power",
+      "subLayers": [
+        "equipment"
+      ],
+      "weightSplit": {
+        "power_equipment": 1.0
+      },
+      "admitted": true,
+      "basis": "hard",
+      "admittedOn": [
+        {
+          "kind": "order",
+          "headline": "Executing large orders for multiple hyperscale data centres",
+          "document": "Annual Report FY2025-26",
+          "date": "2026-05-26",
+          "source": "Trendlyne document search",
+          "excerpt": "In the high horsepower segment; the Company continues to execute large orders for multiple hyperscale datacentres coming up in India"
+        },
+        {
+          "kind": "operating",
+          "headline": "Data centres were 40% of power-generation revenue in the quarter",
+          "document": "Q1 FY27 earnings call",
+          "date": "2026-08-11",
+          "source": "Trendlyne document search",
+          "excerpt": "data centers out of this, in this particular quarter; was 40% of overall power generation revenue"
+        }
+      ],
+      "reviewedBy": null,
+      "reviewedAt": null,
+      "exposureAttributable": true,
+      "exposureNote": "Data centres were 40% of power-generation revenue in Q1 FY27, against 23% in Q1 FY26 (both stated on the Q1 FY27 call).",
+      "note": "Customers are not named.",
+      "attribution": "MANAGEMENT_DISCLOSED",
+      "discoveredVia": "EXTERNAL_LEAD_2026_09_18",
+      "evidenceReadOn": "2026-09-18",
+      "membershipStart": "2026-09-18"
+    },
+    {
+      "symbol": "BHARTIARTL",
+      "name": "Bharti Airtel Ltd.",
+      "instrumentKey": "NSE_EQ|INE397D01024",
+      "isin": "INE397D01024",
+      "layer": "data_centre",
+      "subLayers": [
+        "operator"
+      ],
+      "weightSplit": {
+        "data_centre_operator": 1.0
+      },
+      "admitted": true,
+      "basis": "hard",
+      "admittedOn": [
+        {
+          "kind": "operating",
+          "headline": "14 hyperscale and 120+ edge data centres, about 250 MW",
+          "document": "Annual Report FY2025-26",
+          "date": "2026-05-12",
+          "source": "Trendlyne document search",
+          "excerpt": "Our integrated digital ecosystem, comprising 14 hyperscale data centers and 120+ edge data centers supported by ~250 MW of power capacity"
+        },
+        {
+          "kind": "operating",
+          "headline": "Data-centre revenue up 17.2%",
+          "document": "Annual Report FY2025-26",
+          "date": "2026-05-12",
+          "source": "Trendlyne document search",
+          "excerpt": "The data centre business recorded strong revenue growth of 17.2%, supported by robust demand and continued capacity expansion"
+        }
+      ],
+      "reviewedBy": null,
+      "reviewedAt": null,
+      "exposureAttributable": false,
+      "exposureNote": "Data centres are not a reportable segment, but the data-centre subsidiary Nxtra's own filings state its figures: FY26 revenue Rs 2,434 cr and EBITDA (excluding other income) Rs 981.6 cr, 40.3% (audited results filed for its listed debt; turnover also in Airtel's AOC-1). Airtel gives about 250 MW (annual report), ~300 MW (Mar 2026 release) and 120-130 MW (Q1 FY27 call) without reconciling them; target 1 GW. Nxtra raised US$1 bn at about US$3.1 bn post-closing (Mar 2026).",
+      "note": "Admitted through its data-centre subsidiary Nxtra, which its own annual report describes. The Google gigawatt campus is a partnership and is not counted.",
+      "attribution": "MANAGEMENT_DISCLOSED",
+      "discoveredVia": "EXTERNAL_LEAD_2026_09_18",
+      "evidenceReadOn": "2026-09-18",
+      "membershipStart": "2026-09-18",
+      "supportingEvidence": [
+        {
+          "kind": "operating",
+          "headline": "Nxtra FY26: revenue ₹2,434 cr, EBITDA margin 40.3%",
+          "document": "Nxtra Data Ltd audited standalone results FY26 (NSE filing, listed debt)",
+          "date": "2026-05-11",
+          "page": "5",
+          "excerpt": "Revenue Rs 24,341 mn; profit before depreciation, amortisation, finance costs and tax Rs 10,076 mn (EBITDA excluding other income Rs 9,816 mn, 40.3%)",
+          "source": "Verification ledger, 2026-09-18 (read from the company document)"
+        }
+      ]
+    },
+    {
+      "symbol": "LT",
+      "name": "Larsen & Toubro Ltd.",
+      "instrumentKey": "NSE_EQ|INE018A01030",
+      "isin": "INE018A01030",
+      "layer": "data_centre",
+      "subLayers": [
+        "operator"
+      ],
+      "weightSplit": {
+        "data_centre_operator": 1.0
+      },
+      "admitted": true,
+      "basis": "hard",
+      "admittedOn": [
+        {
+          "kind": "operating",
+          "headline": "Vyoma: 26 MW operating, 36 MW Mahape site under development",
+          "document": "Annual Report FY2025-26",
+          "date": "2026-05-04",
+          "source": "Trendlyne document search",
+          "excerpt": "As of FY 2025-26, Larsen & Toubro Vyoma's operational capacity stood at 26 MW across Chennai and Panvel. The company is developing a 36 MW AI-ready green data center at Mahape, Navi Mumbai, scalable up to 100 MW"
+        }
+      ],
+      "reviewedBy": null,
+      "reviewedAt": null,
+      "exposureAttributable": false,
+      "exposureNote": "L&T's subsidiary LTN Compute (Vyoma.AI) secured a 'Mega' order, which L&T defines as Rs 10,000-15,000 crore, to host a 10,000-GPU NVIDIA B300 AI factory for Together AI at its own Chennai campus (13 Aug 2026): a value band for an owner-operator contract, not an EPC job. Vyoma had 26 MW operational at FY26 (Chennai 24, Panvel 2). Data-centre revenue is not separated. The data-centre business earned Rs 36.6 crore in FY26 (business-transfer filing, 11 Aug 2026).",
+      "note": "Admitted as an operator through L&T Vyoma. Its EPC work for data centres and fabs has no named order with a value, so under the contractor rule it does not add an EPC admission.",
+      "attribution": "MANAGEMENT_DISCLOSED",
+      "discoveredVia": "EXTERNAL_LEAD_2026_09_18",
+      "evidenceReadOn": "2026-09-18",
+      "membershipStart": "2026-09-18",
+      "supportingEvidence": [
+        {
+          "kind": "order",
+          "headline": "Vyoma.AI wins a \"mega\" AI-cluster order (₹10,000–15,000 cr band)",
+          "document": "L&T press release: Mega order with Together AI",
+          "date": "2026-08-13",
+          "page": "1-2",
+          "source": "Verification ledger, 2026-09-18 (read from the company document)",
+          "excerpt": "Vyoma.AI an L&T company, through its AI infrastructure subsidiary LTN Compute, has secured India's largest single-cluster AI infrastructure ... Mega: Value in Rs Cr 10,000 to 15,000"
+        },
+        {
+          "kind": "operating",
+          "headline": "Vyoma operating capacity 26 MW at year-end",
+          "document": "L&T Integrated Annual Report FY2025-26 (figures as of 31 Mar 2026)",
+          "date": "2026-03-31",
+          "page": "128",
+          "source": "Verification ledger, 2026-09-18 (read from the company document)",
+          "excerpt": "As of FY 2025-26, Larsen & Toubro Vyoma's operational capacity stood at 26 MW across Chennai and Panvel."
+        },
+        {
+          "kind": "operating",
+          "headline": "Data-centre business moves to Vyoma for about ₹1,400 cr",
+          "document": "L&T business-transfer filing (data-centre business to Vyoma.AI)",
+          "date": "2026-08-11",
+          "page": "1",
+          "excerpt": "FY26 revenue of the data-centre business Rs 36.6 crore; net worth Rs 1,142 crore; consideration about Rs 1,400 crore",
+          "source": "Verification ledger, 2026-09-18 (read from the company document)"
+        }
+      ]
+    },
+    {
+      "symbol": "POWERGRID",
+      "name": "Power Grid Corporation of India Ltd.",
+      "instrumentKey": "NSE_EQ|INE752E01010",
+      "isin": "INE752E01010",
+      "layer": "data_centre",
+      "subLayers": [
+        "developer"
+      ],
+      "weightSplit": {
+        "data_centre_developer": 1.0
+      },
+      "admitted": true,
+      "basis": "hard",
+      "admittedOn": [
+        {
+          "kind": "capex",
+          "headline": "Commercial data centre under way at Manesar substation",
+          "document": "Annual Report FY2025-26",
+          "date": "2026-05-14",
+          "source": "Trendlyne document search",
+          "excerpt": "POWERGRID is expanding its business into Data Centre services through PowerTel and a commercial Data Centre at POWERGRID Manesar Substation, Haryana is under implementation"
+        },
+        {
+          "kind": "capex",
+          "headline": "Pilot 1,000-rack data centre under PowerTel",
+          "document": "Annual Report FY2025-26",
+          "date": "2026-05-14",
+          "source": "Trendlyne document search",
+          "excerpt": "PowerTel has also forayed into the Data Centre business with the implementation of a pilot 1,000 rack Data Centre"
+        }
+      ],
+      "reviewedBy": null,
+      "reviewedAt": null,
+      "exposureAttributable": false,
+      "exposureNote": "Data-centre capex is disclosed only bundled with smart metering and BESS (about Rs 4,200 crore together).",
+      "note": "Admitted on a data centre under construction on its own substation land, not on its transmission business.",
+      "attribution": "NOT_ATTRIBUTABLE",
+      "discoveredVia": "EXTERNAL_LEAD_2026_09_18",
+      "evidenceReadOn": "2026-09-18",
+      "membershipStart": "2026-09-18"
+    },
+    {
+      "symbol": "BLUESTARCO",
+      "name": "Blue Star Ltd.",
+      "instrumentKey": "NSE_EQ|INE472A01039",
+      "isin": "INE472A01039",
+      "layer": "infrastructure",
+      "subLayers": [
+        "epc"
+      ],
+      "weightSplit": {
+        "infrastructure_epc": 1.0
+      },
+      "admitted": true,
+      "basis": "hard",
+      "admittedOn": [
+        {
+          "kind": "operating",
+          "headline": "About ₹1,000 cr of data-centre MEP business in a ₹3,500 cr market",
+          "document": "Q4 FY26 earnings call",
+          "date": "2026-05-12",
+          "source": "Trendlyne document search",
+          "excerpt": "the data centre, the MEP part, where we are leaders, we would estimate the market size to be somewhere around Rs.3,500 Crore and we do a business of around Rs.1,000 Crore there"
+        },
+        {
+          "kind": "order",
+          "headline": "Projects won from ST Telemedia and semiconductor clients",
+          "document": "Annual Report FY2025-26",
+          "date": "2026-05-05",
+          "source": "Trendlyne document search",
+          "excerpt": "the Electro-Mechanical Projects business secured projects from several marquee clients, including ST Telemedia, Damani Hospitals, Raheja Group, L&T Realty, DLF, CapitaLand, GIFT City, CG Semicon, Tata Semiconductor"
+        }
+      ],
+      "reviewedBy": null,
+      "reviewedAt": null,
+      "exposureAttributable": true,
+      "exposureNote": "Management put its data-centre MEP business at about Rs 1,000 crore a year (Q4 FY26 call), about 8% of revenue; 'about 15%' and Rs 3,000-4,000 crore are targets, not current figures. Named clients include ST Telemedia and CapitaLand.",
+      "note": "Admitted under the contractor rule: named projects (ST Telemedia; Tata Semiconductor and CG Semicon), a contracted role (electro-mechanical projects), and an identified exposure.",
+      "attribution": "MANAGEMENT_DISCLOSED",
+      "discoveredVia": "EXTERNAL_LEAD_2026_09_18",
+      "evidenceReadOn": "2026-09-18",
+      "membershipStart": "2026-09-18",
+      "supportingEvidence": [
+        {
+          "kind": "order",
+          "document": "Blue Star website, data-centre credentials",
+          "date": "2026-09-18",
+          "page": "web page (undated table)",
+          "excerpt": "AWS HYD 121: Rs 207 cr; ST Telemedia: five contracts totalling Rs 734 cr; CapitaLand 'Veritas' Mumbai: Rs 162 cr; CapitaLand 'Pearl' Hyderabad: Rs 116 cr; Nxtra Mahape: Rs 100 cr",
+          "source": "Verification ledger, 2026-09-18 (read from the company document)",
+          "undated": true
+        }
+      ]
+    },
+    {
+      "symbol": "SCHNEIDER",
+      "name": "Schneider Electric Infrastructure Ltd.",
+      "instrumentKey": "NSE_EQ|INE839M01018",
+      "isin": "INE839M01018",
+      "layer": "power",
+      "subLayers": [
+        "equipment"
+      ],
+      "weightSplit": {
+        "power_equipment": 1.0
+      },
+      "admitted": true,
+      "basis": "hard",
+      "admittedOn": [
+        {
+          "kind": "order",
+          "headline": "Significant order from a semiconductor manufacturer",
+          "document": "Annual Report FY2025-26",
+          "date": "2026-05-27",
+          "source": "Trendlyne document search",
+          "excerpt": "We also won a significant order from a leading semiconductor manufacturer for AIS, GIS, transformers, and LV switchboards, reinforcing our position in mission-critical infrastructure"
+        },
+        {
+          "kind": "operating",
+          "headline": "More than a fifth of the order bank is the new emerging segment",
+          "document": "Q1 FY27 earnings call",
+          "date": "2026-08-17",
+          "source": "Trendlyne document search",
+          "excerpt": "more than 1/5 of what is coming is on this new emerging segment is what we hold in our order bank"
+        }
+      ],
+      "reviewedBy": null,
+      "reviewedAt": null,
+      "exposureAttributable": true,
+      "exposureNote": "Management said data centres and semiconductors together are more than a fifth of the order bank (Q1 FY27 call). An order-book share, not revenue.",
+      "note": "Customers are not named; values are not disclosed.",
+      "attribution": "MANAGEMENT_DISCLOSED",
+      "discoveredVia": "EXTERNAL_LEAD_2026_09_18",
+      "evidenceReadOn": "2026-09-18",
+      "membershipStart": "2026-09-18",
+      "parentGroupNote": "Schneider Electric's India business is reported to earn 15-20% of revenue from data centres, and the parent names data centres as leading demand (H1 2026 release). The listed company makes distribution transformers, MV switchgear up to 36 kV, relays and automation; UPS, secure power and cooling are not in its described business and sit with other Schneider entities. None of the group figure is counted for this company."
+    },
+    {
+      "symbol": "TDPOWERSYS",
+      "name": "TD Power Systems Ltd.",
+      "instrumentKey": "NSE_EQ|INE419M01035",
+      "isin": "INE419M01035",
+      "layer": "power",
+      "subLayers": [
+        "equipment"
+      ],
+      "weightSplit": {
+        "power_equipment": 1.0
+      },
+      "admitted": true,
+      "basis": "hard",
+      "admittedOn": [
+        {
+          "kind": "order",
+          "headline": "Repeat orders from global OEMs for US data centres",
+          "document": "Q1 FY27 investor presentation",
+          "date": "2026-08-11",
+          "source": "Trendlyne document search",
+          "excerpt": "Secured large-volume repeat orders from leading global OEMs across multiple ratings for US data-center applications"
+        },
+        {
+          "kind": "operating",
+          "headline": "Shipments going to multiple data centres and customers",
+          "document": "Q1 FY27 earnings call",
+          "date": "2026-08-18",
+          "source": "Trendlyne document search",
+          "excerpt": "shipments because these are going to multiple sites, multiple data centres, multiple customers and everyone is taking delivery"
+        }
+      ],
+      "reviewedBy": null,
+      "reviewedAt": null,
+      "exposureAttributable": false,
+      "exposureNote": "Management declined to give the data-centre share of the order book.",
+      "note": "Generators for US data centres, supplied through gas-turbine and engine OEMs. The OEMs are not named.",
+      "attribution": "NOT_ATTRIBUTABLE",
+      "discoveredVia": "EXTERNAL_LEAD_2026_09_18",
+      "evidenceReadOn": "2026-09-18",
+      "isinNote": "INE419M01027, from the NSE equity list in the repo, is rejected by Upstox as an invalid instrument key; INE419M01035 is the current ISIN (Trendlyne) and returns prices. Found 2026-09-18 when the member never priced.",
+      "membershipStart": "2026-09-18"
+    },
+    {
+      "symbol": "SANSERA",
+      "name": "Sansera Engineering Ltd.",
+      "instrumentKey": "NSE_EQ|INE953O01021",
+      "isin": "INE953O01021",
+      "layer": "semiconductor",
+      "subLayers": [
+        "hardware"
+      ],
+      "weightSplit": {
+        "semiconductor_hardware": 1.0
+      },
+      "admitted": true,
+      "basis": "hard",
+      "admittedOn": [
+        {
+          "kind": "order",
+          "headline": "One large order from a semiconductor-equipment maker",
+          "document": "Q1 FY27 earnings call",
+          "date": "2026-08-20",
+          "source": "Trendlyne document search",
+          "excerpt": "But since this is one big order; and this is from semicon equipment manufacturer"
+        },
+        {
+          "kind": "order",
+          "headline": "Semiconductor-equipment order worth about ₹1,250 cr over five years",
+          "document": "Q1 FY27 earnings call",
+          "date": "2026-08-20",
+          "source": "Trendlyne document search",
+          "excerpt": "So on five-year basis, this would approximately translate to about INR 1,250 crores"
+        },
+        {
+          "kind": "operating",
+          "headline": "Regular production of semiconductor components begins",
+          "document": "Annual Report FY2025-26",
+          "date": "2026-05-20",
+          "source": "Trendlyne document search",
+          "excerpt": "commencing regular production of semiconductor components, further advancing the Company's diversification strategy"
+        }
+      ],
+      "reviewedBy": null,
+      "reviewedAt": null,
+      "exposureAttributable": true,
+      "exposureNote": "Order value disclosed (about Rs 1,250 crore over five years); semiconductor revenue sits inside the aerospace, defence and semiconductor segment.",
+      "note": "First member of the semiconductor hardware sub-layer. The equipment maker, an existing customer, is not named; the order was won in Q2 FY27 and revenue is expected to ramp from CY2027.",
+      "attribution": "MANAGEMENT_DISCLOSED",
+      "discoveredVia": "EXTERNAL_LEAD_2026_09_18",
+      "evidenceReadOn": "2026-09-18",
+      "membershipStart": "2026-09-18"
+    },
+    {
+      "symbol": "GVT&D",
+      "name": "GE Vernova T&D India Ltd.",
+      "instrumentKey": "NSE_EQ|INE200A01026",
+      "isin": "INE200A01026",
+      "layer": "power",
+      "subLayers": [
+        "equipment"
+      ],
+      "weightSplit": {
+        "power_equipment": 1.0
+      },
+      "admitted": true,
+      "basis": "hard",
+      "admittedOn": [
+        {
+          "kind": "operating",
+          "headline": "220 kV GIS bays commissioned for NTT Data Center, among others",
+          "document": "Annual Report FY2025-26",
+          "date": "2026-05-17",
+          "source": "Trendlyne document search",
+          "excerpt": "Commissioned multiple 220 kV GIS bays across projects for NTT Data Center, Karnataka Power Transmission Corporation Limited, Transglobal Power Limited, and Jindal Stainless Limited"
+        }
+      ],
+      "reviewedBy": null,
+      "reviewedAt": null,
+      "exposureAttributable": false,
+      "exposureNote": "No data-centre revenue or order value disclosed.",
+      "note": "Admitted on commissioned GIS bays for a named data-centre operator. Q1 FY27: a 150 MVA 245 kV transformer for a semiconductor customer; the MD said data-centre ordering in the quarter was 'not significant' (verification ledger, 2026-09-18).",
+      "attribution": "NOT_ATTRIBUTABLE",
+      "discoveredVia": "EXTERNAL_LEAD_2026_09_18",
+      "evidenceReadOn": "2026-09-18",
+      "membershipStart": "2026-09-18",
+      "parentGroupNote": "GE Vernova Inc. (US parent) booked $2.4 billion of equipment orders to support data centres in Q1 2026, more than all of the previous year (release, 22 Apr 2026). That is the parent's business; the Indian company's MD called its own Q1 FY27 data-centre ordering 'not significant', and a related-party US data-centre order of up to Rs 1,300 crore is not yet booked."
+    },
+    {
+      "symbol": "HFCL",
+      "name": "HFCL Ltd.",
+      "instrumentKey": "NSE_EQ|INE548A01028",
+      "isin": "INE548A01028",
+      "layer": "data_centre",
+      "subLayers": [
+        "hardware"
+      ],
+      "weightSplit": {
+        "data_centre_hardware": 1.0
+      },
+      "admitted": true,
+      "basis": "hard",
+      "admittedOn": [
+        {
+          "kind": "operating",
+          "headline": "About ₹100 cr of Q1 revenue as MPO cable deliveries begin",
+          "document": "Q1 FY27 earnings call",
+          "date": "2026-07-29",
+          "source": "Trendlyne document search",
+          "excerpt": "MPO cables and all that delivery has already commenced. That is already on. We made about INR 100 crores revenue in the first quarter"
+        },
+        {
+          "kind": "capex",
+          "headline": "Board approves ₹215 cr data-centre connectivity plant",
+          "document": "Board outcome, Q1 FY27 results",
+          "date": "2026-07-22",
+          "source": "Trendlyne document search",
+          "excerpt": "The Board has approved the setting up of a state-of-the-art manufacturing facility for Data Center Connectivity Products with a capacity of 2,70,000 assemblies per annum at an estimated capital outlay of Rs 215 crore"
+        }
+      ],
+      "reviewedBy": null,
+      "reviewedAt": null,
+      "exposureAttributable": true,
+      "exposureNote": "About Rs 100 crore of Q1 FY27 revenue from data-centre products, stated on the call; data centre is reported within optical fibre cables, not as a segment.",
+      "note": "Also has Rs 215 crore of board-approved capex for a data-centre connectivity plant, due by September 2027. The Rs 800 crore expected for FY27 is guidance and is not counted.",
+      "attribution": "MANAGEMENT_DISCLOSED",
+      "discoveredVia": "EXTERNAL_LEAD_2026_09_18",
+      "evidenceReadOn": "2026-09-18",
+      "membershipStart": "2026-09-18",
+      "supportingEvidence": [
+        {
+          "kind": "order",
+          "headline": "Export order of about ₹496 cr for data-centre connectivity",
+          "document": "HFCL exchange disclosure",
+          "date": "2026-07-10",
+          "page": "1",
+          "excerpt": "export order worth ~USD 51.98 million (equivalent to ~INR 495.80 crore), for the supply of optical fiber cable based data centre connectivity solutions",
+          "source": "Verification ledger, 2026-09-18 (read from the company document)"
+        }
+      ]
+    },
+    {
+      "symbol": "MTARTECH",
+      "name": "MTAR Technologies Ltd.",
+      "instrumentKey": "NSE_EQ|INE864I01014",
+      "isin": "INE864I01014",
+      "layer": "data_centre",
+      "subLayers": [
+        "hardware"
+      ],
+      "weightSplit": {
+        "data_centre_hardware": 1.0
+      },
+      "admitted": true,
+      "basis": "hard",
+      "admittedOn": [
+        {
+          "kind": "order",
+          "headline": "₹45 cr of data-centre orders from SLB",
+          "document": "Q1 FY27 investor presentation",
+          "date": "2026-07-29",
+          "source": "Trendlyne document search",
+          "excerpt": "The company has received Rs. 45 Cr of orders from SLB to supply components and assemblies for data center infrastructure solutions"
+        },
+        {
+          "kind": "order",
+          "headline": "₹35.6 cr of data-centre infrastructure orders",
+          "document": "Reg 30 disclosure: receipt of purchase orders worth Rs 35.56 crores",
+          "date": "2026-04-01",
+          "source": "Letter to BSE/NSE hosted on mtar.in, read directly (PDF text)",
+          "excerpt": "Nature of order(s) / contract(s): Supply of various products for data centre infrastructure ... Orders worth USD 3783456 (Rs. 35.56 Crores)"
+        }
+      ],
+      "reviewedBy": null,
+      "reviewedAt": null,
+      "exposureAttributable": true,
+      "exposureNote": "Order values disclosed: Rs 45 crore (SLB) and Rs 35.56 crore (unnamed international energy-sector customer), both for data-centre infrastructure.",
+      "note": "The customer is SLB, a supplier, and the order is explicitly for data-centre infrastructure. First articles are still being qualified.",
+      "attribution": "MANAGEMENT_DISCLOSED",
+      "discoveredVia": "EXTERNAL_LEAD_2026_09_18",
+      "evidenceReadOn": "2026-09-18",
+      "membershipStart": "2026-09-18"
+    },
+    {
+      "symbol": "POLYCAB",
+      "name": "Polycab India Ltd.",
+      "instrumentKey": "NSE_EQ|INE455K01017",
+      "isin": "INE455K01017",
+      "layer": "power",
+      "subLayers": [
+        "equipment"
+      ],
+      "weightSplit": {
+        "power_equipment": 1.0
+      },
+      "admitted": true,
+      "basis": "hard",
+      "admittedOn": [
+        {
+          "kind": "operating",
+          "headline": "Cables supplied to Vodafone Idea data centres",
+          "document": "Q1 FY27 earnings call",
+          "date": "2026-07-20",
+          "source": "Trendlyne document search",
+          "excerpt": "in the data centres of Vodafone Idea in Mohali, Pune and South of India, we have the cables supplied"
+        }
+      ],
+      "reviewedBy": null,
+      "reviewedAt": null,
+      "exposureAttributable": false,
+      "exposureNote": "Supply to named data centres is stated; no value, volume or share.",
+      "note": "A thin admission: conventional cables supplied through distribution into a telecom operator's existing data centres, restated on the call rather than newly won.",
+      "attribution": "NOT_ATTRIBUTABLE",
+      "discoveredVia": "EXTERNAL_LEAD_2026_09_18",
+      "evidenceReadOn": "2026-09-18",
+      "membershipStart": "2026-09-18"
+    },
+    {
+      "symbol": "APARINDS",
+      "name": "APAR Industries Ltd.",
+      "instrumentKey": "NSE_EQ|INE372A01015",
+      "isin": "INE372A01015",
+      "layer": "power",
+      "subLayers": [
+        "equipment"
+      ],
+      "weightSplit": {
+        "power_equipment": 1.0
+      },
+      "admitted": true,
+      "basis": "hard",
+      "admittedOn": [
+        {
+          "kind": "operating",
+          "headline": "Now supplying cables to US data-centre projects",
+          "document": "Annual Report FY2025-26",
+          "date": "2026-05-27",
+          "source": "Trendlyne document search",
+          "excerpt": "We have already started supplying cables to U.S. data-centre projects"
+        }
+      ],
+      "reviewedBy": null,
+      "reviewedAt": null,
+      "exposureAttributable": false,
+      "exposureNote": "Supply to US data-centre projects is stated; no value, volume or share. Hyperscaler approvals are vendor listings, not orders, and are not counted.",
+      "note": "A thin admission.",
+      "attribution": "NOT_ATTRIBUTABLE",
+      "discoveredVia": "EXTERNAL_LEAD_2026_09_18",
+      "evidenceReadOn": "2026-09-18",
+      "membershipStart": "2026-09-18"
+    },
+    {
+      "symbol": "KIRLOSENG",
+      "name": "Kirloskar Oil Engines Ltd.",
+      "instrumentKey": "NSE_EQ|INE146L01010",
+      "isin": "INE146L01010",
+      "layer": "power",
+      "subLayers": [
+        "equipment"
+      ],
+      "weightSplit": {
+        "power_equipment": 1.0
+      },
+      "admitted": true,
+      "basis": "hard",
+      "admittedOn": [
+        {
+          "kind": "order",
+          "headline": "Large-value data-centre orders secured in FY26",
+          "document": "Annual Report FY2025-26",
+          "date": "2026-05-13",
+          "source": "Trendlyne document search",
+          "excerpt": "KOEL secured large-value orders in the data center segment; establishing a meaningful presence in one of India's fastest-growing infrastructure verticals."
+        }
+      ],
+      "reviewedBy": null,
+      "reviewedAt": null,
+      "exposureAttributable": false,
+      "exposureNote": "Its first hyperscale data-centre order, about 192 MW, was stated on the Q1 FY27 call; no customer, rupee value or revenue split is given.",
+      "note": "A thin admission.",
+      "attribution": "NOT_ATTRIBUTABLE",
+      "discoveredVia": "EXTERNAL_LEAD_2026_09_18",
+      "evidenceReadOn": "2026-09-18",
+      "membershipStart": "2026-09-18",
+      "supportingEvidence": [
+        {
+          "kind": "order",
+          "headline": "First hyperscale data-centre order, about 192 MW",
+          "document": "Kirloskar Oil Engines Q1 FY27 earnings call transcript",
+          "date": "2026-08-07",
+          "page": "PDF 7",
+          "source": "Verification ledger, 2026-09-18 (read from the company document)",
+          "excerpt": "we secured our first hyperscale data center order of approximately 192 megawatts."
+        }
+      ]
+    },
+    {
+      "symbol": "DIACABS",
+      "name": "Diamond Power Infrastructure Ltd.",
+      "instrumentKey": "NSE_EQ|INE989C01038",
+      "isin": "INE989C01038",
+      "layer": "power",
+      "subLayers": [
+        "equipment"
+      ],
+      "weightSplit": {
+        "power_equipment": 1.0
+      },
+      "admitted": true,
+      "basis": "hard",
+      "admittedOn": [
+        {
+          "kind": "order",
+          "headline": "₹435 cr data-centre cable order book in hand",
+          "document": "Q1 FY27 investor presentation",
+          "date": "2026-08-13",
+          "source": "Trendlyne document search",
+          "excerpt": "EHV HV LV cables plus HTLS conductor for the data-centre segment ₹435 Cr MVCC order book already in hand"
+        },
+        {
+          "kind": "operating",
+          "headline": "Order book ₹3,688 cr, 11.8% of it data centre",
+          "document": "Q1 FY27 investor presentation",
+          "date": "2026-08-13",
+          "source": "Trendlyne document search",
+          "excerpt": "Order book as on 11-Aug-2026 ₹3,687.55 Cr across cables, conductors & data-centre products ... Data Centre | 11.8%"
+        },
+        {
+          "kind": "order",
+          "headline": "₹435 cr data-centre order confirmed on the Q1 call",
+          "document": "Q1 FY27 earnings call",
+          "date": "2026-08-21",
+          "source": "Trendlyne document search",
+          "excerpt": "Our INR435 crores data center order sits within it"
+        },
+        {
+          "kind": "order",
+          "headline": "Letter of intent from Aurionpro for cables to a Hyderabad data-centre campus",
+          "document": "Reg 30 announcement",
+          "date": "2026-08-22",
+          "source": "Trendlyne news feed (BSE filing)",
+          "excerpt": "Letter of Intent received from Aurionpro Solutions Limited for the cable supply to Hyderabad data centre campus"
+        }
+      ],
+      "reviewedBy": null,
+      "reviewedAt": null,
+      "exposureAttributable": true,
+      "exposureNote": "A Rs 435 crore data-centre cable order; data centres are 11.8% of the Rs 3,688 crore order book (11 Aug 2026). Management-disclosed order values, not revenue.",
+      "note": "Held as a candidate on 17 Sep on a market-projection slide. That read missed the order, and it was not re-read on 18 Sep with the other leads. Re-read on 18 Sep after an external fact-check flagged it; admitted on the filings above.",
+      "attribution": "MANAGEMENT_DISCLOSED",
+      "evidenceReadOn": "2026-09-18",
+      "membershipStart": "2026-09-18"
+    },
+    {
+      "symbol": "ABB",
+      "name": "ABB India Ltd.",
+      "instrumentKey": "NSE_EQ|INE117A01022",
+      "isin": "INE117A01022",
+      "layer": "power",
+      "subLayers": [
+        "equipment"
+      ],
+      "weightSplit": {
+        "power_equipment": 1.0
+      },
+      "admitted": true,
+      "basis": "hard",
+      "admittedOn": [
+        {
+          "kind": "order",
+          "headline": "Order growth in data centres, one of four sectors named",
+          "document": "Q1 CY2026 analyst presentation, Electrification",
+          "date": "2026-05-08",
+          "source": "ABB India Q1 CY2026 analyst presentation, filed with BSE/NSE under Reg 30 (primary read)",
+          "excerpt": "Order growth in Data Center, Energy, Metals, and Building sectors"
+        },
+        {
+          "kind": "order",
+          "headline": "Data-centre demand for LT panels, e-houses and UPS",
+          "document": "Q1 CY2026 analyst presentation, \"Proven capabilities leading to significant wins\"",
+          "date": "2026-05-08",
+          "source": "ABB India Q1 CY2026 analyst presentation, filed with BSE/NSE under Reg 30 (primary read)",
+          "excerpt": "Data Centers — Demand for a host of offerings: Low Tension panels; Packaging and e-house including UPS and auxiliary power equipment; Site supervision involving Erection Testing and Commissioning"
+        }
+      ],
+      "reviewedBy": null,
+      "reviewedAt": null,
+      "exposureAttributable": false,
+      "exposureNote": "Management said data centres were about 15-17% of Q2 CY2026 orders (call, 31 Jul 2026), against orders of Rs 4,363 crore; the quarter's key orders included LV/MV switchgear and ring-main units for data centres. A share of one quarter's orders, not revenue; no customer is named.",
+      "note": "Admitted on the same basis as Kirloskar, TD Power and Cummins: orders stated for data centres, customer and value undisclosed. Moved from excluded to candidate on 18 Sep after an external fact-check; confirmed on 18 Sep from ABB's own filed presentation, read directly. A relayed \"data center major\" wording and a Q2 CY2026 release were not seen and are not relied on. ABB reports on a calendar year.",
+      "attribution": "MANAGEMENT_DISCLOSED",
+      "discoveredVia": "EXTERNAL_LEAD_2026_09_18",
+      "evidenceReadOn": "2026-09-18",
+      "membershipStart": "2026-09-18",
+      "supportingEvidence": [
+        {
+          "kind": "order",
+          "headline": "Switchgear and ring-main-unit orders for data centres",
+          "document": "ABB India Q2 CY2026 press release",
+          "date": "2026-07-31",
+          "page": "PDF 4",
+          "source": "Verification ledger, 2026-09-18 (read from the company document)",
+          "excerpt": "Key orders included low and medium voltage switchgears and Ring Main units for data centers and smart power products for renewable energy."
+        },
+        {
+          "kind": "operating",
+          "headline": "Data centres were about 15–17% of the quarter's orders",
+          "document": "ABB India Q2 CY2026 earnings call transcript",
+          "date": "2026-07-31",
+          "page": "PDF 10",
+          "source": "Verification ledger, 2026-09-18 (read from the company document)",
+          "excerpt": "Data Centers orders in this quarter has been almost 15% to 17% of our orders"
+        },
+        {
+          "kind": "order",
+          "headline": "Last year's large data-centre order executed in Q1",
+          "document": "ABB India Q1 CY2026 analyst call transcript",
+          "date": "2026-05-08",
+          "page": "6",
+          "source": "Verification ledger, 2026-09-18 (read from the company document)",
+          "excerpt": "last year, we had a very big data center order, which we got executed in Q1"
+        }
+      ]
+    },
+    {
+      "symbol": "RELIANCE",
+      "name": "Reliance Industries Ltd.",
+      "instrumentKey": "NSE_EQ|INE002A01018",
+      "isin": "INE002A01018",
+      "layer": "data_centre",
+      "subLayers": [
+        "developer",
+        "operator"
+      ],
+      "weightSplit": {
+        "data_centre_developer": 0.5,
+        "data_centre_operator": 0.5
+      },
+      "admitted": true,
+      "basis": "hard",
+      "admittedOn": [
+        {
+          "kind": "order",
+          "headline": "168 MW data centre with Meta leasing capacity, due within two years",
+          "document": "Media release: Reliance and Meta to Develop AI-Enabled Data Centre in Jamnagar, Gujarat",
+          "date": "2026-06-10",
+          "source": "ril.com media release, read directly (PDF text)",
+          "excerpt": "RIL will develop a data center with 168 MW capacity to be delivered within two years, with an option to scale. ... Meta will lease capacity from the facility"
+        }
+      ],
+      "reviewedBy": null,
+      "reviewedAt": null,
+      "exposureAttributable": false,
+      "exposureNote": "A 168 MW built-to-suit agreement is disclosed; no revenue, capex or share of the group is attributed to it.",
+      "note": "Admitted on a signed built-to-suit agreement with a named hyperscaler: RIL designs, builds and runs the facility and Meta leases the capacity. The 18 Sep document search had found only the compute plan and the Google Cloud partnership; this release was found by the exchange-announcement sweep. RIL discloses no lease rate, revenue or tenure for the 168 MW Meta facility and calls the commissioning timeline 'commercially sensitive'; it is funded on RIL's own balance sheet (Q1 FY27 call).",
+      "attribution": "NOT_ATTRIBUTABLE",
+      "discoveredVia": "EXTERNAL_LEAD_2026_09_18",
+      "evidenceReadOn": "2026-09-18",
+      "membershipStart": "2026-09-18",
+      "priorStatus": "candidate"
+    },
+    {
+      "symbol": "ADANIENSOL",
+      "name": "Adani Energy Solutions Ltd.",
+      "instrumentKey": "NSE_EQ|INE931S01010",
+      "isin": "INE931S01010",
+      "layer": "power",
+      "subLayers": [
+        "generation"
+      ],
+      "weightSplit": {
+        "power_generation": 1.0
+      },
+      "admitted": true,
+      "basis": "hard",
+      "admittedOn": [
+        {
+          "kind": "operating",
+          "headline": "Data-centre volume \"very negligible\": one contract, about 20–25 MW",
+          "document": "Q1 FY27 earnings call transcript (Reg 30 filing)",
+          "date": "2026-07-28",
+          "source": "Trendlyne document search (filed transcript)",
+          "excerpt": "So the data center volume today is very negligible. There is only one contract that we are doing, servicing for about 20,25 megawatt"
+        }
+      ],
+      "reviewedBy": null,
+      "reviewedAt": null,
+      "exposureAttributable": true,
+      "exposureNote": "One data-centre supply contract of about 20-25 MW, described by management as very negligible against the platform.",
+      "note": "Admitted on a live data-centre power supply contract. Small by the company's own account: AGI has no materiality floor, so the size is carried in the exposure note, not used to refuse.",
+      "attribution": "MANAGEMENT_DISCLOSED",
+      "discoveredVia": "EXTERNAL_LEAD_2026_09_18",
+      "evidenceReadOn": "2026-09-18",
+      "membershipStart": "2026-09-18",
+      "priorStatus": "candidate"
+    },
+    {
+      "symbol": "ADANIGREEN",
+      "name": "Adani Green Energy Ltd.",
+      "instrumentKey": "NSE_EQ|INE364U01010",
+      "isin": "INE364U01010",
+      "layer": "power",
+      "subLayers": [
+        "generation"
+      ],
+      "weightSplit": {
+        "power_generation": 1.0
+      },
+      "admitted": true,
+      "basis": "hard",
+      "admittedOn": [
+        {
+          "kind": "order",
+          "headline": "61.4 MW renewable supply deal for a data centre",
+          "document": "Media release: H1 FY25 results",
+          "date": "2024-10-22",
+          "source": "adanigreenenergy.com media release, read directly (page text)",
+          "excerpt": "AGEL has entered the C&I segment by signing a power consumption agreement to supply 61.4 MW of renewable energy that will power a datacenter. This will help advance Google's 24/7 carbon-free energy goal"
+        }
+      ],
+      "reviewedBy": null,
+      "reviewedAt": null,
+      "exposureAttributable": true,
+      "exposureNote": "A 61.4 MW data-centre power agreement against an operating portfolio of more than 11 GW at the time; small.",
+      "note": "Excluded on 18 Sep because its 2026 filings only discussed data-centre demand; the sweep found its own 2024 release of a signed data-centre power agreement. Evidence older than the decision does not backdate membership.",
+      "attribution": "MANAGEMENT_DISCLOSED",
+      "discoveredVia": "EXTERNAL_LEAD_2026_09_18",
+      "evidenceReadOn": "2026-09-18",
+      "membershipStart": "2026-09-18",
+      "priorStatus": "excluded"
+    },
+    {
+      "symbol": "TATAPOWER",
+      "name": "Tata Power Company Ltd.",
+      "instrumentKey": "NSE_EQ|INE245A01021",
+      "isin": "INE245A01021",
+      "layer": "power",
+      "subLayers": [
+        "generation"
+      ],
+      "weightSplit": {
+        "power_generation": 1.0
+      },
+      "admitted": true,
+      "basis": "hard",
+      "admittedOn": [
+        {
+          "kind": "order",
+          "headline": "25-year renewable power agreement with Princeton Digital Group",
+          "document": "Group captive case study, 'United for sustainability' (tatapower.com)",
+          "date": "2024-03-14",
+          "source": "Tata Power website, read directly 2026-09-18",
+          "excerpt": "Tata Power Renewables joins forces with Princeton Digital Group (PDG) to power their Mumbai data facility ... a co-developed 25-year renewable Power Consumption Agreement (PCA) and a dedicated solar plant"
+        },
+        {
+          "kind": "operating",
+          "headline": "Solar plant powering PDG's Airoli data centre since June 2023",
+          "document": "Group captive case study, 'United for sustainability' (tatapower.com)",
+          "date": "2024-03-14",
+          "source": "Tata Power website, read directly 2026-09-18",
+          "excerpt": "the solar plant supplies clean energy to PDG's MU 1 data center at Airoli, Mumbai. Since the launch of its operation in June 2023"
+        }
+      ],
+      "reviewedBy": "portfolio owner",
+      "reviewedAt": "2026-09-18",
+      "exposureAttributable": false,
+      "exposureNote": "One signed 25-year renewable power agreement supplying Princeton Digital Group's MU1 data centre in Mumbai, operating since June 2023, stated on Tata Power's website; no capacity, value or revenue is given, and no exchange filing, annual report or call mentions it. Other data-centre mentions are discussions, not agreements.",
+      "note": "Admitted on the company's own website text, not an exchange filing; recorded as such.",
+      "attribution": "NOT_ATTRIBUTABLE",
+      "discoveredVia": "EXTERNAL_LEAD_2026_09_18",
+      "evidenceReadOn": "2026-09-18",
+      "priorStatus": "candidate (pendingVerification)",
+      "membershipStart": "2026-09-18"
+    },
+    {
+      "symbol": "CRAFTSMAN",
+      "name": "Craftsman Automation Ltd.",
+      "instrumentKey": "NSE_EQ|INE00LO01017",
+      "isin": "INE00LO01017",
+      "layer": "power",
+      "subLayers": [
+        "equipment"
+      ],
+      "weightSplit": {
+        "power_equipment": 1.0
+      },
+      "admitted": true,
+      "basis": "hard",
+      "admittedOn": [
+        {
+          "kind": "operating",
+          "headline": "German unit: 90% of revenue from power-generation engines, mostly for data centres",
+          "document": "Q2 FY26 earnings call transcript (BSE, filed 2025-11-12)",
+          "date": "2025-11-10",
+          "source": "BSE filing, read directly (pdftotext) 2026-09-18",
+          "excerpt": "The German subsidiary is catering 90% of the revenue towards large engines for the power generation which is again predominantly getting into the data center business. Predominantly means majority."
+        }
+      ],
+      "reviewedBy": "portfolio owner",
+      "reviewedAt": "2026-09-18",
+      "exposureAttributable": false,
+      "exposureNote": "Management states its German foundry (Craftsman Fronberg Guss; H1 FY26 revenue about Rs 158 crore) earns 90% of revenue from large power-generation engine parts, a majority of which go into data centres. Not quantified further. The $100 million stationary-engine order book is with engine makers and is not tied to data-centre use; customers do not say whether engines are for prime or backup power.",
+      "note": "Admitted on the German unit's operating disclosure only; the order book is not counted.",
+      "attribution": "MANAGEMENT_DISCLOSED",
+      "discoveredVia": "EXTERNAL_LEAD_2026_09_18",
+      "evidenceReadOn": "2026-09-18",
+      "priorStatus": "candidate (pendingVerification)",
+      "membershipStart": "2026-09-18"
+    }
+  ],
+  "candidates": [
+    {
+      "symbol": "KEI",
+      "name": "KEI Industries Ltd.",
+      "isin": null,
+      "suggestedLayer": "power",
+      "suggestedSubLayers": [
+        "equipment"
+      ],
+      "admitted": false,
+      "basis": "soft",
+      "note": "Its investor presentation carries a page on India's data centre capacity reaching 14GW by 2035. That is a claim about the market and appears in the decks of companies with data centre orders and companies with none. Not evidence. Re-checked 18 Sep (ledger): no company-specific data-centre order, customer or revenue in any Q1 FY27 or FY26 document."
+    },
+    {
+      "symbol": "INDOTECH",
+      "name": "Indo Tech Transformers Ltd.",
+      "isin": null,
+      "suggestedLayer": "power",
+      "suggestedSubLayers": [
+        "equipment"
+      ],
+      "admitted": false,
+      "basis": "soft",
+      "note": "Rs 495 Cr capex to 50,000 MVA is a hard commitment, but the data centre reference is sector demand commentary, not a data centre order. Needs a first-party item."
+    },
+    {
+      "symbol": "SUPREMEPWR",
+      "name": "Supreme Power Equipment Ltd.",
+      "isin": null,
+      "suggestedLayer": "power",
+      "suggestedSubLayers": [
+        "equipment"
+      ],
+      "admitted": false,
+      "basis": "soft",
+      "note": "Annual report cites CBRE on national data centre stock. Market commentary."
+    },
+    {
+      "symbol": "PREMIERENE",
+      "name": "Premier Energies Ltd.",
+      "isin": null,
+      "admitted": false,
+      "basis": "soft",
+      "note": "10 GVA HV and EHV transformer capacity with COD expected September 2026 is a real commitment, but the AI link in the same deck is sector demand commentary. Needs a first-party data centre item."
+    },
+    {
+      "symbol": "ESDS",
+      "name": "ESDS Software Solution Ltd.",
+      "isin": null,
+      "admitted": false,
+      "basis": "soft",
+      "note": "A data centre operator, but the material retrieved is IPO offer-document market sizing rather than its own operating disclosure.",
+      "outOfUniverse": "NOT_ON_NSE_LISTS",
+      "outOfUniverseNote": "On neither NSE equity list on 2026-09-18. Its filings in Trendlyne include an IPO red herring prospectus dated 2026-08-27; if it lists on NSE it re-enters."
+    },
+    {
+      "symbol": "AETHER",
+      "name": "Aether Industries Ltd.",
+      "isin": "INE0BWX01014",
+      "suggestedLayer": "semiconductor",
+      "suggestedSubLayers": [
+        "materials"
+      ],
+      "admitted": false,
+      "basis": "soft",
+      "note": "Refused: the low-dielectric monomers for AI-server boards are being developed, not sold. The Magnum site capex is real and first-party but is not AI capex - it is the Baker Hughes and oil-and-gas site. Admit only on a disclosed supply agreement or segment revenue for the electronic-materials line.",
+      "evidence": [
+        {
+          "kind": "language",
+          "document": "Q1 FY27 earnings call",
+          "date": "2026-08-07",
+          "source": "Trendlyne document search",
+          "excerpt": "Few of them are the specialty monomers that Aether is actively developing. These molecules that Aether will be manufacturing in its brand new site, Magnum, are an upstream input to the board inside 5G and AI hardware."
+        }
+      ]
+    },
+    {
+      "symbol": "CENTUM",
+      "name": "Centum Electronics Ltd.",
+      "isin": "INE320B01020",
+      "suggestedLayer": "semiconductor",
+      "suggestedSubLayers": [
+        "hardware"
+      ],
+      "admitted": false,
+      "basis": "soft",
+      "note": "Refused: \"specialised capabilities for complex semiconductor equipment\" is a capability claim. The EMS order book of Rs 8,718 Mn is first-party and hard but is the whole EMS business, with no semiconductor-equipment split disclosed. Admit on a segment split or a named order.",
+      "evidence": [
+        {
+          "kind": "partnership",
+          "document": "Q1 FY27 investor presentation",
+          "date": "2026-09-01",
+          "source": "Trendlyne document search",
+          "excerpt": "Semiconductor Expertise: Specialized capabilities for complex semiconductor equipment, supporting customer qualification, ramp-up and scalable production."
+        }
+      ]
+    },
+    {
+      "symbol": "KEC",
+      "name": "KEC International Ltd.",
+      "isin": "INE389H01022",
+      "suggestedLayer": "data_centre",
+      "suggestedSubLayers": [],
+      "admitted": false,
+      "basis": "soft",
+      "note": "Builds data-centre and semiconductor facilities (Kolkata data centre completed Q1 FY27; semiconductor plant at Sanand) and, in Q1 FY27, won its first transmission line order to evacuate power to a data centre. All of it is construction, so the contractor rule applies: a named project, a contracted role and an identifiable value. No value is disclosed for any of these, so it is held. Re-read 2026-09-18. Re-checked 18 Sep (ledger): the data-centre line order sits inside a Rs 1,180 crore batch with no split, and the MD said of the civil business 'right now, we don't have a single order in data centers'.",
+      "evidence": [
+        {
+          "kind": "order",
+          "document": "Q1 FY27 investor presentation",
+          "date": "2026-08-10",
+          "source": "Trendlyne document search",
+          "excerpt": "Secured first transmission line order for evacuation of power to a Data Centre from a private developer"
+        },
+        {
+          "kind": "capex",
+          "document": "Annual Report FY2025-26",
+          "date": "2026-05-15",
+          "source": "Trendlyne document search",
+          "excerpt": "DATA CENTRE PROJECT, KOLKATA: construction of a mission critical facility. Project physically completed in Q1 FY27. SEMICONDUCTOR MANUFACTURING PLANT, SANAND, GUJARAT: construction of a semiconductor manufacturing facility including specialised cleanroom construction. Main plant commissioned in Q4 FY26."
+        }
+      ],
+      "evidenceReadOn": "2026-09-18"
+    },
+    {
+      "symbol": "TANFACIND",
+      "name": "Tanfac Industries Ltd.",
+      "isin": "INE639A01017",
+      "suggestedLayer": "semiconductor",
+      "suggestedSubLayers": [
+        "materials"
+      ],
+      "admitted": false,
+      "basis": "soft",
+      "note": "Refused: \"we are just evaluating various technologies\" and an approval cycle of 1 to 1.5 years before any semiconductor revenue. An intention, on the company’s own account.",
+      "evidence": [
+        {
+          "kind": "language",
+          "document": "Q1 FY27 earnings call",
+          "date": "2026-08-03",
+          "source": "Trendlyne document search",
+          "excerpt": "We are just evaluating various technologies, nothing else. It is more of an approval cycle which takes about 1 to 1.5 years in semicon for approval."
+        }
+      ],
+      "outOfUniverse": "NOT_ON_NSE_LISTS",
+      "outOfUniverseNote": "On neither NSE equity list on 2026-09-18."
+    },
+    {
+      "symbol": "CYIENT",
+      "name": "Cyient Ltd.",
+      "isin": "INE136B01020",
+      "suggestedLayer": "semiconductor",
+      "suggestedSubLayers": [
+        "hardware"
+      ],
+      "admitted": false,
+      "basis": "soft",
+      "note": "Refused: an ASIC application table listing \"Data Centers, Industrial\" is a product-positioning slide. No order, no capex, no segment disclosure tied to AI infrastructure.",
+      "evidence": [
+        {
+          "kind": "news",
+          "document": "Investor presentation",
+          "date": "2026-08-25",
+          "source": "Trendlyne document search",
+          "excerpt": "Application-Specific Integrated Circuits Deep Dive. Cyient Semiconductors: Data Centers, Industrial. Kinetic Technologies: Edge AI, Automotive."
+        }
+      ]
+    },
+    {
+      "symbol": "NTPCGREEN",
+      "name": "NTPC Green Energy Ltd.",
+      "isin": "INE0ONG01011",
+      "suggestedLayer": "power",
+      "suggestedSubLayers": [
+        "generation"
+      ],
+      "admitted": false,
+      "basis": "soft",
+      "note": "MoUs with two named data-centre operators (CtrlS up to 2 GW; Nxtra up to 500 MW). An MoU is intent, not a PPA or contracted MW. Re-checked 18 Sep (ledger): both still listed as MoUs in the Q1 FY27 deck (22 Jul); neither CtrlS nor Nxtra appears as an offtaker.",
+      "evidence": [
+        {
+          "kind": "partnership",
+          "document": "Annual Report FY2025-26",
+          "date": "2026-05-21",
+          "source": "Trendlyne document search",
+          "excerpt": "MoU signed with CtrlS Data Centre on 31st October 2025, for development of RE Projects/Assets with Capacity up to 2 GW"
+        }
+      ],
+      "discoveredVia": "EXTERNAL_LEAD_2026_09_18",
+      "evidenceReadOn": "2026-09-18"
+    },
+    {
+      "symbol": "ACMESOLAR",
+      "name": "ACME Solar Holdings Ltd.",
+      "isin": "INE622W01025",
+      "suggestedLayer": "power",
+      "suggestedSubLayers": [
+        "generation"
+      ],
+      "admitted": false,
+      "basis": "soft",
+      "note": "Building a team to target data-centre demand; management says nothing is concrete yet. Sweep 18 Sep: objects clause amended to permit data centres; the notice says this approves no specific project. Re-checked 18 Sep (ledger): no data-centre customer or contract; on 1 Sep 2026 the board approved adding data centres to its objects, subject to AGM approval.",
+      "evidence": [
+        {
+          "kind": "language",
+          "document": "Q1 FY27 earnings call",
+          "date": "2026-08-04",
+          "source": "Trendlyne document search",
+          "excerpt": "So we'll update you whenever there is anything concrete on this"
+        }
+      ],
+      "discoveredVia": "EXTERNAL_LEAD_2026_09_18",
+      "evidenceReadOn": "2026-09-18"
+    },
+    {
+      "symbol": "SIEMENS",
+      "name": "Siemens Ltd.",
+      "isin": "INE003A01024",
+      "suggestedLayer": "power",
+      "suggestedSubLayers": [
+        "equipment"
+      ],
+      "admitted": false,
+      "basis": "soft",
+      "note": "Management says data centres are among its fastest-growing businesses and hyperscalers are ordering, but names no order, customer or value. Re-checked 18 Sep (ledger): no data-centre order, customer or value in any company document; data centres appear only as a Smart Infrastructure growth area.",
+      "evidence": [
+        {
+          "kind": "language",
+          "document": "Earnings call",
+          "date": "2026-06-03",
+          "source": "Trendlyne document search",
+          "excerpt": "It's one of our fastest growing businesses as well. A lot of conversion actually happening on the ground: Hyperscalers are ordering"
+        }
+      ],
+      "discoveredVia": "EXTERNAL_LEAD_2026_09_18",
+      "evidenceReadOn": "2026-09-18"
+    },
+    {
+      "symbol": "SYRMA",
+      "name": "Syrma SGS Technology Ltd.",
+      "isin": "INE0DYJ01015",
+      "suggestedLayer": "data_centre",
+      "suggestedSubLayers": [
+        "hardware"
+      ],
+      "admitted": false,
+      "basis": "soft",
+      "note": "Server motherboards in process with unnamed clients; semiconductors explicitly not committed. Sweep 18 Sep: its customer Giga Computing announced that Syrma has begun PCBA of its server motherboards; not yet confirmed in Syrma's own filings. Re-checked 18 Sep (ledger): Syrma's own documents do not mention Giga Computing or any data-centre order.",
+      "evidence": [
+        {
+          "kind": "language",
+          "document": "Q1 FY27 earnings call",
+          "date": "2026-08-04",
+          "source": "Trendlyne document search",
+          "excerpt": "eligible to design and manufacture server motherboards which we are already in the process of working with few select clients"
+        }
+      ],
+      "discoveredVia": "EXTERNAL_LEAD_2026_09_18",
+      "evidenceReadOn": "2026-09-18"
+    },
+    {
+      "symbol": "PARAS",
+      "name": "Paras Defence and Space Technologies Ltd.",
+      "isin": "INE045601023",
+      "suggestedLayer": "semiconductor",
+      "suggestedSubLayers": [
+        "osat"
+      ],
+      "admitted": false,
+      "basis": "soft",
+      "note": "A subsidiary is establishing an OSAT facility; no capex, timeline or customer disclosed. Sweep 18 Sep: an MoU with MP for a Rs 6,200 crore proposed OSAT facility; no board-approved capex. Re-checked 18 Sep (ledger): the OSAT plan is an MoU with Madhya Pradesh (Rs 6,200 crore, 22 Jul 2026); no semiconductor or AI revenue.",
+      "evidence": [
+        {
+          "kind": "language",
+          "document": "Annual Report FY2025-26",
+          "date": "2026-05-12",
+          "source": "Trendlyne document search",
+          "excerpt": "Paras Semiconductors is establishing an outsourced semiconductor assembly and testing facility for advanced packaging"
+        }
+      ],
+      "discoveredVia": "EXTERNAL_LEAD_2026_09_18",
+      "evidenceReadOn": "2026-09-18"
+    },
+    {
+      "symbol": "FLUOROCHEM",
+      "name": "Gujarat Fluorochemicals Ltd.",
+      "isin": "INE09N301011",
+      "suggestedLayer": "semiconductor",
+      "suggestedSubLayers": [
+        "materials"
+      ],
+      "admitted": false,
+      "basis": "soft",
+      "note": "A semiconductor subsidiary incorporated and semiconductor demand cited; no fab customer, qualification or dedicated capex. Sweep 18 Sep: Rs 222 crore of FY27 capex earmarked for high-purity electronic chemicals for semiconductors (Q4 FY26 call); a product plant with no fab customer, the same rule as Navin. Re-checked 18 Sep (ledger): Rs 3,150 crore FY27 capex including Rs 222 crore for semiconductor chemicals confirmed; no named fab customer or qualification.",
+      "evidence": [
+        {
+          "kind": "language",
+          "document": "Q1 FY27 earnings call",
+          "date": "2026-08-19",
+          "source": "Trendlyne document search",
+          "excerpt": "PFA, FKM, they're all driven by the requirement that we are seeing from semiconductor sector"
+        }
+      ],
+      "discoveredVia": "EXTERNAL_LEAD_2026_09_18",
+      "evidenceReadOn": "2026-09-18"
+    },
+    {
+      "symbol": "NAVINFLUOR",
+      "name": "Navin Fluorine International Ltd.",
+      "isin": "INE048G01026",
+      "suggestedLayer": "data_centre",
+      "suggestedSubLayers": [
+        "hardware"
+      ],
+      "admitted": false,
+      "basis": "soft",
+      "note": "Rs 120 crore of committed, part customer-funded capex for data-centre immersion-cooling fluid (Chemours agreement). Held until it ships: the plant makes a product, it is not an AI facility, and the fluid has other cooling uses. Sweep 18 Sep: management says it already supplies the Chemours liquid-cooling product, but the dedicated capacity completes end of Q2 FY27; re-check once commissioned. Re-checked 18 Sep (ledger): the Chemours plant is not commissioned as of 18 Sep; the date has slipped each quarter.",
+      "evidence": [
+        {
+          "kind": "capex",
+          "document": "Q1 FY27 investor presentation",
+          "date": "2026-08-05",
+          "source": "Trendlyne document search",
+          "excerpt": "Capex of Rs. 120 Crs, with 35 % funded by customer; balance through internal accruals Targeted commissioning by Q2 FY27"
+        }
+      ],
+      "discoveredVia": "EXTERNAL_LEAD_2026_09_18",
+      "evidenceReadOn": "2026-09-18"
+    },
+    {
+      "symbol": "WAAREEENER",
+      "name": "Waaree Energies Ltd.",
+      "isin": "INE377N01017",
+      "suggestedLayer": "semiconductor",
+      "suggestedSubLayers": [
+        "hardware"
+      ],
+      "admitted": false,
+      "basis": "soft",
+      "note": "A signed joint venture (13 Aug 2026) to manufacture power diodes and set up a semiconductor fabrication unit in Gujarat; no committed capex, and the entity has not begun operations. Intent, not yet building. Re-checked 18 Sep (ledger): no data-centre order; data centres are named only as target customers for its battery plant.",
+      "evidence": [
+        {
+          "kind": "partnership",
+          "document": "Reg 30: execution of joint venture agreement by subsidiaries",
+          "date": "2026-08-13",
+          "source": "BSE filing (via exchange sweep)",
+          "excerpt": "The Parties propose to enter into the joint venture for the purpose of manufacturing and supplying semiconductor products, including power application diodes and related products and setting up semiconductor fabrication unit in Gujarat, India."
+        }
+      ],
+      "discoveredVia": "EXTERNAL_LEAD_2026_09_18",
+      "evidenceReadOn": "2026-09-18"
+    }
+  ],
+  "excluded": [
+    {
+      "symbol": "HSCL",
+      "name": "Himadri Speciality Chemical Ltd.",
+      "isin": "INE019C01026",
+      "basis": "none",
+      "reason": "No qualifying evidence found in its own filings (read 2026-09-18). Only generic application lists for a planned carbon nanotube plant.",
+      "discoveredVia": "EXTERNAL_LEAD_2026_09_18",
+      "evidenceReadOn": "2026-09-18"
+    },
+    {
+      "symbol": "BRIGADE",
+      "name": "Brigade Enterprises Ltd.",
+      "isin": "INE791I01019",
+      "basis": "none",
+      "reason": "No qualifying evidence found in its own filings (read 2026-09-18). No data-centre land, development, lease or partnership found.",
+      "discoveredVia": "EXTERNAL_LEAD_2026_09_18",
+      "evidenceReadOn": "2026-09-18"
+    },
+    {
+      "symbol": "WAAREERTL",
+      "name": "Waaree Renewable Technologies Ltd.",
+      "isin": "INE299N01021",
+      "basis": "none",
+      "reason": "Its data-centre subsidiary is being transferred to its parent, Waaree Energies (board outcome 27 Aug 2026), the new data-centre subsidiaries are shells with nil turnover, and management has said no data-centre order has been received.",
+      "discoveredVia": "EXTERNAL_LEAD_2026_09_18",
+      "evidenceReadOn": "2026-09-18"
+    }
+  ],
+  "measuredLiquidity": {
+    "measuredOn": "2026-09-17",
+    "sessions": 120,
+    "source": "Upstox daily candles via scripts/aiEnablersScreenReport.mjs",
+    "note": "Median daily turnover in rupees. Median, not mean: one block trade in a thin name moves a mean enough to carry it through a floor it does not clear.",
+    "medianDailyTurnoverInr": {
+      "NETWEB": 5930400000,
+      "ADANIENT": 4794700000,
+      "POWERINDIA": 4029500000,
+      "KAYNES": 3964700000,
+      "CGPOWER": 2647900000,
+      "ANANTRAJ": 1030900000,
+      "CLEANMAX": 233800000
+    },
+    "averageDailyVolume": {
+      "CGPOWER": 3811497,
+      "ANANTRAJ": 2840750,
+      "ADANIENT": 2253753,
+      "NETWEB": 1714222,
+      "KAYNES": 1428899,
+      "CLEANMAX": 289937,
+      "POWERINDIA": 149771
+    }
+  },
+  "dataAvailability": {
+    "measuredOn": "2026-09-18",
+    "note": "What the connected sources actually serve for these members, probed rather than assumed.",
+    "freeFloatMarketCap": "DERIVED and cross-checked. market cap = P/B x book equity, since P/B is price over book value per share and no share count is needed. P/B from Upstox key-ratios, equity from Upstox balance-sheet (standalone - consolidated returns no rows), promoter share from Upstox share-holdings, and an independent market cap from Yahoo to check it against. The basis is the exposed assumption: the equity is standalone while the P/B's basis is unstated, and for a holding company those books differ by a multiple. A member whose two figures disagree by more than 25% is reported unscreened rather than screened on a number nobody verified. Yahoo is a cross-check and never a source: if it is unreachable, every member is refused.",
+    "stage3Inputs": "Revenue growth yes, capex no. income-statement serves revenue, operating_profit and net_profit with four annual periods each, so a three-year CAGR has the points it needs. Capex is in neither the income statement nor the cash-flow statement: cash-flow serves operating, investing and financing, and its line items run from profit before tax to cash at the end of the year with nothing for purchases of property, plant or equipment. Investing cash flow is not a substitute - it nets acquisitions and disposals against capital spending, and for a holding company it is mostly stake buying, so it would be most wrong for exactly the companies where capex matters most. capex-to-sales and capex growth need an ingested filing.",
+    "consensusEstimates": "ABSENT. No forward estimates on any connected source, so earnings revisions and forward EPS have nothing to compute from.",
+    "unblockedBy": "Ingesting annual reports for the seven members. That single action supplies shares outstanding for Stage 2, capex and revenue with lineage for Stage 3, and the citations the dashboard claims resolve to.",
+    "balanceSheet": "Only standalone returns rows, and only total_asset and total_liability. Consolidated yearly, consolidated quarterly and the default parameters all return zero rows.",
+    "crossCheckSource": "Yahoo Finance quote endpoint, already used elsewhere in this repo. Reported in whole rupees and converted to crore once, in the provider - the statements it is compared against are in crore, and a missing factor of 1e7 would fail every company by seven orders of magnitude and read as 'the derivation is always wrong' rather than as a unit bug.",
+    "ratioBasis": "Resolved by measurement rather than assumed. P/E is price over earnings per share and income-statement's full_statement carries EPS - Basic on the requested basis, so dividing the live price by each basis's EPS and comparing against the stated P/E identifies which basis the key-ratios figures are quoted on. A P/E matching neither is reported as such rather than forced onto the nearer one, because it means the ratio is computed on something this code does not hold. That settles the assumption the size derivation previously carried unexamined.",
+    "corporateActions": "Available, and needed. A bonus or split halves or divides the quoted price on its ex-date, and against an unadjusted previous close the basket reads a loss that did not happen. The residual check does not catch this - the wrong member return flows into the contribution and the index return identically and they still reconcile - so the ex-dates are read ahead and the member is excluded for the day. A dividend is not flagged: the price falls by it and the holder received it, which is a real return.",
+    "parameters": "balance-sheet and cash-flow take type and fs only. income-statement additionally takes time_period. share-holdings, key-ratios and corporate-actions take none.",
+    "disclosedFacts": "Held in india-ai-enablers.disclosed-facts.json, provenance class THIRD_PARTY_RELAYED. Supplied in conversation citing aggregators rather than read from a primary filing by this system, so they carry a source but no document id, page or sentence. They are not served as FILED and are not in company_facts. Ingesting the annual reports either confirms or contradicts each one.",
+    "exposureAttribution": "A third dimension beside evidence and liquidity, in three tiers rather than two. SEGMENT_REPORTED: the theme is an audited Ind AS 108 segment, separable into revenue, result, assets and capex - CGPOWER only. MANAGEMENT_DISCLOSED: the company states a figure for the theme outside segment reporting - NETWEB's AI Systems at 43.4% of revenue, CLEANMAX's 42% of contracted capacity - specific and first-party, but unaudited as a segment and not tied to assets or capex. NOT_ATTRIBUTABLE: nothing separable - KAYNES reports one segment, ADANIENT's data centres sit in an equity-accounted joint venture, POWERINDIA has no AI line though its orders are individually sized. A binary verdict had put NETWEB beside KAYNES, which disclose very different amounts. Never used to drop a company automatically.",
+    "unreadable": "Form MGT-7 for 2024-25 was supplied and could not be read: it is an image-scanned PDF with no extractable text layer, and no OCR is available in this environment. It is also the prior year. Nothing from it has been recorded.",
+    "emptyLayersAreAStandard": "Checked against an independent screen of the same question, and the check is worth recording even though its figures are not. That screen used a materially lower bar for AI exposure - company mentions in news flow and management discussion, with partnerships counting as qualifying - and on that basis it placed companies in both of the sub-layers AGI reports empty. AGI had already examined those layers and refused what it found there: monomers being developed, technologies being evaluated, a capability claim with no segment split, a product-positioning slide. The same companies, judged against a different standard. So the two empty sub-layers are a finding about what Indian semiconductor materials and equipment companies currently disclose, not a gap in AGI's coverage - and that is now checked rather than assumed.",
+    "taxonomyProvenance": "The three layers and nine sub-layers were derived from published third-party research at the start of this build rather than arrived at independently. Recorded because an independent screen using the same decomposition is not corroboration of it, and nobody should later read the match that way."
+  },
+  "universeScope": {
+    "exchange": "NSE",
+    "boards": [
+      "main",
+      "sme"
+    ],
+    "decided": "2026-09-18",
+    "lists": [
+      "EQUITY_L.csv",
+      "SME_EQUITY_L.csv"
+    ],
+    "note": "Companies on neither NSE equity list are outside the universe, whatever their evidence. They are kept in candidates with outOfUniverse set, so the reason they are absent stays visible."
+  },
+  "externalLeads": [
+    {
+      "id": "EXTERNAL_LEAD_2026_09_18",
+      "description": "42 companies reported as named in a sell-side AI-enablers screen (17 September 2026).",
+      "source": "Economic Times article, 2026-09-18, as relayed in a ChatGPT summary supplied by the analyst",
+      "verifiedAgainstSource": false,
+      "verificationNote": "AGI could not open the article (its fetch and browser are blocked for that site), so the list is recorded as relayed. The list served only as a reading queue: no layer, weight or score was taken from it, and every company was admitted, held or excluded on its own filings under AGI's evidence standard.",
+      "symbols": [
+        "ADANIGREEN",
+        "TATAPOWER",
+        "NTPCGREEN",
+        "ACMESOLAR",
+        "CLEANMAX",
+        "POWERGRID",
+        "ADANIENSOL",
+        "KEC",
+        "ABB",
+        "CUMMINSIND",
+        "SIEMENS",
+        "POWERINDIA",
+        "GVT&D",
+        "APARINDS",
+        "KIRLOSENG",
+        "SCHNEIDER",
+        "TDPOWERSYS",
+        "MTARTECH",
+        "DIACABS",
+        "WAAREERTL",
+        "FLUOROCHEM",
+        "NAVINFLUOR",
+        "HSCL",
+        "NETWEB",
+        "CGPOWER",
+        "WAAREEENER",
+        "SANSERA",
+        "KAYNES",
+        "PARAS",
+        "POLYCAB",
+        "KEI",
+        "STLTECH",
+        "HFCL",
+        "BLUESTARCO",
+        "CRAFTSMAN",
+        "SYRMA",
+        "RELIANCE",
+        "BHARTIARTL",
+        "LT",
+        "ADANIENT",
+        "ANANTRAJ",
+        "BRIGADE"
+      ]
+    }
+  ],
+  "membershipNote": "membershipStart is the date AGI decided the admission. It is not the date of the evidence, and discovering older evidence never creates earlier membership. Any performance series starts a member no earlier than this date."
+}
