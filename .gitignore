@@ -17,6 +17,9 @@ node_modules/
 *.pdf
 # Published reports are served from the site on purpose.
 !public/reports/*.pdf
+# The live site serves the repository root (Hostinger Git sync), so the same
+# report is also committed at /reports to be reachable at /reports/<file>.
+!reports/*.pdf
 __pycache__/
 artifacts/*.json
 artifacts/*.log
