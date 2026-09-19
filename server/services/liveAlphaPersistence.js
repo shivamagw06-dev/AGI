@@ -7,7 +7,7 @@ function config() {
   return { url, key };
 }
 
-async function rest(table, { method = 'POST', query = '', body, prefer = 'return=minimal' } = {}) {
+export async function rest(table, { method = 'POST', query = '', body, prefer = 'return=minimal' } = {}) {
   const { url, key } = config();
   const response = await fetch(`${url}/rest/v1/${table}${query ? `?${query}` : ''}`, {
     method, headers: { apikey: key, Authorization: `Bearer ${key}`, 'Content-Type': 'application/json', Prefer: prefer },
@@ -155,7 +155,7 @@ export class LiveAlphaPersistence {
       rank: signal.rank, classification: signal.classification, alpha_z: signal.alpha_z,
       signal_quality_score: signal.signal_quality.score, signal_quality_label: signal.signal_quality.label,
       empirical_confidence_score: signal.empirical_confidence.score, comparable_observations: signal.empirical_confidence.comparable_observations,
-      liquidity_ok: signal.liquidity_ok, factor_values: { ...signal.factors, residual_15m: signal.residual_15m, residual_60m: signal.residual_60m, volume_surprise: signal.volume_surprise, sector_strength: signal.sector_strength },
+      liquidity_ok: signal.liquidity_ok, factor_values: { ...signal.factors, residual_15m: signal.residual_15m, residual_60m: signal.residual_60m, volume_surprise: signal.volume_surprise, sector_strength: signal.sector_strength, sector_instrument_key: signal.sector_instrument_key ?? null },
       direction: signal.direction, price_at_signal: signal.price_at_signal, nifty_at_signal: signal.nifty_at_signal,
       sector_at_signal: signal.sector_at_signal, volume_ratio: signal.volume_surprise,
     }));

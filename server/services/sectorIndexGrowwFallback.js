@@ -19,6 +19,9 @@ export const SECTOR_INDEX_GROWW = Object.freeze({
   'NSE_INDEX|Nifty Financial Services': 'FINNIFTY',
   'NSE_INDEX|Nifty Infrastructure': 'NIFTYINFRA',
   'NSE_INDEX|Nifty India Digital': 'NIFTYIT',
+  // Upstox's own keys for the two indices above (the older names do not exist there).
+  'NSE_INDEX|Nifty Fin Service': 'FINNIFTY',
+  'NSE_INDEX|Nifty Infra': 'NIFTYINFRA',
 });
 
 export function growwSymbolForIndex(instrumentKey) {

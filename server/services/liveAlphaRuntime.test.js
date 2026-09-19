@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { classifyEvaluationStatus, loadLiveAlphaPersistenceState, loadLiveAlphaUniverse, shouldUseGrowwFallback, startLiveAlphaRuntime, stopLiveAlphaRuntime, validateLiveAlphaUniverse } from './liveAlphaRuntime.js';
+import { classifyEvaluationStatus, feedSupervisorAction, loadLiveAlphaPersistenceState, loadLiveAlphaUniverse, SECTOR_INDEX_BY_INDUSTRY, shouldUseGrowwFallback, startLiveAlphaRuntime, stopLiveAlphaRuntime, validateLiveAlphaUniverse } from './liveAlphaRuntime.js';
 
 const valid = { benchmarkKey: 'NSE_INDEX|Nifty 50', members: Array.from({ length: 10 }, (_, index) => ({ symbol: `S${index}`, sector: 'BANK', instrumentKey: `NSE_EQ|${index}`, sectorInstrumentKey: 'NSE_INDEX|Nifty Bank' })) };
 
@@ -78,4 +78,37 @@ test('optional persistence timeouts do not disable live alpha startup', async ()
   assert.equal(restored.openingSnapshots.length, 1);
   assert.deepEqual(restored.recentSnapshots, []);
   assert.deepEqual(restored.errors.map((row) => row.component), ['volume_baselines', 'recent_snapshots']);
+});
+
+test('sector benchmarks use keys Upstox actually publishes', async () => {
+  // Checked against the public history endpoint on 19 Sep 2026. The three
+  // older names returned "Invalid Instrument key", so the feed never sent them
+  // and about 200 names had no sector anchor.
+  const published = new Set([
+    'NSE_INDEX|Nifty 50', 'NSE_INDEX|Nifty Fin Service', 'NSE_INDEX|Nifty IT', 'NSE_INDEX|Nifty Auto',
+    'NSE_INDEX|Nifty Pharma', 'NSE_INDEX|Nifty FMCG', 'NSE_INDEX|Nifty Metal', 'NSE_INDEX|Nifty Energy',
+    'NSE_INDEX|Nifty Realty', 'NSE_INDEX|NIFTY IND DIGITAL', 'NSE_INDEX|Nifty Infra',
+  ]);
+  for (const key of Object.values(SECTOR_INDEX_BY_INDUSTRY)) assert.ok(published.has(key), key);
+  const prior = process.env.LIVE_ALPHA_UNIVERSE_PATH;
+  delete process.env.LIVE_ALPHA_UNIVERSE_PATH;
+  try {
+    const universe = await loadLiveAlphaUniverse();
+    for (const member of universe.members) assert.ok(published.has(member.sectorInstrumentKey), member.symbol);
+    assert.equal(universe.members.find((member) => member.symbol === 'HDFCBANK').sectorInstrumentKey, 'NSE_INDEX|Nifty Fin Service');
+  } finally {
+    if (prior !== undefined) process.env.LIVE_ALPHA_UNIVERSE_PATH = prior;
+  }
+});
+
+test('the supervisor re-arms an exhausted feed only during market hours', () => {
+  const now = Date.parse('2026-09-17T05:00:00Z');
+  assert.equal(feedSupervisorAction({ status: 'exhausted' }, { now, marketOpen: true }), 'rearm');
+  assert.equal(feedSupervisorAction({ status: 'exhausted' }, { now, marketOpen: false }), null);
+  assert.equal(feedSupervisorAction({ status: 'exhausted' }, { now, marketOpen: true, lastRearmMs: now - 60_000 }), null);
+  assert.equal(feedSupervisorAction({ status: 'auth_failed' }, { now, marketOpen: true }), null);
+  const silent = { status: 'connected', last_message_at: new Date(now - 5 * 60_000).toISOString() };
+  assert.equal(feedSupervisorAction(silent, { now, marketOpen: true }), 'recycle_silent');
+  const live = { status: 'connected', last_message_at: new Date(now - 10_000).toISOString() };
+  assert.equal(feedSupervisorAction(live, { now, marketOpen: true }), null);
 });

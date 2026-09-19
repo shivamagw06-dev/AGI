@@ -59,6 +59,12 @@ function StateBanner({ readiness, freshness, runtime }) {
       title: 'Storage degraded',
       detail: `Engines affected: ${(readiness?.degraded_engines || []).join(', ') || 'unknown'}.`,
     };
+  } else if (evaluation === 'market_closed') {
+    state = {
+      tone: 'warn',
+      title: 'Market closed',
+      detail: 'The engines run from 09:15 to 15:30 IST on NSE trading days. Signals below are from the last completed session.',
+    };
   } else if (neverRan && evaluation === 'warming_up') {
     state = {
       tone: 'warn',

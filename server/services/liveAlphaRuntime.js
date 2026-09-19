@@ -10,12 +10,21 @@ import { resolveLiveAlphaDerivatives } from './liveAlphaDerivativeUniverse.js';
 import { isUpstoxAuthError } from './upstoxMarketFeedV3.js';
 import { attachGrowwDerivatives, GrowwLiveAlphaFeed } from './growwLiveAlphaFeed.js';
 import { isGrowwConfigured } from '../providers/groww.js';
+import { sessionState } from './liveAlphaSession.js';
 
 const serverDir = path.dirname(fileURLToPath(import.meta.url));
 const defaultUniversePath = path.join(serverDir, '../config/live-alpha-universe.example.json');
 const nifty500Path = path.join(serverDir, '../../indices/Nifty500.csv');
-const SECTOR_INDEX_BY_INDUSTRY = Object.freeze({
-  'FINANCIAL SERVICES': 'NSE_INDEX|Nifty Financial Services',
+/**
+ * Sector benchmark for each Nifty 500 industry, as Upstox instrument keys.
+ *
+ * Three keys used before 20 Sep 2026 do not exist at Upstox ('Nifty Financial
+ * Services', 'Nifty Infrastructure', 'Nifty India Digital'). The feed never
+ * delivered them, so about 200 names had no sector anchor and no measured
+ * outcome. Every key below returns candles from the public history endpoint.
+ */
+export const SECTOR_INDEX_BY_INDUSTRY = Object.freeze({
+  'FINANCIAL SERVICES': 'NSE_INDEX|Nifty Fin Service',
   'INFORMATION TECHNOLOGY': 'NSE_INDEX|Nifty IT',
   'AUTOMOBILE AND AUTO COMPONENTS': 'NSE_INDEX|Nifty Auto',
   'HEALTHCARE': 'NSE_INDEX|Nifty Pharma',
@@ -24,11 +33,11 @@ const SECTOR_INDEX_BY_INDUSTRY = Object.freeze({
   'OIL GAS & CONSUMABLE FUELS': 'NSE_INDEX|Nifty Energy',
   'POWER': 'NSE_INDEX|Nifty Energy',
   'REALTY': 'NSE_INDEX|Nifty Realty',
-  'TELECOMMUNICATION': 'NSE_INDEX|Nifty India Digital',
-  'CAPITAL GOODS': 'NSE_INDEX|Nifty Infrastructure',
-  'CONSTRUCTION': 'NSE_INDEX|Nifty Infrastructure',
-  'CONSTRUCTION MATERIALS': 'NSE_INDEX|Nifty Infrastructure',
-  'SERVICES': 'NSE_INDEX|Nifty Infrastructure',
+  'TELECOMMUNICATION': 'NSE_INDEX|NIFTY IND DIGITAL',
+  'CAPITAL GOODS': 'NSE_INDEX|Nifty Infra',
+  'CONSTRUCTION': 'NSE_INDEX|Nifty Infra',
+  'CONSTRUCTION MATERIALS': 'NSE_INDEX|Nifty Infra',
+  'SERVICES': 'NSE_INDEX|Nifty Infra',
 });
 let runtime = null;
 let state = {
@@ -180,8 +189,14 @@ export async function startLiveAlphaRuntime({ Feed = null, FallbackFeed = GrowwL
     // Upstox-only mode: full websocket feed. Do not mix Groww quote polling.
     const processBatch = async (batch) => {
       store.ingest(batch);
+      // Outside the session the feed only replays the last traded prices.
+      // Feeding them to the engines stored Friday's prices as a weekend
+      // shortlist, so collection and evaluation follow the NSE session. A
+      // short margin either side keeps the first and last minutes whole.
+      if (!sessionState(new Date(), { leadMs: SESSION_MARGIN_MS, lagMs: SESSION_MARGIN_MS }).open) return;
       pipeline.ingest(batch);
       await persistence.persistBatch(batch);
+      if (!sessionState(new Date()).open) return;
       if (Date.now() - lastEvaluationMs >= 5_000) {
         lastEvaluationMs = Date.now();
         const evaluation = await pipeline.evaluate(new Date());
@@ -279,6 +294,7 @@ export async function startLiveAlphaRuntime({ Feed = null, FallbackFeed = GrowwL
       fallbackMonitor.unref?.();
       runtime.fallbackMonitor = fallbackMonitor;
     }
+    runtime.supervisor = startFeedSupervisor();
     const missingBaselineMembers = universe.members.filter((member) => !baselines.hasInstrument(member.instrumentKey));
     if (missingBaselineMembers.length) {
       state.baseline_bootstrap = { status: 'running', rows: baselines.values.size, covered_instruments: baselines.instrumentCount(), missing_instruments: missingBaselineMembers.length, failures: [] };
@@ -314,8 +330,57 @@ export async function startLiveAlphaRuntime({ Feed = null, FallbackFeed = GrowwL
   }
 }
 
+const SESSION_MARGIN_MS = 5 * 60_000;
+const SUPERVISOR_INTERVAL_MS = 60_000;
+const REARM_COOLDOWN_MS = 3 * 60_000;
+const SILENT_FEED_MS = 3 * 60_000;
+
+/**
+ * Decide whether the supervisor should restart the feed.
+ *
+ * The Upstox feed gives up after twelve failed reconnects, which is right for
+ * a refusal that retrying makes worse, but nothing ever re-armed it. Each
+ * redeploy briefly runs two instances against a two-connection cap, so a day
+ * of merges (18 Sep 2026) left the feed exhausted and no engine ran at all.
+ */
+export function feedSupervisorAction(feedState, { now = Date.now(), lastRearmMs = 0, marketOpen }) {
+  if (!marketOpen || !feedState) return null;
+  if (now - lastRearmMs < REARM_COOLDOWN_MS) return null;
+  if (feedState.status === 'exhausted') return 'rearm';
+  if (feedState.status === 'connected') {
+    const lastMessage = Date.parse(feedState.last_message_at || feedState.connected_at || '') || 0;
+    if (lastMessage && now - lastMessage > SILENT_FEED_MS) return 'recycle_silent';
+  }
+  return null;
+}
+
+function startFeedSupervisor() {
+  let lastRearmMs = 0;
+  state.feed_supervisor = { rearms: 0, last_action: null, last_action_at: null };
+  const tick = () => {
+    const feed = runtime?.feed;
+    if (!feed?.rearm || runtime.switchingFeed) return;
+    // Connect ten minutes early so the 15 and 60 minute windows fill from 09:15.
+    const marketOpen = sessionState(new Date(), { leadMs: 10 * 60_000 }).open;
+    const action = feedSupervisorAction(feed.status?.(), { lastRearmMs, marketOpen });
+    if (!action) return;
+    lastRearmMs = Date.now();
+    if (feed.rearm({ force: action === 'recycle_silent' })) {
+      state.feed_supervisor = {
+        rearms: state.feed_supervisor.rearms + 1,
+        last_action: action,
+        last_action_at: new Date().toISOString(),
+      };
+    }
+  };
+  const timer = setInterval(tick, SUPERVISOR_INTERVAL_MS);
+  timer.unref?.();
+  return timer;
+}
+
 export function stopLiveAlphaRuntime() {
   if (runtime?.fallbackMonitor) clearInterval(runtime.fallbackMonitor);
+  if (runtime?.supervisor) clearInterval(runtime.supervisor);
   runtime?.feed.stop();
   runtime = null;
   state.status = 'stopped';
@@ -333,8 +398,11 @@ export function getLiveAlphaRuntimeStatus() {
   const runtimeStatus = !runtime || !feed || ['connected', 'idle'].includes(feed.status)
     ? state.status
     : ['auth_failed', 'failed'].includes(feed.status) ? feed.status : 'degraded';
+  const market = sessionState(new Date());
   return {
     ...state, status: runtimeStatus,
+    evaluation_status: runtime && !market.open ? 'market_closed' : state.evaluation_status,
+    market_session: { open: market.open, reason: market.reason },
     provider: runtime?.provider || null,
     feed,
     universe: runtime ? { name: runtime.universe.name, members: runtime.universe.members.length, expected_members: runtime.universe.expectedMembers, coverage_complete: runtime.universe.members.length === runtime.universe.expectedMembers, subscribed_instruments: runtime.feed.instrumentKeys.length, benchmark_key: runtime.universe.benchmarkKey, derivatives: runtime.universe.derivativeResolution } : null,

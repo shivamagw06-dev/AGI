@@ -742,7 +742,8 @@ export default function createMarketRouter(env = {}) {
   router.get('/live-alpha/status', async (_req, res) => {
     try {
       const { getLiveAlphaRuntimeStatus } = await import('../services/liveAlphaRuntime.js');
-      return res.status(200).json({ ok: true, ...getLiveAlphaRuntimeStatus() });
+      const { getLiveAlphaOutcomeStatus } = await import('../services/liveAlphaOutcomeSettlement.js');
+      return res.status(200).json({ ok: true, ...getLiveAlphaRuntimeStatus(), outcome_settlement: getLiveAlphaOutcomeStatus() });
     } catch (err) {
       return res.status(200).json({ ok: false, error: err?.message || 'live_alpha_status_unavailable' });
     }

@@ -253,3 +253,41 @@ test('stop closes the socket, which is what a redeploy must do', () => {
   assert.equal(state.status, 'stopped');
   assert.equal(feed.socket, null);
 });
+
+test('an exhausted feed can be re-armed; an auth failure cannot', async () => {
+  // Exhaustion was permanent: after 18 Sep 2026's redeploys used up the
+  // retries, the feed stayed down for the rest of the session.
+  let opened = 0;
+  const feed = new UpstoxMarketFeedV3({
+    instrumentKeys: ['NSE_EQ|INE07Y701011'],
+    authorize: async () => 'wss://feed.example/authorized',
+    connectMode: 'authorize',
+    websocketFactory: () => { opened += 1; return { on: () => {}, close: () => {} }; },
+  });
+  feed.stopped = false;
+  feed.attempt = 12;
+  feed.state.status = 'exhausted';
+  feed.state.gave_up_at = '2026-09-18T05:00:00.000Z';
+  assert.equal(feed.rearm(), true);
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.equal(opened, 1);
+  assert.equal(feed.attempt, 0);
+  assert.equal(feed.status().gave_up_at, null);
+  assert.equal(feed.status().rearms, 1);
+
+  feed.state.status = 'auth_failed';
+  assert.equal(feed.rearm(), false);
+  feed.stop();
+  assert.equal(feed.rearm(), false);
+});
+
+test('a silent connected socket is recycled only when forced', () => {
+  let closed = 0;
+  const feed = new UpstoxMarketFeedV3({ instrumentKeys: ['NSE_EQ|INE07Y701011'] });
+  feed.stopped = false;
+  feed.socket = { close: () => { closed += 1; } };
+  feed.state.status = 'connected';
+  assert.equal(feed.rearm(), false);
+  assert.equal(feed.rearm({ force: true }), true);
+  assert.equal(closed, 1);
+});

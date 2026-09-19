@@ -1,3 +1,5 @@
+import { recentSessions, sessionWindowsFilter } from './liveAlphaSession.js';
+
 const ENGINE_LABELS = Object.freeze({
   cross_sectional_momentum_v1: 'Leadership',
   volume_liquidity_anomaly_v1: 'Activity',
@@ -39,10 +41,15 @@ async function query(table, search, fetchImpl) {
  * Supabase (~1000 rows), which can crowd newer engines and falsely mark older
  * healthy runs as orphaned / persistence_failed.
  */
-async function loadLatestRunsByEngine(fetchImpl) {
+async function loadLatestRunsByEngine(fetchImpl, now = new Date()) {
+  // Only runs issued during a session. Before 20 Sep 2026 the engines also
+  // ran on weekends against the last session's prices, and those runs would
+  // otherwise stand as the latest shortlist.
+  const windows = sessionWindowsFilter('as_of', recentSessions(now, 10));
+  const inSession = windows ? `&or=${encodeURIComponent(windows)}` : '';
   const batches = await Promise.all(Object.keys(ENGINE_LABELS).map((engine) => query(
     'live_alpha_runs',
-    `select=id,engine,as_of,market_session,universe_size,diagnostics&engine=eq.${encodeURIComponent(engine)}&order=as_of.desc&limit=1`,
+    `select=id,engine,as_of,market_session,universe_size,diagnostics&engine=eq.${encodeURIComponent(engine)}${inSession}&order=as_of.desc&limit=1`,
     fetchImpl,
   )));
   return batches.flat().filter(Boolean);
@@ -62,7 +69,7 @@ async function loadSignalsForRuns(runs, { fetchImpl, limit }) {
 export async function getLiveAlphaWorkspace({ fetchImpl = globalThis.fetch, limit = 500, now = new Date() } = {}) {
   let runs;
   try {
-    runs = await loadLatestRunsByEngine(fetchImpl);
+    runs = await loadLatestRunsByEngine(fetchImpl, now);
   } catch (error) {
     if (error.status !== 404) throw error;
     return {
