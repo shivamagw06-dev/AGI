@@ -39,17 +39,17 @@ export const STRATEGY_ROWS = [
   { symbol: 'HFCL', name: 'HFCL', layer: 'AI/DC connectivity', rating: 'High', evidence: '₹495.8 cr DC export order; ₹215 cr DC connectivity plant approved', status: 'Core' },
   { symbol: 'DIACABS', name: 'Diamond Power Infrastructure', layer: 'DC cabling', rating: 'Medium-High', evidence: '₹435 cr DC order book (11.8% of ₹3,688 cr); letter of intent for a Hyderabad DC campus', status: 'Core' },
   { symbol: 'CLEANMAX', name: 'CleanMax', layer: 'DC renewable power', rating: 'Very High', evidence: 'Data & AI is 42% of contracted capacity, over 2.5 GW: 0.63 GW serves Indian DC load, 1.87 GW are emission-offset deals', status: 'Core / High Risk' },
-  { symbol: 'CGPOWER', name: 'CG Power and Industrial Solutions', layer: 'Semiconductor packaging (OSAT)', rating: 'Medium', evidence: '₹502.77 cr FY26 semiconductor segment revenue (audited); OSAT at 0.5 m units a day, G2 to take it to 14.5 m', status: 'Core' },
   { symbol: 'SANSERA', name: 'Sansera Engineering', layer: 'Semiconductor-equipment parts', rating: 'Medium', evidence: 'About ₹1,250 cr semiconductor-equipment order over five years; regular production begun', status: 'Core' },
   { symbol: 'MTARTECH', name: 'MTAR Technologies', layer: 'AI/DC assemblies', rating: 'Medium-High', evidence: 'About ₹81 cr of DC orders (SLB and one other); potential scale-up', status: 'Emerging Core' },
 
   // Watch list today: each fails the materiality test, for the reason shown on the page.
   { symbol: 'RELIANCE', name: 'Reliance Industries', layer: 'AI DC / power / network', rating: 'Medium-High', evidence: '168 MW AI data centre for Meta, due within two years', status: 'Core' },
-  { symbol: 'ADANIENT', name: 'Adani Enterprises', layer: 'AdaniConneX', rating: 'High', evidence: '65.4 MW operating against 960+ MW tied up (including 358 MW Hyderabad and 400 MW Vizag hyperscale orders)', status: 'Core / Execution' },
+  { symbol: 'ADANIENT', name: 'Adani Enterprises', layer: 'AdaniConneX', rating: 'High', evidence: '65.4 MW operating against 960+ MW tied up; the 400 MW Vizag order is part of the Google contract (AEL Q1 FY27 call); AdaniConneX is a 50:50 JV', status: 'Core / Execution' },
   { symbol: 'POWERINDIA', name: 'Hitachi Energy India', layer: 'Transformers / grid', rating: 'High', evidence: '₹32,222 cr backlog; data centres the major segment contributor to Q4 FY26 orders (value and share not disclosed)', status: 'Core' },
   { symbol: 'GVT&D', name: 'GE Vernova T&D India', layer: 'Transformers / grid', rating: 'Medium-High', evidence: '₹20,930 cr backlog; direct DC equipment exposure: 220 kV GIS commissioned for NTT Data Center (value and share not disclosed)', status: 'Core' },
   { symbol: 'POLYCAB', name: 'Polycab India', layer: 'DC cabling', rating: 'Medium-High', evidence: 'Data centres a strategic end market; management puts industry cable content at about ₹3.5 cr per MW (not Polycab revenue)', status: 'Core' },
   { symbol: 'TATAPOWER', name: 'Tata Power', layer: 'Power / grid / storage', rating: 'Medium', evidence: 'One 25-year renewable power agreement for Princeton Digital Group\'s Mumbai DC; grid, FDRE and storage are not DC evidence', status: 'Threshold Exception' },
+  { symbol: 'CGPOWER', name: 'CG Power and Industrial Solutions', layer: 'Semiconductor packaging (OSAT)', rating: 'Medium', evidence: 'Audited ₹502.8 cr FY26 semiconductor segment, largely Axiro RF (not AI/DC revenue); OSAT commercial production began July 2026, at 0.5 m units a day with G2 planned for 14.5 m', status: 'Core' },
   { symbol: 'KEC', name: 'KEC International', layer: 'Transmission', rating: 'Medium', evidence: 'First transmission-line order to evacuate power to a data centre; value not split out of a ₹1,180 cr batch', status: 'Core / Optionality', member: false, watchReason: 'A data-centre line order exists, but its value is not split out of a ₹1,180 cr batch; contractors need a value' },
   { symbol: 'NTPCGREEN', name: 'NTPC Green Energy', layer: 'RTC DC power', rating: 'Medium-High', evidence: 'MoUs with Nxtra (up to 500 MW) and CtrlS (up to 2 GW); not yet power purchase agreements', status: 'Emerging Core', member: false, watchReason: 'MoUs only; a signed power purchase agreement would pass the evidence test' },
 ];
@@ -99,8 +99,8 @@ export const STRUCTURES = [
   },
   {
     title: 'Components and semiconductors',
-    names: ['CGPOWER', 'SANSERA', 'MTARTECH', 'CRAFTSMAN'],
-    text: 'CG Power, Sansera, MTAR and Craftsman. Packaging, precision parts and engine components whose AI/data-centre business is real but small against the whole company, so earnings momentum and the conversion of orders to revenue matter most.',
+    names: ['SANSERA', 'MTARTECH', 'CRAFTSMAN'],
+    text: 'Sansera, MTAR and Craftsman. Precision parts and engine components whose AI/data-centre business is real but small against the whole company, so earnings momentum and the conversion of orders to revenue matter most. CG Power is on the watch list: its semiconductor revenue is RF chip design, and its OSAT plant only began commercial production in July 2026.',
   },
 ];
 

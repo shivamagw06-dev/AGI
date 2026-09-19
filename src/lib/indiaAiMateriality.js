@@ -49,15 +49,22 @@ export function classifyMateriality({
       if (f.share >= rules.revenueShare) passes.push({ test: 'share', tag: f.basis, text: `${fmtPct(f.share)}: ${f.label}`, fact: f });
       else misses.push(`${fmtPct(f.share)} (${f.label}) is under ${fmtPct(rules.revenueShare)}`);
     } else if (f.test === 'contracted') {
-      const sized = Number.isFinite(f.capacityShare);
-      if (f.customerNamed && sized && f.capacityShare >= rules.capacityShare) {
-        passes.push({ test: 'contracted', tag: f.basis, text: `${f.mw} MW, ${fmtPct(f.capacityShare)} of capacity: ${f.label}`, fact: f });
+      // Capacity counts only where it is a representative denominator for the
+      // listed company; a JV's megawatts inside a diversified parent do not
+      // establish the parent's materiality on their own. Share is adjusted
+      // for the listed company's economic ownership.
+      const share = Number.isFinite(f.capacityShare) ? f.capacityShare * (Number.isFinite(f.ownership) ? f.ownership : 1) : null;
+      const sized = share !== null;
+      if (f.representative === false) {
+        misses.push(`${f.mw} MW of ${f.label}${f.customerNamed ? ` (${f.customers || 'named customer'})` : ''}; capacity is not a representative measure for this parent${Number.isFinite(f.ownership) && f.ownership < 1 ? ` (${fmtPct(f.ownership)}-owned JV)` : ''}, so materiality must come from revenue, orders or the FY29 EBITDA route`);
+      } else if (f.customerNamed && sized && share >= rules.capacityShare) {
+        passes.push({ test: 'contracted', tag: f.basis, text: `${f.mw} MW, ${fmtPct(share)} of capacity: ${f.label}`, fact: f });
       } else if (!f.customerNamed) {
         misses.push(`${f.mw} MW of ${f.label || 'contracted capacity'}, but no customer is named`);
       } else if (!sized) {
         misses.push(`Exposure confirmed: ${f.mw} MW contracted with ${f.customers || 'a named customer'}; its revenue or EBITDA contribution is not disclosed`);
       } else {
-        misses.push(`${f.mw} MW is ${fmtPct(f.capacityShare)} of capacity, under ${fmtPct(rules.capacityShare)}`);
+        misses.push(`${f.mw} MW is ${fmtPct(share)} of capacity, under ${fmtPct(rules.capacityShare)}`);
       }
     }
   }
