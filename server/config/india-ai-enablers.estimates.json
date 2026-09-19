@@ -1000,10 +1000,10 @@
         },
         "patFY26Cr": {
           "kind": "disclosed",
-          "value": 5118,
+          "value": 3747.19,
           "label": "FY26 profit after tax",
           "unit": "cr",
-          "source": "FY26 annual report"
+          "source": "Profit attributable to owners, FY26 consolidated results p10"
         }
       }
     },

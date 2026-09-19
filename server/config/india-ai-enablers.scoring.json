@@ -1590,7 +1590,7 @@
       "symbol": "TATAPOWER",
       "basis": "consolidated",
       "revenueFY26": 62428.59,
-      "patFY26": 5117.56,
+      "patFY26": 3747.19,
       "cfoFY26": 5993.33,
       "capexFY26": 13694.83,
       "capexIntangiblesFY26": null,
@@ -1599,8 +1599,8 @@
       "capitalEmployedFY26": 118660.46,
       "statedRoceFY26": 0.1,
       "roceDefinition": "Consolidated ratio note: Profit before tax and exceptional item + interest expense excluding interest on consumer security deposit / Average capital employed (shareholders' equity + total debt + deferred tax liability); FY26 10% vs FY25 11% (rounded). AR highlights page separately shows 'RoCE 7.8% (FY25 8.8%)' without definition. Computed year-end CE = total equity 47,538.07 (incl. NCI 8,070.86) + non-current borrowings 61,608.57 + current borrowings 9,513.82 = 118,660.46.",
-      "revenueQ1FY27": 18898,
-      "revenueQ1FY26": 17464,
+      "revenueQ1FY27": 19051.26,
+      "revenueQ1FY26": 18035.07,
       "intakeQ1FY27": null,
       "sources": {
         "cfoFY26": {
@@ -1640,7 +1640,7 @@
           "page": "presentation slide (txt line ~1379)"
         }
       },
-      "notes": "BASIS CAVEAT for Q1: the press-release/presentation 'Revenue'/'Operating Income' (18,898 / 17,464) equals revenue from operations PLUS net movement in regulatory deferral balances; it is not the statutory 'Revenue from Operations' line used for FY26 (62,428.59). Trendlyne document search (used only to locate) shows the Q1 FY27 consolidated results statement with Revenue from Operations 19,051.26 (Q1 FY27) and 18,035.07 (Q1 FY26) and regulatory movement (153.09)/(570.76), which reconcile exactly to 18,898/17,464; I could not retrieve that statement itself (tatapower.com returns 406 bot-block, BSE API 403), so those two figures are UNVERIFIED against the source PDF. FY26 CFO fell to 5,993.33 from 12,680.19. PAT 5,117.56 incl. NCI; owners 3,747.19. Capex line bundles PPE, intangibles, CWIP, capital advances and capital payables (no separate intangibles line). No company-level order intake; only rooftop solar order book Rs 639 cr (PR p5). Quarter revenue is the press-release figure, including regulatory deferral movements."
+      "notes": "BASIS CAVEAT for Q1: the press-release/presentation 'Revenue'/'Operating Income' (18,898 / 17,464) equals revenue from operations PLUS net movement in regulatory deferral balances; it is not the statutory 'Revenue from Operations' line used for FY26 (62,428.59). Trendlyne document search (used only to locate) shows the Q1 FY27 consolidated results statement with Revenue from Operations 19,051.26 (Q1 FY27) and 18,035.07 (Q1 FY26) and regulatory movement (153.09)/(570.76), which reconcile exactly to 18,898/17,464; I could not retrieve that statement itself (tatapower.com returns 406 bot-block, BSE API 403), so those two figures are UNVERIFIED against the source PDF. FY26 CFO fell to 5,993.33 from 12,680.19. PAT 5,117.56 incl. NCI; owners 3,747.19. Capex line bundles PPE, intangibles, CWIP, capital advances and capital payables (no separate intangibles line). No company-level order intake; only rooftop solar order book Rs 639 cr (PR p5). Quarter revenue is the press-release figure, including regulatory deferral movements. | Corrected 2026-09-19 (numeric audit, read from tatapower.com in a browser; the site blocks plain downloads): patFY26 is profit attributable to owners, 3,747.19 (FY26 consolidated results p10; 5,117.56 on p15 includes minority interests); Q1 revenue is 'Revenue from Operations' in the Q1 FY27 consolidated statement p8 (19,051.26 against 18,035.07), replacing rounded figures 18,898 / 17,464 of unclear basis. revenueFY26 62,428.59, cfoFY26 5,993.33 and capexFY26 13,694.83 (includes intangibles) confirmed."
     },
     {
       "symbol": "CRAFTSMAN",
