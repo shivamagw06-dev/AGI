@@ -39,6 +39,37 @@ export const SECTOR_INDEX_BY_INDUSTRY = Object.freeze({
   'CONSTRUCTION MATERIALS': 'NSE_INDEX|Nifty Infra',
   'SERVICES': 'NSE_INDEX|Nifty Infra',
 });
+/**
+ * Sector labels of the 20-stock universe Live Alpha ran on before the Nifty 500
+ * preset (August 2026), with the Upstox key each label's index has. A symbol's
+ * sector changed with the universe (KOTAKBANK was BANK, is now
+ * FINANCIAL_SERVICES), so an old signal's benchmark follows its own label.
+ */
+const EARLY_UNIVERSE_SECTOR_KEYS = Object.freeze({
+  FINANCIALS: 'NSE_INDEX|Nifty Fin Service',
+  BANK: 'NSE_INDEX|Nifty Bank',
+  IT: 'NSE_INDEX|Nifty IT',
+  ENERGY: 'NSE_INDEX|Nifty Energy',
+  AUTO: 'NSE_INDEX|Nifty Auto',
+  PHARMA: 'NSE_INDEX|Nifty Pharma',
+  FMCG: 'NSE_INDEX|Nifty FMCG',
+  METAL: 'NSE_INDEX|Nifty Metal',
+  TELECOM: 'NSE_INDEX|NIFTY IND DIGITAL',
+  INFRA: 'NSE_INDEX|Nifty Infra',
+});
+
+export function sectorLabel(industry) {
+  return String(industry || '').toUpperCase().replace(/[^A-Z0-9]+/g, '_').replace(/^_|_$/g, '');
+}
+
+/** The sector index for a stored sector label, or null when the label has none. */
+export function sectorKeyForLabel(label) {
+  const key = String(label || '').trim().toUpperCase();
+  if (EARLY_UNIVERSE_SECTOR_KEYS[key]) return EARLY_UNIVERSE_SECTOR_KEYS[key];
+  const industry = Object.keys(SECTOR_INDEX_BY_INDUSTRY).find((name) => sectorLabel(name) === key);
+  return industry ? SECTOR_INDEX_BY_INDUSTRY[industry] : null;
+}
+
 let runtime = null;
 let state = {
   enabled: false, status: 'disabled', evaluation_status: 'disabled', started_at: null,
@@ -123,7 +154,7 @@ export async function loadLiveAlphaUniverse(filePath = process.env.LIVE_ALPHA_UN
       const normalizedIndustry = industry.toUpperCase();
       return {
         symbol,
-        sector: normalizedIndustry.replace(/[^A-Z0-9]+/g, '_').replace(/^_|_$/g, ''),
+        sector: sectorLabel(normalizedIndustry),
         instrumentKey: `NSE_EQ|${isin}`,
         sectorInstrumentKey: SECTOR_INDEX_BY_INDUSTRY[normalizedIndustry] || 'NSE_INDEX|Nifty 50',
       };

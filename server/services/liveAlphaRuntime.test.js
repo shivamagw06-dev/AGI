@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { classifyEvaluationStatus, feedSupervisorAction, loadLiveAlphaPersistenceState, loadLiveAlphaUniverse, SECTOR_INDEX_BY_INDUSTRY, shouldUseGrowwFallback, startLiveAlphaRuntime, stopLiveAlphaRuntime, validateLiveAlphaUniverse } from './liveAlphaRuntime.js';
+import { classifyEvaluationStatus, feedSupervisorAction, loadLiveAlphaPersistenceState, loadLiveAlphaUniverse, SECTOR_INDEX_BY_INDUSTRY, sectorKeyForLabel, shouldUseGrowwFallback, startLiveAlphaRuntime, stopLiveAlphaRuntime, validateLiveAlphaUniverse } from './liveAlphaRuntime.js';
 
 const valid = { benchmarkKey: 'NSE_INDEX|Nifty 50', members: Array.from({ length: 10 }, (_, index) => ({ symbol: `S${index}`, sector: 'BANK', instrumentKey: `NSE_EQ|${index}`, sectorInstrumentKey: 'NSE_INDEX|Nifty Bank' })) };
 
@@ -111,4 +111,11 @@ test('the supervisor re-arms an exhausted feed only during market hours', () => 
   assert.equal(feedSupervisorAction(silent, { now, marketOpen: true }), 'recycle_silent');
   const live = { status: 'connected', last_message_at: new Date(now - 10_000).toISOString() };
   assert.equal(feedSupervisorAction(live, { now, marketOpen: true }), null);
+});
+
+test('stored sector labels resolve to the index they were anchored to', () => {
+  assert.equal(sectorKeyForLabel('BANK'), 'NSE_INDEX|Nifty Bank');
+  assert.equal(sectorKeyForLabel('FINANCIAL_SERVICES'), 'NSE_INDEX|Nifty Fin Service');
+  assert.equal(sectorKeyForLabel('METALS_MINING'), 'NSE_INDEX|Nifty Metal');
+  assert.equal(sectorKeyForLabel('TEXTILES'), null);
 });

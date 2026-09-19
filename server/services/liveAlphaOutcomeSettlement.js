@@ -2,6 +2,7 @@ import { calculateSignalOutcome } from './alphaOutcomeTracker.js';
 import { CandlePriceBook, todayIst } from './candlePriceBook.js';
 import { rest } from './liveAlphaPersistence.js';
 import { sessionState } from './liveAlphaSession.js';
+import { sectorKeyForLabel } from './liveAlphaRuntime.js';
 
 /**
  * Settle Live Alpha outcome rows against Upstox one-minute history.
@@ -39,7 +40,7 @@ export function createOutcomeRepository({ request = rest } = {}) {
   return {
     async listDue(beforeIso, limit) {
       const params = new URLSearchParams({
-        select: 'id,signal_id,horizon,due_at,attempt_count,price_at_signal,nifty_at_signal,sector_at_signal,estimated_cost_bps,signal:live_alpha_signals(symbol,instrument_key,direction,beta,factor_values,run:live_alpha_runs(as_of))',
+        select: 'id,signal_id,horizon,due_at,attempt_count,price_at_signal,nifty_at_signal,sector_at_signal,estimated_cost_bps,signal:live_alpha_signals(symbol,instrument_key,sector,direction,beta,factor_values,run:live_alpha_runs(as_of))',
         status: 'eq.pending',
         due_at: `lt.${beforeIso}`,
         // Rows that could not be priced move behind fresh ones, so a few dead
@@ -85,7 +86,11 @@ export async function settleOutcome(row, { book, universeBySymbol }) {
   const keys = {
     stock: signal.instrument_key || member?.instrumentKey,
     nifty: 'NSE_INDEX|Nifty 50',
-    sector: signal.factor_values?.sector_instrument_key || member?.sectorInstrumentKey,
+    // The key recorded with the signal, else the index for the sector label
+    // stored with it. The symbol's current sector is the last resort: it
+    // changed when the universe did, and priced 136 August bank signals
+    // against Financial Services instead of Nifty Bank.
+    sector: signal.factor_values?.sector_instrument_key || sectorKeyForLabel(signal.sector) || member?.sectorInstrumentKey,
   };
   if (!keys.stock || !keys.sector) return missed('instrument_not_mapped');
 
