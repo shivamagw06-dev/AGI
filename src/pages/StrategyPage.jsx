@@ -32,13 +32,13 @@ export default function StrategyPage() {
           ) : null}
         </header>
 
-        {STRATEGIES.map(({ id, title, sector, summary, monitor, Component }) => (
+        {STRATEGIES.map(({ id, title, sector, summary, monitor, report, Component }) => (
           <section key={id} id={id} aria-labelledby={`${id}-h`} className="scroll-mt-24 border-b border-[#e5e8ec] py-10 last:border-b-0">
             <p className="text-[13px] font-medium text-[#6b7480]">{sector}</p>
             <h2 id={`${id}-h`} className="mt-1 text-[28px] font-semibold tracking-tight sm:text-[32px]">{title}</h2>
             <p className="mt-2 max-w-[80ch] text-[16px] leading-relaxed text-[#34404f]">{summary}</p>
             <div className="mt-6">
-              <Component monitor={monitor} />
+              <Component monitor={monitor} report={report} />
             </div>
           </section>
         ))}
