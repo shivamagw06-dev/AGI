@@ -110,7 +110,12 @@ function StrategyTable({ rows, bySym, loading, priced, watch = false }) {
                     </>
                   ) : (
                     <>
-                      <span className={`inline-block whitespace-nowrap rounded-full px-2.5 py-0.5 text-[12px] font-semibold ${statusTone(row.status)}`}>{row.status}</span>
+                      <span className="inline-flex flex-wrap items-center gap-1.5">
+                        <span className={`inline-block whitespace-nowrap rounded-full px-2.5 py-0.5 text-[12px] font-semibold ${statusTone(row.status)}`}>{row.status}</span>
+                        {rec.mat.tier === 'material-estimate' ? (
+                          <abbr title="Passes the materiality test only on AGI's modelled FY29 figures, not on a disclosed AI/DC revenue or order figure." className="whitespace-nowrap rounded-full border border-[#efc9a0] bg-[#fdf1e2] px-2 py-0.5 text-[11px] font-semibold text-[#9a520c] no-underline">AGI estimate</abbr>
+                        ) : null}
+                      </span>
                       <span className="mt-1.5 block whitespace-nowrap text-[12px] text-[#8a93a0]">AGI test: {MATERIALITY_TIER[rec.mat.tier].label.replace(/^\w/, (c) => c.toLowerCase())}</span>
                     </>
                   )}
