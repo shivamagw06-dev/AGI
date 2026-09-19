@@ -16,7 +16,7 @@ export default function StrategyPage() {
   }, []);
   return (
     <div className="min-h-screen bg-white text-[#0f1720]">
-      <div className="mx-auto w-full max-w-[1480px] px-4 pb-20 pt-10 sm:px-8">
+      <div className="w-full px-4 pb-20 pt-10 sm:px-6 lg:px-8">
         <header className="border-b border-[#e5e8ec] pb-8">
           <p className="text-[12px] font-semibold uppercase tracking-[0.2em] text-[#d9701f]">AGI Strategies</p>
           <h1 className="mt-2 text-[34px] font-semibold leading-[1.1] tracking-tight sm:text-[44px]">Strategies</h1>
