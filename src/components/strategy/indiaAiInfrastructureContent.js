@@ -28,7 +28,7 @@ export const STRATEGY_FACTORS = [
 export const STRATEGY_ROWS = [
   { symbol: 'NETWEB', name: 'Netweb Technologies', layer: 'AI compute', rating: 'Very High', evidence: 'AI about 62% of Q1 revenue; AI "maybe" 40–45% of the order book', status: 'Core' },
   { symbol: 'STLTECH', name: 'Sterlite Technologies', layer: 'Optical connectivity', rating: 'Very High', evidence: '$1.11 bn (₹10,000+ cr) hyperscaler AI data-centre award, FY27–FY29', status: 'Core' },
-  { symbol: 'BLUESTARCO', name: 'Blue Star', layer: 'DC MEP / cooling', rating: 'High', evidence: 'About ₹1,000 cr DC MEP revenue a year; DC MEP order book about ₹1,500 cr at any given point', status: 'Core' },
+  { symbol: 'BLUESTARCO', name: 'Blue Star', layer: 'DC MEP / cooling', rating: 'High', evidence: 'About ₹1,000 cr DC MEP revenue in FY26; order book about ₹1,500 cr at any given point (Q4 FY26 call); about ₹1,500 cr of new DC MEP orders in Q1 FY27', status: 'Core' },
   { symbol: 'LT', name: 'Larsen & Toubro', layer: 'AI factory / EPC / cloud', rating: 'High', evidence: '10,000-GPU NVIDIA B300 AI factory for Together AI (L&T\'s "Mega" band, ₹10,000–15,000 cr)', status: 'Core' },
   { symbol: 'BHARTIARTL', name: 'Bharti Airtel', layer: 'Nxtra DC', rating: 'High', evidence: 'Nxtra FY26 revenue ₹2,434 cr; about 300 MW (annual report: about 250 MW), targeting 1 GW; valued about $3.1 bn in the March 2026 funding', status: 'Core' },
   { symbol: 'ANANTRAJ', name: 'Anant Raj', layer: 'DC / cloud', rating: 'High', evidence: 'DC turnover ₹145.9 cr in FY26 (9% of turnover); roadmap to 357 MW', status: 'Core / Execution' },
@@ -50,8 +50,8 @@ export const STRATEGY_ROWS = [
   { symbol: 'GVT&D', name: 'GE Vernova T&D India', layer: 'Transformers / grid', rating: 'Medium-High', evidence: '₹20,930 cr backlog; direct DC equipment exposure: 220 kV GIS commissioned for NTT Data Center (value and share not disclosed)', status: 'Core' },
   { symbol: 'POLYCAB', name: 'Polycab India', layer: 'DC cabling', rating: 'Medium-High', evidence: 'Data centres a strategic end market; management puts industry cable content at about ₹3.5 cr per MW (not Polycab revenue)', status: 'Core' },
   { symbol: 'TATAPOWER', name: 'Tata Power', layer: 'Power / grid / storage', rating: 'Medium', evidence: 'One 25-year renewable power agreement for Princeton Digital Group\'s Mumbai DC; grid, FDRE and storage are not DC evidence', status: 'Threshold Exception' },
-  { symbol: 'KEC', name: 'KEC International', layer: 'Transmission', rating: 'Medium', evidence: 'First transmission-line order to evacuate power to a data centre; value not split out of a ₹1,180 cr batch', status: 'Core / Optionality', member: false, watchReason: 'Held candidate: no value disclosed for any data-centre order' },
-  { symbol: 'NTPCGREEN', name: 'NTPC Green Energy', layer: 'RTC DC power', rating: 'Medium-High', evidence: 'MoUs with Nxtra (up to 500 MW) and CtrlS (up to 2 GW); not yet power purchase agreements', status: 'Emerging Core', member: false, watchReason: 'Held candidate: memoranda of understanding, not contracted capacity' },
+  { symbol: 'KEC', name: 'KEC International', layer: 'Transmission', rating: 'Medium', evidence: 'First transmission-line order to evacuate power to a data centre; value not split out of a ₹1,180 cr batch', status: 'Core / Optionality', member: false, watchReason: 'A data-centre line order exists, but its value is not split out of a ₹1,180 cr batch; contractors need a value' },
+  { symbol: 'NTPCGREEN', name: 'NTPC Green Energy', layer: 'RTC DC power', rating: 'Medium-High', evidence: 'MoUs with Nxtra (up to 500 MW) and CtrlS (up to 2 GW); not yet power purchase agreements', status: 'Emerging Core', member: false, watchReason: 'MoUs only; a signed power purchase agreement would pass the evidence test' },
 ];
 
 // Filed figures for basket names that are not index members, so AGI's
