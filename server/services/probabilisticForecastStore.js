@@ -1,6 +1,10 @@
 import { FORECAST_HORIZONS, generateProbabilisticForecast, settleForecast } from './probabilisticForecast.js';
 import { buildDailyCrossSectionalFeatureSnapshots } from './crossSectionalForecastFeatures.js';
 import { summarizeForecastValidation } from './forecastValidationReport.js';
+import { sharedCandleBook } from './candlePriceBook.js';
+import { calculateConfluenceOutcome, confluenceHorizonDueAt } from './confluenceOutcomeValidation.js';
+import { sessionState } from './liveAlphaSession.js';
+import { publishedBefore } from './liveAlphaOutcomeSettlement.js';
 function config(){const url=String(process.env.SUPABASE_URL||'').trim().replace(/\/$/,''),key=String(process.env.SUPABASE_SERVICE_ROLE_KEY||'').trim();if(!url||!key)throw new Error('Forecast storage requires Supabase credentials.');return{url,key};}
 async function rest(table,{method='GET',query='',body,prefer}={}){const{url,key}=config();const response=await fetch(`${url}/rest/v1/${table}${query?`?${query}`:''}`,{method,headers:{apikey:key,Authorization:`Bearer ${key}`,'Content-Type':'application/json',...(prefer?{Prefer:prefer}:{})},body:body==null?undefined:JSON.stringify(body)});if(!response.ok){const error=new Error(`Forecast storage failed (${response.status}): ${(await response.text()).slice(0,240)}`);error.status=response.status;throw error;}const text=await response.text();return text?JSON.parse(text):[];}
 
@@ -34,30 +38,55 @@ export async function syncProbabilisticForecasts({limit=2000}={}){
 }
 
 /**
- * Score forecasts whose confluence outcome has completed.
+ * Score forecasts from price history once their horizon has closed.
  *
- * The old loop read the oldest 1000 forecasts and the first 1000 recorded
- * outcomes, then made one request per forecast. Past 1000 of either it
- * re-scored rows it had scored and never reached newer ones. This asks the
- * database for exactly the forecasts that are unscored and settleable: the
- * matching-horizon confluence outcome is completed, and no forecast outcome
- * exists yet. A forecast whose outcome was missed is never returned, so it
- * cannot hold the head of the queue.
+ * Forecasts used to wait for the matching confluence outcome, but that queue
+ * holds 3.5 million rows (an event every five minutes per stock) and settles
+ * 200 per cycle, so after five weeks 120 of 18,588 forecasts were scored.
+ * A forecast needs only its own event's anchors and two prices at the due
+ * close, so it is priced directly: the stock's and its sector's returns from
+ * the event to the horizon's close, from the shared candle book.
+ *
+ * Each cycle reads the unscored forecasts that are due and works until a
+ * time budget runs out; the next cycle carries on. A forecast whose event was
+ * captured outside a session or cannot be priced is left unscored and
+ * counted, never given an invented result.
  */
-export async function settleDueForecasts({limit=500}={}){
-  const summary={completed:0,by_horizon:{}};
+let lastIdleSettlement=0;
+export async function settleDueForecasts({now=new Date(),book=sharedCandleBook(),budgetMs=90_000,request=rest,force=false}={}){
+  // A backlog is worked every cycle; once nothing is left, look hourly.
+  if(!force&&Date.now()-lastIdleSettlement<60*60_000)return{status:'skipped',reason:'no_backlog_within_the_hour'};
+  const started=Date.now(),published=Date.parse(publishedBefore(now));
+  const summary={completed:0,not_due:0,skipped:{},by_horizon:{},budget_exhausted:false};
+  const skip=(reason)=>{summary.skipped[reason]=(summary.skipped[reason]||0)+1;};
+  const select='select=id,horizon,expected_alpha_pct,probability_positive,research_forecast_outcomes(id),event:research_confluence_events!confluence_event_id(captured_at,instrument_key,sector_instrument_key,benchmark_instrument_key,price_at_signal,sector_index_at_signal,benchmark_at_signal)';
   for(const horizon of FORECAST_HORIZONS){
-    const query=[
-      'select=id,horizon,expected_alpha_pct,probability_positive,research_forecast_outcomes(id),event:research_confluence_events!confluence_event_id!inner(outcomes:research_confluence_outcomes!inner(observed_at,sector_adjusted_alpha_pct,horizon,status))',
-      'is_canonical=eq.true',`horizon=eq.${horizon}`,'research_forecast_outcomes=is.null',
-      `event.outcomes.horizon=eq.${horizon}`,'event.outcomes.status=eq.completed',
-      'order=forecast_time.asc',`limit=${Math.min(1000,limit)}`,
-    ].join('&');
-    const forecasts=await rest('research_forecasts',{query});
-    const rows=forecasts.map((forecast)=>{const outcome=forecast.event?.outcomes?.[0];return outcome?settleForecast(forecast,outcome):null;}).filter(Boolean);
-    if(rows.length)await rest('research_forecast_outcomes',{method:'POST',query:'on_conflict=forecast_id',body:rows,prefer:'resolution=ignore-duplicates,return=minimal'});
+    const forecasts=[];
+    for(let offset=0;;offset+=1000){
+      const page=await request('research_forecasts',{query:`${select}&is_canonical=eq.true&horizon=eq.${horizon}&research_forecast_outcomes=is.null&forecast_time=lt.${encodeURIComponent(publishedBefore(now))}&order=forecast_time.asc&limit=1000&offset=${offset}`});
+      forecasts.push(...page);if(page.length<1000)break;
+    }
+    const rows=[];
+    for(const forecast of forecasts){
+      if(Date.now()-started>budgetMs){summary.budget_exhausted=true;break;}
+      const event=forecast.event;
+      if(!event?.captured_at){skip('event_missing');continue;}
+      if(!sessionState(event.captured_at).open){skip('event_outside_session');continue;}
+      const dueAt=confluenceHorizonDueAt(event.captured_at,horizon);
+      if(Date.parse(dueAt)>=published){summary.not_due+=1;continue;}
+      const [stock,sector,benchmark]=await Promise.all([book.priceAt(event.instrument_key,dueAt),book.priceAt(event.sector_instrument_key,dueAt),book.priceAt(event.benchmark_instrument_key,dueAt)]);
+      const gap=[['stock',stock],['sector',sector],['benchmark',benchmark]].find(([,quote])=>quote.price==null);
+      if(gap){skip(`${gap[0]}_${gap[1].reason}`);continue;}
+      let outcome;
+      try{outcome=calculateConfluenceOutcome({priceAtSignal:event.price_at_signal,futurePrice:stock.price,benchmarkAtSignal:event.benchmark_at_signal,futureBenchmark:benchmark.price,sectorAtSignal:event.sector_index_at_signal,futureSector:sector.price});}
+      catch{skip('invalid_anchor');continue;}
+      rows.push(settleForecast(forecast,{observed_at:stock.candle_end,sector_adjusted_alpha_pct:outcome.sector_adjusted_alpha_pct}));
+    }
+    if(rows.length)await request('research_forecast_outcomes',{method:'POST',query:'on_conflict=forecast_id',body:rows,prefer:'resolution=ignore-duplicates,return=minimal'});
     summary.by_horizon[horizon]=rows.length;summary.completed+=rows.length;
+    if(summary.budget_exhausted)break;
   }
+  lastIdleSettlement=summary.completed||summary.budget_exhausted?0:Date.now();
   return summary;
 }
 

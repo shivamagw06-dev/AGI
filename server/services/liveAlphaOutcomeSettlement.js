@@ -1,5 +1,5 @@
 import { calculateSignalOutcome } from './alphaOutcomeTracker.js';
-import { CandlePriceBook, todayIst } from './candlePriceBook.js';
+import { sharedCandleBook, todayIst } from './candlePriceBook.js';
 import { rest } from './liveAlphaPersistence.js';
 import { sessionState } from './liveAlphaSession.js';
 import { sectorKeyForLabel } from './liveAlphaRuntime.js';
@@ -170,7 +170,7 @@ export function startLiveAlphaOutcomeScheduler({ loadUniverse }) {
   if (!enabled || timer) { state.enabled = enabled; return state; }
   state = { ...state, enabled: true, status: 'idle' };
   const repository = createOutcomeRepository();
-  const book = new CandlePriceBook();
+  const book = sharedCandleBook();
   const schedule = (ms) => { timer = setTimeout(tick, ms); timer.unref?.(); };
   async function tick() {
     state.status = 'running';
