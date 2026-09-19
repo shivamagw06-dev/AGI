@@ -91,6 +91,16 @@ const FEATURE_COPY = {
     title: 'Unlock IPO intelligence',
     blurb: 'Issue analysis and IPO research desks.',
   },
+  equity_research: {
+    eyebrow: 'Equity Research',
+    title: 'Unlock AGI equity research',
+    blurb: 'Company research across India and the US, with AGI views and filed figures.',
+  },
+  strategies: {
+    eyebrow: 'Strategies',
+    title: 'Unlock AGI strategies',
+    blurb: 'Sector and thematic strategies, and the monitors behind them: evidence, filed figures and estimates for every name.',
+  },
   intelligence: {
     eyebrow: 'AGI Intelligence',
     title: 'Unlock AGI Intelligence',
@@ -131,6 +141,14 @@ const GATED_PREFIXES = [
   ['/workspace', 'workspace'],
   ['/insider-activity', 'insider'],
   ['/ipo-intelligence', 'ipo'],
+  // Every item in the site's top menu needs a free account (owner's decision,
+  // 19 Sep 2026). A route wrapped in the gate is only locked if its path is
+  // listed here: the gate resolves access from this table, not its props.
+  ['/equity-research', 'equity_research'],
+  ['/strategy', 'strategies'],
+  ['/india-ai', 'strategies'],
+  ['/live-desk', 'market_intelligence'],
+  ['/institutional-holdings', 'hedge_fund'],
   ['/ipos', 'ipo'],
 ];
 

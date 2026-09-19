@@ -152,16 +152,16 @@ function AppShell() {
   }
 
   // Valuation Intelligence — full-bleed institutional consensus (read for users; admin import on /admin).
-  // Public, and deliberately ungated: this page is AGI's own screen over
-  // public filings and the evidence is the product. No PinGate - that gate
-  // renders a blank white shell, which is exactly what happened when this
-  // block was first copied from the gated product wrappers.
+  // Behind the free-account gate like every top-menu page (owner's decision,
+  // 19 Sep 2026). RequireRegistration, not PinGate: PinGate renders a blank
+  // white shell here, which is what happened when this block was first
+  // copied from the gated product wrappers.
   if (isIndiaAiTerminal) {
     return (
       <>
         <Suspense fallback={<div className="min-h-screen bg-[#080b11] p-8 text-center text-[#68727f]">Loading India AI Intelligence…</div>}>
           <Routes>
-            <Route path="/india-ai" element={<IndiaAiIntelligencePage />} />
+            <Route path="/india-ai" element={<RequireRegistration feature="strategies"><IndiaAiIntelligencePage /></RequireRegistration>} />
           </Routes>
         </Suspense>
         <Toaster />
@@ -222,14 +222,14 @@ function PublicRoutes() {
       <Route path="/company-updates" element={<SectionArticlesPage overrideId="company-updates" />} />
 
       <Route path="/research" element={<ArticlesFeed variant="light" />} />
-      <Route path="/equity-research" element={<EquityResearchPage />} />
-      <Route path="/strategy" element={<StrategyPage />} />
+      <Route path="/equity-research" element={gate('equity_research', <EquityResearchPage />)} />
+      <Route path="/strategy" element={gate('strategies', <StrategyPage />)} />
       <Route path="/india-stock-intelligence" element={<IndiaStockIntelligencePage />} />
       <Route path="/index-rebalance" element={<IndexRebalancePage />} />
       <Route path="/manager-backtest" element={<BacktestPage />} />
-      <Route path="/institutional-holdings" element={<InstitutionalHoldingsPage />} />
-      <Route path="/institutional-holdings/funds/:fundSlug" element={<InstitutionalHoldingsPage />} />
-      <Route path="/institutional-holdings/stocks/:stockKey" element={<InstitutionalHoldingsPage />} />
+      <Route path="/institutional-holdings" element={gate('hedge_fund', <InstitutionalHoldingsPage />)} />
+      <Route path="/institutional-holdings/funds/:fundSlug" element={gate('hedge_fund', <InstitutionalHoldingsPage />)} />
+      <Route path="/institutional-holdings/stocks/:stockKey" element={gate('hedge_fund', <InstitutionalHoldingsPage />)} />
       <Route path="/sections/live-articles" element={<Navigate replace to="/research" />} />
       <Route path="/live-articles" element={<Navigate replace to="/research" />} />
 
