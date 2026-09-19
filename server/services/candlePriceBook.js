@@ -79,23 +79,38 @@ export class CandlePriceBook {
     this.clock = clock;
     this.cache = new Map();
     this.lastRequestMs = 0;
-    this.queue = Promise.resolve();
+    this.waiting = { high: [], normal: [] };
+    this.pumping = false;
     this.stats = { requests: 0, cache_hits: 0, errors: 0, empty: 0 };
   }
 
   /**
-   * Wait for this request's turn. Several jobs share one book, so the spacing
-   * is a queue: two callers never read the same last-request time and fire
-   * together.
+   * Wait for this request's turn. Several jobs share one book, so turns are
+   * granted by a single pump at the book's rate: two callers never fire
+   * together. A high-priority turn (a daily close, one request per
+   * instrument-month) goes ahead of queued minute requests, so a job with a
+   * few cheap requests is not starved behind one working a long backlog.
    */
-  #slot() {
-    const turn = this.queue.then(async () => {
-      const wait = this.lastRequestMs + this.minGapMs - this.clock();
-      if (wait > 0) await this.sleep(wait);
-      this.lastRequestMs = this.clock();
+  #slot(priority = 'normal') {
+    return new Promise((resolve) => {
+      (priority === 'high' ? this.waiting.high : this.waiting.normal).push(resolve);
+      this.#pump();
     });
-    this.queue = turn.catch(() => {});
-    return turn;
+  }
+
+  async #pump() {
+    if (this.pumping) return;
+    this.pumping = true;
+    try {
+      while (this.waiting.high.length || this.waiting.normal.length) {
+        const wait = this.lastRequestMs + this.minGapMs - this.clock();
+        if (wait > 0) await this.sleep(wait);
+        this.lastRequestMs = this.clock();
+        (this.waiting.high.shift() || this.waiting.normal.shift())();
+      }
+    } finally {
+      this.pumping = false;
+    }
   }
 
   async #rows(key, date) {
@@ -143,7 +158,7 @@ export class CandlePriceBook {
     let entry = this.cache.get(cacheKey);
     const current = month >= todayIst(this.clock()).slice(0, 7);
     if (!entry || (current && this.clock() - entry.fetched_at > 60 * 60_000)) {
-      await this.#slot();
+      await this.#slot('high');
       this.stats.requests += 1;
       const [year, monthNumber] = month.split('-').map(Number);
       const last = new Date(Date.UTC(year, monthNumber, 0)).toISOString().slice(0, 10);

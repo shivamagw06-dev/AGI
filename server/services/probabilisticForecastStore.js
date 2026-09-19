@@ -54,7 +54,7 @@ export async function syncProbabilisticForecasts({limit=2000}={}){
  * counted, never given an invented result.
  */
 let lastIdleSettlement=0;
-export async function settleDueForecasts({now=new Date(),book=sharedCandleBook(),budgetMs=90_000,request=rest,force=false}={}){
+export async function settleDueForecasts({now=new Date(),book=sharedCandleBook(),budgetMs=150_000,request=rest,force=false}={}){
   // A backlog is worked every cycle; once nothing is left, look hourly.
   if(!force&&Date.now()-lastIdleSettlement<60*60_000)return{status:'skipped',reason:'no_backlog_within_the_hour'};
   const started=Date.now(),published=Date.parse(publishedBefore(now));
