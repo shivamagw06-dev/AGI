@@ -44,24 +44,108 @@ function useIndiaAiData() {
   return data;
 }
 
+const COLS = [
+  ['Stock'], ['AI layer'], ['AI materiality'], ['Hard evidence / key KPI'],
+  ['Revenue growth, latest qtr', 'I'], ['Capex / sales, FY26', 'I'], ['FCF / sales, FY26', 'I'], ['P/E, FY26 profit', 'I'],
+  ['Capital quality', 'I'], ['Expectation load', 'A'],
+];
+
+const isMaterial = (rec) => rec?.mat && (rec.mat.tier === 'material' || rec.mat.tier === 'material-estimate');
+
+/** Why a watch-list row is not in the basket, from the test itself. */
+function watchReason(row, rec) {
+  if (row.watchReason) return row.watchReason;
+  if (!rec?.mat) return 'Not tested';
+  const m = rec.mat;
+  const first = (m.misses[0] || m.reasons[0] || 'No materiality test passed').replace(/\.$/, '');
+  return m.evidenceOk ? first : `${first}; evidence confidence ${rec.factors.evidence.band}`;
+}
+
+function StrategyTable({ rows, bySym, loading, priced, watch = false }) {
+  const wait = <span className="text-[#a0a8b3]">…</span>;
+  return (
+    <div className="overflow-x-auto rounded-xl border border-[#e5e8ec]">
+      <table className="w-full min-w-[1380px] text-[14px]">
+        <thead className="bg-[#f7f8fa]">
+          <tr className="text-left text-[12px] font-semibold text-[#5b6573]">
+            {[...COLS, [watch ? 'Why not yet in the basket' : 'AGI status']].map(([h, tag]) => (
+              <th key={h} scope="col" className="border-b border-[#e5e8ec] px-4 py-3 align-bottom">{h}{tag ? <Tag t={tag} /> : null}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row) => {
+            const rec = bySym[row.symbol] || null;
+            const x = filedRatios(rec, NON_MEMBER_FILED[row.symbol]);
+            const member = row.member !== false;
+            return (
+              <tr key={row.symbol} className="border-b border-[#eef0f3] align-top last:border-b-0 hover:bg-[#fafbfc]">
+                <td className="px-4 py-3.5">
+                  <span className="whitespace-nowrap font-semibold text-[#0f1720]">{row.name}</span>
+                  <span className="block font-mono text-[12px] text-[#8a93a0]">{row.symbol}{member ? '' : ' · not an index member'}</span>
+                </td>
+                <td className="px-4 py-3.5 text-[#34404f]">{row.layer}</td>
+                <td className="px-4 py-3.5"><span className={`inline-block whitespace-nowrap rounded-full px-2.5 py-0.5 text-[12px] font-medium ${RATING_TONE[row.rating] || RATING_TONE.Medium}`}>{row.rating}</span></td>
+                <td className="min-w-[280px] max-w-[420px] px-4 py-3.5 leading-snug text-[#1f2a37]">{row.evidence}</td>
+                <td className="px-4 py-3.5 tabular-nums text-[#1f2a37]">{loading && member ? wait : signedPct(x.q1)}</td>
+                <td className="px-4 py-3.5 tabular-nums text-[#1f2a37]">{loading && member ? wait : pct(x.capexSales)}</td>
+                <td className="px-4 py-3.5 tabular-nums text-[#1f2a37]">{loading && member ? wait : signedPct(x.fcfSales)}</td>
+                <td className="px-4 py-3.5 tabular-nums text-[#1f2a37]">
+                  {!member ? <span className="text-[#a0a8b3]">not priced</span> : !priced ? wait : x.pe !== null ? `${x.pe.toFixed(0)}x` : '—'}
+                </td>
+                <td className="px-4 py-3.5">{loading && member ? wait : <Band b={x.capital.band} />}</td>
+                <td className="px-4 py-3.5">
+                  {!member ? <span className="text-[#a0a8b3]">not priced</span> : !priced ? wait : x.expectation ? (
+                    <span className="inline-flex flex-col gap-1">
+                      <Band b={x.expectation.band} scale="expectation" />
+                      {x.implied ? <span className="text-[12px] text-[#5b6573]">{x.implied.cagr <= 0 ? 'no growth needed' : `needs ${pct(x.implied.cagr)}/yr`}</span> : null}
+                    </span>
+                  ) : '—'}
+                </td>
+                <td className="max-w-[300px] px-4 py-3.5">
+                  {watch ? (
+                    <>
+                      <span className="inline-block whitespace-nowrap rounded-full bg-[#f3f4f6] px-2.5 py-0.5 text-[12px] font-semibold text-[#5b6573]">Watch</span>
+                      <span className="mt-1.5 block text-[12px] leading-snug text-[#6b7480]">{watchReason(row, rec)}</span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="inline-flex flex-wrap items-center gap-1.5">
+                        <span className={`inline-block whitespace-nowrap rounded-full px-2.5 py-0.5 text-[12px] font-semibold ${statusTone(row.status)}`}>{row.status}</span>
+                        {rec.mat.tier === 'material-estimate' ? (
+                          <abbr title="Passes the materiality test only on AGI's modelled FY29 figures, not on a disclosed AI/DC revenue or order figure." className="whitespace-nowrap rounded-full border border-[#efc9a0] bg-[#fdf1e2] px-2 py-0.5 text-[11px] font-semibold text-[#9a520c] no-underline">AGI estimate</abbr>
+                        ) : null}
+                      </span>
+                      <span className="mt-1.5 block whitespace-nowrap text-[12px] text-[#8a93a0]">AGI test: {MATERIALITY_TIER[rec.mat.tier].label.replace(/^\w/, (c) => c.toLowerCase())}</span>
+                    </>
+                  )}
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 export default function IndiaAiInfrastructureStrategy({ monitor }) {
   const d = useIndiaAiData();
   const records = d.universe?.members ? buildRecords(d) : [];
   const bySym = Object.fromEntries(records.map((r) => [r.m.symbol, r]));
   const loading = !d.universe || !d.scoring;
   const priced = Boolean(d.marketValue?.rows);
+  const tested = Boolean(d.universe?.members && d.materiality?.rules);
   const netweb = bySym.NETWEB;
-  const cols = [
-    ['Stock'], ['AI layer'], ['AI materiality'], ['Hard evidence / key KPI'],
-    ['Revenue growth, latest qtr', 'I'], ['Capex / sales, FY26', 'I'], ['FCF / sales, FY26', 'I'], ['P/E, FY26 profit', 'I'],
-    ['Capital quality', 'I'], ['Expectation load', 'A'], ['AGI status'],
-  ];
-  const wait = <span className="text-[#a0a8b3]">…</span>;
+  // The basket is exactly the rows that pass the materiality test today.
+  const basket = STRATEGY_ROWS.filter((row) => isMaterial(bySym[row.symbol]));
+  const watch = STRATEGY_ROWS.filter((row) => !isMaterial(bySym[row.symbol]));
   return (
     <>
       <div className="flex flex-wrap items-end justify-between gap-4">
         <p className="text-[14px] text-[#5b6573]">
-          {STRATEGY_ROWS.length} names · strategy as of {dateLabel(STRATEGY_ASOF)}
+          {tested ? `${basket.length} names in the basket · ${watch.length} on the watch list` : 'Running the materiality test…'}
+          {` · strategy as of ${dateLabel(STRATEGY_ASOF)}`}
           {d.marketValue?.closeDate ? ` · prices to ${dateLabel(d.marketValue.closeDate)}` : ''}
         </p>
         <Link
@@ -72,62 +156,25 @@ export default function IndiaAiInfrastructureStrategy({ monitor }) {
         </Link>
       </div>
 
-      <div className="mt-4 overflow-x-auto rounded-xl border border-[#e5e8ec]">
-        <table className="w-full min-w-[1380px] text-[14px]">
-          <thead className="bg-[#f7f8fa]">
-            <tr className="text-left text-[12px] font-semibold text-[#5b6573]">
-              {cols.map(([h, tag]) => (
-                <th key={h} scope="col" className="border-b border-[#e5e8ec] px-4 py-3 align-bottom">{h}{tag ? <Tag t={tag} /> : null}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {STRATEGY_ROWS.map((row) => {
-              const rec = bySym[row.symbol] || null;
-              const x = filedRatios(rec, NON_MEMBER_FILED[row.symbol]);
-              const member = row.member !== false;
-              return (
-                <tr key={row.symbol} className="border-b border-[#eef0f3] align-top last:border-b-0 hover:bg-[#fafbfc]">
-                  <td className="px-4 py-3.5">
-                    <span className="whitespace-nowrap font-semibold text-[#0f1720]">{row.name}</span>
-                    <span className="block font-mono text-[12px] text-[#8a93a0]">{row.symbol}{member ? '' : ' · not an index member'}</span>
-                  </td>
-                  <td className="px-4 py-3.5 text-[#34404f]">{row.layer}</td>
-                  <td className="px-4 py-3.5"><span className={`inline-block whitespace-nowrap rounded-full px-2.5 py-0.5 text-[12px] font-medium ${RATING_TONE[row.rating] || RATING_TONE.Medium}`}>{row.rating}</span></td>
-                  <td className="min-w-[280px] max-w-[420px] px-4 py-3.5 leading-snug text-[#1f2a37]">{row.evidence}</td>
-                  <td className="px-4 py-3.5 tabular-nums text-[#1f2a37]">{loading && member ? wait : signedPct(x.q1)}</td>
-                  <td className="px-4 py-3.5 tabular-nums text-[#1f2a37]">{loading && member ? wait : pct(x.capexSales)}</td>
-                  <td className="px-4 py-3.5 tabular-nums text-[#1f2a37]">{loading && member ? wait : signedPct(x.fcfSales)}</td>
-                  <td className="px-4 py-3.5 tabular-nums text-[#1f2a37]">
-                    {!member ? <span className="text-[#a0a8b3]">not priced</span> : !priced ? wait : x.pe !== null ? `${x.pe.toFixed(0)}x` : '—'}
-                  </td>
-                  <td className="px-4 py-3.5">{loading && member ? wait : <Band b={x.capital.band} />}</td>
-                  <td className="px-4 py-3.5">
-                    {!member ? <span className="text-[#a0a8b3]">not priced</span> : !priced ? wait : x.expectation ? (
-                      <span className="inline-flex flex-col gap-1">
-                        <Band b={x.expectation.band} scale="expectation" />
-                        {x.implied ? <span className="text-[12px] text-[#5b6573]">{x.implied.cagr <= 0 ? 'no growth needed' : `needs ${pct(x.implied.cagr)}/yr`}</span> : null}
-                      </span>
-                    ) : '—'}
-                  </td>
-                  <td className="px-4 py-3.5">
-                    <span className={`inline-block whitespace-nowrap rounded-full px-2.5 py-0.5 text-[12px] font-semibold ${statusTone(row.status)}`}>{row.status}</span>
-                    <span className="mt-1.5 block whitespace-nowrap text-[12px] text-[#8a93a0]">
-                      AGI test: {rec?.mat ? MATERIALITY_TIER[rec.mat.tier].label.toLowerCase() : member ? '…' : 'not a member'}
-                    </span>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+      <div className="mt-4">
+        {tested ? <StrategyTable rows={basket} bySym={bySym} loading={loading} priced={priced} /> : (
+          <p className="rounded-xl border border-[#e5e8ec] px-5 py-10 text-center text-[15px] text-[#6b7480]">Loading the basket.</p>
+        )}
       </div>
       <p className="mt-3 max-w-[110ch] text-[13px] leading-relaxed text-[#6b7480]">
         Selected on {STRATEGY_FACTORS.join(', ')}. Layer, AI materiality rating, evidence and status are AGI&rsquo;s judgments, and every evidence line is checked against the company&rsquo;s own documents.
         Financial columns are AGI arithmetic on filed FY26 and June-quarter results: revenue growth is the June 2026 quarter on June 2025; capex includes intangibles; FCF is operating cash flow less capex; P/E is AGI&rsquo;s market value at the last close over FY26 profit. Expectation load is the profit growth that takes today&rsquo;s market value to 30x earnings by FY29.
-        No broker or consensus figures are used. KEC and NTPC Green are held candidates in the monitor, so AGI does not price them. &lsquo;AGI test&rsquo; is the monitor&rsquo;s rule-based materiality tier.
+        No broker or consensus figures are used. The basket is exactly the names that pass the monitor&rsquo;s materiality test; a name moves between the basket and the watch list when its figures do. Status is Core for a pass on filed figures and Emerging Core for a pass on AGI&rsquo;s estimate.
         A research classification, not a recommendation to buy or sell.
       </p>
+
+      {tested && watch.length ? (
+        <>
+          <h3 className="mt-10 text-[20px] font-semibold tracking-tight text-[#0f1720]">Watch list: evidenced, not yet material</h3>
+          <p className="mt-1 max-w-[90ch] text-[15px] text-[#5b6573]">Real AI/data-centre evidence on the company&rsquo;s own paper, but not yet enough disclosed to pass the materiality test. Each joins the basket when it does. KEC and NTPC Green are held candidates in the monitor, so AGI does not price them.</p>
+          <div className="mt-4"><StrategyTable rows={watch} bySym={bySym} loading={loading} priced={priced} watch /></div>
+        </>
+      ) : null}
 
       <h3 className="mt-10 text-[20px] font-semibold tracking-tight text-[#0f1720]">How to interpret this list</h3>
       <p className="mt-1 text-[15px] text-[#5b6573]">There are really four different investment structures inside it.</p>
@@ -148,8 +195,8 @@ export default function IndiaAiInfrastructureStrategy({ monitor }) {
         </p>
       ) : null}
 
-      <h3 className="mt-10 text-[20px] font-semibold tracking-tight text-[#0f1720]">Kept outside the basket for now</h3>
-      <p className="mt-1 text-[15px] text-[#5b6573]">Valuable monitor names, not yet in the main basket.</p>
+      <h3 className="mt-10 text-[20px] font-semibold tracking-tight text-[#0f1720]">Other names kept outside</h3>
+      <p className="mt-1 text-[15px] text-[#5b6573]">Valuable monitor names, further from the basket than the watch list.</p>
       <ul className="mt-4 grid gap-4 md:grid-cols-2">
         {OUTSIDE.map((o) => (
           <li key={o.name} className="rounded-xl border border-[#e5e8ec] px-5 py-4">
