@@ -7,9 +7,8 @@ import { getWealthUniverse, getWealthResearch } from '@/lib/wealthIntelligenceAp
 import { MODEL_VERSION, compareScenarios, breakEvenGrowth } from '@/lib/wealthScenario';
 import './wealthIntelligence.css';
 import PlanningWorkspace from '@/components/wealth/PlanningWorkspace';
-import { emptyWorkspace, householdSummary, monitoringAlerts } from '@/lib/wealthPlanning';
-import { validateWorkspace } from '@/lib/wealthWorkspace';
-import { estimateOrdinaryTax, TAX_RULE } from '@/lib/wealthTax';
+import { emptyWorkspace } from '@/lib/wealthPlanning';
+import { createReviewPack, validateReviewPack, renderReviewReport } from '@/lib/wealthReviewPack';
 
 const ASSET_CLASSES = [
   ['equity', 'Equities'], ['mutual_fund', 'Mutual funds'], ['property', 'Land & property'],
@@ -127,31 +126,17 @@ export default function WealthIntelligence() {
     catch(e) { setResearch({status:'unavailable',reason:e.message,metrics:[]}); }
     finally { setResearchLoading(false); }
   };
-  const downloadReviewPack = () => {
-    const payload = { version: 'agi-review-pack-v2', generatedAt: new Date().toISOString(), workspace,
-      comparison: { plan, assets, results: model.rows, error: model.error, model: MODEL_VERSION },
-      household: householdSummary(workspace), alerts: monitoringAlerts(workspace),
-      tax: workspace.people.map(p => { try { return { ownerId: p.id, ...estimateOrdinaryTax(p) }; } catch (e) { return { ownerId:p.id, status:'review_required', reason:e.message }; } }),
-      rule: TAX_RULE, reviewStatus:'Professional review pending; supplied evidence is not independently verified.' };
-    const url = URL.createObjectURL(new Blob([JSON.stringify(payload, null, 2)], { type:'application/json' }));
-    const a = document.createElement('a'); a.href = url; a.download = 'agi-wealth-review-pack.json'; a.click(); URL.revokeObjectURL(url);
+  const downloadFile = (body, type, filename) => {
+    const url = URL.createObjectURL(new Blob([body], { type }));
+    const a = document.createElement('a'); a.href = url; a.download = filename; a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
   };
+  const downloadReviewPack = () => downloadFile(JSON.stringify(createReviewPack(workspace, plan, assets), null, 2), 'application/json', 'agi-wealth-review-pack.json');
+  const downloadReviewReport = () => downloadFile(renderReviewReport(createReviewPack(workspace, plan, assets)), 'text/html;charset=utf-8', 'agi-wealth-review-report.html');
   const importReviewPack = async file => {
     if (file.size > 2000000) throw new Error('Review pack exceeds 2 MB.');
-    const raw = JSON.parse(await file.text());
-    if (raw.version !== 'agi-review-pack-v2') throw new Error('Unsupported review pack.');
-    const validated = validateWorkspace(raw.workspace);
-    const importedAssets = raw.comparison?.assets;
-    if (!Array.isArray(importedAssets) || importedAssets.length > 4) throw new Error('Invalid comparison assets.');
-    const ids = new Set(['fd']);
-    for (const a of importedAssets) {
-      if (!a || typeof a.id !== 'string' || !/^[a-zA-Z0-9:_-]{1,120}$/.test(a.id) || ids.has(a.id) || typeof a.label !== 'string' || !a.label.trim() || a.label.length > 160 || !ASSET_CLASSES.some(([id])=>id===a.kind)) throw new Error('Invalid scenario.');
-      ids.add(a.id);
-      if (a.property && Object.values(a.property).some(v=>typeof v !== 'string')) throw new Error('Invalid property evidence.');
-      if (a.observed && (typeof a.observed.source !== 'string' && a.observed.source != null)) throw new Error('Invalid observation source.');
-    }
-    compareScenarios(raw.comparison.plan, importedAssets);
-    setWorkspace(validated); setPlan(raw.comparison.plan); setAssets(importedAssets); setDraft(null); setNotice('Saved review pack opened. Results have been recalculated; refresh market observations separately.');
+    const { workspace: imported, plan: importedPlan, assets: importedAssets } = validateReviewPack(JSON.parse(await file.text()));
+    setWorkspace(imported); setPlan(importedPlan); setAssets(importedAssets); setDraft(null); setNotice('Saved review pack opened. Results have been recalculated; refresh market observations separately.');
   };
   const saveObservation = row => {
     if (workspace.watchlist.length >= 100 && !workspace.watchlist.some(w=>w.id===row.id)) { setNotice('Watchlist limit is 100. Remove an observation first.'); return; }
@@ -176,7 +161,7 @@ export default function WealthIntelligence() {
         <Link className="wi-link" to="/portfolio">Your portfolio <ArrowUpRight size={16} /></Link>
       </header>
 
-      <PlanningWorkspace workspace={workspace} setWorkspace={setWorkspace} onExport={downloadReviewPack} onImport={importReviewPack} onCompareProperty={compareProperty} />
+      <PlanningWorkspace workspace={workspace} setWorkspace={setWorkspace} onExport={downloadReviewPack} onReport={downloadReviewReport} onImport={importReviewPack} onCompareProperty={compareProperty} />
       <section className="wi-plan" aria-label="Comparison assumptions">
         <div className="wi-section-title"><h2><SlidersHorizontal size={18} /> Your comparison</h2><span>Illustrative starting inputs · edit for one owner</span></div>
         <div className="wi-input-grid">

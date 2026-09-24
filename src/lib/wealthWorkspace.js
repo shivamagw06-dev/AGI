@@ -13,9 +13,12 @@ export function blankRecord(kind) {
 }
 export function validateRecord(kind, raw, workspace, now = Date.now()) {
   if (!raw || typeof raw !== 'object' || Array.isArray(raw)) throw new Error('Invalid record.');
-  const out = { id: String(raw.id || '') };
+  if (!Object.hasOwn(RECORD_SCHEMAS, kind)) throw new Error('Unsupported record type.');
+  if (typeof raw.id !== 'string') throw new Error('Invalid record identifier.');
+  const out = { id: raw.id };
   if (!/^[a-zA-Z0-9:_-]{1,120}$/.test(out.id)) throw new Error('Invalid record identifier.');
   for (const f of RECORD_SCHEMAS[kind] || []) {
+    if (raw[f.key] != null && !['string','number'].includes(typeof raw[f.key])) throw new Error(`Invalid ${f.label}.`);
     const v = String(raw[f.key] ?? '');
     if (v.length > (f.type === 'textarea' ? 30000 : 1000)) throw new Error(`${f.label} is too long.`);
     const optional = f.label.includes('(optional)') || f.key === 'coupons';
@@ -44,9 +47,15 @@ export function validateWorkspace(raw, now = Date.now()) {
     out[kind] = raw[kind].map(row => { const r = validateRecord(kind, row, out, now); if (ids.has(r.id)) throw new Error('Duplicate record identifier.'); ids.add(r.id); return r; });
   }
   if (!Array.isArray(raw.watchlist) || raw.watchlist.length > 100) throw new Error('Watchlist limit is 100.');
+  const observationIds = new Set();
   out.watchlist = raw.watchlist.map(row => {
     if (!row || !['equity','mutual_fund'].includes(row.assetClass) || typeof row.id !== 'string' || typeof row.name !== 'string' || row.name.length > 500) throw new Error('Invalid saved observation.');
-    const asOf = row.asOf == null ? null : String(row.asOf);
+    if (!/^[a-zA-Z0-9:_.&-]{1,120}$/.test(row.id) || observationIds.has(row.id)) throw new Error('Invalid or duplicate observation identifier.');
+    observationIds.add(row.id);
+    if (row.asOf != null && typeof row.asOf !== 'string') throw new Error('Invalid observation date.');
+    if (row.source != null && typeof row.source !== 'string') throw new Error('Invalid observation source.');
+    const asOf = row.asOf == null ? null : row.asOf;
+    if (asOf && /^\d{4}-\d{2}-\d{2}$/.test(asOf)) date(asOf);
     if (asOf && (!Number.isFinite(Date.parse(asOf)) || Date.parse(asOf) > now + 86400000)) throw new Error('Invalid observation date.');
     return { id: row.id.slice(0,120), name: row.name, assetClass: row.assetClass, asOf, price: row.price == null ? null : number(row.price, 'Price'), source: String(row.source || '').slice(0,200) };
   });

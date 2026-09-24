@@ -2,7 +2,7 @@
 export const WORKSPACE_VERSION = 'agi-wealth-v2';
 export const DAY = 86400000;
 export function number(value, label, min = 0, max = 1e12) {
-  if (value === '' || value == null || typeof value === 'boolean') throw new Error(`${label} is required.`);
+  if (!['number','string'].includes(typeof value) || (typeof value === 'string' && !value.trim())) throw new Error(`${label} is required.`);
   const n = Number(value);
   if (!Number.isFinite(n) || n < min || n > max) throw new Error(`${label} must be between ${min} and ${max}.`);
   return n;

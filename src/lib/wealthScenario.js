@@ -2,7 +2,7 @@
 export const MODEL_VERSION = 'wealth-scenario-v1';
 
 function value(raw, name, min, max) {
-  if (raw === '' || raw == null || typeof raw === 'boolean') throw new Error(`${name} is required.`);
+  if (!['number','string'].includes(typeof raw) || (typeof raw === 'string' && !raw.trim())) throw new Error(`${name} is required.`);
   const n = Number(raw);
   if (!Number.isFinite(n) || n < min || n > max) throw new Error(`${name} must be between ${min} and ${max}.`);
   return n;

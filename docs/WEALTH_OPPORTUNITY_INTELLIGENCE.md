@@ -127,3 +127,11 @@ Records can be added individually to the client's evidence book, including stale
 ### Verification for this increment
 
 40 focused and regression tests pass across financial models, evidence validation, API authentication, stale-data handling and existing institutional safety gates. Targeted no-undefined-identifier lint and production build pass. Live Supabase research reads and real vendor feed availability are not verified from this development session. No database migration, secret, market subscription or production setting changes.
+
+## CA report and import hardening
+
+The workspace now offers **Download CA report** (offline printable HTML, suitable for browser Print to PDF) alongside **Save editable pack** (JSON). The report includes household totals, all scenario inputs and outcomes, source observations, property comparable summaries, bond maturity cash flows, owner-level tax estimates, review tasks and source records, plus a reviewer sign-off area. It is not a signed professional opinion.
+
+`wealthReviewPack.js` supplies a shared import/export validator. It rejects malformed nested objects, duplicate/reserved scenario IDs, invalid dates and non-boolean reinvestment settings; normalizes numeric inputs; drops unrecognized fields; and recomputes outputs instead of trusting saved totals. Watchlist records reject duplicate IDs and impossible calendar dates. Record fields reject arrays/objects instead of coercing them into visible text. Export errors are shown in the workspace.
+
+The report escapes user text, uses no scripts or external resources, and has a restrictive Content Security Policy. No report is uploaded or sent to a reviewer automatically. Automated report-content/security tests pass; visual print pagination and deployed authenticated UI QA remain outstanding. The expanded suite has 44 passing tests. The prior implementation commit passed all three GitHub workflows; checks run again for this increment.
