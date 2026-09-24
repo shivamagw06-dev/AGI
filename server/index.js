@@ -21,6 +21,7 @@ import createArticleShareRouter from "./routes/articleShare.js";
 import createResearchSignalsRouter from "./routes/researchSignals.js";
 import createInstitutionalHoldingsRouter from "./routes/institutionalHoldings.js";
 import createIndexRebalanceRouter from "./routes/indexRebalance.js";
+import createWealthIntelligenceRouter from "./routes/wealthIntelligence.js";
 import { startInstitutionalHoldingsAutomation } from "./services/institutionalHoldingsService.js";
 import { startInstitutionalResearchLayerAutomation } from "./services/institutionalResearchLayerService.js";
 import { getNewsHeadlines } from "./services/newsHeadlinesService.js";
@@ -163,6 +164,7 @@ app.use('/api', apiLimiter);
 app.use('/research', researchLimiter);
 app.use('/api/institutional-holdings', createInstitutionalHoldingsRouter());
 app.use('/api/index-rebalance', createIndexRebalanceRouter());
+app.use('/api/wealth', createWealthIntelligenceRouter());
 
 // dynamic fetch implementation
 let _fetchImpl = undefined;
@@ -994,7 +996,7 @@ const AGI_MARKET_INTEL = new Set([
 // same disguise.
 const AGI_API_PREFIXES = new Set([
   'auth', 'institutional-holdings', 'intelligence', 'market', 'newsletter',
-  'pe', 'public', 'research', 'research-signals', 'ui', 'upstox',
+  'pe', 'public', 'research', 'research-signals', 'ui', 'upstox', 'wealth',
 ]);
 
 // wildcard fallback (IndianAPI proxy only)

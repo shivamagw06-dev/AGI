@@ -16,6 +16,11 @@ export const UNLOCK_BENEFITS = [
 ];
 
 const FEATURE_COPY = {
+  wealth: {
+    eyebrow: 'Wealth Intelligence',
+    title: 'Unlock wealth and opportunity intelligence',
+    blurb: 'Explore investment data and compare income, costs and wealth after tax.',
+  },
   ask_agi: {
     eyebrow: 'Ask AGI',
     title: 'Unlock Ask AGI research',
@@ -110,6 +115,7 @@ const FEATURE_COPY = {
 
 /** Longest prefix wins. Free paths are omitted (return null). */
 const GATED_PREFIXES = [
+  ['/wealth-intelligence', 'wealth'],
   ['/ask', 'ask_agi'],
   ['/agi', 'agi_workspace'],
   ['/valuation-intelligence', 'valuation'],
