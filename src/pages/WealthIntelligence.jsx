@@ -3,9 +3,13 @@ import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
 import { Search, RefreshCw, Download, ArrowUpRight, Plus, X, Landmark, Building2, SlidersHorizontal } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
-import { getWealthUniverse } from '@/lib/wealthIntelligenceApi';
+import { getWealthUniverse, getWealthResearch } from '@/lib/wealthIntelligenceApi';
 import { MODEL_VERSION, compareScenarios, breakEvenGrowth } from '@/lib/wealthScenario';
 import './wealthIntelligence.css';
+import PlanningWorkspace from '@/components/wealth/PlanningWorkspace';
+import { emptyWorkspace, householdSummary, monitoringAlerts } from '@/lib/wealthPlanning';
+import { validateWorkspace } from '@/lib/wealthWorkspace';
+import { estimateOrdinaryTax, TAX_RULE } from '@/lib/wealthTax';
 
 const ASSET_CLASSES = [
   ['equity', 'Equities'], ['mutual_fund', 'Mutual funds'], ['property', 'Land & property'],
@@ -38,6 +42,9 @@ function NumberField({ label, value, onChange, min = 0, max, step = 'any' }) {
 }
 
 export default function WealthIntelligence() {
+  const [workspace, setWorkspace] = useState(emptyWorkspace);
+  const [research, setResearch] = useState(null);
+  const [researchLoading, setResearchLoading] = useState(false);
   const [tab, setTab] = useState('equity');
   const [query, setQuery] = useState('');
   const [search, setSearch] = useState('');
@@ -114,6 +121,53 @@ export default function WealthIntelligence() {
     const a = document.createElement('a'); a.href = url; a.download = 'agi-wealth-comparison.json'; a.click(); URL.revokeObjectURL(url);
   };
 
+  const loadResearch = async row => {
+    setResearchLoading(true); setResearch(null);
+    try { setResearch(await getWealthResearch(`research/${row.symbol}`, AbortSignal.timeout(15000))); }
+    catch(e) { setResearch({status:'unavailable',reason:e.message,metrics:[]}); }
+    finally { setResearchLoading(false); }
+  };
+  const downloadReviewPack = () => {
+    const payload = { version: 'agi-review-pack-v2', generatedAt: new Date().toISOString(), workspace,
+      comparison: { plan, assets, results: model.rows, error: model.error, model: MODEL_VERSION },
+      household: householdSummary(workspace), alerts: monitoringAlerts(workspace),
+      tax: workspace.people.map(p => { try { return { ownerId: p.id, ...estimateOrdinaryTax(p) }; } catch (e) { return { ownerId:p.id, status:'review_required', reason:e.message }; } }),
+      rule: TAX_RULE, reviewStatus:'Professional review pending; supplied evidence is not independently verified.' };
+    const url = URL.createObjectURL(new Blob([JSON.stringify(payload, null, 2)], { type:'application/json' }));
+    const a = document.createElement('a'); a.href = url; a.download = 'agi-wealth-review-pack.json'; a.click(); URL.revokeObjectURL(url);
+  };
+  const importReviewPack = async file => {
+    if (file.size > 2000000) throw new Error('Review pack exceeds 2 MB.');
+    const raw = JSON.parse(await file.text());
+    if (raw.version !== 'agi-review-pack-v2') throw new Error('Unsupported review pack.');
+    const validated = validateWorkspace(raw.workspace);
+    const importedAssets = raw.comparison?.assets;
+    if (!Array.isArray(importedAssets) || importedAssets.length > 4) throw new Error('Invalid comparison assets.');
+    const ids = new Set(['fd']);
+    for (const a of importedAssets) {
+      if (!a || typeof a.id !== 'string' || !/^[a-zA-Z0-9:_-]{1,120}$/.test(a.id) || ids.has(a.id) || typeof a.label !== 'string' || !a.label.trim() || a.label.length > 160 || !ASSET_CLASSES.some(([id])=>id===a.kind)) throw new Error('Invalid scenario.');
+      ids.add(a.id);
+      if (a.property && Object.values(a.property).some(v=>typeof v !== 'string')) throw new Error('Invalid property evidence.');
+      if (a.observed && (typeof a.observed.source !== 'string' && a.observed.source != null)) throw new Error('Invalid observation source.');
+    }
+    compareScenarios(raw.comparison.plan, importedAssets);
+    setWorkspace(validated); setPlan(raw.comparison.plan); setAssets(importedAssets); setDraft(null); setNotice('Saved review pack opened. Results have been recalculated; refresh market observations separately.');
+  };
+  const saveObservation = row => {
+    if (workspace.watchlist.length >= 100 && !workspace.watchlist.some(w=>w.id===row.id)) { setNotice('Watchlist limit is 100. Remove an observation first.'); return; }
+    const entry = { id:row.id, name:row.name, assetClass:row.assetClass, price:row.price, asOf:row.asOf, source:row.source };
+    setWorkspace(w=>({...w,watchlist:[...w.watchlist.filter(x=>x.id!==row.id),entry]}));
+    setNotice(`${row.name} saved to Monitoring with its observation date.`);
+  };
+  const compareProperty = p => {
+    if (assets.length >= 4) { setNotice('Remove a scenario before adding another property.'); return; }
+    setPlan(prev=>({...prev,capital:Number(p.price)}));
+    setDraft({...BLANK_ASSET,id:globalThis.crypto.randomUUID(),label:p.name,kind:'property',incomeYield:Number(p.rent)/Number(p.price)*100});
+    setProperty({location:p.location,askingPrice:p.price,source:p.source,date:p.asOf,priceType:p.priceType,documents:p.legal});
+    setNotice('Budget set to the quoted property price. Add purchase costs to the budget and enter return, holding-cost and tax assumptions before comparing.');
+    document.getElementById('wealth-workbench')?.scrollIntoView({behavior:'smooth',block:'start'});
+  };
+
   return <div className="wi-page">
     <Helmet><title>Wealth &amp; Opportunity Intelligence | AGI</title></Helmet>
     <div className="wi-shell">
@@ -122,6 +176,7 @@ export default function WealthIntelligence() {
         <Link className="wi-link" to="/portfolio">Your portfolio <ArrowUpRight size={16} /></Link>
       </header>
 
+      <PlanningWorkspace workspace={workspace} setWorkspace={setWorkspace} onExport={downloadReviewPack} onImport={importReviewPack} onCompareProperty={compareProperty} />
       <section className="wi-plan" aria-label="Comparison assumptions">
         <div className="wi-section-title"><h2><SlidersHorizontal size={18} /> Your comparison</h2><span>Illustrative starting inputs · edit for one owner</span></div>
         <div className="wi-input-grid">
@@ -148,13 +203,16 @@ export default function WealthIntelligence() {
           {loading ? <p className="wi-empty" role="status">Loading investment data…</p> : error ? <p className="wi-error" role="alert">{error}</p> : <>
             {data?.source?.error && <p className="wi-error">{data.source.error} Last available observations are labelled stale.</p>}
             <div className="wi-table-wrap"><table><thead><tr><th>Investment</th><th>{tab === 'equity' ? 'Sector' : 'Fund house'}</th><th>Price / NAV (₹)</th><th>{tab === 'equity' ? 'Day change' : 'Scheme code'}</th><th>Observation</th><th>Research</th></tr></thead><tbody>
-              {data?.items?.map(row => <tr key={row.id}><td><strong>{row.name}</strong><small>{row.symbol || row.category}</small></td><td>{row.sector || row.fundHouse || '—'}</td><td>{row.price == null ? '—' : Number(row.price).toLocaleString('en-IN', { maximumFractionDigits: 4 })}</td><td>{tab === 'equity' ? pct(row.changePct) : row.schemeCode}</td><td><span className={`wi-badge wi-${row.status}`}>{({ live: 'Live', stale: 'Stale / last known', daily: 'Daily NAV', unavailable: 'Unavailable' })[row.status]}</span><small>{stamp(row.asOf)} · {row.source || 'No observation'}</small></td><td><div className="wi-row-actions">{row.researchUrl && <Link to={row.researchUrl}>Research <ArrowUpRight size={13} /></Link>}<button onClick={() => begin(tab, row)}>Compare</button></div></td></tr>)}
+              {data?.items?.map(row => <tr key={row.id}><td><strong>{row.name}</strong><small>{row.symbol || row.category}</small></td><td>{row.sector || row.fundHouse || '—'}</td><td>{row.price == null ? '—' : Number(row.price).toLocaleString('en-IN', { maximumFractionDigits: 4 })}</td><td>{tab === 'equity' ? pct(row.changePct) : row.schemeCode}</td><td><span className={`wi-badge wi-${row.status}`}>{({ live: 'Live', stale: 'Stale / last known', daily: 'Daily NAV', unavailable: 'Unavailable' })[row.status]}</span><small>{stamp(row.asOf)} · {row.source || 'No observation'}</small></td><td><div className="wi-row-actions">{row.researchUrl && <Link to={row.researchUrl}>Research <ArrowUpRight size={13} /></Link>}{tab === 'equity' && <button disabled={researchLoading} onClick={() => loadResearch(row)}>Financial snapshot</button>}<button onClick={() => begin(tab, row)}>Compare</button><button onClick={() => saveObservation(row)}>Save observation</button></div></td></tr>)}
               {!data?.items?.length && <tr><td colSpan={6}>No matching investments. Try another search.</td></tr>}
             </tbody></table></div>
             <div className="wi-pagination"><span>{data?.total || 0} matching investments · prices do not imply expected returns</span><div><button disabled={offset === 0} onClick={() => setOffset(Math.max(0, offset - 25))}>Previous</button><button disabled={offset + 25 >= (data?.total || 0)} onClick={() => setOffset(offset + 25)}>Next</button></div></div>
           </>}
         </> : <div className="wi-gap"><Building2 size={25} /><div><h3>{GAPS[tab][0]}</h3><p>{GAPS[tab][1]}</p><button className="wi-button" onClick={() => begin(tab)}><Plus size={15} /> {tab === 'property' ? 'Compare a property quote' : 'Add an investment scenario'}</button></div></div>}
       </section>
+
+      {researchLoading && <p className="wi-notice" role="status">Loading stored company research…</p>}
+      {research && <section className="wi-panel" aria-label="Company financial snapshot"><div className="wi-section-title"><h2>{research.name || research.symbol || 'Company research'}</h2><button className="wi-button" onClick={()=>setResearch(null)}>Close snapshot</button></div><p className="wi-note">{research.status} · {research.source || 'No source'} · Source as of {research.sourceAsOf || 'unavailable'} · Generated {stamp(research.generatedAt)}</p>{research.reason && <p className="wi-notice">{research.reason}</p>}<div className="wi-table-wrap"><table><thead><tr><th>Metric</th><th>Stored value</th><th>Reference position</th></tr></thead><tbody>{research.metrics?.map(m=><tr key={m.metric}><td>{m.metric.replaceAll('_',' ')}</td><td>{m.value}</td><td>{m.position || 'Not available'}</td></tr>)}</tbody></table></div><p className="wi-note">{research.caveat}</p>{research.symbol && <Link className="wi-link" to={`/research/stocks/${encodeURIComponent(research.symbol)}`}>Open full company research ↗</Link>}</section>}
 
       <section className="wi-panel" id="wealth-workbench" aria-labelledby="wi-compare">
         <div className="wi-section-title"><div><p className="wi-eyebrow">02 / COMPARE</p><h2 id="wi-compare">After-tax scenario workbench</h2></div><div className="wi-actions"><button className="wi-button" onClick={() => begin()}><Plus size={15} /> Add scenario</button><button className="wi-button" disabled={!!model.error} onClick={exportPlan}><Download size={15} /> Download comparison</button></div></div>

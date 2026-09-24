@@ -97,3 +97,6 @@
 .wi-tabs button{padding:10px}
 .wi-header .wi-link{font-size:14px}
 }
+.wi-field textarea{border:1px solid #c8d3e0;border-radius:4px;padding:10px 12px;background:#fff;color:#17283c;font-size:14px;width:100%;resize:vertical}
+.wi-wide{grid-column:1/-1}.wi-file{max-width:185px;font-size:12px}.wi-allocation{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:18px;margin-top:24px;font-size:14px}.wi-allocation progress{display:block;width:100%;height:12px;margin-top:8px;accent-color:#214e7a}.wi-subtitle{font-weight:600;font-size:18px;margin:24px 0 12px}.wi-alert-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}.wi-alert-list p{margin-top:7px}.wi-draft h3{margin-bottom:18px}.wi-page td details{max-width:320px;margin-top:8px}.wi-page td summary{cursor:pointer;color:#245481}.wi-page td p{line-height:1.5;white-space:normal}.wi-page table{margin-top:16px}.wi-page .wi-input-grid{margin-top:16px}
+@media(max-width:440px){.wi-input-grid,.wi-input-grid.wi-three{grid-template-columns:1fr}.wi-file{max-width:160px}}

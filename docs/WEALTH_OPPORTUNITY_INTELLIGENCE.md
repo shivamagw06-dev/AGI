@@ -76,3 +76,54 @@ node --test src/lib/wealthScenario.test.js src/lib/accessPolicy.test.js server/p
 5. **Monitoring:** saved comparisons, dated rules and evidence-change alerts. Keep data quality separate from investment attractiveness and suitability.
 
 Merge/deployment follows existing repository gates and production workflows. This branch does not directly publish or merge to main.
+
+## Second increment: household and evidence workspaces
+
+Added six working panels on the existing signed-in route:
+
+- **Household:** legal owners (individual/HUF/business), residency, owner-specific tax inputs, holdings, debt, gross cash income, geography, concentration, spending and reserve targets. Joint holdings must be split into ownership shares. No actual family figures are preloaded.
+- **Fund research:** dated AMC evidence, scheme codes, expenses, risk labels and disclosure-weight overlap, with partial-coverage and mismatched-date warnings. No performance history or manager-change feed is claimed.
+- **Property evidence:** typed asking/registered/guidance/estimated observations, sq-ft normalization, micro-market/type/price-type group medians and ranges, rental yields, infrastructure stages and legal-review status. Compare action opens the FD workbench. These are supplied comparables, not an automated appraisal or verified listing service.
+- **Fixed income:** explicit settlement, all-in purchase cost, principal redemption, dated coupon schedule and separate effective tax assumptions. Outputs scheduled after-tax receipts, dated IRR and annual maturity/cash-flow ladder. No assumed reinvestment, default prediction, early exercise or executable dealer quote.
+- **Tax review:** deterministic ordinary-income calculator for resident individuals, FY 2025–26 / AY 2026–27, including old-regime age thresholds, rebate, new-regime rebate marginal relief, surcharge marginal relief, cess and credits. Inputs are already-computed taxable ordinary income. No deductions are inferred from gross income. Capital gains, dividends, foreign income, losses, other entities and residency cases are blocked. Tax Year 2026–27 is explicitly blocked pending separate authoritative rule verification. All outputs still require professional review.
+- **Monitoring:** due/past-due maturities, stale saved market observations, stale fund/property/bond evidence, concentration and dated review tasks. Recomputed on workspace changes or user refresh; not a persistent background notification service.
+
+Review packs include the input records, rule version, assumptions, recomputed results and current alerts. JSON export/import is explicit. Files are capped at 2 MB; collections, field sizes, dates, identifiers, URLs and ownership references are validated. Unknown workspace fields are dropped. Inputs stay in component memory and are lost when the page is left or refreshed. No financial data is written to shared browser storage or a database.
+
+### Existing company research integration
+
+`GET /api/wealth/research/:symbol` reads the existing **stored** five-year valuation company pack using `readLatestValuationCompanyPack`. It returns only meaningful finite metrics and preserves generation/source dates. It does not invoke an engine refresh, scan the universe, create market subscriptions or mutate Supabase. Missing research returns unavailable; stale or future-dated packs cannot be labelled available. Individual metric units/reference methods remain in the full company-research page.
+
+`GET /api/wealth/evidence` reads a deployment-configured evidence file via `WEALTH_EVIDENCE_FILE`. Both new endpoints use the existing server-verified authentication boundary, private/no-store responses, sanitized errors and a 120 requests/minute per-IP limit after authentication. The source filename and service credentials are never returned. Client requests cannot supply a filesystem path or remote fetch URL.
+
+### Connecting reviewed external evidence
+
+The adapter is implemented; **no property/bond/disclosure provider is configured by this change**. A provider agreement, suitable geographic coverage, permitted redistribution and an ingestion job must be established before serving a real catalogue.
+
+The deployment's ingestion job should atomically replace a UTF-8 JSON file with this envelope:
+
+```json
+{
+  "version": "agi-wealth-evidence-v1",
+  "provider": "Name of contracted or permitted source",
+  "displayRightsConfirmed": true,
+  "reviewedAt": "YYYY-MM-DD",
+  "records": []
+}
+```
+
+Each record uses `kind` (`funds`, `properties`, `bonds`, `events`) plus the exact corresponding schema in `src/lib/wealthWorkspace.js`. Required fields include a stable `id`, descriptive `name`, HTTPS `source`, and dated evidence (`asOf`) or a task due date. Numeric strings or numbers are accepted by the input normalizer. Dates are strictly validated. Provider review must be within 90 days. Maximum file size: 2 MB; maximum records: 1,000; one process-wide 60-second cache with in-flight request deduplication. Malformed/oversized/unreviewed files fail closed and serve no records. A provider declaration does not confer legal or investment approval.
+
+Records can be added individually to the client's evidence book, including stale records with explicit warnings. The UI does not silently overwrite client research. The feed is not for client-private financial records. No broker scraping, exchange redistribution or paid subscription is enabled automatically.
+
+### Required work before a full live launch
+
+1. Complete deployed visual and authenticated end-to-end QA. The cloud browser did not complete the local preview check; no UI pass is claimed.
+2. Obtain independent CA validation and a supported Tax Year 2026–27 package. Broader tax features (deductions, capital-gain tax lots, exemptions, loss set-offs, foreign income, HUF/business and GST) remain outside this calculator.
+3. Connect permitted AMC holdings/performance, verified property transactions/availability and executable bond/bank rate feeds. This code does not fabricate them.
+4. Add consented owner-isolated persistence before scheduled background monitoring or notifications. Current monitoring is session-only.
+5. Complete existing CI gates and review before merging/deployment. This increment itself does not publish to production.
+
+### Verification for this increment
+
+40 focused and regression tests pass across financial models, evidence validation, API authentication, stale-data handling and existing institutional safety gates. Targeted no-undefined-identifier lint and production build pass. Live Supabase research reads and real vendor feed availability are not verified from this development session. No database migration, secret, market subscription or production setting changes.

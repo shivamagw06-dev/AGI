@@ -1,4 +1,6 @@
 import { Router } from 'express';
+import rateLimit from 'express-rate-limit';
+import { getWealthEquityResearch, getWealthEvidence } from '../services/wealthResearch.js';
 import { createSupabaseAdmin } from '../lib/supabaseAdmin.js';
 import { getWealthUniverse } from '../services/wealthIntelligence.js';
 
@@ -10,7 +12,7 @@ async function verifyUser(token) {
   return data?.user || null;
 }
 
-export default function createWealthIntelligenceRouter({ authenticate = verifyUser, getUniverse = getWealthUniverse } = {}) {
+export default function createWealthIntelligenceRouter({ authenticate = verifyUser, getUniverse = getWealthUniverse, getResearch = getWealthEquityResearch, getEvidence = getWealthEvidence } = {}) {
   const router = Router();
   router.use(async (req, res, next) => {
     res.set('Cache-Control', 'private, no-store');
@@ -23,6 +25,15 @@ export default function createWealthIntelligenceRouter({ authenticate = verifyUs
     } catch {
       return res.status(503).json({ error: 'Authentication is temporarily unavailable.' });
     }
+  });
+  router.use(rateLimit({ windowMs: 60000, limit: 120, standardHeaders: true, legacyHeaders: false }));
+  router.get('/research/:symbol', async (req, res) => {
+    const symbol = req.params.symbol;
+    if (!/^[A-Z0-9&_.-]{1,30}$/.test(symbol)) return res.status(400).json({ error: 'Invalid equity symbol.' });
+    try { return res.json(await getResearch(symbol)); } catch { return res.status(503).json({error:'Company research is temporarily unavailable.'}); }
+  });
+  router.get('/evidence', async (_req, res) => {
+    try { return res.json(await getEvidence()); } catch { return res.status(503).json({error:'Evidence feed is temporarily unavailable.'}); }
   });
   router.get('/universe', async (req, res) => {
     const { assetClass = 'equity', q = '', offset = '0', limit = '50' } = req.query;

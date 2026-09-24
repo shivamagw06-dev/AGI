@@ -23,3 +23,20 @@ test('server enforces sign-in, validates search, and does not expose errors or c
   assert.equal(response.status, 200); assert.equal(response.headers.get('cache-control'), 'private, no-store');
   assert.equal((await response.json()).params.q, 'test'); assert.equal(calls, 1);
 });
+
+test('research and provider evidence share the authentication boundary and hide internal failures', async t => {
+  let researchCalls = 0, evidenceCalls = 0;
+  const app = express();
+  app.use('/api/wealth', createRouter({ authenticate: async token => token === 'valid' ? {id:'user'} : null,
+    getResearch: async symbol => {researchCalls++; if(symbol === 'ERROR') throw new Error('secret service detail'); return {symbol,metrics:[]};},
+    getEvidence: async () => {evidenceCalls++; return {status:'not_connected',records:[]};},
+  }));
+  const server=app.listen(0,'127.0.0.1');await once(server,'listening');t.after(()=>{server.closeAllConnections();server.close();});
+  const base=`http://127.0.0.1:${server.address().port}/api/wealth`, headers={Authorization:'Bearer valid'};
+  for(const path of ['/research/TEST','/evidence']) assert.equal((await fetch(base+path)).status,401);
+  assert.equal(researchCalls,0);assert.equal(evidenceCalls,0);
+  assert.equal((await fetch(base+'/research/bad!symbol',{headers})).status,400);
+  assert.equal((await fetch(base+'/research/TEST',{headers})).status,200);
+  const evidence=await fetch(base+'/evidence',{headers});assert.equal(evidence.status,200);assert.equal(evidence.headers.get('cache-control'),'private, no-store');
+  const failed=await fetch(base+'/research/ERROR',{headers});assert.equal(failed.status,503);assert.ok(!(await failed.text()).includes('secret'));
+});
