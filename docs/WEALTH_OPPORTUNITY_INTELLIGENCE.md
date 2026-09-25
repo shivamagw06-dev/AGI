@@ -142,3 +142,5 @@ Fund research now automatically requests the authenticated wealth universe endpo
 Missing NAVs, dates, plan details and minimum investments remain unavailable. A freshly downloaded file does not make an old NAV current. Expense ratios and underlying portfolio overlap still require AMC disclosures; scheme data is never passed off as those disclosures. Selected comparison rows are session snapshots, not persisted client holdings.
 
 This integration does not use the shared Upstox market-data token to publish account orders, SIPs or personal holdings. Those endpoints require a user-specific authenticated broker integration. No order placement is added.
+
+Live file inspection returned 38,196 entries / 23,677 normalized distinct fund ISINs; 14,259 had positive NAVs but no rows had NAV dates. Accordingly, AMFI is fetched concurrently and exact-ISIN matches supply the NAV and its date together when Upstox's date is missing or older. Each row retains separate scheme and NAV provenance. Unmatched undated NAVs remain stale, never current.

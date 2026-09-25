@@ -26,7 +26,7 @@ export default function FundDirectory() {
     {data && <>
       <p className="wi-note">{data.source.provider} · {data.total.toLocaleString()} matching schemes · {data.source.status}{data.source.fetchedAt ? ` · fetched ${new Date(data.source.fetchedAt).toLocaleString()}` : ''}{data.source.provider==='AMFI' ? ' · Upstox unavailable; showing AMFI fallback.' : ''}</p>
       {data.source.error && <p className="wi-error">{data.source.error}</p>}
-      <div className="wi-table-wrap"><table><thead><tr>{['Fund / ISIN','Category / plan','Published NAV','NAV date / status','Compare'].map(t=><th key={t}>{t}</th>)}</tr></thead><tbody>{data.items.map(f=><tr key={f.id}><td>{f.name}<small>{f.isin || f.schemeCode}</small></td><td>{f.category || 'Unavailable'}<small>{f.plan || 'Plan not supplied'}</small></td><td>{rupees(f.price)}</td><td>{f.asOf || 'Unavailable'}<small>{f.status}</small></td><td><button className="wi-button" aria-pressed={selected.some(s=>s.id===f.id)} onClick={()=>choose(f)}>{selected.some(s=>s.id===f.id) ? 'Remove' : 'Compare'}</button></td></tr>)}</tbody></table></div>
+      <div className="wi-table-wrap"><table><thead><tr>{['Fund / ISIN','Category / plan','Published NAV','NAV date / status','Compare'].map(t=><th key={t}>{t}</th>)}</tr></thead><tbody>{data.items.map(f=><tr key={f.id}><td>{f.name}<small>{f.isin || f.schemeCode}</small></td><td>{f.category || 'Unavailable'}<small>{f.plan || 'Plan not supplied'}</small></td><td>{rupees(f.price)}</td><td>{f.asOf || 'Unavailable'}<small>{f.status} · {f.navSource || f.source}</small></td><td><button className="wi-button" aria-pressed={selected.some(s=>s.id===f.id)} onClick={()=>choose(f)}>{selected.some(s=>s.id===f.id) ? 'Remove' : 'Compare'}</button></td></tr>)}</tbody></table></div>
       {!data.items.length && <p className="wi-empty">{data.source.status==='unavailable' ? 'Fund sources are unavailable. Retry shortly.' : 'No matching funds. Try another name or ISIN.'}</p>}
       <div className="wi-actions"><button className="wi-button" disabled={offset===0} onClick={()=>setOffset(v=>Math.max(0,v-20))}>Previous</button><span>{data.total ? offset+1 : 0}–{Math.min(offset+20,data.total)} of {data.total}</span><button className="wi-button" disabled={offset+20>=data.total} onClick={()=>setOffset(v=>v+20)}>Next</button></div>
     </>}
@@ -35,7 +35,7 @@ export default function FundDirectory() {
       ['Published NAV',f=>rupees(f.price)], ['NAV date',f=>f.asOf || 'Unavailable'], ['NAV status',f=>f.status], ['Minimum investment',f=>rupees(f.minimumInvestment)],
       ['Purchases allowed',f=>f.purchaseAllowed==null ? 'Unavailable' : f.purchaseAllowed ? 'Yes' : 'No'],
       ['Expense ratio',()=>'Unavailable from this source'], ['Underlying portfolio / overlap',()=>'AMC disclosure required'],
-      ['Source',f=>f.source],
+      ['Scheme source',f=>f.source], ['NAV source',f=>f.navSource || f.source],
     ].map(([label,value])=><tr key={label}><td>{label}</td>{selected.map(f=><td key={f.id}>{value(f)}</td>)}</tr>)}</tbody></table></div><p className="wi-note">These are snapshots from when you selected each fund. Published NAV levels do not measure comparative performance. Add AMC disclosures below for portfolio overlap.</p></>}
   </div>;
 }

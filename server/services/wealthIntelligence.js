@@ -44,14 +44,24 @@ export async function getWealthUniverse({ assetClass = 'equity', q = '', offset 
   const now = deps.now?.() ?? Date.now();
   let rows, source;
   if (assetClass === 'mutual_fund') {
-    let data = await (deps.getFunds || (deps.getNav ? deps.getNav : getUpstoxFunds))();
-    let provider = deps.getNav && !deps.getFunds ? 'AMFI' : 'Upstox';
-    if (!data.rows.length && provider === 'Upstox') { data = await (deps.getNav || getAmfiNav)(); provider = 'AMFI'; }
-    rows = data.rows.map(row => {
+    const [funds, nav] = await Promise.all([
+      deps.getFunds ? deps.getFunds() : deps.getNav ? Promise.resolve(null) : getUpstoxFunds(),
+      (deps.getNav || getAmfiNav)(),
+    ]);
+    const provider = funds?.rows.length ? 'Upstox' : 'AMFI';
+    const data = provider === 'Upstox' ? funds : nav;
+    const byIsin = new Map(nav.rows.filter(row => row.isin).map(row => [row.isin, row]));
+    rows = data.rows.map(original => {
+      const amfi = provider === 'Upstox' ? byIsin.get(original.isin) : null;
+      const row = amfi && (!original.asOf || amfi.asOf > original.asOf) ? {
+        ...original, price:amfi.price, asOf:amfi.asOf, schemeCode:amfi.schemeCode,
+        fundHouse:original.fundHouse || amfi.fundHouse, navSource:'AMFI', navSourceUrl:amfi.sourceUrl,
+      } : { ...original, navSource:original.source || provider };
+      const navStale = row.navSource === 'AMFI' ? nav.status === 'stale' : data.status === 'stale';
       const age = now - Date.parse(`${row.asOf}T00:00:00+05:30`);
-      return { ...row, status: !row.price && provider === 'Upstox' ? 'unavailable' : data.status === 'stale' || !Number.isFinite(age) || age < -86_400_000 || age > 4 * 86_400_000 ? 'stale' : 'daily' };
+      return { ...row, status: !row.price && provider === 'Upstox' ? 'unavailable' : navStale || !Number.isFinite(age) || age < -86_400_000 || age > 4 * 86_400_000 ? 'stale' : 'daily' };
     });
-    source = { provider, status: data.status, fetchedAt: data.fetchedAt, error: data.error };
+    source = { provider, status: data.status, fetchedAt: data.fetchedAt, error: data.error, navProvider: provider === 'Upstox' ? 'Upstox / AMFI' : 'AMFI' };
   } else {
     const members = await (deps.getUniverse || universe)();
     const snapshot = (deps.getSnapshot || getLiveAlphaMarketSnapshot)(members.map(row => row.symbol));
