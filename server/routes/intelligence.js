@@ -2350,11 +2350,11 @@ export default function createIntelligenceRouter() {
   //
   // Same reason as the workbook below: the engine routes are token-guarded and
   // the token belongs in this process, not in the browser bundle.
-  router.post('/insider-trades/preview', async (req, res) => {
+  router.post('/insider-trades/preview', requireStrategyLabAdmin, async (req, res) => {
     try {
       const result = await engineFetch('/v1/warehouse/import/insider-trades/preview', {
         method: 'POST',
-        body: { text: String(req.body?.text || '') },
+        body: { text: String(req.body?.text || ''), country: req.body?.country || 'IN' },
       });
       return res.status(result.status).json(result.data);
     } catch (error) {
@@ -2363,11 +2363,11 @@ export default function createIntelligenceRouter() {
     }
   });
 
-  router.post('/insider-trades/paste', async (req, res) => {
+  router.post('/insider-trades/paste', requireStrategyLabAdmin, async (req, res) => {
     try {
       const result = await engineFetch('/v1/warehouse/import/insider-trades/paste', {
         method: 'POST',
-        body: { text: String(req.body?.text || ''), actor: 'admin_paste' },
+        body: { text: String(req.body?.text || ''), country: req.body?.country || 'IN', actor: req.strategyLabActor?.id || 'admin_paste' },
         // A large paste is thousands of rows through DQIV validation.
         timeoutMs: 180_000,
       });

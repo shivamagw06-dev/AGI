@@ -42,12 +42,13 @@ function engineConfig() {
   return { baseUrl, token: (process.env.INTELLIGENCE_ENGINE_TOKEN || 'dev-intelligence-token').trim() };
 }
 
-async function fetchRows({ timeoutMs = 60_000 } = {}) {
+async function fetchRows({ timeoutMs = 60_000, country = 'IN' } = {}) {
+  const table = country === 'US' ? 'us_insider_trades' : TAB;
   const { baseUrl, token } = engineConfig();
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
-    const response = await fetch(`${baseUrl}/v1/warehouse/tab/${TAB}?limit=${ROW_LIMIT}`, {
+    const response = await fetch(`${baseUrl}/v1/warehouse/tab/${table}?limit=${ROW_LIMIT}`, {
       headers: { Accept: 'application/json', Authorization: `Bearer ${token}` },
       signal: controller.signal,
     });
@@ -76,7 +77,7 @@ async function fetchRows({ timeoutMs = 60_000 } = {}) {
 export function dedupe(rows) {
   const best = new Map();
   for (const row of rows || []) {
-    const key = [row.company_name, row.reported_on, row.person, row.action, row.quantity, row.mode]
+    const key = row.country === 'US' && row.trade_id ? `US:${row.trade_id}` : [row.company_name, row.reported_on, row.person, row.action, row.quantity, row.mode]
       .map(lower).join('|');
     const held = best.get(key);
     if (!held || (!held.symbol_match && row.symbol_match)) best.set(key, row);
@@ -93,8 +94,10 @@ export function side(row) {
 
 export const isOpenMarket = (row) => String(row.is_open_market) === 'true';
 
+const isIncludedTrade = row => row.country === 'US' ? String(row.is_purchase_sale) === 'true' : isOpenMarket(row);
+
 /** Filings a market price was actually paid for, one side or the other. */
-const conviction = (rows) => rows.filter((row) => isOpenMarket(row) && side(row) !== 'other');
+const conviction = (rows) => rows.filter((row) => isIncludedTrade(row) && side(row) !== 'other');
 
 /**
  * Net open-market flow per day, and the running total behind it.
@@ -196,7 +199,7 @@ export function modeBreakdown(rows) {
   const counts = new Map();
   for (const row of rows || []) {
     const label = String(row.mode || 'unspecified');
-    if (!counts.has(label)) counts.set(label, { mode: label, count: 0, openMarket: isOpenMarket(row) });
+    if (!counts.has(label)) counts.set(label, { mode: label, count: 0, openMarket: isIncludedTrade(row) });
     counts.get(label).count += 1;
   }
   return [...counts.values()].sort((a, b) => b.count - a.count);
@@ -230,7 +233,7 @@ export function summarise(rows, query = {}) {
     return true;
   });
 
-  const open = filtered.filter(isOpenMarket);
+  const open = filtered.filter(isIncludedTrade);
   const valued = filtered.filter((row) => num(row.value));
   const insider = filtered.filter((row) => regimeOf(row) === 'insider');
   const dates = filtered.map((row) => row.reported_on).filter(Boolean).sort();
@@ -238,6 +241,8 @@ export function summarise(rows, query = {}) {
   return {
     ok: true,
     source: 'warehouse',
+    country: query.country === 'US' ? 'US' : 'IN',
+    currency: query.country === 'US' ? 'USD' : 'INR',
     trades: filtered
       .slice()
       .sort((a, b) => String(b.reported_on).localeCompare(String(a.reported_on))
@@ -273,5 +278,5 @@ export function summarise(rows, query = {}) {
 }
 
 export async function getInsiderActivityFromWarehouse(query = {}) {
-  return summarise(await fetchRows(), query);
+  return summarise(await fetchRows({country: query.country}), query);
 }

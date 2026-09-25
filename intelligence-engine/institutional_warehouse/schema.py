@@ -1133,6 +1133,25 @@ INSIDER_TRADES = Tab(
 )
 
 # --------------------------------------------------------------------------
+US_INSIDER_TRADES = Tab(
+    id="us_insider_trades", label="US Insider Trades", description="Pasted US ownership disclosures; absolute USD values, separate from India.",
+    mode="append", key=("trade_id",), order_by=("reported_on DESC", "value DESC"), search_columns=("symbol", "company_name", "person"), icon="ownership",
+    columns=(
+        _c("trade_id", "Transaction identity", TEXT, required=True),
+        *INSIDER_TRADES.columns,
+        _c("transaction_date", "Trade date", DATE, required=True),
+        _c("filing_timestamp", "Filing timestamp", TEXT),
+        _c("transaction_code", "SEC code", TEXT, required=True),
+        _c("planned", "10b5-1 plan", TEXT),
+        _c("derivative", "Derivative", TEXT),
+        _c("ownership_change_pct", "Change in insider holding (%)", PERCENT),
+        _c("ownership_change_text", "Reported holding change", TEXT),
+        _c("source_url", "Source document", TEXT),
+        _c("is_purchase_sale", "Purchase / sale", TEXT),
+        _c("country", "Country", TEXT), _c("currency", "Currency", TEXT),
+    ),
+)
+
 # Tab — Share Count History (Phase 7.4F FWCP)
 # --------------------------------------------------------------------------
 
@@ -2907,6 +2926,7 @@ TABS: tuple[Tab, ...] = (
     CORPORATE_ACTIONS,
     OWNERSHIP,
     INSIDER_TRADES,
+    US_INSIDER_TRADES,
     FUNDAMENTALS_REFRESH_QUEUE,
     PEER_RELATIONSHIPS,
     FWCP_IMPORT_QUEUE,

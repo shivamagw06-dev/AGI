@@ -29,3 +29,7 @@ test('missing value is not zero and only safe source links are emitted',()=>{
  assert.equal(sourceLink({source_url:'javascript:alert(1)'}),null);assert.equal(sourceLink({source_url:'https://www.nseindia.com/filing'}),'https://www.nseindia.com/filing');
  const c=buildIntelligence([row({value:null})],'2026-09-26')[0];assert.equal(c.valued,0);
 });
+test('US planned trades and derivative transactions do not become conviction signals',()=>{
+ const c=buildIntelligence([row({country:'US',transaction_code:'P',trade_id:'1',planned:'true'}),row({country:'US',transaction_code:'P',trade_id:'2',derivative:'true'}),row({country:'US',transaction_code:'P',trade_id:'3',planned:'unknown',derivative:'false'})],'2026-09-26')[0];
+ assert.equal(c.buys.length,1);assert.equal(c.rows.length,3);assert.equal(c.signals[0].title,'Purchase disclosed');
+});
