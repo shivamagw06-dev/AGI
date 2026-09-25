@@ -37,3 +37,5 @@ For each taxpayer: year and residence; source and legal ownership of each receip
 
 ## Implementation / validation boundary
 The new scanner performs no official portal imports, OCR, persistent record storage, tax filing or individualized professional certification. It reuses the existing FY25–26 ordinary-income estimator only for a complete individual salary/interest fact pattern. It does not treat current-year law as an extension of the previous assessment year. Quantitative comparisons are estimates pending independent professional rule verification and real case reconciliation. Rules for other case types remain work to build, not silent zeros.
+
+The Income Tax Department confirms AIS downloads in PDF, JSON and CSV and states AIS may omit relevant transactions; TIS also contains category-level processed and confirmed values. A reliable importer must be tested against real redacted, year-specific export fixtures before it can map columns or deduplicate AIS/TIS/26AS. The current scanner takes user-entered facts and does not import these files. Official reference: https://www.incometax.gov.in/iec/foportal/ais-faq
