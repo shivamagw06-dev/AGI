@@ -40,3 +40,13 @@ test('research and provider evidence share the authentication boundary and hide 
   const evidence=await fetch(base+'/evidence',{headers});assert.equal(evidence.status,200);assert.equal(evidence.headers.get('cache-control'),'private, no-store');
   const failed=await fetch(base+'/research/ERROR',{headers});assert.equal(failed.status,503);assert.ok(!(await failed.text()).includes('secret'));
 });
+
+
+test('configured backend limiter allows 120 authenticated requests and blocks the next', async t => {
+  const app = express();
+  app.use('/api/wealth', createRouter({authenticate:async()=>({id:'user'}),getEvidence:async()=>({records:[]})}));
+  const server=app.listen(0,'127.0.0.1');await once(server,'listening');t.after(()=>{server.closeAllConnections();server.close();});
+  const url=`http://127.0.0.1:${server.address().port}/api/wealth/evidence`, headers={Authorization:'Bearer valid'};
+  for(let i=0;i<120;i++) assert.equal((await fetch(url,{headers})).status,200,`request ${i+1}`);
+  assert.equal((await fetch(url,{headers})).status,429);
+});
