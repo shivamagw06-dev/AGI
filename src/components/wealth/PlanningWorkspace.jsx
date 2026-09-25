@@ -101,7 +101,7 @@ export default function PlanningWorkspace({ workspace, setWorkspace, onExport, o
       {!workspace.bonds.length && <p className="wi-empty">No dated instruments yet. Executable dealer quotes and current bank rate feeds require a provider connection.</p>}
     </>}
     {tab === 'tax' && <>
-      <TaxIntelligence />
+      <TaxIntelligence people={workspace.people} />
       <h3>Owner-by-owner ordinary-income estimate</h3><p className="wi-note">Available rule: FY 2025–26 / AY 2026–27. Professional review pending. Current Tax Year 2026–27 is blocked until its own rule package is verified. Enter CA-computed taxable income after deductions for each regime separately; gross household income is not a substitute.</p>
       <Table headers={['Owner / year','Status','Tax estimate incl. cess','Credits','Balance / (excess credits)','Actions']}>{workspace.people.map(p=>{let r;try{r=estimateOrdinaryTax(p);}catch(e){r={total:null,reasons:[e.message]};}return <tr key={p.id}><td>{p.name}<small>{p.year} · {p.regime}</small></td><td>{r.total==null?'Review required':'Estimate · CA review pending'}<small>{r.reasons?.join(' ')}</small></td><td>{money(r.total)}</td><td>{money(r.credits)}</td><td>{money(r.balance)}</td><td>{actions('people',p)}{r.total!=null&&<details><summary>Calculation</summary><p>Slab tax {money(r.base)}; rebate {money(r.rebate)}; rebate relief {money(r.rebateRelief)}; surcharge {money(r.surcharge)}; surcharge relief {money(r.marginalRelief)}; cess {money(r.cess)}.</p></details>}</td></tr>;})}</Table>
       <p className="wi-note">Rule {TAX_RULE.id} · checked {TAX_RULE.checkedAt} · <Source url={TAX_RULE.source}/> · <a className="wi-link" href={TAX_RULE.transitionSource} target="_blank" rel="noopener noreferrer">New Act transition ↗</a></p>
