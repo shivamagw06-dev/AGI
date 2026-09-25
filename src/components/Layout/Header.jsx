@@ -30,7 +30,6 @@ const PRIMARY_NAV = [
 ];
 
 const MORE_NAV = [
-  { name: 'Wealth Intelligence', path: '/wealth-intelligence' },
   { name: 'Hedge Funds', path: '/institutional-holdings' },
   { name: 'Insider Activity', path: '/insider-activity' },
   { name: 'Private Markets', path: '/private-markets' },
