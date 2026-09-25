@@ -80,6 +80,8 @@ const IntelligenceEntityPage = React.lazy(() => import('@/pages/IntelligenceEnti
 const EconomicsPage = React.lazy(() => import('@/pages/EconomicsPage'));
 const InsiderActivityPage = React.lazy(() => import('@/pages/InsiderActivityPage'));
 
+const FinancialModelingPage = React.lazy(() => import('@/pages/FinancialModelingPage'));
+
 function RouteFallback({ label = 'Loading…' }) {
   return <div className="min-h-[40vh] p-8 text-center text-slate-600">{label}</div>;
 }
@@ -216,6 +218,8 @@ function PublicRoutes() {
       <Route path="/" element={<HomeLayout />} />
       <Route path="/ask" element={<RequireAskAgiAdmin><AskAgiPage /></RequireAskAgiAdmin>} />
       <Route path="/predictions" element={gate('forecasts', <PredictionCentre />)} />
+      <Route path="/financial-modeling" element={<FinancialModelingPage />} />
+      <Route path="/financial-modelling" element={<Navigate replace to="/financial-modeling" />} />
       <Route path="/workspace" element={gate('workspace', <PersonalWorkspace />)} />
 
       <Route path="/market-updates" element={<MarketUpdates />} />
