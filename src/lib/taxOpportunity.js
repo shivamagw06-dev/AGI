@@ -68,7 +68,13 @@ export function scanTaxOpportunities(input) {
     const base = {year,age,entity:'individual',residency:'resident',special:'none',credits:0};
     const oldResult = estimateOrdinaryTax({...base,regime:'old',taxable:oldTaxable});
     const newResult = estimateOrdinaryTax({...base,regime:'new',taxable:newTaxable});
-    comparison = {old:oldResult.total,new:newResult.total,oldTaxable,newTaxable,oldDeductions:oldDed,lower:oldResult.total === newResult.total ? 'equal' : oldResult.total < newResult.total ? 'old' : 'new',difference:Math.abs(oldResult.total-newResult.total)};
+    // The comparison below audits eligible payments already made in FY25–26; it never models a new payment after that year.
+    const withoutClaims = Math.max(0, oldTaxable + Math.min(amounts.eligible80c||0,150000) + Math.min(amounts.eligibleNps||0,50000));
+    const noClaimsOld = estimateOrdinaryTax({...base,regime:'old',taxable:withoutClaims});
+    const documentedClaimEffect = Math.max(0, Math.min(noClaimsOld.total,newResult.total)-Math.min(oldResult.total,newResult.total));
+    comparison = {old:oldResult.total,new:newResult.total,oldTaxable,newTaxable,oldDeductions:oldDed,
+      lower:oldResult.total === newResult.total ? 'equal' : oldResult.total < newResult.total ? 'old' : 'new',
+      difference:Math.abs(oldResult.total-newResult.total),documentedClaimEffect};
   }
   return {year, cards:sorted,missing,comparison,blockedReason:!old ? 'Tax Year 2026–27 rule package is awaiting separate verification.' : complex ? 'Complex or special income needs separate computation before a whole-case comparison.' : missing.length ? 'Complete and confirm the listed inputs to compare supported ordinary income.' : null};
 }
