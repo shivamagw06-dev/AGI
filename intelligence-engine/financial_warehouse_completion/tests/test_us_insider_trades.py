@@ -44,3 +44,38 @@ def test_conflicting_same_identity_blocks_publication():
 def test_bounded_holding_change_remains_text_not_exact_percentage():
  r=parse_pasted(paste({'ΔOwn':'>999%'}))['rows'][0]
  assert r['ownership_change_pct'] is None and r['ownership_change_text']=='>999%'
+
+EXPORT_HEAD=['Stock','Client Name','Client Category','Action','Reported to Exchange','Quantity','Post Transaction Holding','Traded %','Avg. Price','Value','Security Type']
+def export_paste(**changes):
+ row=dict(zip(EXPORT_HEAD,['Globe Life','Robert Edward Hensley','EVP & Chief Investment Officer','Exercise or conversion of derivative security received from the company   (such as an option) at price $ 103.23 per share.','22/09/26','10000','22383','0%','103.2','10,32,300','Common Stock']));row.update(changes)
+ out=io.StringIO();w=csv.writer(out,delimiter='\t');w.writerow(EXPORT_HEAD);w.writerow([row[h] for h in EXPORT_HEAD]);return out.getvalue()
+def test_exact_user_export():
+ r=parse_pasted(export_paste());assert r['ok'],r
+ row=r['rows'][0];assert row['reported_on']=='2026-09-22';assert row['transaction_date'] is None
+ assert row['value']==1032300 and row['transaction_code']=='M' and row['is_purchase_sale']=='false'
+ assert row.get('traded_pct') is None and row['ownership_change_pct'] is None
+ assert row['action_description'].startswith('Exercise or conversion')
+@pytest.mark.parametrize('action,code',[
+ ('Sale of securities on an exchange or to another person at price $ 238.51 per share.','S'),
+ ('Payment of exercise price or tax liability using portion of securities received from the company at price $ 52.93 per share.','F'),
+ ('Acquisition of securities at price $ 110.07 per share.','J'),
+ ('Purchase of securities on an exchange or from another person at price $ 10 per share.','P')])
+def test_export_descriptions(action,code):
+ r=parse_pasted(export_paste(Action=action));assert r['ok'];assert r['rows'][0]['transaction_code']==code
+
+def test_export_ambiguous_date_is_day_first():
+ r=parse_pasted(export_paste(**{'Reported to Exchange':'03/09/26'}));assert r['rows'][0]['reported_on']=='2026-09-03'
+def test_export_distinct_holdings_not_collapsed():
+ a=export_paste();b=export_paste(**{'Post Transaction Holding':'23000'}).splitlines()[1]
+ assert parse_pasted(a+b+'\n')['row_count']==2
+
+def test_export_gateway_missing_trade_date(tmp_path,monkeypatch):
+ from institutional_warehouse import db
+ monkeypatch.setenv('INSTITUTIONAL_WAREHOUSE_ROOT',str(tmp_path))
+ monkeypatch.delenv('WAREHOUSE_DATABASE_URL',raising=False);monkeypatch.delenv('INSTITUTIONAL_WAREHOUSE_DATABASE_URL',raising=False)
+ monkeypatch.setattr(db,'_BACKEND',None);monkeypatch.setattr(db,'_INITIALISED',False)
+ result=import_pasted(export_paste());assert result['ok'],result
+ rows=db.query('SELECT * FROM wh_us_insider_trades');assert len(rows)==1 and rows[0]['transaction_date'] is None
+ assert rows[0]['value']==1032300 and rows[0]['action_description'].startswith('Exercise')
+ assert import_pasted(export_paste())['ok'];assert len(db.query('SELECT * FROM wh_us_insider_trades'))==1
+ if db._BACKEND:db._BACKEND.close()

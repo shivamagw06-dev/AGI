@@ -19,7 +19,7 @@ CODES = {'P':'Purchase (open market or private)', 'S':'Sale (open market or priv
 ALIASES = {
  'company': ['Company','Company Name','Stock'], 'symbol':['Ticker','Symbol'],
  'person':['Insider Name','Insider','Owner','Client Name'], 'category':['Title','Role','Relationship','Client Category'],
- 'filed':['Filing Date','Reported Date','Reported To/By Exchange'],
+ 'filed':['Filing Date','Reported Date','Reported To/By Exchange','Reported to Exchange'],
  'trade':['Trade Date','Transaction Date','Date'], 'code':['Transaction Code','Trade Type','Transaction','Action'],
  'quantity':['Quantity','Qty','Shares','#Shares'], 'price':['Price','Cost','Avg. Price'],
  'value':['Value','Value ($)','Value USD'], 'owned':['Owned','Shares Owned','Post Transaction Holding','#Shares Total'],
@@ -41,10 +41,10 @@ def _number(value):
  if not math.isfinite(result): raise ValueError('numeric value must be finite')
  return result
 
-def _date(value, required=True):
+def _date(value, required=True, day_first=False):
  if not value and not required:return None
  # Dates without a year are deliberately not guessed. US slash dates are month/day/year.
- for fmt in ('%Y-%m-%d','%m/%d/%Y','%m/%d/%y','%b %d, %Y','%d %b %Y'):
+ for fmt in ('%Y-%m-%d', *(['%d/%m/%Y','%d/%m/%y'] if day_first else ['%m/%d/%Y','%m/%d/%y']), '%b %d, %Y','%d %b %Y'):
   try:return datetime.strptime(value,fmt).date().isoformat()
   except ValueError:pass
  if re.match(r'^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}',value):
@@ -76,11 +76,16 @@ def parse_pasted(text, **_):
    row={_key(k):v for k,v in item.items()}
    symbol=_pick(row,'symbol').upper();company=_pick(row,'company') or symbol;person=_pick(row,'person')
    if not company or not person:raise ValueError('Company/Ticker and Insider Name are required')
-   filed=_date(_pick(row,'filed'));trade=_date(_pick(row,'trade'))
-   if trade>filed:raise ValueError('trade date cannot follow filing date')
+   export_format='reported to exchange' in row
+   filed=_date(_pick(row,'filed'),day_first=export_format);trade=_date(_pick(row,'trade'),required=not export_format,day_first=export_format)
+   if trade and trade>filed:raise ValueError('trade date cannot follow filing date')
    rawcode=_pick(row,'code');code=rawcode.upper()
    code={'PURCHASE':'P','BUY':'P','SALE':'S','SELL':'S','OPTION EXERCISE':'M','GIFT':'G','AWARD':'A'}.get(code,code)
    if re.match(r'^[A-Z]\s*[-–]',code):code=code[0]
+   description=_key(rawcode)
+   for prefix, mapped in [('exercise or conversion of derivative security received from the company','M'),('payment of exercise price or tax liability using portion of securities received from the company','F'),('sale of securities on an exchange or to another person','S'),('purchase of securities on an exchange or from another person','P'),('acquisition of securities','J'),('grant, award or other acquisition','A'),('gift of securities','G')]:
+    if description.startswith(prefix):
+     code=mapped;break
    if code not in CODES:raise ValueError('unsupported transaction code: '+rawcode)
    if _pick(row,'form').upper() in {'4/A','AMENDMENT','AMENDED'}:raise ValueError('amendments require reconciliation with the original transaction; do not import as a new trade')
    qty=_number(_pick(row,'quantity'));price=_number(_pick(row,'price'));value=_number(_pick(row,'value'))
@@ -94,11 +99,13 @@ def parse_pasted(text, **_):
    filing_stamp=datetime.fromisoformat(_pick(row,'filed').replace('Z','+00:00')).isoformat() if re.match(r'^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}',_pick(row,'filed')) else filed
    change_text=_pick(row,'change')
    change_num=None if re.match(r'^[<>]',change_text) else _number(change_text)
-   identity=json.dumps([symbol or company,_pick(row,'id')]) if _pick(row,'id') else json.dumps([symbol,company,person,filing_stamp,trade,code,abs(qty),price,_pick(row,'security')],ensure_ascii=False)
+   identity_parts=[symbol,company,person,filing_stamp,trade,code,abs(qty),price,_pick(row,'security')]
+   if export_format:identity_parts.append(_number(_pick(row,'owned')))
+   identity=json.dumps([symbol or company,_pick(row,'id')]) if _pick(row,'id') else json.dumps(identity_parts,ensure_ascii=False)
    ident=hashlib.sha256(identity.encode()).hexdigest()[:32]
    candidate={'trade_id':ident,'company_name':company,'symbol':symbol or None,'symbol_match':'provided' if symbol else 'unmapped',
     'reported_on':filed,'transaction_date':trade,'filing_timestamp':filing_stamp,'person':person,'category':_pick(row,'category') or None,
-    'transaction_code':code,'action':'Acquisition' if code=='P' else 'Disposal' if code=='S' else CODES[code],
+    'transaction_code':code,'action_description':rawcode,'action':'Acquisition' if code=='P' else 'Disposal' if code=='S' else CODES[code],
     'quantity':abs(qty),'avg_price':price,'value':abs(value) if value is not None else None,
     'post_holding':_number(_pick(row,'owned')),'ownership_change_pct':change_num,'ownership_change_text':change_text or None,
     'mode':CODES[code],'regulation':'SEC Form 4 import','regime':'insider','security_type':_pick(row,'security') or None,
@@ -114,7 +121,7 @@ def parse_pasted(text, **_):
   'error':'invalid_us_rows' if errors else None,'hint':'; '.join(errors[:5]) if errors else ('Paste at least one US transaction.' if not out else None),
   'errors':errors[:50],'companies':len({r['company_name'] for r in out}),'with_symbol':sum(bool(r['symbol']) for r in out),
   'open_market_rows':sum(r['is_purchase_sale']=='true' for r in out),'first_reported':min(dates) if dates else None,'last_reported':max(dates) if dates else None,
-  'preview_rows':out[:6], 'limitations':['P/S codes include private transactions; they do not prove exchange execution.','10b5-1 and derivative status stay unknown when omitted.','Use distinct Transaction IDs for otherwise identical trades. Amendments require reconciliation.','Values must be absolute USD amounts; ownership change is not percentage of company equity.']}
+  'preview_rows':out[:6], 'limitations':['P/S codes include private transactions; they do not prove exchange execution.','10b5-1 and derivative status stay unknown when omitted.','Trade date stays unknown when absent. Reported to Exchange exports use day/month/year.','Generic acquisitions are not treated as market purchases.','Use distinct Transaction IDs for otherwise identical trades. Amendments require reconciliation.','Values must be absolute USD amounts; ownership change is not percentage of company equity.']}
 
 def import_pasted(text, *, actor='us_insider_paste'):
  from institutional_warehouse import gateway

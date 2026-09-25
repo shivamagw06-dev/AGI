@@ -1139,9 +1139,10 @@ US_INSIDER_TRADES = Tab(
     columns=(
         _c("trade_id", "Transaction identity", TEXT, required=True),
         *INSIDER_TRADES.columns,
-        _c("transaction_date", "Trade date", DATE, required=True),
+        _c("transaction_date", "Trade date", DATE),
         _c("filing_timestamp", "Filing timestamp", TEXT),
         _c("transaction_code", "SEC code", TEXT, required=True),
+        _c("action_description", "Original action", TEXT),
         _c("planned", "10b5-1 plan", TEXT),
         _c("derivative", "Derivative", TEXT),
         _c("ownership_change_pct", "Change in insider holding (%)", PERCENT),
