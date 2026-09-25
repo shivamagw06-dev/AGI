@@ -31,7 +31,7 @@ describe('accessPolicy', () => {
   it('gates every page in the top menu, including the AI monitor behind Strategies', () => {
     // Keep in step with PRIMARY_NAV and MORE_NAV in components/Layout/Header.jsx.
     const menu = ['/equity-research', '/strategy', '/ipo-intelligence', '/portfolio', '/live-desk', '/live-alpha',
-      '/institutional-holdings', '/insider-activity', '/private-markets', '/global-markets', '/india-ai'];
+      '/institutional-holdings', '/insider-activity', '/private-markets', '/global-markets', '/india-ai', '/wealth-intelligence'];
     for (const path of menu) {
       assert.ok(getFeatureForPath(path), `${path} is not gated`);
       assert.equal(resolveAccess({ user: null, pathname: path }).allowed, false, `${path} open to visitors`);
