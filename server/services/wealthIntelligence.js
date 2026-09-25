@@ -1,5 +1,6 @@
 import { readFile } from 'node:fs/promises';
 import { getLiveAlphaMarketSnapshot, loadLiveAlphaUniverse } from './liveAlphaRuntime.js';
+import { getUpstoxFunds } from '../providers/upstoxMutualFunds.js';
 import { getAmfiNav } from '../providers/amfiNav.js';
 
 export function normalizeWealthQuote(member, quote, now = Date.now()) {
@@ -32,7 +33,7 @@ async function universe() {
 
 export const WEALTH_COVERAGE = [
   { id: 'equity', label: 'Indian equities', cadence: 'Shared Upstox runtime', detail: 'Quotes and existing company research. Feed freshness is checked per security.' },
-  { id: 'mutual_fund', label: 'Mutual funds', cadence: 'Daily NAV', detail: 'AMFI scheme directory and NAVs. NAV alone does not establish expected returns or tax classification.' },
+  { id: 'mutual_fund', label: 'Mutual funds', cadence: 'Daily NAV', detail: 'Upstox fund directory and published NAVs, with AMFI fallback. NAV alone does not establish expected returns or tax classification.' },
   { id: 'property', label: 'Land & property', cadence: 'Manual evidence', detail: 'Compare a property using your quote and costs. Verified listings and local transaction feeds are not connected.' },
   { id: 'fixed_income', label: 'FDs & bonds', cadence: 'Manual assumptions', detail: 'Income scenarios are available. Bank rate sheets and executable bond offerings are not connected.' },
   { id: 'commodity', label: 'Gold & commodities', cadence: 'Manual assumptions', detail: 'Scenario modelling available. This workspace has no verified investable commodity catalogue.' },
@@ -43,12 +44,14 @@ export async function getWealthUniverse({ assetClass = 'equity', q = '', offset 
   const now = deps.now?.() ?? Date.now();
   let rows, source;
   if (assetClass === 'mutual_fund') {
-    const data = await (deps.getNav || getAmfiNav)();
+    let data = await (deps.getFunds || (deps.getNav ? deps.getNav : getUpstoxFunds))();
+    let provider = deps.getNav && !deps.getFunds ? 'AMFI' : 'Upstox';
+    if (!data.rows.length && provider === 'Upstox') { data = await (deps.getNav || getAmfiNav)(); provider = 'AMFI'; }
     rows = data.rows.map(row => {
       const age = now - Date.parse(`${row.asOf}T00:00:00+05:30`);
-      return { ...row, status: data.status === 'stale' || !Number.isFinite(age) || age < -86_400_000 || age > 4 * 86_400_000 ? 'stale' : 'daily' };
+      return { ...row, status: !row.price && provider === 'Upstox' ? 'unavailable' : data.status === 'stale' || !Number.isFinite(age) || age < -86_400_000 || age > 4 * 86_400_000 ? 'stale' : 'daily' };
     });
-    source = { provider: 'AMFI', status: data.status, fetchedAt: data.fetchedAt, error: data.error };
+    source = { provider, status: data.status, fetchedAt: data.fetchedAt, error: data.error };
   } else {
     const members = await (deps.getUniverse || universe)();
     const snapshot = (deps.getSnapshot || getLiveAlphaMarketSnapshot)(members.map(row => row.symbol));
@@ -56,7 +59,7 @@ export async function getWealthUniverse({ assetClass = 'equity', q = '', offset 
     source = { provider: snapshot.provider, status: snapshot.status, observedAt: snapshot.observed_at, lastHeartbeat: snapshot.last_heartbeat };
   }
   const query = String(q).toLowerCase().trim();
-  rows = rows.filter(row => `${row.name} ${row.symbol || ''} ${row.sector || ''} ${row.fundHouse || ''} ${row.category || ''} ${row.schemeCode || ''}`.toLowerCase().includes(query));
+  rows = rows.filter(row => `${row.name} ${row.symbol || ''} ${row.sector || ''} ${row.fundHouse || ''} ${row.category || ''} ${row.schemeCode || ''} ${row.isin || ''} ${row.plan || ''}`.toLowerCase().includes(query));
   rows.sort((a, b) => a.name.localeCompare(b.name));
   return { items: rows.slice(offset, offset + limit), total: rows.length, offset, limit, source,
     coverage: WEALTH_COVERAGE, generatedAt: new Date(now).toISOString(), researchOnly: true };

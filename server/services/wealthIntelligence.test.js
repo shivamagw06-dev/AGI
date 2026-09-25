@@ -28,3 +28,16 @@ test('old published NAV remains stale even if successfully fetched today', async
   });
   assert.equal(result.items[0].status, 'stale');
 });
+test('Upstox scheme search supports ISIN and keeps missing NAV unavailable', async () => {
+  const result = await getWealthUniverse({assetClass:'mutual_fund',q:'INF109K01Q49'}, {
+    now:()=>now, getFunds:async()=>({status:'available',rows:[{name:'Fund',isin:'INF109K01Q49',price:null,asOf:null}]}),
+  });
+  assert.equal(result.source.provider,'Upstox');assert.equal(result.total,1);assert.equal(result.items[0].status,'unavailable');
+});
+test('AMFI fallback is labeled when Upstox has no directory', async () => {
+  const result = await getWealthUniverse({assetClass:'mutual_fund'}, {
+    now:()=>now, getFunds:async()=>({status:'unavailable',rows:[]}),
+    getNav:async()=>({status:'available',rows:[{name:'Fallback fund',price:10,asOf:'2026-09-23',source:'AMFI'}]}),
+  });
+  assert.equal(result.source.provider,'AMFI');assert.equal(result.items[0].source,'AMFI');assert.equal(result.items[0].status,'daily');
+});

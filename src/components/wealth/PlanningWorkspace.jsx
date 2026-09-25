@@ -1,3 +1,4 @@
+import FundDirectory from './FundDirectory';
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { householdSummary, fundOverlap, propertySummary, bondCashFlows, maturityLadder, monitoringAlerts, safeUrl } from '@/lib/wealthPlanning';
@@ -75,10 +76,11 @@ export default function PlanningWorkspace({ workspace, setWorkspace, onExport, o
       {!!summary.concentration.length && <div className="wi-allocation">{summary.concentration.map(c=><div key={c.kind}><span>{c.kind} · {percent(c.weight)}</span><progress max="100" value={c.weight} /></div>)}</div>}
     </>}
     {tab === 'funds' && <>
+      <FundDirectory />
       <div className="wi-section-title"><h3>Disclosure-based fund comparison</h3>{add('funds','Add AMC disclosure')}</div>
-      <p className="wi-note">Search current AMFI NAVs in the universe below. Add dated AMC holdings and expenses here to compare underlying exposure. Use the same identifiers in both funds. A daily NAV does not supply holdings, fees or future returns.</p>
+      <p className="wi-note">Search Upstox funds above. Add dated AMC holdings and expenses here to compare underlying exposure. Use the same identifiers in both funds. A daily NAV does not supply holdings, fees or future returns.</p>
       <Table headers={['Fund / plan','Expense ratio','Risk','Disclosure','Actions']}>{workspace.funds.map(f=><tr key={f.id}><td>{f.name}<small>AMFI {f.schemeCode}</small></td><td>{percent(Number(f.expense))}</td><td>{f.risk}</td><td>{f.asOf}<br/><Source url={f.source}/></td><td>{actions('funds',f)}</td></tr>)}</Table>
-      <div className="wi-input-grid wi-three">{[[fundA,setFundA,'First fund'],[fundB,setFundB,'Second fund']].map(([value,setter,label])=><label className="wi-field" key={label}><span>{label}</span><select value={value} onChange={e=>setter(e.target.value)}><option value="">Choose fund</option>{workspace.funds.map(f=><option key={f.id} value={f.id}>{f.name}</option>)}</select></label>)}</div>
+      <div className="wi-input-grid wi-three">{[[fundA,setFundA,'First fund'],[fundB,setFundB,'Second fund']].map(([value,setter,label])=><label className="wi-field" key={label}><span>{label}</span><select value={value} onChange={e=>setter(e.target.value)}><option value="">Choose added disclosure</option>{workspace.funds.map(f=><option key={f.id} value={f.id}>{f.name}</option>)}</select></label>)}</div>
       {overlap && <div className="wi-property-result"><div><h3>{percent(overlap.overlap)} disclosed portfolio overlap</h3><p>Coverage: {percent(overlap.coverageA)} / {percent(overlap.coverageB)}. {overlap.partial ? 'Partial holdings: this is a lower bound, not total overlap.' : 'Based on supplied disclosure weights.'} {!overlap.comparableDates && 'Disclosure dates differ; changes between dates can distort the comparison.'}</p><p>{overlap.shared.map(r=>`${r.id}: ${percent(r.overlap)}`).join(' · ') || 'No matching identifiers in the supplied holdings.'}</p></div></div>}
       <p className="wi-note">Company financials and valuation are available through each equity’s Research link below and the <Link className="wi-link" to="/valuation-terminal">existing valuation terminal</Link>. Automated AMC disclosure ingestion and fund return histories need a licensed or permitted source.</p>
     </>}

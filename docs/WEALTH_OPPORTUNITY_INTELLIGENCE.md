@@ -135,3 +135,10 @@ The workspace now offers **Download CA report** (offline printable HTML, suitabl
 `wealthReviewPack.js` supplies a shared import/export validator. It rejects malformed nested objects, duplicate/reserved scenario IDs, invalid dates and non-boolean reinvestment settings; normalizes numeric inputs; drops unrecognized fields; and recomputes outputs instead of trusting saved totals. Watchlist records reject duplicate IDs and impossible calendar dates. Record fields reject arrays/objects instead of coercing them into visible text. Export errors are shown in the workspace.
 
 The report escapes user text, uses no scripts or external resources, and has a restrictive Content Security Policy. No report is uploaded or sent to a reviewer automatically. Automated report-content/security tests pass; visual print pagination and deployed authenticated UI QA remain outstanding. The expanded suite has 44 passing tests. The prior implementation commit passed all three GitHub workflows; checks run again for this increment.
+
+### Upstox fund directory (September 25, 2026)
+Fund research now automatically requests the authenticated wealth universe endpoint and offers search, pagination and two-fund scheme comparison. The backend reads Upstox's public MF instruments JSON gzip file, with bounded decoding, a shared hourly cache, single-flight requests and explicit stale/error states. If no Upstox records are available, it uses the existing AMFI provider and labels the fallback. No additional API key is required for this scheme master.
+
+Missing NAVs, dates, plan details and minimum investments remain unavailable. A freshly downloaded file does not make an old NAV current. Expense ratios and underlying portfolio overlap still require AMC disclosures; scheme data is never passed off as those disclosures. Selected comparison rows are session snapshots, not persisted client holdings.
+
+This integration does not use the shared Upstox market-data token to publish account orders, SIPs or personal holdings. Those endpoints require a user-specific authenticated broker integration. No order placement is added.
