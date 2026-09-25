@@ -2,6 +2,8 @@ import { useMemo, useState } from 'react';
 import { BLANK_TAX_CASE, scanTaxOpportunities } from '@/lib/taxOpportunity';
 import { EVIDENCE_CATEGORIES, parseEvidenceCsv, mapEvidenceCsv, parseUpstoxFundOrders, reconcileTaxEvidence, restoreTaxReview } from '@/lib/taxEvidence';
 import { housePropertySchedule } from '@/lib/taxProperty';
+import { taxDecisionBrief } from '@/lib/taxDecisionEngine';
+import { assessInsurancePremium } from '@/lib/taxHealth';
 const money = n => new Intl.NumberFormat('en-IN',{style:'currency',currency:'INR',maximumFractionDigits:0}).format(n);
 const FIELDS = [
   ['salary','Salary/pension after eligible allowances, before standard deduction (₹)'],
@@ -9,13 +11,15 @@ const FIELDS = [
   ['savingsInterest','Annual savings-account interest (₹)'],
   ['eligible80c','Eligible 80C/80CCC/80CCD(1) paid in the year (₹)'],
   ['eligibleNps','Additional personal NPS paid, excluding the 80C amount (₹)'],
-  ['eligible80d','Health premium potentially eligible under 80D (₹)'],
 ];
 const TYPES = [
   ['hasRental','Rental property or hotel-related income'],['hasGains','Shares, funds, property or other capital gains'],
   ['hasBusiness','Business or professional income'],['hasForeign','Foreign income or overseas assets'],
   ['otherIncome','Dividends, losses or other special income'],
 ];
+const SIGNALS=[['receivesHra','I receive HRA and pay rent'],['employerNps','My employer contributes to NPS'],
+  ['parentCover','I pay health insurance for a parent'],['donated','I made a donation'],
+  ['inheritedSale','I sold inherited property or investments'],['hotel','I operate a hotel or other active business']];
 const download = (name,value) => {const url=URL.createObjectURL(new Blob([JSON.stringify(value,null,2)],{type:'application/json'}));const link=document.createElement('a');link.href=url;link.download=name;link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);};
 export default function TaxIntelligence({ people=[] }) {
   const [form,setForm] = useState({...BLANK_TAX_CASE});
@@ -23,19 +27,29 @@ export default function TaxIntelligence({ people=[] }) {
   const [evidence,setEvidence] = useState([]), [staged,setStaged] = useState(null), [importError,setImportError] = useState('');
   const [mapping,setMapping] = useState({amount:'',credit:'',category:'',reference:'',date:'',defaultCategory:'salary',source:''});
   const [property,setProperty] = useState({rent:'',municipal:'',interest:'',confirmedHouseProperty:false});
+  const [signals,setSignals] = useState({});
+  const [health,setHealth] = useState({selfPremium:'',parentPremium:'',parentAge:'',nonCashPaid:false,eligibleRelationship:false,paidInYear:false,notDoubleClaimed:false});
   const update = (key,value) => setForm(previous=>({...previous,[key]:value}));
   const reconciled = useMemo(()=>reconcileTaxEvidence(evidence,ownerId||'session',form.year,form),[evidence,ownerId,form]);
   const scoped = evidence.filter(r=>r.ownerId===(ownerId||'session')&&r.year===form.year);
   const blockedByEvidence = scoped.length>0 && (reconciled.unmatched>0 || reconciled.warnings.length>0 ||
     reconciled.comparisons.some(c=>c.status==='difference') || reconciled.missingCategories.length>0);
-  const effectiveForm={...form,recordsConfirmed:form.recordsConfirmed&&!blockedByEvidence,
+  const healthResult=useMemo(()=>{try{return {value:assessInsurancePremium({...health,selfAge:form.age})};}catch(e){return {error:e.message};}},[health,form.age]);
+  const blockedBySignals=Object.entries(signals).some(([key,value])=>value && !(key==='parentCover'&&healthResult.value));
+  const healthUnknown=health.selfPremium!==''||health.parentPremium!==''||form.eligible80d!=='';
+  const effectiveForm={...form,recordsConfirmed:form.recordsConfirmed&&!blockedByEvidence&&!blockedBySignals,
+    eligible80d:healthResult.value?.deduction==null?(healthUnknown?'':form.eligible80d):String(healthResult.value.deduction),
+    healthValidated:Boolean(healthResult.value),
     hasRental:form.hasRental||reconciled.missingCategories.includes('rent'),
-    hasBusiness:form.hasBusiness||reconciled.missingCategories.includes('business'),
-    hasGains:form.hasGains||reconciled.missingCategories.includes('capital_gains')||scoped.some(r=>r.category==='investment'&&r.transactionType==='SELL'&&r.status==='COMPLETED'),
+    hasBusiness:form.hasBusiness||Boolean(signals.hotel)||reconciled.missingCategories.includes('business'),
+    hasGains:form.hasGains||Boolean(signals.inheritedSale)||reconciled.missingCategories.includes('capital_gains')||scoped.some(r=>r.category==='investment'&&r.transactionType==='SELL'&&r.status==='COMPLETED'),
     otherIncome:form.otherIncome||reconciled.missingCategories.some(c=>['dividend','other'].includes(c))};
-  const result = useMemo(()=>{try{return {value:scanTaxOpportunities(effectiveForm)};}catch(e){return {error:e.message};}},[form,reconciled,blockedByEvidence,scoped]);
+  const result = useMemo(()=>{try{return {value:scanTaxOpportunities(effectiveForm)};}catch(e){return {error:e.message};}},[form,reconciled,blockedByEvidence,blockedBySignals,scoped,healthResult.value]);
   const report = result.value;
   const propertyResult=useMemo(()=>{if(!form.hasRental)return null;try{return {value:housePropertySchedule(property)};}catch(e){return {error:e.message};}},[form.hasRental,property]);
+  const intelligence=useMemo(()=>report?taxDecisionBrief({form:effectiveForm,scan:report,reconciliation:reconciled,
+    propertySchedule:propertyResult?.value,context:signals,asOf:new Date().toISOString().slice(0,10)}):null,
+  [form,report,reconciled,propertyResult,signals,healthResult.value]);
   const importFile = async (file,kind) => {
     setImportError('');setStaged(null);
     try {
@@ -55,22 +69,30 @@ export default function TaxIntelligence({ people=[] }) {
       setEvidence(previous=>[...previous,...rows]);setStaged(null);setImportError('');
     }catch(e){setImportError(e.message);}
   };
-  const switchOwner = next => {setOwnerId(next);setForm({...BLANK_TAX_CASE});setStaged(null);setProperty({rent:'',municipal:'',interest:'',confirmedHouseProperty:false});};
+  const switchOwner = next => {setOwnerId(next);setForm({...BLANK_TAX_CASE});setStaged(null);setProperty({rent:'',municipal:'',interest:'',confirmedHouseProperty:false});setSignals({});setHealth({selfPremium:'',parentPremium:'',parentAge:'',nonCashPaid:false,eligibleRelationship:false,paidInYear:false,notDoubleClaimed:false});};
   const exportReport = () => download(`agi-tax-review-${form.year}.json`,{version:1,createdAt:new Date().toISOString(),owner:people.find(p=>p.id===ownerId)?.name||'Unassigned session case',
     year:form.year,legalBasis:form.year==='2026-27'?'Income Tax Act 2025; Form 168':'Income Tax Act 1961; AIS / 26AS',
-    case:form,propertyInputs:property,propertySchedule:propertyResult?.value||null,reconciliation:reconciled,review:report,evidence:scoped,
+    case:form,signals,healthInputs:health,propertyInputs:property,propertySchedule:propertyResult?.value||null,reconciliation:reconciled,review:report,intelligence,evidence:scoped,
     limitations:'Unverified records and investment orders do not establish taxable income, gain or deductible expense. No return has been filed. Current-year tax calculation and complex income require separate verification.'});
   return <div className="wi-tax-intelligence">
-    <div className="wi-section-title"><div><p className="wi-eyebrow">AGI TAX INTELLIGENCE · EVIDENCE WORKSPACE</p><h3>Build a defensible tax review</h3></div><div className="wi-actions"><button className="wi-button" onClick={exportReport}>Download tax review</button><label className="wi-button">Open tax review<input className="wi-file" type="file" accept=".json,application/json" onChange={async e=>{const f=e.target.files?.[0];if(f)try{const restored=restoreTaxReview(await f.text(),ownerId||'session');setForm(restored.form);setEvidence(restored.evidence);setStaged(null);setProperty(restored.property);setImportError('Recheck imported rows and eligibility before using an estimate.');}catch(err){setImportError(err.message);}e.target.value='';}} /></label><button className="wi-button" onClick={()=>{setForm({...BLANK_TAX_CASE});setEvidence([]);setStaged(null);setImportError('');setProperty({rent:'',municipal:'',interest:'',confirmedHouseProperty:false});}}>Clear session</button></div></div>
+    <div className="wi-section-title"><div><p className="wi-eyebrow">AGI TAX INTELLIGENCE · EVIDENCE WORKSPACE</p><h3>Build a defensible tax review</h3></div><div className="wi-actions"><button className="wi-button" onClick={exportReport}>Download tax review</button><label className="wi-button">Open tax review<input className="wi-file" type="file" accept=".json,application/json" onChange={async e=>{const f=e.target.files?.[0];if(f)try{const restored=restoreTaxReview(await f.text(),ownerId||'session');setForm(restored.form);setEvidence(restored.evidence);setStaged(null);setProperty(restored.property);setSignals(restored.signals);setHealth(restored.health);setImportError('Recheck imported rows and eligibility before using an estimate.');}catch(err){setImportError(err.message);}e.target.value='';}} /></label><button className="wi-button" onClick={()=>{setForm({...BLANK_TAX_CASE});setEvidence([]);setStaged(null);setImportError('');setProperty({rent:'',municipal:'',interest:'',confirmedHouseProperty:false});setSignals({});setHealth({selfPremium:'',parentPremium:'',parentAge:'',nonCashPaid:false,eligibleRelationship:false,paidInYear:false,notDoubleClaimed:false});}}>Clear session</button></div></div>
     <p className="wi-note">One resident individual and one income year at a time. Files stay in this page session; use Download tax review to save your work. Imports are evidence for review, not automatically accepted taxable income or a filed return.</p>
     {!!people.length && <label className="wi-field"><span>Legal owner for this case and imports</span><select value={ownerId} onChange={e=>switchOwner(e.target.value)}><option value="">Separate unnamed session case</option>{people.filter(p=>p.entity==='individual').map(p=><option key={p.id} value={p.id}>{p.name}</option>)}</select></label>}
     <div className="wi-input-grid wi-three">
       <label className="wi-field"><span>Income year</span><select value={form.year} onChange={e=>update('year',e.target.value)}><option value="2026-27">Tax Year 2026–27 · planning</option><option value="2025-26">FY 2025–26 / AY 2026–27 · claim review</option></select></label>
       <label className="wi-field"><span>Age at end of income year</span><input type="number" min="18" max="120" value={form.age} onChange={e=>update('age',e.target.value)} placeholder="Age" /></label>
-      {FIELDS.map(([key,label])=><label className="wi-field" key={key}><span>{label}</span><input type="number" min="0" step="0.01" value={form[key]} onChange={e=>update(key,e.target.value)} placeholder="Enter 0 if none" /></label>)}
+      {FIELDS.map(([key,label])=><label className="wi-field" key={key}><span>{form.year==='2026-27'&&key==='eligible80c'?'Potential eligible Schedule XV / section 123 payments (₹)':label}</span><input type="number" min="0" step="0.01" value={form[key]} onChange={e=>update(key,e.target.value)} placeholder="Enter 0 if none" /></label>)}
     </div>
-    <p className="wi-note">Deduction amounts refer to payments made in the selected year. FY 2025–26 is already over; a payment made today cannot be added to that year's claim. Leave unknown amounts blank. The health premium is flagged for review and excluded from the numerical estimate.</p>
+    <p className="wi-note">Deduction amounts refer to payments made in the selected year. FY 2025–26 is already over; a payment made today cannot be added to that year's claim. Leave unknown amounts blank. Qualified health premiums enter only the supported FY 2025–26 old-regime scenario after confirmation.</p>
+    <section className="wi-tax-evidence"><h4>Health insurance premium details</h4><p className="wi-note">Enter premiums paid in the selected year; 0 means none. For FY 2025–26, a confirmed non-cash premium may qualify under section 80D up to the separate self/family and parent limits. Do not include preventive check-ups or medical expenses here. Current-year amounts are collected for review but not calculated.</p>
+      <div className="wi-input-grid wi-three">{[['selfPremium','Self, spouse and dependent children premium (₹)'],['parentPremium','Parent health premium (₹)'],['parentAge','Insured parent age at year end (if applicable)']].map(([key,label])=><label className="wi-field" key={key}><span>{label}</span><input type="number" min="0" step={key==='parentAge'?'1':'0.01'} value={health[key]} onChange={e=>setHealth(previous=>({...previous,[key]:e.target.value}))} placeholder={key==='parentAge'?'Age':'Enter 0 if none'} /></label>)}</div>
+      <div className="wi-input-grid wi-three">{[['eligibleRelationship','The insured people match the eligible self/family or parent group'],['nonCashPaid','These premiums were paid by a permitted non-cash method'],['paidInYear','I paid them in the selected income year'],['notDoubleClaimed','No one else is claiming the same premiums']].map(([key,label])=><label className="wi-tax-check" key={key}><input type="checkbox" checked={health[key]} onChange={e=>setHealth(previous=>({...previous,[key]:e.target.checked}))} /> {label}</label>)}</div>
+      {healthResult.value&&<p className="wi-notice">{form.year==='2025-26'?`FY 2025–26 eligible premium: self/family ${money(healthResult.value.selfAllowed)} · parents ${money(healthResult.value.parentAllowed)}. This amount is included in a complete, supported old-regime comparison.`:'Premium evidence recorded. Eligibility and tax effect under the 2025 Act require current-year rule verification.'}</p>}
+      {healthResult.error&&(healthUnknown||form.year==='2025-26')&&<p className="wi-note">{healthResult.error}</p>}
+    </section>
     <div className="wi-input-grid wi-three">{TYPES.map(([key,label])=><label className="wi-tax-check" key={key}><input type="checkbox" checked={form[key]} onChange={e=>update(key,e.target.checked)} /> {label}</label>)}</div>
+    <h4>More facts that can change your options</h4>
+    <div className="wi-input-grid wi-three">{SIGNALS.map(([key,label])=><label className="wi-tax-check" key={key}><input type="checkbox" checked={Boolean(signals[key])} onChange={e=>setSignals(previous=>({...previous,[key]:e.target.checked}))} /> {label}</label>)}</div>
     <div className="wi-tax-confirm"><label className="wi-tax-check"><input type="checkbox" checked={form.recordsConfirmed} onChange={e=>update('recordsConfirmed',e.target.checked)} /> I checked entered income against source records and {form.year==='2025-26'?'AIS/26AS':'Form 168 and relevant tax records'}; all other income is declared above.</label><label className="wi-tax-check"><input type="checkbox" checked={form.claimsConfirmed} onChange={e=>update('claimsConfirmed',e.target.checked)} /> Entered deduction payments were eligible, made in this income year and are not counted twice.</label></div>
     <section className="wi-tax-evidence" aria-label="Tax evidence imports">
       <h4>Import and reconcile evidence</h4>
@@ -98,8 +120,15 @@ export default function TaxIntelligence({ people=[] }) {
     {result.error && <p className="wi-error" role="alert">{result.error}</p>}
     {report && <>
       {blockedByEvidence&&<p className="wi-error">Resolve imported record differences, possible duplicates, unreviewed rows and other income before using a numerical regime comparison.</p>}
+      {blockedBySignals&&<p className="wi-notice">Your additional answers may change the calculation. Complete those reviews before using a whole-case estimate.</p>}
       {report.comparison ? <><div className="wi-metrics"><div><span>Old regime estimate</span><strong>{money(report.comparison.old)}</strong></div><div><span>New regime estimate</span><strong>{money(report.comparison.new)}</strong></div><div><span>Difference to verify</span><strong>{money(report.comparison.difference)}</strong></div><div><span>Effect of documented 80C/NPS claims</span><strong>{money(report.comparison.documentedClaimEffect)}</strong></div></div><p className="wi-note">{report.comparison.lower === 'equal' ? 'Same estimated liability.' : `${report.comparison.lower === 'old' ? 'Old' : 'New'} regime is lower on these inputs.`} Documented-claim effect compares the best regime with and without the *already paid* 80C/NPS amounts; it is not a recommendation to make a new investment. Taxable ordinary income: old {money(report.comparison.oldTaxable)}, new {money(report.comparison.newTaxable)}. These are estimates pending professional verification of eligibility, income classification and the underlying tax rule.</p></> : <p className="wi-notice">{report.blockedReason} {report.missing.length ? `To complete this case: ${report.missing.join(' · ')}.` : ''}</p>}
-      <h4>Prioritised review queue</h4>
+      <h4>Tax-saving intelligence · next decisions</h4>
+      <p className="wi-note">Opportunities depend on your answers and imported records. A numeric effect is shown only for the supported, complete FY 2025–26 ordinary-income case. A zero effect can mean another regime is still cheaper. Review the questions before taking any action.</p>
+      <div className="wi-tax-cards">{intelligence?.items.map(c=><article className="wi-notice wi-tax-decision" key={c.id}>
+        <div className="wi-tax-decision-heading"><strong>{c.title}</strong><span>{c.impact==null?c.kind==='blocker'?'Resolve first':'Evidence needed':`${money(c.impact)} · estimated effect`}</span></div>
+        <p>{c.detail}</p><small>Confirm: {c.questions.join(' · ')}</small><small>Evidence: {c.evidence} · <a className="wi-link" href={c.source} target="_blank" rel="noopener noreferrer">Official source ↗</a></small>
+      </article>)}</div>
+      <h4>Full review checklist</h4>
       <div className="wi-tax-cards">{report.cards.map(c=><article className="wi-notice" key={c.id}><strong>{c.title}</strong><p>{c.detail}</p><small>Check: {c.evidence} · <a className="wi-link" href={c.source} target="_blank" rel="noopener noreferrer">Official source ↗</a></small></article>)}</div>
     </>}
   </div>;

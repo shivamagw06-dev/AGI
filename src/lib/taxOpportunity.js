@@ -35,7 +35,7 @@ export function scanTaxOpportunities(input) {
     add('interest',age >= 60 ? 'Check resident senior deposit deduction' : 'Check savings-interest deduction',age >= 60 ? 'For FY 2025–26 old regime, section 80TTB may cover up to ₹50,000 of eligible deposit interest for a resident senior citizen. FD interest above the eligible amount remains income.' : 'For FY 2025–26 old regime, section 80TTA may cover up to ₹10,000 of savings-account interest. FD interest does not qualify for 80TTA.','Bank interest certificates, age and residency',TAX_SOURCES.interest,'action');
   }
   if (old) add('80c','Audit existing 80C payments',`The combined FY 2025–26 old-regime ceiling is ₹1,50,000. Enter only eligible payments actually made in that year; recorded eligible amount: ₹${Math.min(amounts.eligible80c,150000).toLocaleString('en-IN')}. Buying something now cannot create a 2025–26 payment.`,'EPF/PPF/ELSS/tuition/home-loan principal certificates as applicable',TAX_SOURCES.regime,'action');
-  if (old) add('80d','Review qualifying health cover','Old-regime self/family premium limits depend on who is insured and their age; verify payment method, premium and policy before claiming. Parent cover has a separate limit.','Policy, receipt, insured persons and payment method',TAX_SOURCES.regime,'review');
+  if (old) add('80d','Review qualifying health cover','Old-regime self/family premium limits depend on who is insured and their age; verify payment method, premium and policy before claiming. Parent cover has a separate limit. A premium enters the estimate only after these details are confirmed.','Policy, receipt, insured persons and payment method',TAX_SOURCES.regime,'review');
   if (old) add('nps','Review additional personal NPS contribution','Section 80CCD(1B) can allow up to ₹50,000 in FY 2025–26 old regime for an eligible personal NPS contribution not also claimed under 80CCD(1).','PRAN and contribution statement',TAX_SOURCES.regime,'action');
   if (!old) add('current-year-deductions','Check current-year rule eligibility','Tax Year 2026–27 is governed by the 2025 Act. Record existing contributions, employer NPS, health premiums and the old-regime election history, then verify current-year sections and limits before estimating savings.','Payment evidence, employer statement and current-year rule pack',TAX_SOURCES.year,'review');
   if (input.hasRental) add('rental','Calculate rent property by property','Check legal ownership, reasonable annual value, municipal tax actually paid, the 30% standard deduction on net annual value and qualifying loan interest. Composite hotel services or inseparable asset letting may require a different income head.','Title/share, leases, rent ledger, municipal receipts and loan certificate',TAX_SOURCES.property,'review');
@@ -54,14 +54,14 @@ export function scanTaxOpportunities(input) {
   if (amounts.savingsInterest == null) missing.push('Savings-account interest, enter 0 if none');
   if (old) for (const [key,label] of [['eligible80c','80C/80CCC/80CCD(1)'],['eligibleNps','Personal NPS'],['eligible80d','Health premium']]) if (amounts[key] == null) missing.push(`${label} amount, enter 0 if none`);
   if (old && !input.claimsConfirmed) missing.push('Eligibility and same-year payment of deductions');
-  if (old && (amounts.eligible80d || 0) > 0) missing.push('80D premium eligibility details (excluded from this numerical comparison)');
+  if (old && (amounts.eligible80d || 0) > 0 && (!input.healthValidated || amounts.eligible80d > 100000)) missing.push('80D premium eligibility details');
   if (!input.recordsConfirmed) missing.push('Income records reconciled with AIS/26AS');
   const complex = input.hasRental || input.hasGains || input.hasBusiness || input.hasForeign || input.otherIncome;
   const taxableEligible = old && missing.length === 0 && !complex;
   let comparison = null;
   if (taxableEligible) {
     const gross = amounts.salary + amounts.depositInterest + amounts.savingsInterest;
-    const oldDed = Math.min(amounts.eligible80c || 0,150000) + Math.min(amounts.eligibleNps || 0,50000) + (age >= 60 ? Math.min(amounts.depositInterest + amounts.savingsInterest,50000) : Math.min(amounts.savingsInterest,10000));
+    const oldDed = Math.min(amounts.eligible80c || 0,150000) + Math.min(amounts.eligibleNps || 0,50000) + (amounts.eligible80d || 0) + (age >= 60 ? Math.min(amounts.depositInterest + amounts.savingsInterest,50000) : Math.min(amounts.savingsInterest,10000));
     const salaryOld = Math.min(amounts.salary,50000), salaryNew = Math.min(amounts.salary,75000);
     // This is a narrow ordinary-income comparison. Unknown benefits, loss treatment and special rates are excluded.
     const oldTaxable = Math.max(0,gross - salaryOld - oldDed), newTaxable = Math.max(0,gross - salaryNew);

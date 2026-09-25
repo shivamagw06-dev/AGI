@@ -125,5 +125,25 @@ export function restoreTaxReview(text,ownerId) {
       property[key]=v;
     }
   }
-  return {form,evidence,property};
+  const signals={};
+  const allowedSignals=['receivesHra','employerNps','parentCover','donated','inheritedSale','hotel'];
+  if(raw.signals!=null){
+    if(typeof raw.signals!=='object'||Array.isArray(raw.signals))throw new Error('Invalid follow-up answers.');
+    for(const key of allowedSignals){
+      if(raw.signals[key]!=null && typeof raw.signals[key]!=='boolean')throw new Error(`Invalid answer ${key}.`);
+      signals[key]=Boolean(raw.signals[key]);
+    }
+  }
+  const health={selfPremium:'',parentPremium:'',parentAge:'',nonCashPaid:false,eligibleRelationship:false,paidInYear:false,notDoubleClaimed:false};
+  if(raw.healthInputs!=null){
+    if(typeof raw.healthInputs!=='object'||Array.isArray(raw.healthInputs))throw new Error('Invalid health premium details.');
+    for(const key of ['selfPremium','parentPremium','parentAge']){
+      const v=String(raw.healthInputs[key]??'');
+      if(v && (!/^\d+(?:\.\d{1,2})?$/.test(v)||Number(v)>1e12||key==='parentAge'&&(!/^\d+$/.test(v)||Number(v)>120)))throw new Error(`Invalid ${key} in tax review.`);
+      health[key]=v;
+    }
+    for(const key of ['nonCashPaid','eligibleRelationship','paidInYear','notDoubleClaimed'])
+      if(raw.healthInputs[key]!=null&&typeof raw.healthInputs[key]!=='boolean')throw new Error(`Invalid ${key} in tax review.`);
+  }
+  return {form,evidence,property,signals,health};
 }
