@@ -7,6 +7,7 @@ import {
 import { insiderActivity } from '@/lib/insiderTradingApi';
 import { flowChart, shareBars } from '@/lib/insiderCharts';
 import './insiderActivity.css';
+import IntelligenceDesk from '@/components/Insider/IntelligenceDesk';
 
 /**
  * India Insider Activity.
@@ -274,16 +275,21 @@ export default function InsiderActivityPage() {
   const [search, setSearch] = useState('');
   const [regime, setRegime] = useState('insider');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [visibleDates,setVisibleDates] = useState(20);
 
   useEffect(() => {
+    const controller = new AbortController();
+    let active = true;
+    setLoading(true);setVisibleDates(20);
     const start = new Date();
     start.setDate(start.getDate() - Number(range));
     const params = { from: range === 'all' ? '' : start.toISOString().slice(0, 10), search, regime };
     const timer = setTimeout(() => {
-      insiderActivity(params).then((body) => { setData(body); setError(''); })
-        .catch((issue) => setError(issue.message));
+      insiderActivity(params,{signal:controller.signal}).then((body) => { if(active){setData(body); setError('');} })
+        .catch((issue) => {if(active)setError(issue.message);}).finally(()=>{if(active)setLoading(false);});
     }, 200);
-    return () => clearTimeout(timer);
+    return () => {active=false;clearTimeout(timer);controller.abort();};
   }, [range, search, regime]);
 
   const stats = data?.stats || {};
@@ -298,7 +304,7 @@ export default function InsiderActivityPage() {
       if (!groups.has(date)) groups.set(date, []);
       groups.get(date).push(row);
     }
-    return [...groups.entries()].sort((a, b) => b[0].localeCompare(a[0])).slice(0, 20);
+    return [...groups.entries()].sort((a, b) => b[0].localeCompare(a[0]));
   }, [trades]);
 
   return (
@@ -331,7 +337,9 @@ export default function InsiderActivityPage() {
         <button type="button" disabled>United States <small>Coming next</small></button>
       </nav>
 
-      <section className="ia-controls">
+      <IntelligenceDesk />
+
+      <section className="ia-controls" aria-label="Historical filing filters">
         <div>
           {RANGES.map(([value, label]) => (
             <button type="button" key={value} className={range === value ? 'active' : ''}
@@ -351,13 +359,14 @@ export default function InsiderActivityPage() {
         </label>
       </section>
 
+      {loading&&<p className="ia-note" role="status">Updating historical filings…</p>}
       {error ? <p className="ia-error">{error}</p> : (
         <>
           <section className="ia-stats">
             {[
               ['Filings', count(stats.records)],
               ['Companies', count(stats.companies)],
-              ['At a market price', count(stats.openMarket)],
+              ['Open-market filings', count(stats.openMarket)],
               ['Open-market buys', count(stats.buys)],
               ['Open-market sells', count(stats.sells)],
               ['Value stated on', stats.valueCoveragePct == null ? '—' : `${stats.valueCoveragePct}%`],
@@ -372,14 +381,6 @@ export default function InsiderActivityPage() {
           </p>
 
           <main className="ia-main">
-            <section className="ia-panel">
-              <div className="ia-section-title">
-                <span>CONVICTION CLUSTERS</span>
-                <h2>Where several insiders bought at once</h2>
-              </div>
-              <Clusters rows={data?.clusters} />
-            </section>
-
             <section className="ia-panel">
               <div className="ia-section-title">
                 <span>DIRECTION OF FLOW</span>
@@ -411,17 +412,19 @@ export default function InsiderActivityPage() {
                 <span>TRANSACTION TAPE</span>
                 <h2>Every filing, in the order it was reported</h2>
               </div>
-              {byDate.map(([date, rows]) => (
+              {byDate.slice(0,visibleDates).map(([date, rows]) => (
                 <div className="ia-day" key={date}>
                   <header>
                     <strong>{pretty(date)}</strong>
-                    <span>{rows.length} filings · {rows.filter(openMarket).length} at a market price</span>
+                    <span>{rows.length} filings · {rows.filter(openMarket).length} open-market</span>
                   </header>
                   {rows.map((row, index) => (
                     <TradeRow key={`${date}-${row.person}-${row.quantity}-${index}`} row={row} />
                   ))}
                 </div>
               ))}
+              <p className="ia-note">Showing {byDate.slice(0,visibleDates).reduce((sum,[,rows])=>sum+rows.length,0)} of {trades.length} available filings.</p>
+              {visibleDates<byDate.length&&<button className="ii-button" onClick={()=>setVisibleDates(n=>n+20)}>Load earlier filings</button>}
             </section>
           </main>
 
