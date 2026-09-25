@@ -145,7 +145,11 @@ export async function getLiveAlphaWorkspace({ fetchImpl = globalThis.fetch, limi
     },
     strategy_health: strategyHealth,
     runs, groww,
-    signals: signals.map((signal) => ({ ...signal, engine: runById.get(signal.run_id)?.engine || null, as_of: runById.get(signal.run_id)?.as_of || signal.created_at })),
+    signals: signals.map((signal) => ({ ...signal,
+      liquidity_verified: signal.factor_values?.liquidity_verified ?? null,
+      engine: runById.get(signal.run_id)?.engine || null,
+      as_of: runById.get(signal.run_id)?.as_of || signal.created_at,
+    })),
   };
 }
 

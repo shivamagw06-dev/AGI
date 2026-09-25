@@ -332,7 +332,7 @@ export function evaluateOpeningRangeExpansion(snapshots, {
     const spreadGate = spreadWithinLimit(spreadBps, maximumSpreadBps);
     const liquidityOk = row.minimumLiquidity !== false && spreadGate.ok;
     const liquidityVerified = row.minimumLiquidity !== false && spreadGate.verified;
-    return { symbol, sector, instrumentKey: String(row.instrumentKey || row.instrument_key || '').trim() || null, currentPrice, openingHigh, openingLow, rangePct, breakoutPct, direction, volumeSurprise, spreadBps, rangeOk, liquidityOk };
+    return { symbol, sector, instrumentKey: String(row.instrumentKey || row.instrument_key || '').trim() || null, currentPrice, openingHigh, openingLow, rangePct, breakoutPct, direction, volumeSurprise, spreadBps, rangeOk, liquidityOk, liquidityVerified, liquidityReason: spreadGate.reason };
   });
   if (new Set(rows.map((row) => row.symbol)).size !== rows.length) throw new Error('Snapshot symbols must be unique.');
   const breakoutZ = zScores(rows, 'breakoutPct');
@@ -345,6 +345,8 @@ export function evaluateOpeningRangeExpansion(snapshots, {
       alpha_z: Number(alphaZ.toFixed(4)), residual_15m: 0, residual_60m: 0,
       volume_surprise: Number(row.volumeSurprise.toFixed(4)), sector_strength: 0,
       liquidity_ok: row.liquidityOk,
+      liquidity_verified: row.liquidityVerified,
+      liquidity_reason: row.liquidityReason,
       classification: !row.liquidityOk ? 'filtered' : !row.rangeOk ? 'invalid_opening_range' : candidate ? (row.direction === 'positive' ? 'upside_opening_breakout_candidate' : 'downside_opening_breakout_candidate') : 'neutral',
       signal_quality: preliminarySignalQuality({ alphaZ, persistence: candidate ? 1 : 0, volumeSurprise: row.volumeSurprise, liquidityOk: row.liquidityOk && row.rangeOk, dataCoverage: row.instrumentKey ? 1 : 0.9 }),
       empirical_confidence: { status: 'unvalidated', score: null, comparable_observations: 0 },
@@ -431,6 +433,7 @@ export function evaluateDerivativesPositioning(snapshots, {
     return {
       symbol: row.symbol, sector: row.sector, instrument_key: row.instrumentKey, alpha_z: Number(alphaZ.toFixed(4)),
       residual_15m: Number(row.priceReturn15m.toFixed(4)), residual_60m: 0, volume_surprise: 1, sector_strength: 0, liquidity_ok: liquidityOk, classification,
+      liquidity_verified: liquidityVerified, liquidity_reason: spreadGate.reason,
       signal_quality: preliminarySignalQuality({ alphaZ, persistence: material ? 1 : 0, volumeSurprise: 1, liquidityOk, dataCoverage: row.instrumentKey ? 1 : 0.9 }),
       empirical_confidence: { status: 'unvalidated', score: null, comparable_observations: 0 },
       factors: { price_return_15m: Number(row.priceReturn15m.toFixed(4)), oi_change_15m: Number(row.oiChange15m.toFixed(4)), open_interest: row.openInterest, price_return_z: Number(priceZ[index].toFixed(4)), oi_change_z: Number(oiZ[index].toFixed(4)), implied_volatility: row.impliedVolatility, spread_bps: row.spreadBps },
