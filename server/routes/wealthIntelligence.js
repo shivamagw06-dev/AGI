@@ -26,7 +26,7 @@ export default function createWealthIntelligenceRouter({ authenticate = verifyUs
       return res.status(503).json({ error: 'Authentication is temporarily unavailable.' });
     }
   });
-  router.use(rateLimit({ windowMs: 60000, limit: 120, standardHeaders: true, legacyHeaders: false }));
+  router.use(rateLimit({ windowMs: 60000, max: 120, standardHeaders: true, legacyHeaders: false }));
   router.get('/research/:symbol', async (req, res) => {
     const symbol = req.params.symbol;
     if (!/^[A-Z0-9&_.-]{1,30}$/.test(symbol)) return res.status(400).json({ error: 'Invalid equity symbol.' });
