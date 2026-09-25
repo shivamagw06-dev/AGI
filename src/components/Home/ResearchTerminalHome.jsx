@@ -419,6 +419,7 @@ export default function ResearchTerminalHome() {
                   : `Research notes from the ${activeDeskLabel} desk.`}
               </p>
             </div>
+            <Link to="/financial-modeling" className="rounded-full border border-[#0b1f33] px-3 py-1.5 text-xs font-semibold text-[#0b1f33] hover:bg-slate-100">Financial Models ↗</Link>
             <Link to="/research" className="text-sm font-semibold text-[#111111] hover:underline underline-offset-4">
               View all research →
             </Link>

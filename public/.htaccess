@@ -1,6 +1,7 @@
 <IfModule mod_rewrite.c>
   RewriteEngine On
   RewriteBase /
+  RewriteRule ^server/assets/financial-models(?:/|$) - [F,L,NC]
 
   RewriteCond %{HTTP_HOST} ^www\.agarwalglobalinvestments\.com$ [NC]
   RewriteRule ^ https://agarwalglobalinvestments.com%{REQUEST_URI} [R=301,L]
