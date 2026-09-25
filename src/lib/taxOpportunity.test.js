@@ -6,7 +6,9 @@ test('verified narrow salary/interest case compares regimes, caps deductions and
   const r=scanTaxOpportunities(base);
   assert.equal(r.blockedReason,null);assert.equal(r.comparison.oldTaxable,1450000);
   assert.equal(r.comparison.newTaxable,1635000);assert.equal(r.comparison.oldDeductions,210000);
-  assert.equal(r.cards[0].id,'ais');assert.equal(r.comparison.difference,Math.abs(r.comparison.old-r.comparison.new));
+  assert.equal(r.comparison.old,257400);assert.equal(r.comparison.new,132080);
+  assert.equal(r.comparison.lower,'new');assert.equal(r.comparison.difference,125320);
+  assert.equal(r.cards[0].id,'ais');
   assert.ok(r.cards.find(c=>c.id==='80c').detail.includes('2025–26'));
 });
 test('senior deposit deduction applies only to old regime on this year',()=>{
