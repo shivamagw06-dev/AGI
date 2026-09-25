@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import {
   AlertTriangle, ArrowDownRight, ArrowUpRight, CalendarDays, Minus, Search, ShieldCheck, Users,
@@ -32,7 +33,8 @@ import IntelligenceDesk from '@/components/Insider/IntelligenceDesk';
 
 const RANGES = [['30', '30D'], ['60', '60D'], ['90', '90D'], ['all', 'ALL']];
 
-const money = (value) => {
+const money = (value, country='IN') => {
+  if(country==='US')return new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:0}).format(Number(value)||0);
   const amount = Number(value) || 0;
   if (amount >= 1e7) return `₹${(amount / 1e7).toFixed(1)} Cr`;
   if (amount >= 1e5) return `₹${(amount / 1e5).toFixed(1)} L`;
@@ -49,7 +51,7 @@ const shortDate = (value) => (value
   ? new Date(`${value}T00:00:00`).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })
   : '');
 
-const openMarket = (row) => String(row?.is_open_market) === 'true';
+const openMarket = (row) => row?.country==='US'?String(row?.is_purchase_sale)==='true':String(row?.is_open_market) === 'true';
 
 /**
  * Which way a filing points, in three states rather than two.
@@ -72,10 +74,10 @@ function direction(row) {
  * says little; a fortnight where sellers outnumber buyers every day is the
  * thing worth seeing, and only a cumulative line shows it.
  */
-export function FlowChart({ days }) {
+export function FlowChart({ days, country='IN' }) {
   const chart = useMemo(() => flowChart(days, { width: 960, height: 250 }), [days]);
   if (chart.empty) {
-    return <p className="ia-empty">No open-market filings in this window.</p>;
+    return <p className="ia-empty">No purchase/sale activity in this window.</p>;
   }
   const { width, height, zeroY, bars, line, marks, barBound, netBound, breaks } = chart;
   const labelEvery = Math.ceil(marks.length / 8);
@@ -83,7 +85,7 @@ export function FlowChart({ days }) {
   return (
     <figure className="ia-flow">
       <svg viewBox={`0 0 ${width} ${height + 26}`} role="img" preserveAspectRatio="none"
-           aria-label={`Daily open-market insider filings. Running net stands at ${marks.at(-1)?.cumulativeNet}.`}>
+           aria-label={`Daily ${country === 'US' ? 'purchase and sale' : 'open-market insider'} filings. Running net stands at ${marks.at(-1)?.cumulativeNet}.`}>
         <line className="ia-axis" x1="0" y1={zeroY} x2={width} y2={zeroY} />
         {bars.map((bar) => (
           <rect key={`${bar.date}-${bar.kind}`} className={`ia-bar ia-bar-${bar.kind}`}
@@ -244,7 +246,7 @@ export function RegimeNote({ stats }) {
   );
 }
 
-export function TradeRow({ row }) {
+export function TradeRow({ row, country='IN' }) {
   const way = direction(row);
   const market = openMarket(row);
   const share = Number(row.traded_pct);
@@ -257,11 +259,11 @@ export function TradeRow({ row }) {
       </div>
       <div className="ia-who">
         <h3>{row.company_name}{row.symbol ? <em>{row.symbol}</em> : null}</h3>
-        <p>{row.person} · {row.category || 'category undisclosed'}</p>
+        <p>{row.person} · {row.category || 'category undisclosed'}{country==='US'?` · Code ${row.transaction_code} · 10b5-1: ${row.planned||'unknown'}`:''}</p>
       </div>
       <span className={market ? 'ia-tag on' : 'ia-tag'}>{row.mode}</span>
       <div className="ia-number">
-        <strong>{row.value ? money(row.value) : count(row.quantity)}</strong>
+        <strong>{row.value ? money(row.value,country) : count(row.quantity)}</strong>
         <small>{row.value ? `${count(row.quantity)} shares` : `${count(row.quantity)} shares · no value stated`}</small>
         {Number.isFinite(share) && share >= 0.01 ? <b>{share}% of the company</b> : null}
       </div>
@@ -270,6 +272,8 @@ export function TradeRow({ row }) {
 }
 
 export default function InsiderActivityPage() {
+  const [params,setParams]=useSearchParams();const country=params.get('country')==='US'?'US':'IN';
+  function switchCountry(next){setData(null);setError('');setParams(p=>{const q=new URLSearchParams(p);q.set('country',next);q.delete('company');return q;});}
   const [data, setData] = useState(null);
   const [range, setRange] = useState('60');
   const [search, setSearch] = useState('');
@@ -284,13 +288,13 @@ export default function InsiderActivityPage() {
     setLoading(true);setVisibleDates(20);
     const start = new Date();
     start.setDate(start.getDate() - Number(range));
-    const params = { from: range === 'all' ? '' : start.toISOString().slice(0, 10), search, regime };
+    const params = { country, from: range === 'all' ? '' : start.toISOString().slice(0, 10), search, regime:country==='US'?'insider':regime };
     const timer = setTimeout(() => {
       insiderActivity(params,{signal:controller.signal}).then((body) => { if(active){setData(body); setError('');} })
         .catch((issue) => {if(active)setError(issue.message);}).finally(()=>{if(active)setLoading(false);});
     }, 200);
     return () => {active=false;clearTimeout(timer);controller.abort();};
-  }, [range, search, regime]);
+  }, [range, search, regime,country]);
 
   const stats = data?.stats || {};
   const trades = data?.trades || [];
@@ -309,20 +313,18 @@ export default function InsiderActivityPage() {
 
   return (
     <div className="ia">
-      <Helmet><title>India Insider Activity | Agarwal Global Investments</title></Helmet>
+      <Helmet><title>{country==='US'?'US':'India'} Insider Activity | Agarwal Global Investments</title></Helmet>
 
       <header className="ia-hero">
         <div>
-          <span>AGI / INDIA INSIDER ACTIVITY</span>
+          <span>AGI / {country==='US'?'US':'INDIA'} INSIDER ACTIVITY</span>
           <h1>Follow the people<br /><i>closest to the business.</i></h1>
           <p>
-            Exchange filings, split by whether anyone actually paid a market price.
-            Gifts, ESOP allotments and off-market transfers are shown, but they never
-            enter the flow or the clusters.
+            {country==='US'?'US insider disclosures you upload, with purchases and sales separated from awards, exercises, tax withholding and gifts. P/S codes include open-market and private transactions.':'Exchange filings, with open-market trades separated from gifts, ESOP allotments and off-market transfers.'}
           </p>
         </div>
         <aside>
-          <small>Net open-market filings</small>
+          <small>{country==='US'?'Net purchase / sale transactions':'Net open-market filings'}</small>
           <strong className={latestNet > 0 ? 'up' : latestNet < 0 ? 'down' : ''}>
             {latestNet == null ? '—' : `${latestNet > 0 ? '+' : ''}${latestNet}`}
           </strong>
@@ -333,11 +335,11 @@ export default function InsiderActivityPage() {
       </header>
 
       <nav className="ia-country">
-        <button type="button" className="active">India</button>
-        <button type="button" disabled>United States <small>Coming next</small></button>
+        <button type="button" className={country==='IN'?'active':''} onClick={()=>switchCountry('IN')}>India</button>
+        <button type="button" className={country==='US'?'active':''} onClick={()=>switchCountry('US')}>United States</button>
       </nav>
 
-      <IntelligenceDesk />
+      <IntelligenceDesk key={country} country={country} />
 
       <section className="ia-controls" aria-label="Historical filing filters">
         <div>
@@ -346,12 +348,12 @@ export default function InsiderActivityPage() {
                     onClick={() => setRange(value)}>{label}</button>
           ))}
         </div>
-        <div className="ia-regime">
+        {country==='IN'&&<div className="ia-regime">
           {[['insider', 'Insider filings'], ['sast', 'Takeover code'], ['all', 'Both']].map(([value, label]) => (
             <button type="button" key={value} className={regime === value ? 'active' : ''}
                     onClick={() => setRegime(value)}>{label}</button>
           ))}
-        </div>
+        </div>}
         <label className="ia-search">
           <Search aria-hidden="true" />
           <input value={search} onChange={(event) => setSearch(event.target.value)}
@@ -364,11 +366,11 @@ export default function InsiderActivityPage() {
         <>
           <section className="ia-stats">
             {[
-              ['Filings', count(stats.records)],
+              [country==='US'?'Transactions':'Filings', count(stats.records)],
               ['Companies', count(stats.companies)],
-              ['Open-market filings', count(stats.openMarket)],
-              ['Open-market buys', count(stats.buys)],
-              ['Open-market sells', count(stats.sells)],
+              [country==='US'?'Purchases / sales':'Open-market filings', count(stats.openMarket)],
+              [country==='US'?'Purchases (P)':'Open-market buys', count(stats.buys)],
+              [country==='US'?'Sales (S)':'Open-market sells', count(stats.sells)],
               ['Value stated on', stats.valueCoveragePct == null ? '—' : `${stats.valueCoveragePct}%`],
             ].map(([label, value]) => (
               <article key={label}><small>{label}</small><strong>{value}</strong></article>
@@ -377,34 +379,35 @@ export default function InsiderActivityPage() {
 
           <p className="ia-note">
             <CalendarDays aria-hidden="true" />
-            <RegimeNote stats={stats} />
+            {country==='US'?'US dollars. P/S codes do not establish exchange execution or trading motive. Plan status is unknown unless supplied.':<RegimeNote stats={stats} />}
           </p>
 
+          {!loading&&!trades.length&&<p className="ia-note">{country==='US'?'No US trades have been published for this selection yet. Publish a US batch from the administrator paste screen.':'No filings match this selection.'}</p>}
           <main className="ia-main">
             <section className="ia-panel">
               <div className="ia-section-title">
                 <span>DIRECTION OF FLOW</span>
-                <h2>Open-market buying against selling</h2>
+                <h2>{country==='US'?'Purchases against sales':'Open-market buying against selling'}</h2>
               </div>
-              <FlowChart days={data?.daily} />
+              <FlowChart days={data?.daily} country={country} />
             </section>
 
             <div className="ia-split">
               <section className="ia-panel">
                 <div className="ia-section-title">
                   <span>HOW SHARES CHANGED HANDS</span>
-                  <h2>Market trades against everything else</h2>
+                  <h2>{country === 'US' ? 'Purchases and sales against other transactions' : 'Market trades against everything else'}</h2>
                 </div>
                 <ModeMix modes={data?.modes} />
               </section>
 
-              <section className="ia-panel">
+{country==='IN'&&              <section className="ia-panel">
                 <div className="ia-section-title">
                   <span>PLEDGE WATCH</span>
                   <h2><AlertTriangle aria-hidden="true" /> Borrowing against the holding</h2>
                 </div>
                 <PledgeWatch rows={data?.pledges} />
-              </section>
+              </section>}
             </div>
 
             <section className="ia-panel">
@@ -416,10 +419,10 @@ export default function InsiderActivityPage() {
                 <div className="ia-day" key={date}>
                   <header>
                     <strong>{pretty(date)}</strong>
-                    <span>{rows.length} filings · {rows.filter(openMarket).length} open-market</span>
+                    <span>{rows.length} filings · {rows.filter(openMarket).length} {country==='US'?'purchases / sales':'open-market'}</span>
                   </header>
                   {rows.map((row, index) => (
-                    <TradeRow key={`${date}-${row.person}-${row.quantity}-${index}`} row={row} />
+                    <TradeRow key={`${date}-${row.person}-${row.quantity}-${index}`} row={row} country={country} />
                   ))}
                 </div>
               ))}
@@ -431,10 +434,7 @@ export default function InsiderActivityPage() {
           <footer className="ia-method">
             <b>How to read this page</b>
             <p>
-              An acquisition is not automatically bullish. ESOP allotments are pay,
-              gifts move shares without a price, and inter-se transfers move them
-              between people who already control the company. Only the filings marked
-              at a market price are evidence that someone put money at risk.
+              {country==='US'?'P/S transactions can be private or open-market. Awards, gifts, tax withholding and exercises are different events. A disclosed 10b5-1 plan indicates a pre-arranged plan; missing plan information is not confirmation of discretionary trading.':'An acquisition is not automatically bullish. ESOP allotments are pay, gifts move shares without a price, and inter-se transfers can move them between connected people.'}
             </p>
             {data?.degraded ? (
               <p className="ia-degraded">

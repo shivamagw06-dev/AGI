@@ -20158,7 +20158,13 @@ def warehouse_insider_paste_preview(payload: dict[str, Any] = Body(default_facto
     and how many lines were dropped before committing to it - a vendor export
     that silently lost half its rows should be caught here, not in the data.
     """
-    from financial_warehouse_completion.insider_trades import parse_pasted
+    country = str(payload.get("country", "IN")).upper()
+    if country not in {"IN", "US"}:
+        raise HTTPException(status_code=400, detail="Invalid country")
+    if country == "US":
+        from financial_warehouse_completion.us_insider_trades import parse_pasted
+    else:
+        from financial_warehouse_completion.insider_trades import parse_pasted
 
     # Preview validates and normalises only. Ticker matching is deferred to
     # publish so a slow company-master read cannot block the Check button.
@@ -20178,7 +20184,13 @@ def warehouse_insider_paste_run(payload: dict[str, Any] = Body(default_factory=d
     importer, so pasting a day that was already loaded updates those rows
     rather than duplicating them.
     """
-    from financial_warehouse_completion.insider_trades import import_pasted
+    country = str(payload.get("country", "IN")).upper()
+    if country not in {"IN", "US"}:
+        raise HTTPException(status_code=400, detail="Invalid country")
+    if country == "US":
+        from financial_warehouse_completion.us_insider_trades import import_pasted
+    else:
+        from financial_warehouse_completion.insider_trades import import_pasted
 
     return import_pasted(str((payload or {}).get("text") or ""),
                          actor=_warehouse_actor(payload or {}, x_agi_actor))

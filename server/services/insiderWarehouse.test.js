@@ -153,3 +153,13 @@ test('a filtered view reports what it is showing, not what exists', () => {
   assert.equal(summarise(rows, { regime: 'sast' }).stats.insiderRecords, 0);
   assert.equal(summarise(rows, {}).stats.sastRecords, 1);
 });
+test('US transaction identifiers preserve distinct trades and count P/S separately from awards',()=>{
+ const us=extra=>row({country:'US',currency:'USD',trade_id:'one',is_open_market:'false',is_purchase_sale:'true',transaction_code:'P',...extra});
+ const out=summarise([us({}),us({trade_id:'two'}),us({trade_id:'three',is_purchase_sale:'false',transaction_code:'A',action:'Grant / award'})],{country:'US'});
+ assert.equal(out.country,'US');assert.equal(out.currency,'USD');assert.equal(out.trades.length,3);assert.equal(out.stats.buys,2);
+});
+test('US reads request the separate US warehouse table',async()=>{
+ const original=globalThis.fetch;let requested;
+ globalThis.fetch=async url=>{requested=String(url);return {ok:true,json:async()=>({rows:[]})};};
+ try{const {getInsiderActivityFromWarehouse}=await import('./insiderWarehouse.js');const out=await getInsiderActivityFromWarehouse({country:'US'});assert.match(requested,/\/us_insider_trades\?/);assert.equal(out.country,'US');assert.equal(out.trades.length,0);}finally{globalThis.fetch=original;}
+});

@@ -34,10 +34,12 @@ export default function createPeIntelligenceRouter() {
   // work the admin upload screen. The Supabase copy stays as the fallback so a
   // cold or failing engine leaves the page with data rather than an error.
   router.get('/insider/activity',async(req,res)=>{
+    if(req.query.country && !['IN','US'].includes(req.query.country))return res.status(400).json({error:'Invalid country'});
     res.set('Cache-Control','public, max-age=60, stale-while-revalidate=300');
     try{
       return res.json(await getInsiderActivityFromWarehouse(req.query));
     }catch(warehouseError){
+      if(req.query.country==='US')return res.status(503).json({error:'US insider data is temporarily unavailable. Please retry.'});
       try{
         const body=await getInsiderActivity(req.query);
         return res.json({...body,source:'supabase',degraded:warehouseError.message});

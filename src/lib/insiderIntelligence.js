@@ -3,8 +3,9 @@ const text = value => String(value ?? '').trim();
 const key = value => text(value).toLowerCase().replace(/\s+/g, ' ');
 export const number = value => value === null || value === undefined || text(value) === '' ? null : Number.isFinite(Number(value)) ? Number(value) : null;
 export const companyKey = row => key(row.company_name);
-export const filingKey = row => JSON.stringify([row.company_name,row.person,row.reported_on,row.period,row.action,row.mode,row.quantity,row.value].map(text));
+export const filingKey = row => row.country==='US'&&row.trade_id ? JSON.stringify([row.trade_id,row.quantity,row.value,row.planned]) : JSON.stringify([row.company_name,row.person,row.reported_on,row.period,row.action,row.mode,row.quantity,row.value].map(text));
 export function filingKind(row) {
+ if(row.country==='US')return ({P:'purchase',S:'sale',A:'grant / award',F:'tax withholding',M:'exercise / conversion',G:'gift'})[row.transaction_code]||row.mode||'other';
  const description = `${row.action || ''} ${row.mode || ''}`;
  if (/invok|invocation/i.test(description)) return 'pledge invocation';
  if (/revoke|revocation|release/i.test(description)) return 'pledge release';
@@ -36,23 +37,24 @@ export function buildIntelligence(rows, asOf = new Date().toISOString().slice(0,
   const sorted=company.rows.sort((a,b)=>b.reported_on.localeCompare(a.reported_on));
   const recent=sorted.filter(row=>row.reported_on>=cutoff);
   const prior=sorted.filter(row=>row.reported_on>=previous&&row.reported_on<cutoff);
-  const buys=recent.filter(row=>row.kind==='market purchase');
-  const sells=recent.filter(row=>row.kind==='market sale');
+  const buys=recent.filter(row=>['market purchase','purchase'].includes(row.kind)&&row.planned!=='true'&&row.derivative!=='true');
+  const sells=recent.filter(row=>['market sale','sale'].includes(row.kind)&&row.planned!=='true'&&row.derivative!=='true');
   const buyers=new Set(buys.map(row=>key(row.person)).filter(Boolean)).size;
   const days=new Set(buys.map(row=>row.reported_on)).size;
   const valued=buys.filter(row=>number(row.value)>0);
   const buyValue=valued.reduce((sum,row)=>sum+number(row.value),0);
   const invocations=recent.filter(row=>row.kind==='pledge invocation');
-  const promoterSales=sells.filter(row=>/promoter/i.test(row.category||''));
+  const promoterSales=sells.filter(row=>(row.country==='US'?/CEO|CFO|COO|CTO|officer|director|president/i:/promoter/i).test(row.category||''));
   const material=recent.filter(row=>['market purchase','market sale','block deal'].includes(row.kind)&&number(row.traded_pct)>=1);
+  const us=sorted[0]?.country==='US';
   const signals=[];
   if(invocations.length)signals.push({kind:'risk',title:'Pledge invocation',detail:`${invocations.length} invocation disclosure${invocations.length===1?'':'s'} in the last 30 days. Review lender enforcement and remaining encumbrance.`});
-  if(buyers>=3)signals.push({kind:'buying',title:'Multiple-buyer activity',detail:`${buyers} named buyers across ${buys.length} open-market purchase filings. Related-party connections have not been verified.`});
-  if(days>=3)signals.push({kind:'buying',title:'Repeated purchase disclosures',detail:`Open-market purchases disclosed on ${days} separate days. These are reporting dates, not necessarily distinct trading days.`});
-  if(promoterSales.length)signals.push({kind:'selling',title:'Promoter market sales',detail:`${promoterSales.length} promoter sale filing${promoterSales.length===1?'':'s'}. Check holding changes and the disclosed purpose before interpreting motive.`});
+  if(buyers>=3)signals.push({kind:'buying',title:'Multiple-buyer activity',detail:`${buyers} named buyers across ${buys.length} ${us?'purchase':'open-market purchase'} filings. Related-party connections have not been verified.`});
+  if(days>=3)signals.push({kind:'buying',title:'Repeated purchase disclosures',detail:`${us?'Purchases':'Open-market purchases'} disclosed on ${days} separate days. These are reporting dates, not necessarily distinct trading days.`});
+  if(promoterSales.length)signals.push({kind:'selling',title:us?'Officer / director sales':'Promoter market sales',detail:`${promoterSales.length} ${us?'officer / director':'promoter'} sale filing${promoterSales.length===1?'':'s'}. Check holding changes and the disclosed purpose before interpreting motive.`});
   if(material.length)signals.push({kind:'size',title:'Large reported ownership movement',detail:`${material.length} market or block-deal filing${material.length===1?'':'s'} each report at least 1% of company equity traded. This is a screening threshold, not a recommendation.`});
-  if(!signals.length&&buys.length)signals.push({kind:'buying',title:'Open-market purchase observed',detail:`${buys.length} purchase filing${buys.length===1?'':'s'} in 30 days. Compare the amount with the buyer’s existing stake.`});
-  return {...company,rows:sorted,recent,prior,buys,sells,buyers,buyValue,valued:valued.length,signals,latest:sorted[0]?.reported_on,cutoff,asOf,priorBuys:prior.filter(row=>row.kind==='market purchase').length,priorSells:prior.filter(row=>row.kind==='market sale').length,linked:recent.filter(sourceLink).length};
+  if(!signals.length&&buys.length)signals.push({kind:'buying',title:us?'Purchase disclosed':'Open-market purchase observed',detail:`${buys.length} purchase filing${buys.length===1?'':'s'} in 30 days. Compare the amount with the buyer’s existing stake.`});
+  return {...company,country:us?'US':'IN',rows:sorted,recent,prior,buys,sells,buyers,buyValue,valued:valued.length,signals,latest:sorted[0]?.reported_on,cutoff,asOf,priorBuys:prior.filter(row=>['market purchase','purchase'].includes(row.kind)&&row.planned!=='true'&&row.derivative!=='true').length,priorSells:prior.filter(row=>['market sale','sale'].includes(row.kind)&&row.planned!=='true'&&row.derivative!=='true').length,linked:recent.filter(sourceLink).length};
  }).sort((a,b)=>Number(b.signals.some(s=>s.kind==='risk'))-Number(a.signals.some(s=>s.kind==='risk'))||Number(b.buyers>=3)-Number(a.buyers>=3)||b.latest.localeCompare(a.latest)||a.company.localeCompare(b.company));
 }
 export function newWatchlistFilings(companies, watchlist) {
