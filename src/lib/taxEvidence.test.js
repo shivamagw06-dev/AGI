@@ -48,5 +48,9 @@ test('saved review restores cases without trusting confirmation or row review fl
   assert.equal(restored.form.claimsConfirmed,false);
   assert.equal(restored.evidence[0].reviewed,false);
   assert.equal(restored.evidence[0].ownerId,'new-owner');
+  const withHealth=restoreTaxReview(JSON.stringify({...saved,healthInputs:{selfPremium:'30000',parentPremium:'40000',parentAge:'65',nonCashPaid:true,eligibleRelationship:true,paidInYear:true,notDoubleClaimed:true}}),'new-owner');
+  assert.equal(withHealth.health.selfPremium,'30000');
+  assert.equal(withHealth.health.nonCashPaid,false);
+  assert.throws(()=>restoreTaxReview(JSON.stringify({...saved,healthInputs:{selfPremium:'-1'}}),'owner'),/Invalid selfPremium/);
   assert.throws(()=>restoreTaxReview(JSON.stringify({...saved,evidence:[{...saved.evidence[0],credit:-1}]}),'owner'),/Invalid evidence/);
 });
