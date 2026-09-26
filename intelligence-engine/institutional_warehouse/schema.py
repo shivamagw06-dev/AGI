@@ -1139,6 +1139,18 @@ INSTITUTION_SNAPSHOTS = Tab(
     columns=(_c("country", "Country", TEXT, required=True), _c("snapshot_json", "Snapshot", TEXT, required=True)),
 )
 
+INVESTOR_ENTITY_MAPPINGS = Tab(
+    id="investor_entity_mappings", label="Investor Entity Mappings", description="Audited administrator decisions linking investor profiles to legal shareholder names.",
+    mode="append", key=("mapping_id",), order_by=("mapping_id ASC",), search_columns=("mapping_id",), icon="ownership",
+    columns=(_c("mapping_id", "Mapping ID", TEXT, required=True), _c("mapping_json", "Mapping", TEXT, required=True)),
+)
+
+INVESTOR_BSE_FILINGS = Tab(
+    id="investor_bse_filings", label="Original BSE investor filings", description="Validated administrator-supplied BSE XBRL documents, without personal identifiers.",
+    mode="append", key=("filing_id",), order_by=("filing_id ASC",), search_columns=("filing_id",), icon="ownership",
+    columns=(_c("filing_id", "Filing ID", TEXT, required=True), _c("filing_json", "Filing", TEXT, required=True)),
+)
+
 US_INSIDER_TRADES = Tab(
     id="us_insider_trades", label="US Insider Trades", description="Pasted US ownership disclosures; absolute USD values, separate from India.",
     mode="append", key=("trade_id",), order_by=("reported_on DESC", "value DESC"), search_columns=("symbol", "company_name", "person"), icon="ownership",
@@ -2935,6 +2947,8 @@ TABS: tuple[Tab, ...] = (
     INSIDER_TRADES,
     US_INSIDER_TRADES,
     INSTITUTION_SNAPSHOTS,
+    INVESTOR_ENTITY_MAPPINGS,
+    INVESTOR_BSE_FILINGS,
     FUNDAMENTALS_REFRESH_QUEUE,
     PEER_RELATIONSHIPS,
     FWCP_IMPORT_QUEUE,

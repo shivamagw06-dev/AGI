@@ -2,7 +2,7 @@ import unittest
 from refresh import parse, normalized, latest_filings, refresh
 from unittest.mock import patch
 
-XML = b'''<xbrl xmlns:x="urn:x"><context id="name"><period><endDate>2026-06-30</endDate></period><scenario><x:typedMember dimension="holder"><x:value>1</x:value></x:typedMember></scenario></context><context id="qty"><period><instant>2026-06-30</instant></period><scenario><x:typedMember dimension="holder"><x:value>1</x:value></x:typedMember></scenario></context><x:NameOfTheShareholder contextRef="name">Rekha Jhunjhunwala</x:NameOfTheShareholder><x:NumberOfShares contextRef="qty">1234</x:NumberOfShares><x:ShareholdingAsAPercentageOfTotalNumberOfShares contextRef="qty">0.0123</x:ShareholdingAsAPercentageOfTotalNumberOfShares></xbrl>'''
+XML = b'''<xbrl xmlns:x="urn:x"><x:ISIN>INE000A01010</x:ISIN><x:Symbol>S0</x:Symbol><x:ScripCode>500000</x:ScripCode><x:NameOfTheCompany>Test company</x:NameOfTheCompany><context id="name"><period><endDate>2026-06-30</endDate></period><scenario><x:typedMember dimension="holder"><x:value>1</x:value></x:typedMember></scenario></context><context id="qty"><period><instant>2026-06-30</instant></period><scenario><x:typedMember dimension="holder"><x:value>1</x:value></x:typedMember></scenario></context><x:NameOfTheShareholder contextRef="name">Rekha Jhunjhunwala</x:NameOfTheShareholder><x:NumberOfShares contextRef="qty">1234</x:NumberOfShares><x:ShareholdingAsAPercentageOfTotalNumberOfShares contextRef="qty">0.0123</x:ShareholdingAsAPercentageOfTotalNumberOfShares></xbrl>'''
 class FilingTests(unittest.TestCase):
     def test_dimensions_join_duration_to_instant(self):
         self.assertEqual(parse(XML,'2026-06-30'),[{'holder':'Rekha Jhunjhunwala','quantity':1234,'ownershipPct':1.23}])

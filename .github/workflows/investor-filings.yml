@@ -20,6 +20,9 @@ jobs:
       - name: Validate filing parser
         run: python -m unittest discover -s scripts/investor_filings -p 'test_*.py'
       - name: Check new and revised original disclosures
+        env:
+          BSE_SHAREHOLDING_FEED_URL: ${{ secrets.BSE_SHAREHOLDING_FEED_URL }}
+          BSE_SHAREHOLDING_FEED_TOKEN: ${{ secrets.BSE_SHAREHOLDING_FEED_TOKEN }}
         run: python scripts/investor_filings/refresh.py /tmp/investor-filings/latest.json --limit 250
       - name: Publish successful scan
         env:

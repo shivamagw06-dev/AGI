@@ -22753,6 +22753,30 @@ def warehouse_normalise_units(
                            dry_run=bool(body.get("dry_run", True)))
 
 
+@router.get("/investor-mappings", dependencies=[Depends(require_token)])
+def investor_mapping_registry():
+    from financial_warehouse_completion.investor_mapping import registry, bse_documents
+    result=registry()
+    result['bseFilings']=bse_documents()
+    return result
+
+@router.post("/investor-mappings/review", dependencies=[Depends(require_token)])
+def investor_mapping_review(payload: dict[str, Any] = Body(default_factory=dict)):
+    from financial_warehouse_completion.investor_mapping import save
+    try:
+        return save(payload, str(payload.get('actor') or 'admin'))
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+@router.post("/investor-mappings/bse", dependencies=[Depends(require_token)])
+def investor_mapping_bse(payload: dict[str, Any] = Body(default_factory=dict)):
+    from financial_warehouse_completion.investor_mapping import save_bse
+    try:
+        return save_bse(payload, str(payload.get('actor') or 'admin'))
+    except (ValueError, KeyError) as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
 @router.get("/institutions", dependencies=[Depends(require_token)])
 def institutions_snapshot(country: str = "IN", category: str = "individual"):
     from financial_warehouse_completion.institutions import current

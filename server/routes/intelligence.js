@@ -2350,6 +2350,33 @@ export default function createIntelligenceRouter() {
   //
   // Same reason as the workbook below: the engine routes are token-guarded and
   // the token belongs in this process, not in the browser bundle.
+  // Read-only approved/revoked rules consumed by the nightly collector. Keep
+  // reviewer identity private; only authenticated administrators can decide.
+  router.get('/investor-mappings/approved', async (_req, res) => {
+    try {
+      const result = await engineFetch('/v1/investor-mappings');
+      if (result.status !== 200 || !result.data?.ok) return res.status(503).json({ok:false,error:'Mapping registry unavailable'});
+      const mappings = result.data.mappings.map(({reviewedBy, evidenceNote, ...mapping}) => mapping);
+      res.set('Cache-Control','no-store');
+      return res.json({ok:true,mappings,bseFilings:result.data.bseFilings || []});
+    } catch { return res.status(503).json({ok:false,error:'Mapping registry unavailable'}); }
+  });
+  router.get('/investor-mappings/review', requireStrategyLabAdmin, async (_req, res) => {
+    try {
+      const result = await engineFetch('/v1/investor-mappings');
+      res.set('Cache-Control','no-store');
+      return res.status(result.status).json(result.data);
+    } catch { return res.status(503).json({ok:false,error:'Mapping registry unavailable'}); }
+  });
+  for (const operation of ['review','bse']) {
+    router.post(`/investor-mappings/${operation}`, requireStrategyLabAdmin, async (req, res) => {
+      try {
+        const result = await engineFetch(`/v1/investor-mappings/${operation}`, {method:'POST',body:{...req.body,actor:req.strategyLabActor.id},timeoutMs:60000});
+        return res.status(result.status).json(result.data);
+      } catch { return res.status(503).json({ok:false,error:'Investor review could not be saved'}); }
+    });
+  }
+
   router.get('/institutions', async (req, res) => {
     if (!['IN','US'].includes(req.query.country || 'IN')) return res.status(400).json({error:'Invalid country'});
     try {
