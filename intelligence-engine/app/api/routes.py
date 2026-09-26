@@ -22751,3 +22751,19 @@ def warehouse_normalise_units(
     body = payload or {}
     return normalise_units(actor=_warehouse_actor(body, x_agi_actor),
                            dry_run=bool(body.get("dry_run", True)))
+
+
+@router.get("/institutions", dependencies=[Depends(require_token)])
+def institutions_snapshot(country: str = "IN"):
+    from financial_warehouse_completion.institutions import current
+    if country not in {"IN", "US"}:
+        raise HTTPException(status_code=400, detail="Invalid country")
+    return current(country)
+
+@router.post("/institutions/{operation}", dependencies=[Depends(require_token)])
+def institutions_import(operation: str, payload: dict[str, Any] = Body(default_factory=dict)):
+    from financial_warehouse_completion.institutions import parse, publish
+    if operation not in {"preview", "publish"}:
+        raise HTTPException(status_code=404, detail="Unknown operation")
+    args = (str(payload.get("text") or ""), payload.get("country", "IN"), payload.get("asOf"))
+    return parse(*args) if operation == "preview" else publish(*args, actor=str(payload.get("actor") or "admin"))

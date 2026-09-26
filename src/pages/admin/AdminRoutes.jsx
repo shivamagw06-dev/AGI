@@ -69,6 +69,7 @@ const UpstoxBootstrap = lazy(() => import('@/pages/admin/UpstoxBootstrap'));
 const UpstoxFundamentals = lazy(() => import('@/pages/admin/UpstoxFundamentals'));
 const ValuationPolicy = lazy(() => import('@/pages/admin/ValuationPolicy'));
 const ValuationRatiosWorkbook = lazy(() => import('@/pages/admin/ValuationRatiosWorkbook'));
+const InstitutionsPaste = lazy(() => import('@/pages/admin/InstitutionsPaste'));
 const InsiderTradesPaste = lazy(() => import('@/pages/admin/InsiderTradesPaste'));
 const IpoIntelligenceImport = lazy(() => import('@/pages/admin/IpoIntelligenceImport'));
 const InstitutionalHoldingsAdmin = lazy(() => import('@/pages/admin/InstitutionalHoldingsAdmin'));
@@ -124,6 +125,7 @@ export default function AdminRoutes() {
           {/* Full-bleed Valuation Policy & Applicability Engine (Phase 8.2A) */}
           <Route path="valuation-policy" element={<ValuationPolicy />} />
           <Route path="valuation-ratios-workbook" element={<ValuationRatiosWorkbook />} />
+          <Route path="institutions-paste" element={<InstitutionsPaste />} />
           <Route path="insider-trades-paste" element={<InsiderTradesPaste />} />
           <Route path="ipo-intelligence-input" element={<IpoIntelligenceImport />} />
           {/* Full-bleed Historical Valuation Intelligence Engine (Phase 8.3) */}
