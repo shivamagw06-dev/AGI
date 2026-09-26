@@ -1,3 +1,4 @@
+import ExchangeDisclosures from '@/components/institutions/ExchangeDisclosures';
 import { useEffect, useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { Link, useParams } from 'react-router-dom';
@@ -81,6 +82,7 @@ export default function InvestorPortfolioPage() {
       <div className="rk-hero-meta"><span>{country === 'IN' ? 'INDIA · INR' : 'USA · USD'}</span><span>{currentProfile?.reportPeriod ? `SOURCE PERIOD · ${currentProfile.reportPeriod}` : 'REPORTING PERIOD UNAVAILABLE'}</span></div>
     </div></header>
     <div className="rk-container ip-content">
+      {country === 'IN' && <ExchangeDisclosures investorId={investorId}/>}
       {error ? <div className="ip-notice" role="alert">{error} <button onClick={() => setRetry(x => x + 1)}>Retry</button></div> : entry && !currentProfile ? <p role="status">Loading disclosed holdings…</p> : null}
       {currentProfile && <>
         <div className="ip-metrics"><div><span>Holdings rows available</span><strong>{currentProfile.rows.length.toLocaleString()}</strong></div><div><span>Source period</span><strong>{currentProfile.reportPeriod || 'Not available'}</strong></div><div><span>Source</span><strong>{currentProfile.sourceLabel}</strong></div><div><span>Retrieved</span><strong>{currentProfile.retrievedAt}</strong></div></div>
