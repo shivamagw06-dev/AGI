@@ -1,0 +1,1 @@
+from institutional_memory.decision_journal.engine import decision_journal

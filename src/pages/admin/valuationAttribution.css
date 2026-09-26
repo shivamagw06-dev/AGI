@@ -1,0 +1,223 @@
+/* VARIE — Why Valuation panels */
+
+.varie-panel {
+  border: 1px solid var(--vi-line, #d5dde6);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.97), rgba(243, 247, 250, 0.94)),
+    radial-gradient(90% 70% at 0% 0%, rgba(23, 56, 79, 0.05), transparent 55%);
+  padding: 1rem 1.05rem 0.95rem;
+  margin: 0.85rem 0 1rem;
+}
+
+.varie-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  margin-bottom: 0.75rem;
+}
+
+.varie-panel h3 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.varie-panel h4 {
+  margin: 0 0 0.45rem;
+  font-size: 0.88rem;
+}
+
+.varie-actions {
+  display: flex;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.varie-actions button,
+.varie-linkish {
+  border: 1px solid var(--vi-line, #d5dde6);
+  background: #fff;
+  font: inherit;
+  font-size: 0.75rem;
+  padding: 0.3rem 0.5rem;
+  cursor: pointer;
+}
+
+.varie-snap {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 0.5rem;
+  margin-bottom: 0.85rem;
+}
+
+.varie-snap > div {
+  border: 1px solid rgba(23, 56, 79, 0.08);
+  background: rgba(255, 255, 255, 0.72);
+  padding: 0.45rem 0.55rem;
+}
+
+.varie-snap .k,
+.varie-driver-meta span {
+  display: block;
+  font-size: 0.68rem;
+  color: var(--vi-muted, #6b7280);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.varie-snap .v {
+  display: block;
+  margin-top: 0.12rem;
+  font-weight: 650;
+  font-size: 0.98rem;
+}
+
+.varie-two {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.85rem;
+  margin-bottom: 0.85rem;
+}
+
+.varie-why {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.varie-why li {
+  padding: 0.28rem 0;
+  font-size: 0.86rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+.varie-largest {
+  margin: 0.65rem 0 0;
+  font-size: 0.86rem;
+}
+
+.varie-breakdown {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.varie-breakdown li button,
+.varie-breakdown li {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  width: 100%;
+  border: none;
+  background: none;
+  padding: 0.35rem 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  font: inherit;
+  font-size: 0.84rem;
+  cursor: pointer;
+  text-align: left;
+  color: inherit;
+}
+
+.varie-market-drivers li {
+  cursor: default;
+}
+
+.varie-daily {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  font-size: 0.84rem;
+  margin-bottom: 0.4rem;
+}
+
+.varie-note {
+  font-size: 0.92rem;
+  line-height: 1.45;
+  margin: 0 0 0.4rem;
+}
+
+.varie-timeline {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.varie-timeline li button {
+  display: grid;
+  grid-template-columns: 56px 1fr auto;
+  gap: 0.5rem;
+  width: 100%;
+  border: none;
+  background: none;
+  padding: 0.35rem 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  font: inherit;
+  font-size: 0.82rem;
+  cursor: pointer;
+  text-align: left;
+  color: inherit;
+}
+
+.varie-driver-detail {
+  border: 1px solid rgba(23, 56, 79, 0.12);
+  background: rgba(255, 255, 255, 0.85);
+  padding: 0.65rem 0.75rem;
+  margin: 0.55rem 0 0.85rem;
+  font-size: 0.84rem;
+}
+
+.varie-driver-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 0.35rem;
+}
+
+.varie-factors {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 0.5rem;
+}
+
+.varie-factor {
+  text-align: left;
+  border: 1px solid var(--vi-line, #d5dde6);
+  background: #fff;
+  padding: 0.55rem 0.65rem;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.varie-factor span {
+  font-size: 0.78rem;
+  color: var(--vi-muted, #6b7280);
+}
+
+.varie-factor em {
+  font-size: 0.68rem;
+  font-style: normal;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #35546f;
+}
+
+.varie-error {
+  color: #9a3412;
+  border-color: rgba(154, 52, 18, 0.25);
+  background: rgba(154, 52, 18, 0.06);
+}
+
+@media (max-width: 1100px) {
+  .varie-snap { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .varie-two { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 720px) {
+  .varie-snap { grid-template-columns: 1fr 1fr; }
+}

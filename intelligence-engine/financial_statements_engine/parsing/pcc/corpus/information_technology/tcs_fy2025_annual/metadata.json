@@ -1,0 +1,22 @@
+{
+  "case_id": "tcs_fy2025_annual",
+  "company_id": "nse:TCS",
+  "company_name": "Tata Consultancy Services",
+  "currency": "INR",
+  "document_hash": "167d3ebaaadb7701bef57e9d17c488126ce91e99932db00379618c9ad0cac7fd",
+  "exchange": "NSE",
+  "filing_type": "json",
+  "financial_year": "FY2025",
+  "immutable": true,
+  "industry": "IT Services",
+  "manual_verification": true,
+  "period_end": "2025-03-31",
+  "quarter": null,
+  "reporting_standard": "IND_AS",
+  "sector": "information_technology",
+  "statement_frequency": "annual",
+  "taxonomy_version": "nse_indas_integrated_filing.2024.1",
+  "ticker": "TCS",
+  "verified_at": "2026-07-30T00:00:00Z",
+  "verified_by": "agib_pcc_seed"
+}

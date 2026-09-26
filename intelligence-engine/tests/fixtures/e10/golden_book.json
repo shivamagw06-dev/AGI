@@ -1,0 +1,114 @@
+{
+  "as_of": "2026-07-24",
+  "universe_id": "NIFTY500",
+  "symbols": [
+    {
+      "symbol": "TCS",
+      "sector_id": "IT",
+      "sigma": 0.18,
+      "lowvol_score": 80,
+      "l4_score": 72,
+      "l4_label": "Strong Bullish",
+      "l4_confidence": 0.72
+    },
+    {
+      "symbol": "INFY",
+      "sector_id": "IT",
+      "sigma": 0.20,
+      "lowvol_score": 70,
+      "l4_score": 68,
+      "l4_label": "Bullish",
+      "l4_confidence": 0.65
+    },
+    {
+      "symbol": "WIPRO",
+      "sector_id": "IT",
+      "sigma": 0.22,
+      "lowvol_score": 60,
+      "l4_score": 64,
+      "l4_label": "Bullish",
+      "l4_confidence": 0.60
+    },
+    {
+      "symbol": "HCLTECH",
+      "sector_id": "IT",
+      "sigma": 0.21,
+      "lowvol_score": 65,
+      "l4_score": 61,
+      "l4_label": "Bullish",
+      "l4_confidence": 0.58
+    },
+    {
+      "symbol": "RELIANCE",
+      "sector_id": "ENERGY",
+      "sigma": 0.24,
+      "lowvol_score": 55,
+      "l4_score": 70,
+      "l4_label": "Bullish",
+      "l4_confidence": 0.70
+    },
+    {
+      "symbol": "ONGC",
+      "sector_id": "ENERGY",
+      "sigma": 0.30,
+      "lowvol_score": 40,
+      "l4_score": 62,
+      "l4_label": "Bullish",
+      "l4_confidence": 0.55
+    },
+    {
+      "symbol": "HDFCBANK",
+      "sector_id": "FINANCIALS",
+      "sigma": 0.19,
+      "lowvol_score": 75,
+      "l4_score": 66,
+      "l4_label": "Bullish",
+      "l4_confidence": 0.68
+    },
+    {
+      "symbol": "ICICIBANK",
+      "sector_id": "FINANCIALS",
+      "sigma": 0.23,
+      "lowvol_score": 50,
+      "l4_score": 63,
+      "l4_label": "Bullish",
+      "l4_confidence": 0.62
+    },
+    {
+      "symbol": "SBIN",
+      "sector_id": "FINANCIALS",
+      "sigma": 0.28,
+      "lowvol_score": 35,
+      "l4_score": 60,
+      "l4_label": "Bullish",
+      "l4_confidence": 0.57
+    },
+    {
+      "symbol": "AXISBANK",
+      "sector_id": "FINANCIALS",
+      "sigma": 0.26,
+      "lowvol_score": 45,
+      "l4_score": 59,
+      "l4_label": "Bullish",
+      "l4_confidence": 0.56
+    },
+    {
+      "symbol": "BEARCO",
+      "sector_id": "CONS",
+      "sigma": 0.35,
+      "lowvol_score": 20,
+      "l4_score": 30,
+      "l4_label": "Bearish",
+      "l4_confidence": 0.50
+    },
+    {
+      "symbol": "LOWCO",
+      "sector_id": "CONS",
+      "sigma": 0.27,
+      "lowvol_score": 40,
+      "l4_score": 50,
+      "l4_label": "Neutral",
+      "l4_confidence": 0.45
+    }
+  ]
+}

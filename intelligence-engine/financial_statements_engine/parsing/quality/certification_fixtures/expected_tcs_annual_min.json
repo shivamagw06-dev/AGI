@@ -1,0 +1,14 @@
+{
+  "expected_metrics": [
+    "revenue",
+    "other_income",
+    "net_income",
+    "finance_cost",
+    "cash",
+    "total_assets",
+    "total_equity",
+    "operating_cash_flow"
+  ],
+  "min_overall_confidence": 0.5,
+  "expect_hierarchy": true
+}

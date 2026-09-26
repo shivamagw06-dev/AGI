@@ -1,0 +1,80 @@
+{
+  "entity": "HDFCBANK",
+  "hd_version": "historical-depth-v1.0.0",
+  "kind": "valuation",
+  "n": 3,
+  "records": [
+    {
+      "available_from": "2026-07-31",
+      "confidence": 0.95,
+      "entity": "HDFCBANK",
+      "hd_schema_version": "hd-schema-v1.0.0",
+      "immutable": true,
+      "kind": "valuation",
+      "payload": {
+        "enterprise_value": 12989775335000.0,
+        "ev_ebitda": 11.7033,
+        "forward_pe": null,
+        "market_cap": 5683620735000.0,
+        "pb": 1.2526,
+        "pe": 15.2249,
+        "pe_premium_pct": -11.7,
+        "peer_median_pe": 17.25,
+        "peg": 0.7471,
+        "source": "valuation_intelligence_p22",
+        "stance": "discount versus peers"
+      },
+      "period": "2026-07-31",
+      "period_end": "2026-07-31",
+      "source": "valuation_intelligence_p22"
+    },
+    {
+      "available_from": "2026-08-04",
+      "confidence": 0.95,
+      "entity": "HDFCBANK",
+      "hd_schema_version": "hd-schema-v1.0.0",
+      "immutable": true,
+      "kind": "valuation",
+      "payload": {
+        "enterprise_value": 12943054400000.0,
+        "ev_ebitda": 11.6612,
+        "forward_pe": null,
+        "market_cap": 5636899800000.0,
+        "pb": 1.2423,
+        "pe": 15.0997,
+        "pe_premium_pct": -14.1,
+        "peer_median_pe": 17.57,
+        "peg": 0.7409,
+        "source": "valuation_intelligence_p22",
+        "stance": "discount versus peers"
+      },
+      "period": "2026-08-04",
+      "period_end": "2026-08-04",
+      "source": "valuation_intelligence_p22"
+    },
+    {
+      "available_from": "2026-08-05",
+      "confidence": 0.95,
+      "entity": "HDFCBANK",
+      "hd_schema_version": "hd-schema-v1.0.0",
+      "immutable": true,
+      "kind": "valuation",
+      "payload": {
+        "enterprise_value": 12917984630000.0,
+        "ev_ebitda": 11.6386,
+        "forward_pe": null,
+        "market_cap": 5611830030000.0,
+        "pb": 1.2368,
+        "pe": 15.0326,
+        "pe_premium_pct": -14.2,
+        "peer_median_pe": 17.52,
+        "peg": 0.7376,
+        "source": "valuation_intelligence_p22",
+        "stance": "discount versus peers"
+      },
+      "period": "2026-08-05",
+      "period_end": "2026-08-05",
+      "source": "valuation_intelligence_p22"
+    }
+  ]
+}

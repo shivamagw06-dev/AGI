@@ -1,0 +1,139 @@
+/* Index rebalance — the same restraint as the holdings pages.
+ *
+ * White ground, squared corners, one typeface, tabular figures. The only
+ * colour is semantic: inflow and outflow. Nothing here decorates, because the
+ * page is scanned for two things - which names move most, and how many days of
+ * normal volume that represents.
+ */
+
+.rebalance-page {
+  --reb-ground: #ffffff;
+  --reb-panel:  #fafafa;
+  --reb-line:   #e4e4e4;
+  --reb-ink:    #17181a;
+  --reb-muted:  #6b6f76;
+  --reb-in:     #1f6f43;
+  --reb-out:    #a32a1f;
+
+  background: var(--reb-ground);
+  color: var(--reb-ink);
+  padding: 28px clamp(16px, 4vw, 48px) 64px;
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+.rebalance-header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: end;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--reb-line);
+  padding-bottom: 16px;
+}
+
+.rebalance-page h1 { font-size: 1.5rem; margin: 0; letter-spacing: -0.01em; }
+
+.rebalance-picker { display: flex; flex-direction: column; gap: 4px; }
+.rebalance-picker span {
+  font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--reb-muted);
+}
+.rebalance-picker select {
+  border: 1px solid var(--reb-line); background: var(--reb-ground); color: inherit;
+  padding: 7px 10px; font: inherit; border-radius: 0; min-width: 260px;
+}
+
+.rebalance-summary {
+  display: flex; flex-wrap: wrap; gap: 32px; margin: 20px 0 4px;
+}
+.rebalance-summary > div { display: flex; flex-direction: column; gap: 2px; }
+.rebalance-label {
+  font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--reb-muted);
+}
+.rebalance-countdown { font-style: normal; color: var(--reb-muted); font-weight: 400; }
+
+/* Attribution is a first-class line, not a footnote. These are somebody
+ * else's estimates and the page must never imply otherwise. */
+.rebalance-attribution {
+  margin: 16px 0 0; padding: 10px 12px;
+  background: var(--reb-panel); border-left: 2px solid var(--reb-line);
+  font-size: 0.82rem; color: var(--reb-muted); max-width: 68ch;
+}
+
+.rebalance-block { margin-top: 32px; }
+.rebalance-block__title {
+  font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.09em;
+  margin: 0 0 10px; color: var(--reb-muted); font-weight: 600;
+}
+.rebalance-block__title--in  { color: var(--reb-in); }
+.rebalance-block__title--out { color: var(--reb-out); }
+
+/* Wide tables scroll inside their own container so the page body never
+ * scrolls sideways. */
+.rebalance-scroll { overflow-x: auto; border: 1px solid var(--reb-line); }
+
+.rebalance-table { width: 100%; border-collapse: collapse; font-size: 0.86rem; }
+.rebalance-table th, .rebalance-table td {
+  padding: 8px 12px; text-align: left; border-bottom: 1px solid var(--reb-line); white-space: nowrap;
+}
+.rebalance-table thead th {
+  background: var(--reb-panel); font-size: 0.7rem; text-transform: uppercase;
+  letter-spacing: 0.06em; color: var(--reb-muted); font-weight: 600;
+}
+.rebalance-table tbody tr:last-child td { border-bottom: 0; }
+.rebalance-table tbody th { font-weight: 600; }
+
+/* Figures line up in columns, so they get tabular numerals. Without it the
+ * ranking is harder to read than the numbers deserve. */
+.num { text-align: right; font-variant-numeric: tabular-nums; }
+.num--flow { font-weight: 600; }
+
+/* An unrefreshed cell is marked rather than left blank, because a blank cell
+ * reads as zero. The reason is on the title attribute. */
+.rebalance-unpriced { color: var(--reb-muted); border-bottom: 1px dotted currentColor; cursor: help; }
+
+.rebalance-sectors { list-style: none; margin: 0; padding: 0; display: grid; gap: 1px; background: var(--reb-line); border: 1px solid var(--reb-line); }
+.rebalance-sectors li {
+  display: flex; justify-content: space-between; gap: 24px;
+  padding: 7px 12px; background: var(--reb-ground); font-size: 0.85rem;
+}
+.rebalance-sectors strong { font-variant-numeric: tabular-nums; }
+.rebalance-sectors .is-in  { color: var(--reb-in); }
+.rebalance-sectors .is-out { color: var(--reb-out); }
+
+.rebalance-empty, .rebalance-error { color: var(--reb-muted); max-width: 60ch; }
+.rebalance-error { color: var(--reb-out); }
+
+@media (max-width: 640px) {
+  .rebalance-summary { gap: 20px; }
+  .rebalance-picker select { min-width: 0; width: 100%; }
+}
+
+/* Admin paste panel. Same restraint; it is a working surface, not a feature. */
+.rebalance-admin__toggle,
+.rebalance-admin button {
+  border: 1px solid var(--reb-line); background: var(--reb-ground); color: inherit;
+  padding: 7px 12px; font: inherit; border-radius: 0; cursor: pointer;
+}
+.rebalance-admin__toggle:hover,
+.rebalance-admin button:hover:not(:disabled) { background: var(--reb-panel); }
+.rebalance-admin button:disabled { color: var(--reb-muted); cursor: not-allowed; }
+
+.rebalance-admin {
+  border: 1px solid var(--reb-line); background: var(--reb-panel);
+  padding: 16px; margin: 20px 0; width: 100%;
+}
+.rebalance-admin h2 { font-size: 0.9rem; margin: 0 0 12px; }
+.rebalance-admin__grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px;
+}
+.rebalance-admin label { display: flex; flex-direction: column; gap: 4px; font-size: 0.75rem; color: var(--reb-muted); }
+.rebalance-admin input, .rebalance-admin select, .rebalance-admin textarea {
+  border: 1px solid var(--reb-line); background: var(--reb-ground); color: var(--reb-ink);
+  padding: 6px 8px; font: inherit; font-size: 0.85rem; border-radius: 0;
+}
+.rebalance-admin__paste { margin-top: 12px; }
+.rebalance-admin textarea { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.78rem; resize: vertical; }
+.rebalance-admin__actions { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+.rebalance-admin__preview { margin-top: 14px; font-size: 0.82rem; }
+.rebalance-admin__preview ul { margin: 6px 0 0; padding-left: 18px; }
+.rebalance-admin__preview code { font-size: 0.75rem; color: var(--reb-muted); }

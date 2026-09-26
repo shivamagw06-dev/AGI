@@ -1,0 +1,758 @@
+{
+  "tables": {
+    "business_model": {
+      "description": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:11.850141Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "ICICI Bank Limited (ICICI Bank) operates as a diversified financial services group offering a wide range of banking and financial services to corporate and retail customers through a variety of delivery channels.\n\nApart from banking products and services, the company offers life and general insurance, asset management, securities brokerage, and private equity products and services through specialized subsidiaries.\n\nThe company's primary business consists of commercial banking operations for retail and corporate customers. The company's commercial banking operations for retail customers consist of retail lending, deposit taking, and other fee-based products and services. The company provides a range of commercial banking products and services, including loan products, fee and commission-based products and services, deposit products and foreign exchange and derivatives products to large corporations, middle market companies, and small and medium enterprises. The company also offers agricultural and rural banking products. The company earns interest and fee income from commercial banking operations. The company delivers products and services through a variety of channels, including bank branches, ATMs, call centers, internet, and mobile phones. The company had a network of various branches, ATMs, and cash recycler machines in India at year-end fiscal 2026.\n\nAt year-end fiscal 2026, the company had banking subsidiaries in the United Kingdom and Canada, branches in the United States (New York), Dubai International Finance Centre, Bahrain, Hong Kong, Singapore, China, Offshore Banking Unit in Mumbai, and IFSC Banking Unit in Gandhinagar. In May 2026, the company received the no-objection letter from the Reserve Bank of India to close the Offshore Banking Unit located in the Santacruz Electronic Exports Promotion Zone, Mumbai. At year-end fiscal 2026, the company had representative offices in the United Arab Emirates (Dubai, Abu Dhabi, and Sharjah), the United States (Texas, California, Illinois, and New Jersey), Nepal, Bangladesh, Sri Lanka, Malaysia, and Indonesia. The company's subsidiary in the United Kingdom has a branch in Germany.\n\nThe company's treasury operations include the maintenance and management of regulatory reserves, proprietary trading in equity and fixed income, and a range of foreign exchange and derivatives products and services for corporate customers, such as forward contracts, and interest rate and currency swaps.\n\nThe company is also engaged in insurance, asset management, securities brokerage business, and private equity fund management through specialized subsidiaries. The company's subsidiaries, ICICI Prudential Life Insurance Company Limited, ICICI Lombard General Insurance Company Limited, and ICICI Prudential Asset Management Company Limited, provide a wide range of life insurance, general insurance, and asset management products respectively.\n\nThe company's subsidiary ICICI Securities Limited is engaged in equities underwriting, securities brokerage, and distribution of financial products. The company's subsidiary ICICI Securities Primary Dealership Limited is engaged in underwriting and primary dealership of government securities. The company's private equity fund management subsidiary, ICICI Venture Funds Management Company Limited, transferred the private equity, venture capital, and real estate fund management business to ICICI Prudential Asset Management Company Limited. ICICI Venture Funds Management Company Limited would continue to undertake certain advisory activities as well as manage certain residual funds. The company's subsidiary, ICICI Pension Fund Management Limited, is a registered pension fund manager under the National Pension System.\n\nStrategy\n\nIn fiscal 2026, the company maintained its strategic focus on profitable growth in business within the guardrails of risk and compliance. The company grew its credit portfolio with a focus on granularity, and saw healthy growth across its retail and business banking and wholesale portfolios.\n\nThe company continued to focus on holistically serving clients and their ecosystems. The company sought to maintain and enhance its liability franchise.\n\nThe company maintains its focus on growing its loan portfolio in a granular manner based on risk and reward, with focus on return of capital and containment of provisions within targeted levels.\n\nThe company will continue with its strategic focus on growing the profit before tax excluding treasury (calculated as Profit before tax less Income from treasury-related activities, both reported separately in Operating Results Data).\n\nThe company aims to continue to grow its deposit franchise, and maintain a stable and healthy funding profile.\n\nProducts and Services\n\nCommercial Banking for Retail Customers\n\nThe company's commercial banking operations for retail customers consist of retail lending and deposits, and fee-based products and services like credit, debit, and prepaid cards, and depositary share accounts.\n\nRetail Lending Activities\n\nThe company's retail lending activities include home loans, automobile loans, commercial business loans, personal loans, credit cards, consumer durable goods financing, loans against time deposits, and loans against securities.\n\nThe company's suite of products and services for retail customers includes savings, investment, credit, and protection products, along with payment and transaction banking services. The company's retail portfolio consists largely of secured lending, with growth based on proprietary data and analytics in addition to credit bureau checks. The company's deposit franchise enables it to offer competitive pricing. The company also leverages its existing customer database for sale of key retail asset products through cross-sell and up-sell. The company's underwriting process involves a combination of key variables to assess the cash flow and repayment ability of the customer, like income, leverage, customer profile, quality markers, credit bureau data, and demographics. The company utilizes multiple data points, including liability and asset relationships, transaction behavior, and bureau behavior, along with proprietary machine learning and statistical models for making credit decisions.\n\nHome Loan\n\nThe company's home loan portfolio includes loans for purchase and construction of homes, and by mortgaging residential or commercial properties. The company also offers instant top-up on loans to existing home loan customers. The company's policies for home loans are based on certain stipulated ratios, such as the loan-to-value ratio, and leverage to borrower\u2019s income. The repayment term of home loans is 15 to 20 years with payments in the form of equal monthly installments over the tenor of the loan. The credit process includes a cashflow assessment of the borrower, as well as evaluating the property being mortgaged against the legal and technical standards defined at the company.\n\nThe company follows a comprehensive credit appraisal process when offering a loan-against-property. The average loan-to-value ratios of the loan-against-property portfolio are lower compared to the company's home loan portfolio. The company offers home loan products primarily in India through ICICI Bank and its wholly-owned subsidiary, ICICI Home Finance Company Limited. The loan portfolio of the company's housing finance subsidiary includes home loans, loans-against-property, and loans to developers, among others. The company also provides loans to customers belonging to economically weaker sections, and customers buying homes in the low-cost affordable housing segment. The company's banking subsidiary in Canada offers residential mortgages in the local market.\n\nAutomobile loans\n\nThe company finances the purchase of new and used automobiles. Automobile loans are fixed rate products repayable in equated monthly installments. The interest rate is based on fac",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:01.478299Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "ICICI Bank Limited (ICICI Bank) operates as a diversified financial services group offering a wide range of banking and financial services to corporate and retail customers through a variety of delivery channels.\n\nApart from banking products and services, the company offers life and general insurance, asset management, securities brokerage, and private equity products and services through specialized subsidiaries.\n\nThe company's primary business consists of commercial banking operations for retail and corporate customers. The company's commercial banking operations for retail customers consist of retail lending, deposit taking, and other fee-based products and services. The company provides a range of commercial banking products and services, including loan products, fee and commission-based products and services, deposit products and foreign exchange and derivatives products to large corporations, middle market companies, and small and medium enterprises. The company also offers agricultural and rural banking products. The company earns interest and fee income from commercial banking operations. The company delivers products and services through a variety of channels, including bank branches, ATMs, call centers, internet, and mobile phones. The company had a network of various branches, ATMs, and cash recycler machines in India at year-end fiscal 2026.\n\nAt year-end fiscal 2026, the company had banking subsidiaries in the United Kingdom and Canada, branches in the United States (New York), Dubai International Finance Centre, Bahrain, Hong Kong, Singapore, China, Offshore Banking Unit in Mumbai, and IFSC Banking Unit in Gandhinagar. In May 2026, the company received the no-objection letter from the Reserve Bank of India to close the Offshore Banking Unit located in the Santacruz Electronic Exports Promotion Zone, Mumbai. At year-end fiscal 2026, the company had representative offices in the United Arab Emirates (Dubai, Abu Dhabi, and Sharjah), the United States (Texas, California, Illinois, and New Jersey), Nepal, Bangladesh, Sri Lanka, Malaysia, and Indonesia. The company's subsidiary in the United Kingdom has a branch in Germany.\n\nThe company's treasury operations include the maintenance and management of regulatory reserves, proprietary trading in equity and fixed income, and a range of foreign exchange and derivatives products and services for corporate customers, such as forward contracts, and interest rate and currency swaps.\n\nThe company is also engaged in insurance, asset management, securities brokerage business, and private equity fund management through specialized subsidiaries. The company's subsidiaries, ICICI Prudential Life Insurance Company Limited, ICICI Lombard General Insurance Company Limited, and ICICI Prudential Asset Management Company Limited, provide a wide range of life insurance, general insurance, and asset management products respectively.\n\nThe company's subsidiary ICICI Securities Limited is engaged in equities underwriting, securities brokerage, and distribution of financial products. The company's subsidiary ICICI Securities Primary Dealership Limited is engaged in underwriting and primary dealership of government securities. The company's private equity fund management subsidiary, ICICI Venture Funds Management Company Limited, transferred the private equity, venture capital, and real estate fund management business to ICICI Prudential Asset Management Company Limited. ICICI Venture Funds Management Company Limited would continue to undertake certain advisory activities as well as manage certain residual funds. The company's subsidiary, ICICI Pension Fund Management Limited, is a registered pension fund manager under the National Pension System.\n\nStrategy\n\nIn fiscal 2026, the company maintained its strategic focus on profitable growth in business within the guardrails of risk and compliance. The company grew its credit portfolio with a focus on granularity, and saw healthy growth across its retail and business banking and wholesale portfolios.\n\nThe company continued to focus on holistically serving clients and their ecosystems. The company sought to maintain and enhance its liability franchise.\n\nThe company maintains its focus on growing its loan portfolio in a granular manner based on risk and reward, with focus on return of capital and containment of provisions within targeted levels.\n\nThe company will continue with its strategic focus on growing the profit before tax excluding treasury (calculated as Profit before tax less Income from treasury-related activities, both reported separately in Operating Results Data).\n\nThe company aims to continue to grow its deposit franchise, and maintain a stable and healthy funding profile.\n\nProducts and Services\n\nCommercial Banking for Retail Customers\n\nThe company's commercial banking operations for retail customers consist of retail lending and deposits, and fee-based products and services like credit, debit, and prepaid cards, and depositary share accounts.\n\nRetail Lending Activities\n\nThe company's retail lending activities include home loans, automobile loans, commercial business loans, personal loans, credit cards, consumer durable goods financing, loans against time deposits, and loans against securities.\n\nThe company's suite of products and services for retail customers includes savings, investment, credit, and protection products, along with payment and transaction banking services. The company's retail portfolio consists largely of secured lending, with growth based on proprietary data and analytics in addition to credit bureau checks. The company's deposit franchise enables it to offer competitive pricing. The company also leverages its existing customer database for sale of key retail asset products through cross-sell and up-sell. The company's underwriting process involves a combination of key variables to assess the cash flow and repayment ability of the customer, like income, leverage, customer profile, quality markers, credit bureau data, and demographics. The company utilizes multiple data points, including liability and asset relationships, transaction behavior, and bureau behavior, along with proprietary machine learning and statistical models for making credit decisions.\n\nHome Loan\n\nThe company's home loan portfolio includes loans for purchase and construction of homes, and by mortgaging residential or commercial properties. The company also offers instant top-up on loans to existing home loan customers. The company's policies for home loans are based on certain stipulated ratios, such as the loan-to-value ratio, and leverage to borrower\u2019s income. The repayment term of home loans is 15 to 20 years with payments in the form of equal monthly installments over the tenor of the loan. The credit process includes a cashflow assessment of the borrower, as well as evaluating the property being mortgaged against the legal and technical standards defined at the company.\n\nThe company follows a comprehensive credit appraisal process when offering a loan-against-property. The average loan-to-value ratios of the loan-against-property portfolio are lower compared to the company's home loan portfolio. The company offers home loan products primarily in India through ICICI Bank and its wholly-owned subsidiary, ICICI Home Finance Company Limited. The loan portfolio of the company's housing finance subsidiary includes home loans, loans-against-property, and loans to developers, among others. The company also provides loans to customers belonging to economically weaker sections, and customers buying homes in the low-cost affordable housing segment. The company's banking subsidiary in Canada offers residential mortgages in the local market.\n\nAutomobile loans\n\nThe company finances the purchase of new and used automobiles. Automobile loans are fixed rate products repayable in equated monthly installments. The interest rate is based on fac",
+          "version": 2
+        }
+      ],
+      "description_short": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:11.843724Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "ICICI Bank Limited, together with its subsidiaries, engages in the provision of various banking and financial services to corporate and retail customers in India and internationally. The company operates through Retail Banking, Wholesale Banking, Treasury, Other Banking, Life Insurance, General Insurance, and Others segments. The company offers asset management, securities brokerage, private equity, foreign exchange, agricultural and rural banking, equities underwriting, depositary share accounts, consumer durable goods financing, corporate salary and current account, savings and sovereign gold bonds, insurance policies, public offerings, investment, credit and protection, retail inward remittances, certificates of deposits, and payment and transaction banking products and services. It is also involved in the fee and commission-based activities; distribution of financial products; venture capital and real estate fund management business; treasury and rural banking operations; financial solutions; working capital financing; I-Process services, mutual funds, investment banking, and pension funds; and advisory activities. In addition, the company provides savings, salary, capital gains scheme, Hindu undivided family savings, real estate regulatory authority, government e-marketplace, current, trade, escrow, and foreign currency accounts. Further, it offers personal, home, car, education, gold, automobile, and commercial business loans, as well as loans against time deposits, securities, and property; and working capital loans, as well as credit, debit, prepaid, travel, forex, commercial, and corporate cards. Additionally, the company provides fixed income products; investment products; payments; general, accident, life, health, vehicle, and travel insurance products; cash management and merchant services; capital market and securities market services; and forex, derivatives, bullion, and bonds. The company was founded in 1955 and is headquartered in Mumbai, India.",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:01.468722Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "ICICI Bank Limited, together with its subsidiaries, engages in the provision of various banking and financial services to corporate and retail customers in India and internationally. The company operates through Retail Banking, Wholesale Banking, Treasury, Other Banking, Life Insurance, General Insurance, and Others segments. The company offers asset management, securities brokerage, private equity, foreign exchange, agricultural and rural banking, equities underwriting, depositary share accounts, consumer durable goods financing, corporate salary and current account, savings and sovereign gold bonds, insurance policies, public offerings, investment, credit and protection, retail inward remittances, certificates of deposits, and payment and transaction banking products and services. It is also involved in the fee and commission-based activities; distribution of financial products; venture capital and real estate fund management business; treasury and rural banking operations; financial solutions; working capital financing; I-Process services, mutual funds, investment banking, and pension funds; and advisory activities. In addition, the company provides savings, salary, capital gains scheme, Hindu undivided family savings, real estate regulatory authority, government e-marketplace, current, trade, escrow, and foreign currency accounts. Further, it offers personal, home, car, education, gold, automobile, and commercial business loans, as well as loans against time deposits, securities, and property; and working capital loans, as well as credit, debit, prepaid, travel, forex, commercial, and corporate cards. Additionally, the company provides fixed income products; investment products; payments; general, accident, life, health, vehicle, and travel insurance products; cash management and merchant services; capital market and securities market services; and forex, derivatives, bullion, and bonds. The company was founded in 1955 and is headquartered in Mumbai, India.",
+          "version": 2
+        }
+      ],
+      "index_constituents": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:11.819831Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "FTSE Asia Pacific Banks Index\n\nS&P Global Ex-China LargeMidCap Index\n\nS&P Global LargeMidCap Value Index\n\nS&P Global LargeMidCap Growth Index\n\nS&P Global Ex-U.S. LargeCap Value\n\nS&P Pan Asia BMI Banks (Industry Group) Index\n\nS&P GIVI Asia Pacific Emerging Plus LargeMidCap Index\n\nS&P Emerging LargeMidCap Value Index\n\nS&P GIVI Global Ex. U.S. Index\n\nFTSE All-World Ex Eurozone Index",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:01.421907Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "MSCI ACWI Ex USA Sector Neutral Quality Index\n\nMSCI ACWI Ex USA Volatility Tilt Index\n\nMSCI ACWI FM Ex Japan IMI Index\n\nMSCI ACWI FM Ex USA Index\n\nMSCI ACWI Ex USA Ex Coal Index\n\nMSCI ACWI Ex Ireland Index\n\nMSCI ACWI Ex USA Large/Banks (Industry Group) Index\n\nMSCI ACWI IMI With USA Gross Index\n\nMSCI ACWI Large/Banks (Industry Group) Index\n\nMSCI ACWI Ex UK Large Cap Index",
+          "version": 2
+        }
+      ],
+      "industry_classifications": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:11.840302Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Financials (Primary)",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:01.463069Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Financials (Primary)",
+          "version": 2
+        }
+      ],
+      "investors": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:11.841140Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "British International Investment plc (Current Investor); Warburg Pincus LLC (Current Investor); Temasek Holdings (Private) Limited (Current Investor); International Finance Corporation (Current Investor); GIC Private Limited (Current Investor); Deutsche Bank Trust Company Americas (Current Investor); Keskin\u00e4inen ty\u00f6el\u00e4kevakuutusyhti\u00f6 Varma (Current Investor); Brand Capital (Current Investor); Chandler Corporation (Current Investor)",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:01.465235Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "British International Investment plc (Current Investor); Warburg Pincus LLC (Current Investor); Temasek Holdings (Private) Limited (Current Investor); International Finance Corporation (Current Investor); GIC Private Limited (Current Investor); Deutsche Bank Trust Company Americas (Current Investor); Keskin\u00e4inen ty\u00f6el\u00e4kevakuutusyhti\u00f6 Varma (Current Investor); Brand Capital (Current Investor); Chandler Corporation (Current Investor)",
+          "version": 2
+        }
+      ],
+      "subsidiaries_count": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:11.844679Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 126,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:01.469847Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 126,
+          "version": 2
+        }
+      ]
+    },
+    "company_master": {
+      "company_name": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:11.818501Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "ICICI Bank Limited",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:01.420889Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "ICICI Bank Limited",
+          "version": 2
+        }
+      ],
+      "company_type": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:11.845556Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Public Company",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:01.470976Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Public Company",
+          "version": 2
+        }
+      ],
+      "country": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:11.842831Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "India",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:01.467549Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "India",
+          "version": 2
+        }
+      ],
+      "currency": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:11.823450Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Indian Rupee",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:01.426622Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Indian Rupee",
+          "version": 2
+        }
+      ],
+      "external_id": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:11.822107Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "IQT20212645",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:01.424869Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "IQT46355603",
+          "version": 2
+        }
+      ],
+      "industry": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:11.839478Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Diversified Banks",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:01.461483Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Diversified Banks",
+          "version": 2
+        }
+      ],
+      "parent_company": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:11.841963Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "ICICI Bank Limited (NSEI:ICICIBANK)",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:01.466426Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "ICICI Bank Limited (NSEI:ICICIBANK)",
+          "version": 2
+        }
+      ],
+      "research_coverage_count": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:11.852169Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 74,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:01.480815Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 74,
+          "version": 2
+        }
+      ],
+      "sector": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:11.838687Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Financials",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:01.452653Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Financials",
+          "version": 2
+        }
+      ],
+      "status": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:11.821294Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Active",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:01.422884Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Active",
+          "version": 2
+        }
+      ],
+      "ticker": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:11.816799Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "ICICIBANK",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:01.419375Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "ICICIBANK",
+          "version": 2
+        }
+      ],
+      "website": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:11.857386Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "www.icici.bank.in",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:01.486270Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "www.icici.bank.in",
+          "version": 2
+        }
+      ]
+    },
+    "competitors": {
+      "peer": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:11.846442Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Bank of America Corporation (NYSE:BAC); American Express Company (NYSE:AXP); China Merchants Bank Co., Ltd. (SHSE:600036); BNP Paribas SA (ENXTPA:BNP); LIC Housing Finance Limited (NSEI:LICHSGFIN); Cholamandalam Investment and Finance Company Limited (BSE:511243); Bank of China Limited (SEHK:3988); Life Insurance Corporation of India (NSEI:LICI); The Hongkong and Shanghai Banking Corporation Limited, India; CSB Bank Limited (NSEI:CSBBANK); PNB Housing Finance Limited (NSEI:PNBHOUSING); Madhya Pradesh State Industrial Development Corporation Limited; Nuvama Wealth and Investment Limited; Delhi State Financial Corporation; Wealth First Portfolio Managers Limited (NSEI:WEALTH); Paytm Payments Bank Limited; Finablr PLC; Soci\u00e9t\u00e9 G\u00e9n\u00e9rale Soci\u00e9t\u00e9 anonyme (ENXTPA:GLE); ANZ Group Holdings Limited (ASX:ANZ); IDBI Bank Limited (NSEI:IDBI); Bank of Baroda Limited (NSEI:BANKBARODA); Kotak Mahindra Bank Limited (BSE:500247); Oversea-Chinese Banking Corporation Limited (SGX:O39); Standard Bank Group Limited (JSE:SBK); The Federal Bank Limited (NSEI:FEDERALBNK); Shriram Finance Limited (BSE:511218); The South Indian Bank Limited (NSEI:SOUTHBANK); REC Limited (NSEI:RECLTD); Sanctum Wealth Management Private Limited; DCB Bank Limited (NSEI:DCBBANK); Gujarat Industrial Development Corporation; Fino Payments Bank Limited (NSEI:FINOPB); Transaction Analysts India Pvt Ltd; The Bank of East Asia, Limited (SEHK:23); The Karur Vysya Bank Limited (NSEI:KARURVYSYA); The Nainital Bank Limited; KB Financial Group Inc. (KOSE:A105560); Zipcash Card Services Pvt. Ltd.; GaragePreneurs Internet Private Limited; Ujjivan Small Finance Bank Limited (NSEI:UJJIVANSFB); Citigroup Inc. (NYSE:C); UBS Group AG (SWX:UBSG); GE Capital Global Holdings, LLC; Bajaj Finance Limited (NSEI:BAJFINANCE); HBOS plc; Industrial Investment Bank of India Ltd.; AU Small Finance Bank Limited (NSEI:AUBANK); Jana Small Finance Bank Limited (NSEI:JSFB); Airtel Payments Bank Ltd.; Triotech Solutions Pvt. Ltd.; Pay Point India Network Pvt. Ltd.; PhonePe Limited; Utkarsh Small Finance Bank Limited (NSEI:UTKARSHBNK); ESAF Small Finance Bank (NSEI:ESAFSFB); Anand Rathi Wealth Limited (NSEI:ANANDRATHI); Appnit Technologies Pvt. Ltd.; Deutsche Bank Aktiengesellschaft (XTRA:DBK); NatWest Group plc (LSE:NWG); KB Kookmin Bank; Lloyds Banking Group plc (LSE:LLOY); Standard Chartered PLC (LSE:STAN); City Union Bank Limited (NSEI:CUB); Jammu and Kashmir Bank Limited (NSEI:J&KBANK); Industrial and Commercial Bank of China Limited (SEHK:1398); BNP Paribas India Holding Private Limited; Repco Home Finance Limited (NSEI:REPCOHOME); Prudent Corporate Advisory Services Limited (NSEI:PRUDENT); DAM Capital Advisors Limited (NSEI:DAMCAPITAL); Equitas Small Finance Bank Limited (NSEI:EQUITASBNK); Fincare Small Finance Bank Limited; One MobiKwik Systems Limited (NSEI:MOBIKWIK); Banco Santander, S.A. (BME:SAN); Credit Suisse Group AG; United Overseas Bank Limited (SGX:U11); JPMorgan Chase & Co. (NYSE:JPM); Punjab National Bank (NSEI:PNB); Srei Infrastructure Finance Limited; Maharashtra Industrial Development Corporation; Indian Railway Finance Corporation Limited (NSEI:IRFC); Citicorp Finance (India) Limited; Madhya Pradesh Financial Corporation; Suryoday Small Finance Bank Limited (NSEI:SURYODAY); BlackBuck Limited (NSEI:BLACKBUCK); Jio Payments Bank Limited; 360 ONE Distribution Services Limited; HSBC Holdings plc (LSE:HSBA); UniCredit S.p.A. (BIT:UCG); DBS Group Holdings Ltd (SGX:D05); State Bank of India (NSEI:SBIN); Kotak Mahindra Asset Management Company Limited; Housing and Urban Development Corporation Limited (NSEI:HUDCO); RBL Bank Limited (NSEI:RBLBANK); Maharashtra State Financial Corporation; ICICI Securities Limited; Wise Group plc (LSE:WISE); Capital Small Finance Bank Limited (NSEI:CAPITALSFB); IDFC First Bank Limited (BSE:539437); AFINIT; Bandhan Bank Limited (NSEI:BANDHANBNK); Amazon Pay (India) Private Limited; RBS Holdings N.V.; Barclays PLC (LSE:BARC); IFCI Limited (NSEI:IFCI); Infrastructure Leasing & Financial Services Limited; SBI Cards and Payment Services Limited (NSEI:SBICARD); NJ IndiaInvest Private Limited",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:01.472146Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Banco Santander, S.A. (BME:SAN); Credit Suisse Group AG; United Overseas Bank Limited (SGX:U11); JPMorgan Chase & Co. (NYSE:JPM); Punjab National Bank (NSEI:PNB); Srei Infrastructure Finance Limited; Maharashtra Industrial Development Corporation; Indian Railway Finance Corporation Limited (NSEI:IRFC); Citicorp Finance (India) Limited; Madhya Pradesh Financial Corporation; Suryoday Small Finance Bank Limited (NSEI:SURYODAY); BlackBuck Limited (NSEI:BLACKBUCK); Jio Payments Bank Limited; 360 ONE Distribution Services Limited; The Bank of East Asia, Limited (SEHK:23); The Karur Vysya Bank Limited (NSEI:KARURVYSYA); The Nainital Bank Limited; KB Financial Group Inc. (KOSE:A105560); Zipcash Card Services Pvt. Ltd.; GaragePreneurs Internet Private Limited; Ujjivan Small Finance Bank Limited (NSEI:UJJIVANSFB); RBS Holdings N.V.; Barclays PLC (LSE:BARC); IFCI Limited (NSEI:IFCI); Infrastructure Leasing & Financial Services Limited; SBI Cards and Payment Services Limited (NSEI:SBICARD); NJ IndiaInvest Private Limited; Bank of America Corporation (NYSE:BAC); American Express Company (NYSE:AXP); China Merchants Bank Co., Ltd. (SHSE:600036); BNP Paribas SA (ENXTPA:BNP); LIC Housing Finance Limited (NSEI:LICHSGFIN); Cholamandalam Investment and Finance Company Limited (BSE:511243); Bank of China Limited (SEHK:3988); Life Insurance Corporation of India (NSEI:LICI); The Hongkong and Shanghai Banking Corporation Limited, India; CSB Bank Limited (NSEI:CSBBANK); PNB Housing Finance Limited (NSEI:PNBHOUSING); Madhya Pradesh State Industrial Development Corporation Limited; Nuvama Wealth and Investment Limited; Delhi State Financial Corporation; Wealth First Portfolio Managers Limited (NSEI:WEALTH); Paytm Payments Bank Limited; Finablr PLC; HSBC Holdings plc (LSE:HSBA); UniCredit S.p.A. (BIT:UCG); DBS Group Holdings Ltd (SGX:D05); State Bank of India (NSEI:SBIN); Kotak Mahindra Asset Management Company Limited; Housing and Urban Development Corporation Limited (NSEI:HUDCO); RBL Bank Limited (NSEI:RBLBANK); Maharashtra State Financial Corporation; ICICI Securities Limited; Wise Group plc (LSE:WISE); Capital Small Finance Bank Limited (NSEI:CAPITALSFB); IDFC First Bank Limited (BSE:539437); AFINIT; Bandhan Bank Limited (NSEI:BANDHANBNK); Amazon Pay (India) Private Limited; Soci\u00e9t\u00e9 G\u00e9n\u00e9rale Soci\u00e9t\u00e9 anonyme (ENXTPA:GLE); ANZ Group Holdings Limited (ASX:ANZ); IDBI Bank Limited (NSEI:IDBI); Bank of Baroda Limited (NSEI:BANKBARODA); Kotak Mahindra Bank Limited (BSE:500247); Oversea-Chinese Banking Corporation Limited (SGX:O39); Standard Bank Group Limited (JSE:SBK); The Federal Bank Limited (NSEI:FEDERALBNK); Shriram Finance Limited (BSE:511218); The South Indian Bank Limited (NSEI:SOUTHBANK); REC Limited (NSEI:RECLTD); Sanctum Wealth Management Private Limited; DCB Bank Limited (NSEI:DCBBANK); Gujarat Industrial Development Corporation; Fino Payments Bank Limited (NSEI:FINOPB); Transaction Analysts India Pvt Ltd; Deutsche Bank Aktiengesellschaft (XTRA:DBK); NatWest Group plc (LSE:NWG); KB Kookmin Bank; Lloyds Banking Group plc (LSE:LLOY); Standard Chartered PLC (LSE:STAN); City Union Bank Limited (NSEI:CUB); Jammu and Kashmir Bank Limited (NSEI:J&KBANK); Industrial and Commercial Bank of China Limited (SEHK:1398); BNP Paribas India Holding Private Limited; Repco Home Finance Limited (NSEI:REPCOHOME); Prudent Corporate Advisory Services Limited (NSEI:PRUDENT); DAM Capital Advisors Limited (NSEI:DAMCAPITAL); Equitas Small Finance Bank Limited (NSEI:EQUITASBNK); Fincare Small Finance Bank Limited; One MobiKwik Systems Limited (NSEI:MOBIKWIK); Citigroup Inc. (NYSE:C); UBS Group AG (SWX:UBSG); GE Capital Global Holdings, LLC; Bajaj Finance Limited (NSEI:BAJFINANCE); HBOS plc; Industrial Investment Bank of India Ltd.; AU Small Finance Bank Limited (NSEI:AUBANK); Jana Small Finance Bank Limited (NSEI:JSFB); Airtel Payments Bank Ltd.; Triotech Solutions Pvt. Ltd.; Pay Point India Network Pvt. Ltd.; PhonePe Limited; Utkarsh Small Finance Bank Limited (NSEI:UTKARSHBNK); ESAF Small Finance Bank (NSEI:ESAFSFB); Anand Rathi Wealth Limited (NSEI:ANANDRATHI); Appnit Technologies Pvt. Ltd.",
+          "version": 2
+        }
+      ]
+    },
+    "financial_statements": {
+      "LTM::ebitda": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:11.847330Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 0,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:01.473403Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 0,
+          "version": 2
+        }
+      ],
+      "LTM::revenue": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:11.848245Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 21547.1,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:01.475150Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 21547.1,
+          "version": 2
+        }
+      ]
+    },
+    "market_data": {
+      "latest::close": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:11.825726Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 15,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:01.428757Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 15,
+          "version": 2
+        }
+      ],
+      "latest::market_cap": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:11.849166Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 107778.5,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:01.477011Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 107778.5,
+          "version": 2
+        }
+      ],
+      "latest::next_earnings_date_expected": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:11.851133Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "2026-10-23 00:00:00",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:01.479554Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "2026-10-23 00:00:00",
+          "version": 2
+        }
+      ],
+      "latest::returns_1d": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:11.829560Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 0.665,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:01.432543Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 0.496,
+          "version": 2
+        }
+      ],
+      "latest::returns_1m": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:11.832228Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 3.57,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:01.438326Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 3.62,
+          "version": 2
+        }
+      ],
+      "latest::returns_1w": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:11.831107Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": -0.284,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:01.435440Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": -0.194,
+          "version": 2
+        }
+      ],
+      "latest::returns_1y": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:11.835541Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": -3.29,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:01.445929Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": -3.25,
+          "version": 2
+        }
+      ],
+      "latest::returns_3m": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:11.833138Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 12.2,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:01.440433Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 12.2,
+          "version": 2
+        }
+      ],
+      "latest::returns_3y": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:11.836334Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 44.4,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:01.447921Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 44.3,
+          "version": 2
+        }
+      ],
+      "latest::returns_5y": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:11.837124Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 109.1,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:01.449809Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 109.1,
+          "version": 2
+        }
+      ],
+      "latest::returns_6m": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:11.833978Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 3.85,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:01.442227Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 3.92,
+          "version": 2
+        }
+      ],
+      "latest::returns_9m": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:11.834746Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 4.87,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:01.443366Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 4.93,
+          "version": 2
+        }
+      ],
+      "latest::returns_ytd": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:11.827530Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 7.46,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:01.430543Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 7.47,
+          "version": 2
+        }
+      ],
+      "latest::volume": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:11.837891Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 0.742,
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:01.451531Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": 15.7,
+          "version": 2
+        }
+      ]
+    },
+    "products": {
+      "product": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:11.855538Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Advisory Services; Agricultural Loans; Automobile Loans; Business Loans; Credit Cards; Cross-Border Acquisition Financing Services; Current Accounts; Custodial Services; Debt Financing Services; Distribution of General and Life Insurance Products; Distribution of Mutual Funds; Equipment Loans; Foreign Exchange Services; Gold Loans; Guarantee Services; Home Loans; Leasing Services; Letters of Credit; Miscellaneous Banking Services; Mortgage Loans; Personal Loans; Project Financing Services; Savings Accounts; Structured Financing Services; Student and Educational Loans; Syndication Services; Time Deposits; Trade Financing Services; Treasury Services; Trust Services",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:01.483537Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Advisory Services; Agricultural Loans; Automobile Loans; Business Loans; Credit Cards; Cross-Border Acquisition Financing Services; Current Accounts; Custodial Services; Debt Financing Services; Distribution of General and Life Insurance Products; Distribution of Mutual Funds; Equipment Loans; Foreign Exchange Services; Gold Loans; Guarantee Services; Home Loans; Leasing Services; Letters of Credit; Miscellaneous Banking Services; Mortgage Loans; Personal Loans; Project Financing Services; Savings Accounts; Structured Financing Services; Student and Educational Loans; Syndication Services; Time Deposits; Trade Financing Services; Treasury Services; Trust Services",
+          "version": 2
+        }
+      ],
+      "product_description": [
+        {
+          "current": false,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:34:11.854079Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Advisory Services:\nAdvisory Services include International Syndication Group Mergers and Acquisitions Advisory services.\n\nAgricultural Loans:\nAgricultural Loans include loans to farmers and to co-operatives and companies in eligible sectors such as seeds, poultry and irrigation equipment, tractors & other farm equipment, fisheries as well as micro-finance loans to borrowers in rural areas.\n\nAutomobile Loans:\nAutomobile Loans include Car Loans which includes New Car Loan and Pre Owned Used Car Loan, Two wheeler Loans and Commercial Vehicle Loans.\n\nBusiness Loans:\nBusiness Loans include working capital loans, dealer funding (Dealer Financing Services) and small ticket loans to small businesses. Also include Supply Chain Financing Solutions.\n\nCurrent Accounts:\nCurrent Accounts include cheque deposit, Made2Order Current Account, and roaming current account.",
+          "version": 1
+        },
+        {
+          "current": true,
+          "effective_date": "2026-08-01",
+          "recorded_at": "2026-08-01T19:37:01.482271Z",
+          "source": "capital_iq_exports/capiq_export_7000.xlsx",
+          "trigger": "bulk_sheet_upload",
+          "value": "Advisory Services:\nAdvisory Services include International Syndication Group Mergers and Acquisitions Advisory services.\n\nAgricultural Loans:\nAgricultural Loans include loans to farmers and to co-operatives and companies in eligible sectors such as seeds, poultry and irrigation equipment, tractors & other farm equipment, fisheries as well as micro-finance loans to borrowers in rural areas.\n\nAutomobile Loans:\nAutomobile Loans include Car Loans which includes New Car Loan and Pre Owned Used Car Loan, Two wheeler Loans and Commercial Vehicle Loans.\n\nBusiness Loans:\nBusiness Loans include working capital loans, dealer funding (Dealer Financing Services) and small ticket loans to small businesses. Also include Supply Chain Financing Solutions.\n\nCurrent Accounts:\nCurrent Accounts include cheque deposit, Made2Order Current Account, and roaming current account.",
+          "version": 2
+        }
+      ]
+    }
+  },
+  "ticker": "ICICIBANK",
+  "updated_at": "2026-08-01T19:37:01.486275Z"
+}

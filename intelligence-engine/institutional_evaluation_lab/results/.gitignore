@@ -1,0 +1,5 @@
+# Evaluation Lab release artifacts (written by the runner).
+# Commit intentionally curated baselines only; ignore local runs by default.
+*
+!.gitignore
+!README.placeholder

@@ -1,0 +1,601 @@
+{
+  "version": "2026-09-18",
+  "provenance": {
+    "class": "THIRD_PARTY_RELAYED",
+    "note": "Figures supplied in conversation, citing aggregators - FinancialFilings, Economic Times, Perivis, BazaarWatch, company investor pages - rather than read from a primary filing by this system. They carry a source but no document id, page or sentence, which is what the fact store requires before a figure may be quoted as disclosed. They are held here, outside company_facts, until the annual reports are ingested. At that point each one is either confirmed or contradicted, and a contradiction is a finding rather than an error to paper over.",
+    "doNotServeAs": "FILED"
+  },
+  "companies": {
+    "KAYNES": {
+      "isin": "INE918Z01012",
+      "facts": [
+        {
+          "concept": "revenue",
+          "definition_id": "REVENUE.OPERATIONS_NET",
+          "scope": "consolidated",
+          "period_end": "2026-03-31",
+          "value": 36263.54,
+          "prior": 27217.52,
+          "unit": "inr_million",
+          "as_reported_label": "Revenue from operations",
+          "source_document_id": "kaynes-consol-fy2026",
+          "source_page": 30
+        },
+        {
+          "concept": "net_profit",
+          "definition_id": "PAT.REPORTED",
+          "scope": "consolidated",
+          "period_end": "2026-03-31",
+          "value": 3638.9,
+          "prior": 2934.33,
+          "unit": "inr_million",
+          "as_reported_label": "Profit / (Loss) for the year",
+          "source_document_id": "kaynes-consol-fy2026",
+          "source_page": 30
+        },
+        {
+          "concept": "eps",
+          "definition_id": "EPS.BASIC",
+          "scope": "consolidated",
+          "period_end": "2026-03-31",
+          "value": 54.85,
+          "prior": 45.82,
+          "unit": "inr_per_share",
+          "as_reported_label": "Basic, under Earnings per share (nominal value of Rs. 10 each)",
+          "source_document_id": "kaynes-consol-fy2026",
+          "source_page": 30
+        },
+        {
+          "concept": "eps",
+          "definition_id": "EPS.DILUTED",
+          "scope": "consolidated",
+          "period_end": "2026-03-31",
+          "value": 54.45,
+          "prior": 45.4,
+          "unit": "inr_per_share",
+          "as_reported_label": "Diluted, under Earnings per share (nominal value of Rs. 10 each)",
+          "source_document_id": "kaynes-consol-fy2026",
+          "source_page": 30
+        },
+        {
+          "concept": "capex",
+          "definition_id": "CAPEX.CASH_PPE_INTANGIBLES",
+          "scope": "consolidated",
+          "period_end": "2026-03-31",
+          "value": 12403.01,
+          "prior": 9487.47,
+          "unit": "inr_million",
+          "as_reported_label": "Purchase of fixed assets",
+          "note": "Not decomposed. The cash-flow statement gives one investing line and does not split property, plant and equipment, capital work in progress, capital advances or intangible assets. Recorded as served rather than reconstructed from balance-sheet movements.",
+          "source_document_id": "kaynes-consol-fy2026",
+          "source_page": 31
+        },
+        {
+          "concept": "cfo",
+          "definition_id": "CFO.STATEMENT",
+          "scope": "consolidated",
+          "period_end": "2026-03-31",
+          "value": -6004.04,
+          "unit": "inr_million",
+          "as_reported_label": "Net Cash from Operating Activities",
+          "note": "Negative. Operating activities consumed 6,004.04 million while 12,403.01 million was spent on fixed assets, so the FY26 build was funded externally rather than from operations - which the QIP allotment in the same year is consistent with.",
+          "source_document_id": "kaynes-consol-fy2026",
+          "source_page": 31
+        },
+        {
+          "concept": "share_count",
+          "definition_id": "SHARE_COUNT.OUTSTANDING",
+          "scope": "entity",
+          "period_end": "2026-03-31",
+          "value": 67034654,
+          "prior": 64084305,
+          "unit": "shares",
+          "as_reported_label": "Shares issued, subscribed and fully paid-up",
+          "note": "One class, par value Rs 10. The movement is 2,872,788 allotted on the QIP and 77,561 on ESOP exercise. No split, bonus or face-value change in FY26.",
+          "source_document_id": "kaynes-consol-fy2026",
+          "source_page": 55
+        },
+        {
+          "concept": "rnd",
+          "definition_id": "RND.GROSS",
+          "scope": "consolidated",
+          "period_end": "2026-03-31",
+          "value": null,
+          "unit": null,
+          "state": "NOT_DISCLOSED",
+          "note": "Two independent relayed readings of this report disagreed - one gave 138.60 million gross with 129.24 capitalised, the other could not verify any monetary figure in the Board’s Report technology-absorption annexure. Unresolved against the primary document, so it stays NOT_DISCLOSED. A disagreement between sources is a finding, not something to pick a side on. The BRSR percentage and capitalised technical know-how are not substitutes."
+        }
+      ],
+      "segmentRevenue": null,
+      "segmentNote": "Single EMS reporting segment. No OSAT revenue row exists and none is manufactured: the OSAT and PCB disclosures are operational, not segmental.",
+      "doNotConflate": "The cumulative QIP deployment toward the Sanand OSAT and PCB projects is not FY26 cash capex. Different concepts, never summed.",
+      "provenance": "PRIMARY_FILING_READ",
+      "document": "Consolidated Financial Statements FY2025-26, Kaynes Technology India Limited",
+      "documentNote": "Pages are PDF page numbers in the consolidated statements file. That scan carries no printed page footer, and a printed annual-report page number is not invented where it cannot be verified.",
+      "segmentReporting": "Single operating segment under Ind AS 108: Electronics Manufacturing Services. There is no OSAT segment, no segment revenue table and no segment capex. Management discusses OSAT as a business vertical, and that is not the same thing.",
+      "exposureAttributable": false,
+      "exposureFinding": "Admitted on committed OSAT capex, and the exposure cannot be sized from the accounts. Kaynes reports one segment, so no share of its revenue, assets or capital expenditure is attributable to semiconductors from the filing. The 12,403.01 million of fixed-asset purchases is group-wide and covers OSAT, the PCB facility and the existing EMS business together, with no split served. This is the ADANIENT problem in a different shape: sound first-party evidence, unsizeable exposure. It is the opposite of CGPOWER, which reports Semiconductors as a segment and can be sized at 4.0% of revenue and 42.5% of group capex.",
+      "exposureVerdict": "One reporting segment, Electronics Manufacturing Services, so OSAT capex is not separable from group capex.",
+      "attribution": "NOT_ATTRIBUTABLE"
+    },
+    "CGPOWER": {
+      "isin": "INE067A01029",
+      "facts": [
+        {
+          "concept": "revenue",
+          "definition_id": "REVENUE.OPERATIONS_NET",
+          "scope": "consolidated",
+          "period_end": "2026-03-31",
+          "value": 12417.95,
+          "prior": 9908.66,
+          "unit": "inr_crore",
+          "as_reported_label": "Total revenue, all segments",
+          "source_page": 176
+        },
+        {
+          "concept": "net_profit",
+          "definition_id": "PAT.REPORTED",
+          "scope": "consolidated",
+          "period_end": "2026-03-31",
+          "value": 1198.68,
+          "prior": 972.98,
+          "unit": "inr_crore",
+          "as_reported_label": "Profit for the year",
+          "source_page": 176
+        },
+        {
+          "concept": "capex",
+          "definition_id": "CAPEX.SEGMENT",
+          "scope": "consolidated",
+          "period_end": "2026-03-31",
+          "value": 777.76,
+          "unit": "inr_crore",
+          "as_reported_label": "Capital expenditure (net of government grant), all segments",
+          "note": "Net of government grant. The India Semiconductor Mission support reduces the reported figure, so this is not gross capital spend and must not be compared with a gross capex from another company.",
+          "source_page": 176
+        }
+      ],
+      "segmentNote": "Semiconductors appears as a segment in consolidated reporting and not in standalone, so consolidated is the correct scope for semiconductor attribution.",
+      "documentProvenance": "The FY26 annual report must be read with the company's subsequent corrigendum, which the company itself states. Both belong to the document provenance.",
+      "provenance": "PRIMARY_FILING_READ",
+      "document": "Annual Report 2025-2026 (89th), CG Power and Industrial Solutions Limited",
+      "segmentRevenue": [
+        {
+          "segment": "Industrial Systems",
+          "value": 6745.43,
+          "unit": "inr_crore",
+          "scope": "consolidated",
+          "source_page": 176
+        },
+        {
+          "segment": "Power Systems",
+          "value": 5135.51,
+          "unit": "inr_crore",
+          "scope": "consolidated",
+          "source_page": 176
+        },
+        {
+          "segment": "Semiconductors",
+          "value": 502.77,
+          "prior": 0,
+          "unit": "inr_crore",
+          "scope": "consolidated",
+          "source_page": 176
+        },
+        {
+          "segment": "Others",
+          "value": 34.24,
+          "unit": "inr_crore",
+          "scope": "consolidated",
+          "source_page": 176
+        }
+      ],
+      "segmentCapex": [
+        {
+          "segment": "Semiconductors",
+          "value": 330.33,
+          "unit": "inr_crore",
+          "source_page": 176
+        },
+        {
+          "segment": "Power Systems",
+          "value": 320.71,
+          "unit": "inr_crore",
+          "source_page": 176
+        },
+        {
+          "segment": "Industrial Systems",
+          "value": 115.92,
+          "unit": "inr_crore",
+          "source_page": 176
+        },
+        {
+          "segment": "Others",
+          "value": 0.35,
+          "unit": "inr_crore",
+          "source_page": 176
+        },
+        {
+          "segment": "Unallocable",
+          "value": 10.45,
+          "unit": "inr_crore",
+          "source_page": 176
+        }
+      ],
+      "segmentResult": [
+        {
+          "segment": "Semiconductors",
+          "value": -107.86,
+          "prior": -22.39,
+          "unit": "inr_crore",
+          "source_page": 176
+        }
+      ],
+      "segmentAssets": [
+        {
+          "segment": "Semiconductors",
+          "value": 1421.39,
+          "prior": 773.5,
+          "unit": "inr_crore",
+          "source_page": 176
+        }
+      ],
+      "exposureAttributable": true,
+      "exposureFinding": "The opposite of ADANIENT, and measurable. Semiconductors is a reported operating segment in consolidated accounts - OSAT and fabless design, identified separately under Ind AS 108 (page 176) - so the theme can be sized from the filing rather than asserted. FY26 semiconductor revenue of 502.77 crore is 4.0% of group revenue, its assets of 1,421.39 crore are 11.2% of group assets, and its capital expenditure of 330.33 crore is 42.5% of all group capex. A segment taking two fifths of the capital while earning four per cent of the revenue is the AI infrastructure thesis stated in the company's own numbers. External sales were nil in FY25, so this is the first year the segment earned anything, and it is loss-making at -107.86 crore against -22.39 the year before.",
+      "rndNote": "Still no discrete FY26 R&D figure. The report describes R&D direction qualitatively at page 66 and gives no amount, so this stays NOT_DISCLOSED rather than zero.",
+      "exposureVerdict": "Semiconductors is a reported Ind AS 108 segment, so revenue, assets and capex are all separable.",
+      "attribution": "SEGMENT_REPORTED"
+    },
+    "NETWEB": {
+      "isin": "INE0NT901020",
+      "facts": [
+        {
+          "concept": "capex",
+          "definition_id": "CAPEX.CASH_PPE_INTANGIBLES",
+          "scope": "consolidated",
+          "period_end": "2026-03-31",
+          "value": 119.79,
+          "unit": "inr_million",
+          "as_reported_label": "purchase of property, plant and equipment and intangible assets",
+          "note": "CWIP additions of 68.37 mn disclosed separately and not included"
+        },
+        {
+          "concept": "rnd",
+          "definition_id": "RND.INCLUDING_CAPEX",
+          "scope": "consolidated",
+          "period_end": "2026-03-31",
+          "value": 13.14,
+          "unit": "inr_crore",
+          "as_reported_label": "R&D expenditure including capex"
+        },
+        {
+          "concept": "share_count",
+          "definition_id": "SHARE_COUNT.OUTSTANDING",
+          "scope": "entity",
+          "period_end": "2026-03-31",
+          "value": 56940687,
+          "unit": "shares",
+          "as_reported_label": "issued, subscribed and fully paid"
+        }
+      ],
+      "segmentRevenue": [
+        {
+          "segment": "AI Systems",
+          "value": 9477.9,
+          "unit": "inr_million",
+          "share_of_revenue": 0.434,
+          "yoy": 4.596
+        },
+        {
+          "segment": "HPC",
+          "value": 5307.5,
+          "unit": "inr_million"
+        },
+        {
+          "segment": "Private Cloud and HCI",
+          "value": 5169.7,
+          "unit": "inr_million"
+        }
+      ],
+      "segmentNote": "The cited layer-attribution row for data_centre/hardware.",
+      "exposureAttributable": false,
+      "exposureFinding": "The strongest theme figure any member discloses, and it is not segment reporting. The annual report carries a management table, \"Revenue by Business Segment\", putting AI Systems at 9,477.9 million, 43.4% of operating revenue, up from 1,693.8 million the year before. The audited accounts report one Ind AS 108 segment, Computer Servers, and make no segment disclosure. So the figure is company-disclosed and specific - far more than KAYNES or ADANIENT give - but it is not audited as a segment and cannot be tied to assets or capex. It belongs in the middle tier, not the top one.",
+      "exposureVerdict": "A single audited segment, Computer Servers, but management discloses AI Systems at 43.4% of revenue - the most specific theme figure in the basket.",
+      "attribution": "MANAGEMENT_DISCLOSED",
+      "segmentReporting": "Single Ind AS 108 operating segment, Computer Servers (the exchange filing names it Computer and Computer Servers), so no segment disclosure is required and none is made.",
+      "businessVerticalRevenue": {
+        "basis": "MANAGEMENT_DISCLOSURE",
+        "table": "Revenue by Business Segment, a management table in the FY2025-26 annual report - not the Ind AS 108 note",
+        "unit": "inr_million",
+        "rows": [
+          {
+            "vertical": "AI Systems",
+            "value": 9477.9,
+            "prior": 1693.8,
+            "shareOfRevenue": 0.434
+          },
+          {
+            "vertical": "HPC",
+            "value": 5307.5
+          },
+          {
+            "vertical": "Private Cloud and HCI",
+            "value": 5169.7
+          },
+          {
+            "vertical": "Software Services, Spares and Others",
+            "value": 1232.0
+          },
+          {
+            "vertical": "HPS Solutions",
+            "value": 327.7
+          },
+          {
+            "vertical": "Data Centre Servers",
+            "value": 320.8
+          }
+        ]
+      },
+      "provenanceNote": "Relayed, not read by this system: supplied citing the FY2025-26 annual report and the NSE integrated filing. Recorded as MANAGEMENT_DISCLOSED on that basis until the primary filing is read."
+    },
+    "ADANIENT": {
+      "isin": "INE423A01024",
+      "provenance": "PRIMARY_FILING_READ",
+      "document": "Annual Report 2025-26, Adani Enterprises Limited",
+      "facts": [
+        {
+          "concept": "revenue",
+          "definition_id": "REVENUE.OPERATIONS_NET",
+          "scope": "consolidated",
+          "period_end": "2026-03-31",
+          "value": 100468.61,
+          "prior": 109215.38,
+          "unit": "inr_crore",
+          "as_reported_label": "Revenue from Operations, total of all segments net of inter-segment elimination",
+          "source_page": 339
+        },
+        {
+          "concept": "net_profit",
+          "definition_id": "PAT.REPORTED",
+          "scope": "consolidated",
+          "period_end": "2026-03-31",
+          "value": 9950.69,
+          "prior": 8004.98,
+          "unit": "inr_crore",
+          "as_reported_label": "Net Profit for the Year",
+          "source_page": 339
+        }
+      ],
+      "segmentRevenue": [
+        {
+          "segment": "Integrated Resources Management",
+          "value": 28362.46,
+          "unit": "inr_crore",
+          "source_page": 339
+        },
+        {
+          "segment": "New Energy Ecosystem",
+          "value": 15399.0,
+          "unit": "inr_crore",
+          "source_page": 339
+        },
+        {
+          "segment": "Copper",
+          "value": 15284.34,
+          "unit": "inr_crore",
+          "source_page": 339
+        },
+        {
+          "segment": "Others",
+          "value": 14289.6,
+          "unit": "inr_crore",
+          "source_page": 339
+        },
+        {
+          "segment": "Airport",
+          "value": 13215.43,
+          "unit": "inr_crore",
+          "source_page": 339
+        },
+        {
+          "segment": "Road",
+          "value": 6347.18,
+          "unit": "inr_crore",
+          "source_page": 339
+        },
+        {
+          "segment": "Commercial Mining",
+          "value": 5642.3,
+          "unit": "inr_crore",
+          "source_page": 339
+        },
+        {
+          "segment": "Mining Services",
+          "value": 4445.86,
+          "unit": "inr_crore",
+          "source_page": 339
+        }
+      ],
+      "exposureAttributable": false,
+      "exposureFinding": "The open question is now answered, and the answer is no. There is no data centre segment in the consolidated segment table at page 339 - the segments are Integrated Resources Management, Mining Services, Commercial Mining, New Energy Ecosystem, Airport, Road, Copper and Others. AdaniConneX is a joint venture between AEL and EdgeConneX founded in 2021 (page 55) and is described as 'a joint venture of your Company' at page 155, so it is equity-accounted rather than consolidated: its revenue is in none of the 1,00,468.61 crore above, and its earnings appear only inside 'Share of Profit from Jointly Controlled Entities & Associates' of 257.18 crore, which covers every joint venture and associate together and is not broken out. So the data centre exposure of this member cannot be located in its financial statements at any size, and the 400 MW hyperscale order that admitted it sits in a vehicle whose results are not consolidated here.",
+      "implication": "The evidence that admitted ADANIENT is real, first-party and dated, and the admission is not withdrawn on this basis alone. What cannot be claimed is attribution: a reader cannot be shown what share of this company is the theme, because the filing does not say. Holding it for AI infrastructure means holding a diversified conglomerate whose reported revenue is mining, copper, airports and roads, for a stake in a joint venture. That is a decision for a reviewer, and it is recorded here rather than settled quietly.",
+      "exposureVerdict": "AdaniConneX is an equity-accounted joint venture and appears in no segment, so none of the reported revenue is data centre revenue.",
+      "attribution": "NOT_ATTRIBUTABLE"
+    },
+    "CLEANMAX": {
+      "isin": "INE647U01026",
+      "facts": [
+        {
+          "concept": "rnd",
+          "definition_id": "RND.GROSS",
+          "scope": "entity",
+          "period_end": "2026-03-31",
+          "value": 0,
+          "unit": "inr_million",
+          "state": "DISCLOSED_NIL",
+          "as_reported_label": "the expenditure incurred on Research and Development - Nil",
+          "note": "Disclosed as nil, which is a fact with a value, not an absence.",
+          "source_page": 40
+        },
+        {
+          "concept": "share_count",
+          "definition_id": "SHARE_COUNT.OUTSTANDING",
+          "scope": "entity",
+          "period_end": "2026-03-31",
+          "value": 117079174,
+          "unit": "shares",
+          "as_reported_label": "Equity shares of Rs 1 each, issued, subscribed and fully paid-up",
+          "note": "Prior year 5,072,091 shares of Rs 10 each. The face value changed from Rs 10 to Rs 1 during FY26, so the share count is not comparable across the two years without adjusting for the sub-division.",
+          "source_page": 500
+        },
+        {
+          "concept": "capex",
+          "definition_id": "CAPEX.CASH_PPE_INTANGIBLES",
+          "scope": "consolidated",
+          "period_end": "2026-03-31",
+          "value": 57543.18,
+          "prior": 29106.17,
+          "unit": "inr_million",
+          "as_reported_label": "Capital expenditure on property, plant and equipment, capital work in progress and capital advances (56,871.87) plus capital expenditure on other intangible assets (671.31)",
+          "components": {
+            "ppe_cwip_advances": 56871.87,
+            "intangibles": 671.31
+          },
+          "source_page": 140
+        }
+      ],
+      "provenance": "PRIMARY_FILING_READ",
+      "document": "Annual Report 2025-26, Clean Max Enviro Energy Solutions Limited",
+      "corporateAction": "A sub-division of the equity share from Rs 10 to Rs 1 took effect during FY26. That is exactly the class of action that breaks a price series against an unadjusted previous close, and it is the reason the index now reads ex-dates ahead and excludes the member for the day.",
+      "exposureAttributable": false,
+      "exposureFinding": "The 42% of contracted capacity attributed to Data and AI is a management disclosure in the quarterly presentation, not a reported segment, so it cannot be tied to revenue, assets or capex in the audited accounts. It is the most specific theme-share figure any member discloses and it still is not segment reporting.",
+      "exposureVerdict": "Management discloses 42% of contracted capacity from Data and AI - a capacity share, not revenue, and not a segment.",
+      "attribution": "MANAGEMENT_DISCLOSED"
+    },
+    "POWERINDIA": {
+      "isin": "INE07Y701011",
+      "provenance": "PRIMARY_FILING_READ",
+      "note": "Read from the PDF by this system, so every figure carries a page. Unlike the other entries in this file, these are eligible to be served as FILED.",
+      "facts": [
+        {
+          "concept": "revenue",
+          "definition_id": "REVENUE.OPERATIONS_NET",
+          "scope": "standalone",
+          "period_end": "2026-03-31",
+          "value": 8147.71,
+          "prior": 6384.93,
+          "unit": "inr_crore",
+          "as_reported_label": "Revenue from operations",
+          "source_document_id": "powerindia-iar-fy2026",
+          "document": "Integrated Annual Report 2025-26, Hitachi Energy India Limited",
+          "source_page": 239
+        },
+        {
+          "concept": "net_profit",
+          "definition_id": "PAT.REPORTED",
+          "scope": "standalone",
+          "period_end": "2026-03-31",
+          "value": 987.84,
+          "prior": 383.98,
+          "unit": "inr_crore",
+          "as_reported_label": "Profit for the year",
+          "source_document_id": "powerindia-iar-fy2026",
+          "document": "Integrated Annual Report 2025-26, Hitachi Energy India Limited",
+          "source_page": 239
+        },
+        {
+          "concept": "eps",
+          "definition_id": "EPS.BASIC_AND_DILUTED",
+          "scope": "standalone",
+          "period_end": "2026-03-31",
+          "value": 221.63,
+          "prior": 90.36,
+          "unit": "inr_per_share",
+          "as_reported_label": "Earnings per equity share of face value of Rs 2 each, basic and diluted",
+          "source_document_id": "powerindia-iar-fy2026",
+          "document": "Integrated Annual Report 2025-26, Hitachi Energy India Limited",
+          "source_page": 239
+        },
+        {
+          "concept": "share_count",
+          "definition_id": "SHARE_COUNT.OUTSTANDING",
+          "scope": "entity",
+          "period_end": "2026-03-31",
+          "value": 44572363,
+          "unit": "shares",
+          "as_reported_label": "Equity shares of Rs 2 each issued, subscribed and fully paid",
+          "note": "Unchanged during FY26; 42,381,675 at 01-Apr-2024 plus 2,190,688 issued in FY25.",
+          "source_document_id": "powerindia-iar-fy2026",
+          "document": "Integrated Annual Report 2025-26, Hitachi Energy India Limited",
+          "source_page": 241
+        },
+        {
+          "concept": "capex",
+          "definition_id": "CAPEX.CASH_PPE_INTANGIBLES",
+          "scope": "standalone",
+          "period_end": "2026-03-31",
+          "value": 509.83,
+          "prior": 129.09,
+          "unit": "inr_crore",
+          "as_reported_label": "Purchase of property, plant and equipment, capital work in progress including capital advances (509.20) plus purchase of intangible assets (0.63)",
+          "components": {
+            "ppe_cwip_advances": 509.2,
+            "intangibles": 0.63
+          },
+          "source_document_id": "powerindia-iar-fy2026",
+          "document": "Integrated Annual Report 2025-26, Hitachi Energy India Limited",
+          "source_page": 240
+        },
+        {
+          "concept": "order_backlog",
+          "definition_id": "ORDER_BACKLOG.REPORTED",
+          "scope": "entity",
+          "period_end": "2026-03-31",
+          "value": 29555.3,
+          "unit": "inr_crore",
+          "as_reported_label": "Highest-ever order backlog",
+          "source_document_id": "powerindia-iar-fy2026",
+          "document": "Integrated Annual Report 2025-26, Hitachi Energy India Limited",
+          "source_page": 53
+        },
+        {
+          "concept": "rnd",
+          "definition_id": "RND.GROSS",
+          "scope": "standalone",
+          "period_end": "2026-03-31",
+          "value": null,
+          "unit": null,
+          "state": "NOT_DISCLOSED",
+          "note": "No discrete R&D figure. The company states R&D is pooled centrally at group level and the expenditure is mainly licence fees reported as royalty and technology fees within other expenses. The Rs 241.85 crore of royalty and technology fees paid to Hitachi Energy Ltd, Switzerland is a related-party licence payment and must not be recorded or substituted as R&D spend.",
+          "source_document_id": "powerindia-iar-fy2026",
+          "document": "Integrated Annual Report 2025-26, Hitachi Energy India Limited",
+          "source_page": 225
+        }
+      ],
+      "softEvidenceNote": "Page 53 says the company \"remains focused on high-growth segments such as energy storage, data centers, e-mobility and renewable energy\". That is positioning, not activity, and does not admit anything. This member was admitted on the specific transformer, GIS and pooling-station orders in its Q1 FY27 call and FY26 report, and it still is.",
+      "measuredAgainstDerivation": {
+        "sharesFiled": 44572363,
+        "sharesDerivedFromPB": 43207582,
+        "sharesError": "-3.06%",
+        "marketCapFiledBasis": "Rs 139,199 crore at a close of 31,230",
+        "marketCapDerived": "Rs 134,937 crore",
+        "marketCapError": "-3.06%",
+        "peStatedByUpstox": 117.3,
+        "peFromFiledEps": 140.91,
+        "peGap": "+20.1%",
+        "impliedEpsBehindUpstoxPe": 266.24,
+        "filedEps": 221.63,
+        "finding": "Upstox ratios are not on the annual statements. The P/E implies earnings per share of 266.24 against a filed FY26 figure of 221.63, which is a trailing twelve months that already includes the much stronger Q1 FY27. The P/B is 3.2% from the March 2026 book for the same reason - a more recent equity. So the basis mismatch is an as-of date, not consolidated versus standalone, and it matters far more for earnings than for book: equity compounds slowly, earnings jumped 157% year on year."
+      },
+      "exposureAttributable": false,
+      "exposureFinding": "No AI segment. Hitachi Energy India reports no separate data centre or AI line, so no share of revenue, assets or capex is attributable to the theme from the accounts. Its admitting evidence is different in kind from the others: individually sized orders - 56 units of 400 kV GIS, 12.8 km of busbar, 3x 220 kV transformers - which are attributable at the order level even though the segment is not. Order backlog of 29,555.30 crore is group-wide.",
+      "exposureVerdict": "No AI segment; the admitting orders are individually sized but the backlog is group-wide.",
+      "attribution": "NOT_ATTRIBUTABLE"
+    }
+  },
+  "attributionTiers": {
+    "SEGMENT_REPORTED": "The theme is a reported operating segment under Ind AS 108. Audited, and separable into revenue, result, assets and capex.",
+    "MANAGEMENT_DISCLOSED": "The company states a figure for the theme - a revenue vertical, a capacity share - outside its audited segment reporting. Company-disclosed and specific, but not audited as a segment, and it cannot be tied to assets or capex.",
+    "NOT_ATTRIBUTABLE": "Nothing separable. A single reporting segment absorbs the line, the exposure sits in an entity outside consolidation, or no figure for the theme is disclosed at all."
+  }
+}
