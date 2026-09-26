@@ -5,7 +5,7 @@ export function useInvestorValuations() {
   useEffect(() => {
     let active = true;
     const controller = new AbortController();
-    const load = () => fetch('/investor-valuations/latest.json', {
+    const load = () => fetch('https://raw.githubusercontent.com/shivamagw06-dev/AGI/investor-valuation-data/investor-valuations/latest.json', {
       cache: 'no-store', signal: AbortSignal.any([controller.signal, AbortSignal.timeout(15000)]),
     }).then(r => { if (!r.ok) throw Error('Unavailable'); return r.json(); })
       .then(data => { if (active && data.schemaVersion === 1 && data.profiles && Number.isFinite(Date.parse(data.updatedAt))) setSnapshot(data); })
