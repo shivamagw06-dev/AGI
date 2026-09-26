@@ -22,6 +22,12 @@ jobs:
         run: python -m unittest discover -s scripts/investor_valuation -p 'test_*.py'
       - name: Refresh Yahoo prices and value disclosed shares
         run: python scripts/investor_valuation/refresh.py /tmp/investor-valuations/latest.json
+      - name: Preserve the validated snapshot for publication diagnostics
+        uses: actions/upload-artifact@v4
+        with:
+          name: investor-valuation-snapshot
+          path: /tmp/investor-valuations/latest.json
+          retention-days: 2
       - name: Publish validated snapshot atomically
         env:
           FTP_SERVER: ${{ secrets.FTP_SERVER }}
