@@ -111,6 +111,8 @@ def coverage(profile):
         profile['coverageNote'] += f" The source reports {profile['sourceReportedCount']:,} positions for its period; historical rows and security classes can affect comparisons."
     if profile.get('sourceCrawled'):
         profile['coverageNote'] += ' Retrieval-cache age at collection: ' + profile['sourceCrawled'] + '.'
+    if profile.get('extraNote'):
+        profile['coverageNote'] += ' ' + profile['extraNote']
     return profile
 
 
@@ -144,6 +146,9 @@ if __name__ == '__main__':
     dataroma_path = Path('/private/tmp/agi-portfolio-dataroma-sources.json')
     dataroma_sources = {s['name']: s['parts'] for s in json.loads(dataroma_path.read_text())} if dataroma_path.exists() else {}
     profiles = [coverage(sec(dataroma(trendlyne(entry), dataroma_sources))) for entry in inputs]
+    supplemental = json.loads((OUTPUT / 'supplemental.json').read_text())
+    overrides = {(p['country'], p['name']): coverage(dict(p, slug=slug(p['name']))) for p in supplemental}
+    profiles = [overrides.get((p['country'], p['name']), p) for p in profiles]
     (OUTPUT / 'holdings').mkdir(parents=True, exist_ok=True)
     directory = []
     for profile in profiles:
