@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet';
-import { useSearchParams, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useSearchParams, useLocation, useNavigate } from 'react-router-dom';
 import { indiaInvestors, usaInvestors } from '@/data/richKids';
 import './richKids.css';
+import { investorPath } from '@/lib/investorProfiles';
 import { API_ORIGIN } from '@/config';
 
 function Entries({ items, tone = '' }) {
@@ -36,9 +37,9 @@ export default function InstitutionsPage() {
     <button className="rk-refresh" onClick={()=>setRefresh(x=>x+1)}>Refresh table</button>
     {error?<div className="rk-empty" role="alert">{error}</div>:!current?<p role="status">Loading published portfolios…</p>:investors.length ? <>
      <div className="rk-toolbar"><label>Find an investor, holding or sector<input type="search" placeholder="Try Rekha, Titan or Healthcare" value={query} onChange={e=>setQuery(e.target.value)} /></label><label>Sort by<select value={sort} onChange={e=>setSort(e.target.value)}><option value="value">Portfolio value: highest first</option><option value="stocks">Number of stocks: highest first</option><option value="name">Investor name: A–Z</option></select></label><p aria-live="polite">{rows.length} of {investors.length} investors</p></div>
-     <p className="rk-table-hint">Scroll across to explore all columns. Names and holdings link to their supplied sources.</p>
+     <p className="rk-table-hint">Scroll across to explore all columns. Click an investor name to explore disclosed holdings and reporting history.</p>
      <div className="rk-table-wrap" role="region" aria-label="Investor portfolio comparison" tabIndex={0}><table><caption className="rk-sr-only">{country==='IN'?'Indian':'US'} investor portfolios. Currency: {country==='IN'?'INR crore':'USD million'}.</caption><thead><tr>{['Superstar','Portfolio Value* (change)','# of Stocks','Sector Preference','Quarterly Net Worth','Top Holdings','Recently bought','Recently sold'].map(label=><th key={label} scope="col">{label}</th>)}</tr></thead><tbody>{rows.map(row=><tr key={row.name}>
-      <th scope="row">{row.url?<a href={row.url} target="_blank" rel="noopener noreferrer">{row.name}<span className="rk-external" aria-hidden="true"> ↗</span></a>:row.name}</th>
+      <th scope="row"><Link to={investorPath(country,row.name)}>{row.name}<span className="rk-external" aria-hidden="true"> →</span></Link></th>
       <td className="rk-number"><strong>{currency}{row.value.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})} {unit}</strong><span className={row.change>=0?'rk-positive':'rk-negative'}>{row.change==null?'Not supplied':`${row.change>0?'+':''}${row.change}%`}</span></td><td className="rk-count">{row.stocks}</td><td><Entries items={row.sectors}/></td><td><span className="rk-muted">{row.quarterlyNetWorth || 'Not supplied'}</span></td><td><Entries items={row.holdings}/></td><td><Entries items={row.bought} tone="rk-positive"/></td><td><Entries items={row.sold} tone="rk-negative"/></td>
      </tr>)}</tbody></table>{!rows.length&&<div className="rk-no-results"><h3>No matching investors</h3><p>Try a different name, sector or holding.</p><button onClick={()=>setQuery('')}>Clear search</button></div>}</div>
      <aside className="rk-notes"><h3>How to read this table</h3><p>* Portfolio value reflects the supplied listed-shareholding figures, not personal net worth. Change periods are as reported by the source; the valuation date is shown above when supplied. “Recently bought” and “Recently sold” retain the source labels and percentages; these are not verified trade executions or investment returns.</p><p>Quarterly history is shown only when supplied as text or figures; copied graph images are not reconstructed. A dash means no entry was provided, not necessarily no activity. Figures are reproduced from the supplied snapshot and may not reconcile across columns. Family and associate portfolios can overlap; their values should not be added together.</p><p>Source: administrator-published table; initial India coverage is the supplied Trendlyne snapshot. Source links appear when included in the paste. Tables update after publication and refresh every minute while this page is visible; this is not a live price feed.</p></aside>
