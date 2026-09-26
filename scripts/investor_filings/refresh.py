@@ -5,7 +5,7 @@ not overwritten. Only the current filing for an issuer is eligible for display.
 """
 import argparse
 from concurrent.futures import ThreadPoolExecutor
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from decimal import Decimal
 import json
 from pathlib import Path
@@ -53,7 +53,7 @@ def latest_filings(rows):
             filing = {'symbol': symbol, 'stock': row['name'], 'period': period, 'url': url, 'submitted': row.get('broadcastDate') or row.get('submissionDate'), 'revision': row.get('revisedData') == 'Y', 'isin':row.get('isin'), 'exchange':'NSE'}
             # A later submission in the same quarter supersedes an earlier one.
             stamp = datetime.strptime((filing['submitted'] or '')[:20], '%d-%b-%Y %H:%M:%S') if len(filing['submitted'] or '') >= 20 else datetime.strptime(filing['submitted'], '%d-%b-%Y')
-            filing['submittedISO'] = stamp.isoformat()
+            filing['submittedISO'] = stamp.replace(tzinfo=timezone(timedelta(hours=5,minutes=30))).astimezone(timezone.utc).isoformat()
             rank = (period, stamp)
             if symbol not in latest or rank > latest[symbol][0]: latest[symbol] = (rank, filing)
         except (KeyError, ValueError, TypeError): continue

@@ -24,6 +24,9 @@ class MappingTests(unittest.TestCase):
  def test_dual_listing_dedup_and_latest_period(self):
   p,_=build_profiles([PERSON],[filing(),filing('BSE')],[rule()]);self.assertEqual(len(p['in-test']['rows']),1)
   p,_=build_profiles([PERSON],[filing(),filing('BSE','2026-09-30',150)],[rule()]);self.assertEqual(p['in-test']['rows'][0]['quantity'],150)
+ def test_cross_exchange_conflict_is_withheld_without_revision_order(self):
+  p,c=build_profiles([PERSON],[filing(),filing('BSE',quantity=200)],[rule()])
+  self.assertEqual(p['in-test']['rows'],[]);self.assertEqual(c[0]['kind'],'filing-conflict')
  def test_duplicates_not_summed(self):
   f=filing();f['rows']*=2
   p,_=build_profiles([PERSON],[f],[rule()]);self.assertEqual(p['in-test']['rows'],[])

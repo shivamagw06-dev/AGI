@@ -76,12 +76,20 @@ def build_profiles(people, filings, mappings):
     profiles = {}; candidates = []
     # One latest document per ISIN, across both exchanges. Missing ISINs remain
     # source-scoped and cannot contribute to combined totals.
-    issuers = {}
+    issuers = {}; conflicting = set()
+    def positions(f):
+        return sorted((normal(r['holder']),r['quantity']) for r in f['rows'])
     for filing in filings:
         if filing.get('status') != 'ok': continue
         key = filing.get('isin') or filing.get('symbol')
         rank = (filing['period'], filing.get('submittedISO') or '', filing.get('exchange') == 'NSE')
+        if key in issuers:
+            prior=issuers[key][1]
+            if prior['period']==filing['period'] and prior.get('exchange')!=filing.get('exchange') and positions(prior)!=positions(filing) and not (prior.get('submittedISO') and filing.get('submittedISO') and prior['submittedISO']!=filing['submittedISO']):
+                conflicting.add(key)
+                candidates.append({'id':'source-'+str(key),'kind':'filing-conflict','profileId':'','name':'Source reconciliation','stock':filing['stock'],'period':filing['period'],'evidenceUrl':filing['url'],'otherUrl':prior['url'],'reason':'NSE/BSE figures differ and revision order is not established. Excluded until an original filing with a verified submission timestamp resolves it.'})
         if key not in issuers or rank > issuers[key][0]: issuers[key] = (rank, filing)
+    issuers={key:value for key,value in issuers.items() if key not in conflicting}
     for person in people:
         pid = person.get('id') or 'in-' + person['slug']
         rules = [m for m in mappings if m['profileId']==pid]

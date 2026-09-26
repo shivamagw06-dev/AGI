@@ -2,7 +2,7 @@
 from decimal import Decimal
 from xml.etree import ElementTree as ET
 import re
-from datetime import date
+from datetime import date, datetime, timezone
 
 def local(tag):
     return tag.rsplit('}', 1)[-1]
@@ -71,7 +71,12 @@ def import_bse(payload):
     if not re.fullmatch(r'\d{6}',expected) or info['scripCode']!=expected: raise ValueError('BSE scrip code does not match the document.')
     url=str(payload.get('sourceUrl','')).strip();u=urlparse(url)
     if u.scheme!='https' or not u.hostname or u.username or len(url)>2000: raise ValueError('Link the original public HTTPS filing.')
+    submitted=str(payload.get('submittedISO') or '').strip()
+    if submitted:
+        stamp=datetime.fromisoformat(submitted.replace('Z','+00:00'))
+        if stamp.tzinfo is None: raise ValueError('Submission timestamp must include its time zone.')
+        submitted=stamp.astimezone(timezone.utc).isoformat()
     rows=parse(raw,period)
     return {**info,'symbol': info['symbol'] if re.fullmatch(r'[A-Z0-9&_.-]+',info['symbol']) and info['symbol'] not in {'NA','-'} else 'BSE-'+expected,
             'period':period,'url':url,'exchange':'BSE','status':'ok','rows':rows,'cacheVersion':2,
-            'submitted':str(payload.get('submitted') or ''),'provenance':'administrator-supplied original XBRL'}
+            'submitted':submitted or 'Not supplied','submittedISO':submitted,'provenance':'administrator-supplied original XBRL'}
