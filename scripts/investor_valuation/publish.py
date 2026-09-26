@@ -8,15 +8,28 @@ def tls_host(server):
         ipaddress.ip_address(server)
     except ValueError:
         return server
-    name=socket.gethostbyaddr(server)[0].rstrip('.').lower()
-    # Only the configured hosting provider's domains are eligible, and forward
-    # DNS must point back to the exact configured IP before any credentials move.
-    if not name.endswith(('.main-hosting.eu','.hostinger.com')):
-        raise ValueError('FTP IP needs its Hostinger TLS hostname configured')
-    addresses={item[4][0] for item in socket.getaddrinfo(name,21,type=socket.SOCK_STREAM)}
-    if server not in addresses:
-        raise ValueError('FTP hostname does not resolve to the configured server')
-    return name
+    try:
+        candidates=[socket.gethostbyaddr(server)[0].rstrip('.').lower()]
+    except socket.herror:
+        # Inspect only the public certificate, before sending ANY credentials.
+        # CA validation remains enabled; the eventual authenticated connection
+        # always performs both CA and hostname validation with a default context.
+        discovery=ssl.create_default_context()
+        discovery.check_hostname=False
+        with ftplib.FTP_TLS(context=discovery,timeout=30) as probe:
+            probe.connect(server,21)
+            probe.auth()
+            candidates=[name.lower().rstrip('.') for kind,name in probe.sock.getpeercert().get('subjectAltName',[]) if kind=='DNS' and '*' not in name]
+    for name in candidates:
+        if not (name.endswith(('.main-hosting.eu','.hostinger.com')) or name=='agarwalglobalinvestments.com' or name.endswith('.agarwalglobalinvestments.com')):
+            continue
+        try:
+            addresses={item[4][0] for item in socket.getaddrinfo(name,21,type=socket.SOCK_STREAM)}
+        except socket.gaierror:
+            continue
+        if server in addresses:
+            return name
+    raise ValueError('No verified provider hostname resolves to the configured FTP IP; configure the Hostinger TLS hostname')
 
 def publish(path):
     p=Path(path) if path != '--check' else None
