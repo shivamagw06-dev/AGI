@@ -47,3 +47,17 @@ def test_atomic_publication_country_isolation_and_failed_batch(tmp_path,monkeypa
  assert current('IN')['rows'][0]['name']=='New Investor'
  assert len(db.query('SELECT * FROM wh_institution_snapshots'))==2
  if db._BACKEND:db._BACKEND.close()
+
+def test_category_publications_are_isolated(tmp_path,monkeypatch):
+ from institutional_warehouse import db
+ monkeypatch.setenv('INSTITUTIONAL_WAREHOUSE_ROOT',str(tmp_path));monkeypatch.delenv('WAREHOUSE_DATABASE_URL',raising=False);monkeypatch.delenv('INSTITUTIONAL_WAREHOUSE_DATABASE_URL',raising=False)
+ monkeypatch.setattr(db,'_BACKEND',None);monkeypatch.setattr(db,'_INITIALISED',False)
+ assert publish(paste(),'IN')['ok']
+ assert publish(paste(**{'Superstar':'SBI Group'}),'IN',category='institutional')['ok']
+ assert current('IN')['rows'][0]['name']=='Mukesh Ambani and Family'
+ assert current('IN','institutional')['rows'][0]['name']=='SBI Group'
+ assert current('US','institutional')['published'] is False
+ with pytest.raises(ValueError):current('IN','bad')
+ assert not publish(paste(**{'#Of Stocks':'bad'}),'IN',category='institutional')['ok']
+ assert current('IN','institutional')['rows'][0]['name']=='SBI Group'
+ if db._BACKEND:db._BACKEND.close()
