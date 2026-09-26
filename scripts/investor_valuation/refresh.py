@@ -102,6 +102,8 @@ def run(output):
             if failures>=6 and failures/(offset+len(batch))>.25:
                 raise RuntimeError('Yahoo unavailable or rate limited; previous published valuations preserved')
             time.sleep(1)
+    # Validate against collection completion: US quotes may advance during the run.
+    now=datetime.now(timezone.utc)
     results={p['country'].lower()+'-'+p['slug']:value_profile(p,mappings,quotes,now) for p in profiles}
     if not any(p['pricedCount'] for p in results.values()): raise RuntimeError('No usable prices; refusing publication')
     data=dict(schemaVersion=1,updatedAt=now.isoformat(),provider='Yahoo Finance',schedule='Daily at 02:00 Asia/Kolkata',profiles=results)
