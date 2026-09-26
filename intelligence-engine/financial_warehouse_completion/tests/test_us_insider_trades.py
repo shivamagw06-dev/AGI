@@ -79,3 +79,45 @@ def test_export_gateway_missing_trade_date(tmp_path,monkeypatch):
  assert rows[0]['value']==1032300 and rows[0]['action_description'].startswith('Exercise')
  assert import_pasted(export_paste())['ok'];assert len(db.query('SELECT * FROM wh_us_insider_trades'))==1
  if db._BACKEND:db._BACKEND.close()
+
+@pytest.mark.parametrize('action,code',[
+ ('Grant, award, or other acquisition of securities at price $ 0.00 per share.','A'),
+ ('Grant, award or other acquisition of securities at price $ 0.00 per share.','A'),
+ ('Other type of transaction at price $ 0.00 per share.','J'),
+ ('Sale or transfer of securities back to the company at price $ 10.00 per share.','D'),
+ ('Gift of securities by or to the insider at price $ 0.00 per share.','G'),
+ ('','UNKNOWN'),
+])
+def test_additional_export_actions(action,code):
+ result=parse_pasted(export_paste(Action=action));assert result['ok'],result
+ row=result['rows'][0];assert row['transaction_code']==code
+ assert row['is_purchase_sale']=='false' and row['action_description']==action
+
+def test_multiline_holding_is_shares_only():
+ result=parse_pasted(export_paste(**{'Post Transaction Holding':'0\n                    \n                        (0%)'}))
+ assert result['ok'],result
+ assert result['rows'][0]['post_holding']==0
+ assert result['rows'][0]['ownership_change_pct'] is None
+ assert result['rows'][0]['trade_id']==parse_pasted(export_paste(**{'Post Transaction Holding':'0'}))['rows'][0]['trade_id']
+
+def test_holding_percentage_does_not_change_quantity():
+ result=parse_pasted(export_paste(**{'Post Transaction Holding':'12,345\n (1.25%)'}))
+ assert result['ok'];assert result['rows'][0]['post_holding']==12345
+
+@pytest.mark.parametrize('value',['0 (unknown)','0 (0%) trailing','100 shares','0\n200'])
+def test_malformed_holdings_still_fail(value):
+ assert not parse_pasted(export_paste(**{'Post Transaction Holding':value}))['ok']
+
+def test_unknown_standard_code_still_rejected():
+ assert not parse_pasted(paste({'Trade Type':''}))['ok']
+ assert not parse_pasted(export_paste(Action='Unrecognised action text'))['ok']
+
+def test_unknown_action_gateway(tmp_path,monkeypatch):
+ from institutional_warehouse import db
+ monkeypatch.setenv('INSTITUTIONAL_WAREHOUSE_ROOT',str(tmp_path))
+ monkeypatch.delenv('WAREHOUSE_DATABASE_URL',raising=False);monkeypatch.delenv('INSTITUTIONAL_WAREHOUSE_DATABASE_URL',raising=False)
+ monkeypatch.setattr(db,'_BACKEND',None);monkeypatch.setattr(db,'_INITIALISED',False)
+ result=import_pasted(export_paste(Action='',**{'Post Transaction Holding':'0\n (0%)'}));assert result['ok'],result
+ row=db.query('SELECT * FROM wh_us_insider_trades')[0]
+ assert row['transaction_code']=='UNKNOWN' and row['is_purchase_sale']=='false' and row['post_holding']==0
+ if db._BACKEND:db._BACKEND.close()

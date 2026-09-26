@@ -10,7 +10,7 @@ from datetime import datetime
 from urllib.parse import urlparse
 
 SOURCE = 'us_insider_paste'
-CODES = {'P':'Purchase (open market or private)', 'S':'Sale (open market or private)',
+CODES = {'UNKNOWN':'Unknown action (not supplied)', 'P':'Purchase (open market or private)', 'S':'Sale (open market or private)',
          'A':'Grant / award', 'D':'Disposition to issuer', 'F':'Tax / exercise withholding',
          'M':'Exercise / conversion', 'C':'Conversion', 'G':'Gift', 'J':'Other',
          'K':'Equity swap', 'U':'Tender', 'W':'Inheritance', 'Z':'Voting trust',
@@ -40,6 +40,12 @@ def _number(value):
  except ValueError: raise ValueError('invalid numeric value: '+value[:35])
  if not math.isfinite(result): raise ValueError('numeric value must be finite')
  return result
+
+def _holding(value):
+ # Clipboard holdings may contain a second line showing ownership percentage.
+ # Parse only the share count; never combine it with the percentage.
+ match=re.fullmatch(r'\s*([\d,]+(?:\.\d+)?)\s*\(\s*[\d.]+%\s*\)\s*',value)
+ return _number(match.group(1) if match else value)
 
 def _date(value, required=True, day_first=False):
  if not value and not required:return None
@@ -82,8 +88,9 @@ def parse_pasted(text, **_):
    rawcode=_pick(row,'code');code=rawcode.upper()
    code={'PURCHASE':'P','BUY':'P','SALE':'S','SELL':'S','OPTION EXERCISE':'M','GIFT':'G','AWARD':'A'}.get(code,code)
    if re.match(r'^[A-Z]\s*[-–]',code):code=code[0]
-   description=_key(rawcode)
-   for prefix, mapped in [('exercise or conversion of derivative security received from the company','M'),('payment of exercise price or tax liability using portion of securities received from the company','F'),('sale of securities on an exchange or to another person','S'),('purchase of securities on an exchange or from another person','P'),('acquisition of securities','J'),('grant, award or other acquisition','A'),('gift of securities','G')]:
+   description=_key(rawcode.replace(',', ''))
+   if export_format and not rawcode:code='UNKNOWN'
+   for prefix, mapped in [('exercise or conversion of derivative security received from the company','M'),('payment of exercise price or tax liability using portion of securities received from the company','F'),('sale of securities on an exchange or to another person','S'),('purchase of securities on an exchange or from another person','P'),('acquisition of securities','J'),('grant award or other acquisition','A'),('other type of transaction','J'),('sale or transfer of securities back to the company','D'),('gift of securities','G')]:
     if description.startswith(prefix):
      code=mapped;break
    if code not in CODES:raise ValueError('unsupported transaction code: '+rawcode)
@@ -100,14 +107,14 @@ def parse_pasted(text, **_):
    change_text=_pick(row,'change')
    change_num=None if re.match(r'^[<>]',change_text) else _number(change_text)
    identity_parts=[symbol,company,person,filing_stamp,trade,code,abs(qty),price,_pick(row,'security')]
-   if export_format:identity_parts.append(_number(_pick(row,'owned')))
+   if export_format:identity_parts.append(_holding(_pick(row,'owned')))
    identity=json.dumps([symbol or company,_pick(row,'id')]) if _pick(row,'id') else json.dumps(identity_parts,ensure_ascii=False)
    ident=hashlib.sha256(identity.encode()).hexdigest()[:32]
    candidate={'trade_id':ident,'company_name':company,'symbol':symbol or None,'symbol_match':'provided' if symbol else 'unmapped',
     'reported_on':filed,'transaction_date':trade,'filing_timestamp':filing_stamp,'person':person,'category':_pick(row,'category') or None,
     'transaction_code':code,'action_description':rawcode,'action':'Acquisition' if code=='P' else 'Disposal' if code=='S' else CODES[code],
     'quantity':abs(qty),'avg_price':price,'value':abs(value) if value is not None else None,
-    'post_holding':_number(_pick(row,'owned')),'ownership_change_pct':change_num,'ownership_change_text':change_text or None,
+    'post_holding':_holding(_pick(row,'owned')),'ownership_change_pct':change_num,'ownership_change_text':change_text or None,
     'mode':CODES[code],'regulation':'SEC Form 4 import','regime':'insider','security_type':_pick(row,'security') or None,
     'period':trade,'is_open_market':'false','is_purchase_sale':'true' if code in {'P','S'} else 'false',
     'planned':plan,'derivative':derivative,'source_url':link or None,'source':SOURCE,'country':'US','currency':'USD'}
@@ -121,7 +128,7 @@ def parse_pasted(text, **_):
   'error':'invalid_us_rows' if errors else None,'hint':'; '.join(errors[:5]) if errors else ('Paste at least one US transaction.' if not out else None),
   'errors':errors[:50],'companies':len({r['company_name'] for r in out}),'with_symbol':sum(bool(r['symbol']) for r in out),
   'open_market_rows':sum(r['is_purchase_sale']=='true' for r in out),'first_reported':min(dates) if dates else None,'last_reported':max(dates) if dates else None,
-  'preview_rows':out[:6], 'limitations':['P/S codes include private transactions; they do not prove exchange execution.','10b5-1 and derivative status stay unknown when omitted.','Trade date stays unknown when absent. Reported to Exchange exports use day/month/year.','Generic acquisitions are not treated as market purchases.','Use distinct Transaction IDs for otherwise identical trades. Amendments require reconciliation.','Values must be absolute USD amounts; ownership change is not percentage of company equity.']}
+  'preview_rows':out[:6], 'limitations':['P/S codes include private transactions; they do not prove exchange execution.','10b5-1 and derivative status stay unknown when omitted.','Trade date stays unknown when absent. Reported to Exchange exports use day/month/year.','Generic acquisitions and blank actions are not treated as market purchases. Blank actions are retained as Unknown.','Use distinct Transaction IDs for otherwise identical trades. Amendments require reconciliation.','Values must be absolute USD amounts; ownership change is not percentage of company equity.']}
 
 def import_pasted(text, *, actor='us_insider_paste'):
  from institutional_warehouse import gateway
