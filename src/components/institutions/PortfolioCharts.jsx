@@ -4,7 +4,7 @@ import { investorPath } from '@/lib/investorProfiles';
 import { portfolioChartData } from './chartData';
 import './portfolioCharts.css';
 const colors = ['#173c58','#337b8b','#c59a50','#7e7195','#92aaa8','#c8d0d6'];
-export default function PortfolioCharts({investors, country}) {
+export default function PortfolioCharts({investors, country, linkProfiles=true}) {
  const [direction, setDirection] = useState('gainers');
  const data = useMemo(()=>portfolioChartData(investors),[investors]);
  const movers = [...data.changes].sort((a,b)=>direction==='gainers'?b.change-a.change:a.change-b.change).slice(0,5);
@@ -13,7 +13,7 @@ export default function PortfolioCharts({investors, country}) {
  const slices = data.sectors.map((x,i)=>{const start=offset;offset+=x.count/data.sectorCount*100;return `${colors[i]} ${start}% ${offset}%`;});
  return <section className="portfolio-charts" aria-label={`${country==='IN'?'India':'USA'} portfolio charts`}>
   <article className="portfolio-chart"><header><h2>Reported portfolio change</h2><select aria-label="Rank portfolio changes" value={direction} onChange={e=>setDirection(e.target.value)}><option value="gainers">Highest</option><option value="decliners">Lowest</option></select></header><p>Source-reported change · periods may differ</p>
-   {movers.length?<ol className="chart-bars">{movers.map(x=><li key={x.name}><div><Link to={investorPath(country,x.name)}>{x.name}</Link><strong className={x.change<0?'is-negative':'is-positive'}>{x.change>0?'+':''}{x.change.toLocaleString('en-US',{maximumFractionDigits:2})}%</strong></div><div className="chart-track"><span className={x.change<0?'is-negative':'is-positive'} style={{width:`${Math.abs(x.change)/max*100}%`}}/></div></li>)}</ol>:<p className="chart-empty">No reported changes available.</p>}
+   {movers.length?<ol className="chart-bars">{movers.map(x=><li key={x.name}><div>{linkProfiles?<Link to={investorPath(country,x.name)}>{x.name}</Link>:<span>{x.name}</span>}<strong className={x.change<0?'is-negative':'is-positive'}>{x.change>0?'+':''}{x.change.toLocaleString('en-US',{maximumFractionDigits:2})}%</strong></div><div className="chart-track"><span className={x.change<0?'is-negative':'is-positive'} style={{width:`${Math.abs(x.change)/max*100}%`}}/></div></li>)}</ol>:<p className="chart-empty">No reported changes available.</p>}
    <footer>Snapshot comparison, not investment returns. Multi-quarter value history has not been supplied.</footer>
   </article>
   <article className="portfolio-chart"><header><h2>Most reported additions</h2><span>Investor count</span></header><p>Stocks appearing in the supplied additions lists</p>

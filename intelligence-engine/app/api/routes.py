@@ -22754,16 +22754,21 @@ def warehouse_normalise_units(
 
 
 @router.get("/institutions", dependencies=[Depends(require_token)])
-def institutions_snapshot(country: str = "IN"):
+def institutions_snapshot(country: str = "IN", category: str = "individual"):
     from financial_warehouse_completion.institutions import current
     if country not in {"IN", "US"}:
         raise HTTPException(status_code=400, detail="Invalid country")
-    return current(country)
+    if category not in {"individual", "institutional"}:
+        raise HTTPException(status_code=400, detail="Invalid investor category")
+    return current(country, category)
 
 @router.post("/institutions/{operation}", dependencies=[Depends(require_token)])
 def institutions_import(operation: str, payload: dict[str, Any] = Body(default_factory=dict)):
     from financial_warehouse_completion.institutions import parse, publish
     if operation not in {"preview", "publish"}:
         raise HTTPException(status_code=404, detail="Unknown operation")
+    category = payload.get("category", "individual")
+    if category not in {"individual", "institutional"}:
+        raise HTTPException(status_code=400, detail="Invalid investor category")
     args = (str(payload.get("text") or ""), payload.get("country", "IN"), payload.get("asOf"))
-    return parse(*args) if operation == "preview" else publish(*args, actor=str(payload.get("actor") or "admin"))
+    return parse(*args) if operation == "preview" else publish(*args, actor=str(payload.get("actor") or "admin"), category=category)

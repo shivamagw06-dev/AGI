@@ -2353,7 +2353,8 @@ export default function createIntelligenceRouter() {
   router.get('/institutions', async (req, res) => {
     if (!['IN','US'].includes(req.query.country || 'IN')) return res.status(400).json({error:'Invalid country'});
     try {
-      const result = await engineFetch(`/v1/institutions?country=${req.query.country || 'IN'}`);
+      if (!['individual','institutional'].includes(req.query.category || 'individual')) return res.status(400).json({error:'Invalid investor category'});
+      const result = await engineFetch(`/v1/institutions?country=${req.query.country || 'IN'}&category=${req.query.category || 'individual'}`);
       res.set('Cache-Control','no-store');
       return res.status(result.status).json(result.data);
     } catch (error) { return res.status(503).json({error:'Institutions are temporarily unavailable.'}); }
@@ -2361,7 +2362,7 @@ export default function createIntelligenceRouter() {
   for (const operation of ['preview','publish']) {
     router.post(`/institutions/${operation}`, requireStrategyLabAdmin, async (req, res) => {
       try {
-        const result = await engineFetch(`/v1/institutions/${operation}`, {method:'POST',body:{text:String(req.body?.text || ''),country:req.body?.country || 'IN',asOf:req.body?.asOf || null,actor:req.strategyLabActor?.id || 'admin'},timeoutMs:60000});
+        const result = await engineFetch(`/v1/institutions/${operation}`, {method:'POST',body:{text:String(req.body?.text || ''),country:req.body?.country || 'IN',category:req.body?.category || 'individual',asOf:req.body?.asOf || null,actor:req.strategyLabActor?.id || 'admin'},timeoutMs:60000});
         return res.status(result.status).json(result.data);
       } catch (error) { return res.status(503).json({ok:false,error:'Institutions import is temporarily unavailable.'}); }
     });

@@ -67,16 +67,23 @@ def parse(text,country='IN',as_of=None):
    rows[identity]=row
   except ValueError as e:errors.append(f'Row {n}: {e}')
  return {'ok':bool(rows) and not errors,'country':country,'currency':'INR' if country=='IN' else 'USD','unit':'Cr' if country=='IN' else 'M','asOf':as_of or None,'rows':list(rows.values()),'row_count':len(rows),'duplicate_rows':duplicates,'errors':errors or ([] if rows else ['No investor rows found.'])}
-def current(country):
- from institutional_warehouse import db
+def snapshot_key(country,category):
  if country not in {'IN','US'}:raise ValueError('Invalid country')
- found=db.query('SELECT snapshot_json FROM wh_institution_snapshots WHERE country = ?',[country])
- return json.loads(found[0]['snapshot_json']) if found else {'country':country,'published':False,'rows':[]}
-def publish(text,country,as_of=None,actor='admin'):
+ if category not in {'individual','institutional'}:raise ValueError('Invalid investor category')
+ return country if category=='individual' else country+':institutional'
+def current(country,category='individual'):
+ from institutional_warehouse import db
+ storage_key=snapshot_key(country,category)
+ found=db.query('SELECT snapshot_json FROM wh_institution_snapshots WHERE country = ?',[storage_key])
+ result=json.loads(found[0]['snapshot_json']) if found else {'country':country,'published':False,'rows':[]}
+ result['category']=category
+ return result
+def publish(text,country,as_of=None,actor='admin',category='individual'):
  from institutional_warehouse import gateway
+ storage_key=snapshot_key(country,category)
  result=parse(text,country,as_of)
  if not result['ok']:return result
- result.update(published=True,updatedAt=datetime.now(timezone.utc).isoformat())
+ result.update(category=category,published=True,updatedAt=datetime.now(timezone.utc).isoformat())
  payload=json.dumps(result,ensure_ascii=False,allow_nan=False)
- written=gateway.write('institution_snapshots',[{'country':country,'snapshot_json':payload}],source='institutions_admin_paste',actor=actor,reason='Replace selected market investor snapshot')
+ written=gateway.write('institution_snapshots',[{'country':storage_key,'snapshot_json':payload}],source='institutions_admin_paste',actor=actor,reason='Replace selected market investor snapshot')
  return {'ok':bool(written.get('ok')) and written.get('quarantined',0)==0,'row_count':result['row_count'],'written':written,'updatedAt':result['updatedAt']}
