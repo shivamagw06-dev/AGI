@@ -3,6 +3,7 @@ import { Helmet } from 'react-helmet';
 import { Link, useParams } from 'react-router-dom';
 import { API_ORIGIN } from '@/config';
 import { disclosureStatus, investorSlug, portfolioCsv } from '@/lib/investorProfiles';
+import { usaInstitutionalInvestors } from '@/data/usInstitutionalInvestors';
 import { indiaInstitutionalInvestors } from '@/data/institutionalInvestors';
 import directory from '@/data/investorProfiles/index.json';
 import './richKids.css';
@@ -40,7 +41,7 @@ export default function InvestorPortfolioPage() {
   useEffect(() => {
     let active = true;
     const controller = new AbortController();
-    setProfile(null); setSummary(category==='institutional'?indiaInstitutionalInvestors.find(row=>investorSlug(row.name)===investorId)||null:null); setError(''); setQuery(''); setStatus('all'); setPage(0); setHistory(false);
+    setProfile(null); setSummary(category==='institutional'?(country==='US'?usaInstitutionalInvestors:indiaInstitutionalInvestors).find(row=>investorSlug(row.name)===investorId)||null:null); setError(''); setQuery(''); setStatus('all'); setPage(0); setHistory(false);
     if (!country) return () => { active = false; controller.abort(); };
     const load = snapshots[`../data/investorProfiles/holdings/${country.toLowerCase()}-${investorId}.json`];
     if (load) load().then(module => { if (active) setProfile(module.default); }).catch(() => { if (active) setError('The holdings snapshot could not load. Please retry.'); });
