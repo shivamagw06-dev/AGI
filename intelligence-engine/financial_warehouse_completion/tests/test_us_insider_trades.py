@@ -121,3 +121,28 @@ def test_unknown_action_gateway(tmp_path,monkeypatch):
  row=db.query('SELECT * FROM wh_us_insider_trades')[0]
  assert row['transaction_code']=='UNKNOWN' and row['is_purchase_sale']=='false' and row['post_holding']==0
  if db._BACKEND:db._BACKEND.close()
+
+def rounded_price_export(price='81.39',value='27,266'):
+ return export_paste(Stock='Example Utility',Action=f'Purchase of securities on an exchange or from another person at price $ {price} per share.',Quantity='335',**{'Avg. Price':'81.4','Value':value,'Post Transaction Holding':'670'})
+
+def test_rounded_prices_distinguish_trades_in_any_order():
+ a=rounded_price_export();b=rounded_price_export('81.36','27,254')
+ r=parse_pasted(a+b.split('\n',1)[1]);reverse=parse_pasted(b+a.split('\n',1)[1])
+ assert r['ok'] and r['row_count']==2
+ assert {x['trade_id'] for x in r['rows']}=={x['trade_id'] for x in reverse['rows']}
+ assert parse_pasted(a+a.split('\n',1)[1])['row_count']==1
+
+def test_legacy_identity_reused_without_merging_distinct_trade(tmp_path,monkeypatch):
+ from institutional_warehouse import db,gateway
+ monkeypatch.setenv('INSTITUTIONAL_WAREHOUSE_ROOT',str(tmp_path))
+ monkeypatch.delenv('WAREHOUSE_DATABASE_URL',raising=False);monkeypatch.delenv('INSTITUTIONAL_WAREHOUSE_DATABASE_URL',raising=False)
+ monkeypatch.setattr(db,'_BACKEND',None);monkeypatch.setattr(db,'_INITIALISED',False)
+ a=rounded_price_export();b=rounded_price_export('81.36','27,254')
+ old=parse_pasted(a)['rows'][0];old['trade_id']=old.pop('_legacy_trade_id');old_id=old['trade_id']
+ assert gateway.write('us_insider_trades',[old],source='us_insider_paste')['ok']
+ assert import_pasted(b)['ok']
+ result=import_pasted(a+b.split('\n',1)[1]);assert result['ok'];assert result['written']['unchanged']==2
+ rows=db.query('SELECT * FROM wh_us_insider_trades');assert len(rows)==2
+ assert old_id in {r['trade_id'] for r in rows}
+ assert {r['value'] for r in rows}=={27266,27254}
+ if db._BACKEND:db._BACKEND.close()

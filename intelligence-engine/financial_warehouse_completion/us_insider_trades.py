@@ -109,8 +109,11 @@ def parse_pasted(text, **_):
    identity_parts=[symbol,company,person,filing_stamp,trade,code,abs(qty),price,_pick(row,'security')]
    if export_format:identity_parts.append(_holding(_pick(row,'owned')))
    identity=json.dumps([symbol or company,_pick(row,'id')]) if _pick(row,'id') else json.dumps(identity_parts,ensure_ascii=False)
+   legacy_ident=hashlib.sha256(identity.encode()).hexdigest()[:32]
+   if export_format and not _pick(row,'id'):
+    identity=json.dumps([identity, _key(rawcode), abs(value) if value is not None else None],ensure_ascii=False)
    ident=hashlib.sha256(identity.encode()).hexdigest()[:32]
-   candidate={'trade_id':ident,'company_name':company,'symbol':symbol or None,'symbol_match':'provided' if symbol else 'unmapped',
+   candidate={'trade_id':ident,'_legacy_trade_id':legacy_ident if ident!=legacy_ident else None,'company_name':company,'symbol':symbol or None,'symbol_match':'provided' if symbol else 'unmapped',
     'reported_on':filed,'transaction_date':trade,'filing_timestamp':filing_stamp,'person':person,'category':_pick(row,'category') or None,
     'transaction_code':code,'action_description':rawcode,'action':'Acquisition' if code=='P' else 'Disposal' if code=='S' else CODES[code],
     'quantity':abs(qty),'avg_price':price,'value':abs(value) if value is not None else None,
@@ -131,8 +134,20 @@ def parse_pasted(text, **_):
   'preview_rows':out[:6], 'limitations':['P/S codes include private transactions; they do not prove exchange execution.','10b5-1 and derivative status stay unknown when omitted.','Trade date stays unknown when absent. Reported to Exchange exports use day/month/year.','Generic acquisitions and blank actions are not treated as market purchases. Blank actions are retained as Unknown.','Use distinct Transaction IDs for otherwise identical trades. Amendments require reconciliation.','Values must be absolute USD amounts; ownership change is not percentage of company equity.']}
 
 def import_pasted(text, *, actor='us_insider_paste'):
- from institutional_warehouse import gateway
+ from institutional_warehouse import gateway, db
  parsed=parse_pasted(text)
  if not parsed['ok']:return {k:v for k,v in parsed.items() if k!='rows'}
+ # Preserve IDs already published by the earlier rounded-price importer.
+ # Match description AND value before reusing one; a distinct trade gets its new ID.
+ legacy_ids=list({r['_legacy_trade_id'] for r in parsed['rows'] if r.get('_legacy_trade_id')})
+ existing={}
+ for start in range(0,len(legacy_ids),200):
+  batch=legacy_ids[start:start+200]
+  for old in db.query('SELECT trade_id, action_description, value FROM wh_us_insider_trades WHERE trade_id IN ('+','.join('?' for _ in batch)+')',batch):
+   existing[old['trade_id']]=old
+ for row in parsed['rows']:
+  old=existing.get(row.pop('_legacy_trade_id',None))
+  if old and _key(old.get('action_description'))==_key(row['action_description']) and old.get('value')==row['value']:
+   row['trade_id']=old['trade_id']
  written=gateway.write('us_insider_trades',parsed['rows'],source=SOURCE,actor=actor,reason='us_insider_paste')
  return {**{k:v for k,v in parsed.items() if k!='rows'},'written':written,'ok':bool(written.get('ok'))}
