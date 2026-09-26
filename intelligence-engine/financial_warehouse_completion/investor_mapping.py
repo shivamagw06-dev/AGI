@@ -6,7 +6,7 @@ import hashlib
 import json
 import re
 
-DATA = Path(__file__).with_name('data')
+DATA = Path(__file__).with_name('reference_data')
 BUCKETS = {'personal', 'family', 'corporate', 'managed'}
 
 def normal(value):
