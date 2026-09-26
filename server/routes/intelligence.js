@@ -2350,6 +2350,23 @@ export default function createIntelligenceRouter() {
   //
   // Same reason as the workbook below: the engine routes are token-guarded and
   // the token belongs in this process, not in the browser bundle.
+  router.get('/institutions', async (req, res) => {
+    if (!['IN','US'].includes(req.query.country || 'IN')) return res.status(400).json({error:'Invalid country'});
+    try {
+      const result = await engineFetch(`/v1/institutions?country=${req.query.country || 'IN'}`);
+      res.set('Cache-Control','no-store');
+      return res.status(result.status).json(result.data);
+    } catch (error) { return res.status(503).json({error:'Institutions are temporarily unavailable.'}); }
+  });
+  for (const operation of ['preview','publish']) {
+    router.post(`/institutions/${operation}`, requireStrategyLabAdmin, async (req, res) => {
+      try {
+        const result = await engineFetch(`/v1/institutions/${operation}`, {method:'POST',body:{text:String(req.body?.text || ''),country:req.body?.country || 'IN',asOf:req.body?.asOf || null,actor:req.strategyLabActor?.id || 'admin'},timeoutMs:60000});
+        return res.status(result.status).json(result.data);
+      } catch (error) { return res.status(503).json({ok:false,error:'Institutions import is temporarily unavailable.'}); }
+    });
+  }
+
   router.post('/insider-trades/preview', requireStrategyLabAdmin, async (req, res) => {
     try {
       const result = await engineFetch('/v1/warehouse/import/insider-trades/preview', {

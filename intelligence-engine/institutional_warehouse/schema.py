@@ -1133,6 +1133,12 @@ INSIDER_TRADES = Tab(
 )
 
 # --------------------------------------------------------------------------
+INSTITUTION_SNAPSHOTS = Tab(
+    id="institution_snapshots", label="Institution Snapshots", description="Admin-published investor portfolio tables, one atomic snapshot per country.",
+    mode="append", key=("country",), order_by=("country ASC",), search_columns=("country",), icon="ownership",
+    columns=(_c("country", "Country", TEXT, required=True), _c("snapshot_json", "Snapshot", TEXT, required=True)),
+)
+
 US_INSIDER_TRADES = Tab(
     id="us_insider_trades", label="US Insider Trades", description="Pasted US ownership disclosures; absolute USD values, separate from India.",
     mode="append", key=("trade_id",), order_by=("reported_on DESC", "value DESC"), search_columns=("symbol", "company_name", "person"), icon="ownership",
@@ -2928,6 +2934,7 @@ TABS: tuple[Tab, ...] = (
     OWNERSHIP,
     INSIDER_TRADES,
     US_INSIDER_TRADES,
+    INSTITUTION_SNAPSHOTS,
     FUNDAMENTALS_REFRESH_QUEUE,
     PEER_RELATIONSHIPS,
     FWCP_IMPORT_QUEUE,

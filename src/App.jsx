@@ -263,6 +263,7 @@ function PublicRoutes() {
       <Route path="/global-markets" element={gate('global_markets', <GlobalMarketsPage />)} />
       <Route path="/us-stock-intelligence" element={gate('global_markets', <UsStockIntelligence />)} />
       <Route path="/economics" element={gate('economics', <EconomicsPage />)} />
+      <Route path="/institutions" element={<RichKidsPage />} />
       <Route path="/rich-kids" element={<RichKidsPage />} />
       <Route path="/insider-activity" element={gate('insider', <InsiderActivityPage />)} />
       <Route path="/global" element={<Navigate replace to="/global-markets" />} />
