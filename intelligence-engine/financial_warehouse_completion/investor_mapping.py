@@ -42,7 +42,9 @@ def validate(payload):
     if not 15 <= len(note) <= 2000: raise ValueError('Explain what the source establishes, including group membership where relevant.')
     status = payload.get('status', 'approved')
     if status not in {'approved','rejected','revoked'}: raise ValueError('Invalid review decision.')
-    return {'id':identity(person,holder,scope),'profileId':person,'holder':holder,'scope':scope,'bucket':bucket,
+    mapping_id=identity(person,holder,scope)
+    if payload.get('id') and payload['id']!=mapping_id: raise ValueError('Revoke the old mapping before changing its legal name, investor or issuer scope. Then create a new mapping.')
+    return {'id':mapping_id,'profileId':person,'holder':holder,'scope':scope,'bucket':bucket,
             'validFrom':start,'validTo':end or None,'evidenceUrl':evidence,'evidenceNote':note,'status':status}
 
 def seeds():

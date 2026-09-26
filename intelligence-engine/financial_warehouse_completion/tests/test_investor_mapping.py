@@ -24,3 +24,10 @@ def test_invalid_review_cannot_overwrite(isolated_db):
  for field,value in [('profileId','in-unknown'),('bucket','wealth'),('validFrom','bad'),('evidenceUrl','javascript:bad'),('evidenceNote','')]:
   with pytest.raises(ValueError):save({**seed,field:value},'test-admin')
  assert not isolated_db.query('SELECT * FROM wh_investor_entity_mappings')
+
+
+def test_edit_cannot_leave_old_scope_approved(isolated_db):
+ seed=seeds()[0]
+ with pytest.raises(ValueError,match='Revoke the old mapping'):
+  save({**seed,'scope':'*'},'test-admin')
+ assert not isolated_db.query('SELECT * FROM wh_investor_entity_mappings')
