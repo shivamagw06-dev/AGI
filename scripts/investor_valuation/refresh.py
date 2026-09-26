@@ -46,7 +46,7 @@ def eligible(profile,row,mappings):
 def fetch_quote(symbol):
     # No alternate hosts, proxy bypasses, or retries on provider rate limits.
     url='https://query1.finance.yahoo.com/v8/finance/chart/'+quote(symbol,safe='')+'?range=1y&interval=1d&events=splits'
-    proc=subprocess.run(['curl','--fail','--silent','--show-error','--max-time','25',url],capture_output=True,text=True)
+    proc=subprocess.run(['curl','--fail','--silent','--show-error','--max-time','25','--user-agent','AGI-Portfolio-Valuation/1.0 (+https://agarwalglobalinvestments.com)',url],capture_output=True,text=True)
     if proc.returncode: raise RuntimeError('Yahoo quote unavailable')
     data=json.loads(proc.stdout)['chart']['result'][0]
     meta=data['meta']; stamps=data.get('timestamp',[])
