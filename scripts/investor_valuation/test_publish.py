@@ -1,14 +1,21 @@
-import unittest
-from unittest.mock import patch
-from publish import tls_host
+import ssl, unittest
+from unittest.mock import patch, MagicMock
+from publish import tls_host, publish
 class PublicationTests(unittest.TestCase):
     def test_dns_hostname_is_verified_directly(self):
         self.assertEqual(tls_host('example.hostinger.com'),'example.hostinger.com')
-    @patch('publish.socket.getaddrinfo',return_value=[(None,None,None,None,('192.0.2.1',21))])
-    @patch('publish.socket.gethostbyaddr',return_value=('srv1.main-hosting.eu',[],['192.0.2.1']))
-    def test_provider_hostname_must_point_to_original_ip(self,*_):
-        self.assertEqual(tls_host('192.0.2.1'),'srv1.main-hosting.eu')
-        with self.assertRaises(ValueError): tls_host('192.0.2.2')
-    @patch('publish.socket.gethostbyaddr',return_value=('hostinger.com.attacker.example',[],['192.0.2.1']))
-    def test_other_provider_hostname_rejected(self,*_):
-        with self.assertRaises(ValueError): tls_host('192.0.2.1')
+    def test_ip_uses_expected_hostinger_service_identity(self):
+        self.assertEqual(tls_host('192.0.2.1'),'hstgr.io')
+        self.assertEqual(tls_host('2001:db8::1'),'hstgr.io')
+    @patch.dict('os.environ',{'FTP_SERVER':'192.0.2.1','FTP_USERNAME':'test','FTP_PASSWORD':'test'})
+    @patch('publish.ftplib.FTP_TLS')
+    def test_preflight_keeps_tcp_peer_and_full_certificate_verification(self,cls):
+        ftp=cls.return_value.__enter__.return_value
+        publish('--check')
+        context=cls.call_args.kwargs['context']
+        self.assertTrue(context.check_hostname)
+        self.assertEqual(context.verify_mode,ssl.CERT_REQUIRED)
+        ftp.connect.assert_called_once_with('192.0.2.1',21)
+        self.assertEqual(ftp.host,'hstgr.io')
+        ftp.login.assert_called_once_with('test','test')
+        ftp.storbinary.assert_not_called()

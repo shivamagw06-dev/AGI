@@ -1,43 +1,26 @@
 """Atomically replace only the nightly valuation file over verified FTPS."""
-import ftplib, ipaddress, os, socket, ssl, sys, uuid
+import ftplib, ipaddress, os, ssl, sys, uuid
 from pathlib import Path
 
 def tls_host(server):
-    """Resolve legacy IP configuration to a verified Hostinger service hostname."""
+    """Hostinger's shared FTP certificate covers hstgr.io, not server IPs.
+
+    The TCP destination stays the configured server. This selects the expected
+    TLS service identity; certificate chain AND hostname checks stay enabled.
+    """
     try:
         ipaddress.ip_address(server)
     except ValueError:
         return server
-    try:
-        candidates=[socket.gethostbyaddr(server)[0].rstrip('.').lower()]
-    except socket.herror:
-        # Inspect only the public certificate, before sending ANY credentials.
-        # CA validation remains enabled; the eventual authenticated connection
-        # always performs both CA and hostname validation with a default context.
-        discovery=ssl.create_default_context()
-        discovery.check_hostname=False
-        with ftplib.FTP_TLS(context=discovery,timeout=30) as probe:
-            probe.connect(server,21)
-            probe.auth()
-            certificate_names=[name.lower().rstrip('.') for kind,name in probe.sock.getpeercert().get('subjectAltName',[]) if kind=='DNS']
-            print('Public FTP certificate DNS names:', ', '.join(certificate_names))
-            candidates=[name for name in certificate_names if '*' not in name]
-    for name in candidates:
-        if not (name.endswith(('.main-hosting.eu','.hostinger.com')) or name=='agarwalglobalinvestments.com' or name.endswith('.agarwalglobalinvestments.com')):
-            continue
-        try:
-            addresses={item[4][0] for item in socket.getaddrinfo(name,21,type=socket.SOCK_STREAM)}
-        except socket.gaierror:
-            continue
-        if server in addresses:
-            return name
-    raise ValueError('No verified provider hostname resolves to the configured FTP IP; configure the Hostinger TLS hostname')
+    return 'hstgr.io'
 
 def publish(path):
     p=Path(path) if path != '--check' else None
-    host=tls_host(os.environ['FTP_SERVER'])
+    server=os.environ['FTP_SERVER']
+    host=tls_host(server)
     with ftplib.FTP_TLS(context=ssl.create_default_context(),timeout=120) as ftp:
-        ftp.connect(host,21)
+        ftp.connect(server,21)
+        ftp.host=host  # TLS SNI/identity only; the established TCP peer stays unchanged.
         ftp.login(os.environ['FTP_USERNAME'],os.environ['FTP_PASSWORD'])
         ftp.prot_p()
         if p is None:
