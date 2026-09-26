@@ -3,6 +3,7 @@ import { Helmet } from 'react-helmet';
 import { Link, useSearchParams, useLocation, useNavigate } from 'react-router-dom';
 import { indiaInvestors, usaInvestors } from '@/data/richKids';
 import './richKids.css';
+import PortfolioCharts from '@/components/institutions/PortfolioCharts';
 import { useInvestorValuations, valuationMoney, valuationTime, valuationStale } from '@/lib/investorValuations';
 import { investorSlug } from '@/lib/investorProfiles';
 import { investorPath } from '@/lib/investorProfiles';
@@ -39,6 +40,7 @@ export default function InstitutionsPage() {
    <section id="rk-panel" role="tabpanel" aria-labelledby={`rk-tab-${country}`} tabIndex={0}>
     <div className="institutions-status"><p><span className={`institutions-status-dot ${valuationStale(valuations) ? 'is-stale' : ''}`} aria-hidden="true"/>{valuations ? `Prices refreshed ${valuationTime(valuations.updatedAt)}${valuationStale(valuations) ? ' · refresh overdue' : ''}` : 'Price refresh pending'}<span className="institutions-schedule">Daily refresh · 2:00 AM IST</span></p><button className="rk-refresh" onClick={()=>setRefresh(x=>x+1)}>↻ Refresh table</button></div>
     {error?<div className="rk-empty" role="alert">{error}</div>:!current?<p role="status">Loading published portfolios…</p>:investors.length ? <>
+     <PortfolioCharts investors={investors} country={country} />
      <div className="rk-toolbar"><label>Search portfolios<input type="search" placeholder="Investor, company or sector…" value={query} onChange={e=>setQuery(e.target.value)} /></label><label>Sort by<select value={sort} onChange={e=>setSort(e.target.value)}><option value="value">Reported value: high to low</option><option value="stocks">Stock count: high to low</option><option value="name">Investor name: A–Z</option></select></label><p aria-live="polite">{rows.length} of {investors.length} investors</p></div>
      <p className="rk-table-hint">Select an investor to view holdings. Daily estimates exclude unpriced positions; partial totals are marked.</p>
      <div className="rk-table-wrap" role="region" aria-label="Investor portfolio comparison" tabIndex={0}><table><caption className="rk-sr-only">{country==='IN'?'Indian':'US'} investor portfolios. Currency: {country==='IN'?'INR crore':'USD million'}.</caption><thead><tr>{['Investor','Reported value','Daily estimate','Stocks','Sector exposure',...(hasQuarterlyHistory ? ['Quarterly history'] : []),'Top holdings','Reported additions','Reported reductions'].map(label=><th key={label} scope="col">{label}</th>)}</tr></thead><tbody>{rows.map(row=>{const valuation=valuations?.profiles?.[`${country.toLowerCase()}-${investorSlug(row.name)}`]; return <tr key={row.name}>
