@@ -78,6 +78,7 @@ const PrivateEquityPage = React.lazy(() => import('@/pages/PrivateEquityPage'));
 const PrivateEquityFirmPage = React.lazy(() => import('@/pages/PrivateEquityFirmPage'));
 const IntelligenceEntityPage = React.lazy(() => import('@/pages/IntelligenceEntityPage'));
 const EconomicsPage = React.lazy(() => import('@/pages/EconomicsPage'));
+const RichKidsPage = React.lazy(() => import('@/pages/RichKidsPage'));
 const InsiderActivityPage = React.lazy(() => import('@/pages/InsiderActivityPage'));
 
 const FinancialModelingPage = React.lazy(() => import('@/pages/FinancialModelingPage'));
@@ -262,6 +263,7 @@ function PublicRoutes() {
       <Route path="/global-markets" element={gate('global_markets', <GlobalMarketsPage />)} />
       <Route path="/us-stock-intelligence" element={gate('global_markets', <UsStockIntelligence />)} />
       <Route path="/economics" element={gate('economics', <EconomicsPage />)} />
+      <Route path="/rich-kids" element={<RichKidsPage />} />
       <Route path="/insider-activity" element={gate('insider', <InsiderActivityPage />)} />
       <Route path="/global" element={<Navigate replace to="/global-markets" />} />
       <Route path="/global-intelligence" element={<Navigate replace to="/global-markets" />} />
