@@ -19,12 +19,15 @@ def tls_host(server):
     return name
 
 def publish(path):
-    p=Path(path)
+    p=Path(path) if path != '--check' else None
     host=tls_host(os.environ['FTP_SERVER'])
     with ftplib.FTP_TLS(context=ssl.create_default_context(),timeout=120) as ftp:
         ftp.connect(host,21)
         ftp.login(os.environ['FTP_USERNAME'],os.environ['FTP_PASSWORD'])
         ftp.prot_p()
+        if p is None:
+            print('Verified Hostinger TLS connection and login')
+            return
         try: ftp.cwd('investor-valuations')
         except ftplib.error_perm:
             ftp.mkd('investor-valuations'); ftp.cwd('investor-valuations')
