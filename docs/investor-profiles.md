@@ -41,3 +41,30 @@ Institutional entries reuse the holdings route and existing nightly valuation jo
 ## USA institutional directory, 26 September 2026
 
 All 16 supplied US entries are included. Summary numbers and labels come from the owner's paste, not the differently dated public index cache. Nine public detail tables yielded 769 holding rows; seven profiles are summary-only because no usable table was returned. Holder names and source periods are retained, including older periods. Fund labels must not be interpreted as a verified mapping to a manager's complete 13F book. These US disclosures lack verified security mappings in some cases and may remain unpriced. The existing nightly job applies its normal identity and currency checks. India institutional and existing investor records are preserved.
+
+## Original Indian exchange disclosures
+
+`scripts/investor_filings/refresh.py` reads NSE's public all-company SHP index
+and the original XBRL documents. The daily workflow runs at 02:00 IST (GitHub
+queueing can delay it). Each run attempts up to 250 new, revised or failed
+issuer documents, with two concurrent requests; successful unchanged documents
+are reused. An initial/backlog scan therefore spans multiple runs. Failed
+requests rotate behind unattempted documents. Index/read/publication failures
+preserve the previously published feed. A revised document replaces its prior
+version only in this separate feed; incomplete or unsupported documents are
+not treated as zero positions.
+
+The feed is `investor-filings/latest.json` on `investor-valuation-data`.
+Initialize it using `refresh({}, index, limit)` and publish only after at least
+one document parses successfully. Subsequent runs require readable previous
+state. The public profile section shows issuer coverage, reporting dates and
+links to original documents. It matches normalized exact directory names only;
+it does not claim identity verification, infer family/group aliases, combine
+ambiguous contexts, classify missing holdings as sales, or scan BSE-only issuers.
+It never copies PAN identifiers into the feed. Existing imported portfolios,
+summary rankings and Yahoo valuations remain separate and unchanged.
+
+This is a first-stage disclosure feed, **not automatic reconciliation of every
+listed investor's complete portfolio**. Legal-entity aliases, BSE-only coverage,
+identity checks for new issuers, and reconciliation of groups require further
+work before the old portfolio quantities or summary totals can be replaced.
