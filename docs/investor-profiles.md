@@ -17,3 +17,17 @@ This release is a dated collection retrieved on 2026-09-26, not an automatic ing
 Validate an updated collection with `node --test src/lib/investorProfiles.test.js` and `npm run build`. The initial release additionally exercised rendered India history, US security rows and pagination, back navigation, and unavailable-source summary pages through React with a local DOM.
 
 Supplemental snapshots in `src/data/investorProfiles/supplemental.json` cover Robert Karr (10 positions, 2026 Q1) and a partial Ron Baron excerpt (40 weights, 2026 Q2). The final collection has 111 retrieved disclosure snapshots, 11 partial tables, and 12 unavailable detailed sources.
+
+## Daily price-based valuations
+
+The `Investor Portfolio Nightly Valuation` workflow is scheduled for 20:30 UTC (02:00 IST the following day), including weekends. GitHub can delay scheduled starts. It can also be run manually. This refreshes prices, not the underlying disclosure quantities or pasted summary. At 02:00 IST the US regular session is still open during US standard time; quotes are not always closing prices.
+
+The standalone JSON at `/investor-valuations/latest.json` is uploaded using verified FTPS and an atomic rename, without synchronizing or deleting other website files. The existing FTP repository secrets are reused only inside GitHub. Pricing failures fail the workflow and preserve the previously published file. The UI shows the last successful refresh and flags it overdue after 36 hours. Ordinary frontend builds do not own this file.
+
+Yahoo chart regular-session prices are used for exact NSE-master name mappings or existing AGI CUSIP/ticker mappings. No fuzzy name lookup is used. Options, principal units, preferred securities, warrants, absent quantities, unknown/old disclosure dates, stale prices, currency mismatches and securities with a split since the disclosure date are excluded. Values are estimates based on disclosed quantities, not actual positions or personal wealth. Partial subtotals are explicitly identified; filing values are preserved separately. Changes compare the same disclosed quantities at latest price versus previous daily close; they are not investor returns. Missing prices are never zero. US profiles without a CUSIP mapping remain unpriced.
+
+The frontend checks a shared SHA-256 fingerprint of disclosure inputs before attaching quotes to individual rows. Updating a holdings file invalidates old row valuations until the next refresh. Directory estimates display their own disclosure period, separate from an administrator's current summary.
+
+`build_mappings.py` generates reviewable mappings from the local NSE equity master files and existing cached AGI SEC holdings. Refresh/review these mappings when companies rename, listings change or new disclosure rows arrive. Yahoo is an unofficial integration and may rate-limit access; no proxy or access-control bypass is implemented. Yahoo data availability does not establish commercial redistribution rights; confirm applicable provider/exchange permissions for public client-facing use.
+
+Tests: `python3 -m unittest discover -s scripts/investor_valuation -p 'test_*.py'`, `node --test src/lib/investorValuations.test.js src/lib/investorProfiles.test.js`, and `npm run build`.

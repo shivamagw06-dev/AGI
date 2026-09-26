@@ -6,6 +6,7 @@ import { disclosureStatus, investorSlug, portfolioCsv } from '@/lib/investorProf
 import directory from '@/data/investorProfiles/index.json';
 import './richKids.css';
 import './investorPortfolio.css';
+import { useInvestorValuations, valuationFingerprint, valuationMoney, valuationTime, valuationStale } from '@/lib/investorValuations';
 
 const snapshots = import.meta.glob('../data/investorProfiles/holdings/*.json');
 const display = value => value == null || value === '' ? '—' : value;
@@ -26,6 +27,13 @@ export default function InvestorPortfolioPage() {
   const [page, setPage] = useState(0);
   const [history, setHistory] = useState(false);
   const [retry, setRetry] = useState(0);
+  const valuations = useInvestorValuations();
+  const [fingerprint, setFingerprint] = useState(null);
+  useEffect(() => {
+    let active = true; setFingerprint(null);
+    if (profile) valuationFingerprint(profile).then(value => { if (active) setFingerprint({ profile, value }); }).catch(() => {});
+    return () => { active = false; };
+  }, [profile]);
 
   useEffect(() => {
     let active = true;
@@ -42,6 +50,8 @@ export default function InvestorPortfolioPage() {
   }, [country, investorId, retry]);
 
   const currentProfile = profile?.country === country && profile.slug === investorId ? profile : null;
+  const candidate = valuations?.profiles?.[`${country?.toLowerCase()}-${investorId}`];
+  const valuation = currentProfile && fingerprint?.profile === currentProfile && candidate?.fingerprint === fingerprint.value ? candidate : null;
   const rows = useMemo(() => (currentProfile?.rows || []).filter(row =>
     `${row.stock} ${row.holder || ''} ${row.security || ''}`.toLowerCase().includes(query.trim().toLowerCase()) &&
     (status === 'all' || disclosureStatus(row) === status)), [currentProfile, query, status]);
@@ -71,6 +81,7 @@ export default function InvestorPortfolioPage() {
       {error ? <div className="ip-notice" role="alert">{error} <button onClick={() => setRetry(x => x + 1)}>Retry</button></div> : entry && !currentProfile ? <p role="status">Loading disclosed holdings…</p> : null}
       {currentProfile && <>
         <div className="ip-metrics"><div><span>Holdings rows available</span><strong>{currentProfile.rows.length.toLocaleString()}</strong></div><div><span>Source period</span><strong>{currentProfile.reportPeriod || 'Not available'}</strong></div><div><span>Source</span><strong>{currentProfile.sourceLabel}</strong></div><div><span>Retrieved</span><strong>{currentProfile.retrievedAt}</strong></div></div>
+        <aside className="ip-notice"><strong>Daily price-based valuation</strong><p>{valuation?.pricedCount ? `${valuationMoney(valuation.value, country)} · ${valuation.pricedCount} of ${valuation.rowCount} disclosed rows priced. ${valuation.pricedCount < valuation.rowCount ? 'Partial subtotal; unpriced holdings are excluded.' : 'Value of the disclosed rows only.'}` : 'Price-based valuation is not available yet. Reported values remain visible below.'}</p>{valuation?.pricedCount > 0 && <p>{valuation.dayChangePct != null && `Price movement: ${valuation.dayChangePct > 0 ? '+' : ''}${valuation.dayChangePct.toFixed(2)}% versus prior trading-session close, using the same disclosed quantities. `}Last successful refresh: {valuationTime(valuations.updatedAt)}. {valuationStale(valuations) ? 'Refresh overdue; showing the last successful snapshot. ' : ''}Oldest included quote: {valuationTime(valuation.oldestPriceAt)}.</p>}<p>Scheduled daily at 2:00 AM IST. Yahoo Finance regular-session prices may be delayed; US prices can be intraday at this time. This estimates disclosed holdings, not personal net worth. Share counts remain as reported; unsupported securities and unresolved corporate actions are excluded.</p></aside>
         <aside className="ip-notice"><strong>{currentProfile.coverageLabel}</strong><p>{currentProfile.coverageNote}</p>{currentProfile.managerName && <p>Filing entity: <strong>{currentProfile.managerName}</strong>. This is the entity’s reported portfolio, not the named individual’s personal assets.</p>}
           {currentProfile.sourceUrl && <a href={currentProfile.sourceUrl} target="_blank" rel="noopener noreferrer">View source disclosure ↗</a>}
         </aside>
@@ -79,7 +90,7 @@ export default function InvestorPortfolioPage() {
           <div className="rk-toolbar"><label>Find a holding<input type="search" value={query} onChange={e => changeQuery(e.target.value)} placeholder="Company, holder or security class"/></label><label>Reported movement<select value={status} onChange={e => { setStatus(e.target.value); setPage(0); }}><option value="all">All disclosed rows</option>{statuses.map(value => <option key={value}>{value}</option>)}</select></label><p aria-live="polite">{rows.length.toLocaleString()} matching rows</p></div>
           {currentProfile.periods.length > 1 && <label className="ip-history"><input type="checkbox" checked={history} onChange={e => setHistory(e.target.checked)}/> Show quarterly ownership history</label>}
           <p className="rk-table-hint">{['sec13f', 'fund-disclosures'].includes(currentProfile.kind) ? 'Value is at the filing date. Portfolio weight is a share of the disclosed book, not ownership of the company.' : 'Values retain source units. Ownership changes are reported percentage-point changes, not investment returns or confirmed trades.'}</p>
-          <div className="rk-table-wrap" role="region" aria-label={`${name} holdings`} tabIndex={0}><table><caption className="rk-sr-only">{name} holdings; {currentProfile.reportPeriod}. {currentProfile.coverageLabel}.</caption><thead><tr><th scope="col">Stock / security</th><th scope="col">Holding value {country === 'IN' ? '(INR)' : '(USD)'}</th><th scope="col">Quantity held</th><th scope="col">{currentProfile.kind === 'sec13f' ? 'Security type' : currentProfile.kind === 'fund-disclosures' ? 'Reported share change' : 'Reported change (pp)'}</th>{periods.map(period => <th key={period} scope="col">{period}</th>)}</tr></thead><tbody>{shown.map((row, i) => <tr key={`${page}:${i}`}><th scope="row">{row.stock}{(row.holder || row.security) && <small className="ip-holder">{[row.holder, row.security].filter(Boolean).join(' · ')}</small>}</th><td className="rk-number">{display(row.value)}</td><td className="rk-number">{display(row.quantity)}</td><td className={disclosureStatus(row) === 'Increased' ? 'rk-positive' : disclosureStatus(row) === 'Reduced' ? 'rk-negative' : ''}>{currentProfile.kind === 'sec13f' ? display(row.security) : display(row.change)}</td>{periods.map((period, index) => <td className="rk-number" key={period}>{display(row.history[index])}</td>)}</tr>)}</tbody></table>{!shown.length && <div className="rk-no-results"><h3>No matching holdings</h3><button onClick={() => { changeQuery(''); setStatus('all'); }}>Clear filters</button></div>}</div>
+          <div className="rk-table-wrap" role="region" aria-label={`${name} holdings`} tabIndex={0}><table><caption className="rk-sr-only">{name} holdings; {currentProfile.reportPeriod}. {currentProfile.coverageLabel}.</caption><thead><tr><th scope="col">Stock / security</th><th scope="col">Holding value {country === 'IN' ? '(INR)' : '(USD)'}</th><th scope="col">Latest price / estimated value</th><th scope="col">Quantity held</th><th scope="col">{currentProfile.kind === 'sec13f' ? 'Security type' : currentProfile.kind === 'fund-disclosures' ? 'Reported share change' : 'Reported change (pp)'}</th>{periods.map(period => <th key={period} scope="col">{period}</th>)}</tr></thead><tbody>{shown.map((row, i) => { const priced = valuation?.rows[currentProfile.rows.indexOf(row)]; return <tr key={`${page}:${i}`}><th scope="row">{row.stock}{(row.holder || row.security) && <small className="ip-holder">{[row.holder, row.security].filter(Boolean).join(' · ')}</small>}</th><td className="rk-number">{display(row.value)}</td><td className="rk-number">{priced?.value != null ? <><strong>{valuationMoney(priced.value, country)}</strong><small className="ip-holder">{country === 'IN' ? '₹' : '$'}{priced.price.toLocaleString()} · {priced.symbol}</small><small className="ip-holder">{valuationTime(priced.priceAt)}</small></> : <span className="rk-muted">{priced?.reason || 'Not priced'}</span>}</td><td className="rk-number">{display(row.quantity)}</td><td className={disclosureStatus(row) === 'Increased' ? 'rk-positive' : disclosureStatus(row) === 'Reduced' ? 'rk-negative' : ''}>{currentProfile.kind === 'sec13f' ? display(row.security) : display(row.change)}</td>{periods.map((period, index) => <td className="rk-number" key={period}>{display(row.history[index])}</td>)}</tr>; })}</tbody></table>{!shown.length && <div className="rk-no-results"><h3>No matching holdings</h3><button onClick={() => { changeQuery(''); setStatus('all'); }}>Clear filters</button></div>}</div>
           {rows.length > 50 && <nav className="ip-pagination" aria-label="Holdings pagination"><button disabled={page === 0} onClick={() => setPage(p => p - 1)}>Previous</button><span>Page {page + 1} of {Math.ceil(rows.length / 50)}</span><button disabled={(page + 1) * 50 >= rows.length} onClick={() => setPage(p => p + 1)}>Next</button></nav>}
         </> : <div className="rk-empty"><h3>Detailed holdings are not available yet</h3><p>The source could not provide a usable holdings table. The published summary below is limited to the entries supplied by the administrator.</p></div>}
       </>}
