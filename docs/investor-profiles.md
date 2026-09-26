@@ -31,3 +31,9 @@ The frontend checks a shared SHA-256 fingerprint of disclosure inputs before att
 `build_mappings.py` generates reviewable mappings from the local NSE equity master files and existing cached AGI SEC holdings. Refresh/review these mappings when companies rename, listings change or new disclosure rows arrive. Yahoo is an unofficial integration and may rate-limit access; no proxy or access-control bypass is implemented. Yahoo data availability does not establish commercial redistribution rights; confirm applicable provider/exchange permissions for public client-facing use.
 
 Tests: `python3 -m unittest discover -s scripts/investor_valuation -p 'test_*.py'`, `node --test src/lib/investorValuations.test.js src/lib/investorProfiles.test.js`, and `npm run build`.
+
+## Institutional directory, 26 September 2026
+
+The owner supplied 100 names from a 124-entry India institutional directory. These 100 names were matched to the public Trendlyne institutional index; the remaining 24 are not included. Detail snapshots are separate, dated public-source tables: 71 profiles have 1,959 aggregate holding rows and 29 are summary-only. Five captured detailed tables are partial. Group portfolios can combine entities and overlap; they are not a global fund portfolio or total net worth. Each profile retains its source URL, reporting period, retrieval date and coverage note. Summary valuation dates were not supplied.
+
+Institutional entries reuse the holdings route and existing nightly valuation job, which discovers the JSON files automatically. Price estimates appear after a successful scheduled refresh only for quantities and stock identities supported by the existing mappings. Importing a new summary does not update the detailed share quantities. Regenerate this collection using `scripts/build-institutional-profiles.py SUMMARY_JSON RETRIEVALS_JSON`; raw source captures remain local and are not shipped.
