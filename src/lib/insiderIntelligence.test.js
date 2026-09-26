@@ -33,3 +33,7 @@ test('US planned trades and derivative transactions do not become conviction sig
  const c=buildIntelligence([row({country:'US',transaction_code:'P',trade_id:'1',planned:'true'}),row({country:'US',transaction_code:'P',trade_id:'2',derivative:'true'}),row({country:'US',transaction_code:'P',trade_id:'3',planned:'unknown',derivative:'false'})],'2026-09-26')[0];
  assert.equal(c.buys.length,1);assert.equal(c.rows.length,3);assert.equal(c.signals[0].title,'Purchase disclosed');
 });
+test('US missing actions remain visible without generating buy or sell signals',()=>{
+ const c=buildIntelligence([row({country:'US',transaction_code:'UNKNOWN',mode:'Unknown action (not supplied)',trade_id:'unknown'})],'2026-09-26')[0];
+ assert.equal(c.rows.length,1);assert.equal(c.buys.length,0);assert.equal(c.sells.length,0);assert.equal(c.signals.length,0);
+});
