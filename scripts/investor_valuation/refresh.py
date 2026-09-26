@@ -18,10 +18,10 @@ def number(value):
 
 def period_date(profile):
     s=profile.get('reportPeriod') or ''
-    for fmt in ('%Y-%m-%d','%b %Y','%B %Y'):
+    for fmt in ('%Y-%m-%d','%d %b %Y','%b %Y','%B %Y'):
         try:
             dt=datetime.strptime(s,fmt).replace(tzinfo=timezone.utc)
-            if fmt!='%Y-%m-%d':
+            if fmt in ('%b %Y','%B %Y'):
                 import calendar
                 dt=dt.replace(day=calendar.monthrange(dt.year,dt.month)[1])
             return dt
@@ -40,6 +40,9 @@ def eligible(profile,row,mappings):
     if re.search(r'\b(PUT|CALL|PRN|PFD|PREF|NOTE|WARRANT|WTS|DEBT|CONVERTIBLE)\b',row.get('security',''),re.I):
         return None,'Security requires separate valuation'
     mapping=mappings['IN'].get(row['stock']) if profile['country']=='IN' else mappings['CUSIP'].get(row.get('cusip'))
+    if not mapping and profile['country']=='US' and profile.get('kind')=='fund-disclosures':
+        explicit=re.match(r'^([A-Z][A-Z0-9.\-]{0,9}) - ',row['stock'])
+        if explicit: return explicit[1].replace('.','-'),None
     if not mapping: return None,'Exact security mapping unavailable'
     return mapping['symbol'],None
 

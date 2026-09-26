@@ -25,6 +25,11 @@ class ValuationTests(unittest.TestCase):
         v=value_profile(self.p,self.m,self.q,self.now)
         self.assertEqual(v['rowCount'],2);self.assertEqual(v['pricedCount'],1)
         self.assertNotEqual(before,fingerprint(self.p))
+    def test_explicit_source_ticker_and_full_date(self):
+        self.p.update(country='US',kind='fund-disclosures',reportPeriod='30 Jun 2026')
+        self.p['rows'][0]['stock']='AAPL - Apple Inc.'
+        self.q={'AAPL':dict(symbol='AAPL',currency='USD',type='EQUITY',price=110,previous=100,time=self.now.timestamp()-3600,splits=[])}
+        self.assertEqual(value_profile(self.p,self.m,self.q,self.now)['value'],110000)
     def test_old_or_future_disclosure_excluded(self):
         for period in ['Jun 2023','Dec 2026','unknown']:
             self.p['reportPeriod']=period
