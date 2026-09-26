@@ -19,7 +19,9 @@ def tls_host(server):
         with ftplib.FTP_TLS(context=discovery,timeout=30) as probe:
             probe.connect(server,21)
             probe.auth()
-            candidates=[name.lower().rstrip('.') for kind,name in probe.sock.getpeercert().get('subjectAltName',[]) if kind=='DNS' and '*' not in name]
+            certificate_names=[name.lower().rstrip('.') for kind,name in probe.sock.getpeercert().get('subjectAltName',[]) if kind=='DNS']
+            print('Public FTP certificate DNS names:', ', '.join(certificate_names))
+            candidates=[name for name in certificate_names if '*' not in name]
     for name in candidates:
         if not (name.endswith(('.main-hosting.eu','.hostinger.com')) or name=='agarwalglobalinvestments.com' or name.endswith('.agarwalglobalinvestments.com')):
             continue
