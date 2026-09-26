@@ -3,6 +3,7 @@ import { Helmet } from 'react-helmet';
 import { Link, useParams } from 'react-router-dom';
 import { API_ORIGIN } from '@/config';
 import { disclosureStatus, investorSlug, portfolioCsv } from '@/lib/investorProfiles';
+import { indiaInstitutionalInvestors } from '@/data/institutionalInvestors';
 import directory from '@/data/investorProfiles/index.json';
 import './richKids.css';
 import './investorPortfolio.css';
@@ -19,6 +20,7 @@ export default function InvestorPortfolioPage() {
   const { country: market, investorId } = useParams();
   const country = ['in', 'us'].includes(market) ? market.toUpperCase() : null;
   const entry = directory.find(item => item.country === country && item.slug === investorId);
+  const category=entry?.category || 'individual';
   const [profile, setProfile] = useState(null);
   const [summary, setSummary] = useState(null);
   const [error, setError] = useState('');
@@ -38,16 +40,16 @@ export default function InvestorPortfolioPage() {
   useEffect(() => {
     let active = true;
     const controller = new AbortController();
-    setProfile(null); setSummary(null); setError(''); setQuery(''); setStatus('all'); setPage(0); setHistory(false);
+    setProfile(null); setSummary(category==='institutional'?indiaInstitutionalInvestors.find(row=>investorSlug(row.name)===investorId)||null:null); setError(''); setQuery(''); setStatus('all'); setPage(0); setHistory(false);
     if (!country) return () => { active = false; controller.abort(); };
     const load = snapshots[`../data/investorProfiles/holdings/${country.toLowerCase()}-${investorId}.json`];
     if (load) load().then(module => { if (active) setProfile(module.default); }).catch(() => { if (active) setError('The holdings snapshot could not load. Please retry.'); });
-    fetch(`${API_ORIGIN || ''}/api/intelligence/institutions?country=${country}`, { signal: AbortSignal.any([controller.signal, AbortSignal.timeout(20000)]), cache: 'no-store' })
+    fetch(`${API_ORIGIN || ''}/api/intelligence/institutions?country=${country}&category=${category}`, { signal: AbortSignal.any([controller.signal, AbortSignal.timeout(20000)]), cache: 'no-store' })
       .then(response => { if (!response.ok) throw Error('Summary unavailable'); return response.json(); })
-      .then(data => { if (active && data.country === country) setSummary(data.rows?.find(row => investorSlug(row.name) === investorId) || null); })
+      .then(data => { if (active && data.country === country && (data.category||'individual')===category && data.published) setSummary(data.rows?.find(row => investorSlug(row.name) === investorId) || null); })
       .catch(() => { /* A dated, bundled source snapshot remains usable offline. */ });
     return () => { active = false; controller.abort(); };
-  }, [country, investorId, retry]);
+  }, [country, investorId, category, retry]);
 
   const currentProfile = profile?.country === country && profile.slug === investorId ? profile : null;
   const candidate = valuations?.profiles?.[`${country?.toLowerCase()}-${investorId}`];
@@ -72,7 +74,7 @@ export default function InvestorPortfolioPage() {
   return <main className="rk-page ip-page">
     <Helmet><title>{name} — Publicly Disclosed Holdings | AGI</title><meta name="description" content={`Explore ${name}'s publicly disclosed holdings, reporting periods and source coverage.`}/></Helmet>
     <header className="rk-hero"><div className="rk-container">
-      <Link className="ip-back" to={`/institutions?country=${country}`}>← {country === 'IN' ? 'India' : 'USA'} institutions</Link>
+      <Link className="ip-back" to={`/institutions?country=${country}&category=${category}`}>← {country === 'IN' ? 'India' : 'USA'} institutions</Link>
       <p className="rk-eyebrow">AGI / PUBLICLY DISCLOSED HOLDINGS</p><h1>{name}</h1>
       <p className="rk-intro">Explore the disclosed positions and how reported ownership has changed.</p>
       <div className="rk-hero-meta"><span>{country === 'IN' ? 'INDIA · INR' : 'USA · USD'}</span><span>{currentProfile?.reportPeriod ? `SOURCE PERIOD · ${currentProfile.reportPeriod}` : 'REPORTING PERIOD UNAVAILABLE'}</span></div>
