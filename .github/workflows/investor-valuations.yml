@@ -4,6 +4,11 @@ on:
     # 20:30 UTC = 02:00 IST the following day. GitHub can queue scheduled jobs.
     - cron: '30 20 * * *'
   workflow_dispatch:
+    inputs:
+      probe_only:
+        description: Check the verified upload connection without refreshing or publishing
+        type: boolean
+        default: false
 permissions:
   contents: read
 concurrency:
@@ -20,9 +25,24 @@ jobs:
           python-version: '3.12'
       - name: Validate valuation rules
         run: python -m unittest discover -s scripts/investor_valuation -p 'test_*.py'
+      - name: Verify publication connection before fetching prices
+        env:
+          FTP_SERVER: ${{ secrets.FTP_SERVER }}
+          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+        run: python scripts/investor_valuation/publish.py --check
       - name: Refresh Yahoo prices and value disclosed shares
+        if: ${{ inputs.probe_only != true }}
         run: python scripts/investor_valuation/refresh.py /tmp/investor-valuations/latest.json
+      - name: Preserve the validated snapshot for publication diagnostics
+        if: ${{ inputs.probe_only != true }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: investor-valuation-snapshot
+          path: /tmp/investor-valuations/latest.json
+          retention-days: 2
       - name: Publish validated snapshot atomically
+        if: ${{ inputs.probe_only != true }}
         env:
           FTP_SERVER: ${{ secrets.FTP_SERVER }}
           FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
