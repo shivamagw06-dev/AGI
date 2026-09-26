@@ -68,6 +68,7 @@ const Header = ({ currentPage, setCurrentPage }) => {
     { name: "Companies", page: "companies", path: "/companies" },
     { name: "Private Markets", page: "private-markets", path: "/private-markets" },
     { name: "Hedge Funds", page: "hedge-funds", path: "/institutional-holdings" },
+    { name: 'Rich Kids', page: 'rich-kids', path: '/rich-kids' },
     { name: "Insider Activity", page: "insider-activity", path: "/insider-activity" },
     { name: "Business", page: "business", path: "/business" },
     { name: "Insights", page: "insights", path: "/insights" },
