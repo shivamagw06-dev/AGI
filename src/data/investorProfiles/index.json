@@ -1970,5 +1970,149 @@
     "coverageLabel": "Retrieved disclosure snapshot",
     "sourceUrl": "https://trendlyne.com/portfolio/superstar-shareholders/2809274/latest/gqg-partners/",
     "category": "institutional"
+  },
+  {
+    "name": "PRIMECAP Management",
+    "country": "US",
+    "slug": "primecap-management-e53199d3",
+    "reportPeriod": "Jul 2026",
+    "coverageLabel": "Partial disclosed portfolio",
+    "sourceUrl": "https://us.trendlyne.com/us/portfolio/superstar-shareholders/2158575/latest/primecap-management-portfolio/",
+    "category": "institutional"
+  },
+  {
+    "name": "Yacktman Asset Management",
+    "country": "US",
+    "slug": "yacktman-asset-management-5e593050",
+    "reportPeriod": "Nov 2025",
+    "coverageLabel": "Retrieved disclosure snapshot",
+    "sourceUrl": "https://us.trendlyne.com/us/portfolio/superstar-shareholders/2158608/latest/yacktman-asset-management-portfolio/",
+    "category": "institutional"
+  },
+  {
+    "name": "Causeway International Value",
+    "country": "US",
+    "slug": "causeway-international-value-bd839bde",
+    "reportPeriod": "Oct 2025",
+    "coverageLabel": "Retrieved disclosure snapshot",
+    "sourceUrl": "https://us.trendlyne.com/us/portfolio/superstar-shareholders/2158616/latest/causeway-international-value-portfolio/",
+    "category": "institutional"
+  },
+  {
+    "name": "ValueAct Capital",
+    "country": "US",
+    "slug": "valueact-capital-ef841022",
+    "reportPeriod": "Aug 2026",
+    "coverageLabel": "Retrieved disclosure snapshot",
+    "sourceUrl": "https://us.trendlyne.com/us/portfolio/superstar-shareholders/2158619/latest/valueact-capital-portfolio/",
+    "category": "institutional"
+  },
+  {
+    "name": "Tweedy Browne International Value",
+    "country": "US",
+    "slug": "tweedy-browne-international-value-a5c73725",
+    "reportPeriod": null,
+    "coverageLabel": "Detailed source unavailable",
+    "sourceUrl": "https://us.trendlyne.com/us/portfolio/superstar-shareholders/2158633/latest/tweedy-browne-international-value-portfolio/",
+    "category": "institutional"
+  },
+  {
+    "name": "Donald Smith & Co",
+    "country": "US",
+    "slug": "donald-smith-co-22e2365a",
+    "reportPeriod": "Nov 2025",
+    "coverageLabel": "Retrieved disclosure snapshot",
+    "sourceUrl": "https://us.trendlyne.com/us/portfolio/superstar-shareholders/2158647/latest/donald-smith-co-portfolio/",
+    "category": "institutional"
+  },
+  {
+    "name": "EDGEPOINT CANADIAN PORTFOLIO",
+    "country": "US",
+    "slug": "edgepoint-canadian-portfolio-8a92f723",
+    "reportPeriod": "Aug 2026",
+    "coverageLabel": "Retrieved disclosure snapshot",
+    "sourceUrl": "https://us.trendlyne.com/us/portfolio/superstar-shareholders/2158648/latest/edgepoint-canadian-portfolio-portfolio/",
+    "category": "institutional"
+  },
+  {
+    "name": "Oakmark Intl Small Cap",
+    "country": "US",
+    "slug": "oakmark-intl-small-cap-751c9e75",
+    "reportPeriod": null,
+    "coverageLabel": "Detailed source unavailable",
+    "sourceUrl": "https://us.trendlyne.com/us/portfolio/superstar-shareholders/2158657/latest/oakmark-intl-small-cap-portfolio/",
+    "category": "institutional"
+  },
+  {
+    "name": "Value Partners Group",
+    "country": "US",
+    "slug": "value-partners-group-d2971fda",
+    "reportPeriod": "Jul 2026",
+    "coverageLabel": "Retrieved disclosure snapshot",
+    "sourceUrl": "https://us.trendlyne.com/us/portfolio/superstar-shareholders/2158663/latest/value-partners-group-portfolio/",
+    "category": "institutional"
+  },
+  {
+    "name": "Private Capital",
+    "country": "US",
+    "slug": "private-capital-21f308dc",
+    "reportPeriod": null,
+    "coverageLabel": "Detailed source unavailable",
+    "sourceUrl": "https://us.trendlyne.com/us/portfolio/superstar-shareholders/2158666/latest/private-capital-portfolio/",
+    "category": "institutional"
+  },
+  {
+    "name": "Keeley-Teton Advisors, LLC",
+    "country": "US",
+    "slug": "keeley-teton-advisors-llc-673f2f65",
+    "reportPeriod": null,
+    "coverageLabel": "Detailed source unavailable",
+    "sourceUrl": "https://us.trendlyne.com/us/portfolio/superstar-shareholders/2158667/latest/keeley-teton-advisors-llc-portfolio/",
+    "category": "institutional"
+  },
+  {
+    "name": "Third Avenue Management",
+    "country": "US",
+    "slug": "third-avenue-management-62e4d53",
+    "reportPeriod": null,
+    "coverageLabel": "Detailed source unavailable",
+    "sourceUrl": "https://us.trendlyne.com/us/portfolio/superstar-shareholders/2158677/latest/third-avenue-management-portfolio/",
+    "category": "institutional"
+  },
+  {
+    "name": "Wasatch International Growth",
+    "country": "US",
+    "slug": "wasatch-international-growth-55ecc557",
+    "reportPeriod": null,
+    "coverageLabel": "Detailed source unavailable",
+    "sourceUrl": "https://us.trendlyne.com/us/portfolio/superstar-shareholders/2158679/latest/wasatch-international-growth-portfolio/",
+    "category": "institutional"
+  },
+  {
+    "name": "Fairholme Focused Income Fund",
+    "country": "US",
+    "slug": "fairholme-focused-income-fund-4973da37",
+    "reportPeriod": "Jun 2026",
+    "coverageLabel": "Retrieved disclosure snapshot",
+    "sourceUrl": "https://us.trendlyne.com/us/portfolio/superstar-shareholders/2158699/latest/fairholme-focused-income-fund-portfolio/",
+    "category": "institutional"
+  },
+  {
+    "name": "Bruce Kovner",
+    "country": "US",
+    "slug": "bruce-kovner-21a5d4e5",
+    "reportPeriod": "Mar 2026",
+    "coverageLabel": "Partial disclosed portfolio",
+    "sourceUrl": "https://us.trendlyne.com/us/portfolio/superstar-shareholders/2158706/latest/bruce-kovner-portfolio/",
+    "category": "institutional"
+  },
+  {
+    "name": "Chou RRSP Fund",
+    "country": "US",
+    "slug": "chou-rrsp-fund-41d8200c",
+    "reportPeriod": null,
+    "coverageLabel": "Detailed source unavailable",
+    "sourceUrl": "https://us.trendlyne.com/us/portfolio/superstar-shareholders/2158707/latest/chou-rrsp-fund-portfolio/",
+    "category": "institutional"
   }
 ]

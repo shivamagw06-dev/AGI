@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { Link, useSearchParams, useLocation, useNavigate } from 'react-router-dom';
+import { usaInstitutionalInvestors } from '@/data/usInstitutionalInvestors';
 import { indiaInstitutionalInvestors } from '@/data/institutionalInvestors';
 import { indiaInvestors, usaInvestors } from '@/data/richKids';
 import './richKids.css';
@@ -34,7 +35,7 @@ export default function InstitutionsPage() {
   load();const interval=setInterval(()=>{if(!document.hidden)load();},60000);return()=>{stopped=true;controller.abort();clearInterval(interval);};
  },[country,category,refresh]);
  const current=snapshot?.country===country&&(snapshot.category||'individual')===category?snapshot:null;
- const investors = current ? (current.published?current.rows:category==='institutional'?(country==='IN'?indiaInstitutionalInvestors:[]):country==='IN'?indiaInvestors:usaInvestors) : [];
+ const investors = current ? (current.published?current.rows:category==='institutional'?(country==='IN'?indiaInstitutionalInvestors:usaInstitutionalInvestors):country==='IN'?indiaInvestors:usaInvestors) : [];
  const currency=country==='IN'?'₹':'$',unit=country==='IN'?'Cr':'M';
  const chosenInvestors=useMemo(()=>selected.length?investors.filter(row=>selected.includes(row.name)):investors,[investors,selected]);
  const rows = useMemo(() => chosenInvestors.filter(row => [row.name,...row.sectors.map(x=>x.label),...row.holdings.map(x=>x.label)].join(' ').toLowerCase().includes(query.trim().toLowerCase())).sort((a,b)=>sort==='name'?a.name.localeCompare(b.name):sort==='stocks'?b.stocks-a.stocks:b.value-a.value),[chosenInvestors,query,sort]);
@@ -50,7 +51,7 @@ export default function InstitutionsPage() {
    <section id="rk-panel" role="tabpanel" aria-labelledby={`rk-tab-${country}`} tabIndex={0}>
     <div className="institutions-status"><p><span className={`institutions-status-dot ${valuationStale(valuations) ? 'is-stale' : ''}`} aria-hidden="true"/>{valuations ? `Prices refreshed ${valuationTime(valuations.updatedAt)}${valuationStale(valuations) ? ' · refresh overdue' : ''}` : 'Price refresh pending'}<span className="institutions-schedule">Daily refresh · 2:00 AM IST</span></p><button className="rk-refresh" onClick={()=>setRefresh(x=>x+1)}>↻ Refresh table</button></div>
     {error?<div className="rk-empty" role="alert">{error}</div>:!current?<p role="status">Loading published portfolios…</p>:investors.length ? <>
-     {category==='institutional'&&!current.published&&<p className="rk-table-hint">100 institutions from the supplied list, matched to public sources. The source directory contains 124 entries; the remaining 24 were not supplied. Summary valuation date was not supplied.</p>}
+     {category==='institutional'&&!current.published&&<p className="rk-table-hint">{country==='IN'?'100 institutions from the supplied list. The source directory contains 124 entries; the remaining 24 were not supplied.':'16 institutions from the supplied US list, matched to public sources.'} Summary valuation date was not supplied.</p>}
      <InvestorSelector key={`${country}-${category}`} investors={investors} selected={selected} onChange={changeSelection} />
      <PortfolioCharts investors={rows} country={country} linkProfiles />
      <div className="rk-toolbar"><label>Search portfolios<input type="search" placeholder="Investor, company or sector…" value={query} onChange={e=>setQuery(e.target.value)} /></label><label>Sort by<select value={sort} onChange={e=>setSort(e.target.value)}><option value="value">Reported value: high to low</option><option value="stocks">Stock count: high to low</option><option value="name">Investor name: A–Z</option></select></label><p aria-live="polite">{rows.length} of {investors.length} investors</p></div>
