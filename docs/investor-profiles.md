@@ -68,3 +68,41 @@ This is a first-stage disclosure feed, **not automatic reconciliation of every
 listed investor's complete portfolio**. Legal-entity aliases, BSE-only coverage,
 identity checks for new issuers, and reconciliation of groups require further
 work before the old portfolio quantities or summary totals can be replaced.
+
+## Reviewed entity mappings and BSE connection
+
+`/admin/investor-mappings` is protected by the existing administrator route and
+server-verified Supabase user allowlist. Suggestions from the public filing scan
+are not approvals. An administrator records the profile, full legal name,
+issuer/ISIN scope (or explicitly verified `*` scope), personal/family/corporate/
+managed bucket, effective dates, evidence URL and rationale. Review, rejection
+and revocation go through the audited warehouse gateway. Revocations override
+bundled seed rules. The public collector endpoint omits reviewer identity and
+review notes. Approvals are applied at the next 02:00 IST collection run.
+
+The original-fact cache is now a separate compressed file, pinned by immutable
+commit in the public feed. It contains all parsed shareholder names/quantities,
+not PAN or other identifiers. This permits approved aliases to be applied to
+already collected filings without another quarter's publication. Old filtered
+cache entries are migrated through a fresh original-document read. Failed
+replacement downloads retain the older, dated disclosure marked stale.
+
+Cross-listed documents are keyed by ISIN and reporting period; separate legal
+holders remain separate rows. Managed-fund assets never become personal wealth.
+Seed mappings are intentionally narrow: five direct Ambani-family names in
+Reliance; the legal-name variants for Damani/DMART and Agrawal/NEULANDLAB; SBI
+Mutual Fund(s) as managed client holdings. The seeds do not infer the entire
+promoter group, trusts or corporate beneficial ownership.
+
+BSE original XBRL files can be validated/imported in the admin page. The source
+URL, expected six-digit BSE code, reporting period and document ISIN are required;
+only parsed public named holdings are stored. Imports join the next scan.
+Automated BSE collection uses an **authorised manifest feed**, configured through
+GitHub Actions secrets `BSE_SHAREHOLDING_FEED_URL` and optional
+`BSE_SHAREHOLDING_FEED_TOKEN`. The manifest contract is:
+`{"filings":[{"url":"https://www.bseindia.com/...xml","period":"YYYY-MM-DD","scripCode":"NNNNNN","submitted":"...","submittedISO":"..."}]}`.
+The manifest endpoint must return HTTPS JSON without redirects; document URLs
+must be official BSE URLs. Provider-specific licensed payloads require conversion
+to this contract. Missing credentials, restricted access or malformed documents
+never imply complete BSE coverage: status is visible on public and admin pages.
+No subscription or licensed feed was obtained by this implementation.
