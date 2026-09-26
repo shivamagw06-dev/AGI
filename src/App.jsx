@@ -1,4 +1,5 @@
 // src/App.jsx
+import InvestorPortfolioPage from '@/pages/InvestorPortfolioPage';
 import React, { useEffect, Suspense } from 'react';
 import { Helmet, HelmetProvider } from 'react-helmet-async';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
@@ -264,6 +265,7 @@ function PublicRoutes() {
       <Route path="/us-stock-intelligence" element={gate('global_markets', <UsStockIntelligence />)} />
       <Route path="/economics" element={gate('economics', <EconomicsPage />)} />
       <Route path="/institutions" element={<RichKidsPage />} />
+      <Route path="/institutions/:country/:investorId" element={<InvestorPortfolioPage />} />
       <Route path="/rich-kids" element={<RichKidsPage />} />
       <Route path="/insider-activity" element={gate('insider', <InsiderActivityPage />)} />
       <Route path="/global" element={<Navigate replace to="/global-markets" />} />
