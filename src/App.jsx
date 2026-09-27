@@ -10,6 +10,7 @@ import { Toaster } from '@/components/ui/toaster';
 import PinGate from '@/components/auth/PinGate';
 import RequireRegistration from '@/components/auth/RequireRegistration';
 import RequireAskAgiAdmin, { AskAgiVisibility } from '@/components/auth/AskAgiAdminAccess';
+import WebsiteTracker from '@/components/analytics/WebsiteTracker';
 import FunnelRouteTracker from '@/components/analytics/FunnelRouteTracker';
 
 const AdminRoutes = React.lazy(() => import('@/pages/admin/AdminRoutes'));
@@ -355,6 +356,7 @@ function App() {
   return (
     <HelmetProvider>
       <BrowserRouter>
+        <WebsiteTracker />
         <div className="min-h-screen bg-white">
           <Helmet>
             <title>AGI — Independent Equity Research for Indian Investors</title>
