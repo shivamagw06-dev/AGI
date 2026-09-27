@@ -3,6 +3,7 @@
  */
 
 import { Router } from 'express';
+import websiteAnalytics from './websiteAnalytics.js';
 import {
   buildRecentLearningSummary,
   cmsLearningStatus,
@@ -2352,6 +2353,7 @@ export default function createIntelligenceRouter() {
   // the token belongs in this process, not in the browser bundle.
   // Read-only approved/revoked rules consumed by the nightly collector. Keep
   // reviewer identity private; only authenticated administrators can decide.
+  router.use('/website-analytics', websiteAnalytics(engineFetch));
   router.get('/investor-mappings/approved', async (_req, res) => {
     try {
       const result = await engineFetch('/v1/investor-mappings');

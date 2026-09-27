@@ -22796,3 +22796,16 @@ def institutions_import(operation: str, payload: dict[str, Any] = Body(default_f
         raise HTTPException(status_code=400, detail="Invalid investor category")
     args = (str(payload.get("text") or ""), payload.get("country", "IN"), payload.get("asOf"))
     return parse(*args) if operation == "preview" else publish(*args, actor=str(payload.get("actor") or "admin"), category=category)
+
+
+@router.post("/website-analytics/event", dependencies=[Depends(require_token)])
+def website_analytics_event(payload: dict[str, Any] = Body(default_factory=dict)):
+    from financial_warehouse_completion.website_analytics import collect
+    try: return collect(payload)
+    except ValueError as exc: raise HTTPException(status_code=400, detail=str(exc))
+
+@router.get("/website-analytics/summary", dependencies=[Depends(require_token)])
+def website_analytics_summary(days: int = 7):
+    from financial_warehouse_completion.website_analytics import report
+    try: return report(days)
+    except ValueError as exc: raise HTTPException(status_code=400, detail=str(exc))

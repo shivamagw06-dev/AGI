@@ -1,3 +1,4 @@
+import { trackWebsiteEvent } from '@/lib/websiteAnalytics';
 import { useEffect, useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link, useSearchParams } from 'react-router-dom';
@@ -53,6 +54,7 @@ function ModelWorkspace({catalog}){
    const bytes=await response.arrayBuffer();
    if(kind==='library'){downloadBlob(new Blob([bytes],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}),'AGI_Indian_Sector_Model_Library.xlsx');}
    else{const {exportCurrentModel}=await import('@/lib/financialModelExport');const blob=await exportCurrentModel(bytes,catalog,model,scenario,overrides);downloadBlob(blob,`AGI_${model.id}_${CASES[scenario-1]}_Model.xlsx`);}
+   trackWebsiteEvent('model_download');
    setMessage(kind==='library'?'Excel library downloaded. It contains the original illustrative assumptions.':'Your model downloaded with your assumptions and editable Excel formulas.');
   }catch(error){setDownloadError(error.message||'Download failed. Please try again.');}finally{setBusy('');}
  }
