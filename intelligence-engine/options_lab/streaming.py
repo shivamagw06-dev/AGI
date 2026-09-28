@@ -13,6 +13,7 @@ import signal
 import sys
 import time
 import urllib.request
+import urllib.error
 import uuid
 from datetime import datetime, timezone
 
@@ -42,6 +43,18 @@ def authorize(token):
     if result.get('status') != 'success' or not uri.startswith('wss://'):
         raise ValueError('Market feed authorization unavailable')
     return uri  # Never logged or persisted: it contains a short-lived credential.
+
+
+async def handshake(token):
+    try:
+        return await asyncio.to_thread(authorize,token), {'Accept':'*/*'}, 'authorized URL'
+    except urllib.error.HTTPError as error:
+        if error.code not in (401,403):
+            raise
+        # Upstox also documents direct Bearer authentication on this endpoint.
+        # This is the same read-only feed, never a trading API or weaker TLS.
+        return ('wss://api.upstox.com/v3/feed/market-data-feed',
+                {'Accept':'*/*','Authorization':f'Bearer {token}'}, 'direct feed')
 
 
 def discover(now):
@@ -186,9 +199,10 @@ class StreamWorker:
         contracts,spot = await asyncio.to_thread(discover,now)
         pinned = await asyncio.to_thread(paper.pinned_contracts)
         self.metadata = universe(contracts,spot,now,pinned)
-        uri = await asyncio.to_thread(authorize,load_access_token())
+        uri,headers,mode = await handshake(load_access_token())
+        self.status['connection_mode'] = mode
         # The URL is authorized by Upstox. TLS certificate verification stays on.
-        async with connect(uri,open_timeout=20,ping_interval=20,ping_timeout=20,max_size=4*1024*1024,max_queue=16) as ws:
+        async with connect(uri,additional_headers=headers,open_timeout=20,ping_interval=20,ping_timeout=20,max_size=4*1024*1024,max_queue=16) as ws:
             self.cache = QuoteCache()
             await self.subscribe(ws,'sub',set(self.metadata)|{NIFTY})
             self.status.update(connected=True,authorization='Verified',error=None)
@@ -253,19 +267,21 @@ class StreamWorker:
                     wait = 1
                 except Exception as error:
                     # Exception strings can contain the authorized WSS URI/token.
-                    code = getattr(error,'code',None)
+                    code = getattr(error,'code',None) or getattr(getattr(error,'response',None),'status_code',None)
                     auth_error = code in (401,403) or (isinstance(error,UpstoxLiveError) and 'authorization failed' in str(error))
-                    reason = 'Upstox authentication rejected; renew data token' if auth_error else f'Stream reconnecting ({type(error).__name__})'
+                    reason = 'Upstox streaming access rejected; check token validity and feed permissions' if auth_error else f'Stream reconnecting ({type(error).__name__})'
                     if auth_error:
                         self.status['authorization'] = 'Rejected'
                     self.status.update(status=reason,error=reason,connected=False)
                     print(json.dumps(dict(event='paper_stream_retry',reason=reason)),flush=True)
                     await self.persist([],datetime.now(timezone.utc))
                     wait,delay = delay,min(60,delay*2)
-            try:
-                await asyncio.wait_for(self.stop.wait(),timeout=wait)
-            except asyncio.TimeoutError:
-                pass
+            until = time.monotonic()+wait
+            while not self.stop.is_set() and time.monotonic()<until:
+                try:
+                    await asyncio.wait_for(self.stop.wait(),timeout=min(15,until-time.monotonic()))
+                except asyncio.TimeoutError:
+                    await self.persist([],datetime.now(timezone.utc))
         self.status.update(status='Stream stopped',connected=False)
         await self.persist([],datetime.now(timezone.utc))
 
