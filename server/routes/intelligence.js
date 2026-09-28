@@ -1,3 +1,4 @@
+import financeTools from './financeTools.js';
 /**
  * AGI Intelligence Engine proxy — frontend never talks to Python directly.
  */
@@ -2354,6 +2355,7 @@ export default function createIntelligenceRouter() {
   // Read-only approved/revoked rules consumed by the nightly collector. Keep
   // reviewer identity private; only authenticated administrators can decide.
   router.use('/website-analytics', websiteAnalytics(engineFetch));
+  router.use('/finance-tools', financeTools(engineFetch));
   router.get('/investor-mappings/approved', async (_req, res) => {
     try {
       const result = await engineFetch('/v1/investor-mappings');
