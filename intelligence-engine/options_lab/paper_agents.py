@@ -6,6 +6,8 @@ one transition function. Only the existing collector writes source quotes.
 from __future__ import annotations
 import json
 import math
+import os
+import zlib
 import sqlite3
 from contextlib import closing
 from datetime import datetime, timedelta, timezone
@@ -83,8 +85,12 @@ def direction(strategy, history, spot):
     return None
 
 
-def step(state, rows, *, wall_now=None, allow_entries=True):
+def step(state, rows, *, wall_now=None, allow_entries=True, interval_seconds=900):
     """Atomic simulated transition; caller persists the state and source cursor."""
+    if interval_seconds not in (1, 900):
+        raise ValueError('Supported observation intervals are 1 and 900 seconds')
+    fast = interval_seconds == 1
+    max_gap = 5 if fast else 1200
     if not rows:
         return
     at = rows[0]['captured_at']
@@ -104,12 +110,12 @@ def step(state, rows, *, wall_now=None, allow_entries=True):
     # Multiple collectors/retries can write distinct timestamps in one window.
     # Use only its first observation; later repetitions cannot accelerate signals
     # or fills, or crowd earlier opening observations out of the history.
-    if state['last_at'] and int(now.timestamp()) // 900 == int(timestamp(state['last_at']).timestamp()) // 900:
+    if state['last_at'] and int(now.timestamp()) // interval_seconds == int(timestamp(state['last_at']).timestamp()) // interval_seconds:
         return
     day = local.date().isoformat()
-    gap = bool(state['last_at'] and (now - timestamp(state['last_at'])).total_seconds() > 1200)
+    gap = bool(state['last_at'] and (now - timestamp(state['last_at'])).total_seconds() > max_gap)
     new_day = state['day'] != day
-    stale = wall_now is not None and not 0 <= (wall_now-now).total_seconds() <= 180
+    stale = wall_now is not None and not 0 <= (wall_now-now).total_seconds() <= (5 if fast else 180)
     spot = sorted(spots)[len(spots)//2]
     inconsistent = (max(spots)-min(spots))/spot > .002
     if new_day or gap or inconsistent or stale:
@@ -119,7 +125,9 @@ def step(state, rows, *, wall_now=None, allow_entries=True):
             agent['daily_start'] = agent['equity']
             agent['daily_entries'] = 0
             agent['pending'] = None
-    quotes = {r['instrument_key']: r for r in rows if valid_quote(r)}
+    quotes = {r['instrument_key']: r for r in rows if valid_quote(r)
+              and (not fast or (r.get('quote_at') and
+                   0 <= (now-timestamp(r['quote_at'])).total_seconds() <= 5))}
     policy = state['policy']
     for name, agent in state['agents'].items():
         pos = agent['position']
@@ -155,7 +163,8 @@ def step(state, rows, *, wall_now=None, allow_entries=True):
             agent['pending'] = None
             quote = quotes.get(pending['instrument_key'])
             if (allow_entries and not stale and not gap and not inconsistent and minute < 870 and quote
-                and (now-timestamp(pending['signal_at'])).total_seconds() <= 1200):
+                and (now-timestamp(pending['signal_at'])).total_seconds() <= max_gap
+                and (not fast or timestamp(quote['quote_at']) > timestamp(pending['signal_at']))):
                 entry = float(quote['ask']) * (1+policy['slippage_pct']/100)
                 quantity = int(quote['lot_size'])  # Never split an exchange lot.
                 premium = entry*quantity
@@ -182,18 +191,26 @@ def step(state, rows, *, wall_now=None, allow_entries=True):
             elif agent['equity'] <= agent['daily_start']-policy['daily_loss'] or agent['daily_entries'] >= policy['max_trades_per_day']:
                 event(agent,at,'risk','Daily entry/loss limit reached')
             elif 585 < minute < 855:
-                side = direction(name,state['history'],spot)
+                signal_history = [h for h in state['history'] if not fast or
+                                  int(timestamp(h['at']).timestamp()) // 900 < int(now.timestamp()) // 900]
+                side = direction(name,signal_history,spot)
                 candidates = [r for r in quotes.values() if r['option_type']==side
                               and 2 <= (datetime.fromisoformat(r['expiry']).date()-local.date()).days <= 14]
                 if candidates:
                     contract = min(candidates,key=lambda r:(r['expiry'],abs(r['strike']-spot)))
-                    agent['pending'] = dict(signal_at=at,instrument_key=contract['instrument_key'])
+                    agent['pending'] = dict(signal_at=at,instrument_key=contract['instrument_key'],
+                                            quote_at=contract.get('quote_at',at))
                     event(agent,at,'signal',f'{side} candidate; awaiting next recorded quote')
                 else:
                     agent['status'] = 'Waiting for setup and liquid contract (2–14 days to expiry)'
         agent['peak'] = max(agent['peak'],agent['equity'])
         agent['max_drawdown'] = max(agent['max_drawdown'],agent['peak']-agent['equity'])
-    state['history'].append(dict(at=at,minute=minute,spot=spot))
+    # Strategy context stays on the 15-minute clock even with 1-second exits.
+    # A mid-window start cannot manufacture a missing boundary observation.
+    bucket = int(now.timestamp()) // 900
+    if not fast or (int(now.timestamp()) % 900 <= 30 and
+        (not state['history'] or int(timestamp(state['history'][-1]['at']).timestamp()) // 900 != bucket)):
+        state['history'].append(dict(at=at,minute=minute,spot=spot))
     state['history'] = state['history'][-30:]
     state['day'],state['last_at'] = day,at
 
@@ -218,6 +235,8 @@ def database():
     db.execute('PRAGMA journal_mode=WAL')
     db.execute('CREATE TABLE IF NOT EXISTS sessions (id INTEGER PRIMARY KEY CHECK(id=1), enabled INTEGER NOT NULL, started_at TEXT NOT NULL, state TEXT NOT NULL)')
     db.execute('CREATE TABLE IF NOT EXISTS backtests (id INTEGER PRIMARY KEY AUTOINCREMENT, created_at TEXT NOT NULL, result TEXT NOT NULL)')
+    db.execute('CREATE TABLE IF NOT EXISTS stream_status (id INTEGER PRIMARY KEY CHECK(id=1), payload TEXT NOT NULL)')
+    db.execute('CREATE TABLE IF NOT EXISTS second_frames (at TEXT PRIMARY KEY, payload BLOB NOT NULL)')
     db.commit()
     return db
 
@@ -274,6 +293,8 @@ def control(action):
 
 def tick():
     """Called after existing collection; paused agents still monitor open exits."""
+    if stream_enabled():
+        return  # The streaming worker exclusively owns forward transitions.
     with closing(database()) as db,db:
         db.execute('BEGIN IMMEDIATE')
         row=db.execute('SELECT * FROM sessions WHERE id=1').fetchone()
@@ -317,9 +338,64 @@ def dashboard():
     with closing(database()) as db:
         row=db.execute('SELECT * FROM sessions WHERE id=1').fetchone()
         latest=db.execute('SELECT created_at,result FROM backtests ORDER BY id DESC LIMIT 1').fetchone()
+        stream=db.execute('SELECT payload FROM stream_status WHERE id=1').fetchone()
     state=json.loads(row['state']) if row else fresh_state()
     last=state['last_at']
     return dict(ok=True,mode='paper_only',enabled=bool(row and row['enabled']),
+        interval_seconds=1 if stream_enabled() else 900,
+        stream=json.loads(stream['payload']) if stream else None,
         started_at=row['started_at'] if row else None,
         quote_age_seconds=round((datetime.now(timezone.utc)-timestamp(last)).total_seconds()) if last else None,
         live=summary(state),last_backtest=json.loads(latest['result']) if latest else None)
+
+
+def stream_enabled():
+    return os.getenv('NIFTY_PAPER_STREAM_ENABLED', '').lower() in ('true', '1', 'yes')
+
+
+def stream_tick(rows, status, *, now, prune=False):
+    """Persist one-second evidence and account transition atomically. Never orders.
+
+    Missing input cancels pending signals and freezes any open position as
+    unresolved. A subsequent fresh quote cannot silently invent a gap fill.
+    """
+    at = now.astimezone(timezone.utc).isoformat()
+    with closing(database()) as db, db:
+        db.execute('BEGIN IMMEDIATE')
+        db.execute('INSERT OR REPLACE INTO stream_status VALUES(1,?)', (json.dumps(status),))
+        if rows:
+            db.execute('INSERT OR IGNORE INTO second_frames VALUES(?,?)',
+                (at, zlib.compress(json.dumps(rows,separators=(',',':')).encode(),1)))
+        if prune:
+            db.execute('DELETE FROM second_frames WHERE at < ?', ((now-timedelta(days=14)).isoformat(),))
+        row = db.execute('SELECT * FROM sessions WHERE id=1').fetchone()
+        if not row:
+            return
+        state = json.loads(row['state'])
+        if state.get('version') != 'nifty-paper-v2-1s':
+            state.update(version='nifty-paper-v2-1s', history=[], last_at=None, upgraded_at=at)
+            for agent in state['agents'].values():
+                agent['pending'] = None
+                if agent['position']:
+                    agent['blocked'] = True
+                    event(agent,at,'migration','Existing position preserved unresolved on sampling change')
+        if not rows:
+            for agent in state['agents'].values():
+                agent['pending'] = None
+                if agent['position'] and not agent['blocked']:
+                    agent['blocked'] = True
+                    event(agent,at,'data_gap','Live feed unavailable/stale; open position unresolved; agent halted')
+                elif not agent['blocked']:
+                    agent['status'] = status.get('status','Waiting for stream')
+        else:
+            step(state, rows, wall_now=now, allow_entries=bool(row['enabled']), interval_seconds=1)
+        db.execute('UPDATE sessions SET state=? WHERE id=1',(json.dumps(state),))
+
+
+def pinned_contracts():
+    with closing(database()) as db:
+        row = db.execute('SELECT state FROM sessions WHERE id=1').fetchone()
+    if not row:
+        return set()
+    return {item['instrument_key'] for agent in json.loads(row['state'])['agents'].values()
+            for item in (agent['position'],agent['pending']) if item}
