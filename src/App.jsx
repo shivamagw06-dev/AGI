@@ -338,7 +338,8 @@ function PublicRoutes() {
       <Route path="/tools/stats" element={<ToolsStatsPage />} />
       <Route path="/tools/valuation" element={<ValuationCalculator />} />
       <Route path="/tools/peer-comparison" element={<PeerComparison />} />
-      <Route path="/finance-tools" element={<FinanceToolsPage />} />
+      <Route path="/tools" element={<FinanceToolsPage />} />
+      <Route path="/finance-tools" element={<Navigate replace to={`/tools${location.search}${location.hash}`} />} />
 
       <Route path="/profile/edit" element={<ProfileEditor />} />
       <Route path="/u/:handle" element={<PublicProfile />} />
