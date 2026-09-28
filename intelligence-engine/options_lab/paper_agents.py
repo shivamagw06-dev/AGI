@@ -261,6 +261,12 @@ def summary(state):
     result=json.loads(json.dumps(state))
     result.pop('history',None)
     spreads=result.pop('spreads',None)
+    research=result.pop('research',None)
+    if research:
+        result['research']={k:v for k,v in research.items() if k not in ('agents','candles','minutes','minute','iv_history')}
+        result['research']['completed_bars']=len(research['candles'])
+        result['research']['iv_days']=len(research['iv_history'])
+        result['agents'].update(research['agents'])
     if spreads:
         result['agents'].update(spreads['agents'])
         result['candle_status']=dict(completed_1m=len(spreads['minutes']),completed_5m=len(spreads['candles']),required_5m=12)
@@ -298,7 +304,7 @@ def control(action):
         else:
             state=json.loads(row['state'])
             if action=='pause':
-                for agent in [*state['agents'].values(),*state.get('spreads',{}).get('agents',{}).values()]:
+                for agent in [*state['agents'].values(),*state.get('spreads',{}).get('agents',{}).values(),*state.get('research',{}).get('agents',{}).values()]:
                     agent['pending']=None
             db.execute('UPDATE sessions SET enabled=?,state=? WHERE id=1',(int(action=='start'),json.dumps(state)))
     return dashboard()
@@ -353,6 +359,8 @@ def dashboard():
         latest=db.execute('SELECT created_at,result FROM backtests ORDER BY id DESC LIMIT 1').fetchone()
         stream=db.execute('SELECT payload FROM stream_status WHERE id=1').fetchone()
     state=json.loads(row['state']) if row else fresh_state()
+    from . import regime_agents
+    state.setdefault('research',regime_agents.fresh())
     last=state['last_at']
     return dict(ok=True,mode='paper_only',enabled=bool(row and row['enabled']),
         interval_seconds=1 if stream_enabled() else 900,
@@ -392,7 +400,10 @@ def stream_tick(rows, status, *, now, prune=False):
                 if agent['position']:
                     agent['blocked'] = True
                     event(agent,at,'migration','Existing position preserved unresolved on sampling change')
-        from . import spread_agents
+        from . import spread_agents, regime_agents
+        state.setdefault('research',regime_agents.fresh())
+        regime_agents.advance(state['research'],rows,now,bool(row['enabled']))
+        rows=[r for r in rows if r.get('option_type') in ('CE','PE')]
         if 'spreads' not in state:
             state['spreads']=spread_agents.fresh()
         spread_agents.advance(state['spreads'],rows,now,bool(row['enabled']))
@@ -419,4 +430,23 @@ def pinned_contracts():
           for item in (agent['position'],agent['pending']) if item}
     keys.update(leg['instrument_key'] for agent in state.get('spreads',{}).get('agents',{}).values()
                 for item in (agent['position'],agent['pending']) if item for leg in item['legs'])
+    keys.update(leg['instrument_key'] for agent in state.get('research',{}).get('agents',{}).values()
+                for item in (agent['position'],agent['pending']) if item for leg in item['legs'])
     return keys
+
+
+def set_research_calendar(payload):
+    from . import regime_agents
+    config=regime_agents.calendar(payload)
+    with closing(database()) as db,db:
+        db.execute('BEGIN IMMEDIATE')
+        row=db.execute('SELECT * FROM sessions WHERE id=1').fetchone()
+        if not row:
+            state=fresh_state()
+            state['research']=regime_agents.fresh()
+            db.execute('INSERT INTO sessions VALUES(1,0,?,?)',(datetime.now(timezone.utc).isoformat(),json.dumps(state)))
+        else:state=json.loads(row['state'])
+        state.setdefault('research',regime_agents.fresh())['calendar']=config
+        for a in state['research']['agents'].values():a['pending']=None
+        db.execute('UPDATE sessions SET state=? WHERE id=1',(json.dumps(state),))
+    return dashboard()

@@ -6,6 +6,7 @@ WebSocket authorization. Timestamps and market status gate every simulated fill.
 from __future__ import annotations
 
 import asyncio
+import gzip
 import fcntl
 import json
 import resource
@@ -71,7 +72,27 @@ def discover(now):
     spot = next((s for s in spots if s and s > 0), None)
     if spot is None:
         raise ValueError('No reference spot for contract discovery')
+    # Public BOD metadata only. A missing futures master must not break options.
+    try:
+        contracts += discover_futures(now)
+    except (OSError, ValueError, KeyError, TypeError):
+        pass  # Futures strategy displays missing-quote status; never substitutes spot.
     return contracts, spot
+
+
+def discover_futures(now):
+    url='https://assets.upstox.com/market-quote/instruments/exchange/NSE.json.gz'
+    with urllib.request.urlopen(url,timeout=15) as response:
+        blob=response.read(32*1024*1024+1)
+    if len(blob)>32*1024*1024:raise ValueError('Instrument master too large')
+    master=json.loads(gzip.decompress(blob))
+    result=[]
+    for c in master:
+        if c.get('segment')!='NSE_FO' or c.get('instrument_type')!='FUT' or c.get('underlying_key')!=NIFTY:continue
+        expiry=datetime.fromtimestamp(float(c['expiry'])/1000,paper.IST).date()
+        if expiry<=now.astimezone(paper.IST).date():continue
+        result.append(dict(c,expiry=expiry.isoformat(),strike_price=0))
+    return sorted(result,key=lambda c:c['expiry'])[:1]
 
 
 def universe(contracts, spot, now, pinned=()):
@@ -85,6 +106,7 @@ def universe(contracts, spot, now, pinned=()):
     nearest = sorted((c for c in eligible if c['expiry']==expiry),
                      key=lambda c:(abs(float(c['strike_price'])-spot),float(c['strike_price']),c['instrument_type']))[:MAX_CONTRACTS]
     chosen = {c['instrument_key']: c for c in nearest}
+    chosen.update({c['instrument_key']:c for c in contracts if c.get('instrument_type')=='FUT' and c.get('expiry','')>today.isoformat()})
     # Never unsubscribe an open or pending contract when the ATM window moves.
     chosen.update({c['instrument_key']:c for c in contracts if c.get('instrument_key') in pinned})
     return {key:dict(instrument_key=key, option_type=c['instrument_type'],
@@ -131,7 +153,7 @@ class QuoteCache:
                 q = levels[0]
                 self.values[key] = dict(at=at,bid=q.get('bidP'),ask=q.get('askP'),
                     bid_size=q.get('bidQ'),ask_size=q.get('askQ'),volume=body.get('vtt'),oi=body.get('oi'),
-                    ltp=body.get('ltpc',{}).get('ltp'),iv=body.get('iv'),greeks=body.get('optionGreeks',{}))
+                    ltp=body.get('ltpc',{}).get('ltp'),vwap=body.get('atp'),iv=body.get('iv'),greeks=body.get('optionGreeks',{}))
 
     def rows(self, now, metadata):
         spot = self.values.get(NIFTY)
