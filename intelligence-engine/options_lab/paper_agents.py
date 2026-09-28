@@ -14,7 +14,7 @@ from pathlib import Path
 from zoneinfo import ZoneInfo
 
 IST = ZoneInfo('Asia/Kolkata')
-VERSION = 'nifty-paper-v1'
+VERSION = 'nifty-paper-v1.1'
 STRATEGIES = ('opening_range', 'mean_reversion')
 POLICY = dict(capital=100000, max_premium=10000, daily_loss=2000,
               stop_pct=20, target_pct=40, slippage_pct=0.5,
@@ -64,7 +64,7 @@ def fee(notional, policy):
 def direction(strategy, history, spot):
     if strategy == 'opening_range':
         opening = [h for h in history if h['minute'] <= 585]
-        if len(opening) < 3 or opening[0]['minute'] > 555 or opening[-1]['minute'] < 585:
+        if {h['minute'] // 15 for h in opening} != {37, 38, 39}:
             return None
         upper, lower = max(h['spot'] for h in opening), min(h['spot'] for h in opening)
         if spot > upper * 1.001:
@@ -100,6 +100,11 @@ def step(state, rows, *, wall_now=None, allow_entries=True):
     local = now.astimezone(IST)
     minute = local.hour * 60 + local.minute
     if local.weekday() >= 5 or not 555 <= minute <= 930:
+        return
+    # Multiple collectors/retries can write distinct timestamps in one window.
+    # Use only its first observation; later repetitions cannot accelerate signals
+    # or fills, or crowd earlier opening observations out of the history.
+    if state['last_at'] and int(now.timestamp()) // 900 == int(timestamp(state['last_at']).timestamp()) // 900:
         return
     day = local.date().isoformat()
     gap = bool(state['last_at'] and (now - timestamp(state['last_at'])).total_seconds() > 1200)
@@ -256,9 +261,8 @@ def control(action):
         db.execute('BEGIN IMMEDIATE')
         row=db.execute('SELECT * FROM sessions WHERE id=1').fetchone()
         if not row:
-            if action=='pause':
-                return dashboard()
-            db.execute('INSERT INTO sessions VALUES(1,1,?,?)',(datetime.now(timezone.utc).isoformat(),json.dumps(fresh_state())))
+            if action=='start':
+                db.execute('INSERT INTO sessions VALUES(1,1,?,?)',(datetime.now(timezone.utc).isoformat(),json.dumps(fresh_state())))
         else:
             state=json.loads(row['state'])
             if action=='pause':
@@ -294,11 +298,14 @@ def backtest(start,end):
     rows=read_quotes(start,end)
     state=fresh_state()
     batches=0
+    sampled=0
     for _,group in groupby(rows,key=lambda r:r['captured_at']):
+        previous=state['last_at']
         step(state,list(group))
+        sampled+=int(state['last_at'] != previous)
         batches+=1
     result=dict(ok=True,mode='historical_replay',start=start,end=end,
-        quote_rows=len(rows),observations=batches,days=len({r['captured_at'][:10] for r in rows}),
+        quote_rows=len(rows),observations=batches,sampled_observations=sampled,days=len({r['captured_at'][:10] for r in rows}),
         first_observation=rows[0]['captured_at'] if rows else None,last_observation=rows[-1]['captured_at'] if rows else None,
         status='research_only' if rows else 'no_data',**summary(state))
     with closing(database()) as db,db:

@@ -140,3 +140,5 @@ https://upstox.com/developer/api-documentation/expired-instruments/
 
 Expired instrument candles are a separate data product/capability; this v1 does
 not imply that historical bid/ask chains can be reconstructed from those candles.
+
+Paper agents v1.1 sample the first collection in each 15-minute window, so duplicate collectors or retries cannot accelerate signals/fills. Opening range requires all three distinct opening windows. Replay displays the actual sampled count separately from raw stored batches.
