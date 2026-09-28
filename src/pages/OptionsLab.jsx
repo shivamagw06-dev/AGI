@@ -172,6 +172,7 @@ export default function OptionsLab() {
             <div>
               <div className="ol-kicker"><LockKeyhole size={14} /> Administrator research instrument</div>
               <h1>Options Intelligence Lab</h1>
+              <Link to="/admin/nifty-paper-agents">Open NIFTY paper agents →</Link>
               <p>
                 Frozen V1 conditional repricing, contract-level rolling IV and prospective
                 validation from the live Upstox option chain. Execution remains disconnected.

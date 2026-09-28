@@ -92,6 +92,7 @@ const KulDashboard = lazy(() => import('@/pages/admin/KulDashboard'));
 const MarketResearchNote = lazy(() => import('@/pages/admin/MarketResearchNote'));
 const MarketActivities = lazy(() => import('@/pages/admin/MarketActivities'));
 const StrategyLab = lazy(() => import('@/pages/admin/StrategyLab'));
+const NiftyPaperAgents = lazy(() => import('@/pages/NiftyPaperAgents'));
 const OptionsLab = lazy(() => import('@/pages/OptionsLab'));
 const BroadcastLinks = lazy(() => import('@/pages/admin/BroadcastLinks'));
 const IntelligenceCmsRoutes = lazy(() => import('@/pages/admin/intelligence/IntelligenceCmsRoutes'));
@@ -147,6 +148,7 @@ export default function AdminRoutes() {
           <Route path="market-research-note" element={<MarketResearchNote />} />
           <Route path="strategy-lab" element={<StrategyLab />} />
           <Route path="options-lab" element={<OptionsLab />} />
+          <Route path="nifty-paper-agents" element={<NiftyPaperAgents />} />
           <Route path="ifac" element={<IfacComposer />} />
           <Route path="aqe" element={<AskProductQuality />} />
           <Route path="kul" element={<KulDashboard />} />

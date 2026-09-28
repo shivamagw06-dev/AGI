@@ -142,6 +142,7 @@ const navItems = [
   { to: '/admin/institutional-memory', label: 'Learning & Memory', icon: BookMarked },
   { to: '/admin/simulation-lab', label: 'Simulation Lab', icon: FlaskConical },
   { to: '/admin/strategy-lab', label: 'Strategy Lab', icon: LineChart },
+  { to: '/admin/nifty-paper-agents', label: 'NIFTY Paper Agents', icon: Radar },
   { to: '/admin/options-lab', label: 'Options Lab', icon: Radar },
   { to: '/admin/decision-engine-v2', label: 'Decision Engine V2', icon: Gavel },
   { to: '/admin/institutional-intelligence', label: 'Institutional Intelligence', icon: Activity },
