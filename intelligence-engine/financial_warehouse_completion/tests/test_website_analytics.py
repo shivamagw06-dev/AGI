@@ -32,3 +32,23 @@ def test_ist_boundaries_unique_visitors_sessions_and_events():
  r=summarize(rows,1,now)
  assert (r['pageviews'],r['visitors'],r['visits'],r['repeatVisitors'],r['downloads'],r['signups'])==(2,1,2,1,1,1)
  assert r['daily']==[{'date':'2026-09-27','views':2}]
+
+def test_hourly_unique_browsers_and_legacy_technology():
+ now=datetime(2026,9,27,1,tzinfo=timezone.utc)
+ events=[]
+ for at in ['2026-09-26T18:31:00+00:00','2026-09-26T18:35:00+00:00','2026-09-26T19:35:00+00:00']:
+  p=clean(payload());p.pop('browser');p.pop('os')
+  events.append({'received_at':at,'event_json':json.dumps(p)})
+ r=summarize(events,1,now)
+ assert r['visitors']==1
+ assert r['trend'][0]=={'date':'2026-09-27T00:00','visitors':1,'views':2}
+ assert r['trend'][1]['visitors']==1
+ assert len(r['trend'])==7
+ assert r['browsers']==[{'label':'Unknown','views':3}]
+ assert r['operatingSystems']==[{'label':'Unknown','views':3}]
+
+def test_metadata_is_enumerated():
+ p=payload();p.update(browser='private-agent',os='private-device')
+ r=clean(p);assert r['browser']=='Unknown' and r['os']=='Unknown'
+ p.update(browser='Chrome',os='Windows');r=clean(p)
+ assert r['browser']=='Chrome' and r['os']=='Windows'
