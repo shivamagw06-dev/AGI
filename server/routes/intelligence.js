@@ -1,3 +1,4 @@
+import { createPaperDashboardReader } from '../services/paperDashboardRead.js';
 import financeTools from './financeTools.js';
 /**
  * AGI Intelligence Engine proxy — frontend never talks to Python directly.
@@ -66,28 +67,28 @@ const ENGINE_FAILURE_THRESHOLD = 2;
 const ENGINE_CIRCUIT_COOLDOWN_MS = 30_000;
 const engineCircuit = { failures: 0, openUntil: 0, lastError: null };
 
-function recordEngineSuccess() {
-  engineCircuit.failures = 0;
-  engineCircuit.openUntil = 0;
-  engineCircuit.lastError = null;
+function recordEngineSuccess(circuit = engineCircuit) {
+  circuit.failures = 0;
+  circuit.openUntil = 0;
+  circuit.lastError = null;
 }
 
-function recordEngineFailure(error) {
-  engineCircuit.failures += 1;
-  engineCircuit.lastError = String(error?.message || error || 'engine request failed').slice(0, 240);
-  if (engineCircuit.failures >= ENGINE_FAILURE_THRESHOLD) {
-    engineCircuit.openUntil = Date.now() + ENGINE_CIRCUIT_COOLDOWN_MS;
+function recordEngineFailure(error, circuit = engineCircuit) {
+  circuit.failures += 1;
+  circuit.lastError = String(error?.message || error || 'engine request failed').slice(0, 240);
+  if (circuit.failures >= ENGINE_FAILURE_THRESHOLD) {
+    circuit.openUntil = Date.now() + ENGINE_CIRCUIT_COOLDOWN_MS;
   }
 }
 
-function circuitIsOpen(path) {
+function circuitIsOpen(path, circuit = engineCircuit) {
   // Let explicit health probes through so the circuit can recover naturally.
-  return path !== '/v1/health' && Date.now() < engineCircuit.openUntil;
+  return path !== '/v1/health' && Date.now() < circuit.openUntil;
 }
 
-async function engineFetch(path, { method = 'GET', body = null, timeoutMs = 120_000, headers = null } = {}) {
-  if (circuitIsOpen(path)) {
-    const waitSeconds = Math.max(1, Math.ceil((engineCircuit.openUntil - Date.now()) / 1000));
+async function engineFetch(path, { method = 'GET', body = null, timeoutMs = 120_000, headers = null, circuit = engineCircuit } = {}) {
+  if (circuitIsOpen(path, circuit)) {
+    const waitSeconds = Math.max(1, Math.ceil((circuit.openUntil - Date.now()) / 1000));
     const error = new Error(`Intelligence engine is recovering; retry in about ${waitSeconds}s.`);
     error.code = 'ENGINE_CIRCUIT_OPEN';
     throw error;
@@ -124,14 +125,16 @@ async function engineFetch(path, { method = 'GET', body = null, timeoutMs = 120_
           }
         : { raw: String(text || '').slice(0, 400) };
     }
-    if (response.ok) recordEngineSuccess();
-    else if (response.status >= 500) recordEngineFailure(new Error(`engine HTTP ${response.status}`));
+    if (response.ok) recordEngineSuccess(circuit);
+    else if (response.status >= 500) recordEngineFailure(new Error(`engine HTTP ${response.status}`), circuit);
     return { ok: response.ok, status: response.status, data };
   } catch (error) {
-    recordEngineFailure(error);
+    recordEngineFailure(error, circuit);
     throw error;
   }
 }
+
+const readPaperDashboard = createPaperDashboardReader(engineFetch);
 
 function proxyPost(path) {
   return async (req, res) => {
@@ -2760,10 +2763,17 @@ export default function createIntelligenceRouter() {
   // and validation evidence require a verified AGI administrator session.
   router.get('/options-lab/paper-agents', requireStrategyLabAdmin, async (_req, res) => {
     try {
-      const r = await engineFetch('/v1/options-lab/paper-agents', { timeoutMs: 10000 });
+      const r = await readPaperDashboard();
       res.set('Cache-Control', 'no-store');
       return res.status(r.status).json(r.data);
-    } catch { return res.status(503).json({ error: 'Paper agent dashboard temporarily unavailable' }); }
+    } catch (error) {
+      const code = error?.code === 'ENGINE_CIRCUIT_OPEN' ? 'PAPER_READ_COOLDOWN'
+        : error?.name === 'TimeoutError' ? 'PAPER_READ_TIMEOUT' : 'PAPER_READ_UNAVAILABLE';
+      console.warn('[paper-dashboard]', code);
+      return res.status(503).set('Cache-Control', 'no-store').set('Retry-After', '5').json({
+        error: 'The paper dashboard could not reach the engine. Retrying automatically; you can also retry now.', code,
+      });
+    }
   });
   for (const operation of ['control', 'backtest']) {
     router.post(`/options-lab/paper-agents/${operation}`, requireStrategyLabAdmin, async (req, res) => {
