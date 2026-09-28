@@ -29,6 +29,10 @@ export default function PrivacyPolicy() {
         </p>
       </LegalSection>
 
+      <LegalSection title="Finance Tools applications">
+        <p>When you apply to list a finance tool, we store your account email, company name, website, description, category, proposed budget and application status. These applications are private to you and authorized AGI administrators, who use them to review your listing and respond to your application. Submitting an application does not authorize a payment or publish your contact details.</p>
+      </LegalSection>
+
       <LegalSection title="Website analytics preferences">
         <p>Our first-party traffic measurement uses a random browser identifier stored on your device for up to 90 days. It records public page paths, referring domains, device categories and sign-up or download actions. It does not store your IP address, email, URL query strings or private portfolio identifiers. Browser Do Not Track and Global Privacy Control signals disable this tracking.</p>
         <button onClick={()=>{const next=!optout;try{localStorage.setItem('agi_analytics_optout',next?'1':'0');if(next){localStorage.removeItem('agi_site_visitor_v1');localStorage.removeItem('agi_site_session_v1');}setOptout(next);}catch{}}} className="border px-4 py-2 mt-3" aria-pressed={optout}>{optout?'Anonymous website analytics disabled — enable':'Disable anonymous website analytics'}</button>
