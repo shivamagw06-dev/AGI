@@ -153,6 +153,37 @@ class StreamTests(unittest.TestCase):
 if __name__=='__main__':unittest.main()
 
 class StreamWorkerTests(unittest.IsolatedAsyncioTestCase):
+    async def test_documented_direct_handshake_only_on_auth_endpoint_rejection(self):
+        from options_lab.streaming import handshake
+        from urllib.error import HTTPError
+        with patch('options_lab.streaming.authorize',return_value='wss://feed.upstox.com/?code=one-time'):
+            uri,headers,mode=await handshake('secret')
+            self.assertNotIn('Authorization',headers)
+            self.assertEqual(mode,'authorized URL')
+        for status in (401,403):
+            with patch('options_lab.streaming.authorize',side_effect=HTTPError('https://api.upstox.com',status,'denied',{},None)):
+                uri,headers,mode=await handshake('secret')
+                self.assertEqual(uri,'wss://api.upstox.com/v3/feed/market-data-feed')
+                self.assertEqual(headers['Authorization'],'Bearer secret')
+                self.assertEqual(mode,'direct feed')
+        with patch('options_lab.streaming.authorize',side_effect=HTTPError('https://api.upstox.com',429,'limit',{},None)):
+            with self.assertRaises(HTTPError): await handshake('secret')
+
+    async def test_socket_auth_rejection_is_reported_without_credentials(self):
+        from unittest.mock import AsyncMock
+        from types import SimpleNamespace
+        from options_lab.streaming import StreamWorker
+        w=StreamWorker();error=ValueError('wss://secret/?token=private')
+        error.response=SimpleNamespace(status_code=403)
+        w.session=AsyncMock(side_effect=error)
+        async def persist(*args,**kwargs): w.stop.set()
+        w.persist=AsyncMock(side_effect=persist)
+        with patch('builtins.print'):
+            await w.run()
+        self.assertEqual(w.status['authorization'],'Rejected')
+        self.assertIn('feed permissions',w.status['error'])
+        self.assertNotIn('private',json.dumps(w.status))
+
     async def test_closed_market_auth_checks_subscription_then_idles(self):
         from unittest.mock import AsyncMock, MagicMock
         from options_lab.streaming import StreamWorker
