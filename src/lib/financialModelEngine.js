@@ -31,6 +31,7 @@ export function createModelCalculator(catalog,scenario=1,overrides={}){
    if(n.name==='CHOOSE'){const i=numeric(ev(0));if(!Number.isInteger(i)||i<1||i>=n.args.length)throw Error('Invalid choice');return ev(i);}
    if(n.name==='INDEX'){const a=ev(0),i=numeric(ev(1));if(!a.range||!Number.isInteger(i)||i<1||i>a.range.length)throw Error('Invalid index');return a.range[i-1]();}
    if(n.name==='NA')throw Error('Complete the selected scenario assumptions');
+   if(n.name==='DATE')return (Date.UTC(numeric(ev(0)),numeric(ev(1))-1,numeric(ev(2)))-Date.UTC(1899,11,30))/86400000;
    const args=n.args.flatMap((_,i)=>{const v=ev(i);return v?.range?v.range.map(f=>f()):[v];});
    if(n.name==='COUNT')return args.filter(v=>typeof v==='number'&&Number.isFinite(v)).length;
    if(n.name==='SUM')return args.reduce((x,v)=>x+numeric(v),0);
@@ -41,7 +42,47 @@ export function createModelCalculator(catalog,scenario=1,overrides={}){
  }
  return{cell,safe:(sheet,address)=>{try{return{value:cell(sheet,address),error:null};}catch(e){return{value:null,error:e.message};}}};
 }
-export function modelInputErrors(model,catalog,overrides,scenario){const errors=[];for(const row of model.inputs){if(row.case&&row.case!==scenario)continue;for(const ref of row.refs){const value=Object.hasOwn(overrides?.[model.name]||{},ref)?overrides[model.name][ref]:catalog.sheets[model.name][ref].v;if(typeof value!=='number'||!Number.isFinite(value))errors.push(`${row.label}: enter a number`);else if(value<0&&!/growth|change|working capital|contract asset/.test(row.label.toLowerCase()))errors.push(`${row.label}: use a non-negative value`);else if(row.format.includes('%')&&value>1&&!/growth/.test(row.label.toLowerCase()))errors.push(`${row.label}: enter a rate no higher than 100%`);}}return [...new Set(errors)];}
+// Ratios of two independent amounts (claims / premium, costs / revenue, RWA /
+// loans) can legitimately exceed 100%. Only bounded shares have an upper limit.
+export function inputBounds(row){
+ const label=row.label.toLowerCase();
+ if(/growth/.test(label))return {min:-1};
+ if(/change.*pp/.test(label))return {min:-1,max:1};
+ if(/working capital|contract asset/.test(label))return {};
+ const positive=/diluted shares|wacc|cost of equity|terminal incremental roic|length of stay/.test(label);
+ const bounded=/utilization|occupancy|retention|payout|tax rate|recovery \/|write-offs \/|completed \/ recognized|collection \/|d&a \/|fraction|weighting|attrition|offshore share/.test(label);
+ return {min:positive?Number.EPSILON:0,...(bounded?{max:1}:{})};
+}
+export function modelInputErrors(model,catalog,overrides,scenario){
+ const errors=[];
+ for(const row of model.inputs){if(row.case&&row.case!==scenario)continue;const bounds=inputBounds(row);
+  for(const ref of row.refs){const value=Object.hasOwn(overrides?.[model.name]||{},ref)?overrides[model.name][ref]:catalog.sheets[model.name][ref].v;
+   if(typeof value!=='number'||!Number.isFinite(value))errors.push(`${row.label}: enter a number`);
+   else if(/0 off \/ 1 on/.test(row.label)&&![0,1].includes(value))errors.push(`${row.label}: choose 0 or 1`);
+   else if(bounds.min!==undefined&&value<bounds.min)errors.push(`${row.label}: ${bounds.min===-1?'growth cannot be below −100%':bounds.min>0?'enter a value greater than zero':'use a non-negative value'}`);
+   else if(bounds.max!==undefined&&value>bounds.max)errors.push(`${row.label}: enter a rate no higher than 100%`);
+  }
+ }
+ const calc=createModelCalculator(catalog,scenario,overrides);
+ if(overrides.Controls?.E17!==undefined&&(!Number.isInteger(overrides.Controls.E17)||overrides.Controls.E17<2020||overrides.Controls.E17>2040))errors.push('First forecast year must be a whole year between 2020 and 2040.');
+ const find=label=>model.inputs.find(r=>r.label===label);
+ const wacc=find('WACC'),g=find('Terminal growth'),roic=find('Terminal incremental ROIC');
+ if(wacc&&g){const w=calc.safe(model.name,wacc.refs[0]).value,t=calc.safe(model.name,g.refs[0]).value;
+  if(w!==null&&t!==null&&w<=t)errors.push('WACC must exceed terminal growth.');
+  if(roic&&t>calc.safe(model.name,roic.refs[0]).value)errors.push('Terminal growth exceeds incremental ROIC; revise the terminal reinvestment assumptions.');
+ }
+ return [...new Set(errors)];
+}
+export function modelHealth(model,catalog,overrides,scenario){
+ const calc=createModelCalculator(catalog,scenario,overrides);
+ const issues=modelInputErrors(model,catalog,overrides,scenario);
+ for(const row of model.rows.filter(r=>r.section==='MODEL CHECKS'))for(const [i,c] of ['E','F','G','H','I'].entries()){
+  const r=calc.safe(model.name,`${c}${row.row}`);
+  if(r.error||typeof r.value==='number'&&Math.abs(r.value)>.01)issues.push(`Year ${i+1} · ${row.label}${r.error?`: ${r.error}`:''}`);
+ }
+ for(const ref of Object.values(model.summary).filter(v=>/^[A-Z]+\d+$/.test(v))){const r=calc.safe(model.name,ref);if(r.error)issues.push(r.error);}
+ return [...new Set(issues)];
+}
 export function formatModelValue(value,format='General'){
  if(value===null||value===undefined)return '—';if(typeof value!=='number')return String(value);
  const percentage=format.includes('%'),multiple=format.includes('"x"');const decimals=format.includes('0.00')?2:1;
