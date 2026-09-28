@@ -260,6 +260,19 @@ def read_quotes(start,end,after=None):
 def summary(state):
     result=json.loads(json.dumps(state))
     result.pop('history',None)
+    spreads=result.pop('spreads',None)
+    if spreads:
+        result['agents'].update(spreads['agents'])
+        result['candle_status']=dict(completed_1m=len(spreads['minutes']),completed_5m=len(spreads['candles']),required_5m=12)
+    for name,agent in result['agents'].items():
+        agent.setdefault('fee_model','Legacy illustrative costs')
+        pnl=[t['pnl'] for t in agent['trades']]
+        gains=sum(max(0,x) for x in pnl);losses=-sum(min(0,x) for x in pnl)
+        agent['average_pnl']=round(sum(pnl)/len(pnl),2) if pnl else None
+        agent['profit_factor']=round(gains/losses,2) if losses else None
+        agent['total_charges']=round(sum(t.get('entry_cost',0)+t.get('exit_cost',0) for t in agent['trades']),2)
+        agent['available_after_reserve']=round(agent['cash']-agent.get('capital_reserved',0),2)
+
     for agent in result['agents'].values():
         closed=agent['trades']
         agent['closed_trades']=len(closed)
@@ -285,7 +298,7 @@ def control(action):
         else:
             state=json.loads(row['state'])
             if action=='pause':
-                for agent in state['agents'].values():
+                for agent in [*state['agents'].values(),*state.get('spreads',{}).get('agents',{}).values()]:
                     agent['pending']=None
             db.execute('UPDATE sessions SET enabled=?,state=? WHERE id=1',(int(action=='start'),json.dumps(state)))
     return dashboard()
@@ -379,6 +392,10 @@ def stream_tick(rows, status, *, now, prune=False):
                 if agent['position']:
                     agent['blocked'] = True
                     event(agent,at,'migration','Existing position preserved unresolved on sampling change')
+        from . import spread_agents
+        if 'spreads' not in state:
+            state['spreads']=spread_agents.fresh()
+        spread_agents.advance(state['spreads'],rows,now,bool(row['enabled']))
         if not rows:
             for agent in state['agents'].values():
                 agent['pending'] = None
@@ -397,5 +414,9 @@ def pinned_contracts():
         row = db.execute('SELECT state FROM sessions WHERE id=1').fetchone()
     if not row:
         return set()
-    return {item['instrument_key'] for agent in json.loads(row['state'])['agents'].values()
-            for item in (agent['position'],agent['pending']) if item}
+    state=json.loads(row['state'])
+    keys={item['instrument_key'] for agent in state['agents'].values()
+          for item in (agent['position'],agent['pending']) if item}
+    keys.update(leg['instrument_key'] for agent in state.get('spreads',{}).get('agents',{}).values()
+                for item in (agent['position'],agent['pending']) if item for leg in item['legs'])
+    return keys

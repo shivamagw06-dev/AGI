@@ -190,3 +190,49 @@ Generated with grpcio-tools 1.71.0 / protobuf 5.29; vendored schema and decoder 
 `options_lab/proto/`. Regenerate with `python -m grpc_tools.protoc` using that
 folder as both include and Python output directory. No compiler is needed at
 runtime.
+
+### Additional forward paper agents (spread experiments v1)
+
+Two independent ₹100,000 accounts are added without resetting legacy accounts.
+`trend_pullback` uses completed 5-minute spot candles: 3/10-close average trend,
+>0.1% six-close move, prior-bar pullback through the prior three-close average,
+then a close beyond the prior bar's high/low. Buy ATM and sell further OTM CE/PE.
+`volatility_credit` uses the same directional trend (0.1–0.6%), last-bar range
+<=0.4%, and same-expiry ATM option IV >= max(12%, 1.25 × annualised intraday RV).
+RV uses 11 five-minute returns, scaled by 75×252. This is a short-history proxy,
+not a calibrated same-horizon volatility forecast. Sell an option >0.3% OTM on
+the opposite side of the trend and buy a further OTM hedge. Missing IV means no trade.
+
+Candles are **one-second sampled spot OHLC**, not all exchange ticks; no spot
+VWAP or invented volume. A minute needs >=55 observations, first within 2sec,
+last within 3sec; five consecutive complete minutes form a 5-minute candle.
+12 consecutive complete candles warm up each day or after a data gap. No
+unfinished candle is eligible. Entry window 10:15–14:15 IST; session exits at 15:15.
+Nearest eligible expiry is 2–14 days away; strikes 50–200 points apart (50 preferred).
+All thresholds are fixed research hypotheses, not optimised profitability claims.
+
+Entry needs newer two-sided quotes on BOTH legs, <=5sec age, <=1sec quote skew,
+full lot size at best bid/ask, correct lot/expiry, <=5% bid/ask spread. Both legs
+fill or neither does; partial-fill/unhedged real execution is NOT modelled.
+Adverse 0.5% slippage on every leg entry/exit. Missing exits freeze BOTH legs and
+halt that account; no future backfilled exit is fabricated. Pin both held legs.
+
+Max planned expiry loss incl. entry fees ₹2,000; exit costs additional. Two entries
+per day and ₹2,000 daily loss trigger. Debit stop 40% of debit; target 50% of remaining
+expiry gross upside. Credit target 50% of credit; stop=min(half gross maximum loss,
+credit). Stops compare whole-spread net liquidation P&L and may overshoot.
+Paper capital reserve = strike width×lot + gross long premium + entry fees.
+This fully funds the model spread liability but is NOT broker SPAN/exposure margin
+or a promise ₹1 lakh suffices for live orders. Refuse if reserve exceeds account cash.
+
+Dated new-agent fee model from https://upstox.com/brokerage-charges/ and
+https://www.nseindia.com/static/products-services/equity-derivatives-securities-transaction-tax
+(checked 28 September 2026): ₹20/order, sell-premium STT 0.15%, NSE premium transaction
+charge 0.03553%, SEBI ₹10/crore, buy stamp 0.003%, IPFT ₹0.01/crore, GST 18% on brokerage,
+transaction and IPFT. Estimates before broker rounding; exclude expiry/exercise
+charges because no expiry-day entries. Legacy agents keep their original
+illustrative fees; their results are explicitly labelled and should not be
+compared as if they share this fee model.
+
+Existing 15-minute historical replay remains legacy-only. New strategies need
+forward one-second data; do not fabricate historical spread results from slow snapshots.
