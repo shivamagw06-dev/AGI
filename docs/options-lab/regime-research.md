@@ -46,6 +46,19 @@ Sources: https://upstox.com/brokerage-charges/ ; https://upstox.com/developer/ap
 
 ## Evidence and deployment
 
-The new module is additive under session `research`; existing journals, balances and strategy definitions are preserved. New positions record strategy version, classifier snapshot, signal time, entry/exit quotes, per-leg charges and reasons. The dashboard shows forward comparison and explicit waiting conditions. Historical replay continues to cover only the original two 15-minute strategies. There is no historical/out-of-sample validation of the new suite yet; the unit tests validate implementation, not returns.
+The new module is additive under session `research`; existing journals, balances and strategy definitions are preserved. New positions record strategy version, classifier snapshot, signal time, entry/exit quotes, per-leg charges and reasons. The dashboard shows forward comparison and explicit waiting conditions. All-strategy replay supports the two original strategies on fifteen-minute snapshots and the other nine on recorded one-second frames. There is no historical/out-of-sample validation of the new suite yet; the unit tests validate implementation, not returns.
 
 Validation: payoff endpoints, futures ledger, shared limits, overlap, calendar validation/expiry, complete-bar warm-up, daily-IV recording, stale/mismatched/all-or-none execution, loss-trigger exits, preserved migrations and subscriptions. Run `PYTHONPATH=. python -m pytest options_lab/tests tests/test_route_offload.py -q` inside `intelligence-engine` and the normal frontend build.
+
+
+## All-strategy replay
+
+The admin backtest endpoint now queues an isolated low-priority Python worker, returning immediately. One job is allowed at a time, bounded to 15 minutes and 350,000 recorded frames. Progress and the last completed result persist in SQLite; the browser polls the existing private dashboard. Failed or interrupted jobs do not overwrite the previous completed result. No replay writes forward balances, positions, source quotes, or the live calendar.
+
+The nine newer agents reuse `spread_agents.advance` and `regime_agents.advance` exactly. Earlier recorded frames warm indicators with entries disabled. Daily IV seeds are restricted to observations preceding the earliest replayed day, excluding future/test-day observations and preventing duplicate warm-up days. Raw frames are paged in bounded batches to keep memory down. A fixed final timestamp excludes later arriving data. No 15-minute-to-1-second interpolation, fabricated bid/ask sizes, delta, futures price or forced terminal exit is allowed.
+
+All eleven agents appear in one comparison. Missing prerequisites produce `insufficient_data` and null performance metrics, not zero-profit backtests. Open/unresolved terminal positions are labelled incomplete and retain their last known marks. Zero trades with usable inputs remains an observed zero-trade result. Cost models and sampling intervals are visible; legacy results and shared strategy contributions are not independently comparable accounts.
+
+Calendar edits now append timestamped audit records. Replay applies a review only when it was known at the simulated time. Optional `calendars` inputs accept dated, explicitly reviewed windows within the test range; an explicit empty window list means clear. These retrospective inputs are clearly labelled and affect only that run. Missing dates fail closed. Current session calendars are never silently copied into historical dates.
+
+Historical Upstox OHLC candles do not contain the one-second depth/basket timing required by these rules. See https://upstox.com/developer/api-documentation/get-expired-historical-candle-data/. Existing raw evidence is retained for fourteen days; this release does not acquire or invent earlier high-frequency history. Performance must be reported only for available evidence, and implementation tests are not evidence of profitability.

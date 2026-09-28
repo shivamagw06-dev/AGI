@@ -358,6 +358,9 @@ def dashboard():
         row=db.execute('SELECT * FROM sessions WHERE id=1').fetchone()
         latest=db.execute('SELECT created_at,result FROM backtests ORDER BY id DESC LIMIT 1').fetchone()
         stream=db.execute('SELECT payload FROM stream_status WHERE id=1').fetchone()
+        from .replay import latest_job
+        replay_job=latest_job(db)
+        db.commit()
     state=json.loads(row['state']) if row else fresh_state()
     from . import regime_agents
     state.setdefault('research',regime_agents.fresh())
@@ -367,7 +370,7 @@ def dashboard():
         stream=json.loads(stream['payload']) if stream else None,
         started_at=row['started_at'] if row else None,
         quote_age_seconds=round((datetime.now(timezone.utc)-timestamp(last)).total_seconds()) if last else None,
-        live=summary(state),last_backtest=json.loads(latest['result']) if latest else None)
+        live=summary(state),replay_job=replay_job,last_backtest=json.loads(latest['result']) if latest else None)
 
 
 def stream_enabled():
@@ -446,6 +449,9 @@ def set_research_calendar(payload):
             state['research']=regime_agents.fresh()
             db.execute('INSERT INTO sessions VALUES(1,0,?,?)',(datetime.now(timezone.utc).isoformat(),json.dumps(state)))
         else:state=json.loads(row['state'])
+        from .replay import schema
+        schema(db)
+        db.execute('INSERT INTO paper_calendar_reviews(reviewed_at,payload) VALUES(?,?)', (timestamp(config['reviewed_at']).astimezone(timezone.utc).isoformat(),json.dumps(config)))
         state.setdefault('research',regime_agents.fresh())['calendar']=config
         for a in state['research']['agents'].values():a['pending']=None
         db.execute('UPDATE sessions SET state=? WHERE id=1',(json.dumps(state),))
