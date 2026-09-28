@@ -86,7 +86,7 @@ export default function FinanceToolsPage() {
         <button className="ft-primary" disabled={busy}>{busy ? 'Submitting…' : 'Submit for review'}<ArrowUpRight size={18}/></button>
       </form>
       {message && <p className="ft-success" role="status"><Check size={16}/>{message}</p>}{error && <p className="ft-error" role="alert">{error}</p>}
-      <div className="ft-account-links"><Link to="/login?next=/finance-tools">Sign in / create account</Link><button onClick={loadMine}>My submissions</button></div>
+      <div className="ft-account-links"><Link to="/login?next=/tools">Sign in / create account</Link><button onClick={loadMine}>My submissions</button></div>
       {mine && <section className="ft-mine"><h3>Your applications</h3>{mine.length ? mine.map(r => <div key={r.id}><strong>{r.name}</strong><span>{r.status === 'reviewed' ? 'Reviewed' : r.status}</span></div>) : <p>No applications yet.</p>}</section>}
       <p className="ft-private">Your application and email stay private. Submission does not reserve a rank. <Link to="/privacy">Privacy policy</Link></p>
     </aside></div>

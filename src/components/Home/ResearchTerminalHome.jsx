@@ -55,7 +55,7 @@ const DESK_BUTTONS = [
             : Landmark,
     hint: desk.hint,
   })),
-  { id: 'finance-tools', label: 'Tools', icon: Grid2X2, hint: 'Discover & list', href: '/finance-tools' },
+  { id: 'finance-tools', label: 'Tools', icon: Grid2X2, hint: 'Discover & list', href: '/tools' },
 ];
 
 const DEFAULT_COVER =
