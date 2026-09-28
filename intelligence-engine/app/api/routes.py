@@ -22827,3 +22827,27 @@ def finance_tools_review(identity: str, payload: dict[str, Any] = Body(default_f
     from financial_warehouse_completion.finance_tools import review
     try: return review(identity, payload)
     except ValueError as exc: raise HTTPException(status_code=400, detail=str(exc))
+
+
+@router.get("/options-lab/paper-agents", dependencies=[Depends(require_token)])
+async def nifty_paper_dashboard():
+    from options_lab.paper_agents import dashboard
+    return await run_in_threadpool(dashboard)
+
+
+@router.post("/options-lab/paper-agents/control", dependencies=[Depends(require_token)])
+async def nifty_paper_control(payload: dict[str, Any] = Body(default={})):
+    from options_lab.paper_agents import control
+    try:
+        return await run_in_threadpool(control, payload.get("action"))
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+
+@router.post("/options-lab/paper-agents/backtest", dependencies=[Depends(require_token)])
+async def nifty_paper_backtest(payload: dict[str, Any] = Body(default={})):
+    from options_lab.paper_agents import backtest
+    try:
+        return await run_in_threadpool(backtest, str(payload.get("start", "")), str(payload.get("end", "")))
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc

@@ -84,3 +84,59 @@ below 3%.
 
 August 17-21, 2026 remains a permanently burned historical holdout. Live
 observations collected by this worker form the prospective evidence set.
+
+## NIFTY paper agents (v1)
+
+Admin desk: `/admin/nifty-paper-agents`. Two independently funded INR 100,000
+virtual accounts evaluate opening-range breakout and rolling-mean reversal.
+These are hypotheses, not the "best" Indian strategies or proven edges.
+
+- Breakout uses all three 09:15/09:30/09:45 spot samples, then a 0.1% break.
+- Reversal uses six strictly earlier samples, a two-population-standard-deviation
+  displacement and a minimum 0.2% distance. Neither strategy optimizes thresholds.
+- Choose the nearest expiry 2–14 calendar days out, then nearest strike. Buy one
+  whole CE/PE lot at the *next* recorded ask plus 0.5% assumed slippage. Require
+  positive volume/OI and bid/ask with no more than 5% spread. Instrument metadata
+  supplies lot size; no static lot-size assumption.
+- Exit at an observed bid minus 0.5% on 20% premium loss, 40% premium gain,
+  INR 2,000 marked daily loss, or the first sample at/after 15:15 IST. No new
+  signals from 14:15, no fills from 14:30. Max two entries/day and INR 10,000
+  premium plus entry-cost budget. Stops are observations, not guaranteed fills.
+- All-in cost stress is INR 20 + 0.5% premium turnover *per side*. This is an
+  explicit illustrative assumption, not a verified statutory/broker tariff.
+  No short-option margin assumptions or real orders are involved.
+- Replay reads only stored Upstox NIFTY snapshots (max 60 calendar days/250,000
+  rows). It never substitutes spot candles or Black-Scholes prices for option
+  fills. Empty history is reported as no data. Historical replay is exploratory,
+  not an out-of-sample claim. Test frozen settings on unseen future data before
+  drawing any conclusion. Report dates/coverage alongside any metrics.
+- Collection timestamps are not exchange timestamps. Fifteen-minute observations
+  miss intrabar excursions and cannot verify executable depth or actual fills.
+  Missing quotes/gaps over 20 minutes with an open position halt that account;
+  no fabricated closing trade is added. Unresolved positions remain at their
+  last known mark, so closed P&L is incomplete when positions are unresolved.
+- Start creates a durable account from that moment; restarting the worker cannot
+  double-process a quote. Pause cancels pending entries but keeps exit observation
+  active. Resume does not erase history or unblock unresolved positions. Review
+  an unresolved account's source data before any explicit future reconciliation.
+
+Architecture: source `option_snapshots` → deterministic strategy decision → next
+quote paper fill → risk/exit observation → immutable completed-trade records in
+session state. State/cursor writes use one SQLite transaction in the separate
+`nifty_paper_agents.sqlite3` alongside the evidence DB. Historical replay results
+are separate and cannot alter forward paper accounts. Source quotes are read-only.
+The existing collector calls `tick()` after each successful collection; no new
+poller, Upstox subscriptions, broker account permissions, or credentials are needed.
+
+APIs under `/api/intelligence/options-lab/paper-agents` are administrator-only:
+GET status; POST `/control` with `start`/`pause`; POST `/backtest` with ISO start/end.
+The engine endpoints also require the internal engine token. The module has no
+broker/network client and does not call order endpoints. Public visitors cannot
+view or start these private simulations.
+
+Primary data documentation checked for this implementation:
+https://upstox.com/developer/api-documentation/get-pc-option-chain/
+https://upstox.com/developer/api-documentation/expired-instruments/
+
+Expired instrument candles are a separate data product/capability; this v1 does
+not imply that historical bid/ask chains can be reconstructed from those candles.

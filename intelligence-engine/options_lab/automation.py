@@ -60,6 +60,13 @@ def collect_command(config: LiveConfig, *, force: bool) -> int:
         _emit("collection_failed", {"error": str(error)})
         return 2
     _emit("collection_completed", result)
+    # Paper agents consume stored quotes only, in this separate worker process.
+    # Their failure must never stop market-data collection.
+    try:
+        from .paper_agents import tick
+        tick()
+    except Exception as error:
+        _emit("paper_agents_failed", {"error": str(error)[:250]})
     return 0
 
 

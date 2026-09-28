@@ -30,3 +30,7 @@ export const priceOptionsSnapshotAdmin = (payload) => request('/price', {
   method: 'POST',
   body: JSON.stringify(payload),
 });
+
+export const getPaperAgents = () => request('/paper-agents');
+export const controlPaperAgents = (action) => request('/paper-agents/control', {method:'POST', body:JSON.stringify({action})});
+export const backtestPaperAgents = (start,end) => request('/paper-agents/backtest', {method:'POST', body:JSON.stringify({start,end})});

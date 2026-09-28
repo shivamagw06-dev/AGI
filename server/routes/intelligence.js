@@ -2758,6 +2758,23 @@ export default function createIntelligenceRouter() {
 
   // Pricing Engine V1 is an internal research instrument. Both calculation
   // and validation evidence require a verified AGI administrator session.
+  router.get('/options-lab/paper-agents', requireStrategyLabAdmin, async (_req, res) => {
+    try {
+      const r = await engineFetch('/v1/options-lab/paper-agents', { timeoutMs: 10000 });
+      res.set('Cache-Control', 'no-store');
+      return res.status(r.status).json(r.data);
+    } catch { return res.status(503).json({ error: 'Paper agent dashboard temporarily unavailable' }); }
+  });
+  for (const operation of ['control', 'backtest']) {
+    router.post(`/options-lab/paper-agents/${operation}`, requireStrategyLabAdmin, async (req, res) => {
+      try {
+        const body = operation === 'control' ? {action:req.body?.action} : {start:req.body?.start,end:req.body?.end};
+        const r = await engineFetch(`/v1/options-lab/paper-agents/${operation}`, {method:'POST', body, timeoutMs:30000});
+        return res.status(r.status).json(r.data);
+      } catch { return res.status(503).json({error:'Paper agent request failed; refresh status before retrying'}); }
+    });
+  }
+
   router.post('/options-lab/price', requireStrategyLabAdmin, async (req, res) => {
     try {
       const r = await engineFetch('/v1/options-lab/price', {
