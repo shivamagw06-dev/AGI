@@ -30,6 +30,25 @@ class PaperTests(unittest.TestCase):
         self.assertAlmostEqual(a['position']['entry_price'],100.5)
         self.assertLess(a['equity'],100000)
 
+    def test_repeated_collections_cannot_accelerate_strategy(self):
+        state=setup()
+        prior=copy.deepcopy(state)
+        q=quote('10:00',25100)
+        q['captured_at']='2026-09-28T10:00:45+05:30'
+        step(state,[q])
+        self.assertEqual(prior,state)
+        self.assertIsNone(state['agents']['opening_range']['position'])
+        step(state,[quote('10:15',25080)])
+        self.assertIsNotNone(state['agents']['opening_range']['position'])
+
+    def test_opening_range_needs_three_distinct_windows(self):
+        history=[dict(minute=m,spot=25000) for m in [555,556,585]]
+        self.assertIsNone(direction('opening_range',history,25200))
+
+    def test_pause_before_activation_is_safe(self):
+        with tempfile.TemporaryDirectory() as d,patch('options_lab.paper_agents.paths',return_value=(Path(d)/'source.sqlite',Path(d)/'paper.sqlite')):
+            self.assertFalse(control('pause')['enabled'])
+
     def test_exit_uses_bid_costs_and_actual_stop_gap(self):
         state=setup();step(state,[quote('10:15',25080)])
         step(state,[quote('10:30',25000,bid=60,ask=61)])
