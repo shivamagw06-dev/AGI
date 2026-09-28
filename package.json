@@ -54,9 +54,11 @@
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
     "express-rate-limit": "^8.6.2",
+    "fflate": "0.8.2",
     "framer-motion": "^10.18.0",
     "highlight.js": "^11.11.1",
     "jspdf": "4.2.1",
+    "katex": "^0.16.11",
     "lowlight": "^2.9.0",
     "lucide-react": "^0.292.0",
     "react": "^18.2.0",
@@ -70,8 +72,7 @@
     "remark-gfm": "^4.0.1",
     "tailwind-merge": "^1.14.0",
     "tailwindcss-animate": "^1.0.7",
-    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz",
-    "katex": "^0.16.11"
+    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
   },
   "devDependencies": {
     "@types/node": "^20.8.3",
