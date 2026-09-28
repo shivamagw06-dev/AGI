@@ -22846,9 +22846,9 @@ async def nifty_paper_control(payload: dict[str, Any] = Body(default={})):
 
 @router.post("/options-lab/paper-agents/backtest", dependencies=[Depends(require_token)])
 async def nifty_paper_backtest(payload: dict[str, Any] = Body(default={})):
-    from options_lab.paper_agents import backtest
+    from options_lab.replay import submit
     try:
-        return await run_in_threadpool(backtest, str(payload.get("start", "")), str(payload.get("end", "")))
+        return await run_in_threadpool(submit, str(payload.get("start", "")), str(payload.get("end", "")), payload.get("calendars"))
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
 
