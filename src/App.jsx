@@ -17,6 +17,7 @@ const AdminRoutes = React.lazy(() => import('@/pages/admin/AdminRoutes'));
 const CategoryPage = React.lazy(() => import('@/pages/CategoryPage'));
 const ArticlesFeed = React.lazy(() => import('@/components/ArticlesFeed'));
 const About = React.lazy(() => import('@/components/About'));
+const FinanceToolsPage = React.lazy(() => import('@/pages/FinanceToolsPage'));
 const Contact = React.lazy(() => import('@/components/Contact'));
 const ResearchNotes = React.lazy(() => import('@/components/ResearchNotes'));
 const DealTracker = React.lazy(() => import('@/components/DealTracker'));
@@ -331,6 +332,7 @@ function PublicRoutes() {
 
       <Route path="/about" element={<About />} />
       <Route path="/contact" element={<Contact />} />
+      <Route path="/finance-tools" element={<FinanceToolsPage />} />
 
       <Route path="/profile/edit" element={<ProfileEditor />} />
       <Route path="/u/:handle" element={<PublicProfile />} />

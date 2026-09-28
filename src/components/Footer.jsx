@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import Logo from '@/components/Layout/Logo';
 
 const LINKS = [
+  { label: 'Finance Tools', to: '/finance-tools' },
   { label: 'Research', to: '/research' },
   { label: 'Markets', to: '/market-intelligence' },
   { label: 'About', to: '/about' },

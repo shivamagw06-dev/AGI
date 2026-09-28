@@ -72,6 +72,7 @@ const navItems = [
   { to: '/admin/upstox-fundamentals', label: 'AGI Fundamentals', icon: Building2 },
   { to: '/admin/valuation-policy', label: 'Valuation Policy', icon: Scale },
   { to: '/admin/valuation-ratios-workbook', label: 'Valuation Ratios Workbook', icon: FileSpreadsheet },
+  { to: '/admin/finance-tools', label: 'Finance Tools', icon: Activity },
   { to: '/admin/website-analytics', label: 'Website Analytics', icon: Activity },
   { to: '/admin/investor-mappings', label: 'Investor Mapping Review', icon: FileSpreadsheet },
   { to: '/admin/institutions-paste', label: 'Institutions Paste', icon: FileSpreadsheet },

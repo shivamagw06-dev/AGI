@@ -22809,3 +22809,21 @@ def website_analytics_summary(days: int = 7):
     from financial_warehouse_completion.website_analytics import report
     try: return report(days)
     except ValueError as exc: raise HTTPException(status_code=400, detail=str(exc))
+
+
+@router.post('/finance-tools/applications', dependencies=[Depends(require_token)])
+def finance_tools_submit(payload: dict[str, Any] = Body(default_factory=dict)):
+    from financial_warehouse_completion.finance_tools import submit
+    try: return submit(payload)
+    except ValueError as exc: raise HTTPException(status_code=400, detail=str(exc))
+
+@router.get('/finance-tools/applications', dependencies=[Depends(require_token)])
+def finance_tools_applications(owner: str | None = None):
+    from financial_warehouse_completion.finance_tools import applications
+    return applications(owner)
+
+@router.patch('/finance-tools/applications/{identity}', dependencies=[Depends(require_token)])
+def finance_tools_review(identity: str, payload: dict[str, Any] = Body(default_factory=dict)):
+    from financial_warehouse_completion.finance_tools import review
+    try: return review(identity, payload)
+    except ValueError as exc: raise HTTPException(status_code=400, detail=str(exc))
