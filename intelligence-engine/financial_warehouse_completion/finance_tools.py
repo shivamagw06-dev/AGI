@@ -7,7 +7,7 @@ from contextlib import contextmanager
 from datetime import datetime, timezone
 from urllib.parse import urlsplit
 
-CATEGORIES = ['Research & Data', 'Financial Modeling', 'Accounting', 'Portfolio Tools', 'AI for Finance', 'Professional Services']
+CATEGORIES = ['Leaderboards', 'SEO', 'Marketing', 'Productivity', 'Agents', 'Developer', 'Crypto', 'Other', 'Games', 'Health', 'Business', 'Ecommerce', 'Travel', 'Directories', 'Agencies', 'AI Media', 'Education', 'Social', 'People', 'Design', 'Hiring', 'Domains', 'Sales', 'Security', 'News', 'Real Estate', 'Writing', 'Audio', 'Analytics', 'Product Management']
 
 @contextmanager
 def connection():

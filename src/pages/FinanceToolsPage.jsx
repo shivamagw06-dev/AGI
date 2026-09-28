@@ -6,11 +6,11 @@ import { supabase } from '@/lib/supabaseClient';
 import { API_ORIGIN } from '@/config';
 import './financeTools.css';
 
-export const categories = ['Research & Data', 'Financial Modeling', 'Accounting', 'Portfolio Tools', 'AI for Finance', 'Professional Services'];
+export const categories = ['Leaderboards', 'SEO', 'Marketing', 'Productivity', 'Agents', 'Developer', 'Crypto', 'Other', 'Games', 'Health', 'Business', 'Ecommerce', 'Travel', 'Directories', 'Agencies', 'AI Media', 'Education', 'Social', 'People', 'Design', 'Hiring', 'Domains', 'Sales', 'Security', 'News', 'Real Estate', 'Writing', 'Audio', 'Analytics', 'Product Management'];
 const samples = [
-  { id: 'a', name: 'Example Research Studio', description: 'Company filings and earnings transcripts in one searchable workspace.', category: 'Research & Data', amount: 2500, today: 500 },
-  { id: 'b', name: 'Example Model Desk', description: 'Forecasts, valuation templates and scenario tools for financial analysts.', category: 'Financial Modeling', amount: 1500, today: 750 },
-  { id: 'c', name: 'Example Ledger', description: 'A simpler way for finance teams to reconcile and review their accounts.', category: 'Accounting', amount: 500, today: 0 },
+  { id: 'a', name: 'Example Research Studio', description: 'Company filings and earnings transcripts in one searchable workspace.', category: 'Analytics', amount: 2500, today: 500 },
+  { id: 'b', name: 'Example Model Desk', description: 'Forecasts, valuation templates and scenario tools for financial analysts.', category: 'Productivity', amount: 1500, today: 750 },
+  { id: 'c', name: 'Example Ledger', description: 'A simpler way for finance teams to reconcile and review their accounts.', category: 'Business', amount: 500, today: 0 },
 ];
 const money = n => `₹${Number(n).toLocaleString('en-IN')}`;
 export async function toolsRequest(path, options = {}) {
@@ -24,7 +24,8 @@ export async function toolsRequest(path, options = {}) {
   return value;
 }
 export default function FinanceToolsPage() {
-  const [category, setCategory] = useState('All tools'), [query, setQuery] = useState(''), [period, setPeriod] = useState('all');
+  const [category, setCategory] = useState('All'), [query, setQuery] = useState(''), [period, setPeriod] = useState('all');
+  const [explore, setExplore] = useState(false);
   const [example, setExample] = useState(false), [board, setBoard] = useState(null), [loadError, setLoadError] = useState(''), [retry, setRetry] = useState(0);
   const [form, setForm] = useState({ name: '', url: '', description: '', category: categories[0], budget: '', authorized: false });
   const [busy, setBusy] = useState(false), [message, setMessage] = useState(''), [error, setError] = useState(''), [mine, setMine] = useState(null);
@@ -37,7 +38,7 @@ export default function FinanceToolsPage() {
     return () => controller.abort();
   }, [retry]);
   const rows = (example ? samples : board?.listings || []).map(r => ({ ...r, displayed: period === 'today' ? r.today : r.amount }))
-    .filter(r => r.displayed > 0 && (category === 'All tools' || r.category === category) && `${r.name} ${r.description}`.toLowerCase().includes(query.toLowerCase()))
+    .filter(r => r.displayed > 0 && (category === 'All' || r.category === category) && `${r.name} ${r.description}`.toLowerCase().includes(query.toLowerCase()))
     .sort((a, b) => b.displayed - a.displayed);
   const change = e => setForm(f => ({ ...f, [e.target.name]: e.target.type === 'checkbox' ? e.target.checked : e.target.value }));
   async function submit(e) {
@@ -57,7 +58,8 @@ export default function FinanceToolsPage() {
     <div className="ft-top"><Link to="/" className="ft-wordmark">AGI<span>/ FINANCE TOOLS</span></Link><a href="#ft-rules">How it works</a></div>
     <header className="ft-heading"><div><p className="ft-eyebrow">THE FINANCE TOOLS DIRECTORY</p><h1>Useful tools.<br/><em>A place to be seen.</em></h1><p>Find your next research tool. Put your business in front of the people doing the work.</p></div><a className="ft-primary" href="#ft-submit"><Plus size={18}/> Submit your company</a></header>
     <div className="ft-launch"><span>EARLY ACCESS</span> Company applications are open. Paid placements launch after payment activation.</div>
-    <nav className="ft-categories" aria-label="Tool categories">{['All tools', ...categories].map(c => <button key={c} aria-pressed={category === c} onClick={() => setCategory(c)}>{c}</button>)}</nav>
+    <nav className="ft-categories" aria-label="Tool categories">{['All', ...categories.slice(0, 9), ...(category !== 'All' && !categories.slice(0, 9).includes(category) ? [category] : [])].map(c => <button key={c} aria-pressed={category === c} onClick={() => setCategory(c)}>{c}</button>)}<button className="ft-explore" aria-expanded={explore} aria-controls="ft-category-explorer" onClick={() => setExplore(v => !v)}>Explore {explore ? '−' : '+'}</button></nav>
+    {explore && <section id="ft-category-explorer" className="ft-category-explorer" aria-label="Explore all categories"><h2>Explore all categories</h2><div>{categories.map(c => <button key={c} aria-pressed={category === c} onClick={() => { setCategory(c); setExplore(false); }}>{c}</button>)}</div></section>}
     <div className="ft-workspace"><section className="ft-board" aria-label="Sponsored leaderboard">
       <div className="ft-board-head"><div><h2>Sponsored leaderboard</h2><p>Placement reflects verified sponsorship spend, never an AGI endorsement.</p></div><Trophy size={24}/></div>
       <div className="ft-toolbar"><div className="ft-period">{[['all', 'All time'], ['today', 'Today · IST']].map(([id, label]) => <button key={id} aria-pressed={period === id} onClick={() => setPeriod(id)}>{label}</button>)}</div><label className="ft-search"><Search size={16}/><input aria-label="Search tools" value={query} onChange={e => setQuery(e.target.value)} placeholder="Find a tool…" /></label></div>
@@ -65,7 +67,7 @@ export default function FinanceToolsPage() {
       {example && <p className="ft-example-note">EXAMPLE BOARD · These businesses and amounts are fictional. They are not advertisers or payments.</p>}
       {!example && loadError ? <div role="alert" className="ft-empty"><p>{loadError}</p><button onClick={() => setRetry(r => r + 1)}>Try again</button></div> : !example && !board ? <p role="status" className="ft-empty">Loading the directory…</p> : rows.length ? <ol className="ft-list">{rows.map((r, i) => <li key={r.id}>
         <span className="ft-rank">{String(i + 1).padStart(2, '0')}</span><div className="ft-monogram" aria-hidden="true">{r.name.replace('Example ', '').slice(0, 1)}</div><div className="ft-list-copy"><span className="ft-list-category">{r.category}</span><h3>{r.name}</h3><p>{r.description}</p><small>{example ? 'Fictional listing' : 'Sponsored placement'}</small></div><div className="ft-amount"><strong>{money(r.displayed)}</strong><span>{period === 'today' ? 'today’s spend' : 'total spend'}</span><ArrowUpRight size={20}/></div>
-      </li>)}</ol> : <div className="ft-empty"><Layers size={32}/><h3>{query || category !== 'All tools' ? 'No matching listings yet.' : 'The first spot is still open.'}</h3><p>{query || category !== 'All tools' ? 'Try another category or clear your search.' : 'There are no paid listings yet. Submit your company for review before sponsorships open.'}</p><a href="#ft-submit">Apply for the launch <ArrowUpRight size={16}/></a></div>}
+      </li>)}</ol> : <div className="ft-empty"><Layers size={32}/><h3>{query || category !== 'All' ? 'No matching listings yet.' : 'The first spot is still open.'}</h3><p>{query || category !== 'All' ? 'Try another category or clear your search.' : 'There are no paid listings yet. Submit your company for review before sponsorships open.'}</p><a href="#ft-submit">Apply for the launch <ArrowUpRight size={16}/></a></div>}
       <div className="ft-board-foot"><span>{example ? 'Example data' : 'Only verified paid placements will appear'}</span><a href="#ft-rules">Read the rules ↓</a></div>
     </section>
     <aside id="ft-submit" className="ft-submit"><p className="ft-eyebrow">FOR COMPANIES & BUILDERS</p><h2>Get on the list.</h2><p>Tell us about your product. Applications are free and reviewed before payment becomes available.</p>
@@ -84,6 +86,6 @@ export default function FinanceToolsPage() {
       {mine && <section className="ft-mine"><h3>Your applications</h3>{mine.length ? mine.map(r => <div key={r.id}><strong>{r.name}</strong><span>{r.status === 'reviewed' ? 'Reviewed · awaiting launch' : r.status}</span></div>) : <p>No applications yet.</p>}</section>}
       <p className="ft-private">Your application and email stay private. Submission does not reserve a rank. <Link to="/privacy">Privacy policy</Link></p>
     </aside></div>
-    <section id="ft-rules" className="ft-rules"><div><p className="ft-eyebrow">A CLEAR EXCHANGE</p><h2>Visibility, with the rules<br/>out in the open.</h2></div><div><details open><summary>How will rankings work?</summary><p>When paid placements launch, approved listings will be ordered by verified sponsorship payments. The daily view will use midnight-to-midnight India time. Equal amounts will favour the earlier qualifying payment. No bids or payments are accepted today.</p></details><details><summary>Does paying mean AGI recommends my product?</summary><p>No. These are sponsored placements. Payment will not influence AGI’s company research, investor data or investment analysis.</p></details><details><summary>What can I submit?</summary><p>Finance software, research products and relevant professional services you are authorised to represent. We review applications for relevance and misleading claims. Approval is not guaranteed.</p></details><details><summary>What am I committing to now?</summary><p>Nothing to pay. Your budget expresses interest only. Payment, refund, tax and placement terms will be presented separately before any purchase. We do not guarantee traffic, leads or sales.</p></details></div></section>
+    <section id="ft-rules" className="ft-rules"><div><p className="ft-eyebrow">A CLEAR EXCHANGE</p><h2>Visibility, with the rules<br/>out in the open.</h2></div><div><details open><summary>How will rankings work?</summary><p>When paid placements launch, approved listings will be ordered by verified sponsorship payments. The daily view will use midnight-to-midnight India time. Equal amounts will favour the earlier qualifying payment. No bids or payments are accepted today.</p></details><details><summary>Does paying mean AGI recommends my product?</summary><p>No. These are sponsored placements. Payment will not influence AGI’s company research, investor data or investment analysis.</p></details><details><summary>What can I submit?</summary><p>Products, software and services across the listed categories that you are authorised to represent. We review applications for relevance and misleading claims. Approval is not guaranteed.</p></details><details><summary>What am I committing to now?</summary><p>Nothing to pay. Your budget expresses interest only. Payment, refund, tax and placement terms will be presented separately before any purchase. We do not guarantee traffic, leads or sales.</p></details></div></section>
   </main>;
 }

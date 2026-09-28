@@ -9,7 +9,7 @@ class FinanceToolsTests(unittest.TestCase):
         self.temp = tempfile.TemporaryDirectory()
         self.root = patch('institutional_warehouse.db.store_root', return_value=Path(self.temp.name))
         self.root.start()
-        self.payload = dict(owner='member', email='member@example.test', name='A test tool', url='https://example.com/?tracking=yes', description='A useful research tool for analysts.', category='Research & Data', budget=500, authorized=True)
+        self.payload = dict(owner='member', email='member@example.test', name='A test tool', url='https://example.com/?tracking=yes', description='A useful research tool for analysts.', category='Analytics', budget=500, authorized=True)
     def tearDown(self):
         self.root.stop()
         self.temp.cleanup()
