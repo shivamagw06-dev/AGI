@@ -22851,3 +22851,12 @@ async def nifty_paper_backtest(payload: dict[str, Any] = Body(default={})):
         return await run_in_threadpool(backtest, str(payload.get("start", "")), str(payload.get("end", "")))
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+
+@router.post("/options-lab/paper-agents/calendar", dependencies=[Depends(require_token)])
+async def nifty_paper_calendar(payload: dict[str, Any] = Body(default={})):
+    from options_lab.paper_agents import set_research_calendar
+    try:
+        return await run_in_threadpool(set_research_calendar, payload)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc

@@ -155,7 +155,7 @@ class SpreadTests(unittest.TestCase):
                 state=json.loads(db.execute('SELECT state FROM sessions').fetchone()[0]);state['agents']['opening_range']['cash']=99123
                 db.execute('UPDATE sessions SET state=?',(json.dumps(state),))
             p.stream_tick([],dict(status='Waiting'),now=NOW)
-            first=p.dashboard();self.assertEqual(len(first['live']['agents']),4)
+            first=p.dashboard();self.assertEqual(len(first['live']['agents']),11)
             self.assertEqual(first['live']['agents']['opening_range']['cash'],99123)
             self.assertEqual(first['live']['agents']['trend_pullback']['cash'],100000)
             with p.database() as db:

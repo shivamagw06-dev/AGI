@@ -34,3 +34,5 @@ export const priceOptionsSnapshotAdmin = (payload) => request('/price', {
 export const getPaperAgents = () => request('/paper-agents');
 export const controlPaperAgents = (action) => request('/paper-agents/control', {method:'POST', body:JSON.stringify({action})});
 export const backtestPaperAgents = (start,end) => request('/paper-agents/backtest', {method:'POST', body:JSON.stringify({start,end})});
+
+export const setPaperCalendar = (date,windows) => request('/paper-agents/calendar', {method:'POST', body:JSON.stringify({date,windows})});
