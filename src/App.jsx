@@ -17,6 +17,8 @@ const AdminRoutes = React.lazy(() => import('@/pages/admin/AdminRoutes'));
 const CategoryPage = React.lazy(() => import('@/pages/CategoryPage'));
 const ArticlesFeed = React.lazy(() => import('@/components/ArticlesFeed'));
 const About = React.lazy(() => import('@/components/About'));
+const ValuationCalculator = React.lazy(() => import('@/pages/ResearchCalculators').then(m => ({default:m.ValuationCalculator})));
+const PeerComparison = React.lazy(() => import('@/pages/ResearchCalculators').then(m => ({default:m.PeerComparison})));
 const FinanceToolsPage = React.lazy(() => import('@/pages/FinanceToolsPage'));
 const Contact = React.lazy(() => import('@/components/Contact'));
 const ResearchNotes = React.lazy(() => import('@/components/ResearchNotes'));
@@ -332,6 +334,8 @@ function PublicRoutes() {
 
       <Route path="/about" element={<About />} />
       <Route path="/contact" element={<Contact />} />
+      <Route path="/tools/valuation" element={<ValuationCalculator />} />
+      <Route path="/tools/peer-comparison" element={<PeerComparison />} />
       <Route path="/finance-tools" element={<FinanceToolsPage />} />
 
       <Route path="/profile/edit" element={<ProfileEditor />} />

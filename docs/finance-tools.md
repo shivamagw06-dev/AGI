@@ -11,3 +11,9 @@ Payment activation is deferred per user instruction pending Razorpay approval. B
 Existing membership pricing draft remains local and is not part of this release. Provider keys are neither required nor accepted by this prelaunch.
 
 Validation: Python persistence/deduplication/ownership/validation tests, Node route authorization/identity-spoofing/payment-disabled tests, Vite production build and browser preview. Back up the private database with the persistent disk.
+
+## AGI-owned tools
+
+The directory now includes four permanent, clearly labelled Built by AGI listings, independent of the paid leaderboard and filtered by category/search: Model Studio (`/financial-modeling`), Holdings Explorer (`/institutions`), Valuation (`/tools/valuation`), and Peer Comparison (`/tools/peer-comparison`). Existing Model Studio account protection is unchanged.
+
+New calculators are free browser-only tools. Valuation uses five years of constant-growth FCFF, year-end DCF, terminal perpetuity, an equity bridge, EV/EBITDA comparison and WACC/g sensitivity. Peer comparison accepts 2–6 manually entered companies; no live data is implied. Both support INR crore or USD million with matching share-count units, explicit missing/invalid states and CSV export. Currency selection only labels inputs, never converts them. Inputs are not persisted or uploaded. Ratios are descriptive and not stock rankings. Tests cover DCF reconciliation, invalid assumptions, loss/missing denominators and CSV escaping.
