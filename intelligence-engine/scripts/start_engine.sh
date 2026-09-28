@@ -190,6 +190,7 @@ OPTIONS_LAB_ENABLED="$(flag "${OPTIONS_LAB_LIVE_VALIDATION-}" false)"
 if [[ "${OPTIONS_LAB_ENABLED}" == "true" ]]; then
   export OPTIONS_LAB_DB_PATH="${OPTIONS_LAB_DB_PATH:-/var/data/kip/options_lab/options_lab.sqlite3}"
   export OPTIONS_LAB_REPORT_DIR="${OPTIONS_LAB_REPORT_DIR:-/var/data/kip/options_lab/reports}"
+  export NIFTY_PAPER_STREAM_ENABLED="$(flag "${NIFTY_PAPER_STREAM_ENABLED-}" true)"
   mkdir -p "$(dirname "${OPTIONS_LAB_DB_PATH}")" "${OPTIONS_LAB_REPORT_DIR}"
   (
     export AGI_ROLE=options_lab_validation_worker
@@ -198,6 +199,17 @@ if [[ "${OPTIONS_LAB_ENABLED}" == "true" ]]; then
   ) &
   OPTIONS_LAB_PID=$!
   echo "[start_engine] options validation pid=${OPTIONS_LAB_PID}"
+  if [[ "${NIFTY_PAPER_STREAM_ENABLED}" == "true" ]]; then
+    (
+      export AGI_ROLE=nifty_paper_stream_worker
+      while true; do
+        python -m options_lab.streaming
+        echo "[start_engine] paper stream stopped; restarting in 10 seconds"
+        sleep 10
+      done
+    ) &
+    echo "[start_engine] one-second paper stream supervisor pid=$!"
+  fi
 else
   echo "[start_engine] options validation collector disabled"
 fi

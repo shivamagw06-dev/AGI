@@ -142,3 +142,51 @@ Expired instrument candles are a separate data product/capability; this v1 does
 not imply that historical bid/ask chains can be reconstructed from those candles.
 
 Paper agents v1.1 sample the first collection in each 15-minute window, so duplicate collectors or retries cannot accelerate signals/fills. Opening range requires all three distinct opening windows. Replay displays the actual sampled count separately from raw stored batches.
+
+## One-second forward paper worker (v2)
+
+`python -m options_lab.streaming` is a separate, read-only Upstox V3 WebSocket
+process. Production `scripts/start_engine.sh` enables it with the existing
+options-lab service; set `NIFTY_PAPER_STREAM_ENABLED=false` to opt out. There is
+no broker order code. The existing Start/Pause controls still govern entries.
+The 15-minute collector no longer writes forward account transitions in stream
+mode. Its pricing validation and historical replay are unchanged.
+
+- One `full` subscription: NIFTY index + nearest expiry 2–14 days away, nearest
+  42 CE/PE contracts. Refresh the strike selection every five minutes and retain
+  every open/pending contract. Metadata supplies actual lot sizes.
+- One-second monotonic evaluation loop; never burst to catch up a delayed loop.
+- Require Upstox `NSE_FO=NORMAL_OPEN`, local weekday session, per-instrument
+  provider timestamps no more than five seconds old, a fresh NIFTY observation,
+  valid spread/volume/OI and displayed best-bid/ask size covering the whole lot.
+  Timestamps identify feed updates, not guaranteed exchange-tick latency.
+- Entry requires a strictly newer feed quote than the signal's quote. Disconnects
+  cancel pending signals; missing/stale observations freeze existing positions
+  unresolved and halt that agent. No interpolated fills or automatic halt resets.
+- Indicator context remains first fresh observation within 30 seconds of each
+  15-minute boundary. Mean reversion uses six strictly prior boundary samples;
+  OR needs the 09:15, 09:30, 09:45 observations. A midday start cannot invent them.
+- Account/state + compressed one-second frames commit atomically to the existing
+  durable SQLite database each second. Only new `second_frames` older than 14
+  calendar days are pruned. Trade journals, balances and old validation evidence
+  are retained. Frames include source quote timestamps, so cached quotes are not
+  represented as newly received ticks. The UI's replay remains 15-minute only.
+- Migration preserves balances/trades, clears pending signals and warms up fresh
+  indicator context. Any legacy open position stays unresolved/blocked.
+- Advisory disk lock prevents simultaneous stream workers. TLS remains verified;
+  exponential reconnect up to 60 seconds reloads the token. URLs/tokens and raw
+  connection exception messages are never logged. A post-close startup checks
+  authorization/subscription then disconnects until the next weekday session;
+  exchange feed status additionally prevents holiday trading.
+- Dashboard (5-second refresh) reports recent CPU as % of **one core**, peak RSS,
+  processing milliseconds, fresh/subscribed contracts and worker heartbeat.
+  These are process metrics, not total-server utilization. Counters reset on
+  worker restart; evidence and accounts do not.
+
+Official protocol (downloaded 2026-09-28):
+https://assets.upstox.com/feed/market-data-feed/v3/MarketDataFeed.proto
+https://upstox.com/developer/api-documentation/v3/get-market-data-feed/
+Generated with grpcio-tools 1.71.0 / protobuf 5.29; vendored schema and decoder in
+`options_lab/proto/`. Regenerate with `python -m grpc_tools.protoc` using that
+folder as both include and Python output directory. No compiler is needed at
+runtime.
