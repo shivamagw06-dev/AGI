@@ -498,7 +498,7 @@ _offloaded_routes = install_legacy_route_offload(
     app,
     exempt_paths={"/v1/health"},
 )
-log.info("legacy_api_route_offload_installed", extra={"routes": _offloaded_routes})
+log.info("legacy_api_route_offload_installed routes=%s", _offloaded_routes)
 
 
 _MIGRATION_ALLOWLIST = (
