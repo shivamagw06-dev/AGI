@@ -113,7 +113,7 @@ def assessment(snapshot, now):
                 article_ids=sorted(a['id'] for a in active),until=max((a['pause_until'] for a in active),default=None))
 
 
-def poll(symbols, universe, *, now=None, get=read_json):
+def poll(symbols, universe, *, now=None, get=read_json, live_collection=True):
     at = now or datetime.now(timezone.utc)
     with closing(p.database()) as db:
         schema(db)
@@ -127,8 +127,13 @@ def poll(symbols, universe, *, now=None, get=read_json):
         with closing(p.database()) as db, db:
             schema(db)
             for article in articles:
-                row=db.execute('SELECT first_seen FROM paper_news_articles WHERE id=?',(article['id'],)).fetchone()
+                row=db.execute('SELECT first_seen,payload FROM paper_news_articles WHERE id=?',(article['id'],)).fetchone()
+                old=json.loads(row[1]) if row else {}
                 article['first_seen_at']=row[0] if row else completed.isoformat()
+                article['original_published_at']=old.get('original_published_at',old.get('published_at',article['published_at']))
+                article['original_heading']=old.get('original_heading',old.get('heading',article['heading']))
+                article['revised']=bool(old.get('revised') or (row and (article['published_at']!=old.get('published_at') or article['heading']!=old.get('heading'))))
+                article['live_discovery']=old.get('live_discovery',False) if row else bool(live_collection and previous.get('available') and previous.get('last_success_at') and 0<=(completed-p.timestamp(previous['last_success_at'])).total_seconds()<=180)
                 db.execute('INSERT OR REPLACE INTO paper_news_articles VALUES(?,?,?)',
                            (article['id'],article['first_seen_at'],json.dumps(article)))
             # Do not repeatedly arm old stories after restarts or pagination changes.
@@ -229,7 +234,7 @@ class NewsWorker:
                 try:
                     day=now.astimezone(p.IST).date().isoformat()
                     if self.universe_day!=day: await asyncio.to_thread(self.refresh_universe,day)
-                    await asyncio.to_thread(poll,self.symbols,self.universe)
+                    await asyncio.to_thread(poll,self.symbols,self.universe,live_collection=not first)
                     if now.timestamp() >= yahoo_due:
                         await asyncio.to_thread(yahoo_news.poll)
                         yahoo_due=now.timestamp()+yahoo_news.INTERVAL

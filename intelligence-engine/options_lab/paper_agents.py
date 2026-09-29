@@ -262,6 +262,9 @@ def summary(state):
     result.pop('history',None)
     spreads=result.pop('spreads',None)
     research=result.pop('research',None)
+    from . import news_agent
+    news_state=result.pop('news_agent',None)
+    if news_state: result['news_agent']=news_agent.dashboard(news_state)
     if research:
         result['research']={k:v for k,v in research.items() if k not in ('agents','candles','minutes','minute','iv_history')}
         result['research']['completed_bars']=len(research['candles'])
@@ -304,7 +307,7 @@ def control(action):
         else:
             state=json.loads(row['state'])
             if action=='pause':
-                for agent in [*state['agents'].values(),*state.get('spreads',{}).get('agents',{}).values(),*state.get('research',{}).get('agents',{}).values()]:
+                for agent in [*state['agents'].values(),*state.get('spreads',{}).get('agents',{}).values(),*state.get('research',{}).get('agents',{}).values(),*state.get('news_agent',{}).get('agents',{}).values()]:
                     agent['pending']=None
             db.execute('UPDATE sessions SET enabled=?,state=? WHERE id=1',(int(action=='start'),json.dumps(state)))
     return dashboard()
@@ -467,7 +470,8 @@ def stream_tick(rows, status, *, now, prune=False):
                 if agent['position']:
                     agent['blocked'] = True
                     event(agent,at,'migration','Existing position preserved unresolved on sampling change')
-        from . import spread_agents, regime_agents, news_monitor
+        from . import spread_agents, regime_agents, news_monitor, news_agent
+        news_agent.isolated_tick(state,rows,news_agent.snapshot_from_db(db),now,bool(row['enabled']))
         news_before=news_monitor.capture(state)
         state.setdefault('research',regime_agents.fresh())
         regime_agents.advance(state['research'],rows,now,bool(row['enabled']))
@@ -504,6 +508,8 @@ def pinned_contracts():
     keys.update(leg['instrument_key'] for agent in state.get('spreads',{}).get('agents',{}).values()
                 for item in (agent['position'],agent['pending']) if item for leg in item['legs'])
     keys.update(leg['instrument_key'] for agent in state.get('research',{}).get('agents',{}).values()
+                for item in (agent['position'],agent['pending']) if item for leg in item['legs'])
+    keys.update(leg['instrument_key'] for agent in state.get('news_agent',{}).get('agents',{}).values()
                 for item in (agent['position'],agent['pending']) if item for leg in item['legs'])
     return keys
 
