@@ -14,7 +14,7 @@ from . import paper_agents as p, spread_agents as s, regime_agents as r
 
 VERSION = 'all-strategies-replay-v2'
 MAX_SECONDS = 900
-MAX_FRAMES = 350000  # More than fourteen regular sessions; evidence retention is fourteen days.
+MAX_FRAMES = 1500000  # Bounded replay; long-term archives are read incrementally.
 IV_NAMES = {'regime_credit', 'iron_condor', 'long_straddle', 'long_strangle', 'iron_fly'}
 
 
@@ -253,33 +253,38 @@ def replay_frames(frames, first, last, reviews=(), overrides=None, iv_seed=(), j
     return result, coverage
 
 
-def run(config, job=None):
+def _run(config, job=None):
     first,last = bounds(config['start'],config['end'])
     with closing(p.database()) as db:
         schema(db)
         # This fixed cutoff makes a run reproducible while the collector keeps appending.
-        cutoff = db.execute('SELECT MAX(at) FROM second_frames WHERE at < ?', (last.isoformat(),)).fetchone()[0]
+        cutoff = min(last, datetime.now(timezone.utc)).isoformat()
         warm_start = (first-timedelta(days=14)).isoformat()
-        count = db.execute('SELECT COUNT(*) FROM second_frames WHERE at>=? AND at<=?', (warm_start,cutoff or '')).fetchone()[0]
-        if count > MAX_FRAMES:
-            raise ValueError('Too many recorded seconds. Choose a shorter range.')
         reviews = [json.loads(x[0]) for x in db.execute('SELECT payload FROM paper_calendar_reviews WHERE reviewed_at < ? ORDER BY reviewed_at',(last.isoformat(),))]
         live = db.execute('SELECT state FROM sessions WHERE id=1').fetchone()
         research = json.loads(live[0]).get('research',{}) if live else {}
         seed = research.get('iv_history',[]) + ([research['iv_today']] if research.get('iv_today') else [])
     # Keyset pages release read locks between batches; no transaction is held for the run.
     def frames():
-        after = ''
-        while cutoff:
-            with closing(p.database()) as db:
-                page = db.execute('SELECT at,payload FROM second_frames WHERE at>=? AND at>? AND at<=? ORDER BY at LIMIT 250',
-                                  (warm_start,after,cutoff)).fetchall()
-            if not page:return
-            for at,payload in page:
-                from .iv_history import normalize_stream_rows
-                yield p.timestamp(at),normalize_stream_rows(json.loads(zlib.decompress(payload)))
-            after = page[-1][0]
-    progress(job, phase='Reading recorded evidence', total_frames=count)
+        from .evidence_archive import archived_frames
+        from .iv_history import normalize_stream_rows
+        import heapq
+        def hot():
+            after = ''
+            while True:
+                with closing(p.database()) as db:
+                    page = db.execute('SELECT at,payload FROM second_frames WHERE at>=? AND at>? AND at<? ORDER BY at LIMIT 250',
+                                      (warm_start,after,cutoff)).fetchall()
+                if not page:return
+                for at,payload in page: yield p.timestamp(at),json.loads(zlib.decompress(payload))
+                after=page[-1][0]
+        previous=None;count=0
+        for at,rows in heapq.merge(archived_frames(warm_start,cutoff),hot(),key=lambda x:x[0]):
+            if at==previous:continue
+            previous=at;count+=1
+            if count>MAX_FRAMES:raise ValueError('Too many recorded seconds; select a shorter range')
+            yield at,normalize_stream_rows(rows)
+    progress(job, phase='Reading recorded evidence and verified daily archives')
     result,coverage = replay_frames(frames(),first,last,reviews,config['calendars'],seed,job)
     # Preserve the legacy fifteen-minute experiment, clearly labelled separately.
     from .replay_evidence import ReplayEvidence, validation_report
@@ -322,6 +327,12 @@ def run(config, job=None):
                     'Current dated fee model is applied throughout; not a historical tariff reconstruction.',
                     'Open/unresolved positions are not closed at invented prices. Results are exploratory, not validation.'])
     return result
+
+
+def run(config,job=None):
+    from .evidence_archive import archive_lock
+    with archive_lock():
+        return _run(config,job)
 
 
 def worker(job):

@@ -2785,6 +2785,18 @@ export default function createIntelligenceRouter() {
     });
   }
 
+  router.get('/options-lab/minute-backtest', requireStrategyLabAdmin, async (_req,res)=>{
+    try { const r=await engineFetch('/v1/options-lab/minute-backtest',{timeoutMs:30000});
+      return res.status(r.status).set('Cache-Control','no-store').json(r.data);
+    } catch { return res.status(503).json({error:'Minute backtest status unavailable'}); }
+  });
+  router.post('/options-lab/minute-backtest', requireStrategyLabAdmin, async (req,res)=>{
+    try { const r=await engineFetch('/v1/options-lab/minute-backtest',{method:'POST',
+      body:{start:req.body?.start,end:req.body?.end,calendars:req.body?.calendars},timeoutMs:30000});
+      return res.status(r.status).json(r.data);
+    } catch { return res.status(503).json({error:'Minute backtest request failed; check status before retrying'}); }
+  });
+
   router.get('/options-lab/daily-research', requireStrategyLabAdmin, async (_req,res) => {
     try { const r=await engineFetch('/v1/options-lab/daily-research',{timeoutMs:30000});
       return res.status(r.status).set('Cache-Control','no-store').json(r.data);

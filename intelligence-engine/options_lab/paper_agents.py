@@ -451,14 +451,15 @@ def stream_tick(rows, status, *, now, prune=False):
     unresolved. A subsequent fresh quote cannot silently invent a gap fill.
     """
     at = now.astimezone(timezone.utc).isoformat()
+    if prune:
+        from .evidence_archive import launch
+        launch()
     with closing(database()) as db, db:
         db.execute('BEGIN IMMEDIATE')
         db.execute('INSERT OR REPLACE INTO stream_status VALUES(1,?)', (json.dumps(status),))
         if rows:
             db.execute('INSERT OR IGNORE INTO second_frames VALUES(?,?)',
                 (at, zlib.compress(json.dumps(rows,separators=(',',':')).encode(),1)))
-        if prune:
-            db.execute('DELETE FROM second_frames WHERE at < ?', ((now-timedelta(days=14)).isoformat(),))
         row = db.execute('SELECT * FROM sessions WHERE id=1').fetchone()
         if not row:
             return

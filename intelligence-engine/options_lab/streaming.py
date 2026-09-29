@@ -181,7 +181,7 @@ class StreamWorker:
         self.metadata = {}
         self.status = dict(status='Starting stream', interval_seconds=1, connected=False,
                            source='Upstox V3 WebSocket', messages=0, evaluations=0, recorded_frames=0,
-                           retention_days=14, started_at=datetime.now(timezone.utc).isoformat())
+                           retention_days=365, started_at=datetime.now(timezone.utc).isoformat())
         self.cpu_at = time.process_time()
         self.wall_at = time.monotonic()
         self.pruned_day = None
