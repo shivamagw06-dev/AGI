@@ -40,6 +40,8 @@ class SpreadTests(unittest.TestCase):
         self.assertEqual(buy['stt'],0);self.assertEqual(sell['stt'],15)
         self.assertAlmostEqual(buy['stamp'],.3);self.assertEqual(sell['stamp'],0)
         self.assertAlmostEqual(buy['exchange'],3.553)
+        self.assertEqual(buy['ipft'],0)
+        self.assertAlmostEqual(buy['total'],28.10254)
         self.assertAlmostEqual(buy['total'],sum(v for k,v in buy.items() if k!='total'))
 
     def test_complete_candles_only_and_ohlc(self):

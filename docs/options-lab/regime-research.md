@@ -90,3 +90,41 @@ recent observation to be no older than 10 calendar days. Stale history fails clo
 Historical imports are eligible only after their actual retrieval timestamp; a
 replay before retrieval cannot claim the engine possessed this history earlier.
 No prior performance is silently restated.
+
+## Replay evidence audit (29 September 2026)
+
+Replay v2 schedules each daily IV record at the later of its actual retrieval,
+observation timestamp, and the start of the following IST day. The earlier replay
+discarded any seed unavailable at the start of the requested range and could also
+discard a later-eligible seed during warm-up. The corrected replay imports it only
+when the simulated clock reaches availability. It never backdates an import or
+uses the current trading day's closing IV for an earlier decision. Fresh arrivals
+force context recomputation. Old saved reports are retained until a new run.
+
+All eleven replayed strategies now expose signal/entry counts, first bearish
+signal with available indicator context, sampled state counts, a bounded decision
+journal and daily closed-trade P&L. These diagnostics do not change admission or
+enable real orders. A signal is evidence of a rule firing, not of a future return.
+The news experiment remains separate and is not included in this eleven-agent
+replay: historical point-in-time news coverage is not reconstructed.
+
+Validation diagnostics flag fewer than 20 observed sessions or 30 closed trades,
+non-positive net P&L and non-positive P&L with twice the estimated fees. They also
+show results excluding the best day and chronological earlier/later sums. These
+are descriptive checks on the requested data, not statistical significance,
+independent out-of-sample evaluation or a live-trading qualification. Fee stress
+holds fills fixed, does not double slippage, and does not rerun position sizing.
+Unresolved/missing evidence keeps performance diagnostics unavailable. Each
+shared strategy remains a contribution to the same research account.
+
+IPFT is included in the NSE transaction charge and is no longer charged again.
+Existing saved fills and balances are not rewritten. Replay dates are displayed
+alongside requests, and quick date controls use completed calendar days.
+
+The remaining data constraint is material: raw one-second retention is fourteen
+days, so a single current replay cannot normally reach the 20-session diagnostic
+minimum. Longer retention/archive capacity must be provisioned and verified
+before claiming long-horizon validation; this release does not increase storage
+costs or delete additional data. NSE daily closes and older 15-minute snapshots
+cannot reconstruct missing executable depth. No thresholds were optimized to
+the September fall and no new strategy was promoted based on that example.
