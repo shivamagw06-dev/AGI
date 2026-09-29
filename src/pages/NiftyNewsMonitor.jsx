@@ -5,7 +5,7 @@ export default function NiftyNewsMonitor({news,names}){
  return <section className="np-method" aria-label="Shared news monitor">
   <p className="np-eyebrow">NEWS MONITOR · OBSERVATION ONLY</p>
   <h2>{unavailable?'News unavailable — coverage unknown':news.would_pause?'Potential news risk — would pause new entries':'No recent headline rule matches'}</h2>
-  <p>This monitor records what a news filter would flag across all eleven strategies. It does not change entries, exits or the scheduled-event calendar. Matches are keyword-based research labels, not verified impact assessments.</p>
+  <p>This observer records proposed risk flags for the original eleven strategies without changing their trades or calendar. The separate news agent above uses its own event eligibility rules. Matches are keyword-based research labels, not verified impact assessments.</p>
   <p>Last successful refresh: {when(news?.last_success_at)} IST · Refresh: every minute during market hours · {news?.instrument_count??0} stocks</p>
   <small>{news?.universe||'Waiting for constituent coverage'} · News source: Upstox · Rules: {news?.rule_version||'Pending'}</small>
   {news?.error&&<p className="np-warning">{news.error}</p>}
