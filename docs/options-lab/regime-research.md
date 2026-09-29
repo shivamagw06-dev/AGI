@@ -62,3 +62,31 @@ All eleven agents appear in one comparison. Missing prerequisites produce `insuf
 Calendar edits now append timestamped audit records. Replay applies a review only when it was known at the simulated time. Optional `calendars` inputs accept dated, explicitly reviewed windows within the test range; an explicit empty window list means clear. These retrospective inputs are clearly labelled and affect only that run. Missing dates fail closed. Current session calendars are never silently copied into historical dates.
 
 Historical Upstox OHLC candles do not contain the one-second depth/basket timing required by these rules. See https://upstox.com/developer/api-documentation/get-expired-historical-candle-data/. Existing raw evidence is retained for fourteen days; this release does not acquire or invent earlier high-frequency history. Performance must be reported only for available evidence, and implementation tests are not evidence of profitability.
+
+## Daily IV bootstrap (29 September 2026)
+
+The audited bundle in `options_lab/reference_data/nifty_atm_iv_history.json` supplies prior
+completed daily ATM observations derived from public NSE F&O bhavcopies. Each
+record keeps its source URL, SHA-256 of the NIFTY source rows, retrieval time,
+selected expiry/strike, call and put closes/IV, forward quality and rate assumption.
+Only the nearest 2–14-day expiry and a matched ATM pair qualify. Missing pairs,
+nontraded contracts, low/medium quality forwards and excessive call/put IV
+disagreement are excluded. The reusable acquisition command is
+`PYTHONPATH=. python scripts/bootstrap_nifty_iv.py --as-of YYYY-MM-DD --output /tmp/iv.json`.
+
+This is a labelled Black-76 end-of-day proxy (5.25% rate assumption), combined
+with provider live IV; tenor and provider/model basis differences remain. It is
+not India VIX, a constant-maturity index, or evidence of past trading returns.
+Upstox V3 decimal IV is now converted to percentage points at ingestion; original
+raw stored frames remain immutable and replay normalizes them when reading.
+Earlier forward daily observations retain their original IV alongside a unit
+correction. Accounts, open positions, past trades and risk limits are preserved.
+
+The stream loads the bundled series locally and merges it once per IST day. No
+historical network request runs inside the one-second execution loop. Completed
+forward observations extend the daily series automatically; days deduplicate,
+retain at most 60 observations within 120 calendar days, and require the most
+recent observation to be no older than 10 calendar days. Stale history fails closed.
+Historical imports are eligible only after their actual retrieval timestamp; a
+replay before retrieval cannot claim the engine possessed this history earlier.
+No prior performance is silently restated.

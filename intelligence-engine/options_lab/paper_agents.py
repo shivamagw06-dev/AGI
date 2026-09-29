@@ -474,6 +474,8 @@ def stream_tick(rows, status, *, now, prune=False):
         news_agent.isolated_tick(state,rows,news_agent.snapshot_from_db(db),now,bool(row['enabled']))
         news_before=news_monitor.capture(state)
         state.setdefault('research',regime_agents.fresh())
+        from .iv_history import bootstrap
+        bootstrap(state['research'],now)
         regime_agents.advance(state['research'],rows,now,bool(row['enabled']))
         rows=[r for r in rows if r.get('option_type') in ('CE','PE')]
         if 'spreads' not in state:

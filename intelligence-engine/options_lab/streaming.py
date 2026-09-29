@@ -19,6 +19,7 @@ import uuid
 from datetime import datetime, timezone
 
 from . import paper_agents as paper
+from .iv_history import stream_iv_percent
 from .automation import _is_market_session
 from .upstox_live import UpstoxClient, UpstoxLiveError, load_access_token, DEFAULT_UNDERLYING_KEY as NIFTY
 
@@ -153,7 +154,7 @@ class QuoteCache:
                 q = levels[0]
                 self.values[key] = dict(at=at,bid=q.get('bidP'),ask=q.get('askP'),
                     bid_size=q.get('bidQ'),ask_size=q.get('askQ'),volume=body.get('vtt'),oi=body.get('oi'),
-                    ltp=body.get('ltpc',{}).get('ltp'),vwap=body.get('atp'),iv=body.get('iv'),greeks=body.get('optionGreeks',{}))
+                    ltp=body.get('ltpc',{}).get('ltp'),vwap=body.get('atp'),iv=stream_iv_percent(body.get('iv')),iv_unit='percent',greeks=body.get('optionGreeks',{}))
 
     def rows(self, now, metadata):
         spot = self.values.get(NIFTY)

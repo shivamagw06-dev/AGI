@@ -7,6 +7,7 @@ from __future__ import annotations
 import math
 from datetime import datetime, timedelta
 from . import paper_agents as p, spread_agents as s
+from .iv_history import prior_observations
 
 VERSION = 'nifty-regime-research-v1'
 NAMES = ('regime_debit', 'regime_credit', 'iron_condor', 'long_straddle',
@@ -25,7 +26,7 @@ def fresh():
                  status='Waiting for complete bars and a reviewed event calendar', shared_account=True)
     return dict(version=VERSION, agents=result, policy=dict(POLICY), last_at=None, day=None,
                 minute=None, minutes=[], candles=[], last_bar=None, session_bars=0,
-                iv_history=[], iv_today=None, regime=dict(name='WARMUP'),
+                iv_history=[], iv_today=None, iv_unit_version=1, regime=dict(name='WARMUP'),
                 calendar=dict(date=None, windows=[]), daily_start=100000., peak=100000.,
                 max_drawdown=0., halted=False, equity=100000., reserve=0., risk=0.,
                 evidence_frames=0, first_observation=None)
@@ -106,8 +107,11 @@ def context(state, rows, now):
                 iv=p.number(min(chain,key=lambda r:abs(r['strike']-spot)).get('iv'))
                 if iv and 0<iv<200:ivs.append(iv)
     iv=sum(ivs)/2 if len(ivs)==2 else None
-    history=[x['iv'] for x in state['iv_history'] if x['day']<now.astimezone(p.IST).date().isoformat()]
-    percentile=100*sum(v<iv for v in history)/len(history) if iv and len(history)>=20 else None
+    prior=prior_observations(state['iv_history'],now)
+    history=[x['iv'] for x in prior]
+    recent=bool(prior and (now.astimezone(p.IST).date()-datetime.fromisoformat(prior[-1]['day']).date()).days<=10)
+    result.update(iv_days=len(prior),iv_history_last_day=prior[-1]['day'] if prior else None,iv_history_fresh=recent)
+    percentile=100*sum(v<iv for v in history)/len(history) if iv and len(history)>=20 and recent else None
     result.update(iv=iv,iv_percentile=percentile)
     if event in ('UNREVIEWED','BLACKOUT'):
         result['name']='EVENT_RISK';return result
@@ -288,7 +292,7 @@ def advance(state, rows, now, allow_entries):
     valid=active and bool(spots) and (max(spots)-min(spots))/min(spots)<.002
     if newday:
         if state['iv_today']:
-            state['iv_history']=(state['iv_history']+[state['iv_today']])[-60:]
+            state['iv_history']=prior_observations([state['iv_today']]+state['iv_history'],now)
         state.update(iv_today=None,daily_start=state['equity'],halted=any(a['blocked'] for a in state['agents'].values()))
         for a in state['agents'].values():a.update(daily_entries=0,pending=None)
     if newday or gap or not valid:
@@ -301,7 +305,7 @@ def advance(state, rows, now, allow_entries):
         state['candles']=(history+[completed])[-100:] if completed else history
         if completed:state['session_bars']+=1
         state['evidence_frames']+=1;state['first_observation']=state['first_observation'] or at
-    if completed or newday or not valid:
+    if completed or newday or not valid or state.pop('iv_recompute',False) or not state['regime'].get('iv'):
         state['regime']=context(state,list(quotes.values()),now)
     # Event gates are evaluated each second even between bar boundaries.
     event=event_state(state['calendar'],now)
@@ -309,7 +313,7 @@ def advance(state, rows, now, allow_entries):
     if event in ('UNREVIEWED','BLACKOUT'):ctx['name']='EVENT_RISK'
     state['regime']=ctx
     if completed and ctx.get('iv'):
-        state['iv_today']=dict(day=day,iv=ctx['iv'],at=at)
+        state['iv_today']=dict(day=day,iv=ctx['iv'],at=at,available_at=at,unit='percent',source='Upstox V3 stream',method='last-completed-bar-atm-ce-pe-v1')
     # Exit/mark every open basket before admitting any new exposure.
     for name,a in state['agents'].items():
         pos=a['position']

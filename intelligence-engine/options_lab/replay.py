@@ -142,7 +142,8 @@ def replay_frames(frames, first, last, reviews=(), overrides=None, iv_seed=(), j
     state['research'] = r.fresh()
     research = state['research']
     research['iv_history'] = [x for x in iv_seed if x['day'] < first.astimezone(p.IST).date().isoformat()
-                              and p.timestamp(x['at']) < first][-60:]
+                              and p.timestamp(x['at']) < first
+                              and p.timestamp(x.get('available_at',x['at'])) <= first][-60:]
     reviews = sorted(reviews, key=lambda x: p.timestamp(x['reviewed_at']))
     cursor = 0
     known = {}
@@ -267,7 +268,8 @@ def run(config, job=None):
                                   (warm_start,after,cutoff)).fetchall()
             if not page:return
             for at,payload in page:
-                yield p.timestamp(at),json.loads(zlib.decompress(payload))
+                from .iv_history import normalize_stream_rows
+                yield p.timestamp(at),normalize_stream_rows(json.loads(zlib.decompress(payload)))
             after = page[-1][0]
     progress(job, phase='Reading recorded evidence', total_frames=count)
     result,coverage = replay_frames(frames(),first,last,reviews,config['calendars'],seed,job)
@@ -291,7 +293,7 @@ def run(config, job=None):
     coverage.update(legacy_days=len({x['captured_at'][:10] for x in rows}),legacy_quote_rows=len(rows),
                     legacy_observations=sampled,frame_cutoff=cutoff,
                     calendar_mode='retrospective_admin_inputs' if config['calendars'] else 'recorded_as_of_reviews',
-                    retrospective_dates=sorted(config['calendars']),iv_seed_days=len([x for x in seed if p.timestamp(x['at'])<first]))
+                    retrospective_dates=sorted(config['calendars']),iv_seed_days=len([x for x in seed if p.timestamp(x['at'])<first and p.timestamp(x.get('available_at',x['at']))<=first]))
     result.update(ok=True,version=VERSION,mode='historical_replay',start=config['start'],end=config['end'],
                   status='research_only' if rows or coverage['frames'] else 'no_data',
                   days=coverage['legacy_days'],quote_rows=len(rows),observations=batches,sampled_observations=sampled,
