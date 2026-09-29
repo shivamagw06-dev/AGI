@@ -236,3 +236,36 @@ compared as if they share this fee model.
 
 Existing 15-minute historical replay remains legacy-only. New strategies need
 forward one-second data; do not fabricate historical spread results from slow snapshots.
+
+### Official daily Nifty research
+
+The admin paper desk includes four separate **daily index-direction reference studies**:
+EMA50/200 trend, 20/10-session channel breakout, RSI2 pullback above EMA200,
+and 63-session momentum with an EMA200 regime filter. They do not place orders
+or add options positions to the eleven intraday agents.
+
+`daily_research.py` accepts official NSE historical CSVs and the daily all-index
+report. The initial `reference_data/nifty_daily_ohlc.json` contains 743 rows
+captured from the NSE Indices Historical Data UI (29 September 2023–28 September
+2026), with source, retrieval time and a normalized-content SHA-256. Admin
+uploads are labelled as uploader-asserted provenance. Conflicting dates are
+rejected for review, not silently overwritten. Reports use the persistent
+paper-research database and merge the seed once by its content hash.
+
+There are 400 completed sessions of warm-up; every decision uses only the
+previous close and earlier data and executes at the next observed open. The
+comparison stops at the final observed open, charging that open's rebalance.
+Latest-close signals are shown separately. Exposure is a synthetic daily
+rebalanced +/-1x index reference, with 5 bps per exposure leg and 10 bps stress.
+Dividends, financing, broker margin, options decay, derivatives prices and live
+fills are not simulated. These are retrospective studies, not held-out evidence.
+A gap over seven calendar days restarts warm-up; smaller missing-session gaps
+are not independently audited. Insufficient history produces no return figure.
+
+Engine routes `/v1/options-lab/daily-research`, `/import`, and `/refresh` require
+the internal engine token; the Node proxy requires a verified administrator.
+Calculations and downloads run off the event loop. The refresh action requests
+one fixed prior-calendar-day official report and retains cached data on failure
+(including weekends or a report that has not been published). There is no public
+website polling scheduler. Continuous direct exchange collection requires an
+authorised feed; this importer does not replace the existing Upstox intraday feed.
