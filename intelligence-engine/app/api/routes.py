@@ -22860,3 +22860,27 @@ async def nifty_paper_calendar(payload: dict[str, Any] = Body(default={})):
         return await run_in_threadpool(set_research_calendar, payload)
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+
+@router.get("/options-lab/daily-research", dependencies=[Depends(require_token)])
+async def nifty_daily_research():
+    from options_lab.daily_research import dashboard
+    return await run_in_threadpool(dashboard)
+
+
+@router.post("/options-lab/daily-research/import", dependencies=[Depends(require_token)])
+async def nifty_daily_import(payload: dict[str, Any] = Body(default={})):
+    from options_lab.daily_research import import_csv
+    try:
+        return await run_in_threadpool(import_csv, payload.get('csv'))
+    except (ValueError, KeyError, TypeError) as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+
+@router.post("/options-lab/daily-research/refresh", dependencies=[Depends(require_token)])
+async def nifty_daily_refresh():
+    from options_lab.daily_research import refresh
+    try:
+        return await run_in_threadpool(refresh)
+    except Exception as exc:
+        raise HTTPException(status_code=503, detail='Official NSE report unavailable; retain cached history or import the official CSV.') from exc

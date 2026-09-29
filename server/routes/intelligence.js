@@ -2785,6 +2785,20 @@ export default function createIntelligenceRouter() {
     });
   }
 
+  router.get('/options-lab/daily-research', requireStrategyLabAdmin, async (_req,res) => {
+    try { const r=await engineFetch('/v1/options-lab/daily-research',{timeoutMs:30000});
+      return res.status(r.status).set('Cache-Control','no-store').json(r.data);
+    } catch { return res.status(503).json({error:'Daily research unavailable'}); }
+  });
+  for (const operation of ['import','refresh']) {
+    router.post(`/options-lab/daily-research/${operation}`,requireStrategyLabAdmin,async(req,res)=>{
+      try { const r=await engineFetch(`/v1/options-lab/daily-research/${operation}`,{
+        method:'POST',body:operation==='import'?{csv:req.body?.csv}:{},timeoutMs:30000});
+        return res.status(r.status).json(r.data);
+      } catch { return res.status(503).json({error:'Daily history request failed; cached history is retained'}); }
+    });
+  }
+
   router.post('/options-lab/price', requireStrategyLabAdmin, async (req, res) => {
     try {
       const r = await engineFetch('/v1/options-lab/price', {
