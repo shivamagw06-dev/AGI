@@ -360,6 +360,8 @@ def dashboard():
         stream=db.execute('SELECT payload FROM stream_status WHERE id=1').fetchone()
         from .replay import latest_job
         replay_job=latest_job(db)
+        from .news_monitor import dashboard as news_dashboard
+        news=news_dashboard(db,datetime.now(timezone.utc))
         db.commit()
     state=json.loads(row['state']) if row else fresh_state()
     from . import regime_agents
@@ -370,7 +372,7 @@ def dashboard():
         stream=json.loads(stream['payload']) if stream else None,
         started_at=row['started_at'] if row else None,
         quote_age_seconds=round((datetime.now(timezone.utc)-timestamp(last)).total_seconds()) if last else None,
-        live=summary(state),replay_job=replay_job,last_backtest=json.loads(latest['result']) if latest else None)
+        live=summary(state),news=news,replay_job=replay_job,last_backtest=json.loads(latest['result']) if latest else None)
 
 
 def stream_enabled():
@@ -403,7 +405,8 @@ def stream_tick(rows, status, *, now, prune=False):
                 if agent['position']:
                     agent['blocked'] = True
                     event(agent,at,'migration','Existing position preserved unresolved on sampling change')
-        from . import spread_agents, regime_agents
+        from . import spread_agents, regime_agents, news_monitor
+        news_before=news_monitor.capture(state)
         state.setdefault('research',regime_agents.fresh())
         regime_agents.advance(state['research'],rows,now,bool(row['enabled']))
         rows=[r for r in rows if r.get('option_type') in ('CE','PE')]
@@ -420,6 +423,11 @@ def stream_tick(rows, status, *, now, prune=False):
                     agent['status'] = status.get('status','Waiting for stream')
         else:
             step(state, rows, wall_now=now, allow_entries=bool(row['enabled']), interval_seconds=1)
+        # Observer failures must not interrupt price evaluation or position exits.
+        try:
+            news_monitor.observe(db,state,news_before,now)
+        except (ValueError,KeyError,TypeError,sqlite3.Error):
+            pass
         db.execute('UPDATE sessions SET state=? WHERE id=1',(json.dumps(state),))
 
 

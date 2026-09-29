@@ -322,7 +322,13 @@ def main():
             loop = asyncio.get_running_loop()
             for signum in (signal.SIGINT,signal.SIGTERM):
                 loop.add_signal_handler(signum,worker.stop.set)
-            await worker.run()
+            from .news_monitor import NewsWorker
+            news_task=asyncio.create_task(NewsWorker(worker.stop).run())
+            try:
+                await worker.run()
+            finally:
+                worker.stop.set()
+                await news_task
         asyncio.run(run())
 
 
