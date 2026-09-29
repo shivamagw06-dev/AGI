@@ -65,3 +65,17 @@ class NewsTests(unittest.TestCase):
     def test_bundled_watchlist_is_fifty_unique_keys(self):
         self.assertEqual(len(n.instruments((Path(n.__file__).parent/'data/nifty50_news_watchlist.csv').read_text())),50)
 if __name__=='__main__':unittest.main()
+
+class TransportTests(unittest.TestCase):
+    def test_transport_uses_bearer_without_redirects_and_bounds_body(self):
+        from unittest.mock import MagicMock
+        response=MagicMock();response.status_code=200
+        response.__enter__.return_value=response
+        response.iter_content.return_value=[b'{"status":"success"}']
+        with patch('requests.get',return_value=response) as get:
+            self.assertEqual(n.read_json('https://api.upstox.com/v2/news','private')['status'],'success')
+            self.assertFalse(get.call_args.kwargs['allow_redirects'])
+            self.assertTrue(get.call_args.kwargs['stream'])
+        response.iter_content.return_value=[b'x'*2_000_001]
+        with patch('requests.get',return_value=response),self.assertRaises(ValueError):
+            n.read_json('https://api.upstox.com/v2/news','private')
