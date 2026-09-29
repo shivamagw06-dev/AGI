@@ -310,6 +310,68 @@ def control(action):
     return dashboard()
 
 
+
+def recover_legacy_position(strategy, expected_entry_at):
+    """Explicit operator recovery of a halted PAPER position, never a gap fill.
+
+    Liquidate at the latest fresh recorded bid with existing slippage/costs.
+    The entry identity prevents an operator retry from closing a newer position.
+    Normal streaming/replay never invokes this operation automatically.
+    """
+    if strategy not in STRATEGIES:
+        raise ValueError('Recovery supports only the two legacy paper agents')
+    with closing(database()) as db, db:
+        db.execute('BEGIN IMMEDIATE')
+        row = db.execute('SELECT state FROM sessions WHERE id=1').fetchone()
+        if not row:
+            raise ValueError('No paper session')
+        state = json.loads(row['state'])
+        agent = state['agents'][strategy]
+        pos = agent['position']
+        if not agent['blocked'] or not pos or pos.get('entry_at') != expected_entry_at:
+            raise ValueError('Expected halted position no longer present; nothing changed')
+        now = datetime.now(timezone.utc)
+        local = now.astimezone(IST)
+        if local.weekday() >= 5 or not 555 <= local.hour*60+local.minute < 930:
+            raise ValueError('Recovery requires a live market-session quote')
+        frame = db.execute('SELECT at,payload FROM second_frames ORDER BY at DESC LIMIT 1').fetchone()
+        if not frame or not 0 <= (now-timestamp(frame['at'])).total_seconds() <= 5:
+            raise ValueError('No fresh recorded frame; position remains unresolved')
+        rows = json.loads(zlib.decompress(frame['payload']))
+        quote = next((q for q in rows if q.get('instrument_key') == pos['instrument_key']), None)
+        if (not quote or quote.get('provider') != 'upstox'
+                or quote.get('underlying_key') != 'NSE_INDEX|Nifty 50'
+                or quote.get('captured_at') != frame['at'] or not valid_quote(quote)
+                or not quote.get('quote_at')
+                or not 0 <= (now-timestamp(quote['quote_at'])).total_seconds() <= 5
+                or timestamp(quote['quote_at']) <= timestamp(pos['entry_at'])
+                or quote.get('expiry') != pos['expiry']
+                or quote.get('option_type') != pos['option_type']
+                or number(quote.get('strike')) != number(pos['strike'])
+                or datetime.fromisoformat(pos['expiry']).date() < local.date()
+                or (number(quote.get('bid_size')) or 0) < pos['quantity']):
+            raise ValueError('Held contract lacks a fresh executable bid; position remains unresolved')
+        policy = state['policy']
+        exit_price = float(quote['bid']) * (1-policy['slippage_pct']/100)
+        proceeds = exit_price * pos['quantity']
+        exit_cost = fee(proceeds, policy)
+        equity = agent['cash'] + proceeds - exit_cost
+        reason = 'Operator recovery after data gap — current bid; missing-period exits unknown'
+        trade = dict(**pos, exit_at=frame['at'], exit_price=round(exit_price,4),
+                     exit_cost=round(exit_cost,2), pnl=round(equity-pos['equity_before'],2),
+                     reason=reason, evidence_status='data_gap_recovery',
+                     recovery_at=now.isoformat(), recovery_quote_at=quote['quote_at'],
+                     recovery_bid=float(quote['bid']), recovery_bid_size=float(quote['bid_size']))
+        agent['trades'].append(trade)
+        agent.update(cash=equity, equity=equity, position=None, pending=None, blocked=False)
+        agent['peak'] = max(agent['peak'], equity)
+        agent['max_drawdown'] = max(agent['max_drawdown'], agent['peak']-equity)
+        event(agent, now.isoformat(), 'recovery', reason)
+        # Keep daily risk counters/history intact; recovery grants no fresh budget.
+        db.execute('UPDATE sessions SET state=? WHERE id=1', (json.dumps(state),))
+    return trade
+
+
 def tick():
     """Called after existing collection; paused agents still monitor open exits."""
     if stream_enabled():
