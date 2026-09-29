@@ -22,6 +22,8 @@ def test_no_evidence_reports_all_eleven_as_not_tested_and_never_touches_live(sto
         before=db.execute('SELECT state FROM sessions').fetchone()[0]
     result=b.run(b.request_config('2026-09-01','2026-09-28'))
     assert len(result['agents'])==11 and result['status']=='no_data'
+    assert set(result['decision_audit'])==set(result['validation'])==set(result['agents'])
+    assert all(x['status']=='insufficient_evidence' for x in result['validation'].values())
     assert all(a['closed_trades'] is None and a['net_pnl'] is None and a['evidence_status']=='insufficient_data' for a in result['agents'].values())
     with p.database() as db:assert db.execute('SELECT state FROM sessions').fetchone()[0]==before
 
@@ -97,7 +99,22 @@ def test_iv_seed_excludes_future_days_and_no_duplicate_warmup_days():
         seen.append(copy.deepcopy(state['iv_history']));actual(state,rows,now,allowed)
     warm=NOW-timedelta(days=3)
     with patch.object(r,'advance',side_effect=capture):b.replay_frames([(warm,chain(warm)),(NOW,chain())],first,last,iv_seed=seed)
-    assert seen[0]==[] and seen[1]==[]
+    assert seen[0]==[] and [x['day'] for x in seen[1]]==['2026-09-25']
+
+
+def test_iv_becomes_available_during_replay_without_leaking_before_import():
+    first,last=b.bounds('2026-09-28','2026-09-28')
+    available=NOW+timedelta(seconds=1)
+    seed=[dict(day='2026-09-25',iv=10,at='2026-09-25T15:30+05:30',available_at=available.isoformat()),
+          dict(day='2026-09-28',iv=20,at='2026-09-28T15:30+05:30',available_at=available.isoformat())]
+    seen=[];actual=r.advance
+    def capture(state,rows,now,allowed):
+        seen.append(copy.deepcopy(state['iv_history']));actual(state,rows,now,allowed)
+    with patch.object(r,'advance',side_effect=capture):
+        _,coverage=b.replay_frames([(NOW,chain()),(available,chain(available))],first,last,iv_seed=seed)
+    assert seen[0]==[]
+    assert [x['day'] for x in seen[1]]==['2026-09-25']
+    assert coverage['max_prior_iv_days']==1
 
 
 @pytest.mark.parametrize('name',r.NAMES)

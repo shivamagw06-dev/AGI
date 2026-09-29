@@ -199,7 +199,7 @@ def step(state, rows, *, wall_now=None, allow_entries=True, interval_seconds=900
                 if candidates:
                     contract = min(candidates,key=lambda r:(r['expiry'],abs(r['strike']-spot)))
                     agent['pending'] = dict(signal_at=at,instrument_key=contract['instrument_key'],
-                                            quote_at=contract.get('quote_at',at))
+                                            quote_at=contract.get('quote_at',at),option_type=contract['option_type'])
                     event(agent,at,'signal',f'{side} candidate; awaiting next recorded quote')
                 else:
                     agent['status'] = 'Waiting for setup and liquid contract (2–14 days to expiry)'

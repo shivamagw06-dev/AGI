@@ -10,7 +10,7 @@ from . import paper_agents as p
 
 NAMES = ('trend_pullback', 'volatility_credit')
 VERSION = 'nifty-spreads-v1'
-FEE_MODEL = 'NSE-Upstox-2026-09-28'
+FEE_MODEL = 'NSE-Upstox-2026-09-29-inclusive-IPFT'
 
 
 def fresh():
@@ -30,7 +30,7 @@ def costs(notional, side):
     # NSE transaction charge includes the former IPFT component from March 2026.
     charges = dict(brokerage=20., stt=notional*.0015 if side=='SELL' else 0.,
         exchange=notional*.0003553, sebi=notional*.000001,
-        ipft=notional*.000000001, stamp=notional*.00003 if side=='BUY' else 0.)
+        ipft=0., stamp=notional*.00003 if side=='BUY' else 0.)
     charges['gst'] = .18*(charges['brokerage']+charges['exchange']+charges['ipft'])
     charges['total'] = sum(charges.values())
     return charges

@@ -203,7 +203,7 @@ def choose(name, ctx, rows, spot, bars):
 def charges(notional, side, future=False):
     if not future:return s.costs(notional,side)
     c=dict(brokerage=min(20.,notional*.0005),stt=notional*.0005 if side=='SELL' else 0.,
-           exchange=notional*.0000183,sebi=notional*.000001,ipft=notional*.000000001,
+           exchange=notional*.0000183,sebi=notional*.000001,ipft=0.,
            stamp=notional*.00002 if side=='BUY' else 0.)
     c['gst']=.18*(c['brokerage']+c['exchange']+c['ipft']);c['total']=sum(c.values());return c
 

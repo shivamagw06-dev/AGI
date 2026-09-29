@@ -12,7 +12,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from . import paper_agents as p, spread_agents as s, regime_agents as r
 
-VERSION = 'all-strategies-replay-v1'
+VERSION = 'all-strategies-replay-v2'
 MAX_SECONDS = 900
 MAX_FRAMES = 350000  # More than fourteen regular sessions; evidence retention is fourteen days.
 IV_NAMES = {'regime_credit', 'iron_condor', 'long_straddle', 'long_strangle', 'iron_fly'}
@@ -141,9 +141,11 @@ def replay_frames(frames, first, last, reviews=(), overrides=None, iv_seed=(), j
     state['spreads'] = s.fresh()
     state['research'] = r.fresh()
     research = state['research']
-    research['iv_history'] = [x for x in iv_seed if x['day'] < first.astimezone(p.IST).date().isoformat()
-                              and p.timestamp(x['at']) < first
-                              and p.timestamp(x.get('available_at',x['at'])) <= first][-60:]
+    from .iv_history import prior_observations
+    from .replay_evidence import ReplayEvidence, iv_schedule
+    audit = ReplayEvidence()
+    scheduled_iv = iv_schedule(iv_seed)
+    iv_cursor = 0
     reviews = sorted(reviews, key=lambda x: p.timestamp(x['reviewed_at']))
     cursor = 0
     known = {}
@@ -154,7 +156,6 @@ def replay_frames(frames, first, last, reviews=(), overrides=None, iv_seed=(), j
                     iv_frames=0, delta_frames=0, eligible_frames={name:0 for name in (*s.NAMES,*r.NAMES)})
     previous = None
     last_bar = None
-    seeded = False
     for index, (now, rows) in enumerate(frames):
         if now >= last:
             break
@@ -163,15 +164,20 @@ def replay_frames(frames, first, last, reviews=(), overrides=None, iv_seed=(), j
             known[review['date']] = review
             cursor += 1
         day = now.astimezone(p.IST).date().isoformat()
-        if not seeded:
-            research['iv_history'] = sorted({x['day']:x for x in research['iv_history'] if x['day']<day and p.timestamp(x['at'])<now}.values(),key=lambda x:x['day'])[-60:]
-            seeded = True
+        arriving = []
+        while iv_cursor < len(scheduled_iv) and scheduled_iv[iv_cursor][0] <= now:
+            arriving.append(scheduled_iv[iv_cursor][1])
+            iv_cursor += 1
+        if arriving:
+            research['iv_history'] = prior_observations(research['iv_history'] + arriving, now)
+            research['iv_recompute'] = True
         research['calendar'] = overrides.get(day) or known.get(day) or dict(date=None, windows=[])
         selected = now >= first
         r.advance(research, rows, now, selected)
         options = [q for q in rows if q.get('option_type') in ('CE','PE')]
         s.advance(state['spreads'], options, now, selected)
         if selected:
+            audit.observe(now, {**state['spreads']['agents'], **research['agents']}, research['regime'])
             coverage['frames'] += 1
             coverage['quote_rows'] += len(rows)
             if day not in coverage['days']:
@@ -180,7 +186,7 @@ def replay_frames(frames, first, last, reviews=(), overrides=None, iv_seed=(), j
                                            and previous.astimezone(p.IST).date()==now.astimezone(p.IST).date())
             coverage['max_research_bars'] = max(coverage['max_research_bars'],len(research['candles']))
             coverage['max_spread_bars'] = max(coverage['max_spread_bars'],len(state['spreads']['candles']))
-            coverage['max_prior_iv_days'] = max(coverage['max_prior_iv_days'],len(research['iv_history']))
+            coverage['max_prior_iv_days'] = max(coverage['max_prior_iv_days'],len(prior_observations(research['iv_history'], now)))
             if research['last_bar'] is not None and research['last_bar'] != last_bar:
                 coverage['complete_bars'] += 1
             ctx = research['regime']
@@ -216,7 +222,9 @@ def replay_frames(frames, first, last, reviews=(), overrides=None, iv_seed=(), j
         last_bar = research['last_bar']
         if index % 1000 == 0:
             progress(job, phase='Replaying one-second evidence', processed_frames=index+1, at=now.isoformat())
+    evidence = audit.finish({**state['spreads']['agents'], **research['agents']})
     result = p.summary(state)
+    result['decision_audit'] = evidence
     for name in (*s.NAMES,*r.NAMES):
         a = result['agents'][name]
         a['replay_interval_seconds'] = 1
@@ -274,15 +282,21 @@ def run(config, job=None):
     progress(job, phase='Reading recorded evidence', total_frames=count)
     result,coverage = replay_frames(frames(),first,last,reviews,config['calendars'],seed,job)
     # Preserve the legacy fifteen-minute experiment, clearly labelled separately.
+    from .replay_evidence import ReplayEvidence, validation_report
+    legacy_audit = ReplayEvidence()
     rows = p.read_quotes(config['start'],config['end'])
     legacy = p.fresh_state()
     batches = sampled = 0
     from itertools import groupby
     for _,group in groupby(rows,key=lambda x:x['captured_at']):
         before = legacy['last_at']
-        p.step(legacy,list(group))
+        group = list(group)
+        p.step(legacy,group)
+        if legacy['last_at'] != before:
+            legacy_audit.observe(p.timestamp(legacy['last_at']), legacy['agents'])
         batches += 1
         sampled += int(legacy['last_at'] != before)
+    result['decision_audit'].update(legacy_audit.finish(legacy['agents']))
     original = p.summary(legacy)
     for name,a in original['agents'].items():
         a.update(replay_interval_seconds=900,evidence_status='observed')
@@ -294,13 +308,16 @@ def run(config, job=None):
                     legacy_observations=sampled,frame_cutoff=cutoff,
                     calendar_mode='retrospective_admin_inputs' if config['calendars'] else 'recorded_as_of_reviews',
                     retrospective_dates=sorted(config['calendars']),iv_seed_days=len([x for x in seed if p.timestamp(x['at'])<first and p.timestamp(x.get('available_at',x['at']))<=first]))
+    result['validation'] = validation_report(result['agents'], result['decision_audit'])
     result.update(ok=True,version=VERSION,mode='historical_replay',start=config['start'],end=config['end'],
                   status='research_only' if rows or coverage['frames'] else 'no_data',
                   days=coverage['legacy_days'],quote_rows=len(rows),observations=batches,sampled_observations=sampled,
                   coverage=coverage,completed_at=datetime.now(timezone.utc).isoformat(),job_id=job,
                   assumptions=['Original two: 15-minute snapshots and legacy illustrative costs.',
                     'Other nine: exact forward rules on recorded one-second frames; no interpolation or invented depth.',
-                    'Warm-up uses prior recorded frames without entries. IV seed uses only prior dated observations.',
+                    'Warm-up cannot trade. IV observations become usable only after their recorded availability and trading day; arrivals during replay are processed chronologically.',
+                    'Diagnostic minimum: 20 observed sessions and 30 completed trades per strategy; passing is not a claim of profitability or permission for live trading.',
+                    'Earlier/later results are chronological diagnostics, not independent out-of-sample validation. Fee stress deducts one additional copy of estimated fees, holding fills unchanged.',
                     'Historical calendar overrides are retrospective research assumptions, not point-in-time evidence.',
                     'Current dated fee model is applied throughout; not a historical tariff reconstruction.',
                     'Open/unresolved positions are not closed at invented prices. Results are exploratory, not validation.'])
