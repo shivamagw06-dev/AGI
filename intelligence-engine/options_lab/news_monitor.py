@@ -190,13 +190,15 @@ def observe(db, state, before, now):
 
 
 def dashboard(db, now):
+    from . import yahoo_news
+    yahoo=yahoo_news.dashboard(db,now)
     if not db.execute("SELECT 1 FROM sqlite_master WHERE name='paper_news_status'").fetchone():
-        return dict(mode='observe',status='unavailable',would_pause=None,articles=[],observations=[])
+        return dict(mode='observe',status='unavailable',would_pause=None,articles=[],observations=[],yahoo=yahoo)
     row=db.execute('SELECT payload FROM paper_news_status WHERE id=1').fetchone()
     snapshot=json.loads(row[0]) if row else {}
     current=assessment(snapshot,now)
     recent=db.execute('SELECT at,agent,kind,payload FROM paper_news_observations ORDER BY at DESC LIMIT 30').fetchall()
-    return dict(snapshot,**current,articles=snapshot.get('articles',[])[:20],
+    return dict(snapshot,**current,yahoo=yahoo,articles=snapshot.get('articles',[])[:20],
                 observations=[dict(at=r[0],agent=r[1],kind=r[2],**json.loads(r[3])) for r in recent])
 
 
@@ -218,7 +220,9 @@ class NewsWorker:
 
     async def run(self):
         from .automation import _is_market_session
+        from . import yahoo_news
         first=True
+        yahoo_due=0
         while not self.stop.is_set():
             now=datetime.now(timezone.utc)
             if first or _is_market_session(now):
@@ -226,6 +230,9 @@ class NewsWorker:
                     day=now.astimezone(p.IST).date().isoformat()
                     if self.universe_day!=day: await asyncio.to_thread(self.refresh_universe,day)
                     await asyncio.to_thread(poll,self.symbols,self.universe)
+                    if now.timestamp() >= yahoo_due:
+                        await asyncio.to_thread(yahoo_news.poll)
+                        yahoo_due=now.timestamp()+yahoo_news.INTERVAL
                 except Exception:
                     # Isolate disk/network failures from the one-second stream.
                     # Dashboard freshness expires even when this status write fails.

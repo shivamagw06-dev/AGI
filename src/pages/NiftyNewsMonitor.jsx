@@ -19,5 +19,15 @@ export default function NiftyNewsMonitor({news,names}){
    {!news?.observations?.length?<p>Waiting for new strategy candidates or paper entries after the monitor starts.</p>:<div className="np-scroll"><table><thead><tr><th>Time (IST)</th><th>Strategy / event</th><th>News assessment</th></tr></thead><tbody>{news.observations.map((o,i)=><tr key={i}><td>{when(o.at)}</td><td>{o.agent==='all'?'All strategies':names[o.agent]||o.agent}<small>{o.kind==='paper_entry'?'Paper entry':o.kind==='news_review'?'News assessment':'Candidate'}</small></td><td>{o.would_pause===null?'Unknown — news unavailable':o.would_pause?'Would pause':'No matching pause rule'}{o.headlines?.map(a=><small key={a.id}>{a.heading}</small>)}</td></tr>)}</tbody></table></div>}
   </details>
   <small>A proposed pause lasts 30 minutes from publication, never from delayed discovery. Headlines older than that cannot start a fresh pause. No historical news has been injected into past backtests.</small>
+  <div aria-label="Yahoo Finance news">
+   <h3>Yahoo Finance</h3>
+   <p>Global top stories · refresh every 5 minutes during market hours · for reading only. This feed does not change strategy signals or trades and is not complete India coverage.</p>
+   <p>{news?.yahoo?.fresh&&Date.now()-new Date(news.yahoo.last_success_at).getTime()<=600000?'Feed available':'Feed unavailable or stale'} · Last successful refresh: {when(news?.yahoo?.last_success_at)} IST</p>
+   {news?.yahoo?.latest_published_at&&<p>Newest returned article: {when(news.yahoo.latest_published_at)} IST. {!news.yahoo.content_recent&&'The feed contains older stories; a successful refresh does not establish current news coverage.'}</p>}
+   {news?.yahoo?.error&&<p className="np-warning">{news.yahoo.error}</p>}
+   <details><summary>Yahoo headlines ({news?.yahoo?.articles?.length??0})</summary>
+    {!news?.yahoo?.articles?.length?<p>No Yahoo headlines received yet.</p>:<div className="np-scroll"><table><thead><tr><th>Yahoo Finance headline</th><th>Original publication / received (IST)</th></tr></thead><tbody>{news.yahoo.articles.map(a=><tr key={a.id}><td><a href={a.url} target="_blank" rel="noreferrer">{a.heading}</a><small>Source: Yahoo Finance</small></td><td>{when(a.original_published_at||a.published_at)}<small>Received {when(a.first_seen_at)}</small>{a.updated_at&&<small>Update detected {when(a.updated_at)}</small>}</td></tr>)}</tbody></table></div>}
+   </details>
+  </div>
  </section>;
 }
