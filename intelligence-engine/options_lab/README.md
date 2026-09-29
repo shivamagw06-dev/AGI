@@ -269,3 +269,47 @@ one fixed prior-calendar-day official report and retains cached data on failure
 (including weekends or a report that has not been published). There is no public
 website polling scheduler. Continuous direct exchange collection requires an
 authorised feed; this importer does not replace the existing Upstox intraday feed.
+
+### One-minute approximate backtest (separate experiment)
+
+`GET/POST /v1/options-lab/minute-backtest` is token-protected; the website proxy
+also requires the strategy-lab administrator. Requests accept `start`, `end`
+(completed dates, up to 180 calendar days), and explicit retrospective `calendars`
+in the detailed replay format. A bounded, low-priority subprocess downloads and
+caches Upstox V3 spot minute bars and expired F&O minute OHLCV/OI. Expired history
+requires Upstox Plus. A job is limited to one hour and 3,500 contract requests;
+retries reuse completed downloads. Only returned expired expiries are available.
+The collector adds 45 prior calendar days for warm-up and rolling estimated IV.
+
+Results use `mode=one_minute_approximate` and their own SQLite job/result store.
+They never enter `second_frames`, `backtests`, or forward account state. All nine
+newer strategies are separate ₹1 lakh accounts in this approximation, unlike the
+shared forward research account. Signal selection reuses the five-minute rules;
+execution is a deliberately separate candle model. Entry at the next minute open;
+minute-close stop/target/time checks exit at the following open. No intra-minute
+ordering or market depth is invented. Basket fills assume all legs execute.
+BSM-estimated IV/delta use 5.5% rate and zero dividend yield. Futures average traded
+price is approximated by cumulative typical-price × volume / volume. Current fee
+rates apply throughout history; stress actually reruns with twice slippage/fees.
+Open/missing-exit positions suppress headline P&L; the export retains closed-only
+results, positions, skips, trade legs, fees, source coverage and all assumptions.
+Missing dated event reviews block research entries rather than assuming no events.
+
+### Recorded evidence: 365-day retention
+
+Recent 14 UTC days stay in the SQLite hot store; older full days move to lossless
+`nifty_second_archive/YYYY-MM-DD.jsonl.gz` beside `OPTIONS_LAB_DB_PATH`. Every
+archive is read back, its row count/content hash verified, then durably renamed
+with a SHA256 manifest before any hot rows are removed. Archive failure retains
+hot evidence. Compression runs in a low-priority subprocess, outside the trading
+transaction. A file lock prevents detailed replay racing archival/pruning. Replay
+merges verified archived frames with recent records and deduplicates timestamps;
+it remains limited to 60 calendar days/1.5 million frames/15 minutes per job.
+Archives expire after 365 days. The UI exposes archive size/free space and errors.
+
+This requires a **persistent evidence volume**. Archives on the same volume are
+not disaster-recovery backups. Monitor volume capacity and take independent
+backups; no paid storage subscription is created by this change. Previously
+pruned data cannot be recovered. If free space is below 512 MiB, archival fails
+closed and retains hot rows; operators must increase space before collection
+runs out. Cached minute history also shares this volume.

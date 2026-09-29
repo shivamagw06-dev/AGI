@@ -22884,3 +22884,18 @@ async def nifty_daily_refresh():
         return await run_in_threadpool(refresh)
     except Exception as exc:
         raise HTTPException(status_code=503, detail='Official NSE report unavailable; retain cached history or import the official CSV.') from exc
+
+
+@router.get('/options-lab/minute-backtest', dependencies=[Depends(require_token)])
+async def nifty_minute_dashboard():
+    from options_lab.minute_backtest import dashboard
+    return await run_in_threadpool(dashboard)
+
+
+@router.post('/options-lab/minute-backtest', dependencies=[Depends(require_token)])
+async def nifty_minute_submit(payload: dict[str, Any] = Body(default={})):
+    from options_lab.minute_backtest import submit
+    try:
+        return await run_in_threadpool(submit,payload.get('start'),payload.get('end'),payload.get('calendars'))
+    except ValueError as exc:
+        raise HTTPException(status_code=422,detail=str(exc)) from exc
