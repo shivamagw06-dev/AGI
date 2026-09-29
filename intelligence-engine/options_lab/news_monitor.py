@@ -47,14 +47,19 @@ def instruments(text):
 
 
 def read_json(url, token):
-    request = urllib.request.Request(url, headers={'Authorization':f'Bearer {token}','Accept':'application/json'})
-    # Do not forward credentials to redirect destinations.
-    class NoRedirect(urllib.request.HTTPRedirectHandler):
-        def redirect_request(self,*args,**kwargs): return None
-    with urllib.request.build_opener(NoRedirect).open(request,timeout=8) as response:
-        blob = response.read(2_000_001)
-    if len(blob)>2_000_000: raise ValueError('News response too large')
-    return json.loads(blob)
+    # Use the same requests transport verified against Upstox from Render.
+    # Redirects remain disabled so credentials never reach another host.
+    import requests
+    with requests.get(url,headers={'Authorization':f'Bearer {token}','Accept':'application/json'},
+                      timeout=8,allow_redirects=False,stream=True) as response:
+        response.raise_for_status()
+        if response.status_code!=200: raise ValueError('Unexpected news status')
+        chunks=[];size=0
+        for chunk in response.iter_content(65536):
+            size+=len(chunk)
+            if size>2_000_000: raise ValueError('News response too large')
+            chunks.append(chunk)
+    return json.loads(b''.join(chunks))
 
 
 def fetch_news(keys, token, get=read_json):
@@ -136,7 +141,7 @@ def poll(symbols, universe, *, now=None, get=read_json):
             db.execute('DELETE FROM paper_news_observations WHERE at<?',(cutoff,))
     except Exception as error:
         # Never log exception text/headers: may contain secrets or provider response.
-        code=getattr(error,'code',None)
+        code=getattr(error,'code',None) or getattr(getattr(error,'response',None),'status_code',None)
         snapshot.update(available=False,error=f'News refresh failed ({"HTTP "+str(code) if code else type(error).__name__}); coverage unknown')
         with closing(p.database()) as db, db:
             schema(db)
