@@ -1,5 +1,6 @@
 import { FEEDS, normaliseFeed } from './model.js';
 import { database, result } from './store.js';
+import {collectDocuments} from './documents.js';
 let running=false;
 export async function fetchJson(url,fetcher=fetch) {
   const response=await fetcher(url,{signal:AbortSignal.timeout(20000),headers:{Accept:'application/json'},redirect:'error'});
@@ -35,4 +36,7 @@ export function startGlobalIntelligenceCollector(){
   const run=()=>collectEvents().catch(e=>console.warn('[global-intelligence]',e.message));
   setTimeout(run,60000).unref();
   setInterval(run,30*60*1000).unref();
+  const documents=()=>collectDocuments().catch(e=>console.warn('[gi-documents]',e.message));
+  setTimeout(documents,90000).unref();
+  setInterval(documents,60*60*1000).unref();
 }
