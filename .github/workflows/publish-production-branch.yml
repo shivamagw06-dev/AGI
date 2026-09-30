@@ -96,10 +96,9 @@ jobs:
           python3 - <<'PY'
           import re, sys
           from pathlib import Path
-          files = sorted(Path("assets").glob("index-*.js"))
-          if not files:
-              sys.exit("No assets/index-*.js produced")
-          text = files[-1].read_text(errors="ignore")
+          from scripts.hostinger_entrypoint import entry_bundle
+          entry = entry_bundle()
+          text = entry.read_text(errors="ignore")
           if "supabase.co" not in text:
               sys.exit("Bundle is missing the Supabase URL")
           keys = re.findall(r'"(eyJhbGciOiJIUzI1NiIs[^"]+)"', text)
@@ -117,7 +116,7 @@ jobs:
           baked = Path(".build-id").read_text().strip()
           if shipped != baked:
               sys.exit(f"version.json says {shipped}, bundle was built as {baked}")
-          print("bundle checks passed:", files[-1].name, "build", baked)
+          print("bundle checks passed:", entry.name, "build", baked)
           PY
 
       - name: Publish to deploy
