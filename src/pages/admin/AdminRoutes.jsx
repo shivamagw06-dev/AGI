@@ -76,6 +76,7 @@ const InstitutionsPaste = lazy(() => import('@/pages/admin/InstitutionsPaste'));
 const LowPeScreenerPaste = lazy(() => import('@/pages/admin/LowPeScreenerPaste'));
 const PromoterScreenerPaste = lazy(() => import('@/pages/admin/PromoterScreenerPaste'));
 const PiotroskiScreenerPaste = lazy(() => import('@/pages/admin/PiotroskiScreenerPaste'));
+const MomentumScreenerPaste = lazy(() => import('@/pages/admin/MomentumScreenerPaste'));
 const CashFlowScreenerPaste = lazy(() => import('@/pages/admin/CashFlowScreenerPaste'));
 const InsiderTradesPaste = lazy(() => import('@/pages/admin/InsiderTradesPaste'));
 const IpoIntelligenceImport = lazy(() => import('@/pages/admin/IpoIntelligenceImport'));
@@ -140,6 +141,7 @@ export default function AdminRoutes() {
           <Route path="low-pe-screener" element={<LowPeScreenerPaste />} />
           <Route path="promoter-screener" element={<PromoterScreenerPaste />} />
           <Route path="piotroski-screener" element={<PiotroskiScreenerPaste />} />
+          <Route path="momentum-screener" element={<MomentumScreenerPaste />} />
           <Route path="cash-flow-screener" element={<CashFlowScreenerPaste />} />
           <Route path="insider-trades-paste" element={<InsiderTradesPaste />} />
           <Route path="ipo-intelligence-input" element={<IpoIntelligenceImport />} />
