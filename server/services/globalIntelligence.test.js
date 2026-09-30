@@ -41,8 +41,8 @@ test('public read, protected writes, and watchlists use verified identity only',
  assert.equal((await fetch(base+'/collect',{method:'POST'})).status,403);
  assert.equal((await fetch(base+'/admin')).status,403);
  assert.equal((await fetch(base+'/watchlist')).status,401);
- const response=await fetch(base+'/watchlist',{method:'PUT',headers:{'Content-Type':'application/json',Authorization:'Bearer valid'},body:JSON.stringify({user_id:'attacker',symbols:['NTPC']})});
+ const response=await fetch(base+'/watchlist',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer valid'},body:JSON.stringify({user_id:'attacker',symbols:['NTPC']})});
  assert.equal(response.status,200);assert.equal(saved.user_id,'verified-user');
- assert.equal((await fetch(base+'/watchlist',{method:'PUT',headers:{'Content-Type':'application/json',Authorization:'Bearer valid'},body:JSON.stringify({symbols:['UNKNOWN']})})).status,400);
+ assert.equal((await fetch(base+'/watchlist',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer valid'},body:JSON.stringify({symbols:['UNKNOWN']})})).status,400);
  }finally{server.closeAllConnections();await new Promise(r=>server.close(r));}
 });

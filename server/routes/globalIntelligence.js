@@ -43,7 +43,7 @@ export default function createGlobalIntelligenceRouter(deps={}) {
       const rows=await result(db().from('gi_watchlists').select('symbols,updated_at').eq('user_id',user.id).maybeSingle());
       return res.json(rows||{symbols:[]});
     }
-    if(req.method!=='PUT')return res.status(405).json({error:'Method not allowed.'});
+    if(req.method!=='POST')return res.status(405).json({error:'Method not allowed.'});
     if(!Array.isArray(req.body.symbols)||req.body.symbols.length>100||req.body.symbols.some(x=>typeof x!=='string'))return res.status(400).json({error:'Choose up to 100 listed companies.'});
     const symbols=[...new Set(req.body.symbols)];
     const assets=await result(db().from('gi_assets').select('symbol').eq('active',true));
