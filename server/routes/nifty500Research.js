@@ -5,6 +5,7 @@ import {
   getStockResearch,
   searchResearchSymbols,
 } from '../services/nifty500ResearchService.js';
+import { getNseScreenerUniverse } from '../services/nseScreenerService.js';
 
 const CACHE_CONTROL = 'public, max-age=1800, stale-while-revalidate=300';
 
@@ -43,6 +44,17 @@ export default function createNifty500ResearchRouter() {
       return res.json(data);
     } catch (error) {
       return sendError(res, error);
+    }
+  });
+
+  router.get('/screeners/nse', async (_req, res) => {
+    try {
+      const data = await getNseScreenerUniverse();
+      res.set('Cache-Control', 'public, max-age=60, stale-while-revalidate=60');
+      return res.json(data);
+    } catch (error) {
+      console.error('[nse-screeners]', error?.message || error);
+      return res.status(502).json({ error: 'Unable to load the NSE equity list.' });
     }
   });
 

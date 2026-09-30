@@ -23,6 +23,10 @@ export function getNifty500ScreenerUniverse() {
   return request('/screeners');
 }
 
+export function getNseScreenerUniverse() {
+  return request('/screeners/nse');
+}
+
 export function searchNifty500Research(query) {
   return request(`/search?q=${encodeURIComponent(query)}`);
 }

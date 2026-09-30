@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { getNifty500ScreenerUniverse } from '@/lib/nifty500ResearchApi';
+import { getNseScreenerUniverse } from '@/lib/nifty500ResearchApi';
 import { matchScreenerItem, SCREENER_CATEGORIES, SCREENER_PRESETS, sortScreenerItems } from './screenerLogic';
 import './screeners.css';
 
 const PAGE_SIZE = 40;
-const FILTER_KEYS = ['search', 'sentiment', 'minScore', 'maxScore', 'minConfidence', 'minRisks'];
+const FILTER_KEYS = ['search', 'coverage', 'sentiment', 'minScore', 'maxScore', 'minConfidence', 'minRisks', 'minChange', 'maxChange', 'minPrice', 'maxPrice', 'minVolume'];
 
 function formatDate(value) {
   if (!value) return 'Date unavailable';
@@ -21,9 +21,15 @@ function sentimentTone(value) {
 }
 
 function exportCsv(items) {
-  const header = ['Symbol', 'Sentiment', 'AGI research score', 'Confidence (%)', 'Risk factors', 'Supporting factors'];
+  const header = ['Symbol', 'Company', 'ISIN', 'Last price (INR)', 'Change (%)', 'Volume', 'Research available', 'Sentiment', 'AGI research score', 'Confidence (%)', 'Risk factors', 'Supporting factors'];
   const rows = items.map((item) => [
     item.symbol,
+    item.name,
+    item.isin,
+    item.lastPrice,
+    item.changePercent,
+    item.volume,
+    item.hasResearch ? 'Yes' : 'No',
     item.overallSentiment,
     item.agiResearchScore,
     item.aiConfidencePercent,
@@ -45,7 +51,7 @@ function exportCsv(items) {
 
 export default function ScreenersPage() {
   const [params, setParams] = useSearchParams();
-  const [data, setData] = useState({ run: null, items: [] });
+  const [data, setData] = useState({ run: null, items: [], quoteCount: 0 });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [page, setPage] = useState(1);
@@ -59,7 +65,7 @@ export default function ScreenersPage() {
     let active = true;
     setLoading(true);
     setError('');
-    getNifty500ScreenerUniverse()
+    getNseScreenerUniverse()
       .then((result) => { if (active) setData(result || { run: null, items: [] }); })
       .catch((err) => { if (active) setError(err.message || 'Unable to load research screens.'); })
       .finally(() => { if (active) setLoading(false); });
@@ -70,7 +76,7 @@ export default function ScreenersPage() {
   const activePreset = SCREENER_PRESETS.find((item) => item.id === presetId) || SCREENER_PRESETS[0];
   const category = params.get('category') || activePreset.category;
   const filters = useMemo(() => Object.fromEntries(FILTER_KEYS.map((key) => [key, params.get(key) ?? ''])), [params]);
-  const sort = params.get('sort') || 'score-desc';
+  const sort = params.get('sort') || 'symbol-asc';
 
   const filtered = useMemo(() => sortScreenerItems((data.items || []).filter((item) => matchScreenerItem(item, filters)), sort), [data.items, filters, sort]);
   const visible = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
@@ -117,12 +123,12 @@ export default function ScreenersPage() {
         <div>
           <div className="agi-screener-kicker">AGI RESEARCH / INDIA</div>
           <h1>Stock screeners</h1>
-          <p>Start with a research question. Narrow the published coverage, inspect the reasons, then open a company for deeper work.</p>
+          <p>Screen the NSE equity list by price activity and explore AGI research where it is available.</p>
         </div>
         <div className="agi-screener-run">
-          <span>Current research run</span>
-          <strong>{formatDate(data.run?.publishedAt || data.run?.generatedAt)}</strong>
-          <small>{data.items?.length || 0} names available</small>
+          <span>NSE equity universe</span>
+          <strong>{(data.items?.length || 0).toLocaleString('en-IN')} names</strong>
+          <small>{data.researchCount || 0} with AGI research · updated {formatDate(data.instrumentAsOf)}</small>
         </div>
       </div>
 
@@ -148,7 +154,7 @@ export default function ScreenersPage() {
         <main className="agi-screener-main">
           <div className="agi-screener-section-top">
             <div><span className="agi-screener-eyebrow">PRESET SCREENS</span><h2>{SCREENER_CATEGORIES.find((item) => item.id === category)?.label || 'All screens'}</h2></div>
-            <span className="agi-screener-small-note">Built from published AGI research scores and factors</span>
+            <span className="agi-screener-small-note">NSE instrument list and market quotes via Upstox · AGI scores where published</span>
           </div>
           <div className="agi-screener-presets">
             {SCREENER_PRESETS.filter((item) => category === 'all' || item.category === category).map((item) => {
@@ -163,29 +169,37 @@ export default function ScreenersPage() {
 
           <section className="agi-screener-results" aria-label="Screen results">
             <div className="agi-screener-results-head">
-              <div><span className="agi-screener-eyebrow">SCREEN RESULTS</span><h2>{presetId === 'custom' ? 'Custom screen' : activePreset.title}</h2><p>{loading ? 'Loading coverage…' : `${filtered.length} matching names · ${data.items?.length || 0} in published coverage`}</p></div>
-              <div className="agi-screener-actions"><button type="button" onClick={saveScreen} disabled={!data.run}>Save screen</button><button type="button" onClick={() => exportCsv(filtered)} disabled={!filtered.length}>Export CSV</button></div>
+              <div><span className="agi-screener-eyebrow">SCREEN RESULTS</span><h2>{presetId === 'custom' ? 'Custom screen' : activePreset.title}</h2><p>{loading ? 'Loading NSE coverage…' : `${filtered.length.toLocaleString('en-IN')} matching names · ${(data.items?.length || 0).toLocaleString('en-IN')} NSE equities · ${data.quoteCount || 0} with quotes`}</p></div>
+              <div className="agi-screener-actions"><button type="button" onClick={saveScreen} disabled={!data.items?.length}>Save screen</button><button type="button" onClick={() => exportCsv(filtered)} disabled={!filtered.length}>Export CSV</button></div>
             </div>
 
+            {data.quotesAsOf && <p className="agi-screener-data-status">Market snapshot: {new Date(data.quotesAsOf).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })} IST. Quotes are cached and may be delayed.</p>}
+            {data.quoteError && <p className="agi-screener-data-status">{data.quoteError} Price and volume screens only include stocks with available quotes.</p>}
+
             <div className="agi-screener-filters">
-              <label className="agi-screener-search">Search symbol<input type="search" value={filters.search} onChange={(event) => setField('search', event.target.value)} placeholder="e.g. TCS" /></label>
+              <label className="agi-screener-search">Search symbol or company<input type="search" value={filters.search} onChange={(event) => setField('search', event.target.value)} placeholder="e.g. TCS or Tata" /></label>
+              <label>Coverage<select value={filters.coverage} onChange={(event) => setField('coverage', event.target.value)}><option value="">All NSE equities</option><option value="research">With AGI research</option></select></label>
               <label>Sentiment<select value={filters.sentiment} onChange={(event) => setField('sentiment', event.target.value)}><option value="">Any</option><option>Strong Bullish</option><option>Bullish side</option><option>Neutral</option><option>Bearish side</option><option>Strong Bearish</option></select></label>
+              <label>Min. price ₹<input type="number" min="0" value={filters.minPrice} onChange={(event) => setField('minPrice', event.target.value)} placeholder="Any" /></label>
+              <label>Max. price ₹<input type="number" min="0" value={filters.maxPrice} onChange={(event) => setField('maxPrice', event.target.value)} placeholder="Any" /></label>
+              <label>Min. change %<input type="number" step="0.1" value={filters.minChange} onChange={(event) => setField('minChange', event.target.value)} placeholder="Any" /></label>
+              <label>Max. change %<input type="number" step="0.1" value={filters.maxChange} onChange={(event) => setField('maxChange', event.target.value)} placeholder="Any" /></label>
+              <label>Min. volume<input type="number" min="0" value={filters.minVolume} onChange={(event) => setField('minVolume', event.target.value)} placeholder="Shares" /></label>
               <label>Min. score<input type="number" min="0" max="100" value={filters.minScore} onChange={(event) => setField('minScore', event.target.value)} placeholder="0–100" /></label>
               <label>Max. score<input type="number" min="0" max="100" value={filters.maxScore} onChange={(event) => setField('maxScore', event.target.value)} placeholder="0–100" /></label>
               <label>Min. confidence<input type="number" min="0" max="100" value={filters.minConfidence} onChange={(event) => setField('minConfidence', event.target.value)} placeholder="0–100%" /></label>
               <label>Min. risk factors<input type="number" min="0" max="20" value={filters.minRisks} onChange={(event) => setField('minRisks', event.target.value)} placeholder="Any" /></label>
-              <label>Sort by<select value={sort} onChange={(event) => setField('sort', event.target.value)}><option value="score-desc">Score · high to low</option><option value="score-asc">Score · low to high</option><option value="confidence-desc">Confidence</option><option value="risk-desc">Risk factors</option><option value="symbol-asc">Symbol A–Z</option></select></label>
+              <label>Sort by<select value={sort} onChange={(event) => setField('sort', event.target.value)}><option value="symbol-asc">Symbol A–Z</option><option value="change-desc">Change · highest</option><option value="change-asc">Change · lowest</option><option value="volume-desc">Volume · highest</option><option value="price-desc">Price · highest</option><option value="score-desc">Score · high to low</option><option value="score-asc">Score · low to high</option><option value="confidence-desc">Confidence</option><option value="risk-desc">Risk factors</option></select></label>
             </div>
 
             {error && <div className="agi-screener-message error" role="alert">{error} <button type="button" onClick={() => setReload((value) => value + 1)}>Try again</button></div>}
-            {!error && !loading && !data.run && <div className="agi-screener-message">No published research run is available yet. The screens will populate when the next run is published.</div>}
-            {!error && !loading && data.run && filtered.length === 0 && <div className="agi-screener-message">No names match these filters. Try a wider score or confidence range.</div>}
-            {!error && filtered.length > 0 && <div className="agi-screener-table-wrap"><table><thead><tr><th>Company</th><th>Research view</th><th>Score</th><th>Confidence</th><th>Factors</th><th>Research note</th></tr></thead><tbody>
-              {visible.map((item) => <tr key={item.symbol}><td><Link to={`/agi/companies/${encodeURIComponent(item.symbol)}`}>{item.symbol} <span>↗</span></Link></td><td><span className={`agi-screener-sentiment ${sentimentTone(item.overallSentiment)}`}>{item.overallSentiment}</span></td><td><strong>{Number(item.agiResearchScore).toFixed(1)}</strong><div className="agi-screener-score-track"><i style={{ width: `${Math.max(0, Math.min(100, Number(item.agiResearchScore)))}%` }} /></div></td><td>{item.aiConfidencePercent}%</td><td><span className="agi-screener-factor positive">+{item.supportingFactors?.length || 0}</span><span className="agi-screener-factor negative">−{item.riskFactors?.length || 0}</span></td><td className="agi-screener-note">{item.researchSummary || 'No summary supplied'}</td></tr>)}
+            {!error && !loading && filtered.length === 0 && <div className="agi-screener-message">No names match these filters. Try a wider range or a different screen.</div>}
+            {!error && filtered.length > 0 && <div className="agi-screener-table-wrap"><table><thead><tr><th>Company</th><th>Last price</th><th>Change</th><th>Volume</th><th>Research view</th><th>Score</th><th>Confidence</th><th>Factors</th><th>Research note</th></tr></thead><tbody>
+              {visible.map((item) => <tr key={item.symbol}><td><Link to={`/agi/companies/${encodeURIComponent(item.symbol)}`}>{item.symbol} <span>↗</span></Link><small className="agi-screener-company-name">{item.name}</small></td><td>{item.lastPrice == null ? '—' : `₹${Number(item.lastPrice).toLocaleString('en-IN', { maximumFractionDigits: 2 })}`}</td><td className={item.changePercent >= 0 ? 'agi-screener-up' : 'agi-screener-down'}>{item.changePercent == null ? '—' : `${item.changePercent >= 0 ? '+' : ''}${Number(item.changePercent).toFixed(2)}%`}</td><td>{item.volume == null ? '—' : Number(item.volume).toLocaleString('en-IN')}</td><td>{item.hasResearch ? <span className={`agi-screener-sentiment ${sentimentTone(item.overallSentiment)}`}>{item.overallSentiment}</span> : <span className="agi-screener-uncovered">No AGI research</span>}</td><td>{item.hasResearch ? <><strong>{Number(item.agiResearchScore).toFixed(1)}</strong><div className="agi-screener-score-track"><i style={{ width: `${Math.max(0, Math.min(100, Number(item.agiResearchScore)))}%` }} /></div></> : '—'}</td><td>{item.hasResearch ? `${item.aiConfidencePercent}%` : '—'}</td><td>{item.hasResearch ? <><span className="agi-screener-factor positive">+{item.supportingFactors?.length || 0}</span><span className="agi-screener-factor negative">−{item.riskFactors?.length || 0}</span></> : '—'}</td><td className="agi-screener-note">{item.researchSummary || 'Research not published for this stock'}</td></tr>)}
             </tbody></table></div>}
             {!error && filtered.length > PAGE_SIZE && <div className="agi-screener-pagination"><span>Showing {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, filtered.length)} of {filtered.length}</span><div><button type="button" disabled={page === 1} onClick={() => setPage(page - 1)}>Previous</button><span>{page} / {pageCount}</span><button type="button" disabled={page >= pageCount} onClick={() => setPage(page + 1)}>Next</button></div></div>}
           </section>
-          <p className="agi-screener-footnote">Screens use the latest published research snapshot. Scores and sentiment are research classifications, not prices, trading signals, or investment recommendations. Fundamental ratios, shareholding changes, and candle patterns require separate verified data feeds.</p>
+          <p className="agi-screener-footnote">Universe: NSE_EQ instruments classified as EQ in the Upstox daily file. Market snapshots are cached for 15 minutes when a data token is available. AGI scores cover only the published research subset. Neither snapshot nor score is an investment recommendation.</p>
         </main>
       </div>
     </div>

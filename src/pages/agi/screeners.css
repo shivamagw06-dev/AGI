@@ -59,6 +59,11 @@
 .agi-screener-factor.positive { color: var(--agi-ok); }
 .agi-screener-factor.negative { color: var(--agi-danger); }
 .agi-screener-note { color: var(--agi-ink-soft); min-width: 230px; max-width: 380px; line-height: 1.45; }
+.agi-screener-company-name { display: block; max-width: 180px; margin-top: .25rem; color: var(--agi-muted); font-size: .69rem; line-height: 1.3; }
+.agi-screener-uncovered { color: var(--agi-muted); font-size: .7rem; white-space: nowrap; }
+.agi-screener-up { color: var(--agi-ok); font-weight: 700; white-space: nowrap; }
+.agi-screener-down { color: var(--agi-danger); font-weight: 700; white-space: nowrap; }
+.agi-screener-data-status { padding: .45rem 1.25rem; margin: 0; border-bottom: 1px solid var(--agi-line); color: var(--agi-muted); font-size: .72rem; }
 .agi-screener-pagination { padding: .85rem 1.25rem; display: flex; justify-content: space-between; align-items: center; gap: 1rem; border-top: 1px solid var(--agi-line); color: var(--agi-muted); font-size: .75rem; }
 .agi-screener-pagination > div { display: flex; align-items: center; gap: .6rem; }
 .agi-screener-message { padding: 2rem 1.25rem; color: var(--agi-muted); font-size: .86rem; }

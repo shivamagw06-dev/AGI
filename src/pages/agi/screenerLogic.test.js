@@ -18,3 +18,13 @@ test('sorting leaves the input order untouched', () => {
   assert.deepEqual(sortScreenerItems(items, 'score-asc').map((item) => item.symbol), ['BBB', 'CCC', 'AAA']);
   assert.deepEqual(items.map((item) => item.symbol), ['AAA', 'BBB', 'CCC']);
 });
+
+test('all-NSE items without research are not treated as zero-score research', () => {
+  const stock = { symbol: 'XYZ', name: 'XYZ Industries', hasResearch: false, lastPrice: 120, changePercent: 2.5, volume: 1500000 };
+  assert.equal(matchScreenerItem(stock, {}), true);
+  assert.equal(matchScreenerItem(stock, { search: 'industries', minChange: 2, minVolume: 1000000 }), true);
+  assert.equal(matchScreenerItem(stock, { maxScore: 35 }), false);
+  assert.equal(matchScreenerItem(stock, { minRisks: 0 }), false);
+  assert.equal(matchScreenerItem(stock, { coverage: 'research' }), false);
+  assert.equal(matchScreenerItem(stock, { maxChange: -2 }), false);
+});
