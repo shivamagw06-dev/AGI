@@ -76,6 +76,7 @@ const navItems = [
   { to: '/admin/website-analytics', label: 'Website Analytics', icon: Activity },
   { to: '/admin/investor-mappings', label: 'Investor Mapping Review', icon: FileSpreadsheet },
   { to: '/admin/institutions-paste', label: 'Institutions Paste', icon: FileSpreadsheet },
+  { to: '/admin/low-pe-screener', label: 'Low P/E Screener Paste', icon: FileSpreadsheet },
   { to: '/admin/insider-trades-paste', label: 'Insider Trades Paste', icon: FileSpreadsheet },
   { to: '/admin/ipo-intelligence-input', label: 'IPO Intelligence Input', icon: ClipboardList },
   { to: '/admin/institutional-holdings', label: 'Institutional Holdings', icon: Landmark },
