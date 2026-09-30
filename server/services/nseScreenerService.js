@@ -9,8 +9,8 @@ const QUOTE_BATCH_SIZE = 150; // Keep GET URLs well below proxy limits (API maxi
 let masterCache = { items: null, asOf: null, expiresAt: 0, pending: null };
 let quoteCache = { quotes: new Map(), asOf: null, expiresAt: 0, pending: null, error: null };
 
-export async function getNseEquityMaster() {
-  if (masterCache.items && Date.now() < masterCache.expiresAt) return masterCache;
+export async function getNseEquityMaster({ force = false } = {}) {
+  if (!force && masterCache.items && Date.now() < masterCache.expiresAt) return masterCache;
   if (masterCache.pending) return masterCache.pending;
   masterCache.pending = (async () => {
     try {
@@ -24,7 +24,7 @@ export async function getNseEquityMaster() {
       })).sort((a, b) => a.symbol.localeCompare(b.symbol));
       masterCache = { items, asOf: new Date().toISOString(), expiresAt: Date.now() + MASTER_TTL_MS, pending: null };
     } catch (error) {
-      if (!masterCache.items) throw error;
+      if (!masterCache.items || force) throw error;
       masterCache.expiresAt = Date.now() + RETRY_MS;
     }
     return masterCache;
@@ -70,10 +70,11 @@ async function fetchQuoteBatch(batch, token) {
   return quotes;
 }
 
-export async function getNseQuoteSnapshot(items) {
-  const { token } = resolveUpstoxAccessToken();
-  if (!token) return { quotes: new Map(), asOf: null, error: 'Market quotes are unavailable until the Upstox data token is configured.' };
-  if (Date.now() < quoteCache.expiresAt) return quoteCache;
+export async function getNseQuoteSnapshot(items, { force = false } = {}) {
+  // Analytics tokens are long-lived and read-only; daily trading tokens remain a fallback.
+  const token = String(process.env.UPSTOX_ANALYTICS_TOKEN || '').trim() || resolveUpstoxAccessToken().token;
+  if (!token) return { quotes: new Map(), asOf: null, error: 'Market quotes are unavailable until an Upstox analytics or access token is configured.' };
+  if (!force && Date.now() < quoteCache.expiresAt) return quoteCache;
   if (quoteCache.pending) return quoteCache.pending;
   quoteCache.pending = (async () => {
     const batches = [];
@@ -105,11 +106,11 @@ export async function getNseQuoteSnapshot(items) {
   finally { quoteCache.pending = null; }
 }
 
-export async function getNseScreenerUniverse() {
-  const master = await getNseEquityMaster();
+export async function getNseScreenerUniverse({ force = false } = {}) {
+  const master = await getNseEquityMaster({ force });
   const [researchResult, quoteResult] = await Promise.allSettled([
     getResearchUniverse(),
-    getNseQuoteSnapshot(master.items),
+    getNseQuoteSnapshot(master.items, { force }),
   ]);
   const research = researchResult.status === 'fulfilled' ? researchResult.value : { run: null, items: [] };
   const snapshot = quoteResult.status === 'fulfilled' ? quoteResult.value : { quotes: new Map(), asOf: null, error: 'Market quotes are currently unavailable.' };

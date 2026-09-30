@@ -174,6 +174,7 @@ export default function ScreenersPage() {
             </div>
 
             {data.quotesAsOf && <p className="agi-screener-data-status">Market snapshot: {new Date(data.quotesAsOf).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })} IST. Quotes are cached and may be delayed.</p>}
+            {data.dailyRefresh?.lastRun && <p className="agi-screener-data-status">Post-market market-data refresh ({data.dailyRefresh.lastRun.date}): {data.dailyRefresh.lastRun.ok ? 'quote batches fetched' : 'incomplete'} · {data.dailyRefresh.lastRun.instruments || 0} instruments · {data.dailyRefresh.lastRun.quoted || 0} available quotes. Research scores update separately.</p>}
             {data.quoteError && <p className="agi-screener-data-status">{data.quoteError} Price and volume screens only include stocks with available quotes.</p>}
 
             <div className="agi-screener-filters">

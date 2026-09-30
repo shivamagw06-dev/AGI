@@ -106,6 +106,10 @@ services:
         sync: false
       - key: SUPABASE_SERVICE_ROLE_KEY
         sync: false
+      # Read-only market data token for the all-NSE screener; daily access token
+      # remains a fallback when analytics token has not yet been configured.
+      - key: UPSTOX_ANALYTICS_TOKEN
+        sync: false
       - key: OPENAI_API_KEY
         sync: false
       - key: AGI_INTELLIGENCE_LEARNING_ENABLED
