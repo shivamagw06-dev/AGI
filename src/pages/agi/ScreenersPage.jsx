@@ -14,6 +14,11 @@ function formatDate(value) {
   return new Intl.DateTimeFormat('en-IN', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Asia/Kolkata' }).format(date);
 }
 
+function researchRunIsOld(value) {
+  const published = Date.parse(value || '');
+  return Number.isFinite(published) && Date.now() - published > 7 * 24 * 60 * 60 * 1000;
+}
+
 function sentimentTone(value) {
   if (value?.includes('Bullish')) return 'positive';
   if (value?.includes('Bearish')) return 'negative';
@@ -174,6 +179,7 @@ export default function ScreenersPage() {
             </div>
 
             {data.quotesAsOf && <p className="agi-screener-data-status">Market snapshot: {new Date(data.quotesAsOf).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })} IST. Quotes are cached and may be delayed.</p>}
+            {data.run?.publishedAt && <p className="agi-screener-data-status">AGI research run published {formatDate(data.run.publishedAt)}{researchRunIsOld(data.run.publishedAt) ? ' · historical research, not a current stock shortlist' : ''}. Research scores update separately from market quotes.</p>}
             {data.dailyRefresh?.lastRun && <p className="agi-screener-data-status">Post-market market-data refresh ({data.dailyRefresh.lastRun.date}): {data.dailyRefresh.lastRun.ok ? 'quote batches fetched' : 'incomplete'} · {data.dailyRefresh.lastRun.instruments || 0} instruments · {data.dailyRefresh.lastRun.quoted || 0} available quotes. Research scores update separately.</p>}
             {data.quoteError && <p className="agi-screener-data-status">{data.quoteError} Price and volume screens only include stocks with available quotes.</p>}
 
