@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { API_ORIGIN } from '@/config';
+import ManualScreenerTabs from './ManualScreenerTabs';
 import './manualLowPe.css';
 
 const integer = new Intl.NumberFormat('en-IN', { maximumFractionDigits: 0 });
@@ -55,6 +56,7 @@ export default function ManualLowPePage() {
   }, [snapshot, search, sector, sort]);
 
   return <main className="manual-low-pe">
+    <ManualScreenerTabs />
     <div className="manual-low-pe__intro"><div><span className="manual-low-pe__kicker">AGI / INDIA / VALUATION</span><h1>Low P/E stocks</h1><p>Stocks in the published table whose current P/E is below their 3, 5 and 10-year averages.</p></div><div className="manual-low-pe__stat"><span>DATA AS OF</span><strong>{dateLabel(snapshot?.as_of)}</strong><small>{snapshot ? `${integer.format(snapshot.row_count)} stocks` : 'Awaiting data'}</small></div></div>
     <div className="manual-low-pe__explain"><strong>A dated screen, not a live signal.</strong> Figures reflect the last administrator-published table and change only when a new table is published. P/E comparisons alone do not establish that a stock is undervalued.</div>
     {loading && <p className="manual-low-pe__state">Loading stocks…</p>}

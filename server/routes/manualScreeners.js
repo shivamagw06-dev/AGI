@@ -6,6 +6,11 @@ import {
   publishLowPeSnapshot,
   validateAsOf,
 } from '../services/manualLowPeScreener.js';
+import {
+  latestPromoterSnapshot,
+  parsePromoterTables,
+  publishPromoterSnapshot,
+} from '../services/manualPromoterScreener.js';
 
 export default function createManualScreenersRouter() {
   const router = Router();
@@ -42,6 +47,42 @@ export default function createManualScreenersRouter() {
         return res.status(400).json({ error: error.message });
       }
       console.error('[manual-low-pe] publish:', error.message);
+      return res.status(503).json({ error: 'The screener could not be published. Try again.' });
+    }
+  });
+
+  router.get('/promoter-holdings', async (_req, res) => {
+    try {
+      const snapshot = await latestPromoterSnapshot();
+      res.set('Cache-Control', 'no-store');
+      return res.json({ snapshot });
+    } catch (error) {
+      console.error('[manual-promoter] read:', error.message);
+      return res.status(503).json({ error: 'The screener is temporarily unavailable.' });
+    }
+  });
+
+  router.post('/promoter-holdings/preview', requireStrategyLabAdmin, (req, res) => {
+    try {
+      const asOf = validateAsOf(req.body?.asOf);
+      const rows = parsePromoterTables(req.body?.tables, asOf);
+      return res.json({ asOf, rowCount: rows.length, rows });
+    } catch (error) {
+      return res.status(400).json({ error: error.message });
+    }
+  });
+
+  router.post('/promoter-holdings/publish', requireStrategyLabAdmin, async (req, res) => {
+    try {
+      const asOf = validateAsOf(req.body?.asOf);
+      const rows = parsePromoterTables(req.body?.tables, asOf);
+      const snapshot = await publishPromoterSnapshot({ asOf, rows, actorId: req.strategyLabActor.id });
+      return res.json({ snapshot });
+    } catch (error) {
+      if (/^(Choose|Paste|Table|Row|Duplicate|No stock|A publication)/.test(error.message)) {
+        return res.status(400).json({ error: error.message });
+      }
+      console.error('[manual-promoter] publish:', error.message);
       return res.status(503).json({ error: 'The screener could not be published. Try again.' });
     }
   });

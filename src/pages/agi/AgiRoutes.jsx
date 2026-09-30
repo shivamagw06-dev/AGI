@@ -12,6 +12,7 @@ import ResearchWorkspacePage from './ResearchWorkspacePage';
 import WatchlistsWorkspacePage from './WatchlistsWorkspacePage';
 import ComingSoonPage from './ComingSoonPage';
 import ManualLowPePage from './ManualLowPePage';
+import ManualPromoterPage from './ManualPromoterPage';
 import SettingsPage from './SettingsPage';
 
 export default function AgiRoutes() {
@@ -28,6 +29,7 @@ export default function AgiRoutes() {
         <Route path="research" element={<ResearchWorkspacePage />} />
         <Route path="watchlists" element={<WatchlistsWorkspacePage />} />
         <Route path="screeners" element={<ManualLowPePage />} />
+        <Route path="screeners/promoter-holdings" element={<ManualPromoterPage />} />
         <Route path="notebook" element={<ComingSoonPage area="notebook" />} />
         <Route path="alerts" element={<ComingSoonPage area="alerts" />} />
         <Route path="settings" element={<SettingsPage />} />
