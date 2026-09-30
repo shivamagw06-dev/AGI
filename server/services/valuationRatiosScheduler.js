@@ -49,6 +49,7 @@ export function getValuationRatiosSchedulerStatus() {
     lastFullUniverseStartDate,
     target: '18:15 IST weekdays',
     scope: 'all ISIN-mapped company equities',
+    waves: 'first 1,000 companies, then all remaining companies at least 30 minutes later',
     intervalMs: Number(process.env.VALUATION_RATIOS_INTERVAL_MS || 60 * 1000),
   };
 }
@@ -84,6 +85,8 @@ export async function triggerValuationRatiosRefresh({ force = false } = {}) {
       batchSize: Number(process.env.UPSTOX_VALUATION_FULL_BATCH || 20),
       concurrency: Number(process.env.UPSTOX_VALUATION_CONCURRENCY || 2),
       pauseMs: Number(process.env.UPSTOX_VALUATION_FULL_PAUSE_MS || 15000),
+      firstWaveSize: 1_000,
+      waveWaitMs: 30 * 60 * 1_000,
     });
     lastRun = {
       at: new Date().toISOString(),

@@ -270,7 +270,7 @@ export default function createMarketRouter(env = {}) {
       return res.status(200).json({
         ok: true,
         scheduler: getValuationRatiosSchedulerStatus(),
-        note: 'All ISIN-mapped company-equity key-ratios collected after 18:15 IST into warehouse.valuation_ratios; inspect upstox-bootstrap/status for run completion and failures.',
+        note: 'Company-equity key ratios: first 1,000 after 18:15 IST, then the remaining companies at least 30 minutes later. Inspect upstox-bootstrap/status for progress and failures.',
       });
     } catch (err) {
       return res.status(200).json({ ok: false, error: err?.message || 'status_unavailable' });
@@ -317,6 +317,8 @@ export default function createMarketRouter(env = {}) {
         batchSize: req.body?.batchSize ?? req.body?.batch_size,
         concurrency: req.body?.concurrency,
         pauseMs: req.body?.pauseMs ?? req.body?.pause_ms,
+        firstWaveSize: req.body?.firstWaveSize ?? req.body?.first_wave_size,
+        waveWaitMs: req.body?.waveWaitMs ?? req.body?.wave_wait_ms,
       });
       return res.status(result.ok ? 200 : 409).json(result);
     } catch (err) {

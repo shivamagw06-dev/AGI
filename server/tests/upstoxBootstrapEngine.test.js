@@ -17,6 +17,7 @@ const {
   getUpstoxBootstrapStatus,
   resetUpstoxBootstrap,
   isUpstoxBootstrapRunning,
+  shouldPauseAfterFirstWave,
 } = await import('../services/upstoxBootstrapEngine.js');
 
 describe('upstoxBootstrapEngine', () => {
@@ -45,5 +46,12 @@ describe('upstoxBootstrapEngine', () => {
     assert.equal(typeof st.apiHealth.successfulCalls, 'number');
     assert.equal(typeof st.throughput.pauseMs, 'number');
     assert.match(st.nightlySchedulerNote, /full company-equity/i);
+    assert.equal(st.waves.firstWaveSize, 1000);
+  });
+
+  it('pauses after the first thousand only when more companies remain', () => {
+    assert.equal(shouldPauseAfterFirstWave({ attempted: 999, size: 1000, pending: 500 }), false);
+    assert.equal(shouldPauseAfterFirstWave({ attempted: 1000, size: 1000, pending: 500 }), true);
+    assert.equal(shouldPauseAfterFirstWave({ attempted: 1000, size: 1000, pending: 0, retry: 0 }), false);
   });
 });
