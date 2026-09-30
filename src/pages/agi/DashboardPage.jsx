@@ -46,6 +46,7 @@ export default function DashboardPage() {
         Your institutional command centre — markets, intelligence, watchlists, and research in one continuous
         workflow.
       </p>
+      <p><Link className="agi-btn agi-btn-primary" to="/agi/screeners">Open stock screeners →</Link></p>
 
       <section className="agi-section">
         <div className="agi-section-head">

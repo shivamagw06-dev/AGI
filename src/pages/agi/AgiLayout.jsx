@@ -17,6 +17,7 @@ export default function AgiLayout() {
   const [navOpen, setNavOpen] = useState(false);
   const pageTitle = titleForPath(location.pathname);
   const isAsk = location.pathname.startsWith('/agi/ask');
+  const isScreener = location.pathname === '/agi/screeners' || location.pathname.startsWith('/agi/screeners/');
 
   useEffect(() => {
     setNavOpen(false);
@@ -36,9 +37,9 @@ export default function AgiLayout() {
         />
       </Helmet>
 
-      <div className="agi-overlay" onClick={() => setNavOpen(false)} aria-hidden="true" />
+      {!isScreener && <div className="agi-overlay" onClick={() => setNavOpen(false)} aria-hidden="true" />}
 
-      <aside className="agi-nav" aria-label="AGI product navigation">
+      {!isScreener && <aside className="agi-nav" aria-label="AGI product navigation">
         <div className="agi-brand">
           <Link to="/agi">
             <div className="agi-brand-mark">AGI</div>
@@ -61,19 +62,19 @@ export default function AgiLayout() {
         <div className="agi-nav-footer">
           Companies · Portfolios · Research · Markets · Ideas
         </div>
-      </aside>
+      </aside>}
 
       <div className="agi-main">
         <header className="agi-topbar">
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-            <button
+            {!isScreener && <button
               type="button"
               className="agi-menu-btn"
               aria-label="Open navigation"
               onClick={() => setNavOpen(true)}
             >
               ☰
-            </button>
+            </button>}
             <div className="agi-topbar-title">{pageTitle}</div>
           </div>
           <div className="agi-topbar-actions">
@@ -87,7 +88,7 @@ export default function AgiLayout() {
             </Link>
           </div>
         </header>
-        <div className={`agi-content${isAsk ? ' agi-content-ask' : ''}`}>
+        <div className={`agi-content${isAsk ? ' agi-content-ask' : ''}${isScreener ? ' agi-content-screeners' : ''}`}>
           <Outlet />
         </div>
       </div>

@@ -10,6 +10,7 @@ import {
   Library,
   LineChart,
   Grid2X2,
+  SlidersHorizontal,
 } from 'lucide-react';
 import NewsletterSection from '@/components/Home/NewsletterSection';
 import LiveBadge from '@/components/Article/LiveBadge';
@@ -56,6 +57,7 @@ const DESK_BUTTONS = [
     hint: desk.hint,
   })),
   { id: 'finance-tools', label: 'Tools', icon: Grid2X2, hint: 'Discover & list', href: '/tools' },
+  { id: 'screeners', label: 'Screeners', icon: SlidersHorizontal, hint: 'Stock screens', href: '/agi/screeners' },
 ];
 
 const DEFAULT_COVER =
@@ -364,10 +366,10 @@ export default function ResearchTerminalHome() {
         />
       </Helmet>
 
-      {/* Desk navigation — eight equal professional buttons */}
+      {/* Desk navigation */}
       <section className="border-b border-[#e8eaee] bg-white" aria-label="Research desks">
         <div className="mx-auto max-w-[1680px] px-4 sm:px-6 lg:px-8 py-5">
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 xl:grid-cols-8">
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 xl:grid-cols-9">
             {DESK_BUTTONS.map((desk) => {
               const Icon = desk.icon;
               const isActive = activeDesk === desk.id;
