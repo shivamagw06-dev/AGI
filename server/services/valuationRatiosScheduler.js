@@ -3,12 +3,12 @@
  * (after FII/DII at 18:05, before warehouse refresh ~18:45).
  */
 
-import { refreshUpstoxValuationRatios } from './upstoxValuationRatiosRefresh.js';
 import { tradingCalendar } from './tradingCalendarService.js';
 
 let scheduler = null;
 let lastRun = null;
 let lastSuccessDate = null;
+let lastFullUniverseStartDate = null;
 
 function enabled() {
   return String(process.env.VALUATION_RATIOS_SCHEDULER || 'true').toLowerCase() !== 'false';
@@ -46,14 +46,24 @@ export function getValuationRatiosSchedulerStatus() {
     enabled: Boolean(scheduler),
     lastRun,
     lastSuccessDate,
+    lastFullUniverseStartDate,
     target: '18:15 IST weekdays',
+    scope: 'all ISIN-mapped company equities',
+    waves: 'first 1,000 companies, then all remaining companies at least 30 minutes later',
     intervalMs: Number(process.env.VALUATION_RATIOS_INTERVAL_MS || 60 * 1000),
   };
 }
 
 export async function triggerValuationRatiosRefresh({ force = false } = {}) {
   const parts = istParts();
-  if (!force && lastSuccessDate === parts.date) {
+  if (lastFullUniverseStartDate === parts.date && !lastSuccessDate) {
+    const { getUpstoxBootstrapStatus } = await import('./upstoxBootstrapEngine.js');
+    const status = getUpstoxBootstrapStatus();
+    if (status.status === 'completed' && !status.queue?.FAILED && !status.queue?.RETRY) {
+      lastSuccessDate = parts.date;
+    }
+  }
+  if (!force && lastFullUniverseStartDate === parts.date) {
     return { ok: true, skipped: true, reason: 'already_ran_today', date: parts.date };
   }
   if (!force && !inEodWindow(parts)) {
@@ -62,36 +72,34 @@ export async function triggerValuationRatiosRefresh({ force = false } = {}) {
 
   try {
     // Never compete with the one-shot full-universe bootstrap (Phase 7.4d).
-    const { isUpstoxBootstrapRunning } = await import('./upstoxBootstrapEngine.js');
+    const { isUpstoxBootstrapRunning, startUpstoxBootstrap } = await import('./upstoxBootstrapEngine.js');
     if (!force && isUpstoxBootstrapRunning()) {
       return { ok: true, skipped: true, reason: 'bootstrap_running', date: parts.date };
     }
 
-    // Nightly = incremental maintenance only (small batch), not universe bootstrap.
-    const incrementalLimit = Number(process.env.UPSTOX_VALUATION_INCREMENTAL_BATCH || 80);
-    const result = await refreshUpstoxValuationRatios({
-      limit: incrementalLimit,
-      concurrency: Number(process.env.UPSTOX_VALUATION_CONCURRENCY || 3),
+    // The normal nightly path covers every company, not a tiny rotation that
+    // leaves most valuation snapshots stale for weeks. The bootstrap worker
+    // enforces the documented rolling API quota and retries partial failures.
+    const result = await startUpstoxBootstrap({
+      reset: true,
+      batchSize: Number(process.env.UPSTOX_VALUATION_FULL_BATCH || 20),
+      concurrency: Number(process.env.UPSTOX_VALUATION_CONCURRENCY || 2),
+      pauseMs: Number(process.env.UPSTOX_VALUATION_FULL_PAUSE_MS || 15000),
+      firstWaveSize: 1_000,
+      waveWaitMs: 30 * 60 * 1_000,
     });
     lastRun = {
       at: new Date().toISOString(),
       ok: Boolean(result.ok),
-      status: result.status,
+      status: result.status?.status || result.status,
       date: parts.date,
-      fetched: result.fetched ?? 0,
-      failed: result.failed ?? 0,
-      selection: result.selection
-        ? {
-            universeSize: result.selection.universeSize,
-            offset: result.selection.offset,
-            batchSize: result.selection.batchSize,
-          }
-        : null,
+      runId: result.status?.runId || null,
+      eligibleCompanies: result.status?.summary?.isinAvailable || 0,
       error: result.error || null,
     };
-    if (result.ok) lastSuccessDate = parts.date;
+    if (result.ok) lastFullUniverseStartDate = parts.date;
     if (result.ok) {
-      console.info('[valuation-ratios] EOD ingest ok', parts.date, `fetched=${result.fetched}`);
+      console.info('[valuation-ratios] EOD full-universe collection started', parts.date, `eligible=${lastRun.eligibleCompanies}`);
     } else {
       console.warn('[valuation-ratios] EOD ingest failed', result.error || result.status);
     }

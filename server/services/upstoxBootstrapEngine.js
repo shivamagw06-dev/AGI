@@ -1,9 +1,9 @@
 /**
  * Phase 7.4d — Upstox Full-Universe Bootstrap & Continuous Valuation Backfill.
  *
- * One-time (resumable) bootstrap that drains the ISIN-mapped company queue into
+ * Resumable full-universe collector that drains the ISIN-mapped company queue into
  * warehouse.valuation_ratios via Normalizer → DQIV → Warehouse → UVE.
- * Independent from the nightly 18:15 IST incremental scheduler.
+ * Used by the nightly 18:15 IST scheduler and by operator-triggered backfills.
  */
 
 import fs from 'node:fs';
@@ -69,6 +69,12 @@ function emptyRun() {
     batchSize: envInt('UPSTOX_BOOTSTRAP_BATCH', 40),
     concurrency: envInt('UPSTOX_BOOTSTRAP_CONCURRENCY', 3),
     pauseMs: envInt('UPSTOX_BOOTSTRAP_PAUSE_MS', 2_000),
+    firstWaveSize: envInt('UPSTOX_BOOTSTRAP_FIRST_WAVE_SIZE', 1_000),
+    waveWaitMs: Math.max(30 * 60 * 1_000, envInt('UPSTOX_BOOTSTRAP_WAVE_WAIT_MS', 30 * 60 * 1_000)),
+    firstWaveCalls: 0,
+    firstWaveCompletedAt: null,
+    secondWaveAfter: null,
+    secondWaveReleased: false,
     minPauseMs: envInt('UPSTOX_BOOTSTRAP_MIN_PAUSE_MS', 1_000),
     maxPauseMs: envInt('UPSTOX_BOOTSTRAP_MAX_PAUSE_MS', 60_000),
     masters: 0,
@@ -127,6 +133,10 @@ function countByState() {
     counts[st] += 1;
   }
   return counts;
+}
+
+export function shouldPauseAfterFirstWave({ attempted, size, pending, retry } = {}) {
+  return Number(attempted) >= Number(size) && Number(pending || 0) + Number(retry || 0) > 0;
 }
 
 function avgLatency() {
@@ -219,7 +229,7 @@ async function loadUniverse() {
     masters = await loadIsinUniverse({ limit: 10_000 });
   }
 
-  const isinRe = /^IN[A-Z0-9]{10}$/;
+  const isinRe = /^INE[A-Z0-9]{9}$/;
   const queue = {};
   const missing = [];
   for (const row of masters) {
@@ -227,6 +237,7 @@ async function loadUniverse() {
     if (!symbol) continue;
     const isin = String(row.isin || '').trim().toUpperCase();
     const companyName = row.company_name || symbol;
+    if (isin && !isin.startsWith('INE')) continue; // fund/ETF or other non-company security
     if (!isin || !isinRe.test(isin)) {
       missing.push({
         symbol,
@@ -365,6 +376,13 @@ async function processBatch(batch) {
   for (const item of batch) {
     const err = failedMap.get(item.symbol);
     if (err) {
+      if (err.status === 422 && err.error === 'no_company_key_ratios') {
+        item.state = 'SKIPPED';
+        item.lastError = err.error;
+        item.updatedAt = nowIso();
+        pushLog({ symbol: item.symbol, isin: item.isin, state: 'SKIPPED', reason: err.error });
+        continue;
+      }
       markRetry(item, err.error || `http_${err.status}`, err.status || null);
       continue;
     }
@@ -375,7 +393,7 @@ async function processBatch(batch) {
     }
     item.state = 'SUCCESS';
     item.latencyMs = perCompanyLatency;
-    item.rowsWritten = 6; // six key ratios typical
+    item.rowsWritten = Number(result.rowCounts?.[item.symbol] || 0);
     item.lastError = null;
     item.nextRetryAt = null;
     item.updatedAt = nowIso();
@@ -474,6 +492,16 @@ async function loop() {
 
   try {
     while (!stopRequested) {
+      if (run.secondWaveAfter && !run.secondWaveReleased) {
+        const waitMs = new Date(run.secondWaveAfter).getTime() - Date.now();
+        if (waitMs > 0) {
+          await sleep(Math.min(waitMs, 60_000));
+          continue;
+        }
+        run.secondWaveReleased = true;
+        pushLog({ symbol: '*', state: 'RUNNING', reason: 'remaining_company_wave_started' });
+        persist();
+      }
       const batch = nextBatch();
       if (!batch.length) {
         // Wait for retries that are not due yet.
@@ -487,6 +515,21 @@ async function loop() {
 
       await awaitUpstoxQuota(batch.length);
       await processBatch(batch);
+      if (!run.firstWaveCompletedAt) {
+        run.firstWaveCalls += batch.length;
+        const queueCounts = countByState();
+        if (shouldPauseAfterFirstWave({
+          attempted: run.firstWaveCalls,
+          size: run.firstWaveSize,
+          pending: queueCounts.PENDING,
+          retry: queueCounts.RETRY,
+        })) {
+          run.firstWaveCompletedAt = nowIso();
+          run.secondWaveAfter = new Date(Date.now() + run.waveWaitMs).toISOString();
+          pushLog({ symbol: '*', state: 'PENDING', reason: 'first_1000_company_wave_complete', remainingStartsAt: run.secondWaveAfter });
+        }
+        persist();
+      }
       if (stopRequested) break;
       await sleep(run.pauseMs || 2_000);
     }
@@ -558,9 +601,17 @@ export function getUpstoxBootstrapStatus() {
       minPauseMs: run.minPauseMs,
       maxPauseMs: run.maxPauseMs,
     },
+    waves: {
+      firstWaveSize: run.firstWaveSize,
+      firstWaveCalls: run.firstWaveCalls,
+      firstWaveCompletedAt: run.firstWaveCompletedAt,
+      remainingStartsAt: run.secondWaveAfter,
+      waitingForRemaining: Boolean(run.secondWaveAfter && !run.secondWaveReleased),
+      remainingStarted: run.secondWaveReleased,
+    },
     recentLog: (run.recentLog || []).slice(0, 40),
     error: run.error,
-    nightlySchedulerNote: 'Nightly 18:15 IST remains incremental maintenance only — bootstrap is one-shot.',
+    nightlySchedulerNote: 'Full company-equity key-ratio collection starts after 18:15 IST on trading days.',
   };
 }
 
@@ -585,6 +636,8 @@ export async function startUpstoxBootstrap({
   batchSize,
   concurrency,
   pauseMs,
+  firstWaveSize,
+  waveWaitMs,
 } = {}) {
   if (loopPromise) {
     return { ok: false, error: 'bootstrap_already_running', status: getUpstoxBootstrapStatus() };
@@ -599,6 +652,8 @@ export async function startUpstoxBootstrap({
   if (batchSize) run.batchSize = Math.max(5, Math.min(100, Number(batchSize) || 40));
   if (concurrency) run.concurrency = Math.max(1, Math.min(8, Number(concurrency) || 3));
   if (pauseMs) run.pauseMs = Math.max(run.minPauseMs, Math.min(run.maxPauseMs, Number(pauseMs) || 2000));
+  if (firstWaveSize) run.firstWaveSize = Math.max(1, Number(firstWaveSize) || 1_000);
+  if (waveWaitMs) run.waveWaitMs = Math.max(30 * 60 * 1_000, Number(waveWaitMs) || 30 * 60 * 1_000);
 
   run.runId = run.runId || `ubr-${crypto.randomBytes(6).toString('hex')}`;
   run.startedAt = run.startedAt || nowIso();

@@ -55,6 +55,7 @@ const state = {
   batchSize: 10,
   concurrency: 2,
   pauseMs: 2000,
+  normalPauseMs: 2000,
   includeThin: true,
   processed: 0,
   filled: 0,
@@ -83,15 +84,35 @@ function rememberAttempted(symbols) {
   state.attempted = [...seen].slice(-2000);
 }
 
+export function summarizeStatementBatch(todo, result = {}) {
+  const companyOk = new Set(
+    (result.ingest?.results || []).filter((r) => r?.ok && r?.symbol)
+      .map((r) => String(r.symbol).toUpperCase()),
+  );
+  const rateLimited = new Set(
+    (result.errors || []).filter((e) => Number(e.status) === 429)
+      .map((e) => String(e.symbol || '').toUpperCase()),
+  );
+  if (Number(result.status) === 429) {
+    for (const symbol of todo) if (!companyOk.has(symbol)) rateLimited.add(symbol);
+  }
+  const settled = todo.filter((symbol) => !rateLimited.has(symbol));
+  return {
+    settled,
+    filledCount: companyOk.size,
+    failedCount: Math.max(0, settled.length - companyOk.size),
+    rateLimitedCount: rateLimited.size,
+  };
+}
+
 async function loadQueue(limit) {
   const qs = new URLSearchParams({
-    limit: String(limit),
+    // Fetch the ranked candidate list once, then exclude every attempted name
+    // locally. Sending only the last 150 exclusions made long runs cycle back
+    // to already-attempted companies.
+    limit: String(Math.max(5000, limit)),
     include_thin: state.includeThin ? 'true' : 'false',
   });
-  // Keep the query string bounded; session memory still tracks up to 2000.
-  if ((state.attempted || []).length) {
-    qs.set('exclude', state.attempted.slice(-150).join(','));
-  }
   const result = await engineFetch(`/v1/warehouse/upstox-fill/queue?${qs}`);
   if (!result.ok) {
     throw new Error(result.data?.error || `queue_http_${result.status}`);
@@ -104,7 +125,8 @@ async function runBatch({ batchSize = state.batchSize, symbols = null } = {}) {
   let queueMeta = null;
   if (!todo) {
     queueMeta = await loadQueue(batchSize);
-    todo = (queueMeta.rows || []).map((r) => r.symbol).filter(Boolean);
+    const attempted = new Set(state.attempted || []);
+    todo = (queueMeta.rows || []).map((r) => r.symbol).filter((symbol) => symbol && !attempted.has(symbol));
   }
   todo = todo.slice(0, Math.max(1, Math.min(Number(batchSize) || 10, 50)));
   if (!todo.length) {
@@ -126,16 +148,11 @@ async function runBatch({ batchSize = state.batchSize, symbols = null } = {}) {
 
   const fetched = Number(result.fetched || 0);
   const ingestRows = Number(result.ingest?.totals?.rows || 0);
-  const ingestResults = result.ingest?.results || [];
-  const companyOk = new Set(
-    ingestResults.filter((r) => r?.ok && r?.symbol).map((r) => String(r.symbol).toUpperCase()),
-  );
+  const { settled, filledCount, failedCount, rateLimitedCount } = summarizeStatementBatch(todo, result);
   // Prefer explicit per-company ingest success; do not invent fills from row totals.
-  const filledCount = companyOk.size;
-  const failedCount = Math.max(0, todo.length - filledCount);
 
-  rememberAttempted(todo);
-  state.processed += todo.length;
+  rememberAttempted(settled);
+  state.processed += settled.length;
   state.filled += filledCount;
   state.failed += failedCount;
   state.skipped = (state.attempted || []).length;
@@ -143,6 +160,7 @@ async function runBatch({ batchSize = state.batchSize, symbols = null } = {}) {
     size: todo.length,
     filled: filledCount,
     failed: failedCount,
+    rate_limited: rateLimitedCount,
     fetched,
     ingest_rows: ingestRows,
     errors: (result.errors || []).slice(0, 8),
@@ -156,10 +174,12 @@ async function runBatch({ batchSize = state.batchSize, symbols = null } = {}) {
     error: result.error || null,
   });
 
-  if ((result.errors || []).some((e) => e.status === 429)) {
-    state.pauseMs = Math.min(60_000, Math.max(state.pauseMs * 2, 8_000));
+  if (rateLimitedCount) {
+    // Upstox's standard-API rolling allowance is 2,000 requests per 30 min.
+    // A one-minute retry loop cannot recover that window and can exhaust it.
+    state.pauseMs = Math.max(state.pauseMs, 30 * 60 * 1000);
   } else {
-    state.pauseMs = Math.max(2_500, Math.floor(state.pauseMs * 0.9));
+    state.pauseMs = state.normalPauseMs;
   }
 
   return {
@@ -188,8 +208,6 @@ async function loop() {
   state.startedAt = state.startedAt || nowIso();
   state.endedAt = null;
   state.lastError = null;
-  let idle = 0;
-  let zeroStreak = 0;
   try {
     while (!state.stopped && state.status === 'running') {
       let out;
@@ -205,35 +223,7 @@ async function loop() {
         continue;
       }
       if (!out.batch?.size) {
-        idle += 1;
-        // Queue dry — clear attempt memory so cooldown symbols can retry later.
-        if (idle >= 2) {
-          if ((state.attempted || []).length) {
-            state.attempted = [];
-            idle = 0;
-            state.pauseMs = Math.min(120_000, Math.max(state.pauseMs, 30_000));
-            // eslint-disable-next-line no-await-in-loop
-            await new Promise((r) => setTimeout(r, state.pauseMs));
-            continue;
-          }
-          break;
-        }
-        // eslint-disable-next-line no-await-in-loop
-        await new Promise((r) => setTimeout(r, 2000));
-        continue;
-      }
-      idle = 0;
-      if (!out.batch?.ingest_rows) {
-        zeroStreak += 1;
-        if (zeroStreak >= 8) {
-          // Drop oldest half of attempted so rate-limited symbols can rotate.
-          const n = (state.attempted || []).length;
-          state.attempted = (state.attempted || []).slice(Math.floor(n / 2));
-          zeroStreak = 0;
-          state.pauseMs = Math.min(120_000, Math.max(state.pauseMs, 45_000));
-        }
-      } else {
-        zeroStreak = 0;
+        break;
       }
       // eslint-disable-next-line no-await-in-loop
       await new Promise((r) => setTimeout(r, state.pauseMs));
@@ -281,6 +271,7 @@ export async function startUpstoxEmptyFill({
   state.batchSize = Math.max(1, Math.min(Number(batchSize) || 10, 40));
   state.concurrency = Math.max(1, Math.min(Number(concurrency) || 2, 4));
   state.pauseMs = Math.max(500, Number(pauseMs) || 2500);
+  state.normalPauseMs = state.pauseMs;
   state.includeThin = includeThin !== false;
   state.processed = 0;
   state.filled = 0;
