@@ -67,5 +67,9 @@ export function validateReview(input) {
   const review = { status: input.status, assessment: cleanText(input.assessment,3000), uncertainty: cleanText(input.uncertainty,1500), next_check: cleanText(input.next_check,1500), evidence_url: safeUrl(input.evidence_url), content_hash: cleanText(input.content_hash,64) };
   if (!['published','rejected'].includes(review.status) || !/^[a-f0-9]{64}$/.test(review.content_hash)) throw new Error('Choose a review decision and reload the current event before reviewing.');
   if (!review.assessment || (review.status==='published' && (!review.uncertainty || !review.next_check || !review.evidence_url))) throw new Error('Published assessments require an explanation, uncertainty, next evidence to check and an HTTPS evidence link.');
+  review.impact_type=input.impact_type||'unconfirmed'; review.direction=input.direction||'unknown';review.horizon=input.horizon||'unknown';
+  if(!['unconfirmed','operational','supply_chain','demand','regulatory','none'].includes(review.impact_type)||!['unknown','positive','negative','mixed','neutral'].includes(review.direction)||!['unknown','days','weeks','months'].includes(review.horizon))throw new Error('Choose valid impact, direction and horizon values.');
+  if(input.company_symbols!==undefined&&(!Array.isArray(input.company_symbols)||input.company_symbols.length>20||input.company_symbols.some(s=>typeof s!=='string'||!/^[A-Z0-9&.-]{1,25}$/.test(s))))throw new Error('Select up to 20 companies.');
+  review.company_symbols=[...new Set(input.company_symbols||[])];
   return review;
 }
