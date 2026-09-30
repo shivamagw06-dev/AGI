@@ -17,6 +17,8 @@ import {
   publishPiotroskiSnapshot,
 } from '../services/manualPiotroskiScreener.js';
 
+import { latestCashFlowSnapshot, parseCashFlowTables, publishCashFlowSnapshot } from '../services/manualCashFlowScreener.js';
+
 export default function createManualScreenersRouter() {
   const router = Router();
 
@@ -124,6 +126,42 @@ export default function createManualScreenersRouter() {
         return res.status(400).json({ error: error.message });
       }
       console.error('[manual-piotroski] publish:', error.message);
+      return res.status(503).json({ error: 'The screener could not be published. Try again.' });
+    }
+  });
+
+  router.get('/cash-flow', async (_req, res) => {
+    try {
+      const snapshot = await latestCashFlowSnapshot();
+      res.set('Cache-Control', 'no-store');
+      return res.json({ snapshot });
+    } catch (error) {
+      console.error('[manual-cash-flow] read:', error.message);
+      return res.status(503).json({ error: 'The screener is temporarily unavailable.' });
+    }
+  });
+
+  router.post('/cash-flow/preview', requireStrategyLabAdmin, (req, res) => {
+    try {
+      const asOf = validateAsOf(req.body?.asOf);
+      const rows = parseCashFlowTables(req.body?.tables);
+      return res.json({ asOf, rowCount: rows.length, rows });
+    } catch (error) {
+      return res.status(400).json({ error: error.message });
+    }
+  });
+
+  router.post('/cash-flow/publish', requireStrategyLabAdmin, async (req, res) => {
+    try {
+      const asOf = validateAsOf(req.body?.asOf);
+      const rows = parseCashFlowTables(req.body?.tables);
+      const snapshot = await publishCashFlowSnapshot({ asOf, rows, actorId: req.strategyLabActor.id });
+      return res.json({ snapshot });
+    } catch (error) {
+      if (/^(Choose|Paste|Table|Row|Duplicate|No stock|A publication)/.test(error.message)) {
+        return res.status(400).json({ error: error.message });
+      }
+      console.error('[manual-cash-flow] publish:', error.message);
       return res.status(503).json({ error: 'The screener could not be published. Try again.' });
     }
   });

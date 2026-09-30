@@ -79,6 +79,7 @@ const navItems = [
   { to: '/admin/low-pe-screener', label: 'Low P/E Screener Paste', icon: FileSpreadsheet },
   { to: '/admin/promoter-screener', label: 'Promoter Screener Paste', icon: FileSpreadsheet },
   { to: '/admin/piotroski-screener', label: 'Piotroski Screener Paste', icon: FileSpreadsheet },
+  { to: '/admin/cash-flow-screener', label: 'Cash Flow Screener Paste', icon: FileSpreadsheet },
   { to: '/admin/insider-trades-paste', label: 'Insider Trades Paste', icon: FileSpreadsheet },
   { to: '/admin/ipo-intelligence-input', label: 'IPO Intelligence Input', icon: ClipboardList },
   { to: '/admin/institutional-holdings', label: 'Institutional Holdings', icon: Landmark },
