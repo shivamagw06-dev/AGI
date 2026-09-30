@@ -49,7 +49,7 @@ export function parseMomentumTables(tables) {
       const row = Object.fromEntries(keys.map((key, column) => [key, String(cells[column] || '').trim()]));
       row.price = numericValue(cells[7], 'Current Price', rowNumber);
       row.marketCapCr = numericValue(cells[8], 'Market Capitalization', rowNumber);
-      row.score = numericValue(cells[9], 'Trendlyne Momentum Score', 'Day Volume', 'Week change %', 'Nifty50 Week change %', 'Current Price', rowNumber);
+      row.score = numericValue(cells[9], 'Trendlyne Momentum Score', rowNumber);
       if (!row.stock || !row.isin || !/^IN[A-Z0-9]{10}$/.test(row.isin) || !row.sector || !row.industry) {
         throw new Error(`Table ${tableIndex + 1}, row ${rowNumber}: stock, sector, industry and a valid ISIN are required.`);
       }
