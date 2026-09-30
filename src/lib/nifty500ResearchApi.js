@@ -19,6 +19,10 @@ export function getNifty500Summary() {
   return request('/summary');
 }
 
+export function getNifty500ScreenerUniverse() {
+  return request('/screeners');
+}
+
 export function searchNifty500Research(query) {
   return request(`/search?q=${encodeURIComponent(query)}`);
 }

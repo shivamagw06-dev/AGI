@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import {
   getResearchSummary,
+  getResearchUniverse,
   getStockResearch,
   searchResearchSymbols,
 } from '../services/nifty500ResearchService.js';
@@ -34,6 +35,16 @@ export default function createNifty500ResearchRouter() {
   // Root used to 503 via the IndianAPI wildcard; serve summary instead.
   router.get('/', summaryHandler);
   router.get('/summary', summaryHandler);
+
+  router.get('/screeners', async (_req, res) => {
+    try {
+      const data = await getResearchUniverse();
+      res.set('Cache-Control', CACHE_CONTROL);
+      return res.json(data);
+    } catch (error) {
+      return sendError(res, error);
+    }
+  });
 
   router.get('/search', async (req, res) => {
     try {

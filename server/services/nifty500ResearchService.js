@@ -2,6 +2,7 @@ const CACHE_MS = 30 * 60 * 1000;
 const SUMMARY_LIMIT = 20;
 let currentRunCache = { value: null, expiresAt: 0 };
 let summaryCache = { value: null, expiresAt: 0 };
+let universeCache = { value: null, expiresAt: 0 };
 
 function config() {
   const url = (process.env.SUPABASE_URL || '').trim().replace(/\/$/, '');
@@ -100,6 +101,24 @@ export async function getResearchSummary() {
   return data;
 }
 
+export async function getResearchUniverse() {
+  if (universeCache.value && universeCache.expiresAt > Date.now()) return universeCache.value;
+  const run = await getCurrentResearchRun();
+  if (!run) return { run: null, items: [] };
+
+  // Published runs are capped at the Nifty 500 universe. Keep this query
+  // separate from the 20-name home-page summary so filters cover every name.
+  const rows = await supabaseSelect('nifty500_stock_research', {
+    select: 'symbol,overall_sentiment,agi_research_score,ai_confidence_percent,research_summary,trend_analysis,momentum_analysis,volume_analysis,volatility_analysis,market_structure_analysis,relative_strength_analysis,supporting_factors,risk_factors,last_updated',
+    run_id: `eq.${run.id}`,
+    order: 'symbol.asc',
+    limit: '1000',
+  });
+  const data = { run, items: rows.map(publicRecord) };
+  universeCache = { value: data, expiresAt: Date.now() + CACHE_MS };
+  return data;
+}
+
 export async function searchResearchSymbols(rawQuery) {
   const query = String(rawQuery || '').trim().toUpperCase().replace(/[^A-Z0-9&-]/g, '');
   const run = await getCurrentResearchRun();
@@ -132,4 +151,5 @@ export async function getStockResearch(rawSymbol) {
 export function clearNifty500ResearchCache() {
   currentRunCache = { value: null, expiresAt: 0 };
   summaryCache = { value: null, expiresAt: 0 };
+  universeCache = { value: null, expiresAt: 0 };
 }
