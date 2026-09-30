@@ -47,3 +47,11 @@ Next implementation order: expand verified company assets → official-document 
 ## Verification
 
 `node --test server/services/globalIntelligence.test.js` checks source parsing, malformed and duplicate records, hash semantics, date-line distance, review validation, bounded HTTP fetches, admin denial and watchlist ownership. Production build: `npm run build`. Migration/function checks verify RLS and no anonymous function execution. Deployment smoke checks must include public read, anonymous admin denial, source freshness, globe navigation and admin queue rendering.
+
+## Coverage expansion — 1 October 2026
+
+The additive company-coverage migration adds five areas across Indian Oil (IOC: Panipat, Paradip), Hindalco (Renukoot, Dahej), and JSW Steel (Vijayanagar/Toranagallu), bringing seeded coverage to seven companies / fourteen areas. Each record links to its official company location page; these are evidence of a documented relationship, not a live operating-status check. Existing analyst records are preserved on conflict.
+
+Directory search matches company names, symbols and asset-area names. Sector filters use every mapped asset's sector; search and sector combine. Counts are derived from active records rather than hard-coded pilot numbers. Clear filters restores all active companies. Existing company pages, map markers, proximity matching and private watchlists consume these new records automatically.
+
+Coordinate references (rounded town/area markers only): Panipat/Paradip from [GeoNames](https://www.geonames.org/search.html?country=IN&q=&startRow=450); Renukoot from [LatLong](https://www.latlong.net/place/renukoot-uttar-pradesh-india-11072.html); Toranagallu from [Wikidata](https://www.wikidata.org/wiki/Q16901850); Dahej reuses the existing approximate area marker. This does not constitute a surveyed site boundary. New company relationship sources are retained in each database record.
