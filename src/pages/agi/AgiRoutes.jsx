@@ -11,6 +11,7 @@ import MarketsWorkspacePage from './MarketsWorkspacePage';
 import ResearchWorkspacePage from './ResearchWorkspacePage';
 import WatchlistsWorkspacePage from './WatchlistsWorkspacePage';
 import ComingSoonPage from './ComingSoonPage';
+import ScreenersPage from './ScreenersPage';
 import SettingsPage from './SettingsPage';
 
 export default function AgiRoutes() {
@@ -26,7 +27,7 @@ export default function AgiRoutes() {
         <Route path="markets" element={<MarketsWorkspacePage />} />
         <Route path="research" element={<ResearchWorkspacePage />} />
         <Route path="watchlists" element={<WatchlistsWorkspacePage />} />
-        <Route path="screeners" element={<ComingSoonPage area="screeners" />} />
+        <Route path="screeners" element={<ScreenersPage />} />
         <Route path="notebook" element={<ComingSoonPage area="notebook" />} />
         <Route path="alerts" element={<ComingSoonPage area="alerts" />} />
         <Route path="settings" element={<SettingsPage />} />
