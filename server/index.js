@@ -9,6 +9,7 @@ import express from "express";
 import researchRouter from "./research.js";
 import createMarketRouter from "./routes/market.js";
 import createNifty500ResearchRouter from "./routes/nifty500Research.js";
+import createManualScreenersRouter from "./routes/manualScreeners.js";
 import createIntelligenceRouter from "./routes/intelligence.js";
 import createUiRouter from "./routes/ui.js";
 import createPeIntelligenceRouter from "./routes/peIntelligence.js";
@@ -433,6 +434,7 @@ const nifty500ResearchRouter = createNifty500ResearchRouter();
 app.use('/api/research/nifty500', nifty500ResearchLimiter, nifty500ResearchRouter);
 // Alias — some clients/probes hit /nifty50 without the trailing 0.
 app.use('/api/research/nifty50', nifty500ResearchLimiter, nifty500ResearchRouter);
+app.use('/api/manual-screeners', createManualScreenersRouter());
 app.use('/api/research-signals', createResearchSignalsRouter());
 app.use('/api/intelligence', createIntelligenceRouter());
 app.use('/api/ui', createUiRouter());
