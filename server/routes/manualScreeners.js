@@ -11,6 +11,11 @@ import {
   parsePromoterTables,
   publishPromoterSnapshot,
 } from '../services/manualPromoterScreener.js';
+import {
+  latestPiotroskiSnapshot,
+  parsePiotroskiTables,
+  publishPiotroskiSnapshot,
+} from '../services/manualPiotroskiScreener.js';
 
 export default function createManualScreenersRouter() {
   const router = Router();
@@ -83,6 +88,42 @@ export default function createManualScreenersRouter() {
         return res.status(400).json({ error: error.message });
       }
       console.error('[manual-promoter] publish:', error.message);
+      return res.status(503).json({ error: 'The screener could not be published. Try again.' });
+    }
+  });
+
+  router.get('/piotroski', async (_req, res) => {
+    try {
+      const snapshot = await latestPiotroskiSnapshot();
+      res.set('Cache-Control', 'no-store');
+      return res.json({ snapshot });
+    } catch (error) {
+      console.error('[manual-piotroski] read:', error.message);
+      return res.status(503).json({ error: 'The screener is temporarily unavailable.' });
+    }
+  });
+
+  router.post('/piotroski/preview', requireStrategyLabAdmin, (req, res) => {
+    try {
+      const asOf = validateAsOf(req.body?.asOf);
+      const rows = parsePiotroskiTables(req.body?.tables);
+      return res.json({ asOf, rowCount: rows.length, rows });
+    } catch (error) {
+      return res.status(400).json({ error: error.message });
+    }
+  });
+
+  router.post('/piotroski/publish', requireStrategyLabAdmin, async (req, res) => {
+    try {
+      const asOf = validateAsOf(req.body?.asOf);
+      const rows = parsePiotroskiTables(req.body?.tables);
+      const snapshot = await publishPiotroskiSnapshot({ asOf, rows, actorId: req.strategyLabActor.id });
+      return res.json({ snapshot });
+    } catch (error) {
+      if (/^(Choose|Paste|Table|Row|Duplicate|No stock|A publication)/.test(error.message)) {
+        return res.status(400).json({ error: error.message });
+      }
+      console.error('[manual-piotroski] publish:', error.message);
       return res.status(503).json({ error: 'The screener could not be published. Try again.' });
     }
   });

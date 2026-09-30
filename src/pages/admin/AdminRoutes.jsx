@@ -75,6 +75,7 @@ const InvestorMappings = lazy(() => import('@/pages/admin/InvestorMappings'));
 const InstitutionsPaste = lazy(() => import('@/pages/admin/InstitutionsPaste'));
 const LowPeScreenerPaste = lazy(() => import('@/pages/admin/LowPeScreenerPaste'));
 const PromoterScreenerPaste = lazy(() => import('@/pages/admin/PromoterScreenerPaste'));
+const PiotroskiScreenerPaste = lazy(() => import('@/pages/admin/PiotroskiScreenerPaste'));
 const InsiderTradesPaste = lazy(() => import('@/pages/admin/InsiderTradesPaste'));
 const IpoIntelligenceImport = lazy(() => import('@/pages/admin/IpoIntelligenceImport'));
 const InstitutionalHoldingsAdmin = lazy(() => import('@/pages/admin/InstitutionalHoldingsAdmin'));
@@ -137,6 +138,7 @@ export default function AdminRoutes() {
           <Route path="institutions-paste" element={<InstitutionsPaste />} />
           <Route path="low-pe-screener" element={<LowPeScreenerPaste />} />
           <Route path="promoter-screener" element={<PromoterScreenerPaste />} />
+          <Route path="piotroski-screener" element={<PiotroskiScreenerPaste />} />
           <Route path="insider-trades-paste" element={<InsiderTradesPaste />} />
           <Route path="ipo-intelligence-input" element={<IpoIntelligenceImport />} />
           {/* Full-bleed Historical Valuation Intelligence Engine (Phase 8.3) */}

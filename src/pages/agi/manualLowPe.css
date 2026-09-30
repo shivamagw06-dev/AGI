@@ -34,4 +34,7 @@
 .manual-promoter__toggle { display: flex !important; align-items: center; gap: 7px !important; align-self: end; height: 40px; }
 .manual-promoter__toggle input { min-width: auto !important; width: 16px; height: 16px; }
 .manual-promoter__old { display: inline-block; margin-left: 7px; padding: 2px 5px; color: #a54b38; background: #fff0eb; font-size: 10px; font-weight: 700; }
+.manual-piotroski table { min-width: 1400px; }
+.manual-piotroski th:nth-child(4), .manual-piotroski th:nth-child(5), .manual-piotroski td:nth-child(4), .manual-piotroski td:nth-child(5) { text-align: left; }
+.manual-piotroski__score { display: inline-block; padding: 4px 8px; background: #e7f2ed; color: #1e7254; font-weight: 800; }
 @media (max-width: 700px) { .manual-low-pe__intro { align-items: flex-start; flex-direction: column; } .manual-low-pe__toolbar > span { margin-left: 0; width: 100%; } }
