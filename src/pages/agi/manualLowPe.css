@@ -41,3 +41,6 @@
 
 .manual-cash-flow th:nth-child(9), .manual-cash-flow td:nth-child(9), .manual-cash-flow th:nth-child(10), .manual-cash-flow td:nth-child(10) { text-align: left; }
 .manual-cash-flow th:nth-child(12), .manual-cash-flow td:nth-child(12) { text-align: right; }
+
+.manual-momentum th:nth-child(8), .manual-momentum td:nth-child(8), .manual-momentum th:nth-child(9), .manual-momentum td:nth-child(9) { text-align: left; }
+.manual-momentum th:nth-child(12), .manual-momentum td:nth-child(12) { text-align: right; }

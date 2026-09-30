@@ -14,6 +14,7 @@ import ComingSoonPage from './ComingSoonPage';
 import ManualLowPePage from './ManualLowPePage';
 import ManualPromoterPage from './ManualPromoterPage';
 import ManualPiotroskiPage from './ManualPiotroskiPage';
+import ManualMomentumPage from './ManualMomentumPage';
 import ManualCashFlowPage from './ManualCashFlowPage';
 import SettingsPage from './SettingsPage';
 
@@ -33,6 +34,7 @@ export default function AgiRoutes() {
         <Route path="screeners" element={<ManualLowPePage />} />
         <Route path="screeners/promoter-holdings" element={<ManualPromoterPage />} />
         <Route path="screeners/piotroski" element={<ManualPiotroskiPage />} />
+        <Route path="screeners/momentum" element={<ManualMomentumPage />} />
         <Route path="screeners/cash-flow" element={<ManualCashFlowPage />} />
         <Route path="notebook" element={<ComingSoonPage area="notebook" />} />
         <Route path="alerts" element={<ComingSoonPage area="alerts" />} />
