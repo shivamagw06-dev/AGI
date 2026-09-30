@@ -59,7 +59,9 @@ function pickIsinCompanies(rows, { limit = 200 } = {}) {
     const symbol = String(row.symbol || '').trim().toUpperCase();
     const isin = String(row.isin || '').trim().toUpperCase();
     if (!symbol || !isin || seen.has(isin)) continue;
-    if (!/^IN[A-Z0-9]{10}$/.test(isin) && !/^INE[A-Z0-9]{9}$/.test(isin)) continue;
+    // INE identifies Indian company equity. INF fund/ETF identifiers also pass
+    // the broader ISIN pattern, but do not belong in company fundamentals.
+    if (!/^INE[A-Z0-9]{9}$/.test(isin)) continue;
     seen.add(isin);
     out.push({
       symbol,
@@ -166,14 +168,19 @@ export async function refreshUpstoxValuationRatios({
       const company = companies[idx];
       try {
         const json = await getFundamentals(company.isin, 'key-ratios');
-        batch.push({
+        const companyBatch = {
           symbol: company.symbol,
           isin: company.isin,
           company_id: company.company_id,
           instrument_key: company.instrument_key,
           reported_date: reportedDate,
           data: json?.data || json,
-        });
+        };
+        if (!flattenKeyRatioRows([companyBatch]).length) {
+          errors.push({ symbol: company.symbol, isin: company.isin, error: 'no_company_key_ratios', status: 422 });
+          continue;
+        }
+        batch.push(companyBatch);
       } catch (err) {
         errors.push({
           symbol: company.symbol,
@@ -187,6 +194,9 @@ export async function refreshUpstoxValuationRatios({
 
   const workers = Array.from({ length: Math.max(1, concurrency) }, () => worker());
   await Promise.all(workers);
+  const rowCounts = Object.fromEntries(batch.map((company) => [
+    company.symbol, flattenKeyRatioRows([company]).length,
+  ]));
 
   if (!batch.length) {
     // Every getFundamentals call threw — usually rate-limit / auth, not "no ratios".
@@ -197,18 +207,20 @@ export async function refreshUpstoxValuationRatios({
       (e) => e.status === 401 || e.status === 403
         || /unauthorized|forbidden|access.token/i.test(String(e.error || '')),
     );
+    const noData = errors.length && errors.every((e) => e.status === 422);
     return {
       ok: false,
-      status: rateLimited ? 429 : authFailed ? 401 : 502,
+      status: rateLimited ? 429 : authFailed ? 401 : noData ? 422 : 502,
       error: rateLimited
         ? 'upstox_rate_limited'
         : authFailed
           ? 'upstox_auth_failed'
-          : 'upstox_key_ratios_fetch_failed',
+          : noData ? 'no_company_key_ratios' : 'upstox_key_ratios_fetch_failed',
       // Legacy alias — bootstrap logs previously showed this for 429 batches.
       legacy_error: 'upstox_key_ratios_empty',
       attempted: companies.length,
       fetched: 0,
+      rowCounts,
       failed: errors.length,
       errors: errors.slice(0, 20),
       hint: rateLimited
@@ -235,6 +247,7 @@ export async function refreshUpstoxValuationRatios({
       status: ingest.status,
       attempted: companies.length,
       fetched: batch.length,
+      rowCounts,
       failed: errors.length,
       errors: errors.slice(0, 20),
       warehouse: ingest.data,
@@ -254,6 +267,7 @@ export async function refreshUpstoxValuationRatios({
     status: fallback?.ok ? 200 : ingest.status,
     attempted: companies.length,
     fetched: batch.length,
+    rowCounts,
     failed: errors.length,
     errors: errors.slice(0, 20),
     warehouse: fallback || ingest.data,

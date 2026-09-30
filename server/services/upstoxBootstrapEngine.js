@@ -1,9 +1,9 @@
 /**
  * Phase 7.4d — Upstox Full-Universe Bootstrap & Continuous Valuation Backfill.
  *
- * One-time (resumable) bootstrap that drains the ISIN-mapped company queue into
+ * Resumable full-universe collector that drains the ISIN-mapped company queue into
  * warehouse.valuation_ratios via Normalizer → DQIV → Warehouse → UVE.
- * Independent from the nightly 18:15 IST incremental scheduler.
+ * Used by the nightly 18:15 IST scheduler and by operator-triggered backfills.
  */
 
 import fs from 'node:fs';
@@ -219,7 +219,7 @@ async function loadUniverse() {
     masters = await loadIsinUniverse({ limit: 10_000 });
   }
 
-  const isinRe = /^IN[A-Z0-9]{10}$/;
+  const isinRe = /^INE[A-Z0-9]{9}$/;
   const queue = {};
   const missing = [];
   for (const row of masters) {
@@ -227,6 +227,7 @@ async function loadUniverse() {
     if (!symbol) continue;
     const isin = String(row.isin || '').trim().toUpperCase();
     const companyName = row.company_name || symbol;
+    if (isin && !isin.startsWith('INE')) continue; // fund/ETF or other non-company security
     if (!isin || !isinRe.test(isin)) {
       missing.push({
         symbol,
@@ -365,6 +366,13 @@ async function processBatch(batch) {
   for (const item of batch) {
     const err = failedMap.get(item.symbol);
     if (err) {
+      if (err.status === 422 && err.error === 'no_company_key_ratios') {
+        item.state = 'SKIPPED';
+        item.lastError = err.error;
+        item.updatedAt = nowIso();
+        pushLog({ symbol: item.symbol, isin: item.isin, state: 'SKIPPED', reason: err.error });
+        continue;
+      }
       markRetry(item, err.error || `http_${err.status}`, err.status || null);
       continue;
     }
@@ -375,7 +383,7 @@ async function processBatch(batch) {
     }
     item.state = 'SUCCESS';
     item.latencyMs = perCompanyLatency;
-    item.rowsWritten = 6; // six key ratios typical
+    item.rowsWritten = Number(result.rowCounts?.[item.symbol] || 0);
     item.lastError = null;
     item.nextRetryAt = null;
     item.updatedAt = nowIso();
@@ -560,7 +568,7 @@ export function getUpstoxBootstrapStatus() {
     },
     recentLog: (run.recentLog || []).slice(0, 40),
     error: run.error,
-    nightlySchedulerNote: 'Nightly 18:15 IST remains incremental maintenance only — bootstrap is one-shot.',
+    nightlySchedulerNote: 'Full company-equity key-ratio collection starts after 18:15 IST on trading days.',
   };
 }
 

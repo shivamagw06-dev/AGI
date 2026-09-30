@@ -270,7 +270,7 @@ export default function createMarketRouter(env = {}) {
       return res.status(200).json({
         ok: true,
         scheduler: getValuationRatiosSchedulerStatus(),
-        note: 'Upstox key-ratios ingested daily at 18:15 IST into warehouse.valuation_ratios',
+        note: 'All ISIN-mapped company-equity key-ratios collected after 18:15 IST into warehouse.valuation_ratios; inspect upstox-bootstrap/status for run completion and failures.',
       });
     } catch (err) {
       return res.status(200).json({ ok: false, error: err?.message || 'status_unavailable' });

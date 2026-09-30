@@ -44,6 +44,6 @@ describe('upstoxBootstrapEngine', () => {
     }
     assert.equal(typeof st.apiHealth.successfulCalls, 'number');
     assert.equal(typeof st.throughput.pauseMs, 'number');
-    assert.match(st.nightlySchedulerNote, /incremental/i);
+    assert.match(st.nightlySchedulerNote, /full company-equity/i);
   });
 });
