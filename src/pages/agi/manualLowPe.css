@@ -38,3 +38,6 @@
 .manual-piotroski th:nth-child(4), .manual-piotroski th:nth-child(5), .manual-piotroski td:nth-child(4), .manual-piotroski td:nth-child(5) { text-align: left; }
 .manual-piotroski__score { display: inline-block; padding: 4px 8px; background: #e7f2ed; color: #1e7254; font-weight: 800; }
 @media (max-width: 700px) { .manual-low-pe__intro { align-items: flex-start; flex-direction: column; } .manual-low-pe__toolbar > span { margin-left: 0; width: 100%; } }
+
+.manual-cash-flow th:nth-child(9), .manual-cash-flow td:nth-child(9), .manual-cash-flow th:nth-child(10), .manual-cash-flow td:nth-child(10) { text-align: left; }
+.manual-cash-flow th:nth-child(12), .manual-cash-flow td:nth-child(12) { text-align: right; }
