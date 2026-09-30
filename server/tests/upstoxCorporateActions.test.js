@@ -65,7 +65,13 @@ describe('upstox corporate actions', () => {
 
     const originalFetch = globalThis.fetch;
     globalThis.fetch = async (url, opts) => {
-      assert.match(String(url), /\/fundamentals\/INE002A01018\/corporate-actions$/);
+      // The path and the parameters, separately. A suffix regex broke the day
+      // corporate-actions started routing through getFundamentals, which sends
+      // type=consolidated - the assertion was about the end of the string
+      // rather than about the request being made.
+      const parsed = new URL(String(url));
+      assert.equal(parsed.pathname, '/v2/fundamentals/INE002A01018/corporate-actions');
+      assert.equal(parsed.searchParams.get('type'), 'consolidated');
       assert.equal(opts.headers.Authorization, 'Bearer test-access-token-with-enough-length-abcdefgh');
       return {
         ok: true,

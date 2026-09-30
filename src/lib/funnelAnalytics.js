@@ -144,6 +144,7 @@ export function trackFunnelEvent(stage, payload = {}, opts = {}) {
 
   write(state);
   forwardToGa(stage, payload, state.visitor_id);
+  if(stage === 'signup_completed') { try { window.dispatchEvent(new CustomEvent('agi:signup-completed')); } catch { /* Optional central analytics. */ } }
 
   if (stage === 'first_meaningful_action') {
     trackProductEvent('research_conversion', { funnel: true, ...payload });

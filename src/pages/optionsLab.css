@@ -168,3 +168,8 @@
 @media (prefers-reduced-motion: reduce) {
   .ol-root *, .ol-root *::before, .ol-root *::after { animation-duration: 0.001ms !important; }
 }
+
+.ol-news-agent-button { display: inline-flex; align-items: center; margin-top: 8px; padding: 12px 18px; border: 1px solid #b6d2c9; border-radius: 5px; background: #e8f3ee; color: #153c30; font-weight: 700; text-decoration: none; }
+.ol-news-agent-button:hover { background: #fff; }
+.ol-news-agent-button:focus-visible { outline: 3px solid #fff; outline-offset: 4px; }
+.ol-news-agent-note { display: block; margin-top: 8px; color: #b6c8c2; }

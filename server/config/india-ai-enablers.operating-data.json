@@ -1,0 +1,490 @@
+{
+  "asOf": "2026-09-18",
+  "purpose": "Order books and data-centre capacity for members, each figure read from the company's own document and quoted. Rs crore unless stated; MW as the company states it (IT load or power capacity, which differ).",
+  "source": "Verification ledger, 2026-09-18",
+  "orderBooks": [
+    {
+      "symbol": "ABB",
+      "asOf": "2026-06-30",
+      "backlogCr": 11898,
+      "intakeCr": 4363,
+      "dataCentreOrders": "Data centres about 15-17% of Q2 orders (management, call); no value",
+      "document": "ABB India Q2 CY2026 press release; earnings call",
+      "page": "PR PDF 4-5; call PDF 10",
+      "quote": "Data Centers orders in this quarter has been almost 15% to 17% of our orders came from base orders. (T.K. Sridhar, call 31 Jul 2026)",
+      "basisNote": "Calendar-year reporter: Q2 CY2026",
+      "quoteIsVerbatim": true,
+      "quarterRevenueCr": 3558.87,
+      "quarterRevenueSource": "Q2 CY2026 results statement"
+    },
+    {
+      "symbol": "GVT&D",
+      "asOf": "2026-06-30",
+      "backlogCr": 20929.5,
+      "intakeCr": 1137.0,
+      "dataCentreOrders": "'Not significant' in the quarter (MD); a 150 MVA transformer for a semiconductor customer",
+      "document": "GE Vernova T&D India Q1 FY27 investor presentation",
+      "page": "PDF 4, 8",
+      "quote": "Q1'27 Orders : 11,370 ... Order Backlog : 209,295 (₹ in millions)",
+      "basisNote": null,
+      "quoteIsVerbatim": true,
+      "quarterRevenueCr": 1836.1,
+      "quarterRevenueSource": "Q1 FY27 presentation (Rs 18,361 mn)"
+    },
+    {
+      "symbol": "POWERINDIA",
+      "asOf": "2026-06-30",
+      "backlogCr": 32222.1,
+      "intakeCr": 5096.5,
+      "dataCentreOrders": "Data-centre orders stated in MVA only; data centres the major contributor to Q4 FY26 orders",
+      "document": "Hitachi Energy India Q1 FY27 results release",
+      "page": "1",
+      "quote": "Data Centers: secured over 560 MVA power transformers, 800 MVA dry transformers and 230/33KV GIS over multiple data center orders during Q1FY27.",
+      "basisNote": null,
+      "quoteIsVerbatim": true,
+      "quarterRevenueCr": 2493.7,
+      "quarterRevenueSource": "Q1 FY27 release"
+    },
+    {
+      "symbol": "SCHNEIDER",
+      "asOf": "2026-06-30",
+      "backlogCr": 2169,
+      "intakeCr": 915,
+      "dataCentreOrders": "No value or share; data centres and semiconductors named among 'emerging segments' (more than a fifth of the order bank together)",
+      "document": "Schneider Electric Infrastructure Q1 FY27 press release",
+      "page": "PDF 2",
+      "quote": "Orders: INR 915 crores, Highest-ever in a quarter ... Order Backlog 30th June'26 : 2169 crores +32.7% YoY",
+      "basisNote": null,
+      "quoteIsVerbatim": true,
+      "quarterRevenueCr": 651.4,
+      "quarterRevenueSource": "Q1 FY27 press release"
+    },
+    {
+      "symbol": "TDPOWERSYS",
+      "asOf": "2026-06-30",
+      "backlogCr": 2208,
+      "intakeCr": 734,
+      "dataCentreOrders": "Split not disclosed ('we don't give that split-up of applications'); exports 93% of intake",
+      "document": "TD Power Systems Q1 FY27 earnings call",
+      "page": "PDF 3",
+      "quote": "Order book for the Manufacturing segment is INR22.08 billion, out of which INR19.29 billion is the generator and motor manufacturing business",
+      "basisNote": null,
+      "quoteIsVerbatim": true,
+      "quarterRevenueCr": 640.05,
+      "quarterRevenueSource": "Q1 FY27 results (consolidated)"
+    },
+    {
+      "symbol": "STLTECH",
+      "asOf": "2026-06-30",
+      "backlogCr": 18618,
+      "intakeCr": 13100,
+      "dataCentreOrders": "$1.11 bn hyperscaler award for AI data-centre products (FY27-29) plus hyperscaler orders of $100 mn+",
+      "document": "STL Q1 FY27 investor presentation",
+      "page": "15, 25",
+      "quote": "Open order book / Backlog (INR Cr.) ... 18,618 ... Order Intake (INR Cr.) ... 13,100 ... Q2 FY27 2,228; Q3FY27 & Beyond 16,390",
+      "basisNote": null,
+      "quoteIsVerbatim": true,
+      "quarterRevenueCr": 1910,
+      "quarterRevenueSource": "Q1 FY27 presentation"
+    },
+    {
+      "symbol": "HFCL",
+      "asOf": "2026-06-30",
+      "backlogCr": 26665,
+      "intakeCr": null,
+      "dataCentreOrders": "None disclosed; data-centre product revenue about Rs 100 crore in Q1 (management)",
+      "document": "HFCL Q1 FY27 investor presentation",
+      "page": "slide 8",
+      "quote": "our order book has strengthened to approximately ₹26,665 crore, which is not only all time high but is 5 times of FY26 revenue",
+      "basisNote": null,
+      "quoteIsVerbatim": true,
+      "quarterRevenueCr": 1914.98,
+      "quarterRevenueSource": "Q1 FY27 presentation"
+    },
+    {
+      "symbol": "APARINDS",
+      "asOf": "2026-06-30",
+      "backlogCr": null,
+      "intakeCr": null,
+      "dataCentreOrders": "None disclosed",
+      "document": "APAR Q1 FY27 investor update",
+      "page": "3, 5",
+      "quote": "Pending order book was ₹ 10,190 crores, of which exports contribute 56.8% ... New order received stood at ₹ 5,245 crores in Q1 FY27 ... Pending order book is at ₹ 1,925 crores compared to Rs 1,653 crores year ago.",
+      "basisNote": "No consolidated order book: conductors Rs 10,190 cr and cables Rs 1,925 cr",
+      "quoteIsVerbatim": true,
+      "quarterRevenueCr": 6591,
+      "quarterRevenueSource": "Q1 FY27 earnings update"
+    },
+    {
+      "symbol": "DIACABS",
+      "asOf": "2026-08-11",
+      "backlogCr": 3687.55,
+      "intakeCr": null,
+      "dataCentreOrders": "Rs 435 crore data-centre cable order, 11.8% of the order book",
+      "document": "Diamond Power Q1 FY27 investor presentation",
+      "page": "6, 11, 12",
+      "quote": "Order book as on 11-Aug-2026 — ₹3,687.55 Cr across cables, conductors & data-centre products ... Data-Centre Cable MV Cables 435.00 11.8%",
+      "basisNote": null,
+      "quoteIsVerbatim": true,
+      "quarterRevenueCr": 689.9,
+      "quarterRevenueSource": "Q1 FY27 presentation (Rs 6,899 mn)"
+    },
+    {
+      "symbol": "NETWEB",
+      "asOf": "2026-06-30",
+      "backlogCr": 2506.94,
+      "intakeCr": null,
+      "dataCentreOrders": "About 40-45% of the order book AI (CMD, 'maybe'); L1 of Rs 848 crore excluded",
+      "document": "Netweb Q1 FY27 earnings presentation",
+      "page": "4, 29",
+      "quote": "Order Book: 25,069.35 Mn as of 30th June",
+      "basisNote": null,
+      "quoteIsVerbatim": true,
+      "quarterRevenueCr": 819.69,
+      "quarterRevenueSource": "Q1 FY27 press release"
+    },
+    {
+      "symbol": "MTARTECH",
+      "asOf": "2026-06-30",
+      "backlogCr": 5143.3,
+      "intakeCr": 2895.1,
+      "dataCentreOrders": "Rs 45 crore from SLB for data-centre infrastructure assemblies",
+      "document": "MTAR Q1 FY27 investor presentation",
+      "page": "13, 22",
+      "quote": "Diversified Order Book of Rs. 5,143.3 Cr as on 30th Jun 2026 ... Company secured orders worth Rs 2,895.1 Cr across various sectors during Q1",
+      "basisNote": null,
+      "quoteIsVerbatim": true,
+      "quarterRevenueCr": 360.7,
+      "quarterRevenueSource": "Q1 FY27 press release"
+    },
+    {
+      "symbol": "KAYNES",
+      "asOf": "2026-06-30",
+      "backlogCr": 8903.8,
+      "intakeCr": null,
+      "dataCentreOrders": "None disclosed",
+      "document": "Kaynes Q1 FY27 press release",
+      "page": "2",
+      "quote": "Orderbook grew to Rs 89,038 million as of June 30, 2026, from Rs 74,011 million as of June 30, 2025.",
+      "basisNote": null,
+      "quoteIsVerbatim": true,
+      "quarterRevenueCr": 946.0,
+      "quarterRevenueSource": "Q1 FY27 press release (Rs 9,460 mn)"
+    },
+    {
+      "symbol": "CGPOWER",
+      "asOf": "2026-06-30",
+      "backlogCr": 18965,
+      "intakeCr": 5211,
+      "dataCentreOrders": "None quantified; MD: data centres 'of course' contributed",
+      "document": "CG Power Q1 FY27 press release (revised)",
+      "page": "4",
+      "quote": "Order intake for the quarter was at INR 5,211 Cr and Unexecuted Order backlog as of 30th June 2026 was 45% higher YoY at INR 18,965 Cr",
+      "basisNote": null,
+      "quoteIsVerbatim": true,
+      "quarterRevenueCr": 3280.81,
+      "quarterRevenueSource": "Q1 FY27 results (consolidated)"
+    },
+    {
+      "symbol": "LT",
+      "asOf": "2026-06-30",
+      "backlogCr": 779000,
+      "intakeCr": 108000,
+      "dataCentreOrders": "Together AI 'Mega' order (Rs 10,000-15,000 crore band) booked 13 Aug 2026, after this date",
+      "document": "L&T Q1 FY27 analyst presentation",
+      "page": "PDF 10, 16",
+      "quote": "As on 30-June-26 : Rs 7790 Bn",
+      "basisNote": null,
+      "quoteIsVerbatim": true,
+      "quarterRevenueCr": 67941.74,
+      "quarterRevenueSource": "Q1 FY27 press release (consolidated)"
+    },
+    {
+      "symbol": "BLUESTARCO",
+      "asOf": "2026-06-30",
+      "backlogCr": 7764,
+      "intakeCr": null,
+      "dataCentreOrders": "Two statements, both verified in Blue Star's own transcripts: (1) Q4 FY26 call, 12 May 2026, p20: data-centre MEP order book \"somewhere around RS. 1,500 Crore ... at any given point of time\"; (2) Q1 FY27 call, 7 Aug 2026, p4: \"around RS.1,500 Crore of order inflow from this segment alone\" in the June quarter, with FY27 inflow expected around Rs 3,000 crore and revenue close to Rs 1,400 crore.",
+      "document": "Blue Star Q1 FY27 earnings call",
+      "page": "n/a (indexed text)",
+      "quote": "The carried forward order book is healthy at Rs. 7,764 Crore",
+      "basisNote": null,
+      "quoteIsVerbatim": true,
+      "quarterRevenueCr": 3377.92,
+      "quarterRevenueSource": "Q1 FY27 results (consolidated)"
+    }
+  ],
+  "dataCentreCapacity": [
+    {
+      "symbol": "ADANIENT",
+      "platform": "AdaniConneX",
+      "asOf": "2026-06-30",
+      "operationalMW": 65.4,
+      "underConstructionMW": null,
+      "tiedUpMW": 960,
+      "target": "~470 MW operational in 2-3 years; 3 GW tied up by 2031",
+      "document": "Adani Enterprises Q1 FY27 release; August 2026 investor deck",
+      "page": "deck 37, 41",
+      "quote": "ACX has currently tied up capacity of 960+ MW"
+    },
+    {
+      "symbol": "BHARTIARTL",
+      "platform": "Nxtra",
+      "asOf": "2026-03-31",
+      "operationalMW": 250,
+      "underConstructionMW": null,
+      "tiedUpMW": null,
+      "target": "1 GW",
+      "document": "Bharti Airtel Integrated Report FY26",
+      "page": "PDF 53, 72",
+      "quote": "14 hyperscale data centers and 120+ edge data centers supported by ~250 MW of power capacity"
+    },
+    {
+      "symbol": "LT",
+      "platform": "L&T Vyoma",
+      "asOf": "2026-03-31",
+      "operationalMW": 26,
+      "underConstructionMW": 46,
+      "tiedUpMW": null,
+      "target": ">200 MW national roadmap; Chennai campus Phase 1 designed for 250 MW",
+      "document": "L&T Integrated Annual Report FY26",
+      "page": "127-128",
+      "quote": "operational capacity stood at 26 MW across Chennai and Panvel"
+    },
+    {
+      "symbol": "ANANTRAJ",
+      "platform": "Anant Raj Cloud",
+      "asOf": "2026-06-30",
+      "operationalMW": 28,
+      "underConstructionMW": 35,
+      "tiedUpMW": null,
+      "target": "63 MW by end-FY27; 357 MW by FY32",
+      "document": "Anant Raj Q1 FY27 investor presentation",
+      "page": "13, 26, 35",
+      "quote": "Operational Capacity 28 MW IT load"
+    },
+    {
+      "symbol": "RELIANCE",
+      "platform": "Reliance Intelligence (Jamnagar)",
+      "asOf": "2026-06-19",
+      "operationalMW": 0,
+      "underConstructionMW": 288,
+      "tiedUpMW": 168,
+      "target": "Multi-GW",
+      "document": "RIL AGM chairman's statement; RIL release 10 Jun 2026",
+      "page": "5; 1",
+      "quote": "The first 120 megawatts will be commissioned by the end of 2026."
+    },
+    {
+      "symbol": "POWERGRID",
+      "platform": "PowerTel pilot (Manesar)",
+      "asOf": "2026-03-31",
+      "operationalMW": 0,
+      "underConstructionMW": 14,
+      "tiedUpMW": null,
+      "target": "Chennai site land acquired",
+      "document": "POWERGRID Integrated Annual Report FY26",
+      "page": "PDF 81, 112",
+      "quote": "1000-rack, 14MW, Uptime Tier-III certified Pilot Data Centre"
+    }
+  ],
+  "notes": {
+    "RELIANCE": "Under construction = 120 MW Reliance Intelligence capacity (target: commissioned by end-2026) plus the 168 MW Meta build (within two years); tied up = the 168 MW leased to Meta.",
+    "LT": "Under construction = remaining 6 MW at Chennai plus about 40 MW at Mahape (the annual report says 36 MW).",
+    "BHARTIARTL": "Power capacity per the annual report; on the Q1 FY27 call management gave a lower base of 120-130 MW.",
+    "ADANIENT": "Tied up includes the 400 MW Vizag order, a shell-only scope shown as turnkey-equivalent; 769 MW is shown strictly as contracted.",
+    "ANANTRAJ": "Operating is capacity delivered; in Nov 2025 only 8 MW of colocation and 0.5 MW of cloud had been handed over and billed (MD, Q2 FY26 call). No later billed-MW figure is disclosed."
+  },
+  "statedShares": [
+    {
+      "symbol": "NETWEB",
+      "metric": "AI Systems share of revenue",
+      "value": "62.3%",
+      "base": "Q1 FY27 revenue (Rs 819.7 cr)",
+      "source": "Q1 FY27 presentation",
+      "quote": "contributing ₹5,105.70 million, being 62.29% of Revenue from Operations"
+    },
+    {
+      "symbol": "NETWEB",
+      "metric": "AI share of order book",
+      "value": "about 40-45% ('maybe')",
+      "base": "Order book Rs 2,507 cr (L1 of Rs 848 cr excluded)",
+      "source": "Q1 FY27 call (CMD)",
+      "quote": "maybe around 40% to 45%"
+    },
+    {
+      "symbol": "STLTECH",
+      "metric": "Data-centre share of revenue",
+      "value": "21% (FY26: 1%)",
+      "base": "Q1 FY27 revenue (Rs 1,910 cr)",
+      "source": "Q1 FY27 call (CFO)",
+      "quote": "our Data Center segment saw a strong growth, contributing 21% this quarter, up from 1% in FY26"
+    },
+    {
+      "symbol": "CUMMINSIND",
+      "metric": "Data-centre share of power-generation revenue",
+      "value": "40% in Q1 FY27; about 35% in Q4 FY26; 30-35% in FY26; 23% in Q1 FY26",
+      "base": "Domestic power-generation revenue, not company revenue",
+      "source": "Q1 FY27 call; FY26 annual report",
+      "quote": "data centers out of this, in this particular quarter, was 40% of overall power generation revenue"
+    },
+    {
+      "symbol": "ABB",
+      "metric": "Data-centre share of orders",
+      "value": "about 15-17%",
+      "base": "Q2 CY2026 orders (Rs 4,363 cr)",
+      "source": "Q2 CY26 call (CFO)",
+      "quote": "Data Centers orders in this quarter has been almost 15% to 17% of our orders"
+    },
+    {
+      "symbol": "DIACABS",
+      "metric": "Data-centre share of order book",
+      "value": "11.8% (Rs 435 cr)",
+      "base": "Order book Rs 3,687.55 cr (11 Aug 2026)",
+      "source": "Q1 FY27 presentation",
+      "quote": "Data Centre 11.8%"
+    },
+    {
+      "symbol": "HFCL",
+      "metric": "Data-centre revenue",
+      "value": "about Rs 100 cr in Q1 FY27 (about 5% of revenue)",
+      "base": "Q1 FY27 revenue Rs 1,915 cr; the 5% is AGI arithmetic",
+      "source": "Q1 FY27 call (MD)",
+      "quote": "Q1 would have been about INR100 crores or so"
+    },
+    {
+      "symbol": "BLUESTARCO",
+      "metric": "Data-centre MEP revenue",
+      "value": "about Rs 1,000 cr in FY26 (about 8% of revenue; a third of the projects business)",
+      "base": "FY26 revenue Rs 12,402 cr; the 8% is AGI arithmetic",
+      "source": "Q4 FY26 call (MD)",
+      "quote": "we do a business of around RS.1,000 Crore there"
+    },
+    {
+      "symbol": "CLEANMAX",
+      "metric": "Data & AI share of contracted capacity",
+      "value": "42% (over 2.5 GW); of which 0.63 GW serves Indian data-centre load",
+      "base": "Contracted RE power sales capacity, about 6.0 GW",
+      "source": "Q1 FY27 release; Aug 2026 corporate presentation",
+      "quote": "0.63 GW STU connected for India data center demand"
+    },
+    {
+      "symbol": "BLUESTARCO",
+      "metric": "Share of the data-centre MEP market",
+      "value": "about 29% (Rs 1,000 cr of a Rs 3,500 cr market; AGI arithmetic)",
+      "base": "Management's market estimate (also given as Rs 3,000-4,000 cr)",
+      "source": "Q4 FY26 call",
+      "quote": "market size to be somewhere around RS.3,500 Crore and we do a business of around RS.1,000 Crore there"
+    },
+    {
+      "symbol": "BHARTIARTL",
+      "metric": "Data-centre subsidiary revenue and EBITDA",
+      "value": "Nxtra FY26 revenue Rs 2,434 cr; EBITDA Rs 981.6 cr (40.3%)",
+      "base": "Nxtra standalone, audited; Airtel FY26 revenue Rs 2.11 lakh cr",
+      "source": "Nxtra FY26 results (NSE filing, listed debt)",
+      "quote": "Revenue from operations 24,341 ... Total expenses 14,525 (Rs mn)"
+    },
+    {
+      "symbol": "ANANTRAJ",
+      "metric": "Data-centre business turnover",
+      "value": "Rs 145.90 cr in FY26, 8.96% of combined turnover",
+      "base": "Combined standalone turnover of Anant Raj and its data-centre subsidiary (Rs 1,627.72 cr), not the consolidated figure",
+      "source": "Composite scheme filing, 21 Jul 2026",
+      "quote": "Demerged Undertaking 145.90 / Total 1627.72 / Percentage 8.96%"
+    },
+    {
+      "symbol": "LT",
+      "metric": "Data-centre business revenue",
+      "value": "Rs 36.6 cr in FY26 (about 0.02% of standalone revenue)",
+      "base": "L&T standalone revenue",
+      "source": "Business-transfer filing, 11 Aug 2026",
+      "quote": "FY26 revenue of the data-centre business Rs 36.6 crore"
+    }
+  ],
+  "targets": [
+    {
+      "symbol": "BLUESTARCO",
+      "target": "Data-centre MEP revenue about Rs 1,350-1,400 cr in FY27; about Rs 4,000 cr (close to 20% of revenue) by FY29",
+      "source": "Q1 FY27 call (MD, CFO)",
+      "impliedGrowth": "Rs 1,000 cr (FY26) to Rs 4,000 cr (FY29) is about 59% a year"
+    },
+    {
+      "symbol": "HFCL",
+      "target": "Data-centre revenue about Rs 800 cr in FY27, with Rs 850 cr+ of orders in hand",
+      "source": "Q1 FY27 call (MD)",
+      "impliedGrowth": null
+    },
+    {
+      "symbol": "MTARTECH",
+      "target": "Data-centre revenue potential of Rs 400-500 cr 'over the next couple of years'",
+      "source": "Q4 FY26 call",
+      "impliedGrowth": null
+    },
+    {
+      "symbol": "DIACABS",
+      "target": "Data-centre sales about Rs 750 cr before March 2027; 20% of revenue from data centres",
+      "source": "Q1 FY27 call",
+      "impliedGrowth": null
+    },
+    {
+      "symbol": "CRAFTSMAN",
+      "target": "About $100 mn of stationary-engine revenue (FY29-FY30; the date has moved between calls)",
+      "source": "Q1 FY27 and earlier calls",
+      "impliedGrowth": null
+    },
+    {
+      "symbol": "STLTECH",
+      "target": "Data-centre plus enterprise to reach 50% of revenue in FY27; EBITDA margin 23% in FY27, over 27% by FY29",
+      "source": "Q1 FY27 call",
+      "impliedGrowth": null
+    },
+    {
+      "symbol": "KAYNES",
+      "target": "OSAT and PCB revenue Rs 450-500 cr in FY27; OSAT 30% of group revenue in 4-5 years",
+      "source": "Q1 FY27 call; FY26 annual report",
+      "impliedGrowth": null
+    },
+    {
+      "symbol": "CGPOWER",
+      "target": "G2 packaging plant (14.5 m units a day) complete by end-2026",
+      "source": "Q4 FY26 call",
+      "impliedGrowth": null
+    },
+    {
+      "symbol": "GVT&D",
+      "target": "A related-party US data-centre order of up to Rs 1,300 cr, not booked; expected in Q2 or Q3 FY27",
+      "source": "Q1 FY27 call (CFO)",
+      "impliedGrowth": null
+    },
+    {
+      "symbol": "ADANIENT",
+      "target": "About 470 MW operational in 2-3 years; 3 GW tied up by 2031 (replacing 2 GW by 2030)",
+      "source": "Q1 FY27 call; Aug 2026 deck",
+      "impliedGrowth": null
+    },
+    {
+      "symbol": "BHARTIARTL",
+      "target": "Nxtra to 1 GW 'in the next few years', about 25% market share",
+      "source": "Airtel release, 30 Mar 2026",
+      "impliedGrowth": null
+    },
+    {
+      "symbol": "ANANTRAJ",
+      "target": "63 MW by end-FY27; 117 MW to commence by FY28; 357 MW by FY32",
+      "source": "Investor presentation, 11 Aug 2026",
+      "impliedGrowth": null
+    },
+    {
+      "symbol": "CLEANMAX",
+      "target": "At least 1.5 GW of new capacity commissioned in FY27",
+      "source": "Q1 FY27 call",
+      "impliedGrowth": null
+    },
+    {
+      "symbol": "RELIANCE",
+      "target": "First 120 MW of AI compute capacity at Jamnagar by end-2026; 168 MW for Meta within two years",
+      "source": "49th AGM; 10 Jun 2026 release",
+      "impliedGrowth": null
+    }
+  ]
+}

@@ -6,8 +6,10 @@ import {
   Briefcase,
   Globe2,
   Landmark,
+  Layers,
   Library,
   LineChart,
+  Grid2X2,
 } from 'lucide-react';
 import NewsletterSection from '@/components/Home/NewsletterSection';
 import LiveBadge from '@/components/Article/LiveBadge';
@@ -31,6 +33,13 @@ const DESK_BUTTONS = [
     hint: 'India & US',
     href: '/equity-research',
   },
+  {
+    id: 'strategies',
+    label: 'Strategies',
+    icon: Layers,
+    hint: 'Sector & thematic',
+    href: '/strategy',
+  },
   ...RESEARCH_DESKS.filter((desk) =>
     ['indian-market', 'global-markets', 'private-markets', 'economics'].includes(desk.id)
   ).map((desk) => ({
@@ -46,6 +55,7 @@ const DESK_BUTTONS = [
             : Landmark,
     hint: desk.hint,
   })),
+  { id: 'finance-tools', label: 'Tools', icon: Grid2X2, hint: 'Discover & list', href: '/tools' },
 ];
 
 const DEFAULT_COVER =
@@ -354,10 +364,10 @@ export default function ResearchTerminalHome() {
         />
       </Helmet>
 
-      {/* Desk navigation — six equal professional buttons */}
+      {/* Desk navigation — eight equal professional buttons */}
       <section className="border-b border-[#e8eaee] bg-white" aria-label="Research desks">
         <div className="mx-auto max-w-[1680px] px-4 sm:px-6 lg:px-8 py-5">
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-6">
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 xl:grid-cols-8">
             {DESK_BUTTONS.map((desk) => {
               const Icon = desk.icon;
               const isActive = activeDesk === desk.id;
@@ -411,6 +421,7 @@ export default function ResearchTerminalHome() {
                   : `Research notes from the ${activeDeskLabel} desk.`}
               </p>
             </div>
+            <Link to="/financial-modeling" className="rounded-full border border-[#0b1f33] px-3 py-1.5 text-xs font-semibold text-[#0b1f33] hover:bg-slate-100">Financial Models ↗</Link>
             <Link to="/research" className="text-sm font-semibold text-[#111111] hover:underline underline-offset-4">
               View all research →
             </Link>

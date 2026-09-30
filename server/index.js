@@ -12,13 +12,17 @@ import createNifty500ResearchRouter from "./routes/nifty500Research.js";
 import createIntelligenceRouter from "./routes/intelligence.js";
 import createUiRouter from "./routes/ui.js";
 import createPeIntelligenceRouter from "./routes/peIntelligence.js";
+import createIndiaAiIntelligenceRouter from "./routes/indiaAiIntelligence.js";
 import createIntelligenceCmsRouter from "./routes/intelligenceCms.js";
 import createIntelligencePlatformRouter from "./routes/intelligencePlatform.js";
+import createFinancialModelsRouter from "./routes/financialModels.js";
 import createAuthRouter from "./routes/auth.js";
 import createNewsletterRouter from "./routes/newsletter.js";
 import createArticleShareRouter from "./routes/articleShare.js";
 import createResearchSignalsRouter from "./routes/researchSignals.js";
 import createInstitutionalHoldingsRouter from "./routes/institutionalHoldings.js";
+import createIndexRebalanceRouter from "./routes/indexRebalance.js";
+import createWealthIntelligenceRouter from "./routes/wealthIntelligence.js";
 import { startInstitutionalHoldingsAutomation } from "./services/institutionalHoldingsService.js";
 import { startInstitutionalResearchLayerAutomation } from "./services/institutionalResearchLayerService.js";
 import { getNewsHeadlines } from "./services/newsHeadlinesService.js";
@@ -39,7 +43,8 @@ import { startGrowwEquityOpportunityScheduler } from "./services/growwEquityOppo
 import { startGrowwSectorRotationScheduler } from "./services/growwSectorRotationScheduler.js";
 import { startEngineKeepWarm } from "./services/engineKeepWarm.js";
 import { startUpstoxStatementScheduler } from "./services/upstoxStatementScheduler.js";
-import { getLiveAlphaRuntimeStatus, startLiveAlphaRuntime } from "./services/liveAlphaRuntime.js";
+import { getLiveAlphaRuntimeStatus, loadLiveAlphaUniverse, startLiveAlphaRuntime, stopLiveAlphaRuntime } from "./services/liveAlphaRuntime.js";
+import { getLiveAlphaOutcomeStatus, startLiveAlphaOutcomeScheduler } from "./services/liveAlphaOutcomeSettlement.js";
 import { getLiveAlphaWorkspace } from "./services/liveAlphaWorkspace.js";
 import { buildConfluenceQueue } from "./services/researchConfluence.js";
 import { getResearchEvidence } from "./services/researchEvidenceCollector.js";
@@ -160,6 +165,8 @@ const researchLimiter = rateLimit({ windowMs: 60_000, max: 30, standardHeaders: 
 app.use('/api', apiLimiter);
 app.use('/research', researchLimiter);
 app.use('/api/institutional-holdings', createInstitutionalHoldingsRouter());
+app.use('/api/index-rebalance', createIndexRebalanceRouter());
+app.use('/api/wealth', createWealthIntelligenceRouter());
 
 // dynamic fetch implementation
 let _fetchImpl = undefined;
@@ -336,7 +343,7 @@ function reg(path, handler) {
 
 // --- Health + debug endpoints
 reg('/', (req, res) => res.json({ service: 'finance-news-backend', status: 'running' }));
-reg('/api/market/live-alpha/status', (_req, res) => res.json(getLiveAlphaRuntimeStatus()));
+reg('/api/market/live-alpha/status', (_req, res) => res.json({ ...getLiveAlphaRuntimeStatus(), outcome_settlement: getLiveAlphaOutcomeStatus() }));
 reg('/api/market/trading-calendar/status', (_req, res) => res.json(tradingCalendar.health()));
 reg('/api/market/live-alpha/workspace', async (_req, res) => {
   try {
@@ -430,9 +437,11 @@ app.use('/api/research-signals', createResearchSignalsRouter());
 app.use('/api/intelligence', createIntelligenceRouter());
 app.use('/api/ui', createUiRouter());
 app.use('/api/pe', createPeIntelligenceRouter());
+app.use('/api/india-ai', marketIntelLimiter, createIndiaAiIntelligenceRouter());
 app.use('/api/intelligence/cms', createIntelligenceCmsRouter());
 app.use('/api/intelligence/platform', createIntelligencePlatformRouter());
 app.use('/api/auth', createAuthRouter());
+app.use('/api/financial-models', createFinancialModelsRouter());
 const newsletterRouter = createNewsletterRouter();
 app.use('/api/newsletter', newsletterRouter);
 app.use('/api/public', createArticleShareRouter());
@@ -457,6 +466,7 @@ startHedgeFundLiveQuoteScheduler();
 startHedgeFundUpstoxCandleScheduler();
 startUpstoxStatementScheduler();
 startLiveAlphaRuntime().catch((error) => console.error('[live-alpha] startup failed:', error?.message || error));
+startLiveAlphaOutcomeScheduler({ loadUniverse: loadLiveAlphaUniverse });
 startConfluenceValidationScheduler();
 startEngineKeepWarm();
 startIntelligenceLearningWorker();
@@ -978,18 +988,36 @@ const AGI_MARKET_INTEL = new Set([
 ]);
 
 // Mounted AGI routers (must never be forwarded to IndianAPI).
-const AGI_API_PREFIXES = new Set(['ui', 'intelligence', 'research']);
+//
+// This list was three entries while eleven routers were mounted, so an
+// unmatched path under the other eight fell through to the IndianAPI proxy and
+// came back as HTTP 200 with an "upstream_rate_limited" body. Four missing
+// institutional-holdings routes therefore looked like a third-party outage
+// rather than a routing mistake, and no monitor could tell the difference.
+//
+// Keeping it in sync by hand is what failed. Every router mounted under /api
+// belongs here; a new one added below without a line here reintroduces the
+// same disguise.
+const AGI_API_PREFIXES = new Set([
+  'auth', 'institutional-holdings', 'intelligence', 'market', 'newsletter',
+  'pe', 'public', 'research', 'research-signals', 'ui', 'upstox', 'wealth',
+]);
 
 // wildcard fallback (IndianAPI proxy only)
 reg('/api/:path(*)', (req, res) => {
   const path = req.params.path || '';
   const [head, ...rest] = path.split('/').filter(Boolean);
   if (AGI_API_PREFIXES.has(head)) {
-    return res.status(503).json({
-      error: 'AGI API route unavailable on this server build',
+    // A real 404. This path belongs to an AGI router that is mounted, so the
+    // route simply does not exist - forwarding it to IndianAPI would answer a
+    // question about AGI with someone else's data, and returning 200 would
+    // hide the mistake from every monitor watching status codes.
+    return res.status(404).json({
+      ok: false,
+      error: 'route_not_found',
       path: `/api/${path}`,
-      hint: 'Redeploy finance-news-backend from main so /api/ui, /api/intelligence, and /api/research/nifty500 are mounted.',
-      architecture: 'v1.0.1 LOCKED',
+      router: head,
+      hint: `No such route on the ${head} router. If it should exist, the build serving this request predates it.`,
     });
   }
   if (head === 'market' && AGI_MARKET_INTEL.has(rest[0])) {
@@ -1015,13 +1043,43 @@ app.use((req, res) => res.status(404).json({ error: 'Not found', path: req.path 
 
 }); // setImmediate — defer heavy route registration until after listen()
 
-process.on('SIGTERM', () => {
-  console.info('SIGTERM received — closing HTTP server');
+// Sockets first, then the HTTP server. A WebSocket abandoned by process.exit
+// stays open as far as the provider is concerned, and Upstox caps concurrent
+// market-data connections per application - so leaking one per deploy
+// eventually refuses every new handshake with a 403 while REST still works.
+async function closeLongLivedSockets() {
+  // Upstox allows two market-data sockets per user. A redeploy briefly runs
+  // two instances, so the old one must release its Live Alpha socket too.
+  try {
+    stopLiveAlphaRuntime();
+  } catch (error) {
+    console.warn('live-alpha feed shutdown failed:', error?.message || error);
+  }
+  try {
+    const { shutdownRuntime } = await import('./routes/indiaAiIntelligence.js');
+    const result = await shutdownRuntime();
+    console.info('india-ai feed shutdown:', JSON.stringify(result));
+  } catch (error) {
+    console.warn('india-ai feed shutdown failed:', error?.message || error);
+  }
+}
+
+let shuttingDown = false;
+async function gracefulExit(signal) {
+  if (shuttingDown) return;
+  shuttingDown = true;
+  console.info(`${signal} received — closing sockets then HTTP server`);
+  await closeLongLivedSockets();
   server.close(() => {
     console.info('HTTP server closed');
     process.exit(0);
   });
-});
+  // Do not hang forever if a keep-alive connection refuses to drain.
+  setTimeout(() => process.exit(0), 8_000).unref();
+}
+
+process.on('SIGTERM', () => { gracefulExit('SIGTERM'); });
+process.on('SIGINT', () => { gracefulExit('SIGINT'); });
 
 export default app;
 

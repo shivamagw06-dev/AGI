@@ -30,3 +30,16 @@ export const priceOptionsSnapshotAdmin = (payload) => request('/price', {
   method: 'POST',
   body: JSON.stringify(payload),
 });
+
+export const getPaperAgents = () => request('/paper-agents');
+export const controlPaperAgents = (action) => request('/paper-agents/control', {method:'POST', body:JSON.stringify({action})});
+export const backtestPaperAgents = (start,end,calendars=[]) => request('/paper-agents/backtest', {method:'POST', body:JSON.stringify({start,end,calendars})});
+
+export const setPaperCalendar = (date,windows) => request('/paper-agents/calendar', {method:'POST', body:JSON.stringify({date,windows})});
+
+export const getDailyResearch=()=>request('/daily-research');
+export const refreshDailyResearch=()=>request('/daily-research/refresh',{method:'POST',body:'{}'});
+export const importDailyResearch=(csv)=>request('/daily-research/import',{method:'POST',body:JSON.stringify({csv})});
+
+export const getMinuteBacktest=()=>request('/minute-backtest');
+export const runMinuteBacktest=(start,end,calendars)=>request('/minute-backtest',{method:'POST',body:JSON.stringify({start,end,calendars})});

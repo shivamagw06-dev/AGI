@@ -1,20 +1,59 @@
 import { createSupabaseAdmin } from '../lib/supabaseAdmin.js';
+import { getCollectionHealth, listRuns } from './institutionalCollectionRuns.js';
+import { classifyFiling, applyAmendment, droppedPositions } from './secAmendment.js';
+import { valueScaleFor, detectScaleMismatch, resolveScale } from './valueScale.js';
+import { parseSummaryPage, assessInformationTable, isPlaceholderRow } from './confidentialTreatment.js';
+import { consensusKey, dedupeSignalRows } from './consensusKey.js';
+import {
+  activityCounts, topWeight, turnover, holdingTenure, averageTenure, topKeys, valueFlow,
+} from './filingActivity.js';
+import { revaluePosition, revalueBook, foldCloseWindows } from './valueSinceDisclosure.js';
+import { summariseInsiderFilings, insiderHeadline } from './insiderSummary.js';
+import { topTrades } from './topTrades.js';
+import { saidForManager } from './managerSaidService.js';
+import { rowsFromBlock, needsArchive, archiveFiles, selectThirteenF } from './filingHistory.js';
+import { ingestPlan } from './filingBackfillPlan.js';
+import { noticesFromBlock, filingPosture, postureMessage } from './filingNotice.js';
+import { scanOrder, mergeByWindow } from './managerCiks.js';
 
 const SEC_ROOT = 'https://www.sec.gov';
 const SEC_DATA = 'https://data.sec.gov';
+import { scheduleSecRequest, recordThrottled, recordSuccess, parseRetryAfter, SecCircuitOpenError } from './secRateLimiter.js';
+import { resolveAsOf, attachKnownTickers } from './securityIdentity.js';
+import { coverage, mappingFromLookup, rankUnmapped } from './identifierBackfill.js';
+import { groupByIdType } from './securityIdentifierType.js';
+import { preferredFigiCandidate, noCandidateReason } from './figiCandidate.js';
+import { partitionByClass, expandThroughChains, readClasses, readChains } from './securityIdentityGate.js';
+
 const SEC_USER_AGENT = (process.env.SEC_USER_AGENT || 'AGI Institutional Research research@agarwalglobalinvestments.com').trim();
 const OPENFIGI_URL = 'https://api.openfigi.com/v3/mapping';
 const OPENFIGI_API_KEY = String(process.env.OPENFIGI_API_KEY || '').trim();
 const PAGE_SIZE = 1000;
 const CONSENSUS_MIN_MANAGERS = 4;
 const AUTO_REFRESH_INTERVAL_MS = 24 * 60 * 60 * 1000;
-const POST_2022_VALUE_RULE_DATE = '2023-01-03';
 
 export const DEFAULT_MANAGERS = [
   { slug: 'situational-awareness', display_name: 'Situational Awareness', legal_name: 'SITUATIONAL AWARENESS LP', cik: '0002045724', strategy: 'AI and technology concentration', manager_type: 'Investment manager', quality_weight: 1.10, earliest_report_date: '2024-12-31', city: 'San Francisco', state: 'CA', country: 'United States', postal_code: '94107', active: true },
   { slug: 'berkshire-hathaway', display_name: 'Berkshire Hathaway', legal_name: 'BERKSHIRE HATHAWAY INC', cik: '0001067983', strategy: 'Concentrated quality and value', manager_type: 'Holding company', quality_weight: 1.20, earliest_report_date: '2001-03-31', city: 'Omaha', state: 'NE', country: 'United States', postal_code: '68131', active: true },
   { slug: 'duquesne-family-office', display_name: 'Duquesne Family Office', legal_name: 'DUQUESNE FAMILY OFFICE LLC', cik: '0001536411', strategy: 'Macro and concentrated equities', manager_type: 'Family office', quality_weight: 1.15, earliest_report_date: '2011-12-31', city: 'New York', state: 'NY', country: 'United States', postal_code: '10019', active: true },
-  { slug: 'blackrock', display_name: 'BlackRock', legal_name: 'BLACKROCK INC.', cik: '0001364742', strategy: 'Diversified global asset management', manager_type: 'Asset manager', quality_weight: 0.85, earliest_report_date: '2006-03-31', city: 'New York', state: 'NY', country: 'United States', postal_code: '10001', active: true },
+  // CIK 0001364742 is BlackRock Finance, Inc., which stopped filing 13F after
+  // 2024-06-30. BlackRock, Inc. files under 0002012383 and is current: its
+  // 2026-06-30 table was accepted 2026-08-07. Tracking the old entity showed
+  // the manager as STALE with a two-year-old book, which was an accurate
+  // report of the wrong filer.
+  //
+  // Quarters before the succession sat under the old CIK and are not
+  // collected. At twelve quarters the window starts in 2023, so roughly three
+  // of them are lost; current data is worth more than three stale ones.
+  // BlackRock's 13F filer changed. 0001364742 is BlackRock Finance, Inc.,
+  // whose last 13F covers 2024-06-30; BlackRock, Inc. files under 0002012383
+  // from 2024-09-30 onward, continuously and with no gap between them.
+  //
+  // Correcting this once took the page down, because seeding conflicted on the
+  // CIK and a new number became an insert carrying a slug the old row held. It
+  // conflicts on the slug now, so this is the update it always should have
+  // been, and the filings already collected stay attached to the same row.
+  { slug: 'blackrock', display_name: 'BlackRock', legal_name: 'BLACKROCK, INC.', cik: '0002012383', strategy: 'Diversified global asset management', manager_type: 'Asset manager', quality_weight: 0.85, earliest_report_date: '2006-03-31', city: 'New York', state: 'NY', country: 'United States', postal_code: '10001', active: true },
   { slug: 'pershing-square', display_name: 'Pershing Square Capital Management', legal_name: 'PERSHING SQUARE CAPITAL MANAGEMENT, L.P.', cik: '0001336528', strategy: 'Concentrated activist', manager_type: 'Investment manager', quality_weight: 1.15, earliest_report_date: '2005-12-31', city: 'New York', state: 'NY', country: 'United States', postal_code: '10019', active: true },
   { slug: 'scion-asset-management', display_name: 'Scion Asset Management', legal_name: 'SCION ASSET MANAGEMENT, LLC', cik: '0001649339', strategy: 'Contrarian and special situations', manager_type: 'Investment manager', quality_weight: 1.05, earliest_report_date: '2015-12-31', city: 'Saratoga', state: 'CA', country: 'United States', postal_code: '95070', active: true },
   { slug: 'tci-fund-management', display_name: 'TCI Fund Management', legal_name: 'TCI FUND MANAGEMENT LTD', cik: '0001647251', strategy: 'Concentrated global activist', manager_type: 'Investment manager', quality_weight: 1.15, earliest_report_date: '2006-03-31', city: 'London', state: '', country: 'United Kingdom', postal_code: 'W1S 2FT', active: true },
@@ -94,7 +133,7 @@ function xmlValue(block, tag) {
   return decodeXml(match?.[1] || '').replace(/<[^>]+>/g, '').trim();
 }
 
-function parseInformationTable(xml, valueScale = 1) {
+export function parseInformationTable(xml, valueScale = 1) {
   const blocks = [...String(xml).matchAll(/<(?:\w+:)?infoTable(?:\s[^>]*)?>([\s\S]*?)<\/(?:\w+:)?infoTable>/gi)];
   return blocks.map((match) => {
     const block = match[1];
@@ -157,27 +196,67 @@ function collapseDuplicateRows(rows) {
   return [...combined.values()];
 }
 
-async function collect(factory, pageSize = PAGE_SIZE) {
+/**
+ * Page a query to completion, with a ceiling.
+ *
+ * The loop had no upper bound: it kept requesting pages until one came back
+ * short. That is fine while a table is small and becomes a way to pull an
+ * unbounded result into memory as it grows. The cap is high enough that no
+ * present caller reaches it, and it warns rather than truncating silently -
+ * a quietly incomplete result is worse than a slow one.
+ */
+async function collect(factory, pageSize = PAGE_SIZE, maxRows = 250_000) {
   const rows = [];
-  for (let from = 0; ; from += pageSize) {
+  for (let from = 0; from < maxRows; from += pageSize) {
     const { data, error } = await factory().range(from, from + pageSize - 1);
     if (error) throw error;
     rows.push(...(data || []));
-    if (!data || data.length < pageSize) break;
+    if (!data || data.length < pageSize) return rows;
   }
+  console.warn(`[institutional-holdings] collect() stopped at its ${maxRows}-row ceiling; the result is incomplete`);
   return rows;
 }
 
-async function seedManagers(client) {
+/**
+ * Keep the tracked-manager table in step with the list in this file.
+ *
+ * Two things here were wrong together, and the pair took the whole
+ * institutional surface down over a one-line edit.
+ *
+ * The conflict target was the CIK. The slug is what identifies a manager to
+ * us - it is in the URL, it is stable, we choose it - while the CIK belongs to
+ * the filer and can change: BlackRock Finance stopped filing and BlackRock,
+ * Inc. took over under a different number. Conflicting on the CIK turns
+ * correcting one into an insert, and that insert carries a slug the old row
+ * still holds under its own unique constraint. Conflicting on the slug makes
+ * the same edit an update, which is what it always was.
+ *
+ * And a failure here threw. Seeding runs before every read of every
+ * institutional surface, so one rejected row emptied all of them and the page
+ * showed a Postgres constraint name to the public. Reads now continue against
+ * whatever the table already holds, which is nearly always right: seeding is
+ * how a new manager arrives, not how the existing ones are served.
+ *
+ * `required` is for callers that genuinely cannot proceed - a collection run
+ * needs the roster it is about to crawl - and for the test that proves a
+ * failure still surfaces somewhere.
+ */
+export async function seedManagers(client, { required = false } = {}) {
   const { error } = await client.from('institutional_managers').upsert(DEFAULT_MANAGERS, {
-    onConflict: 'cik',
+    onConflict: 'slug',
     ignoreDuplicates: false,
   });
-  if (error) throw error;
+  if (!error) return { ok: true };
+  // Wrapped, because the client hands back a plain object: throwing it gives
+  // a rejection with no stack and an "[object Object]" message wherever it is
+  // reported.
+  if (required) throw new Error(`manager seed failed: ${error.message}`);
+  console.error(`[institutional-holdings] manager seed failed, serving the stored roster: ${error.message}`);
+  return { ok: false, error: error.message };
 }
 
-async function managers(client) {
-  await seedManagers(client);
+async function managers(client, { seedRequired = false } = {}) {
+  await seedManagers(client, { required: seedRequired });
   const { data, error } = await client.from('institutional_managers').select('*').eq('active', true).order('display_name');
   if (error) throw error;
   return data || [];
@@ -216,24 +295,47 @@ function signal(type, score, components, explanation) {
   return { signal_type: type, score: value, label: scoreLabel(type, value), components, explanation };
 }
 
-function aggregateConsensus(latestHoldings, changes, managerCount) {
+// Exported for testing. Quarter activity read +0/-0 on every row for a day
+// because the holdings and the changes were keyed differently, and nothing
+// exercised the two together.
+export function aggregateConsensus(latestHoldings, changes, managerCount) {
+  // Keyed the same way the holdings are.
+  //
+  // Holdings moved to the CUSIP in #996, to stop one security forming two
+  // groups when its ticker had resolved on some rows and not others. The
+  // changes kept the old `ticker || cusip` key, so every lookup below asked a
+  // CUSIP of a ticker-keyed map and missed. Quarter activity read +0/-0 on
+  // every row of the consensus table while the prose above it described
+  // movement, which is worse than showing nothing: the zeros look measured.
   const changeMap = new Map();
   for (const row of changes) {
-    const key = row.ticker || row.cusip;
+    const key = consensusKey(row);
+    if (!key) continue;
     if (!changeMap.has(key)) changeMap.set(key, []);
     changeMap.get(key).push(row);
   }
   const map = new Map();
   for (const row of latestHoldings.filter((item) => !item.put_call)) {
-    const key = securityKey(row);
+    // Grouped by the identifier the row is published under. Keying on
+    // `ticker || cusip` meant one security formed two groups whenever its
+    // ticker had resolved on some holdings and not others - both publishing
+    // the same CUSIP, which the signals insert then rejected as a duplicate.
+    const key = consensusKey(row);
+    if (!key) continue;
     if (!map.has(key)) map.set(key, { key, cusip: row.cusip, ticker: row.ticker, issuer_name: row.issuer_name, owners: new Set(), aggregate_weight: 0, aggregate_value_usd: 0 });
     const item = map.get(key);
+    // Whichever copy carries the label keeps it, so a group is not left
+    // unnamed because the first holding through had not been enriched.
+    if (!item.ticker && row.ticker) item.ticker = row.ticker;
+    if (!item.issuer_name && row.issuer_name) item.issuer_name = row.issuer_name;
     item.owners.add(row.manager_id);
     item.aggregate_weight += n(row.portfolio_weight);
     item.aggregate_value_usd += n(row.value_usd);
   }
   return [...map.values()].map((item) => {
-    const related = changeMap.get(item.key) || changeMap.get(item.cusip) || [];
+    // One key now, because both sides derive it the same way. The fallback
+    // that used to be here hid the mismatch rather than resolving it.
+    const related = changeMap.get(item.key) || [];
     const activityByManager = new Map();
     for (const row of related) {
       if (!activityByManager.has(row.manager_id)) activityByManager.set(row.manager_id, []);
@@ -300,7 +402,7 @@ export async function getInstitutionalOverview() {
         total_value_usd: row.total_value_usd,
         holdings_count: row.holdings_count,
       }));
-    return {
+  return {
       ...manager,
       latest_filing: filing,
       filing_history: filingHistory,
@@ -311,8 +413,13 @@ export async function getInstitutionalOverview() {
     };
   });
   const { data: alerts } = await client.from('institutional_filing_alerts').select('*, institutional_managers(display_name, slug)').order('created_at', { ascending: false }).limit(12);
+  // Consensus aggregates across every manager and quarter, so it is precisely
+  // the figure that cannot be trusted while some history is repaired and some
+  // is not. The surface reports the gate; it does not decide for itself.
+  const dataIntegrity = await getRepairStatus();
   return {
     generated_at: new Date().toISOString(),
+    data_integrity: dataIntegrity,
     reporting_basis: 'SEC Form 13F, available only after the SEC acceptance timestamp',
     managers: fundCards,
     consensus: consensus.slice(0, 30),
@@ -343,7 +450,187 @@ export async function getInstitutionalFund(slug) {
     const calculatedAt = row?.calculated_at ? new Date(row.calculated_at).getTime() : 0;
     return calculatedAt >= latestIngestedAt;
   });
-  return { manager, filings: filings || [], latest_filing: latest, holdings, changes, signals: freshSignals };
+  const activity = await fundActivity(client, manager, filings || [], latest, holdings, changes);
+  // The quarter's largest moves, ranked by weight rather than by size, with
+  // the disclosed value joined from the positions already in hand.
+  const valueByCusip = new Map((holdings || []).map((row) => [row.cusip, n(row.value_usd)]));
+  const trades = topTrades(changes || [], { valueByCusip, limit: 6 });
+  // What the manager wrote about its own business, for the page a reader
+  // reaches having already chosen this manager. Null for the 44 of 50 that
+  // have pasted nothing. `collect` is wrapped because it takes a page size
+  // where the pager this expects takes a label.
+  const said = await saidForManager(client, manager, { paged: (factory) => collect(factory) });
+  return { manager, filings: filings || [], latest_filing: latest, holdings, changes, signals: freshSignals, activity, trades, said };
+}
+
+/** How many currently-held securities are worth measuring a holding period for. */
+const TENURE_POSITION_LIMIT = 250;
+
+/** How many positions are revalued. Beyond this the rest is reported unpriced. */
+const REVALUE_POSITION_LIMIT = 300;
+
+/**
+ * The two closes each disclosed position is revalued between.
+ *
+ * Fetched as two narrow windows rather than a series: only two dates matter,
+ * and the windows are a few sessions wide because neither is guaranteed to be
+ * a trading day - a quarter can end on a Saturday, and the last close is
+ * whatever the last collection reached.
+ *
+ * The caller must bound the ticker list. This issues one request per two
+ * hundred tickers, so an index fund's nine thousand positions would be ninety
+ * sequential round trips behind a page load. The limit is applied where the
+ * positions are ranked, so what is dropped is the smallest of the book and the
+ * share that could not be priced is reported rather than hidden.
+ */
+async function closesAround(client, tickers, reportDate) {
+  if (!tickers.length) return new Map();
+  const windowStart = new Date(`${reportDate}T00:00:00Z`);
+  windowStart.setUTCDate(windowStart.getUTCDate() - 10);
+  const recentFrom = new Date(Date.now() - 12 * 86_400_000).toISOString().slice(0, 10);
+
+  // Paged, and ordered on ticker before date.
+  //
+  // Two hundred tickers over a ten-session window is about sixteen hundred
+  // rows against PostgREST's thousand-row ceiling, and the old ordering was by
+  // date alone - so the truncation removed the newest sessions first, which
+  // are precisely the ones being asked for. A broad book's revaluation was
+  // computed from a close several sessions old, and the tickers whose only
+  // rows fell in the discarded tail were reported on the page as positions
+  // that could not be priced. The prices were there; the query would not carry
+  // them.
+  //
+  // Ordering by ticker first also gives paging a total order. Dates repeat
+  // across two hundred symbols, so ordering by date alone lets rows sharing a
+  // date move between pages - read twice, or not at all.
+  const fetchWindow = async (from, to) => {
+    const rows = [];
+    for (let i = 0; i < tickers.length; i += 200) {
+      const slice = tickers.slice(i, i + 200);
+      for (let page = 0; ; page += 1000) {
+        const { data, error } = await client
+          .from('institutional_security_prices')
+          .select('ticker,price_date,close')
+          .in('ticker', slice)
+          .gte('price_date', from)
+          .lte('price_date', to)
+          .not('close', 'is', null)
+          .order('ticker')
+          .order('price_date')
+          .range(page, page + 999);
+        if (error) throw error;
+        rows.push(...(data || []));
+        if (!data || data.length < 1000) break;
+      }
+    }
+    return rows;
+  };
+
+  // The close on or before the report date, and the most recent close.
+  const atReport = await fetchWindow(windowStart.toISOString().slice(0, 10), reportDate);
+  const atLatest = await fetchWindow(recentFrom, new Date().toISOString().slice(0, 10));
+
+  return foldCloseWindows({ atReport, atLatest });
+}
+
+/**
+ * The descriptive statistics for a manager's latest filing.
+ *
+ * Holding period is the expensive one: it needs every period a security has
+ * appeared in, and an index fund's 13F runs to thousands of positions, so
+ * asking for all of them across sixteen quarters would put a hundred thousand
+ * rows behind a page load. It is therefore computed for the largest positions
+ * only, which is exactly what the top-ten and top-twenty figures need, and the
+ * portfolio-wide average is reported as not computed - with the count that
+ * made it so - rather than quietly measured over whichever subset was cheap.
+ */
+async function fundActivity(client, manager, filings, latest, holdings, changes) {
+  if (!latest) return null;
+  const priced = (holdings || []).filter((row) => !row.put_call);
+  const keyOf = (row) => consensusKey(row);
+
+  const counts = activityCounts(changes);
+  const flow = valueFlow(latest.total_value_usd, filings?.[1]?.total_value_usd);
+  const churn = turnover(changes, priced);
+
+  // Only the largest positions, and only when the book is small enough that
+  // the query is bounded. Everything below degrades to a stated absence.
+  const measurable = priced.length <= TENURE_POSITION_LIMIT;
+  const periods = (filings || []).map((row) => row.report_date);
+  let tenure = new Map();
+  if (measurable && periods.length > 1) {
+    const keys = priced.map(keyOf).filter(Boolean);
+    const rows = keys.length
+      ? await collect(() => client
+        .from('institutional_holdings')
+        .select('cusip,report_date')
+        .eq('manager_id', manager.id)
+        .in('cusip', keys.slice(0, TENURE_POSITION_LIMIT)))
+      : [];
+    const byPeriod = new Map();
+    for (const row of rows) {
+      const key = consensusKey(row);
+      if (!key) continue;
+      if (!byPeriod.has(row.report_date)) byPeriod.set(row.report_date, new Set());
+      byPeriod.get(row.report_date).add(key);
+    }
+    tenure = holdingTenure(periods, byPeriod, latest.report_date);
+  }
+
+  const tenureFor = (count) => (measurable && tenure.size
+    ? averageTenure(tenure, topKeys(priced, count, keyOf), periods.length)
+    : { quarters: null, truncated: false, sample: 0, reason: measurable ? 'one filed period' : `${priced.length} positions exceeds the ${TENURE_POSITION_LIMIT} measured` });
+
+  // What the disclosed book would be worth at the latest close. A
+  // counterfactual, not a claim about what is held now - the manager has
+  // traded since and has disclosed none of it.
+  //
+  // Bounded to the largest positions. Revaluation costs one request per two
+  // hundred tickers, and an index fund discloses thousands; the smallest of
+  // those move the total by almost nothing while costing almost all of the
+  // time. What is left out is counted as unpriced, which is already reported.
+  const byValue = priced.slice().sort((a, b) => n(b.value_usd) - n(a.value_usd));
+  const revalued = byValue.slice(0, REVALUE_POSITION_LIMIT);
+  const tickers = [...new Set(revalued.map((row) => row.ticker).filter(Boolean).map((t) => String(t).toUpperCase()))];
+  let revaluation = null;
+  try {
+    const closes = await closesAround(client, tickers, latest.report_date);
+    const keyTicker = (row) => (row.ticker ? String(row.ticker).toUpperCase() : null);
+    revaluation = revalueBook(priced, closes, keyTicker);
+    revaluation.as_of = [...closes.values()].map((c) => c.at_latest_close_on).filter(Boolean).sort().at(-1) || null;
+    revaluation.disclosed_on = latest.report_date;
+    // Whether the book was capped, so the page can say "not measured" rather
+    // than "could not be priced" - the second blames the data for a limit the
+    // query chose.
+    revaluation.positions_considered = revalued.length;
+    revaluation.positions_total = priced.length;
+    revaluation.capped = priced.length > revalued.length;
+  } catch (error) {
+    // Revaluation is an addition to the page, not a precondition for it.
+    console.warn(`[institutional-holdings] revaluation for ${manager.slug}: ${error.message}`);
+  }
+
+  return {
+    as_of: latest.report_date,
+    revaluation,
+    market_value: flow.current,
+    prior_market_value: flow.prior,
+    value_change_pct: flow.changePct,
+    positions: priced.length,
+    new_positions: counts.new,
+    added_to: counts.increased,
+    reduced: counts.reduced,
+    sold_out: counts.exited,
+    top_10_pct: topWeight(priced, 10),
+    top_20_pct: topWeight(priced, 20),
+    turnover_by_count_pct: churn.byCount,
+    turnover_by_value_pct: churn.byValue,
+    tenure_top_10: tenureFor(10),
+    tenure_top_20: tenureFor(20),
+    tenure_all: tenureFor(priced.length),
+    // Stated so a reader can tell a short holding period from a short history.
+    quarters_observed: periods.length,
+  };
 }
 
 export async function getInstitutionalStock(rawKey) {
@@ -364,6 +651,27 @@ export async function getInstitutionalStock(rawKey) {
   const managerMap = new Map(managerRows.map((row) => [row.id, row]));
   const owners = holdings.filter((row) => !row.put_call).map((row) => ({ ...row, manager: managerMap.get(row.manager_id), filing: latest.get(row.manager_id) }));
   const { data: changes } = await client.from('holding_changes').select('*').in('filing_id', ids).eq('cusip', identity.cusip);
+
+  // Insider filings for the issuer, summarised so the page never has to draw
+  // the line between a decision and a vesting event for itself.
+  let insider = null;
+  if (identity.ticker) {
+    const { data: insiderRows, error: insiderError } = await client
+      .from('institutional_external_filings')
+      .select('accession_number,filed_at,report_date,source_url,parsed_data')
+      .eq('ticker', String(identity.ticker).toUpperCase())
+      .eq('event_type', 'insider_transaction')
+      .order('filed_at', { ascending: false })
+      .limit(120);
+    if (insiderError) {
+      // Insider activity is an addition to this page, not a precondition.
+      console.warn(`[institutional-holdings] insider filings for ${identity.ticker}: ${insiderError.message}`);
+    } else {
+      const summary = summariseInsiderFilings(insiderRows || [], { asOf: new Date().toISOString(), sinceDays: 180 });
+      insider = { ...summary, headline: insiderHeadline(summary) };
+    }
+  }
+
   const consensusReady = consensusLatest.size >= CONSENSUS_MIN_MANAGERS;
   const consensusScore = consensusReady ? clamp((owners.length / Math.max(consensusLatest.size, 1)) * 80 + Math.min(owners.reduce((sum, row) => sum + n(row.portfolio_weight), 0) / Math.max(owners.length, 1), 10) * 2) : null;
   return {
@@ -383,23 +691,40 @@ export async function getInstitutionalStock(rawKey) {
     owners: owners.sort((a, b) => n(b.portfolio_weight) - n(a.portfolio_weight)),
     changes: changes || [],
     history: allHistory,
+    insider,
   };
 }
 
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
+// Retry was already here; pacing was not. Every attempt now queues through the
+// process-wide limiter, and a throttle is reported to it rather than absorbed
+// locally - EDGAR's limit is per source, so one caller's 429 is every caller's
+// problem and must slow all of them down.
 async function secFetch(url, asJson = false) {
   let lastError;
   for (let attempt = 0; attempt < 4; attempt += 1) {
     try {
-      const response = await fetch(url, {
+      const response = await scheduleSecRequest(() => fetch(url, {
         headers: { Accept: asJson ? 'application/json' : 'application/xml,text/xml,text/plain,*/*', 'User-Agent': SEC_USER_AGENT },
         signal: AbortSignal.timeout(30_000),
-      });
-      if (response.ok) return asJson ? response.json() : response.text();
+      }));
+      if (response.ok) {
+        recordSuccess();
+        return asJson ? response.json() : response.text();
+      }
       lastError = new Error(`SEC request failed (${response.status}) for ${url}`);
-      if (response.status !== 429 && response.status < 500) throw lastError;
+      // 403 is how EDGAR answers a source it has decided to block, so it counts
+      // as pushback exactly like 429 does.
+      if (response.status === 429 || response.status === 403) {
+        recordThrottled(parseRetryAfter(response.headers.get('retry-after')));
+      } else if (response.status < 500) {
+        throw lastError;
+      }
     } catch (error) {
+      // An open circuit is a decision, not a transient failure. Retrying
+      // against it is the behaviour the circuit exists to prevent.
+      if (error instanceof SecCircuitOpenError) throw error;
       lastError = error;
       if (attempt === 3) break;
     }
@@ -408,19 +733,35 @@ async function secFetch(url, asJson = false) {
   throw lastError || new Error(`SEC request failed for ${url}`);
 }
 
-function recent13fFilings(submissions, quarters) {
-  const recent = submissions?.filings?.recent || {};
-  const forms = recent.form || [];
-  const rows = forms.map((form, index) => ({
-    form_type: form,
-    accession_number: recent.accessionNumber?.[index],
-    report_date: recent.reportDate?.[index],
-    filing_date: recent.filingDate?.[index],
-    accepted_at: recent.acceptanceDateTime?.[index] || `${recent.filingDate?.[index]}T00:00:00Z`,
-    primary_document: recent.primaryDocument?.[index] || '',
-  })).filter((row) => ['13F-HR', '13F-HR/A'].includes(row.form_type) && row.report_date && row.accession_number);
-  const periods = [...new Set(rows.map((row) => row.report_date))].sort().reverse().slice(0, Math.max(1, Math.min(n(quarters) || 4, 16)));
-  return rows.filter((row) => periods.includes(row.report_date)).sort((a, b) => String(a.accepted_at).localeCompare(String(b.accepted_at)));
+/**
+ * A manager's 13F filings, as deep as asked for.
+ *
+ * EDGAR splits a filer's index: `filings.recent` holds the last thousand
+ * filings of every type, and older ones sit in separate files listed under
+ * `filings.files`. Only the first was read, and the result was then capped at
+ * sixteen quarters. For Berkshire that is twelve periods of an available two
+ * hundred and eleven - forty-four in the recent block back to 2016, and one
+ * hundred and sixty-seven more in the archive, to 1998.
+ *
+ * The archive is fetched only when the recent block cannot cover the request,
+ * so a daily run costs exactly what it did before.
+ */
+async function recent13fFilings(submissions, quarters, cik) {
+  let rows = rowsFromBlock(submissions?.filings?.recent);
+  if (cik && needsArchive(rows, quarters)) {
+    for (const file of archiveFiles(submissions)) {
+      try {
+        const older = await secFetch(`${SEC_DATA}/submissions/${file.name}`, true);
+        rows = rows.concat(rowsFromBlock(older));
+      } catch (error) {
+        // A missing archive file limits how far back this goes; it does not
+        // invalidate the filings already in hand.
+        console.warn(`[institutional-holdings] archive ${file.name}: ${error.message}`);
+      }
+      if (!needsArchive(rows, quarters)) break;
+    }
+  }
+  return selectThirteenF(rows, quarters);
 }
 
 async function filingDocuments(cik, accession) {
@@ -441,98 +782,359 @@ async function filingDocuments(cik, accession) {
     documents.push({ name, text });
     if (documents.some((doc) => /<(?:\w+:)?infoTable[\s>]/i.test(doc.text))) break;
   }
-  return { base, documents };
+
+  // The cover page, fetched separately and on purpose.
+  //
+  // The loop above ranks the information table first and stops the moment it
+  // has one, so on a filing laid out as [infotable.xml, submission.txt,
+  // primary_doc.xml] it downloads exactly one file. That is correct for
+  // holdings and wrong for everything else: the cover page is the only place
+  // SEC states whether a 13F-HR/A restates the earlier report or adds to it,
+  // and it was never being read. Verified against Elliott 0000902664-25-003078
+  // and Baupost 0001567619-18-006456, both real restatements, both of which
+  // downloaded only the info table.
+  //
+  // One extra request per filing, and only when the cover page was not already
+  // picked up in the documents above.
+  let coverPage = documents.find((doc) => /primary_doc\.xml$/i.test(doc.name))?.text || null;
+  if (!coverPage && names.some((name) => /primary_doc\.xml$/i.test(name))) {
+    try {
+      coverPage = await secFetch(`${base}/primary_doc.xml`);
+    } catch (error) {
+      // Not fatal. An amendment without a readable cover page is escalated for
+      // review rather than guessed at, which is handled by the caller.
+      console.warn(`[institutional-holdings] cover page unavailable for ${accession}: ${error.message}`);
+    }
+  }
+  // Older filings predate the XML cover page entirely; the full submission text
+  // is the only place the metadata can be.
+  if (!coverPage) {
+    coverPage = documents.find((doc) => /<(?:\w+:)?amendmentType>/i.test(doc.text))?.text || null;
+  }
+
+  return { base, documents, coverPage };
 }
 
-async function mappingsFor(client, cusips) {
+/**
+ * Identifiers for a set of CUSIPs, as they stood on a given date.
+ *
+ * `asOf` is required. Without it this took the newest mapping for each CUSIP
+ * whatever the filing's date, so a reassignment in 2025 relabelled a holding
+ * disclosed in 2023 as whatever that CUSIP means now. A CUSIP with no mapping
+ * in force on the date is left out entirely rather than borrowing one from
+ * another period.
+ */
+async function mappingsFor(client, cusips, asOf) {
   if (!cusips.length) return new Map();
+  if (!asOf) throw new Error('mappingsFor requires the date the identifiers should be resolved as at.');
   const rows = [];
   for (let index = 0; index < cusips.length; index += 400) {
     const { data, error } = await client.from('security_identifier_history').select('*').in('cusip', cusips.slice(index, index + 400)).order('valid_from', { ascending: false });
     if (error) throw error;
     rows.push(...(data || []));
   }
-  const map = new Map();
-  for (const row of rows) if (!map.has(row.cusip)) map.set(row.cusip, row);
-  return map;
+  return resolveAsOf(rows, cusips, asOf);
 }
 
-function preferredFigiCandidate(result) {
-  const candidates = (result?.data || []).filter((row) => row?.ticker && row?.marketSector === 'Equity');
-  return candidates.sort((a, b) => {
-    const score = (row) => (row.exchCode === 'US' ? 20 : 0)
-      + (/Common Stock|Depositary Receipt|REIT|ETP/i.test(row.securityType2 || '') ? 10 : 0)
-      + (row.compositeFIGI ? 2 : 0);
-    return score(b) - score(a);
-  })[0] || null;
+/**
+ * Attach the tickers already known for these identifiers.
+ *
+ * Ingestion replaces a filing's holdings wholesale - delete by filing_id, then
+ * insert what the XML said. A 13F carries no ticker, so every row came back
+ * null and every ticker resolved for that filing was destroyed. The enrichment
+ * tail that follows a refresh handles about a thousand securities, nowhere near
+ * enough to restore a run that touched 551 filings, so coverage decayed every
+ * time collection ran. Numbers were being measured against something quietly
+ * resetting them.
+ *
+ * Resolved as at the filing's report date rather than as at today, for the same
+ * reason resolution everywhere else is: a mapping that began in 2023 says
+ * nothing about a 2019 filing, and stamping it on one relabels holdings the
+ * mapping does not cover.
+ *
+ * Nothing is invented here. Only identifiers that already have a mapping get a
+ * ticker; the rest stay null and are picked up by enrichment as before.
+ */
+async function withKnownTickers(client, rows, asOf) {
+  const cusips = [...new Set((rows || []).map((row) => row?.cusip).filter(Boolean))];
+  if (!cusips.length || !asOf) return rows || [];
+  return attachKnownTickers(rows, await mappingsFor(client, cusips, asOf));
 }
 
-async function openFigiBatch(cusips) {
-  const headers = { Accept: 'application/json', 'Content-Type': 'application/json' };
-  if (OPENFIGI_API_KEY) headers['X-OPENFIGI-APIKEY'] = OPENFIGI_API_KEY;
-  let lastError;
-  for (let attempt = 0; attempt < 4; attempt += 1) {
-    try {
-      const response = await fetch(OPENFIGI_URL, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify(cusips.map((cusip) => ({ idType: 'ID_CUSIP', idValue: cusip }))),
-        signal: AbortSignal.timeout(30_000),
-      });
-      if (response.ok) return response.json();
-      lastError = new Error(`OpenFIGI mapping failed (${response.status})`);
-      if (response.status !== 429 && response.status < 500) throw lastError;
-      const resetSeconds = Math.max(1, n(response.headers.get('ratelimit-reset')));
-      await wait(resetSeconds * 1000);
-    } catch (error) {
-      lastError = error;
-      if (attempt < 3) await wait(750 * (2 ** attempt));
+
+async function openFigiBatch(identifiers) {
+  // Ask each identifier with the scheme it actually belongs to.
+  //
+  // This asked ID_CUSIP for everything. A CINS - the letter-prefixed scheme
+  // non-US issuers use - answers "No identifier found" to that, which reads
+  // exactly like a security the vendor has never listed. 147 of them were
+  // reported to the operator as probable private placements. They were Chubb,
+  // Linde, Accenture, Spotify, ASML, Medtronic, UBS and Eaton.
+  //
+  // Identifiers whose check digit does not compute are not sent at all. The
+  // vendor's answer for those is "Invalid idValue format", which will not
+  // change, so spending a request on one is spending it to be told no again.
+  const { jobs, invalid } = groupByIdType(identifiers);
+  const skipped = new Map(invalid.map((entry) => [entry.identifier, entry]));
+  const answers = new Map();
+
+  if (jobs.length) {
+    const headers = { Accept: 'application/json', 'Content-Type': 'application/json' };
+    if (OPENFIGI_API_KEY) headers['X-OPENFIGI-APIKEY'] = OPENFIGI_API_KEY;
+    let lastError;
+    let payload = null;
+    for (let attempt = 0; attempt < 4 && !payload; attempt += 1) {
+      try {
+        const response = await fetch(OPENFIGI_URL, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify(jobs),
+          signal: AbortSignal.timeout(30_000),
+        });
+        if (response.ok) {
+          payload = await response.json();
+          break;
+        }
+        lastError = new Error(`OpenFIGI mapping failed (${response.status})`);
+        if (response.status !== 429 && response.status < 500) throw lastError;
+        const resetSeconds = Math.max(1, n(response.headers.get('ratelimit-reset')));
+        await wait(resetSeconds * 1000);
+      } catch (error) {
+        lastError = error;
+        if (attempt < 3) await wait(750 * (2 ** attempt));
+      }
     }
+    if (!payload) throw lastError || new Error('OpenFIGI mapping failed.');
+    // Answers come back positionally against the jobs sent, which is not the
+    // caller's array once malformed identifiers have been dropped. Keyed back
+    // by identifier so the caller's own ordering is what it reads.
+    payload.forEach((result, index) => {
+      if (jobs[index]) answers.set(jobs[index].idValue, result);
+    });
   }
-  throw lastError || new Error('OpenFIGI mapping failed.');
+
+  return (identifiers || []).map((value) => {
+    const key = String(value || '').trim().toUpperCase();
+    const malformed = skipped.get(key);
+    if (malformed) return { data: [], skipped: malformed.reason };
+    return answers.get(key) || { data: [], error: 'no answer returned for this identifier' };
+  });
 }
 
 async function enrichSecurityIdentifiers(client, limit = 1000) {
-  const unresolved = await collect(() => client.from('institutional_holdings').select('cusip,issuer_name,value_usd').is('ticker', null).order('value_usd', { ascending: false }));
-  const unique = [];
-  const seen = new Set();
-  for (const row of unresolved) {
-    if (!seen.has(row.cusip)) {
-      seen.add(row.cusip);
-      unique.push(row);
+  // Sub-step timing. The phase boundary said the failure was somewhere between
+  // the vendor calls and the writes, which is a two-minute window containing
+  // four different statements. Each now reports its own duration, so the next
+  // failure names the statement rather than the phase.
+  const step = async (name, work) => {
+    const at = Date.now();
+    try {
+      const value = await work();
+      console.info(`[identifiers]   ${name}: ${((Date.now() - at) / 1000).toFixed(1)}s`);
+      return value;
+    } catch (error) {
+      console.error(`[identifiers]   ${name} FAILED after ${((Date.now() - at) / 1000).toFixed(1)}s: ${error.message}`);
+      throw error;
     }
-    if (unique.length >= limit) break;
+  };
+  // Bounded on the server, not in JavaScript.
+  //
+  // This selected every unmapped holding - about ninety per cent of 561,209
+  // rows - sorted all of them by value, and paged the whole result back just to
+  // keep the first thousand distinct CUSIPs. That is what produced "canceling
+  // statement due to statement timeout" forty-three minutes into a run.
+  //
+  // Postgres can answer a top-N with a bounded heapsort instead of sorting the
+  // whole table. The multiplier is headroom for duplicates: the same CUSIP
+  // appears once per manager holding it, so a few thousand rows comfortably
+  // yields a thousand distinct ones.
+  const scanLimit = Math.min(limit * 25, 25_000);
+  const unresolved = await step('scan unmapped', async () => {
+    const { data, error: unresolvedError } = await client
+      .from('institutional_holdings')
+      .select('cusip,issuer_name,value_usd,report_date,manager_id')
+      .is('ticker', null)
+      // Option lines are not candidates and never were.
+      //
+      // A put or a call carries the underlying's issuer number with a 90- or
+      // 95-series issue code - 037833900 against Apple's 037833100 - which is
+      // not a valid CUSIP and has no equity ticker to find. They were still
+      // offered to the vendor every run, and because a 13F reports an option
+      // at the underlying's notional they sorted straight to the top of a
+      // ranking by disclosed value: $742bn across eight identifiers, crowding
+      // out real securities. put_call is already how the screener, the
+      // research layer and the value-scale audit exclude them; the enrichment
+      // simply never asked.
+      .is('put_call', null)
+      .order('value_usd', { ascending: false })
+      .limit(scanLimit);
+    if (unresolvedError) throw new Error(unresolvedError.message);
+    return data || [];
+  });
+  // Ranked by disclosed value and then by how many managers report it, and
+  // carrying the earliest date each CUSIP was observed so a looked-up mapping
+  // can be anchored to evidence rather than to 1900.
+  const ranked = rankUnmapped(unresolved, limit);
+
+  // Ask the SEC's list what these are before asking a vendor what they map to.
+  //
+  // 1,630 of the identifiers with no ticker are convertible notes, preferred
+  // stock, warrants and SPAC units - 12,395 rows and $130bn. Every one of them
+  // consumed a lookup on every run and returned nothing, because a note does
+  // not have a common-equity ticker. Skipping them is not an optimisation: it
+  // is the difference between a run that reports "unresolved" about securities
+  // that could resolve and one that reports it about securities that cannot.
+  //
+  // Only the classes that are definitively not common equity are skipped.
+  // Unclassified identifiers are still asked about.
+  const classByCusip = await step('classify candidates', () => readClasses(client, ranked.map((r) => r.cusip)));
+  const { askable, excluded } = partitionByClass(ranked, classByCusip);
+  const unique = askable;
+  if (excluded.length) {
+    const byClass = {};
+    for (const row of excluded) byClass[row.security_class] = (byClass[row.security_class] || 0) + 1;
+    console.info(`[identifiers]   not asked (${excluded.length}): `
+      + Object.entries(byClass).map(([k, v]) => `${k} ${v}`).join(', '));
   }
+
   const batchSize = OPENFIGI_API_KEY ? 100 : 5;
+  const vendorStartedAt = Date.now();
   const mappings = [];
   const errors = [];
+  // Why identifiers produced no ticker, by reason. "Listed only outside the
+  // US" and "OpenFIGI has never heard of it" need different work, so they are
+  // counted apart rather than both reading as an unmapped identifier.
+  const noCandidate = new Map();
+  let applied = 0;
+  let skipped = 0;
   for (let index = 0; index < unique.length; index += batchSize) {
     const batch = unique.slice(index, index + batchSize);
     try {
       const results = await openFigiBatch(batch.map((row) => row.cusip));
       results.forEach((result, resultIndex) => {
         const source = batch[resultIndex];
+        // Counted apart from a vendor miss. "We did not ask because the
+        // identifier is malformed" and "we asked and the vendor has no
+        // listing" are different facts, and a report that merges them is how
+        // 147 blue chips came to be described as private placements.
+        if (result?.skipped) {
+          skipped += 1;
+          return;
+        }
         const match = preferredFigiCandidate(result);
-        if (source && match) mappings.push({
-          cusip: source.cusip,
-          ticker: String(match.ticker).trim().toUpperCase(),
-          issuer_name: source.issuer_name,
-          valid_from: '1900-01-01',
-          source: 'openfigi',
-          manually_verified: false,
-          updated_at: new Date().toISOString(),
-        });
+        // A vendor answer that names no US listing is now a real outcome
+        // rather than a fallback, so it is counted. Without this the run
+        // reports the same success it always did while quietly mapping
+        // fewer identifiers, and the reason lives only in the vendor's reply.
+        if (!match) {
+          const why = noCandidateReason(result);
+          noCandidate.set(why, (noCandidate.get(why) || 0) + 1);
+        }
+        // OpenFIGI answers what a CUSIP maps to now. Storing that as valid
+        // from 1900 claimed today's ticker applied to every filing ever made -
+        // invisible while resolution took the newest mapping, and actively
+        // wrong now that it asks what was in force on the filing date.
+        const mapping = source && match
+          ? mappingFromLookup({
+            cusip: source.cusip,
+            ticker: match.ticker,
+            issuerName: source.issuer_name,
+            observedFrom: source.observed_from,
+          })
+          : null;
+        if (mapping) mappings.push(mapping);
       });
     } catch (error) {
       errors.push(error.message);
     }
     if (!OPENFIGI_API_KEY && index + batchSize < unique.length) await wait(2500);
   }
-  if (mappings.length) {
-    const { error } = await client.from('security_identifier_history').upsert(mappings, { onConflict: 'cusip,valid_from' });
-    if (error) throw error;
+  // Carry each answer across the identifiers that are the same security.
+  //
+  // Aptiv's holdings sit under G6095L109 for seven years and under G3265R107
+  // since; the vendor knows only the second. 1,872 unmapped identifiers have a
+  // sibling that already carries a ticker, and they need no lookup at all -
+  // the answer was already bought, under a different number.
+  if (noCandidate.size) {
+    const summary = [...noCandidate.entries()].sort((a, b) => b[1] - a[1]).map(([why, n]) => `${n} ${why}`).join('; ');
+    console.warn(`[identifiers] no US listing for ${[...noCandidate.values()].reduce((a, b) => a + b, 0)} identifiers: ${summary}`);
   }
-  return { attempted: unique.length, mapped: mappings.length, unresolved: Math.max(0, unique.length - mappings.length), errors: [...new Set(errors)] };
+
+  let inherited = 0;
+  if (mappings.length) {
+    const observedFrom = new Map(ranked.map((row) => [row.cusip, row.observed_from]));
+    const chains = await step('read identity chains', () => readChains(client, mappings.map((m) => m.cusip)));
+    const extra = expandThroughChains(mappings, { ...chains, observedFrom });
+    inherited = extra.length;
+    mappings.push(...extra);
+    if (inherited) console.info(`[identifiers]   inherited through identity chains: ${inherited}`);
+  }
+
+  if (mappings.length) {
+    console.info(`[identifiers]   vendor lookups: ${((Date.now() - vendorStartedAt) / 1000).toFixed(1)}s`
+      + ` for ${unique.length} security(ies)`);
+
+    // Written in chunks. A single upsert of every mapping is one statement, and
+    // one statement is what statement_timeout applies to - so a slow batch
+    // takes the whole write with it rather than the part that was slow.
+    const CHUNK = 25;
+    await step(`upsert ${mappings.length} mapping(s)`, async () => {
+      for (let i = 0; i < mappings.length; i += CHUNK) {
+        const slice = mappings.slice(i, i + CHUNK);
+        const { error } = await client.from('security_identifier_history')
+          .upsert(slice, { onConflict: 'cusip,valid_from' });
+        if (error) throw new Error(`chunk ${i / CHUNK + 1} (${slice[0]?.cusip}…): ${error.message}`);
+      }
+    });
+
+    // Apply each mapping to the holdings it covers.
+    //
+    // Writing the mapping table alone changed nothing anyone can see: the
+    // search index, consensus, sector weights and every price lookup read
+    // institutional_holdings.ticker, which stayed null. A run could report
+    // "mapped 209" while coverage sat unmoved at 9.93%, because the two
+    // numbers were measuring different tables.
+    //
+    // Scoped to each mapping's validity window rather than applied to every
+    // row for the CUSIP. That is the same discipline as resolution: a mapping
+    // that began in 2023 says nothing about a 2019 filing.
+    //
+    // One statement per security, so a slow one names itself instead of
+    // taking a batch of two hundred down with it.
+    const applyStartedAt = Date.now();
+    for (const mapping of mappings) {
+      try {
+        let update = client.from('institutional_holdings')
+          .update({ ticker: mapping.ticker })
+          .eq('cusip', mapping.cusip)
+          .is('ticker', null)
+          .gte('report_date', mapping.valid_from);
+        if (mapping.valid_to) update = update.lt('report_date', mapping.valid_to);
+        const { error: applyError } = await update;
+        if (applyError) throw new Error(applyError.message);
+        applied += 1;
+      } catch (applyError) {
+        errors.push(`applying ${mapping.cusip}: ${applyError.message}`);
+      }
+    }
+    console.info(`[identifiers]   apply to holdings: ${((Date.now() - applyStartedAt) / 1000).toFixed(1)}s`
+      + ` for ${applied}/${mappings.length}`);
+  }
+  return {
+    attempted: unique.length,
+    mapped: mappings.length,
+    applied,
+    // Asked and answered no. Counted against what was asked, not against what
+    // was ranked, so skipping a convertible note does not read as a failure.
+    unresolved: Math.max(0, unique.length - (mappings.length - inherited) - skipped),
+    // Never asked, because the identifier could not be one.
+    skipped,
+    // Not asked about, because the SEC's list says they are not common equity.
+    not_equity: excluded.length,
+    // Resolved from a sibling identifier rather than from the vendor.
+    inherited,
+    errors: [...new Set(errors)],
+  };
 }
 
 async function mapWithConcurrency(items, concurrency, worker) {
@@ -616,29 +1218,219 @@ async function createAlerts(client, manager, filing, changes) {
   if (error) throw error;
 }
 
+/**
+ * Record a filing whose information table was withheld, and store no holdings.
+ *
+ * Three things this deliberately does not do.
+ *
+ * It does not deactivate the other versions of the quarter. A withheld
+ * original and the amendment that later discloses it share a report date, and
+ * Norges Bank's amendments arrive a full year after the placeholder - so
+ * re-reading the placeholder must not knock the real filing out from under
+ * the quarter it finally filled in.
+ *
+ * It does not set `needs_review`. Nothing here needs an operator: the filer
+ * exercised a right the SEC granted it, the reason is on the cover page, and
+ * the holdings arrive on their own schedule. Review is for filings we could
+ * not classify, and mixing the two would bury those.
+ *
+ * It does delete whatever was stored against this filing before, which is how
+ * the placeholder rows already in the table are cleared - one row per affected
+ * quarter, carrying issuer "NA" at zero dollars, plus the holding_changes that
+ * were derived from it and are the direct cause of the 100% turnover reading.
+ */
+async function recordEmptyFiling(client, manager, source, archive, infoDocument, table) {
+  const { data: filing, error } = await client.from('institutional_filings').upsert({
+    manager_id: manager.id,
+    accession_number: source.accession_number,
+    form_type: source.form_type,
+    report_date: source.report_date,
+    filed_at: source.accepted_at,
+    primary_document: source.primary_document,
+    amendment_type: source.form_type.endsWith('/A') ? 'unknown' : 'original',
+    is_amendment: source.form_type.endsWith('/A'),
+    // No holdings to serve, so nothing to be authoritative about.
+    //
+    // quarantineAmendment argues the other way for its case - a quarter with
+    // no active filing disappears from history, so it reactivates the version
+    // the bad amendment superseded. That reasoning depends on there being an
+    // earlier version holding real positions. Here there is none: the
+    // positions have not been published. The choice is between a quarter
+    // absent from the series and a quarter asserting a one-name book, and only
+    // the first is true.
+    is_active: false,
+    source_url: `${archive.base}/${source.primary_document || infoDocument.name}`,
+    holdings_count: 0,
+    total_value_usd: 0,
+    // What the filer said, not what we inferred. A filing that reports no
+    // holdings has isConfidentialOmitted false, and recording it as withheld
+    // would assert a confidential treatment request that was never made.
+    confidential_omitted: table.status === 'confidential',
+    declared_holdings_count: table.declaredEntries,
+    declared_value_usd: table.declaredValueUsd,
+    ingested_at: new Date().toISOString(),
+  }, { onConflict: 'accession_number' }).select().single();
+  if (error) throw error;
+
+  // Anything a previous run stored from the placeholder.
+  const { count: removed } = await client.from('institutional_holdings')
+    .delete({ count: 'exact' }).eq('filing_id', filing.id);
+  await client.from('holding_changes').delete().eq('filing_id', filing.id);
+  if (removed) {
+    console.info(`[institutional-holdings] ${source.accession_number}: removed ${removed} placeholder holding(s) stored by an earlier run`);
+  }
+
+  return {
+    accession_number: filing.accession_number,
+    status: table.status === 'confidential' ? 'withheld' : 'reports-nothing',
+    holdings: 0,
+    removed: removed || 0,
+    report_date: filing.report_date,
+    changes: 0,
+    form_type: filing.form_type,
+    declared_holdings_count: table.declaredEntries,
+    declared_value_usd: table.declaredValueUsd,
+    reason: table.reason,
+  };
+}
+
 async function ingestFiling(client, manager, source) {
-  const archive = await filingDocuments(manager.cik, source.accession_number);
+  // EDGAR stores a filing under the directory of the CIK that filed it, which
+  // for a predecessor is not the manager's current CIK. Getting this wrong
+  // returns a 404 for every historical filing, which reads as a filer that
+  // never filed rather than as a wrong URL.
+  const archive = await filingDocuments(source.source_cik || manager.cik, source.accession_number);
   const infoDocument = archive.documents.find((doc) => /<(?:\w+:)?infoTable[\s>]/i.test(doc.text));
   if (!infoDocument) throw new Error(`No 13F information table found in ${source.accession_number}`);
-  let rawRows = collapseDuplicateRows(parseInformationTable(infoDocument.text, 1));
-  if (!rawRows.length) throw new Error(`The SEC information table was empty for ${source.accession_number}`);
-  const ratios = rawRows.filter((row) => row.shares > 0 && row.value_usd > 0 && !row.put_call).map((row) => row.value_usd / row.shares).sort((a, b) => a - b);
-  const medianRatio = ratios.length ? ratios[Math.floor(ratios.length / 2)] : null;
-  const legacyScaleDetected = ratios.length >= 5 && medianRatio < 1 && ratios.filter((ratio) => ratio < 1).length / ratios.length >= 0.6;
-  const valueScale = n(manager.value_scale_override) || (String(source.accepted_at || source.filing_date) < POST_2022_VALUE_RULE_DATE || legacyScaleDetected ? 1000 : 1);
-  if (valueScale !== 1) rawRows = rawRows.map((row) => ({ ...row, value_usd: n(row.value_usd) * valueScale }));
-  const combined = archive.documents.map((doc) => doc.text).join('\n');
-  const isRestatement = /<(?:\w+:)?isRestatement>\s*true\s*</i.test(combined);
-  const amendmentType = source.form_type === '13F-HR' ? 'original' : isRestatement ? 'restatement' : 'additional_holdings';
-  const { data: previousVersion } = await client.from('institutional_filings').select('*').eq('manager_id', manager.id).eq('report_date', source.report_date).eq('is_active', true).order('filed_at', { ascending: false }).limit(1).maybeSingle();
-  let rows = rawRows;
-  if (source.form_type === '13F-HR/A' && !isRestatement && previousVersion) {
-    const priorVersionRows = await collect(() => client.from('institutional_holdings').select('*').eq('filing_id', previousVersion.id));
-    const merged = new Map(priorVersionRows.map((row) => [filingKey(row), row]));
-    for (const row of rawRows) merged.set(filingKey(row), row);
-    rows = collapseDuplicateRows([...merged.values()].map(({ id, filing_id, manager_id, report_date, portfolio_weight, created_at, ...row }) => row));
+  // The filing's own account of itself, read before its rows are trusted.
+  //
+  // `tableEntryTotal` is how many entries the filer says the table holds, and
+  // comparing the parsed count against it is what turns a table that failed to
+  // read into an error instead of a small portfolio. It is a stronger test
+  // than anything keyed to the manager's history: Alphabet genuinely held two
+  // positions in 2016, and no median can tell that apart from a table that
+  // went missing, while the filer's own total can.
+  const summary = parseSummaryPage(archive.coverPage);
+  const parsedRows = parseInformationTable(infoDocument.text, 1);
+  const table = assessInformationTable({ rawRows: parsedRows, summary });
+
+  // A table withheld under confidential treatment. There are no holdings, and
+  // storing the placeholder as one is what made Norges Bank read as a manager
+  // that sold 1,600 names and bought one. Recorded, not applied.
+  if (table.status === 'confidential' || table.status === 'empty') {
+    const label = table.status === 'confidential' ? 'withheld' : 'reports nothing';
+    console.info(`[institutional-holdings] ${source.accession_number} ${label}: ${table.reason}`);
+    return recordEmptyFiling(client, manager, source, archive, infoDocument, table);
   }
-  const identifierMap = await mappingsFor(client, [...new Set(rows.map((row) => row.cusip))]);
+
+  // Rows are missing and the filing does not say it withheld them, so the
+  // fault is ours - a partial fetch, an unread continuation, a namespace we do
+  // not match. Nothing is stored on a guess.
+  if (table.status === 'short') {
+    throw new Error(`${source.accession_number}: ${table.reason}`);
+  }
+
+  let rawRows = collapseDuplicateRows(table.realRows);
+  if (!rawRows.length) throw new Error(`The SEC information table was empty for ${source.accession_number}`);
+  // The per-share sanity check that lived here now runs inside
+  // detectScaleMismatch, which reports a disagreement instead of silently
+  // overriding the documented rule with a heuristic.
+  // One rule, shared by all three paths. This one was already keyed to the
+  // filing date and correct; the two import paths keyed to report_date and
+  // overstated every Q4-2022 filing by 1000x.
+  const ruled = valueScaleFor({
+    acceptedAt: source.accepted_at,
+    filedAt: source.filing_date,
+    reportDate: source.report_date,
+    override: manager.value_scale_override,
+  });
+  const scaleMismatch = detectScaleMismatch(rawRows, ruled.scale);
+  // The rule is right about what filers are required to do and wrong about
+  // what some of them did. Renaissance filed its Q3 2023 table on 2023-11-14,
+  // ten months after values became whole dollars, reporting Apple at 719,357
+  // against 4,201,607 shares - $0.17 a share, or $171.21 at a thousand times,
+  // which is where Apple closed that quarter. Applying the rule stores a $60bn
+  // book as $60m, and nothing downstream can see it: every position is wrong
+  // by the same factor, so weights and share counts still agree.
+  //
+  // A manager override still wins outright. It is a person's decision about a
+  // specific filer and outranks both the rule and the arithmetic.
+  const { scale: valueScale, basis: valueScaleBasis, overridden } = manager.value_scale_override
+    ? { ...ruled, overridden: false }
+    : resolveScale(ruled, scaleMismatch);
+  if (scaleMismatch && overridden) {
+    console.warn(`[institutional-holdings] ${source.accession_number}: scale ${ruled.scale} -> ${valueScale}, ${scaleMismatch.reason}`);
+  } else if (scaleMismatch) {
+    // Not corrected: the evidence was not clear enough to overrule the rule.
+    console.warn(`[institutional-holdings] ${source.accession_number}: applied scale ${valueScale} (${valueScaleBasis}) but ${scaleMismatch.reason}`);
+  }
+  if (valueScale !== 1) rawRows = rawRows.map((row) => ({ ...row, value_usd: n(row.value_usd) * valueScale }));
+  // Amendment handling.
+  //
+  // What was here tested for a tag SEC does not emit, against documents that
+  // did not include the cover page, so every 13F-HR/A ever ingested was
+  // classified additional_holdings and merged. A restatement that removed a
+  // position therefore left it standing as a phantom holding. See
+  // secAmendment.js for the filings this was verified against.
+  const classification = classifyFiling(source.form_type, archive.coverPage);
+  const amendmentType = classification.amendmentType;
+  const { data: previousVersion } = await client.from('institutional_filings').select('*').eq('manager_id', manager.id).eq('report_date', source.report_date).eq('is_active', true).order('filed_at', { ascending: false }).limit(1).maybeSingle();
+
+  const priorVersionRows = previousVersion
+    ? await collect(() => client.from('institutional_holdings').select('*').eq('filing_id', previousVersion.id))
+    : [];
+  const strippedPriorRows = priorVersionRows.map(
+    ({ id, filing_id, manager_id, report_date, portfolio_weight, created_at, ...row }) => row,
+  );
+
+  // An amendment with no prior version to amend is just a filing.
+  const strategy = amendmentType === 'original' || !previousVersion ? 'replace' : classification.strategy;
+  const outcome = applyAmendment({
+    strategy,
+    priorRows: strippedPriorRows,
+    amendmentRows: rawRows,
+    keyOf: filingKey,
+  });
+  const removed = strategy === 'replace' && previousVersion
+    ? droppedPositions({ priorRows: strippedPriorRows, amendmentRows: rawRows, keyOf: filingKey })
+    : [];
+  if (removed.length) {
+    console.info(`[institutional-holdings] ${source.accession_number} restates ${manager.slug || manager.display_name}: ${removed.length} position(s) removed`);
+  }
+
+  // An amendment we could not classify must not silently rewrite the report.
+  // The filing is recorded so it is visible, the earlier version stays
+  // authoritative, and an operator decides.
+  if (strategy === 'review') {
+    console.warn(`[institutional-holdings] ${source.accession_number} needs review: ${classification.reviewReason}`);
+    await client.from('institutional_filings').upsert({
+      manager_id: manager.id,
+      accession_number: source.accession_number,
+      form_type: source.form_type,
+      report_date: source.report_date,
+      filed_at: source.accepted_at,
+      primary_document: source.primary_document,
+      amendment_type: 'unknown',
+      is_amendment: true,
+      is_active: false,
+      needs_review: true,
+      review_reason: classification.reviewReason,
+      source_url: `${archive.base}/${source.primary_document || infoDocument.name}`,
+      holdings_count: rawRows.length,
+      ingested_at: new Date().toISOString(),
+    }, { onConflict: 'accession_number' });
+    return {
+      accession_number: source.accession_number,
+      status: 'needs_review',
+      holdings: 0,
+      report_date: source.report_date,
+      changes: 0,
+      review_reason: classification.reviewReason,
+    };
+  }
+
+  let rows = strategy === 'merge' ? collapseDuplicateRows(outcome.rows) : outcome.rows;
+  const identifierMap = await mappingsFor(client, [...new Set(rows.map((row) => row.cusip))], source.report_date);
   const totalValue = rows.reduce((sum, row) => sum + n(row.value_usd), 0);
   rows = rows.map((row) => ({
     ...row,
@@ -660,20 +1452,37 @@ async function ingestFiling(client, manager, source) {
     source_url: `${archive.base}/${source.primary_document || infoDocument.name}`,
     holdings_count: rows.length,
     total_value_usd: totalValue,
+    // Kept on complete filings too. A partial withholding is still a
+    // withholding, and the declared totals are the only record of what the
+    // filer said this quarter was.
+    confidential_omitted: table.confidentialOmitted,
+    declared_holdings_count: table.declaredEntries,
+    declared_value_usd: table.declaredValueUsd,
     ingested_at: new Date().toISOString(),
   };
   const { data: filing, error: filingError } = await client.from('institutional_filings').upsert(filingPayload, { onConflict: 'accession_number' }).select().single();
   if (filingError) throw filingError;
   await client.from('institutional_filings').update({ is_active: false }).eq('manager_id', manager.id).eq('report_date', source.report_date).neq('id', filing.id);
   await client.from('institutional_holdings').delete().eq('filing_id', filing.id);
-  await insertChunks(client, 'institutional_holdings', rows.map((row) => ({ ...row, filing_id: filing.id })));
+  await insertChunks(client, 'institutional_holdings',
+    await withKnownTickers(client, rows.map((row) => ({ ...row, filing_id: filing.id })), filing.report_date));
   const { data: priorFiling } = await client.from('institutional_filings').select('*').eq('manager_id', manager.id).eq('is_active', true).lt('report_date', source.report_date).order('report_date', { ascending: false }).order('filed_at', { ascending: false }).limit(1).maybeSingle();
   const previousRows = priorFiling ? await collect(() => client.from('institutional_holdings').select('*').eq('filing_id', priorFiling.id)) : [];
   const changes = buildChanges(rows, previousRows, filing);
   await client.from('holding_changes').delete().eq('filing_id', filing.id);
   if (changes.length) await insertChunks(client, 'holding_changes', changes);
   await createAlerts(client, manager, filing, changes);
-  return { accession_number: filing.accession_number, status: 'ingested', holdings: rows.length, report_date: filing.report_date, changes: changes.length };
+  return {
+    accession_number: filing.accession_number,
+    status: 'ingested',
+    holdings: rows.length,
+    report_date: filing.report_date,
+    changes: changes.length,
+    // Reported so a run summary can count amendments without re-reading the
+    // filings table. Their absence is why every completed run reported zero.
+    form_type: filing.form_type,
+    amendment_type: amendmentType,
+  };
 }
 
 function pastedAccession(value = '') {
@@ -751,9 +1560,16 @@ async function secImportRows(manager, source) {
     .filter((name) => /\.xml$/i.test(name) && name !== source.primary_document)
     .sort((left, right) => Number(/infotable|informationtable/i.test(right)) - Number(/infotable|informationtable/i.test(left)));
   for (const name of names) {
-    const response = await fetch(`${archive.base}/${name}`, { headers: { 'User-Agent': SEC_USER_AGENT } });
+    const response = await scheduleSecRequest(() => fetch(`${archive.base}/${name}`, { headers: { 'User-Agent': SEC_USER_AGENT } }));
     if (!response.ok) continue;
-    const scale = source.report_date < POST_2022_VALUE_RULE_DATE ? 1000 : 1;
+    // Was source.report_date, which put Q4-2022 on the wrong side of the rule:
+    // the quarter ends 2022-12-31 but the filing is made in February 2023.
+    const { scale } = valueScaleFor({
+      acceptedAt: source.accepted_at,
+      filedAt: source.filing_date,
+      reportDate: source.report_date,
+      override: manager.value_scale_override,
+    });
     const rows = collapseDuplicateRows(parseInformationTable(await response.text(), scale));
     if (rows.length) return { rows, primary_document: name, source_url: `${archive.base}/${name}` };
   }
@@ -780,7 +1596,7 @@ async function prepareInstitutionalImport(client, payload = {}) {
   if (!input) throw new Error('Paste a SEC URL, accession number, XML document, or holdings table.');
   const manager = (await managers(client)).find((item) => item.id === payload.managerId || item.slug === payload.managerId);
   if (!manager) throw new Error('Choose the manager that owns this filing.');
-  const submissions = await fetchJson(`${SEC_DATA}/submissions/CIK${cleanCik(manager.cik)}.json`);
+  const submissions = await secFetch(`${SEC_DATA}/submissions/CIK${cleanCik(manager.cik)}.json`, true);
   const accession = pastedAccession(input);
   const isXml = /<(?:\w+:)?informationTable\b|<(?:\w+:)?infoTable\b/i.test(input);
   let kind = 'table';
@@ -809,12 +1625,33 @@ async function prepareInstitutionalImport(client, payload = {}) {
       source_url: null,
       amendment_type: payload.amendmentType || null,
     };
-    const scale = reportDate < POST_2022_VALUE_RULE_DATE ? 1000 : 1;
+    // reportDate only, deliberately. The source above stamps accepted_at with
+    // the moment of upload, which says when an analyst pasted the filing and
+    // nothing about when it was filed - so valueScaleFor falls back to the
+    // 45-day statutory deadline, which is right for any filing made on time.
+    const { scale } = valueScaleFor({ reportDate, override: manager.value_scale_override });
     rows = isXml ? collapseDuplicateRows(parseInformationTable(input, scale)) : parsePasted13fTable(input, scale);
   }
+  // A withheld filing pasted into the CMS carries the same "NA" placeholder
+  // the fetch path sees. Importing it stores a position that does not exist,
+  // so it is dropped here too and the operator is told why rather than being
+  // shown a one-line portfolio to publish.
+  const placeholders = rows.filter(isPlaceholderRow).length;
+  rows = rows.filter((row) => !isPlaceholderRow(row));
+  if (!rows.length && placeholders) {
+    throw new Error('This filing withholds its information table under a confidential treatment request - '
+      + 'it carries a placeholder entry rather than holdings. The positions are normally filed as a '
+      + '13F-HR/A when the confidentiality lapses; import that amendment instead.');
+  }
   if (!rows.length) throw new Error('No valid holdings were detected. Preserve tabs between copied columns, or paste the SEC information-table XML.');
-  const mapping = await mappingsFor(client, rows.map((row) => row.cusip));
-  rows = rows.map((row) => ({ ...row, ...(mapping.get(row.cusip) || {}) }));
+  const mapping = await mappingsFor(client, rows.map((row) => row.cusip), source.report_date);
+  // Picked explicitly rather than spread: only these belong on a holding row.
+  rows = rows.map((row) => {
+    const resolved = mapping.get(String(row.cusip || '').trim().toUpperCase());
+    return resolved
+      ? { ...row, ticker: resolved.ticker || row.ticker || null, issuer_name: resolved.issuer_name || row.issuer_name }
+      : row;
+  });
   const totalValue = rows.reduce((sum, row) => sum + n(row.value_usd), 0);
   rows = rows.map((row) => ({ ...row, portfolio_weight: totalValue ? (n(row.value_usd) / totalValue) * 100 : 0 }));
   const previous = await previousImportPortfolio(client, manager, source.report_date, submissions);
@@ -909,7 +1746,8 @@ async function publishPreparedImport(client, prepared, actor) {
   if (error) throw error;
   await client.from('institutional_filings').update({ is_active: false }).eq('manager_id', manager.id).eq('report_date', source.report_date).neq('id', filing.id);
   await client.from('institutional_holdings').delete().eq('filing_id', filing.id);
-  await insertChunks(client, 'institutional_holdings', rows.map((row) => importedHolding(row, filing, manager)));
+  await insertChunks(client, 'institutional_holdings',
+    await withKnownTickers(client, rows.map((row) => importedHolding(row, filing, manager)), filing.report_date));
   const previous = await previousImportPortfolio(client, manager, source.report_date, { filings: { recent: {} } });
   await client.from('institutional_holding_changes').delete().eq('filing_id', filing.id);
   const changes = buildChanges(rows, previous.rows || [], filing);
@@ -983,39 +1821,155 @@ async function rebuildSignals(client) {
     });
   }
   await client.from('institutional_signals').delete().in('scope_type', ['fund', 'stock']);
-  if (signalRows.length) {
-    const { error: insertError } = await client.from('institutional_signals').upsert(signalRows, { onConflict: 'scope_type,scope_id,as_of,signal_type' });
+  // Grouping by CUSIP is what stops duplicates arising; this stops one that
+  // slips through from failing the whole rebuild. A single repeated security
+  // withheld every fund's scores too, which is wildly out of proportion.
+  const { rows: uniqueSignals, dropped } = dedupeSignalRows(signalRows);
+  if (dropped.length) {
+    console.warn(`[institutional-holdings] ${dropped.length} duplicate signal row(s) dropped before insert: ${dropped.slice(0, 5).join(', ')}`);
+  }
+  if (uniqueSignals.length) {
+    const { error: insertError } = await client.from('institutional_signals').upsert(uniqueSignals, { onConflict: 'scope_type,scope_id,as_of,signal_type' });
     if (insertError) throw insertError;
   }
   return { funds: latest.size, stocks: consensus.length };
 }
 
-async function performInstitutionalRefresh({ managerSlug, quarters = 12 } = {}) {
+async function performInstitutionalRefresh({ managerSlug, quarters = 12, refetch = false, onManagerDone = null, onRoster = null } = {}) {
   const client = db();
-  const managerRows = await managers(client);
+  // Strict here, unlike a read. A collection run is about to crawl the roster
+  // it just seeded, and crawling a stale one would quietly cover the wrong
+  // set of managers and report success for it. A page serving the stored
+  // roster is degraded; a run doing so is wrong.
+  const managerRows = await managers(client, { seedRequired: true });
   const selected = managerSlug && managerSlug !== 'all' ? managerRows.filter((row) => row.slug === managerSlug) : managerRows;
   if (!selected.length) throw new Error('Select a tracked manager.');
+  // Announced before any work, so a run that dies partway still knows how many
+  // managers it was supposed to cover. Without it the count of managers that
+  // finished is the only number available, and a truncated run reports itself
+  // as having covered everything it attempted.
+  if (onRoster) { try { onRoster(selected.length); } catch { /* telemetry must never break collection */ } }
+
+  // Read once for the whole roster rather than per manager. A failure here
+  // leaves every manager on its own CIK, which is the behaviour before this
+  // existed - degraded, not broken.
+  const cikRows = new Map();
+  {
+    const { data, error } = await client
+      .from('institutional_manager_ciks')
+      .select('manager_id,cik,role,effective_from,effective_to,label');
+    if (error) console.warn(`[institutional-holdings] manager CIKs: ${error.message}`);
+    for (const row of data || []) {
+      if (!cikRows.has(row.manager_id)) cikRows.set(row.manager_id, []);
+      cikRows.get(row.manager_id).push(row);
+    }
+  }
   const results = await mapWithConcurrency(selected, 3, async (manager) => {
     await client.from('institutional_managers').update({ last_refresh_at: new Date().toISOString(), last_refresh_status: 'running', last_refresh_error: null }).eq('id', manager.id);
     try {
-      const submissions = await secFetch(`${SEC_DATA}/submissions/CIK${cleanCik(manager.cik)}.json`, true);
-      const filingRows = recent13fFilings(submissions, quarters);
+      // A manager's 13F reporting can move between legal entities. Every CIK
+      // it has filed under is scanned, primary first, and each one's filings
+      // are accepted only for the report dates its declared window covers.
+      const order = scanOrder(manager.cik, cikRows.get(manager.id) || []);
+      const collected = [];
+      let submissions = null;
+      for (const entry of order) {
+        const payload = await secFetch(`${SEC_DATA}/submissions/CIK${cleanCik(entry.cik)}.json`, true);
+        // The notice check reads the manager's own CIK: a predecessor filing
+        // notices says nothing about where the current book is reported.
+        if (entry.role === 'primary' || !submissions) submissions = payload;
+        const rows = await recent13fFilings(payload, quarters, entry.cik);
+        collected.push({ entry, filings: rows.map((row) => ({ ...row, source_cik: entry.cik })) });
+      }
+
+      const merged = mergeByWindow(collected);
+      for (const conflict of merged.conflicts) {
+        // Declared windows should make this impossible, so it means a boundary
+        // is wrong. Reported rather than resolved silently.
+        console.warn(`[institutional-holdings] ${manager.slug} ${conflict.report_date}: claimed by ${conflict.kept} and ${conflict.dropped}; kept ${conflict.kept}`);
+      }
+      if (merged.outside.length) {
+        console.warn(`[institutional-holdings] ${manager.slug}: ${merged.outside.length} filing(s) outside every CIK window, oldest ${merged.outside.map((row) => row.report_date).sort()[0]}`);
+      }
+
+      // Re-selected across the merged set, so the newest N periods are the
+      // newest overall rather than the newest from whichever CIK ran last.
+      const filingRows = selectThirteenF(merged.filings, quarters);
       if (!filingRows.length) throw new Error('No Form 13F filings were found for this SEC filer.');
+      // What is already stored, so the run does not re-download tables that
+      // cannot change. At twelve quarters this saves about twelve hundred
+      // EDGAR requests a night; at the depth a historical backfill needs it is
+      // the difference between converging and re-crawling the same
+      // alphabetical head until the ceiling every time.
+      const { data: storedRows, error: storedError } = await client
+        .from('institutional_filings')
+        .select('accession_number,holdings_count')
+        .eq('manager_id', manager.id);
+      // A failed lookup means fetch everything. Skipping on an unknown is how
+      // a transient database error turns into a permanent hole in the history.
+      if (storedError) console.warn(`[institutional-holdings] stored filings for ${manager.slug}: ${storedError.message}`);
+      const plan = ingestPlan({ available: filingRows, stored: storedError ? [] : (storedRows || []), refetch });
       const filings = [];
-      for (const filing of filingRows) filings.push(await ingestFiling(client, manager, filing));
+      for (const filing of plan.fetch) filings.push(await ingestFiling(client, manager, filing));
       const newestReport = filingRows.map((row) => row.report_date).sort().reverse()[0];
       const staleCutoff = new Date(Date.now() - (240 * 24 * 60 * 60 * 1000)).toISOString().slice(0, 10);
-      const status = newestReport < staleCutoff ? 'stale' : 'success';
-      await client.from('institutional_managers').update({ last_refresh_at: new Date().toISOString(), last_successful_refresh_at: new Date().toISOString(), last_refresh_status: status, last_refresh_error: status === 'stale' ? `Latest available 13F reports ${newestReport}.` : null }).eq('id', manager.id);
-      return { manager: manager.display_name, cik: manager.cik, ok: true, status, latest_report_date: newestReport, filings };
+
+      // A notice newer than the newest holdings report means this manager is
+      // not late - it is reporting through a different filer, and no further
+      // 13F-HR is coming under this CIK. Saying 'stale' invites waiting for an
+      // update that will never arrive, while the page shows an old book as if
+      // it were current.
+      const notices = noticesFromBlock(submissions?.filings?.recent);
+      const posture = filingPosture({ newestHoldingsReport: newestReport, notices });
+
+      const status = posture.posture === 'reports_elsewhere'
+        ? 'reports_elsewhere'
+        : (newestReport < staleCutoff ? 'stale' : 'success');
+      const message = postureMessage({ ...posture, newestHoldingsReport: newestReport })
+        || (status === 'stale' ? `Latest available 13F reports ${newestReport}.` : null);
+
+      await client.from('institutional_managers').update({ last_refresh_at: new Date().toISOString(), last_successful_refresh_at: new Date().toISOString(), last_refresh_status: status, last_refresh_error: message }).eq('id', manager.id);
+      const done = { manager: manager.display_name, slug: manager.slug, cik: manager.cik, ok: true, status, latest_report_date: newestReport, filings, skipped: plan.skipped, available: plan.total, notice_period: posture.notice_period };
+      // Announced as it completes rather than only in the final return. A run
+      // that hits its ceiling abandons that return, and without this the record
+      // reported zero managers for work already committed to the database.
+      if (onManagerDone) { try { onManagerDone(done); } catch { /* telemetry must never break collection */ } }
+      return done;
     } catch (error) {
       await client.from('institutional_managers').update({ last_refresh_at: new Date().toISOString(), last_refresh_status: 'error', last_refresh_error: error.message }).eq('id', manager.id);
       return { manager: manager.display_name, cik: manager.cik, ok: false, status: 'error', error: error.message };
     }
   });
-  const enrichment = await enrichSecurityIdentifiers(client);
-  const scores = await rebuildSignals(client);
-  return { ok: results.some((row) => row.ok), refreshed_at: new Date().toISOString(), results, enrichment, scores };
+  // Identifier enrichment and signal rebuilding are post-processing. By the
+  // time they run, every filing has been ingested and committed. A failure
+  // here - a statement timeout, OpenFIGI being down - must not turn a run that
+  // wrote 561,209 rows into a failed one; it is reported and the run stands.
+  let enrichment = null;
+  let scores = null;
+  const postErrors = [];
+  try {
+    enrichment = await enrichSecurityIdentifiers(client);
+  } catch (error) {
+    postErrors.push(`identifier enrichment: ${error.message}`);
+    console.error(`[institutional-holdings] identifier enrichment failed: ${error.message}`);
+  }
+  try {
+    scores = await rebuildSignals(client);
+  } catch (error) {
+    postErrors.push(`signal rebuild: ${error.message}`);
+    console.error(`[institutional-holdings] signal rebuild failed: ${error.message}`);
+  }
+
+  return {
+    ok: results.some((row) => row.ok),
+    refreshed_at: new Date().toISOString(),
+    results,
+    enrichment,
+    scores,
+    // Surfaced so the run record can say the collection succeeded and the
+    // post-processing did not, rather than conflating the two.
+    post_processing_errors: postErrors,
+  };
 }
 
 let fullRefreshPromise = null;
@@ -1031,8 +1985,19 @@ export function refreshInstitutionalFilings(options = {}) {
 
 let automationStarted = false;
 
+// Opt-in, not opt-out.
+//
+// This used to default to on, so every deploy of the web process started an
+// unthrottled SEC crawl 15 seconds later: 51 managers x 12 quarters of EDGAR
+// requests from a dyno whose job is serving clients, with no rate limiter and
+// no coordination between instances. Restart the service three times and three
+// crawls run at once, against an endpoint whose Fair Access policy is 10
+// requests a second and whose penalty is an IP block.
+//
+// Collection belongs in a scheduled worker with a real limiter. Until that
+// exists, this runs only where someone has deliberately set the flag.
 export function startInstitutionalHoldingsAutomation() {
-  if (automationStarted || String(process.env.INSTITUTIONAL_AUTO_REFRESH || 'true').toLowerCase() === 'false') return;
+  if (automationStarted || String(process.env.INSTITUTIONAL_AUTO_REFRESH || 'false').toLowerCase() !== 'true') return;
   automationStarted = true;
   const execute = () => refreshInstitutionalFilings({ managerSlug: 'all', quarters: 12 })
     .then((result) => console.info(`[institutional-holdings] automatic refresh complete: ${result.results.filter((row) => row.ok).length}/${result.results.length} managers, ${result.enrichment.mapped} identifiers mapped`))
@@ -1052,10 +2017,21 @@ export async function getInstitutionalAdmin() {
     if (!unresolvedMap.has(row.cusip)) unresolvedMap.set(row.cusip, { ...row, observations: 0 });
     unresolvedMap.get(row.cusip).observations += 1;
   }
+  // Collection telemetry. Wrapped because the admin console must still load
+  // before the run-records migration has been applied, and because an
+  // operations panel failing shut takes the whole CMS page with it - the
+  // opposite of what a health display is for.
+  let collection = null;
+  try {
+    collection = { health: await getCollectionHealth(), runs: await listRuns(10) };
+  } catch (error) {
+    collection = { health: null, runs: [], unavailable: error.message };
+  }
   const { data: filings } = await client.from('institutional_filings').select('*, institutional_managers(display_name,slug)').order('filed_at', { ascending: false }).limit(30);
   const { data: alerts } = await client.from('institutional_filing_alerts').select('*, institutional_managers(display_name,slug)').order('created_at', { ascending: false }).limit(50);
   const { data: corrections } = await client.from('institutional_corrections').select('*').order('created_at', { ascending: false }).limit(50);
   return {
+    collection,
     managers: managerRows,
     filings: filings || [],
     alerts: alerts || [],
@@ -1065,16 +2041,36 @@ export async function getInstitutionalAdmin() {
   };
 }
 
-export async function saveSecurityMapping({ cusip, ticker, issuer_name, reason, actor } = {}) {
+export async function saveSecurityMapping({ cusip, ticker, issuer_name, reason, actor, validFrom = null, validTo = null } = {}) {
   const client = db();
   const cleanCusip = String(cusip || '').trim().toUpperCase();
   const cleanTicker = String(ticker || '').trim().toUpperCase();
   if (!cleanCusip || !cleanTicker) throw new Error('CUSIP and ticker are required.');
+
+  // An admin asserting a mapping is still asserting it about a period. Default
+  // to the earliest date the CUSIP was actually observed rather than to 1900,
+  // which claims the ticker applied to filings nobody has evidence about.
+  let from = /^\d{4}-\d{2}-\d{2}$/.test(String(validFrom || '')) ? validFrom : null;
+  if (!from) {
+    const { data: earliest } = await client.from('institutional_holdings')
+      .select('report_date').eq('cusip', cleanCusip)
+      .order('report_date', { ascending: true }).limit(1).maybeSingle();
+    from = earliest?.report_date || new Date().toISOString().slice(0, 10);
+  }
+  const to = /^\d{4}-\d{2}-\d{2}$/.test(String(validTo || '')) ? validTo : null;
   const { data: previous } = await client.from('security_identifier_history').select('*').eq('cusip', cleanCusip).order('valid_from', { ascending: false }).limit(1).maybeSingle();
-  const { error } = await client.from('security_identifier_history').upsert({ cusip: cleanCusip, ticker: cleanTicker, issuer_name: issuer_name || previous?.issuer_name || null, valid_from: '1900-01-01', source: 'manual_cms', manually_verified: true, updated_at: new Date().toISOString() }, { onConflict: 'cusip,valid_from' });
+  const { error } = await client.from('security_identifier_history').upsert({ cusip: cleanCusip, ticker: cleanTicker, issuer_name: issuer_name || previous?.issuer_name || null, valid_from: from, valid_to: to, security_key: cleanCusip, source: 'manual_cms', manually_verified: true, updated_at: new Date().toISOString() }, { onConflict: 'cusip,valid_from' });
   if (error) throw error;
-  await client.from('institutional_holdings').update({ ticker: cleanTicker }).eq('cusip', cleanCusip);
-  await client.from('holding_changes').update({ ticker: cleanTicker }).eq('cusip', cleanCusip);
+  // Scoped to the interval the mapping claims. Stamping the ticker onto every
+  // holding for this CUSIP regardless of date is the same error as resolving
+  // with the newest mapping: it relabels filings the mapping says nothing about.
+  const scope = (query) => {
+    let q = query.eq('cusip', cleanCusip).gte('report_date', from);
+    if (to) q = q.lt('report_date', to);
+    return q;
+  };
+  await scope(client.from('institutional_holdings').update({ ticker: cleanTicker }));
+  await scope(client.from('holding_changes').update({ ticker: cleanTicker }));
   await client.from('institutional_corrections').insert({ entity_type: 'security', entity_key: cleanCusip, field_name: 'ticker', old_value: previous?.ticker || null, new_value: cleanTicker, reason: reason || null, actor: actor || 'admin' });
   await rebuildSignals(client);
   return { ok: true, cusip: cleanCusip, ticker: cleanTicker };
@@ -1098,4 +2094,445 @@ export async function markInstitutionalAlert(id, isRead = true) {
   const { data, error } = await client.from('institutional_filing_alerts').update({ is_read: Boolean(isRead) }).eq('id', id).select().single();
   if (error) throw error;
   return data;
+}
+
+/**
+ * Re-ingest one already-known filing straight from SEC.
+ *
+ * Exists for the amendment remediation job. Every 13F-HR/A ingested before the
+ * classification was fixed took the merge branch, so a restatement that removed
+ * a position left it in the portfolio. Fixing ingestion forward does not undo
+ * that: the stored rows are the merged result, and the amendment's own holdings
+ * are not recoverable from them. They have to come back from EDGAR.
+ *
+ * The whole point is that this re-runs the same ingestFiling every collection
+ * uses, rather than a parallel repair implementation that could drift from it.
+ * Re-ingesting a manager's filings for one report_date in acceptance order
+ * reproduces the correct end state: the original first, then each amendment
+ * applied under its real classification.
+ */
+export async function reingestFiling(filingId) {
+  const client = db();
+  const { data: filing, error } = await client
+    .from('institutional_filings')
+    .select('*, institutional_managers(*)')
+    .eq('id', filingId)
+    .single();
+  if (error) throw new Error(error.message);
+  if (!filing) throw new Error(`Filing ${filingId} not found`);
+
+  const manager = filing.institutional_managers;
+  if (!manager?.cik) throw new Error(`Filing ${filingId} has no manager CIK to fetch against`);
+
+  return ingestFiling(client, manager, {
+    accession_number: filing.accession_number,
+    form_type: filing.form_type,
+    report_date: filing.report_date,
+    accepted_at: filing.filed_at,
+    primary_document: filing.primary_document,
+  });
+}
+
+/** Holdings currently stored for a filing, for before/after comparison. */
+export async function holdingsForFiling(filingId) {
+  const client = db();
+  return collect(() => client
+    .from('institutional_holdings')
+    .select('cusip,ticker,issuer_name,shares,value_usd,put_call')
+    .eq('filing_id', filingId));
+}
+
+/** Every 13F-HR/A on record, oldest acceptance first, with its manager. */
+export async function amendmentFilings() {
+  const client = db();
+  const { data, error } = await client
+    .from('institutional_filings')
+    .select('id,accession_number,form_type,report_date,filed_at,manager_id,is_active,amendment_type,institutional_managers(slug,display_name,cik)')
+    .like('form_type', '%/A')
+    .order('filed_at', { ascending: true });
+  if (error) throw new Error(error.message);
+  return data || [];
+}
+
+/** Active filings for one manager and quarter, in acceptance order. */
+export async function filingsForQuarter(managerId, reportDate) {
+  const client = db();
+  const { data, error } = await client
+    .from('institutional_filings')
+    .select('id,accession_number,form_type,report_date,filed_at,is_active,amendment_type')
+    .eq('manager_id', managerId)
+    .eq('report_date', reportDate)
+    .order('filed_at', { ascending: true });
+  if (error) throw new Error(error.message);
+  return data || [];
+}
+
+/** Recompute signals after a repair batch. Exported so the job runs it once at the end. */
+export async function rebuildInstitutionalSignals() {
+  return rebuildSignals(db());
+}
+
+/**
+ * What re-ingesting a filing would produce, without writing anything.
+ *
+ * The repair job defaults to a dry run, and a dry run that can only say "this
+ * would be reclassified" is not much of a report. This fetches and parses the
+ * filing exactly as ingestion would, applies the real classification, and hands
+ * back the rows that would result - so the reconciliation report can state
+ * which positions would be removed before anything is changed.
+ */
+export async function previewFilingRepair(filingId) {
+  const client = db();
+  const { data: filing, error } = await client
+    .from('institutional_filings')
+    .select('*, institutional_managers(*)')
+    .eq('id', filingId)
+    .single();
+  if (error) throw new Error(error.message);
+
+  const manager = filing?.institutional_managers;
+  if (!manager?.cik) throw new Error(`Filing ${filingId} has no manager CIK`);
+
+  const archive = await filingDocuments(manager.cik, filing.accession_number);
+  const infoDocument = archive.documents.find((doc) => /<(?:\w+:)?infoTable[\s>]/i.test(doc.text));
+  if (!infoDocument) throw new Error(`No 13F information table in ${filing.accession_number}`);
+
+  // Same assessment ingestion makes, so a dry run reports what a repair would
+  // actually do. Without it the preview reads a withheld table as a one-line
+  // portfolio and offers to store it, which is the outcome being repaired.
+  const table = assessInformationTable({
+    rawRows: parseInformationTable(infoDocument.text, 1),
+    summary: parseSummaryPage(archive.coverPage),
+  });
+  if (table.status !== 'complete') {
+    const currentRows = (await collect(() => client.from('institutional_holdings')
+      .select('*').eq('filing_id', filing.id)))
+      .map(({ id, filing_id, manager_id, report_date, portfolio_weight, created_at, ...row }) => row);
+    return {
+      filing,
+      manager,
+      classification: classifyFiling(filing.form_type, archive.coverPage),
+      strategy: table.status,
+      priorRows: [],
+      currentRows,
+      superseded: [],
+      amendmentRows: [],
+      resultingRows: [],
+      // Everything stored against this filing goes, because none of it came
+      // from a disclosed position.
+      removed: currentRows,
+      applied: false,
+      table,
+    };
+  }
+
+  const amendmentRows = collapseDuplicateRows(table.realRows);
+  const classification = classifyFiling(filing.form_type, archive.coverPage);
+
+  // The version this amendment amends.
+  //
+  // is_active is deliberately NOT part of this query. Ingesting the amendment
+  // made it the active filing and deactivated the report it superseded, so
+  // asking for the active one excludes the very filing being looked for. That
+  // returned null on every amendment in the database, with two consequences:
+  // removals were computed against an empty prior set and always reported
+  // zero, and `strategy` fell through to replace regardless of what the cover
+  // page said - which would erase valid positions on an additive amendment.
+  const { data: previousVersion } = await client.from('institutional_filings').select('*')
+    .eq('manager_id', manager.id).eq('report_date', filing.report_date)
+    .neq('id', filing.id).lte('filed_at', filing.filed_at)
+    .order('filed_at', { ascending: false }).limit(1).maybeSingle();
+  const priorRows = previousVersion
+    ? (await collect(() => client.from('institutional_holdings').select('*').eq('filing_id', previousVersion.id)))
+      .map(({ id, filing_id, manager_id, report_date, portfolio_weight, created_at, ...row }) => row)
+    : [];
+
+  const strategy = classification.amendmentType === 'original' || !previousVersion
+    ? 'replace'
+    : classification.strategy;
+  const outcome = applyAmendment({ strategy, priorRows, amendmentRows, keyOf: filingKey });
+
+  // What actually disappears from the portfolio, measured against the rows
+  // stored TODAY rather than against the prior version.
+  //
+  // The stored rows are the merged result the broken classification produced,
+  // and they are what a client sees now. Comparing the prior version to the
+  // amendment answers a different question and reported zero removals while
+  // row counts visibly dropped - JPMorgan 7,756 to 7,499 with "0 removed".
+  const currentRows = (await collect(() => client.from('institutional_holdings')
+    .select('*').eq('filing_id', filing.id)))
+    .map(({ id, filing_id, manager_id, report_date, portfolio_weight, created_at, ...row }) => row);
+  const surviving = new Set(outcome.rows.map((row) => filingKey(row)));
+  const goingAway = currentRows.filter((row) => !surviving.has(filingKey(row)));
+
+  // Two very different things look identical at row level, and conflating them
+  // makes the report unreviewable.
+  //
+  // filingKey is cusip|class|shareType|putCall - it carries no value or share
+  // count. When a restatement re-reports the same security with corrected
+  // figures, the old row disappears and a new one takes its place. That is a
+  // superseded row, not a divested position.
+  //
+  // H&H International's Q4-2024 restatement is the case that exposed it: the
+  // report listed APPLE, BERKSHIRE, ALPHABET, PDD and OCCIDENTAL as "removed"
+  // when all five are in the amendment SEC actually filed. Read literally it
+  // says the manager exited Apple. It did not; the row was restated.
+  //
+  // So a position only counts as removed when its security is absent from the
+  // result entirely.
+  const survivingSecurities = new Set(
+    outcome.rows.map((row) => String(row.cusip || '').trim().toUpperCase()),
+  );
+  const removed = goingAway.filter(
+    (row) => !survivingSecurities.has(String(row.cusip || '').trim().toUpperCase()),
+  );
+  const superseded = goingAway.filter(
+    (row) => survivingSecurities.has(String(row.cusip || '').trim().toUpperCase()),
+  );
+
+  return {
+    filing,
+    manager,
+    classification,
+    strategy,
+    priorRows,
+    currentRows,
+    superseded,
+    amendmentRows,
+    resultingRows: outcome.rows,
+    removed,
+    applied: outcome.applied,
+    table,
+  };
+}
+
+/**
+ * Take an unclassifiable amendment out of the derived calculations.
+ *
+ * Recording that a filing needs review is not the same as stopping it counting.
+ * An amendment whose type could not be read was ingested under the old merge
+ * behaviour, so its rows are the merged result - and while it stays active,
+ * consensus, sector weights and change signals keep reading them as though the
+ * amendment had been understood.
+ *
+ * The filing itself is preserved: it is the audit record, and it is what a
+ * reviewer resolves against. Only is_active changes, which is the flag every
+ * derived surface filters on. The version it superseded is reactivated so the
+ * quarter still has exactly one authoritative report rather than none - a
+ * quarter with no active filing silently disappears from history, which is a
+ * worse failure than the one being fixed.
+ */
+export async function quarantineAmendment(filingId, reason) {
+  const client = db();
+  const { data: amendment, error } = await client
+    .from('institutional_filings')
+    .select('id,manager_id,report_date,accession_number')
+    .eq('id', filingId)
+    .single();
+  if (error) throw new Error(error.message);
+
+  const { error: flagError } = await client
+    .from('institutional_filings')
+    .update({ is_active: false, needs_review: true, review_reason: reason || 'Amendment type could not be determined.' })
+    .eq('id', filingId);
+  if (flagError) throw new Error(flagError.message);
+
+  // The most recent filing for this quarter that is not itself quarantined.
+  const { data: candidates } = await client
+    .from('institutional_filings')
+    .select('id,form_type,filed_at,needs_review')
+    .eq('manager_id', amendment.manager_id)
+    .eq('report_date', amendment.report_date)
+    .neq('id', filingId)
+    .order('filed_at', { ascending: false });
+
+  const successor = (candidates || []).find((row) => !row.needs_review);
+  if (successor) {
+    await client.from('institutional_filings').update({ is_active: true }).eq('id', successor.id);
+    // Exactly one active version per quarter, or the aggregates double count.
+    await client.from('institutional_filings').update({ is_active: false })
+      .eq('manager_id', amendment.manager_id)
+      .eq('report_date', amendment.report_date)
+      .neq('id', successor.id);
+  }
+
+  return {
+    quarantined: amendment.accession_number,
+    reactivated: successor?.id || null,
+    orphaned_quarter: !successor,
+  };
+}
+
+/**
+ * Whether derived numbers can currently be trusted as a whole.
+ *
+ * Repairing amendments quarter by quarter means there is a window in which
+ * some of the history has been corrected and some has not, and a consensus
+ * figure computed across both is not a figure of anything. Surfaces that
+ * aggregate across managers and quarters ask this and say so, rather than
+ * publishing a number whose inputs are half repaired.
+ *
+ * Deliberately conservative: anything unresolved reports as in progress. A gate
+ * that reads clear while filings sit unreviewed is a gate that does nothing.
+ */
+export async function getRepairStatus() {
+  const client = db();
+  try {
+    const [{ count: pendingReview }, { data: lastRun }] = await Promise.all([
+      client.from('institutional_filings')
+        .select('id', { count: 'exact', head: true })
+        .eq('needs_review', true),
+      client.from('institutional_amendment_repair_summary')
+        .select('*')
+        .order('started_at', { ascending: false })
+        .limit(1)
+        .maybeSingle(),
+    ]);
+
+    const run = lastRun || null;
+    const failed = Number(run?.filings_failed || 0);
+    const needingReview = Number(run?.filings_needing_review || 0);
+    const pending = Number(pendingReview || 0);
+
+    // A dry run has repaired nothing, so it never clears the gate on its own.
+    const repairApplied = Boolean(run?.applied);
+    const incomplete = failed > 0 || needingReview > 0 || pending > 0;
+
+    if (!run) {
+      return {
+        status: 'not_started',
+        clean: false,
+        message: 'Historical amendment repair has not run. Aggregate figures may include positions withdrawn by amendments.',
+      };
+    }
+    if (!repairApplied) {
+      return {
+        status: 'in_progress',
+        clean: false,
+        message: 'Historical repair in progress. Aggregate figures may mix repaired and unrepaired history.',
+        pending_review: pending,
+      };
+    }
+    if (incomplete) {
+      return {
+        status: 'in_progress',
+        clean: false,
+        message: 'Historical repair in progress. Some filings could not be repaired or are awaiting review, so aggregate figures may mix repaired and unrepaired history.',
+        pending_review: pending,
+        failed,
+      };
+    }
+    return {
+      status: 'complete',
+      clean: true,
+      message: null,
+      repaired_at: run.finished_at || null,
+    };
+  } catch (error) {
+    // Before the repair migration is applied the tables do not exist. Unknown
+    // is not clean: it must not read as a clean bill of health.
+    return {
+      status: 'unknown',
+      clean: false,
+      message: 'Repair status is unavailable, so aggregate figures cannot be confirmed as fully repaired.',
+      error: error.message,
+    };
+  }
+}
+
+/**
+ * Run identifier enrichment as a job rather than as a tail on collection.
+ *
+ * enrichSecurityIdentifiers is invoked after every refresh with a modest limit,
+ * which keeps a healthy table healthy and will never close a gap of roughly
+ * ninety per cent. This is the same routine with the limit under the caller's
+ * control, plus a measurement either side so the effect is a figure rather than
+ * an impression.
+ *
+ * `apply` false resolves nothing and writes nothing: it reports which
+ * securities would be attempted and in what order. A bulk write of thousands of
+ * mappings deserves to be looked at first.
+ */
+export async function runIdentifierBackfill({ limit = 500, apply = false } = {}) {
+  const client = db();
+
+  // Each phase announces itself. The first apply run died with "canceling
+  // statement due to statement timeout" after 124 seconds and there was no way
+  // to tell which statement: the coverage count, the candidate scan, the vendor
+  // upsert, or the holdings update. Naming the phase costs one line of log and
+  // saves guessing.
+  const phase = async (name, work) => {
+    const at = Date.now();
+    try {
+      const value = await work();
+      console.info(`[identifiers] ${name}: ${((Date.now() - at) / 1000).toFixed(1)}s`);
+      return value;
+    } catch (error) {
+      console.error(`[identifiers] ${name} failed after ${((Date.now() - at) / 1000).toFixed(1)}s: ${error.message}`);
+      throw error;
+    }
+  };
+
+  const measure = async () => {
+    const [{ count: total }, { count: mapped }] = await Promise.all([
+      client.from('institutional_holdings').select('id', { count: 'exact', head: true }),
+      client.from('institutional_holdings').select('id', { count: 'exact', head: true }).not('ticker', 'is', null),
+    ]);
+    return coverage({ total: total || 0, mapped: mapped || 0 });
+  };
+
+  const before = await phase('coverage before', measure);
+
+  // The same ranked, evidence-anchored candidate list the inline enrichment
+  // uses, so a dry run shows exactly what an applied run would attempt.
+  const scanLimit = Math.min(limit * 25, 25_000);
+  const unresolvedRows = await phase('candidate scan', async () => {
+    const { data, error } = await client
+      .from('institutional_holdings')
+      .select('cusip,issuer_name,value_usd,report_date,manager_id')
+      .is('ticker', null)
+      .order('value_usd', { ascending: false })
+      .limit(scanLimit);
+    if (error) throw new Error(error.message);
+    return data || [];
+  });
+
+  const candidates = rankUnmapped(unresolvedRows, limit);
+
+  if (!apply) {
+    return {
+      applied: false,
+      coverage_before: before,
+      coverage_after: before,
+      candidates: candidates.length,
+      sample: candidates.slice(0, 15).map((row) => ({
+        cusip: row.cusip,
+        issuer_name: row.issuer_name,
+        observed_from: row.observed_from,
+        // Named for what they are. The previous shape reported the cumulative
+        // sum as "disclosed value" and the row count as "managers", so QQQ read
+        // as fifty-two managers holding $850bn - more than the fund contains.
+        latest_value_usd: Math.round(row.latest_value),
+        latest_report_date: row.latest_date,
+        cumulative_value_usd: Math.round(row.cumulative_value),
+        managers: row.managers,
+        observations: row.observations,
+      })),
+      mapped: 0,
+      unresolved: 0,
+      errors: [],
+    };
+  }
+
+  const outcome = await phase('resolve and apply', () => enrichSecurityIdentifiers(client, limit));
+  const after = await phase('coverage after', measure);
+
+  return {
+    applied: true,
+    coverage_before: before,
+    coverage_after: after,
+    candidates: candidates.length,
+    sample: [],
+    ...outcome,
+  };
 }

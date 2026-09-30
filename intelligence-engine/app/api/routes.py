@@ -20158,7 +20158,13 @@ def warehouse_insider_paste_preview(payload: dict[str, Any] = Body(default_facto
     and how many lines were dropped before committing to it - a vendor export
     that silently lost half its rows should be caught here, not in the data.
     """
-    from financial_warehouse_completion.insider_trades import parse_pasted
+    country = str(payload.get("country", "IN")).upper()
+    if country not in {"IN", "US"}:
+        raise HTTPException(status_code=400, detail="Invalid country")
+    if country == "US":
+        from financial_warehouse_completion.us_insider_trades import parse_pasted
+    else:
+        from financial_warehouse_completion.insider_trades import parse_pasted
 
     # Preview validates and normalises only. Ticker matching is deferred to
     # publish so a slow company-master read cannot block the Check button.
@@ -20178,7 +20184,13 @@ def warehouse_insider_paste_run(payload: dict[str, Any] = Body(default_factory=d
     importer, so pasting a day that was already loaded updates those rows
     rather than duplicating them.
     """
-    from financial_warehouse_completion.insider_trades import import_pasted
+    country = str(payload.get("country", "IN")).upper()
+    if country not in {"IN", "US"}:
+        raise HTTPException(status_code=400, detail="Invalid country")
+    if country == "US":
+        from financial_warehouse_completion.us_insider_trades import import_pasted
+    else:
+        from financial_warehouse_completion.insider_trades import import_pasted
 
     return import_pasted(str((payload or {}).get("text") or ""),
                          actor=_warehouse_actor(payload or {}, x_agi_actor))
@@ -22739,3 +22751,151 @@ def warehouse_normalise_units(
     body = payload or {}
     return normalise_units(actor=_warehouse_actor(body, x_agi_actor),
                            dry_run=bool(body.get("dry_run", True)))
+
+
+@router.get("/investor-mappings", dependencies=[Depends(require_token)])
+def investor_mapping_registry():
+    from financial_warehouse_completion.investor_mapping import registry, bse_documents
+    result=registry()
+    result['bseFilings']=bse_documents()
+    return result
+
+@router.post("/investor-mappings/review", dependencies=[Depends(require_token)])
+def investor_mapping_review(payload: dict[str, Any] = Body(default_factory=dict)):
+    from financial_warehouse_completion.investor_mapping import save
+    try:
+        return save(payload, str(payload.get('actor') or 'admin'))
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+@router.post("/investor-mappings/bse", dependencies=[Depends(require_token)])
+def investor_mapping_bse(payload: dict[str, Any] = Body(default_factory=dict)):
+    from financial_warehouse_completion.investor_mapping import save_bse
+    try:
+        return save_bse(payload, str(payload.get('actor') or 'admin'))
+    except (ValueError, KeyError) as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
+@router.get("/institutions", dependencies=[Depends(require_token)])
+def institutions_snapshot(country: str = "IN", category: str = "individual"):
+    from financial_warehouse_completion.institutions import current
+    if country not in {"IN", "US"}:
+        raise HTTPException(status_code=400, detail="Invalid country")
+    if category not in {"individual", "institutional"}:
+        raise HTTPException(status_code=400, detail="Invalid investor category")
+    return current(country, category)
+
+@router.post("/institutions/{operation}", dependencies=[Depends(require_token)])
+def institutions_import(operation: str, payload: dict[str, Any] = Body(default_factory=dict)):
+    from financial_warehouse_completion.institutions import parse, publish
+    if operation not in {"preview", "publish"}:
+        raise HTTPException(status_code=404, detail="Unknown operation")
+    category = payload.get("category", "individual")
+    if category not in {"individual", "institutional"}:
+        raise HTTPException(status_code=400, detail="Invalid investor category")
+    args = (str(payload.get("text") or ""), payload.get("country", "IN"), payload.get("asOf"))
+    return parse(*args) if operation == "preview" else publish(*args, actor=str(payload.get("actor") or "admin"), category=category)
+
+
+@router.post("/website-analytics/event", dependencies=[Depends(require_token)])
+def website_analytics_event(payload: dict[str, Any] = Body(default_factory=dict)):
+    from financial_warehouse_completion.website_analytics import collect
+    try: return collect(payload)
+    except ValueError as exc: raise HTTPException(status_code=400, detail=str(exc))
+
+@router.get("/website-analytics/summary", dependencies=[Depends(require_token)])
+def website_analytics_summary(days: int = 7):
+    from financial_warehouse_completion.website_analytics import report
+    try: return report(days)
+    except ValueError as exc: raise HTTPException(status_code=400, detail=str(exc))
+
+
+@router.post('/finance-tools/applications', dependencies=[Depends(require_token)])
+def finance_tools_submit(payload: dict[str, Any] = Body(default_factory=dict)):
+    from financial_warehouse_completion.finance_tools import submit
+    try: return submit(payload)
+    except ValueError as exc: raise HTTPException(status_code=400, detail=str(exc))
+
+@router.get('/finance-tools/applications', dependencies=[Depends(require_token)])
+def finance_tools_applications(owner: str | None = None):
+    from financial_warehouse_completion.finance_tools import applications
+    return applications(owner)
+
+@router.patch('/finance-tools/applications/{identity}', dependencies=[Depends(require_token)])
+def finance_tools_review(identity: str, payload: dict[str, Any] = Body(default_factory=dict)):
+    from financial_warehouse_completion.finance_tools import review
+    try: return review(identity, payload)
+    except ValueError as exc: raise HTTPException(status_code=400, detail=str(exc))
+
+
+@router.get("/options-lab/paper-agents", dependencies=[Depends(require_token)])
+async def nifty_paper_dashboard():
+    from options_lab.paper_agents import dashboard
+    return await run_in_threadpool(dashboard)
+
+
+@router.post("/options-lab/paper-agents/control", dependencies=[Depends(require_token)])
+async def nifty_paper_control(payload: dict[str, Any] = Body(default={})):
+    from options_lab.paper_agents import control
+    try:
+        return await run_in_threadpool(control, payload.get("action"))
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+
+@router.post("/options-lab/paper-agents/backtest", dependencies=[Depends(require_token)])
+async def nifty_paper_backtest(payload: dict[str, Any] = Body(default={})):
+    from options_lab.replay import submit
+    try:
+        return await run_in_threadpool(submit, str(payload.get("start", "")), str(payload.get("end", "")), payload.get("calendars"))
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+
+@router.post("/options-lab/paper-agents/calendar", dependencies=[Depends(require_token)])
+async def nifty_paper_calendar(payload: dict[str, Any] = Body(default={})):
+    from options_lab.paper_agents import set_research_calendar
+    try:
+        return await run_in_threadpool(set_research_calendar, payload)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+
+@router.get("/options-lab/daily-research", dependencies=[Depends(require_token)])
+async def nifty_daily_research():
+    from options_lab.daily_research import dashboard
+    return await run_in_threadpool(dashboard)
+
+
+@router.post("/options-lab/daily-research/import", dependencies=[Depends(require_token)])
+async def nifty_daily_import(payload: dict[str, Any] = Body(default={})):
+    from options_lab.daily_research import import_csv
+    try:
+        return await run_in_threadpool(import_csv, payload.get('csv'))
+    except (ValueError, KeyError, TypeError) as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+
+@router.post("/options-lab/daily-research/refresh", dependencies=[Depends(require_token)])
+async def nifty_daily_refresh():
+    from options_lab.daily_research import refresh
+    try:
+        return await run_in_threadpool(refresh)
+    except Exception as exc:
+        raise HTTPException(status_code=503, detail='Official NSE report unavailable; retain cached history or import the official CSV.') from exc
+
+
+@router.get('/options-lab/minute-backtest', dependencies=[Depends(require_token)])
+async def nifty_minute_dashboard():
+    from options_lab.minute_backtest import dashboard
+    return await run_in_threadpool(dashboard)
+
+
+@router.post('/options-lab/minute-backtest', dependencies=[Depends(require_token)])
+async def nifty_minute_submit(payload: dict[str, Any] = Body(default={})):
+    from options_lab.minute_backtest import submit
+    try:
+        return await run_in_threadpool(submit,payload.get('start'),payload.get('end'),payload.get('calendars'))
+    except ValueError as exc:
+        raise HTTPException(status_code=422,detail=str(exc)) from exc

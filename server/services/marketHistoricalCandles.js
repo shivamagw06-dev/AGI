@@ -12,7 +12,7 @@ export const UPSTOX_INDEX_KEYS = Object.freeze({
   NIFTYENERGY: 'NSE_INDEX|Nifty Energy',
   NIFTYREALTY: 'NSE_INDEX|Nifty Realty',
   NIFTYPSUBANK: 'NSE_INDEX|Nifty PSU Bank',
-  FINNIFTY: 'NSE_INDEX|Nifty Financial Services',
+  FINNIFTY: 'NSE_INDEX|Nifty Fin Service',
   NIFTYMEDIA: 'NSE_INDEX|Nifty Media',
 });
 

@@ -266,6 +266,7 @@ export class UpstoxMarketFeedV3 {
     onBatch = async () => {},
     reconnect = true,
     reconnectBaseMs = 1_000,
+    maxReconnectAttempts = 12,
     random = Math.random,
   } = {}) {
     this.instrumentKeys = [...new Set((instrumentKeys || []).map(String).map((key) => key.trim()).filter(Boolean))];
@@ -285,6 +286,7 @@ export class UpstoxMarketFeedV3 {
     this.onBatch = onBatch;
     this.reconnect = reconnect;
     this.reconnectBaseMs = Math.max(1, Number(reconnectBaseMs) || 1_000);
+    this.maxReconnectAttempts = Math.max(1, Number(maxReconnectAttempts) || 12);
     this.random = random;
     this.socket = null;
     this.timer = null;
@@ -300,6 +302,8 @@ export class UpstoxMarketFeedV3 {
       decode_errors: 0,
       last_error: null,
       next_retry_at: null,
+      gave_up_at: null,
+      give_up_reason: null,
       connect_mode: this.connectMode,
     };
   }
@@ -382,8 +386,29 @@ export class UpstoxMarketFeedV3 {
     }
   }
 
+  /**
+   * Retry, but not forever.
+   *
+   * An unbounded loop against a provider that is refusing the handshake does
+   * two harmful things. It keeps consuming connection attempts against a
+   * concurrent-connection cap, which is the very thing most likely to be
+   * causing the refusal. And it never reaches a terminal state, so the status
+   * reads "reconnecting" indefinitely and a persistent auth or quota failure
+   * is indistinguishable from a socket that is about to come back. This feed
+   * spent hours in that state reporting a 403 that nothing escalated.
+   *
+   * After `maxAttempts` consecutive failures it gives up and says so, which a
+   * caller can surface and an operator can act on.
+   */
   #scheduleReconnect() {
     if (this.stopped || !this.reconnect || this.timer) return;
+    if (this.attempt >= this.maxReconnectAttempts) {
+      this.state.status = 'exhausted';
+      this.state.next_retry_at = null;
+      this.state.gave_up_at = new Date().toISOString();
+      this.state.give_up_reason = `${this.attempt} consecutive failures; last error: ${this.state.last_error || 'unknown'}`;
+      return;
+    }
     const delay = Math.min(30_000, this.reconnectBaseMs * (2 ** this.attempt)) + Math.floor(this.random() * 250);
     this.attempt += 1;
     this.state.reconnects += 1;
@@ -393,6 +418,39 @@ export class UpstoxMarketFeedV3 {
       this.state.next_retry_at = null;
       this.#connect();
     }, delay);
+  }
+
+  /**
+   * Start a fresh round of reconnect attempts after the feed gave up.
+   *
+   * Giving up stops the feed hammering a two-connection cap, but it is also
+   * permanent: on 18 Sep 2026 a run of mid-session redeploys exhausted the
+   * retries and no strategy ran for the rest of the day. A supervisor calls
+   * this on a cool-down during market hours. With `force`, it also recycles a
+   * socket that claims to be connected but has gone silent.
+   *
+   * An auth failure is not re-armed: the token has to be replaced first.
+   */
+  rearm({ force = false } = {}) {
+    if (this.stopped || this.timer) return false;
+    const status = this.state.status;
+    if (status === 'exhausted') {
+      this.attempt = 0;
+      this.state.gave_up_at = null;
+      this.state.give_up_reason = null;
+      this.state.rearms = (this.state.rearms || 0) + 1;
+      this.state.last_rearm_at = new Date().toISOString();
+      this.#connect();
+      return true;
+    }
+    if (force && status === 'connected' && this.socket) {
+      // 'close' schedules the reconnect; open resets the attempt count.
+      this.state.rearms = (this.state.rearms || 0) + 1;
+      this.state.last_rearm_at = new Date().toISOString();
+      this.socket.close();
+      return true;
+    }
+    return false;
   }
 
   stop() {

@@ -1,4 +1,5 @@
 // src/App.jsx
+import InvestorPortfolioPage from '@/pages/InvestorPortfolioPage';
 import React, { useEffect, Suspense } from 'react';
 import { Helmet, HelmetProvider } from 'react-helmet-async';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
@@ -9,12 +10,17 @@ import { Toaster } from '@/components/ui/toaster';
 import PinGate from '@/components/auth/PinGate';
 import RequireRegistration from '@/components/auth/RequireRegistration';
 import RequireAskAgiAdmin, { AskAgiVisibility } from '@/components/auth/AskAgiAdminAccess';
+import WebsiteTracker from '@/components/analytics/WebsiteTracker';
 import FunnelRouteTracker from '@/components/analytics/FunnelRouteTracker';
 
 const AdminRoutes = React.lazy(() => import('@/pages/admin/AdminRoutes'));
 const CategoryPage = React.lazy(() => import('@/pages/CategoryPage'));
 const ArticlesFeed = React.lazy(() => import('@/components/ArticlesFeed'));
 const About = React.lazy(() => import('@/components/About'));
+const ValuationCalculator = React.lazy(() => import('@/pages/ResearchCalculators').then(m => ({default:m.ValuationCalculator})));
+const PeerComparison = React.lazy(() => import('@/pages/ResearchCalculators').then(m => ({default:m.PeerComparison})));
+const ToolsStatsPage = React.lazy(() => import('@/pages/ToolsStatsPage'));
+const FinanceToolsPage = React.lazy(() => import('@/pages/FinanceToolsPage'));
 const Contact = React.lazy(() => import('@/components/Contact'));
 const ResearchNotes = React.lazy(() => import('@/components/ResearchNotes'));
 const DealTracker = React.lazy(() => import('@/components/DealTracker'));
@@ -50,6 +56,7 @@ const IpoIntelligencePage = React.lazy(() => import('@/pages/IpoIntelligencePage
 const MarketDataCentre = React.lazy(() => import('@/pages/MarketDataCentre'));
 const DataHealthSheet = React.lazy(() => import('@/pages/DataHealthSheet'));
 const PortfolioHub = React.lazy(() => import('@/pages/PortfolioHub'));
+const WealthIntelligence = React.lazy(() => import('@/pages/WealthIntelligence'));
 const ThemeDesk = React.lazy(() => import('@/pages/ThemeDesk'));
 const SectorDesk = React.lazy(() => import('@/pages/SectorDesk'));
 const ResearchWorkflowDesk = React.lazy(() => import('@/pages/ResearchWorkflowDesk'));
@@ -61,8 +68,12 @@ const PredictionCentre = React.lazy(() => import('@/pages/PredictionCentre'));
 const PersonalWorkspace = React.lazy(() => import('@/pages/PersonalWorkspace'));
 const ResearchTerminalHome = React.lazy(() => import('@/components/Home/ResearchTerminalHome'));
 const EquityResearchPage = React.lazy(() => import('@/pages/EquityResearchPage'));
+const StrategyPage = React.lazy(() => import('@/pages/StrategyPage'));
 const IndiaStockIntelligencePage = React.lazy(() => import('@/pages/IndiaStockIntelligencePage'));
 const InstitutionalHoldingsPage = React.lazy(() => import('@/pages/InstitutionalHoldingsPage'));
+const IndexRebalancePage = React.lazy(() => import('@/pages/IndexRebalancePage'));
+const IndiaAiIntelligencePage = React.lazy(() => import('@/pages/IndiaAiIntelligencePage'));
+const BacktestPage = React.lazy(() => import('@/pages/BacktestPage'));
 const HedgeFundDesk = React.lazy(() => import('@/pages/HedgeFundDesk'));
 const HedgeFundPage = React.lazy(() => import('@/pages/HedgeFundPage'));
 const HedgeFundSignalPage = React.lazy(() => import('@/pages/HedgeFundSignalPage'));
@@ -73,7 +84,10 @@ const PrivateEquityPage = React.lazy(() => import('@/pages/PrivateEquityPage'));
 const PrivateEquityFirmPage = React.lazy(() => import('@/pages/PrivateEquityFirmPage'));
 const IntelligenceEntityPage = React.lazy(() => import('@/pages/IntelligenceEntityPage'));
 const EconomicsPage = React.lazy(() => import('@/pages/EconomicsPage'));
+const RichKidsPage = React.lazy(() => import('@/pages/RichKidsPage'));
 const InsiderActivityPage = React.lazy(() => import('@/pages/InsiderActivityPage'));
+
+const FinancialModelingPage = React.lazy(() => import('@/pages/FinancialModelingPage'));
 
 function RouteFallback({ label = 'Loading…' }) {
   return <div className="min-h-[40vh] p-8 text-center text-slate-600">{label}</div>;
@@ -90,6 +104,9 @@ function AppShell() {
   const isAskWorkspace = location.pathname === '/ask';
   const isValuationIntelligence =
     location.pathname === '/valuation-intelligence' || location.pathname === '/valuation-terminal';
+  // The India AI monitor carries its own dark chrome, like the other
+  // terminals: the public light shell would fight it.
+  const isIndiaAiTerminal = location.pathname === '/india-ai';
   const isAgiProduct = location.pathname === '/agi' || location.pathname.startsWith('/agi/');
 
   useEffect(() => {
@@ -145,6 +162,23 @@ function AppShell() {
   }
 
   // Valuation Intelligence — full-bleed institutional consensus (read for users; admin import on /admin).
+  // Behind the free-account gate like every top-menu page (owner's decision,
+  // 19 Sep 2026). RequireRegistration, not PinGate: PinGate renders a blank
+  // white shell here, which is what happened when this block was first
+  // copied from the gated product wrappers.
+  if (isIndiaAiTerminal) {
+    return (
+      <>
+        <Suspense fallback={<div className="min-h-screen bg-[#080b11] p-8 text-center text-[#68727f]">Loading India AI Intelligence…</div>}>
+          <Routes>
+            <Route path="/india-ai" element={<RequireRegistration feature="strategies"><IndiaAiIntelligencePage /></RequireRegistration>} />
+          </Routes>
+        </Suspense>
+        <Toaster />
+      </>
+    );
+  }
+
   if (isValuationIntelligence) {
     return (
       <MarketDataProvider>
@@ -191,6 +225,8 @@ function PublicRoutes() {
       <Route path="/" element={<HomeLayout />} />
       <Route path="/ask" element={<RequireAskAgiAdmin><AskAgiPage /></RequireAskAgiAdmin>} />
       <Route path="/predictions" element={gate('forecasts', <PredictionCentre />)} />
+      <Route path="/financial-modeling" element={<FinancialModelingPage />} />
+      <Route path="/financial-modelling" element={<Navigate replace to="/financial-modeling" />} />
       <Route path="/workspace" element={gate('workspace', <PersonalWorkspace />)} />
 
       <Route path="/market-updates" element={<MarketUpdates />} />
@@ -198,11 +234,14 @@ function PublicRoutes() {
       <Route path="/company-updates" element={<SectionArticlesPage overrideId="company-updates" />} />
 
       <Route path="/research" element={<ArticlesFeed variant="light" />} />
-      <Route path="/equity-research" element={<EquityResearchPage />} />
+      <Route path="/equity-research" element={gate('equity_research', <EquityResearchPage />)} />
+      <Route path="/strategy" element={gate('strategies', <StrategyPage />)} />
       <Route path="/india-stock-intelligence" element={<IndiaStockIntelligencePage />} />
-      <Route path="/institutional-holdings" element={<InstitutionalHoldingsPage />} />
-      <Route path="/institutional-holdings/funds/:fundSlug" element={<InstitutionalHoldingsPage />} />
-      <Route path="/institutional-holdings/stocks/:stockKey" element={<InstitutionalHoldingsPage />} />
+      <Route path="/index-rebalance" element={<IndexRebalancePage />} />
+      <Route path="/manager-backtest" element={<BacktestPage />} />
+      <Route path="/institutional-holdings" element={gate('hedge_fund', <InstitutionalHoldingsPage />)} />
+      <Route path="/institutional-holdings/funds/:fundSlug" element={gate('hedge_fund', <InstitutionalHoldingsPage />)} />
+      <Route path="/institutional-holdings/stocks/:stockKey" element={gate('hedge_fund', <InstitutionalHoldingsPage />)} />
       <Route path="/sections/live-articles" element={<Navigate replace to="/research" />} />
       <Route path="/live-articles" element={<Navigate replace to="/research" />} />
 
@@ -230,6 +269,9 @@ function PublicRoutes() {
       <Route path="/global-markets" element={gate('global_markets', <GlobalMarketsPage />)} />
       <Route path="/us-stock-intelligence" element={gate('global_markets', <UsStockIntelligence />)} />
       <Route path="/economics" element={gate('economics', <EconomicsPage />)} />
+      <Route path="/institutions" element={<RichKidsPage />} />
+      <Route path="/institutions/:country/:investorId" element={<InvestorPortfolioPage />} />
+      <Route path="/rich-kids" element={<RichKidsPage />} />
       <Route path="/insider-activity" element={gate('insider', <InsiderActivityPage />)} />
       <Route path="/global" element={<Navigate replace to="/global-markets" />} />
       <Route path="/global-intelligence" element={<Navigate replace to="/global-markets" />} />
@@ -241,6 +283,7 @@ function PublicRoutes() {
       <Route path="/research/stocks/:symbol" element={gate('company_research', <Nifty500StockResearch />)} />
               <Route path="/portfolio/founder" element={<Navigate replace to="/admin/founder-portfolio" />} />
       <Route path="/portfolio/*" element={gate('sector_theme', <PortfolioHub />)} />
+      <Route path="/wealth-intelligence" element={gate('wealth', <WealthIntelligence />)} />
       <Route path="/themes/:themeId" element={gate('sector_theme', <ThemeDesk />)} />
       <Route path="/themes" element={<Navigate replace to="/themes/credit_growth" />} />
       <Route path="/sectors/:sectorId" element={gate('sector_theme', <SectorDesk />)} />
@@ -292,6 +335,11 @@ function PublicRoutes() {
 
       <Route path="/about" element={<About />} />
       <Route path="/contact" element={<Contact />} />
+      <Route path="/tools/stats" element={<ToolsStatsPage />} />
+      <Route path="/tools/valuation" element={<ValuationCalculator />} />
+      <Route path="/tools/peer-comparison" element={<PeerComparison />} />
+      <Route path="/tools" element={<FinanceToolsPage />} />
+      <Route path="/finance-tools" element={<Navigate replace to={`/tools${location.search}${location.hash}`} />} />
 
       <Route path="/profile/edit" element={<ProfileEditor />} />
       <Route path="/u/:handle" element={<PublicProfile />} />
@@ -317,6 +365,7 @@ function App() {
   return (
     <HelmetProvider>
       <BrowserRouter>
+        <WebsiteTracker />
         <div className="min-h-screen bg-white">
           <Helmet>
             <title>AGI — Independent Equity Research for Indian Investors</title>

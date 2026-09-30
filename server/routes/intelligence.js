@@ -1,8 +1,11 @@
+import { createPaperDashboardReader } from '../services/paperDashboardRead.js';
+import financeTools from './financeTools.js';
 /**
  * AGI Intelligence Engine proxy — frontend never talks to Python directly.
  */
 
 import { Router } from 'express';
+import websiteAnalytics from './websiteAnalytics.js';
 import {
   buildRecentLearningSummary,
   cmsLearningStatus,
@@ -64,28 +67,28 @@ const ENGINE_FAILURE_THRESHOLD = 2;
 const ENGINE_CIRCUIT_COOLDOWN_MS = 30_000;
 const engineCircuit = { failures: 0, openUntil: 0, lastError: null };
 
-function recordEngineSuccess() {
-  engineCircuit.failures = 0;
-  engineCircuit.openUntil = 0;
-  engineCircuit.lastError = null;
+function recordEngineSuccess(circuit = engineCircuit) {
+  circuit.failures = 0;
+  circuit.openUntil = 0;
+  circuit.lastError = null;
 }
 
-function recordEngineFailure(error) {
-  engineCircuit.failures += 1;
-  engineCircuit.lastError = String(error?.message || error || 'engine request failed').slice(0, 240);
-  if (engineCircuit.failures >= ENGINE_FAILURE_THRESHOLD) {
-    engineCircuit.openUntil = Date.now() + ENGINE_CIRCUIT_COOLDOWN_MS;
+function recordEngineFailure(error, circuit = engineCircuit) {
+  circuit.failures += 1;
+  circuit.lastError = String(error?.message || error || 'engine request failed').slice(0, 240);
+  if (circuit.failures >= ENGINE_FAILURE_THRESHOLD) {
+    circuit.openUntil = Date.now() + ENGINE_CIRCUIT_COOLDOWN_MS;
   }
 }
 
-function circuitIsOpen(path) {
+function circuitIsOpen(path, circuit = engineCircuit) {
   // Let explicit health probes through so the circuit can recover naturally.
-  return path !== '/v1/health' && Date.now() < engineCircuit.openUntil;
+  return path !== '/v1/health' && Date.now() < circuit.openUntil;
 }
 
-async function engineFetch(path, { method = 'GET', body = null, timeoutMs = 120_000, headers = null } = {}) {
-  if (circuitIsOpen(path)) {
-    const waitSeconds = Math.max(1, Math.ceil((engineCircuit.openUntil - Date.now()) / 1000));
+async function engineFetch(path, { method = 'GET', body = null, timeoutMs = 120_000, headers = null, circuit = engineCircuit } = {}) {
+  if (circuitIsOpen(path, circuit)) {
+    const waitSeconds = Math.max(1, Math.ceil((circuit.openUntil - Date.now()) / 1000));
     const error = new Error(`Intelligence engine is recovering; retry in about ${waitSeconds}s.`);
     error.code = 'ENGINE_CIRCUIT_OPEN';
     throw error;
@@ -122,14 +125,16 @@ async function engineFetch(path, { method = 'GET', body = null, timeoutMs = 120_
           }
         : { raw: String(text || '').slice(0, 400) };
     }
-    if (response.ok) recordEngineSuccess();
-    else if (response.status >= 500) recordEngineFailure(new Error(`engine HTTP ${response.status}`));
+    if (response.ok) recordEngineSuccess(circuit);
+    else if (response.status >= 500) recordEngineFailure(new Error(`engine HTTP ${response.status}`), circuit);
     return { ok: response.ok, status: response.status, data };
   } catch (error) {
-    recordEngineFailure(error);
+    recordEngineFailure(error, circuit);
     throw error;
   }
 }
+
+const readPaperDashboard = createPaperDashboardReader(engineFetch);
 
 function proxyPost(path) {
   return async (req, res) => {
@@ -2350,11 +2355,58 @@ export default function createIntelligenceRouter() {
   //
   // Same reason as the workbook below: the engine routes are token-guarded and
   // the token belongs in this process, not in the browser bundle.
-  router.post('/insider-trades/preview', async (req, res) => {
+  // Read-only approved/revoked rules consumed by the nightly collector. Keep
+  // reviewer identity private; only authenticated administrators can decide.
+  router.use('/website-analytics', websiteAnalytics(engineFetch));
+  router.use('/finance-tools', financeTools(engineFetch));
+  router.get('/investor-mappings/approved', async (_req, res) => {
+    try {
+      const result = await engineFetch('/v1/investor-mappings');
+      if (result.status !== 200 || !result.data?.ok) return res.status(503).json({ok:false,error:'Mapping registry unavailable'});
+      const mappings = result.data.mappings.map(({reviewedBy, evidenceNote, ...mapping}) => mapping);
+      res.set('Cache-Control','no-store');
+      return res.json({ok:true,mappings,bseFilings:result.data.bseFilings || []});
+    } catch { return res.status(503).json({ok:false,error:'Mapping registry unavailable'}); }
+  });
+  router.get('/investor-mappings/review', requireStrategyLabAdmin, async (_req, res) => {
+    try {
+      const result = await engineFetch('/v1/investor-mappings');
+      res.set('Cache-Control','no-store');
+      return res.status(result.status).json(result.data);
+    } catch { return res.status(503).json({ok:false,error:'Mapping registry unavailable'}); }
+  });
+  for (const operation of ['review','bse']) {
+    router.post(`/investor-mappings/${operation}`, requireStrategyLabAdmin, async (req, res) => {
+      try {
+        const result = await engineFetch(`/v1/investor-mappings/${operation}`, {method:'POST',body:{...req.body,actor:req.strategyLabActor.id},timeoutMs:60000});
+        return res.status(result.status).json(result.data);
+      } catch { return res.status(503).json({ok:false,error:'Investor review could not be saved'}); }
+    });
+  }
+
+  router.get('/institutions', async (req, res) => {
+    if (!['IN','US'].includes(req.query.country || 'IN')) return res.status(400).json({error:'Invalid country'});
+    try {
+      if (!['individual','institutional'].includes(req.query.category || 'individual')) return res.status(400).json({error:'Invalid investor category'});
+      const result = await engineFetch(`/v1/institutions?country=${req.query.country || 'IN'}&category=${req.query.category || 'individual'}`);
+      res.set('Cache-Control','no-store');
+      return res.status(result.status).json(result.data);
+    } catch (error) { return res.status(503).json({error:'Institutions are temporarily unavailable.'}); }
+  });
+  for (const operation of ['preview','publish']) {
+    router.post(`/institutions/${operation}`, requireStrategyLabAdmin, async (req, res) => {
+      try {
+        const result = await engineFetch(`/v1/institutions/${operation}`, {method:'POST',body:{text:String(req.body?.text || ''),country:req.body?.country || 'IN',category:req.body?.category || 'individual',asOf:req.body?.asOf || null,actor:req.strategyLabActor?.id || 'admin'},timeoutMs:60000});
+        return res.status(result.status).json(result.data);
+      } catch (error) { return res.status(503).json({ok:false,error:'Institutions import is temporarily unavailable.'}); }
+    });
+  }
+
+  router.post('/insider-trades/preview', requireStrategyLabAdmin, async (req, res) => {
     try {
       const result = await engineFetch('/v1/warehouse/import/insider-trades/preview', {
         method: 'POST',
-        body: { text: String(req.body?.text || '') },
+        body: { text: String(req.body?.text || ''), country: req.body?.country || 'IN' },
       });
       return res.status(result.status).json(result.data);
     } catch (error) {
@@ -2363,11 +2415,11 @@ export default function createIntelligenceRouter() {
     }
   });
 
-  router.post('/insider-trades/paste', async (req, res) => {
+  router.post('/insider-trades/paste', requireStrategyLabAdmin, async (req, res) => {
     try {
       const result = await engineFetch('/v1/warehouse/import/insider-trades/paste', {
         method: 'POST',
-        body: { text: String(req.body?.text || ''), actor: 'admin_paste' },
+        body: { text: String(req.body?.text || ''), country: req.body?.country || 'IN', actor: req.strategyLabActor?.id || 'admin_paste' },
         // A large paste is thousands of rows through DQIV validation.
         timeoutMs: 180_000,
       });
@@ -2709,6 +2761,56 @@ export default function createIntelligenceRouter() {
 
   // Pricing Engine V1 is an internal research instrument. Both calculation
   // and validation evidence require a verified AGI administrator session.
+  router.get('/options-lab/paper-agents', requireStrategyLabAdmin, async (_req, res) => {
+    try {
+      const r = await readPaperDashboard();
+      res.set('Cache-Control', 'no-store');
+      return res.status(r.status).json(r.data);
+    } catch (error) {
+      const code = error?.code === 'ENGINE_CIRCUIT_OPEN' ? 'PAPER_READ_COOLDOWN'
+        : error?.name === 'TimeoutError' ? 'PAPER_READ_TIMEOUT' : 'PAPER_READ_UNAVAILABLE';
+      console.warn('[paper-dashboard]', code);
+      return res.status(503).set('Cache-Control', 'no-store').set('Retry-After', '5').json({
+        error: 'The paper dashboard could not reach the engine. Retrying automatically; you can also retry now.', code,
+      });
+    }
+  });
+  for (const operation of ['control', 'backtest', 'calendar']) {
+    router.post(`/options-lab/paper-agents/${operation}`, requireStrategyLabAdmin, async (req, res) => {
+      try {
+        const body = operation === 'control' ? {action:req.body?.action} : operation === 'calendar' ? {date:req.body?.date,windows:req.body?.windows} : {start:req.body?.start,end:req.body?.end,calendars:req.body?.calendars};
+        const r = await engineFetch(`/v1/options-lab/paper-agents/${operation}`, {method:'POST', body, timeoutMs:30000});
+        return res.status(r.status).json(r.data);
+      } catch { return res.status(503).json({error:'Paper agent request failed; refresh status before retrying'}); }
+    });
+  }
+
+  router.get('/options-lab/minute-backtest', requireStrategyLabAdmin, async (_req,res)=>{
+    try { const r=await engineFetch('/v1/options-lab/minute-backtest',{timeoutMs:30000});
+      return res.status(r.status).set('Cache-Control','no-store').json(r.data);
+    } catch { return res.status(503).json({error:'Minute backtest status unavailable'}); }
+  });
+  router.post('/options-lab/minute-backtest', requireStrategyLabAdmin, async (req,res)=>{
+    try { const r=await engineFetch('/v1/options-lab/minute-backtest',{method:'POST',
+      body:{start:req.body?.start,end:req.body?.end,calendars:req.body?.calendars},timeoutMs:30000});
+      return res.status(r.status).json(r.data);
+    } catch { return res.status(503).json({error:'Minute backtest request failed; check status before retrying'}); }
+  });
+
+  router.get('/options-lab/daily-research', requireStrategyLabAdmin, async (_req,res) => {
+    try { const r=await engineFetch('/v1/options-lab/daily-research',{timeoutMs:30000});
+      return res.status(r.status).set('Cache-Control','no-store').json(r.data);
+    } catch { return res.status(503).json({error:'Daily research unavailable'}); }
+  });
+  for (const operation of ['import','refresh']) {
+    router.post(`/options-lab/daily-research/${operation}`,requireStrategyLabAdmin,async(req,res)=>{
+      try { const r=await engineFetch(`/v1/options-lab/daily-research/${operation}`,{
+        method:'POST',body:operation==='import'?{csv:req.body?.csv}:{},timeoutMs:30000});
+        return res.status(r.status).json(r.data);
+      } catch { return res.status(503).json({error:'Daily history request failed; cached history is retained'}); }
+    });
+  }
+
   router.post('/options-lab/price', requireStrategyLabAdmin, async (req, res) => {
     try {
       const r = await engineFetch('/v1/options-lab/price', {

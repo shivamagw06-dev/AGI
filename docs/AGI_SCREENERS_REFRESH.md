@@ -13,6 +13,8 @@ AGI does not import Trendlyne's screen results. It calculates its own screens fr
 
 The Node API scheduler retries incomplete post-close refreshes every 15 minutes within the 16:15–16:59 IST window. It records the last result in process memory. If the server restarts, the page's on-demand cache refresh remains the fallback. Displayed timestamps and quote counts tell readers whether data is current; missing quotes never qualify for price/volume screens. Research values are never inferred for uncovered stocks.
 
+The production API service is managed in the Render dashboard rather than this repository's 13F-only Blueprint. Set `UPSTOX_ANALYTICS_TOKEN` on that API service if using a long-lived read-only token; the existing daily Upstox access token remains a fallback. Never commit either token.
+
 The configured token permits read-only API calls; it does not itself establish permission to redistribute exchange quote data on a public site. Confirm the applicable public-display and redistribution terms before relying on those quotes for a public product.
 
 Before exposing further Trendlyne-like screen families, add a durable per-symbol daily data store, sufficient lookback, corporate-action adjustments, input coverage checks, and a last-successful-session date for each rule. Do not present a screen as refreshed if its inputs are incomplete.

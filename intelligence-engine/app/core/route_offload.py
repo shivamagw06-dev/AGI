@@ -8,7 +8,7 @@ import os
 from functools import wraps
 from typing import Any, Callable
 
-from fastapi import FastAPI
+from fastapi import APIRouter, FastAPI
 from fastapi.routing import APIRoute, request_response
 
 
@@ -22,7 +22,7 @@ def _enabled() -> bool:
 
 
 def install_legacy_route_offload(
-    app: FastAPI,
+    app: FastAPI | APIRouter,
     *,
     exempt_paths: set[str] | None = None,
 ) -> int:
@@ -40,8 +40,18 @@ def install_legacy_route_offload(
 
     exempt = exempt_paths or set()
     installed = 0
-    for route in app.routes:
-        if not isinstance(route, APIRoute) or route.path in exempt:
+    # FastAPI 0.141 stores included routers as lazy branches, not APIRoutes.
+    # Traverse these before the application starts serving requests.
+    def routes(container, prefix=""):
+        for route in container.routes:
+            original = getattr(route, "original_router", None)
+            if original is not None:
+                yield from routes(original, prefix + route.include_context.prefix)
+            else:
+                yield prefix + getattr(route, "path", ""), route
+
+    for path, route in routes(app):
+        if not isinstance(route, APIRoute) or path in exempt:
             continue
 
         endpoint = route.dependant.call
@@ -55,11 +65,17 @@ def install_legacy_route_offload(
         ) -> Any:
             return asyncio.run(_endpoint(**kwargs))
 
+        # FastAPI now unwraps decorators when detecting coroutine handlers.
+        # Preserve the API signature without pointing to an async __wrapped__.
+        offloaded_endpoint.__signature__ = inspect.signature(endpoint, eval_str=True)
+        del offloaded_endpoint.__wrapped__
+        route.endpoint = offloaded_endpoint
         route.dependant.call = offloaded_endpoint
         # APIRoute caches ``is_coroutine`` inside its request handler during
         # construction, so rebuild that handler after replacing the callable.
         route.app = request_response(route.get_route_handler())
         installed += 1
 
-    app.state.legacy_routes_offloaded = installed
+    if hasattr(app, "state"):
+        app.state.legacy_routes_offloaded = installed
     return installed

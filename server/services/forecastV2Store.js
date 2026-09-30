@@ -4,10 +4,27 @@ async function rest(table,{method='GET',query='',body,prefer}={}){const{url,key}
 const groupKey=(row)=>`${String(row.forecast_time).slice(0,10)}|${row.horizon}`;
 const round=(value,digits=6)=>Number(Number(value).toFixed(digits));
 
-export async function syncForecastCrossSections({limit=10000}={}){
-  const [forecasts,outcomes]=await Promise.all([rest('research_forecasts',{query:`select=*&is_canonical=eq.true&order=forecast_time.asc&limit=${Math.min(10000,limit)}`}),rest('research_forecast_outcomes',{query:'select=*&limit=10000'})]);
-  const groups=new Map();for(const row of forecasts){const key=groupKey(row);if(!groups.has(key))groups.set(key,[]);groups.get(key).push(row);}const output={groups:groups.size,rankings:0,metrics:0};
+async function pagedRows(table,query,{pageSize=1000,max=200_000}={}){const rows=[];while(rows.length<max){const page=await rest(table,{query:`${query}&limit=${pageSize}&offset=${rows.length}`});rows.push(...page);if(page.length<pageSize)break;}return rows;}
+const CROSS_SECTION_WINDOW_DAYS=40,CROSS_SECTION_INTERVAL_MS=60*60_000;
+let lastCrossSectionSync=0;
+
+/**
+ * Rank each day's forecasts and score the ranking once outcomes arrive.
+ *
+ * This read the oldest 1000 forecasts, under one day of the ~1500 written
+ * daily, so later days were never ranked or scored. It now reads the last 40
+ * days in full (the 20-day horizon settles inside that), once an hour.
+ */
+export async function syncForecastCrossSections({now=new Date(),force=false}={}){
+  if(!force&&Date.now()-lastCrossSectionSync<CROSS_SECTION_INTERVAL_MS)return{status:'skipped',reason:'synced_within_the_hour'};
+  const since=encodeURIComponent(new Date(now.getTime()-CROSS_SECTION_WINDOW_DAYS*86_400_000).toISOString());
+  const [forecasts,outcomes]=await Promise.all([
+    pagedRows('research_forecasts',`select=id,symbol,horizon,forecast_time,expected_alpha_pct&is_canonical=eq.true&forecast_time=gte.${since}&order=id.asc`),
+    pagedRows('research_forecast_outcomes',`select=forecast_id,actual_alpha_pct,forecast:research_forecasts!inner(forecast_time)&forecast.forecast_time=gte.${since}&order=forecast_id.asc`),
+  ]);
+  const groups=new Map();for(const row of forecasts){const key=groupKey(row);if(!groups.has(key))groups.set(key,[]);groups.get(key).push(row);}const output={groups:groups.size,forecasts:forecasts.length,outcomes:outcomes.length,rankings:0,metrics:0};
   for(const [key,rows] of groups){const [forecastDate,horizon]=key.split('|'),rankings=rankForecastCrossSection(rows);if(rankings.length){await rest('research_forecast_rankings',{method:'POST',query:'on_conflict=forecast_id',body:rankings,prefer:'resolution=merge-duplicates,return=minimal'});output.rankings+=rankings.length;}const metric=evaluateCrossSection(rows,outcomes);if(metric.observations>=3){await rest('research_forecast_cross_section_metrics',{method:'POST',query:'on_conflict=forecast_date,horizon',body:{forecast_date:forecastDate,horizon,...metric},prefer:'resolution=merge-duplicates,return=minimal'});output.metrics+=1;}}
+  lastCrossSectionSync=Date.now();
   return output;
 }
 

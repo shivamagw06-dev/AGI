@@ -16,6 +16,11 @@ export const UNLOCK_BENEFITS = [
 ];
 
 const FEATURE_COPY = {
+  wealth: {
+    eyebrow: 'Wealth Intelligence',
+    title: 'Unlock wealth and opportunity intelligence',
+    blurb: 'Explore investment data and compare income, costs and wealth after tax.',
+  },
   ask_agi: {
     eyebrow: 'Ask AGI',
     title: 'Unlock Ask AGI research',
@@ -91,6 +96,16 @@ const FEATURE_COPY = {
     title: 'Unlock IPO intelligence',
     blurb: 'Issue analysis and IPO research desks.',
   },
+  equity_research: {
+    eyebrow: 'Equity Research',
+    title: 'Unlock AGI equity research',
+    blurb: 'Company research across India and the US, with AGI views and filed figures.',
+  },
+  strategies: {
+    eyebrow: 'Strategies',
+    title: 'Unlock AGI strategies',
+    blurb: 'Sector and thematic strategies, and the monitors behind them: evidence, filed figures and estimates for every name.',
+  },
   intelligence: {
     eyebrow: 'AGI Intelligence',
     title: 'Unlock AGI Intelligence',
@@ -100,11 +115,19 @@ const FEATURE_COPY = {
 
 /** Longest prefix wins. Free paths are omitted (return null). */
 const GATED_PREFIXES = [
+  ['/wealth-intelligence', 'wealth'],
   ['/ask', 'ask_agi'],
   ['/agi', 'agi_workspace'],
   ['/valuation-intelligence', 'valuation'],
   ['/valuation-terminal', 'valuation'],
   ['/hedge-fund', 'hedge_fund'],
+  // Index rebalance research carries third-party flow estimates, attributed
+  // but not ours to publish openly, and it is written for clients rather than
+  // for search engines.
+  ['/index-rebalance', 'hedge_fund'],
+  // A backtest reads several hundred thousand price rows to produce one
+  // number. Behind the gate so it is run by clients rather than by crawlers.
+  ['/manager-backtest', 'hedge_fund'],
   ['/live-alpha', 'live_alpha'],
   ['/market-intelligence', 'market_intelligence'],
   ['/market-sector-intelligence', 'market_intelligence'],
@@ -124,6 +147,14 @@ const GATED_PREFIXES = [
   ['/workspace', 'workspace'],
   ['/insider-activity', 'insider'],
   ['/ipo-intelligence', 'ipo'],
+  // Every item in the site's top menu needs a free account (owner's decision,
+  // 19 Sep 2026). A route wrapped in the gate is only locked if its path is
+  // listed here: the gate resolves access from this table, not its props.
+  ['/equity-research', 'equity_research'],
+  ['/strategy', 'strategies'],
+  ['/india-ai', 'strategies'],
+  ['/live-desk', 'market_intelligence'],
+  ['/institutional-holdings', 'hedge_fund'],
   ['/ipos', 'ipo'],
 ];
 

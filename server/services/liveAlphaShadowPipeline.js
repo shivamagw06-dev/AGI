@@ -250,7 +250,7 @@ export class MomentumShadowPipeline {
     const anchors = new Map(this.universe.map((member) => {
       const stock = this.featureStore.latest(member.instrumentKey);
       const sector = this.featureStore.latest(member.sectorInstrumentKey);
-      return [member.symbol, { stock, sector }];
+      return [member.symbol, { stock, sector, sectorKey: member.sectorInstrumentKey }];
     }));
     result.signals = result.signals.map((signal) => {
       const anchor = anchors.get(signal.symbol);
@@ -259,7 +259,7 @@ export class MomentumShadowPipeline {
         direction: signal.classification === 'positive_research_candidate' ? 'positive' : signal.classification === 'negative_research_candidate' ? 'negative' : null,
         price_at_signal: anchor?.stock?.ltp ?? null,
         nifty_at_signal: benchmark.current.ltp,
-        sector_at_signal: anchor?.sector?.ltp ?? null,
+        sector_at_signal: anchor?.sector?.ltp ?? null, sector_instrument_key: anchor?.sectorKey ?? null,
       };
     });
     volumeResult.signals = volumeResult.signals.map((signal) => {
@@ -270,20 +270,20 @@ export class MomentumShadowPipeline {
         direction: !candidate ? null : signal.classification === 'abnormal_accumulation_candidate' ? 'positive' : 'negative',
         price_at_signal: anchor?.stock?.ltp ?? null,
         nifty_at_signal: benchmark.current.ltp,
-        sector_at_signal: anchor?.sector?.ltp ?? null,
+        sector_at_signal: anchor?.sector?.ltp ?? null, sector_instrument_key: anchor?.sectorKey ?? null,
       };
     });
     if (openingResult) openingResult.signals = openingResult.signals.map((signal) => {
       const anchor = anchors.get(signal.symbol);
       const positive = signal.classification === 'upside_opening_breakout_candidate';
       const negative = signal.classification === 'downside_opening_breakout_candidate';
-      return { ...signal, direction: positive ? 'positive' : negative ? 'negative' : null, price_at_signal: anchor?.stock?.ltp ?? null, nifty_at_signal: benchmark.current.ltp, sector_at_signal: anchor?.sector?.ltp ?? null };
+      return { ...signal, direction: positive ? 'positive' : negative ? 'negative' : null, price_at_signal: anchor?.stock?.ltp ?? null, nifty_at_signal: benchmark.current.ltp, sector_at_signal: anchor?.sector?.ltp ?? null, sector_instrument_key: anchor?.sectorKey ?? null };
     });
     meanReversionResult.signals = meanReversionResult.signals.map((signal) => {
       const anchor = anchors.get(signal.symbol);
       const positive = signal.classification === 'negative_shock_rebound_candidate';
       const negative = signal.classification === 'positive_shock_pullback_candidate';
-      return { ...signal, direction: positive ? 'positive' : negative ? 'negative' : null, price_at_signal: anchor?.stock?.ltp ?? null, nifty_at_signal: benchmark.current.ltp, sector_at_signal: anchor?.sector?.ltp ?? null };
+      return { ...signal, direction: positive ? 'positive' : negative ? 'negative' : null, price_at_signal: anchor?.stock?.ltp ?? null, nifty_at_signal: benchmark.current.ltp, sector_at_signal: anchor?.sector?.ltp ?? null, sector_instrument_key: anchor?.sectorKey ?? null };
     });
     if (derivativesResult) derivativesResult.signals = derivativesResult.signals.map((signal) => {
       const positive = signal.classification === 'long_buildup_candidate' || signal.classification === 'short_covering_candidate';
@@ -291,7 +291,7 @@ export class MomentumShadowPipeline {
       const member = this.universe.find((row) => row.symbol === signal.symbol);
       const stock = this.featureStore.latest(member?.instrumentKey);
       const sector = this.featureStore.latest(member?.sectorInstrumentKey);
-      return { ...signal, direction: positive ? 'positive' : negative ? 'negative' : null, price_at_signal: stock?.ltp ?? null, nifty_at_signal: benchmark.current.ltp, sector_at_signal: sector?.ltp ?? null };
+      return { ...signal, direction: positive ? 'positive' : negative ? 'negative' : null, price_at_signal: stock?.ltp ?? null, nifty_at_signal: benchmark.current.ltp, sector_at_signal: sector?.ltp ?? null, sector_instrument_key: member?.sectorInstrumentKey ?? null };
     });
     this.lastRunBucket = bucket;
     const diagnostics = { benchmark_key: this.benchmarkKey, minute_of_session: minute };

@@ -69,9 +69,15 @@ const UpstoxBootstrap = lazy(() => import('@/pages/admin/UpstoxBootstrap'));
 const UpstoxFundamentals = lazy(() => import('@/pages/admin/UpstoxFundamentals'));
 const ValuationPolicy = lazy(() => import('@/pages/admin/ValuationPolicy'));
 const ValuationRatiosWorkbook = lazy(() => import('@/pages/admin/ValuationRatiosWorkbook'));
+const FinanceToolsAdmin = lazy(() => import('@/pages/admin/FinanceToolsAdmin'));
+const WebsiteAnalytics = lazy(() => import('@/pages/admin/WebsiteAnalytics'));
+const InvestorMappings = lazy(() => import('@/pages/admin/InvestorMappings'));
+const InstitutionsPaste = lazy(() => import('@/pages/admin/InstitutionsPaste'));
 const InsiderTradesPaste = lazy(() => import('@/pages/admin/InsiderTradesPaste'));
 const IpoIntelligenceImport = lazy(() => import('@/pages/admin/IpoIntelligenceImport'));
 const InstitutionalHoldingsAdmin = lazy(() => import('@/pages/admin/InstitutionalHoldingsAdmin'));
+const PublicationReview = lazy(() => import('@/pages/admin/PublicationReview'));
+const AnnualReportIntelligence = lazy(() => import('@/pages/admin/AnnualReportIntelligence'));
 const HistoricalValuation = lazy(() => import('@/pages/admin/HistoricalValuation'));
 const HvieRuntime = lazy(() => import('@/pages/admin/HvieRuntime'));
 const FinancialWarehouse = lazy(() => import('@/pages/admin/FinancialWarehouse'));
@@ -86,6 +92,7 @@ const KulDashboard = lazy(() => import('@/pages/admin/KulDashboard'));
 const MarketResearchNote = lazy(() => import('@/pages/admin/MarketResearchNote'));
 const MarketActivities = lazy(() => import('@/pages/admin/MarketActivities'));
 const StrategyLab = lazy(() => import('@/pages/admin/StrategyLab'));
+const NiftyPaperAgents = lazy(() => import('@/pages/NiftyPaperAgents'));
 const OptionsLab = lazy(() => import('@/pages/OptionsLab'));
 const BroadcastLinks = lazy(() => import('@/pages/admin/BroadcastLinks'));
 const IntelligenceCmsRoutes = lazy(() => import('@/pages/admin/intelligence/IntelligenceCmsRoutes'));
@@ -122,6 +129,10 @@ export default function AdminRoutes() {
           {/* Full-bleed Valuation Policy & Applicability Engine (Phase 8.2A) */}
           <Route path="valuation-policy" element={<ValuationPolicy />} />
           <Route path="valuation-ratios-workbook" element={<ValuationRatiosWorkbook />} />
+          <Route path="finance-tools" element={<FinanceToolsAdmin />} />
+          <Route path="website-analytics" element={<WebsiteAnalytics />} />
+          <Route path="investor-mappings" element={<InvestorMappings />} />
+          <Route path="institutions-paste" element={<InstitutionsPaste />} />
           <Route path="insider-trades-paste" element={<InsiderTradesPaste />} />
           <Route path="ipo-intelligence-input" element={<IpoIntelligenceImport />} />
           {/* Full-bleed Historical Valuation Intelligence Engine (Phase 8.3) */}
@@ -137,6 +148,7 @@ export default function AdminRoutes() {
           <Route path="market-research-note" element={<MarketResearchNote />} />
           <Route path="strategy-lab" element={<StrategyLab />} />
           <Route path="options-lab" element={<OptionsLab />} />
+          <Route path="nifty-paper-agents" element={<NiftyPaperAgents />} />
           <Route path="ifac" element={<IfacComposer />} />
           <Route path="aqe" element={<AskProductQuality />} />
           <Route path="kul" element={<KulDashboard />} />
@@ -148,6 +160,8 @@ export default function AdminRoutes() {
             <Route index element={<AdminDashboard />} />
             <Route path="company-financials" element={<CompanyFinancials />} />
             <Route path="institutional-holdings" element={<InstitutionalHoldingsAdmin />} />
+            <Route path="publication-review" element={<PublicationReview />} />
+            <Route path="annual-report" element={<AnnualReportIntelligence />} />
             <Route path="articles" element={<AdminDashboard />} />
             <Route path="articles/new" element={<ArticleEditor />} />
             <Route path="articles/edit/:slug" element={<ArticleEditor />} />

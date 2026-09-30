@@ -107,6 +107,11 @@ export default function AdminDashboard() {
               Activities
             </Button>
           ) : null}
+          {admin ? (
+            <Button asChild className="bg-slate-900 hover:bg-slate-800">
+              <Link to="/admin/nifty-paper-agents">Nifty News Agent</Link>
+            </Button>
+          ) : null}
           <Button onClick={() => navigate('/admin/articles/new')} className="bg-blue-700 hover:bg-blue-800">
             <Plus size={16} className="mr-2" />
             New Article

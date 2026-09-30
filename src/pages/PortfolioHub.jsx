@@ -22,6 +22,9 @@ export default function PortfolioHub() {
               Founder&apos;s Portfolio
             </Link>
           ) : null}
+          <Link to="/wealth-intelligence" className="px-4 py-2 text-sm font-semibold text-[#475569] transition hover:bg-[#ece7dc]">
+            Wealth Intelligence
+          </Link>
         </div>
       </div>
       <ClientPortfolioIntelligence />
