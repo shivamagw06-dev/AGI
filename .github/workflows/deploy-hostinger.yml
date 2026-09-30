@@ -97,10 +97,9 @@ jobs:
           python3 <<'PY'
           from pathlib import Path
           import re
-          files = sorted(Path("assets").glob("index-*.js"))
-          if not files:
-              raise SystemExit("No assets/index-*.js present")
-          text = files[-1].read_text(errors="ignore")
+          from scripts.hostinger_entrypoint import entry_bundle
+          entry = entry_bundle()
+          text = entry.read_text(errors="ignore")
           if "zrvdtpxfmuijhionbaxr.supabase.co" not in text:
               raise SystemExit("Bundle missing production Supabase URL")
           matches = re.findall(r'"(eyJhbGciOiJIUzI1NiIs[^"]+)"', text)
@@ -109,7 +108,7 @@ jobs:
           key = max(matches, key=len)
           if len(key) < 100 or key.count(".") != 2:
               raise SystemExit(f"Baked anon key is truncated/invalid (len={len(key)})")
-          print("Bundle anon key OK, length", len(key), "file", files[-1].name)
+          print("Bundle anon key OK, length", len(key), "file", entry.name)
           # Guard against VITE_API_URL accidentally set to the static site.
           if 'function pwe(){try{return"https://agarwalglobalinvestments.com"}' in text.replace(' ', ''):
               raise SystemExit(
