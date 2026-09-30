@@ -70,7 +70,7 @@ function emptyRun() {
     concurrency: envInt('UPSTOX_BOOTSTRAP_CONCURRENCY', 3),
     pauseMs: envInt('UPSTOX_BOOTSTRAP_PAUSE_MS', 2_000),
     firstWaveSize: envInt('UPSTOX_BOOTSTRAP_FIRST_WAVE_SIZE', 1_000),
-    waveWaitMs: envInt('UPSTOX_BOOTSTRAP_WAVE_WAIT_MS', 30 * 60 * 1_000),
+    waveWaitMs: Math.max(30 * 60 * 1_000, envInt('UPSTOX_BOOTSTRAP_WAVE_WAIT_MS', 30 * 60 * 1_000)),
     firstWaveCalls: 0,
     firstWaveCompletedAt: null,
     secondWaveAfter: null,
