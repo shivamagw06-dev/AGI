@@ -89,6 +89,8 @@ const InsiderActivityPage = React.lazy(() => import('@/pages/InsiderActivityPage
 
 const FinancialModelingPage = React.lazy(() => import('@/pages/FinancialModelingPage'));
 
+const GlobalIntelligencePage = React.lazy(() => import('@/pages/intelligence/GlobalIntelligencePage'));
+
 function RouteFallback({ label = 'Loading…' }) {
   return <div className="min-h-[40vh] p-8 text-center text-slate-600">{label}</div>;
 }
@@ -123,6 +125,10 @@ function AppShell() {
         </Routes>
       </Suspense>
     );
+  }
+
+  if (location.pathname === '/intelligence' || location.pathname.startsWith('/intelligence/')) {
+    return <Suspense fallback={<RouteFallback label="Loading Global Intelligence…" />}><GlobalIntelligencePage /></Suspense>;
   }
 
   // Phase 2 AGI product shell — full-bleed institutional workflow (no public chrome).
@@ -274,7 +280,7 @@ function PublicRoutes() {
       <Route path="/rich-kids" element={<RichKidsPage />} />
       <Route path="/insider-activity" element={gate('insider', <InsiderActivityPage />)} />
       <Route path="/global" element={<Navigate replace to="/global-markets" />} />
-      <Route path="/global-intelligence" element={<Navigate replace to="/global-markets" />} />
+      <Route path="/global-intelligence" element={<Navigate replace to="/intelligence" />} />
       <Route path="/economy" element={<Navigate replace to="/economics" />} />
       <Route path="/pre-market" element={gate('market_intelligence', <PreMarketIntelligence />)} />
       <Route path="/updates/pre-market" element={<Navigate replace to="/pre-market" />} />

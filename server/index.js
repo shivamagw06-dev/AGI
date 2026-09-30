@@ -1,3 +1,5 @@
+import createGlobalIntelligenceRouter from './routes/globalIntelligence.js';
+import { startGlobalIntelligenceCollector } from './services/globalIntelligence/collector.js';
 // server/index.js
 // IndianAPI proxy + research router
 // - mounts ./research.js at /research
@@ -434,6 +436,7 @@ app.use('/api/research/nifty500', nifty500ResearchLimiter, nifty500ResearchRoute
 // Alias — some clients/probes hit /nifty50 without the trailing 0.
 app.use('/api/research/nifty50', nifty500ResearchLimiter, nifty500ResearchRouter);
 app.use('/api/manual-screeners', createManualScreenersRouter());
+app.use('/api/global-intelligence', createGlobalIntelligenceRouter());
 app.use('/api/research-signals', createResearchSignalsRouter());
 app.use('/api/intelligence', createIntelligenceRouter());
 app.use('/api/ui', createUiRouter());
@@ -452,6 +455,7 @@ app.post('/api/notify-subscribers', (req, res, next) => {
   return newsletterRouter.handle(req, res, next);
 });
 startTradingCalendarService();
+startGlobalIntelligenceCollector();
 startCioMorningScheduler();
 startContinuousGatherLearnScheduler();
 startInstitutionalFlowScheduler();
