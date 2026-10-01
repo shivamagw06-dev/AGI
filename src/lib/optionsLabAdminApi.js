@@ -43,3 +43,6 @@ export const importDailyResearch=(csv)=>request('/daily-research/import',{method
 
 export const getMinuteBacktest=()=>request('/minute-backtest');
 export const runMinuteBacktest=(start,end,calendars)=>request('/minute-backtest',{method:'POST',body:JSON.stringify({start,end,calendars})});
+
+export const getDataEvidence=()=>request('/data-evidence');
+export const startDataEvidence=()=>request('/data-evidence',{method:'POST',body:'{}'});

@@ -26,3 +26,6 @@ redis>=5.0.0
 # Upstox V3 read-only market stream
 websockets>=14,<16
 protobuf>=5.29,<7
+
+# Official read-only Groww observation feed
+growwapi==1.5.0

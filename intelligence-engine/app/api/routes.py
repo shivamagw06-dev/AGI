@@ -22899,3 +22899,15 @@ async def nifty_minute_submit(payload: dict[str, Any] = Body(default={})):
         return await run_in_threadpool(submit,payload.get('start'),payload.get('end'),payload.get('calendars'))
     except ValueError as exc:
         raise HTTPException(status_code=422,detail=str(exc)) from exc
+
+
+@router.get('/options-lab/data-evidence', dependencies=[Depends(require_token)])
+async def data_evidence_status():
+    from options_lab.data_evidence import status
+    return await run_in_threadpool(status)
+
+
+@router.post('/options-lab/data-evidence', dependencies=[Depends(require_token)])
+async def data_evidence_start():
+    from options_lab.data_evidence import start
+    return await run_in_threadpool(start, True)

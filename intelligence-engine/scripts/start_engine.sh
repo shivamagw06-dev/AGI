@@ -198,6 +198,8 @@ if [[ "${OPTIONS_LAB_ENABLED}" == "true" ]]; then
     exec nice -n 10 python -m options_lab.automation run --poll-seconds "${OPTIONS_LAB_POLL_SECONDS:-10}"
   ) &
   OPTIONS_LAB_PID=$!
+  # Persisted admin activation controls these read-only collectors.
+  (while true; do python -m options_lab.data_evidence; sleep 30; done) &
   echo "[start_engine] options validation pid=${OPTIONS_LAB_PID}"
   if [[ "${NIFTY_PAPER_STREAM_ENABLED}" == "true" ]]; then
     (
