@@ -2785,6 +2785,14 @@ export default function createIntelligenceRouter() {
     });
   }
 
+  for (const method of ['get','post']) {
+    router[method]('/options-lab/data-evidence', requireStrategyLabAdmin, async (_req,res)=>{
+      try { const r=await engineFetch('/v1/options-lab/data-evidence',{method:method.toUpperCase(),timeoutMs:30000});
+        return res.status(r.status).set('Cache-Control','no-store').json(r.data);
+      } catch { return res.status(503).json({error:'Data evidence service unavailable; refresh before retrying'}); }
+    });
+  }
+
   router.get('/options-lab/minute-backtest', requireStrategyLabAdmin, async (_req,res)=>{
     try { const r=await engineFetch('/v1/options-lab/minute-backtest',{timeoutMs:30000});
       return res.status(r.status).set('Cache-Control','no-store').json(r.data);
