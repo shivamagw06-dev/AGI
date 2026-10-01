@@ -259,6 +259,8 @@ def read_quotes(start,end,after=None):
 
 def summary(state):
     result=json.loads(json.dumps(state))
+    from .technical_chart import chart_payload
+    result['technical_chart']=chart_payload(state)
     result.pop('history',None)
     spreads=result.pop('spreads',None)
     research=result.pop('research',None)

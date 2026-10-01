@@ -202,6 +202,7 @@ def advance(state, rows, now, allow_entries):
                 p.event(a,at,'exit',reason)
         elif a['pending']:
             pending=a['pending'];a['pending']=None
+            age=(now-p.timestamp(pending['signal_at'])).total_seconds()
             fills=execution(pending['legs'],quotes,now,entry=True,signal_at=pending['signal_at']) if valid and not gap and allow_entries and minute<855 else None
             t=terms(fills,name,spots[0]) if fills and (now-p.timestamp(pending['signal_at'])).total_seconds()<=5 else None
             if t and t['reserve']<=a['cash'] and a['daily_entries']<2 and a['equity']>a['daily_start']-2000:
@@ -211,7 +212,18 @@ def advance(state, rows, now, allow_entries):
                 close=execution(fills,quotes,now,entry=False)
                 a['equity']=a['cash']+cashflow(close)
                 p.event(a,at,'entry','Both legs simulated at next fresh bid/ask with 0.5% adverse slippage')
-            else:p.event(a,at,'skip','Basket cancelled: missing next quotes, cost/risk budget or reserve check failed')
+            elif not fills and valid and not gap and allow_entries and minute<855 and age<5:
+                a['pending']=pending
+                a['status']='Waiting for fresh synchronised quotes on both legs (maximum 5 seconds)'
+            else:
+                reason=('Entries paused or session closed' if not allow_entries or minute>=855 else
+                        'Data gap or invalid market observation' if gap or not valid else
+                        'Fresh synchronised quotes unavailable within signal window' if not fills else
+                        'Signal older than five seconds' if age>5 else
+                        'Spread payoff, cost or planned-risk check failed' if not t else
+                        'Insufficient paper cash for reserve' if t['reserve']>a['cash'] else
+                        'Daily entry or loss limit reached')
+                p.event(a,at,'skip',f'Basket cancelled: {reason}')
         elif not valid:
             a['status']='Waiting for market / fresh quotes'
         elif not allow_entries:a['status']='New entries paused'

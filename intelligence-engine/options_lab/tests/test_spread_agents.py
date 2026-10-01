@@ -35,6 +35,23 @@ def enter(name='trend_pullback'):
     return state,a
 
 class SpreadTests(unittest.TestCase):
+    def test_pending_waits_for_new_quotes_then_fills_within_window(self):
+        state=s.fresh();a=pending(state)
+        s.advance(state,rows(NOW),NOW+timedelta(seconds=1),True)
+        self.assertIsNotNone(a['pending'])
+        self.assertIsNone(a['position'])
+        s.advance(state,rows(NOW+timedelta(seconds=2)),NOW+timedelta(seconds=2),True)
+        self.assertIsNotNone(a['position'])
+        self.assertIsNone(a['pending'])
+
+    def test_pending_expires_without_fabricated_fill(self):
+        state=s.fresh();a=pending(state)
+        for seconds in range(1,6):
+            s.advance(state,rows(NOW),NOW+timedelta(seconds=seconds),True)
+        self.assertIsNone(a['position'])
+        self.assertIsNone(a['pending'])
+        self.assertIn('Fresh synchronised quotes unavailable',a['events'][-1]['reason'])
+
     def test_fee_sides_and_components(self):
         buy=s.costs(10000,'BUY');sell=s.costs(10000,'SELL')
         self.assertEqual(buy['stt'],0);self.assertEqual(sell['stt'],15)
