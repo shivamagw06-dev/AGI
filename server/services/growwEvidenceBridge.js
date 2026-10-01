@@ -3,7 +3,7 @@ import {timingSafeEqual,randomUUID} from 'node:crypto';
 import {growwRequest,resolveGrowwAccessToken} from '../providers/groww.js';
 export function engineAuthorized(header,expected=process.env.INTELLIGENCE_ENGINE_TOKEN){
  const a=Buffer.from(String(header||'').replace(/^Bearer /i,''));const b=Buffer.from(String(expected||'').trim());
- return b.length>=16 && a.length===b.length && timingSafeEqual(a,b);
+ return b.length>=10 && a.length===b.length && timingSafeEqual(a,b);
 }
 export function validateRequest(body){
  const {action,params={}}=body||{};
