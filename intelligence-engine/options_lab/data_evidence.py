@@ -50,7 +50,7 @@ def status():
     from .evidence_archive import status as retention
     return dict(config=read('config'), storage=storage(), retention=retention(),
                 groww_stream=read('groww_stream'), groww_history=read('groww_history'),
-                upstox_history=read('upstox_history'), execution='Observation only; no provider switching or orders')
+                upstox_history=read('upstox_history'), live_validation=read('live_validation'), data_comparison=read('data_comparison'), strategy_validation=read('strategy_validation'), legacy_validation=read('legacy_validation'), execution='Observation only; no provider switching or orders')
 
 
 def start(activate=False):
@@ -68,11 +68,18 @@ def start(activate=False):
             ('upstox_history','options_lab.year_history'),
             ('groww_history','options_lab.year_history'),
             ('groww_stream','options_lab.groww_observer'),
+            ('validation_monitor','options_lab.validation_pipeline'),
+            ('experiment','options_lab.validation_pipeline'),
         ]:
             old=_children.get(name)
             if old and old.poll() is None: continue
             state=read(name)
-            if name.endswith('history') and state.get('finished_at'): continue
+            if name.endswith('history') and state.get('finished_at') and state.get('download_version')=='v2': continue
+            if name=='experiment':
+                history=read('upstox_history')
+                if not history.get('finished_at') or history.get('download_version')!='v2':continue
+                result=read('strategy_validation')
+                if result.get('status') in ('complete','failed'):continue
             # A failed provider gets at most one retry per five minutes.
             if state.get('retry_after') and state['retry_after']>datetime.now(timezone.utc).isoformat(): continue
             child=subprocess.Popen([sys.executable,'-m',module,name],stdin=subprocess.PIPE,
