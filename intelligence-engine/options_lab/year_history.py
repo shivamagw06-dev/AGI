@@ -3,12 +3,15 @@
 Downloads spot first, then eligible expired options within 2,000 spot points
 and futures. Provider expiry availability is reported, never inferred complete.
 """
+import gzip
 import hashlib
+from dataclasses import asdict
 import json
 import os
 import sqlite3
 import sys
 import time
+import urllib.error
 import urllib.request
 import urllib.parse
 from contextlib import closing
@@ -64,13 +67,25 @@ def normalize(rows):
 
 
 def collect_chunk(provider,key,a,b,asset,token):
+    # Groww limits response size. Short windows avoid silently truncated month requests.
+    if provider == 'groww' and (date.fromisoformat(b)-date.fromisoformat(a)).days >= 7:
+        for first,last in windows(a,b,7):
+            collect_safe(provider,key,first,last,asset,token)
+        return
     with closing(db()) as con:
         if con.execute('SELECT 1 FROM chunks WHERE provider=? AND instrument=? AND start=? AND end=?',(provider,key,a,b)).fetchone():return
     if e.storage()['free_bytes']<2*1024**3:raise ValueError('Less than 2 GiB free; collection paused')
     if provider=='groww':
         data=groww('/historical/candles',token,exchange='NSE',segment='CASH' if asset=='spot' else 'FNO',groww_symbol=key,
             start_time=a+' 00:00:00',end_time=b+' 23:59:59',candle_interval='1minute')
-        rows=normalize(data.get('candles',[]))
+        raw=data.get('candles',[])
+        try:
+            rows=normalize(raw)
+        except ValueError:
+            # Preserve rejected evidence for diagnosis; never manufacture replacement prices.
+            target=e.root()/('rejected-'+hashlib.sha256(f'{provider}|{key}|{a}|{b}'.encode()).hexdigest()+'.json.gz')
+            with gzip.open(target,'wt') as out:json.dump(raw,out)
+            raise
     else:
         mh.download(key,a,b,token,spot=asset=='spot')
         with closing(mh.database()) as con:
@@ -91,24 +106,38 @@ def collect_chunk(provider,key,a,b,asset,token):
     time.sleep(.4)
 
 
+def collect_safe(provider,key,a,b,asset,token):
+    try:
+        collect_chunk(provider,key,a,b,asset,token)
+    except (ValueError, urllib.error.HTTPError) as exc:
+        if 'GiB' in str(exc):raise
+        if isinstance(exc,urllib.error.HTTPError) and (exc.code in (401,403,429) or exc.code>=500):raise
+        # Bad provider chunks must not prevent unrelated contracts from downloading.
+        # Only locally generated validation messages and HTTP status are persisted.
+        reason=('HTTP '+str(exc.code)) if isinstance(exc,urllib.error.HTTPError) else str(exc)[:180]
+        with closing(db()) as con,con:
+            con.execute('INSERT OR REPLACE INTO gaps VALUES(?,?,?,?,?)',(provider,key,a,b,reason))
+        time.sleep(1)
+
+
 def summary(provider):
     with closing(db()) as con:
         return {asset:dict(chunks=n,candles=count,first=first,last=last) for asset,n,count,first,last in con.execute(
-            'SELECT asset,COUNT(*),SUM(rows),MIN(first),MAX(last) FROM chunks WHERE provider=? GROUP BY asset',(provider,))}
+            "SELECT asset,COUNT(*),SUM(rows),MIN(first),MAX(last) FROM chunks WHERE provider=? AND (provider!='groww' OR julianday(end)-julianday(start)<7) GROUP BY asset",(provider,))}
 
 
 def run(name,cfg):
     provider=name.split('_')[0]; token=None if provider=='groww' else h.load_access_token()
     a,b=cfg['start'],cfg['end'];state=dict(status='running',start=a,end=b,source=provider,
-        scope='NIFTY spot; expired options within 2,000 points of observed spot opens, final 14 days; expired futures final 28 days. Historical depth unavailable.',
+        download_version='v2',scope='NIFTY spot; expired options within 2,000 points of observed spot opens, final 14 days; expired futures final 28 days. Historical depth unavailable.',
         started_at=datetime.now(timezone.utc).isoformat())
     def update(**kw):
         with closing(db()) as con:
             state['empty_chunks']=con.execute('SELECT COUNT(*) FROM gaps WHERE provider=?',(provider,)).fetchone()[0]
         state.update(kw,heartbeat_at=datetime.now(timezone.utc).isoformat(),coverage=summary(provider));e.write(name,state)
     spot='NSE-NIFTY' if provider=='groww' else h.NIFTY_KEY
-    for first,last in windows(a,b):
-        update(phase='Spot minute candles',through=last);collect_chunk(provider,spot,first,last,'spot',token)
+    for first,last in windows(a,b,7 if provider=='groww' else 28):
+        update(phase='Spot minute candles',through=last);collect_safe(provider,spot,first,last,'spot',token)
     expiries=set()
     if provider=='groww':
         months=sorted({(first[:4],first[5:7]) for first,_ in windows(a,b,1)})
@@ -133,13 +162,19 @@ def run(name,cfg):
                 if key.endswith('-FUT'):contracts.append((key,'future'))
                 elif key.endswith(('-CE','-PE')) and low<=float(key.split('-')[-2])<=high:contracts.append((key,'option'))
         else:
-            contracts=[(c.instrument_key,'option') for c in h.list_contracts(expiry,token=token) if c.is_option and low<=c.strike<=high]
+            metadata=[asdict(c) for c in h.list_contracts(expiry,token=token) if c.is_option and low<=c.strike<=high]
+            contracts=[(c['instrument_key'],'option') for c in metadata]
             q=urllib.parse.urlencode(dict(instrument_key=h.NIFTY_KEY,expiry_date=expiry))
-            contracts += [(c['instrument_key'],'future') for c in h._request(h.API_BASE+'/expired-instruments/future/contract?'+q,token) or []]
+            futures=h._request(h.API_BASE+'/expired-instruments/future/contract?'+q,token) or []
+            contracts += [(c['instrument_key'],'future') for c in futures]
+            metadata += [dict(instrument_key=c['instrument_key'],option_type='FUT',strike=0.,expiry=expiry,lot_size=c['lot_size'],underlying_key=h.NIFTY_KEY) for c in futures]
+            with closing(mh.database()) as con,con:
+                for item in metadata:
+                    if int(item.get('lot_size',0))>0:con.execute('INSERT OR REPLACE INTO contracts VALUES(?,?)',(item['instrument_key'],json.dumps(item)))
         for key,asset in contracts:
             begin=max(first,(date.fromisoformat(expiry)-timedelta(days=13)).isoformat()) if asset=='option' else first
             update(phase='Expired '+asset+' minute candles',expiry=expiry,contracts_processed=count)
-            collect_chunk(provider,key,begin,expiry,asset,token);count+=1
+            collect_safe(provider,key,begin,expiry,asset,token);count+=1
     update(status='download_pass_finished',finished_at=datetime.now(timezone.utc).isoformat(),
         completeness='Provider-returned coverage only. Missing expiry months and empty responses are gaps; not a complete-chain or full-session guarantee.')
 
@@ -152,5 +187,5 @@ if __name__=='__main__':
     except BlockingIOError:sys.exit(0)
     try:run(name,json.load(sys.stdin))
     except Exception as exc:
-        state=e.read(name);state['failure_type']=type(exc).__name__;state['http_status']=getattr(exc,'code',None);state.update(status='retry_pending',error='History request or validation failed; cached chunks retained. Check provider entitlement/authentication and disk.',
+        state=e.read(name);state['failure_type']=type(exc).__name__;state['validation_reason']=str(exc)[:180] if isinstance(exc,ValueError) else None;state['http_status']=getattr(exc,'code',None);state.update(status='retry_pending',error='History request or validation failed; cached chunks retained. Check provider entitlement/authentication and disk.',
             retry_after=(datetime.now(timezone.utc)+timedelta(minutes=5)).isoformat());e.write(name,state)
