@@ -38,7 +38,7 @@ export async function handleGrowwEvidence(req,res){
  try{
   if(input.path)return res.json(await growwRequest(input.path,input.params));
   const token=await resolveGrowwAccessToken();
-  const r=await fetch('https://api.groww.in/v1/api/apex/v1/socket/token/create/',{method:'POST',redirect:'error',signal:AbortSignal.timeout(20000),headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/json','X-API-VERSION':'1.0','x-request-id':randomUUID(),'x-client-id':'growwapi','x-client-platform':'growwapi-python-client','x-client-platform-version':'1.5.0'},body:JSON.stringify(input)});
+  const r=await fetch('https://api.groww.in/v1/api/apex/v1/socket/token/create',{method:'POST',redirect:'error',signal:AbortSignal.timeout(20000),headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/json','X-API-VERSION':'1.0','x-request-id':randomUUID(),'x-client-id':'growwapi','x-client-platform':'growwapi-python-client','x-client-platform-version':'1.5.0'},body:JSON.stringify(input)});
   const body=await r.json();
   const payload=body.payload||body;
   if(!r.ok||body.status==='FAILURE'||typeof payload.token!=='string'||!payload.subscriptionId)throw new Error('Socket authorization failed');
