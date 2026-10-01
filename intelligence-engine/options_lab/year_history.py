@@ -37,11 +37,10 @@ def windows(start,end,days=28):
 
 
 def groww(path,token,**params):
-    url='https://api.groww.in/v1'+path+'?'+urllib.parse.urlencode(params)
-    req=urllib.request.Request(url,headers={'Authorization':'Bearer '+token,'Accept':'application/json','X-API-VERSION':'1.0'})
-    with urllib.request.urlopen(req,timeout=30) as response: body=json.load(response)
-    if body.get('status')!='SUCCESS':raise ValueError('Groww request rejected')
-    return body.get('payload') or {}
+    from .groww_bridge import request
+    actions={'/live-data/quote':'quote','/historical/candles':'candles','/historical/expiries':'expiries','/historical/contracts':'contracts'}
+    if path not in actions:raise ValueError('Unsupported market-data action')
+    return request(actions[path],params)
 
 
 def normalize(rows):
@@ -99,8 +98,7 @@ def summary(provider):
 
 
 def run(name,cfg):
-    from .groww_observer import token as groww_token
-    provider=name.split('_')[0]; token=groww_token() if provider=='groww' else h.load_access_token()
+    provider=name.split('_')[0]; token=None if provider=='groww' else h.load_access_token()
     a,b=cfg['start'],cfg['end'];state=dict(status='running',start=a,end=b,source=provider,
         scope='NIFTY spot; expired options within 2,000 points of observed spot opens, final 14 days; expired futures final 28 days. Historical depth unavailable.',
         started_at=datetime.now(timezone.utc).isoformat())

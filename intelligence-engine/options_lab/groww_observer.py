@@ -15,21 +15,6 @@ from . import data_evidence as e, paper_agents as p
 from .year_history import groww
 
 
-def token():
-    direct=os.getenv('GROWW_ACCESS_TOKEN','').strip()
-    if direct:return direct
-    key=os.getenv('GROWW_API_KEY','').strip()
-    if key.startswith('eyJ') and len(key)>100:return key
-    secret=os.getenv('GROWW_API_SECRET','').strip()
-    if not key or not secret:raise ValueError('Groww credentials unavailable')
-    now=str(int(time.time()))
-    body=json.dumps(dict(key_type='approval',timestamp=now,checksum=hashlib.sha256((secret+now).encode()).hexdigest())).encode()
-    req=urllib.request.Request('https://api.groww.in/v1/token/api/access',data=body,
-        headers={'Authorization':'Bearer '+key,'Content-Type':'application/json'})
-    with urllib.request.urlopen(req,timeout=30) as r:result=json.load(r)
-    if not result.get('token'):raise ValueError('Groww token unavailable')
-    return result['token']
-
 
 def timestamp(value):
     try:
@@ -61,17 +46,18 @@ def select(rows,today,spot):
     return result[:42]+future[:1]
 
 
-def observe():
-    from growwapi import GrowwAPI, GrowwFeed
-    auth=token();day=datetime.now(p.IST).date().isoformat()
+def observe(probe_seconds=0):
+    from growwapi import GrowwFeed
+    from .groww_bridge import FeedAuthorization
+    auth=None;day=datetime.now(p.IST).date().isoformat()
     quote=groww('/live-data/quote',auth,exchange='NSE',segment='CASH',trading_symbol='NIFTY')
     spot=float(quote['last_price'])
     with urllib.request.urlopen('https://growwapi-assets.groww.in/instruments/instrument.csv',timeout=60) as r:
         mapping=select(list(csv.DictReader(io.StringIO(r.read().decode()))),day,spot)
     if not mapping:raise ValueError('No verified NIFTY derivative mapping')
     e.write('groww_mapping',dict(day=day,instruments=mapping))
-    feed=GrowwFeed(GrowwAPI(auth)); state=dict(status='subscribing',mode='observation_only',mapped_contracts=len(mapping),messages=0,fresh_messages=0,stale_messages=0,
-        started_at=datetime.now(timezone.utc).isoformat(),automatic_failover=False)
+    feed=GrowwFeed(FeedAuthorization()); state=dict(status='subscribing',mode='observation_only',mapped_contracts=len(mapping),messages=0,fresh_messages=0,stale_messages=0,
+        started_at=datetime.now(timezone.utc).isoformat(),connection_verified_at=datetime.now(timezone.utc).isoformat(),probe_day=day,automatic_failover=False)
     lock=threading.Lock();last={};pending={}
     def callback(kind,getter):
         def receive(_meta):
@@ -93,7 +79,7 @@ def observe():
     feed.subscribe_market_depth(derivatives,on_data_received=callback('depth',feed.get_market_depth))
     thread=threading.Thread(target=feed.consume,daemon=True);thread.start()
     started=time.monotonic()
-    while thread.is_alive() and datetime.now(p.IST).date().isoformat()==day and (datetime.now(p.IST).hour,datetime.now(p.IST).minute)<=(15,40) and time.monotonic()-started<6*3600:
+    while thread.is_alive() and datetime.now(p.IST).date().isoformat()==day and ((probe_seconds and time.monotonic()-started<probe_seconds) or (not probe_seconds and (datetime.now(p.IST).hour,datetime.now(p.IST).minute)<=(15,40) and time.monotonic()-started<6*3600)):
         now=datetime.now(timezone.utc)
         with lock:
             batch=list(pending.values());pending.clear()
@@ -105,7 +91,7 @@ def observe():
             e.write('groww_stream',state)
         time.sleep(1)
     # Parent supervisor renews mapping/auth at next start. No stale success status.
-    state['status']='reconnect_pending';e.write('groww_stream',state)
+    state['status']='outside_market_hours' if probe_seconds else 'reconnect_pending';e.write('groww_stream',state)
     from .evidence_archive import digest, durable
     path=e.root()/f'groww-{day}.jsonl.gz'
     if path.exists():
@@ -119,6 +105,7 @@ if __name__=='__main__':
     try:
         now=datetime.now(p.IST)
         if now.weekday()<5 and (9,0)<=(now.hour,now.minute)<=(15,40):observe()
+        elif e.read('groww_stream').get('probe_day')!=now.date().isoformat():observe(probe_seconds=15)
         else:
             state=e.read('groww_stream');state.update(status='outside_market_hours',mode='observation_only',heartbeat_at=now.isoformat(),automatic_failover=False);e.write('groww_stream',state)
     except Exception:

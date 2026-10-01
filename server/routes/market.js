@@ -4,6 +4,7 @@
  */
 
 import { Router } from 'express';
+import {handleGrowwEvidence} from '../services/growwEvidenceBridge.js';
 import { coverageStatus, startCoverageAudit } from '../services/providerCoverage.js';
 import { getAgiIntelligence, getDashboardFromIntelligence } from '../services/intelligenceService.js';
 import { getDashboardData, getTickerData } from '../services/marketDataService.js';
@@ -36,6 +37,7 @@ export default function createMarketRouter(env = {}) {
   startPreMarketBriefingScheduler();
   startClientPortfolioSnapshotScheduler();
   const router = Router();
+  router.post('/internal/nifty-groww',handleGrowwEvidence);
   router.get('/provider-coverage', requireStrategyLabAdmin, async (_req,res) => {
     res.set('Cache-Control','no-store');
     try { res.json(await coverageStatus()); } catch { res.status(503).json({ok:false,error:'Coverage storage unavailable'}); }

@@ -27,8 +27,12 @@ Changed index/LTP/depth payloads are sampled at most once per second and retain
 provider and receipt timestamps. Both stale and fresh observations are retained
 with quality labels. No automatic failover is enabled. It reconnects daily and
 on process exit, with a five-minute failure cooldown. After-market state does not
-prove fresh live delivery. Existing credentials are read only inside the engine;
-no token is returned by these APIs or written into the collector configuration.
+prove fresh live delivery. The existing finance backend owns Groww authentication. An allowlisted NIFTY-only
+service bridge supplies historical data and short-lived socket authorization;
+the Groww trading token is never copied to the engine. The engine retains its
+existing Upstox credentials. No token is returned through the admin API or written
+into collector configuration. A brief after-hours connection probe checks stream
+authentication, but does not prove fresh market delivery.
 
 Live Upstox second frames already use 14 hot days plus verified compressed daily
 archives for 365 days. Groww observations are retained 365 days. Both reside on
