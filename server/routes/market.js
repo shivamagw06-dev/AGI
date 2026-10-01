@@ -4,6 +4,7 @@
  */
 
 import { Router } from 'express';
+import { coverageStatus, startCoverageAudit } from '../services/providerCoverage.js';
 import { getAgiIntelligence, getDashboardFromIntelligence } from '../services/intelligenceService.js';
 import { getDashboardData, getTickerData } from '../services/marketDataService.js';
 import { MARKET_REFRESH_MS } from '../config/marketRefresh.js';
@@ -35,6 +36,13 @@ export default function createMarketRouter(env = {}) {
   startPreMarketBriefingScheduler();
   startClientPortfolioSnapshotScheduler();
   const router = Router();
+  router.get('/provider-coverage', requireStrategyLabAdmin, async (_req,res) => {
+    res.set('Cache-Control','no-store');
+    try { res.json(await coverageStatus()); } catch { res.status(503).json({ok:false,error:'Coverage storage unavailable'}); }
+  });
+  router.post('/provider-coverage/run', requireStrategyLabAdmin, (_req,res) => {
+    res.set('Cache-Control','no-store');res.status(202).json(startCoverageAudit());
+  });
 
   router.post('/portfolio-package', async (req, res) => {
     try {
