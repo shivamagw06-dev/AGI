@@ -119,7 +119,8 @@ if __name__=='__main__':
     try:
         now=datetime.now(p.IST)
         if now.weekday()<5 and (9,0)<=(now.hour,now.minute)<=(15,40):observe()
-        else:e.write('groww_stream',dict(status='outside_market_hours',mode='observation_only',heartbeat_at=now.isoformat(),automatic_failover=False))
+        else:
+            state=e.read('groww_stream');state.update(status='outside_market_hours',mode='observation_only',heartbeat_at=now.isoformat(),automatic_failover=False);e.write('groww_stream',state)
     except Exception:
         state=e.read('groww_stream');state.update(status='retry_pending',error='Groww stream/auth/mapping unavailable; no automatic failover.',
             retry_after=(datetime.now(timezone.utc)+timedelta(minutes=5)).isoformat());e.write('groww_stream',state)

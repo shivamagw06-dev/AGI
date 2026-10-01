@@ -5,6 +5,7 @@ and futures. Provider expiry availability is reported, never inferred complete.
 """
 import hashlib
 import json
+import os
 import sqlite3
 import sys
 import time
@@ -126,14 +127,15 @@ def run(name,cfg):
             rows=con.execute('SELECT payload FROM candles WHERE provider=? AND instrument=? AND at>=? AND at<?',(provider,spot,first,expiry+'Z')).fetchall()
         prices=[json.loads(r[0])[1] for r in rows]
         if not prices:continue
+        low,high=min(prices)-2000,max(prices)+2000
         if provider=='groww':
             keys=groww('/historical/contracts',token,exchange='NSE',underlying_symbol='NIFTY',expiry_date=expiry).get('contracts',[])
             contracts=[]
             for key in keys:
                 if key.endswith('-FUT'):contracts.append((key,'future'))
-                elif key.endswith(('-CE','-PE')) and min(prices)-2000<=float(key.split('-')[-2])<=max(prices)+2000:contracts.append((key,'option'))
+                elif key.endswith(('-CE','-PE')) and low<=float(key.split('-')[-2])<=high:contracts.append((key,'option'))
         else:
-            contracts=[(c.instrument_key,'option') for c in h.list_contracts(expiry,token=token) if c.is_option and min(prices)-2000<=c.strike<=max(prices)+2000]
+            contracts=[(c.instrument_key,'option') for c in h.list_contracts(expiry,token=token) if c.is_option and low<=c.strike<=high]
             q=urllib.parse.urlencode(dict(instrument_key=h.NIFTY_KEY,expiry_date=expiry))
             contracts += [(c['instrument_key'],'future') for c in h._request(h.API_BASE+'/expired-instruments/future/contract?'+q,token) or []]
         for key,asset in contracts:
@@ -145,6 +147,8 @@ def run(name,cfg):
 
 
 if __name__=='__main__':
+    try:os.nice(10)
+    except (AttributeError,OSError):pass
     name=sys.argv[1]
     try:lock=e.process_lock(name)
     except BlockingIOError:sys.exit(0)
