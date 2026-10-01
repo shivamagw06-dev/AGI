@@ -1,3 +1,4 @@
+import {readEnergy} from '../services/globalIntelligence/energy.js';
 import express from 'express';
 import rateLimit from 'express-rate-limit';
 import { requireStrategyLabAdmin } from '../services/strategyLabAdminAuth.js';
@@ -23,6 +24,7 @@ export default function createGlobalIntelligenceRouter(deps={}) {
     res.status(status).json({error:status===503?'Global Intelligence is temporarily unavailable. Please retry.':e.message});
   }};
   const validate=fn=>{try{return fn();}catch(e){e.status=400;throw e;}};
+  router.get('/energy',handle(async(req,res)=>res.set('Cache-Control','public, max-age=60').json(await (deps.readEnergy||readEnergy)())));
   router.get('/snapshot',handle(async(req,res)=>res.set('Cache-Control','public, max-age=60').json(await read())));
   router.get('/archive',handle(async(req,res)=>{
     const page=Number(req.query.page||1);if(!Number.isInteger(page)||page<1||page>100)return res.status(400).json({error:'Choose a page from 1 to 100.'});
