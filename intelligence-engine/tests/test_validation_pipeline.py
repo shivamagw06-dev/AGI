@@ -44,3 +44,26 @@ class ValidationTests(unittest.TestCase):
   self.assertEqual(v.refresh_candidates()['paper_candidates'],[])
   self.assertIn('Provider price discrepancies need review',e.read('paper_watchlist')['blockers'])
 if __name__=='__main__':unittest.main()
+
+class GrowwMalformedCandleTests(unittest.TestCase):
+ def test_invalid_price_types_are_validation_errors(self):
+  for value in (None,{},[],True,'bad',float('nan')):
+   with self.subTest(value=value),self.assertRaises(ValueError):
+    y.normalize([['2025-12-08T09:00:00',value,100,100,100,1425,None]])
+ def test_invalid_container(self):
+  for value in (None,{},'bad'):
+   with self.subTest(value=value),self.assertRaises(ValueError):y.normalize(value)
+ def test_null_prices_preserved_as_gap_and_next_chunk_continues(self):
+  import gzip
+  with tempfile.TemporaryDirectory() as tmp,patch.object(e,'root',return_value=Path(tmp)),patch.object(e,'storage',return_value={'free_bytes':10*1024**3}),patch.object(y.time,'sleep'):
+   bad=[['2025-12-08T09:00:00',None,None,None,None,1425,None]]
+   good=[['2025-12-09T09:15:00',100,101,99,100,10,None]]
+   with patch.object(y,'groww',side_effect=[{'candles':bad},{'candles':good}]):
+    y.collect_safe('groww','TEST','2025-12-08','2025-12-08','future',None)
+    y.collect_safe('groww','TEST','2025-12-09','2025-12-09','future',None)
+   with closing(y.db()) as db:
+    self.assertEqual(db.execute('SELECT reason FROM gaps').fetchall(),[('Invalid OHLC',)])
+    self.assertEqual(db.execute('SELECT COUNT(*) FROM chunks').fetchone()[0],1)
+    self.assertEqual(db.execute('SELECT COUNT(*) FROM candles').fetchone()[0],1)
+   rejected=list(Path(tmp).glob('rejected-*.json.gz'));self.assertEqual(len(rejected),1)
+   with gzip.open(rejected[0],'rt') as f:self.assertEqual(json.load(f),bad)
