@@ -48,6 +48,12 @@ def groww(path,token,**params):
 
 def normalize(rows):
     import math
+    if not isinstance(rows,list):raise ValueError('Invalid candles container')
+    def number(value,label):
+        if isinstance(value,bool) or not isinstance(value,(int,float,str)):
+            raise ValueError('Invalid '+label)
+        try:return float(value)
+        except (ValueError,OverflowError):raise ValueError('Invalid '+label) from None
     result={}
     for row in rows:
         if not isinstance(row,list) or len(row)<5:raise ValueError('Invalid candle shape')
@@ -55,9 +61,9 @@ def normalize(rows):
         if len(t)==19:t+='+05:30'
         at=datetime.fromisoformat(t)
         if at.tzinfo is None or at.second or at.microsecond:raise ValueError('Invalid candle timestamp')
-        o,hi,lo,c=[float(v) for v in row[1:5]]
+        o,hi,lo,c=[number(v,'OHLC') for v in row[1:5]]
         if not all(math.isfinite(v) for v in (o,hi,lo,c)) or not 0<lo<=min(o,c)<=max(o,c)<=hi:raise ValueError('Invalid OHLC')
-        extras=[float(v) if v is not None else None for v in row[5:7]]
+        extras=[number(v,'volume/OI') if v is not None else None for v in row[5:7]]
         extras+=(2-len(extras))*[None]
         if any(v is not None and (not math.isfinite(v) or v<0) for v in extras):raise ValueError('Invalid volume/OI')
         key=at.astimezone(mh.p.IST).isoformat();item=[key,o,hi,lo,c,*extras]
