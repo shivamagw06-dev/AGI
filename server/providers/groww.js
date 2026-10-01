@@ -87,7 +87,7 @@ export function isGrowwConfigured() {
   );
 }
 
-async function growwRequest(path, params = {}) {
+export async function growwRequest(path, params = {}) {
   const token = await resolveGrowwAccessToken();
 
   const url = new URL(`${GROWW_BASE}${path}`);
@@ -98,6 +98,8 @@ async function growwRequest(path, params = {}) {
   const fetchFn = await ensureFetch();
   const resp = await fetchFn(url.toString(), {
     method: 'GET',
+    signal: AbortSignal.timeout(15_000),
+    redirect: 'error',
     headers: {
       Authorization: `Bearer ${token}`,
       Accept: 'application/json',
@@ -144,26 +146,32 @@ export async function getOHLC(exchangeSymbols, segment = 'CASH') {
   });
 }
 
-const formatGrowwDate = (date) => date.toISOString().slice(0, 19).replace('T', ' ');
-
-/** Historical daily candle range — backend only; callers must not expose raw candles publicly. */
-export async function getHistoricalCandleRange(
-  exchange,
-  segment,
-  tradingSymbol,
-  start,
-  end,
-  intervalMinutes = 1440
-) {
-  const payload = await growwRequest('/historical/candle/range', {
-    exchange,
-    segment,
-    trading_symbol: tradingSymbol,
-    start_time: formatGrowwDate(start),
-    end_time: formatGrowwDate(end),
-    interval_in_minutes: String(intervalMinutes),
-  });
-  return payload?.candles || [];
+/** New historical API: timezone-explicit input; legacy callers still receive epoch seconds. */
+export function growwTimestamp(value) {
+  if (typeof value === 'number') return value > 1e12 ? value / 1000 : value;
+  const text = String(value).replace(' ', 'T');
+  return Date.parse(/[zZ]$|[+-]\d{2}:\d{2}$/.test(text) ? text : `${text}+05:30`) / 1000;
+}
+export async function getHistoricalCandleRange(exchange, segment, tradingSymbol, start, end, intervalMinutes = 1440) {
+  const intervals = {1:'1minute',2:'2minute',3:'3minute',5:'5minute',10:'10minute',15:'15minute',30:'30minute',60:'1hour',240:'4hour',1440:'1day',10080:'1week'};
+  if (!intervals[intervalMinutes]) throw new Error('Unsupported Groww candle interval');
+  if (segment !== 'CASH' && !tradingSymbol.startsWith(`${exchange}-`)) throw new Error('FNO history requires the canonical groww_symbol from contract discovery');
+  const from = new Date(start).getTime(), to = new Date(end).getTime();
+  if (!Number.isFinite(from) || !Number.isFinite(to) || from >= to || to-from>730*86400000) throw new Error('History range must be positive and at most two years');
+  const chunk = (intervalMinutes<=5?30:intervalMinutes<=30?90:180)*86400000;
+  const rows = new Map();
+  for (let cursor=from; cursor<to; cursor+=chunk) {
+    const payload = await growwRequest('/historical/candles', {
+      exchange, segment, groww_symbol: tradingSymbol.startsWith(`${exchange}-`) ? tradingSymbol : `${exchange}-${tradingSymbol}`,
+      start_time: Math.floor(cursor/1000), end_time: Math.floor(Math.min(to,cursor+chunk)/1000), candle_interval: intervals[intervalMinutes],
+    });
+    for (const row of payload?.candles || []) {
+      const at=growwTimestamp(row[0]);
+      if (!Number.isFinite(at)) throw new Error('Invalid Groww candle timestamp');
+      if (at*1000>=from && at*1000<=to) rows.set(at,[at,...row.slice(1)]);
+    }
+  }
+  return [...rows.values()].sort((a,b)=>a[0]-b[0]);
 }
 
 /** Historical daily candles for indicator calculation — backend only */
