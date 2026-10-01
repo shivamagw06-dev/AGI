@@ -35,7 +35,6 @@ const MORE_NAV = [
   { name: 'Insider Activity', path: '/insider-activity' },
   { name: 'Private Markets', path: '/private-markets' },
   { name: 'Global Markets', path: '/global-markets' },
-  { name: 'Global Intelligence', path: '/intelligence' },
 ];
 
 const MOBILE_NAV = [{ name: 'Home', path: '/' }, ...PRIMARY_NAV, ...MORE_NAV];
