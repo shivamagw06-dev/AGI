@@ -3,7 +3,6 @@ import { Navigate, Route, Routes } from 'react-router-dom';
 import RequireAdmin from '@/components/admin/RequireAdmin';
 import AdminLayout from '@/pages/admin/AdminLayout';
 
-const GlobalIntelligenceAdmin = lazy(() => import('@/pages/intelligence/GlobalIntelligenceAdmin'));
 const AdminDashboard = lazy(() => import('@/pages/admin/Dashboard'));
 const ArticleEditor = lazy(() => import('@/pages/admin/ArticleEditor'));
 const CategoryManager = lazy(() => import('@/pages/admin/CategoryManager'));
@@ -116,7 +115,7 @@ export default function AdminRoutes() {
     <RequireAdmin>
       <Suspense fallback={<AdminPageFallback />}>
         <Routes>
-          <Route path="global-intelligence" element={<GlobalIntelligenceAdmin />} />
+
           {/* Full-bleed Institutional Knowledge Operations Center — not CMS chrome */}
           <Route path="knowledge-operations" element={<KnowledgeOperations />} />
           {/* Full-bleed Valuation Intelligence — Institutional Consensus Dashboard */}
