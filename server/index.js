@@ -132,7 +132,7 @@ app.use(cors({
     // Deny quietly — never cb(Error) (that surfaces as Internal Server Error).
     return cb(null, false);
   },
-  methods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
   optionsSuccessStatus: 200,
   credentials: true,
 }));

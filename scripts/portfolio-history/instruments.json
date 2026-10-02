@@ -344,7 +344,7 @@
   },
   "Chemical & Mining Co. of Chile Inc.": {
     "symbol": "SQM",
-    "providerName": "Sociedad Química y Minera de Chile S.A.",
+    "providerName": "Sociedad Qu\u00edmica y Minera de Chile S.A.",
     "reviewedAt": "2026-10-02",
     "source": "https://finance.yahoo.com/quote/SQM/",
     "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
@@ -412,9 +412,9 @@
     "source": "https://finance.yahoo.com/quote/COIN/",
     "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
   },
-  "Compañía de Minas Buenaventura S.A.A.": {
+  "Compa\u00f1\u00eda de Minas Buenaventura S.A.A.": {
     "symbol": "BVN",
-    "providerName": "Compañía de Minas Buenaventura S.A.A.",
+    "providerName": "Compa\u00f1\u00eda de Minas Buenaventura S.A.A.",
     "reviewedAt": "2026-10-02",
     "source": "https://finance.yahoo.com/quote/BVN/",
     "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
@@ -1457,7 +1457,7 @@
   },
   "Schrodinger Inc": {
     "symbol": "SDGR",
-    "providerName": "Schrödinger, Inc.",
+    "providerName": "Schr\u00f6dinger, Inc.",
     "reviewedAt": "2026-10-02",
     "source": "https://finance.yahoo.com/quote/SDGR/",
     "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
@@ -1853,5 +1853,26 @@
     "reviewedAt": "2026-10-02",
     "source": "https://finance.yahoo.com/quote/VLUE/",
     "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
+  },
+  "JPMorgan Chase & Co.": {
+    "symbol": "JPM",
+    "providerName": "JPMorgan Chase & Co.",
+    "reviewedAt": "2026-10-02",
+    "source": "https://www.jpmorganchase.com/ir",
+    "note": "AGI Top 10 selection; US common stock. Berkshire Class B uses Yahoo BRK-B."
+  },
+  "Berkshire Hathaway Inc. Class B": {
+    "symbol": "BRK-B",
+    "providerName": "Berkshire Hathaway Inc. Class B",
+    "reviewedAt": "2026-10-02",
+    "source": "https://www.berkshirehathaway.com/",
+    "note": "AGI Top 10 selection; US common stock. Berkshire Class B uses Yahoo BRK-B."
+  },
+  "GE Aerospace": {
+    "symbol": "GE",
+    "providerName": "GE Aerospace",
+    "reviewedAt": "2026-10-02",
+    "source": "https://www.geaerospace.com/investor-relations",
+    "note": "AGI Top 10 selection; US common stock. Berkshire Class B uses Yahoo BRK-B."
   }
 }
