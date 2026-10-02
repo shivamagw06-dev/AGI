@@ -1,6 +1,15 @@
 import research from '@/data/portfolioResearch.json';
 
 export default function PortfolioResearch({ portfolio }) {
+  if (portfolio.market === 'usa' && portfolio.id === 'us-top10' && portfolio.customized && !portfolio.incomplete) return <section className="pf-research" aria-labelledby="portfolio-research-heading">
+    <span className="pf-eyebrow">AGI RESEARCH · 2026-10-02</span>
+    <h2 id="portfolio-research-heading">Why this portfolio?</h2>
+    <p>AGI independently selected a concentrated quality-growth basket for a 3–5-year research horizon. Microsoft, Alphabet, Amazon and Nvidia provide cloud and AI exposure; Visa, JPMorgan and Berkshire broaden the business mix; Lilly, GE Aerospace and Costco add healthcare, aerospace and consumer exposure.</p>
+    <p>The initial allocation totals 100%. Weights are research judgments, not an optimised portfolio. The four cloud and AI names account for 38% of the initial allocation and share spending-cycle risk. Ten stocks remain a concentrated, aggressive equity portfolio.</p>
+    <p>Selection considered operating growth, cash generation and business durability. Investment gains can distort reported earnings; valuation comparisons should use normalised operating results. Current valuation comparisons are incomplete, particularly before making any investment decision.</p>
+    <p>Review after quarterly results. Record any allocation changes and their rationale. The historical comparisons above use current holdings with hindsight; they are not an independently validated selection strategy or returns earned since launch.</p>
+    <p className="pf-footnote">This rationale describes the 2 October 2026 selection. Subsequent holding edits require a fresh research review. It replaces the earlier partially disclosed reference basket; it is not Vested’s US Top10 allocation.</p>
+  </section>;
   const review = portfolio.market === 'usa' && research.portfolios[portfolio.id];
   if (!review) return null;
   return <section className="pf-research" aria-labelledby="portfolio-research-heading">
