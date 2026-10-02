@@ -40,6 +40,7 @@ export function createPortfolioStore(client = createSupabaseAdmin()) {
       const { data: old, error: readError } = await db().select('document,revision').eq('id', id).maybeSingle();
       if (readError) throw readError;
       if ((old?.revision || 0) !== input.revision) { const e = new Error('This portfolio changed. Reload before editing again.'); e.status = 409; throw e; }
+      clean.holdings = clean.holdings.map(h => ({...old?.document.holdings?.find(x=>x.symbol===h.symbol), ...h}));
       const document = { ...old?.document, ...clean, sourceName: old?.document.sourceName || null, sourceUrl: old?.document.sourceUrl || null, sourceAsOf: old?.document.sourceAsOf || old?.document.asOf || null, customized: true };
       const revision = (old?.revision || 0) + 1;
       const row = { id, document, revision, updated_by: actorId, updated_at: new Date().toISOString() };
