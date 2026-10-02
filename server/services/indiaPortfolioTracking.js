@@ -1,3 +1,5 @@
+import { nseSession } from './liveAlphaSession.js';
+import { createIndiaDailyReader, dailyDue, dailyValuation, completedDates } from './indiaPortfolioDaily.js';
 import { createSupabaseAdmin } from '../lib/supabaseAdmin.js';
 import { loadUpstoxNseIsinMap } from './companyIsinBackfill.js';
 let instrumentCache=null,instrumentExpiry=0;
@@ -14,7 +16,7 @@ export const INDIA_IDS = ['in-momentum','in-growth','in-value','in-quality','in-
 export function session(now = new Date()) {
  const p=Object.fromEntries(new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Kolkata',year:'numeric',month:'2-digit',day:'2-digit',weekday:'short',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).formatToParts(now).map(x=>[x.type,x.value]));
  const minutes=+p.hour*60 + +p.minute;
- return {date:`${p.year}-${p.month}-${p.day}`,open:!['Sat','Sun'].includes(p.weekday)&&minutes>=555&&minutes<930};
+ return {date:`${p.year}-${p.month}-${p.day}`,open:!!nseSession(now)&&minutes>=555&&minutes<930};
 }
 const stamp=v=>{const n=typeof v==='string'&&/^\d+$/.test(v)?Number(v):v;const d=new Date(n);return v!=null&&Number.isFinite(d.getTime())?d.toISOString():null;};
 export function fresh(q, now) {const age=now.getTime()-Date.parse(q?.time);return q?.price>0&&age>=0&&age<=120000;}
@@ -50,43 +52,71 @@ export function valueBaseline(base,quotes,now=new Date()) {
  const complete=positions.every(h=>h.fresh&&h.price>0&&quotes[h.symbol].instrumentKey===h.instrumentKey);
  return {positions,complete,nav:complete?positions.reduce((sum,h)=>sum+h.weight*h.price/h.basePrice,base.cashWeight||0):null};
 }
-export function createIndiaTracker({client=createSupabaseAdmin(), readQuotes=createIndiaQuotes(), now=()=>new Date()}={}) {
- const table=()=>{if(!client)throw Error('Tracking storage unavailable');return client.from('agi_india_portfolio_tracking');};
- let inFlight=null;
- return {async read(portfolios){
-  if(inFlight)return inFlight;
-  inFlight=(async()=>{
-   let time=now();const s=session(time);const selected=portfolios.filter(p=>INDIA_IDS.includes(p.id)&&p.market==='india');
-   if(!selected.length)return {startDate:INDIA_START,portfolios:[],source:'Upstox'};
-   const {data:states,error}=await table().select('*');if(error)throw error;
-   const {data:marks,error:markError}=await client.from('agi_india_portfolio_marks').select('*').order('session_date');if(markError)throw markError;
-   const map=new Map(states.map(x=>[x.portfolio_id,x]));
-   const symbols=[...new Set(selected.flatMap(p=>[...p.holdings,...(map.get(p.id)?.baseline.holdings||[])].map(h=>h.symbol)))];
-   let feed={quotes:{},fetchedAt:null},quoteError=null;try{feed=await readQuotes(symbols);}catch{quoteError='Upstox prices temporarily unavailable';}
-   time=now();
-   const result=[];
-   for(const p of selected){let state=map.get(p.id);
-    if(!state){const baseline=makeBaseline(p,feed.quotes,time);if(baseline){
-      const {data:created,error:insertError}=await table().insert({portfolio_id:p.id,baseline}).select('*').single();
-      if(insertError?.code==='23505'){const {data,error}=await table().select('*').eq('portfolio_id',p.id).single();if(error)throw error;state=data;}
-      else if(insertError)throw insertError;else state=created;
-    }}
-    const valuation=state?valueBaseline(state.baseline,feed.quotes,time):null;
-    const history=marks.filter(m=>m.portfolio_id===p.id);
-    const lastMark=history.at(-1)||null;
-    if(state&&valuation.complete&&s.open){const {error}=await client.from('agi_india_portfolio_marks').upsert({portfolio_id:p.id,session_date:s.date,marked_at:time.toISOString(),nav:valuation.nav});if(error)throw error;}
-    const nav=valuation?.complete&&s.open?valuation.nav:lastMark?.nav??null;
-    result.push({id:p.id,status:!state?(s.date<INDIA_START?'scheduled':s.date>INDIA_START?'start_missed':'awaiting_fresh_prices'):valuation.complete&&s.open?'live':'stale',startDate:INDIA_START,startedAt:state?.baseline.startedAt||null,returnPct:nav==null?null:nav-100,nav,markedAt:valuation?.complete&&s.open?time.toISOString():lastMark?.marked_at||null,history:history.map(m=>({date:m.session_date,nav:m.nav})),cashWeight:state?.baseline.cashWeight??p.cashWeight??0,positions:valuation?.positions||p.holdings.map(h=>({...h,price:feed.quotes[h.symbol]?.price??null,quoteTime:feed.quotes[h.symbol]?.time??null})),allocationChanged:!!state&&state.baseline.revision!==p.revision});
-   }
-   return {startDate:INDIA_START,marketOpen:s.open,source:'Upstox',fetchedAt:feed.fetchedAt,quoteError,portfolios:result};
-  })();try{return await inFlight;}finally{inFlight=null;}
- }};
+async function allRows(client,table) {
+ const rows=[];
+ for(let offset=0;;offset+=500){let query=client.from(table).select('*').order(table==='agi_india_daily_prices'?'session_date':'portfolio_id');if(table==='agi_india_portfolio_marks')query=query.order('session_date');const {data,error}=await query.range(offset,offset+499);if(error)throw error;rows.push(...data);if(data.length<500)return rows;}
 }
-
+export function createIndiaTracker({client=createSupabaseAdmin(),readQuotes=createIndiaQuotes(),readDaily=createIndiaDailyReader(),now=()=>new Date()}={}) {
+ let running=null;
+ const states=async()=>{if(!client)throw Error('Tracking storage unavailable');return allRows(client,'agi_india_portfolio_tracking');};
+ return {
+ async collect(portfolios){
+  if(running)return running;
+  running=(async()=>{
+   const time=now(),s=session(time);let saved=await states();
+   const selected=portfolios.filter(p=>INDIA_IDS.includes(p.id)&&p.market==='india');
+   const pending=selected.filter(p=>!saved.some(x=>x.portfolio_id===p.id));
+   if(pending.length&&s.date===INDIA_START&&s.open){
+    const feed=await readQuotes([...new Set(pending.flatMap(p=>p.holdings.map(h=>h.symbol)))]);
+    for(const p of pending){const baseline=makeBaseline(p,feed.quotes,now());if(!baseline)continue;
+     const {error}=await client.from('agi_india_portfolio_tracking').insert({portfolio_id:p.id,baseline});if(error&&error.code!=='23505')throw error;
+    }
+    saved=await states();
+   }
+   if(!saved.length)return;
+   const daily=await allRows(client,'agi_india_daily_prices');
+   const marks=await allRows(client,'agi_india_portfolio_marks');
+   for(const date of completedDates(time,INDIA_START)){
+    const eligible=saved.filter(x=>session(new Date(x.baseline.startedAt)).date<=date);
+    const pendingMarks=eligible.filter(x=>!marks.some(m=>m.portfolio_id===x.portfolio_id&&m.session_date===date&&m.valuation_method==='upstox_daily'));
+    if(!pendingMarks.length)continue;
+    const existing=daily.find(x=>x.session_date===date)?.prices||{};
+    const instruments=[...new Map(pendingMarks.flatMap(x=>x.baseline.holdings).map(h=>[h.symbol,h])).values()];
+    const missing=instruments.filter(h=>!(existing[h.symbol]?.price>0)||existing[h.symbol]?.instrumentKey!==h.instrumentKey);
+    const prices={...existing,...(missing.length?await readDaily(date,missing):{})};
+    const collectedAt=now().toISOString();
+    if(missing.length){const {error}=await client.from('agi_india_daily_prices').upsert({session_date:date,prices,collected_at:collectedAt});if(error)throw error;}
+    for(const row of pendingMarks){const nav=dailyValuation(row.baseline,prices);if(nav==null)continue;
+     const {error}=await client.from('agi_india_portfolio_marks').upsert({portfolio_id:row.portfolio_id,session_date:date,marked_at:collectedAt,nav,valuation_method:'upstox_daily'});if(error)throw error;
+    }
+   }
+  })();try{return await running;}finally{running=null;}
+ },
+ async read(portfolios){
+  const time=now(),s=session(time),saved=await states();
+  const daily=await allRows(client,'agi_india_daily_prices');
+  const marks=(await allRows(client,'agi_india_portfolio_marks')).filter(x=>x.valuation_method==='upstox_daily').sort((a,b)=>a.session_date.localeCompare(b.session_date));
+  return {startDate:INDIA_START,source:'Upstox daily candles',updateTime:'16:00 Asia/Kolkata',marketOpen:s.open,portfolios:portfolios.filter(p=>INDIA_IDS.includes(p.id)&&p.market==='india').map(p=>{
+   const base=saved.find(x=>x.portfolio_id===p.id)?.baseline;
+   const history=marks.filter(x=>x.portfolio_id===p.id).map(x=>({date:x.session_date,nav:x.nav,recordedAt:x.marked_at}));
+   const last=history.at(-1),prior=history.at(-2);
+   const positions=(base?.holdings||p.holdings).map(h=>{
+    const points=base?daily.filter(x=>x.session_date>=session(new Date(base.startedAt)).date&&x.prices[h.symbol]?.instrumentKey===h.instrumentKey&&x.prices[h.symbol]?.price>0).map(x=>({date:x.session_date,price:x.prices[h.symbol].price})).sort((a,b)=>a.date.localeCompare(b.date)):[];
+    const latest=points.at(-1),previous=points.at(-2);
+    return {...h,price:latest?.price??null,priceDate:latest?.date??null,history:points,returnPct:latest&&h.basePrice?(latest.price/h.basePrice-1)*100:null,dayReturnPct:latest?(latest.price/(previous?.price||h.basePrice)-1)*100:null};
+   });
+   const due=completedDates(time,INDIA_START).at(-1);
+   return {id:p.id,startDate:INDIA_START,startedAt:base?.startedAt||null,status:!base?(s.date<INDIA_START?'scheduled':s.date>INDIA_START?'start_missed':'awaiting_fresh_prices'):last?(due&&last.date<due?'daily_pending':'daily_recorded'):'awaiting_daily',nav:last?.nav??null,returnPct:last?last.nav-100:null,dayReturnPct:last?(last.nav/(prior?.nav||100)-1)*100:null,markedAt:last?.recordedAt||null,priceDate:last?.date||null,history,positions,cashWeight:base?.cashWeight??p.cashWeight??0};
+  })};
+ }
+ };
+}
 let tracker;
-export const readIndiaTracking=async portfolios=>{tracker||=createIndiaTracker();return tracker.read(portfolios);};
-let running=false;
+function sharedTracker(){return tracker||=createIndiaTracker();}
+export const readIndiaTracking=async portfolios=>sharedTracker().read(portfolios);
+let running=false,lastDailyAttempt=0;
 export function startIndiaPortfolioScheduler(){
- const tick=async()=>{if(running||!session().open||session().date<INDIA_START)return;running=true;try{await readIndiaTracking(await createPortfolioStore().list());}catch{console.warn('[india-portfolios] Tracking refresh failed; retaining recorded evidence.');}finally{running=false;}};
+ const tick=async()=>{const now=new Date(),s=session(now);const launch=s.date===INDIA_START&&s.open;const due=dailyDue(now);if(running||s.date<INDIA_START||(!launch&&!due)||(!launch&&Date.now()-lastDailyAttempt<300000))return;
+  running=true;if(due)lastDailyAttempt=Date.now();try{await sharedTracker().collect(await createPortfolioStore().list());}catch{console.warn('[india-portfolios] Collection failed; retaining recorded evidence.');}finally{running=false;}};
  const timer=setInterval(tick,60000);timer.unref();tick();return timer;
 }
