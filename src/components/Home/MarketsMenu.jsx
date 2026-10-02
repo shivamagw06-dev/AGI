@@ -28,6 +28,7 @@ const NEWS_LINKS = [
 ];
 
 const DATA_LINKS = [
+  { label: 'Portfolios', to: '/portfolios' },
   { label: 'Market Intelligence', to: '/market-intelligence' },
   { label: 'Sectors', to: '/market-sector-intelligence' },
   { label: 'Global Markets', to: '/global-markets' },

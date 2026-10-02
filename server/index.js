@@ -1,3 +1,4 @@
+import createPortfolioRouter from './routes/portfolioCatalog.js';
 // server/index.js
 // IndianAPI proxy + research router
 // - mounts ./research.js at /research
@@ -433,6 +434,7 @@ const nifty500ResearchRouter = createNifty500ResearchRouter();
 app.use('/api/research/nifty500', nifty500ResearchLimiter, nifty500ResearchRouter);
 // Alias — some clients/probes hit /nifty50 without the trailing 0.
 app.use('/api/research/nifty50', nifty500ResearchLimiter, nifty500ResearchRouter);
+app.use('/api/portfolios', createPortfolioRouter());
 app.use('/api/manual-screeners', createManualScreenersRouter());
 // Paused by owner: keep stored evidence, disable reads/writes and on-demand provider calls.
 app.use('/api/global-intelligence', (_req, res) => res.status(410).json({error:'Global Intelligence is paused.'}));

@@ -1,3 +1,4 @@
+import PortfolioEditor from './PortfolioEditor';
 import React, { Suspense, lazy } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import RequireAdmin from '@/components/admin/RequireAdmin';
@@ -169,6 +170,7 @@ export default function AdminRoutes() {
           <Route path="intelligence/*" element={<IntelligenceCmsRoutes />} />
           <Route element={<AdminLayout />}>
             <Route index element={<AdminDashboard />} />
+            <Route path="portfolios" element={<PortfolioEditor />} />
             <Route path="company-financials" element={<CompanyFinancials />} />
             <Route path="institutional-holdings" element={<InstitutionalHoldingsAdmin />} />
             <Route path="publication-review" element={<PublicationReview />} />

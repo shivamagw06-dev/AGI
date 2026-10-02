@@ -56,6 +56,7 @@ const DESK_BUTTONS = [
             : Landmark,
     hint: desk.hint,
   })),
+  { id: 'portfolios', label: 'Portfolios', icon: Grid2X2, hint: 'India & USA', href: '/portfolios' },
   { id: 'finance-tools', label: 'Tools', icon: Grid2X2, hint: 'Discover & list', href: '/tools' },
   { id: 'screeners', label: 'Screeners', icon: SlidersHorizontal, hint: 'Stock screens', href: '/agi/screeners' },
 ];
