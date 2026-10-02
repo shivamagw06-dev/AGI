@@ -749,8 +749,11 @@
     "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
   },
   "Heico Corp": {
-    "symbol": null,
-    "reason": "Share class not specified: HEI and HEI-A have different prices"
+    "symbol": "HEI",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/HEI/history/",
+    "identitySource": "https://app.vestedfinance.com/en/global/vests/details?vestId=bc6a4fa8-2e62-421c-8b55-5afbba71d727",
+    "note": "Ticker verified directly in Vested portfolio UI (holding image label or Details company link). Legacy display name retained; Yahoo price listing matched to verified ticker."
   },
   "Home Depot, Inc., The": {
     "symbol": "HD",
@@ -893,8 +896,11 @@
     "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
   },
   "LIBERTY MEDIA CORP-LIBERTY-C": {
-    "symbol": null,
-    "reason": "Liberty tracking-stock identity requires original ticker verification"
+    "symbol": "LLYVK",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/LLYVK/history/",
+    "identitySource": "https://app.vestedfinance.com/en/global/vests/details?vestId=55a6fd3b-3945-46dc-8d5d-0ca064dfd29a",
+    "note": "Ticker verified directly in Vested portfolio UI (holding image label or Details company link). Legacy display name retained; Yahoo price listing matched to verified ticker."
   },
   "LITHIUM AMERICAS (ARGENTINA) CORP": {
     "symbol": "LAR",
@@ -918,8 +924,11 @@
     "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
   },
   "Lennar Corp.": {
-    "symbol": null,
-    "reason": "Share class not specified: LEN and LEN-B have different prices"
+    "symbol": "LEN",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/LEN/history/",
+    "identitySource": "https://app.vestedfinance.com/en/global/vests/details?vestId=55a6fd3b-3945-46dc-8d5d-0ca064dfd29a",
+    "note": "Ticker verified directly in Vested portfolio UI (holding image label or Details company link). Legacy display name retained; Yahoo price listing matched to verified ticker."
   },
   "Li Auto Inc": {
     "symbol": "LI",
@@ -985,8 +994,11 @@
     "note": "Name and US security type reviewed against Yahoo search; legacy names matched to current listing."
   },
   "Madison Square Garden Company": {
-    "symbol": null,
-    "reason": "Ambiguous legacy name: sports and entertainment securities differ"
+    "symbol": "MSGS",
+    "reviewedAt": "2026-10-02",
+    "source": "https://finance.yahoo.com/quote/MSGS/history/",
+    "identitySource": "https://app.vestedfinance.com/en/global/vests/details?vestId=e4ede621-654e-43ec-a651-81a470089f24",
+    "note": "Ticker verified directly in Vested portfolio UI (holding image label or Details company link). Legacy display name retained; Yahoo price listing matched to verified ticker."
   },
   "Marvell Technology Group Ltd.": {
     "symbol": "MRVL",

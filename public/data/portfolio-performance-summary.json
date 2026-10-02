@@ -1,6 +1,6 @@
 {
   "asOf": "2026-10-01",
-  "generatedAt": "2026-10-02T10:58:46.407933+00:00",
+  "generatedAt": "2026-10-02T12:14:06.018939+00:00",
   "method": "Current weights, adjusted-close buy-and-hold simulation; not fund track record",
   "portfolios": [
     {
@@ -218,93 +218,41 @@
           "months": 1,
           "start": "2026-09-01",
           "end": "2026-10-01",
-          "returnPct": null,
-          "maxDrawdownPct": null,
-          "coveredWeight": 99.28000000000003,
-          "reason": "Missing instrument history: full-portfolio return withheld",
-          "missing": [
-            {
-              "name": "LIBERTY MEDIA CORP-LIBERTY-C",
-              "symbol": "",
-              "weight": 0.37,
-              "reason": "Liberty tracking-stock identity requires original ticker verification"
-            },
-            {
-              "name": "Lennar Corp.",
-              "symbol": "",
-              "weight": 0.35,
-              "reason": "Share class not specified: LEN and LEN-B have different prices"
-            }
-          ]
+          "returnPct": -3.5314864555891057,
+          "maxDrawdownPct": 4.689833284463029,
+          "coveredWeight": 100.00000000000003,
+          "reason": null,
+          "missing": []
         },
         {
           "months": 3,
           "start": "2026-07-01",
           "end": "2026-10-01",
-          "returnPct": null,
-          "maxDrawdownPct": null,
-          "coveredWeight": 99.28000000000003,
-          "reason": "Missing instrument history: full-portfolio return withheld",
-          "missing": [
-            {
-              "name": "LIBERTY MEDIA CORP-LIBERTY-C",
-              "symbol": "",
-              "weight": 0.37,
-              "reason": "Liberty tracking-stock identity requires original ticker verification"
-            },
-            {
-              "name": "Lennar Corp.",
-              "symbol": "",
-              "weight": 0.35,
-              "reason": "Share class not specified: LEN and LEN-B have different prices"
-            }
-          ]
+          "returnPct": 2.7616476261141054,
+          "maxDrawdownPct": 4.548259544263278,
+          "coveredWeight": 100.00000000000003,
+          "reason": null,
+          "missing": []
         },
         {
           "months": 6,
           "start": "2026-04-01",
           "end": "2026-10-01",
-          "returnPct": null,
-          "maxDrawdownPct": null,
-          "coveredWeight": 99.28000000000003,
-          "reason": "Missing instrument history: full-portfolio return withheld",
-          "missing": [
-            {
-              "name": "LIBERTY MEDIA CORP-LIBERTY-C",
-              "symbol": "",
-              "weight": 0.37,
-              "reason": "Liberty tracking-stock identity requires original ticker verification"
-            },
-            {
-              "name": "Lennar Corp.",
-              "symbol": "",
-              "weight": 0.35,
-              "reason": "Share class not specified: LEN and LEN-B have different prices"
-            }
-          ]
+          "returnPct": 12.084687547445316,
+          "maxDrawdownPct": 5.173289153759486,
+          "coveredWeight": 100.00000000000003,
+          "reason": null,
+          "missing": []
         },
         {
           "months": 12,
           "start": "2025-10-01",
           "end": "2026-10-01",
-          "returnPct": null,
-          "maxDrawdownPct": null,
-          "coveredWeight": 99.28000000000003,
-          "reason": "Missing instrument history: full-portfolio return withheld",
-          "missing": [
-            {
-              "name": "LIBERTY MEDIA CORP-LIBERTY-C",
-              "symbol": "",
-              "weight": 0.37,
-              "reason": "Liberty tracking-stock identity requires original ticker verification"
-            },
-            {
-              "name": "Lennar Corp.",
-              "symbol": "",
-              "weight": 0.35,
-              "reason": "Share class not specified: LEN and LEN-B have different prices"
-            }
-          ]
+          "returnPct": 18.559861442796468,
+          "maxDrawdownPct": 6.127675629762042,
+          "coveredWeight": 100.00000000000003,
+          "reason": null,
+          "missing": []
         }
       ]
     },
@@ -654,69 +602,41 @@
           "months": 1,
           "start": "2026-09-01",
           "end": "2026-10-01",
-          "returnPct": null,
-          "maxDrawdownPct": null,
-          "coveredWeight": 95.44999999999999,
-          "reason": "Missing instrument history: full-portfolio return withheld",
-          "missing": [
-            {
-              "name": "Heico Corp",
-              "symbol": "",
-              "weight": 4.52,
-              "reason": "Share class not specified: HEI and HEI-A have different prices"
-            }
-          ]
+          "returnPct": -7.248554079302161,
+          "maxDrawdownPct": 8.02776059921565,
+          "coveredWeight": 99.96999999999998,
+          "reason": null,
+          "missing": []
         },
         {
           "months": 3,
           "start": "2026-07-01",
           "end": "2026-10-01",
-          "returnPct": null,
-          "maxDrawdownPct": null,
-          "coveredWeight": 95.44999999999999,
-          "reason": "Missing instrument history: full-portfolio return withheld",
-          "missing": [
-            {
-              "name": "Heico Corp",
-              "symbol": "",
-              "weight": 4.52,
-              "reason": "Share class not specified: HEI and HEI-A have different prices"
-            }
-          ]
+          "returnPct": -13.78586509176346,
+          "maxDrawdownPct": 17.958478786093778,
+          "coveredWeight": 99.96999999999998,
+          "reason": null,
+          "missing": []
         },
         {
           "months": 6,
           "start": "2026-04-01",
           "end": "2026-10-01",
-          "returnPct": null,
-          "maxDrawdownPct": null,
-          "coveredWeight": 95.44999999999999,
-          "reason": "Missing instrument history: full-portfolio return withheld",
-          "missing": [
-            {
-              "name": "Heico Corp",
-              "symbol": "",
-              "weight": 4.52,
-              "reason": "Share class not specified: HEI and HEI-A have different prices"
-            }
-          ]
+          "returnPct": -5.761592395798099,
+          "maxDrawdownPct": 18.189713037192224,
+          "coveredWeight": 99.96999999999998,
+          "reason": null,
+          "missing": []
         },
         {
           "months": 12,
           "start": "2025-10-01",
           "end": "2026-10-01",
-          "returnPct": null,
-          "maxDrawdownPct": null,
-          "coveredWeight": 95.44999999999999,
-          "reason": "Missing instrument history: full-portfolio return withheld",
-          "missing": [
-            {
-              "name": "Heico Corp",
-              "symbol": "",
-              "weight": 4.52,
-              "reason": "Share class not specified: HEI and HEI-A have different prices"
-            }
-          ]
+          "returnPct": 9.552705890174806,
+          "maxDrawdownPct": 17.965961564725998,
+          "coveredWeight": 99.96999999999998,
+          "reason": null,
+          "missing": []
         }
       ]
     },
@@ -730,69 +650,41 @@
           "months": 1,
           "start": "2026-09-01",
           "end": "2026-10-01",
-          "returnPct": null,
-          "maxDrawdownPct": null,
-          "coveredWeight": 96.35000000000001,
-          "reason": "Missing instrument history: full-portfolio return withheld",
-          "missing": [
-            {
-              "name": "Heico Corp",
-              "symbol": "",
-              "weight": 3.65,
-              "reason": "Share class not specified: HEI and HEI-A have different prices"
-            }
-          ]
+          "returnPct": -0.028888859746711848,
+          "maxDrawdownPct": 4.310990934175674,
+          "coveredWeight": 100.00000000000001,
+          "reason": null,
+          "missing": []
         },
         {
           "months": 3,
           "start": "2026-07-01",
           "end": "2026-10-01",
-          "returnPct": null,
-          "maxDrawdownPct": null,
-          "coveredWeight": 96.35000000000001,
-          "reason": "Missing instrument history: full-portfolio return withheld",
-          "missing": [
-            {
-              "name": "Heico Corp",
-              "symbol": "",
-              "weight": 3.65,
-              "reason": "Share class not specified: HEI and HEI-A have different prices"
-            }
-          ]
+          "returnPct": -7.1859624795992065,
+          "maxDrawdownPct": 12.55700306847194,
+          "coveredWeight": 100.00000000000001,
+          "reason": null,
+          "missing": []
         },
         {
           "months": 6,
           "start": "2026-04-01",
           "end": "2026-10-01",
-          "returnPct": null,
-          "maxDrawdownPct": null,
-          "coveredWeight": 96.35000000000001,
-          "reason": "Missing instrument history: full-portfolio return withheld",
-          "missing": [
-            {
-              "name": "Heico Corp",
-              "symbol": "",
-              "weight": 3.65,
-              "reason": "Share class not specified: HEI and HEI-A have different prices"
-            }
-          ]
+          "returnPct": 4.464059003873144,
+          "maxDrawdownPct": 12.638369260889693,
+          "coveredWeight": 100.00000000000001,
+          "reason": null,
+          "missing": []
         },
         {
           "months": 12,
           "start": "2025-10-01",
           "end": "2026-10-01",
-          "returnPct": null,
-          "maxDrawdownPct": null,
-          "coveredWeight": 96.35000000000001,
-          "reason": "Missing instrument history: full-portfolio return withheld",
-          "missing": [
-            {
-              "name": "Heico Corp",
-              "symbol": "",
-              "weight": 3.65,
-              "reason": "Share class not specified: HEI and HEI-A have different prices"
-            }
-          ]
+          "returnPct": 32.914294844580816,
+          "maxDrawdownPct": 12.907280317701487,
+          "coveredWeight": 100.00000000000001,
+          "reason": null,
+          "missing": []
         }
       ]
     },
@@ -922,69 +814,41 @@
           "months": 1,
           "start": "2026-09-01",
           "end": "2026-10-01",
-          "returnPct": null,
-          "maxDrawdownPct": null,
-          "coveredWeight": 99.05999999999999,
-          "reason": "Missing instrument history: full-portfolio return withheld",
-          "missing": [
-            {
-              "name": "Madison Square Garden Company",
-              "symbol": "",
-              "weight": 0.94,
-              "reason": "Ambiguous legacy name: sports and entertainment securities differ"
-            }
-          ]
+          "returnPct": -4.771429481445755,
+          "maxDrawdownPct": 5.894286073271459,
+          "coveredWeight": 99.99999999999999,
+          "reason": null,
+          "missing": []
         },
         {
           "months": 3,
           "start": "2026-07-01",
           "end": "2026-10-01",
-          "returnPct": null,
-          "maxDrawdownPct": null,
-          "coveredWeight": 99.05999999999999,
-          "reason": "Missing instrument history: full-portfolio return withheld",
-          "missing": [
-            {
-              "name": "Madison Square Garden Company",
-              "symbol": "",
-              "weight": 0.94,
-              "reason": "Ambiguous legacy name: sports and entertainment securities differ"
-            }
-          ]
+          "returnPct": -1.6797208140647446,
+          "maxDrawdownPct": 6.80999592556274,
+          "coveredWeight": 99.99999999999999,
+          "reason": null,
+          "missing": []
         },
         {
           "months": 6,
           "start": "2026-04-01",
           "end": "2026-10-01",
-          "returnPct": null,
-          "maxDrawdownPct": null,
-          "coveredWeight": 99.05999999999999,
-          "reason": "Missing instrument history: full-portfolio return withheld",
-          "missing": [
-            {
-              "name": "Madison Square Garden Company",
-              "symbol": "",
-              "weight": 0.94,
-              "reason": "Ambiguous legacy name: sports and entertainment securities differ"
-            }
-          ]
+          "returnPct": -0.6504211858285647,
+          "maxDrawdownPct": 6.800160142667289,
+          "coveredWeight": 99.99999999999999,
+          "reason": null,
+          "missing": []
         },
         {
           "months": 12,
           "start": "2025-10-01",
           "end": "2026-10-01",
-          "returnPct": null,
-          "maxDrawdownPct": null,
-          "coveredWeight": 99.05999999999999,
-          "reason": "Missing instrument history: full-portfolio return withheld",
-          "missing": [
-            {
-              "name": "Madison Square Garden Company",
-              "symbol": "",
-              "weight": 0.94,
-              "reason": "Ambiguous legacy name: sports and entertainment securities differ"
-            }
-          ]
+          "returnPct": 20.691027609749945,
+          "maxDrawdownPct": 8.169123778082776,
+          "coveredWeight": 99.99999999999999,
+          "reason": null,
+          "missing": []
         }
       ]
     },
@@ -1286,35 +1150,21 @@
           "months": 1,
           "start": "2026-09-01",
           "end": "2026-10-01",
-          "returnPct": null,
-          "maxDrawdownPct": null,
-          "coveredWeight": 94.64000000000003,
-          "reason": "Missing instrument history: full-portfolio return withheld",
-          "missing": [
-            {
-              "name": "Heico Corp",
-              "symbol": "",
-              "weight": 5.35,
-              "reason": "Share class not specified: HEI and HEI-A have different prices"
-            }
-          ]
+          "returnPct": -1.623271288511019,
+          "maxDrawdownPct": 3.8100915729436857,
+          "coveredWeight": 99.99000000000002,
+          "reason": null,
+          "missing": []
         },
         {
           "months": 3,
           "start": "2026-07-01",
           "end": "2026-10-01",
-          "returnPct": null,
-          "maxDrawdownPct": null,
-          "coveredWeight": 94.64000000000003,
-          "reason": "Missing instrument history: full-portfolio return withheld",
-          "missing": [
-            {
-              "name": "Heico Corp",
-              "symbol": "",
-              "weight": 5.35,
-              "reason": "Share class not specified: HEI and HEI-A have different prices"
-            }
-          ]
+          "returnPct": -9.277141335629924,
+          "maxDrawdownPct": 11.708919553312613,
+          "coveredWeight": 99.99000000000002,
+          "reason": null,
+          "missing": []
         },
         {
           "months": 6,
@@ -1322,7 +1172,7 @@
           "end": "2026-10-01",
           "returnPct": null,
           "maxDrawdownPct": null,
-          "coveredWeight": 77.84,
+          "coveredWeight": 83.19000000000001,
           "reason": "Missing instrument history: full-portfolio return withheld",
           "missing": [
             {
@@ -1330,12 +1180,6 @@
               "symbol": "SPCX",
               "weight": 12.46,
               "reason": "Missing prices or insufficient listing history"
-            },
-            {
-              "name": "Heico Corp",
-              "symbol": "",
-              "weight": 5.35,
-              "reason": "Share class not specified: HEI and HEI-A have different prices"
             },
             {
               "name": "Honeywell Aerospace Inc",
@@ -1351,7 +1195,7 @@
           "end": "2026-10-01",
           "returnPct": null,
           "maxDrawdownPct": null,
-          "coveredWeight": 77.84,
+          "coveredWeight": 83.19000000000001,
           "reason": "Missing instrument history: full-portfolio return withheld",
           "missing": [
             {
@@ -1359,12 +1203,6 @@
               "symbol": "SPCX",
               "weight": 12.46,
               "reason": "Missing prices or insufficient listing history"
-            },
-            {
-              "name": "Heico Corp",
-              "symbol": "",
-              "weight": 5.35,
-              "reason": "Share class not specified: HEI and HEI-A have different prices"
             },
             {
               "name": "Honeywell Aerospace Inc",

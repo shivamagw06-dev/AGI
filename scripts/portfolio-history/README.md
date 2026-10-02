@@ -1,6 +1,6 @@
 # Portfolio price snapshots
 
-Read-only Yahoo history collection; no broker orders or DB mutations. The reviewed instrument map is independent of portfolio weights. Never select the first search match automatically; verify the listing/share class and record evidence in instruments.json. Four ambiguous copied holdings are intentionally unmapped.
+Read-only Yahoo history collection; no broker orders or DB mutations. The reviewed instrument map is independent of portfolio weights. Never select the first search match automatically; verify the listing/share class and record evidence in instruments.json. The four formerly ambiguous names were verified against Vested’s portfolio UI on 2 October 2026: HEICO → HEI, Lennar → LEN, Liberty’s legacy display name → LLYVK, Madison Square Garden → MSGS.
 
 Manual refresh from repo root:
 
