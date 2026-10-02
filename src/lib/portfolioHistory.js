@@ -27,6 +27,8 @@ export function holdingReturn(data, holding, months) {
   if(resolved.reason) return resolved;
   if(!period) return {...resolved,reason:'Insufficient benchmark calendar'};
   const prices=new Map(resolved.series.bars.map(b=>[b[0],b[1]]));
+  const firstDate=resolved.series.firstDate || resolved.series.bars[0]?.[0];
+  if(firstDate>period.start && period.dates.filter(d=>d>=firstDate).every(d=>Number.isFinite(prices.get(d))&&prices.get(d)>0)) return {...resolved,...period,isNew:true,reason:'New listing: not enough history for this period'};
   if(period.dates.some(d=>!Number.isFinite(prices.get(d))||prices.get(d)<=0)) return {...resolved,reason:'Missing prices or insufficient listing history',...period};
   const initial=prices.get(period.start), end=prices.get(period.end);
   return {symbol:resolved.symbol,...period,returnPct:(end/initial-1)*100,startPrice:initial,endPrice:end,values:period.dates.map(date=>({date,value:prices.get(date)/initial}))};
@@ -39,7 +41,7 @@ export function portfolioReturn(data, portfolio, months) {
   const base={rows,total,covered,months,...periodDates(data,months)};
   if(portfolio.incomplete || !Number.isFinite(total) || Math.abs(total-100)>.050001) return {...base,reason:'Incomplete allocation: full-portfolio return withheld'};
   if(!positive.length || portfolio.holdings.some(h=>!Number.isFinite(h.weight)||h.weight<0)) return {...base,reason:'Invalid allocation'};
-  if(rows.some(r=>r.weight>0&&r.reason)) return {...base,reason:'Missing instrument history: full-portfolio return withheld'};
+  if(rows.some(r=>r.weight>0&&r.reason)) return {...base,isNew:rows.filter(r=>r.weight>0&&r.reason).every(r=>r.isNew),reason:'Missing instrument history: full-portfolio return withheld'};
   // Only tiny disclosed rounding differences are normalised; no unknown weight becomes cash.
   const valid=rows.filter(r=>r.weight>0);
   const curve=valid[0].values.map((p,i)=>({date:p.date,value:valid.reduce((s,r)=>s+(r.weight/total)*r.values[i].value,0)}));

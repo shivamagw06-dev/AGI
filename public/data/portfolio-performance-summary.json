@@ -1,6 +1,6 @@
 {
   "asOf": "2026-10-01",
-  "generatedAt": "2026-10-02T12:14:06.018939+00:00",
+  "generatedAt": "2026-10-02T12:47:41.597106+00:00",
   "method": "Current weights, adjusted-close buy-and-hold simulation; not fund track record",
   "portfolios": [
     {
@@ -11,6 +11,7 @@
       "periods": [
         {
           "months": 1,
+          "isNew": false,
           "start": "2026-09-01",
           "end": "2026-10-01",
           "returnPct": -6.233330645125113,
@@ -21,6 +22,7 @@
         },
         {
           "months": 3,
+          "isNew": false,
           "start": "2026-07-01",
           "end": "2026-10-01",
           "returnPct": 0.8832596454247943,
@@ -31,6 +33,7 @@
         },
         {
           "months": 6,
+          "isNew": false,
           "start": "2026-04-01",
           "end": "2026-10-01",
           "returnPct": 6.591295286366039,
@@ -41,6 +44,7 @@
         },
         {
           "months": 12,
+          "isNew": false,
           "start": "2025-10-01",
           "end": "2026-10-01",
           "returnPct": 17.703938218882076,
@@ -59,6 +63,7 @@
       "periods": [
         {
           "months": 1,
+          "isNew": false,
           "start": "2026-09-01",
           "end": "2026-10-01",
           "returnPct": -2.1558575402073066,
@@ -69,6 +74,7 @@
         },
         {
           "months": 3,
+          "isNew": false,
           "start": "2026-07-01",
           "end": "2026-10-01",
           "returnPct": -0.9298148186484445,
@@ -79,6 +85,7 @@
         },
         {
           "months": 6,
+          "isNew": false,
           "start": "2026-04-01",
           "end": "2026-10-01",
           "returnPct": 1.9993642103791176,
@@ -89,6 +96,7 @@
         },
         {
           "months": 12,
+          "isNew": false,
           "start": "2025-10-01",
           "end": "2026-10-01",
           "returnPct": 5.491194554633294,
@@ -107,6 +115,7 @@
       "periods": [
         {
           "months": 1,
+          "isNew": false,
           "start": "2026-09-01",
           "end": "2026-10-01",
           "returnPct": -1.2347732454063953,
@@ -117,6 +126,7 @@
         },
         {
           "months": 3,
+          "isNew": false,
           "start": "2026-07-01",
           "end": "2026-10-01",
           "returnPct": -2.3640383500245665,
@@ -127,6 +137,7 @@
         },
         {
           "months": 6,
+          "isNew": false,
           "start": "2026-04-01",
           "end": "2026-10-01",
           "returnPct": 23.066964474583163,
@@ -137,6 +148,7 @@
         },
         {
           "months": 12,
+          "isNew": true,
           "start": "2025-10-01",
           "end": "2026-10-01",
           "returnPct": null,
@@ -148,13 +160,13 @@
               "name": "PayPay Corp",
               "symbol": "PAYP",
               "weight": 1.45,
-              "reason": "Missing prices or insufficient listing history"
+              "reason": "New listing: not enough history for this period"
             },
             {
               "name": "Ethos Technologies Corp.",
               "symbol": "LIFE",
               "weight": 1.3,
-              "reason": "Missing prices or insufficient listing history"
+              "reason": "New listing: not enough history for this period"
             }
           ]
         }
@@ -168,6 +180,7 @@
       "periods": [
         {
           "months": 1,
+          "isNew": false,
           "start": "2026-09-01",
           "end": "2026-10-01",
           "returnPct": 9.908273303315385,
@@ -178,6 +191,7 @@
         },
         {
           "months": 3,
+          "isNew": false,
           "start": "2026-07-01",
           "end": "2026-10-01",
           "returnPct": 9.6387608242811,
@@ -188,6 +202,7 @@
         },
         {
           "months": 6,
+          "isNew": false,
           "start": "2026-04-01",
           "end": "2026-10-01",
           "returnPct": 72.09804768795911,
@@ -198,6 +213,7 @@
         },
         {
           "months": 12,
+          "isNew": false,
           "start": "2025-10-01",
           "end": "2026-10-01",
           "returnPct": 84.21021893045864,
@@ -216,6 +232,7 @@
       "periods": [
         {
           "months": 1,
+          "isNew": false,
           "start": "2026-09-01",
           "end": "2026-10-01",
           "returnPct": -3.5314864555891057,
@@ -226,6 +243,7 @@
         },
         {
           "months": 3,
+          "isNew": false,
           "start": "2026-07-01",
           "end": "2026-10-01",
           "returnPct": 2.7616476261141054,
@@ -236,6 +254,7 @@
         },
         {
           "months": 6,
+          "isNew": false,
           "start": "2026-04-01",
           "end": "2026-10-01",
           "returnPct": 12.084687547445316,
@@ -246,6 +265,7 @@
         },
         {
           "months": 12,
+          "isNew": false,
           "start": "2025-10-01",
           "end": "2026-10-01",
           "returnPct": 18.559861442796468,
@@ -264,6 +284,7 @@
       "periods": [
         {
           "months": 1,
+          "isNew": false,
           "start": "2026-09-01",
           "end": "2026-10-01",
           "returnPct": 10.129251906692538,
@@ -274,6 +295,7 @@
         },
         {
           "months": 3,
+          "isNew": false,
           "start": "2026-07-01",
           "end": "2026-10-01",
           "returnPct": 6.241394506556719,
@@ -284,6 +306,7 @@
         },
         {
           "months": 6,
+          "isNew": false,
           "start": "2026-04-01",
           "end": "2026-10-01",
           "returnPct": 57.36698090383281,
@@ -294,6 +317,7 @@
         },
         {
           "months": 12,
+          "isNew": false,
           "start": "2025-10-01",
           "end": "2026-10-01",
           "returnPct": 94.33854908415135,
@@ -312,6 +336,7 @@
       "periods": [
         {
           "months": 1,
+          "isNew": false,
           "start": "2026-09-01",
           "end": "2026-10-01",
           "returnPct": -0.15742214181865277,
@@ -322,6 +347,7 @@
         },
         {
           "months": 3,
+          "isNew": false,
           "start": "2026-07-01",
           "end": "2026-10-01",
           "returnPct": 1.6349895921463187,
@@ -332,6 +358,7 @@
         },
         {
           "months": 6,
+          "isNew": false,
           "start": "2026-04-01",
           "end": "2026-10-01",
           "returnPct": 23.779303756680847,
@@ -342,6 +369,7 @@
         },
         {
           "months": 12,
+          "isNew": false,
           "start": "2025-10-01",
           "end": "2026-10-01",
           "returnPct": 32.400325112026884,
@@ -360,6 +388,7 @@
       "periods": [
         {
           "months": 1,
+          "isNew": false,
           "start": "2026-09-01",
           "end": "2026-10-01",
           "returnPct": 5.334053810705797,
@@ -370,6 +399,7 @@
         },
         {
           "months": 3,
+          "isNew": false,
           "start": "2026-07-01",
           "end": "2026-10-01",
           "returnPct": 3.7024971191254474,
@@ -380,6 +410,7 @@
         },
         {
           "months": 6,
+          "isNew": false,
           "start": "2026-04-01",
           "end": "2026-10-01",
           "returnPct": 24.600951686572703,
@@ -390,6 +421,7 @@
         },
         {
           "months": 12,
+          "isNew": false,
           "start": "2025-10-01",
           "end": "2026-10-01",
           "returnPct": -15.14873456494863,
@@ -408,6 +440,7 @@
       "periods": [
         {
           "months": 1,
+          "isNew": false,
           "start": "2026-09-01",
           "end": "2026-10-01",
           "returnPct": -0.6162074893211522,
@@ -418,6 +451,7 @@
         },
         {
           "months": 3,
+          "isNew": false,
           "start": "2026-07-01",
           "end": "2026-10-01",
           "returnPct": -14.122565470201875,
@@ -428,6 +462,7 @@
         },
         {
           "months": 6,
+          "isNew": false,
           "start": "2026-04-01",
           "end": "2026-10-01",
           "returnPct": 6.493944651886396,
@@ -438,6 +473,7 @@
         },
         {
           "months": 12,
+          "isNew": false,
           "start": "2025-10-01",
           "end": "2026-10-01",
           "returnPct": 33.31099736128116,
@@ -456,6 +492,7 @@
       "periods": [
         {
           "months": 1,
+          "isNew": false,
           "start": "2026-09-01",
           "end": "2026-10-01",
           "returnPct": 7.703359227696671,
@@ -466,6 +503,7 @@
         },
         {
           "months": 3,
+          "isNew": false,
           "start": "2026-07-01",
           "end": "2026-10-01",
           "returnPct": 26.80291077089676,
@@ -476,6 +514,7 @@
         },
         {
           "months": 6,
+          "isNew": false,
           "start": "2026-04-01",
           "end": "2026-10-01",
           "returnPct": 65.24398122870778,
@@ -486,6 +525,7 @@
         },
         {
           "months": 12,
+          "isNew": false,
           "start": "2025-10-01",
           "end": "2026-10-01",
           "returnPct": 47.30292826723499,
@@ -504,6 +544,7 @@
       "periods": [
         {
           "months": 1,
+          "isNew": false,
           "start": "2026-09-01",
           "end": "2026-10-01",
           "returnPct": -10.133962206577396,
@@ -514,6 +555,7 @@
         },
         {
           "months": 3,
+          "isNew": false,
           "start": "2026-07-01",
           "end": "2026-10-01",
           "returnPct": -2.371495889426656,
@@ -524,6 +566,7 @@
         },
         {
           "months": 6,
+          "isNew": false,
           "start": "2026-04-01",
           "end": "2026-10-01",
           "returnPct": -4.321031436444612,
@@ -534,6 +577,7 @@
         },
         {
           "months": 12,
+          "isNew": false,
           "start": "2025-10-01",
           "end": "2026-10-01",
           "returnPct": 36.37035086676128,
@@ -552,6 +596,7 @@
       "periods": [
         {
           "months": 1,
+          "isNew": false,
           "start": "2026-09-01",
           "end": "2026-10-01",
           "returnPct": 13.726940443772051,
@@ -562,6 +607,7 @@
         },
         {
           "months": 3,
+          "isNew": false,
           "start": "2026-07-01",
           "end": "2026-10-01",
           "returnPct": 20.980909013192893,
@@ -572,6 +618,7 @@
         },
         {
           "months": 6,
+          "isNew": false,
           "start": "2026-04-01",
           "end": "2026-10-01",
           "returnPct": 100.52346174603768,
@@ -582,6 +629,7 @@
         },
         {
           "months": 12,
+          "isNew": false,
           "start": "2025-10-01",
           "end": "2026-10-01",
           "returnPct": 52.20245466241653,
@@ -600,6 +648,7 @@
       "periods": [
         {
           "months": 1,
+          "isNew": false,
           "start": "2026-09-01",
           "end": "2026-10-01",
           "returnPct": -7.248554079302161,
@@ -610,6 +659,7 @@
         },
         {
           "months": 3,
+          "isNew": false,
           "start": "2026-07-01",
           "end": "2026-10-01",
           "returnPct": -13.78586509176346,
@@ -620,6 +670,7 @@
         },
         {
           "months": 6,
+          "isNew": false,
           "start": "2026-04-01",
           "end": "2026-10-01",
           "returnPct": -5.761592395798099,
@@ -630,6 +681,7 @@
         },
         {
           "months": 12,
+          "isNew": false,
           "start": "2025-10-01",
           "end": "2026-10-01",
           "returnPct": 9.552705890174806,
@@ -648,6 +700,7 @@
       "periods": [
         {
           "months": 1,
+          "isNew": false,
           "start": "2026-09-01",
           "end": "2026-10-01",
           "returnPct": -0.028888859746711848,
@@ -658,6 +711,7 @@
         },
         {
           "months": 3,
+          "isNew": false,
           "start": "2026-07-01",
           "end": "2026-10-01",
           "returnPct": -7.1859624795992065,
@@ -668,6 +722,7 @@
         },
         {
           "months": 6,
+          "isNew": false,
           "start": "2026-04-01",
           "end": "2026-10-01",
           "returnPct": 4.464059003873144,
@@ -678,6 +733,7 @@
         },
         {
           "months": 12,
+          "isNew": false,
           "start": "2025-10-01",
           "end": "2026-10-01",
           "returnPct": 32.914294844580816,
@@ -696,6 +752,7 @@
       "periods": [
         {
           "months": 1,
+          "isNew": false,
           "start": "2026-09-01",
           "end": "2026-10-01",
           "returnPct": -4.36215916084286,
@@ -706,6 +763,7 @@
         },
         {
           "months": 3,
+          "isNew": false,
           "start": "2026-07-01",
           "end": "2026-10-01",
           "returnPct": 2.1046901505465065,
@@ -716,6 +774,7 @@
         },
         {
           "months": 6,
+          "isNew": true,
           "start": "2026-04-01",
           "end": "2026-10-01",
           "returnPct": null,
@@ -727,12 +786,13 @@
               "name": "WISE GROUP PLC-CL A",
               "symbol": "WSE",
               "weight": 4.63,
-              "reason": "Missing prices or insufficient listing history"
+              "reason": "New listing: not enough history for this period"
             }
           ]
         },
         {
           "months": 12,
+          "isNew": false,
           "start": "2025-10-01",
           "end": "2026-10-01",
           "returnPct": null,
@@ -750,7 +810,7 @@
               "name": "WISE GROUP PLC-CL A",
               "symbol": "WSE",
               "weight": 4.63,
-              "reason": "Missing prices or insufficient listing history"
+              "reason": "New listing: not enough history for this period"
             }
           ]
         }
@@ -764,6 +824,7 @@
       "periods": [
         {
           "months": 1,
+          "isNew": false,
           "start": "2026-09-01",
           "end": "2026-10-01",
           "returnPct": -4.931725044711643,
@@ -774,6 +835,7 @@
         },
         {
           "months": 3,
+          "isNew": false,
           "start": "2026-07-01",
           "end": "2026-10-01",
           "returnPct": -20.080641789017793,
@@ -784,6 +846,7 @@
         },
         {
           "months": 6,
+          "isNew": false,
           "start": "2026-04-01",
           "end": "2026-10-01",
           "returnPct": -8.493350117561228,
@@ -794,6 +857,7 @@
         },
         {
           "months": 12,
+          "isNew": false,
           "start": "2025-10-01",
           "end": "2026-10-01",
           "returnPct": -8.996669810805658,
@@ -812,6 +876,7 @@
       "periods": [
         {
           "months": 1,
+          "isNew": false,
           "start": "2026-09-01",
           "end": "2026-10-01",
           "returnPct": -4.771429481445755,
@@ -822,6 +887,7 @@
         },
         {
           "months": 3,
+          "isNew": false,
           "start": "2026-07-01",
           "end": "2026-10-01",
           "returnPct": -1.6797208140647446,
@@ -832,6 +898,7 @@
         },
         {
           "months": 6,
+          "isNew": false,
           "start": "2026-04-01",
           "end": "2026-10-01",
           "returnPct": -0.6504211858285647,
@@ -842,6 +909,7 @@
         },
         {
           "months": 12,
+          "isNew": false,
           "start": "2025-10-01",
           "end": "2026-10-01",
           "returnPct": 20.691027609749945,
@@ -860,6 +928,7 @@
       "periods": [
         {
           "months": 1,
+          "isNew": false,
           "start": "2026-09-01",
           "end": "2026-10-01",
           "returnPct": 17.078767652740122,
@@ -870,6 +939,7 @@
         },
         {
           "months": 3,
+          "isNew": false,
           "start": "2026-07-01",
           "end": "2026-10-01",
           "returnPct": 49.70611568516197,
@@ -880,6 +950,7 @@
         },
         {
           "months": 6,
+          "isNew": false,
           "start": "2026-04-01",
           "end": "2026-10-01",
           "returnPct": 131.90914812247473,
@@ -890,6 +961,7 @@
         },
         {
           "months": 12,
+          "isNew": false,
           "start": "2025-10-01",
           "end": "2026-10-01",
           "returnPct": 215.70602237832705,
@@ -908,6 +980,7 @@
       "periods": [
         {
           "months": 1,
+          "isNew": false,
           "start": "2026-09-01",
           "end": "2026-10-01",
           "returnPct": -0.8985466713397061,
@@ -918,6 +991,7 @@
         },
         {
           "months": 3,
+          "isNew": false,
           "start": "2026-07-01",
           "end": "2026-10-01",
           "returnPct": 2.151218621930018,
@@ -928,6 +1002,7 @@
         },
         {
           "months": 6,
+          "isNew": false,
           "start": "2026-04-01",
           "end": "2026-10-01",
           "returnPct": 10.728485547035183,
@@ -938,6 +1013,7 @@
         },
         {
           "months": 12,
+          "isNew": false,
           "start": "2025-10-01",
           "end": "2026-10-01",
           "returnPct": 15.491640321602397,
@@ -956,6 +1032,7 @@
       "periods": [
         {
           "months": 1,
+          "isNew": false,
           "start": "2026-09-01",
           "end": "2026-10-01",
           "returnPct": -1.8013479237339536,
@@ -966,6 +1043,7 @@
         },
         {
           "months": 3,
+          "isNew": false,
           "start": "2026-07-01",
           "end": "2026-10-01",
           "returnPct": -0.9567899916497091,
@@ -976,6 +1054,7 @@
         },
         {
           "months": 6,
+          "isNew": false,
           "start": "2026-04-01",
           "end": "2026-10-01",
           "returnPct": 1.2046463156201392,
@@ -986,6 +1065,7 @@
         },
         {
           "months": 12,
+          "isNew": false,
           "start": "2025-10-01",
           "end": "2026-10-01",
           "returnPct": 3.7541363108562376,
@@ -1004,6 +1084,7 @@
       "periods": [
         {
           "months": 1,
+          "isNew": false,
           "start": "2026-09-01",
           "end": "2026-10-01",
           "returnPct": -1.203500672726654,
@@ -1014,6 +1095,7 @@
         },
         {
           "months": 3,
+          "isNew": false,
           "start": "2026-07-01",
           "end": "2026-10-01",
           "returnPct": 1.4331718056781684,
@@ -1024,6 +1106,7 @@
         },
         {
           "months": 6,
+          "isNew": false,
           "start": "2026-04-01",
           "end": "2026-10-01",
           "returnPct": 7.646426496326408,
@@ -1034,6 +1117,7 @@
         },
         {
           "months": 12,
+          "isNew": false,
           "start": "2025-10-01",
           "end": "2026-10-01",
           "returnPct": 12.070965754622943,
@@ -1052,6 +1136,7 @@
       "periods": [
         {
           "months": 1,
+          "isNew": false,
           "start": "2026-09-01",
           "end": "2026-10-01",
           "returnPct": 2.004437617936139,
@@ -1062,6 +1147,7 @@
         },
         {
           "months": 3,
+          "isNew": false,
           "start": "2026-07-01",
           "end": "2026-10-01",
           "returnPct": 2.4476105224794154,
@@ -1072,6 +1158,7 @@
         },
         {
           "months": 6,
+          "isNew": false,
           "start": "2026-04-01",
           "end": "2026-10-01",
           "returnPct": 19.93335020437248,
@@ -1082,6 +1169,7 @@
         },
         {
           "months": 12,
+          "isNew": false,
           "start": "2025-10-01",
           "end": "2026-10-01",
           "returnPct": 26.738492765402878,
@@ -1100,6 +1188,7 @@
       "periods": [
         {
           "months": 1,
+          "isNew": false,
           "start": "2026-09-01",
           "end": "2026-10-01",
           "returnPct": -12.210508481657612,
@@ -1110,6 +1199,7 @@
         },
         {
           "months": 3,
+          "isNew": false,
           "start": "2026-07-01",
           "end": "2026-10-01",
           "returnPct": -14.475513408422158,
@@ -1120,6 +1210,7 @@
         },
         {
           "months": 6,
+          "isNew": false,
           "start": "2026-04-01",
           "end": "2026-10-01",
           "returnPct": -23.19633637561742,
@@ -1130,6 +1221,7 @@
         },
         {
           "months": 12,
+          "isNew": false,
           "start": "2025-10-01",
           "end": "2026-10-01",
           "returnPct": -26.73492838439587,
@@ -1148,6 +1240,7 @@
       "periods": [
         {
           "months": 1,
+          "isNew": false,
           "start": "2026-09-01",
           "end": "2026-10-01",
           "returnPct": -1.623271288511019,
@@ -1158,6 +1251,7 @@
         },
         {
           "months": 3,
+          "isNew": false,
           "start": "2026-07-01",
           "end": "2026-10-01",
           "returnPct": -9.277141335629924,
@@ -1168,6 +1262,7 @@
         },
         {
           "months": 6,
+          "isNew": true,
           "start": "2026-04-01",
           "end": "2026-10-01",
           "returnPct": null,
@@ -1179,18 +1274,19 @@
               "name": "Space Exploration Technologies Corp",
               "symbol": "SPCX",
               "weight": 12.46,
-              "reason": "Missing prices or insufficient listing history"
+              "reason": "New listing: not enough history for this period"
             },
             {
               "name": "Honeywell Aerospace Inc",
               "symbol": "HONA",
               "weight": 4.34,
-              "reason": "Missing prices or insufficient listing history"
+              "reason": "New listing: not enough history for this period"
             }
           ]
         },
         {
           "months": 12,
+          "isNew": true,
           "start": "2025-10-01",
           "end": "2026-10-01",
           "returnPct": null,
@@ -1202,13 +1298,13 @@
               "name": "Space Exploration Technologies Corp",
               "symbol": "SPCX",
               "weight": 12.46,
-              "reason": "Missing prices or insufficient listing history"
+              "reason": "New listing: not enough history for this period"
             },
             {
               "name": "Honeywell Aerospace Inc",
               "symbol": "HONA",
               "weight": 4.34,
-              "reason": "Missing prices or insufficient listing history"
+              "reason": "New listing: not enough history for this period"
             }
           ]
         }
@@ -1222,6 +1318,7 @@
       "periods": [
         {
           "months": 1,
+          "isNew": false,
           "start": "2026-09-01",
           "end": "2026-10-01",
           "returnPct": -1.8658694969405532,
@@ -1232,6 +1329,7 @@
         },
         {
           "months": 3,
+          "isNew": false,
           "start": "2026-07-01",
           "end": "2026-10-01",
           "returnPct": -0.6923563791740417,
@@ -1242,6 +1340,7 @@
         },
         {
           "months": 6,
+          "isNew": false,
           "start": "2026-04-01",
           "end": "2026-10-01",
           "returnPct": 8.457411341920107,
@@ -1252,6 +1351,7 @@
         },
         {
           "months": 12,
+          "isNew": false,
           "start": "2025-10-01",
           "end": "2026-10-01",
           "returnPct": 9.70993130404727,
@@ -1264,48 +1364,52 @@
     },
     {
       "id": "us-top10",
-      "name": "US Top10",
-      "revision": 1,
+      "name": "AGI US Top 10 — Quality Growth",
+      "revision": 2,
       "asOf": "2026-10-02",
       "periods": [
         {
           "months": 1,
+          "isNew": false,
           "start": "2026-09-01",
           "end": "2026-10-01",
-          "returnPct": null,
-          "maxDrawdownPct": null,
-          "coveredWeight": 29.599999999999998,
-          "reason": "Incomplete allocation: full-portfolio return withheld",
+          "returnPct": -1.2927811615209617,
+          "maxDrawdownPct": 2.801256865353352,
+          "coveredWeight": 100,
+          "reason": null,
           "missing": []
         },
         {
           "months": 3,
+          "isNew": false,
           "start": "2026-07-01",
           "end": "2026-10-01",
-          "returnPct": null,
-          "maxDrawdownPct": null,
-          "coveredWeight": 29.599999999999998,
-          "reason": "Incomplete allocation: full-portfolio return withheld",
+          "returnPct": 3.3293006716135,
+          "maxDrawdownPct": 4.599979820247602,
+          "coveredWeight": 100,
+          "reason": null,
           "missing": []
         },
         {
           "months": 6,
+          "isNew": false,
           "start": "2026-04-01",
           "end": "2026-10-01",
-          "returnPct": null,
-          "maxDrawdownPct": null,
-          "coveredWeight": 29.599999999999998,
-          "reason": "Incomplete allocation: full-portfolio return withheld",
+          "returnPct": 16.10449517742878,
+          "maxDrawdownPct": 4.731829554128786,
+          "coveredWeight": 100,
+          "reason": null,
           "missing": []
         },
         {
           "months": 12,
+          "isNew": false,
           "start": "2025-10-01",
           "end": "2026-10-01",
-          "returnPct": null,
-          "maxDrawdownPct": null,
-          "coveredWeight": 29.599999999999998,
-          "reason": "Incomplete allocation: full-portfolio return withheld",
+          "returnPct": 11.840180099319152,
+          "maxDrawdownPct": 13.148744170062832,
+          "coveredWeight": 100,
+          "reason": null,
           "missing": []
         }
       ]
