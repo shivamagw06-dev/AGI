@@ -1,0 +1,13 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {monthBoundary,portfolioReturn,holdingReturn,resolveHolding} from './portfolioHistory.js';
+const dates=['2025-09-30','2025-10-01','2026-07-01','2026-09-01','2026-09-30','2026-10-01'];
+const series = values=>({status:'ok',currency:'USD',bars:dates.map((d,i)=>[d,values[i]])});
+const data={asOf:'2026-10-01',calendar:dates,mappings:{A:{symbol:'A'},B:{symbol:'B'}},securities:{A:series([100,100,100,100,80,110]),B:series([100,100,100,100,100,90])}};
+const p={holdings:[{name:'A',weight:60},{name:'B',weight:40}]};
+test('buy and hold weighted adjusted returns and daily drawdown',()=>{const r=portfolioReturn(data,p,1);assert.ok(Math.abs(r.returnPct-2)<1e-10);assert.ok(Math.abs(r.maxDrawdownPct-12)<1e-10);assert.equal(r.start,'2026-09-01');});
+test('does not rescale missing holdings or incomplete allocations',()=>{assert.ok(portfolioReturn(data,{holdings:[{name:'A',weight:29.6}],incomplete:true},1).reason);assert.ok(portfolioReturn(data,{holdings:[{name:'A',weight:50},{name:'Unknown',weight:50}]},1).reason);});
+test('missing internal sessions and missing starting history blocked',()=>{const d=structuredClone(data);d.securities.A.bars=d.securities.A.bars.filter(b=>b[0]!=='2026-09-30');assert.ok(holdingReturn(d,{name:'A'},1).reason);d.securities.A.bars=d.securities.A.bars.slice(-1);assert.ok(holdingReturn(d,{name:'A'},12).reason);});
+test('rounding only within tolerance; dates clamp to calendar month',()=>{assert.equal(monthBoundary('2026-03-31',1),'2026-02-28');assert.equal(monthBoundary('2024-03-31',1),'2024-02-29');const r=portfolioReturn(data,{holdings:[{name:'A',weight:99.99}]},1);assert.equal(r.roundingNormalised,true);assert.ok(Math.abs(r.returnPct-10)<1e-10);assert.ok(portfolioReturn(data,{holdings:[{name:'A',weight:99}]},1).reason);});
+test('editing ticker cannot reuse a different reviewed instrument',()=>assert.ok(resolveHolding(data,{name:'A',symbol:'B'}).reason));
+test('zero-weight unavailable candidate does not block funded positions',()=>assert.ok(!portfolioReturn(data,{holdings:[{name:'A',weight:100},{name:'Unknown',weight:0}]},1).reason));
