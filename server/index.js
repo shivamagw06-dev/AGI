@@ -1,3 +1,4 @@
+import { startIndiaPortfolioScheduler } from './services/indiaPortfolioTracking.js';
 import createPortfolioRouter from './routes/portfolioCatalog.js';
 // server/index.js
 // IndianAPI proxy + research router
@@ -458,6 +459,7 @@ app.post('/api/notify-subscribers', (req, res, next) => {
 startTradingCalendarService();
 // Global Intelligence event and document collectors are paused.
 startCioMorningScheduler();
+startIndiaPortfolioScheduler();
 startContinuousGatherLearnScheduler();
 startInstitutionalFlowScheduler();
 startValuationRatiosScheduler();

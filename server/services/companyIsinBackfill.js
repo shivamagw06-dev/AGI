@@ -50,7 +50,7 @@ function validIsin(value) {
   return ISIN_RE.test(text) ? text : null;
 }
 
-export async function loadUpstoxNseIsinMap({ url = UPSTOX_NSE_INSTRUMENTS } = {}) {
+export async function loadUpstoxNseIsinMap({ url = UPSTOX_NSE_INSTRUMENTS, instrumentTypes = ['EQ'] } = {}) {
   const response = await fetch(url, {
     headers: { Accept: 'application/gzip, application/json', 'User-Agent': 'AGIB-ISIN-Backfill/1.0' },
     signal: AbortSignal.timeout(90_000),
@@ -64,7 +64,7 @@ export async function loadUpstoxNseIsinMap({ url = UPSTOX_NSE_INSTRUMENTS } = {}
   const out = new Map();
   for (const item of Array.isArray(data) ? data : []) {
     if (!item || item.segment !== 'NSE_EQ') continue;
-    if (String(item.instrument_type || '').toUpperCase() !== 'EQ') continue;
+    if (!instrumentTypes.includes(String(item.instrument_type || '').toUpperCase())) continue;
     const symbol = String(item.trading_symbol || '').trim().toUpperCase();
     const isin = validIsin(item.isin);
     if (!symbol || !isin) continue;
