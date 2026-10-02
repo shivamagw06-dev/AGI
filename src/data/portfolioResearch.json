@@ -1,0 +1,698 @@
+{
+  "asOf": "2026-10-02",
+  "status": "Research candidates; valuation, weights and broker availability pending",
+  "methodology": "Primary company releases, SEC holdings filings and ETF issuer documents. Strategy fit and risks are AGI research judgments, not statements by Vested. This is a curated shortlist, not an exhaustive quantitative screen. No target prices or return forecasts have been calculated. Existing portfolio allocations are unchanged.",
+  "securities": {
+    "TXG": {
+      "symbol": "TXG",
+      "name": "10x Genomics",
+      "fit": "Single-cell and spatial research tools diversify a therapeutics-heavy genomics basket.",
+      "evidence": "Q2 2026 revenue was $151m; excluding litigation settlements, underlying revenue grew 3%.",
+      "risk": "Research-budget sensitivity and weak underlying growth; settlement revenue distorts comparisons.",
+      "reviewGate": "Check recurring consumables growth, instrument utilisation, cash burn and valuation excluding settlements.",
+      "sources": [
+        "https://www.sec.gov/Archives/edgar/data/1770787/000162828026054273/txg-20260806xexx991.htm"
+      ]
+    },
+    "PACB": {
+      "symbol": "PACB",
+      "name": "Pacific Biosciences",
+      "fit": "Long-read sequencing tools provide a different technology exposure.",
+      "evidence": "Q2 2026 revenue was $39.0m versus $39.8m a year earlier; 2026 guidance was $155–165m.",
+      "risk": "Speculative: continuing losses, funding/dilution risk and competition.",
+      "reviewGate": "Require a funded runway and evidence of installed-base utilisation before considering any allocation.",
+      "sources": [
+        "https://www.pacb.com/press_releases/pacbio-announces-second-quarter-2026-financial-results/"
+      ]
+    },
+    "NTSK": {
+      "symbol": "NTSK",
+      "name": "Netskope",
+      "fit": "Cloud and network security extends coverage beyond endpoint protection.",
+      "evidence": "September 2 FY2027 Q2 announcement reported ARR of $899m, up 27%, and revenue of $221m, up 29%.",
+      "risk": "Crowded security market; growth does not establish GAAP profitability or an attractive price.",
+      "reviewGate": "Reconcile cash flow, stock compensation, retention and enterprise value/recurring revenue.",
+      "sources": [
+        "https://investors.netskope.com/news-events/news-releases"
+      ]
+    },
+    "FFIV": {
+      "symbol": "FFIV",
+      "name": "F5",
+      "fit": "Application delivery and application security add a different security workload.",
+      "evidence": "Fiscal Q3 2026 revenue was $865m, up 11%; product revenue grew 19%.",
+      "risk": "Hardware refresh cycles and broader networking exposure make this less pure cybersecurity.",
+      "reviewGate": "Separate recurring security/software growth from cyclical hardware demand.",
+      "sources": [
+        "https://www.f5.com/company/news/press-releases/earnings-q3-fy26"
+      ]
+    },
+    "ANET": {
+      "symbol": "ANET",
+      "name": "Arista Networks",
+      "fit": "High-speed networking supports AI clusters and cloud infrastructure.",
+      "evidence": "Q2 2026 revenue was $3.036bn, up 37.7%; GAAP operating margin was 45.4%.",
+      "risk": "Large-customer concentration and dependence on hyperscaler capital expenditure.",
+      "reviewGate": "Value normalised earnings under slower customer spending; check overlap with chip and cloud holdings.",
+      "sources": [
+        "https://www.arista.com/company/news/press-release/24401-pr-20260804"
+      ]
+    },
+    "VRT": {
+      "symbol": "VRT",
+      "name": "Vertiv",
+      "fit": "Power and cooling provide physical AI infrastructure exposure.",
+      "evidence": "Q2 2026 sales were $3.274bn, up 24%, including 18% organic growth.",
+      "risk": "Capacity execution, order cancellation and a reversal in data-centre spending.",
+      "reviewGate": "Test cash conversion and backlog quality; do not extrapolate peak growth into valuation.",
+      "sources": [
+        "https://www.sec.gov/Archives/edgar/data/1674101/000162828026050323/q22026exhibit991vrt07292026.htm"
+      ]
+    },
+    "ORCL": {
+      "symbol": "ORCL",
+      "name": "Oracle",
+      "fit": "Cloud infrastructure plus enterprise software adds another major platform.",
+      "evidence": "FY2027 Q1 revenue was $19.3bn, up 30%; cloud infrastructure revenue was $7.4bn, up 121%.",
+      "risk": "Large infrastructure commitments, funding needs and customer concentration; bookings are not earned revenue.",
+      "reviewGate": "Reconcile capital expenditure, debt, free cash flow and contracted returns before pricing the growth.",
+      "sources": [
+        "https://investor.oracle.com/investor-news/news-details/2026/Oracle-Announces-Q1-Results-Driven-by-Triple-Digit-Growth-in-Cloud-Infrastructure-Revenues/default.aspx"
+      ]
+    },
+    "EQIX": {
+      "symbol": "EQIX",
+      "name": "Equinix",
+      "fit": "Data centres and interconnection broaden a software-heavy cloud basket.",
+      "evidence": "Q2 2026 recurring revenue grew 11%; annualised gross bookings grew 23%, with 9,700 net new interconnections.",
+      "risk": "Interest rates, construction costs and power availability; REIT metrics differ from software metrics.",
+      "reviewGate": "Use AFFO per share, leverage and development returns rather than software revenue multiples.",
+      "sources": [
+        "https://investor.equinix.com/news-events/press-releases/detail/1114/equinix-reports-second-quarter-results-raises-2026"
+      ]
+    },
+    "PWR": {
+      "symbol": "PWR",
+      "name": "Quanta Services",
+      "fit": "Grid construction and electrical infrastructure fit electrification and domestic investment.",
+      "evidence": "Q2 2026 revenue was $9.56bn versus $6.77bn; backlog reached $53.4bn.",
+      "risk": "Labour shortages, acquisitions and project execution; not all revenue is renewable energy.",
+      "reviewGate": "Disaggregate organic growth and acquisitions; review backlog margins and cash conversion.",
+      "sources": [
+        "https://investors.quantaservices.com/news-events/press-releases/detail/402/quanta-services-reports-second-quarter-2026-results"
+      ]
+    },
+    "EMR": {
+      "symbol": "EMR",
+      "name": "Emerson Electric",
+      "fit": "Industrial automation is a route to manufacturing productivity and reshoring exposure.",
+      "evidence": "Fiscal Q3 2026 sales rose 7%, underlying sales 6%, and orders 7%.",
+      "risk": "Industrial investment cycles and integration risk; global operations dilute a pure US reshoring thesis.",
+      "reviewGate": "Verify geographic revenue and automation exposure; compare normalised cash yield with industrial peers.",
+      "sources": [
+        "https://ir.emerson.com/news-events/press-releases/detail/642/emerson-reports-third-quarter-2026-results-raises-2026-outlook"
+      ]
+    },
+    "BHP": {
+      "symbol": "BHP",
+      "name": "BHP Group",
+      "fit": "Diversified copper exposure offers an alternative to smaller single-commodity miners.",
+      "evidence": "FY2026 copper production was about 2m tonnes; copper contributed over half of underlying EBITDA.",
+      "risk": "Iron ore and China exposure remain substantial; commodity prices and project costs can reverse.",
+      "reviewGate": "Value assets on mid-cycle commodity prices, not current spot margins; verify ADR availability.",
+      "sources": [
+        "https://www.bhp.com/news/media-centre/releases/2026/08/bhp-results-for-the-full-year-ended-30-june-2026"
+      ]
+    },
+    "RIO": {
+      "symbol": "RIO",
+      "name": "Rio Tinto",
+      "fit": "Copper and lithium projects broaden critical-material exposure.",
+      "evidence": "The 2026 half-year presentation identifies growth investment in copper and lithium and capex up to $11bn in 2026/27.",
+      "risk": "Iron ore concentration, project execution and lithium price volatility.",
+      "reviewGate": "Measure actual segment exposure and project economics; verify the US ADR rather than another listing.",
+      "sources": [
+        "https://www.sec.gov/Archives/edgar/data/863064/000086306426000037/ex11d29ppt26slides.htm"
+      ]
+    },
+    "GEV": {
+      "symbol": "GEV",
+      "name": "GE Vernova",
+      "fit": "Grid equipment fits energy infrastructure; nuclear technology is an additional, indirect exposure.",
+      "evidence": "Q2 2026 revenue was $11.1bn, up 22% reported and 12% organically. The company also reports GE Vernova Hitachi nuclear projects.",
+      "risk": "Diversified gas, wind and grid business: neither a pure renewable nor a pure nuclear company.",
+      "reviewGate": "Review segment profitability and nuclear revenue materiality; stress order conversion and cash advances.",
+      "sources": [
+        "https://www.gevernova.com/news/press-releases/ge-vernova-reports-second-quarter-2026-financial-results-raises-2026-financial",
+        "https://www.gevernova.com/investors/updates"
+      ]
+    },
+    "ABT": {
+      "symbol": "ABT",
+      "name": "Abbott Laboratories",
+      "fit": "Diagnostics and medical devices broaden exposure to ageing-related healthcare demand.",
+      "evidence": "Q2 2026 sales grew 13% reported and 4.8% on a comparable basis; GAAP EPS was $0.53 versus adjusted $1.31.",
+      "risk": "Product and reimbursement risk; acquisition and adjustment effects complicate growth comparisons.",
+      "reviewGate": "Review organic growth, GAAP-to-adjusted reconciliation and device competition.",
+      "sources": [
+        "https://abbott.mediaroom.com/2026-07-16-Abbott-Reports-Second-Quarter-2026-Results-and-Raises-Full-Year-EPS-Guidance"
+      ]
+    },
+    "ISRG": {
+      "symbol": "ISRG",
+      "name": "Intuitive Surgical",
+      "fit": "Robotic surgery adds procedure-driven medical-technology exposure.",
+      "evidence": "Q2 2026 worldwide da Vinci and Ion procedures grew about 16%; installed da Vinci systems grew 12%.",
+      "risk": "Hospital budgets, competing systems, reimbursement and valuation risk.",
+      "reviewGate": "Assess recurring instruments revenue and procedure economics against the price paid.",
+      "sources": [
+        "https://investor.intuitivesurgical.com/news-releases/news-release-details/intuitive-announces-second-quarter-earnings-6"
+      ]
+    },
+    "PL": {
+      "symbol": "PL",
+      "name": "Planet Labs",
+      "fit": "Earth-observation data adds a commercial space-data business.",
+      "evidence": "September 2026 company announcements include a German dedicated-constellation contract and a European defence/intelligence agreement.",
+      "risk": "Government/customer concentration, satellite replacement spending and dilution.",
+      "reviewGate": "Read Q2 FY2027 cash flow and contract terms; distinguish backlog from recognised revenue. Already present in the Alphabet basket.",
+      "sources": [
+        "https://investors.planet.com/news/default.aspx?LanguageId=1"
+      ]
+    },
+    "HII": {
+      "symbol": "HII",
+      "name": "Huntington Ingalls Industries",
+      "fit": "Naval shipbuilding diversifies an aerospace-heavy defence basket.",
+      "evidence": "Q2 2026 revenue rose 10.9% to $3.4bn; operating margin was 6.1%.",
+      "risk": "Fixed-price contracts, labour constraints and concentrated government customers.",
+      "reviewGate": "Check programme-level execution and cash flow; avoid valuing backlog as guaranteed profit.",
+      "sources": [
+        "https://www.sec.gov/Archives/edgar/data/1501585/000150158526000045/hii2026q2earningsrelease.htm"
+      ]
+    },
+    "AVAV": {
+      "symbol": "AVAV",
+      "name": "AeroVironment",
+      "fit": "Autonomous systems and space/cyber technologies provide a different defence mix.",
+      "evidence": "FY2027 Q1 revenue grew 6% to $480.5m; funded backlog was $1.5bn, up 37%.",
+      "risk": "Acquisition accounting, contract timing and spending concentration; speculative relative to mature defence primes.",
+      "reviewGate": "Reconcile organic growth, intangible amortisation and free cash flow; evaluate funded rather than total pipeline.",
+      "sources": [
+        "https://www.avinc.com/2026/09/09/aerovironment-announces-fiscal-2027-first-quarter-results/"
+      ]
+    },
+    "CME": {
+      "symbol": "CME",
+      "name": "CME Group",
+      "fit": "Regulated crypto derivatives infrastructure is an indirect blockchain exposure.",
+      "evidence": "Q2 2026 crypto average daily volume grew 32% to 250,000 contracts; the overall company reported $1.7bn revenue.",
+      "risk": "Crypto is only one business line; exchange competition and regulation matter.",
+      "reviewGate": "Quantify crypto contribution; do not treat the stock as equivalent to owning cryptocurrency. Already in Alphabet.",
+      "sources": [
+        "https://www.cmegroup.com/newsletters/quarterly-cryptocurrencies-report/2026-q2-cryptocurrency-highlights.html",
+        "https://www.cmegroup.com/media-room/press-releases/2026/7/22/cme_group_inc_reportsstrongfinancialresultsforq22026.html"
+      ]
+    },
+    "IBKR": {
+      "symbol": "IBKR",
+      "name": "Interactive Brokers Group",
+      "fit": "Brokerage distribution and custody access provide indirect digital-asset infrastructure exposure.",
+      "evidence": "July 2026 announcement expanded supported crypto tokens and stablecoin withdrawal capabilities.",
+      "risk": "Most earnings are from the wider brokerage business; rates, trading activity and operational risk dominate.",
+      "reviewGate": "Measure materiality of crypto economics and rate sensitivity rather than assigning a crypto multiple.",
+      "sources": [
+        "https://www.interactivebrokers.com/en/general/about/mediaRelations/7-15-26.php"
+      ]
+    },
+    "NU": {
+      "symbol": "NU",
+      "name": "Nu Holdings",
+      "fit": "Digital banking expands payments exposure to Latin America.",
+      "evidence": "Q2 2026 company release reported 139m customers and quarterly net income above $1bn.",
+      "risk": "Consumer-credit losses, currencies and country regulation; this is a lender, not simply a payments network.",
+      "reviewGate": "Examine delinquency vintages, cost of risk, capital and customer profitability.",
+      "sources": [
+        "https://international.nubank.com.br/pt/sala-de-imprensa/companhia/nu-holdings-ltd-divulga-resultados-financeiros-do-segundo-trimestre-de-2026"
+      ]
+    },
+    "MELI": {
+      "symbol": "MELI",
+      "name": "MercadoLibre",
+      "fit": "Mercado Pago combines payments with a commerce distribution network.",
+      "evidence": "Q2 2026 payment volume reached $101bn, up 56%; operating income declined 17% despite strong revenue growth.",
+      "risk": "Credit exposure, Latin American currencies, competition and reinvestment pressure on margins.",
+      "reviewGate": "Separate commerce, payments and lending economics; assess credit quality and sustainable margins.",
+      "sources": [
+        "https://www.sec.gov/Archives/edgar/data/1099590/000109959026000021/meli-20260805xex991.htm"
+      ]
+    },
+    "BWA": {
+      "symbol": "BWA",
+      "name": "BorgWarner",
+      "fit": "Propulsion components diversify exposure beyond EV manufacturers.",
+      "evidence": "Q2 2026 sales rose 0.3% reported but fell 1.2% organically; battery-energy sales declined about $60m.",
+      "risk": "EV adoption delays and legacy combustion exposure; not a pure EV business.",
+      "reviewGate": "Require a segment-level EV growth case rather than treating total sales as EV revenue.",
+      "sources": [
+        "https://www.borgwarner.com/docs/default-source/investors/borg-00531_earnings_infographic_2026_q2_final_hi_res.pdf",
+        "https://www.borgwarner.com/newsroom/press-releases/2026/08/05/borgwarner-reports-strong-second-quarter-2026-results--increases-2026-adjusted-eps-guidance-and-share-repurchase-authorization-by--1-billion--announces-7-awards-across-portfolio-to-support-long-term-profitable-growth"
+      ]
+    },
+    "STM": {
+      "symbol": "STM",
+      "name": "STMicroelectronics",
+      "fit": "Automotive and power semiconductors complement automakers and battery suppliers.",
+      "evidence": "Q2 2026 reported operating margin was 5.4%, net income $222m and net financial position $2.01bn.",
+      "risk": "Auto/industrial inventory cycles, capital intensity and silicon-carbide competition.",
+      "reviewGate": "Validate automotive and EV revenue mix and utilisation; do not use company-wide AI growth as EV evidence.",
+      "sources": [
+        "https://investors.st.com/static-files/33f4c86d-a751-48ff-9b10-599df05110ba"
+      ]
+    },
+    "TLN": {
+      "symbol": "TLN",
+      "name": "Talen Energy",
+      "fit": "Existing nuclear generation adds operating-asset exposure alongside reactor developers.",
+      "evidence": "Company reported 2.2GW nuclear capacity within approximately 15.6GW total capacity; Q2 GAAP loss was $92m versus adjusted EBITDA $374m.",
+      "risk": "Significant fossil fleet, power prices, nuclear outages and leverage; not a pure nuclear company.",
+      "reviewGate": "Reconcile hedging-related accounting, debt and cash flow; examine power-contract concentration.",
+      "sources": [
+        "https://ir.talenenergy.com/news-releases/news-release-details/talen-energy-report-second-quarter-2026-financial-results-august",
+        "https://ir.talenenergy.com/news-releases/news-release-details/talen-energy-reports-second-quarter-2026-results-raises-2026"
+      ]
+    },
+    "SPGI": {
+      "symbol": "SPGI",
+      "name": "S&P Global",
+      "fit": "Ratings, indices and data support a potential recurring-revenue and embedded-workflow moat.",
+      "evidence": "Q2 2026 GAAP revenue rose 10% to $4.146bn; Mobility was spun off on July 1, requiring comparable-base adjustments.",
+      "risk": "Debt-issuance cycles, regulation, AI/data competition and valuation.",
+      "reviewGate": "Compare post-spin earnings, retention and return on capital; do not compare unadjusted historical multiples.",
+      "sources": [
+        "https://www.sec.gov/Archives/edgar/data/64040/000006404026000040/spgi2q2026-earningsrelease.htm"
+      ]
+    },
+    "MCO": {
+      "symbol": "MCO",
+      "name": "Moody’s",
+      "fit": "Ratings and risk analytics diversify a consumer/technology-heavy moat basket.",
+      "evidence": "Q2 2026 revenue grew 15% to $2.2bn.",
+      "risk": "Debt issuance cyclicality, regulation and overlap with S&P Global.",
+      "reviewGate": "Compare recurring analytics growth and through-cycle earnings; consider one rather than both ratings companies. Already in Berkshire.",
+      "sources": [
+        "https://www.sec.gov/Archives/edgar/data/1059556/000162828026049104/a2q26earningsrelease.htm"
+      ]
+    },
+    "CB": {
+      "symbol": "CB",
+      "name": "Chubb",
+      "fit": "Filing-backed candidate for the Berkshire strategy.",
+      "evidence": "Berkshire reported 34,249,183 shares at June 30, 2026, absent from our copied basket.",
+      "risk": "Ownership is lagged and does not disclose the purchase thesis; insurance catastrophe and reserving risks remain.",
+      "reviewGate": "Check subsequent filings and insurer valuation; do not copy the reported dollar weight into AGI automatically.",
+      "sources": [
+        "https://www.sec.gov/Archives/edgar/data/1067983/000119312526352200/xslForm13F_X02/56757.xml"
+      ]
+    },
+    "BRK.B": {
+      "symbol": "BRK.B",
+      "name": "Berkshire Hathaway Class B",
+      "fit": "Filing-backed candidate for the Gates strategy.",
+      "evidence": "Gates Trust reported 14,689,844 Class B shares at June 30, 2026.",
+      "risk": "Look-through overlap with the separate Berkshire basket; quarter-end ownership may have changed.",
+      "reviewGate": "Verify the Class B instrument and current filings; assess underlying business and holding overlap.",
+      "sources": [
+        "https://www.sec.gov/Archives/edgar/data/1166559/000110465926097175/xslForm13F_X02/infotable.xml"
+      ]
+    },
+    "CNI": {
+      "symbol": "CNI",
+      "name": "Canadian National Railway",
+      "fit": "Filing-backed candidate for the Gates strategy.",
+      "evidence": "Gates Trust reported 51,826,786 shares at June 30, 2026.",
+      "risk": "Rail volume cycles, labour disruption, capital spending and CAD exposure.",
+      "reviewGate": "Verify current ownership and operating/cash returns; filing ownership alone is not a valuation thesis.",
+      "sources": [
+        "https://www.sec.gov/Archives/edgar/data/1166559/000110465926097175/xslForm13F_X02/infotable.xml"
+      ]
+    },
+    "FIG": {
+      "symbol": "FIG",
+      "name": "Figma",
+      "fit": "Filing-backed candidate for the Alphabet strategy; product design software exposure.",
+      "evidence": "Alphabet reported 215,582 shares at June 30, 2026; Figma Q2 revenue grew 48% to $370.1m.",
+      "risk": "Small disclosed stake is not an endorsement; AI competition and stock compensation matter.",
+      "reviewGate": "Check subsequent ownership, dilution and durable software economics before considering a weight.",
+      "sources": [
+        "https://www.sec.gov/Archives/edgar/data/1652044/000165204426000073/xslForm13F_X02/information_table.xml",
+        "https://investor.figma.com/news-events/news/news-details/2026/Figma-Announces-Second-Quarter-2026-Financial-Results/default.aspx"
+      ]
+    },
+    "BEAM": {
+      "symbol": "BEAM",
+      "name": "Beam Therapeutics",
+      "fit": "Filing-backed candidate for Alphabet; precision genetic medicines.",
+      "evidence": "Alphabet reported 321,604 shares at June 30, 2026. Beam describes clinical base-editing programmes.",
+      "risk": "Speculative clinical, regulatory and financing risk.",
+      "reviewGate": "Review trial endpoints, cash runway and next catalysts; do not infer success from Alphabet ownership.",
+      "sources": [
+        "https://www.sec.gov/Archives/edgar/data/1652044/000165204426000073/xslForm13F_X02/information_table.xml",
+        "https://investors.beamtx.com/"
+      ]
+    },
+    "IMTM": {
+      "symbol": "IMTM",
+      "name": "iShares MSCI Intl Momentum Factor ETF",
+      "fit": "International momentum complements the existing US factor sleeves.",
+      "evidence": "Tracks developed-market stocks outside the US with stronger price momentum; disclosed expense ratio 0.30%.",
+      "risk": "Momentum reversals, turnover, currency exposure and overlap with international holdings.",
+      "reviewGate": "Compare combined factor exposures and turnover, not just the number of ETF names.",
+      "sources": [
+        "https://www.ishares.com/us/products/271538/IMTM"
+      ]
+    },
+    "IQLT": {
+      "symbol": "IQLT",
+      "name": "iShares MSCI Intl Quality Factor ETF",
+      "fit": "International quality broadens the factor framework.",
+      "evidence": "Issuer identifies this as the international quality factor ETF.",
+      "risk": "Equity and currency risk; quality can be expensive and overlap with other developed-market funds.",
+      "reviewGate": "Read current holdings and methodology; measure combined country/sector weights before sizing.",
+      "sources": [
+        "https://www.ishares.com/us/products/271540/ishares-msci-international-dev"
+      ]
+    },
+    "AVUV": {
+      "symbol": "AVUV",
+      "name": "Avantis U.S. Small Cap Value ETF",
+      "fit": "Adds a small-cap value/profitability sleeve missing from a large-cap-led allocation.",
+      "evidence": "Actively managed US small-cap value ETF; issuer expense ratio 0.25%.",
+      "risk": "Smaller-company volatility, liquidity and prolonged factor underperformance.",
+      "reviewGate": "Treat as a replacement for part of US equity allocation, not extra risk outside the target equity budget.",
+      "sources": [
+        "https://www.avantisinvestors.com/avantis-investments/avantis-us-small-cap-value-etf/AVUV/"
+      ]
+    },
+    "IEMG": {
+      "symbol": "IEMG",
+      "name": "iShares Core MSCI Emerging Markets ETF",
+      "fit": "Alternative implementation of the existing emerging-market allocation.",
+      "evidence": "Tracks large-, mid- and small-cap emerging-market equities; issuer expense ratio 0.09%.",
+      "risk": "Country, currency and geopolitical concentration; overlaps EEM.",
+      "reviewGate": "Compare with EEM and replace if justified; holding both is not a new asset class.",
+      "sources": [
+        "https://www.ishares.com/us/products/244050/ishare-core-msci-emerging-market-etf"
+      ]
+    },
+    "VGIT": {
+      "symbol": "VGIT",
+      "name": "Vanguard Intermediate-Term Treasury ETF",
+      "fit": "A dedicated Treasury sleeve separates duration exposure from corporate credit.",
+      "evidence": "Vanguard lists the intermediate-term government bond ETF with a 0.03% expense ratio.",
+      "risk": "Interest-rate duration can produce losses; USD exposure remains for Indian clients.",
+      "reviewGate": "Check total duration and reduce another bond allocation rather than exceeding the portfolio budget.",
+      "sources": [
+        "https://investor.vanguard.com/investment-products/list/etfs"
+      ]
+    },
+    "VTIP": {
+      "symbol": "VTIP",
+      "name": "Vanguard Short-Term Inflation-Protected Securities ETF",
+      "fit": "Short-duration US inflation-linked bonds add a distinct inflation sleeve.",
+      "evidence": "Vanguard identifies VTIP as its short-term inflation-protected securities ETF.",
+      "risk": "Protects against US inflation, not Indian inflation or currency loss; real yields can rise.",
+      "reviewGate": "Compare duration and real yield; decide whether this replaces nominal bonds or longer TIPS.",
+      "sources": [
+        "https://advisors.vanguard.com/investments/products/vtip/vanguard-short-term-inflation-protected-securities-etf"
+      ]
+    },
+    "USFR": {
+      "symbol": "USFR",
+      "name": "WisdomTree Floating Rate Treasury Fund",
+      "fit": "Alternative to part of the existing short-term Treasury/cash sleeve.",
+      "evidence": "Holds US Treasury floating-rate notes; issuer expense ratio 0.15%.",
+      "risk": "Income falls with short-term rates; not an insured bank deposit or an INR capital guarantee.",
+      "reviewGate": "Compare net yield and dealing costs with SGOV; avoid treating two cash ETFs as diversification.",
+      "sources": [
+        "https://www.wisdomtree.com/us/products/fixed-income/usfr"
+      ]
+    },
+    "VGSH": {
+      "symbol": "VGSH",
+      "name": "Vanguard Short-Term Treasury ETF",
+      "fit": "Short nominal Treasuries are a conservative bond-sleeve alternative.",
+      "evidence": "Vanguard identifies VGSH as its short-term Treasury ETF.",
+      "risk": "Some duration risk and USD/INR risk; reinvestment yields can decline.",
+      "reviewGate": "Compare maturity exposure with SGOV and USFR and choose the intended role.",
+      "sources": [
+        "https://investor.vanguard.com/investment-products/etfs/profile/vgsh"
+      ]
+    },
+    "SCHH": {
+      "symbol": "SCHH",
+      "name": "Schwab U.S. REIT ETF",
+      "fit": "Alternative implementation of Swensen’s real-estate sleeve.",
+      "evidence": "Issuer lists a US REIT ETF with a 0.07% expense ratio.",
+      "risk": "Real-estate sector and rate sensitivity; overlaps VNQ but does not have identical coverage.",
+      "reviewGate": "Compare index coverage and costs as a VNQ replacement, not an extra real-estate allocation.",
+      "sources": [
+        "https://www.schwabassetmanagement.com/products/schh"
+      ]
+    },
+    "SCHF": {
+      "symbol": "SCHF",
+      "name": "Schwab International Equity ETF",
+      "fit": "Alternative implementation of Swensen’s developed-market equity sleeve.",
+      "evidence": "Issuer lists an international equity ETF with a 0.03% expense ratio.",
+      "risk": "Foreign equity/currency risk and overlapping holdings; benchmark coverage differs from VEA.",
+      "reviewGate": "Compare country and small-cap coverage before substituting for VEA.",
+      "sources": [
+        "https://www.schwabassetmanagement.com/products/schf"
+      ]
+    },
+    "DBMF": {
+      "symbol": "DBMF",
+      "name": "iMGP DBi Managed Futures Strategy ETF",
+      "fit": "Potential diversifier for an explicitly modified All Weather portfolio.",
+      "evidence": "Issuer describes replication of leading managed-futures strategies using liquid futures exposures.",
+      "risk": "Trend reversals, model risk, derivatives and fees; protection in every downturn is not guaranteed.",
+      "reviewGate": "Requires a separately named AGI variant and a correlation/drawdown study; not part of the existing reference recipe.",
+      "sources": [
+        "https://www.imgp.com/us/fund/US53700T8273-imgp-dbi-managed-futures-strategy-etf/"
+      ]
+    }
+  },
+  "portfolios": {
+    "genomics": {
+      "name": "Genomics",
+      "symbols": [
+        "TXG",
+        "PACB"
+      ],
+      "note": "Tools diversify the genomics value chain; PACB is a speculative watchlist candidate."
+    },
+    "cybersecurity": {
+      "name": "Cybersecurity",
+      "symbols": [
+        "NTSK",
+        "FFIV"
+      ],
+      "note": "Cloud/network security and application security extend the security workloads covered."
+    },
+    "artificial-intelligence": {
+      "name": "Artificial Intelligence",
+      "symbols": [
+        "ANET",
+        "VRT"
+      ],
+      "note": "Networking and power/cooling broaden exposure beyond chips and software; common AI-spending risk remains."
+    },
+    "us-top10": {
+      "name": "US Top10",
+      "symbols": [],
+      "note": "No names qualify automatically. The copied snapshot discloses only 3 holdings/29.6%. Obtain the remaining seven and the momentum rules before claiming an addition. A separately defined AGI S&P 100 momentum screen would be a new strategy."
+    },
+    "cloud-computing": {
+      "name": "Cloud Computing",
+      "symbols": [
+        "ORCL",
+        "EQIX"
+      ],
+      "note": "Enterprise cloud infrastructure and physical interconnection add different business models."
+    },
+    "big-tech": {
+      "name": "Big Tech",
+      "symbols": [
+        "ANET",
+        "ORCL"
+      ],
+      "note": "Large infrastructure platforms fit; exposure overlaps the AI and cloud portfolios."
+    },
+    "alphabet-strategy": {
+      "name": "Alphabet Strategy",
+      "symbols": [
+        "FIG",
+        "BEAM"
+      ],
+      "note": "Both names appear in the June 30, 2026 Alphabet 13F. These are candidates for an expanded AGI filing-based variant, not claims that Vested holds them today."
+    },
+    "blackrock-smart-beta": {
+      "name": "BlackRock Smart Beta",
+      "symbols": [
+        "IMTM",
+        "IQLT"
+      ],
+      "note": "Extend factors outside the US while retaining an ETF-based implementation."
+    },
+    "deglobalization": {
+      "name": "Deglobalization",
+      "symbols": [
+        "PWR",
+        "EMR"
+      ],
+      "note": "Grid building and automation are plausible beneficiaries; revenue geography must support the thesis."
+    },
+    "critical-minerals": {
+      "name": "Critical Minerals",
+      "symbols": [
+        "BHP",
+        "RIO"
+      ],
+      "note": "Diversified miners provide scale, but iron ore can dilute critical-minerals exposure."
+    },
+    "clean-energy": {
+      "name": "Clean Energy",
+      "symbols": [
+        "GEV",
+        "PWR"
+      ],
+      "note": "These fit a broad electrification portfolio. They should not be presented as pure renewable-energy holdings."
+    },
+    "aging": {
+      "name": "Aging",
+      "symbols": [
+        "ABT",
+        "ISRG"
+      ],
+      "note": "Diagnostics, devices and surgical procedures broaden healthcare exposure."
+    },
+    "space-tech": {
+      "name": "Space Tech",
+      "symbols": [
+        "PL"
+      ],
+      "note": "One additional candidate rather than padding the list. Iridium was reviewed but deferred because its reported Rocket Lab acquisition introduces deal risk and overlap."
+    },
+    "berkshire-strategy": {
+      "name": "Berkshire Strategy",
+      "symbols": [
+        "CB"
+      ],
+      "note": "Only a filing-backed candidate here; do not invent additional Berkshire holdings or manager rationale."
+    },
+    "global-multi-asset-aggressive": {
+      "name": "Global Multi-Asset (Aggressive)",
+      "symbols": [
+        "AVUV",
+        "IEMG"
+      ],
+      "note": "AVUV adds a factor sleeve; IEMG is an alternative to EEM. Rebalance within existing asset-class budgets."
+    },
+    "gates-strategy": {
+      "name": "Gates Strategy",
+      "symbols": [
+        "BRK.B",
+        "CNI"
+      ],
+      "note": "Both appear in the June 30, 2026 Trust filing and are absent from our copied basket. The filing is not a live holdings feed."
+    },
+    "swensen-portfolio": {
+      "name": "Swensen Portfolio",
+      "symbols": [
+        "SCHH",
+        "SCHF"
+      ],
+      "note": "These are substitute funds for existing asset-class sleeves, not reasons to increase equity/REIT weights."
+    },
+    "moat": {
+      "name": "Moat",
+      "symbols": [
+        "SPGI",
+        "MCO"
+      ],
+      "note": "Ratings/data infrastructure is a useful research direction. Both together create industry concentration; a moat does not establish a cheap price."
+    },
+    "global-multi-asset-moderate": {
+      "name": "Global Multi-Asset (Moderate)",
+      "symbols": [
+        "VGIT",
+        "VTIP"
+      ],
+      "note": "Separate credit, nominal duration and inflation exposure before deciding target weights."
+    },
+    "all-weather": {
+      "name": "All Weather",
+      "symbols": [
+        "VTIP",
+        "DBMF"
+      ],
+      "note": "Adding these changes the reference recipe; publish as a distinct AGI variant only after testing."
+    },
+    "defense-security": {
+      "name": "Defense & Security",
+      "symbols": [
+        "HII",
+        "AVAV"
+      ],
+      "note": "Naval shipbuilding and autonomous systems diversify the types of defence contracts."
+    },
+    "global-multi-asset-conservative": {
+      "name": "Global Multi-Asset (Conservative)",
+      "symbols": [
+        "USFR",
+        "VGSH"
+      ],
+      "note": "Alternatives within the bond/cash allocation. Existing SGOV already provides similar capital-stability intent."
+    },
+    "blockchain-ecosystem": {
+      "name": "Blockchain Ecosystem",
+      "symbols": [
+        "CME",
+        "IBKR"
+      ],
+      "note": "Indirect infrastructure exposure is less crypto-pure; it is not equivalent to holding tokens."
+    },
+    "digital-cash": {
+      "name": "Digital Cash",
+      "symbols": [
+        "NU",
+        "MELI"
+      ],
+      "note": "Latin American digital finance broadens geography but introduces lending and currency risks."
+    },
+    "electric-vehicles": {
+      "name": "Electric Vehicles",
+      "symbols": [
+        "BWA",
+        "STM"
+      ],
+      "note": "Component suppliers broaden the value chain, but EV-specific revenue must be measured."
+    },
+    "nuclear-energy": {
+      "name": "Nuclear Energy",
+      "symbols": [
+        "TLN",
+        "GEV"
+      ],
+      "note": "Operating nuclear generation and reactor technology complement uranium/development holdings; both are diversified businesses."
+    }
+  },
+  "deferred": [
+    {
+      "symbol": "IRDM",
+      "reason": "Reported pending acquisition by Rocket Lab, already in the Space portfolio. Deal-dependent exposure is not the intended diversification.",
+      "source": "https://investor.iridium.com/2026-07-22-Iridium-Announces-Second-Quarter-2026-Results"
+    }
+  ]
+}
