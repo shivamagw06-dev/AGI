@@ -31,6 +31,9 @@ export function createPortfolioStore(client = createSupabaseAdmin()) {
   return {
     async list() { const { data, error } = await db().select('id,document,revision,updated_at').order('id'); if (error) throw error; return data.map(publicDocument); },
     async save(id, input, actorId) {
+      if (['in-conviction-long','in-conviction-short'].includes(id)) {
+        const e = new Error('Conviction uses linked category allocations. Change it through a dated category rebalance, not the flat holdings editor.'); e.status=409; throw e;
+      }
       const clean = validatePortfolio(input);
       if (id.startsWith('in-')) {
         const {data:tracking,error}=await client.from('agi_india_portfolio_tracking').select('portfolio_id').eq('portfolio_id',id).maybeSingle();

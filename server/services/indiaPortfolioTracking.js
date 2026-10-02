@@ -1,4 +1,5 @@
 import { nseSession } from './liveAlphaSession.js';
+import { convictionView } from './convictionTracking.js';
 import { createIndiaDailyReader, dailyDue, dailyValuation, completedDates } from './indiaPortfolioDaily.js';
 import { createSupabaseAdmin } from '../lib/supabaseAdmin.js';
 import { loadUpstoxNseIsinMap } from './companyIsinBackfill.js';
@@ -12,7 +13,7 @@ import { createPortfolioStore } from './portfolioCatalog.js';
 import { resolveUpstoxAccessToken } from '../providers/upstox.js';
 
 export const INDIA_START = '2026-10-05';
-export const INDIA_IDS = ['in-momentum','in-growth','in-value','in-quality','in-all-weather','in-preferred'];
+export const INDIA_IDS = ['in-momentum','in-growth','in-value','in-quality','in-all-weather','in-preferred','in-conviction-long','in-conviction-short'];
 export function session(now = new Date()) {
  const p=Object.fromEntries(new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Kolkata',year:'numeric',month:'2-digit',day:'2-digit',weekday:'short',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).formatToParts(now).map(x=>[x.type,x.value]));
  const minutes=+p.hour*60 + +p.minute;
@@ -43,9 +44,9 @@ export function createIndiaQuotes({master=indiaMaster, fetcher=fetch, token=()=>
 export function makeBaseline(p,quotes,now=new Date()) {
  const s=session(now);if(s.date!==INDIA_START||!s.open)return null;
  if(p.incomplete||!p.holdings?.length||p.holdings.some(h=>!h.symbol||!(h.weight>0))||Math.abs(p.holdings.reduce((sum,h)=>sum+h.weight,0)+(p.cashWeight||0)-100)>0.05)return null;
- if(p.holdings.some(h=>!fresh(quotes[h.symbol],now)))return null;
+ if(p.holdings.some(h=>!fresh(quotes[h.symbol],now)||(h.instrumentKey&&quotes[h.symbol]?.instrumentKey!==h.instrumentKey)))return null;
  const total=p.holdings.reduce((sum,h)=>sum+h.weight,0)+(p.cashWeight||0);
- return {startedAt:now.toISOString(),revision:p.revision,cashWeight:(p.cashWeight||0)/total*100,holdings:p.holdings.map(h=>({...h,weight:h.weight/total*100,basePrice:quotes[h.symbol].price,baseTime:quotes[h.symbol].time,instrumentKey:quotes[h.symbol].instrumentKey}))};
+ return {startedAt:now.toISOString(),revision:p.revision,...(p.conviction?{categories:p.categories,direction:p.direction}:{}),cashWeight:(p.cashWeight||0)/total*100,holdings:p.holdings.map(h=>({...h,weight:h.weight/total*100,basePrice:quotes[h.symbol].price,baseTime:quotes[h.symbol].time,instrumentKey:quotes[h.symbol].instrumentKey}))};
 }
 export function valueBaseline(base,quotes,now=new Date()) {
  const positions=base.holdings.map(h=>({...h,price:quotes[h.symbol]?.price??null,quoteTime:quotes[h.symbol]?.time??null,fresh:fresh(quotes[h.symbol],now)}));
@@ -106,7 +107,7 @@ export function createIndiaTracker({client=createSupabaseAdmin(),readQuotes=crea
     return {...h,price:latest?.price??null,priceDate:latest?.date??null,history:points,returnPct:latest&&h.basePrice?(latest.price/h.basePrice-1)*100:null,dayReturnPct:latest?(latest.price/(previous?.price||h.basePrice)-1)*100:null};
    });
    const due=completedDates(time,INDIA_START).at(-1);
-   return {id:p.id,startDate:INDIA_START,startedAt:base?.startedAt||null,status:!base?(s.date<INDIA_START?'scheduled':s.date>INDIA_START?'start_missed':'awaiting_fresh_prices'):last?(due&&last.date<due?'daily_pending':'daily_recorded'):'awaiting_daily',nav:last?.nav??null,returnPct:last?last.nav-100:null,dayReturnPct:last?(last.nav/(prior?.nav||100)-1)*100:null,markedAt:last?.recordedAt||null,priceDate:last?.date||null,history,positions,cashWeight:base?.cashWeight??p.cashWeight??0};
+   return convictionView(p,base,daily,{id:p.id,startDate:INDIA_START,startedAt:base?.startedAt||null,status:!base?(s.date<INDIA_START?'scheduled':s.date>INDIA_START?'start_missed':'awaiting_fresh_prices'):last?(due&&last.date<due?'daily_pending':'daily_recorded'):'awaiting_daily',nav:last?.nav??null,returnPct:last?last.nav-100:null,dayReturnPct:last?(last.nav/(prior?.nav||100)-1)*100:null,markedAt:last?.recordedAt||null,priceDate:last?.date||null,history,positions,cashWeight:base?.cashWeight??p.cashWeight??0});
   })};
  }
  };

@@ -1,0 +1,3422 @@
+[
+  {
+    "id": "in-conviction-long",
+    "name": "Conviction Long",
+    "market": "india",
+    "category": "Conviction",
+    "conviction": true,
+    "direction": "long",
+    "categories": [
+      {
+        "name": "Composite",
+        "weight": 16.666666666666668,
+        "definition": "Composite",
+        "holdings": [
+          {
+            "symbol": "BHARTIARTL",
+            "sourceTicker": "BHARTI IN",
+            "name": "BHARTI AIRTEL LIMITED",
+            "sector": "Communication Services",
+            "instrumentKey": "NSE_EQ|INE397D01024",
+            "score": 1.2323314334178403,
+            "sourceCell": "Composite!F43",
+            "weight": 5.2631578947368425
+          },
+          {
+            "symbol": "AXISBANK",
+            "sourceTicker": "AXSB IN",
+            "name": "AXIS BANK LIMITED",
+            "sector": "Financials",
+            "instrumentKey": "NSE_EQ|INE238A01034",
+            "score": 1.3172796261316637,
+            "sourceCell": "Composite!F57",
+            "weight": 5.2631578947368425
+          },
+          {
+            "symbol": "DIVISLAB",
+            "sourceTicker": "DIVI IN",
+            "name": "DIVI S LABORATORIES LTD",
+            "sector": "Health Care",
+            "instrumentKey": "NSE_EQ|INE361B01024",
+            "score": 1.6483836567667556,
+            "sourceCell": "Composite!F73",
+            "weight": 5.2631578947368425
+          },
+          {
+            "symbol": "VAML",
+            "sourceTicker": "VAML IN",
+            "name": "VEDANTA ALUMINIUM METAL L",
+            "sector": "Materials",
+            "instrumentKey": "NSE_EQ|INE1CDF01017",
+            "score": 3,
+            "sourceCell": "Composite!F74",
+            "weight": 5.2631578947368425
+          },
+          {
+            "symbol": "TITAN",
+            "sourceTicker": "TTAN IN",
+            "name": "TITAN COMPANY LIMITED",
+            "sector": "Consumer Discretionary",
+            "instrumentKey": "NSE_EQ|INE280A01028",
+            "score": 1.4459343372012605,
+            "sourceCell": "Composite!F75",
+            "weight": 5.2631578947368425
+          },
+          {
+            "symbol": "SUNPHARMA",
+            "sourceTicker": "SUNP IN",
+            "name": "SUN PHARMACEUTICAL IND L",
+            "sector": "Health Care",
+            "instrumentKey": "NSE_EQ|INE044A01036",
+            "score": 1.3521156731988382,
+            "sourceCell": "Composite!F76",
+            "weight": 5.2631578947368425
+          },
+          {
+            "symbol": "BAJAJ-AUTO",
+            "sourceTicker": "BJAUT IN",
+            "name": "BAJAJ AUTO LIMITED",
+            "sector": "Consumer Discretionary",
+            "instrumentKey": "NSE_EQ|INE917I01010",
+            "score": 1.357341773948698,
+            "sourceCell": "Composite!F77",
+            "weight": 5.2631578947368425
+          },
+          {
+            "symbol": "OFSS",
+            "sourceTicker": "OFSS IN",
+            "name": "ORACLE FIN SERV SOFT LTD.",
+            "sector": "Information Technology",
+            "instrumentKey": "NSE_EQ|INE881D01027",
+            "score": 1.7466299276409665,
+            "sourceCell": "Composite!F79",
+            "weight": 5.2631578947368425
+          },
+          {
+            "symbol": "TMPV",
+            "sourceTicker": "TMPV IN",
+            "name": "TATA MOTORS PASS VEH LTD",
+            "sector": "Consumer Discretionary",
+            "instrumentKey": "NSE_EQ|INE155A01022",
+            "score": 1.7847233036147148,
+            "sourceCell": "Composite!F82",
+            "weight": 5.2631578947368425
+          },
+          {
+            "symbol": "PFC",
+            "sourceTicker": "POWF IN",
+            "name": "POWER FIN CORP LTD.",
+            "sector": "Financials",
+            "instrumentKey": "NSE_EQ|INE134E01011",
+            "score": 1.5952208435185984,
+            "sourceCell": "Composite!F83",
+            "weight": 5.2631578947368425
+          },
+          {
+            "symbol": "APOLLOHOSP",
+            "sourceTicker": "APHS IN",
+            "name": "APOLLO HOSPITALS ENTER. L",
+            "sector": "Health Care",
+            "instrumentKey": "NSE_EQ|INE437A01024",
+            "score": 1.8821186555177205,
+            "sourceCell": "Composite!F85",
+            "weight": 5.2631578947368425
+          },
+          {
+            "symbol": "NESTLEIND",
+            "sourceTicker": "NEST IN",
+            "name": "NESTLE INDIA LIMITED",
+            "sector": "Consumer Staples",
+            "instrumentKey": "NSE_EQ|INE239A01024",
+            "score": 1.5217260200571592,
+            "sourceCell": "Composite!F87",
+            "weight": 5.2631578947368425
+          },
+          {
+            "symbol": "CANBK",
+            "sourceTicker": "CBK IN",
+            "name": "CANARA BANK",
+            "sector": "Financials",
+            "instrumentKey": "NSE_EQ|INE476A01022",
+            "score": 1.3469736696690358,
+            "sourceCell": "Composite!F89",
+            "weight": 5.2631578947368425
+          },
+          {
+            "symbol": "LUPIN",
+            "sourceTicker": "LPC IN",
+            "name": "LUPIN LIMITED",
+            "sector": "Health Care",
+            "instrumentKey": "NSE_EQ|INE326A01037",
+            "score": 1.3092022721665173,
+            "sourceCell": "Composite!F92",
+            "weight": 5.2631578947368425
+          },
+          {
+            "symbol": "FEDERALBNK",
+            "sourceTicker": "FB IN",
+            "name": "FEDERAL BANK LTD",
+            "sector": "Financials",
+            "instrumentKey": "NSE_EQ|INE171A01029",
+            "score": 1.277597629928363,
+            "sourceCell": "Composite!F93",
+            "weight": 5.2631578947368425
+          },
+          {
+            "symbol": "PNB",
+            "sourceTicker": "PNB IN",
+            "name": "PUNJAB NATIONAL BANK",
+            "sector": "Financials",
+            "instrumentKey": "NSE_EQ|INE160A01022",
+            "score": 1.704224623696537,
+            "sourceCell": "Composite!F95",
+            "weight": 5.2631578947368425
+          },
+          {
+            "symbol": "MARICO",
+            "sourceTicker": "MRCO IN",
+            "name": "MARICO LIMITED",
+            "sector": "Consumer Staples",
+            "instrumentKey": "NSE_EQ|INE196A01026",
+            "score": 1.2966827044429319,
+            "sourceCell": "Composite!F96",
+            "weight": 5.2631578947368425
+          },
+          {
+            "symbol": "AUROPHARMA",
+            "sourceTicker": "ARBP IN",
+            "name": "AUROBINDO PHARMA LTD",
+            "sector": "Health Care",
+            "instrumentKey": "NSE_EQ|INE406A01037",
+            "score": 1.2766428771441292,
+            "sourceCell": "Composite!F97",
+            "weight": 5.2631578947368425
+          },
+          {
+            "symbol": "YESBANK",
+            "sourceTicker": "YES IN",
+            "name": "YES BANK LIMITED",
+            "sector": "Financials",
+            "instrumentKey": "NSE_EQ|INE528G01035",
+            "score": 2.2764857361838895,
+            "sourceCell": "Composite!F98",
+            "weight": 5.2631578947368425
+          }
+        ]
+      },
+      {
+        "name": "Value",
+        "weight": 16.666666666666668,
+        "definition": "Fwd Earnings Yield, Sales Yield, B/P",
+        "holdings": [
+          {
+            "symbol": "HINDALCO",
+            "sourceTicker": "HNDL IN",
+            "name": "HINDALCO  INDUSTRIES  LTD",
+            "sector": "Materials",
+            "instrumentKey": "NSE_EQ|INE038A01020",
+            "score": 1.8406348027198098,
+            "sourceCell": "Value!F51",
+            "weight": 5.555555555555555
+          },
+          {
+            "symbol": "VAML",
+            "sourceTicker": "VAML IN",
+            "name": "VEDANTA ALUMINIUM METAL L",
+            "sector": "Materials",
+            "instrumentKey": "NSE_EQ|INE1CDF01017",
+            "score": 2.7407165622808023,
+            "sourceCell": "Value!F54",
+            "weight": 5.555555555555555
+          },
+          {
+            "symbol": "COALINDIA",
+            "sourceTicker": "COAL IN",
+            "name": "COAL INDIA LTD",
+            "sector": "Energy",
+            "instrumentKey": "NSE_EQ|INE522F01014",
+            "score": 1.574944250832988,
+            "sourceCell": "Value!F55",
+            "weight": 5.555555555555555
+          },
+          {
+            "symbol": "VEDL",
+            "sourceTicker": "VEDL IN",
+            "name": "VEDANTA LIMITED",
+            "sector": "Materials",
+            "instrumentKey": "NSE_EQ|INE205A01025",
+            "score": 2.862856008846693,
+            "sourceCell": "Value!F57",
+            "weight": 5.555555555555555
+          },
+          {
+            "symbol": "TMPV",
+            "sourceTicker": "TMPV IN",
+            "name": "TATA MOTORS PASS VEH LTD",
+            "sector": "Consumer Discretionary",
+            "instrumentKey": "NSE_EQ|INE155A01022",
+            "score": 3,
+            "sourceCell": "Value!F61",
+            "weight": 5.555555555555555
+          },
+          {
+            "symbol": "PFC",
+            "sourceTicker": "POWF IN",
+            "name": "POWER FIN CORP LTD.",
+            "sector": "Financials",
+            "instrumentKey": "NSE_EQ|INE134E01011",
+            "score": 3,
+            "sourceCell": "Value!F62",
+            "weight": 5.555555555555555
+          },
+          {
+            "symbol": "ONGC",
+            "sourceTicker": "ONGC IN",
+            "name": "OIL AND NATURAL GAS CORP.",
+            "sector": "Energy",
+            "instrumentKey": "NSE_EQ|INE213A01029",
+            "score": 3,
+            "sourceCell": "Value!F63",
+            "weight": 5.555555555555555
+          },
+          {
+            "symbol": "CANBK",
+            "sourceTicker": "CBK IN",
+            "name": "CANARA BANK",
+            "sector": "Financials",
+            "instrumentKey": "NSE_EQ|INE476A01022",
+            "score": 2.431944213433242,
+            "sourceCell": "Value!F71",
+            "weight": 5.555555555555555
+          },
+          {
+            "symbol": "BANKBARODA",
+            "sourceTicker": "BOB IN",
+            "name": "BANK OF BARODA",
+            "sector": "Financials",
+            "instrumentKey": "NSE_EQ|INE028A01039",
+            "score": 3,
+            "sourceCell": "Value!F74",
+            "weight": 5.555555555555555
+          },
+          {
+            "symbol": "UNIONBANK",
+            "sourceTicker": "UNBK IN",
+            "name": "UNION BANK OF INDIA",
+            "sector": "Financials",
+            "instrumentKey": "NSE_EQ|INE692A01016",
+            "score": 1.9548099453359131,
+            "sourceCell": "Value!F75",
+            "weight": 5.555555555555555
+          },
+          {
+            "symbol": "HINDPETRO",
+            "sourceTicker": "HPCL IN",
+            "name": "HINDUSTAN PETROLEUM CORP",
+            "sector": "Energy",
+            "instrumentKey": "NSE_EQ|INE094A01015",
+            "score": 1.902047907502621,
+            "sourceCell": "Value!F78",
+            "weight": 5.555555555555555
+          },
+          {
+            "symbol": "RECLTD",
+            "sourceTicker": "RECL IN",
+            "name": "REC LIMITED",
+            "sector": "Financials",
+            "instrumentKey": "NSE_EQ|INE020B01018",
+            "score": 2.6635101380925956,
+            "sourceCell": "Value!F81",
+            "weight": 5.555555555555555
+          },
+          {
+            "symbol": "BPCL",
+            "sourceTicker": "BPCL IN",
+            "name": "BHARAT PETROLEUM CORP  LT",
+            "sector": "Energy",
+            "instrumentKey": "NSE_EQ|INE029A01011",
+            "score": 1.8559133713095102,
+            "sourceCell": "Value!F83",
+            "weight": 5.555555555555555
+          },
+          {
+            "symbol": "PNB",
+            "sourceTicker": "PNB IN",
+            "name": "PUNJAB NATIONAL BANK",
+            "sector": "Financials",
+            "instrumentKey": "NSE_EQ|INE160A01022",
+            "score": 2.409787628972617,
+            "sourceCell": "Value!F84",
+            "weight": 5.555555555555555
+          },
+          {
+            "symbol": "GAIL",
+            "sourceTicker": "GAIL IN",
+            "name": "GAIL (INDIA) LTD",
+            "sector": "Utilities",
+            "instrumentKey": "NSE_EQ|INE129A01019",
+            "score": 1.5281614233010539,
+            "sourceCell": "Value!F90",
+            "weight": 5.555555555555555
+          },
+          {
+            "symbol": "IOC",
+            "sourceTicker": "IOCL IN",
+            "name": "INDIAN OIL CORP LTD",
+            "sector": "Energy",
+            "instrumentKey": "NSE_EQ|INE242A01010",
+            "score": 2.5927604338767978,
+            "sourceCell": "Value!F91",
+            "weight": 5.555555555555555
+          },
+          {
+            "symbol": "NMDC",
+            "sourceTicker": "NMDC IN",
+            "name": "NMDC LTD.",
+            "sector": "Materials",
+            "instrumentKey": "NSE_EQ|INE584A01023",
+            "score": 1.3173286815663459,
+            "sourceCell": "Value!F92",
+            "weight": 5.555555555555555
+          },
+          {
+            "symbol": "OIL",
+            "sourceTicker": "OINL IN",
+            "name": "OIL INDIA LTD",
+            "sector": "Energy",
+            "instrumentKey": "NSE_EQ|INE274J01014",
+            "score": 1.5547498214454856,
+            "sourceCell": "Value!F93",
+            "weight": 5.555555555555555
+          }
+        ]
+      },
+      {
+        "name": "Growth",
+        "weight": 16.666666666666668,
+        "definition": "EPS Growth, Sales Growth, Forecast Certainty",
+        "holdings": [
+          {
+            "symbol": "BHARTIARTL",
+            "sourceTicker": "BHARTI IN",
+            "name": "BHARTI AIRTEL LIMITED",
+            "sector": "Communication Services",
+            "instrumentKey": "NSE_EQ|INE397D01024",
+            "score": 1.5508611093921814,
+            "sourceCell": "Growth!F51",
+            "weight": 14.285714285714286
+          },
+          {
+            "symbol": "INDIGO",
+            "sourceTicker": "INDIGO IN",
+            "name": "INTERGLOBE AVIATION LTD",
+            "sector": "Industrials",
+            "instrumentKey": "NSE_EQ|INE646L01027",
+            "score": 2.062869947551524,
+            "sourceCell": "Growth!F68",
+            "weight": 14.285714285714286
+          },
+          {
+            "symbol": "CGPOWER",
+            "sourceTicker": "CGPOWER IN",
+            "name": "CG POWER AND IND SOL LTD",
+            "sector": "Industrials",
+            "instrumentKey": "NSE_EQ|INE067A01029",
+            "score": 1.969214800952685,
+            "sourceCell": "Growth!F69",
+            "weight": 14.285714285714286
+          },
+          {
+            "symbol": "TRENT",
+            "sourceTicker": "TRENT IN",
+            "name": "TRENT LTD",
+            "sector": "Consumer Discretionary",
+            "instrumentKey": "NSE_EQ|INE849A01020",
+            "score": 2.9262655320566524,
+            "sourceCell": "Growth!F70",
+            "weight": 14.285714285714286
+          },
+          {
+            "symbol": "BHARATFORG",
+            "sourceTicker": "BHFC IN",
+            "name": "BHARAT FORGE LTD",
+            "sector": "Consumer Discretionary",
+            "instrumentKey": "NSE_EQ|INE465A01025",
+            "score": 1.5542415886176568,
+            "sourceCell": "Growth!F72",
+            "weight": 14.285714285714286
+          },
+          {
+            "symbol": "AUBANK",
+            "sourceTicker": "AUBANK IN",
+            "name": "AU SMALL FINANCE BANK LTD",
+            "sector": "Financials",
+            "instrumentKey": "NSE_EQ|INE949L01017",
+            "score": 1.8506597633190893,
+            "sourceCell": "Growth!F75",
+            "weight": 14.285714285714286
+          },
+          {
+            "symbol": "YESBANK",
+            "sourceTicker": "YES IN",
+            "name": "YES BANK LIMITED",
+            "sector": "Financials",
+            "instrumentKey": "NSE_EQ|INE528G01035",
+            "score": 2.2917637292137667,
+            "sourceCell": "Growth!F76",
+            "weight": 14.285714285714286
+          }
+        ]
+      },
+      {
+        "name": "Quality",
+        "weight": 16.666666666666668,
+        "definition": "ROE, Forecast Certainty",
+        "holdings": [
+          {
+            "symbol": "BSE",
+            "sourceTicker": "BSE IN",
+            "name": "BSE LIMITED",
+            "sector": "Financials",
+            "instrumentKey": "NSE_EQ|INE118H01025",
+            "score": 0.9566668585873617,
+            "sourceCell": "Quality!F54",
+            "weight": 5.2631578947368425
+          },
+          {
+            "symbol": "INFY",
+            "sourceTicker": "INFO IN",
+            "name": "INFOSYS LIMITED",
+            "sector": "Information Technology",
+            "instrumentKey": "NSE_EQ|INE009A01021",
+            "score": 0.6380622470473569,
+            "sourceCell": "Quality!F55",
+            "weight": 5.2631578947368425
+          },
+          {
+            "symbol": "TCS",
+            "sourceTicker": "TCS IN",
+            "name": "TATA CONSULTANCY SERV LT",
+            "sector": "Information Technology",
+            "instrumentKey": "NSE_EQ|INE467B01029",
+            "score": 1.1569083649666227,
+            "sourceCell": "Quality!F62",
+            "weight": 5.2631578947368425
+          },
+          {
+            "symbol": "DIXON",
+            "sourceTicker": "DIXON IN",
+            "name": "DIXON TECHNO (INDIA) LTD",
+            "sector": "Consumer Discretionary",
+            "instrumentKey": "NSE_EQ|INE935N01020",
+            "score": 0.495412352903667,
+            "sourceCell": "Quality!F69",
+            "weight": 5.2631578947368425
+          },
+          {
+            "symbol": "GVT&D",
+            "sourceTicker": "GVTD IN",
+            "name": "GE VERNOVA T&D INDIA LTD",
+            "sector": "Industrials",
+            "instrumentKey": "NSE_EQ|INE200A01026",
+            "score": 2.411121405568316,
+            "sourceCell": "Quality!F75",
+            "weight": 5.2631578947368425
+          },
+          {
+            "symbol": "TVSMOTOR",
+            "sourceTicker": "TVSL IN",
+            "name": "TVS MOTOR COMPANY  LTD",
+            "sector": "Consumer Discretionary",
+            "instrumentKey": "NSE_EQ|INE494B01023",
+            "score": 0.5800380312483473,
+            "sourceCell": "Quality!F76",
+            "weight": 5.2631578947368425
+          },
+          {
+            "symbol": "TITAN",
+            "sourceTicker": "TTAN IN",
+            "name": "TITAN COMPANY LIMITED",
+            "sector": "Consumer Discretionary",
+            "instrumentKey": "NSE_EQ|INE280A01028",
+            "score": 0.771707276791048,
+            "sourceCell": "Quality!F79",
+            "weight": 5.2631578947368425
+          },
+          {
+            "symbol": "OFSS",
+            "sourceTicker": "OFSS IN",
+            "name": "ORACLE FIN SERV SOFT LTD.",
+            "sector": "Information Technology",
+            "instrumentKey": "NSE_EQ|INE881D01027",
+            "score": 0.57618482866495,
+            "sourceCell": "Quality!F82",
+            "weight": 5.2631578947368425
+          },
+          {
+            "symbol": "TMCV",
+            "sourceTicker": "TMCV IN",
+            "name": "TATA MOTORS LIMITED",
+            "sector": "Industrials",
+            "instrumentKey": "NSE_EQ|INE1TAE01010",
+            "score": 1.0384683440838107,
+            "sourceCell": "Quality!F84",
+            "weight": 5.2631578947368425
+          },
+          {
+            "symbol": "HINDUNILVR",
+            "sourceTicker": "HUVR IN",
+            "name": "HINDUSTAN UNILEVER LTD.",
+            "sector": "Consumer Staples",
+            "instrumentKey": "NSE_EQ|INE030A01027",
+            "score": 0.5252899479291473,
+            "sourceCell": "Quality!F86",
+            "weight": 5.2631578947368425
+          },
+          {
+            "symbol": "TMPV",
+            "sourceTicker": "TMPV IN",
+            "name": "TATA MOTORS PASS VEH LTD",
+            "sector": "Consumer Discretionary",
+            "instrumentKey": "NSE_EQ|INE155A01022",
+            "score": 1.2232962475421825,
+            "sourceCell": "Quality!F88",
+            "weight": 5.2631578947368425
+          },
+          {
+            "symbol": "SUZLON",
+            "sourceTicker": "SUEL IN",
+            "name": "SUZLON ENERGY LIMITED",
+            "sector": "Industrials",
+            "instrumentKey": "NSE_EQ|INE040H01021",
+            "score": 0.5488100792471935,
+            "sourceCell": "Quality!F90",
+            "weight": 5.2631578947368425
+          },
+          {
+            "symbol": "NESTLEIND",
+            "sourceTicker": "NEST IN",
+            "name": "NESTLE INDIA LIMITED",
+            "sector": "Consumer Staples",
+            "instrumentKey": "NSE_EQ|INE239A01024",
+            "score": 1.6348880727424921,
+            "sourceCell": "Quality!F91",
+            "weight": 5.2631578947368425
+          },
+          {
+            "symbol": "HDFCAMC",
+            "sourceTicker": "HDFCAMC IN",
+            "name": "HDFC AMC LIMITED",
+            "sector": "Financials",
+            "instrumentKey": "NSE_EQ|INE127D01025",
+            "score": 0.5798345617325171,
+            "sourceCell": "Quality!F94",
+            "weight": 5.2631578947368425
+          },
+          {
+            "symbol": "MARICO",
+            "sourceTicker": "MRCO IN",
+            "name": "MARICO LIMITED",
+            "sector": "Consumer Staples",
+            "instrumentKey": "NSE_EQ|INE196A01026",
+            "score": 0.9689266278511435,
+            "sourceCell": "Quality!F96",
+            "weight": 5.2631578947368425
+          },
+          {
+            "symbol": "BRITANNIA",
+            "sourceTicker": "BRIT IN",
+            "name": "BRITANNIA INDUSTRIES LTD",
+            "sector": "Consumer Staples",
+            "instrumentKey": "NSE_EQ|INE216A01030",
+            "score": 1.3689778017971035,
+            "sourceCell": "Quality!F97",
+            "weight": 5.2631578947368425
+          },
+          {
+            "symbol": "PAGEIND",
+            "sourceTicker": "PAG IN",
+            "name": "PAGE INDUSTRIES LTD",
+            "sector": "Consumer Discretionary",
+            "instrumentKey": "NSE_EQ|INE761H01022",
+            "score": 1.23616391754701,
+            "sourceCell": "Quality!F98",
+            "weight": 5.2631578947368425
+          },
+          {
+            "symbol": "COLPAL",
+            "sourceTicker": "CLGT IN",
+            "name": "COLGATE PALMOLIVE LTD.",
+            "sector": "Consumer Staples",
+            "instrumentKey": "NSE_EQ|INE259A01022",
+            "score": 1.6850392613781002,
+            "sourceCell": "Quality!F99",
+            "weight": 5.2631578947368425
+          },
+          {
+            "symbol": "MCX",
+            "sourceTicker": "MCX IB",
+            "name": "MULTI COMMODITY EXCHANGE",
+            "sector": "Financials",
+            "instrumentKey": "NSE_EQ|INE745G01043",
+            "score": 1.3353110458881494,
+            "sourceCell": "Quality!F100",
+            "weight": 5.2631578947368425
+          }
+        ]
+      },
+      {
+        "name": "Momentum",
+        "weight": 16.666666666666668,
+        "definition": "6M, 12M Price Mom 3M EPS Revision",
+        "holdings": [
+          {
+            "symbol": "PAYTM",
+            "sourceTicker": "PAYTM IN",
+            "name": "ONE 97 COMMUNICATIONS LTD",
+            "sector": "Financials",
+            "instrumentKey": "NSE_EQ|INE982J01020",
+            "score": 3,
+            "sourceCell": "Momentum!F74",
+            "weight": 5.882352941176471
+          },
+          {
+            "symbol": "IDEA",
+            "sourceTicker": "IDEA IN",
+            "name": "VODAFONE IDEA LIMITED",
+            "sector": "Communication Services",
+            "instrumentKey": "NSE_EQ|INE669E01016",
+            "score": 1.9650790885092777,
+            "sourceCell": "Momentum!F76",
+            "weight": 5.882352941176471
+          },
+          {
+            "symbol": "ADANIENT",
+            "sourceTicker": "ADE IN",
+            "name": "ADANI ENTERPRISES LIMITED",
+            "sector": "Industrials",
+            "instrumentKey": "NSE_EQ|INE423A01024",
+            "score": 1.623290203459141,
+            "sourceCell": "Momentum!F81",
+            "weight": 5.882352941176471
+          },
+          {
+            "symbol": "BHEL",
+            "sourceTicker": "BHEL IN",
+            "name": "BHEL",
+            "sector": "Industrials",
+            "instrumentKey": "NSE_EQ|INE257A01026",
+            "score": 3,
+            "sourceCell": "Momentum!F82",
+            "weight": 5.882352941176471
+          },
+          {
+            "symbol": "GVT&D",
+            "sourceTicker": "GVTD IN",
+            "name": "GE VERNOVA T&D INDIA LTD",
+            "sector": "Industrials",
+            "instrumentKey": "NSE_EQ|INE200A01026",
+            "score": 1.4411187030429364,
+            "sourceCell": "Momentum!F83",
+            "weight": 5.882352941176471
+          },
+          {
+            "symbol": "POWERINDIA",
+            "sourceTicker": "POWERIND IN",
+            "name": "HITACHI ENERGY INDIA LTD",
+            "sector": "Industrials",
+            "instrumentKey": "NSE_EQ|INE07Y701011",
+            "score": 2.335765781012916,
+            "sourceCell": "Momentum!F84",
+            "weight": 5.882352941176471
+          },
+          {
+            "symbol": "DIVISLAB",
+            "sourceTicker": "DIVI IN",
+            "name": "DIVI S LABORATORIES LTD",
+            "sector": "Health Care",
+            "instrumentKey": "NSE_EQ|INE361B01024",
+            "score": 2.210289372257853,
+            "sourceCell": "Momentum!F85",
+            "weight": 5.882352941176471
+          },
+          {
+            "symbol": "SOLARINDS",
+            "sourceTicker": "SOIL IN",
+            "name": "SOLAR INDUSTRIES (I) LTD",
+            "sector": "Materials",
+            "instrumentKey": "NSE_EQ|INE343H01029",
+            "score": 1.5805611986949164,
+            "sourceCell": "Momentum!F86",
+            "weight": 5.882352941176471
+          },
+          {
+            "symbol": "OFSS",
+            "sourceTicker": "OFSS IN",
+            "name": "ORACLE FIN SERV SOFT LTD.",
+            "sector": "Information Technology",
+            "instrumentKey": "NSE_EQ|INE881D01027",
+            "score": 2.915072222945958,
+            "sourceCell": "Momentum!F87",
+            "weight": 5.882352941176471
+          },
+          {
+            "symbol": "MOTHERSON",
+            "sourceTicker": "MOTHERSO IN",
+            "name": "SAMVRDHNA MTHRSN INTL LTD",
+            "sector": "Consumer Discretionary",
+            "instrumentKey": "NSE_EQ|INE775A01035",
+            "score": 1.844403536371854,
+            "sourceCell": "Momentum!F89",
+            "weight": 5.882352941176471
+          },
+          {
+            "symbol": "INDUSINDBK",
+            "sourceTicker": "IIB IN",
+            "name": "INDUSIND BANK LIMITED",
+            "sector": "Financials",
+            "instrumentKey": "NSE_EQ|INE095A01012",
+            "score": 1.5865576093385483,
+            "sourceCell": "Momentum!F91",
+            "weight": 5.882352941176471
+          },
+          {
+            "symbol": "FEDERALBNK",
+            "sourceTicker": "FB IN",
+            "name": "FEDERAL BANK LTD",
+            "sector": "Financials",
+            "instrumentKey": "NSE_EQ|INE171A01029",
+            "score": 1.3873534995679462,
+            "sourceCell": "Momentum!F92",
+            "weight": 5.882352941176471
+          },
+          {
+            "symbol": "NYKAA",
+            "sourceTicker": "NYKAA IN",
+            "name": "FSN E COMMERCE VENTURES",
+            "sector": "Consumer Discretionary",
+            "instrumentKey": "NSE_EQ|INE388Y01029",
+            "score": 2.0828691528353627,
+            "sourceCell": "Momentum!F94",
+            "weight": 5.882352941176471
+          },
+          {
+            "symbol": "IDFCFIRSTB",
+            "sourceTicker": "IDFCFB IN",
+            "name": "IDFC FIRST BANK LIMITED",
+            "sector": "Financials",
+            "instrumentKey": "NSE_EQ|INE092T01019",
+            "score": 1.4410469280000973,
+            "sourceCell": "Momentum!F95",
+            "weight": 5.882352941176471
+          },
+          {
+            "symbol": "BOSCHLTD",
+            "sourceTicker": "BOS IN",
+            "name": "BOSCH LIMITED",
+            "sector": "Consumer Discretionary",
+            "instrumentKey": "NSE_EQ|INE323A01026",
+            "score": 2.2542517068104013,
+            "sourceCell": "Momentum!F97",
+            "weight": 5.882352941176471
+          },
+          {
+            "symbol": "AUROPHARMA",
+            "sourceTicker": "ARBP IN",
+            "name": "AUROBINDO PHARMA LTD",
+            "sector": "Health Care",
+            "instrumentKey": "NSE_EQ|INE406A01037",
+            "score": 1.332424596001722,
+            "sourceCell": "Momentum!F98",
+            "weight": 5.882352941176471
+          },
+          {
+            "symbol": "MCX",
+            "sourceTicker": "MCX IB",
+            "name": "MULTI COMMODITY EXCHANGE",
+            "sector": "Financials",
+            "instrumentKey": "NSE_EQ|INE745G01043",
+            "score": 1.4922609483242215,
+            "sourceCell": "Momentum!F102",
+            "weight": 5.882352941176471
+          }
+        ]
+      },
+      {
+        "name": "Low Vol",
+        "weight": 16.666666666666668,
+        "definition": "Low 240D Vol",
+        "holdings": [
+          {
+            "symbol": "HDFCBANK",
+            "sourceTicker": "HDFCB IN",
+            "name": "HDFC BANK LTD",
+            "sector": "Financials",
+            "instrumentKey": "NSE_EQ|INE040A01034",
+            "score": 1.228887500968345,
+            "sourceCell": "Low Vol!F11",
+            "weight": 5.882352941176471
+          },
+          {
+            "symbol": "ICICIBANK",
+            "sourceTicker": "ICICIBC IN",
+            "name": "ICICI BANK LTD.",
+            "sector": "Financials",
+            "instrumentKey": "NSE_EQ|INE090A01021",
+            "score": 1.545484665962184,
+            "sourceCell": "Low Vol!F20",
+            "weight": 5.882352941176471
+          },
+          {
+            "symbol": "RELIANCE",
+            "sourceTicker": "RELIANCE IN",
+            "name": "RELIANCE INDUSTRIES LTD",
+            "sector": "Energy",
+            "instrumentKey": "NSE_EQ|INE002A01018",
+            "score": 1.2717910669511139,
+            "sourceCell": "Low Vol!F21",
+            "weight": 5.882352941176471
+          },
+          {
+            "symbol": "BHARTIARTL",
+            "sourceTicker": "BHARTI IN",
+            "name": "BHARTI AIRTEL LIMITED",
+            "sector": "Communication Services",
+            "instrumentKey": "NSE_EQ|INE397D01024",
+            "score": 1.3049345493145863,
+            "sourceCell": "Low Vol!F25",
+            "weight": 5.882352941176471
+          },
+          {
+            "symbol": "KOTAKBANK",
+            "sourceTicker": "KMB IN",
+            "name": "KOTAK MAHINDRA BANK LTD",
+            "sector": "Financials",
+            "instrumentKey": "NSE_EQ|INE237A01036",
+            "score": 1.2444764334644618,
+            "sourceCell": "Low Vol!F49",
+            "weight": 5.882352941176471
+          },
+          {
+            "symbol": "ITC",
+            "sourceTicker": "ITC IN",
+            "name": "ITC LTD",
+            "sector": "Consumer Staples",
+            "instrumentKey": "NSE_EQ|INE154A01025",
+            "score": 1.2763310925762814,
+            "sourceCell": "Low Vol!F59",
+            "weight": 5.882352941176471
+          },
+          {
+            "symbol": "SUNPHARMA",
+            "sourceTicker": "SUNP IN",
+            "name": "SUN PHARMACEUTICAL IND L",
+            "sector": "Health Care",
+            "instrumentKey": "NSE_EQ|INE044A01036",
+            "score": 1.5606526260394191,
+            "sourceCell": "Low Vol!F62",
+            "weight": 5.882352941176471
+          },
+          {
+            "symbol": "HINDUNILVR",
+            "sourceTicker": "HUVR IN",
+            "name": "HINDUSTAN UNILEVER LTD.",
+            "sector": "Consumer Staples",
+            "instrumentKey": "NSE_EQ|INE030A01027",
+            "score": 1.237826688370823,
+            "sourceCell": "Low Vol!F66",
+            "weight": 5.882352941176471
+          },
+          {
+            "symbol": "NTPC",
+            "sourceTicker": "NTPC IN",
+            "name": "NTPC LTD",
+            "sector": "Utilities",
+            "instrumentKey": "NSE_EQ|INE733E01010",
+            "score": 1.5637904896847739,
+            "sourceCell": "Low Vol!F68",
+            "weight": 5.882352941176471
+          },
+          {
+            "symbol": "APOLLOHOSP",
+            "sourceTicker": "APHS IN",
+            "name": "APOLLO HOSPITALS ENTER. L",
+            "sector": "Health Care",
+            "instrumentKey": "NSE_EQ|INE437A01024",
+            "score": 1.726852537013805,
+            "sourceCell": "Low Vol!F74",
+            "weight": 5.882352941176471
+          },
+          {
+            "symbol": "NESTLEIND",
+            "sourceTicker": "NEST IN",
+            "name": "NESTLE INDIA LIMITED",
+            "sector": "Consumer Staples",
+            "instrumentKey": "NSE_EQ|INE239A01024",
+            "score": 1.3417437299717025,
+            "sourceCell": "Low Vol!F78",
+            "weight": 5.882352941176471
+          },
+          {
+            "symbol": "POWERGRID",
+            "sourceTicker": "PWGR IN",
+            "name": "POWER GRID CORP. LTD.",
+            "sector": "Utilities",
+            "instrumentKey": "NSE_EQ|INE752E01010",
+            "score": 1.2679116441986529,
+            "sourceCell": "Low Vol!F82",
+            "weight": 5.882352941176471
+          },
+          {
+            "symbol": "LUPIN",
+            "sourceTicker": "LPC IN",
+            "name": "LUPIN LIMITED",
+            "sector": "Health Care",
+            "instrumentKey": "NSE_EQ|INE326A01037",
+            "score": 1.4562223219124417,
+            "sourceCell": "Low Vol!F86",
+            "weight": 5.882352941176471
+          },
+          {
+            "symbol": "SBILIFE",
+            "sourceTicker": "SBILIFE IN",
+            "name": "SBI LIFE INSURANCE CO LTD",
+            "sector": "Financials",
+            "instrumentKey": "NSE_EQ|INE123W01016",
+            "score": 1.2700942242780846,
+            "sourceCell": "Low Vol!F88",
+            "weight": 5.882352941176471
+          },
+          {
+            "symbol": "CIPLA",
+            "sourceTicker": "CIPLA IN",
+            "name": "CIPLA LTD",
+            "sector": "Health Care",
+            "instrumentKey": "NSE_EQ|INE059A01026",
+            "score": 1.2929481692492817,
+            "sourceCell": "Low Vol!F92",
+            "weight": 5.882352941176471
+          },
+          {
+            "symbol": "MARICO",
+            "sourceTicker": "MRCO IN",
+            "name": "MARICO LIMITED",
+            "sector": "Consumer Staples",
+            "instrumentKey": "NSE_EQ|INE196A01026",
+            "score": 1.7253661805502165,
+            "sourceCell": "Low Vol!F93",
+            "weight": 5.882352941176471
+          },
+          {
+            "symbol": "BRITANNIA",
+            "sourceTicker": "BRIT IN",
+            "name": "BRITANNIA INDUSTRIES LTD",
+            "sector": "Consumer Staples",
+            "instrumentKey": "NSE_EQ|INE216A01030",
+            "score": 1.5281454596783333,
+            "sourceCell": "Low Vol!F95",
+            "weight": 5.882352941176471
+          }
+        ]
+      }
+    ],
+    "holdings": [
+      {
+        "symbol": "BHARTIARTL",
+        "sourceTicker": "BHARTI IN",
+        "name": "BHARTI AIRTEL LIMITED",
+        "sector": "Communication Services",
+        "instrumentKey": "NSE_EQ|INE397D01024",
+        "weight": 4.238537520271267,
+        "factors": [
+          "Composite",
+          "Growth",
+          "Low Vol"
+        ]
+      },
+      {
+        "symbol": "AXISBANK",
+        "sourceTicker": "AXSB IN",
+        "name": "AXIS BANK LIMITED",
+        "sector": "Financials",
+        "instrumentKey": "NSE_EQ|INE238A01034",
+        "weight": 0.8771929824561404,
+        "factors": [
+          "Composite"
+        ]
+      },
+      {
+        "symbol": "DIVISLAB",
+        "sourceTicker": "DIVI IN",
+        "name": "DIVI S LABORATORIES LTD",
+        "sector": "Health Care",
+        "instrumentKey": "NSE_EQ|INE361B01024",
+        "weight": 1.8575851393188856,
+        "factors": [
+          "Composite",
+          "Momentum"
+        ]
+      },
+      {
+        "symbol": "VAML",
+        "sourceTicker": "VAML IN",
+        "name": "VEDANTA ALUMINIUM METAL L",
+        "sector": "Materials",
+        "instrumentKey": "NSE_EQ|INE1CDF01017",
+        "weight": 1.8031189083820665,
+        "factors": [
+          "Composite",
+          "Value"
+        ]
+      },
+      {
+        "symbol": "TITAN",
+        "sourceTicker": "TTAN IN",
+        "name": "TITAN COMPANY LIMITED",
+        "sector": "Consumer Discretionary",
+        "instrumentKey": "NSE_EQ|INE280A01028",
+        "weight": 1.7543859649122808,
+        "factors": [
+          "Composite",
+          "Quality"
+        ]
+      },
+      {
+        "symbol": "SUNPHARMA",
+        "sourceTicker": "SUNP IN",
+        "name": "SUN PHARMACEUTICAL IND L",
+        "sector": "Health Care",
+        "instrumentKey": "NSE_EQ|INE044A01036",
+        "weight": 1.8575851393188856,
+        "factors": [
+          "Composite",
+          "Low Vol"
+        ]
+      },
+      {
+        "symbol": "BAJAJ-AUTO",
+        "sourceTicker": "BJAUT IN",
+        "name": "BAJAJ AUTO LIMITED",
+        "sector": "Consumer Discretionary",
+        "instrumentKey": "NSE_EQ|INE917I01010",
+        "weight": 0.8771929824561404,
+        "factors": [
+          "Composite"
+        ]
+      },
+      {
+        "symbol": "OFSS",
+        "sourceTicker": "OFSS IN",
+        "name": "ORACLE FIN SERV SOFT LTD.",
+        "sector": "Information Technology",
+        "instrumentKey": "NSE_EQ|INE881D01027",
+        "weight": 2.734778121775026,
+        "factors": [
+          "Composite",
+          "Quality",
+          "Momentum"
+        ]
+      },
+      {
+        "symbol": "TMPV",
+        "sourceTicker": "TMPV IN",
+        "name": "TATA MOTORS PASS VEH LTD",
+        "sector": "Consumer Discretionary",
+        "instrumentKey": "NSE_EQ|INE155A01022",
+        "weight": 2.680311890838207,
+        "factors": [
+          "Composite",
+          "Value",
+          "Quality"
+        ]
+      },
+      {
+        "symbol": "PFC",
+        "sourceTicker": "POWF IN",
+        "name": "POWER FIN CORP LTD.",
+        "sector": "Financials",
+        "instrumentKey": "NSE_EQ|INE134E01011",
+        "weight": 1.8031189083820665,
+        "factors": [
+          "Composite",
+          "Value"
+        ]
+      },
+      {
+        "symbol": "APOLLOHOSP",
+        "sourceTicker": "APHS IN",
+        "name": "APOLLO HOSPITALS ENTER. L",
+        "sector": "Health Care",
+        "instrumentKey": "NSE_EQ|INE437A01024",
+        "weight": 1.8575851393188856,
+        "factors": [
+          "Composite",
+          "Low Vol"
+        ]
+      },
+      {
+        "symbol": "NESTLEIND",
+        "sourceTicker": "NEST IN",
+        "name": "NESTLE INDIA LIMITED",
+        "sector": "Consumer Staples",
+        "instrumentKey": "NSE_EQ|INE239A01024",
+        "weight": 2.734778121775026,
+        "factors": [
+          "Composite",
+          "Quality",
+          "Low Vol"
+        ]
+      },
+      {
+        "symbol": "CANBK",
+        "sourceTicker": "CBK IN",
+        "name": "CANARA BANK",
+        "sector": "Financials",
+        "instrumentKey": "NSE_EQ|INE476A01022",
+        "weight": 1.8031189083820665,
+        "factors": [
+          "Composite",
+          "Value"
+        ]
+      },
+      {
+        "symbol": "LUPIN",
+        "sourceTicker": "LPC IN",
+        "name": "LUPIN LIMITED",
+        "sector": "Health Care",
+        "instrumentKey": "NSE_EQ|INE326A01037",
+        "weight": 1.8575851393188856,
+        "factors": [
+          "Composite",
+          "Low Vol"
+        ]
+      },
+      {
+        "symbol": "FEDERALBNK",
+        "sourceTicker": "FB IN",
+        "name": "FEDERAL BANK LTD",
+        "sector": "Financials",
+        "instrumentKey": "NSE_EQ|INE171A01029",
+        "weight": 1.8575851393188856,
+        "factors": [
+          "Composite",
+          "Momentum"
+        ]
+      },
+      {
+        "symbol": "PNB",
+        "sourceTicker": "PNB IN",
+        "name": "PUNJAB NATIONAL BANK",
+        "sector": "Financials",
+        "instrumentKey": "NSE_EQ|INE160A01022",
+        "weight": 1.8031189083820665,
+        "factors": [
+          "Composite",
+          "Value"
+        ]
+      },
+      {
+        "symbol": "MARICO",
+        "sourceTicker": "MRCO IN",
+        "name": "MARICO LIMITED",
+        "sector": "Consumer Staples",
+        "instrumentKey": "NSE_EQ|INE196A01026",
+        "weight": 2.734778121775026,
+        "factors": [
+          "Composite",
+          "Quality",
+          "Low Vol"
+        ]
+      },
+      {
+        "symbol": "AUROPHARMA",
+        "sourceTicker": "ARBP IN",
+        "name": "AUROBINDO PHARMA LTD",
+        "sector": "Health Care",
+        "instrumentKey": "NSE_EQ|INE406A01037",
+        "weight": 1.8575851393188856,
+        "factors": [
+          "Composite",
+          "Momentum"
+        ]
+      },
+      {
+        "symbol": "YESBANK",
+        "sourceTicker": "YES IN",
+        "name": "YES BANK LIMITED",
+        "sector": "Financials",
+        "instrumentKey": "NSE_EQ|INE528G01035",
+        "weight": 3.2581453634085213,
+        "factors": [
+          "Composite",
+          "Growth"
+        ]
+      },
+      {
+        "symbol": "HINDALCO",
+        "sourceTicker": "HNDL IN",
+        "name": "HINDALCO  INDUSTRIES  LTD",
+        "sector": "Materials",
+        "instrumentKey": "NSE_EQ|INE038A01020",
+        "weight": 0.9259259259259259,
+        "factors": [
+          "Value"
+        ]
+      },
+      {
+        "symbol": "COALINDIA",
+        "sourceTicker": "COAL IN",
+        "name": "COAL INDIA LTD",
+        "sector": "Energy",
+        "instrumentKey": "NSE_EQ|INE522F01014",
+        "weight": 0.9259259259259259,
+        "factors": [
+          "Value"
+        ]
+      },
+      {
+        "symbol": "VEDL",
+        "sourceTicker": "VEDL IN",
+        "name": "VEDANTA LIMITED",
+        "sector": "Materials",
+        "instrumentKey": "NSE_EQ|INE205A01025",
+        "weight": 0.9259259259259259,
+        "factors": [
+          "Value"
+        ]
+      },
+      {
+        "symbol": "ONGC",
+        "sourceTicker": "ONGC IN",
+        "name": "OIL AND NATURAL GAS CORP.",
+        "sector": "Energy",
+        "instrumentKey": "NSE_EQ|INE213A01029",
+        "weight": 0.9259259259259259,
+        "factors": [
+          "Value"
+        ]
+      },
+      {
+        "symbol": "BANKBARODA",
+        "sourceTicker": "BOB IN",
+        "name": "BANK OF BARODA",
+        "sector": "Financials",
+        "instrumentKey": "NSE_EQ|INE028A01039",
+        "weight": 0.9259259259259259,
+        "factors": [
+          "Value"
+        ]
+      },
+      {
+        "symbol": "UNIONBANK",
+        "sourceTicker": "UNBK IN",
+        "name": "UNION BANK OF INDIA",
+        "sector": "Financials",
+        "instrumentKey": "NSE_EQ|INE692A01016",
+        "weight": 0.9259259259259259,
+        "factors": [
+          "Value"
+        ]
+      },
+      {
+        "symbol": "HINDPETRO",
+        "sourceTicker": "HPCL IN",
+        "name": "HINDUSTAN PETROLEUM CORP",
+        "sector": "Energy",
+        "instrumentKey": "NSE_EQ|INE094A01015",
+        "weight": 0.9259259259259259,
+        "factors": [
+          "Value"
+        ]
+      },
+      {
+        "symbol": "RECLTD",
+        "sourceTicker": "RECL IN",
+        "name": "REC LIMITED",
+        "sector": "Financials",
+        "instrumentKey": "NSE_EQ|INE020B01018",
+        "weight": 0.9259259259259259,
+        "factors": [
+          "Value"
+        ]
+      },
+      {
+        "symbol": "BPCL",
+        "sourceTicker": "BPCL IN",
+        "name": "BHARAT PETROLEUM CORP  LT",
+        "sector": "Energy",
+        "instrumentKey": "NSE_EQ|INE029A01011",
+        "weight": 0.9259259259259259,
+        "factors": [
+          "Value"
+        ]
+      },
+      {
+        "symbol": "GAIL",
+        "sourceTicker": "GAIL IN",
+        "name": "GAIL (INDIA) LTD",
+        "sector": "Utilities",
+        "instrumentKey": "NSE_EQ|INE129A01019",
+        "weight": 0.9259259259259259,
+        "factors": [
+          "Value"
+        ]
+      },
+      {
+        "symbol": "IOC",
+        "sourceTicker": "IOCL IN",
+        "name": "INDIAN OIL CORP LTD",
+        "sector": "Energy",
+        "instrumentKey": "NSE_EQ|INE242A01010",
+        "weight": 0.9259259259259259,
+        "factors": [
+          "Value"
+        ]
+      },
+      {
+        "symbol": "NMDC",
+        "sourceTicker": "NMDC IN",
+        "name": "NMDC LTD.",
+        "sector": "Materials",
+        "instrumentKey": "NSE_EQ|INE584A01023",
+        "weight": 0.9259259259259259,
+        "factors": [
+          "Value"
+        ]
+      },
+      {
+        "symbol": "OIL",
+        "sourceTicker": "OINL IN",
+        "name": "OIL INDIA LTD",
+        "sector": "Energy",
+        "instrumentKey": "NSE_EQ|INE274J01014",
+        "weight": 0.9259259259259259,
+        "factors": [
+          "Value"
+        ]
+      },
+      {
+        "symbol": "INDIGO",
+        "sourceTicker": "INDIGO IN",
+        "name": "INTERGLOBE AVIATION LTD",
+        "sector": "Industrials",
+        "instrumentKey": "NSE_EQ|INE646L01027",
+        "weight": 2.380952380952381,
+        "factors": [
+          "Growth"
+        ]
+      },
+      {
+        "symbol": "CGPOWER",
+        "sourceTicker": "CGPOWER IN",
+        "name": "CG POWER AND IND SOL LTD",
+        "sector": "Industrials",
+        "instrumentKey": "NSE_EQ|INE067A01029",
+        "weight": 2.380952380952381,
+        "factors": [
+          "Growth"
+        ]
+      },
+      {
+        "symbol": "TRENT",
+        "sourceTicker": "TRENT IN",
+        "name": "TRENT LTD",
+        "sector": "Consumer Discretionary",
+        "instrumentKey": "NSE_EQ|INE849A01020",
+        "weight": 2.380952380952381,
+        "factors": [
+          "Growth"
+        ]
+      },
+      {
+        "symbol": "BHARATFORG",
+        "sourceTicker": "BHFC IN",
+        "name": "BHARAT FORGE LTD",
+        "sector": "Consumer Discretionary",
+        "instrumentKey": "NSE_EQ|INE465A01025",
+        "weight": 2.380952380952381,
+        "factors": [
+          "Growth"
+        ]
+      },
+      {
+        "symbol": "AUBANK",
+        "sourceTicker": "AUBANK IN",
+        "name": "AU SMALL FINANCE BANK LTD",
+        "sector": "Financials",
+        "instrumentKey": "NSE_EQ|INE949L01017",
+        "weight": 2.380952380952381,
+        "factors": [
+          "Growth"
+        ]
+      },
+      {
+        "symbol": "BSE",
+        "sourceTicker": "BSE IN",
+        "name": "BSE LIMITED",
+        "sector": "Financials",
+        "instrumentKey": "NSE_EQ|INE118H01025",
+        "weight": 0.8771929824561404,
+        "factors": [
+          "Quality"
+        ]
+      },
+      {
+        "symbol": "INFY",
+        "sourceTicker": "INFO IN",
+        "name": "INFOSYS LIMITED",
+        "sector": "Information Technology",
+        "instrumentKey": "NSE_EQ|INE009A01021",
+        "weight": 0.8771929824561404,
+        "factors": [
+          "Quality"
+        ]
+      },
+      {
+        "symbol": "TCS",
+        "sourceTicker": "TCS IN",
+        "name": "TATA CONSULTANCY SERV LT",
+        "sector": "Information Technology",
+        "instrumentKey": "NSE_EQ|INE467B01029",
+        "weight": 0.8771929824561404,
+        "factors": [
+          "Quality"
+        ]
+      },
+      {
+        "symbol": "DIXON",
+        "sourceTicker": "DIXON IN",
+        "name": "DIXON TECHNO (INDIA) LTD",
+        "sector": "Consumer Discretionary",
+        "instrumentKey": "NSE_EQ|INE935N01020",
+        "weight": 0.8771929824561404,
+        "factors": [
+          "Quality"
+        ]
+      },
+      {
+        "symbol": "GVT&D",
+        "sourceTicker": "GVTD IN",
+        "name": "GE VERNOVA T&D INDIA LTD",
+        "sector": "Industrials",
+        "instrumentKey": "NSE_EQ|INE200A01026",
+        "weight": 1.8575851393188856,
+        "factors": [
+          "Quality",
+          "Momentum"
+        ]
+      },
+      {
+        "symbol": "TVSMOTOR",
+        "sourceTicker": "TVSL IN",
+        "name": "TVS MOTOR COMPANY  LTD",
+        "sector": "Consumer Discretionary",
+        "instrumentKey": "NSE_EQ|INE494B01023",
+        "weight": 0.8771929824561404,
+        "factors": [
+          "Quality"
+        ]
+      },
+      {
+        "symbol": "TMCV",
+        "sourceTicker": "TMCV IN",
+        "name": "TATA MOTORS LIMITED",
+        "sector": "Industrials",
+        "instrumentKey": "NSE_EQ|INE1TAE01010",
+        "weight": 0.8771929824561404,
+        "factors": [
+          "Quality"
+        ]
+      },
+      {
+        "symbol": "HINDUNILVR",
+        "sourceTicker": "HUVR IN",
+        "name": "HINDUSTAN UNILEVER LTD.",
+        "sector": "Consumer Staples",
+        "instrumentKey": "NSE_EQ|INE030A01027",
+        "weight": 1.8575851393188856,
+        "factors": [
+          "Quality",
+          "Low Vol"
+        ]
+      },
+      {
+        "symbol": "SUZLON",
+        "sourceTicker": "SUEL IN",
+        "name": "SUZLON ENERGY LIMITED",
+        "sector": "Industrials",
+        "instrumentKey": "NSE_EQ|INE040H01021",
+        "weight": 0.8771929824561404,
+        "factors": [
+          "Quality"
+        ]
+      },
+      {
+        "symbol": "HDFCAMC",
+        "sourceTicker": "HDFCAMC IN",
+        "name": "HDFC AMC LIMITED",
+        "sector": "Financials",
+        "instrumentKey": "NSE_EQ|INE127D01025",
+        "weight": 0.8771929824561404,
+        "factors": [
+          "Quality"
+        ]
+      },
+      {
+        "symbol": "BRITANNIA",
+        "sourceTicker": "BRIT IN",
+        "name": "BRITANNIA INDUSTRIES LTD",
+        "sector": "Consumer Staples",
+        "instrumentKey": "NSE_EQ|INE216A01030",
+        "weight": 1.8575851393188856,
+        "factors": [
+          "Quality",
+          "Low Vol"
+        ]
+      },
+      {
+        "symbol": "PAGEIND",
+        "sourceTicker": "PAG IN",
+        "name": "PAGE INDUSTRIES LTD",
+        "sector": "Consumer Discretionary",
+        "instrumentKey": "NSE_EQ|INE761H01022",
+        "weight": 0.8771929824561404,
+        "factors": [
+          "Quality"
+        ]
+      },
+      {
+        "symbol": "COLPAL",
+        "sourceTicker": "CLGT IN",
+        "name": "COLGATE PALMOLIVE LTD.",
+        "sector": "Consumer Staples",
+        "instrumentKey": "NSE_EQ|INE259A01022",
+        "weight": 0.8771929824561404,
+        "factors": [
+          "Quality"
+        ]
+      },
+      {
+        "symbol": "MCX",
+        "sourceTicker": "MCX IB",
+        "name": "MULTI COMMODITY EXCHANGE",
+        "sector": "Financials",
+        "instrumentKey": "NSE_EQ|INE745G01043",
+        "weight": 1.8575851393188856,
+        "factors": [
+          "Quality",
+          "Momentum"
+        ]
+      },
+      {
+        "symbol": "PAYTM",
+        "sourceTicker": "PAYTM IN",
+        "name": "ONE 97 COMMUNICATIONS LTD",
+        "sector": "Financials",
+        "instrumentKey": "NSE_EQ|INE982J01020",
+        "weight": 0.9803921568627452,
+        "factors": [
+          "Momentum"
+        ]
+      },
+      {
+        "symbol": "IDEA",
+        "sourceTicker": "IDEA IN",
+        "name": "VODAFONE IDEA LIMITED",
+        "sector": "Communication Services",
+        "instrumentKey": "NSE_EQ|INE669E01016",
+        "weight": 0.9803921568627452,
+        "factors": [
+          "Momentum"
+        ]
+      },
+      {
+        "symbol": "ADANIENT",
+        "sourceTicker": "ADE IN",
+        "name": "ADANI ENTERPRISES LIMITED",
+        "sector": "Industrials",
+        "instrumentKey": "NSE_EQ|INE423A01024",
+        "weight": 0.9803921568627452,
+        "factors": [
+          "Momentum"
+        ]
+      },
+      {
+        "symbol": "BHEL",
+        "sourceTicker": "BHEL IN",
+        "name": "BHEL",
+        "sector": "Industrials",
+        "instrumentKey": "NSE_EQ|INE257A01026",
+        "weight": 0.9803921568627452,
+        "factors": [
+          "Momentum"
+        ]
+      },
+      {
+        "symbol": "POWERINDIA",
+        "sourceTicker": "POWERIND IN",
+        "name": "HITACHI ENERGY INDIA LTD",
+        "sector": "Industrials",
+        "instrumentKey": "NSE_EQ|INE07Y701011",
+        "weight": 0.9803921568627452,
+        "factors": [
+          "Momentum"
+        ]
+      },
+      {
+        "symbol": "SOLARINDS",
+        "sourceTicker": "SOIL IN",
+        "name": "SOLAR INDUSTRIES (I) LTD",
+        "sector": "Materials",
+        "instrumentKey": "NSE_EQ|INE343H01029",
+        "weight": 0.9803921568627452,
+        "factors": [
+          "Momentum"
+        ]
+      },
+      {
+        "symbol": "MOTHERSON",
+        "sourceTicker": "MOTHERSO IN",
+        "name": "SAMVRDHNA MTHRSN INTL LTD",
+        "sector": "Consumer Discretionary",
+        "instrumentKey": "NSE_EQ|INE775A01035",
+        "weight": 0.9803921568627452,
+        "factors": [
+          "Momentum"
+        ]
+      },
+      {
+        "symbol": "INDUSINDBK",
+        "sourceTicker": "IIB IN",
+        "name": "INDUSIND BANK LIMITED",
+        "sector": "Financials",
+        "instrumentKey": "NSE_EQ|INE095A01012",
+        "weight": 0.9803921568627452,
+        "factors": [
+          "Momentum"
+        ]
+      },
+      {
+        "symbol": "NYKAA",
+        "sourceTicker": "NYKAA IN",
+        "name": "FSN E COMMERCE VENTURES",
+        "sector": "Consumer Discretionary",
+        "instrumentKey": "NSE_EQ|INE388Y01029",
+        "weight": 0.9803921568627452,
+        "factors": [
+          "Momentum"
+        ]
+      },
+      {
+        "symbol": "IDFCFIRSTB",
+        "sourceTicker": "IDFCFB IN",
+        "name": "IDFC FIRST BANK LIMITED",
+        "sector": "Financials",
+        "instrumentKey": "NSE_EQ|INE092T01019",
+        "weight": 0.9803921568627452,
+        "factors": [
+          "Momentum"
+        ]
+      },
+      {
+        "symbol": "BOSCHLTD",
+        "sourceTicker": "BOS IN",
+        "name": "BOSCH LIMITED",
+        "sector": "Consumer Discretionary",
+        "instrumentKey": "NSE_EQ|INE323A01026",
+        "weight": 0.9803921568627452,
+        "factors": [
+          "Momentum"
+        ]
+      },
+      {
+        "symbol": "HDFCBANK",
+        "sourceTicker": "HDFCB IN",
+        "name": "HDFC BANK LTD",
+        "sector": "Financials",
+        "instrumentKey": "NSE_EQ|INE040A01034",
+        "weight": 0.9803921568627452,
+        "factors": [
+          "Low Vol"
+        ]
+      },
+      {
+        "symbol": "ICICIBANK",
+        "sourceTicker": "ICICIBC IN",
+        "name": "ICICI BANK LTD.",
+        "sector": "Financials",
+        "instrumentKey": "NSE_EQ|INE090A01021",
+        "weight": 0.9803921568627452,
+        "factors": [
+          "Low Vol"
+        ]
+      },
+      {
+        "symbol": "RELIANCE",
+        "sourceTicker": "RELIANCE IN",
+        "name": "RELIANCE INDUSTRIES LTD",
+        "sector": "Energy",
+        "instrumentKey": "NSE_EQ|INE002A01018",
+        "weight": 0.9803921568627452,
+        "factors": [
+          "Low Vol"
+        ]
+      },
+      {
+        "symbol": "KOTAKBANK",
+        "sourceTicker": "KMB IN",
+        "name": "KOTAK MAHINDRA BANK LTD",
+        "sector": "Financials",
+        "instrumentKey": "NSE_EQ|INE237A01036",
+        "weight": 0.9803921568627452,
+        "factors": [
+          "Low Vol"
+        ]
+      },
+      {
+        "symbol": "ITC",
+        "sourceTicker": "ITC IN",
+        "name": "ITC LTD",
+        "sector": "Consumer Staples",
+        "instrumentKey": "NSE_EQ|INE154A01025",
+        "weight": 0.9803921568627452,
+        "factors": [
+          "Low Vol"
+        ]
+      },
+      {
+        "symbol": "NTPC",
+        "sourceTicker": "NTPC IN",
+        "name": "NTPC LTD",
+        "sector": "Utilities",
+        "instrumentKey": "NSE_EQ|INE733E01010",
+        "weight": 0.9803921568627452,
+        "factors": [
+          "Low Vol"
+        ]
+      },
+      {
+        "symbol": "POWERGRID",
+        "sourceTicker": "PWGR IN",
+        "name": "POWER GRID CORP. LTD.",
+        "sector": "Utilities",
+        "instrumentKey": "NSE_EQ|INE752E01010",
+        "weight": 0.9803921568627452,
+        "factors": [
+          "Low Vol"
+        ]
+      },
+      {
+        "symbol": "SBILIFE",
+        "sourceTicker": "SBILIFE IN",
+        "name": "SBI LIFE INSURANCE CO LTD",
+        "sector": "Financials",
+        "instrumentKey": "NSE_EQ|INE123W01016",
+        "weight": 0.9803921568627452,
+        "factors": [
+          "Low Vol"
+        ]
+      },
+      {
+        "symbol": "CIPLA",
+        "sourceTicker": "CIPLA IN",
+        "name": "CIPLA LTD",
+        "sector": "Health Care",
+        "instrumentKey": "NSE_EQ|INE059A01026",
+        "weight": 0.9803921568627452,
+        "factors": [
+          "Low Vol"
+        ]
+      }
+    ],
+    "cashWeight": 0,
+    "incomplete": false,
+    "asOf": "2026-10-03",
+    "trackingStart": "2026-10-05",
+    "sourceName": "JPM_Asia_Quantamental_Up_2026-09-24_5462124.xlsm",
+    "sourceAsOf": "2026-09-01",
+    "description": "India long-decile classifications across six factor categories. Equal category allocations, equal stock weights within each category; shared stocks remain in every applicable category.",
+    "weightMethod": "AGI allocation: one-sixth to each category, then equal weights within that category. Shared-stock weights are added for the total. Fixed launch units; no automatic rebalancing. Composite classification comes from JPM, not an average of visible scores.",
+    "researchOnly": true
+  },
+  {
+    "id": "in-conviction-short",
+    "name": "Conviction Short \u2014 Research",
+    "market": "india",
+    "category": "Conviction",
+    "conviction": true,
+    "direction": "short",
+    "categories": [
+      {
+        "name": "Composite",
+        "weight": 16.666666666666668,
+        "definition": "Composite",
+        "holdings": [
+          {
+            "symbol": "SWIGGY",
+            "sourceTicker": "SWIGGY IN",
+            "name": "SWIGGY LIMITED",
+            "sector": "Consumer Discretionary",
+            "instrumentKey": "NSE_EQ|INE00H001014",
+            "score": -3,
+            "sourceCell": "Composite!M62",
+            "weight": 7.142857142857143
+          },
+          {
+            "symbol": "ADANIPOWER",
+            "sourceTicker": "ADANI IN",
+            "name": "ADANI POWER LTD",
+            "sector": "Utilities",
+            "instrumentKey": "NSE_EQ|INE814H01029",
+            "score": -1.5081821511114741,
+            "sourceCell": "Composite!M70",
+            "weight": 7.142857142857143
+          },
+          {
+            "symbol": "JIOFIN",
+            "sourceTicker": "JIOFIN IN",
+            "name": "JIO FIN SERVICES LTD",
+            "sector": "Financials",
+            "instrumentKey": "NSE_EQ|INE758E01017",
+            "score": -1.5831020681640855,
+            "sourceCell": "Composite!M76",
+            "weight": 7.142857142857143
+          },
+          {
+            "symbol": "POLICYBZR",
+            "sourceTicker": "POLICYBZ IN",
+            "name": "PB FINTECH LIMITED",
+            "sector": "Financials",
+            "instrumentKey": "NSE_EQ|INE417T01026",
+            "score": -2.5996504619810077,
+            "sourceCell": "Composite!M77",
+            "weight": 7.142857142857143
+          },
+          {
+            "symbol": "WAAREEENER",
+            "sourceTicker": "WAAREEEN IN",
+            "name": "WAAREE ENERGIES LIMITED",
+            "sector": "Information Technology",
+            "instrumentKey": "NSE_EQ|INE377N01017",
+            "score": -1.4693638502829358,
+            "sourceCell": "Composite!M85",
+            "weight": 7.142857142857143
+          },
+          {
+            "symbol": "ENRIN",
+            "sourceTicker": "ENRIN IN",
+            "name": "SIEMENS ENERGY INDIA LTD",
+            "sector": "Industrials",
+            "instrumentKey": "NSE_EQ|INE1NPP01017",
+            "score": -1.5710086823932592,
+            "sourceCell": "Composite!M86",
+            "weight": 7.142857142857143
+          },
+          {
+            "symbol": "GMRAIRPORT",
+            "sourceTicker": "GMRAIRPO IN",
+            "name": "GMR AIRPORTS LIMITED",
+            "sector": "Industrials",
+            "instrumentKey": "NSE_EQ|INE776C01039",
+            "score": -1.432352692220782,
+            "sourceCell": "Composite!M88",
+            "weight": 7.142857142857143
+          },
+          {
+            "symbol": "VMM",
+            "sourceTicker": "VMM IN",
+            "name": "VISHAL MEGA MART LIMITED",
+            "sector": "Consumer Discretionary",
+            "instrumentKey": "NSE_EQ|INE01EA01019",
+            "score": -1.2295488819511138,
+            "sourceCell": "Composite!M91",
+            "weight": 7.142857142857143
+          },
+          {
+            "symbol": "JSWENERGY",
+            "sourceTicker": "JSW IN",
+            "name": "JSW ENERGY LIMITED",
+            "sector": "Utilities",
+            "instrumentKey": "NSE_EQ|INE121E01018",
+            "score": -1.223737284267349,
+            "sourceCell": "Composite!M93",
+            "weight": 7.142857142857143
+          },
+          {
+            "symbol": "PRESTIGE",
+            "sourceTicker": "PEPL IN",
+            "name": "PRESTIGE ESTATE LTD",
+            "sector": "Real Estate",
+            "instrumentKey": "NSE_EQ|INE811K01011",
+            "score": -1.4767081628731027,
+            "sourceCell": "Composite!M96",
+            "weight": 7.142857142857143
+          },
+          {
+            "symbol": "VOLTAS",
+            "sourceTicker": "VOLT IN",
+            "name": "VOLTAS LTD",
+            "sector": "Industrials",
+            "instrumentKey": "NSE_EQ|INE226A01021",
+            "score": -1.7906211817398106,
+            "sourceCell": "Composite!M97",
+            "weight": 7.142857142857143
+          },
+          {
+            "symbol": "TIINDIA",
+            "sourceTicker": "TIINDIA IN",
+            "name": "TUBE INVEST OF INDIA LTD",
+            "sector": "Consumer Discretionary",
+            "instrumentKey": "NSE_EQ|INE974X01010",
+            "score": -1.461119885014878,
+            "sourceCell": "Composite!M98",
+            "weight": 7.142857142857143
+          },
+          {
+            "symbol": "AMBUJACEM",
+            "sourceTicker": "ACEM IN",
+            "name": "AMBUJA CEMENTS LTD",
+            "sector": "Materials",
+            "instrumentKey": "NSE_EQ|INE079A01024",
+            "score": -2.8610277490482305,
+            "sourceCell": "Composite!M99",
+            "weight": 7.142857142857143
+          },
+          {
+            "symbol": "PIIND",
+            "sourceTicker": "PI IN",
+            "name": "PI INDUSTRIES LTD",
+            "sector": "Materials",
+            "instrumentKey": "NSE_EQ|INE603J01030",
+            "score": -1.7757685973575346,
+            "sourceCell": "Composite!M102",
+            "weight": 7.142857142857143
+          }
+        ]
+      },
+      {
+        "name": "Value",
+        "weight": 16.666666666666668,
+        "definition": "Fwd Earnings Yield, Sales Yield, B/P",
+        "holdings": [
+          {
+            "symbol": "BSE",
+            "sourceTicker": "BSE IN",
+            "name": "BSE LIMITED",
+            "sector": "Financials",
+            "instrumentKey": "NSE_EQ|INE118H01025",
+            "score": -1.1443611591434477,
+            "sourceCell": "Value!M58",
+            "weight": 14.285714285714286
+          },
+          {
+            "symbol": "PAYTM",
+            "sourceTicker": "PAYTM IN",
+            "name": "ONE 97 COMMUNICATIONS LTD",
+            "sector": "Financials",
+            "instrumentKey": "NSE_EQ|INE982J01020",
+            "score": -1.343224590753614,
+            "sourceCell": "Value!M73",
+            "weight": 14.285714285714286
+          },
+          {
+            "symbol": "JIOFIN",
+            "sourceTicker": "JIOFIN IN",
+            "name": "JIO FIN SERVICES LTD",
+            "sector": "Financials",
+            "instrumentKey": "NSE_EQ|INE758E01017",
+            "score": -1.3796562269106833,
+            "sourceCell": "Value!M86",
+            "weight": 14.285714285714286
+          },
+          {
+            "symbol": "POLICYBZR",
+            "sourceTicker": "POLICYBZ IN",
+            "name": "PB FINTECH LIMITED",
+            "sector": "Financials",
+            "instrumentKey": "NSE_EQ|INE417T01026",
+            "score": -1.0681068111820335,
+            "sourceCell": "Value!M87",
+            "weight": 14.285714285714286
+          },
+          {
+            "symbol": "SOLARINDS",
+            "sourceTicker": "SOIL IN",
+            "name": "SOLAR INDUSTRIES (I) LTD",
+            "sector": "Materials",
+            "instrumentKey": "NSE_EQ|INE343H01029",
+            "score": -1.1168525706459964,
+            "sourceCell": "Value!M89",
+            "weight": 14.285714285714286
+          },
+          {
+            "symbol": "NYKAA",
+            "sourceTicker": "NYKAA IN",
+            "name": "FSN E COMMERCE VENTURES",
+            "sector": "Consumer Discretionary",
+            "instrumentKey": "NSE_EQ|INE388Y01029",
+            "score": -1.1242743934221175,
+            "sourceCell": "Value!M96",
+            "weight": 14.285714285714286
+          },
+          {
+            "symbol": "MCX",
+            "sourceTicker": "MCX IB",
+            "name": "MULTI COMMODITY EXCHANGE",
+            "sector": "Financials",
+            "instrumentKey": "NSE_EQ|INE745G01043",
+            "score": -1.256126274096826,
+            "sourceCell": "Value!M103",
+            "weight": 14.285714285714286
+          }
+        ]
+      },
+      {
+        "name": "Growth",
+        "weight": 16.666666666666668,
+        "definition": "EPS Growth, Sales Growth, Forecast Certainty",
+        "holdings": [
+          {
+            "symbol": "INFY",
+            "sourceTicker": "INFO IN",
+            "name": "INFOSYS LIMITED",
+            "sector": "Information Technology",
+            "instrumentKey": "NSE_EQ|INE009A01021",
+            "score": -0.956794001174847,
+            "sourceCell": "Growth!M16",
+            "weight": 5.882352941176471
+          },
+          {
+            "symbol": "ADANIENT",
+            "sourceTicker": "ADE IN",
+            "name": "ADANI ENTERPRISES LIMITED",
+            "sector": "Industrials",
+            "instrumentKey": "NSE_EQ|INE423A01024",
+            "score": -1.3243376297744804,
+            "sourceCell": "Growth!M37",
+            "weight": 5.882352941176471
+          },
+          {
+            "symbol": "ITC",
+            "sourceTicker": "ITC IN",
+            "name": "ITC LTD",
+            "sector": "Consumer Staples",
+            "instrumentKey": "NSE_EQ|INE154A01025",
+            "score": -0.9281829734348656,
+            "sourceCell": "Growth!M40",
+            "weight": 5.882352941176471
+          },
+          {
+            "symbol": "COALINDIA",
+            "sourceTicker": "COAL IN",
+            "name": "COAL INDIA LTD",
+            "sector": "Energy",
+            "instrumentKey": "NSE_EQ|INE522F01014",
+            "score": -1.4974668399992266,
+            "sourceCell": "Growth!M42",
+            "weight": 5.882352941176471
+          },
+          {
+            "symbol": "HINDUNILVR",
+            "sourceTicker": "HUVR IN",
+            "name": "HINDUSTAN UNILEVER LTD.",
+            "sector": "Consumer Staples",
+            "instrumentKey": "NSE_EQ|INE030A01027",
+            "score": -1.3266745973756302,
+            "sourceCell": "Growth!M46",
+            "weight": 5.882352941176471
+          },
+          {
+            "symbol": "VEDL",
+            "sourceTicker": "VEDL IN",
+            "name": "VEDANTA LIMITED",
+            "sector": "Materials",
+            "instrumentKey": "NSE_EQ|INE205A01025",
+            "score": -1.1138180881906345,
+            "sourceCell": "Growth!M47",
+            "weight": 5.882352941176471
+          },
+          {
+            "symbol": "NTPC",
+            "sourceTicker": "NTPC IN",
+            "name": "NTPC LTD",
+            "sector": "Utilities",
+            "instrumentKey": "NSE_EQ|INE733E01010",
+            "score": -0.9619812102285297,
+            "sourceCell": "Growth!M48",
+            "weight": 5.882352941176471
+          },
+          {
+            "symbol": "ONGC",
+            "sourceTicker": "ONGC IN",
+            "name": "OIL AND NATURAL GAS CORP.",
+            "sector": "Energy",
+            "instrumentKey": "NSE_EQ|INE213A01029",
+            "score": -2.171396353396467,
+            "sourceCell": "Growth!M49",
+            "weight": 5.882352941176471
+          },
+          {
+            "symbol": "DRREDDY",
+            "sourceTicker": "DRRD IN",
+            "name": "DR. REDDY S LABORATORIES",
+            "sector": "Health Care",
+            "instrumentKey": "NSE_EQ|INE089A01031",
+            "score": -0.9304698229663677,
+            "sourceCell": "Growth!M52",
+            "weight": 5.882352941176471
+          },
+          {
+            "symbol": "POWERGRID",
+            "sourceTicker": "PWGR IN",
+            "name": "POWER GRID CORP. LTD.",
+            "sector": "Utilities",
+            "instrumentKey": "NSE_EQ|INE752E01010",
+            "score": -1.227508665453056,
+            "sourceCell": "Growth!M53",
+            "weight": 5.882352941176471
+          },
+          {
+            "symbol": "WIPRO",
+            "sourceTicker": "WPRO IN",
+            "name": "WIPRO LTD",
+            "sector": "Information Technology",
+            "instrumentKey": "NSE_EQ|INE075A01022",
+            "score": -1.1665917889110111,
+            "sourceCell": "Growth!M55",
+            "weight": 5.882352941176471
+          },
+          {
+            "symbol": "BANKBARODA",
+            "sourceTicker": "BOB IN",
+            "name": "BANK OF BARODA",
+            "sector": "Financials",
+            "instrumentKey": "NSE_EQ|INE028A01039",
+            "score": -0.9914690953932737,
+            "sourceCell": "Growth!M56",
+            "weight": 5.882352941176471
+          },
+          {
+            "symbol": "HINDPETRO",
+            "sourceTicker": "HPCL IN",
+            "name": "HINDUSTAN PETROLEUM CORP",
+            "sector": "Energy",
+            "instrumentKey": "NSE_EQ|INE094A01015",
+            "score": -1.8254053993497468,
+            "sourceCell": "Growth!M57",
+            "weight": 5.882352941176471
+          },
+          {
+            "symbol": "JSWSTEEL",
+            "sourceTicker": "JSTL IN",
+            "name": "JSW STEEL LIMITED",
+            "sector": "Materials",
+            "instrumentKey": "NSE_EQ|INE019A01038",
+            "score": -0.9462719586688498,
+            "sourceCell": "Growth!M58",
+            "weight": 5.882352941176471
+          },
+          {
+            "symbol": "BPCL",
+            "sourceTicker": "BPCL IN",
+            "name": "BHARAT PETROLEUM CORP  LT",
+            "sector": "Energy",
+            "instrumentKey": "NSE_EQ|INE029A01011",
+            "score": -0.9932753020569637,
+            "sourceCell": "Growth!M61",
+            "weight": 5.882352941176471
+          },
+          {
+            "symbol": "IOC",
+            "sourceTicker": "IOCL IN",
+            "name": "INDIAN OIL CORP LTD",
+            "sector": "Energy",
+            "instrumentKey": "NSE_EQ|INE242A01010",
+            "score": -1.520868183726856,
+            "sourceCell": "Growth!M63",
+            "weight": 5.882352941176471
+          },
+          {
+            "symbol": "AMBUJACEM",
+            "sourceTicker": "ACEM IN",
+            "name": "AMBUJA CEMENTS LTD",
+            "sector": "Materials",
+            "instrumentKey": "NSE_EQ|INE079A01024",
+            "score": -2.0196709929578995,
+            "sourceCell": "Growth!M70",
+            "weight": 5.882352941176471
+          }
+        ]
+      },
+      {
+        "name": "Quality",
+        "weight": 16.666666666666668,
+        "definition": "ROE, Forecast Certainty",
+        "holdings": [
+          {
+            "symbol": "ETERNAL",
+            "sourceTicker": "ETERNAL IN",
+            "name": "ETERNAL LIMITED",
+            "sector": "Consumer Discretionary",
+            "instrumentKey": "NSE_EQ|INE758T01015",
+            "score": -1.2103757096687797,
+            "sourceCell": "Quality!M29",
+            "weight": 9.090909090909092
+          },
+          {
+            "symbol": "PAYTM",
+            "sourceTicker": "PAYTM IN",
+            "name": "ONE 97 COMMUNICATIONS LTD",
+            "sector": "Financials",
+            "instrumentKey": "NSE_EQ|INE982J01020",
+            "score": -0.8536870743826948,
+            "sourceCell": "Quality!M49",
+            "weight": 9.090909090909092
+          },
+          {
+            "symbol": "SWIGGY",
+            "sourceTicker": "SWIGGY IN",
+            "name": "SWIGGY LIMITED",
+            "sector": "Consumer Discretionary",
+            "instrumentKey": "NSE_EQ|INE00H001014",
+            "score": -1.6131105384950166,
+            "sourceCell": "Quality!M53",
+            "weight": 9.090909090909092
+          },
+          {
+            "symbol": "INDIGO",
+            "sourceTicker": "INDIGO IN",
+            "name": "INTERGLOBE AVIATION LTD",
+            "sector": "Industrials",
+            "instrumentKey": "NSE_EQ|INE646L01027",
+            "score": -2.081605437473154,
+            "sourceCell": "Quality!M69",
+            "weight": 9.090909090909092
+          },
+          {
+            "symbol": "JIOFIN",
+            "sourceTicker": "JIOFIN IN",
+            "name": "JIO FIN SERVICES LTD",
+            "sector": "Financials",
+            "instrumentKey": "NSE_EQ|INE758E01017",
+            "score": -0.7294839392348804,
+            "sourceCell": "Quality!M70",
+            "weight": 9.090909090909092
+          },
+          {
+            "symbol": "GRASIM",
+            "sourceTicker": "GRASIM IN",
+            "name": "GRASIM INDUSTRIES LTD",
+            "sector": "Materials",
+            "instrumentKey": "NSE_EQ|INE047A01021",
+            "score": -1.0869850185648917,
+            "sourceCell": "Quality!M76",
+            "weight": 9.090909090909092
+          },
+          {
+            "symbol": "GMRAIRPORT",
+            "sourceTicker": "GMRAIRPO IN",
+            "name": "GMR AIRPORTS LIMITED",
+            "sector": "Industrials",
+            "instrumentKey": "NSE_EQ|INE776C01039",
+            "score": -1.0816054374731539,
+            "sourceCell": "Quality!M87",
+            "weight": 9.090909090909092
+          },
+          {
+            "symbol": "JSWENERGY",
+            "sourceTicker": "JSW IN",
+            "name": "JSW ENERGY LIMITED",
+            "sector": "Utilities",
+            "instrumentKey": "NSE_EQ|INE121E01018",
+            "score": -0.7434076820068047,
+            "sourceCell": "Quality!M92",
+            "weight": 9.090909090909092
+          },
+          {
+            "symbol": "PRESTIGE",
+            "sourceTicker": "PEPL IN",
+            "name": "PRESTIGE ESTATE LTD",
+            "sector": "Real Estate",
+            "instrumentKey": "NSE_EQ|INE811K01011",
+            "score": -0.9964260487311765,
+            "sourceCell": "Quality!M96",
+            "weight": 9.090909090909092
+          },
+          {
+            "symbol": "AMBUJACEM",
+            "sourceTicker": "ACEM IN",
+            "name": "AMBUJA CEMENTS LTD",
+            "sector": "Materials",
+            "instrumentKey": "NSE_EQ|INE079A01024",
+            "score": -0.9675183842864521,
+            "sourceCell": "Quality!M97",
+            "weight": 9.090909090909092
+          },
+          {
+            "symbol": "ICICIPRULI",
+            "sourceTicker": "IPRU IN",
+            "name": "ICICI PRU LIFE INS CO LTD",
+            "sector": "Financials",
+            "instrumentKey": "NSE_EQ|INE726G01019",
+            "score": -0.8211305185196116,
+            "sourceCell": "Quality!M98",
+            "weight": 9.090909090909092
+          }
+        ]
+      },
+      {
+        "name": "Momentum",
+        "weight": 16.666666666666668,
+        "definition": "6M, 12M Price Mom 3M EPS Revision",
+        "holdings": [
+          {
+            "symbol": "INFY",
+            "sourceTicker": "INFO IN",
+            "name": "INFOSYS LIMITED",
+            "sector": "Information Technology",
+            "instrumentKey": "NSE_EQ|INE009A01021",
+            "score": -1.3286054312961937,
+            "sourceCell": "Momentum!M17",
+            "weight": 4.545454545454546
+          },
+          {
+            "symbol": "TCS",
+            "sourceTicker": "TCS IN",
+            "name": "TATA CONSULTANCY SERV LT",
+            "sector": "Information Technology",
+            "instrumentKey": "NSE_EQ|INE467B01029",
+            "score": -1.1403592308756365,
+            "sourceCell": "Momentum!M27",
+            "weight": 4.545454545454546
+          },
+          {
+            "symbol": "SWIGGY",
+            "sourceTicker": "SWIGGY IN",
+            "name": "SWIGGY LIMITED",
+            "sector": "Consumer Discretionary",
+            "instrumentKey": "NSE_EQ|INE00H001014",
+            "score": -3,
+            "sourceCell": "Momentum!M32",
+            "weight": 4.545454545454546
+          },
+          {
+            "symbol": "MARUTI",
+            "sourceTicker": "MSIL IN",
+            "name": "MARUTI SUZUKI INDIA LTD.",
+            "sector": "Consumer Discretionary",
+            "instrumentKey": "NSE_EQ|INE585B01010",
+            "score": -1.0181113169761185,
+            "sourceCell": "Momentum!M36",
+            "weight": 4.545454545454546
+          },
+          {
+            "symbol": "ITC",
+            "sourceTicker": "ITC IN",
+            "name": "ITC LTD",
+            "sector": "Consumer Staples",
+            "instrumentKey": "NSE_EQ|INE154A01025",
+            "score": -1.3532344257645172,
+            "sourceCell": "Momentum!M55",
+            "weight": 4.545454545454546
+          },
+          {
+            "symbol": "HINDUNILVR",
+            "sourceTicker": "HUVR IN",
+            "name": "HINDUSTAN UNILEVER LTD.",
+            "sector": "Consumer Staples",
+            "instrumentKey": "NSE_EQ|INE030A01027",
+            "score": -0.9304966576923681,
+            "sourceCell": "Momentum!M61",
+            "weight": 4.545454545454546
+          },
+          {
+            "symbol": "VEDL",
+            "sourceTicker": "VEDL IN",
+            "name": "VEDANTA LIMITED",
+            "sector": "Materials",
+            "instrumentKey": "NSE_EQ|INE205A01025",
+            "score": -1.3942287501962431,
+            "sourceCell": "Momentum!M62",
+            "weight": 4.545454545454546
+          },
+          {
+            "symbol": "MUTHOOTFIN",
+            "sourceTicker": "MUTH IN",
+            "name": "MUTHOOT FINANCE LIMITED",
+            "sector": "Financials",
+            "instrumentKey": "NSE_EQ|INE414G01012",
+            "score": -0.9663969237726753,
+            "sourceCell": "Momentum!M63",
+            "weight": 4.545454545454546
+          },
+          {
+            "symbol": "TMPV",
+            "sourceTicker": "TMPV IN",
+            "name": "TATA MOTORS PASS VEH LTD",
+            "sector": "Consumer Discretionary",
+            "instrumentKey": "NSE_EQ|INE155A01022",
+            "score": -1.2038788383195718,
+            "sourceCell": "Momentum!M64",
+            "weight": 4.545454545454546
+          },
+          {
+            "symbol": "SUZLON",
+            "sourceTicker": "SUEL IN",
+            "name": "SUZLON ENERGY LIMITED",
+            "sector": "Industrials",
+            "instrumentKey": "NSE_EQ|INE040H01021",
+            "score": -1.2423036305629471,
+            "sourceCell": "Momentum!M67",
+            "weight": 4.545454545454546
+          },
+          {
+            "symbol": "DRREDDY",
+            "sourceTicker": "DRRD IN",
+            "name": "DR. REDDY S LABORATORIES",
+            "sector": "Health Care",
+            "instrumentKey": "NSE_EQ|INE089A01031",
+            "score": -1.1576464299619442,
+            "sourceCell": "Momentum!M73",
+            "weight": 4.545454545454546
+          },
+          {
+            "symbol": "WIPRO",
+            "sourceTicker": "WPRO IN",
+            "name": "WIPRO LTD",
+            "sector": "Information Technology",
+            "instrumentKey": "NSE_EQ|INE075A01022",
+            "score": -1.306149483308605,
+            "sourceCell": "Momentum!M75",
+            "weight": 4.545454545454546
+          },
+          {
+            "symbol": "BANKBARODA",
+            "sourceTicker": "BOB IN",
+            "name": "BANK OF BARODA",
+            "sector": "Financials",
+            "instrumentKey": "NSE_EQ|INE028A01039",
+            "score": -1.0095952036351543,
+            "sourceCell": "Momentum!M76",
+            "weight": 4.545454545454546
+          },
+          {
+            "symbol": "WAAREEENER",
+            "sourceTicker": "WAAREEEN IN",
+            "name": "WAAREE ENERGIES LIMITED",
+            "sector": "Information Technology",
+            "instrumentKey": "NSE_EQ|INE377N01017",
+            "score": -1.507799330129703,
+            "sourceCell": "Momentum!M84",
+            "weight": 4.545454545454546
+          },
+          {
+            "symbol": "ICICIGI",
+            "sourceTicker": "ICICIGI IN",
+            "name": "ICICI LOMBARD GIC LIMITED",
+            "sector": "Financials",
+            "instrumentKey": "NSE_EQ|INE765G01017",
+            "score": -1.702343798571368,
+            "sourceCell": "Momentum!M85",
+            "weight": 4.545454545454546
+          },
+          {
+            "symbol": "GODREJCP",
+            "sourceTicker": "GCPL IN",
+            "name": "GODREJ CONSUMER PRODUCTS",
+            "sector": "Consumer Staples",
+            "instrumentKey": "NSE_EQ|INE102D01028",
+            "score": -1.1576271001450547,
+            "sourceCell": "Momentum!M88",
+            "weight": 4.545454545454546
+          },
+          {
+            "symbol": "HAVELLS",
+            "sourceTicker": "HAVL IN",
+            "name": "HAVELLS INDIA LIMITED",
+            "sector": "Industrials",
+            "instrumentKey": "NSE_EQ|INE176B01034",
+            "score": -1.3660989441138742,
+            "sourceCell": "Momentum!M91",
+            "weight": 4.545454545454546
+          },
+          {
+            "symbol": "VOLTAS",
+            "sourceTicker": "VOLT IN",
+            "name": "VOLTAS LTD",
+            "sector": "Industrials",
+            "instrumentKey": "NSE_EQ|INE226A01021",
+            "score": -1.2147502186198411,
+            "sourceCell": "Momentum!M94",
+            "weight": 4.545454545454546
+          },
+          {
+            "symbol": "AMBUJACEM",
+            "sourceTicker": "ACEM IN",
+            "name": "AMBUJA CEMENTS LTD",
+            "sector": "Materials",
+            "instrumentKey": "NSE_EQ|INE079A01024",
+            "score": -2.6747790086092085,
+            "sourceCell": "Momentum!M96",
+            "weight": 4.545454545454546
+          },
+          {
+            "symbol": "DABUR",
+            "sourceTicker": "DABUR IN",
+            "name": "DABUR INDIA LTD",
+            "sector": "Consumer Staples",
+            "instrumentKey": "NSE_EQ|INE016A01026",
+            "score": -0.9344912131005275,
+            "sourceCell": "Momentum!M97",
+            "weight": 4.545454545454546
+          },
+          {
+            "symbol": "PIIND",
+            "sourceTicker": "PI IN",
+            "name": "PI INDUSTRIES LTD",
+            "sector": "Materials",
+            "instrumentKey": "NSE_EQ|INE603J01030",
+            "score": -1.6552973060440952,
+            "sourceCell": "Momentum!M98",
+            "weight": 4.545454545454546
+          },
+          {
+            "symbol": "SHREECEM",
+            "sourceTicker": "SRCM IN",
+            "name": "SHREE CEMENT LIMITED",
+            "sector": "Materials",
+            "instrumentKey": "NSE_EQ|INE070A01015",
+            "score": -1.0516609295915282,
+            "sourceCell": "Momentum!M100",
+            "weight": 4.545454545454546
+          }
+        ]
+      },
+      {
+        "name": "Low Vol",
+        "weight": 16.666666666666668,
+        "definition": "Low 240D Vol",
+        "holdings": [
+          {
+            "symbol": "BSE",
+            "sourceTicker": "BSE IN",
+            "name": "BSE LIMITED",
+            "sector": "Financials",
+            "instrumentKey": "NSE_EQ|INE118H01025",
+            "score": -1.6037225669565962,
+            "sourceCell": "Low Vol!M67",
+            "weight": 6.25
+          },
+          {
+            "symbol": "PAYTM",
+            "sourceTicker": "PAYTM IN",
+            "name": "ONE 97 COMMUNICATIONS LTD",
+            "sector": "Financials",
+            "instrumentKey": "NSE_EQ|INE982J01020",
+            "score": -1.693948290195702,
+            "sourceCell": "Low Vol!M75",
+            "weight": 6.25
+          },
+          {
+            "symbol": "DIXON",
+            "sourceTicker": "DIXON IN",
+            "name": "DIXON TECHNO (INDIA) LTD",
+            "sector": "Consumer Discretionary",
+            "instrumentKey": "NSE_EQ|INE935N01020",
+            "score": -1.5925554639834223,
+            "sourceCell": "Low Vol!M77",
+            "weight": 6.25
+          },
+          {
+            "symbol": "SWIGGY",
+            "sourceTicker": "SWIGGY IN",
+            "name": "SWIGGY LIMITED",
+            "sector": "Consumer Discretionary",
+            "instrumentKey": "NSE_EQ|INE00H001014",
+            "score": -1.37337617409281,
+            "sourceCell": "Low Vol!M79",
+            "weight": 6.25
+          },
+          {
+            "symbol": "IDEA",
+            "sourceTicker": "IDEA IN",
+            "name": "VODAFONE IDEA LIMITED",
+            "sector": "Communication Services",
+            "instrumentKey": "NSE_EQ|INE669E01016",
+            "score": -2.8648409760724944,
+            "sourceCell": "Low Vol!M81",
+            "weight": 6.25
+          },
+          {
+            "symbol": "ADANIPOWER",
+            "sourceTicker": "ADANI IN",
+            "name": "ADANI POWER LTD",
+            "sector": "Utilities",
+            "instrumentKey": "NSE_EQ|INE814H01029",
+            "score": -2.2527681276398477,
+            "sourceCell": "Low Vol!M84",
+            "weight": 6.25
+          },
+          {
+            "symbol": "GVT&D",
+            "sourceTicker": "GVTD IN",
+            "name": "GE VERNOVA T&D INDIA LTD",
+            "sector": "Industrials",
+            "instrumentKey": "NSE_EQ|INE200A01026",
+            "score": -2.592862030106023,
+            "sourceCell": "Low Vol!M85",
+            "weight": 6.25
+          },
+          {
+            "symbol": "POWERINDIA",
+            "sourceTicker": "POWERIND IN",
+            "name": "HITACHI ENERGY INDIA LTD",
+            "sector": "Industrials",
+            "instrumentKey": "NSE_EQ|INE07Y701011",
+            "score": -2.5325253486074986,
+            "sourceCell": "Low Vol!M88",
+            "weight": 6.25
+          },
+          {
+            "symbol": "POLICYBZR",
+            "sourceTicker": "POLICYBZ IN",
+            "name": "PB FINTECH LIMITED",
+            "sector": "Financials",
+            "instrumentKey": "NSE_EQ|INE417T01026",
+            "score": -3,
+            "sourceCell": "Low Vol!M91",
+            "weight": 6.25
+          },
+          {
+            "symbol": "TMCV",
+            "sourceTicker": "TMCV IN",
+            "name": "TATA MOTORS LIMITED",
+            "sector": "Industrials",
+            "instrumentKey": "NSE_EQ|INE1TAE01010",
+            "score": -1.6182331624105017,
+            "sourceCell": "Low Vol!M92",
+            "weight": 6.25
+          },
+          {
+            "symbol": "MUTHOOTFIN",
+            "sourceTicker": "MUTH IN",
+            "name": "MUTHOOT FINANCE LIMITED",
+            "sector": "Financials",
+            "instrumentKey": "NSE_EQ|INE414G01012",
+            "score": -1.417048824302381,
+            "sourceCell": "Low Vol!M93",
+            "weight": 6.25
+          },
+          {
+            "symbol": "LODHA",
+            "sourceTicker": "LODHA IN",
+            "name": "LODHA DEVELOPERS LIMITED",
+            "sector": "Real Estate",
+            "instrumentKey": "NSE_EQ|INE670K01029",
+            "score": -1.4908096685891583,
+            "sourceCell": "Low Vol!M94",
+            "weight": 6.25
+          },
+          {
+            "symbol": "NATIONALUM",
+            "sourceTicker": "NACL IN",
+            "name": "NATIONAL ALUMINIUM CO LTD",
+            "sector": "Materials",
+            "instrumentKey": "NSE_EQ|INE139A01034",
+            "score": -2.2113412033725397,
+            "sourceCell": "Low Vol!M96",
+            "weight": 6.25
+          },
+          {
+            "symbol": "WAAREEENER",
+            "sourceTicker": "WAAREEEN IN",
+            "name": "WAAREE ENERGIES LIMITED",
+            "sector": "Information Technology",
+            "instrumentKey": "NSE_EQ|INE377N01017",
+            "score": -1.4902980251877496,
+            "sourceCell": "Low Vol!M98",
+            "weight": 6.25
+          },
+          {
+            "symbol": "ENRIN",
+            "sourceTicker": "ENRIN IN",
+            "name": "SIEMENS ENERGY INDIA LTD",
+            "sector": "Industrials",
+            "instrumentKey": "NSE_EQ|INE1NPP01017",
+            "score": -1.5385009862743597,
+            "sourceCell": "Low Vol!M99",
+            "weight": 6.25
+          },
+          {
+            "symbol": "MCX",
+            "sourceTicker": "MCX IB",
+            "name": "MULTI COMMODITY EXCHANGE",
+            "sector": "Financials",
+            "instrumentKey": "NSE_EQ|INE745G01043",
+            "score": -1.6575147464662026,
+            "sourceCell": "Low Vol!M104",
+            "weight": 6.25
+          }
+        ]
+      }
+    ],
+    "holdings": [
+      {
+        "symbol": "SWIGGY",
+        "sourceTicker": "SWIGGY IN",
+        "name": "SWIGGY LIMITED",
+        "sector": "Consumer Discretionary",
+        "instrumentKey": "NSE_EQ|INE00H001014",
+        "weight": 4.50487012987013,
+        "factors": [
+          "Composite",
+          "Quality",
+          "Momentum",
+          "Low Vol"
+        ]
+      },
+      {
+        "symbol": "ADANIPOWER",
+        "sourceTicker": "ADANI IN",
+        "name": "ADANI POWER LTD",
+        "sector": "Utilities",
+        "instrumentKey": "NSE_EQ|INE814H01029",
+        "weight": 2.232142857142857,
+        "factors": [
+          "Composite",
+          "Low Vol"
+        ]
+      },
+      {
+        "symbol": "JIOFIN",
+        "sourceTicker": "JIOFIN IN",
+        "name": "JIO FIN SERVICES LTD",
+        "sector": "Financials",
+        "instrumentKey": "NSE_EQ|INE758E01017",
+        "weight": 5.086580086580087,
+        "factors": [
+          "Composite",
+          "Value",
+          "Quality"
+        ]
+      },
+      {
+        "symbol": "POLICYBZR",
+        "sourceTicker": "POLICYBZ IN",
+        "name": "PB FINTECH LIMITED",
+        "sector": "Financials",
+        "instrumentKey": "NSE_EQ|INE417T01026",
+        "weight": 4.613095238095238,
+        "factors": [
+          "Composite",
+          "Value",
+          "Low Vol"
+        ]
+      },
+      {
+        "symbol": "WAAREEENER",
+        "sourceTicker": "WAAREEEN IN",
+        "name": "WAAREE ENERGIES LIMITED",
+        "sector": "Information Technology",
+        "instrumentKey": "NSE_EQ|INE377N01017",
+        "weight": 2.9897186147186146,
+        "factors": [
+          "Composite",
+          "Momentum",
+          "Low Vol"
+        ]
+      },
+      {
+        "symbol": "ENRIN",
+        "sourceTicker": "ENRIN IN",
+        "name": "SIEMENS ENERGY INDIA LTD",
+        "sector": "Industrials",
+        "instrumentKey": "NSE_EQ|INE1NPP01017",
+        "weight": 2.232142857142857,
+        "factors": [
+          "Composite",
+          "Low Vol"
+        ]
+      },
+      {
+        "symbol": "GMRAIRPORT",
+        "sourceTicker": "GMRAIRPO IN",
+        "name": "GMR AIRPORTS LIMITED",
+        "sector": "Industrials",
+        "instrumentKey": "NSE_EQ|INE776C01039",
+        "weight": 2.705627705627706,
+        "factors": [
+          "Composite",
+          "Quality"
+        ]
+      },
+      {
+        "symbol": "VMM",
+        "sourceTicker": "VMM IN",
+        "name": "VISHAL MEGA MART LIMITED",
+        "sector": "Consumer Discretionary",
+        "instrumentKey": "NSE_EQ|INE01EA01019",
+        "weight": 1.1904761904761905,
+        "factors": [
+          "Composite"
+        ]
+      },
+      {
+        "symbol": "JSWENERGY",
+        "sourceTicker": "JSW IN",
+        "name": "JSW ENERGY LIMITED",
+        "sector": "Utilities",
+        "instrumentKey": "NSE_EQ|INE121E01018",
+        "weight": 2.705627705627706,
+        "factors": [
+          "Composite",
+          "Quality"
+        ]
+      },
+      {
+        "symbol": "PRESTIGE",
+        "sourceTicker": "PEPL IN",
+        "name": "PRESTIGE ESTATE LTD",
+        "sector": "Real Estate",
+        "instrumentKey": "NSE_EQ|INE811K01011",
+        "weight": 2.705627705627706,
+        "factors": [
+          "Composite",
+          "Quality"
+        ]
+      },
+      {
+        "symbol": "VOLTAS",
+        "sourceTicker": "VOLT IN",
+        "name": "VOLTAS LTD",
+        "sector": "Industrials",
+        "instrumentKey": "NSE_EQ|INE226A01021",
+        "weight": 1.948051948051948,
+        "factors": [
+          "Composite",
+          "Momentum"
+        ]
+      },
+      {
+        "symbol": "TIINDIA",
+        "sourceTicker": "TIINDIA IN",
+        "name": "TUBE INVEST OF INDIA LTD",
+        "sector": "Consumer Discretionary",
+        "instrumentKey": "NSE_EQ|INE974X01010",
+        "weight": 1.1904761904761905,
+        "factors": [
+          "Composite"
+        ]
+      },
+      {
+        "symbol": "AMBUJACEM",
+        "sourceTicker": "ACEM IN",
+        "name": "AMBUJA CEMENTS LTD",
+        "sector": "Materials",
+        "instrumentKey": "NSE_EQ|INE079A01024",
+        "weight": 4.443595620066209,
+        "factors": [
+          "Composite",
+          "Growth",
+          "Quality",
+          "Momentum"
+        ]
+      },
+      {
+        "symbol": "PIIND",
+        "sourceTicker": "PI IN",
+        "name": "PI INDUSTRIES LTD",
+        "sector": "Materials",
+        "instrumentKey": "NSE_EQ|INE603J01030",
+        "weight": 1.948051948051948,
+        "factors": [
+          "Composite",
+          "Momentum"
+        ]
+      },
+      {
+        "symbol": "BSE",
+        "sourceTicker": "BSE IN",
+        "name": "BSE LIMITED",
+        "sector": "Financials",
+        "instrumentKey": "NSE_EQ|INE118H01025",
+        "weight": 3.4226190476190474,
+        "factors": [
+          "Value",
+          "Low Vol"
+        ]
+      },
+      {
+        "symbol": "PAYTM",
+        "sourceTicker": "PAYTM IN",
+        "name": "ONE 97 COMMUNICATIONS LTD",
+        "sector": "Financials",
+        "instrumentKey": "NSE_EQ|INE982J01020",
+        "weight": 4.937770562770563,
+        "factors": [
+          "Value",
+          "Quality",
+          "Low Vol"
+        ]
+      },
+      {
+        "symbol": "SOLARINDS",
+        "sourceTicker": "SOIL IN",
+        "name": "SOLAR INDUSTRIES (I) LTD",
+        "sector": "Materials",
+        "instrumentKey": "NSE_EQ|INE343H01029",
+        "weight": 2.380952380952381,
+        "factors": [
+          "Value"
+        ]
+      },
+      {
+        "symbol": "NYKAA",
+        "sourceTicker": "NYKAA IN",
+        "name": "FSN E COMMERCE VENTURES",
+        "sector": "Consumer Discretionary",
+        "instrumentKey": "NSE_EQ|INE388Y01029",
+        "weight": 2.380952380952381,
+        "factors": [
+          "Value"
+        ]
+      },
+      {
+        "symbol": "MCX",
+        "sourceTicker": "MCX IB",
+        "name": "MULTI COMMODITY EXCHANGE",
+        "sector": "Financials",
+        "instrumentKey": "NSE_EQ|INE745G01043",
+        "weight": 3.4226190476190474,
+        "factors": [
+          "Value",
+          "Low Vol"
+        ]
+      },
+      {
+        "symbol": "INFY",
+        "sourceTicker": "INFO IN",
+        "name": "INFOSYS LIMITED",
+        "sector": "Information Technology",
+        "instrumentKey": "NSE_EQ|INE009A01021",
+        "weight": 1.737967914438503,
+        "factors": [
+          "Growth",
+          "Momentum"
+        ]
+      },
+      {
+        "symbol": "ADANIENT",
+        "sourceTicker": "ADE IN",
+        "name": "ADANI ENTERPRISES LIMITED",
+        "sector": "Industrials",
+        "instrumentKey": "NSE_EQ|INE423A01024",
+        "weight": 0.9803921568627452,
+        "factors": [
+          "Growth"
+        ]
+      },
+      {
+        "symbol": "ITC",
+        "sourceTicker": "ITC IN",
+        "name": "ITC LTD",
+        "sector": "Consumer Staples",
+        "instrumentKey": "NSE_EQ|INE154A01025",
+        "weight": 1.737967914438503,
+        "factors": [
+          "Growth",
+          "Momentum"
+        ]
+      },
+      {
+        "symbol": "COALINDIA",
+        "sourceTicker": "COAL IN",
+        "name": "COAL INDIA LTD",
+        "sector": "Energy",
+        "instrumentKey": "NSE_EQ|INE522F01014",
+        "weight": 0.9803921568627452,
+        "factors": [
+          "Growth"
+        ]
+      },
+      {
+        "symbol": "HINDUNILVR",
+        "sourceTicker": "HUVR IN",
+        "name": "HINDUSTAN UNILEVER LTD.",
+        "sector": "Consumer Staples",
+        "instrumentKey": "NSE_EQ|INE030A01027",
+        "weight": 1.737967914438503,
+        "factors": [
+          "Growth",
+          "Momentum"
+        ]
+      },
+      {
+        "symbol": "VEDL",
+        "sourceTicker": "VEDL IN",
+        "name": "VEDANTA LIMITED",
+        "sector": "Materials",
+        "instrumentKey": "NSE_EQ|INE205A01025",
+        "weight": 1.737967914438503,
+        "factors": [
+          "Growth",
+          "Momentum"
+        ]
+      },
+      {
+        "symbol": "NTPC",
+        "sourceTicker": "NTPC IN",
+        "name": "NTPC LTD",
+        "sector": "Utilities",
+        "instrumentKey": "NSE_EQ|INE733E01010",
+        "weight": 0.9803921568627452,
+        "factors": [
+          "Growth"
+        ]
+      },
+      {
+        "symbol": "ONGC",
+        "sourceTicker": "ONGC IN",
+        "name": "OIL AND NATURAL GAS CORP.",
+        "sector": "Energy",
+        "instrumentKey": "NSE_EQ|INE213A01029",
+        "weight": 0.9803921568627452,
+        "factors": [
+          "Growth"
+        ]
+      },
+      {
+        "symbol": "DRREDDY",
+        "sourceTicker": "DRRD IN",
+        "name": "DR. REDDY S LABORATORIES",
+        "sector": "Health Care",
+        "instrumentKey": "NSE_EQ|INE089A01031",
+        "weight": 1.737967914438503,
+        "factors": [
+          "Growth",
+          "Momentum"
+        ]
+      },
+      {
+        "symbol": "POWERGRID",
+        "sourceTicker": "PWGR IN",
+        "name": "POWER GRID CORP. LTD.",
+        "sector": "Utilities",
+        "instrumentKey": "NSE_EQ|INE752E01010",
+        "weight": 0.9803921568627452,
+        "factors": [
+          "Growth"
+        ]
+      },
+      {
+        "symbol": "WIPRO",
+        "sourceTicker": "WPRO IN",
+        "name": "WIPRO LTD",
+        "sector": "Information Technology",
+        "instrumentKey": "NSE_EQ|INE075A01022",
+        "weight": 1.737967914438503,
+        "factors": [
+          "Growth",
+          "Momentum"
+        ]
+      },
+      {
+        "symbol": "BANKBARODA",
+        "sourceTicker": "BOB IN",
+        "name": "BANK OF BARODA",
+        "sector": "Financials",
+        "instrumentKey": "NSE_EQ|INE028A01039",
+        "weight": 1.737967914438503,
+        "factors": [
+          "Growth",
+          "Momentum"
+        ]
+      },
+      {
+        "symbol": "HINDPETRO",
+        "sourceTicker": "HPCL IN",
+        "name": "HINDUSTAN PETROLEUM CORP",
+        "sector": "Energy",
+        "instrumentKey": "NSE_EQ|INE094A01015",
+        "weight": 0.9803921568627452,
+        "factors": [
+          "Growth"
+        ]
+      },
+      {
+        "symbol": "JSWSTEEL",
+        "sourceTicker": "JSTL IN",
+        "name": "JSW STEEL LIMITED",
+        "sector": "Materials",
+        "instrumentKey": "NSE_EQ|INE019A01038",
+        "weight": 0.9803921568627452,
+        "factors": [
+          "Growth"
+        ]
+      },
+      {
+        "symbol": "BPCL",
+        "sourceTicker": "BPCL IN",
+        "name": "BHARAT PETROLEUM CORP  LT",
+        "sector": "Energy",
+        "instrumentKey": "NSE_EQ|INE029A01011",
+        "weight": 0.9803921568627452,
+        "factors": [
+          "Growth"
+        ]
+      },
+      {
+        "symbol": "IOC",
+        "sourceTicker": "IOCL IN",
+        "name": "INDIAN OIL CORP LTD",
+        "sector": "Energy",
+        "instrumentKey": "NSE_EQ|INE242A01010",
+        "weight": 0.9803921568627452,
+        "factors": [
+          "Growth"
+        ]
+      },
+      {
+        "symbol": "ETERNAL",
+        "sourceTicker": "ETERNAL IN",
+        "name": "ETERNAL LIMITED",
+        "sector": "Consumer Discretionary",
+        "instrumentKey": "NSE_EQ|INE758T01015",
+        "weight": 1.5151515151515154,
+        "factors": [
+          "Quality"
+        ]
+      },
+      {
+        "symbol": "INDIGO",
+        "sourceTicker": "INDIGO IN",
+        "name": "INTERGLOBE AVIATION LTD",
+        "sector": "Industrials",
+        "instrumentKey": "NSE_EQ|INE646L01027",
+        "weight": 1.5151515151515154,
+        "factors": [
+          "Quality"
+        ]
+      },
+      {
+        "symbol": "GRASIM",
+        "sourceTicker": "GRASIM IN",
+        "name": "GRASIM INDUSTRIES LTD",
+        "sector": "Materials",
+        "instrumentKey": "NSE_EQ|INE047A01021",
+        "weight": 1.5151515151515154,
+        "factors": [
+          "Quality"
+        ]
+      },
+      {
+        "symbol": "ICICIPRULI",
+        "sourceTicker": "IPRU IN",
+        "name": "ICICI PRU LIFE INS CO LTD",
+        "sector": "Financials",
+        "instrumentKey": "NSE_EQ|INE726G01019",
+        "weight": 1.5151515151515154,
+        "factors": [
+          "Quality"
+        ]
+      },
+      {
+        "symbol": "TCS",
+        "sourceTicker": "TCS IN",
+        "name": "TATA CONSULTANCY SERV LT",
+        "sector": "Information Technology",
+        "instrumentKey": "NSE_EQ|INE467B01029",
+        "weight": 0.7575757575757577,
+        "factors": [
+          "Momentum"
+        ]
+      },
+      {
+        "symbol": "MARUTI",
+        "sourceTicker": "MSIL IN",
+        "name": "MARUTI SUZUKI INDIA LTD.",
+        "sector": "Consumer Discretionary",
+        "instrumentKey": "NSE_EQ|INE585B01010",
+        "weight": 0.7575757575757577,
+        "factors": [
+          "Momentum"
+        ]
+      },
+      {
+        "symbol": "MUTHOOTFIN",
+        "sourceTicker": "MUTH IN",
+        "name": "MUTHOOT FINANCE LIMITED",
+        "sector": "Financials",
+        "instrumentKey": "NSE_EQ|INE414G01012",
+        "weight": 1.7992424242424243,
+        "factors": [
+          "Momentum",
+          "Low Vol"
+        ]
+      },
+      {
+        "symbol": "TMPV",
+        "sourceTicker": "TMPV IN",
+        "name": "TATA MOTORS PASS VEH LTD",
+        "sector": "Consumer Discretionary",
+        "instrumentKey": "NSE_EQ|INE155A01022",
+        "weight": 0.7575757575757577,
+        "factors": [
+          "Momentum"
+        ]
+      },
+      {
+        "symbol": "SUZLON",
+        "sourceTicker": "SUEL IN",
+        "name": "SUZLON ENERGY LIMITED",
+        "sector": "Industrials",
+        "instrumentKey": "NSE_EQ|INE040H01021",
+        "weight": 0.7575757575757577,
+        "factors": [
+          "Momentum"
+        ]
+      },
+      {
+        "symbol": "ICICIGI",
+        "sourceTicker": "ICICIGI IN",
+        "name": "ICICI LOMBARD GIC LIMITED",
+        "sector": "Financials",
+        "instrumentKey": "NSE_EQ|INE765G01017",
+        "weight": 0.7575757575757577,
+        "factors": [
+          "Momentum"
+        ]
+      },
+      {
+        "symbol": "GODREJCP",
+        "sourceTicker": "GCPL IN",
+        "name": "GODREJ CONSUMER PRODUCTS",
+        "sector": "Consumer Staples",
+        "instrumentKey": "NSE_EQ|INE102D01028",
+        "weight": 0.7575757575757577,
+        "factors": [
+          "Momentum"
+        ]
+      },
+      {
+        "symbol": "HAVELLS",
+        "sourceTicker": "HAVL IN",
+        "name": "HAVELLS INDIA LIMITED",
+        "sector": "Industrials",
+        "instrumentKey": "NSE_EQ|INE176B01034",
+        "weight": 0.7575757575757577,
+        "factors": [
+          "Momentum"
+        ]
+      },
+      {
+        "symbol": "DABUR",
+        "sourceTicker": "DABUR IN",
+        "name": "DABUR INDIA LTD",
+        "sector": "Consumer Staples",
+        "instrumentKey": "NSE_EQ|INE016A01026",
+        "weight": 0.7575757575757577,
+        "factors": [
+          "Momentum"
+        ]
+      },
+      {
+        "symbol": "SHREECEM",
+        "sourceTicker": "SRCM IN",
+        "name": "SHREE CEMENT LIMITED",
+        "sector": "Materials",
+        "instrumentKey": "NSE_EQ|INE070A01015",
+        "weight": 0.7575757575757577,
+        "factors": [
+          "Momentum"
+        ]
+      },
+      {
+        "symbol": "DIXON",
+        "sourceTicker": "DIXON IN",
+        "name": "DIXON TECHNO (INDIA) LTD",
+        "sector": "Consumer Discretionary",
+        "instrumentKey": "NSE_EQ|INE935N01020",
+        "weight": 1.0416666666666667,
+        "factors": [
+          "Low Vol"
+        ]
+      },
+      {
+        "symbol": "IDEA",
+        "sourceTicker": "IDEA IN",
+        "name": "VODAFONE IDEA LIMITED",
+        "sector": "Communication Services",
+        "instrumentKey": "NSE_EQ|INE669E01016",
+        "weight": 1.0416666666666667,
+        "factors": [
+          "Low Vol"
+        ]
+      },
+      {
+        "symbol": "GVT&D",
+        "sourceTicker": "GVTD IN",
+        "name": "GE VERNOVA T&D INDIA LTD",
+        "sector": "Industrials",
+        "instrumentKey": "NSE_EQ|INE200A01026",
+        "weight": 1.0416666666666667,
+        "factors": [
+          "Low Vol"
+        ]
+      },
+      {
+        "symbol": "POWERINDIA",
+        "sourceTicker": "POWERIND IN",
+        "name": "HITACHI ENERGY INDIA LTD",
+        "sector": "Industrials",
+        "instrumentKey": "NSE_EQ|INE07Y701011",
+        "weight": 1.0416666666666667,
+        "factors": [
+          "Low Vol"
+        ]
+      },
+      {
+        "symbol": "TMCV",
+        "sourceTicker": "TMCV IN",
+        "name": "TATA MOTORS LIMITED",
+        "sector": "Industrials",
+        "instrumentKey": "NSE_EQ|INE1TAE01010",
+        "weight": 1.0416666666666667,
+        "factors": [
+          "Low Vol"
+        ]
+      },
+      {
+        "symbol": "LODHA",
+        "sourceTicker": "LODHA IN",
+        "name": "LODHA DEVELOPERS LIMITED",
+        "sector": "Real Estate",
+        "instrumentKey": "NSE_EQ|INE670K01029",
+        "weight": 1.0416666666666667,
+        "factors": [
+          "Low Vol"
+        ]
+      },
+      {
+        "symbol": "NATIONALUM",
+        "sourceTicker": "NACL IN",
+        "name": "NATIONAL ALUMINIUM CO LTD",
+        "sector": "Materials",
+        "instrumentKey": "NSE_EQ|INE139A01034",
+        "weight": 1.0416666666666667,
+        "factors": [
+          "Low Vol"
+        ]
+      }
+    ],
+    "cashWeight": 0,
+    "incomplete": false,
+    "asOf": "2026-10-03",
+    "trackingStart": "2026-10-05",
+    "sourceName": "JPM_Asia_Quantamental_Up_2026-09-24_5462124.xlsm",
+    "sourceAsOf": "2026-09-01",
+    "description": "India short-decile classifications across six factor categories. Equal category allocations, equal stock weights within each category; shared stocks remain in every applicable category.",
+    "weightMethod": "AGI allocation: one-sixth to each category, then equal weights within that category. Shared-stock weights are added for the total. Fixed launch units; no automatic rebalancing. Composite classification comes from JPM, not an average of visible scores.",
+    "researchOnly": true
+  }
+]
