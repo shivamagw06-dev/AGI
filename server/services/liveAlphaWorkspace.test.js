@@ -35,11 +35,12 @@ test('joins stored signals to their research engine without execution fields', a
       ],
       [
         (url) => url.includes('live_alpha_signals') && url.includes('run_id=eq.run-1'),
-        [{ id: 'signal-1', run_id: 'run-1', symbol: 'SBIN', classification: 'positive_research_candidate' }],
+        [{ id: 'signal-1', run_id: 'run-1', symbol: 'SBIN', classification: 'positive_research_candidate', factor_values: { liquidity_verified: true } }],
       ],
     ]);
     const result = await getLiveAlphaWorkspace({ fetchImpl });
     assert.equal(result.signals[0].engine, 'cross_sectional_momentum_v1');
+    assert.equal(result.signals[0].liquidity_verified, true);
     assert.equal(result.execution_enabled, false);
     assert.equal(result.strategy_health.cross_sectional_momentum_v1.stored_signals, 1);
   });
