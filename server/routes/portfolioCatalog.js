@@ -1,3 +1,4 @@
+import { readIndiaTracking } from '../services/indiaPortfolioTracking.js';
 import { Router } from 'express';
 import { requireStrategyLabAdmin } from '../services/strategyLabAdminAuth.js';
 import { createPortfolioStore, validatePortfolio } from '../services/portfolioCatalog.js';
@@ -7,6 +8,10 @@ export default function createPortfolioRouter({ store, admin = requireStrategyLa
   router.get('/', async (_req,res) => {
     try { res.set('Cache-Control', 'no-store').json({ portfolios: await repository().list() }); }
     catch { res.status(503).json({ error: 'Portfolios are temporarily unavailable. Please try again.' }); }
+  });
+  router.get('/india-tracking', async (_req,res) => {
+    try { res.set('Cache-Control','no-store').json(await readIndiaTracking(await repository().list())); }
+    catch { res.status(503).json({error:'India tracking is temporarily unavailable. No returns have been estimated.'}); }
   });
   router.put('/:id', admin, async (req,res) => {
     if (!/^[a-z0-9-]{1,100}$/.test(req.params.id)) return res.status(400).json({error:'Invalid portfolio ID.'});
