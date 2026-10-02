@@ -12,7 +12,7 @@ import { createPortfolioStore } from './portfolioCatalog.js';
 import { resolveUpstoxAccessToken } from '../providers/upstox.js';
 
 export const INDIA_START = '2026-10-05';
-export const INDIA_IDS = ['in-momentum','in-growth','in-value','in-quality','in-all-weather'];
+export const INDIA_IDS = ['in-momentum','in-growth','in-value','in-quality','in-all-weather','in-preferred'];
 export function session(now = new Date()) {
  const p=Object.fromEntries(new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Kolkata',year:'numeric',month:'2-digit',day:'2-digit',weekday:'short',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).formatToParts(now).map(x=>[x.type,x.value]));
  const minutes=+p.hour*60 + +p.minute;
