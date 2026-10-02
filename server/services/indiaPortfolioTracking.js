@@ -1,5 +1,11 @@
 import { createSupabaseAdmin } from '../lib/supabaseAdmin.js';
-import { getNseEquityMaster } from './nseScreenerService.js';
+import { loadUpstoxNseIsinMap } from './companyIsinBackfill.js';
+let instrumentCache=null,instrumentExpiry=0;
+async function indiaMaster(){
+ if(instrumentCache&&Date.now()<instrumentExpiry)return instrumentCache;
+ const map=await loadUpstoxNseIsinMap({instrumentTypes:['EQ','BE']});
+ instrumentCache={items:[...map].map(([symbol,x])=>({symbol,instrumentKey:x.instrument_key}))};instrumentExpiry=Date.now()+86400000;return instrumentCache;
+}
 import { createPortfolioStore } from './portfolioCatalog.js';
 import { resolveUpstoxAccessToken } from '../providers/upstox.js';
 
@@ -12,7 +18,7 @@ export function session(now = new Date()) {
 }
 const stamp=v=>{const n=typeof v==='string'&&/^\d+$/.test(v)?Number(v):v;const d=new Date(n);return v!=null&&Number.isFinite(d.getTime())?d.toISOString():null;};
 export function fresh(q, now) {const age=now.getTime()-Date.parse(q?.time);return q?.price>0&&age>=0&&age<=120000;}
-export function createIndiaQuotes({master=getNseEquityMaster, fetcher=fetch, token=()=>process.env.UPSTOX_ANALYTICS_TOKEN||resolveUpstoxAccessToken().token, now=()=>new Date()}={}) {
+export function createIndiaQuotes({master=indiaMaster, fetcher=fetch, token=()=>process.env.UPSTOX_ANALYTICS_TOKEN||resolveUpstoxAccessToken().token, now=()=>new Date()}={}) {
  let cache=null,pending=null;
  return async symbols=>{
   const key=[...new Set(symbols)].sort().join(',');const time=now();
