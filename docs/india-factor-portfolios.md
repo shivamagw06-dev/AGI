@@ -21,3 +21,7 @@ Research price returns exclude fees, taxes and dividends. Corporate-action autom
 Routes: `/portfolios/india`, `/portfolios/india/in-momentum` (and in-growth, in-value, in-quality, in-all-weather). API `/api/portfolios/india-tracking`.
 
 Validation: tests cover the IST boundary, holiday suppression, candle-date/OHLC rejection, provider throttling and rate-limit exit, frozen-unit NAV, partial persistence and missing-only retries, read-only API behavior and idempotent completion. Live collection is pending Monday's session; no production chart points are seeded for testing.
+
+## Preferred
+
+`in-preferred` is a separate 17-stock research portfolio from the supplied preferred-picks list, not the broader OW universe or a factor replica. Seed: `server/data/indiaPreferredPortfolio.json`. Approximately equal weights total 100%; four 5.89% and thirteen 5.88% positions. Financials total 35.31%, so the five factor portfolios’ 25% sector cap does not apply. All 17 tickers matched the Upstox NSE EQ instrument master when prepared. Shares and chart tracking use the same 5 October launch and 4 pm daily collection. Existing five allocations are unchanged.
