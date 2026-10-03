@@ -157,7 +157,7 @@
   "TMPV": {
     "src": "/company-logos/TMPV.svg",
     "name": "Tata Motors Passenger Vehicles Ltd",
-    "source": "https://s3-symbol-logo.tradingview.com/tata.svg"
+    "source": "https://www.tatamotors.com/wp-content/themes/TataMotors/images/Tata-Motors-logo.svg"
   },
   "PFC": {
     "src": "/company-logos/PFC.svg",
@@ -307,7 +307,8 @@
   "TCS": {
     "src": "/company-logos/TCS.svg",
     "name": "Tata Consultancy Services Limited",
-    "source": "https://s3-symbol-logo.tradingview.com/tata.svg"
+    "source": "https://cdn.simpleicons.org/tcs",
+    "officialReference": "https://www.tcs.com/who-we-are/tcs-brand/tcs-logo"
   },
   "DIXON": {
     "src": "/company-logos/DIXON.svg",
@@ -327,7 +328,7 @@
   "TMCV": {
     "src": "/company-logos/TMCV.svg",
     "name": "Tata Motors Limited",
-    "source": "https://s3-symbol-logo.tradingview.com/tata.svg"
+    "source": "https://www.tatamotors.com/wp-content/themes/TataMotors/images/Tata-Motors-logo.svg"
   },
   "HINDUNILVR": {
     "src": "/company-logos/HINDUNILVR.svg",
@@ -375,9 +376,9 @@
     "source": "https://s3-symbol-logo.tradingview.com/vodafone-idea.svg"
   },
   "ADANIENT": {
-    "src": "/company-logos/ADANIENT.svg",
+    "src": "/company-logos/ADANIENT.png",
     "name": "Adani Enterprises Limited",
-    "source": "https://s3-symbol-logo.tradingview.com/adani.svg"
+    "source": "https://www.adanienterprises.com/-/media/51BCCD0BCDD0451EBB3081919B8BE8A1.ashx"
   },
   "BHEL": {
     "src": "/company-logos/BHEL.svg",
@@ -470,9 +471,9 @@
     "source": "https://s3-symbol-logo.tradingview.com/swiggy-ltd.svg"
   },
   "ADANIPOWER": {
-    "src": "/company-logos/ADANIPOWER.svg",
+    "src": "/company-logos/ADANIPOWER.png",
     "name": "Adani Power Limited",
-    "source": "https://s3-symbol-logo.tradingview.com/adani.svg"
+    "source": "https://www.adanipower.com/-/media/C7B41EE9FFC747C9BC03FEC2514B83E8.ashx"
   },
   "JIOFIN": {
     "src": "/company-logos/JIOFIN.svg",
@@ -775,9 +776,9 @@
     "source": "https://s3-symbol-logo.tradingview.com/pidilite.svg"
   },
   "TATACONSUM": {
-    "src": "/company-logos/TATACONSUM.svg",
+    "src": "/company-logos/TATACONSUM.png",
     "name": "Tata Consumer Products Limited",
-    "source": "https://s3-symbol-logo.tradingview.com/tata.svg"
+    "source": "https://www.tataconsumer.com/themes/custom/tcpl/logo.png"
   },
   "EXIDEIND": {
     "src": "/company-logos/EXIDEIND.svg",
