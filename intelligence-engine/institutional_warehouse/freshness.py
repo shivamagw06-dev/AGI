@@ -115,8 +115,14 @@ def _as_date(value: Any) -> Optional[date]:
 
 
 def _newest(tab_id: str, column: str,
-            value_columns: tuple[str, ...] = ()) -> tuple[Optional[date], int]:
-    """The newest date the table can actually answer a question from.
+            value_columns: tuple[str, ...] = ()
+            ) -> tuple[Optional[date], Optional[date], int]:
+    """The newest and oldest dates the table can answer a question from.
+
+    Both ends, because they fail differently. The newest answers "has ingestion
+    stopped". The oldest answers "has history disappeared", and nothing was
+    asking it -- a table truncated from behind keeps a fresh newest row and
+    reports healthy while the past quietly goes missing.
 
     Not simply MAX(date): a row carrying only a date is not an observation,
     and one of those is enough to make a dead feed read as current. An empty
@@ -130,21 +136,24 @@ def _newest(tab_id: str, column: str,
     try:
         total = db.count(table)
     except Exception:
-        return None, 0
+        return None, None, 0
     if not total:
-        return None, 0
+        return None, None, 0
     where = ""
     if value_columns:
         where = " WHERE " + " OR ".join(f"{c} IS NOT NULL" for c in value_columns)
     try:
-        rows = db.query(f"SELECT MAX({column}) AS newest FROM {table}{where}")
+        rows = db.query(f"SELECT MAX({column}) AS newest, MIN({column}) AS oldest "
+                        f"FROM {table}{where}")
     except Exception:
         # A column this table does not have must not silently report "never".
         try:
-            rows = db.query(f"SELECT MAX({column}) AS newest FROM {table}")
+            rows = db.query(f"SELECT MAX({column}) AS newest, "
+                            f"MIN({column}) AS oldest FROM {table}")
         except Exception:
-            return None, total
-    return (_as_date((rows or [{}])[0].get("newest")), total)
+            return None, None, total
+    first = (rows or [{}])[0]
+    return (_as_date(first.get("newest")), _as_date(first.get("oldest")), total)
 
 
 def _audit_column(tab_id: str) -> Optional[str]:
@@ -179,7 +188,8 @@ def _derived_row(tab_id: str, now: date) -> dict[str, Any]:
         total = 0
 
     row = {"tab": tab_id, "cadence": None, "rows": total, "check": "derived",
-           "column": column, "newest": None, "age_days": None,
+           "column": column, "newest": None, "oldest": None,
+           "span_days": None, "age_days": None,
            "allowed_days": SILENT_AFTER_DAYS, "reader": None, "note": None}
 
     if not total:
@@ -192,12 +202,14 @@ def _derived_row(tab_id: str, now: date) -> dict[str, Any]:
         row["note"] = "no column records when a row was written"
         return row
 
-    newest, _ = _newest(tab_id, column)
+    newest, oldest, _ = _newest(tab_id, column)
     if newest is None:
         row["status"] = UNKNOWN
         return row
     age = (now - newest).days
     row["newest"] = newest.isoformat()
+    row["oldest"] = oldest.isoformat() if oldest else None
+    row["span_days"] = (newest - oldest).days if oldest else None
     row["age_days"] = age
     row["status"] = SILENT if age > SILENT_AFTER_DAYS else OK
     return row
@@ -208,8 +220,8 @@ def report(*, today: Optional[str] = None) -> dict[str, Any]:
     now = _as_date(today) or datetime.now(timezone.utc).date()
     tables: list[dict[str, Any]] = []
     for tab_id, spec in sorted(EXPECTED.items()):
-        newest, total = _newest(tab_id, spec["column"],
-                                tuple(spec.get("value_columns") or ()))
+        newest, oldest, total = _newest(tab_id, spec["column"],
+                                        tuple(spec.get("value_columns") or ()))
         age = (now - newest).days if newest else None
         cadence = spec["cadence"]
         allowed = spec.get("quiet_days", TOLERANCE[cadence])
@@ -227,6 +239,11 @@ def report(*, today: Optional[str] = None) -> dict[str, Any]:
             "cadence": cadence,
             "rows": total,
             "newest": newest.isoformat() if newest else None,
+            "oldest": oldest.isoformat() if oldest else None,
+            # How much past the table actually holds. A span that shrinks
+            # between runs is history being lost, which a fresh newest row
+            # hides completely.
+            "span_days": (newest - oldest).days if newest and oldest else None,
             "age_days": age,
             "allowed_days": allowed,
             "status": status,
