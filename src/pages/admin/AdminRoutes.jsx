@@ -1,3 +1,4 @@
+import GrowthMomentum from './GrowthMomentum';
 import PortfolioEditor from './PortfolioEditor';
 import React, { Suspense, lazy } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
@@ -171,6 +172,7 @@ export default function AdminRoutes() {
           <Route element={<AdminLayout />}>
             <Route index element={<AdminDashboard />} />
             <Route path="portfolios" element={<PortfolioEditor />} />
+            <Route path="growth-momentum" element={<GrowthMomentum />} />
             <Route path="company-financials" element={<CompanyFinancials />} />
             <Route path="institutional-holdings" element={<InstitutionalHoldingsAdmin />} />
             <Route path="publication-review" element={<PublicationReview />} />
