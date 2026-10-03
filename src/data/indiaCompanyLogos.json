@@ -928,5 +928,15 @@
     "src": "/company-logos/BAJAJ-AUTO.svg",
     "name": "Bajaj Auto Limited",
     "source": "https://s3-symbol-logo.tradingview.com/bajaj-auto.svg"
+  },
+  "KIRLPNU": {
+    "src": "/company-logos/KIRLPNU.png",
+    "name": "Kirloskar Pneumatic Company Limited",
+    "source": "https://www.kirloskarpneumatic.com/"
+  },
+  "VAML": {
+    "src": "/company-logos/VAML.png",
+    "name": "Vedanta Aluminium Metal Limited",
+    "source": "https://vedantaaluminium.com/"
   }
 }
