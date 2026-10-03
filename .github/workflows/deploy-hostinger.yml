@@ -141,6 +141,11 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add index.html .htaccess version.json og-article.php robots.txt agi-og-cover.png || true
           git add -A assets || true
+          if [ -d public/company-logos ]; then
+            mkdir -p company-logos
+            cp -R public/company-logos/. company-logos/
+            git add -A company-logos
+          fi
           if [ -d article ]; then git add -A article || true; fi
           if git diff --cached --quiet; then
             echo "No Hostinger root artifact changes to commit."
@@ -170,6 +175,11 @@ jobs:
           cp index.html dist/index.html
           rm -rf dist/assets
           cp -R assets dist/assets
+          # Company marks are Vite public assets, outside the compiled assets tree.
+          if [ -d public/company-logos ]; then
+            mkdir -p dist/company-logos
+            cp -R public/company-logos/. dist/company-logos/
+          fi
           cp .htaccess dist/.htaccess 2>/dev/null || true
           cp version.json dist/version.json
           cp og-article.php dist/og-article.php 2>/dev/null || true
