@@ -1,3 +1,4 @@
+import { withGrowthMomentum } from './growthMomentumPortfolio.js';
 import { nseSession } from './liveAlphaSession.js';
 import { convictionView } from './convictionTracking.js';
 import { createIndiaDailyReader, dailyDue, dailyValuation, completedDates } from './indiaPortfolioDaily.js';
@@ -13,7 +14,7 @@ import { createPortfolioStore } from './portfolioCatalog.js';
 import { resolveUpstoxAccessToken } from '../providers/upstox.js';
 
 export const INDIA_START = '2026-10-05';
-export const INDIA_IDS = ['in-momentum','in-growth','in-value','in-quality','in-all-weather','in-preferred','in-conviction-long','in-conviction-short'];
+export const INDIA_IDS = ['in-momentum','in-growth','in-value','in-quality','in-all-weather','in-preferred','in-conviction-long','in-conviction-short','in-growth-momentum-private'];
 export function session(now = new Date()) {
  const p=Object.fromEntries(new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Kolkata',year:'numeric',month:'2-digit',day:'2-digit',weekday:'short',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).formatToParts(now).map(x=>[x.type,x.value]));
  const minutes=+p.hour*60 + +p.minute;
@@ -118,6 +119,6 @@ export const readIndiaTracking=async portfolios=>sharedTracker().read(portfolios
 let running=false,lastDailyAttempt=0;
 export function startIndiaPortfolioScheduler(){
  const tick=async()=>{const now=new Date(),s=session(now);const launch=s.date===INDIA_START&&s.open;const due=dailyDue(now);if(running||s.date<INDIA_START||(!launch&&!due)||(!launch&&Date.now()-lastDailyAttempt<300000))return;
-  running=true;if(due)lastDailyAttempt=Date.now();try{await sharedTracker().collect(await createPortfolioStore().list());}catch{console.warn('[india-portfolios] Collection failed; retaining recorded evidence.');}finally{running=false;}};
+  running=true;if(due)lastDailyAttempt=Date.now();try{const rows=await createPortfolioStore().list(); let all=rows; try {all=withGrowthMomentum(rows);} catch {console.warn('[india-portfolios] Private combination unavailable; public collection continues.');} await sharedTracker().collect(all);}catch{console.warn('[india-portfolios] Collection failed; retaining recorded evidence.');}finally{running=false;}};
  const timer=setInterval(tick,60000);timer.unref();tick();return timer;
 }
